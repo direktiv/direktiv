@@ -1,11 +1,6 @@
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "~/design/Dialog";
+import { Dialog, DialogTrigger } from "~/design/Dialog";
 import { FC, useState } from "react";
+import { ModalPluginSelector, ModalWrapper } from "../components/Modal";
 import {
   Select,
   SelectContent,
@@ -74,83 +69,73 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({
           </Button>
         </DialogTrigger>
       </div>
-      <DialogContent className="sm:max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>Configure Target plugin</DialogTitle>
-        </DialogHeader>
-        <div className="my-3 flex flex-col gap-y-5">
-          <div className="flex flex-col gap-y-5">
-            <fieldset className="flex items-center gap-5">
-              <label className="w-[150px] overflow-hidden text-right text-sm">
-                select a target plugin
-              </label>
-              <Select
-                onValueChange={(e) => {
-                  setSelectedPlugin(e as typeof selectedPlugin);
-                }}
-                value={selectedPlugin}
-              >
-                <SelectTrigger variant="outline">
-                  <SelectValue placeholder="please select a target plugin" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.values(targetPluginTypes).map((pluginType) => (
-                    <SelectItem key={pluginType} value={pluginType}>
-                      {pluginType}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </fieldset>
-          </div>
+      <ModalWrapper title="Configure Target plugin">
+        <ModalPluginSelector title="Target plugin">
+          <Select
+            onValueChange={(e) => {
+              setSelectedPlugin(e as typeof selectedPlugin);
+            }}
+            value={selectedPlugin}
+          >
+            <SelectTrigger variant="outline" className="grow">
+              <SelectValue placeholder="please select a target plugin" />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.values(targetPluginTypes).map((pluginType) => (
+                <SelectItem key={pluginType} value={pluginType}>
+                  {pluginType}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </ModalPluginSelector>
 
-          {selectedPlugin === targetPluginTypes.instantResponse && (
-            <InstantResponseForm
-              defaultConfig={defaultInstantResponseConfig}
-              onSubmit={(configuration) => {
-                setDialogOpen(false);
-                formControls.setValue("plugins.target", configuration);
-              }}
-            />
-          )}
-          {selectedPlugin === targetPluginTypes.targetFlow && (
-            <TargetFlowForm
-              defaultConfig={defaultTargetFlowConfig}
-              onSubmit={(configuration) => {
-                setDialogOpen(false);
-                formControls.setValue("plugins.target", configuration);
-              }}
-            />
-          )}
-          {selectedPlugin === targetPluginTypes.targetFlowVar && (
-            <TargetFlowVarForm
-              defaultConfig={defaultTargetFlowVarConfig}
-              onSubmit={(configuration) => {
-                setDialogOpen(false);
-                formControls.setValue("plugins.target", configuration);
-              }}
-            />
-          )}
-          {selectedPlugin === targetPluginTypes.targetNamespaceFile && (
-            <TargetNamespaceFileForm
-              defaultConfig={defaultTargetNamespaceFileConfig}
-              onSubmit={(configuration) => {
-                setDialogOpen(false);
-                formControls.setValue("plugins.target", configuration);
-              }}
-            />
-          )}
-          {selectedPlugin === targetPluginTypes.targetNamespaceVar && (
-            <TargetNamespaceVarForm
-              defaultConfig={defaultTargetNamespaceVarConfig}
-              onSubmit={(configuration) => {
-                setDialogOpen(false);
-                formControls.setValue("plugins.target", configuration);
-              }}
-            />
-          )}
-        </div>
-      </DialogContent>
+        {selectedPlugin === targetPluginTypes.instantResponse && (
+          <InstantResponseForm
+            defaultConfig={defaultInstantResponseConfig}
+            onSubmit={(configuration) => {
+              setDialogOpen(false);
+              formControls.setValue("plugins.target", configuration);
+            }}
+          />
+        )}
+        {selectedPlugin === targetPluginTypes.targetFlow && (
+          <TargetFlowForm
+            defaultConfig={defaultTargetFlowConfig}
+            onSubmit={(configuration) => {
+              setDialogOpen(false);
+              formControls.setValue("plugins.target", configuration);
+            }}
+          />
+        )}
+        {selectedPlugin === targetPluginTypes.targetFlowVar && (
+          <TargetFlowVarForm
+            defaultConfig={defaultTargetFlowVarConfig}
+            onSubmit={(configuration) => {
+              setDialogOpen(false);
+              formControls.setValue("plugins.target", configuration);
+            }}
+          />
+        )}
+        {selectedPlugin === targetPluginTypes.targetNamespaceFile && (
+          <TargetNamespaceFileForm
+            defaultConfig={defaultTargetNamespaceFileConfig}
+            onSubmit={(configuration) => {
+              setDialogOpen(false);
+              formControls.setValue("plugins.target", configuration);
+            }}
+          />
+        )}
+        {selectedPlugin === targetPluginTypes.targetNamespaceVar && (
+          <TargetNamespaceVarForm
+            defaultConfig={defaultTargetNamespaceVarConfig}
+            onSubmit={(configuration) => {
+              setDialogOpen(false);
+              formControls.setValue("plugins.target", configuration);
+            }}
+          />
+        )}
+      </ModalWrapper>
     </Dialog>
   );
 };
