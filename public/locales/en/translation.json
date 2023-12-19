@@ -352,6 +352,17 @@
                   "contentType": "Content Type",
                   "contentTypePlaceholder": "application/json"
                 }
+              },
+              "inbound": {
+                "headlineAdd": "Add inbound plugin",
+                "headlineEdit": "Edit inbound plugin",
+                "label": "Inbound plugin",
+                "placeholder": "Please select a inbound plugin",
+                "types": {
+                  "acl": "Access control list (acl)",
+                  "js-inbound": "JavaScript",
+                  "request-convert": "Request convert"
+                }
               }
             }
           },
