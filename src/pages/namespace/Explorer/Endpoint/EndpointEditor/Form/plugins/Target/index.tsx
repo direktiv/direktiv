@@ -36,30 +36,30 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({
   const currentType = values.plugins?.target?.type;
   const [selectedPlugin, setSelectedPlugin] = useState(currentType);
 
-  const defaultInstantResponseConfig =
-    currentType === targetPluginTypes.instantResponse
-      ? values.plugins?.target?.configuration
-      : undefined;
+  const {
+    instantResponse,
+    targetFlow,
+    targetFlowVar,
+    targetNamespaceFile,
+    targetNamespaceVar,
+  } = targetPluginTypes;
 
-  const defaultTargetFlowConfig =
-    currentType === targetPluginTypes.targetFlow
-      ? values.plugins?.target?.configuration
-      : undefined;
+  const currentConfiguration = values.plugins?.target?.configuration;
 
-  const defaultTargetFlowVarConfig =
-    currentType === targetPluginTypes.targetFlowVar
-      ? values.plugins?.target?.configuration
-      : undefined;
+  const currentInstantResponseConfig =
+    currentType === instantResponse ? currentConfiguration : undefined;
 
-  const defaultTargetNamespaceFileConfig =
-    currentType === targetPluginTypes.targetNamespaceFile
-      ? values.plugins?.target?.configuration
-      : undefined;
+  const currentTargetFlowConfig =
+    currentType === targetFlow ? currentConfiguration : undefined;
 
-  const defaultTargetNamespaceVarConfig =
-    currentType === targetPluginTypes.targetNamespaceVar
-      ? values.plugins?.target?.configuration
-      : undefined;
+  const currentTargetFlowVarConfig =
+    currentType === targetFlowVar ? currentConfiguration : undefined;
+
+  const currentTargetNamespaceFileConfig =
+    currentType === targetNamespaceFile ? currentConfiguration : undefined;
+
+  const currentTargetNamespaceVarConfig =
+    currentType === targetNamespaceVar ? currentConfiguration : undefined;
 
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -105,45 +105,45 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({
           </Select>
         </PluginSelector>
 
-        {selectedPlugin === targetPluginTypes.instantResponse && (
+        {selectedPlugin === instantResponse && (
           <InstantResponseForm
-            defaultConfig={defaultInstantResponseConfig}
+            defaultConfig={currentInstantResponseConfig}
             onSubmit={(configuration) => {
               setDialogOpen(false);
               formControls.setValue("plugins.target", configuration);
             }}
           />
         )}
-        {selectedPlugin === targetPluginTypes.targetFlow && (
+        {selectedPlugin === targetFlow && (
           <TargetFlowForm
-            defaultConfig={defaultTargetFlowConfig}
+            defaultConfig={currentTargetFlowConfig}
             onSubmit={(configuration) => {
               setDialogOpen(false);
               formControls.setValue("plugins.target", configuration);
             }}
           />
         )}
-        {selectedPlugin === targetPluginTypes.targetFlowVar && (
+        {selectedPlugin === targetFlowVar && (
           <TargetFlowVarForm
-            defaultConfig={defaultTargetFlowVarConfig}
+            defaultConfig={currentTargetFlowVarConfig}
             onSubmit={(configuration) => {
               setDialogOpen(false);
               formControls.setValue("plugins.target", configuration);
             }}
           />
         )}
-        {selectedPlugin === targetPluginTypes.targetNamespaceFile && (
+        {selectedPlugin === targetNamespaceFile && (
           <TargetNamespaceFileForm
-            defaultConfig={defaultTargetNamespaceFileConfig}
+            defaultConfig={currentTargetNamespaceFileConfig}
             onSubmit={(configuration) => {
               setDialogOpen(false);
               formControls.setValue("plugins.target", configuration);
             }}
           />
         )}
-        {selectedPlugin === targetPluginTypes.targetNamespaceVar && (
+        {selectedPlugin === targetNamespaceVar && (
           <TargetNamespaceVarForm
-            defaultConfig={defaultTargetNamespaceVarConfig}
+            defaultConfig={currentTargetNamespaceVarConfig}
             onSubmit={(configuration) => {
               setDialogOpen(false);
               formControls.setValue("plugins.target", configuration);
