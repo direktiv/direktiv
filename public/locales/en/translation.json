@@ -964,6 +964,7 @@
       "mirror": "Mirror"
     },
     "breadcrumb": {
+      "selectPlaceholder": "Select Namespace",
       "searchPlaceholder": "Search namespace...",
       "notFound": "No namespace found.",
       "createBtn": "Create new namespace",
