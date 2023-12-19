@@ -308,8 +308,9 @@
             "plugins": {
               "saveBtn": "Save",
               "target": {
-                "headline": "Configure Target Plugin",
-                "label": "Target Plugin",
+                "headline": "Configure target plugin",
+                "label": "Target plugin",
+                "placeholder": "Please select a target plugin",
                 "notConfigured": "Please configure the target plugin",
                 "types": {
                   "instant-response": "Instant Response",

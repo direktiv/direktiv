@@ -91,7 +91,11 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({
             value={selectedPlugin}
           >
             <SelectTrigger variant="outline" className="grow">
-              <SelectValue placeholder="please select a target plugin" />
+              <SelectValue
+                placeholder={t(
+                  "pages.explorer.endpoint.editor.form.plugins.target.placeholder"
+                )}
+              />
             </SelectTrigger>
             <SelectContent>
               {Object.values(targetPluginTypes).map((pluginType) => (
