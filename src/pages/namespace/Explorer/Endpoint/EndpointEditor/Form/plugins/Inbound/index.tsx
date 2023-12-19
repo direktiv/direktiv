@@ -24,14 +24,12 @@ import { inboundPluginTypes } from "../../../schema/plugins/inbound";
 import { useTranslation } from "react-i18next";
 
 type InboundPluginFormProps = {
-  formControls: UseFormReturn<EndpointFormSchemaType>;
+  form: UseFormReturn<EndpointFormSchemaType>;
 };
 
-export const InboundPluginForm: FC<InboundPluginFormProps> = ({
-  formControls,
-}) => {
+export const InboundPluginForm: FC<InboundPluginFormProps> = ({ form }) => {
   const { t } = useTranslation();
-  const { control } = formControls;
+  const { control } = form;
   const {
     append: addPlugin,
     remove: deletePlugin,

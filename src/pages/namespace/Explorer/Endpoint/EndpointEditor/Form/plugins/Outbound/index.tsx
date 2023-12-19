@@ -24,7 +24,7 @@ import { OutboundPluginFormSchemaType } from "../../../schema/plugins/outbound/s
 import { outboundPluginTypes } from "../../../schema/plugins/outbound";
 
 type OutboundPluginFormProps = {
-  formControls: UseFormReturn<EndpointFormSchemaType>;
+  form: UseFormReturn<EndpointFormSchemaType>;
 };
 
 // TODO: may create a factory for this, ot introduce a generic
@@ -38,10 +38,8 @@ const readJsOutboundConfig = (
     : undefined;
 };
 
-export const OutboundPluginForm: FC<OutboundPluginFormProps> = ({
-  formControls,
-}) => {
-  const { control } = formControls;
+export const OutboundPluginForm: FC<OutboundPluginFormProps> = ({ form }) => {
+  const { control } = form;
   const {
     append: addPlugin,
     remove: deletePlugin,

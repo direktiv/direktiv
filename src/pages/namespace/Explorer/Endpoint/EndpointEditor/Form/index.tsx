@@ -116,9 +116,9 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
             </div>
           )}
         />
-        <TargetPluginForm formControls={formControls} />
-        <InboundPluginForm formControls={formControls} />
-        <OutboundPluginForm formControls={formControls} />
+        <TargetPluginForm form={formControls} />
+        <InboundPluginForm form={formControls} />
+        <OutboundPluginForm form={formControls} />
         <AuthPluginForm formControls={formControls} />
       </div>
     ),

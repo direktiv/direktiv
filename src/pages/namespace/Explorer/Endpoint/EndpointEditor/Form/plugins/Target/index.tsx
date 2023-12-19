@@ -22,13 +22,11 @@ import { targetPluginTypes } from "../../../schema/plugins/target";
 import { useTranslation } from "react-i18next";
 
 type TargetPluginFormProps = {
-  formControls: UseFormReturn<EndpointFormSchemaType>;
+  form: UseFormReturn<EndpointFormSchemaType>;
 };
 
-export const TargetPluginForm: FC<TargetPluginFormProps> = ({
-  formControls,
-}) => {
-  const { control } = formControls;
+export const TargetPluginForm: FC<TargetPluginFormProps> = ({ form }) => {
+  const { control } = form;
   const values = useWatch({ control });
   const { t } = useTranslation();
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -114,7 +112,7 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({
             defaultConfig={currentInstantResponseConfig}
             onSubmit={(configuration) => {
               setDialogOpen(false);
-              formControls.setValue("plugins.target", configuration);
+              form.setValue("plugins.target", configuration);
             }}
           />
         )}
@@ -123,7 +121,7 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({
             defaultConfig={currentTargetFlowConfig}
             onSubmit={(configuration) => {
               setDialogOpen(false);
-              formControls.setValue("plugins.target", configuration);
+              form.setValue("plugins.target", configuration);
             }}
           />
         )}
@@ -132,7 +130,7 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({
             defaultConfig={currentTargetFlowVarConfig}
             onSubmit={(configuration) => {
               setDialogOpen(false);
-              formControls.setValue("plugins.target", configuration);
+              form.setValue("plugins.target", configuration);
             }}
           />
         )}
@@ -141,7 +139,7 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({
             defaultConfig={currentTargetNamespaceFileConfig}
             onSubmit={(configuration) => {
               setDialogOpen(false);
-              formControls.setValue("plugins.target", configuration);
+              form.setValue("plugins.target", configuration);
             }}
           />
         )}
@@ -150,7 +148,7 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({
             defaultConfig={currentTargetNamespaceVarConfig}
             onSubmit={(configuration) => {
               setDialogOpen(false);
-              formControls.setValue("plugins.target", configuration);
+              form.setValue("plugins.target", configuration);
             }}
           />
         )}
