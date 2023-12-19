@@ -18,39 +18,27 @@ import { UseFormReturn, useFieldArray } from "react-hook-form";
 
 import Button from "~/design/Button";
 import { EndpointFormSchemaType } from "../../../schema";
-import { InboundPluginFormSchemaType } from "../../../schema/plugins/inbound/schema";
-import { JsInboundForm } from "./JsInboundForm";
-import { JsInboundFormSchemaType } from "../../../schema/plugins/inbound/jsInbound";
-import { RequestConvertForm } from "./RequestConvertForm";
-import { RequestConvertFormSchemaType } from "../../../schema/plugins/inbound/requestConvert";
-import { inboundPluginTypes } from "../../../schema/plugins/inbound";
+import { JsOutboundForm } from "./JsOutboundForm";
+import { JsOutboundFormSchemaType } from "../../../schema/plugins/outbound/jsOutbound";
+import { OutboundPluginFormSchemaType } from "../../../schema/plugins/outbound/schema";
+import { outboundPluginTypes } from "../../../schema/plugins/outbound";
 
-type InboundPluginFormProps = {
+type OutboundPluginFormProps = {
   formControls: UseFormReturn<EndpointFormSchemaType>;
 };
 
 // TODO: may create a factory for this, ot introduce a generic
-const readRequestConvertConfig = (
-  fields: InboundPluginFormSchemaType[] | undefined,
+const readJsOutboundConfig = (
+  fields: OutboundPluginFormSchemaType[] | undefined,
   index: number | undefined
-): RequestConvertFormSchemaType["configuration"] | undefined => {
+): JsOutboundFormSchemaType["configuration"] | undefined => {
   const plugin = index !== undefined ? fields?.[index] : undefined;
-  return plugin?.type === inboundPluginTypes.requestConvert
+  return plugin?.type === outboundPluginTypes.jsOutbound
     ? plugin.configuration
     : undefined;
 };
 
-const readJsInboundConfig = (
-  fields: InboundPluginFormSchemaType[] | undefined,
-  index: number | undefined
-): JsInboundFormSchemaType["configuration"] | undefined => {
-  const plugin = index !== undefined ? fields?.[index] : undefined;
-  return plugin?.type === inboundPluginTypes.jsInbound
-    ? plugin.configuration
-    : undefined;
-};
-
-export const InboundPluginForm: FC<InboundPluginFormProps> = ({
+export const OutboundPluginForm: FC<OutboundPluginFormProps> = ({
   formControls,
 }) => {
   const { control } = formControls;
@@ -62,13 +50,13 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({
     fields,
   } = useFieldArray({
     control,
-    name: "plugins.inbound",
+    name: "plugins.outbound",
   });
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editIndex, setEditIndex] = useState<number>();
 
   const [selectedPlugin, setSelectedPlugin] =
-    useState<InboundPluginFormSchemaType["type"]>();
+    useState<OutboundPluginFormSchemaType["type"]>();
 
   const pluginsCount = fields.length;
 
@@ -81,10 +69,10 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({
       }}
     >
       <div className="flex items-center gap-3">
-        {pluginsCount} Inbound plugins
+        {pluginsCount} Outbound plugins
         <DialogTrigger asChild>
           <Button icon variant="outline">
-            <Plus /> add inbound plugin
+            <Plus /> add outbound plugin
           </Button>
         </DialogTrigger>
       </div>
@@ -145,14 +133,14 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>
-            {editIndex === undefined ? "add" : "edit"} Inbound Plugin
+            {editIndex === undefined ? "add" : "edit"} Outbound Plugin
           </DialogTitle>
         </DialogHeader>
         <div className="my-3 flex flex-col gap-y-5">
           <div className="flex flex-col gap-y-5">
             <fieldset className="flex items-center gap-5">
               <label className="w-[150px] overflow-hidden text-right text-sm">
-                select a inbound plugin
+                select a outbound plugin
               </label>
               <Select
                 onValueChange={(e) => {
@@ -161,10 +149,10 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({
                 value={selectedPlugin}
               >
                 <SelectTrigger variant="outline">
-                  <SelectValue placeholder="please select a inbound plugin" />
+                  <SelectValue placeholder="please select a outbound plugin" />
                 </SelectTrigger>
                 <SelectContent>
-                  {Object.values(inboundPluginTypes).map((pluginType) => (
+                  {Object.values(outboundPluginTypes).map((pluginType) => (
                     <SelectItem key={pluginType} value={pluginType}>
                       {pluginType}
                     </SelectItem>
@@ -173,24 +161,10 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({
               </Select>
             </fieldset>
           </div>
-          {selectedPlugin === inboundPluginTypes.requestConvert && (
-            <RequestConvertForm
-              defaultConfig={readRequestConvertConfig(fields, editIndex)}
-              onSubmit={(configuration) => {
-                setDialogOpen(false);
-                if (editIndex === undefined) {
-                  addPlugin(configuration);
-                } else {
-                  editPlugin(editIndex, configuration);
-                }
-                setEditIndex(undefined);
-              }}
-            />
-          )}
 
-          {selectedPlugin === inboundPluginTypes.jsInbound && (
-            <JsInboundForm
-              defaultConfig={readJsInboundConfig(fields, editIndex)}
+          {selectedPlugin === outboundPluginTypes.jsOutbound && (
+            <JsOutboundForm
+              defaultConfig={readJsOutboundConfig(fields, editIndex)}
               onSubmit={(configuration) => {
                 setDialogOpen(false);
                 if (editIndex === undefined) {
