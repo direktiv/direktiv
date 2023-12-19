@@ -11,7 +11,6 @@ import {
 import { Card } from "~/design/Card";
 import Delete from "./components/modals/Delete";
 import ExplorerHeader from "./Header";
-import FilePicker from "~/componentsNext/FilePicker";
 import FileRow from "./FileRow";
 import FileViewer from "./components/modals/FileViewer";
 import { FolderUp } from "lucide-react";
