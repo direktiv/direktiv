@@ -1,3 +1,4 @@
+import { AuthPluginFormSchema } from "./plugins/auth/schema";
 import { InboundPluginFormSchema } from "./plugins/inbound/schema";
 import { MethodsSchema } from "~/api/gateway/schema";
 import { OutboundPluginFormSchema } from "./plugins/outbound/schema";
@@ -15,6 +16,7 @@ export const EndpointFormSchema = z.object({
       target: TargetPluginFormSchema,
       inbound: z.array(InboundPluginFormSchema).optional(),
       outbound: z.array(OutboundPluginFormSchema).optional(),
+      auth: z.array(AuthPluginFormSchema).optional(),
     })
     .optional(),
 });
