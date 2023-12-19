@@ -152,7 +152,6 @@ Direktiv Documentation can be found at https://docs.direktiv.io/
 | Method  | URI     | Name   | Summary |
 |---------|---------|--------|---------|
 | POST | /api/namespaces/{namespace}/broadcast | [broadcast cloudevent](#broadcast-cloudevent) | Broadcast Cloud Event |
-| POST | /api/namespaces/{namespace}/broadcast/{filtername} | [broadcast cloudevent filter](#broadcast-cloudevent-filter) | Filter given cloud event and broadcast it |
 | POST | /api/jq | [jq playground](#jq-playground) | JQ Playground api to test jq queries |
 | POST | /api/namespaces/{namespace}/events/{event}/replay | [replay cloudevent](#replay-cloudevent) | Replay Cloud Event |
 | GET | /api/version | [version](#version) | Returns version information for servers in the cluster. |

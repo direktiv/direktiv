@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"strings"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/binding/format"
@@ -37,15 +36,6 @@ var sendEventCmd = &cobra.Command{
 	Args:  cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		urlExecuteEvent := fmt.Sprintf("%s/broadcast", root.UrlPrefix)
-
-		filter, err := cmd.Flags().GetString("filter")
-		if err != nil {
-			root.Fail(cmd, "could not parse event filter %v", err.Error())
-		}
-
-		if filter != "" {
-			urlExecuteEvent += "/" + strings.TrimPrefix(filter, "/")
-		}
 
 		cmd.Printf("sending events to %s\n", urlExecuteEvent)
 
@@ -160,9 +150,7 @@ func executeEvent(cmd *cobra.Command, url string, args []string) (string, error)
 
 	// the root command checks if the namespace exists
 	// this not found has to be a wrong filter
-	if resp.StatusCode == http.StatusNotFound {
-		return "", fmt.Errorf("eventfilter does not exist")
-	} else if resp.StatusCode == http.StatusForbidden {
+	if resp.StatusCode == http.StatusForbidden {
 		return "", fmt.Errorf("access to server forbidden")
 	} else if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("server responded with status %d", resp.StatusCode)

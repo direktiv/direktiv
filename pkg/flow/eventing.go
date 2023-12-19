@@ -58,11 +58,11 @@ func newEventReceiver(events *events, flow *flow) (*eventReceiver, error) {
 	}, nil
 }
 
-func (rcv *eventReceiver) sendToNamespace(name, filter string, r *http.Request) error {
+func (rcv *eventReceiver) sendToNamespace(name string, r *http.Request) error {
 	ctx := r.Context()
 	ctx, end := startIncomingEvent(ctx, "http")
 	defer end()
-	rcv.logger.Debugf("event for namespace %s (filter: %s)", name, filter)
+	rcv.logger.Debugf("event for namespace %s", name)
 
 	m := protocol.NewMessageFromHttpRequest(r)
 	ev, err := binding.ToEvent(ctx, m)
@@ -89,15 +89,7 @@ func (rcv *eventReceiver) NamespaceHandler(w http.ResponseWriter, r *http.Reques
 
 	ns := mux.Vars(r)["ns"]
 
-	// check for filter
-	filter := r.URL.Query().Get("filter")
-	if filter != "" {
-		rcv.logger.Infof("using event filter %s", filter)
-	} else {
-		rcv.logger.Infof("using no event filter")
-	}
-
-	err := rcv.sendToNamespace(ns, filter, r)
+	err := rcv.sendToNamespace(ns, r)
 	if err != nil {
 		w.WriteHeader(http.StatusNotAcceptable)
 		return
@@ -122,7 +114,7 @@ func (rcv *eventReceiver) MultiNamespaceHandler(w http.ResponseWriter, r *http.R
 	}
 
 	for i := range nss {
-		err := rcv.sendToNamespace(nss[i].Name, "", r)
+		err := rcv.sendToNamespace(nss[i].Name, r)
 		if err != nil {
 			rcv.logger.Errorf("error sending event: %s", err.Error())
 		}
