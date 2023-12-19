@@ -161,7 +161,7 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({
                 value={selectedPlugin}
               >
                 <SelectTrigger variant="outline">
-                  <SelectValue placeholder="please select a target plugin" />
+                  <SelectValue placeholder="please select a inbound plugin" />
                 </SelectTrigger>
                 <SelectContent>
                   {Object.values(inboundPluginTypes).map((pluginType) => (
