@@ -94,9 +94,9 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({
                   <SelectValue placeholder="please select a target plugin" />
                 </SelectTrigger>
                 <SelectContent>
-                  {Object.values(targetPluginTypes).map((targetPluginType) => (
-                    <SelectItem key={targetPluginType} value={targetPluginType}>
-                      {targetPluginType}
+                  {Object.values(targetPluginTypes).map((pluginType) => (
+                    <SelectItem key={pluginType} value={pluginType}>
+                      {pluginType}
                     </SelectItem>
                   ))}
                 </SelectContent>

@@ -1,39 +1,43 @@
 import { FC, FormEvent } from "react";
 import FormErrors, { errorsType } from "~/componentsNext/FormErrors";
 import {
-  TargetFlowFormSchema,
-  TargetFlowFormSchemaType,
-} from "../../../schema/plugins/target/targetFlow";
+  RequestConvertFormSchema,
+  RequestConvertFormSchemaType,
+} from "../../../schema/plugins/inbound/requestConvert";
 
 import Button from "~/design/Button";
 import { Checkbox } from "~/design/Checkbox";
 import { DialogFooter } from "~/design/Dialog";
-import Input from "~/design/Input";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-type OptionalConfig = Partial<TargetFlowFormSchemaType["configuration"]>;
+type OptionalConfig = Partial<RequestConvertFormSchemaType["configuration"]>;
 
 const predfinedConfig: OptionalConfig = {
-  async: false,
+  omit_body: false,
+  omit_headers: false,
+  omit_consumer: false,
+  omit_queries: false,
 };
 
 type FormProps = {
   defaultConfig?: OptionalConfig;
-  onSubmit: (data: TargetFlowFormSchemaType) => void;
+  onSubmit: (data: RequestConvertFormSchemaType) => void;
 };
 
-export const TargetFlowForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
+export const RequestConvertForm: FC<FormProps> = ({
+  defaultConfig,
+  onSubmit,
+}) => {
   const {
-    register,
     handleSubmit,
     setValue,
     getValues,
     formState: { errors },
-  } = useForm<TargetFlowFormSchemaType>({
-    resolver: zodResolver(TargetFlowFormSchema),
+  } = useForm<RequestConvertFormSchemaType>({
+    resolver: zodResolver(RequestConvertFormSchema),
     defaultValues: {
-      type: "target-flow",
+      type: "request-convert",
       configuration: {
         ...predfinedConfig,
         ...defaultConfig,
@@ -58,45 +62,55 @@ export const TargetFlowForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
       <div className="my-3 flex flex-col gap-y-5">
         <fieldset className="flex items-center gap-5">
           <label className="w-[170px] overflow-hidden text-right text-sm">
-            namespace (optional)
-          </label>
-          <Input
-            {...register("configuration.namespace", {
-              setValueAs: (value) => (value === "" ? undefined : value),
-            })}
-          />
-        </fieldset>
-        <fieldset className="flex items-center gap-5">
-          <label className="w-[170px] overflow-hidden text-right text-sm">
-            workflow
-          </label>
-          <Input {...register("configuration.flow")} />
-        </fieldset>
-        <fieldset className="flex items-center gap-5">
-          <label className="w-[170px] overflow-hidden text-right text-sm">
-            asynchronous
+            omit headers
           </label>
           <Checkbox
-            defaultChecked={getValues("configuration.async")}
+            defaultChecked={getValues("configuration.omit_headers")}
             onCheckedChange={(value) => {
               if (typeof value === "boolean") {
-                setValue("configuration.async", value);
+                setValue("configuration.omit_headers", value);
               }
             }}
           />
         </fieldset>
         <fieldset className="flex items-center gap-5">
           <label className="w-[170px] overflow-hidden text-right text-sm">
-            content type (optional)
+            omit queries
           </label>
-          <div>
-            <Input
-              {...register("configuration.content_type", {
-                setValueAs: (value) => (value === "" ? undefined : value),
-              })}
-              placeholder="application/json"
-            />
-          </div>
+          <Checkbox
+            defaultChecked={getValues("configuration.omit_queries")}
+            onCheckedChange={(value) => {
+              if (typeof value === "boolean") {
+                setValue("configuration.omit_queries", value);
+              }
+            }}
+          />
+        </fieldset>
+        <fieldset className="flex items-center gap-5">
+          <label className="w-[170px] overflow-hidden text-right text-sm">
+            omit body
+          </label>
+          <Checkbox
+            defaultChecked={getValues("configuration.omit_body")}
+            onCheckedChange={(value) => {
+              if (typeof value === "boolean") {
+                setValue("configuration.omit_body", value);
+              }
+            }}
+          />
+        </fieldset>
+        <fieldset className="flex items-center gap-5">
+          <label className="w-[170px] overflow-hidden text-right text-sm">
+            omit consumer
+          </label>
+          <Checkbox
+            defaultChecked={getValues("configuration.omit_consumer")}
+            onCheckedChange={(value) => {
+              if (typeof value === "boolean") {
+                setValue("configuration.omit_consumer", value);
+              }
+            }}
+          />
         </fieldset>
       </div>
       <DialogFooter>

@@ -8,3 +8,7 @@ export const InboundPluginFormSchema = z.discriminatedUnion("type", [
   JsInboundFormSchema,
   RequestConvertFormSchema,
 ]);
+
+export type InboundPluginFormSchemaType = z.infer<
+  typeof InboundPluginFormSchema
+>;

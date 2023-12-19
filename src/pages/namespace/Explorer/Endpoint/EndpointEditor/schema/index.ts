@@ -10,11 +10,13 @@ export const EndpointFormSchema = z.object({
   path: z.string().nonempty().optional(),
   timeout: z.number().int().positive().optional(),
   methods: z.array(MethodsSchema).nonempty().optional(),
-  plugins: z.object({
-    target: TargetPluginFormSchema,
-    inbound: z.array(InboundPluginFormSchema).optional(),
-    outbound: z.array(OutboundPluginFormSchema).optional(),
-  }),
+  plugins: z
+    .object({
+      target: TargetPluginFormSchema,
+      inbound: z.array(InboundPluginFormSchema).optional(),
+      outbound: z.array(OutboundPluginFormSchema).optional(),
+    })
+    .optional(),
 });
 
 export type EndpointFormSchemaType = z.infer<typeof EndpointFormSchema>;

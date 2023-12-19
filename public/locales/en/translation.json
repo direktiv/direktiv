@@ -113,7 +113,8 @@
             "image": "Image",
             "scale": "Scale",
             "size": "Size",
-            "cmd": "Cmd"
+            "cmd": "Cmd",
+            "envs": "Envs"
           }
         },
         "newRoute": {
@@ -592,7 +593,9 @@
           "cmd": "cmd"
         },
         "tableRow": {
-          "errorLabel": "Error"
+          "errorLabel": "Error",
+          "envsLabel": "{{count}} environment variables",
+          "envsLabel_one": "{{count}} environment variable"
         },
         "contextMenu": {
           "rebuild": "Rebuild"

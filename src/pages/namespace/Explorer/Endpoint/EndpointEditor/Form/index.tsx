@@ -10,6 +10,7 @@ import { EndpointFormSchema, EndpointFormSchemaType } from "../schema";
 import Badge from "~/design/Badge";
 import { Checkbox } from "~/design/Checkbox";
 import { FC } from "react";
+import { InboundPluginForm } from "./plugins/Inbound";
 import Input from "~/design/Input";
 import { Switch } from "~/design/Switch";
 import { TargetPluginForm } from "./plugins/Target";
@@ -114,6 +115,7 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
           )}
         />
         <TargetPluginForm formControls={formControls} />
+        <InboundPluginForm formControls={formControls} />
       </div>
     ),
   });
