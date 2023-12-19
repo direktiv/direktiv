@@ -1,3 +1,4 @@
+import { ChevronDown, ChevronUp, Edit, Plus, Trash } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -5,7 +6,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "~/design/Dialog";
-import { Edit, Plus, Trash } from "lucide-react";
 import { FC, useState } from "react";
 import {
   Select,
@@ -57,6 +57,7 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({
   const {
     append: addPlugin,
     remove: deletePlugin,
+    move: movePlugin,
     update: editPlugin,
     fields,
   } = useFieldArray({
@@ -87,33 +88,60 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({
           </Button>
         </DialogTrigger>
       </div>
-      {fields.map(({ id, type }, index) => (
-        <div key={id} className="flex gap-2">
-          {type}
-          <Button
-            variant="destructive"
-            icon
-            size="sm"
-            onClick={() => {
-              deletePlugin(index);
-            }}
-          >
-            <Trash />
-          </Button>
-          <Button
-            variant="outline"
-            icon
-            size="sm"
-            onClick={() => {
-              setSelectedPlugin(type);
-              setDialogOpen(true);
-              setEditIndex(index);
-            }}
-          >
-            <Edit />
-          </Button>
-        </div>
-      ))}
+      {fields.map(({ id, type }, index, srcArray) => {
+        const canMoveDown = index < srcArray.length - 1;
+        const canMoveUp = index > 0;
+
+        return (
+          <div key={id} className="flex gap-2">
+            {type}
+            <Button
+              variant="destructive"
+              icon
+              size="sm"
+              onClick={() => {
+                deletePlugin(index);
+              }}
+            >
+              <Trash />
+            </Button>
+            <Button
+              variant="outline"
+              icon
+              size="sm"
+              disabled={!canMoveDown}
+              onClick={() => {
+                movePlugin(index, index + 1);
+              }}
+            >
+              <ChevronDown />
+            </Button>
+            <Button
+              variant="outline"
+              icon
+              size="sm"
+              disabled={!canMoveUp}
+              onClick={() => {
+                movePlugin(index, index - 1);
+              }}
+            >
+              <ChevronUp />
+            </Button>
+            <Button
+              variant="outline"
+              icon
+              size="sm"
+              onClick={() => {
+                setSelectedPlugin(type);
+                setDialogOpen(true);
+                setEditIndex(index);
+              }}
+            >
+              <Edit />
+            </Button>
+          </div>
+        );
+      })}
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>
