@@ -391,7 +391,8 @@
                   "addUsernameHeader": "Add username header",
                   "addTagsHeader": "Add tags header",
                   "addGroupsHeader": "Add groups header",
-                  "keyName": "Key name (optional)"
+                  "keyName": "Key name (optional)",
+                  "keyNamePlaceholder": "name of the key"
                 }
               }
             }
