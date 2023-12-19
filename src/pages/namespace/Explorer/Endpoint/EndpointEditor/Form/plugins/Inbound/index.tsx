@@ -19,6 +19,8 @@ import { UseFormReturn, useFieldArray } from "react-hook-form";
 import Button from "~/design/Button";
 import { EndpointFormSchemaType } from "../../../schema";
 import { InboundPluginFormSchemaType } from "../../../schema/plugins/inbound/schema";
+import { JsInboundForm } from "./JsInbound";
+import { JsInboundFormSchemaType } from "../../../schema/plugins/inbound/jsInbound";
 import { RequestConvertForm } from "./RequestConvertForm";
 import { RequestConvertFormSchemaType } from "../../../schema/plugins/inbound/requestConvert";
 import { inboundPluginTypes } from "../../../schema/plugins/inbound";
@@ -27,12 +29,23 @@ type InboundPluginFormProps = {
   formControls: UseFormReturn<EndpointFormSchemaType>;
 };
 
+// TODO: may create a factory for this, ot introduce a generic
 const readRequestConvertConfig = (
   fields: InboundPluginFormSchemaType[] | undefined,
   index: number | undefined
 ): RequestConvertFormSchemaType["configuration"] | undefined => {
   const plugin = index ? fields?.[index] : undefined;
   return plugin?.type === inboundPluginTypes.requestConvert
+    ? plugin.configuration
+    : undefined;
+};
+
+const readJsInboundConfig = (
+  fields: InboundPluginFormSchemaType[] | undefined,
+  index: number | undefined
+): JsInboundFormSchemaType["configuration"] | undefined => {
+  const plugin = index ? fields?.[index] : undefined;
+  return plugin?.type === inboundPluginTypes.jsInbound
     ? plugin.configuration
     : undefined;
 };
@@ -135,6 +148,21 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({
           {selectedPlugin === inboundPluginTypes.requestConvert && (
             <RequestConvertForm
               defaultConfig={readRequestConvertConfig(fields, editIndex)}
+              onSubmit={(configuration) => {
+                setDialogOpen(false);
+                if (editIndex === undefined) {
+                  addPlugin(configuration);
+                } else {
+                  editPlugin(editIndex, configuration);
+                }
+                setEditIndex(undefined);
+              }}
+            />
+          )}
+
+          {selectedPlugin === inboundPluginTypes.jsInbound && (
+            <JsInboundForm
+              defaultConfig={readJsInboundConfig(fields, editIndex)}
               onSubmit={(configuration) => {
                 setDialogOpen(false);
                 if (editIndex === undefined) {
