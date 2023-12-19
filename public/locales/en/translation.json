@@ -328,6 +328,18 @@
                   "variable": "Variable",
                   "contentType": "Content Type",
                   "contentTypePlaceholder": "application/json"
+                },
+                "targetNamespaceFile": {
+                  "namespace": "Namespace (optional)",
+                  "file": "File",
+                  "contentType": "Content Type",
+                  "contentTypePlaceholder": "application/json"
+                },
+                "targetNamespaceVariable": {
+                  "namespace": "Namespace (optional)",
+                  "variable": "Variable",
+                  "contentType": "Content Type",
+                  "contentTypePlaceholder": "application/json"
                 }
               }
             }
