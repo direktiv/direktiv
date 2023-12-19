@@ -1223,34 +1223,6 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully sent cloud event"
 	r.HandleFunc("/namespaces/{ns}/broadcast", h.BroadcastCloudevent).Name(RN_NamespaceEvent).Methods(http.MethodPost)
 
-	// swagger:operation POST /api/namespaces/{namespace}/broadcast/{filtername} Other broadcastCloudeventFilter
-	// ---
-	// description: |
-	//   Filter cloud event by given filtername and broadcast to a namespace.
-	//   Cloud events posted to this api will filter cloud event by given filtername and be picked up by any workflows listening to the same event type on the namescape.
-	//   The body of this request should follow the cloud event core specification defined at https://github.com/cloudevents/spec .
-	// summary: Filter given cloud event and broadcast it
-	// parameters:
-	// - in: path
-	//   name: namespace
-	//   type: string
-	//   required: true
-	//   description: 'target namespace'
-	// - in: path
-	//   name: filtername
-	//   type: string
-	//   required: true
-	//   description: 'target filtername'
-	// - in: body
-	//   name: cloudevent
-	//   required: true
-	//   description: Cloud Event request to be sent.
-	//   schema:
-	//     type: object
-	// responses:
-	//   '200':
-	r.HandleFunc("/namespaces/{ns}/broadcast/{filter}", h.BroadcastCloudeventFilter).Name(RN_NamespaceEventFilter).Methods(http.MethodPost)
-
 	// swagger:operation GET /api/namespaces/{namespace}/tree/{workflow}?op=logs Logs getWorkflowLogs
 	// ---
 	// description: |

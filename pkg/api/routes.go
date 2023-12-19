@@ -97,18 +97,6 @@ const (
 	RN_EventHistory   = "eventHistory"
 	RN_NamespaceEvent = "namespaceEvent"
 
-	// filter get routes.
-	RN_NamespaceEventFilter      = "namespaceEventFilter"
-	RN_ListNamespaceEventFilters = "listNamespaceEventFilters"
-	RN_GetNamespaceEventFilter   = "getNamespaceEventFilter"
-
-	// filter set routes.
-	RN_CreateNamespaceEventFilter = "createNamespaceEventFilter"
-	RN_UpdateNamespaceEventFilter = "updateNamespaceEventFilter"
-
-	// filter delete routes.
-	RN_DeleteNamespaceEventFilter = "deleteNamespaceEventFilter"
-
 	// secrets get routes.
 	RN_ListSecrets  = "listSecrets"
 	RN_SearchSecret = "searchSecret"
