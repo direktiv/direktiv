@@ -321,6 +321,13 @@
                   "asynchronous": "Asynchronous",
                   "contentType": "Content Type",
                   "contentTypePlaceholder": "application/json"
+                },
+                "targetFlowVar": {
+                  "namespace": "Namespace (optional)",
+                  "workflow": "Workflow",
+                  "variable": "Variable",
+                  "contentType": "Content Type",
+                  "contentTypePlaceholder": "application/json"
                 }
               }
             }

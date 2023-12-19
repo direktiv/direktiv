@@ -57,7 +57,6 @@ export const TargetFlowForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
             className="mb-5"
           />
         )}
-
         <Fieldset
           label={t(
             "pages.explorer.endpoint.editor.form.plugins.target.targetFlow.namespace"
