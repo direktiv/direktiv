@@ -19,6 +19,7 @@ import { TargetFlowVarForm } from "./TargetFlowVarForm";
 import { TargetNamespaceFileForm } from "./TargetNamespaceFileForm";
 import { TargetNamespaceVarForm } from "./TargetNamespaceVarForm";
 import { targetPluginTypes } from "../../../schema/plugins/target";
+import { useTranslation } from "react-i18next";
 
 type TargetPluginFormProps = {
   formControls: UseFormReturn<EndpointFormSchemaType>;
@@ -29,6 +30,7 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({
 }) => {
   const { control } = formControls;
   const values = useWatch({ control });
+  const { t } = useTranslation();
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const currentType = values.plugins?.target?.type;
@@ -62,15 +64,26 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <div className="flex items-center gap-3">
-        Target plugin
+        {t("pages.explorer.endpoint.editor.form.plugins.target.label")}
         <DialogTrigger asChild>
           <Button icon variant="outline">
-            <Settings /> {values.plugins?.target?.type ?? "no plugin set yet"}
+            <Settings />{" "}
+            {values.plugins?.target?.type
+              ? t(
+                  `pages.explorer.endpoint.editor.form.plugins.target.types.${values.plugins?.target?.type}`
+                )
+              : t(
+                  "pages.explorer.endpoint.editor.form.plugins.target.notConfigured"
+                )}
           </Button>
         </DialogTrigger>
       </div>
-      <ModalWrapper title="Configure Target plugin">
-        <PluginSelector title="Target plugin">
+      <ModalWrapper
+        title={t("pages.explorer.endpoint.editor.form.plugins.target.headline")}
+      >
+        <PluginSelector
+          title={t("pages.explorer.endpoint.editor.form.plugins.target.label")}
+        >
           <Select
             onValueChange={(e) => {
               setSelectedPlugin(e as typeof selectedPlugin);
@@ -83,7 +96,9 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({
             <SelectContent>
               {Object.values(targetPluginTypes).map((pluginType) => (
                 <SelectItem key={pluginType} value={pluginType}>
-                  {pluginType}
+                  {t(
+                    `pages.explorer.endpoint.editor.form.plugins.target.types.${pluginType}`
+                  )}
                 </SelectItem>
               ))}
             </SelectContent>

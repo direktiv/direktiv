@@ -308,6 +308,16 @@
             "plugins": {
               "saveBtn": "Save",
               "target": {
+                "headline": "Configure Target Plugin",
+                "label": "Target Plugin",
+                "notConfigured": "Please configure the target plugin",
+                "types": {
+                  "instant-response": "Instant Response",
+                  "target-flow": "Workflow",
+                  "target-flow-var": "Workflow Variable",
+                  "target-namespace-file": "Namespace File",
+                  "target-namespace-var": "Namespace Variable"
+                },
                 "instantResponse": {
                   "statusCode": "Status Code",
                   "statusCodePlaceholder": "200",
