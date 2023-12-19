@@ -437,6 +437,17 @@ func (srv *server) start(ctx context.Context) error {
 		},
 	)
 
+	if srv.conf.EnableEventing {
+		srv.sugar.Info("Initializing knative eventing receiver.")
+		rcv, err := newEventReceiver(srv.events, srv.flow)
+		if err != nil {
+			return err
+		}
+
+		// starting the event receiver
+		go rcv.Start()
+	}
+
 	srv.registerFunctions()
 
 	go srv.cronPoller()
