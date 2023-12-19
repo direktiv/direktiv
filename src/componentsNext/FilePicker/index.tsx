@@ -131,7 +131,7 @@ const FilePicker = ({
                 </FilepickerListItem>
               ) : (
                 <FilepickerClose
-                  className="h-auto w-full hover:underline"
+                  className="h-auto w-full text-gray-11 hover:underline dark:text-gray-dark-11"
                   onClick={() => {
                     setPath(file.parent);
                     setInputValue(file.path);
