@@ -10,7 +10,6 @@ import {
 } from "~/design/Filepicker";
 import { Fragment, useState } from "react";
 
-import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
 import Input from "~/design/Input";
 import { analyzePath } from "~/util/router/utils";
@@ -87,31 +86,32 @@ const FilePicker = ({
               </div>
             </FilepickerHeading>
             <FilepickerList>
-              <Button
-                onClick={() => {
-                  setPath("/");
-                }}
-                variant="link"
-                className="h-auto w-full p-0 font-normal text-gray-11 hover:underline focus:bg-transparent focus:ring-0 focus:ring-transparent focus:ring-offset-0 dark:text-gray-dark-11 dark:focus:bg-transparent"
-              >
-                <FilepickerListItem icon={ArrowLeftToLineIcon}>
+              <FilepickerListItem icon={ArrowLeftToLineIcon} asChild>
+                <div
+                  onClick={() => {
+                    setPath("/");
+                  }}
+                  className="h-auto w-full cursor-pointer p-0 font-normal text-gray-11 hover:underline focus:bg-transparent focus:ring-0 focus:ring-transparent focus:ring-offset-0 dark:text-gray-dark-11 dark:focus:bg-transparent"
+                >
                   {t("components.filepicker.error.linkText")}
-                </FilepickerListItem>
-              </Button>
+                </div>
+              </FilepickerListItem>
             </FilepickerList>
           </div>
         )}
         {!isRoot && data && (
           <Fragment>
-            <Button
-              variant="link"
-              onClick={() => {
-                parent ? setPath(parent.absolute) : null;
-              }}
-              className="h-auto w-full p-0 font-normal text-gray-11 hover:underline focus:bg-transparent focus:ring-0 focus:ring-transparent focus:ring-offset-0 dark:text-gray-dark-11 dark:focus:bg-transparent "
-            >
-              <FilepickerListItem icon={FolderUp}>..</FilepickerListItem>
-            </Button>
+            <FilepickerListItem icon={FolderUp} asChild>
+              <div
+                onClick={() => {
+                  parent ? setPath(parent.absolute) : null;
+                }}
+                className="h-auto w-full cursor-pointer p-0 font-normal text-gray-11 hover:underline focus:bg-transparent focus:ring-0 focus:ring-transparent focus:ring-offset-0 dark:text-gray-dark-11 dark:focus:bg-transparent"
+              >
+                ..
+              </div>
+            </FilepickerListItem>
+
             <FilepickerSeparator />
           </Fragment>
         )}
@@ -119,17 +119,16 @@ const FilePicker = ({
           {results.map((file) => (
             <Fragment key={file.name}>
               {file.type === "directory" ? (
-                <Button
-                  variant="link"
-                  onClick={() => {
-                    setPath(file.path);
-                  }}
-                  className="h-auto w-full p-0 font-normal text-gray-11 hover:underline focus:bg-transparent focus:ring-0 focus:ring-transparent focus:ring-offset-0 dark:text-gray-dark-11 dark:focus:bg-transparent"
-                >
-                  <FilepickerListItem icon={fileTypeToIcon(file.type)}>
+                <FilepickerListItem icon={fileTypeToIcon(file.type)} asChild>
+                  <div
+                    className="w-full cursor-pointer text-gray-11 hover:underline focus:bg-transparent focus:ring-0 focus:ring-transparent focus:ring-offset-0 dark:text-gray-dark-11 dark:focus:bg-transparent"
+                    onClick={() => {
+                      setPath(file.path);
+                    }}
+                  >
                     {file.name}
-                  </FilepickerListItem>
-                </Button>
+                  </div>
+                </FilepickerListItem>
               ) : (
                 <FilepickerClose
                   className="w-full hover:underline "
@@ -150,13 +149,13 @@ const FilePicker = ({
           ))}
         </FilepickerList>
       </Filepicker>
-
       <Input
         placeholder={t("components.filepicker.placeholder")}
         value={inputValue}
         className="w-80"
         onChange={(e) => {
           setInputValue(e.target.value);
+          onChange?.(e.target.value);
         }}
       />
     </ButtonBar>
