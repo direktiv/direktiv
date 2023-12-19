@@ -61,6 +61,7 @@ export const BasicAuthForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
             "pages.explorer.endpoint.editor.form.plugins.auth.basciAuth.addUsernameHeader"
           )}
           htmlFor="add-username-header"
+          horizontal
         >
           <Checkbox
             defaultChecked={getValues("configuration.add_username_header")}
@@ -77,6 +78,7 @@ export const BasicAuthForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
             "pages.explorer.endpoint.editor.form.plugins.auth.basciAuth.addTagsHeader"
           )}
           htmlFor="add-tags-header"
+          horizontal
         >
           <Checkbox
             defaultChecked={getValues("configuration.add_tags_header")}

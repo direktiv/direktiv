@@ -8,6 +8,7 @@ import { FC, PropsWithChildren } from "react";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
+import { twMergeClsx } from "~/util/helpers";
 import { useTranslation } from "react-i18next";
 
 type ModalWrapperProps = PropsWithChildren & {
@@ -46,11 +47,22 @@ export const PluginWrapper: FC<PropsWithChildren> = ({ children }) => (
 type FieldsetProps = PropsWithChildren & {
   label: string;
   htmlFor?: string;
+  horizontal?: boolean;
 };
 
-export const Fieldset: FC<FieldsetProps> = ({ label, htmlFor, children }) => (
-  <fieldset className="flex flex-col gap-2">
-    <label className="text-sm" htmlFor={htmlFor}>
+export const Fieldset: FC<FieldsetProps> = ({
+  label,
+  htmlFor,
+  children,
+  horizontal,
+}) => (
+  <fieldset
+    className={twMergeClsx(
+      "mb-2 flex gap-2",
+      horizontal ? "flex-row-reverse items-center" : "flex-col"
+    )}
+  >
+    <label className="grow text-sm" htmlFor={htmlFor}>
       {label}
     </label>
     {children}

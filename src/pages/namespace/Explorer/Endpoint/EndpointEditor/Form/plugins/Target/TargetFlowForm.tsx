@@ -83,6 +83,7 @@ export const TargetFlowForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
             "pages.explorer.endpoint.editor.form.plugins.target.targetFlow.asynchronous"
           )}
           htmlFor="async"
+          horizontal
         >
           <Checkbox
             defaultChecked={getValues("configuration.async")}

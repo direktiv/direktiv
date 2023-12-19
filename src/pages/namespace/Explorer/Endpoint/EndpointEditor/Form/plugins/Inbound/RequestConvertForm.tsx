@@ -65,6 +65,7 @@ export const RequestConvertForm: FC<FormProps> = ({
             "pages.explorer.endpoint.editor.form.plugins.inbound.requestConvert.omitHeaders"
           )}
           htmlFor="omit-headers"
+          horizontal
         >
           <Checkbox
             defaultChecked={getValues("configuration.omit_headers")}
@@ -81,6 +82,7 @@ export const RequestConvertForm: FC<FormProps> = ({
             "pages.explorer.endpoint.editor.form.plugins.inbound.requestConvert.omitQueries"
           )}
           htmlFor="omit-queries"
+          horizontal
         >
           <Checkbox
             defaultChecked={getValues("configuration.omit_queries")}
@@ -97,6 +99,7 @@ export const RequestConvertForm: FC<FormProps> = ({
             "pages.explorer.endpoint.editor.form.plugins.inbound.requestConvert.omitBody"
           )}
           htmlFor="omit-body"
+          horizontal
         >
           <Checkbox
             defaultChecked={getValues("configuration.omit_body")}
@@ -113,6 +116,7 @@ export const RequestConvertForm: FC<FormProps> = ({
             "pages.explorer.endpoint.editor.form.plugins.inbound.requestConvert.omitConsumer"
           )}
           htmlFor="omit-consumer"
+          horizontal
         >
           <Checkbox
             defaultChecked={getValues("configuration.omit_consumer")}
