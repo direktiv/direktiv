@@ -85,7 +85,6 @@ cmd/exec/.direktiv.yaml
 cmd/exec/greeting.json
 cmd/exec/test.json
 cmd/exec/test.yaml
-ent/schema/cloudeventFilters.go
 greeting.json
 issuer.crt
 issuer.key
