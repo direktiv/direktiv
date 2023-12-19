@@ -177,7 +177,6 @@ type mirrorCallbacks struct {
 	fstore               filestore.FileStore
 	varstore             core.RuntimeVariablesStore
 	fileAnnotationsStore core.FileAnnotationsStore
-	filterStore          eventsstore.CloudEventsFilterStore
 	wfconf               func(ctx context.Context, nsID uuid.UUID, nsName string, file *filestore.File) error
 }
 

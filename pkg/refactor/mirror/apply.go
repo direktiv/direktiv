@@ -101,11 +101,6 @@ func (o *DirektivApplyer) apply(ctx context.Context, callbacks Callbacks, proc *
 		return fmt.Errorf("failed to configure workflows: %w", err)
 	}
 
-	err = o.copyEventFilters(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to copy event filters: %w", err)
-	}
-
 	err = o.updateConfig(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to configure update config: %w", err)
@@ -344,29 +339,6 @@ func (o *DirektivApplyer) updateConfig(ctx context.Context) error {
 	_, err = o.callbacks.Store().UpdateConfig(ctx, cfg)
 	if err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (o *DirektivApplyer) copyEventFilters(ctx context.Context) error {
-	filters, err := o.callbacks.EventFilterStore().GetAll(ctx, o.NamespaceID)
-	if err != nil {
-		return err
-	}
-
-	for _, filter := range filters {
-		err = o.callbacks.EventFilterStore().Delete(ctx, o.NamespaceID, filter.Name)
-		if err != nil {
-			return err
-		}
-	}
-
-	for name, script := range o.parser.Filters {
-		err = o.callbacks.EventFilterStore().Create(ctx, o.NamespaceID, name, string(script))
-		if err != nil {
-			return err
-		}
 	}
 
 	return nil

@@ -32,7 +32,6 @@ type Store interface {
 
 	EventHistory() events.EventHistoryStore
 	EventListener() events.EventListenerStore
-	EventFilter() events.CloudEventsFilterStore
 	EventListenerTopics() events.EventTopicsStore
 	StagingEvents() events.StagingEventStore
 }

@@ -67,10 +67,6 @@ func (s *sqlStore) RuntimeVariables() core.RuntimeVariablesStore {
 	}
 }
 
-func (s *sqlStore) EventFilter() events.CloudEventsFilterStore {
-	return &sqlNamespaceCloudEventFilter{db: s.db}
-}
-
 func (s *sqlStore) StagingEvents() events.StagingEventStore {
 	return &sqlStagingEventStore{db: s.db}
 }
@@ -85,10 +81,6 @@ func (s *sqlStore) EventListener() events.EventListenerStore {
 
 func (s *sqlStore) EventListenerTopics() events.EventTopicsStore {
 	return &sqlEventTopicsStore{db: s.db}
-}
-
-func (s *sqlStore) NamespaceCloudEventFilter() events.CloudEventsFilterStore {
-	return &sqlNamespaceCloudEventFilter{db: s.db}
 }
 
 func (s *sqlStore) Namespaces() core.NamespacesStore {
