@@ -1,15 +1,15 @@
 import { FC, FormEvent } from "react";
+import { Fieldset, ModalFooter, PluginWrapper } from "../components/Modal";
 import FormErrors, { errorsType } from "~/componentsNext/FormErrors";
 import {
   TargetNamespaceVarFormSchema,
   TargetNamespaceVarFormSchemaType,
 } from "../../../schema/plugins/target/targetNamespaceVar";
 
-import Button from "~/design/Button";
-import { DialogFooter } from "~/design/Dialog";
 import Input from "~/design/Input";
 import { treatEmptyStringAsUndefined } from "../utils";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 type OptionalConfig = Partial<
@@ -25,6 +25,7 @@ export const TargetNamespaceVarForm: FC<FormProps> = ({
   defaultConfig,
   onSubmit,
 }) => {
+  const { t } = useTranslation();
   const {
     register,
     handleSubmit,
@@ -46,45 +47,52 @@ export const TargetNamespaceVarForm: FC<FormProps> = ({
 
   return (
     <form onSubmit={submitForm}>
-      {errors?.configuration && (
-        <FormErrors
-          errors={errors?.configuration as errorsType}
-          className="mb-5"
-        />
-      )}
-
-      <div className="my-3 flex flex-col gap-y-5">
-        <fieldset className="flex items-center gap-5">
-          <label className="w-[170px] overflow-hidden text-right text-sm">
-            namespace (optional)
-          </label>
+      <PluginWrapper>
+        {errors?.configuration && (
+          <FormErrors
+            errors={errors?.configuration as errorsType}
+            className="mb-5"
+          />
+        )}
+        <Fieldset
+          label={t(
+            "pages.explorer.endpoint.editor.form.plugins.target.targetNamespaceVariable.namespace"
+          )}
+          htmlFor="namespace"
+        >
           <Input
             {...register("configuration.namespace", {
               setValueAs: treatEmptyStringAsUndefined,
             })}
+            id="namespace"
           />
-        </fieldset>
-        <fieldset className="flex items-center gap-5">
-          <label className="w-[170px] overflow-hidden text-right text-sm">
-            variable
-          </label>
-          <Input {...register("configuration.variable")} />
-        </fieldset>
-        <fieldset className="flex items-center gap-5">
-          <label className="w-[170px] overflow-hidden text-right text-sm">
-            content type (optional)
-          </label>
+        </Fieldset>
+        <Fieldset
+          label={t(
+            "pages.explorer.endpoint.editor.form.plugins.target.targetNamespaceVariable.variable"
+          )}
+          htmlFor="variable"
+        >
+          <Input {...register("configuration.variable")} id="variable" />
+        </Fieldset>
+        <Fieldset
+          label={t(
+            "pages.explorer.endpoint.editor.form.plugins.target.targetNamespaceVariable.contentType"
+          )}
+          htmlFor="content-type"
+        >
           <Input
             {...register("configuration.content_type", {
               setValueAs: treatEmptyStringAsUndefined,
             })}
-            placeholder="application/json"
+            placeholder={t(
+              "pages.explorer.endpoint.editor.form.plugins.target.targetNamespaceVariable.contentTypePlaceholder"
+            )}
+            id="content-type"
           />
-        </fieldset>
-      </div>
-      <DialogFooter>
-        <Button type="submit">Save</Button>
-      </DialogFooter>
+        </Fieldset>
+      </PluginWrapper>
+      <ModalFooter />
     </form>
   );
 };
