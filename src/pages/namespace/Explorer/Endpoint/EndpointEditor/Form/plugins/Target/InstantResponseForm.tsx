@@ -11,6 +11,7 @@ import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
 import Input from "~/design/Input";
 import { useTheme } from "~/util/store/theme";
+import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 type OptionalConfig = Partial<InstantResponseFormSchemaType["configuration"]>;
@@ -28,6 +29,7 @@ export const InstantResponseForm: FC<FormProps> = ({
   defaultConfig,
   onSubmit,
 }) => {
+  const { t } = useTranslation();
   const {
     register,
     handleSubmit,
@@ -57,24 +59,40 @@ export const InstantResponseForm: FC<FormProps> = ({
         {errors?.configuration && (
           <FormErrors errors={errors?.configuration as errorsType} />
         )}
-        <Fieldset label="status code">
+        <Fieldset
+          label={t(
+            "pages.explorer.endpoint.editor.form.plugins.target.instantResponse.statusCode"
+          )}
+        >
           <Input
             {...register("configuration.status_code", {
               valueAsNumber: true,
             })}
             type="number"
-            placeholder="200"
+            placeholder={t(
+              "pages.explorer.endpoint.editor.form.plugins.target.instantResponse.statusCodePlaceholder"
+            )}
           />
         </Fieldset>
-        <Fieldset label="content type (optional)">
+        <Fieldset
+          label={t(
+            "pages.explorer.endpoint.editor.form.plugins.target.instantResponse.contentType"
+          )}
+        >
           <Input
             {...register("configuration.content_type", {
               setValueAs: (value) => (value === "" ? undefined : value),
             })}
-            placeholder="application/json"
+            placeholder={t(
+              "pages.explorer.endpoint.editor.form.plugins.target.instantResponse.contentTypePlaceholder"
+            )}
           />
         </Fieldset>
-        <Fieldset label="status message (optional)">
+        <Fieldset
+          label={t(
+            "pages.explorer.endpoint.editor.form.plugins.target.instantResponse.statusMessage"
+          )}
+        >
           <Card className="h-[200px] w-full p-5" background="weight-1" noShadow>
             <Controller
               control={control}
