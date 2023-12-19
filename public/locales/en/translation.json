@@ -304,7 +304,10 @@
         "goToRoutes": "Go to routes",
         "editor": {
           "form": {
-            "serialisationError": "There was an error serializing the form data"
+            "serialisationError": "There was an error serializing the form data",
+            "plugins": {
+              "saveBtn": "Save"
+            }
           },
           "saveBtn": "Save",
           "previewTitle": "File Preview"

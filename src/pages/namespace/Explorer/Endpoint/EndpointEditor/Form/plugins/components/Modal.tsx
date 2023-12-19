@@ -8,6 +8,7 @@ import { FC, PropsWithChildren } from "react";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
+import { useTranslation } from "react-i18next";
 
 type ModalWrapperProps = PropsWithChildren & {
   title: string;
@@ -56,8 +57,13 @@ export const Fieldset: FC<FieldsetProps> = ({ label, htmlFor, children }) => (
   </fieldset>
 );
 
-export const ModalFooter = () => (
-  <DialogFooter className="pt-5">
-    <Button type="submit">Save</Button>
-  </DialogFooter>
-);
+export const ModalFooter = () => {
+  const { t } = useTranslation();
+  return (
+    <DialogFooter className="pt-5">
+      <Button type="submit">
+        {t("pages.explorer.endpoint.editor.form.plugins.saveBtn")}
+      </Button>
+    </DialogFooter>
+  );
+};
