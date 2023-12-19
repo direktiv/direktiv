@@ -94,6 +94,7 @@ export const BasicAuthForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
           label={t(
             "pages.explorer.endpoint.editor.form.plugins.auth.basciAuth.addGroupsHeader"
           )}
+          horizontal
           htmlFor="add-groups-header"
         >
           <Checkbox
