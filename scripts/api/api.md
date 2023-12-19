@@ -45,18 +45,6 @@ Direktiv Documentation can be found at https://docs.direktiv.io/
 
 ## All endpoints
 
-###  cloud_event_filter
-
-| Method  | URI     | Name   | Summary |
-|---------|---------|--------|---------|
-| POST | /api/namespaces/{namespace}/eventfilter/{filtername} | [create cloudevent filter](#create-cloudevent-filter) | Creates new cloudEventFilter |
-| DELETE | /api/namespaces/{namespace}/eventfilter/{filtername} | [delete cloudevent filter](#delete-cloudevent-filter) | Delete existing cloudEventFilter |
-| GET | /api/namespaces/{namespace}/eventfilter/{filtername} | [get cloud event filter](#get-cloud-event-filter) | Get specific cloudEventFilter |
-| GET | /api/namespaces/{namespace}/eventfilter | [list cloudevent filter](#list-cloudevent-filter) | List existing cloudEventFilters |
-| PATCH | /api/namespaces/{namespace}/eventfilter/{filtername} | [update cloudevent filter](#update-cloudevent-filter) | Update existing cloudEventFilter |
-  
-
-
 ###  directory
 
 | Method  | URI     | Name   | Summary |
@@ -356,39 +344,6 @@ Status: OK
 
 ###### <span id="broadcast-cloudevent-200-schema"></span> Schema
 
-### <span id="broadcast-cloudevent-filter"></span> Filter given cloud event and broadcast it (*broadcastCloudeventFilter*)
-
-```
-POST /api/namespaces/{namespace}/broadcast/{filtername}
-```
-
-Filter cloud event by given filtername and broadcast to a namespace.
-Cloud events posted to this api will filter cloud event by given filtername and be picked up by any workflows listening to the same event type on the namescape.
-The body of this request should follow the cloud event core specification defined at https://github.com/cloudevents/spec .
-
-
-#### Parameters
-
-| Name | Source | Type | Go type | Separator | Required | Default | Description |
-|------|--------|------|---------|-----------| :------: |---------|-------------|
-| filtername | `path` | string | `string` |  | ✓ |  | target filtername |
-| namespace | `path` | string | `string` |  | ✓ |  | target namespace |
-| cloudevent | `body` | [interface{}](#interface) | `interface{}` | | ✓ | | Cloud Event request to be sent. |
-
-#### All responses
-
-| Code | Status | Description | Has headers | Schema |
-|------|--------|-------------|:-----------:|--------|
-| [200](#broadcast-cloudevent-filter-200) | OK |  |  | [schema](#broadcast-cloudevent-filter-200-schema) |
-
-#### Responses
-
-
-##### <span id="broadcast-cloudevent-filter-200"></span> 200
-Status: OK
-
-###### <span id="broadcast-cloudevent-filter-200-schema"></span> Schema
-
 ### <span id="cancel-instance"></span> Cancel a Pending Instance (*cancelInstance*)
 
 ```
@@ -418,38 +373,6 @@ Cancel a currently pending instance.
 Status: OK
 
 ###### <span id="cancel-instance-200-schema"></span> Schema
-
-### <span id="create-cloudevent-filter"></span> Creates new cloudEventFilter (*createCloudeventFilter*)
-
-```
-POST /api/namespaces/{namespace}/eventfilter/{filtername}
-```
-
-Creates new cloud event filter in target namespace
-The body of this request should be a compilable javascript code without function header.
-
-
-#### Parameters
-
-| Name | Source | Type | Go type | Separator | Required | Default | Description |
-|------|--------|------|---------|-----------| :------: |---------|-------------|
-| filtername | `path` | string | `string` |  | ✓ |  | new filtername |
-| namespace | `path` | string | `string` |  | ✓ |  | target namespace |
-| script | `body` | [interface{}](#interface) | `interface{}` | | ✓ | | compilable javascript code. |
-
-#### All responses
-
-| Code | Status | Description | Has headers | Schema |
-|------|--------|-------------|:-----------:|--------|
-| [200](#create-cloudevent-filter-200) | OK |  |  | [schema](#create-cloudevent-filter-200-schema) |
-
-#### Responses
-
-
-##### <span id="create-cloudevent-filter-200"></span> 200
-Status: OK
-
-###### <span id="create-cloudevent-filter-200-schema"></span> Schema
 
 ### <span id="create-directory"></span> Create a Directory (*createDirectory*)
 
@@ -786,36 +709,6 @@ an error has occurred
   
 
 [ErrorResponse](#error-response)
-
-### <span id="delete-cloudevent-filter"></span> Delete existing cloudEventFilter (*deleteCloudeventFilter*)
-
-```
-DELETE /api/namespaces/{namespace}/eventfilter/{filtername}
-```
-
-Delete existing cloud event filter in target namespace
-
-
-#### Parameters
-
-| Name | Source | Type | Go type | Separator | Required | Default | Description |
-|------|--------|------|---------|-----------| :------: |---------|-------------|
-| filtername | `path` | string | `string` |  | ✓ |  | target filtername |
-| namespace | `path` | string | `string` |  | ✓ |  | target namespace |
-
-#### All responses
-
-| Code | Status | Description | Has headers | Schema |
-|------|--------|-------------|:-----------:|--------|
-| [200](#delete-cloudevent-filter-200) | OK |  |  | [schema](#delete-cloudevent-filter-200-schema) |
-
-#### Responses
-
-
-##### <span id="delete-cloudevent-filter-200"></span> 200
-Status: OK
-
-###### <span id="delete-cloudevent-filter-200-schema"></span> Schema
 
 ### <span id="delete-folder"></span> Delete a Namespace Folder (*deleteFolder*)
 
@@ -1276,36 +1169,6 @@ an error has occurred
   
 
 [ErrorResponse](#error-response)
-
-### <span id="get-cloud-event-filter"></span> Get specific cloudEventFilter (*getCloudEventFilter*)
-
-```
-GET /api/namespaces/{namespace}/eventfilter/{filtername}
-```
-
-Get specific cloud event filter by given name in target namespace
-
-
-#### Parameters
-
-| Name | Source | Type | Go type | Separator | Required | Default | Description |
-|------|--------|------|---------|-----------| :------: |---------|-------------|
-| filtername | `path` | string | `string` |  | ✓ |  | target filtername |
-| namespace | `path` | string | `string` |  | ✓ |  | target namespace |
-
-#### All responses
-
-| Code | Status | Description | Has headers | Schema |
-|------|--------|-------------|:-----------:|--------|
-| [200](#get-cloud-event-filter-200) | OK |  |  | [schema](#get-cloud-event-filter-200-schema) |
-
-#### Responses
-
-
-##### <span id="get-cloud-event-filter-200"></span> 200
-Status: OK
-
-###### <span id="get-cloud-event-filter-200-schema"></span> Schema
 
 ### <span id="get-event-history"></span> Get events history. (*getEventHistory*)
 
@@ -2232,37 +2095,6 @@ Status: Internal Server Error
 | data | string| `string` | ✓ | | JSON data encoded in base64 |  |
 | query | string| `string` | ✓ | | jq query to manipulate JSON data |  |
 
-
-
-### <span id="list-cloudevent-filter"></span> List existing cloudEventFilters (*listCloudeventFilter*)
-
-```
-GET /api/namespaces/{namespace}/eventfilter
-```
-
-list all existing cloud event filter in target namespace
-
-
-#### Parameters
-
-| Name | Source | Type | Go type | Separator | Required | Default | Description |
-|------|--------|------|---------|-----------| :------: |---------|-------------|
-| namespace | `path` | string | `string` |  | ✓ |  | target namespace |
-
-#### All responses
-
-| Code | Status | Description | Has headers | Schema |
-|------|--------|-------------|:-----------:|--------|
-| [200](#list-cloudevent-filter-200) | OK |  |  | [schema](#list-cloudevent-filter-200-schema) |
-
-#### Responses
-
-
-##### <span id="list-cloudevent-filter-200"></span> 200
-Status: OK
-
-###### <span id="list-cloudevent-filter-200-schema"></span> Schema
-
 ### <span id="list-namespace-service-revision-pods"></span> Get Namespace Service Revision Pods List (*listNamespaceServiceRevisionPods*)
 
 ```
@@ -2972,38 +2804,6 @@ Status: OK
 |------|------|---------|:--------:| ------- |-------------|---------|
 | live | boolean| `bool` | ✓ | | Workflow live status |  |
 
-
-
-### <span id="update-cloudevent-filter"></span> Update existing cloudEventFilter (*updateCloudeventFilter*)
-
-```
-PATCH /api/namespaces/{namespace}/eventfilter/{filtername}
-```
-
-Update existing cloud event filter in target namespace
-
-
-#### Parameters
-
-| Name | Source | Type | Go type | Separator | Required | Default | Description |
-|------|--------|------|---------|-----------| :------: |---------|-------------|
-| filtername | `path` | string | `string` |  | ✓ |  | target filtername |
-| namespace | `path` | string | `string` |  | ✓ |  | target namespace |
-| script | `body` | [interface{}](#interface) | `interface{}` | | ✓ | | compilable javascript code. |
-
-#### All responses
-
-| Code | Status | Description | Has headers | Schema |
-|------|--------|-------------|:-----------:|--------|
-| [200](#update-cloudevent-filter-200) | OK |  |  | [schema](#update-cloudevent-filter-200-schema) |
-
-#### Responses
-
-
-##### <span id="update-cloudevent-filter-200"></span> 200
-Status: OK
-
-###### <span id="update-cloudevent-filter-200-schema"></span> Schema
 
 ### <span id="update-namespace-service"></span> Create Namespace Service Revision (*updateNamespaceService*)
 
