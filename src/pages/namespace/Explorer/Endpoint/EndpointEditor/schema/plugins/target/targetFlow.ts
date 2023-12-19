@@ -4,11 +4,10 @@ import { z } from "zod";
 export const TargetFlowFormSchema = z.object({
   type: z.literal(targetPluginTypes.targetFlow),
   configuration: z.object({
+    namespace: z.string().optional(),
     flow: z.string().nonempty(),
-    content_type: z.string().nonempty(),
-    namespace: z.string().nonempty().optional(),
-    // technically optional, but we a boolean is hard to represent in a form as not set
-    async: z.boolean().default(false),
+    async: z.boolean().optional(),
+    content_type: z.string().optional(),
   }),
 });
 

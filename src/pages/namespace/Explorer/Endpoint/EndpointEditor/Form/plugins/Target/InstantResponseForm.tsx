@@ -4,7 +4,7 @@ import FormErrors, { errorsType } from "~/componentsNext/FormErrors";
 import {
   InstantResponseFormSchema,
   InstantResponseFormSchemaType,
-} from "../../../schema/plugins/target/InstantResponse";
+} from "../../../schema/plugins/target/instantResponse";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
@@ -14,8 +14,14 @@ import Input from "~/design/Input";
 import { useTheme } from "~/util/store/theme";
 import { zodResolver } from "@hookform/resolvers/zod";
 
+type OptionalConfig = Partial<InstantResponseFormSchemaType["configuration"]>;
+
+const predfinedConfig: OptionalConfig = {
+  status_code: 200,
+};
+
 type FormProps = {
-  defaultConfig?: Partial<InstantResponseFormSchemaType["configuration"]>;
+  defaultConfig?: OptionalConfig;
   onSubmit: (data: InstantResponseFormSchemaType) => void;
 };
 
@@ -33,6 +39,7 @@ export const InstantResponseForm: FC<FormProps> = ({
     defaultValues: {
       type: "instant-response",
       configuration: {
+        ...predfinedConfig,
         ...defaultConfig,
       },
     },
@@ -69,16 +76,18 @@ export const InstantResponseForm: FC<FormProps> = ({
         </fieldset>
         <fieldset className="flex items-center gap-5">
           <label className="w-[150px] overflow-hidden text-right text-sm">
-            content type
+            content type (optional)
           </label>
           <Input
-            {...register("configuration.content_type")}
+            {...register("configuration.content_type", {
+              setValueAs: (value) => (value === "" ? undefined : value),
+            })}
             placeholder="application/json"
           />
         </fieldset>
         <fieldset className="flex items-center gap-5">
           <label className="w-[150px] overflow-hidden text-right text-sm">
-            status message
+            status message (optional)
           </label>
           <Card className="h-[200px] w-full p-5" background="weight-1" noShadow>
             <Controller

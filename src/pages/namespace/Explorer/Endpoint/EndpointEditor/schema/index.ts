@@ -1,4 +1,6 @@
+import { InboundPluginFormSchema } from "./plugins/inbound/schema";
 import { MethodsSchema } from "~/api/gateway/schema";
+import { OutboundPluginFormSchema } from "./plugins/outbound/schema";
 import { TargetPluginFormSchema } from "./plugins/target/schema";
 import { z } from "zod";
 
@@ -8,11 +10,11 @@ export const EndpointFormSchema = z.object({
   path: z.string().nonempty().optional(),
   timeout: z.number().int().positive().optional(),
   methods: z.array(MethodsSchema).nonempty().optional(),
-  plugins: z
-    .object({
-      target: TargetPluginFormSchema,
-    })
-    .optional(),
+  plugins: z.object({
+    target: TargetPluginFormSchema,
+    inbound: z.array(InboundPluginFormSchema).optional(),
+    outbound: z.array(OutboundPluginFormSchema).optional(),
+  }),
 });
 
 export type EndpointFormSchemaType = z.infer<typeof EndpointFormSchema>;

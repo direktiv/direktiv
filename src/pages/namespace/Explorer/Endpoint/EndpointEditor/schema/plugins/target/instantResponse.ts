@@ -4,9 +4,9 @@ import { z } from "zod";
 export const InstantResponseFormSchema = z.object({
   type: z.literal(targetPluginTypes.instantResponse),
   configuration: z.object({
-    content_type: z.string().nonempty(),
+    content_type: z.string().optional(),
     status_code: z.number().int().positive(),
-    status_message: z.string().nonempty(),
+    status_message: z.string().optional(),
   }),
 });
 

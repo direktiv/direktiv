@@ -1,41 +1,38 @@
 import { FC, FormEvent } from "react";
 import FormErrors, { errorsType } from "~/componentsNext/FormErrors";
 import {
-  TargetFlowFormSchema,
-  TargetFlowFormSchemaType,
-} from "../../../schema/plugins/target/targetFlow";
+  TargetNamespaceFileFormSchema,
+  TargetNamespaceFileFormSchemaType,
+} from "../../../schema/plugins/target/targetNamespaceFile";
 
 import Button from "~/design/Button";
-import { Checkbox } from "~/design/Checkbox";
 import { DialogFooter } from "~/design/Dialog";
 import Input from "~/design/Input";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-type OptionalConfig = Partial<TargetFlowFormSchemaType["configuration"]>;
-
-const predfinedConfig: OptionalConfig = {
-  async: false,
-};
+type OptionalConfig = Partial<
+  TargetNamespaceFileFormSchemaType["configuration"]
+>;
 
 type FormProps = {
   defaultConfig?: OptionalConfig;
-  onSubmit: (data: TargetFlowFormSchemaType) => void;
+  onSubmit: (data: TargetNamespaceFileFormSchemaType) => void;
 };
 
-export const TargetFlowForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
+export const TargetNamespaceFileForm: FC<FormProps> = ({
+  defaultConfig,
+  onSubmit,
+}) => {
   const {
     register,
     handleSubmit,
-    setValue,
-    getValues,
     formState: { errors },
-  } = useForm<TargetFlowFormSchemaType>({
-    resolver: zodResolver(TargetFlowFormSchema),
+  } = useForm<TargetNamespaceFileFormSchemaType>({
+    resolver: zodResolver(TargetNamespaceFileFormSchema),
     defaultValues: {
-      type: "target-flow",
+      type: "target-namespace-file",
       configuration: {
-        ...predfinedConfig,
         ...defaultConfig,
       },
     },
@@ -68,35 +65,20 @@ export const TargetFlowForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
         </fieldset>
         <fieldset className="flex items-center gap-5">
           <label className="w-[170px] overflow-hidden text-right text-sm">
-            workflow
+            file
           </label>
-          <Input {...register("configuration.flow")} />
-        </fieldset>
-        <fieldset className="flex items-center gap-5">
-          <label className="w-[170px] overflow-hidden text-right text-sm">
-            asynchronous
-          </label>
-          <Checkbox
-            checked={getValues("configuration.async")}
-            onCheckedChange={(value) => {
-              if (typeof value === "boolean") {
-                setValue("configuration.async", value);
-              }
-            }}
-          />
+          <Input {...register("configuration.file")} />
         </fieldset>
         <fieldset className="flex items-center gap-5">
           <label className="w-[170px] overflow-hidden text-right text-sm">
             content type (optional)
           </label>
-          <div>
-            <Input
-              {...register("configuration.content_type", {
-                setValueAs: (value) => (value === "" ? undefined : value),
-              })}
-              placeholder="application/json"
-            />
-          </div>
+          <Input
+            {...register("configuration.content_type", {
+              setValueAs: (value) => (value === "" ? undefined : value),
+            })}
+            placeholder="application/json"
+          />
         </fieldset>
       </div>
       <DialogFooter>

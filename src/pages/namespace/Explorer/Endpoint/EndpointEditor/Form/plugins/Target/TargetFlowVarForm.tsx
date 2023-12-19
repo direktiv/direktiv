@@ -1,41 +1,36 @@
 import { FC, FormEvent } from "react";
 import FormErrors, { errorsType } from "~/componentsNext/FormErrors";
 import {
-  TargetFlowFormSchema,
-  TargetFlowFormSchemaType,
-} from "../../../schema/plugins/target/targetFlow";
+  TargetFlowVarFormSchema,
+  TargetFlowVarFormSchemaType,
+} from "../../../schema/plugins/target/targetFlowVar";
 
 import Button from "~/design/Button";
-import { Checkbox } from "~/design/Checkbox";
 import { DialogFooter } from "~/design/Dialog";
 import Input from "~/design/Input";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-type OptionalConfig = Partial<TargetFlowFormSchemaType["configuration"]>;
-
-const predfinedConfig: OptionalConfig = {
-  async: false,
-};
+type OptionalConfig = Partial<TargetFlowVarFormSchemaType["configuration"]>;
 
 type FormProps = {
   defaultConfig?: OptionalConfig;
-  onSubmit: (data: TargetFlowFormSchemaType) => void;
+  onSubmit: (data: TargetFlowVarFormSchemaType) => void;
 };
 
-export const TargetFlowForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
+export const TargetFlowVarForm: FC<FormProps> = ({
+  defaultConfig,
+  onSubmit,
+}) => {
   const {
     register,
     handleSubmit,
-    setValue,
-    getValues,
     formState: { errors },
-  } = useForm<TargetFlowFormSchemaType>({
-    resolver: zodResolver(TargetFlowFormSchema),
+  } = useForm<TargetFlowVarFormSchemaType>({
+    resolver: zodResolver(TargetFlowVarFormSchema),
     defaultValues: {
-      type: "target-flow",
+      type: "target-flow-var",
       configuration: {
-        ...predfinedConfig,
         ...defaultConfig,
       },
     },
@@ -74,16 +69,9 @@ export const TargetFlowForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
         </fieldset>
         <fieldset className="flex items-center gap-5">
           <label className="w-[170px] overflow-hidden text-right text-sm">
-            asynchronous
+            variable
           </label>
-          <Checkbox
-            checked={getValues("configuration.async")}
-            onCheckedChange={(value) => {
-              if (typeof value === "boolean") {
-                setValue("configuration.async", value);
-              }
-            }}
-          />
+          <Input {...register("configuration.variable")} />
         </fieldset>
         <fieldset className="flex items-center gap-5">
           <label className="w-[170px] overflow-hidden text-right text-sm">

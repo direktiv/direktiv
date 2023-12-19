@@ -20,6 +20,9 @@ import { EndpointFormSchemaType } from "../../../schema";
 import { InstantResponseForm } from "./InstantResponseForm";
 import { Settings } from "lucide-react";
 import { TargetFlowForm } from "./TargetFlowForm";
+import { TargetFlowVarForm } from "./TargetFlowVarForm";
+import { TargetNamespaceFileForm } from "./TargetNamespaceFileForm";
+import { TargetNamespaceVarForm } from "./TargetNamespaceVarForm";
 import { targetPluginTypes } from "../../../schema/plugins/target";
 
 type TargetPluginFormProps = {
@@ -43,6 +46,21 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({
 
   const defaultTargetFlowConfig =
     currentType === targetPluginTypes.targetFlow
+      ? values.plugins?.target?.configuration
+      : undefined;
+
+  const defaultTargetFlowVarConfig =
+    currentType === targetPluginTypes.targetFlowVar
+      ? values.plugins?.target?.configuration
+      : undefined;
+
+  const defaultTargetNamespaceFileConfig =
+    currentType === targetPluginTypes.targetNamespaceFile
+      ? values.plugins?.target?.configuration
+      : undefined;
+
+  const defaultTargetNamespaceVarConfig =
+    currentType === targetPluginTypes.targetNamespaceVar
       ? values.plugins?.target?.configuration
       : undefined;
 
@@ -98,6 +116,33 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({
           {selectedPlugin === targetPluginTypes.targetFlow && (
             <TargetFlowForm
               defaultConfig={defaultTargetFlowConfig}
+              onSubmit={(configuration) => {
+                setDialogOpen(false);
+                formControls.setValue("plugins.target", configuration);
+              }}
+            />
+          )}
+          {selectedPlugin === targetPluginTypes.targetFlowVar && (
+            <TargetFlowVarForm
+              defaultConfig={defaultTargetFlowVarConfig}
+              onSubmit={(configuration) => {
+                setDialogOpen(false);
+                formControls.setValue("plugins.target", configuration);
+              }}
+            />
+          )}
+          {selectedPlugin === targetPluginTypes.targetNamespaceFile && (
+            <TargetNamespaceFileForm
+              defaultConfig={defaultTargetNamespaceFileConfig}
+              onSubmit={(configuration) => {
+                setDialogOpen(false);
+                formControls.setValue("plugins.target", configuration);
+              }}
+            />
+          )}
+          {selectedPlugin === targetPluginTypes.targetNamespaceVar && (
+            <TargetNamespaceVarForm
+              defaultConfig={defaultTargetNamespaceVarConfig}
               onSubmit={(configuration) => {
                 setDialogOpen(false);
                 formControls.setValue("plugins.target", configuration);
