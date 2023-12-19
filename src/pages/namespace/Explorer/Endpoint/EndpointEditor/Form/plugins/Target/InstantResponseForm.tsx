@@ -64,11 +64,13 @@ export const InstantResponseForm: FC<FormProps> = ({
           label={t(
             "pages.explorer.endpoint.editor.form.plugins.target.instantResponse.statusCode"
           )}
+          htmlFor="status-code"
         >
           <Input
             {...register("configuration.status_code", {
               valueAsNumber: true,
             })}
+            id="status-code"
             type="number"
             placeholder={t(
               "pages.explorer.endpoint.editor.form.plugins.target.instantResponse.statusCodePlaceholder"
@@ -79,11 +81,13 @@ export const InstantResponseForm: FC<FormProps> = ({
           label={t(
             "pages.explorer.endpoint.editor.form.plugins.target.instantResponse.contentType"
           )}
+          htmlFor="content-type"
         >
           <Input
             {...register("configuration.content_type", {
               setValueAs: treatEmptyStringAsUndefined,
             })}
+            id="content-type"
             placeholder={t(
               "pages.explorer.endpoint.editor.form.plugins.target.instantResponse.contentTypePlaceholder"
             )}

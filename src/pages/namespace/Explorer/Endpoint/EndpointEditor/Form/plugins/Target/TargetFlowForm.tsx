@@ -62,24 +62,28 @@ export const TargetFlowForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
           label={t(
             "pages.explorer.endpoint.editor.form.plugins.target.targetFlow.namespace"
           )}
+          htmlFor="namespace"
         >
           <Input
             {...register("configuration.namespace", {
               setValueAs: treatEmptyStringAsUndefined,
             })}
+            id="namespace"
           />
         </Fieldset>
         <Fieldset
           label={t(
             "pages.explorer.endpoint.editor.form.plugins.target.targetFlow.workflow"
           )}
+          htmlFor="workflow"
         >
-          <Input {...register("configuration.flow")} />
+          <Input {...register("configuration.flow")} id="workflow" />
         </Fieldset>
         <Fieldset
           label={t(
             "pages.explorer.endpoint.editor.form.plugins.target.targetFlow.asynchronous"
           )}
+          htmlFor="async"
         >
           <Checkbox
             defaultChecked={getValues("configuration.async")}
@@ -88,12 +92,14 @@ export const TargetFlowForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
                 setValue("configuration.async", value);
               }
             }}
+            id="async"
           />
         </Fieldset>
         <Fieldset
           label={t(
             "pages.explorer.endpoint.editor.form.plugins.target.targetFlow.contentType"
           )}
+          htmlFor="content-type"
         >
           <Input
             {...register("configuration.content_type", {
@@ -102,6 +108,7 @@ export const TargetFlowForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
             placeholder={t(
               "pages.explorer.endpoint.editor.form.plugins.target.targetFlow.contentTypePlaceholder"
             )}
+            id="content-type"
           />
         </Fieldset>
       </PluginWrapper>
