@@ -8,6 +8,7 @@ import {
 import Button from "~/design/Button";
 import { DialogFooter } from "~/design/Dialog";
 import Input from "~/design/Input";
+import { treatEmptyStringAsUndefined } from "../utils";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -59,7 +60,7 @@ export const TargetNamespaceFileForm: FC<FormProps> = ({
           </label>
           <Input
             {...register("configuration.namespace", {
-              setValueAs: (value) => (value === "" ? undefined : value),
+              setValueAs: treatEmptyStringAsUndefined,
             })}
           />
         </fieldset>
@@ -75,7 +76,7 @@ export const TargetNamespaceFileForm: FC<FormProps> = ({
           </label>
           <Input
             {...register("configuration.content_type", {
-              setValueAs: (value) => (value === "" ? undefined : value),
+              setValueAs: treatEmptyStringAsUndefined,
             })}
             placeholder="application/json"
           />

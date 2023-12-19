@@ -9,6 +9,7 @@ import Button from "~/design/Button";
 import { Checkbox } from "~/design/Checkbox";
 import { DialogFooter } from "~/design/Dialog";
 import Input from "~/design/Input";
+import { treatEmptyStringAsUndefined } from "../utils";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -104,7 +105,7 @@ export const KeyAuthForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
           <div>
             <Input
               {...register("configuration.key_name", {
-                setValueAs: (value) => (value === "" ? undefined : value),
+                setValueAs: treatEmptyStringAsUndefined,
               })}
               placeholder="name of key"
             />
