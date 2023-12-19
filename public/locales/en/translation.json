@@ -372,6 +372,11 @@
                   "omitBody": "Omit Body",
                   "omitConsumer": "Omit Consumer"
                 }
+              },
+              "outbound": {
+                "jsOutbound": {
+                  "script": "JavaScript"
+                }
               }
             }
           },
