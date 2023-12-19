@@ -208,10 +208,6 @@ func (c *mirrorCallbacks) FileAnnotationsStore() core.FileAnnotationsStore {
 	return c.fileAnnotationsStore
 }
 
-func (c *mirrorCallbacks) EventFilterStore() eventsstore.CloudEventsFilterStore {
-	return c.filterStore
-}
-
 var _ mirror.Callbacks = &mirrorCallbacks{}
 
 func (srv *server) start(ctx context.Context) error {
@@ -437,7 +433,6 @@ func (srv *server) start(ctx context.Context) error {
 			fstore:               noTx.FileStore(),
 			varstore:             noTx.DataStore().RuntimeVariables(),
 			fileAnnotationsStore: noTx.DataStore().FileAnnotations(),
-			filterStore:          noTx.DataStore().EventFilter(),
 			wfconf:               cc,
 		},
 	)

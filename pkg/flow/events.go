@@ -19,7 +19,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	pkgevents "github.com/direktiv/direktiv/pkg/refactor/events"
-	"github.com/dop251/goja"
 	"github.com/google/uuid"
 	"github.com/jinzhu/copier"
 	"google.golang.org/grpc/codes"
@@ -760,109 +759,6 @@ func (events *events) listenForEvents(ctx context.Context, im *instanceMemory, c
 	events.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), "Registered to receive events.")
 
 	return nil
-}
-
-func (flow *flow) execFilter(ctx context.Context, namespace, filterName string, cloudevent []byte) ([]byte, error) {
-	var script string
-	var newBytesEvent []byte
-
-	key := fmt.Sprintf("%s-%s", namespace, filterName)
-
-	var err error
-	var ns *core.Namespace
-	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
-		ns, err = tx.DataStore().Namespaces().GetByName(ctx, namespace)
-		return err
-	})
-	if err != nil {
-		return newBytesEvent, err
-	}
-
-	if jsCode, ok := eventFilterCache.get(key); ok {
-		script = fmt.Sprintf("function filter() {\n %s \n}", jsCode)
-	} else {
-		var filters []*pkgevents.NamespaceCloudEventFilter
-		err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
-			f, _, err := tx.DataStore().EventFilter().Get(ctx, ns.ID)
-			if err != nil {
-				return err
-			}
-			filters = f
-			return nil
-		})
-		if err != nil {
-			return nil, err
-		}
-		var ceventfilter pkgevents.NamespaceCloudEventFilter
-		for _, ncef := range filters {
-			if ncef.Name == filterName {
-				ceventfilter = *ncef
-			}
-		}
-
-		script = fmt.Sprintf("function filter() {\n %s \n}", ceventfilter.JSCode)
-
-		flow.sugar.Debugf("adding filter cache key: %v\n", key)
-		eventFilterCache.put(key, ceventfilter.JSCode)
-	}
-
-	var mapEvent map[string]interface{}
-	err = json.Unmarshal(cloudevent, &mapEvent)
-	if err != nil {
-		return newBytesEvent, err
-	}
-
-	// create js runtime
-	vm := goja.New()
-	time.AfterFunc(1*time.Second, func() {
-		vm.Interrupt("block event filter")
-	})
-
-	err = vm.Set("event", mapEvent)
-	if err != nil {
-		return newBytesEvent, fmt.Errorf("failed to initialize js runtime: %w", err)
-	}
-
-	// add logging function
-	err = vm.Set("nslog", func(txt interface{}) {
-		flow.logger.Infof(ctx, ns.ID, ns.GetAttributes(), fmt.Sprintf("%v", txt))
-	})
-	if err != nil {
-		return newBytesEvent, fmt.Errorf("failed to initialize js runtime: %w", err)
-	}
-
-	_, err = vm.RunString(script)
-	if err != nil {
-		flow.logger.Errorf(ctx, ns.ID, ns.GetAttributes(), "CloudEvent filter '%s' produced an error (1): %v", filterName, err)
-		return newBytesEvent, err
-	}
-
-	f, ok := goja.AssertFunction(vm.Get("filter"))
-	if !ok {
-		flow.logger.Errorf(ctx, ns.ID, ns.GetAttributes(), "cloudEvent filter '%s' error: %v", filterName, err)
-		return newBytesEvent, err
-	}
-
-	newEventMap, err := f(goja.Undefined())
-	if err != nil {
-		flow.logger.Errorf(ctx, ns.ID, ns.GetAttributes(), "CloudEvent filter '%s' produced an error (2): %v", filterName, err)
-		return newBytesEvent, err
-	}
-
-	retValue := newEventMap.Export()
-
-	// event dropped
-	if retValue == nil {
-		return newBytesEvent, nil
-	}
-
-	newBytesEvent, err = json.Marshal(newEventMap)
-	if err != nil {
-		flow.logger.Errorf(ctx, ns.ID, ns.GetAttributes(), "CloudEvent filter '%s' produced an error (3): %v", filterName, err)
-		return newBytesEvent, err
-	}
-
-	return newBytesEvent, nil
 }
 
 const (

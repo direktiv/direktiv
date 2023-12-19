@@ -2,7 +2,6 @@ package flow
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -81,29 +80,6 @@ func (rcv *eventReceiver) sendToNamespace(name, filter string, r *http.Request) 
 	}
 
 	c := context.WithValue(ctx, EventingCtxKeySource, "eventing")
-
-	if filter != "" {
-		ce, err := ev.MarshalJSON()
-		if err != nil {
-			return err
-		}
-
-		b, err := rcv.flow.execFilter(c, name, filter, ce)
-		if err != nil {
-			return err
-		}
-
-		// dropped
-		if len(b) == 0 {
-			rcv.logger.Debugf("dropping event")
-			return nil
-		}
-
-		err = json.Unmarshal(b, ev)
-		if err != nil {
-			return err
-		}
-	}
 
 	return rcv.events.BroadcastCloudevent(c, ns, ev, 0)
 }
