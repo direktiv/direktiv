@@ -32,7 +32,7 @@ const readJsOutboundConfig = (
   fields: OutboundPluginFormSchemaType[] | undefined,
   index: number | undefined
 ): JsOutboundFormSchemaType["configuration"] | undefined => {
-  const plugin = index ? fields?.[index] : undefined;
+  const plugin = index !== undefined ? fields?.[index] : undefined;
   return plugin?.type === outboundPluginTypes.jsOutbound
     ? plugin.configuration
     : undefined;
