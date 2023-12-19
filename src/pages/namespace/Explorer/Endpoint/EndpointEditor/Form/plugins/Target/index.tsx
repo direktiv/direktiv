@@ -1,6 +1,6 @@
 import { Dialog, DialogTrigger } from "~/design/Dialog";
 import { FC, useState } from "react";
-import { ModalPluginSelector, ModalWrapper } from "../components/Modal";
+import { ModalWrapper, PluginSelector } from "../components/Modal";
 import {
   Select,
   SelectContent,
@@ -70,7 +70,7 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({
         </DialogTrigger>
       </div>
       <ModalWrapper title="Configure Target plugin">
-        <ModalPluginSelector title="Target plugin">
+        <PluginSelector title="Target plugin">
           <Select
             onValueChange={(e) => {
               setSelectedPlugin(e as typeof selectedPlugin);
@@ -88,7 +88,7 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({
               ))}
             </SelectContent>
           </Select>
-        </ModalPluginSelector>
+        </PluginSelector>
 
         {selectedPlugin === targetPluginTypes.instantResponse && (
           <InstantResponseForm
