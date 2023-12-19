@@ -29,7 +29,7 @@ const FilePicker = ({
   const [path, setPath] = useState(defaultPath ? defaultPath : "/");
   const [inputValue, setInputValue] = useState(defaultPath ? defaultPath : "");
 
-  const { data } = useNodeContent({
+  const { data, isError } = useNodeContent({
     path,
     namespace,
   });
@@ -78,7 +78,7 @@ const FilePicker = ({
           </BreadcrumbRoot>
         </FilepickerHeading>
         <FilepickerSeparator />
-        {!data && (
+        {isError && (
           <div>
             <FilepickerHeading>
               <div className="py-3">
