@@ -89,13 +89,6 @@ service Flow {
 	rpc CancelInstance (CancelInstanceRequest) returns (google.protobuf.Empty) {}
 	rpc BroadcastCloudevent (BroadcastCloudeventRequest) returns (google.protobuf.Empty) {}
 
-	rpc ApplyCloudEventFilter (ApplyCloudEventFilterRequest) returns (google.protobuf.Empty) {}
-	rpc DeleteCloudEventFilter (DeleteCloudEventFilterRequest) returns (google.protobuf.Empty) {}
-	rpc CreateCloudEventFilter (CreateCloudEventFilterRequest) returns (google.protobuf.Empty) {}
-	rpc UpdateCloudEventFilter (UpdateCloudEventFilterRequest) returns (google.protobuf.Empty) {}
-	rpc GetCloudEventFilterScript (GetCloudEventFilterScriptRequest) returns (GetCloudEventFilterScriptResponse) {}
-	rpc GetCloudEventFilters (GetCloudEventFiltersRequest) returns (GetCloudEventFiltersResponse) {}
-
 	//
 
 	rpc NamespaceVariable (NamespaceVariableRequest) returns (NamespaceVariableResponse) {}
