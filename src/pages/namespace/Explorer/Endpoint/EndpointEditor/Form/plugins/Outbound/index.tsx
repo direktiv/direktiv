@@ -19,29 +19,16 @@ import { UseFormReturn, useFieldArray } from "react-hook-form";
 import Button from "~/design/Button";
 import { EndpointFormSchemaType } from "../../../schema";
 import { JsOutboundForm } from "./JsOutboundForm";
-import { JsOutboundFormSchemaType } from "../../../schema/plugins/outbound/jsOutbound";
 import { OutboundPluginFormSchemaType } from "../../../schema/plugins/outbound/schema";
+import { getJsOutboundConfigAtIndex } from "../utils";
 import { outboundPluginTypes } from "../../../schema/plugins/outbound";
 
 type OutboundPluginFormProps = {
-  formControls: UseFormReturn<EndpointFormSchemaType>;
+  form: UseFormReturn<EndpointFormSchemaType>;
 };
 
-// TODO: may create a factory for this, ot introduce a generic
-const readJsOutboundConfig = (
-  fields: OutboundPluginFormSchemaType[] | undefined,
-  index: number | undefined
-): JsOutboundFormSchemaType["configuration"] | undefined => {
-  const plugin = index !== undefined ? fields?.[index] : undefined;
-  return plugin?.type === outboundPluginTypes.jsOutbound
-    ? plugin.configuration
-    : undefined;
-};
-
-export const OutboundPluginForm: FC<OutboundPluginFormProps> = ({
-  formControls,
-}) => {
-  const { control } = formControls;
+export const OutboundPluginForm: FC<OutboundPluginFormProps> = ({ form }) => {
+  const { control } = form;
   const {
     append: addPlugin,
     remove: deletePlugin,
@@ -164,7 +151,7 @@ export const OutboundPluginForm: FC<OutboundPluginFormProps> = ({
 
           {selectedPlugin === outboundPluginTypes.jsOutbound && (
             <JsOutboundForm
-              defaultConfig={readJsOutboundConfig(fields, editIndex)}
+              defaultConfig={getJsOutboundConfigAtIndex(fields, editIndex)}
               onSubmit={(configuration) => {
                 setDialogOpen(false);
                 if (editIndex === undefined) {

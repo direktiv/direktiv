@@ -1,14 +1,15 @@
 import { FC, FormEvent } from "react";
+import { Fieldset, ModalFooter, PluginWrapper } from "../components/Modal";
 import FormErrors, { errorsType } from "~/componentsNext/FormErrors";
 import {
   TargetNamespaceFileFormSchema,
   TargetNamespaceFileFormSchemaType,
 } from "../../../schema/plugins/target/targetNamespaceFile";
 
-import Button from "~/design/Button";
-import { DialogFooter } from "~/design/Dialog";
 import Input from "~/design/Input";
+import { treatEmptyStringAsUndefined } from "../utils";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 type OptionalConfig = Partial<
@@ -24,6 +25,7 @@ export const TargetNamespaceFileForm: FC<FormProps> = ({
   defaultConfig,
   onSubmit,
 }) => {
+  const { t } = useTranslation();
   const {
     register,
     handleSubmit,
@@ -45,45 +47,52 @@ export const TargetNamespaceFileForm: FC<FormProps> = ({
 
   return (
     <form onSubmit={submitForm}>
-      {errors?.configuration && (
-        <FormErrors
-          errors={errors?.configuration as errorsType}
-          className="mb-5"
-        />
-      )}
-
-      <div className="my-3 flex flex-col gap-y-5">
-        <fieldset className="flex items-center gap-5">
-          <label className="w-[170px] overflow-hidden text-right text-sm">
-            namespace (optional)
-          </label>
+      <PluginWrapper>
+        {errors?.configuration && (
+          <FormErrors
+            errors={errors?.configuration as errorsType}
+            className="mb-5"
+          />
+        )}
+        <Fieldset
+          label={t(
+            "pages.explorer.endpoint.editor.form.plugins.target.targetNamespaceFile.namespace"
+          )}
+          htmlFor="namespace"
+        >
           <Input
             {...register("configuration.namespace", {
-              setValueAs: (value) => (value === "" ? undefined : value),
+              setValueAs: treatEmptyStringAsUndefined,
             })}
+            id="namespace"
           />
-        </fieldset>
-        <fieldset className="flex items-center gap-5">
-          <label className="w-[170px] overflow-hidden text-right text-sm">
-            file
-          </label>
-          <Input {...register("configuration.file")} />
-        </fieldset>
-        <fieldset className="flex items-center gap-5">
-          <label className="w-[170px] overflow-hidden text-right text-sm">
-            content type (optional)
-          </label>
+        </Fieldset>
+        <Fieldset
+          label={t(
+            "pages.explorer.endpoint.editor.form.plugins.target.targetNamespaceFile.file"
+          )}
+          htmlFor="file"
+        >
+          <Input {...register("configuration.file")} id="file" />
+        </Fieldset>
+        <Fieldset
+          label={t(
+            "pages.explorer.endpoint.editor.form.plugins.target.targetNamespaceFile.contentType"
+          )}
+          htmlFor="content-type"
+        >
           <Input
             {...register("configuration.content_type", {
-              setValueAs: (value) => (value === "" ? undefined : value),
+              setValueAs: treatEmptyStringAsUndefined,
             })}
-            placeholder="application/json"
+            placeholder={t(
+              "pages.explorer.endpoint.editor.form.plugins.target.targetNamespaceFile.contentTypePlaceholder"
+            )}
+            id="content-type"
           />
-        </fieldset>
-      </div>
-      <DialogFooter>
-        <Button type="submit">Save</Button>
-      </DialogFooter>
+        </Fieldset>
+      </PluginWrapper>
+      <ModalFooter />
     </form>
   );
 };

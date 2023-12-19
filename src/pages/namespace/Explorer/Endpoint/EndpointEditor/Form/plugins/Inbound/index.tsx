@@ -1,12 +1,7 @@
 import { ChevronDown, ChevronUp, Edit, Plus, Trash } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "~/design/Dialog";
+import { Dialog, DialogTrigger } from "~/design/Dialog";
 import { FC, useState } from "react";
+import { ModalWrapper, PluginSelector } from "../components/Modal";
 import {
   Select,
   SelectContent,
@@ -15,45 +10,26 @@ import {
   SelectValue,
 } from "~/design/Select";
 import { UseFormReturn, useFieldArray } from "react-hook-form";
+import {
+  getJsInboundConfigAtIndex,
+  getRequestConvertConfigAtIndex,
+} from "../utils";
 
 import Button from "~/design/Button";
 import { EndpointFormSchemaType } from "../../../schema";
 import { InboundPluginFormSchemaType } from "../../../schema/plugins/inbound/schema";
 import { JsInboundForm } from "./JsInboundForm";
-import { JsInboundFormSchemaType } from "../../../schema/plugins/inbound/jsInbound";
 import { RequestConvertForm } from "./RequestConvertForm";
-import { RequestConvertFormSchemaType } from "../../../schema/plugins/inbound/requestConvert";
 import { inboundPluginTypes } from "../../../schema/plugins/inbound";
+import { useTranslation } from "react-i18next";
 
 type InboundPluginFormProps = {
-  formControls: UseFormReturn<EndpointFormSchemaType>;
+  form: UseFormReturn<EndpointFormSchemaType>;
 };
 
-// TODO: may create a factory for this, ot introduce a generic
-const readRequestConvertConfig = (
-  fields: InboundPluginFormSchemaType[] | undefined,
-  index: number | undefined
-): RequestConvertFormSchemaType["configuration"] | undefined => {
-  const plugin = index !== undefined ? fields?.[index] : undefined;
-  return plugin?.type === inboundPluginTypes.requestConvert
-    ? plugin.configuration
-    : undefined;
-};
-
-const readJsInboundConfig = (
-  fields: InboundPluginFormSchemaType[] | undefined,
-  index: number | undefined
-): JsInboundFormSchemaType["configuration"] | undefined => {
-  const plugin = index !== undefined ? fields?.[index] : undefined;
-  return plugin?.type === inboundPluginTypes.jsInbound
-    ? plugin.configuration
-    : undefined;
-};
-
-export const InboundPluginForm: FC<InboundPluginFormProps> = ({
-  formControls,
-}) => {
-  const { control } = formControls;
+export const InboundPluginForm: FC<InboundPluginFormProps> = ({ form }) => {
+  const { t } = useTranslation();
+  const { control } = form;
   const {
     append: addPlugin,
     remove: deletePlugin,
@@ -69,6 +45,8 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({
 
   const [selectedPlugin, setSelectedPlugin] =
     useState<InboundPluginFormSchemaType["type"]>();
+
+  const { jsInbound, requestConvert } = inboundPluginTypes;
 
   const pluginsCount = fields.length;
 
@@ -142,68 +120,74 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({
           </div>
         );
       })}
-      <DialogContent className="sm:max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>
-            {editIndex === undefined ? "add" : "edit"} Inbound Plugin
-          </DialogTitle>
-        </DialogHeader>
-        <div className="my-3 flex flex-col gap-y-5">
-          <div className="flex flex-col gap-y-5">
-            <fieldset className="flex items-center gap-5">
-              <label className="w-[150px] overflow-hidden text-right text-sm">
-                select a inbound plugin
-              </label>
-              <Select
-                onValueChange={(e) => {
-                  setSelectedPlugin(e as typeof selectedPlugin);
-                }}
-                value={selectedPlugin}
-              >
-                <SelectTrigger variant="outline">
-                  <SelectValue placeholder="please select a inbound plugin" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.values(inboundPluginTypes).map((pluginType) => (
-                    <SelectItem key={pluginType} value={pluginType}>
-                      {pluginType}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </fieldset>
-          </div>
-          {selectedPlugin === inboundPluginTypes.requestConvert && (
-            <RequestConvertForm
-              defaultConfig={readRequestConvertConfig(fields, editIndex)}
-              onSubmit={(configuration) => {
-                setDialogOpen(false);
-                if (editIndex === undefined) {
-                  addPlugin(configuration);
-                } else {
-                  editPlugin(editIndex, configuration);
-                }
-                setEditIndex(undefined);
-              }}
-            />
-          )}
 
-          {selectedPlugin === inboundPluginTypes.jsInbound && (
-            <JsInboundForm
-              defaultConfig={readJsInboundConfig(fields, editIndex)}
-              onSubmit={(configuration) => {
-                setDialogOpen(false);
-                if (editIndex === undefined) {
-                  addPlugin(configuration);
-                } else {
-                  editPlugin(editIndex, configuration);
-                }
-                setEditIndex(undefined);
-              }}
-            />
-          )}
-        </div>
-      </DialogContent>
+      <ModalWrapper
+        title={
+          editIndex === undefined
+            ? t(
+                "pages.explorer.endpoint.editor.form.plugins.inbound.headlineAdd"
+              )
+            : t(
+                "pages.explorer.endpoint.editor.form.plugins.inbound.headlineEdit"
+              )
+        }
+      >
+        <PluginSelector
+          title={t("pages.explorer.endpoint.editor.form.plugins.inbound.label")}
+        >
+          <Select
+            onValueChange={(e) => {
+              setSelectedPlugin(e as typeof selectedPlugin);
+            }}
+            value={selectedPlugin}
+          >
+            <SelectTrigger variant="outline" className="grow">
+              <SelectValue
+                placeholder={t(
+                  "pages.explorer.endpoint.editor.form.plugins.inbound.placeholder"
+                )}
+              />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.values(inboundPluginTypes).map((pluginType) => (
+                <SelectItem key={pluginType} value={pluginType}>
+                  {t(
+                    `pages.explorer.endpoint.editor.form.plugins.inbound.types.${pluginType}`
+                  )}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </PluginSelector>
+        {selectedPlugin === requestConvert && (
+          <RequestConvertForm
+            defaultConfig={getRequestConvertConfigAtIndex(fields, editIndex)}
+            onSubmit={(configuration) => {
+              setDialogOpen(false);
+              if (editIndex === undefined) {
+                addPlugin(configuration);
+              } else {
+                editPlugin(editIndex, configuration);
+              }
+              setEditIndex(undefined);
+            }}
+          />
+        )}
+        {selectedPlugin === jsInbound && (
+          <JsInboundForm
+            defaultConfig={getJsInboundConfigAtIndex(fields, editIndex)}
+            onSubmit={(configuration) => {
+              setDialogOpen(false);
+              if (editIndex === undefined) {
+                addPlugin(configuration);
+              } else {
+                editPlugin(editIndex, configuration);
+              }
+              setEditIndex(undefined);
+            }}
+          />
+        )}
+      </ModalWrapper>
     </Dialog>
   );
 };

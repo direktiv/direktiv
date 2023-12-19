@@ -304,7 +304,98 @@
         "goToRoutes": "Go to routes",
         "editor": {
           "form": {
-            "serialisationError": "There was an error serializing the form data"
+            "serialisationError": "There was an error serializing the form data",
+            "plugins": {
+              "saveBtn": "Save",
+              "target": {
+                "headline": "Configure target plugin",
+                "label": "Target plugin",
+                "placeholder": "Please select a target plugin",
+                "notConfigured": "Please configure the target plugin",
+                "types": {
+                  "instant-response": "Instant Response",
+                  "target-flow": "Workflow",
+                  "target-flow-var": "Workflow Variable",
+                  "target-namespace-file": "Namespace File",
+                  "target-namespace-var": "Namespace Variable"
+                },
+                "instantResponse": {
+                  "statusCode": "Status Code",
+                  "statusCodePlaceholder": "200",
+                  "contentType": "Content Type",
+                  "contentTypePlaceholder": "application/json",
+                  "statusMessage": "Status Message (optional)"
+                },
+                "targetFlow": {
+                  "namespace": "Namespace (optional)",
+                  "workflow": "Workflow",
+                  "asynchronous": "Asynchronous",
+                  "contentType": "Content Type",
+                  "contentTypePlaceholder": "application/json"
+                },
+                "targetFlowVar": {
+                  "namespace": "Namespace (optional)",
+                  "workflow": "Workflow",
+                  "variable": "Variable",
+                  "contentType": "Content type",
+                  "contentTypePlaceholder": "application/json"
+                },
+                "targetNamespaceFile": {
+                  "namespace": "Namespace (optional)",
+                  "file": "File",
+                  "contentType": "Content Type",
+                  "contentTypePlaceholder": "application/json"
+                },
+                "targetNamespaceVariable": {
+                  "namespace": "Namespace (optional)",
+                  "variable": "Variable",
+                  "contentType": "Content Type",
+                  "contentTypePlaceholder": "application/json"
+                }
+              },
+              "inbound": {
+                "headlineAdd": "Add inbound plugin",
+                "headlineEdit": "Edit inbound plugin",
+                "label": "Inbound plugin",
+                "placeholder": "Please select a inbound plugin",
+                "types": {
+                  "acl": "Access control list (acl)",
+                  "js-inbound": "JavaScript",
+                  "request-convert": "Request convert"
+                },
+                "jsInbound": {
+                  "script": "JavaScript"
+                },
+                "requestConvert": {
+                  "omitHeaders": "Omit Headers",
+                  "omitQueries": "Omit Queries",
+                  "omitBody": "Omit Body",
+                  "omitConsumer": "Omit Consumer"
+                }
+              },
+              "outbound": {
+                "jsOutbound": {
+                  "script": "JavaScript"
+                }
+              },
+              "auth": {
+                "basciAuth": {
+                  "addUsernameHeader": "Add username header",
+                  "addTagsHeader": "Add tags header",
+                  "addGroupsHeader": "Add groups header"
+                },
+                "githubWebhookAuth": {
+                  "secret": "secret"
+                },
+                "keyAuth": {
+                  "addUsernameHeader": "Add username header",
+                  "addTagsHeader": "Add tags header",
+                  "addGroupsHeader": "Add groups header",
+                  "keyName": "Key name (optional)",
+                  "keyNamePlaceholder": "name of the key"
+                }
+              }
+            }
           },
           "saveBtn": "Save",
           "previewTitle": "File Preview"
