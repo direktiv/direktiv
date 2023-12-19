@@ -365,6 +365,12 @@
                 },
                 "jsInbound": {
                   "script": "JavaScript"
+                },
+                "requestConvert": {
+                  "omitHeaders": "Omit Headers",
+                  "omitQueries": "Omit Queries",
+                  "omitBody": "Omit Body",
+                  "omitConsumer": "Omit Consumer"
                 }
               }
             }

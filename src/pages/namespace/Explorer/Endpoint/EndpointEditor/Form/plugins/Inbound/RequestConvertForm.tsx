@@ -1,14 +1,14 @@
 import { FC, FormEvent } from "react";
+import { Fieldset, ModalFooter, PluginWrapper } from "../components/Modal";
 import FormErrors, { errorsType } from "~/componentsNext/FormErrors";
 import {
   RequestConvertFormSchema,
   RequestConvertFormSchemaType,
 } from "../../../schema/plugins/inbound/requestConvert";
 
-import Button from "~/design/Button";
 import { Checkbox } from "~/design/Checkbox";
-import { DialogFooter } from "~/design/Dialog";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 type OptionalConfig = Partial<RequestConvertFormSchemaType["configuration"]>;
@@ -29,6 +29,7 @@ export const RequestConvertForm: FC<FormProps> = ({
   defaultConfig,
   onSubmit,
 }) => {
+  const { t } = useTranslation();
   const {
     handleSubmit,
     setValue,
@@ -52,18 +53,19 @@ export const RequestConvertForm: FC<FormProps> = ({
 
   return (
     <form onSubmit={submitForm}>
-      {errors?.configuration && (
-        <FormErrors
-          errors={errors?.configuration as errorsType}
-          className="mb-5"
-        />
-      )}
-
-      <div className="my-3 flex flex-col gap-y-5">
-        <fieldset className="flex items-center gap-5">
-          <label className="w-[170px] overflow-hidden text-right text-sm">
-            omit headers
-          </label>
+      <PluginWrapper>
+        {errors?.configuration && (
+          <FormErrors
+            errors={errors?.configuration as errorsType}
+            className="mb-5"
+          />
+        )}
+        <Fieldset
+          label={t(
+            "pages.explorer.endpoint.editor.form.plugins.inbound.requestConvert.omitHeaders"
+          )}
+          htmlFor="omit-headers"
+        >
           <Checkbox
             defaultChecked={getValues("configuration.omit_headers")}
             onCheckedChange={(value) => {
@@ -71,12 +73,15 @@ export const RequestConvertForm: FC<FormProps> = ({
                 setValue("configuration.omit_headers", value);
               }
             }}
+            id="omit-headers"
           />
-        </fieldset>
-        <fieldset className="flex items-center gap-5">
-          <label className="w-[170px] overflow-hidden text-right text-sm">
-            omit queries
-          </label>
+        </Fieldset>
+        <Fieldset
+          label={t(
+            "pages.explorer.endpoint.editor.form.plugins.inbound.requestConvert.omitQueries"
+          )}
+          htmlFor="omit-queries"
+        >
           <Checkbox
             defaultChecked={getValues("configuration.omit_queries")}
             onCheckedChange={(value) => {
@@ -84,12 +89,15 @@ export const RequestConvertForm: FC<FormProps> = ({
                 setValue("configuration.omit_queries", value);
               }
             }}
+            id="omit-queries"
           />
-        </fieldset>
-        <fieldset className="flex items-center gap-5">
-          <label className="w-[170px] overflow-hidden text-right text-sm">
-            omit body
-          </label>
+        </Fieldset>
+        <Fieldset
+          label={t(
+            "pages.explorer.endpoint.editor.form.plugins.inbound.requestConvert.omitBody"
+          )}
+          htmlFor="omit-body"
+        >
           <Checkbox
             defaultChecked={getValues("configuration.omit_body")}
             onCheckedChange={(value) => {
@@ -97,12 +105,15 @@ export const RequestConvertForm: FC<FormProps> = ({
                 setValue("configuration.omit_body", value);
               }
             }}
+            id="omit-body"
           />
-        </fieldset>
-        <fieldset className="flex items-center gap-5">
-          <label className="w-[170px] overflow-hidden text-right text-sm">
-            omit consumer
-          </label>
+        </Fieldset>
+        <Fieldset
+          label={t(
+            "pages.explorer.endpoint.editor.form.plugins.inbound.requestConvert.omitConsumer"
+          )}
+          htmlFor="omit-consumer"
+        >
           <Checkbox
             defaultChecked={getValues("configuration.omit_consumer")}
             onCheckedChange={(value) => {
@@ -110,12 +121,11 @@ export const RequestConvertForm: FC<FormProps> = ({
                 setValue("configuration.omit_consumer", value);
               }
             }}
+            id="omit-consumer"
           />
-        </fieldset>
-      </div>
-      <DialogFooter>
-        <Button type="submit">Save</Button>
-      </DialogFooter>
+        </Fieldset>
+      </PluginWrapper>
+      <ModalFooter />
     </form>
   );
 };
