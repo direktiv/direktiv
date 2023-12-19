@@ -10,6 +10,7 @@ import {
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
 import Input from "~/design/Input";
+import { treatEmptyStringAsUndefined } from "../utils";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -81,7 +82,7 @@ export const InstantResponseForm: FC<FormProps> = ({
         >
           <Input
             {...register("configuration.content_type", {
-              setValueAs: (value) => (value === "" ? undefined : value),
+              setValueAs: treatEmptyStringAsUndefined,
             })}
             placeholder={t(
               "pages.explorer.endpoint.editor.form.plugins.target.instantResponse.contentTypePlaceholder"
