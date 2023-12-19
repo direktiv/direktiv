@@ -1,11 +1,5 @@
 import { ChevronDown, ChevronUp, Edit, Plus, Trash } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "~/design/Dialog";
+import { Dialog, DialogTrigger } from "~/design/Dialog";
 import { FC, useState } from "react";
 import { ModalWrapper, PluginSelector } from "../components/Modal";
 import {
@@ -16,40 +10,21 @@ import {
   SelectValue,
 } from "~/design/Select";
 import { UseFormReturn, useFieldArray } from "react-hook-form";
+import {
+  getJsInboundConfigAtIndex,
+  getRequestConvertConfigAtIndex,
+} from "../utils";
 
 import Button from "~/design/Button";
 import { EndpointFormSchemaType } from "../../../schema";
 import { InboundPluginFormSchemaType } from "../../../schema/plugins/inbound/schema";
 import { JsInboundForm } from "./JsInboundForm";
-import { JsInboundFormSchemaType } from "../../../schema/plugins/inbound/jsInbound";
 import { RequestConvertForm } from "./RequestConvertForm";
-import { RequestConvertFormSchemaType } from "../../../schema/plugins/inbound/requestConvert";
 import { inboundPluginTypes } from "../../../schema/plugins/inbound";
 import { useTranslation } from "react-i18next";
 
 type InboundPluginFormProps = {
   formControls: UseFormReturn<EndpointFormSchemaType>;
-};
-
-// TODO: may create a factory for this, ot introduce a generic
-const readRequestConvertConfig = (
-  fields: InboundPluginFormSchemaType[] | undefined,
-  index: number | undefined
-): RequestConvertFormSchemaType["configuration"] | undefined => {
-  const plugin = index !== undefined ? fields?.[index] : undefined;
-  return plugin?.type === inboundPluginTypes.requestConvert
-    ? plugin.configuration
-    : undefined;
-};
-
-const readJsInboundConfig = (
-  fields: InboundPluginFormSchemaType[] | undefined,
-  index: number | undefined
-): JsInboundFormSchemaType["configuration"] | undefined => {
-  const plugin = index !== undefined ? fields?.[index] : undefined;
-  return plugin?.type === inboundPluginTypes.jsInbound
-    ? plugin.configuration
-    : undefined;
 };
 
 export const InboundPluginForm: FC<InboundPluginFormProps> = ({
@@ -72,6 +47,8 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({
 
   const [selectedPlugin, setSelectedPlugin] =
     useState<InboundPluginFormSchemaType["type"]>();
+
+  const { jsInbound, requestConvert } = inboundPluginTypes;
 
   const pluginsCount = fields.length;
 
@@ -184,9 +161,9 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({
             </SelectContent>
           </Select>
         </PluginSelector>
-        {selectedPlugin === inboundPluginTypes.requestConvert && (
+        {selectedPlugin === requestConvert && (
           <RequestConvertForm
-            defaultConfig={readRequestConvertConfig(fields, editIndex)}
+            defaultConfig={getRequestConvertConfigAtIndex(fields, editIndex)}
             onSubmit={(configuration) => {
               setDialogOpen(false);
               if (editIndex === undefined) {
@@ -198,9 +175,9 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({
             }}
           />
         )}
-        {selectedPlugin === inboundPluginTypes.jsInbound && (
+        {selectedPlugin === jsInbound && (
           <JsInboundForm
-            defaultConfig={readJsInboundConfig(fields, editIndex)}
+            defaultConfig={getJsInboundConfigAtIndex(fields, editIndex)}
             onSubmit={(configuration) => {
               setDialogOpen(false);
               if (editIndex === undefined) {
