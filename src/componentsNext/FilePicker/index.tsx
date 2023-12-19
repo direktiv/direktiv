@@ -121,7 +121,7 @@ const FilePicker = ({
               {file.type === "directory" ? (
                 <FilepickerListItem icon={fileTypeToIcon(file.type)} asChild>
                   <div
-                    className="w-full cursor-pointer text-gray-11 hover:underline focus:bg-transparent focus:ring-0 focus:ring-transparent focus:ring-offset-0 dark:text-gray-dark-11 dark:focus:bg-transparent"
+                    className="h-auto w-full cursor-pointer text-gray-11 hover:underline focus:bg-transparent focus:ring-0 focus:ring-transparent focus:ring-offset-0 dark:text-gray-dark-11 dark:focus:bg-transparent"
                     onClick={() => {
                       setPath(file.path);
                     }}
@@ -131,7 +131,7 @@ const FilePicker = ({
                 </FilepickerListItem>
               ) : (
                 <FilepickerClose
-                  className="w-full hover:underline "
+                  className="h-auto w-full hover:underline"
                   onClick={() => {
                     setPath(file.parent);
                     setInputValue(file.path);
