@@ -19,7 +19,7 @@ import { UseFormReturn, useFieldArray } from "react-hook-form";
 import Button from "~/design/Button";
 import { EndpointFormSchemaType } from "../../../schema";
 import { InboundPluginFormSchemaType } from "../../../schema/plugins/inbound/schema";
-import { JsInboundForm } from "./JsInbound";
+import { JsInboundForm } from "./JsInboundForm";
 import { JsInboundFormSchemaType } from "../../../schema/plugins/inbound/jsInbound";
 import { RequestConvertForm } from "./RequestConvertForm";
 import { RequestConvertFormSchemaType } from "../../../schema/plugins/inbound/requestConvert";
