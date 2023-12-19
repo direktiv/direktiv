@@ -16,43 +16,53 @@ import {
 } from "~/design/Select";
 import { UseFormReturn, useFieldArray } from "react-hook-form";
 
+import { AuthPluginFormSchemaType } from "../../../schema/plugins/auth/schema";
+import { BasicAuthForm } from "./BasicAuthForm";
+import { BasicAuthFormSchemaType } from "../../../schema/plugins/auth/basicAuth";
 import Button from "~/design/Button";
 import { EndpointFormSchemaType } from "../../../schema";
-import { InboundPluginFormSchemaType } from "../../../schema/plugins/inbound/schema";
-import { JsInboundForm } from "./JsInboundForm";
-import { JsInboundFormSchemaType } from "../../../schema/plugins/inbound/jsInbound";
-import { RequestConvertForm } from "./RequestConvertForm";
-import { RequestConvertFormSchemaType } from "../../../schema/plugins/inbound/requestConvert";
-import { inboundPluginTypes } from "../../../schema/plugins/inbound";
+import { GithubWebhookAuthForm } from "./GithubWebhookAuthForm";
+import { GithubWebhookAuthFormSchemaType } from "../../../schema/plugins/auth/githubWebhookAuth";
+import { KeyAuthForm } from "./KeyAuthForm";
+import { KeyAuthFormSchemaType } from "../../../schema/plugins/auth/keyAuth";
+import { authPluginTypes } from "../../../schema/plugins/auth";
 
-type InboundPluginFormProps = {
+type AuthPluginFormProps = {
   formControls: UseFormReturn<EndpointFormSchemaType>;
 };
 
 // TODO: may create a factory for this, ot introduce a generic
-const readRequestConvertConfig = (
-  fields: InboundPluginFormSchemaType[] | undefined,
+const readBasicAuthConfig = (
+  fields: AuthPluginFormSchemaType[] | undefined,
   index: number | undefined
-): RequestConvertFormSchemaType["configuration"] | undefined => {
+): BasicAuthFormSchemaType["configuration"] | undefined => {
   const plugin = index !== undefined ? fields?.[index] : undefined;
-  return plugin?.type === inboundPluginTypes.requestConvert
+  return plugin?.type === authPluginTypes.basicAuth
     ? plugin.configuration
     : undefined;
 };
 
-const readJsInboundConfig = (
-  fields: InboundPluginFormSchemaType[] | undefined,
+const readKeyAuthConfig = (
+  fields: AuthPluginFormSchemaType[] | undefined,
   index: number | undefined
-): JsInboundFormSchemaType["configuration"] | undefined => {
+): KeyAuthFormSchemaType["configuration"] | undefined => {
   const plugin = index !== undefined ? fields?.[index] : undefined;
-  return plugin?.type === inboundPluginTypes.jsInbound
+  return plugin?.type === authPluginTypes.keyAuth
     ? plugin.configuration
     : undefined;
 };
 
-export const InboundPluginForm: FC<InboundPluginFormProps> = ({
-  formControls,
-}) => {
+const readGithubWebhookAuthConfig = (
+  fields: AuthPluginFormSchemaType[] | undefined,
+  index: number | undefined
+): GithubWebhookAuthFormSchemaType["configuration"] | undefined => {
+  const plugin = index !== undefined ? fields?.[index] : undefined;
+  return plugin?.type === authPluginTypes.githubWebhookAuth
+    ? plugin.configuration
+    : undefined;
+};
+
+export const AuthPluginForm: FC<AuthPluginFormProps> = ({ formControls }) => {
   const { control } = formControls;
   const {
     append: addPlugin,
@@ -62,13 +72,13 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({
     fields,
   } = useFieldArray({
     control,
-    name: "plugins.inbound",
+    name: "plugins.auth",
   });
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editIndex, setEditIndex] = useState<number>();
 
   const [selectedPlugin, setSelectedPlugin] =
-    useState<InboundPluginFormSchemaType["type"]>();
+    useState<AuthPluginFormSchemaType["type"]>();
 
   const pluginsCount = fields.length;
 
@@ -81,10 +91,10 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({
       }}
     >
       <div className="flex items-center gap-3">
-        {pluginsCount} Inbound plugins
+        {pluginsCount} Auth plugins
         <DialogTrigger asChild>
           <Button icon variant="outline">
-            <Plus /> add inbound plugin
+            <Plus /> add auth plugin
           </Button>
         </DialogTrigger>
       </div>
@@ -145,14 +155,14 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>
-            {editIndex === undefined ? "add" : "edit"} Inbound Plugin
+            {editIndex === undefined ? "add" : "edit"} Auth Plugin
           </DialogTitle>
         </DialogHeader>
         <div className="my-3 flex flex-col gap-y-5">
           <div className="flex flex-col gap-y-5">
             <fieldset className="flex items-center gap-5">
               <label className="w-[150px] overflow-hidden text-right text-sm">
-                select a inbound plugin
+                select a auth plugin
               </label>
               <Select
                 onValueChange={(e) => {
@@ -161,10 +171,10 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({
                 value={selectedPlugin}
               >
                 <SelectTrigger variant="outline">
-                  <SelectValue placeholder="please select a inbound plugin" />
+                  <SelectValue placeholder="please select a auth plugin" />
                 </SelectTrigger>
                 <SelectContent>
-                  {Object.values(inboundPluginTypes).map((pluginType) => (
+                  {Object.values(authPluginTypes).map((pluginType) => (
                     <SelectItem key={pluginType} value={pluginType}>
                       {pluginType}
                     </SelectItem>
@@ -173,9 +183,9 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({
               </Select>
             </fieldset>
           </div>
-          {selectedPlugin === inboundPluginTypes.requestConvert && (
-            <RequestConvertForm
-              defaultConfig={readRequestConvertConfig(fields, editIndex)}
+          {selectedPlugin === authPluginTypes.basicAuth && (
+            <BasicAuthForm
+              defaultConfig={readBasicAuthConfig(fields, editIndex)}
               onSubmit={(configuration) => {
                 setDialogOpen(false);
                 if (editIndex === undefined) {
@@ -187,10 +197,23 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({
               }}
             />
           )}
-
-          {selectedPlugin === inboundPluginTypes.jsInbound && (
-            <JsInboundForm
-              defaultConfig={readJsInboundConfig(fields, editIndex)}
+          {selectedPlugin === authPluginTypes.keyAuth && (
+            <KeyAuthForm
+              defaultConfig={readKeyAuthConfig(fields, editIndex)}
+              onSubmit={(configuration) => {
+                setDialogOpen(false);
+                if (editIndex === undefined) {
+                  addPlugin(configuration);
+                } else {
+                  editPlugin(editIndex, configuration);
+                }
+                setEditIndex(undefined);
+              }}
+            />
+          )}
+          {selectedPlugin === authPluginTypes.githubWebhookAuth && (
+            <GithubWebhookAuthForm
+              defaultConfig={readGithubWebhookAuthConfig(fields, editIndex)}
               onSubmit={(configuration) => {
                 setDialogOpen(false);
                 if (editIndex === undefined) {

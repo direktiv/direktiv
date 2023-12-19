@@ -7,11 +7,13 @@ import {
 } from "react-hook-form";
 import { EndpointFormSchema, EndpointFormSchemaType } from "../schema";
 
+import { AuthPluginForm } from "./plugins/Auth";
 import Badge from "~/design/Badge";
 import { Checkbox } from "~/design/Checkbox";
 import { FC } from "react";
 import { InboundPluginForm } from "./plugins/Inbound";
 import Input from "~/design/Input";
+import { OutboundPluginForm } from "./plugins/Outbound";
 import { Switch } from "~/design/Switch";
 import { TargetPluginForm } from "./plugins/Target";
 import { routeMethods } from "~/api/gateway/schema";
@@ -116,6 +118,8 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
         />
         <TargetPluginForm formControls={formControls} />
         <InboundPluginForm formControls={formControls} />
+        <OutboundPluginForm formControls={formControls} />
+        <AuthPluginForm formControls={formControls} />
       </div>
     ),
   });
