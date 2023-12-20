@@ -19,6 +19,9 @@ import { twMergeClsx } from "~/util/helpers";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useTranslation } from "react-i18next";
 
+const convertFileToPath = (string?: string) =>
+  analyzePath(string).parent?.absolute ?? "/";
+
 const FilePicker = ({
   namespace,
   defaultPath,
@@ -30,7 +33,7 @@ const FilePicker = ({
   onChange?: (filePath: string) => void;
   selectable?: (node: NodeSchemaType) => boolean;
 }) => {
-  const [path, setPath] = useState(defaultPath ? defaultPath : "/");
+  const [path, setPath] = useState(convertFileToPath(defaultPath));
   const [inputValue, setInputValue] = useState(defaultPath ? defaultPath : "");
 
   const { data, isError } = useNodeContent({
@@ -49,7 +52,7 @@ const FilePicker = ({
       <Filepicker
         buttonText={t("components.filepicker.buttonText")}
         onClick={() => {
-          setPath(inputValue);
+          setPath(convertFileToPath(inputValue));
         }}
       >
         <FilepickerHeading>
