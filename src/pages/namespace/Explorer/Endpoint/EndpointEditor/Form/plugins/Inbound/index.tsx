@@ -131,15 +131,17 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({ form }) => {
         title={
           editIndex === undefined
             ? t(
-                "pages.explorer.endpoint.editor.form.plugins.inbound.headlineAdd"
+                "pages.explorer.endpoint.editor.form.plugins.inbound.modal.headlineAdd"
               )
             : t(
-                "pages.explorer.endpoint.editor.form.plugins.inbound.headlineEdit"
+                "pages.explorer.endpoint.editor.form.plugins.inbound.modal.headlineEdit"
               )
         }
       >
         <PluginSelector
-          title={t("pages.explorer.endpoint.editor.form.plugins.inbound.label")}
+          title={t(
+            "pages.explorer.endpoint.editor.form.plugins.inbound.modal.label"
+          )}
         >
           <Select
             onValueChange={(e) => {
@@ -150,7 +152,7 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({ form }) => {
             <SelectTrigger variant="outline" className="grow">
               <SelectValue
                 placeholder={t(
-                  "pages.explorer.endpoint.editor.form.plugins.inbound.placeholder"
+                  "pages.explorer.endpoint.editor.form.plugins.inbound.modal.placeholder"
                 )}
               />
             </SelectTrigger>

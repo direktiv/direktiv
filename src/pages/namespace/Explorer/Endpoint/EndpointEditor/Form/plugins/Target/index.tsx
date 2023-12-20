@@ -101,10 +101,14 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({ form }) => {
       </Card>
 
       <ModalWrapper
-        title={t("pages.explorer.endpoint.editor.form.plugins.target.headline")}
+        title={t(
+          "pages.explorer.endpoint.editor.form.plugins.target.modal.headline"
+        )}
       >
         <PluginSelector
-          title={t("pages.explorer.endpoint.editor.form.plugins.target.label")}
+          title={t(
+            "pages.explorer.endpoint.editor.form.plugins.target.modal.label"
+          )}
         >
           <Select
             onValueChange={(e) => {
@@ -115,7 +119,7 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({ form }) => {
             <SelectTrigger variant="outline" className="grow">
               <SelectValue
                 placeholder={t(
-                  "pages.explorer.endpoint.editor.form.plugins.target.placeholder"
+                  "pages.explorer.endpoint.editor.form.plugins.target.modal.placeholder"
                 )}
               />
             </SelectTrigger>

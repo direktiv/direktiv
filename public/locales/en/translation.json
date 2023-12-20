@@ -311,12 +311,14 @@
               "moveUpBtn": "Move up",
               "moveDownBtn": "Move down",
               "target": {
-                "headline": "Configure target plugin",
-                "label": "Target plugin",
-                "placeholder": "Please select a target plugin",
                 "table": {
                   "headline": "Target plugin",
                   "addButton": "set target plugin"
+                },
+                "modal": {
+                  "headline": "Configure target plugin",
+                  "label": "Target plugin",
+                  "placeholder": "Please select a target plugin"
                 },
                 "types": {
                   "instant-response": "Instant Response",
@@ -360,10 +362,12 @@
                 }
               },
               "inbound": {
-                "headlineAdd": "Add inbound plugin",
-                "headlineEdit": "Edit inbound plugin",
-                "label": "Inbound plugin",
-                "placeholder": "Please select a inbound plugin",
+                "modal": {
+                  "headlineAdd": "Add inbound plugin",
+                  "headlineEdit": "Edit inbound plugin",
+                  "label": "Inbound plugin",
+                  "placeholder": "Please select a inbound plugin"
+                },
                 "table": {
                   "headline": "{{count}} inbound plugins",
                   "headline_one": "{{count}} inbound plugin",
@@ -385,10 +389,12 @@
                 }
               },
               "outbound": {
-                "headlineAdd": "Add outbound plugin",
-                "headlineEdit": "Edit outbound plugin",
-                "label": "Outbound plugin",
-                "placeholder": "Please select a inbound plugin",
+                "modal": {
+                  "headlineAdd": "Add outbound plugin",
+                  "headlineEdit": "Edit outbound plugin",
+                  "label": "Outbound plugin",
+                  "placeholder": "Please select a inbound plugin"
+                },
                 "table": {
                   "headline": "{{count}} outbound plugins",
                   "headline_one": "{{count}} outbound plugin",
@@ -402,10 +408,12 @@
                 }
               },
               "auth": {
-                "headlineAdd": "Add auth plugin",
-                "headlineEdit": "Edit auth plugin",
-                "label": "Auth plugin",
-                "placeholder": "Please select an auth plugin",
+                "modal": {
+                  "headlineAdd": "Add auth plugin",
+                  "headlineEdit": "Edit auth plugin",
+                  "label": "Auth plugin",
+                  "placeholder": "Please select an auth plugin"
+                },
                 "table": {
                   "headline": "{{count}} auth plugins",
                   "headline_one": "{{count}} auth plugin",

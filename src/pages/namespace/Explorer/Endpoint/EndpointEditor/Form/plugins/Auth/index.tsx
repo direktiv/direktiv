@@ -130,12 +130,18 @@ export const AuthPluginForm: FC<AuthPluginFormProps> = ({ formControls }) => {
       <ModalWrapper
         title={
           editIndex === undefined
-            ? t("pages.explorer.endpoint.editor.form.plugins.auth.headlineAdd")
-            : t("pages.explorer.endpoint.editor.form.plugins.auth.headlineEdit")
+            ? t(
+                "pages.explorer.endpoint.editor.form.plugins.auth.modal.headlineAdd"
+              )
+            : t(
+                "pages.explorer.endpoint.editor.form.plugins.auth.modal.headlineEdit"
+              )
         }
       >
         <PluginSelector
-          title={t("pages.explorer.endpoint.editor.form.plugins.auth.label")}
+          title={t(
+            "pages.explorer.endpoint.editor.form.plugins.auth.modal.label"
+          )}
         >
           <Select
             onValueChange={(e) => {
@@ -146,7 +152,7 @@ export const AuthPluginForm: FC<AuthPluginFormProps> = ({ formControls }) => {
             <SelectTrigger variant="outline" className="grow">
               <SelectValue
                 placeholder={t(
-                  "pages.explorer.endpoint.editor.form.plugins.auth.placeholder"
+                  "pages.explorer.endpoint.editor.form.plugins.auth.modal.placeholder"
                 )}
               />
             </SelectTrigger>
