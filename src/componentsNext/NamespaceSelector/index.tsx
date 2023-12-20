@@ -1,3 +1,4 @@
+import { ComponentProps, FC } from "react";
 import {
   Select,
   SelectContent,
@@ -6,13 +7,12 @@ import {
   SelectValue,
 } from "~/design/Select";
 
-import { FC } from "react";
 import { Loader2 } from "lucide-react";
 import { useListNamespaces } from "~/api/namespaces/query/get";
 import { useNamespace } from "~/util/store/namespace";
 import { useTranslation } from "react-i18next";
 
-export type ButtonProps = {
+export type ButtonProps = ComponentProps<typeof SelectTrigger> & {
   defaultValue?: string;
   onValueChange?: (value: string) => void;
 };
@@ -20,6 +20,7 @@ export type ButtonProps = {
 const NamespaceSelector: FC<ButtonProps> = ({
   defaultValue,
   onValueChange,
+  ...props
 }) => {
   const { t } = useTranslation();
   const namespace = useNamespace();
@@ -33,7 +34,7 @@ const NamespaceSelector: FC<ButtonProps> = ({
 
   return (
     <Select onValueChange={onValueChange} defaultValue={defaultValue}>
-      <SelectTrigger variant="outline">
+      <SelectTrigger variant="outline" {...props}>
         <SelectValue
           placeholder={t("components.namespaceSelector.placeholder")}
         />
