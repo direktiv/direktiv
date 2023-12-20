@@ -7,6 +7,7 @@ import {
   TargetFlowVarFormSchemaType,
 } from "../../../schema/plugins/target/targetFlowVar";
 
+import FilePicker from "~/componentsNext/FilePicker";
 import Input from "~/design/Input";
 import NamespaceSelector from "~/componentsNext/NamespaceSelector";
 import { treatEmptyStringAsUndefined } from "../utils";
@@ -28,6 +29,7 @@ export const TargetFlowVarForm: FC<FormProps> = ({
   const {
     control,
     register,
+    watch,
     handleSubmit,
     formState: { errors },
   } = useForm<TargetFlowVarFormSchemaType>({
@@ -78,7 +80,18 @@ export const TargetFlowVarForm: FC<FormProps> = ({
           )}
           htmlFor="workflow"
         >
-          <Input {...register("configuration.flow")} id="workflow" />
+          <Controller
+            control={control}
+            name="configuration.flow"
+            render={({ field }) => (
+              <FilePicker
+                namespace={watch("configuration.namespace")}
+                onChange={field.onChange}
+                defaultPath={field.value}
+                selectable={(node) => node.type === "workflow"}
+              />
+            )}
+          />
         </Fieldset>
         <Fieldset
           label={t(
