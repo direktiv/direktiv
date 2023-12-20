@@ -1211,7 +1211,8 @@
     },
     "namespaceSelector": {
       "placeholder": "Select Namespace",
-      "loading": "loading..."
+      "loading": "loading...",
+      "optionDoesNotExists": "{{namespace}} (does not exist)"
     },
     "filepicker": {
       "buttonText": "Browse Files",
