@@ -1,13 +1,14 @@
 import { Controller, useForm } from "react-hook-form";
 import { FC, FormEvent } from "react";
-import { Fieldset, ModalFooter, PluginWrapper } from "../components/Modal";
 import FormErrors, { errorsType } from "~/componentsNext/FormErrors";
+import { ModalFooter, PluginWrapper } from "../components/Modal";
 import {
   TargetFlowFormSchema,
   TargetFlowFormSchemaType,
 } from "../../../schema/plugins/target/targetFlow";
 
 import { Checkbox } from "~/design/Checkbox";
+import { Fieldset } from "../../components/FormHelper";
 import FilePicker from "~/componentsNext/FilePicker";
 import Input from "~/design/Input";
 import NamespaceSelector from "~/componentsNext/NamespaceSelector";

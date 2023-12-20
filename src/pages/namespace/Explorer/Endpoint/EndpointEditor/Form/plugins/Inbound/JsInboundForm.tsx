@@ -1,14 +1,15 @@
 import { Controller, useForm } from "react-hook-form";
 import { FC, FormEvent } from "react";
-import { Fieldset, ModalFooter, PluginWrapper } from "../components/Modal";
 import FormErrors, { errorsType } from "~/componentsNext/FormErrors";
 import {
   JsInboundFormSchema,
   JsInboundFormSchemaType,
 } from "../../../schema/plugins/inbound/jsInbound";
+import { ModalFooter, PluginWrapper } from "../components/Modal";
 
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
+import { Fieldset } from "../../components/FormHelper";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";

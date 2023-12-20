@@ -1,11 +1,12 @@
 import { FC, FormEvent } from "react";
-import { Fieldset, ModalFooter, PluginWrapper } from "../components/Modal";
 import FormErrors, { errorsType } from "~/componentsNext/FormErrors";
 import {
   GithubWebhookAuthFormSchema,
   GithubWebhookAuthFormSchemaType,
 } from "../../../schema/plugins/auth/githubWebhookAuth";
+import { ModalFooter, PluginWrapper } from "../components/Modal";
 
+import { Fieldset } from "../../components/FormHelper";
 import Input from "~/design/Input";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";

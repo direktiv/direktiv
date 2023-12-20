@@ -1,12 +1,13 @@
 import { FC, FormEvent } from "react";
-import { Fieldset, ModalFooter, PluginWrapper } from "../components/Modal";
 import FormErrors, { errorsType } from "~/componentsNext/FormErrors";
 import {
   KeyAuthFormSchema,
   KeyAuthFormSchemaType,
 } from "../../../schema/plugins/auth/keyAuth";
+import { ModalFooter, PluginWrapper } from "../components/Modal";
 
 import { Checkbox } from "~/design/Checkbox";
+import { Fieldset } from "../../components/FormHelper";
 import Input from "~/design/Input";
 import { treatEmptyStringAsUndefined } from "../utils";
 import { useForm } from "react-hook-form";

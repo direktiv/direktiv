@@ -1,14 +1,15 @@
 import { Controller, useForm } from "react-hook-form";
 import { FC, FormEvent } from "react";
-import { Fieldset, ModalFooter, PluginWrapper } from "../components/Modal";
 import FormErrors, { errorsType } from "~/componentsNext/FormErrors";
 import {
   InstantResponseFormSchema,
   InstantResponseFormSchemaType,
 } from "../../../schema/plugins/target/instantResponse";
+import { ModalFooter, PluginWrapper } from "../components/Modal";
 
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
+import { Fieldset } from "../../components/FormHelper";
 import Input from "~/design/Input";
 import { treatEmptyStringAsUndefined } from "../utils";
 import { useTheme } from "~/util/store/theme";
