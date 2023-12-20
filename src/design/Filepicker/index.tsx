@@ -39,7 +39,9 @@ const FilepickerHeading: FC<PropsWithChildren> = ({ children }) => (
 );
 
 const FilepickerList: FC<PropsWithChildren> = ({ children }) => (
-  <div className="h-96 w-screen overflow-auto lg:w-72">{children}</div>
+  <div className="w-screen overflow-x-hidden overflow-y-scroll lg:w-72">
+    {children}
+  </div>
 );
 
 // asChild only works with exactly one child, so when asChild is true, we can not have a loading property
