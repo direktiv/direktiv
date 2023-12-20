@@ -1209,6 +1209,10 @@
         }
       }
     },
+    "namespaceSelector": {
+      "placeholder": "Select Namespace",
+      "loading": "loading..."
+    },
     "filepicker": {
       "buttonText": "Browse Files",
       "placeholder": "No File selected",
