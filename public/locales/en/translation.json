@@ -307,6 +307,9 @@
             "serialisationError": "There was an error serializing the form data",
             "plugins": {
               "saveBtn": "Save",
+              "deleteBtn": "Delete",
+              "moveUpBtn": "Move up",
+              "moveDownBtn": "Move down",
               "target": {
                 "headline": "Configure target plugin",
                 "label": "Target plugin",
@@ -358,6 +361,11 @@
                 "headlineEdit": "Edit inbound plugin",
                 "label": "Inbound plugin",
                 "placeholder": "Please select a inbound plugin",
+                "table": {
+                  "headline": "{{count}} inbound plugins",
+                  "headline_one": "{{count}} inbound plugin",
+                  "addButton": "add inbound plugin"
+                },
                 "types": {
                   "acl": "Access control list (acl)",
                   "js-inbound": "JavaScript",

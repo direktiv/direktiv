@@ -1,11 +1,5 @@
-import { ArrowDown, ArrowUp, MoreVertical, Plus, Trash } from "lucide-react";
+import { ContextMenu, TableHeader } from "../components/PluginsTable";
 import { Dialog, DialogTrigger } from "~/design/Dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "~/design/Dropdown";
 import { FC, useState } from "react";
 import { ModalWrapper, PluginSelector } from "../components/Modal";
 import {
@@ -15,14 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/design/Select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeaderCell,
-  TableRow,
-} from "~/design/Table";
+import { Table, TableBody, TableCell, TableRow } from "~/design/Table";
 import { UseFormReturn, useFieldArray } from "react-hook-form";
 import {
   getJsInboundConfigAtIndex,
@@ -34,6 +21,7 @@ import { Card } from "~/design/Card";
 import { EndpointFormSchemaType } from "../../../schema";
 import { InboundPluginFormSchemaType } from "../../../schema/plugins/inbound/schema";
 import { JsInboundForm } from "./JsInboundForm";
+import { Plus } from "lucide-react";
 import { RequestConvertForm } from "./RequestConvertForm";
 import { inboundPluginTypes } from "../../../schema/plugins/inbound";
 import { useTranslation } from "react-i18next";
@@ -73,26 +61,42 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({ form }) => {
         setDialogOpen(isOpen);
       }}
     >
-      <div className="flex items-center gap-3"></div>
-
       <Card noShadow>
         <Table>
-          <TableHead>
-            <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
-              <TableHeaderCell>{pluginsCount} inbound plugins</TableHeaderCell>
-              <TableHeaderCell className="w-60 text-right">
-                <DialogTrigger asChild>
-                  <Button icon variant="outline" size="sm">
-                    <Plus /> add inbound plugin
-                  </Button>
-                </DialogTrigger>
-              </TableHeaderCell>
-            </TableRow>
-          </TableHead>
+          <TableHeader
+            title={t(
+              "pages.explorer.endpoint.editor.form.plugins.inbound.table.headline",
+              {
+                count: pluginsCount,
+              }
+            )}
+          >
+            <DialogTrigger asChild>
+              <Button icon variant="outline" size="sm">
+                <Plus />{" "}
+                {t(
+                  "pages.explorer.endpoint.editor.form.plugins.inbound.table.addButton"
+                )}
+              </Button>
+            </DialogTrigger>
+          </TableHeader>
           <TableBody>
             {fields.map(({ id, type }, index, srcArray) => {
               const canMoveDown = index < srcArray.length - 1;
               const canMoveUp = index > 0;
+              const onMoveUp = canMoveUp
+                ? () => {
+                    movePlugin(index, index - 1);
+                  }
+                : undefined;
+              const onMoveDown = canMoveDown
+                ? () => {
+                    movePlugin(index, index + 1);
+                  }
+                : undefined;
+              const onDelete = () => {
+                deletePlugin(index);
+              };
               return (
                 <TableRow
                   key={id}
@@ -109,64 +113,11 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({ form }) => {
                     )}
                   </TableCell>
                   <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => e.preventDefault()}
-                          icon
-                        >
-                          <MoreVertical />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent className="w-40">
-                        {canMoveDown && (
-                          <DialogTrigger
-                            className="w-full"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              e.preventDefault();
-                              movePlugin(index, index + 1);
-                            }}
-                          >
-                            <DropdownMenuItem>
-                              <ArrowDown className="mr-2 h-4 w-4" />
-                              mode down
-                            </DropdownMenuItem>
-                          </DialogTrigger>
-                        )}
-                        {canMoveUp && (
-                          <DialogTrigger
-                            className="w-full"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              e.preventDefault();
-                              movePlugin(index, index - 1);
-                            }}
-                          >
-                            <DropdownMenuItem>
-                              <ArrowUp className="mr-2 h-4 w-4" />
-                              mode up
-                            </DropdownMenuItem>
-                          </DialogTrigger>
-                        )}
-
-                        <DialogTrigger
-                          className="w-full"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            e.preventDefault();
-                            deletePlugin(index);
-                          }}
-                        >
-                          <DropdownMenuItem>
-                            <Trash className="mr-2 h-4 w-4" />
-                            delete
-                          </DropdownMenuItem>
-                        </DialogTrigger>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <ContextMenu
+                      onDelete={onDelete}
+                      onMoveDown={onMoveDown}
+                      onMoveUp={onMoveUp}
+                    />
                   </TableCell>
                 </TableRow>
               );
