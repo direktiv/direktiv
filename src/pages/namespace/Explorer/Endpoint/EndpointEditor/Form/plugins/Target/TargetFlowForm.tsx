@@ -1,3 +1,4 @@
+import { Controller, useForm } from "react-hook-form";
 import { FC, FormEvent } from "react";
 import { Fieldset, ModalFooter, PluginWrapper } from "../components/Modal";
 import FormErrors, { errorsType } from "~/componentsNext/FormErrors";
@@ -8,8 +9,8 @@ import {
 
 import { Checkbox } from "~/design/Checkbox";
 import Input from "~/design/Input";
+import NamespaceSelector from "~/componentsNext/NamespaceSelector";
 import { treatEmptyStringAsUndefined } from "../utils";
-import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -31,6 +32,7 @@ export const TargetFlowForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
     handleSubmit,
     setValue,
     getValues,
+    control,
     formState: { errors },
   } = useForm<TargetFlowFormSchemaType>({
     resolver: zodResolver(TargetFlowFormSchema),
@@ -63,11 +65,16 @@ export const TargetFlowForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
           )}
           htmlFor="namespace"
         >
-          <Input
-            {...register("configuration.namespace", {
-              setValueAs: treatEmptyStringAsUndefined,
-            })}
-            id="namespace"
+          <Controller
+            control={control}
+            name="configuration.namespace"
+            render={({ field }) => (
+              <NamespaceSelector
+                id="namespace"
+                defaultValue={field.value}
+                onValueChange={field.onChange}
+              />
+            )}
           />
         </Fieldset>
         <Fieldset

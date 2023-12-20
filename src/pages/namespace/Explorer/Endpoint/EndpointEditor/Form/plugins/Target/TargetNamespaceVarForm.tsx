@@ -1,3 +1,4 @@
+import { Controller, useForm } from "react-hook-form";
 import { FC, FormEvent } from "react";
 import { Fieldset, ModalFooter, PluginWrapper } from "../components/Modal";
 import FormErrors, { errorsType } from "~/componentsNext/FormErrors";
@@ -7,8 +8,8 @@ import {
 } from "../../../schema/plugins/target/targetNamespaceVar";
 
 import Input from "~/design/Input";
+import NamespaceSelector from "~/componentsNext/NamespaceSelector";
 import { treatEmptyStringAsUndefined } from "../utils";
-import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -27,6 +28,7 @@ export const TargetNamespaceVarForm: FC<FormProps> = ({
 }) => {
   const { t } = useTranslation();
   const {
+    control,
     register,
     handleSubmit,
     formState: { errors },
@@ -60,11 +62,16 @@ export const TargetNamespaceVarForm: FC<FormProps> = ({
           )}
           htmlFor="namespace"
         >
-          <Input
-            {...register("configuration.namespace", {
-              setValueAs: treatEmptyStringAsUndefined,
-            })}
-            id="namespace"
+          <Controller
+            control={control}
+            name="configuration.namespace"
+            render={({ field }) => (
+              <NamespaceSelector
+                id="namespace"
+                defaultValue={field.value}
+                onValueChange={field.onChange}
+              />
+            )}
           />
         </Fieldset>
         <Fieldset
