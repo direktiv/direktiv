@@ -1,12 +1,7 @@
 import { ChevronDown, ChevronUp, Edit, Plus, Trash } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "~/design/Dialog";
+import { Dialog, DialogTrigger } from "~/design/Dialog";
 import { FC, useState } from "react";
+import { ModalWrapper, PluginSelector } from "../components/Modal";
 import {
   Select,
   SelectContent,
@@ -22,12 +17,14 @@ import { JsOutboundForm } from "./JsOutboundForm";
 import { OutboundPluginFormSchemaType } from "../../../schema/plugins/outbound/schema";
 import { getJsOutboundConfigAtIndex } from "../utils";
 import { outboundPluginTypes } from "../../../schema/plugins/outbound";
+import { useTranslation } from "react-i18next";
 
 type OutboundPluginFormProps = {
   form: UseFormReturn<EndpointFormSchemaType>;
 };
 
 export const OutboundPluginForm: FC<OutboundPluginFormProps> = ({ form }) => {
+  const { t } = useTranslation();
   const { control } = form;
   const {
     append: addPlugin,
@@ -117,54 +114,59 @@ export const OutboundPluginForm: FC<OutboundPluginFormProps> = ({ form }) => {
           </div>
         );
       })}
-      <DialogContent className="sm:max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>
-            {editIndex === undefined ? "add" : "edit"} Outbound Plugin
-          </DialogTitle>
-        </DialogHeader>
-        <div className="my-3 flex flex-col gap-y-5">
-          <div className="flex flex-col gap-y-5">
-            <fieldset className="flex items-center gap-5">
-              <label className="w-[150px] overflow-hidden text-right text-sm">
-                select a outbound plugin
-              </label>
-              <Select
-                onValueChange={(e) => {
-                  setSelectedPlugin(e as typeof selectedPlugin);
-                }}
-                value={selectedPlugin}
-              >
-                <SelectTrigger variant="outline">
-                  <SelectValue placeholder="please select a outbound plugin" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.values(outboundPluginTypes).map((pluginType) => (
-                    <SelectItem key={pluginType} value={pluginType}>
-                      {pluginType}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </fieldset>
-          </div>
-
-          {selectedPlugin === outboundPluginTypes.jsOutbound && (
-            <JsOutboundForm
-              defaultConfig={getJsOutboundConfigAtIndex(fields, editIndex)}
-              onSubmit={(configuration) => {
-                setDialogOpen(false);
-                if (editIndex === undefined) {
-                  addPlugin(configuration);
-                } else {
-                  editPlugin(editIndex, configuration);
-                }
-                setEditIndex(undefined);
-              }}
-            />
+      <ModalWrapper
+        title={
+          editIndex === undefined
+            ? t(
+                "pages.explorer.endpoint.editor.form.plugins.outbound.headlineAdd"
+              )
+            : t(
+                "pages.explorer.endpoint.editor.form.plugins.outbound.headlineEdit"
+              )
+        }
+      >
+        <PluginSelector
+          title={t(
+            "pages.explorer.endpoint.editor.form.plugins.outbound.label"
           )}
-        </div>
-      </DialogContent>
+        >
+          <Select
+            onValueChange={(e) => {
+              setSelectedPlugin(e as typeof selectedPlugin);
+            }}
+            value={selectedPlugin}
+          >
+            <SelectTrigger variant="outline" className="grow">
+              <SelectValue
+                placeholder={t(
+                  "pages.explorer.endpoint.editor.form.plugins.outbound.placeholder"
+                )}
+              />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.values(outboundPluginTypes).map((pluginType) => (
+                <SelectItem key={pluginType} value={pluginType}>
+                  {pluginType}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </PluginSelector>
+        {selectedPlugin === outboundPluginTypes.jsOutbound && (
+          <JsOutboundForm
+            defaultConfig={getJsOutboundConfigAtIndex(fields, editIndex)}
+            onSubmit={(configuration) => {
+              setDialogOpen(false);
+              if (editIndex === undefined) {
+                addPlugin(configuration);
+              } else {
+                editPlugin(editIndex, configuration);
+              }
+              setEditIndex(undefined);
+            }}
+          />
+        )}
+      </ModalWrapper>
     </Dialog>
   );
 };

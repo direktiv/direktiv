@@ -374,6 +374,10 @@
                 }
               },
               "outbound": {
+                "headlineAdd": "Add outbound plugin",
+                "headlineEdit": "Edit outbound plugin",
+                "label": "Outbound plugin",
+                "placeholder": "Please select a inbound plugin",
                 "jsOutbound": {
                   "script": "JavaScript"
                 }
