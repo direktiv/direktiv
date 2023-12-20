@@ -73,7 +73,7 @@ export const AuthPluginForm: FC<AuthPluginFormProps> = ({ formControls }) => {
           >
             <DialogTrigger asChild>
               <Button icon variant="outline" size="sm">
-                <Plus />{" "}
+                <Plus />
                 {t(
                   "pages.explorer.endpoint.editor.form.plugins.auth.table.addButton"
                 )}

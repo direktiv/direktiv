@@ -67,7 +67,7 @@ export const OutboundPluginForm: FC<OutboundPluginFormProps> = ({ form }) => {
           >
             <DialogTrigger asChild>
               <Button icon variant="outline" size="sm">
-                <Plus />{" "}
+                <Plus />
                 {t(
                   "pages.explorer.endpoint.editor.form.plugins.outbound.table.addButton"
                 )}
