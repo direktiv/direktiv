@@ -97,6 +97,7 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({ form }) => {
               const onDelete = () => {
                 deletePlugin(index);
               };
+
               return (
                 <TableRow
                   key={id}
