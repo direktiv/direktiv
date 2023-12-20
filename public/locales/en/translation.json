@@ -314,7 +314,10 @@
                 "headline": "Configure target plugin",
                 "label": "Target plugin",
                 "placeholder": "Please select a target plugin",
-                "notConfigured": "Please configure the target plugin",
+                "table": {
+                  "headline": "Target plugin",
+                  "addButton": "set target plugin"
+                },
                 "types": {
                   "instant-response": "Instant Response",
                   "target-flow": "Workflow",
