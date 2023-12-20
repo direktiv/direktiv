@@ -386,6 +386,11 @@
                 "headlineEdit": "Edit outbound plugin",
                 "label": "Outbound plugin",
                 "placeholder": "Please select a inbound plugin",
+                "table": {
+                  "headline": "{{count}} outound plugins",
+                  "headline_one": "{{count}} outound plugin",
+                  "addButton": "add outound plugin"
+                },
                 "types": {
                   "js-outbound": "JavaScript"
                 },
@@ -398,6 +403,11 @@
                 "headlineEdit": "Edit auth plugin",
                 "label": "Auth plugin",
                 "placeholder": "Please select an auth plugin",
+                "table": {
+                  "headline": "{{count}} auth plugins",
+                  "headline_one": "{{count}} auth plugin",
+                  "addButton": "add auth plugin"
+                },
                 "types": {
                   "basic-auth": "Basic Auth",
                   "github-webhook-auth": "Github Webhook",
