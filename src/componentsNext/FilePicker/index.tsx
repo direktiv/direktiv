@@ -104,7 +104,7 @@ const FilePicker = ({
           </div>
         )}
         {!isRoot && data && (
-          <Fragment>
+          <>
             <div
               onClick={() => {
                 parent ? setPath(parent.absolute) : null;
@@ -113,9 +113,8 @@ const FilePicker = ({
             >
               <FilepickerListItem icon={FolderUp}>..</FilepickerListItem>
             </div>
-
             <FilepickerSeparator />
-          </Fragment>
+          </>
         )}
         <FilepickerList>
           {results.map((file) => {
