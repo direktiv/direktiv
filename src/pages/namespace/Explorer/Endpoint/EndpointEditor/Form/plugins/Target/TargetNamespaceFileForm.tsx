@@ -32,7 +32,6 @@ export const TargetNamespaceFileForm: FC<FormProps> = ({
     control,
     register,
     handleSubmit,
-    getValues,
     watch,
     formState: { errors },
   } = useForm<TargetNamespaceFileFormSchemaType>({
