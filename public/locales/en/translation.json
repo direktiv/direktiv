@@ -387,9 +387,9 @@
                 "label": "Outbound plugin",
                 "placeholder": "Please select a inbound plugin",
                 "table": {
-                  "headline": "{{count}} outound plugins",
-                  "headline_one": "{{count}} outound plugin",
-                  "addButton": "add outound plugin"
+                  "headline": "{{count}} outbound plugins",
+                  "headline_one": "{{count}} outbound plugin",
+                  "addButton": "add outbound plugin"
                 },
                 "types": {
                   "js-outbound": "JavaScript"
