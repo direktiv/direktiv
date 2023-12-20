@@ -378,6 +378,9 @@
                 "headlineEdit": "Edit outbound plugin",
                 "label": "Outbound plugin",
                 "placeholder": "Please select a inbound plugin",
+                "types": {
+                  "js-outbound": "JavaScript"
+                },
                 "jsOutbound": {
                   "script": "JavaScript"
                 }

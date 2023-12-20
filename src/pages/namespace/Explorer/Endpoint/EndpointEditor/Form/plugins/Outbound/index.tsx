@@ -146,7 +146,9 @@ export const OutboundPluginForm: FC<OutboundPluginFormProps> = ({ form }) => {
             <SelectContent>
               {Object.values(outboundPluginTypes).map((pluginType) => (
                 <SelectItem key={pluginType} value={pluginType}>
-                  {pluginType}
+                  {t(
+                    `pages.explorer.endpoint.editor.form.plugins.outbound.types.${pluginType}`
+                  )}
                 </SelectItem>
               ))}
             </SelectContent>
