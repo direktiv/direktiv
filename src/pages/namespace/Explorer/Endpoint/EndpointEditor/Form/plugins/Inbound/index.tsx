@@ -1,5 +1,11 @@
-import { ChevronDown, ChevronUp, Edit, Plus, Trash } from "lucide-react";
+import { ArrowDown, ArrowUp, MoreVertical, Plus, Trash } from "lucide-react";
 import { Dialog, DialogTrigger } from "~/design/Dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "~/design/Dropdown";
 import { FC, useState } from "react";
 import { ModalWrapper, PluginSelector } from "../components/Modal";
 import {
@@ -9,6 +15,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/design/Select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeaderCell,
+  TableRow,
+} from "~/design/Table";
 import { UseFormReturn, useFieldArray } from "react-hook-form";
 import {
   getJsInboundConfigAtIndex,
@@ -16,6 +30,7 @@ import {
 } from "../utils";
 
 import Button from "~/design/Button";
+import { Card } from "~/design/Card";
 import { EndpointFormSchemaType } from "../../../schema";
 import { InboundPluginFormSchemaType } from "../../../schema/plugins/inbound/schema";
 import { JsInboundForm } from "./JsInboundForm";
@@ -58,68 +73,107 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({ form }) => {
         setDialogOpen(isOpen);
       }}
     >
-      <div className="flex items-center gap-3">
-        {pluginsCount} Inbound plugins
-        <DialogTrigger asChild>
-          <Button icon variant="outline">
-            <Plus /> add inbound plugin
-          </Button>
-        </DialogTrigger>
-      </div>
-      {fields.map(({ id, type }, index, srcArray) => {
-        const canMoveDown = index < srcArray.length - 1;
-        const canMoveUp = index > 0;
+      <div className="flex items-center gap-3"></div>
 
-        return (
-          <div key={id} className="flex gap-2">
-            {type}
-            <Button
-              variant="destructive"
-              icon
-              size="sm"
-              onClick={() => {
-                deletePlugin(index);
-              }}
-            >
-              <Trash />
-            </Button>
-            <Button
-              variant="outline"
-              icon
-              size="sm"
-              disabled={!canMoveDown}
-              onClick={() => {
-                movePlugin(index, index + 1);
-              }}
-            >
-              <ChevronDown />
-            </Button>
-            <Button
-              variant="outline"
-              icon
-              size="sm"
-              disabled={!canMoveUp}
-              onClick={() => {
-                movePlugin(index, index - 1);
-              }}
-            >
-              <ChevronUp />
-            </Button>
-            <Button
-              variant="outline"
-              icon
-              size="sm"
-              onClick={() => {
-                setSelectedPlugin(type);
-                setDialogOpen(true);
-                setEditIndex(index);
-              }}
-            >
-              <Edit />
-            </Button>
-          </div>
-        );
-      })}
+      <Card noShadow>
+        <Table>
+          <TableHead>
+            <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
+              <TableHeaderCell>{pluginsCount} inbound plugins</TableHeaderCell>
+              <TableHeaderCell className="w-60 text-right">
+                <DialogTrigger asChild>
+                  <Button icon variant="outline" size="sm">
+                    <Plus /> add inbound plugin
+                  </Button>
+                </DialogTrigger>
+              </TableHeaderCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {fields.map(({ id, type }, index, srcArray) => {
+              const canMoveDown = index < srcArray.length - 1;
+              const canMoveUp = index > 0;
+              return (
+                <TableRow
+                  key={id}
+                  className="cursor-pointer"
+                  onClick={() => {
+                    setSelectedPlugin(type);
+                    setDialogOpen(true);
+                    setEditIndex(index);
+                  }}
+                >
+                  <TableCell>
+                    {t(
+                      `pages.explorer.endpoint.editor.form.plugins.inbound.types.${type}`
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => e.preventDefault()}
+                          icon
+                        >
+                          <MoreVertical />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="w-40">
+                        {canMoveDown && (
+                          <DialogTrigger
+                            className="w-full"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              movePlugin(index, index + 1);
+                            }}
+                          >
+                            <DropdownMenuItem>
+                              <ArrowDown className="mr-2 h-4 w-4" />
+                              mode down
+                            </DropdownMenuItem>
+                          </DialogTrigger>
+                        )}
+                        {canMoveUp && (
+                          <DialogTrigger
+                            className="w-full"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              movePlugin(index, index - 1);
+                            }}
+                          >
+                            <DropdownMenuItem>
+                              <ArrowUp className="mr-2 h-4 w-4" />
+                              mode up
+                            </DropdownMenuItem>
+                          </DialogTrigger>
+                        )}
+
+                        <DialogTrigger
+                          className="w-full"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            deletePlugin(index);
+                          }}
+                        >
+                          <DropdownMenuItem>
+                            <Trash className="mr-2 h-4 w-4" />
+                            delete
+                          </DropdownMenuItem>
+                        </DialogTrigger>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </Card>
 
       <ModalWrapper
         title={
