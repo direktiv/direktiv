@@ -12,8 +12,10 @@ import { Fragment, useState } from "react";
 
 import { ButtonBar } from "~/design/ButtonBar";
 import Input from "~/design/Input";
+import { NodeSchemaType } from "~/api/tree/schema/node";
 import { analyzePath } from "~/util/router/utils";
 import { fileTypeToIcon } from "~/api/tree/utils";
+import { twMergeClsx } from "~/util/helpers";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useTranslation } from "react-i18next";
 
@@ -21,10 +23,12 @@ const FilePicker = ({
   namespace,
   defaultPath,
   onChange,
+  selectable,
 }: {
   namespace?: string;
   defaultPath?: string;
   onChange?: (filePath: string) => void;
+  selectable?: (node: NodeSchemaType) => boolean;
 }) => {
   const [path, setPath] = useState(defaultPath ? defaultPath : "/");
   const [inputValue, setInputValue] = useState(defaultPath ? defaultPath : "");
@@ -114,37 +118,44 @@ const FilePicker = ({
           </Fragment>
         )}
         <FilepickerList>
-          {results.map((file) => (
-            <Fragment key={file.name}>
-              {file.type === "directory" ? (
-                <div
-                  onClick={() => {
-                    setPath(file.path);
-                  }}
-                  className="h-auto w-full cursor-pointer text-gray-11 hover:underline focus:bg-transparent focus:ring-0 focus:ring-transparent focus:ring-offset-0 dark:text-gray-dark-11 dark:focus:bg-transparent"
-                >
-                  <FilepickerListItem icon={fileTypeToIcon(file.type)}>
-                    {file.name}
-                  </FilepickerListItem>
-                </div>
-              ) : (
-                <FilepickerClose
-                  className="h-auto w-full text-gray-11 hover:underline dark:text-gray-dark-11"
-                  onClick={() => {
-                    setPath(file.parent);
-                    setInputValue(file.path);
-                    onChange?.(file.path);
-                  }}
-                >
-                  <FilepickerListItem icon={fileTypeToIcon(file.type)}>
-                    {file.name}
-                  </FilepickerListItem>
-                </FilepickerClose>
-              )}
+          {results.map((file) => {
+            const isSelectable = selectable?.(file) ?? true;
+            return (
+              <Fragment key={file.name}>
+                {file.type === "directory" ? (
+                  <div
+                    onClick={() => {
+                      setPath(file.path);
+                    }}
+                    className="h-auto w-full cursor-pointer text-gray-11 hover:underline focus:bg-transparent focus:ring-0 focus:ring-transparent focus:ring-offset-0 dark:text-gray-dark-11 dark:focus:bg-transparent"
+                  >
+                    <FilepickerListItem icon={fileTypeToIcon(file.type)}>
+                      {file.name}
+                    </FilepickerListItem>
+                  </div>
+                ) : (
+                  <FilepickerClose
+                    className={twMergeClsx(
+                      "h-auto w-full text-gray-11 hover:underline dark:text-gray-dark-11",
+                      !isSelectable && "cursor-not-allowed opacity-70"
+                    )}
+                    disabled={!isSelectable}
+                    onClick={() => {
+                      setPath(file.parent);
+                      setInputValue(file.path);
+                      onChange?.(file.path);
+                    }}
+                  >
+                    <FilepickerListItem icon={fileTypeToIcon(file.type)}>
+                      {file.name}
+                    </FilepickerListItem>
+                  </FilepickerClose>
+                )}
 
-              <FilepickerSeparator />
-            </Fragment>
-          ))}
+                <FilepickerSeparator />
+              </Fragment>
+            );
+          })}
         </FilepickerList>
       </Filepicker>
       <Input
