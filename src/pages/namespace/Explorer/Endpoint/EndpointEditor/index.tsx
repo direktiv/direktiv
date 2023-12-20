@@ -44,18 +44,14 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data, path }) => {
     <Form defaultConfig={endpointConfig}>
       {({
         formControls: {
-          formState: { errors, dirtyFields },
+          formState: { errors },
           handleSubmit,
         },
         formMarkup,
         values,
       }) => {
         const preview = stringify(values);
-        /**
-         * the isDirty from react-hook-form fromState is not somehow not working,
-         * or it is working as soon as we have dirtyFields destructured from the formState
-         */
-        const isDirty = Object.keys(dirtyFields).length > 0;
+        const isDirty = preview !== endpointFileContent;
 
         return (
           <form
