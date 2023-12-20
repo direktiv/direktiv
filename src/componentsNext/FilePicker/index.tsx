@@ -54,6 +54,7 @@ const FilePicker = ({
         onClick={() => {
           setPath(convertFileToPath(inputValue));
         }}
+        className="w-44"
       >
         <FilepickerHeading>
           <BreadcrumbRoot className="py-3">
@@ -163,7 +164,6 @@ const FilePicker = ({
       <Input
         placeholder={t("components.filepicker.placeholder")}
         value={inputValue}
-        className="w-80"
         onChange={(e) => {
           setInputValue(e.target.value);
           onChange?.(e.target.value);
