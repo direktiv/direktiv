@@ -1,17 +1,18 @@
 import { Controller, useForm } from "react-hook-form";
 import { FC, FormEvent } from "react";
+import { Fieldset, ModalFooter, PluginWrapper } from "../components/Modal";
 import FormErrors, { errorsType } from "~/componentsNext/FormErrors";
 import {
   InstantResponseFormSchema,
   InstantResponseFormSchemaType,
 } from "../../../schema/plugins/target/instantResponse";
 
-import Button from "~/design/Button";
 import { Card } from "~/design/Card";
-import { DialogFooter } from "~/design/Dialog";
 import Editor from "~/design/Editor";
 import Input from "~/design/Input";
+import { treatEmptyStringAsUndefined } from "../utils";
 import { useTheme } from "~/util/store/theme";
+import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 type OptionalConfig = Partial<InstantResponseFormSchemaType["configuration"]>;
@@ -29,6 +30,7 @@ export const InstantResponseForm: FC<FormProps> = ({
   defaultConfig,
   onSubmit,
 }) => {
+  const { t } = useTranslation();
   const {
     register,
     handleSubmit,
@@ -54,41 +56,48 @@ export const InstantResponseForm: FC<FormProps> = ({
 
   return (
     <form onSubmit={submitForm}>
-      {errors?.configuration && (
-        <FormErrors
-          errors={errors?.configuration as errorsType}
-          className="mb-5"
-        />
-      )}
-
-      <div className="my-3 flex flex-col gap-y-5">
-        <fieldset className="flex items-center gap-5">
-          <label className="w-[150px] overflow-hidden text-right text-sm">
-            status code
-          </label>
+      <PluginWrapper>
+        {errors?.configuration && (
+          <FormErrors errors={errors?.configuration as errorsType} />
+        )}
+        <Fieldset
+          label={t(
+            "pages.explorer.endpoint.editor.form.plugins.target.instantResponse.statusCode"
+          )}
+          htmlFor="status-code"
+        >
           <Input
             {...register("configuration.status_code", {
               valueAsNumber: true,
             })}
+            id="status-code"
             type="number"
-            placeholder="200"
+            placeholder={t(
+              "pages.explorer.endpoint.editor.form.plugins.target.instantResponse.statusCodePlaceholder"
+            )}
           />
-        </fieldset>
-        <fieldset className="flex items-center gap-5">
-          <label className="w-[150px] overflow-hidden text-right text-sm">
-            content type (optional)
-          </label>
+        </Fieldset>
+        <Fieldset
+          label={t(
+            "pages.explorer.endpoint.editor.form.plugins.target.instantResponse.contentType"
+          )}
+          htmlFor="content-type"
+        >
           <Input
             {...register("configuration.content_type", {
-              setValueAs: (value) => (value === "" ? undefined : value),
+              setValueAs: treatEmptyStringAsUndefined,
             })}
-            placeholder="application/json"
+            id="content-type"
+            placeholder={t(
+              "pages.explorer.endpoint.editor.form.plugins.target.instantResponse.contentTypePlaceholder"
+            )}
           />
-        </fieldset>
-        <fieldset className="flex items-center gap-5">
-          <label className="w-[150px] overflow-hidden text-right text-sm">
-            status message (optional)
-          </label>
+        </Fieldset>
+        <Fieldset
+          label={t(
+            "pages.explorer.endpoint.editor.form.plugins.target.instantResponse.statusMessage"
+          )}
+        >
           <Card className="h-[200px] w-full p-5" background="weight-1" noShadow>
             <Controller
               control={control}
@@ -103,11 +112,9 @@ export const InstantResponseForm: FC<FormProps> = ({
               )}
             />
           </Card>
-        </fieldset>
-      </div>
-      <DialogFooter>
-        <Button type="submit">Save</Button>
-      </DialogFooter>
+        </Fieldset>
+      </PluginWrapper>
+      <ModalFooter />
     </form>
   );
 };

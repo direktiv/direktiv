@@ -1,15 +1,16 @@
 import { FC, FormEvent } from "react";
+import { Fieldset, ModalFooter, PluginWrapper } from "../components/Modal";
 import FormErrors, { errorsType } from "~/componentsNext/FormErrors";
 import {
   KeyAuthFormSchema,
   KeyAuthFormSchemaType,
 } from "../../../schema/plugins/auth/keyAuth";
 
-import Button from "~/design/Button";
 import { Checkbox } from "~/design/Checkbox";
-import { DialogFooter } from "~/design/Dialog";
 import Input from "~/design/Input";
+import { treatEmptyStringAsUndefined } from "../utils";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 type OptionalConfig = Partial<KeyAuthFormSchemaType["configuration"]>;
@@ -26,6 +27,7 @@ type FormProps = {
 };
 
 export const KeyAuthForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
+  const { t } = useTranslation();
   const {
     handleSubmit,
     setValue,
@@ -50,18 +52,20 @@ export const KeyAuthForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
 
   return (
     <form onSubmit={submitForm}>
-      {errors?.configuration && (
-        <FormErrors
-          errors={errors?.configuration as errorsType}
-          className="mb-5"
-        />
-      )}
-
-      <div className="my-3 flex flex-col gap-y-5">
-        <fieldset className="flex items-center gap-5">
-          <label className="w-[170px] overflow-hidden text-right text-sm">
-            add username header
-          </label>
+      <PluginWrapper>
+        {errors?.configuration && (
+          <FormErrors
+            errors={errors?.configuration as errorsType}
+            className="mb-5"
+          />
+        )}
+        <Fieldset
+          label={t(
+            "pages.explorer.endpoint.editor.form.plugins.auth.keyAuth.addUsernameHeader"
+          )}
+          htmlFor="add-username-header"
+          horizontal
+        >
           <Checkbox
             defaultChecked={getValues("configuration.add_username_header")}
             onCheckedChange={(value) => {
@@ -69,12 +73,16 @@ export const KeyAuthForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
                 setValue("configuration.add_username_header", value);
               }
             }}
+            id="add-username-header"
           />
-        </fieldset>
-        <fieldset className="flex items-center gap-5">
-          <label className="w-[170px] overflow-hidden text-right text-sm">
-            add tags header
-          </label>
+        </Fieldset>
+        <Fieldset
+          label={t(
+            "pages.explorer.endpoint.editor.form.plugins.auth.keyAuth.addTagsHeader"
+          )}
+          htmlFor="add-tags-header"
+          horizontal
+        >
           <Checkbox
             defaultChecked={getValues("configuration.add_tags_header")}
             onCheckedChange={(value) => {
@@ -82,12 +90,16 @@ export const KeyAuthForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
                 setValue("configuration.add_tags_header", value);
               }
             }}
+            id="add-tags-header"
           />
-        </fieldset>
-        <fieldset className="flex items-center gap-5">
-          <label className="w-[170px] overflow-hidden text-right text-sm">
-            add groups header
-          </label>
+        </Fieldset>
+        <Fieldset
+          label={t(
+            "pages.explorer.endpoint.editor.form.plugins.auth.keyAuth.addGroupsHeader"
+          )}
+          htmlFor="add-groups-header"
+          horizontal
+        >
           <Checkbox
             defaultChecked={getValues("configuration.add_groups_header")}
             onCheckedChange={(value) => {
@@ -95,25 +107,27 @@ export const KeyAuthForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
                 setValue("configuration.add_groups_header", value);
               }
             }}
+            id="add-groups-header"
           />
-        </fieldset>
-        <fieldset className="flex items-center gap-5">
-          <label className="w-[170px] overflow-hidden text-right text-sm">
-            key name (optional)
-          </label>
-          <div>
-            <Input
-              {...register("configuration.key_name", {
-                setValueAs: (value) => (value === "" ? undefined : value),
-              })}
-              placeholder="name of key"
-            />
-          </div>
-        </fieldset>
-      </div>
-      <DialogFooter>
-        <Button type="submit">Save</Button>
-      </DialogFooter>
+        </Fieldset>
+        <Fieldset
+          label={t(
+            "pages.explorer.endpoint.editor.form.plugins.auth.keyAuth.keyName"
+          )}
+          htmlFor="key-name"
+        >
+          <Input
+            {...register("configuration.key_name", {
+              setValueAs: treatEmptyStringAsUndefined,
+            })}
+            placeholder={t(
+              "pages.explorer.endpoint.editor.form.plugins.auth.keyAuth.keyNamePlaceholder"
+            )}
+            id="key-name"
+          />
+        </Fieldset>
+      </PluginWrapper>
+      <ModalFooter />
     </form>
   );
 };

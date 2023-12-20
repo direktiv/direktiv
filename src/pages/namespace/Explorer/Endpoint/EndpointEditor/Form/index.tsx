@@ -66,7 +66,7 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
           render={({ field }) => (
             <div>
               methods
-              <div className="grid grid-cols-5 gap-5">
+              <div className="grid grid-cols-3 gap-5">
                 {routeMethods.map((method) => {
                   const isChecked = field.value?.includes(method);
                   return (
@@ -116,9 +116,9 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
             </div>
           )}
         />
-        <TargetPluginForm formControls={formControls} />
-        <InboundPluginForm formControls={formControls} />
-        <OutboundPluginForm formControls={formControls} />
+        <TargetPluginForm form={formControls} />
+        <InboundPluginForm form={formControls} />
+        <OutboundPluginForm form={formControls} />
         <AuthPluginForm formControls={formControls} />
       </div>
     ),

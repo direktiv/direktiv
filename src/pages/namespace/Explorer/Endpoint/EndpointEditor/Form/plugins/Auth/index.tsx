@@ -15,51 +15,22 @@ import {
   SelectValue,
 } from "~/design/Select";
 import { UseFormReturn, useFieldArray } from "react-hook-form";
+import {
+  getBasicAuthConfigAtIndex,
+  getGithubWebhookAuthConfigAtIndex,
+  getKeyAuthConfigAtIndex,
+} from "../utils";
 
 import { AuthPluginFormSchemaType } from "../../../schema/plugins/auth/schema";
 import { BasicAuthForm } from "./BasicAuthForm";
-import { BasicAuthFormSchemaType } from "../../../schema/plugins/auth/basicAuth";
 import Button from "~/design/Button";
 import { EndpointFormSchemaType } from "../../../schema";
 import { GithubWebhookAuthForm } from "./GithubWebhookAuthForm";
-import { GithubWebhookAuthFormSchemaType } from "../../../schema/plugins/auth/githubWebhookAuth";
 import { KeyAuthForm } from "./KeyAuthForm";
-import { KeyAuthFormSchemaType } from "../../../schema/plugins/auth/keyAuth";
 import { authPluginTypes } from "../../../schema/plugins/auth";
 
 type AuthPluginFormProps = {
   formControls: UseFormReturn<EndpointFormSchemaType>;
-};
-
-// TODO: may create a factory for this, ot introduce a generic
-const readBasicAuthConfig = (
-  fields: AuthPluginFormSchemaType[] | undefined,
-  index: number | undefined
-): BasicAuthFormSchemaType["configuration"] | undefined => {
-  const plugin = index !== undefined ? fields?.[index] : undefined;
-  return plugin?.type === authPluginTypes.basicAuth
-    ? plugin.configuration
-    : undefined;
-};
-
-const readKeyAuthConfig = (
-  fields: AuthPluginFormSchemaType[] | undefined,
-  index: number | undefined
-): KeyAuthFormSchemaType["configuration"] | undefined => {
-  const plugin = index !== undefined ? fields?.[index] : undefined;
-  return plugin?.type === authPluginTypes.keyAuth
-    ? plugin.configuration
-    : undefined;
-};
-
-const readGithubWebhookAuthConfig = (
-  fields: AuthPluginFormSchemaType[] | undefined,
-  index: number | undefined
-): GithubWebhookAuthFormSchemaType["configuration"] | undefined => {
-  const plugin = index !== undefined ? fields?.[index] : undefined;
-  return plugin?.type === authPluginTypes.githubWebhookAuth
-    ? plugin.configuration
-    : undefined;
 };
 
 export const AuthPluginForm: FC<AuthPluginFormProps> = ({ formControls }) => {
@@ -185,7 +156,7 @@ export const AuthPluginForm: FC<AuthPluginFormProps> = ({ formControls }) => {
           </div>
           {selectedPlugin === authPluginTypes.basicAuth && (
             <BasicAuthForm
-              defaultConfig={readBasicAuthConfig(fields, editIndex)}
+              defaultConfig={getBasicAuthConfigAtIndex(fields, editIndex)}
               onSubmit={(configuration) => {
                 setDialogOpen(false);
                 if (editIndex === undefined) {
@@ -199,7 +170,7 @@ export const AuthPluginForm: FC<AuthPluginFormProps> = ({ formControls }) => {
           )}
           {selectedPlugin === authPluginTypes.keyAuth && (
             <KeyAuthForm
-              defaultConfig={readKeyAuthConfig(fields, editIndex)}
+              defaultConfig={getKeyAuthConfigAtIndex(fields, editIndex)}
               onSubmit={(configuration) => {
                 setDialogOpen(false);
                 if (editIndex === undefined) {
@@ -213,7 +184,10 @@ export const AuthPluginForm: FC<AuthPluginFormProps> = ({ formControls }) => {
           )}
           {selectedPlugin === authPluginTypes.githubWebhookAuth && (
             <GithubWebhookAuthForm
-              defaultConfig={readGithubWebhookAuthConfig(fields, editIndex)}
+              defaultConfig={getGithubWebhookAuthConfigAtIndex(
+                fields,
+                editIndex
+              )}
               onSubmit={(configuration) => {
                 setDialogOpen(false);
                 if (editIndex === undefined) {

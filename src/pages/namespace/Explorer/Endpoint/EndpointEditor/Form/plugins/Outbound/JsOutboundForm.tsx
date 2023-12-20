@@ -1,16 +1,16 @@
 import { Controller, useForm } from "react-hook-form";
 import { FC, FormEvent } from "react";
+import { Fieldset, ModalFooter, PluginWrapper } from "../components/Modal";
 import FormErrors, { errorsType } from "~/componentsNext/FormErrors";
 import {
   JsOutboundFormSchema,
   JsOutboundFormSchemaType,
 } from "../../../schema/plugins/outbound/jsOutbound";
 
-import Button from "~/design/Button";
 import { Card } from "~/design/Card";
-import { DialogFooter } from "~/design/Dialog";
 import Editor from "~/design/Editor";
 import { useTheme } from "~/util/store/theme";
+import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 type OptionalConfig = Partial<JsOutboundFormSchemaType["configuration"]>;
@@ -21,6 +21,7 @@ type FormProps = {
 };
 
 export const JsOutboundForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
+  const { t } = useTranslation();
   const {
     handleSubmit,
     formState: { errors },
@@ -44,18 +45,18 @@ export const JsOutboundForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
 
   return (
     <form onSubmit={submitForm}>
-      {errors?.configuration && (
-        <FormErrors
-          errors={errors?.configuration as errorsType}
-          className="mb-5"
-        />
-      )}
-
-      <div className="my-3 flex flex-col gap-y-5">
-        <fieldset className="flex items-center gap-5">
-          <label className="w-[150px] overflow-hidden text-right text-sm">
-            script
-          </label>
+      <PluginWrapper>
+        {errors?.configuration && (
+          <FormErrors
+            errors={errors?.configuration as errorsType}
+            className="mb-5"
+          />
+        )}
+        <Fieldset
+          label={t(
+            "pages.explorer.endpoint.editor.form.plugins.outbound.jsOutbound.script"
+          )}
+        >
           <Card className="h-[200px] w-full p-5" background="weight-1" noShadow>
             <Controller
               control={control}
@@ -70,11 +71,9 @@ export const JsOutboundForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
               )}
             />
           </Card>
-        </fieldset>
-      </div>
-      <DialogFooter>
-        <Button type="submit">Save</Button>
-      </DialogFooter>
+        </Fieldset>
+      </PluginWrapper>
+      <ModalFooter />
     </form>
   );
 };

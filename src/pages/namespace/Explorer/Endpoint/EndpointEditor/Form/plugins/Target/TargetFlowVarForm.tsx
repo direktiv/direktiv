@@ -1,14 +1,15 @@
 import { FC, FormEvent } from "react";
+import { Fieldset, ModalFooter, PluginWrapper } from "../components/Modal";
 import FormErrors, { errorsType } from "~/componentsNext/FormErrors";
 import {
   TargetFlowVarFormSchema,
   TargetFlowVarFormSchemaType,
 } from "../../../schema/plugins/target/targetFlowVar";
 
-import Button from "~/design/Button";
-import { DialogFooter } from "~/design/Dialog";
 import Input from "~/design/Input";
+import { treatEmptyStringAsUndefined } from "../utils";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 type OptionalConfig = Partial<TargetFlowVarFormSchemaType["configuration"]>;
@@ -22,6 +23,7 @@ export const TargetFlowVarForm: FC<FormProps> = ({
   defaultConfig,
   onSubmit,
 }) => {
+  const { t } = useTranslation();
   const {
     register,
     handleSubmit,
@@ -43,53 +45,60 @@ export const TargetFlowVarForm: FC<FormProps> = ({
 
   return (
     <form onSubmit={submitForm}>
-      {errors?.configuration && (
-        <FormErrors
-          errors={errors?.configuration as errorsType}
-          className="mb-5"
-        />
-      )}
-
-      <div className="my-3 flex flex-col gap-y-5">
-        <fieldset className="flex items-center gap-5">
-          <label className="w-[170px] overflow-hidden text-right text-sm">
-            namespace (optional)
-          </label>
+      <PluginWrapper>
+        {errors?.configuration && (
+          <FormErrors
+            errors={errors?.configuration as errorsType}
+            className="mb-5"
+          />
+        )}
+        <Fieldset
+          label={t(
+            "pages.explorer.endpoint.editor.form.plugins.target.targetFlowVar.namespace"
+          )}
+          htmlFor="namespace"
+        >
           <Input
             {...register("configuration.namespace", {
-              setValueAs: (value) => (value === "" ? undefined : value),
+              setValueAs: treatEmptyStringAsUndefined,
             })}
+            id="namespace"
           />
-        </fieldset>
-        <fieldset className="flex items-center gap-5">
-          <label className="w-[170px] overflow-hidden text-right text-sm">
-            workflow
-          </label>
-          <Input {...register("configuration.flow")} />
-        </fieldset>
-        <fieldset className="flex items-center gap-5">
-          <label className="w-[170px] overflow-hidden text-right text-sm">
-            variable
-          </label>
-          <Input {...register("configuration.variable")} />
-        </fieldset>
-        <fieldset className="flex items-center gap-5">
-          <label className="w-[170px] overflow-hidden text-right text-sm">
-            content type (optional)
-          </label>
-          <div>
-            <Input
-              {...register("configuration.content_type", {
-                setValueAs: (value) => (value === "" ? undefined : value),
-              })}
-              placeholder="application/json"
-            />
-          </div>
-        </fieldset>
-      </div>
-      <DialogFooter>
-        <Button type="submit">Save</Button>
-      </DialogFooter>
+        </Fieldset>
+        <Fieldset
+          label={t(
+            "pages.explorer.endpoint.editor.form.plugins.target.targetFlowVar.workflow"
+          )}
+          htmlFor="workflow"
+        >
+          <Input {...register("configuration.flow")} id="workflow" />
+        </Fieldset>
+        <Fieldset
+          label={t(
+            "pages.explorer.endpoint.editor.form.plugins.target.targetFlowVar.variable"
+          )}
+          htmlFor="variable"
+        >
+          <Input {...register("configuration.variable")} id="variable" />
+        </Fieldset>
+        <Fieldset
+          label={t(
+            "pages.explorer.endpoint.editor.form.plugins.target.targetFlowVar.contentType"
+          )}
+          htmlFor="content-type"
+        >
+          <Input
+            {...register("configuration.content_type", {
+              setValueAs: treatEmptyStringAsUndefined,
+            })}
+            id="content-type"
+            placeholder={t(
+              "pages.explorer.endpoint.editor.form.plugins.target.targetFlowVar.contentTypePlaceholder"
+            )}
+          />
+        </Fieldset>
+      </PluginWrapper>
+      <ModalFooter />
     </form>
   );
 };
