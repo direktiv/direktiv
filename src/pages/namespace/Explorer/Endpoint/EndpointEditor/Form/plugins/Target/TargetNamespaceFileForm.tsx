@@ -7,6 +7,7 @@ import {
   TargetNamespaceFileFormSchemaType,
 } from "../../../schema/plugins/target/targetNamespaceFile";
 
+import FilePicker from "~/componentsNext/FilePicker";
 import Input from "~/design/Input";
 import NamespaceSelector from "~/componentsNext/NamespaceSelector";
 import { treatEmptyStringAsUndefined } from "../utils";
@@ -31,6 +32,8 @@ export const TargetNamespaceFileForm: FC<FormProps> = ({
     control,
     register,
     handleSubmit,
+    getValues,
+    watch,
     formState: { errors },
   } = useForm<TargetNamespaceFileFormSchemaType>({
     resolver: zodResolver(TargetNamespaceFileFormSchema),
@@ -78,9 +81,19 @@ export const TargetNamespaceFileForm: FC<FormProps> = ({
           label={t(
             "pages.explorer.endpoint.editor.form.plugins.target.targetNamespaceFile.file"
           )}
-          htmlFor="file"
         >
-          <Input {...register("configuration.file")} id="file" />
+          <Controller
+            control={control}
+            name="configuration.file"
+            render={({ field }) => (
+              <FilePicker
+                namespace={watch("configuration.namespace")}
+                onChange={field.onChange}
+                defaultPath={field.value}
+                selectable={(node) => node.type === "file"}
+              />
+            )}
+          />
         </Fieldset>
         <Fieldset
           label={t(

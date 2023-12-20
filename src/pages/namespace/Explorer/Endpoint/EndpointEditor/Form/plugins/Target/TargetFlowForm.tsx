@@ -8,6 +8,7 @@ import {
 } from "../../../schema/plugins/target/targetFlow";
 
 import { Checkbox } from "~/design/Checkbox";
+import FilePicker from "~/componentsNext/FilePicker";
 import Input from "~/design/Input";
 import NamespaceSelector from "~/componentsNext/NamespaceSelector";
 import { treatEmptyStringAsUndefined } from "../utils";
@@ -32,6 +33,7 @@ export const TargetFlowForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
     handleSubmit,
     setValue,
     getValues,
+    watch,
     control,
     formState: { errors },
   } = useForm<TargetFlowFormSchemaType>({
@@ -81,9 +83,19 @@ export const TargetFlowForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
           label={t(
             "pages.explorer.endpoint.editor.form.plugins.target.targetFlow.workflow"
           )}
-          htmlFor="workflow"
         >
-          <Input {...register("configuration.flow")} id="workflow" />
+          <Controller
+            control={control}
+            name="configuration.flow"
+            render={({ field }) => (
+              <FilePicker
+                namespace={watch("configuration.namespace")}
+                onChange={field.onChange}
+                defaultPath={field.value}
+                selectable={(node) => node.type === "workflow"}
+              />
+            )}
+          />
         </Fieldset>
         <Fieldset
           label={t(
