@@ -1100,7 +1100,6 @@
       "mirror": "Mirror"
     },
     "breadcrumb": {
-      "selectPlaceholder": "Select Namespace",
       "searchPlaceholder": "Search namespace...",
       "notFound": "No namespace found.",
       "createBtn": "Create new namespace",
@@ -1209,6 +1208,10 @@
           "description_one": "You have {{count}} uninitialized secret."
         }
       }
+    },
+    "namespaceSelector": {
+      "placeholder": "Select Namespace",
+      "loading": "loading..."
     },
     "filepicker": {
       "buttonText": "Browse Files",

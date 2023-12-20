@@ -33,13 +33,13 @@ const NamespaceSelector: FC<ButtonProps> = ({ onValueChange }) => {
     <Select onValueChange={onValueChange}>
       <SelectTrigger variant="outline">
         <SelectValue
-          placeholder={t("components.breadcrumb.selectPlaceholder")}
+          placeholder={t("components.namespaceSelector.placeholder")}
         />
       </SelectTrigger>
       {isLoading && (
         <SelectContent>
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          {t("components.breadcrumb.loading")}
+          {t("components.namespaceSelector.placeholder")}
         </SelectContent>
       )}
       {hasResults && (
