@@ -2,7 +2,6 @@ import { TableCell, TableRow } from "~/design/Table";
 
 import { AllowAnonymous } from "./Anonymous";
 import Badge from "~/design/Badge";
-import CopyButton from "~/design/CopyButton";
 import { FC } from "react";
 import { Link } from "react-router-dom";
 import MessagesOverlay from "./MessagesOverlay";
