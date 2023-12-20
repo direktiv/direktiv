@@ -1,12 +1,7 @@
-import { ChevronDown, ChevronUp, Edit, Plus, Trash } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "~/design/Dialog";
+import { ContextMenu, TableHeader } from "../components/PluginsTable";
+import { Dialog, DialogTrigger } from "~/design/Dialog";
 import { FC, useState } from "react";
+import { ModalWrapper, PluginSelector } from "../components/Modal";
 import {
   Select,
   SelectContent,
@@ -14,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/design/Select";
+import { Table, TableBody, TableCell, TableRow } from "~/design/Table";
 import { UseFormReturn, useFieldArray } from "react-hook-form";
 import {
   getBasicAuthConfigAtIndex,
@@ -24,16 +20,20 @@ import {
 import { AuthPluginFormSchemaType } from "../../../schema/plugins/auth/schema";
 import { BasicAuthForm } from "./BasicAuthForm";
 import Button from "~/design/Button";
+import { Card } from "~/design/Card";
 import { EndpointFormSchemaType } from "../../../schema";
 import { GithubWebhookAuthForm } from "./GithubWebhookAuthForm";
 import { KeyAuthForm } from "./KeyAuthForm";
+import { Plus } from "lucide-react";
 import { authPluginTypes } from "../../../schema/plugins/auth";
+import { useTranslation } from "react-i18next";
 
 type AuthPluginFormProps = {
   formControls: UseFormReturn<EndpointFormSchemaType>;
 };
 
 export const AuthPluginForm: FC<AuthPluginFormProps> = ({ formControls }) => {
+  const { t } = useTranslation();
   const { control } = formControls;
   const {
     append: addPlugin,
@@ -61,146 +61,155 @@ export const AuthPluginForm: FC<AuthPluginFormProps> = ({ formControls }) => {
         setDialogOpen(isOpen);
       }}
     >
-      <div className="flex items-center gap-3">
-        {pluginsCount} Auth plugins
-        <DialogTrigger asChild>
-          <Button icon variant="outline">
-            <Plus /> add auth plugin
-          </Button>
-        </DialogTrigger>
-      </div>
-      {fields.map(({ id, type }, index, srcArray) => {
-        const canMoveDown = index < srcArray.length - 1;
-        const canMoveUp = index > 0;
-
-        return (
-          <div key={id} className="flex gap-2">
-            {type}
-            <Button
-              variant="destructive"
-              icon
-              size="sm"
-              onClick={() => {
+      <Card noShadow>
+        <Table>
+          <TableHeader
+            title={t(
+              "pages.explorer.endpoint.editor.form.plugins.auth.table.headline",
+              {
+                count: pluginsCount,
+              }
+            )}
+          >
+            <DialogTrigger asChild>
+              <Button icon variant="outline" size="sm">
+                <Plus />
+                {t(
+                  "pages.explorer.endpoint.editor.form.plugins.auth.table.addButton"
+                )}
+              </Button>
+            </DialogTrigger>
+          </TableHeader>
+          <TableBody>
+            {fields.map(({ id, type }, index, srcArray) => {
+              const canMoveDown = index < srcArray.length - 1;
+              const canMoveUp = index > 0;
+              const onMoveUp = canMoveUp
+                ? () => {
+                    movePlugin(index, index - 1);
+                  }
+                : undefined;
+              const onMoveDown = canMoveDown
+                ? () => {
+                    movePlugin(index, index + 1);
+                  }
+                : undefined;
+              const onDelete = () => {
                 deletePlugin(index);
-              }}
-            >
-              <Trash />
-            </Button>
-            <Button
-              variant="outline"
-              icon
-              size="sm"
-              disabled={!canMoveDown}
-              onClick={() => {
-                movePlugin(index, index + 1);
-              }}
-            >
-              <ChevronDown />
-            </Button>
-            <Button
-              variant="outline"
-              icon
-              size="sm"
-              disabled={!canMoveUp}
-              onClick={() => {
-                movePlugin(index, index - 1);
-              }}
-            >
-              <ChevronUp />
-            </Button>
-            <Button
-              variant="outline"
-              icon
-              size="sm"
-              onClick={() => {
-                setSelectedPlugin(type);
-                setDialogOpen(true);
-                setEditIndex(index);
-              }}
-            >
-              <Edit />
-            </Button>
-          </div>
-        );
-      })}
-      <DialogContent className="sm:max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>
-            {editIndex === undefined ? "add" : "edit"} Auth Plugin
-          </DialogTitle>
-        </DialogHeader>
-        <div className="my-3 flex flex-col gap-y-5">
-          <div className="flex flex-col gap-y-5">
-            <fieldset className="flex items-center gap-5">
-              <label className="w-[150px] overflow-hidden text-right text-sm">
-                select a auth plugin
-              </label>
-              <Select
-                onValueChange={(e) => {
-                  setSelectedPlugin(e as typeof selectedPlugin);
-                }}
-                value={selectedPlugin}
-              >
-                <SelectTrigger variant="outline">
-                  <SelectValue placeholder="please select a auth plugin" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.values(authPluginTypes).map((pluginType) => (
-                    <SelectItem key={pluginType} value={pluginType}>
-                      {pluginType}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </fieldset>
-          </div>
-          {selectedPlugin === authPluginTypes.basicAuth && (
-            <BasicAuthForm
-              defaultConfig={getBasicAuthConfigAtIndex(fields, editIndex)}
-              onSubmit={(configuration) => {
-                setDialogOpen(false);
-                if (editIndex === undefined) {
-                  addPlugin(configuration);
-                } else {
-                  editPlugin(editIndex, configuration);
-                }
-                setEditIndex(undefined);
-              }}
-            />
+              };
+
+              return (
+                <TableRow
+                  key={id}
+                  className="cursor-pointer"
+                  onClick={() => {
+                    setSelectedPlugin(type);
+                    setDialogOpen(true);
+                    setEditIndex(index);
+                  }}
+                >
+                  <TableCell>
+                    {t(
+                      `pages.explorer.endpoint.editor.form.plugins.auth.types.${type}`
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <ContextMenu
+                      onDelete={onDelete}
+                      onMoveDown={onMoveDown}
+                      onMoveUp={onMoveUp}
+                    />
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </Card>
+
+      <ModalWrapper
+        title={
+          editIndex === undefined
+            ? t(
+                "pages.explorer.endpoint.editor.form.plugins.auth.modal.headlineAdd"
+              )
+            : t(
+                "pages.explorer.endpoint.editor.form.plugins.auth.modal.headlineEdit"
+              )
+        }
+      >
+        <PluginSelector
+          title={t(
+            "pages.explorer.endpoint.editor.form.plugins.auth.modal.label"
           )}
-          {selectedPlugin === authPluginTypes.keyAuth && (
-            <KeyAuthForm
-              defaultConfig={getKeyAuthConfigAtIndex(fields, editIndex)}
-              onSubmit={(configuration) => {
-                setDialogOpen(false);
-                if (editIndex === undefined) {
-                  addPlugin(configuration);
-                } else {
-                  editPlugin(editIndex, configuration);
-                }
-                setEditIndex(undefined);
-              }}
-            />
-          )}
-          {selectedPlugin === authPluginTypes.githubWebhookAuth && (
-            <GithubWebhookAuthForm
-              defaultConfig={getGithubWebhookAuthConfigAtIndex(
-                fields,
-                editIndex
-              )}
-              onSubmit={(configuration) => {
-                setDialogOpen(false);
-                if (editIndex === undefined) {
-                  addPlugin(configuration);
-                } else {
-                  editPlugin(editIndex, configuration);
-                }
-                setEditIndex(undefined);
-              }}
-            />
-          )}
-        </div>
-      </DialogContent>
+        >
+          <Select
+            onValueChange={(e) => {
+              setSelectedPlugin(e as typeof selectedPlugin);
+            }}
+            value={selectedPlugin}
+          >
+            <SelectTrigger variant="outline" className="grow">
+              <SelectValue
+                placeholder={t(
+                  "pages.explorer.endpoint.editor.form.plugins.auth.modal.placeholder"
+                )}
+              />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.values(authPluginTypes).map((pluginType) => (
+                <SelectItem key={pluginType} value={pluginType}>
+                  {t(
+                    `pages.explorer.endpoint.editor.form.plugins.auth.types.${pluginType}`
+                  )}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </PluginSelector>
+        {selectedPlugin === authPluginTypes.basicAuth && (
+          <BasicAuthForm
+            defaultConfig={getBasicAuthConfigAtIndex(fields, editIndex)}
+            onSubmit={(configuration) => {
+              setDialogOpen(false);
+              if (editIndex === undefined) {
+                addPlugin(configuration);
+              } else {
+                editPlugin(editIndex, configuration);
+              }
+              setEditIndex(undefined);
+            }}
+          />
+        )}
+        {selectedPlugin === authPluginTypes.keyAuth && (
+          <KeyAuthForm
+            defaultConfig={getKeyAuthConfigAtIndex(fields, editIndex)}
+            onSubmit={(configuration) => {
+              setDialogOpen(false);
+              if (editIndex === undefined) {
+                addPlugin(configuration);
+              } else {
+                editPlugin(editIndex, configuration);
+              }
+              setEditIndex(undefined);
+            }}
+          />
+        )}
+        {selectedPlugin === authPluginTypes.githubWebhookAuth && (
+          <GithubWebhookAuthForm
+            defaultConfig={getGithubWebhookAuthConfigAtIndex(fields, editIndex)}
+            onSubmit={(configuration) => {
+              setDialogOpen(false);
+              if (editIndex === undefined) {
+                addPlugin(configuration);
+              } else {
+                editPlugin(editIndex, configuration);
+              }
+              setEditIndex(undefined);
+            }}
+          />
+        )}
+      </ModalWrapper>
     </Dialog>
   );
 };

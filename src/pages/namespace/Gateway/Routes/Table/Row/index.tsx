@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import MessagesOverlay from "./MessagesOverlay";
 import { Methods } from "./Methods";
 import Plugins from "./Plugins";
+import PublicPathInput from "./PublicPath";
 import { RouteSchemeType } from "~/api/gateway/schema";
 import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
@@ -21,10 +22,14 @@ export const Row: FC<RowProps> = ({ gateway }) => {
   const { t } = useTranslation();
   if (!namespace) return null;
 
+  const publicPath = gateway.server_path
+    ? `${window.location.origin}${gateway.server_path}`
+    : undefined;
+
   return (
     <TableRow>
       <TableCell>
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-3">
           <Link
             className="whitespace-normal break-all hover:underline"
             to={pages.explorer.createHref({
@@ -35,6 +40,7 @@ export const Row: FC<RowProps> = ({ gateway }) => {
           >
             {gateway.file_path}
           </Link>
+          {publicPath && <PublicPathInput path={publicPath} />}
           <div className="flex gap-1">
             <MessagesOverlay messages={gateway.errors} variant="error">
               {(errorCount) => (

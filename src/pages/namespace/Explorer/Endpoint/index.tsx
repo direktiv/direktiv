@@ -6,6 +6,7 @@ import EndpointEditor from "./EndpointEditor";
 import { FC } from "react";
 import { Link } from "react-router-dom";
 import { NoPermissions } from "~/design/Table";
+import PublicPathInput from "../../Gateway/Routes/Table/Row/PublicPath";
 import { analyzePath } from "~/util/router/utils";
 import { pages } from "~/util/router/pages";
 import { removeLeadingSlash } from "~/api/tree/utils";
@@ -47,14 +48,21 @@ const EndpointPage: FC = () => {
     (route) => removeLeadingSlash(route.file_path) === removeLeadingSlash(path)
   );
 
+  const publicPath = matchingRoute?.server_path
+    ? `${window.location.origin}${matchingRoute.server_path}`
+    : undefined;
+
   return (
     <>
       <div className="space-y-5 border-b border-gray-5 bg-gray-1 p-5  dark:border-gray-dark-5 dark:bg-gray-dark-1">
-        <div className="flex flex-col max-sm:space-y-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-5 max-sm:space-y-4 sm:flex-row sm:items-center sm:justify-between">
           <h3 className="flex items-center gap-x-2 font-bold text-primary-500">
             <Workflow className="h-5" />
             {filename?.relative}
           </h3>
+          <div className="grow">
+            {publicPath && <PublicPathInput path={publicPath} />}
+          </div>
           <Button isAnchor asChild variant="primary">
             <Link
               to={pages.gateway.createHref({

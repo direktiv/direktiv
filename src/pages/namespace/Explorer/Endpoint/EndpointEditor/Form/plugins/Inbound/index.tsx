@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronUp, Edit, Plus, Trash } from "lucide-react";
+import { ContextMenu, TableHeader } from "../components/PluginsTable";
 import { Dialog, DialogTrigger } from "~/design/Dialog";
 import { FC, useState } from "react";
 import { ModalWrapper, PluginSelector } from "../components/Modal";
@@ -9,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/design/Select";
+import { Table, TableBody, TableCell, TableRow } from "~/design/Table";
 import { UseFormReturn, useFieldArray } from "react-hook-form";
 import {
   getJsInboundConfigAtIndex,
@@ -16,9 +17,11 @@ import {
 } from "../utils";
 
 import Button from "~/design/Button";
+import { Card } from "~/design/Card";
 import { EndpointFormSchemaType } from "../../../schema";
 import { InboundPluginFormSchemaType } from "../../../schema/plugins/inbound/schema";
 import { JsInboundForm } from "./JsInboundForm";
+import { Plus } from "lucide-react";
 import { RequestConvertForm } from "./RequestConvertForm";
 import { inboundPluginTypes } from "../../../schema/plugins/inbound";
 import { useTranslation } from "react-i18next";
@@ -58,82 +61,87 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({ form }) => {
         setDialogOpen(isOpen);
       }}
     >
-      <div className="flex items-center gap-3">
-        {pluginsCount} Inbound plugins
-        <DialogTrigger asChild>
-          <Button icon variant="outline">
-            <Plus /> add inbound plugin
-          </Button>
-        </DialogTrigger>
-      </div>
-      {fields.map(({ id, type }, index, srcArray) => {
-        const canMoveDown = index < srcArray.length - 1;
-        const canMoveUp = index > 0;
-
-        return (
-          <div key={id} className="flex gap-2">
-            {type}
-            <Button
-              variant="destructive"
-              icon
-              size="sm"
-              onClick={() => {
+      <Card noShadow>
+        <Table>
+          <TableHeader
+            title={t(
+              "pages.explorer.endpoint.editor.form.plugins.inbound.table.headline",
+              {
+                count: pluginsCount,
+              }
+            )}
+          >
+            <DialogTrigger asChild>
+              <Button icon variant="outline" size="sm">
+                <Plus />
+                {t(
+                  "pages.explorer.endpoint.editor.form.plugins.inbound.table.addButton"
+                )}
+              </Button>
+            </DialogTrigger>
+          </TableHeader>
+          <TableBody>
+            {fields.map(({ id, type }, index, srcArray) => {
+              const canMoveDown = index < srcArray.length - 1;
+              const canMoveUp = index > 0;
+              const onMoveUp = canMoveUp
+                ? () => {
+                    movePlugin(index, index - 1);
+                  }
+                : undefined;
+              const onMoveDown = canMoveDown
+                ? () => {
+                    movePlugin(index, index + 1);
+                  }
+                : undefined;
+              const onDelete = () => {
                 deletePlugin(index);
-              }}
-            >
-              <Trash />
-            </Button>
-            <Button
-              variant="outline"
-              icon
-              size="sm"
-              disabled={!canMoveDown}
-              onClick={() => {
-                movePlugin(index, index + 1);
-              }}
-            >
-              <ChevronDown />
-            </Button>
-            <Button
-              variant="outline"
-              icon
-              size="sm"
-              disabled={!canMoveUp}
-              onClick={() => {
-                movePlugin(index, index - 1);
-              }}
-            >
-              <ChevronUp />
-            </Button>
-            <Button
-              variant="outline"
-              icon
-              size="sm"
-              onClick={() => {
-                setSelectedPlugin(type);
-                setDialogOpen(true);
-                setEditIndex(index);
-              }}
-            >
-              <Edit />
-            </Button>
-          </div>
-        );
-      })}
+              };
+
+              return (
+                <TableRow
+                  key={id}
+                  className="cursor-pointer"
+                  onClick={() => {
+                    setSelectedPlugin(type);
+                    setDialogOpen(true);
+                    setEditIndex(index);
+                  }}
+                >
+                  <TableCell>
+                    {t(
+                      `pages.explorer.endpoint.editor.form.plugins.inbound.types.${type}`
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <ContextMenu
+                      onDelete={onDelete}
+                      onMoveDown={onMoveDown}
+                      onMoveUp={onMoveUp}
+                    />
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </Card>
 
       <ModalWrapper
         title={
           editIndex === undefined
             ? t(
-                "pages.explorer.endpoint.editor.form.plugins.inbound.headlineAdd"
+                "pages.explorer.endpoint.editor.form.plugins.inbound.modal.headlineAdd"
               )
             : t(
-                "pages.explorer.endpoint.editor.form.plugins.inbound.headlineEdit"
+                "pages.explorer.endpoint.editor.form.plugins.inbound.modal.headlineEdit"
               )
         }
       >
         <PluginSelector
-          title={t("pages.explorer.endpoint.editor.form.plugins.inbound.label")}
+          title={t(
+            "pages.explorer.endpoint.editor.form.plugins.inbound.modal.label"
+          )}
         >
           <Select
             onValueChange={(e) => {
@@ -144,7 +152,7 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({ form }) => {
             <SelectTrigger variant="outline" className="grow">
               <SelectValue
                 placeholder={t(
-                  "pages.explorer.endpoint.editor.form.plugins.inbound.placeholder"
+                  "pages.explorer.endpoint.editor.form.plugins.inbound.modal.placeholder"
                 )}
               />
             </SelectTrigger>

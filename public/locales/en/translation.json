@@ -307,11 +307,19 @@
             "serialisationError": "There was an error serializing the form data",
             "plugins": {
               "saveBtn": "Save",
+              "deleteBtn": "Delete",
+              "moveUpBtn": "Move up",
+              "moveDownBtn": "Move down",
               "target": {
-                "headline": "Configure target plugin",
-                "label": "Target plugin",
-                "placeholder": "Please select a target plugin",
-                "notConfigured": "Please configure the target plugin",
+                "table": {
+                  "headline": "Target plugin",
+                  "addButton": "set target plugin"
+                },
+                "modal": {
+                  "headline": "Configure target plugin",
+                  "label": "Target plugin",
+                  "placeholder": "Please select a target plugin"
+                },
                 "types": {
                   "instant-response": "Instant Response",
                   "target-flow": "Workflow",
@@ -354,10 +362,17 @@
                 }
               },
               "inbound": {
-                "headlineAdd": "Add inbound plugin",
-                "headlineEdit": "Edit inbound plugin",
-                "label": "Inbound plugin",
-                "placeholder": "Please select a inbound plugin",
+                "modal": {
+                  "headlineAdd": "Add inbound plugin",
+                  "headlineEdit": "Edit inbound plugin",
+                  "label": "Inbound plugin",
+                  "placeholder": "Please select a inbound plugin"
+                },
+                "table": {
+                  "headline": "{{count}} inbound plugins",
+                  "headline_one": "{{count}} inbound plugin",
+                  "addButton": "add inbound plugin"
+                },
                 "types": {
                   "acl": "Access control list (acl)",
                   "js-inbound": "JavaScript",
@@ -374,11 +389,41 @@
                 }
               },
               "outbound": {
+                "modal": {
+                  "headlineAdd": "Add outbound plugin",
+                  "headlineEdit": "Edit outbound plugin",
+                  "label": "Outbound plugin",
+                  "placeholder": "Please select a inbound plugin"
+                },
+                "table": {
+                  "headline": "{{count}} outbound plugins",
+                  "headline_one": "{{count}} outbound plugin",
+                  "addButton": "add outbound plugin"
+                },
+                "types": {
+                  "js-outbound": "JavaScript"
+                },
                 "jsOutbound": {
                   "script": "JavaScript"
                 }
               },
               "auth": {
+                "modal": {
+                  "headlineAdd": "Add auth plugin",
+                  "headlineEdit": "Edit auth plugin",
+                  "label": "Auth plugin",
+                  "placeholder": "Please select an auth plugin"
+                },
+                "table": {
+                  "headline": "{{count}} auth plugins",
+                  "headline_one": "{{count}} auth plugin",
+                  "addButton": "add auth plugin"
+                },
+                "types": {
+                  "basic-auth": "Basic Auth",
+                  "github-webhook-auth": "Github Webhook",
+                  "key-auth": "Key Auth"
+                },
                 "basciAuth": {
                   "addUsernameHeader": "Add username header",
                   "addTagsHeader": "Add tags header",

@@ -8,12 +8,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/design/Select";
+import { Table, TableBody, TableCell, TableRow } from "~/design/Table";
 import { UseFormReturn, useWatch } from "react-hook-form";
 
 import Button from "~/design/Button";
+import { Card } from "~/design/Card";
 import { EndpointFormSchemaType } from "../../../schema";
 import { InstantResponseForm } from "./InstantResponseForm";
 import { Settings } from "lucide-react";
+import { TableHeader } from "../components/PluginsTable";
 import { TargetFlowForm } from "./TargetFlowForm";
 import { TargetFlowVarForm } from "./TargetFlowVarForm";
 import { TargetNamespaceFileForm } from "./TargetNamespaceFileForm";
@@ -61,26 +64,51 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({ form }) => {
 
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-      <div className="flex items-center gap-3">
-        {t("pages.explorer.endpoint.editor.form.plugins.target.label")}
-        <DialogTrigger asChild>
-          <Button icon variant="outline">
-            <Settings />{" "}
-            {values.plugins?.target?.type
-              ? t(
-                  `pages.explorer.endpoint.editor.form.plugins.target.types.${values.plugins?.target?.type}`
-                )
-              : t(
-                  "pages.explorer.endpoint.editor.form.plugins.target.notConfigured"
+      <Card noShadow>
+        <Table>
+          <TableHeader
+            title={t(
+              "pages.explorer.endpoint.editor.form.plugins.target.table.headline"
+            )}
+          />
+          <TableBody>
+            <TableRow>
+              <TableCell colSpan={2}>
+                {values.plugins?.target?.type ? (
+                  <DialogTrigger asChild>
+                    <div className="cursor-pointer">
+                      {t(
+                        `pages.explorer.endpoint.editor.form.plugins.target.types.${values.plugins?.target?.type}`
+                      )}
+                    </div>
+                  </DialogTrigger>
+                ) : (
+                  <div className="text-center">
+                    <DialogTrigger asChild>
+                      <Button icon variant="outline" size="sm">
+                        <Settings />
+                        {t(
+                          "pages.explorer.endpoint.editor.form.plugins.target.table.addButton"
+                        )}
+                      </Button>
+                    </DialogTrigger>
+                  </div>
                 )}
-          </Button>
-        </DialogTrigger>
-      </div>
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </Card>
+
       <ModalWrapper
-        title={t("pages.explorer.endpoint.editor.form.plugins.target.headline")}
+        title={t(
+          "pages.explorer.endpoint.editor.form.plugins.target.modal.headline"
+        )}
       >
         <PluginSelector
-          title={t("pages.explorer.endpoint.editor.form.plugins.target.label")}
+          title={t(
+            "pages.explorer.endpoint.editor.form.plugins.target.modal.label"
+          )}
         >
           <Select
             onValueChange={(e) => {
@@ -91,7 +119,7 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({ form }) => {
             <SelectTrigger variant="outline" className="grow">
               <SelectValue
                 placeholder={t(
-                  "pages.explorer.endpoint.editor.form.plugins.target.placeholder"
+                  "pages.explorer.endpoint.editor.form.plugins.target.modal.placeholder"
                 )}
               />
             </SelectTrigger>

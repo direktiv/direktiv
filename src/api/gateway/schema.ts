@@ -58,6 +58,7 @@ const RouteSchema = z.object({
   methods: z.array(MethodsSchema).nullable(),
   file_path: z.string(),
   path: z.string().optional(),
+  server_path: z.string().optional(),
   allow_anonymous: z.boolean(),
   errors: z.array(z.string()),
   warnings: z.array(z.string()),
