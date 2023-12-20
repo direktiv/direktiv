@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronUp, Edit, Plus, Trash } from "lucide-react";
+import { ContextMenu, TableHeader } from "../components/PluginsTable";
 import { Dialog, DialogTrigger } from "~/design/Dialog";
 import { FC, useState } from "react";
 import { ModalWrapper, PluginSelector } from "../components/Modal";
@@ -9,12 +9,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/design/Select";
+import { Table, TableBody, TableCell, TableRow } from "~/design/Table";
 import { UseFormReturn, useFieldArray } from "react-hook-form";
 
 import Button from "~/design/Button";
+import { Card } from "~/design/Card";
 import { EndpointFormSchemaType } from "../../../schema";
 import { JsOutboundForm } from "./JsOutboundForm";
 import { OutboundPluginFormSchemaType } from "../../../schema/plugins/outbound/schema";
+import { Plus } from "lucide-react";
 import { getJsOutboundConfigAtIndex } from "../utils";
 import { outboundPluginTypes } from "../../../schema/plugins/outbound";
 import { useTranslation } from "react-i18next";
@@ -52,68 +55,72 @@ export const OutboundPluginForm: FC<OutboundPluginFormProps> = ({ form }) => {
         setDialogOpen(isOpen);
       }}
     >
-      <div className="flex items-center gap-3">
-        {pluginsCount} Outbound plugins
-        <DialogTrigger asChild>
-          <Button icon variant="outline">
-            <Plus /> add outbound plugin
-          </Button>
-        </DialogTrigger>
-      </div>
-      {fields.map(({ id, type }, index, srcArray) => {
-        const canMoveDown = index < srcArray.length - 1;
-        const canMoveUp = index > 0;
-
-        return (
-          <div key={id} className="flex gap-2">
-            {type}
-            <Button
-              variant="destructive"
-              icon
-              size="sm"
-              onClick={() => {
+      <Card noShadow>
+        <Table>
+          <TableHeader
+            title={t(
+              "pages.explorer.endpoint.editor.form.plugins.outbound.table.headline",
+              {
+                count: pluginsCount,
+              }
+            )}
+          >
+            <DialogTrigger asChild>
+              <Button icon variant="outline" size="sm">
+                <Plus />{" "}
+                {t(
+                  "pages.explorer.endpoint.editor.form.plugins.outbound.table.addButton"
+                )}
+              </Button>
+            </DialogTrigger>
+          </TableHeader>
+          <TableBody>
+            {fields.map(({ id, type }, index, srcArray) => {
+              const canMoveDown = index < srcArray.length - 1;
+              const canMoveUp = index > 0;
+              const onMoveUp = canMoveUp
+                ? () => {
+                    movePlugin(index, index - 1);
+                  }
+                : undefined;
+              const onMoveDown = canMoveDown
+                ? () => {
+                    movePlugin(index, index + 1);
+                  }
+                : undefined;
+              const onDelete = () => {
                 deletePlugin(index);
-              }}
-            >
-              <Trash />
-            </Button>
-            <Button
-              variant="outline"
-              icon
-              size="sm"
-              disabled={!canMoveDown}
-              onClick={() => {
-                movePlugin(index, index + 1);
-              }}
-            >
-              <ChevronDown />
-            </Button>
-            <Button
-              variant="outline"
-              icon
-              size="sm"
-              disabled={!canMoveUp}
-              onClick={() => {
-                movePlugin(index, index - 1);
-              }}
-            >
-              <ChevronUp />
-            </Button>
-            <Button
-              variant="outline"
-              icon
-              size="sm"
-              onClick={() => {
-                setSelectedPlugin(type);
-                setDialogOpen(true);
-                setEditIndex(index);
-              }}
-            >
-              <Edit />
-            </Button>
-          </div>
-        );
-      })}
+              };
+
+              return (
+                <TableRow
+                  key={id}
+                  className="cursor-pointer"
+                  onClick={() => {
+                    setSelectedPlugin(type);
+                    setDialogOpen(true);
+                    setEditIndex(index);
+                  }}
+                >
+                  <TableCell>
+                    {t(
+                      `pages.explorer.endpoint.editor.form.plugins.outbound.types.${type}`
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <ContextMenu
+                      onDelete={onDelete}
+                      onMoveDown={onMoveDown}
+                      onMoveUp={onMoveUp}
+                    />
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </Card>
+
       <ModalWrapper
         title={
           editIndex === undefined
