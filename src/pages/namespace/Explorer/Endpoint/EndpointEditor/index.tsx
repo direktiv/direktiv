@@ -63,8 +63,8 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data, path }) => {
             className="relative flex grow flex-col space-y-4 p-5"
           >
             <div className="flex grow">
-              <div className="grid grow grid-cols-2 gap-5">
-                <Card className="h-[calc(100vh-15rem)] overflow-y-scroll p-5">
+              <div className="grid grow grid-cols-1 gap-5 lg:grid-cols-2">
+                <Card className="p-5 lg:h-[calc(100vh-15rem)] lg:overflow-y-scroll">
                   {!endpointConfig ? (
                     <div>
                       <Alert variant="error">
@@ -85,7 +85,7 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data, path }) => {
                     </div>
                   )}
                 </Card>
-                <Card className="flex grow p-4">
+                <Card className="flex grow p-4 max-lg:h-[500px]">
                   <Editor
                     value={preview}
                     theme={theme ?? undefined}
