@@ -386,6 +386,15 @@
                 }
               },
               "auth": {
+                "headlineAdd": "Add auth plugin",
+                "headlineEdit": "Edit auth plugin",
+                "label": "Auth plugin",
+                "placeholder": "Please select an auth plugin",
+                "types": {
+                  "basic-auth": "Basic Auth",
+                  "github-webhook-auth": "Github Webhook",
+                  "key-auth": "Key Auth"
+                },
                 "basciAuth": {
                   "addUsernameHeader": "Add username header",
                   "addTagsHeader": "Add tags header",
