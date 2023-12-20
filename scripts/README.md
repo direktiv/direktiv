@@ -37,13 +37,7 @@ chmod 700 get_helm.sh
 
 **Base Install**
 
-Installs DB, Knative
-
+Installs DB, Knative, Direktiv
 ```
-scripts/resetAll.sh
-```
-
-Installs Direktiv
-```
-make cluster
+make -C ../ k3s-install
 ```
