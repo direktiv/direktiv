@@ -65,7 +65,7 @@ export const JsOutboundForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
               render={({ field }) => (
                 <Editor
                   theme={theme ?? undefined}
-                  language="plaintext"
+                  language="javascript"
                   value={field.value}
                   onChange={field.onChange}
                 />
