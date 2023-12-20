@@ -82,7 +82,7 @@ const FilePicker = ({
           <div>
             <FilepickerHeading>
               <div className="py-3">
-                {t("components.filepicker.error.title")}
+                {t("components.filepicker.error.title", { path })}
               </div>
             </FilepickerHeading>
             <FilepickerList>

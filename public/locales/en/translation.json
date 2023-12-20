@@ -1218,7 +1218,7 @@
       "buttonText": "Browse Files",
       "placeholder": "No File selected",
       "error": {
-        "title": "The provided Path was not found.",
+        "title": "The path \"{{path}}\" was not found.",
         "linkText": "Go back to root directory"
       }
     },
