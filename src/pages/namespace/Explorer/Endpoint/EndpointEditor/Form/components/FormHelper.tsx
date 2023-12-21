@@ -50,39 +50,34 @@ export const ArrayInput: FC<ArrayInputProps> = ({
 
   const addToArray = () => {
     if (inputVal.length > 0) {
-      setStringArr((old) => {
-        const newValue = [...old, inputVal];
-        const newValueRemovedEmpty = newValue.filter(Boolean);
-        onChange(newValueRemovedEmpty);
-        setInputVal("");
-        return newValueRemovedEmpty;
-      });
+      const newStringArr = [...stringArr, inputVal];
+      const newStringArrEmptyRemoved = newStringArr.filter(Boolean);
+      setInputVal("");
+      setStringArr(newStringArrEmptyRemoved);
+      onChange(newStringArrEmptyRemoved);
     }
   };
 
   const changeEntry = (index: number, entry: string) => {
-    setStringArr((oldArray) => {
-      const newArray = oldArray.map((oldValue, olcValueIndex) => {
-        if (olcValueIndex === index) {
-          return entry;
-        }
-        return oldValue;
-      });
-
-      if (entry) {
-        onChange(newArray);
+    const newStringArr = stringArr.map((oldValue, oldValueIndex) => {
+      if (oldValueIndex === index) {
+        return entry;
       }
-      return newArray;
+      return oldValue;
     });
+    if (entry) {
+      onChange(newStringArr);
+    }
+    setStringArr(newStringArr);
   };
 
   const removeEntry = (index: number) => {
-    setStringArr((old) => {
-      const newValue = old.filter((_, i) => i !== index);
-      const newValueRemovedEmpty = newValue.filter(Boolean);
-      onChange(newValueRemovedEmpty);
-      return newValueRemovedEmpty;
-    });
+    const newStringArr = stringArr.filter(
+      (_, oldValueIndex) => oldValueIndex !== index
+    );
+    const newValueRemovedEmpty = newStringArr.filter(Boolean);
+    setStringArr(newValueRemovedEmpty);
+    onChange(newValueRemovedEmpty);
   };
 
   return (
