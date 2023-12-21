@@ -2,6 +2,7 @@ import { NodeListSchemaType, WorkflowCreatedSchema } from "../schema/node";
 
 import { apiFactory } from "~/api/apiFactory";
 import { forceLeadingSlash } from "../utils";
+import { gatewayKeys } from "~/api/gateway";
 import { getMessageFromApiError } from "~/api/errorHandling";
 import { treeKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
@@ -64,6 +65,12 @@ export const useUpdateWorkflow = ({
           path: variables.path,
         }),
         () => data
+      );
+      // if the updated fiel was a route, we need to invalidate the routes query
+      queryClient.invalidateQueries(
+        gatewayKeys.routes(namespace, {
+          apiKey: apiKey ?? undefined,
+        })
       );
       onSuccess?.();
     },
