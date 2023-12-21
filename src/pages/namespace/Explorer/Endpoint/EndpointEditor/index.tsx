@@ -96,7 +96,7 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data, path }) => {
                 {isDirty && (
                   <div className="text-sm text-gray-8 dark:text-gray-dark-8">
                     <span className="text-center">
-                      {t("pages.explorer.workflow.editor.unsavedNote")}
+                      {t("pages.explorer.endpoint.editor.unsavedNote")}
                     </span>
                   </div>
                 )}

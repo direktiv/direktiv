@@ -455,7 +455,7 @@
             }
           },
           "saveBtn": "Save",
-          "previewTitle": "File Preview"
+          "unsavedNote": "unsaved changes"
         }
       },
       "consumer": {
