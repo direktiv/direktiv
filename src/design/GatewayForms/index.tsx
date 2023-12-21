@@ -190,7 +190,7 @@ const GatewayTextarea: FC<InputPropsType> = ({
   </div>
 );
 
-type GatewayArrayProps = PropsWithChildren & {
+type GatewayArrayProps = {
   placeholder?: string;
   externalArray: string[];
   onChange: (newValue: string[]) => void;
@@ -199,7 +199,6 @@ type GatewayArrayProps = PropsWithChildren & {
 const GatewayArray: FC<GatewayArrayProps> = ({
   externalArray,
   onChange,
-  children,
   placeholder,
 }) => {
   const [internalArray, setInternalArray] = useState(externalArray);
@@ -243,65 +242,55 @@ const GatewayArray: FC<GatewayArrayProps> = ({
   };
 
   return (
-    <div className="flex flex-row">
-      <div className="flex flex-col justify-start">
-        <label
-          htmlFor="add_variable"
-          className="m-2 w-40 py-2 text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-        >
-          {children}
-        </label>
-      </div>
-      <div className="flex flex-col">
-        {internalArray.map((value, valueIndex) => (
-          <div key={valueIndex} className="flex justify-start py-2">
-            <ButtonBar>
-              <Input
-                placeholder={placeholder}
-                value={value}
-                onChange={(e) => {
-                  changeValue(valueIndex, e.target.value);
-                }}
-                className="sm:w-max"
-                id="add_key"
-              />
-              {}
-              <Button
-                icon
-                variant="outline"
-                type="button"
-                onClick={() => {
-                  deleteValue(valueIndex);
-                }}
-              >
-                <X />
-              </Button>
-            </ButtonBar>
-          </div>
-        ))}
+    <div className="grid grid-cols-2 gap-5">
+      {internalArray.map((value, valueIndex) => (
+        <ButtonBar key={valueIndex}>
+          <Input
+            placeholder={placeholder}
+            value={value}
+            onChange={(e) => {
+              changeValue(valueIndex, e.target.value);
+            }}
+          />
+          {}
+          <Button
+            icon
+            variant="outline"
+            type="button"
+            onClick={() => {
+              deleteValue(valueIndex);
+            }}
+          >
+            <X />
+          </Button>
+        </ButtonBar>
+      ))}
 
-        <div className="flex justify-start py-2">
-          <ButtonBar>
-            <Input
-              placeholder={placeholder}
-              value={inputVal}
-              onChange={(e) => {
-                setInputVal(e.target.value);
-              }}
-            />
-            <Button
-              icon
-              variant="outline"
-              onClick={() => {
-                newValue(inputVal);
-              }}
-              type="button"
-            >
-              <Plus />
-            </Button>
-          </ButtonBar>
-        </div>
-      </div>
+      <ButtonBar>
+        <Input
+          placeholder={placeholder}
+          value={inputVal}
+          onChange={(e) => {
+            setInputVal(e.target.value);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              newValue(inputVal);
+              e.preventDefault();
+            }
+          }}
+        />
+        <Button
+          icon
+          variant={!inputVal ? "outline" : undefined}
+          onClick={() => {
+            newValue(inputVal);
+          }}
+          type="button"
+        >
+          <Plus />
+        </Button>
+      </ButtonBar>
     </div>
   );
 };
