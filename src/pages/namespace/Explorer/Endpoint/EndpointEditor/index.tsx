@@ -57,11 +57,11 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data, path }) => {
         return (
           <form
             onSubmit={handleSubmit(save)}
-            className="relative flex grow flex-col gap-4 p-5"
+            className="relative flex-col gap-4 p-5"
           >
-            <div className="flex grow">
+            <div className="flex flex-col gap-4">
               <div className="grid grow grid-cols-1 gap-5 lg:grid-cols-2">
-                <Card className="p-5 lg:h-[calc(100vh-15rem)] lg:overflow-y-scroll">
+                <Card className="p-5 lg:h-[calc(100vh-15.5rem)] lg:overflow-y-scroll">
                   {endpointConfigError ? (
                     <div className="flex flex-col gap-5">
                       <Alert variant="error">
@@ -92,23 +92,23 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data, path }) => {
                   />
                 </Card>
               </div>
-            </div>
-            <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
-              {isDirty && (
-                <div className="text-sm text-gray-8 dark:text-gray-dark-8">
-                  <span className="text-center">
-                    {t("pages.explorer.workflow.editor.unsavedNote")}
-                  </span>
-                </div>
-              )}
-              <Button
-                variant={isDirty ? "primary" : "outline"}
-                disabled={disableButton}
-                type="submit"
-              >
-                <Save />
-                {t("pages.explorer.endpoint.editor.saveBtn")}
-              </Button>
+              <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
+                {isDirty && (
+                  <div className="text-sm text-gray-8 dark:text-gray-dark-8">
+                    <span className="text-center">
+                      {t("pages.explorer.workflow.editor.unsavedNote")}
+                    </span>
+                  </div>
+                )}
+                <Button
+                  variant={isDirty ? "primary" : "outline"}
+                  disabled={disableButton}
+                  type="submit"
+                >
+                  <Save />
+                  {t("pages.explorer.endpoint.editor.saveBtn")}
+                </Button>
+              </div>
             </div>
           </form>
         );
