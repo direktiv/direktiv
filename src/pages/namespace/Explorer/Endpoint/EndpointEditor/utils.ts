@@ -4,11 +4,11 @@ import { ZodError } from "zod";
 import { stringify as jsonToPrettyYamlStringify } from "json-to-pretty-yaml";
 import yamljs from "js-yaml";
 
-type ReturnType =
+type SerializeReturnType =
   | [EndpointFormSchemaType, undefined]
   | [undefined, ZodError<EndpointFormSchemaType>];
 
-export const serializeEndpointFile = (yaml: string): ReturnType => {
+export const serializeEndpointFile = (yaml: string): SerializeReturnType => {
   let json;
   try {
     json = yamljs.load(yaml);
