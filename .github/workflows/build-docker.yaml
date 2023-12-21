@@ -1,6 +1,6 @@
 name: Create and push PR Docker image
 
-on: pull_request
+on: workflow_dispatch
 
 env:
   REGISTRY: ghcr.io
