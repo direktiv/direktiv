@@ -6,7 +6,7 @@ export const supportedLanguages = [
   "css",
   "json",
   "shell",
-  "shell",
+  "plaintext",
   "javascript",
   "yaml",
 ] as const;
