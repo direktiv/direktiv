@@ -392,10 +392,10 @@
                   "omitConsumer": "Omit Consumer"
                 },
                 "acl": {
-                  "allow_groups": "Allow Groups",
-                  "deny_groups": "Deny Groups",
-                  "allow_tags": "Allow tags",
-                  "deny_tags": "Deny tags"
+                  "allow_groups": "Allow Groups (optional)",
+                  "deny_groups": "Deny Groups (optional)",
+                  "allow_tags": "Allow tags (optional)",
+                  "deny_tags": "Deny tags (optional)"
                 }
               },
               "outbound": {
