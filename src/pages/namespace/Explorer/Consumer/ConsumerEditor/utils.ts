@@ -1,7 +1,7 @@
 import { ConsumerFormSchema, ConsumerFormSchemaType } from "./schema";
 
 import { ZodError } from "zod";
-import { stringify as jsonToPrettyYamlStringify } from "json-to-pretty-yaml";
+import { jsonToYaml } from "../../utils";
 import yamljs from "js-yaml";
 
 type SerializeReturnType =
@@ -28,16 +28,4 @@ const defaultConsumerFileJson: ConsumerFormSchemaType = {
   direktiv_api: "consumer/v1",
 };
 
-export const defaultConsumerFileYaml = jsonToPrettyYamlStringify(
-  defaultConsumerFileJson
-);
-
-/**
- * a wrapper around the stringify method of json-to-pretty-yaml
- * but it will serialize an empty object to an empty string instead
- * of "{}"
- *
- * TODO: merge this function with the one in EndpointEditor/utils.ts
- */
-export const jsonToYaml = (t: Record<string, unknown>) =>
-  Object.keys(t).length === 0 ? "" : jsonToPrettyYamlStringify(t);
+export const defaultConsumerFileYaml = jsonToYaml(defaultConsumerFileJson);

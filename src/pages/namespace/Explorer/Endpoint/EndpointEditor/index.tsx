@@ -1,5 +1,3 @@
-import { jsonToYaml, serializeEndpointFile } from "./utils";
-
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
@@ -11,6 +9,8 @@ import FormErrors from "~/componentsNext/FormErrors";
 import { RouteSchemeType } from "~/api/gateway/schema";
 import { Save } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
+import { jsonToYaml } from "../../utils";
+import { serializeEndpointFile } from "./utils";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
