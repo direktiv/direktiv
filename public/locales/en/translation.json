@@ -395,7 +395,9 @@
                   "allow_groups": "Allow Groups (optional)",
                   "deny_groups": "Deny Groups (optional)",
                   "allow_tags": "Allow tags (optional)",
-                  "deny_tags": "Deny tags (optional)"
+                  "deny_tags": "Deny tags (optional)",
+                  "groupPlaceholder": "Enter a group",
+                  "tagPlaceholder": "Enter a Tag"
                 }
               },
               "outbound": {
