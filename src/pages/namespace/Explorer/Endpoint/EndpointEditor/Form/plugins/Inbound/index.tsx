@@ -12,10 +12,12 @@ import {
 import { Table, TableBody, TableCell, TableRow } from "~/design/Table";
 import { UseFormReturn, useFieldArray } from "react-hook-form";
 import {
+  getAclConfigAtIndex,
   getJsInboundConfigAtIndex,
   getRequestConvertConfigAtIndex,
 } from "../utils";
 
+import { AclForm } from "./AclForm";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import { EndpointFormSchemaType } from "../../../schema";
@@ -49,9 +51,10 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({ form }) => {
   const [selectedPlugin, setSelectedPlugin] =
     useState<InboundPluginFormSchemaType["type"]>();
 
-  const { jsInbound, requestConvert } = inboundPluginTypes;
+  const { jsInbound, requestConvert, acl } = inboundPluginTypes;
 
   const pluginsCount = fields.length;
+  const formId = "inboundPluginForm";
 
   return (
     <Dialog
@@ -128,6 +131,8 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({ form }) => {
       </Card>
 
       <ModalWrapper
+        formId={formId}
+        showSaveBtn={!!selectedPlugin}
         title={
           editIndex === undefined
             ? t(
@@ -169,6 +174,7 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({ form }) => {
         </PluginSelector>
         {selectedPlugin === requestConvert && (
           <RequestConvertForm
+            formId={formId}
             defaultConfig={getRequestConvertConfigAtIndex(fields, editIndex)}
             onSubmit={(configuration) => {
               setDialogOpen(false);
@@ -183,7 +189,24 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({ form }) => {
         )}
         {selectedPlugin === jsInbound && (
           <JsInboundForm
+            formId={formId}
             defaultConfig={getJsInboundConfigAtIndex(fields, editIndex)}
+            onSubmit={(configuration) => {
+              setDialogOpen(false);
+              if (editIndex === undefined) {
+                addPlugin(configuration);
+              } else {
+                editPlugin(editIndex, configuration);
+              }
+              setEditIndex(undefined);
+            }}
+          />
+        )}
+
+        {selectedPlugin === acl && (
+          <AclForm
+            formId={formId}
+            defaultConfig={getAclConfigAtIndex(fields, editIndex)}
             onSubmit={(configuration) => {
               setDialogOpen(false);
               if (editIndex === undefined) {

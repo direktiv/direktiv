@@ -22,7 +22,7 @@ export const Row: FC<RowProps> = ({ gateway }) => {
   const { t } = useTranslation();
   if (!namespace) return null;
 
-  const publicPath = gateway.server_path
+  const path = gateway.server_path
     ? `${window.location.origin}${gateway.server_path}`
     : undefined;
 
@@ -40,7 +40,6 @@ export const Row: FC<RowProps> = ({ gateway }) => {
           >
             {gateway.file_path}
           </Link>
-          {publicPath && <PublicPathInput path={publicPath} />}
           <div className="flex gap-1">
             <MessagesOverlay messages={gateway.errors} variant="error">
               {(errorCount) => (
@@ -67,7 +66,7 @@ export const Row: FC<RowProps> = ({ gateway }) => {
         <Methods methods={gateway.methods} />
       </TableCell>
       <TableCell className="whitespace-normal break-all">
-        {gateway.path}
+        {path && <PublicPathInput path={path} />}
       </TableCell>
       <TableCell>
         <Plugins plugins={gateway.plugins} />

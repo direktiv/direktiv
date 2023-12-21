@@ -1,6 +1,5 @@
 import { Controller, useForm } from "react-hook-form";
 import { FC, FormEvent } from "react";
-import { Fieldset, ModalFooter, PluginWrapper } from "../components/Modal";
 import FormErrors, { errorsType } from "~/componentsNext/FormErrors";
 import {
   JsInboundFormSchema,
@@ -9,6 +8,8 @@ import {
 
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
+import { Fieldset } from "../../components/FormHelper";
+import { PluginWrapper } from "../components/Modal";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -16,11 +17,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 type OptionalConfig = Partial<JsInboundFormSchemaType["configuration"]>;
 
 type FormProps = {
+  formId: string;
   defaultConfig?: OptionalConfig;
   onSubmit: (data: JsInboundFormSchemaType) => void;
 };
 
-export const JsInboundForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
+export const JsInboundForm: FC<FormProps> = ({
+  defaultConfig,
+  onSubmit,
+  formId,
+}) => {
   const { t } = useTranslation();
   const {
     handleSubmit,
@@ -44,7 +50,7 @@ export const JsInboundForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
   const theme = useTheme();
 
   return (
-    <form onSubmit={submitForm}>
+    <form onSubmit={submitForm} id={formId}>
       {errors?.configuration && (
         <FormErrors
           errors={errors?.configuration as errorsType}
@@ -64,7 +70,7 @@ export const JsInboundForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
               render={({ field }) => (
                 <Editor
                   theme={theme ?? undefined}
-                  language="plaintext"
+                  language="javascript"
                   value={field.value}
                   onChange={field.onChange}
                 />
@@ -73,7 +79,6 @@ export const JsInboundForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
           </Card>
         </Fieldset>
       </PluginWrapper>
-      <ModalFooter />
     </form>
   );
 };

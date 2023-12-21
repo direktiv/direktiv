@@ -1,5 +1,4 @@
 import { FC, FormEvent } from "react";
-import { Fieldset, ModalFooter, PluginWrapper } from "../components/Modal";
 import FormErrors, { errorsType } from "~/componentsNext/FormErrors";
 import {
   RequestConvertFormSchema,
@@ -7,6 +6,8 @@ import {
 } from "../../../schema/plugins/inbound/requestConvert";
 
 import { Checkbox } from "~/design/Checkbox";
+import { Fieldset } from "../../components/FormHelper";
+import { PluginWrapper } from "../components/Modal";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -21,6 +22,7 @@ const predfinedConfig: OptionalConfig = {
 };
 
 type FormProps = {
+  formId: string;
   defaultConfig?: OptionalConfig;
   onSubmit: (data: RequestConvertFormSchemaType) => void;
 };
@@ -28,6 +30,7 @@ type FormProps = {
 export const RequestConvertForm: FC<FormProps> = ({
   defaultConfig,
   onSubmit,
+  formId,
 }) => {
   const { t } = useTranslation();
   const {
@@ -52,7 +55,7 @@ export const RequestConvertForm: FC<FormProps> = ({
   };
 
   return (
-    <form onSubmit={submitForm}>
+    <form onSubmit={submitForm} id={formId}>
       <PluginWrapper>
         {errors?.configuration && (
           <FormErrors
@@ -129,7 +132,6 @@ export const RequestConvertForm: FC<FormProps> = ({
           />
         </Fieldset>
       </PluginWrapper>
-      <ModalFooter />
     </form>
   );
 };

@@ -35,7 +35,7 @@ const RoutesTable = () => {
           <TableHeaderCell className="w-32">
             {t("pages.gateway.routes.columns.methods")}
           </TableHeaderCell>
-          <TableHeaderCell className="w-52">
+          <TableHeaderCell className="w-80">
             {t("pages.gateway.routes.columns.path")}
           </TableHeaderCell>
           <TableHeaderCell className="w-32">

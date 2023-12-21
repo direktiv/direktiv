@@ -1,14 +1,15 @@
 import { Controller, useForm } from "react-hook-form";
 import { FC, FormEvent } from "react";
-import { Fieldset, ModalFooter, PluginWrapper } from "../components/Modal";
 import FormErrors, { errorsType } from "~/componentsNext/FormErrors";
 import {
   TargetNamespaceVarFormSchema,
   TargetNamespaceVarFormSchemaType,
 } from "../../../schema/plugins/target/targetNamespaceVar";
 
+import { Fieldset } from "../../components/FormHelper";
 import Input from "~/design/Input";
 import NamespaceSelector from "~/componentsNext/NamespaceSelector";
+import { PluginWrapper } from "../components/Modal";
 import { treatEmptyStringAsUndefined } from "../utils";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -18,6 +19,7 @@ type OptionalConfig = Partial<
 >;
 
 type FormProps = {
+  formId: string;
   defaultConfig?: OptionalConfig;
   onSubmit: (data: TargetNamespaceVarFormSchemaType) => void;
 };
@@ -25,6 +27,7 @@ type FormProps = {
 export const TargetNamespaceVarForm: FC<FormProps> = ({
   defaultConfig,
   onSubmit,
+  formId,
 }) => {
   const { t } = useTranslation();
   const {
@@ -48,7 +51,7 @@ export const TargetNamespaceVarForm: FC<FormProps> = ({
   };
 
   return (
-    <form onSubmit={submitForm}>
+    <form onSubmit={submitForm} id={formId}>
       <PluginWrapper>
         {errors?.configuration && (
           <FormErrors
@@ -99,7 +102,6 @@ export const TargetNamespaceVarForm: FC<FormProps> = ({
           />
         </Fieldset>
       </PluginWrapper>
-      <ModalFooter />
     </form>
   );
 };

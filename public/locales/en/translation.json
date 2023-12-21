@@ -305,6 +305,10 @@
         "editor": {
           "form": {
             "serialisationError": "There was an error serializing the form data",
+            "path": "path",
+            "timeout": "timeout",
+            "methods": "methods",
+            "allowAnonymous": "allow anonymous",
             "plugins": {
               "saveBtn": "Save",
               "deleteBtn": "Delete",
@@ -386,6 +390,14 @@
                   "omitQueries": "Omit Queries",
                   "omitBody": "Omit Body",
                   "omitConsumer": "Omit Consumer"
+                },
+                "acl": {
+                  "allow_groups": "Allow Groups (optional)",
+                  "deny_groups": "Deny Groups (optional)",
+                  "allow_tags": "Allow tags (optional)",
+                  "deny_tags": "Deny tags (optional)",
+                  "groupPlaceholder": "Enter a group",
+                  "tagPlaceholder": "Enter a Tag"
                 }
               },
               "outbound": {

@@ -8,21 +8,39 @@ import { FC, PropsWithChildren } from "react";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
-import { twMergeClsx } from "~/util/helpers";
 import { useTranslation } from "react-i18next";
 
 type ModalWrapperProps = PropsWithChildren & {
   title: string;
+  formId?: string;
+  showSaveBtn?: boolean;
 };
 
-export const ModalWrapper: FC<ModalWrapperProps> = ({ title, children }) => (
-  <DialogContent className="sm:max-w-xl">
-    <DialogHeader>
-      <DialogTitle>{title}</DialogTitle>
-    </DialogHeader>
-    <div className="my-3 flex flex-col gap-5">{children}</div>
-  </DialogContent>
-);
+export const ModalWrapper: FC<ModalWrapperProps> = ({
+  title,
+  showSaveBtn = true,
+  children,
+  formId,
+}) => {
+  const { t } = useTranslation();
+  return (
+    <DialogContent className="sm:max-w-xl">
+      <DialogHeader>
+        <DialogTitle>{title}</DialogTitle>
+      </DialogHeader>
+      <div className="flex max-h-[70vh] flex-col gap-5 overflow-y-auto p-[1px]">
+        {children}
+      </div>
+      {showSaveBtn && (
+        <DialogFooter>
+          <Button type="submit" form={formId ?? undefined}>
+            {t("pages.explorer.endpoint.editor.form.plugins.saveBtn")}
+          </Button>
+        </DialogFooter>
+      )}
+    </DialogContent>
+  );
+};
 
 type PluginSelectorProps = PropsWithChildren & {
   title: string;
@@ -43,39 +61,3 @@ export const PluginWrapper: FC<PropsWithChildren> = ({ children }) => (
     {children}
   </Card>
 );
-
-type FieldsetProps = PropsWithChildren & {
-  label: string;
-  htmlFor?: string;
-  horizontal?: boolean;
-};
-
-export const Fieldset: FC<FieldsetProps> = ({
-  label,
-  htmlFor,
-  children,
-  horizontal,
-}) => (
-  <fieldset
-    className={twMergeClsx(
-      "mb-2 flex gap-2",
-      horizontal ? "flex-row-reverse items-center" : "flex-col"
-    )}
-  >
-    <label className="grow text-sm" htmlFor={htmlFor}>
-      {label}
-    </label>
-    {children}
-  </fieldset>
-);
-
-export const ModalFooter = () => {
-  const { t } = useTranslation();
-  return (
-    <DialogFooter className="pt-5">
-      <Button type="submit">
-        {t("pages.explorer.endpoint.editor.form.plugins.saveBtn")}
-      </Button>
-    </DialogFooter>
-  );
-};

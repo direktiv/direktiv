@@ -62,6 +62,8 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({ form }) => {
   const currentTargetNamespaceVarConfig =
     currentType === targetNamespaceVar ? currentConfiguration : undefined;
 
+  const formId = "targetPluginForm";
+
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <Card noShadow>
@@ -101,6 +103,8 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({ form }) => {
       </Card>
 
       <ModalWrapper
+        formId={formId}
+        showSaveBtn={!!selectedPlugin}
         title={t(
           "pages.explorer.endpoint.editor.form.plugins.target.modal.headline"
         )}
@@ -137,6 +141,7 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({ form }) => {
 
         {selectedPlugin === instantResponse && (
           <InstantResponseForm
+            formId={formId}
             defaultConfig={currentInstantResponseConfig}
             onSubmit={(configuration) => {
               setDialogOpen(false);
@@ -146,6 +151,7 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({ form }) => {
         )}
         {selectedPlugin === targetFlow && (
           <TargetFlowForm
+            formId={formId}
             defaultConfig={currentTargetFlowConfig}
             onSubmit={(configuration) => {
               setDialogOpen(false);
@@ -155,6 +161,7 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({ form }) => {
         )}
         {selectedPlugin === targetFlowVar && (
           <TargetFlowVarForm
+            formId={formId}
             defaultConfig={currentTargetFlowVarConfig}
             onSubmit={(configuration) => {
               setDialogOpen(false);
@@ -164,6 +171,7 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({ form }) => {
         )}
         {selectedPlugin === targetNamespaceFile && (
           <TargetNamespaceFileForm
+            formId={formId}
             defaultConfig={currentTargetNamespaceFileConfig}
             onSubmit={(configuration) => {
               setDialogOpen(false);
@@ -173,6 +181,7 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({ form }) => {
         )}
         {selectedPlugin === targetNamespaceVar && (
           <TargetNamespaceVarForm
+            formId={formId}
             defaultConfig={currentTargetNamespaceVarConfig}
             onSubmit={(configuration) => {
               setDialogOpen(false);

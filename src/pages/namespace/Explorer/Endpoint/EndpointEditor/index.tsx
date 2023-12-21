@@ -1,3 +1,5 @@
+import { jsonToYaml, serializeEndpointFile } from "./utils";
+
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
@@ -9,8 +11,6 @@ import FormErrors from "~/componentsNext/FormErrors";
 import { RouteSchemeType } from "~/api/gateway/schema";
 import { Save } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
-import { serializeEndpointFile } from "./utils";
-import { stringify } from "json-to-pretty-yaml";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
@@ -33,7 +33,7 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data, path }) => {
   const { mutate: updateRoute, isLoading } = useUpdateWorkflow();
 
   const save = (data: EndpointFormSchemaType) => {
-    const toSave = stringify(data);
+    const toSave = jsonToYaml(data);
     updateRoute({
       path,
       fileContent: toSave,
@@ -44,36 +44,33 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data, path }) => {
     <Form defaultConfig={endpointConfig}>
       {({
         formControls: {
-          formState: { errors, dirtyFields },
+          formState: { errors },
           handleSubmit,
         },
         formMarkup,
         values,
       }) => {
-        const preview = stringify(values);
-        /**
-         * the isDirty from react-hook-form fromState is not somehow not working,
-         * or it is working as soon as we have dirtyFields destructured from the formState
-         */
-        const isDirty = Object.keys(dirtyFields).length > 0;
+        const preview = jsonToYaml(values);
+        const isDirty = !endpointConfigError && preview !== endpointFileContent;
+        const disableButton = isLoading || !!endpointConfigError;
 
         return (
           <form
             onSubmit={handleSubmit(save)}
-            className="relative flex grow flex-col space-y-4 p-5"
+            className="relative flex-col gap-4 p-5"
           >
-            <div className="flex grow">
-              <div className="grid grow grid-cols-2 gap-5">
-                <Card className="p-5">
-                  {!endpointConfig ? (
-                    <div>
+            <div className="flex flex-col gap-4">
+              <div className="grid grow grid-cols-1 gap-5 lg:grid-cols-2">
+                <Card className="p-5 lg:h-[calc(100vh-15.5rem)] lg:overflow-y-scroll">
+                  {endpointConfigError ? (
+                    <div className="flex flex-col gap-5">
                       <Alert variant="error">
                         {t(
                           "pages.explorer.endpoint.editor.form.serialisationError"
                         )}
                       </Alert>
-                      <ScrollArea className="h-full w-full whitespace-nowrap rounded-md border p-4">
-                        <pre>
+                      <ScrollArea className="h-full w-full whitespace-nowrap">
+                        <pre className="grow text-sm text-primary-500">
                           {JSON.stringify(endpointConfigError, null, 2)}
                         </pre>
                       </ScrollArea>
@@ -85,7 +82,7 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data, path }) => {
                     </div>
                   )}
                 </Card>
-                <Card className="flex grow p-4">
+                <Card className="flex grow p-4 max-lg:h-[500px]">
                   <Editor
                     value={preview}
                     theme={theme ?? undefined}
@@ -95,23 +92,23 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data, path }) => {
                   />
                 </Card>
               </div>
-            </div>
-            <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
-              {isDirty && (
-                <div className="text-sm text-gray-8 dark:text-gray-dark-8">
-                  <span className="text-center">
-                    {t("pages.explorer.workflow.editor.unsavedNote")}
-                  </span>
-                </div>
-              )}
-              <Button
-                variant={isDirty ? "primary" : "outline"}
-                disabled={isLoading}
-                type="submit"
-              >
-                <Save />
-                {t("pages.explorer.endpoint.editor.saveBtn")}
-              </Button>
+              <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
+                {isDirty && (
+                  <div className="text-sm text-gray-8 dark:text-gray-dark-8">
+                    <span className="text-center">
+                      {t("pages.explorer.workflow.editor.unsavedNote")}
+                    </span>
+                  </div>
+                )}
+                <Button
+                  variant={isDirty ? "primary" : "outline"}
+                  disabled={disableButton}
+                  type="submit"
+                >
+                  <Save />
+                  {t("pages.explorer.endpoint.editor.saveBtn")}
+                </Button>
+              </div>
             </div>
           </form>
         );

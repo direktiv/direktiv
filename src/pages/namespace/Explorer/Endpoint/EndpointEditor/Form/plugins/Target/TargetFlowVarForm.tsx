@@ -1,14 +1,16 @@
 import { Controller, useForm } from "react-hook-form";
 import { FC, FormEvent } from "react";
-import { Fieldset, ModalFooter, PluginWrapper } from "../components/Modal";
 import FormErrors, { errorsType } from "~/componentsNext/FormErrors";
 import {
   TargetFlowVarFormSchema,
   TargetFlowVarFormSchemaType,
 } from "../../../schema/plugins/target/targetFlowVar";
 
+import { Fieldset } from "../../components/FormHelper";
+import FilePicker from "~/componentsNext/FilePicker";
 import Input from "~/design/Input";
 import NamespaceSelector from "~/componentsNext/NamespaceSelector";
+import { PluginWrapper } from "../components/Modal";
 import { treatEmptyStringAsUndefined } from "../utils";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -16,6 +18,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 type OptionalConfig = Partial<TargetFlowVarFormSchemaType["configuration"]>;
 
 type FormProps = {
+  formId: string;
   defaultConfig?: OptionalConfig;
   onSubmit: (data: TargetFlowVarFormSchemaType) => void;
 };
@@ -23,11 +26,13 @@ type FormProps = {
 export const TargetFlowVarForm: FC<FormProps> = ({
   defaultConfig,
   onSubmit,
+  formId,
 }) => {
   const { t } = useTranslation();
   const {
     control,
     register,
+    watch,
     handleSubmit,
     formState: { errors },
   } = useForm<TargetFlowVarFormSchemaType>({
@@ -46,7 +51,7 @@ export const TargetFlowVarForm: FC<FormProps> = ({
   };
 
   return (
-    <form onSubmit={submitForm}>
+    <form onSubmit={submitForm} id={formId}>
       <PluginWrapper>
         {errors?.configuration && (
           <FormErrors
@@ -78,7 +83,18 @@ export const TargetFlowVarForm: FC<FormProps> = ({
           )}
           htmlFor="workflow"
         >
-          <Input {...register("configuration.flow")} id="workflow" />
+          <Controller
+            control={control}
+            name="configuration.flow"
+            render={({ field }) => (
+              <FilePicker
+                namespace={watch("configuration.namespace")}
+                onChange={field.onChange}
+                defaultPath={field.value}
+                selectable={(node) => node.type === "workflow"}
+              />
+            )}
+          />
         </Fieldset>
         <Fieldset
           label={t(
@@ -105,7 +121,6 @@ export const TargetFlowVarForm: FC<FormProps> = ({
           />
         </Fieldset>
       </PluginWrapper>
-      <ModalFooter />
     </form>
   );
 };

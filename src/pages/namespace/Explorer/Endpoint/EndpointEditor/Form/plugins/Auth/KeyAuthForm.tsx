@@ -1,5 +1,4 @@
 import { FC, FormEvent } from "react";
-import { Fieldset, ModalFooter, PluginWrapper } from "../components/Modal";
 import FormErrors, { errorsType } from "~/componentsNext/FormErrors";
 import {
   KeyAuthFormSchema,
@@ -7,7 +6,9 @@ import {
 } from "../../../schema/plugins/auth/keyAuth";
 
 import { Checkbox } from "~/design/Checkbox";
+import { Fieldset } from "../../components/FormHelper";
 import Input from "~/design/Input";
+import { PluginWrapper } from "../components/Modal";
 import { treatEmptyStringAsUndefined } from "../utils";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -22,11 +23,16 @@ const predfinedConfig: OptionalConfig = {
 };
 
 type FormProps = {
+  formId: string;
   defaultConfig?: OptionalConfig;
   onSubmit: (data: KeyAuthFormSchemaType) => void;
 };
 
-export const KeyAuthForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
+export const KeyAuthForm: FC<FormProps> = ({
+  defaultConfig,
+  onSubmit,
+  formId,
+}) => {
   const { t } = useTranslation();
   const {
     handleSubmit,
@@ -51,7 +57,7 @@ export const KeyAuthForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
   };
 
   return (
-    <form onSubmit={submitForm}>
+    <form onSubmit={submitForm} id={formId}>
       <PluginWrapper>
         {errors?.configuration && (
           <FormErrors
@@ -127,7 +133,6 @@ export const KeyAuthForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
           />
         </Fieldset>
       </PluginWrapper>
-      <ModalFooter />
     </form>
   );
 };

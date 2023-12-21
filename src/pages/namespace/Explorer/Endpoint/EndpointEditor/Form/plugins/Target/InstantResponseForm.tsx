@@ -1,6 +1,5 @@
 import { Controller, useForm } from "react-hook-form";
 import { FC, FormEvent } from "react";
-import { Fieldset, ModalFooter, PluginWrapper } from "../components/Modal";
 import FormErrors, { errorsType } from "~/componentsNext/FormErrors";
 import {
   InstantResponseFormSchema,
@@ -9,7 +8,9 @@ import {
 
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
+import { Fieldset } from "../../components/FormHelper";
 import Input from "~/design/Input";
+import { PluginWrapper } from "../components/Modal";
 import { treatEmptyStringAsUndefined } from "../utils";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
@@ -22,6 +23,7 @@ const predfinedConfig: OptionalConfig = {
 };
 
 type FormProps = {
+  formId: string;
   defaultConfig?: OptionalConfig;
   onSubmit: (data: InstantResponseFormSchemaType) => void;
 };
@@ -29,6 +31,7 @@ type FormProps = {
 export const InstantResponseForm: FC<FormProps> = ({
   defaultConfig,
   onSubmit,
+  formId,
 }) => {
   const { t } = useTranslation();
   const {
@@ -55,7 +58,7 @@ export const InstantResponseForm: FC<FormProps> = ({
   const theme = useTheme();
 
   return (
-    <form onSubmit={submitForm}>
+    <form onSubmit={submitForm} id={formId}>
       <PluginWrapper>
         {errors?.configuration && (
           <FormErrors errors={errors?.configuration as errorsType} />
@@ -114,7 +117,6 @@ export const InstantResponseForm: FC<FormProps> = ({
           </Card>
         </Fieldset>
       </PluginWrapper>
-      <ModalFooter />
     </form>
   );
 };

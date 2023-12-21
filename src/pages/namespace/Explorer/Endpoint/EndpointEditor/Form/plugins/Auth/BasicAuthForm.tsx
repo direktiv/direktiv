@@ -3,10 +3,11 @@ import {
   BasicAuthFormSchemaType,
 } from "../../../schema/plugins/auth/basicAuth";
 import { FC, FormEvent } from "react";
-import { Fieldset, ModalFooter, PluginWrapper } from "../components/Modal";
 import FormErrors, { errorsType } from "~/componentsNext/FormErrors";
 
 import { Checkbox } from "~/design/Checkbox";
+import { Fieldset } from "../../components/FormHelper";
+import { PluginWrapper } from "../components/Modal";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -20,11 +21,16 @@ const predfinedConfig: OptionalConfig = {
 };
 
 type FormProps = {
+  formId: string;
   defaultConfig?: OptionalConfig;
   onSubmit: (data: BasicAuthFormSchemaType) => void;
 };
 
-export const BasicAuthForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
+export const BasicAuthForm: FC<FormProps> = ({
+  defaultConfig,
+  formId,
+  onSubmit,
+}) => {
   const { t } = useTranslation();
   const {
     handleSubmit,
@@ -48,7 +54,7 @@ export const BasicAuthForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
   };
 
   return (
-    <form onSubmit={submitForm}>
+    <form onSubmit={submitForm} id={formId}>
       <PluginWrapper>
         {errors?.configuration && (
           <FormErrors
@@ -108,7 +114,6 @@ export const BasicAuthForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
           />
         </Fieldset>
       </PluginWrapper>
-      <ModalFooter />
     </form>
   );
 };

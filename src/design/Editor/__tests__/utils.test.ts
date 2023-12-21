@@ -25,6 +25,11 @@ describe("mimeTypeToEditorSyntax", () => {
     expect(mimeTypeToEditorSyntax("text/whatever")).toBe("plaintext");
   });
 
+  test("it must detect javascript", () => {
+    expect(mimeTypeToEditorSyntax("application/javascript")).toBe("javascript");
+    expect(mimeTypeToEditorSyntax("text/javascript")).toBe("javascript");
+  });
+
   test("it must return undefined for unsuported mime types", () => {
     expect(mimeTypeToEditorSyntax("unsupported")).toBe(undefined);
   });

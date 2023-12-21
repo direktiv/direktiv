@@ -52,6 +52,7 @@ export const AuthPluginForm: FC<AuthPluginFormProps> = ({ formControls }) => {
     useState<AuthPluginFormSchemaType["type"]>();
 
   const pluginsCount = fields.length;
+  const formId = "authPluginForm";
 
   return (
     <Dialog
@@ -128,6 +129,8 @@ export const AuthPluginForm: FC<AuthPluginFormProps> = ({ formControls }) => {
       </Card>
 
       <ModalWrapper
+        formId={formId}
+        showSaveBtn={!!selectedPlugin}
         title={
           editIndex === undefined
             ? t(
@@ -169,6 +172,7 @@ export const AuthPluginForm: FC<AuthPluginFormProps> = ({ formControls }) => {
         </PluginSelector>
         {selectedPlugin === authPluginTypes.basicAuth && (
           <BasicAuthForm
+            formId={formId}
             defaultConfig={getBasicAuthConfigAtIndex(fields, editIndex)}
             onSubmit={(configuration) => {
               setDialogOpen(false);
@@ -183,6 +187,7 @@ export const AuthPluginForm: FC<AuthPluginFormProps> = ({ formControls }) => {
         )}
         {selectedPlugin === authPluginTypes.keyAuth && (
           <KeyAuthForm
+            formId={formId}
             defaultConfig={getKeyAuthConfigAtIndex(fields, editIndex)}
             onSubmit={(configuration) => {
               setDialogOpen(false);
@@ -197,6 +202,7 @@ export const AuthPluginForm: FC<AuthPluginFormProps> = ({ formControls }) => {
         )}
         {selectedPlugin === authPluginTypes.githubWebhookAuth && (
           <GithubWebhookAuthForm
+            formId={formId}
             defaultConfig={getGithubWebhookAuthConfigAtIndex(fields, editIndex)}
             onSubmit={(configuration) => {
               setDialogOpen(false);
