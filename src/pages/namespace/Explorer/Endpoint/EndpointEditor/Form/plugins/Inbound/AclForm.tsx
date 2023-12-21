@@ -2,12 +2,11 @@ import {
   AclFormSchema,
   AclFormSchemaType,
 } from "../../../schema/plugins/inbound/acl";
+import { ArrayInput, Fieldset } from "../../components/FormHelper";
 import { Controller, useForm } from "react-hook-form";
 import { FC, FormEvent } from "react";
 import FormErrors, { errorsType } from "~/componentsNext/FormErrors";
 
-import { Fieldset } from "../../components/FormHelper";
-import { GatewayArray } from "~/design/GatewayForms";
 import { PluginWrapper } from "../components/Modal";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -67,7 +66,7 @@ export const AclForm: FC<FormProps> = ({ defaultConfig, onSubmit, formId }) => {
             control={control}
             name="configuration.allow_groups"
             render={({ field }) => (
-              <GatewayArray
+              <ArrayInput
                 placeholder={t(
                   "pages.explorer.endpoint.editor.form.plugins.inbound.acl.groupPlaceholder"
                 )}
@@ -88,7 +87,7 @@ export const AclForm: FC<FormProps> = ({ defaultConfig, onSubmit, formId }) => {
             control={control}
             name="configuration.deny_groups"
             render={({ field }) => (
-              <GatewayArray
+              <ArrayInput
                 placeholder={t(
                   "pages.explorer.endpoint.editor.form.plugins.inbound.acl.groupPlaceholder"
                 )}
@@ -109,7 +108,7 @@ export const AclForm: FC<FormProps> = ({ defaultConfig, onSubmit, formId }) => {
             control={control}
             name="configuration.allow_tags"
             render={({ field }) => (
-              <GatewayArray
+              <ArrayInput
                 placeholder={t(
                   "pages.explorer.endpoint.editor.form.plugins.inbound.acl.tagPlaceholder"
                 )}
@@ -130,7 +129,7 @@ export const AclForm: FC<FormProps> = ({ defaultConfig, onSubmit, formId }) => {
             control={control}
             name="configuration.deny_tags"
             render={({ field }) => (
-              <GatewayArray
+              <ArrayInput
                 placeholder={t(
                   "pages.explorer.endpoint.editor.form.plugins.inbound.acl.tagPlaceholder"
                 )}
