@@ -2,6 +2,7 @@ import { FileSymlink, Users } from "lucide-react";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
+import ConsumerEditor from "./ConsumerEditor";
 import { FC } from "react";
 import { Link } from "react-router-dom";
 import { NoPermissions } from "~/design/Table";
@@ -58,7 +59,7 @@ const ConsumerPage: FC = () => {
           </Button>
         </div>
       </div>
-      ###EDITOR###
+      <ConsumerEditor data={consumerData} path={path} />
     </>
   );
 };
