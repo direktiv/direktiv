@@ -334,7 +334,7 @@
                 "instantResponse": {
                   "statusCode": "Status Code",
                   "statusCodePlaceholder": "200",
-                  "contentType": "Content Type",
+                  "contentType": "Content Type (optional)",
                   "contentTypePlaceholder": "application/json",
                   "statusMessage": "Status Message (optional)"
                 },
@@ -342,26 +342,26 @@
                   "namespace": "Namespace (optional)",
                   "workflow": "Workflow",
                   "asynchronous": "Asynchronous",
-                  "contentType": "Content Type",
+                  "contentType": "Content Type (optional)",
                   "contentTypePlaceholder": "application/json"
                 },
                 "targetFlowVar": {
                   "namespace": "Namespace (optional)",
                   "workflow": "Workflow",
                   "variable": "Variable",
-                  "contentType": "Content type",
+                  "contentType": "Content type (optional)",
                   "contentTypePlaceholder": "application/json"
                 },
                 "targetNamespaceFile": {
                   "namespace": "Namespace (optional)",
                   "file": "File",
-                  "contentType": "Content Type",
+                  "contentType": "Content Type (optional)",
                   "contentTypePlaceholder": "application/json"
                 },
                 "targetNamespaceVariable": {
                   "namespace": "Namespace (optional)",
                   "variable": "Variable",
-                  "contentType": "Content Type",
+                  "contentType": "Content Type (optional)",
                   "contentTypePlaceholder": "application/json"
                 }
               },
