@@ -54,8 +54,16 @@ const PluginSchema = z.object({
   }
 }
  */
+
+const filterInvalidEntries = (schema: z.ZodTypeAny) =>
+  z
+    .array(z.any())
+    .transform((entryArr) =>
+      entryArr.filter((entry) => schema.safeParse(entry).success)
+    );
+
 const RouteSchema = z.object({
-  methods: z.array(MethodsSchema).nullable(),
+  methods: filterInvalidEntries(MethodsSchema).nullable(),
   file_path: z.string(),
   path: z.string().optional(),
   server_path: z.string().optional(),
@@ -63,9 +71,10 @@ const RouteSchema = z.object({
   errors: z.array(z.string()),
   warnings: z.array(z.string()),
   plugins: z.object({
-    outbound: z.array(PluginSchema).optional(),
-    inbound: z.array(PluginSchema).optional(),
-    auth: z.array(PluginSchema).optional(),
+    // if a user might use an unsupported plugin, they will be parsed out instead of throwing an error
+    outbound: filterInvalidEntries(PluginSchema).optional(),
+    inbound: filterInvalidEntries(PluginSchema).optional(),
+    auth: filterInvalidEntries(PluginSchema).optional(),
     target: PluginSchema.optional(),
   }),
 });
