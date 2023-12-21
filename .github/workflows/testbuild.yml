@@ -2,7 +2,7 @@ name: Make test build
 on:
   push:
     branches-ignore:
-      - 'main'
+      - "main"
 jobs:
   build:
     name: Make build and run testsuite

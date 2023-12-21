@@ -10,11 +10,12 @@ import { TableCell, TableRow } from "~/design/Table";
 
 import Button from "~/design/Button";
 import { DialogTrigger } from "~/design/Dialog";
+import EnvsVariables from "./EnvVariables";
 import { FC } from "react";
 import { ServiceSchemaType } from "~/api/services/schema/services";
-import { StatusBadge } from "../components/StatusBadge";
+import { StatusBadge } from "../../components/StatusBadge";
 import { TooltipProvider } from "~/design/Tooltip";
-import { linkToServiceSource } from "../components/utils";
+import { linkToServiceSource } from "../../components/utils";
 import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
 import { useTranslation } from "react-i18next";
@@ -88,6 +89,7 @@ const ServicesTableRow: FC<{
                   {condition.type}
                 </StatusBadge>
               ))}
+              <EnvsVariables envs={service.envs} />
             </div>
           </div>
         </TableCell>
