@@ -24,6 +24,13 @@ export const useServiceFormSchema = (): RJSFSchema => {
         title: t("pages.explorer.tree.newService.form.cmd"),
         type: "string",
       },
+      post_start_exec: {
+        title: t("pages.explorer.tree.newService.form.postStartExec"),
+        type: "array",
+        items: {
+          type: "string",
+        },
+      },
       envs: {
         title: t("pages.explorer.tree.newService.form.envs"),
         type: "array",

@@ -12,6 +12,7 @@ import Button from "~/design/Button";
 import { DialogTrigger } from "~/design/Dialog";
 import EnvsVariables from "./EnvVariables";
 import { FC } from "react";
+import PostStartExecs from "./PostStartExecs";
 import { ServiceSchemaType } from "~/api/services/schema/services";
 import { StatusBadge } from "../../components/StatusBadge";
 import { TooltipProvider } from "~/design/Tooltip";
@@ -90,6 +91,7 @@ const ServicesTableRow: FC<{
                 </StatusBadge>
               ))}
               <EnvsVariables envs={service.envs} />
+              <PostStartExecs exec={service.post_start_exec} />
             </div>
           </div>
         </TableCell>
