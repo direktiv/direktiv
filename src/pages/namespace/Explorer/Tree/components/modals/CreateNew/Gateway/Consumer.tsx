@@ -11,7 +11,7 @@ import Button from "~/design/Button";
 import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
 import { addYamlFileExtension } from "../../../../utils";
-import { defaultConsumerYaml } from "~/pages/namespace/Explorer/Consumer/utils";
+import { defaultConsumerYaml } from "~/pages/namespace/Explorer/Consumer/ConsumerEditor/utils";
 import { fileNameSchema } from "~/api/tree/schema/node";
 import { pages } from "~/util/router/pages";
 import { useCreateWorkflow } from "~/api/tree/mutate/createWorkflow";
