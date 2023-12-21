@@ -15,6 +15,18 @@ const workflow = `
     transform:
       result: Hello world!
 `
+
+
+const workflowNotToBetriggered = `
+  direktiv_api: workflow/v1
+  description: A simple 'no-op' state that returns 'Hello world!'
+  states:
+  - id: helloworld
+    type: noop
+    transform:
+      result: This wf should not be triggered!
+`
+
 const workflowEcho = `
   direktiv_api: workflow/v1
   description: A simple 'no-op' state that returns 'Hello world!'
@@ -373,6 +385,14 @@ describe("Test scope for target workflow plugin", () => {
   );
 
   common.helpers.itShouldCreateFile(
+    it,
+    expect,
+    testNamespace,
+    "/workflow.yaml",
+    workflowNotToBetriggered
+  );
+
+  common.helpers.itShouldCreateFile(
       it,
       expect,
       testNamespace,
@@ -385,6 +405,7 @@ describe("Test scope for target workflow plugin", () => {
       `/gw/endpoint7`
   );
     expect(req.statusCode).toEqual(200);
+    expect(req.text).toEqual("{\"result\":\"This wf should not be triggered!\"}").not()
     expect(req.text).toEqual("{\"result\":\"Hello world!\"}")
   });
 });
