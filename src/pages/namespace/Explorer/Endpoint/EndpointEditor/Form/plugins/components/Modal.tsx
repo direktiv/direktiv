@@ -19,7 +19,9 @@ export const ModalWrapper: FC<ModalWrapperProps> = ({ title, children }) => (
     <DialogHeader>
       <DialogTitle>{title}</DialogTitle>
     </DialogHeader>
-    <div className="my-3 flex flex-col gap-5">{children}</div>
+    <div className="my-3 flex max-h-[80vh] flex-col gap-5 overflow-y-scroll">
+      {children}
+    </div>
   </DialogContent>
 );
 
