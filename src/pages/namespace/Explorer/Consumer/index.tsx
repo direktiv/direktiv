@@ -39,8 +39,8 @@ const ConsumerPage: FC = () => {
 
   return (
     <>
-      <div className="space-y-5 border-b border-gray-5 bg-gray-1 p-5  dark:border-gray-dark-5 dark:bg-gray-dark-1">
-        <div className="flex flex-col max-sm:space-y-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="border-b border-gray-5 bg-gray-1 p-5 dark:border-gray-dark-5 dark:bg-gray-dark-1">
+        <div className="flex flex-col gap-5 max-sm:space-y-4 sm:flex-row sm:items-center sm:justify-between">
           <h3 className="flex items-center gap-x-2 font-bold text-primary-500">
             <Users className="h-5" />
             {filename?.relative}
