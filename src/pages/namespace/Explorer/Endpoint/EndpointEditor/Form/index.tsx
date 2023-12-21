@@ -24,7 +24,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 type FormProps = {
   defaultConfig?: EndpointFormSchemaType;
-
   children: (args: {
     formControls: UseFormReturn<EndpointFormSchemaType>;
     formMarkup: JSX.Element;
