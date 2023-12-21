@@ -12,10 +12,12 @@ import {
 import { Table, TableBody, TableCell, TableRow } from "~/design/Table";
 import { UseFormReturn, useFieldArray } from "react-hook-form";
 import {
+  getAclConfigAtIndex,
   getJsInboundConfigAtIndex,
   getRequestConvertConfigAtIndex,
 } from "../utils";
 
+import { AclForm } from "./AclForm";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import { EndpointFormSchemaType } from "../../../schema";
@@ -49,7 +51,7 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({ form }) => {
   const [selectedPlugin, setSelectedPlugin] =
     useState<InboundPluginFormSchemaType["type"]>();
 
-  const { jsInbound, requestConvert } = inboundPluginTypes;
+  const { jsInbound, requestConvert, acl } = inboundPluginTypes;
 
   const pluginsCount = fields.length;
 
@@ -184,6 +186,21 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({ form }) => {
         {selectedPlugin === jsInbound && (
           <JsInboundForm
             defaultConfig={getJsInboundConfigAtIndex(fields, editIndex)}
+            onSubmit={(configuration) => {
+              setDialogOpen(false);
+              if (editIndex === undefined) {
+                addPlugin(configuration);
+              } else {
+                editPlugin(editIndex, configuration);
+              }
+              setEditIndex(undefined);
+            }}
+          />
+        )}
+
+        {selectedPlugin === acl && (
+          <AclForm
+            defaultConfig={getAclConfigAtIndex(fields, editIndex)}
             onSubmit={(configuration) => {
               setDialogOpen(false);
               if (editIndex === undefined) {

@@ -390,6 +390,12 @@
                   "omitQueries": "Omit Queries",
                   "omitBody": "Omit Body",
                   "omitConsumer": "Omit Consumer"
+                },
+                "acl": {
+                  "allow_groups": "Allow Groups",
+                  "deny_groups": "Deny Groups",
+                  "allow_tags": "Allow tags",
+                  "deny_tags": "Deny tags"
                 }
               },
               "outbound": {
