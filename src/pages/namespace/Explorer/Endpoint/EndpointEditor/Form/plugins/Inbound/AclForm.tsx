@@ -22,11 +22,12 @@ const predfinedConfig: OptionalConfig = {
 };
 
 type FormProps = {
+  formId: string;
   defaultConfig?: OptionalConfig;
   onSubmit: (data: AclFormSchemaType) => void;
 };
 
-export const AclForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
+export const AclForm: FC<FormProps> = ({ defaultConfig, onSubmit, formId }) => {
   const { t } = useTranslation();
   const {
     handleSubmit,
@@ -49,7 +50,7 @@ export const AclForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
   };
 
   return (
-    <form onSubmit={submitForm}>
+    <form onSubmit={submitForm} id={formId}>
       {errors?.configuration && (
         <FormErrors
           errors={errors?.configuration as errorsType}

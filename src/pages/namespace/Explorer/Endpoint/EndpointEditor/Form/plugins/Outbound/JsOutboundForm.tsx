@@ -17,11 +17,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 type OptionalConfig = Partial<JsOutboundFormSchemaType["configuration"]>;
 
 type FormProps = {
+  formId: string;
   defaultConfig?: OptionalConfig;
   onSubmit: (data: JsOutboundFormSchemaType) => void;
 };
 
-export const JsOutboundForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
+export const JsOutboundForm: FC<FormProps> = ({
+  defaultConfig,
+  onSubmit,
+  formId,
+}) => {
   const { t } = useTranslation();
   const {
     handleSubmit,
@@ -45,7 +50,7 @@ export const JsOutboundForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
   const theme = useTheme();
 
   return (
-    <form onSubmit={submitForm}>
+    <form onSubmit={submitForm} id={formId}>
       <PluginWrapper>
         {errors?.configuration && (
           <FormErrors

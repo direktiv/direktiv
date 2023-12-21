@@ -46,6 +46,7 @@ export const OutboundPluginForm: FC<OutboundPluginFormProps> = ({ form }) => {
     useState<OutboundPluginFormSchemaType["type"]>();
 
   const pluginsCount = fields.length;
+  const formId = "outboundPluginForm";
 
   return (
     <Dialog
@@ -122,6 +123,8 @@ export const OutboundPluginForm: FC<OutboundPluginFormProps> = ({ form }) => {
       </Card>
 
       <ModalWrapper
+        formId={formId}
+        showSaveBtn={!!selectedPlugin}
         title={
           editIndex === undefined
             ? t(
@@ -163,6 +166,7 @@ export const OutboundPluginForm: FC<OutboundPluginFormProps> = ({ form }) => {
         </PluginSelector>
         {selectedPlugin === outboundPluginTypes.jsOutbound && (
           <JsOutboundForm
+            formId={formId}
             defaultConfig={getJsOutboundConfigAtIndex(fields, editIndex)}
             onSubmit={(configuration) => {
               setDialogOpen(false);

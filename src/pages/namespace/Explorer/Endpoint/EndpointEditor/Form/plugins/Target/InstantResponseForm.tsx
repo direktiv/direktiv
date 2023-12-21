@@ -23,6 +23,7 @@ const predfinedConfig: OptionalConfig = {
 };
 
 type FormProps = {
+  formId: string;
   defaultConfig?: OptionalConfig;
   onSubmit: (data: InstantResponseFormSchemaType) => void;
 };
@@ -30,6 +31,7 @@ type FormProps = {
 export const InstantResponseForm: FC<FormProps> = ({
   defaultConfig,
   onSubmit,
+  formId,
 }) => {
   const { t } = useTranslation();
   const {
@@ -56,7 +58,7 @@ export const InstantResponseForm: FC<FormProps> = ({
   const theme = useTheme();
 
   return (
-    <form onSubmit={submitForm}>
+    <form onSubmit={submitForm} id={formId}>
       <PluginWrapper>
         {errors?.configuration && (
           <FormErrors errors={errors?.configuration as errorsType} />

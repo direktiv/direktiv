@@ -23,11 +23,16 @@ const predfinedConfig: OptionalConfig = {
 };
 
 type FormProps = {
+  formId: string;
   defaultConfig?: OptionalConfig;
   onSubmit: (data: TargetFlowFormSchemaType) => void;
 };
 
-export const TargetFlowForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
+export const TargetFlowForm: FC<FormProps> = ({
+  defaultConfig,
+  onSubmit,
+  formId,
+}) => {
   const { t } = useTranslation();
   const {
     register,
@@ -54,7 +59,7 @@ export const TargetFlowForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
   };
 
   return (
-    <form onSubmit={submitForm}>
+    <form onSubmit={submitForm} id={formId}>
       <PluginWrapper>
         {errors?.configuration && (
           <FormErrors

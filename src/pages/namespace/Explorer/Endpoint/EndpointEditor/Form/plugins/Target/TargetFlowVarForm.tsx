@@ -18,6 +18,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 type OptionalConfig = Partial<TargetFlowVarFormSchemaType["configuration"]>;
 
 type FormProps = {
+  formId: string;
   defaultConfig?: OptionalConfig;
   onSubmit: (data: TargetFlowVarFormSchemaType) => void;
 };
@@ -25,6 +26,7 @@ type FormProps = {
 export const TargetFlowVarForm: FC<FormProps> = ({
   defaultConfig,
   onSubmit,
+  formId,
 }) => {
   const { t } = useTranslation();
   const {
@@ -49,7 +51,7 @@ export const TargetFlowVarForm: FC<FormProps> = ({
   };
 
   return (
-    <form onSubmit={submitForm}>
+    <form onSubmit={submitForm} id={formId}>
       <PluginWrapper>
         {errors?.configuration && (
           <FormErrors

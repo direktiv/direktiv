@@ -15,6 +15,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 type OptionalConfig = Partial<GithubWebhookAuthFormSchemaType["configuration"]>;
 
 type FormProps = {
+  formId: string;
   defaultConfig?: OptionalConfig;
   onSubmit: (data: GithubWebhookAuthFormSchemaType) => void;
 };
@@ -22,6 +23,7 @@ type FormProps = {
 export const GithubWebhookAuthForm: FC<FormProps> = ({
   defaultConfig,
   onSubmit,
+  formId,
 }) => {
   const { t } = useTranslation();
   const {
@@ -44,7 +46,7 @@ export const GithubWebhookAuthForm: FC<FormProps> = ({
   };
 
   return (
-    <form onSubmit={submitForm}>
+    <form onSubmit={submitForm} id={formId}>
       <PluginWrapper>
         {errors?.configuration && (
           <FormErrors

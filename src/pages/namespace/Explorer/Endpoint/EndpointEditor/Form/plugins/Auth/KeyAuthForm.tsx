@@ -23,11 +23,16 @@ const predfinedConfig: OptionalConfig = {
 };
 
 type FormProps = {
+  formId: string;
   defaultConfig?: OptionalConfig;
   onSubmit: (data: KeyAuthFormSchemaType) => void;
 };
 
-export const KeyAuthForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
+export const KeyAuthForm: FC<FormProps> = ({
+  defaultConfig,
+  onSubmit,
+  formId,
+}) => {
   const { t } = useTranslation();
   const {
     handleSubmit,
@@ -52,7 +57,7 @@ export const KeyAuthForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
   };
 
   return (
-    <form onSubmit={submitForm}>
+    <form onSubmit={submitForm} id={formId}>
       <PluginWrapper>
         {errors?.configuration && (
           <FormErrors

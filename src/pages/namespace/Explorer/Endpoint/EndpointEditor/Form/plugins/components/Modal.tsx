@@ -12,9 +12,16 @@ import { useTranslation } from "react-i18next";
 
 type ModalWrapperProps = PropsWithChildren & {
   title: string;
+  formId?: string;
+  showSaveBtn?: boolean;
 };
 
-export const ModalWrapper: FC<ModalWrapperProps> = ({ title, children }) => {
+export const ModalWrapper: FC<ModalWrapperProps> = ({
+  title,
+  showSaveBtn = true,
+  children,
+  formId,
+}) => {
   const { t } = useTranslation();
   return (
     <DialogContent className="sm:max-w-xl">
@@ -24,11 +31,13 @@ export const ModalWrapper: FC<ModalWrapperProps> = ({ title, children }) => {
       <div className="flex max-h-[70vh] flex-col gap-5 overflow-y-auto p-[1px]">
         {children}
       </div>
-      <DialogFooter>
-        <Button type="submit">
-          {t("pages.explorer.endpoint.editor.form.plugins.saveBtn")}
-        </Button>
-      </DialogFooter>
+      {showSaveBtn && (
+        <DialogFooter>
+          <Button type="submit" form={formId ?? undefined}>
+            {t("pages.explorer.endpoint.editor.form.plugins.saveBtn")}
+          </Button>
+        </DialogFooter>
+      )}
     </DialogContent>
   );
 };

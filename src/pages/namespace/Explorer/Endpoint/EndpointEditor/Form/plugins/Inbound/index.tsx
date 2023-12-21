@@ -54,6 +54,7 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({ form }) => {
   const { jsInbound, requestConvert, acl } = inboundPluginTypes;
 
   const pluginsCount = fields.length;
+  const formId = "inboundPluginForm";
 
   return (
     <Dialog
@@ -130,6 +131,8 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({ form }) => {
       </Card>
 
       <ModalWrapper
+        formId={formId}
+        showSaveBtn={!!selectedPlugin}
         title={
           editIndex === undefined
             ? t(
@@ -171,6 +174,7 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({ form }) => {
         </PluginSelector>
         {selectedPlugin === requestConvert && (
           <RequestConvertForm
+            formId={formId}
             defaultConfig={getRequestConvertConfigAtIndex(fields, editIndex)}
             onSubmit={(configuration) => {
               setDialogOpen(false);
@@ -185,6 +189,7 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({ form }) => {
         )}
         {selectedPlugin === jsInbound && (
           <JsInboundForm
+            formId={formId}
             defaultConfig={getJsInboundConfigAtIndex(fields, editIndex)}
             onSubmit={(configuration) => {
               setDialogOpen(false);
@@ -200,6 +205,7 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({ form }) => {
 
         {selectedPlugin === acl && (
           <AclForm
+            formId={formId}
             defaultConfig={getAclConfigAtIndex(fields, editIndex)}
             onSubmit={(configuration) => {
               setDialogOpen(false);

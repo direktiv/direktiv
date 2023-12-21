@@ -20,6 +20,7 @@ type OptionalConfig = Partial<
 >;
 
 type FormProps = {
+  formId: string;
   defaultConfig?: OptionalConfig;
   onSubmit: (data: TargetNamespaceFileFormSchemaType) => void;
 };
@@ -27,6 +28,7 @@ type FormProps = {
 export const TargetNamespaceFileForm: FC<FormProps> = ({
   defaultConfig,
   onSubmit,
+  formId,
 }) => {
   const { t } = useTranslation();
   const {
@@ -51,7 +53,7 @@ export const TargetNamespaceFileForm: FC<FormProps> = ({
   };
 
   return (
-    <form onSubmit={submitForm}>
+    <form onSubmit={submitForm} id={formId}>
       <PluginWrapper>
         {errors?.configuration && (
           <FormErrors
