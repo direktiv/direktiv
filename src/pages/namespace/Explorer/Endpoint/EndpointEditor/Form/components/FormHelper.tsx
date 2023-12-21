@@ -36,21 +36,21 @@ export const Fieldset: FC<FieldsetProps> = ({
 
 type ArrayInputProps = {
   placeholder?: string;
-  externalArray: string[];
+  defaultValue: string[];
   onChange: (newValue: string[]) => void;
 };
 
 export const ArrayInput: FC<ArrayInputProps> = ({
-  externalArray,
+  defaultValue,
   onChange,
   placeholder,
 }) => {
-  const [internalArray, setInternalArray] = useState(externalArray);
+  const [stringArr, setStringArr] = useState(defaultValue);
   const [inputVal, setInputVal] = useState("");
 
-  const newValue = (val: string) => {
-    if (val.length) {
-      setInternalArray((old) => {
+  const addToArray = () => {
+    if (inputVal.length > 0) {
+      setStringArr((old) => {
         const newValue = [...old, inputVal];
         const newValueRemovedEmpty = newValue.filter(Boolean);
         onChange(newValueRemovedEmpty);
@@ -60,25 +60,25 @@ export const ArrayInput: FC<ArrayInputProps> = ({
     }
   };
 
-  const changeValue = (valueIndex: number, newValue: string) => {
-    setInternalArray((oldArray) => {
-      const newArray = oldArray.map((oldValue, index) => {
-        if (index === valueIndex) {
-          return newValue;
+  const changeEntry = (index: number, entry: string) => {
+    setStringArr((oldArray) => {
+      const newArray = oldArray.map((oldValue, olcValueIndex) => {
+        if (olcValueIndex === index) {
+          return entry;
         }
         return oldValue;
       });
 
-      if (newValue) {
+      if (entry) {
         onChange(newArray);
       }
       return newArray;
     });
   };
 
-  const deleteValue = (valueIndex: number) => {
-    setInternalArray((old) => {
-      const newValue = old.filter((_, i) => i !== valueIndex);
+  const removeEntry = (index: number) => {
+    setStringArr((old) => {
+      const newValue = old.filter((_, i) => i !== index);
       const newValueRemovedEmpty = newValue.filter(Boolean);
       onChange(newValueRemovedEmpty);
       return newValueRemovedEmpty;
@@ -87,22 +87,21 @@ export const ArrayInput: FC<ArrayInputProps> = ({
 
   return (
     <div className="grid grid-cols-2 gap-5">
-      {internalArray.map((value, valueIndex) => (
+      {stringArr.map((value, valueIndex) => (
         <ButtonBar key={valueIndex}>
           <Input
             placeholder={placeholder}
             value={value}
             onChange={(e) => {
-              changeValue(valueIndex, e.target.value);
+              changeEntry(valueIndex, e.target.value);
             }}
           />
-          {}
           <Button
             icon
             variant="outline"
             type="button"
             onClick={() => {
-              deleteValue(valueIndex);
+              removeEntry(valueIndex);
             }}
           >
             <X />
@@ -119,16 +118,17 @@ export const ArrayInput: FC<ArrayInputProps> = ({
           }}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
-              newValue(inputVal);
+              addToArray();
               e.preventDefault();
             }
           }}
         />
         <Button
           icon
-          variant={!inputVal ? "outline" : undefined}
+          disabled={!inputVal}
+          variant="outline"
           onClick={() => {
-            newValue(inputVal);
+            addToArray();
           }}
           type="button"
         >

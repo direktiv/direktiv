@@ -70,7 +70,7 @@ export const AclForm: FC<FormProps> = ({ defaultConfig, onSubmit, formId }) => {
                 placeholder={t(
                   "pages.explorer.endpoint.editor.form.plugins.inbound.acl.groupPlaceholder"
                 )}
-                externalArray={field.value ?? []}
+                defaultValue={field.value ?? []}
                 onChange={(changedValue) => {
                   field.onChange(changedValue);
                 }}
@@ -91,7 +91,7 @@ export const AclForm: FC<FormProps> = ({ defaultConfig, onSubmit, formId }) => {
                 placeholder={t(
                   "pages.explorer.endpoint.editor.form.plugins.inbound.acl.groupPlaceholder"
                 )}
-                externalArray={field.value ?? []}
+                defaultValue={field.value ?? []}
                 onChange={(changedValue) => {
                   field.onChange(changedValue);
                 }}
@@ -112,7 +112,7 @@ export const AclForm: FC<FormProps> = ({ defaultConfig, onSubmit, formId }) => {
                 placeholder={t(
                   "pages.explorer.endpoint.editor.form.plugins.inbound.acl.tagPlaceholder"
                 )}
-                externalArray={field.value ?? []}
+                defaultValue={field.value ?? []}
                 onChange={(changedValue) => {
                   field.onChange(changedValue);
                 }}
@@ -133,7 +133,7 @@ export const AclForm: FC<FormProps> = ({ defaultConfig, onSubmit, formId }) => {
                 placeholder={t(
                   "pages.explorer.endpoint.editor.form.plugins.inbound.acl.tagPlaceholder"
                 )}
-                externalArray={field.value ?? []}
+                defaultValue={field.value ?? []}
                 onChange={(changedValue) => {
                   field.onChange(changedValue);
                 }}
