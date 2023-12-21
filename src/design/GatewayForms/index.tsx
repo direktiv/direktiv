@@ -269,6 +269,7 @@ const GatewayArray: FC<GatewayArrayProps> = ({
               <Button
                 icon
                 variant="outline"
+                type="button"
                 onClick={() => {
                   deleteValue(valueIndex);
                 }}
@@ -294,6 +295,7 @@ const GatewayArray: FC<GatewayArrayProps> = ({
               onClick={() => {
                 newValue(inputVal);
               }}
+              type="button"
             >
               <Plus />
             </Button>
