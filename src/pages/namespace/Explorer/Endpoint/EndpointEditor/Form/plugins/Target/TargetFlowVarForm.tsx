@@ -6,12 +6,12 @@ import {
   TargetFlowVarFormSchemaType,
 } from "../../../schema/plugins/target/targetFlowVar";
 
-import { Fieldset } from "../../components/FormHelper";
+import { Fieldset } from "~/pages/namespace/Explorer/components/Fieldset";
 import FilePicker from "~/componentsNext/FilePicker";
 import Input from "~/design/Input";
 import NamespaceSelector from "~/componentsNext/NamespaceSelector";
 import { PluginWrapper } from "../components/Modal";
-import { treatEmptyStringAsUndefined } from "../utils";
+import { treatEmptyStringAsUndefined } from "~/pages/namespace/Explorer/utils";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 

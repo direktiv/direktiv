@@ -11,14 +11,14 @@ import { AuthPluginForm } from "./plugins/Auth";
 import Badge from "~/design/Badge";
 import { Checkbox } from "~/design/Checkbox";
 import { FC } from "react";
-import { Fieldset } from "./components/FormHelper";
+import { Fieldset } from "../../../components/Fieldset";
 import { InboundPluginForm } from "./plugins/Inbound";
 import Input from "~/design/Input";
 import { OutboundPluginForm } from "./plugins/Outbound";
 import { Switch } from "~/design/Switch";
 import { TargetPluginForm } from "./plugins/Target";
 import { routeMethods } from "~/api/gateway/schema";
-import { treatAsNumberOrUndefined } from "./plugins/utils";
+import { treatAsNumberOrUndefined } from "../../../utils";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 

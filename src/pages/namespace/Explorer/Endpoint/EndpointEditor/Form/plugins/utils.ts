@@ -12,21 +12,6 @@ import { authPluginTypes } from "../../schema/plugins/auth";
 import { inboundPluginTypes } from "../../schema/plugins/inbound";
 import { outboundPluginTypes } from "../../schema/plugins/outbound";
 
-export const treatEmptyStringAsUndefined = (value: unknown) => {
-  if (value === "") {
-    return undefined;
-  }
-  return value;
-};
-
-export const treatAsNumberOrUndefined = (value: unknown) => {
-  const parsed = parseInt(`${value}`, 10);
-  if (isNaN(parsed)) {
-    return undefined;
-  }
-  return parsed;
-};
-
 export const getRequestConvertConfigAtIndex = (
   fields: InboundPluginFormSchemaType[] | undefined,
   index: number | undefined

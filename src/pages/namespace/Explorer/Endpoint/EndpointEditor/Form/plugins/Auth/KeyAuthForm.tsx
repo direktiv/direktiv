@@ -6,10 +6,10 @@ import {
 } from "../../../schema/plugins/auth/keyAuth";
 
 import { Checkbox } from "~/design/Checkbox";
-import { Fieldset } from "../../components/FormHelper";
+import { Fieldset } from "~/pages/namespace/Explorer/components/Fieldset";
 import Input from "~/design/Input";
 import { PluginWrapper } from "../components/Modal";
-import { treatEmptyStringAsUndefined } from "../utils";
+import { treatEmptyStringAsUndefined } from "~/pages/namespace/Explorer/utils";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";

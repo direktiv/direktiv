@@ -8,10 +8,10 @@ import {
 
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
-import { Fieldset } from "../../components/FormHelper";
+import { Fieldset } from "~/pages/namespace/Explorer/components/Fieldset";
 import Input from "~/design/Input";
 import { PluginWrapper } from "../components/Modal";
-import { treatEmptyStringAsUndefined } from "../utils";
+import { treatEmptyStringAsUndefined } from "~/pages/namespace/Explorer/utils";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";

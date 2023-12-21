@@ -5,7 +5,7 @@ import {
   GithubWebhookAuthFormSchemaType,
 } from "../../../schema/plugins/auth/githubWebhookAuth";
 
-import { Fieldset } from "../../components/FormHelper";
+import { Fieldset } from "~/pages/namespace/Explorer/components/Fieldset";
 import Input from "~/design/Input";
 import { PluginWrapper } from "../components/Modal";
 import { useForm } from "react-hook-form";
