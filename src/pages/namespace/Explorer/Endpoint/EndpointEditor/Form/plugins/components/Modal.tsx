@@ -21,10 +21,10 @@ export const ModalWrapper: FC<ModalWrapperProps> = ({ title, children }) => {
       <DialogHeader>
         <DialogTitle>{title}</DialogTitle>
       </DialogHeader>
-      <div className="my-3 flex max-h-[70vh] flex-col gap-5 overflow-y-scroll">
+      <div className="flex max-h-[70vh] flex-col gap-5 overflow-y-auto p-[1px]">
         {children}
       </div>
-      <DialogFooter className="pt-5">
+      <DialogFooter>
         <Button type="submit">
           {t("pages.explorer.endpoint.editor.form.plugins.saveBtn")}
         </Button>
