@@ -22,10 +22,10 @@ import { Fragment, useState } from "react";
 
 import type { Meta, StoryObj } from "@storybook/react";
 
+import Button from "../Button";
 import { ButtonBar } from "../ButtonBar";
 
 import Input from "../Input";
-import Button from "../Button";
 
 const meta = {
   title: "Components/Filepicker",
