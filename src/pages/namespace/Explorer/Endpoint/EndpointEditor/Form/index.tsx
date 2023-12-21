@@ -6,10 +6,6 @@ import {
   useWatch,
 } from "react-hook-form";
 import { EndpointFormSchema, EndpointFormSchemaType } from "../schema";
-import {
-  treatAsNumberOrUndefined,
-  treatEmptyStringAsUndefined,
-} from "./plugins/utils";
 
 import { AuthPluginForm } from "./plugins/Auth";
 import Badge from "~/design/Badge";
@@ -22,6 +18,7 @@ import { OutboundPluginForm } from "./plugins/Outbound";
 import { Switch } from "~/design/Switch";
 import { TargetPluginForm } from "./plugins/Target";
 import { routeMethods } from "~/api/gateway/schema";
+import { treatAsNumberOrUndefined } from "./plugins/utils";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
