@@ -38,6 +38,19 @@ const endpointWorkflow = `
     - GET
   path: /endpoint1`
 
+const endpointTargetLimitedNamespaceWorkflow = `
+  direktiv_api: endpoint/v1
+  allow_anonymous: true
+  plugins:
+    target:
+      type: target-flow
+      configuration:
+          namespace: ` + limitedNamespace + `
+          flow: /workflow.yaml
+  methods: 
+    - GET
+  path: /endpoint1`
+
 const endpointPOSTWorkflow = `
   direktiv_api: endpoint/v1
   allow_anonymous: true
@@ -354,7 +367,7 @@ describe("Test scope for target workflow plugin", () => {
   common.helpers.itShouldCreateFile(
     it,
     expect,
-    testNamespace,
+    limitedNamespace,
     "/workflow.yaml",
     workflow
   );
@@ -363,14 +376,14 @@ describe("Test scope for target workflow plugin", () => {
       it,
       expect,
       testNamespace,
-      "/endpoint1.yaml",
-      endpointWorkflow
+      "/endpoint7.yaml",
+      endpointTargetLimitedNamespaceWorkflow
   );
 
-  it(`should return a workflow run from magic namespace`, async () => {
-  const req = await request(common.config.getDirektivHost()).post(
-      `/gw/endpoint1`
-  ).send({"message":"Hi"})
+  it(`should return a workflow run from limited namespace`, async () => {
+  const req = await request(common.config.getDirektivHost()).get(
+      `/gw/endpoint7`
+  );
     expect(req.statusCode).toEqual(200);
     expect(req.text).toEqual("{\"result\":\"Hello world!\"}")
   });
