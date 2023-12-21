@@ -32,6 +32,7 @@ export const editorLanguageSchema = z
       case "text/css":
         return "css";
       case "application/javascript":
+      case "text/javascript":
         return "javascript";
       case "application/json":
         return "json";
