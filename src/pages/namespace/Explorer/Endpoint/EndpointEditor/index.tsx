@@ -62,14 +62,14 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data, path }) => {
               <div className="grid grow grid-cols-1 gap-5 lg:grid-cols-2">
                 <Card className="p-5 lg:h-[calc(100vh-15rem)] lg:overflow-y-scroll">
                   {!endpointConfig ? (
-                    <div>
+                    <div className="flex flex-col gap-5">
                       <Alert variant="error">
                         {t(
                           "pages.explorer.endpoint.editor.form.serialisationError"
                         )}
                       </Alert>
-                      <ScrollArea className="h-full w-full whitespace-nowrap rounded-md border p-4">
-                        <pre>
+                      <ScrollArea className="h-full w-full whitespace-nowrap">
+                        <pre className="grow text-sm text-primary-500">
                           {JSON.stringify(endpointConfigError, null, 2)}
                         </pre>
                       </ScrollArea>
