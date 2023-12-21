@@ -57,7 +57,7 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data, path }) => {
         return (
           <form
             onSubmit={handleSubmit(save)}
-            className="relative flex grow flex-col space-y-4 p-5"
+            className="relative flex grow flex-col gap-4 p-5"
           >
             <div className="flex grow">
               <div className="grid grow grid-cols-1 gap-5 lg:grid-cols-2">
