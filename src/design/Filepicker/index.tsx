@@ -39,7 +39,7 @@ const FilepickerHeading: FC<PropsWithChildren> = ({ children }) => (
 );
 
 const FilepickerList: FC<PropsWithChildren> = ({ children }) => (
-  <div className="h-96 w-screen overflow-x-hidden overflow-y-scroll lg:w-72">
+  <div className="h-96 w-full overflow-x-hidden overflow-y-scroll">
     {children}
   </div>
 );
