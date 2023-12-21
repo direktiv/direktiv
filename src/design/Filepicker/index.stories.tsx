@@ -25,6 +25,7 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { ButtonBar } from "../ButtonBar";
 
 import Input from "../Input";
+import Button from "../Button";
 
 const meta = {
   title: "Components/Filepicker",
@@ -150,7 +151,9 @@ export const InAModal = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-      <DialogTrigger className="px-4 outline">Open Dialog Menu</DialogTrigger>
+      <DialogTrigger asChild>
+        <Button>Open Dialog Menu</Button>
+      </DialogTrigger>
       <DialogContent>
         <ButtonBar>
           <Filepicker buttonText="Open Filepicker Menu" className="w-96">
