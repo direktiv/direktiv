@@ -1,0 +1,21 @@
+server {
+  listen 80;
+  
+  root /usr/share/nginx/html;
+  include /etc/nginx/mime.types;
+
+  location ^~/api/ {
+          proxy_pass http://flow:6665/api/;
+          proxy_ssl_verify off;
+          proxy_set_header   X-Forwarded-For    $proxy_add_x_forwarded_for;
+          proxy_set_header   X-Real-IP          $remote_addr;
+  }
+
+  location / {
+          proxy_pass http://ui:8181;
+          proxy_ssl_verify off;
+          proxy_set_header   X-Forwarded-For    $proxy_add_x_forwarded_for;
+          proxy_set_header   X-Real-IP          $remote_addr;
+  }
+
+}
