@@ -6,6 +6,10 @@ import {
   useWatch,
 } from "react-hook-form";
 import { EndpointFormSchema, EndpointFormSchemaType } from "../schema";
+import {
+  treatAsNumberOrUndefined,
+  treatEmptyStringAsUndefined,
+} from "./plugins/utils";
 
 import { AuthPluginForm } from "./plugins/Auth";
 import Badge from "~/design/Badge";
@@ -66,7 +70,7 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
           >
             <Input
               {...register("timeout", {
-                valueAsNumber: true,
+                setValueAs: treatAsNumberOrUndefined,
               })}
               type="number"
               id="timeout"
