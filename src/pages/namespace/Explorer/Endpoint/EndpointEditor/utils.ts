@@ -1,7 +1,7 @@
 import { EndpointFormSchema, EndpointFormSchemaType } from "./schema";
 
 import { ZodError } from "zod";
-import { stringify } from "json-to-pretty-yaml";
+import { stringify as jsonToPrettyYamlStringify } from "json-to-pretty-yaml";
 import yamljs from "js-yaml";
 
 type ReturnType =
@@ -28,4 +28,14 @@ const defaultEndpointFileJson: EndpointFormSchemaType = {
   direktiv_api: "endpoint/v1",
 };
 
-export const defaultEndpointFileYaml = stringify(defaultEndpointFileJson);
+export const defaultEndpointFileYaml = jsonToPrettyYamlStringify(
+  defaultEndpointFileJson
+);
+
+/**
+ * a wrapper around the stringify method of json-to-pretty-yaml
+ * but it will serialize an empty object to an empty string instead
+ * of "{}"
+ */
+export const jsonToYaml = (t: Record<string, unknown>) =>
+  Object.keys(t).length === 0 ? "" : jsonToPrettyYamlStringify(t);

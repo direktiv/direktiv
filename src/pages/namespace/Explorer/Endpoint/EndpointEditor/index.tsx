@@ -1,3 +1,5 @@
+import { jsonToYaml, serializeEndpointFile } from "./utils";
+
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
@@ -9,8 +11,6 @@ import FormErrors from "~/componentsNext/FormErrors";
 import { RouteSchemeType } from "~/api/gateway/schema";
 import { Save } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
-import { serializeEndpointFile } from "./utils";
-import { stringify } from "json-to-pretty-yaml";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
@@ -33,7 +33,7 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data, path }) => {
   const { mutate: updateRoute, isLoading } = useUpdateWorkflow();
 
   const save = (data: EndpointFormSchemaType) => {
-    const toSave = stringify(data);
+    const toSave = jsonToYaml(data);
     updateRoute({
       path,
       fileContent: toSave,
@@ -50,8 +50,9 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data, path }) => {
         formMarkup,
         values,
       }) => {
-        const preview = stringify(values);
-        const isDirty = preview !== endpointFileContent;
+        const preview = jsonToYaml(values);
+        const isDirty = !endpointConfigError && preview !== endpointFileContent;
+        const disableButton = isLoading || !!endpointConfigError;
 
         return (
           <form
@@ -61,7 +62,7 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data, path }) => {
             <div className="flex grow">
               <div className="grid grow grid-cols-1 gap-5 lg:grid-cols-2">
                 <Card className="p-5 lg:h-[calc(100vh-15rem)] lg:overflow-y-scroll">
-                  {!endpointConfig ? (
+                  {endpointConfigError ? (
                     <div className="flex flex-col gap-5">
                       <Alert variant="error">
                         {t(
@@ -102,7 +103,7 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data, path }) => {
               )}
               <Button
                 variant={isDirty ? "primary" : "outline"}
-                disabled={isLoading}
+                disabled={disableButton}
                 type="submit"
               >
                 <Save />
