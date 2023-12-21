@@ -5,10 +5,10 @@ import {
 import { Controller, useForm } from "react-hook-form";
 import { FC, FormEvent } from "react";
 import FormErrors, { errorsType } from "~/componentsNext/FormErrors";
-import { ModalFooter, PluginWrapper } from "../components/Modal";
 
 import { Fieldset } from "../../components/FormHelper";
 import { GatewayArray } from "~/design/GatewayForms";
+import { PluginWrapper } from "../components/Modal";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -142,7 +142,6 @@ export const AclForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
           />
         </Fieldset>
       </PluginWrapper>
-      <ModalFooter />
     </form>
   );
 };

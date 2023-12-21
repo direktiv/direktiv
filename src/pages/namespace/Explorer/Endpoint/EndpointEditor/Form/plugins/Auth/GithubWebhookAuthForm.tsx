@@ -4,10 +4,10 @@ import {
   GithubWebhookAuthFormSchema,
   GithubWebhookAuthFormSchemaType,
 } from "../../../schema/plugins/auth/githubWebhookAuth";
-import { ModalFooter, PluginWrapper } from "../components/Modal";
 
 import { Fieldset } from "../../components/FormHelper";
 import Input from "~/design/Input";
+import { PluginWrapper } from "../components/Modal";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -61,7 +61,6 @@ export const GithubWebhookAuthForm: FC<FormProps> = ({
           <Input {...register("configuration.secret")} id="secret" />
         </Fieldset>
       </PluginWrapper>
-      <ModalFooter />
     </form>
   );
 };

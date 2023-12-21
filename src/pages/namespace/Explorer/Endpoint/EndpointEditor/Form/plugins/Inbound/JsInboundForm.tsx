@@ -5,11 +5,11 @@ import {
   JsInboundFormSchema,
   JsInboundFormSchemaType,
 } from "../../../schema/plugins/inbound/jsInbound";
-import { ModalFooter, PluginWrapper } from "../components/Modal";
 
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
 import { Fieldset } from "../../components/FormHelper";
+import { PluginWrapper } from "../components/Modal";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -74,7 +74,6 @@ export const JsInboundForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
           </Card>
         </Fieldset>
       </PluginWrapper>
-      <ModalFooter />
     </form>
   );
 };

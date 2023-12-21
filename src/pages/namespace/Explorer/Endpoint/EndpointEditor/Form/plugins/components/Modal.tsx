@@ -14,16 +14,24 @@ type ModalWrapperProps = PropsWithChildren & {
   title: string;
 };
 
-export const ModalWrapper: FC<ModalWrapperProps> = ({ title, children }) => (
-  <DialogContent className="sm:max-w-xl">
-    <DialogHeader>
-      <DialogTitle>{title}</DialogTitle>
-    </DialogHeader>
-    <div className="my-3 flex max-h-[80vh] flex-col gap-5 overflow-y-scroll">
-      {children}
-    </div>
-  </DialogContent>
-);
+export const ModalWrapper: FC<ModalWrapperProps> = ({ title, children }) => {
+  const { t } = useTranslation();
+  return (
+    <DialogContent className="sm:max-w-xl">
+      <DialogHeader>
+        <DialogTitle>{title}</DialogTitle>
+      </DialogHeader>
+      <div className="my-3 flex max-h-[70vh] flex-col gap-5 overflow-y-scroll">
+        {children}
+      </div>
+      <DialogFooter className="pt-5">
+        <Button type="submit">
+          {t("pages.explorer.endpoint.editor.form.plugins.saveBtn")}
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  );
+};
 
 type PluginSelectorProps = PropsWithChildren & {
   title: string;
@@ -44,14 +52,3 @@ export const PluginWrapper: FC<PropsWithChildren> = ({ children }) => (
     {children}
   </Card>
 );
-
-export const ModalFooter = () => {
-  const { t } = useTranslation();
-  return (
-    <DialogFooter className="pt-5">
-      <Button type="submit">
-        {t("pages.explorer.endpoint.editor.form.plugins.saveBtn")}
-      </Button>
-    </DialogFooter>
-  );
-};

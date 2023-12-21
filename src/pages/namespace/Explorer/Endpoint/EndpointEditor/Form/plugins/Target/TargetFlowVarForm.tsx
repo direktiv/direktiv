@@ -1,7 +1,6 @@
 import { Controller, useForm } from "react-hook-form";
 import { FC, FormEvent } from "react";
 import FormErrors, { errorsType } from "~/componentsNext/FormErrors";
-import { ModalFooter, PluginWrapper } from "../components/Modal";
 import {
   TargetFlowVarFormSchema,
   TargetFlowVarFormSchemaType,
@@ -11,6 +10,7 @@ import { Fieldset } from "../../components/FormHelper";
 import FilePicker from "~/componentsNext/FilePicker";
 import Input from "~/design/Input";
 import NamespaceSelector from "~/componentsNext/NamespaceSelector";
+import { PluginWrapper } from "../components/Modal";
 import { treatEmptyStringAsUndefined } from "../utils";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -119,7 +119,6 @@ export const TargetFlowVarForm: FC<FormProps> = ({
           />
         </Fieldset>
       </PluginWrapper>
-      <ModalFooter />
     </form>
   );
 };

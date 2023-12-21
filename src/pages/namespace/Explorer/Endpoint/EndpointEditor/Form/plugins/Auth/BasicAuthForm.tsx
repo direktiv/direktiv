@@ -4,10 +4,10 @@ import {
 } from "../../../schema/plugins/auth/basicAuth";
 import { FC, FormEvent } from "react";
 import FormErrors, { errorsType } from "~/componentsNext/FormErrors";
-import { ModalFooter, PluginWrapper } from "../components/Modal";
 
 import { Checkbox } from "~/design/Checkbox";
 import { Fieldset } from "../../components/FormHelper";
+import { PluginWrapper } from "../components/Modal";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -109,7 +109,6 @@ export const BasicAuthForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
           />
         </Fieldset>
       </PluginWrapper>
-      <ModalFooter />
     </form>
   );
 };

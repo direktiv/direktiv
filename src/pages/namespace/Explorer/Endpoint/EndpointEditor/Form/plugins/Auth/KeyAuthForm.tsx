@@ -4,11 +4,11 @@ import {
   KeyAuthFormSchema,
   KeyAuthFormSchemaType,
 } from "../../../schema/plugins/auth/keyAuth";
-import { ModalFooter, PluginWrapper } from "../components/Modal";
 
 import { Checkbox } from "~/design/Checkbox";
 import { Fieldset } from "../../components/FormHelper";
 import Input from "~/design/Input";
+import { PluginWrapper } from "../components/Modal";
 import { treatEmptyStringAsUndefined } from "../utils";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -128,7 +128,6 @@ export const KeyAuthForm: FC<FormProps> = ({ defaultConfig, onSubmit }) => {
           />
         </Fieldset>
       </PluginWrapper>
-      <ModalFooter />
     </form>
   );
 };

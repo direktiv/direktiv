@@ -5,12 +5,12 @@ import {
   InstantResponseFormSchema,
   InstantResponseFormSchemaType,
 } from "../../../schema/plugins/target/instantResponse";
-import { ModalFooter, PluginWrapper } from "../components/Modal";
 
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
 import { Fieldset } from "../../components/FormHelper";
 import Input from "~/design/Input";
+import { PluginWrapper } from "../components/Modal";
 import { treatEmptyStringAsUndefined } from "../utils";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
@@ -115,7 +115,6 @@ export const InstantResponseForm: FC<FormProps> = ({
           </Card>
         </Fieldset>
       </PluginWrapper>
-      <ModalFooter />
     </form>
   );
 };
