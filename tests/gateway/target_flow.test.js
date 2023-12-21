@@ -3,7 +3,6 @@ import request from "supertest";
 import retry from "jest-retries";
 
 const testNamespace = "gateway";
-
 const limitedNamespace = "limited_namespace";
 
 
@@ -343,5 +342,36 @@ describe("Test Complex POST method for target workflow plugin", () => {
   ).send({"message":"Hi"})
       expect(req.statusCode).toEqual(200);
       expect(req.text).toEqual("{\"result\":{\"message\":\"Changed\"}}")
+  });
+});
+
+describe("Test scope for target workflow plugin", () => {
+  beforeAll(common.helpers.deleteAllNamespaces);
+
+  common.helpers.itShouldCreateNamespace(it, expect, limitedNamespace);
+  common.helpers.itShouldCreateNamespace(it, expect, testNamespace);
+
+  common.helpers.itShouldCreateFile(
+    it,
+    expect,
+    testNamespace,
+    "/workflow.yaml",
+    workflow
+  );
+
+  common.helpers.itShouldCreateFile(
+      it,
+      expect,
+      testNamespace,
+      "/endpoint1.yaml",
+      endpointWorkflow
+  );
+
+  it(`should return a workflow run from magic namespace`, async () => {
+  const req = await request(common.config.getDirektivHost()).post(
+      `/gw/endpoint1`
+  ).send({"message":"Hi"})
+    expect(req.statusCode).toEqual(200);
+    expect(req.text).toEqual("{\"result\":\"Hello world!\"}")
   });
 });
