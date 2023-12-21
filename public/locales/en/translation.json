@@ -306,7 +306,7 @@
           "form": {
             "serialisationError": "There was an error serializing the form data",
             "path": "path",
-            "timeout": "timeout",
+            "timeout": "timeout (optional)",
             "methods": "methods",
             "allowAnonymous": "allow anonymous",
             "plugins": {
