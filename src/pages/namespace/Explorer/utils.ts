@@ -4,8 +4,8 @@ import { stringify as jsonToPrettyYamlStringify } from "json-to-pretty-yaml";
  * but it will serialize an empty object to an empty string instead
  * of "{}"
  */
-export const jsonToYaml = (t: Record<string, unknown>) =>
-  Object.keys(t).length === 0 ? "" : jsonToPrettyYamlStringify(t);
+export const jsonToYaml = (json: Record<string, unknown>) =>
+  Object.keys(json).length === 0 ? "" : jsonToPrettyYamlStringify(json);
 
 export const treatEmptyStringAsUndefined = (value: unknown) => {
   if (value === "") {
