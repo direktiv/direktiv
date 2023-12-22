@@ -113,8 +113,8 @@ const ConsumerSchema = z.object({
   username: z.string(),
   password: z.string(),
   api_key: z.string(),
-  tags: z.array(z.string()),
-  groups: z.array(z.string()),
+  tags: z.array(z.string()).nullable(),
+  groups: z.array(z.string()).nullable(),
 });
 
 export type ConsumerSchemaType = z.infer<typeof ConsumerSchema>;
