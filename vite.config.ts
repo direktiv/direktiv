@@ -42,6 +42,11 @@ export default ({ mode }) => {
   }
 
   return defineConfig({
+    // define global variable replacements. Entries will be defined on window during dev and replaced during build.
+    define: {
+      // will be undefined in plawright tests, to need to be typed as optional
+      "process.env.VITE": parsedEnv,
+    },
     server: {
       host: "0.0.0.0",
       port: 3000,

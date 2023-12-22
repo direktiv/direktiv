@@ -55,7 +55,10 @@ type PermissionStatus =
 
 export const getPermissionStatus = (error: unknown): PermissionStatus => {
   if (isApiErrorSchema(error)) {
-    if (error.response.status === 401) {
+    if (
+      error.response.status === 401 &&
+      process.env.VITE.VITE_IS_ENTERPRISE === true
+    ) {
       /**
        * Technically, the following code could be falsely executed on non enterprise builds.
        * However, it is not possible to check against VITE_IS_ENTERPRISE in this file without
