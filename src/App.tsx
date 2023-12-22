@@ -38,7 +38,9 @@ const App = () => {
         <RouterProvider router={router} />
       </AuthenticationProvider>
       {/* By default, React Query Devtools are only included in bundles when process.env.NODE_ENV === 'development', so you don't need to worry about excluding them during a production build. */}
-      {env.VITE_RQ_DEV_TOOLS && <ReactQueryDevtools initialIsOpen={false} />}
+      {env.VITE_RQ_DEV_TOOLS === "true" && (
+        <ReactQueryDevtools initialIsOpen={false} />
+      )}
       <Toaster />
     </QueryClientProvider>
   );

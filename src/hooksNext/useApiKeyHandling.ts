@@ -12,9 +12,9 @@ const { VITE_IS_ENTERPRISE: isEnterprise } = env;
  */
 const useIsApiKeyRequired = () => {
   const { data: testSucceeded, isFetched: isFinished } = useAuthTest({
-    enabled: !isEnterprise,
+    enabled: isEnterprise === "false",
   });
-  return isEnterprise
+  return isEnterprise === "true"
     ? { isApiKeyRequired: false, isFinished: true }
     : {
         isApiKeyRequired:
@@ -69,7 +69,7 @@ const useApiKeyHandling = () => {
     isApiKeyRequired,
     isCurrentKeyValid,
     isFetched,
-    showUsermenu: isEnterprise ? true : isApiKeyRequired,
+    showUsermenu: isEnterprise === "true" ? true : isApiKeyRequired,
   };
 };
 

@@ -12,7 +12,7 @@ export const AuthenticationProvider: FC<PropsWithChildren> = ({ children }) => {
   const { setApiKey: storeApiKey } = useApiActions();
   const apiKeyFromLocalStorage = useApiKey();
 
-  useRefreshSession({ enabled: env.VITE_IS_ENTERPRISE });
+  useRefreshSession({ enabled: env.VITE_IS_ENTERPRISE === "true" });
 
   /**
    * clean up old api keys from local storage

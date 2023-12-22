@@ -15,7 +15,7 @@ const LogoutButton = () => {
     storeApiKey(null);
   };
 
-  return isEnterprise ? (
+  return isEnterprise === "true" ? (
     <DropdownMenuItem className="cursor-pointer" asChild>
       <a href={enterpriseConfig.logoutPath} className="flex items-center">
         <LogOut className="mr-2 h-4 w-4" />
