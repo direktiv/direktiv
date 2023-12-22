@@ -66,7 +66,7 @@ export const useUpdateWorkflow = ({
         }),
         () => data
       );
-      // if the updated fiel was a route, we need to invalidate the routes query
+      // if the updated file was a route, we need to invalidate the routes query
       queryClient.invalidateQueries(
         gatewayKeys.routes(namespace, {
           apiKey: apiKey ?? undefined,
