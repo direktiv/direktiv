@@ -57,15 +57,8 @@ export const getPermissionStatus = (error: unknown): PermissionStatus => {
   if (isApiErrorSchema(error)) {
     if (
       error.response.status === 401 &&
-      process.env.VITE.VITE_IS_ENTERPRISE === true
+      process.env.VITE_IS_ENTERPRISE === "true"
     ) {
-      /**
-       * Technically, the following code could be falsely executed on non enterprise builds.
-       * However, it is not possible to check against VITE_IS_ENTERPRISE in this file without
-       * breaking Playwright. Playwright runs in a node environment and includes the a lot of
-       * the fetch requests, which implicitly import this file as well and will break when
-       * they stumble upon import.meta.env.VITE_IS_ENTERPRISE.
-       */
       window.location.href = enterpriseConfig.logoutPath;
     }
 

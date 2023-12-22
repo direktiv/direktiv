@@ -1,8 +1,7 @@
-import env from "~/config/env";
 import { useApiKey } from "~/util/store/apiKey";
 import { useAuthTest } from "~/api/authenticate/query/getAuthInfos";
 
-const { VITE_IS_ENTERPRISE: isEnterprise } = env;
+const isEnterprise = process.env.VITE?.VITE_IS_ENTERPRISE === "true";
 
 /**
  * Send test request to check if api needs an api key. In enterprise
@@ -12,9 +11,9 @@ const { VITE_IS_ENTERPRISE: isEnterprise } = env;
  */
 const useIsApiKeyRequired = () => {
   const { data: testSucceeded, isFetched: isFinished } = useAuthTest({
-    enabled: isEnterprise === "false",
+    enabled: !isEnterprise,
   });
-  return isEnterprise === "true"
+  return isEnterprise
     ? { isApiKeyRequired: false, isFinished: true }
     : {
         isApiKeyRequired:
@@ -69,7 +68,7 @@ const useApiKeyHandling = () => {
     isApiKeyRequired,
     isCurrentKeyValid,
     isFetched,
-    showUsermenu: isEnterprise === "true" ? true : isApiKeyRequired,
+    showUsermenu: isEnterprise ? true : isApiKeyRequired,
   };
 };
 

@@ -94,7 +94,6 @@ export const apiFactory =
   > =>
   async ({ apiKey, payload, headers, urlParams }): Promise<TSchema> => {
     const payloadFileCheck = FileSchema.safeParse(payload);
-
     let body;
     if (typeof payload === "string") {
       body = payload;

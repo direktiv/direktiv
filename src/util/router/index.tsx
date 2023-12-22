@@ -20,6 +20,6 @@ export const router = createBrowserRouter(
     },
   ],
   {
-    basename: env.VITE_BASE ?? undefined,
+    basename: process.env.VITE?.VITE_BASE ?? undefined,
   }
 );
