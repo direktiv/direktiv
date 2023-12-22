@@ -12,7 +12,7 @@ export const AuthenticationProvider: FC<PropsWithChildren> = ({ children }) => {
   const apiKeyFromLocalStorage = useApiKey();
 
   useRefreshSession({
-    enabled: process.env.VITE?.VITE_IS_ENTERPRISE === "true",
+    enabled: !!process.env.VITE?.VITE_IS_ENTERPRISE,
   });
 
   /**

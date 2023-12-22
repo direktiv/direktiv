@@ -245,73 +245,73 @@ type PermissionsPageSetup = Partial<
 
 type EnterprisePageType = PermissionsPageSetup;
 
-export const enterprisePages: EnterprisePageType =
-  process.env.VITE?.VITE_IS_ENTERPRISE === "true"
-    ? {
-        permissions: {
-          name: "components.mainMenu.permissions",
-          icon: BadgeCheck,
-          createHref: (params) => {
-            let subpage = "";
-            if (params.subpage === "groups") {
-              subpage = "/groups";
-            }
-            if (params.subpage === "tokens") {
-              subpage = "/tokens";
-            }
-            return `/${params.namespace}/permissions${subpage}`;
-          },
-          useParams: () => {
-            const [, secondLevel, thirdLevel] = useMatches(); // first level is namespace level
-            const isPermissionsPage = checkHandler(
-              secondLevel,
-              "isPermissionsPage"
-            );
-            const isPermissionsPolicyPage = checkHandler(
-              thirdLevel,
-              "isPermissionsPolicyPage"
-            );
-            const isPermissionsTokenPage = checkHandler(
-              thirdLevel,
-              "isPermissionsTokenPage"
-            );
-            const isPermissionsGroupPage = checkHandler(
-              thirdLevel,
-              "isPermissionsGroupPage"
-            );
-
-            return {
-              isPermissionsPage,
-              isPermissionsPolicyPage,
-              isPermissionsTokenPage,
-              isPermissionsGroupPage,
-            };
-          },
-          route: {
-            path: "permissions",
-            element: <PermissionsPage />,
-            handle: { permissions: true, isPermissionsPage: true },
-            children: [
-              {
-                path: "",
-                element: <PolicyPage />,
-                handle: { isPermissionsPolicyPage: true },
-              },
-              {
-                path: "tokens",
-                element: <TokensPage />,
-                handle: { isPermissionsTokenPage: true },
-              },
-              {
-                path: "groups",
-                element: <GroupsPage />,
-                handle: { isPermissionsGroupPage: true },
-              },
-            ],
-          },
+export const enterprisePages: EnterprisePageType = process.env.VITE
+  ?.VITE_IS_ENTERPRISE
+  ? {
+      permissions: {
+        name: "components.mainMenu.permissions",
+        icon: BadgeCheck,
+        createHref: (params) => {
+          let subpage = "";
+          if (params.subpage === "groups") {
+            subpage = "/groups";
+          }
+          if (params.subpage === "tokens") {
+            subpage = "/tokens";
+          }
+          return `/${params.namespace}/permissions${subpage}`;
         },
-      }
-    : {};
+        useParams: () => {
+          const [, secondLevel, thirdLevel] = useMatches(); // first level is namespace level
+          const isPermissionsPage = checkHandler(
+            secondLevel,
+            "isPermissionsPage"
+          );
+          const isPermissionsPolicyPage = checkHandler(
+            thirdLevel,
+            "isPermissionsPolicyPage"
+          );
+          const isPermissionsTokenPage = checkHandler(
+            thirdLevel,
+            "isPermissionsTokenPage"
+          );
+          const isPermissionsGroupPage = checkHandler(
+            thirdLevel,
+            "isPermissionsGroupPage"
+          );
+
+          return {
+            isPermissionsPage,
+            isPermissionsPolicyPage,
+            isPermissionsTokenPage,
+            isPermissionsGroupPage,
+          };
+        },
+        route: {
+          path: "permissions",
+          element: <PermissionsPage />,
+          handle: { permissions: true, isPermissionsPage: true },
+          children: [
+            {
+              path: "",
+              element: <PolicyPage />,
+              handle: { isPermissionsPolicyPage: true },
+            },
+            {
+              path: "tokens",
+              element: <TokensPage />,
+              handle: { isPermissionsTokenPage: true },
+            },
+            {
+              path: "groups",
+              element: <GroupsPage />,
+              handle: { isPermissionsGroupPage: true },
+            },
+          ],
+        },
+      },
+    }
+  : {};
 
 // these are the direct child pages that live in the /:namespace folder
 // the main goal of this abstraction is to make the router as typesafe as

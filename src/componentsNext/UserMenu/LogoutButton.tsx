@@ -8,7 +8,7 @@ const LogoutButton = () => {
   const { t } = useTranslation();
   const { setApiKey: storeApiKey } = useApiActions();
 
-  const isEnterprise = process.env.VITE?.VITE_IS_ENTERPRISE === "true";
+  const isEnterprise = !!process.env.VITE?.VITE_IS_ENTERPRISE;
 
   const logout = () => {
     storeApiKey(null);
