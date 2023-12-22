@@ -35,7 +35,7 @@ export const Main: FC<PropsWithChildren> = ({ children }) => (
 );
 
 export const MainTop: FC<PropsWithChildren> = ({ children }) => (
-  <div className="flex items-center justify-between border-b border-gray-5 bg-white px-4 py-2 dark:border-gray-dark-5 dark:bg-black lg:sticky lg:top-0 ">
+  <div className="z-30 flex items-center justify-between border-b border-gray-5 bg-white px-4 py-2 dark:border-gray-dark-5 dark:bg-black lg:sticky lg:top-0">
     {children}
   </div>
 );

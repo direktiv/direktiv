@@ -49,6 +49,7 @@
             "title": "this directory is empty",
             "createWorkflow": "Create Workflow",
             "createService": "Create Service",
+            "createEndpoint": "Create Endpoint",
             "createDirectory": "Create Directory"
           }
         },
@@ -78,12 +79,19 @@
           "cancelBtn": "Cancel",
           "deleteBtn": "Delete"
         },
-        "header": {
-          "newBtn": "New",
-          "createLabel": "Create",
-          "newDirectory": "New Directory",
-          "newWorkflow": "New Workflow",
-          "newService": "New Service"
+        "newFileButton": {
+          "buttonText": "New",
+          "label": "Create",
+          "items": {
+            "directory": "New Directory",
+            "workflow": "New Workflow",
+            "service": "New Service",
+            "gateway": {
+              "label": "Gateway",
+              "route": "New Route",
+              "consumer": "New Consumer"
+            }
+          }
         },
         "newWorkflow": {
           "title": "Create a new workflow",
@@ -109,6 +117,22 @@
             "envs": "Envs",
             "postStartExec": "Post Start Exec"
           }
+        },
+        "newRoute": {
+          "title": "Create a new route",
+          "nameLabel": "Name",
+          "namePlaceholder": "route-name.yaml",
+          "nameAlreadyExists": "The name already exists",
+          "cancelBtn": "Cancel",
+          "createBtn": "Create"
+        },
+        "newConsumer": {
+          "title": "Create a new consumer",
+          "nameLabel": "Name",
+          "namePlaceholder": "consumer-name.yaml",
+          "nameAlreadyExists": "The name already exists",
+          "cancelBtn": "Cancel",
+          "createBtn": "Create"
         },
         "workflow": {
           "revisions": {
@@ -275,6 +299,181 @@
         "editor": {
           "saveBtn": "Save",
           "helpTitle": "Example service file"
+        }
+      },
+      "endpoint": {
+        "goToRoutes": "Go to routes",
+        "editor": {
+          "form": {
+            "serialisationError": "There was an error serializing the form data",
+            "path": "path",
+            "timeout": "timeout (optional)",
+            "methods": "methods",
+            "allowAnonymous": "allow anonymous",
+            "plugins": {
+              "saveBtn": "Save",
+              "deleteBtn": "Delete",
+              "moveUpBtn": "Move up",
+              "moveDownBtn": "Move down",
+              "target": {
+                "table": {
+                  "headline": "Target plugin",
+                  "addButton": "set target plugin"
+                },
+                "modal": {
+                  "headline": "Configure target plugin",
+                  "label": "Target plugin",
+                  "placeholder": "Please select a target plugin"
+                },
+                "types": {
+                  "instant-response": "Instant Response",
+                  "target-flow": "Workflow",
+                  "target-flow-var": "Workflow Variable",
+                  "target-namespace-file": "Namespace File",
+                  "target-namespace-var": "Namespace Variable"
+                },
+                "instantResponse": {
+                  "statusCode": "Status Code",
+                  "statusCodePlaceholder": "200",
+                  "contentType": "Content Type (optional)",
+                  "contentTypePlaceholder": "application/json",
+                  "statusMessage": "Status Message (optional)"
+                },
+                "targetFlow": {
+                  "namespace": "Namespace (optional)",
+                  "workflow": "Workflow",
+                  "asynchronous": "Asynchronous",
+                  "contentType": "Content Type (optional)",
+                  "contentTypePlaceholder": "application/json"
+                },
+                "targetFlowVar": {
+                  "namespace": "Namespace (optional)",
+                  "workflow": "Workflow",
+                  "variable": "Variable",
+                  "contentType": "Content Type (optional)",
+                  "contentTypePlaceholder": "application/json"
+                },
+                "targetNamespaceFile": {
+                  "namespace": "Namespace (optional)",
+                  "file": "File",
+                  "contentType": "Content Type (optional)",
+                  "contentTypePlaceholder": "application/json"
+                },
+                "targetNamespaceVariable": {
+                  "namespace": "Namespace (optional)",
+                  "variable": "Variable",
+                  "contentType": "Content Type (optional)",
+                  "contentTypePlaceholder": "application/json"
+                }
+              },
+              "inbound": {
+                "modal": {
+                  "headlineAdd": "Add inbound plugin",
+                  "headlineEdit": "Edit inbound plugin",
+                  "label": "Inbound plugin",
+                  "placeholder": "Please select an inbound plugin"
+                },
+                "table": {
+                  "headline": "{{count}} inbound plugins",
+                  "headline_one": "{{count}} inbound plugin",
+                  "addButton": "add inbound plugin"
+                },
+                "types": {
+                  "acl": "Access control list (acl)",
+                  "js-inbound": "JavaScript",
+                  "request-convert": "Request convert"
+                },
+                "jsInbound": {
+                  "script": "JavaScript"
+                },
+                "requestConvert": {
+                  "omitHeaders": "Omit Headers",
+                  "omitQueries": "Omit Queries",
+                  "omitBody": "Omit Body",
+                  "omitConsumer": "Omit Consumer"
+                },
+                "acl": {
+                  "allow_groups": "Allow Groups (optional)",
+                  "deny_groups": "Deny Groups (optional)",
+                  "allow_tags": "Allow tags (optional)",
+                  "deny_tags": "Deny tags (optional)",
+                  "groupPlaceholder": "Enter a group",
+                  "tagPlaceholder": "Enter a tag"
+                }
+              },
+              "outbound": {
+                "modal": {
+                  "headlineAdd": "Add outbound plugin",
+                  "headlineEdit": "Edit outbound plugin",
+                  "label": "Outbound plugin",
+                  "placeholder": "Please select an outbound plugin"
+                },
+                "table": {
+                  "headline": "{{count}} outbound plugins",
+                  "headline_one": "{{count}} outbound plugin",
+                  "addButton": "add outbound plugin"
+                },
+                "types": {
+                  "js-outbound": "JavaScript"
+                },
+                "jsOutbound": {
+                  "script": "JavaScript"
+                }
+              },
+              "auth": {
+                "modal": {
+                  "headlineAdd": "Add auth plugin",
+                  "headlineEdit": "Edit auth plugin",
+                  "label": "Auth plugin",
+                  "placeholder": "Please select an auth plugin"
+                },
+                "table": {
+                  "headline": "{{count}} auth plugins",
+                  "headline_one": "{{count}} auth plugin",
+                  "addButton": "add auth plugin"
+                },
+                "types": {
+                  "basic-auth": "Basic Auth",
+                  "github-webhook-auth": "Github Webhook",
+                  "key-auth": "Key Auth"
+                },
+                "basciAuth": {
+                  "addUsernameHeader": "Add username header",
+                  "addTagsHeader": "Add tags header",
+                  "addGroupsHeader": "Add groups header"
+                },
+                "githubWebhookAuth": {
+                  "secret": "secret"
+                },
+                "keyAuth": {
+                  "addUsernameHeader": "Add username header",
+                  "addTagsHeader": "Add tags header",
+                  "addGroupsHeader": "Add groups header",
+                  "keyName": "Key name (optional)",
+                  "keyNamePlaceholder": "name of the key"
+                }
+              }
+            }
+          },
+          "saveBtn": "Save",
+          "unsavedNote": "unsaved changes"
+        }
+      },
+      "consumer": {
+        "goToConsumer": "Go to consumers",
+        "editor": {
+          "form": {
+            "serialisationError": "There was an error serializing the form data",
+            "username": "Username",
+            "password": "Password",
+            "api_key": "Api key",
+            "tags": "Tags (optional)",
+            "groups": "Groups (optional)",
+            "tagsPlaceholder": "Enter a tag",
+            "groupsPlaceholder": "Enter a group"
+          },
+          "saveBtn": "Save",
+          "unsavedNote": "unsaved changes"
         }
       }
     },
@@ -828,13 +1027,59 @@
         "title": "Namespace"
       },
       "apiKey": {
-        "title": "Api Key"
+        "title": "API Key"
       },
       "version": {
         "title": "Version"
       },
       "namespacesList": {
         "title": "Namespaces"
+      }
+    },
+    "gateway": {
+      "tabs": {
+        "routes": "Routes",
+        "consumers": "Consumers"
+      },
+      "routes": {
+        "columns": {
+          "filePath": "file path",
+          "methods": "methods",
+          "path": "path",
+          "plugins": "plugins",
+          "anonymous": "allow anonymous"
+        },
+        "row": {
+          "allowAnonymous": {
+            "yes": "yes",
+            "no": "no"
+          },
+          "errors": {
+            "count": "{{count}} errors",
+            "count_one": "{{count}} error"
+          },
+          "warnings": {
+            "count": "{{count}} warnings",
+            "count_one": "{{count}} warning"
+          },
+          "plugin": {
+            "countAll": "{{count}} plugins",
+            "countAll_one": "{{count}} plugin",
+            "countType": "{{count}} {{type}} plugins",
+            "countType_one": "{{count}} {{type}} plugin"
+          }
+        },
+        "empty": "No routes exist yet"
+      },
+      "consumer": {
+        "columns": {
+          "username": "username",
+          "password": "password",
+          "apikey": "apikey",
+          "tags": "tags",
+          "groups": "groups"
+        },
+        "empty": "No consumers exist yet"
       }
     },
     "jqPlayground": {
@@ -894,6 +1139,9 @@
       "permissionsTokens": "Tokens",
       "permissionsGroups": "Groups",
       "settings": "Settings",
+      "gateway": "Gateway",
+      "gatewayRoutes": "Routes",
+      "gatewayConsumers": "Consumer",
       "jqPlayground": "jq Playground"
     },
     "namespaceEdit": {
@@ -983,6 +1231,19 @@
           "description": "You have {{count}} uninitialized secrets.",
           "description_one": "You have {{count}} uninitialized secret."
         }
+      }
+    },
+    "namespaceSelector": {
+      "placeholder": "Select Namespace",
+      "loading": "loading...",
+      "optionDoesNotExists": "{{namespace}} (does not exist)"
+    },
+    "filepicker": {
+      "buttonText": "Browse Files",
+      "placeholder": "No File selected",
+      "error": {
+        "title": "The path \"{{path}}\" was not found.",
+        "linkText": "Go back to root directory"
       }
     },
     "userMenu": {

@@ -96,8 +96,8 @@ const Edit = ({ item, onSuccess, path }: EditProps) => {
     if (isInitialized) {
       const contentType = data.headers["content-type"];
       const safeParsedContentType = EditorMimeTypeSchema.safeParse(contentType);
-      setValue("mimeType", contentType);
-      onMimeTypeChange(contentType);
+      setValue("mimeType", contentType ?? "");
+      onMimeTypeChange(contentType ?? "");
       if (safeParsedContentType.success) {
         setBody(data.body);
       } else {

@@ -11,7 +11,7 @@ import Button from "~/design/Button";
 import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
 import { TextCursorInput } from "lucide-react";
-import { addYamlFileExtension } from "./utils";
+import { addYamlFileExtension } from "../../utils";
 import { useRenameNode } from "~/api/tree/mutate/renameNode";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
@@ -40,7 +40,7 @@ const Rename = ({
       z.object({
         name: fileNameSchema
           .transform((enteredName) => {
-            if (node.type === "workflow") {
+            if (node.type !== "directory" && node.type !== "file") {
               return addYamlFileExtension(enteredName);
             }
             return enteredName;
