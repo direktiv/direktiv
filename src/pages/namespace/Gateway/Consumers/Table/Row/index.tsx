@@ -12,9 +12,7 @@ type RowProps = {
 export const Row: FC<RowProps> = ({ consumer }) => (
   <TableRow>
     <TableCell>
-      <div className="whitespace-normal break-all hover:underline">
-        {consumer.username}
-      </div>
+      <div className="whitespace-normal break-all">{consumer.username}</div>
     </TableCell>
     <TableCell>
       <SecretInput secret={consumer.password} />
