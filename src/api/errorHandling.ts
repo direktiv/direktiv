@@ -57,7 +57,7 @@ export const getPermissionStatus = (error: unknown): PermissionStatus => {
   if (isApiErrorSchema(error)) {
     if (
       error.response.status === 401 &&
-      process.env.VITE_IS_ENTERPRISE === "true"
+      process.env.VITE?.VITE_IS_ENTERPRISE === "true"
     ) {
       window.location.href = enterpriseConfig.logoutPath;
     }
