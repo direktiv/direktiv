@@ -1,5 +1,4 @@
 import Backend from "i18next-http-backend";
-import env from "./config/env";
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 

@@ -2,7 +2,6 @@ import ErrorPage from "./ErrorPage";
 import NamespaceLayout from "~/pages/namespace/Layout";
 import OnboardingPage from "~/pages/OnboardingPage";
 import { createBrowserRouter } from "react-router-dom";
-import env from "~/config/env";
 import { pages } from "./pages";
 
 export const router = createBrowserRouter(
