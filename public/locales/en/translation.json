@@ -460,7 +460,7 @@
         }
       },
       "consumer": {
-        "goToConsumer": "Go to consumer",
+        "goToConsumer": "Go to consumers",
         "editor": {
           "form": {
             "serialisationError": "There was an error serializing the form data",
