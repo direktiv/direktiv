@@ -3,7 +3,7 @@ import { ComponentProps, FC } from "react";
 import Alert from "~/design/Alert";
 import { useTranslation } from "react-i18next";
 
-type errorsType = Record<string, { message?: string }>;
+export type errorsType = Record<string, { message?: string }>;
 
 type FormErrorsProps = ComponentProps<typeof Alert> & { errors: errorsType };
 

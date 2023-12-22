@@ -160,7 +160,6 @@ const ApiCommands = ({
             <Editor
               value={selectedTemplate?.body}
               language={selectedTemplate?.payloadSyntax}
-              options={{}}
               onChange={(data) => {
                 if (data && selectedTemplate) {
                   setBody(data);

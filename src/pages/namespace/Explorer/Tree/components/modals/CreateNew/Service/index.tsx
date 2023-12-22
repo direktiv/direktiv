@@ -22,9 +22,9 @@ import FormErrors from "~/componentsNext/FormErrors";
 import Input from "~/design/Input";
 import { JSONSchemaForm } from "~/design/JSONschemaForm";
 import { ScrollArea } from "~/design/ScrollArea";
-import ServiceHelp from "../../Service/ServiceHelp";
+import ServiceHelp from "~/pages/namespace/Explorer/Service/ServiceHelp";
 import { Toggle } from "~/design/Toggle";
-import { addYamlFileExtension } from "../utils";
+import { addYamlFileExtension } from "../../../../utils";
 import { fileNameSchema } from "~/api/tree/schema/node";
 import { pages } from "~/util/router/pages";
 import { stringify } from "json-to-pretty-yaml";
@@ -120,7 +120,7 @@ const NewService = ({
           {t("pages.explorer.tree.newService.title")}
         </DialogTitle>
       </DialogHeader>
-      <div className="my-5 flex flex-col gap-y-5">
+      <div className="my-5 flex max-h-[70vh] flex-col gap-y-5 overflow-y-auto">
         <FormErrors errors={errors} className="mb-5" />
         <form id={formId} onSubmit={handleSubmit(onSubmit)}>
           <fieldset className="flex items-center gap-5">
