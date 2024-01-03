@@ -3,7 +3,9 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
+	"strings"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	v1 "k8s.io/api/core/v1"
@@ -46,7 +48,52 @@ func (c *knativeClient) createService(sv *core.ServiceConfig) error {
 		return err
 	}
 
+	err = c.applyPatch(sv)
+	if err != nil {
+		return err
+	}
+
 	return nil
+}
+
+func (c *knativeClient) applyPatch(sv *core.ServiceConfig) error {
+	pathWhiteList := []string{
+		"/spec/template/metadata/labels",
+		"/spec/template/metadata/annotations",
+		"/spec/template/spec/affinity",
+		"/spec/template/spec/securityContext",
+		"/spec/template/spec/containers/0",
+	}
+
+	// check patch whitelist paths.
+	for i := range sv.Patches {
+		patch := sv.Patches[i]
+
+		hasAllowedPrefix := false
+		for a := range pathWhiteList {
+			prefix := pathWhiteList[a]
+			if strings.HasPrefix(patch.Path, prefix) {
+				hasAllowedPrefix = true
+
+				break
+			}
+
+		}
+
+		// if the path is not in the allowed prefix list, return with an error.
+		if !hasAllowedPrefix {
+			return fmt.Errorf("path %s is not permitted for patches", patch.Path)
+		}
+	}
+
+	patchBytes, err := json.Marshal(sv.Patches)
+	if err != nil {
+		return err
+	}
+
+	_, err = c.knativeCli.ServingV1().Services(c.config.KnativeNamespace).Patch(context.Background(), sv.GetID(), types.JSONPatchType, patchBytes, metav1.PatchOptions{})
+
+	return err
 }
 
 func (c *knativeClient) updateService(sv *core.ServiceConfig) error {
@@ -60,6 +107,12 @@ func (c *knativeClient) updateService(sv *core.ServiceConfig) error {
 	}
 	_, err = c.knativeCli.ServingV1().Services(c.config.KnativeNamespace).Patch(context.Background(), sv.GetID(), types.MergePatchType, input, metav1.PatchOptions{})
 	if err != nil {
+		return err
+	}
+
+	err = c.applyPatch(sv)
+	if err != nil {
+		fmt.Println(err)
 		return err
 	}
 

@@ -108,7 +108,6 @@ func buildPodMeta(c *core.Config, sv *core.ServiceConfig) metav1.ObjectMeta {
 
 	metaSpec.Annotations["autoscaling.knative.dev/minScale"] = strconv.Itoa(sv.Scale)
 	metaSpec.Annotations["autoscaling.knative.dev/maxScale"] = strconv.Itoa(c.KnativeMaxScale)
-	metaSpec.Annotations["autoscaling.knative.dev/minScale"] = strconv.Itoa(sv.Scale)
 
 	if len(c.KnativeNetShape) > 0 {
 		metaSpec.Annotations["kubernetes.io/ingress-bandwidth"] = c.KnativeNetShape
@@ -141,12 +140,12 @@ func buildContainers(c *core.Config, sv *core.ServiceConfig) ([]corev1.Container
 		return nil, err
 	}
 
-	allowPrivilegeEscalation := false
+	allowPrivilegeEscalation := true
 	secContext := &corev1.SecurityContext{
 		AllowPrivilegeEscalation: &allowPrivilegeEscalation,
 		Capabilities: &corev1.Capabilities{
 			Drop: []corev1.Capability{
-				corev1.Capability("ALL"),
+				// corev1.Capability("ALL"),
 			},
 		},
 	}

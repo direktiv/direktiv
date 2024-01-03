@@ -10,7 +10,7 @@
     "supertest": "^6.3.3"
   },
   "scripts": {
-    "run-tests": "npx jest --runInBand",
+    "run-tests": "npx jest --modulePathIgnorePatterns=$DIREKTIV_KUBERNETES --runInBand",
     "run-tests-watch": "npx jest --watch --runInBand",
     "all": "npm install && npm run run-tests"
   }
