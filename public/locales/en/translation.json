@@ -1456,7 +1456,7 @@
         "rebuildService": {
           "success": {
             "title": "Service rebuild",
-            "description": "Service was rebuild."
+            "description": "Service was rebuilt."
           },
           "error": {
             "description": "Could not rebuild service 😢"
