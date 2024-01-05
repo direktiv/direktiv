@@ -1141,7 +1141,7 @@
       "settings": "Settings",
       "gateway": "Gateway",
       "gatewayRoutes": "Routes",
-      "gatewayConsumers": "Consumer",
+      "gatewayConsumers": "Consumers",
       "jqPlayground": "jq Playground"
     },
     "namespaceEdit": {
