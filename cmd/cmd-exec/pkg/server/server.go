@@ -5,10 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"io/fs"
 	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 	"time"
 
@@ -24,6 +26,17 @@ const (
 
 	DirektivErrorCode = "io.direktiv.error.execution"
 )
+
+type File struct {
+	Name       string `json:"name"`
+	Content    string `json:"content"`
+	Permission uint   `json:"permission"`
+}
+
+type Payload[DATA any] struct {
+	Files []File `json:"files"`
+	Data  DATA   `json:"data"`
+}
 
 type Server[IN any] struct {
 	httpServer *http.Server
@@ -63,8 +76,7 @@ func Handler[IN any](fn func(context.Context, IN, *ExecutionInfo) (interface{}, 
 
 	r.Post("/", func(w http.ResponseWriter, r *http.Request) {
 
-		var data IN
-
+		var in Payload[IN]
 		b, err := io.ReadAll(r.Body)
 		if err != nil {
 			errWriter(w, http.StatusBadRequest, err.Error())
@@ -74,7 +86,7 @@ func Handler[IN any](fn func(context.Context, IN, *ExecutionInfo) (interface{}, 
 		defer r.Body.Close()
 
 		if len(b) > 0 {
-			err = json.Unmarshal(b, &data)
+			err = json.Unmarshal(b, &in)
 			if err != nil {
 				errWriter(w, http.StatusBadRequest, err.Error())
 
@@ -104,7 +116,26 @@ func Handler[IN any](fn func(context.Context, IN, *ExecutionInfo) (interface{}, 
 			Log:    NewLogger(actionID),
 		}
 
-		out, err := fn(r.Context(), data, ei)
+		for a := range in.Files {
+			f := in.Files[a]
+			file, err := os.Create(filepath.Join(tmpDir, f.Name))
+			if err != nil {
+				errWriter(w, http.StatusInternalServerError, err.Error())
+
+				return
+			}
+
+			_, err = file.Write([]byte(f.Content))
+			if err != nil {
+				errWriter(w, http.StatusInternalServerError, err.Error())
+
+				return
+			}
+
+			file.Chmod(fs.FileMode(f.Permission))
+		}
+
+		out, err := fn(r.Context(), in.Data, ei)
 		if err != nil {
 			errWriter(w, http.StatusInternalServerError, err.Error())
 
