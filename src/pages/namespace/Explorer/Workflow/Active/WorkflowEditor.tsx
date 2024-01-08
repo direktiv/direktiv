@@ -90,14 +90,11 @@ const WorkflowEditor: FC<{
       <WorkspaceLayout
         layout={currentLayout}
         diagramComponent={
-          <Diagram
-            workflowData={workflowDataFromServer}
-            layout={currentLayout}
-          />
+          <Diagram workflowData={editorContent} layout={currentLayout} />
         }
         editorComponent={
           <CodeEditor
-            value={workflowDataFromServer}
+            value={editorContent}
             onValueChange={onEditorContentUpdate}
             createdAt={data.revision?.createdAt}
             error={error}
