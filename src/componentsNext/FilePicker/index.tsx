@@ -55,6 +55,8 @@ const FilePicker = ({
       ? false
       : true;
 
+  namespace = namespace || data?.namespace;
+
   const emptyNamespace = isRoot && noResults;
   const emptyDirectory = !isRoot && !isError && noResults;
 
@@ -70,7 +72,7 @@ const FilePicker = ({
         >
           <FilepickerHeading>
             <div className="py-3">
-              {t("components.filepicker.emptyNamespace.title")}
+              {t("components.filepicker.emptyNamespace.title", { namespace })}
             </div>
           </FilepickerHeading>
         </Filepicker>
@@ -113,7 +115,7 @@ const FilePicker = ({
           </FilepickerHeading>
 
           <FilepickerSeparator />
-          {isError && (
+          {isError ? (
             <div>
               <FilepickerHeading>
                 <div className="py-3">
@@ -133,65 +135,72 @@ const FilePicker = ({
                 </div>
               </FilepickerList>
             </div>
-          )}
-          {!isRoot && data && (
-            <>
-              <div
-                onClick={() => {
-                  parent ? setPath(parent.absolute) : null;
-                }}
-                className="h-auto w-full cursor-pointer p-0 font-normal text-gray-11 hover:underline focus:bg-transparent focus:ring-0 focus:ring-transparent focus:ring-offset-0 dark:text-gray-dark-11 dark:focus:bg-transparent"
-              >
-                <FilepickerListItem icon={FolderUp}>..</FilepickerListItem>
-              </div>
-              <FilepickerSeparator />
-            </>
-          )}
-          {emptyDirectory ? (
-            <FilepickerMessage>
-              {t("components.filepicker.emptyDirectory.title")}
-            </FilepickerMessage>
           ) : (
-            <FilepickerList scrollableLength={scrollableLength}>
-              {results.map((file) => {
-                const isSelectable = selectable?.(file) ?? true;
-                return (
-                  <Fragment key={file.name}>
-                    {file.type === "directory" ? (
-                      <div
-                        onClick={() => {
-                          setPath(file.path);
-                        }}
-                        className="h-auto w-full cursor-pointer text-gray-11 hover:underline focus:bg-transparent focus:ring-0 focus:ring-transparent focus:ring-offset-0 dark:text-gray-dark-11 dark:focus:bg-transparent"
-                      >
-                        <FilepickerListItem icon={fileTypeToIcon(file.type)}>
-                          {file.name}
-                        </FilepickerListItem>
-                      </div>
-                    ) : (
-                      <FilepickerClose
-                        className={twMergeClsx(
-                          "h-auto w-full text-gray-11 hover:underline dark:text-gray-dark-11",
-                          !isSelectable && "cursor-not-allowed opacity-70"
+            <div>
+              {!isRoot && data && (
+                <>
+                  <div
+                    onClick={() => {
+                      parent ? setPath(parent.absolute) : null;
+                    }}
+                    className="h-auto w-full cursor-pointer p-0 font-normal text-gray-11 hover:underline focus:bg-transparent focus:ring-0 focus:ring-transparent focus:ring-offset-0 dark:text-gray-dark-11 dark:focus:bg-transparent"
+                  >
+                    <FilepickerListItem icon={FolderUp}>..</FilepickerListItem>
+                  </div>
+                  <FilepickerSeparator />
+                </>
+              )}
+              {emptyDirectory ? (
+                <FilepickerMessage>
+                  {t("components.filepicker.emptyDirectory.title", { path })}
+                </FilepickerMessage>
+              ) : (
+                <FilepickerList scrollableLength={scrollableLength}>
+                  {results.map((file) => {
+                    const isSelectable = selectable?.(file) ?? true;
+                    return (
+                      <Fragment key={file.name}>
+                        {file.type === "directory" ? (
+                          <div
+                            onClick={() => {
+                              setPath(file.path);
+                            }}
+                            className="h-auto w-full cursor-pointer text-gray-11 hover:underline focus:bg-transparent focus:ring-0 focus:ring-transparent focus:ring-offset-0 dark:text-gray-dark-11 dark:focus:bg-transparent"
+                          >
+                            <FilepickerListItem
+                              icon={fileTypeToIcon(file.type)}
+                            >
+                              {file.name}
+                            </FilepickerListItem>
+                          </div>
+                        ) : (
+                          <FilepickerClose
+                            className={twMergeClsx(
+                              "h-auto w-full text-gray-11 hover:underline dark:text-gray-dark-11",
+                              !isSelectable && "cursor-not-allowed opacity-70"
+                            )}
+                            disabled={!isSelectable}
+                            onClick={() => {
+                              setPath(file.parent);
+                              setInputValue(file.path);
+                              onChange?.(file.path);
+                            }}
+                          >
+                            <FilepickerListItem
+                              icon={fileTypeToIcon(file.type)}
+                            >
+                              {file.name}
+                            </FilepickerListItem>
+                          </FilepickerClose>
                         )}
-                        disabled={!isSelectable}
-                        onClick={() => {
-                          setPath(file.parent);
-                          setInputValue(file.path);
-                          onChange?.(file.path);
-                        }}
-                      >
-                        <FilepickerListItem icon={fileTypeToIcon(file.type)}>
-                          {file.name}
-                        </FilepickerListItem>
-                      </FilepickerClose>
-                    )}
 
-                    <FilepickerSeparator />
-                  </Fragment>
-                );
-              })}
-            </FilepickerList>
+                        <FilepickerSeparator />
+                      </Fragment>
+                    );
+                  })}
+                </FilepickerList>
+              )}
+            </div>
           )}
         </Filepicker>
       )}
