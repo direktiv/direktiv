@@ -38,11 +38,33 @@ const FilepickerHeading: FC<PropsWithChildren> = ({ children }) => (
   </div>
 );
 
-const FilepickerList: FC<PropsWithChildren> = ({ children }) => (
-  <div className="h-96 w-full overflow-x-hidden overflow-y-scroll">
+const FilepickerMessage: FC<PropsWithChildren> = ({ children }) => (
+  <div className="p-2 text-sm text-gray-9 dark:text-gray-dark-9">
     {children}
   </div>
 );
+
+const Content: FC<PropsWithChildren> = ({ children }) => (
+  <div className="max-h-96 min-h-fit w-full overflow-x-hidden">{children}</div>
+);
+
+const ScrollableContent: FC<PropsWithChildren> = ({ children }) => (
+  <div className="max-h-96 min-h-fit w-full overflow-x-hidden overflow-y-scroll">
+    {children}
+  </div>
+);
+
+export type FilepickerListProps = PropsWithChildren & {
+  scrollableLength: boolean;
+};
+
+const FilepickerList: FC<FilepickerListProps> = ({
+  children,
+  scrollableLength,
+}) => {
+  const Comp = scrollableLength ? ScrollableContent : Content;
+  return <Comp>{children}</Comp>;
+};
 
 // asChild only works with exactly one child, so when asChild is true, we can not have a loading property
 type AsChildOrLoading =
@@ -112,6 +134,7 @@ export {
   Filepicker,
   FilepickerClose,
   FilepickerHeading,
+  FilepickerMessage,
   FilepickerList,
   FilepickerListItem,
   FilepickerSeparator,

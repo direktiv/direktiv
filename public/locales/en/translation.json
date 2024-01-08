@@ -1241,6 +1241,12 @@
     "filepicker": {
       "buttonText": "Browse Files",
       "placeholder": "No File selected",
+      "emptyNamespace": {
+        "title": "This namespace is empty."
+      },
+      "emptyDirectory": {
+        "title": "This directory is empty."
+      },
       "error": {
         "title": "The path \"{{path}}\" was not found.",
         "linkText": "Go back to root directory"
