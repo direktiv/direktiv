@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -55,6 +56,31 @@ func main() {
 		sidecar.RunApplication()
 	case "flow":
 		flow.RunApplication()
+	case "init":
+		os.MkdirAll("/usr/share/direktiv", 0755)
+
+		source, err := os.Open("/bin/direktiv-cmd")
+		if err != nil {
+			panic(err)
+		}
+		defer source.Close()
+
+		destination, err := os.Create("/usr/share/direktiv/direktiv-cmd")
+		if err != nil {
+			panic(err)
+		}
+		defer destination.Close()
+
+		_, err = io.Copy(destination, source)
+		if err != nil {
+			panic(err)
+		}
+
+		err = os.Chmod("/usr/share/direktiv/direktiv-cmd", 0755)
+		if err != nil {
+			panic(err)
+		}
+
 	case "":
 		log.Fatalf("error: empty DIREKTIV_APP environment variable.\n")
 	default:
