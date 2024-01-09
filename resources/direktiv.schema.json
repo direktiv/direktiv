@@ -1,7 +1,9 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": ["states"],
+  "required": [
+    "states"
+  ],
   "title": "direktiv-workflow",
   "meta": {
     "maintainer": {
@@ -13,689 +15,850 @@
       "website": "https://direktiv.io"
     },
     "documentation": "https://docs.direktiv.io/",
-    "version": "15.09.2023",
+    "version": "08.01.2023",
     "createdAt": "15.09.2023"
   },
-  "properties": {
-    "url": {
-      "description": "Link to further information.",
-      "type": "string"
+  "properties": {},
+  "allOf": [
+    {
+      "properties": {
+        "direktiv_api": {
+          "enum": [
+            "workflow/v1"
+          ]
+        }
+      }
     },
-    "description": {
-      "type": "string",
-      "description": "Description of the workflow."
+    {
+      "$ref": "#/definitions/workflowfile"
+    }
+  ],
+  "definitions": {
+    "servicefile": {
+      "properties": {
+        "image": {
+          "type": "string"
+        },
+        "size": {
+          "type": "string"
+        },
+        "scale": {
+          "type": "number"
+        }
+      }
     },
-    "functions": {
-      "type": "object",
-      "description": "List of function definitions for use by function-based states.",
-      "examples": [
-        "functions:\n- type: knative-workflow\n  id: request\n  image: direktiv/request:latest\n  size: small"
-      ],
-      "oneOf": [
-        { "$ref": "#/definitions/knativeNamespaceFunction" },
-        { "$ref": "#/definitions/knativeWorkflowFunction" },
-        { "$ref": "#/definitions/subflowFunction" }
-      ]
-    },
-    "start": {
-      "type": "object",
-      "description": "Configuration for how the workflow should start. If omitted from the workflow definition the DefaultStartDefinition will be used, which means the workflow will only be executed when called.",
-      "oneOf": [
-        { "$ref": "#/definitions/DefaultStartDefinition" },
-        { "$ref": "#/definitions/ScheduledStartDefinition" },
-        { "$ref": "#/definitions/EventStartDefinition" },
-        { "$ref": "#/definitions/EventsXorDefinition" },
-        { "$ref": "#/definitions/EventsAndDefinition" }
-      ]
-    },
-    "states": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "oneOf": [
-          {
-            "title": "action",
-            "type": "object",
-            "required": ["id", "type", "action"],
-            "properties": {
-              "type": {
-                "type": "string",
-                "enum": ["action"],
-                "description": "Type of the state."
-              },
-              "id": {
-                "type": "string",
-                "description": "id of the state."
-              },
-              "action": { "$ref": "#/definitions/actionState" },
-              "transform": {
-                "$ref": "#/definitions/transform"
-              },
-              "transition": {
-                "$ref": "#/definitions/transition"
-              },
-              "timeout": {
-                "$ref": "#/definitions/timeout"
-              },
-              "async": {
-                "$ref": "#/definitions/async"
-              },
-              "log": {
-                "$ref": "#/definitions/log"
-              },
-              "metadata": {
-                "$ref": "#/definitions/metadata"
-              },
-              "catch": {
-                "$ref": "#/definitions/catch"
-              }
+    "workflowfile": {
+      "properties": {
+        "direktiv_api": {
+          "type": "string"
+        },
+        "url": {
+          "description": "Link to further information.",
+          "type": "string"
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the workflow."
+        },
+        "functions": {
+          "type": "array",
+          "description": "List of function definitions for use by function-based states.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/knativeNamespaceFunction"
+            },
+            {
+              "$ref": "#/definitions/knativeWorkflowFunction"
+            },
+            {
+              "$ref": "#/definitions/subflowFunction"
             }
-          },
-          {
-            "type": "object",
-            "title": "consumeEvent",
-            "required": ["id", "type", "event"],
-            "properties": {
-              "type": {
-                "type": "string",
-                "enum": ["event"],
-                "description": "Type of the state."
-              },
-              "id": {
-                "type": "string",
-                "description": "id of the state."
-              },
-              "event": {
-                "$ref": "#/definitions/EventProperties"
-              },
-              "transform": {
-                "$ref": "#/definitions/transform"
-              },
-              "transition": {
-                "$ref": "#/definitions/transition"
-              },
-              "timeout": {
-                "$ref": "#/definitions/timeout"
-              },
-              "log": {
-                "$ref": "#/definitions/log"
-              },
-              "metadata": {
-                "$ref": "#/definitions/metadata"
-              },
-              "catch": {
-                "$ref": "#/definitions/catch"
-              }
+          ]
+        },
+        "start": {
+          "type": "object",
+          "description": "Configuration for how the workflow should start. If omitted from the workflow definition the DefaultStartDefinition will be used, which means the workflow will only be executed when called.",
+          "oneOf": [
+            {
+              "$ref": "#/definitions/DefaultStartDefinition"
+            },
+            {
+              "$ref": "#/definitions/ScheduledStartDefinition"
+            },
+            {
+              "$ref": "#/definitions/EventStartDefinition"
+            },
+            {
+              "$ref": "#/definitions/EventsXorDefinition"
+            },
+            {
+              "$ref": "#/definitions/EventsAndDefinition"
             }
-          },
-          {
+          ]
+        },
+        "states": {
+          "type": "array",
+          "items": {
             "type": "object",
-            "title": "eventsAnd",
-            "required": ["id", "type", "events"],
-            "properties": {
-              "type": {
-                "type": "string",
-                "enum": ["eventsAnd"],
-                "description": "Type of the state."
-              },
-              "id": {
-                "type": "string",
-                "description": "id of the state."
-              },
-              "events": {
-                "type": "array",
-                "items": {
-                  "event": {
-                    "$ref": "#/definitions/EventProperties"
-                  }
-                }
-              },
-              "transform": {
-                "$ref": "#/definitions/transform"
-              },
-              "transition": {
-                "$ref": "#/definitions/transition"
-              },
-              "timeout": {
-                "$ref": "#/definitions/timeout"
-              },
-              "log": {
-                "$ref": "#/definitions/log"
-              },
-              "metadata": {
-                "$ref": "#/definitions/metadata"
-              },
-              "catch": {
-                "$ref": "#/definitions/catch"
-              }
-            }
-          },
-          {
-            "type": "object",
-            "title": "eventsXor",
-            "required": ["id", "type", "events"],
-            "properties": {
-              "type": {
-                "type": "string",
-                "enum": ["eventsXor"],
-                "description": "Type of the state."
-              },
-              "id": {
-                "type": "string",
-                "description": "id of the state."
-              },
-              "events": {
-                "type": "array",
-                "items": {
-                  "event": {
-                    "required": ["type", "transition"],
-                    "type": "object",
-                    "properties": {
-                      "event": {
-                        "$ref": "#/definitions/EventProperties"
-                      },
-                      "transition": {
-                        "type": "string",
-                        "description": "Next state to transition to if the event is received."
-                      },
-                      "transform": {
-                        "type": "object",
-                        "description": "Transformation to be applied to the event."
-                      }
-                    }
-                  }
-                }
-              },
-              "transform": {
-                "$ref": "#/definitions/transform"
-              },
-              "transition": {
-                "$ref": "#/definitions/transition"
-              },
-              "timeout": {
-                "$ref": "#/definitions/timeout"
-              },
-              "log": {
-                "$ref": "#/definitions/log"
-              },
-              "metadata": {
-                "$ref": "#/definitions/metadata"
-              },
-              "catch": {
-                "$ref": "#/definitions/catch"
-              }
-            }
-          },
-          {
-            "type": "object",
-            "title": "foreach",
-            "required": ["id", "type", "array"],
-            "properties": {
-              "type": {
-                "type": "string",
-                "enum": ["foreach"],
-                "description": "Type of the state."
-              },
-              "id": {
-                "type": "string",
-                "description": "id of the state."
-              },
-              "action": {
-                "$ref": "#/definitions/actionState"
-              },
-              "transform": {
-                "$ref": "#/definitions/transform"
-              },
-              "transition": {
-                "$ref": "#/definitions/transition"
-              },
-              "timeout": {
-                "$ref": "#/definitions/timeout"
-              },
-              "log": {
-                "$ref": "#/definitions/log"
-              },
-              "metadata": {
-                "$ref": "#/definitions/metadata"
-              },
-              "catch": {
-                "$ref": "#/definitions/catch"
-              }
-            }
-          },
-          {
-            "type": "object",
-            "title": "generateEvent",
-            "required": ["id", "type", "event"],
-            "properties": {
-              "type": {
-                "type": "string",
-                "enum": ["generateEvent"],
-                "description": "Type of the state."
-              },
-              "id": {
-                "type": "string",
-                "description": "id of the state."
-              },
-              "event": {
-                "required": ["type", "source"],
+            "oneOf": [
+              {
+                "title": "action",
                 "type": "object",
+                "required": [
+                  "id",
+                  "type",
+                  "action"
+                ],
                 "properties": {
                   "type": {
                     "type": "string",
-                    "description": "Identifies which CloudEvents events can trigger the workflow by requiring an exact match to the event's own type context value."
+                    "enum": [
+                      "action"
+                    ],
+                    "description": "Type of the state."
                   },
-                  "source": {
+                  "id": {
                     "type": "string",
-                    "description": "Sets the CloudEvents event source."
+                    "description": "id of the state."
                   },
-                  "data": {
-                    "type": "object",
-                    "description": "Defines the content of the payload for the CloudEvents event."
+                  "action": {
+                    "$ref": "#/definitions/actionState"
                   },
-                  "datacontenttype": {
-                    "type": "object",
-                    "description": "An RFC2046 string specifying the payload content type."
+                  "transform": {
+                    "$ref": "#/definitions/transform"
                   },
-                  "context": {
-                    "type": "object",
-                    "description": "If defined, must evaluate to an object of key-value pairs. These will be used to define CloudEvents event context data."
+                  "transition": {
+                    "$ref": "#/definitions/transition"
+                  },
+                  "timeout": {
+                    "$ref": "#/definitions/timeout"
+                  },
+                  "async": {
+                    "$ref": "#/definitions/async"
+                  },
+                  "log": {
+                    "$ref": "#/definitions/log"
+                  },
+                  "metadata": {
+                    "$ref": "#/definitions/metadata"
+                  },
+                  "catch": {
+                    "$ref": "#/definitions/catch"
                   }
                 }
               },
-              "transform": {
-                "$ref": "#/definitions/transform"
+              {
+                "type": "object",
+                "title": "consumeEvent",
+                "required": [
+                  "id",
+                  "type",
+                  "event"
+                ],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "consumeEvent"
+                    ],
+                    "description": "Type of the state."
+                  },
+                  "id": {
+                    "type": "string",
+                    "description": "id of the state."
+                  },
+                  "event": {
+                    "$ref": "#/definitions/EventProperties"
+                  },
+                  "transform": {
+                    "$ref": "#/definitions/transform"
+                  },
+                  "transition": {
+                    "$ref": "#/definitions/transition"
+                  },
+                  "timeout": {
+                    "$ref": "#/definitions/timeout"
+                  },
+                  "log": {
+                    "$ref": "#/definitions/log"
+                  },
+                  "metadata": {
+                    "$ref": "#/definitions/metadata"
+                  },
+                  "catch": {
+                    "$ref": "#/definitions/catch"
+                  }
+                }
               },
-              "transition": {
-                "$ref": "#/definitions/transition"
+              {
+                "type": "object",
+                "title": "eventsAnd",
+                "required": [
+                  "id",
+                  "type",
+                  "events"
+                ],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "eventsAnd"
+                    ],
+                    "description": "Type of the state."
+                  },
+                  "id": {
+                    "type": "string",
+                    "description": "id of the state."
+                  },
+                  "events": {
+                    "type": "array",
+                    "items": {
+                      "event": {
+                        "$ref": "#/definitions/EventProperties"
+                      }
+                    }
+                  },
+                  "transform": {
+                    "$ref": "#/definitions/transform"
+                  },
+                  "transition": {
+                    "$ref": "#/definitions/transition"
+                  },
+                  "timeout": {
+                    "$ref": "#/definitions/timeout"
+                  },
+                  "log": {
+                    "$ref": "#/definitions/log"
+                  },
+                  "metadata": {
+                    "$ref": "#/definitions/metadata"
+                  },
+                  "catch": {
+                    "$ref": "#/definitions/catch"
+                  }
+                }
               },
-              "log": {
-                "$ref": "#/definitions/log"
+              {
+                "type": "object",
+                "title": "eventsXor",
+                "required": [
+                  "id",
+                  "type",
+                  "events"
+                ],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "eventsXor"
+                    ],
+                    "description": "Type of the state."
+                  },
+                  "id": {
+                    "type": "string",
+                    "description": "id of the state."
+                  },
+                  "events": {
+                    "type": "array",
+                    "items": {
+                      "event": {
+                        "required": [
+                          "type",
+                          "transition"
+                        ],
+                        "type": "object",
+                        "properties": {
+                          "event": {
+                            "$ref": "#/definitions/EventProperties"
+                          },
+                          "transition": {
+                            "type": "string",
+                            "description": "Next state to transition to if the event is received."
+                          },
+                          "transform": {
+                            "type": "object",
+                            "description": "Transformation to be applied to the event."
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "transform": {
+                    "$ref": "#/definitions/transform"
+                  },
+                  "transition": {
+                    "$ref": "#/definitions/transition"
+                  },
+                  "timeout": {
+                    "$ref": "#/definitions/timeout"
+                  },
+                  "log": {
+                    "$ref": "#/definitions/log"
+                  },
+                  "metadata": {
+                    "$ref": "#/definitions/metadata"
+                  },
+                  "catch": {
+                    "$ref": "#/definitions/catch"
+                  }
+                }
               },
-              "metadata": {
-                "$ref": "#/definitions/metadata"
+              {
+                "type": "object",
+                "title": "foreach",
+                "required": [
+                  "id",
+                  "type",
+                  "array"
+                ],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "foreach"
+                    ],
+                    "description": "Type of the state."
+                  },
+                  "id": {
+                    "type": "string",
+                    "description": "id of the state."
+                  },
+                  "action": {
+                    "$ref": "#/definitions/actionState"
+                  },
+                  "transform": {
+                    "$ref": "#/definitions/transform"
+                  },
+                  "transition": {
+                    "$ref": "#/definitions/transition"
+                  },
+                  "timeout": {
+                    "$ref": "#/definitions/timeout"
+                  },
+                  "log": {
+                    "$ref": "#/definitions/log"
+                  },
+                  "metadata": {
+                    "$ref": "#/definitions/metadata"
+                  },
+                  "catch": {
+                    "$ref": "#/definitions/catch"
+                  }
+                }
               },
-              "catch": {
-                "$ref": "#/definitions/catch"
-              }
-            }
-          },
-          {
-            "type": "object",
-            "title": "getter",
-            "required": ["id", "type", "key"],
-            "properties": {
-              "type": {
-                "type": "string",
-                "enum": ["getter"],
-                "description": "Type of the state."
+              {
+                "type": "object",
+                "title": "generateEvent",
+                "required": [
+                  "id",
+                  "type",
+                  "event"
+                ],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "generateEvent"
+                    ],
+                    "description": "Type of the state."
+                  },
+                  "id": {
+                    "type": "string",
+                    "description": "id of the state."
+                  },
+                  "event": {
+                    "required": [
+                      "type",
+                      "source"
+                    ],
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "description": "Identifies which CloudEvents events can trigger the workflow by requiring an exact match to the event's own type context value."
+                      },
+                      "source": {
+                        "type": "string",
+                        "description": "Sets the CloudEvents event source."
+                      },
+                      "data": {
+                        "type": "object",
+                        "description": "Defines the content of the payload for the CloudEvents event."
+                      },
+                      "datacontenttype": {
+                        "type": "object",
+                        "description": "An RFC2046 string specifying the payload content type."
+                      },
+                      "context": {
+                        "type": "object",
+                        "description": "If defined, must evaluate to an object of key-value pairs. These will be used to define CloudEvents event context data."
+                      }
+                    }
+                  },
+                  "transform": {
+                    "$ref": "#/definitions/transform"
+                  },
+                  "transition": {
+                    "$ref": "#/definitions/transition"
+                  },
+                  "log": {
+                    "$ref": "#/definitions/log"
+                  },
+                  "metadata": {
+                    "$ref": "#/definitions/metadata"
+                  },
+                  "catch": {
+                    "$ref": "#/definitions/catch"
+                  }
+                }
               },
-              "id": {
-                "type": "string",
-                "description": "id of the state."
-              },
-              "key": {
-                "type": "string",
-                "description": "Variable name."
-              },
-              "scope": {
-                "type": "string",
-                "description": "Selects the scope to which the variable belongs. If undefined, defaults to instance. See Variables."
-              },
-              "as": {
-                "type": "string",
-                "description": "Names the resulting data. If left unspecified, the key will be used instead."
-              },
-              "transform": {
-                "$ref": "#/definitions/transform"
-              },
-              "transition": {
-                "$ref": "#/definitions/transition"
-              },
-              "log": {
-                "$ref": "#/definitions/log"
-              },
-              "metadata": {
-                "$ref": "#/definitions/metadata"
-              },
-              "catch": {
-                "$ref": "#/definitions/catch"
-              }
-            }
-          },
-          {
-            "type": "object",
-            "title": "noop",
-            "required": ["id", "type", "log"],
-            "properties": {
-              "type": {
-                "type": "string",
-                "enum": ["noop"],
-                "description": "Type of the state."
-              },
-              "id": {
-                "type": "string",
-                "description": "id of the state."
-              },
-              "transform": {
-                "$ref": "#/definitions/transform"
-              },
-              "transition": {
-                "$ref": "#/definitions/transition"
-              },
-              "log": {
-                "$ref": "#/definitions/log"
-              },
-              "metadata": {
-                "$ref": "#/definitions/metadata"
-              },
-              "catch": {
-                "$ref": "#/definitions/catch"
-              }
-            }
-          },
-          {
-            "type": "object",
-            "title": "parallel",
-            "required": ["id", "type", "actions"],
-            "properties": {
-              "type": {
-                "type": "string",
-                "enum": ["parallel"],
-                "description": "Type of the state."
-              },
-              "id": {
-                "type": "string",
-                "description": "id of the state."
-              },
-              "mode": {
-                "type": "string",
-                "enum": ["and", "or"],
-                "description": "If defined, must be either and or or. The default is and. This setting determines whether the state is considered successfully completed only if all threads have returned without error (and) or as soon as any single thread returns without error (or)."
-              },
-              "action": {
-                "$ref": "#/definitions/actionState"
-              },
-              "transform": {
-                "$ref": "#/definitions/transform"
-              },
-              "transition": {
-                "$ref": "#/definitions/transition"
-              },
-              "log": {
-                "$ref": "#/definitions/log"
-              },
-              "metadata": {
-                "$ref": "#/definitions/metadata"
-              },
-              "catch": {
-                "$ref": "#/definitions/catch"
-              }
-            }
-          },
-          {
-            "type": "object",
-            "title": "setter",
-            "required": ["id", "type", "variables"],
-            "properties": {
-              "type": {
-                "type": "string",
-                "enum": ["setter"],
-                "description": "Type of the state."
-              },
-              "id": {
-                "type": "string",
-                "description": "id of the state."
-              },
-              "variables": {
-                "type": "array",
-                "description": "Defines variables to push.",
-                "items": {
+              {
+                "type": "object",
+                "title": "getter",
+                "required": [
+                  "id",
+                  "type"
+                ],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "getter"
+                    ],
+                    "description": "Type of the state."
+                  },
+                  "id": {
+                    "type": "string",
+                    "description": "id of the state."
+                  },
                   "key": {
                     "type": "string",
                     "description": "Variable name."
+                  },
+                  "variables": {
+                    "type": "array",
+                    "properties": {
+                      "key": {
+                        "type": "string",
+                        "description": "Variable name."
+                      },
+                      "scope": {
+                        "type": "string"
+                      }
+                    }
                   },
                   "scope": {
                     "type": "string",
                     "description": "Selects the scope to which the variable belongs. If undefined, defaults to instance. See Variables."
                   },
-                  "mimeType": {
+                  "as": {
                     "type": "string",
-                    "description": "Store a MIME type with the variable. If left undefined, it will default to application/json. Two specific MIME types cause this state to behave differently: text/plain and application/octet-stream. If the value evaluates to a JSON string the MIME type is text/plain, that string will be stored in plaintext (without JSON quotes and escapes). If if the value is a JSON string containing base64 encoded data and the MIME type is application/octet-stream, the base64 data will be decoded and stored as binary data."
+                    "description": "Names the resulting data. If left unspecified, the key will be used instead."
                   },
-                  "value": {
-                    "type": "string",
-                    "description": "Select or generate the data to store."
+                  "transform": {
+                    "$ref": "#/definitions/transform"
+                  },
+                  "transition": {
+                    "$ref": "#/definitions/transition"
+                  },
+                  "log": {
+                    "$ref": "#/definitions/log"
+                  },
+                  "metadata": {
+                    "$ref": "#/definitions/metadata"
+                  },
+                  "catch": {
+                    "$ref": "#/definitions/catch"
                   }
                 }
               },
-              "transform": {
-                "type": "string",
-                "description": "Transformation to be applied to the state's output."
-              },
-              "transition": {
-                "type": "string",
-                "description": "Next state to transition to"
-              },
-              "log": {
-                "type": "string",
-                "description": "Log message to be written to instance logs. Supports structured JQ for querying instance data."
-              },
-              "metadata": {
+              {
                 "type": "object",
-                "description": "Instance metadata to be updated by the state. Supports structured JQ for querying instance data and inserting it into the metadata."
-              },
-              "catch": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "description": "Error code pattern to catch."
-                    },
-                    "transition": {
-                      "type": "string",
-                      "description": "Next state to transition to if the error is caught."
-                    }
+                "title": "noop",
+                "required": [
+                  "id",
+                  "type"
+                ],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "noop"
+                    ],
+                    "description": "Type of the state."
                   },
-                  "required": ["error"],
-                  "description": "Error catch configuration."
-                },
-                "description": "List of error catchers for the state."
-              }
-            }
-          },
-          {
-            "type": "object",
-            "title": "switch",
-            "required": ["id", "type", "conditions"],
-            "properties": {
-              "type": {
-                "type": "string",
-                "enum": ["switch"],
-                "description": "Type of the state."
-              },
-              "id": {
-                "type": "string",
-                "description": "id of the state."
-              },
-              "conditions": {
-                "type": "array",
-                "description": "List of conditions, which are evaluated in-order until a match is found.",
-                "items": {
-                  "properties": {
-                    "condition": {
-                      "type": "string",
-                      "description": "Selects or generates the data used to determine if condition is met. The condition is considered met if the result is anything other than null, false, {}, [], \"\", or 0."
-                    },
-                    "transform": {
-                      "type": "string",
-                      "description": "If defined, modifies the instance's data upon completing the state logic. See StateTransforms."
-                    },
-                    "transition": {
-                      "type": "string",
-                      "description": "Identifies which state to transition to next, referring to the next state's unique id. If undefined, matching this condition terminates the workflow."
-                    }
+                  "id": {
+                    "type": "string",
+                    "description": "id of the state."
+                  },
+                  "transform": {
+                    "$ref": "#/definitions/transform"
+                  },
+                  "transition": {
+                    "$ref": "#/definitions/transition"
+                  },
+                  "log": {
+                    "$ref": "#/definitions/log"
+                  },
+                  "metadata": {
+                    "$ref": "#/definitions/metadata"
+                  },
+                  "catch": {
+                    "$ref": "#/definitions/catch"
                   }
                 }
               },
-              "transform": {
-                "$ref": "#/definitions/transform"
-              },
-              "transition": {
-                "$ref": "#/definitions/transition"
-              },
-              "log": {
-                "$ref": "#/definitions/log"
-              },
-              "metadata": {
-                "$ref": "#/definitions/metadata"
-              },
-              "catch": {
-                "$ref": "#/definitions/catch"
-              }
-            }
-          },
-          {
-            "type": "object",
-            "title": "validate",
-            "required": ["id", "type", "schema"],
-            "properties": {
-              "type": {
-                "type": "string",
-                "enum": ["validate"],
-                "description": "Type of the state."
-              },
-              "id": {
-                "type": "string",
-                "description": "id of the state."
-              },
-              "transform": {
-                "$ref": "#/definitions/transform"
-              },
-              "transition": {
-                "$ref": "#/definitions/transition"
-              },
-              "log": {
-                "$ref": "#/definitions/log"
-              },
-              "metadata": {
-                "$ref": "#/definitions/metadata"
-              },
-              "catch": {
-                "$ref": "#/definitions/catch"
-              }
-            }
-          },
-          {
-            "type": "object",
-            "title": "delay",
-            "required": ["id", "type", "durration"],
-            "properties": {
-              "id": {
-                "type": "string",
-                "description": "id of the state.",
-                "enum": ["durration"]
-              },
-              "durration": {
-                "type": "string",
-                "description": "ISO8601 Durration string"
-              },
-              "transform": {
-                "$ref": "#/definitions/transform"
-              },
-              "transition": {
-                "$ref": "#/definitions/transition"
-              },
-              "timeout": {
-                "$ref": "#/definitions/timeout"
-              },
-              "log": {
-                "$ref": "#/definitions/log"
-              },
-              "metadata": {
-                "$ref": "#/definitions/metadata"
-              },
-              "catch": {
-                "$ref": "#/definitions/catch"
-              }
-            }
-          },
-          {
-            "type": "object",
-            "title": "error",
-            "required": ["id", "type", "error"],
-            "properties": {
-              "type": {
-                "type": "string",
-                "enum": ["error"],
-                "description": "Type of the state."
-              },
-              "id": {
-                "type": "string",
-                "description": "id of the state."
-              },
-              "error": {
-                "type": "string",
-                "description": "Error code pattern to catch."
-              },
-              "message": {
-                "type": "string",
-                "description": "Error message."
-              },
-              "args": {
-                "type": "array",
-                "items": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    }
-                  ]
+              {
+                "type": "object",
+                "title": "parallel",
+                "required": [
+                  "id",
+                  "type",
+                  "actions"
+                ],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "parallel"
+                    ],
+                    "description": "Type of the state."
+                  },
+                  "id": {
+                    "type": "string",
+                    "description": "id of the state."
+                  },
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "and",
+                      "or"
+                    ],
+                    "description": "If defined, must be either and or or. The default is and. This setting determines whether the state is considered successfully completed only if all threads have returned without error (and) or as soon as any single thread returns without error (or)."
+                  },
+                  "action": {
+                    "$ref": "#/definitions/actionState"
+                  },
+                  "transform": {
+                    "$ref": "#/definitions/transform"
+                  },
+                  "transition": {
+                    "$ref": "#/definitions/transition"
+                  },
+                  "log": {
+                    "$ref": "#/definitions/log"
+                  },
+                  "metadata": {
+                    "$ref": "#/definitions/metadata"
+                  },
+                  "catch": {
+                    "$ref": "#/definitions/catch"
+                  }
                 }
               },
-              "transform": {
-                "$ref": "#/definitions/transform"
+              {
+                "type": "object",
+                "title": "setter",
+                "required": [
+                  "id",
+                  "type",
+                  "variables"
+                ],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "setter"
+                    ],
+                    "description": "Type of the state."
+                  },
+                  "id": {
+                    "type": "string",
+                    "description": "id of the state."
+                  },
+                  "variables": {
+                    "type": "array",
+                    "description": "Defines variables to push.",
+                    "items": {
+                      "key": {
+                        "type": "string",
+                        "description": "Variable name."
+                      },
+                      "scope": {
+                        "type": "string",
+                        "description": "Selects the scope to which the variable belongs. If undefined, defaults to instance. See Variables."
+                      },
+                      "mimeType": {
+                        "type": "string",
+                        "description": "Store a MIME type with the variable. If left undefined, it will default to application/json. Two specific MIME types cause this state to behave differently: text/plain and application/octet-stream. If the value evaluates to a JSON string the MIME type is text/plain, that string will be stored in plaintext (without JSON quotes and escapes). If if the value is a JSON string containing base64 encoded data and the MIME type is application/octet-stream, the base64 data will be decoded and stored as binary data."
+                      },
+                      "value": {
+                        "type": "string",
+                        "description": "Select or generate the data to store."
+                      }
+                    }
+                  },
+                  "transform": {
+                    "type": "string",
+                    "description": "Transformation to be applied to the state's output."
+                  },
+                  "transition": {
+                    "type": "string",
+                    "description": "Next state to transition to"
+                  },
+                  "log": {
+                    "type": "string",
+                    "description": "Log message to be written to instance logs. Supports structured JQ for querying instance data."
+                  },
+                  "metadata": {
+                    "type": "object",
+                    "description": "Instance metadata to be updated by the state. Supports structured JQ for querying instance data and inserting it into the metadata."
+                  },
+                  "catch": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "error": {
+                          "type": "string",
+                          "description": "Error code pattern to catch."
+                        },
+                        "transition": {
+                          "type": "string",
+                          "description": "Next state to transition to if the error is caught."
+                        }
+                      },
+                      "required": [
+                        "error"
+                      ],
+                      "description": "Error catch configuration."
+                    },
+                    "description": "List of error catchers for the state."
+                  }
+                }
               },
-              "transition": {
-                "$ref": "#/definitions/transition"
+              {
+                "type": "object",
+                "title": "switch",
+                "required": [
+                  "id",
+                  "type",
+                  "conditions"
+                ],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "switch"
+                    ],
+                    "description": "Type of the state."
+                  },
+                  "id": {
+                    "type": "string",
+                    "description": "id of the state."
+                  },
+                  "conditions": {
+                    "type": "array",
+                    "description": "List of conditions, which are evaluated in-order until a match is found.",
+                    "items": {
+                      "properties": {
+                        "condition": {
+                          "type": "string",
+                          "description": "Selects or generates the data used to determine if condition is met. The condition is considered met if the result is anything other than null, false, {}, [], \"\", or 0."
+                        },
+                        "transform": {
+                          "type": "string",
+                          "description": "If defined, modifies the instance's data upon completing the state logic. See StateTransforms."
+                        },
+                        "transition": {
+                          "type": "string",
+                          "description": "Identifies which state to transition to next, referring to the next state's unique id. If undefined, matching this condition terminates the workflow."
+                        }
+                      }
+                    }
+                  },
+                  "transform": {
+                    "$ref": "#/definitions/transform"
+                  },
+                  "transition": {
+                    "$ref": "#/definitions/transition"
+                  },
+                  "log": {
+                    "$ref": "#/definitions/log"
+                  },
+                  "metadata": {
+                    "$ref": "#/definitions/metadata"
+                  },
+                  "catch": {
+                    "$ref": "#/definitions/catch"
+                  }
+                }
               },
-              "timeout": {
-                "$ref": "#/definitions/timeout"
+              {
+                "type": "object",
+                "title": "validate",
+                "required": [
+                  "id",
+                  "type",
+                  "schema"
+                ],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "validate"
+                    ],
+                    "description": "Type of the state."
+                  },
+                  "id": {
+                    "type": "string",
+                    "description": "id of the state."
+                  },
+                  "transform": {
+                    "$ref": "#/definitions/transform"
+                  },
+                  "transition": {
+                    "$ref": "#/definitions/transition"
+                  },
+                  "log": {
+                    "$ref": "#/definitions/log"
+                  },
+                  "metadata": {
+                    "$ref": "#/definitions/metadata"
+                  },
+                  "catch": {
+                    "$ref": "#/definitions/catch"
+                  }
+                }
               },
-              "log": {
-                "$ref": "#/definitions/log"
+              {
+                "type": "object",
+                "title": "delay",
+                "required": [
+                  "id",
+                  "type",
+                  "durration"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "description": "id of the state.",
+                    "enum": [
+                      "durration"
+                    ]
+                  },
+                  "durration": {
+                    "type": "string",
+                    "description": "ISO8601 Durration string"
+                  },
+                  "transform": {
+                    "$ref": "#/definitions/transform"
+                  },
+                  "transition": {
+                    "$ref": "#/definitions/transition"
+                  },
+                  "timeout": {
+                    "$ref": "#/definitions/timeout"
+                  },
+                  "log": {
+                    "$ref": "#/definitions/log"
+                  },
+                  "metadata": {
+                    "$ref": "#/definitions/metadata"
+                  },
+                  "catch": {
+                    "$ref": "#/definitions/catch"
+                  }
+                }
               },
-              "metadata": {
-                "$ref": "#/definitions/metadata"
-              },
-              "catch": {
-                "$ref": "#/definitions/catch"
+              {
+                "type": "object",
+                "title": "error",
+                "required": [
+                  "id",
+                  "type",
+                  "error"
+                ],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "error"
+                    ],
+                    "description": "Type of the state."
+                  },
+                  "id": {
+                    "type": "string",
+                    "description": "id of the state."
+                  },
+                  "error": {
+                    "type": "string",
+                    "description": "Error code pattern to catch."
+                  },
+                  "message": {
+                    "type": "string",
+                    "description": "Error message."
+                  },
+                  "args": {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        }
+                      ]
+                    }
+                  },
+                  "transform": {
+                    "$ref": "#/definitions/transform"
+                  },
+                  "transition": {
+                    "$ref": "#/definitions/transition"
+                  },
+                  "timeout": {
+                    "$ref": "#/definitions/timeout"
+                  },
+                  "log": {
+                    "$ref": "#/definitions/log"
+                  },
+                  "metadata": {
+                    "$ref": "#/definitions/metadata"
+                  },
+                  "catch": {
+                    "$ref": "#/definitions/catch"
+                  }
+                }
               }
-            }
+            ]
+          },
+          "timeouts": {
+            "type": "object",
+            "properties": {
+              "interrupt": {
+                "type": "string",
+                "description": "An ISO8601 duration string. Sets the time to wait before throwing a catchable direktiv.cancels.timeout.soft error. Consider this a soft timeout."
+              },
+              "kill": {
+                "type": "string",
+                "description": "An ISO8601 duration string. Sets the time to wait before throwing an uncatchable direktiv.cancels.timeout.hard error. This is a hard timeout."
+              }
+            },
+            "description": "Global timeouts for the workflow."
           }
-        ]
+        }
       }
     },
-    "timeouts": {
-      "type": "object",
-      "properties": {
-        "interrupt": {
-          "type": "string",
-          "description": "An ISO8601 duration string. Sets the time to wait before throwing a catchable direktiv.cancels.timeout.soft error. Consider this a soft timeout."
-        },
-        "kill": {
-          "type": "string",
-          "description": "An ISO8601 duration string. Sets the time to wait before throwing an uncatchable direktiv.cancels.timeout.hard error. This is a hard timeout."
-        }
-      },
-      "description": "Global timeouts for the workflow."
-    }
-  },
-  "definitions": {
     "transform": {
-      "type": "string",
-      "description": "Transformation to be applied to the state's output."
+      "anyOf": [
+        {
+          "type": "string",
+          "description": "Input data as a string."
+        },
+        {
+          "type": "object",
+          "description": "Input data as an object."
+        }
+      ]
     },
     "transition": {
       "type": "string",
@@ -731,7 +894,9 @@
             "description": "Next state to transition to if the error is caught."
           }
         },
-        "required": ["error"],
+        "required": [
+          "error"
+        ],
         "description": "Error catch configuration."
       },
       "description": "List of error catchers for the state."
@@ -739,15 +904,25 @@
     "actionState": {
       "type": "object",
       "description": "Definition of an action type state.",
-      "required": ["function"],
+      "required": [
+        "function"
+      ],
       "properties": {
         "function": {
           "type": "string",
           "description": "Name of the referenced function."
         },
         "input": {
-          "type": "string",
-          "description": "Selects or generates the data to send as input to the function."
+          "anyOf": [
+            {
+              "type": "string",
+              "description": "Input data as a string."
+            },
+            {
+              "type": "object",
+              "description": "Input data as an object."
+            }
+          ]
         },
         "secrets": {
           "type": "array",
@@ -759,7 +934,9 @@
         "retries": {
           "type": "object",
           "description": "RetryPolicyDefinition structure.",
-          "required": ["maxattempts"],
+          "required": [
+            "maxattempts"
+          ],
           "properties": {
             "codes": {
               "type": "array",
@@ -793,7 +970,11 @@
               },
               "scope": {
                 "type": "string",
-                "enum": ["instance", "workflow", "namespace"],
+                "enum": [
+                  "instance",
+                  "workflow",
+                  "namespace"
+                ],
                 "description": "Specifies the scope from which to load the variable."
               },
               "as": {
@@ -817,15 +998,22 @@
           "description": "A unique identifier for the function within the workflow definition."
         }
       },
-      "required": ["type", "id"]
+      "required": [
+        "type",
+        "id"
+      ]
     },
     "knativeNamespaceFunction": {
       "allOf": [
-        { "$ref": "#/definitions/baseFunction" },
+        {
+          "$ref": "#/definitions/baseFunction"
+        },
         {
           "properties": {
             "type": {
-              "enum": ["knative-namespace"],
+              "enum": [
+                "knative-namespace"
+              ],
               "description": "In this case it must be set to knative-namespace."
             },
             "service": {
@@ -833,17 +1021,23 @@
               "description": "URI to a function on the namespace."
             }
           },
-          "required": ["service"]
+          "required": [
+            "service"
+          ]
         }
       ]
     },
     "knativeWorkflowFunction": {
       "allOf": [
-        { "$ref": "#/definitions/baseFunction" },
+        {
+          "$ref": "#/definitions/baseFunction"
+        },
         {
           "properties": {
             "type": {
-              "enum": ["knative-workflow"]
+              "enum": [
+                "knative-workflow"
+              ]
             },
             "image": {
               "type": "string",
@@ -851,7 +1045,11 @@
             },
             "size": {
               "type": "string",
-              "enum": ["small", "medium", "large"],
+              "enum": [
+                "small",
+                "medium",
+                "large"
+              ],
               "description": "Specifies the container size."
             },
             "cmd": {
@@ -859,24 +1057,32 @@
               "description": "Command to run in the knative-workflow compliant container."
             }
           },
-          "required": ["image"]
+          "required": [
+            "image"
+          ]
         }
       ]
     },
     "subflowFunction": {
       "allOf": [
-        { "$ref": "#/definitions/baseFunction" },
+        {
+          "$ref": "#/definitions/baseFunction"
+        },
         {
           "properties": {
             "type": {
-              "enum": ["subflow"]
+              "enum": [
+                "subflow"
+              ]
             },
             "workflow": {
               "type": "string",
               "description": "URI to a workflow within the same namespace."
             }
           },
-          "required": ["workflow"]
+          "required": [
+            "workflow"
+          ]
         }
       ]
     },
@@ -893,7 +1099,9 @@
       }
     },
     "EventProperties": {
-      "required": ["type"],
+      "required": [
+        "type"
+      ],
       "type": "object",
       "properties": {
         "type": {
@@ -908,72 +1116,116 @@
     },
     "DefaultStartDefinition": {
       "allOf": [
-        { "$ref": "#/definitions/BaseStartDefinition" },
+        {
+          "$ref": "#/definitions/BaseStartDefinition"
+        },
         {
           "properties": {
-            "type": { "enum": ["default"] }
+            "type": {
+              "enum": [
+                "default"
+              ]
+            }
           }
         }
       ]
     },
     "ScheduledStartDefinition": {
       "allOf": [
-        { "$ref": "#/definitions/BaseStartDefinition" },
+        {
+          "$ref": "#/definitions/BaseStartDefinition"
+        },
         {
           "properties": {
-            "type": { "enum": ["scheduled"] },
+            "type": {
+              "enum": [
+                "scheduled"
+              ]
+            },
             "cron": {
               "type": "string",
               "description": "Defines the time(s) when the workflow should execute using a CRON expression."
             }
           },
-          "required": ["cron"]
+          "required": [
+            "cron"
+          ]
         }
       ]
     },
     "EventStartDefinition": {
       "allOf": [
-        { "$ref": "#/definitions/BaseStartDefinition" },
+        {
+          "$ref": "#/definitions/BaseStartDefinition"
+        },
         {
           "properties": {
-            "type": { "enum": ["event"] },
-            "event": { "$ref": "#/definitions/EventProperties" }
+            "type": {
+              "enum": [
+                "event"
+              ]
+            },
+            "event": {
+              "$ref": "#/definitions/EventProperties"
+            }
           },
-          "required": ["event"]
+          "required": [
+            "event"
+          ]
         }
       ]
     },
     "EventsXorDefinition": {
       "allOf": [
-        { "$ref": "#/definitions/BaseStartDefinition" },
+        {
+          "$ref": "#/definitions/BaseStartDefinition"
+        },
         {
           "properties": {
-            "type": { "enum": ["eventsXor"] },
+            "type": {
+              "enum": [
+                "eventsXor"
+              ]
+            },
             "events": {
               "type": "array",
-              "items": { "$ref": "#/definitions/EventProperties" }
+              "items": {
+                "$ref": "#/definitions/EventProperties"
+              }
             }
           },
-          "required": ["events"]
+          "required": [
+            "events"
+          ]
         }
       ]
     },
     "EventsAndDefinition": {
       "allOf": [
-        { "$ref": "#/definitions/BaseStartDefinition" },
+        {
+          "$ref": "#/definitions/BaseStartDefinition"
+        },
         {
           "properties": {
-            "type": { "enum": ["eventsAnd"] },
+            "type": {
+              "enum": [
+                "eventsAnd"
+              ]
+            },
             "lifespan": {
               "type": "string",
               "description": "An ISO8601 duration string. Sets the maximum duration an event can be stored before being discarded while waiting for other events."
             },
             "events": {
               "type": "array",
-              "items": { "$ref": "#/definitions/EventProperties" }
+              "items": {
+                "$ref": "#/definitions/EventProperties"
+              }
             }
           },
-          "required": ["events"]
+          "required": [
+            "events"
+          ]
         }
       ]
     }
