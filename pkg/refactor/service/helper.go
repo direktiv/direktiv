@@ -15,7 +15,7 @@ import (
 
 const direktivCmdExecValue = "/usr/share/direktiv/direktiv-cmd"
 
-func buildService(c *core.Config, sv *core.ServiceConfig) (*servingv1.Service, error) {
+func buildService(c *core.Config, sv *core.ServiceConfig, registrySecrets []corev1.LocalObjectReference) (*servingv1.Service, error) {
 	containers, err := buildContainers(c, sv)
 	if err != nil {
 		return nil, err
@@ -93,15 +93,9 @@ func buildService(c *core.Config, sv *core.ServiceConfig) (*servingv1.Service, e
 		},
 	}
 
-	// nolint
 	// Set Registry Secrets
-	//secrets := createPullSecrets(info.GetNamespaceName())
-	//svc.Spec.ConfigurationSpec.Template.Spec.ImagePullSecrets = secrets
-	//svc.Spec.ConfigurationSpec.Template.Spec.PodSpec.ImagePullSecrets = secrets
-	//if len(functionsConfig.Runtime) > 0 && functionsConfig.Runtime != "default" {
-	//	logger.Debugf("setting runtime class %v", functionsConfig.Runtime)
-	//	svc.Spec.ConfigurationSpec.Template.Spec.PodSpec.RuntimeClassName = &functionsConfig.Runtime
-	//}
+	svc.Spec.ConfigurationSpec.Template.Spec.ImagePullSecrets = registrySecrets
+	svc.Spec.ConfigurationSpec.Template.Spec.PodSpec.ImagePullSecrets = registrySecrets
 
 	return svc, nil
 }

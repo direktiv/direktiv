@@ -12,16 +12,14 @@ describe('Test services crud operations', () => {
     common.helpers.itShouldCreateFile(it, expect, testNamespace,
         "/s1.yaml", `
 direktiv_api: service/v1
-image: redis
-cmd: redis-server
+image: direktiv/request
 scale: 1
 `)
 
     common.helpers.itShouldCreateFile(it, expect, testNamespace,
         "/s2.yaml", `
 direktiv_api: service/v1
-image: redis
-cmd: redis-server
+image: direktiv/request
 scale: 2
 `)
 
@@ -34,22 +32,20 @@ scale: 2
         expect(listRes.body).toMatchObject({
             data: [
                 {
-                    "cmd": "redis-server",
                     "error": null,
                     "filePath": "/s1.yaml",
                     "id": "test-services-s1-yaml-466337cb33",
-                    "image": "redis",
+                    "image": "direktiv/request",
                     "namespace": "test-services",
                     "scale": 1,
                     "size": "medium",
                     "type": "namespace-service",
                 },
                 {
-                    "cmd": "redis-server",
                     "error": null,
                     "filePath": "/s2.yaml",
                     "id": "test-services-s2-yaml-d396514862",
-                    "image": "redis",
+                    "image": "direktiv/request",
                     "namespace": "test-services",
                     "scale": 2,
                     "size": "medium",
@@ -93,24 +89,22 @@ scale: 2
         expect(res.body).toMatchObject({
             data: [
                 {
-                    "cmd": "redis-server",
                     "conditions": expect.arrayContaining([expect.anything()]),
                     "error": null,
                     "filePath": "/s1.yaml",
                     "id": "test-services-s1-yaml-466337cb33",
-                    "image": "redis",
+                    "image": "direktiv/request",
                     "namespace": "test-services",
                     "scale": 1,
                     "size": "medium",
                     "type": "namespace-service",
                 },
                 {
-                    "cmd": "redis-server",
                     "conditions": expect.arrayContaining([expect.anything()]),
                     "error": null,
                     "filePath": "/s2.yaml",
                     "id": "test-services-s2-yaml-d396514862",
-                    "image": "redis",
+                    "image": "direktiv/request",
                     "namespace": "test-services",
                     "scale": 2,
                     "size": "medium",
