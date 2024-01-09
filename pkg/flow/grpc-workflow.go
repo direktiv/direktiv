@@ -275,8 +275,11 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 	if err != nil {
 		return nil, err
 	}
-	if file.Typ != filestore.FileTypeWorkflow && file.Typ != filestore.FileTypeService && file.Typ != filestore.FileTypeEndpoint {
-		return nil, status.Error(codes.InvalidArgument, "file type is not workflow or service or endpoint")
+	switch file.Typ {
+	case filestore.FileTypeWorkflow, filestore.FileTypeService, filestore.FileTypeEndpoint, filestore.FileTypeConsumer:
+		// Valid file type, continue processing
+	default:
+		return nil, status.Error(codes.InvalidArgument, "file type is not workflow or service or endpoint or consumer")
 	}
 	revision, err := tx.FileStore().ForFile(file).GetCurrentRevision(ctx)
 	if err != nil {
