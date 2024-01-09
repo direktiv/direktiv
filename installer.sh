@@ -468,7 +468,6 @@ install_direktiv() {
         chart="scripts/direktiv-charts/charts/direktiv/"
         if [ ! -d "./scripts/direktiv-charts" ]; then
             git clone https://github.com/direktiv/direktiv-charts.git ./scripts/direktiv-charts;
-            git -C ./scripts/direktiv-charts checkout alan/small_charts_cleanup; # TODO: this branch is temporary
         fi
 
         # TODO: when did this become important, and why?
