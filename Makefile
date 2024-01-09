@@ -134,6 +134,12 @@ k3s-install: ## Install the local development k3s environment.
 	DEV=true ./installer.sh all
 	@$(MAKE) k3s-wait
 
+.PHONY: k3s-monitoring-install
+k3s-monitoring-install: k3s-uninstall
+k3s-monitoring-install: ## Install the local development k3s environment.
+	WITH_MONITORING=true DEV=true ./installer.sh all
+	@$(MAKE) k3s-wait
+
 .PHONY: k3s-redeploy
 k3s-redeploy: ## Upgrade the local deployment.
 	DEV=true ./installer.sh all
