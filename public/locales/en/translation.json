@@ -1241,9 +1241,6 @@
     "filepicker": {
       "buttonText": "Browse Files",
       "placeholder": "No File selected",
-      "emptyNamespace": {
-        "title": "The namespace \"{{namespace}}\" is empty."
-      },
       "emptyDirectory": {
         "title": "The directory \"{{path}}\" is empty."
       },
