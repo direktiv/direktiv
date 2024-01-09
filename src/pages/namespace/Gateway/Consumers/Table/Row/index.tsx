@@ -3,7 +3,7 @@ import { TableCell, TableRow } from "~/design/Table";
 import Badge from "~/design/Badge";
 import { ConsumerSchemaType } from "~/api/gateway/schema";
 import { FC } from "react";
-import SecretInput from "./SecretInput";
+import PasswordInput from "./PasswordInput";
 
 type RowProps = {
   consumer: ConsumerSchemaType;
@@ -15,10 +15,10 @@ export const Row: FC<RowProps> = ({ consumer }) => (
       <div className="whitespace-normal break-all">{consumer.username}</div>
     </TableCell>
     <TableCell>
-      <SecretInput secret={consumer.password} />
+      <PasswordInput password={consumer.password} />
     </TableCell>
     <TableCell>
-      <SecretInput secret={consumer.api_key} />
+      <PasswordInput password={consumer.api_key} />
     </TableCell>
     <TableCell>
       <div className="flex flex-wrap gap-1">
