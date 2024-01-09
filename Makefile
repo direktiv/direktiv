@@ -158,13 +158,12 @@ k3s-tail: ## Tail the logs of the direktiv server running in the local k3s envir
 
 .PHONY: k3s-tests
 k3s-tests: k3s-wait
-k3s-tests: ## Runs end-to-end tests. DIREKTIV_KUBERNETES=(true or not set for kubernetes specific tests) DIREKTIV_HOST=128.0.0.1 make test [JEST_PREFIX=/tests/namespaces]
+k3s-tests: ## Runs end-to-end tests. DIREKTIV_HOST=128.0.0.1 make test [JEST_PREFIX=/tests/namespaces]
 	docker run -it --rm \
 	-v `pwd`/tests:/tests \
 	-v `pwd`/direktivctl:/bin/direktivctl \
 	-e 'DIREKTIV_HOST=${DIREKTIV_HOST}' \
 	-e 'NODE_TLS_REJECT_UNAUTHORIZED=0' \
-	-e 'DIREKTIV_KUBERNETES=$(if $(DIREKTIV_KUBERNETES),"",kubernetes)' \
 	node:lts-alpine3.18 npm --prefix "/tests" run all -- ${JEST_PREFIX}
 
 # TODO: do we need "make binary"?
