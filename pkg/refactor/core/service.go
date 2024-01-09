@@ -19,6 +19,12 @@ type EnvironmentVariable struct {
 	Value string `json:"value"`
 }
 
+type ServicePatch struct {
+	Op    string      `json:"op"`
+	Path  string      `json:"path"`
+	Value interface{} `json:"value"`
+}
+
 // nolint:tagliatelle
 type ServiceConfig struct {
 	// identification fields:
@@ -34,6 +40,7 @@ type ServiceConfig struct {
 	Scale         int                   `json:"scale"`
 	Envs          []EnvironmentVariable `json:"envs"`
 	PostStartExec []string              `json:"post_start_exec"`
+	Patches       []ServicePatch        `json:"patches"`
 
 	Error *string `json:"error"`
 }
@@ -66,6 +73,10 @@ func (c *ServiceConfig) GetValueHash() string {
 	for _, v := range c.PostStartExec {
 		str += "-" + v
 	}
+	for _, v := range c.Patches {
+		str += "-" + v.Op + "-" + v.Path + "-" + fmt.Sprintf("%v", v.Value)
+	}
+
 	sh := sha256.Sum256([]byte(str))
 
 	return hex.EncodeToString(sh[:10])

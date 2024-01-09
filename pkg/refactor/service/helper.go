@@ -13,6 +13,8 @@ import (
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 )
 
+const direktivCmdExecValue = "/usr/share/direktiv/direktiv-cmd"
+
 func buildService(c *core.Config, sv *core.ServiceConfig, registrySecrets []corev1.LocalObjectReference) (*servingv1.Service, error) {
 	containers, err := buildContainers(c, sv)
 	if err != nil {
@@ -38,6 +40,26 @@ func buildService(c *core.Config, sv *core.ServiceConfig, registrySecrets []core
 
 	nonRoot := false
 
+	initContainers := []corev1.Container{}
+	if sv.CMD == direktivCmdExecValue {
+		initContainers = append(initContainers, corev1.Container{
+			Name:  "init",
+			Image: c.KnativeSidecar,
+			Env: []corev1.EnvVar{
+				{
+					Name:  "DIREKTIV_APP",
+					Value: "init",
+				},
+			},
+			VolumeMounts: []corev1.VolumeMount{
+				{
+					Name:      "bindir",
+					MountPath: "/usr/share/direktiv/",
+				},
+			},
+		})
+	}
+
 	svc := &servingv1.Service{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "serving.knative.dev/v1",
@@ -59,6 +81,7 @@ func buildService(c *core.Config, sv *core.ServiceConfig, registrySecrets []core
 							},
 							ServiceAccountName: c.KnativeServiceAccount,
 							Containers:         containers,
+							InitContainers:     initContainers,
 							Volumes:            buildVolumes(c, sv),
 							Affinity:           &corev1.Affinity{
 								// NodeAffinity: n,
@@ -102,7 +125,6 @@ func buildPodMeta(c *core.Config, sv *core.ServiceConfig) metav1.ObjectMeta {
 
 	metaSpec.Annotations["autoscaling.knative.dev/minScale"] = strconv.Itoa(sv.Scale)
 	metaSpec.Annotations["autoscaling.knative.dev/maxScale"] = strconv.Itoa(c.KnativeMaxScale)
-	metaSpec.Annotations["autoscaling.knative.dev/minScale"] = strconv.Itoa(sv.Scale)
 
 	if len(c.KnativeNetShape) > 0 {
 		metaSpec.Annotations["kubernetes.io/ingress-bandwidth"] = c.KnativeNetShape
@@ -123,7 +145,15 @@ func buildVolumes(c *core.Config, sv *core.ServiceConfig) []corev1.Volume {
 		},
 	}
 
-	// volumes = append(volumes, c.extraVolumes...)
+	// add extra folder if bin required
+	if sv.CMD == direktivCmdExecValue {
+		volumes = append(volumes, corev1.Volume{
+			Name: "bindir",
+			VolumeSource: corev1.VolumeSource{
+				EmptyDir: &corev1.EmptyDirVolumeSource{},
+			},
+		})
+	}
 
 	return volumes
 }
@@ -135,12 +165,12 @@ func buildContainers(c *core.Config, sv *core.ServiceConfig) ([]corev1.Container
 		return nil, err
 	}
 
-	allowPrivilegeEscalation := false
+	allowPrivilegeEscalation := true
 	secContext := &corev1.SecurityContext{
 		AllowPrivilegeEscalation: &allowPrivilegeEscalation,
 		Capabilities: &corev1.Capabilities{
 			Drop: []corev1.Capability{
-				corev1.Capability("ALL"),
+				// corev1.Capability("ALL"),
 			},
 		},
 	}
@@ -171,6 +201,14 @@ func buildContainers(c *core.Config, sv *core.ServiceConfig) ([]corev1.Container
 			},
 		},
 		SecurityContext: secContext,
+	}
+
+	// add volume for binary or add command
+	if sv.CMD == direktivCmdExecValue {
+		uc.VolumeMounts = append(uc.VolumeMounts, corev1.VolumeMount{
+			Name:      "bindir",
+			MountPath: "/usr/share/direktiv/",
+		})
 	}
 
 	if len(sv.CMD) > 0 {

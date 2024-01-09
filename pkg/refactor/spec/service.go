@@ -16,6 +16,7 @@ type ServiceFile struct {
 	Scale         int                        `yaml:"scale"`
 	Envs          []core.EnvironmentVariable `yaml:"envs"`
 	PostStartExec []string                   `yaml:"post_start_exec"`
+	Patches       []core.ServicePatch        `yaml:"patches"`
 }
 
 func ParseServiceFile(data []byte) (*ServiceFile, error) {

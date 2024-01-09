@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"io"
+	"io/fs"
 	"log"
 	"net/http"
 	"os"
@@ -55,6 +57,39 @@ func main() {
 		sidecar.RunApplication()
 	case "flow":
 		flow.RunApplication()
+	case "init":
+
+		perm := 0o755
+
+		// copies the command server to the shared directory in kubernetes
+		err := os.MkdirAll("/usr/share/direktiv", fs.FileMode(perm))
+		if err != nil {
+			panic(err)
+		}
+
+		source, err := os.Open("/bin/direktiv-cmd")
+		if err != nil {
+			panic(err)
+		}
+
+		destination, err := os.Create("/usr/share/direktiv/direktiv-cmd")
+		if err != nil {
+			panic(err)
+		}
+
+		_, err = io.Copy(destination, source)
+		if err != nil {
+			panic(err)
+		}
+
+		err = os.Chmod("/usr/share/direktiv/direktiv-cmd", fs.FileMode(perm))
+		if err != nil {
+			panic(err)
+		}
+
+		destination.Close()
+		source.Close()
+
 	case "":
 		log.Fatalf("error: empty DIREKTIV_APP environment variable.\n")
 	default:
