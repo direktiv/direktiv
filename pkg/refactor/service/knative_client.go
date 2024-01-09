@@ -77,7 +77,6 @@ func (c *knativeClient) applyPatch(sv *core.ServiceConfig) error {
 
 				break
 			}
-
 		}
 
 		// if the path is not in the allowed prefix list, return with an error.
@@ -112,7 +111,6 @@ func (c *knativeClient) updateService(sv *core.ServiceConfig) error {
 
 	err = c.applyPatch(sv)
 	if err != nil {
-		fmt.Println(err)
 		return err
 	}
 
