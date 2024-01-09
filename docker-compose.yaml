@@ -73,6 +73,6 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ./nginx.template:/etc/nginx/conf.d/default.conf
+    - ./nginx.template:/etc/nginx/conf.d/default.conf
     depends_on:
       - ui

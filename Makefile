@@ -95,12 +95,15 @@ docker-start: ## Create a local docker deployment.
 	rm -rf direktiv-ui
 	git clone https://github.com/direktiv/direktiv-ui.git
 	cd direktiv-ui && make react && docker build -t direktiv-ui-dev .
+	sed -i 's|^\s*-\s*.*:/etc/nginx/conf.d/default.conf|    - ./nginx.template:/etc/nginx/conf.d/default.conf|' docker-compose.yaml
 	DIREKTIV_UI_IMAGE=direktiv-ui-dev DIREKTIV_IMAGE=direktiv-dev  docker compose up -d --scale e2e-tests=0
 
 .PHONY: docker-headless
 docker-headless: docker-stop docker-stop
 docker-headless: ## Create a local docker deployment without an included UI container.
+	sed -i 's|^\s*-\s*.*:/etc/nginx/conf.d/default.conf|    - ./nginx.headless.template:/etc/nginx/conf.d/default.conf|' docker-compose.yaml
 	DIREKTIV_UI_IMAGE=direktiv-ui-dev DIREKTIV_IMAGE=direktiv-dev  docker compose up -d --scale ui=0 --scale e2e-tests=0
+	sed -i 's|^\s*-\s*.*:/etc/nginx/conf.d/default.conf|    - ./nginx.template:/etc/nginx/conf.d/default.conf|' docker-compose.yaml
 
 .PHONY: docker-stop 
 docker-stop: ## Stop an existing docker deployment.
