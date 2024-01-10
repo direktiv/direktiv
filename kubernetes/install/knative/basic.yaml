@@ -37,7 +37,7 @@ spec:
       tag-header-based-routing: "enabled"
       autodetect-http2: "enabled"
       kubernetes.podspec-volumes-emptydir: "enabled"
-      kubernetes.podspec-init-containers: "disabled"
+      kubernetes.podspec-init-containers: "enabled"
       kubernetes.podspec-persistent-volume-claim: "disabled"
       kubernetes.podspec-persistent-volume-write: "disabled"
       queueproxy.mount-podinfo: "disabled"

@@ -10,8 +10,7 @@
     "supertest": "^6.3.3"
   },
   "scripts": {
-    "run-tests": "npx jest --runInBand",
-    "run-tests-watch": "npx jest --watch --runInBand",
-    "all": "npm install && npm run run-tests"
+    "all": "npm install && npx jest --runInBand",
+    "without-k8s": "npm install && npx jest tests --runInBand  --testPathIgnorePatterns=kubernetes"
   }
 }
