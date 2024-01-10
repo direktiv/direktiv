@@ -3,3 +3,5 @@ export const authPluginTypes = {
   githubWebhookAuth: "github-webhook-auth",
   keyAuth: "key-auth",
 } as const;
+
+export const availablePlugins = Object.values(authPluginTypes);

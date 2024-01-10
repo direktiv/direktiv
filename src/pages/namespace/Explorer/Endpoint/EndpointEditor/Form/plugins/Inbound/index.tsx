@@ -12,6 +12,10 @@ import {
 import { Table, TableBody, TableCell, TableRow } from "~/design/Table";
 import { UseFormReturn, useFieldArray } from "react-hook-form";
 import {
+  availablePlugins,
+  inboundPluginTypes,
+} from "../../../schema/plugins/inbound";
+import {
   getAclConfigAtIndex,
   getEventFilterConfigAtIndex,
   getJsInboundConfigAtIndex,
@@ -27,7 +31,6 @@ import { InboundPluginFormSchemaType } from "../../../schema/plugins/inbound/sch
 import { JsInboundForm } from "./JsInboundForm";
 import { Plus } from "lucide-react";
 import { RequestConvertForm } from "./RequestConvertForm";
-import { inboundPluginTypes } from "../../../schema/plugins/inbound";
 import { useTranslation } from "react-i18next";
 
 type InboundPluginFormProps = {
@@ -164,7 +167,7 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({ form }) => {
               />
             </SelectTrigger>
             <SelectContent>
-              {Object.values(inboundPluginTypes).map((pluginType) => (
+              {availablePlugins.map((pluginType) => (
                 <SelectItem key={pluginType} value={pluginType}>
                   {t(
                     `pages.explorer.endpoint.editor.form.plugins.inbound.types.${pluginType}`

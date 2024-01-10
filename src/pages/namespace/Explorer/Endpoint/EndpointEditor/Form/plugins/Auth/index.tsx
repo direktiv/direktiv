@@ -12,6 +12,10 @@ import {
 import { Table, TableBody, TableCell, TableRow } from "~/design/Table";
 import { UseFormReturn, useFieldArray } from "react-hook-form";
 import {
+  authPluginTypes,
+  availablePlugins,
+} from "../../../schema/plugins/auth";
+import {
   getBasicAuthConfigAtIndex,
   getGithubWebhookAuthConfigAtIndex,
   getKeyAuthConfigAtIndex,
@@ -25,7 +29,6 @@ import { EndpointFormSchemaType } from "../../../schema";
 import { GithubWebhookAuthForm } from "./GithubWebhookAuthForm";
 import { KeyAuthForm } from "./KeyAuthForm";
 import { Plus } from "lucide-react";
-import { authPluginTypes } from "../../../schema/plugins/auth";
 import { useTranslation } from "react-i18next";
 
 type AuthPluginFormProps = {
@@ -160,7 +163,7 @@ export const AuthPluginForm: FC<AuthPluginFormProps> = ({ formControls }) => {
               />
             </SelectTrigger>
             <SelectContent>
-              {Object.values(authPluginTypes).map((pluginType) => (
+              {availablePlugins.map((pluginType) => (
                 <SelectItem key={pluginType} value={pluginType}>
                   {t(
                     `pages.explorer.endpoint.editor.form.plugins.auth.types.${pluginType}`

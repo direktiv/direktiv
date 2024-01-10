@@ -10,6 +10,10 @@ import {
 } from "~/design/Select";
 import { Table, TableBody, TableCell, TableRow } from "~/design/Table";
 import { UseFormReturn, useWatch } from "react-hook-form";
+import {
+  availablePlugins,
+  targetPluginTypes,
+} from "../../../schema/plugins/target";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
@@ -22,7 +26,6 @@ import { TargetFlowForm } from "./TargetFlowForm";
 import { TargetFlowVarForm } from "./TargetFlowVarForm";
 import { TargetNamespaceFileForm } from "./TargetNamespaceFileForm";
 import { TargetNamespaceVarForm } from "./TargetNamespaceVarForm";
-import { targetPluginTypes } from "../../../schema/plugins/target";
 import { useTranslation } from "react-i18next";
 
 type TargetPluginFormProps = {
@@ -145,7 +148,7 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({ form }) => {
               />
             </SelectTrigger>
             <SelectContent>
-              {Object.values(targetPluginTypes).map((pluginType) => (
+              {availablePlugins.map((pluginType) => (
                 <SelectItem key={pluginType} value={pluginType}>
                   {t(
                     `pages.explorer.endpoint.editor.form.plugins.target.types.${pluginType}`
