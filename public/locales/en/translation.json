@@ -330,7 +330,8 @@
                   "target-flow": "Workflow",
                   "target-flow-var": "Workflow Variable",
                   "target-namespace-file": "Namespace File",
-                  "target-namespace-var": "Namespace Variable"
+                  "target-namespace-var": "Namespace Variable",
+                  "target-event": "Event"
                 },
                 "instantResponse": {
                   "statusCode": "Status Code",
