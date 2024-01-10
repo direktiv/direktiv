@@ -1,9 +1,9 @@
 import Badge from "~/design/Badge";
 import { FC } from "react";
-import { RouteSchemeType } from "~/api/gateway/schema";
+import { RouteSchemaType } from "~/api/gateway/schema";
 
 type AllowAnonymousProps = {
-  methods: RouteSchemeType["methods"];
+  methods: RouteSchemaType["methods"];
 };
 
 export const Methods: FC<AllowAnonymousProps> = ({ methods }) => (

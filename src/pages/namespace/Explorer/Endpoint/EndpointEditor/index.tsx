@@ -6,7 +6,7 @@ import { EndpointFormSchemaType } from "./schema";
 import { FC } from "react";
 import { Form } from "./Form";
 import FormErrors from "~/componentsNext/FormErrors";
-import { RouteSchemeType } from "~/api/gateway/schema";
+import { RouteSchemaType } from "~/api/gateway/schema";
 import { Save } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
 import { jsonToYaml } from "../../utils";
@@ -21,7 +21,7 @@ type NodeContentType = ReturnType<typeof useNodeContent>["data"];
 type EndpointEditorProps = {
   path: string;
   data: NonNullable<NodeContentType>;
-  route?: RouteSchemeType;
+  route?: RouteSchemaType;
 };
 
 const EndpointEditor: FC<EndpointEditorProps> = ({ data, path }) => {
