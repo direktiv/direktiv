@@ -61,12 +61,18 @@ jobs:
       matrix:
         jest_prefix: [
             "engine/",
-            #"filesystem/",
-            #"logparser/",
-            #"variables/",
-            #"errors/",
-            # "mirror/",
-            # "namespaces/",
+            "filesystem/",
+            "logparser/",
+            "variables/",
+            "errors/",
+            "mirror/",
+            "namespaces/",
+            "functions/",
+            "gateway/",
+            "kubernetes/",
+            "registry/",
+            "secrets/",
+            "services/",
           ]
     steps:
       - name: Checkout code
