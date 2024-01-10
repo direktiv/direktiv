@@ -101,16 +101,11 @@ test("it is possible to delete the last namespace and it will redirect to the la
   const confirmButton = page.getByTestId("delete-namespace-confirm-btn");
   const confirmInput = page.getByTestId("delete-namespace-confirm-input");
 
-  confirmInput.type(namespace);
-  await confirmButton.click();
-
   /**
-   * when the api is now called for the namespaces, we return
+   * the next time the api is called for the namespaces, we return
    * an empty  list to act like there are no namespaces left
    */
-  const mockedNamespace: NamespaceListSchemaType = {
-    results: [],
-  };
+
   await page.route("**/api/namespaces", (route, reg) => {
     if (reg.method() !== "GET") {
       return route.continue();
@@ -118,9 +113,12 @@ test("it is possible to delete the last namespace and it will redirect to the la
     route.fulfill({
       status: 200,
       contentType: "application/json",
-      body: JSON.stringify(mockedNamespace),
+      body: JSON.stringify({ results: [] }),
     });
   });
+
+  confirmInput.type(namespace);
+  await confirmButton.click();
 
   await page.waitForURL("/");
   /**
