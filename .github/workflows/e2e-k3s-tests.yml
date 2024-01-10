@@ -90,6 +90,9 @@ jobs:
       - name: Install Helm
         run: curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
+      - name: Create namespace for the DB
+        run: kubectl create ns postgres
+
       - name: Install a database
         run: helm repo add bitnami https://charts.bitnami.com/bitnami && helm install psql-single bitnami/postgresql -n postgres
 
