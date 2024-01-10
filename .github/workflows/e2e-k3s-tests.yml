@@ -61,12 +61,12 @@ jobs:
       matrix:
         jest_prefix: [
             "engine/",
-            #"filesystem/",
+            "filesystem/",
             #"logparser/",
             #"variables/",
             #"errors/",
             # "mirror/",
-            # "namespaces/",
+            "namespaces/",
           ]
     steps:
       - name: Checkout code
@@ -153,12 +153,6 @@ jobs:
 
       - name: Print DIREKTIV_HOST
         run: echo "DIREKTIV_HOST is set to ${{ env.DIREKTIV_HOST }}"
-
-      - name: Wait for Direktiv function pods to be ready
-        run: |
-          kubectl wait --for=condition=Ready pod -l app.kubernetes.io/instance=direktiv-functions --timeout=120s
-          echo "Listing all pods:"
-          kubectl get all
 
       - name: List all pods and sleep 10
         run: |
