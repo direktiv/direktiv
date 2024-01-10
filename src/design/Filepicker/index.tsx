@@ -50,6 +50,21 @@ const FilepickerList: FC<PropsWithChildren> = ({ children }) => (
   </div>
 );
 
+interface FilepickerButtonType extends PropsWithChildren {
+  onClick: React.MouseEventHandler;
+}
+
+const FilepickerButton: FC<FilepickerButtonType> = ({ children, onClick }) => (
+  <div
+    onClick={onClick}
+    className={twMergeClsx(
+      "h-auto w-full cursor-pointer p-0 font-normal text-gray-11 hover:underline focus:bg-transparent focus:ring-0 focus:ring-transparent focus:ring-offset-0 dark:text-gray-dark-11 dark:focus:bg-transparent"
+    )}
+  >
+    {children}
+  </div>
+);
+
 // asChild only works with exactly one child, so when asChild is true, we can not have a loading property
 type AsChildOrLoading =
   | {
@@ -116,6 +131,7 @@ const Filepicker: FC<FilepickerPropsType> = ({
 
 export {
   Filepicker,
+  FilepickerButton,
   FilepickerClose,
   FilepickerHeading,
   FilepickerMessage,
