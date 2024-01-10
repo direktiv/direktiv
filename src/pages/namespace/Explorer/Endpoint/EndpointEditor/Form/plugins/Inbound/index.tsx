@@ -13,6 +13,7 @@ import { Table, TableBody, TableCell, TableRow } from "~/design/Table";
 import { UseFormReturn, useFieldArray } from "react-hook-form";
 import {
   getAclConfigAtIndex,
+  getEventFilterConfigAtIndex,
   getJsInboundConfigAtIndex,
   getRequestConvertConfigAtIndex,
 } from "../utils";
@@ -21,6 +22,7 @@ import { AclForm } from "./AclForm";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import { EndpointFormSchemaType } from "../../../schema";
+import { EventFilterForm } from "./EventFilterForm";
 import { InboundPluginFormSchemaType } from "../../../schema/plugins/inbound/schema";
 import { JsInboundForm } from "./JsInboundForm";
 import { Plus } from "lucide-react";
@@ -51,7 +53,7 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({ form }) => {
   const [selectedPlugin, setSelectedPlugin] =
     useState<InboundPluginFormSchemaType["type"]>();
 
-  const { jsInbound, requestConvert, acl } = inboundPluginTypes;
+  const { jsInbound, requestConvert, acl, eventFilter } = inboundPluginTypes;
 
   const pluginsCount = fields.length;
   const formId = "inboundPluginForm";
@@ -202,11 +204,25 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({ form }) => {
             }}
           />
         )}
-
         {selectedPlugin === acl && (
           <AclForm
             formId={formId}
             defaultConfig={getAclConfigAtIndex(fields, editIndex)}
+            onSubmit={(configuration) => {
+              setDialogOpen(false);
+              if (editIndex === undefined) {
+                addPlugin(configuration);
+              } else {
+                editPlugin(editIndex, configuration);
+              }
+              setEditIndex(undefined);
+            }}
+          />
+        )}
+        {selectedPlugin === eventFilter && (
+          <EventFilterForm
+            formId={formId}
+            defaultConfig={getEventFilterConfigAtIndex(fields, editIndex)}
             onSubmit={(configuration) => {
               setDialogOpen(false);
               if (editIndex === undefined) {
