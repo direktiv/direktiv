@@ -1,6 +1,7 @@
 import { createNamespace, deleteNamespace } from "../utils/namespace";
 import { expect, test } from "@playwright/test";
 
+import { NamespaceListSchemaType } from "~/api/namespaces/schema";
 import { getNamespaces } from "~/api/namespaces/query/get";
 import { headers } from "e2e/utils/testutils";
 
@@ -105,6 +106,10 @@ test("it is possible to delete the last namespace and it will redirect to the la
    * an empty  list to act like there are no namespaces left
    */
 
+  const mockedNamespaces: NamespaceListSchemaType = {
+    results: [],
+  };
+
   await page.route("**/api/namespaces", (route, reg) => {
     if (reg.method() !== "GET") {
       return route.continue();
@@ -112,7 +117,7 @@ test("it is possible to delete the last namespace and it will redirect to the la
     route.fulfill({
       status: 200,
       contentType: "application/json",
-      body: JSON.stringify({ results: [] }),
+      body: JSON.stringify(mockedNamespaces),
     });
   });
 
