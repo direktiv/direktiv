@@ -50,9 +50,9 @@ const FilepickerList: FC<PropsWithChildren> = ({ children }) => (
   </div>
 );
 
-interface FilepickerButtonType extends PropsWithChildren {
+type FilepickerButtonType = PropsWithChildren & {
   onClick: React.MouseEventHandler;
-}
+};
 
 const FilepickerButton: FC<FilepickerButtonType> = ({ children, onClick }) => (
   <div
