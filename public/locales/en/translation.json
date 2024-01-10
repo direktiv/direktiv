@@ -404,6 +404,10 @@
                   "deny_tags": "Deny tags (optional)",
                   "groupPlaceholder": "Enter a group",
                   "tagPlaceholder": "Enter a tag"
+                },
+                "eventFilter": {
+                  "script": "JavaScript",
+                  "allow_non_events": "Allow non events (optional)"
                 }
               },
               "outbound": {
