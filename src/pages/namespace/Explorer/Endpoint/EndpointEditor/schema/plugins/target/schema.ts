@@ -1,4 +1,5 @@
 import { InstantResponseFormSchema } from "./instantResponse";
+import { TargetEventFormSchema } from "./targetEvent";
 import { TargetFlowFormSchema } from "./targetFlow";
 import { TargetFlowVarFormSchema } from "./targetFlowVar";
 import { TargetNamespaceFileFormSchema } from "./targetNamespaceFile";
@@ -11,4 +12,5 @@ export const TargetPluginFormSchema = z.discriminatedUnion("type", [
   TargetFlowVarFormSchema,
   TargetNamespaceFileFormSchema,
   TargetNamespaceVarFormSchema,
+  TargetEventFormSchema,
 ]);
