@@ -94,7 +94,7 @@ jobs:
         run: kubectl create ns postgres
 
       - name: Install a database
-        run: helm repo add bitnami https://charts.bitnami.com/bitnami && helm install --set psql-single bitnami/postgresql
+        run: helm repo add bitnami https://charts.bitnami.com/bitnami && helm install psql-single bitnami/postgresql
 
       - name: Add Direktiv Helm repository
         run: helm repo add direktiv https://chart.direktiv.io
