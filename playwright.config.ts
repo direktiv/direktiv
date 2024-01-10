@@ -76,6 +76,7 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
+    timeout: 60000,
     command: `yarn run vite --port ${process.env.VITE_E2E_UI_PORT}`,
     url: baseURL,
     reuseExistingServer: !process.env.CI,
