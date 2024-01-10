@@ -365,6 +365,9 @@
                   "variable": "Variable",
                   "contentType": "Content Type (optional)",
                   "contentTypePlaceholder": "application/json"
+                },
+                "targetEvent": {
+                  "namespace": "Namespace (optional)"
                 }
               },
               "inbound": {

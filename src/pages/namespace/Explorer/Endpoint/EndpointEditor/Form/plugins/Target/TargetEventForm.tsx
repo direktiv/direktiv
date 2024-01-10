@@ -56,7 +56,7 @@ export const TargetEventForm: FC<FormProps> = ({
         )}
         <Fieldset
           label={t(
-            "pages.explorer.endpoint.editor.form.plugins.target.targetFlow.namespace"
+            "pages.explorer.endpoint.editor.form.plugins.target.targetEvent.namespace"
           )}
           htmlFor="namespace"
         >
