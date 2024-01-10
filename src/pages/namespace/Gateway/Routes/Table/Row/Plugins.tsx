@@ -7,12 +7,12 @@ import { Table, TableBody, TableCell, TableRow } from "~/design/Table";
 
 import { ConditionalWrapper } from "~/util/helpers";
 import { FC } from "react";
-import { RouteSchemeType } from "~/api/gateway/schema";
+import { RouteSchemaType } from "~/api/gateway/schema";
 import { useTranslation } from "react-i18next";
 
 type PluginCountProps = {
   number: number;
-  type: keyof RouteSchemeType["plugins"];
+  type: keyof RouteSchemaType["plugins"];
 };
 
 const PluginCount: FC<PluginCountProps> = ({ type, number }) => {
@@ -30,7 +30,7 @@ const PluginCount: FC<PluginCountProps> = ({ type, number }) => {
 };
 
 type PluginsProps = {
-  plugins: RouteSchemeType["plugins"];
+  plugins: RouteSchemaType["plugins"];
 };
 
 const Plugins: FC<PluginsProps> = ({ plugins }) => {

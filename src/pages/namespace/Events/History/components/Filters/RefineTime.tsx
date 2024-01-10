@@ -31,7 +31,7 @@ const RefineTime = ({
 
     date.setHours(hr, min, sec);
     setFilter({
-      [field]: { type: "MATCH", value: date },
+      [field]: { type: field, value: date },
     });
   };
 
