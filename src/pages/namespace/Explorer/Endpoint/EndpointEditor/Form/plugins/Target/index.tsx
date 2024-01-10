@@ -17,6 +17,7 @@ import { EndpointFormSchemaType } from "../../../schema";
 import { InstantResponseForm } from "./InstantResponseForm";
 import { Settings } from "lucide-react";
 import { TableHeader } from "../components/PluginsTable";
+import { TargetEventForm } from "./TargetEventForm";
 import { TargetFlowForm } from "./TargetFlowForm";
 import { TargetFlowVarForm } from "./TargetFlowVarForm";
 import { TargetNamespaceFileForm } from "./TargetNamespaceFileForm";
@@ -43,12 +44,16 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({ form }) => {
     targetFlowVar,
     targetNamespaceFile,
     targetNamespaceVar,
+    targetEvent,
   } = targetPluginTypes;
 
   const currentConfiguration = values.plugins?.target?.configuration;
 
   const currentInstantResponseConfig =
     currentType === instantResponse ? currentConfiguration : undefined;
+
+  const currentTargetEventConfig =
+    currentType === targetEvent ? currentConfiguration : undefined;
 
   const currentTargetFlowConfig =
     currentType === targetFlow ? currentConfiguration : undefined;
@@ -183,6 +188,16 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({ form }) => {
           <TargetNamespaceVarForm
             formId={formId}
             defaultConfig={currentTargetNamespaceVarConfig}
+            onSubmit={(configuration) => {
+              setDialogOpen(false);
+              form.setValue("plugins.target", configuration);
+            }}
+          />
+        )}
+        {selectedPlugin === targetEvent && (
+          <TargetEventForm
+            formId={formId}
+            defaultConfig={currentTargetEventConfig}
             onSubmit={(configuration) => {
               setDialogOpen(false);
               form.setValue("plugins.target", configuration);
