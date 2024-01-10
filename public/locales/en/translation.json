@@ -382,7 +382,8 @@
                 "types": {
                   "acl": "Access control list (acl)",
                   "js-inbound": "JavaScript",
-                  "request-convert": "Request convert"
+                  "request-convert": "Request convert",
+                  "event-filter": "Event Filter"
                 },
                 "jsInbound": {
                   "script": "JavaScript"
