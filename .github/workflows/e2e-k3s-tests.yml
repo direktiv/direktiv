@@ -119,13 +119,12 @@ jobs:
             logging: console
 
           database:
-            database:
-              host: "psql-single-postgresql"
-              port: 5432
-              user: "postgres"
-              password: "$(kubectl get secret psql-single-postgresql -o jsonpath="{.data.postgres-password}" | base64 -d)"
-              name: "postgres"
-              sslmode: "disable"
+            host: "psql-single-postgresql"
+            port: 5432
+            user: "postgres"
+            password: "$(kubectl get secret psql-single-postgresql -o jsonpath="{.data.postgres-password}" | base64 -d)"
+            name: "postgres"
+            sslmode: "disable"
           EOF
           cat dev.yaml
 
