@@ -116,7 +116,7 @@ const Filepicker: FC<FilepickerPropsType> = ({
 }) => (
   <Popover modal>
     <PopoverTrigger asChild>
-      <Button onClick={onClick} className={className}>
+      <Button variant="outline" onClick={onClick} className={className}>
         <div className="relative">{buttonText}</div>
       </Button>
     </PopoverTrigger>
