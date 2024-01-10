@@ -18,15 +18,14 @@ const BreadcrumbSegment: FC<{
    * we need to request file information to figure out which
    * icon to use
    */
-  const requestIconInformation = isLast;
 
   const { data } = useNodeContent({
     path: absolute,
-    enabled: requestIconInformation,
+    enabled: isLast,
   });
 
   if (!namespace) return null;
-  if (requestIconInformation && !data) return null;
+  if (isLast && !data) return null;
 
   const Icon = fileTypeToIcon(data?.node.type ?? "directory");
 
