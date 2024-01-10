@@ -127,6 +127,7 @@ jobs:
               name: "postgres"
               sslmode: "disable"
           EOF
+          cat dev.yaml
 
       - name: Cache Docker layers
         id: docker-cache
