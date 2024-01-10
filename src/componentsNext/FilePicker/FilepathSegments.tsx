@@ -3,7 +3,7 @@ import { Breadcrumb, BreadcrumbRoot } from "~/design/Breadcrumbs";
 import { FC } from "react";
 import { Home } from "lucide-react";
 
-export type FilePathSegmentsType = {
+export type FilePathSegmentsProps = {
   segments: {
     relative: string;
     absolute: string;
@@ -11,7 +11,7 @@ export type FilePathSegmentsType = {
   setPath: (path: string) => void;
 };
 
-export const FilePathSegments: FC<FilePathSegmentsType> = ({
+export const FilePathSegments: FC<FilePathSegmentsProps> = ({
   segments,
   setPath,
 }) => (

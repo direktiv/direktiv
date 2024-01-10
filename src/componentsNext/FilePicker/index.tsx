@@ -11,8 +11,8 @@ import {
 import { Fragment, useState } from "react";
 
 import { ButtonBar } from "~/design/ButtonBar";
+import { FileList } from "./FileList";
 import { FilePathSegments } from "./FilepathSegments";
-import { FilepickerItem } from "./FilepickerItem";
 import Input from "~/design/Input";
 import { NodeSchemaType } from "~/api/tree/schema/node";
 import { analyzePath } from "~/util/router/utils";
@@ -104,7 +104,7 @@ const FilePicker = ({
         )}
         {results && (
           <FilepickerList>
-            <FilepickerItem
+            <FileList
               results={results}
               selectable={selectable}
               setPath={(path) => setPath(path)}

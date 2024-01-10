@@ -9,7 +9,7 @@ import { NodeSchemaType } from "~/api/tree/schema/node";
 import { fileTypeToIcon } from "~/api/tree/utils";
 import { twMergeClsx } from "~/util/helpers";
 
-export type FilepickerItemType = {
+export type FileListProps = {
   results: NodeSchemaType[];
   selectable: ((node: NodeSchemaType) => boolean) | undefined;
   setPath: (path: string) => void;
@@ -17,7 +17,7 @@ export type FilepickerItemType = {
   onChange: (path: string) => void;
 };
 
-export const FilepickerItem: FC<FilepickerItemType> = ({
+export const FileList: FC<FileListProps> = ({
   results,
   selectable,
   setPath,
@@ -25,8 +25,9 @@ export const FilepickerItem: FC<FilepickerItemType> = ({
   onChange,
 }) => (
   <>
-    {results.map((file) => {
+    {results.map((file, index) => {
       const isSelectable = selectable?.(file) ?? true;
+      const isLastListItem = index === results.length - 1;
       return (
         <Fragment key={file.name}>
           {file.type === "directory" ? (
@@ -58,7 +59,7 @@ export const FilepickerItem: FC<FilepickerItemType> = ({
               </FilepickerListItem>
             </FilepickerClose>
           )}
-          <FilepickerSeparator />
+          {!isLastListItem && <FilepickerSeparator />}
         </Fragment>
       );
     })}
