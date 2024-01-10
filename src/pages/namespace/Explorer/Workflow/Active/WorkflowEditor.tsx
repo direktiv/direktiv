@@ -5,7 +5,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/design/Dropdown";
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { GitBranchPlus, Play, Save, Tag, Undo } from "lucide-react";
 
 import Button from "~/design/Button";
@@ -57,6 +57,15 @@ const WorkflowEditor: FC<{
 
   const [editorContent, setEditorContent] = useState(workflowDataFromServer);
 
+  /**
+   * When the server state of the content changes, the internal state needs to be updated,
+   * to have the editor and diagram up to date. This is important, when the user is reverting
+   * to an old revision.
+   */
+  useEffect(() => {
+    setEditorContent(workflowDataFromServer);
+  }, [workflowDataFromServer]);
+
   const { mutate: createRevision } = useCreateRevision();
   const { mutate: revertRevision } = useRevertRevision({
     onSuccess: () => {
@@ -90,14 +99,11 @@ const WorkflowEditor: FC<{
       <WorkspaceLayout
         layout={currentLayout}
         diagramComponent={
-          <Diagram
-            workflowData={workflowDataFromServer}
-            layout={currentLayout}
-          />
+          <Diagram workflowData={editorContent} layout={currentLayout} />
         }
         editorComponent={
           <CodeEditor
-            value={workflowDataFromServer}
+            value={editorContent}
             onValueChange={onEditorContentUpdate}
             createdAt={data.revision?.createdAt}
             error={error}
