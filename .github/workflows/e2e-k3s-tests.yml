@@ -117,7 +117,7 @@ jobs:
 
           database:
             host: "psql-single-postgresql"
-            password: "$(kubectl get secret psql-single-postgresql -o jsonpath="{.data.postgres-password}" | base64 -d)"
+            password: "$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "password"}}' | base64 --decode"
           EOF
 
       - name: Cache Docker layers
