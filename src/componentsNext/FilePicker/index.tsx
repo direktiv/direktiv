@@ -1,8 +1,6 @@
-import { ArrowLeftToLineIcon, FolderUp, Home } from "lucide-react";
-import { Breadcrumb, BreadcrumbRoot } from "~/design/Breadcrumbs";
+import { ArrowLeftToLineIcon, FolderUp } from "lucide-react";
 import {
   Filepicker,
-  FilepickerClose,
   FilepickerHeading,
   FilepickerList,
   FilepickerListItem,
@@ -12,11 +10,11 @@ import {
 import { Fragment, useState } from "react";
 
 import { ButtonBar } from "~/design/ButtonBar";
+import { FilePathSegments } from "./FilepathSegments";
+import { FilepickerItem } from "./FilepickerItem";
 import Input from "~/design/Input";
 import { NodeSchemaType } from "~/api/tree/schema/node";
 import { analyzePath } from "~/util/router/utils";
-import { fileTypeToIcon } from "~/api/tree/utils";
-import { twMergeClsx } from "~/util/helpers";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useTranslation } from "react-i18next";
 
@@ -49,9 +47,9 @@ const FilePicker = ({
   const results = data?.children?.results ?? [];
   const noResults = data?.children?.results.length ? false : true;
 
-  const emptyDirectory = !isError && noResults;
   const pathNotFound = isError;
-  const folderUpButton = !isRoot && data && !isError;
+  const emptyDirectory = !isError && noResults;
+  const folderUpButton = !isError && !noResults && !isRoot;
 
   return (
     <ButtonBar>
@@ -63,33 +61,10 @@ const FilePicker = ({
         className="w-44"
       >
         <FilepickerHeading>
-          <BreadcrumbRoot className="py-3">
-            <Breadcrumb
-              noArrow
-              onClick={() => {
-                setPath("/");
-              }}
-              className="h-5 hover:underline"
-            >
-              <Home />
-            </Breadcrumb>
-            {segments.map((file) => {
-              const isEmpty = file.absolute === "";
-
-              if (isEmpty) return null;
-              return (
-                <Breadcrumb
-                  key={file.relative}
-                  onClick={() => {
-                    setPath(file.absolute);
-                  }}
-                  className="h-5 hover:underline"
-                >
-                  {file.relative}
-                </Breadcrumb>
-              );
-            })}
-          </BreadcrumbRoot>
+          <FilePathSegments
+            segments={segments}
+            setPath={(path) => setPath(path)}
+          />
         </FilepickerHeading>
         <FilepickerSeparator />
         {folderUpButton && (
@@ -128,46 +103,18 @@ const FilePicker = ({
             </FilepickerMessage>
           </>
         )}
-        <FilepickerList>
-          {results.map((file) => {
-            const isSelectable = selectable?.(file) ?? true;
-            return (
-              <Fragment key={file.name}>
-                {file.type === "directory" ? (
-                  <div
-                    onClick={() => {
-                      setPath(file.path);
-                    }}
-                    className="h-auto w-full cursor-pointer text-gray-11 hover:underline focus:bg-transparent focus:ring-0 focus:ring-transparent focus:ring-offset-0 dark:text-gray-dark-11 dark:focus:bg-transparent"
-                  >
-                    <FilepickerListItem icon={fileTypeToIcon(file.type)}>
-                      {file.name}
-                    </FilepickerListItem>
-                  </div>
-                ) : (
-                  <FilepickerClose
-                    className={twMergeClsx(
-                      "h-auto w-full text-gray-11 hover:underline dark:text-gray-dark-11",
-                      !isSelectable && "cursor-not-allowed opacity-70"
-                    )}
-                    disabled={!isSelectable}
-                    onClick={() => {
-                      setPath(file.parent);
-                      setInputValue(file.path);
-                      onChange?.(file.path);
-                    }}
-                  >
-                    <FilepickerListItem icon={fileTypeToIcon(file.type)}>
-                      {file.name}
-                    </FilepickerListItem>
-                  </FilepickerClose>
-                )}
-
-                <FilepickerSeparator />
-              </Fragment>
-            );
-          })}
-        </FilepickerList>
+        {results && (
+          <FilepickerList>
+            <FilepickerItem
+              results={results}
+              selectable={selectable}
+              setPath={(path) => setPath(path)}
+              setInputValue={(value) => setInputValue(value)}
+              onChange={(path) => onChange?.(path)}
+            />
+            <FilepickerSeparator />
+          </FilepickerList>
+        )}
       </Filepicker>
       <Input
         placeholder={t("components.filepicker.placeholder")}
