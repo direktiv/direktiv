@@ -17,6 +17,7 @@ type ReusableFunctionDefinition struct {
 	Cmd           string                     `json:"cmd,omitempty"             yaml:"cmd,omitempty"`
 	Envs          []core.EnvironmentVariable `json:"envs,omitempty"            yaml:"envs,omitempty"`
 	PostStartExec []string                   `json:"post_start_exec,omitempty" yaml:"post_start_exec,omitempty"`
+	Patches       []core.ServicePatch        `json:"patches,omitempty"         yaml:"patches,omitempty"`
 }
 
 // GetID returns the ID of a reusable function.

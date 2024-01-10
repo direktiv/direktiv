@@ -314,14 +314,18 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 		if err != nil {
 			return nil, err
 		}
-		err = flow.pBus.Publish(pubsub.WorkflowUpdate, ns.Name)
-		if err != nil {
-			flow.sugar.Error("pubsub publish", "error", err)
-		}
 	}
 
 	if err = tx.Commit(ctx); err != nil {
 		return nil, err
+	}
+
+	// has to move past the commit to get the changes to services
+	if file.Typ == filestore.FileTypeWorkflow {
+		err = flow.pBus.Publish(pubsub.WorkflowUpdate, ns.Name)
+		if err != nil {
+			flow.sugar.Error("pubsub publish", "error", err)
+		}
 	}
 
 	if file.Typ == filestore.FileTypeService {

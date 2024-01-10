@@ -8,16 +8,17 @@ import (
 )
 
 const (
-	ErrCodeJQBadQuery             = "direktiv.jq.badCommand"
-	ErrCodeJQNoResults            = "direktiv.jq.badCommand"
-	ErrCodeJQManyResults          = "direktiv.jq.badCommand"
-	ErrCodeJQNotObject            = "direktiv.jq.notObject"
-	ErrCodeFailedSchemaValidation = "direktiv.schema.failed"
-	ErrCodeJQNotString            = "direktiv.jq.notString"
-	ErrCodeInvalidVariableKey     = "direktiv.var.invalidKey"
-	ErrCodeInvalidVariableScope   = "direktiv.var.invalidScope"
-	ErrCodeAllBranchesFailed      = "direktiv.parallel.allFailed"
-	ErrCodeNotArray               = "direktiv.foreach.badArray"
+	ErrCodeJQBadQuery                 = "direktiv.jq.badCommand"
+	ErrCodeJQNoResults                = "direktiv.jq.badCommand"
+	ErrCodeJQManyResults              = "direktiv.jq.badCommand"
+	ErrCodeJQNotObject                = "direktiv.jq.notObject"
+	ErrCodeFailedSchemaValidation     = "direktiv.schema.failed"
+	ErrCodeJQNotString                = "direktiv.jq.notString"
+	ErrCodeInvalidVariableKey         = "direktiv.var.invalidKey"
+	ErrCodeInvalidVariableScope       = "direktiv.var.invalidScope"
+	ErrCodeAllBranchesFailed          = "direktiv.parallel.allFailed"
+	ErrCodeNotArray                   = "direktiv.foreach.badArray"
+	ErrCodeInvalidVariablePermissions = "direktiv.var.perms"
 )
 
 func wrap(err error, s string) error {

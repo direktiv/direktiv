@@ -5,6 +5,7 @@
 # TODO: ensure skips still notice version mismatches
 DEV=${DEV:-false}
 VERBOSE=${VERBOSE:-false}
+WITH_MONITORING=${WITH_MONITORING:-false}
 
 DIREKTIV_CONFIG=${DIREKTIV_CONFIG:-direktiv.yaml}
 
@@ -416,9 +417,6 @@ registry: localhost:5000
 image: ${backend_image}
 tag: ${DIREKTIV_VERSION}
 
-flow:
-  logging: console
-
 EOF
         fi
 
@@ -429,12 +427,80 @@ frontend:
   tag: "${DIREKTIV_VERSION}"
 
 EOF
+
+        if [ "$WITH_MONITORING" == "true" ]; then
+            cat <<EOF >> $DIREKTIV_CONFIG
+flow:
+  logging: json
+
+opentelemetry:
+  # -- opentelemetry address where Direktiv is sending data to
+  address: "localhost:4317"
+  # -- installs opentelemtry agent as sidecar in flow
+  enabled: true
+  # -- config for sidecar agent
+  agentconfig: |
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+          http:
+    exporters:
+      otlp:
+        endpoint: "tempo:4317"
+        insecure: true
+        sending_queue:
+          num_consumers: 4
+          queue_size: 100
+        retry_on_failure:
+          enabled: true
+      logging:
+        loglevel: debug
+    processors:
+      batch:
+      memory_limiter:
+        # Same as --mem-ballast-size-mib CLI argument
+        ballast_size_mib: 165
+        # 80% of maximum memory up to 2G
+        limit_mib: 400
+        # 25% of limit up to 2G
+        spike_limit_mib: 100
+        check_interval: 5s
+    extensions:
+      zpages: {}
+    service:
+      extensions: [zpages]
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors: [memory_limiter, batch]
+          exporters: [logging, otlp]
+EOF
+        else
+            cat <<EOF >> $DIREKTIV_CONFIG
+flow:
+  logging: console
+EOF
+        fi
     fi
 
     sed -i '/database:/,+6 d' $DIREKTIV_CONFIG
     echo "database:
   host: \"$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "host"}}' | base64 --decode)\"
   password: \"$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "password"}}' | base64 --decode)\"" >> $DIREKTIV_CONFIG
+}
+
+install_monitoring() {
+    echo "Installing monitoring components..."
+
+    kubectl apply -f scripts/install-monitoring.yaml
+    helm repo add grafana https://grafana.github.io/helm-charts
+    helm repo add fluent https://fluent.github.io/helm-charts
+    helm repo update
+    helm upgrade --install tempo grafana/tempo
+    helm upgrade --install fluent-bit fluent/fluent-bit --values scripts/fluentbit.values.yaml
+
+    echo "Monitoring components installed successfully."
 }
 
 install_direktiv() {
@@ -551,6 +617,10 @@ install_all() {
     if [ $? -ne 0 ]
     then 
         exit 1
+    fi
+
+    if [ "$WITH_MONITORING" == "true" ]; then
+        install_monitoring
     fi
 
     install_direktiv 

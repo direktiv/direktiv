@@ -16,7 +16,7 @@ func RegisterState(st model.StateType, initializer func(instance Instance, state
 	}
 
 	if _, exists := stateInitializers[st]; exists {
-		panic(fmt.Errorf("Attempted to register duplicate state initializer."))
+		panic(fmt.Errorf("attempted to register duplicate state initializer"))
 	}
 
 	stateInitializers[st] = initializer
