@@ -1,11 +1,12 @@
 name: E2E Tests
 on:
-  push:
-    tags:
-      - v*
-    branches:
-      - main
-  pull_request:
+    push:
+      tags:
+        - v*
+      branches:
+        - main
+    pull_request:
+    workflow_dispatch:
 
 env:
   KUBECONFIG: /etc/rancher/k3s/k3s.yaml
