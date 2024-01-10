@@ -79,7 +79,7 @@ const RouteSchema = z.object({
   }),
 });
 
-export type RouteSchemeType = z.infer<typeof RouteSchema>;
+export type RouteSchemaType = z.infer<typeof RouteSchema>;
 
 /**
  * example

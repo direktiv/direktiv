@@ -1141,7 +1141,7 @@
       "settings": "Settings",
       "gateway": "Gateway",
       "gatewayRoutes": "Routes",
-      "gatewayConsumers": "Consumer",
+      "gatewayConsumers": "Consumers",
       "jqPlayground": "jq Playground"
     },
     "namespaceEdit": {
@@ -1236,7 +1236,7 @@
     "namespaceSelector": {
       "placeholder": "Select Namespace",
       "loading": "loading...",
-      "optionDoesNotExists": "{{namespace}} (does not exist)"
+      "optionDoesNotExist": "{{namespace}} (does not exist)"
     },
     "filepicker": {
       "buttonText": "Browse Files",
@@ -1459,7 +1459,7 @@
         "rebuildService": {
           "success": {
             "title": "Service rebuild",
-            "description": "Service was rebuild."
+            "description": "Service was rebuilt."
           },
           "error": {
             "description": "Could not rebuild service 😢"

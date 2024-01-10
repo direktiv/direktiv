@@ -8,13 +8,13 @@ import MessagesOverlay from "./MessagesOverlay";
 import { Methods } from "./Methods";
 import Plugins from "./Plugins";
 import PublicPathInput from "./PublicPath";
-import { RouteSchemeType } from "~/api/gateway/schema";
+import { RouteSchemaType } from "~/api/gateway/schema";
 import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
 import { useTranslation } from "react-i18next";
 
 type RowProps = {
-  gateway: RouteSchemeType;
+  gateway: RouteSchemaType;
 };
 
 export const Row: FC<RowProps> = ({ gateway }) => {
