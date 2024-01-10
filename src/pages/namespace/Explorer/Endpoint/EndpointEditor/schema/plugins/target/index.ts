@@ -4,4 +4,5 @@ export const targetPluginTypes = {
   targetFlowVar: "target-flow-var",
   targetNamespaceFile: "target-namespace-file",
   targetNamespaceVar: "target-namespace-var",
+  targetEvent: "target-event",
 } as const;
