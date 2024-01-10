@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"strconv"
 	"time"
 
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
@@ -206,6 +207,13 @@ func generateActionInput(ctx context.Context, args *generateActionInputArgs) ([]
 			return nil, nil, wrap(err, fmt.Sprintf("error evaluating jq in 'type' for function file %d: %%w", idx))
 		}
 		file.Type = s
+
+		if file.Permissions != "" {
+			_, err := strconv.ParseUint(file.Permissions, 8, 32)
+			if err != nil {
+				return nil, nil, derrors.NewCatchableError(ErrCodeInvalidVariablePermissions, "invalid 'permissions' for function file %d: %s", idx, err.Error())
+			}
+		}
 
 		files = append(files, file)
 	}

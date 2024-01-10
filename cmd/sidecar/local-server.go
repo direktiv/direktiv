@@ -366,10 +366,11 @@ type functionRequest struct {
 }
 
 type functionFiles struct {
-	Key   string `json:"key"`
-	As    string `json:"as"`
-	Scope string `json:"scope"`
-	Type  string `json:"type"`
+	Key         string `json:"key"`
+	As          string `json:"as"`
+	Scope       string `json:"scope"`
+	Type        string `json:"type"`
+	Permissions string `json:"permissions"`
 }
 
 const sharedDir = "/mnt/shared"
