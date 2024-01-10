@@ -1,7 +1,6 @@
 import { createNamespace, deleteNamespace } from "../utils/namespace";
 import { expect, test } from "@playwright/test";
 
-import { NamespaceListSchemaType } from "~/api/namespaces/schema";
 import { getNamespaces } from "~/api/namespaces/query/get";
 import { headers } from "e2e/utils/testutils";
 
