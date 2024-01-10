@@ -47,25 +47,37 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({ form }) => {
     targetEvent,
   } = targetPluginTypes;
 
-  const currentConfiguration = values.plugins?.target?.configuration;
+  const currentConfiguration = values.plugins?.target;
 
   const currentInstantResponseConfig =
-    currentType === instantResponse ? currentConfiguration : undefined;
+    currentConfiguration?.type === instantResponse
+      ? currentConfiguration.configuration
+      : undefined;
 
   const currentTargetEventConfig =
-    currentType === targetEvent ? currentConfiguration : undefined;
+    currentConfiguration?.type === targetEvent
+      ? currentConfiguration.configuration
+      : undefined;
 
   const currentTargetFlowConfig =
-    currentType === targetFlow ? currentConfiguration : undefined;
+    currentConfiguration?.type === targetFlow
+      ? currentConfiguration.configuration
+      : undefined;
 
   const currentTargetFlowVarConfig =
-    currentType === targetFlowVar ? currentConfiguration : undefined;
+    currentConfiguration?.type === targetFlowVar
+      ? currentConfiguration.configuration
+      : undefined;
 
   const currentTargetNamespaceFileConfig =
-    currentType === targetNamespaceFile ? currentConfiguration : undefined;
+    currentConfiguration?.type === targetNamespaceFile
+      ? currentConfiguration.configuration
+      : undefined;
 
   const currentTargetNamespaceVarConfig =
-    currentType === targetNamespaceVar ? currentConfiguration : undefined;
+    currentConfiguration?.type === targetNamespaceVar
+      ? currentConfiguration.configuration
+      : undefined;
 
   const formId = "targetPluginForm";
 
