@@ -1,6 +1,7 @@
 import { AclFormSchemaType } from "../../schema/plugins/inbound/acl";
 import { AuthPluginFormSchemaType } from "../../schema/plugins/auth/schema";
 import { BasicAuthFormSchemaType } from "../../schema/plugins/auth/basicAuth";
+import { EventFilterFormSchemaType } from "../../schema/plugins/inbound/eventFilter";
 import { GithubWebhookAuthFormSchemaType } from "../../schema/plugins/auth/githubWebhookAuth";
 import { InboundPluginFormSchemaType } from "../../schema/plugins/inbound/schema";
 import { JsInboundFormSchemaType } from "../../schema/plugins/inbound/jsInbound";
@@ -38,6 +39,16 @@ export const getAclConfigAtIndex = (
 ): AclFormSchemaType["configuration"] | undefined => {
   const plugin = index !== undefined ? fields?.[index] : undefined;
   return plugin?.type === inboundPluginTypes.acl
+    ? plugin.configuration
+    : undefined;
+};
+
+export const getEventFilterConfigAtIndex = (
+  fields: InboundPluginFormSchemaType[] | undefined,
+  index: number | undefined
+): EventFilterFormSchemaType["configuration"] | undefined => {
+  const plugin = index !== undefined ? fields?.[index] : undefined;
+  return plugin?.type === inboundPluginTypes.eventFilter
     ? plugin.configuration
     : undefined;
 };
