@@ -17,7 +17,6 @@ import (
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.10.0"
 	"go.opentelemetry.io/otel/trace"
-	"go.opentelemetry.io/otel/trace/noop"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
@@ -79,7 +78,7 @@ func InitTelemetry(addr string, svcName, imName string) (func(), error) {
 
 	var prop propagation.TextMapPropagator
 	prop = propagation.TraceContext{}
-	otel.SetTracerProvider(noop.NewTracerProvider())
+	otel.SetTracerProvider(otel.GetTracerProvider())
 	otel.SetTextMapPropagator(prop)
 
 	if addr == "" {
@@ -323,6 +322,19 @@ func TraceHTTPRequest(ctx context.Context, r *http.Request) (cleanup func()) {
 	tp := otel.GetTracerProvider()
 	tr := tp.Tracer(instrumentationName)
 	ctx, span := tr.Start(ctx, "function", trace.WithSpanKind(trace.SpanKindClient))
+
+	prop := otel.GetTextMapPropagator()
+	prop.Inject(ctx, &httpCarrier{
+		r: r,
+	})
+
+	return func() { span.End() }
+}
+
+func TraceGWHTTPRequest(ctx context.Context, r *http.Request, instrumentationName string) (cleanup func()) {
+	tp := otel.GetTracerProvider()
+	tr := tp.Tracer(instrumentationName)
+	ctx, span := tr.Start(ctx, "gateway", trace.WithSpanKind(trace.SpanKindClient))
 
 	prop := otel.GetTextMapPropagator()
 	prop.Inject(ctx, &httpCarrier{
