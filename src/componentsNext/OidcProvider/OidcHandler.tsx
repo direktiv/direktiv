@@ -3,6 +3,7 @@ import { hasAuthParams, useAuth } from "react-oidc-context";
 
 import Alert from "~/design/Alert";
 import { Loader2 } from "lucide-react";
+import { getOidcUser } from "./utils";
 
 export const OidcHandler: FC<PropsWithChildren> = ({ children }) => {
   const auth = useAuth();
@@ -11,6 +12,8 @@ export const OidcHandler: FC<PropsWithChildren> = ({ children }) => {
   // TODO: remove this before merging
   // eslint-disable-next-line no-console
   console.log("🔑 oidc auth object", auth);
+  // eslint-disable-next-line no-console
+  console.log("👤 user", getOidcUser());
 
   useEffect(() => {
     if (
