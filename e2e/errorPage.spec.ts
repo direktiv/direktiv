@@ -15,7 +15,7 @@ test.afterAll(async () => {
 test("the 404 error page shows, when the user opens a url that does not exist", async ({
   page,
 }) => {
-  await page.goto("/this/page/does/not/exist");
+  await page.goto("/this/page/does/not/exist", { waitUntil: "networkidle" });
   await expect(page.getByTestId("error-title")).toHaveText("404");
   await expect(page.getByTestId("error-message")).toHaveText("Not Found");
 });

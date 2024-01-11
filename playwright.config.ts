@@ -20,8 +20,9 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
+  /* Opt out of parallel tests per default. Enable parallel tests by setting
+     VITE_E2E_PARALLEL to TRUE. */
+  workers: process.env.VITE_E2E_PARALLEL === "TRUE" ? undefined : 1,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: "html",
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
@@ -36,6 +37,7 @@ export default defineConfig({
   },
 
   timeout: 30000, // defaults to 30000
+  expect: { timeout: 10000 },
 
   /* Configure projects for major browsers */
   projects: [
@@ -75,6 +77,7 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
+    timeout: 60000,
     command: `yarn run vite --port ${process.env.VITE_E2E_UI_PORT}`,
     url: baseURL,
     reuseExistingServer: !process.env.CI,
