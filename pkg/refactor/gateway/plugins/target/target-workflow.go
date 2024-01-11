@@ -133,26 +133,6 @@ const (
 	pathArg      = "path"
 )
 
-type httpCarrier struct {
-	r *http.Request
-}
-
-func (c *httpCarrier) Get(key string) string {
-	return c.r.Header.Get(key)
-}
-
-func (c *httpCarrier) Keys() []string {
-	return c.r.Header.Values("oteltmckeys")
-}
-
-func (c *httpCarrier) Set(key, val string) {
-	prev := c.Get(key)
-	if prev == "" {
-		c.r.Header.Add("oteltmckeys", key)
-	}
-	c.r.Header.Set(key, val)
-}
-
 func doDirektivRequest(requestType direktivRequestType, args map[string]string,
 	w http.ResponseWriter, r *http.Request,
 ) *http.Response {

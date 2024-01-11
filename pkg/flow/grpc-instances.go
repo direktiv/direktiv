@@ -575,7 +575,6 @@ func (flow *flow) CancelInstance(ctx context.Context, req *grpc.CancelInstanceRe
 	return &resp, nil
 }
 
-
 type grpcMetadataTMC struct {
 	md *metadata.MD
 }
@@ -603,7 +602,6 @@ func (tmc *grpcMetadataTMC) Set(k, v string) {
 		tmc.md.Append("oteltmckeys", k)
 	}
 }
-
 
 func (flow *flow) AwaitWorkflow(req *grpc.AwaitWorkflowRequest, srv grpc.Flow_AwaitWorkflowServer) error {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
