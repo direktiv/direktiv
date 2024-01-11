@@ -26,7 +26,7 @@ This repository contains the user interface for [direktiv](https://github.com/di
 - create a `.env` file, copy the content from `.env.example` and change the variables to your needs
 - run `yarn start` to start the dev server
 - when you are using VSCode, make sure to install the recommended extensions for the best dev experience
-  - VSCode should suggest you the extensions when you open this folder in VSCode, but you can also check them in the `.vscode/extensions.json` file 
+  - VSCode should suggest you the extensions when you open this folder in VSCode, but you can also check them in the `.vscode/extensions.json` file
 
 # Scripts you might want to run
 
@@ -39,6 +39,7 @@ This repository contains the user interface for [direktiv](https://github.com/di
   - `yarn run check:prettier` checks if all prettier formatting was applied (`yarn run prettier`)
 - `yarn run e2e:headless` runs all Playwright e2e tests in headless mode
 - `yarn run e2e:ui` runs all Playwright e2e tests in ui mode
+- `yarn run preview` locally preview the production build (requires you to run `yarn build` first)
 
 # Recommended Development Environment
 

@@ -47,7 +47,6 @@ import WorkflowPageRevisions from "~/pages/namespace/Explorer/Workflow/Revisions
 import WorkflowPageServices from "~/pages/namespace/Explorer/Workflow/Services";
 import WorkflowPageSettings from "~/pages/namespace/Explorer/Workflow/Settings";
 import { checkHandlerInMatcher as checkHandler } from "./utils";
-import env from "~/config/env";
 
 type PageBase = {
   name: string;
@@ -246,7 +245,8 @@ type PermissionsPageSetup = Partial<
 
 type EnterprisePageType = PermissionsPageSetup;
 
-export const enterprisePages: EnterprisePageType = env.VITE_IS_ENTERPRISE
+export const enterprisePages: EnterprisePageType = process.env.VITE
+  ?.VITE_IS_ENTERPRISE
   ? {
       permissions: {
         name: "components.mainMenu.permissions",

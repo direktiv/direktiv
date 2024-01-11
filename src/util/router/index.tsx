@@ -2,7 +2,6 @@ import ErrorPage from "./ErrorPage";
 import NamespaceLayout from "~/pages/namespace/Layout";
 import OnboardingPage from "~/pages/OnboardingPage";
 import { createBrowserRouter } from "react-router-dom";
-import env from "~/config/env";
 import { pages } from "./pages";
 
 export const router = createBrowserRouter(
@@ -20,6 +19,6 @@ export const router = createBrowserRouter(
     },
   ],
   {
-    basename: env.VITE_BASE ?? undefined,
+    basename: process.env.VITE?.VITE_BASE ?? undefined,
   }
 );
