@@ -102,7 +102,6 @@ const ServicesTableRow: FC<{
           {service.cmd ? service.cmd : "-"}
         </TableCell>
         <TableCell>
-          {/* when the server  */}
           {!service.error ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

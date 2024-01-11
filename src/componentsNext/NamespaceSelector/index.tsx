@@ -49,7 +49,7 @@ const NamespaceSelector: FC<ButtonProps> = ({
         {defaultDoesNotExist && (
           <SelectItem value={defaultValue}>
             <span>
-              {t("components.namespaceSelector.optionDoesNotExists", {
+              {t("components.namespaceSelector.optionDoesNotExist", {
                 namespace: defaultValue,
               })}
             </span>
