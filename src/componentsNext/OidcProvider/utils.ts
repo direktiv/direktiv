@@ -17,6 +17,7 @@ const authority = `${rootUrl}/auth/realms/${realm}`;
 export const oidcConfig: AuthProviderProps = {
   authority,
   client_id,
+  post_logout_redirect_uri: rootUrl,
   redirect_uri: `${rootUrl}${appFolder}`,
   /**
    * removes code and state from url after signin
