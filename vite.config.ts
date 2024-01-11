@@ -55,6 +55,11 @@ export default ({ mode }) => {
               secure: false,
               changeOrigin: true,
             },
+            "/ping": {
+              target: apiDomain,
+              secure: false,
+              changeOrigin: true,
+            },
             "/logout": {
               target: apiDomain,
               secure: false,
