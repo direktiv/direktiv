@@ -185,7 +185,7 @@ func InitTelemetry(addr string, svcName, imName string) (func(), error) {
 		var span trace.Span
 		ctx, span = tr.Start(
 			ctx,
-			info.FullMethod,
+			info.FullMethod+"Interceptor",
 			trace.WithSpanKind(trace.SpanKindServer),
 		)
 		defer span.End()
@@ -214,7 +214,7 @@ func InitTelemetry(addr string, svcName, imName string) (func(), error) {
 		var span trace.Span
 		_, span = tr.Start(
 			ctx,
-			info.FullMethod,
+			info.FullMethod+"Interceptor",
 			trace.WithSpanKind(trace.SpanKindServer),
 		)
 		defer span.End()
