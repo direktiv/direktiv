@@ -6,7 +6,7 @@ const rootUrl = `${window.location.protocol}//${window.location.host}`;
 const appFolder = process.env.VITE?.VITE_BASE ?? "/";
 
 const realm = "direktiv";
-const authority = `${rootUrl}/realms/${realm}`;
+const authority = `${rootUrl}/auth/realms/${realm}`;
 const client_id = "direktiv-ui";
 
 export const oidcConfig: AuthProviderProps = {
