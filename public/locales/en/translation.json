@@ -386,7 +386,7 @@
                   "acl": "Access control list (acl)",
                   "js-inbound": "JavaScript",
                   "request-convert": "Request convert",
-                  "event-filter": "Event Filter"
+                  "event-filter": "Event filter"
                 },
                 "jsInbound": {
                   "script": "JavaScript"
