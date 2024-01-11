@@ -14,6 +14,7 @@ export const OidcHandler: FC<PropsWithChildren> = ({ children }) => {
   console.log("🔑 oidc auth object", auth);
   // eslint-disable-next-line no-console
   console.log("👤 user", getOidcUser());
+  // eslint-disable-next-line no-console
   console.log("⌚ expires at", getOidcUser()?.expires_at);
 
   useEffect(() => {
