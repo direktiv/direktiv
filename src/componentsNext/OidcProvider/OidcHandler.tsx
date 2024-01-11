@@ -8,6 +8,10 @@ export const OidcHandler: FC<PropsWithChildren> = ({ children }) => {
   const auth = useAuth();
   const [hasTriedSignin, setHasTriedSignin] = useState(false);
 
+  // TODO: remove this before merging
+  // eslint-disable-next-line no-console
+  console.log("🔑 oidc auth object", auth);
+
   useEffect(() => {
     if (
       !hasAuthParams() &&
