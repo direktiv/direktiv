@@ -1141,7 +1141,7 @@
       "settings": "Settings",
       "gateway": "Gateway",
       "gatewayRoutes": "Routes",
-      "gatewayConsumers": "Consumer",
+      "gatewayConsumers": "Consumers",
       "jqPlayground": "jq Playground"
     },
     "namespaceEdit": {
@@ -1236,11 +1236,14 @@
     "namespaceSelector": {
       "placeholder": "Select Namespace",
       "loading": "loading...",
-      "optionDoesNotExists": "{{namespace}} (does not exist)"
+      "optionDoesNotExist": "{{namespace}} (does not exist)"
     },
     "filepicker": {
       "buttonText": "Browse Files",
       "placeholder": "No File selected",
+      "emptyDirectory": {
+        "title": "The directory \"{{path}}\" is empty."
+      },
       "error": {
         "title": "The path \"{{path}}\" was not found.",
         "linkText": "Go back to root directory"
@@ -1456,7 +1459,7 @@
         "rebuildService": {
           "success": {
             "title": "Service rebuild",
-            "description": "Service was rebuild."
+            "description": "Service was rebuilt."
           },
           "error": {
             "description": "Could not rebuild service 😢"
