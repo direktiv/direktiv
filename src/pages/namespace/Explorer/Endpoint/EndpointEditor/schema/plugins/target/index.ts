@@ -1,3 +1,5 @@
+import { filterAvailablePlugins } from "../utils";
+
 export const targetPluginTypes = {
   instantResponse: {
     name: "instant-response",
@@ -25,8 +27,6 @@ export const targetPluginTypes = {
   },
 } as const;
 
-const isEnterprise = !!process.env.VITE?.VITE_IS_ENTERPRISE;
-
 export const availablePlugins = Object.values(targetPluginTypes).filter(
-  (plugin) => (isEnterprise ? true : plugin.enterpriseOnly === false)
+  filterAvailablePlugins
 );

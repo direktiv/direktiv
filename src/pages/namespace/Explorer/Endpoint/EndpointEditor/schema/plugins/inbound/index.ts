@@ -1,3 +1,5 @@
+import { filterAvailablePlugins } from "../utils";
+
 export const inboundPluginTypes = {
   acl: {
     name: "acl",
@@ -17,8 +19,6 @@ export const inboundPluginTypes = {
   },
 } as const;
 
-const isEnterprise = !!process.env.VITE?.VITE_IS_ENTERPRISE;
-
 export const availablePlugins = Object.values(inboundPluginTypes).filter(
-  (plugin) => (isEnterprise ? true : plugin.enterpriseOnly === false)
+  filterAvailablePlugins
 );
