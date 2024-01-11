@@ -3,17 +3,12 @@ import { useApiActions, useApiKey } from "~/util/store/apiKey";
 
 import { Authdialog } from "../Authdialog";
 import useApiKeyHandling from "~/hooksNext/useApiKeyHandling";
-import { useRefreshSession } from "~/api/enterprise/session/query/ping";
 
 export const AuthenticationProvider: FC<PropsWithChildren> = ({ children }) => {
   const { isFetched, isCurrentKeyValid, isApiKeyRequired, showLoginModal } =
     useApiKeyHandling();
   const { setApiKey: storeApiKey } = useApiActions();
   const apiKeyFromLocalStorage = useApiKey();
-
-  useRefreshSession({
-    enabled: !!process.env.VITE?.VITE_IS_ENTERPRISE,
-  });
 
   /**
    * clean up old api keys from local storage
