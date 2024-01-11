@@ -3,11 +3,11 @@ import { User, WebStorageStateStore } from "oidc-client-ts";
 import { AuthProviderProps } from "react-oidc-context";
 
 const rootUrl = `${window.location.protocol}//${window.location.host}`;
-const appFolder = process.env.VITE?.VITE_BASE ?? "/";
-
 const realm = "direktiv";
-const authority = `${rootUrl}/auth/realms/${realm}`;
 const client_id = "direktiv-ui";
+
+const appFolder = process.env.VITE?.VITE_BASE ?? "/";
+const authority = `${rootUrl}/auth/realms/${realm}`;
 
 export const oidcConfig: AuthProviderProps = {
   authority,
