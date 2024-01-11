@@ -45,13 +45,13 @@ func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, level lo
 
 	b, err := json.Marshal(valuesCopy)
 	if err != nil {
-		return fmt.Errorf("failed to marshal JSON: %v", err)
+		return fmt.Errorf("failed to marshal JSON: %w", err)
 	}
 	vals = append(vals, b)
 
 	tx := sl.db.WithContext(ctx).Exec(query, vals...)
 	if tx.Error != nil {
-		return fmt.Errorf("failed to execute SQL query: %v", tx.Error)
+		return fmt.Errorf("failed to execute SQL query: %w", tx.Error)
 	}
 	if tx.RowsAffected == 0 {
 		return fmt.Errorf("no rows affected by the SQL query")
