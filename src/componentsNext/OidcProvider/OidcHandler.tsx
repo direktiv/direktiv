@@ -28,7 +28,9 @@ export const OidcHandler: FC<PropsWithChildren> = ({ children }) => {
   if (auth.error) {
     return (
       <div className="flex w-full flex-col items-center p-5">
-        <Alert variant="error">{auth.error.message}</Alert>
+        <Alert variant="error">
+          {auth.error.name}: {auth.error.message}
+        </Alert>
       </div>
     );
   }
