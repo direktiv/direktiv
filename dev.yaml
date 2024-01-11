@@ -1,8 +1,0 @@
-pullPolicy: IfNotPresent
-tag: "${{ env.SRVTAG }}"
-flow:
-  logging: console
-
-database:
-  host: "psql-single-postgresql"
-  password: WkdoVldHODFSWFJ3UlE9PQ==
