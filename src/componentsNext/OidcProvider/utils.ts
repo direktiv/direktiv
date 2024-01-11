@@ -2,7 +2,12 @@ import { User, WebStorageStateStore } from "oidc-client-ts";
 
 import { AuthProviderProps } from "react-oidc-context";
 
-const rootUrl = `${window.location.protocol}//${window.location.host}`;
+const isBrowser = typeof window !== "undefined";
+
+const rootUrl = isBrowser
+  ? `${window.location.protocol}//${window.location.host}`
+  : "";
+
 const realm = "direktiv";
 const client_id = "direktiv";
 
@@ -25,7 +30,11 @@ export const oidcConfig: AuthProviderProps = {
    * be to read it from the user object returned from useAuth, but as only the enterprise
    * edition uses oidc, we would have to conditionally call the hook, which is not possible.
    */
-  userStore: new WebStorageStateStore({ store: window.localStorage }),
+  userStore: isBrowser
+    ? new WebStorageStateStore({
+        store: window.localStorage,
+      })
+    : undefined,
 };
 
 export const getOidcUser = () => {
