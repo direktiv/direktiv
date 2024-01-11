@@ -158,11 +158,12 @@ CREATE TABLE IF NOT EXISTS "log_entries" (
     "type" text,
     "log_instance_call_path" text,
     "entry" bytea NOT NULL,
+    "date" text,
     PRIMARY KEY ("id")
 );
 
 -- speeds up pagination
-CREATE INDEX  IF NOT EXISTS "log_entries_sorted" ON log_entries ("timestamp" ASC);
+CREATE INDEX IF NOT EXISTS "log_entries_date" ON "log_entries" USING hash("date");
 
 CREATE TABLE IF NOT EXISTS "staging_events" (
     "id" uuid NOT NULL,

@@ -22,8 +22,8 @@ func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, level lo
 	cols := make([]string, 0, len(keysAndValues))
 	vals := make([]interface{}, 0, len(keysAndValues))
 	msg = strings.ReplaceAll(msg, "\u0000", "") // postgres will return an error if a string contains "\u0000"
-	cols = append(cols, "id", "timestamp", "level")
-	vals = append(vals, uuid.New(), timestamp, level)
+	cols = append(cols, "id", "timestamp", "level", "date")
+	vals = append(vals, uuid.New(), timestamp, level, time.Now().UTC().Format("2006-01-02"))
 	databaseCols := []string{
 		"source",
 		"log_instance_call_path",
@@ -66,8 +66,11 @@ func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, level lo
 }
 
 func (sl *sqlLogStore) Get(ctx context.Context, keysAndValues map[string]interface{}, limit, offset int) ([]*logengine.LogEntry, int, error) {
-	wEq := []string{}
-
+	today := time.Now().UTC().Format("2006-01-02") // we query only the logs for the last 2 days
+	yesterday := time.Now().UTC().AddDate(0, 0, -1).Format("2006-01-02")
+	wEq := []string{
+		fmt.Sprintf(`date = '%s' OR date = '%s'`, today, yesterday),
+	}
 	databaseCols := []string{
 		"source",
 		"type",
@@ -86,7 +89,6 @@ func (sl *sqlLogStore) Get(ctx context.Context, keysAndValues map[string]interfa
 	if ok {
 		wEq = append(wEq, fmt.Sprintf("log_instance_call_path like '%s%%'", prefix))
 	}
-
 	query := composeQuery(limit, offset, wEq)
 
 	resultList := make([]*gormLogMsg, 0)
@@ -124,11 +126,11 @@ func (sl *sqlLogStore) Get(ctx context.Context, keysAndValues map[string]interfa
 }
 
 func (sl *sqlLogStore) DeleteOldLogs(ctx context.Context, t time.Time) error {
-	query := "DELETE FROM log_entries WHERE timestamp < $1"
+	query := "DELETE FROM log_entries WHERE date < $1"
 
 	res := sl.db.WithContext(ctx).Exec(
 		query,
-		t.UTC(),
+		t.Format("2006-01-02"),
 	)
 	if res.Error != nil {
 		return res.Error
