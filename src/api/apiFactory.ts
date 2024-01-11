@@ -1,19 +1,7 @@
 import { FileSchema } from "./schema";
 import { createApiErrorFromResponse } from "./errorHandling";
+import { getAuthHeader } from "./utils";
 import { z } from "zod";
-const isEnterprise = !!process.env.VITE?.VITE_IS_ENTERPRISE;
-
-const getAuthHeader = (apiKey: string) => {
-  if (isEnterprise) {
-    return {
-      authorization: `Bearer ${apiKey}`,
-    };
-  }
-
-  return {
-    "direktiv-token": apiKey,
-  };
-};
 
 type HTTPMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 
