@@ -58,7 +58,7 @@ export const getJsOutboundConfigAtIndex = (
   index: number | undefined
 ): JsOutboundFormSchemaType["configuration"] | undefined => {
   const plugin = index !== undefined ? fields?.[index] : undefined;
-  return plugin?.type === outboundPluginTypes.jsOutbound
+  return plugin?.type === outboundPluginTypes.jsOutbound.name
     ? plugin.configuration
     : undefined;
 };

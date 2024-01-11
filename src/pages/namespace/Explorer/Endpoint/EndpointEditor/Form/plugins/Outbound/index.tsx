@@ -157,17 +157,17 @@ export const OutboundPluginForm: FC<OutboundPluginFormProps> = ({ form }) => {
               />
             </SelectTrigger>
             <SelectContent>
-              {availablePlugins.map((pluginType) => (
-                <SelectItem key={pluginType} value={pluginType}>
+              {availablePlugins.map(({ name: pluginName }) => (
+                <SelectItem key={pluginName} value={pluginName}>
                   {t(
-                    `pages.explorer.endpoint.editor.form.plugins.outbound.types.${pluginType}`
+                    `pages.explorer.endpoint.editor.form.plugins.outbound.types.${pluginName}`
                   )}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </PluginSelector>
-        {selectedPlugin === outboundPluginTypes.jsOutbound && (
+        {selectedPlugin === outboundPluginTypes.jsOutbound.name && (
           <JsOutboundForm
             formId={formId}
             defaultConfig={getJsOutboundConfigAtIndex(fields, editIndex)}
