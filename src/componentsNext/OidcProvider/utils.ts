@@ -7,12 +7,10 @@ const appFolder = process.env.VITE?.VITE_BASE ?? "/";
 
 const realm = "direktiv";
 const authority = `${rootUrl}/realms/${realm}`;
-const resource = "direktiv-ui";
 const client_id = "direktiv-ui";
 
 export const oidcConfig: AuthProviderProps = {
   authority,
-  resource,
   client_id,
   redirect_uri: `${rootUrl}${appFolder}`,
   /**
