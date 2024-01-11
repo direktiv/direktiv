@@ -6,6 +6,7 @@ import {
   GitCompare,
   Layers,
   LucideIcon,
+  Network,
   PlaySquare,
   Radio,
   Settings,
@@ -13,7 +14,12 @@ import {
 import { useMatches, useParams, useSearchParams } from "react-router-dom";
 
 import Activities from "~/pages/namespace/Mirror/Activities";
+import ConsumerEditorPage from "~/pages/namespace/Explorer/Consumer";
+import EndpointEditorPage from "~/pages/namespace/Explorer/Endpoint";
 import EventsPage from "~/pages/namespace/Events";
+import GatewayConsumersPage from "~/pages/namespace/Gateway/Consumers";
+import GatewayPage from "~/pages/namespace/Gateway";
+import GatewayRoutesPage from "~/pages/namespace/Gateway/Routes";
 import GroupsPage from "~/pages/namespace/Permissions/Groups";
 import History from "~/pages/namespace/Events/History";
 import InstancesPage from "~/pages/namespace/Instances";
@@ -56,13 +62,15 @@ type DefaultPageSetup = Record<
   PageBase & { createHref: (params: { namespace: string }) => string }
 >;
 
-type ExplorerSubpages =
+export type ExplorerSubpages =
   | "workflow"
   | "workflow-revisions"
   | "workflow-overview"
   | "workflow-settings"
   | "workflow-services"
-  | "service";
+  | "service"
+  | "endpoint"
+  | "consumer";
 
 type ExplorerSubpagesParams =
   | {
@@ -104,6 +112,8 @@ type ExplorerPageSetup = Record<
       isWorkflowSettingsPage: boolean;
       isWorkflowServicesPage: boolean;
       isServicePage: boolean;
+      isEndpointPage: boolean;
+      isConsumerPage: boolean;
       serviceId: string | undefined;
     };
   }
@@ -190,6 +200,21 @@ type JqPlaygroundPageSetup = Record<
   }
 >;
 
+type GatewayPageSetup = Record<
+  "gateway",
+  PageBase & {
+    createHref: (params: {
+      namespace: string;
+      subpage?: "consumers";
+    }) => string;
+    useParams: () => {
+      isGatewayPage: boolean;
+      isGatewayRoutesPage: boolean;
+      isGatewayConsumerPage: boolean;
+    };
+  }
+>;
+
 type PageType = DefaultPageSetup &
   ExplorerPageSetup &
   InstancesPageSetup &
@@ -197,6 +222,7 @@ type PageType = DefaultPageSetup &
   EventsPageSetup &
   MonitoringPageSetup &
   SettingsPageSetup &
+  GatewayPageSetup &
   JqPlaygroundPageSetup &
   MirrorPageSetup;
 
@@ -306,6 +332,8 @@ export const pages: PageType & EnterprisePageType = {
         "workflow-overview": "workflow/overview",
         "workflow-settings": "workflow/settings",
         "workflow-services": "workflow/services",
+        endpoint: "endpoint",
+        consumer: "consumer",
         service: "service",
       };
 
@@ -342,7 +370,14 @@ export const pages: PageType & EnterprisePageType = {
       const isTreePage = checkHandler(thirdLvl, "isTreePage");
       const isWorkflowPage = checkHandler(thirdLvl, "isWorkflowPage");
       const isServicePage = checkHandler(thirdLvl, "isServicePage");
-      const isExplorerPage = isTreePage || isWorkflowPage || isServicePage;
+      const isEndpointPage = checkHandler(thirdLvl, "isEndpointPage");
+      const isConsumerPage = checkHandler(thirdLvl, "isConsumerPage");
+      const isExplorerPage =
+        isTreePage ||
+        isWorkflowPage ||
+        isServicePage ||
+        isEndpointPage ||
+        isConsumerPage;
       const isWorkflowActivePage = checkHandler(fourthLvl, "isActivePage");
       const isWorkflowRevPage = checkHandler(fourthLvl, "isRevisionsPage");
       const isWorkflowOverviewPage = checkHandler(fourthLvl, "isOverviewPage");
@@ -352,7 +387,7 @@ export const pages: PageType & EnterprisePageType = {
       return {
         path: isExplorerPage ? path : undefined,
         namespace: isExplorerPage ? namespace : undefined,
-        isExplorerPage: isTreePage || isWorkflowPage || isServicePage,
+        isExplorerPage,
         revision: searchParams.get("revision") ?? undefined,
         isTreePage,
         isWorkflowPage,
@@ -362,6 +397,8 @@ export const pages: PageType & EnterprisePageType = {
         isWorkflowSettingsPage,
         isWorkflowServicesPage,
         isServicePage,
+        isEndpointPage,
+        isConsumerPage,
         serviceId: searchParams.get("serviceId") ?? undefined,
       };
     },
@@ -410,6 +447,16 @@ export const pages: PageType & EnterprisePageType = {
           path: "service/*",
           element: <ServiceEditorPage />,
           handle: { isServicePage: true },
+        },
+        {
+          path: "endpoint/*",
+          element: <EndpointEditorPage />,
+          handle: { isEndpointPage: true },
+        },
+        {
+          path: "consumer/*",
+          element: <ConsumerEditorPage />,
+          handle: { isConsumerPage: true },
         },
       ],
     },
@@ -512,15 +559,48 @@ export const pages: PageType & EnterprisePageType = {
       ],
     },
   },
-  // gateway: {
-  //   name: "components.mainMenu.gateway",
-  //   icon: Network,
-  //   createHref: (params) => `/${params.namespace}/gateway`,
-  //   route: {
-  //     path: "gateway",
-  //     element: <div className="flex flex-col space-y-5 p-10">Gateway</div>,
-  //   },
-  // },
+  gateway: {
+    name: "components.mainMenu.gateway",
+    icon: Network,
+    createHref: (params) =>
+      `/${params.namespace}/gateway/${
+        params?.subpage === "consumers" ? `consumers` : "routes"
+      }`,
+    useParams: () => {
+      const [, secondLevel, thirdLevel] = useMatches(); // first level is namespace level
+      const isGatewayPage = checkHandler(secondLevel, "isGatewayPage");
+      const isGatewayRoutesPage = checkHandler(
+        thirdLevel,
+        "isGatewayRoutesPage"
+      );
+      const isGatewayConsumerPage = checkHandler(
+        thirdLevel,
+        "isGatewayConsumerPage"
+      );
+      return {
+        isGatewayPage,
+        isGatewayRoutesPage,
+        isGatewayConsumerPage,
+      };
+    },
+    route: {
+      path: "gateway",
+      element: <GatewayPage />,
+      handle: { gateway: true, isGatewayPage: true },
+      children: [
+        {
+          path: "routes",
+          element: <GatewayRoutesPage />,
+          handle: { isGatewayRoutesPage: true },
+        },
+        {
+          path: "consumers",
+          element: <GatewayConsumersPage />,
+          handle: { isGatewayConsumerPage: true },
+        },
+      ],
+    },
+  },
   services: {
     name: "components.mainMenu.services",
     icon: Layers,

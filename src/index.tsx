@@ -1,18 +1,16 @@
 import "./i18n";
 
-import App from "./App";
-import React from "react";
+import React, { lazy } from "react";
+
 import { createRoot } from "react-dom/client";
 
-const app = document.getElementById("root");
+const App = lazy(() => import("./App"));
 
-if (app) {
-  const root = createRoot(app);
-  root.render(
-    <React.StrictMode>
-      <App />
-    </React.StrictMode>
-  );
-} else {
-  throw new Error("Root element not found");
-}
+const appContainer = document.getElementById("root");
+if (!appContainer) throw new Error("Root element not found");
+
+createRoot(appContainer).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);

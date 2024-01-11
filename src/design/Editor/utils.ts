@@ -7,6 +7,7 @@ export const supportedLanguages = [
   "json",
   "shell",
   "plaintext",
+  "javascript",
   "yaml",
 ] as const;
 
@@ -30,6 +31,9 @@ export const editorLanguageSchema = z
         return "html";
       case "text/css":
         return "css";
+      case "application/javascript":
+      case "text/javascript":
+        return "javascript";
       case "application/json":
         return "json";
       case "application/x-sh":
