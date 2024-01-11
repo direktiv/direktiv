@@ -1,6 +1,7 @@
 FROM node:18.18.1 as build
 
 ARG FULL_VERSION
+ARG IS_ENTERPRISE=FALSE
 
 RUN echo "building $FULL_VERSION"
 WORKDIR /app
@@ -11,7 +12,7 @@ COPY . .
 
 RUN yarn install
 # If this causes problems on github actions: A potential fix is to change the builder image to `node:alpine`
-RUN VITE_APP_VERSION=$FULL_VERSION VITE_BASE=/ui/ yarn build
+RUN VITE_APP_VERSION=$FULL_VERSION VITE_BASE=/ui/ VITE_IS_ENTERPRISE=${IS_ENTERPRISE} yarn build
 
 # production environment
 FROM nginx:stable-alpine

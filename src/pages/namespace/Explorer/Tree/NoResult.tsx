@@ -1,12 +1,13 @@
-import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
+import { Dialog, DialogContent } from "~/design/Dialog";
 import { FC, useEffect, useState } from "react";
-import { Folder, FolderOpen, Layers, Play } from "lucide-react";
+import NewFileButton, { FileTypeSelection } from "./components/NewFileButton";
 
-import Button from "~/design/Button";
-import { NewDialog } from "./types";
-import NewDirectory from "./NewDirectory";
-import NewService from "./NewService";
-import NewWorkflow from "./NewWorkflow";
+import { FolderOpen } from "lucide-react";
+import NewConsumer from "./components/modals/CreateNew/Gateway/Consumer";
+import NewDirectory from "./components/modals/CreateNew/Directory";
+import NewRoute from "./components/modals/CreateNew/Gateway/Route";
+import NewService from "./components/modals/CreateNew/Service";
+import NewWorkflow from "./components/modals/CreateNew/Workflow";
 import { NoResult as NoResultContainer } from "~/design/Table";
 import { pages } from "~/util/router/pages";
 import { twMergeClsx } from "~/util/helpers";
@@ -14,53 +15,22 @@ import { useTranslation } from "react-i18next";
 
 const EmptyDirectoryButton = () => {
   const { path } = pages.explorer.useParams();
-  const { t } = useTranslation();
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedDialog, setSelectedDialog] = useState<NewDialog>();
+  const [selectedDialog, setSelectedDialog] = useState<FileTypeSelection>();
 
   useEffect(() => {
     if (dialogOpen === false) setSelectedDialog(undefined);
   }, [dialogOpen, selectedDialog]);
 
-  const wideOverlay = selectedDialog !== "new-dir";
+  const wideOverlay =
+    !!selectedDialog &&
+    !["new-dir", "new-route", "new-consumer"].includes(selectedDialog);
 
   return (
-    <div className="flex flex-col gap-5 sm:flex-row">
+    <div className="grid gap-5">
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogTrigger
-          asChild
-          onClick={() => {
-            setSelectedDialog("new-workflow");
-          }}
-        >
-          <Button>
-            <Play />
-            {t("pages.explorer.tree.list.empty.createWorkflow")}
-          </Button>
-        </DialogTrigger>
-        <DialogTrigger
-          asChild
-          onClick={() => {
-            setSelectedDialog("new-service");
-          }}
-        >
-          <Button>
-            <Layers />
-            {t("pages.explorer.tree.list.empty.createService")}
-          </Button>
-        </DialogTrigger>
-        <DialogTrigger
-          asChild
-          onClick={() => {
-            setSelectedDialog("new-dir");
-          }}
-        >
-          <Button>
-            <Folder />
-            {t("pages.explorer.tree.list.empty.createDirectory")}
-          </Button>
-        </DialogTrigger>
+        <NewFileButton setSelectedDialog={setSelectedDialog} />
         <DialogContent
           className={twMergeClsx(
             wideOverlay && "sm:max-w-xl md:max-w-2xl lg:max-w-3xl"
@@ -74,6 +44,12 @@ const EmptyDirectoryButton = () => {
           )}
           {selectedDialog === "new-service" && (
             <NewService path={path} close={() => setDialogOpen(false)} />
+          )}
+          {selectedDialog === "new-route" && (
+            <NewRoute path={path} close={() => setDialogOpen(false)} />
+          )}
+          {selectedDialog === "new-consumer" && (
+            <NewConsumer path={path} close={() => setDialogOpen(false)} />
           )}
         </DialogContent>
       </Dialog>

@@ -26,7 +26,7 @@ test("it is possible to navigate to a namespace via breadcrumbs", async ({
   page,
 }) => {
   // visit page
-  await page.goto("/");
+  await page.goto("/", { waitUntil: "networkidle" });
 
   await expect(
     page.getByTestId("breadcrumb-namespace"),
@@ -112,7 +112,7 @@ test("it is possible to create a folder", async ({ page }) => {
   const folderName = "awesome-folder";
 
   // create folder
-  await page.getByTestId("dropdown-trg-new").click();
+  await page.getByText("New").first().click();
   await page.getByTestId("new-dir").click();
   await page.getByPlaceholder("folder-name").fill(folderName);
   await page.getByRole("button", { name: "Create" }).click();
@@ -168,7 +168,7 @@ test("it is possible to create a workflow", async ({ page }) => {
   const filename = "awesomeworkflow.yaml";
 
   // create workflow
-  await page.getByTestId("dropdown-trg-new").click();
+  await page.getByText("New").first().click();
   await page.getByTestId("new-workflow").click();
   await page.getByTestId("new-workflow-name").fill(filename);
   await page.getByTestId("new-workflow-submit").click();
@@ -229,7 +229,7 @@ test("it is possible to create a workflow without providing the .yaml file exten
   const filenameWithoutExtension = "awesome-workflow";
 
   // create workflow
-  await page.getByTestId("dropdown-trg-new").click();
+  await page.getByText("New").first().click();
   await page.getByTestId("new-workflow").click();
   await page.getByTestId("new-workflow-name").fill(filenameWithoutExtension);
   await page.getByTestId("new-workflow-submit").click();

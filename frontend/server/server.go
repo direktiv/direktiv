@@ -23,10 +23,6 @@ type Server struct {
 	routeManager RouteManager
 }
 
-const (
-	APITokenHeader = "direktiv-token"
-)
-
 func NewServer(conf *Config, rm RouteManager) *Server {
 
 	r := chi.NewRouter()

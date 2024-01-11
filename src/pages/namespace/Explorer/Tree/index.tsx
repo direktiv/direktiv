@@ -9,15 +9,15 @@ import {
 } from "~/design/Table";
 
 import { Card } from "~/design/Card";
-import Delete from "./Delete";
+import Delete from "./components/modals/Delete";
 import ExplorerHeader from "./Header";
 import FileRow from "./FileRow";
-import FileViewer from "./FileViewer";
+import FileViewer from "./components/modals/FileViewer";
 import { FolderUp } from "lucide-react";
 import { Link } from "react-router-dom";
 import NoResult from "./NoResult";
 import { NodeSchemaType } from "~/api/tree/schema/node";
-import Rename from "./Rename";
+import Rename from "./components/modals/Rename";
 import { analyzePath } from "~/util/router/utils";
 import { pages } from "~/util/router/pages";
 import { twMergeClsx } from "~/util/helpers";

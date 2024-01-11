@@ -1,7 +1,7 @@
 import { Page, expect, test } from "@playwright/test";
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
 
-import { consumeEvent as consumeEventWorkflow } from "~/pages/namespace/Explorer/Tree/NewWorkflow/templates";
+import { consumeEvent as consumeEventWorkflow } from "~/pages/namespace/Explorer/Tree/components/modals/CreateNew/Workflow/templates";
 import { createRevision } from "~/api/tree/mutate/createRevision";
 import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
 import { faker } from "@faker-js/faker";
@@ -300,4 +300,34 @@ test("it is possible to use the diagram view on the revisions detail page as wel
   expect(await splitHorBtn.getAttribute("aria-pressed")).toBe("false");
   await expect(editor).toBeVisible();
   await expect(diagram).toBeVisible();
+});
+
+test("it is possible to switch from Code View to Diagram View without loosing the recent changes", async ({
+  page,
+}) => {
+  await page.goto(`/${namespace}/explorer/workflow/active/${workflow}`);
+
+  const { codeBtn, diagramBtn } = await getCommonPageElements(page);
+
+  const firstLine = page.getByText("direktiv_api: workflow/v1");
+  await firstLine.click();
+
+  const workflowChanges = "some changes to the workflows code";
+  await page.type("textarea", workflowChanges);
+  const recentlyChanges = page.getByText(workflowChanges);
+  await expect(
+    recentlyChanges,
+    "after the user typed new workflow code, it will be visible in the editor"
+  ).toBeVisible();
+
+  await diagramBtn.click();
+  await expect(
+    recentlyChanges,
+    "when the user switches to the Diagram View, the most recent code changes are not visible anymore"
+  ).not.toBeVisible();
+  await codeBtn.click();
+  await expect(
+    recentlyChanges,
+    "after the user switched back to the Editor View, the most recent chages are still in the Editor"
+  ).toBeVisible();
 });
