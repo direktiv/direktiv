@@ -18,7 +18,7 @@ export const getRequestConvertConfigAtIndex = (
   index: number | undefined
 ): RequestConvertFormSchemaType["configuration"] | undefined => {
   const plugin = index !== undefined ? fields?.[index] : undefined;
-  return plugin?.type === inboundPluginTypes.requestConvert
+  return plugin?.type === inboundPluginTypes.requestConvert.name
     ? plugin.configuration
     : undefined;
 };
@@ -28,7 +28,7 @@ export const getJsInboundConfigAtIndex = (
   index: number | undefined
 ): JsInboundFormSchemaType["configuration"] | undefined => {
   const plugin = index !== undefined ? fields?.[index] : undefined;
-  return plugin?.type === inboundPluginTypes.jsInbound
+  return plugin?.type === inboundPluginTypes.jsInbound.name
     ? plugin.configuration
     : undefined;
 };
@@ -38,7 +38,7 @@ export const getAclConfigAtIndex = (
   index: number | undefined
 ): AclFormSchemaType["configuration"] | undefined => {
   const plugin = index !== undefined ? fields?.[index] : undefined;
-  return plugin?.type === inboundPluginTypes.acl
+  return plugin?.type === inboundPluginTypes.acl.name
     ? plugin.configuration
     : undefined;
 };
@@ -48,7 +48,7 @@ export const getEventFilterConfigAtIndex = (
   index: number | undefined
 ): EventFilterFormSchemaType["configuration"] | undefined => {
   const plugin = index !== undefined ? fields?.[index] : undefined;
-  return plugin?.type === inboundPluginTypes.eventFilter
+  return plugin?.type === inboundPluginTypes.eventFilter.name
     ? plugin.configuration
     : undefined;
 };

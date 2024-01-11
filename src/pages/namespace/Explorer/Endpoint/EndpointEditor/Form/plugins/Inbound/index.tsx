@@ -167,17 +167,17 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({ form }) => {
               />
             </SelectTrigger>
             <SelectContent>
-              {availablePlugins.map((pluginType) => (
-                <SelectItem key={pluginType} value={pluginType}>
+              {availablePlugins.map(({ name: pluginName }) => (
+                <SelectItem key={pluginName} value={pluginName}>
                   {t(
-                    `pages.explorer.endpoint.editor.form.plugins.inbound.types.${pluginType}`
+                    `pages.explorer.endpoint.editor.form.plugins.inbound.types.${pluginName}`
                   )}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </PluginSelector>
-        {selectedPlugin === requestConvert && (
+        {selectedPlugin === requestConvert.name && (
           <RequestConvertForm
             formId={formId}
             defaultConfig={getRequestConvertConfigAtIndex(fields, editIndex)}
@@ -192,7 +192,7 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({ form }) => {
             }}
           />
         )}
-        {selectedPlugin === jsInbound && (
+        {selectedPlugin === jsInbound.name && (
           <JsInboundForm
             formId={formId}
             defaultConfig={getJsInboundConfigAtIndex(fields, editIndex)}
@@ -207,7 +207,7 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({ form }) => {
             }}
           />
         )}
-        {selectedPlugin === acl && (
+        {selectedPlugin === acl.name && (
           <AclForm
             formId={formId}
             defaultConfig={getAclConfigAtIndex(fields, editIndex)}
@@ -222,7 +222,7 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({ form }) => {
             }}
           />
         )}
-        {selectedPlugin === eventFilter && (
+        {selectedPlugin === eventFilter.name && (
           <EventFilterForm
             formId={formId}
             defaultConfig={getEventFilterConfigAtIndex(fields, editIndex)}

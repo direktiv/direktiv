@@ -28,5 +28,5 @@ export const targetPluginTypes = {
 const isEnterprise = !!process.env.VITE?.VITE_IS_ENTERPRISE;
 
 export const availablePlugins = Object.values(targetPluginTypes).filter(
-  (plugin) => (isEnterprise ? true : !plugin.enterpriseOnly)
+  (plugin) => (isEnterprise ? true : plugin.enterpriseOnly === false)
 );
