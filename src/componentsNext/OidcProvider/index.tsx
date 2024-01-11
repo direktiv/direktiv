@@ -2,6 +2,7 @@ import { AuthProvider, AuthProviderProps } from "react-oidc-context";
 import { FC, PropsWithChildren } from "react";
 
 import { OidcHandler } from "./OidcHandler";
+import { WebStorageStateStore } from "oidc-client-ts";
 
 const isEnterprise = !!process.env.VITE?.VITE_IS_ENTERPRISE;
 const rootUrl = `${window.location.protocol}//${window.location.host}`;
@@ -19,6 +20,12 @@ const oidcConfig: AuthProviderProps = {
   onSigninCallback: () => {
     window.history.replaceState({}, document.title, window.location.pathname);
   },
+  /**
+   * we need to store the user in local storage, to access the token. The alternative would
+   * be to read it from the user object returned from useAuth, but as only the enterprise
+   * edition uses oidc, we would have to conditionally call the hook, which is not possible.
+   */
+  userStore: new WebStorageStateStore({ store: window.localStorage }),
 };
 
 export const OidcProvider: FC<PropsWithChildren> = ({ children }) => {
