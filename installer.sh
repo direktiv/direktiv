@@ -54,6 +54,7 @@ Options:
     
     DEV                         boolean     Install from local dev environment.
     VERBOSE                     boolean     Enable verbose script output.
+    WITH_MONITORING             boolean     Enable grafana-stack installation
 
 Commands:
     all         Install everything.
@@ -435,7 +436,7 @@ flow:
 
 opentelemetry:
   # -- opentelemetry address where Direktiv is sending data to
-  address: "localhost:4317"
+  address: "tempo.default:4317"
   # -- installs opentelemtry agent as sidecar in flow
   enabled: true
   # -- config for sidecar agent
@@ -447,7 +448,7 @@ opentelemetry:
           http:
     exporters:
       otlp:
-        endpoint: "tempo:4317"
+        endpoint: "tempo.default:4317"
         insecure: true
         sending_queue:
           num_consumers: 4
@@ -492,7 +493,6 @@ EOF
 
 install_monitoring() {
     echo "Installing monitoring components..."
-
     kubectl apply -f scripts/install-monitoring.yaml
     helm repo add grafana https://grafana.github.io/helm-charts
     helm repo add fluent https://fluent.github.io/helm-charts
