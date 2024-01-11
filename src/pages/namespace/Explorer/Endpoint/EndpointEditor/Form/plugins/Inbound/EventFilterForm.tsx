@@ -17,7 +17,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 type OptionalConfig = Partial<EventFilterFormSchemaType["configuration"]>;
 
-const predfinedConfig: OptionalConfig = {
+const predefinedConfig: OptionalConfig = {
   allow_non_events: false,
 };
 
@@ -44,7 +44,7 @@ export const EventFilterForm: FC<FormProps> = ({
     defaultValues: {
       type: "event-filter",
       configuration: {
-        ...predfinedConfig,
+        ...predefinedConfig,
         ...defaultConfig,
       },
     },
