@@ -163,17 +163,17 @@ export const AuthPluginForm: FC<AuthPluginFormProps> = ({ formControls }) => {
               />
             </SelectTrigger>
             <SelectContent>
-              {availablePlugins.map((pluginType) => (
-                <SelectItem key={pluginType} value={pluginType}>
+              {availablePlugins.map(({ name: pluginName }) => (
+                <SelectItem key={pluginName} value={pluginName}>
                   {t(
-                    `pages.explorer.endpoint.editor.form.plugins.auth.types.${pluginType}`
+                    `pages.explorer.endpoint.editor.form.plugins.auth.types.${pluginName}`
                   )}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </PluginSelector>
-        {selectedPlugin === authPluginTypes.basicAuth && (
+        {selectedPlugin === authPluginTypes.basicAuth.name && (
           <BasicAuthForm
             formId={formId}
             defaultConfig={getBasicAuthConfigAtIndex(fields, editIndex)}
@@ -188,7 +188,7 @@ export const AuthPluginForm: FC<AuthPluginFormProps> = ({ formControls }) => {
             }}
           />
         )}
-        {selectedPlugin === authPluginTypes.keyAuth && (
+        {selectedPlugin === authPluginTypes.keyAuth.name && (
           <KeyAuthForm
             formId={formId}
             defaultConfig={getKeyAuthConfigAtIndex(fields, editIndex)}
@@ -203,7 +203,7 @@ export const AuthPluginForm: FC<AuthPluginFormProps> = ({ formControls }) => {
             }}
           />
         )}
-        {selectedPlugin === authPluginTypes.githubWebhookAuth && (
+        {selectedPlugin === authPluginTypes.githubWebhookAuth.name && (
           <GithubWebhookAuthForm
             formId={formId}
             defaultConfig={getGithubWebhookAuthConfigAtIndex(fields, editIndex)}

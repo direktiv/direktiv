@@ -68,7 +68,7 @@ export const getBasicAuthConfigAtIndex = (
   index: number | undefined
 ): BasicAuthFormSchemaType["configuration"] | undefined => {
   const plugin = index !== undefined ? fields?.[index] : undefined;
-  return plugin?.type === authPluginTypes.basicAuth
+  return plugin?.type === authPluginTypes.basicAuth.name
     ? plugin.configuration
     : undefined;
 };
@@ -78,7 +78,7 @@ export const getKeyAuthConfigAtIndex = (
   index: number | undefined
 ): KeyAuthFormSchemaType["configuration"] | undefined => {
   const plugin = index !== undefined ? fields?.[index] : undefined;
-  return plugin?.type === authPluginTypes.keyAuth
+  return plugin?.type === authPluginTypes.keyAuth.name
     ? plugin.configuration
     : undefined;
 };
@@ -88,7 +88,7 @@ export const getGithubWebhookAuthConfigAtIndex = (
   index: number | undefined
 ): GithubWebhookAuthFormSchemaType["configuration"] | undefined => {
   const plugin = index !== undefined ? fields?.[index] : undefined;
-  return plugin?.type === authPluginTypes.githubWebhookAuth
+  return plugin?.type === authPluginTypes.githubWebhookAuth.name
     ? plugin.configuration
     : undefined;
 };
