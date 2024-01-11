@@ -102,10 +102,10 @@ const RegistriesList: FC = () => {
                             item={{
                               ...item,
                               /**
-                               * ItemRow is used by registies, secrets and variables
+                               * ItemRow is used by registries, secrets and variables
                                * when all migrate to api V2 and have a unique id the
                                * type signature of item can be updated from name to id
-                               * (all Playwright tests need to be updated as then)
+                               * (all Playwright tests need to be updated as well then)
                                */
                               name: item.url,
                             }}

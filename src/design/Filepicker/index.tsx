@@ -38,8 +38,29 @@ const FilepickerHeading: FC<PropsWithChildren> = ({ children }) => (
   </div>
 );
 
+const FilepickerMessage: FC<PropsWithChildren> = ({ children }) => (
+  <div className="p-2 text-sm text-gray-9 dark:text-gray-dark-9">
+    {children}
+  </div>
+);
+
 const FilepickerList: FC<PropsWithChildren> = ({ children }) => (
-  <div className="h-96 w-full overflow-x-hidden overflow-y-scroll">
+  <div className={twMergeClsx("max-h-96 min-h-fit w-full overflow-x-hidden")}>
+    {children}
+  </div>
+);
+
+type FilepickerButtonType = PropsWithChildren & {
+  onClick: React.MouseEventHandler;
+};
+
+const FilepickerButton: FC<FilepickerButtonType> = ({ children, onClick }) => (
+  <div
+    onClick={onClick}
+    className={twMergeClsx(
+      "h-auto w-full cursor-pointer p-0 font-normal text-gray-11 hover:underline focus:bg-transparent focus:ring-0 focus:ring-transparent focus:ring-offset-0 dark:text-gray-dark-11 dark:focus:bg-transparent"
+    )}
+  >
     {children}
   </div>
 );
@@ -95,7 +116,7 @@ const Filepicker: FC<FilepickerPropsType> = ({
 }) => (
   <Popover modal>
     <PopoverTrigger asChild>
-      <Button onClick={onClick} className={className}>
+      <Button variant="outline" onClick={onClick} className={className}>
         <div className="relative">{buttonText}</div>
       </Button>
     </PopoverTrigger>
@@ -110,8 +131,10 @@ const Filepicker: FC<FilepickerPropsType> = ({
 
 export {
   Filepicker,
+  FilepickerButton,
   FilepickerClose,
   FilepickerHeading,
+  FilepickerMessage,
   FilepickerList,
   FilepickerListItem,
   FilepickerSeparator,
