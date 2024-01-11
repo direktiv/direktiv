@@ -4,7 +4,7 @@ import { AuthProviderProps } from "react-oidc-context";
 
 const rootUrl = `${window.location.protocol}//${window.location.host}`;
 const realm = "direktiv";
-const client_id = "direktiv-ui";
+const client_id = "direktiv";
 
 const appFolder = process.env.VITE?.VITE_BASE ?? "/";
 const authority = `${rootUrl}/auth/realms/${realm}`;
