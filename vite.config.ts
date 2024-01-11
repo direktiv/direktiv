@@ -53,10 +53,12 @@ export default ({ mode }) => {
             "/api": {
               target: apiDomain,
               secure: false,
+              changeOrigin: true,
             },
             "/logout": {
               target: apiDomain,
               secure: false,
+              changeOrigin: true,
             },
           }
         : {},
