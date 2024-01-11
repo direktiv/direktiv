@@ -53,32 +53,32 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({ form }) => {
   const currentConfiguration = values.plugins?.target;
 
   const currentInstantResponseConfig =
-    currentConfiguration?.type === instantResponse
+    currentConfiguration?.type === instantResponse.name
       ? currentConfiguration.configuration
       : undefined;
 
   const currentTargetEventConfig =
-    currentConfiguration?.type === targetEvent
+    currentConfiguration?.type === targetEvent.name
       ? currentConfiguration.configuration
       : undefined;
 
   const currentTargetFlowConfig =
-    currentConfiguration?.type === targetFlow
+    currentConfiguration?.type === targetFlow.name
       ? currentConfiguration.configuration
       : undefined;
 
   const currentTargetFlowVarConfig =
-    currentConfiguration?.type === targetFlowVar
+    currentConfiguration?.type === targetFlowVar.name
       ? currentConfiguration.configuration
       : undefined;
 
   const currentTargetNamespaceFileConfig =
-    currentConfiguration?.type === targetNamespaceFile
+    currentConfiguration?.type === targetNamespaceFile.name
       ? currentConfiguration.configuration
       : undefined;
 
   const currentTargetNamespaceVarConfig =
-    currentConfiguration?.type === targetNamespaceVar
+    currentConfiguration?.type === targetNamespaceVar.name
       ? currentConfiguration.configuration
       : undefined;
 
@@ -148,10 +148,10 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({ form }) => {
               />
             </SelectTrigger>
             <SelectContent>
-              {availablePlugins.map((pluginType) => (
-                <SelectItem key={pluginType} value={pluginType}>
+              {availablePlugins.map(({ name: pluginName }) => (
+                <SelectItem key={pluginName} value={pluginName}>
                   {t(
-                    `pages.explorer.endpoint.editor.form.plugins.target.types.${pluginType}`
+                    `pages.explorer.endpoint.editor.form.plugins.target.types.${pluginName}`
                   )}
                 </SelectItem>
               ))}
@@ -159,7 +159,7 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({ form }) => {
           </Select>
         </PluginSelector>
 
-        {selectedPlugin === instantResponse && (
+        {selectedPlugin === instantResponse.name && (
           <InstantResponseForm
             formId={formId}
             defaultConfig={currentInstantResponseConfig}
@@ -169,7 +169,7 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({ form }) => {
             }}
           />
         )}
-        {selectedPlugin === targetFlow && (
+        {selectedPlugin === targetFlow.name && (
           <TargetFlowForm
             formId={formId}
             defaultConfig={currentTargetFlowConfig}
@@ -179,7 +179,7 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({ form }) => {
             }}
           />
         )}
-        {selectedPlugin === targetFlowVar && (
+        {selectedPlugin === targetFlowVar.name && (
           <TargetFlowVarForm
             formId={formId}
             defaultConfig={currentTargetFlowVarConfig}
@@ -189,7 +189,7 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({ form }) => {
             }}
           />
         )}
-        {selectedPlugin === targetNamespaceFile && (
+        {selectedPlugin === targetNamespaceFile.name && (
           <TargetNamespaceFileForm
             formId={formId}
             defaultConfig={currentTargetNamespaceFileConfig}
@@ -199,7 +199,7 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({ form }) => {
             }}
           />
         )}
-        {selectedPlugin === targetNamespaceVar && (
+        {selectedPlugin === targetNamespaceVar.name && (
           <TargetNamespaceVarForm
             formId={formId}
             defaultConfig={currentTargetNamespaceVarConfig}
@@ -209,7 +209,7 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({ form }) => {
             }}
           />
         )}
-        {selectedPlugin === targetEvent && (
+        {selectedPlugin === targetEvent.name && (
           <TargetEventForm
             formId={formId}
             defaultConfig={currentTargetEventConfig}

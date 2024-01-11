@@ -2,7 +2,7 @@ import { targetPluginTypes } from ".";
 import { z } from "zod";
 
 export const TargetEventFormSchema = z.object({
-  type: z.literal(targetPluginTypes.targetEvent),
+  type: z.literal(targetPluginTypes.targetEvent.name),
   configuration: z
     .object({
       namespace: z.string().optional(),

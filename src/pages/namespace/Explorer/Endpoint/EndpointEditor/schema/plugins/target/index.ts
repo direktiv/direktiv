@@ -1,20 +1,32 @@
 export const targetPluginTypes = {
-  instantResponse: "instant-response",
-  targetFlow: "target-flow",
-  targetFlowVar: "target-flow-var",
-  targetNamespaceFile: "target-namespace-file",
-  targetNamespaceVar: "target-namespace-var",
-  targetEvent: "target-event",
+  instantResponse: {
+    name: "instant-response",
+    enterpriseOnly: false,
+  },
+  targetFlow: {
+    name: "target-flow",
+    enterpriseOnly: false,
+  },
+  targetFlowVar: {
+    name: "target-flow-var",
+    enterpriseOnly: false,
+  },
+  targetNamespaceFile: {
+    name: "target-namespace-file",
+    enterpriseOnly: false,
+  },
+  targetNamespaceVar: {
+    name: "target-namespace-var",
+    enterpriseOnly: false,
+  },
+  targetEvent: {
+    name: "target-event",
+    enterpriseOnly: true,
+  },
 } as const;
 
-const allPlugins = Object.values(targetPluginTypes);
-const enterpriseOnlyPlugins = [targetPluginTypes.targetEvent] as string[];
-
-const enterprisePlugins = allPlugins;
-const openSourcePlugins = allPlugins.filter(
-  (plugin) => !enterpriseOnlyPlugins.includes(plugin)
-);
 const isEnterprise = !!process.env.VITE?.VITE_IS_ENTERPRISE;
-export const availablePlugins = isEnterprise
-  ? enterprisePlugins
-  : openSourcePlugins;
+
+export const availablePlugins = Object.values(targetPluginTypes).filter(
+  (plugin) => (isEnterprise ? true : !plugin.enterpriseOnly)
+);
