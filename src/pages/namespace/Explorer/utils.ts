@@ -25,11 +25,8 @@ export const yamlToJsonOrNull = (yaml: string) => {
  * structural comparison, so it will return true if the yaml strings are
  * structurally equal, even if the order of the keys is different.
  */
-export const compareYamlStructure = (aYaml: string, bYaml: string) => {
-  const previewJson = yamlToJsonOrNull(aYaml);
-  const fileContentFromServerJson = yamlToJsonOrNull(bYaml);
-  return isEqual(previewJson, fileContentFromServerJson);
-};
+export const compareYamlStructure = (aYaml: string, bYaml: string) =>
+  isEqual(yamlToJsonOrNull(aYaml), yamlToJsonOrNull(bYaml));
 
 export const treatEmptyStringAsUndefined = (value: unknown) => {
   if (value === "") {
