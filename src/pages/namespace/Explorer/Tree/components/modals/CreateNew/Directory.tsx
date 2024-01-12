@@ -35,22 +35,25 @@ const NewDirectory = ({
   const { t } = useTranslation();
   const namespace = useNamespace();
   const navigate = useNavigate();
+
+  const resolver = zodResolver(
+    z.object({
+      name: fileNameSchema.and(
+        z
+          .string()
+          .refine((name) => !(unallowedNames ?? []).some((n) => n === name), {
+            message: t("pages.explorer.tree.newDirectory.nameAlreadyExists"),
+          })
+      ),
+    })
+  );
+
   const {
     register,
     handleSubmit,
     formState: { isDirty, errors, isValid, isSubmitted },
   } = useForm<FormInput>({
-    resolver: zodResolver(
-      z.object({
-        name: fileNameSchema.and(
-          z
-            .string()
-            .refine((name) => !(unallowedNames ?? []).some((n) => n === name), {
-              message: t("pages.explorer.tree.newDirectory.nameAlreadyExists"),
-            })
-        ),
-      })
-    ),
+    resolver,
   });
 
   const { mutate: createDirectory, isLoading } = useCreateDirectory({

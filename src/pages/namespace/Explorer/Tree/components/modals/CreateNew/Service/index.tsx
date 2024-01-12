@@ -61,6 +61,23 @@ const NewService = ({
   const [serviceConfigJson, setServiceConfigJson] = useState(serviceHeader);
   const serviceFormSchema = useServiceFormSchema();
 
+  const resolver = zodResolver(
+    z.object({
+      name: fileNameSchema
+        .transform((enteredName) => addYamlFileExtension(enteredName))
+        .refine(
+          (nameWithExtension) =>
+            !(unallowedNames ?? []).some(
+              (unallowedName) => unallowedName === nameWithExtension
+            ),
+          {
+            message: t("pages.explorer.tree.newService.nameAlreadyExists"),
+          }
+        ),
+      fileContent: z.string(),
+    })
+  );
+
   const {
     register,
     handleSubmit,
@@ -68,22 +85,7 @@ const NewService = ({
     getValues,
     formState: { isDirty, errors, isValid, isSubmitted },
   } = useForm<FormInput>({
-    resolver: zodResolver(
-      z.object({
-        name: fileNameSchema
-          .transform((enteredName) => addYamlFileExtension(enteredName))
-          .refine(
-            (nameWithExtension) =>
-              !(unallowedNames ?? []).some(
-                (unallowedName) => unallowedName === nameWithExtension
-              ),
-            {
-              message: t("pages.explorer.tree.newService.nameAlreadyExists"),
-            }
-          ),
-        fileContent: z.string(),
-      })
-    ),
+    resolver,
     defaultValues: {
       fileContent: defaultServiceYaml,
     },

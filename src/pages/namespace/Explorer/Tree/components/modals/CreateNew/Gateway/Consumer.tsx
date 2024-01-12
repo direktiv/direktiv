@@ -38,27 +38,30 @@ const NewConsumer = ({
   const { t } = useTranslation();
   const namespace = useNamespace();
   const navigate = useNavigate();
+
+  const resolver = zodResolver(
+    z.object({
+      name: fileNameSchema
+        .transform((enteredName) => addYamlFileExtension(enteredName))
+        .refine(
+          (nameWithExtension) =>
+            !(unallowedNames ?? []).some(
+              (unallowedName) => unallowedName === nameWithExtension
+            ),
+          {
+            message: t("pages.explorer.tree.newConsumer.nameAlreadyExists"),
+          }
+        ),
+      fileContent: z.string(),
+    })
+  );
+
   const {
     register,
     handleSubmit,
     formState: { isDirty, errors, isValid, isSubmitted },
   } = useForm<FormInput>({
-    resolver: zodResolver(
-      z.object({
-        name: fileNameSchema
-          .transform((enteredName) => addYamlFileExtension(enteredName))
-          .refine(
-            (nameWithExtension) =>
-              !(unallowedNames ?? []).some(
-                (unallowedName) => unallowedName === nameWithExtension
-              ),
-            {
-              message: t("pages.explorer.tree.newConsumer.nameAlreadyExists"),
-            }
-          ),
-        fileContent: z.string(),
-      })
-    ),
+    resolver,
     defaultValues: {
       fileContent: defaultConsumerFileYaml,
     },
