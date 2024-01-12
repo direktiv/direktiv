@@ -11,6 +11,10 @@ import {
 } from "~/design/Select";
 import { Table, TableBody, TableCell, TableRow } from "~/design/Table";
 import { UseFormReturn, useFieldArray } from "react-hook-form";
+import {
+  availablePlugins,
+  outboundPluginTypes,
+} from "../../../schema/plugins/outbound";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
@@ -19,7 +23,6 @@ import { JsOutboundForm } from "./JsOutboundForm";
 import { OutboundPluginFormSchemaType } from "../../../schema/plugins/outbound/schema";
 import { Plus } from "lucide-react";
 import { getJsOutboundConfigAtIndex } from "../utils";
-import { outboundPluginTypes } from "../../../schema/plugins/outbound";
 import { useTranslation } from "react-i18next";
 
 type OutboundPluginFormProps = {
@@ -154,17 +157,17 @@ export const OutboundPluginForm: FC<OutboundPluginFormProps> = ({ form }) => {
               />
             </SelectTrigger>
             <SelectContent>
-              {Object.values(outboundPluginTypes).map((pluginType) => (
-                <SelectItem key={pluginType} value={pluginType}>
+              {availablePlugins.map(({ name: pluginName }) => (
+                <SelectItem key={pluginName} value={pluginName}>
                   {t(
-                    `pages.explorer.endpoint.editor.form.plugins.outbound.types.${pluginType}`
+                    `pages.explorer.endpoint.editor.form.plugins.outbound.types.${pluginName}`
                   )}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </PluginSelector>
-        {selectedPlugin === outboundPluginTypes.jsOutbound && (
+        {selectedPlugin === outboundPluginTypes.jsOutbound.name && (
           <JsOutboundForm
             formId={formId}
             defaultConfig={getJsOutboundConfigAtIndex(fields, editIndex)}

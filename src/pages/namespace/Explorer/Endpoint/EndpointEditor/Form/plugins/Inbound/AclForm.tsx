@@ -14,7 +14,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 type OptionalConfig = Partial<AclFormSchemaType["configuration"]>;
 
-const predfinedConfig: OptionalConfig = {
+const predefinedConfig: OptionalConfig = {
   allow_groups: [],
   deny_groups: [],
   allow_tags: [],
@@ -38,7 +38,7 @@ export const AclForm: FC<FormProps> = ({ defaultConfig, onSubmit, formId }) => {
     defaultValues: {
       type: "acl",
       configuration: {
-        ...predfinedConfig,
+        ...predefinedConfig,
         ...defaultConfig,
       },
     },

@@ -330,7 +330,8 @@
                   "target-flow": "Workflow",
                   "target-flow-var": "Workflow Variable",
                   "target-namespace-file": "Namespace File",
-                  "target-namespace-var": "Namespace Variable"
+                  "target-namespace-var": "Namespace Variable",
+                  "target-event": "Event"
                 },
                 "instantResponse": {
                   "statusCode": "Status Code",
@@ -364,6 +365,9 @@
                   "variable": "Variable",
                   "contentType": "Content Type (optional)",
                   "contentTypePlaceholder": "application/json"
+                },
+                "targetEvent": {
+                  "namespace": "Namespace (optional)"
                 }
               },
               "inbound": {
@@ -381,7 +385,8 @@
                 "types": {
                   "acl": "Access control list (acl)",
                   "js-inbound": "JavaScript",
-                  "request-convert": "Request convert"
+                  "request-convert": "Request convert",
+                  "event-filter": "Event filter"
                 },
                 "jsInbound": {
                   "script": "JavaScript"
@@ -399,6 +404,10 @@
                   "deny_tags": "Deny tags (optional)",
                   "groupPlaceholder": "Enter a group",
                   "tagPlaceholder": "Enter a tag"
+                },
+                "eventFilter": {
+                  "script": "JavaScript",
+                  "allow_non_events": "Allow non events (optional)"
                 }
               },
               "outbound": {

@@ -26,7 +26,7 @@ export const MethodsSchema = z.enum(routeMethods);
  */
 const PluginSchema = z.object({
   type: z.string(),
-  configuration: z.record(z.unknown()).nullable(),
+  configuration: z.record(z.unknown()).optional(),
 });
 
 /**
