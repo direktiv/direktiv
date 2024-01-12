@@ -14,7 +14,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 type OptionalConfig = Partial<RequestConvertFormSchemaType["configuration"]>;
 
-const predfinedConfig: OptionalConfig = {
+const predefinedConfig: OptionalConfig = {
   omit_body: false,
   omit_headers: false,
   omit_consumer: false,
@@ -43,7 +43,7 @@ export const RequestConvertForm: FC<FormProps> = ({
     defaultValues: {
       type: "request-convert",
       configuration: {
-        ...predfinedConfig,
+        ...predefinedConfig,
         ...defaultConfig,
       },
     },

@@ -18,7 +18,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 type OptionalConfig = Partial<InstantResponseFormSchemaType["configuration"]>;
 
-const predfinedConfig: OptionalConfig = {
+const predefinedConfig: OptionalConfig = {
   status_code: 200,
 };
 
@@ -44,7 +44,7 @@ export const InstantResponseForm: FC<FormProps> = ({
     defaultValues: {
       type: "instant-response",
       configuration: {
-        ...predfinedConfig,
+        ...predefinedConfig,
         ...defaultConfig,
       },
     },
