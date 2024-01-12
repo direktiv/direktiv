@@ -2,7 +2,7 @@ import { inboundPluginTypes } from ".";
 import { z } from "zod";
 
 export const AclFormSchema = z.object({
-  type: z.literal(inboundPluginTypes.acl),
+  type: z.literal(inboundPluginTypes.acl.name),
   configuration: z.object({
     allow_groups: z.array(z.string()).optional(),
     deny_groups: z.array(z.string()).optional(),

@@ -2,7 +2,7 @@ import { inboundPluginTypes } from ".";
 import { z } from "zod";
 
 export const JsInboundFormSchema = z.object({
-  type: z.literal(inboundPluginTypes.jsInbound),
+  type: z.literal(inboundPluginTypes.jsInbound.name),
   configuration: z.object({
     script: z.string(),
   }),

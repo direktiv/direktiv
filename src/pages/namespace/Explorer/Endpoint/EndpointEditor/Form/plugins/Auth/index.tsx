@@ -12,6 +12,10 @@ import {
 import { Table, TableBody, TableCell, TableRow } from "~/design/Table";
 import { UseFormReturn, useFieldArray } from "react-hook-form";
 import {
+  authPluginTypes,
+  availablePlugins,
+} from "../../../schema/plugins/auth";
+import {
   getBasicAuthConfigAtIndex,
   getGithubWebhookAuthConfigAtIndex,
   getKeyAuthConfigAtIndex,
@@ -25,7 +29,6 @@ import { EndpointFormSchemaType } from "../../../schema";
 import { GithubWebhookAuthForm } from "./GithubWebhookAuthForm";
 import { KeyAuthForm } from "./KeyAuthForm";
 import { Plus } from "lucide-react";
-import { authPluginTypes } from "../../../schema/plugins/auth";
 import { useTranslation } from "react-i18next";
 
 type AuthPluginFormProps = {
@@ -160,17 +163,17 @@ export const AuthPluginForm: FC<AuthPluginFormProps> = ({ formControls }) => {
               />
             </SelectTrigger>
             <SelectContent>
-              {Object.values(authPluginTypes).map((pluginType) => (
-                <SelectItem key={pluginType} value={pluginType}>
+              {availablePlugins.map(({ name: pluginName }) => (
+                <SelectItem key={pluginName} value={pluginName}>
                   {t(
-                    `pages.explorer.endpoint.editor.form.plugins.auth.types.${pluginType}`
+                    `pages.explorer.endpoint.editor.form.plugins.auth.types.${pluginName}`
                   )}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </PluginSelector>
-        {selectedPlugin === authPluginTypes.basicAuth && (
+        {selectedPlugin === authPluginTypes.basicAuth.name && (
           <BasicAuthForm
             formId={formId}
             defaultConfig={getBasicAuthConfigAtIndex(fields, editIndex)}
@@ -185,7 +188,7 @@ export const AuthPluginForm: FC<AuthPluginFormProps> = ({ formControls }) => {
             }}
           />
         )}
-        {selectedPlugin === authPluginTypes.keyAuth && (
+        {selectedPlugin === authPluginTypes.keyAuth.name && (
           <KeyAuthForm
             formId={formId}
             defaultConfig={getKeyAuthConfigAtIndex(fields, editIndex)}
@@ -200,7 +203,7 @@ export const AuthPluginForm: FC<AuthPluginFormProps> = ({ formControls }) => {
             }}
           />
         )}
-        {selectedPlugin === authPluginTypes.githubWebhookAuth && (
+        {selectedPlugin === authPluginTypes.githubWebhookAuth.name && (
           <GithubWebhookAuthForm
             formId={formId}
             defaultConfig={getGithubWebhookAuthConfigAtIndex(fields, editIndex)}

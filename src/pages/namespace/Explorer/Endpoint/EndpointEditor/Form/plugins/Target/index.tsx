@@ -10,6 +10,10 @@ import {
 } from "~/design/Select";
 import { Table, TableBody, TableCell, TableRow } from "~/design/Table";
 import { UseFormReturn, useWatch } from "react-hook-form";
+import {
+  availablePlugins,
+  targetPluginTypes,
+} from "../../../schema/plugins/target";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
@@ -17,11 +21,11 @@ import { EndpointFormSchemaType } from "../../../schema";
 import { InstantResponseForm } from "./InstantResponseForm";
 import { Settings } from "lucide-react";
 import { TableHeader } from "../components/PluginsTable";
+import { TargetEventForm } from "./TargetEventForm";
 import { TargetFlowForm } from "./TargetFlowForm";
 import { TargetFlowVarForm } from "./TargetFlowVarForm";
 import { TargetNamespaceFileForm } from "./TargetNamespaceFileForm";
 import { TargetNamespaceVarForm } from "./TargetNamespaceVarForm";
-import { targetPluginTypes } from "../../../schema/plugins/target";
 import { useTranslation } from "react-i18next";
 
 type TargetPluginFormProps = {
@@ -43,24 +47,40 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({ form }) => {
     targetFlowVar,
     targetNamespaceFile,
     targetNamespaceVar,
+    targetEvent,
   } = targetPluginTypes;
 
-  const currentConfiguration = values.plugins?.target?.configuration;
+  const currentConfiguration = values.plugins?.target;
 
   const currentInstantResponseConfig =
-    currentType === instantResponse ? currentConfiguration : undefined;
+    currentConfiguration?.type === instantResponse.name
+      ? currentConfiguration.configuration
+      : undefined;
+
+  const currentTargetEventConfig =
+    currentConfiguration?.type === targetEvent.name
+      ? currentConfiguration.configuration
+      : undefined;
 
   const currentTargetFlowConfig =
-    currentType === targetFlow ? currentConfiguration : undefined;
+    currentConfiguration?.type === targetFlow.name
+      ? currentConfiguration.configuration
+      : undefined;
 
   const currentTargetFlowVarConfig =
-    currentType === targetFlowVar ? currentConfiguration : undefined;
+    currentConfiguration?.type === targetFlowVar.name
+      ? currentConfiguration.configuration
+      : undefined;
 
   const currentTargetNamespaceFileConfig =
-    currentType === targetNamespaceFile ? currentConfiguration : undefined;
+    currentConfiguration?.type === targetNamespaceFile.name
+      ? currentConfiguration.configuration
+      : undefined;
 
   const currentTargetNamespaceVarConfig =
-    currentType === targetNamespaceVar ? currentConfiguration : undefined;
+    currentConfiguration?.type === targetNamespaceVar.name
+      ? currentConfiguration.configuration
+      : undefined;
 
   const formId = "targetPluginForm";
 
@@ -128,10 +148,10 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({ form }) => {
               />
             </SelectTrigger>
             <SelectContent>
-              {Object.values(targetPluginTypes).map((pluginType) => (
-                <SelectItem key={pluginType} value={pluginType}>
+              {availablePlugins.map(({ name: pluginName }) => (
+                <SelectItem key={pluginName} value={pluginName}>
                   {t(
-                    `pages.explorer.endpoint.editor.form.plugins.target.types.${pluginType}`
+                    `pages.explorer.endpoint.editor.form.plugins.target.types.${pluginName}`
                   )}
                 </SelectItem>
               ))}
@@ -139,7 +159,7 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({ form }) => {
           </Select>
         </PluginSelector>
 
-        {selectedPlugin === instantResponse && (
+        {selectedPlugin === instantResponse.name && (
           <InstantResponseForm
             formId={formId}
             defaultConfig={currentInstantResponseConfig}
@@ -149,7 +169,7 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({ form }) => {
             }}
           />
         )}
-        {selectedPlugin === targetFlow && (
+        {selectedPlugin === targetFlow.name && (
           <TargetFlowForm
             formId={formId}
             defaultConfig={currentTargetFlowConfig}
@@ -159,7 +179,7 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({ form }) => {
             }}
           />
         )}
-        {selectedPlugin === targetFlowVar && (
+        {selectedPlugin === targetFlowVar.name && (
           <TargetFlowVarForm
             formId={formId}
             defaultConfig={currentTargetFlowVarConfig}
@@ -169,7 +189,7 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({ form }) => {
             }}
           />
         )}
-        {selectedPlugin === targetNamespaceFile && (
+        {selectedPlugin === targetNamespaceFile.name && (
           <TargetNamespaceFileForm
             formId={formId}
             defaultConfig={currentTargetNamespaceFileConfig}
@@ -179,10 +199,20 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({ form }) => {
             }}
           />
         )}
-        {selectedPlugin === targetNamespaceVar && (
+        {selectedPlugin === targetNamespaceVar.name && (
           <TargetNamespaceVarForm
             formId={formId}
             defaultConfig={currentTargetNamespaceVarConfig}
+            onSubmit={(configuration) => {
+              setDialogOpen(false);
+              form.setValue("plugins.target", configuration);
+            }}
+          />
+        )}
+        {selectedPlugin === targetEvent.name && (
+          <TargetEventForm
+            formId={formId}
+            defaultConfig={currentTargetEventConfig}
             onSubmit={(configuration) => {
               setDialogOpen(false);
               form.setValue("plugins.target", configuration);
