@@ -1,6 +1,7 @@
 import { AclFormSchemaType } from "../../schema/plugins/inbound/acl";
 import { AuthPluginFormSchemaType } from "../../schema/plugins/auth/schema";
 import { BasicAuthFormSchemaType } from "../../schema/plugins/auth/basicAuth";
+import { EventFilterFormSchemaType } from "../../schema/plugins/inbound/eventFilter";
 import { GithubWebhookAuthFormSchemaType } from "../../schema/plugins/auth/githubWebhookAuth";
 import { InboundPluginFormSchemaType } from "../../schema/plugins/inbound/schema";
 import { JsInboundFormSchemaType } from "../../schema/plugins/inbound/jsInbound";
@@ -17,7 +18,7 @@ export const getRequestConvertConfigAtIndex = (
   index: number | undefined
 ): RequestConvertFormSchemaType["configuration"] | undefined => {
   const plugin = index !== undefined ? fields?.[index] : undefined;
-  return plugin?.type === inboundPluginTypes.requestConvert
+  return plugin?.type === inboundPluginTypes.requestConvert.name
     ? plugin.configuration
     : undefined;
 };
@@ -27,7 +28,7 @@ export const getJsInboundConfigAtIndex = (
   index: number | undefined
 ): JsInboundFormSchemaType["configuration"] | undefined => {
   const plugin = index !== undefined ? fields?.[index] : undefined;
-  return plugin?.type === inboundPluginTypes.jsInbound
+  return plugin?.type === inboundPluginTypes.jsInbound.name
     ? plugin.configuration
     : undefined;
 };
@@ -37,7 +38,17 @@ export const getAclConfigAtIndex = (
   index: number | undefined
 ): AclFormSchemaType["configuration"] | undefined => {
   const plugin = index !== undefined ? fields?.[index] : undefined;
-  return plugin?.type === inboundPluginTypes.acl
+  return plugin?.type === inboundPluginTypes.acl.name
+    ? plugin.configuration
+    : undefined;
+};
+
+export const getEventFilterConfigAtIndex = (
+  fields: InboundPluginFormSchemaType[] | undefined,
+  index: number | undefined
+): EventFilterFormSchemaType["configuration"] | undefined => {
+  const plugin = index !== undefined ? fields?.[index] : undefined;
+  return plugin?.type === inboundPluginTypes.eventFilter.name
     ? plugin.configuration
     : undefined;
 };
@@ -47,7 +58,7 @@ export const getJsOutboundConfigAtIndex = (
   index: number | undefined
 ): JsOutboundFormSchemaType["configuration"] | undefined => {
   const plugin = index !== undefined ? fields?.[index] : undefined;
-  return plugin?.type === outboundPluginTypes.jsOutbound
+  return plugin?.type === outboundPluginTypes.jsOutbound.name
     ? plugin.configuration
     : undefined;
 };
@@ -57,7 +68,7 @@ export const getBasicAuthConfigAtIndex = (
   index: number | undefined
 ): BasicAuthFormSchemaType["configuration"] | undefined => {
   const plugin = index !== undefined ? fields?.[index] : undefined;
-  return plugin?.type === authPluginTypes.basicAuth
+  return plugin?.type === authPluginTypes.basicAuth.name
     ? plugin.configuration
     : undefined;
 };
@@ -67,7 +78,7 @@ export const getKeyAuthConfigAtIndex = (
   index: number | undefined
 ): KeyAuthFormSchemaType["configuration"] | undefined => {
   const plugin = index !== undefined ? fields?.[index] : undefined;
-  return plugin?.type === authPluginTypes.keyAuth
+  return plugin?.type === authPluginTypes.keyAuth.name
     ? plugin.configuration
     : undefined;
 };
@@ -77,7 +88,7 @@ export const getGithubWebhookAuthConfigAtIndex = (
   index: number | undefined
 ): GithubWebhookAuthFormSchemaType["configuration"] | undefined => {
   const plugin = index !== undefined ? fields?.[index] : undefined;
-  return plugin?.type === authPluginTypes.githubWebhookAuth
+  return plugin?.type === authPluginTypes.githubWebhookAuth.name
     ? plugin.configuration
     : undefined;
 };

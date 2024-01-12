@@ -15,7 +15,7 @@ test.afterAll(async () => {
 test("the 404 error page shows, when the user opens a url that does not exist", async ({
   page,
 }) => {
-  await page.goto("/this/page/does/not/exist");
+  await page.goto("/this/page/does/not/exist", { waitUntil: "networkidle" });
   await expect(page.getByTestId("error-title")).toHaveText("404");
   await expect(page.getByTestId("error-message")).toHaveText("Not Found");
 });
@@ -66,6 +66,6 @@ test("the home button on the error page navigates the user to the home page", as
   const currentUrl = new URL(await page.url());
   expect(
     currentUrl.pathname,
-    "clicking the home button on the 404 page navigates the user back to where they came from"
+    "clicking the home button on the 404 page navigates to '/'"
   ).toBe("/");
 });

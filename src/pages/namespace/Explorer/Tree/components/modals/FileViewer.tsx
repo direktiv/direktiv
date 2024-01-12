@@ -28,7 +28,7 @@ const NoPreview = ({ mimeType }: { mimeType?: string }) => {
   );
 };
 
-const imagesSrc = (mimeType: string, source: string) =>
+const imageSrc = (mimeType: string, source: string) =>
   `data:${mimeType};base64,${source}`;
 
 const FileViewer = ({ node }: { node: NodeSchemaType }) => {
@@ -58,7 +58,7 @@ const FileViewer = ({ node }: { node: NodeSchemaType }) => {
         <div className="flex h-[700px]">
           {showImage && (
             <img
-              src={imagesSrc(mimeType ?? "", data?.revision?.source ?? "")}
+              src={imageSrc(mimeType ?? "", data?.revision?.source ?? "")}
               className="w-full object-contain"
             />
           )}
