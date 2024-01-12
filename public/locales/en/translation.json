@@ -1241,6 +1241,9 @@
     "filepicker": {
       "buttonText": "Browse Files",
       "placeholder": "No File selected",
+      "emptyDirectory": {
+        "title": "The directory \"{{path}}\" is empty."
+      },
       "error": {
         "title": "The path \"{{path}}\" was not found.",
         "linkText": "Go back to root directory"

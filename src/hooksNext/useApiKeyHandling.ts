@@ -1,8 +1,7 @@
-import env from "~/config/env";
 import { useApiKey } from "~/util/store/apiKey";
 import { useAuthTest } from "~/api/authenticate/query/getAuthInfos";
 
-const { VITE_IS_ENTERPRISE: isEnterprise } = env;
+const isEnterprise = !!process.env.VITE?.VITE_IS_ENTERPRISE;
 
 /**
  * Send test request to check if api needs an api key. In enterprise

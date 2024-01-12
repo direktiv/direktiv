@@ -42,6 +42,9 @@ export default ({ mode }) => {
   }
 
   return defineConfig({
+    define: {
+      "process.env.VITE": parsedEnv,
+    },
     server: {
       host: "0.0.0.0",
       port: 3000,
@@ -51,7 +54,7 @@ export default ({ mode }) => {
               target: apiDomain,
               secure: false,
             },
-            "/oidc": {
+            "/logout": {
               target: apiDomain,
               secure: false,
             },
