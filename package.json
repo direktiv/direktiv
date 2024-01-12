@@ -94,6 +94,7 @@
     "start": "vite",
     "dev": "yarn run start",
     "build": "vite build",
+    "preview": "vite preview --debug",
     "prebuild": "yarn run check",
     "test": "vitest",
     "storybook": "NODE_OPTIONS=--openssl-legacy-provider storybook dev -p 6006 -s public",

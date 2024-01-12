@@ -1,3 +1,4 @@
+import enterpriseConfig from "~/config/enterprise";
 import { z } from "zod";
 
 /**
@@ -54,7 +55,14 @@ type PermissionStatus =
 
 export const getPermissionStatus = (error: unknown): PermissionStatus => {
   if (isApiErrorSchema(error)) {
-    if (error.response.status === 401 || error.response.status === 403) {
+    if (
+      error.response.status === 401 &&
+      !!process.env.VITE?.VITE_IS_ENTERPRISE
+    ) {
+      window.location.href = enterpriseConfig.logoutPath;
+    }
+
+    if (error.response.status === 403 || error.response.status === 401) {
       return {
         isAllowed: false,
         message: getMessageFromApiError(error),

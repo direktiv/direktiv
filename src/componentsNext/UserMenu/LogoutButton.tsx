@@ -1,7 +1,6 @@
 import { DropdownMenuItem } from "~/design/Dropdown";
 import { LogOut } from "lucide-react";
 import enterpriseConfig from "~/config/enterprise";
-import env from "~/config/env";
 import { useApiActions } from "~/util/store/apiKey";
 import { useTranslation } from "react-i18next";
 
@@ -9,7 +8,7 @@ const LogoutButton = () => {
   const { t } = useTranslation();
   const { setApiKey: storeApiKey } = useApiActions();
 
-  const { VITE_IS_ENTERPRISE: isEnterprise } = env;
+  const isEnterprise = !!process.env.VITE?.VITE_IS_ENTERPRISE;
 
   const logout = () => {
     storeApiKey(null);
