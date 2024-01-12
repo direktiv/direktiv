@@ -9,7 +9,7 @@ import FormErrors, { errorsType } from "~/componentsNext/FormErrors";
 import { Card } from "~/design/Card";
 import { Checkbox } from "~/design/Checkbox";
 import Editor from "~/design/Editor";
-import { Fieldset } from "~/pages/namespace/Explorer/components/Fieldset";
+import { Fieldset } from "~/componentsNext/Form/Fieldset";
 import { PluginWrapper } from "../components/Modal";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
