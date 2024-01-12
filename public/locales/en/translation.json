@@ -261,15 +261,15 @@
           "setInactive": "Deactivate workflow"
         },
         "apiCommands": {
-          "tooltip": "Open API Commands",
-          "title": "Workflow API Interactions",
+          "tooltip": "Open API commands",
+          "title": "Workflow API interactions",
           "namespace": "Namespace",
           "namespacePlaceholder": "your-namespace",
           "workflow": "Workflow",
           "workflowPlaceholder": "path-to-workflow",
           "interaction": "Interaction",
           "interactionPlaceholder": "select an interaction",
-          "openDocsBtn": "Open API Docs",
+          "openDocsBtn": "Open API docs",
           "copyBtn": "Copy as cURL command",
           "copyBtnCopied": "Copied",
           "labels": {
@@ -1093,12 +1093,12 @@
     },
     "jqPlayground": {
       "title": "jq Playground",
-      "description": "jq Playground is an envrioment where you can quickly test your jq commands against JSON input.",
-      "openManualBtn": "Open jq Manual",
+      "description": "jq Playground is an environment where you can quickly test your jq commands against JSON input.",
+      "openManualBtn": "Open jq manual",
       "queryPlaceholder": "Enter your jq query here...",
       "input": "Input",
       "output": "Output",
-      "submitBtn": "Run Query",
+      "submitBtn": "Run query",
       "examples": {
         "title": "Examples",
         "buttonLabel": "Run",

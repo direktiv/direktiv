@@ -41,7 +41,7 @@ const useIsApiKeyRequired = () => {
  * showUsermenu: indicates whether the usermenu should be shown. In the
  * enterprise version this is always true (and is independent from any
  * api key handling), in the open source version this is only true if
- * the api is required
+ * the api key is required
  */
 const useApiKeyHandling = () => {
   const storedKey = useApiKey();
