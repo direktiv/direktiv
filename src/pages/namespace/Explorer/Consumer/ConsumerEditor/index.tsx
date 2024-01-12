@@ -1,3 +1,5 @@
+import { compareYamlStructure, jsonToYaml } from "../../utils";
+
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
@@ -8,7 +10,6 @@ import { Form } from "./Form";
 import FormErrors from "~/componentsNext/FormErrors";
 import { Save } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
-import { jsonToYaml } from "../../utils";
 import { serializeConsumerFile } from "./utils";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useTheme } from "~/util/store/theme";
@@ -25,9 +26,10 @@ type ConsumerEditorProps = {
 const ConsumerEditor: FC<ConsumerEditorProps> = ({ data, path }) => {
   const { t } = useTranslation();
   const theme = useTheme();
-  const consumerFileContent = atob(data.revision?.source ?? "");
-  const [consumerConfig, consumerConfigError] =
-    serializeConsumerFile(consumerFileContent);
+  const fileContentFromServer = atob(data.revision?.source ?? "");
+  const [consumerConfig, consumerConfigError] = serializeConsumerFile(
+    fileContentFromServer
+  );
   const { mutate: updateRoute, isLoading } = useUpdateWorkflow();
 
   const save = (data: ConsumerFormSchemaType) => {
@@ -49,7 +51,11 @@ const ConsumerEditor: FC<ConsumerEditorProps> = ({ data, path }) => {
         values,
       }) => {
         const preview = jsonToYaml(values);
-        const isDirty = !consumerConfigError && preview !== consumerFileContent;
+        const filehasChanged = compareYamlStructure(
+          preview,
+          fileContentFromServer
+        );
+        const isDirty = !consumerConfigError && !filehasChanged;
         const disableButton = isLoading || !!consumerConfigError;
 
         return (
