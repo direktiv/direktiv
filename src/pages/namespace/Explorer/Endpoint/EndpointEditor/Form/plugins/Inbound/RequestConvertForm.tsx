@@ -6,7 +6,7 @@ import {
 } from "../../../schema/plugins/inbound/requestConvert";
 
 import { Checkbox } from "~/design/Checkbox";
-import { Fieldset } from "~/pages/namespace/Explorer/components/Fieldset";
+import { Fieldset } from "~/componentsNext/Form/Fieldset";
 import { PluginWrapper } from "../components/Modal";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";

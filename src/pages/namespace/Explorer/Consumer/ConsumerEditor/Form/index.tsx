@@ -7,9 +7,9 @@ import {
   useWatch,
 } from "react-hook-form";
 
-import { ArrayInput } from "../../../components/ArrayInput";
+import { ArrayInput } from "~/componentsNext/Form/ArrayInput";
 import { FC } from "react";
-import { Fieldset } from "../../../components/Fieldset";
+import { Fieldset } from "~/componentsNext/Form/Fieldset";
 import Input from "~/design/Input";
 import { treatEmptyStringAsUndefined } from "../../../utils";
 import { useTranslation } from "react-i18next";

@@ -7,7 +7,7 @@ import {
 } from "../../../schema/plugins/target/targetFlow";
 
 import { Checkbox } from "~/design/Checkbox";
-import { Fieldset } from "~/pages/namespace/Explorer/components/Fieldset";
+import { Fieldset } from "~/componentsNext/Form/Fieldset";
 import FilePicker from "~/componentsNext/FilePicker";
 import Input from "~/design/Input";
 import NamespaceSelector from "~/componentsNext/NamespaceSelector";

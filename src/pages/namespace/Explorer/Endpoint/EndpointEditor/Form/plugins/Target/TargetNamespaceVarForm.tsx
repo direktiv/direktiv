@@ -6,7 +6,7 @@ import {
   TargetNamespaceVarFormSchemaType,
 } from "../../../schema/plugins/target/targetNamespaceVar";
 
-import { Fieldset } from "~/pages/namespace/Explorer/components/Fieldset";
+import { Fieldset } from "~/componentsNext/Form/Fieldset";
 import Input from "~/design/Input";
 import NamespaceSelector from "~/componentsNext/NamespaceSelector";
 import { PluginWrapper } from "../components/Modal";
