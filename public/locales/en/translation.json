@@ -261,15 +261,15 @@
           "setInactive": "Deactivate workflow"
         },
         "apiCommands": {
-          "tooltip": "Open API Commands",
-          "title": "Workflow API Interactions",
+          "tooltip": "Open API commands",
+          "title": "Workflow API interactions",
           "namespace": "Namespace",
           "namespacePlaceholder": "your-namespace",
           "workflow": "Workflow",
           "workflowPlaceholder": "path-to-workflow",
           "interaction": "Interaction",
           "interactionPlaceholder": "select an interaction",
-          "openDocsBtn": "Open API Docs",
+          "openDocsBtn": "Open API docs",
           "copyBtn": "Copy as cURL command",
           "copyBtnCopied": "Copied",
           "labels": {
@@ -330,7 +330,8 @@
                   "target-flow": "Workflow",
                   "target-flow-var": "Workflow Variable",
                   "target-namespace-file": "Namespace File",
-                  "target-namespace-var": "Namespace Variable"
+                  "target-namespace-var": "Namespace Variable",
+                  "target-event": "Event"
                 },
                 "instantResponse": {
                   "statusCode": "Status Code",
@@ -364,6 +365,9 @@
                   "variable": "Variable",
                   "contentType": "Content Type (optional)",
                   "contentTypePlaceholder": "application/json"
+                },
+                "targetEvent": {
+                  "namespace": "Namespace (optional)"
                 }
               },
               "inbound": {
@@ -381,7 +385,8 @@
                 "types": {
                   "acl": "Access control list (acl)",
                   "js-inbound": "JavaScript",
-                  "request-convert": "Request convert"
+                  "request-convert": "Request convert",
+                  "event-filter": "Event filter"
                 },
                 "jsInbound": {
                   "script": "JavaScript"
@@ -399,6 +404,10 @@
                   "deny_tags": "Deny tags (optional)",
                   "groupPlaceholder": "Enter a group",
                   "tagPlaceholder": "Enter a tag"
+                },
+                "eventFilter": {
+                  "script": "JavaScript",
+                  "allow_non_events": "Allow non events (optional)"
                 }
               },
               "outbound": {
@@ -1084,12 +1093,12 @@
     },
     "jqPlayground": {
       "title": "jq Playground",
-      "description": "jq Playground is an envrioment where you can quickly test your jq commands against JSON input.",
-      "openManualBtn": "Open jq Manual",
+      "description": "jq Playground is an environment where you can quickly test your jq commands against JSON input.",
+      "openManualBtn": "Open jq manual",
       "queryPlaceholder": "Enter your jq query here...",
       "input": "Input",
       "output": "Output",
-      "submitBtn": "Run Query",
+      "submitBtn": "Run query",
       "examples": {
         "title": "Examples",
         "buttonLabel": "Run",

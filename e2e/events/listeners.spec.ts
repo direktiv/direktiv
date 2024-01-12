@@ -98,8 +98,7 @@ test("it renders event listeners", async ({ page }) => {
   ).toHaveURL(`${namespace}/explorer/workflow/active/${workflowNames[2]}`);
 });
 
-// [DIR-930] unskip test when test server is updated to latest version. Bug is already fixed.
-test.skip("it paginates event listeners", async ({ page }) => {
+test("it paginates event listeners", async ({ page }) => {
   /* set up test data */
   const workflowNames = Array.from(
     { length: 13 },

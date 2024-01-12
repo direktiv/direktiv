@@ -2,7 +2,7 @@ import { targetPluginTypes } from ".";
 import { z } from "zod";
 
 export const TargetNamespaceFileFormSchema = z.object({
-  type: z.literal(targetPluginTypes.targetNamespaceFile),
+  type: z.literal(targetPluginTypes.targetNamespaceFile.name),
   configuration: z.object({
     namespace: z.string().optional(),
     file: z.string().nonempty(),
