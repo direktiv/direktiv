@@ -5,6 +5,7 @@ import {
 } from "event-source-polyfill";
 import { useEffect, useRef } from "react";
 
+import { getAuthHeader } from "./utils";
 import { z } from "zod";
 
 /**
@@ -41,9 +42,7 @@ export const useEventSource = ({
       const listener = new EventSourcePolyfill(url, {
         ...(apiKey
           ? {
-              headers: {
-                "direktiv-token": apiKey,
-              },
+              headers: { ...getAuthHeader(apiKey) },
             }
           : {}),
       });

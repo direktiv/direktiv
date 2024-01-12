@@ -1,3 +1,4 @@
+import { getAuthHeader } from "~/api/utils";
 import { useApiKey } from "~/util/store/apiKey";
 import useApiKeyHandling from "~/hooksNext/useApiKeyHandling";
 import { useMemo } from "react";
@@ -44,6 +45,13 @@ states:
   return memoizedTemplates;
 };
 
+const headerObjToCurlString = (header: Record<string, string>) =>
+  Object.entries(header)
+    .map(
+      ([headerKey, headerValue]) => `\n -H '${headerKey}: ${headerValue}' \\`
+    )
+    .join("");
+
 export const useCurlCommand = ({
   url,
   body,
@@ -56,7 +64,7 @@ export const useCurlCommand = ({
 
   const apiKeyHeader =
     isApiKeyRequired && apiKeyFromLocalstorage
-      ? `\n -H 'direktiv-token: ${apiKeyFromLocalstorage}' \\`
+      ? headerObjToCurlString(getAuthHeader(apiKeyFromLocalstorage))
       : "";
 
   const bodyEscaped = body.replace(/'/g, "\\'");

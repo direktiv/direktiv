@@ -174,7 +174,7 @@ const ApiCommands = ({
         <DialogClose asChild>
           <Button variant="ghost">Close</Button>
         </DialogClose>
-        <Button variant="outline" asChild>
+        <Button variant="outline" asChild isAnchor>
           <a
             href="https://docs.direktiv.io/api/#all-endpoints"
             target="_blank"

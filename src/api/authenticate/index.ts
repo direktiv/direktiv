@@ -6,11 +6,16 @@ export const authenticationKeys = {
     [{ scope: "authentication", apiKey }] as const,
 };
 
+/**
+ * There is no dedicated authentication endpoint. Instead, we query the
+ * "version" endpoint. Like with any other endpoint, it will succeed with the
+ * correct auth keys and fail otherwise.
+ */
 export const checkApiKeyAgainstServer = (apiKey?: string) =>
   getVersion({
     apiKey,
     urlParams: undefined,
-  }) // when test call succeeds and matches the schema our auth test passes
+  })
     .then(() => true)
     /**
      * when the test call fails with a 401 or 403 our auth test fails, any
