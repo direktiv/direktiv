@@ -6,7 +6,7 @@ const isEnterprise = !!process.env.VITE?.VITE_IS_ENTERPRISE;
 /**
  * Send test request to check if api needs an api key. In enterprise
  * mode, this test will be skipped and will always return true since
- * enter price will always require us to send a token
+ * enterprise will always require us to send a token
  */
 const useIsApiKeyRequired = () => {
   const { data: testSucceeded, isFetched: isFinished } = useAuthTest({
