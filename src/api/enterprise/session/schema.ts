@@ -1,3 +1,5 @@
 import { z } from "zod";
 
-export const SessionSchema = z.string();
+export const SessionSchema = z.object({
+  response: z.string(),
+});

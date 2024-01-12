@@ -16,7 +16,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 type OptionalConfig = Partial<KeyAuthFormSchemaType["configuration"]>;
 
-const predfinedConfig: OptionalConfig = {
+const predefinedConfig: OptionalConfig = {
   add_groups_header: true,
   add_tags_header: true,
   add_username_header: true,
@@ -45,7 +45,7 @@ export const KeyAuthForm: FC<FormProps> = ({
     defaultValues: {
       type: "key-auth",
       configuration: {
-        ...predfinedConfig,
+        ...predefinedConfig,
         ...defaultConfig,
       },
     },

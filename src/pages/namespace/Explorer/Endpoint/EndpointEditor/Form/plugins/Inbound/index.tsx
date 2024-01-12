@@ -12,7 +12,12 @@ import {
 import { Table, TableBody, TableCell, TableRow } from "~/design/Table";
 import { UseFormReturn, useFieldArray } from "react-hook-form";
 import {
+  availablePlugins,
+  inboundPluginTypes,
+} from "../../../schema/plugins/inbound";
+import {
   getAclConfigAtIndex,
+  getEventFilterConfigAtIndex,
   getJsInboundConfigAtIndex,
   getRequestConvertConfigAtIndex,
 } from "../utils";
@@ -21,11 +26,11 @@ import { AclForm } from "./AclForm";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import { EndpointFormSchemaType } from "../../../schema";
+import { EventFilterForm } from "./EventFilterForm";
 import { InboundPluginFormSchemaType } from "../../../schema/plugins/inbound/schema";
 import { JsInboundForm } from "./JsInboundForm";
 import { Plus } from "lucide-react";
 import { RequestConvertForm } from "./RequestConvertForm";
-import { inboundPluginTypes } from "../../../schema/plugins/inbound";
 import { useTranslation } from "react-i18next";
 
 type InboundPluginFormProps = {
@@ -51,7 +56,7 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({ form }) => {
   const [selectedPlugin, setSelectedPlugin] =
     useState<InboundPluginFormSchemaType["type"]>();
 
-  const { jsInbound, requestConvert, acl } = inboundPluginTypes;
+  const { jsInbound, requestConvert, acl, eventFilter } = inboundPluginTypes;
 
   const pluginsCount = fields.length;
   const formId = "inboundPluginForm";
@@ -162,17 +167,17 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({ form }) => {
               />
             </SelectTrigger>
             <SelectContent>
-              {Object.values(inboundPluginTypes).map((pluginType) => (
-                <SelectItem key={pluginType} value={pluginType}>
+              {availablePlugins.map(({ name: pluginName }) => (
+                <SelectItem key={pluginName} value={pluginName}>
                   {t(
-                    `pages.explorer.endpoint.editor.form.plugins.inbound.types.${pluginType}`
+                    `pages.explorer.endpoint.editor.form.plugins.inbound.types.${pluginName}`
                   )}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </PluginSelector>
-        {selectedPlugin === requestConvert && (
+        {selectedPlugin === requestConvert.name && (
           <RequestConvertForm
             formId={formId}
             defaultConfig={getRequestConvertConfigAtIndex(fields, editIndex)}
@@ -187,7 +192,7 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({ form }) => {
             }}
           />
         )}
-        {selectedPlugin === jsInbound && (
+        {selectedPlugin === jsInbound.name && (
           <JsInboundForm
             formId={formId}
             defaultConfig={getJsInboundConfigAtIndex(fields, editIndex)}
@@ -202,11 +207,25 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({ form }) => {
             }}
           />
         )}
-
-        {selectedPlugin === acl && (
+        {selectedPlugin === acl.name && (
           <AclForm
             formId={formId}
             defaultConfig={getAclConfigAtIndex(fields, editIndex)}
+            onSubmit={(configuration) => {
+              setDialogOpen(false);
+              if (editIndex === undefined) {
+                addPlugin(configuration);
+              } else {
+                editPlugin(editIndex, configuration);
+              }
+              setEditIndex(undefined);
+            }}
+          />
+        )}
+        {selectedPlugin === eventFilter.name && (
+          <EventFilterForm
+            formId={formId}
+            defaultConfig={getEventFilterConfigAtIndex(fields, editIndex)}
             onSubmit={(configuration) => {
               setDialogOpen(false);
               if (editIndex === undefined) {

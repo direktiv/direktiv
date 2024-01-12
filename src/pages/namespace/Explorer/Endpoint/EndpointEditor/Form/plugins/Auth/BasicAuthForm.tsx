@@ -14,7 +14,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 type OptionalConfig = Partial<BasicAuthFormSchemaType["configuration"]>;
 
-const predfinedConfig: OptionalConfig = {
+const predefinedConfig: OptionalConfig = {
   add_groups_header: false,
   add_tags_header: false,
   add_username_header: false,
@@ -42,7 +42,7 @@ export const BasicAuthForm: FC<FormProps> = ({
     defaultValues: {
       type: "basic-auth",
       configuration: {
-        ...predfinedConfig,
+        ...predefinedConfig,
         ...defaultConfig,
       },
     },
