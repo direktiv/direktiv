@@ -5,28 +5,28 @@ import Button from "~/design/Button";
 import Input from "~/design/Input";
 import { InputWithButton } from "~/design/InputWithButton";
 
-type SecretInputProps = {
-  secret: string;
+type PasswordInputProps = {
+  password: string;
 };
 
-const SecretInput: FC<SecretInputProps> = ({ secret }) => {
-  const [revealSecret, setRevealSecret] = useState(false);
+const PasswordInput: FC<PasswordInputProps> = ({ password }) => {
+  const [revealPassword, setRevealPassword] = useState(false);
   return (
     <InputWithButton>
       <Input
-        value={secret}
+        value={password}
         readOnly
-        type={revealSecret ? "text" : "password"}
+        type={revealPassword ? "text" : "password"}
       />
       <Button
         variant="ghost"
-        onClick={() => setRevealSecret(!revealSecret)}
+        onClick={() => setRevealPassword(!revealPassword)}
         icon
       >
-        {revealSecret ? <EyeOff /> : <Eye />}
+        {revealPassword ? <EyeOff /> : <Eye />}
       </Button>
     </InputWithButton>
   );
 };
 
-export default SecretInput;
+export default PasswordInput;

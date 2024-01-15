@@ -8,7 +8,7 @@ import {
 
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
-import { Fieldset } from "~/pages/namespace/Explorer/components/Fieldset";
+import { Fieldset } from "~/componentsNext/Form/Fieldset";
 import Input from "~/design/Input";
 import { PluginWrapper } from "../components/Modal";
 import { treatEmptyStringAsUndefined } from "~/pages/namespace/Explorer/utils";

@@ -35,6 +35,16 @@ const CreateGroup = ({
     },
   });
 
+  const resolver = zodResolver(
+    GroupFormSchema.refine(
+      (x) => !(unallowedNames ?? []).some((n) => n === x.group),
+      {
+        path: ["group"],
+        message: t("pages.permissions.groups.create.group.alreadyExist"),
+      }
+    )
+  );
+
   const {
     register,
     setValue,
@@ -47,15 +57,7 @@ const CreateGroup = ({
       description: "",
       permissions: [],
     },
-    resolver: zodResolver(
-      GroupFormSchema.refine(
-        (x) => !(unallowedNames ?? []).some((n) => n === x.group),
-        {
-          path: ["group"],
-          message: t("pages.permissions.groups.create.group.alreadyExist"),
-        }
-      )
-    ),
+    resolver,
   });
 
   const onSubmit: SubmitHandler<GroupFormSchemaType> = (params) => {

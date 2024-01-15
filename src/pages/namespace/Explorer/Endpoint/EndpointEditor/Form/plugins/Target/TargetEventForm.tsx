@@ -6,7 +6,7 @@ import {
   TargetEventFormSchemaType,
 } from "../../../schema/plugins/target/targetEvent";
 
-import { Fieldset } from "~/pages/namespace/Explorer/components/Fieldset";
+import { Fieldset } from "~/componentsNext/Form/Fieldset";
 import NamespaceSelector from "~/componentsNext/NamespaceSelector";
 import { PluginWrapper } from "../components/Modal";
 import { useTranslation } from "react-i18next";

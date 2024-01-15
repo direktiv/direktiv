@@ -6,7 +6,7 @@ import {
   TargetNamespaceFileFormSchemaType,
 } from "../../../schema/plugins/target/targetNamespaceFile";
 
-import { Fieldset } from "~/pages/namespace/Explorer/components/Fieldset";
+import { Fieldset } from "~/componentsNext/Form/Fieldset";
 import FilePicker from "~/componentsNext/FilePicker";
 import Input from "~/design/Input";
 import NamespaceSelector from "~/componentsNext/NamespaceSelector";

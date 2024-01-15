@@ -6,8 +6,8 @@ import { Controller, useForm } from "react-hook-form";
 import { FC, FormEvent } from "react";
 import FormErrors, { errorsType } from "~/componentsNext/FormErrors";
 
-import { ArrayInput } from "~/pages/namespace/Explorer/components/ArrayInput";
-import { Fieldset } from "~/pages/namespace/Explorer/components/Fieldset";
+import { ArrayInput } from "~/componentsNext/Form/ArrayInput";
+import { Fieldset } from "~/componentsNext/Form/Fieldset";
 import { PluginWrapper } from "../components/Modal";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";

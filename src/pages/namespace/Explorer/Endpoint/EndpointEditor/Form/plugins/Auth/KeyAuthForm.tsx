@@ -6,7 +6,7 @@ import {
 } from "../../../schema/plugins/auth/keyAuth";
 
 import { Checkbox } from "~/design/Checkbox";
-import { Fieldset } from "~/pages/namespace/Explorer/components/Fieldset";
+import { Fieldset } from "~/componentsNext/Form/Fieldset";
 import Input from "~/design/Input";
 import { PluginWrapper } from "../components/Modal";
 import { treatEmptyStringAsUndefined } from "~/pages/namespace/Explorer/utils";
