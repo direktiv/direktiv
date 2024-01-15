@@ -2,13 +2,9 @@ name: Run API e2e tests
 
 on:
   push:
-    paths-ignore:
-      - ui/**
     branches:
       - main
   pull_request:
-    paths-ignore:
-      - ui/**
 
 permissions:
   contents: read

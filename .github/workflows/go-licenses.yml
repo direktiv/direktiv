@@ -2,13 +2,9 @@ name: Check golang licenses
 
 on:
   push:
-    paths-ignore:
-      - ui/**
     branches:
       - main
   pull_request:
-    paths-ignore:
-      - ui/**
 
 permissions:
   contents: read

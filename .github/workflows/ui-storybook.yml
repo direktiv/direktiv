@@ -2,14 +2,16 @@ name: (UI) Publish Storybook to Chromatic
 
 on:
   push:
-    paths:
-      - ui/**
     branches:
       - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ui
 
     steps:
       - uses: actions/checkout@v4

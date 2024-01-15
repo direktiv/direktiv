@@ -1,13 +1,16 @@
 name: (UI) Test Playwright
 on:
   workflow_dispatch:
-    paths:
-      - ui/**
 
 jobs:
   test:
     timeout-minutes: 45
     runs-on: self-hosted
+
+    defaults:
+      run:
+        working-directory: ui
+
     steps:
       - uses: actions/checkout@v4
 
