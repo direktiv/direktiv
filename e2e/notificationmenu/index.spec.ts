@@ -63,7 +63,7 @@ test("Notification Bell updates depending on the count of Notification Messages"
 
   expect(
     page.getByTestId("notification-indicator").nth(1),
-    "the red indicator is visible"
+    "the indicator for new messages is visible"
   ).toBeVisible();
 
   await notificationBell.click();
@@ -91,7 +91,7 @@ test("Notification Bell updates depending on the count of Notification Messages"
 
   expect(
     page.getByTestId("notification-indicator").nth(1),
-    "the red indicator is visible"
+    "the indicator for new messages is visible"
   ).toBeVisible();
 
   expect(
@@ -106,7 +106,7 @@ test("Notification Bell updates depending on the count of Notification Messages"
 
   expect(
     page.getByTestId("notification-indicator").nth(1),
-    "the red indicator is NOT visible"
+    "the indicator for new messages is NOT visible"
   ).not.toBeVisible();
 
   await notificationBell.click();
