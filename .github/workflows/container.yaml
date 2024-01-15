@@ -1,4 +1,4 @@
-name: Build Container Component
+name: Build Container Component ui
 on:
   workflow_dispatch:
     inputs:
