@@ -973,7 +973,8 @@
                 "enum": [
                   "instance",
                   "workflow",
-                  "namespace"
+                  "namespace",
+                  "file"
                 ],
                 "description": "Specifies the scope from which to load the variable."
               },
