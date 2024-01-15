@@ -1,4 +1,4 @@
-name: Lint backend code
+name: Lint golang code
 
 on:
   push:
@@ -17,7 +17,6 @@ permissions:
 
 jobs:
   golangci:
-
     runs-on: ubuntu-latest
 
     steps:
