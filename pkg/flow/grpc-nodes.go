@@ -13,6 +13,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
+	"github.com/direktiv/direktiv/pkg/refactor/nmetrics"
 	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -211,8 +212,8 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 	}
 
 	if file.Typ == filestore.FileTypeWorkflow {
-		metricsWf.WithLabelValues(ns.Name, ns.Name).Dec()
-		metricsWfUpdated.WithLabelValues(ns.Name, file.Path, ns.Name).Inc()
+		nmetrics.WfDec(ns.Name)
+		nmetrics.WfUpdated(ns.Name, file.Path)
 
 		// Broadcast Event
 		err = flow.BroadcastWorkflow(ctx, BroadcastEventTypeDelete,

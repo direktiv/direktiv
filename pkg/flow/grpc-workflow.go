@@ -13,6 +13,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
+	"github.com/direktiv/direktiv/pkg/refactor/nmetrics"
 	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -223,9 +224,8 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 	if err = tx.Commit(ctx); err != nil {
 		return nil, err
 	}
-
-	metricsWf.WithLabelValues(ns.Name, ns.Name).Inc()
-	metricsWfUpdated.WithLabelValues(ns.Name, file.Path, ns.Name).Inc()
+	nmetrics.WfInc(ns.Name)
+	nmetrics.WfUpdated(ns.Name, file.Path)
 
 	flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Created workflow '%s'.", file.Path)
 

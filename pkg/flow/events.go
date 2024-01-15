@@ -19,6 +19,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	pkgevents "github.com/direktiv/direktiv/pkg/refactor/events"
+	"github.com/direktiv/direktiv/pkg/refactor/nmetrics"
 	"github.com/google/uuid"
 	"github.com/jinzhu/copier"
 	"google.golang.org/grpc/codes"
@@ -232,7 +233,7 @@ func (events *events) handleEvent(ctx context.Context, ns uuid.UUID, nsName stri
 	// }
 	e.ProcessEvents(ctx, ns, []event.Event{*ce}, events.sugar.Errorf)
 	// tx.Commit(ctx)
-	metricsCloudEventsCaptured.WithLabelValues(nsName, ce.Type(), ce.Source(), nsName).Inc()
+	nmetrics.CloudEventsCaptured(nsName, ce.Type(), ce.Source())
 	return nil
 }
 
@@ -675,7 +676,7 @@ func (events *events) ReplayCloudevent(ctx context.Context, ns *database.Namespa
 func (events *events) BroadcastCloudevent(ctx context.Context, ns *database.Namespace, event *cloudevents.Event, timer int64) error {
 	events.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Event received: %s (%s / %s) target time: %v", event.ID(), event.Type(), event.Source(), time.Unix(timer, 0))
 
-	metricsCloudEventsReceived.WithLabelValues(ns.Name, event.Type(), event.Source(), ns.Name).Inc()
+	nmetrics.CloudEventsReceived(ns.Name, event.Type(), event.Source())
 	ctx, end := traceBrokerMessage(ctx, *event)
 	defer end()
 	// add event to db

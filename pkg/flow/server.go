@@ -32,6 +32,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore/instancestoresql"
 	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
+	"github.com/direktiv/direktiv/pkg/refactor/nmetrics"
 	pubsub2 "github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	pubsubSQL "github.com/direktiv/direktiv/pkg/refactor/pubsub/sql"
 	"github.com/direktiv/direktiv/pkg/util"
@@ -221,7 +222,7 @@ func (srv *server) start(ctx context.Context) error {
 	defer telend()
 
 	go func() {
-		err := setupPrometheusEndpoint()
+		err := nmetrics.SetupPrometheusEndpoint()
 		if err != nil {
 			srv.sugar.Errorf("Failed to set up Prometheus endpoint: %v.", err)
 		}

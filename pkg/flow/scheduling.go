@@ -7,6 +7,7 @@ import (
 
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/refactor/nmetrics"
 )
 
 func (engine *engine) InstanceYield(im *instanceMemory) {
@@ -109,9 +110,8 @@ func (engine *engine) sleepWakeup(data []byte) {
 func (engine *engine) queue(im *instanceMemory) {
 	namespace := im.instance.TelemetryInfo.NamespaceName
 	workflow := GetInodePath(im.instance.Instance.WorkflowPath)
-
-	metricsWfInvoked.WithLabelValues(namespace, workflow, namespace).Inc()
-	metricsWfPending.WithLabelValues(namespace, workflow, namespace).Inc()
+	nmetrics.WfInvoked(namespace, workflow)
+	nmetrics.WfPending(namespace, workflow)
 
 	go engine.start(im)
 }
