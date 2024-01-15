@@ -1,0 +1,117 @@
+import { Meta } from "@storybook/addon-docs";
+import "./stories.css";
+
+<Meta title="Systems/Styling and CSS" />
+
+# Styling and CSS
+
+The direktiv-ui project has two approaches to styling components and pages. Below is a simplified version of this repository files in a tree view that we'll use throughout this document.
+
+<div className="subheading">Tree view of project</div>
+
+```
+/
+├── Dockerfile
+├── ...
+└── src
+    ├── App.css
+    ├── App.js
+    ├── components
+    │   ├── button
+    │   │   └── index.tsx
+    │   ├── ...
+    │   └── flexbox
+    │       ├── index.tsx
+    │       └── style.css
+    ├── index.css
+    ├── index.js
+    ├── layouts
+    │   ├── ...
+    │   └── events
+    │       ├── index.js
+    │       └── style.css
+    ├── ...
+    └── theme
+        └── style.tsx
+```
+
+<div className="subheading">APP Wide CSS</div>
+
+Before we continue onto the styling approaches, it's important to note that App-wide styling classes and variables are defined in `src/App.css`.
+
+```
+/
+├── Dockerfile
+├── ...
+└── src
+    ├── **App.css**
+    ├── App.js
+    ├── ...
+    └── theme
+        └── style.tsx
+```
+
+<div className="subheading">Approach 1 - style.css</div>
+
+When navigating the component and layout directories you will notice some of them contain a `style.css` file bundled alongside their TSX/JSX file. These CSS files plus the App.css are whats used to style the React Nodes in their directories.
+
+Below are some examples of this approach seen in the flexbox component at `src/components/flexbox/style.css` and the events layout at `src/layouts/events/style.css`.
+
+```
+/
+├── Dockerfile
+├── ...
+└── src
+    ├── App.css
+    ├── App.js
+    ├── components
+    │   ├── button
+    │   │   └── index.tsx
+    │   ├── ...
+    │   └── flexbox
+    │       ├── index.tsx
+    │       └── **style.css**
+    ├── index.css
+    ├── index.js
+    ├── layouts
+    │   ├── ...
+    │   └── events
+    │       ├── index.js
+    │       └── **style.css**
+    ├── ...
+    └── theme
+        └── style.tsx
+```
+
+<div className="subheading">Approach 2 - MUI Theme Provider</div>
+
+While approach 1 has served well since the start of this project, recently there has been an effort to switch to a UI library to make this project's styling be more consistent and maintainable as it scales in complexity.
+
+For this reason, MUI was added to this project with its ThemeProvider wrapping the entire App. Only a handful of JSX/TSX elements make use of MUI currently, below is highlighted a component that uses MUI `src/components/button/index.tsx`.
+The MUI theme can be found at `src/theme/style.tsx`.
+
+```
+/
+├── Dockerfile
+├── ...
+└── src
+    ├── App.css
+    ├── App.js
+    ├── components
+    │   ├── button
+    │   │   └── **index.tsx**
+    │   ├── ...
+    │   └── flexbox
+    │       ├── index.tsx
+    │       └── style.css
+    ├── index.css
+    ├── index.js
+    ├── layouts
+    │   ├── ...
+    │   └── events
+    │       ├── index.js
+    │       └── style.css
+    ├── ...
+    └── theme
+        └── **style.tsx**
+```

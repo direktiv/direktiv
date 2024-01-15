@@ -1,0 +1,65 @@
+import { Meta } from "@storybook/addon-docs";
+import "./stories.css";
+
+<Meta title="Systems/Pagination" />
+
+# Pagination
+
+Pagination is done with the combination of two functions:
+
+- usePageHandler - A Hook that tracks current page info and generates query strings to be used by direktiv-react-hooks or the direktiv API
+- Pagination - A React Component that renders a page selector that the user will use to change the page values of `usePageHandler`
+
+<div className="subheading">Hook & Connection</div>
+
+In direktiv-ui pagination is used to control the items a direktiv-react-hook Hook returns using limit and offset as API query parameters. For example, if a we wanted page 2 and the page size was 10 we would use the query param `?limit=10&offset=10`.
+
+```js
+// Init hook
+const PAGE_SIZE = 10;
+const pageHandler = usePageHandler(PAGE_SIZE);
+
+// Start direktiv-react-hook connection
+// pageHandler contains the pageParams property which is the API query that we need to pass to direktiv hooks.
+// Because we just init'd pageHandler pageHandler.pageParams will currently equal `limit=10&offset=0`
+const {
+  data,
+  err,
+  templates,
+  pageInfo,
+  createNode,
+  createMirrorNode,
+  deleteNode,
+  renameNode,
+} = useNodes(
+  Config.url,
+  streamNodes,
+  namespace,
+  path,
+  localStorage.getItem("apikey"),
+  pageHandler.pageParams
+);
+```
+
+<div className="subheading">Manipulating pageParams</div>
+
+The state of `pageHandler.pageParams` from the previous example can be manipulated using the Pagination component. Simply pass it to the pageHandler prop and the Pagination component will automatically update `pageParams` when the user changes pages.
+
+```js
+const PAGE_SIZE = 10
+const pageHandler = usePageHandler(PAGE_SIZE)
+const {data, err, templates, pageInfo, createNode, createMirrorNode, deleteNode, renameNode } = useNodes(Config.url, streamNodes, namespace, path, localStorage.getItem("apikey"), pageHandler.pageParams)
+
+...
+<Pagination pageHandler={pageHandler} pageInfo={pageInfo}/>
+...
+```
+
+If we take the example above were the user clicked the next page button to go to page 2 on the Pagination component, The `pageHandler` hook will update its `pageParams` property to equal `limit=10&offset=10`. This change to `pageParams` is what ultimately changes the `data` being returned from the `useNodes` direktiv-react-hook.
+
+<div className="subheading">usePageHandler Functions</div>
+
+The usePageHandler returns two functions:
+
+- updatePage - Sets the current page (This automatically updates other returned values like `pageParams`). This is used by the `Pagination` component but can be used by the parents to programmatically set the page.
+- goToFirstPage - A utility function that sets the current page to 1. This is mainly used when you need to programmatically reset the state of usePageHandler.
