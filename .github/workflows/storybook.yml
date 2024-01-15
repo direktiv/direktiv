@@ -1,0 +1,20 @@
+name: "Publish Storybook to Chromatic"
+on:
+  push:
+    branches: ["main"]
+jobs:
+  build:
+    name: Build and test design system
+    runs-on: ubuntu-latest
+    # Job steps
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # chromatic needs all commits
+      - name: Install dependencies
+        run: yarn
+      - name: Publish to Chromatic
+        uses: chromaui/action@v1
+        with:
+          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+          buildScriptName: storybook:build
