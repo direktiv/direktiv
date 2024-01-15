@@ -11,7 +11,7 @@ import { EventListenerSchemaType } from "~/api/eventListeners/schema";
 import { Link } from "react-router-dom";
 import { pages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
-import useUpdatedAt from "~/hooksNext/useUpdatedAt";
+import useUpdatedAt from "~/hooks/useUpdatedAt";
 
 const Row = ({
   listener,

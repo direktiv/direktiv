@@ -8,7 +8,7 @@ import { NodeSchemaType, fileNameSchema } from "~/api/tree/schema/node";
 import { SubmitHandler, useForm } from "react-hook-form";
 
 import Button from "~/design/Button";
-import FormErrors from "~/componentsNext/FormErrors";
+import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { TextCursorInput } from "lucide-react";
 import { addYamlFileExtension } from "../../utils";

@@ -17,7 +17,7 @@ import { Card } from "~/design/Card";
 import CopyButton from "~/design/CopyButton";
 import Editor from "~/design/Editor";
 import Examples from "./Examples";
-import FormErrors from "~/componentsNext/FormErrors";
+import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { prettifyJsonString } from "~/util/helpers";
 import { useExecuteJQuery } from "~/api/jq/mutate/executeQuery";

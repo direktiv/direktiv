@@ -14,7 +14,7 @@ import Button from "~/design/Button";
 import LogoutButton from "./LogoutButton/index.";
 import { RxChevronDown } from "react-icons/rx";
 import { twMergeClsx } from "~/util/helpers";
-import useApiKeyHandling from "~/hooksNext/useApiKeyHandling";
+import useApiKeyHandling from "~/hooks/useApiKeyHandling";
 import { useTranslation } from "react-i18next";
 
 interface UserMenuProps {

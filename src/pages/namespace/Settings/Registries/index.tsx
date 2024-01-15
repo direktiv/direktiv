@@ -10,7 +10,7 @@ import Delete from "./Delete";
 import { Dialog } from "~/design/Dialog";
 import Input from "~/design/Input";
 import ItemRow from "../components/ItemRow";
-import PaginationProvider from "~/componentsNext/PaginationProvider";
+import PaginationProvider from "~/components/PaginationProvider";
 import { RegistrySchemaType } from "~/api/registries/schema";
 import { useDeleteRegistry } from "~/api/registries/mutate/deleteRegistry";
 import { useRegistries } from "~/api/registries/query/get";

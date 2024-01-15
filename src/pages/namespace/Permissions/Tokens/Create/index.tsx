@@ -13,7 +13,7 @@ import {
 
 import Button from "~/design/Button";
 import DurationHint from "../../components/DurationHint";
-import FormErrors from "~/componentsNext/FormErrors";
+import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { InputWithButton } from "~/design/InputWithButton";
 import PermissionsSelector from "../../components/PermisionsSelector";

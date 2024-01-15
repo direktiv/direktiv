@@ -15,7 +15,7 @@ import {
 import { Card } from "~/design/Card";
 import { EventSchemaType } from "~/api/events/schema";
 import Filters from "./components/Filters";
-import { Pagination } from "~/componentsNext/Pagination";
+import { Pagination } from "~/components/Pagination";
 import { Radio } from "lucide-react";
 import Row from "./Row";
 import SendEvent from "./SendEvent";

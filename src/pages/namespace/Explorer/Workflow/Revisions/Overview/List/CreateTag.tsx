@@ -8,7 +8,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { Trans, useTranslation } from "react-i18next";
 
 import Button from "~/design/Button";
-import FormErrors from "~/componentsNext/FormErrors";
+import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { Tag } from "lucide-react";
 import { TrimmedRevisionSchemaType } from "~/api/tree/schema/node";

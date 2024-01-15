@@ -17,7 +17,7 @@ import CreateItemButton from "../components/CreateItemButton";
 import Delete from "./Delete";
 import Input from "~/design/Input";
 import ItemRow from "../components/ItemRow";
-import PaginationProvider from "~/componentsNext/PaginationProvider";
+import PaginationProvider from "~/components/PaginationProvider";
 import { SecretSchemaType } from "~/api/secrets/schema";
 import { useDeleteSecret } from "~/api/secrets/mutate/deleteSecret";
 import { useNamespaceLinting } from "~/api/namespaceLinting/query/useNamespaceLinting";

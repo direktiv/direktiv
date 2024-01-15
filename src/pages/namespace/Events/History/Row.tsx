@@ -9,7 +9,7 @@ import {
 import { EventSchemaType } from "~/api/events/schema";
 import TooltipCopyBadge from "../../../../design/TooltipCopyBadge";
 import { useTranslation } from "react-i18next";
-import useUpdatedAt from "~/hooksNext/useUpdatedAt";
+import useUpdatedAt from "~/hooks/useUpdatedAt";
 
 const Row = ({
   event,

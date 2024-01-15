@@ -16,7 +16,7 @@ import TooltipCopyBadge from "~/design/TooltipCopyBadge";
 import { pages } from "~/util/router/pages";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import useUpdatedAt from "~/hooksNext/useUpdatedAt";
+import useUpdatedAt from "~/hooks/useUpdatedAt";
 
 const Row = ({
   item,

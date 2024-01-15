@@ -21,7 +21,7 @@ import { pages } from "~/util/router/pages";
 import { statusToBadgeVariant } from "../../Instances/utils";
 import { useNamespace } from "~/util/store/namespace";
 import { useTranslation } from "react-i18next";
-import useUpdatedAt from "~/hooksNext/useUpdatedAt";
+import useUpdatedAt from "~/hooks/useUpdatedAt";
 
 export const InstanceRow = ({ instance }: { instance: InstanceSchemaType }) => {
   const { t } = useTranslation();

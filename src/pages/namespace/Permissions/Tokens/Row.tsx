@@ -19,7 +19,7 @@ import { DialogTrigger } from "~/design/Dialog";
 import PermissionsInfo from "../components/PermissionsInfo";
 import { TokenSchemaType } from "~/api/enterprise/tokens/schema";
 import { useTranslation } from "react-i18next";
-import useUpdatedAt from "~/hooksNext/useUpdatedAt";
+import useUpdatedAt from "~/hooks/useUpdatedAt";
 
 const Row = ({
   token,

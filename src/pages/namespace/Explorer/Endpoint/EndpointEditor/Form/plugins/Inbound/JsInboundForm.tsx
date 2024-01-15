@@ -1,6 +1,6 @@
 import { Controller, useForm } from "react-hook-form";
 import { FC, FormEvent } from "react";
-import FormErrors, { errorsType } from "~/componentsNext/FormErrors";
+import FormErrors, { errorsType } from "~/components/FormErrors";
 import {
   JsInboundFormSchema,
   JsInboundFormSchemaType,
@@ -8,7 +8,7 @@ import {
 
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
-import { Fieldset } from "~/componentsNext/Form/Fieldset";
+import { Fieldset } from "~/components/Form/Fieldset";
 import { PluginWrapper } from "../components/Modal";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";

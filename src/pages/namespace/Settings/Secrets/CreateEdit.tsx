@@ -16,7 +16,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
 import { EditorMimeTypeSchema } from "../Variables/MimeTypeSelect";
-import FormErrors from "~/componentsNext/FormErrors";
+import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { Textarea } from "~/design/TextArea";
 import { useTranslation } from "react-i18next";

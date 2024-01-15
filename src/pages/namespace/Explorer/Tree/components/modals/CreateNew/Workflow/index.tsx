@@ -17,7 +17,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
-import FormErrors from "~/componentsNext/FormErrors";
+import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { Textarea } from "~/design/TextArea";
 import { addYamlFileExtension } from "../../../../utils";

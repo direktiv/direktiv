@@ -11,7 +11,7 @@ import { Dialog } from "~/design/Dialog";
 import Edit from "./Edit";
 import Input from "~/design/Input";
 import ItemRow from "../components/ItemRow";
-import PaginationProvider from "~/componentsNext/PaginationProvider";
+import PaginationProvider from "~/components/PaginationProvider";
 import { VarSchemaType } from "~/api/variables/schema";
 import { triggerDownloadFromBlob } from "~/util/helpers";
 import { useDeleteVar } from "~/api/variables/mutate/deleteVariable";

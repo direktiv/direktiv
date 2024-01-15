@@ -3,10 +3,10 @@ import {
   BasicAuthFormSchemaType,
 } from "../../../schema/plugins/auth/basicAuth";
 import { FC, FormEvent } from "react";
-import FormErrors, { errorsType } from "~/componentsNext/FormErrors";
+import FormErrors, { errorsType } from "~/components/FormErrors";
 
 import { Checkbox } from "~/design/Checkbox";
-import { Fieldset } from "~/componentsNext/Form/Fieldset";
+import { Fieldset } from "~/components/Form/Fieldset";
 import { PluginWrapper } from "../components/Modal";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";

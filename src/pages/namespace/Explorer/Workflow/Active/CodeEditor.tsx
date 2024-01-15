@@ -6,7 +6,7 @@ import Editor from "~/design/Editor";
 import { FC } from "react";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
-import useUpdatedAt from "~/hooksNext/useUpdatedAt";
+import useUpdatedAt from "~/hooks/useUpdatedAt";
 
 type EditorProps = {
   value: string;

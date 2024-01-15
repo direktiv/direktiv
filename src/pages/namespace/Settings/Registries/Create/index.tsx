@@ -12,7 +12,7 @@ import {
 import { SubmitHandler, useForm } from "react-hook-form";
 
 import Button from "~/design/Button";
-import FormErrors from "~/componentsNext/FormErrors";
+import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { PlusCircle } from "lucide-react";
 import { useCreateRegistry } from "~/api/registries/mutate/createRegistry";

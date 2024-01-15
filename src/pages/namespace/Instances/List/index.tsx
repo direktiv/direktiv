@@ -13,7 +13,7 @@ import {
 import { Boxes } from "lucide-react";
 import { Card } from "~/design/Card";
 import Filters from "../components/Filters";
-import { Pagination } from "~/componentsNext/Pagination";
+import { Pagination } from "~/components/Pagination";
 import Row from "./Row";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
