@@ -12,7 +12,7 @@ import {
 
 import { Antenna } from "lucide-react";
 import { Card } from "~/design/Card";
-import { Pagination } from "~/componentsNext/Pagination";
+import { Pagination } from "~/components/Pagination";
 import Row from "./Row";
 import { itemsPerPage } from ".";
 import { useEventListeners } from "~/api/eventListeners/query/get";

@@ -1,12 +1,12 @@
 import { FC, FormEvent } from "react";
-import FormErrors, { errorsType } from "~/componentsNext/FormErrors";
+import FormErrors, { errorsType } from "~/components/FormErrors";
 import {
   KeyAuthFormSchema,
   KeyAuthFormSchemaType,
 } from "../../../schema/plugins/auth/keyAuth";
 
 import { Checkbox } from "~/design/Checkbox";
-import { Fieldset } from "~/componentsNext/Form/Fieldset";
+import { Fieldset } from "~/components/Form/Fieldset";
 import Input from "~/design/Input";
 import { PluginWrapper } from "../components/Modal";
 import { treatEmptyStringAsUndefined } from "~/pages/namespace/Explorer/utils";

@@ -13,12 +13,12 @@ import {
 import { Outlet, useParams } from "react-router-dom";
 import { useNamespace, useNamespaceActions } from "~/util/store/namespace";
 
-import Breadcrumb from "~/componentsNext/Breadcrumb";
+import Breadcrumb from "~/components/Breadcrumb";
 import Logo from "~/design/Logo";
 import { Menu } from "lucide-react";
-import Navigation from "~/componentsNext/Navigation";
-import NotificationMenu from "~/componentsNext/NotificationMenu";
-import UserMenu from "~/componentsNext/UserMenu";
+import Navigation from "~/components/Navigation";
+import NotificationMenu from "~/components/NotificationMenu";
+import UserMenu from "~/components/UserMenu";
 import { useEffect } from "react";
 import { useVersion } from "~/api/version/query/get";
 

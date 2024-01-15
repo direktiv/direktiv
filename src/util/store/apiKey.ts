@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { getOidcUser } from "~/componentsNext/OidcProvider/utils";
+import { getOidcUser } from "~/components/OidcProvider/utils";
 import { persist } from "zustand/middleware";
 const isEnterprise = !!process.env.VITE?.VITE_IS_ENTERPRISE;
 

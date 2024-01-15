@@ -7,7 +7,7 @@ import Editor from "~/design/Editor";
 import { EndpointFormSchemaType } from "./schema";
 import { FC } from "react";
 import { Form } from "./Form";
-import FormErrors from "~/componentsNext/FormErrors";
+import FormErrors from "~/components/FormErrors";
 import { RouteSchemaType } from "~/api/gateway/schema";
 import { Save } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";

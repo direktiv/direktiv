@@ -13,7 +13,7 @@ import { Pagination, PaginationLink } from "~/design/Pagination";
 import { Card } from "~/design/Card";
 import { GitCompare } from "lucide-react";
 import Header from "./Header";
-import PaginationProvider from "~/componentsNext/PaginationProvider";
+import PaginationProvider from "~/components/PaginationProvider";
 import Row from "./Row";
 import { treeKeys } from "~/api/tree";
 import { useApiKey } from "~/util/store/apiKey";

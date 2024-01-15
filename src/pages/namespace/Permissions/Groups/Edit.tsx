@@ -13,7 +13,7 @@ import {
 import { SubmitHandler, useForm } from "react-hook-form";
 
 import Button from "~/design/Button";
-import FormErrors from "~/componentsNext/FormErrors";
+import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import PermissionsSelector from "../components/PermisionsSelector";
 import { useEditGroup } from "~/api/enterprise/groups/mutation/edit";

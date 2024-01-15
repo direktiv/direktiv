@@ -11,7 +11,7 @@ import { AuthPluginForm } from "./plugins/Auth";
 import Badge from "~/design/Badge";
 import { Checkbox } from "~/design/Checkbox";
 import { FC } from "react";
-import { Fieldset } from "~/componentsNext/Form/Fieldset";
+import { Fieldset } from "~/components/Form/Fieldset";
 import { InboundPluginForm } from "./plugins/Inbound";
 import Input from "~/design/Input";
 import { OutboundPluginForm } from "./plugins/Outbound";

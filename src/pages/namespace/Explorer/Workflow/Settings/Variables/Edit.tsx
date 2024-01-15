@@ -26,7 +26,7 @@ import Alert from "~/design/Alert";
 import { Braces } from "lucide-react";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
-import FormErrors from "~/componentsNext/FormErrors";
+import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { useSetWorkflowVariable } from "~/api/tree/mutate/setVariable";
 import { useTheme } from "~/util/store/theme";

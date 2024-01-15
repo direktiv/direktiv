@@ -18,7 +18,7 @@ import { VarFormSchema, VarFormSchemaType } from "~/api/variables/schema";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
-import FormErrors from "~/componentsNext/FormErrors";
+import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { PlusCircle } from "lucide-react";
 import { useState } from "react";

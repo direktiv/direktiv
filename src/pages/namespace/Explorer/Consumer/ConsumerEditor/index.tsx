@@ -7,7 +7,7 @@ import { ConsumerFormSchemaType } from "./schema";
 import Editor from "~/design/Editor";
 import { FC } from "react";
 import { Form } from "./Form";
-import FormErrors from "~/componentsNext/FormErrors";
+import FormErrors from "~/components/FormErrors";
 import { Save } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
 import { serializeConsumerFile } from "./utils";

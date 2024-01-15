@@ -1,15 +1,15 @@
 import { Controller, useForm } from "react-hook-form";
 import { FC, FormEvent } from "react";
-import FormErrors, { errorsType } from "~/componentsNext/FormErrors";
+import FormErrors, { errorsType } from "~/components/FormErrors";
 import {
   TargetNamespaceFileFormSchema,
   TargetNamespaceFileFormSchemaType,
 } from "../../../schema/plugins/target/targetNamespaceFile";
 
-import { Fieldset } from "~/componentsNext/Form/Fieldset";
-import FilePicker from "~/componentsNext/FilePicker";
+import { Fieldset } from "~/components/Form/Fieldset";
+import FilePicker from "~/components/FilePicker";
 import Input from "~/design/Input";
-import NamespaceSelector from "~/componentsNext/NamespaceSelector";
+import NamespaceSelector from "~/components/NamespaceSelector";
 import { PluginWrapper } from "../components/Modal";
 import { treatEmptyStringAsUndefined } from "~/pages/namespace/Explorer/utils";
 import { useTranslation } from "react-i18next";

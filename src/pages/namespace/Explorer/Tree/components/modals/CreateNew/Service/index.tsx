@@ -18,7 +18,7 @@ import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
-import FormErrors from "~/componentsNext/FormErrors";
+import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { JSONSchemaForm } from "~/design/JSONschemaForm";
 import { ScrollArea } from "~/design/ScrollArea";

@@ -1,13 +1,13 @@
 import { Controller, useForm } from "react-hook-form";
 import { FC, FormEvent } from "react";
-import FormErrors, { errorsType } from "~/componentsNext/FormErrors";
+import FormErrors, { errorsType } from "~/components/FormErrors";
 import {
   TargetEventFormSchema,
   TargetEventFormSchemaType,
 } from "../../../schema/plugins/target/targetEvent";
 
-import { Fieldset } from "~/componentsNext/Form/Fieldset";
-import NamespaceSelector from "~/componentsNext/NamespaceSelector";
+import { Fieldset } from "~/components/Form/Fieldset";
+import NamespaceSelector from "~/components/NamespaceSelector";
 import { PluginWrapper } from "../components/Modal";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";

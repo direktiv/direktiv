@@ -1,14 +1,14 @@
 import { Controller, useForm } from "react-hook-form";
 import { FC, FormEvent } from "react";
-import FormErrors, { errorsType } from "~/componentsNext/FormErrors";
+import FormErrors, { errorsType } from "~/components/FormErrors";
 import {
   TargetNamespaceVarFormSchema,
   TargetNamespaceVarFormSchemaType,
 } from "../../../schema/plugins/target/targetNamespaceVar";
 
-import { Fieldset } from "~/componentsNext/Form/Fieldset";
+import { Fieldset } from "~/components/Form/Fieldset";
 import Input from "~/design/Input";
-import NamespaceSelector from "~/componentsNext/NamespaceSelector";
+import NamespaceSelector from "~/components/NamespaceSelector";
 import { PluginWrapper } from "../components/Modal";
 import { treatEmptyStringAsUndefined } from "~/pages/namespace/Explorer/utils";
 import { useTranslation } from "react-i18next";

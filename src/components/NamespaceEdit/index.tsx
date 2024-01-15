@@ -13,7 +13,7 @@ import { useEffect, useState } from "react";
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
 import { Checkbox } from "~/design/Checkbox";
-import FormErrors from "~/componentsNext/FormErrors";
+import FormErrors from "~/components/FormErrors";
 import FormTypeSelect from "./FormTypeSelect";
 import InfoTooltip from "./InfoTooltip";
 import Input from "~/design/Input";
