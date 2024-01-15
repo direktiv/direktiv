@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 
 import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
 import { headers } from "e2e/utils/testutils";
-import { workflowWithSecrets } from "./workflow";
+import { workflowWithSecrets } from "./utils";
 
 let namespace = "";
 
