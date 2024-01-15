@@ -92,7 +92,7 @@ const JqPlaygroundPage: FC = () => {
           <PlaySquare className="h-5" />
           {t("pages.jqPlayground.title")}
         </h3>
-        <Button variant="outline" asChild>
+        <Button variant="outline" asChild isAnchor>
           <a
             href="https://stedolan.github.io/jq/manual/"
             target="_blank"

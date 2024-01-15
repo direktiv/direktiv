@@ -3,17 +3,12 @@ import { useApiActions, useApiKey } from "~/util/store/apiKey";
 
 import { Authdialog } from "../Authdialog";
 import useApiKeyHandling from "~/hooksNext/useApiKeyHandling";
-import { useRefreshSession } from "~/api/enterprise/session/query/ping";
 
 export const AuthenticationProvider: FC<PropsWithChildren> = ({ children }) => {
-  const { isFetched, isCurrentKeyValid, isApiKeyRequired } =
+  const { isFetched, isCurrentKeyValid, isApiKeyRequired, showLoginModal } =
     useApiKeyHandling();
   const { setApiKey: storeApiKey } = useApiActions();
   const apiKeyFromLocalStorage = useApiKey();
-
-  useRefreshSession({
-    enabled: !!process.env.VITE?.VITE_IS_ENTERPRISE,
-  });
 
   /**
    * clean up old api keys from local storage
@@ -31,8 +26,11 @@ export const AuthenticationProvider: FC<PropsWithChildren> = ({ children }) => {
   // return nothing until we know the status of the api key and server
   if (!isFetched) return null;
 
-  // when the current key is not valid we show the auth dialog
-  if (!isCurrentKeyValid) {
+  /**
+   * when the current key is not valid and the UI is configured
+   * to handle the login screen, show the auth dialog
+   */
+  if (!isCurrentKeyValid && showLoginModal) {
     return <Authdialog />;
   }
 

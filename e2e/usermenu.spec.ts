@@ -1,6 +1,18 @@
+import { createNamespace, deleteNamespace } from "./utils/namespace";
 import { expect, test } from "@playwright/test";
 
 import { getStyle } from "./utils/testutils";
+
+let namespace = "";
+
+test.beforeAll(async () => {
+  namespace = await createNamespace();
+});
+
+test.afterAll(async () => {
+  await deleteNamespace(namespace);
+  namespace = "";
+});
 
 test("it is possible to switch between light and dark mode", async ({
   page,

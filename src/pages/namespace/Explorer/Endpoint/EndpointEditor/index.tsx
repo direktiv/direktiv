@@ -1,3 +1,5 @@
+import { compareYamlStructure, jsonToYaml } from "../../utils";
+
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
@@ -9,7 +11,6 @@ import FormErrors from "~/componentsNext/FormErrors";
 import { RouteSchemaType } from "~/api/gateway/schema";
 import { Save } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
-import { jsonToYaml } from "../../utils";
 import { serializeEndpointFile } from "./utils";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useTheme } from "~/util/store/theme";
@@ -27,9 +28,10 @@ type EndpointEditorProps = {
 const EndpointEditor: FC<EndpointEditorProps> = ({ data, path }) => {
   const { t } = useTranslation();
   const theme = useTheme();
-  const endpointFileContent = atob(data.revision?.source ?? "");
-  const [endpointConfig, endpointConfigError] =
-    serializeEndpointFile(endpointFileContent);
+  const fileContentFromServer = atob(data.revision?.source ?? "");
+  const [endpointConfig, endpointConfigError] = serializeEndpointFile(
+    fileContentFromServer
+  );
   const { mutate: updateRoute, isLoading } = useUpdateWorkflow();
 
   const save = (data: EndpointFormSchemaType) => {
@@ -51,7 +53,11 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data, path }) => {
         values,
       }) => {
         const preview = jsonToYaml(values);
-        const isDirty = !endpointConfigError && preview !== endpointFileContent;
+        const filehasChanged = compareYamlStructure(
+          preview,
+          fileContentFromServer
+        );
+        const isDirty = !endpointConfigError && !filehasChanged;
         const disableButton = isLoading || !!endpointConfigError;
 
         return (

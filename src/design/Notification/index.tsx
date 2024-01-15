@@ -62,7 +62,10 @@ const NotificationMessage = ({
   text: string;
   icon: LucideIcon;
 }) => (
-  <div className="flex flex-col focus:bg-gray-3 dark:focus:bg-gray-dark-3">
+  <div
+    className="flex flex-col focus:bg-gray-3 dark:focus:bg-gray-dark-3"
+    data-testid="notification-text"
+  >
     <div className="flex items-center px-2">
       <div className="w-max">
         <Icon
@@ -92,11 +95,13 @@ const Notification: FC<NotificationPropsType> = ({
           variant="ghost"
           className="group items-center px-1"
           role="button"
+          data-testid="notification-bell"
         >
           <div className="relative h-6 w-6">
             <Bell className="relative" />
             {showIndicator && (
               <div
+                data-testid="notification-indicator"
                 data-state="open"
                 className={twMergeClsx(
                   "absolute top-0 right-0 rounded-full border-2 border-white bg-danger-10 p-1 transition-colors dark:border-black dark:bg-danger-dark-10",

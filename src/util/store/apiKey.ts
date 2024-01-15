@@ -1,5 +1,7 @@
 import { create } from "zustand";
+import { getOidcUser } from "~/componentsNext/OidcProvider/utils";
 import { persist } from "zustand/middleware";
+const isEnterprise = !!process.env.VITE?.VITE_IS_ENTERPRISE;
 
 interface ApiKeyState {
   apiKey: string | null;
@@ -25,5 +27,16 @@ const useApiKeyState = create<ApiKeyState>()(
   )
 );
 
-export const useApiKey = () => useApiKeyState((state) => state.apiKey);
+export const useApiKey = () =>
+  useApiKeyState((state) => {
+    if (isEnterprise) {
+      /**
+       * in enterprise mode we need to read from a different source
+       */
+      const user = getOidcUser();
+      return user?.access_token ?? null;
+    }
+    return state.apiKey;
+  });
+
 export const useApiActions = () => useApiKeyState((state) => state.actions);
