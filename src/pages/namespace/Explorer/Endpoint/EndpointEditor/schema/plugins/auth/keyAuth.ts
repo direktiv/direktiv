@@ -2,7 +2,7 @@ import { authPluginTypes } from ".";
 import { z } from "zod";
 
 export const KeyAuthFormSchema = z.object({
-  type: z.literal(authPluginTypes.keyAuth),
+  type: z.literal(authPluginTypes.keyAuth.name),
   configuration: z.object({
     add_username_header: z.boolean(),
     add_tags_header: z.boolean(),

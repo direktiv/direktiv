@@ -1,5 +1,6 @@
 import { useCallback, useEffect } from "react";
 
+import { getAuthHeader } from "./utils";
 import { z } from "zod";
 
 type HttpStreamingOptions = {
@@ -59,9 +60,7 @@ export const useHttpStreaming = ({
         signal: abortController.signal,
         ...(apiKey
           ? {
-              headers: {
-                "direktiv-token": apiKey,
-              },
+              headers: { ...getAuthHeader(apiKey) },
             }
           : {}),
         /**

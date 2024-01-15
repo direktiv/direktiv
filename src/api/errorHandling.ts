@@ -54,7 +54,7 @@ type PermissionStatus =
 
 export const getPermissionStatus = (error: unknown): PermissionStatus => {
   if (isApiErrorSchema(error)) {
-    if (error.response.status === 401 || error.response.status === 403) {
+    if (error.response.status === 403 || error.response.status === 401) {
       return {
         isAllowed: false,
         message: getMessageFromApiError(error),

@@ -2,7 +2,7 @@ import { targetPluginTypes } from ".";
 import { z } from "zod";
 
 export const TargetFlowVarFormSchema = z.object({
-  type: z.literal(targetPluginTypes.targetFlowVar),
+  type: z.literal(targetPluginTypes.targetFlowVar.name),
   configuration: z.object({
     namespace: z.string().optional(),
     flow: z.string().nonempty(),

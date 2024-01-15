@@ -1,11 +1,10 @@
-FROM openresty/openresty:1.21.4.3-2-focal
+FROM nginx:bookworm
 
-RUN ["luarocks", "install", "lua-resty-session", "3.10"]
-RUN ["luarocks", "install", "lua-resty-http"]
-RUN ["luarocks", "install", "lua-resty-jwt"]
-RUN luarocks install lua-resty-openidc
-
+RUN ls -la
 ADD dist /usr/share/nginx/html
-RUN echo '{ "response": "pong" }' > /usr/share/nginx/html/ping
-
 COPY conf/prod/nginx.conf /etc/nginx/conf.d/default.conf
+
+COPY conf/prod/entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+ENTRYPOINT ["entrypoint.sh"]

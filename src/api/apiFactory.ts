@@ -1,10 +1,7 @@
 import { FileSchema } from "./schema";
 import { createApiErrorFromResponse } from "./errorHandling";
+import { getAuthHeader } from "./utils";
 import { z } from "zod";
-
-const getAuthHeader = (apiKey: string) => ({
-  "direktiv-token": apiKey,
-});
 
 type HTTPMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 
@@ -94,7 +91,6 @@ export const apiFactory =
   > =>
   async ({ apiKey, payload, headers, urlParams }): Promise<TSchema> => {
     const payloadFileCheck = FileSchema.safeParse(payload);
-
     let body;
     if (typeof payload === "string") {
       body = payload;
