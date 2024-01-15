@@ -9,6 +9,8 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
+	"github.com/direktiv/direktiv/pkg/util"
+	"go.opentelemetry.io/otel/trace"
 )
 
 const (
@@ -79,12 +81,15 @@ func (tf FlowPlugin) Config() interface{} {
 func (tf FlowPlugin) ExecutePlugin(_ *core.ConsumerFile,
 	w http.ResponseWriter, r *http.Request,
 ) bool {
+	tracer := trace.SpanFromContext(r.Context()).TracerProvider().Tracer("direktiv/flow")
+	ctx, childSpan := tracer.Start(r.Context(), "target-workflow-plugin")
+	defer childSpan.End()
 	// request failed if nil and response already written
 	resp := doDirektivRequest(direktivWorkflowRequest, map[string]string{
 		namespaceArg: tf.config.Namespace,
 		flowArg:      tf.config.Flow,
 		execArg:      tf.config.internalAsync,
-	}, w, r)
+	}, w, r.WithContext(ctx))
 	if resp == nil {
 		return false
 	}
@@ -160,7 +165,11 @@ func doDirektivRequest(requestType direktivRequestType, args map[string]string,
 	}
 
 	client := http.Client{}
-	req, err := http.NewRequestWithContext(r.Context(), method, url, body)
+	ctx := r.Context()
+	req, err := http.NewRequestWithContext(ctx, method, url, body)
+
+	endTrace := util.TraceGWHTTPRequest(ctx, req, "direktiv/flow")
+	defer endTrace()
 	if err != nil {
 		plugins.ReportError(w, http.StatusInternalServerError,
 			"can not create request", err)
@@ -173,7 +182,7 @@ func doDirektivRequest(requestType direktivRequestType, args map[string]string,
 		req.Header.Set("Direktiv-Token", os.Getenv("DIREKTIV_API_KEY"))
 	}
 
-	resp, err := client.Do(req)
+	resp, err := client.Do(req.WithContext(ctx))
 	if err != nil {
 		plugins.ReportError(w, http.StatusInternalServerError,
 			"can not execute flow", err)
