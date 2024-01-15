@@ -11,6 +11,10 @@ RELEASE := ""
 RELEASE_TAG = $(shell v='$${RELEASE:+:}$${RELEASE}'; echo "$${v%.*}")
 FULL_VERSION := $(shell v='$${RELEASE}$${RELEASE:+-}${GIT_HASH}${GIT_DIRTY}'; echo "$${v%.*}")
 
+# used by binary build
+CGO_LDFLAGS := "CGO_LDFLAGS=-static -w -s"
+GO_BUILD_TAGS := "osusergo,netgo"
+
 .SECONDARY:
 
 .PHONY: help
@@ -184,12 +188,12 @@ scan: push
 .PHONY: cli
 cli:
 	@echo "Building linux cli binary...";
-	@export ${CGO_LDFLAGS} && go build -tags ${GO_BUILD_TAGS} -o direktivctl cmd/exec/main.go
+	@export ${CGO_LDFLAGS} && go build -tags ${GO_BUILD_TAGS}  -o direktivctl cmd/exec/main.go
 	@echo "Building mac cli binary...";
 	@export ${CGO_LDFLAGS} && GOOS=darwin go build -tags ${GO_BUILD_TAGS} -o direktivctl-darwin cmd/exec/main.go
 	@echo "Building mac cli arm64 binary...";
 	@export ${CGO_LDFLAGS} && GOOS=darwin GOARCH=arm64 go build -tags ${GO_BUILD_TAGS} -o direktivctl-darwin-arm64 cmd/exec/main.go
-	@echo "Building linux cli binary...";
+	@echo "Building windows cli binary...";
 	@export ${CGO_LDFLAGS} && GOOS=windows go build -tags ${GO_BUILD_TAGS} -o direktivctl-windows.exe cmd/exec/main.go
 
 
