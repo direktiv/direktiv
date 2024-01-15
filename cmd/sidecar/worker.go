@@ -159,7 +159,7 @@ func (worker *inboundWorker) prepOneFunctionFiles(ctx context.Context, ir *funct
 	return nil
 }
 
-func untarFile(tr *tar.Reader, path string) error {
+func untarFile(tr *tar.Reader, perms string, path string) error {
 	pdir, _ := filepath.Split(path)
 	err := os.MkdirAll(pdir, 0o750)
 	if err != nil {
@@ -183,10 +183,22 @@ func untarFile(tr *tar.Reader, path string) error {
 		return err
 	}
 
+	if perms != "" {
+		p, err := strconv.ParseUint(perms, 8, 32)
+		if err != nil {
+			return fmt.Errorf("failed to parse file permissions: %w", err)
+		}
+
+		err = os.Chmod(f.Name(), os.FileMode(uint32(p)))
+		if err != nil {
+			return fmt.Errorf("failed to apply file permissions: %w", err)
+		}
+	}
+
 	return nil
 }
 
-func untar(dst string, r io.Reader) error {
+func untar(dst string, perms string, r io.Reader) error {
 	err := os.MkdirAll(dst, 0o750)
 	if err != nil {
 		return err
@@ -213,7 +225,7 @@ func untar(dst string, r io.Reader) error {
 		path := filepath.Join(dst, hdr.Name)
 
 		if hdr.Typeflag == tar.TypeReg {
-			err = untarFile(tr, path)
+			err = untarFile(tr, perms, path)
 			if err != nil {
 				return err
 			}
@@ -230,7 +242,7 @@ func untar(dst string, r io.Reader) error {
 	return nil
 }
 
-func writeFile(dst string, r io.Reader) error {
+func writeFile(dst, perms string, r io.Reader) error {
 	f, err := os.Create(dst)
 	if err != nil {
 		return err
@@ -248,6 +260,18 @@ func writeFile(dst string, r io.Reader) error {
 		return err
 	}
 
+	if perms != "" {
+		p, err := strconv.ParseUint(perms, 8, 32)
+		if err != nil {
+			return fmt.Errorf("failed to parse file permissions: %w", err)
+		}
+
+		err = os.Chmod(f.Name(), os.FileMode(uint32(p)))
+		if err != nil {
+			return fmt.Errorf("failed to apply file permissions: %w", err)
+		}
+	}
+
 	return nil
 }
 
@@ -262,7 +286,7 @@ func (wr *WrapperReader) Read(p []byte) (n int, err error) {
 	return o, err
 }
 
-func (worker *inboundWorker) writeFile(ftype, dst string, pr io.Reader) error {
+func (worker *inboundWorker) writeFile(ftype, dst, perms string, pr io.Reader) error {
 	var err error
 
 	// wrap reader to detect empty tar/gz and DON'T error if the variable
@@ -273,14 +297,14 @@ func (worker *inboundWorker) writeFile(ftype, dst string, pr io.Reader) error {
 		fallthrough
 
 	case "plain":
-		err = writeFile(dst, pr)
+		err = writeFile(dst, perms, pr)
 		if err != nil {
 			return err
 		}
 
 	case "base64":
 		r := base64.NewDecoder(base64.StdEncoding, pr)
-		err = writeFile(dst, r)
+		err = writeFile(dst, perms, r)
 		if err != nil {
 			return err
 		}
@@ -291,7 +315,7 @@ func (worker *inboundWorker) writeFile(ftype, dst string, pr io.Reader) error {
 			rd: pr,
 		}
 
-		err = untar(dst, wr)
+		err = untar(dst, perms, wr)
 		if err != nil && wr.offset > 0 {
 			return err
 		}
@@ -316,7 +340,7 @@ func (worker *inboundWorker) writeFile(ftype, dst string, pr io.Reader) error {
 			return err
 		}
 
-		err = untar(dst, gr)
+		err = untar(dst, perms, gr)
 		if err != nil && wr.offset > 0 {
 			return err
 		}
@@ -347,7 +371,7 @@ func (worker *inboundWorker) fileWriter(ctx context.Context, ir *functionRequest
 		return err
 	}
 
-	err = worker.writeFile(f.Type, dst, pr)
+	err = worker.writeFile(f.Type, dst, f.Permissions, pr)
 	if err != nil {
 		return err
 	}

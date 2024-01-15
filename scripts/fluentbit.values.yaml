@@ -1,4 +1,4 @@
-config: 
+config:
   customParsers: |
     [PARSER]
         Name prefix_tail
@@ -10,21 +10,28 @@ config:
   inputs: |
     [INPUT]
         Name tail
-        Path /var/log/containers/direktiv-api*api*.log,/var/log/containers/direktiv-flow*flow*.log,/var/log/containers/direktiv-functions*functions*.log
-        parser prefix_tail
+        Path /var/log/containers/*flow*.log
+        Parser prefix_tail
+        Tag kube.*
         Mem_Buf_Limit 5MB
         Skip_Long_Lines Off
+  filters: |
+    [FILTER]
+        Name             kubernetes
+        Match            kube.*
+        Kube_URL         https://kubernetes.default.svc:443
+        Kube_CA_File     /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        Kube_Token_File  /var/run/secrets/kubernetes.io/serviceaccount/token
+        Kube_Tag_Prefix  kube.var.log.containers.
+        Buffer_Size      72k
   outputs: |
-      [OUTPUT]
-          Name stdout
-      [OUTPUT]
-          name   loki
-          match  *
-          host  loki
-          port  3100
-          http_user   loki
-          http_passwd loki
-          line_format json
-          labels job=fluent-bit, $log['state'], $log['state-id'], $log['namespace'], $log['workflow'], $log['trace'], $log['httppath']
-          label_keys $log['level'], $log['stream'], $log['component'], $log['built'], $log['trace'], $log['log-recipient'], $log['invoker'], $log['callpath'] "
- 
+    [OUTPUT]
+        name   loki
+        match  *
+        host  loki
+        port  3100
+        http_user   loki
+        http_passwd loki
+        line_format json
+        auto_kubernetes_labels off
+        labels job=fluent-bit, level=$log['level'], stream=$log['stream'], component=$log['component'], build=$log['build'], trace=$log['trace'], namespace=$log['namespace'], workflow=$log['workflow'], httppath=$log['httppath'], log-recipient=$log['log-recipient'], invoker=$log['invoker'], callpath=$log['callpath'], mirrorid=$log['mirror-id'], recipient=$log['recipientType'], source=$log['source']

@@ -1,3 +1,33 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: direktiv-grafana-datasources
+data:
+  ds.yaml: |-
+    {
+        "apiVersion": 1,
+        "datasources": [
+            {
+              "uid":"tempo",
+              "name": "Tempo",
+              "type": "tempo",
+              "url": "http://tempo.default.svc.cluster.local:3100"
+            },
+            {
+              "uid":"loki",
+              "name": "Loki",
+              "type": "loki",
+              "url": "http://loki.default.svc.cluster.local:3100"
+            },
+            {
+              "uid":"prometheus",
+              "name": "Prometheus",
+              "type": "prometheus",
+              "url": "http://direktiv-prometheus-server.direktiv.svc.cluster.local"
+            }
+        ]
+    }
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -92,12 +122,14 @@ spec:
               cpu: 250m
               memory: 750Mi
           volumeMounts:
-            - mountPath: /var/lib/grafana
-              name: grafana-pv
+              - mountPath: /etc/grafana/provisioning/datasources
+                name: direktiv-grafana-datasources
+                readOnly: false
       volumes:
-        - name: grafana-pv
-          persistentVolumeClaim:
-            claimName: grafana-pvc
+        - name: direktiv-grafana-datasources
+          configMap:
+              defaultMode: 420
+              name: direktiv-grafana-datasources
 ---
 apiVersion: v1
 kind: Service

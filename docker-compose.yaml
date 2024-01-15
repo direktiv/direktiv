@@ -51,7 +51,7 @@ services:
     image: ${DIREKTIV_UI_IMAGE}
     environment:
       - UI_BACKEND=http://flow:8181/api/
-      - UI_PORT=8181
+      - UI_PORT=8080
     ports:
       # api port
       - "8080:8080"
@@ -65,6 +65,6 @@ services:
     environment:
       - NODE_TLS_REJECT_UNAUTHORIZED=0
       - DIREKTIV_HOST=http://flow:8181
-    command: npm --prefix /tests run all -- /
+    command: npm --prefix /tests run without-k8s
     depends_on:
       - flow

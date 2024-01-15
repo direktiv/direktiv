@@ -3,7 +3,6 @@ import request from "supertest";
 import retry from "jest-retries";
 
 const testNamespace = "gateway";
-
 const limitedNamespace = "limited_namespace";
 
 
@@ -16,6 +15,18 @@ const workflow = `
     transform:
       result: Hello world!
 `
+
+
+const workflowNotToBetriggered = `
+  direktiv_api: workflow/v1
+  description: A simple 'no-op' state that returns 'Hello world!'
+  states:
+  - id: helloworld
+    type: noop
+    transform:
+      result: This wf should not be triggered!
+`
+
 const workflowEcho = `
   direktiv_api: workflow/v1
   description: A simple 'no-op' state that returns 'Hello world!'
@@ -34,6 +45,19 @@ const endpointWorkflow = `
       type: target-flow
       configuration:
           namespace: ` + testNamespace + `
+          flow: /workflow.yaml
+  methods: 
+    - GET
+  path: /endpoint1`
+
+const endpointTargetLimitedNamespaceWorkflow = `
+  direktiv_api: endpoint/v1
+  allow_anonymous: true
+  plugins:
+    target:
+      type: target-flow
+      configuration:
+          namespace: ` + limitedNamespace + `
           flow: /workflow.yaml
   methods: 
     - GET
@@ -343,5 +367,44 @@ describe("Test Complex POST method for target workflow plugin", () => {
   ).send({"message":"Hi"})
       expect(req.statusCode).toEqual(200);
       expect(req.text).toEqual("{\"result\":{\"message\":\"Changed\"}}")
+  });
+});
+
+describe("Test scope for target workflow plugin", () => {
+  beforeAll(common.helpers.deleteAllNamespaces);
+
+  common.helpers.itShouldCreateNamespace(it, expect, limitedNamespace);
+  common.helpers.itShouldCreateNamespace(it, expect, testNamespace);
+
+  common.helpers.itShouldCreateFile(
+    it,
+    expect,
+    limitedNamespace,
+    "/workflow.yaml",
+    workflow
+  );
+
+  common.helpers.itShouldCreateFile(
+    it,
+    expect,
+    testNamespace,
+    "/workflow.yaml",
+    workflowNotToBetriggered
+  );
+
+  common.helpers.itShouldCreateFile(
+      it,
+      expect,
+      testNamespace,
+      "/endpoint7.yaml",
+      endpointTargetLimitedNamespaceWorkflow
+  );
+
+  it(`should return a workflow run from limited namespace`, async () => {
+  const req = await request(common.config.getDirektivHost()).get(
+      `/gw/endpoint1`
+  );
+    expect(req.statusCode).toEqual(200);
+    expect(req.text).toEqual("{\"result\":\"Hello world!\"}")
   });
 });
