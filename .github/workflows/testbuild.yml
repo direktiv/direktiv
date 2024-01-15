@@ -1,0 +1,20 @@
+name: Make test build
+on:
+  push:
+    branches-ignore:
+      - "main"
+jobs:
+  build:
+    name: Make build and run testsuite
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v3
+      - name: run linter, typecheck, prettier and make testbuild
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.18.1
+      - run: npm install -g yarn
+      - run: yarn install
+      # build will automatically run prebuild
+      - run: yarn build

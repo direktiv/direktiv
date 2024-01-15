@@ -1,0 +1,1591 @@
+{
+  "pages": {
+    "error": {
+      "status": "Oops!",
+      "message": "Something went wrong here....",
+      "goBack": "Go back",
+      "reload": "Reload",
+      "goHome": "Go to homepage"
+    },
+    "onboarding": {
+      "welcomeTo": "Welcome to",
+      "noNamespace": "Create a namespace to get started.",
+      "createNamespaceBtn": "Create namespace",
+      "error": "There was an error fetching the namespaces",
+      "links": {
+        "docs": {
+          "title": "Getting started",
+          "description": "Read our docs"
+        },
+        "slack": {
+          "title": "Slack",
+          "description": "Join our Open Source Support channel on Slack"
+        },
+        "github": {
+          "title": "Github",
+          "description": "Check out our Github repository"
+        }
+      }
+    },
+    "authenticate": {
+      "title": "Authenticate",
+      "description": "An authentication token is required to connect to the API.",
+      "apiKey": "API key",
+      "apiKeyPlaceholder": "Enter your API key",
+      "wrongKey": "The API key is incorrect",
+      "wrongOldKey": "The previously used API key is incorrect, it may have changed after your last use",
+      "loginBtn": "Login"
+    },
+    "explorer": {
+      "tree": {
+        "list": {
+          "oneLevelUp": "..",
+          "contextMenu": {
+            "title": "Edit",
+            "delete": "Delete",
+            "rename": "Rename"
+          },
+          "empty": {
+            "title": "this directory is empty",
+            "createWorkflow": "Create Workflow",
+            "createService": "Create Service",
+            "createEndpoint": "Create Endpoint",
+            "createDirectory": "Create Directory"
+          }
+        },
+        "rename": {
+          "title": "Rename",
+          "renameBtn": "Rename",
+          "cancelBtn": "Cancel",
+          "nameAlreadyExists": "The name already exists"
+        },
+        "newDirectory": {
+          "title": "Create a new directory",
+          "nameLabel": "Name",
+          "folderPlaceholder": "folder-name",
+          "nameAlreadyExists": "The name already exists",
+          "createBtn": "Create",
+          "cancelBtn": "Cancel"
+        },
+        "fileViewer": {
+          "title": "Preview",
+          "notSupported": "Preview for this mime type is not currently supported.",
+          "closeBtn": "Close"
+        },
+        "delete": {
+          "title": "Delete",
+          "fileMsg": "Are you sure you want to delete <b>{{name}}</b>? This cannot be undone.",
+          "directoryMsg": "Are you sure you want to delete <b>{{name}}</b>? All content of this directory will be deleted as well.",
+          "cancelBtn": "Cancel",
+          "deleteBtn": "Delete"
+        },
+        "newFileButton": {
+          "buttonText": "New",
+          "label": "Create",
+          "items": {
+            "directory": "New Directory",
+            "workflow": "New Workflow",
+            "service": "New Service",
+            "gateway": {
+              "label": "Gateway",
+              "route": "New Route",
+              "consumer": "New Consumer"
+            }
+          }
+        },
+        "newWorkflow": {
+          "title": "Create a new workflow",
+          "nameLabel": "Name",
+          "namePlaceholder": "workflow-name.yaml",
+          "templateLabel": "Template",
+          "nameAlreadyExists": "The name already exists",
+          "cancelBtn": "Cancel",
+          "createBtn": "Create"
+        },
+        "newService": {
+          "title": "Create a new service",
+          "nameLabel": "Name",
+          "namePlaceholder": "service-name.yaml",
+          "nameAlreadyExists": "The name already exists",
+          "cancelBtn": "Cancel",
+          "createBtn": "Create",
+          "form": {
+            "image": "Image",
+            "scale": "Scale",
+            "size": "Size",
+            "cmd": "Cmd",
+            "envs": "Envs",
+            "postStartExec": "Post Start Exec"
+          }
+        },
+        "newRoute": {
+          "title": "Create a new route",
+          "nameLabel": "Name",
+          "namePlaceholder": "route-name.yaml",
+          "nameAlreadyExists": "The name already exists",
+          "cancelBtn": "Cancel",
+          "createBtn": "Create"
+        },
+        "newConsumer": {
+          "title": "Create a new consumer",
+          "nameLabel": "Name",
+          "namePlaceholder": "consumer-name.yaml",
+          "nameAlreadyExists": "The name already exists",
+          "cancelBtn": "Cancel",
+          "createBtn": "Create"
+        },
+        "workflow": {
+          "revisions": {
+            "overview": {
+              "trafficShaping": {
+                "title": "Traffic Shaping",
+                "description": "Change the way the traffic for this workflow is distributed between two different revisions.",
+                "setup": "The traffic will be split between <b>{{aName}}</b> and <b>{{bName}}</b> with a ratio of <b>{{aWeight}}</b> to <b>{{bWeight}}</b> %",
+                "hint": "Please select 2 different revisions to configure traffic shaping.",
+                "saveBtn": "Save",
+                "revisionSelector": {
+                  "placeholder": "Select Revision...",
+                  "searchPlaceholder": "Search Revisions...",
+                  "tags": "Tags",
+                  "revisions": "Revisions",
+                  "notFound": "No Revisions found."
+                }
+              },
+              "list": {
+                "title": "Revisions",
+                "distribution": "{{count}} % of traffic distribution",
+                "contextMenu": {
+                  "title": "Actions",
+                  "delete": "Delete",
+                  "tag": "Create Tag",
+                  "revert": "Revert to Revision"
+                },
+                "delete": {
+                  "titleTag": "Delete Tag",
+                  "titleRevision": "Delete Revision",
+                  "description": "Are you sure you want to delete <b>{{name}}</b>? This cannot be undone.",
+                  "revisionNote": "Please note that this will also delete all corresponding tags as well.",
+                  "cancelBtn": "Cancel",
+                  "deleteBtn": "Delete"
+                },
+                "tag": {
+                  "titleTag": "Create a Tag",
+                  "description": "You are about to create a tag based on <b>{{name}}</b>.",
+                  "tagAlreadyExist": "This tag already exists.",
+                  "cancelBtn": "Cancel",
+                  "createBtn": "Create Tag"
+                },
+                "revert": {
+                  "title": "Revert to Revision",
+                  "description": "Are you sure you want to revert to <b>{{name}}</b>?",
+                  "cancelBtn": "Cancel",
+                  "revertBtn": "Revert",
+                  "error": {
+                    "title": "Error",
+                    "description": "Something went wrong reverting this workflow."
+                  },
+                  "success": {
+                    "title": "Successfully reverted",
+                    "description": "Your workflow was reverted to {{name}}.",
+                    "action": "Open workflow"
+                  }
+                }
+              },
+              "detail": {
+                "backBtn": "Revisions List",
+                "readOnlyNote": "You cannot edit an old revision",
+                "revertBtn": "Revert"
+              }
+            }
+          },
+          "runWorkflow": {
+            "title": "Run Workflow",
+            "jsonInput": "JSON Input",
+            "formInput": "Form Input",
+            "formInputHint": "The first state of this Workflow must be of type 'validate' to generate a form.",
+            "learnMoreBtn": "Learn more",
+            "cancelBtn": "Cancel",
+            "runBtn": "Run",
+            "genericRunError": "Something went wrong running this workflow."
+          },
+          "settings": {
+            "variables": {
+              "list": {
+                "title": "Workflow variables",
+                "createBtn": "Add variable",
+                "emptySearch": "No variable matches your search",
+                "empty": "No variable found"
+              },
+              "create": {
+                "title": "Add a workflow variable"
+              },
+              "edit": {
+                "title": "Edit {{name}}"
+              }
+            }
+          },
+          "overview": {
+            "instances": {
+              "header": "Workflow instances",
+              "noResult": "No instances of this workflow have been executed recently."
+            },
+            "metrics": {
+              "header": "Success / failure rate",
+              "successful": "Successful: {{percentage}}%",
+              "failed": "Failed: {{percentage}}%",
+              "noResult": "No data available"
+            },
+            "trafficDistribution": {
+              "header": "Traffic Distribution",
+              "noResult": "Traffic shaping is not configured for this workflow."
+            },
+            "services": {
+              "header": "Workflow services"
+            }
+          }
+        }
+      },
+      "workflow": {
+        "menu": {
+          "activeRevision": "Active Revision",
+          "revisions": "Revisions",
+          "overview": "Overview",
+          "settings": "Settings",
+          "services": "Services"
+        },
+        "headline": "Latest",
+        "updated": "Updated {{relativeTime}} ago",
+        "runBtn": "Run",
+        "toggleActiveBtn": {
+          "setActive": "Activate workflow",
+          "setInactive": "Deactivate workflow"
+        },
+        "apiCommands": {
+          "tooltip": "Open API Commands",
+          "title": "Workflow API Interactions",
+          "namespace": "Namespace",
+          "namespacePlaceholder": "your-namespace",
+          "workflow": "Workflow",
+          "workflowPlaceholder": "path-to-workflow",
+          "interaction": "Interaction",
+          "interactionPlaceholder": "select an interaction",
+          "openDocsBtn": "Open API Docs",
+          "copyBtn": "Copy as cURL command",
+          "copyBtnCopied": "Copied",
+          "labels": {
+            "execute": "Execute workflow",
+            "awaitExecute": "Execute workflow and wait",
+            "update": "Update a workflow"
+          }
+        },
+        "editor": {
+          "unsavedNote": "unsaved changes",
+          "theresOneIssue": "There is an issue",
+          "revisionsBtn": "Revisions",
+          "makeRevision": "Make Revision",
+          "revertToPrevious": "Revert to previous revision",
+          "runBtn": "Run",
+          "saveBtn": "Save",
+          "layout": {
+            "code": "Code View",
+            "diagram": "Diagram View",
+            "splitVertically": "Split Vertically",
+            "splitHorizontally": "Split Horizontally"
+          }
+        }
+      },
+      "service": {
+        "goToServices": "Go to services",
+        "editor": {
+          "saveBtn": "Save",
+          "helpTitle": "Example service file"
+        }
+      },
+      "endpoint": {
+        "goToRoutes": "Go to routes",
+        "editor": {
+          "form": {
+            "serialisationError": "There was an error serializing the form data",
+            "path": "path",
+            "timeout": "timeout (optional)",
+            "methods": "methods",
+            "allowAnonymous": "allow anonymous",
+            "plugins": {
+              "saveBtn": "Save",
+              "deleteBtn": "Delete",
+              "moveUpBtn": "Move up",
+              "moveDownBtn": "Move down",
+              "target": {
+                "table": {
+                  "headline": "Target plugin",
+                  "addButton": "set target plugin"
+                },
+                "modal": {
+                  "headline": "Configure target plugin",
+                  "label": "Target plugin",
+                  "placeholder": "Please select a target plugin"
+                },
+                "types": {
+                  "instant-response": "Instant Response",
+                  "target-flow": "Workflow",
+                  "target-flow-var": "Workflow Variable",
+                  "target-namespace-file": "Namespace File",
+                  "target-namespace-var": "Namespace Variable"
+                },
+                "instantResponse": {
+                  "statusCode": "Status Code",
+                  "statusCodePlaceholder": "200",
+                  "contentType": "Content Type (optional)",
+                  "contentTypePlaceholder": "application/json",
+                  "statusMessage": "Status Message (optional)"
+                },
+                "targetFlow": {
+                  "namespace": "Namespace (optional)",
+                  "workflow": "Workflow",
+                  "asynchronous": "Asynchronous",
+                  "contentType": "Content Type (optional)",
+                  "contentTypePlaceholder": "application/json"
+                },
+                "targetFlowVar": {
+                  "namespace": "Namespace (optional)",
+                  "workflow": "Workflow",
+                  "variable": "Variable",
+                  "contentType": "Content Type (optional)",
+                  "contentTypePlaceholder": "application/json"
+                },
+                "targetNamespaceFile": {
+                  "namespace": "Namespace (optional)",
+                  "file": "File",
+                  "contentType": "Content Type (optional)",
+                  "contentTypePlaceholder": "application/json"
+                },
+                "targetNamespaceVariable": {
+                  "namespace": "Namespace (optional)",
+                  "variable": "Variable",
+                  "contentType": "Content Type (optional)",
+                  "contentTypePlaceholder": "application/json"
+                }
+              },
+              "inbound": {
+                "modal": {
+                  "headlineAdd": "Add inbound plugin",
+                  "headlineEdit": "Edit inbound plugin",
+                  "label": "Inbound plugin",
+                  "placeholder": "Please select an inbound plugin"
+                },
+                "table": {
+                  "headline": "{{count}} inbound plugins",
+                  "headline_one": "{{count}} inbound plugin",
+                  "addButton": "add inbound plugin"
+                },
+                "types": {
+                  "acl": "Access control list (acl)",
+                  "js-inbound": "JavaScript",
+                  "request-convert": "Request convert"
+                },
+                "jsInbound": {
+                  "script": "JavaScript"
+                },
+                "requestConvert": {
+                  "omitHeaders": "Omit Headers",
+                  "omitQueries": "Omit Queries",
+                  "omitBody": "Omit Body",
+                  "omitConsumer": "Omit Consumer"
+                },
+                "acl": {
+                  "allow_groups": "Allow Groups (optional)",
+                  "deny_groups": "Deny Groups (optional)",
+                  "allow_tags": "Allow tags (optional)",
+                  "deny_tags": "Deny tags (optional)",
+                  "groupPlaceholder": "Enter a group",
+                  "tagPlaceholder": "Enter a tag"
+                }
+              },
+              "outbound": {
+                "modal": {
+                  "headlineAdd": "Add outbound plugin",
+                  "headlineEdit": "Edit outbound plugin",
+                  "label": "Outbound plugin",
+                  "placeholder": "Please select an outbound plugin"
+                },
+                "table": {
+                  "headline": "{{count}} outbound plugins",
+                  "headline_one": "{{count}} outbound plugin",
+                  "addButton": "add outbound plugin"
+                },
+                "types": {
+                  "js-outbound": "JavaScript"
+                },
+                "jsOutbound": {
+                  "script": "JavaScript"
+                }
+              },
+              "auth": {
+                "modal": {
+                  "headlineAdd": "Add auth plugin",
+                  "headlineEdit": "Edit auth plugin",
+                  "label": "Auth plugin",
+                  "placeholder": "Please select an auth plugin"
+                },
+                "table": {
+                  "headline": "{{count}} auth plugins",
+                  "headline_one": "{{count}} auth plugin",
+                  "addButton": "add auth plugin"
+                },
+                "types": {
+                  "basic-auth": "Basic Auth",
+                  "github-webhook-auth": "Github Webhook",
+                  "key-auth": "Key Auth"
+                },
+                "basciAuth": {
+                  "addUsernameHeader": "Add username header",
+                  "addTagsHeader": "Add tags header",
+                  "addGroupsHeader": "Add groups header"
+                },
+                "githubWebhookAuth": {
+                  "secret": "secret"
+                },
+                "keyAuth": {
+                  "addUsernameHeader": "Add username header",
+                  "addTagsHeader": "Add tags header",
+                  "addGroupsHeader": "Add groups header",
+                  "keyName": "Key name (optional)",
+                  "keyNamePlaceholder": "name of the key"
+                }
+              }
+            }
+          },
+          "saveBtn": "Save",
+          "unsavedNote": "unsaved changes"
+        }
+      },
+      "consumer": {
+        "goToConsumer": "Go to consumers",
+        "editor": {
+          "form": {
+            "serialisationError": "There was an error serializing the form data",
+            "username": "Username",
+            "password": "Password",
+            "api_key": "Api key",
+            "tags": "Tags (optional)",
+            "groups": "Groups (optional)",
+            "tagsPlaceholder": "Enter a tag",
+            "groupsPlaceholder": "Enter a group"
+          },
+          "saveBtn": "Save",
+          "unsavedNote": "unsaved changes"
+        }
+      }
+    },
+    "events": {
+      "tabs": {
+        "history": "Event history",
+        "listeners": "Event listeners"
+      },
+      "history": {
+        "title": "Cloud events history",
+        "send": {
+          "dialogTrigger": "Send new event",
+          "dialogHeader": "Create new event",
+          "submit": "Send"
+        },
+        "view": {
+          "info": "This information is read-only, 'retrigger' will replay a stored copy of the event.",
+          "dialogHeader": "View event",
+          "submit": "Retrigger"
+        },
+        "tableHeader": {
+          "id": "id",
+          "type": "type",
+          "source": "source",
+          "receivedAt": "received"
+        },
+        "tableRow": {
+          "realtiveTime": "{{relativeTime}} ago"
+        },
+        "empty": {
+          "noFilterResults": "No events found with these filter criteria",
+          "noResults": "No events found"
+        },
+        "filter": {
+          "filterButton": "Filter",
+          "placeholder": {
+            "mainMenu": "Type or select a field...",
+            "TYPE": "cloud.event.type",
+            "TEXT": "search cloudevent content"
+          },
+          "field": {
+            "TYPE": "type",
+            "TEXT": "search content",
+            "AFTER": "received after",
+            "BEFORE": "received before"
+          },
+          "menuHeading": {
+            "main": "Select filter",
+            "time": "refine time",
+            "TYPE": "filter by type",
+            "TEXT": "search cloudevent content",
+            "AFTER": "filter by received after",
+            "BEFORE": "filter by received before"
+          }
+        }
+      },
+      "listeners": {
+        "title": "Event listeners",
+        "tableHeader": {
+          "target": "target",
+          "type": "type",
+          "mode": "mode",
+          "createdAt": "updated",
+          "eventTypes": "cloud event type"
+        },
+        "empty": {
+          "noResults": "No event listeners found"
+        },
+        "tableRow": {
+          "realtiveTime": "{{relativeTime}} ago",
+          "type": {
+            "workflow": "start workflow",
+            "instance": "resume instance"
+          }
+        }
+      }
+    },
+    "monitoring": {
+      "title": "Monitoring",
+      "logs": {
+        "title": "Logs",
+        "followLogs": "Follow logs",
+        "logsCount": "received {{count}} log entries",
+        "logsCount_one": "received {{count}} log entry",
+        "tooltips": {
+          "copy": "Copy logs"
+        }
+      },
+      "instances": {
+        "openWorkflowTooltip": "click to open workflow {{name}}",
+        "successfulExecutions": {
+          "title": "Successful Executions",
+          "empty": "There are no recent successful executions."
+        },
+        "failedExecutions": {
+          "title": "Failed Executions",
+          "empty": "There are no recent failed executions."
+        }
+      }
+    },
+    "instances": {
+      "list": {
+        "title": "Recently executed instances",
+        "empty": {
+          "noInstances": "There are no recently executed instances",
+          "noFilterResults": "No recently executed instances found with these filter criteria"
+        },
+        "tableHeader": {
+          "name": "name",
+          "id": "id",
+          "invoker": "trigger",
+          "state": "state",
+          "startedAt": "started at",
+          "updatedAt": "last updated",
+          "childInstances": {
+            "label": "spawned",
+            "instanceCount": "{{count}} instances",
+            "instanceCountMax": "+ {{count}} instances",
+            "searchPlaceholder": "Search child instances...",
+            "searchPlaceholderMax": "Search the latest {{count}} child instances...",
+            "notFound": "No child instances found."
+          }
+        },
+        "tableRow": {
+          "realtiveTime": "{{relativeTime}} ago",
+          "openWorkflowTooltip": "click to open workflow {{name}}"
+        },
+        "filter": {
+          "filterButton": "Filter",
+          "menuHeading": {
+            "main": "Select filter",
+            "AS": "filter by name",
+            "STATUS": "filter by status",
+            "TRIGGER": "filter by trigger",
+            "AFTER": "filter created after",
+            "BEFORE": "filter created before",
+            "time": "Refine time"
+          },
+          "field": {
+            "AS": "name",
+            "STATUS": "status",
+            "TRIGGER": "trigger",
+            "AFTER": "created after",
+            "BEFORE": "created before"
+          },
+          "placeholder": {
+            "mainMenu": "Type or select a field...",
+            "AS": "filename.yaml",
+            "STATUS": "Type or select status...",
+            "TRIGGER": "Type or select trigger type..."
+          }
+        }
+      },
+      "detail": {
+        "header": {
+          "openWorkflow": "Open workflow",
+          "cancelWorkflow": "Cancel workflow",
+          "invoker": "trigger",
+          "state": "state",
+          "startedAt": "started at",
+          "updatedAt": "last updated",
+          "realtiveTime": "{{relativeTime}} ago"
+        },
+        "logs": {
+          "title": "Logs",
+          "followLogs": "Follow logs",
+          "logsCount": "received {{count}} log entries",
+          "logsCount_one": "received {{count}} log entry",
+          "tooltips": {
+            "verbose": "Verbose logs",
+            "wordWrap": "Word wrap",
+            "copy": "Copy logs",
+            "minimize": "Minimize logs",
+            "maximize": "Maximize logs"
+          },
+          "filter": {
+            "filterButton": "Filter",
+            "menuHeading": {
+              "main": "Select filter",
+              "workflowName": "workflow name",
+              "stateName": "state name"
+            },
+            "field": {
+              "workflowName": "workflow name",
+              "stateName": "state name"
+            },
+            "placeholder": {
+              "mainMenu": "Type or select a field...",
+              "workflowName": "/path/filename.yaml",
+              "stateName": "someStateName"
+            }
+          }
+        },
+        "diagram": {
+          "minimizeInput": "Minimize diagram",
+          "maximizeInput": "Maximize diagram"
+        },
+        "inputOutput": {
+          "copyInput": "Copy input",
+          "minimizeInput": "Minimize input",
+          "maximizeInput": "Maximize input",
+          "copyOutput": "Copy output",
+          "minimizeOutput": "Minimize output",
+          "maximizeOutput": "Maximize output",
+          "tabs": {
+            "input": "Input",
+            "output": "Output"
+          },
+          "output": {
+            "stillRunningMsg": "The workflow is still running",
+            "noOutputMsg": "no output data was resolved"
+          }
+        }
+      }
+    },
+    "mirror": {
+      "header": {
+        "ref": "ref",
+        "url": "url",
+        "editMirror": "Edit mirror",
+        "sync": "Sync"
+      },
+      "syncDialog": {
+        "title": "Sync {{namespace}}",
+        "description": "Fetch and sync mirror with latest content from remote repository?",
+        "confirm": "Sync"
+      },
+      "activities": {
+        "list": {
+          "title": "Activities",
+          "noResults": "No activities found"
+        },
+        "detail": {
+          "header": {
+            "createdAt": "started",
+            "relativeTime": "{{relativeTime}} ago",
+            "type": "type",
+            "status": "status"
+          },
+          "logs": {
+            "title": "Activity log"
+          }
+        },
+        "tableHeader": {
+          "createdAt": "Started",
+          "id": "Activity ID",
+          "status": "Status",
+          "type": "Type"
+        },
+        "tableRow": {
+          "realtiveTime": "{{relativeTime}} ago"
+        }
+      },
+      "noMirror": {
+        "title": "This namespace is not a mirror",
+        "description1": "This page is only available for Git mirrors.",
+        "description2": "When you create a new namespace, you can set it up as a Git mirror. This means the contents of a Git repository will be imported, and changes to your files will be synched between namespace and repository.",
+        "docs": {
+          "title": "Git mirrors",
+          "description": "Read more about Git synching in our docs."
+        },
+        "example": {
+          "title": "Try it out!",
+          "description": "Create a mirror using our examples repository."
+        }
+      }
+    },
+    "services": {
+      "list": {
+        "title": "Services",
+        "tableHeader": {
+          "name": "name",
+          "image": "image",
+          "scale": "scale",
+          "size": "size",
+          "cmd": "cmd"
+        },
+        "tableRow": {
+          "errorLabel": "Error",
+          "envsLabel": "{{count}} environment variables",
+          "envsLabel_one": "{{count}} environment variable",
+          "execLabel": "post start exec"
+        },
+        "contextMenu": {
+          "rebuild": "Rebuild"
+        },
+        "empty": {
+          "title": "No services exist yet"
+        },
+        "rebuild": {
+          "title": "Rebuild service",
+          "msg": "Are you sure you want to rebuild <b>{{name}}</b>? This will kill the running service, repull the image and start the service again.",
+          "cancelBtn": "Cancel",
+          "deleteBtn": "Rebuild"
+        }
+      },
+      "detail": {
+        "logs": {
+          "noPods": "No running pods",
+          "title": "Logs for {{name}}",
+          "followLogs": "Follow logs",
+          "logsCount": "received {{count}} log entries",
+          "logsCount_one": "received {{count}} log entry",
+          "tab": "Pod {{number}} of {{total}}",
+          "tooltips": {
+            "copy": "Copy logs"
+          }
+        }
+      }
+    },
+    "permissions": {
+      "tabs": {
+        "policy": "Policy",
+        "tokens": "Tokens",
+        "groups": "Groups"
+      },
+      "policy": {
+        "unsavedNote": "unsaved changes",
+        "theresOneIssue": "There is an issue",
+        "saveBtn": "Save",
+        "permissionsHintTitle": "Available permissions"
+      },
+      "permissionsInfo": {
+        "all": "all permissions",
+        "partial": "{{count}} permisions",
+        "partial_one": "{{count}} permision",
+        "partial_zero": "no permissions"
+      },
+      "durationHint": {
+        "title": "Token lifetime",
+        "description": "The token lifetime must be a valid ISO 8601 duration string.",
+        "examples": "Examples:",
+        "P1Y": "1 year",
+        "PT48H": "48 hours",
+        "P1Y2M15D": "1 year, 2 months, and 15 days"
+      },
+      "permissionsSelector": {
+        "permissions": "Permissions",
+        "selectAll": "Select all",
+        "deselectAll": "Deselect all"
+      },
+      "groups": {
+        "tableHeader": {
+          "name": "name",
+          "description": "description",
+          "permissions": "permissions"
+        },
+        "createBtn": "Create a new group",
+        "noGroups": "There are no groups yet.",
+        "contextMenu": {
+          "edit": "Edit",
+          "delete": "Delete"
+        },
+        "create": {
+          "title": "Create a group",
+          "cancelBtn": "Cancel",
+          "createBtn": "Create",
+          "group": {
+            "label": "Name",
+            "placeholder": "groupname",
+            "alreadyExist": "The name already exists"
+          },
+          "description": {
+            "label": "Description",
+            "placeholder": "Enter a description for the group"
+          }
+        },
+        "edit": {
+          "title": "Update group",
+          "cancelBtn": "Cancel",
+          "editBtn": "Save",
+          "group": {
+            "label": "Name",
+            "placeholder": "groupname",
+            "alreadyExist": "The name already exists"
+          },
+          "description": {
+            "label": "Description",
+            "placeholder": "Enter a description for the group"
+          }
+        },
+        "delete": {
+          "title": "Delete group",
+          "msg": "Are you sure you want to delete <b>{{name}}</b>? This cannot be undone.",
+          "cancelBtn": "Cancel",
+          "deleteBtn": "Delete"
+        }
+      },
+      "tokens": {
+        "tableHeader": {
+          "description": "description",
+          "permissions": "permissions",
+          "created": "created",
+          "expires": "expires"
+        },
+        "createBtn": "Create a new token",
+        "created": "{{relativeTime}} ago",
+        "expiresIn": "in {{relativeTime}}",
+        "expiredAgo": "{{relativeTime}} ago",
+        "noTokens": "There are no tokens yet.",
+        "contextMenu": {
+          "delete": "Delete"
+        },
+        "create": {
+          "title": "Create a token",
+          "cancelBtn": "Cancel",
+          "createBtn": "Create",
+          "description": {
+            "label": "Description",
+            "placeholder": "Enter a description for the group"
+          },
+          "duration": {
+            "label": "Duration",
+            "placeholder": "Lifetime of the token in ISO 8601 like e.g P1Y (1 year) or PT12H (12 hours)"
+          },
+          "success": {
+            "title": "Token was Created",
+            "description": "Your token was created successfully. Please copy it and store it in a safe place as it will not be shown again.",
+            "copy": "Copy token",
+            "copied": "Copied!",
+            "close": "Close"
+          }
+        },
+        "delete": {
+          "title": "Delete token",
+          "msg": "Are you sure you want to delete this token? This cannot be undone.",
+          "cancelBtn": "Cancel",
+          "deleteBtn": "Delete"
+        }
+      }
+    },
+    "settings": {
+      "generic": {
+        "contextMenu": {
+          "title": "Actions",
+          "delete": "Delete",
+          "edit": "Edit",
+          "download": "Download"
+        }
+      },
+      "secrets": {
+        "list": {
+          "title": "Secrets",
+          "empty": "No secrets exist yet",
+          "createBtn": "Create secret",
+          "searchPlaceholder": "Filter secrets...",
+          "emptySearch": "No secret matches your search",
+          "initializeBtn": "Initialize secret",
+          "notInitializedTooltip": "We created a placeholder for this secret because we detected a reference to it in one of your workflows. Please initialize the secret by uploading a file or entering a value."
+        },
+        "delete": {
+          "description": "Are you sure you want to delete <b>{{name}}</b>?<br/> This cannot be undone."
+        },
+        "create": {
+          "description": "Add a secret",
+          "name": "Name",
+          "file": "Upload a file",
+          "fileError": "There was an error uploading the file",
+          "unsupported": "This mime type is not supported"
+        },
+        "edit": {
+          "description": "Edit {{name}}",
+          "editNote": "Existing secrets cannot be retrieved after creating. But you can overwrite the existing value with a new one"
+        }
+      },
+      "registries": {
+        "list": {
+          "title": "Container Registries",
+          "empty": "No registries exist yet",
+          "createBtn": "Create registry",
+          "searchPlaceholder": "Filter registries...",
+          "emptySearch": "No registry matches your search"
+        },
+        "delete": {
+          "description": "Are you sure you want to delete <b>{{name}}</b>?<br/> This cannot be undone."
+        },
+        "create": {
+          "description": "Add a container registry",
+          "url": "URL",
+          "user": "User",
+          "password": "Password"
+        }
+      },
+      "variables": {
+        "list": {
+          "title": "Variables",
+          "empty": "No variables exist yet",
+          "createBtn": "Create variable",
+          "searchPlaceholder": "Filter variables...",
+          "emptySearch": "No variable matches your search"
+        },
+        "delete": {
+          "description": "Are you sure you want to delete <b>{{name}}</b>?<br/> This cannot be undone."
+        },
+        "create": {
+          "title": "Add a variable",
+          "name": {
+            "label": "Name",
+            "placeholder": "variable-name"
+          },
+          "file": {
+            "label": "Upload a file"
+          },
+          "noPreview": "Only text based mime types are supported for preview and editing"
+        },
+        "edit": {
+          "title": "Edit {{name}}",
+          "fetchError": "There was an error fetching the variable's content",
+          "mimeType": {
+            "label": "Mimetype",
+            "placeholder": "Select a mimetype"
+          },
+          "file": {
+            "label": "Upload a file"
+          },
+          "noPreview": "Only text based mime types are supported for preview and editing"
+        }
+      },
+      "broadcasts": {
+        "title": "Broadcasts",
+        "columns": {
+          "success": "Success",
+          "start": "Started",
+          "fail": "Failed",
+          "create": "Created",
+          "update": "Updated",
+          "delete": "Deleted"
+        },
+        "rows": {
+          "instance": "Instance",
+          "directory": "Directory",
+          "workflow": "Workflow",
+          "instanceVariable": "Instance Variable",
+          "namespaceVariable": "Namespace Variable",
+          "workflowVariable": "Workflow Variable"
+        }
+      },
+      "deleteNamespace": {
+        "title": "Delete namespace",
+        "description": "This will permanently delete the current active namespace and all resources associated with it.",
+        "deleteBtn": "Delete namespace",
+        "modal": {
+          "description": "Are you sure you want to delete <b>{{namespace}}</b>?<br/> This cannot be undone.",
+          "confirm": "Please type <b>{{namespace}}</b> to confirm."
+        }
+      },
+      "theme": {
+        "title": "Theme"
+      },
+      "namespace": {
+        "title": "Namespace"
+      },
+      "apiKey": {
+        "title": "API Key"
+      },
+      "version": {
+        "title": "Version"
+      },
+      "namespacesList": {
+        "title": "Namespaces"
+      }
+    },
+    "gateway": {
+      "tabs": {
+        "routes": "Routes",
+        "consumers": "Consumers"
+      },
+      "routes": {
+        "columns": {
+          "filePath": "file path",
+          "methods": "methods",
+          "path": "path",
+          "plugins": "plugins",
+          "anonymous": "allow anonymous"
+        },
+        "row": {
+          "allowAnonymous": {
+            "yes": "yes",
+            "no": "no"
+          },
+          "errors": {
+            "count": "{{count}} errors",
+            "count_one": "{{count}} error"
+          },
+          "warnings": {
+            "count": "{{count}} warnings",
+            "count_one": "{{count}} warning"
+          },
+          "plugin": {
+            "countAll": "{{count}} plugins",
+            "countAll_one": "{{count}} plugin",
+            "countType": "{{count}} {{type}} plugins",
+            "countType_one": "{{count}} {{type}} plugin"
+          }
+        },
+        "empty": "No routes exist yet"
+      },
+      "consumer": {
+        "columns": {
+          "username": "username",
+          "password": "password",
+          "apikey": "apikey",
+          "tags": "tags",
+          "groups": "groups"
+        },
+        "empty": "No consumers exist yet"
+      }
+    },
+    "jqPlayground": {
+      "title": "jq Playground",
+      "description": "jq Playground is an envrioment where you can quickly test your jq commands against JSON input.",
+      "openManualBtn": "Open jq Manual",
+      "queryPlaceholder": "Enter your jq query here...",
+      "input": "Input",
+      "output": "Output",
+      "submitBtn": "Run Query",
+      "examples": {
+        "title": "Examples",
+        "buttonLabel": "Run",
+        "snippets": {
+          "unchangedInput": "unchanged input",
+          "valueAtKey": "value at key",
+          "arrayOperation": "array operation",
+          "arrayObjectConstruction": "array/object construction",
+          "lengthOfValue": "length of a value",
+          "keysInArray": "keys in an array",
+          "feedInput": "feed input into multiple filters",
+          "pipeOutput": "pipe output of one filter to the next filter",
+          "inputUnchanged": "input unchanged if foo returns true",
+          "invokeFilter": "invoke filter foo for each input",
+          "conditionals": "conditionals",
+          "stringInterpolation": "string interpolation"
+        }
+      }
+    }
+  },
+  "components": {
+    "mainMenu": {
+      "explorer": "Explorer",
+      "monitoring": "Monitoring",
+      "instances": "Instances",
+      "events": "Events",
+      "gateway": "Gateway",
+      "permissions": "Permissions",
+      "services": "Services",
+      "settings": "Settings",
+      "jqPlayground": "jq Playground",
+      "mirror": "Mirror"
+    },
+    "breadcrumb": {
+      "searchPlaceholder": "Search namespace...",
+      "notFound": "No namespace found.",
+      "createBtn": "Create new namespace",
+      "loading": "loading...",
+      "instances": "Instances",
+      "eventHistory": "Event History",
+      "services": "Services",
+      "eventListeners": "Event Listeners",
+      "monitoring": "Monitoring",
+      "mirror": "Mirror",
+      "permissions": "Permissions",
+      "permissionsPolicy": "Policy",
+      "permissionsTokens": "Tokens",
+      "permissionsGroups": "Groups",
+      "settings": "Settings",
+      "gateway": "Gateway",
+      "gatewayRoutes": "Routes",
+      "gatewayConsumers": "Consumers",
+      "jqPlayground": "jq Playground"
+    },
+    "namespaceEdit": {
+      "title": {
+        "new": "Create a new namespace",
+        "edit": "Update mirror {{namespace}}"
+      },
+      "submitBtn": {
+        "create": "Create",
+        "save": "Save"
+      },
+      "nameAlreadyExists": "The name already exists",
+      "cancelBtn": "Cancel",
+      "tab": {
+        "namespace": "Namespace",
+        "mirror": "Mirror"
+      },
+      "formTypeSelect": {
+        "keep-token": "Keep existing token (http)",
+        "keep-ssh": "Keep existing keys (ssh)",
+        "public": "Public",
+        "token": "Token (http)",
+        "ssh": "Key pair (ssh)"
+      },
+      "formTypeMessage": {
+        "keep": "Your authentication data will be kept unless you chose a different option.",
+        "replace": "The new authentication settings will overwrite any stored credentials. Select the 'keep' option above to prevent this."
+      },
+      "placeholder": {
+        "name": "new-namespace-name",
+        "ref": "branch or commit hash",
+        "httpUrl": "https://example.com/direktiv/repo.git",
+        "gitUrl": "git@example.com/direktiv/repo.git",
+        "passphrase": "Passphrase (optional)",
+        "publicKey": "Public Key (required)",
+        "privateKey": "Private Key (required)",
+        "token": "token",
+        "formType": "Select authentication method"
+      },
+      "label": {
+        "name": "Name",
+        "ref": "Ref",
+        "url": "Url",
+        "passphrase": "Passphrase",
+        "publicKey": "Public key",
+        "privateKey": "Private key",
+        "token": "Token",
+        "formType": "Auth type",
+        "insecure": "Skip certificate validation"
+      },
+      "tooltip": {
+        "url": "URL to repository. If auth method is SSH, a git url must be used, e.g. 'git@github.com:direktiv/apps-svc.git'. All other auth methods must use HTTP/S urls.",
+        "ref": "Repository reference to sync from. For example this could be a commit hash ('b139f0e') or branch ('main').",
+        "token": "Personal access token (for authentication with a HTTP/S url).",
+        "passphrase": "Passphrase to decrypt keys (optional).",
+        "privateKey": "Private SSH key used for authentication via git@ url.",
+        "publicKey": "Public SSH key used for authenticating via git@ url.",
+        "insecure": "This will skip all checks for TLS certificate validity (only relevant for https and ssh, has no effect on http)"
+      }
+    },
+    "button": {
+      "label": {
+        "cancel": "Cancel",
+        "create": "Create",
+        "delete": "Delete",
+        "save": "Save"
+      }
+    },
+    "dialog": {
+      "header": {
+        "confirm": "Confirmation required"
+      }
+    },
+    "formErrors": {
+      "fieldInvalid": "this field is invalid"
+    },
+    "notificationMenu": {
+      "title": "Notifications",
+      "isLoading": {
+        "description": "Loading..."
+      },
+      "noIssues": {
+        "description": "You do not have any notifications."
+      },
+      "hasIssues": {
+        "secrets": {
+          "description": "You have {{count}} uninitialized secrets.",
+          "description_one": "You have {{count}} uninitialized secret."
+        }
+      }
+    },
+    "namespaceSelector": {
+      "placeholder": "Select Namespace",
+      "loading": "loading...",
+      "optionDoesNotExist": "{{namespace}} (does not exist)"
+    },
+    "filepicker": {
+      "buttonText": "Browse Files",
+      "placeholder": "No File selected",
+      "emptyDirectory": {
+        "title": "The directory \"{{path}}\" is empty."
+      },
+      "error": {
+        "title": "The path \"{{path}}\" was not found.",
+        "linkText": "Go back to root directory"
+      }
+    },
+    "userMenu": {
+      "loggedIn": "You are logged in",
+      "logout": "Logout",
+      "appearance": "Appearance",
+      "switchToLight": "Switch to light mode",
+      "switchToDark": "Switch to dark mode",
+      "help": "Help",
+      "docs": "Open the docs",
+      "supportChannelOnSlack": "Support Channel on Slack"
+    }
+  },
+  "api": {
+    "generic": {
+      "error": "An error occurred",
+      "noPermissionTitle": "No permission",
+      "noPermissionMutationDescription": "You do not have permission to perform this action",
+      "noPermissionQueryDescription": "You do not have permission to view this data"
+    },
+    "authentication": {
+      "mutate": {
+        "authenticate": {
+          "error": {
+            "description": "The auth endpoint did not answer as expected 😢"
+          }
+        }
+      }
+    },
+    "tree": {
+      "mutate": {
+        "setRouter": {
+          "success": {
+            "title": "Traffic shaping was updated",
+            "description": "The traffic will be split between <b>{{aName}}</b> and <b>{{bName}}</b> with a ratio of <b>{{aWeight}}</b> to <b>{{bWeight}}</b> %"
+          },
+          "error": "could set traffic shaping"
+        },
+        "setVariable": {
+          "success": {
+            "title": "Worfklow variable saved",
+            "description": "Saved variable {{variable}} for workflow {{workflow}}"
+          },
+          "error": {
+            "description": "could not save workflow variable 😢"
+          }
+        },
+        "toggleLive": {
+          "success": {
+            "title": "Workflow updated",
+            "description": {
+              "activated": "Workflow {{workflow}} was activated",
+              "deactivated": "Workflow {{workflow}} was deactivated"
+            }
+          }
+        },
+        "createDirectory": {
+          "success": {
+            "title": "Directory created",
+            "description": "Directory {{directory}} was created in {{path}}"
+          },
+          "error": {
+            "description": "could not create directory 😢"
+          }
+        },
+        "createRevision": {
+          "success": {
+            "title": "Revision created",
+            "description": "Revision {{name}} was created",
+            "action": "Open Revision"
+          },
+          "error": {
+            "description": "could not create revision 😢"
+          }
+        },
+        "createTag": {
+          "success": {
+            "title": "Tag created",
+            "description": "Tag {{name}} was created"
+          },
+          "error": {
+            "description": "could not create tag 😢"
+          }
+        },
+        "createWorkflow": {
+          "success": {
+            "title": "File created",
+            "description": "File {{name}} was created in {{path}}"
+          },
+          "error": {
+            "description": "could not create File 😢"
+          }
+        },
+        "deleteNode": {
+          "success": {
+            "title": "{{type}} deleted",
+            "description": "{{name}} was deleted"
+          },
+          "error": {
+            "description": "could not delete 😢"
+          }
+        },
+        "deleteRevision": {
+          "success": {
+            "title": "revision deleted",
+            "description": "revision {{name}} was deleted"
+          },
+          "error": {
+            "description": "could not delete 😢"
+          }
+        },
+        "deleteTag": {
+          "success": {
+            "title": "tag deleted",
+            "description": "tag {{name}} was deleted"
+          },
+          "error": {
+            "description": "could not delete 😢"
+          }
+        },
+        "renameNode": {
+          "success": {
+            "title": "{{type}} renamed",
+            "description": "{{name}} was renamed"
+          },
+          "error": {
+            "description": "could not rename 😢"
+          }
+        },
+        "revertRevision": {
+          "success": {
+            "title": "Restored workflow",
+            "description": "The latest revision was restored"
+          },
+          "error": {
+            "description": "could not revert workflow 😢"
+          }
+        },
+        "downloadVariable": {
+          "error": {
+            "description": "could not download variable 😢"
+          }
+        }
+      }
+    },
+    "namespaces": {
+      "mutate": {
+        "createNamespaces": {
+          "success": {
+            "title": "Create a new namespace",
+            "description": "Namespace {{name}} was created successfully."
+          },
+          "error": {
+            "description": "could not create namespace 😢"
+          }
+        },
+        "deleteNamespaces": {
+          "success": {
+            "title": "Delete namespace",
+            "description": "Namespace {{name}} was deleted successfully."
+          },
+          "error": {
+            "description": "could not delete namespace 😢"
+          }
+        },
+        "syncMirror": {
+          "success": {
+            "title": "Sync namespace",
+            "description": "Triggered sync for namespace {{namespace}}"
+          },
+          "error": {
+            "description": "could not sync namespace 😢"
+          }
+        },
+        "updateMirror": {
+          "success": {
+            "title": "Update mirror",
+            "description": "Settings for mirror {{namespace}} were updated"
+          },
+          "error": {
+            "description": "could not update mirror settings 😢"
+          }
+        }
+      }
+    },
+    "registries": {
+      "mutate": {
+        "createRegistry": {
+          "success": {
+            "title": "Registry created",
+            "description": "Registry {{name}} was created."
+          },
+          "error": {
+            "description": "Could not create registry 😢"
+          }
+        },
+        "deleteRegistry": {
+          "success": {
+            "title": "Registry deleted",
+            "description": "Registry {{name}} was deleted."
+          },
+          "error": {
+            "description": "Could not delete registry 😢"
+          }
+        }
+      }
+    },
+    "services": {
+      "mutate": {
+        "rebuildService": {
+          "success": {
+            "title": "Service rebuild",
+            "description": "Service was rebuilt."
+          },
+          "error": {
+            "description": "Could not rebuild service 😢"
+          }
+        }
+      }
+    },
+    "variables": {
+      "mutate": {
+        "updateVariable": {
+          "success": {
+            "title": "Variable saved",
+            "description": "Variable {{name}} was saved."
+          },
+          "error": {
+            "description": "Could not save variable 😢"
+          }
+        },
+        "deleteVariable": {
+          "success": {
+            "title": "Variable deleted",
+            "description": "Variable {{name}} was deleted."
+          },
+          "error": {
+            "description": "Could not delete variable 😢"
+          }
+        },
+        "downloadVariable": {
+          "error": {
+            "description": "Could not download variable 😢"
+          }
+        }
+      }
+    },
+    "secrets": {
+      "mutate": {
+        "updateSecret": {
+          "success": {
+            "title": "Secret saved",
+            "description": "Secret {{name}} was saved."
+          },
+          "error": {
+            "description": "Could not save secret 😢"
+          }
+        },
+        "deleteSecret": {
+          "success": {
+            "title": "Secret deleted",
+            "description": "Secret {{name}} was deleted"
+          },
+          "error": {
+            "description": "Could not delete secret 😢"
+          }
+        }
+      }
+    },
+    "events": {
+      "mutate": {
+        "sendEvent": {
+          "success": {
+            "title": "Event sent",
+            "description": "The event was sent"
+          },
+          "error": {
+            "description": "The event could not be sent 😢"
+          }
+        },
+        "replayEvent": {
+          "success": {
+            "title": "Event retriggered",
+            "description": "The event was retriggered"
+          },
+          "error": {
+            "description": "The event could not be retriggered 😢"
+          }
+        }
+      }
+    },
+    "tokens": {
+      "mutate": {
+        "createToken": {
+          "error": {
+            "description": "The token could not be created 😢"
+          }
+        },
+        "deleteToken": {
+          "success": {
+            "title": "Token deleted",
+            "description": "The token was deleted"
+          },
+          "error": {
+            "description": "The token could not be deleted 😢"
+          }
+        }
+      }
+    },
+    "groups": {
+      "mutate": {
+        "createGroup": {
+          "success": {
+            "title": "Group created",
+            "description": "The group {{name}} was created"
+          },
+          "error": {
+            "description": "The group could not be created 😢"
+          }
+        },
+        "editGroup": {
+          "success": {
+            "title": "Group updated",
+            "description": "The group {{name}} was updated"
+          },
+          "error": {
+            "description": "The group could not be updated 😢"
+          }
+        },
+        "deleteGroup": {
+          "success": {
+            "title": "Group deleted",
+            "description": "The group {{name}} was deleted"
+          },
+          "error": {
+            "description": "The group could not be deleted 😢"
+          }
+        }
+      }
+    }
+  }
+}

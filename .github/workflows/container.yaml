@@ -1,0 +1,34 @@
+name: Build Container Component
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+  push:
+    tags:
+      - v*
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: "^1.17.1"
+      - name: Set env
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      - name: test version
+        run: |
+          echo ${{ env.RELEASE_VERSION }}
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+      - name: build container
+        run: |
+          export RV=${{ env.RELEASE_VERSION }}
+          echo "RV set to $RV"
+          if [ "$RV" == "main" ] || [ "$RV" == "" ] ; then export RV=latest; fi
+          echo "RV set to $RV"
+          make server DOCKER_REPO=direktiv RV=$RV
+          make update-containers DOCKER_REPO=direktiv RV=$RV
