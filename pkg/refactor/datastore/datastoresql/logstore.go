@@ -19,88 +19,77 @@ type sqlLogStore struct {
 }
 
 func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, level logengine.LogLevel, msg string, keysAndValues map[string]interface{}) error {
-	cols := make([]string, 0, len(keysAndValues))
-	vals := make([]interface{}, 0, len(keysAndValues))
-	msg = strings.ReplaceAll(msg, "\u0000", "") // postgres will return an error if a string contains "\u0000"
-	cols = append(cols, "id", "timestamp", "level")
-	vals = append(vals, uuid.New(), timestamp, level)
-	databaseCols := []string{
-		"source",
-		"log_instance_call_path",
-		"root_instance_id",
-		"type",
+	valuesCopy := make(map[string]interface{})
+	for k, v := range keysAndValues {
+		valuesCopy[k] = v
 	}
-	for _, k := range databaseCols {
-		if v, ok := keysAndValues[k]; ok {
-			cols = append(cols, k)
-			vals = append(vals, v)
-		}
+
+	msg = strings.ReplaceAll(msg, "\u0000", "")
+	valuesCopy["message"] = msg
+
+	topic := fmt.Sprintf("%v%v%v", valuesCopy["type"], valuesCopy["root_instance_id"], time.Now().UTC().Format("2006-01-02"))
+
+	query := `
+		INSERT INTO engine_messages 
+		(id, timestamp, level, topic, source, entry) 
+		VALUES (?, ?, ?, ?, ?, ?)
+	`
+
+	vals := []interface{}{
+		uuid.New(),
+		timestamp,
+		level,
+		topic,
+		valuesCopy["source"],
 	}
-	keysAndValues["message"] = msg
-	b, err := json.Marshal(keysAndValues)
+
+	b, err := json.Marshal(valuesCopy)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to marshal JSON: %w", err)
 	}
-	cols = append(cols, "entry")
 	vals = append(vals, b)
-	q := "INSERT INTO log_entries ("
-	qTail := "VALUES ("
-	for i := range vals {
-		q += fmt.Sprintf(cols[i])
-		qTail += fmt.Sprintf("$%d", i+1)
-		if i != len(vals)-1 {
-			q += ", "
-			qTail += ", "
-		}
-	}
-	q = q + ") " + qTail + ");"
-	tx := sl.db.WithContext(ctx).Exec(q, vals...)
+
+	tx := sl.db.WithContext(ctx).Exec(query, vals...)
 	if tx.Error != nil {
-		return tx.Error
+		return fmt.Errorf("failed to execute SQL query: %w", tx.Error)
 	}
 	if tx.RowsAffected == 0 {
-		return fmt.Errorf("no rows affected")
+		return fmt.Errorf("no rows affected by the SQL query")
 	}
 
 	return nil
 }
 
 func (sl *sqlLogStore) Get(ctx context.Context, keysAndValues map[string]interface{}, limit, offset int) ([]*logengine.LogEntry, int, error) {
-	wEq := []string{}
+	today := fmt.Sprintf("%v%v%v", keysAndValues["type"], keysAndValues["root_instance_id"], time.Now().UTC().Format("2006-01-02"))
+	yesterday := fmt.Sprintf("%v%v%v", keysAndValues["type"], keysAndValues["root_instance_id"], time.Now().UTC().AddDate(0, 0, -1).Format("2006-01-02"))
 
-	databaseCols := []string{
-		"source",
-		"type",
-		"root_instance_id",
-	}
-	for _, k := range databaseCols {
-		if v, ok := keysAndValues[k]; ok {
-			wEq = append(wEq, fmt.Sprintf("%s = '%s'", k, v))
-		}
-	}
-	level, ok := keysAndValues["level"]
-	if ok {
-		wEq = append(wEq, fmt.Sprintf("level >= '%v' ", level))
-	}
-	prefix, ok := keysAndValues["log_instance_call_path"]
-	if ok {
-		wEq = append(wEq, fmt.Sprintf("log_instance_call_path like '%s%%'", prefix))
+	delete(keysAndValues, "type")
+	delete(keysAndValues, "root_instance_id")
+
+	wEq := []string{
+		fmt.Sprintf(`topic = '%s' OR topic = '%s'`, today, yesterday), // we query only the logs for the last 2 days
 	}
 
-	query := composeQuery(limit, offset, wEq)
+	addCondition(&wEq, "source", keysAndValues)
+	addCondition(&wEq, "level", keysAndValues)
+	addConditionPrefix(&wEq, "log_instance_call_path", keysAndValues)
+
+	query := buildQuery("timestamp, level, log_instance_call_path, source, entry", wEq, limit, offset)
 
 	resultList := make([]*gormLogMsg, 0)
 	tx := sl.db.WithContext(ctx).Raw(query).Scan(&resultList)
 	if tx.Error != nil {
 		return nil, 0, tx.Error
 	}
-	count := 0
-	queryCount := composeCountQuery(wEq)
 
-	tx = sl.db.WithContext(ctx).Raw(queryCount).Scan(&count)
+	countQuery := buildCountQuery(wEq)
+	count := 0
+	tx = sl.db.WithContext(ctx).Raw(countQuery).Scan(&count)
 	if tx.Error != nil {
 		return nil, 0, tx.Error
 	}
+
 	convertedList := make([]*logengine.LogEntry, 0, len(resultList))
 	for _, e := range resultList {
 		m := make(map[string]interface{})
@@ -109,8 +98,7 @@ func (sl *sqlLogStore) Get(ctx context.Context, keysAndValues map[string]interfa
 			return nil, 0, err
 		}
 
-		levels := []string{"debug", "info", "warn", "error"}
-		m["level"] = levels[e.Level]
+		m["level"] = getLevelString(e.Level)
 		msg := fmt.Sprintf("%v", m["message"])
 		delete(m, "message")
 		convertedList = append(convertedList, &logengine.LogEntry{
@@ -123,8 +111,53 @@ func (sl *sqlLogStore) Get(ctx context.Context, keysAndValues map[string]interfa
 	return convertedList, count, nil
 }
 
+func addCondition(wEq *[]string, key string, keysAndValues map[string]interface{}) {
+	if val, ok := keysAndValues[key]; ok {
+		*wEq = append(*wEq, fmt.Sprintf("%s = '%s'", key, val))
+	}
+}
+
+func addConditionPrefix(wEq *[]string, key string, keysAndValues map[string]interface{}) {
+	if val, ok := keysAndValues[key]; ok {
+		*wEq = append(*wEq, fmt.Sprintf("%s LIKE '%s%%'", key, val))
+	}
+}
+
+func buildQuery(fields string, wEq []string, limit, offset int) string {
+	query := fmt.Sprintf(`
+		SELECT %s
+		FROM engine_messages
+		WHERE %s
+		ORDER BY timestamp ASC`, fields, strings.Join(wEq, " AND "))
+
+	if limit > 0 {
+		query += fmt.Sprintf(" LIMIT %d", limit)
+	}
+	if offset > 0 {
+		query += fmt.Sprintf(" OFFSET %d", offset)
+	}
+
+	return query
+}
+
+func buildCountQuery(wEq []string) string {
+	return fmt.Sprintf(`
+		SELECT COUNT(id)
+		FROM engine_messages
+		WHERE %s`, strings.Join(wEq, " AND "))
+}
+
+func getLevelString(level int) string {
+	levels := []string{"debug", "info", "warn", "error"}
+	if level >= 0 && level < len(levels) {
+		return levels[level]
+	}
+
+	return "debug"
+}
+
 func (sl *sqlLogStore) DeleteOldLogs(ctx context.Context, t time.Time) error {
-	query := "DELETE FROM log_entries WHERE timestamp < $1"
+	query := "DELETE FROM engine_messages WHERE timestamp < $1"
 
 	res := sl.db.WithContext(ctx).Exec(
 		query,
@@ -135,41 +168,6 @@ func (sl *sqlLogStore) DeleteOldLogs(ctx context.Context, t time.Time) error {
 	}
 
 	return nil
-}
-
-func composeQuery(limit, offset int, wEq []string) string {
-	q := `SELECT timestamp, level, root_instance_id, log_instance_call_path, source, type, entry
-	FROM log_entries `
-	q += "WHERE "
-	for i, e := range wEq {
-		q += e
-		if i+1 < len(wEq) {
-			q += " AND "
-		}
-	}
-	q += " ORDER BY timestamp ASC"
-	if limit > 0 {
-		q += fmt.Sprintf(" LIMIT %d ", limit)
-	}
-	if offset > 0 {
-		q += fmt.Sprintf(" OFFSET %d ", offset)
-	}
-
-	return q + ";"
-}
-
-func composeCountQuery(wEq []string) string {
-	q := `SELECT count(id)
-	FROM log_entries `
-	q += "WHERE "
-	for i, e := range wEq {
-		q += e
-		if i+1 < len(wEq) {
-			q += " AND "
-		}
-	}
-
-	return q + ";"
 }
 
 type gormLogMsg struct {

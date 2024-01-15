@@ -149,20 +149,19 @@ CREATE TABLE IF NOT EXISTS "runtime_variables" (
     FOREIGN KEY ("instance_id") REFERENCES "instances_v2"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS "log_entries" (
+CREATE TABLE IF NOT EXISTS "engine_messages" (
     "id" uuid,
     "timestamp" timestamptz NOT NULL,
-    "level" integer,
-    "root_instance_id" uuid,
+    "topic" text,
     "source" uuid,
-    "type" text,
+    "level" integer,
     "log_instance_call_path" text,
     "entry" bytea NOT NULL,
     PRIMARY KEY ("id")
 );
 
--- speeds up pagination
-CREATE INDEX  IF NOT EXISTS "log_entries_sorted" ON log_entries ("timestamp" ASC);
+-- partitioning the logtable to speeds up pagination and queries
+CREATE INDEX IF NOT EXISTS "engine_messages_topic" ON "engine_messages" USING hash("topic");
 
 CREATE TABLE IF NOT EXISTS "staging_events" (
     "id" uuid NOT NULL,
