@@ -1,4 +1,4 @@
-name: Publish Storybook to Chromatic
+name: (UI) Publish Storybook to Chromatic
 
 on:
   push:

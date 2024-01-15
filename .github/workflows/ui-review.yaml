@@ -1,4 +1,4 @@
-name: Create review app
+name: (UI) Create review app
 
 on:
   push:
