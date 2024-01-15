@@ -1,0 +1,60 @@
+import { Meta } from "@storybook/addon-docs";
+import "./stories.css";
+
+import RunWorkflow from "./assets/run-workflow.png";
+import ValidateForm from "./assets/validate-form.png";
+
+<Meta title="Systems/Validate State Form" />
+
+# Validate State Form
+
+One of the qualities of life features that the direktiv-ui adds is that when executing a workflow through the UI and the first state of that workflow is a validate state; A form will be generated to prompt users for the input.
+
+If we take a look at the workflow below we can see that the first state is a validate state that requires the string property `name`.
+
+```yaml
+states:
+  - id: validate-input
+    type: validate
+    schema:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          description: Name to greet
+          title: Name
+    transition: greeter
+  - id: greeter
+    type: noop
+    log: "Greetings jq(.name)! Welcome to Direktiv"
+```
+
+Since this schema only requires `name` when executing the workflow on the UI, the user will be prompted with a form that contains a single text input instead of the default JSON input text editor.
+
+Below is what the form would look like for the workflow above:
+
+<img src={RunWorkflow} alt="run-workflow" class="center" />
+
+<div className="subheading">How it works</div>
+
+<img
+  src={ValidateForm}
+  alt="validate-workflow"
+  class="center"
+  style={{ width: "90%" }}
+/>
+
+When the user presses the Run Button on the workflow page the `onOpen` event function will trigger on the Modal component. During this onOpen function the following things happen:
+
+1. Validate the workflow is a valid yaml.
+2. Check if the first state in the workflow is a `validate` state.
+3. If the first workflow is a validate state, save its schema property to the React state `workflowJSONSchema` to be used later when generating the form. Note: The schema property in a validate state follows the same specification as a JSON schema.
+
+After the onOpen function is complete, the Modal will open to one of two views:
+
+1. A Editor window for the user to set instance input as JSON (`default`).
+2. A Form that has been generated from the schema in the `workflowJSONSchema` state.
+
+If `workflowJSONSchema` is set (first state is type validate), then a HTLM form will be generated and rendered using the [@rjsf/core](https://www.npmjs.com/package/@rjsf/core) package.
