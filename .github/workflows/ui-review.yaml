@@ -1,6 +1,14 @@
-name: Create and push PR Docker image
+name: Create review app
 
-on: workflow_dispatch
+on:
+  push:
+    paths:
+      - ui/**
+    branches:
+      - main
+  pull_request:
+    paths:
+      - ui/**
 
 env:
   REGISTRY: ghcr.io
@@ -12,6 +20,10 @@ jobs:
     permissions:
       contents: read
       packages: write
+
+    defaults:
+      run:
+        working-directory: ui
 
     steps:
       - uses: actions/checkout@v4
@@ -47,6 +59,10 @@ jobs:
     permissions:
       contents: read
       packages: read
+
+    defaults:
+      run:
+        working-directory: ui
 
     env:
       NOMAD_TOKEN: ${{ secrets.NOMAD_TOKEN }}
