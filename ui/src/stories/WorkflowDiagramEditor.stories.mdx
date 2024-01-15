@@ -1,0 +1,204 @@
+import { Meta } from "@storybook/addon-docs";
+import "./stories.css";
+
+<Meta title="Systems/Workflow Diagram Editor" />
+
+# Workflow Diagram Editor
+
+Currently, in the direktiv-ui there are two ways to develop workflow:
+
+1. A code editor used to write the workflow YAML
+2. A Visual abstraction drag-n-drop layer that lets users create a workflow from dragging and dropping nodes onto a Diagram.
+
+This document focuses on the former and examines its flow of logic.
+
+<div className="subheading">Flow of logic</div>
+
+Diagrams are generated from workflow YAMLS, so a valid YAML is a prerequisite. The YAML is imported and converted to a diagram on mount.
+
+Below is the flow of logic of the editor when a user is interacting with it:
+
+1. Import YAML to Diagram
+2. Adding nodes (Example: The noop node used to represent a noop state)
+3. Connections (Example: Connecting node to new noop node)
+4. Compiling diagram - Exporting back to YAML
+
+<div className="subheading">Import YAML to Diagram</div>
+
+When the diagram editor is mounted it will need to convert the existing workflow YAML into nodes in a diagram. This functionality is done with the `importFromWorkflowData` function in [src/components/diagram-editor/import.js](https://github.com/direktiv/direktiv-ui/blob/main/src/components/diagram-editor/import.js).
+
+When importing sometimes additional logic is required depending on the node type. This is done from the `importProcessTransformCallback` map in [src/components/diagram-editor/import.js](https://github.com/direktiv/direktiv-ui/blob/main/src/components/diagram-editor/import.js). Any additional logic can be added here and will be done automatically during import.
+
+<div className="subheading">Adding nodes</div>
+
+Adding nodes can be done by dragging-n-dropping nodes from the drawer, or by right-clicking on the diagram and searching a node to add. All nodes are defined in [node.js](https://github.com/direktiv/direktiv-ui/blob/main/src/components/diagram-editor/nodes.js) as constants.
+
+Nodes contain data, that is required to generate a valid YAML counterpart when compiling. Users input this data with a HTML form, however, this form is generated from a JSON schema. This means all nodes require an accompanying JSON schema to handle their input data. These JSON schemas can be found in [jsonSchema.js](https://github.com/direktiv/direktiv-ui/blob/main/src/components/diagram-editor/jsonSchema.js)
+
+Lets look at an example; Take the StateNoop Node below:
+
+```js
+...
+    {
+        name: 'StateNoop',
+        family: "primitive",
+        type: "noop",
+        info: {
+            requiresInit: true,
+            actions: true,
+            description: "The No-op State exists for when nothing more than generic state functionality is required.",
+            longDescription: `The No-op State exists for when nothing more than generic state functionality is required. A common use-case would be to perform a jq operation on the state data without performing another operation.`,
+            link: "https://docs.direktiv.io/v0.6.0/specification/#noopstate"
+        },
+        data: {
+            schemaKey: 'stateSchemaNoop',
+            formData: {}
+        },
+        connections: {
+            input: 1,
+            output: 2
+        },
+        html: 'Noop State'
+    }
+...
+```
+
+Nodes are linked to their JSON schema by their schemaKey property. The StateNoop Node has the schemaKey `stateSchemaNoop`:
+
+```js
+...
+        data: {
+            schemaKey: 'stateSchemaNoop',
+...
+```
+
+This schema key is used by the diagram editor to find the associated JSON schema defined in [jsonSchema.js](https://github.com/direktiv/direktiv-ui/blob/main/src/components/diagram-editor/jsonSchema.js) by looking it up in the `SchemaMap` map constant.
+
+```js
+// Common JSON schema properties that all State based Nodes share
+export const CommonSchemaDefinitionStateFields = {
+    "transform": {
+        "title": "Transform",
+        "description": "jq command to transform the state's data output.",
+        "type": "object",
+        "properties": {
+            "selectionType": {
+                "enum": [
+                    "JQ Query",
+                    "Key Value",
+                    "YAML",
+                    "Javascript"
+                ],
+                "default": "JQ Query"
+            }
+        },
+        "allOf": [
+            {
+                "if": {
+                    "properties": {
+                        "selectionType": {
+                            "const": "JQ Query"
+                        }
+                    }
+                },
+                "then": {
+                    "properties": {
+                        "jqQuery": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            {
+                "if": {
+                    "properties": {
+                        "selectionType": {
+                            "const": "YAML"
+                        }
+                    }
+                },
+                "then": {
+                    "properties": {
+                        "rawYAML": {
+                            "title": "YAML",
+                            "type": "string",
+                            "description": "Raw YAML object representation of data.",
+                        }
+                    }
+                }
+            },
+            {
+                "if": {
+                    "properties": {
+                        "selectionType": {
+                            "const": "Javascript"
+                        }
+                    }
+                },
+                "then": {
+                    "properties": {
+                        "js": {
+                            "title": "Javascript",
+                            "type": "string",
+                            "description": "TODO: Javascript",
+                        }
+                    }
+                }
+            },
+            {
+                "if": {
+                    "properties": {
+                        "selectionType": {
+                            "const": "Key Value"
+                        }
+                    }
+                },
+                "then": {
+                    "properties": {
+                        "keyValue": {
+                            "type": "object",
+                            "title": "Key Value",
+                            "description": "Key Values representation of data.",
+                            "additionalProperties": {
+                                "type": "string"
+                            },
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "log": {
+        "type": "string",
+        "title": "Log",
+        "description": "jq command to generate data for instance-logging."
+    }
+}
+...
+// StateNoop Node JSON Schema
+export const StateSchemaNoop = {
+    "type": "object",
+    "properties": {
+        ...CommonSchemaDefinitionStateFields,
+    }
+}
+
+...
+// Map to all Schemas
+export const SchemaMap = {
+    // States
+    "stateSchemaNoop": StateSchemaNoop,
+    ...
+}
+...
+```
+
+<div className="subheading">Connections</div>
+
+Connections are handled by the diagram editor directly in callbacks on the [connectionCreated event](https://github.com/direktiv/direktiv-ui/blob/205d2c961efc1afd116ef111d01f2d0de68f950f/src/components/diagram-editor/index.js#L357-L396). Its fairly simple, since by default all nodes are able to connect to each other, this callback is used to control which nodes can connect to each other.
+
+<div className="subheading">Compiling diagram</div>
+
+When the diagram is complete, it can be compiled back to a YAML by using the [Compile button](https://github.com/direktiv/direktiv-ui/blob/205d2c961efc1afd116ef111d01f2d0de68f950f/src/components/diagram-editor/index.js#L598-L698) located on the toolbar. This is essentially the opposite of the import functionality from the import YAML step.
+
+Similar to the `importProcessTransformCallback` map in [src/components/diagram-editor/import.js](https://github.com/direktiv/direktiv-ui/blob/main/src/components/diagram-editor/import.js), special logic can be done during this step for individual states by adding to the `connectionsCallbackMap` in [src/components/diagram-editor/util.js](https://github.com/direktiv/direktiv-ui/blob/main/src/components/diagram-editor/util.js)

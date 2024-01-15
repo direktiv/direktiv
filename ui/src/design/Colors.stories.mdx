@@ -1,0 +1,322 @@
+import { Meta, ColorPalette, ColorItem } from "@storybook/addon-docs";
+import {
+  blackA,
+  whiteA,
+  gray,
+  grayDark,
+  red,
+  redDark,
+  blue,
+  blueDark,
+  yellow,
+  yellowDark,
+  green,
+  greenDark,
+} from "@radix-ui/colors";
+
+<Meta title="Components/Colors" />
+
+# Colors
+
+All colors we use are explicitly configured in `tailwind.config.cjs` and should be the only one that we use. Tailwind comes with some pre configred colors that we itentionally do not delete (yet?), but we should not use them and only use "our" colors.
+
+We kept them though to make any tailwind snippet we might use (like from tailwindui.com) still copy and pasteable. But we should always adjust the colors afterwards.
+
+From every color, tailwind will provide its color classes. So a color named `primary-500` can be used as `text-primary-500`, `bg-primary-500`, `border-primary-500` etc.
+
+These colors are defined in the `tailwind.config.cjs` under `themes.extend.colors`. These colors are not aware of the applied theme and it must always be decided which color to use depending on the theme.
+
+## colors in light and dark mode
+
+These colors are all on a scale of 1 to 12 and are taken from [radix colors](https://www.radix-ui.com/docs/colors/palette-composition/understanding-the-scale)
+
+Each of these palettes are bound to light or dark mode. When using them, always pick poth colors from the same column unless you have a good reason.
+
+### gray
+
+<ColorPalette>
+  <ColorItem
+    title="gray"
+    subtitle="Shades of gray, only for light mode."
+    colors={{
+      "gray-1": gray.gray1,
+      "gray-2": gray.gray2,
+      "gray-3": gray.gray3,
+      "gray-4": gray.gray4,
+      "gray-5": gray.gray5,
+      "gray-6": gray.gray6,
+      "gray-7": gray.gray7,
+      "gray-8": gray.gray8,
+      "gray-9": gray.gray9,
+      "gray-10": gray.gray10,
+      "gray-11": gray.gray11,
+      "gray-12": gray.gray12,
+    }}
+  />
+  <ColorItem
+    title="gray-dark"
+    subtitle="Shades of gray, only for dark mode"
+    colors={{
+      "gray-dark-1": grayDark.gray1,
+      "gray-dark-2": grayDark.gray2,
+      "gray-dark-3": grayDark.gray3,
+      "gray-dark-4": grayDark.gray4,
+      "gray-dark-5": grayDark.gray5,
+      "gray-dark-6": grayDark.gray6,
+      "gray-dark-7": grayDark.gray7,
+      "gray-dark-8": grayDark.gray8,
+      "gray-dark-9": grayDark.gray9,
+      "gray-dark-10": grayDark.gray10,
+      "gray-dark-11": grayDark.gray11,
+      "gray-dark-12": grayDark.gray12,
+    }}
+  />
+  <ColorItem
+    title="black-alpha"
+    subtitle="Shades of black with alpha channel"
+    colors={{
+      "black-alpha-1": blackA.blackA1,
+      "black-alpha-2": blackA.blackA2,
+      "black-alpha-3": blackA.blackA3,
+      "black-alpha-4": blackA.blackA4,
+      "black-alpha-5": blackA.blackA5,
+      "black-alpha-6": blackA.blackA6,
+      "black-alpha-7": blackA.blackA7,
+      "black-alpha-8": blackA.blackA8,
+      "black-alpha-9": blackA.blackA9,
+      "black-alpha-10": blackA.blackA10,
+      "black-alpha-11": blackA.blackA11,
+      "black-alpha-12": blackA.blackA12,
+    }}
+  />
+  <ColorItem
+    title="white-alpha"
+    subtitle="Shades of white with alpha channel"
+    colors={{
+      "white-alpha-1": whiteA.whiteA1,
+      "white-alpha-2": whiteA.whiteA2,
+      "white-alpha-3": whiteA.whiteA3,
+      "white-alpha-4": whiteA.whiteA4,
+      "white-alpha-5": whiteA.whiteA5,
+      "white-alpha-6": whiteA.whiteA6,
+      "white-alpha-7": whiteA.whiteA7,
+      "white-alpha-8": whiteA.whiteA8,
+      "white-alpha-9": whiteA.whiteA9,
+      "white-alpha-10": whiteA.whiteA10,
+      "white-alpha-11": whiteA.whiteA11,
+      "white-alpha-12": whiteA.whiteA12,
+    }}
+  />
+
+  <ColorItem
+    title="success"
+    subtitle="Shades of green, only for light mode."
+    colors={{
+      "success-1": green.green1,
+      "success-2": green.green2,
+      "success-3": green.green3,
+      "success-4": green.green4,
+      "success-5": green.green5,
+      "success-6": green.green6,
+      "success-7": green.green7,
+      "success-8": green.green8,
+      "success-9": green.green9,
+      "success-10": green.green10,
+      "success-11": green.green11,
+      "success-12": green.green12,
+    }}
+  />
+  <ColorItem
+    title="success-dark"
+    subtitle="Shades of green, only for dark mode."
+    colors={{
+      "success-dark-1": greenDark.green1,
+      "success-dark-2": greenDark.green2,
+      "success-dark-3": greenDark.green3,
+      "success-dark-4": greenDark.green4,
+      "success-dark-5": greenDark.green5,
+      "success-dark-6": greenDark.green6,
+      "success-dark-7": greenDark.green7,
+      "success-dark-8": greenDark.green8,
+      "success-dark-9": greenDark.green9,
+      "success-dark-10": greenDark.green10,
+      "success-dark-11": greenDark.green11,
+      "success-dark-12": greenDark.green12,
+    }}
+  />
+  <ColorItem
+    title="danger"
+    subtitle="Shades of red, only for light mode."
+    colors={{
+      "danger-1": red.red1,
+      "danger-2": red.red2,
+      "danger-3": red.red3,
+      "danger-4": red.red4,
+      "danger-5": red.red5,
+      "danger-6": red.red6,
+      "danger-7": red.red7,
+      "danger-8": red.red8,
+      "danger-9": red.red9,
+      "danger-10": red.red10,
+      "danger-11": red.red11,
+      "danger-12": red.red12,
+    }}
+  />
+  <ColorItem
+    title="danger-dark"
+    subtitle="Shades of red, only for dark mode."
+    colors={{
+      "danger-dark-1": redDark.red1,
+      "danger-dark-2": redDark.red2,
+      "danger-dark-3": redDark.red3,
+      "danger-dark-4": redDark.red4,
+      "danger-dark-5": redDark.red5,
+      "danger-dark-6": redDark.red6,
+      "danger-dark-7": redDark.red7,
+      "danger-dark-8": redDark.red8,
+      "danger-dark-9": redDark.red9,
+      "danger-dark-10": redDark.red10,
+      "danger-dark-11": redDark.red11,
+      "danger-dark-12": redDark.red12,
+    }}
+  />
+  <ColorItem
+    title="info"
+    subtitle="Shades of blue, only for light mode."
+    colors={{
+      "info-1": blue.blue1,
+      "info-2": blue.blue2,
+      "info-3": blue.blue3,
+      "info-4": blue.blue4,
+      "info-5": blue.blue5,
+      "info-6": blue.blue6,
+      "info-7": blue.blue7,
+      "info-8": blue.blue8,
+      "info-9": blue.blue9,
+      "info-10": blue.blue10,
+      "info-11": blue.blue11,
+      "info-12": blue.blue12,
+    }}
+  />
+  <ColorItem
+    title="info-dark"
+    subtitle="Shades of blue, only for dark mode."
+    colors={{
+      "info-dark-1": blueDark.blue1,
+      "info-dark-2": blueDark.blue2,
+      "info-dark-3": blueDark.blue3,
+      "info-dark-4": blueDark.blue4,
+      "info-dark-5": blueDark.blue5,
+      "info-dark-6": blueDark.blue6,
+      "info-dark-7": blueDark.blue7,
+      "info-dark-8": blueDark.blue8,
+      "info-dark-9": blueDark.blue9,
+      "info-dark-10": blueDark.blue10,
+      "info-dark-11": blueDark.blue11,
+      "info-dark-12": blueDark.blue12,
+    }}
+  />
+  <ColorItem
+    title="warning"
+    subtitle="Shades of yellow, only for light mode."
+    colors={{
+      "warning-1": yellow.yellow1,
+      "warning-2": yellow.yellow2,
+      "warning-3": yellow.yellow3,
+      "warning-4": yellow.yellow4,
+      "warning-5": yellow.yellow5,
+      "warning-6": yellow.yellow6,
+      "warning-7": yellow.yellow7,
+      "warning-8": yellow.yellow8,
+      "warning-9": yellow.yellow9,
+      "warning-10": yellow.yellow10,
+      "warning-11": yellow.yellow11,
+      "warning-12": yellow.yellow12,
+    }}
+  />
+  <ColorItem
+    title="warning-dark"
+    subtitle="Shades of yellow, only for dark mode."
+    colors={{
+      "warning-dark-1": yellowDark.yellow1,
+      "warning-dark-2": yellowDark.yellow2,
+      "warning-dark-3": yellowDark.yellow3,
+      "warning-dark-4": yellowDark.yellow4,
+      "warning-dark-5": yellowDark.yellow5,
+      "warning-dark-6": yellowDark.yellow6,
+      "warning-dark-7": yellowDark.yellow7,
+      "warning-dark-8": yellowDark.yellow8,
+      "warning-dark-9": yellowDark.yellow9,
+      "warning-dark-10": yellowDark.yellow10,
+      "warning-dark-11": yellowDark.yellow11,
+      "warning-dark-12": yellowDark.yellow12,
+    }}
+  />
+</ColorPalette>
+
+In this example, we apply a gray background in light and darkmode with the intensity of `12`.
+
+```jsx
+<div className="fill-gray-12 dark:fill-gray-dark-12"></div>
+```
+
+## primary color
+
+This is a special color reflecting the directiv brand color. It was developed by an agency and projected on a scale from 50 to 900. This color has no predefined rules for dark an light mode. The specific value must always be picked based on esthetics.
+
+<ColorPalette>
+  <ColorItem
+    title="primary"
+    subtitle="primary brand color"
+    colors={{
+      "primary-50": "#EEEFFF",
+      "primary-100": "#CBD1FF",
+      "primary-200": "#A9B2FF",
+      "primary-300": "#8793FF",
+      "primary-400": "#6473FF",
+      "primary-500": "#5364FF",
+      "primary-600": "#4554DF",
+      "primary-700": "#323C99",
+      "primary-800": "#212866",
+      "primary-900": "#4D5469",
+    }}
+  />
+</ColorPalette>
+
+### Slate - Gray Color Mapping
+
+This is an overview of how the light mode slate color palette translates to our gray color palette.
+
+<ColorPalette>
+  <ColorItem
+    title="slate"
+    colors={{
+      "slat-e50": "#F8FAFC",
+      "slate-100": "#F1F5F9",
+      "slate-200": "#E2E8F0",
+      "slate-300": "#CBD5E1",
+      "slate-400": "#94A3B8",
+      "slate-500": "#64748B",
+      "slate-600": "#475569",
+      "slate-700": "#334155",
+      "slate-800": "#1E293B",
+      "slate-900": "#0F1D2A",
+    }}
+  />
+
+  <ColorItem
+    title="gray"
+    colors={{
+      "gray-1": gray.gray1,
+      "gray-2": gray.gray2,
+      "gray-3": gray.gray3,
+      "gray-4": gray.gray4,
+      "gray-7": gray.gray7,
+      "gray-8": gray.gray8,
+      "gray-9": gray.gray9,
+      "gray-10": gray.gray10,
+      "gray-11": gray.gray11,
+      "gray-12": gray.gray12,
+    }}
+  />
+</ColorPalette>
