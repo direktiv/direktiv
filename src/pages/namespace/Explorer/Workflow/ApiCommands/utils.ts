@@ -1,6 +1,6 @@
 import { getAuthHeader } from "~/api/utils";
 import { useApiKey } from "~/util/store/apiKey";
-import useApiKeyHandling from "~/hooksNext/useApiKeyHandling";
+import useApiKeyHandling from "~/hooks/useApiKeyHandling";
 import { useMemo } from "react";
 
 export const useApiCommandTemplate = (namespace: string, workflow: string) => {

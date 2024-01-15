@@ -7,7 +7,7 @@ import Badge from "~/design/Badge";
 import { GitCompare } from "lucide-react";
 import { useMirrorActivity } from "~/api/tree/query/mirrorInfo";
 import { useTranslation } from "react-i18next";
-import useUpdatedAt from "~/hooksNext/useUpdatedAt";
+import useUpdatedAt from "~/hooks/useUpdatedAt";
 
 const Header = ({ activityId }: { activityId: string }) => {
   const { data } = useMirrorActivity({ id: activityId });

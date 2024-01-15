@@ -2,7 +2,7 @@ import { FC, PropsWithChildren, useEffect } from "react";
 import { useApiActions, useApiKey } from "~/util/store/apiKey";
 
 import { Authdialog } from "../Authdialog";
-import useApiKeyHandling from "~/hooksNext/useApiKeyHandling";
+import useApiKeyHandling from "~/hooks/useApiKeyHandling";
 
 export const AuthenticationProvider: FC<PropsWithChildren> = ({ children }) => {
   const { isFetched, isCurrentKeyValid, isApiKeyRequired, showLoginModal } =

@@ -16,7 +16,7 @@ import { useCancelInstance } from "~/api/logs/mutate/cancel";
 import { useInstanceDetails } from "~/api/instances/query/details";
 import { useInstanceId } from "../store/instanceContext";
 import { useTranslation } from "react-i18next";
-import useUpdatedAt from "~/hooksNext/useUpdatedAt";
+import useUpdatedAt from "~/hooks/useUpdatedAt";
 
 const Header = () => {
   const instanceId = useInstanceId();
