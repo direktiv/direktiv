@@ -14,7 +14,9 @@ import (
 	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/google/uuid"
+	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -573,10 +575,44 @@ func (flow *flow) CancelInstance(ctx context.Context, req *grpc.CancelInstanceRe
 	return &resp, nil
 }
 
+type grpcMetadataTMC struct {
+	md *metadata.MD
+}
+
+func (tmc *grpcMetadataTMC) Get(k string) string {
+	array := tmc.md.Get(k)
+	if len(array) == 0 {
+		return ""
+	}
+	return array[0]
+}
+
+func (tmc *grpcMetadataTMC) Keys() []string {
+	keys := tmc.md.Get("oteltmckeys")
+	if keys == nil {
+		keys = make([]string, 0)
+	}
+	return keys
+}
+
+func (tmc *grpcMetadataTMC) Set(k, v string) {
+	newKey := len(tmc.md.Get(k)) == 0
+	tmc.md.Set(k, v)
+	if newKey {
+		tmc.md.Append("oteltmckeys", k)
+	}
+}
+
 func (flow *flow) AwaitWorkflow(req *grpc.AwaitWorkflowRequest, srv grpc.Flow_AwaitWorkflowServer) error {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	ctx := srv.Context()
+	prop := otel.GetTextMapPropagator()
+	requestMetadata, _ := metadata.FromIncomingContext(ctx)
+	metadataCopy := requestMetadata.Copy()
+	carrier := &grpcMetadataTMC{&metadataCopy}
+	ctx = prop.Extract(ctx, carrier)
+
 	phash := ""
 	nhash := ""
 
@@ -596,6 +632,9 @@ func (flow *flow) AwaitWorkflow(req *grpc.AwaitWorkflowRequest, srv grpc.Flow_Aw
 	}
 
 	span := trace.SpanFromContext(ctx)
+	cctx, cSpan := span.TracerProvider().Tracer("flow/direktiv").Start(ctx, "working")
+	defer cSpan.End()
+	span = trace.SpanFromContext(cctx)
 
 	input := req.GetInput()
 	if input == nil {

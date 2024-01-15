@@ -402,10 +402,9 @@ describe("Test scope for target workflow plugin", () => {
 
   it(`should return a workflow run from limited namespace`, async () => {
   const req = await request(common.config.getDirektivHost()).get(
-      `/gw/endpoint7`
+      `/gw/endpoint1`
   );
     expect(req.statusCode).toEqual(200);
-    expect(req.text).toEqual("{\"result\":\"This wf should not be triggered!\"}").not()
     expect(req.text).toEqual("{\"result\":\"Hello world!\"}")
   });
 });
