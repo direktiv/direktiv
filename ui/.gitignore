@@ -145,5 +145,6 @@ storybook-static
 /playwright-report/
 /playwright/.cache/
 
+
 .vscode/*
 !.vscode/extensions.json
