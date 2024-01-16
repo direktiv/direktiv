@@ -4,7 +4,13 @@ on:
   push:
     branches:
       - main
+    paths:
+      - '*'
+      - '!ui/**'
   pull_request:
+    paths:
+      - '*'
+      - '!ui/**'
 
 permissions:
   contents: read

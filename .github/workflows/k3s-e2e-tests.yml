@@ -1,0 +1,201 @@
+name: K3s Tests
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '*'
+      - '!ui/**'
+  pull_request:
+    paths:
+      - '*'
+      - '!ui/**'
+
+env:
+  KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  SRVTAG: dev
+  IS_GITHUB_ACTIONS: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Cache Ubuntu packages
+        uses: actions/cache@v3
+        with:
+          path: /var/cache/apt/archives
+          key: ${{ runner.os }}-apt-packages-${{ hashFiles('**/apt.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-apt-packages-
+      - name: Cache Docker layers
+        id: docker-cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.docker
+          key: docker-${{ runner.os }}-${{ hashFiles('Dockerfile') }}
+          restore-keys: |
+            docker-${{ runner.os }}-
+
+      - name: Build Docker image
+        run: docker build -t direktiv/direktiv:${{ env.SRVTAG }} .
+        env:
+          DOCKER_BUILDKIT: 1
+
+      - name: Save Docker image to tar file
+        run: docker save direktiv/direktiv:${{ env.SRVTAG }} -o direktiv.tar
+
+      - name: Upload Docker image as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: direktiv-image
+          path: direktiv.tar
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+
+    timeout-minutes: 18
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        jest_prefix: [
+            "engine/",
+            "filesystem/",
+            "logparser/",
+            "variables/",
+            "errors/",
+            "mirror/",
+            "namespaces/",
+            # "functions/",
+            "gateway/",
+            # "kubernetes/",
+            "registry/",
+            "secrets/",
+            # "services/",
+          ]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Cache Ubuntu packages
+        uses: actions/cache@v3
+        with:
+          path: /var/cache/apt/archives
+          key: ${{ runner.os }}-apt-packages-${{ hashFiles('**/apt.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-apt-packages-
+      - name: Download Docker image artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: direktiv-image
+
+      - name: Setup k3s
+        run: curl -sfL https://get.k3s.io | sh -s - --disable traefik --write-kubeconfig-mode=644
+
+      - name: Install Helm
+        run: curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+      - name: Create namespace for the DB
+        run: kubectl create ns postgres
+
+      - name: Install a database
+        run: helm repo add bitnami https://charts.bitnami.com/bitnami && helm install psql-single bitnami/postgresql
+      - name: Install Knative
+        run: |
+          kubectl apply -f https://github.com/knative/operator/releases/download/knative-v1.11.7/operator.yaml
+          kubectl create ns knative-serving
+          kubectl apply -f https://raw.githubusercontent.com/direktiv/direktiv/main/kubernetes/install/knative/basic.yaml
+
+      - name: Add Direktiv Helm repository
+        run: helm repo add direktiv https://chart.direktiv.io
+
+      - name: Clone Direktiv-charts repository
+        run: |
+          git clone https://github.com/direktiv/direktiv-charts.git direktiv-charts
+          helm dependency update direktiv-charts/charts/direktiv
+
+      - name: Wait for PostgreSQL pod to be ready
+        run: |
+          while ! kubectl get secret psql-single-postgresql ; do
+              sleep 2
+          done
+
+      - name: Create dev.yaml file
+        run: |
+          cat <<EOF > dev.yaml
+          pullPolicy: IfNotPresent
+          tag: "${{ env.SRVTAG }}"
+          flow:
+            logging: console
+
+          database:
+            host: "psql-single-postgresql"
+            port: 5432
+            user: "postgres"
+            password: "$(kubectl get secret psql-single-postgresql -o jsonpath="{.data.postgres-password}" | base64 -d)"
+            name: "postgres"
+            sslmode: "disable"
+          EOF
+          cat dev.yaml
+
+      - name: Cache Docker layers
+        id: docker-cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.docker
+          key: docker-${{ runner.os }}-${{ hashFiles('Dockerfile') }}
+          restore-keys: |
+            docker-${{ runner.os }}-
+
+      - name: Apply images
+        run: |
+          sudo k3s ctr images import direktiv.tar
+
+      - name: Install Direktiv chart
+        run: helm install direktiv -f dev.yaml ./direktiv-charts/charts/direktiv/
+
+      - name: Wait for Direktiv pods to be ready
+        run: |
+          sleep 1
+          kubectl wait --for=condition=Ready pod -l app.kubernetes.io/instance=direktiv --timeout=120s
+          kubectl wait --for=condition=Ready pod -l app.kubernetes.io/name=direktiv-frontend --timeout=120s
+
+      - name: Get Internal IP
+        id: getInternalIP
+        run: |
+          internal_ip=$(kubectl get service direktiv-ingress-nginx-controller -o jsonpath='{.spec.clusterIP}')
+          echo "internal_ip=$internal_ip" >> $GITHUB_ENV
+
+      - name: Set Environment Variables
+        run: echo "DIREKTIV_HOST=${{ env.internal_ip }}" >> $GITHUB_ENV
+
+      - name: Print DIREKTIV_HOST
+        run: echo "DIREKTIV_HOST is set to ${{ env.DIREKTIV_HOST }}"
+
+      - name: List all pods and sleep 10
+        run: |
+          kubectl get pods 
+          kubectl logs deployments/direktiv-flow | tail -n 100
+          sleep 10
+      - name: Show logs
+        run: |
+          kubectl logs deployments/direktiv-flow | tail -n 100  
+     
+      - name: Run E2E tests
+        run: |
+          npm -prefix tests run all -- ${{ env.JEST_PREFIX }}
+        env:
+          JEST_PREFIX: ${{ matrix.jest_prefix }}
+          DIREKTIV_HOST: ${{ env.DIREKTIV_HOST }}
+          GITHUB_ACTIONS: true
+
+      - name: Show logs
+        run: |
+          kubectl logs deployments/direktiv-flow | tail -n 100
+
+      - name: Cleanup test cache
+        run: npm cache clean --force
