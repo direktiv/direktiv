@@ -1,6 +1,7 @@
 name: (UI) Publish Storybook to Chromatic
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
