@@ -27,7 +27,7 @@ jobs:
         with:
           path: |
             ../
-          key: ${{ runner.os }}-docker-${{ hashFiles('../Dockerfile') }}
+          key: ${{ runner.os }}-docker-${{ hashFiles('Dockerfile') }}
 
       - name: Build direktiv
         run: |
