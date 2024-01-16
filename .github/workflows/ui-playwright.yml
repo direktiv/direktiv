@@ -22,6 +22,13 @@ jobs:
         with:
           node-version: 18.18.1
 
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: |
+            ../.docker
+          key: ${{ runner.os }}-docker-${{ hashFiles('**/Dockerfile') }}
+
       - name: Build direktiv
         run: |
           docker build -t direktiv-dev ../.
