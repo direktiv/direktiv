@@ -8,8 +8,8 @@ on:
     paths:
       - "ui/**"
   pull_request:
-    # paths:
-    # - "ui/**"
+    paths:
+      - "ui/**"
 
 jobs:
   run-prebuild:
