@@ -1,6 +1,10 @@
 name: (UI) Test Playwright
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - '*'
+      - '!ui/**'
 
 jobs:
   test:
@@ -18,9 +22,13 @@ jobs:
         with:
           node-version: 18.18.1
 
-      - name: Run direktiv
-        run: make docker-start
-
+      - name: Build direktiv
+        run: |
+          docker build -t direktiv-dev .
+          docker compose up -d --scale e2e-tests=0
+        env:
+          DIREKTIV_UI_IMAGE: nginx
+          DIREKTIV_IMAGE: direktiv-dev
       # Cache Node Modules
       - name: Cache Node Modules
         uses: actions/cache@v2
