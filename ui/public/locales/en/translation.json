@@ -295,6 +295,7 @@
         }
       },
       "service": {
+        "goToService": "Go to service",
         "goToServices": "Go to services",
         "editor": {
           "saveBtn": "Save",
