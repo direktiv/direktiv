@@ -25,4 +25,5 @@ jobs:
         uses: chromaui/action@v1
         with:
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+          workingDir: ui
           buildScriptName: storybook:build
