@@ -24,8 +24,8 @@ jobs:
 
       - name: Build direktiv
         run: |
-          docker build -t direktiv-dev .
-          docker compose up -d --scale e2e-tests=0
+          docker build -t direktiv-dev ../.
+          docker compose -f ../docker-compose.yml up -d --scale e2e-tests=0
         env:
           DIREKTIV_UI_IMAGE: nginx
           DIREKTIV_IMAGE: direktiv-dev
