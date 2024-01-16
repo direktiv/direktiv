@@ -8,7 +8,6 @@ on:
 
 jobs:
   run-prebuild:
-    name: "run prebuild tests/checks"
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -20,5 +19,5 @@ jobs:
           version: 8
       - name: install dependencies
         run: yarn install
-      - name: run dependencies
+      - name: run prebuild
         run: yarn run prebuild
