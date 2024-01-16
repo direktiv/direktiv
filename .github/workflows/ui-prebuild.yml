@@ -1,0 +1,21 @@
+name: (UI) Run prebuild tests and checks
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  run-prebuild:
+    name: "run prebuild tests/checks"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - name: install dependencies
+        run: yarn install
+      - name: run dependencies
+        run: yarn run prebuild
