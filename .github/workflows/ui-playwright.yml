@@ -1,11 +1,15 @@
 name: (UI) Test Playwright
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - '*'
+      - '!ui/**'
 
 jobs:
   test:
     timeout-minutes: 45
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
 
     defaults:
       run:
@@ -18,6 +22,20 @@ jobs:
         with:
           node-version: 18.18.1
 
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: |
+            ../
+          key: ${{ runner.os }}-docker-${{ hashFiles('Dockerfile') }}
+
+      - name: Build direktiv
+        run: |
+          docker build -t direktiv-dev ../.
+          docker compose -f ../docker-compose.yaml up -d --scale e2e-tests=0
+        env:
+          DIREKTIV_UI_IMAGE: nginx
+          DIREKTIV_IMAGE: direktiv-dev
       # Cache Node Modules
       - name: Cache Node Modules
         uses: actions/cache@v2
@@ -48,10 +66,9 @@ jobs:
       - name: Run Playwright tests
         run: yarn playwright test
         env:
-          VITE_E2E_UI_HOST: ${{ vars.VITE_E2E_UI_HOST }}
-          VITE_E2E_UI_PORT: ${{ vars.VITE_E2E_UI_PORT }}
-          VITE_DEV_API_DOMAIN: ${{ vars.VITE_DEV_API_DOMAIN }}
-          VITE_E2E_API_TOKEN: ${{ vars.VITE_E2E_API_TOKEN }}
+          VITE_E2E_UI_HOST: "http://localhost"
+          VITE_E2E_UI_PORT: "3333"
+          VITE_DEV_API_DOMAIN: "http://localhost:8181"
 
       - uses: actions/upload-artifact@v3
         if: always()
