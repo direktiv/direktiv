@@ -46,7 +46,9 @@ const ExplorerHeader: FC = () => {
 
   const wideOverlay =
     !!selectedDialog &&
-    !["new-dir", "new-route", "new-consumer"].includes(selectedDialog);
+    !["new-dir", "new-route", "new-consumer", "new-service"].includes(
+      selectedDialog
+    );
 
   return (
     <div className="space-y-5 border-b border-gray-5 bg-gray-1 p-5 dark:border-gray-dark-5 dark:bg-gray-dark-1">
