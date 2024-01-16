@@ -10,6 +10,9 @@ jobs:
   run-prebuild:
     name: "run prebuild tests/checks"
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ui
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v2
