@@ -70,7 +70,7 @@ jobs:
           VITE_E2E_UI_PORT: "3333"
           VITE_DEV_API_DOMAIN: "http://localhost:8181"
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: playwright-report
