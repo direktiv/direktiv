@@ -105,8 +105,6 @@ const (
 	Flow_DeleteInstanceVariable_FullMethodName        = "/direktiv_flow.Flow/DeleteInstanceVariable"
 	Flow_RenameInstanceVariable_FullMethodName        = "/direktiv_flow.Flow/RenameInstanceVariable"
 	Flow_JQ_FullMethodName                            = "/direktiv_flow.Flow/JQ"
-	Flow_CreateNodeAttributes_FullMethodName          = "/direktiv_flow.Flow/CreateNodeAttributes"
-	Flow_DeleteNodeAttributes_FullMethodName          = "/direktiv_flow.Flow/DeleteNodeAttributes"
 	Flow_WorkflowMetrics_FullMethodName               = "/direktiv_flow.Flow/WorkflowMetrics"
 	Flow_EventListeners_FullMethodName                = "/direktiv_flow.Flow/EventListeners"
 	Flow_EventListenersStream_FullMethodName          = "/direktiv_flow.Flow/EventListenersStream"
@@ -114,8 +112,6 @@ const (
 	Flow_EventHistoryStream_FullMethodName            = "/direktiv_flow.Flow/EventHistoryStream"
 	Flow_HistoricalEvent_FullMethodName               = "/direktiv_flow.Flow/HistoricalEvent"
 	Flow_ReplayEvent_FullMethodName                   = "/direktiv_flow.Flow/ReplayEvent"
-	Flow_ToggleWorkflow_FullMethodName                = "/direktiv_flow.Flow/ToggleWorkflow"
-	Flow_SetWorkflowEventLogging_FullMethodName       = "/direktiv_flow.Flow/SetWorkflowEventLogging"
 	Flow_ResolveNamespaceUID_FullMethodName           = "/direktiv_flow.Flow/ResolveNamespaceUID"
 	Flow_ResolveWorkflowUID_FullMethodName            = "/direktiv_flow.Flow/ResolveWorkflowUID"
 	Flow_SetNamespaceConfig_FullMethodName            = "/direktiv_flow.Flow/SetNamespaceConfig"
@@ -262,8 +258,6 @@ type FlowClient interface {
 	DeleteInstanceVariable(ctx context.Context, in *DeleteInstanceVariableRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	RenameInstanceVariable(ctx context.Context, in *RenameInstanceVariableRequest, opts ...grpc.CallOption) (*RenameInstanceVariableResponse, error)
 	JQ(ctx context.Context, in *JQRequest, opts ...grpc.CallOption) (*JQResponse, error)
-	CreateNodeAttributes(ctx context.Context, in *CreateNodeAttributesRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	DeleteNodeAttributes(ctx context.Context, in *DeleteNodeAttributesRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	WorkflowMetrics(ctx context.Context, in *WorkflowMetricsRequest, opts ...grpc.CallOption) (*WorkflowMetricsResponse, error)
 	// COMING SOON:
 	//
@@ -277,8 +271,6 @@ type FlowClient interface {
 	EventHistoryStream(ctx context.Context, in *EventHistoryRequest, opts ...grpc.CallOption) (Flow_EventHistoryStreamClient, error)
 	HistoricalEvent(ctx context.Context, in *HistoricalEventRequest, opts ...grpc.CallOption) (*HistoricalEventResponse, error)
 	ReplayEvent(ctx context.Context, in *ReplayEventRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	ToggleWorkflow(ctx context.Context, in *ToggleWorkflowRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	SetWorkflowEventLogging(ctx context.Context, in *SetWorkflowEventLoggingRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	ResolveNamespaceUID(ctx context.Context, in *ResolveNamespaceUIDRequest, opts ...grpc.CallOption) (*NamespaceResponse, error)
 	ResolveWorkflowUID(ctx context.Context, in *ResolveWorkflowUIDRequest, opts ...grpc.CallOption) (*WorkflowResponse, error)
 	SetNamespaceConfig(ctx context.Context, in *SetNamespaceConfigRequest, opts ...grpc.CallOption) (*SetNamespaceConfigResponse, error)
@@ -1690,24 +1682,6 @@ func (c *flowClient) JQ(ctx context.Context, in *JQRequest, opts ...grpc.CallOpt
 	return out, nil
 }
 
-func (c *flowClient) CreateNodeAttributes(ctx context.Context, in *CreateNodeAttributesRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, Flow_CreateNodeAttributes_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) DeleteNodeAttributes(ctx context.Context, in *DeleteNodeAttributesRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, Flow_DeleteNodeAttributes_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *flowClient) WorkflowMetrics(ctx context.Context, in *WorkflowMetricsRequest, opts ...grpc.CallOption) (*WorkflowMetricsResponse, error) {
 	out := new(WorkflowMetricsResponse)
 	err := c.cc.Invoke(ctx, Flow_WorkflowMetrics_FullMethodName, in, out, opts...)
@@ -1811,24 +1785,6 @@ func (c *flowClient) HistoricalEvent(ctx context.Context, in *HistoricalEventReq
 func (c *flowClient) ReplayEvent(ctx context.Context, in *ReplayEventRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, Flow_ReplayEvent_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) ToggleWorkflow(ctx context.Context, in *ToggleWorkflowRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, Flow_ToggleWorkflow_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) SetWorkflowEventLogging(ctx context.Context, in *SetWorkflowEventLoggingRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, Flow_SetWorkflowEventLogging_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -2749,8 +2705,6 @@ type FlowServer interface {
 	DeleteInstanceVariable(context.Context, *DeleteInstanceVariableRequest) (*emptypb.Empty, error)
 	RenameInstanceVariable(context.Context, *RenameInstanceVariableRequest) (*RenameInstanceVariableResponse, error)
 	JQ(context.Context, *JQRequest) (*JQResponse, error)
-	CreateNodeAttributes(context.Context, *CreateNodeAttributesRequest) (*emptypb.Empty, error)
-	DeleteNodeAttributes(context.Context, *DeleteNodeAttributesRequest) (*emptypb.Empty, error)
 	WorkflowMetrics(context.Context, *WorkflowMetricsRequest) (*WorkflowMetricsResponse, error)
 	// COMING SOON:
 	//
@@ -2764,8 +2718,6 @@ type FlowServer interface {
 	EventHistoryStream(*EventHistoryRequest, Flow_EventHistoryStreamServer) error
 	HistoricalEvent(context.Context, *HistoricalEventRequest) (*HistoricalEventResponse, error)
 	ReplayEvent(context.Context, *ReplayEventRequest) (*emptypb.Empty, error)
-	ToggleWorkflow(context.Context, *ToggleWorkflowRequest) (*emptypb.Empty, error)
-	SetWorkflowEventLogging(context.Context, *SetWorkflowEventLoggingRequest) (*emptypb.Empty, error)
 	ResolveNamespaceUID(context.Context, *ResolveNamespaceUIDRequest) (*NamespaceResponse, error)
 	ResolveWorkflowUID(context.Context, *ResolveWorkflowUIDRequest) (*WorkflowResponse, error)
 	SetNamespaceConfig(context.Context, *SetNamespaceConfigRequest) (*SetNamespaceConfigResponse, error)
@@ -3083,12 +3035,6 @@ func (UnimplementedFlowServer) RenameInstanceVariable(context.Context, *RenameIn
 func (UnimplementedFlowServer) JQ(context.Context, *JQRequest) (*JQResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method JQ not implemented")
 }
-func (UnimplementedFlowServer) CreateNodeAttributes(context.Context, *CreateNodeAttributesRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateNodeAttributes not implemented")
-}
-func (UnimplementedFlowServer) DeleteNodeAttributes(context.Context, *DeleteNodeAttributesRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteNodeAttributes not implemented")
-}
 func (UnimplementedFlowServer) WorkflowMetrics(context.Context, *WorkflowMetricsRequest) (*WorkflowMetricsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method WorkflowMetrics not implemented")
 }
@@ -3109,12 +3055,6 @@ func (UnimplementedFlowServer) HistoricalEvent(context.Context, *HistoricalEvent
 }
 func (UnimplementedFlowServer) ReplayEvent(context.Context, *ReplayEventRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReplayEvent not implemented")
-}
-func (UnimplementedFlowServer) ToggleWorkflow(context.Context, *ToggleWorkflowRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ToggleWorkflow not implemented")
-}
-func (UnimplementedFlowServer) SetWorkflowEventLogging(context.Context, *SetWorkflowEventLoggingRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SetWorkflowEventLogging not implemented")
 }
 func (UnimplementedFlowServer) ResolveNamespaceUID(context.Context, *ResolveNamespaceUIDRequest) (*NamespaceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ResolveNamespaceUID not implemented")
@@ -4914,42 +4854,6 @@ func _Flow_JQ_Handler(srv interface{}, ctx context.Context, dec func(interface{}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Flow_CreateNodeAttributes_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateNodeAttributesRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).CreateNodeAttributes(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_CreateNodeAttributes_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).CreateNodeAttributes(ctx, req.(*CreateNodeAttributesRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_DeleteNodeAttributes_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteNodeAttributesRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).DeleteNodeAttributes(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_DeleteNodeAttributes_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).DeleteNodeAttributes(ctx, req.(*DeleteNodeAttributesRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Flow_WorkflowMetrics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(WorkflowMetricsRequest)
 	if err := dec(in); err != nil {
@@ -5078,42 +4982,6 @@ func _Flow_ReplayEvent_Handler(srv interface{}, ctx context.Context, dec func(in
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).ReplayEvent(ctx, req.(*ReplayEventRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_ToggleWorkflow_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ToggleWorkflowRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).ToggleWorkflow(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_ToggleWorkflow_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).ToggleWorkflow(ctx, req.(*ToggleWorkflowRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_SetWorkflowEventLogging_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SetWorkflowEventLoggingRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).SetWorkflowEventLogging(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_SetWorkflowEventLogging_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).SetWorkflowEventLogging(ctx, req.(*SetWorkflowEventLoggingRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -6418,14 +6286,6 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Flow_JQ_Handler,
 		},
 		{
-			MethodName: "CreateNodeAttributes",
-			Handler:    _Flow_CreateNodeAttributes_Handler,
-		},
-		{
-			MethodName: "DeleteNodeAttributes",
-			Handler:    _Flow_DeleteNodeAttributes_Handler,
-		},
-		{
 			MethodName: "WorkflowMetrics",
 			Handler:    _Flow_WorkflowMetrics_Handler,
 		},
@@ -6444,14 +6304,6 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ReplayEvent",
 			Handler:    _Flow_ReplayEvent_Handler,
-		},
-		{
-			MethodName: "ToggleWorkflow",
-			Handler:    _Flow_ToggleWorkflow_Handler,
-		},
-		{
-			MethodName: "SetWorkflowEventLogging",
-			Handler:    _Flow_SetWorkflowEventLogging_Handler,
 		},
 		{
 			MethodName: "ResolveNamespaceUID",

@@ -132,9 +132,6 @@ service Flow {
 
 	rpc JQ (JQRequest) returns (JQResponse) {}
 
-	rpc CreateNodeAttributes (CreateNodeAttributesRequest) returns (google.protobuf.Empty) {}
-	rpc DeleteNodeAttributes (DeleteNodeAttributesRequest) returns (google.protobuf.Empty) {}
-
 	rpc WorkflowMetrics (WorkflowMetricsRequest) returns (WorkflowMetricsResponse) {}
 
 	// COMING SOON:
@@ -157,9 +154,6 @@ service Flow {
 	// LintRevision
 	// LintPayload
 	// Workflow Metrics
-
-	rpc ToggleWorkflow (ToggleWorkflowRequest) returns (google.protobuf.Empty) {}
-	rpc SetWorkflowEventLogging (SetWorkflowEventLoggingRequest) returns (google.protobuf.Empty) {}
 
 
 	rpc ResolveNamespaceUID (ResolveNamespaceUIDRequest) returns (NamespaceResponse) {}
