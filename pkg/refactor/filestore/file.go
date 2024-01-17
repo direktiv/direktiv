@@ -64,9 +64,6 @@ type FileQuery interface {
 	// GetCurrentRevision returns current file revision, this method is not applicable for directory file type.
 	GetCurrentRevision(ctx context.Context) (*Revision, error)
 
-	// GetAllRevisions lists all file revisions, this method is not applicable for directory file type.
-	GetAllRevisions(ctx context.Context) ([]*Revision, error)
-
 	// CreateRevision creates a new file revision, this method is not applicable for directory file type.
 	CreateRevision(ctx context.Context, data []byte) (*Revision, error)
 

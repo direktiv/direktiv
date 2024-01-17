@@ -143,23 +143,6 @@ func (q *FileQuery) GetRevision(ctx context.Context) (*filestore.Revision, error
 	return rev, nil
 }
 
-func (q *FileQuery) GetAllRevisions(ctx context.Context) ([]*filestore.Revision, error) {
-	if q.file.Typ == filestore.FileTypeDirectory {
-		return nil, filestore.ErrFileTypeIsDirectory
-	}
-
-	var list []*filestore.Revision
-	res := q.db.WithContext(ctx).Table("filesystem_revisions").
-		Where("file_id", q.file.ID).
-		Order("created_at desc").
-		Find(&list)
-	if res.Error != nil {
-		return nil, res.Error
-	}
-
-	return list, nil
-}
-
 var _ filestore.FileQuery = &FileQuery{}
 
 //nolint:revive
