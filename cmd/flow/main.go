@@ -70,11 +70,6 @@ func RunApplication() {
 	rootCmd.AddCommand(createNamespaceCmd)
 	rootCmd.AddCommand(deleteNamespaceCmd)
 	rootCmd.AddCommand(renameNamespaceCmd)
-	rootCmd.AddCommand(annotationSetNamespaceCmd)
-	rootCmd.AddCommand(annotationGetNamespaceCmd)
-	rootCmd.AddCommand(annotationListNamespaceCmd)
-	rootCmd.AddCommand(annotationRenameNamespaceCmd)
-	rootCmd.AddCommand(annotationDeleteNamespaceCmd)
 
 	rootCmd.AddCommand(directoryCmd)
 	rootCmd.AddCommand(createDirectoryCmd)
