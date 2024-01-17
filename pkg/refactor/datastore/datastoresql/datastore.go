@@ -39,13 +39,6 @@ func (s *sqlStore) Mirror() mirror.Store {
 	}
 }
 
-// FileAnnotations returns file annotations store.
-func (s *sqlStore) FileAnnotations() core.FileAnnotationsStore {
-	return &sqlFileAnnotationsStore{
-		db: s.db,
-	}
-}
-
 // Logs returns a log store.
 func (s *sqlStore) Logs() logengine.LogStore {
 	return &sqlLogStore{

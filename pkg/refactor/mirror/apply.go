@@ -80,11 +80,6 @@ func (o *DirektivApplyer) apply(ctx context.Context, callbacks Callbacks, proc *
 		return fmt.Errorf("failed to copy deprecated variables: %w", err)
 	}
 
-	err = o.createAnnotations(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to create annotations: %w", err)
-	}
-
 	// TODO: join the next two operations into a single atomic SQL operation?
 	err = callbacks.FileStore().ForNamespace(proc.Namespace).Delete(ctx)
 	if err != nil {
@@ -300,23 +295,6 @@ func (o *DirektivApplyer) copyDeprecatedVariables(ctx context.Context) error {
 				return fmt.Errorf("failed to save workflow variable '%s' '%s': %w", path, k, err)
 			}
 		}
-	}
-
-	return nil
-}
-
-func (o *DirektivApplyer) createAnnotations(ctx context.Context) error {
-	f, err := o.callbacks.FileStore().ForRootID(o.rootID).GetFile(ctx, "/")
-	if err != nil {
-		return err
-	}
-
-	err = o.callbacks.FileAnnotationsStore().Set(ctx, &core.FileAnnotations{
-		FileID: f.ID,
-		Data:   o.notes,
-	})
-	if err != nil {
-		return err
 	}
 
 	return nil
