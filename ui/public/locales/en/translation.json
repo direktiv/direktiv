@@ -312,7 +312,11 @@
               "placeholder": "Select a size"
             },
             "cmd": "Cmd",
-            "envs": "Envs"
+            "envs": {
+              "label": "Environment variables",
+              "name": "Name",
+              "value": "Value"
+            }
           }
         }
       },
