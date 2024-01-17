@@ -25,7 +25,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Cache Ubuntu packages
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: /var/cache/apt/archives
           key: ${{ runner.os }}-apt-packages-${{ hashFiles('**/apt.lock') }}
@@ -33,7 +33,7 @@ jobs:
             ${{ runner.os }}-apt-packages-
       - name: Cache Docker layers
         id: docker-cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.docker
           key: docker-${{ runner.os }}-${{ hashFiles('Dockerfile') }}
@@ -82,7 +82,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Cache Ubuntu packages
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: /var/cache/apt/archives
           key: ${{ runner.os }}-apt-packages-${{ hashFiles('**/apt.lock') }}
@@ -144,7 +144,7 @@ jobs:
 
       - name: Cache Docker layers
         id: docker-cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.docker
           key: docker-${{ runner.os }}-${{ hashFiles('Dockerfile') }}
