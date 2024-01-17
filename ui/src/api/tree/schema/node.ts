@@ -69,8 +69,6 @@ export const RouterSchema = z.object({
     .refine((routes) => [0, 2].includes(routes.length)),
 });
 
-export const ToggleLiveSchema = z.null();
-
 export const FolderCreatedSchema = z.object({
   namespace: z.string(),
   node: NodeSchema,
