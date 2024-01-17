@@ -5,8 +5,6 @@ import {
   Layers,
   PieChart,
   Play,
-  Power,
-  PowerOff,
   Settings,
   TerminalSquare,
 } from "lucide-react";
@@ -30,8 +28,6 @@ import { analyzePath } from "~/util/router/utils";
 import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
 import { useNodeContent } from "~/api/tree/query/node";
-import { useRouter } from "~/api/tree/query/router";
-import { useToggleLive } from "~/api/tree/mutate/toggleLive";
 import { useTranslation } from "react-i18next";
 
 const Header: FC = () => {
@@ -48,16 +44,11 @@ const Header: FC = () => {
   const { segments } = analyzePath(path);
   const filename = segments[segments.length - 1];
 
-  const { data: router, isFetched: routerIsFetched } = useRouter({ path });
   const {
     isAllowed,
     noPermissionMessage,
     isFetched: isPermissionCheckFetched,
   } = useNodeContent({ path });
-
-  const { mutate: toggleLive } = useToggleLive();
-
-  const isLive = router?.live || false;
 
   if (!namespace) return null;
   if (!path) return null;
@@ -160,40 +151,12 @@ const Header: FC = () => {
                     <ApiCommands namespace={namespace} path={path} />
                   </DialogContent>
                 </Dialog>
-                <Button
-                  data-testid="toggle-workflow-active-btn"
-                  loading={!routerIsFetched}
-                  icon
-                  variant="outline"
-                  onClick={() => toggleLive({ path, value: !isLive })}
-                >
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      {routerIsFetched &&
-                        (isLive ? (
-                          <PowerOff data-testid="active-workflow-off-icon" />
-                        ) : (
-                          <Power data-testid="active-workflow-on-icon" />
-                        ))}
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      {isLive
-                        ? t(
-                            "pages.explorer.workflow.toggleActiveBtn.setInactive"
-                          )
-                        : t(
-                            "pages.explorer.workflow.toggleActiveBtn.setActive"
-                          )}
-                    </TooltipContent>
-                  </Tooltip>
-                </Button>
               </ButtonBar>
             </TooltipProvider>
             <Dialog>
               <DialogTrigger asChild>
                 <Button
                   variant="primary"
-                  disabled={!isLive}
                   data-testid="workflow-header-btn-run"
                   className="grow"
                 >

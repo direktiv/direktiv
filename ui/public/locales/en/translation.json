@@ -256,10 +256,6 @@
         "headline": "Latest",
         "updated": "Updated {{relativeTime}} ago",
         "runBtn": "Run",
-        "toggleActiveBtn": {
-          "setActive": "Activate workflow",
-          "setInactive": "Deactivate workflow"
-        },
         "apiCommands": {
           "tooltip": "Open API commands",
           "title": "Workflow API interactions",
@@ -1301,15 +1297,6 @@
           },
           "error": {
             "description": "could not save workflow variable 😢"
-          }
-        },
-        "toggleLive": {
-          "success": {
-            "title": "Workflow updated",
-            "description": {
-              "activated": "Workflow {{workflow}} was activated",
-              "deactivated": "Workflow {{workflow}} was deactivated"
-            }
           }
         },
         "createDirectory": {
