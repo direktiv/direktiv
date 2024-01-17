@@ -14,7 +14,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/emptypb"
 	"gopkg.in/yaml.v3"
 )
 
@@ -516,45 +515,4 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 	resp.Revision.Source = data
 
 	return &resp, nil
-}
-
-func (flow *flow) ToggleWorkflow(ctx context.Context, req *grpc.ToggleWorkflowRequest) (*emptypb.Empty, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
-
-	tx, err := flow.beginSqlTx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer tx.Rollback()
-
-	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
-
-	file, err := tx.FileStore().ForNamespace(ns.Name).GetFile(ctx, req.GetPath())
-	if err != nil {
-		return nil, err
-	}
-
-	annotations, router, err := getRouter(ctx, tx, file)
-	if err != nil {
-		return nil, err
-	}
-
-	router.Enabled = !router.Enabled
-
-	annotations.Data = annotations.Data.SetEntry(routerAnnotationKey, router.Marshal())
-
-	err = tx.DataStore().FileAnnotations().Set(ctx, annotations)
-	if err != nil {
-		return nil, err
-	}
-
-	err = tx.Commit(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return &emptypb.Empty{}, nil
 }
