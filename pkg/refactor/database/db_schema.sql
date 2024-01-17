@@ -44,16 +44,6 @@ CREATE TABLE IF NOT EXISTS "filesystem_revisions" (
     FOREIGN KEY ("file_id") REFERENCES "filesystem_files"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS "file_annotations" (
-    "file_id" uuid,
-    "data" text,
-    "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY ("file_id"),
-    CONSTRAINT "fk_filesystem_files_file_annotations"
-    FOREIGN KEY ("file_id") REFERENCES "filesystem_files"("id") ON DELETE CASCADE ON UPDATE CASCADE
-);
-
 CREATE TABLE IF NOT EXISTS "mirror_configs" (
     "namespace" text,
     "url" text NOT NULL,
@@ -241,3 +231,5 @@ CREATE TABLE IF NOT EXISTS "metrics" (
     "transition" text,
     PRIMARY KEY ("id")
 );
+
+DROP TABLE IF EXISTS "file_annotations";
