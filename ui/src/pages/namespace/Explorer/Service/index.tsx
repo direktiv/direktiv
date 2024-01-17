@@ -5,6 +5,7 @@ import { Card } from "~/design/Card";
 import { FC } from "react";
 import { Link } from "react-router-dom";
 import { NoPermissions } from "~/design/Table";
+import ServiceEditor from "./ServiceEditor";
 import { analyzePath } from "~/util/router/utils";
 import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
@@ -68,6 +69,7 @@ const ServicePage: FC = () => {
           )}
         </div>
       </div>
+      <ServiceEditor data={serviceData} path={path} />
     </>
   );
 };

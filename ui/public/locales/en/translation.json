@@ -299,7 +299,11 @@
         "goToServices": "Go to services",
         "editor": {
           "saveBtn": "Save",
-          "helpTitle": "Example service file"
+          "unsavedNote": "unsaved changes",
+          "form": {
+            "serialisationError": "There was an error serializing the form data",
+            "image": "image"
+          }
         }
       },
       "endpoint": {

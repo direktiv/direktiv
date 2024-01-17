@@ -25,7 +25,7 @@ const ConditionSchema = z.object({
     "value": "value"
   }
  */
-const EnvironementVariableSchema = z.object({
+export const EnvironementVariableSchema = z.object({
   name: z.string(),
   value: z.string(),
 });
