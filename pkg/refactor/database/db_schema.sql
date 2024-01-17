@@ -32,8 +32,6 @@ CREATE TABLE IF NOT EXISTS "filesystem_files" (
 
 CREATE TABLE IF NOT EXISTS "filesystem_revisions" (
     "id" uuid,
-    "tags" text,
-    "is_current" boolean NOT NULL,
     "data" bytea NOT NULL,
     "checksum" text NOT NULL,
     "file_id" uuid NOT NULL,

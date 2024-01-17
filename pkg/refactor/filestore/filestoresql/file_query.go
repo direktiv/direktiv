@@ -108,24 +108,6 @@ func (q *FileQuery) SetPath(ctx context.Context, path string) error {
 	return nil
 }
 
-func (q *FileQuery) getRevisionByID(ctx context.Context, id uuid.UUID) (*filestore.Revision, error) {
-	if q.file.Typ == filestore.FileTypeDirectory {
-		return nil, filestore.ErrFileTypeIsDirectory
-	}
-
-	rev := &filestore.Revision{}
-	res := q.db.WithContext(ctx).Raw(`
-					SELECT *
-					FROM filesystem_revisions
-					WHERE id=?
-					`, id).First(rev)
-	if res.Error != nil {
-		return nil, res.Error
-	}
-
-	return rev, nil
-}
-
 func (q *FileQuery) GetRevision(ctx context.Context) (*filestore.Revision, error) {
 	if q.file.Typ == filestore.FileTypeDirectory {
 		return nil, filestore.ErrFileTypeIsDirectory
@@ -167,31 +149,13 @@ func (q *FileQuery) GetData(ctx context.Context) ([]byte, error) {
 	res := q.db.WithContext(ctx).Raw(`
 					SELECT *
 					FROM filesystem_revisions
-					WHERE file_id=? AND is_current=true
+					WHERE file_id=?
 					`, q.file.ID).First(rev)
 	if res.Error != nil {
 		return nil, res.Error
 	}
 
 	return rev.Data, nil
-}
-
-func (q *FileQuery) GetCurrentRevision(ctx context.Context) (*filestore.Revision, error) {
-	if q.file.Typ == filestore.FileTypeDirectory {
-		return nil, filestore.ErrFileTypeIsDirectory
-	}
-
-	rev := &filestore.Revision{}
-	res := q.db.WithContext(ctx).Raw(`
-					SELECT *
-					FROM filesystem_revisions
-					WHERE file_id=? AND is_current=true`, q.file.ID).
-		First(rev)
-	if res.Error != nil {
-		return nil, res.Error
-	}
-
-	return rev, nil
 }
 
 func (q *FileQuery) CreateRevision(ctx context.Context, data []byte) (*filestore.Revision, error) {
@@ -201,29 +165,15 @@ func (q *FileQuery) CreateRevision(ctx context.Context, data []byte) (*filestore
 
 	newChecksum := string(q.checksumFunc(data))
 
-	// set current revisions 'is_current' flag to false.
-	res := q.db.WithContext(ctx).
-		Table("filesystem_revisions").
-		Where("file_id", q.file.ID).
-		Where("is_current", true).
-		Update("is_current", false)
-	if res.Error != nil {
-		return nil, res.Error
-	}
-	if res.RowsAffected != 1 {
-		return nil, fmt.Errorf("unexpected gorm update count, got: %d, want: %d", res.RowsAffected, 1)
-	}
-
 	// create a new file revision.
 	newRev := &filestore.Revision{
-		ID:        uuid.New(),
-		FileID:    q.file.ID,
-		IsCurrent: true,
+		ID:     uuid.New(),
+		FileID: q.file.ID,
 
 		Checksum: newChecksum,
 		Data:     data,
 	}
-	res = q.db.WithContext(ctx).Table("filesystem_revisions").Create(newRev)
+	res := q.db.WithContext(ctx).Table("filesystem_revisions").Create(newRev)
 	if res.Error != nil {
 		return nil, res.Error
 	}

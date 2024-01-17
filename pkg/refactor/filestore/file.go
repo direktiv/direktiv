@@ -61,20 +61,12 @@ type FileQuery interface {
 	// GetData returns reader for the file, this method is not applicable for directory file type.
 	GetData(ctx context.Context) ([]byte, error)
 
-	// GetCurrentRevision returns current file revision, this method is not applicable for directory file type.
-	GetCurrentRevision(ctx context.Context) (*Revision, error)
-
 	// CreateRevision creates a new file revision, this method is not applicable for directory file type.
 	CreateRevision(ctx context.Context, data []byte) (*Revision, error)
 
 	// Delete deletes the file (or the directory).
 	Delete(ctx context.Context, force bool) error
 
-	// GetRevision queries a file revision by either:
-	// 		reference = 'latest' -> this will return the current revision,
-	// or:	reference = any tag string -> this will return a tagged revision,
-	// or:	reference = any uuid string -> this will return a revision by id.
-	// This method is not applicable for directory file type.
 	GetRevision(ctx context.Context) (*Revision, error)
 
 	// SetPath sets a new path for the file, this method is used to rename files and directories or move them
