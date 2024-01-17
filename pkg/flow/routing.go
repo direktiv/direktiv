@@ -2,15 +2,14 @@ package flow
 
 import (
 	"context"
-	"crypto/rand"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"math/big"
 	"strings"
 
-	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
+
+	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/model"
 	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
@@ -83,10 +82,6 @@ func (engine *engine) mux(ctx context.Context, ns *database.Namespace, calledAs 
 	// TODO: Alan, fix for the new filestore.(*Revision).GetRevision() api.
 	uriElems := strings.SplitN(calledAs, ":", 2)
 	path := uriElems[0]
-	ref := ""
-	if len(uriElems) > 1 {
-		ref = uriElems[1]
-	}
 
 	tx, err := engine.flow.beginSqlTx(ctx)
 	if err != nil {
@@ -94,102 +89,18 @@ func (engine *engine) mux(ctx context.Context, ns *database.Namespace, calledAs 
 	}
 	defer tx.Rollback()
 
-	file, err := engine.getAmbiguousFile(ctx, tx, ns, path)
+	file, err := tx.FileStore().ForNamespace(ns.Name).GetFile(ctx, path)
 	if err != nil {
 		return nil, nil, err
 	}
-
-	_, router, err := getRouter(ctx, tx, file)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	if !router.Enabled {
-		return nil, nil, errors.New("cannot execute disabled workflow")
-	}
-
 	var rev *filestore.Revision
 
-	if ref == filestore.Latest {
+	if true {
 		rev, err = tx.FileStore().ForFile(file).GetCurrentRevision(ctx)
 		if err != nil {
 			return nil, nil, err
 		}
-	} else if ref != "" {
-		rev, err = tx.FileStore().ForFile(file).GetRevision(ctx, ref)
-		if err != nil {
-			return nil, nil, err
-		}
-	} else {
-		if len(router.Routes) == 0 {
-			rev, err = tx.FileStore().ForFile(file).GetCurrentRevision(ctx)
-			if err != nil {
-				return nil, nil, err
-			}
-		} else {
-			totalWeights := 0
-			allRevs := make([]*filestore.Revision, 0)
-			allWeights := make([]int, 0)
-
-			for k, v := range router.Routes {
-				id, err := uuid.Parse(k)
-				if err == nil {
-					rev, err = tx.FileStore().ForFile(file).GetRevision(ctx, id.String())
-					if err == nil {
-						totalWeights += v
-						allRevs = append(allRevs, rev)
-						allWeights = append(allWeights, v)
-					}
-				} else if k == filestore.Latest {
-					rev, err = tx.FileStore().ForFile(file).GetCurrentRevision(ctx)
-					if err == nil {
-						totalWeights += v
-						allRevs = append(allRevs, rev)
-						allWeights = append(allWeights, v)
-					}
-				} else {
-					rev, err = tx.FileStore().ForFile(file).GetRevision(ctx, k)
-					if err == nil {
-						totalWeights += v
-						allRevs = append(allRevs, rev)
-						allWeights = append(allWeights, v)
-					}
-				}
-			}
-
-			if totalWeights < 1 {
-				rev, err = tx.FileStore().ForFile(file).GetCurrentRevision(ctx)
-				if err != nil {
-					return nil, nil, err
-				}
-			} else {
-				x, err := rand.Int(rand.Reader, big.NewInt(int64(totalWeights)))
-				if err != nil {
-					return nil, nil, err
-				}
-				choice := int(x.Int64())
-				var idx int
-				for idx = 0; choice > 0; idx++ {
-					choice -= allWeights[idx]
-					if choice <= 0 {
-						break
-					}
-				}
-				rev = allRevs[idx]
-			}
-		}
 	}
-
-	// if cached.Ref == nil {
-	// 	// TODO: yassir, how are we going to fake these fields?
-	// 	cached.Ref = &database.Ref{
-	// 		// ID: ,
-	// 		// Immutable: ,
-	// 		// Name: ,
-	// 		// CreatedAt: ,
-	// 		Revision: rev.ID,
-	// 	}
-	// }
 
 	return file, rev, nil
 }

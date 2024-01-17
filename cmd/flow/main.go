@@ -97,8 +97,6 @@ func RunApplication() {
 	rootCmd.AddCommand(instanceInputCmd)
 	rootCmd.AddCommand(instanceOutputCmd)
 
-	rootCmd.AddCommand(routerCmd)
-	rootCmd.AddCommand(editRouterCmd)
 	rootCmd.AddCommand(secretsCmd)
 	rootCmd.AddCommand(setSecretCmd)
 	rootCmd.AddCommand(deleteSecretCmd)
