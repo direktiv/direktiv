@@ -303,8 +303,14 @@
           "form": {
             "serialisationError": "There was an error serializing the form data",
             "image": "Image",
-            "scale": "Scale",
-            "size": "Size",
+            "scale": {
+              "label": "Scale",
+              "placeholder": "Select a scale"
+            },
+            "size": {
+              "label": "Size", 
+              "placeholder": "Select a size"
+            },
             "cmd": "Cmd",
             "envs": "Envs"
           }

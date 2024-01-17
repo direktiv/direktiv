@@ -4,6 +4,15 @@ import {
   useForm,
   useWatch,
 } from "react-hook-form";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "~/design/Select";
 import { ServiceFormSchema, ServiceFormSchemaType } from "./schema";
 
 import { FC } from "react";
@@ -36,6 +45,8 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
 
   const { register, control } = formControls;
 
+  const sizeValues = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
+
   return children({
     formControls,
     values,
@@ -50,19 +61,60 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
         </Fieldset>
 
         <Fieldset
-          label={t("pages.explorer.service.editor.form.scale")}
+          label={t("pages.explorer.service.editor.form.scale.label")}
           htmlFor="scale"
           className="grow"
         >
-          <Input {...register("scale")} id="scale" />
+          <Select
+            value={formControls.getValues("scale")?.toString()}
+            onValueChange={(value) =>
+              formControls.setValue("scale", Number(value))
+            }
+          >
+            <SelectTrigger>
+              <SelectValue
+                placeholder={t(
+                  "pages.explorer.service.editor.form.scale.placeholder"
+                )}
+              />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectLabel>Size</SelectLabel>
+                {sizeValues.map((value, index) => (
+                  <SelectItem key={index} value={value}>
+                    {value}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
         </Fieldset>
-
         <Fieldset
-          label={t("pages.explorer.service.editor.form.size")}
+          label={t("pages.explorer.service.editor.form.size.label")}
           htmlFor="size"
           className="grow"
         >
-          <Input {...register("size")} id="size" />
+          <Select
+            value={formControls.getValues("size")}
+            onValueChange={(value) => formControls.setValue("size", value)}
+          >
+            <SelectTrigger>
+              <SelectValue
+                placeholder={t(
+                  "pages.explorer.service.editor.form.size.placeholder"
+                )}
+              />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectLabel>Size</SelectLabel>
+                <SelectItem value="small">small</SelectItem>
+                <SelectItem value="medium">medium</SelectItem>
+                <SelectItem value="large">large</SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
         </Fieldset>
 
         <Fieldset
