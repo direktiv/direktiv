@@ -41,15 +41,37 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
     values,
     formMarkup: (
       <div className="flex flex-col gap-8">
-        <div className="flex gap-3">
-          <Fieldset
-            label={t("pages.explorer.service.editor.form.image")}
-            htmlFor="image"
-            className="grow"
-          >
-            <Input {...register("image")} id="image" />
-          </Fieldset>
-        </div>
+        <Fieldset
+          label={t("pages.explorer.service.editor.form.image")}
+          htmlFor="image"
+          className="grow"
+        >
+          <Input {...register("image")} id="image" />
+        </Fieldset>
+
+        <Fieldset
+          label={t("pages.explorer.service.editor.form.scale")}
+          htmlFor="scale"
+          className="grow"
+        >
+          <Input {...register("scale")} id="scale" />
+        </Fieldset>
+
+        <Fieldset
+          label={t("pages.explorer.service.editor.form.size")}
+          htmlFor="size"
+          className="grow"
+        >
+          <Input {...register("size")} id="size" />
+        </Fieldset>
+
+        <Fieldset
+          label={t("pages.explorer.service.editor.form.cmd")}
+          htmlFor="cmd"
+          className="grow"
+        >
+          <Input {...register("cmd")} id="cmd" />
+        </Fieldset>
       </div>
     ),
   });
