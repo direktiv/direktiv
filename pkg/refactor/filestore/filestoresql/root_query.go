@@ -184,9 +184,7 @@ func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.F
 	}
 
 	rev := &filestore.Revision{
-		ID:   uuid.New(),
-		Tags: "",
-
+		ID:        uuid.New(),
 		FileID:    f.ID,
 		IsCurrent: true,
 

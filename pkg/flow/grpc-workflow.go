@@ -49,7 +49,7 @@ func (flow *flow) Workflow(ctx context.Context, req *grpc.WorkflowRequest) (*grp
 	if ref == "" {
 		ref = filestore.Latest
 	}
-	revision, err := tx.FileStore().ForFile(file).GetRevision(ctx, ref)
+	revision, err := tx.FileStore().ForFile(file).GetRevision(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -272,7 +272,7 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 	if err != nil {
 		return nil, err
 	}
-	newRevision, err := tx.FileStore().ForFile(file).CreateRevision(ctx, "", req.GetSource())
+	newRevision, err := tx.FileStore().ForFile(file).CreateRevision(ctx, req.GetSource())
 	if err != nil {
 		return nil, err
 	}
@@ -368,7 +368,7 @@ func (flow *flow) SaveHead(ctx context.Context, req *grpc.SaveHeadRequest) (*grp
 	if err != nil {
 		return nil, err
 	}
-	_, err = tx.FileStore().ForFile(file).CreateRevision(ctx, "", dataReader)
+	_, err = tx.FileStore().ForFile(file).CreateRevision(ctx, dataReader)
 	if err != nil {
 		return nil, err
 	}
@@ -447,7 +447,7 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 	if err != nil {
 		return nil, err
 	}
-	newRev, err := tx.FileStore().ForFile(file).CreateRevision(ctx, "", dataReader)
+	newRev, err := tx.FileStore().ForFile(file).CreateRevision(ctx, dataReader)
 	if err != nil {
 		return nil, err
 	}

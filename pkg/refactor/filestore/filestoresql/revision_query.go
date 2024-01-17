@@ -41,22 +41,6 @@ func (q *RevisionQuery) GetData(ctx context.Context) ([]byte, error) {
 	return rev.Data, nil
 }
 
-func (q *RevisionQuery) SetTags(ctx context.Context, tags filestore.RevisionTags) error {
-	res := q.db.WithContext(ctx).Exec(`
-					UPDATE filesystem_revisions 
-					SET tags=? 
-					WHERE id=?
-					`, tags, q.rev.ID)
-	if res.Error != nil {
-		return res.Error
-	}
-	if res.RowsAffected != 1 {
-		return fmt.Errorf("unexpected gorm update count, got: %d, want: %d", res.RowsAffected, 1)
-	}
-
-	return nil
-}
-
 func (q *RevisionQuery) SetCurrent(ctx context.Context) (*filestore.Revision, error) {
 	// set current revisions 'is_current' flag to false.
 	res := q.db.WithContext(ctx).Exec(`

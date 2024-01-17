@@ -68,7 +68,7 @@ type FileQuery interface {
 	GetAllRevisions(ctx context.Context) ([]*Revision, error)
 
 	// CreateRevision creates a new file revision, this method is not applicable for directory file type.
-	CreateRevision(ctx context.Context, tags RevisionTags, data []byte) (*Revision, error)
+	CreateRevision(ctx context.Context, data []byte) (*Revision, error)
 
 	// Delete deletes the file (or the directory).
 	Delete(ctx context.Context, force bool) error
@@ -78,7 +78,7 @@ type FileQuery interface {
 	// or:	reference = any tag string -> this will return a tagged revision,
 	// or:	reference = any uuid string -> this will return a revision by id.
 	// This method is not applicable for directory file type.
-	GetRevision(ctx context.Context, reference string) (*Revision, error)
+	GetRevision(ctx context.Context) (*Revision, error)
 
 	// SetPath sets a new path for the file, this method is used to rename files and directories or move them
 	// to a new location. Param path should be a new path that doesn't already exist and the directory of Param path

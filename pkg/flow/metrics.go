@@ -181,7 +181,7 @@ func (flow *flow) WorkflowMetrics(ctx context.Context, req *grpc.WorkflowMetrics
 
 	var rev *filestore.Revision
 
-	rev, err = tx.FileStore().ForFile(file).GetRevision(ctx, req.GetRef())
+	rev, err = tx.FileStore().ForFile(file).GetRevision(ctx)
 	if err != nil {
 		return nil, err
 	}
