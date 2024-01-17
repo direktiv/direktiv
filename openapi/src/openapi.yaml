@@ -1,6 +1,6 @@
 openapi: 3.1.0
 servers:
-  - url: 'https://direkitv.com'
+  - url: 'https://direktiv.io'
 
 info:
   version: 0.1.0
@@ -15,7 +15,7 @@ info:
     All request and response bodies are `application/json` format.
     
     # Versioning
-    This is v2 api, v1 endpoints will be removed as we implement them in v2.
+    This is v2 api, v1 endpoints will be removed as we implement them in v2. Unitl the transition is finished this API documentation is incomplete.
 
     # Methods
     We use the following http methods:
