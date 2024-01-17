@@ -139,7 +139,6 @@
             "overview": {
               "list": {
                 "title": "Revisions",
-                "distribution": "{{count}} % of traffic distribution",
                 "contextMenu": {
                   "title": "Actions",
                   "delete": "Delete",
@@ -220,10 +219,6 @@
               "successful": "Successful: {{percentage}}%",
               "failed": "Failed: {{percentage}}%",
               "noResult": "No data available"
-            },
-            "trafficDistribution": {
-              "header": "Traffic Distribution",
-              "noResult": "Traffic shaping is not configured for this workflow."
             },
             "services": {
               "header": "Workflow services"
