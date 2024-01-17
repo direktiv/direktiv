@@ -126,31 +126,15 @@ func (q *FileQuery) getRevisionByID(ctx context.Context, id uuid.UUID) (*filesto
 	return rev, nil
 }
 
-func (q *FileQuery) GetRevision(ctx context.Context, reference string) (*filestore.Revision, error) {
-	if reference == "" {
-		return nil, filestore.ErrNotFound
-	}
-	if reference == filestore.Latest {
-		return q.GetCurrentRevision(ctx)
-	}
-	id, err := uuid.Parse(reference)
-	if err == nil {
-		return q.getRevisionByID(ctx, id)
-	}
-
+func (q *FileQuery) GetRevision(ctx context.Context) (*filestore.Revision, error) {
 	if q.file.Typ == filestore.FileTypeDirectory {
 		return nil, filestore.ErrFileTypeIsDirectory
 	}
 
 	rev := &filestore.Revision{}
 	res := q.db.WithContext(ctx).Raw(`
-							SELECT * FROM filesystem_revisions WHERE "file_id" = ? AND
-							("tags" = ? OR "tags" LIKE ? OR "tags" LIKE ? OR "tags" LIKE ?)`,
-		q.file.ID,
-		reference,
-		reference+",%",
-		"%,"+reference,
-		"%,"+reference+",%").
+							SELECT * FROM filesystem_revisions WHERE "file_id" = ?`,
+		q.file.ID).
 		First(rev)
 	if res.Error != nil {
 		return nil, res.Error
@@ -227,7 +211,7 @@ func (q *FileQuery) GetCurrentRevision(ctx context.Context) (*filestore.Revision
 	return rev, nil
 }
 
-func (q *FileQuery) CreateRevision(ctx context.Context, tags filestore.RevisionTags, data []byte) (*filestore.Revision, error) {
+func (q *FileQuery) CreateRevision(ctx context.Context, data []byte) (*filestore.Revision, error) {
 	if q.file.Typ == filestore.FileTypeDirectory {
 		return nil, filestore.ErrFileTypeIsDirectory
 	}
@@ -249,9 +233,7 @@ func (q *FileQuery) CreateRevision(ctx context.Context, tags filestore.RevisionT
 
 	// create a new file revision.
 	newRev := &filestore.Revision{
-		ID:   uuid.New(),
-		Tags: tags,
-
+		ID:        uuid.New(),
 		FileID:    q.file.ID,
 		IsCurrent: true,
 

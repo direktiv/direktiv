@@ -96,7 +96,7 @@ func (flow *flow) DeleteRevision(ctx context.Context, req *grpc.DeleteRevisionRe
 		return nil, err
 	}
 
-	rev, err := tx.FileStore().ForFile(file).GetRevision(ctx, req.GetRevision())
+	rev, err := tx.FileStore().ForFile(file).GetRevision(ctx)
 	if err != nil {
 		return nil, err
 	}
