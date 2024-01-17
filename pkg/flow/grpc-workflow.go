@@ -2,7 +2,6 @@ package flow
 
 import (
 	"context"
-	"errors"
 	"path/filepath"
 	"time"
 
@@ -11,7 +10,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/model"
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"google.golang.org/grpc/codes"
@@ -559,49 +557,4 @@ func (flow *flow) ToggleWorkflow(ctx context.Context, req *grpc.ToggleWorkflowRe
 	}
 
 	return &emptypb.Empty{}, nil
-}
-
-func (flow *flow) SetWorkflowEventLogging(ctx context.Context, req *grpc.SetWorkflowEventLoggingRequest) (*emptypb.Empty, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
-
-	tx, err := flow.beginSqlTx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer tx.Rollback()
-
-	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
-
-	file, err := tx.FileStore().ForNamespace(ns.Name).GetFile(ctx, req.GetPath())
-	if err != nil {
-		return nil, err
-	}
-
-	annotations, err := tx.DataStore().FileAnnotations().Get(ctx, file.ID)
-
-	if errors.Is(err, core.ErrFileAnnotationsNotSet) {
-		annotations = &core.FileAnnotations{
-			FileID: file.ID,
-			Data:   map[string]string{},
-		}
-	} else if err != nil {
-		return nil, err
-	}
-
-	annotations.Data = annotations.Data.SetEntry("workflow_log_event_key", req.GetLogger())
-
-	err = tx.DataStore().FileAnnotations().Set(ctx, annotations)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := tx.Commit(ctx); err != nil {
-		return nil, err
-	}
-	var resp emptypb.Empty
-
-	return &resp, nil
 }

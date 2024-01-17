@@ -23,13 +23,6 @@ func (flow *flow) NamespaceLint(ctx context.Context, req *grpc.NamespaceLintRequ
 		return nil, err
 	}
 
-	rootDir, err := tx.FileStore().ForNamespace(ns.Name).GetFile(ctx, "/")
-	if err != nil {
-		return nil, err
-	}
-
-	annotations, _ := tx.DataStore().FileAnnotations().Get(ctx, rootDir.ID)
-
 	secretIssues, err := flow.lintSecrets(ctx, tx, ns)
 	if err != nil {
 		return nil, err
@@ -37,7 +30,7 @@ func (flow *flow) NamespaceLint(ctx context.Context, req *grpc.NamespaceLintRequ
 
 	var resp grpc.NamespaceLintResponse
 
-	resp.Namespace = bytedata.ConvertNamespaceToGrpc(ns, annotations)
+	resp.Namespace = bytedata.ConvertNamespaceToGrpc(ns)
 	resp.Issues = make([]*grpc.LinterIssue, 0)
 	resp.Issues = append(resp.Issues, secretIssues...)
 
