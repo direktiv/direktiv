@@ -62,8 +62,6 @@ func (ms *muxStart) Hash() string {
 	return bytedata.Checksum(ms)
 }
 
-const routerAnnotationKey = "router"
-
 type routerData struct {
 	Enabled bool
 	Routes  map[string]int
