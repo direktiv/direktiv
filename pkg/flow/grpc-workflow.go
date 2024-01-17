@@ -268,7 +268,7 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 	default:
 		return nil, status.Error(codes.InvalidArgument, "file type is not workflow or service or endpoint or consumer")
 	}
-	revision, err := tx.FileStore().ForFile(file).GetCurrentRevision(ctx)
+	revision, err := tx.FileStore().ForFile(file).GetRevision(ctx)
 	if err != nil {
 		return nil, err
 	}
