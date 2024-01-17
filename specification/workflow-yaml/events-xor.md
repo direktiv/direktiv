@@ -34,6 +34,6 @@ To pause the workflow and wait until one of multiple CloudEvents events is recei
 | `id` | An identifier unique within the workflow to this one state. | string | yes |
 | `log` | If defined, the workflow will generate a log when it commences this state. See [StateLogging](./logging.md). | [Structured JQ](../instance-data/structured-jx.md) | no |
 | `metadata` | If defined, updates the instance's metadata. See [InstanceMetadata](./metadata.md). | [Structured JQ](../instance-data/structured-jx.md) | no |
-| `catch` | Defines behaviour for handling of catchable errors.  | [[]ErrorCatchDefinition](/spec/workflow-yaml/errors/#errorcatchdefinition) | no |
+| `catch` | Defines behaviour for handling of catchable errors.  | [[]ErrorCatchDefinition](errors.md#errorcatchdefinition) | no |
 | `timeout` | An ISO8601 duration string. | string | no |
 | `events` | Defines the criteria by which incoming CloudEvents events are evaluated to find a match. | [ConsumeEventDefinition](./consume-event.md#consumeeventdefinition) | yes |

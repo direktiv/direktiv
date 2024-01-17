@@ -96,9 +96,7 @@ docker-build:
 .PHONY: docker-start
 docker-start: docker-build docker-stop
 docker-start: ## Create a local docker deployment.
-	rm -rf direktiv-ui
-	git clone https://github.com/direktiv/direktiv-ui.git
-	cd direktiv-ui && docker build -t direktiv-ui-dev .
+	cd ui && docker build -t direktiv-ui-dev .
 	DIREKTIV_UI_IMAGE=direktiv-ui-dev DIREKTIV_IMAGE=direktiv-dev  docker compose up -d --scale e2e-tests=0
 
 .PHONY: docker-headless

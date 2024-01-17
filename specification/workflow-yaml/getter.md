@@ -28,7 +28,7 @@ To load variables, use the `getter` state. See [Variables](../variables/variable
 | `metadata` | If defined, updates the instance's metadata. See [InstanceMetadata](./metadata.md). | [Structured JQ](../instance-data/structured-jx.md) | no |
 | `transform` | If defined, modifies the instance's data upon completing the state logic. See [StateTransforms](../instance-data/transforms.md). | [Structured JQ](../instance-data/structured-jx.md) | no |
 | `transition` | Identifies which state to transition to next, referring to the next state's unique `id`. If undefined, this state terminates the workflow. | string | no |
-| `catch` | Defines behaviour for handling of catchable errors.  | [[]ErrorCatchDefinition](/spec/workflow-yaml/errors/#errorcatchdefinition) | no |
+| `catch` | Defines behaviour for handling of catchable errors.  | [[]ErrorCatchDefinition](errors.md#errorcatchdefinition) | no |
 | `variables` | Defines variables to load. | [[]VariableGetterDefinition](#variablegetterdefinition) | yes |
 
 ## VariableGetterDefinition
