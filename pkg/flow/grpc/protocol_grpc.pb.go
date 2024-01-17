@@ -54,11 +54,7 @@ const (
 	Flow_Tag_FullMethodName                           = "/direktiv_flow.Flow/Tag"
 	Flow_Untag_FullMethodName                         = "/direktiv_flow.Flow/Untag"
 	Flow_Retag_FullMethodName                         = "/direktiv_flow.Flow/Retag"
-	Flow_Router_FullMethodName                        = "/direktiv_flow.Flow/Router"
-	Flow_RouterStream_FullMethodName                  = "/direktiv_flow.Flow/RouterStream"
-	Flow_EditRouter_FullMethodName                    = "/direktiv_flow.Flow/EditRouter"
 	Flow_ValidateRef_FullMethodName                   = "/direktiv_flow.Flow/ValidateRef"
-	Flow_ValidateRouter_FullMethodName                = "/direktiv_flow.Flow/ValidateRouter"
 	Flow_Secrets_FullMethodName                       = "/direktiv_flow.Flow/Secrets"
 	Flow_SecretsStream_FullMethodName                 = "/direktiv_flow.Flow/SecretsStream"
 	Flow_SetSecret_FullMethodName                     = "/direktiv_flow.Flow/SetSecret"
@@ -207,11 +203,7 @@ type FlowClient interface {
 	Tag(ctx context.Context, in *TagRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	Untag(ctx context.Context, in *UntagRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	Retag(ctx context.Context, in *RetagRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	Router(ctx context.Context, in *RouterRequest, opts ...grpc.CallOption) (*RouterResponse, error)
-	RouterStream(ctx context.Context, in *RouterRequest, opts ...grpc.CallOption) (Flow_RouterStreamClient, error)
-	EditRouter(ctx context.Context, in *EditRouterRequest, opts ...grpc.CallOption) (*EditRouterResponse, error)
 	ValidateRef(ctx context.Context, in *ValidateRefRequest, opts ...grpc.CallOption) (*ValidateRefResponse, error)
-	ValidateRouter(ctx context.Context, in *ValidateRouterRequest, opts ...grpc.CallOption) (*ValidateRouterResponse, error)
 	Secrets(ctx context.Context, in *SecretsRequest, opts ...grpc.CallOption) (*SecretsResponse, error)
 	SecretsStream(ctx context.Context, in *SecretsRequest, opts ...grpc.CallOption) (Flow_SecretsStreamClient, error)
 	SetSecret(ctx context.Context, in *SetSecretRequest, opts ...grpc.CallOption) (*SetSecretResponse, error)
@@ -849,68 +841,9 @@ func (c *flowClient) Retag(ctx context.Context, in *RetagRequest, opts ...grpc.C
 	return out, nil
 }
 
-func (c *flowClient) Router(ctx context.Context, in *RouterRequest, opts ...grpc.CallOption) (*RouterResponse, error) {
-	out := new(RouterResponse)
-	err := c.cc.Invoke(ctx, Flow_Router_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) RouterStream(ctx context.Context, in *RouterRequest, opts ...grpc.CallOption) (Flow_RouterStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[9], Flow_RouterStream_FullMethodName, opts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &flowRouterStreamClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-type Flow_RouterStreamClient interface {
-	Recv() (*RouterResponse, error)
-	grpc.ClientStream
-}
-
-type flowRouterStreamClient struct {
-	grpc.ClientStream
-}
-
-func (x *flowRouterStreamClient) Recv() (*RouterResponse, error) {
-	m := new(RouterResponse)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func (c *flowClient) EditRouter(ctx context.Context, in *EditRouterRequest, opts ...grpc.CallOption) (*EditRouterResponse, error) {
-	out := new(EditRouterResponse)
-	err := c.cc.Invoke(ctx, Flow_EditRouter_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *flowClient) ValidateRef(ctx context.Context, in *ValidateRefRequest, opts ...grpc.CallOption) (*ValidateRefResponse, error) {
 	out := new(ValidateRefResponse)
 	err := c.cc.Invoke(ctx, Flow_ValidateRef_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) ValidateRouter(ctx context.Context, in *ValidateRouterRequest, opts ...grpc.CallOption) (*ValidateRouterResponse, error) {
-	out := new(ValidateRouterResponse)
-	err := c.cc.Invoke(ctx, Flow_ValidateRouter_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -927,7 +860,7 @@ func (c *flowClient) Secrets(ctx context.Context, in *SecretsRequest, opts ...gr
 }
 
 func (c *flowClient) SecretsStream(ctx context.Context, in *SecretsRequest, opts ...grpc.CallOption) (Flow_SecretsStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[10], Flow_SecretsStream_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[9], Flow_SecretsStream_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1022,7 +955,7 @@ func (c *flowClient) Instance(ctx context.Context, in *InstanceRequest, opts ...
 }
 
 func (c *flowClient) InstanceStream(ctx context.Context, in *InstanceRequest, opts ...grpc.CallOption) (Flow_InstanceStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[11], Flow_InstanceStream_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[10], Flow_InstanceStream_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1063,7 +996,7 @@ func (c *flowClient) Instances(ctx context.Context, in *InstancesRequest, opts .
 }
 
 func (c *flowClient) InstancesStream(ctx context.Context, in *InstancesRequest, opts ...grpc.CallOption) (Flow_InstancesStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[12], Flow_InstancesStream_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[11], Flow_InstancesStream_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1122,7 +1055,7 @@ func (c *flowClient) InstanceLogs(ctx context.Context, in *InstanceLogsRequest, 
 }
 
 func (c *flowClient) InstanceLogsParcels(ctx context.Context, in *InstanceLogsRequest, opts ...grpc.CallOption) (Flow_InstanceLogsParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[13], Flow_InstanceLogsParcels_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[12], Flow_InstanceLogsParcels_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1163,7 +1096,7 @@ func (c *flowClient) StartWorkflow(ctx context.Context, in *StartWorkflowRequest
 }
 
 func (c *flowClient) RunWorkflow(ctx context.Context, in *RunWorkflowRequest, opts ...grpc.CallOption) (Flow_RunWorkflowClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[14], Flow_RunWorkflow_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[13], Flow_RunWorkflow_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1195,7 +1128,7 @@ func (x *flowRunWorkflowClient) Recv() (*RunWorkflowResponse, error) {
 }
 
 func (c *flowClient) AwaitWorkflow(ctx context.Context, in *AwaitWorkflowRequest, opts ...grpc.CallOption) (Flow_AwaitWorkflowClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[15], Flow_AwaitWorkflow_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[14], Flow_AwaitWorkflow_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1254,7 +1187,7 @@ func (c *flowClient) NamespaceVariable(ctx context.Context, in *NamespaceVariabl
 }
 
 func (c *flowClient) NamespaceVariableParcels(ctx context.Context, in *NamespaceVariableRequest, opts ...grpc.CallOption) (Flow_NamespaceVariableParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[16], Flow_NamespaceVariableParcels_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[15], Flow_NamespaceVariableParcels_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1295,7 +1228,7 @@ func (c *flowClient) NamespaceVariables(ctx context.Context, in *NamespaceVariab
 }
 
 func (c *flowClient) NamespaceVariablesStream(ctx context.Context, in *NamespaceVariablesRequest, opts ...grpc.CallOption) (Flow_NamespaceVariablesStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[17], Flow_NamespaceVariablesStream_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[16], Flow_NamespaceVariablesStream_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1336,7 +1269,7 @@ func (c *flowClient) SetNamespaceVariable(ctx context.Context, in *SetNamespaceV
 }
 
 func (c *flowClient) SetNamespaceVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetNamespaceVariableParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[18], Flow_SetNamespaceVariableParcels_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[17], Flow_SetNamespaceVariableParcels_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1397,7 +1330,7 @@ func (c *flowClient) WorkflowVariable(ctx context.Context, in *WorkflowVariableR
 }
 
 func (c *flowClient) WorkflowVariableParcels(ctx context.Context, in *WorkflowVariableRequest, opts ...grpc.CallOption) (Flow_WorkflowVariableParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[19], Flow_WorkflowVariableParcels_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[18], Flow_WorkflowVariableParcels_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1438,7 +1371,7 @@ func (c *flowClient) WorkflowVariables(ctx context.Context, in *WorkflowVariable
 }
 
 func (c *flowClient) WorkflowVariablesStream(ctx context.Context, in *WorkflowVariablesRequest, opts ...grpc.CallOption) (Flow_WorkflowVariablesStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[20], Flow_WorkflowVariablesStream_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[19], Flow_WorkflowVariablesStream_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1479,7 +1412,7 @@ func (c *flowClient) SetWorkflowVariable(ctx context.Context, in *SetWorkflowVar
 }
 
 func (c *flowClient) SetWorkflowVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetWorkflowVariableParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[21], Flow_SetWorkflowVariableParcels_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[20], Flow_SetWorkflowVariableParcels_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1540,7 +1473,7 @@ func (c *flowClient) InstanceVariable(ctx context.Context, in *InstanceVariableR
 }
 
 func (c *flowClient) InstanceVariableParcels(ctx context.Context, in *InstanceVariableRequest, opts ...grpc.CallOption) (Flow_InstanceVariableParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[22], Flow_InstanceVariableParcels_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[21], Flow_InstanceVariableParcels_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1581,7 +1514,7 @@ func (c *flowClient) InstanceVariables(ctx context.Context, in *InstanceVariable
 }
 
 func (c *flowClient) InstanceVariablesStream(ctx context.Context, in *InstanceVariablesRequest, opts ...grpc.CallOption) (Flow_InstanceVariablesStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[23], Flow_InstanceVariablesStream_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[22], Flow_InstanceVariablesStream_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1622,7 +1555,7 @@ func (c *flowClient) SetInstanceVariable(ctx context.Context, in *SetInstanceVar
 }
 
 func (c *flowClient) SetInstanceVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetInstanceVariableParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[24], Flow_SetInstanceVariableParcels_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[23], Flow_SetInstanceVariableParcels_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1701,7 +1634,7 @@ func (c *flowClient) EventListeners(ctx context.Context, in *EventListenersReque
 }
 
 func (c *flowClient) EventListenersStream(ctx context.Context, in *EventListenersRequest, opts ...grpc.CallOption) (Flow_EventListenersStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[25], Flow_EventListenersStream_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[24], Flow_EventListenersStream_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1742,7 +1675,7 @@ func (c *flowClient) EventHistory(ctx context.Context, in *EventHistoryRequest, 
 }
 
 func (c *flowClient) EventHistoryStream(ctx context.Context, in *EventHistoryRequest, opts ...grpc.CallOption) (Flow_EventHistoryStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[26], Flow_EventHistoryStream_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[25], Flow_EventHistoryStream_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1855,7 +1788,7 @@ func (c *flowClient) NamespaceAnnotation(ctx context.Context, in *NamespaceAnnot
 }
 
 func (c *flowClient) NamespaceAnnotationParcels(ctx context.Context, in *NamespaceAnnotationRequest, opts ...grpc.CallOption) (Flow_NamespaceAnnotationParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[27], Flow_NamespaceAnnotationParcels_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[26], Flow_NamespaceAnnotationParcels_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1896,7 +1829,7 @@ func (c *flowClient) NamespaceAnnotations(ctx context.Context, in *NamespaceAnno
 }
 
 func (c *flowClient) NamespaceAnnotationsStream(ctx context.Context, in *NamespaceAnnotationsRequest, opts ...grpc.CallOption) (Flow_NamespaceAnnotationsStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[28], Flow_NamespaceAnnotationsStream_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[27], Flow_NamespaceAnnotationsStream_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1937,7 +1870,7 @@ func (c *flowClient) SetNamespaceAnnotation(ctx context.Context, in *SetNamespac
 }
 
 func (c *flowClient) SetNamespaceAnnotationParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetNamespaceAnnotationParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[29], Flow_SetNamespaceAnnotationParcels_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[28], Flow_SetNamespaceAnnotationParcels_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1998,7 +1931,7 @@ func (c *flowClient) WorkflowAnnotation(ctx context.Context, in *WorkflowAnnotat
 }
 
 func (c *flowClient) WorkflowAnnotationParcels(ctx context.Context, in *WorkflowAnnotationRequest, opts ...grpc.CallOption) (Flow_WorkflowAnnotationParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[30], Flow_WorkflowAnnotationParcels_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[29], Flow_WorkflowAnnotationParcels_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -2039,7 +1972,7 @@ func (c *flowClient) WorkflowAnnotations(ctx context.Context, in *WorkflowAnnota
 }
 
 func (c *flowClient) WorkflowAnnotationsStream(ctx context.Context, in *WorkflowAnnotationsRequest, opts ...grpc.CallOption) (Flow_WorkflowAnnotationsStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[31], Flow_WorkflowAnnotationsStream_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[30], Flow_WorkflowAnnotationsStream_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -2080,7 +2013,7 @@ func (c *flowClient) SetWorkflowAnnotation(ctx context.Context, in *SetWorkflowA
 }
 
 func (c *flowClient) SetWorkflowAnnotationParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetWorkflowAnnotationParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[32], Flow_SetWorkflowAnnotationParcels_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[31], Flow_SetWorkflowAnnotationParcels_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -2141,7 +2074,7 @@ func (c *flowClient) InstanceAnnotation(ctx context.Context, in *InstanceAnnotat
 }
 
 func (c *flowClient) InstanceAnnotationParcels(ctx context.Context, in *InstanceAnnotationRequest, opts ...grpc.CallOption) (Flow_InstanceAnnotationParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[33], Flow_InstanceAnnotationParcels_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[32], Flow_InstanceAnnotationParcels_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -2182,7 +2115,7 @@ func (c *flowClient) InstanceAnnotations(ctx context.Context, in *InstanceAnnota
 }
 
 func (c *flowClient) InstanceAnnotationsStream(ctx context.Context, in *InstanceAnnotationsRequest, opts ...grpc.CallOption) (Flow_InstanceAnnotationsStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[34], Flow_InstanceAnnotationsStream_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[33], Flow_InstanceAnnotationsStream_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -2223,7 +2156,7 @@ func (c *flowClient) SetInstanceAnnotation(ctx context.Context, in *SetInstanceA
 }
 
 func (c *flowClient) SetInstanceAnnotationParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetInstanceAnnotationParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[35], Flow_SetInstanceAnnotationParcels_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[34], Flow_SetInstanceAnnotationParcels_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -2293,7 +2226,7 @@ func (c *flowClient) NodeAnnotation(ctx context.Context, in *NodeAnnotationReque
 }
 
 func (c *flowClient) NodeAnnotationParcels(ctx context.Context, in *NodeAnnotationRequest, opts ...grpc.CallOption) (Flow_NodeAnnotationParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[36], Flow_NodeAnnotationParcels_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[35], Flow_NodeAnnotationParcels_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -2334,7 +2267,7 @@ func (c *flowClient) NodeAnnotations(ctx context.Context, in *NodeAnnotationsReq
 }
 
 func (c *flowClient) NodeAnnotationsStream(ctx context.Context, in *NodeAnnotationsRequest, opts ...grpc.CallOption) (Flow_NodeAnnotationsStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[37], Flow_NodeAnnotationsStream_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[36], Flow_NodeAnnotationsStream_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -2375,7 +2308,7 @@ func (c *flowClient) SetNodeAnnotation(ctx context.Context, in *SetNodeAnnotatio
 }
 
 func (c *flowClient) SetNodeAnnotationParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetNodeAnnotationParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[38], Flow_SetNodeAnnotationParcels_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[37], Flow_SetNodeAnnotationParcels_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -2499,7 +2432,7 @@ func (c *flowClient) MirrorInfo(ctx context.Context, in *MirrorInfoRequest, opts
 }
 
 func (c *flowClient) MirrorInfoStream(ctx context.Context, in *MirrorInfoRequest, opts ...grpc.CallOption) (Flow_MirrorInfoStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[39], Flow_MirrorInfoStream_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[38], Flow_MirrorInfoStream_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -2540,7 +2473,7 @@ func (c *flowClient) MirrorActivityLogs(ctx context.Context, in *MirrorActivityL
 }
 
 func (c *flowClient) MirrorActivityLogsParcels(ctx context.Context, in *MirrorActivityLogsRequest, opts ...grpc.CallOption) (Flow_MirrorActivityLogsParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[40], Flow_MirrorActivityLogsParcels_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[39], Flow_MirrorActivityLogsParcels_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -2654,11 +2587,7 @@ type FlowServer interface {
 	Tag(context.Context, *TagRequest) (*emptypb.Empty, error)
 	Untag(context.Context, *UntagRequest) (*emptypb.Empty, error)
 	Retag(context.Context, *RetagRequest) (*emptypb.Empty, error)
-	Router(context.Context, *RouterRequest) (*RouterResponse, error)
-	RouterStream(*RouterRequest, Flow_RouterStreamServer) error
-	EditRouter(context.Context, *EditRouterRequest) (*EditRouterResponse, error)
 	ValidateRef(context.Context, *ValidateRefRequest) (*ValidateRefResponse, error)
-	ValidateRouter(context.Context, *ValidateRouterRequest) (*ValidateRouterResponse, error)
 	Secrets(context.Context, *SecretsRequest) (*SecretsResponse, error)
 	SecretsStream(*SecretsRequest, Flow_SecretsStreamServer) error
 	SetSecret(context.Context, *SetSecretRequest) (*SetSecretResponse, error)
@@ -2882,20 +2811,8 @@ func (UnimplementedFlowServer) Untag(context.Context, *UntagRequest) (*emptypb.E
 func (UnimplementedFlowServer) Retag(context.Context, *RetagRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Retag not implemented")
 }
-func (UnimplementedFlowServer) Router(context.Context, *RouterRequest) (*RouterResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Router not implemented")
-}
-func (UnimplementedFlowServer) RouterStream(*RouterRequest, Flow_RouterStreamServer) error {
-	return status.Errorf(codes.Unimplemented, "method RouterStream not implemented")
-}
-func (UnimplementedFlowServer) EditRouter(context.Context, *EditRouterRequest) (*EditRouterResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method EditRouter not implemented")
-}
 func (UnimplementedFlowServer) ValidateRef(context.Context, *ValidateRefRequest) (*ValidateRefResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ValidateRef not implemented")
-}
-func (UnimplementedFlowServer) ValidateRouter(context.Context, *ValidateRouterRequest) (*ValidateRouterResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ValidateRouter not implemented")
 }
 func (UnimplementedFlowServer) Secrets(context.Context, *SecretsRequest) (*SecretsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Secrets not implemented")
@@ -3873,63 +3790,6 @@ func _Flow_Retag_Handler(srv interface{}, ctx context.Context, dec func(interfac
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Flow_Router_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RouterRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).Router(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_Router_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).Router(ctx, req.(*RouterRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_RouterStream_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(RouterRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
-	return srv.(FlowServer).RouterStream(m, &flowRouterStreamServer{stream})
-}
-
-type Flow_RouterStreamServer interface {
-	Send(*RouterResponse) error
-	grpc.ServerStream
-}
-
-type flowRouterStreamServer struct {
-	grpc.ServerStream
-}
-
-func (x *flowRouterStreamServer) Send(m *RouterResponse) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func _Flow_EditRouter_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(EditRouterRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).EditRouter(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_EditRouter_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).EditRouter(ctx, req.(*EditRouterRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Flow_ValidateRef_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ValidateRefRequest)
 	if err := dec(in); err != nil {
@@ -3944,24 +3804,6 @@ func _Flow_ValidateRef_Handler(srv interface{}, ctx context.Context, dec func(in
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).ValidateRef(ctx, req.(*ValidateRefRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_ValidateRouter_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ValidateRouterRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).ValidateRouter(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_ValidateRouter_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).ValidateRouter(ctx, req.(*ValidateRouterRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -6146,20 +5988,8 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Flow_Retag_Handler,
 		},
 		{
-			MethodName: "Router",
-			Handler:    _Flow_Router_Handler,
-		},
-		{
-			MethodName: "EditRouter",
-			Handler:    _Flow_EditRouter_Handler,
-		},
-		{
 			MethodName: "ValidateRef",
 			Handler:    _Flow_ValidateRef_Handler,
-		},
-		{
-			MethodName: "ValidateRouter",
-			Handler:    _Flow_ValidateRouter_Handler,
 		},
 		{
 			MethodName: "Secrets",
@@ -6514,11 +6344,6 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "RevisionsStream",
 			Handler:       _Flow_RevisionsStream_Handler,
-			ServerStreams: true,
-		},
-		{
-			StreamName:    "RouterStream",
-			Handler:       _Flow_RouterStream_Handler,
 			ServerStreams: true,
 		},
 		{

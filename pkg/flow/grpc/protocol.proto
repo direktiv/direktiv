@@ -60,11 +60,7 @@ service Flow {
 	rpc Tag (TagRequest) returns (google.protobuf.Empty) {}
 	rpc Untag (UntagRequest) returns (google.protobuf.Empty) {}
 	rpc Retag (RetagRequest) returns (google.protobuf.Empty) {}
-	rpc Router (RouterRequest) returns (RouterResponse) {}
-	rpc RouterStream (RouterRequest) returns (stream RouterResponse) {}
-	rpc EditRouter (EditRouterRequest) returns (EditRouterResponse) {}
 	rpc ValidateRef (ValidateRefRequest) returns (ValidateRefResponse) {}
-	rpc ValidateRouter (ValidateRouterRequest) returns (ValidateRouterResponse) {}
 	rpc Secrets (SecretsRequest) returns (SecretsResponse) {}
 	rpc SecretsStream (SecretsRequest) returns (stream SecretsResponse) {}
 	rpc SetSecret (SetSecretRequest) returns (SetSecretResponse) {}
