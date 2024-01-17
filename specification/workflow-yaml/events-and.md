@@ -25,7 +25,7 @@ To pause the workflow and wait until multiple CloudEvents events are received be
 | `metadata` | If defined, updates the instance's metadata. See [InstanceMetadata](./metadata.md). | [Structured JQ](../instance-data/structured-jx.md) | no |
 | `transform` | If defined, modifies the instance's data upon completing the state logic. See [StateTransforms](../instance-data/transforms.md). | [Structured JQ](../instance-data/structured-jx.md) | no |
 | `transition` | Identifies which state to transition to next, referring to the next state's unique `id`. If undefined, this state terminates the workflow. | string | no |
-| `catch` | Defines behaviour for handling of catchable errors.  | [[]ErrorCatchDefinition](/spec/workflow-yaml/errors/#errorcatchdefinition) | no |
+| `catch` | Defines behaviour for handling of catchable errors.  | [[]ErrorCatchDefinition](errors.md#errorcatchdefinition) | no |
 | `timeout` | An ISO8601 duration string. | string | no |
 | `events` | Defines the criteria by which incoming CloudEvents events are evaluated to find a match. | [ConsumeEventDefinition](./consume-event.md#consumeeventdefinition) | yes |
 

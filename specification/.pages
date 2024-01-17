@@ -1,0 +1,4 @@
+nav:
+    - Workflow YAML: workflow-yaml
+    - Instance Data: instance-data
+    - Variables: variables

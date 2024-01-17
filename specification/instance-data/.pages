@@ -1,0 +1,7 @@
+nav:
+    - Instance Data: instance-data.md
+    - Input: input.md
+    - Output: output.md
+    - Transforms: transforms.md
+    - Structured JX: structured-jx.md
+    - Security: security.md

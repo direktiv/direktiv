@@ -35,7 +35,7 @@ This is the top-level structure of a Direktiv workflow definition. All workflows
 | `direktiv_api` | Set it to 'workflow/v1' to reduce ambiguity, enabling tools to better identify this file as a workflow. | string | no |
 | `url` | Link to further information. | string | no |
 | `description` | Short description of the workflow.  | string | no |
-| `functions` | List of function definitions for use by function-based `states`. | [[]FunctionDefinition](/spec/workflow-yaml/functions/#functiondefinition) | no |
+| `functions` | List of function definitions for use by function-based `states`. | [[]FunctionDefinition](functions.md#functiondefinition) | no |
 | `start` | Configuration for how the workflow should start. | [StartDefinition](./starts.md) | no |
 | `states` | List of all possible workflow states. | [[]StateDefinition](./states.md) | yes | 
 | `timeouts` | Configuration of workflow-level timeouts. | [TimeoutsDefinition](./timeouts.md) | no |
