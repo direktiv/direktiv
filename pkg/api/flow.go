@@ -1438,13 +1438,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	// TODO: SWAGGER-SPEC
 	pathHandler(r, http.MethodPost, RN_Retag, "retag", h.Retag)
 	// TODO: SWAGGER-SPEC
-	pathHandlerPair(r, RN_GetWorkflowRouter, "router", h.Router, h.RouterSSE)
-	// TODO: SWAGGER-SPEC
-	pathHandler(r, http.MethodPost, RN_EditWorkflowRouter, "edit-router", h.EditRouter)
-	// TODO: SWAGGER-SPEC
 	pathHandler(r, http.MethodPost, RN_ValidateRef, "validate-ref", h.ValidateRef)
-	// TODO: SWAGGER-SPEC
-	pathHandler(r, http.MethodPost, RN_ValidateRouter, "validate-router", h.ValidateRouter)
 	// TODO: SWAGGER_SPEC
 	pathHandler(r, http.MethodPost, RN_RenameNode, "rename-node", h.RenameNode)
 
@@ -3204,108 +3198,6 @@ func (h *flowHandler) ValidateRef(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.ValidateRef(ctx, in)
 	respond(w, resp, err)
-}
-
-func (h *flowHandler) ValidateRouter(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
-
-	ctx := r.Context()
-	namespace := mux.Vars(r)["ns"]
-	path, _ := pathAndRef(r)
-
-	in := &grpc.ValidateRouterRequest{
-		Namespace: namespace,
-		Path:      path,
-	}
-
-	resp, err := h.client.ValidateRouter(ctx, in)
-	respond(w, resp, err)
-}
-
-func (h *flowHandler) EditRouter(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
-
-	ctx := r.Context()
-	namespace := mux.Vars(r)["ns"]
-	path, _ := pathAndRef(r)
-
-	in := new(grpc.EditRouterRequest)
-
-	err := unmarshalBody(r, in)
-	if err != nil {
-		respond(w, nil, err)
-		return
-	}
-
-	in.Namespace = namespace
-	in.Path = path
-
-	resp, err := h.client.EditRouter(ctx, in)
-	respond(w, resp, err)
-}
-
-func (h *flowHandler) Router(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
-
-	ctx := r.Context()
-	namespace := mux.Vars(r)["ns"]
-	path, _ := pathAndRef(r)
-
-	in := &grpc.RouterRequest{
-		Namespace: namespace,
-		Path:      path,
-	}
-
-	resp, err := h.client.Router(ctx, in)
-	respond(w, resp, err)
-}
-
-func (h *flowHandler) RouterSSE(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
-
-	ctx := r.Context()
-	namespace := mux.Vars(r)["ns"]
-	path, _ := pathAndRef(r)
-
-	in := &grpc.RouterRequest{
-		Namespace: namespace,
-		Path:      path,
-	}
-
-	resp, err := h.client.RouterStream(ctx, in)
-	if err != nil {
-		respond(w, resp, err)
-		return
-	}
-
-	ch := make(chan interface{}, 1)
-
-	defer func() {
-		_ = resp.CloseSend()
-
-		for {
-			_, more := <-ch
-			if !more {
-				return
-			}
-		}
-	}()
-
-	go func() {
-		defer close(ch)
-
-		for {
-			x, err := resp.Recv()
-			if err != nil {
-				ch <- err
-				return
-			}
-
-			ch <- x
-		}
-	}()
-
-	sse(w, ch)
 }
 
 func (h *flowHandler) MirrorInfo(w http.ResponseWriter, r *http.Request) {
