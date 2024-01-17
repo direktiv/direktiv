@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/direktiv/direktiv/pkg/refactor/filestore"
+
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore/datastoresql"
@@ -281,4 +283,26 @@ func Test_sqlRuntimeVariablesStore_CrudOnList(t *testing.T) {
 			return
 		}
 	}
+}
+
+func createFile(t *testing.T, fs filestore.FileStore) *filestore.File {
+	t.Helper()
+
+	id := uuid.New()
+
+	_, err := fs.CreateRoot(context.Background(), id, uuid.New().String())
+	if err != nil {
+		t.Fatalf("unexpected CreateRoot() error: %v", err)
+	}
+	_, _, err = fs.ForRootID(id).CreateFile(context.Background(), "/", filestore.FileTypeDirectory, "", nil)
+	if err != nil {
+		t.Fatalf("unexpected CreateFile() error: %v", err)
+	}
+
+	file, _, err := fs.ForRootID(id).CreateFile(context.Background(), "/my_file.text", filestore.FileTypeFile, "application/octet-stream", []byte("my file"))
+	if err != nil {
+		t.Fatalf("unexpected CreateFile() error: %v", err)
+	}
+
+	return file
 }
