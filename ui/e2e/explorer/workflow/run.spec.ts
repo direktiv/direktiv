@@ -1,10 +1,6 @@
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
 import { expect, test } from "@playwright/test";
-import {
-  jsonSchemaFormWorkflow,
-  jsonSchemaWithRequiredEnum,
-  waitForSuccessToast,
-} from "./utils";
+import { jsonSchemaFormWorkflow, jsonSchemaWithRequiredEnum } from "./utils";
 
 import { noop as basicWorkflow } from "~/pages/namespace/Explorer/Tree/components/modals/CreateNew/Workflow/templates";
 import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
