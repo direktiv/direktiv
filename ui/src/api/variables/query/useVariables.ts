@@ -21,9 +21,13 @@ const fetchVars = async ({
     urlParams: { namespace },
   });
 
-export const useVars = () => {
+export const useVars = ({
+  namespace: givenNamespace,
+}: { namespace?: string } = {}) => {
   const apiKey = useApiKey();
-  const namespace = useNamespace();
+  const defaultNamespace = useNamespace();
+
+  const namespace = givenNamespace ? givenNamespace : defaultNamespace;
 
   if (!namespace) {
     throw new Error("namespace is undefined");
@@ -34,6 +38,18 @@ export const useVars = () => {
       apiKey: apiKey ?? undefined,
     }),
     queryFn: fetchVars,
+    select(data) {
+      if (data?.variables?.results) {
+        return {
+          ...data,
+          variables: {
+            ...data.variables,
+            results: data.variables.results,
+          },
+        };
+      }
+      return data;
+    },
     enabled: !!namespace,
   });
 };

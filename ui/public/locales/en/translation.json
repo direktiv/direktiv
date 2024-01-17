@@ -1247,6 +1247,30 @@
       "loading": "loading...",
       "optionDoesNotExist": "{{namespace}} (does not exist)"
     },
+    "namespaceVariablepicker": {
+      "title": "Variables in \"{{path}}\"",
+      "buttonText": "Browse Variables",
+      "placeholder": "No Variable selected",
+      "emptyDirectory": {
+        "title": "The directory \"{{path}}\" is empty."
+      },
+      "error": {
+        "title": "The path \"{{path}}\" was not found.",
+        "linkText": "Please make sure the namespace exists."
+      }
+    },
+    "workflowVariablepicker": {
+      "title": "Variables in \"{{path}}\"",
+      "buttonText": "Browse Variables",
+      "placeholder": "No Variable selected",
+      "emptyDirectory": {
+        "title": "The directory \"{{path}}\" is empty."
+      },
+      "error": {
+        "title": "The path \"{{path}}\" was not found.",
+        "linkText": "Please make sure the namespace exists."
+      }
+    },
     "filepicker": {
       "buttonText": "Browse Files",
       "placeholder": "No File selected",
