@@ -1424,11 +1424,6 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	pathHandler(r, http.MethodDelete, RN_DeleteNode, "delete-node", h.DeleteNode)
 
 	// TODO: SWAGGER-SPEC
-	pathHandler(r, http.MethodPut, RN_CreateNodeAttributes, "create-node-attributes", h.CreateNodeAttributes)
-	// TODO: SWAGGER-SPEC
-	pathHandler(r, http.MethodDelete, RN_DeleteNodeAttributes, "delete-node-attributes", h.DeleteNodeAttributes)
-
-	// TODO: SWAGGER-SPEC
 	pathHandlerPair(r, RN_GetWorkflowTags, "tags", h.GetTags, h.GetTagsSSE)
 	// TODO: SWAGGER-SPEC
 	pathHandlerPair(r, RN_GetWorkflowRefs, "refs", h.GetRefs, h.GetRefsSSE)
@@ -1514,81 +1509,6 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   '200':
 	//     "description": "successfully replayed cloud event"
 	r.HandleFunc("/namespaces/{ns}/events/{event:.*}/replay", h.ReplayEvent).Name(RN_NamespaceEvent).Methods(http.MethodPost)
-
-	// swagger:operation POST /api/namespaces/{namespace}/tree/{workflow}?op=set-workflow-event-logging Workflows setWorkflowCloudEventLogs
-	// ---
-	// description: |
-	//   Set Cloud Event for Workflow to Log to.
-	//   When configured type `direktiv.instanceLog` cloud events will be generated with the `logger` parameter set to the configured value.
-	//   Workflows can be configured to generate cloud events on their namespace anything the log parameter produces data.
-	//   Please find more information on this topic here:
-	//   https://docs.direktiv.io/docs/examples/logging.html
-	// summary: Set Cloud Event for Workflow to Log to
-	// parameters:
-	// - in: path
-	//   name: namespace
-	//   type: string
-	//   required: true
-	//   description: 'target namespace'
-	// - in: path
-	//   name: workflow
-	//   type: string
-	//   required: true
-	//   description: 'path to target workflow'
-	// - in: body
-	//   name: Cloud Event Logger
-	//   required: true
-	//   description: Cloud event logger to target
-	//   schema:
-	//     example:
-	//       logger: "mylog"
-	//     type: object
-	//     required:
-	//       - logger
-	//     properties:
-	//       logger:
-	//         type: string
-	//         description: Target Cloud Event
-	// responses:
-	//   '200':
-	//     "description": "successfully update workflow"
-	pathHandler(r, http.MethodPost, RN_UpdateWorkflow, "set-workflow-event-logging", h.SetWorkflowEventLogging)
-
-	// swagger:operation POST /api/namespaces/{namespace}/tree/{workflow}?op=toggle Workflows toggleWorkflow
-	// ---
-	// description: |
-	//   Toggle's whether or not a workflow is active.
-	//   Disabled workflows cannot be invoked. This includes start event and scheduled workflows.
-	// summary: Set Cloud Event for Workflow to Log to
-	// parameters:
-	// - in: path
-	//   name: namespace
-	//   type: string
-	//   required: true
-	//   description: 'target namespace'
-	// - in: path
-	//   name: workflow
-	//   type: string
-	//   required: true
-	//   description: 'path to target workflow'
-	// - in: body
-	//   name: Workflow Live Status
-	//   required: true
-	//   description: Whether or not the workflow is alive or disabled
-	//   schema:
-	//     example:
-	//       live: false
-	//     type: object
-	//     required:
-	//       - live
-	//     properties:
-	//       live:
-	//         type: boolean
-	//         description: Workflow live status
-	// responses:
-	//   '200':
-	//     "description": "successfully updated workflow live status"
-	pathHandler(r, http.MethodPost, RN_UpdateWorkflow, "toggle", h.ToggleWorkflow)
 
 	// swagger:operation POST /api/namespaces/{namespace}/tree/{workflow}?op=execute Workflows executeWorkflow
 	// ---
@@ -3201,50 +3121,6 @@ func (h *flowHandler) DeleteRevision(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp, err := h.client.DeleteRevision(ctx, in)
-	respond(w, resp, err)
-}
-
-func (h *flowHandler) CreateNodeAttributes(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
-
-	ctx := r.Context()
-	namespace := mux.Vars(r)["ns"]
-	path, _ := pathAndRef(r)
-
-	in := new(grpc.CreateNodeAttributesRequest)
-
-	err := unmarshalBody(r, in)
-	if err != nil {
-		respond(w, nil, err)
-		return
-	}
-
-	in.Namespace = namespace
-	in.Path = path
-
-	resp, err := h.client.CreateNodeAttributes(ctx, in)
-	respond(w, resp, err)
-}
-
-func (h *flowHandler) DeleteNodeAttributes(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
-
-	ctx := r.Context()
-	namespace := mux.Vars(r)["ns"]
-	path, _ := pathAndRef(r)
-
-	in := new(grpc.DeleteNodeAttributesRequest)
-
-	err := unmarshalBody(r, in)
-	if err != nil {
-		respond(w, nil, err)
-		return
-	}
-
-	in.Namespace = namespace
-	in.Path = path
-
-	resp, err := h.client.DeleteNodeAttributes(ctx, in)
 	respond(w, resp, err)
 }
 
@@ -4936,49 +4812,5 @@ func (h *flowHandler) DeleteWorkflowVariable(w http.ResponseWriter, r *http.Requ
 	}
 
 	resp, err := h.client.DeleteWorkflowVariable(ctx, in)
-	respond(w, resp, err)
-}
-
-func (h *flowHandler) SetWorkflowEventLogging(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
-
-	ctx := r.Context()
-	namespace := mux.Vars(r)["ns"]
-	path, _ := pathAndRef(r)
-
-	in := new(grpc.SetWorkflowEventLoggingRequest)
-
-	err := unmarshalBody(r, in)
-	if err != nil {
-		respond(w, nil, err)
-		return
-	}
-
-	in.Namespace = namespace
-	in.Path = path
-
-	resp, err := h.client.SetWorkflowEventLogging(ctx, in)
-	respond(w, resp, err)
-}
-
-func (h *flowHandler) ToggleWorkflow(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
-
-	ctx := r.Context()
-	namespace := mux.Vars(r)["ns"]
-	path, _ := pathAndRef(r)
-
-	in := new(grpc.ToggleWorkflowRequest)
-
-	err := unmarshalBody(r, in)
-	if err != nil {
-		respond(w, nil, err)
-		return
-	}
-
-	in.Namespace = namespace
-	in.Path = path
-
-	resp, err := h.client.ToggleWorkflow(ctx, in)
 	respond(w, resp, err)
 }
