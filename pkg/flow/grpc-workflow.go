@@ -202,16 +202,6 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	_, router, err := getRouter(ctx, tx, file)
-	if err != nil {
-		return nil, err
-	}
-
-	err = flow.configureWorkflowStarts(ctx, tx, ns.ID, file, router, true)
-	if err != nil {
-		return nil, err
-	}
-
 	err = flow.placeholdSecrets(ctx, tx, ns.Name, file)
 	if err != nil {
 		return nil, err
@@ -296,17 +286,8 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 	if err != nil {
 		return nil, err
 	}
-	_, router, err := getRouter(ctx, tx, file)
-	if err != nil {
-		return nil, err
-	}
 
 	if file.Typ == filestore.FileTypeWorkflow {
-		err = flow.configureWorkflowStarts(ctx, tx, ns.ID, file, router, true)
-		if err != nil {
-			return nil, err
-		}
-
 		err = flow.placeholdSecrets(ctx, tx, ns.Name, file)
 		if err != nil {
 			return nil, err
@@ -396,16 +377,6 @@ func (flow *flow) SaveHead(ctx context.Context, req *grpc.SaveHeadRequest) (*grp
 		return nil, err
 	}
 
-	_, router, err := getRouter(ctx, tx, file)
-	if err != nil {
-		return nil, err
-	}
-
-	err = flow.configureWorkflowStarts(ctx, tx, ns.ID, file, router, true)
-	if err != nil {
-		return nil, err
-	}
-
 	if err = tx.Commit(ctx); err != nil {
 		return nil, err
 	}
@@ -486,14 +457,6 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 		return nil, err
 	}
 	data, err := tx.FileStore().ForRevision(newRev).GetData(ctx)
-	if err != nil {
-		return nil, err
-	}
-	_, router, err := getRouter(ctx, tx, file)
-	if err != nil {
-		return nil, err
-	}
-	err = flow.configureWorkflowStarts(ctx, tx, ns.ID, file, router, true)
 	if err != nil {
 		return nil, err
 	}

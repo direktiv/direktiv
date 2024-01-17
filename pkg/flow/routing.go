@@ -8,54 +8,18 @@ import (
 	"fmt"
 	"math/big"
 	"strings"
-	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/model"
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore/instancestoresql"
 	"github.com/google/uuid"
 	"go.opentelemetry.io/otel/trace"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
-
-func getRouter(ctx context.Context, tx *sqlTx, file *filestore.File) (*core.FileAnnotations, *routerData, error) {
-	router := &routerData{
-		Enabled: true,
-		Routes:  make(map[string]int),
-	}
-
-	annotations, err := tx.DataStore().FileAnnotations().Get(ctx, file.ID)
-	if err != nil {
-		if errors.Is(err, core.ErrFileAnnotationsNotSet) {
-			t := time.Now().UTC()
-			annotations := &core.FileAnnotations{
-				FileID:    file.ID,
-				Data:      make(core.FileAnnotationsData),
-				CreatedAt: t,
-				UpdatedAt: t,
-			}
-			return annotations, router, nil
-		}
-		return nil, nil, err
-	} else {
-		s := annotations.Data.GetEntry(routerAnnotationKey)
-		if s != "" && s != `""` && s != `\"\"` {
-			err = json.Unmarshal([]byte(s), &router)
-			if err != nil {
-				return nil, nil, err
-			}
-		}
-	}
-
-	return annotations, router, nil
-}
 
 type muxStart struct {
 	Enabled  bool                         `json:"enabled"`
@@ -113,97 +77,6 @@ func (r *routerData) Marshal() string {
 		panic(err)
 	}
 	return string(data)
-}
-
-func (srv *server) validateRouter(ctx context.Context, tx *sqlTx, file *filestore.File) (*muxStart, error, error) {
-	_, router, err := getRouter(ctx, tx, file)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	if len(router.Routes) == 0 {
-		rev, err := tx.FileStore().ForFile(file).GetCurrentRevision(ctx)
-		if err != nil {
-			return nil, nil, err
-		}
-
-		workflow := new(model.Workflow)
-
-		err = workflow.Load(rev.Data)
-		if err != nil {
-			return nil, status.Error(codes.InvalidArgument, err.Error()), nil
-		}
-
-		ms := newMuxStart(workflow)
-		ms.Enabled = router.Enabled
-
-		return ms, nil, nil
-	}
-
-	var startHash string
-	var startRef string
-
-	var ms *muxStart
-
-	for ref := range router.Routes {
-		rev, err := tx.FileStore().ForFile(file).GetRevision(ctx, ref)
-		if err != nil {
-			return nil, nil, err
-		}
-
-		workflow := new(model.Workflow)
-
-		err = workflow.Load(rev.Data)
-		if err != nil {
-			return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("route to '%s' invalid because revision fails to compile: %v", ref, err)), nil
-		}
-
-		ms = newMuxStart(workflow)
-		ms.Enabled = router.Enabled
-
-		hash := ms.Hash() // checksum(workflow.Start)
-		if startHash == "" {
-			startHash = hash
-			startRef = ref
-		} else {
-			if startHash != hash {
-				return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("incompatible start definitions between refs '%s' and '%s'", startRef, ref)), nil
-			}
-		}
-	}
-
-	return ms, nil, nil
-}
-
-func (engine *engine) getAmbiguousFile(ctx context.Context, tx *sqlTx, ns *database.Namespace, path string) (*filestore.File, error) {
-	file, err := tx.FileStore().ForNamespace(ns.Name).GetFile(ctx, path)
-	if err != nil {
-		if errors.Is(err, filestore.ErrNotFound) { // try as-is, then '.yaml', then '.yml'
-			if !strings.HasSuffix(path, ".yaml") && !strings.HasSuffix(path, ".yml") {
-				var err2 error
-				file, err2 = tx.FileStore().ForNamespace(ns.Name).GetFile(ctx, path+".yaml")
-				if err2 != nil {
-					if errors.Is(err2, filestore.ErrNotFound) {
-						file, err2 = tx.FileStore().ForNamespace(ns.Name).GetFile(ctx, path+".yml")
-						if err2 != nil {
-							if !errors.Is(err2, filestore.ErrNotFound) {
-								err = err2
-							}
-							return nil, err
-						}
-					} else {
-						err = err2
-						return nil, err
-					}
-				}
-			} else {
-				return nil, err
-			}
-		} else {
-			return nil, err
-		}
-	}
-	return file, nil
 }
 
 func (engine *engine) mux(ctx context.Context, ns *database.Namespace, calledAs string) (*filestore.File, *filestore.Revision, error) {
@@ -437,24 +310,12 @@ func (flow *flow) cronHandler(data []byte) {
 }
 
 func (flow *flow) configureWorkflowStarts(ctx context.Context, tx *sqlTx, nsID uuid.UUID, file *filestore.File, router *routerData, strict bool) error {
-	ms, verr, err := flow.validateRouter(ctx, tx, file)
-	if err != nil {
-		return err
-	}
-	if verr != nil {
-		if strict {
-			return verr
-		}
+	ms := &muxStart{
+		Enabled: false,
+		Type:    model.StartTypeDefault.String(),
 	}
 
-	if ms == nil {
-		ms = &muxStart{
-			Enabled: false,
-			Type:    model.StartTypeDefault.String(),
-		}
-	}
-
-	err = flow.events.processWorkflowEvents(ctx, nsID, file, ms)
+	err := flow.events.processWorkflowEvents(ctx, nsID, file, ms)
 	if err != nil {
 		return err
 	}
