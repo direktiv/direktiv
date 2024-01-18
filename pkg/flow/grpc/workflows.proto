@@ -10,13 +10,6 @@ import "pkg/flow/grpc/pagination.proto";
 
 import "pkg/flow/grpc/nodes.proto";
 
-message Revision {
-	google.protobuf.Timestamp created_at = 1;
-	string hash = 2;
-	bytes source = 3;
-	string name = 4;
-}
-
 message NodeRequest {
 	string namespace = 2;
 	string path = 3;
@@ -34,13 +27,11 @@ message ResolveWorkflowUIDRequest {
 message WorkflowRequest {
 	string namespace = 1;
 	string path = 2;	
-	string ref = 3;
 }
 
 message WorkflowResponse {
 	string namespace = 1;
 	Node node = 2;
-	Revision revision = 3;
 	string eventLogging = 4;
 	string oid = 5;
 }
@@ -54,7 +45,6 @@ message CreateWorkflowRequest {
 message CreateWorkflowResponse {
 	string namespace = 1;
 	Node node = 2;
-	Revision revision = 3;
 }
 
 message UpdateWorkflowRequest {
@@ -66,112 +56,5 @@ message UpdateWorkflowRequest {
 message UpdateWorkflowResponse {
 	string namespace = 1;
 	Node node = 2;
-	Revision revision = 3;
 }
 
-message SaveHeadRequest {
-	string namespace = 1;
-	string path = 2;
-	bytes metadata = 3;
-}
-
-message SaveHeadResponse {
-	string namespace = 1;
-	Node node = 2;
-	Revision revision = 3;
-}
-
-message DiscardHeadRequest {
-	string namespace = 1;
-	string path = 2;
-}
-
-message DiscardHeadResponse {
-	string namespace = 1;
-	Node node = 2;
-	Revision revision = 3;
-}
-
-message TagsRequest {
-	Pagination pagination = 1;
-	string namespace = 2;
-	string path = 3;
-}
-
-message Ref {
-	string name = 1;
-}
-
-message TagsResponse {
-	string namespace = 1;
-	Node node = 2;
-	PageInfo pageInfo = 4;
-	repeated Ref results = 6;
-}
-
-message RefsRequest {
-	Pagination pagination = 1;
-	string namespace = 2;
-	string path = 3;
-}
-
-message RefsResponse {
-	string namespace = 1;
-	Node node = 2;
-	PageInfo pageInfo = 4;
-	repeated Ref results = 6;
-}
-
-message RevisionsRequest {
-	Pagination pagination = 1;
-	string namespace = 2;
-	string path = 3;
-}
-
-message RevisionsResponse {
-	string namespace = 1;
-	Node node = 2;
-	PageInfo pageInfo = 4;
-	repeated Ref results = 6;
-}
-
-message TagRequest {
-	string namespace = 1;
-	string path = 2;
-	string ref = 3;
-	string tag = 4;
-}
-
-message UntagRequest {
-	string namespace = 1;
-	string path = 2;
-	string tag = 4;
-}
-
-message RetagRequest {
-	string namespace = 1;
-	string path = 2;
-	string ref = 3;
-	string tag = 4;
-}
-
-message DeleteRevisionRequest {
-	string namespace = 1;
-	string path = 2;
-	string revision = 3;
-}
-
-message ValidateRefRequest {
-	string namespace = 1;
-	string path = 2;
-	string ref = 3;
-}
-
-message ValidateRefResponse {
-	string namespace = 1;
-	string path = 2;
-	string ref = 3;
-	bool invalid = 4;
-	string reason = 5;
-	bool compiles = 6;
-}

@@ -47,19 +47,7 @@ service Flow {
 	rpc WorkflowStream (WorkflowRequest) returns (stream WorkflowResponse) {}
 	rpc CreateWorkflow (CreateWorkflowRequest) returns (CreateWorkflowResponse) {}
 	rpc UpdateWorkflow (UpdateWorkflowRequest) returns (UpdateWorkflowResponse) {}
-	rpc SaveHead (SaveHeadRequest) returns (SaveHeadResponse) {}
-	rpc DiscardHead (DiscardHeadRequest) returns (DiscardHeadResponse) {}
-	rpc Tags (TagsRequest) returns (TagsResponse) {}
-	rpc TagsStream (TagsRequest) returns (stream TagsResponse) {}
-	rpc Refs (RefsRequest) returns (RefsResponse) {}
-	rpc RefsStream (RefsRequest) returns (stream RefsResponse) {}
-	rpc Revisions (RevisionsRequest) returns (RevisionsResponse) {}
-	rpc RevisionsStream (RevisionsRequest) returns (stream RevisionsResponse) {}
-	rpc DeleteRevision (DeleteRevisionRequest) returns (google.protobuf.Empty) {}
-	rpc Tag (TagRequest) returns (google.protobuf.Empty) {}
-	rpc Untag (UntagRequest) returns (google.protobuf.Empty) {}
-	rpc Retag (RetagRequest) returns (google.protobuf.Empty) {}
-	rpc ValidateRef (ValidateRefRequest) returns (ValidateRefResponse) {}
+
 	rpc Secrets (SecretsRequest) returns (SecretsResponse) {}
 	rpc SecretsStream (SecretsRequest) returns (stream SecretsResponse) {}
 	rpc SetSecret (SetSecretRequest) returns (SetSecretResponse) {}
