@@ -34,6 +34,7 @@ message WorkflowResponse {
 	Node node = 2;
 	string eventLogging = 4;
 	string oid = 5;
+	bytes source = 6;
 }
 
 message CreateWorkflowRequest {
@@ -45,6 +46,7 @@ message CreateWorkflowRequest {
 message CreateWorkflowResponse {
 	string namespace = 1;
 	Node node = 2;
+	bytes source = 3;
 }
 
 message UpdateWorkflowRequest {
@@ -56,5 +58,6 @@ message UpdateWorkflowRequest {
 message UpdateWorkflowResponse {
 	string namespace = 1;
 	Node node = 2;
+	bytes source = 3;
 }
 
