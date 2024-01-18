@@ -206,8 +206,8 @@ func WfPendingInc(namespace string, workflow string) {
 	metricsWfPending.WithLabelValues(namespace, workflow, namespace).Inc()
 }
 
-func WfObserveStateDuration(namespace string, workflow string, ms float64) {
-	metricsWfStateDuration.WithLabelValues(namespace, workflow, namespace).Observe(ms)
+func WfObserveStateDuration(namespace string, workflow string, state string, ms float64) {
+	metricsWfStateDuration.WithLabelValues(namespace, workflow, state, namespace).Observe(ms)
 }
 
 func WfInc(namspace string) {
@@ -219,7 +219,7 @@ func WfDec(namspace string) {
 }
 
 func WfUpdated(namspace string, filePath string) {
-	metricsWf.WithLabelValues(namspace, filePath, namspace).Inc()
+	metricsWf.WithLabelValues(namspace, filePath).Inc()
 }
 
 func CloudEventsCaptured(namespace string, eventType string, eventSource string) {

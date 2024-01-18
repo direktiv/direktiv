@@ -190,11 +190,11 @@ func (engine *engine) metricsCompleteInstance(ctx context.Context, im *instanceM
 
 	if t != empty {
 		ms := now.Sub(t).Milliseconds()
-		nmetrics.WfObserveStateDuration(namespace, workflow, float64(ms))
+		nmetrics.WfObserveStateDuration(namespace, workflow, im.GetState(), float64(ms))
 	}
 }
 
 func reportStateEnd(namespace, workflow, state string, t time.Time) {
 	ms := time.Since(t).Milliseconds()
-	nmetrics.WfObserveStateDuration(namespace, GetInodePath(workflow), float64(ms))
+	nmetrics.WfObserveStateDuration(namespace, GetInodePath(workflow), state, float64(ms))
 }
