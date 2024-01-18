@@ -541,18 +541,6 @@ func (pubsub *Pubsub) NotifyNamespaceVariables(nsID uuid.UUID) {
 	pubsub.Publish(pubsubNotify(pubsub.namespaceVars(nsID)))
 }
 
-func (pubsub *Pubsub) namespaceAnnotations(ns *database.Namespace) string {
-	return fmt.Sprintf("nsnote:%s", ns.ID.String())
-}
-
-func (pubsub *Pubsub) SubscribeNamespaceAnnotations(ns *database.Namespace) *Subscription {
-	return pubsub.Subscribe(ns.ID.String(), pubsub.namespaceAnnotations(ns))
-}
-
-func (pubsub *Pubsub) NotifyNamespaceAnnotations(ns *database.Namespace) {
-	pubsub.Publish(pubsubNotify(pubsub.namespaceAnnotations(ns)))
-}
-
 func (pubsub *Pubsub) instanceLogs(instID uuid.UUID) string {
 	return fmt.Sprintf("instlogs:%s", instID.String())
 }

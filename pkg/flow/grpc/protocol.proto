@@ -20,7 +20,6 @@ import "pkg/flow/grpc/eventing.proto";
 
 import "pkg/flow/grpc/build.proto";
 
-import "pkg/flow/grpc/annotations.proto";
 import "pkg/flow/grpc/mirror.proto";
 
 service Flow {
@@ -60,11 +59,7 @@ service Flow {
 	rpc Tag (TagRequest) returns (google.protobuf.Empty) {}
 	rpc Untag (UntagRequest) returns (google.protobuf.Empty) {}
 	rpc Retag (RetagRequest) returns (google.protobuf.Empty) {}
-	rpc Router (RouterRequest) returns (RouterResponse) {}
-	rpc RouterStream (RouterRequest) returns (stream RouterResponse) {}
-	rpc EditRouter (EditRouterRequest) returns (EditRouterResponse) {}
 	rpc ValidateRef (ValidateRefRequest) returns (ValidateRefResponse) {}
-	rpc ValidateRouter (ValidateRouterRequest) returns (ValidateRouterResponse) {}
 	rpc Secrets (SecretsRequest) returns (SecretsResponse) {}
 	rpc SecretsStream (SecretsRequest) returns (stream SecretsResponse) {}
 	rpc SetSecret (SetSecretRequest) returns (SetSecretResponse) {}
@@ -132,9 +127,6 @@ service Flow {
 
 	rpc JQ (JQRequest) returns (JQResponse) {}
 
-	rpc CreateNodeAttributes (CreateNodeAttributesRequest) returns (google.protobuf.Empty) {}
-	rpc DeleteNodeAttributes (DeleteNodeAttributesRequest) returns (google.protobuf.Empty) {}
-
 	rpc WorkflowMetrics (WorkflowMetricsRequest) returns (WorkflowMetricsResponse) {}
 
 	// COMING SOON:
@@ -158,9 +150,6 @@ service Flow {
 	// LintPayload
 	// Workflow Metrics
 
-	rpc ToggleWorkflow (ToggleWorkflowRequest) returns (google.protobuf.Empty) {}
-	rpc SetWorkflowEventLogging (SetWorkflowEventLoggingRequest) returns (google.protobuf.Empty) {}
-
 
 	rpc ResolveNamespaceUID (ResolveNamespaceUIDRequest) returns (NamespaceResponse) {}
 	rpc ResolveWorkflowUID (ResolveWorkflowUIDRequest) returns (WorkflowResponse) {}
@@ -172,39 +161,8 @@ service Flow {
 
 	rpc InstanceMetadata (InstanceMetadataRequest) returns (InstanceMetadataResponse) {}
 
-	rpc NamespaceAnnotation (NamespaceAnnotationRequest) returns (NamespaceAnnotationResponse) {}
-	rpc NamespaceAnnotationParcels (NamespaceAnnotationRequest) returns (stream NamespaceAnnotationResponse) {}
-	rpc NamespaceAnnotations (NamespaceAnnotationsRequest) returns (NamespaceAnnotationsResponse) {}
-	rpc NamespaceAnnotationsStream (NamespaceAnnotationsRequest) returns (stream NamespaceAnnotationsResponse) {}
-	rpc SetNamespaceAnnotation (SetNamespaceAnnotationRequest) returns (SetNamespaceAnnotationResponse) {}
-	rpc SetNamespaceAnnotationParcels (stream SetNamespaceAnnotationRequest) returns (SetNamespaceAnnotationResponse) {}
-	rpc DeleteNamespaceAnnotation (DeleteNamespaceAnnotationRequest) returns (google.protobuf.Empty) {}
-	rpc RenameNamespaceAnnotation (RenameNamespaceAnnotationRequest) returns (RenameNamespaceAnnotationResponse) {}
-	rpc WorkflowAnnotation (WorkflowAnnotationRequest) returns (WorkflowAnnotationResponse) {}
-	rpc WorkflowAnnotationParcels (WorkflowAnnotationRequest) returns (stream WorkflowAnnotationResponse) {}
-	rpc WorkflowAnnotations (WorkflowAnnotationsRequest) returns (WorkflowAnnotationsResponse) {}
-	rpc WorkflowAnnotationsStream (WorkflowAnnotationsRequest) returns (stream WorkflowAnnotationsResponse) {}
-	rpc SetWorkflowAnnotation (SetWorkflowAnnotationRequest) returns (SetWorkflowAnnotationResponse) {}
-	rpc SetWorkflowAnnotationParcels (stream SetWorkflowAnnotationRequest) returns (SetWorkflowAnnotationResponse) {}
-	rpc DeleteWorkflowAnnotation (DeleteWorkflowAnnotationRequest) returns (google.protobuf.Empty) {}
-	rpc RenameWorkflowAnnotation (RenameWorkflowAnnotationRequest) returns (RenameWorkflowAnnotationResponse) {}
-	rpc InstanceAnnotation (InstanceAnnotationRequest) returns (InstanceAnnotationResponse) {}
-	rpc InstanceAnnotationParcels (InstanceAnnotationRequest) returns (stream InstanceAnnotationResponse) {}
-	rpc InstanceAnnotations (InstanceAnnotationsRequest) returns (InstanceAnnotationsResponse) {}
-	rpc InstanceAnnotationsStream (InstanceAnnotationsRequest) returns (stream InstanceAnnotationsResponse) {}
-	rpc SetInstanceAnnotation (SetInstanceAnnotationRequest) returns (SetInstanceAnnotationResponse) {}
-	rpc SetInstanceAnnotationParcels (stream SetInstanceAnnotationRequest) returns (SetInstanceAnnotationResponse) {}
-	rpc DeleteInstanceAnnotation (DeleteInstanceAnnotationRequest) returns (google.protobuf.Empty) {}
-	rpc RenameInstanceAnnotation (RenameInstanceAnnotationRequest) returns (RenameInstanceAnnotationResponse) {}
 	rpc ReleaseInstance (ReleaseInstanceRequest) returns (ReleaseInstanceResponse) {}
-	rpc NodeAnnotation (NodeAnnotationRequest) returns (NodeAnnotationResponse) {}
-	rpc NodeAnnotationParcels (NodeAnnotationRequest) returns (stream NodeAnnotationResponse) {}
-	rpc NodeAnnotations (NodeAnnotationsRequest) returns (NodeAnnotationsResponse) {}
-	rpc NodeAnnotationsStream (NodeAnnotationsRequest) returns (stream NodeAnnotationsResponse) {}
-	rpc SetNodeAnnotation (SetNodeAnnotationRequest) returns (SetNodeAnnotationResponse) {}
-	rpc SetNodeAnnotationParcels (stream SetNodeAnnotationRequest) returns (SetNodeAnnotationResponse) {}
-	rpc DeleteNodeAnnotation (DeleteNodeAnnotationRequest) returns (google.protobuf.Empty) {}
-	rpc RenameNodeAnnotation (RenameNodeAnnotationRequest) returns (RenameNodeAnnotationResponse) {}
+
 
 	rpc CreateNamespaceMirror (CreateNamespaceMirrorRequest) returns (CreateNamespaceResponse) {}
 	rpc CreateDirectoryMirror (CreateDirectoryMirrorRequest) returns (CreateDirectoryResponse) {}

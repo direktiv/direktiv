@@ -32,15 +32,8 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 
 	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetName())
 	if err == nil && req.GetIdempotent() {
-		rootDir, err := tx.FileStore().ForNamespace(ns.Name).GetFile(ctx, "/")
-		if err != nil {
-			return nil, err
-		}
-
-		annotations, _ := tx.DataStore().FileAnnotations().Get(ctx, rootDir.ID)
-
 		var resp grpc.CreateNamespaceResponse
-		resp.Namespace = bytedata.ConvertNamespaceToGrpc(ns, annotations)
+		resp.Namespace = bytedata.ConvertNamespaceToGrpc(ns)
 		return &resp, nil
 	}
 	if !errors.Is(err, datastore.ErrNotFound) {
@@ -77,13 +70,6 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 		return nil, err
 	}
 
-	rootDir, err := tx.FileStore().ForNamespace(ns.Name).GetFile(ctx, "/")
-	if err != nil {
-		return nil, err
-	}
-
-	annotations, _ := tx.DataStore().FileAnnotations().Get(ctx, rootDir.ID)
-
 	if err = tx.Commit(ctx); err != nil {
 		return nil, err
 	}
@@ -104,7 +90,7 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 	flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Created namespace as git mirror '%s'.", ns.Name)
 
 	var resp grpc.CreateNamespaceResponse
-	resp.Namespace = bytedata.ConvertNamespaceToGrpc(ns, annotations)
+	resp.Namespace = bytedata.ConvertNamespaceToGrpc(ns)
 
 	return &resp, nil
 }
