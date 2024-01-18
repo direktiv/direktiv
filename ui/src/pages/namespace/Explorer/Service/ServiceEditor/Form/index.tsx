@@ -1,4 +1,5 @@
 import {
+  Controller,
   DeepPartialSkipArrayKey,
   UseFormReturn,
   useForm,
@@ -13,13 +14,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/design/Select";
-import { ServiceFormSchema, ServiceFormSchemaType } from "./schema";
+import { ServiceFormSchema, ServiceFormSchemaType } from "../schema";
 
-import Button from "~/design/Button";
+import EnvForm from "./EnvForm";
 import { FC } from "react";
 import { Fieldset } from "~/components/Form/Fieldset";
 import Input from "~/design/Input";
-import { Plus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -132,15 +132,18 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
           htmlFor="size"
           className="flex grow"
         >
-          {values.envs?.map((env) => (
-            <div className="flex gap-3" key={env.name}>
-              <Input value={env.name} placeholder="NAME"></Input>
-              <Input value={env.value} placeholder="VALUE"></Input>
-              <Button type="button" variant="outline">
-                <Plus />
-              </Button>
-            </div>
-          ))}
+          <Controller
+            control={control}
+            name="envs"
+            render={({ field }) => (
+              <EnvForm
+                defaultValue={field.value || []}
+                onChange={(changedValue) => {
+                  field.onChange(changedValue);
+                }}
+              />
+            )}
+          />
         </Fieldset>
       </div>
     ),
