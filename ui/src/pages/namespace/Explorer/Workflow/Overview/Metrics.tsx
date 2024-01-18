@@ -57,7 +57,7 @@ const Metrics = ({ workflow }: { workflow: string }) => {
 
   return (
     <Card className="flex flex-col">
-      <div className="flex h-full items-center gap-x-2 border-b border-gray-5 p-5 font-medium dark:border-gray-dark-5">
+      <div className="flex items-center gap-x-2 border-b border-gray-5 p-5 font-medium dark:border-gray-dark-5">
         <PieChart className="h-5" />
         <h3 className="grow">
           {t("pages.explorer.tree.workflow.overview.metrics.header")}
