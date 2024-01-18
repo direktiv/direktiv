@@ -80,11 +80,6 @@ func RunApplication() {
 	rootCmd.AddCommand(workflowCmd)
 	rootCmd.AddCommand(createWorkflowCmd)
 	rootCmd.AddCommand(updateWorkflowCmd)
-	rootCmd.AddCommand(saveHeadCmd)
-	rootCmd.AddCommand(discardHeadCmd)
-	rootCmd.AddCommand(tagsCmd)
-	rootCmd.AddCommand(refsCmd)
-	rootCmd.AddCommand(revisionsCmd)
 
 	rootCmd.AddCommand(startWorkflowCmd)
 	rootCmd.AddCommand(instanceCmd)

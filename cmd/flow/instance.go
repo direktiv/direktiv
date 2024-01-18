@@ -14,7 +14,7 @@ func init() {
 
 var startWorkflowCmd = &cobra.Command{
 	Use:  "start-workflow NAMESPACE PATH [REF]",
-	Args: cobra.RangeArgs(2, 3),
+	Args: cobra.RangeArgs(1, 2),
 	Run: func(cmd *cobra.Command, args []string) {
 		source, err := loadSource()
 		if err != nil {
@@ -23,10 +23,6 @@ var startWorkflowCmd = &cobra.Command{
 
 		namespace := args[0]
 		path := args[1]
-		ref := ""
-		if len(args) > 2 {
-			ref = args[2]
-		}
 
 		c, closer, err := client()
 		if err != nil {
@@ -37,7 +33,6 @@ var startWorkflowCmd = &cobra.Command{
 		req := &grpc.StartWorkflowRequest{
 			Namespace: namespace,
 			Path:      path,
-			Ref:       ref,
 			Input:     source,
 		}
 
