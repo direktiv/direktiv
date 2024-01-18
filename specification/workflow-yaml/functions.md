@@ -53,11 +53,11 @@ states:
 
 A `knative-namespace` refers to a function that is implemented according to the requirements for a direktiv knative service. Specifically, in this case referring to a service configured to be available on the namespace.
 
-This function type supports [`files`](/spec/workflow-yaml/actions/#functionfiledefinition).
+This function type supports [`files`](actions.md#functionfiledefinition).
 
 | Parameter | Description | Type | Required |
 | --- | --- | --- | --- |
-| `type` | Identifies which kind of [FunctionDefinition](/spec/workflow-yaml/functions/#functiondefinition) is being used. In this case it must be set to `knative-namespace`. | string | yes | 
+| `type` | Identifies which kind of [FunctionDefinition](#functiondefinition) is being used. In this case it must be set to `knative-namespace`. | string | yes | 
 | `id` | A unique identifier for the function within the workflow definition. | string | yes |
 | `service` | URI to a function on the namespace. | string | yes |
 
@@ -65,11 +65,11 @@ This function type supports [`files`](/spec/workflow-yaml/actions/#functionfiled
 
 A `knative-workflow` refers to a function that is implemented according to the requirements for a direktiv knative service. Specifically, in this case referring to a service that Direktiv can create on-demand for the exclusive use by this workflow.
 
-This function type supports [`files`](/spec/workflow-yaml/actions/#functionfiledefinition).
+This function type supports [`files`](actions.md#functionfiledefinition).
 
 | Parameter | Description | Type | Required |
 | --- | --- | --- | --- |
-| `type` | Identifies which kind of [FunctionDefinition](/spec/workflow-yaml/functions/#functiondefinition) is being used. In this case it must be set to `knative-workflow`. | string | yes | 
+| `type` | Identifies which kind of [FunctionDefinition](#functiondefinition) is being used. In this case it must be set to `knative-workflow`. | string | yes | 
 | `id` | A unique identifier for the function within the workflow definition. | string | yes |
 | `image` | URI to a `knative-workflow` compliant container. | string | yes |
 | `size` | Specifies the container size. | [ContainerSizeDefinition](#ContainerSizeDefinition) | no |
@@ -91,6 +91,6 @@ This function type does not support [`files`](#FunctionFileDefinition).
 
 | Parameter | Description | Type | Required |
 | --- | --- | --- | --- |
-| `type` | Identifies which kind of [FunctionDefinition](/spec/workflow-yaml/functions/#functiondefinition) is being used. In this case it must be set to `subflow`. | string | yes | 
+| `type` | Identifies which kind of [FunctionDefinition](#functiondefinition) is being used. In this case it must be set to `subflow`. | string | yes | 
 | `id` | A unique identifier for the function within the workflow definition. | string | yes |
 | `workflow` | URI to a workflow within the same namespace. | string | yes |

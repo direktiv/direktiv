@@ -1,20 +1,29 @@
-name: golangci-unittests
+name: Run golang unittests
+
 on:
   push:
-    tags:
-      - v*
     branches:
       - main
+    paths:
+      - '*'
+      - '!ui/**'
   pull_request:
+    paths:
+      - '*'
+      - '!ui/**'
+
 permissions:
   contents: read
+
 jobs:
   golangci:
-    name: go-unittests
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
 
