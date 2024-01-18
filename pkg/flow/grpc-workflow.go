@@ -45,10 +45,6 @@ func (flow *flow) Workflow(ctx context.Context, req *grpc.WorkflowRequest) (*grp
 		return nil, err
 	}
 
-	ref := req.GetRef()
-	if ref == "" {
-		ref = filestore.Latest
-	}
 	revision, err := tx.FileStore().ForFile(file).GetRevision(ctx)
 	if err != nil {
 		return nil, err
@@ -65,8 +61,7 @@ func (flow *flow) Workflow(ctx context.Context, req *grpc.WorkflowRequest) (*grp
 	resp := new(grpc.WorkflowResponse)
 	resp.Namespace = ns.Name
 	resp.Node = bytedata.ConvertFileToGrpcNode(file)
-	resp.Revision = bytedata.ConvertRevisionToGrpcRevision(revision)
-	resp.Revision.Source = data
+	resp.Source = data
 	resp.EventLogging = ""
 	resp.Oid = file.ID.String()
 
@@ -123,8 +118,7 @@ func (flow *flow) createFileSystemObject(ctx context.Context, fileType filestore
 	resp := &grpc.CreateWorkflowResponse{}
 	resp.Namespace = ns.Name
 	resp.Node = bytedata.ConvertFileToGrpcNode(file)
-	resp.Revision = bytedata.ConvertRevisionToGrpcRevision(revision)
-	resp.Revision.Source = data
+	resp.Source = data
 
 	if err = tx.Commit(ctx); err != nil {
 		return nil, err
@@ -236,8 +230,7 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 	resp := &grpc.CreateWorkflowResponse{}
 	resp.Namespace = ns.Name
 	resp.Node = bytedata.ConvertFileToGrpcNode(file)
-	resp.Revision = bytedata.ConvertRevisionToGrpcRevision(revision)
-	resp.Revision.Source = data
+	resp.Source = data
 
 	return resp, nil
 }
@@ -331,8 +324,7 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 
 	resp.Namespace = ns.Name
 	resp.Node = bytedata.ConvertFileToGrpcNode(file)
-	resp.Revision = bytedata.ConvertRevisionToGrpcRevision(newRevision)
-	resp.Revision.Source = data
+	resp.Source = data
 
 	return &resp, nil
 }

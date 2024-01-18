@@ -12,7 +12,6 @@ message InstanceWorkflow {
 	string path = 1;
 	string name = 2;
 	string parent = 3;
-	bytes source = 4;
 }
 
 message Instance {
