@@ -280,7 +280,6 @@ func (engine *engine) metricsCompleteState(ctx context.Context, im *instanceMemo
 
 	args.Namespace = im.instance.TelemetryInfo.NamespaceName
 	args.Workflow = workflow
-	args.Revision = im.instance.Instance.RevisionID.String()
 	args.Instance = im.instance.Instance.ID.String()
 
 	caller := engine.InstanceCaller(ctx, im)

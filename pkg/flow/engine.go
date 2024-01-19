@@ -186,7 +186,6 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 		ID:             args.ID,
 		NamespaceID:    args.Namespace.ID,
 		Namespace:      args.Namespace.Name,
-		RevisionID:     revision.ID,
 		RootInstanceID: root,
 		Invoker:        args.Invoker,
 		WorkflowPath:   file.Path,
