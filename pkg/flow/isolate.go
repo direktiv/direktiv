@@ -96,7 +96,6 @@ type functionContainer struct {
 type functionWorkflow struct {
 	Name          string
 	Path          string
-	Revision      string
 	InstanceID    string
 	NamespaceID   string
 	NamespaceName string

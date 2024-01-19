@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
@@ -307,11 +306,6 @@ func (engine *engine) metricsCompleteInstance(ctx context.Context, im *instanceM
 	t := im.StateBeginTime()
 	namespace := im.instance.TelemetryInfo.NamespaceName
 	workflow := GetInodePath(im.instance.Instance.WorkflowPath)
-
-	// Trim workflow revision until revisions are fully implemented.
-	if divider := strings.LastIndex(workflow, ":"); divider > 0 {
-		workflow = workflow[0:divider]
-	}
 
 	now := time.Now().UTC()
 	empty := time.Time{}

@@ -54,7 +54,7 @@ func ConvertFilesToGrpcNodeList(list []*filestore.File) []*grpc.Node {
 	return result
 }
 
-func ConvertRevisionToGrpcFile(file *filestore.File) *grpc.File {
+func ConvertFileToGrpcFile(file *filestore.File) *grpc.File {
 	return &grpc.File{
 		Name:      file.Name(),
 		CreatedAt: timestamppb.New(file.CreatedAt),

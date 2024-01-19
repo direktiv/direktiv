@@ -50,7 +50,7 @@ func (flow *flow) CreateFile(ctx context.Context, req *grpc.CreateFileRequest) (
 	resp := &grpc.CreateFileResponse{}
 	resp.Namespace = ns.Name
 	resp.Node = bytedata.ConvertFileToGrpcNode(file)
-	resp.File = bytedata.ConvertRevisionToGrpcFile(file)
+	resp.File = bytedata.ConvertFileToGrpcFile(file)
 	resp.File.Source = data
 
 	return resp, nil
@@ -106,7 +106,7 @@ func (flow *flow) UpdateFile(ctx context.Context, req *grpc.UpdateFileRequest) (
 
 	resp.Namespace = ns.Name
 	resp.Node = bytedata.ConvertFileToGrpcNode(file)
-	resp.File = bytedata.ConvertRevisionToGrpcFile(file)
+	resp.File = bytedata.ConvertFileToGrpcFile(file)
 	resp.File.Source = data
 
 	return &resp, nil
@@ -143,7 +143,7 @@ func (flow *flow) File(ctx context.Context, req *grpc.FileRequest) (*grpc.FileRe
 	resp := new(grpc.FileResponse)
 	resp.Namespace = ns.Name
 	resp.Node = bytedata.ConvertFileToGrpcNode(file)
-	resp.File = bytedata.ConvertRevisionToGrpcFile(file)
+	resp.File = bytedata.ConvertFileToGrpcFile(file)
 	resp.File.Source = data
 
 	return resp, nil
