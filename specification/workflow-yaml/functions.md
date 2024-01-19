@@ -60,6 +60,9 @@ This function type supports [`files`](actions.md#functionfiledefinition).
 | `type` | Identifies which kind of [FunctionDefinition](#functiondefinition) is being used. In this case it must be set to `knative-namespace`. | string | yes | 
 | `id` | A unique identifier for the function within the workflow definition. | string | yes |
 | `service` | URI to a function on the namespace. | string | yes |
+| `cmd` | Custom command to execute within the container. | string | no |
+| `envs` | Environment variables | [EnvironmentVariablesDefinition](#environmentvariablesdefinition) | no |
+| `patches` | Patching the user container | [PatchDefinition](#patchdefintion) | no |
 
 ### WorkflowKnativeFunctionDefinition
 
@@ -74,6 +77,40 @@ This function type supports [`files`](actions.md#functionfiledefinition).
 | `image` | URI to a `knative-workflow` compliant container. | string | yes |
 | `size` | Specifies the container size. | [ContainerSizeDefinition](#ContainerSizeDefinition) | no |
 | `cmd` | Custom command to execute within the container. | string | no |
+| `envs` | Environment variables | [EnvironmentVariablesDefinition](#environmentvariablesdefinition) | no |
+| `patches` | Patching the user container | [PatchDefinition](#patchdefintion) | no |
+
+#### PatchDefinition
+
+With `patches` the configuration of the function can be changed. Direktiv is using Kubernetes' patching feature to apply those. The following commands can be applied: `add`, `remove` and `replace`. Not all of the paths inside a function can be modified. To ensure that changes don't break Direktiv's functionality the following list of paths can be used within the `patch` section.
+
+- /spec/template/metadata/labels
+- /spec/template/metadata/annotations
+- /spec/template/spec/affinity
+- /spec/template/spec/securityContext
+- /spec/template/spec/containers/0
+
+```title="Patching"
+  patches:
+  - op: add
+    path: /spec/template/metadata/annotations
+    Value: { "my": "annotation" }
+  - op: add
+    path: /spec/template/spec/containers[0]/env
+    Value: { "name": "hello", "value": "world" }
+```
+
+#### EnvironmentVariablesDefinition
+
+Environment variables can be defined for [namespace services](#namespacedknativefunctiondefinition) as well as in [function definitions](#workflowknativefunctiondefinition). It is an array with `name` and `value`. 
+
+```title="Environment Variables"
+envs:
+- name: key
+  value: value
+```
+
+Examples for environment variables can be found in the [example section](../../examples/envs-wf.md)
 
 #### ContainerSizeDefinition
 
