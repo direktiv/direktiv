@@ -1,21 +1,54 @@
 version: "3.9"
 services:
+  fluent-bit:
+    image: fluent/fluent-bit:1.9.9
+    hostname: fluent-bit
+    environment:
+      PG_HOST: postgres
+      PG_PORT: 5432
+      PG_USER: fluentbit
+      PG_PASSWORD: mypassword
+      PG_DATABASE: mydb
+    ports:
+      - "24224:24224"
+      - "24224:24224/udp"
+    volumes:
+      - ./fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf
+    depends_on:
+      - postgres
+    command: [fluent-bit", "-c", "/fluent-bit/etc/fluent-bit.conf"]
   postgres:
     image: postgres:buster
-    command: [
-        "postgres",
-        ## "-c", "log_statement=all",
-        ## "-c", "log_destination=stderr",
-      ]
+    hostname: postgres
     environment:
       POSTGRES_USER: myadmin
       POSTGRES_PASSWORD: mypassword
       POSTGRES_DB: mydb
+      PG_USER: fluentbit
+      PG_PASSWORD: mypassword
       POSTGRES_INITDB_ARGS: "-A password"
     ports:
       - "5432:5432"
-    volumes: []
-
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+    depends_on:
+      - postgres-init
+  postgres-init:
+    image: postgres:buster
+    hostname: postgres
+    environment:
+      POSTGRES_USER: myadmin
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: mydb
+      PG_USER: fluentbit
+      PG_PASSWORD: mypassword
+      POSTGRES_INITDB_ARGS: "-A password"
+    command: ["-c", "exit 0"]
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
+      - ./pgdata:/var/lib/postgresql/data
   flow:
     image: ${DIREKTIV_IMAGE}
     command: ["/bin/direktiv", "server"]
@@ -38,14 +71,17 @@ services:
       - DIREKTIV_LOG_JSON=console
 
     ports:
-      # api v1 port
       - "8181:8181"
-      # grpc port
       - "6666:6666"
-      # api v2 port
       - "6667:6667"
     depends_on:
       - postgres
+      - fluent-bit
+    logging:
+      driver: fluentd
+      options:
+        tag: flow
+        fluentd-address: localhost:24224
 
   ui:
     image: ${DIREKTIV_UI_IMAGE}
@@ -53,9 +89,9 @@ services:
       - UI_BACKEND=http://flow:8181/api/
       - UI_PORT=8080
     ports:
-      # api port
       - "8080:8080"
     depends_on:
+      - postgres
       - flow
 
   e2e-tests:
