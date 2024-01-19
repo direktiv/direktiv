@@ -1,10 +1,6 @@
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
 import { expect, test } from "@playwright/test";
-import {
-  jsonSchemaFormWorkflow,
-  jsonSchemaWithRequiredEnum,
-  waitForSuccessToast,
-} from "./utils";
+import { jsonSchemaFormWorkflow, jsonSchemaWithRequiredEnum } from "./utils";
 
 import { noop as basicWorkflow } from "~/pages/namespace/Explorer/Tree/components/modals/CreateNew/Workflow/templates";
 import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
@@ -405,65 +401,4 @@ test("it is possible to provide the input via generated form and resolve form er
   };
   const inputResponseAsJson = JSON.parse(atob(res.data));
   expect(inputResponseAsJson).toEqual(expectedJson);
-});
-
-test(`it is possible to deactivate and activate a workflow`, async ({
-  page,
-}) => {
-  const workflowName = "testworkflow.yaml";
-
-  await createWorkflow({
-    payload: jsonSchemaWithRequiredEnum,
-    urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
-      namespace,
-      name: workflowName,
-    },
-    headers,
-  });
-
-  await page.goto(`/${namespace}/explorer/workflow/active/${workflowName}`, {
-    waitUntil: "networkidle",
-  });
-
-  const btnToggle = page.getByTestId("toggle-workflow-active-btn");
-  const iconPowerOn = page.getByTestId("active-workflow-on-icon");
-  const iconPowerOff = page.getByTestId("active-workflow-off-icon");
-  const btnRun = page.getByTestId("workflow-header-btn-run");
-
-  await expect(
-    iconPowerOff,
-    "initial state should be active, shows the power-off button"
-  ).toBeVisible();
-  await expect(
-    btnRun,
-    "initial state should be active, run button is enabled"
-  ).toBeEnabled();
-
-  await btnToggle.click();
-  await waitForSuccessToast(page);
-  await expect(
-    iconPowerOn,
-    "next state should be inactive, shows the power-on button"
-  ).toBeVisible();
-  await expect(
-    btnRun,
-    "next state should be inactive, run button is inactive"
-  ).toBeDisabled();
-
-  await btnRun.click({ force: true }); //nothing happens on this click
-  await page.waitForTimeout(1000);
-  await expect(
-    page.getByTestId("run-workflow-dialog"),
-    "it doesn't open the dialog"
-  ).toBeHidden();
-
-  await btnToggle.click(); //activate again
-  await waitForSuccessToast(page);
-
-  await btnRun.click(); //run the workflow
-  await expect(
-    page.getByTestId("run-workflow-dialog"),
-    "it opens the dialog from the editor button"
-  ).toBeVisible();
 });

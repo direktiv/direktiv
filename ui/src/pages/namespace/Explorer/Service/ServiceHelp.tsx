@@ -16,10 +16,6 @@ cmd: "redis-server" # container's cmd string (optional)
 envs: # list of environment variables (optional)
   - name: "MY_ENV_VAR"
     value: "env-var-value"
-post_start_exec: # container's post start exec array (optional)
-  - "/bin/sh"
-  - "-c"
-  - "echo 2 > /usr/share/message2"
 `;
 
 const ServiceHelp = () => {

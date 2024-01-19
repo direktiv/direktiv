@@ -12,7 +12,6 @@ import type { TrimmedRevisionSchemaType } from "~/api/tree/schema/node";
 import { pages } from "~/util/router/pages";
 import { useNodeRevisions } from "~/api/tree/query/revisions";
 import { useNodeTags } from "~/api/tree/query/tags";
-import { useRouter } from "~/api/tree/query/router";
 import { useTranslation } from "react-i18next";
 
 const RevisionsList: FC = () => {
@@ -38,8 +37,6 @@ const RevisionsList: FC = () => {
     TrimmedRevisionSchemaType | undefined
   >();
   const [revert, setRevert] = useState<TrimmedRevisionSchemaType | undefined>();
-
-  const { data: router } = useRouter({ path });
 
   useEffect(() => {
     if (dialogOpen === false) {
@@ -69,13 +66,8 @@ const RevisionsList: FC = () => {
                 const isTag =
                   tags?.results?.some((tag) => tag.name === rev.name) ?? false;
 
-                const index =
-                  router?.routes?.findIndex((x) => x.ref === rev.name) ?? -1;
-
                 return (
                   <RevisionTableRow
-                    isPrimaryTraffic={index === 0}
-                    isSecondaryTraffic={index === 1}
                     revision={rev}
                     isTag={isTag}
                     key={i}
