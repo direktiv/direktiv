@@ -340,12 +340,7 @@ describe('Test behaviour specific to the root node', () => {
                 readOnly: false,
                 mimeType: "application/direktiv",
             },
-            revision: {
-                createdAt: expect.stringMatching(common.regex.timestampRegex),
-                hash: "d4ac523a7b82b805eb0bec604ce16cfb0a4e54c9280bb98fe4e1b58e8722c1d9",
-                source: expect.stringMatching(common.regex.base64Regex),
-                name: expect.stringMatching(common.regex.uuidRegex),
-            },
+            source: expect.stringMatching(common.regex.base64Regex),
             eventLogging: ``,
             oid: expect.stringMatching(common.regex.uuidRegex),
         })
@@ -369,12 +364,7 @@ describe('Test behaviour specific to the root node', () => {
                 readOnly: false,
                 mimeType: "text/plain",
             },
-            revision: {
-                createdAt: expect.stringMatching(common.regex.timestampRegex),
-                hash: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-                source: expect.stringMatching(common.regex.base64Regex),
-                name: expect.stringMatching(common.regex.uuidRegex),
-            },
+            source: expect.stringMatching(common.regex.base64Regex),
             eventLogging: ``,
             oid: expect.stringMatching(common.regex.uuidRegex),
         })
@@ -398,12 +388,7 @@ describe('Test behaviour specific to the root node', () => {
                 readOnly: false,
                 mimeType: "application/direktiv",
             },
-            revision: {
-                createdAt: expect.stringMatching(common.regex.timestampRegex),
-                hash: "2a4f39df7002abc30c919d47a62b06c7a4b978a384a4ac2f93c18fb0f56adab6",
-                source: expect.stringMatching(common.regex.base64Regex),
-                name: expect.stringMatching(common.regex.uuidRegex),
-            },
+            source: expect.stringMatching(common.regex.base64Regex),
             eventLogging: ``,
             oid: expect.stringMatching(common.regex.uuidRegex),
         })
@@ -541,12 +526,7 @@ describe('Test behaviour specific to the root node', () => {
                 readOnly: false,
                 mimeType: "application/direktiv",
             },
-            revision: {
-                createdAt: expect.stringMatching(common.regex.timestampRegex),
-                hash: "a600b303d59570902466822693a92a410bc0b5894f19e85af9b6cbf0d9f2a53b",
-                source: expect.stringMatching(common.regex.base64Regex),
-                name: expect.stringMatching(common.regex.uuidRegex),
-            },
+            source: expect.stringMatching(common.regex.base64Regex),
             eventLogging: ``,
             oid: expect.stringMatching(common.regex.uuidRegex),
         })
@@ -570,12 +550,7 @@ describe('Test behaviour specific to the root node', () => {
                 readOnly: false,
                 mimeType: expect.anything(),
             },
-            revision: {
-                createdAt: expect.stringMatching(common.regex.timestampRegex),
-                //hash: "5595048ad23cdef4a0c10a36e7d9a335264e55182046ed213d5aacda0803812e",
-                source: expect.stringMatching(common.regex.base64Regex),
-                name: expect.stringMatching(common.regex.uuidRegex),
-            },
+            source: expect.stringMatching(common.regex.base64Regex),
             eventLogging: ``,
             oid: expect.stringMatching(common.regex.uuidRegex),
         })
@@ -621,12 +596,7 @@ describe('Test behaviour specific to the root node', () => {
                 readOnly: false,
                 mimeType: "application/direktiv",
             },
-            revision: {
-                createdAt: expect.stringMatching(common.regex.timestampRegex),
-                hash: "5595048ad23cdef4a0c10a36e7d9a335264e55182046ed213d5aacda0803812e",
-                source: expect.stringMatching(common.regex.base64Regex),
-                name: expect.stringMatching(common.regex.uuidRegex),
-            },
+            source: expect.stringMatching(common.regex.base64Regex),
             eventLogging: ``,
             oid: expect.stringMatching(common.regex.uuidRegex),
         })
@@ -730,12 +700,7 @@ describe('Test behaviour specific to the root node', () => {
                 readOnly: false,
                 mimeType: "application/direktiv",
             },
-            revision: {
-                createdAt: expect.stringMatching(common.regex.timestampRegex),
-                hash: "05729d2916b0cfff71291ca877600173520734f13da273859a9701b8efd10975",
-                source: expect.stringMatching(common.regex.base64Regex),
-                name: expect.stringMatching(common.regex.uuidRegex),
-            },
+            source: expect.stringMatching(common.regex.base64Regex),
             eventLogging: ``,
             oid: expect.stringMatching(common.regex.uuidRegex),
         })
@@ -759,12 +724,7 @@ describe('Test behaviour specific to the root node', () => {
                 readOnly: false,
                 mimeType: "application/direktiv",
             },
-            revision: {
-                createdAt: expect.stringMatching(common.regex.timestampRegex),
-                hash: "ac0fea085b3889f7411ef777ed4d89af6d7f7a1ef787cbea37431ae086be1318",
-                source: expect.stringMatching(common.regex.base64Regex),
-                name: expect.stringMatching(common.regex.uuidRegex),
-            },
+            source: expect.stringMatching(common.regex.base64Regex),
             eventLogging: ``,
             oid: expect.stringMatching(common.regex.uuidRegex),
         })
