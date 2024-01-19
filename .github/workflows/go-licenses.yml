@@ -2,6 +2,8 @@ name: Check golang licenses
 
 on:
   push:
+    branches:
+      - main
   pull_request:
 
 permissions:

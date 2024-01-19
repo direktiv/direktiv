@@ -2,6 +2,8 @@ name: Lint golang code
 
 on:
   push:
+    branches:
+      - main
   pull_request:
 
 permissions:

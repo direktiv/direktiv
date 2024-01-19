@@ -2,6 +2,8 @@ name: Run API e2e tests
 
 on:
   push:
+    branches:
+      - main
   pull_request:
 
 permissions:
