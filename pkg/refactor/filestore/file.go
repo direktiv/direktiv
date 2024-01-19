@@ -36,6 +36,9 @@ type File struct {
 	Depth int
 	Typ   FileType
 
+	Data     []byte
+	Checksum string
+
 	// Root is a filestore instance, users can create multiple filestore roots and RootID tells which root the file
 	// belongs too.
 	RootID uuid.UUID
@@ -61,13 +64,10 @@ type FileQuery interface {
 	// GetData returns reader for the file, this method is not applicable for directory file type.
 	GetData(ctx context.Context) ([]byte, error)
 
-	// CreateRevision creates a new file revision, this method is not applicable for directory file type.
-	CreateRevision(ctx context.Context, data []byte) (*Revision, error)
-
 	// Delete deletes the file (or the directory).
 	Delete(ctx context.Context, force bool) error
 
-	GetRevision(ctx context.Context) (*Revision, error)
+	SetData(ctx context.Context, data []byte) (string, error)
 
 	// SetPath sets a new path for the file, this method is used to rename files and directories or move them
 	// to a new location. Param path should be a new path that doesn't already exist and the directory of Param path

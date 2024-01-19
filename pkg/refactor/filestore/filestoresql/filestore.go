@@ -38,13 +38,6 @@ func (s *sqlFileStore) ForFile(file *filestore.File) filestore.FileQuery {
 	}
 }
 
-func (s *sqlFileStore) ForRevision(revision *filestore.Revision) filestore.RevisionQuery {
-	return &RevisionQuery{
-		rev: revision,
-		db:  s.db,
-	}
-}
-
 var _ filestore.FileStore = &sqlFileStore{} // Ensures sqlFileStore struct conforms to filestore.FileStore interface.
 
 func NewSQLFileStore(db *gorm.DB) filestore.FileStore {

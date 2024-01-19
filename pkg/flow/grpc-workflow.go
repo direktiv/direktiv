@@ -45,12 +45,7 @@ func (flow *flow) Workflow(ctx context.Context, req *grpc.WorkflowRequest) (*grp
 		return nil, err
 	}
 
-	revision, err := tx.FileStore().ForFile(file).GetRevision(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	data, err := tx.FileStore().ForRevision(revision).GetData(ctx)
+	data, err := tx.FileStore().ForFile(file).GetData(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -104,13 +99,13 @@ func (flow *flow) createFileSystemObject(ctx context.Context, fileType filestore
 	if err != nil {
 		return nil, err
 	}
-	file, revision, err := tx.FileStore().ForNamespace(ns.Name).CreateFile(ctx, req.GetPath(),
+	file, err := tx.FileStore().ForNamespace(ns.Name).CreateFile(ctx, req.GetPath(),
 		fileType, "application/direktiv", req.GetSource())
 	if err != nil {
 		return nil, err
 	}
 
-	data, err := tx.FileStore().ForRevision(revision).GetData(ctx)
+	data, err := tx.FileStore().ForFile(file).GetData(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -180,12 +175,12 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 	if len(req.GetSource()) == 0 {
 		return nil, status.Error(codes.InvalidArgument, "empty workflow is not allowed")
 	}
-	file, revision, err := tx.FileStore().ForNamespace(ns.Name).CreateFile(ctx, req.GetPath(), filestore.FileTypeWorkflow, "application/direktiv", req.GetSource())
+	file, err := tx.FileStore().ForNamespace(ns.Name).CreateFile(ctx, req.GetPath(), filestore.FileTypeWorkflow, "application/direktiv", req.GetSource())
 	if err != nil {
 		return nil, err
 	}
 
-	data, err := tx.FileStore().ForRevision(revision).GetData(ctx)
+	data, err := tx.FileStore().ForFile(file).GetData(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -261,24 +256,7 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 	default:
 		return nil, status.Error(codes.InvalidArgument, "file type is not workflow or service or endpoint or consumer")
 	}
-	revision, err := tx.FileStore().ForFile(file).GetRevision(ctx)
-	if err != nil {
-		return nil, err
-	}
-	newRevision, err := tx.FileStore().ForFile(file).CreateRevision(ctx, req.GetSource())
-	if err != nil {
-		return nil, err
-	}
-	// delete the previous revision.
-	err = tx.FileStore().ForRevision(revision).Delete(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	data, err := tx.FileStore().ForRevision(newRevision).GetData(ctx)
-	if err != nil {
-		return nil, err
-	}
+	_, err = tx.FileStore().ForFile(file).SetData(ctx, req.GetSource())
 
 	if file.Typ == filestore.FileTypeWorkflow {
 		err = flow.placeholdSecrets(ctx, tx, ns.Name, file)
@@ -324,7 +302,7 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 
 	resp.Namespace = ns.Name
 	resp.Node = bytedata.ConvertFileToGrpcNode(file)
-	resp.Source = data
+	resp.Source = req.GetSource()
 
 	return &resp, nil
 }

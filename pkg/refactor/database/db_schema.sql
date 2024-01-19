@@ -21,6 +21,10 @@ CREATE TABLE IF NOT EXISTS "filesystem_files" (
     "path" text NOT NULL,
     "depth" integer NOT NULL,
     "typ" text NOT NULL,
+
+    "data" bytea,
+    "checksum" text,
+
     "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "mime_type" text NOT NULL,
@@ -28,18 +32,6 @@ CREATE TABLE IF NOT EXISTS "filesystem_files" (
     CONSTRAINT "file_path_no_dup_check" UNIQUE ("root_id","path"),
     CONSTRAINT "fk_filesystem_roots_filesystem_files"
     FOREIGN KEY ("root_id") REFERENCES "filesystem_roots"("id") ON DELETE CASCADE ON UPDATE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS "filesystem_revisions" (
-    "id" uuid,
-    "data" bytea NOT NULL,
-    "checksum" text NOT NULL,
-    "file_id" uuid NOT NULL,
-    "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY ("id"),
-    CONSTRAINT "fk_filesystem_files_filesystem_revisions"
-    FOREIGN KEY ("file_id") REFERENCES "filesystem_files"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS "mirror_configs" (

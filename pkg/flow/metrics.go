@@ -9,7 +9,6 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/metrics"
-	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
@@ -179,17 +178,9 @@ func (flow *flow) WorkflowMetrics(ctx context.Context, req *grpc.WorkflowMetrics
 		return nil, err
 	}
 
-	var rev *filestore.Revision
-
-	rev, err = tx.FileStore().ForFile(file).GetRevision(ctx)
-	if err != nil {
-		return nil, err
-	}
-
 	resp, err := flow.metrics.GetMetrics(&metrics.GetMetricsArgs{
 		Namespace: ns.Name,
 		Workflow:  file.Path,
-		Revision:  rev.ID.String(),
 		Since:     req.SinceTimestamp.AsTime(),
 	})
 	if err != nil {
