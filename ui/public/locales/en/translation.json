@@ -179,7 +179,7 @@
       },
       "workflow": {
         "menu": {
-          "activeRevision": "Active Revision",
+          "fileContent": "File Content",
           "overview": "Overview",
           "settings": "Settings",
           "services": "Services"

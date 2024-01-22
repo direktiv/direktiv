@@ -1,12 +1,12 @@
-import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import {
-  GitCommit,
+  Code2,
   Layers,
   PieChart,
   Play,
   Settings,
   TerminalSquare,
 } from "lucide-react";
+import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import { Link, Outlet } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger } from "~/design/Tabs";
 import {
@@ -55,8 +55,8 @@ const Header: FC = () => {
     {
       value: "activeRevision",
       active: isWorkflowActivePage,
-      icon: <GitCommit aria-hidden="true" />,
-      title: t("pages.explorer.workflow.menu.activeRevision"),
+      icon: <Code2 aria-hidden="true" />,
+      title: t("pages.explorer.workflow.menu.fileContent"),
       link: pages.explorer.createHref({
         namespace,
         path,
