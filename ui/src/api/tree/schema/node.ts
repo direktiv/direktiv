@@ -22,13 +22,6 @@ const NodeSchema = z.object({
   mimeType: z.string(),
 });
 
-const RevisionSchema = z.object({
-  createdAt: z.string(),
-  hash: z.string(),
-  source: z.string(),
-  name: z.string(),
-});
-
 export const NodeListSchema = z.object({
   namespace: z.string(),
   node: NodeSchema,
@@ -38,7 +31,6 @@ export const NodeListSchema = z.object({
       results: z.array(NodeSchema),
     })
     .optional(), // not for workflows
-  revision: RevisionSchema.optional(), // only for workflows
 });
 
 // the revisions schema in the revisions list only has a subset of the fields
@@ -63,7 +55,6 @@ export const FolderCreatedSchema = z.object({
 export const WorkflowCreatedSchema = z.object({
   namespace: z.string(),
   node: NodeSchema,
-  revision: RevisionSchema,
 });
 
 export const WorkflowStartedSchema = z.object({
