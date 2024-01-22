@@ -1,37 +1,47 @@
 config:
   customParsers: |
     [PARSER]
-        Name prefix_tail
-        Format regex
-        Regex ^(?<time>[^ ]+) (?<stream>\w+ \w+) (?<log>.*$)
-        Time_Key    time
-        Time_Format %Y-%m-%dT%H:%M:%S.%L%z
-        Decode_Field_As json log
+        Name                    prefix_tail
+        Format                  regex
+        Regex                   ^(?<time>[^ ]+) (?<stream>\w+ \w+) (?<log>.*$)
+        Time_Key                time
+        Time_Format             %Y-%m-%dT%H:%M:%S.%L%z
+        Decode_Field_As         json log
   inputs: |
     [INPUT]
-        Name tail
-        Path /var/log/containers/*flow*.log
-        Parser prefix_tail
-        Tag kube.*
-        Mem_Buf_Limit 5MB
-        Skip_Long_Lines Off
+        Name                    tail
+        Path                    /var/log/containers/*flow*.log
+        Parser                  prefix_tail
+        Tag                     kube.*
+        Mem_Buf_Limit           5MB
+        Skip_Long_Lines         Off
   filters: |
     [FILTER]
-        Name             kubernetes
-        Match            kube.*
-        Kube_URL         https://kubernetes.default.svc:443
-        Kube_CA_File     /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-        Kube_Token_File  /var/run/secrets/kubernetes.io/serviceaccount/token
-        Kube_Tag_Prefix  kube.var.log.containers.
-        Buffer_Size      72k
+        Name                    kubernetes
+        Match                   kube.*
+        Kube_URL                https://kubernetes.default.svc:443
+        Kube_CA_File            /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        Kube_Token_File         /var/run/secrets/kubernetes.io/serviceaccount/token
+        Kube_Tag_Prefix         kube.var.log.containers.
+        Buffer_Size             72k
   outputs: |
     [OUTPUT]
-        name   loki
-        match  *
-        host  loki
-        port  3100
-        http_user   loki
-        http_passwd loki
-        line_format json
-        auto_kubernetes_labels off
-        labels job=fluent-bit, level=$log['level'], stream=$log['stream'], component=$log['component'], build=$log['build'], trace=$log['trace'], namespace=$log['namespace'], workflow=$log['workflow'], httppath=$log['httppath'], log-recipient=$log['log-recipient'], invoker=$log['invoker'], callpath=$log['callpath'], mirrorid=$log['mirror-id'], recipient=$log['recipientType'], source=$log['source']
+        name                    loki
+        match                   *
+        host                    loki
+        port                    3100
+        http_user               loki
+        http_passwd             loki
+        line_format             json
+        auto_kubernetes_labels  off
+        labels                  job=fluent-bit, level=$log['level'], stream=$log['stream'], component=$log['component'], build=$log['build'], trace=$log['trace'], namespace=$log['namespace'], workflow=$log['workflow'], httppath=$log['httppath'], log-recipient=$log['log-recipient'], invoker=$log['invoker'], callpath=$log['callpath'], mirrorid=$log['mirror-id'], recipient=$log['recipientType'], source=$log['source']
+    [OUTPUT]
+        name                    pgsql
+        match                   *
+        labels                  job=fluent-bit, level=$log['level'], stream=$log['stream'], component=$log['component'], build=$log['build'], trace=$log['trace'], namespace=$log['namespace'], workflow=$log['workflow'], httppath=$log['httppath'], log-recipient=$log['log-recipient'], invoker=$log['invoker'], callpath=$log['callpath'], mirrorid=$log['mirror-id'], recipient=$log['recipientType'], source=$log['source']
+        port                    5432
+        table                   fluentbit
+        user                    direktiv
+        database                direktiv
+        host                    ${PG_HOST}
+        password                ${PG_PASSWORD}
