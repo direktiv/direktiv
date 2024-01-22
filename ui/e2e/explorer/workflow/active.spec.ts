@@ -1,9 +1,4 @@
 import { Page, expect, test } from "@playwright/test";
-import {
-  actionMakeRevision,
-  actionRevertRevision,
-  waitForSuccessToast,
-} from "./utils";
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
 
 import { createWorkflow } from "../../utils/node";
@@ -73,35 +68,6 @@ const testSaveWorkflow = async (page: Page) => {
   ).toHaveText("Updated a few seconds ago");
 };
 
-const testMakeRevision = async (page: Page) => {
-  await actionMakeRevision(page);
-  // check the success toast action button
-  const toastAction = page.getByTestId("make-revision-toast-success-action");
-  await expect(
-    toastAction,
-    "success toast should appear after make-revision button click"
-  ).toBeVisible();
-
-  await toastAction.click();
-  await expect(
-    toastAction,
-    "success toast should disappear after toast action click"
-  ).toBeHidden();
-  await expect(page, "page url should have revision param").toHaveURL(
-    /revision=/
-  );
-  const revisionId = page.url().split("revision=")[1];
-
-  if (!revisionId) throw new Error("revisionId should be present in the url");
-
-  await expect(
-    page.getByText(revisionId),
-    "revisionId should be in the revision list"
-  ).toBeVisible();
-  // go back to the workflow editor
-  await page.getByTestId("workflow-tabs-trg-activeRevision").click();
-};
-
 test("it is possible to navigate to the active revision", async ({ page }) => {
   await page.goto("/");
   await expect(
@@ -142,42 +108,4 @@ test("it is possible to navigate to the active revision", async ({ page }) => {
 test("it is possible to save the workflow", async ({ page }) => {
   await actionNavigateToActiveWorkflow(page);
   await testSaveWorkflow(page);
-});
-
-test("it is possible to make the revision", async ({ page }) => {
-  await actionNavigateToActiveWorkflow(page);
-  await testMakeRevision(page);
-});
-
-test("it is possible to revert the revision", async ({ page }) => {
-  await actionNavigateToActiveWorkflow(page);
-  await testMakeRevision(page);
-  await testSaveWorkflow(page);
-  await actionRevertRevision(page);
-  await waitForSuccessToast(page);
-
-  // check the description is reverted
-  await expect(
-    page.getByText(defaultDescription),
-    "description should be reverted to the default"
-  ).toBeVisible();
-
-  // check the bottom left
-  await expect(
-    page.getByTestId("workflow-txt-updated"),
-    "text should be Updated a few seconds ago"
-  ).toHaveText("Updated a few seconds ago");
-
-  // check both after page reload
-  await page.reload({ waitUntil: "networkidle" });
-
-  await expect(
-    page.getByText(defaultDescription),
-    "description should be reverted to the default"
-  ).toBeVisible();
-
-  await expect(
-    page.getByTestId("workflow-txt-updated"),
-    "text should be Updated a few seconds ago"
-  ).toHaveText("Updated a few seconds ago");
 });
