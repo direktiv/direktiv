@@ -55,6 +55,7 @@ export const FolderCreatedSchema = z.object({
 export const WorkflowCreatedSchema = z.object({
   namespace: z.string(),
   node: NodeSchema,
+  source: z.string(),
 });
 
 export const WorkflowStartedSchema = z.object({
