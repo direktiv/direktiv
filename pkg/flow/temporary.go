@@ -14,7 +14,6 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
-	log "github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/flow/states"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
@@ -129,18 +128,18 @@ func (im *instanceMemory) ListenForEvents(ctx context.Context, events []*model.C
 	return nil
 }
 
-func (im *instanceMemory) Log(ctx context.Context, level log.Level, a string, x ...interface{}) {
-	switch level {
-	case log.Info:
-		im.engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
-	case log.Debug:
-		im.engine.logger.Debugf(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
-	case log.Error:
-		im.engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
-	case log.Panic:
-		im.engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
-	}
-}
+// func (im *instanceMemory) Log(ctx context.Context, level log.Level, a string, x ...interface{}) {
+// 	switch level {
+// 	case log.Info:
+// 		im.// engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
+// 	case log.Debug:
+// 		im.// engine.logger.Debugf(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
+// 	case log.Error:
+// 		im.// engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
+// 	case log.Panic:
+// 		im.// engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
+// 	}
+// }
 
 func (im *instanceMemory) AddAttribute(tag, value string) {
 	if im.tags == nil {
@@ -487,7 +486,7 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	addr := ar.Container.Service
 
 	engine.sugar.Debugf("function request for image %s name %s addr %v:", ar.Container.Image, ar.Container.ID, addr)
-	engine.logger.Debugf(ctx, engine.flow.ID, engine.flow.GetAttributes(), "function request for image %s name %s", ar.Container.Image, ar.Container.ID)
+	// engine.logger.Debugf(ctx, engine.flow.ID, engine.flow.GetAttributes(), "function request for image %s name %s", ar.Container.Image, ar.Container.ID)
 
 	deadline := time.Now().UTC().Add(time.Duration(ar.Workflow.Timeout) * time.Second)
 	rctx, cancel := context.WithDeadline(context.Background(), deadline)
@@ -541,7 +540,7 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 				engine.sugar.Debugf("context error in knative call")
 				return
 			}
-			engine.logger.Debugf(ctx, engine.flow.ID, engine.flow.GetAttributes(), "function request for image %s name %s returned an error: %v", ar.Container.Image, ar.Container.ID, err)
+			// engine.logger.Debugf(ctx, engine.flow.ID, engine.flow.GetAttributes(), "function request for image %s name %s returned an error: %v", ar.Container.Image, ar.Container.ID, err)
 
 			time.Sleep(time.Second)
 		} else {

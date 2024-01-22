@@ -17,7 +17,6 @@ import (
 	"github.com/caarlos0/env/v10"
 	"github.com/direktiv/direktiv/pkg/dlog"
 	"github.com/direktiv/direktiv/pkg/flow/database"
-	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/metrics"
 	"github.com/direktiv/direktiv/pkg/refactor/cmd"
@@ -30,7 +29,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/filestore/filestoresql"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore/instancestoresql"
-	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	pubsub2 "github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	pubsubSQL "github.com/direktiv/direktiv/pkg/refactor/pubsub/sql"
@@ -38,7 +36,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 	_ "github.com/lib/pq" // postgres for ent
-	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 	libgrpc "google.golang.org/grpc"
 	"gorm.io/driver/postgres"
@@ -78,7 +75,6 @@ type server struct {
 	events   *events
 
 	metrics *metrics.Client
-	logger  logengine.BetterLogger
 }
 
 func Run(ctx context.Context, logger *zap.SugaredLogger) error {
@@ -125,47 +121,46 @@ func newServer(logger *zap.SugaredLogger) (*server, error) {
 
 type mirrorProcessLogger struct {
 	sugar  *zap.SugaredLogger
-	logger logengine.BetterLogger
 }
 
 func (log *mirrorProcessLogger) Debug(pid uuid.UUID, msg string, kv ...interface{}) {
 	log.sugar.Debugw(msg, kv...)
-	tags := map[string]string{
-		"recipientType": "mirror",
-		"mirror-id":     pid.String(),
-	}
-	msg += strings.Repeat(", %s = %v", len(kv)/2)
-	log.logger.Debugf(context.Background(), pid, tags, msg, kv...)
+	// tags := map[string]string{
+	// 	"recipientType": "mirror",
+	// 	"mirror-id":     pid.String(),
+	// }
+	// msg += strings.Repeat(", %s = %v", len(kv)/2)
+	// log.logger.Debugf(context.Background(), pid, tags, msg, kv...)
 }
 
 func (log *mirrorProcessLogger) Info(pid uuid.UUID, msg string, kv ...interface{}) {
 	log.sugar.Infow(msg, kv...)
-	tags := map[string]string{
-		"recipientType": "mirror",
-		"mirror-id":     pid.String(),
-	}
-	msg += strings.Repeat(", %s = %v", len(kv)/2)
-	log.logger.Infof(context.Background(), pid, tags, msg, kv...)
+	// tags := map[string]string{
+	// 	"recipientType": "mirror",
+	// 	"mirror-id":     pid.String(),
+	// }
+	// msg += strings.Repeat(", %s = %v", len(kv)/2)
+	// log.logger.Infof(context.Background(), pid, tags, msg, kv...)
 }
 
 func (log *mirrorProcessLogger) Warn(pid uuid.UUID, msg string, kv ...interface{}) {
 	log.sugar.Warnw(msg, kv...)
-	tags := map[string]string{
-		"recipientType": "mirror",
-		"mirror-id":     pid.String(),
-	}
-	msg += strings.Repeat(", %s = %v", len(kv)/2)
-	log.logger.Warnf(context.Background(), pid, tags, msg, kv...)
+	// tags := map[string]string{
+	// 	"recipientType": "mirror",
+	// 	"mirror-id":     pid.String(),
+	// }
+	// msg += strings.Repeat(", %s = %v", len(kv)/2)
+	// log.logger.Warnf(context.Background(), pid, tags, msg, kv...)
 }
 
 func (log *mirrorProcessLogger) Error(pid uuid.UUID, msg string, kv ...interface{}) {
 	log.sugar.Errorw(msg, kv...)
-	tags := map[string]string{
-		"recipientType": "mirror",
-		"mirror-id":     pid.String(),
-	}
-	msg += strings.Repeat(", %s = %v", len(kv)/2)
-	log.logger.Errorf(context.Background(), pid, tags, msg, kv...)
+	// tags := map[string]string{
+	// 	"recipientType": "mirror",
+	// 	"mirror-id":     pid.String(),
+	// }
+	// msg += strings.Repeat(", %s = %v", len(kv)/2)
+	// log.logger.Errorf(context.Background(), pid, tags, msg, kv...)
 }
 
 var _ mirror.ProcessLogger = &mirrorProcessLogger{}
@@ -347,41 +342,14 @@ func (srv *server) start(ctx context.Context) error {
 		res:       srv.gormDB,
 		secretKey: srv.conf.SecretKey,
 	}
-	dbLogger, logworker, closelogworker := logengine.NewCachedLogger(1024,
-		noTx.DataStore().Logs().Append,
-		func(objectID uuid.UUID, objectType string) {
-			srv.pubsub.NotifyLogs(objectID, recipient.RecipientType(objectType))
-		},
-		srv.sugar.Errorf,
-	)
 
-	addTrace := func(ctx context.Context, toTags map[string]string) map[string]string {
-		span := trace.SpanFromContext(ctx)
-		tid := span.SpanContext().TraceID()
-		toTags["trace"] = tid.String()
-		return toTags
-	}
+	// addTrace := func(ctx context.Context, toTags map[string]string) map[string]string {
+	// 	span := trace.SpanFromContext(ctx)
+	// 	tid := span.SpanContext().TraceID()
+	// 	toTags["trace"] = tid.String()
+	// 	return toTags
+	// }
 
-	var sugarBetterLogger logengine.BetterLogger
-	sugarBetterLogger = logengine.SugarBetterJSONLogger{
-		Sugar:        srv.sugar.Named("userLogger"),
-		AddTraceFrom: addTrace,
-	}
-	if os.Getenv(util.DirektivLogFormat) != "json" {
-		sugarBetterLogger = logengine.SugarBetterConsoleLogger{
-			Sugar:        srv.sugar.Named("userLogger"),
-			AddTraceFrom: addTrace,
-			RetainTags:   []string{"caller", "Caller"}, // if set to nil all tags will be retained
-		}
-	}
-	srv.logger = logengine.ChainedBetterLogger{
-		sugarBetterLogger,
-		dbLogger,
-	}
-
-	go func() {
-		logworker()
-	}()
 
 	srv.sugar.Info("Initializing events.")
 	srv.events, err = initEvents(srv, noTx.DataStore().StagingEvents().Append)
@@ -401,7 +369,7 @@ func (srv *server) start(ctx context.Context) error {
 		err = srv.flow.placeholdSecrets(ctx, noTx, nsName, file)
 		if err != nil {
 			srv.sugar.Debugf("Error setting up placeholder secrets: %v", err)
-			srv.flow.logger.Errorf(ctx, nsID, nil, "Error setting up placeholder secrets: %v", err)
+			//srv.// flow.logger.Errorf(ctx, nsID, nil, "Error setting up placeholder secrets: %v", err)
 		}
 
 		return nil
@@ -411,7 +379,7 @@ func (srv *server) start(ctx context.Context) error {
 		&mirrorCallbacks{
 			logger: &mirrorProcessLogger{
 				sugar:  srv.sugar,
-				logger: srv.logger,
+				//logger: srv.logger,
 			},
 			syslogger: srv.sugar,
 			store:     noTx.DataStore().Mirror(),
@@ -480,8 +448,6 @@ func (srv *server) start(ctx context.Context) error {
 	wg.Wait()
 
 	newMainWG.Wait()
-
-	closelogworker()
 
 	if err != nil {
 		return err

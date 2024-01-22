@@ -5,8 +5,6 @@ import (
 	"fmt"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
-	"github.com/direktiv/direktiv/pkg/flow/database"
-	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/gabriel-vasile/mimetype"
@@ -45,7 +43,7 @@ func (flow *flow) CreateFile(ctx context.Context, req *grpc.CreateFileRequest) (
 		return nil, err
 	}
 
-	flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Created file '%s'.", file.Path)
+	// flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Created file '%s'.", file.Path)
 
 	resp := &grpc.CreateFileResponse{}
 	resp.Namespace = ns.Name
@@ -100,7 +98,7 @@ func (flow *flow) UpdateFile(ctx context.Context, req *grpc.UpdateFileRequest) (
 		return nil, err
 	}
 
-	flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Updated file '%s'.", file.Path)
+	// flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Updated file '%s'.", file.Path)
 
 	var resp grpc.UpdateFileResponse
 

@@ -5,8 +5,6 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
-	"github.com/direktiv/direktiv/pkg/flow/database"
-	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
@@ -206,7 +204,7 @@ func (flow *flow) Tag(ctx context.Context, req *grpc.TagRequest) (*emptypb.Empty
 		return nil, err
 	}
 
-	flow.logger.Infof(ctx, file.ID, database.GetAttributes(recipient.Workflow, ns, fileAttributes(*file)), "Tagged workflow: %s -> %s.", req.GetTag(), revision.ID.String())
+	// flow.logger.Infof(ctx, file.ID, database.GetAttributes(recipient.Workflow, ns, fileAttributes(*file)), "Tagged workflow: %s -> %s.", req.GetTag(), revision.ID.String())
 
 	var resp emptypb.Empty
 
@@ -243,7 +241,7 @@ func (flow *flow) Untag(ctx context.Context, req *grpc.UntagRequest) (*emptypb.E
 		return nil, err
 	}
 
-	flow.logger.Infof(ctx, file.ID, database.GetAttributes(recipient.Workflow, ns, fileAttributes(*file)), "Deleted workflow tag: %s.", req.GetTag())
+	// flow.logger.Infof(ctx, file.ID, database.GetAttributes(recipient.Workflow, ns, fileAttributes(*file)), "Deleted workflow tag: %s.", req.GetTag())
 
 	var resp emptypb.Empty
 

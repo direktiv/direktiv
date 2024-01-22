@@ -8,7 +8,6 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
-	log "github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/google/uuid"
 	"github.com/senseyeio/duration"
@@ -68,14 +67,14 @@ func (logic *generateEventLogic) Run(ctx context.Context, wakedata []byte) (*Tra
 			err = event.SetData(ctype, data)
 		}
 		if err != nil {
-			logic.Log(ctx, log.Error, "Unable to set event data: %v", err)
+			// logic.Log(ctx, log.Error, "Unable to set event data: %v", err)
 		}
 	}
 
 	if data == nil {
 		err = event.SetData("application/json", x)
 		if err != nil {
-			logic.Log(ctx, log.Error, "Unable to set event data: %v", err)
+			// logic.Log(ctx, log.Error, "Unable to set event data: %v", err)
 		}
 	}
 
@@ -85,15 +84,15 @@ func (logic *generateEventLogic) Run(ctx context.Context, wakedata []byte) (*Tra
 			return nil, derrors.NewUncatchableError("direktiv.event.jq", "failed to process event context key '%s': %v", k, err)
 		}
 
-		logic.Log(ctx, log.Debug, "Adding context %v: %v", k, x)
+		// logic.Log(ctx, log.Debug, "Adding context %v: %v", k, x)
 
 		err = event.Context.SetExtension(k, x)
 		if err != nil {
-			logic.Log(ctx, log.Error, "Unable to set event extension: %v", err)
+			// logic.Log(ctx, log.Error, "Unable to set event extension: %v", err)
 		}
 	}
 
-	logic.Log(ctx, log.Info, "Broadcasting event type:%s/source:%s to this namespace.", event.Type(), event.Source())
+	// logic.Log(ctx, log.Info, "Broadcasting event type:%s/source:%s to this namespace.", event.Type(), event.Source())
 
 	var dd int64
 

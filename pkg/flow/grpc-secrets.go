@@ -123,7 +123,7 @@ func (flow *flow) SetSecret(ctx context.Context, req *grpc.SetSecretRequest) (*g
 		return nil, err
 	}
 	// TODO: Alax, please look into this.
-	// flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Created namespace secret '%s'.", req.GetKey())
+	// // flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Created namespace secret '%s'.", req.GetKey())
 	// flow.pubsub.NotifyNamespaceSecrets(cached.Namespace)
 
 	err = flow.pBus.Publish(pubsub.SecretCreate, ns.Name)
@@ -174,7 +174,7 @@ func (flow *flow) DeleteSecret(ctx context.Context, req *grpc.DeleteSecretReques
 	}
 
 	// TODO: Alex please look into this.
-	// flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Deleted namespace secret '%s'.", req.GetKey())
+	// // flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Deleted namespace secret '%s'.", req.GetKey())
 	// flow.pubsub.NotifyNamespaceSecrets(cached.Namespace)
 
 	var resp emptypb.Empty
@@ -216,7 +216,7 @@ func (flow *flow) UpdateSecret(ctx context.Context, req *grpc.UpdateSecretReques
 	}
 
 	// TODO: Alex, please look into this.
-	// flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Updated namespace secret '%s'.", req.GetKey())
+	// // flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Updated namespace secret '%s'.", req.GetKey())
 	// flow.pubsub.NotifyNamespaceSecrets(cached.Namespace)
 
 	err = flow.pBus.Publish(pubsub.SecretUpdate, ns.Name)

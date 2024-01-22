@@ -7,8 +7,6 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
-	"github.com/direktiv/direktiv/pkg/flow/database"
-	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
@@ -140,7 +138,7 @@ func (flow *flow) CreateDirectory(ctx context.Context, req *grpc.CreateDirectory
 		return nil, err
 	}
 
-	flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Created directory '%s'.", file.Path)
+	// flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Created directory '%s'.", file.Path)
 
 	// Broadcast
 	err = flow.BroadcastDirectory(ctx, BroadcastEventTypeCreate,
@@ -263,7 +261,7 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 		}
 	}
 
-	flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Deleted %s '%s'.", file.Typ, file.Path)
+	// flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Deleted %s '%s'.", file.Typ, file.Path)
 
 	var resp emptypb.Empty
 
@@ -321,7 +319,7 @@ func (flow *flow) RenameNode(ctx context.Context, req *grpc.RenameNodeRequest) (
 		flow.sugar.Error("pubsub publish", "error", err)
 	}
 
-	flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Renamed %s from '%s' to '%s'.", file.Typ, req.GetOld(), req.GetNew())
+	// flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Renamed %s from '%s' to '%s'.", file.Typ, req.GetOld(), req.GetNew())
 
 	var resp grpc.RenameNodeResponse
 

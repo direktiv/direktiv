@@ -118,68 +118,68 @@ func (srv *LocalServer) wait() {
 }
 
 func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
-	actionId := r.URL.Query().Get("aid")
+	// actionId := r.URL.Query().Get("aid")
 
-	srv.requestsLock.Lock()
-	req, ok := srv.requests[actionId]
-	srv.requestsLock.Unlock()
+	// srv.requestsLock.Lock()
+	// req, ok := srv.requests[actionId]
+	// srv.requestsLock.Unlock()
 
-	reportError := func(code int, err error) {
-		http.Error(w, err.Error(), code)
-		log.Warnf("Log handler for '%s' returned %v: %v.", actionId, code, err)
-	}
+	// reportError := func(code int, err error) {
+	// 	http.Error(w, err.Error(), code)
+	// 	log.Warnf("Log handler for '%s' returned %v: %v.", actionId, code, err)
+	// }
 
-	if !ok {
-		err := errors.New("the action id went missing")
-		code := http.StatusInternalServerError
-		reportError(code, err)
-		return
-	}
+	// if !ok {
+	// 	err := errors.New("the action id went missing")
+	// 	code := http.StatusInternalServerError
+	// 	reportError(code, err)
+	// 	return
+	// }
 
-	if req == nil {
-		code := http.StatusNotFound
-		reportError(code, fmt.Errorf("actionId %s not found", actionId))
-		return
-	}
+	// if req == nil {
+	// 	code := http.StatusNotFound
+	// 	reportError(code, fmt.Errorf("actionId %s not found", actionId))
+	// 	return
+	// }
 
-	var msg string
+	// var msg string
 
-	if r.Method == http.MethodPost {
-		cap := int64(0x400000) // 4 MiB
-		if r.ContentLength > cap {
-			code := http.StatusRequestEntityTooLarge
-			reportError(code, errors.New(http.StatusText(code)))
-			return
-		}
-		r := io.LimitReader(r.Body, cap)
+	// if r.Method == http.MethodPost {
+	// 	cap := int64(0x400000) // 4 MiB
+	// 	if r.ContentLength > cap {
+	// 		code := http.StatusRequestEntityTooLarge
+	// 		reportError(code, errors.New(http.StatusText(code)))
+	// 		return
+	// 	}
+	// 	r := io.LimitReader(r.Body, cap)
 
-		data, err := io.ReadAll(r)
-		if err != nil {
-			code := http.StatusBadRequest
-			reportError(code, err)
-			return
-		}
+	// 	data, err := io.ReadAll(r)
+	// 	if err != nil {
+	// 		code := http.StatusBadRequest
+	// 		reportError(code, err)
+	// 		return
+	// 	}
 
-		msg = string(data)
-	} else {
-		msg = r.URL.Query().Get("log")
-	}
+	// 	msg = string(data)
+	// } else {
+	// 	msg = r.URL.Query().Get("log")
+	// }
 
-	if len(msg) == 0 {
-		log.Debugf("Log handler for '%s' received zero bytes.", actionId)
-		return
-	}
+	// if len(msg) == 0 {
+	// 	log.Debugf("Log handler for '%s' received zero bytes.", actionId)
+	// 	return
+	// }
 
-	_, err := srv.flow.ActionLog(req.ctx, &grpc.ActionLogRequest{
-		InstanceId: req.instanceId,
-		Msg:        []string{msg},
-		Iterator:   int32(req.iterator),
-	})
-	if err != nil {
-		log.Errorf("Failed to forward log to diretiv: %v.", err)
-	}
+	// _, err := srv.flow.ActionLog(req.ctx, &grpc.ActionLogRequest{
+	// 	InstanceId: req.instanceId,
+	// 	Msg:        []string{msg},
+	// 	Iterator:   int32(req.iterator),
+	// })
+	// if err != nil {
+	// 	log.Errorf("Failed to forward log to diretiv: %v.", err)
+	// }
 
-	log.Debugf("Log handler for '%s' posted %d bytes.", actionId, len(msg))
+	// log.Debugf("Log handler for '%s' posted %d bytes.", actionId, len(msg))
 }
 
 func (srv *LocalServer) varHandler(w http.ResponseWriter, r *http.Request) {

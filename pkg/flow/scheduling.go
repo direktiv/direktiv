@@ -28,7 +28,7 @@ func (engine *engine) WakeInstanceCaller(ctx context.Context, im *instanceMemory
 	caller := engine.InstanceCaller(ctx, im)
 
 	if caller != nil {
-		engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), "Reporting results to calling workflow.")
+		// engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), "Reporting results to calling workflow.")
 
 		msg := &actionResultMessage{
 			InstanceID: caller.ID.String(),

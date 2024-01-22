@@ -322,7 +322,7 @@ func (flow *flow) SetWorkflowVariable(ctx context.Context, req *grpc.SetWorkflow
 	}
 
 	// TODO: need fix here.
-	// flow.logger.Infof(ctx, file.ID, database.GetAttributes(recipient.Workflow, ns, fileAttributes(*file)), "Set workflow variable '%s'.", key)
+	// // flow.logger.Infof(ctx, file.ID, database.GetAttributes(recipient.Workflow, ns, fileAttributes(*file)), "Set workflow variable '%s'.", key)
 	// flow.pubsub.NotifyWorkflowVariables(file.ID)
 
 	var resp grpc.SetWorkflowVariableResponse
@@ -438,7 +438,7 @@ func (flow *flow) DeleteWorkflowVariable(ctx context.Context, req *grpc.DeleteWo
 	}
 
 	// TODO: need fix here.
-	//flow.logger.Infof(ctx, file.ID, database.GetAttributes(recipient.Workflow, ns, fileAttributes(*file)), "Deleted workflow variable '%s'.", vref.Name)
+	//// flow.logger.Infof(ctx, file.ID, database.GetAttributes(recipient.Workflow, ns, fileAttributes(*file)), "Deleted workflow variable '%s'.", vref.Name)
 	//flow.pubsub.NotifyWorkflowVariables(file.ID)
 	//
 	//// Broadcast Event
@@ -490,7 +490,7 @@ func (flow *flow) RenameWorkflowVariable(ctx context.Context, req *grpc.RenameWo
 	}
 
 	// TODO: fix here.
-	// flow.logger.Infof(ctx, file.ID, database.GetAttributes(recipient.Workflow, ns, fileAttributes(*file)), "Renamed workflow variable from '%s' to '%s'.", req.GetOld(), req.GetNew())
+	// // flow.logger.Infof(ctx, file.ID, database.GetAttributes(recipient.Workflow, ns, fileAttributes(*file)), "Renamed workflow variable from '%s' to '%s'.", req.GetOld(), req.GetNew())
 	// flow.pubsub.NotifyWorkflowVariables(file.ID)
 
 	var resp grpc.RenameWorkflowVariableResponse

@@ -351,7 +351,7 @@ func (flow *flow) SetNamespaceVariable(ctx context.Context, req *grpc.SetNamespa
 
 	// TODO: Alex, please fix here.
 
-	// flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Set namespace variable '%s'.", req.GetKey())
+	// // flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Set namespace variable '%s'.", req.GetKey())
 	// flow.pubsub.NotifyNamespaceVariables(cached.Namespace)
 
 	var resp grpc.SetNamespaceVariableResponse
@@ -460,7 +460,7 @@ func (flow *flow) DeleteNamespaceVariable(ctx context.Context, req *grpc.DeleteN
 	}
 
 	// TODO: nned fix here.
-	// flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Deleted namespace variable '%s'.", vref.Name)
+	// // flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Deleted namespace variable '%s'.", vref.Name)
 	// flow.pubsub.NotifyNamespaceVariables(cached.Namespace)
 
 	// Broadcast Event
@@ -508,7 +508,7 @@ func (flow *flow) RenameNamespaceVariable(ctx context.Context, req *grpc.RenameN
 	}
 
 	// TODO: need fix.
-	// flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Renamed namespace variable from '%s' to '%s'.", req.GetOld(), req.GetNew())
+	// // flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Renamed namespace variable from '%s' to '%s'.", req.GetOld(), req.GetNew())
 	// flow.pubsub.NotifyNamespaceVariables(cached.Namespace)
 
 	var resp grpc.RenameNamespaceVariableResponse

@@ -3,11 +3,9 @@ package flow
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net"
 	"strings"
 
-	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
 	libgrpc "google.golang.org/grpc"
@@ -90,25 +88,25 @@ func (internal *internal) ReportActionResults(ctx context.Context, req *grpc.Rep
 }
 
 func (internal *internal) ActionLog(ctx context.Context, req *grpc.ActionLogRequest) (*emptypb.Empty, error) {
-	internal.sugar.Debugf("Handling gRPC request: %s", this())
+	// internal.sugar.Debugf("Handling gRPC request: %s", this())
 
-	instance, err := internal.getInstance(ctx, req.GetInstanceId())
-	if err != nil {
-		internal.sugar.Error(err)
-		return nil, err
-	}
+	// instance, err := internal.getInstance(ctx, req.GetInstanceId())
+	// if err != nil {
+	// 	internal.sugar.Error(err)
+	// 	return nil, err
+	// }
 
-	flow := instance.RuntimeInfo.Flow
-	stateID := flow[len(flow)-1]
+	// flow := instance.RuntimeInfo.Flow
+	// stateID := flow[len(flow)-1]
 
-	tags := instance.GetAttributes(recipient.Instance)
-	tags["loop-index"] = fmt.Sprintf("%d", req.Iterator)
-	tags["state-id"] = stateID
-	tags["state-type"] = "action"
-	for _, msg := range req.GetMsg() {
-		res := truncateLogsMsg(msg, 1024)
-		internal.logger.Infof(ctx, instance.Instance.ID, tags, res)
-	}
+	// tags := instance.GetAttributes(recipient.Instance)
+	// tags["loop-index"] = fmt.Sprintf("%d", req.Iterator)
+	// tags["state-id"] = stateID
+	// tags["state-type"] = "action"
+	// for _, msg := range req.GetMsg() {
+	// 	res := truncateLogsMsg(msg, 1024)
+	// 	internal.logger.Infof(ctx, instance.Instance.ID, tags, res)
+	// }
 
 	var resp emptypb.Empty
 

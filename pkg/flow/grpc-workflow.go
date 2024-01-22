@@ -6,8 +6,6 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
-	"github.com/direktiv/direktiv/pkg/flow/database"
-	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
@@ -129,7 +127,7 @@ func (flow *flow) createFileSystemObject(ctx context.Context, fileType filestore
 	if err = tx.Commit(ctx); err != nil {
 		return nil, err
 	}
-	flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Created %s '%s'.", fileType, file.Path)
+	// flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Created %s '%s'.", fileType, file.Path)
 
 	// do we need the path for services?
 	if fileType == filestore.FileTypeService {
@@ -214,7 +212,7 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 	metricsWf.WithLabelValues(ns.Name, ns.Name).Inc()
 	metricsWfUpdated.WithLabelValues(ns.Name, file.Path, ns.Name).Inc()
 
-	flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Created workflow '%s'.", file.Path)
+	// flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Created workflow '%s'.", file.Path)
 
 	err = flow.BroadcastWorkflow(ctx, BroadcastEventTypeCreate,
 		broadcastWorkflowInput{

@@ -9,7 +9,6 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
-	log "github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/senseyeio/duration"
 )
@@ -39,7 +38,7 @@ func EventsAnd(instance Instance, state model.State) (Logic, error) {
 func (logic *eventsAndLogic) Deadline(ctx context.Context) time.Time {
 	d, err := duration.ParseISO8601(logic.Timeout)
 	if err != nil {
-		logic.Log(ctx, log.Error, "failed to parse duration: %v", err)
+		// logic.Log(ctx, log.Error, "failed to parse duration: %v", err)
 		return time.Now().UTC().Add(DefaultLongDeadline)
 	}
 

@@ -6,8 +6,6 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
-	"github.com/direktiv/direktiv/pkg/flow/database"
-	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
@@ -210,7 +208,7 @@ func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespace
 	}
 
 	flow.sugar.Infof("Created namespace '%s'.", ns.Name)
-	flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Created namespace '%s'.", ns.Name)
+	// flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Created namespace '%s'.", ns.Name)
 	flow.pubsub.NotifyNamespaces()
 
 	var resp grpc.CreateNamespaceResponse
@@ -262,7 +260,7 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 		return nil, err
 	}
 
-	flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Deleted namespace '%s'.", ns.Name)
+	// flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Deleted namespace '%s'.", ns.Name)
 	flow.pubsub.NotifyNamespaces()
 	flow.pubsub.CloseNamespace(ns)
 
@@ -304,8 +302,8 @@ func (flow *flow) RenameNamespace(ctx context.Context, req *grpc.RenameNamespace
 		return nil, err
 	}
 
-	flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Renamed namespace from '%s' to '%s'.", req.GetOld(), req.GetNew())
-	flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Renamed namespace from '%s' to '%s'.", req.GetOld(), req.GetNew())
+	// flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Renamed namespace from '%s' to '%s'.", req.GetOld(), req.GetNew())
+	// flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Renamed namespace from '%s' to '%s'.", req.GetOld(), req.GetNew())
 	flow.pubsub.NotifyNamespaces()
 	flow.pubsub.CloseNamespace(ns)
 

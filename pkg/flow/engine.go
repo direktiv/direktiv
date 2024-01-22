@@ -17,7 +17,6 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/direktiv/direktiv/pkg/flow/database"
-	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/states"
 	"github.com/direktiv/direktiv/pkg/model"
@@ -100,7 +99,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	file, revision, err := engine.mux(ctx, args.Namespace, args.CalledAs)
 	if err != nil {
 		engine.sugar.Debugf("Failed to create new instance: %v", err)
-		engine.logger.Errorf(ctx, engine.flow.ID, engine.flow.GetAttributes(), "Failed to receive workflow %s", args.CalledAs)
+		// engine.logger.Errorf(ctx, engine.flow.ID, engine.flow.GetAttributes(), "Failed to receive workflow %s", args.CalledAs)
 		if derrors.IsNotFound(err) {
 			return nil, derrors.NewUncatchableError("direktiv.workflow.notfound", "workflow not found: %v", err.Error())
 		}
@@ -235,10 +234,10 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	im.AddAttribute("loop-index", fmt.Sprintf("%d", iterator))
 
 	engine.pubsub.NotifyInstances(im.Namespace())
-	engine.logger.Infof(ctx, instance.Instance.NamespaceID, instance.GetAttributes(recipient.Namespace), "Workflow '%s' has been triggered by %s.", args.CalledAs, args.Invoker)
+	// engine.logger.Infof(ctx, instance.Instance.NamespaceID, instance.GetAttributes(recipient.Namespace), "Workflow '%s' has been triggered by %s.", args.CalledAs, args.Invoker)
 	// TODO: alex, do we need to restore workflow logs?
-	// engine.logger.Infof(ctx, im.instance.Instance.WorkflowID, im.instance.GetAttributes(recipient.Workflow), "Instance '%s' created by %s.", im.ID().String(), args.Invoker)
-	engine.logger.Debugf(ctx, im.instance.Instance.ID, im.GetAttributes(), "Preparing workflow triggered by %s.", args.Invoker)
+	// // engine.logger.Infof(ctx, im.instance.Instance.WorkflowID, im.instance.GetAttributes(recipient.Workflow), "Instance '%s' created by %s.", im.ID().String(), args.Invoker)
+	// engine.logger.Debugf(ctx, im.instance.Instance.ID, im.GetAttributes(), "Preparing workflow triggered by %s.", args.Invoker)
 
 	// Broadcast Event
 	err = engine.flow.BroadcastInstance(BroadcastEventTypeInstanceStarted, ctx,
@@ -261,15 +260,15 @@ func (engine *engine) start(im *instanceMemory) {
 	}
 
 	engine.sugar.Debugf("Starting workflow %v", im.ID().String())
-	engine.logger.Infof(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "Starting workflow %v", database.GetWorkflow(im.instance.Instance.WorkflowPath))
+	// engine.logger.Infof(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "Starting workflow %v", database.GetWorkflow(im.instance.Instance.WorkflowPath))
 	// TODO: alex, do we need to restore workflow logs?
-	// engine.logger.Infof(ctx, im.instance.Instance.WorkflowID, im.instance.GetAttributes(recipient.Workflow), "Starting workflow %v", database.GetWorkflow(im.instance.Instance.CalledAs))
-	engine.logger.Debugf(ctx, im.instance.Instance.ID, im.GetAttributes(), "Starting workflow %v.", database.GetWorkflow(im.instance.Instance.WorkflowPath))
+	// // engine.logger.Infof(ctx, im.instance.Instance.WorkflowID, im.instance.GetAttributes(recipient.Workflow), "Starting workflow %v", database.GetWorkflow(im.instance.Instance.CalledAs))
+	// engine.logger.Debugf(ctx, im.instance.Instance.ID, im.GetAttributes(), "Starting workflow %v.", database.GetWorkflow(im.instance.Instance.WorkflowPath))
 
 	workflow, err := im.Model()
 	if err != nil {
 		engine.CrashInstance(ctx, im, derrors.NewUncatchableError(ErrCodeWorkflowUnparsable, "failed to parse workflow YAML: %v", err))
-		engine.logger.Errorf(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "failed to parse workflow YAML")
+		// engine.logger.Errorf(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "failed to parse workflow YAML")
 		return
 	}
 
@@ -535,7 +534,7 @@ failure:
 	if errors.As(err, &cerr) {
 		_ = im.StoreData("error", cerr)
 
-		for i, catch := range im.logic.ErrorDefinitions() {
+		for _, catch := range im.logic.ErrorDefinitions() {
 			errRegex := catch.Error
 			if errRegex == "*" {
 				errRegex = ".*"
@@ -543,12 +542,12 @@ failure:
 
 			matched, regErr := regexp.MatchString(errRegex, cerr.Code)
 			if regErr != nil {
-				engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), "Error catching regex failed to compile: %v", regErr)
+				// engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), "Error catching regex failed to compile: %v", regErr)
 			}
 
 			if matched {
-				engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), "State failed with error '%s': %s", cerr.Code, cerr.Message)
-				engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), "Error caught by error definition %d: %s", i, catch.Error)
+				// engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), "State failed with error '%s': %s", cerr.Code, cerr.Message)
+				// engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), "Error caught by error definition %d: %s", i, catch.Error)
 
 				transition = &states.Transition{
 					Transform: "",
@@ -576,7 +575,7 @@ func (engine *engine) transformState(ctx context.Context, im *instanceMemory, tr
 		return nil
 	}
 
-	engine.logger.Debugf(ctx, im.GetInstanceID(), im.GetAttributes(), "Transforming state data.")
+	// engine.logger.Debugf(ctx, im.GetInstanceID(), im.GetAttributes(), "Transforming state data.")
 
 	x, err := jqObject(im.data, transition.Transform)
 	if err != nil {
@@ -602,7 +601,7 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 	if transition.NextState != "" {
 		engine.metricsCompleteState(ctx, im, transition.NextState, errCode, false)
 		engine.sugar.Debugf("Instance transitioning to next state: %s -> %s", im.ID().String(), transition.NextState)
-		engine.logger.Debugf(ctx, im.GetInstanceID(), im.GetAttributes(), "Transitioning to next state: %s (%d).", transition.NextState, im.Step()+1)
+		// engine.logger.Debugf(ctx, im.GetInstanceID(), im.GetAttributes(), "Transitioning to next state: %s (%d).", transition.NextState, im.Step()+1)
 		go engine.Transition(ctx, im, transition.NextState, 0)
 		return
 	}
@@ -611,7 +610,7 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 	if im.ErrorCode() != "" {
 		status = instancestore.InstanceStatusFailed
 		engine.sugar.Debugf("Instance failed: %s", im.ID().String())
-		engine.logger.Errorf(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "Workflow failed with error '%s': %s", im.ErrorCode(), im.instance.Instance.ErrorMessage)
+		// engine.logger.Errorf(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "Workflow failed with error '%s': %s", im.ErrorCode(), im.instance.Instance.ErrorMessage)
 	}
 
 	engine.sugar.Debugf("Instance terminated: %s", im.ID().String())
@@ -622,8 +621,8 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 	im.instance.Instance.Status = status
 	im.updateArgs.Status = &im.instance.Instance.Status
 
-	engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), "Workflow %s completed.", database.GetWorkflow(im.instance.Instance.WorkflowPath))
-	engine.logger.Infof(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "Workflow %s completed.", database.GetWorkflow(im.instance.Instance.WorkflowPath))
+	// engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), "Workflow %s completed.", database.GetWorkflow(im.instance.Instance.WorkflowPath))
+	// engine.logger.Infof(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "Workflow %s completed.", database.GetWorkflow(im.instance.Instance.WorkflowPath))
 
 	defer engine.pubsub.NotifyInstance(im.instance.Instance.ID)
 	defer engine.pubsub.NotifyInstances(im.Namespace())
@@ -744,7 +743,7 @@ func (engine *engine) retryWakeup(data []byte) {
 		return
 	}
 
-	engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), "Waking up to retry.")
+	// engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), "Waking up to retry.")
 
 	engine.sugar.Debugf("Handling retry wakeup: %s", this())
 
@@ -897,12 +896,12 @@ func (engine *engine) SetMemory(ctx context.Context, im *instanceMemory, x inter
 
 func (engine *engine) reportInstanceCrashed(ctx context.Context, im *instanceMemory, typ, code string, err error) {
 	engine.sugar.Errorf("Instance failed with %s error '%s': %v", typ, code, err)
-	engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), "Instance failed with %s error '%s': %s", typ, code, err.Error())
-	engine.logger.Errorf(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "Workflow failed %s Instance %s crashed with %s error '%s': %s", database.GetWorkflow(im.instance.Instance.WorkflowPath), im.GetInstanceID(), typ, code, err.Error())
+	// engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), "Instance failed with %s error '%s': %s", typ, code, err.Error())
+	// engine.logger.Errorf(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "Workflow failed %s Instance %s crashed with %s error '%s': %s", database.GetWorkflow(im.instance.Instance.WorkflowPath), im.GetInstanceID(), typ, code, err.Error())
 }
 
 func (engine *engine) UserLog(ctx context.Context, im *instanceMemory, msg string, a ...interface{}) {
-	engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), msg, a...)
+	// engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), msg, a...)
 
 	if attr := im.instance.Settings.LogToEvents; attr != "" {
 		s := fmt.Sprintf(msg, a...)
@@ -928,7 +927,7 @@ func (engine *engine) UserLog(ctx context.Context, im *instanceMemory, msg strin
 func (engine *engine) logRunState(ctx context.Context, im *instanceMemory, wakedata []byte, err error) {
 	engine.sugar.Debugf("Running state logic -- %s:%v (%s) (%v)", im.ID().String(), im.Step(), im.logic.GetID(), time.Now().UTC())
 	if im.GetMemory() == nil && len(wakedata) == 0 && err == nil {
-		engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), "Running state logic (step:%v) -- %s", im.Step(), im.logic.GetID())
+		// engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), "Running state logic (step:%v) -- %s", im.Step(), im.logic.GetID())
 	}
 }
 
