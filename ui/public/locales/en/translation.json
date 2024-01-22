@@ -209,9 +209,6 @@
         "editor": {
           "unsavedNote": "unsaved changes",
           "theresOneIssue": "There is an issue",
-          "revisionsBtn": "Revisions",
-          "makeRevision": "Make Revision",
-          "revertToPrevious": "Revert to previous revision",
           "runBtn": "Run",
           "saveBtn": "Save",
           "layout": {
