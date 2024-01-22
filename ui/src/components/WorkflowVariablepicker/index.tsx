@@ -1,4 +1,4 @@
-import { FC, Fragment, PropsWithChildren, useState } from "react";
+import { Fragment, useState } from "react";
 import {
   Variablepicker,
   VariablepickerError,
@@ -8,52 +8,20 @@ import {
   VariablepickerSeparator,
 } from "~/design/VariablePicker";
 
-import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
 import Input from "~/design/Input";
 import { VarSchema } from "~/api/variables/schema";
-import { analyzePath } from "~/util/router/utils";
 import { useNamespace } from "~/util/store/namespace";
-import { useNodeContent } from "~/api/tree/query/node";
 import { useTranslation } from "react-i18next";
 import { useWorkflowVariables } from "~/api/tree/query/variables";
 import { z } from "zod";
 
-const variableWithoutChecksum = VarSchema.omit({ checksum: true });
+const variableWithoutChecksumAndSize = VarSchema.omit({
+  checksum: true,
+  size: true,
+});
 
-type variableType = z.infer<typeof variableWithoutChecksum>;
-const convertFileToPath = (string?: string) =>
-  analyzePath(string).parent?.absolute ?? "/";
-
-const defaultPath = "/";
-
-const WorkflowVariables: FC<PropsWithChildren> = ({ children }) => {
-  const [path, setPath] = useState(convertFileToPath(defaultPath));
-
-  const namespace = useNamespace() ?? "/";
-  const { data, isError } = useNodeContent({
-    path,
-    namespace,
-  });
-
-  const results = data?.children?.results ?? [];
-  const workflows = data?.children?.results.filter(
-    (element) => element.type === "workflow"
-  );
-
-  return (
-    <Fragment>
-      {workflows &&
-        workflows.map((file) => (
-          <>
-            <Fragment key={file.name}>{file.name}</Fragment>
-            {children}
-            <br />
-          </>
-        ))}
-    </Fragment>
-  );
-};
+type variableType = z.infer<typeof variableWithoutChecksumAndSize>;
 
 const WorkflowVariablePicker = ({
   namespace: givenNamespace,
@@ -64,45 +32,69 @@ const WorkflowVariablePicker = ({
   namespace?: string;
   workflow: string;
   defaultVariable?: variableType;
-  defaultPath?: string;
   onChange: (variable: variableType | undefined) => void;
+  //onChange?: (event: React.FormEvent) => void;
 }) => {
   const { t } = useTranslation();
 
-  const defaultNamespace = useNamespace();
+  //   const defaultNamespace = useNamespace();
 
-  const namespace = givenNamespace ? givenNamespace : defaultNamespace;
-  if (!namespace) {
-    throw new Error("namespace is undefined");
-  }
-
-  // BEFORE for Testing
-  // const path = "workflow.yaml";
-
+  const namespace = givenNamespace ? givenNamespace : undefined;
   const path = workflow;
 
-  const { data, isError } = useWorkflowVariables({ path });
+  console.log("ns  " + namespace);
+  console.log("p " + path);
+
+  //   if (!namespace) {
+  //     throw new Error("namespace is undefined");
+  //   }
+
+  //const path = workflow ? workflow : "/";
+
+  const { data, isError } = useWorkflowVariables({ path, namespace });
+
+  if (isError) {
+    throw new Error("path not found");
+  }
 
   const variableList = data?.variables.results
     ? data.variables.results
     : undefined;
 
+  if (!variableList) {
+    throw new Error("namespace is undefined");
+  }
+
   const [inputValue, setInput] = useState(
     defaultVariable ? defaultVariable.name : ""
   );
-
-  const [index, setIndex] = useState(0);
 
   const [variable, setVariable] = useState(
     defaultVariable ? defaultVariable : undefined
   );
 
-  const buttonText = "Browse Variables";
+  const [index, setIndex] = useState(0);
+
+  const emptyVariable: variableType = {
+    name: "",
+    createdAt: "",
+    updatedAt: "",
+    mimeType: "",
+  };
 
   const pathNotFound = isError;
 
+  const handleIt = (value: string) => {
+    setInput(value);
+    setIndex(-1);
+    emptyVariable.name = value;
+    setVariable(emptyVariable);
+    onChange(emptyVariable);
+  };
+
   const handleChanges = (index: number) => {
     setIndex(index);
+
     if (
       variableList != undefined &&
       variableList[index] != undefined &&
@@ -111,17 +103,11 @@ const WorkflowVariablePicker = ({
       const newVar = variableList?.[index];
       const newVarName = variableList?.[index]?.name;
 
-      console.log("newVar " + newVar);
-      console.log("newVarName " + newVarName);
-
-      const test = variableList?.[index];
-      console.log("index is " + test);
-
       newVarName === undefined ? setInput(inputValue) : setInput(newVarName);
       newVar === undefined ? onChange(undefined) : onChange(newVar);
       variableList?.[index] != undefined
         ? setVariable(variableList[index])
-        : undefined;
+        : setVariable(emptyVariable);
     }
   };
 
@@ -129,7 +115,9 @@ const WorkflowVariablePicker = ({
     <>
       <ButtonBar>
         {pathNotFound ? (
-          <VariablepickerError buttonText={buttonText}>
+          <VariablepickerError
+            buttonText={t("components.workflowVariablepicker.buttonText")}
+          >
             <VariablepickerHeading>
               {t("components.workflowVariablepicker.title", { path })}
             </VariablepickerHeading>
@@ -143,7 +131,9 @@ const WorkflowVariablePicker = ({
         ) : (
           <>
             {!variableList || variableList.length == 0 ? (
-              <VariablepickerError buttonText={buttonText}>
+              <VariablepickerError
+                buttonText={t("components.workflowVariablepicker.buttonText")}
+              >
                 <VariablepickerHeading>
                   {t("components.workflowVariablepicker.title", { path })}
                 </VariablepickerHeading>
@@ -158,7 +148,7 @@ const WorkflowVariablePicker = ({
               </VariablepickerError>
             ) : (
               <Variablepicker
-                buttonText={buttonText}
+                buttonText={t("components.workflowVariablepicker.buttonText")}
                 onChange={onChange}
                 onValueChange={(index) => handleChanges(index)}
               >
@@ -182,21 +172,10 @@ const WorkflowVariablePicker = ({
           placeholder={t("components.workflowVariablepicker.placeholder")}
           value={inputValue}
           onChange={(e) => {
-            setInput(e.target.value);
-            setIndex(-1);
+            handleIt(e.target.value);
           }}
         />
       </ButtonBar>
-      <Button variant="outline">{variable?.createdAt}</Button>
-      <Button variant="outline">{variable?.mimeType}</Button>
-      <br></br>
-      <Button>{inputValue}</Button>
-      <br></br>
-      <br></br>
-      <Button>{JSON.stringify(variable)}</Button>
-      <br></br>
-      <Button>{index}</Button>
-      <br></br>
     </>
   );
 };

@@ -27,12 +27,27 @@ const fetchVariables = async ({
     },
   });
 
-export const useWorkflowVariables = ({ path }: { path: string }) => {
+export const useWorkflowVariables = ({
+  path,
+  namespace: givenNamespace,
+}: {
+  path: string;
+  namespace?: string;
+}) => {
   const apiKey = useApiKey();
-  const namespace = useNamespace();
+  const defaultNamespace = useNamespace();
 
+  console.log("namespace " + givenNamespace);
+  console.log("path " + path);
+
+  const namespace = givenNamespace ? givenNamespace : defaultNamespace;
+  console.log("not " + !namespace);
   if (!namespace) {
     throw new Error("namespace is undefined");
+  }
+
+  if (!path) {
+    throw new Error("path is undefined");
   }
 
   return useQuery({

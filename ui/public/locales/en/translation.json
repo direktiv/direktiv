@@ -1250,11 +1250,10 @@
       "buttonText": "Browse Variables",
       "placeholder": "No Variable selected",
       "emptyDirectory": {
-        "title": "The directory \"{{path}}\" is empty."
+        "title": "No Variables found in \"{{path}}\" "
       },
       "error": {
-        "title": "The path \"{{path}}\" was not found.",
-        "linkText": "Please make sure the namespace exists."
+        "title": "The directory \"{{path}}\" was not found."
       }
     },
     "workflowVariablepicker": {
@@ -1265,8 +1264,7 @@
         "title": "No Variables found in \"{{path}}\" "
       },
       "error": {
-        "title": "The workflow \"{{path}}\" was not found.",
-        "linkText": "Please make sure the namespace exists."
+        "title": "The workflow \"{{path}}\" was not found."
       }
     },
     "filepicker": {

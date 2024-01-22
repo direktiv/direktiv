@@ -20,20 +20,25 @@ import { z } from "zod";
 type variableType = z.infer<typeof VarSchema>;
 
 const NamespaceVariablePicker = ({
-  namespace,
+  namespace: givenNamespace,
   defaultVariable,
   onChange,
 }: {
   namespace?: string;
   defaultVariable?: variableType;
+  //onChange: (value: number) => void;
   onChange: (variable: variableType | undefined) => void;
+  //onChange?: (event: React.FormEvent) => void;
 }) => {
   const { t } = useTranslation();
+  const defaultNamespace = useNamespace();
+  defaultNamespace;
+  const namespace = givenNamespace ? givenNamespace : defaultNamespace;
 
-  const path = useNamespace();
-
+  console.log("namespace " + namespace);
   const { data, isError } = useVars({ namespace });
-
+  const path = namespace;
+  console.log("path " + path);
   const variableList = data?.variables.results
     ? data.variables.results
     : undefined;
@@ -48,46 +53,64 @@ const NamespaceVariablePicker = ({
     defaultVariable ? defaultVariable : undefined
   );
 
-  const buttonText = "Browse Variables";
+  const emptyVariable: variableType = {
+    name: "",
+    createdAt: "123",
+    updatedAt: "",
+    mimeType: "",
+    checksum: "",
+    size: "",
+  };
 
   const pathNotFound = isError;
   const emptyVariableList = !isError && !variableList?.length;
 
   const varname = variable ? variable.name : "test";
 
-  console.log("variable " + varname);
-  console.log("index " + index);
-  console.log("inputValue " + inputValue);
-
   const handleChanges = (index: number) => {
     setIndex(index);
+    console.log("here");
     if (
       variableList != undefined &&
       variableList[index] != undefined &&
       variableList?.[index]?.name != undefined
     ) {
-      const newVar = variableList?.[index];
-      const newVarName = variableList?.[index]?.name;
+      const newVariable = variableList[index];
 
-      console.log("newVar " + newVar);
-      console.log("newVarName " + newVarName);
+      if (newVariable === undefined) {
+        throw new Error("Variable is undefined");
+      }
+      console.log("There");
+      // const newVarName = variableList?.[index]?.name;
 
-      const test = variableList?.[index];
-      console.log("index is " + test);
+      // const test = variableList?.[index];
 
-      newVarName === undefined ? setInput(inputValue) : setInput(newVarName);
-      newVar === undefined ? onChange(undefined) : onChange(newVar);
-      variableList?.[index] != undefined
-        ? setVariable(variableList[index])
-        : undefined;
+      setInput(newVariable.name);
+      setVariable(newVariable);
+
+      // newVarName === undefined ? setInput(inputValue) : setInput(newVarName);
+      // newVar === undefined ? onChange(undefined) : onChange(newVar);
+      // variableList?.[index] != undefined
+      //   ? setVariable(variableList[index])
+      //   : undefined;
     }
+  };
+
+  const handleIt = (value: string) => {
+    setInput(value);
+    setIndex(-1);
+    emptyVariable.name = value;
+    setVariable(emptyVariable);
+    onChange(emptyVariable);
   };
 
   return (
     <>
       <ButtonBar>
         {pathNotFound ? (
-          <VariablepickerError buttonText={buttonText}>
+          <VariablepickerError
+            buttonText={t("components.namespaceVariablepicker.buttonText")}
+          >
             <VariablepickerHeading>
               {t("components.namespaceVariablepicker.title", { path })}
             </VariablepickerHeading>
@@ -101,7 +124,9 @@ const NamespaceVariablePicker = ({
         ) : (
           <>
             {!variableList || variableList.length == 0 ? (
-              <VariablepickerError buttonText={buttonText}>
+              <VariablepickerError
+                buttonText={t("components.namespaceVariablepicker.buttonText")}
+              >
                 <VariablepickerHeading>
                   {t("components.namespaceVariablepicker.title", { path })}
                 </VariablepickerHeading>
@@ -117,8 +142,8 @@ const NamespaceVariablePicker = ({
               </VariablepickerError>
             ) : (
               <Variablepicker
-                buttonText={buttonText}
-                onChange={onChange}
+                buttonText={t("components.namespaceVariablepicker.buttonText")}
+                onChange={(e) => onChange(variable)}
                 onValueChange={(index) => handleChanges(index)}
               >
                 <VariablepickerHeading>
@@ -141,8 +166,7 @@ const NamespaceVariablePicker = ({
           placeholder={t("components.namespaceVariablepicker.placeholder")}
           value={inputValue}
           onChange={(e) => {
-            setInput(e.target.value);
-            setIndex(-1);
+            handleIt(e.target.value);
           }}
         />
       </ButtonBar>

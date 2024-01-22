@@ -23,7 +23,7 @@ const fetchVars = async ({
 
 export const useVars = ({
   namespace: givenNamespace,
-}: { namespace?: string } = {}) => {
+}: { namespace?: string | null } = {}) => {
   const apiKey = useApiKey();
   const defaultNamespace = useNamespace();
 
