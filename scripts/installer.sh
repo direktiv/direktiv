@@ -189,7 +189,7 @@ helm_install_db_operator() {
 }
 
 apply_database_configuration() {
-    output=`kubectl apply -f https://raw.githubusercontent.com/direktiv/direktiv/main/kubernetes/install/db/basic.yaml 2>&1 | tee /dev/fd/3`
+    output=`kubectl apply -f ./scripts/kubernetes/install/db/basic.yaml 2>&1 | tee /dev/fd/3`
     assert_success $? "Failed to apply database configuration" "$output"
 
     # TODO: customizable database configuration
@@ -310,9 +310,9 @@ create_knative_namespace() {
 }
 
 apply_knative_configuration() {
-    conf="kubernetes/install/knative/basic.yaml"
+    conf="./scripts/kubernetes/install/knative/basic.yaml"
     if [ "$DEV" != "true" ]; then 
-        conf="https://raw.githubusercontent.com/direktiv/direktiv/main/${conf}"
+        conf="./scripts/kubernetes/install/knative/basic.yaml/${conf}"
     fi
 
     log "Applying knative configuration from: ${conf}"

@@ -161,37 +161,6 @@ message DeleteRevisionRequest {
 	string revision = 3;
 }
 
-message Route {
-	string ref = 1;
-	int32 weight = 2;
-}
-
-message RouterRequest {
-	string namespace = 1;
-	string path = 2;
-}
-
-message RouterResponse {
-	string namespace = 1;
-	Node node = 2;
-	bool live = 3;
-	repeated Route routes = 4;
-}
-
-message EditRouterRequest {
-	string namespace = 1;
-	string path = 2;
-	bool live = 3;
-	repeated Route route = 4;
-}
-
-message EditRouterResponse {
-	string namespace = 1;
-	Node node = 2;
-	bool live = 3;
-	repeated Route routes = 4;
-}
-
 message ValidateRefRequest {
 	string namespace = 1;
 	string path = 2;
@@ -205,28 +174,4 @@ message ValidateRefResponse {
 	bool invalid = 4;
 	string reason = 5;
 	bool compiles = 6;
-}
-
-message ValidateRouterRequest {
-	string namespace = 1;
-	string path = 2;
-}
-
-message ValidateRouterResponse {
-	string namespace = 1;
-	string path = 2;
-	bool invalid = 3;
-	string reason = 4;
-}
-
-message ToggleWorkflowRequest {
-	string namespace = 1;
-	string path = 2;
-	bool live = 3;
-}
-
-message SetWorkflowEventLoggingRequest {
-	string namespace = 1;
-	string path = 2;
-	string logger = 3;
 }

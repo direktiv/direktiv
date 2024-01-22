@@ -214,17 +214,6 @@ describe('Test basic directory operations', () => {
         })
     })
 
-    it(`should read the workflow router`, async () => {
-        var readRouterResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/${workflowName}?op=router`)
-        expect(readRouterResponse.statusCode).toEqual(200)
-        expect(readRouterResponse.body).toMatchObject({
-            namespace: namespaceName,
-            node: expectedChildNodeObject,
-            live: true,
-            routes: [],
-        })
-    })
-
     // TODO: tags pagination / filtering / ordering
     // TODO: refs pagination / filtering / ordering
     // TODO: revisions stuff pagination / filtering / ordering
