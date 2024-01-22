@@ -25,6 +25,7 @@ const NodeSchema = z.object({
 export const NodeListSchema = z.object({
   namespace: z.string(),
   node: NodeSchema,
+  source: z.string().optional(), // only for workflows
   children: z
     .object({
       pageInfo: PageinfoSchema,
