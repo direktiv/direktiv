@@ -41,7 +41,7 @@ import SettingsPage from "~/pages/namespace/Settings";
 import TokensPage from "~/pages/namespace/Permissions/Tokens";
 import TreePage from "~/pages/namespace/Explorer/Tree";
 import WorkflowPage from "~/pages/namespace/Explorer/Workflow";
-import WorkflowPageActive from "~/pages/namespace/Explorer/Workflow/Active";
+import WorkflowPageActive from "~/pages/namespace/Explorer/Workflow/Edit";
 import WorkflowPageOverview from "~/pages/namespace/Explorer/Workflow/Overview";
 import WorkflowPageServices from "~/pages/namespace/Explorer/Workflow/Services";
 import WorkflowPageSettings from "~/pages/namespace/Explorer/Workflow/Settings";

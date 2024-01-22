@@ -1,7 +1,7 @@
 import { FC, useState } from "react";
 
 import Button from "~/design/Button";
-import { CodeEditor } from "../Workflow/Active/CodeEditor";
+import { CodeEditor } from "../Workflow/Edit/CodeEditor";
 import { Save } from "lucide-react";
 import ServiceHelp from "./ServiceHelp";
 import { useNamespace } from "~/util/store/namespace";
