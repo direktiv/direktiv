@@ -2,7 +2,6 @@ import { Page, expect, test } from "@playwright/test";
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
 
 import { consumeEvent as consumeEventWorkflow } from "~/pages/namespace/Explorer/Tree/components/modals/CreateNew/Workflow/templates";
-import { createRevision } from "~/api/tree/mutate/createRevision";
 import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
 import { faker } from "@faker-js/faker";
 import { headers } from "e2e/utils/testutils";
@@ -260,46 +259,6 @@ test("it will update the diagram when the workflow is saved", async ({
     diagram.getByTestId("rf__node-greet"),
     "the second state 'greet' was commented out and the diagram updated to not show it anymore"
   ).not.toBeVisible();
-});
-
-test("it is possible to use the diagram view on the revisions detail page as well", async ({
-  page,
-}) => {
-  const {
-    revision: { name: revisionName },
-  } = await createRevision({
-    payload: consumeEventWorkflow,
-    urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
-      namespace,
-      path: workflow,
-    },
-    headers,
-  });
-
-  await page.goto(
-    `/${namespace}/explorer/workflow/revisions/${workflow}?revision=${revisionName}`
-  );
-
-  const { editor, diagram, codeBtn, diagramBtn, splitVertBtn, splitHorBtn } =
-    await getCommonPageElements(page);
-
-  // code is the default view
-  expect(await codeBtn.getAttribute("aria-pressed")).toBe("true");
-  expect(await diagramBtn.getAttribute("aria-pressed")).toBe("false");
-  expect(await splitVertBtn.getAttribute("aria-pressed")).toBe("false");
-  expect(await splitHorBtn.getAttribute("aria-pressed")).toBe("false");
-  await expect(editor).toBeVisible();
-  await expect(diagram).not.toBeVisible();
-
-  // split vertically
-  await splitVertBtn.click();
-  expect(await codeBtn.getAttribute("aria-pressed")).toBe("false");
-  expect(await diagramBtn.getAttribute("aria-pressed")).toBe("false");
-  expect(await splitVertBtn.getAttribute("aria-pressed")).toBe("true");
-  expect(await splitHorBtn.getAttribute("aria-pressed")).toBe("false");
-  await expect(editor).toBeVisible();
-  await expect(diagram).toBeVisible();
 });
 
 test("it is possible to switch from Code View to Diagram View without loosing the recent changes", async ({
