@@ -22,7 +22,7 @@ test.afterEach(async () => {
 });
 
 const actionNavigateToActiveWorkflow = async (page: Page) => {
-  await page.goto(`${namespace}/explorer/workflow/active/${workflow}`);
+  await page.goto(`${namespace}/explorer/workflow/edit/${workflow}`);
 };
 
 const testSaveWorkflow = async (page: Page) => {
@@ -101,7 +101,7 @@ test("it is possible to navigate to the active revision", async ({ page }) => {
   ).toBeVisible();
 
   await expect(page, "the workflow is reflected in the url").toHaveURL(
-    `${namespace}/explorer/workflow/active/${workflow}`
+    `${namespace}/explorer/workflow/edit/${workflow}`
   );
 });
 

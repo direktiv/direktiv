@@ -315,7 +315,7 @@ export const pages: PageType & EnterprisePageType = {
         path = params.path.startsWith("/") ? params.path : `/${params.path}`;
       }
       const subfolder: Record<ExplorerSubpages, string> = {
-        workflow: "workflow/active", //  TODO: rename path
+        workflow: "workflow/edit",
         "workflow-overview": "workflow/overview",
         "workflow-settings": "workflow/settings",
         "workflow-services": "workflow/services",
@@ -397,7 +397,7 @@ export const pages: PageType & EnterprisePageType = {
           handle: { isWorkflowPage: true },
           children: [
             {
-              path: "active/*",
+              path: "edit/*",
               element: <WorkflowPageActive />,
               handle: { isActivePage: true },
             },
