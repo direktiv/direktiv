@@ -20,7 +20,7 @@ const ServiceEditor: FC<{
   const [error, setError] = useState<string | undefined>();
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
-  const serviceDataFromServer = atob(data?.revision?.source ?? "");
+  const serviceDataFromServer = atob(data?.source ?? "");
 
   const { mutate: updateService, isLoading } = useUpdateWorkflow({
     onError: (error) => {

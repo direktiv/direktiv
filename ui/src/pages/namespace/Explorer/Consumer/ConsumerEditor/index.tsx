@@ -26,7 +26,7 @@ type ConsumerEditorProps = {
 const ConsumerEditor: FC<ConsumerEditorProps> = ({ data, path }) => {
   const { t } = useTranslation();
   const theme = useTheme();
-  const fileContentFromServer = atob(data.revision?.source ?? "");
+  const fileContentFromServer = atob(data.source ?? "");
   const [consumerConfig, consumerConfigError] = serializeConsumerFile(
     fileContentFromServer
   );

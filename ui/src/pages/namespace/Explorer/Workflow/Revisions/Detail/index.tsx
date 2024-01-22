@@ -32,7 +32,7 @@ const WorkflowRevisionsPage = () => {
   const { data } = useNodeContent({ path, revision: selectedRevision });
   const { data: tags } = useNodeTags({ path });
 
-  const workflowData = atob(data?.revision?.source ?? "");
+  const workflowData = atob(data?.source ?? "");
   const isTag =
     tags?.results?.some((tag) => tag.name === selectedRevision) ?? false;
   const Icon = isTag ? Tag : GitMerge;

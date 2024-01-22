@@ -39,7 +39,7 @@ const WorkflowEditor: FC<{
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const { refetch: updateNotificationBell } = useNamespaceLinting();
 
-  const workflowDataFromServer = atob(data?.revision?.source ?? "");
+  const workflowDataFromServer = atob(data?.source ?? "");
 
   const { mutate: updateWorkflow, isLoading } = useUpdateWorkflow({
     onError: (error) => {

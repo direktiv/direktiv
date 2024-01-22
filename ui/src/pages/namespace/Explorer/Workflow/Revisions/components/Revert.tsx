@@ -80,7 +80,7 @@ const Revert = ({
       },
     });
 
-  const workflowData = atob(data?.revision?.source ?? "");
+  const workflowData = atob(data?.source ?? "");
   const isLoading = !isSuccess || updateIsLoading;
 
   return (

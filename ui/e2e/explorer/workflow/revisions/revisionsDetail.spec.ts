@@ -144,7 +144,7 @@ test("it is possible to revert a revision within the details page", async ({
   // check the content of the latest revision
   await page.goto(`/${namespace}/explorer/workflow/active/${workflow}`);
 
-  let expectedEditorContent = atob(latestRevisions?.revision?.source);
+  let expectedEditorContent = atob(latestRevisions?.source);
   const textArea = page.getByRole("textbox");
   await expect
     .poll(
@@ -159,7 +159,7 @@ test("it is possible to revert a revision within the details page", async ({
     { waitUntil: "networkidle" }
   );
 
-  expectedEditorContent = atob(secondRevision?.revision?.source);
+  expectedEditorContent = atob(secondRevision?.source);
 
   // if this step fails, there is a separate test (currently skipped) that you can
   // use to troubleshoot: "it is possible to view the content of an older revision"
