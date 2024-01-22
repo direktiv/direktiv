@@ -176,7 +176,7 @@ test("it is possible to create a workflow", async ({ page }) => {
   // assert it has created and navigated to workflow
   await expect(
     page,
-    "it creates the workflow and loads the active revision page"
+    "it creates the workflow and loads the edit page"
   ).toHaveURL(`${namespace}/explorer/workflow/edit/${filename}`);
 
   await expect(
@@ -237,7 +237,7 @@ test("it is possible to create a workflow without providing the .yaml file exten
   // assert it has created and navigated to workflow
   await expect(
     page,
-    "it creates the workflow and loads the active revision page"
+    "it creates the workflow and loads the active edit page"
   ).toHaveURL(
     `${namespace}/explorer/workflow/edit/${filenameWithoutExtension}.yaml`
   );
@@ -282,7 +282,7 @@ test("when creating a workflow, the name (before extension) may be the same as a
   // assert it has created and navigated to workflow
   await expect(
     page,
-    "it creates the workflow and loads the active revision page"
+    "it creates the workflow and loads the edit page"
   ).toHaveURL(`${namespace}/explorer/workflow/edit/${directoryName}.yaml`);
 
   await expect(
