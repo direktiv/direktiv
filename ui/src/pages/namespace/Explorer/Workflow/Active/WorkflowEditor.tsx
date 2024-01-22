@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import { FC, useEffect, useState } from "react";
-import { Play, Save, Tag } from "lucide-react";
+import { Play, Save } from "lucide-react";
 
 import Button from "~/design/Button";
 import { CodeEditor } from "./CodeEditor";
@@ -74,10 +74,6 @@ const WorkflowEditor: FC<{
 
   return (
     <div className="relative flex grow flex-col space-y-4 p-5">
-      <h3 className="flex items-center gap-x-2 font-bold">
-        <Tag className="h-5" />
-        {t("pages.explorer.workflow.headline")}
-      </h3>
       <WorkspaceLayout
         layout={currentLayout}
         diagramComponent={

@@ -185,7 +185,6 @@
           "settings": "Settings",
           "services": "Services"
         },
-        "headline": "Latest",
         "updated": "Updated {{relativeTime}} ago",
         "runBtn": "Run",
         "apiCommands": {
