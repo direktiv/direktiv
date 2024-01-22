@@ -68,7 +68,7 @@ const testSaveWorkflow = async (page: Page) => {
   ).toHaveText("Updated a few seconds ago");
 };
 
-test("it is possible to navigate to the active revision", async ({ page }) => {
+test("it is possible to navigate to the code editor ", async ({ page }) => {
   await page.goto("/");
   await expect(
     page.getByTestId("breadcrumb-namespace"),
