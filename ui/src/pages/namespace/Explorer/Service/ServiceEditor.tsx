@@ -55,7 +55,8 @@ const ServiceEditor: FC<{
       <CodeEditor
         value={serviceDataFromServer}
         onValueChange={onEditorContentUpdate}
-        createdAt={data.revision?.createdAt}
+        // TODO: may remove this
+        createdAt={data.node.createdAt}
         error={error}
         hasUnsavedChanges={hasUnsavedChanges}
         onSave={onSave}
