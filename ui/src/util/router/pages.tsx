@@ -43,7 +43,6 @@ import TreePage from "~/pages/namespace/Explorer/Tree";
 import WorkflowPage from "~/pages/namespace/Explorer/Workflow";
 import WorkflowPageActive from "~/pages/namespace/Explorer/Workflow/Active";
 import WorkflowPageOverview from "~/pages/namespace/Explorer/Workflow/Overview";
-import WorkflowPageRevisions from "~/pages/namespace/Explorer/Workflow/Revisions";
 import WorkflowPageServices from "~/pages/namespace/Explorer/Workflow/Services";
 import WorkflowPageSettings from "~/pages/namespace/Explorer/Workflow/Settings";
 import { checkHandlerInMatcher as checkHandler } from "./utils";
@@ -63,7 +62,6 @@ type DefaultPageSetup = Record<
 
 export type ExplorerSubpages =
   | "workflow"
-  | "workflow-revisions"
   | "workflow-overview"
   | "workflow-settings"
   | "workflow-services"
@@ -73,15 +71,7 @@ export type ExplorerSubpages =
 
 type ExplorerSubpagesParams =
   | {
-      subpage?: Exclude<
-        ExplorerSubpages,
-        "workflow-revisions" | "workflow-services"
-      >;
-    }
-  // workflow-revisions has an optional revision param
-  | {
-      subpage: "workflow-revisions";
-      revision?: string;
+      subpage?: Exclude<ExplorerSubpages, "workflow-services">;
     }
   // workflow-services must has an optional serviceId param
   | {
@@ -101,12 +91,10 @@ type ExplorerPageSetup = Record<
     useParams: () => {
       namespace: string | undefined;
       path: string | undefined;
-      revision: string | undefined;
       isExplorerPage: boolean;
       isTreePage: boolean;
       isWorkflowPage: boolean;
       isWorkflowActivePage: boolean;
-      isWorkflowRevPage: boolean;
       isWorkflowOverviewPage: boolean;
       isWorkflowSettingsPage: boolean;
       isWorkflowServicesPage: boolean;
@@ -327,8 +315,7 @@ export const pages: PageType & EnterprisePageType = {
         path = params.path.startsWith("/") ? params.path : `/${params.path}`;
       }
       const subfolder: Record<ExplorerSubpages, string> = {
-        workflow: "workflow/active",
-        "workflow-revisions": "workflow/revisions",
+        workflow: "workflow/active", //  TODO: rename path
         "workflow-overview": "workflow/overview",
         "workflow-settings": "workflow/settings",
         "workflow-services": "workflow/services",
@@ -338,10 +325,6 @@ export const pages: PageType & EnterprisePageType = {
       };
 
       let searchParamsObj;
-
-      if (params.subpage === "workflow-revisions" && params.revision) {
-        searchParamsObj = { revision: params.revision };
-      }
 
       if (params.subpage === "workflow-services" && params.serviceId) {
         searchParamsObj = {
@@ -379,7 +362,6 @@ export const pages: PageType & EnterprisePageType = {
         isEndpointPage ||
         isConsumerPage;
       const isWorkflowActivePage = checkHandler(fourthLvl, "isActivePage");
-      const isWorkflowRevPage = checkHandler(fourthLvl, "isRevisionsPage");
       const isWorkflowOverviewPage = checkHandler(fourthLvl, "isOverviewPage");
       const isWorkflowSettingsPage = checkHandler(fourthLvl, "isSettingsPage");
       const isWorkflowServicesPage = checkHandler(fourthLvl, "isServicesPage");
@@ -388,11 +370,9 @@ export const pages: PageType & EnterprisePageType = {
         path: isExplorerPage ? path : undefined,
         namespace: isExplorerPage ? namespace : undefined,
         isExplorerPage,
-        revision: searchParams.get("revision") ?? undefined,
         isTreePage,
         isWorkflowPage,
         isWorkflowActivePage,
-        isWorkflowRevPage,
         isWorkflowOverviewPage,
         isWorkflowSettingsPage,
         isWorkflowServicesPage,
@@ -420,11 +400,6 @@ export const pages: PageType & EnterprisePageType = {
               path: "active/*",
               element: <WorkflowPageActive />,
               handle: { isActivePage: true },
-            },
-            {
-              path: "revisions/*",
-              element: <WorkflowPageRevisions />,
-              handle: { isRevisionsPage: true },
             },
             {
               path: "overview/*",
