@@ -1,7 +1,6 @@
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import {
   GitCommit,
-  GitMerge,
   Layers,
   PieChart,
   Play,
@@ -35,7 +34,6 @@ const Header: FC = () => {
   const {
     path,
     isWorkflowActivePage,
-    isWorkflowRevPage,
     isWorkflowOverviewPage,
     isWorkflowSettingsPage,
     isWorkflowServicesPage,
@@ -63,17 +61,6 @@ const Header: FC = () => {
         namespace,
         path,
         subpage: "workflow",
-      }),
-    },
-    {
-      value: "revisions",
-      active: isWorkflowRevPage,
-      icon: <GitMerge aria-hidden="true" />,
-      title: t("pages.explorer.workflow.menu.revisions"),
-      link: pages.explorer.createHref({
-        namespace,
-        path,
-        subpage: "workflow-revisions",
       }),
     },
     {

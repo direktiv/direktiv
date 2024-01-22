@@ -180,7 +180,6 @@
       "workflow": {
         "menu": {
           "activeRevision": "Active Revision",
-          "revisions": "Revisions",
           "overview": "Overview",
           "settings": "Settings",
           "services": "Services"
