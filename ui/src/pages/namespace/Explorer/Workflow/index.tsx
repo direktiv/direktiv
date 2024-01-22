@@ -33,7 +33,7 @@ const Header: FC = () => {
   const { t } = useTranslation();
   const {
     path,
-    isWorkflowActivePage,
+    isWorkflowEditorPage,
     isWorkflowOverviewPage,
     isWorkflowSettingsPage,
     isWorkflowServicesPage,
@@ -53,8 +53,8 @@ const Header: FC = () => {
 
   const tabs = [
     {
-      value: "activeRevision",
-      active: isWorkflowActivePage,
+      value: "editor",
+      active: isWorkflowEditorPage,
       icon: <Code2 aria-hidden="true" />,
       title: t("pages.explorer.workflow.menu.fileContent"),
       link: pages.explorer.createHref({

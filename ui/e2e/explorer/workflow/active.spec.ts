@@ -96,7 +96,7 @@ test("it is possible to navigate to the code editor ", async ({ page }) => {
   await page.getByTestId(`explorer-item-link-${workflow}`).click();
 
   await expect(
-    page.getByTestId("workflow-tabs-trg-activeRevision"),
+    page.getByTestId("workflow-tabs-trg-editor"),
     "screen should have activeRevision tab"
   ).toBeVisible();
 

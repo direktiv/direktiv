@@ -94,7 +94,7 @@ type ExplorerPageSetup = Record<
       isExplorerPage: boolean;
       isTreePage: boolean;
       isWorkflowPage: boolean;
-      isWorkflowActivePage: boolean;
+      isWorkflowEditorPage: boolean;
       isWorkflowOverviewPage: boolean;
       isWorkflowSettingsPage: boolean;
       isWorkflowServicesPage: boolean;
@@ -361,7 +361,7 @@ export const pages: PageType & EnterprisePageType = {
         isServicePage ||
         isEndpointPage ||
         isConsumerPage;
-      const isWorkflowActivePage = checkHandler(fourthLvl, "isActivePage");
+      const isWorkflowEditorPage = checkHandler(fourthLvl, "isEditorPage");
       const isWorkflowOverviewPage = checkHandler(fourthLvl, "isOverviewPage");
       const isWorkflowSettingsPage = checkHandler(fourthLvl, "isSettingsPage");
       const isWorkflowServicesPage = checkHandler(fourthLvl, "isServicesPage");
@@ -372,7 +372,7 @@ export const pages: PageType & EnterprisePageType = {
         isExplorerPage,
         isTreePage,
         isWorkflowPage,
-        isWorkflowActivePage,
+        isWorkflowEditorPage,
         isWorkflowOverviewPage,
         isWorkflowSettingsPage,
         isWorkflowServicesPage,
@@ -399,7 +399,7 @@ export const pages: PageType & EnterprisePageType = {
             {
               path: "edit/*",
               element: <WorkflowPageActive />,
-              handle: { isActivePage: true },
+              handle: { isEditorPage: true },
             },
             {
               path: "overview/*",
