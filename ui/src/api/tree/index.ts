@@ -18,30 +18,6 @@ export const treeKeys = {
         revision,
       },
     ] as const,
-  revisionsList: (
-    namespace: string,
-    { apiKey, path }: { apiKey?: string; path?: string }
-  ) =>
-    [
-      {
-        scope: "tree-revisions-list",
-        apiKey,
-        namespace,
-        path: forceLeadingSlash(path ?? "/"),
-      },
-    ] as const,
-  tagsList: (
-    namespace: string,
-    { apiKey, path }: { apiKey?: string; path?: string }
-  ) =>
-    [
-      {
-        scope: "tree-tags-list",
-        apiKey,
-        namespace,
-        path: forceLeadingSlash(path ?? ""),
-      },
-    ] as const,
   workflowVariablesList: (
     namespace: string,
     { apiKey, path }: { apiKey?: string; path: string }
