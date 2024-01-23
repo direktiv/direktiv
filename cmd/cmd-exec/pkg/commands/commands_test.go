@@ -12,9 +12,8 @@ import (
 	"sync"
 	"testing"
 
-	"direktiv/direktiv/cmd/cmd-exec/pkg/server"
-
 	"github.com/direktiv/direktiv/cmd/cmd-exec/pkg/commands"
+	"github.com/direktiv/direktiv/cmd/cmd-exec/pkg/server"
 	"github.com/stretchr/testify/assert"
 )
 

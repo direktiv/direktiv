@@ -10,14 +10,13 @@ import (
 
 // ReusableFunctionDefinition defines a reusable function and the fields it requires.
 type ReusableFunctionDefinition struct {
-	Type          FunctionType               `json:"type"                      yaml:"type"`
-	ID            string                     `json:"id"                        yaml:"id"`
-	Image         string                     `json:"image"                     yaml:"image"`
-	Size          Size                       `json:"size,omitempty"            yaml:"size,omitempty"`
-	Cmd           string                     `json:"cmd,omitempty"             yaml:"cmd,omitempty"`
-	Envs          []core.EnvironmentVariable `json:"envs,omitempty"            yaml:"envs,omitempty"`
-	PostStartExec []string                   `json:"post_start_exec,omitempty" yaml:"post_start_exec,omitempty"`
-	Patches       []core.ServicePatch        `json:"patches,omitempty"         yaml:"patches,omitempty"`
+	Type    FunctionType               `json:"type"              yaml:"type"`
+	ID      string                     `json:"id"                yaml:"id"`
+	Image   string                     `json:"image"             yaml:"image"`
+	Size    Size                       `json:"size,omitempty"    yaml:"size,omitempty"`
+	Cmd     string                     `json:"cmd,omitempty"     yaml:"cmd,omitempty"`
+	Envs    []core.EnvironmentVariable `json:"envs,omitempty"    yaml:"envs,omitempty"`
+	Patches []core.ServicePatch        `json:"patches,omitempty" yaml:"patches,omitempty"`
 }
 
 // GetID returns the ID of a reusable function.

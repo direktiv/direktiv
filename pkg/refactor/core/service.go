@@ -34,13 +34,12 @@ type ServiceConfig struct {
 	Name      string `json:"name"`
 
 	// settings fields:
-	Image         string                `json:"image"`
-	CMD           string                `json:"cmd"`
-	Size          string                `json:"size"`
-	Scale         int                   `json:"scale"`
-	Envs          []EnvironmentVariable `json:"envs"`
-	PostStartExec []string              `json:"post_start_exec"`
-	Patches       []ServicePatch        `json:"patches"`
+	Image   string                `json:"image"`
+	CMD     string                `json:"cmd"`
+	Size    string                `json:"size"`
+	Scale   int                   `json:"scale"`
+	Envs    []EnvironmentVariable `json:"envs"`
+	Patches []ServicePatch        `json:"patches"`
 
 	Error *string `json:"error"`
 }
@@ -69,9 +68,6 @@ func (c *ServiceConfig) GetValueHash() string {
 	str := fmt.Sprintf("%s-%s-%s-%d", c.Image, c.CMD, c.Size, c.Scale)
 	for _, v := range c.Envs {
 		str += "-" + v.Name + "-" + v.Value
-	}
-	for _, v := range c.PostStartExec {
-		str += "-" + v
 	}
 	for _, v := range c.Patches {
 		str += "-" + v.Op + "-" + v.Path + "-" + fmt.Sprintf("%v", v.Value)
