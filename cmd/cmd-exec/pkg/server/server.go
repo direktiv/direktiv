@@ -124,6 +124,7 @@ func Handler[IN any](fn func(context.Context, IN, *ExecutionInfo) (interface{}, 
 
 				return
 			}
+			defer file.Close()
 
 			_, err = file.Write([]byte(f.Content))
 			if err != nil {
