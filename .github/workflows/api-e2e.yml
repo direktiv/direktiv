@@ -1,4 +1,4 @@
-name: Run API e2e tests
+name: API E2E
 
 on:
   push:
@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 jobs:
-  e2e-test:
+  test:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     strategy:
@@ -40,5 +40,5 @@ jobs:
         with:
           go-version-file: go.mod
 
-      - name: Run end-to-end tests/${{ matrix.test-section }}
+      - name: Run tests
         run: TEST_SECTION=${{ matrix.test-section }} make docker-tests
