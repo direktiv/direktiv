@@ -83,8 +83,6 @@ const WorkflowEditor: FC<{
           <CodeEditor
             value={editorContent}
             onValueChange={onEditorContentUpdate}
-            // TODO: may remove this
-            createdAt={data.node.createdAt}
             error={error}
             hasUnsavedChanges={hasUnsavedChanges}
             onSave={onSave}
