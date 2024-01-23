@@ -1,4 +1,4 @@
-name: API E2E
+name: API test
 
 on:
   push:
