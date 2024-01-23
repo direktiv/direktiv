@@ -1,4 +1,4 @@
-import { GitCommit, GitMerge, PieChart, Settings } from "lucide-react";
+import { Code2, Layers, PieChart, Settings } from "lucide-react";
 import type { Meta, StoryObj } from "@storybook/react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./index";
 import { Card } from "../Card";
@@ -59,22 +59,22 @@ export const TabsWithIcons = () => (
   <div>
     <Tabs defaultValue="overview">
       <TabsList>
+        <TabsTrigger value="active-rev" asChild>
+          <a href="#">
+            <Code2 aria-hidden="true" />
+            File Content
+          </a>
+        </TabsTrigger>
         <TabsTrigger value="overview" asChild>
           <a href="#">
             <PieChart aria-hidden="true" />
             Overview
           </a>
         </TabsTrigger>
-        <TabsTrigger value="active-rev" asChild>
-          <a href="#">
-            <GitCommit aria-hidden="true" />
-            Active Revisions
-          </a>
-        </TabsTrigger>
         <TabsTrigger value="revisions" asChild>
           <a href="#">
-            <GitMerge aria-hidden="true" />
-            Revisions
+            <Layers aria-hidden="true" />
+            Services
           </a>
         </TabsTrigger>
         <TabsTrigger value="settings" asChild>
