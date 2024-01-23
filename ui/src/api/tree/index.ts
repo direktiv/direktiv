@@ -3,11 +3,7 @@ import { forceLeadingSlash } from "./utils";
 export const treeKeys = {
   nodeContent: (
     namespace: string,
-    {
-      apiKey,
-      path,
-      revision,
-    }: { apiKey?: string; path?: string; revision?: string }
+    { apiKey, path }: { apiKey?: string; path?: string }
   ) =>
     [
       {
@@ -15,7 +11,6 @@ export const treeKeys = {
         apiKey,
         namespace,
         path: forceLeadingSlash(path ?? "/"),
-        revision,
       },
     ] as const,
   workflowVariablesList: (
