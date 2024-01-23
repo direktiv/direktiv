@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC, memo, useState } from "react";
 
 import { EnvItemForm } from "./EnvItemForm";
 import { EnvironementVariableSchemaType } from "~/api/services/schema/services";
@@ -42,7 +42,7 @@ const EnvForm: FC<EnvFormProps> = ({ defaultValue, onChange }) => {
     <>
       {items?.map((item, index) => (
         <EnvItemForm
-          key={JSON.stringify(item)}
+          key={`${items.length}-${index}`}
           item={item}
           onUpdate={(value) => updateAtIndex(index, value)}
           onDelete={() => deleteAtIndex(index)}
