@@ -71,7 +71,7 @@ export const TabsWithIcons = () => (
             Overview
           </a>
         </TabsTrigger>
-        <TabsTrigger value="revisions" asChild>
+        <TabsTrigger value="services" asChild>
           <a href="#">
             <Layers aria-hidden="true" />
             Services
