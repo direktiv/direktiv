@@ -9,7 +9,6 @@ import {
 import { GitMerge, MoreVertical, Tag, Trash, Undo } from "lucide-react";
 import { TableCell, TableRow } from "~/design/Table";
 
-import Badge from "~/design/Badge";
 import Button from "~/design/Button";
 import CopyButton from "~/design/CopyButton";
 import { DialogTrigger } from "~/design/Dialog";
@@ -17,14 +16,11 @@ import { FC } from "react";
 import { Link } from "react-router-dom";
 import { TrimmedRevisionSchemaType } from "~/api/tree/schema/node";
 import { pages } from "~/util/router/pages";
-import { useRouter } from "~/api/tree/query/router";
 import { useTranslation } from "react-i18next";
 
 const RevisionTableRow: FC<{
   revision: TrimmedRevisionSchemaType;
   isTag: boolean;
-  isPrimaryTraffic: boolean; // traffic shaping is configured for this revision (left side of the traffic split)
-  isSecondaryTraffic: boolean; // traffic shaping is configured for this revision (right side of the traffic split)
   onDeleteRevClicked: (revision: TrimmedRevisionSchemaType) => void;
   onDeleteTagCLicked: (revision: TrimmedRevisionSchemaType) => void;
   onRevertClicked: (revision: TrimmedRevisionSchemaType) => void;
@@ -32,8 +28,7 @@ const RevisionTableRow: FC<{
 }> = ({
   revision,
   isTag,
-  isPrimaryTraffic,
-  isSecondaryTraffic,
+
   onDeleteRevClicked,
   onDeleteTagCLicked,
   onRevertClicked,
@@ -42,7 +37,6 @@ const RevisionTableRow: FC<{
   const { t } = useTranslation();
   const { path, namespace } = pages.explorer.useParams();
   const isLatest = revision.name === "latest";
-  const { data: router } = useRouter({ path });
   const Icon = isTag ? Tag : GitMerge;
   if (!namespace) return null;
   return (
@@ -62,28 +56,6 @@ const RevisionTableRow: FC<{
             {revision.name}
           </Link>
         </div>
-      </TableCell>
-      <TableCell className="w-0 justify-start gap-x-3">
-        {isPrimaryTraffic && (
-          <Badge data-testid="traffic-distribution-primary">
-            {t(
-              "pages.explorer.tree.workflow.revisions.overview.list.distribution",
-              {
-                count: router?.routes?.[0]?.weight,
-              }
-            )}
-          </Badge>
-        )}
-        {isSecondaryTraffic && (
-          <Badge data-testid="traffic-distribution-secondary" variant="outline">
-            {t(
-              "pages.explorer.tree.workflow.revisions.overview.list.distribution",
-              {
-                count: router?.routes?.[1]?.weight,
-              }
-            )}
-          </Badge>
-        )}
       </TableCell>
       <TableCell
         className="flex w-auto justify-end gap-x-3"

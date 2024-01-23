@@ -69,17 +69,7 @@ message RenameNodeResponse {
 	Node node = 2;
 }
 
-message CreateNodeAttributesRequest {
-	string namespace = 1; 
-	string path = 2;
-	repeated string attributes = 3;
-}
 
-message DeleteNodeAttributesRequest {
-	string namespace = 1; 
-	string path = 2;
-	repeated string attributes = 3;
-}
 
 message File {
 	google.protobuf.Timestamp created_at = 1;

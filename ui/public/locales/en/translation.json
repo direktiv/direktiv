@@ -114,8 +114,7 @@
             "scale": "Scale",
             "size": "Size",
             "cmd": "Cmd",
-            "envs": "Envs",
-            "postStartExec": "Post Start Exec"
+            "envs": "Envs"
           }
         },
         "newRoute": {
@@ -137,23 +136,8 @@
         "workflow": {
           "revisions": {
             "overview": {
-              "trafficShaping": {
-                "title": "Traffic Shaping",
-                "description": "Change the way the traffic for this workflow is distributed between two different revisions.",
-                "setup": "The traffic will be split between <b>{{aName}}</b> and <b>{{bName}}</b> with a ratio of <b>{{aWeight}}</b> to <b>{{bWeight}}</b> %",
-                "hint": "Please select 2 different revisions to configure traffic shaping.",
-                "saveBtn": "Save",
-                "revisionSelector": {
-                  "placeholder": "Select Revision...",
-                  "searchPlaceholder": "Search Revisions...",
-                  "tags": "Tags",
-                  "revisions": "Revisions",
-                  "notFound": "No Revisions found."
-                }
-              },
               "list": {
                 "title": "Revisions",
-                "distribution": "{{count}} % of traffic distribution",
                 "contextMenu": {
                   "title": "Actions",
                   "delete": "Delete",
@@ -235,10 +219,6 @@
               "failed": "Failed: {{percentage}}%",
               "noResult": "No data available"
             },
-            "trafficDistribution": {
-              "header": "Traffic Distribution",
-              "noResult": "Traffic shaping is not configured for this workflow."
-            },
             "services": {
               "header": "Workflow services"
             }
@@ -256,10 +236,6 @@
         "headline": "Latest",
         "updated": "Updated {{relativeTime}} ago",
         "runBtn": "Run",
-        "toggleActiveBtn": {
-          "setActive": "Activate workflow",
-          "setInactive": "Deactivate workflow"
-        },
         "apiCommands": {
           "tooltip": "Open API commands",
           "title": "Workflow API interactions",
@@ -782,8 +758,7 @@
         "tableRow": {
           "errorLabel": "Error",
           "envsLabel": "{{count}} environment variables",
-          "envsLabel_one": "{{count}} environment variable",
-          "execLabel": "post start exec"
+          "envsLabel_one": "{{count}} environment variable"
         },
         "contextMenu": {
           "rebuild": "Rebuild"
@@ -1306,13 +1281,6 @@
     },
     "tree": {
       "mutate": {
-        "setRouter": {
-          "success": {
-            "title": "Traffic shaping was updated",
-            "description": "The traffic will be split between <b>{{aName}}</b> and <b>{{bName}}</b> with a ratio of <b>{{aWeight}}</b> to <b>{{bWeight}}</b> %"
-          },
-          "error": "could set traffic shaping"
-        },
         "setVariable": {
           "success": {
             "title": "Worfklow variable saved",
@@ -1320,15 +1288,6 @@
           },
           "error": {
             "description": "could not save workflow variable 😢"
-          }
-        },
-        "toggleLive": {
-          "success": {
-            "title": "Workflow updated",
-            "description": {
-              "activated": "Workflow {{workflow}} was activated",
-              "deactivated": "Workflow {{workflow}} was deactivated"
-            }
           }
         },
         "createDirectory": {

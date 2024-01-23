@@ -2,15 +2,9 @@ name: Lint golang code
 
 on:
   push:
-    paths-ignore:
-      - ui/**
-    tags:
-      - v*
     branches:
       - main
   pull_request:
-    paths-ignore:
-      - ui/**
 
 permissions:
   contents: read

@@ -55,22 +55,6 @@ export const RevisionsListSchema = z.object({
 
 export const TagsListSchema = RevisionsListSchema;
 
-const RouteSchema = z.object({
-  ref: z.string(),
-  weight: z.number(),
-});
-
-export const RouterSchema = z.object({
-  namespace: z.string(),
-  node: NodeSchema,
-  live: z.boolean(),
-  routes: z
-    .array(RouteSchema)
-    .refine((routes) => [0, 2].includes(routes.length)),
-});
-
-export const ToggleLiveSchema = z.null();
-
 export const FolderCreatedSchema = z.object({
   namespace: z.string(),
   node: NodeSchema,
@@ -108,4 +92,3 @@ export type RevisionsListSchemaType = z.infer<typeof RevisionsListSchema>;
 export type TrimmedRevisionSchemaType = z.infer<typeof TrimmedRevisionSchema>;
 export type TagsListSchemaType = z.infer<typeof TagsListSchema>;
 export type NodeSchemaType = z.infer<typeof NodeSchema>;
-export type RouterSchemaType = z.infer<typeof RouterSchema>;

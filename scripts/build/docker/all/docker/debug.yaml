@@ -1,0 +1,19 @@
+image: direktiv/direktiv
+tag: v0.8.1
+
+PROXY
+
+eventing:
+  enabled: true
+
+frontend:
+  image: "direktiv/frontend"
+
+flow:
+  logging: console
+  debug: "true"
+
+database:
+  host: "postgres"
+  password: "direktivdirektiv"
+  sslmode: disable

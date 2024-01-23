@@ -10,7 +10,6 @@ import common from "../common"
 // TODO: test bad method
 // TODO: test namespace logs 
 // TODO: test namespace config
-// TODO: test namespace annotations
 
 const testNamespace = "a"
 

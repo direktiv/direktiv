@@ -9,14 +9,13 @@ import (
 )
 
 type ServiceFile struct {
-	DirektivAPI   string                     `yaml:"direktiv_api"`
-	Image         string                     `yaml:"image"`
-	Cmd           string                     `yaml:"cmd"`
-	Size          string                     `yaml:"size"`
-	Scale         int                        `yaml:"scale"`
-	Envs          []core.EnvironmentVariable `yaml:"envs"`
-	PostStartExec []string                   `yaml:"post_start_exec"`
-	Patches       []core.ServicePatch        `yaml:"patches"`
+	DirektivAPI string                     `yaml:"direktiv_api"`
+	Image       string                     `yaml:"image"`
+	Cmd         string                     `yaml:"cmd"`
+	Size        string                     `yaml:"size"`
+	Scale       int                        `yaml:"scale"`
+	Envs        []core.EnvironmentVariable `yaml:"envs"`
+	Patches     []core.ServicePatch        `yaml:"patches"`
 }
 
 func ParseServiceFile(data []byte) (*ServiceFile, error) {
