@@ -32,16 +32,13 @@ export const useWorkflowVariables = ({
   namespace: givenNamespace,
 }: {
   path: string;
-  namespace?: string;
+  namespace?: string | null;
 }) => {
   const apiKey = useApiKey();
   const defaultNamespace = useNamespace();
 
-  console.log("namespace " + givenNamespace);
-  console.log("path " + path);
-
   const namespace = givenNamespace ? givenNamespace : defaultNamespace;
-  console.log("not " + !namespace);
+
   if (!namespace) {
     throw new Error("namespace is undefined");
   }
