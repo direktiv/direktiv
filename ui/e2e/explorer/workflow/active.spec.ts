@@ -91,7 +91,7 @@ test("it is possible to navigate to the code editor ", async ({ page }) => {
 
   await expect(
     page.getByTestId("workflow-tabs-trg-editor"),
-    "screen should have activeRevision tab"
+    "screen should have code editor tab"
   ).toBeVisible();
 
   await expect(page, "the workflow is reflected in the url").toHaveURL(
