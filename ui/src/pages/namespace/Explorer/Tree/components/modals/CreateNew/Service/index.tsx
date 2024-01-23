@@ -6,23 +6,17 @@ import {
 } from "~/design/Dialog";
 import { Play, PlusCircle } from "lucide-react";
 import { SubmitHandler, useForm } from "react-hook-form";
-import {
-  defaultServiceYaml,
-  serviceHeader,
-  useServiceFormSchema,
-} from "./config";
 
 import Button from "~/design/Button";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { addYamlFileExtension } from "../../../../utils";
+import { defaultServiceYaml } from "./config";
 import { fileNameSchema } from "~/api/tree/schema/node";
 import { pages } from "~/util/router/pages";
 import { useCreateWorkflow } from "~/api/tree/mutate/createWorkflow";
 import { useNamespace } from "~/util/store/namespace";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
-import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -43,11 +37,6 @@ const NewService = ({
   const { t } = useTranslation();
   const namespace = useNamespace();
   const navigate = useNavigate();
-  const theme = useTheme();
-
-  const [splitView, setSplitView] = useState(true);
-  const [serviceConfigJson, setServiceConfigJson] = useState(serviceHeader);
-  const serviceFormSchema = useServiceFormSchema();
 
   const resolver = zodResolver(
     z.object({
@@ -69,8 +58,6 @@ const NewService = ({
   const {
     register,
     handleSubmit,
-    setValue,
-    getValues,
     formState: { isDirty, errors, isValid, isSubmitted },
   } = useForm<FormInput>({
     resolver,

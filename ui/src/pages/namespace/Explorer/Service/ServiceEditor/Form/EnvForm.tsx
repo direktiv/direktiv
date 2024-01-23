@@ -1,4 +1,4 @@
-import { FC, memo, useState } from "react";
+import { FC, useState } from "react";
 
 import { EnvItemForm } from "./EnvItemForm";
 import { EnvironementVariableSchemaType } from "~/api/services/schema/services";
