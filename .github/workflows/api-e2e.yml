@@ -12,6 +12,23 @@ permissions:
 jobs:
   e2e-test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        test-section:
+          - cli
+          - engine
+          - errors
+          - events
+          - filesystem
+          - functions
+          - gateway
+          - logparser
+          - mirror
+          - namespace
+          - registry
+          - secrets
+          - services
+          - variables
 
     steps:
       - uses: actions/checkout@v4
@@ -21,5 +38,5 @@ jobs:
         with:
           go-version-file: go.mod
 
-      - name: Run end-to-end tests
-        run: make docker-tests
+      - name: Run end-to-end tests/${{ matrix.test-section }}
+        run: TEST_SECTION=${{ matrix.test-section }} make docker-tests
