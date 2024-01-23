@@ -48,6 +48,7 @@ type ExecutionInfo struct {
 	Log    *Logger
 }
 
+// nolint
 func NewServer[IN any](fn func(context.Context, IN, *ExecutionInfo) (interface{}, error)) *Server[IN] {
 	server := &http.Server{
 		Addr:         "0.0.0.0:8080",
@@ -63,6 +64,7 @@ func NewServer[IN any](fn func(context.Context, IN, *ExecutionInfo) (interface{}
 	}
 }
 
+// nolint
 func Handler[IN any](fn func(context.Context, IN, *ExecutionInfo) (interface{}, error)) http.Handler {
 	r := chi.NewRouter()
 
@@ -75,7 +77,6 @@ func Handler[IN any](fn func(context.Context, IN, *ExecutionInfo) (interface{}, 
 	}
 
 	r.Post("/", func(w http.ResponseWriter, r *http.Request) {
-
 		var in Payload[IN]
 		b, err := io.ReadAll(r.Body)
 		if err != nil {
@@ -101,7 +102,6 @@ func Handler[IN any](fn func(context.Context, IN, *ExecutionInfo) (interface{}, 
 			errWriter(w, http.StatusBadRequest, "no temp directory provided")
 
 			return
-
 		}
 
 		actionID := r.Header.Get(DirektivActionIDHeader)
@@ -125,7 +125,7 @@ func Handler[IN any](fn func(context.Context, IN, *ExecutionInfo) (interface{}, 
 				return
 			}
 
-			_, err = file.Write([]byte(f.Content))
+			_, err = file.WriteString(f.Content)
 			if err != nil {
 				errWriter(w, http.StatusInternalServerError, err.Error())
 
@@ -148,14 +148,12 @@ func Handler[IN any](fn func(context.Context, IN, *ExecutionInfo) (interface{}, 
 
 			return
 		}
-
 	})
 
 	return r
 }
 
 func (s *Server[IN]) Start() {
-
 	slog.Info("starting server")
 
 	signal.Notify(s.stopChan,
@@ -173,8 +171,8 @@ func (s *Server[IN]) Start() {
 	s.Stop()
 }
 
+// nolint
 func (s *Server[IN]) Stop() {
-
 	slog.Info("stopping server")
 	s.httpServer.SetKeepAlivesEnabled(false)
 

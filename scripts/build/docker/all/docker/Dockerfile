@@ -37,6 +37,7 @@ RUN git clone https://github.com/direktiv/direktiv-charts.git
 RUN helm repo add nginx https://kubernetes.github.io/ingress-nginx
 RUN helm repo add prometheus https://prometheus-community.github.io/helm-charts
 RUN helm repo update
+RUN helm dependency update /direktiv-charts/charts/direktiv
 RUN helm dependency build /direktiv-charts/charts/direktiv
 
 # This/
