@@ -43,7 +43,7 @@ func TestCommandSuppress(t *testing.T) {
 	}
 
 	cmds := commands.Commands{
-		[]commands.Commmand{
+		[]commands.Command{
 			{
 				Command: "ls",
 			},
@@ -58,7 +58,7 @@ func TestCommandSuppress(t *testing.T) {
 	b.Reset()
 
 	cmds = commands.Commands{
-		[]commands.Commmand{
+		[]commands.Command{
 			{
 				Command:         "ls",
 				SuppressCommand: true,
@@ -86,7 +86,7 @@ func TestOutputSuppress(t *testing.T) {
 	}
 
 	cmds := commands.Commands{
-		[]commands.Commmand{
+		[]commands.Command{
 			{
 				Command:        "echo jens",
 				SuppressOutput: true,
@@ -119,7 +119,7 @@ func TestErrors(t *testing.T) {
 	}
 
 	cmds := commands.Commands{
-		[]commands.Commmand{
+		[]commands.Command{
 			{
 				Command:        "onetwo",
 				SuppressOutput: true,
@@ -152,7 +152,7 @@ func TestStopOnTestErrors(t *testing.T) {
 	defer os.RemoveAll(dir)
 
 	cmds := commands.Commands{
-		[]commands.Commmand{
+		[]commands.Command{
 			{
 				Command:     "echo hello1",
 				StopOnError: true,
