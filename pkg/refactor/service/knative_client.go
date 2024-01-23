@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log/slog"
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
@@ -69,7 +68,7 @@ func (c *knativeClient) createService(sv *core.ServiceConfig) error {
 
 	err = c.applyPatch(sv)
 	if err != nil {
-		return err
+		return fmt.Errorf("applying patch: %w", err)
 	}
 
 	return nil
@@ -97,29 +96,23 @@ func (c *knativeClient) applyPatch(sv *core.ServiceConfig) error {
 				break
 			}
 		}
-
 		// if the path is not in the allowed prefix list, return with an error.
 		if !hasAllowedPrefix {
-			slog.Error("path is not permitted for patches", slog.String("path", patch.Path))
-
 			return fmt.Errorf("path %s is not permitted for patches", patch.Path)
 		}
 	}
 
 	patchBytes, err := json.Marshal(sv.Patches)
 	if err != nil {
-		slog.Error("error marshalling patching service", slog.String("flow", sv.Name), slog.String("error", err.Error()))
-
-		return err
+		return fmt.Errorf("marshalling patch: %w", err)
 	}
 
 	_, err = c.knativeCli.ServingV1().Services(c.config.KnativeNamespace).Patch(context.Background(), sv.GetID(), types.JSONPatchType, patchBytes, metav1.PatchOptions{})
-
 	if err != nil {
-		slog.Error("error patching service", slog.String("flow", sv.Name), slog.String("error", err.Error()))
+		return fmt.Errorf("applying patch: %w", err)
 	}
 
-	return err
+	return nil
 }
 
 func (c *knativeClient) updateService(sv *core.ServiceConfig) error {
@@ -138,7 +131,7 @@ func (c *knativeClient) updateService(sv *core.ServiceConfig) error {
 
 	err = c.applyPatch(sv)
 	if err != nil {
-		return err
+		return fmt.Errorf("applying patch: %w", err)
 	}
 
 	return nil
