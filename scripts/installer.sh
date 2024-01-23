@@ -495,7 +495,7 @@ install_monitoring() {
     echo "Installing monitoring components..."
     export PG_HOST=$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "host"}}' | base64 --decode)
     export PG_PASSWORD=$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "password"}}' | base64 --decode)
-    envsubst < scripts/fluentbit.values.yaml > /tmp/fluentbit.values.yaml
+    envsubst '${PG_HOST} ${PG_PASSWORD}' < scripts/fluentbit.values.yaml > /tmp/fluentbit.values.yaml
     kubectl apply -f scripts/install-monitoring.yaml
     helm repo add grafana https://grafana.github.io/helm-charts
     helm repo add fluent https://fluent.github.io/helm-charts

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net"
 	"net/http"
 	"path/filepath"
@@ -99,6 +100,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	file, revision, err := engine.mux(ctx, args.Namespace, args.CalledAs)
 	if err != nil {
 		engine.sugar.Debugf("Failed to create new instance: %v", err)
+		slog.Error("Failed to receive workflow", "stream", "namespace"+"."+args.Namespace.Name, "id", args.Namespace.ID, "workflow", args.CalledAs, "namespace", args.Namespace)
 		// engine.logger.Errorf(ctx, engine.flow.ID, engine.flow.GetAttributes(), "Failed to receive workflow %s", args.CalledAs)
 		if derrors.IsNotFound(err) {
 			return nil, derrors.NewUncatchableError("direktiv.workflow.notfound", "workflow not found: %v", err.Error())
@@ -234,6 +236,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	im.AddAttribute("loop-index", fmt.Sprintf("%d", iterator))
 
 	engine.pubsub.NotifyInstances(im.Namespace())
+	slog.Info("Workflow has been triggered", "stream", "namespace"+"."+instance.Instance.Namespace, "workflow", args.CalledAs, "invoker", args.Invoker, "namespace", instance.Instance.Namespace)
 	// engine.logger.Infof(ctx, instance.Instance.NamespaceID, instance.GetAttributes(recipient.Namespace), "Workflow '%s' has been triggered by %s.", args.CalledAs, args.Invoker)
 	// TODO: alex, do we need to restore workflow logs?
 	// // engine.logger.Infof(ctx, im.instance.Instance.WorkflowID, im.instance.GetAttributes(recipient.Workflow), "Instance '%s' created by %s.", im.ID().String(), args.Invoker)
@@ -260,6 +263,7 @@ func (engine *engine) start(im *instanceMemory) {
 	}
 
 	engine.sugar.Debugf("Starting workflow %v", im.ID().String())
+	slog.Info("Starting workflow", "stream", "instance"+"."+im.GetInstanceID().String(), "instance", im.GetInstanceID(), "workflow", database.GetWorkflow(im.instance.Instance.WorkflowPath), "namespace", im.instance.Instance.Namespace)
 	// engine.logger.Infof(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "Starting workflow %v", database.GetWorkflow(im.instance.Instance.WorkflowPath))
 	// TODO: alex, do we need to restore workflow logs?
 	// // engine.logger.Infof(ctx, im.instance.Instance.WorkflowID, im.instance.GetAttributes(recipient.Workflow), "Starting workflow %v", database.GetWorkflow(im.instance.Instance.CalledAs))
@@ -268,6 +272,7 @@ func (engine *engine) start(im *instanceMemory) {
 	workflow, err := im.Model()
 	if err != nil {
 		engine.CrashInstance(ctx, im, derrors.NewUncatchableError(ErrCodeWorkflowUnparsable, "failed to parse workflow YAML: %v", err))
+		slog.Error("failed to parse the workflow YAML file", "stream", "instance"+"."+im.GetInstanceID().String(), "workflow", database.GetWorkflow(im.instance.Instance.WorkflowPath), "namespace", im.instance.Instance.Namespace)
 		// engine.logger.Errorf(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "failed to parse workflow YAML")
 		return
 	}
@@ -542,6 +547,7 @@ failure:
 
 			matched, regErr := regexp.MatchString(errRegex, cerr.Code)
 			if regErr != nil {
+				slog.Error("regex failed to compile", "stream", "instance"+"."+im.GetInstanceID().String(), "instance", im.GetInstanceID(), "workflow", database.GetWorkflow(im.instance.Instance.WorkflowPath), "namespace", im.instance.Instance.Namespace, "error", regErr)
 				// engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), "Error catching regex failed to compile: %v", regErr)
 			}
 
@@ -602,6 +608,7 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 		engine.metricsCompleteState(ctx, im, transition.NextState, errCode, false)
 		engine.sugar.Debugf("Instance transitioning to next state: %s -> %s", im.ID().String(), transition.NextState)
 		// engine.logger.Debugf(ctx, im.GetInstanceID(), im.GetAttributes(), "Transitioning to next state: %s (%d).", transition.NextState, im.Step()+1)
+		slog.Info("Transitioning to next state", "stream", "instance"+"."+im.GetInstanceID().String(), "state", transition.NextState, "instance", im.GetInstanceID(), "workflow", database.GetWorkflow(im.instance.Instance.WorkflowPath), "namespace", im.instance.Instance.Namespace)
 		go engine.Transition(ctx, im, transition.NextState, 0)
 		return
 	}
@@ -620,6 +627,7 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 	im.updateArgs.Output = &im.instance.Instance.Output
 	im.instance.Instance.Status = status
 	im.updateArgs.Status = &im.instance.Instance.Status
+	slog.Info("Workflow completed", "stream", "instance"+"."+im.GetInstanceID().String(), "instance", im.GetInstanceID(), "workflow", database.GetWorkflow(im.instance.Instance.WorkflowPath), "namespace", im.instance.Instance.Namespace)
 
 	// engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), "Workflow %s completed.", database.GetWorkflow(im.instance.Instance.WorkflowPath))
 	// engine.logger.Infof(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "Workflow %s completed.", database.GetWorkflow(im.instance.Instance.WorkflowPath))
@@ -896,6 +904,8 @@ func (engine *engine) SetMemory(ctx context.Context, im *instanceMemory, x inter
 
 func (engine *engine) reportInstanceCrashed(ctx context.Context, im *instanceMemory, typ, code string, err error) {
 	engine.sugar.Errorf("Instance failed with %s error '%s': %v", typ, code, err)
+	slog.Error("Instance failed with an error", "stream", "instance"+"."+im.GetInstanceID().String(), "instance", im.GetInstanceID(), "workflow", database.GetWorkflow(im.instance.Instance.WorkflowPath), "namespace", im.instance.Instance.Namespace, "error", err, "error-code", code, "error-typ", typ)
+
 	// engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), "Instance failed with %s error '%s': %s", typ, code, err.Error())
 	// engine.logger.Errorf(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "Workflow failed %s Instance %s crashed with %s error '%s': %s", database.GetWorkflow(im.instance.Instance.WorkflowPath), im.GetInstanceID(), typ, code, err.Error())
 }

@@ -61,21 +61,20 @@ func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, level lo
 }
 
 func (sl *sqlLogStore) Get(ctx context.Context, keysAndValues map[string]interface{}, limit, offset int) ([]*logengine.LogEntry, int, error) {
-	today := fmt.Sprintf("%v%v%v", keysAndValues["type"], keysAndValues["root_instance_id"], time.Now().UTC().Format("2006-01-02"))
-	yesterday := fmt.Sprintf("%v%v%v", keysAndValues["type"], keysAndValues["root_instance_id"], time.Now().UTC().AddDate(0, 0, -1).Format("2006-01-02"))
+	key := fmt.Sprintf("%v.%v", keysAndValues["type"], keysAndValues["root_instance_id"])
 
 	delete(keysAndValues, "type")
 	delete(keysAndValues, "root_instance_id")
 
 	wEq := []string{
-		fmt.Sprintf(`topic = '%s' OR topic = '%s'`, today, yesterday), // we query only the logs for the last 2 days
+		fmt.Sprintf(`tag = '%s'`, key),
 	}
 
-	addCondition(&wEq, "source", keysAndValues)
-	addCondition(&wEq, "level", keysAndValues)
-	addConditionPrefix(&wEq, "log_instance_call_path", keysAndValues)
+	// addCondition(&wEq, "source", keysAndValues)
+	// addCondition(&wEq, "level", keysAndValues)
+	// addConditionPrefix(&wEq, "log_instance_call_path", keysAndValues)
 
-	query := buildQuery("timestamp, level, log_instance_call_path, source, entry", wEq, limit, offset)
+	query := buildQuery("time, tag, data", wEq, limit, offset)
 
 	resultList := make([]*gormLogMsg, 0)
 	tx := sl.db.WithContext(ctx).Raw(query).Scan(&resultList)
@@ -126,9 +125,9 @@ func addConditionPrefix(wEq *[]string, key string, keysAndValues map[string]inte
 func buildQuery(fields string, wEq []string, limit, offset int) string {
 	query := fmt.Sprintf(`
 		SELECT %s
-		FROM engine_messages
+		FROM fluentbit
 		WHERE %s
-		ORDER BY timestamp ASC`, fields, strings.Join(wEq, " AND "))
+		ORDER BY time ASC`, fields, strings.Join(wEq, " AND "))
 
 	if limit > 0 {
 		query += fmt.Sprintf(" LIMIT %d", limit)
