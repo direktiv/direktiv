@@ -237,7 +237,7 @@ test("it is possible to create a workflow without providing the .yaml file exten
   // assert it has created and navigated to workflow
   await expect(
     page,
-    "it creates the workflow and loads the active edit page"
+    "it creates the workflow and loads the edit page"
   ).toHaveURL(
     `${namespace}/explorer/workflow/edit/${filenameWithoutExtension}.yaml`
   );
