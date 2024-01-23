@@ -10,10 +10,7 @@ let namespace = "";
 let workflow = "";
 
 const getCommonPageElements = (page: Page) => {
-  const isActiveWorkflowPage = page.url().includes("workflow/edit/");
-  const editor = page.getByTestId(
-    isActiveWorkflowPage ? "workflow-editor" : "revisions-detail-editor"
-  );
+  const editor = page.getByTestId("workflow-editor");
   const diagram = page.getByTestId("workflow-diagram");
   const codeBtn = page.getByTestId("editor-layout-btn-code");
   const diagramBtn = page.getByTestId("editor-layout-btn-diagram");
