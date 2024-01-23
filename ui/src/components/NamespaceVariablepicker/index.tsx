@@ -115,7 +115,6 @@ const NamespaceVariablePicker = ({
             <Variablepicker
               buttonText={t("components.namespaceVariablepicker.buttonText")}
               value={inputValue}
-              onChange={onChange}
               onValueChange={(value) => {
                 setExistingVariable(value);
               }}

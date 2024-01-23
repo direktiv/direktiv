@@ -1,13 +1,8 @@
 import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu";
 import * as React from "react";
 
-import { ChangeEventHandler, FC, PropsWithChildren } from "react";
-import {
-  Popover,
-  PopoverClose,
-  PopoverContent,
-  PopoverTrigger,
-} from "~/design/Popover";
+import { FC, PropsWithChildren } from "react";
+import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 import {
   Select,
   SelectContent,
@@ -51,32 +46,13 @@ const VariablepickerClose: FC<ClickType> = ({ children, onClick }) => (
 type VariablepickerPropsType = PropsWithChildren & {
   buttonText: string;
   value?: string;
-  onChange?: (variable: Variable) => void;
-  //onChange?: ChangeEventHandler;
   onValueChange?: (value: string) => void;
 };
-
-type Variable = {
-  name: string;
-  createdAt: string;
-  updatedAt: string;
-  mimeType: string;
-  checksum: string;
-  size: string;
-};
-
-const Item = React.forwardRef<
-  React.ElementRef<typeof SelectItem>,
-  React.ComponentPropsWithoutRef<typeof SelectItem>
->(({ className, ...props }, ref) => <SelectItem {...props} />);
-
-Item.displayName = SelectItem.displayName;
 
 const Variablepicker: FC<VariablepickerPropsType> = ({
   children,
   buttonText,
   value,
-  onChange,
   onValueChange,
 }) => (
   <Select value={value} onValueChange={onValueChange}>
@@ -93,7 +69,6 @@ type VariablepickerItemProps = PropsWithChildren & {
   props?: object;
   value: string;
   disabled?: boolean;
-  onClick?: any;
 };
 
 const VariablepickerHeading: FC<PropsWithChildren> = ({ children }) => (
@@ -143,7 +118,6 @@ const VariablepickerItem: FC<VariablepickerItemProps> = ({
   value,
   children,
   disabled,
-  onClick,
 }) => (
   <SelectItem disabled={disabled} value={value} {...props}>
     {children}

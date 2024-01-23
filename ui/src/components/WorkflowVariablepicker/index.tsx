@@ -120,7 +120,6 @@ const WorkflowVariablePicker = ({
             <Variablepicker
               buttonText={t("components.workflowVariablepicker.buttonText")}
               value={inputValue}
-              onChange={onChange}
               onValueChange={(value) => {
                 setExistingVariable(value);
               }}
