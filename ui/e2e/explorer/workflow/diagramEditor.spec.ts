@@ -231,12 +231,10 @@ test("it will update the diagram when the workflow is saved", async ({
   // comment out all states expect the first one to force the diagram to update
   await page.getByTestId("workflow-editor").click();
   // cursor is at the end of line 8, use right arrow to go to the first column of line 8
-  await page.keyboard.press("ArrowRight"); // line 9, column 1 after this command runs
+  await page.keyboard.press("ArrowRight"); // line 11, column 1 after this command runs
   if (browserName === "webkit") {
     await page.keyboard.press("ArrowDown"); // webkit is one line off
   }
-  await page.keyboard.press("ArrowDown"); // line 10, column 1 after this command runs
-  await page.keyboard.press("ArrowDown"); // line 11, column 1 after this command runs
   await page.keyboard.press("ArrowDown"); // line 12, column 1 after this command runs
   await page.keyboard.press("ArrowDown"); // line 13, column 1 after this command runs
   await page.keyboard.press("#"); // adding # at the beginning of line "transition: greet" now
