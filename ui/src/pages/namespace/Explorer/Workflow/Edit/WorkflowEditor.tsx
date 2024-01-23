@@ -46,15 +46,6 @@ const WorkflowEditor: FC<{
 
   const [editorContent, setEditorContent] = useState(workflowDataFromServer);
 
-  /**
-   * When the server state of the content changes, the internal state needs to be updated,
-   * to have the editor and diagram up to date. This is important, when the user is reverting
-   * to an old revision.
-   */
-  useEffect(() => {
-    setEditorContent(workflowDataFromServer);
-  }, [workflowDataFromServer]);
-
   const onEditorContentUpdate = (newData: string) => {
     setHasUnsavedChanges(workflowDataFromServer !== newData);
     setEditorContent(newData ?? "");
