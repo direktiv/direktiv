@@ -12,6 +12,7 @@ permissions:
 jobs:
   e2e-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     strategy:
       matrix:
         test-section:
