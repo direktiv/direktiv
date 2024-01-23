@@ -22,8 +22,7 @@ export const EnvItemForm: FC<EnvItemFormProps> = ({
     name: "",
     value: "",
   };
-  // const [name, setName] = useState<string>(item?.name || "");
-  // const [value, setValue] = useState<string>(item?.value || "");
+
   const [state, setState] = useState<EnvironementVariableSchemaType>(
     item || emptyItem
   );
