@@ -35,10 +35,10 @@ const NamespaceVariablePicker = ({
   defaultNamespace;
   const namespace = givenNamespace ? givenNamespace : defaultNamespace;
 
-  console.log("namespace " + namespace);
+  // console.log("namespace " + namespace);
   const { data, isError } = useVars({ namespace });
   const path = namespace;
-  console.log("path " + path);
+  // console.log("path " + path);
   const variableList = data?.variables.results
     ? data.variables.results
     : undefined;
@@ -49,52 +49,49 @@ const NamespaceVariablePicker = ({
 
   const [index, setIndex] = useState(0);
 
-  const [variable, setVariable] = useState(
-    defaultVariable ? defaultVariable : undefined
-  );
-
   const emptyVariable: variableType = {
     name: "",
+    checksum: "",
     createdAt: "123",
     updatedAt: "",
-    mimeType: "",
-    checksum: "",
     size: "",
+    mimeType: "",
   };
+  const [variable, setVariable] = useState(
+    defaultVariable ? defaultVariable : emptyVariable
+  );
 
   const pathNotFound = isError;
   const emptyVariableList = !isError && !variableList?.length;
 
-  const varname = variable ? variable.name : "test";
+  const handleChanges = (value: variableType) => {
+    //setIndex(index);
+    // console.log("here");
+    // if (
+    //   variableList != undefined &&
+    //   variableList[index] != undefined &&
+    //   variableList?.[index]?.name != undefined
+    // ) {
+    // const newVariable = variableList?.findIndex(value);
 
-  const handleChanges = (index: number) => {
-    setIndex(index);
-    console.log("here");
-    if (
-      variableList != undefined &&
-      variableList[index] != undefined &&
-      variableList?.[index]?.name != undefined
-    ) {
-      const newVariable = variableList[index];
-
-      if (newVariable === undefined) {
-        throw new Error("Variable is undefined");
-      }
-      console.log("There");
-      // const newVarName = variableList?.[index]?.name;
-
-      // const test = variableList?.[index];
-
-      setInput(newVariable.name);
-      setVariable(newVariable);
-
-      // newVarName === undefined ? setInput(inputValue) : setInput(newVarName);
-      // newVar === undefined ? onChange(undefined) : onChange(newVar);
-      // variableList?.[index] != undefined
-      //   ? setVariable(variableList[index])
-      //   : undefined;
+    const newVariable = value;
+    if (newVariable === undefined) {
+      throw new Error("Variable is undefined");
     }
+    // console.log("There");
+
+    setInput(newVariable.name);
+    setVariable(newVariable);
+    onChange(newVariable);
   };
+
+  // const handleIg = (value: string) => {
+  //   console.log("IG " + value);
+  //   setInput(value);
+  //   setIndex(0);
+  //   setVariable(variable);
+  //   onChange(variable);
+  // };
 
   const handleIt = (value: string) => {
     setInput(value);
@@ -103,6 +100,8 @@ const NamespaceVariablePicker = ({
     setVariable(emptyVariable);
     onChange(emptyVariable);
   };
+
+  console.log("end var " + variable?.name);
 
   return (
     <>
@@ -143,8 +142,25 @@ const NamespaceVariablePicker = ({
             ) : (
               <Variablepicker
                 buttonText={t("components.namespaceVariablepicker.buttonText")}
-                onChange={(e) => onChange(variable)}
-                onValueChange={(index) => handleChanges(index)}
+                value={inputValue}
+                onChange={onChange}
+                onValueChange={(value) => {
+                  setInput(value);
+                  const result = variableList.filter(
+                    (element) => element.name === value
+                  );
+
+                  //console.log("value " + value);
+                  //console.log("type " + typeof result);
+                  // type is object, because there is only one with the name, but maybe it makes more
+                  // sense to filter for the index
+
+                  const newVar = typeof result == "object" ? result[0] : null;
+                  setVariable(newVar);
+                  onChange(variable);
+                  console.log("newvar " + result[0]);
+                  console.log("X " + variable.name);
+                }}
               >
                 <VariablepickerHeading>
                   {t("components.namespaceVariablepicker.title", { path })}
@@ -152,7 +168,7 @@ const NamespaceVariablePicker = ({
                 <VariablepickerSeparator />
                 {variableList.map((variable, index) => (
                   <Fragment key={index}>
-                    <VariablepickerItem value={index}>
+                    <VariablepickerItem value={variable.name}>
                       {variable.name}
                     </VariablepickerItem>
                     <VariablepickerSeparator />
@@ -170,6 +186,8 @@ const NamespaceVariablePicker = ({
           }}
         />
       </ButtonBar>
+
+      <Button variant="outline">{variable?.name}</Button>
       <Button variant="outline">{variable?.createdAt}</Button>
     </>
   );

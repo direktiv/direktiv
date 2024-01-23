@@ -8,6 +8,7 @@ import {
 import { ButtonBar } from "../ButtonBar";
 import Input from "../Input";
 import { useState } from "react";
+import Button from "../Button";
 
 const meta = {
   title: "Components/Variablepicker",
@@ -71,13 +72,19 @@ export const WithMappingItems = () => {
 };
 
 export const WithHeadingAndSeparator = () => {
+  const [value, setValue] = useState("");
   const [inputValue, setInputValue] = useState("");
+  const handleChanges = () => {
+    setInputValue("Yes");
+  };
 
   return (
     <div className="flex items-center ">
       <Variablepicker
+        value={value}
         onValueChange={(value) => {
-          setInputValue(value);
+          setValue(value);
+          console.log("X");
         }}
         buttonText="Select Variable"
       >
@@ -92,6 +99,9 @@ export const WithHeadingAndSeparator = () => {
       <div className="m-5 flex">
         <p>It is:</p>
         <p className="ml-2">{inputValue}</p>
+        <p>It is:</p>
+        <p className="ml-2">{value}</p>
+        <Button onClick={() => setValue("Yes")}>Set to Yes</Button>
       </div>
     </div>
   );

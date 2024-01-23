@@ -2,7 +2,12 @@ import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu";
 import * as React from "react";
 
 import { ChangeEventHandler, FC, PropsWithChildren } from "react";
-import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
+import {
+  Popover,
+  PopoverClose,
+  PopoverContent,
+  PopoverTrigger,
+} from "~/design/Popover";
 import {
   Select,
   SelectContent,
@@ -35,12 +40,20 @@ const VariablepickerSeparator = React.forwardRef<
 VariablepickerSeparator.displayName =
   DropdownMenuPrimitive.Separator.displayName;
 
+type ClickType = PropsWithChildren & {
+  onClick: React.MouseEventHandler;
+};
+
+const VariablepickerClose: FC<ClickType> = ({ children, onClick }) => (
+  <Button onClick={onClick}>{children}</Button>
+);
+
 type VariablepickerPropsType = PropsWithChildren & {
   buttonText: string;
   value?: string;
-  //onChange?: (variable: Variable) => void;
-  onChange?: ChangeEventHandler;
-  onValueChange?: (value: number) => void;
+  onChange?: (variable: Variable) => void;
+  //onChange?: ChangeEventHandler;
+  onValueChange?: (value: string) => void;
 };
 
 type Variable = {
@@ -66,11 +79,11 @@ const Variablepicker: FC<VariablepickerPropsType> = ({
   onChange,
   onValueChange,
 }) => (
-  <Select value={value} onValueChange={() => onValueChange}>
+  <Select value={value} onValueChange={onValueChange}>
     <SelectTrigger className="w-52" variant="outline">
       <SelectValue placeholder={buttonText}>{buttonText}</SelectValue>
     </SelectTrigger>
-    <SelectContent onChange={() => onChange}>
+    <SelectContent>
       <SelectGroup>{children}</SelectGroup>
     </SelectContent>
   </Select>
@@ -78,8 +91,9 @@ const Variablepicker: FC<VariablepickerPropsType> = ({
 
 type VariablepickerItemProps = PropsWithChildren & {
   props?: object;
-  value: number;
+  value: string;
   disabled?: boolean;
+  onClick?: any;
 };
 
 const VariablepickerHeading: FC<PropsWithChildren> = ({ children }) => (
@@ -129,14 +143,16 @@ const VariablepickerItem: FC<VariablepickerItemProps> = ({
   value,
   children,
   disabled,
+  onClick,
 }) => (
-  <SelectItem disabled={disabled} value={value.toString()} {...props}>
+  <SelectItem disabled={disabled} value={value} {...props}>
     {children}
   </SelectItem>
 );
 
 export {
   Variablepicker,
+  VariablepickerClose,
   VariablepickerError,
   VariablepickerHeading,
   VariablepickerItem,
