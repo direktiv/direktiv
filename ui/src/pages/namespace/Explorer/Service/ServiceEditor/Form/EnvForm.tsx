@@ -32,13 +32,20 @@ const EnvForm: FC<EnvFormProps> = ({ defaultValue, onChange }) => {
     onChange(newItems);
   };
 
+  const deleteAtIndex = (index: number) => {
+    const newItems = items.filter((_, oldIndex) => oldIndex !== index);
+    setItems(newItems);
+    onChange(newItems);
+  };
+
   return (
     <>
       {items?.map((item, index) => (
         <EnvItemForm
-          key={index}
+          key={JSON.stringify(item)}
           item={item}
           onUpdate={(value) => updateAtIndex(index, value)}
+          onDelete={() => deleteAtIndex(index)}
         />
       ))}
       <EnvItemForm onAdd={addItem} />

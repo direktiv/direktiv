@@ -1,9 +1,9 @@
 import { FC, useState } from "react";
+import { Plus, X } from "lucide-react";
 
 import Button from "~/design/Button";
 import { EnvironementVariableSchemaType } from "~/api/services/schema/services";
 import Input from "~/design/Input";
-import { Plus } from "lucide-react";
 
 type EnvItemFormProps = {
   item?: EnvironementVariableSchemaType;
@@ -16,20 +16,31 @@ export const EnvItemForm: FC<EnvItemFormProps> = ({
   item,
   onAdd,
   onUpdate,
+  onDelete,
 }) => {
+  const emptyItem = {
+    name: "",
+    value: "",
+  };
   // const [name, setName] = useState<string>(item?.name || "");
   // const [value, setValue] = useState<string>(item?.value || "");
   const [state, setState] = useState<EnvironementVariableSchemaType>(
-    item || {
-      name: "",
-      value: "",
-    }
+    item || emptyItem
   );
 
   const handleChange = (object: Partial<EnvironementVariableSchemaType>) => {
     const newState = { ...state, ...object };
     setState(newState);
     onUpdate && onUpdate(newState);
+  };
+
+  const handleAdd = () => {
+    onAdd && onAdd(state);
+    setState(emptyItem);
+  };
+
+  const handleDelete = () => {
+    onDelete && onDelete();
   };
 
   return (
@@ -48,11 +59,15 @@ export const EnvItemForm: FC<EnvItemFormProps> = ({
         <Button
           type="button"
           variant="outline"
-          onClick={() => {
-            onAdd && onAdd(state);
-          }}
+          onClick={() => handleAdd()}
+          disabled={!(state.name && state.value)}
         >
           <Plus />
+        </Button>
+      )}
+      {onDelete && (
+        <Button type="button" variant="outline" onClick={() => handleDelete()}>
+          <X />
         </Button>
       )}
     </div>
