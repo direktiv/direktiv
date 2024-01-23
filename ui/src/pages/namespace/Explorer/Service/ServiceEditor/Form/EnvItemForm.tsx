@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC, KeyboardEvent, useState } from "react";
 import { Plus, X } from "lucide-react";
 
 import Button from "~/design/Button";
@@ -33,6 +33,8 @@ export const EnvItemForm: FC<EnvItemFormProps> = ({
     onUpdate && onUpdate(newState);
   };
 
+  const isValid = state?.name && state?.value;
+
   const handleAdd = () => {
     onAdd && onAdd(state);
     setState(emptyItem);
@@ -40,6 +42,14 @@ export const EnvItemForm: FC<EnvItemFormProps> = ({
 
   const handleDelete = () => {
     onDelete && onDelete();
+  };
+
+  const handleKeyDown = (event: KeyboardEvent) => {
+    event.preventDefault();
+    if (!isValid) return;
+    if (event.key === "Enter") {
+      handleAdd();
+    }
   };
 
   return (
@@ -52,6 +62,7 @@ export const EnvItemForm: FC<EnvItemFormProps> = ({
       <Input
         value={state.value}
         onChange={(event) => handleChange({ value: event.target.value })}
+        onKeyDown={handleKeyDown}
         placeholder="VALUE"
       ></Input>
       {onAdd && (
@@ -59,7 +70,7 @@ export const EnvItemForm: FC<EnvItemFormProps> = ({
           type="button"
           variant="outline"
           onClick={() => handleAdd()}
-          disabled={!(state.name && state.value)}
+          disabled={!isValid}
         >
           <Plus />
         </Button>
