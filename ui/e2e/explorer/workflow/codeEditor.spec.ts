@@ -21,10 +21,6 @@ test.afterEach(async () => {
   namespace = "";
 });
 
-const actionNavigateToActiveWorkflow = async (page: Page) => {
-  await page.goto(`${namespace}/explorer/workflow/edit/${workflow}`);
-};
-
 const testSaveWorkflow = async (page: Page) => {
   const description = page.getByText(defaultDescription);
   await description.click();
@@ -100,6 +96,6 @@ test("it is possible to navigate to the code editor ", async ({ page }) => {
 });
 
 test("it is possible to save the workflow", async ({ page }) => {
-  await actionNavigateToActiveWorkflow(page);
+  await page.goto(`${namespace}/explorer/workflow/edit/${workflow}`);
   await testSaveWorkflow(page);
 });
