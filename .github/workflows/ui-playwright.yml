@@ -2,9 +2,7 @@ name: (UI) Test Playwright
 on:
   workflow_dispatch:
   pull_request:
-    paths:
-      - '*'
-      - '!ui/**'
+
 
 jobs:
   test:
