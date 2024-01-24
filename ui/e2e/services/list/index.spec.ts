@@ -44,6 +44,9 @@ test("Service list will show all available services", async ({ page }) => {
     headers,
   });
 
+  // wait one second to make sure the service has been created and avoid flaky tests
+  await page.waitForTimeout(1000);
+
   await page.goto(`/${namespace}/services`, {
     waitUntil: "networkidle",
   });
@@ -256,6 +259,9 @@ test("Service list will highlight services that have errors", async ({
     },
     headers,
   });
+
+  // wait one second to make sure the service has been created and avoid flaky tests
+  await page.waitForTimeout(1000);
 
   await page.goto(`/${namespace}/services`, {
     waitUntil: "networkidle",
