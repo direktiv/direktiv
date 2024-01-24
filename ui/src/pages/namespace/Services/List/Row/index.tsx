@@ -33,6 +33,7 @@ const ServicesTableRow: FC<{
   return (
     <TooltipProvider>
       <TableRow
+        data-testid="service-row"
         onClick={() => {
           if (service.type === "workflow-service") {
             return navigate(

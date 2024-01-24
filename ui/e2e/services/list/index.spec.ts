@@ -48,7 +48,44 @@ test("Service list will list available services", async ({ page }) => {
   });
 
   await expect(
-    page.getByText("No services exist yet"),
-    "it renders an empy list of services"
+    page.getByTestId("service-row"),
+    "it renders one row of services"
+  ).toHaveCount(1);
+
+  await expect(
+    page
+      .getByTestId("service-row")
+      .getByRole("link", { name: "/redis-service.yaml" }),
+    "it renders the link to the service file"
+  ).toBeVisible();
+
+  await expect(
+    page
+      .getByTestId("service-row")
+      .locator("a")
+      .filter({ hasText: "UpAndReady" }),
+    "it renders the status of the service"
+  ).toBeVisible();
+
+  await expect(
+    page
+      .getByTestId("service-row")
+      .getByRole("cell", { name: "redis", exact: true }),
+    "it renders the image name of the service"
+  ).toBeVisible();
+
+  await expect(
+    page.getByTestId("service-row").getByRole("cell", { name: "1" }),
+    "it renders the scale of the service"
+  ).toBeVisible();
+
+  await expect(
+    page.getByTestId("service-row").getByRole("cell", { name: "small" }),
+    "it renders the size of the service"
+  ).toBeVisible();
+
+  await expect(
+    page.getByTestId("service-row").getByRole("cell", { name: "redis-server" }),
+    "it renders the cmd of the service"
   ).toBeVisible();
 });
