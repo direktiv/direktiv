@@ -56,7 +56,7 @@ const Variablepicker: FC<VariablepickerPropsType> = ({
   onValueChange,
 }) => (
   <Select value={value} onValueChange={onValueChange}>
-    <SelectTrigger className="w-52" variant="outline">
+    <SelectTrigger className="w-64" variant="outline">
       <SelectValue placeholder={buttonText}>{buttonText}</SelectValue>
     </SelectTrigger>
     <SelectContent>
@@ -88,7 +88,7 @@ const VariablepickerError: FC<VariablepickerPropsType> = ({
 }) => (
   <Popover modal>
     <PopoverTrigger asChild>
-      <Button variant="outline" className="w-52">
+      <Button variant="outline" className="w-64">
         <span>{buttonText}</span>
         <RxChevronDown />
       </Button>

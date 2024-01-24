@@ -9,6 +9,7 @@ import {
 import { Fieldset } from "~/components/Form/Fieldset";
 import Input from "~/design/Input";
 import NamespaceSelector from "~/components/NamespaceSelector";
+import NamespaceVariablePicker from "~/components/NamespaceVariablepicker";
 import { PluginWrapper } from "../components/Modal";
 import { treatEmptyStringAsUndefined } from "~/pages/namespace/Explorer/utils";
 import { useTranslation } from "react-i18next";
@@ -33,6 +34,7 @@ export const TargetNamespaceVarForm: FC<FormProps> = ({
   const {
     control,
     register,
+    watch,
     handleSubmit,
     formState: { errors },
   } = useForm<TargetNamespaceVarFormSchemaType>({
@@ -83,7 +85,22 @@ export const TargetNamespaceVarForm: FC<FormProps> = ({
           )}
           htmlFor="variable"
         >
-          <Input {...register("configuration.variable")} id="variable" />
+          <Controller
+            control={control}
+            name="configuration.variable"
+            render={({ field }) => (
+              <NamespaceVariablePicker
+                {...register("configuration.variable", {
+                  setValueAs: treatEmptyStringAsUndefined,
+                })}
+                defaultVariable="OKAYYYY"
+                namespace={watch("configuration.namespace")}
+                onChange={(variable) => {
+                  field.onChange(variable?.name);
+                }}
+              />
+            )}
+          />
         </Fieldset>
         <Fieldset
           label={t(
@@ -91,14 +108,21 @@ export const TargetNamespaceVarForm: FC<FormProps> = ({
           )}
           htmlFor="content-type"
         >
-          <Input
-            {...register("configuration.content_type", {
-              setValueAs: treatEmptyStringAsUndefined,
-            })}
-            placeholder={t(
-              "pages.explorer.endpoint.editor.form.plugins.target.targetNamespaceVariable.contentTypePlaceholder"
+          <Controller
+            control={control}
+            name="configuration.content_type"
+            render={({ field }) => (
+              <Input
+                {...register("configuration.content_type", {
+                  setValueAs: treatEmptyStringAsUndefined,
+                })}
+                value={watch("configuration.content_type")}
+                placeholder={t(
+                  "pages.explorer.endpoint.editor.form.plugins.target.targetNamespaceVariable.contentTypePlaceholder"
+                )}
+                id="content-type"
+              />
             )}
-            id="content-type"
           />
         </Fieldset>
       </PluginWrapper>
