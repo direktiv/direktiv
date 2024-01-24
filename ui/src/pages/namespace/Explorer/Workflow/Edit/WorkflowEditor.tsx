@@ -1,5 +1,5 @@
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
-import { FC, useEffect, useState } from "react";
+import { FC, useState } from "react";
 import { Play, Save } from "lucide-react";
 
 import Button from "~/design/Button";

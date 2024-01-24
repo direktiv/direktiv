@@ -1,5 +1,5 @@
-import { Page, expect, test } from "@playwright/test";
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
+import { expect, test } from "@playwright/test";
 
 import { createWorkflow } from "../../utils/node";
 import { faker } from "@faker-js/faker";
@@ -20,43 +20,6 @@ test.afterEach(async () => {
   await deleteNamespace(namespace);
   namespace = "";
 });
-
-const testSaveWorkflow = async (page: Page) => {
-  const description = page.getByText(defaultDescription);
-  await description.click();
-  // type random text in that textarea which is for description
-  const testText = faker.random.alphaNumeric(9);
-  await page.type("textarea", testText);
-
-  // now click on Save
-  const saveButton = page.getByTestId("workflow-editor-btn-save");
-  await saveButton.click();
-
-  // Commented out since this is not a critical step, but maybe we can enable
-  // it again at some point after learning more about the following problem:
-  // These steps fail locally, but work with a remote API. They works locally
-  // with throttling enabled in devtools. This implies the request is completed
-  // so fast there is not enough time to detect the inactive button.
-  // await expect(
-  //   saveButton,
-  //   "save button should be disabled during the api call"
-  // ).toBeDisabled();
-  // await expect(
-  //   saveButton,
-  //   "save button should be enabled after the api call"
-  // ).toBeEnabled();
-
-  // after saving is completed screen should have those new changed text before/after the page reload
-  await expect(
-    page.getByText(testText),
-    "after saving, screen should have the updated text"
-  ).toBeVisible();
-  await page.reload({ waitUntil: "networkidle" });
-  await expect(
-    page.getByText(testText),
-    "after reloading, screen should have the updated text"
-  ).toBeVisible();
-};
 
 test("it is possible to navigate to the code editor ", async ({ page }) => {
   await page.goto("/");
@@ -97,5 +60,39 @@ test("it is possible to navigate to the code editor ", async ({ page }) => {
 
 test("it is possible to save the workflow", async ({ page }) => {
   await page.goto(`${namespace}/explorer/workflow/edit/${workflow}`);
-  await testSaveWorkflow(page);
+
+  const editorElement = page.getByText(defaultDescription);
+  await editorElement.click();
+
+  const testText = faker.random.alphaNumeric(9);
+  await page.type("textarea", testText);
+
+  // now click on Save
+  const saveButton = page.getByTestId("workflow-editor-btn-save");
+  await saveButton.click();
+
+  // Commented out since this is not a critical step, but maybe we can enable
+  // it again at some point after learning more about the following problem:
+  // These steps fail locally, but work with a remote API. They works locally
+  // with throttling enabled in devtools. This implies the request is completed
+  // so fast there is not enough time to detect the inactive button.
+  // await expect(
+  //   saveButton,
+  //   "save button should be disabled during the api call"
+  // ).toBeDisabled();
+  // await expect(
+  //   saveButton,
+  //   "save button should be enabled after the api call"
+  // ).toBeEnabled();
+
+  // after saving is completed screen should have those new changed text before/after the page reload
+  await expect(
+    page.getByText(testText),
+    "after saving, screen should have the updated text"
+  ).toBeVisible();
+  await page.reload({ waitUntil: "networkidle" });
+  await expect(
+    page.getByText(testText),
+    "after reloading, screen should have the updated text"
+  ).toBeVisible();
 });
