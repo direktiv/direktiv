@@ -64,7 +64,18 @@ test("Service list will list available services", async ({ page }) => {
       .getByTestId("service-row")
       .locator("a")
       .filter({ hasText: "UpAndReady" }),
-    "it renders the status of the service"
+    "it renders the UpAndReady status of the service"
+  ).toBeVisible();
+
+  await page
+    .getByTestId("service-row")
+    .locator("a")
+    .filter({ hasText: "UpAndReady" })
+    .hover();
+
+  await expect(
+    page.getByTestId("service-row").getByText(/Up \d+ second/),
+    "it renders the uptime in a tooltip"
   ).toBeVisible();
 
   await expect(
@@ -83,7 +94,7 @@ test("Service list will list available services", async ({ page }) => {
 
   await expect(
     page.getByText("MY_ENV_VAR=env-var-value"),
-    "it renders one environment variable tooltip"
+    "it shows the environment variable in a tooltip"
   ).toBeVisible();
 
   await expect(
