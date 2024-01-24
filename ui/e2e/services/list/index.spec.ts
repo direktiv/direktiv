@@ -70,12 +70,33 @@ test("Service list will list available services", async ({ page }) => {
   await expect(
     page
       .getByTestId("service-row")
+      .locator("a")
+      .filter({ hasText: "1 environment variable" }),
+    "it renders one environment variable"
+  ).toBeVisible();
+
+  await page
+    .getByTestId("service-row")
+    .locator("a")
+    .filter({ hasText: "1 environment variable" })
+    .hover();
+
+  await expect(
+    page.getByText("MY_ENV_VAR=env-var-value"),
+    "it renders one environment variable tooltip"
+  ).toBeVisible();
+
+  await expect(
+    page
+      .getByTestId("service-row")
       .getByRole("cell", { name: "redis", exact: true }),
     "it renders the image name of the service"
   ).toBeVisible();
 
   await expect(
-    page.getByTestId("service-row").getByRole("cell", { name: "1" }),
+    page
+      .getByTestId("service-row")
+      .getByRole("cell", { name: "1", exact: true }),
     "it renders the scale of the service"
   ).toBeVisible();
 

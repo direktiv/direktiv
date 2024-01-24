@@ -11,4 +11,7 @@ image: "redis"
 scale: ${scale}
 size: ${size}
 cmd: "redis-server"
+envs:
+  - name: "MY_ENV_VAR"
+    value: "env-var-value"
 `;
