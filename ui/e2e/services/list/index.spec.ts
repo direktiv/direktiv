@@ -192,6 +192,6 @@ test("Service list lets the user rebuild a service", async ({ page }) => {
       .getByTestId("service-row")
       .locator("a")
       .filter({ hasText: "UpAndReady" }),
-    "but it does not renders the UpAndReady status of the service anymore"
+    "but it does not render the UpAndReady status of the service anymore"
   ).not.toBeVisible();
 });
