@@ -73,6 +73,7 @@ test("Service list will show all available services", async ({ page }) => {
     .filter({ hasText: "UpAndReady" })
     .hover();
 
+  // TODO: this is flaky. It fails especially when multiple test are running in parallel.
   await expect(
     page.getByTestId("service-row").getByText(/Up \d+ second/),
     "it renders the uptime in a tooltip"
@@ -187,6 +188,12 @@ test("Service list lets the user rebuild a service", async ({ page }) => {
     "it renders one environment variable"
   ).toBeVisible();
 
+  /**
+   * TODO: it is not garanteed that the UpAndReady status is gone. The services a automatically
+   * refetched after the rebuild, but the status might still be UpAndReady from before the rebuild
+   * or it could even be that the service is already UpAndReady again. Maybe just test for the
+   * success toast?
+   */
   await expect(
     page
       .getByTestId("service-row")
@@ -195,3 +202,6 @@ test("Service list lets the user rebuild a service", async ({ page }) => {
     "but it does not render the UpAndReady status of the service anymore"
   ).not.toBeVisible();
 });
+
+// TODO: failing service
+// TODO: test refresh button (change the scale and size and see if it updates)
