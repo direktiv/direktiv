@@ -607,7 +607,6 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 		engine.sugar.Debugf("Instance transitioning to next state: %s -> %s", im.ID().String(), transition.NextState)
 		slog.Info(fmt.Sprintf("Transitioning to next state: %s (%d).", transition.NextState, im.Step()+1), im.GetSlogAttributes()...)
 		engine.logger.Debugf(ctx, im.GetInstanceID(), im.GetAttributes(), "Transitioning to next state: %s (%d).", transition.NextState, im.Step()+1)
-		slog.Info(fmt.Sprintf("Transitioning to next state: %s (%d).", transition.NextState, im.Step()+1), im.GetSlogAttributes()...)
 		go engine.Transition(ctx, im, transition.NextState, 0)
 		return
 	}
