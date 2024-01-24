@@ -24,7 +24,7 @@ const NamespaceVariablePicker = ({
   onChange,
 }: {
   namespace?: string;
-  defaultVariable?: variableType;
+  defaultVariable?: string;
   onChange: (variable: variableType | undefined) => void;
 }) => {
   const { t } = useTranslation();
@@ -39,7 +39,7 @@ const NamespaceVariablePicker = ({
   };
 
   const [variableName, setVariableName] = useState(
-    defaultVariable ? defaultVariable.name : ""
+    defaultVariable ? defaultVariable : ""
   );
 
   const defaultNamespace = useNamespace();

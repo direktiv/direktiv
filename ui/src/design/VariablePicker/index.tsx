@@ -8,7 +8,6 @@ import {
   SelectContent,
   SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "../Select";
@@ -107,12 +106,6 @@ const VariablepickerMessage: FC<PropsWithChildren> = ({ children }) => (
   </div>
 );
 
-const VariablepickerMessage2: FC<PropsWithChildren> = ({ children }) => (
-  <SelectLabel className="p-2 text-sm text-gray-9 dark:text-gray-dark-9">
-    {children}
-  </SelectLabel>
-);
-
 const VariablepickerItem: FC<VariablepickerItemProps> = ({
   props,
   value,
@@ -132,5 +125,4 @@ export {
   VariablepickerItem,
   VariablepickerSeparator,
   VariablepickerMessage,
-  VariablepickerMessage2,
 };

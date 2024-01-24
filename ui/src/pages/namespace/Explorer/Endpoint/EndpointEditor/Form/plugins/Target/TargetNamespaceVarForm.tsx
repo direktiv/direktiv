@@ -72,7 +72,6 @@ export const TargetNamespaceVarForm: FC<FormProps> = ({
             name="configuration.namespace"
             render={({ field }) => (
               <NamespaceSelector
-                id="namespace"
                 defaultValue={field.value}
                 onValueChange={field.onChange}
               />
@@ -94,11 +93,13 @@ export const TargetNamespaceVarForm: FC<FormProps> = ({
                 {...register("configuration.variable", {
                   setValueAs: treatEmptyStringAsUndefined,
                 })}
+                defaultVariable={watch("configuration.variable")}
                 namespace={watch("configuration.namespace")}
                 onChange={(variable) => {
                   field.onChange({
                     variable: variable?.name,
                     content_type: variable?.mimeType,
+                    namespace: watch("configuration.namespace"),
                   });
                 }}
               />
@@ -114,7 +115,7 @@ export const TargetNamespaceVarForm: FC<FormProps> = ({
           <Controller
             control={control}
             name="configuration.content_type"
-            render={({ field }) => (
+            render={() => (
               <Input
                 {...register("configuration.content_type", {
                   setValueAs: treatEmptyStringAsUndefined,
