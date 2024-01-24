@@ -40,7 +40,7 @@ const RunWorkflow = ({ path }: { path: string }) => {
   const { data } = useNodeContent({ path });
   const submitButtonRef = useRef<HTMLButtonElement>(null);
   const validationSchema = getValidationSchemaFromYaml(
-    atob(data?.revision?.source ?? "")
+    atob(data?.source ?? "")
   );
 
   // tab handling

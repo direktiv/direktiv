@@ -124,6 +124,7 @@ func Handler[IN any](fn func(context.Context, IN, *ExecutionInfo) (interface{}, 
 
 				return
 			}
+			defer file.Close()
 
 			_, err = file.WriteString(f.Content)
 			if err != nil {
@@ -132,7 +133,12 @@ func Handler[IN any](fn func(context.Context, IN, *ExecutionInfo) (interface{}, 
 				return
 			}
 
-			file.Chmod(fs.FileMode(f.Permission))
+			err = file.Chmod(fs.FileMode(f.Permission))
+			if err != nil {
+				errWriter(w, http.StatusInternalServerError, err.Error())
+
+				return
+			}
 		}
 
 		out, err := fn(r.Context(), in.Data, ei)

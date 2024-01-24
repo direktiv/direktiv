@@ -96,7 +96,7 @@ test.skip("it renders event listeners", async ({ page }) => {
   await expect(
     page,
     "when clicking on the workflow name, it navigates to the workflow page"
-  ).toHaveURL(`${namespace}/explorer/workflow/active/${workflowNames[2]}`);
+  ).toHaveURL(`${namespace}/explorer/workflow/edit/${workflowNames[2]}`);
 });
 
 // TODO: remove skip until DIR-1096 is resolve

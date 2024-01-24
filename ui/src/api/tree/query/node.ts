@@ -11,42 +11,29 @@ import useQueryWithPermissions from "~/api/useQueryWithPermissions";
 // a node can be a directory or a file, the returned content could either
 // be the list of files (if it's a direkctory) or the content of the file
 const getNodeContent = apiFactory({
-  url: ({
-    namespace,
-    path,
-    revision,
-  }: {
-    namespace: string;
-    path?: string;
-    revision?: string;
-  }) =>
-    `/api/namespaces/${namespace}/tree${forceLeadingSlash(path)}${
-      revision ? `?ref=${revision}` : ""
-    }`,
+  url: ({ namespace, path }: { namespace: string; path?: string }) =>
+    `/api/namespaces/${namespace}/tree${forceLeadingSlash(path)}`,
   method: "GET",
   schema: NodeListSchema,
 });
 
 const fetchTree = async ({
-  queryKey: [{ apiKey, namespace, path, revision }],
+  queryKey: [{ apiKey, namespace, path }],
 }: QueryFunctionContext<ReturnType<(typeof treeKeys)["nodeContent"]>>) =>
   getNodeContent({
     apiKey,
     urlParams: {
       namespace,
       path,
-      revision,
     },
   });
 
 export const useNodeContent = ({
   path,
-  revision,
   enabled = true,
   namespace: givenNamespace,
 }: {
   path?: string;
-  revision?: string;
   enabled?: boolean;
   namespace?: string;
 } = {}) => {
@@ -63,7 +50,6 @@ export const useNodeContent = ({
     queryKey: treeKeys.nodeContent(namespace, {
       apiKey: apiKey ?? undefined,
       path,
-      revision,
     }),
     queryFn: fetchTree,
     select(data) {
