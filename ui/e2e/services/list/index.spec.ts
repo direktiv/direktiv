@@ -177,30 +177,22 @@ test("Service list lets the user rebuild a service", async ({ page }) => {
   ).toBeVisible();
 
   await page.getByTestId("service-row").getByRole("button").click();
-  await page.getByRole("button", { name: "Rebuild" }).click(); // select the rebuild option from the context menu
-  await page.getByRole("button", { name: "Rebuild" }).click(); // click the confirm button
-
   await expect(
-    page
-      .getByTestId("service-row")
-      .locator("a")
-      .filter({ hasText: "1 environment variable" }),
-    "it renders one environment variable"
+    page.getByRole("button", { name: "Rebuild" }),
+    "it opens the context menu"
   ).toBeVisible();
 
-  /**
-   * TODO: it is not garanteed that the UpAndReady status is gone. The services a automatically
-   * refetched after the rebuild, but the status might still be UpAndReady from before the rebuild
-   * or it could even be that the service is already UpAndReady again. Maybe just test for the
-   * success toast?
-   */
+  await page.getByRole("button", { name: "Rebuild" }).click();
   await expect(
-    page
-      .getByTestId("service-row")
-      .locator("a")
-      .filter({ hasText: "UpAndReady" }),
-    "but it does not render the UpAndReady status of the service anymore"
-  ).not.toBeVisible();
+    page.getByLabel("Rebuild service"),
+    "it opens the rebuild service modal"
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Rebuild" }).click();
+
+  await expect(
+    page.getByTestId("toast-success"),
+    "it renders a confirmation toast after resending the event"
+  ).toBeVisible();
 });
 
 // TODO: failing service
