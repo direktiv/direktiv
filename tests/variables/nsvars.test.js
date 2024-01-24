@@ -129,7 +129,7 @@ describe('Test workflow variable operations', () => {
             .send(simpleWorkflow)
 
         expect(createWorkflowResponse.statusCode).toEqual(200)
-        var buf = Buffer.from(createWorkflowResponse.body.revision.source, 'base64')
+        var buf = Buffer.from(createWorkflowResponse.body.source, 'base64')
         expect(buf.toString()).toEqual(simpleWorkflow)
     })
 

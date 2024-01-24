@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"os/exec"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -100,7 +102,7 @@ func TestNewServerErrors(t *testing.T) {
 
 	h.ServeHTTP(w, r)
 
-	assert.Equal(t, http.StatusInternalServerError, w.Result().StatusCode)
+	assert.Equal(t, http.StatusOK, w.Result().StatusCode)
 
 }
 
@@ -114,4 +116,39 @@ func handleit(ctx context.Context, in testIn, ei *server.ExecutionInfo) (interfa
 	in.Integer = 200
 
 	return in, nil
+}
+
+func TestNewServerFiles(t *testing.T) {
+
+	payload := `
+	{
+		"files": [
+			{
+				"name": "hello.sh",
+				"permission": 493,
+				"content": "#!/bin/sh\necho -n hello"
+			}
+		]
+	}
+	`
+
+	h := server.Handler[testIn](handleit)
+
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest(http.MethodPost, "/", strings.NewReader(payload))
+	r.Header.Add(server.DirektivActionIDHeader, "123")
+	r.Header.Add(server.DirektivTempDir, os.TempDir())
+
+	fp := filepath.Join(os.TempDir(), "hello.sh")
+
+	h.ServeHTTP(w, r)
+
+	cmd := exec.Command(fp)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err := cmd.Run()
+
+	assert.NoError(t, err)
+
+	h.ServeHTTP(w, r)
 }

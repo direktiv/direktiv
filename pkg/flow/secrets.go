@@ -9,7 +9,7 @@ import (
 )
 
 func (flow *flow) placeholdSecrets(ctx context.Context, tx *sqlTx, ns string, file *filestore.File) error {
-	rev, err := tx.FileStore().ForFile(file).GetCurrentRevision(ctx)
+	rev, err := tx.FileStore().ForFile(file).GetRevision(ctx)
 	if err != nil {
 		return err
 	}

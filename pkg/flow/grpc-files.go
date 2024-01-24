@@ -131,7 +131,7 @@ func (flow *flow) File(ctx context.Context, req *grpc.FileRequest) (*grpc.FileRe
 		return nil, err
 	}
 
-	revision, err := tx.FileStore().ForFile(file).GetCurrentRevision(ctx)
+	revision, err := tx.FileStore().ForFile(file).GetRevision(ctx)
 	if err != nil {
 		return nil, err
 	}

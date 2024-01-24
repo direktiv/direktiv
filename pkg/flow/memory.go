@@ -280,6 +280,7 @@ func (engine *engine) getInstanceMemory(ctx context.Context, id string) (*instan
 
 	flow := im.instance.RuntimeInfo.Flow
 	if len(flow)-1 < 0 {
+		engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", "failed to initialize (likely due to high load)"))
 		return nil, fmt.Errorf("unable to retrieve stateID. Possible data race occurred, causing the instance to crash")
 	}
 	stateID := flow[len(flow)-1]

@@ -314,6 +314,8 @@ func runHelm() {
 	cmd := exec.Command("helm", "install", "-f", "/direktiv.yaml", "direktiv", ".")
 	cmd.Dir = "/direktiv-charts/charts/direktiv"
 	cmd.Env = []string{"KUBECONFIG=/etc/rancher/k3s/k3s.yaml"}
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stdout
 	err = cmd.Run()
 	if err != nil {
 		panic(err)
@@ -361,13 +363,13 @@ func installKnative() {
 
 	var buf bytes.Buffer
 
-	cmd := exec.Command("k3s", "kubectl", "apply", "-f", "https://github.com/knative/operator/releases/download/knative-v1.11.6/operator.yaml")
+	cmd := exec.Command("k3s", "kubectl", "apply", "-f", "https://github.com/knative/operator/releases/download/knative-v1.12.2/operator.yaml")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Run()
 	waitForPod("name=knative-operator", "default")
 
-	b, err := downloadFile("https://raw.githubusercontent.com/direktiv/direktiv/main/kubernetes/install/knative/basic.yaml")
+	b, err := downloadFile("https://raw.githubusercontent.com/direktiv/direktiv/main/scripts/kubernetes/install/knative/basic.yaml")
 	if err != nil {
 		panic(fmt.Sprintf("can not download knative yaml: %s", err.Error()))
 	}
@@ -459,7 +461,7 @@ func installKnative() {
 	}
 
 	// contour
-	cmd = exec.Command("k3s", "kubectl", "apply", "-f", "https://github.com/knative/net-contour/releases/download/knative-v1.11.0/contour.yaml")
+	cmd = exec.Command("k3s", "kubectl", "apply", "-f", "https://github.com/knative/net-contour/releases/download/knative-v1.12.2/contour.yaml")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
@@ -514,7 +516,7 @@ func startingK3s() error {
 	log.Println("evacuate cgroup2")
 	if err := cgrouputil.EvacuateCgroup2("init"); err != nil {
 		log.Println("could not evacuate cgroup2")
-		return err
+		// return err
 	}
 
 	// passing env in for http_prox values

@@ -53,9 +53,6 @@ type FileStore interface {
 
 	// GetFileByID queries a file by id.
 	GetFileByID(ctx context.Context, id uuid.UUID) (*File, error)
-
-	// GetRevisionByID queries a revision by id.
-	GetRevisionByID(ctx context.Context, id uuid.UUID) (*File, *Revision, error)
 }
 
 // Root represents an isolated filesystems. Users of filestore can create and deletes multiple roots. In Direktiv,

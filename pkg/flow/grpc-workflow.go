@@ -45,11 +45,7 @@ func (flow *flow) Workflow(ctx context.Context, req *grpc.WorkflowRequest) (*grp
 		return nil, err
 	}
 
-	ref := req.GetRef()
-	if ref == "" {
-		ref = filestore.Latest
-	}
-	revision, err := tx.FileStore().ForFile(file).GetRevision(ctx, ref)
+	revision, err := tx.FileStore().ForFile(file).GetRevision(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -65,8 +61,7 @@ func (flow *flow) Workflow(ctx context.Context, req *grpc.WorkflowRequest) (*grp
 	resp := new(grpc.WorkflowResponse)
 	resp.Namespace = ns.Name
 	resp.Node = bytedata.ConvertFileToGrpcNode(file)
-	resp.Revision = bytedata.ConvertRevisionToGrpcRevision(revision)
-	resp.Revision.Source = data
+	resp.Source = data
 	resp.EventLogging = ""
 	resp.Oid = file.ID.String()
 
@@ -123,8 +118,7 @@ func (flow *flow) createFileSystemObject(ctx context.Context, fileType filestore
 	resp := &grpc.CreateWorkflowResponse{}
 	resp.Namespace = ns.Name
 	resp.Node = bytedata.ConvertFileToGrpcNode(file)
-	resp.Revision = bytedata.ConvertRevisionToGrpcRevision(revision)
-	resp.Revision.Source = data
+	resp.Source = data
 
 	if err = tx.Commit(ctx); err != nil {
 		return nil, err
@@ -236,8 +230,7 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 	resp := &grpc.CreateWorkflowResponse{}
 	resp.Namespace = ns.Name
 	resp.Node = bytedata.ConvertFileToGrpcNode(file)
-	resp.Revision = bytedata.ConvertRevisionToGrpcRevision(revision)
-	resp.Revision.Source = data
+	resp.Source = data
 
 	return resp, nil
 }
@@ -268,11 +261,11 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 	default:
 		return nil, status.Error(codes.InvalidArgument, "file type is not workflow or service or endpoint or consumer")
 	}
-	revision, err := tx.FileStore().ForFile(file).GetCurrentRevision(ctx)
+	revision, err := tx.FileStore().ForFile(file).GetRevision(ctx)
 	if err != nil {
 		return nil, err
 	}
-	newRevision, err := tx.FileStore().ForFile(file).CreateRevision(ctx, "", req.GetSource())
+	newRevision, err := tx.FileStore().ForFile(file).CreateRevision(ctx, req.GetSource())
 	if err != nil {
 		return nil, err
 	}
@@ -331,151 +324,7 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 
 	resp.Namespace = ns.Name
 	resp.Node = bytedata.ConvertFileToGrpcNode(file)
-	resp.Revision = bytedata.ConvertRevisionToGrpcRevision(newRevision)
-	resp.Revision.Source = data
-
-	return &resp, nil
-}
-
-func (flow *flow) SaveHead(ctx context.Context, req *grpc.SaveHeadRequest) (*grpc.SaveHeadResponse, error) {
-	// This is being called by the UI when a user clicks create revision button.
-
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
-
-	tx, err := flow.beginSqlTx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer tx.Rollback()
-
-	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
-
-	file, err := tx.FileStore().ForNamespace(ns.Name).GetFile(ctx, req.GetPath())
-	if err != nil {
-		return nil, err
-	}
-	if file.Typ != filestore.FileTypeWorkflow {
-		return nil, status.Error(codes.InvalidArgument, "file type is not workflow")
-	}
-	revision, err := tx.FileStore().ForFile(file).GetCurrentRevision(ctx)
-	if err != nil {
-		return nil, err
-	}
-	dataReader, err := tx.FileStore().ForRevision(revision).GetData(ctx)
-	if err != nil {
-		return nil, err
-	}
-	_, err = tx.FileStore().ForFile(file).CreateRevision(ctx, "", dataReader)
-	if err != nil {
-		return nil, err
-	}
-	data, err := tx.FileStore().ForRevision(revision).GetData(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	if err = tx.Commit(ctx); err != nil {
-		return nil, err
-	}
-
-	err = flow.pBus.Publish(pubsub.WorkflowUpdate, ns.Name)
-	if err != nil {
-		flow.sugar.Error("pubsub publish", "error", err)
-	}
-
-	var resp grpc.SaveHeadResponse
-
-	resp.Namespace = ns.Name
-	resp.Node = bytedata.ConvertFileToGrpcNode(file)
-	resp.Revision = bytedata.ConvertRevisionToGrpcRevision(revision)
-	resp.Revision.Source = data
-
-	return &resp, nil
-}
-
-func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest) (*grpc.DiscardHeadResponse, error) {
-	// This is being called by the UI when a user clicks 'revert' button.
-
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
-
-	tx, err := flow.beginSqlTx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer tx.Rollback()
-
-	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
-
-	file, err := tx.FileStore().ForNamespace(ns.Name).GetFile(ctx, req.GetPath())
-	if err != nil {
-		return nil, err
-	}
-	if file.Typ != filestore.FileTypeWorkflow {
-		return nil, status.Error(codes.InvalidArgument, "file type is not workflow")
-	}
-
-	// Discarding head is basically reverting to the before latest revision.
-
-	revs, err := tx.FileStore().ForFile(file).GetAllRevisions(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	var currentRev *filestore.Revision
-	var beforeLatestRev *filestore.Revision
-	if !revs[0].IsCurrent {
-		beforeLatestRev = revs[0]
-	} else {
-		beforeLatestRev = revs[1]
-	}
-	for _, rev := range revs {
-		if rev.IsCurrent {
-			currentRev = rev
-			continue
-		}
-		if rev.CreatedAt.Compare(beforeLatestRev.CreatedAt) >= 0 {
-			beforeLatestRev = rev
-		}
-	}
-	dataReader, err := tx.FileStore().ForRevision(beforeLatestRev).GetData(ctx)
-	if err != nil {
-		return nil, err
-	}
-	newRev, err := tx.FileStore().ForFile(file).CreateRevision(ctx, "", dataReader)
-	if err != nil {
-		return nil, err
-	}
-	// delete the old current revision.
-	err = tx.FileStore().ForRevision(currentRev).Delete(ctx)
-	if err != nil {
-		return nil, err
-	}
-	data, err := tx.FileStore().ForRevision(newRev).GetData(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	if err = tx.Commit(ctx); err != nil {
-		return nil, err
-	}
-
-	err = flow.pBus.Publish(pubsub.WorkflowUpdate, ns.Name)
-	if err != nil {
-		flow.sugar.Error("pubsub publish", "error", err)
-	}
-
-	var resp grpc.DiscardHeadResponse
-
-	resp.Namespace = ns.Name
-	resp.Node = bytedata.ConvertFileToGrpcNode(file)
-	resp.Revision = bytedata.ConvertRevisionToGrpcRevision(newRev)
-	resp.Revision.Source = data
+	resp.Source = data
 
 	return &resp, nil
 }
