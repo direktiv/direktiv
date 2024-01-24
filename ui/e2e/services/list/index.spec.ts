@@ -4,6 +4,7 @@ import { expect, test } from "@playwright/test";
 
 import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
 import { headers } from "e2e/utils/testutils";
+import { updateWorkflow } from "~/api/tree/mutate/updateWorkflow";
 
 let namespace = "";
 
@@ -229,4 +230,62 @@ test("Service list will highlight services that have errors", async ({
   ).toBeVisible();
 });
 
-// TODO: test refresh button (change the scale and size and see if it updates)
+test("Service list will update the services when refecth button is clicked", async ({
+  page,
+}) => {
+  await createWorkflow({
+    payload: createRedisServiceFile({
+      scale: 1,
+      size: "large",
+    }),
+    urlParams: {
+      baseUrl: process.env.VITE_DEV_API_DOMAIN,
+      namespace,
+      name: "redis-service.yaml",
+    },
+    headers,
+  });
+
+  await page.goto(`/${namespace}/services`, {
+    waitUntil: "networkidle",
+  });
+
+  await expect(
+    page
+      .getByTestId("service-row")
+      .getByRole("cell", { name: "1", exact: true }),
+    "it will show the scale of 1"
+  ).toBeVisible();
+
+  await expect(
+    page.getByTestId("service-row").getByRole("cell", { name: "large" }),
+    "it will show a size of large"
+  ).toBeVisible();
+
+  await updateWorkflow({
+    payload: createRedisServiceFile({
+      scale: 2,
+      size: "small",
+    }),
+    urlParams: {
+      baseUrl: process.env.VITE_DEV_API_DOMAIN,
+      namespace,
+      path: "redis-service.yaml",
+    },
+    headers,
+  });
+
+  await page.getByLabel("Refetch services").click();
+
+  await expect(
+    page
+      .getByTestId("service-row")
+      .getByRole("cell", { name: "2", exact: true }),
+    "it will have updated the scale to 1"
+  ).toBeVisible();
+
+  await expect(
+    page.getByTestId("service-row").getByRole("cell", { name: "small" }),
+    "it will have updated the size to small"
+  ).toBeVisible();
+});
