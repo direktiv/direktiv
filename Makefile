@@ -202,4 +202,5 @@ cli:
 
 .PHONY: binary
 binary: ## Useful only to check that code compiles properly.
+	go build -o /dev/null cmd/cmd-exec/*.go
 	go build -o /dev/null cmd/direktiv/*.go
