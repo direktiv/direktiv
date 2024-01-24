@@ -9,6 +9,8 @@ import (
 	"sync"
 	"time"
 
+	"log/slog"
+
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
@@ -21,7 +23,6 @@ import (
 	pkgevents "github.com/direktiv/direktiv/pkg/refactor/events"
 	"github.com/google/uuid"
 	"github.com/jinzhu/copier"
-	"golang.org/x/exp/slog"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
