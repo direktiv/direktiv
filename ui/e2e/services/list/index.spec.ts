@@ -121,3 +121,33 @@ test("Service list will show all available services", async ({ page }) => {
     "it renders the cmd of the service"
   ).toBeVisible();
 });
+
+test("Service list will link to the service file", async ({ page }) => {
+  await createWorkflow({
+    payload: createRedisServiceFile(),
+    urlParams: {
+      baseUrl: process.env.VITE_DEV_API_DOMAIN,
+      namespace,
+      name: "redis-service.yaml",
+    },
+    headers,
+  });
+
+  await page.goto(`/${namespace}/services`, {
+    waitUntil: "networkidle",
+  });
+
+  await page
+    .getByTestId("service-row")
+    .getByRole("link", { name: "/redis-service.yaml" })
+    .click();
+
+  await expect(page, "after clicking the service, the user was").toHaveURL(
+    `/${namespace}/explorer/service/redis-service.yaml`
+  );
+
+  await expect(
+    page.getByTestId("breadcrumb-segment"),
+    "it renders the 'Services' breadcrumb"
+  ).toHaveText("redis-service.yaml");
+});
