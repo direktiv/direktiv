@@ -93,7 +93,7 @@ func (engine *engine) mux(ctx context.Context, ns *database.Namespace, calledAs 
 	var rev *filestore.Revision
 
 	if true {
-		rev, err = tx.FileStore().ForFile(file).GetCurrentRevision(ctx)
+		rev, err = tx.FileStore().ForFile(file).GetRevision(ctx)
 		if err != nil {
 			return nil, nil, err
 		}

@@ -63,14 +63,6 @@ func ConvertRevisionToGrpcFile(file *filestore.File, rev *filestore.Revision) *g
 	}
 }
 
-func ConvertRevisionToGrpcRevision(rev *filestore.Revision) *grpc.Revision {
-	return &grpc.Revision{
-		Name:      rev.ID.String(),
-		CreatedAt: timestamppb.New(rev.CreatedAt),
-		Hash:      rev.Checksum,
-	}
-}
-
 func ConvertMirrorConfigToGrpcMirrorInfo(config *mirror.Config) *grpc.MirrorInfo {
 	return &grpc.MirrorInfo{
 		Url: config.URL,

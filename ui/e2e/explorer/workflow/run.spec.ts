@@ -33,7 +33,7 @@ test("it is possible to open and use the run workflow modal from the editor and 
     headers,
   });
 
-  await page.goto(`${namespace}/explorer/workflow/active/${workflowName}`);
+  await page.goto(`${namespace}/explorer/workflow/edit/${workflowName}`);
 
   // open modal via editor button
   await page.getByTestId("workflow-editor-btn-run").click();
@@ -104,7 +104,7 @@ test("it is possible to run the workflow by setting an input JSON via the editor
     headers,
   });
 
-  await page.goto(`${namespace}/explorer/workflow/active/${workflowName}`);
+  await page.goto(`${namespace}/explorer/workflow/edit/${workflowName}`);
 
   await page.getByTestId("workflow-editor-btn-run").click();
   expect(
@@ -181,7 +181,7 @@ test("it is not possible to run the workflow when the editor has unsaved changes
     headers,
   });
 
-  await page.goto(`${namespace}/explorer/workflow/active/${workflowName}`);
+  await page.goto(`${namespace}/explorer/workflow/edit/${workflowName}`);
 
   await expect(page.getByTestId("workflow-editor-btn-run")).not.toBeDisabled();
 
@@ -204,7 +204,7 @@ test("it is possible to provide the input via generated form", async ({
     headers,
   });
 
-  await page.goto(`${namespace}/explorer/workflow/active/${workflowName}`);
+  await page.goto(`${namespace}/explorer/workflow/edit/${workflowName}`);
 
   await page.getByTestId("workflow-editor-btn-run").click();
   expect(
@@ -325,7 +325,7 @@ test("it is possible to provide the input via generated form and resolve form er
     headers,
   });
 
-  await page.goto(`${namespace}/explorer/workflow/active/${workflowName}`);
+  await page.goto(`${namespace}/explorer/workflow/edit/${workflowName}`);
 
   await page.getByTestId("workflow-editor-btn-run").click();
   expect(

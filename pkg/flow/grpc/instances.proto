@@ -12,7 +12,6 @@ message InstanceWorkflow {
 	string path = 1;
 	string name = 2;
 	string parent = 3;
-	string revision = 4;
 }
 
 message Instance {
@@ -95,7 +94,6 @@ message CancelInstanceRequest {
 message StartWorkflowRequest {
 	string namespace = 1;
 	string path = 2;
-	string ref = 3;
 	bytes input = 4;
 	bool hold = 5;
 }
@@ -118,7 +116,6 @@ message ReleaseInstanceResponse {
 message RunWorkflowRequest {
 	string namespace = 1;
 	string path = 2;
-	string ref = 3;
 	bytes input = 4;
 }
 
@@ -131,7 +128,6 @@ message RunWorkflowResponse {
 message AwaitWorkflowRequest {
 	string namespace = 1;
 	string path = 2;
-	string ref = 3;
 	bytes input = 4;
 }
 
