@@ -151,3 +151,47 @@ test("Service list will link to the service file", async ({ page }) => {
     "it renders the 'Services' breadcrumb"
   ).toHaveText("redis-service.yaml");
 });
+
+test("Service list lets the user rebuild a service", async ({ page }) => {
+  await createWorkflow({
+    payload: createRedisServiceFile(),
+    urlParams: {
+      baseUrl: process.env.VITE_DEV_API_DOMAIN,
+      namespace,
+      name: "redis-service.yaml",
+    },
+    headers,
+  });
+
+  await page.goto(`/${namespace}/services`, {
+    waitUntil: "networkidle",
+  });
+
+  await expect(
+    page
+      .getByTestId("service-row")
+      .locator("a")
+      .filter({ hasText: "UpAndReady" }),
+    "it renders the UpAndReady status of the service"
+  ).toBeVisible();
+
+  await page.getByTestId("service-row").getByRole("button").click();
+  await page.getByRole("button", { name: "Rebuild" }).click(); // select the rebuild option from the context menu
+  await page.getByRole("button", { name: "Rebuild" }).click(); // click the confirm button
+
+  await expect(
+    page
+      .getByTestId("service-row")
+      .locator("a")
+      .filter({ hasText: "1 environment variable" }),
+    "it renders one environment variable"
+  ).toBeVisible();
+
+  await expect(
+    page
+      .getByTestId("service-row")
+      .locator("a")
+      .filter({ hasText: "UpAndReady" }),
+    "but it does not renders the UpAndReady status of the service anymore"
+  ).not.toBeVisible();
+});
