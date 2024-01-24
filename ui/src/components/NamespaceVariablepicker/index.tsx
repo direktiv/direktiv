@@ -38,12 +38,8 @@ const NamespaceVariablePicker = ({
     mimeType: "",
   };
 
-  const [inputValue, setInput] = useState(
+  const [variableName, setVariableName] = useState(
     defaultVariable ? defaultVariable.name : ""
-  );
-
-  const [variable, setVariable] = useState(
-    defaultVariable ? defaultVariable : emptyVariable
   );
 
   const defaultNamespace = useNamespace();
@@ -60,9 +56,8 @@ const NamespaceVariablePicker = ({
 
   const setNewVariable = (value: string) => {
     emptyVariable.name = value;
-    setVariable(emptyVariable);
     onChange(emptyVariable);
-    setInput(value);
+    setVariableName(value);
   };
 
   const setExistingVariable = (value: string) => {
@@ -71,9 +66,8 @@ const NamespaceVariablePicker = ({
     )[0];
 
     if (foundVariable != undefined) {
-      setVariable(foundVariable);
       onChange(foundVariable);
-      setInput(value);
+      setVariableName(value);
     }
   };
 
@@ -114,7 +108,7 @@ const NamespaceVariablePicker = ({
           ) : (
             <Variablepicker
               buttonText={t("components.namespaceVariablepicker.buttonText")}
-              value={inputValue}
+              value={variableName}
               onValueChange={(value) => {
                 setExistingVariable(value);
               }}
@@ -137,7 +131,7 @@ const NamespaceVariablePicker = ({
       )}
       <Input
         placeholder={t("components.namespaceVariablepicker.placeholder")}
-        value={inputValue}
+        value={variableName}
         onChange={(e) => {
           setNewVariable(e.target.value);
         }}
