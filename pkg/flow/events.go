@@ -21,6 +21,7 @@ import (
 	pkgevents "github.com/direktiv/direktiv/pkg/refactor/events"
 	"github.com/google/uuid"
 	"github.com/jinzhu/copier"
+	"golang.org/x/exp/slog"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -751,6 +752,7 @@ func (events *events) listenForEvents(ctx context.Context, im *instanceMemory, c
 	}
 
 	events.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), "Registered to receive events.")
+	slog.Info("Registered to receive events.", "stream", recipient.Namespace.String()+"."+im.Namespace().Name)
 
 	return nil
 }

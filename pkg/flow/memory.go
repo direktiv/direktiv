@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"strings"
 	"time"
 
@@ -29,7 +30,8 @@ type instanceMemory struct {
 	// stores the events to be fired on schedule
 	eventQueue []string
 
-	tags map[string]string
+	tags       map[string]string
+	userLogger *slog.Logger
 
 	instance   *enginerefactor.Instance
 	updateArgs *instancestore.UpdateInstanceDataArgs
@@ -219,6 +221,17 @@ func (im *instanceMemory) GetAttributes() map[string]string {
 		}
 	}
 
+	return tags
+}
+
+func (im *instanceMemory) GetSlogAttributes() []interface{} {
+	tags := im.instance.GetSlogAttributes()
+
+	if im.logic != nil {
+		tags = append(tags, "state-id", im.logic.GetID())
+		tags = append(tags, "state-type", im.logic.GetType())
+	}
+	im.userLogger = slog.Default().With(tags...)
 	return tags
 }
 
