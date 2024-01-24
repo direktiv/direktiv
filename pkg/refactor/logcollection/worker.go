@@ -2,6 +2,7 @@ package logcollection
 
 import (
 	"context"
+	"log/slog"
 	"time"
 )
 
@@ -41,7 +42,8 @@ func (lw *LogStoreWorker) Start(ctx context.Context) {
 			case <-ticker.C:
 				logs, err := lw.LogStore.Get(ctx, lw.Stream, 0)
 				if err != nil {
-					// Handle error
+					slog.Error("TODO: should we quit with an error?", "error", err)
+
 					continue
 				}
 				lw.LogCh <- logs
@@ -64,7 +66,8 @@ func (lw *LogStoreWorker) StartInstanceLogsWorker(ctx context.Context) {
 			case <-ticker.C:
 				logs, err := lw.LogStore.GetInstanceLogs(ctx, lw.Stream, lw.InstanceID, 0)
 				if err != nil {
-					// Handle error
+					slog.Error("TODO: should we quit with an error?", "error", err)
+
 					continue
 				}
 				lw.LogCh <- logs

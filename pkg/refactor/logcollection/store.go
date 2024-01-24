@@ -5,13 +5,10 @@ import (
 	"time"
 )
 
-// Represents an individual log entry.
 type LogEntry struct {
-	// the timestamp of the log-entry.
 	Time time.Time
 	Tag  string
-	// Fields contains metadata of the log-entry.
-	data map[string]interface{}
+	Data map[string]interface{}
 }
 
 type LogLevel int

@@ -22,7 +22,7 @@ func (s sqlLogNewStore) Get(ctx context.Context, stream string, offset int) ([]l
 		ORDER BY timestamp ASC LIMIT 200, OFFSET ?
 	`
 	resultList := make([]logcollection.LogEntry, 0)
-	tx := s.db.WithContext(ctx).Raw(query).Scan(&resultList)
+	tx := s.db.WithContext(ctx).Raw(query, stream, offset).Scan(&resultList)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
