@@ -124,7 +124,9 @@ test("Service list will show all available services", async ({ page }) => {
   ).toBeVisible();
 });
 
-test("Service list will link to the service file", async ({ page }) => {
+test("Service list will link the file name to the service file", async ({
+  page,
+}) => {
   await createWorkflow({
     payload: createRedisServiceFile(),
     urlParams: {
@@ -144,14 +146,60 @@ test("Service list will link to the service file", async ({ page }) => {
     .getByRole("link", { name: "/redis-service.yaml" })
     .click();
 
-  await expect(page, "after clicking the service, the user was").toHaveURL(
-    `/${namespace}/explorer/service/redis-service.yaml`
-  );
+  await expect(
+    page,
+    "after clicking on the service file name, the user gets redirected to the file explorer page of the service file"
+  ).toHaveURL(`/${namespace}/explorer/service/redis-service.yaml`);
 
   await expect(
     page.getByTestId("breadcrumb-segment"),
     "it renders the 'Services' breadcrumb"
   ).toHaveText("redis-service.yaml");
+});
+
+test("Service list will link the row to the service details page", async ({
+  page,
+}) => {
+  await createWorkflow({
+    payload: createRedisServiceFile(),
+    urlParams: {
+      baseUrl: process.env.VITE_DEV_API_DOMAIN,
+      namespace,
+      name: "redis-service.yaml",
+    },
+    headers,
+  });
+
+  await page.goto(`/${namespace}/services`, {
+    waitUntil: "networkidle",
+  });
+
+  await page.getByTestId("service-row").click();
+
+  const urlReg = new RegExp(
+    `${namespace}/services/${namespace}-redis-service-yaml-(.*)`
+  );
+
+  await expect(
+    page,
+    "after clicking on the service row, the user gets redirected to the service details page"
+  ).toHaveURL(urlReg);
+
+  const serviceId = page.url().match(urlReg)?.[1];
+
+  await expect(
+    page
+      .getByTestId("breadcrumb-services")
+      .getByRole("link", { name: "Services" }),
+    "it renders the 'Services' breadcrumb segment"
+  ).toBeVisible();
+
+  await expect(
+    page.getByRole("link", {
+      name: `${namespace}-redis-service-yaml-${serviceId}`,
+    }),
+    "it renders the filename breadcrumb segment"
+  ).toBeVisible();
 });
 
 test("Service list lets the user rebuild a service", async ({ page }) => {
