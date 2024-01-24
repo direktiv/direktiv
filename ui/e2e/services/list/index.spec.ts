@@ -73,9 +73,9 @@ test("Service list will show all available services", async ({ page }) => {
     .filter({ hasText: "UpAndReady" })
     .hover();
 
-  // TODO: this is flaky. It fails especially when multiple test are running in parallel.
+  // message can be "Up 1 second" or "Up 2 seconds" or "Up Less than a second"
   await expect(
-    page.getByTestId("service-row").getByText(/Up \d+ second/),
+    page.getByTestId("service-row").getByText(/Up .* second/),
     "it renders the uptime in a tooltip"
   ).toBeVisible();
 
