@@ -32,7 +32,7 @@ test("Service list is empty by default", async ({ page }) => {
   ).toBeVisible();
 });
 
-test("Service list will list available services", async ({ page }) => {
+test("Service list will show all available services", async ({ page }) => {
   await createWorkflow({
     payload: createRedisServiceFile(),
     urlParams: {
