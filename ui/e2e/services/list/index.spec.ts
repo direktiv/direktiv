@@ -1,7 +1,7 @@
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
+import { createRedisServiceFile, serviceWithAnError } from "./utils";
 import { expect, test } from "@playwright/test";
 
-import { createRedisServiceFile } from "./utils";
 import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
 import { headers } from "e2e/utils/testutils";
 
@@ -195,5 +195,38 @@ test("Service list lets the user rebuild a service", async ({ page }) => {
   ).toBeVisible();
 });
 
-// TODO: failing service
+test("Service list will highlight services that have errors", async ({
+  page,
+}) => {
+  await createWorkflow({
+    payload: serviceWithAnError,
+    urlParams: {
+      baseUrl: process.env.VITE_DEV_API_DOMAIN,
+      namespace,
+      name: "failed-service.yaml",
+    },
+    headers,
+  });
+
+  await page.goto(`/${namespace}/services`, {
+    waitUntil: "networkidle",
+  });
+
+  await expect(
+    page.getByTestId("service-row").locator("a").filter({ hasText: "Error" }),
+    "it renders the Error status of the service"
+  ).toBeVisible();
+
+  await page
+    .getByTestId("service-row")
+    .locator("a")
+    .filter({ hasText: "Error" })
+    .hover();
+
+  await expect(
+    page.getByTestId("service-row").getByText("image pull, err:"),
+    "it renders the uptime in a tooltip"
+  ).toBeVisible();
+});
+
 // TODO: test refresh button (change the scale and size and see if it updates)

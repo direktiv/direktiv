@@ -15,3 +15,9 @@ envs:
   - name: "MY_ENV_VAR"
     value: "env-var-value"
 `;
+
+export const serviceWithAnError = `direktiv_api: service/v1
+image: "this-image-does-not-exist"
+scale: 1
+size: "small"
+`;
