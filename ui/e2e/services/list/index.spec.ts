@@ -22,6 +22,11 @@ test("Service list is empty by default", async ({ page }) => {
   });
 
   await expect(
+    page.getByTestId("breadcrumb-services"),
+    "it renders the 'Services' breadcrumb"
+  ).toBeVisible();
+
+  await expect(
     page.getByText("No services exist yet"),
     "it renders an empy list of services"
   ).toBeVisible();
