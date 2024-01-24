@@ -36,7 +36,8 @@ export const EnvItemForm: FC<EnvItemFormProps> = ({
   const isValid = state?.name && state?.value;
 
   const handleAdd = () => {
-    onAdd && onAdd(state);
+    if (!onAdd) return;
+    onAdd(state);
     setState(emptyItem);
   };
 
@@ -44,10 +45,12 @@ export const EnvItemForm: FC<EnvItemFormProps> = ({
     onDelete && onDelete();
   };
 
-  const handleKeyDown = (event: KeyboardEvent) => {
+  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (!isValid) return;
     if (event.key === "Enter") {
+      if (!onAdd) return;
       event.preventDefault();
+      event.currentTarget.blur();
       handleAdd();
     }
   };
@@ -57,6 +60,7 @@ export const EnvItemForm: FC<EnvItemFormProps> = ({
       <Input
         value={state.name}
         onChange={(event) => handleChange({ name: event.target.value })}
+        onKeyDown={handleKeyDown}
         placeholder="NAME"
       ></Input>
       <Input
