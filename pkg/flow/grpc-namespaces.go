@@ -35,15 +35,8 @@ func (flow *flow) ResolveNamespaceUID(ctx context.Context, req *grpc.ResolveName
 		return nil, err
 	}
 
-	rootDir, err := tx.FileStore().ForNamespace(ns.Name).GetFile(ctx, "/")
-	if err != nil {
-		return nil, err
-	}
-
-	annotations, _ := tx.DataStore().FileAnnotations().Get(ctx, rootDir.ID)
-
 	var resp grpc.NamespaceResponse
-	resp.Namespace = bytedata.ConvertNamespaceToGrpc(ns, annotations)
+	resp.Namespace = bytedata.ConvertNamespaceToGrpc(ns)
 
 	return &resp, nil
 }
@@ -127,15 +120,8 @@ func (flow *flow) Namespace(ctx context.Context, req *grpc.NamespaceRequest) (*g
 		return nil, err
 	}
 
-	rootDir, err := tx.FileStore().ForNamespace(ns.Name).GetFile(ctx, "/")
-	if err != nil {
-		return nil, err
-	}
-
-	annotations, _ := tx.DataStore().FileAnnotations().Get(ctx, rootDir.ID)
-
 	var resp grpc.NamespaceResponse
-	resp.Namespace = bytedata.ConvertNamespaceToGrpc(ns, annotations)
+	resp.Namespace = bytedata.ConvertNamespaceToGrpc(ns)
 
 	return &resp, nil
 }
@@ -157,20 +143,7 @@ func (flow *flow) Namespaces(ctx context.Context, req *grpc.NamespacesRequest) (
 	resp := new(grpc.NamespacesResponse)
 	resp.PageInfo = nil
 
-	var annotations []*core.FileAnnotations
-
-	for idx := range list {
-		ns := list[idx]
-		rootDir, err := tx.FileStore().ForNamespace(ns.Name).GetFile(ctx, "/")
-		if err != nil {
-			return nil, err
-		}
-
-		annotation, _ := tx.DataStore().FileAnnotations().Get(ctx, rootDir.ID)
-		annotations = append(annotations, annotation)
-	}
-
-	resp.Results = bytedata.ConvertNamespacesListToGrpc(list, annotations)
+	resp.Results = bytedata.ConvertNamespacesListToGrpc(list)
 	if err != nil {
 		return nil, err
 	}
@@ -231,13 +204,6 @@ func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespace
 		return nil, err
 	}
 
-	rootDir, err := tx.FileStore().ForNamespace(ns.Name).GetFile(ctx, "/")
-	if err != nil {
-		return nil, err
-	}
-
-	annotations, _ := tx.DataStore().FileAnnotations().Get(ctx, rootDir.ID)
-
 	if err = tx.Commit(ctx); err != nil {
 		flow.sugar.Warnf("CreateNamespace failed to commit database transaction: %v", err)
 		return nil, err
@@ -248,7 +214,7 @@ func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespace
 	flow.pubsub.NotifyNamespaces()
 
 	var resp grpc.CreateNamespaceResponse
-	resp.Namespace = bytedata.ConvertNamespaceToGrpc(ns, annotations)
+	resp.Namespace = bytedata.ConvertNamespaceToGrpc(ns)
 
 	err = flow.pBus.Publish(pubsub2.NamespaceCreate, ns.Name)
 	if err != nil {
@@ -334,13 +300,6 @@ func (flow *flow) RenameNamespace(ctx context.Context, req *grpc.RenameNamespace
 		return nil, err
 	}
 
-	rootDir, err := tx.FileStore().ForNamespace(ns.Name).GetFile(ctx, "/")
-	if err != nil {
-		return nil, err
-	}
-
-	annotations, _ := tx.DataStore().FileAnnotations().Get(ctx, rootDir.ID)
-
 	if err = tx.Commit(ctx); err != nil {
 		return nil, err
 	}
@@ -351,7 +310,7 @@ func (flow *flow) RenameNamespace(ctx context.Context, req *grpc.RenameNamespace
 	flow.pubsub.CloseNamespace(ns)
 
 	var resp grpc.RenameNamespaceResponse
-	resp.Namespace = bytedata.ConvertNamespaceToGrpc(ns, annotations)
+	resp.Namespace = bytedata.ConvertNamespaceToGrpc(ns)
 
 	return &resp, nil
 }

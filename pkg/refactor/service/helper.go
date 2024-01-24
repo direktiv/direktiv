@@ -175,23 +175,10 @@ func buildContainers(c *core.Config, sv *core.ServiceConfig) ([]corev1.Container
 		},
 	}
 
-	var lc *corev1.Lifecycle
-
-	if len(sv.PostStartExec) > 0 {
-		lc = &corev1.Lifecycle{
-			PostStart: &corev1.LifecycleHandler{
-				Exec: &corev1.ExecAction{
-					Command: sv.PostStartExec,
-				},
-			},
-		}
-	}
-
 	// user container
 	uc := corev1.Container{
 		Name:      containerUser,
 		Image:     sv.Image,
-		Lifecycle: lc,
 		Env:       buildEnvVars(false, c, sv),
 		Resources: *rl,
 		VolumeMounts: []corev1.VolumeMount{

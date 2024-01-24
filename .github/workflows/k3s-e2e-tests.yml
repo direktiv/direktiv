@@ -1,15 +1,10 @@
 name: K3s Tests
+
 on:
   push:
     branches:
       - main
-    paths:
-      - '*'
-      - '!ui/**'
   pull_request:
-    paths:
-      - '*'
-      - '!ui/**'
 
 env:
   KUBECONFIG: /etc/rancher/k3s/k3s.yaml
@@ -25,7 +20,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Cache Ubuntu packages
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: /var/cache/apt/archives
           key: ${{ runner.os }}-apt-packages-${{ hashFiles('**/apt.lock') }}
@@ -33,7 +28,7 @@ jobs:
             ${{ runner.os }}-apt-packages-
       - name: Cache Docker layers
         id: docker-cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.docker
           key: docker-${{ runner.os }}-${{ hashFiles('Dockerfile') }}
@@ -70,19 +65,19 @@ jobs:
             "errors/",
             "mirror/",
             "namespaces/",
-            # "functions/",
+            "functions/",
             "gateway/",
-            # "kubernetes/",
+            "kubernetes/",
             "registry/",
             "secrets/",
-            # "services/",
+            "services/",
           ]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Cache Ubuntu packages
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: /var/cache/apt/archives
           key: ${{ runner.os }}-apt-packages-${{ hashFiles('**/apt.lock') }}
@@ -108,7 +103,7 @@ jobs:
         run: |
           kubectl apply -f https://github.com/knative/operator/releases/download/knative-v1.11.7/operator.yaml
           kubectl create ns knative-serving
-          kubectl apply -f https://raw.githubusercontent.com/direktiv/direktiv/main/kubernetes/install/knative/basic.yaml
+          kubectl apply -f ./scripts/kubernetes/install/knative/basic.yaml
 
       - name: Add Direktiv Helm repository
         run: helm repo add direktiv https://chart.direktiv.io
@@ -144,7 +139,7 @@ jobs:
 
       - name: Cache Docker layers
         id: docker-cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.docker
           key: docker-${{ runner.os }}-${{ hashFiles('Dockerfile') }}

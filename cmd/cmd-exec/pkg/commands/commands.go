@@ -7,11 +7,11 @@ import (
 	"os/exec"
 
 	"github.com/direktiv/direktiv/cmd/cmd-exec/pkg/server"
-
 	"github.com/mattn/go-shellwords"
 )
 
-type Commmand struct {
+// nolint
+type Command struct {
 	Command         string `json:"command"`
 	StopOnError     bool   `json:"stop"`
 	SuppressCommand bool   `json:"suppress_command"`
@@ -19,16 +19,17 @@ type Commmand struct {
 }
 
 type Commands struct {
-	Commands []Commmand `json:"commands"`
+	Commands []Command `json:"commands"`
 }
 
+// nolint
 type CommandsResponse struct {
 	Error  string
 	Output interface{}
 }
 
+// nolint
 func RunCommands(ctx context.Context, in Commands, info *server.ExecutionInfo) (interface{}, error) {
-
 	commandOutput := make([]CommandsResponse, 0)
 
 	info.Log.Log("running %d commands", len(in.Commands))
@@ -66,21 +67,19 @@ func RunCommands(ctx context.Context, in Commands, info *server.ExecutionInfo) (
 
 			// check if it has to stop here
 			if command.StopOnError {
-
 				commandOutput = append(commandOutput, cr)
+
 				break
 			}
 		}
 
 		commandOutput = append(commandOutput, cr)
-
 	}
 
 	return commandOutput, nil
 }
 
-func runCmd(command Commmand, ei *server.ExecutionInfo) error {
-
+func runCmd(command Command, ei *server.ExecutionInfo) error {
 	p := shellwords.NewParser()
 	p.ParseEnv = true
 	p.ParseBacktick = true

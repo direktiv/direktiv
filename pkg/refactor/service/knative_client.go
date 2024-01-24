@@ -68,7 +68,7 @@ func (c *knativeClient) createService(sv *core.ServiceConfig) error {
 
 	err = c.applyPatch(sv)
 	if err != nil {
-		return err
+		return fmt.Errorf("applying patch: %w", err)
 	}
 
 	return nil
@@ -96,7 +96,6 @@ func (c *knativeClient) applyPatch(sv *core.ServiceConfig) error {
 				break
 			}
 		}
-
 		// if the path is not in the allowed prefix list, return with an error.
 		if !hasAllowedPrefix {
 			return fmt.Errorf("path %s is not permitted for patches", patch.Path)
@@ -105,12 +104,15 @@ func (c *knativeClient) applyPatch(sv *core.ServiceConfig) error {
 
 	patchBytes, err := json.Marshal(sv.Patches)
 	if err != nil {
-		return err
+		return fmt.Errorf("marshalling patch: %w", err)
 	}
 
 	_, err = c.knativeCli.ServingV1().Services(c.config.KnativeNamespace).Patch(context.Background(), sv.GetID(), types.JSONPatchType, patchBytes, metav1.PatchOptions{})
+	if err != nil {
+		return fmt.Errorf("applying patch: %w", err)
+	}
 
-	return err
+	return nil
 }
 
 func (c *knativeClient) updateService(sv *core.ServiceConfig) error {
@@ -129,7 +131,7 @@ func (c *knativeClient) updateService(sv *core.ServiceConfig) error {
 
 	err = c.applyPatch(sv)
 	if err != nil {
-		return err
+		return fmt.Errorf("applying patch: %w", err)
 	}
 
 	return nil

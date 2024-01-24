@@ -20,7 +20,6 @@ type Callbacks interface {
 	Store() Store
 	FileStore() filestore.FileStore
 	VarStore() core.RuntimeVariablesStore
-	FileAnnotationsStore() core.FileAnnotationsStore
 }
 
 type ProcessLogger interface {

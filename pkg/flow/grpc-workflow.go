@@ -2,7 +2,6 @@ package flow
 
 import (
 	"context"
-	"errors"
 	"path/filepath"
 	"time"
 
@@ -11,12 +10,10 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/model"
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/emptypb"
 	"gopkg.in/yaml.v3"
 )
 
@@ -205,16 +202,6 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	_, router, err := getRouter(ctx, tx, file)
-	if err != nil {
-		return nil, err
-	}
-
-	err = flow.configureWorkflowStarts(ctx, tx, ns.ID, file, router, true)
-	if err != nil {
-		return nil, err
-	}
-
 	err = flow.placeholdSecrets(ctx, tx, ns.Name, file)
 	if err != nil {
 		return nil, err
@@ -299,17 +286,8 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 	if err != nil {
 		return nil, err
 	}
-	_, router, err := getRouter(ctx, tx, file)
-	if err != nil {
-		return nil, err
-	}
 
 	if file.Typ == filestore.FileTypeWorkflow {
-		err = flow.configureWorkflowStarts(ctx, tx, ns.ID, file, router, true)
-		if err != nil {
-			return nil, err
-		}
-
 		err = flow.placeholdSecrets(ctx, tx, ns.Name, file)
 		if err != nil {
 			return nil, err
@@ -399,16 +377,6 @@ func (flow *flow) SaveHead(ctx context.Context, req *grpc.SaveHeadRequest) (*grp
 		return nil, err
 	}
 
-	_, router, err := getRouter(ctx, tx, file)
-	if err != nil {
-		return nil, err
-	}
-
-	err = flow.configureWorkflowStarts(ctx, tx, ns.ID, file, router, true)
-	if err != nil {
-		return nil, err
-	}
-
 	if err = tx.Commit(ctx); err != nil {
 		return nil, err
 	}
@@ -492,14 +460,6 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 	if err != nil {
 		return nil, err
 	}
-	_, router, err := getRouter(ctx, tx, file)
-	if err != nil {
-		return nil, err
-	}
-	err = flow.configureWorkflowStarts(ctx, tx, ns.ID, file, router, true)
-	if err != nil {
-		return nil, err
-	}
 
 	if err = tx.Commit(ctx); err != nil {
 		return nil, err
@@ -516,92 +476,6 @@ func (flow *flow) DiscardHead(ctx context.Context, req *grpc.DiscardHeadRequest)
 	resp.Node = bytedata.ConvertFileToGrpcNode(file)
 	resp.Revision = bytedata.ConvertRevisionToGrpcRevision(newRev)
 	resp.Revision.Source = data
-
-	return &resp, nil
-}
-
-func (flow *flow) ToggleWorkflow(ctx context.Context, req *grpc.ToggleWorkflowRequest) (*emptypb.Empty, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
-
-	tx, err := flow.beginSqlTx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer tx.Rollback()
-
-	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
-
-	file, err := tx.FileStore().ForNamespace(ns.Name).GetFile(ctx, req.GetPath())
-	if err != nil {
-		return nil, err
-	}
-
-	annotations, router, err := getRouter(ctx, tx, file)
-	if err != nil {
-		return nil, err
-	}
-
-	router.Enabled = !router.Enabled
-
-	annotations.Data = annotations.Data.SetEntry(routerAnnotationKey, router.Marshal())
-
-	err = tx.DataStore().FileAnnotations().Set(ctx, annotations)
-	if err != nil {
-		return nil, err
-	}
-
-	err = tx.Commit(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return &emptypb.Empty{}, nil
-}
-
-func (flow *flow) SetWorkflowEventLogging(ctx context.Context, req *grpc.SetWorkflowEventLoggingRequest) (*emptypb.Empty, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
-
-	tx, err := flow.beginSqlTx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer tx.Rollback()
-
-	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
-
-	file, err := tx.FileStore().ForNamespace(ns.Name).GetFile(ctx, req.GetPath())
-	if err != nil {
-		return nil, err
-	}
-
-	annotations, err := tx.DataStore().FileAnnotations().Get(ctx, file.ID)
-
-	if errors.Is(err, core.ErrFileAnnotationsNotSet) {
-		annotations = &core.FileAnnotations{
-			FileID: file.ID,
-			Data:   map[string]string{},
-		}
-	} else if err != nil {
-		return nil, err
-	}
-
-	annotations.Data = annotations.Data.SetEntry("workflow_log_event_key", req.GetLogger())
-
-	err = tx.DataStore().FileAnnotations().Set(ctx, annotations)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := tx.Commit(ctx); err != nil {
-		return nil, err
-	}
-	var resp emptypb.Empty
 
 	return &resp, nil
 }

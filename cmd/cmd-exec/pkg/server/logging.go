@@ -27,7 +27,6 @@ const (
 )
 
 func NewLogger(actionID string) *Logger {
-
 	backend := "http://localhost:8889"
 	if os.Getenv(httpBackend) != "" {
 		backend = os.Getenv(httpBackend)
@@ -60,16 +59,18 @@ func (l *Logger) SetWriterState(enable bool) {
 	l.w = io.MultiWriter(wrs...)
 }
 
+// nolint
 func (l *Logger) Log(format string, args ...any) {
 	l.Write([]byte(fmt.Sprintf(format+"\n", args...)))
 }
 
-func (l *Logger) Write(p []byte) (n int, err error) {
+func (l *Logger) Write(p []byte) (int, error) {
 	return l.w.Write(p)
 }
 
-func (l *httpLogger) Write(p []byte) (n int, err error) {
-	_, err = http.Post(fmt.Sprintf("%s/log?aid=%s",
+// nolint
+func (l *httpLogger) Write(p []byte) (int, error) {
+	_, err := http.Post(fmt.Sprintf("%s/log?aid=%s",
 		l.backendLogServer, l.actionID), "plain/text", bytes.NewBuffer(p))
 
 	return len(p), err

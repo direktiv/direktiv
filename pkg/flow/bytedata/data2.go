@@ -186,7 +186,7 @@ func ConvertInstancesToGrpcInstances(instances []instancestore.InstanceData) []*
 	return list
 }
 
-func ConvertNamespaceToGrpc(item *core.Namespace, annotations *core.FileAnnotations) *grpc.Namespace {
+func ConvertNamespaceToGrpc(item *core.Namespace) *grpc.Namespace {
 	ns := &grpc.Namespace{
 		Oid:  item.ID.String(),
 		Name: item.Name,
@@ -195,19 +195,14 @@ func ConvertNamespaceToGrpc(item *core.Namespace, annotations *core.FileAnnotati
 		UpdatedAt: timestamppb.New(item.UpdatedAt),
 	}
 
-	if annotations != nil {
-		ns.Notes = annotations.Data
-	}
-
 	return ns
 }
 
-func ConvertNamespacesListToGrpc(list []*core.Namespace, annotations []*core.FileAnnotations) []*grpc.Namespace {
+func ConvertNamespacesListToGrpc(list []*core.Namespace) []*grpc.Namespace {
 	var result []*grpc.Namespace
 	for idx := range list {
 		ns := list[idx]
-		annotation := annotations[idx]
-		result = append(result, ConvertNamespaceToGrpc(ns, annotation))
+		result = append(result, ConvertNamespaceToGrpc(ns))
 	}
 
 	return result

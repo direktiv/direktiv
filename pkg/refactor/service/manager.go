@@ -137,6 +137,7 @@ func (m *manager) runCycle() []error {
 		v.Error = nil
 		// v is passed un-cloned.
 		if err := m.runtimeClient.createService(v); err != nil {
+			errs = append(errs, fmt.Errorf("create service id: %s %w", id, err))
 			errStr := err.Error()
 			v.Error = &errStr
 		}
@@ -147,6 +148,7 @@ func (m *manager) runCycle() []error {
 		v.Error = nil
 		// v is passed un-cloned.
 		if err := m.runtimeClient.updateService(v); err != nil {
+			errs = append(errs, fmt.Errorf("update service id: %s %w", id, err))
 			errStr := err.Error()
 			v.Error = &errStr
 		}
@@ -352,8 +354,5 @@ func (m *manager) setServiceDefaults(sv *core.ServiceConfig) {
 	}
 	if len(sv.Envs) == 0 {
 		sv.Envs = make([]core.EnvironmentVariable, 0)
-	}
-	if len(sv.PostStartExec) == 0 {
-		sv.PostStartExec = make([]string, 0)
 	}
 }

@@ -128,23 +128,23 @@ k3s-wait:
 
 .PHONY: k3s-uninstall
 k3s-uninstall: ## Uninstall the local development k3s environment.
-	./installer.sh uninstall
+	./scripts/installer.sh uninstall
 
 .PHONY: k3s-install
 k3s-install: k3s-uninstall
 k3s-install: ## Install the local development k3s environment.
-	DEV=true ./installer.sh all
+	DEV=true ./scripts/installer.sh all
 	@$(MAKE) k3s-wait
 
 .PHONY: k3s-monitoring-install
 k3s-monitoring-install: k3s-uninstall
 k3s-monitoring-install: ## Install the local development k3s environment.
-	WITH_MONITORING=true DEV=true ./installer.sh all
+	WITH_MONITORING=true DEV=true ./scripts/installer.sh all
 	@$(MAKE) k3s-wait
 
 .PHONY: k3s-redeploy
 k3s-redeploy: ## Upgrade the local deployment.
-	DEV=true ./installer.sh all
+	DEV=true ./scripts/installer.sh all
 	@$(MAKE) k3s-wait
 
 .PHONY: k3s-reboot 
@@ -202,4 +202,5 @@ cli:
 
 .PHONY: binary
 binary: ## Useful only to check that code compiles properly.
+	go build -o /dev/null cmd/cmd-exec/*.go
 	go build -o /dev/null cmd/direktiv/*.go
