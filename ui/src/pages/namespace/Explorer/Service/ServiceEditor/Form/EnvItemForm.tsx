@@ -45,9 +45,9 @@ export const EnvItemForm: FC<EnvItemFormProps> = ({
   };
 
   const handleKeyDown = (event: KeyboardEvent) => {
-    event.preventDefault();
     if (!isValid) return;
     if (event.key === "Enter") {
+      event.preventDefault();
       handleAdd();
     }
   };
