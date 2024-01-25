@@ -1,5 +1,9 @@
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
-import { createRedisServiceFile, serviceWithAnError } from "./utils";
+import {
+  createRedisServiceFile,
+  findServiceViaApi,
+  serviceWithAnError,
+} from "./utils";
 import { expect, test } from "@playwright/test";
 
 import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
@@ -267,8 +271,18 @@ test("Service list will highlight services that have errors", async ({
     headers,
   });
 
-  // wait one second to make sure the service has been created and avoid flaky tests
-  await page.waitForTimeout(1000);
+  await expect
+    .poll(
+      async () =>
+        await findServiceViaApi({
+          namespace,
+          find: (service) =>
+            service.filePath === "/failed-service.yaml" &&
+            service.error !== null,
+        }),
+      "the service in the backend is in an error state"
+    )
+    .toBe(true);
 
   await page.goto(`/${namespace}/services`, {
     waitUntil: "networkidle",
