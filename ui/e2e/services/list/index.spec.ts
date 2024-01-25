@@ -3,6 +3,7 @@ import { createRedisServiceFile, serviceWithAnError } from "./utils";
 import { expect, test } from "@playwright/test";
 
 import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
+import { getServices } from "~/api/services/query/services";
 import { headers } from "e2e/utils/testutils";
 import { updateWorkflow } from "~/api/tree/mutate/updateWorkflow";
 
@@ -173,22 +174,28 @@ test("Service list will link the row to the service details page", async ({
     headers,
   });
 
+  const { data: services } = await getServices({
+    urlParams: {
+      baseUrl: process.env.VITE_DEV_API_DOMAIN,
+      namespace,
+    },
+  });
+
+  const createdService = services.find(
+    (service) => service.filePath === "/redis-service.yaml"
+  );
+  if (!createdService) throw new Error("could not find service");
+
   await page.goto(`/${namespace}/services`, {
     waitUntil: "networkidle",
   });
 
   await page.getByTestId("service-row").click();
 
-  const urlReg = new RegExp(
-    `${namespace}/services/${namespace}-redis-service-yaml-(.*)`
-  );
-
   await expect(
     page,
     "after clicking on the service row, the user gets redirected to the service details page"
-  ).toHaveURL(urlReg);
-
-  const serviceId = page.url().match(urlReg)?.[1];
+  ).toHaveURL(`/${namespace}/services/${createdService.id}`);
 
   await expect(
     page
@@ -199,7 +206,7 @@ test("Service list will link the row to the service details page", async ({
 
   await expect(
     page.getByRole("link", {
-      name: `${namespace}-redis-service-yaml-${serviceId}`,
+      name: `${createdService.id}`,
     }),
     "it renders the filename breadcrumb segment"
   ).toBeVisible();
