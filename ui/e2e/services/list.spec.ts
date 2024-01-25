@@ -187,6 +187,17 @@ test("Service list will link the row to the service details page", async ({
     headers,
   });
 
+  await expect
+    .poll(
+      async () =>
+        await findServiceViaApi({
+          namespace,
+          searchFn: (service) => service.filePath === "/redis-service.yaml",
+        }),
+      "the service was mounted in the backend"
+    )
+    .toBeTruthy();
+
   const createdService = await findServiceViaApi({
     namespace,
     searchFn: (service) => service.filePath === "/redis-service.yaml",
