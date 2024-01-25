@@ -92,6 +92,14 @@ test("Service details page provides information about the service", async ({
   ).toBeVisible();
 
   await expect(
+    page
+      .getByTestId("service-detail-header")
+      .locator("a")
+      .filter({ hasText: "1 environment variable" }),
+    "it renders one environment variable"
+  ).toBeVisible();
+
+  await expect(
     page.getByText(`Logs for ${createdService.id}_1`),
     "it renders the headline for the first pods logs"
   ).toBeVisible();
@@ -140,5 +148,4 @@ test("Service details page provides information about the service", async ({
 
 // TODO: test refetch button (wait for network request)
 // TODO: show env vars, and write test for it
-// TODO: test the UpAndReady tooltip
 // TODO: error state, show error state, show error tooltip, show empty logs
