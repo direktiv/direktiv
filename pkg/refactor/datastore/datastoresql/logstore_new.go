@@ -9,12 +9,12 @@ import (
 )
 
 var _ logcollection.LogStore = &sqlLogNewStore{}
+
 const pageSize = 200
 
 type sqlLogNewStore struct {
 	db *gorm.DB
 }
-
 
 func (s sqlLogNewStore) Get(ctx context.Context, stream string, cursorTime time.Time) ([]logcollection.LogEntry, error) {
 	query := `

@@ -77,22 +77,24 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 
 			r.Get("/namespaces/{namespace}/logs", func(w http.ResponseWriter, r *http.Request) {
 				params := extractLogRequestParams(r)
-			
+
 				// Extract the cursor parameter from the request URL query
 				cursorTimeStr := r.URL.Query().Get("cursor")
 				cursorTime, err := time.Parse(time.RFC3339Nano, cursorTimeStr)
 				if err != nil {
 					writeInternalError(w, err)
+
 					return
 				}
-			
+
 				// Call the Get method with the cursor instead of offset
 				data, err := app.LogManager.Get(r.Context(), cursorTime, params)
 				if err != nil {
 					writeInternalError(w, err)
+
 					return
 				}
-			
+
 				writeJSON(w, data)
 			})
 
