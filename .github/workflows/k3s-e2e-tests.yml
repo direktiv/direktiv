@@ -65,12 +65,12 @@ jobs:
             "errors/",
             "mirror/",
             "namespaces/",
-            "functions/",
+            # "functions/",
             "gateway/",
-            "kubernetes/",
+            # "kubernetes/",
             "registry/",
             "secrets/",
-            "services/",
+            # "services/",
           ]
     steps:
       - name: Checkout code

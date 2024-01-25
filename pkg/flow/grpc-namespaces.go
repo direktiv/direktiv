@@ -198,7 +198,7 @@ func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespace
 		flow.sugar.Warnf("CreateNamespace failed to create file-system root: %v", err)
 		return nil, err
 	}
-	_, _, err = tx.FileStore().ForRootID(root.ID).CreateFile(ctx, "/", filestore.FileTypeDirectory, "", nil)
+	_, err = tx.FileStore().ForRootID(root.ID).CreateFile(ctx, "/", filestore.FileTypeDirectory, "", nil)
 	if err != nil {
 		flow.sugar.Warnf("CreateNamespace failed to create root directory: %v", err)
 		return nil, err

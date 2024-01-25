@@ -41,10 +41,9 @@ type InstanceResponse struct {
 	InvokedBy string   `json:"invokedBy"`
 	Flow      []string `json:"flow"`
 	Workflow  struct {
-		Path     string `json:"path"`
-		Name     string `json:"name"`
-		Parent   string `json:"parent"`
-		Revision string `json:"revision"`
+		Path   string `json:"path"`
+		Name   string `json:"name"`
+		Parent string `json:"parent"`
 	} `json:"workflow"`
 }
 

@@ -38,13 +38,6 @@ func (s *sqlFileStore) ForFile(file *filestore.File) filestore.FileQuery {
 	}
 }
 
-func (s *sqlFileStore) ForRevision(revision *filestore.Revision) filestore.RevisionQuery {
-	return &RevisionQuery{
-		rev: revision,
-		db:  s.db,
-	}
-}
-
 var _ filestore.FileStore = &sqlFileStore{} // Ensures sqlFileStore struct conforms to filestore.FileStore interface.
 
 func NewSQLFileStore(db *gorm.DB) filestore.FileStore {
@@ -141,7 +134,7 @@ func (s *sqlFileStore) GetRootByNamespace(ctx context.Context, namespace string)
 func (s *sqlFileStore) GetFileByID(ctx context.Context, id uuid.UUID) (*filestore.File, error) {
 	file := &filestore.File{}
 	res := s.db.WithContext(ctx).Raw(`
-					SELECT *
+					SELECT id, root_id, path, depth, typ, created_at, updated_at, mime_type
 					FROM filesystem_files
 					WHERE id=?`, id).
 		First(file)
