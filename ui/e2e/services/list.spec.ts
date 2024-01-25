@@ -1,4 +1,4 @@
-import { createNamespace, deleteNamespace } from "../../utils/namespace";
+import { createNamespace, deleteNamespace } from "../utils/namespace";
 import {
   createRedisServiceFile,
   findServiceViaApi,
