@@ -80,6 +80,12 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 
 				// Extract the cursor parameter from the request URL query
 				cursorTimeStr := r.URL.Query().Get("cursor")
+				if cursorTimeStr == "" {
+					// Handle the case when cursor is not provided
+					writeInternalError(w, errors.New("cursor parameter is required"))
+
+					return
+				}
 				cursorTime, err := time.Parse(time.RFC3339Nano, cursorTimeStr)
 				if err != nil {
 					writeInternalError(w, err)

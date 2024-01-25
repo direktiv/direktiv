@@ -2,6 +2,7 @@ package logcollection
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -123,10 +124,14 @@ func (m *Manager) Stream(params map[string]string) http.HandlerFunc {
 }
 
 func (e LogEntry) toFeatureLogEntry() (core.FeatureLogEntry, error) {
-	entry := e.Data["entry"]
-	m, ok := entry.(map[string]interface{})
+	entry, ok := e.Data["entry"].(string)
 	if !ok {
 		return core.FeatureLogEntry{}, fmt.Errorf("log-entry format is corrupt")
+	}
+
+	var m map[string]interface{}
+	if err := json.Unmarshal([]byte(entry), &m); err != nil {
+		return core.FeatureLogEntry{}, fmt.Errorf("failed to unmarshal log entry: %v", err)
 	}
 
 	return core.FeatureLogEntry{
@@ -177,9 +182,9 @@ func (e *loglist) filterByLevel(level string) {
 
 func determineStream(params map[string]string) (string, error) {
 	if p, ok := params["root-instance-id"]; ok {
-		return "flow." + p, nil
+		return "flow.instance." + p, nil
 	} else if p, ok := params["namespace"]; ok {
-		return "flow." + p, nil
+		return "flow.namespace." + p, nil
 	} else if p, ok := params["route"]; ok {
 		return "flow.gateway." + p, nil
 	}

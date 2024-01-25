@@ -18,6 +18,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway"
+	"github.com/direktiv/direktiv/pkg/refactor/logcollection"
 	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"github.com/direktiv/direktiv/pkg/refactor/registry"
 	"github.com/direktiv/direktiv/pkg/refactor/service"
@@ -57,6 +58,7 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 	// Create endpoint manager
 	gatewayManager := gateway.NewGatewayManager(db)
 
+	logManager := logcollection.NewManger(db.DataStore().NewLogs())
 	// Create App
 	app := core.App{
 		Version: &core.Version{
@@ -66,6 +68,7 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 		ServiceManager:  serviceManager,
 		RegistryManager: registryManager,
 		GatewayManager:  gatewayManager,
+		LogManager:      &logManager,
 	}
 
 	pbus.Subscribe(func(_ string) {
