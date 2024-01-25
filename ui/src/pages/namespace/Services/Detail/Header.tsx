@@ -1,4 +1,5 @@
 import { Diamond } from "lucide-react";
+import EnvsVariables from "../components/EnvVariables";
 import { Link } from "react-router-dom";
 import RefreshButton from "~/design/RefreshButton";
 import { StatusBadge } from "../components/StatusBadge";
@@ -77,6 +78,7 @@ const Header = ({ serviceId }: { serviceId: string }) => {
               {condition.type}
             </StatusBadge>
           ))}
+          <EnvsVariables envs={service.envs} />
           <RefreshButton
             icon
             size="sm"
