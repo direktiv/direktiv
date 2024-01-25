@@ -79,7 +79,7 @@ states:
                 pageInfo: {
                     limit: 0,
                     offset: 0,
-                    total: 2,
+                    total: 1,
                     order: [],
                     filter: [],
                 },
