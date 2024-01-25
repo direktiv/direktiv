@@ -48,8 +48,18 @@ test("Service list will show all available services", async ({ page }) => {
     headers,
   });
 
-  // wait one second to make sure the service has been created and avoid flaky tests
-  await page.waitForTimeout(1000);
+  await expect
+    .poll(
+      async () =>
+        await findServiceViaApi({
+          namespace,
+          searchFn: (service) =>
+            service.filePath === "/redis-service.yaml" &&
+            (service.conditions ?? []).some((c) => c.type === "UpAndReady"),
+        }),
+      "the service in the backend is in an UpAndReady state"
+    )
+    .toBeTruthy();
 
   await page.goto(`/${namespace}/services`, {
     waitUntil: "networkidle",
@@ -220,6 +230,19 @@ test("Service list lets the user rebuild a service", async ({ page }) => {
     },
     headers,
   });
+
+  await expect
+    .poll(
+      async () =>
+        await findServiceViaApi({
+          namespace,
+          searchFn: (service) =>
+            service.filePath === "/redis-service.yaml" &&
+            (service.conditions ?? []).some((c) => c.type === "UpAndReady"),
+        }),
+      "the service in the backend is in an UpAndReady state"
+    )
+    .toBeTruthy();
 
   await page.goto(`/${namespace}/services`, {
     waitUntil: "networkidle",
