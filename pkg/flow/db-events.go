@@ -112,7 +112,7 @@ func (events *events) processWorkflowEvents(ctx context.Context, nsID uuid.UUID,
 		}
 	}
 
-	if len(ms.Events) > 0 && ms.Enabled {
+	if len(ms.Events) > 0 {
 		fEv := &pkgevents.EventListener{
 			ID:                       uuid.New(),
 			CreatedAt:                time.Now().UTC(),

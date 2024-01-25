@@ -21,7 +21,6 @@ message WorkflowMetricsRequest {
 	string namespace = 1;
 	string path = 2;
 	google.protobuf.Timestamp sinceTimestamp = 3;
-	string ref = 4;
 }
 
 message WorkflowMetricsResponse {

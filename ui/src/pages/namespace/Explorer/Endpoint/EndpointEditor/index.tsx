@@ -28,7 +28,7 @@ type EndpointEditorProps = {
 const EndpointEditor: FC<EndpointEditorProps> = ({ data, path }) => {
   const { t } = useTranslation();
   const theme = useTheme();
-  const fileContentFromServer = atob(data.revision?.source ?? "");
+  const fileContentFromServer = atob(data.source ?? "");
   const [endpointConfig, endpointConfigError] = serializeEndpointFile(
     fileContentFromServer
   );

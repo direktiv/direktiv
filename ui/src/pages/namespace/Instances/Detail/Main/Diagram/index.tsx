@@ -28,7 +28,7 @@ const Diagram: FC<{ workflowPath: string; flow: string[] }> = ({
 
   if (!data) return null;
 
-  const workflowData = atob(data.revision?.source ?? "");
+  const workflowData = atob(data.source ?? "");
 
   return (
     <div className="relative flex grow">

@@ -398,6 +398,11 @@ func (srv *server) start(ctx context.Context) error {
 	go eventWorker.Start(ctx)
 
 	cc := func(ctx context.Context, nsID uuid.UUID, nsName string, file *filestore.File) error {
+		err = srv.flow.configureWorkflowStarts(ctx, noTx, nsID, file)
+		if err != nil {
+			return err
+		}
+
 		err = srv.flow.placeholdSecrets(ctx, noTx, nsName, file)
 		if err != nil {
 			srv.sugar.Debugf("Error setting up placeholder secrets: %v", err)
@@ -433,6 +438,8 @@ func (srv *server) start(ctx context.Context) error {
 	}
 
 	srv.registerFunctions()
+
+	go srv.cronPoller()
 
 	go func() {
 		defer wg.Done()
@@ -584,6 +591,67 @@ func (srv *server) registerFunctions() {
 	srv.timers.registerFunction(retryWakeupFunction, srv.flow.engine.retryWakeup)
 
 	srv.pubsub.RegisterFunction(pubsub.PubsubDeleteActivityTimersFunction, srv.timers.deleteActivityTimersHandler)
+}
+
+func (srv *server) cronPoller() {
+	for {
+		srv.cronPoll()
+		time.Sleep(time.Minute * 15)
+	}
+}
+
+func (srv *server) cronPoll() {
+	ctx := context.Background()
+
+	tx, err := srv.flow.beginSqlTx(ctx)
+	if err != nil {
+		srv.sugar.Error(err)
+		return
+	}
+	defer tx.Rollback()
+
+	roots, err := tx.FileStore().GetAllRoots(ctx)
+	if err != nil {
+		srv.sugar.Error(err)
+		return
+	}
+
+	for _, root := range roots {
+		files, err := tx.FileStore().ForRootID(root.ID).ListAllFiles(ctx)
+		if err != nil {
+			srv.sugar.Error(err)
+			return
+		}
+
+		for _, file := range files {
+			if file.Typ != filestore.FileTypeWorkflow {
+				continue
+			}
+
+			srv.cronPollerWorkflow(ctx, tx, file)
+		}
+	}
+}
+
+func (srv *server) cronPollerWorkflow(ctx context.Context, tx *sqlTx, file *filestore.File) {
+	ms, err := srv.validateRouter(ctx, tx, file)
+	if err != nil {
+		return
+	}
+
+	if ms.Cron != "" {
+		srv.timers.deleteCronForWorkflow(file.ID.String())
+	}
+
+	if ms.Cron != "" {
+		err := srv.timers.addCron(file.ID.String(), wfCron, ms.Cron, []byte(file.ID.String()))
+		if err != nil {
+			srv.sugar.Error(err)
+			return
+		}
+
+		srv.sugar.Debugf("Loaded cron: %s", file.ID.String())
+	}
 }
 
 func unaryInterceptor(ctx context.Context, req interface{}, info *libgrpc.UnaryServerInfo, handler libgrpc.UnaryHandler) (resp interface{}, err error) {

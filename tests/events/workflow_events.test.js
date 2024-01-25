@@ -14,7 +14,7 @@ describe('Test basic workflow events', () => {
         expect(createNamespaceResponse.statusCode).toEqual(200)
     })
 
-    common.helpers.itShouldCreateFile(it, expect, testNamespace,
+    common.helpers.itShouldCreateFile(it, expect, namespaceName,
         "/listener.yml", `
 start:
   type: event
@@ -67,7 +67,7 @@ states:
             req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/instances`)
             expect(req.statusCode).toEqual(200)
 
-            if (req.body.instances.pageInfo.total > 1) {
+            if (req.body.instances.pageInfo.total === 1) {
                 invoked = true
             }
 
@@ -79,7 +79,7 @@ states:
                 pageInfo: {
                     limit: 0,
                     offset: 0,
-                    total: 2,
+                    total: 1,
                     order: [],
                     filter: [],
                 },
@@ -333,3 +333,8 @@ describe('Test workflow events', () => {
     })
 
 })
+
+
+function sleep(time) {
+    return new Promise((resolve) => setTimeout(resolve, time));
+}

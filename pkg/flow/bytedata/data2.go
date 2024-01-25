@@ -54,20 +54,12 @@ func ConvertFilesToGrpcNodeList(list []*filestore.File) []*grpc.Node {
 	return result
 }
 
-func ConvertRevisionToGrpcFile(file *filestore.File, rev *filestore.Revision) *grpc.File {
+func ConvertFileToGrpcFile(file *filestore.File) *grpc.File {
 	return &grpc.File{
-		Name:      rev.ID.String(),
-		CreatedAt: timestamppb.New(rev.CreatedAt),
-		Hash:      rev.Checksum,
+		Name:      file.Name(),
+		CreatedAt: timestamppb.New(file.CreatedAt),
+		Hash:      file.Checksum,
 		MimeType:  file.MIMEType,
-	}
-}
-
-func ConvertRevisionToGrpcRevision(rev *filestore.Revision) *grpc.Revision {
-	return &grpc.Revision{
-		Name:      rev.ID.String(),
-		CreatedAt: timestamppb.New(rev.CreatedAt),
-		Hash:      rev.Checksum,
 	}
 }
 

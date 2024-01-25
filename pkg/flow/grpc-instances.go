@@ -385,7 +385,6 @@ func (flow *flow) Instance(ctx context.Context, req *grpc.InstanceRequest) (*grp
 	rwf.Name = filepath.Base(instance.Instance.WorkflowPath)
 	rwf.Parent = filepath.Dir(instance.Instance.WorkflowPath)
 	rwf.Path = instance.Instance.WorkflowPath
-	rwf.Revision = instance.Instance.RevisionID.String()
 	resp.Workflow = rwf
 
 	return &resp, nil
@@ -455,7 +454,6 @@ resend:
 	rwf.Name = filepath.Base(instance.Instance.WorkflowPath)
 	rwf.Parent = filepath.Dir(instance.Instance.WorkflowPath)
 	rwf.Path = instance.Instance.WorkflowPath
-	rwf.Revision = instance.Instance.RevisionID.String()
 	resp.Workflow = rwf
 
 	nhash = bytedata.Checksum(resp)
@@ -489,9 +487,6 @@ func (flow *flow) StartWorkflow(ctx context.Context, req *grpc.StartWorkflowRequ
 	}
 
 	calledAs := req.GetPath()
-	if req.GetRef() != "" {
-		calledAs += ":" + req.GetRef()
-	}
 
 	span := trace.SpanFromContext(ctx)
 
@@ -627,9 +622,6 @@ func (flow *flow) AwaitWorkflow(req *grpc.AwaitWorkflowRequest, srv grpc.Flow_Aw
 	}
 
 	calledAs := req.GetPath()
-	if req.GetRef() != "" {
-		calledAs += ":" + req.GetRef()
-	}
 
 	span := trace.SpanFromContext(ctx)
 	cctx, cSpan := span.TracerProvider().Tracer("flow/direktiv").Start(ctx, "working")
@@ -687,7 +679,6 @@ resend:
 	// rwf.Name = cached.File.Name()
 	// rwf.Parent = cached.Dir()
 	rwf.Path = instance.Instance.WorkflowPath
-	rwf.Revision = instance.Instance.RevisionID.String()
 	resp.Workflow = rwf
 
 	if instance.Instance.Status == instancestore.InstanceStatusComplete {

@@ -40,8 +40,7 @@ test.afterEach(async () => {
   namespace = "";
 });
 
-// TODO: remove skip until DIR-1096 is resolve
-test.skip("it renders event listeners", async ({ page }) => {
+test("it renders event listeners", async ({ page }) => {
   /* set up test data */
   const workflowNames = Array.from(
     { length: 4 },
@@ -96,11 +95,10 @@ test.skip("it renders event listeners", async ({ page }) => {
   await expect(
     page,
     "when clicking on the workflow name, it navigates to the workflow page"
-  ).toHaveURL(`${namespace}/explorer/workflow/active/${workflowNames[2]}`);
+  ).toHaveURL(`${namespace}/explorer/workflow/edit/${workflowNames[2]}`);
 });
 
-// TODO: remove skip until DIR-1096 is resolve
-test.skip("it paginates event listeners", async ({ page }) => {
+test("it paginates event listeners", async ({ page }) => {
   /* set up test data */
   const workflowNames = Array.from(
     { length: 13 },
