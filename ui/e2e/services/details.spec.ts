@@ -69,7 +69,7 @@ test("Service details page provides information about the service", async ({
 
   await expect(
     page.getByTestId("service-detail-header").getByText("imageredis"),
-    "it renders the service image"
+    "it renders the service image name"
   ).toBeVisible();
 
   await expect(
@@ -168,7 +168,9 @@ test("Service details page provides information about the service", async ({
   ).toBeTruthy();
 });
 
-test("Service details page provides will provide error", async ({ page }) => {
+test("Service details page will show no logs when the service did not mount", async ({
+  page,
+}) => {
   await createWorkflow({
     payload: serviceWithAnError,
     urlParams: {

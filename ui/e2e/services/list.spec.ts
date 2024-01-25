@@ -165,12 +165,12 @@ test("Service list will link the file name to the service file", async ({
 
   await expect(
     page,
-    "after clicking on the service file name, the user gets redirected to the file explorer page of the service file"
+    "after clicking on the file name, the user gets redirected to the file explorer page of the service file"
   ).toHaveURL(`/${namespace}/explorer/service/redis-service.yaml`);
 
   await expect(
     page.getByTestId("breadcrumb-segment"),
-    "it renders the 'Services' breadcrumb"
+    "it renders the filename in the breadcrumb"
   ).toHaveText("redis-service.yaml");
 });
 
@@ -227,7 +227,7 @@ test("Service list will link the row to the service details page", async ({
     page.getByRole("link", {
       name: `${createdService.id}`,
     }),
-    "it renders the filename breadcrumb segment"
+    "it renders the service id breadcrumb segment"
   ).toBeVisible();
 });
 
@@ -329,7 +329,7 @@ test("Service list will highlight services that have errors", async ({
 
   await expect(
     page.getByTestId("service-row").getByText("image pull, err:"),
-    "it renders the uptime in a tooltip"
+    "it renders the error in a tooltip"
   ).toBeVisible();
 });
 
