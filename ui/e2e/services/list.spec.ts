@@ -1,7 +1,7 @@
 import { createNamespace, deleteNamespace } from "../utils/namespace";
 import {
   createRedisServiceFile,
-  findServiceViaApi,
+  findServiceWithApiRequest,
   serviceWithAnError,
 } from "./utils";
 import { expect, test } from "@playwright/test";
@@ -51,9 +51,9 @@ test("Service list will show all available services", async ({ page }) => {
   await expect
     .poll(
       async () =>
-        await findServiceViaApi({
+        await findServiceWithApiRequest({
           namespace,
-          searchFn: (service) =>
+          match: (service) =>
             service.filePath === "/redis-service.yaml" &&
             (service.conditions ?? []).some((c) => c.type === "UpAndReady"),
         }),
@@ -190,17 +190,17 @@ test("Service list will link the row to the service details page", async ({
   await expect
     .poll(
       async () =>
-        await findServiceViaApi({
+        await findServiceWithApiRequest({
           namespace,
-          searchFn: (service) => service.filePath === "/redis-service.yaml",
+          match: (service) => service.filePath === "/redis-service.yaml",
         }),
       "the service was mounted in the backend"
     )
     .toBeTruthy();
 
-  const createdService = await findServiceViaApi({
+  const createdService = await findServiceWithApiRequest({
     namespace,
-    searchFn: (service) => service.filePath === "/redis-service.yaml",
+    match: (service) => service.filePath === "/redis-service.yaml",
   });
 
   if (!createdService) throw new Error("could not find service");
@@ -245,9 +245,9 @@ test("Service list lets the user rebuild a service", async ({ page }) => {
   await expect
     .poll(
       async () =>
-        await findServiceViaApi({
+        await findServiceWithApiRequest({
           namespace,
-          searchFn: (service) =>
+          match: (service) =>
             service.filePath === "/redis-service.yaml" &&
             (service.conditions ?? []).some((c) => c.type === "UpAndReady"),
         }),
@@ -302,9 +302,9 @@ test("Service list will highlight services that have errors", async ({
   await expect
     .poll(
       async () =>
-        await findServiceViaApi({
+        await findServiceWithApiRequest({
           namespace,
-          searchFn: (service) =>
+          match: (service) =>
             service.filePath === "/failed-service.yaml" &&
             service.error !== null,
         }),

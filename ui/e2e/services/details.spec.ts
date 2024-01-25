@@ -1,7 +1,7 @@
 import { createNamespace, deleteNamespace } from "../utils/namespace";
 import {
   createRedisServiceFile,
-  findServiceViaApi,
+  findServiceWithApiRequest,
   serviceWithAnError,
 } from "./utils";
 import { expect, test } from "@playwright/test";
@@ -38,9 +38,9 @@ test("Service details page provides information about the service", async ({
   await expect
     .poll(
       async () =>
-        await findServiceViaApi({
+        await findServiceWithApiRequest({
           namespace,
-          searchFn: (service) =>
+          match: (service) =>
             service.filePath === "/redis-service.yaml" &&
             (service.conditions ?? []).some((c) => c.type === "UpAndReady"),
         }),
@@ -48,9 +48,9 @@ test("Service details page provides information about the service", async ({
     )
     .toBeTruthy();
 
-  const createdService = await findServiceViaApi({
+  const createdService = await findServiceWithApiRequest({
     namespace,
-    searchFn: (service) => service.filePath === "/redis-service.yaml",
+    match: (service) => service.filePath === "/redis-service.yaml",
   });
 
   if (!createdService) throw new Error("could not find service");
@@ -182,9 +182,9 @@ test("Service details page provides will provide error", async ({ page }) => {
   await expect
     .poll(
       async () =>
-        await findServiceViaApi({
+        await findServiceWithApiRequest({
           namespace,
-          searchFn: (service) =>
+          match: (service) =>
             service.filePath === "/redis-service.yaml" &&
             service.error !== null,
         }),
@@ -192,9 +192,9 @@ test("Service details page provides will provide error", async ({ page }) => {
     )
     .toBeTruthy();
 
-  const createdService = await findServiceViaApi({
+  const createdService = await findServiceWithApiRequest({
     namespace,
-    searchFn: (service) => service.filePath === "/redis-service.yaml",
+    match: (service) => service.filePath === "/redis-service.yaml",
   });
 
   if (!createdService) throw new Error("could not find service");

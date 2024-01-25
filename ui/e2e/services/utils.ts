@@ -25,20 +25,20 @@ scale: 1
 size: "small"
 `;
 
-type FindServiceViaApiParam = {
+type FindServiceWithApiRequestParams = {
   namespace: string;
-  searchFn: (service: ServiceSchemaType) => boolean;
+  match: (service: ServiceSchemaType) => boolean;
 };
 
-export const findServiceViaApi = async ({
+export const findServiceWithApiRequest = async ({
   namespace,
-  searchFn: search,
-}: FindServiceViaApiParam) => {
+  match,
+}: FindServiceWithApiRequestParams) => {
   const { data: services } = await getServices({
     urlParams: {
       baseUrl: process.env.VITE_DEV_API_DOMAIN,
       namespace,
     },
   });
-  return services.find(search);
+  return services.find(match);
 };
