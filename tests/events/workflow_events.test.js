@@ -67,7 +67,7 @@ states:
             req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/instances`)
             expect(req.statusCode).toEqual(200)
 
-            if (req.body.instances.pageInfo.total > 1) {
+            if (req.body.instances.pageInfo.total === 1) {
                 invoked = true
             }
 
@@ -333,3 +333,8 @@ describe('Test workflow events', () => {
     })
 
 })
+
+
+function sleep(time) {
+    return new Promise((resolve) => setTimeout(resolve, time));
+}
