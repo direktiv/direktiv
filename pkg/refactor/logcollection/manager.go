@@ -4,8 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
@@ -89,28 +91,6 @@ func (m *Manager) Stream(params map[string]string) http.HandlerFunc {
 
 		// Create a channel to send SSE messages
 		messageChannel := make(chan string)
-		defer close(messageChannel)
-
-		// Start a goroutine to listen for messages and send them to the client
-		go func() {
-			for {
-				select {
-				case <-ctx.Done():
-					return // Exit goroutine on context cancellation
-				case message := <-messageChannel:
-					fmt.Fprintf(w, "data: %s\n\n", message)
-					f, ok := w.(http.Flusher)
-					if !ok {
-						// TODO Handle case where response writer is not a http.Flusher
-						slog.Error("Response writer is not a http.Flusher")
-
-						return
-					}
-					f.Flush()
-				}
-			}
-		}()
-
 		// Adjust the logStoreWorker to use cursor instead of offset
 		worker := logStoreWorker{
 			Get:      m.Get,
@@ -119,7 +99,33 @@ func (m *Manager) Stream(params map[string]string) http.HandlerFunc {
 			Params:   params,
 			Cursor:   cursorTime,
 		}
-		worker.start(ctx)
+		go worker.start(ctx)
+
+		for {
+			select {
+			case <-ctx.Done():
+				slog.Info("context  done")
+
+				return
+			case message := <-messageChannel:
+				slog.Info("data", "message", message)
+				_, err := io.Copy(w, strings.NewReader(fmt.Sprintf("data: %s\n\n", message)))
+				if err != nil {
+					slog.Error("copy", "error", err)
+				}
+
+				f, ok := w.(http.Flusher)
+				if !ok {
+					// TODO Handle case where response writer is not a http.Flusher
+					slog.Error("Response writer is not a http.Flusher")
+
+					return
+				}
+				if f != nil {
+					f.Flush()
+				}
+			}
+		}
 	}
 }
 

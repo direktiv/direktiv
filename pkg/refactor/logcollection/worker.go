@@ -21,16 +21,16 @@ type logStoreWorker struct {
 // Start starts the log polling worker.
 func (lw *logStoreWorker) start(ctx context.Context) {
 	go func() {
-		defer close(lw.LogCh)
 		ticker := time.NewTicker(lw.Interval)
 		defer ticker.Stop()
-		cursorTime := time.Time{} // Initial cursor is the zero time
+		defer close(lw.LogCh)
 		for {
 			select {
 			case <-ctx.Done():
 				return
 			case <-ticker.C:
-				logs, err := lw.Get(ctx, cursorTime, lw.Params)
+				slog.Info("data", "message", lw.Params)
+				logs, err := lw.Get(ctx, lw.Cursor, lw.Params)
 				if err != nil {
 					slog.Error("TODO: should we quit with an error?", "error", err)
 
@@ -43,12 +43,13 @@ func (lw *logStoreWorker) start(ctx context.Context) {
 
 						continue
 					}
+					slog.Info("data", "message", string(b))
 					lw.LogCh <- string(b)
 				}
 
 				// Update cursorTime for the next iteration
 				if len(logs) > 0 {
-					cursorTime = logs[len(logs)-1].Time
+					lw.Cursor = logs[len(logs)-1].Time
 				}
 			}
 		}
