@@ -201,7 +201,12 @@ func (q *RootQuery) GetFile(ctx context.Context, path string) (*filestore.File, 
 	f := &filestore.File{}
 	path = filepath.Clean(path)
 
-	res := q.db.WithContext(ctx).Table("filesystem_files").Where("root_id", q.rootID).Where("path = ?", path).First(f)
+	res := q.db.WithContext(ctx).Raw(`
+					SELECT id, root_id, path, depth, typ, created_at, updated_at, mime_type
+					FROM filesystem_files
+					WHERE root_id=? AND path=?`, q.rootID, path).
+		First(f)
+
 	if res.Error != nil {
 		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 			return nil, fmt.Errorf("file '%s': %w", path, filestore.ErrNotFound)

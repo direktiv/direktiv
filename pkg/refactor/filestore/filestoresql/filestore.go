@@ -134,7 +134,7 @@ func (s *sqlFileStore) GetRootByNamespace(ctx context.Context, namespace string)
 func (s *sqlFileStore) GetFileByID(ctx context.Context, id uuid.UUID) (*filestore.File, error) {
 	file := &filestore.File{}
 	res := s.db.WithContext(ctx).Raw(`
-					SELECT *
+					SELECT id, root_id, path, depth, typ, created_at, updated_at, mime_type
 					FROM filesystem_files
 					WHERE id=?`, id).
 		First(file)
