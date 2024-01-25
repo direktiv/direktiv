@@ -1,14 +1,9 @@
 import { createNamespace, deleteNamespace } from "../utils/namespace";
-import {
-  createRedisServiceFile,
-  findServiceViaApi,
-  serviceWithAnError,
-} from "./utils";
+import { createRedisServiceFile, findServiceViaApi } from "./utils";
 import { expect, test } from "@playwright/test";
 
 import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
 import { headers } from "e2e/utils/testutils";
-import { updateWorkflow } from "~/api/tree/mutate/updateWorkflow";
 
 let namespace = "";
 
@@ -118,10 +113,29 @@ test("Service details page provides information about the service", async ({
     "it renders the the second pod tab"
   ).toBeVisible();
 
-  await page.getByRole("tab", { name: "Pod 2 of 2" }).click();
+  await page.click("text=Pod 2 of 2");
+
+  /**
+   * since the logs from both pods are equal, we can only check, if changing
+   * the tab will trigger a network request to the logs of the second pod.
+   * We also check if the server responds with a 200 status code to make sure
+   * that the logs are comming in.
+   */
+  await expect(
+    await page.waitForResponse((response) => {
+      const logsApiCall = `/api/v2/namespaces/${namespace}/services/${createdService.id}/pods/${createdService.id}_2/logs`;
+      return response.status() === 200 && response.url().endsWith(logsApiCall);
+    }),
+    "after clicking on the second pod tab, a network request for the logs is made"
+  ).toBeTruthy();
 
   await expect(
     page.getByText(`Logs for ${createdService.id}_2`),
     "after clicking on the second pod tab, it renders the headline for the second pods logs"
   ).toBeVisible();
 });
+
+// TODO: test refetch button (wait for network request)
+// TODO: show env vars, and write test for it
+// TODO: test the UpAndReady tooltip
+// TODO: error state, show error state, show error tooltip, show empty logs
