@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -108,23 +107,6 @@ func (q *FileQuery) SetPath(ctx context.Context, path string) error {
 	return nil
 }
 
-func (q *FileQuery) GetRevision(ctx context.Context) (*filestore.Revision, error) {
-	if q.file.Typ == filestore.FileTypeDirectory {
-		return nil, filestore.ErrFileTypeIsDirectory
-	}
-
-	rev := &filestore.Revision{}
-	res := q.db.WithContext(ctx).Raw(`
-							SELECT * FROM filesystem_revisions WHERE "file_id" = ?`,
-		q.file.ID).
-		First(rev)
-	if res.Error != nil {
-		return nil, res.Error
-	}
-
-	return rev, nil
-}
-
 var _ filestore.FileQuery = &FileQuery{}
 
 //nolint:revive
@@ -144,12 +126,12 @@ func (q *FileQuery) GetData(ctx context.Context) ([]byte, error) {
 	if q.file.Typ == filestore.FileTypeDirectory {
 		return nil, filestore.ErrFileTypeIsDirectory
 	}
-	rev := &filestore.Revision{}
+	rev := &filestore.File{}
 
 	res := q.db.WithContext(ctx).Raw(`
 					SELECT *
-					FROM filesystem_revisions
-					WHERE file_id=?
+					FROM filesystem_files
+					WHERE id=?
 					`, q.file.ID).First(rev)
 	if res.Error != nil {
 		return nil, res.Error
@@ -158,28 +140,24 @@ func (q *FileQuery) GetData(ctx context.Context) ([]byte, error) {
 	return rev.Data, nil
 }
 
-func (q *FileQuery) CreateRevision(ctx context.Context, data []byte) (*filestore.Revision, error) {
+func (q *FileQuery) SetData(ctx context.Context, data []byte) (string, error) {
 	if q.file.Typ == filestore.FileTypeDirectory {
-		return nil, filestore.ErrFileTypeIsDirectory
+		return "", filestore.ErrFileTypeIsDirectory
 	}
 
 	newChecksum := string(q.checksumFunc(data))
 
-	// create a new file revision.
-	newRev := &filestore.Revision{
-		ID:     uuid.New(),
-		FileID: q.file.ID,
-
-		Checksum: newChecksum,
-		Data:     data,
-	}
-	res := q.db.WithContext(ctx).Table("filesystem_revisions").Create(newRev)
+	res := q.db.WithContext(ctx).Exec(`
+					UPDATE filesystem_files
+					SET data=?, checksum=? WHERE id=? 
+					`, data, newChecksum, q.file.ID)
 	if res.Error != nil {
-		return nil, res.Error
-	}
-	if res.RowsAffected != 1 {
-		return nil, fmt.Errorf("unexpected gorm create count, got: %d, want: %d", res.RowsAffected, 1)
+		return "", res.Error
 	}
 
-	return newRev, nil
+	if res.RowsAffected != 1 {
+		return "", fmt.Errorf("unexpected gorm create count, got: %d, want: %d", res.RowsAffected, 1)
+	}
+
+	return newChecksum, nil
 }

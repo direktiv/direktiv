@@ -46,18 +46,13 @@ func (internal *internal) FileVariableParcels(req *grpc.VariableInternalRequest,
 
 	file, err := tx.FileStore().ForNamespace(inst.Instance.Namespace).GetFile(ctx, req.GetKey())
 	if err == nil {
-		revision, err := tx.FileStore().ForFile(file).GetRevision(ctx)
-		if err != nil {
-			return err
-		}
-
 		path = file.Path
-		checksum = revision.Checksum
+		checksum = file.Checksum
 		createdAt = timestamppb.New(file.CreatedAt)
-		updatedAt = timestamppb.New(revision.UpdatedAt)
+		updatedAt = timestamppb.New(file.UpdatedAt)
 		mime = file.MIMEType
 
-		data, err = tx.FileStore().ForRevision(revision).GetData(ctx)
+		data, err = tx.FileStore().ForFile(file).GetData(ctx)
 		if err != nil {
 			return err
 		}

@@ -75,7 +75,7 @@ func (r *routerData) Marshal() string {
 	return string(data)
 }
 
-func (engine *engine) mux(ctx context.Context, ns *database.Namespace, calledAs string) (*filestore.File, *filestore.Revision, error) {
+func (engine *engine) mux(ctx context.Context, ns *database.Namespace, calledAs string) (*filestore.File, []byte, error) {
 	// TODO: Alan, fix for the new filestore.(*Revision).GetRevision() api.
 	uriElems := strings.SplitN(calledAs, ":", 2)
 	path := uriElems[0]
@@ -90,16 +90,13 @@ func (engine *engine) mux(ctx context.Context, ns *database.Namespace, calledAs 
 	if err != nil {
 		return nil, nil, err
 	}
-	var rev *filestore.Revision
 
-	if true {
-		rev, err = tx.FileStore().ForFile(file).GetRevision(ctx)
-		if err != nil {
-			return nil, nil, err
-		}
+	data, err := tx.FileStore().ForFile(file).GetData(ctx)
+	if err != nil {
+		return nil, nil, err
 	}
 
-	return file, rev, nil
+	return file, data, nil
 }
 
 const (
