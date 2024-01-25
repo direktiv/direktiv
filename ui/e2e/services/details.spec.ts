@@ -137,7 +137,7 @@ test("Service details page provides information about the service", async ({
       const logsApiCall = `/api/v2/namespaces/${namespace}/services/${createdService.id}/pods/${createdService.id}_2/logs`;
       return response.status() === 200 && response.url().endsWith(logsApiCall);
     }),
-    "after clicking on the second pod tab, a network request for the logs is made"
+    "after clicking on the second pod tab, a network request to the log was made"
   ).toBeTruthy();
 
   await expect(
