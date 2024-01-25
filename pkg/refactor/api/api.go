@@ -6,6 +6,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"strconv"
 	"sync"
 	"time"
 
@@ -74,6 +75,29 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 			r.Route("/namespaces/{namespace}/registries", func(r chi.Router) {
 				regCtr.mountRouter(r)
 			})
+
+			r.Get("/namespaces/{namespace}/logs", func(w http.ResponseWriter, r *http.Request) {
+				params := extractLogRequestParams(r)
+				offset, err := strconv.Atoi(chi.URLParam(r, "offset"))
+				if err != nil {
+					writeInternalError(w, err)
+
+					return
+				}
+				data, err := app.LogManager.Get(r.Context(), offset, params)
+				if err != nil {
+					writeInternalError(w, err)
+
+					return
+				}
+				writeJSON(w, data)
+			})
+
+			r.Get("/namespaces/{namespace}/logs/subscribe", func(w http.ResponseWriter, r *http.Request) {
+				params := extractLogRequestParams(r)
+				app.LogManager.Stream(params).ServeHTTP(w, r)
+			})
+
 			r.Get("/namespaces/{namespace}/gateway/consumers", func(w http.ResponseWriter, r *http.Request) {
 				data, err := app.GatewayManager.GetConsumers(chi.URLParam(r, "namespace"))
 				if err != nil {
@@ -121,6 +145,30 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 		}
 		serverStopCtx()
 	}()
+}
+
+func extractLogRequestParams(r *http.Request) map[string]string {
+	params := map[string]string{}
+	if v := chi.URLParam(r, "namespace"); v != "" {
+		params["namespace"] = v
+	}
+	if v := chi.URLParam(r, "instance-id"); v != "" {
+		params["instance-id"] = v
+	}
+	if v := chi.URLParam(r, "root-instance-id"); v != "" {
+		params["root-instance-id"] = v
+	}
+	if v := chi.URLParam(r, "branch"); v != "" {
+		params["branch"] = v
+	}
+	if v := chi.URLParam(r, "level"); v != "" {
+		params["level"] = v
+	}
+	if v := chi.URLParam(r, "WithInheritance"); v != "" {
+		params["WithInheritance"] = v
+	}
+
+	return params
 }
 
 func writeJSON(w http.ResponseWriter, v any) {

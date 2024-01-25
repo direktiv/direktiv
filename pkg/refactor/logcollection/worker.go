@@ -2,81 +2,50 @@ package logcollection
 
 import (
 	"context"
+	"encoding/json"
 	"log/slog"
 	"time"
+
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 )
 
 // LogStoreWorker manages the log polling and channel communication.
-type LogStoreWorker struct {
-	LogStore   LogStore
-	Stream     string
-	InstanceID string
-	Interval   time.Duration
-	StopCh     chan struct{}
-	LogCh      chan []LogEntry
-}
-
-// NewLogStoreWorker creates a new LogStoreWorker.
-func NewLogStoreWorker(logStore LogStore, stream, instanceID string, interval time.Duration) *LogStoreWorker {
-	return &LogStoreWorker{
-		LogStore:   logStore,
-		Stream:     stream,
-		InstanceID: instanceID,
-		Interval:   interval,
-		StopCh:     make(chan struct{}),
-		LogCh:      make(chan []LogEntry),
-	}
+type logStoreWorker struct {
+	Get      func(ctx context.Context, offset int, params map[string]string) ([]core.FeatureLogEntry, error)
+	Interval time.Duration
+	LogCh    chan []byte
+	Params   map[string]string
 }
 
 // Start starts the log polling worker.
-func (lw *LogStoreWorker) Start(ctx context.Context) {
+func (lw *logStoreWorker) start(ctx context.Context) {
 	go func() {
 		defer close(lw.LogCh)
 		ticker := time.NewTicker(lw.Interval)
 		defer ticker.Stop()
-
+		offset := 0
 		for {
 			select {
 			case <-ctx.Done():
 				return
 			case <-ticker.C:
-				logs, err := lw.LogStore.Get(ctx, lw.Stream, 0)
+				logs, err := lw.Get(ctx, offset, lw.Params)
+				offset += len(logs)
 				if err != nil {
 					slog.Error("TODO: should we quit with an error?", "error", err)
 
 					continue
 				}
-				lw.LogCh <- logs
-			}
-		}
-	}()
-}
+				for _, fle := range logs {
+					b, err := json.Marshal(fle)
+					if err != nil {
+						slog.Error("TODO: should we quit with an error?", "error", err)
 
-// StartInstanceLogsWorker starts the instance logs polling worker.
-func (lw *LogStoreWorker) StartInstanceLogsWorker(ctx context.Context) {
-	go func() {
-		defer close(lw.LogCh)
-		ticker := time.NewTicker(lw.Interval)
-		defer ticker.Stop()
-
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-ticker.C:
-				logs, err := lw.LogStore.GetInstanceLogs(ctx, lw.Stream, lw.InstanceID, 0)
-				if err != nil {
-					slog.Error("TODO: should we quit with an error?", "error", err)
-
-					continue
+						continue
+					}
+					lw.LogCh <- b
 				}
-				lw.LogCh <- logs
 			}
 		}
 	}()
-}
-
-// Stop stops the log polling worker.
-func (lw *LogStoreWorker) Stop() {
-	close(lw.StopCh)
 }
