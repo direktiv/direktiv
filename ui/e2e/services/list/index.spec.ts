@@ -299,7 +299,7 @@ test("Service list will highlight services that have errors", async ({
   ).toBeVisible();
 });
 
-test("Service list will update the services when refecth button is clicked", async ({
+test("Service list will update the services when refetch button is clicked", async ({
   page,
 }) => {
   await createWorkflow({
