@@ -1,5 +1,9 @@
 import { createNamespace, deleteNamespace } from "../utils/namespace";
-import { createRedisServiceFile, findServiceViaApi } from "./utils";
+import {
+  createRedisServiceFile,
+  findServiceViaApi,
+  serviceWithAnError,
+} from "./utils";
 import { expect, test } from "@playwright/test";
 
 import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
@@ -162,4 +166,56 @@ test("Service details page provides information about the service", async ({
     }),
     "after clicking on the refetch button, a network request to the services was made"
   ).toBeTruthy();
+});
+
+test("Service details page provides will provide error", async ({ page }) => {
+  await createWorkflow({
+    payload: serviceWithAnError,
+    urlParams: {
+      baseUrl: process.env.VITE_DEV_API_DOMAIN,
+      namespace,
+      name: "redis-service.yaml",
+    },
+    headers,
+  });
+
+  await expect
+    .poll(
+      async () =>
+        await findServiceViaApi({
+          namespace,
+          searchFn: (service) =>
+            service.filePath === "/redis-service.yaml" &&
+            service.error !== null,
+        }),
+      "the service in the backend is in an Error state"
+    )
+    .toBeTruthy();
+
+  const createdService = await findServiceViaApi({
+    namespace,
+    searchFn: (service) => service.filePath === "/redis-service.yaml",
+  });
+
+  if (!createdService) throw new Error("could not find service");
+
+  await page.goto(`/${namespace}/services/${createdService.id}`);
+
+  await expect(
+    page.getByRole("heading", { name: createdService.id, exact: true }),
+    "it renders the service id as a heading"
+  ).toBeVisible();
+
+  await expect(
+    page
+      .getByTestId("service-detail-header")
+      .locator("a")
+      .filter({ hasText: "Error" }),
+    "it renders the Error status"
+  ).toBeVisible();
+
+  await expect(
+    page.getByText("No running pods"),
+    "it renders a message that no pods are running"
+  ).toBeVisible();
 });
