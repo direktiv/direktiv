@@ -2,7 +2,6 @@ import { Page, expect, test } from "@playwright/test";
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
 
 import { consumeEvent as consumeEventWorkflow } from "~/pages/namespace/Explorer/Tree/components/modals/CreateNew/Workflow/templates";
-import { createRevision } from "~/api/tree/mutate/createRevision";
 import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
 import { faker } from "@faker-js/faker";
 import { headers } from "e2e/utils/testutils";
@@ -11,10 +10,7 @@ let namespace = "";
 let workflow = "";
 
 const getCommonPageElements = (page: Page) => {
-  const isActiveWorkflowPage = page.url().includes("workflow/active/");
-  const editor = page.getByTestId(
-    isActiveWorkflowPage ? "workflow-editor" : "revisions-detail-editor"
-  );
+  const editor = page.getByTestId("workflow-editor");
   const diagram = page.getByTestId("workflow-diagram");
   const codeBtn = page.getByTestId("editor-layout-btn-code");
   const diagramBtn = page.getByTestId("editor-layout-btn-diagram");
@@ -53,7 +49,7 @@ test.afterEach(async () => {
 test("it is possible to switch between Code View, Diagram View, Split Vertically and Split Horizontally", async ({
   page,
 }) => {
-  await page.goto(`/${namespace}/explorer/workflow/active/${workflow}`);
+  await page.goto(`/${namespace}/explorer/workflow/edit/${workflow}`);
 
   const { editor, diagram, codeBtn, diagramBtn, splitVertBtn, splitHorBtn } =
     await getCommonPageElements(page);
@@ -106,7 +102,7 @@ test("it is possible to switch between Code View, Diagram View, Split Vertically
 test("it will change the direction of the diagram, when the layout is set to Split Vertically", async ({
   page,
 }) => {
-  await page.goto(`/${namespace}/explorer/workflow/active/${workflow}`);
+  await page.goto(`/${namespace}/explorer/workflow/edit/${workflow}`);
   const startNode = page.getByTestId("rf__node-startNode");
   const endNode = page.getByTestId("rf__node-endNode");
 
@@ -161,7 +157,7 @@ test("it will change the direction of the diagram, when the layout is set to Spl
 test("it will persist the preferred layout selection in local storage", async ({
   page,
 }) => {
-  await page.goto(`/${namespace}/explorer/workflow/active/${workflow}`);
+  await page.goto(`/${namespace}/explorer/workflow/edit/${workflow}`);
   const { editor, diagram, codeBtn, diagramBtn, splitVertBtn, splitHorBtn } =
     await getCommonPageElements(page);
 
@@ -200,7 +196,7 @@ test("it will update the diagram when the workflow is saved", async ({
    * networkidle is required to avoid flaky tests. The monaco
    * editor needs to be full loaded before we interact with it.
    */
-  await page.goto(`/${namespace}/explorer/workflow/active/${workflow}`, {
+  await page.goto(`/${namespace}/explorer/workflow/edit/${workflow}`, {
     waitUntil: "networkidle",
   });
   const { editor, diagram, splitVertBtn } = await getCommonPageElements(page);
@@ -232,12 +228,10 @@ test("it will update the diagram when the workflow is saved", async ({
   // comment out all states expect the first one to force the diagram to update
   await page.getByTestId("workflow-editor").click();
   // cursor is at the end of line 8, use right arrow to go to the first column of line 8
-  await page.keyboard.press("ArrowRight"); // line 9, column 1 after this command runs
+  await page.keyboard.press("ArrowRight"); // line 11, column 1 after this command runs
   if (browserName === "webkit") {
     await page.keyboard.press("ArrowDown"); // webkit is one line off
   }
-  await page.keyboard.press("ArrowDown"); // line 10, column 1 after this command runs
-  await page.keyboard.press("ArrowDown"); // line 11, column 1 after this command runs
   await page.keyboard.press("ArrowDown"); // line 12, column 1 after this command runs
   await page.keyboard.press("ArrowDown"); // line 13, column 1 after this command runs
   await page.keyboard.press("#"); // adding # at the beginning of line "transition: greet" now
@@ -262,50 +256,10 @@ test("it will update the diagram when the workflow is saved", async ({
   ).not.toBeVisible();
 });
 
-test("it is possible to use the diagram view on the revisions detail page as well", async ({
-  page,
-}) => {
-  const {
-    revision: { name: revisionName },
-  } = await createRevision({
-    payload: consumeEventWorkflow,
-    urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
-      namespace,
-      path: workflow,
-    },
-    headers,
-  });
-
-  await page.goto(
-    `/${namespace}/explorer/workflow/revisions/${workflow}?revision=${revisionName}`
-  );
-
-  const { editor, diagram, codeBtn, diagramBtn, splitVertBtn, splitHorBtn } =
-    await getCommonPageElements(page);
-
-  // code is the default view
-  expect(await codeBtn.getAttribute("aria-pressed")).toBe("true");
-  expect(await diagramBtn.getAttribute("aria-pressed")).toBe("false");
-  expect(await splitVertBtn.getAttribute("aria-pressed")).toBe("false");
-  expect(await splitHorBtn.getAttribute("aria-pressed")).toBe("false");
-  await expect(editor).toBeVisible();
-  await expect(diagram).not.toBeVisible();
-
-  // split vertically
-  await splitVertBtn.click();
-  expect(await codeBtn.getAttribute("aria-pressed")).toBe("false");
-  expect(await diagramBtn.getAttribute("aria-pressed")).toBe("false");
-  expect(await splitVertBtn.getAttribute("aria-pressed")).toBe("true");
-  expect(await splitHorBtn.getAttribute("aria-pressed")).toBe("false");
-  await expect(editor).toBeVisible();
-  await expect(diagram).toBeVisible();
-});
-
 test("it is possible to switch from Code View to Diagram View without loosing the recent changes", async ({
   page,
 }) => {
-  await page.goto(`/${namespace}/explorer/workflow/active/${workflow}`);
+  await page.goto(`/${namespace}/explorer/workflow/edit/${workflow}`);
 
   const { codeBtn, diagramBtn } = await getCommonPageElements(page);
 

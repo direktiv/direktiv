@@ -134,54 +134,6 @@
           "createBtn": "Create"
         },
         "workflow": {
-          "revisions": {
-            "overview": {
-              "list": {
-                "title": "Revisions",
-                "contextMenu": {
-                  "title": "Actions",
-                  "delete": "Delete",
-                  "tag": "Create Tag",
-                  "revert": "Revert to Revision"
-                },
-                "delete": {
-                  "titleTag": "Delete Tag",
-                  "titleRevision": "Delete Revision",
-                  "description": "Are you sure you want to delete <b>{{name}}</b>? This cannot be undone.",
-                  "revisionNote": "Please note that this will also delete all corresponding tags as well.",
-                  "cancelBtn": "Cancel",
-                  "deleteBtn": "Delete"
-                },
-                "tag": {
-                  "titleTag": "Create a Tag",
-                  "description": "You are about to create a tag based on <b>{{name}}</b>.",
-                  "tagAlreadyExist": "This tag already exists.",
-                  "cancelBtn": "Cancel",
-                  "createBtn": "Create Tag"
-                },
-                "revert": {
-                  "title": "Revert to Revision",
-                  "description": "Are you sure you want to revert to <b>{{name}}</b>?",
-                  "cancelBtn": "Cancel",
-                  "revertBtn": "Revert",
-                  "error": {
-                    "title": "Error",
-                    "description": "Something went wrong reverting this workflow."
-                  },
-                  "success": {
-                    "title": "Successfully reverted",
-                    "description": "Your workflow was reverted to {{name}}.",
-                    "action": "Open workflow"
-                  }
-                }
-              },
-              "detail": {
-                "backBtn": "Revisions List",
-                "readOnlyNote": "You cannot edit an old revision",
-                "revertBtn": "Revert"
-              }
-            }
-          },
           "runWorkflow": {
             "title": "Run Workflow",
             "jsonInput": "JSON Input",
@@ -227,14 +179,11 @@
       },
       "workflow": {
         "menu": {
-          "activeRevision": "Active Revision",
-          "revisions": "Revisions",
+          "fileContent": "File Content",
           "overview": "Overview",
           "settings": "Settings",
           "services": "Services"
         },
-        "headline": "Latest",
-        "updated": "Updated {{relativeTime}} ago",
         "runBtn": "Run",
         "apiCommands": {
           "tooltip": "Open API commands",
@@ -257,9 +206,6 @@
         "editor": {
           "unsavedNote": "unsaved changes",
           "theresOneIssue": "There is an issue",
-          "revisionsBtn": "Revisions",
-          "makeRevision": "Make Revision",
-          "revertToPrevious": "Revert to previous revision",
           "runBtn": "Run",
           "saveBtn": "Save",
           "layout": {
@@ -1281,25 +1227,6 @@
             "description": "could not create directory 😢"
           }
         },
-        "createRevision": {
-          "success": {
-            "title": "Revision created",
-            "description": "Revision {{name}} was created",
-            "action": "Open Revision"
-          },
-          "error": {
-            "description": "could not create revision 😢"
-          }
-        },
-        "createTag": {
-          "success": {
-            "title": "Tag created",
-            "description": "Tag {{name}} was created"
-          },
-          "error": {
-            "description": "could not create tag 😢"
-          }
-        },
         "createWorkflow": {
           "success": {
             "title": "File created",
@@ -1318,24 +1245,6 @@
             "description": "could not delete 😢"
           }
         },
-        "deleteRevision": {
-          "success": {
-            "title": "revision deleted",
-            "description": "revision {{name}} was deleted"
-          },
-          "error": {
-            "description": "could not delete 😢"
-          }
-        },
-        "deleteTag": {
-          "success": {
-            "title": "tag deleted",
-            "description": "tag {{name}} was deleted"
-          },
-          "error": {
-            "description": "could not delete 😢"
-          }
-        },
         "renameNode": {
           "success": {
             "title": "{{type}} renamed",
@@ -1343,15 +1252,6 @@
           },
           "error": {
             "description": "could not rename 😢"
-          }
-        },
-        "revertRevision": {
-          "success": {
-            "title": "Restored workflow",
-            "description": "The latest revision was restored"
-          },
-          "error": {
-            "description": "could not revert workflow 😢"
           }
         },
         "downloadVariable": {

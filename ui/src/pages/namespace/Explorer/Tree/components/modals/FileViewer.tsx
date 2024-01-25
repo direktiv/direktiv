@@ -36,7 +36,7 @@ const FileViewer = ({ node }: { node: NodeSchemaType }) => {
   const theme = useTheme();
   const { data } = useNodeContent({ path: node.path });
 
-  const fileContent = atob(data?.revision?.source ?? "");
+  const fileContent = atob(data?.source ?? "");
   const mimeType = data?.node.mimeType;
 
   const supportedLanguage = mimeTypeToEditorSyntax(mimeType);
@@ -58,7 +58,7 @@ const FileViewer = ({ node }: { node: NodeSchemaType }) => {
         <div className="flex h-[700px]">
           {showImage && (
             <img
-              src={imageSrc(mimeType ?? "", data?.revision?.source ?? "")}
+              src={imageSrc(mimeType ?? "", data?.source ?? "")}
               className="w-full object-contain"
             />
           )}

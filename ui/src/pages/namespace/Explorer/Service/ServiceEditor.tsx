@@ -1,7 +1,7 @@
 import { FC, useState } from "react";
 
 import Button from "~/design/Button";
-import { CodeEditor } from "../Workflow/Active/CodeEditor";
+import { CodeEditor } from "../Workflow/Edit/CodeEditor";
 import { Save } from "lucide-react";
 import ServiceHelp from "./ServiceHelp";
 import { useNamespace } from "~/util/store/namespace";
@@ -20,7 +20,7 @@ const ServiceEditor: FC<{
   const [error, setError] = useState<string | undefined>();
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
-  const serviceDataFromServer = atob(data?.revision?.source ?? "");
+  const serviceDataFromServer = atob(data?.source ?? "");
 
   const { mutate: updateService, isLoading } = useUpdateWorkflow({
     onError: (error) => {
@@ -55,7 +55,6 @@ const ServiceEditor: FC<{
       <CodeEditor
         value={serviceDataFromServer}
         onValueChange={onEditorContentUpdate}
-        createdAt={data.revision?.createdAt}
         error={error}
         hasUnsavedChanges={hasUnsavedChanges}
         onSave={onSave}

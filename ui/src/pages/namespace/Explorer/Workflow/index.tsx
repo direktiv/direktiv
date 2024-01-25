@@ -1,13 +1,12 @@
-import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import {
-  GitCommit,
-  GitMerge,
+  Code2,
   Layers,
   PieChart,
   Play,
   Settings,
   TerminalSquare,
 } from "lucide-react";
+import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import { Link, Outlet } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger } from "~/design/Tabs";
 import {
@@ -34,8 +33,7 @@ const Header: FC = () => {
   const { t } = useTranslation();
   const {
     path,
-    isWorkflowActivePage,
-    isWorkflowRevPage,
+    isWorkflowEditorPage,
     isWorkflowOverviewPage,
     isWorkflowSettingsPage,
     isWorkflowServicesPage,
@@ -55,25 +53,14 @@ const Header: FC = () => {
 
   const tabs = [
     {
-      value: "activeRevision",
-      active: isWorkflowActivePage,
-      icon: <GitCommit aria-hidden="true" />,
-      title: t("pages.explorer.workflow.menu.activeRevision"),
+      value: "editor",
+      active: isWorkflowEditorPage,
+      icon: <Code2 aria-hidden="true" />,
+      title: t("pages.explorer.workflow.menu.fileContent"),
       link: pages.explorer.createHref({
         namespace,
         path,
         subpage: "workflow",
-      }),
-    },
-    {
-      value: "revisions",
-      active: isWorkflowRevPage,
-      icon: <GitMerge aria-hidden="true" />,
-      title: t("pages.explorer.workflow.menu.revisions"),
-      link: pages.explorer.createHref({
-        namespace,
-        path,
-        subpage: "workflow-revisions",
       }),
     },
     {
