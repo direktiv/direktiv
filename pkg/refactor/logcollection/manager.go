@@ -137,7 +137,7 @@ func (e LogEntry) toFeatureLogEntry() (core.FeatureLogEntry, error) {
 
 	var m map[string]interface{}
 	if err := json.Unmarshal([]byte(entry), &m); err != nil {
-		return core.FeatureLogEntry{}, fmt.Errorf("failed to unmarshal log entry: %v", err)
+		return core.FeatureLogEntry{}, fmt.Errorf("failed to unmarshal log entry: %w", err)
 	}
 
 	return core.FeatureLogEntry{
