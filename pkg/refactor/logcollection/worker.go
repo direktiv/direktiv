@@ -13,7 +13,7 @@ import (
 type logStoreWorker struct {
 	Get      func(ctx context.Context, cursorTime time.Time, params map[string]string) ([]core.FeatureLogEntry, error)
 	Interval time.Duration
-	LogCh    chan []byte
+	LogCh    chan string
 	Params   map[string]string
 	Cursor   time.Time // Cursor instead of Offset
 }
@@ -43,7 +43,7 @@ func (lw *logStoreWorker) start(ctx context.Context) {
 
 						continue
 					}
-					lw.LogCh <- b
+					lw.LogCh <- string(b)
 				}
 
 				// Update cursorTime for the next iteration

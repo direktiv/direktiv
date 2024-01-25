@@ -87,7 +87,7 @@ func (m *Manager) Stream(params map[string]string) http.HandlerFunc {
 		}
 
 		// Create a channel to send SSE messages
-		messageChannel := make(chan []byte)
+		messageChannel := make(chan string)
 		defer close(messageChannel)
 
 		// Start a goroutine to listen for messages and send them to the client
