@@ -27,12 +27,12 @@ size: "small"
 
 type FindServiceViaApiParam = {
   namespace: string;
-  find: (service: ServiceSchemaType) => boolean;
+  searchFn: (service: ServiceSchemaType) => boolean;
 };
 
 export const findServiceViaApi = async ({
   namespace,
-  find,
+  searchFn: search,
 }: FindServiceViaApiParam) => {
   const { data: services } = await getServices({
     urlParams: {
@@ -40,6 +40,5 @@ export const findServiceViaApi = async ({
       namespace,
     },
   });
-
-  return services.some(find);
+  return services.find(search);
 };

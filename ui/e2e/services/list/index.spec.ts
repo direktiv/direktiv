@@ -276,13 +276,13 @@ test("Service list will highlight services that have errors", async ({
       async () =>
         await findServiceViaApi({
           namespace,
-          find: (service) =>
+          searchFn: (service) =>
             service.filePath === "/failed-service.yaml" &&
             service.error !== null,
         }),
       "the service in the backend is in an error state"
     )
-    .toBe(true);
+    .toBeTruthy();
 
   await page.goto(`/${namespace}/services`, {
     waitUntil: "networkidle",
