@@ -56,18 +56,20 @@ export const EnvItemForm: FC<EnvItemFormProps> = ({
   };
 
   return (
-    <div className="flex gap-3">
+    <div className="flex gap-3" data-testid="env-item-form">
       <Input
         value={state.name}
         onChange={(event) => handleChange({ name: event.target.value })}
         onKeyDown={handleKeyDown}
         placeholder="NAME"
+        data-testid="env-name"
       ></Input>
       <Input
         value={state.value}
         onChange={(event) => handleChange({ value: event.target.value })}
         onKeyDown={handleKeyDown}
         placeholder="VALUE"
+        data-testid="env-value"
       ></Input>
       {onAdd && (
         <Button
