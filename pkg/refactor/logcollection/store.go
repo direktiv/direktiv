@@ -22,7 +22,7 @@ const (
 
 // LogStore manages storing and querying LogEntries.
 type LogStore interface {
-	Get(ctx context.Context, stream string, offset int) ([]LogEntry, error)
-	GetInstanceLogs(ctx context.Context, stream string, instanceID string, offset int) ([]LogEntry, error)
+	Get(ctx context.Context, stream string, cursorTime time.Time) ([]LogEntry, error)
+	GetInstanceLogs(ctx context.Context, stream string, instanceID string, cursorTime time.Time) ([]LogEntry, error)
 	DeleteOldLogs(ctx context.Context, t time.Time) error
 }

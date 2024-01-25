@@ -5,6 +5,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/events"
+	"github.com/direktiv/direktiv/pkg/refactor/logcollection"
 	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 )
@@ -23,7 +24,7 @@ type Store interface {
 
 	// Logs returns logengine.LogStore, is responsible for reading and writing logs
 	Logs() logengine.LogStore
-
+	NewLogs() logcollection.LogStore
 	Secrets() core.SecretsStore
 
 	RuntimeVariables() core.RuntimeVariablesStore

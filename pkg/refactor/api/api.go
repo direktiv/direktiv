@@ -6,7 +6,6 @@ import (
 	"errors"
 	"log"
 	"net/http"
-	"strconv"
 	"sync"
 	"time"
 
@@ -78,18 +77,22 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 
 			r.Get("/namespaces/{namespace}/logs", func(w http.ResponseWriter, r *http.Request) {
 				params := extractLogRequestParams(r)
-				offset, err := strconv.Atoi(chi.URLParam(r, "offset"))
+			
+				// Extract the cursor parameter from the request URL query
+				cursorTimeStr := r.URL.Query().Get("cursor")
+				cursorTime, err := time.Parse(time.RFC3339Nano, cursorTimeStr)
 				if err != nil {
 					writeInternalError(w, err)
-
 					return
 				}
-				data, err := app.LogManager.Get(r.Context(), offset, params)
+			
+				// Call the Get method with the cursor instead of offset
+				data, err := app.LogManager.Get(r.Context(), cursorTime, params)
 				if err != nil {
 					writeInternalError(w, err)
-
 					return
 				}
+			
 				writeJSON(w, data)
 			})
 

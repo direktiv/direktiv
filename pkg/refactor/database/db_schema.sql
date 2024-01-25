@@ -148,6 +148,12 @@ CREATE TABLE IF NOT EXISTS "engine_messages" (
     PRIMARY KEY ("id")
 );
 
+CREATE TABLE IF NOT EXISTS "fluentbit" (
+    "tag" VARCHAR(255),
+    "time" TIMESTAMP,
+    "data" JSONB
+);
+
 -- partitioning the logtable to speeds up pagination and queries
 CREATE INDEX IF NOT EXISTS "engine_messages_topic" ON "engine_messages" USING hash("topic");
 

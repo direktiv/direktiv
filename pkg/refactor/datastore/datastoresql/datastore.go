@@ -4,6 +4,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/events"
+	"github.com/direktiv/direktiv/pkg/refactor/logcollection"
 	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	"gorm.io/gorm"
@@ -42,6 +43,12 @@ func (s *sqlStore) Mirror() mirror.Store {
 // Logs returns a log store.
 func (s *sqlStore) Logs() logengine.LogStore {
 	return &sqlLogStore{
+		db: s.db,
+	}
+}
+
+func (s *sqlStore) NewLogs() logcollection.LogStore {
+	return &sqlLogNewStore{
 		db: s.db,
 	}
 }

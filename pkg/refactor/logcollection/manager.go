@@ -20,31 +20,27 @@ func NewManger(store LogStore) Manager {
 	}
 }
 
-func (m *Manager) Get(ctx context.Context, offset int, params map[string]string) ([]core.FeatureLogEntry, error) {
+func (m *Manager) Get(ctx context.Context, cursorTime time.Time, params map[string]string) ([]core.FeatureLogEntry, error) {
 	var r []LogEntry
 	var err error
-	//nolint:nestif
-	if p, ok := params["root-instance-id"]; ok {
-		stream := "flow." + p
-		r, err = m.store.GetInstanceLogs(ctx, stream, p, offset)
-		if err != nil {
-			return []core.FeatureLogEntry{}, err
-		}
-	} else if p, ok := params["namespace"]; ok {
-		stream := "flow." + p
-		r, err = m.store.Get(ctx, stream, offset)
-		if err != nil {
-			return []core.FeatureLogEntry{}, err
-		}
-	} else if p, ok := params["route"]; ok {
-		stream := "flow.gateway." + p
-		r, err = m.store.Get(ctx, stream, offset)
-		if err != nil {
-			return []core.FeatureLogEntry{}, err
-		}
-	} else {
-		return []core.FeatureLogEntry{}, fmt.Errorf("requested logs for a unknown typ")
+
+	// Determine the stream based on the provided parameters
+	stream, err := determineStream(params)
+	if err != nil {
+		return []core.FeatureLogEntry{}, err
 	}
+
+	// Call the appropriate LogStore method with cursorTime
+	if p, ok := params["root-instance-id"]; ok {
+		r, err = m.store.GetInstanceLogs(ctx, stream, p, cursorTime)
+	} else {
+		r, err = m.store.Get(ctx, stream, cursorTime)
+	}
+
+	if err != nil {
+		return []core.FeatureLogEntry{}, err
+	}
+
 	res := loglist{}
 	for _, le := range r {
 		e, err := le.toFeatureLogEntry()
@@ -53,6 +49,8 @@ func (m *Manager) Get(ctx context.Context, offset int, params map[string]string)
 		}
 		res = append(res, e)
 	}
+
+	// Apply filters based on additional parameters
 	if p, ok := params["level"]; ok {
 		res.filterByLevel(p)
 	}
@@ -66,7 +64,7 @@ func (m *Manager) Get(ctx context.Context, offset int, params map[string]string)
 	return res, nil
 }
 
-// TODO move this to an other pkg.
+// Stream handles the SSE endpoint.
 func (m *Manager) Stream(params map[string]string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Set the appropriate headers for SSE
@@ -77,6 +75,16 @@ func (m *Manager) Stream(params map[string]string) http.HandlerFunc {
 		// Create a context with cancellation
 		ctx, cancel := context.WithCancel(r.Context())
 		defer cancel()
+
+		// Extract cursor from request URL query
+		cursorTimeStr := r.URL.Query().Get("cursor")
+		cursorTime, err := time.Parse(time.RFC3339Nano, cursorTimeStr)
+		if err != nil {
+			// Handle error
+			http.Error(w, "Invalid cursor parameter", http.StatusBadRequest)
+
+			return
+		}
 
 		// Create a channel to send SSE messages
 		messageChannel := make(chan []byte)
@@ -101,11 +109,14 @@ func (m *Manager) Stream(params map[string]string) http.HandlerFunc {
 				}
 			}
 		}()
+
+		// Adjust the logStoreWorker to use cursor instead of offset
 		worker := logStoreWorker{
 			Get:      m.Get,
 			Interval: time.Second,
 			LogCh:    messageChannel,
 			Params:   params,
+			Cursor:   cursorTime,
 		}
 		worker.start(ctx)
 	}
@@ -131,14 +142,47 @@ func (e LogEntry) toFeatureLogEntry() (core.FeatureLogEntry, error) {
 
 type loglist []core.FeatureLogEntry
 
-func (e *loglist) filterByBranch(_ string) {
-	// TODO
+func (e *loglist) filterByBranch(branch string) {
+	// TODO revisit this implementation
+	filteredEntries := make(loglist, 0)
+	for _, entry := range *e {
+		if entry.Branch == branch {
+			filteredEntries = append(filteredEntries, entry)
+		}
+	}
+	*e = filteredEntries
 }
 
-func (e *loglist) filterByState(_ string) {
-	// TODO
+func (e *loglist) filterByState(state string) {
+	// TODO revisit this implementation
+	filteredEntries := make(loglist, 0)
+	for _, entry := range *e {
+		if entry.State == state {
+			filteredEntries = append(filteredEntries, entry)
+		}
+	}
+	*e = filteredEntries
 }
 
-func (e *loglist) filterByLevel(_ string) {
-	// TODO
+func (e *loglist) filterByLevel(level string) {
+	// TODO revisit this implementation
+	filteredEntries := make(loglist, 0)
+	for _, entry := range *e {
+		if entry.Level == level {
+			filteredEntries = append(filteredEntries, entry)
+		}
+	}
+	*e = filteredEntries
+}
+
+func determineStream(params map[string]string) (string, error) {
+	if p, ok := params["root-instance-id"]; ok {
+		return "flow." + p, nil
+	} else if p, ok := params["namespace"]; ok {
+		return "flow." + p, nil
+	} else if p, ok := params["route"]; ok {
+		return "flow.gateway." + p, nil
+	}
+
+	return "", fmt.Errorf("requested logs for an unknown type")
 }
