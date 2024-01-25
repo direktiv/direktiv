@@ -220,4 +220,12 @@ CREATE TABLE IF NOT EXISTS "metrics" (
     PRIMARY KEY ("id")
 );
 
+-- Remove file_annotations.
 DROP TABLE IF EXISTS "file_annotations";
+
+-- Remove filesystem_revisions table and move its columns to filesystem_file table.
+ALTER TABLE "instances_v2" DROP COLUMN IF EXISTS "revision_id";
+ALTER TABLE "metrics" DROP COLUMN IF EXISTS "revision";
+DROP TABLE IF EXISTS "filesystem_revisions";
+ALTER TABLE "filesystem_files" ADD COLUMN IF NOT EXISTS "data" bytea;
+ALTER TABLE "filesystem_files" ADD COLUMN IF NOT EXISTS "checksum" text;
