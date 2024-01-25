@@ -14,7 +14,7 @@ describe('Test basic workflow events', () => {
         expect(createNamespaceResponse.statusCode).toEqual(200)
     })
 
-    common.helpers.itShouldCreateFile(it, expect, testNamespace,
+    common.helpers.itShouldCreateFile(it, expect, namespaceName,
         "/listener.yml", `
 start:
   type: event
