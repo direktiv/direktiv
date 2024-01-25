@@ -257,6 +257,9 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 		return nil, status.Error(codes.InvalidArgument, "file type is not workflow or service or endpoint or consumer")
 	}
 	_, err = tx.FileStore().ForFile(file).SetData(ctx, req.GetSource())
+	if err != nil {
+		return nil, err
+	}
 
 	if file.Typ == filestore.FileTypeWorkflow {
 		err = flow.placeholdSecrets(ctx, tx, ns.Name, file)

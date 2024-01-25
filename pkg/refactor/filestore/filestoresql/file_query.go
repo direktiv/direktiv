@@ -147,7 +147,7 @@ func (q *FileQuery) SetData(ctx context.Context, data []byte) (string, error) {
 
 	newChecksum := string(q.checksumFunc(data))
 
-	res := q.db.WithContext(ctx).Raw(`
+	res := q.db.WithContext(ctx).Exec(`
 					UPDATE filesystem_files
 					SET data=?, checksum=? WHERE id=? 
 					`, data, newChecksum, q.file.ID)
