@@ -84,7 +84,10 @@ test("Service details page provides information about the service", async ({
   ).toBeVisible();
 
   await expect(
-    page.getByTestId("service-detail-header").getByText("UpAndReady"),
+    page
+      .getByTestId("service-detail-header")
+      .locator("a")
+      .filter({ hasText: "UpAndReady" }),
     "it renders the UpAndReady status"
   ).toBeVisible();
 
