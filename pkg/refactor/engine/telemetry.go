@@ -1,10 +1,12 @@
 package engine
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
+	"go.opentelemetry.io/otel/trace"
 )
 
 func (instance *Instance) GetAttributes(recipientType recipient.RecipientType) map[string]string {
@@ -26,7 +28,7 @@ func (instance *Instance) GetAttributes(recipientType recipient.RecipientType) m
 	return tags
 }
 
-func (instance *Instance) GetSlogAttributes() []interface{} {
+func (instance *Instance) GetSlogAttributes(ctx context.Context) []interface{} {
 	tags := make([]interface{}, 0)
 
 	rootInstanceID := instance.Instance.ID
@@ -37,6 +39,9 @@ func (instance *Instance) GetSlogAttributes() []interface{} {
 	for _, v := range instance.DescentInfo.Descent {
 		callpath += "/" + v.ID.String()
 	}
+	span := trace.SpanFromContext(ctx)
+	TraceID := span.SpanContext().TraceID().String() // TODO: instance.TelemetryInfo.TraceID is broken.
+	SpanID := span.SpanContext().SpanID().String()
 
 	tags = append(tags, "stream", fmt.Sprintf("%v.%v", recipient.Instance, rootInstanceID))
 	tags = append(tags, "instance-id", instance.Instance.ID)
@@ -46,9 +51,9 @@ func (instance *Instance) GetSlogAttributes() []interface{} {
 	tags = append(tags, "namespace", instance.Instance.Namespace)
 	tags = append(tags, "source", recipient.Instance)
 	tags = append(tags, "root-instance-id", rootInstanceID)
-	tags = append(tags, "trace", instance.TelemetryInfo.TraceID)
-	tags = append(tags, "span", instance.TelemetryInfo.SpanID)
-	// tags = append(tags, "callpath", instance.TelemetryInfo.CallPath) // Todo this is value is not filled
+	tags = append(tags, "trace", TraceID)
+	tags = append(tags, "span", SpanID)
+	// tags = append(tags, "callpath", instance.TelemetryInfo.CallPath) // Todo: this is value is not filled
 
 	return tags
 }

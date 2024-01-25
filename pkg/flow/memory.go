@@ -224,8 +224,8 @@ func (im *instanceMemory) GetAttributes() map[string]string {
 	return tags
 }
 
-func (im *instanceMemory) GetSlogAttributes() []interface{} {
-	tags := im.instance.GetSlogAttributes()
+func (im *instanceMemory) GetSlogAttributes(ctx context.Context) []interface{} {
+	tags := im.instance.GetSlogAttributes(ctx)
 
 	if im.logic != nil {
 		tags = append(tags, "state-id", im.logic.GetID())
