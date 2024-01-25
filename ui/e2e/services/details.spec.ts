@@ -144,8 +144,22 @@ test("Service details page provides information about the service", async ({
     page.getByText(`Logs for ${createdService.id}_2`),
     "after clicking on the second pod tab, it renders the headline for the second pods logs"
   ).toBeVisible();
-});
 
-// TODO: test refetch button (wait for network request)
-// TODO: show env vars, and write test for it
-// TODO: error state, show error state, show error tooltip, show empty logs
+  await page.getByTestId("service-detail-header").getByRole("button").click();
+
+  /**
+   * since the logs from both pods are equal, we can only check, if changing
+   * the tab will trigger a network request to the logs of the second pod.
+   * We also check if the server responds with a 200 status code to make sure
+   * that the logs are comming in.
+   */
+  await expect(
+    await page.waitForResponse((response) => {
+      const servicesApiCall = `/api/v2/namespaces/${namespace}/services`;
+      return (
+        response.status() === 200 && response.url().endsWith(servicesApiCall)
+      );
+    }),
+    "after clicking on the refetch button, a network request to the services was made"
+  ).toBeTruthy();
+});
