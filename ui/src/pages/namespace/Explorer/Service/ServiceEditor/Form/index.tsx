@@ -3,7 +3,6 @@ import {
   DeepPartialSkipArrayKey,
   UseFormReturn,
   useForm,
-  useWatch,
 } from "react-hook-form";
 import {
   Select,
@@ -41,9 +40,12 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
     },
   });
 
-  const values = useWatch({
-    control: formControls.control,
-  });
+  const fieldsInOrder = ServiceFormSchema.keyof().options;
+
+  const values = fieldsInOrder.reduce(
+    (object, key) => ({ ...object, [key]: formControls.watch(key) }),
+    {}
+  );
 
   const { register, control } = formControls;
 

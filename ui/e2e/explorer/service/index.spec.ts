@@ -76,15 +76,35 @@ test("it is possible to create a service", async ({ page }) => {
 
   const expectedYaml = `direktiv_api: "service/v1"
 image: "bash"
-cmd: "hello"
-envs: ${envsYaml}
 scale: 2
-size: "medium"`;
+size: "medium"
+cmd: "hello"
+envs:${envsYaml}`;
 
-  const editor = page.locator(".monaco-editor");
+  const editor = page.locator(".lines-content");
 
   await expect(
     editor,
     "all entered data is represented in the editor preview"
   ).toContainText(expectedYaml, { useInnerText: true });
+
+  await expect(
+    page.getByTestId("unsaved-note"),
+    "it renders a hint that there are unsaved changes"
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Save" }).click();
+
+  await expect(
+    page.getByTestId("unsaved-note"),
+    "it does not render a hint that there are unsaved changes"
+  ).not.toBeVisible();
+
+  await page.reload({ waitUntil: "domcontentloaded" });
+
+  await expect(
+    editor,
+    "after reloading, the entered data is still in the editor preview"
+  ).toContainText(expectedYaml, { useInnerText: true });
+
+  // TODO: Assert all fields have the correct values
 });
