@@ -18,7 +18,7 @@ export const runWorkflow = apiFactory({
   }) =>
     `${baseUrl ?? ""}/api/namespaces/${namespace}/tree${forceLeadingSlash(
       path
-    )}?op=execute&ref=latest`,
+    )}?op=execute`,
   method: "POST",
   schema: WorkflowStartedSchema,
 });

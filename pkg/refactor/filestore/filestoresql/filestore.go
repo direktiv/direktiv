@@ -156,38 +156,3 @@ func (s *sqlFileStore) GetFileByID(ctx context.Context, id uuid.UUID) (*filestor
 
 	return file, nil
 }
-
-func (s *sqlFileStore) GetRevisionByID(ctx context.Context, id uuid.UUID) (*filestore.File, *filestore.Revision, error) {
-	// TODO: yassir, reimplement this function using JOIN so that it becomes a single query.
-	rev := &filestore.Revision{}
-	res := s.db.WithContext(ctx).Raw(`
-					SELECT *
-					FROM filesystem_revisions
-					WHERE id=?`, id).
-		First(rev)
-
-	if res.Error != nil {
-		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
-			return nil, nil, fmt.Errorf("revision '%s': %w", id, filestore.ErrNotFound)
-		}
-
-		return nil, nil, res.Error
-	}
-
-	file := &filestore.File{}
-	res = s.db.WithContext(ctx).Raw(`
-					SELECT *
-					FROM filesystem_files
-					WHERE id=?`, rev.FileID).
-		First(file)
-
-	if res.Error != nil {
-		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
-			return nil, nil, fmt.Errorf("file '%s': %w", rev.FileID, filestore.ErrNotFound)
-		}
-
-		return nil, nil, res.Error
-	}
-
-	return file, rev, nil
-}

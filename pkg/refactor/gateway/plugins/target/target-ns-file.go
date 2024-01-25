@@ -128,14 +128,9 @@ type Node struct {
 		ExpandedType string    `json:"expandedType"`
 		MimeType     string    `json:"mimeType"`
 	} `json:"node"`
-	Revision struct {
-		CreatedAt time.Time `json:"createdAt"`
-		Hash      string    `json:"hash"`
-		Source    string    `json:"source"`
-		Name      string    `json:"name"`
-	} `json:"revision"`
 	EventLogging string `json:"eventLogging"`
 	Oid          string `json:"oid"`
+	Source       string `json:"source"`
 }
 
 func fetchObjectData(res *http.Response) ([]byte, error) {
@@ -150,7 +145,7 @@ func fetchObjectData(res *http.Response) ([]byte, error) {
 		return nil, err
 	}
 
-	data, err := base64.StdEncoding.DecodeString(node.Revision.Source)
+	data, err := base64.StdEncoding.DecodeString(node.Source)
 	if err != nil {
 		return nil, err
 	}
