@@ -4,6 +4,7 @@ import { Plus, X } from "lucide-react";
 import Button from "~/design/Button";
 import { EnvironementVariableSchemaType } from "~/api/services/schema/services";
 import Input from "~/design/Input";
+import { useTranslation } from "react-i18next";
 
 type EnvItemFormProps = {
   item?: EnvironementVariableSchemaType;
@@ -18,6 +19,7 @@ export const EnvItemForm: FC<EnvItemFormProps> = ({
   onUpdate,
   onDelete,
 }) => {
+  const { t } = useTranslation();
   const emptyItem = {
     name: "",
     value: "",
@@ -61,16 +63,20 @@ export const EnvItemForm: FC<EnvItemFormProps> = ({
         value={state.name}
         onChange={(event) => handleChange({ name: event.target.value })}
         onKeyDown={handleKeyDown}
-        placeholder="NAME"
+        placeholder={t(
+          "pages.explorer.service.editor.form.envs.namePlaceholder"
+        )}
         data-testid="env-name"
-      ></Input>
+      />
       <Input
         value={state.value}
         onChange={(event) => handleChange({ value: event.target.value })}
         onKeyDown={handleKeyDown}
-        placeholder="VALUE"
+        placeholder={t(
+          "pages.explorer.service.editor.form.envs.valuePlaceholder"
+        )}
         data-testid="env-value"
-      ></Input>
+      />
       {onAdd && (
         <Button
           type="button"

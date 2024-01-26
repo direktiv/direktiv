@@ -229,8 +229,8 @@
             "cmd": "Cmd",
             "envs": {
               "label": "Environment variables",
-              "name": "Name",
-              "value": "Value"
+              "namePlaceholder": "NAME",
+              "valuePlaceholder": "VALUE"
             }
           }
         }
