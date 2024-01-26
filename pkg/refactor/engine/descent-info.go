@@ -42,6 +42,23 @@ func (info *InstanceDescentInfo) MarshalJSON() ([]byte, error) {
 	})
 }
 
+func (info *InstanceDescentInfo) Callpath() string {
+	callpath := ""
+	for _, v := range info.Descent {
+		callpath += "/" + v.ID.String()
+	}
+
+	return callpath
+}
+
+func (info *InstanceDescentInfo) RootInstanceID() (string, bool) {
+	if len(info.Descent) > 0 {
+		return "/" + info.Descent[0].ID.String(), true
+	}
+
+	return "/", false
+}
+
 type InstanceDescentInfoV1 struct {
 	Version string       `json:"version"`
 	Descent []ParentInfo `json:"descent"`

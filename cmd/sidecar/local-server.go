@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"os"
 	"strconv"
@@ -13,6 +14,7 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/gorilla/mux"
 )
@@ -119,9 +121,13 @@ func (srv *LocalServer) wait() {
 
 func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 	actionId := r.URL.Query().Get("aid")
+	execContext, execContextPresent := r.Context().Value(enginerefactor.ExecContextKey).(enginerefactor.FunctionContext)
+	if !execContextPresent {
+		slog.Error("Unable to extract ExecContext from request context")
+	}
 
 	srv.requestsLock.Lock()
-	req, ok := srv.requests[actionId]
+	req, execContextPresent := srv.requests[actionId]
 	srv.requestsLock.Unlock()
 
 	reportError := func(code int, err error) {
@@ -129,7 +135,7 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 		log.Warnf("Log handler for '%s' returned %v: %v.", actionId, code, err)
 	}
 
-	if !ok {
+	if !execContextPresent {
 		err := errors.New("the action id went missing")
 		code := http.StatusInternalServerError
 		reportError(code, err)
@@ -169,7 +175,23 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 		log.Debugf("Log handler for '%s' received zero bytes.", actionId)
 		return
 	}
+	if execContextPresent {
+		root, _ := execContext.Callers.RootInstanceID()
+		if root == "" {
+			root = execContext.InstanceID.String()
+		}
 
+		slog.Info(msg,
+			"stream", "instance."+root,
+			"workflow", execContext.WorkflowPath,
+			"callpath", execContext.Callers.Callpath(),
+			"root-instance-id", root,
+			"state", execContext.State,
+			"branch", execContext.Branch,
+			"trace", execContext.Info.InstanceTelemetryInfo.TraceID,
+			"async", execContext.AsyncExec,
+		)
+	}
 	_, err := srv.flow.ActionLog(req.ctx, &grpc.ActionLogRequest{
 		InstanceId: req.instanceId,
 		Msg:        []string{msg},
