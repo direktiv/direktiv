@@ -25,7 +25,9 @@ const EmptyDirectoryButton = () => {
 
   const wideOverlay =
     !!selectedDialog &&
-    !["new-dir", "new-route", "new-consumer"].includes(selectedDialog);
+    !["new-dir", "new-route", "new-consumer", "new-service"].includes(
+      selectedDialog
+    );
 
   return (
     <div className="grid gap-5">
