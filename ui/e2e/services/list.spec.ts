@@ -37,7 +37,7 @@ test("Service list is empty by default", async ({ page }) => {
   ).toBeVisible();
 });
 
-test("Service list will show all available services", async ({ page }) => {
+test("Service list shows all available services", async ({ page }) => {
   await createWorkflow({
     payload: createRedisServiceFile(),
     urlParams: {
@@ -141,7 +141,7 @@ test("Service list will show all available services", async ({ page }) => {
   ).toBeVisible();
 });
 
-test("Service list will link the file name to the service file", async ({
+test("Service list links the file name to the service file", async ({
   page,
 }) => {
   await createWorkflow({
@@ -174,7 +174,7 @@ test("Service list will link the file name to the service file", async ({
   ).toHaveText("redis-service.yaml");
 });
 
-test("Service list will link the row to the service details page", async ({
+test("Service list links the row to the service details page", async ({
   page,
 }) => {
   await createWorkflow({
@@ -286,9 +286,7 @@ test("Service list lets the user rebuild a service", async ({ page }) => {
   ).toBeVisible();
 });
 
-test("Service list will highlight services that have errors", async ({
-  page,
-}) => {
+test("Service list highlights services that have errors", async ({ page }) => {
   await createWorkflow({
     payload: serviceWithAnError,
     urlParams: {
@@ -357,12 +355,12 @@ test("Service list will update the services when refetch button is clicked", asy
     page
       .getByTestId("service-row")
       .getByRole("cell", { name: "1", exact: true }),
-    "it will show the service's scale"
+    "it shows the service's scale"
   ).toBeVisible();
 
   await expect(
     page.getByTestId("service-row").getByRole("cell", { name: "large" }),
-    "it will show the service's size"
+    "it shows the service's size"
   ).toBeVisible();
 
   await updateWorkflow({
