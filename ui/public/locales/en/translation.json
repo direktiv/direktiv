@@ -108,14 +108,7 @@
           "namePlaceholder": "service-name.yaml",
           "nameAlreadyExists": "The name already exists",
           "cancelBtn": "Cancel",
-          "createBtn": "Create",
-          "form": {
-            "image": "Image",
-            "scale": "Scale",
-            "size": "Size",
-            "cmd": "Cmd",
-            "envs": "Envs"
-          }
+          "createBtn": "Create"
         },
         "newRoute": {
           "title": "Create a new route",
