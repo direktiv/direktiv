@@ -389,6 +389,6 @@ test("Service list will update the services when refetch button is clicked", asy
 
   await expect(
     page.getByTestId("service-row").getByRole("cell", { name: "small" }),
-    ""it has updated the rendered size to the new value""
+    "it has updated the rendered size to the new value"
   ).toBeVisible();
 });

@@ -9,7 +9,7 @@ type CreateRedisServiceFileParams = {
 export const createRedisServiceFile = ({
   scale = 1,
   size = "small",
-}: CreateRedisServiceFileParam = {}) => `direktiv_api: service/v1
+}: CreateRedisServiceFileParams = {}) => `direktiv_api: service/v1
 image: "redis"
 scale: ${scale}
 size: ${size}
