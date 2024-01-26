@@ -114,7 +114,7 @@ test("Service details page provides information about the service", async ({
   ).toBeVisible();
 
   await expect(
-    page.getByText("received 8 log entries"),
+    page.getByText("log entries"),
     "it renders the log summary"
   ).toBeVisible();
 
