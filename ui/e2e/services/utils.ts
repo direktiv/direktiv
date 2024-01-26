@@ -1,7 +1,7 @@
 import { ServiceSchemaType } from "~/api/services/schema/services";
 import { getServices } from "~/api/services/query/services";
 
-type CreateRedisServiceFileParam = {
+type CreateRedisServiceFileParams = {
   scale?: number;
   size?: "large" | "medium" | "small";
 };

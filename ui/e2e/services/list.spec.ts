@@ -102,7 +102,7 @@ test("Service list will show all available services", async ({ page }) => {
       .getByTestId("service-row")
       .locator("a")
       .filter({ hasText: "1 environment variable" }),
-    "it renders one environment variable"
+    "it renders the environment variable count"
   ).toBeVisible();
 
   await page
@@ -357,12 +357,12 @@ test("Service list will update the services when refetch button is clicked", asy
     page
       .getByTestId("service-row")
       .getByRole("cell", { name: "1", exact: true }),
-    "it will show the scale of 1"
+    "it will show the service's scale"
   ).toBeVisible();
 
   await expect(
     page.getByTestId("service-row").getByRole("cell", { name: "large" }),
-    "it will show a size of large"
+    "it will show the service's size"
   ).toBeVisible();
 
   await updateWorkflow({
@@ -384,11 +384,11 @@ test("Service list will update the services when refetch button is clicked", asy
     page
       .getByTestId("service-row")
       .getByRole("cell", { name: "2", exact: true }),
-    "it will have updated the scale to 1"
+    "it has updated the rendered scale to the new value"
   ).toBeVisible();
 
   await expect(
     page.getByTestId("service-row").getByRole("cell", { name: "small" }),
-    "it will have updated the size to small"
+    ""it has updated the rendered size to the new value""
   ).toBeVisible();
 });

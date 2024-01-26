@@ -100,7 +100,7 @@ test("Service details page provides information about the service", async ({
       .getByTestId("service-detail-header")
       .locator("a")
       .filter({ hasText: "1 environment variable" }),
-    "it renders one environment variable"
+    "it renders the environment variable count"
   ).toBeVisible();
 
   await expect(
@@ -168,7 +168,7 @@ test("Service details page provides information about the service", async ({
   ).toBeTruthy();
 });
 
-test("Service details page will show no logs when the service did not mount", async ({
+test("Service details page renders no logs when the service did not mount", async ({
   page,
 }) => {
   await createWorkflow({
