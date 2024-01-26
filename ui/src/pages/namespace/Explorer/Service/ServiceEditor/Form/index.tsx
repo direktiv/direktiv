@@ -13,7 +13,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/design/Select";
-import { ServiceFormSchema, ServiceFormSchemaType } from "../schema";
+import {
+  ServiceFormSchema,
+  ServiceFormSchemaType,
+  scaleOptions,
+} from "../schema";
 
 import EnvForm from "./EnvForm";
 import { FC } from "react";
@@ -48,8 +52,6 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
   );
 
   const { register, control } = formControls;
-
-  const sizeValues = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
 
   return children({
     formControls,
@@ -86,7 +88,7 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
               <SelectContent>
                 <SelectGroup>
                   <SelectLabel>Size</SelectLabel>
-                  {sizeValues.map((value, index) => (
+                  {scaleOptions.map((value, index) => (
                     <SelectItem key={index} value={value}>
                       {value}
                     </SelectItem>
