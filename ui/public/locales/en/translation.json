@@ -675,6 +675,7 @@
     "services": {
       "list": {
         "title": "Services",
+        "refetchLabel": "Refetch services",
         "tableHeader": {
           "name": "name",
           "image": "image",

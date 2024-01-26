@@ -1,4 +1,5 @@
 import { Diamond } from "lucide-react";
+import EnvsVariables from "../components/EnvVariables";
 import { Link } from "react-router-dom";
 import RefreshButton from "~/design/RefreshButton";
 import { StatusBadge } from "../components/StatusBadge";
@@ -11,13 +12,17 @@ const Header = ({ serviceId }: { serviceId: string }) => {
   const { t } = useTranslation();
 
   if (!service) return null;
+  const serviceTitle = service.name ? service.name : serviceId;
 
   return (
-    <div className="space-y-5 border-b border-gray-5 bg-gray-1 p-5 dark:border-gray-dark-5 dark:bg-gray-dark-1">
+    <div
+      className="space-y-5 border-b border-gray-5 bg-gray-1 p-5 dark:border-gray-dark-5 dark:bg-gray-dark-1"
+      data-testid="service-detail-header"
+    >
       <div className="flex flex-col gap-3 sm:flex-row">
         <h3 className="flex grow items-center gap-x-2 font-bold text-primary-500">
           <Diamond className="h-5" />
-          {service.name}
+          {serviceTitle}
         </h3>
 
         <div>
@@ -73,6 +78,7 @@ const Header = ({ serviceId }: { serviceId: string }) => {
               {condition.type}
             </StatusBadge>
           ))}
+          <EnvsVariables envs={service.envs} />
           <RefreshButton
             icon
             size="sm"
