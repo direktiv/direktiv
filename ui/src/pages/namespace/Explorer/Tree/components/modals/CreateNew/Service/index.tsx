@@ -11,7 +11,7 @@ import Button from "~/design/Button";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { addYamlFileExtension } from "../../../../utils";
-import { defaultServiceYaml } from "./config";
+import { defaultServiceYaml } from "~/pages/namespace/Explorer/Service/ServiceEditor/utils";
 import { fileNameSchema } from "~/api/tree/schema/node";
 import { pages } from "~/util/router/pages";
 import { useCreateWorkflow } from "~/api/tree/mutate/createWorkflow";

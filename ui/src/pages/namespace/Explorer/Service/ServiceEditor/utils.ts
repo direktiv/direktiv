@@ -22,4 +22,4 @@ const defaultServiceFileJson: ServiceFormSchemaType = {
   direktiv_api: "service/v1",
 };
 
-export const defaultServiceFileYaml = jsonToYaml(defaultServiceFileJson);
+export const defaultServiceYaml = jsonToYaml(defaultServiceFileJson);
