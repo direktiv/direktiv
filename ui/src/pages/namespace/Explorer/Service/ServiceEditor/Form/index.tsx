@@ -19,7 +19,7 @@ import {
   scaleOptions,
 } from "../schema";
 
-import EnvForm from "./EnvForm";
+import EnvForm from "./Envs";
 import { FC } from "react";
 import { Fieldset } from "~/components/Form/Fieldset";
 import Input from "~/design/Input";
