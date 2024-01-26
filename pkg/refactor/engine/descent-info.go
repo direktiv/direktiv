@@ -53,10 +53,10 @@ func (info *InstanceDescentInfo) Callpath() string {
 
 func (info *InstanceDescentInfo) RootInstanceID() (string, bool) {
 	if len(info.Descent) > 0 {
-		return "/" + info.Descent[0].ID.String(), true
+		return "" + info.Descent[0].ID.String(), true
 	}
 
-	return "/", false
+	return "", false
 }
 
 type InstanceDescentInfoV1 struct {
