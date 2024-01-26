@@ -504,10 +504,8 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	engine.sugar.Debugf("function request for image %s name %s addr %v:", ar.Container.Image, ar.Container.ID, addr)
 	engine.logger.Debugf(ctx, engine.flow.ID, engine.flow.GetAttributes(), "function request for image %s name %s", ar.Container.Image, ar.Container.ID)
 
-	ctxWithValue := context.WithValue(ctx, enginerefactor.ExecContextKey, ar.fnContext)
-
 	deadline := time.Now().UTC().Add(time.Duration(ar.fnContext.Timeout) * time.Second)
-	rctx, cancel := context.WithDeadline(ctxWithValue, deadline)
+	rctx, cancel := context.WithDeadline(ctx, deadline)
 	defer cancel()
 
 	engine.sugar.Debugf("deadline for request: %v", time.Until(deadline))
@@ -518,6 +516,7 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 		engine.reportError(ar, err)
 		return
 	}
+	fnCtx, err := json.Marshal(ar.fnContext)
 
 	// add headers
 	req.Header.Add(DirektivDeadlineHeader, deadline.Format(time.RFC3339))
@@ -537,7 +536,8 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 		str := base64.StdEncoding.EncodeToString(data)
 		req.Header.Add(DirektivFileHeader, str)
 	}
-
+	fnCtsStr := base64.StdEncoding.EncodeToString(fnCtx)
+	req.Header.Add("DIREKTIV-FN-CTX", fnCtsStr)
 	client := &http.Client{
 		Transport: tr,
 	}

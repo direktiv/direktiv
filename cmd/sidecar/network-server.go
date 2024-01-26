@@ -120,6 +120,7 @@ func (srv *NetworkServer) functions(w http.ResponseWriter, r *http.Request) {
 	}
 
 	id := r.Header.Get(actionIDHeader)
+	log.Error("functions")
 
 	defer func(req *inboundRequest) {
 		r := recover()

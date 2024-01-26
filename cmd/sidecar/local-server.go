@@ -121,13 +121,9 @@ func (srv *LocalServer) wait() {
 
 func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 	actionId := r.URL.Query().Get("aid")
-	execContext, execContextPresent := r.Context().Value(enginerefactor.ExecContextKey).(enginerefactor.FunctionContext)
-	if !execContextPresent {
-		slog.Error("Unable to extract ExecContext from request context")
-	}
 
 	srv.requestsLock.Lock()
-	req, execContextPresent := srv.requests[actionId]
+	req, ok := srv.requests[actionId]
 	srv.requestsLock.Unlock()
 
 	reportError := func(code int, err error) {
@@ -135,7 +131,7 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 		log.Warnf("Log handler for '%s' returned %v: %v.", actionId, code, err)
 	}
 
-	if !execContextPresent {
+	if !ok {
 		err := errors.New("the action id went missing")
 		code := http.StatusInternalServerError
 		reportError(code, err)
@@ -175,21 +171,21 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 		log.Debugf("Log handler for '%s' received zero bytes.", actionId)
 		return
 	}
-	if execContextPresent {
-		root, _ := execContext.Callers.RootInstanceID()
+	if ok {
+		root, _ := req.fnCtx.Callers.RootInstanceID()
 		if root == "" {
-			root = execContext.InstanceID.String()
+			root = req.fnCtx.InstanceID.String()
 		}
 
 		slog.Info(msg,
 			"stream", "instance."+root,
-			"workflow", execContext.WorkflowPath,
-			"callpath", execContext.Callers.Callpath(),
+			"workflow", req.fnCtx.WorkflowPath,
+			"callpath", req.fnCtx.Callers.Callpath(),
 			"root-instance-id", root,
-			"state", execContext.State,
-			"branch", execContext.Branch,
-			"trace", execContext.Info.InstanceTelemetryInfo.TraceID,
-			"async", execContext.AsyncExec,
+			"state", req.fnCtx.State,
+			"branch", req.fnCtx.Branch,
+			"trace", req.fnCtx.Info.InstanceTelemetryInfo.TraceID,
+			"async", req.fnCtx.AsyncExec,
 		)
 	}
 	_, err := srv.flow.ActionLog(req.ctx, &grpc.ActionLogRequest{
@@ -385,6 +381,7 @@ type functionRequest struct {
 	input      []byte
 	files      []*functionFiles
 	iterator   int
+	fnCtx      enginerefactor.FunctionContext
 }
 
 type functionFiles struct {
