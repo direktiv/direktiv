@@ -64,62 +64,64 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
           <Input {...register("image")} id="image" />
         </Fieldset>
 
-        <Fieldset
-          label={t("pages.explorer.service.editor.form.scale.label")}
-          htmlFor="scale"
-          className="grow"
-        >
-          <Select
-            value={formControls.getValues("scale")?.toString()}
-            onValueChange={(value) =>
-              formControls.setValue("scale", Number(value))
-            }
+        <div className="grid grid-cols-2 gap-4">
+          <Fieldset
+            label={t("pages.explorer.service.editor.form.scale.label")}
+            htmlFor="scale"
+            className="grow"
           >
-            <SelectTrigger>
-              <SelectValue
-                placeholder={t(
-                  "pages.explorer.service.editor.form.scale.placeholder"
-                )}
-              />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectLabel>Size</SelectLabel>
-                {sizeValues.map((value, index) => (
-                  <SelectItem key={index} value={value}>
-                    {value}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </Fieldset>
-        <Fieldset
-          label={t("pages.explorer.service.editor.form.size.label")}
-          htmlFor="size"
-          className="grow"
-        >
-          <Select
-            value={formControls.getValues("size")}
-            onValueChange={(value) => formControls.setValue("size", value)}
+            <Select
+              value={formControls.getValues("scale")?.toString()}
+              onValueChange={(value) =>
+                formControls.setValue("scale", Number(value))
+              }
+            >
+              <SelectTrigger variant="outline">
+                <SelectValue
+                  placeholder={t(
+                    "pages.explorer.service.editor.form.scale.placeholder"
+                  )}
+                />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectLabel>Size</SelectLabel>
+                  {sizeValues.map((value, index) => (
+                    <SelectItem key={index} value={value}>
+                      {value}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </Fieldset>
+          <Fieldset
+            label={t("pages.explorer.service.editor.form.size.label")}
+            htmlFor="size"
+            className="grow"
           >
-            <SelectTrigger>
-              <SelectValue
-                placeholder={t(
-                  "pages.explorer.service.editor.form.size.placeholder"
-                )}
-              />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectLabel>Size</SelectLabel>
-                <SelectItem value="small">small</SelectItem>
-                <SelectItem value="medium">medium</SelectItem>
-                <SelectItem value="large">large</SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </Fieldset>
+            <Select
+              value={formControls.getValues("size")}
+              onValueChange={(value) => formControls.setValue("size", value)}
+            >
+              <SelectTrigger variant="outline">
+                <SelectValue
+                  placeholder={t(
+                    "pages.explorer.service.editor.form.size.placeholder"
+                  )}
+                />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectLabel>Size</SelectLabel>
+                  <SelectItem value="small">small</SelectItem>
+                  <SelectItem value="medium">medium</SelectItem>
+                  <SelectItem value="large">large</SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </Fieldset>
+        </div>
 
         <Fieldset
           label={t("pages.explorer.service.editor.form.cmd")}
