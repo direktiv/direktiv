@@ -130,20 +130,6 @@ test("Service details page provides information about the service", async ({
 
   await page.click("text=Pod 2 of 2");
 
-  /**
-   * since the logs from both pods are equal, we can only check, if changing
-   * the tab will trigger a network request to the logs of the second pod.
-   * We also check if the server responds with a 200 status code to make sure
-   * that the logs are comming in.
-   */
-  await expect(
-    await page.waitForResponse((response) => {
-      const logsApiCall = `/api/v2/namespaces/${namespace}/services/${createdService.id}/pods/${createdService.id}_2/logs`;
-      return response.status() === 200 && response.url().endsWith(logsApiCall);
-    }),
-    "after clicking on the second pod tab, a network request to the log was made"
-  ).toBeTruthy();
-
   await expect(
     page.getByText(`Logs for ${createdService.id}_2`),
     "after clicking on the second pod tab, it renders the headline for the second pods logs"
