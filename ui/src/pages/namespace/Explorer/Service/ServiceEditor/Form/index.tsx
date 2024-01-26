@@ -78,7 +78,7 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
                 formControls.setValue("scale", Number(value))
               }
             >
-              <SelectTrigger variant="outline">
+              <SelectTrigger variant="outline" id="scale">
                 <SelectValue
                   placeholder={t(
                     "pages.explorer.service.editor.form.scale.placeholder"
@@ -106,7 +106,7 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
               value={formControls.getValues("size")}
               onValueChange={(value) => formControls.setValue("size", value)}
             >
-              <SelectTrigger variant="outline">
+              <SelectTrigger variant="outline" id="size">
                 <SelectValue
                   placeholder={t(
                     "pages.explorer.service.editor.form.size.placeholder"
