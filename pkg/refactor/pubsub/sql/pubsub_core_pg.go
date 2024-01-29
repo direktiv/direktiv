@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/lib/pq"
+	"go.uber.org/zap"
 )
 
 const globalPostgresChannel = "direktiv_pubsub_events"
@@ -49,11 +50,7 @@ func newPostgresCoreBus(db *sql.DB, listenConnectionString string) (*postgresCor
 	return p, nil
 }
 
-func (p *postgresCoreBus) NotifyChannel() <-chan *pq.Notification {
-	return p.listener.Notify
-}
-
-func (p *postgresCoreBus) Publish(channel string, data string) error {
+func (p *postgresCoreBus) publish(channel string, data string) error {
 	if channel == "" || strings.Contains(channel, " ") {
 		return fmt.Errorf("channel name is empty or has spaces: >%s<", channel)
 	}
@@ -63,4 +60,29 @@ func (p *postgresCoreBus) Publish(channel string, data string) error {
 	}
 
 	return nil
+}
+
+func (p *postgresCoreBus) forEachMessage(done <-chan struct{}, logger *zap.SugaredLogger, handler func(channel string, data string)) {
+	for {
+		select {
+		case msg := <-p.listener.Notify:
+			channel, data, err := splitNotificationText(msg.Extra)
+			if err != nil {
+				logger.Error("parsing notify message", "msg", msg.Extra, "err", err)
+			} else {
+				handler(channel, data)
+			}
+		case <-done:
+			return
+		}
+	}
+}
+
+func splitNotificationText(text string) (string, string, error) {
+	firstSpaceIndex := strings.IndexAny(text, " ")
+	if firstSpaceIndex < 0 {
+		return "", "", fmt.Errorf("no space in message: text: >%s<", text)
+	}
+
+	return text[:firstSpaceIndex], text[firstSpaceIndex+1:], nil
 }

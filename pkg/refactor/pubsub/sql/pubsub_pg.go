@@ -34,47 +34,29 @@ func NewPostgresBus(logger *zap.SugaredLogger, db *sql.DB, listenConnectionStrin
 
 func (p *PostgresBus) Start(done <-chan struct{}, wg *sync.WaitGroup) {
 	defer wg.Done()
-	for {
-		select {
-		case msg := <-p.coreBus.NotifyChannel():
-			channel, data, err := splitNotificationText(msg.Extra)
-			if err != nil {
-				p.logger.Error("parsing notify message", "msg", msg.Extra, "err", err)
-			} else {
-				p.subscribers.Range(func(key, f any) bool {
-					k, _ := key.(string)
-					h, _ := f.(func(data string))
 
-					if strings.HasPrefix(k, channel) {
-						go h(data)
-					}
+	p.coreBus.forEachMessage(done, p.logger, func(channel string, data string) {
+		p.subscribers.Range(func(key, f any) bool {
+			k, _ := key.(string)
+			h, _ := f.(func(data string))
 
-					return true
-				})
+			if strings.HasPrefix(k, channel) {
+				go h(data)
 			}
-		case <-done:
-			return
-		}
-	}
+
+			return true
+		})
+	})
 }
 
 func (p *PostgresBus) Publish(channel string, data string) error {
-	return p.coreBus.Publish(channel, data)
+	return p.coreBus.publish(channel, data)
 }
 
 func (p *PostgresBus) Subscribe(handler func(data string), channels ...string) {
 	for _, channel := range channels {
 		p.subscribers.Store(fmt.Sprintf("%s_%s", channel, uuid.New().String()), handler)
 	}
-}
-
-func splitNotificationText(text string) (string, string, error) {
-	firstSpaceIndex := strings.IndexAny(text, " ")
-	if firstSpaceIndex < 0 {
-		return "", "", fmt.Errorf("no space in message: text: >%s<", text)
-	}
-
-	return text[:firstSpaceIndex], text[firstSpaceIndex+1:], nil
 }
 
 var _ pubsub.Bus = &PostgresBus{}
