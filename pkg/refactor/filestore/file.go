@@ -54,6 +54,11 @@ func (file *File) Name() string {
 	return filepath.Base(file.Path)
 }
 
+// RootPath gets file base ID string.
+func (file *File) RootPath() string {
+	return file.RootID.String() + file.Path
+}
+
 // Dir gets file directory.
 func (file *File) Dir() string {
 	return filepath.Dir(file.Path)

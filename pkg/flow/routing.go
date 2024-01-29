@@ -229,7 +229,7 @@ func (flow *flow) configureWorkflowStarts(ctx context.Context, tx *sqlTx, nsID u
 		return err
 	}
 
-	flow.pubsub.ConfigureRouterCron(file.ID.String(), ms.Cron)
+	flow.pubsub.ConfigureRouterCron(file.RootPath(), ms.Cron)
 
 	return nil
 }

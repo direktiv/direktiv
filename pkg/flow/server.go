@@ -641,17 +641,17 @@ func (srv *server) cronPollerWorkflow(ctx context.Context, tx *sqlTx, file *file
 	}
 
 	if ms.Cron != "" {
-		srv.timers.deleteCronForWorkflow(file.ID.String())
+		srv.timers.deleteCronForWorkflow(file.RootPath())
 	}
 
 	if ms.Cron != "" {
-		err := srv.timers.addCron(file.ID.String(), wfCron, ms.Cron, []byte(file.ID.String()))
+		err := srv.timers.addCron(file.RootPath(), wfCron, ms.Cron, []byte(file.RootPath()))
 		if err != nil {
 			srv.sugar.Error(err)
 			return
 		}
 
-		srv.sugar.Debugf("Loaded cron: %s", file.ID.String())
+		srv.sugar.Debugf("Loaded cron: %s", file.RootPath())
 	}
 }
 

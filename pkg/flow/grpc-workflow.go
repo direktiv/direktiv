@@ -57,8 +57,6 @@ func (flow *flow) Workflow(ctx context.Context, req *grpc.WorkflowRequest) (*grp
 	resp.Namespace = ns.Name
 	resp.Node = bytedata.ConvertFileToGrpcNode(file)
 	resp.Source = data
-	resp.EventLogging = ""
-	resp.Oid = file.ID.String()
 
 	return resp, nil
 }
