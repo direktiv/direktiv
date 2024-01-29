@@ -79,6 +79,8 @@ func (p *postgresBus) Loop(done <-chan struct{}, logger *zap.SugaredLogger, hand
 	}
 }
 
+var _ pubsub.CoreBus = &postgresBus{}
+
 func splitNotificationText(text string) (string, string, error) {
 	firstSpaceIndex := strings.IndexAny(text, " ")
 	if firstSpaceIndex < 0 {
