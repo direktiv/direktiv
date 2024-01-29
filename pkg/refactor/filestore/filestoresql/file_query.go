@@ -107,7 +107,7 @@ func (q *FileQuery) SetPath(ctx context.Context, path string) error {
 	// set updated_at for all parent dirs.
 	res := q.db.WithContext(ctx).Exec(`
 					UPDATE filesystem_files
-					SET updated_at=CURRENT_TIMESTAMP WHERE ? LIKE path || '%'' ;
+					SET updated_at=CURRENT_TIMESTAMP WHERE ? LIKE path || '%' ;
 					`, q.file.Path)
 	if res.Error != nil {
 		return res.Error
