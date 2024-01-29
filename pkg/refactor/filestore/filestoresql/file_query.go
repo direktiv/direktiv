@@ -149,7 +149,7 @@ func (q *FileQuery) SetData(ctx context.Context, data []byte) (string, error) {
 
 	res := q.db.WithContext(ctx).Exec(`
 					UPDATE filesystem_files
-					SET data=?, checksum=? WHERE id=? 
+					SET data=?, checksum=?, updated_at=CURRENT_TIMESTAMP WHERE id=? 
 					`, data, newChecksum, q.file.ID)
 	if res.Error != nil {
 		return "", res.Error
