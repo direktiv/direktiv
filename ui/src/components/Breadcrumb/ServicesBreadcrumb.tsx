@@ -17,7 +17,7 @@ const ServicesBreadcrumb = () => {
 
   return (
     <>
-      <BreadcrumbLink>
+      <BreadcrumbLink data-testid="breadcrumb-services">
         <Link
           to={pages.services.createHref({
             namespace,

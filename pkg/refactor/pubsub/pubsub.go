@@ -1,8 +1,10 @@
 package pubsub
 
-type Bus interface {
+import "go.uber.org/zap"
+
+type CoreBus interface {
 	Publish(channel string, data string) error
-	Subscribe(handler func(data string), channels ...string)
+	Loop(done <-chan struct{}, logger *zap.SugaredLogger, handler func(channel string, data string))
 }
 
 var (
