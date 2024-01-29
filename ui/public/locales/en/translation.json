@@ -230,7 +230,17 @@
             "cmd": "Cmd",
             "patches":{
               "label": "{{count}} Patches",
-              "label_one": "{{count}} Patch"
+              "label_one": "{{count}} Patch",
+              "addButton": "add patch",
+              "modal": {
+                "title": "Edit patch",
+                "op": {
+                  "label": "Operation",
+                  "placeholder": "Select a placeholder"
+                },
+                "path": "Path",
+                "value": "Value"
+              }
             },
             "envs": {
               "label": "Environment variables",

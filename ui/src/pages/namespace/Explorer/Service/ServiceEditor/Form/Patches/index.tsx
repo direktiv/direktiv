@@ -1,10 +1,14 @@
+import { Dialog, DialogTrigger } from "~/design/Dialog";
 import { FC, useState } from "react";
+import { Table, TableBody } from "~/design/Table";
 import { UseFormReturn, useFieldArray, useWatch } from "react-hook-form";
 
+import Button from "~/design/Button";
 import { Card } from "~/design/Card";
-import { Dialog } from "~/design/Dialog";
+import { ModalWrapper } from "~/pages/namespace/Explorer/Endpoint/EndpointEditor/Form/plugins/components/Modal";
+import { PatchForm } from "./Form";
+import { Plus } from "lucide-react";
 import { ServiceFormSchemaType } from "../../schema";
-import { Table } from "~/design/Table";
 import { TableHeader } from "./Table";
 import { useTranslation } from "react-i18next";
 
@@ -46,9 +50,25 @@ export const PatchesForm: FC<PatchesFormProps> = ({ form }) => {
             title={t("pages.explorer.service.editor.form.patches.label", {
               count: itemCount,
             })}
-          ></TableHeader>
+          >
+            <DialogTrigger asChild>
+              <Button icon variant="outline" size="sm">
+                <Plus />
+                {t("pages.explorer.service.editor.form.patches.addButton")}
+              </Button>
+            </DialogTrigger>
+          </TableHeader>
+          <TableBody>{/* todo: render an item for every patch */}</TableBody>
         </Table>
       </Card>
+
+      {/* todo: modal wrapper should be generic component */}
+
+      <ModalWrapper
+        title={t("pages.explorer.service.editor.form.patches.modal.title")}
+      >
+        <PatchForm />
+      </ModalWrapper>
     </Dialog>
   );
 };
