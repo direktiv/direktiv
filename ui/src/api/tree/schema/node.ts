@@ -16,7 +16,6 @@ const NodeSchema = z.object({
     "consumer",
   ]),
   attributes: z.array(z.string()), // must be more specified
-  oid: z.string(),
   readOnly: z.boolean(),
   expandedType: z.enum(["directory", "workflow", "file", "git"]),
   mimeType: z.string(),

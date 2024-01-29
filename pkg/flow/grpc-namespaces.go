@@ -253,7 +253,7 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 		return nil, errors.New("refusing to delete non-empty namespace without explicit recursive argument")
 	}
 
-	err = tx.DataStore().Namespaces().Delete(ctx, ns.ID)
+	err = tx.DataStore().Namespaces().Delete(ctx, ns.Name)
 	if err != nil {
 		return nil, err
 	}
