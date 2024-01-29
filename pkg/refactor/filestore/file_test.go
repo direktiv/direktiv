@@ -10,7 +10,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func TestRoot_CorrectSetPath(t *testing.T) {
+func Test_CorrectSetPath(t *testing.T) {
 	db, err := database.NewMockGorm()
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
@@ -183,4 +183,60 @@ func assertAllPathsInRoot(t *testing.T, fs filestore.FileStore, rootID uuid.UUID
 			return
 		}
 	}
+}
+
+func Test_UpdateFile(t *testing.T) {
+	db, err := database.NewMockGorm()
+	if err != nil {
+		t.Fatalf("unepxected NewMockGorm() error = %v", err)
+	}
+	fs := filestoresql.NewSQLFileStore(db)
+
+	root, err := fs.CreateRoot(context.Background(), uuid.New(), "ns1")
+	if err != nil {
+		t.Fatalf("unepxected CreateRoot() error = %v", err)
+	}
+
+	// create files
+	assertCreateFileV2(t, fs, root.ID, filestore.File{
+		Path: "/",
+		Typ:  filestore.FileTypeDirectory,
+		Data: nil,
+	})
+	assertCreateFileV2(t, fs, root.ID, filestore.File{
+		Path: "/example1.text",
+		Typ:  filestore.FileTypeFile,
+		Data: []byte("example1_data"),
+	})
+	assertCreateFileV2(t, fs, root.ID, filestore.File{
+		Path: "/example2.text",
+		Typ:  filestore.FileTypeFile,
+		Data: []byte("example2_data"),
+	})
+
+	// update one file
+	f, _ := fs.ForRootID(root.ID).GetFile(context.Background(), "/example1.text")
+	checksum, err := fs.ForFile(f).SetData(context.Background(), []byte("example1_updated_data"))
+	if err != nil {
+		t.Errorf("unexpected SetData() error: %v", err)
+
+		return
+	}
+	if checksum == "" {
+		t.Errorf("unexpected SetData() checksum: %v", checksum)
+
+		return
+	}
+
+	// assert existence
+	assertFileExistsV2(t, fs, root.ID, filestore.File{
+		Path: "/example1.text",
+		Typ:  filestore.FileTypeFile,
+		Data: []byte("example1_updated_data"),
+	})
+	assertFileExistsV2(t, fs, root.ID, filestore.File{
+		Path: "/example2.text",
+		Typ:  filestore.FileTypeFile,
+		Data: []byte("example2_data"),
+	})
 }
