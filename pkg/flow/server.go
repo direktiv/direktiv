@@ -61,7 +61,7 @@ type server struct {
 	pubsub *pubsub.Pubsub
 
 	// the new pubsub bus
-	pBus pubsub2.Bus
+	pBus *pubsub2.Bus
 
 	locks  *locks
 	timers *timers
@@ -321,12 +321,13 @@ func (srv *server) start(ctx context.Context) error {
 	defer cancel()
 
 	srv.sugar.Info("Initializing pubsub routine.")
-	pBus, err := pubsubSQL.NewPostgresBus(srv.sugar, srv.rawDB, srv.conf.DB)
+	coreBus, err := pubsubSQL.NewPostgresCoreBus(srv.rawDB, srv.conf.DB)
 	if err != nil {
-		return fmt.Errorf("creating pubsub, err: %w", err)
+		return fmt.Errorf("creating pubsub core bus, err: %w", err)
 	}
-	srv.pBus = pBus
-	go pBus.Start(cctx.Done(), &wg)
+
+	srv.pBus = pubsub2.NewBus(srv.sugar, coreBus)
+	go srv.pBus.Start(cctx.Done(), &wg)
 
 	srv.sugar.Info("Initializing internal grpc server.")
 
@@ -472,7 +473,7 @@ func (srv *server) start(ctx context.Context) error {
 	// TODO: yassir, use the new db to refactor old code.
 	dbManager := database2.NewDB(srv.gormDB, srv.conf.SecretKey)
 
-	newMainWG := cmd.NewMain(srv.conf, dbManager, pBus, srv.sugar)
+	newMainWG := cmd.NewMain(srv.conf, dbManager, srv.pBus, srv.sugar)
 
 	srv.sugar.Info("Flow server started.")
 

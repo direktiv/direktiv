@@ -6,19 +6,20 @@ import (
 	"strings"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"github.com/lib/pq"
 	"go.uber.org/zap"
 )
 
 const globalPostgresChannel = "direktiv_pubsub_events"
 
-type postgresCoreBus struct {
+type postgresBus struct {
 	listener *pq.Listener
 	db       *sql.DB
 }
 
-func newPostgresCoreBus(db *sql.DB, listenConnectionString string) (*postgresCoreBus, error) {
-	p := &postgresCoreBus{
+func NewPostgresCoreBus(db *sql.DB, listenConnectionString string) (pubsub.CoreBus, error) {
+	p := &postgresBus{
 		db: db,
 	}
 
@@ -50,7 +51,7 @@ func newPostgresCoreBus(db *sql.DB, listenConnectionString string) (*postgresCor
 	return p, nil
 }
 
-func (p *postgresCoreBus) publish(channel string, data string) error {
+func (p *postgresBus) Publish(channel string, data string) error {
 	if channel == "" || strings.Contains(channel, " ") {
 		return fmt.Errorf("channel name is empty or has spaces: >%s<", channel)
 	}
@@ -62,7 +63,7 @@ func (p *postgresCoreBus) publish(channel string, data string) error {
 	return nil
 }
 
-func (p *postgresCoreBus) forEachMessage(done <-chan struct{}, logger *zap.SugaredLogger, handler func(channel string, data string)) {
+func (p *postgresBus) Loop(done <-chan struct{}, logger *zap.SugaredLogger, handler func(channel string, data string)) {
 	for {
 		select {
 		case msg := <-p.listener.Notify:
