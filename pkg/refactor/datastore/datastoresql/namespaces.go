@@ -86,8 +86,8 @@ func (s *sqlNamespacesStore) Update(ctx context.Context, namespace *core.Namespa
 	return s.GetByID(ctx, namespace.ID)
 }
 
-func (s *sqlNamespacesStore) Delete(ctx context.Context, id uuid.UUID) error {
-	res := s.db.WithContext(ctx).Exec(`DELETE FROM namespaces WHERE  id=?`, id)
+func (s *sqlNamespacesStore) Delete(ctx context.Context, name string) error {
+	res := s.db.WithContext(ctx).Exec(`DELETE FROM namespaces WHERE  name=?`, name)
 	if res.Error != nil {
 		return res.Error
 	}

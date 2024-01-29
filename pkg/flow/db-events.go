@@ -71,7 +71,7 @@ func (events *events) deleteWorkflowEventListeners(ctx context.Context, nsID uui
 
 func (events *events) deleteInstanceEventListeners(ctx context.Context, im *instanceMemory) error {
 	err := events.runSqlTx(ctx, func(tx *sqlTx) error {
-		ids, err := tx.DataStore().EventListener().DeleteAllForWorkflow(ctx, im.instance.Instance.ID)
+		ids, err := tx.DataStore().EventListener().DeleteAllForInstance(ctx, im.instance.Instance.ID)
 		if err != nil {
 			return err
 		}
