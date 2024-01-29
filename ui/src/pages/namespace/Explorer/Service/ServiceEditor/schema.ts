@@ -19,12 +19,19 @@ export const scaleOptions = [
   "9",
 ] as const;
 
+export const PatchesSchema = z.object({
+  op: z.enum(["add", "replace", "remove"]),
+  path: z.string(),
+  value: z.string(),
+});
+
 export const ServiceFormSchema = z.object({
   direktiv_api: z.literal("service/v1"),
   image: z.string().nonempty().optional(),
   scale: z.number().min(0).lt(10).optional(),
   size: z.string().optional(),
   cmd: z.string().optional(),
+  patches: z.array(PatchesSchema).nonempty().optional(),
   envs: z.array(EnvironementVariableSchema).nonempty().optional(),
 });
 

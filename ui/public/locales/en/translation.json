@@ -228,6 +228,10 @@
               "placeholder": "Select a size"
             },
             "cmd": "Cmd",
+            "patches":{
+              "label": "{{count}} Patches",
+              "label_one": "{{count}} Patch"
+            },
             "envs": {
               "label": "Environment variables",
               "namePlaceholder": "NAME",
