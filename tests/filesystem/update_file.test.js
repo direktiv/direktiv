@@ -28,7 +28,6 @@ describe('Test namespaces crud operations', () => {
                 mimeType: "application/direktiv",
             },
             source: btoa(generateTestFile("foo")),
-            oid: expect.stringMatching(common.regex.uuidRegex),
         })
     })
 
@@ -46,7 +45,6 @@ describe('Test namespaces crud operations', () => {
                 mimeType: "application/direktiv",
             },
             source: btoa(generateTestFile("bar")),
-            oid: expect.stringMatching(common.regex.uuidRegex),
         })
     })
 
@@ -67,7 +65,6 @@ describe('Test namespaces crud operations', () => {
                 mimeType: "application/direktiv",
             },
             source: btoa(generateTestFile("bar2")),
-            oid: expect.stringMatching(common.regex.uuidRegex),
         })
     })
 
@@ -85,7 +82,6 @@ describe('Test namespaces crud operations', () => {
                 mimeType: "application/direktiv",
             },
             source: btoa(generateTestFile("foo")),
-            oid: expect.stringMatching(common.regex.uuidRegex),
         })
     })
 })

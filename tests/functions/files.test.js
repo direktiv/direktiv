@@ -15,7 +15,6 @@ describe('Test function files behaviour', () => {
                 createdAt: expect.stringMatching(common.regex.timestampRegex),
                 updatedAt: expect.stringMatching(common.regex.timestampRegex),
                 name: namespaceName,
-                oid: expect.stringMatching(common.regex.uuidRegex),
             },
         })
     })
