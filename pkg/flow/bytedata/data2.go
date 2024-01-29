@@ -22,7 +22,6 @@ func ConvertFileToGrpcNode(f *filestore.File) *grpc.Node {
 		Parent:     filepath.Dir(f.Path),
 		Type:       string(f.Typ),
 		Attributes: []string{},
-		Oid:        "", // NOTE: this is empty string for now for compatibility with end-to-end tests f.ID.String(),
 		ReadOnly:   false,
 		MimeType:   f.MIMEType,
 	}
