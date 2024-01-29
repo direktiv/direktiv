@@ -108,14 +108,7 @@
           "namePlaceholder": "service-name.yaml",
           "nameAlreadyExists": "The name already exists",
           "cancelBtn": "Cancel",
-          "createBtn": "Create",
-          "form": {
-            "image": "Image",
-            "scale": "Scale",
-            "size": "Size",
-            "cmd": "Cmd",
-            "envs": "Envs"
-          }
+          "createBtn": "Create"
         },
         "newRoute": {
           "title": "Create a new route",
@@ -217,10 +210,29 @@
         }
       },
       "service": {
+        "goToService": "Go to service",
         "goToServices": "Go to services",
         "editor": {
           "saveBtn": "Save",
-          "helpTitle": "Example service file"
+          "unsavedNote": "unsaved changes",
+          "form": {
+            "serialisationError": "There was an error serializing the form data",
+            "image": "Image",
+            "scale": {
+              "label": "Scale",
+              "placeholder": "Select a scale"
+            },
+            "size": {
+              "label": "Size", 
+              "placeholder": "Select a size"
+            },
+            "cmd": "Cmd",
+            "envs": {
+              "label": "Environment variables",
+              "namePlaceholder": "NAME",
+              "valuePlaceholder": "VALUE"
+            }
+          }
         }
       },
       "endpoint": {
