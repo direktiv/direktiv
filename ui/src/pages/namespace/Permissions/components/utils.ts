@@ -32,3 +32,34 @@ export const permissionsToScopes = (permissions: string[]) =>
 
     return [...allScopes, scope];
   }, [] as string[]);
+
+type GroupedPermission = Record<string, string[]>;
+
+/**
+ * takes a list of permissions and groups them by resource
+ *
+ * example input:
+ * [
+ *   "READ:config",
+ *   "WRITE:config",
+ *   "READ:lint",
+ *   "WRITE:lint",
+ *   "READ:logs",
+ *   "WRITE:logs"
+ * ]
+ *
+ * example output:
+ * {
+ *   config: ["READ", "WRITE"],
+ *   lint: ["READ", "WRITE"],
+ *   logs: ["READ", "WRITE"]
+ * }
+ *
+ */
+export const groupPermissionsByResouce = (permissions: string[]) =>
+  permissions.reduce<GroupedPermission>((acc, cur) => {
+    const [scope, resource] = splitPermissionString(cur);
+    const existingEntries = acc[resource] ?? [];
+    acc[resource] = [...existingEntries, scope];
+    return acc;
+  }, {});

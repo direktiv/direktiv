@@ -1,8 +1,18 @@
 import { MousePointerSquare, MousePointerSquareDashed } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeaderCell,
+  TableRow,
+} from "~/design/Table";
+import { groupPermissionsByResouce, permissionsToScopes } from "./utils";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import { Checkbox } from "~/design/Checkbox";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 const PermissionsSelector = ({
@@ -36,34 +46,71 @@ const PermissionsSelector = ({
     setPermissions([]);
   };
 
+  const availableScopes = useMemo(
+    () => permissionsToScopes(availablePermissions),
+    [availablePermissions]
+  );
+
+  const perm = useMemo(
+    () => groupPermissionsByResouce(availablePermissions),
+    [availablePermissions]
+  );
+
   return (
     <>
       <fieldset className="flex items-center gap-5">
         <label className="w-[90px] text-right text-[14px]">
           {t("pages.permissions.permissionsSelector.permissions")}
         </label>
-        <Card className="flex w-full flex-col gap-5 p-5">
-          <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-3">
-            {availablePermissions?.map((permission) => (
-              <label
-                key={permission}
-                className="flex items-center gap-2 text-sm"
-                htmlFor={permission}
-              >
-                <Checkbox
-                  id={permission}
-                  value={permission}
-                  checked={selectedPermissions.includes(permission)}
-                  onCheckedChange={(checked) => {
-                    if (checked !== "indeterminate") {
-                      onCheckedChange(permission, checked);
-                    }
-                  }}
-                />
-                {permission}
-              </label>
-            ))}
-          </div>
+
+        <Card
+          className="flex w-full flex-col gap-5 overflow-scroll p-5"
+          noShadow
+        >
+          <Table>
+            <TableHead>
+              <TableRow className="hover:bg-inherit dark:hover:bg-inherit lg:pr-8 xl:pr-12">
+                <TableHeaderCell />
+                {availableScopes.map((scope) => (
+                  <TableHeaderCell
+                    key={scope}
+                    className="w-20 px-2 text-center"
+                  >
+                    {scope.toLowerCase()}
+                  </TableHeaderCell>
+                ))}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {Object.entries(perm).map(([resource, scopes]) => (
+                <TableRow key={resource} className="lg:pr-8 xl:pr-12">
+                  <TableCell className="grow">{resource}</TableCell>
+                  {availableScopes.map((availableScope) => (
+                    <TableCell
+                      key={availableScope}
+                      className="px-2 text-center"
+                    >
+                      {scopes.includes(availableScope) && (
+                        <Checkbox
+                          checked={selectedPermissions.includes(
+                            `${availableScope}:${resource}`
+                          )}
+                          onCheckedChange={(checked) => {
+                            if (checked !== "indeterminate") {
+                              onCheckedChange(
+                                `${availableScope}:${resource}`,
+                                checked
+                              );
+                            }
+                          }}
+                        />
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
           <div className="flex justify-end gap-x-2 ">
             <Button
               variant="link"
