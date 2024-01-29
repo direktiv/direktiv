@@ -175,6 +175,14 @@ func (q *FileQuery) SetData(ctx context.Context, data []byte) (string, error) {
 	if res.RowsAffected != 1 {
 		return "", fmt.Errorf("unexpected gorm create count, got: %d, want: %d", res.RowsAffected, 1)
 	}
+	// set updated_at for all parent dirs.
+	res = q.db.WithContext(ctx).Exec(`
+					UPDATE filesystem_files
+					SET updated_at=CURRENT_TIMESTAMP WHERE ? LIKE path || '%' ;
+					`, q.file.Path)
+	if res.Error != nil {
+		return "", res.Error
+	}
 
 	return newChecksum, nil
 }
