@@ -26,7 +26,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.SugaredLogger) *sync.WaitGroup {
+func NewMain(config *core.Config, db *database.DB, pbus *pubsub.Bus, logger *zap.SugaredLogger) *sync.WaitGroup {
 	initSLog()
 
 	wg := &sync.WaitGroup{}
