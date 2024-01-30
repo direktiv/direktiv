@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "direktiv.fullname" . }}-frontend
+  labels:
+    {{- include "direktiv.labelsFrontend" . | nindent 4 }}
+  annotations:
+    kubernetes.io/ingress.class: {{ .Values.ingress.class }}
+spec:
+  ports:
+    - port: 2304
+      targetPort: 2304
+      protocol: TCP
+      name: frontend
+  selector:
+    {{- include "direktiv.selectorLabelsFrontend" . | nindent 4 }}

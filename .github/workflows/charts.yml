@@ -1,0 +1,37 @@
+name: (UI) Run prebuild tests and checks
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - jens/dir-1149-move-charts
+  pull_request:
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: charts
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Configure Git
+        run: |
+          helm repo add prometheus https://prometheus-community.github.io/helm-charts
+          helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+      - name: Helm Lint
+        run: |
+          helm dependencies update charts/direktiv/
+          helm dependencies update charts/knative/
+          helm lint charts/direktiv/
+          helm lint charts/knative/
+      # - name: Run chart-releaser
+      #   uses: helm/chart-releaser-action@v1.2.1
+      #   env:
+      #     CR_TOKEN: "${{ secrets.GH_TOKEN }}"
+      #     CR_SKIP_EXISTING: true
