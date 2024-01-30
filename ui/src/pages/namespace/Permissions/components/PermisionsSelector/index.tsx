@@ -108,16 +108,18 @@ const PermissionsSelector = ({
               </TableRow>
             </TableHead>
             <TableBody className="h-44 border">
-              {Object.entries(groupedResouces).map(([resource, scopes]) => (
-                <PermissionRow
-                  key={resource}
-                  resource={resource}
-                  scopes={scopes}
-                  availableScopes={availableScopes}
-                  selectedPermissions={selectedPermissions}
-                  onCheckedChange={onCheckedChange}
-                />
-              ))}
+              {Object.entries(groupedResouces)
+                .sort((a, b) => a[0].localeCompare(b[0]))
+                .map(([resource, scopes]) => (
+                  <PermissionRow
+                    key={resource}
+                    resource={resource}
+                    scopes={scopes}
+                    availableScopes={availableScopes}
+                    selectedPermissions={selectedPermissions}
+                    onCheckedChange={onCheckedChange}
+                  />
+                ))}
             </TableBody>
           </Table>
         </Card>
