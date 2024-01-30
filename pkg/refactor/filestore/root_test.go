@@ -60,54 +60,6 @@ func TestRoot_CreateFile(t *testing.T) {
 	}
 }
 
-func TestRootQuery_IsEmptyDirectory(t *testing.T) {
-	db, err := database.NewMockGorm()
-	if err != nil {
-		t.Fatalf("unepxected NewMockGorm() error = %v", err)
-	}
-	fs := filestoresql.NewSQLFileStore(db)
-
-	root, err := fs.CreateRoot(context.Background(), uuid.New(), "ns1")
-	if err != nil {
-		t.Fatalf("unepxected CreateRoot() error = %v", err)
-	}
-
-	assertEmptyDirectory(t, fs, root.ID, "/", false, filestore.ErrNotFound)
-	assertEmptyDirectory(t, fs, root.ID, "/dir1", false, filestore.ErrNotFound)
-
-	assertRootCorrectFileCreation(t, fs, root.ID, "/")
-	assertEmptyDirectory(t, fs, root.ID, "/", true, nil)
-	assertEmptyDirectory(t, fs, root.ID, "/dir1", false, filestore.ErrNotFound)
-
-	assertRootCorrectFileCreation(t, fs, root.ID, "/file1.text")
-	assertRootCorrectFileCreation(t, fs, root.ID, "/file2.text")
-
-	assertRootCorrectFileCreation(t, fs, root.ID, "/dir1")
-	assertRootCorrectFileCreation(t, fs, root.ID, "/dir1/file3.text")
-	assertRootCorrectFileCreation(t, fs, root.ID, "/dir1/file4.text")
-
-	assertRootCorrectFileCreation(t, fs, root.ID, "/dir2")
-
-	assertEmptyDirectory(t, fs, root.ID, "/", false, nil)
-	assertEmptyDirectory(t, fs, root.ID, "/dir1", false, nil)
-
-	assertEmptyDirectory(t, fs, root.ID, "/dir2", true, nil)
-}
-
-func assertEmptyDirectory(t *testing.T, fs filestore.FileStore, rootID uuid.UUID, path string, wantEmpty bool, wantErr error) {
-	t.Helper()
-
-	gotEmpty, gotErr := fs.ForRootID(rootID).IsEmptyDirectory(context.Background(), path)
-	if !errors.Is(gotErr, wantErr) {
-		t.Errorf("unexpected IsEmptyDirectory() error, got: %v, want: %v", gotErr, wantErr)
-
-		return
-	}
-	if gotEmpty != wantEmpty {
-		t.Errorf("unexpected IsEmptyDirectory(), got: %v, want %v", gotEmpty, wantEmpty)
-	}
-}
-
 func assertRootCorrectFileCreation(t *testing.T, fs filestore.FileStore, rootID uuid.UUID, path string) {
 	t.Helper()
 
