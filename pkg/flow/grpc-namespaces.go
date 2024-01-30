@@ -2,7 +2,6 @@ package flow
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
@@ -240,17 +239,6 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 	}
 	if err != nil {
 		return nil, err
-	}
-
-	isEmpty, err := tx.FileStore().ForNamespace(ns.Name).IsEmptyDirectory(ctx, "/")
-	if err != nil {
-		if !errors.Is(err, filestore.ErrNotFound) {
-			// NOTE: the alternative shouldn't be possible
-			return nil, err
-		}
-	}
-	if !req.GetRecursive() && !isEmpty {
-		return nil, errors.New("refusing to delete non-empty namespace without explicit recursive argument")
 	}
 
 	err = tx.DataStore().Namespaces().Delete(ctx, ns.Name)

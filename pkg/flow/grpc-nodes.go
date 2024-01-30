@@ -189,15 +189,6 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 		return nil, err
 	}
 
-	if file.Typ == filestore.FileTypeDirectory {
-		isEmptyDir, err := tx.FileStore().ForNamespace(ns.Name).IsEmptyDirectory(ctx, req.GetPath())
-		if err != nil {
-			return nil, err
-		}
-		if !isEmptyDir && !req.GetRecursive() {
-			return nil, status.Error(codes.InvalidArgument, "refusing to delete non-empty directory without explicit recursive argument")
-		}
-	}
 	if file.Path == "/" {
 		return nil, status.Error(codes.InvalidArgument, "cannot delete root node")
 	}

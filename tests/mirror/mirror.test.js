@@ -816,14 +816,8 @@ describe('Test behaviour specific to the root node', () => {
         expect(req.body.return.return.status).toEqual('200 OK')
     }, 90000)
 
-    it(`should fail to delete a namespace because of a lack of a recursive param`, async () => {
-        const req = await request(common.config.getDirektivHost()).delete(`/api/namespaces/${namespaceName}`)
-        expect(req.statusCode).toEqual(500)
-        expect(req.body).toMatchObject({})
-    })
-
     it(`should delete a namespace`, async () => {
-        const req = await request(common.config.getDirektivHost()).delete(`/api/namespaces/${namespaceName}?recursive=true`)
+        const req = await request(common.config.getDirektivHost()).delete(`/api/namespaces/${namespaceName}`)
         expect(req.statusCode).toEqual(200)
         expect(req.body).toMatchObject({})
     })

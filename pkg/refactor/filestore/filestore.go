@@ -76,11 +76,6 @@ type RootQuery interface {
 	// Delete the root itself.
 	Delete(ctx context.Context) error
 
-	// IsEmptyDirectory returns true if path exist and of type directory and empty,
-	// and false if path exist and of type directory and none empty.
-	// If directory doesn't exist, it returns ErrNotFound.
-	IsEmptyDirectory(ctx context.Context, path string) (bool, error)
-
 	// ListAllFiles lists all files and directories in the filestore, this method used to help testing filestore logic.
 	ListAllFiles(ctx context.Context) ([]*File, error)
 
