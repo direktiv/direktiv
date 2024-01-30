@@ -20,7 +20,6 @@ import (
 var b bytes.Buffer
 
 func TestMain(m *testing.M) {
-
 	s, port, wgExit := startHttpServer(&b)
 	os.Setenv("DIREKTIV_HTTP_BACKEND", fmt.Sprintf("http://localhost:%d", port))
 
@@ -31,7 +30,6 @@ func TestMain(m *testing.M) {
 }
 
 func TestCommandSuppress(t *testing.T) {
-
 	b.Reset()
 
 	dir, _ := os.MkdirTemp(os.TempDir(), "prefix")
@@ -70,11 +68,9 @@ func TestCommandSuppress(t *testing.T) {
 
 	// suppress command
 	assert.True(t, strings.HasPrefix(b.String(), "running 1 commands\nrunning command 0"))
-
 }
 
 func TestOutputSuppress(t *testing.T) {
-
 	b.Reset()
 
 	dir, _ := os.MkdirTemp(os.TempDir(), "prefix")
@@ -103,11 +99,9 @@ func TestOutputSuppress(t *testing.T) {
 	commands.RunCommands(context.Background(), cmds, se)
 
 	assert.Equal(t, "running 1 commands\nrunning command 'echo jens'\njens\n", b.String())
-
 }
 
 func TestErrors(t *testing.T) {
-
 	b.Reset()
 
 	dir, _ := os.MkdirTemp(os.TempDir(), "prefix")
@@ -137,11 +131,9 @@ func TestErrors(t *testing.T) {
 
 	// prints error message, although suppressed
 	assert.Equal(t, "running 1 commands\nrunning command 'onetwo'\nexec: \"onetwo\": executable file not found in $PATH\n", b.String())
-
 }
 
 func TestStopOnTestErrors(t *testing.T) {
-
 	b.Reset()
 
 	dir, _ := os.MkdirTemp(os.TempDir(), "prefix")
@@ -179,7 +171,6 @@ func TestStopOnTestErrors(t *testing.T) {
 }
 
 func startHttpServer(b *bytes.Buffer) (*http.Server, int, *sync.WaitGroup) {
-
 	wgExit := &sync.WaitGroup{}
 	wgExit.Add(1)
 

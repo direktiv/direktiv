@@ -36,7 +36,6 @@ const (
 )
 
 func ReadConfigAndPrepare(configDir string, c interface{}) error {
-
 	viper.SetConfigName("direktiv")
 	viper.AddConfigPath(configDir)
 	viper.SetEnvPrefix("DIREKTIV")
@@ -73,8 +72,10 @@ func ReadConfigAndPrepare(configDir string, c interface{}) error {
 	log.Logger = log.Output(os.Stderr)
 
 	if !viper.GetBool("log.json") {
-		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr, NoColor: true,
-			TimeFormat: time.RFC3339Nano})
+		log.Logger = log.Output(zerolog.ConsoleWriter{
+			Out: os.Stderr, NoColor: true,
+			TimeFormat: time.RFC3339Nano,
+		})
 	}
 
 	// set general logging level
@@ -86,5 +87,4 @@ func ReadConfigAndPrepare(configDir string, c interface{}) error {
 	}
 
 	return nil
-
 }
