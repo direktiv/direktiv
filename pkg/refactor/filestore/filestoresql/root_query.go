@@ -89,6 +89,9 @@ func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.F
 	if err != nil {
 		return nil, fmt.Errorf("%w: %w", filestore.ErrInvalidPathParameter, err)
 	}
+	if path == "/" {
+		return nil, fmt.Errorf("%w: %w", filestore.ErrInvalidPathParameter, err)
+	}
 
 	// check if root exists.
 	if err = q.checkRootExists(ctx); err != nil {
@@ -105,7 +108,7 @@ func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.F
 	}
 
 	parentDir := filepath.Dir(path)
-	if path != "/" {
+	if parentDir != "/" {
 		count = 0
 		tx = q.db.WithContext(ctx).Raw("SELECT count(id) FROM filesystem_files WHERE root_id = ? AND typ = ? AND path = ?", q.rootID, filestore.FileTypeDirectory, parentDir).Scan(&count)
 		if tx.Error != nil {

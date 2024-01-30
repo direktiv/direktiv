@@ -75,6 +75,9 @@ func (q *FileQuery) SetPath(ctx context.Context, path string) error {
 	if err != nil {
 		return filestore.ErrInvalidPathParameter
 	}
+	if path == "/" {
+		return filestore.ErrInvalidPathParameter
+	}
 
 	// check if new path doesn't exist.
 	count := 0

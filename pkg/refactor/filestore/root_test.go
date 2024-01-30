@@ -12,26 +12,6 @@ import (
 	"github.com/google/uuid"
 )
 
-func TestRoot_CreateFileWithoutRootDirectory(t *testing.T) {
-	db, err := database.NewMockGorm()
-	if err != nil {
-		t.Fatalf("unepxected NewMockGorm() error = %v", err)
-	}
-	fs := filestoresql.NewSQLFileStore(db)
-
-	root, err := fs.CreateRoot(context.Background(), uuid.New(), "ns1")
-	if err != nil {
-		t.Fatalf("unepxected CreateRoot() error = %v", err)
-	}
-
-	assertRootErrorFileCreation(t, fs, root.ID, "/file1.text", filestore.ErrNoParentDirectory)
-	assertRootErrorFileCreation(t, fs, root.ID, "/dir1", filestore.ErrNoParentDirectory)
-
-	assertRootCorrectFileCreation(t, fs, root.ID, "/")
-	assertRootCorrectFileCreation(t, fs, root.ID, "/file1.text")
-	assertRootCorrectFileCreation(t, fs, root.ID, "/dir1")
-}
-
 func TestRoot_CreateFile(t *testing.T) {
 	db, err := database.NewMockGorm()
 	if err != nil {
@@ -48,7 +28,6 @@ func TestRoot_CreateFile(t *testing.T) {
 		path    string
 		payload string
 	}{
-		{"/", ""},
 		{"/example.text", "abcd"},
 		{"/example1.text", "abcd"},
 		{"/example2.text", "abcd"},
@@ -155,7 +134,6 @@ func TestRoot_CorrectReadDirectory(t *testing.T) {
 
 	// Test root directory:
 	{
-		assertRootCorrectFileCreation(t, fs, root.ID, "/")
 		assertRootCorrectFileCreation(t, fs, root.ID, "/file1.text")
 		assertRootCorrectFileCreation(t, fs, root.ID, "/file2.text")
 
@@ -219,7 +197,6 @@ func TestRoot_RenamePath(t *testing.T) {
 
 	// Test root directory:
 	{
-		assertRootCorrectFileCreation(t, fs, root.ID, "/")
 		assertRootCorrectFileCreation(t, fs, root.ID, "/dir1")
 		assertRootCorrectFileCreation(t, fs, root.ID, "/dir1/dir2")
 		assertRootCorrectFileCreation(t, fs, root.ID, "/dir1/file.text")
