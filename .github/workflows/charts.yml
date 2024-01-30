@@ -3,8 +3,8 @@ name: Build and Release Charts
 on:
   workflow_dispatch:
   push:
-    paths:
-      - charts/**
+    # paths:
+    #   - charts/**
     branches:
       - jens/dir-1149-move-charts
   pull_request:
