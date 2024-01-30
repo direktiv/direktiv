@@ -1,7 +1,25 @@
+/**
+ * takes a permission string and returns the scope and resource
+ *
+ * example input: "READ:config"
+ *
+ * example output: ["READ", "config"]
+ */
 const splitPermissionString = (permission: string): [string, string] => {
   const [scope, resource] = permission.split(":");
   return [scope ?? "", resource ?? ""];
 };
+
+/**
+ * takes a scope and resource and returns a permission string
+ *
+ * example input: ["READ", "config"]
+ *
+ * example output: "READ:config"
+ *
+ */
+export const joinPermissionString = (scope: string, resource: string): string =>
+  `${scope}:${resource}`;
 
 /**
  * takes a list of permissions and returns all availables of scopes
