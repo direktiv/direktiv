@@ -43,10 +43,6 @@ export const useWorkflowVariables = ({
     throw new Error("namespace is undefined");
   }
 
-  if (!path) {
-    throw new Error("path is undefined");
-  }
-
   return useQuery({
     queryKey: treeKeys.workflowVariablesList(namespace, {
       apiKey: apiKey ?? undefined,

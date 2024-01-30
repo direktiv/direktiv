@@ -11,6 +11,7 @@ import FilePicker from "~/components/FilePicker";
 import Input from "~/design/Input";
 import NamespaceSelector from "~/components/NamespaceSelector";
 import { PluginWrapper } from "../components/Modal";
+import WorkflowVariablePicker from "~/components/WorkflowVariablepicker";
 import { treatEmptyStringAsUndefined } from "~/pages/namespace/Explorer/utils";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -88,6 +89,7 @@ export const TargetFlowVarForm: FC<FormProps> = ({
             name="configuration.flow"
             render={({ field }) => (
               <FilePicker
+                {...register("configuration.flow")}
                 namespace={watch("configuration.namespace")}
                 onChange={field.onChange}
                 defaultPath={field.value}
@@ -102,7 +104,28 @@ export const TargetFlowVarForm: FC<FormProps> = ({
           )}
           htmlFor="variable"
         >
-          <Input {...register("configuration.variable")} id="variable" />
+          <Controller
+            control={control}
+            name="configuration"
+            render={({ field }) => (
+              <WorkflowVariablePicker
+                {...register("configuration.variable", {
+                  setValueAs: treatEmptyStringAsUndefined,
+                })}
+                namespace={watch("configuration.namespace")}
+                workflow={watch("configuration.flow")}
+                defaultVariable={watch("configuration.variable")}
+                onChange={(variable) => {
+                  field.onChange({
+                    variable: variable?.name,
+                    content_type: variable?.mimeType,
+                    flow: watch("configuration.flow"),
+                    namespace: watch("configuration.namespace"),
+                  });
+                }}
+              />
+            )}
+          />
         </Fieldset>
         <Fieldset
           label={t(
@@ -110,13 +133,20 @@ export const TargetFlowVarForm: FC<FormProps> = ({
           )}
           htmlFor="content-type"
         >
-          <Input
-            {...register("configuration.content_type", {
-              setValueAs: treatEmptyStringAsUndefined,
-            })}
-            id="content-type"
-            placeholder={t(
-              "pages.explorer.endpoint.editor.form.plugins.target.targetFlowVar.contentTypePlaceholder"
+          <Controller
+            control={control}
+            name="configuration.content_type"
+            render={() => (
+              <Input
+                {...register("configuration.content_type", {
+                  setValueAs: treatEmptyStringAsUndefined,
+                })}
+                value={watch("configuration.content_type")}
+                placeholder={t(
+                  "pages.explorer.endpoint.editor.form.plugins.target.targetFlowVar.contentTypePlaceholder"
+                )}
+                id="content-type"
+              />
             )}
           />
         </Fieldset>

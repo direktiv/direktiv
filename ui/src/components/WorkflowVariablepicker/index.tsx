@@ -31,7 +31,7 @@ const WorkflowVariablePicker = ({
 }: {
   namespace?: string;
   workflow: string;
-  defaultVariable?: variableType;
+  defaultVariable?: string;
   onChange: (variable: variableType | undefined) => void;
 }) => {
   const { t } = useTranslation();
@@ -43,17 +43,13 @@ const WorkflowVariablePicker = ({
     mimeType: "",
   };
   const [inputValue, setInput] = useState(
-    defaultVariable ? defaultVariable.name : ""
-  );
-
-  const [variable, setVariable] = useState(
-    defaultVariable ? defaultVariable : emptyVariable
+    defaultVariable ? defaultVariable : ""
   );
 
   const defaultNamespace = useNamespace();
   const namespace = givenNamespace ? givenNamespace : defaultNamespace;
 
-  const path = workflow;
+  const path = workflow ? workflow : "";
 
   const { data, isError } = useWorkflowVariables({ path, namespace });
 
@@ -61,11 +57,14 @@ const WorkflowVariablePicker = ({
     ? data.variables.results
     : [emptyVariable];
 
-  const pathNotFound = isError;
+  const emptyWorkflow = data?.variables.results[0] === undefined ? true : false;
+
+  const pathNotFound = isError && !emptyWorkflow;
+  //const pathNotFound = false;
+  const unselectedWorkflow = workflow ? false : true;
 
   const setNewVariable = (value: string) => {
     emptyVariable.name = value;
-    setVariable(emptyVariable);
     onChange(emptyVariable);
     setInput(value);
   };
@@ -76,7 +75,6 @@ const WorkflowVariablePicker = ({
     )[0];
 
     if (foundVariable != undefined) {
-      setVariable(foundVariable);
       onChange(foundVariable);
       setInput(value);
     }
@@ -84,7 +82,7 @@ const WorkflowVariablePicker = ({
 
   return (
     <ButtonBar>
-      {pathNotFound ? (
+      {unselectedWorkflow ? (
         <VariablepickerError
           buttonText={t("components.workflowVariablepicker.buttonText")}
         >
@@ -94,13 +92,13 @@ const WorkflowVariablePicker = ({
           <VariablepickerSeparator />
 
           <VariablepickerMessage>
-            {t("components.workflowVariablepicker.error.title", { path })}
+            {t("components.workflowVariablepicker.unselected.title")}
           </VariablepickerMessage>
           <VariablepickerSeparator />
         </VariablepickerError>
       ) : (
         <>
-          {!variableList || variableList.length == 0 ? (
+          {pathNotFound ? (
             <VariablepickerError
               buttonText={t("components.workflowVariablepicker.buttonText")}
             >
@@ -110,33 +108,54 @@ const WorkflowVariablePicker = ({
               <VariablepickerSeparator />
 
               <VariablepickerMessage>
-                {t("components.workflowVariablepicker.emptyDirectory.title", {
-                  path,
-                })}
+                {t("components.workflowVariablepicker.error.title", { path })}
               </VariablepickerMessage>
               <VariablepickerSeparator />
             </VariablepickerError>
           ) : (
-            <Variablepicker
-              buttonText={t("components.workflowVariablepicker.buttonText")}
-              value={inputValue}
-              onValueChange={(value) => {
-                setExistingVariable(value);
-              }}
-            >
-              <VariablepickerHeading>
-                {t("components.workflowVariablepicker.title", { path })}
-              </VariablepickerHeading>
-              <VariablepickerSeparator />
-              {variableList.map((variable, index) => (
-                <Fragment key={index}>
-                  <VariablepickerItem value={variable.name}>
-                    {variable.name}
-                  </VariablepickerItem>
+            <>
+              {emptyWorkflow ? (
+                <VariablepickerError
+                  buttonText={t("components.workflowVariablepicker.buttonText")}
+                >
+                  <VariablepickerHeading>
+                    {t("components.workflowVariablepicker.title", { path })}
+                  </VariablepickerHeading>
                   <VariablepickerSeparator />
-                </Fragment>
-              ))}
-            </Variablepicker>
+
+                  <VariablepickerMessage>
+                    {t(
+                      "components.workflowVariablepicker.emptyDirectory.title",
+                      {
+                        path,
+                      }
+                    )}
+                  </VariablepickerMessage>
+                  <VariablepickerSeparator />
+                </VariablepickerError>
+              ) : (
+                <Variablepicker
+                  buttonText={t("components.workflowVariablepicker.buttonText")}
+                  value={inputValue}
+                  onValueChange={(value) => {
+                    setExistingVariable(value);
+                  }}
+                >
+                  <VariablepickerHeading>
+                    {t("components.workflowVariablepicker.title", { path })}
+                  </VariablepickerHeading>
+                  <VariablepickerSeparator />
+                  {variableList.map((variable, index) => (
+                    <Fragment key={index}>
+                      <VariablepickerItem value={variable.name}>
+                        {variable.name}
+                      </VariablepickerItem>
+                      <VariablepickerSeparator />
+                    </Fragment>
+                  ))}
+                </Variablepicker>
+              )}
+            </>
           )}
         </>
       )}

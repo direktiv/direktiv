@@ -1242,6 +1242,9 @@
       },
       "error": {
         "title": "The workflow \"{{path}}\" was not found."
+      },
+      "unselected": {
+        "title": "Please select a workflow first."
       }
     },
     "filepicker": {

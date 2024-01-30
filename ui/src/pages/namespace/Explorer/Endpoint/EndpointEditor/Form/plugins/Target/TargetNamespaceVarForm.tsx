@@ -84,15 +84,11 @@ export const TargetNamespaceVarForm: FC<FormProps> = ({
           )}
           htmlFor="variable"
         >
-          {JSON.stringify(watch("configuration"))}
           <Controller
             control={control}
             name="configuration"
             render={({ field }) => (
               <NamespaceVariablePicker
-                {...register("configuration.variable", {
-                  setValueAs: treatEmptyStringAsUndefined,
-                })}
                 defaultVariable={watch("configuration.variable")}
                 namespace={watch("configuration.namespace")}
                 onChange={(variable) => {
