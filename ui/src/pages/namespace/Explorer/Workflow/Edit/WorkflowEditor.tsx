@@ -74,6 +74,7 @@ const WorkflowEditor: FC<{
           <CodeEditor
             value={editorContent}
             onValueChange={onEditorContentUpdate}
+            updatedAt={data.node.updatedAt}
             error={error}
             hasUnsavedChanges={hasUnsavedChanges}
             onSave={onSave}
