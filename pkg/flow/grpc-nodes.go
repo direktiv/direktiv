@@ -2,6 +2,7 @@ package flow
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"path/filepath"
 	"time"
@@ -225,7 +226,15 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 		if err != nil {
 			return nil, err
 		}
-		err = flow.pBus.Publish(pubsub.WorkflowDelete, ns.Name)
+		eventData, err := json.Marshal(pubsub.ChangeWorkflowEvent{
+			Namespace:    ns.Name,
+			NamespaceID:  ns.ID,
+			WorkflowPath: file.Path,
+		})
+		if err != nil {
+			flow.sugar.Error("pubsub publish", "error", err)
+		}
+		err = flow.pBus.Publish(pubsub.WorkflowDelete, string(eventData))
 		if err != nil {
 			flow.sugar.Error("pubsub publish", "error", err)
 		}
