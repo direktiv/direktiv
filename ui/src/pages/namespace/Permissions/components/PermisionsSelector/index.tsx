@@ -65,7 +65,7 @@ const PermissionsSelector = ({
           {t("pages.permissions.permissionsSelector.permissions")}
         </label>
 
-        <Card className="h-[400px] w-full overflow-scroll" noShadow>
+        <Card className="max-h-[400px] w-full overflow-scroll" noShadow>
           <Table>
             <TableHead>
               <TableRow className="hover:bg-inherit dark:hover:bg-inherit lg:pr-8 xl:pr-12">
