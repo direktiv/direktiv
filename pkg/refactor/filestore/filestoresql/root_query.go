@@ -160,7 +160,10 @@ func (q *RootQuery) GetFile(ctx context.Context, path string) (*filestore.File, 
 		return nil, fmt.Errorf("%w: %w", filestore.ErrInvalidPathParameter, err)
 	}
 	if path == "/" {
-		return nil, filestore.ErrInvalidPathParameter
+		return &filestore.File{
+			Path: "/",
+			Typ:  filestore.FileTypeDirectory,
+		}, nil
 	}
 
 	// check if root exists.
