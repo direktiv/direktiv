@@ -16,7 +16,6 @@ import (
 )
 
 func TestLogging(t *testing.T) {
-
 	wgExit := &sync.WaitGroup{}
 	wgExit.Add(1)
 
@@ -40,7 +39,6 @@ func TestLogging(t *testing.T) {
 
 	s.Shutdown(context.Background())
 	wgExit.Wait()
-
 }
 
 func startHttpServer(wg *sync.WaitGroup, b *bytes.Buffer) (*http.Server, int) {
