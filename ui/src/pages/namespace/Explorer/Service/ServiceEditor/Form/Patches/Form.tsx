@@ -1,8 +1,16 @@
-import { Select, SelectTrigger, SelectValue } from "~/design/Select";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/design/Select";
 
 import { FC } from "react";
 import { Fieldset } from "~/components/Form/Fieldset";
 import Input from "~/design/Input";
+import { PatchOperations } from "../../schema";
 import { useTranslation } from "react-i18next";
 
 type PatchFormProps = {};
@@ -24,6 +32,15 @@ export const PatchForm: FC<PatchFormProps> = () => {
               )}
             />
           </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              {PatchOperations.map((op) => (
+                <SelectItem key={op} value={op}>
+                  {op}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
         </Select>
       </Fieldset>
       <Fieldset

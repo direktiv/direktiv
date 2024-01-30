@@ -19,8 +19,10 @@ export const scaleOptions = [
   "9",
 ] as const;
 
+export const PatchOperations = ["add", "replace", "remove"] as const;
+
 export const PatchesSchema = z.object({
-  op: z.enum(["add", "replace", "remove"]),
+  op: z.enum(PatchOperations),
   path: z.string(),
   value: z.string(),
 });
