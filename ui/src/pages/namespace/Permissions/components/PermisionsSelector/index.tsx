@@ -68,7 +68,7 @@ const PermissionsSelector = ({
         <Card className="max-h-[400px] w-full overflow-scroll" noShadow>
           <Table>
             <TableHead>
-              <TableRow className="hover:bg-inherit dark:hover:bg-inherit lg:pr-8 xl:pr-12">
+              <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
                 <TableHeaderCell sticky className="px-0">
                   <div className="flex gap-5">
                     <Button
@@ -104,7 +104,7 @@ const PermissionsSelector = ({
                 ))}
               </TableRow>
             </TableHead>
-            <TableBody className="h-44 border">
+            <TableBody>
               {Object.entries(groupedResouces)
                 .sort((a, b) => a[0].localeCompare(b[0]))
                 .map(([resource, scopes]) => (
