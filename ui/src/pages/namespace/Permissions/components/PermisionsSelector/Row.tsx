@@ -18,14 +18,14 @@ export const PermissionRow = ({
   selectedPermissions,
   onCheckedChange,
 }: PermissionRowProps) => (
-  <TableRow className="lg:pr-8 xl:pr-12">
+  <TableRow>
     <TableCell className="grow">{resource}</TableCell>
     {availableScopes.map((availableScope) => {
       const permissionString = joinPermissionString(availableScope, resource);
       return (
         <TableCell key={availableScope} className="px-2">
           <div className="flex justify-center">
-            {scopes.includes(availableScope) && (
+            {scopes.includes(availableScope) ? (
               <Checkbox
                 checked={selectedPermissions.includes(permissionString)}
                 onCheckedChange={(checked) => {
@@ -34,6 +34,8 @@ export const PermissionRow = ({
                   }
                 }}
               />
+            ) : (
+              <Checkbox disabled={true} />
             )}
           </div>
         </TableCell>
