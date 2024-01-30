@@ -198,7 +198,7 @@ func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespace
 		flow.sugar.Warnf("CreateNamespace failed to create file-system root: %v", err)
 		return nil, err
 	}
-	_, _, err = tx.FileStore().ForRootID(root.ID).CreateFile(ctx, "/", filestore.FileTypeDirectory, "", nil)
+	_, err = tx.FileStore().ForRootID(root.ID).CreateFile(ctx, "/", filestore.FileTypeDirectory, "", nil)
 	if err != nil {
 		flow.sugar.Warnf("CreateNamespace failed to create root directory: %v", err)
 		return nil, err
@@ -253,7 +253,7 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 		return nil, errors.New("refusing to delete non-empty namespace without explicit recursive argument")
 	}
 
-	err = tx.DataStore().Namespaces().Delete(ctx, ns.ID)
+	err = tx.DataStore().Namespaces().Delete(ctx, ns.Name)
 	if err != nil {
 		return nil, err
 	}

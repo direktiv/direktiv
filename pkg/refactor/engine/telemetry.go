@@ -18,7 +18,6 @@ func (instance *Instance) GetAttributes(recipientType recipient.RecipientType) m
 	tags["callpath"] = callpath
 	tags["workflow"] = getWorkflow(instance.Instance.WorkflowPath)
 	tags["namespace-id"] = instance.Instance.NamespaceID.String()
-	tags["revision-id"] = instance.Instance.RevisionID.String()
 
 	tags["namespace"] = instance.TelemetryInfo.NamespaceName
 

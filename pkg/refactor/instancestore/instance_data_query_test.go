@@ -50,7 +50,6 @@ func TestInstanceDataQuery_sqlInstanceStore_GetMost(t *testing.T) {
 		args: &instancestore.CreateInstanceDataArgs{
 			ID:             id,
 			NamespaceID:    uuid.New(),
-			RevisionID:     uuid.New(),
 			RootInstanceID: id,
 			Invoker:        "api",
 			WorkflowPath:   "/test.yaml",
@@ -116,7 +115,6 @@ func TestInstanceDataQuery_sqlInstanceStore_GetSummary(t *testing.T) {
 		args: &instancestore.CreateInstanceDataArgs{
 			ID:             id,
 			NamespaceID:    uuid.New(),
-			RevisionID:     uuid.New(),
 			RootInstanceID: id,
 			Invoker:        "api",
 			WorkflowPath:   "/test.yaml",

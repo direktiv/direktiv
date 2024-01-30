@@ -631,16 +631,14 @@ func (pubsub *Pubsub) HostnameDeleteTimer(hostname, name string) {
 }
 
 type ConfigureRouterMessage struct {
-	ID      string
-	Cron    string
-	Enabled bool
+	ID   string
+	Cron string
 }
 
-func (pubsub *Pubsub) ConfigureRouterCron(id, cron string, enabled bool) {
+func (pubsub *Pubsub) ConfigureRouterCron(id, cron string) {
 	msg := &ConfigureRouterMessage{
-		ID:      id,
-		Cron:    cron,
-		Enabled: enabled,
+		ID:   id,
+		Cron: cron,
 	}
 
 	key := bytedata.Marshal(msg)

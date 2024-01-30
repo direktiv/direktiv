@@ -5,7 +5,7 @@ import { Pods } from "./Pods";
 import { pages } from "~/util/router/pages";
 import { usePods } from "~/api/services/query/pods";
 
-const ServiceRevisionPage = () => {
+const ServiceDetailPage = () => {
   const { service: serviceId } = pages.services.useParams();
   const { isFetched, isAllowed, noPermissionMessage } = usePods(
     serviceId ?? ""
@@ -30,4 +30,4 @@ const ServiceRevisionPage = () => {
   );
 };
 
-export default ServiceRevisionPage;
+export default ServiceDetailPage;

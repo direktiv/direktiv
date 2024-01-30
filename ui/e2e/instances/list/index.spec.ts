@@ -196,7 +196,7 @@ test("it renders the instance item correctly for failed and success status", asy
     await expect(
       page,
       "when the workflow name is clicked, page should navigate to the workflow page"
-    ).toHaveURL(`/${namespace}/explorer/workflow/active${workflowName}`);
+    ).toHaveURL(`/${namespace}/explorer/workflow/edit${workflowName}`);
 
     await page.goBack();
 

@@ -3,11 +3,10 @@ import {
   Bug,
   Calendar,
   ChevronsUpDown,
+  Code2,
   CurlyBraces,
   FolderOpen,
   FolderTree,
-  GitCommit,
-  GitMerge,
   Github,
   Home,
   Layers,
@@ -75,10 +74,10 @@ const navigation = [
 ];
 
 const tabs = [
-  { name: "Overview", href: "#", icon: PieChart, current: true },
-  { name: "Active Revisions", href: "#", icon: GitCommit, current: false },
-  { name: "Revisions", href: "#", icon: GitMerge, current: false },
+  { name: "File Content", href: "#", icon: Code2, current: true },
+  { name: "Overview", href: "#", icon: PieChart, current: false },
   { name: "Settings", href: "#", icon: Settings, current: false },
+  { name: "Services", href: "#", icon: Layers, current: false },
 ];
 
 export const Default = () => (

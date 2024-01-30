@@ -5,7 +5,6 @@ export const NamespaceSchema = z.object({
   createdAt: z.string(),
   updatedAt: z.string(),
   name: z.string(),
-  oid: z.string(),
 });
 
 export const NamespaceListSchema = z.object({

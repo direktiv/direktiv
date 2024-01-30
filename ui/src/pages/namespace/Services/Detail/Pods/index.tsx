@@ -54,7 +54,7 @@ const PodsWithData = ({
     service: serviceId,
   });
 
-  const logs = logData?.split("\n") ?? [];
+  const logs = logData?.trim().split("\n") ?? [];
   const pod = pods.find((pod) => pod.id === selectedPod);
 
   if (!pod)

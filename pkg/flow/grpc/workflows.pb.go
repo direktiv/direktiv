@@ -9,7 +9,7 @@ package grpc
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
+	_ "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
 )
@@ -20,77 +20,6 @@ const (
 	// Verify that runtime/protoimpl is sufficiently up-to-date.
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
-
-type Revision struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	CreatedAt *timestamppb.Timestamp `protobuf:"bytes,1,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	Hash      string                 `protobuf:"bytes,2,opt,name=hash,proto3" json:"hash,omitempty"`
-	Source    []byte                 `protobuf:"bytes,3,opt,name=source,proto3" json:"source,omitempty"`
-	Name      string                 `protobuf:"bytes,4,opt,name=name,proto3" json:"name,omitempty"`
-}
-
-func (x *Revision) Reset() {
-	*x = Revision{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[0]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Revision) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Revision) ProtoMessage() {}
-
-func (x *Revision) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[0]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Revision.ProtoReflect.Descriptor instead.
-func (*Revision) Descriptor() ([]byte, []int) {
-	return file_pkg_flow_grpc_workflows_proto_rawDescGZIP(), []int{0}
-}
-
-func (x *Revision) GetCreatedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.CreatedAt
-	}
-	return nil
-}
-
-func (x *Revision) GetHash() string {
-	if x != nil {
-		return x.Hash
-	}
-	return ""
-}
-
-func (x *Revision) GetSource() []byte {
-	if x != nil {
-		return x.Source
-	}
-	return nil
-}
-
-func (x *Revision) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
 
 type NodeRequest struct {
 	state         protoimpl.MessageState
@@ -104,7 +33,7 @@ type NodeRequest struct {
 func (x *NodeRequest) Reset() {
 	*x = NodeRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[1]
+		mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -117,7 +46,7 @@ func (x *NodeRequest) String() string {
 func (*NodeRequest) ProtoMessage() {}
 
 func (x *NodeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[1]
+	mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -130,7 +59,7 @@ func (x *NodeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NodeRequest.ProtoReflect.Descriptor instead.
 func (*NodeRequest) Descriptor() ([]byte, []int) {
-	return file_pkg_flow_grpc_workflows_proto_rawDescGZIP(), []int{1}
+	return file_pkg_flow_grpc_workflows_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *NodeRequest) GetNamespace() string {
@@ -159,7 +88,7 @@ type NodeResponse struct {
 func (x *NodeResponse) Reset() {
 	*x = NodeResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[2]
+		mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -172,7 +101,7 @@ func (x *NodeResponse) String() string {
 func (*NodeResponse) ProtoMessage() {}
 
 func (x *NodeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[2]
+	mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -185,7 +114,7 @@ func (x *NodeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NodeResponse.ProtoReflect.Descriptor instead.
 func (*NodeResponse) Descriptor() ([]byte, []int) {
-	return file_pkg_flow_grpc_workflows_proto_rawDescGZIP(), []int{2}
+	return file_pkg_flow_grpc_workflows_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *NodeResponse) GetNamespace() string {
@@ -213,7 +142,7 @@ type ResolveWorkflowUIDRequest struct {
 func (x *ResolveWorkflowUIDRequest) Reset() {
 	*x = ResolveWorkflowUIDRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[3]
+		mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -226,7 +155,7 @@ func (x *ResolveWorkflowUIDRequest) String() string {
 func (*ResolveWorkflowUIDRequest) ProtoMessage() {}
 
 func (x *ResolveWorkflowUIDRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[3]
+	mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -239,7 +168,7 @@ func (x *ResolveWorkflowUIDRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResolveWorkflowUIDRequest.ProtoReflect.Descriptor instead.
 func (*ResolveWorkflowUIDRequest) Descriptor() ([]byte, []int) {
-	return file_pkg_flow_grpc_workflows_proto_rawDescGZIP(), []int{3}
+	return file_pkg_flow_grpc_workflows_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *ResolveWorkflowUIDRequest) GetId() string {
@@ -256,13 +185,12 @@ type WorkflowRequest struct {
 
 	Namespace string `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
 	Path      string `protobuf:"bytes,2,opt,name=path,proto3" json:"path,omitempty"`
-	Ref       string `protobuf:"bytes,3,opt,name=ref,proto3" json:"ref,omitempty"`
 }
 
 func (x *WorkflowRequest) Reset() {
 	*x = WorkflowRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[4]
+		mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -275,7 +203,7 @@ func (x *WorkflowRequest) String() string {
 func (*WorkflowRequest) ProtoMessage() {}
 
 func (x *WorkflowRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[4]
+	mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -288,7 +216,7 @@ func (x *WorkflowRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkflowRequest.ProtoReflect.Descriptor instead.
 func (*WorkflowRequest) Descriptor() ([]byte, []int) {
-	return file_pkg_flow_grpc_workflows_proto_rawDescGZIP(), []int{4}
+	return file_pkg_flow_grpc_workflows_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *WorkflowRequest) GetNamespace() string {
@@ -305,29 +233,20 @@ func (x *WorkflowRequest) GetPath() string {
 	return ""
 }
 
-func (x *WorkflowRequest) GetRef() string {
-	if x != nil {
-		return x.Ref
-	}
-	return ""
-}
-
 type WorkflowResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Namespace    string    `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
-	Node         *Node     `protobuf:"bytes,2,opt,name=node,proto3" json:"node,omitempty"`
-	Revision     *Revision `protobuf:"bytes,3,opt,name=revision,proto3" json:"revision,omitempty"`
-	EventLogging string    `protobuf:"bytes,4,opt,name=eventLogging,proto3" json:"eventLogging,omitempty"`
-	Oid          string    `protobuf:"bytes,5,opt,name=oid,proto3" json:"oid,omitempty"`
+	Namespace string `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
+	Node      *Node  `protobuf:"bytes,2,opt,name=node,proto3" json:"node,omitempty"`
+	Source    []byte `protobuf:"bytes,6,opt,name=source,proto3" json:"source,omitempty"`
 }
 
 func (x *WorkflowResponse) Reset() {
 	*x = WorkflowResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[5]
+		mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -340,7 +259,7 @@ func (x *WorkflowResponse) String() string {
 func (*WorkflowResponse) ProtoMessage() {}
 
 func (x *WorkflowResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[5]
+	mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -353,7 +272,7 @@ func (x *WorkflowResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkflowResponse.ProtoReflect.Descriptor instead.
 func (*WorkflowResponse) Descriptor() ([]byte, []int) {
-	return file_pkg_flow_grpc_workflows_proto_rawDescGZIP(), []int{5}
+	return file_pkg_flow_grpc_workflows_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *WorkflowResponse) GetNamespace() string {
@@ -370,25 +289,11 @@ func (x *WorkflowResponse) GetNode() *Node {
 	return nil
 }
 
-func (x *WorkflowResponse) GetRevision() *Revision {
+func (x *WorkflowResponse) GetSource() []byte {
 	if x != nil {
-		return x.Revision
+		return x.Source
 	}
 	return nil
-}
-
-func (x *WorkflowResponse) GetEventLogging() string {
-	if x != nil {
-		return x.EventLogging
-	}
-	return ""
-}
-
-func (x *WorkflowResponse) GetOid() string {
-	if x != nil {
-		return x.Oid
-	}
-	return ""
 }
 
 type CreateWorkflowRequest struct {
@@ -404,7 +309,7 @@ type CreateWorkflowRequest struct {
 func (x *CreateWorkflowRequest) Reset() {
 	*x = CreateWorkflowRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[6]
+		mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -417,7 +322,7 @@ func (x *CreateWorkflowRequest) String() string {
 func (*CreateWorkflowRequest) ProtoMessage() {}
 
 func (x *CreateWorkflowRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[6]
+	mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -430,7 +335,7 @@ func (x *CreateWorkflowRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateWorkflowRequest.ProtoReflect.Descriptor instead.
 func (*CreateWorkflowRequest) Descriptor() ([]byte, []int) {
-	return file_pkg_flow_grpc_workflows_proto_rawDescGZIP(), []int{6}
+	return file_pkg_flow_grpc_workflows_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *CreateWorkflowRequest) GetNamespace() string {
@@ -459,15 +364,15 @@ type CreateWorkflowResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Namespace string    `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
-	Node      *Node     `protobuf:"bytes,2,opt,name=node,proto3" json:"node,omitempty"`
-	Revision  *Revision `protobuf:"bytes,3,opt,name=revision,proto3" json:"revision,omitempty"`
+	Namespace string `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
+	Node      *Node  `protobuf:"bytes,2,opt,name=node,proto3" json:"node,omitempty"`
+	Source    []byte `protobuf:"bytes,3,opt,name=source,proto3" json:"source,omitempty"`
 }
 
 func (x *CreateWorkflowResponse) Reset() {
 	*x = CreateWorkflowResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[7]
+		mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -480,7 +385,7 @@ func (x *CreateWorkflowResponse) String() string {
 func (*CreateWorkflowResponse) ProtoMessage() {}
 
 func (x *CreateWorkflowResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[7]
+	mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -493,7 +398,7 @@ func (x *CreateWorkflowResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateWorkflowResponse.ProtoReflect.Descriptor instead.
 func (*CreateWorkflowResponse) Descriptor() ([]byte, []int) {
-	return file_pkg_flow_grpc_workflows_proto_rawDescGZIP(), []int{7}
+	return file_pkg_flow_grpc_workflows_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *CreateWorkflowResponse) GetNamespace() string {
@@ -510,9 +415,9 @@ func (x *CreateWorkflowResponse) GetNode() *Node {
 	return nil
 }
 
-func (x *CreateWorkflowResponse) GetRevision() *Revision {
+func (x *CreateWorkflowResponse) GetSource() []byte {
 	if x != nil {
-		return x.Revision
+		return x.Source
 	}
 	return nil
 }
@@ -530,7 +435,7 @@ type UpdateWorkflowRequest struct {
 func (x *UpdateWorkflowRequest) Reset() {
 	*x = UpdateWorkflowRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[8]
+		mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -543,7 +448,7 @@ func (x *UpdateWorkflowRequest) String() string {
 func (*UpdateWorkflowRequest) ProtoMessage() {}
 
 func (x *UpdateWorkflowRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[8]
+	mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -556,7 +461,7 @@ func (x *UpdateWorkflowRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateWorkflowRequest.ProtoReflect.Descriptor instead.
 func (*UpdateWorkflowRequest) Descriptor() ([]byte, []int) {
-	return file_pkg_flow_grpc_workflows_proto_rawDescGZIP(), []int{8}
+	return file_pkg_flow_grpc_workflows_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *UpdateWorkflowRequest) GetNamespace() string {
@@ -585,15 +490,15 @@ type UpdateWorkflowResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Namespace string    `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
-	Node      *Node     `protobuf:"bytes,2,opt,name=node,proto3" json:"node,omitempty"`
-	Revision  *Revision `protobuf:"bytes,3,opt,name=revision,proto3" json:"revision,omitempty"`
+	Namespace string `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
+	Node      *Node  `protobuf:"bytes,2,opt,name=node,proto3" json:"node,omitempty"`
+	Source    []byte `protobuf:"bytes,3,opt,name=source,proto3" json:"source,omitempty"`
 }
 
 func (x *UpdateWorkflowResponse) Reset() {
 	*x = UpdateWorkflowResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[9]
+		mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[8]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -606,7 +511,7 @@ func (x *UpdateWorkflowResponse) String() string {
 func (*UpdateWorkflowResponse) ProtoMessage() {}
 
 func (x *UpdateWorkflowResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[9]
+	mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[8]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -619,7 +524,7 @@ func (x *UpdateWorkflowResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateWorkflowResponse.ProtoReflect.Descriptor instead.
 func (*UpdateWorkflowResponse) Descriptor() ([]byte, []int) {
-	return file_pkg_flow_grpc_workflows_proto_rawDescGZIP(), []int{9}
+	return file_pkg_flow_grpc_workflows_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *UpdateWorkflowResponse) GetNamespace() string {
@@ -636,1122 +541,11 @@ func (x *UpdateWorkflowResponse) GetNode() *Node {
 	return nil
 }
 
-func (x *UpdateWorkflowResponse) GetRevision() *Revision {
+func (x *UpdateWorkflowResponse) GetSource() []byte {
 	if x != nil {
-		return x.Revision
+		return x.Source
 	}
 	return nil
-}
-
-type SaveHeadRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Namespace string `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
-	Path      string `protobuf:"bytes,2,opt,name=path,proto3" json:"path,omitempty"`
-	Metadata  []byte `protobuf:"bytes,3,opt,name=metadata,proto3" json:"metadata,omitempty"`
-}
-
-func (x *SaveHeadRequest) Reset() {
-	*x = SaveHeadRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[10]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *SaveHeadRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*SaveHeadRequest) ProtoMessage() {}
-
-func (x *SaveHeadRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[10]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use SaveHeadRequest.ProtoReflect.Descriptor instead.
-func (*SaveHeadRequest) Descriptor() ([]byte, []int) {
-	return file_pkg_flow_grpc_workflows_proto_rawDescGZIP(), []int{10}
-}
-
-func (x *SaveHeadRequest) GetNamespace() string {
-	if x != nil {
-		return x.Namespace
-	}
-	return ""
-}
-
-func (x *SaveHeadRequest) GetPath() string {
-	if x != nil {
-		return x.Path
-	}
-	return ""
-}
-
-func (x *SaveHeadRequest) GetMetadata() []byte {
-	if x != nil {
-		return x.Metadata
-	}
-	return nil
-}
-
-type SaveHeadResponse struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Namespace string    `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
-	Node      *Node     `protobuf:"bytes,2,opt,name=node,proto3" json:"node,omitempty"`
-	Revision  *Revision `protobuf:"bytes,3,opt,name=revision,proto3" json:"revision,omitempty"`
-}
-
-func (x *SaveHeadResponse) Reset() {
-	*x = SaveHeadResponse{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[11]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *SaveHeadResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*SaveHeadResponse) ProtoMessage() {}
-
-func (x *SaveHeadResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[11]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use SaveHeadResponse.ProtoReflect.Descriptor instead.
-func (*SaveHeadResponse) Descriptor() ([]byte, []int) {
-	return file_pkg_flow_grpc_workflows_proto_rawDescGZIP(), []int{11}
-}
-
-func (x *SaveHeadResponse) GetNamespace() string {
-	if x != nil {
-		return x.Namespace
-	}
-	return ""
-}
-
-func (x *SaveHeadResponse) GetNode() *Node {
-	if x != nil {
-		return x.Node
-	}
-	return nil
-}
-
-func (x *SaveHeadResponse) GetRevision() *Revision {
-	if x != nil {
-		return x.Revision
-	}
-	return nil
-}
-
-type DiscardHeadRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Namespace string `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
-	Path      string `protobuf:"bytes,2,opt,name=path,proto3" json:"path,omitempty"`
-}
-
-func (x *DiscardHeadRequest) Reset() {
-	*x = DiscardHeadRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[12]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *DiscardHeadRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DiscardHeadRequest) ProtoMessage() {}
-
-func (x *DiscardHeadRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[12]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DiscardHeadRequest.ProtoReflect.Descriptor instead.
-func (*DiscardHeadRequest) Descriptor() ([]byte, []int) {
-	return file_pkg_flow_grpc_workflows_proto_rawDescGZIP(), []int{12}
-}
-
-func (x *DiscardHeadRequest) GetNamespace() string {
-	if x != nil {
-		return x.Namespace
-	}
-	return ""
-}
-
-func (x *DiscardHeadRequest) GetPath() string {
-	if x != nil {
-		return x.Path
-	}
-	return ""
-}
-
-type DiscardHeadResponse struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Namespace string    `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
-	Node      *Node     `protobuf:"bytes,2,opt,name=node,proto3" json:"node,omitempty"`
-	Revision  *Revision `protobuf:"bytes,3,opt,name=revision,proto3" json:"revision,omitempty"`
-}
-
-func (x *DiscardHeadResponse) Reset() {
-	*x = DiscardHeadResponse{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[13]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *DiscardHeadResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DiscardHeadResponse) ProtoMessage() {}
-
-func (x *DiscardHeadResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[13]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DiscardHeadResponse.ProtoReflect.Descriptor instead.
-func (*DiscardHeadResponse) Descriptor() ([]byte, []int) {
-	return file_pkg_flow_grpc_workflows_proto_rawDescGZIP(), []int{13}
-}
-
-func (x *DiscardHeadResponse) GetNamespace() string {
-	if x != nil {
-		return x.Namespace
-	}
-	return ""
-}
-
-func (x *DiscardHeadResponse) GetNode() *Node {
-	if x != nil {
-		return x.Node
-	}
-	return nil
-}
-
-func (x *DiscardHeadResponse) GetRevision() *Revision {
-	if x != nil {
-		return x.Revision
-	}
-	return nil
-}
-
-type TagsRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Pagination *Pagination `protobuf:"bytes,1,opt,name=pagination,proto3" json:"pagination,omitempty"`
-	Namespace  string      `protobuf:"bytes,2,opt,name=namespace,proto3" json:"namespace,omitempty"`
-	Path       string      `protobuf:"bytes,3,opt,name=path,proto3" json:"path,omitempty"`
-}
-
-func (x *TagsRequest) Reset() {
-	*x = TagsRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[14]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *TagsRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*TagsRequest) ProtoMessage() {}
-
-func (x *TagsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[14]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use TagsRequest.ProtoReflect.Descriptor instead.
-func (*TagsRequest) Descriptor() ([]byte, []int) {
-	return file_pkg_flow_grpc_workflows_proto_rawDescGZIP(), []int{14}
-}
-
-func (x *TagsRequest) GetPagination() *Pagination {
-	if x != nil {
-		return x.Pagination
-	}
-	return nil
-}
-
-func (x *TagsRequest) GetNamespace() string {
-	if x != nil {
-		return x.Namespace
-	}
-	return ""
-}
-
-func (x *TagsRequest) GetPath() string {
-	if x != nil {
-		return x.Path
-	}
-	return ""
-}
-
-type Ref struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-}
-
-func (x *Ref) Reset() {
-	*x = Ref{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[15]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Ref) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Ref) ProtoMessage() {}
-
-func (x *Ref) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[15]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Ref.ProtoReflect.Descriptor instead.
-func (*Ref) Descriptor() ([]byte, []int) {
-	return file_pkg_flow_grpc_workflows_proto_rawDescGZIP(), []int{15}
-}
-
-func (x *Ref) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-type TagsResponse struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Namespace string    `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
-	Node      *Node     `protobuf:"bytes,2,opt,name=node,proto3" json:"node,omitempty"`
-	PageInfo  *PageInfo `protobuf:"bytes,4,opt,name=pageInfo,proto3" json:"pageInfo,omitempty"`
-	Results   []*Ref    `protobuf:"bytes,6,rep,name=results,proto3" json:"results,omitempty"`
-}
-
-func (x *TagsResponse) Reset() {
-	*x = TagsResponse{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[16]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *TagsResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*TagsResponse) ProtoMessage() {}
-
-func (x *TagsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[16]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use TagsResponse.ProtoReflect.Descriptor instead.
-func (*TagsResponse) Descriptor() ([]byte, []int) {
-	return file_pkg_flow_grpc_workflows_proto_rawDescGZIP(), []int{16}
-}
-
-func (x *TagsResponse) GetNamespace() string {
-	if x != nil {
-		return x.Namespace
-	}
-	return ""
-}
-
-func (x *TagsResponse) GetNode() *Node {
-	if x != nil {
-		return x.Node
-	}
-	return nil
-}
-
-func (x *TagsResponse) GetPageInfo() *PageInfo {
-	if x != nil {
-		return x.PageInfo
-	}
-	return nil
-}
-
-func (x *TagsResponse) GetResults() []*Ref {
-	if x != nil {
-		return x.Results
-	}
-	return nil
-}
-
-type RefsRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Pagination *Pagination `protobuf:"bytes,1,opt,name=pagination,proto3" json:"pagination,omitempty"`
-	Namespace  string      `protobuf:"bytes,2,opt,name=namespace,proto3" json:"namespace,omitempty"`
-	Path       string      `protobuf:"bytes,3,opt,name=path,proto3" json:"path,omitempty"`
-}
-
-func (x *RefsRequest) Reset() {
-	*x = RefsRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[17]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *RefsRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*RefsRequest) ProtoMessage() {}
-
-func (x *RefsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[17]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use RefsRequest.ProtoReflect.Descriptor instead.
-func (*RefsRequest) Descriptor() ([]byte, []int) {
-	return file_pkg_flow_grpc_workflows_proto_rawDescGZIP(), []int{17}
-}
-
-func (x *RefsRequest) GetPagination() *Pagination {
-	if x != nil {
-		return x.Pagination
-	}
-	return nil
-}
-
-func (x *RefsRequest) GetNamespace() string {
-	if x != nil {
-		return x.Namespace
-	}
-	return ""
-}
-
-func (x *RefsRequest) GetPath() string {
-	if x != nil {
-		return x.Path
-	}
-	return ""
-}
-
-type RefsResponse struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Namespace string    `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
-	Node      *Node     `protobuf:"bytes,2,opt,name=node,proto3" json:"node,omitempty"`
-	PageInfo  *PageInfo `protobuf:"bytes,4,opt,name=pageInfo,proto3" json:"pageInfo,omitempty"`
-	Results   []*Ref    `protobuf:"bytes,6,rep,name=results,proto3" json:"results,omitempty"`
-}
-
-func (x *RefsResponse) Reset() {
-	*x = RefsResponse{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[18]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *RefsResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*RefsResponse) ProtoMessage() {}
-
-func (x *RefsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[18]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use RefsResponse.ProtoReflect.Descriptor instead.
-func (*RefsResponse) Descriptor() ([]byte, []int) {
-	return file_pkg_flow_grpc_workflows_proto_rawDescGZIP(), []int{18}
-}
-
-func (x *RefsResponse) GetNamespace() string {
-	if x != nil {
-		return x.Namespace
-	}
-	return ""
-}
-
-func (x *RefsResponse) GetNode() *Node {
-	if x != nil {
-		return x.Node
-	}
-	return nil
-}
-
-func (x *RefsResponse) GetPageInfo() *PageInfo {
-	if x != nil {
-		return x.PageInfo
-	}
-	return nil
-}
-
-func (x *RefsResponse) GetResults() []*Ref {
-	if x != nil {
-		return x.Results
-	}
-	return nil
-}
-
-type RevisionsRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Pagination *Pagination `protobuf:"bytes,1,opt,name=pagination,proto3" json:"pagination,omitempty"`
-	Namespace  string      `protobuf:"bytes,2,opt,name=namespace,proto3" json:"namespace,omitempty"`
-	Path       string      `protobuf:"bytes,3,opt,name=path,proto3" json:"path,omitempty"`
-}
-
-func (x *RevisionsRequest) Reset() {
-	*x = RevisionsRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[19]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *RevisionsRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*RevisionsRequest) ProtoMessage() {}
-
-func (x *RevisionsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[19]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use RevisionsRequest.ProtoReflect.Descriptor instead.
-func (*RevisionsRequest) Descriptor() ([]byte, []int) {
-	return file_pkg_flow_grpc_workflows_proto_rawDescGZIP(), []int{19}
-}
-
-func (x *RevisionsRequest) GetPagination() *Pagination {
-	if x != nil {
-		return x.Pagination
-	}
-	return nil
-}
-
-func (x *RevisionsRequest) GetNamespace() string {
-	if x != nil {
-		return x.Namespace
-	}
-	return ""
-}
-
-func (x *RevisionsRequest) GetPath() string {
-	if x != nil {
-		return x.Path
-	}
-	return ""
-}
-
-type RevisionsResponse struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Namespace string    `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
-	Node      *Node     `protobuf:"bytes,2,opt,name=node,proto3" json:"node,omitempty"`
-	PageInfo  *PageInfo `protobuf:"bytes,4,opt,name=pageInfo,proto3" json:"pageInfo,omitempty"`
-	Results   []*Ref    `protobuf:"bytes,6,rep,name=results,proto3" json:"results,omitempty"`
-}
-
-func (x *RevisionsResponse) Reset() {
-	*x = RevisionsResponse{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[20]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *RevisionsResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*RevisionsResponse) ProtoMessage() {}
-
-func (x *RevisionsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[20]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use RevisionsResponse.ProtoReflect.Descriptor instead.
-func (*RevisionsResponse) Descriptor() ([]byte, []int) {
-	return file_pkg_flow_grpc_workflows_proto_rawDescGZIP(), []int{20}
-}
-
-func (x *RevisionsResponse) GetNamespace() string {
-	if x != nil {
-		return x.Namespace
-	}
-	return ""
-}
-
-func (x *RevisionsResponse) GetNode() *Node {
-	if x != nil {
-		return x.Node
-	}
-	return nil
-}
-
-func (x *RevisionsResponse) GetPageInfo() *PageInfo {
-	if x != nil {
-		return x.PageInfo
-	}
-	return nil
-}
-
-func (x *RevisionsResponse) GetResults() []*Ref {
-	if x != nil {
-		return x.Results
-	}
-	return nil
-}
-
-type TagRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Namespace string `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
-	Path      string `protobuf:"bytes,2,opt,name=path,proto3" json:"path,omitempty"`
-	Ref       string `protobuf:"bytes,3,opt,name=ref,proto3" json:"ref,omitempty"`
-	Tag       string `protobuf:"bytes,4,opt,name=tag,proto3" json:"tag,omitempty"`
-}
-
-func (x *TagRequest) Reset() {
-	*x = TagRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[21]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *TagRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*TagRequest) ProtoMessage() {}
-
-func (x *TagRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[21]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use TagRequest.ProtoReflect.Descriptor instead.
-func (*TagRequest) Descriptor() ([]byte, []int) {
-	return file_pkg_flow_grpc_workflows_proto_rawDescGZIP(), []int{21}
-}
-
-func (x *TagRequest) GetNamespace() string {
-	if x != nil {
-		return x.Namespace
-	}
-	return ""
-}
-
-func (x *TagRequest) GetPath() string {
-	if x != nil {
-		return x.Path
-	}
-	return ""
-}
-
-func (x *TagRequest) GetRef() string {
-	if x != nil {
-		return x.Ref
-	}
-	return ""
-}
-
-func (x *TagRequest) GetTag() string {
-	if x != nil {
-		return x.Tag
-	}
-	return ""
-}
-
-type UntagRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Namespace string `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
-	Path      string `protobuf:"bytes,2,opt,name=path,proto3" json:"path,omitempty"`
-	Tag       string `protobuf:"bytes,4,opt,name=tag,proto3" json:"tag,omitempty"`
-}
-
-func (x *UntagRequest) Reset() {
-	*x = UntagRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[22]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *UntagRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*UntagRequest) ProtoMessage() {}
-
-func (x *UntagRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[22]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use UntagRequest.ProtoReflect.Descriptor instead.
-func (*UntagRequest) Descriptor() ([]byte, []int) {
-	return file_pkg_flow_grpc_workflows_proto_rawDescGZIP(), []int{22}
-}
-
-func (x *UntagRequest) GetNamespace() string {
-	if x != nil {
-		return x.Namespace
-	}
-	return ""
-}
-
-func (x *UntagRequest) GetPath() string {
-	if x != nil {
-		return x.Path
-	}
-	return ""
-}
-
-func (x *UntagRequest) GetTag() string {
-	if x != nil {
-		return x.Tag
-	}
-	return ""
-}
-
-type RetagRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Namespace string `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
-	Path      string `protobuf:"bytes,2,opt,name=path,proto3" json:"path,omitempty"`
-	Ref       string `protobuf:"bytes,3,opt,name=ref,proto3" json:"ref,omitempty"`
-	Tag       string `protobuf:"bytes,4,opt,name=tag,proto3" json:"tag,omitempty"`
-}
-
-func (x *RetagRequest) Reset() {
-	*x = RetagRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[23]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *RetagRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*RetagRequest) ProtoMessage() {}
-
-func (x *RetagRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[23]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use RetagRequest.ProtoReflect.Descriptor instead.
-func (*RetagRequest) Descriptor() ([]byte, []int) {
-	return file_pkg_flow_grpc_workflows_proto_rawDescGZIP(), []int{23}
-}
-
-func (x *RetagRequest) GetNamespace() string {
-	if x != nil {
-		return x.Namespace
-	}
-	return ""
-}
-
-func (x *RetagRequest) GetPath() string {
-	if x != nil {
-		return x.Path
-	}
-	return ""
-}
-
-func (x *RetagRequest) GetRef() string {
-	if x != nil {
-		return x.Ref
-	}
-	return ""
-}
-
-func (x *RetagRequest) GetTag() string {
-	if x != nil {
-		return x.Tag
-	}
-	return ""
-}
-
-type DeleteRevisionRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Namespace string `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
-	Path      string `protobuf:"bytes,2,opt,name=path,proto3" json:"path,omitempty"`
-	Revision  string `protobuf:"bytes,3,opt,name=revision,proto3" json:"revision,omitempty"`
-}
-
-func (x *DeleteRevisionRequest) Reset() {
-	*x = DeleteRevisionRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[24]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *DeleteRevisionRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DeleteRevisionRequest) ProtoMessage() {}
-
-func (x *DeleteRevisionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[24]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DeleteRevisionRequest.ProtoReflect.Descriptor instead.
-func (*DeleteRevisionRequest) Descriptor() ([]byte, []int) {
-	return file_pkg_flow_grpc_workflows_proto_rawDescGZIP(), []int{24}
-}
-
-func (x *DeleteRevisionRequest) GetNamespace() string {
-	if x != nil {
-		return x.Namespace
-	}
-	return ""
-}
-
-func (x *DeleteRevisionRequest) GetPath() string {
-	if x != nil {
-		return x.Path
-	}
-	return ""
-}
-
-func (x *DeleteRevisionRequest) GetRevision() string {
-	if x != nil {
-		return x.Revision
-	}
-	return ""
-}
-
-type ValidateRefRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Namespace string `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
-	Path      string `protobuf:"bytes,2,opt,name=path,proto3" json:"path,omitempty"`
-	Ref       string `protobuf:"bytes,3,opt,name=ref,proto3" json:"ref,omitempty"`
-}
-
-func (x *ValidateRefRequest) Reset() {
-	*x = ValidateRefRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[25]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *ValidateRefRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ValidateRefRequest) ProtoMessage() {}
-
-func (x *ValidateRefRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[25]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ValidateRefRequest.ProtoReflect.Descriptor instead.
-func (*ValidateRefRequest) Descriptor() ([]byte, []int) {
-	return file_pkg_flow_grpc_workflows_proto_rawDescGZIP(), []int{25}
-}
-
-func (x *ValidateRefRequest) GetNamespace() string {
-	if x != nil {
-		return x.Namespace
-	}
-	return ""
-}
-
-func (x *ValidateRefRequest) GetPath() string {
-	if x != nil {
-		return x.Path
-	}
-	return ""
-}
-
-func (x *ValidateRefRequest) GetRef() string {
-	if x != nil {
-		return x.Ref
-	}
-	return ""
-}
-
-type ValidateRefResponse struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Namespace string `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
-	Path      string `protobuf:"bytes,2,opt,name=path,proto3" json:"path,omitempty"`
-	Ref       string `protobuf:"bytes,3,opt,name=ref,proto3" json:"ref,omitempty"`
-	Invalid   bool   `protobuf:"varint,4,opt,name=invalid,proto3" json:"invalid,omitempty"`
-	Reason    string `protobuf:"bytes,5,opt,name=reason,proto3" json:"reason,omitempty"`
-	Compiles  bool   `protobuf:"varint,6,opt,name=compiles,proto3" json:"compiles,omitempty"`
-}
-
-func (x *ValidateRefResponse) Reset() {
-	*x = ValidateRefResponse{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[26]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *ValidateRefResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ValidateRefResponse) ProtoMessage() {}
-
-func (x *ValidateRefResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_flow_grpc_workflows_proto_msgTypes[26]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ValidateRefResponse.ProtoReflect.Descriptor instead.
-func (*ValidateRefResponse) Descriptor() ([]byte, []int) {
-	return file_pkg_flow_grpc_workflows_proto_rawDescGZIP(), []int{26}
-}
-
-func (x *ValidateRefResponse) GetNamespace() string {
-	if x != nil {
-		return x.Namespace
-	}
-	return ""
-}
-
-func (x *ValidateRefResponse) GetPath() string {
-	if x != nil {
-		return x.Path
-	}
-	return ""
-}
-
-func (x *ValidateRefResponse) GetRef() string {
-	if x != nil {
-		return x.Ref
-	}
-	return ""
-}
-
-func (x *ValidateRefResponse) GetInvalid() bool {
-	if x != nil {
-		return x.Invalid
-	}
-	return false
-}
-
-func (x *ValidateRefResponse) GetReason() string {
-	if x != nil {
-		return x.Reason
-	}
-	return ""
-}
-
-func (x *ValidateRefResponse) GetCompiles() bool {
-	if x != nil {
-		return x.Compiles
-	}
-	return false
 }
 
 var File_pkg_flow_grpc_workflows_proto protoreflect.FileDescriptor
@@ -1765,210 +559,62 @@ var file_pkg_flow_grpc_workflows_proto_rawDesc = []byte{
 	0x1e, 0x70, 0x6b, 0x67, 0x2f, 0x66, 0x6c, 0x6f, 0x77, 0x2f, 0x67, 0x72, 0x70, 0x63, 0x2f, 0x70,
 	0x61, 0x67, 0x69, 0x6e, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a,
 	0x19, 0x70, 0x6b, 0x67, 0x2f, 0x66, 0x6c, 0x6f, 0x77, 0x2f, 0x67, 0x72, 0x70, 0x63, 0x2f, 0x6e,
-	0x6f, 0x64, 0x65, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x85, 0x01, 0x0a, 0x08, 0x52,
-	0x65, 0x76, 0x69, 0x73, 0x69, 0x6f, 0x6e, 0x12, 0x39, 0x0a, 0x0a, 0x63, 0x72, 0x65, 0x61, 0x74,
-	0x65, 0x64, 0x5f, 0x61, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x67, 0x6f,
-	0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x54, 0x69,
-	0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x52, 0x09, 0x63, 0x72, 0x65, 0x61, 0x74, 0x65, 0x64,
-	0x41, 0x74, 0x12, 0x12, 0x0a, 0x04, 0x68, 0x61, 0x73, 0x68, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09,
-	0x52, 0x04, 0x68, 0x61, 0x73, 0x68, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65,
-	0x18, 0x03, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x06, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x12, 0x12,
-	0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61,
-	0x6d, 0x65, 0x22, 0x3f, 0x0a, 0x0b, 0x4e, 0x6f, 0x64, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
-	0x74, 0x12, 0x1c, 0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x18, 0x02,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12,
-	0x12, 0x0a, 0x04, 0x70, 0x61, 0x74, 0x68, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x70,
-	0x61, 0x74, 0x68, 0x22, 0x55, 0x0a, 0x0c, 0x4e, 0x6f, 0x64, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f,
-	0x6e, 0x73, 0x65, 0x12, 0x1c, 0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65,
-	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63,
-	0x65, 0x12, 0x27, 0x0a, 0x04, 0x6e, 0x6f, 0x64, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32,
-	0x13, 0x2e, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f, 0x66, 0x6c, 0x6f, 0x77, 0x2e,
-	0x4e, 0x6f, 0x64, 0x65, 0x52, 0x04, 0x6e, 0x6f, 0x64, 0x65, 0x22, 0x2b, 0x0a, 0x19, 0x52, 0x65,
-	0x73, 0x6f, 0x6c, 0x76, 0x65, 0x57, 0x6f, 0x72, 0x6b, 0x66, 0x6c, 0x6f, 0x77, 0x55, 0x49, 0x44,
-	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x22, 0x55, 0x0a, 0x0f, 0x57, 0x6f, 0x72, 0x6b, 0x66,
-	0x6c, 0x6f, 0x77, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1c, 0x0a, 0x09, 0x6e, 0x61,
-	0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6e,
-	0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x70, 0x61, 0x74, 0x68,
-	0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x70, 0x61, 0x74, 0x68, 0x12, 0x10, 0x0a, 0x03,
-	0x72, 0x65, 0x66, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x72, 0x65, 0x66, 0x22, 0xc4,
-	0x01, 0x0a, 0x10, 0x57, 0x6f, 0x72, 0x6b, 0x66, 0x6c, 0x6f, 0x77, 0x52, 0x65, 0x73, 0x70, 0x6f,
-	0x6e, 0x73, 0x65, 0x12, 0x1c, 0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65,
-	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63,
-	0x65, 0x12, 0x27, 0x0a, 0x04, 0x6e, 0x6f, 0x64, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32,
-	0x13, 0x2e, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f, 0x66, 0x6c, 0x6f, 0x77, 0x2e,
-	0x4e, 0x6f, 0x64, 0x65, 0x52, 0x04, 0x6e, 0x6f, 0x64, 0x65, 0x12, 0x33, 0x0a, 0x08, 0x72, 0x65,
-	0x76, 0x69, 0x73, 0x69, 0x6f, 0x6e, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x17, 0x2e, 0x64,
-	0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f, 0x66, 0x6c, 0x6f, 0x77, 0x2e, 0x52, 0x65, 0x76,
-	0x69, 0x73, 0x69, 0x6f, 0x6e, 0x52, 0x08, 0x72, 0x65, 0x76, 0x69, 0x73, 0x69, 0x6f, 0x6e, 0x12,
-	0x22, 0x0a, 0x0c, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x4c, 0x6f, 0x67, 0x67, 0x69, 0x6e, 0x67, 0x18,
-	0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0c, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x4c, 0x6f, 0x67, 0x67,
-	0x69, 0x6e, 0x67, 0x12, 0x10, 0x0a, 0x03, 0x6f, 0x69, 0x64, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09,
-	0x52, 0x03, 0x6f, 0x69, 0x64, 0x22, 0x61, 0x0a, 0x15, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x57,
-	0x6f, 0x72, 0x6b, 0x66, 0x6c, 0x6f, 0x77, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1c,
-	0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x12, 0x0a, 0x04,
-	0x70, 0x61, 0x74, 0x68, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x70, 0x61, 0x74, 0x68,
-	0x12, 0x16, 0x0a, 0x06, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0c,
-	0x52, 0x06, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x22, 0x94, 0x01, 0x0a, 0x16, 0x43, 0x72, 0x65,
-	0x61, 0x74, 0x65, 0x57, 0x6f, 0x72, 0x6b, 0x66, 0x6c, 0x6f, 0x77, 0x52, 0x65, 0x73, 0x70, 0x6f,
-	0x6e, 0x73, 0x65, 0x12, 0x1c, 0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65,
-	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63,
-	0x65, 0x12, 0x27, 0x0a, 0x04, 0x6e, 0x6f, 0x64, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32,
-	0x13, 0x2e, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f, 0x66, 0x6c, 0x6f, 0x77, 0x2e,
-	0x4e, 0x6f, 0x64, 0x65, 0x52, 0x04, 0x6e, 0x6f, 0x64, 0x65, 0x12, 0x33, 0x0a, 0x08, 0x72, 0x65,
-	0x76, 0x69, 0x73, 0x69, 0x6f, 0x6e, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x17, 0x2e, 0x64,
-	0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f, 0x66, 0x6c, 0x6f, 0x77, 0x2e, 0x52, 0x65, 0x76,
-	0x69, 0x73, 0x69, 0x6f, 0x6e, 0x52, 0x08, 0x72, 0x65, 0x76, 0x69, 0x73, 0x69, 0x6f, 0x6e, 0x22,
-	0x61, 0x0a, 0x15, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x57, 0x6f, 0x72, 0x6b, 0x66, 0x6c, 0x6f,
-	0x77, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1c, 0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65,
-	0x73, 0x70, 0x61, 0x63, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6e, 0x61, 0x6d,
-	0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x70, 0x61, 0x74, 0x68, 0x18, 0x02,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x70, 0x61, 0x74, 0x68, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x6f,
-	0x75, 0x72, 0x63, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x06, 0x73, 0x6f, 0x75, 0x72,
-	0x63, 0x65, 0x22, 0x94, 0x01, 0x0a, 0x16, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x57, 0x6f, 0x72,
-	0x6b, 0x66, 0x6c, 0x6f, 0x77, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x1c, 0x0a,
-	0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
-	0x52, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x27, 0x0a, 0x04, 0x6e,
-	0x6f, 0x64, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x64, 0x69, 0x72, 0x65,
-	0x6b, 0x74, 0x69, 0x76, 0x5f, 0x66, 0x6c, 0x6f, 0x77, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x52, 0x04,
-	0x6e, 0x6f, 0x64, 0x65, 0x12, 0x33, 0x0a, 0x08, 0x72, 0x65, 0x76, 0x69, 0x73, 0x69, 0x6f, 0x6e,
-	0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x17, 0x2e, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69,
-	0x76, 0x5f, 0x66, 0x6c, 0x6f, 0x77, 0x2e, 0x52, 0x65, 0x76, 0x69, 0x73, 0x69, 0x6f, 0x6e, 0x52,
-	0x08, 0x72, 0x65, 0x76, 0x69, 0x73, 0x69, 0x6f, 0x6e, 0x22, 0x5f, 0x0a, 0x0f, 0x53, 0x61, 0x76,
-	0x65, 0x48, 0x65, 0x61, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1c, 0x0a, 0x09,
-	0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
-	0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x70, 0x61,
-	0x74, 0x68, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x70, 0x61, 0x74, 0x68, 0x12, 0x1a,
-	0x0a, 0x08, 0x6d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0c,
-	0x52, 0x08, 0x6d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0x22, 0x8e, 0x01, 0x0a, 0x10, 0x53,
-	0x61, 0x76, 0x65, 0x48, 0x65, 0x61, 0x64, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12,
-	0x1c, 0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x18, 0x01, 0x20, 0x01,
-	0x28, 0x09, 0x52, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x27, 0x0a,
-	0x04, 0x6e, 0x6f, 0x64, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x64, 0x69,
-	0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f, 0x66, 0x6c, 0x6f, 0x77, 0x2e, 0x4e, 0x6f, 0x64, 0x65,
-	0x52, 0x04, 0x6e, 0x6f, 0x64, 0x65, 0x12, 0x33, 0x0a, 0x08, 0x72, 0x65, 0x76, 0x69, 0x73, 0x69,
-	0x6f, 0x6e, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x17, 0x2e, 0x64, 0x69, 0x72, 0x65, 0x6b,
-	0x74, 0x69, 0x76, 0x5f, 0x66, 0x6c, 0x6f, 0x77, 0x2e, 0x52, 0x65, 0x76, 0x69, 0x73, 0x69, 0x6f,
-	0x6e, 0x52, 0x08, 0x72, 0x65, 0x76, 0x69, 0x73, 0x69, 0x6f, 0x6e, 0x22, 0x46, 0x0a, 0x12, 0x44,
-	0x69, 0x73, 0x63, 0x61, 0x72, 0x64, 0x48, 0x65, 0x61, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
-	0x74, 0x12, 0x1c, 0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x18, 0x01,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12,
-	0x12, 0x0a, 0x04, 0x70, 0x61, 0x74, 0x68, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x70,
-	0x61, 0x74, 0x68, 0x22, 0x91, 0x01, 0x0a, 0x13, 0x44, 0x69, 0x73, 0x63, 0x61, 0x72, 0x64, 0x48,
-	0x65, 0x61, 0x64, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x1c, 0x0a, 0x09, 0x6e,
+	0x6f, 0x64, 0x65, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x3f, 0x0a, 0x0b, 0x4e, 0x6f,
+	0x64, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1c, 0x0a, 0x09, 0x6e, 0x61, 0x6d,
+	0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6e, 0x61,
+	0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x70, 0x61, 0x74, 0x68, 0x18,
+	0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x70, 0x61, 0x74, 0x68, 0x22, 0x55, 0x0a, 0x0c, 0x4e,
+	0x6f, 0x64, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x1c, 0x0a, 0x09, 0x6e,
 	0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09,
 	0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x27, 0x0a, 0x04, 0x6e, 0x6f, 0x64,
 	0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74,
 	0x69, 0x76, 0x5f, 0x66, 0x6c, 0x6f, 0x77, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x52, 0x04, 0x6e, 0x6f,
-	0x64, 0x65, 0x12, 0x33, 0x0a, 0x08, 0x72, 0x65, 0x76, 0x69, 0x73, 0x69, 0x6f, 0x6e, 0x18, 0x03,
-	0x20, 0x01, 0x28, 0x0b, 0x32, 0x17, 0x2e, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f,
-	0x66, 0x6c, 0x6f, 0x77, 0x2e, 0x52, 0x65, 0x76, 0x69, 0x73, 0x69, 0x6f, 0x6e, 0x52, 0x08, 0x72,
-	0x65, 0x76, 0x69, 0x73, 0x69, 0x6f, 0x6e, 0x22, 0x7a, 0x0a, 0x0b, 0x54, 0x61, 0x67, 0x73, 0x52,
-	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x39, 0x0a, 0x0a, 0x70, 0x61, 0x67, 0x69, 0x6e, 0x61,
-	0x74, 0x69, 0x6f, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x64, 0x69, 0x72,
-	0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f, 0x66, 0x6c, 0x6f, 0x77, 0x2e, 0x50, 0x61, 0x67, 0x69, 0x6e,
-	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x0a, 0x70, 0x61, 0x67, 0x69, 0x6e, 0x61, 0x74, 0x69, 0x6f,
-	0x6e, 0x12, 0x1c, 0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x18, 0x02,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12,
-	0x12, 0x0a, 0x04, 0x70, 0x61, 0x74, 0x68, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x70,
-	0x61, 0x74, 0x68, 0x22, 0x19, 0x0a, 0x03, 0x52, 0x65, 0x66, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61,
-	0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x22, 0xb8,
-	0x01, 0x0a, 0x0c, 0x54, 0x61, 0x67, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12,
-	0x1c, 0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x18, 0x01, 0x20, 0x01,
-	0x28, 0x09, 0x52, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x27, 0x0a,
-	0x04, 0x6e, 0x6f, 0x64, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x64, 0x69,
-	0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f, 0x66, 0x6c, 0x6f, 0x77, 0x2e, 0x4e, 0x6f, 0x64, 0x65,
-	0x52, 0x04, 0x6e, 0x6f, 0x64, 0x65, 0x12, 0x33, 0x0a, 0x08, 0x70, 0x61, 0x67, 0x65, 0x49, 0x6e,
-	0x66, 0x6f, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x17, 0x2e, 0x64, 0x69, 0x72, 0x65, 0x6b,
-	0x74, 0x69, 0x76, 0x5f, 0x66, 0x6c, 0x6f, 0x77, 0x2e, 0x50, 0x61, 0x67, 0x65, 0x49, 0x6e, 0x66,
-	0x6f, 0x52, 0x08, 0x70, 0x61, 0x67, 0x65, 0x49, 0x6e, 0x66, 0x6f, 0x12, 0x2c, 0x0a, 0x07, 0x72,
-	0x65, 0x73, 0x75, 0x6c, 0x74, 0x73, 0x18, 0x06, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x12, 0x2e, 0x64,
-	0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f, 0x66, 0x6c, 0x6f, 0x77, 0x2e, 0x52, 0x65, 0x66,
-	0x52, 0x07, 0x72, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x73, 0x22, 0x7a, 0x0a, 0x0b, 0x52, 0x65, 0x66,
-	0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x39, 0x0a, 0x0a, 0x70, 0x61, 0x67, 0x69,
-	0x6e, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x64,
-	0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f, 0x66, 0x6c, 0x6f, 0x77, 0x2e, 0x50, 0x61, 0x67,
-	0x69, 0x6e, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x0a, 0x70, 0x61, 0x67, 0x69, 0x6e, 0x61, 0x74,
-	0x69, 0x6f, 0x6e, 0x12, 0x1c, 0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65,
-	0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63,
-	0x65, 0x12, 0x12, 0x0a, 0x04, 0x70, 0x61, 0x74, 0x68, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52,
-	0x04, 0x70, 0x61, 0x74, 0x68, 0x22, 0xb8, 0x01, 0x0a, 0x0c, 0x52, 0x65, 0x66, 0x73, 0x52, 0x65,
-	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x1c, 0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70,
-	0x61, 0x63, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73,
-	0x70, 0x61, 0x63, 0x65, 0x12, 0x27, 0x0a, 0x04, 0x6e, 0x6f, 0x64, 0x65, 0x18, 0x02, 0x20, 0x01,
-	0x28, 0x0b, 0x32, 0x13, 0x2e, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f, 0x66, 0x6c,
-	0x6f, 0x77, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x52, 0x04, 0x6e, 0x6f, 0x64, 0x65, 0x12, 0x33, 0x0a,
-	0x08, 0x70, 0x61, 0x67, 0x65, 0x49, 0x6e, 0x66, 0x6f, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0b, 0x32,
-	0x17, 0x2e, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f, 0x66, 0x6c, 0x6f, 0x77, 0x2e,
-	0x50, 0x61, 0x67, 0x65, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x08, 0x70, 0x61, 0x67, 0x65, 0x49, 0x6e,
-	0x66, 0x6f, 0x12, 0x2c, 0x0a, 0x07, 0x72, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x73, 0x18, 0x06, 0x20,
-	0x03, 0x28, 0x0b, 0x32, 0x12, 0x2e, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f, 0x66,
-	0x6c, 0x6f, 0x77, 0x2e, 0x52, 0x65, 0x66, 0x52, 0x07, 0x72, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x73,
-	0x22, 0x7f, 0x0a, 0x10, 0x52, 0x65, 0x76, 0x69, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x52, 0x65, 0x71,
-	0x75, 0x65, 0x73, 0x74, 0x12, 0x39, 0x0a, 0x0a, 0x70, 0x61, 0x67, 0x69, 0x6e, 0x61, 0x74, 0x69,
-	0x6f, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x64, 0x69, 0x72, 0x65, 0x6b,
-	0x74, 0x69, 0x76, 0x5f, 0x66, 0x6c, 0x6f, 0x77, 0x2e, 0x50, 0x61, 0x67, 0x69, 0x6e, 0x61, 0x74,
-	0x69, 0x6f, 0x6e, 0x52, 0x0a, 0x70, 0x61, 0x67, 0x69, 0x6e, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12,
-	0x1c, 0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x18, 0x02, 0x20, 0x01,
-	0x28, 0x09, 0x52, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x12, 0x0a,
-	0x04, 0x70, 0x61, 0x74, 0x68, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x70, 0x61, 0x74,
-	0x68, 0x22, 0xbd, 0x01, 0x0a, 0x11, 0x52, 0x65, 0x76, 0x69, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x52,
-	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x1c, 0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73,
-	0x70, 0x61, 0x63, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6e, 0x61, 0x6d, 0x65,
-	0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x27, 0x0a, 0x04, 0x6e, 0x6f, 0x64, 0x65, 0x18, 0x02, 0x20,
-	0x01, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f, 0x66,
-	0x6c, 0x6f, 0x77, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x52, 0x04, 0x6e, 0x6f, 0x64, 0x65, 0x12, 0x33,
-	0x0a, 0x08, 0x70, 0x61, 0x67, 0x65, 0x49, 0x6e, 0x66, 0x6f, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0b,
-	0x32, 0x17, 0x2e, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f, 0x66, 0x6c, 0x6f, 0x77,
-	0x2e, 0x50, 0x61, 0x67, 0x65, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x08, 0x70, 0x61, 0x67, 0x65, 0x49,
-	0x6e, 0x66, 0x6f, 0x12, 0x2c, 0x0a, 0x07, 0x72, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x73, 0x18, 0x06,
-	0x20, 0x03, 0x28, 0x0b, 0x32, 0x12, 0x2e, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f,
-	0x66, 0x6c, 0x6f, 0x77, 0x2e, 0x52, 0x65, 0x66, 0x52, 0x07, 0x72, 0x65, 0x73, 0x75, 0x6c, 0x74,
-	0x73, 0x22, 0x62, 0x0a, 0x0a, 0x54, 0x61, 0x67, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12,
-	0x1c, 0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x18, 0x01, 0x20, 0x01,
-	0x28, 0x09, 0x52, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x12, 0x0a,
-	0x04, 0x70, 0x61, 0x74, 0x68, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x70, 0x61, 0x74,
-	0x68, 0x12, 0x10, 0x0a, 0x03, 0x72, 0x65, 0x66, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03,
-	0x72, 0x65, 0x66, 0x12, 0x10, 0x0a, 0x03, 0x74, 0x61, 0x67, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09,
-	0x52, 0x03, 0x74, 0x61, 0x67, 0x22, 0x52, 0x0a, 0x0c, 0x55, 0x6e, 0x74, 0x61, 0x67, 0x52, 0x65,
-	0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1c, 0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61,
-	0x63, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70,
-	0x61, 0x63, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x70, 0x61, 0x74, 0x68, 0x18, 0x02, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x04, 0x70, 0x61, 0x74, 0x68, 0x12, 0x10, 0x0a, 0x03, 0x74, 0x61, 0x67, 0x18, 0x04,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x74, 0x61, 0x67, 0x22, 0x64, 0x0a, 0x0c, 0x52, 0x65, 0x74,
-	0x61, 0x67, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1c, 0x0a, 0x09, 0x6e, 0x61, 0x6d,
-	0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6e, 0x61,
-	0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x70, 0x61, 0x74, 0x68, 0x18,
-	0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x70, 0x61, 0x74, 0x68, 0x12, 0x10, 0x0a, 0x03, 0x72,
-	0x65, 0x66, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x72, 0x65, 0x66, 0x12, 0x10, 0x0a,
-	0x03, 0x74, 0x61, 0x67, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x74, 0x61, 0x67, 0x22,
-	0x65, 0x0a, 0x15, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x52, 0x65, 0x76, 0x69, 0x73, 0x69, 0x6f,
-	0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1c, 0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65,
-	0x73, 0x70, 0x61, 0x63, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6e, 0x61, 0x6d,
-	0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x70, 0x61, 0x74, 0x68, 0x18, 0x02,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x70, 0x61, 0x74, 0x68, 0x12, 0x1a, 0x0a, 0x08, 0x72, 0x65,
-	0x76, 0x69, 0x73, 0x69, 0x6f, 0x6e, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x72, 0x65,
-	0x76, 0x69, 0x73, 0x69, 0x6f, 0x6e, 0x22, 0x58, 0x0a, 0x12, 0x56, 0x61, 0x6c, 0x69, 0x64, 0x61,
-	0x74, 0x65, 0x52, 0x65, 0x66, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1c, 0x0a, 0x09,
-	0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
-	0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x70, 0x61,
-	0x74, 0x68, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x70, 0x61, 0x74, 0x68, 0x12, 0x10,
-	0x0a, 0x03, 0x72, 0x65, 0x66, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x72, 0x65, 0x66,
-	0x22, 0xa7, 0x01, 0x0a, 0x13, 0x56, 0x61, 0x6c, 0x69, 0x64, 0x61, 0x74, 0x65, 0x52, 0x65, 0x66,
+	0x64, 0x65, 0x22, 0x2b, 0x0a, 0x19, 0x52, 0x65, 0x73, 0x6f, 0x6c, 0x76, 0x65, 0x57, 0x6f, 0x72,
+	0x6b, 0x66, 0x6c, 0x6f, 0x77, 0x55, 0x49, 0x44, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12,
+	0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x22,
+	0x43, 0x0a, 0x0f, 0x57, 0x6f, 0x72, 0x6b, 0x66, 0x6c, 0x6f, 0x77, 0x52, 0x65, 0x71, 0x75, 0x65,
+	0x73, 0x74, 0x12, 0x1c, 0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65,
+	0x12, 0x12, 0x0a, 0x04, 0x70, 0x61, 0x74, 0x68, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04,
+	0x70, 0x61, 0x74, 0x68, 0x22, 0x71, 0x0a, 0x10, 0x57, 0x6f, 0x72, 0x6b, 0x66, 0x6c, 0x6f, 0x77,
 	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x1c, 0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65,
 	0x73, 0x70, 0x61, 0x63, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6e, 0x61, 0x6d,
-	0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x70, 0x61, 0x74, 0x68, 0x18, 0x02,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x70, 0x61, 0x74, 0x68, 0x12, 0x10, 0x0a, 0x03, 0x72, 0x65,
-	0x66, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x72, 0x65, 0x66, 0x12, 0x18, 0x0a, 0x07,
-	0x69, 0x6e, 0x76, 0x61, 0x6c, 0x69, 0x64, 0x18, 0x04, 0x20, 0x01, 0x28, 0x08, 0x52, 0x07, 0x69,
-	0x6e, 0x76, 0x61, 0x6c, 0x69, 0x64, 0x12, 0x16, 0x0a, 0x06, 0x72, 0x65, 0x61, 0x73, 0x6f, 0x6e,
-	0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x72, 0x65, 0x61, 0x73, 0x6f, 0x6e, 0x12, 0x1a,
-	0x0a, 0x08, 0x63, 0x6f, 0x6d, 0x70, 0x69, 0x6c, 0x65, 0x73, 0x18, 0x06, 0x20, 0x01, 0x28, 0x08,
-	0x52, 0x08, 0x63, 0x6f, 0x6d, 0x70, 0x69, 0x6c, 0x65, 0x73, 0x42, 0x2c, 0x5a, 0x2a, 0x67, 0x69,
-	0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69,
-	0x76, 0x2f, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x66,
-	0x6c, 0x6f, 0x77, 0x2f, 0x67, 0x72, 0x70, 0x63, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x27, 0x0a, 0x04, 0x6e, 0x6f, 0x64, 0x65, 0x18, 0x02,
+	0x20, 0x01, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f,
+	0x66, 0x6c, 0x6f, 0x77, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x52, 0x04, 0x6e, 0x6f, 0x64, 0x65, 0x12,
+	0x16, 0x0a, 0x06, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x18, 0x06, 0x20, 0x01, 0x28, 0x0c, 0x52,
+	0x06, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x22, 0x61, 0x0a, 0x15, 0x43, 0x72, 0x65, 0x61, 0x74,
+	0x65, 0x57, 0x6f, 0x72, 0x6b, 0x66, 0x6c, 0x6f, 0x77, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
+	0x12, 0x1c, 0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x12,
+	0x0a, 0x04, 0x70, 0x61, 0x74, 0x68, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x70, 0x61,
+	0x74, 0x68, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x18, 0x03, 0x20, 0x01,
+	0x28, 0x0c, 0x52, 0x06, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x22, 0x77, 0x0a, 0x16, 0x43, 0x72,
+	0x65, 0x61, 0x74, 0x65, 0x57, 0x6f, 0x72, 0x6b, 0x66, 0x6c, 0x6f, 0x77, 0x52, 0x65, 0x73, 0x70,
+	0x6f, 0x6e, 0x73, 0x65, 0x12, 0x1c, 0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63,
+	0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61,
+	0x63, 0x65, 0x12, 0x27, 0x0a, 0x04, 0x6e, 0x6f, 0x64, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b,
+	0x32, 0x13, 0x2e, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f, 0x66, 0x6c, 0x6f, 0x77,
+	0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x52, 0x04, 0x6e, 0x6f, 0x64, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x73,
+	0x6f, 0x75, 0x72, 0x63, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x06, 0x73, 0x6f, 0x75,
+	0x72, 0x63, 0x65, 0x22, 0x61, 0x0a, 0x15, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x57, 0x6f, 0x72,
+	0x6b, 0x66, 0x6c, 0x6f, 0x77, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1c, 0x0a, 0x09,
+	0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x70, 0x61,
+	0x74, 0x68, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x70, 0x61, 0x74, 0x68, 0x12, 0x16,
+	0x0a, 0x06, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x06,
+	0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x22, 0x77, 0x0a, 0x16, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65,
+	0x57, 0x6f, 0x72, 0x6b, 0x66, 0x6c, 0x6f, 0x77, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
+	0x12, 0x1c, 0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x27,
+	0x0a, 0x04, 0x6e, 0x6f, 0x64, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x64,
+	0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f, 0x66, 0x6c, 0x6f, 0x77, 0x2e, 0x4e, 0x6f, 0x64,
+	0x65, 0x52, 0x04, 0x6e, 0x6f, 0x64, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x6f, 0x75, 0x72, 0x63,
+	0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x06, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x42,
+	0x2c, 0x5a, 0x2a, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x64, 0x69,
+	0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x2f, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x2f,
+	0x70, 0x6b, 0x67, 0x2f, 0x66, 0x6c, 0x6f, 0x77, 0x2f, 0x67, 0x72, 0x70, 0x63, 0x62, 0x06, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -1983,70 +629,29 @@ func file_pkg_flow_grpc_workflows_proto_rawDescGZIP() []byte {
 	return file_pkg_flow_grpc_workflows_proto_rawDescData
 }
 
-var file_pkg_flow_grpc_workflows_proto_msgTypes = make([]protoimpl.MessageInfo, 27)
+var file_pkg_flow_grpc_workflows_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_pkg_flow_grpc_workflows_proto_goTypes = []interface{}{
-	(*Revision)(nil),                  // 0: direktiv_flow.Revision
-	(*NodeRequest)(nil),               // 1: direktiv_flow.NodeRequest
-	(*NodeResponse)(nil),              // 2: direktiv_flow.NodeResponse
-	(*ResolveWorkflowUIDRequest)(nil), // 3: direktiv_flow.ResolveWorkflowUIDRequest
-	(*WorkflowRequest)(nil),           // 4: direktiv_flow.WorkflowRequest
-	(*WorkflowResponse)(nil),          // 5: direktiv_flow.WorkflowResponse
-	(*CreateWorkflowRequest)(nil),     // 6: direktiv_flow.CreateWorkflowRequest
-	(*CreateWorkflowResponse)(nil),    // 7: direktiv_flow.CreateWorkflowResponse
-	(*UpdateWorkflowRequest)(nil),     // 8: direktiv_flow.UpdateWorkflowRequest
-	(*UpdateWorkflowResponse)(nil),    // 9: direktiv_flow.UpdateWorkflowResponse
-	(*SaveHeadRequest)(nil),           // 10: direktiv_flow.SaveHeadRequest
-	(*SaveHeadResponse)(nil),          // 11: direktiv_flow.SaveHeadResponse
-	(*DiscardHeadRequest)(nil),        // 12: direktiv_flow.DiscardHeadRequest
-	(*DiscardHeadResponse)(nil),       // 13: direktiv_flow.DiscardHeadResponse
-	(*TagsRequest)(nil),               // 14: direktiv_flow.TagsRequest
-	(*Ref)(nil),                       // 15: direktiv_flow.Ref
-	(*TagsResponse)(nil),              // 16: direktiv_flow.TagsResponse
-	(*RefsRequest)(nil),               // 17: direktiv_flow.RefsRequest
-	(*RefsResponse)(nil),              // 18: direktiv_flow.RefsResponse
-	(*RevisionsRequest)(nil),          // 19: direktiv_flow.RevisionsRequest
-	(*RevisionsResponse)(nil),         // 20: direktiv_flow.RevisionsResponse
-	(*TagRequest)(nil),                // 21: direktiv_flow.TagRequest
-	(*UntagRequest)(nil),              // 22: direktiv_flow.UntagRequest
-	(*RetagRequest)(nil),              // 23: direktiv_flow.RetagRequest
-	(*DeleteRevisionRequest)(nil),     // 24: direktiv_flow.DeleteRevisionRequest
-	(*ValidateRefRequest)(nil),        // 25: direktiv_flow.ValidateRefRequest
-	(*ValidateRefResponse)(nil),       // 26: direktiv_flow.ValidateRefResponse
-	(*timestamppb.Timestamp)(nil),     // 27: google.protobuf.Timestamp
-	(*Node)(nil),                      // 28: direktiv_flow.Node
-	(*Pagination)(nil),                // 29: direktiv_flow.Pagination
-	(*PageInfo)(nil),                  // 30: direktiv_flow.PageInfo
+	(*NodeRequest)(nil),               // 0: direktiv_flow.NodeRequest
+	(*NodeResponse)(nil),              // 1: direktiv_flow.NodeResponse
+	(*ResolveWorkflowUIDRequest)(nil), // 2: direktiv_flow.ResolveWorkflowUIDRequest
+	(*WorkflowRequest)(nil),           // 3: direktiv_flow.WorkflowRequest
+	(*WorkflowResponse)(nil),          // 4: direktiv_flow.WorkflowResponse
+	(*CreateWorkflowRequest)(nil),     // 5: direktiv_flow.CreateWorkflowRequest
+	(*CreateWorkflowResponse)(nil),    // 6: direktiv_flow.CreateWorkflowResponse
+	(*UpdateWorkflowRequest)(nil),     // 7: direktiv_flow.UpdateWorkflowRequest
+	(*UpdateWorkflowResponse)(nil),    // 8: direktiv_flow.UpdateWorkflowResponse
+	(*Node)(nil),                      // 9: direktiv_flow.Node
 }
 var file_pkg_flow_grpc_workflows_proto_depIdxs = []int32{
-	27, // 0: direktiv_flow.Revision.created_at:type_name -> google.protobuf.Timestamp
-	28, // 1: direktiv_flow.NodeResponse.node:type_name -> direktiv_flow.Node
-	28, // 2: direktiv_flow.WorkflowResponse.node:type_name -> direktiv_flow.Node
-	0,  // 3: direktiv_flow.WorkflowResponse.revision:type_name -> direktiv_flow.Revision
-	28, // 4: direktiv_flow.CreateWorkflowResponse.node:type_name -> direktiv_flow.Node
-	0,  // 5: direktiv_flow.CreateWorkflowResponse.revision:type_name -> direktiv_flow.Revision
-	28, // 6: direktiv_flow.UpdateWorkflowResponse.node:type_name -> direktiv_flow.Node
-	0,  // 7: direktiv_flow.UpdateWorkflowResponse.revision:type_name -> direktiv_flow.Revision
-	28, // 8: direktiv_flow.SaveHeadResponse.node:type_name -> direktiv_flow.Node
-	0,  // 9: direktiv_flow.SaveHeadResponse.revision:type_name -> direktiv_flow.Revision
-	28, // 10: direktiv_flow.DiscardHeadResponse.node:type_name -> direktiv_flow.Node
-	0,  // 11: direktiv_flow.DiscardHeadResponse.revision:type_name -> direktiv_flow.Revision
-	29, // 12: direktiv_flow.TagsRequest.pagination:type_name -> direktiv_flow.Pagination
-	28, // 13: direktiv_flow.TagsResponse.node:type_name -> direktiv_flow.Node
-	30, // 14: direktiv_flow.TagsResponse.pageInfo:type_name -> direktiv_flow.PageInfo
-	15, // 15: direktiv_flow.TagsResponse.results:type_name -> direktiv_flow.Ref
-	29, // 16: direktiv_flow.RefsRequest.pagination:type_name -> direktiv_flow.Pagination
-	28, // 17: direktiv_flow.RefsResponse.node:type_name -> direktiv_flow.Node
-	30, // 18: direktiv_flow.RefsResponse.pageInfo:type_name -> direktiv_flow.PageInfo
-	15, // 19: direktiv_flow.RefsResponse.results:type_name -> direktiv_flow.Ref
-	29, // 20: direktiv_flow.RevisionsRequest.pagination:type_name -> direktiv_flow.Pagination
-	28, // 21: direktiv_flow.RevisionsResponse.node:type_name -> direktiv_flow.Node
-	30, // 22: direktiv_flow.RevisionsResponse.pageInfo:type_name -> direktiv_flow.PageInfo
-	15, // 23: direktiv_flow.RevisionsResponse.results:type_name -> direktiv_flow.Ref
-	24, // [24:24] is the sub-list for method output_type
-	24, // [24:24] is the sub-list for method input_type
-	24, // [24:24] is the sub-list for extension type_name
-	24, // [24:24] is the sub-list for extension extendee
-	0,  // [0:24] is the sub-list for field type_name
+	9, // 0: direktiv_flow.NodeResponse.node:type_name -> direktiv_flow.Node
+	9, // 1: direktiv_flow.WorkflowResponse.node:type_name -> direktiv_flow.Node
+	9, // 2: direktiv_flow.CreateWorkflowResponse.node:type_name -> direktiv_flow.Node
+	9, // 3: direktiv_flow.UpdateWorkflowResponse.node:type_name -> direktiv_flow.Node
+	4, // [4:4] is the sub-list for method output_type
+	4, // [4:4] is the sub-list for method input_type
+	4, // [4:4] is the sub-list for extension type_name
+	4, // [4:4] is the sub-list for extension extendee
+	0, // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_pkg_flow_grpc_workflows_proto_init() }
@@ -2058,18 +663,6 @@ func file_pkg_flow_grpc_workflows_proto_init() {
 	file_pkg_flow_grpc_nodes_proto_init()
 	if !protoimpl.UnsafeEnabled {
 		file_pkg_flow_grpc_workflows_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Revision); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_pkg_flow_grpc_workflows_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*NodeRequest); i {
 			case 0:
 				return &v.state
@@ -2081,7 +674,7 @@ func file_pkg_flow_grpc_workflows_proto_init() {
 				return nil
 			}
 		}
-		file_pkg_flow_grpc_workflows_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
+		file_pkg_flow_grpc_workflows_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*NodeResponse); i {
 			case 0:
 				return &v.state
@@ -2093,7 +686,7 @@ func file_pkg_flow_grpc_workflows_proto_init() {
 				return nil
 			}
 		}
-		file_pkg_flow_grpc_workflows_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+		file_pkg_flow_grpc_workflows_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*ResolveWorkflowUIDRequest); i {
 			case 0:
 				return &v.state
@@ -2105,7 +698,7 @@ func file_pkg_flow_grpc_workflows_proto_init() {
 				return nil
 			}
 		}
-		file_pkg_flow_grpc_workflows_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
+		file_pkg_flow_grpc_workflows_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*WorkflowRequest); i {
 			case 0:
 				return &v.state
@@ -2117,7 +710,7 @@ func file_pkg_flow_grpc_workflows_proto_init() {
 				return nil
 			}
 		}
-		file_pkg_flow_grpc_workflows_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
+		file_pkg_flow_grpc_workflows_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*WorkflowResponse); i {
 			case 0:
 				return &v.state
@@ -2129,7 +722,7 @@ func file_pkg_flow_grpc_workflows_proto_init() {
 				return nil
 			}
 		}
-		file_pkg_flow_grpc_workflows_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
+		file_pkg_flow_grpc_workflows_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*CreateWorkflowRequest); i {
 			case 0:
 				return &v.state
@@ -2141,7 +734,7 @@ func file_pkg_flow_grpc_workflows_proto_init() {
 				return nil
 			}
 		}
-		file_pkg_flow_grpc_workflows_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
+		file_pkg_flow_grpc_workflows_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*CreateWorkflowResponse); i {
 			case 0:
 				return &v.state
@@ -2153,7 +746,7 @@ func file_pkg_flow_grpc_workflows_proto_init() {
 				return nil
 			}
 		}
-		file_pkg_flow_grpc_workflows_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
+		file_pkg_flow_grpc_workflows_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*UpdateWorkflowRequest); i {
 			case 0:
 				return &v.state
@@ -2165,212 +758,8 @@ func file_pkg_flow_grpc_workflows_proto_init() {
 				return nil
 			}
 		}
-		file_pkg_flow_grpc_workflows_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
+		file_pkg_flow_grpc_workflows_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*UpdateWorkflowResponse); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_pkg_flow_grpc_workflows_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SaveHeadRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_pkg_flow_grpc_workflows_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SaveHeadResponse); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_pkg_flow_grpc_workflows_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DiscardHeadRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_pkg_flow_grpc_workflows_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DiscardHeadResponse); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_pkg_flow_grpc_workflows_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*TagsRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_pkg_flow_grpc_workflows_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Ref); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_pkg_flow_grpc_workflows_proto_msgTypes[16].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*TagsResponse); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_pkg_flow_grpc_workflows_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*RefsRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_pkg_flow_grpc_workflows_proto_msgTypes[18].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*RefsResponse); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_pkg_flow_grpc_workflows_proto_msgTypes[19].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*RevisionsRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_pkg_flow_grpc_workflows_proto_msgTypes[20].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*RevisionsResponse); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_pkg_flow_grpc_workflows_proto_msgTypes[21].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*TagRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_pkg_flow_grpc_workflows_proto_msgTypes[22].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*UntagRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_pkg_flow_grpc_workflows_proto_msgTypes[23].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*RetagRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_pkg_flow_grpc_workflows_proto_msgTypes[24].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DeleteRevisionRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_pkg_flow_grpc_workflows_proto_msgTypes[25].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ValidateRefRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_pkg_flow_grpc_workflows_proto_msgTypes[26].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ValidateRefResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2388,7 +777,7 @@ func file_pkg_flow_grpc_workflows_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_pkg_flow_grpc_workflows_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   27,
+			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

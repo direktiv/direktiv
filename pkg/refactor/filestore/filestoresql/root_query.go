@@ -129,24 +129,24 @@ func (q *RootQuery) Delete(ctx context.Context) error {
 	return nil
 }
 
-func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.FileType, mimeType string, data []byte) (*filestore.File, *filestore.Revision, error) {
+func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.FileType, mimeType string, data []byte) (*filestore.File, error) {
 	path, err := filestore.SanitizePath(path)
 	if err != nil {
-		return nil, nil, fmt.Errorf("%w: %w", filestore.ErrInvalidPathParameter, err)
+		return nil, fmt.Errorf("%w: %w", filestore.ErrInvalidPathParameter, err)
 	}
 
 	// check if root exists.
 	if err = q.checkRootExists(ctx); err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	count := 0
 	tx := q.db.WithContext(ctx).Raw("SELECT count(id) FROM filesystem_files WHERE root_id = ? AND path = ?", q.rootID, path).Scan(&count)
 	if tx.Error != nil {
-		return nil, nil, tx.Error
+		return nil, tx.Error
 	}
 	if count > 0 {
-		return nil, nil, filestore.ErrPathAlreadyExists
+		return nil, filestore.ErrPathAlreadyExists
 	}
 
 	parentDir := filepath.Dir(path)
@@ -154,10 +154,10 @@ func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.F
 		count = 0
 		tx = q.db.WithContext(ctx).Raw("SELECT count(id) FROM filesystem_files WHERE root_id = ? AND typ = ? AND path = ?", q.rootID, filestore.FileTypeDirectory, parentDir).Scan(&count)
 		if tx.Error != nil {
-			return nil, nil, tx.Error
+			return nil, tx.Error
 		}
 		if count == 0 {
-			return nil, nil, filestore.ErrNoParentDirectory
+			return nil, filestore.ErrNoParentDirectory
 		}
 	}
 
@@ -171,37 +171,29 @@ func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.F
 		MIMEType: mimeType,
 	}
 
+	if typ != filestore.FileTypeDirectory {
+		f.Data = data
+		f.Checksum = string(q.checksumFunc(data))
+	}
+
 	res := q.db.WithContext(ctx).Table("filesystem_files").Create(f)
 	if res.Error != nil {
-		return nil, nil, res.Error
+		return nil, res.Error
 	}
 	if res.RowsAffected != 1 {
-		return nil, nil, fmt.Errorf("unexpected gorm create count, got: %d, want: %d", res.RowsAffected, 1)
+		return nil, fmt.Errorf("unexpected gorm create count, got: %d, want: %d", res.RowsAffected, 1)
 	}
 
-	if typ == filestore.FileTypeDirectory {
-		return f, nil, nil
-	}
-
-	rev := &filestore.Revision{
-		ID:   uuid.New(),
-		Tags: "",
-
-		FileID:    f.ID,
-		IsCurrent: true,
-
-		Data:     data,
-		Checksum: string(q.checksumFunc(data)),
-	}
-	res = q.db.WithContext(ctx).Table("filesystem_revisions").Create(rev)
+	// set updated_at for all parent dirs.
+	res = q.db.WithContext(ctx).Exec(`
+					UPDATE filesystem_files
+					SET updated_at=CURRENT_TIMESTAMP WHERE ? LIKE path || '%' ;
+					`, path)
 	if res.Error != nil {
-		return nil, nil, res.Error
-	}
-	if res.RowsAffected != 1 {
-		return nil, nil, fmt.Errorf("unexpected gorm create count, got: %d, want: %d", res.RowsAffected, 1)
+		return nil, res.Error
 	}
 
-	return f, rev, nil
+	return f, nil
 }
 
 func (q *RootQuery) GetFile(ctx context.Context, path string) (*filestore.File, error) {
@@ -218,7 +210,12 @@ func (q *RootQuery) GetFile(ctx context.Context, path string) (*filestore.File, 
 	f := &filestore.File{}
 	path = filepath.Clean(path)
 
-	res := q.db.WithContext(ctx).Table("filesystem_files").Where("root_id", q.rootID).Where("path = ?", path).First(f)
+	res := q.db.WithContext(ctx).Raw(`
+					SELECT id, root_id, path, depth, typ, created_at, updated_at, mime_type
+					FROM filesystem_files
+					WHERE root_id=? AND path=?`, q.rootID, path).
+		First(f)
+
 	if res.Error != nil {
 		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 			return nil, fmt.Errorf("file '%s': %w", path, filestore.ErrNotFound)
