@@ -99,6 +99,7 @@ describe('Test workflow events and', () => {
             .send(startEventWorkflow)
         expect(createWorkflowResponse.statusCode).toEqual(200)
 
+        await sleep(200)
         var getEventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/event-listeners?limit=8&offset=0`)
             .send()
 
@@ -250,3 +251,6 @@ describe('Test workflow events and', () => {
 
 })
 
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
