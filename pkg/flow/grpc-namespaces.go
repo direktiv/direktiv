@@ -9,7 +9,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	pubsub2 "github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -192,14 +191,9 @@ func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespace
 		return nil, err
 	}
 
-	root, err := tx.FileStore().CreateRoot(ctx, uuid.New(), ns.Name)
+	_, err = tx.FileStore().CreateRoot(ctx, uuid.New(), ns.Name)
 	if err != nil {
 		flow.sugar.Warnf("CreateNamespace failed to create file-system root: %v", err)
-		return nil, err
-	}
-	_, err = tx.FileStore().ForRootID(root.ID).CreateFile(ctx, "/", filestore.FileTypeDirectory, "", nil)
-	if err != nil {
-		flow.sugar.Warnf("CreateNamespace failed to create root directory: %v", err)
 		return nil, err
 	}
 

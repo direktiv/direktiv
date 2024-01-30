@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -57,6 +58,9 @@ type FileStore interface {
 type Root struct {
 	ID        uuid.UUID
 	Namespace string `gorm:"default:NULL"`
+
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 // RootQuery performs different queries associated to a root.

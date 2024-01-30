@@ -29,7 +29,6 @@ func Test_CorrectSetPath(t *testing.T) {
 		{
 			name: "basic_directory_case",
 			paths: []string{
-				"/",
 				"/a",
 				"/a/b",
 				"/a/b/file1.text",
@@ -41,7 +40,6 @@ func Test_CorrectSetPath(t *testing.T) {
 			setPath: "/a/d",
 
 			pathsAfterChange: []string{
-				"/",
 				"/a",
 				"/a/c",
 				"/a/c/file2.text",
@@ -53,7 +51,6 @@ func Test_CorrectSetPath(t *testing.T) {
 		{
 			name: "weird_case_directory_1", // with /a/bfile1.text
 			paths: []string{
-				"/",
 				"/a",
 				"/a/b",
 				"/a/b/file1.text",
@@ -66,7 +63,6 @@ func Test_CorrectSetPath(t *testing.T) {
 			setPath: "/a/d",
 
 			pathsAfterChange: []string{
-				"/",
 				"/a",
 				"/a/bfile1.text",
 				"/a/c",
@@ -79,7 +75,6 @@ func Test_CorrectSetPath(t *testing.T) {
 		{
 			name: "weird_case_directory_2", // with /a/b/a/b
 			paths: []string{
-				"/",
 				"/a",
 				"/a/b",
 				"/a/b/a",
@@ -93,7 +88,6 @@ func Test_CorrectSetPath(t *testing.T) {
 			setPath: "/a/b/a/d",
 
 			pathsAfterChange: []string{
-				"/",
 				"/a",
 				"/a/b",
 				"/a/b/a",
@@ -107,7 +101,6 @@ func Test_CorrectSetPath(t *testing.T) {
 		{
 			name: "weird_case_directory_3", // with /a/b/a/b
 			paths: []string{
-				"/",
 				"/a",
 				"/a/b",
 				"/a/b/a",
@@ -121,7 +114,6 @@ func Test_CorrectSetPath(t *testing.T) {
 			setPath: "/z",
 
 			pathsAfterChange: []string{
-				"/",
 				"/z",
 				"/z/b",
 				"/z/b/a",
@@ -198,11 +190,6 @@ func Test_UpdateFile(t *testing.T) {
 	}
 
 	// create files
-	assertCreateFileV2(t, fs, root.ID, filestore.File{
-		Path: "/",
-		Typ:  filestore.FileTypeDirectory,
-		Data: nil,
-	})
 	assertCreateFileV2(t, fs, root.ID, filestore.File{
 		Path: "/example1.text",
 		Typ:  filestore.FileTypeFile,

@@ -459,6 +459,9 @@ func (p *Parser) ListFiles() ([]string, error) {
 	tfs := os.DirFS(p.tempDir)
 
 	err := fs.WalkDir(tfs, ".", func(path string, d fs.DirEntry, err error) error {
+		if path == "." || path == ".." {
+			return nil
+		}
 		paths = append(paths, path)
 
 		return nil
