@@ -275,6 +275,10 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 			return nil, err
 		}
 	}
+	file, err = tx.FileStore().ForNamespace(ns.Name).GetFile(ctx, req.GetPath())
+	if err != nil {
+		return nil, err
+	}
 
 	if err = tx.Commit(ctx); err != nil {
 		return nil, err
