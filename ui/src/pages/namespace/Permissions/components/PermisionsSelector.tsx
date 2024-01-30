@@ -7,7 +7,11 @@ import {
   TableHeaderCell,
   TableRow,
 } from "~/design/Table";
-import { groupPermissionsByResouce, permissionsToScopes } from "./utils";
+import {
+  groupPermissionsByResouce,
+  joinPermissionString,
+  permissionsToScopes,
+} from "./utils";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
@@ -85,28 +89,31 @@ const PermissionsSelector = ({
               {Object.entries(perm).map(([resource, scopes]) => (
                 <TableRow key={resource} className="lg:pr-8 xl:pr-12">
                   <TableCell className="grow">{resource}</TableCell>
-                  {availableScopes.map((availableScope) => (
-                    <TableCell
-                      key={availableScope}
-                      className="px-2 text-center"
-                    >
-                      {scopes.includes(availableScope) && (
-                        <Checkbox
-                          checked={selectedPermissions.includes(
-                            `${availableScope}:${resource}`
-                          )}
-                          onCheckedChange={(checked) => {
-                            if (checked !== "indeterminate") {
-                              onCheckedChange(
-                                `${availableScope}:${resource}`,
-                                checked
-                              );
-                            }
-                          }}
-                        />
-                      )}
-                    </TableCell>
-                  ))}
+                  {availableScopes.map((availableScope) => {
+                    const permissionString = joinPermissionString(
+                      availableScope,
+                      resource
+                    );
+                    return (
+                      <TableCell
+                        key={availableScope}
+                        className="px-2 text-center"
+                      >
+                        {scopes.includes(availableScope) && (
+                          <Checkbox
+                            checked={selectedPermissions.includes(
+                              permissionString
+                            )}
+                            onCheckedChange={(checked) => {
+                              if (checked !== "indeterminate") {
+                                onCheckedChange(permissionString, checked);
+                              }
+                            }}
+                          />
+                        )}
+                      </TableCell>
+                    );
+                  })}
                 </TableRow>
               ))}
             </TableBody>
