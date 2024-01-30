@@ -40,6 +40,7 @@ var (
 	SecretUpdate = "secret_update"
 )
 
+// nolint:musttag
 type ChangeWorkflowEvent struct {
 	Namespace    string
 	NamespaceID  uuid.UUID
