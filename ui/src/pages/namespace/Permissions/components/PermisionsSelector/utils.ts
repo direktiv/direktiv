@@ -22,7 +22,7 @@ export const joinPermissionString = (scope: string, resource: string): string =>
   `${scope}:${resource}`;
 
 /**
- * takes a list of permissions and returns all availables of scopes
+ * takes a list of permission strings and returns all availables of scopes
  *
  * example input:
  * [
@@ -41,7 +41,7 @@ export const joinPermissionString = (scope: string, resource: string): string =>
  * ]
  *
  */
-export const permissionsToScopes = (permissions: string[]) =>
+export const permissionStringsToScopes = (permissions: string[]) =>
   permissions.reduce((allScopes, permissionString) => {
     const [scope] = splitPermissionString(permissionString);
     if (allScopes.includes(scope)) {
@@ -51,10 +51,8 @@ export const permissionsToScopes = (permissions: string[]) =>
     return [...allScopes, scope];
   }, [] as string[]);
 
-type GroupedPermission = Record<string, string[]>;
-
 /**
- * takes a list of permissions and groups them by resource
+ * takes a list of permission strings and groups them by resource
  *
  * example input:
  * [
@@ -74,7 +72,8 @@ type GroupedPermission = Record<string, string[]>;
  * }
  *
  */
-export const groupPermissionsByResouce = (permissions: string[]) =>
+type GroupedPermission = Record<string, string[]>;
+export const groupPermissionStringsByResouce = (permissions: string[]) =>
   permissions.reduce<GroupedPermission>((acc, cur) => {
     const [scope, resource] = splitPermissionString(cur);
     const existingEntries = acc[resource] ?? [];

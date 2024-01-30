@@ -8,9 +8,9 @@ import {
   TableRow,
 } from "~/design/Table";
 import {
-  groupPermissionsByResouce,
+  groupPermissionStringsByResouce,
   joinPermissionString,
-  permissionsToScopes,
+  permissionStringsToScopes,
 } from "./utils";
 
 import Button from "~/design/Button";
@@ -51,12 +51,12 @@ const PermissionsSelector = ({
   };
 
   const availableScopes = useMemo(
-    () => permissionsToScopes(availablePermissions),
+    () => permissionStringsToScopes(availablePermissions),
     [availablePermissions]
   );
 
-  const perm = useMemo(
-    () => groupPermissionsByResouce(availablePermissions),
+  const resourceGroups = useMemo(
+    () => groupPermissionStringsByResouce(availablePermissions),
     [availablePermissions]
   );
 
@@ -86,7 +86,7 @@ const PermissionsSelector = ({
               </TableRow>
             </TableHead>
             <TableBody>
-              {Object.entries(perm).map(([resource, scopes]) => (
+              {Object.entries(resourceGroups).map(([resource, scopes]) => (
                 <TableRow key={resource} className="lg:pr-8 xl:pr-12">
                   <TableCell className="grow">{resource}</TableCell>
                   {availableScopes.map((availableScope) => {
