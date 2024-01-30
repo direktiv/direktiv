@@ -30,9 +30,7 @@ jobs:
           ls -la 
           ls -la direktiv
           helm dependencies update direktiv
-      # helm dependencies update direktiv
-      # helm lint direktiv
-      # helm lint direktiv
+          helm lint direktiv
       # - name: Run chart-releaser
       #   uses: helm/chart-releaser-action@v1.2.1
       #   env:
