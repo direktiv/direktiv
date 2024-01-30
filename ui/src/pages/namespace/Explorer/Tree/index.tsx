@@ -7,7 +7,21 @@ import {
   TableCell,
   TableRow,
 } from "~/design/Table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/design/Select";
+import {
+  useListNamespaces,
+  useSort,
+  useSorted,
+  useSortedNamespaces,
+} from "~/api/namespaces/query/get";
 
+import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import Delete from "./components/modals/Delete";
 import ExplorerHeader from "./Header";
@@ -15,17 +29,43 @@ import FileRow from "./FileRow";
 import FileViewer from "./components/modals/FileViewer";
 import { FolderUp } from "lucide-react";
 import { Link } from "react-router-dom";
+import NamespaceSelector from "~/components/NamespaceSelector";
 import NoResult from "./NoResult";
 import { NodeSchemaType } from "~/api/tree/schema/node";
 import Rename from "./components/modals/Rename";
 import { analyzePath } from "~/util/router/utils";
 import { pages } from "~/util/router/pages";
 import { twMergeClsx } from "~/util/helpers";
+import { useCreateNamespace } from "~/api/namespaces/mutate/createNamespace";
 import { useNamespace } from "~/util/store/namespace";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useTranslation } from "react-i18next";
 
 const ExplorerPage: FC = () => {
+  const { data: availableNamespaces, isLoading } = useListNamespaces();
+  // const { data: sortedNamespaces } = useSortedNamespaces();
+
+  const { results: sorted } = useSort();
+
+  //
+  // try data.results here:
+  //
+  const { results: sorted2 } = useSorted();
+
+  const { data: listNamespaces } = useCreateNamespace();
+
+  const [chosennamespace, setchosenNamespace] = useState("first");
+
+  const { mutate: createNamespace } = useCreateNamespace({
+    onSuccess: (data) => {
+      setchosenNamespace(data.namespace.name);
+
+      close();
+    },
+  });
+
+  //const listNamespaces = "o";
+
   const namespace = useNamespace();
   const { path } = pages.explorer.useParams();
   const { data, isSuccess, isFetched, isAllowed, noPermissionMessage } =
@@ -66,9 +106,51 @@ const ExplorerPage: FC = () => {
   const noResults = isSuccess && results.length === 0;
   const wideOverlay = !!previewNode;
 
+  console.log("chosennamespace " + chosennamespace);
+  console.log(
+    "Number listNamespaces " +
+      JSON.stringify(availableNamespaces?.results?.length)
+  );
+  console.log("listNamespaces " + JSON.stringify(availableNamespaces?.results));
+
+  console.log("useSort " + JSON.stringify(sorted));
+  console.log("useSorted " + JSON.stringify(sorted2));
+
+  // console.log("NEW " + sortedNamespaces);
+
+  // console.log("sortedNamespaces " + JSON.stringify(sortedNamespaces));
+
   return (
     <>
       <ExplorerHeader />
+      <Card>
+        <p>Before:</p>
+        <NamespaceSelector></NamespaceSelector>
+      </Card>
+      {JSON.stringify(listNamespaces)}
+      <Button onClick={() => createNamespace({ name: "name" })}>
+        Create Namespace
+      </Button>
+      <Card>
+        <p>After:</p>
+        <Select onValueChange={(value) => console.log("now " + value)}>
+          <SelectTrigger variant="outline">
+            <SelectValue
+              placeholder={t("components.namespaceSelector.placeholder")}
+            />
+          </SelectTrigger>
+          <SelectContent>
+            {listNamespaces?.namespace.name ? (
+              <SelectItem value={listNamespaces?.namespace?.name}>
+                Hello
+              </SelectItem>
+            ) : (
+              <SelectItem value="Bye">Bye</SelectItem>
+            )}
+          </SelectContent>
+        </Select>
+      </Card>
+
       <div className="p-5">
         <Card>
           {showTable && (
