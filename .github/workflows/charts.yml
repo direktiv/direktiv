@@ -15,9 +15,10 @@ jobs:
         working-directory: charts
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: jens/dir-1149-move-charts
       - name: Configure Git
         run: |
           helm repo add prometheus https://prometheus-community.github.io/helm-charts
@@ -26,7 +27,7 @@ jobs:
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
       - name: Helm Lint
         run: |
-          ls -la
+          ls -la direktiv
           helm dependencies update direktiv/charts/direktiv/
           helm dependencies update direktiv/charts/knative/
           helm lint charts/direktiv/
