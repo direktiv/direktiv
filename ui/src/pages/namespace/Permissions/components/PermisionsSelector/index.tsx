@@ -66,15 +66,39 @@ const PermissionsSelector = ({
         </label>
 
         <Card
-          className="flex w-full flex-col gap-5 overflow-scroll p-5"
+          className="flex h-[400px] w-full flex-col gap-5 overflow-scroll p-5"
           noShadow
         >
           <Table>
             <TableHead>
               <TableRow className="hover:bg-inherit dark:hover:bg-inherit lg:pr-8 xl:pr-12">
-                <TableHeaderCell />
+                <TableHeaderCell sticky className="px-0">
+                  <div className="flex gap-5">
+                    <Button
+                      variant="link"
+                      type="button"
+                      size="sm"
+                      onClick={selectAllPermissions}
+                      disabled={allSelected}
+                    >
+                      <MousePointerSquare />
+                      {t("pages.permissions.permissionsSelector.selectAll")}
+                    </Button>
+                    <Button
+                      variant="link"
+                      size="sm"
+                      type="button"
+                      onClick={deselectAllPermissions}
+                      disabled={noneSelected}
+                    >
+                      <MousePointerSquareDashed />
+                      {t("pages.permissions.permissionsSelector.deselectAll")}
+                    </Button>
+                  </div>
+                </TableHeaderCell>
                 {availableScopes.map((scope) => (
                   <TableHeaderCell
+                    sticky
                     key={scope}
                     className="w-20 px-2 text-center"
                   >
@@ -83,7 +107,7 @@ const PermissionsSelector = ({
                 ))}
               </TableRow>
             </TableHead>
-            <TableBody>
+            <TableBody className="h-44 border">
               {Object.entries(groupedResouces).map(([resource, scopes]) => (
                 <PermissionRow
                   key={resource}
@@ -96,28 +120,6 @@ const PermissionsSelector = ({
               ))}
             </TableBody>
           </Table>
-          <div className="flex justify-end gap-x-2 ">
-            <Button
-              variant="link"
-              type="button"
-              size="sm"
-              onClick={selectAllPermissions}
-              disabled={allSelected}
-            >
-              <MousePointerSquare />
-              {t("pages.permissions.permissionsSelector.selectAll")}
-            </Button>
-            <Button
-              variant="link"
-              size="sm"
-              type="button"
-              onClick={deselectAllPermissions}
-              disabled={noneSelected}
-            >
-              <MousePointerSquareDashed />
-              {t("pages.permissions.permissionsSelector.deselectAll")}
-            </Button>
-          </div>
         </Card>
       </fieldset>
     </>
