@@ -1,8 +1,10 @@
-name: (UI) Run prebuild tests and checks
+name: Build and Release Charts
 
 on:
   workflow_dispatch:
   push:
+    paths:
+      - charts/**
     branches:
       - jens/dir-1149-move-charts
   pull_request:
@@ -32,7 +34,7 @@ jobs:
           helm dependencies update direktiv
           helm lint direktiv
       # - name: Run chart-releaser
-      #   uses: helm/chart-releaser-action@v1.2.1
+      #   uses: helm/chart-releaser-action@v1.6.0
       #   env:
       #     CR_TOKEN: "${{ secrets.GH_TOKEN }}"
       #     CR_SKIP_EXISTING: true
