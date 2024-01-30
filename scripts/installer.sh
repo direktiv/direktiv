@@ -391,7 +391,7 @@ create_direktiv_namespace() {
 }
 
 add_direktiv_helm_repo() {
-    output=`helm repo add direktiv https://chart.direktiv.io 2>&1 | tee /dev/fd/3`
+    output=`helm repo add direktiv https://charts.direktiv.io 2>&1 | tee /dev/fd/3`
     assert_success $? "Failed to add Direktiv helm repository" "$output"
 }
 

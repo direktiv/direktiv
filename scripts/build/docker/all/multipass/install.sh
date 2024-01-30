@@ -224,7 +224,7 @@ $(if [ -n "${APIKEY+1}" ]; then
 fi)
 EOF
 
-helm repo add direktiv https://chart.direktiv.io && \
+helm repo add direktiv https://charts.direktiv.io && \
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx && \
 helm repo add prometheus https://prometheus-community.github.io/helm-charts && \
 KUBECONFIG=/etc/rancher/k3s/k3s.yaml helm install -f /direktiv.yaml direktiv direktiv/direktiv

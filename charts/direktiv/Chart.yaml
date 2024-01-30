@@ -1,7 +1,7 @@
 apiVersion: v2
 name: direktiv
 description: direktiv helm chart
-icon: https://chart.direktiv.io/logo.png
+icon: https://charts.direktiv.io/logo.png
 
 # A chart can be either an 'application' or a 'library' chart.
 #

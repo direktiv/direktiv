@@ -2,7 +2,7 @@
 
 direktiv helm chart
 
-![Version: 0.1.22-rc1](https://img.shields.io/badge/Version-0.1.22--rc1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v0.8.1-rc1](https://img.shields.io/badge/AppVersion-v0.8.1--rc1-informational?style=flat-square)
+![Version: 0.1.22](https://img.shields.io/badge/Version-0.1.22-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v0.8.1](https://img.shields.io/badge/AppVersion-v0.8.1-informational?style=flat-square)
 
 ## Additional Information
 
@@ -104,7 +104,7 @@ $ helm install direktiv direktiv/direktiv
 | Repository | Name | Version |
 |------------|------|---------|
 | https://kubernetes.github.io/ingress-nginx | ingress-nginx | 4.9.0 |
-| https://prometheus-community.github.io/helm-charts | prometheus | 25.8.1 |
+| https://prometheus-community.github.io/helm-charts | prometheus | 25.8.2 |
 
 ## Values
 
@@ -132,7 +132,7 @@ $ helm install direktiv direktiv/direktiv
 | flow.logging | string | `"json"` | Set to 'json' or 'console' to change log output format. |
 | flow.replicas | int | `1` | number of flow replicas |
 | fluentbit.extraConfig | string | `""` | postgres for direktiv services Append extra output to fluentbit configuration. There are two log types: application (system), functions (workflows) these can be matched to new outputs. |
-| frontend | object | `{"additionalAnnotations":{},"additionalLabels":{},"additionalSecEnvs":{},"backend":{"skip-verify":false,"url":null},"certificate":null,"command":"","extraConfig":null,"extraVariables":[],"image":"direktiv/frontend","logging":{"debug":true,"json":true},"nginx":{"config":"","resolver":"kube-dns.kube-system.svc.cluster.local valid=10s;"},"replicas":1,"resources":{"limits":{"memory":"512Mi"},"requests":{"memory":"128Mi"}},"tag":""}` | Frontend configuration |
+| frontend | object | `{"additionalAnnotations":{},"additionalLabels":{},"additionalSecEnvs":{},"backend":{"skip-verify":false,"url":null},"certificate":null,"command":"","extraConfig":null,"extraVariables":[],"image":"direktiv/frontend","logging":{"debug":true,"json":true},"nginx":{"config":"","resolver":"kube-dns.kube-system.svc.cluster.local valid=10s;"},"replicas":1,"resources":{"limits":{"memory":"512Mi"},"requests":{"memory":"128Mi"}}}` | Frontend configuration |
 | frontend.additionalAnnotations | object | `{}` | Additional Annotations for frontend |
 | frontend.additionalLabels | object | `{}` | Additional Labels for frontend |
 | frontend.additionalSecEnvs | object | `{}` | Additional secret environment variables |
