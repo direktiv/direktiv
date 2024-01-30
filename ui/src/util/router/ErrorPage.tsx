@@ -41,13 +41,7 @@ const ErrorPage = () => {
           <RefreshCcw />
           {t("pages.error.reload")}
         </Button>
-        <Button
-          variant="primary"
-          asChild
-          isAnchor
-          className="col-span-2"
-          data-testid="error-home-btn"
-        >
+        <Button variant="primary" asChild isAnchor className="col-span-2">
           <Link to="/">
             <Home />
             {t("pages.error.goHome")}
