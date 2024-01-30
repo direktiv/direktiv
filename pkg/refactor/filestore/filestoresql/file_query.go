@@ -73,7 +73,7 @@ func (q *FileQuery) setPath(ctx context.Context, path string) error {
 func (q *FileQuery) SetPath(ctx context.Context, path string) error {
 	path, err := filestore.SanitizePath(path)
 	if err != nil {
-		return filestore.ErrInvalidPathParameter
+		return fmt.Errorf("%w: %w", filestore.ErrInvalidPathParameter, err)
 	}
 	if path == "/" {
 		return filestore.ErrInvalidPathParameter

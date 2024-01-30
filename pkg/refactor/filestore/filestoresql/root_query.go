@@ -90,7 +90,7 @@ func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.F
 		return nil, fmt.Errorf("%w: %w", filestore.ErrInvalidPathParameter, err)
 	}
 	if path == "/" {
-		return nil, fmt.Errorf("%w: %w", filestore.ErrInvalidPathParameter, err)
+		return nil, filestore.ErrInvalidPathParameter
 	}
 
 	// check if root exists.
@@ -157,6 +157,9 @@ func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.F
 func (q *RootQuery) GetFile(ctx context.Context, path string) (*filestore.File, error) {
 	path, err := filestore.SanitizePath(path)
 	if err != nil {
+		return nil, fmt.Errorf("%w: %w", filestore.ErrInvalidPathParameter, err)
+	}
+	if path == "/" {
 		return nil, filestore.ErrInvalidPathParameter
 	}
 
@@ -189,7 +192,7 @@ func (q *RootQuery) ReadDirectory(ctx context.Context, path string) ([]*filestor
 	var list []*filestore.File
 	path, err := filestore.SanitizePath(path)
 	if err != nil {
-		return nil, filestore.ErrInvalidPathParameter
+		return nil, fmt.Errorf("%w: %w", filestore.ErrInvalidPathParameter, err)
 	}
 
 	// check if root exists.
