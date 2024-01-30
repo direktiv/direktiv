@@ -6,12 +6,14 @@ import Editor from "~/design/Editor";
 import { FC } from "react";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
+import useUpdatedAt from "~/hooks/useUpdatedAt";
 
 type EditorProps = {
   value: string;
   onValueChange: (value: string) => void;
   onSave: Parameters<typeof Editor>[0]["onSave"];
   hasUnsavedChanges: boolean;
+  updatedAt: string | undefined;
   error: string | undefined;
 };
 
@@ -20,10 +22,12 @@ export const CodeEditor: FC<EditorProps> = ({
   onValueChange,
   onSave,
   hasUnsavedChanges,
+  updatedAt,
   error,
 }) => {
   const { t } = useTranslation();
   const theme = useTheme();
+  const updatedAtInWords = useUpdatedAt(updatedAt);
 
   return (
     <Card className="flex grow flex-col p-4">
@@ -44,6 +48,13 @@ export const CodeEditor: FC<EditorProps> = ({
         className="flex justify-between gap-2 pt-2 text-sm text-gray-8 dark:text-gray-dark-8"
         data-testid="workflow-txt-updated"
       >
+        {updatedAt && !error && (
+          <>
+            {t("pages.explorer.workflow.updated", {
+              relativeTime: updatedAtInWords,
+            })}
+          </>
+        )}
         {error && (
           <Popover defaultOpen>
             <PopoverTrigger asChild>

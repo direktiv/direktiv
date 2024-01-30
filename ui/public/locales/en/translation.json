@@ -177,6 +177,7 @@
           "settings": "Settings",
           "services": "Services"
         },
+        "updated": "Updated {{relativeTime}} ago",
         "runBtn": "Run",
         "apiCommands": {
           "tooltip": "Open API commands",
