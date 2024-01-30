@@ -2,20 +2,18 @@ import { MousePointerSquare, MousePointerSquareDashed } from "lucide-react";
 import {
   Table,
   TableBody,
-  TableCell,
   TableHead,
   TableHeaderCell,
   TableRow,
 } from "~/design/Table";
 import {
   groupPermissionStringsByResouce,
-  joinPermissionString,
   permissionStringsToScopes,
 } from "./utils";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
-import { Checkbox } from "~/design/Checkbox";
+import { PermissionRow } from "./Row";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -30,11 +28,11 @@ const PermissionsSelector = ({
 }) => {
   const { t } = useTranslation();
 
-  const onCheckedChange = (permissionValue: string, isChecked: boolean) => {
+  const onCheckedChange = (permission: string, isChecked: boolean) => {
     const currentPermissions = selectedPermissions;
     const newPermissions = isChecked
-      ? [...currentPermissions, permissionValue]
-      : currentPermissions.filter((p) => p !== permissionValue);
+      ? [...currentPermissions, permission]
+      : currentPermissions.filter((p) => p !== permission);
     setPermissions(newPermissions);
   };
 
@@ -55,7 +53,7 @@ const PermissionsSelector = ({
     [availablePermissions]
   );
 
-  const resourceGroups = useMemo(
+  const groupedResouces = useMemo(
     () => groupPermissionStringsByResouce(availablePermissions),
     [availablePermissions]
   );
@@ -86,35 +84,15 @@ const PermissionsSelector = ({
               </TableRow>
             </TableHead>
             <TableBody>
-              {Object.entries(resourceGroups).map(([resource, scopes]) => (
-                <TableRow key={resource} className="lg:pr-8 xl:pr-12">
-                  <TableCell className="grow">{resource}</TableCell>
-                  {availableScopes.map((availableScope) => {
-                    const permissionString = joinPermissionString(
-                      availableScope,
-                      resource
-                    );
-                    return (
-                      <TableCell
-                        key={availableScope}
-                        className="px-2 text-center"
-                      >
-                        {scopes.includes(availableScope) && (
-                          <Checkbox
-                            checked={selectedPermissions.includes(
-                              permissionString
-                            )}
-                            onCheckedChange={(checked) => {
-                              if (checked !== "indeterminate") {
-                                onCheckedChange(permissionString, checked);
-                              }
-                            }}
-                          />
-                        )}
-                      </TableCell>
-                    );
-                  })}
-                </TableRow>
+              {Object.entries(groupedResouces).map(([resource, scopes]) => (
+                <PermissionRow
+                  key={resource}
+                  resource={resource}
+                  scopes={scopes}
+                  availableScopes={availableScopes}
+                  selectedPermissions={selectedPermissions}
+                  onCheckedChange={onCheckedChange}
+                />
               ))}
             </TableBody>
           </Table>
