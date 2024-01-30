@@ -27,9 +27,10 @@ jobs:
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
       - name: Helm Lint
         run: |
+          ls -la 
           ls -la direktiv
-          helm dependencies update charts/direktiv/
-          helm dependencies update charts/knative/
+          helm dependencies update direktiv/charts
+          helm dependencies update direktiv/charts
           helm lint charts/direktiv/
           helm lint charts/knative/
       # - name: Run chart-releaser
