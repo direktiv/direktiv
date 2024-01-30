@@ -74,9 +74,12 @@ export const permissionStringsToScopes = (permissions: string[]) =>
  */
 type GroupedPermission = Record<string, string[]>;
 export const groupPermissionStringsByResouce = (permissions: string[]) =>
-  permissions.reduce<GroupedPermission>((acc, cur) => {
-    const [scope, resource] = splitPermissionString(cur);
-    const existingEntries = acc[resource] ?? [];
-    acc[resource] = [...existingEntries, scope];
-    return acc;
-  }, {});
+  permissions.reduce<GroupedPermission>(
+    (groupedResources, permissionString) => {
+      const [scope, resource] = splitPermissionString(permissionString);
+      const existingEntries = groupedResources[resource] ?? [];
+      groupedResources[resource] = [...existingEntries, scope];
+      return groupedResources;
+    },
+    {}
+  );
