@@ -21,7 +21,6 @@ const pageInfoObject = {
 
 const namespaceObject = {
     name: expect.stringMatching(regex.namespaceRegex),
-    oid: "",
     createdAt: expect.stringMatching(regex.timestampRegex),
     updatedAt: expect.stringMatching(regex.timestampRegex),
 }
@@ -34,7 +33,6 @@ const nodeObject = {
     expandedType: expect.stringMatching(regex.nodeExtendedTypeRegex),
     readOnly: expect.anything(),
     attributes: expect.anything(),
-    oid: "",
     createdAt: expect.stringMatching(regex.timestampRegex),
     updatedAt: expect.stringMatching(regex.timestampRegex),
     mimeType: expect.anything(),

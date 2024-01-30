@@ -22,7 +22,6 @@ func ConvertFileToGrpcNode(f *filestore.File) *grpc.Node {
 		Parent:     filepath.Dir(f.Path),
 		Type:       string(f.Typ),
 		Attributes: []string{},
-		Oid:        "", // NOTE: this is empty string for now for compatibility with end-to-end tests f.ID.String(),
 		ReadOnly:   false,
 		MimeType:   f.MIMEType,
 	}
@@ -180,7 +179,6 @@ func ConvertInstancesToGrpcInstances(instances []instancestore.InstanceData) []*
 
 func ConvertNamespaceToGrpc(item *core.Namespace) *grpc.Namespace {
 	ns := &grpc.Namespace{
-		Oid:  item.ID.String(),
 		Name: item.Name,
 
 		CreatedAt: timestamppb.New(item.CreatedAt),

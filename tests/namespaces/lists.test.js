@@ -16,7 +16,6 @@ describe('Test namespace listing functionality', () => {
             expect(createResponse.body).toMatchObject({
                 namespace: {
                     name: name,
-                    oid: expect.stringMatching(common.regex.uuidRegex),
                     createdAt: expect.stringMatching(common.regex.timestampRegex),
                     updatedAt: expect.stringMatching(common.regex.timestampRegex),
                 }
@@ -37,7 +36,6 @@ describe('Test namespace listing functionality', () => {
         for (let i = 0; i < listResponse.body.results.length; i++) {
             expect(listResponse.body.results[i]).toMatchObject({
                 name: expected[i],
-                oid: expect.stringMatching(common.regex.uuidRegex),
                 createdAt: expect.stringMatching(common.regex.timestampRegex),
                 updatedAt: expect.stringMatching(common.regex.timestampRegex),
             })

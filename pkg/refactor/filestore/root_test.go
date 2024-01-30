@@ -326,3 +326,64 @@ func assertRootFilesInPath(t *testing.T, fs filestore.FileStore, rootID uuid.UUI
 		}
 	}
 }
+
+func assertFileExistsV2(t *testing.T, fs filestore.FileStore, rootID uuid.UUID, file filestore.File) {
+	t.Helper()
+
+	f, err := fs.ForRootID(rootID).GetFile(context.Background(), file.Path)
+	if err != nil {
+		t.Errorf("unexpected GetFile() error: %v", err)
+
+		return
+	}
+	if f == nil {
+		t.Errorf("unexpected nil file GetFile()")
+
+		return
+	}
+	if f.Path != file.Path {
+		t.Errorf("unexpected file.Path, got: >%s<, want: >%s<", f.Path, file.Path)
+
+		return
+	}
+	if f.Typ != file.Typ {
+		t.Errorf("unexpected file.Typ, got: >%s<, want: >%s<", f.Typ, file.Typ)
+
+		return
+	}
+	if f.Typ == filestore.FileTypeDirectory {
+		return
+	}
+	data, err := fs.ForFile(f).GetData(context.Background())
+	if err != nil {
+		t.Errorf("unexpected GetData() error: %v", err)
+
+		return
+	}
+	if data == nil {
+		t.Errorf("unexpected nil data GetData()")
+
+		return
+	}
+	if string(data) != string(file.Data) {
+		t.Errorf("unexpected data, got: >%s<, want: >%s<", string(data), string(file.Data))
+
+		return
+	}
+}
+
+func assertCreateFileV2(t *testing.T, fs filestore.FileStore, rootID uuid.UUID, file filestore.File) {
+	t.Helper()
+
+	f, err := fs.ForRootID(rootID).CreateFile(context.Background(), file.Path, file.Typ, "text/plain", file.Data)
+	if err != nil {
+		t.Errorf("unexpected CreateFile() error: %v", err)
+
+		return
+	}
+	if f == nil {
+		t.Errorf("unexpected nil file CreateFile()")
+
+		return
+	}
+}

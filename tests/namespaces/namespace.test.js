@@ -23,7 +23,6 @@ describe('Test basic namespace operation.', () => {
         expect(createResponse.body).toMatchObject({
             namespace: {
                 name: testNamespace,
-                oid: expect.stringMatching(common.regex.uuidRegex),
                 createdAt: expect.stringMatching(common.regex.timestampRegex),
                 updatedAt: expect.stringMatching(common.regex.timestampRegex),
             }

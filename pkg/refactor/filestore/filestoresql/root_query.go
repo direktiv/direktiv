@@ -184,6 +184,15 @@ func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.F
 		return nil, fmt.Errorf("unexpected gorm create count, got: %d, want: %d", res.RowsAffected, 1)
 	}
 
+	// set updated_at for all parent dirs.
+	res = q.db.WithContext(ctx).Exec(`
+					UPDATE filesystem_files
+					SET updated_at=CURRENT_TIMESTAMP WHERE ? LIKE path || '%' ;
+					`, path)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+
 	return f, nil
 }
 
