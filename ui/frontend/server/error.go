@@ -16,8 +16,8 @@ const (
 )
 
 func SendError(w http.ResponseWriter, err error, statusCode int,
-	code, message string) {
-
+	code, message string,
+) {
 	w.WriteHeader(statusCode)
 
 	er := &ErrResponse{
@@ -29,5 +29,4 @@ func SendError(w http.ResponseWriter, err error, statusCode int,
 	b, _ := json.MarshalIndent(er, "", "  ")
 
 	w.Write(b)
-
 }

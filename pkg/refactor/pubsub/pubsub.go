@@ -1,6 +1,9 @@
 package pubsub
 
-import "go.uber.org/zap"
+import (
+	"github.com/google/uuid"
+	"go.uber.org/zap"
+)
 
 type CoreBus interface {
 	Publish(channel string, data string) error
@@ -36,3 +39,10 @@ var (
 	SecretDelete = "secret_delete"
 	SecretUpdate = "secret_update"
 )
+
+// nolint:musttag
+type ChangeWorkflowEvent struct {
+	Namespace    string
+	NamespaceID  uuid.UUID
+	WorkflowPath string
+}
