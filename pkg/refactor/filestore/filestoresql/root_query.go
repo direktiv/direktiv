@@ -159,16 +159,17 @@ func (q *RootQuery) GetFile(ctx context.Context, path string) (*filestore.File, 
 	if err != nil {
 		return nil, fmt.Errorf("%w: %w", filestore.ErrInvalidPathParameter, err)
 	}
-	if path == "/" {
-		return &filestore.File{
-			Path: "/",
-			Typ:  filestore.FileTypeDirectory,
-		}, nil
-	}
-
 	// check if root exists.
 	if err = q.checkRootExists(ctx); err != nil {
 		return nil, err
+	}
+	if path == "/" {
+		return &filestore.File{
+			Path:      "/",
+			Typ:       filestore.FileTypeDirectory,
+			CreatedAt: q.root.CreatedAt,
+			UpdatedAt: q.root.UpdatedAt,
+		}, nil
 	}
 
 	f := &filestore.File{}
