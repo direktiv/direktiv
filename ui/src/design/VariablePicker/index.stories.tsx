@@ -1,8 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import {
   Variablepicker,
+  VariablepickerError,
   VariablepickerHeading,
   VariablepickerItem,
+  VariablepickerMessage,
   VariablepickerSeparator,
 } from "./";
 
@@ -94,3 +96,23 @@ export const WithHeadingAndSeparator = () => {
     </div>
   );
 };
+
+export const WithErrorMessage = () => (
+  <>
+    <p>
+      <b>Explanation:</b>
+      <br /> For errors in the Variablepicker we use a popover element because a
+      select element with one item does not make sense, and also we do not need
+      to select it or deliver the value somewhere.
+    </p>
+    <br />
+    <div className="flex items-center ">
+      <VariablepickerError buttonText="Select Variable">
+        <VariablepickerHeading>Variables:</VariablepickerHeading>
+        <VariablepickerSeparator />
+        <VariablepickerMessage>- This space is empty -</VariablepickerMessage>
+        <VariablepickerSeparator />
+      </VariablepickerError>
+    </div>
+  </>
+);
