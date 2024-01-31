@@ -233,7 +233,10 @@
               "label_one": "{{count}} Patch",
               "addButton": "add patch",
               "modal": {
-                "title": "Edit patch",
+                "title": {
+                  "edit": "Edit patch",
+                  "create": "Create patch"
+                },
                 "op": {
                   "label": "Operation",
                   "placeholder": "Select an operation"

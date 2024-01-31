@@ -43,7 +43,6 @@ export const PatchesForm: FC<PatchesFormProps> = ({ form }) => {
     } else {
       updateItem(indexToEdit, item);
     }
-    setIndexToEdit(undefined);
     setDialogOpen(false);
   };
 
@@ -55,6 +54,7 @@ export const PatchesForm: FC<PatchesFormProps> = ({ form }) => {
     <Dialog
       open={dialogOpen}
       onOpenChange={(isOpen) => {
+        if (isOpen === false) setIndexToEdit(undefined);
         setDialogOpen(isOpen);
       }}
     >
@@ -100,7 +100,11 @@ export const PatchesForm: FC<PatchesFormProps> = ({ form }) => {
 
       <ModalWrapper
         formId={formId}
-        title={t("pages.explorer.service.editor.form.patches.modal.title")}
+        title={
+          indexToEdit !== undefined
+            ? t("pages.explorer.service.editor.form.patches.modal.title.edit")
+            : t("pages.explorer.service.editor.form.patches.modal.title.create")
+        }
       >
         <PatchItemForm
           formId={formId}
