@@ -23,12 +23,6 @@ export const PatchesForm: FC<PatchesFormProps> = ({ form }) => {
 
   const formId = "patchItemForm";
 
-  const emptyPatch: PatchSchemaType = {
-    op: "add",
-    path: "",
-    value: "",
-  };
-
   const [dialogOpen, setDialogOpen] = useState(false);
   const [indexToEdit, setIndexToEdit] = useState<number | undefined>();
 
@@ -110,7 +104,7 @@ export const PatchesForm: FC<PatchesFormProps> = ({ form }) => {
       >
         <PatchItemForm
           formId={formId}
-          value={indexToEdit !== undefined ? fields?.[indexToEdit] : emptyPatch}
+          value={indexToEdit !== undefined ? fields?.[indexToEdit] : undefined}
           onSubmit={handleSubmit}
         />
       </ModalWrapper>
