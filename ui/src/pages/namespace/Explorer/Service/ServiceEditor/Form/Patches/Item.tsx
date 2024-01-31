@@ -58,7 +58,7 @@ export const PatchItemForm: FC<PatchItemFormProps> = ({
   };
 
   return (
-    <form onSubmit={submitForm} id={formId}>
+    <form onSubmit={submitForm} id={formId} className="flex flex-col gap-5">
       <FormErrors errors={errors} className="mb-5" />
       <Fieldset
         label={t("pages.explorer.service.editor.form.patches.modal.op.label")}
@@ -70,7 +70,7 @@ export const PatchItemForm: FC<PatchItemFormProps> = ({
             setValue("op", value as PatchOperationType);
           }}
         >
-          <SelectTrigger id="op" variant="outline">
+          <SelectTrigger id="op" variant="outline" className="w-full">
             <SelectValue
               placeholder={t(
                 "pages.explorer.service.editor.form.patches.modal.op.placeholder"
