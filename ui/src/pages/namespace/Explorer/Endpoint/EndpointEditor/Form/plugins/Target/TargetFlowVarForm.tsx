@@ -34,6 +34,7 @@ export const TargetFlowVarForm: FC<FormProps> = ({
     control,
     register,
     watch,
+    setValue,
     handleSubmit,
     formState: { errors },
   } = useForm<TargetFlowVarFormSchemaType>({
@@ -105,22 +106,17 @@ export const TargetFlowVarForm: FC<FormProps> = ({
         >
           <Controller
             control={control}
-            name="configuration"
+            name="configuration.flow"
             render={({ field }) => (
               <WorkflowVariablePicker
-                {...register("configuration.variable", {
-                  setValueAs: treatEmptyStringAsUndefined,
-                })}
                 namespace={watch("configuration.namespace")}
                 workflow={watch("configuration.flow")}
                 defaultVariable={watch("configuration.variable")}
                 onChange={(variable) => {
-                  field.onChange({
-                    variable: variable?.name,
-                    content_type: variable?.mimeType,
-                    flow: watch("configuration.flow"),
-                    namespace: watch("configuration.namespace"),
-                  });
+                  if (variable) {
+                    field.onChange(variable.name);
+                    setValue("configuration.content_type", variable.mimeType);
+                  }
                 }}
               />
             )}
@@ -132,21 +128,14 @@ export const TargetFlowVarForm: FC<FormProps> = ({
           )}
           htmlFor="content-type"
         >
-          <Controller
-            control={control}
-            name="configuration.content_type"
-            render={() => (
-              <Input
-                {...register("configuration.content_type", {
-                  setValueAs: treatEmptyStringAsUndefined,
-                })}
-                value={watch("configuration.content_type")}
-                placeholder={t(
-                  "pages.explorer.endpoint.editor.form.plugins.target.targetFlowVar.contentTypePlaceholder"
-                )}
-                id="content-type"
-              />
+          <Input
+            {...register("configuration.content_type", {
+              setValueAs: treatEmptyStringAsUndefined,
+            })}
+            placeholder={t(
+              "pages.explorer.endpoint.editor.form.plugins.target.targetFlowVar.contentTypePlaceholder"
             )}
+            id="content-type"
           />
         </Fieldset>
       </PluginWrapper>
