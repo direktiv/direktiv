@@ -38,18 +38,6 @@ export const useVars = ({
       apiKey: apiKey ?? undefined,
     }),
     queryFn: fetchVars,
-    select(data) {
-      if (data?.variables?.results) {
-        return {
-          ...data,
-          variables: {
-            ...data.variables,
-            results: data.variables.results,
-          },
-        };
-      }
-      return data;
-    },
     enabled: !!namespace,
   });
 };
