@@ -132,7 +132,7 @@ const VariablesList = ({ path }: { path: string }) => {
                   </TableBody>
                 </Table>
               ) : (
-                <NoResult icon={Braces}>
+                <NoResult icon={FileJson}>
                   {t(
                     isSearch
                       ? "pages.explorer.tree.workflow.settings.variables.list.emptySearch"
