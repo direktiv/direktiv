@@ -223,7 +223,7 @@
               "placeholder": "Select a scale"
             },
             "size": {
-              "label": "Size", 
+              "label": "Size",
               "placeholder": "Select a size"
             },
             "cmd": "Cmd",
@@ -1186,7 +1186,7 @@
       "buttonText": "Browse Variables",
       "placeholder": "No Variable selected",
       "emptyDirectory": {
-        "title": "No Variables found in \"{{path}}\" "
+        "title": "No Variables found"
       },
       "error": {
         "title": "The directory \"{{path}}\" was not found."
@@ -1197,7 +1197,7 @@
       "buttonText": "Browse Variables",
       "placeholder": "No Variable selected",
       "emptyDirectory": {
-        "title": "No Variables found in \"{{path}}\" "
+        "title": "No Variables found"
       },
       "error": {
         "title": "The workflow \"{{path}}\" was not found."
