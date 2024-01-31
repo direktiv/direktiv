@@ -5,10 +5,10 @@ import {
   VariablepickerItem,
   VariablepickerSeparator,
 } from "./";
+
 import { ButtonBar } from "../ButtonBar";
 import Input from "../Input";
 import { useState } from "react";
-import Button from "../Button";
 
 const meta = {
   title: "Components/Variablepicker",
@@ -40,7 +40,7 @@ const variableList: string[] = [
   "Readme0.txt",
 ];
 
-export const WithMappingItems = () => {
+export const WithInputField = () => {
   const defaultValue = "defaultValue";
   const [inputValue, setInputValue] = useState(
     defaultValue ? defaultValue : ""
@@ -73,10 +73,6 @@ export const WithMappingItems = () => {
 
 export const WithHeadingAndSeparator = () => {
   const [value, setValue] = useState("");
-  const [inputValue, setInputValue] = useState("");
-  const handleChanges = () => {
-    setInputValue("Yes");
-  };
 
   return (
     <div className="flex items-center ">
@@ -84,7 +80,6 @@ export const WithHeadingAndSeparator = () => {
         value={value}
         onValueChange={(value) => {
           setValue(value);
-          console.log("X");
         }}
         buttonText="Select Variable"
       >
@@ -98,10 +93,7 @@ export const WithHeadingAndSeparator = () => {
       </Variablepicker>
       <div className="m-5 flex">
         <p>It is:</p>
-        <p className="ml-2">{inputValue}</p>
-        <p>It is:</p>
         <p className="ml-2">{value}</p>
-        <Button onClick={() => setValue("Yes")}>Set to Yes</Button>
       </div>
     </div>
   );
