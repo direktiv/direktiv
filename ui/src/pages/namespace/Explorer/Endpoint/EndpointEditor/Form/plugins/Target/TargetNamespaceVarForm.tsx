@@ -35,6 +35,7 @@ export const TargetNamespaceVarForm: FC<FormProps> = ({
     control,
     register,
     watch,
+    setValue,
     handleSubmit,
     formState: { errors },
   } = useForm<TargetNamespaceVarFormSchemaType>({
@@ -86,17 +87,17 @@ export const TargetNamespaceVarForm: FC<FormProps> = ({
         >
           <Controller
             control={control}
-            name="configuration"
+            name="configuration.variable"
             render={({ field }) => (
               <NamespaceVariablePicker
                 defaultVariable={watch("configuration.variable")}
                 namespace={watch("configuration.namespace")}
                 onChange={(variable) => {
-                  field.onChange({
-                    variable: variable?.name,
-                    content_type: variable?.mimeType,
-                    namespace: watch("configuration.namespace"),
-                  });
+                  // TODO: remove this condition when variable can not be undefined anymore
+                  if (variable) {
+                    field.onChange(variable?.name);
+                    setValue("configuration.content_type", variable.mimeType);
+                  }
                 }}
               />
             )}
@@ -108,21 +109,14 @@ export const TargetNamespaceVarForm: FC<FormProps> = ({
           )}
           htmlFor="content-type"
         >
-          <Controller
-            control={control}
-            name="configuration.content_type"
-            render={() => (
-              <Input
-                {...register("configuration.content_type", {
-                  setValueAs: treatEmptyStringAsUndefined,
-                })}
-                value={watch("configuration.content_type")}
-                placeholder={t(
-                  "pages.explorer.endpoint.editor.form.plugins.target.targetNamespaceVariable.contentTypePlaceholder"
-                )}
-                id="content-type"
-              />
+          <Input
+            {...register("configuration.content_type", {
+              setValueAs: treatEmptyStringAsUndefined,
+            })}
+            placeholder={t(
+              "pages.explorer.endpoint.editor.form.plugins.target.targetNamespaceVariable.contentTypePlaceholder"
             )}
+            id="content-type"
           />
         </Fieldset>
       </PluginWrapper>
