@@ -89,7 +89,6 @@ export const TargetFlowVarForm: FC<FormProps> = ({
             name="configuration.flow"
             render={({ field }) => (
               <FilePicker
-                {...register("configuration.flow")}
                 namespace={watch("configuration.namespace")}
                 onChange={field.onChange}
                 defaultPath={field.value}
