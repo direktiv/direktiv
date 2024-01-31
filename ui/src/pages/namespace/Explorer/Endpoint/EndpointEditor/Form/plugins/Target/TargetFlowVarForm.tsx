@@ -113,6 +113,7 @@ export const TargetFlowVarForm: FC<FormProps> = ({
                 workflow={watch("configuration.flow")}
                 defaultVariable={watch("configuration.variable")}
                 onChange={(variable) => {
+                  // TODO: remove this condition when variable can not be undefined anymore
                   if (variable) {
                     field.onChange(variable.name);
                     setValue("configuration.content_type", variable.mimeType);
