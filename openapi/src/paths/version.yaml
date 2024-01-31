@@ -1,0 +1,14 @@
+get:
+    summary: Get server version information.
+    responses:
+      '200': 
+        description: Server version information.
+        content:
+          application/json:
+            example:
+              data: "1.0.0"
+            schema:
+              type: object
+              properties:
+                data: 
+                  type: string

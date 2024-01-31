@@ -1,3 +1,6 @@
+/api/v2/version:
+  $ref: version.yaml
+
 /api/v2/namespaces/{namespace}/gateway/consumers:
   $ref: gw_consumers.yaml
                           
