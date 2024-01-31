@@ -34,21 +34,22 @@ const VariablepickerSeparator = React.forwardRef<
 VariablepickerSeparator.displayName =
   DropdownMenuPrimitive.Separator.displayName;
 
-type ClickType = PropsWithChildren & {
+type VariablepickerCloseProps = PropsWithChildren & {
   onClick: React.MouseEventHandler;
 };
 
-const VariablepickerClose: FC<ClickType> = ({ children, onClick }) => (
-  <Button onClick={onClick}>{children}</Button>
-);
+const VariablepickerClose: FC<VariablepickerCloseProps> = ({
+  children,
+  onClick,
+}) => <Button onClick={onClick}>{children}</Button>;
 
-type VariablepickerPropsType = PropsWithChildren & {
+type VariablepickerProps = PropsWithChildren & {
   buttonText: string;
   value?: string;
   onValueChange?: (value: string) => void;
 };
 
-const Variablepicker: FC<VariablepickerPropsType> = ({
+const Variablepicker: FC<VariablepickerProps> = ({
   children,
   buttonText,
   value,
@@ -64,12 +65,6 @@ const Variablepicker: FC<VariablepickerPropsType> = ({
   </Select>
 );
 
-type VariablepickerItemProps = PropsWithChildren & {
-  props?: object;
-  value: string;
-  disabled?: boolean;
-};
-
 const VariablepickerHeading: FC<PropsWithChildren> = ({ children }) => (
   <div className="px-2 text-sm font-semibold text-gray-9 dark:text-gray-dark-9">
     <div className="flex items-center px-2">
@@ -81,7 +76,7 @@ const VariablepickerHeading: FC<PropsWithChildren> = ({ children }) => (
   </div>
 );
 
-const VariablepickerError: FC<VariablepickerPropsType> = ({
+const VariablepickerError: FC<VariablepickerProps> = ({
   children,
   buttonText,
 }) => (
@@ -105,6 +100,12 @@ const VariablepickerMessage: FC<PropsWithChildren> = ({ children }) => (
     {children}
   </div>
 );
+
+type VariablepickerItemProps = PropsWithChildren & {
+  props?: object;
+  value: string;
+  disabled?: boolean;
+};
 
 const VariablepickerItem: FC<VariablepickerItemProps> = ({
   props,
