@@ -86,15 +86,9 @@ const WorkflowVariablePicker = ({
         <VariablepickerError
           buttonText={t("components.workflowVariablepicker.buttonText")}
         >
-          <VariablepickerHeading>
-            {t("components.workflowVariablepicker.title", { path })}
-          </VariablepickerHeading>
-          <VariablepickerSeparator />
-
           <VariablepickerMessage>
             {t("components.workflowVariablepicker.unselected.title")}
           </VariablepickerMessage>
-          <VariablepickerSeparator />
         </VariablepickerError>
       ) : (
         <>
