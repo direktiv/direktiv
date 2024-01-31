@@ -16,7 +16,7 @@ type TableHeaderProps = PropsWithChildren & {
 export const TableHeader: FC<TableHeaderProps> = ({ title, children }) => (
   <TableHead>
     <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
-      <TableHeaderCell>{title}</TableHeaderCell>
+      <TableHeaderCell colSpan={2}>{title}</TableHeaderCell>
       <TableHeaderCell className="w-60 text-right">{children}</TableHeaderCell>
     </TableRow>
   </TableHead>
