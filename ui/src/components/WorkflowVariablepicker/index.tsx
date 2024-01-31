@@ -74,7 +74,7 @@ const WorkflowVariablePicker = ({
       (element: variableType) => element.name === value
     )[0];
 
-    if (foundVariable != undefined) {
+    if (foundVariable) {
       onChange(foundVariable);
       setInput(value);
     }
