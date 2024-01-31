@@ -12,14 +12,18 @@ import {
 
 import Button from "~/design/Button";
 import { FC } from "react";
+import { InstanceSchemaType } from "~/api/instances/schema";
 import WorkflowDiagram from "~/design/WorkflowDiagram";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useTranslation } from "react-i18next";
 
-const Diagram: FC<{ workflowPath: string; flow: string[] }> = ({
-  workflowPath,
-  flow,
-}) => {
+type DiagramProps = {
+  workflowPath: string;
+  flow: string[];
+  status: InstanceSchemaType["status"];
+};
+
+const Diagram: FC<DiagramProps> = ({ workflowPath, flow }) => {
   const { data } = useNodeContent({ path: workflowPath });
   const { setMaximizedPanel } = useLogsPreferencesActions();
   const { t } = useTranslation();
