@@ -1,5 +1,6 @@
 import { Dialog, DialogTrigger } from "~/design/Dialog";
 import { FC, useState } from "react";
+import { PatchRow, TableHeader } from "./Table";
 import { PatchSchemaType, ServiceFormSchemaType } from "../../schema";
 import { Table, TableBody } from "~/design/Table";
 import { UseFormReturn, useFieldArray, useWatch } from "react-hook-form";
@@ -9,7 +10,6 @@ import { Card } from "~/design/Card";
 import { ModalWrapper } from "~/pages/namespace/Explorer/Endpoint/EndpointEditor/Form/plugins/components/Modal";
 import { PatchItemForm } from "./Item";
 import { Plus } from "lucide-react";
-import { TableHeader } from "./Table";
 import { useTranslation } from "react-i18next";
 
 type PatchesFormProps = {
@@ -29,14 +29,8 @@ export const PatchesForm: FC<PatchesFormProps> = ({ form }) => {
     value: "",
   };
 
-  const examplePatch: PatchSchemaType = {
-    op: "remove",
-    path: "/fooo",
-    value: "generics",
-  };
-
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [itemToEdit, setItemToEdit] = useState<PatchSchemaType>(emptyPatch);
+  const [indexToEdit, setIndexToEdit] = useState<number | undefined>();
 
   const {
     append: addItem,
@@ -48,6 +42,15 @@ export const PatchesForm: FC<PatchesFormProps> = ({ form }) => {
     control,
     name: "patches",
   });
+
+  const handleSubmit = (item: PatchSchemaType) => {
+    if (!indexToEdit) {
+      addItem(item);
+    } else {
+      updateItem(indexToEdit, item);
+    }
+    setDialogOpen(false);
+  };
 
   const itemCount = fields.length;
 
@@ -67,14 +70,25 @@ export const PatchesForm: FC<PatchesFormProps> = ({ form }) => {
               count: itemCount,
             })}
           >
-            <DialogTrigger asChild onClick={() => setItemToEdit(examplePatch)}>
+            <DialogTrigger asChild>
               <Button icon variant="outline" size="sm">
                 <Plus />
                 {t("pages.explorer.service.editor.form.patches.addButton")}
               </Button>
             </DialogTrigger>
           </TableHeader>
-          <TableBody>{/* todo: render an item for every patch */}</TableBody>
+          <TableBody>
+            {fields.map((field, index) => (
+              <PatchRow
+                key={field.id}
+                patch={field}
+                onClick={() => {
+                  setIndexToEdit(index);
+                  setDialogOpen(true);
+                }}
+              />
+            ))}
+          </TableBody>
         </Table>
       </Card>
 
@@ -86,11 +100,8 @@ export const PatchesForm: FC<PatchesFormProps> = ({ form }) => {
       >
         <PatchItemForm
           formId={formId}
-          value={itemToEdit}
-          onSubmit={(item) => {
-            addItem(item);
-            setDialogOpen(false);
-          }}
+          value={indexToEdit !== undefined ? fields?.[indexToEdit] : emptyPatch}
+          onSubmit={handleSubmit}
         />
       </ModalWrapper>
     </Dialog>

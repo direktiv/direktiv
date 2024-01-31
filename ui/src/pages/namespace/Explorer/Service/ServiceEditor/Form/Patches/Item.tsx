@@ -22,7 +22,7 @@ import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 type PatchItemFormProps = {
-  value: PatchSchemaType;
+  value: PatchSchemaType | undefined;
   onSubmit: (item: PatchSchemaType) => void;
   formId: string;
 };
@@ -42,7 +42,9 @@ export const PatchItemForm: FC<PatchItemFormProps> = ({
     watch,
   } = useForm<PatchSchemaType>({
     resolver: zodResolver(PatchSchema),
-    defaultValues: value,
+    defaultValues: {
+      ...value,
+    },
   });
 
   const submitForm = (event: FormEvent<HTMLFormElement>) => {
