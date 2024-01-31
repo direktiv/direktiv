@@ -2,13 +2,13 @@ import { NoResult, Table, TableBody } from "~/design/Table";
 import { Pagination, PaginationLink } from "~/design/Pagination";
 import { useEffect, useMemo, useState } from "react";
 
-import { Braces } from "lucide-react";
 import { Card } from "~/design/Card";
 import Create from "./Create";
 import CreateItemButton from "~/pages/namespace/Settings/components/CreateItemButton";
 import Delete from "~/pages/namespace/Settings/Variables/Delete";
 import { Dialog } from "~/design/Dialog";
 import Edit from "./Edit";
+import { FileJson } from "lucide-react";
 import Input from "~/design/Input";
 import ItemRow from "~/pages/namespace/Settings/components/ItemRow";
 import PaginationProvider from "~/components/PaginationProvider";
@@ -89,7 +89,7 @@ const VariablesList = ({ path }: { path: string }) => {
           <>
             <div className="mb-4 flex flex-col gap-4 sm:flex-row">
               <h3 className="flex grow items-center gap-x-2 pb-2 pt-1 font-bold">
-                <Braces className="h-5" />
+                <FileJson className="h-5" />
                 {t(
                   "pages.explorer.tree.workflow.settings.variables.list.title"
                 )}
