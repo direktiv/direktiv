@@ -49,7 +49,7 @@ const WorkflowVariablePicker = ({
   const defaultNamespace = useNamespace();
   const namespace = givenNamespace ? givenNamespace : defaultNamespace;
 
-  const path = workflow ? workflow : "";
+  const path = workflow;
 
   const { data, isError } = useWorkflowVariables({ path, namespace });
 
@@ -60,7 +60,7 @@ const WorkflowVariablePicker = ({
   const emptyWorkflow = data?.variables.results[0] === undefined ? true : false;
 
   const pathNotFound = isError && !emptyWorkflow;
-  //const pathNotFound = false;
+
   const unselectedWorkflow = workflow ? false : true;
 
   const setNewVariable = (value: string) => {
