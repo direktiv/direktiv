@@ -1,0 +1,323 @@
+# -- Container registry from which to pull direktiv.
+registry: "docker.io"
+
+# -- Container pull policy.
+pullPolicy: Always
+
+# -- Container registry secrets.
+imagePullSecrets: []
+
+
+# -- image for main direktiv binary
+image: "direktiv/direktiv"
+
+# -- image tag for main direktiv binary pod
+tag: ""
+
+# -- enabled api key for API authentication with the `direktiv-token` header
+apikey: none
+
+# -- max request timeouts in seconds. Used in Knative and the ingress controller if enabled.
+requestTimeout: 7200
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+flow:
+  # -- Output debug-level logs.
+  debug: false
+  # -- Set to 'json' or 'console' to change log output format.
+  logging: json
+  # -- Set to define an encryption key to be used for secrets. If set to empty, one will be generated on install.
+  encryptionKey:
+  # -- number of flow replicas
+  replicas: 1
+  # -- extra environment variables in flow pod 
+  extraVariables: []
+    # - name: 
+    #   value:
+  # -- extra container in flow pod
+  extraContainers: []
+  # -- extra volume mounts in flow pod
+  extraVolumeMounts:
+    # - name: service-template
+    #   mountPath: /etc/config
+  # -- extra volumes in flow pod
+  extraVolumes:
+    # - name: service-template
+    #   configMap:
+    #     name: service-template
+  # -- affinity for flow pods
+  affinity: {}
+    # podAntiAffinity:
+    #   requiredDuringSchedulingIgnoredDuringExecution:
+    #   - labelSelector:
+    #       matchExpressions:
+    #       - key: app.kubernetes.io/name
+    #         operator: In
+    #         values:
+    #         - direktiv
+    #     topologyKey: kubernetes.io/hostname
+  containers:
+    secrets:
+      resources:
+        requests:
+          memory: "128Mi"
+        limits:
+          memory: "512Mi"
+
+database:
+  # -- database host
+  host: "postgres-postgresql-ha-pgpool.postgres"
+  # -- database port
+  port: 5432
+  # -- database user
+  user: "direktiv"
+  # -- database password
+  password: "direktivdirektiv"
+  # -- database name, has to be created before installation
+  name: "direktiv"
+  # -- sslmode for database
+  sslmode: require
+  # -- additional connection attributes, e.g. target_session_attrs
+  additional: ""
+
+prometheus:
+  install: true
+  backendName: "prom-backend-server" # required if install = false
+  global:
+    scrape_interval: 1m
+    evaluation_interval: 1m
+  server:
+    retention: 96h
+    persistentVolume:
+      enabled: false
+  alertmanager:
+    enabled: false
+  prometheus-node-exporter:
+    enabled: false
+  prometheus-pushgateway:
+    enabled: false
+  kube-state-metrics:
+    enabled: false
+  serviceAccounts:
+    server:
+      create: true
+
+# Added this to connect to tracing.direktiv.io
+opentelemetry:
+  # -- installs opentelemtry agent as sidecar in flow
+  enabled: false
+  image: otel/opentelemetry-collector-dev:latest
+  # -- config for sidecar agent
+  agentconfig: |
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+          http:
+    exporters:
+      otlp:
+        endpoint: "tempo.grafana.svc:4317" # otel receivers grpc port for expl. tempo 
+        insecure: true
+        sending_queue:
+          num_consumers: 4
+          queue_size: 100
+        retry_on_failure:
+          enabled: true
+      logging:
+        loglevel: debug
+    processors:
+      batch:
+      memory_limiter:
+        # Same as --mem-ballast-size-mib CLI argument
+        ballast_size_mib: 165
+        # 80% of maximum memory up to 2G
+        limit_mib: 400
+        # 25% of limit up to 2G
+        spike_limit_mib: 100
+        check_interval: 5s
+    extensions:
+      zpages: {}
+    service:
+      extensions: [zpages]
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors: [memory_limiter, batch]
+          exporters: [logging, otlp]
+
+# -- knative eventing enabled, requires knative setup and configuration
+eventing:
+  enabled: true
+
+ingress:
+  # -- 
+  enabled: true
+  # -- Host for external services, only required for TLS
+  host:
+  # -- TLS secret
+  certificate:
+  # -- Ingress class
+  class: "nginx"
+  # -- Additional Annotations
+  additionalAnnotations: {}
+  # -- Additional Labels
+  additionalLabels: {}
+
+# -- nginx ingress controller configuration
+ingress-nginx:
+  install: true
+  controller:
+    podAnnotations:
+      linkerd.io/inject: disabled
+    config:
+      proxy-buffer-size: "16k"
+    replicaCount: 1
+    admissionWebhooks:
+      patch:
+        podAnnotations:
+          linkerd.io/inject: disabled
+
+fluentbit:
+  # -- postgres for direktiv services
+  # Append extra output to fluentbit configuration.
+  # There are two log types: application (system), functions (workflows)
+  # these can be matched to new outputs.
+  extraConfig: ""
+  # extraConfig: |
+  #   [OUTPUT]
+  #           name stdout
+  #           match application
+
+# -- service account for components. If preconfigured serviceaccounts are used the name ise the base 
+# and two additional service accounts are needed, e.g. service account name is myaccount then another two 
+# acounts are needed: myaccount-functions and myaccount-functions-pod
+serviceAccount:
+  annotations: {}
+  name: ""
+  create: true
+  # example to annotate for GCP database access
+  #   annotations:
+  #      iam.gke.io/gcp-service-account: IAM_USER@GCP_PROJECT.iam.gserviceaccount.com
+
+# -- Frontend configuration
+frontend:
+  image: "direktiv/frontend"
+  command: ""
+  replicas: 1
+  extraVariables: []
+  nginx: 
+    resolver: kube-dns.kube-system.svc.cluster.local valid=10s;
+    config: ""
+
+  # -- Logging setting for the UI
+  logging:
+    # -- Logging in JSON or console format
+    json: true
+    # -- Enable/Disable debug mode
+    debug: true
+  
+  # -- certificate secret for frontend
+  certificate:
+  # -- Additional Annotations for frontend
+  additionalAnnotations: {}
+  # -- Additional Labels for frontend
+  additionalLabels: {}
+  # -- Additional secret environment variables
+  additionalSecEnvs: {}
+  # -- Backend configuration for the workflow engine
+  backend:
+    # -- Defaults to engine in the same namespace
+    url:
+    # -- Skip verifing TLS certificate if TLS is configured
+    skip-verify: false
+  extraConfig: 
+  resources:
+    requests:
+      memory: "128Mi"
+    limits:
+      memory: "512Mi"
+
+# -- http proxy settings
+http_proxy: ""
+# -- https proxy settings
+https_proxy: ""
+# -- no proxy proxy settings
+no_proxy: ""
+
+functions:
+
+  # -- knative service limits 
+  limits:
+    memory:
+      small: 512
+      medium: 1024
+      large: 2048
+    cpu:
+      small: 250m
+      medium: 500m
+      large: 1
+    disk:
+      small: 256
+      medium: 1024
+      large: 4096
+
+  # namespace to run functions in
+  namespace: direktiv-services-direktiv
+  ingressClass: contour.ingress.networking.knative.dev
+
+  # -- number of controller replicas
+  replicas: 1
+
+  # -- Egress/Ingress network limit for functions if supported by network
+  netShape: 
+
+  # -- Cleaning up tasks, Kubernetes < 1.20 does not clean finished tasks
+  podCleaner: true  # deprecated
+
+  # -- runtime to use, e.g. gvisor on GCP
+  runtime: "default"
+
+  affinity: {}
+
+  # -- extra containers for function controller, e.g. database containers for google cloud or logging
+  extraContainersPod: []
+
+  # -- extra volumes for tasks and knative pods
+  extraVolumes:
+    []
+  #   - configMap:
+  #   name: otel-agent-conf
+  #   items:
+  #     - key: otel-agent-config
+  #       path: otel-agent-config.yaml
+  # name: otel-agent-config-vol
+
+  # -- extra containers for tasks and knative pods
+  extraContainers:
+    []
+    # - name: cloud-sql-proxy
+    #   image: gcr.io/cloudsql-docker/gce-proxy:1.17
+    #   command:
+    #     - "/cloud_sql_proxy"
+    #     - "-instances=mygcpdb=tcp:5432"
+    #     - "-ip_address_types=PRIVATE"
+    #   securityContext:
+    #     runAsNonRoot: true
+    #   resources:
+    #     requests:
+    #       memory: "2Gi"
+    #       cpu:    "1"
+  
+  containers:
+    functionscontroller:
+      resources:
+        requests:
+          memory: "128Mi"
+        limits:
+          memory: "1024Mi"
+
+
+
