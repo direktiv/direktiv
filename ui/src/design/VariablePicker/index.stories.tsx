@@ -91,10 +91,6 @@ export const WithHeadingAndSeparator = () => {
         <VariablepickerSeparator />
         <VariablepickerItem value="three">three</VariablepickerItem>
       </Variablepicker>
-      <div className="m-5 flex">
-        <p>It is:</p>
-        <p className="ml-2">{value}</p>
-      </div>
     </div>
   );
 };
