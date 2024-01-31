@@ -1,6 +1,12 @@
 import { FC, PropsWithChildren } from "react";
-import { TableHead, TableHeaderCell, TableRow } from "~/design/Table";
+import {
+  TableCell,
+  TableHead,
+  TableHeaderCell,
+  TableRow,
+} from "~/design/Table";
 
+import { ContextMenu } from "~/pages/namespace/Explorer/Endpoint/EndpointEditor/Form/plugins/components/PluginsTable";
 import { PatchSchemaType } from "../../schema";
 
 type TableHeaderProps = PropsWithChildren & {
@@ -19,10 +25,20 @@ export const TableHeader: FC<TableHeaderProps> = ({ title, children }) => (
 type PatchRowProps = {
   patch: PatchSchemaType;
   onClick: () => void;
+  onDelete: () => void;
 };
 
-export const PatchRow: FC<PatchRowProps> = ({ patch, onClick }) => (
+export const PatchRow: FC<PatchRowProps> = ({ patch, onClick, onDelete }) => (
   <TableRow onClick={onClick}>
-    {patch.op}: {patch.path}
+    <TableCell>{patch.op}</TableCell>
+    <TableCell>{patch.path}</TableCell>
+    <TableCell className="text-right">
+      {/* TODO: Context menu should be generic (imported from plugin context) */}
+      <ContextMenu
+        onDelete={onDelete}
+        // onMoveDown={onMoveDown}
+        // onMoveUp={onMoveUp}
+      />
+    </TableCell>
   </TableRow>
 );

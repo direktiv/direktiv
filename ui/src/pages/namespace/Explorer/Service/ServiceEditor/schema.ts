@@ -35,7 +35,7 @@ export const ServiceFormSchema = z.object({
   scale: z.number().min(0).lt(10).optional(),
   size: z.string().optional(),
   cmd: z.string().optional(),
-  patches: z.array(PatchSchema).nonempty().optional(),
+  patches: z.array(PatchSchema).optional(),
   envs: z.array(EnvironementVariableSchema).nonempty().optional(),
 });
 

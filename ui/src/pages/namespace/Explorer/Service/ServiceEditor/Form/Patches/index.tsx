@@ -44,11 +44,12 @@ export const PatchesForm: FC<PatchesFormProps> = ({ form }) => {
   });
 
   const handleSubmit = (item: PatchSchemaType) => {
-    if (!indexToEdit) {
+    if (indexToEdit === undefined) {
       addItem(item);
     } else {
       updateItem(indexToEdit, item);
     }
+    setIndexToEdit(undefined);
     setDialogOpen(false);
   };
 
@@ -86,6 +87,7 @@ export const PatchesForm: FC<PatchesFormProps> = ({ form }) => {
                   setIndexToEdit(index);
                   setDialogOpen(true);
                 }}
+                onDelete={() => deleteItem(index)}
               />
             ))}
           </TableBody>
