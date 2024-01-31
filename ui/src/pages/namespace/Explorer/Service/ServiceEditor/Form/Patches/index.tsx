@@ -1,14 +1,14 @@
 import { Dialog, DialogTrigger } from "~/design/Dialog";
 import { FC, useState } from "react";
+import { PatchSchemaType, ServiceFormSchemaType } from "../../schema";
 import { Table, TableBody } from "~/design/Table";
 import { UseFormReturn, useFieldArray, useWatch } from "react-hook-form";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import { ModalWrapper } from "~/pages/namespace/Explorer/Endpoint/EndpointEditor/Form/plugins/components/Modal";
-import { PatchForm } from "./Form";
+import { PatchItemForm } from "./Item";
 import { Plus } from "lucide-react";
-import { ServiceFormSchemaType } from "../../schema";
 import { TableHeader } from "./Table";
 import { useTranslation } from "react-i18next";
 
@@ -21,7 +21,22 @@ export const PatchesForm: FC<PatchesFormProps> = ({ form }) => {
   const values = useWatch({ control });
   const { t } = useTranslation();
 
+  const formId = "patchItemForm";
+
+  const emptyPatch: PatchSchemaType = {
+    op: "add",
+    path: "",
+    value: "",
+  };
+
+  const examplePatch: PatchSchemaType = {
+    op: "remove",
+    path: "/fooo",
+    value: "generics",
+  };
+
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [itemToEdit, setItemToEdit] = useState<PatchSchemaType>(emptyPatch);
 
   const {
     append: addItem,
@@ -36,11 +51,12 @@ export const PatchesForm: FC<PatchesFormProps> = ({ form }) => {
 
   const itemCount = fields.length;
 
+  if (!values.patches) return <></>;
+
   return (
     <Dialog
       open={dialogOpen}
       onOpenChange={(isOpen) => {
-        // if (isOpen === false) setEditIndex(undefined);
         setDialogOpen(isOpen);
       }}
     >
@@ -51,7 +67,7 @@ export const PatchesForm: FC<PatchesFormProps> = ({ form }) => {
               count: itemCount,
             })}
           >
-            <DialogTrigger asChild>
+            <DialogTrigger asChild onClick={() => setItemToEdit(examplePatch)}>
               <Button icon variant="outline" size="sm">
                 <Plus />
                 {t("pages.explorer.service.editor.form.patches.addButton")}
@@ -65,9 +81,17 @@ export const PatchesForm: FC<PatchesFormProps> = ({ form }) => {
       {/* todo: modal wrapper should be generic component */}
 
       <ModalWrapper
+        formId={formId}
         title={t("pages.explorer.service.editor.form.patches.modal.title")}
       >
-        <PatchForm />
+        <PatchItemForm
+          formId={formId}
+          value={itemToEdit}
+          onSubmit={(item) => {
+            addItem(item);
+            setDialogOpen(false);
+          }}
+        />
       </ModalWrapper>
     </Dialog>
   );

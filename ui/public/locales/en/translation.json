@@ -228,7 +228,7 @@
               "placeholder": "Select a size"
             },
             "cmd": "Cmd",
-            "patches":{
+            "patches": {
               "label": "{{count}} Patches",
               "label_one": "{{count}} Patch",
               "addButton": "add patch",
@@ -236,7 +236,7 @@
                 "title": "Edit patch",
                 "op": {
                   "label": "Operation",
-                  "placeholder": "Select a placeholder"
+                  "placeholder": "Select an operation"
                 },
                 "path": "Path",
                 "value": "Value"

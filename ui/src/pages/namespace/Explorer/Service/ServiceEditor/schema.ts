@@ -21,10 +21,12 @@ export const scaleOptions = [
 
 export const PatchOperations = ["add", "replace", "remove"] as const;
 
-export const PatchesSchema = z.object({
-  op: z.enum(PatchOperations),
-  path: z.string(),
-  value: z.string(),
+export const PatchOperationSchema = z.enum(PatchOperations);
+
+export const PatchSchema = z.object({
+  op: PatchOperationSchema,
+  path: z.string().nonempty(),
+  value: z.string().nonempty(),
 });
 
 export const ServiceFormSchema = z.object({
@@ -33,8 +35,10 @@ export const ServiceFormSchema = z.object({
   scale: z.number().min(0).lt(10).optional(),
   size: z.string().optional(),
   cmd: z.string().optional(),
-  patches: z.array(PatchesSchema).nonempty().optional(),
+  patches: z.array(PatchSchema).nonempty().optional(),
   envs: z.array(EnvironementVariableSchema).nonempty().optional(),
 });
 
+export type PatchOperationType = z.infer<typeof PatchOperationSchema>;
+export type PatchSchemaType = z.infer<typeof PatchSchema>;
 export type ServiceFormSchemaType = z.infer<typeof ServiceFormSchema>;
