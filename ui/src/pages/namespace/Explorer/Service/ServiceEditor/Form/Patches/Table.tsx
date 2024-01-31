@@ -26,9 +26,17 @@ type PatchRowProps = {
   patch: PatchSchemaType;
   onClick: () => void;
   onDelete: () => void;
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
 };
 
-export const PatchRow: FC<PatchRowProps> = ({ patch, onClick, onDelete }) => (
+export const PatchRow: FC<PatchRowProps> = ({
+  patch,
+  onClick,
+  onDelete,
+  onMoveUp,
+  onMoveDown,
+}) => (
   <TableRow onClick={onClick}>
     <TableCell>{patch.op}</TableCell>
     <TableCell>{patch.path}</TableCell>
@@ -36,8 +44,8 @@ export const PatchRow: FC<PatchRowProps> = ({ patch, onClick, onDelete }) => (
       {/* TODO: Context menu should be generic (imported from plugin context) */}
       <ContextMenu
         onDelete={onDelete}
-        // onMoveDown={onMoveDown}
-        // onMoveUp={onMoveUp}
+        onMoveDown={onMoveDown}
+        onMoveUp={onMoveUp}
       />
     </TableCell>
   </TableRow>

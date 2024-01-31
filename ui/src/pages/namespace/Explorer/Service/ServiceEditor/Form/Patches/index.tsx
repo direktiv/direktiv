@@ -79,7 +79,7 @@ export const PatchesForm: FC<PatchesFormProps> = ({ form }) => {
             </DialogTrigger>
           </TableHeader>
           <TableBody>
-            {fields.map((field, index) => (
+            {fields.map((field, index, srcArray) => (
               <PatchRow
                 key={field.id}
                 patch={field}
@@ -88,6 +88,14 @@ export const PatchesForm: FC<PatchesFormProps> = ({ form }) => {
                   setDialogOpen(true);
                 }}
                 onDelete={() => deleteItem(index)}
+                onMoveUp={
+                  index > 0 ? () => moveItem(index, index - 1) : undefined
+                }
+                onMoveDown={
+                  index < srcArray.length - 1
+                    ? () => moveItem(index, index + 1)
+                    : undefined
+                }
               />
             ))}
           </TableBody>
