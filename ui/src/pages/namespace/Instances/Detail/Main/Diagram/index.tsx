@@ -14,6 +14,7 @@ import Button from "~/design/Button";
 import { FC } from "react";
 import { InstanceSchemaType } from "~/api/instances/schema";
 import WorkflowDiagram from "~/design/WorkflowDiagram";
+import { instanceStatusToDiagramStatus } from "./utils";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useTranslation } from "react-i18next";
 
@@ -23,7 +24,7 @@ type DiagramProps = {
   status: InstanceSchemaType["status"];
 };
 
-const Diagram: FC<DiagramProps> = ({ workflowPath, flow }) => {
+const Diagram: FC<DiagramProps> = ({ workflowPath, flow, status }) => {
   const { data } = useNodeContent({ path: workflowPath });
   const { setMaximizedPanel } = useLogsPreferencesActions();
   const { t } = useTranslation();
@@ -64,7 +65,7 @@ const Diagram: FC<DiagramProps> = ({ workflowPath, flow }) => {
         workflow={workflowData}
         flow={flow}
         orientation="horizontal"
-        instanceStatus="complete"
+        instanceStatus={instanceStatusToDiagramStatus(status)}
       />
     </div>
   );
