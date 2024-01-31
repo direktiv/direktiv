@@ -1,3 +1,4 @@
+import { Controller, useForm } from "react-hook-form";
 import { FC, FormEvent } from "react";
 import {
   PatchOperationType,
@@ -14,10 +15,12 @@ import {
   SelectValue,
 } from "~/design/Select";
 
+import { Card } from "~/design/Card";
+import Editor from "~/design/Editor";
 import { Fieldset } from "~/components/Form/Fieldset";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
-import { useForm } from "react-hook-form";
+import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -33,6 +36,7 @@ export const PatchItemForm: FC<PatchItemFormProps> = ({
   onSubmit,
 }) => {
   const { t } = useTranslation();
+  const theme = useTheme();
 
   const {
     handleSubmit,
@@ -40,6 +44,7 @@ export const PatchItemForm: FC<PatchItemFormProps> = ({
     setValue,
     register,
     watch,
+    control,
   } = useForm<PatchSchemaType>({
     resolver: zodResolver(PatchSchema),
     defaultValues: {
@@ -91,9 +96,21 @@ export const PatchItemForm: FC<PatchItemFormProps> = ({
       </Fieldset>
       <Fieldset
         label={t("pages.explorer.service.editor.form.patches.modal.value")}
-        htmlFor="value"
       >
-        <Input type="text" id="value" {...register("value")} />
+        <Card className="h-[200px] w-full p-5" background="weight-1" noShadow>
+          <Controller
+            control={control}
+            name="value"
+            render={({ field }) => (
+              <Editor
+                theme={theme ?? undefined}
+                language="javascript"
+                value={field.value}
+                onChange={field.onChange}
+              />
+            )}
+          />
+        </Card>
       </Fieldset>
     </form>
   );
