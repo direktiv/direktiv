@@ -12,7 +12,6 @@ describe('Test services crud operations', () => {
     itShouldCreateSecret(it, expect,"test_namespace_b", "b_domain_1.io", "b_name_1", "b_password1")
     itShouldCreateSecret(it, expect,"test_namespace_b", "b_domain_2.io", "b_name_2", "b_password2")
 
-
     it(`should list all registries in namespace test_namespace_b`, async () => {
         const listRes = await request(common.config.getDirektivHost())
             .get(`/api/v2/namespaces/test_namespace_a/registries`)
@@ -20,13 +19,11 @@ describe('Test services crud operations', () => {
         expect(listRes.body).toMatchObject({
             data: [
                 {
-                    namespace: "test_namespace_a",
                     id: expect.stringMatching(/^secret-/),
                     url: "a_domain_1.io",
                     user: "a_name_1",
                 },
                 {
-                    namespace: "test_namespace_a",
                     id: expect.stringMatching(/^secret-/),
                     url: "a_domain_2.io",
                     user: "a_name_2",
@@ -41,13 +38,11 @@ describe('Test services crud operations', () => {
         expect(listRes.body).toMatchObject({
             data: [
                 {
-                    namespace: "test_namespace_b",
                     id: expect.stringMatching(/^secret-/),
                     url: "b_domain_1.io",
                     user: "b_name_1",
                 },
                 {
-                    namespace: "test_namespace_b",
                     id: expect.stringMatching(/^secret-/),
                     url: "b_domain_2.io",
                     user: "b_name_2",
@@ -68,7 +63,6 @@ function itShouldCreateSecret(it, expect, namespace, url, user, password) {
         expect(res.statusCode).toEqual(200)
         expect(res.body).toEqual({
             data: {
-                namespace: namespace,
                 id: expect.stringMatching(/^secret-/),
                 url: url,
                 user: user,

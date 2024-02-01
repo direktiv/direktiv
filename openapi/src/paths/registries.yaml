@@ -1,0 +1,89 @@
+delete:
+    summary: Delete a registry.
+    parameters:
+    - $ref: '../parameters.yaml#/namespace'
+    - $ref: '../parameters.yaml#/registry'
+    responses:
+      '204':
+        description: No Content
+  get:
+    summary: Api for listing registries.
+    parameters:
+    - $ref: '../parameters.yaml#/namespace'
+    responses:
+      '200':
+        description: OK
+        content:
+          'application/json':
+            example:
+              data:
+                id: secret-c163796084d652e67cb0
+                url: docker.io
+                user: me
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id: 
+                        type: string
+                      url:
+                        type: string
+                      user:
+                        type: string             
+  post:
+    summary: Create a registry.
+    parameters:
+    - $ref: '../parameters.yaml#/namespace'
+    requestBody:
+      content:
+        'application/json':
+          example:
+            data:
+              url: 'docker.io'
+              user: 'me'
+              password: '****'
+          schema:
+            type: object
+            required:
+            - data
+            properties:
+              data:
+                type: object
+                properties:
+                  url:
+                    type: string 
+                    format: uri
+                  user:
+                    type: string 
+                    # TODO: regex
+                  password:
+                    type: string
+                    format: password
+      required: true
+    responses:
+      '200':
+        description: Registry record.
+        content:
+          application/json:
+            example:
+              data:
+                id: secret-c163796084d652e67cb0
+                url: docker.io
+                user: me
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    id: 
+                      type: string
+                    url:
+                      type: string
+                      format: uri
+                    user:
+                      type: string

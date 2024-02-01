@@ -1,7 +1,6 @@
 import request from 'supertest'
 import common from "../common";
 
-
 const testNamespace = "test-services"
 
 describe('Test services crud operations', () => {
@@ -20,7 +19,6 @@ describe('Test services crud operations', () => {
         expect(res.statusCode).toEqual(200)
         expect(res.body).toEqual({
             data: {
-                namespace: "test-services",
                 id: "secret-c163796084d652e67cb0",
                 url: "docker.io",
                 user: "me",
@@ -39,7 +37,6 @@ describe('Test services crud operations', () => {
         expect(res.statusCode).toEqual(200)
         expect(res.body).toEqual({
             data: {
-                namespace: "test-services",
                 id: "secret-7a95ae8578ed80f27403",
                 url: "docker2.io",
                 user: "me2",
@@ -55,13 +52,11 @@ describe('Test services crud operations', () => {
         expect(listRes.body).toMatchObject({
             data: [
                 {
-                    namespace: "test-services",
                     id: "secret-c163796084d652e67cb0",
                     url: "docker.io",
                     user: "me",
                 },
                 {
-                    namespace: "test-services",
                     id: "secret-7a95ae8578ed80f27403",
                     url: "docker2.io",
                     user: "me2",
@@ -71,8 +66,8 @@ describe('Test services crud operations', () => {
 
     it(`should delete a registry`, async () => {
         const res = await request(common.config.getDirektivHost())
-            .delete(`/api/v2/namespaces/${testNamespace}/registries/secret-c163796084d652e67cb0`)
-        expect(res.statusCode).toEqual(200)
+            .delete(`/api/v2/namespaces/${testNamespace}/registries?registry=secret-c163796084d652e67cb0`)
+        expect(res.statusCode).toEqual(204)
     })
 
     it(`should list all registries after delete`, async () => {
