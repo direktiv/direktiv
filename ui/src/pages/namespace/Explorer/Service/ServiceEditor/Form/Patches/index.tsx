@@ -96,8 +96,6 @@ export const PatchesForm: FC<PatchesFormProps> = ({ form }) => {
         </Table>
       </Card>
 
-      {/* todo: modal wrapper should be generic component */}
-
       <ModalWrapper
         formId={formId}
         title={

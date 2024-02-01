@@ -41,7 +41,6 @@ export const PatchRow: FC<PatchRowProps> = ({
     <TableCell>{patch.op}</TableCell>
     <TableCell>{patch.path}</TableCell>
     <TableCell className="text-right">
-      {/* TODO: Context menu should be generic (imported from plugin context) */}
       <ContextMenu
         onDelete={onDelete}
         onMoveDown={onMoveDown}
