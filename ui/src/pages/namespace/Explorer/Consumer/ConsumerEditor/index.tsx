@@ -1,5 +1,3 @@
-import { compareYamlStructure, jsonToYaml } from "../../utils";
-
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
@@ -10,6 +8,7 @@ import { Form } from "./Form";
 import FormErrors from "~/components/FormErrors";
 import { Save } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
+import { jsonToYaml } from "../../utils";
 import { serializeConsumerFile } from "./utils";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useTheme } from "~/util/store/theme";
