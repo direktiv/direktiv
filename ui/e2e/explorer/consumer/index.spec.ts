@@ -1,6 +1,7 @@
 import { createNamespace, deleteNamespace } from "e2e/utils/namespace";
 import { expect, test } from "@playwright/test";
 
+import { createConsumerYaml } from "./utils";
 import { faker } from "@faker-js/faker";
 
 let namespace = "";
@@ -19,16 +20,14 @@ test("it is possible to create a consumer", async ({ page }) => {
   const filename = "myconsumer.yaml";
   const groups = Array.from({ length: 5 }, () => faker.lorem.word());
   const tags = Array.from({ length: 2 }, () => faker.lorem.word());
-  const groupsYaml = groups.map((group) => `\n  - "${group}"`).join("");
-  const tagsYaml = tags.map((tag) => `\n  - "${tag}"`).join("");
 
-  const expectedYaml = `direktiv_api: "consumer/v1"
-  username: "my-username"
-  password: "a-v3ry-g00d-pASSw0rd"
-  api_key: "some-api-key"
-  tags:${tagsYaml}
-  groups:${groupsYaml}
-  `;
+  const expectedYaml = createConsumerYaml({
+    username: "my-username",
+    password: "a-v3ry-g00d-pASSw0rd",
+    apiKey: "some-api-key",
+    groups,
+    tags,
+  });
 
   /* visit page */
   await page.goto(`/${namespace}/explorer/tree`, { waitUntil: "networkidle" });
