@@ -99,7 +99,7 @@ const ConsumerEditor: FC<ConsumerEditorProps> = ({ data, path }) => {
               <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
                 {isDirty && (
                   <div className="text-sm text-gray-8 dark:text-gray-dark-8">
-                    <span className="text-center">
+                    <span className="text-center" data-testid="unsaved-note">
                       {t("pages.explorer.consumer.editor.unsavedNote")}
                     </span>
                   </div>
