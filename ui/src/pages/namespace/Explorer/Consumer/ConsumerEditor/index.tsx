@@ -51,10 +51,7 @@ const ConsumerEditor: FC<ConsumerEditorProps> = ({ data, path }) => {
         values,
       }) => {
         const preview = jsonToYaml(values);
-        const filehasChanged = compareYamlStructure(
-          preview,
-          fileContentFromServer
-        );
+        const filehasChanged = preview === fileContentFromServer;
         const isDirty = !consumerConfigError && !filehasChanged;
         const disableButton = isLoading || !!consumerConfigError;
 

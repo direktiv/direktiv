@@ -33,9 +33,16 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
     },
   });
 
-  const values = useWatch({
+  const fieldsInOrder = ConsumerFormSchema.keyof().options;
+
+  const watchedValues = useWatch({
     control: formControls.control,
   });
+
+  const values = fieldsInOrder.reduce(
+    (object, key) => ({ ...object, [key]: watchedValues[key] }),
+    {}
+  );
 
   const { register, control } = formControls;
 
