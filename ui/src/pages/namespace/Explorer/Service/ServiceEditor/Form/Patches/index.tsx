@@ -48,7 +48,7 @@ export const PatchesForm: FC<PatchesFormProps> = ({ form }) => {
 
   const itemCount = fields.length;
 
-  if (!values.patches) return <></>;
+  if (!values.patches) return null;
 
   return (
     <Dialog

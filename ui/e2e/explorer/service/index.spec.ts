@@ -1,6 +1,12 @@
+import {
+  PatchOperationType,
+  PatchOperations,
+  PatchSchemaType,
+} from "~/pages/namespace/Explorer/Service/ServiceEditor/schema";
 import { createNamespace, deleteNamespace } from "e2e/utils/namespace";
 import { expect, test } from "@playwright/test";
 
+import { EnvironementVariableSchemaType } from "~/api/services/schema/services";
 import { faker } from "@faker-js/faker";
 
 let namespace = "";
@@ -18,7 +24,12 @@ test("it is possible to create a service", async ({ page }) => {
   /* prepare data */
   const filename = "mynewservice.yaml";
 
-  const envVariables = Array.from({ length: 5 }, () => ({
+  /**
+   * note: keep number of variables and patches low because we only
+   * compare the yaml that is visible in the editor at one time
+   **/
+
+  const envVariables = Array.from({ length: 3 }, () => ({
     name: faker.lorem.word(),
     value: faker.git.shortSha(),
   }));
@@ -27,11 +38,25 @@ test("it is possible to create a service", async ({ page }) => {
     .map((item) => `\n  - name: "${item.name}"\n    value: "${item.value}"`)
     .join("");
 
+  const patches = Array.from({ length: 2 }, () => ({
+    op: PatchOperations[Math.floor(Math.random() * 3)] as PatchOperationType,
+    path: faker.internet.url(),
+    value: faker.lorem.words(3),
+  }));
+
+  const patchesYaml = patches
+    .map(
+      (item) =>
+        `\n  - op: "${item.op}"\n    path: "${item.path}"\n    value: "${item.value}"`
+    )
+    .join("");
+
   const expectedYaml = `direktiv_api: "service/v1"
 image: "bash"
 scale: 2
 size: "medium"
 cmd: "hello"
+patches:${patchesYaml}
 envs:${envsYaml}`;
 
   /* visit page */
@@ -63,23 +88,40 @@ envs:${envsYaml}`;
 
   await page.getByLabel("Cmd").fill("hello");
 
+  /* add patches */
+  for (let i = 0; i < patches.length; i++) {
+    const item = patches[i] as PatchSchemaType;
+    await page.getByRole("button", { name: "add patch" }).click();
+    await page.getByLabel("Operation").click();
+    await page.getByLabel(item.op).click();
+    await page.getByLabel("path").fill(item.path);
+    await page.keyboard.press("Tab");
+    await page.type("textarea", item.value);
+    await page.getByRole("button", { name: "Save" }).click();
+  }
+
+  /* add env variables */
   const envsElement = page
     .locator("fieldset")
     .filter({ hasText: "Environment variables" });
 
-  await Promise.all(
-    envVariables.map(async (item, index) => {
-      await expect(
-        envsElement.getByPlaceholder("NAME"),
-        "it renders one set of inputs for every existing env +1 empty set"
-      ).toHaveCount(index + 1);
+  for (let i = 0; i < envVariables.length; i++) {
+    const item = envVariables[i] as EnvironementVariableSchemaType;
+    await expect(
+      envsElement.getByPlaceholder("NAME"),
+      "it renders one set of inputs for every existing env +1 empty set"
+    ).toHaveCount(i + 1);
 
-      await envsElement.getByPlaceholder("NAME").last().fill(item.name);
-      await envsElement.getByPlaceholder("VALUE").last().fill(item.value);
-      await envsElement.getByRole("button").last().click();
-    })
-  );
+    await envsElement.getByPlaceholder("NAME").last().fill(item.name);
+    await envsElement.getByPlaceholder("VALUE").last().fill(item.value);
+    await envsElement.getByRole("button").last().click();
+  }
 
+  /**
+   * assert preview editor content
+   * note that only the visible part of the yaml is compared, so
+   * this will fail if the document gets too long.
+   */
   const editor = page.locator(".lines-content");
 
   await expect(
