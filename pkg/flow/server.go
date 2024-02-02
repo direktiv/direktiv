@@ -3,6 +3,7 @@ package flow
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -473,7 +474,25 @@ func (srv *server) start(ctx context.Context) error {
 	// TODO: yassir, use the new db to refactor old code.
 	dbManager := database2.NewDB(srv.gormDB, srv.conf.SecretKey)
 
-	newMainWG := cmd.NewMain(srv.conf, dbManager, srv.pBus, srv.sugar)
+	configureWorkflow := func(data string) error {
+		event := pubsub2.ChangeWorkflowEvent{}
+		err := json.Unmarshal([]byte(data), &event)
+		if err != nil {
+			return err
+		}
+		file, err := noTx.FileStore().ForNamespace(event.Namespace).GetFile(ctx, event.WorkflowPath)
+		if err != nil {
+			return err
+		}
+		err = srv.flow.configureWorkflowStarts(ctx, noTx, event.NamespaceID, file)
+		if err != nil {
+			return err
+		}
+
+		return srv.flow.placeholdSecrets(ctx, noTx, event.Namespace, file)
+	}
+
+	newMainWG := cmd.NewMain(srv.conf, dbManager, srv.pBus, srv.sugar, configureWorkflow)
 
 	srv.sugar.Info("Flow server started.")
 

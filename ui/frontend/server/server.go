@@ -24,7 +24,6 @@ type Server struct {
 }
 
 func NewServer(conf *Config, rm RouteManager) *Server {
-
 	r := chi.NewRouter()
 	r.Use(LoggerMiddleware(&log.Logger))
 
@@ -97,13 +96,11 @@ func (s *Server) Stop() {
 }
 
 func (s *Server) Start() {
-
 	if s.routeManager == nil {
 		log.Panic().Msg("route manager not set")
 	}
 
 	go func() {
-
 		var err error
 
 		if len(s.conf.Server.TLSCert) > 0 {
@@ -119,7 +116,6 @@ func (s *Server) Start() {
 				Err(err).
 				Msgf("could not start server")
 		}
-
 	}()
 
 	quit := make(chan os.Signal, 1)
@@ -129,5 +125,4 @@ func (s *Server) Start() {
 
 	log.Info().Msg("shutting down server")
 	s.Stop()
-
 }

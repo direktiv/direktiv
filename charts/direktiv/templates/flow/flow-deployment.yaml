@@ -1,0 +1,190 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "direktiv.fullname" . }}-flow
+  labels:
+    {{- include "direktiv.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.flow.replicas }}
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  selector:
+    matchLabels:
+      {{- include "direktiv.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        prometheus.io/port: "2112"
+        prometheus.io/path: "/metrics"
+        prometheus.io/scrape: "true"
+        prometheus.io/scheme: "http"
+      labels:
+        {{- include "direktiv.selectorLabels" . | nindent 8 }}
+        app: {{ include "direktiv.fullname" . }}-flow
+    spec:
+      {{- if gt (default $.Values.flow.replicas 1) 1 }}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+                - key: "app.kubernetes.io/name"
+                  operator: In
+                  values:
+                  - direktiv
+            topologyKey: "kubernetes.io/hostname"
+      {{- end }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "direktiv.serviceAccountName" . }}-functions
+      containers:
+{{- if .Values.opentelemetry.enabled }}
+{{ include "direktiv.opentelemetry" . | indent 8 }}
+{{- end }}
+{{- if .Values.flow.extraContainers }}
+{{ toYaml .Values.flow.extraContainers | indent 8}}
+{{- end }}
+        - name: flow
+          securityContext:
+            readOnlyRootFilesystem: false
+            allowPrivilegeEscalation: false
+          resources:
+            requests:
+              memory: "128Mi"
+            limits:
+              memory: "2048Mi"
+          image: "{{ .Values.registry }}/{{ .Values.image }}:{{ .Values.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          command: ["/bin/direktiv", "server"]
+          volumeMounts:
+          {{- if .Values.flow.extraVolumeMounts -}}
+          {{ toYaml .Values.flow.extraVolumeMounts | nindent 10 }}
+          {{- end }}
+          ports:
+            - name: flow-v1
+              containerPort: 6665
+              protocol: TCP
+            - name: flow
+              containerPort: 6666
+              protocol: TCP
+            - name: flow-v2
+              containerPort: 6667
+              protocol: TCP
+            - name: internal
+              containerPort: 7777
+              protocol: TCP
+            {{- if .Values.eventing.enabled }}
+            - name: grpcevents
+              protocol: TCP
+              containerPort: 3333
+            {{- end }}
+          env:
+          - name: DIREKTIV_APP
+            value: "flow"
+          - name: DIREKTIV_DEBUG
+            value: {{ .Values.flow.debug | quote }}
+          - name: DIREKTIV_LOG_FORMAT
+            value: {{ .Values.flow.logging | quote }}
+          - name: DIREKTIV_API_V1_PORT
+            value: "6665"
+          - name: DIREKTIV_API_V2_PORT
+            value: "6667"
+          - name: DIREKTIV_GRPC_PORT
+            value: "6666"
+          {{- if ne .Values.apikey "none" }}
+          - name: DIREKTIV_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "direktiv.fullname" . }}
+                key: apikey
+          {{- end }}
+          {{- range .Values.flow.additionalSecEnvs }}
+          - name: {{ .name | quote }}
+            valueFrom:
+               secretKeyRef:
+                 name: {{ .secret | quote }}
+                 key: {{ .key | quote }}
+          {{- end }}
+          - name: DIREKTIV_SECRET_KEY
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "direktiv.fullname" . }}
+                key: key
+          - name: DIREKTIV_DB
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "direktiv.fullname" . }}
+                key: db
+          - name: DIREKTIV_FUNCTIONS_TIMEOUT
+            value: {{ .Values.requestTimeout | quote }}
+          - name: DIREKTIV_PROMETHEUS_BACKEND
+          {{- if .Values.prometheus.install }}
+            value: {{ include "direktiv.fullname" . }}-prometheus-server.{{ .Release.Namespace }}
+          {{- else }}
+            value: {{ .Values.prometheus.backendName | quote }}
+          {{- end }}
+          - name: DIREKTIV_OPEN_TELEMETRY_BACKEND
+            value: {{ include "direktiv.opentelemetry-backend" . }}
+          - name: DIREKTIV_ENABLE_EVENTING
+            value: {{ .Values.eventing.enabled | quote }}
+          - name: DIREKTIV_KNATIVE_SERVICE_ACCOUNT
+            value: "direktiv-functions-pod"
+          - name: DIREKTIV_KNATIVE_NAMESPACE
+            value: "direktiv-services-direktiv"
+          - name: DIREKTIV_KNATIVE_INGRESS_CLASS
+            value: "contour.ingress.networking.knative.dev"
+          - name: DIREKTIV_KNATIVE_SIDECAR
+            value: "{{ .Values.registry }}/{{ .Values.image }}:{{ .Values.tag | default .Chart.AppVersion }}"
+          - name: DIREKTIV_KNATIVE_MAX_SCALE
+            value: "5"
+          {{- if .Values.netShape }}
+          - name: DIREKTIV_KNATIVE_NET_SHAPE
+            value: {{ .Values.netShape | quote }}
+          {{- end }}
+          - name: DIREKTIV_SERVICE_NAMESPACE
+            value: {{ .Values.functions.namespace }}
+          {{- if or (ne .Values.http_proxy "") (ne .Values.https_proxy "") }}
+          - name: "HTTP_PROXY"
+            value: "{{ .Values.http_proxy }}"
+          - name: "HTTPS_PROXY"
+            value: "{{ .Values.https_proxy }}"
+          - name: "NO_PROXY"
+            value: "{{ .Values.no_proxy }}"
+          {{- end }}
+          - name: DIREKTIV_DEPLOYMENT_NAME
+            value: "{{ include "direktiv.fullname" . }}"
+          - name: DIREKTIV_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          {{- range .Values.flow.extraVariables }}
+          - name: {{ .name | quote }}
+            value: {{ .value | quote }}
+          {{- end }}
+      volumes:
+{{- if .Values.opentelemetry.enabled }}
+{{ include "direktiv.opentelemetry.volume" . | indent 8 }}
+{{- end }}
+        {{- if .Values.flow.extraVolumes }}
+        {{ toYaml .Values.flow.extraVolumes | nindent 8 }}
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.flow.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

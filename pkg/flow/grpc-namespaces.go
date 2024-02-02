@@ -2,7 +2,6 @@ package flow
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
@@ -10,7 +9,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	pubsub2 "github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -193,14 +191,9 @@ func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespace
 		return nil, err
 	}
 
-	root, err := tx.FileStore().CreateRoot(ctx, uuid.New(), ns.Name)
+	_, err = tx.FileStore().CreateRoot(ctx, uuid.New(), ns.Name)
 	if err != nil {
 		flow.sugar.Warnf("CreateNamespace failed to create file-system root: %v", err)
-		return nil, err
-	}
-	_, err = tx.FileStore().ForRootID(root.ID).CreateFile(ctx, "/", filestore.FileTypeDirectory, "", nil)
-	if err != nil {
-		flow.sugar.Warnf("CreateNamespace failed to create root directory: %v", err)
 		return nil, err
 	}
 
@@ -240,17 +233,6 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 	}
 	if err != nil {
 		return nil, err
-	}
-
-	isEmpty, err := tx.FileStore().ForNamespace(ns.Name).IsEmptyDirectory(ctx, "/")
-	if err != nil {
-		if !errors.Is(err, filestore.ErrNotFound) {
-			// NOTE: the alternative shouldn't be possible
-			return nil, err
-		}
-	}
-	if !req.GetRecursive() && !isEmpty {
-		return nil, errors.New("refusing to delete non-empty namespace without explicit recursive argument")
 	}
 
 	err = tx.DataStore().Namespaces().Delete(ctx, ns.Name)

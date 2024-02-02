@@ -1,0 +1,98 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "direktiv.fullname" . }}-frontend
+  labels:
+    {{ include "direktiv.labelsFrontend" . | nindent 4 }}-frontend
+spec:
+  replicas: {{ .Values.frontend.replicas }}
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  selector:
+    matchLabels:
+      {{- include "direktiv.selectorLabelsFrontend" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        {{- range $key, $value := .Values.frontend.additionalAnnotations }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
+      labels:
+        {{- include "direktiv.selectorLabelsFrontend" . | nindent 8 }}
+        {{- range $key, $value := .Values.frontend.additionalLabels }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
+    spec:
+    {{- if gt (default $.Values.frontend.replicas 1) 1 }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+                - key: "app.kubernetes.io/name"
+                  operator: In
+                  values: 
+                  - direktiv-frontend
+            topologyKey: "kubernetes.io/hostname"
+      {{- end }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "direktiv.serviceAccountName" . }}
+      containers:
+        - name: frontend
+          {{- if .Values.frontend.command }}
+          command: {{  range .Values.frontend.command }}
+                   - {{ . }}
+                   {{ end }}          
+          {{- end }}
+          securityContext:
+            readOnlyRootFilesystem: false
+            allowPrivilegeEscalation: false
+          resources:
+            requests:
+              memory: {{ .Values.frontend.resources.requests.memory }}
+            limits:
+              memory: {{ .Values.frontend.resources.limits.memory }}
+          image: "{{ .Values.registry }}/{{ .Values.frontend.image }}:{{ .Values.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          env: 
+          {{- if len .Values.frontend.extraVariables }}
+          {{- range .Values.frontend.extraVariables }}
+            - name: {{ .name | quote }}
+              value: {{ .value | quote }}
+          {{- end }}
+          {{- end }}           
+          {{- if or (ne .Values.http_proxy "") (ne .Values.https_proxy "") }}
+          - name: "HTTP_PROXY"
+            value: "{{ .Values.http_proxy }}"
+          - name: "HTTPS_PROXY"
+            value: "{{ .Values.https_proxy }}"
+          - name: "NO_PROXY"
+            value: "{{ .Values.no_proxy }}"
+          {{- end }} 
+          ports:
+            - name: frontend
+              containerPort: 2304
+              protocol: TCP
+          volumeMounts:
+          - name: nginx-conf
+            mountPath: /etc/nginx/templates
+            readOnly: true
+          {{- if .Values.frontend.certificate }}
+          - name: cert-volume
+            mountPath: /etc/certs
+            readOnly: true
+          {{- end }}
+      volumes:
+      - name: nginx-conf
+        configMap:
+          name: {{ include "direktiv.fullname" . }}-config-frontend
+      {{- if .Values.frontend.certificate }}
+      - name: cert-volume
+        secret:
+          secretName: {{ .Values.frontend.certificate }}
+      {{- end }}
