@@ -1186,7 +1186,7 @@
       "title": "Variables in \"{{path}}\"",
       "buttonText": "Browse Variables",
       "placeholder": "No Variable selected",
-      "emptyDirectory": {
+      "noVarsInNamespace": {
         "title": "No Variables found"
       },
       "error": {
@@ -1197,8 +1197,8 @@
       "title": "Variables in \"{{path}}\"",
       "buttonText": "Browse Variables",
       "placeholder": "No Variable selected",
-      "emptyDirectory": {
-        "title": "No Variables found"
+      "noVarsInWorkflow": {
+        "title": "No Variables found in \"{{path}}\""
       },
       "error": {
         "title": "The workflow \"{{path}}\" was not found."

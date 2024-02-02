@@ -1,125 +1,107 @@
 import { Fragment, useState } from "react";
 import {
   Variablepicker,
-  VariablepickerError,
   VariablepickerHeading,
   VariablepickerItem,
-  VariablepickerMessage,
   VariablepickerSeparator,
 } from "~/design/VariablePicker";
 
 import { ButtonBar } from "~/design/ButtonBar";
 import Input from "~/design/Input";
-import { VarSchema } from "~/api/variables/schema";
+import { VariablePickerError } from "./VariablePickerError";
 import { useNamespace } from "~/util/store/namespace";
 import { useTranslation } from "react-i18next";
 import { useVars } from "~/api/variables/query/useVariables";
-import { z } from "zod";
 
-type variableType = z.infer<typeof VarSchema>;
+type NamespaceVariablePickerProps = {
+  namespace?: string;
+  defaultVariable?: string;
+  onChange: (name: string, mimeType?: string) => void;
+};
 
 const NamespaceVariablePicker = ({
   namespace: givenNamespace,
   defaultVariable,
   onChange,
-}: {
-  namespace?: string;
-  defaultVariable?: string;
-  onChange: (name: string, mimeType?: string) => void;
-}) => {
+}: NamespaceVariablePickerProps) => {
   const { t } = useTranslation();
 
-  const [variableName, setVariableName] = useState(
-    defaultVariable ? defaultVariable : ""
-  );
+  const [inputValue, setInput] = useState(defaultVariable ?? "");
 
   const defaultNamespace = useNamespace();
-  const namespace = givenNamespace ? givenNamespace : defaultNamespace;
+  const namespace = givenNamespace ?? defaultNamespace;
 
-  const { data, isError } = useVars({ namespace });
-  const path = namespace;
+  const { data, isError: pathNotFound } = useVars({ namespace });
 
-  const variableList = data?.variables.results ? data.variables.results : [];
-
-  const pathNotFound = isError;
+  const variables = data?.variables.results ?? [];
+  const noVarsInNamespace = variables.length === 0;
 
   const setNewVariable = (name: string) => {
     onChange(name);
-    setVariableName(name);
+    setInput(name);
   };
 
   const setExistingVariable = (name: string) => {
-    const foundVariable = variableList.filter(
-      (element: variableType) => element.name === name
-    )[0];
-
-    if (foundVariable != undefined) {
+    const foundVariable = variables.find((element) => element.name === name);
+    if (foundVariable) {
       onChange(foundVariable?.name, foundVariable?.mimeType);
-      setVariableName(name);
+      setInput(name);
     }
   };
 
+  const getErrorComponent = () => {
+    if (pathNotFound) {
+      return (
+        <VariablePickerError>
+          {t("components.namespaceVariablepicker.error.title", {
+            path: namespace,
+          })}
+        </VariablePickerError>
+      );
+    }
+
+    if (noVarsInNamespace) {
+      return (
+        <VariablePickerError>
+          {t("components.namespaceVariablepicker.noVarsInNamespace.title", {
+            path: namespace,
+          })}
+        </VariablePickerError>
+      );
+    }
+    return null;
+  };
+
+  const errorComponent = getErrorComponent();
+
   return (
     <ButtonBar>
-      {pathNotFound ? (
-        <VariablepickerError
+      {errorComponent ?? (
+        <Variablepicker
           buttonText={t("components.namespaceVariablepicker.buttonText")}
+          value={inputValue}
+          onValueChange={(value) => {
+            setExistingVariable(value);
+          }}
         >
           <VariablepickerHeading>
-            {t("components.namespaceVariablepicker.title", { path })}
+            {t("components.namespaceVariablepicker.title", { path: namespace })}
           </VariablepickerHeading>
           <VariablepickerSeparator />
-
-          <VariablepickerMessage>
-            {t("components.namespaceVariablepicker.error.title", { path })}
-          </VariablepickerMessage>
-          <VariablepickerSeparator />
-        </VariablepickerError>
-      ) : (
-        <>
-          {!variableList || variableList.length == 0 ? (
-            <VariablepickerError
-              buttonText={t("components.namespaceVariablepicker.buttonText")}
-            >
-              <VariablepickerHeading>
-                {t("components.namespaceVariablepicker.title", { path })}
-              </VariablepickerHeading>
+          {variables.map((variable, index) => (
+            <Fragment key={index}>
+              <VariablepickerItem value={variable.name}>
+                {variable.name}
+              </VariablepickerItem>
               <VariablepickerSeparator />
-
-              <VariablepickerMessage>
-                {t("components.namespaceVariablepicker.emptyDirectory.title", {
-                  path,
-                })}
-              </VariablepickerMessage>
-              <VariablepickerSeparator />
-            </VariablepickerError>
-          ) : (
-            <Variablepicker
-              buttonText={t("components.namespaceVariablepicker.buttonText")}
-              value={variableName}
-              onValueChange={(value) => {
-                setExistingVariable(value);
-              }}
-            >
-              <VariablepickerHeading>
-                {t("components.namespaceVariablepicker.title", { path })}
-              </VariablepickerHeading>
-              <VariablepickerSeparator />
-              {variableList.map((variable, index) => (
-                <Fragment key={index}>
-                  <VariablepickerItem value={variable.name}>
-                    {variable.name}
-                  </VariablepickerItem>
-                  <VariablepickerSeparator />
-                </Fragment>
-              ))}
-            </Variablepicker>
-          )}
-        </>
+            </Fragment>
+          ))}
+        </Variablepicker>
       )}
+
       <Input
         placeholder={t("components.namespaceVariablepicker.placeholder")}
-        value={variableName}
+        value={inputValue}
         onChange={(e) => {
           setNewVariable(e.target.value);
         }}

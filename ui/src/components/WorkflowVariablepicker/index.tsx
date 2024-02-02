@@ -1,10 +1,8 @@
 import { Fragment, useState } from "react";
 import {
   Variablepicker,
-  VariablepickerError,
   VariablepickerHeading,
   VariablepickerItem,
-  VariablepickerMessage,
   VariablepickerSeparator,
 } from "~/design/VariablePicker";
 
@@ -67,43 +65,21 @@ const WorkflowVariablePicker = ({
 
     if (pathNotFound) {
       return (
-        <VariablepickerError
-          buttonText={t("components.workflowVariablepicker.buttonText")}
-        >
-          <VariablepickerHeading>
-            {t("components.workflowVariablepicker.title", {
-              path: workflowPath,
-            })}
-          </VariablepickerHeading>
-          <VariablepickerSeparator />
-          <VariablepickerMessage>
-            {t("components.workflowVariablepicker.error.title", {
-              path: workflowPath,
-            })}
-          </VariablepickerMessage>
-          <VariablepickerSeparator />
-        </VariablepickerError>
+        <VariablePickerError>
+          {t("components.workflowVariablepicker.error.title", {
+            path: workflowPath,
+          })}
+        </VariablePickerError>
       );
     }
 
     if (noVarsInWorkflow) {
       return (
-        <VariablepickerError
-          buttonText={t("components.workflowVariablepicker.buttonText")}
-        >
-          <VariablepickerHeading>
-            {t("components.workflowVariablepicker.title", {
-              path: workflowPath,
-            })}
-          </VariablepickerHeading>
-          <VariablepickerSeparator />
-          <VariablepickerMessage>
-            {t("components.workflowVariablepicker.emptyDirectory.title", {
-              path: workflowPath,
-            })}
-          </VariablepickerMessage>
-          <VariablepickerSeparator />
-        </VariablepickerError>
+        <VariablePickerError>
+          {t("components.workflowVariablepicker.noVarsInWorkflow.title", {
+            path: workflowPath,
+          })}
+        </VariablePickerError>
       );
     }
     return null;
