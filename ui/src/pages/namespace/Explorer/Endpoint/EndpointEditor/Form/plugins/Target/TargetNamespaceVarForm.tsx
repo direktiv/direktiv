@@ -92,11 +92,10 @@ export const TargetNamespaceVarForm: FC<FormProps> = ({
               <NamespaceVariablePicker
                 defaultVariable={watch("configuration.variable")}
                 namespace={watch("configuration.namespace")}
-                onChange={(variable) => {
-                  // TODO: remove this condition when variable can not be undefined anymore
-                  if (variable) {
-                    field.onChange(variable?.name);
-                    setValue("configuration.content_type", variable.mimeType);
+                onChange={(name, mimeType) => {
+                  field.onChange(name);
+                  if (mimeType) {
+                    setValue("configuration.content_type", mimeType);
                   }
                 }}
               />

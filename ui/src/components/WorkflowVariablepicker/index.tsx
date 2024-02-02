@@ -32,16 +32,10 @@ const WorkflowVariablePicker = ({
   namespace?: string;
   workflow: string;
   defaultVariable?: string;
-  onChange: (variable: variableType | undefined) => void;
+  onChange: (name: string, mimeType?: string) => void;
 }) => {
   const { t } = useTranslation();
 
-  const emptyVariable: variableType = {
-    name: "",
-    createdAt: "",
-    updatedAt: "",
-    mimeType: "",
-  };
   const [inputValue, setInput] = useState(
     defaultVariable ? defaultVariable : ""
   );
@@ -53,30 +47,27 @@ const WorkflowVariablePicker = ({
 
   const { data, isError } = useWorkflowVariables({ path, namespace });
 
-  const variableList = data?.variables.results
-    ? data.variables.results
-    : [emptyVariable];
+  const variableList = data?.variables.results ? data.variables.results : [];
 
-  const emptyWorkflow = data?.variables.results[0] === undefined ? true : false;
+  const emptyWorkflow = variableList[0] === undefined ? true : false;
 
-  const pathNotFound = isError && !emptyWorkflow;
+  const pathNotFound = isError && emptyWorkflow;
 
   const unselectedWorkflow = workflow ? false : true;
 
-  const setNewVariable = (value: string) => {
-    emptyVariable.name = value;
-    onChange(emptyVariable);
-    setInput(value);
+  const setNewVariable = (name: string) => {
+    onChange(name);
+    setInput(name);
   };
 
-  const setExistingVariable = (value: string) => {
-    const foundVariable = variableList.filter(
-      (element: variableType) => element.name === value
-    )[0];
+  const setExistingVariable = (name: string) => {
+    const foundVariable = variableList.find(
+      (element: variableType) => element.name === name
+    );
 
     if (foundVariable) {
-      onChange(foundVariable);
-      setInput(value);
+      onChange(foundVariable?.name, foundVariable?.mimeType);
+      setInput(name);
     }
   };
 

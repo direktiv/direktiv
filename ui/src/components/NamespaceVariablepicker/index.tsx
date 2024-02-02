@@ -25,18 +25,9 @@ const NamespaceVariablePicker = ({
 }: {
   namespace?: string;
   defaultVariable?: string;
-  onChange: (variable: variableType | undefined) => void;
+  onChange: (name: string, mimeType?: string) => void;
 }) => {
   const { t } = useTranslation();
-
-  const emptyVariable: variableType = {
-    name: "",
-    checksum: "",
-    createdAt: "",
-    updatedAt: "",
-    size: "",
-    mimeType: "",
-  };
 
   const [variableName, setVariableName] = useState(
     defaultVariable ? defaultVariable : ""
@@ -48,26 +39,23 @@ const NamespaceVariablePicker = ({
   const { data, isError } = useVars({ namespace });
   const path = namespace;
 
-  const variableList = data?.variables.results
-    ? data.variables.results
-    : [emptyVariable];
+  const variableList = data?.variables.results ? data.variables.results : [];
 
   const pathNotFound = isError;
 
-  const setNewVariable = (value: string) => {
-    emptyVariable.name = value;
-    onChange(emptyVariable);
-    setVariableName(value);
+  const setNewVariable = (name: string) => {
+    onChange(name);
+    setVariableName(name);
   };
 
-  const setExistingVariable = (value: string) => {
+  const setExistingVariable = (name: string) => {
     const foundVariable = variableList.filter(
-      (element: variableType) => element.name === value
+      (element: variableType) => element.name === name
     )[0];
 
     if (foundVariable != undefined) {
-      onChange(foundVariable);
-      setVariableName(value);
+      onChange(foundVariable?.name, foundVariable?.mimeType);
+      setVariableName(name);
     }
   };
 
