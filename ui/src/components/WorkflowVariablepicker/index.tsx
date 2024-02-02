@@ -10,50 +10,39 @@ import {
 
 import { ButtonBar } from "~/design/ButtonBar";
 import Input from "~/design/Input";
-import { VarSchema } from "~/api/variables/schema";
 import { useNamespace } from "~/util/store/namespace";
 import { useTranslation } from "react-i18next";
 import { useWorkflowVariables } from "~/api/tree/query/variables";
-import { z } from "zod";
 
-const variableWithoutChecksumAndSize = VarSchema.omit({
-  checksum: true,
-  size: true,
-});
-
-type variableType = z.infer<typeof variableWithoutChecksumAndSize>;
+type WorkflowVariablePickerProps = {
+  namespace?: string;
+  workflowPath: string;
+  defaultVariable?: string;
+  onChange: (name: string, mimeType?: string) => void;
+};
 
 const WorkflowVariablePicker = ({
   namespace: givenNamespace,
-  workflow,
+  workflowPath,
   defaultVariable,
   onChange,
-}: {
-  namespace?: string;
-  workflow: string;
-  defaultVariable?: string;
-  onChange: (name: string, mimeType?: string) => void;
-}) => {
+}: WorkflowVariablePickerProps) => {
   const { t } = useTranslation();
 
-  const [inputValue, setInput] = useState(
-    defaultVariable ? defaultVariable : ""
-  );
+  const [inputValue, setInput] = useState(defaultVariable ?? "");
 
   const defaultNamespace = useNamespace();
-  const namespace = givenNamespace ? givenNamespace : defaultNamespace;
+  const namespace = givenNamespace ?? defaultNamespace;
 
-  const path = workflow;
+  const { data, isError } = useWorkflowVariables({
+    path: workflowPath,
+    namespace,
+  });
 
-  const { data, isError } = useWorkflowVariables({ path, namespace });
-
-  const variableList = data?.variables.results ? data.variables.results : [];
-
-  const emptyWorkflow = variableList[0] === undefined ? true : false;
-
+  const variables = data?.variables.results ?? [];
+  const emptyWorkflow = variables.length === 0;
   const pathNotFound = isError && emptyWorkflow;
-
-  const unselectedWorkflow = workflow ? false : true;
+  const unselectedWorkflow = !workflowPath;
 
   const setNewVariable = (name: string) => {
     onChange(name);
@@ -61,10 +50,7 @@ const WorkflowVariablePicker = ({
   };
 
   const setExistingVariable = (name: string) => {
-    const foundVariable = variableList.find(
-      (element: variableType) => element.name === name
-    );
-
+    const foundVariable = variables.find((element) => element.name === name);
     if (foundVariable) {
       onChange(foundVariable?.name, foundVariable?.mimeType);
       setInput(name);
@@ -88,12 +74,16 @@ const WorkflowVariablePicker = ({
               buttonText={t("components.workflowVariablepicker.buttonText")}
             >
               <VariablepickerHeading>
-                {t("components.workflowVariablepicker.title", { path })}
+                {t("components.workflowVariablepicker.title", {
+                  path: workflowPath,
+                })}
               </VariablepickerHeading>
               <VariablepickerSeparator />
 
               <VariablepickerMessage>
-                {t("components.workflowVariablepicker.error.title", { path })}
+                {t("components.workflowVariablepicker.error.title", {
+                  path: workflowPath,
+                })}
               </VariablepickerMessage>
               <VariablepickerSeparator />
             </VariablepickerError>
@@ -104,7 +94,9 @@ const WorkflowVariablePicker = ({
                   buttonText={t("components.workflowVariablepicker.buttonText")}
                 >
                   <VariablepickerHeading>
-                    {t("components.workflowVariablepicker.title", { path })}
+                    {t("components.workflowVariablepicker.title", {
+                      path: workflowPath,
+                    })}
                   </VariablepickerHeading>
                   <VariablepickerSeparator />
 
@@ -112,7 +104,7 @@ const WorkflowVariablePicker = ({
                     {t(
                       "components.workflowVariablepicker.emptyDirectory.title",
                       {
-                        path,
+                        path: workflowPath,
                       }
                     )}
                   </VariablepickerMessage>
@@ -127,10 +119,12 @@ const WorkflowVariablePicker = ({
                   }}
                 >
                   <VariablepickerHeading>
-                    {t("components.workflowVariablepicker.title", { path })}
+                    {t("components.workflowVariablepicker.title", {
+                      path: workflowPath,
+                    })}
                   </VariablepickerHeading>
                   <VariablepickerSeparator />
-                  {variableList.map((variable, index) => (
+                  {variables.map((variable, index) => (
                     <Fragment key={index}>
                       <VariablepickerItem value={variable.name}>
                         {variable.name}

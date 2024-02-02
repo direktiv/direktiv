@@ -110,7 +110,7 @@ export const TargetFlowVarForm: FC<FormProps> = ({
             render={({ field }) => (
               <WorkflowVariablePicker
                 namespace={watch("configuration.namespace")}
-                workflow={watch("configuration.flow")}
+                workflowPath={watch("configuration.flow")}
                 defaultVariable={watch("configuration.variable")}
                 onChange={(name, mimeType) => {
                   field.onChange(name);
