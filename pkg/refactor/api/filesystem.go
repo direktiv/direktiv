@@ -19,7 +19,7 @@ type fsController struct {
 func (e *fsController) mountRouter(r chi.Router) {
 	r.Get("/*", e.read)
 	r.Delete("/*", e.delete)
-	r.Post("/create-file/*", e.createFile)
+	r.Post("/create/*", e.createFile)
 }
 
 func (e *fsController) read(w http.ResponseWriter, r *http.Request) {
@@ -117,10 +117,10 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 
 	// nolint:tagliatelle
 	req := struct {
-		Name     string `json:"name"`
-		Typ      string `json:"type"`
-		Content  string `json:"content"`
-		MIMEType string `json:"mimeType"`
+		Name     string             `json:"name"`
+		Typ      filestore.FileType `json:"type"`
+		MIMEType string             `json:"mimeType"`
+		Content  string             `json:"content"`
 	}{}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -129,7 +129,7 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	decodedBytes, err := base64.StdEncoding.DecodeString(req.Content)
-	if err != nil {
+	if err != nil && req.Typ != filestore.FileTypeDirectory {
 		writeError(w, &Error{
 			Code:    "request_data_invalid",
 			Message: "content filed has invalid base64 string",
@@ -139,14 +139,20 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create file
-	path := strings.Split(r.URL.Path, "/files-tree/create-file")[1]
+	path := strings.Split(r.URL.Path, "/files-tree/create")[1]
 	newFile, err := fStore.ForNamespace(ns.Name).CreateFile(r.Context(),
-		path+"/"+req.Name,
-		filestore.FileType(req.Typ),
+		"/"+path+"/"+req.Name,
+		req.Typ,
 		req.MIMEType,
 		decodedBytes)
 	if err != nil {
 		writeFileStoreError(w, err)
+		return
+	}
+
+	err = db.Commit(r.Context())
+	if err != nil {
+		writeInternalError(w, err)
 		return
 	}
 
