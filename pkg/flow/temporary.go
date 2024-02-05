@@ -537,7 +537,7 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 		req.Header.Add(DirektivFileHeader, str)
 	}
 	fnCtsStr := base64.StdEncoding.EncodeToString(fnCtx)
-	req.Header.Add("DIREKTIV-FN-CTX", fnCtsStr)
+	req.Header.Add(DirektivFunctionContextHeader, fnCtsStr)
 	client := &http.Client{
 		Transport: tr,
 	}

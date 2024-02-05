@@ -741,7 +741,7 @@ func (worker *inboundWorker) validateFilesHeaders(req *inboundRequest, ifiles *[
 }
 
 func (worker *inboundWorker) validateFnCtxHeaders(req *inboundRequest, fnCtxStr string) (enginerefactor.FunctionContext, bool) {
-	hdr := "DIREKTIV-FN-CTX"
+	hdr := "Direktiv-Function-Context"
 	data, err := base64.StdEncoding.DecodeString(fnCtxStr)
 	if err != nil {
 		worker.reportValidationError(req, http.StatusBadRequest, fmt.Errorf("invalid %s [%d]: %w", hdr, 0, err))
@@ -768,7 +768,7 @@ func (worker *inboundWorker) validateFunctionRequest(req *inboundRequest) *funct
 	var it string
 	var fnCtx string
 
-	headers := []string{actionIDHeader, "Direktiv-InstanceID", "Direktiv-Namespace", "Direktiv-Step", "Direktiv-Iterator", "Direktiv-Deadline", "DIREKTIV-FN-CTX"}
+	headers := []string{actionIDHeader, "Direktiv-InstanceID", "Direktiv-Namespace", "Direktiv-Step", "Direktiv-Iterator", "Direktiv-Deadline", "Direktiv-Function-Context"}
 	ptrs := []*string{&ir.actionId, &ir.instanceId, &ir.namespace, &step, &it, &deadline, &fnCtx}
 
 	for i := 0; i < len(headers); i++ {

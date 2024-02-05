@@ -59,6 +59,8 @@ const (
 
 	DirektivErrorCodeHeader    = "Direktiv-ErrorCode"
 	DirektivErrorMessageHeader = "Direktiv-ErrorMessage"
+
+	DirektivFunctionContextHeader = "Direktiv-Function-Context"
 )
 
 // internal error codes for knative services.
