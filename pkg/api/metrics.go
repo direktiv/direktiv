@@ -47,7 +47,7 @@ func (h *flowHandler) MetricsSankey(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
-	path, ref := pathAndRef(r)
+	path, _ := pathAndRef(r)
 
 	// QueryParams
 	values := r.URL.Query()
@@ -69,7 +69,6 @@ func (h *flowHandler) MetricsSankey(w http.ResponseWriter, r *http.Request) {
 	in := &grpc.WorkflowMetricsRequest{
 		Namespace:      namespace,
 		Path:           path,
-		Ref:            ref,
 		SinceTimestamp: ts,
 	}
 

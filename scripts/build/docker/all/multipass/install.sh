@@ -13,12 +13,12 @@ do
 done
 
 # knative
-kubectl apply -f https://github.com/knative/operator/releases/download/knative-v1.11.6/operator.yaml
+kubectl apply -f https://github.com/knative/operator/releases/download/knative-v1.12.2/operator.yaml
 kubectl create ns knative-serving
 
 if [ -n "${HTTPS_PROXY+1}" ]; then
   echo "adding proxy to knative"
-  curl https://raw.githubusercontent.com/direktiv/direktiv/main/kubernetes/install/knative/basic.yaml > knative.yaml
+  curl https://raw.githubusercontent.com/direktiv/direktiv/main/scripts/kubernetes/install/knative/basic.yaml > knative.yaml
 
   ln=$(awk '/name: controller/ {print FNR}' knative.yaml)
   num=$((ln + 1))
@@ -46,7 +46,7 @@ END
 
   kubectl apply -f knative.yaml
 else
-  kubectl apply -f https://raw.githubusercontent.com/direktiv/direktiv/main/kubernetes/install/knative/basic.yaml
+  kubectl apply -f https://raw.githubusercontent.com/direktiv/direktiv/main/scripts/kubernetes/install/knative/basic.yaml
 fi
 
 # database
@@ -193,22 +193,6 @@ debug: "true"
 eventing:
   enabled: true
 
-flow:
-  image: "$1"
-  dbimage: "$1"
-  tag: "$3"
-fronend:
-  image: "$2"
-  tag: "$3"
-api:
-  image: "$1"
-  tag: "$3"
-functions:
-  namespace: direktiv-services-direktiv
-  image: "$1"
-  tag: "$3"
-  sidecar: "$1"
-  initPodImage: "direktiv/init-pod"
 $(if [ -n "${HTTPS_PROXY+1}" ]; then
   echo "  http_proxy: ${HTTP_PROXY}"
   echo "  https_proxy: ${HTTPS_PROXY}"
@@ -240,15 +224,10 @@ $(if [ -n "${APIKEY+1}" ]; then
 fi)
 EOF
 
-git clone https://github.com/direktiv/direktiv-charts.git
-
-cd `pwd`/direktiv-charts/charts/direktiv && \
-    helm repo add direktiv https://chart.direktiv.io && \
-    helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx && \
-    helm repo add prometheus https://prometheus-community.github.io/helm-charts && \
-    helm repo list && \
-    helm dependency build && \ 
-    KUBECONFIG=/etc/rancher/k3s/k3s.yaml helm install -f /direktiv.yaml direktiv .
+helm repo add direktiv https://charts.direktiv.io && \
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx && \
+helm repo add prometheus https://prometheus-community.github.io/helm-charts && \
+KUBECONFIG=/etc/rancher/k3s/k3s.yaml helm install -f /direktiv.yaml direktiv direktiv/direktiv
 
 # eventing
 kubectl create ns knative-eventing
@@ -264,7 +243,7 @@ EOF
 kubectl apply -f eventing.yaml
 
 # contour
-kubectl apply --filename https://github.com/knative/net-contour/releases/download/knative-v1.11.0/contour.yaml
+kubectl apply --filename https://github.com/knative/net-contour/releases/download/knative-v1.12.2/contour.yaml
 kubectl delete ns contour-external &
 
 # waiting for direktiv

@@ -9,6 +9,7 @@ import {
 import { Fieldset } from "~/components/Form/Fieldset";
 import Input from "~/design/Input";
 import NamespaceSelector from "~/components/NamespaceSelector";
+import NamespaceVariablePicker from "~/components/NamespaceVariablepicker";
 import { PluginWrapper } from "../components/Modal";
 import { treatEmptyStringAsUndefined } from "~/pages/namespace/Explorer/utils";
 import { useTranslation } from "react-i18next";
@@ -33,6 +34,8 @@ export const TargetNamespaceVarForm: FC<FormProps> = ({
   const {
     control,
     register,
+    watch,
+    setValue,
     handleSubmit,
     formState: { errors },
   } = useForm<TargetNamespaceVarFormSchemaType>({
@@ -70,7 +73,6 @@ export const TargetNamespaceVarForm: FC<FormProps> = ({
             name="configuration.namespace"
             render={({ field }) => (
               <NamespaceSelector
-                id="namespace"
                 defaultValue={field.value}
                 onValueChange={field.onChange}
               />
@@ -83,7 +85,22 @@ export const TargetNamespaceVarForm: FC<FormProps> = ({
           )}
           htmlFor="variable"
         >
-          <Input {...register("configuration.variable")} id="variable" />
+          <Controller
+            control={control}
+            name="configuration.variable"
+            render={({ field }) => (
+              <NamespaceVariablePicker
+                defaultVariable={watch("configuration.variable")}
+                namespace={watch("configuration.namespace")}
+                onChange={(name, mimeType) => {
+                  field.onChange(name);
+                  if (mimeType) {
+                    setValue("configuration.content_type", mimeType);
+                  }
+                }}
+              />
+            )}
+          />
         </Fieldset>
         <Fieldset
           label={t(

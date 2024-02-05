@@ -16,44 +16,22 @@ const NodeSchema = z.object({
     "consumer",
   ]),
   attributes: z.array(z.string()), // must be more specified
-  oid: z.string(),
   readOnly: z.boolean(),
   expandedType: z.enum(["directory", "workflow", "file", "git"]),
   mimeType: z.string(),
 });
 
-const RevisionSchema = z.object({
-  createdAt: z.string(),
-  hash: z.string(),
-  source: z.string(),
-  name: z.string(),
-});
-
 export const NodeListSchema = z.object({
   namespace: z.string(),
   node: NodeSchema,
+  source: z.string().optional(), // only for workflows
   children: z
     .object({
       pageInfo: PageinfoSchema,
       results: z.array(NodeSchema),
     })
     .optional(), // not for workflows
-  revision: RevisionSchema.optional(), // only for workflows
 });
-
-// the revisions schema in the revisions list only has a subset of the fields
-const TrimmedRevisionSchema = z.object({
-  name: z.string(),
-});
-
-export const RevisionsListSchema = z.object({
-  namespace: z.string(),
-  node: NodeSchema,
-  pageInfo: PageinfoSchema,
-  results: z.array(TrimmedRevisionSchema),
-});
-
-export const TagsListSchema = RevisionsListSchema;
 
 export const FolderCreatedSchema = z.object({
   namespace: z.string(),
@@ -63,7 +41,7 @@ export const FolderCreatedSchema = z.object({
 export const WorkflowCreatedSchema = z.object({
   namespace: z.string(),
   node: NodeSchema,
-  revision: RevisionSchema,
+  source: z.string(),
 });
 
 export const WorkflowStartedSchema = z.object({
@@ -78,8 +56,6 @@ export const NodeRenameSchema = z.object({
   node: NodeSchema,
 });
 
-export const TagCreatedSchema = z.null();
-
 export const fileNameSchema = z
   .string()
   .regex(/^(([a-z][a-z0-9_\-.]*[a-z0-9])|([a-z]))$/, {
@@ -88,7 +64,4 @@ export const fileNameSchema = z
   });
 
 export type NodeListSchemaType = z.infer<typeof NodeListSchema>;
-export type RevisionsListSchemaType = z.infer<typeof RevisionsListSchema>;
-export type TrimmedRevisionSchemaType = z.infer<typeof TrimmedRevisionSchema>;
-export type TagsListSchemaType = z.infer<typeof TagsListSchema>;
 export type NodeSchemaType = z.infer<typeof NodeSchema>;

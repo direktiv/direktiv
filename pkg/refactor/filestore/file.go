@@ -26,24 +26,28 @@ const (
 )
 
 // File represents a file in the filestore, File can be either ordinary file or directory.
+// nolint:tagliatelle
 type File struct {
-	ID uuid.UUID
+	ID uuid.UUID `json:"-"`
 	// Path is the full path of the file, files and directories are only different when they have different paths. As
 	// in typical filesystems, paths are unique within the filesystem.
-	Path string
+	Path string `json:"path,omitempty"`
 
 	// Depth tells how many levels deep the file in the filesystem. This field is needed for sql querying purposes.
-	Depth int
-	Typ   FileType
+	Depth int      `json:"-"`
+	Typ   FileType `json:"type,omitempty"`
+
+	Data     []byte `json:"data,omitempty"`
+	Checksum string `json:"checksum,omitempty"`
 
 	// Root is a filestore instance, users can create multiple filestore roots and RootID tells which root the file
 	// belongs too.
-	RootID uuid.UUID
+	RootID uuid.UUID `json:"-"`
 
-	MIMEType string
+	MIMEType string `json:"mimeType,omitempty"`
 
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 // Name gets file base name.
@@ -61,24 +65,10 @@ type FileQuery interface {
 	// GetData returns reader for the file, this method is not applicable for directory file type.
 	GetData(ctx context.Context) ([]byte, error)
 
-	// GetCurrentRevision returns current file revision, this method is not applicable for directory file type.
-	GetCurrentRevision(ctx context.Context) (*Revision, error)
-
-	// GetAllRevisions lists all file revisions, this method is not applicable for directory file type.
-	GetAllRevisions(ctx context.Context) ([]*Revision, error)
-
-	// CreateRevision creates a new file revision, this method is not applicable for directory file type.
-	CreateRevision(ctx context.Context, tags RevisionTags, data []byte) (*Revision, error)
-
 	// Delete deletes the file (or the directory).
 	Delete(ctx context.Context, force bool) error
 
-	// GetRevision queries a file revision by either:
-	// 		reference = 'latest' -> this will return the current revision,
-	// or:	reference = any tag string -> this will return a tagged revision,
-	// or:	reference = any uuid string -> this will return a revision by id.
-	// This method is not applicable for directory file type.
-	GetRevision(ctx context.Context, reference string) (*Revision, error)
+	SetData(ctx context.Context, data []byte) (string, error)
 
 	// SetPath sets a new path for the file, this method is used to rename files and directories or move them
 	// to a new location. Param path should be a new path that doesn't already exist and the directory of Param path

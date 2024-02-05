@@ -17,6 +17,7 @@ jobs:
       fail-fast: false
       matrix:
         test-section:
+          - api
           - cli
           - engine
           - errors

@@ -1,0 +1,8 @@
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: {{ .Values.functions.namespace }}
+  labels:
+    {{- include "direktiv.labels" . | nindent 4 }}
+  annotations:
+    linkerd.io/inject: enabled

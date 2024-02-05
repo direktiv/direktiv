@@ -38,13 +38,6 @@ func (s *sqlFileStore) ForFile(file *filestore.File) filestore.FileQuery {
 	}
 }
 
-func (s *sqlFileStore) ForRevision(revision *filestore.Revision) filestore.RevisionQuery {
-	return &RevisionQuery{
-		rev: revision,
-		db:  s.db,
-	}
-}
-
 var _ filestore.FileStore = &sqlFileStore{} // Ensures sqlFileStore struct conforms to filestore.FileStore interface.
 
 func NewSQLFileStore(db *gorm.DB) filestore.FileStore {
@@ -141,7 +134,7 @@ func (s *sqlFileStore) GetRootByNamespace(ctx context.Context, namespace string)
 func (s *sqlFileStore) GetFileByID(ctx context.Context, id uuid.UUID) (*filestore.File, error) {
 	file := &filestore.File{}
 	res := s.db.WithContext(ctx).Raw(`
-					SELECT *
+					SELECT id, root_id, path, depth, typ, created_at, updated_at, mime_type
 					FROM filesystem_files
 					WHERE id=?`, id).
 		First(file)
@@ -155,39 +148,4 @@ func (s *sqlFileStore) GetFileByID(ctx context.Context, id uuid.UUID) (*filestor
 	}
 
 	return file, nil
-}
-
-func (s *sqlFileStore) GetRevisionByID(ctx context.Context, id uuid.UUID) (*filestore.File, *filestore.Revision, error) {
-	// TODO: yassir, reimplement this function using JOIN so that it becomes a single query.
-	rev := &filestore.Revision{}
-	res := s.db.WithContext(ctx).Raw(`
-					SELECT *
-					FROM filesystem_revisions
-					WHERE id=?`, id).
-		First(rev)
-
-	if res.Error != nil {
-		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
-			return nil, nil, fmt.Errorf("revision '%s': %w", id, filestore.ErrNotFound)
-		}
-
-		return nil, nil, res.Error
-	}
-
-	file := &filestore.File{}
-	res = s.db.WithContext(ctx).Raw(`
-					SELECT *
-					FROM filesystem_files
-					WHERE id=?`, rev.FileID).
-		First(file)
-
-	if res.Error != nil {
-		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
-			return nil, nil, fmt.Errorf("file '%s': %w", rev.FileID, filestore.ErrNotFound)
-		}
-
-		return nil, nil, res.Error
-	}
-
-	return file, rev, nil
 }

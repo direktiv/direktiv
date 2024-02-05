@@ -36,7 +36,7 @@ func (flow *flow) CreateFile(ctx context.Context, req *grpc.CreateFileRequest) (
 		mimeType = mt.String()
 	}
 
-	file, revision, err := tx.FileStore().ForNamespace(ns.Name).CreateFile(ctx, req.GetPath(), filestore.FileTypeFile, mimeType, data)
+	file, err := tx.FileStore().ForNamespace(ns.Name).CreateFile(ctx, req.GetPath(), filestore.FileTypeFile, mimeType, data)
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +50,7 @@ func (flow *flow) CreateFile(ctx context.Context, req *grpc.CreateFileRequest) (
 	resp := &grpc.CreateFileResponse{}
 	resp.Namespace = ns.Name
 	resp.Node = bytedata.ConvertFileToGrpcNode(file)
-	resp.File = bytedata.ConvertRevisionToGrpcFile(file, revision)
+	resp.File = bytedata.ConvertFileToGrpcFile(file)
 	resp.File.Source = data
 
 	return resp, nil
@@ -91,7 +91,7 @@ func (flow *flow) UpdateFile(ctx context.Context, req *grpc.UpdateFileRequest) (
 		return nil, err
 	}
 
-	file, revision, err := tx.FileStore().ForNamespace(ns.Name).CreateFile(ctx, req.GetPath(), filestore.FileTypeFile, mimeType, data)
+	file, err = tx.FileStore().ForNamespace(ns.Name).CreateFile(ctx, req.GetPath(), filestore.FileTypeFile, mimeType, data)
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +106,7 @@ func (flow *flow) UpdateFile(ctx context.Context, req *grpc.UpdateFileRequest) (
 
 	resp.Namespace = ns.Name
 	resp.Node = bytedata.ConvertFileToGrpcNode(file)
-	resp.File = bytedata.ConvertRevisionToGrpcFile(file, revision)
+	resp.File = bytedata.ConvertFileToGrpcFile(file)
 	resp.File.Source = data
 
 	return &resp, nil
@@ -131,12 +131,7 @@ func (flow *flow) File(ctx context.Context, req *grpc.FileRequest) (*grpc.FileRe
 		return nil, err
 	}
 
-	revision, err := tx.FileStore().ForFile(file).GetCurrentRevision(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	data, err := tx.FileStore().ForRevision(revision).GetData(ctx)
+	data, err := tx.FileStore().ForFile(file).GetData(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -148,7 +143,7 @@ func (flow *flow) File(ctx context.Context, req *grpc.FileRequest) (*grpc.FileRe
 	resp := new(grpc.FileResponse)
 	resp.Namespace = ns.Name
 	resp.Node = bytedata.ConvertFileToGrpcNode(file)
-	resp.File = bytedata.ConvertRevisionToGrpcFile(file, revision)
+	resp.File = bytedata.ConvertFileToGrpcFile(file)
 	resp.File.Source = data
 
 	return resp, nil

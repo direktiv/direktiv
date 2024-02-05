@@ -27,7 +27,6 @@ var expectedChildNodeObject = {
     type: common.filesystem.nodeTypeWorkflow,
     expandedType: common.filesystem.extendedNodeTypeWorkflow,
     attributes: expect.anything(),
-    oid: '', // TODO: revisit
     readOnly: false,
     mimeType: expect.anything(),
 }
@@ -101,15 +100,10 @@ describe('Test basic directory operations', () => {
         expect(createWorkflowResponse.body).toMatchObject({
             namespace: namespaceName,
             node: expectedChildNodeObject,
-            revision: {
-                createdAt: expect.stringMatching(common.regex.timestampRegex),
-                hash: expect.stringMatching(common.regex.hashRegex),
-                source: expect.stringMatching(common.regex.base64Regex),
-                name: expect.stringMatching(common.regex.uuidRegex),
-            },
+            source: expect.stringMatching(common.regex.base64Regex),
         })
 
-        var buf = Buffer.from(createWorkflowResponse.body.revision.source, 'base64')
+        var buf = Buffer.from(createWorkflowResponse.body.source, 'base64')
         expect(buf.toString()).toEqual(simpleWorkflow)
     })
 
@@ -134,7 +128,6 @@ describe('Test basic directory operations', () => {
                 parent: "/",
                 type: common.filesystem.nodeTypeDirectory,
                 attributes: [],
-                oid: "",
                 readOnly: false,
                 expandedType: common.filesystem.extendedNodeTypeDirectory,
             },
@@ -162,57 +155,6 @@ describe('Test basic directory operations', () => {
 
     // TODO: post identical
     // TODO: post non identical
-
-    it(`should read the workflow tags`, async () => {
-        var readTagsResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/${workflowName}?op=tags`)
-        expect(readTagsResponse.statusCode).toEqual(200)
-        expect(readTagsResponse.body).toMatchObject({
-            namespace: namespaceName,
-            node: expectedChildNodeObject,
-            pageInfo: {
-                limit: 0,
-                offset: 0,
-                total: 1,
-                order: [],
-                filter: [],
-            },
-            results: [{name: 'latest'}],
-        })
-    })
-
-    it(`should read the workflow refs`, async () => {
-        var readRefsResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/${workflowName}?op=refs`)
-        expect(readRefsResponse.statusCode).toEqual(200)
-        expect(readRefsResponse.body).toMatchObject({
-            namespace: namespaceName,
-            node: expectedChildNodeObject,
-            pageInfo: {
-                limit: 0,
-                offset: 0,
-                total: 1,
-                order: [],
-                filter: [],
-            },
-            results: [{name: 'latest'}],
-        })
-    })
-
-    it(`should read the workflow revisions`, async () => {
-        var readRevsResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/${workflowName}?op=revisions`)
-        expect(readRevsResponse.statusCode).toEqual(200)
-        expect(readRevsResponse.body).toMatchObject({
-            namespace: namespaceName,
-            node: expectedChildNodeObject,
-            pageInfo: {
-                limit: 0,
-                offset: 0,
-                total: 0,
-                order: [],
-                filter: [],
-            },
-            results: [],
-        })
-    })
 
     // TODO: tags pagination / filtering / ordering
     // TODO: refs pagination / filtering / ordering

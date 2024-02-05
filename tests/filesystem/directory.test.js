@@ -32,7 +32,6 @@ var expectedChildNodeObject = {
     type: common.filesystem.nodeTypeDirectory,
     expandedType: common.filesystem.extendedNodeTypeDirectory,
     attributes: expect.anything(),
-    oid: '', // TODO: revisit
     readOnly: false,
     mimeType: expect.anything(),
 }
@@ -101,7 +100,6 @@ describe('Test basic directory operations', () => {
                 parent: "/",
                 type: common.filesystem.nodeTypeDirectory,
                 attributes: [],
-                oid: "",
                 readOnly: false,
                 expandedType: common.filesystem.extendedNodeTypeDirectory,
             },

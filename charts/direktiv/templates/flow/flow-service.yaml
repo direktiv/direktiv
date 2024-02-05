@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "direktiv.fullname" . }}-flow
+  annotations:
+    kubernetes.io/ingress.class: {{ .Values.ingress.class }}
+  labels:
+    {{- include "direktiv.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: 6665
+      name: flow-v1
+      protocol: TCP
+    - port: 6666
+      name: flow
+      protocol: TCP
+    - port: 6667
+      name: flow-v2
+      protocol: TCP
+    - port: 7777
+      name: internal
+      protocol: TCP
+    - port: 9999
+      name: vars
+      protocol: TCP
+    - port: 9998
+      name: metrics
+      protocol: TCP
+    {{- if .Values.eventing.enabled }}
+    - port: 3333
+      name: grpcevents
+      protocol: TCP
+    {{- end }}
+  selector:
+    {{- include "direktiv.selectorLabels" . | nindent 4 }}

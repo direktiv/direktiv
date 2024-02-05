@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -48,14 +49,8 @@ type FileStore interface {
 	// ForFile returns a query object to do further queries on that file.
 	ForFile(file *File) FileQuery
 
-	// ForRevision returns a query object to do further queries on that revision.
-	ForRevision(revision *Revision) RevisionQuery
-
 	// GetFileByID queries a file by id.
 	GetFileByID(ctx context.Context, id uuid.UUID) (*File, error)
-
-	// GetRevisionByID queries a revision by id.
-	GetRevisionByID(ctx context.Context, id uuid.UUID) (*File, *Revision, error)
 }
 
 // Root represents an isolated filesystems. Users of filestore can create and deletes multiple roots. In Direktiv,
@@ -63,6 +58,9 @@ type FileStore interface {
 type Root struct {
 	ID        uuid.UUID
 	Namespace string `gorm:"default:NULL"`
+
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 // RootQuery performs different queries associated to a root.
@@ -74,18 +72,13 @@ type RootQuery interface {
 	// param 'typ' indicates if file is of type directory or file.
 	// Param 'path' should not already exist and the parent directory of 'path' should exist.
 	// Param 'dataReader' should be nil when creating directories, and should be none nil when creating files.
-	CreateFile(ctx context.Context, path string, typ FileType, mimeType string, data []byte) (*File, *Revision, error)
+	CreateFile(ctx context.Context, path string, typ FileType, mimeType string, data []byte) (*File, error)
 
 	// ReadDirectory lists all files and directories in a path.
 	ReadDirectory(ctx context.Context, path string) ([]*File, error)
 
 	// Delete the root itself.
 	Delete(ctx context.Context) error
-
-	// IsEmptyDirectory returns true if path exist and of type directory and empty,
-	// and false if path exist and of type directory and none empty.
-	// If directory doesn't exist, it returns ErrNotFound.
-	IsEmptyDirectory(ctx context.Context, path string) (bool, error)
 
 	// ListAllFiles lists all files and directories in the filestore, this method used to help testing filestore logic.
 	ListAllFiles(ctx context.Context) ([]*File, error)

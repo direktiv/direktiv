@@ -25,7 +25,6 @@ async function itShouldCreateNamespace(it, expect, ns) {
         expect(res.body).toMatchObject({
             namespace: {
                 name: ns,
-                oid: expect.stringMatching(common.regex.uuidRegex),
                 // regex /^2.*Z$/ matches timestamps like 2023-03-01T14:19:52.383871512Z
                 createdAt: expect.stringMatching(/^2.*Z$/),
                 updatedAt: expect.stringMatching(/^2.*Z$/),
@@ -43,6 +42,28 @@ async function itShouldCreateFile(it, expect, ns, path, content) {
             })
 
             .send(content)
+
+        expect(res.statusCode).toEqual(200)
+        expect(res.body).toMatchObject({
+            namespace: ns,
+        })
+    })
+}
+
+function dummyWorkflow(someText) {
+    return `
+direktiv_api: workflow/v1
+description: A simple 'no-op' state that returns 'Hello world!'
+states:
+- id: helloworld
+  type: noop
+`
+}
+
+async function itShouldCreateDirectory(it, expect, ns, path) {
+    it(`should create a directory ${path}`, async () => {
+        const res = await request(common.config.getDirektivHost())
+            .put(`/api/namespaces/${ns}/tree${path}?op=create-directory`)
 
         expect(res.statusCode).toEqual(200)
         expect(res.body).toMatchObject({
@@ -96,4 +117,6 @@ export default {
     itShouldDeleteFile,
     itShouldRenameFile,
     itShouldUpdateFile,
+    itShouldCreateDirectory,
+    dummyWorkflow,
 }

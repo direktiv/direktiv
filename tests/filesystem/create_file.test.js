@@ -43,7 +43,6 @@ states:
 //        "parent": "/",
 //        "type": "workflow",
 //        "attributes": [],
-//        "oid": "",
 //        "readOnly": false,
 //        "expandedType": "workflow"
 //},

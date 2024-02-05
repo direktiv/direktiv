@@ -15,7 +15,6 @@ const (
 	fieldID             = "id"
 	fieldNamespaceID    = "namespace_id"
 	fieldNamespace      = "namespace"
-	fieldRevisionID     = "revision_id"
 	fieldRootInstanceID = "root_instance_id"
 	fieldCreatedAt      = "created_at"
 	fieldUpdatedAt      = "updated_at"
@@ -43,14 +42,14 @@ const (
 
 var (
 	mostFields = []string{
-		fieldID, fieldNamespaceID, fieldNamespace, fieldRevisionID, fieldRootInstanceID,
+		fieldID, fieldNamespaceID, fieldNamespace, fieldRootInstanceID,
 		fieldCreatedAt, fieldUpdatedAt, fieldEndedAt, fieldDeadline, fieldStatus, fieldWorkflowPath,
 		fieldErrorCode, fieldInvoker, fieldDefinition, fieldSettings, fieldDescentInfo, fieldTelemetryInfo,
 		fieldRuntimeInfo, fieldChildrenInfo, fieldLiveData, fieldStateMemory, fieldErrorMessage,
 	}
 
 	summaryFields = []string{
-		fieldID, fieldNamespaceID, fieldNamespace, fieldRevisionID, fieldRootInstanceID,
+		fieldID, fieldNamespaceID, fieldNamespace, fieldRootInstanceID,
 		fieldCreatedAt, fieldUpdatedAt, fieldEndedAt, fieldDeadline, fieldStatus, fieldWorkflowPath,
 		fieldErrorCode, fieldInvoker, fieldSettings, fieldDescentInfo, fieldTelemetryInfo,
 		fieldRuntimeInfo, fieldChildrenInfo, fieldErrorMessage,
@@ -81,7 +80,6 @@ func (s *sqlInstanceStore) CreateInstanceData(ctx context.Context, args *instanc
 		ID:             args.ID,
 		NamespaceID:    args.NamespaceID,
 		Namespace:      args.Namespace,
-		RevisionID:     args.RevisionID,
 		RootInstanceID: args.RootInstanceID,
 		Status:         instancestore.InstanceStatusPending,
 		WorkflowPath:   args.WorkflowPath,
@@ -102,7 +100,7 @@ func (s *sqlInstanceStore) CreateInstanceData(ctx context.Context, args *instanc
 	}
 
 	columns := []string{
-		fieldID, fieldNamespaceID, fieldNamespace, fieldRevisionID, fieldRootInstanceID,
+		fieldID, fieldNamespaceID, fieldNamespace, fieldRootInstanceID,
 		fieldStatus, fieldWorkflowPath, fieldErrorCode, fieldInvoker, fieldDefinition,
 		fieldSettings, fieldDescentInfo, fieldTelemetryInfo, fieldRuntimeInfo,
 		fieldChildrenInfo, fieldInput, fieldLiveData, fieldStateMemory,
@@ -110,7 +108,7 @@ func (s *sqlInstanceStore) CreateInstanceData(ctx context.Context, args *instanc
 	query := generateInsertQuery(columns)
 
 	res := s.db.WithContext(ctx).Exec(query,
-		idata.ID, idata.NamespaceID, idata.Namespace, idata.RevisionID, idata.RootInstanceID,
+		idata.ID, idata.NamespaceID, idata.Namespace, idata.RootInstanceID,
 		idata.Status, idata.WorkflowPath, idata.ErrorCode, idata.Invoker, idata.Definition,
 		idata.Settings, idata.DescentInfo, idata.TelemetryInfo, idata.RuntimeInfo,
 		idata.ChildrenInfo, idata.Input, idata.LiveData, idata.StateMemory)

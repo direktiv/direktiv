@@ -98,7 +98,7 @@ func trim(s string) string {
 }
 
 func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*instanceMemory, error) {
-	file, revision, err := engine.mux(ctx, args.Namespace, args.CalledAs)
+	file, data, err := engine.mux(ctx, args.Namespace, args.CalledAs)
 	if err != nil {
 		engine.sugar.Debugf("Failed to create new instance: %v", err)
 		engine.logger.Errorf(ctx, engine.flow.ID, engine.flow.GetAttributes(), "Failed to receive workflow %s", args.CalledAs)
@@ -109,7 +109,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	}
 
 	var wf model.Workflow
-	err = wf.Load(revision.Data)
+	err = wf.Load(data)
 	if err != nil {
 		return nil, derrors.NewUncatchableError("direktiv.workflow.invalid", "cannot parse workflow '%s': %v", trim(file.Path), err)
 	}
@@ -187,11 +187,10 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 		ID:             args.ID,
 		NamespaceID:    args.Namespace.ID,
 		Namespace:      args.Namespace.Name,
-		RevisionID:     revision.ID,
 		RootInstanceID: root,
 		Invoker:        args.Invoker,
 		WorkflowPath:   file.Path,
-		Definition:     revision.Data,
+		Definition:     data,
 		Input:          args.Input,
 		LiveData:       []byte(liveData),
 		TelemetryInfo:  telemetryInfo,
