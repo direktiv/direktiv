@@ -50,6 +50,28 @@ async function itShouldCreateFile(it, expect, ns, path, content) {
     })
 }
 
+function dummyWorkflow(someText) {
+    return `
+direktiv_api: workflow/v1
+description: A simple 'no-op' state that returns 'Hello world!'
+states:
+- id: helloworld
+  type: noop
+`
+}
+
+async function itShouldCreateDirectory(it, expect, ns, path) {
+    it(`should create a directory ${path}`, async () => {
+        const res = await request(common.config.getDirektivHost())
+            .put(`/api/namespaces/${ns}/tree${path}?op=create-directory`)
+
+        expect(res.statusCode).toEqual(200)
+        expect(res.body).toMatchObject({
+            namespace: ns,
+        })
+    })
+}
+
 async function itShouldUpdateFile(it, expect, ns, path, content) {
     it(`should update existing file ${path}`, async () => {
         const res = await request(common.config.getDirektivHost())
@@ -95,4 +117,6 @@ export default {
     itShouldDeleteFile,
     itShouldRenameFile,
     itShouldUpdateFile,
+    itShouldCreateDirectory,
+    dummyWorkflow,
 }
