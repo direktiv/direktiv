@@ -27,7 +27,7 @@ export const useVars = ({
   const apiKey = useApiKey();
   const defaultNamespace = useNamespace();
 
-  const namespace = givenNamespace ? givenNamespace : defaultNamespace;
+  const namespace = givenNamespace ?? defaultNamespace;
 
   if (!namespace) {
     throw new Error("namespace is undefined");
