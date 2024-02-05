@@ -108,10 +108,7 @@ export const WithErrorMessage = () => (
     <br />
     <div className="flex items-center ">
       <VariablepickerError buttonText="Select Variable">
-        <VariablepickerHeading>Variables:</VariablepickerHeading>
-        <VariablepickerSeparator />
         <VariablepickerMessage>- This space is empty -</VariablepickerMessage>
-        <VariablepickerSeparator />
       </VariablepickerError>
     </div>
   </>
