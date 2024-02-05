@@ -199,8 +199,9 @@ CREATE TABLE IF NOT EXISTS "event_topics" (
     "event_listener_id" uuid NOT NULL,
     "namespace_id" uuid NOT NULL,
     "topic" text NOT NULL,
+    "filter" text,
     PRIMARY KEY ("id"),
-    CONSTRAINT "no_dup_topics_check" UNIQUE ("event_listener_id","topic"),
+    CONSTRAINT "no_dup_topics_check" UNIQUE ("event_listener_id", "topic", "filter"),
     FOREIGN KEY ("event_listener_id") REFERENCES "event_listeners"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
@@ -233,3 +234,4 @@ ALTER TABLE "metrics" DROP COLUMN IF EXISTS "revision";
 DROP TABLE IF EXISTS "filesystem_revisions";
 ALTER TABLE "filesystem_files" ADD COLUMN IF NOT EXISTS "data" bytea;
 ALTER TABLE "filesystem_files" ADD COLUMN IF NOT EXISTS "checksum" text;
+ALTER TABLE "event_topics" ADD COLUMN IF NOT EXISTS "filter" text;
