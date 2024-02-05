@@ -24,18 +24,18 @@
                 data:
                   type: object
                   properties:
-                      files:
+                      file:
                         allOf: # Combines the BasicErrorModel and the inline model
                           - $ref: '../objects.yaml#/FileNodeWithoutData'
                           - type: object
-                            description: filesystem node data
+                            description: filesystem-tree node data
                             properties:
                               data:
                                 type: string
                                 description: (only with type != directory) base64 encoded string of the file content
 
-                      dirs:
+                      paths:
                         type: array
-                        description: (only with node.type=directory nodes)
+                        description: list of filesystem-tree child nodes
                         items:
                           $ref: '../objects.yaml#/FileNodeWithoutData'
