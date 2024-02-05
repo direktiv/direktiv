@@ -12,6 +12,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/middlewares"
+	"github.com/direktiv/direktiv/pkg/version"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -23,6 +24,10 @@ const (
 func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg *sync.WaitGroup) {
 	funcCtr := &serviceController{
 		manager: app.ServiceManager,
+	}
+
+	fsCtr := &fsController{
+		db: db,
 	}
 
 	regCtr := &registryController{
@@ -60,12 +65,16 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 	r.Handle("/ns/{namespace}/*", app.GatewayManager)
 
 	r.Get("/api/v2/version", func(w http.ResponseWriter, r *http.Request) {
-		writeJSON(w, app.Version)
+		writeJSON(w, version.Version)
 	})
 
 	r.Route("/api/v2", func(r chi.Router) {
 		r.Group(func(r chi.Router) {
 			r.Use(mw.injectNamespace)
+
+			r.Route("/namespaces/{namespace}/files-tree", func(r chi.Router) {
+				fsCtr.mountRouter(r)
+			})
 
 			r.Route("/namespaces/{namespace}/services", func(r chi.Router) {
 				funcCtr.mountRouter(r)

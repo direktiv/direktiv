@@ -64,12 +64,6 @@ func assertInstanceStoreCorrectInstanceDataCreation(t *testing.T, is instancesto
 		return
 	}
 
-	if idata.RevisionID != args.RevisionID {
-		t.Errorf("unexpected idata.RevisionID, got: >%s<, want: >%s<", idata.RevisionID, args.RevisionID)
-
-		return
-	}
-
 	if idata.RootInstanceID != args.RootInstanceID {
 		t.Errorf("unexpected idata.RootInstanceID, got: >%s<, want: >%s<", idata.RootInstanceID, args.RootInstanceID)
 
@@ -214,7 +208,6 @@ func Test_sqlInstanceStore_CreateInstanceData(t *testing.T) {
 		args: &instancestore.CreateInstanceDataArgs{
 			ID:             id,
 			NamespaceID:    uuid.New(),
-			RevisionID:     uuid.New(),
 			RootInstanceID: id,
 			Invoker:        "api",
 			WorkflowPath:   "/test.yaml",
@@ -404,7 +397,6 @@ func Test_sqlInstanceStore_GetNamespaceInstances(t *testing.T) {
 
 	args := &instancestore.CreateInstanceDataArgs{
 		ID:           uuid.New(),
-		RevisionID:   uuid.New(),
 		Invoker:      "api",
 		WorkflowPath: "/test.yaml",
 		Definition: []byte(`
@@ -526,7 +518,6 @@ func Test_sqlInstanceStore_GetHangingInstances(t *testing.T) {
 
 	args := &instancestore.CreateInstanceDataArgs{
 		ID:           id,
-		RevisionID:   uuid.New(),
 		Invoker:      instancestore.InvokerCron,
 		WorkflowPath: "/test.yaml",
 		Definition: []byte(`
@@ -651,7 +642,6 @@ func Test_sqlInstanceStore_DeleteOldInstances(t *testing.T) {
 
 	args := &instancestore.CreateInstanceDataArgs{
 		ID:           id,
-		RevisionID:   uuid.New(),
 		Invoker:      instancestore.InvokerCron,
 		WorkflowPath: "/test.yaml",
 		Definition: []byte(`
@@ -743,7 +733,6 @@ func Test_sqlInstanceStore_AssertNoParallelCron(t *testing.T) {
 
 	args := &instancestore.CreateInstanceDataArgs{
 		ID:           uuid.New(),
-		RevisionID:   uuid.New(),
 		Invoker:      instancestore.InvokerCron,
 		WorkflowPath: "/test2.yaml",
 		Definition: []byte(`

@@ -23,9 +23,9 @@ import {
 import { useEffect, useState } from "react";
 
 import Alert from "~/design/Alert";
-import { Braces } from "lucide-react";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
+import { FileJson } from "lucide-react";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { useTheme } from "~/util/store/theme";
@@ -155,7 +155,7 @@ const Edit = ({ item, onSuccess }: EditProps) => {
         >
           <DialogHeader>
             <DialogTitle>
-              <Braces />
+              <FileJson />
               <Trans
                 i18nKey="pages.settings.variables.edit.title"
                 values={{ name: item.name }}

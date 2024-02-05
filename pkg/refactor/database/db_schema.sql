@@ -10,6 +10,10 @@ CREATE TABLE IF NOT EXISTS  "namespaces" (
 CREATE TABLE IF NOT EXISTS  "filesystem_roots" (
     "id" uuid,
     "namespace" text UNIQUE,
+
+    "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
     PRIMARY KEY ("id"),
     CONSTRAINT "fk_namespaces_filesystem_roots"
     FOREIGN KEY ("namespace") REFERENCES "namespaces"("name") ON DELETE CASCADE ON UPDATE CASCADE
@@ -21,6 +25,10 @@ CREATE TABLE IF NOT EXISTS "filesystem_files" (
     "path" text NOT NULL,
     "depth" integer NOT NULL,
     "typ" text NOT NULL,
+
+    "data" bytea,
+    "checksum" text,
+
     "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "mime_type" text NOT NULL,
@@ -28,18 +36,6 @@ CREATE TABLE IF NOT EXISTS "filesystem_files" (
     CONSTRAINT "file_path_no_dup_check" UNIQUE ("root_id","path"),
     CONSTRAINT "fk_filesystem_roots_filesystem_files"
     FOREIGN KEY ("root_id") REFERENCES "filesystem_roots"("id") ON DELETE CASCADE ON UPDATE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS "filesystem_revisions" (
-    "id" uuid,
-    "data" bytea NOT NULL,
-    "checksum" text NOT NULL,
-    "file_id" uuid NOT NULL,
-    "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY ("id"),
-    CONSTRAINT "fk_filesystem_files_filesystem_revisions"
-    FOREIGN KEY ("file_id") REFERENCES "filesystem_files"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS "mirror_configs" (
@@ -86,7 +82,6 @@ CREATE TABLE IF NOT EXISTS "instances_v2" (
     "id" uuid,
     "namespace_id" uuid NOT NULL,
     "namespace" text NOT NULL,
-    "revision_id" uuid NOT NULL,
     "root_instance_id" uuid NOT NULL,
     "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -217,7 +212,6 @@ CREATE TABLE IF NOT EXISTS "metrics" (
     "id" serial,
     "namespace" text,
     "workflow" text,
-    "revision" text,
     "instance" text,
     "state" text,
     "timestamp" timestamptz DEFAULT CURRENT_TIMESTAMP,
@@ -230,4 +224,12 @@ CREATE TABLE IF NOT EXISTS "metrics" (
     PRIMARY KEY ("id")
 );
 
+-- Remove file_annotations.
 DROP TABLE IF EXISTS "file_annotations";
+
+-- Remove filesystem_revisions table and move its columns to filesystem_file table.
+ALTER TABLE "instances_v2" DROP COLUMN IF EXISTS "revision_id";
+ALTER TABLE "metrics" DROP COLUMN IF EXISTS "revision";
+DROP TABLE IF EXISTS "filesystem_revisions";
+ALTER TABLE "filesystem_files" ADD COLUMN IF NOT EXISTS "data" bytea;
+ALTER TABLE "filesystem_files" ADD COLUMN IF NOT EXISTS "checksum" text;

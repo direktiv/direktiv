@@ -377,7 +377,6 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 	ar := new(functionRequest)
 	ar.ActionID = uid.String()
 	ar.Workflow.Timeout = timeout
-	ar.Workflow.Revision = im.instance.Instance.RevisionID.String()
 	ar.Workflow.NamespaceName = im.instance.TelemetryInfo.NamespaceName
 	ar.Workflow.Path = im.instance.Instance.WorkflowPath
 	ar.Iterator = iterator

@@ -1,41 +1,23 @@
-import { Code, Columns, Play, PlusCircle } from "lucide-react";
 import {
   DialogClose,
   DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "~/design/Dialog";
+import { Play, PlusCircle } from "lucide-react";
 import { SubmitHandler, useForm } from "react-hook-form";
-import {
-  addServiceHeader,
-  defaultServiceYaml,
-  sanitizeServiceJsonObj,
-  serviceHeader,
-  useServiceFormSchema,
-} from "./config";
 
 import Button from "~/design/Button";
-import { ButtonBar } from "~/design/ButtonBar";
-import { Card } from "~/design/Card";
-import Editor from "~/design/Editor";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
-import { JSONSchemaForm } from "~/design/JSONschemaForm";
-import { ScrollArea } from "~/design/ScrollArea";
-import ServiceHelp from "~/pages/namespace/Explorer/Service/ServiceHelp";
-import { Toggle } from "~/design/Toggle";
 import { addYamlFileExtension } from "../../../../utils";
+import { defaultServiceYaml } from "~/pages/namespace/Explorer/Service/ServiceEditor/utils";
 import { fileNameSchema } from "~/api/tree/schema/node";
 import { pages } from "~/util/router/pages";
-import { stringify } from "json-to-pretty-yaml";
-import { twMergeClsx } from "~/util/helpers";
 import { useCreateWorkflow } from "~/api/tree/mutate/createWorkflow";
 import { useNamespace } from "~/util/store/namespace";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
-import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
-import yamljs from "js-yaml";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -55,11 +37,6 @@ const NewService = ({
   const { t } = useTranslation();
   const namespace = useNamespace();
   const navigate = useNavigate();
-  const theme = useTheme();
-
-  const [splitView, setSplitView] = useState(true);
-  const [serviceConfigJson, setServiceConfigJson] = useState(serviceHeader);
-  const serviceFormSchema = useServiceFormSchema();
 
   const resolver = zodResolver(
     z.object({
@@ -81,8 +58,6 @@ const NewService = ({
   const {
     register,
     handleSubmit,
-    setValue,
-    getValues,
     formState: { isDirty, errors, isValid, isSubmitted },
   } = useForm<FormInput>({
     resolver,
@@ -122,96 +97,21 @@ const NewService = ({
           {t("pages.explorer.tree.newService.title")}
         </DialogTitle>
       </DialogHeader>
-      <div className="my-5 flex max-h-[70vh] flex-col gap-y-5 overflow-y-auto">
+
+      <div className="my-3">
         <FormErrors errors={errors} className="mb-5" />
         <form id={formId} onSubmit={handleSubmit(onSubmit)}>
           <fieldset className="flex items-center gap-5">
-            <label className="w-[100px] text-right text-[14px]" htmlFor="name">
-              {t("pages.explorer.tree.newService.nameLabel")}
+            <label className="w-[90px] text-right text-[14px]" htmlFor="name">
+              {t("pages.explorer.tree.newRoute.nameLabel")}
             </label>
             <Input
-              data-testid="new-workflow-name"
               id="name"
               placeholder={t("pages.explorer.tree.newService.namePlaceholder")}
               {...register("name")}
             />
           </fieldset>
         </form>
-        <div className="flex flex-col gap-4">
-          <div
-            className={twMergeClsx(
-              "grid h-[600px] gap-5",
-              splitView
-                ? "grid-rows-2 md:grid-cols-2 md:grid-rows-none"
-                : "grid-rows-1 md:grid-cols-1"
-            )}
-          >
-            {splitView && (
-              <Card background="weight-1">
-                <ScrollArea className="h-[600px] p-4">
-                  <JSONSchemaForm
-                    formData={serviceConfigJson}
-                    onChange={(e) => {
-                      if (e.formData) {
-                        const formDataWithHeader = addServiceHeader(e.formData);
-                        setServiceConfigJson(formDataWithHeader);
-                        const sanitizedJson =
-                          sanitizeServiceJsonObj(formDataWithHeader);
-                        setValue("fileContent", stringify(sanitizedJson));
-                      }
-                    }}
-                    schema={serviceFormSchema}
-                  />
-                </ScrollArea>
-              </Card>
-            )}
-            <Card className="flex p-4" background="weight-1">
-              <Editor
-                value={getValues("fileContent")}
-                theme={theme ?? undefined}
-                onChange={(newData) => {
-                  if (newData && !splitView) {
-                    setValue("fileContent", newData);
-                    let json;
-                    try {
-                      json = yamljs.load(newData);
-                    } catch (e) {
-                      json = null;
-                    }
-                    if (json && typeof json === "object") {
-                      const formDataWithHeader = addServiceHeader(json);
-                      setServiceConfigJson(formDataWithHeader);
-                    }
-                  }
-                }}
-                options={{
-                  readOnly: splitView,
-                }}
-              />
-            </Card>
-          </div>
-          <div className="flex justify-end gap-4">
-            <ButtonBar>
-              <Toggle
-                pressed={splitView}
-                onClick={() => {
-                  setSplitView(true);
-                }}
-              >
-                <Columns />
-              </Toggle>
-              <Toggle
-                pressed={!splitView}
-                onClick={() => {
-                  setSplitView(false);
-                }}
-              >
-                <Code />
-              </Toggle>
-            </ButtonBar>
-            <ServiceHelp />
-          </div>
-        </div>
       </div>
       <DialogFooter>
         <DialogClose asChild>

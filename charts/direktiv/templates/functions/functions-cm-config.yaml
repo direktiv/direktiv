@@ -1,0 +1,93 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "direktiv.fullname" . }}-config-functions
+  labels:
+    {{- include "direktiv.labels" . | nindent 4 }}
+data:
+  functions-config.yaml: |
+      # logging format json/console
+      logging: {{ .Values.logging }}
+
+      # ingress class for knative functions
+      ingress-class: {{ .Values.functions.ingressClass }}
+
+      # address of flow engine
+      flow-service: {{ include "direktiv.fullname" . }}-flow.{{ .Release.Namespace }}
+
+      # address of opentelemetry backend
+      opentelemetry-backend: {{ include "direktiv.opentelemetry-backend" . }}
+
+      # name of the service account to run the pods
+      service-account: {{ include "direktiv.serviceAccountName" . }}-functions-pod
+
+      # name of the namespace to use for the services/functions
+      namespace: {{ .Values.functions.namespace }}
+
+      # pod sidecar name
+      sidecar: {{ .Values.registry }}/{{ .Values.functions.sidecar }}:{{ .Values.tag | default .Chart.AppVersion }}
+
+      # max number of pods per service
+      max-scale: 3
+
+      # shaping network traffic if supported by network plugin
+      net-shape: {{ .Values.functions.netShape }}
+
+      # runtime for services, e.g. gvisor
+      runtime: {{ .Values.functions.runtime }}
+
+      # max memory/cpu value defined for different service sizes
+      # Memory in Megabyte, 0 is no limit
+      memory:
+        small: {{ .Values.functions.limits.memory.small }}
+        medium: {{ .Values.functions.limits.memory.medium }}
+        large: {{ .Values.functions.limits.memory.large }}
+      cpu:
+        small: {{ .Values.functions.limits.cpu.small }}
+        medium: {{ .Values.functions.limits.cpu.medium }}
+        large: {{ .Values.functions.limits.cpu.large }}
+
+      # disk size can not be large than the max configuration
+      # in Knative which is 4GB by default
+      disk:
+        small: {{ .Values.functions.limits.disk.small }}
+        medium: {{ .Values.functions.limits.disk.medium }}
+        large: {{ .Values.functions.limits.disk.large }}
+
+      # proxy values
+      proxy:
+        no: "{{ .Values.no_proxy }}"
+        https: "{{ .Values.https_proxy }}"
+        http: "{{ .Values.http_proxy }}"
+
+      # additional volumes
+      extraVolumes:
+{{- if .Values.opentelemetry.enabled }}
+{{- include "direktiv.opentelemetry.volume" . | nindent 8 }}
+{{- end }}
+
+      # additional sidecar containers
+      extraContainers:
+{{- if .Values.opentelemetry.enabled }}
+{{- include "direktiv.opentelemetry" . | nindent 8 }}
+{{- end }}
+{{- if .Values.functions.extraContainersPod }}
+{{ toYaml .Values.functions.extraContainersPod | indent 8}}
+{{- end }}
+
+      ######### Deprecated #########
+      # default concurrency level
+      concurrency: 100
+
+      # maximum timeout, needs to be in below knative max
+      request-timeout: {{ .Values.requestTimeout }}
+
+      # max ephemeral storage in MB
+      storage: 100
+
+      # rollout seconds for knative services
+      rollout-duration: 10
+      
+      # init pod name
+      init-pod: {{ .Values.registry }}/{{ .Values.functions.initPodImage }}:{{ .Values.tag | default .Chart.AppVersion }}    
+

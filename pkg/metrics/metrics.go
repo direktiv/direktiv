@@ -18,7 +18,6 @@ type Metrics struct {
 	ID         int       `json:"id"`
 	Namespace  string    `json:"namespace"`
 	Workflow   string    `json:"workflow"`
-	Revision   string    `json:"revision"`
 	Instance   string    `json:"instance"`
 	State      string    `json:"state"`
 	Timestamp  time.Time `json:"timestamp"`
@@ -59,13 +58,12 @@ func (c *Client) InsertRecord(args *InsertRecordArgs) error {
 	res := c.db.WithContext(context.Background()).Exec(
 		`
 					INSERT INTO metrics(
-									namespace,workflow,revision,instance,state,
+									namespace,workflow,instance,state,
 									workflow_ms,isolate_ms,error_code,
 									invoker,next,transition) 
-					VALUES(?,?,?,?,?,?,?,?,?,?,?)`,
+					VALUES(?,?,?,?,?,?,?,?,?,?)`,
 		args.Namespace,
 		wf,
-		args.Revision,
 		args.Instance,
 		args.State,
 
@@ -95,10 +93,9 @@ func (c *Client) GetMetrics(args *GetMetricsArgs) (*Dataset, error) {
 	var metricsList []*Metrics
 	res := c.db.WithContext(ctx).Raw(`
 					SELECT * FROM services
-					WHERE namespace=? AND workflow=? AND revision=? AND timestamp=?`,
+					WHERE namespace=? AND workflow=? AND timestamp=?`,
 		args.Namespace,
 		args.Workflow,
-		args.Revision,
 		args.Since,
 	).
 		Find(&metricsList)

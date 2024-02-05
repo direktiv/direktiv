@@ -17,10 +17,11 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore/instancestoresql"
 	"github.com/google/uuid"
 	"go.opentelemetry.io/otel/trace"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type muxStart struct {
-	Enabled  bool                         `json:"enabled"`
 	Type     string                       `json:"type"`
 	Cron     string                       `json:"cron"`
 	Events   []model.StartEventDefinition `json:"events"`
@@ -31,7 +32,6 @@ func newMuxStart(workflow *model.Workflow) *muxStart {
 	ms := new(muxStart)
 
 	def := workflow.GetStartDefinition()
-	ms.Enabled = true
 	ms.Type = def.GetType().String()
 	ms.Events = def.GetEvents()
 
@@ -55,27 +55,31 @@ func newMuxStart(workflow *model.Workflow) *muxStart {
 func (ms *muxStart) Hash() string {
 	if ms == nil {
 		ms = new(muxStart)
-		ms.Enabled = true
 		ms.Type = model.StartTypeDefault.String()
 	}
 
 	return bytedata.Checksum(ms)
 }
 
-type routerData struct {
-	Enabled bool
-	Routes  map[string]int
-}
-
-func (r *routerData) Marshal() string {
-	data, err := json.Marshal(r)
+func (srv *server) validateRouter(ctx context.Context, tx *sqlTx, file *filestore.File) (*muxStart, error) {
+	data, err := tx.FileStore().ForFile(file).GetData(ctx)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	return string(data)
+
+	workflow := new(model.Workflow)
+
+	err = workflow.Load(data)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	ms := newMuxStart(workflow)
+
+	return ms, nil
 }
 
-func (engine *engine) mux(ctx context.Context, ns *database.Namespace, calledAs string) (*filestore.File, *filestore.Revision, error) {
+func (engine *engine) mux(ctx context.Context, ns *database.Namespace, calledAs string) (*filestore.File, []byte, error) {
 	// TODO: Alan, fix for the new filestore.(*Revision).GetRevision() api.
 	uriElems := strings.SplitN(calledAs, ":", 2)
 	path := uriElems[0]
@@ -90,16 +94,13 @@ func (engine *engine) mux(ctx context.Context, ns *database.Namespace, calledAs 
 	if err != nil {
 		return nil, nil, err
 	}
-	var rev *filestore.Revision
 
-	if true {
-		rev, err = tx.FileStore().ForFile(file).GetRevision(ctx)
-		if err != nil {
-			return nil, nil, err
-		}
+	data, err := tx.FileStore().ForFile(file).GetData(ctx)
+	if err != nil {
+		return nil, nil, err
 	}
 
-	return file, rev, nil
+	return file, data, nil
 }
 
 const (
@@ -122,11 +123,11 @@ func (flow *flow) configureRouterHandler(req *pubsub.PubsubUpdate) {
 		return
 	}
 
-	if msg.Cron == "" || !msg.Enabled {
+	if msg.Cron == "" {
 		flow.timers.deleteCronForWorkflow(msg.ID)
 	}
 
-	if msg.Cron != "" && msg.Enabled {
+	if msg.Cron != "" {
 		err = flow.timers.addCron(msg.ID, wfCron, msg.Cron, []byte(msg.ID))
 		if err != nil {
 			flow.sugar.Error(err)
@@ -217,18 +218,18 @@ func (flow *flow) cronHandler(data []byte) {
 	flow.engine.queue(im)
 }
 
-func (flow *flow) configureWorkflowStarts(ctx context.Context, tx *sqlTx, nsID uuid.UUID, file *filestore.File, router *routerData, strict bool) error {
-	ms := &muxStart{
-		Enabled: false,
-		Type:    model.StartTypeDefault.String(),
-	}
-
-	err := flow.events.processWorkflowEvents(ctx, nsID, file, ms)
+func (flow *flow) configureWorkflowStarts(ctx context.Context, tx *sqlTx, nsID uuid.UUID, file *filestore.File) error {
+	ms, err := flow.validateRouter(ctx, tx, file)
 	if err != nil {
 		return err
 	}
 
-	flow.pubsub.ConfigureRouterCron(file.ID.String(), ms.Cron, ms.Enabled)
+	err = flow.events.processWorkflowEvents(ctx, nsID, file, ms)
+	if err != nil {
+		return err
+	}
+
+	flow.pubsub.ConfigureRouterCron(file.ID.String(), ms.Cron)
 
 	return nil
 }

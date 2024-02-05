@@ -36,7 +36,6 @@ var inDataErr = `
 `
 
 func TestNewServer(t *testing.T) {
-
 	h := server.Handler[testIn](handleit)
 
 	w := httptest.NewRecorder()
@@ -72,7 +71,6 @@ func TestNewServer(t *testing.T) {
 }
 
 func TestNewServerErrors(t *testing.T) {
-
 	h := server.Handler[testIn](handleit)
 
 	w := httptest.NewRecorder()
@@ -103,11 +101,9 @@ func TestNewServerErrors(t *testing.T) {
 	h.ServeHTTP(w, r)
 
 	assert.Equal(t, http.StatusOK, w.Result().StatusCode)
-
 }
 
 func handleit(ctx context.Context, in testIn, ei *server.ExecutionInfo) (interface{}, error) {
-
 	if in.Integer == 500 {
 		return nil, fmt.Errorf("that does not work")
 	}
@@ -119,7 +115,6 @@ func handleit(ctx context.Context, in testIn, ei *server.ExecutionInfo) (interfa
 }
 
 func TestNewServerFiles(t *testing.T) {
-
 	payload := `
 	{
 		"files": [

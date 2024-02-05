@@ -8,7 +8,7 @@ runcmd:
  - chown -R ubuntu:ubuntu /home/install.sh
  - rm -Rf /home/.bashrc
  - mv /home/install.sh /home/ubuntu/
- - /home/ubuntu/install.sh ARG1 ARG2 ARG3
+ - /home/ubuntu/install.sh
  
 
 write_files:

@@ -17,7 +17,6 @@ const itemTemplate: NodeSchemaType = {
   parent: "/",
   type: "directory",
   attributes: [],
-  oid: "",
   readOnly: true,
   expandedType: "git",
   mimeType: "text/plain; charset=utf-8",

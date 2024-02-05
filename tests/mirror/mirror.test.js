@@ -31,7 +31,6 @@ describe('Test behaviour specific to the root node', () => {
                 createdAt: expect.stringMatching(common.regex.timestampRegex),
                 updatedAt: expect.stringMatching(common.regex.timestampRegex),
                 name: namespaceName,
-                oid: expect.stringMatching(common.regex.uuidRegex),
             },
         })
     })
@@ -95,7 +94,6 @@ describe('Test behaviour specific to the root node', () => {
                 parent: "/",
                 type: common.filesystem.nodeTypeDirectory,
                 attributes: [],
-                oid: "",
                 readOnly: false,
                 expandedType: common.filesystem.extendedNodeTypeMirror,
                 mimeType: "",
@@ -115,7 +113,6 @@ describe('Test behaviour specific to the root node', () => {
                         parent: "/",
                         type: common.filesystem.nodeTypeDirectory,
                         attributes: [],
-                        oid: "",
                         readOnly: false,
                         mimeType: "",
                         expandedType: common.filesystem.extendedNodeTypeDirectory,
@@ -128,7 +125,6 @@ describe('Test behaviour specific to the root node', () => {
                         parent: "/",
                         type: common.filesystem.nodeTypeWorkflow,
                         attributes: [],
-                        oid: "",
                         readOnly: false,
                         mimeType: "application/direktiv",
                         expandedType: common.filesystem.extendedNodeTypeWorkflow,
@@ -141,7 +137,6 @@ describe('Test behaviour specific to the root node', () => {
                         parent: "/",
                         type: common.filesystem.nodeTypeWorkflow,
                         attributes: [],
-                        oid: "",
                         readOnly: false,
                         mimeType: "application/direktiv",
                         expandedType: common.filesystem.extendedNodeTypeWorkflow,
@@ -154,7 +149,6 @@ describe('Test behaviour specific to the root node', () => {
                         parent: "/",
                         type: common.filesystem.nodeTypeDirectory,
                         attributes: [],
-                        oid: "",
                         readOnly: false,
                         mimeType: "",
                         expandedType: common.filesystem.extendedNodeTypeDirectory,
@@ -167,7 +161,6 @@ describe('Test behaviour specific to the root node', () => {
                         parent: "/",
                         type: common.filesystem.nodeTypeFile,
                         attributes: [],
-                        oid: "",
                         readOnly: false,
                         mimeType: "text/plain",
                         expandedType: common.filesystem.nodeTypeFile,
@@ -180,7 +173,6 @@ describe('Test behaviour specific to the root node', () => {
                         parent: "/",
                         type: common.filesystem.nodeTypeFile,
                         attributes: [],
-                        oid: "",
                         readOnly: false,
                         mimeType: "text/plain",
                         expandedType: common.filesystem.nodeTypeFile,
@@ -193,7 +185,6 @@ describe('Test behaviour specific to the root node', () => {
                         parent: "/",
                         type: common.filesystem.nodeTypeWorkflow,
                         attributes: [],
-                        oid: "",
                         readOnly: false,
                         mimeType: "application/direktiv",
                         expandedType: common.filesystem.extendedNodeTypeWorkflow,
@@ -206,7 +197,6 @@ describe('Test behaviour specific to the root node', () => {
                         parent: "/",
                         type: common.filesystem.nodeTypeFile,
                         attributes: [],
-                        oid: "",
                         readOnly: false,
                         mimeType: "text/plain",
                         expandedType: common.filesystem.nodeTypeFile,
@@ -219,7 +209,6 @@ describe('Test behaviour specific to the root node', () => {
                         parent: "/",
                         type: common.filesystem.nodeTypeFile,
                         attributes: [],
-                        oid: "",
                         readOnly: false,
                         mimeType: "application/json",
                         expandedType: common.filesystem.nodeTypeFile,
@@ -232,7 +221,6 @@ describe('Test behaviour specific to the root node', () => {
                         parent: "/",
                         type: common.filesystem.nodeTypeFile,
                         attributes: [],
-                        oid: "",
                         readOnly: false,
                         mimeType: "application/json",
                         expandedType: common.filesystem.nodeTypeFile,
@@ -245,7 +233,6 @@ describe('Test behaviour specific to the root node', () => {
                         parent: "/",
                         type: common.filesystem.nodeTypeFile,
                         attributes: [],
-                        oid: "",
                         readOnly: false,
                         mimeType: "application/json",
                         expandedType: common.filesystem.nodeTypeFile,
@@ -258,7 +245,6 @@ describe('Test behaviour specific to the root node', () => {
                         parent: "/",
                         type: common.filesystem.nodeTypeFile,
                         attributes: [],
-                        oid: "",
                         readOnly: false,
                         mimeType: "application/json",
                         expandedType: common.filesystem.nodeTypeFile,
@@ -271,7 +257,6 @@ describe('Test behaviour specific to the root node', () => {
                         parent: "/",
                         type: common.filesystem.nodeTypeFile,
                         attributes: [],
-                        oid: "",
                         readOnly: false,
                         mimeType: "application/json",
                         expandedType: common.filesystem.nodeTypeFile,
@@ -284,7 +269,6 @@ describe('Test behaviour specific to the root node', () => {
                         parent: "/",
                         type: common.filesystem.nodeTypeFile,
                         attributes: [],
-                        oid: "",
                         readOnly: false,
                         mimeType: "application/json",
                         expandedType: common.filesystem.nodeTypeFile,
@@ -297,7 +281,6 @@ describe('Test behaviour specific to the root node', () => {
                         parent: "/",
                         type: common.filesystem.nodeTypeDirectory,
                         attributes: [],
-                        oid: "",
                         readOnly: false,
                         mimeType: "",
                         expandedType: common.filesystem.nodeTypeDirectory,
@@ -310,7 +293,6 @@ describe('Test behaviour specific to the root node', () => {
                         parent: "/",
                         type: common.filesystem.nodeTypeFile,
                         attributes: [],
-                        oid: "",
                         readOnly: false,
                         mimeType: "text/plain",
                         expandedType: common.filesystem.nodeTypeFile,
@@ -336,13 +318,10 @@ describe('Test behaviour specific to the root node', () => {
                 type: common.filesystem.nodeTypeWorkflow,
                 expandedType: common.filesystem.extendedNodeTypeWorkflow,
                 attributes: expect.anything(),
-                oid: '',
                 readOnly: false,
                 mimeType: "application/direktiv",
             },
             source: expect.stringMatching(common.regex.base64Regex),
-            eventLogging: ``,
-            oid: expect.stringMatching(common.regex.uuidRegex),
         })
     })
 
@@ -360,13 +339,10 @@ describe('Test behaviour specific to the root node', () => {
                 type: common.filesystem.nodeTypeFile,
                 expandedType: common.filesystem.nodeTypeFile,
                 attributes: expect.anything(),
-                oid: '',
                 readOnly: false,
                 mimeType: "text/plain",
             },
             source: expect.stringMatching(common.regex.base64Regex),
-            eventLogging: ``,
-            oid: expect.stringMatching(common.regex.uuidRegex),
         })
     })
 
@@ -384,13 +360,10 @@ describe('Test behaviour specific to the root node', () => {
                 type: common.filesystem.nodeTypeWorkflow,
                 expandedType: common.filesystem.extendedNodeTypeWorkflow,
                 attributes: expect.anything(),
-                oid: '',
                 readOnly: false,
                 mimeType: "application/direktiv",
             },
             source: expect.stringMatching(common.regex.base64Regex),
-            eventLogging: ``,
-            oid: expect.stringMatching(common.regex.uuidRegex),
         })
     })
 
@@ -408,7 +381,6 @@ describe('Test behaviour specific to the root node', () => {
                 type: common.filesystem.nodeTypeDirectory,
                 expandedType: common.filesystem.extendedNodeTypeDirectory,
                 attributes: expect.anything(),
-                oid: '',
                 readOnly: false,
                 mimeType: "",
             },
@@ -438,7 +410,6 @@ describe('Test behaviour specific to the root node', () => {
                 type: common.filesystem.nodeTypeDirectory,
                 expandedType: common.filesystem.extendedNodeTypeDirectory,
                 attributes: expect.anything(),
-                oid: '',
                 readOnly: false,
                 mimeType: "",
             },
@@ -458,7 +429,6 @@ describe('Test behaviour specific to the root node', () => {
                         type: common.filesystem.nodeTypeWorkflow,
                         expandedType: common.filesystem.extendedNodeTypeWorkflow,
                         name: "css.yaml",
-                        oid: "",
                         parent: "/banana",
                         path: "/banana/css.yaml",
                         readOnly: false,
@@ -471,7 +441,6 @@ describe('Test behaviour specific to the root node', () => {
                         type: "file",
                         expandedType: "file",
                         name: "page-1.yaml.page.html",
-                        oid: "",
                         parent: "/banana",
                         path: "/banana/page-1.yaml.page.html",
                         readOnly: false,
@@ -484,7 +453,6 @@ describe('Test behaviour specific to the root node', () => {
                         type: "file",
                         expandedType: "file",
                         name: "page-2.yaml.Page.HTML",
-                        oid: "",
                         parent: "/banana",
                         path: "/banana/page-2.yaml.Page.HTML",
                         readOnly: false,
@@ -497,7 +465,6 @@ describe('Test behaviour specific to the root node', () => {
                         type: common.filesystem.nodeTypeDirectory,
                         expandedType: common.filesystem.extendedNodeTypeDirectory,
                         name: "util",
-                        oid: "",
                         parent: "/banana",
                         path: "/banana/util",
                         readOnly: false,
@@ -522,13 +489,10 @@ describe('Test behaviour specific to the root node', () => {
                 type: common.filesystem.nodeTypeWorkflow,
                 expandedType: common.filesystem.extendedNodeTypeWorkflow,
                 attributes: expect.anything(),
-                oid: '',
                 readOnly: false,
                 mimeType: "application/direktiv",
             },
             source: expect.stringMatching(common.regex.base64Regex),
-            eventLogging: ``,
-            oid: expect.stringMatching(common.regex.uuidRegex),
         })
     })
 
@@ -546,13 +510,10 @@ describe('Test behaviour specific to the root node', () => {
                 type: "file",
                 expandedType: "file",
                 attributes: expect.anything(),
-                oid: '',
                 readOnly: false,
                 mimeType: expect.anything(),
             },
             source: expect.stringMatching(common.regex.base64Regex),
-            eventLogging: ``,
-            oid: expect.stringMatching(common.regex.uuidRegex),
         })
     })
 
@@ -592,13 +553,10 @@ describe('Test behaviour specific to the root node', () => {
                 type: common.filesystem.nodeTypeWorkflow,
                 expandedType: common.filesystem.extendedNodeTypeWorkflow,
                 attributes: expect.anything(),
-                oid: '',
                 readOnly: false,
                 mimeType: "application/direktiv",
             },
             source: expect.stringMatching(common.regex.base64Regex),
-            eventLogging: ``,
-            oid: expect.stringMatching(common.regex.uuidRegex),
         })
     })
 
@@ -638,7 +596,6 @@ describe('Test behaviour specific to the root node', () => {
                 type: common.filesystem.nodeTypeDirectory,
                 expandedType: common.filesystem.extendedNodeTypeDirectory,
                 attributes: expect.anything(),
-                oid: '',
                 readOnly: false,
                 mimeType: "",
             },
@@ -658,7 +615,6 @@ describe('Test behaviour specific to the root node', () => {
                         type: common.filesystem.nodeTypeWorkflow,
                         expandedType: common.filesystem.extendedNodeTypeWorkflow,
                         name: "caller.yaml",
-                        oid: "",
                         parent: "/banana/util",
                         path: "/banana/util/caller.yaml",
                         readOnly: false,
@@ -671,7 +627,6 @@ describe('Test behaviour specific to the root node', () => {
                         type: common.filesystem.nodeTypeWorkflow,
                         expandedType: common.filesystem.extendedNodeTypeWorkflow,
                         name: "curler.yaml",
-                        oid: "",
                         parent: "/banana/util",
                         path: "/banana/util/curler.yaml",
                         readOnly: false,
@@ -696,13 +651,10 @@ describe('Test behaviour specific to the root node', () => {
                 type: common.filesystem.nodeTypeWorkflow,
                 expandedType: common.filesystem.extendedNodeTypeWorkflow,
                 attributes: expect.anything(),
-                oid: '',
                 readOnly: false,
                 mimeType: "application/direktiv",
             },
             source: expect.stringMatching(common.regex.base64Regex),
-            eventLogging: ``,
-            oid: expect.stringMatching(common.regex.uuidRegex),
         })
     })
 
@@ -720,13 +672,10 @@ describe('Test behaviour specific to the root node', () => {
                 type: common.filesystem.nodeTypeWorkflow,
                 expandedType: common.filesystem.extendedNodeTypeWorkflow,
                 attributes: expect.anything(),
-                oid: '',
                 readOnly: false,
                 mimeType: "application/direktiv",
             },
             source: expect.stringMatching(common.regex.base64Regex),
-            eventLogging: ``,
-            oid: expect.stringMatching(common.regex.uuidRegex),
         })
     })
 
@@ -867,14 +816,8 @@ describe('Test behaviour specific to the root node', () => {
         expect(req.body.return.return.status).toEqual('200 OK')
     }, 90000)
 
-    it(`should fail to delete a namespace because of a lack of a recursive param`, async () => {
-        const req = await request(common.config.getDirektivHost()).delete(`/api/namespaces/${namespaceName}`)
-        expect(req.statusCode).toEqual(500)
-        expect(req.body).toMatchObject({})
-    })
-
     it(`should delete a namespace`, async () => {
-        const req = await request(common.config.getDirektivHost()).delete(`/api/namespaces/${namespaceName}?recursive=true`)
+        const req = await request(common.config.getDirektivHost()).delete(`/api/namespaces/${namespaceName}`)
         expect(req.statusCode).toEqual(200)
         expect(req.body).toMatchObject({})
     })
