@@ -255,7 +255,6 @@ states:
 	}
 
 	assertRootFilesInPath(t, fs, root,
-		"/",
 		"/a",
 		"/a/b",
 		"/a/b/c.yaml",

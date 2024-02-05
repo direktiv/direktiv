@@ -100,9 +100,7 @@ func TestParseEmpty(t *testing.T) {
 		return
 	}
 
-	assertTree(t, p, []string{
-		".",
-	})
+	assertTree(t, p, []string{})
 }
 
 func TestParseSimple(t *testing.T) {
@@ -135,7 +133,6 @@ states:
 	}
 
 	assertTree(t, p, []string{
-		".",
 		"a",
 		"a/b",
 		"a/b/d.yaml",
@@ -203,7 +200,6 @@ states:
 	}
 
 	assertTree(t, p, []string{
-		".",
 		"a",
 		"a/b",
 		"a/b/d.yaml",

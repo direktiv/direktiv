@@ -71,6 +71,8 @@ info:
     | `500` | something went wrong with the server |
 
 tags:
+  - name: server
+    description: Miscellaneous server endpoints
   - name: services
     description: Endpoints for managing services
   - name: registries
@@ -83,11 +85,11 @@ x-tagGroups:
       - services
       - registries
       - gateway
+      - server
 components:
   parameters:
     $ref: "./parameters.yaml"
   schemas:
     $ref: "./objects.yaml"
 paths:
-    $ref: "./paths/paths.yaml"
-
+  $ref: "./paths/paths.yaml"

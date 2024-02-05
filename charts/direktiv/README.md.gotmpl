@@ -1,0 +1,105 @@
+{{ template "chart.header" . }}
+{{ template "chart.description" . }}
+
+{{ template "chart.versionBadge" . }}{{ template "chart.typeBadge" . }}{{ template "chart.appVersionBadge" . }}
+
+## Additional Information
+
+This chart installs direktiv.
+
+### Changes in 0.1.21
+* Changed ui image name to frontend
+* Changed ingress configuration for API and frontend
+* Version upgrade
+
+### Changes in 0.1.20
+
+* Direktiv version upgrade
+* Resources CPU/Memory configurable
+
+### Changes in 0.1.19
+
+* Fixed image commands
+
+### Changes in 0.1.18
+
+* Fixed image references
+
+### Changes in 0.1.17
+
+*Direktiv version upgrade*
+
+### Changes in 0.1.16
+
+*Direktiv version upgrade*
+
+### Changes in 0.1.15
+
+* Deprecated unused function configuration items
+* Added disk size to small, medium, large function settings
+* Added permission to watch configmaps to function deployment
+* Updated dependencies (Prometheus, Nginx)
+
+### Changes in 0.1.14
+
+* Added helm labels to function namespace
+* Updated prometheus, nginx dependencies
+
+### Changes in 0.1.13
+
+* Added function namespace generation automatically 
+* Added update strategy for deployments
+* Ingresses are optional, default true
+
+### Changes in 0.1.12
+
+*Version upgrade*
+
+### Changes in 0.1.11
+
+*Version upgrade*
+
+### Changes in 0.1.10
+
+*Version upgrade*
+*Added API secret*
+
+### Changes in 0.1.9
+*Version fix*
+
+### Changes in 0.1.8
+*Version upgrade*
+
+### Changes in 0.1.7
+*Version upgrade*
+
+### Changes in 0.1.6
+*Flow filesystem is writable for git integration*
+
+### Changes in 0.1.3
+
+*creating of service accounts is optional*
+*added `additional` for additional attribuites for db connections*
+*make the cpu/mem limits for knative containers configurable*
+*multiple replicas have now requiredDuringSchedulingIgnoredDuringExecution podAntiAffinity*
+
+### Changes in 0.1.2
+
+*Removed unnecessary environment variables in UI deployment*
+*Fixed typo in opentelemetry config*
+
+## Installing the Chart
+
+To install the chart with the release name `direktiv`:
+
+```console
+$ kubectl create ns direktiv-services-direktiv
+$ helm repo add direktiv https://chart.direktiv.io
+$ helm install direktiv direktiv/{{ template "chart.name" . }}
+```
+
+{{ template "chart.requirementsSection" . }}
+
+{{ template "chart.valuesSection" . }}
+
+{{ template "helm-docs.versionFooter" . }}

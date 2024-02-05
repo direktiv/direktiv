@@ -9,7 +9,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
-	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
@@ -48,11 +47,7 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 		return nil, err
 	}
 
-	root, err := tx.FileStore().CreateRoot(ctx, uuid.New(), ns.Name)
-	if err != nil {
-		return nil, err
-	}
-	_, err = tx.FileStore().ForRootID(root.ID).CreateFile(ctx, "/", filestore.FileTypeDirectory, "", nil)
+	_, err = tx.FileStore().CreateRoot(ctx, uuid.New(), ns.Name)
 	if err != nil {
 		return nil, err
 	}

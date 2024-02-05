@@ -26,7 +26,6 @@ const (
 )
 
 func (s *Server) addUIRoutes() {
-
 	log.Debug().Msg("adding ui routes")
 	filesDir := http.Dir(s.conf.Server.Assets)
 
@@ -39,9 +38,7 @@ func (s *Server) addUIRoutes() {
 
 	s.chi.Group(func(router chi.Router) {
 		serverFiles := func(wsf http.ResponseWriter, rsf *http.Request) {
-
 			deliver := func(deliverFile []byte) {
-
 				mimeType := http.DetectContentType(deliverFile)
 
 				ext := filepath.Ext(rsf.URL.RequestURI())
@@ -94,13 +91,10 @@ func (s *Server) addUIRoutes() {
 		router.Get("/ui/assets/*", func(w http.ResponseWriter, r *http.Request) {
 			serverFiles(w, r)
 		})
-
 	})
-
 }
 
 func ReverseProxy(r *http.Request, w http.ResponseWriter, urlTarget string) {
-
 	target, err := url.Parse(urlTarget)
 	if err != nil {
 		SendError(w, err, http.StatusInternalServerError, ErrorServerInternal,

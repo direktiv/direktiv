@@ -58,6 +58,7 @@ jobs:
       max-parallel: 2
       matrix:
         jest_prefix: [
+            "api/",
             "engine/",
             "filesystem/",
             "logparser/",

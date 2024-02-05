@@ -1,5 +1,3 @@
-import { compareYamlStructure, jsonToYaml } from "../../utils";
-
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
@@ -10,6 +8,7 @@ import FormErrors from "~/components/FormErrors";
 import { Save } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
 import { ServiceFormSchemaType } from "./schema";
+import { jsonToYaml } from "../../utils";
 import { serializeServiceFile } from "./utils";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useTheme } from "~/util/store/theme";
@@ -54,10 +53,8 @@ const ServiceEditor: FC<ServiceEditorProps> = ({ data, path }) => {
         values,
       }) => {
         const preview = jsonToYaml(values);
-        const filehasChanged = compareYamlStructure(
-          preview,
-          fileContentFromServer
-        );
+
+        const filehasChanged = preview === fileContentFromServer;
         const isDirty = !serviceConfigError && !filehasChanged;
         const disableButton = isLoading || !!serviceConfigError;
 

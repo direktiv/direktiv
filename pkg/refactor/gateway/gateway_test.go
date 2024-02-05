@@ -23,8 +23,7 @@ func createNS(db *database.DB, ns string) {
 	db.DataStore().Namespaces().Create(ctx, &core.Namespace{
 		Name: ns,
 	})
-	root, _ := db.FileStore().CreateRoot(ctx, uuid.New(), ns)
-	db.FileStore().ForRootID(root.ID).CreateFile(ctx, "/", filestore.FileTypeDirectory, "", nil)
+	_, _ = db.FileStore().CreateRoot(ctx, uuid.New(), ns)
 }
 
 var wf1 = `direktiv_api: endpoint/v1

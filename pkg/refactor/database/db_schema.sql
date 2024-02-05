@@ -10,6 +10,10 @@ CREATE TABLE IF NOT EXISTS  "namespaces" (
 CREATE TABLE IF NOT EXISTS  "filesystem_roots" (
     "id" uuid,
     "namespace" text UNIQUE,
+
+    "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
     PRIMARY KEY ("id"),
     CONSTRAINT "fk_namespaces_filesystem_roots"
     FOREIGN KEY ("namespace") REFERENCES "namespaces"("name") ON DELETE CASCADE ON UPDATE CASCADE
