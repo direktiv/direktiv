@@ -138,6 +138,9 @@ export const OutboundPluginForm: FC<OutboundPluginFormProps> = ({ form }) => {
                 "pages.explorer.endpoint.editor.form.plugins.outbound.modal.headlineEdit"
               )
         }
+        onCancel={() => {
+          setDialogOpen(false);
+        }}
       >
         <PluginSelector
           title={t(

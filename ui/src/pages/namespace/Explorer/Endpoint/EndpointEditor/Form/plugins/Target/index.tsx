@@ -129,6 +129,9 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({ form }) => {
         title={t(
           "pages.explorer.endpoint.editor.form.plugins.target.modal.headline"
         )}
+        onCancel={() => {
+          setDialogOpen(false);
+        }}
       >
         <PluginSelector
           title={t(

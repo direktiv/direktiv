@@ -13,6 +13,7 @@ type ModalWrapperProps = PropsWithChildren & {
   title: string;
   formId?: string;
   showSaveBtn?: boolean;
+  onCancel: () => void;
 };
 
 export const ModalWrapper: FC<ModalWrapperProps> = ({
@@ -20,6 +21,7 @@ export const ModalWrapper: FC<ModalWrapperProps> = ({
   showSaveBtn = true,
   children,
   formId,
+  onCancel,
 }) => {
   const { t } = useTranslation();
   return (
@@ -30,13 +32,16 @@ export const ModalWrapper: FC<ModalWrapperProps> = ({
       <div className="flex max-h-[70vh] flex-col gap-5 overflow-y-auto p-[1px]">
         {children}
       </div>
-      {showSaveBtn && (
-        <DialogFooter>
+      <DialogFooter>
+        <Button type="button" onClick={onCancel}>
+          {t("components.modalWrapper.cancelBtn")}
+        </Button>
+        {showSaveBtn && (
           <Button type="submit" form={formId ?? undefined}>
             {t("components.modalWrapper.saveBtn")}
           </Button>
-        </DialogFooter>
-      )}
+        )}
+      </DialogFooter>
     </DialogContent>
   );
 };

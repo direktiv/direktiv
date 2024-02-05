@@ -144,6 +144,9 @@ export const AuthPluginForm: FC<AuthPluginFormProps> = ({ formControls }) => {
                 "pages.explorer.endpoint.editor.form.plugins.auth.modal.headlineEdit"
               )
         }
+        onCancel={() => {
+          setDialogOpen(false);
+        }}
       >
         <PluginSelector
           title={t(

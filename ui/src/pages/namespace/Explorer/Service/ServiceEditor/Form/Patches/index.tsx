@@ -103,6 +103,9 @@ export const PatchesForm: FC<PatchesFormProps> = ({ form }) => {
             ? t("pages.explorer.service.editor.form.patches.modal.title.edit")
             : t("pages.explorer.service.editor.form.patches.modal.title.create")
         }
+        onCancel={() => {
+          setDialogOpen(false);
+        }}
       >
         <PatchItemForm
           formId={formId}
