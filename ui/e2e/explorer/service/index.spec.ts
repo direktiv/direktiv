@@ -260,6 +260,45 @@ test("it is possible to edit patches", async ({ page }) => {
     })
   );
 
+  /* edit one patch */
+  const updatedPatch: PatchSchemaType = {
+    op: PatchOperations[Math.floor(Math.random() * 3)] as PatchOperationType,
+    path: faker.internet.url(),
+    value: faker.lorem.words(3),
+  };
+
+  const patchToEdit = expectNewPatches[1];
+
+  if (!patchToEdit) throw Error("patch to edit is undefined");
+  await page.getByTestId("patch-row").nth(1).click();
+
+  await page.getByLabel("Operation").click();
+  await page.getByLabel(updatedPatch.op).click();
+
+  await page.getByLabel("Path").fill(updatedPatch.path);
+  const editorTarget = await page.getByText(patchToEdit.value, {
+    exact: true,
+  });
+
+  await editorTarget.click();
+  await page.locator("textarea").last().fill(updatedPatch.value);
+
+  await page.getByRole("button", { name: "Save" }).click();
+
+  expectNewPatches = [
+    patches[0] as PatchSchemaType,
+    updatedPatch,
+    patches[1] as PatchSchemaType,
+  ];
+
+  await Promise.all(
+    expectNewPatches.map(async (item, index) => {
+      const currentElement = page.getByTestId("patch-row").nth(index);
+      await expect(currentElement).toContainText(item.op);
+      await expect(currentElement).toContainText(item.path);
+    })
+  );
+
   /* assert preview has been updated */
   const updatedService = {
     name: "mynewservice.yaml",
