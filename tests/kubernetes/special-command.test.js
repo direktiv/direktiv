@@ -87,6 +87,63 @@ states:
           suppress_output: true
 `
 
+const filesWorkflow = `
+direktiv_api: workflow/v1
+functions:
+- id: get
+  image: ubuntu:24.04
+  type: knative-workflow
+  cmd: /usr/share/direktiv/direktiv-cmd
+states:
+- id: getter 
+  type: action
+  action:
+    function: get
+    input: 
+      files:
+      - name: script.sh
+        content: |
+          #!/bin/bash
+
+          cat hello.txt
+        permission: 0755
+      - name: hello.txt
+        content: HELLO
+        permission: 0444
+
+      data:
+        commands:
+        - command: ./script.sh
+        - command: stat -c "%a" hello.txt 
+`
+
+
+describe("Test special command with files and permission", () => {
+    beforeAll(common.helpers.deleteAllNamespaces);
+  
+    common.helpers.itShouldCreateNamespace(it, expect, testNamespace);
+  
+    common.helpers.itShouldCreateFile(
+      it,
+      expect,
+      testNamespace,
+      "/wf1.yaml",
+      filesWorkflow
+    );
+  
+  
+    retry(`should invoke workflow`, 10, async () => {
+      await sleep(500);
+      const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/${testNamespace}/tree/wf1.yaml?op=wait`)
+      expect(res.statusCode).toEqual(200)
+      expect(res.body.return[0].Output).toEqual("HELLO")
+      expect(res.body.return[1].Output).toEqual("444\n")
+    })
+  
+  
+});
+
+
 describe("Test special command with env", () => {
   beforeAll(common.helpers.deleteAllNamespaces);
 
@@ -129,7 +186,6 @@ describe("Test special command with supress", () => {
       await sleep(500);
       const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/${testNamespace}/tree/wf1.yaml?op=wait`)
       expect(res.statusCode).toEqual(200)
-      console.log(res.body)
       expect(res.body.return[0].Output).toEqual("hello\n")
       expect(res.body.return[1].Output).toEqual("")
     })
