@@ -57,40 +57,45 @@ test("it is possible to create a consumer", async ({ page }) => {
 
   const groupsElement = page.getByPlaceholder("Enter a group");
 
-  await Promise.all(
-    groups.map(async (group, index) => {
-      await expect(
-        groupsElement,
-        "it renders one input for every existing group +1 empty one"
-      ).toHaveCount(index + 1);
+  for (let i = 0; i < groups.length; i++) {
+    const group = groups?.[i];
+    if (!group) {
+      throw new Error("group is undefined");
+    }
 
-      await groupsElement.last().fill(group);
-      await page
-        .locator("fieldset")
-        .filter({ hasText: "Groups (optional)" })
-        .getByRole("button")
-        .last()
-        .click();
-    })
-  );
+    await expect(
+      groupsElement,
+      "it renders one input for every existing group +1 empty one"
+    ).toHaveCount(i + 1);
+    await groupsElement.last().fill(group);
+    await page
+      .locator("fieldset")
+      .filter({ hasText: "Groups (optional)" })
+      .getByRole("button")
+      .last()
+      .click();
+  }
 
   const tagsElement = page.getByPlaceholder("Enter a tag");
-  await Promise.all(
-    tags.map(async (tag, index) => {
-      await expect(
-        tagsElement,
-        "it renders one input for every existing tag +1 empty one"
-      ).toHaveCount(index + 1);
 
-      await tagsElement.last().fill(tag);
-      await page
-        .locator("fieldset")
-        .filter({ hasText: "Tags (optional)" })
-        .getByRole("button")
-        .last()
-        .click();
-    })
-  );
+  for (let i = 0; i < tags.length; i++) {
+    const tag = tags?.[i];
+    if (!tag) {
+      throw new Error("tag is undefined");
+    }
+
+    await expect(
+      tagsElement,
+      "it renders one input for every existing tag +1 empty one"
+    ).toHaveCount(i + 1);
+    await tagsElement.last().fill(tag);
+    await page
+      .locator("fieldset")
+      .filter({ hasText: "Tags (optional)" })
+      .getByRole("button")
+      .last()
+      .click();
+  }
 
   const editor = page.locator(".lines-content");
 
