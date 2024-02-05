@@ -4,10 +4,10 @@ import {
   PatchSchemaType,
 } from "~/pages/namespace/Explorer/Service/ServiceEditor/schema";
 import { createNamespace, deleteNamespace } from "e2e/utils/namespace";
+import { createService, createServiceYaml } from "./utils";
 import { expect, test } from "@playwright/test";
 
 import { EnvironementVariableSchemaType } from "~/api/services/schema/services";
-import { createServiceYaml } from "./utils";
 import { faker } from "@faker-js/faker";
 
 let namespace = "";
@@ -159,4 +159,219 @@ test("it is possible to create a service", async ({ page }) => {
       );
     })
   );
+
+  await expect(
+    page.getByRole("cell", { name: `${patches.length} Patches` }),
+    "It renders a table of patches, displaying the number of patches in the header"
+  ).toBeVisible();
+
+  await Promise.all(
+    patches.map(async (item, index) => {
+      const currentElement = page.getByTestId("patch-row").nth(index);
+      await expect(currentElement).toContainText(item.op);
+      await expect(currentElement).toContainText(item.path);
+    })
+  );
+});
+
+test("it is possible to edit patches", async ({ page }) => {
+  /* prepare data */
+  const patches = Array.from({ length: 4 }, () => ({
+    op: PatchOperations[Math.floor(Math.random() * 3)] as PatchOperationType,
+    path: faker.internet.url(),
+    value: faker.lorem.words(3),
+  }));
+
+  const service = {
+    name: "mynewservice.yaml",
+    image: "bash",
+    scale: 2,
+    size: "medium",
+    cmd: "hello",
+    patches,
+  };
+
+  await createService(namespace, service);
+
+  /* visit page, assert content rendered */
+  await page.goto(`/${namespace}/explorer/service/${service.name}`);
+
+  await Promise.all(
+    patches.map(async (item, index) => {
+      const currentElement = page.getByTestId("patch-row").nth(index);
+      await expect(currentElement).toContainText(item.op);
+      await expect(currentElement).toContainText(item.path);
+    })
+  );
+
+  /* update list and assert content after each manipulation*/
+  await page.getByTestId("patch-row").nth(1).getByRole("button").click();
+  await page.getByRole("button", { name: "Move down" }).click();
+
+  let expectNewPatches: PatchSchemaType[];
+
+  expectNewPatches = [
+    patches[0] as PatchSchemaType,
+    patches[2] as PatchSchemaType,
+    patches[1] as PatchSchemaType,
+    patches[3] as PatchSchemaType,
+  ];
+
+  await Promise.all(
+    expectNewPatches.map(async (item, index) => {
+      const currentElement = page.getByTestId("patch-row").nth(index);
+      await expect(currentElement).toContainText(item.op);
+      await expect(currentElement).toContainText(item.path);
+    })
+  );
+
+  await page.getByTestId("patch-row").nth(3).getByRole("button").click();
+  await page.getByRole("button", { name: "Move up" }).click();
+
+  expectNewPatches = [
+    patches[0] as PatchSchemaType,
+    patches[2] as PatchSchemaType,
+    patches[3] as PatchSchemaType,
+    patches[1] as PatchSchemaType,
+  ];
+
+  await Promise.all(
+    expectNewPatches.map(async (item, index) => {
+      const currentElement = page.getByTestId("patch-row").nth(index);
+      await expect(currentElement).toContainText(item.op);
+      await expect(currentElement).toContainText(item.path);
+    })
+  );
+
+  await page.getByTestId("patch-row").nth(1).getByRole("button").click();
+  await page.getByRole("button", { name: "Delete" }).click();
+
+  expectNewPatches = [
+    patches[0] as PatchSchemaType,
+    patches[3] as PatchSchemaType,
+    patches[1] as PatchSchemaType,
+  ];
+
+  await Promise.all(
+    expectNewPatches.map(async (item, index) => {
+      const currentElement = page.getByTestId("patch-row").nth(index);
+      await expect(currentElement).toContainText(item.op);
+      await expect(currentElement).toContainText(item.path);
+    })
+  );
+
+  /* assert preview has been updated */
+  const updatedService = {
+    name: "mynewservice.yaml",
+    image: "bash",
+    scale: 2,
+    size: "medium",
+    cmd: "hello",
+    patches: expectNewPatches,
+  };
+
+  const expectedYaml = createServiceYaml(updatedService);
+
+  const editor = page.locator(".lines-content");
+
+  await expect(
+    editor,
+    "all entered data is represented in the editor preview"
+  ).toContainText(expectedYaml, { useInnerText: true });
+
+  await expect(
+    page.getByTestId("unsaved-note"),
+    "it renders a hint that there are unsaved changes"
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Save" }).click();
+
+  await expect(
+    page.getByTestId("unsaved-note"),
+    "it does not render a hint that there are unsaved changes"
+  ).not.toBeVisible();
+});
+
+test("it is possible to edit environment variables", async ({ page }) => {
+  const envs = Array.from({ length: 5 }, () => ({
+    name: faker.lorem.word(),
+    value: faker.git.shortSha(),
+  }));
+
+  const service = {
+    name: "mynewservice.yaml",
+    image: "bash",
+    scale: 2,
+    size: "medium",
+    cmd: "hello",
+    envs,
+  };
+
+  await createService(namespace, service);
+
+  /* visit page, assert content rendered */
+  await page.goto(`/${namespace}/explorer/service/${service.name}`);
+
+  await Promise.all(
+    envs.map(async (item, index) => {
+      const currentElement = page.getByTestId("env-item-form").nth(index);
+      await expect(currentElement.getByTestId("env-name")).toHaveValue(
+        item.name
+      );
+      await expect(currentElement.getByTestId("env-value")).toHaveValue(
+        item.value
+      );
+    })
+  );
+
+  /* delete items and assert rendered list is updated*/
+  await page.getByTestId("env-item-form").nth(0).getByRole("button").click();
+  await page.getByTestId("env-item-form").nth(2).getByRole("button").click();
+
+  const expectNewEnvs = [
+    envs[1] as EnvironementVariableSchemaType,
+    envs[2] as EnvironementVariableSchemaType,
+    envs[4] as EnvironementVariableSchemaType,
+  ];
+
+  await Promise.all(
+    expectNewEnvs.map(async (item, index) => {
+      const currentElement = page.getByTestId("env-item-form").nth(index);
+      await expect(currentElement.getByTestId("env-name")).toHaveValue(
+        item.name
+      );
+      await expect(currentElement.getByTestId("env-value")).toHaveValue(
+        item.value
+      );
+    })
+  );
+
+  /* assert preview has been updated */
+  const updatedService = {
+    name: "mynewservice.yaml",
+    image: "bash",
+    scale: 2,
+    size: "medium",
+    cmd: "hello",
+    envs: expectNewEnvs,
+  };
+
+  const expectedYaml = createServiceYaml(updatedService);
+
+  const editor = page.locator(".lines-content");
+
+  await expect(
+    editor,
+    "all entered data is represented in the editor preview"
+  ).toContainText(expectedYaml, { useInnerText: true });
+
+  await expect(
+    page.getByTestId("unsaved-note"),
+    "it renders a hint that there are unsaved changes"
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Save" }).click();
+
+  await expect(
+    page.getByTestId("unsaved-note"),
+    "it does not render a hint that there are unsaved changes"
+  ).not.toBeVisible();
 });

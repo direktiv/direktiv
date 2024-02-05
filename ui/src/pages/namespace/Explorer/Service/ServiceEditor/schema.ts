@@ -36,7 +36,7 @@ export const ServiceFormSchema = z.object({
   size: z.string().optional(),
   cmd: z.string().optional(),
   patches: z.array(PatchSchema).optional(),
-  envs: z.array(EnvironementVariableSchema).nonempty().optional(),
+  envs: z.array(EnvironementVariableSchema).optional(),
 });
 
 export type PatchOperationType = z.infer<typeof PatchOperationSchema>;

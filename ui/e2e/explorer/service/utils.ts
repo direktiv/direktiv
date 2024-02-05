@@ -1,26 +1,33 @@
 import { EnvironementVariableSchemaType } from "~/api/services/schema/services";
 import { PatchSchemaType } from "~/pages/namespace/Explorer/Service/ServiceEditor/schema";
+import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
+import { headers } from "e2e/utils/testutils";
 
-const createPatchesYaml = (patches: PatchSchemaType[]) =>
+const createPatchesYaml = (patches?: PatchSchemaType[]) =>
   patches
-    .map(
-      (item) =>
-        `\n  - op: "${item.op}"\n    path: "${item.path}"\n    value: "${item.value}"`
-    )
-    .join("");
+    ? patches
+        .map(
+          (item) =>
+            `\n  - op: "${item.op}"\n    path: "${item.path}"\n    value: "${item.value}"`
+        )
+        .join("")
+    : "[]";
 
-const createEnvsYaml = (envs: EnvironementVariableSchemaType[]) =>
+const createEnvsYaml = (envs?: EnvironementVariableSchemaType[]) =>
   envs
-    .map((item) => `\n  - name: "${item.name}"\n    value: "${item.value}"`)
-    .join("");
+    ? envs
+        .map((item) => `\n  - name: "${item.name}"\n    value: "${item.value}"`)
+        .join("")
+    : "[]";
 
 type Service = {
+  name: string;
   image: string;
   scale: number;
   size: string;
   cmd: string;
-  patches: PatchSchemaType[];
-  envs: EnvironementVariableSchemaType[];
+  patches?: PatchSchemaType[];
+  envs?: EnvironementVariableSchemaType[];
 };
 
 export const createServiceYaml = ({
@@ -35,5 +42,19 @@ image: "${image}"
 scale: ${scale}
 size: "${size}"
 cmd: "${cmd}"
-patches:${createPatchesYaml(patches)}
-envs:${createEnvsYaml(envs)}`;
+patches: ${createPatchesYaml(patches)}
+envs: ${createEnvsYaml(envs)}`;
+
+export const createService = async (namespace: string, service: Service) => {
+  const payload = createServiceYaml(service);
+
+  await createWorkflow({
+    payload,
+    urlParams: {
+      baseUrl: process.env.VITE_DEV_API_DOMAIN,
+      namespace,
+      name: service.name,
+    },
+    headers,
+  });
+};

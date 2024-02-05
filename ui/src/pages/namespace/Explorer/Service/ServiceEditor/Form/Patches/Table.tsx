@@ -37,7 +37,7 @@ export const PatchRow: FC<PatchRowProps> = ({
   onMoveUp,
   onMoveDown,
 }) => (
-  <TableRow onClick={onClick}>
+  <TableRow onClick={onClick} data-testid="patch-row">
     <TableCell>{patch.op}</TableCell>
     <TableCell>{patch.path}</TableCell>
     <TableCell className="text-right">
