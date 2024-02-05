@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
+	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 )
 
 type Error struct {
@@ -88,6 +89,19 @@ func writeNotJsonError(w http.ResponseWriter, err error) {
 
 func writeDataStoreError(w http.ResponseWriter, err error) {
 	if errors.Is(err, datastore.ErrNotFound) {
+		writeError(w, &Error{
+			Code:    "resource_not_found",
+			Message: "requested resource is not found",
+		})
+
+		return
+	}
+
+	writeInternalError(w, err)
+}
+
+func writeFileStoreError(w http.ResponseWriter, err error) {
+	if errors.Is(err, filestore.ErrNotFound) {
 		writeError(w, &Error{
 			Code:    "resource_not_found",
 			Message: "requested resource is not found",
