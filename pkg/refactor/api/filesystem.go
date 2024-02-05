@@ -58,7 +58,7 @@ func (e *fsController) read(w http.ResponseWriter, r *http.Request) {
 
 	res := struct {
 		File *filestore.File   `json:"file"`
-		Dirs []*filestore.File `json:"dirs,omitempty"`
+		Dirs []*filestore.File `json:"dirs"`
 	}{
 		File: file,
 		Dirs: children,
