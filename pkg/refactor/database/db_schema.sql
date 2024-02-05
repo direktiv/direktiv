@@ -234,3 +234,4 @@ ALTER TABLE "metrics" DROP COLUMN IF EXISTS "revision";
 DROP TABLE IF EXISTS "filesystem_revisions";
 ALTER TABLE "filesystem_files" ADD COLUMN IF NOT EXISTS "data" bytea;
 ALTER TABLE "filesystem_files" ADD COLUMN IF NOT EXISTS "checksum" text;
+ALTER TABLE "event_topics" ADD COLUMN IF NOT EXISTS "filter" text;
