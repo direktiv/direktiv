@@ -18,6 +18,7 @@ import {
 import {
   getAclConfigAtIndex,
   getEventFilterConfigAtIndex,
+  getHeaderManipulationConfigAtIndex,
   getJsInboundConfigAtIndex,
   getRequestConvertConfigAtIndex,
 } from "../utils";
@@ -27,6 +28,7 @@ import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import { EndpointFormSchemaType } from "../../../schema";
 import { EventFilterForm } from "./EventFilterForm";
+import { HeaderManipulationForm } from "./HeaderManipulationForm";
 import { InboundPluginFormSchemaType } from "../../../schema/plugins/inbound/schema";
 import { JsInboundForm } from "./JsInboundForm";
 import { Plus } from "lucide-react";
@@ -56,7 +58,8 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({ form }) => {
   const [selectedPlugin, setSelectedPlugin] =
     useState<InboundPluginFormSchemaType["type"]>();
 
-  const { jsInbound, requestConvert, acl, eventFilter } = inboundPluginTypes;
+  const { jsInbound, requestConvert, acl, eventFilter, headerManipulation } =
+    inboundPluginTypes;
 
   const pluginsCount = fields.length;
   const formId = "inboundPluginForm";
@@ -211,6 +214,25 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({ form }) => {
           <AclForm
             formId={formId}
             defaultConfig={getAclConfigAtIndex(fields, editIndex)}
+            onSubmit={(configuration) => {
+              setDialogOpen(false);
+              if (editIndex === undefined) {
+                addPlugin(configuration);
+              } else {
+                editPlugin(editIndex, configuration);
+              }
+              setEditIndex(undefined);
+            }}
+          />
+        )}
+
+        {selectedPlugin === headerManipulation.name && (
+          <HeaderManipulationForm
+            formId={formId}
+            defaultConfig={getHeaderManipulationConfigAtIndex(
+              fields,
+              editIndex
+            )}
             onSubmit={(configuration) => {
               setDialogOpen(false);
               if (editIndex === undefined) {
