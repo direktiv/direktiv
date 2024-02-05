@@ -1,4 +1,4 @@
-.PHONY: build-html run-html clean
+.PHONY: build run
 
 SRC = ./src
 OUTPUT_DIR = ./output
@@ -22,7 +22,7 @@ build:
 	@echo '🎉🎉🎉🎉 done'
 
 run: build
-	docker run -it --rm -v `pwd`:`pwd` -w `pwd` -p 80:80 \
+	docker run -it --rm -v `pwd`:`pwd` -w `pwd` -p 8888:80 \
 	-v `pwd`/output/openapi.yaml:/usr/share/nginx/html/openapi.yaml \
 	-e SPEC_URL=openapi.yaml \
 	redocly/redoc
