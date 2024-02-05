@@ -58,7 +58,7 @@ const WorkflowVariablePicker = ({
     if (!workflowPath) {
       return (
         <VariablePickerError>
-          {t("components.workflowVariablepicker.unselected.title")}
+          {t("components.workflowVariablepicker.error.unselected")}
         </VariablePickerError>
       );
     }
@@ -66,7 +66,7 @@ const WorkflowVariablePicker = ({
     if (pathNotFound) {
       return (
         <VariablePickerError>
-          {t("components.workflowVariablepicker.error.title", {
+          {t("components.workflowVariablepicker.error.pathNotFound", {
             path: workflowPath,
           })}
         </VariablePickerError>
@@ -76,7 +76,7 @@ const WorkflowVariablePicker = ({
     if (noVarsInWorkflow) {
       return (
         <VariablePickerError>
-          {t("components.workflowVariablepicker.noVarsInWorkflow.title", {
+          {t("components.workflowVariablepicker.error.noVarsInWorkflow", {
             path: workflowPath,
           })}
         </VariablePickerError>

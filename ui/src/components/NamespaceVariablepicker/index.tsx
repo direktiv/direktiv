@@ -53,7 +53,7 @@ const NamespaceVariablePicker = ({
     if (pathNotFound) {
       return (
         <VariablePickerError>
-          {t("components.namespaceVariablepicker.error.title", {
+          {t("components.namespaceVariablepicker.error.pathNotFound", {
             path: namespace,
           })}
         </VariablePickerError>
@@ -63,7 +63,7 @@ const NamespaceVariablePicker = ({
     if (noVarsInNamespace) {
       return (
         <VariablePickerError>
-          {t("components.namespaceVariablepicker.noVarsInNamespace.title", {
+          {t("components.namespaceVariablepicker.error.noVarsInNamespace", {
             path: namespace,
           })}
         </VariablePickerError>

@@ -1186,25 +1186,19 @@
       "title": "Variables in \"{{path}}\"",
       "buttonText": "Browse Variables",
       "placeholder": "No Variable selected",
-      "noVarsInNamespace": {
-        "title": "No Variables found"
-      },
       "error": {
-        "title": "The directory \"{{path}}\" was not found."
+        "pathNotFound": "The directory \"{{path}}\" was not found.",
+        "noVarsInNamespace": "No Variables found"
       }
     },
     "workflowVariablepicker": {
       "title": "Variables in \"{{path}}\"",
       "buttonText": "Browse Variables",
       "placeholder": "No Variable selected",
-      "noVarsInWorkflow": {
-        "title": "No Variables found in \"{{path}}\""
-      },
       "error": {
-        "title": "The workflow \"{{path}}\" was not found."
-      },
-      "unselected": {
-        "title": "Please select a workflow first."
+        "pathNotFound": "The workflow \"{{path}}\" was not found.",
+        "noVarsInWorkflow": "No Variables found in \"{{path}}\"",
+        "unselected": "Please select a workflow first."
       }
     },
     "filepicker": {
