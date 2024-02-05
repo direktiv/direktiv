@@ -18,7 +18,6 @@ type OptionalConfig = Partial<
 
 const predefinedConfig: OptionalConfig = {
   headers_to_remove: [],
-  // TODO: add more fields
 };
 
 type FormProps = {
