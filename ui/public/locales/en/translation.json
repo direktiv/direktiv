@@ -224,7 +224,7 @@
               "placeholder": "Select a scale"
             },
             "size": {
-              "label": "Size", 
+              "label": "Size",
               "placeholder": "Select a size"
             },
             "cmd": "Cmd",
@@ -320,6 +320,7 @@
                 "types": {
                   "acl": "Access control list (acl)",
                   "js-inbound": "JavaScript",
+                  "header-manipulation": "Header Manipulation",
                   "request-convert": "Request convert",
                   "event-filter": "Event filter"
                 },
