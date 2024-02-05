@@ -8,7 +8,6 @@ import (
 )
 
 func main() {
-
 	var configDir string
 	if len(os.Args) > 1 {
 		configDir = os.Args[1]
@@ -28,5 +27,4 @@ func main() {
 
 	server := server.NewServer(config, rm)
 	server.Start()
-
 }

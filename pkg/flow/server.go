@@ -3,6 +3,7 @@ package flow
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -61,7 +62,7 @@ type server struct {
 	pubsub *pubsub.Pubsub
 
 	// the new pubsub bus
-	pBus pubsub2.Bus
+	pBus *pubsub2.Bus
 
 	locks  *locks
 	timers *timers
@@ -321,12 +322,13 @@ func (srv *server) start(ctx context.Context) error {
 	defer cancel()
 
 	srv.sugar.Info("Initializing pubsub routine.")
-	pBus, err := pubsubSQL.NewPostgresBus(srv.sugar, srv.rawDB, srv.conf.DB)
+	coreBus, err := pubsubSQL.NewPostgresCoreBus(srv.rawDB, srv.conf.DB)
 	if err != nil {
-		return fmt.Errorf("creating pubsub, err: %w", err)
+		return fmt.Errorf("creating pubsub core bus, err: %w", err)
 	}
-	srv.pBus = pBus
-	go pBus.Start(cctx.Done(), &wg)
+
+	srv.pBus = pubsub2.NewBus(srv.sugar, coreBus)
+	go srv.pBus.Start(cctx.Done(), &wg)
 
 	srv.sugar.Info("Initializing internal grpc server.")
 
@@ -472,7 +474,25 @@ func (srv *server) start(ctx context.Context) error {
 	// TODO: yassir, use the new db to refactor old code.
 	dbManager := database2.NewDB(srv.gormDB, srv.conf.SecretKey)
 
-	newMainWG := cmd.NewMain(srv.conf, dbManager, pBus, srv.sugar)
+	configureWorkflow := func(data string) error {
+		event := pubsub2.ChangeWorkflowEvent{}
+		err := json.Unmarshal([]byte(data), &event)
+		if err != nil {
+			return err
+		}
+		file, err := noTx.FileStore().ForNamespace(event.Namespace).GetFile(ctx, event.WorkflowPath)
+		if err != nil {
+			return err
+		}
+		err = srv.flow.configureWorkflowStarts(ctx, noTx, event.NamespaceID, file)
+		if err != nil {
+			return err
+		}
+
+		return srv.flow.placeholdSecrets(ctx, noTx, event.Namespace, file)
+	}
+
+	newMainWG := cmd.NewMain(srv.conf, dbManager, srv.pBus, srv.sugar, configureWorkflow)
 
 	srv.sugar.Info("Flow server started.")
 

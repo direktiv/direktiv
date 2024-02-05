@@ -97,17 +97,17 @@ test("Notification Bell updates depending on the count of Notification Messages"
   expect(
     await notificationText.textContent(),
     "the modal should now display 'You have 1 uninitialized secret.'"
-  ).toMatch(/You have 1 uninitialized secret./);
+  ).toMatch("You have 1 uninitialized secret.");
 
   await initialize_secret2.click();
 
   await page.getByTestId("new-secret-editor").fill("123");
   await page.getByTestId("secret-create-submit").click();
 
-  expect(
-    page.getByTestId("notification-indicator").nth(1),
+  await expect(
+    page.getByTestId("notification-indicator"),
     "the indicator for new messages is NOT visible"
-  ).not.toBeVisible();
+  ).toHaveCount(0);
 
   await notificationBell.click();
 

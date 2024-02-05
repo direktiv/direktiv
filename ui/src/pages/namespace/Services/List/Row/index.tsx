@@ -10,7 +10,7 @@ import { TableCell, TableRow } from "~/design/Table";
 
 import Button from "~/design/Button";
 import { DialogTrigger } from "~/design/Dialog";
-import EnvsVariables from "./EnvVariables";
+import EnvsVariables from "../../components/EnvVariables";
 import { FC } from "react";
 import { ServiceSchemaType } from "~/api/services/schema/services";
 import { StatusBadge } from "../../components/StatusBadge";
@@ -33,6 +33,7 @@ const ServicesTableRow: FC<{
   return (
     <TooltipProvider>
       <TableRow
+        data-testid="service-row"
         onClick={() => {
           if (service.type === "workflow-service") {
             return navigate(

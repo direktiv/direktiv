@@ -73,6 +73,9 @@ func (q *FileQuery) setPath(ctx context.Context, path string) error {
 func (q *FileQuery) SetPath(ctx context.Context, path string) error {
 	path, err := filestore.SanitizePath(path)
 	if err != nil {
+		return fmt.Errorf("%w: %w", filestore.ErrInvalidPathParameter, err)
+	}
+	if path == "/" {
 		return filestore.ErrInvalidPathParameter
 	}
 
@@ -104,6 +107,15 @@ func (q *FileQuery) SetPath(ctx context.Context, path string) error {
 		return err
 	}
 
+	// set updated_at for all parent dirs.
+	res := q.db.WithContext(ctx).Exec(`
+					UPDATE filesystem_files
+					SET updated_at=CURRENT_TIMESTAMP WHERE ? LIKE path || '%' ;
+					`, q.file.Path)
+	if res.Error != nil {
+		return res.Error
+	}
+
 	return nil
 }
 
@@ -117,6 +129,14 @@ func (q *FileQuery) Delete(ctx context.Context, force bool) error {
 	}
 	if res.RowsAffected != 1 {
 		return fmt.Errorf("unexpected gorm delete count, got: %d, want: %d", res.RowsAffected, 1)
+	}
+	// set updated_at for all parent dirs.
+	res = q.db.WithContext(ctx).Exec(`
+					UPDATE filesystem_files
+					SET updated_at=CURRENT_TIMESTAMP WHERE ? LIKE path || '%' ;
+					`, q.file.Path)
+	if res.Error != nil {
+		return res.Error
 	}
 
 	return nil
@@ -149,7 +169,7 @@ func (q *FileQuery) SetData(ctx context.Context, data []byte) (string, error) {
 
 	res := q.db.WithContext(ctx).Exec(`
 					UPDATE filesystem_files
-					SET data=?, checksum=? WHERE id=? 
+					SET data=?, checksum=?, updated_at=CURRENT_TIMESTAMP WHERE id=? 
 					`, data, newChecksum, q.file.ID)
 	if res.Error != nil {
 		return "", res.Error
@@ -157,6 +177,14 @@ func (q *FileQuery) SetData(ctx context.Context, data []byte) (string, error) {
 
 	if res.RowsAffected != 1 {
 		return "", fmt.Errorf("unexpected gorm create count, got: %d, want: %d", res.RowsAffected, 1)
+	}
+	// set updated_at for all parent dirs.
+	res = q.db.WithContext(ctx).Exec(`
+					UPDATE filesystem_files
+					SET updated_at=CURRENT_TIMESTAMP WHERE ? LIKE path || '%' ;
+					`, q.file.Path)
+	if res.Error != nil {
+		return "", res.Error
 	}
 
 	return newChecksum, nil

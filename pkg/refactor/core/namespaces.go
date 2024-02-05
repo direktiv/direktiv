@@ -47,8 +47,8 @@ type NamespacesStore interface {
 	Update(ctx context.Context, namespace *Namespace) (*Namespace, error)
 
 	// Delete deletes a single namespace. if no record found,
-	//	// it returns datastore.ErrNotFound error.
-	Delete(ctx context.Context, id uuid.UUID) error
+	// it returns datastore.ErrNotFound error.
+	Delete(ctx context.Context, name string) error
 
 	// Create creates a new namespace. Returned errors could be ErrDuplicatedNamespaceName when namespace name is
 	// already exists or ErrInvalidNamespaceName or when namespace name is invalid, too short or too long.

@@ -20,7 +20,6 @@ describe('Test behaviour specific to the root node', () => {
                 parent: "/",
                 type: common.filesystem.nodeTypeDirectory,
                 attributes: [],
-                oid: "",
                 readOnly: false,
                 expandedType: common.filesystem.extendedNodeTypeDirectory,
             },
