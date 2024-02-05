@@ -89,5 +89,4 @@ components:
   schemas:
     $ref: "./objects.yaml"
 paths:
-    $ref: "./paths/paths.yaml"
-
+  $ref: "./paths/paths.yaml"
