@@ -66,7 +66,7 @@ describe('Test services crud operations', () => {
 
     it(`should delete a registry`, async () => {
         const res = await request(common.config.getDirektivHost())
-            .delete(`/api/v2/namespaces/${testNamespace}/registries?registry=secret-c163796084d652e67cb0`)
+            .delete(`/api/v2/namespaces/${testNamespace}/registries/secret-c163796084d652e67cb0`)
         expect(res.statusCode).toEqual(204)
     })
 

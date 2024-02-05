@@ -1,8 +1,3 @@
-/api/v2/namespaces/{namespace}/gateway/consumers:
-  $ref: gw_consumers.yaml
-                          
-/api/v2/namespaces/{namespace}/gateway/routes:
-  $ref: gw_routes.yaml
 
 /api/v2/namespaces/{namespace}/services:
   get:
@@ -137,6 +132,3 @@
     responses:
       "200":
         description: Service rebuilds successfully
-
-/api/v2/namespaces/{namespace}/registries:
-  $ref: registries.yaml

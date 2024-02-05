@@ -1,12 +1,9 @@
-namespacePattern:
-  type: string
-  pattern: '^(([a-z][a-z0-9_\-\.]*[a-z0-9])|([a-z]))$' 
-
 namespace:
   name: namespace
   in: path
   schema:
-    $ref: '#/namespacePattern'
+    type: string
+    pattern: '^(([a-z][a-z0-9_\-\.]*[a-z0-9])|([a-z]))$' 
   required: true
 
 serviceID:
@@ -23,13 +20,13 @@ podID:
     type: string
   required: true
 
-registry:
+pathRegistry:
   name: registry
-  in: query
+  in: path
   schema:
     type: string
     # TODO: regex
-  required: false
+  required: true
 
 route-path:
   name: route-path

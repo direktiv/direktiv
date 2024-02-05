@@ -16,7 +16,7 @@ type registryController struct {
 
 func (e *registryController) mountRouter(r chi.Router) {
 	r.Get("/", e.all)
-	r.Delete("/", e.delete)
+	r.Delete("/{registry}", e.delete)
 	r.Post("/", e.create)
 }
 
@@ -38,7 +38,7 @@ func (e *registryController) all(w http.ResponseWriter, r *http.Request) {
 
 func (e *registryController) delete(w http.ResponseWriter, r *http.Request) {
 	ns := r.Context().Value(ctxKeyNamespace{}).(*core.Namespace)
-	id := r.URL.Query().Get("registry")
+	id := chi.URLParam(r, "registry")
 
 	err := e.manager.DeleteRegistry(ns.Name, id)
 	if errors.Is(err, core.ErrNotFound) {

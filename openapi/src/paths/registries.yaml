@@ -1,13 +1,8 @@
-delete:
-    summary: Delete a registry.
-    parameters:
-    - $ref: '../parameters.yaml#/namespace'
-    - $ref: '../parameters.yaml#/registry'
-    responses:
-      '204':
-        description: No Content
+/api/v2/namespaces/{namespace}/registries:
   get:
     summary: Api for listing registries.
+    tags:
+    - registries
     parameters:
     - $ref: '../parameters.yaml#/namespace'
     responses:
@@ -33,9 +28,11 @@ delete:
                       url:
                         type: string
                       user:
-                        type: string             
+                        type: string   
   post:
     summary: Create a registry.
+    tags:
+    - registries
     parameters:
     - $ref: '../parameters.yaml#/namespace'
     requestBody:
@@ -87,3 +84,15 @@ delete:
                       format: uri
                     user:
                       type: string
+/api/v2/namespaces/{namespace}/registries/{registry}:
+  delete:
+    summary: Delete a registry.
+    tags:
+    - registries
+    parameters:
+    - $ref: '../parameters.yaml#/namespace'
+    - $ref: '../parameters.yaml#/pathRegistry'
+    responses:
+      '204':
+        description: No Content        
+  
