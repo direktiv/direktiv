@@ -39,3 +39,20 @@
                         description: list of filesystem-tree child nodes
                         items:
                           $ref: '../objects.yaml#/FileNodeWithoutData'
+
+  delete:
+    tags:
+      - files-tree
+    summary: Delete any node in the filesystem tree
+    # description:
+    parameters:
+      - $ref: '../parameters.yaml#/namespace'
+      - name: path
+        in: path
+        schema:
+          type: string
+          description: path of the node to delete (with slashes)
+        required: true
+    responses:
+      "200":
+        description: filesystem tree node deleted successfully

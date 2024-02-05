@@ -16,6 +16,7 @@ type fsController struct {
 
 func (e *fsController) mountRouter(r chi.Router) {
 	r.Get("/*", e.read)
+	r.Delete("/*", e.delete)
 }
 
 func (e *fsController) read(w http.ResponseWriter, r *http.Request) {
@@ -65,4 +66,34 @@ func (e *fsController) read(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, res)
+}
+
+func (e *fsController) delete(w http.ResponseWriter, r *http.Request) {
+	//nolint:forcetypeassert
+	ns := r.Context().Value(ctxKeyNamespace{}).(*core.Namespace)
+
+	db, err := e.db.BeginTx(r.Context())
+	if err != nil {
+		writeInternalError(w, err)
+		return
+	}
+	//nolint:errcheck
+	defer db.Rollback()
+
+	fStore := db.FileStore()
+
+	// Fetch file
+	path := strings.Split(r.URL.Path, "/files-tree")[1]
+	file, err := fStore.ForNamespace(ns.Name).GetFile(r.Context(), path)
+	if err != nil {
+		writeFileStoreError(w, err)
+		return
+	}
+	err = fStore.ForFile(file).Delete(r.Context(), true)
+	if err != nil {
+		writeInternalError(w, err)
+		return
+	}
+
+	writeOk(w)
 }
