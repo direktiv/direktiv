@@ -205,9 +205,9 @@ type sqlEventTopicsStore struct {
 	db *gorm.DB
 }
 
-func (s *sqlEventTopicsStore) Append(ctx context.Context, namespaceID uuid.UUID, eventListenerID uuid.UUID, topic string) error {
-	q := "INSERT INTO event_topics (id, event_listener_id, namespace_id, topic) VALUES ( $1 , $2 , $3 , $4 );"
-	tx := s.db.WithContext(ctx).Exec(q, uuid.NewString(), eventListenerID, namespaceID, topic)
+func (s *sqlEventTopicsStore) Append(ctx context.Context, namespaceID uuid.UUID, eventListenerID uuid.UUID, topic string, filter string) error {
+	q := "INSERT INTO event_topics (id, event_listener_id, namespace_id, topic, filter) VALUES ( $1 , $2 , $3 , $4 , $5 );"
+	tx := s.db.WithContext(ctx).Exec(q, uuid.NewString(), eventListenerID, namespaceID, topic, filter)
 	if tx.Error != nil {
 		return tx.Error
 	}
