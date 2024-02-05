@@ -341,6 +341,10 @@
                   "groupPlaceholder": "Enter a group",
                   "tagPlaceholder": "Enter a tag"
                 },
+                "headerManipulation": {
+                  "headers_to_remove": "Headers to remove (optional)",
+                  "headersPlaceholder": "Enter a header name"
+                },
                 "eventFilter": {
                   "script": "JavaScript",
                   "allow_non_events": "Allow non events (optional)"
