@@ -209,3 +209,7 @@ binary: ## Useful only to check that code compiles properly.
 helm-docs: 
 	go install github.com/norwoodj/helm-docs/cmd/helm-docs@latest
 	helm-docs -c charts
+
+.PHONY: openapi
+openapi: ## Build and run openapi doc
+	make -C openapi run

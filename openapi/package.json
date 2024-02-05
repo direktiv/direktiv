@@ -1,6 +1,5 @@
 {
   "dependencies": {
-    "@redocly/cli": "^1.0.0-beta.126",
     "swagger-cli": "^4.0.4"
   },
   "scripts": {
