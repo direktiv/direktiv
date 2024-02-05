@@ -1,0 +1,12 @@
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+ name: {{ include "direktiv.serviceAccountName" . }}-functions-binding
+subjects:
+- kind: ServiceAccount
+  name: {{ include "direktiv.serviceAccountName" . }}-functions
+  namespace: {{ .Release.Namespace }}
+roleRef:
+ kind: ClusterRole
+ name: {{ include "direktiv.serviceAccountName" . }}-role-cluster
+ apiGroup: rbac.authorization.k8s.io

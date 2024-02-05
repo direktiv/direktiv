@@ -36,7 +36,6 @@ var InvokerEnumLabels = map[InvokerEnum]string{
 type InsertRecordArgs struct {
 	Namespace            string
 	Workflow             string
-	Revision             string
 	Instance             string
 	State                string
 	WorkflowMilliSeconds int64
@@ -51,7 +50,6 @@ type InsertRecordArgs struct {
 type GetMetricsArgs struct {
 	Namespace string
 	Workflow  string
-	Revision  string
 	Since     time.Time
 }
 

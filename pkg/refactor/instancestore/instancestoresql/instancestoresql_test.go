@@ -21,7 +21,6 @@ func Test_NewSQLInstanceStore(t *testing.T) {
 	_, err = store.CreateInstanceData(context.Background(), &instancestore.CreateInstanceDataArgs{
 		ID:             uuid.New(),
 		NamespaceID:    ns,
-		RevisionID:     uuid.New(),
 		RootInstanceID: uuid.New(),
 		Invoker:        "api",
 		WorkflowPath:   "someRandomWfPath",
@@ -40,7 +39,6 @@ func Test_NewSQLInstanceStore(t *testing.T) {
 	_, err = store.CreateInstanceData(context.Background(), &instancestore.CreateInstanceDataArgs{
 		ID:             uuid.New(),
 		NamespaceID:    ns,
-		RevisionID:     uuid.New(),
 		RootInstanceID: uuid.New(),
 		Invoker:        "api",
 		WorkflowPath:   "someRandomWfPathPlus",
@@ -59,7 +57,6 @@ func Test_NewSQLInstanceStore(t *testing.T) {
 	_, err = store.CreateInstanceData(context.Background(), &instancestore.CreateInstanceDataArgs{
 		ID:             uuid.New(),
 		NamespaceID:    ns,
-		RevisionID:     uuid.New(),
 		RootInstanceID: uuid.New(),
 		Invoker:        "api",
 		WorkflowPath:   "-someRandomWfPath",

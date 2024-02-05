@@ -204,3 +204,12 @@ cli:
 binary: ## Useful only to check that code compiles properly.
 	go build -o /dev/null cmd/cmd-exec/*.go
 	go build -o /dev/null cmd/direktiv/*.go
+
+.PHONY: helm-docs
+helm-docs: 
+	go install github.com/norwoodj/helm-docs/cmd/helm-docs@latest
+	helm-docs -c charts
+
+.PHONY: openapi
+openapi: ## Build and run openapi doc
+	make -C openapi run

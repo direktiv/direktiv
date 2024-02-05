@@ -1,0 +1,65 @@
+{{ if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "direktiv.fullname" . }}-ingress-frontend
+  labels:
+    {{- include "direktiv.labels" . | nindent 4 }}
+    {{- range $key, $value := .Values.ingress.additionalLabels }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+  annotations:
+     {{- if eq .Values.ingress.class "nginx" }}
+    nginx.ingress.kubernetes.io/service-upstream: "true"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "{{ .Values.requestTimeout }}"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "{{ .Values.requestTimeout }}"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "{{ .Values.requestTimeout }}"
+    nginx.ingress.kubernetes.io/proxy-body-size: 128m
+    {{- end }}
+    {{- range $key, $value := .Values.ingress.additionalAnnotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+    {{- if .Values.ingress.certificate }}
+    ingress.kubernetes.io/force-ssl-redirect: "true"
+    {{- end }}
+spec:
+  ingressClassName: {{ .Values.ingress.class }}
+  {{- if .Values.ingress.certificate }}
+  tls:
+  - hosts:
+      - {{ .Values.ingress.host }}
+    secretName: {{ .Values.ingress.certificate }}
+  {{- end }}
+  rules:
+  - host: {{ .Values.ingress.host }}
+    http:
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: {{ include "direktiv.fullname" . }}-frontend
+              port:
+                number: 2304
+        - path: /api/
+          pathType: Prefix
+          backend:
+            service:
+              name: {{ include "direktiv.fullname" . }}-flow
+              port:
+                number: 6665
+        - path: /gw/
+          pathType: Prefix
+          backend:
+            service:
+              name: {{ include "direktiv.fullname" . }}-flow
+              port:
+                number: 6665
+        - path: /ns/
+          pathType: Prefix
+          backend:
+            service:
+              name: {{ include "direktiv.fullname" . }}-flow
+              port:
+                number: 6665
+{{ end }}

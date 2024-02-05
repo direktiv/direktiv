@@ -62,10 +62,12 @@ test("the home button on the error page navigates the user to the home page", as
   page,
 }) => {
   await page.goto("/this/page/does/not/exist");
-  await page.getByTestId("error-home-btn").click();
-  const currentUrl = new URL(await page.url());
-  expect(
-    currentUrl.pathname,
-    "clicking the home button on the 404 page navigates to '/'"
-  ).toBe("/");
+  await expect(
+    page.getByRole("link", { name: "Go to homepage" }),
+    "the home button links to /"
+  ).toHaveAttribute("href", "/");
+  /**
+   * note: the user may be redirected to the first existing namespace
+   * when visiting /. This behavior is tested in onboarding.spec.ts
+   */
 });

@@ -21,9 +21,13 @@ const fetchVars = async ({
     urlParams: { namespace },
   });
 
-export const useVars = () => {
+export const useVars = ({
+  namespace: givenNamespace,
+}: { namespace?: string | null } = {}) => {
   const apiKey = useApiKey();
-  const namespace = useNamespace();
+  const defaultNamespace = useNamespace();
+
+  const namespace = givenNamespace ?? defaultNamespace;
 
   if (!namespace) {
     throw new Error("namespace is undefined");

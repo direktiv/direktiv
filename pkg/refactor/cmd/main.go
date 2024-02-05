@@ -27,7 +27,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.SugaredLogger) *sync.WaitGroup {
+func NewMain(config *core.Config, db *database.DB, pbus *pubsub.Bus, logger *zap.SugaredLogger, configureWorkflow func(data string) error) *sync.WaitGroup {
 	initSLog()
 
 	wg := &sync.WaitGroup{}
@@ -87,6 +87,17 @@ func NewMain(config *core.Config, db *database.DB, pbus pubsub.Bus, logger *zap.
 	)
 	// Call at least once before booting
 	renderServiceManager(db, serviceManager, logger)
+
+	pbus.Subscribe(func(data string) {
+		err := configureWorkflow(data)
+		if err != nil {
+			logger.Errorw("configure workflow", "error", err)
+		}
+	},
+		pubsub.WorkflowCreate,
+		pubsub.WorkflowUpdate,
+		pubsub.WorkflowDelete,
+	)
 
 	// endpoint manager deletes routes/consumers on namespace delete
 	pbus.Subscribe(func(ns string) {

@@ -45,7 +45,7 @@ linters:
 
 issues:
   exclude-rules:
-    - path: '(pkg|cmd)\/(version|dlog|model|sidecar|secrets|exec|util|jqer|functions|flow|api|flow-dbinit|metrics)\/.*'
+    - path: '(pkg|cmd)\/(version|dlog|model|sidecar|secrets|exec|util|jqer|functions|flow|api|metrics)\/.*'
       linters:
         - paralleltest
         - forbidigo
@@ -81,6 +81,7 @@ issues:
         - rowserrcheck
         - nakedret
         - unused
+        - gocyclo
 
     - text: "do not define dynamic errors, use wrapped static errors instead:"
       linters:

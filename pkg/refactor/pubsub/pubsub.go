@@ -1,8 +1,13 @@
 package pubsub
 
-type Bus interface {
+import (
+	"github.com/google/uuid"
+	"go.uber.org/zap"
+)
+
+type CoreBus interface {
 	Publish(channel string, data string) error
-	Subscribe(handler func(data string), channels ...string)
+	Loop(done <-chan struct{}, logger *zap.SugaredLogger, handler func(channel string, data string))
 }
 
 var (
@@ -34,3 +39,10 @@ var (
 	SecretDelete = "secret_delete"
 	SecretUpdate = "secret_update"
 )
+
+// nolint:musttag
+type ChangeWorkflowEvent struct {
+	Namespace    string
+	NamespaceID  uuid.UUID
+	WorkflowPath string
+}

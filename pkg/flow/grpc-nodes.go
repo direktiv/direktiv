@@ -2,6 +2,7 @@ package flow
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"path/filepath"
 	"time"
@@ -135,7 +136,7 @@ func (flow *flow) CreateDirectory(ctx context.Context, req *grpc.CreateDirectory
 		return nil, err
 	}
 
-	file, _, err = tx.FileStore().ForNamespace(ns.Name).CreateFile(ctx, req.GetPath(), filestore.FileTypeDirectory, "", nil)
+	file, err = tx.FileStore().ForNamespace(ns.Name).CreateFile(ctx, req.GetPath(), filestore.FileTypeDirectory, "", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -188,15 +189,6 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 		return nil, err
 	}
 
-	if file.Typ == filestore.FileTypeDirectory {
-		isEmptyDir, err := tx.FileStore().ForNamespace(ns.Name).IsEmptyDirectory(ctx, req.GetPath())
-		if err != nil {
-			return nil, err
-		}
-		if !isEmptyDir && !req.GetRecursive() {
-			return nil, status.Error(codes.InvalidArgument, "refusing to delete non-empty directory without explicit recursive argument")
-		}
-	}
 	if file.Path == "/" {
 		return nil, status.Error(codes.InvalidArgument, "cannot delete root node")
 	}
@@ -225,7 +217,15 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 		if err != nil {
 			return nil, err
 		}
-		err = flow.pBus.Publish(pubsub.WorkflowDelete, ns.Name)
+		eventData, err := json.Marshal(pubsub.ChangeWorkflowEvent{
+			Namespace:    ns.Name,
+			NamespaceID:  ns.ID,
+			WorkflowPath: file.Path,
+		})
+		if err != nil {
+			flow.sugar.Error("pubsub publish", "error", err)
+		}
+		err = flow.pBus.Publish(pubsub.WorkflowDelete, string(eventData))
 		if err != nil {
 			flow.sugar.Error("pubsub publish", "error", err)
 		}

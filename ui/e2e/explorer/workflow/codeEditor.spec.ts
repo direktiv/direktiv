@@ -95,4 +95,10 @@ test("it is possible to save the workflow", async ({ page }) => {
     page.getByText(testText),
     "after reloading, screen should have the updated text"
   ).toBeVisible();
+
+  // check the text at the bottom left
+  await expect(
+    page.getByTestId("workflow-txt-updated"),
+    "text should be Updated a few seconds ago"
+  ).toHaveText("Updated a few seconds ago");
 });

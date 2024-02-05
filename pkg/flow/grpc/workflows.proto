@@ -32,8 +32,6 @@ message WorkflowRequest {
 message WorkflowResponse {
 	string namespace = 1;
 	Node node = 2;
-	string eventLogging = 4;
-	string oid = 5;
 	bytes source = 6;
 }
 

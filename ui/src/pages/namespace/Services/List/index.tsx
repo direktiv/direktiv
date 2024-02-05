@@ -41,6 +41,7 @@ const ServicesListPage = () => {
           <RefreshButton
             icon
             variant="outline"
+            aria-label={t("pages.services.list.refetchLabel")}
             disabled={isFetching}
             onClick={() => {
               refetch();

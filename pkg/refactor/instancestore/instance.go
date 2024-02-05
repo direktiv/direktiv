@@ -110,7 +110,6 @@ type InstanceData struct {
 	ID             uuid.UUID
 	NamespaceID    uuid.UUID
 	Namespace      string
-	RevisionID     uuid.UUID
 	RootInstanceID uuid.UUID
 	CreatedAt      time.Time
 	UpdatedAt      time.Time
@@ -145,7 +144,6 @@ type CreateInstanceDataArgs struct {
 	ID             uuid.UUID
 	NamespaceID    uuid.UUID
 	Namespace      string
-	RevisionID     uuid.UUID
 	RootInstanceID uuid.UUID
 	Invoker        string
 	WorkflowPath   string

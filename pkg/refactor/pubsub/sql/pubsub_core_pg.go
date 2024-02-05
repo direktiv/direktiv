@@ -4,29 +4,23 @@ import (
 	"database/sql"
 	"fmt"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
-	"github.com/google/uuid"
 	"github.com/lib/pq"
 	"go.uber.org/zap"
 )
 
 const globalPostgresChannel = "direktiv_pubsub_events"
 
-type PostgresBus struct {
-	listener    *pq.Listener
-	db          *sql.DB
-	subscribers sync.Map
-
-	logger *zap.SugaredLogger
+type postgresBus struct {
+	listener *pq.Listener
+	db       *sql.DB
 }
 
-func NewPostgresBus(logger *zap.SugaredLogger, db *sql.DB, listenConnectionString string) (*PostgresBus, error) {
-	p := &PostgresBus{
-		db:     db,
-		logger: logger,
+func NewPostgresCoreBus(db *sql.DB, listenConnectionString string) (pubsub.CoreBus, error) {
+	p := &postgresBus{
+		db: db,
 	}
 
 	p.listener = pq.NewListener(listenConnectionString, time.Second, time.Second,
@@ -57,33 +51,7 @@ func NewPostgresBus(logger *zap.SugaredLogger, db *sql.DB, listenConnectionStrin
 	return p, nil
 }
 
-func (p *PostgresBus) Start(done <-chan struct{}, wg *sync.WaitGroup) {
-	defer wg.Done()
-	for {
-		select {
-		case msg := <-p.listener.Notify:
-			channel, data, err := splitNotificationText(msg.Extra)
-			if err != nil {
-				p.logger.Error("parsing notify message", "msg", msg.Extra, "err", err)
-			} else {
-				p.subscribers.Range(func(key, f any) bool {
-					k, _ := key.(string)
-					h, _ := f.(func(data string))
-
-					if strings.HasPrefix(k, channel) {
-						go h(data)
-					}
-
-					return true
-				})
-			}
-		case <-done:
-			return
-		}
-	}
-}
-
-func (p *PostgresBus) Publish(channel string, data string) error {
+func (p *postgresBus) Publish(channel string, data string) error {
 	if channel == "" || strings.Contains(channel, " ") {
 		return fmt.Errorf("channel name is empty or has spaces: >%s<", channel)
 	}
@@ -95,11 +63,23 @@ func (p *PostgresBus) Publish(channel string, data string) error {
 	return nil
 }
 
-func (p *PostgresBus) Subscribe(handler func(data string), channels ...string) {
-	for _, channel := range channels {
-		p.subscribers.Store(fmt.Sprintf("%s_%s", channel, uuid.New().String()), handler)
+func (p *postgresBus) Loop(done <-chan struct{}, logger *zap.SugaredLogger, handler func(channel string, data string)) {
+	for {
+		select {
+		case msg := <-p.listener.Notify:
+			channel, data, err := splitNotificationText(msg.Extra)
+			if err != nil {
+				logger.Error("parsing notify message", "msg", msg.Extra, "err", err)
+			} else {
+				handler(channel, data)
+			}
+		case <-done:
+			return
+		}
 	}
 }
+
+var _ pubsub.CoreBus = &postgresBus{}
 
 func splitNotificationText(text string) (string, string, error) {
 	firstSpaceIndex := strings.IndexAny(text, " ")
@@ -109,5 +89,3 @@ func splitNotificationText(text string) (string, string, error) {
 
 	return text[:firstSpaceIndex], text[firstSpaceIndex+1:], nil
 }
-
-var _ pubsub.Bus = &PostgresBus{}
