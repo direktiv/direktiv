@@ -32,7 +32,7 @@ describe('Test filesystem tree read operations', () => {
     common.helpers.itShouldCreateFile(it, expect, testNamespace, "/dir1/foo11.yaml", common.helpers.dummyWorkflow("foo11"))
     common.helpers.itShouldCreateFile(it, expect, testNamespace, "/dir1/foo12.yaml", common.helpers.dummyWorkflow("foo12"))
 
-    it(`should read root dir two files`, async () => {
+    it(`should read root dir with three paths`, async () => {
         const res = await request(common.config.getDirektivHost())
             .get(`/api/v2/namespaces/${testNamespace}/files-tree`)
         expect(res.statusCode).toEqual(200)
@@ -122,4 +122,73 @@ describe('Test filesystem tree read operations', () => {
             }
         })
     })
+
+    common.helpers.itShouldDeleteFile(it, expect, testNamespace, "/foo.yaml")
+
+    it(`should read root dir two dirs`, async () => {
+        const res = await request(common.config.getDirektivHost())
+            .get(`/api/v2/namespaces/${testNamespace}/files-tree`)
+        expect(res.statusCode).toEqual(200)
+        expect(res.body).toMatchObject({
+            data: {
+                file: {
+                    path: "/",
+                    type: "directory",
+                    createdAt: expect.stringMatching(regex.timestampRegex),
+                    updatedAt: expect.stringMatching(regex.timestampRegex),
+                },
+                paths: [
+                    {
+                        path: "/dir1",
+                        type: "directory",
+                        createdAt: expect.stringMatching(regex.timestampRegex),
+                        updatedAt: expect.stringMatching(regex.timestampRegex),
+
+                    },
+                    {
+                        path: "/dir2",
+                        type: "directory",
+                        createdAt: expect.stringMatching(regex.timestampRegex),
+                        updatedAt: expect.stringMatching(regex.timestampRegex),
+
+                    },
+                ]
+            }
+        })
+    })
+
+    common.helpers.itShouldDeleteFile(it, expect, testNamespace, "/dir2")
+
+    it(`should read root dir one path`, async () => {
+        const res = await request(common.config.getDirektivHost())
+            .get(`/api/v2/namespaces/${testNamespace}/files-tree`)
+        expect(res.statusCode).toEqual(200)
+        expect(res.body).toMatchObject({
+            data: {
+                file: {
+                    path: "/",
+                    type: "directory",
+                    createdAt: expect.stringMatching(regex.timestampRegex),
+                    updatedAt: expect.stringMatching(regex.timestampRegex),
+                },
+                paths: [
+                    {
+                        path: "/dir1",
+                        type: "directory",
+                        createdAt: expect.stringMatching(regex.timestampRegex),
+                        updatedAt: expect.stringMatching(regex.timestampRegex),
+
+                    },
+                ]
+            }
+        })
+    })
+
+    it(`should read root not found`, async () => {
+        const res = await request(common.config.getDirektivHost())
+            .get(`/api/v2/namespaces/${testNamespace}/files-tree/dir2`)
+        expect(res.statusCode).toEqual(404)
+    })
+
+
 })
