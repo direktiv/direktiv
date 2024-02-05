@@ -21,7 +21,7 @@ describe('Test filesystem tree read operations', () => {
                     createdAt: expect.stringMatching(regex.timestampRegex),
                     updatedAt: expect.stringMatching(regex.timestampRegex),
                 },
-                dirs: []
+                paths: []
             }
         })
     })
@@ -44,7 +44,7 @@ describe('Test filesystem tree read operations', () => {
                     createdAt: expect.stringMatching(regex.timestampRegex),
                     updatedAt: expect.stringMatching(regex.timestampRegex),
                 },
-                dirs: [
+                paths: [
                     {
                         path: "/dir1",
                         type: "directory",
@@ -84,7 +84,7 @@ describe('Test filesystem tree read operations', () => {
                     createdAt: expect.stringMatching(regex.timestampRegex),
                     updatedAt: expect.stringMatching(regex.timestampRegex),
                 },
-                dirs: [
+                paths: [
                     {
                         mimeType: "application/direktiv",
                         path: "/dir1/foo11.yaml",
@@ -118,7 +118,7 @@ describe('Test filesystem tree read operations', () => {
                     createdAt: expect.stringMatching(regex.timestampRegex),
                     updatedAt: expect.stringMatching(regex.timestampRegex),
                 },
-                dirs: []
+                paths: []
             }
         })
     })
