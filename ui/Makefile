@@ -25,8 +25,8 @@ update-containers:
 .PHONY: server-prod
 server-prod:
 	echo ${RELEASE_TAG}
-	docker build . --tag ${docker_repo}/${docker_image}${RELEASE_TAG} -f ${DOCKERFILE_PROD}
-	docker push ${docker_repo}/${docker_image}${RELEASE_TAG}
+	docker build . --tag ${docker_repo}/${docker_image}:${RELEASE_TAG} -f ${DOCKERFILE_PROD}
+	docker push ${docker_repo}/${docker_image}:${RELEASE_TAG}
 
 # this builds the ui files and copies it from the container to dist/
 # used for cross-compilation but can be used locally as well

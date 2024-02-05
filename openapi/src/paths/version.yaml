@@ -1,5 +1,8 @@
-get:
+/api/v2/version:
+  get:
     summary: Get server version information.
+    tags:
+    - server
     responses:
       '200': 
         description: Server version information.
