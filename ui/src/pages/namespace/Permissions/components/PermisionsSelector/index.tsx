@@ -58,6 +58,12 @@ const PermissionsSelector = ({
     [availablePermissions]
   );
 
+  const sortedResources = useMemo(
+    () =>
+      Object.entries(groupedResources).sort((a, b) => a[0].localeCompare(b[0])),
+    [groupedResources]
+  );
+
   return (
     <>
       <fieldset className="flex items-center gap-5">
@@ -105,18 +111,16 @@ const PermissionsSelector = ({
               </TableRow>
             </TableHead>
             <TableBody>
-              {Object.entries(groupedResources)
-                .sort((a, b) => a[0].localeCompare(b[0]))
-                .map(([resource, scopes]) => (
-                  <PermissionRow
-                    key={resource}
-                    resource={resource}
-                    scopes={scopes}
-                    availableScopes={availableScopes}
-                    selectedPermissions={selectedPermissions}
-                    onCheckedChange={onCheckedChange}
-                  />
-                ))}
+              {sortedResources.map(([resource, scopes]) => (
+                <PermissionRow
+                  key={resource}
+                  resource={resource}
+                  scopes={scopes}
+                  availableScopes={availableScopes}
+                  selectedPermissions={selectedPermissions}
+                  onCheckedChange={onCheckedChange}
+                />
+              ))}
             </TableBody>
           </Table>
         </Card>
