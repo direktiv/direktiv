@@ -15,7 +15,7 @@ export const inboundPluginTypes = {
   },
   headerManipulation: {
     name: "header-manipulation",
-    enterpriseOnly: true,
+    enterpriseOnly: false,
   },
   eventFilter: {
     name: "event-filter",
