@@ -34,8 +34,8 @@ func (m *Manager) Get(ctx context.Context, cursorTime time.Time, params map[stri
 	}
 
 	// Call the appropriate LogStore method with cursorTime
-	if p, ok := params["root-instance-id"]; ok {
-		r, err = m.store.GetInstanceLogs(ctx, stream, p, cursorTime)
+	if _, ok := params["instance-id"]; ok {
+		r, err = m.store.GetInstanceLogs(ctx, stream, cursorTime)
 	} else {
 		r, err = m.store.Get(ctx, stream, cursorTime)
 	}
@@ -187,8 +187,8 @@ func (e *loglist) filterByLevel(level string) {
 }
 
 func determineStream(params map[string]string) (string, error) {
-	if p, ok := params["root-instance-id"]; ok {
-		return "flow.instance." + p, nil
+	if p, ok := params["instance-id"]; ok {
+		return "flow.instance." + "%" + p + "%", nil
 	} else if p, ok := params["namespace"]; ok {
 		return "flow.namespace." + p, nil
 	} else if p, ok := params["route"]; ok {

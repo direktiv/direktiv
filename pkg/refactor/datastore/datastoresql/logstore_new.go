@@ -40,16 +40,16 @@ func (s sqlLogNewStore) Get(ctx context.Context, stream string, cursorTime time.
 	return convertScanResults(resultList)
 }
 
-func (s sqlLogNewStore) GetInstanceLogs(ctx context.Context, stream string, instanceID string, cursorTime time.Time) ([]logcollection.LogEntry, error) {
+func (s sqlLogNewStore) GetInstanceLogs(ctx context.Context, stream string, cursorTime time.Time) ([]logcollection.LogEntry, error) {
 	query := `
         SELECT time, tag, data
         FROM fluentbit
-        WHERE tag = ? AND data->'entry'->>'callpath' LIKE ? AND time > ?
+        WHERE tag LIKE ? AND time > ?
         ORDER BY time ASC
         LIMIT ?;
     `
 	resultList := make([]ScanResult, 0)
-	tx := s.db.WithContext(ctx).Raw(query, stream, "%"+instanceID+"%", cursorTime, pageSize).Scan(&resultList)
+	tx := s.db.WithContext(ctx).Raw(query, stream, cursorTime, pageSize).Scan(&resultList)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
