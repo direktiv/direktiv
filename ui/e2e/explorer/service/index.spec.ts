@@ -7,6 +7,7 @@ import { createNamespace, deleteNamespace } from "e2e/utils/namespace";
 import { expect, test } from "@playwright/test";
 
 import { EnvironementVariableSchemaType } from "~/api/services/schema/services";
+import { createServiceYaml } from "./utils";
 import { faker } from "@faker-js/faker";
 
 let namespace = "";
@@ -22,21 +23,16 @@ test.afterEach(async () => {
 
 test("it is possible to create a service", async ({ page }) => {
   /* prepare data */
-  const filename = "mynewservice.yaml";
 
   /**
    * note: keep number of variables and patches low because we only
    * compare the yaml that is visible in the editor at one time
    **/
 
-  const envVariables = Array.from({ length: 3 }, () => ({
+  const envs = Array.from({ length: 3 }, () => ({
     name: faker.lorem.word(),
     value: faker.git.shortSha(),
   }));
-
-  const envsYaml = envVariables
-    .map((item) => `\n  - name: "${item.name}"\n    value: "${item.value}"`)
-    .join("");
 
   const patches = Array.from({ length: 2 }, () => ({
     op: PatchOperations[Math.floor(Math.random() * 3)] as PatchOperationType,
@@ -44,20 +40,17 @@ test("it is possible to create a service", async ({ page }) => {
     value: faker.lorem.words(3),
   }));
 
-  const patchesYaml = patches
-    .map(
-      (item) =>
-        `\n  - op: "${item.op}"\n    path: "${item.path}"\n    value: "${item.value}"`
-    )
-    .join("");
+  const service = {
+    name: "mynewservice.yaml",
+    image: "bash",
+    scale: 2,
+    size: "medium",
+    cmd: "hello",
+    envs,
+    patches,
+  };
 
-  const expectedYaml = `direktiv_api: "service/v1"
-image: "bash"
-scale: 2
-size: "medium"
-cmd: "hello"
-patches:${patchesYaml}
-envs:${envsYaml}`;
+  const expectedYaml = createServiceYaml(service);
 
   /* visit page */
   await page.goto(`/${namespace}/explorer/tree`, { waitUntil: "networkidle" });
@@ -71,22 +64,22 @@ envs:${envsYaml}`;
   await page.getByRole("button", { name: "New Service" }).click();
 
   await expect(page.getByRole("button", { name: "Create" })).toBeDisabled();
-  await page.getByPlaceholder("service-name.yaml").fill(filename);
+  await page.getByPlaceholder("service-name.yaml").fill(service.name);
   await page.getByRole("button", { name: "Create" }).click();
 
   await expect(
     page,
     "it creates the service and opens the file in the explorer"
-  ).toHaveURL(`/${namespace}/explorer/service/${filename}`);
+  ).toHaveURL(`/${namespace}/explorer/service/${service.name}`);
 
   /* fill in form */
   await page.getByLabel("Image").fill("bash");
   await page.locator("button").filter({ hasText: "Select a scale" }).click();
-  await page.getByLabel("2").click();
+  await page.getByLabel(service.scale.toString()).click();
   await page.locator("button").filter({ hasText: "Select a size" }).click();
-  await page.getByLabel("medium").click();
+  await page.getByLabel(service.size).click();
 
-  await page.getByLabel("Cmd").fill("hello");
+  await page.getByLabel("Cmd").fill(service.cmd);
 
   /* add patches */
   for (let i = 0; i < patches.length; i++) {
@@ -105,8 +98,8 @@ envs:${envsYaml}`;
     .locator("fieldset")
     .filter({ hasText: "Environment variables" });
 
-  for (let i = 0; i < envVariables.length; i++) {
-    const item = envVariables[i] as EnvironementVariableSchemaType;
+  for (let i = 0; i < envs.length; i++) {
+    const item = envs[i] as EnvironementVariableSchemaType;
     await expect(
       envsElement.getByPlaceholder("NAME"),
       "it renders one set of inputs for every existing env +1 empty set"
@@ -156,7 +149,7 @@ envs:${envsYaml}`;
   await expect(page.getByLabel("Cmd")).toHaveValue("hello");
 
   await Promise.all(
-    envVariables.map(async (item, index) => {
+    envs.map(async (item, index) => {
       const currentElement = page.getByTestId("env-item-form").nth(index);
       await expect(currentElement.getByTestId("env-name")).toHaveValue(
         item.name
