@@ -7,7 +7,7 @@ import {
   TableRow,
 } from "~/design/Table";
 import {
-  groupPermissionStringsByResouce,
+  groupPermissionStringsByResource,
   permissionStringsToScopes,
 } from "./utils";
 
@@ -53,8 +53,8 @@ const PermissionsSelector = ({
     [availablePermissions]
   );
 
-  const groupedResouces = useMemo(
-    () => groupPermissionStringsByResouce(availablePermissions),
+  const groupedResources = useMemo(
+    () => groupPermissionStringsByResource(availablePermissions),
     [availablePermissions]
   );
 
@@ -105,7 +105,7 @@ const PermissionsSelector = ({
               </TableRow>
             </TableHead>
             <TableBody>
-              {Object.entries(groupedResouces)
+              {Object.entries(groupedResources)
                 .sort((a, b) => a[0].localeCompare(b[0]))
                 .map(([resource, scopes]) => (
                   <PermissionRow
