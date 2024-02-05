@@ -38,46 +38,7 @@ export const useSortedNamespaces = () => {
   const { data } = useListNamespaces();
 
   if (data == undefined) return null;
-
-  const list = data.results;
+  //  const list = data.results;
 
   return { data, results: data.results.sort(sortByName) };
 };
-
-export const useSorted = () => {
-  const data = {
-    results: [
-      { name: "zebra", other: "abc" },
-      { name: "apple", other: "cde" },
-      { name: "okay" },
-    ],
-  };
-
-  return { results: data.results.sort(sortByName) };
-};
-
-export const useSort = () => {
-  const apple: newType = {
-    name: "apple",
-  };
-
-  const banana: newType = {
-    name: "banana",
-  };
-
-  const colibri: newType = {
-    name: "colibri",
-  };
-
-  const zebra: newType = {
-    name: "zebra",
-  };
-
-  // const results = [zebra, apple].sort(sortByName);
-
-  // return results;
-
-  return { results: [zebra, apple, colibri, banana].sort(sortByName) };
-};
-
-//         results: [...oldResults, data.results[0]].sort(sortByName),

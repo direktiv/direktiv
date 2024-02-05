@@ -43,7 +43,7 @@ import { useTranslation } from "react-i18next";
 
 const ExplorerPage: FC = () => {
   const { data: availableNamespaces, isLoading } = useListNamespaces();
-  // const { data: sortedNamespaces } = useSortedNamespaces();
+  const { data: sortedNamespaces } = useSortedNamespaces();
 
   const { results: sorted } = useSort();
 
@@ -63,8 +63,6 @@ const ExplorerPage: FC = () => {
       close();
     },
   });
-
-  //const listNamespaces = "o";
 
   const namespace = useNamespace();
   const { path } = pages.explorer.useParams();
@@ -106,20 +104,6 @@ const ExplorerPage: FC = () => {
   const noResults = isSuccess && results.length === 0;
   const wideOverlay = !!previewNode;
 
-  console.log("chosennamespace " + chosennamespace);
-  console.log(
-    "Number listNamespaces " +
-      JSON.stringify(availableNamespaces?.results?.length)
-  );
-  console.log("listNamespaces " + JSON.stringify(availableNamespaces?.results));
-
-  console.log("useSort " + JSON.stringify(sorted));
-  console.log("useSorted " + JSON.stringify(sorted2));
-
-  // console.log("NEW " + sortedNamespaces);
-
-  // console.log("sortedNamespaces " + JSON.stringify(sortedNamespaces));
-
   return (
     <>
       <ExplorerHeader />
@@ -127,10 +111,8 @@ const ExplorerPage: FC = () => {
         <p>Before:</p>
         <NamespaceSelector></NamespaceSelector>
       </Card>
-      {JSON.stringify(listNamespaces)}
-      <Button onClick={() => createNamespace({ name: "name" })}>
-        Create Namespace
-      </Button>
+      {JSON.stringify(sortedNamespaces)}
+
       <Card>
         <p>After:</p>
         <Select onValueChange={(value) => console.log("now " + value)}>
