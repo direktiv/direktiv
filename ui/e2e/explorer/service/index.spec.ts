@@ -362,11 +362,33 @@ test("it is possible to edit environment variables", async ({ page }) => {
     })
   );
 
+  /* edit one item */
+  const updatedEnv: EnvironementVariableSchemaType = {
+    name: faker.lorem.word(),
+    value: faker.git.shortSha(),
+  };
+
+  const envToEdit = envs[3];
+
+  if (!envToEdit) throw Error("env to edit is undefined");
+
+  await page.getByTestId("env-name").nth(3).fill(updatedEnv.name);
+  await page.getByTestId("env-value").nth(3).fill(updatedEnv.value);
+
+  let expectNewEnvs: EnvironementVariableSchemaType[];
+
+  expectNewEnvs = [
+    envs[1] as EnvironementVariableSchemaType,
+    envs[2] as EnvironementVariableSchemaType,
+    updatedEnv,
+    envs[4] as EnvironementVariableSchemaType,
+  ];
+
   /* delete items and assert rendered list is updated*/
   await page.getByTestId("env-item-form").nth(0).getByRole("button").click();
   await page.getByTestId("env-item-form").nth(2).getByRole("button").click();
 
-  const expectNewEnvs = [
+  expectNewEnvs = [
     envs[1] as EnvironementVariableSchemaType,
     envs[2] as EnvironementVariableSchemaType,
     envs[4] as EnvironementVariableSchemaType,
