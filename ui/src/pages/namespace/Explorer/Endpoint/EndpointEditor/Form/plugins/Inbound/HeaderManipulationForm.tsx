@@ -7,6 +7,7 @@ import {
 } from "../../../schema/plugins/inbound/headerManipulation";
 
 import { ArrayInput } from "~/components/Form/ArrayInput";
+import EnvForm from "~/pages/namespace/Explorer/Service/ServiceEditor/Form/Envs";
 import { Fieldset } from "~/components/Form/Fieldset";
 import { PluginWrapper } from "../components/Modal";
 import { useTranslation } from "react-i18next";
@@ -61,6 +62,44 @@ export const HeaderManipulationForm: FC<FormProps> = ({
         />
       )}
       <PluginWrapper>
+        <Fieldset
+          label={t(
+            "pages.explorer.endpoint.editor.form.plugins.inbound.headerManipulation.headers_to_add"
+          )}
+        >
+          <Controller
+            control={control}
+            name="configuration.headers_to_add"
+            render={({ field }) => (
+              <EnvForm
+                defaultValue={field.value || []}
+                onChange={(changedValue) => {
+                  field.onChange(changedValue);
+                }}
+              />
+            )}
+          />
+        </Fieldset>
+
+        <Fieldset
+          label={t(
+            "pages.explorer.endpoint.editor.form.plugins.inbound.headerManipulation.headers_to_modify"
+          )}
+        >
+          <Controller
+            control={control}
+            name="configuration.headers_to_modify"
+            render={({ field }) => (
+              <EnvForm
+                defaultValue={field.value || []}
+                onChange={(changedValue) => {
+                  field.onChange(changedValue);
+                }}
+              />
+            )}
+          />
+        </Fieldset>
+
         <Fieldset
           label={t(
             "pages.explorer.endpoint.editor.form.plugins.inbound.headerManipulation.headers_to_remove"
