@@ -1016,6 +1016,7 @@
         "empty": "No routes exist yet"
       },
       "consumer": {
+        "refetchLabel": "Refetch consumers",
         "columns": {
           "username": "username",
           "password": "password",

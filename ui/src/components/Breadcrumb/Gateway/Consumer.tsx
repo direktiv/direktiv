@@ -16,7 +16,7 @@ const ConsumerBreadcrumb = () => {
 
   return (
     <>
-      <BreadcrumbLink>
+      <BreadcrumbLink data-testid="breadcrumb-consumers">
         <Link
           to={pages.gateway.createHref({
             namespace,
