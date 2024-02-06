@@ -208,14 +208,14 @@ test("it is possible to edit patches", async ({ page }) => {
   await page.getByTestId("patch-row").nth(1).getByRole("button").click();
   await page.getByRole("button", { name: "Move down" }).click();
 
-  let expectNewPatches: PatchSchemaType[];
+  let expectNewPatches;
 
   expectNewPatches = [
-    patches[0] as PatchSchemaType,
-    patches[2] as PatchSchemaType,
-    patches[1] as PatchSchemaType,
-    patches[3] as PatchSchemaType,
-  ];
+    patches[0],
+    patches[2],
+    patches[1],
+    patches[3],
+  ] as PatchSchemaType[];
 
   await Promise.all(
     expectNewPatches.map(async (item, index) => {
@@ -229,11 +229,11 @@ test("it is possible to edit patches", async ({ page }) => {
   await page.getByRole("button", { name: "Move up" }).click();
 
   expectNewPatches = [
-    patches[0] as PatchSchemaType,
-    patches[2] as PatchSchemaType,
-    patches[3] as PatchSchemaType,
-    patches[1] as PatchSchemaType,
-  ];
+    patches[0],
+    patches[2],
+    patches[3],
+    patches[1],
+  ] as PatchSchemaType[];
 
   await Promise.all(
     expectNewPatches.map(async (item, index) => {
@@ -246,11 +246,7 @@ test("it is possible to edit patches", async ({ page }) => {
   await page.getByTestId("patch-row").nth(1).getByRole("button").click();
   await page.getByRole("button", { name: "Delete" }).click();
 
-  expectNewPatches = [
-    patches[0] as PatchSchemaType,
-    patches[3] as PatchSchemaType,
-    patches[1] as PatchSchemaType,
-  ];
+  expectNewPatches = [patches[0], patches[3], patches[1]] as PatchSchemaType[];
 
   await Promise.all(
     expectNewPatches.map(async (item, index) => {
@@ -286,10 +282,10 @@ test("it is possible to edit patches", async ({ page }) => {
   await page.getByRole("button", { name: "Save" }).click();
 
   expectNewPatches = [
-    patches[0] as PatchSchemaType,
+    patches[0],
     updatedPatch,
-    patches[1] as PatchSchemaType,
-  ];
+    patches[1],
+  ] as PatchSchemaType[];
 
   await Promise.all(
     expectNewPatches.map(async (item, index) => {
@@ -375,24 +371,15 @@ test("it is possible to edit environment variables", async ({ page }) => {
   await page.getByTestId("env-name").nth(3).fill(updatedEnv.name);
   await page.getByTestId("env-value").nth(3).fill(updatedEnv.value);
 
-  let expectNewEnvs: EnvVarSchemaType[];
+  let expectNewEnvs;
 
-  expectNewEnvs = [
-    envs[1] as EnvVarSchemaType,
-    envs[2] as EnvVarSchemaType,
-    updatedEnv,
-    envs[4] as EnvVarSchemaType,
-  ];
+  expectNewEnvs = [envs[1], envs[2], updatedEnv, envs[4]] as EnvVarSchemaType[];
 
   /* delete items and assert rendered list is updated*/
   await page.getByTestId("env-item-form").nth(0).getByRole("button").click();
   await page.getByTestId("env-item-form").nth(2).getByRole("button").click();
 
-  expectNewEnvs = [
-    envs[1] as EnvVarSchemaType,
-    envs[2] as EnvVarSchemaType,
-    envs[4] as EnvVarSchemaType,
-  ];
+  expectNewEnvs = [envs[1], envs[2], envs[4]] as EnvVarSchemaType[];
 
   await Promise.all(
     expectNewEnvs.map(async (item, index) => {
