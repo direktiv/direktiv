@@ -1,10 +1,9 @@
 import { FC, useState } from "react";
 
-import { ItemForm } from "./EnvItemForm";
+import { ItemForm } from "./ItemForm";
 import { UnknownObjectOfStrings } from "./types";
 
 type ObjArrayInputProps = {
-  placeholder?: string;
   defaultValue: UnknownObjectOfStrings[];
   onChange: (newValue: UnknownObjectOfStrings[]) => void;
 };
