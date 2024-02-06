@@ -156,23 +156,26 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
                 itemIsValid={(item) => !!(item?.name && item?.value)}
                 renderItem={({ state, setState, onChange, handleKeyDown }) => (
                   <>
-                    {Object.entries(state).map(([key, value]) => (
-                      <Input
-                        key={key}
-                        data-testid={`env-${key}`}
-                        placeholder={t(
-                          `pages.explorer.service.editor.form.envs.${key}Placeholder`
-                        )}
-                        value={value}
-                        onKeyDown={handleKeyDown}
-                        onChange={(e) => {
-                          const newVal = { [key]: e.target.value };
-                          const newState = { ...state, ...newVal };
-                          setState(newState);
-                          onChange(newState);
-                        }}
-                      />
-                    ))}
+                    {Object.entries(state).map(([key, value]) => {
+                      const typedKey = key as keyof typeof state;
+                      return (
+                        <Input
+                          key={key}
+                          data-testid={`env-${typedKey}`}
+                          placeholder={t(
+                            `pages.explorer.service.editor.form.envs.${typedKey}Placeholder`
+                          )}
+                          value={value}
+                          onKeyDown={handleKeyDown}
+                          onChange={(e) => {
+                            const newVal = { [key]: e.target.value };
+                            const newState = { ...state, ...newVal };
+                            setState(newState);
+                            onChange(newState);
+                          }}
+                        />
+                      );
+                    })}
                   </>
                 )}
               />
