@@ -15,12 +15,11 @@ var ErrInvalidInstanceTelemetryInfo = errors.New("invalid instance telemetry inf
 
 // InstanceTelemetryInfo keeps information useful to our telemetry logic.
 type InstanceTelemetryInfo struct {
-	Version  string // to let us identify and correct outdated versions of this struct
-	TraceID  string
-	SpanID   string
-	CallPath string
-
-	NamespaceName string
+	Version       string `json:"version"` // to let us identify and correct outdated versions of this struct
+	TraceID       string `json:"trace_id"`
+	SpanID        string `json:"span_id"`
+	CallPath      string `json:"call_path"`
+	NamespaceName string `json:"namespace_name"`
 }
 
 func (info *InstanceTelemetryInfo) MarshalJSON() ([]byte, error) {

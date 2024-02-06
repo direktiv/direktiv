@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"os"
 	"strconv"
@@ -13,6 +14,7 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/gorilla/mux"
 )
@@ -169,7 +171,23 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 		log.Debugf("Log handler for '%s' received zero bytes.", actionId)
 		return
 	}
+	if ok {
+		root, _ := req.fnCtx.Callers.RootInstanceID()
+		if root == "" {
+			root = req.fnCtx.InstanceID.String()
+		}
 
+		slog.Info(msg,
+			"stream", "instance."+root,
+			"workflow", req.fnCtx.WorkflowPath,
+			"callpath", req.fnCtx.Callers.Callpath(),
+			"root-instance-id", root,
+			"state", req.fnCtx.State,
+			"branch", req.fnCtx.Branch,
+			"trace", req.fnCtx.Info.InstanceTelemetryInfo.TraceID,
+			"async", req.fnCtx.AsyncExec,
+		)
+	}
 	_, err := srv.flow.ActionLog(req.ctx, &grpc.ActionLogRequest{
 		InstanceId: req.instanceId,
 		Msg:        []string{msg},
@@ -363,6 +381,7 @@ type functionRequest struct {
 	input      []byte
 	files      []*functionFiles
 	iterator   int
+	fnCtx      enginerefactor.FunctionContext
 }
 
 type functionFiles struct {

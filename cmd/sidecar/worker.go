@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/util"
 )
 
@@ -739,15 +740,36 @@ func (worker *inboundWorker) validateFilesHeaders(req *inboundRequest, ifiles *[
 	return true
 }
 
+func (worker *inboundWorker) validateFnCtxHeaders(req *inboundRequest, fnCtxStr string) (enginerefactor.FunctionContext, bool) {
+	hdr := "Direktiv-Function-Context"
+	data, err := base64.StdEncoding.DecodeString(fnCtxStr)
+	if err != nil {
+		worker.reportValidationError(req, http.StatusBadRequest, fmt.Errorf("invalid %s [%d]: %w", hdr, 0, err))
+		return enginerefactor.FunctionContext{}, false
+	}
+
+	fnCtx := new(enginerefactor.FunctionContext)
+	dec := json.NewDecoder(bytes.NewReader(data))
+	dec.DisallowUnknownFields()
+	err = dec.Decode(fnCtx)
+	if err != nil {
+		worker.reportValidationError(req, http.StatusBadRequest, fmt.Errorf("invalid %s [%d]: %w", hdr, 0, err))
+		return enginerefactor.FunctionContext{}, false
+	}
+
+	return *fnCtx, true
+}
+
 func (worker *inboundWorker) validateFunctionRequest(req *inboundRequest) *functionRequest {
 	ir := new(functionRequest)
 
 	var step string
 	var deadline string
 	var it string
+	var fnCtx string
 
-	headers := []string{actionIDHeader, "Direktiv-InstanceID", "Direktiv-Namespace", "Direktiv-Step", "Direktiv-Iterator", "Direktiv-Deadline"}
-	ptrs := []*string{&ir.actionId, &ir.instanceId, &ir.namespace, &step, &it, &deadline}
+	headers := []string{actionIDHeader, "Direktiv-InstanceID", "Direktiv-Namespace", "Direktiv-Step", "Direktiv-Iterator", "Direktiv-Deadline", "Direktiv-Function-Context"}
+	ptrs := []*string{&ir.actionId, &ir.instanceId, &ir.namespace, &step, &it, &deadline, &fnCtx}
 
 	for i := 0; i < len(headers); i++ {
 		if !worker.getRequiredStringHeader(req, ptrs[i], headers[i]) {
@@ -772,6 +794,10 @@ func (worker *inboundWorker) validateFunctionRequest(req *inboundRequest) *funct
 	}
 
 	if !worker.validateFilesHeaders(req, &ir.files) {
+		return nil
+	}
+	var ok bool
+	if ir.fnCtx, ok = worker.validateFnCtxHeaders(req, fnCtx); !ok {
 		return nil
 	}
 

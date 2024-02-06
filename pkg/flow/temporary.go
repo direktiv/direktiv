@@ -372,19 +372,35 @@ func (child *subflowHandle) Info() states.ChildInfo {
 
 func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory, stateId string, timeout int,
 	fn model.FunctionDefinition, inputData []byte,
-	uid uuid.UUID, async bool, files []model.FunctionFileDefinition, iterator int,
+	uid uuid.UUID, async bool, files []model.FunctionFileDefinition, branch int,
 ) (*functionRequest, error) {
 	ar := new(functionRequest)
 	ar.ActionID = uid.String()
-	ar.Workflow.Timeout = timeout
-	ar.Workflow.NamespaceName = im.instance.TelemetryInfo.NamespaceName
-	ar.Workflow.Path = im.instance.Instance.WorkflowPath
-	ar.Iterator = iterator
-	if !async {
-		ar.Workflow.InstanceID = im.ID().String()
-		ar.Workflow.NamespaceID = im.instance.Instance.NamespaceID.String()
-		ar.Workflow.State = stateId
-		ar.Workflow.Step = im.Step()
+
+	fnDescent := make([]enginerefactor.ParentInfo, 0, len(im.instance.DescentInfo.Descent)+1)
+	fnDescent = append(fnDescent, im.instance.DescentInfo.Descent...)
+	fnDescent = append(fnDescent, enginerefactor.ParentInfo{
+		ID:     im.GetInstanceID(),
+		State:  im.GetState(),
+		Step:   im.Step(),
+		Branch: branch,
+	})
+
+	ar.fnContext = enginerefactor.FunctionContext{
+		InstanceID: im.GetInstanceID(),
+		Step:       im.Step(),
+		Branch:     branch,
+		State:      stateId,
+		Callers: enginerefactor.InstanceDescentInfo{
+			Version: im.instance.DescentInfo.Version,
+			Descent: fnDescent,
+		},
+		Timeout:      timeout,
+		WorkflowPath: im.instance.Instance.WorkflowPath,
+		Info: enginerefactor.FunctionTelemetryInfo{
+			InstanceTelemetryInfo: *im.instance.TelemetryInfo,
+		},
+		AsyncExec: async,
 	}
 
 	fnt := fn.GetType()
@@ -401,12 +417,12 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 		ar.Container.Scale = int(scale)
 		ar.Container.Files = files
 		ar.Container.ID = con.ID
-		ar.Container.Service = service.GetServiceURL(ar.Workflow.NamespaceName, core.ServiceTypeWorkflow, ar.Workflow.Path, con.ID)
+		ar.Container.Service = service.GetServiceURL(ar.fnContext.Info.NamespaceName, core.ServiceTypeWorkflow, ar.fnContext.WorkflowPath, con.ID)
 	case model.NamespacedKnativeFunctionType:
 		con := fn.(*model.NamespacedFunctionDefinition)
 		ar.Container.Files = files
 		ar.Container.ID = con.ID
-		ar.Container.Service = service.GetServiceURL(ar.Workflow.NamespaceName, core.ServiceTypeNamespace, con.Path, "")
+		ar.Container.Service = service.GetServiceURL(ar.fnContext.Info.NamespaceName, core.ServiceTypeNamespace, con.Path, "")
 
 	default:
 		return nil, fmt.Errorf("unexpected function type: %v", fn)
@@ -450,14 +466,14 @@ func (child *knativeHandle) Info() states.ChildInfo {
 }
 
 func (engine *engine) doActionRequest(ctx context.Context, ar *functionRequest) error {
-	if ar.Workflow.Timeout == 0 {
-		ar.Workflow.Timeout = 5 * 60 // 5 mins default, knative's default
+	if ar.fnContext.Timeout == 0 {
+		ar.fnContext.Timeout = 5 * 60 // 5 mins default, knative's default
 	}
 
 	// Log warning if timeout exceeds max allowed timeout
-	if actionTimeout := time.Duration(ar.Workflow.Timeout) * time.Second; actionTimeout > engine.server.conf.GetFunctionsTimeout() {
+	if actionTimeout := time.Duration(ar.fnContext.Timeout) * time.Second; actionTimeout > engine.server.conf.GetFunctionsTimeout() {
 		_, err := engine.internal.ActionLog(context.Background(), &grpc.ActionLogRequest{
-			InstanceId: ar.Workflow.InstanceID, Msg: []string{fmt.Sprintf("Warning: Action timeout '%v' is longer than max allowed duariton '%v'", actionTimeout, engine.server.conf.GetFunctionsTimeout())},
+			InstanceId: ar.fnContext.InstanceID.String(), Msg: []string{fmt.Sprintf("Warning: Action timeout '%v' is longer than max allowed duariton '%v'", actionTimeout, engine.server.conf.GetFunctionsTimeout())},
 		})
 		if err != nil {
 			engine.sugar.Errorf("Failed to log: %v.", err)
@@ -488,8 +504,8 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	engine.sugar.Debugf("function request for image %s name %s addr %v:", ar.Container.Image, ar.Container.ID, addr)
 	engine.logger.Debugf(ctx, engine.flow.ID, engine.flow.GetAttributes(), "function request for image %s name %s", ar.Container.Image, ar.Container.ID)
 
-	deadline := time.Now().UTC().Add(time.Duration(ar.Workflow.Timeout) * time.Second)
-	rctx, cancel := context.WithDeadline(context.Background(), deadline)
+	deadline := time.Now().UTC().Add(time.Duration(ar.fnContext.Timeout) * time.Second)
+	rctx, cancel := context.WithDeadline(ctx, deadline)
 	defer cancel()
 
 	engine.sugar.Debugf("deadline for request: %v", time.Until(deadline))
@@ -500,16 +516,17 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 		engine.reportError(ar, err)
 		return
 	}
+	fnCtx, err := json.Marshal(ar.fnContext)
 
 	// add headers
 	req.Header.Add(DirektivDeadlineHeader, deadline.Format(time.RFC3339))
-	req.Header.Add(DirektivNamespaceHeader, ar.Workflow.NamespaceName)
+	req.Header.Add(DirektivNamespaceHeader, ar.fnContext.Info.NamespaceName)
 	req.Header.Add(DirektivActionIDHeader, ar.ActionID)
-	req.Header.Add(DirektivInstanceIDHeader, ar.Workflow.InstanceID)
+	req.Header.Add(DirektivInstanceIDHeader, ar.fnContext.InstanceID.String())
 	req.Header.Add(DirektivStepHeader, fmt.Sprintf("%d",
-		int64(ar.Workflow.Step)))
+		int64(ar.fnContext.Step)))
 	req.Header.Add(DirektivIteratorHeader, fmt.Sprintf("%d",
-		int64(ar.Iterator)))
+		int64(ar.fnContext.Branch)))
 	for i := range ar.Container.Files {
 		f := &ar.Container.Files[i]
 		data, err := json.Marshal(f)
@@ -519,7 +536,8 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 		str := base64.StdEncoding.EncodeToString(data)
 		req.Header.Add(DirektivFileHeader, str)
 	}
-
+	fnCtsStr := base64.StdEncoding.EncodeToString(fnCtx)
+	req.Header.Add(DirektivFunctionContextHeader, fnCtsStr)
 	client := &http.Client{
 		Transport: tr,
 	}
@@ -567,14 +585,14 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 func (engine *engine) reportError(ar *functionRequest, err error) {
 	ec := ""
 	em := err.Error()
-	step := int32(ar.Workflow.Step)
+	step := int32(ar.fnContext.Step)
 	r := &grpc.ReportActionResultsRequest{
-		InstanceId:   ar.Workflow.InstanceID,
+		InstanceId:   ar.fnContext.InstanceID.String(),
 		Step:         step,
 		ActionId:     ar.ActionID,
 		ErrorCode:    ec,
 		ErrorMessage: em,
-		Iterator:     int32(ar.Iterator),
+		Iterator:     int32(ar.fnContext.Branch),
 	}
 
 	_, err = engine.internal.ReportActionResults(context.Background(), r)

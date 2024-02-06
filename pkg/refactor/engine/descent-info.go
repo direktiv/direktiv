@@ -25,8 +25,8 @@ type ParentInfo struct {
 
 // InstanceDescentInfo keeps a local copy of useful information about the entire chain of parent instances all the way to the root instance, excepting this instance.
 type InstanceDescentInfo struct {
-	Version string       // to let us identify and correct outdated versions of this struct
-	Descent []ParentInfo // chain of callers from the root instance to the direct parent.
+	Version string       `json:"version"` // to let us identify and correct outdated versions of this struct
+	Descent []ParentInfo `json:"descent"` // chain of callers from the root instance to the direct parent.
 }
 
 func (info *InstanceDescentInfo) MarshalJSON() ([]byte, error) {
@@ -40,6 +40,23 @@ func (info *InstanceDescentInfo) MarshalJSON() ([]byte, error) {
 		Version: instanceDescentInfoVersion1,
 		Descent: info.Descent,
 	})
+}
+
+func (info *InstanceDescentInfo) Callpath() string {
+	callpath := ""
+	for _, v := range info.Descent {
+		callpath += "/" + v.ID.String()
+	}
+
+	return callpath
+}
+
+func (info *InstanceDescentInfo) RootInstanceID() (string, bool) {
+	if len(info.Descent) > 0 {
+		return "" + info.Descent[0].ID.String(), true
+	}
+
+	return "", false
 }
 
 type InstanceDescentInfoV1 struct {

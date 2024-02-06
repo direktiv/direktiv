@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/model"
+	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 )
 
 // NOTE: old constants.
@@ -58,6 +59,8 @@ const (
 
 	DirektivErrorCodeHeader    = "Direktiv-ErrorCode"
 	DirektivErrorMessageHeader = "Direktiv-ErrorMessage"
+
+	DirektivFunctionContextHeader = "Direktiv-Function-Context"
 )
 
 // internal error codes for knative services.
@@ -78,8 +81,7 @@ type ServiceResponse struct {
 
 type functionRequest struct {
 	ActionID  string
-	Iterator  int
-	Workflow  functionWorkflow
+	fnContext enginerefactor.FunctionContext
 	Container functionContainer
 }
 
@@ -91,15 +93,4 @@ type functionContainer struct {
 	Size                model.Size
 	Scale               int
 	Files               []model.FunctionFileDefinition
-}
-
-type functionWorkflow struct {
-	Name          string
-	Path          string
-	InstanceID    string
-	NamespaceID   string
-	NamespaceName string
-	State         string
-	Step          int
-	Timeout       int
 }
