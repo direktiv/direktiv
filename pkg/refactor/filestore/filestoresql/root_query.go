@@ -52,7 +52,7 @@ func (q *RootQuery) ListAllFiles(ctx context.Context) ([]*filestore.File, error)
 	return list, nil
 }
 
-func (q *RootQuery) ListDirektivFiles(ctx context.Context) ([]*filestore.File, error) {
+func (q *RootQuery) ListDirektivFilesWithData(ctx context.Context) ([]*filestore.File, error) {
 	var list []*filestore.File
 
 	// check if root exists.
@@ -60,7 +60,6 @@ func (q *RootQuery) ListDirektivFiles(ctx context.Context) ([]*filestore.File, e
 		return nil, err
 	}
 
-	// TODO: check if data field is leagued in the query.
 	res := q.db.WithContext(ctx).Raw(`
 						SELECT *, length(data) AS size
 						FROM filesystem_files 
