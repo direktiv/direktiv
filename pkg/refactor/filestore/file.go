@@ -45,6 +45,8 @@ type File struct {
 	Data     []byte `json:"data,omitempty"`
 	Checksum string `json:"checksum,omitempty"`
 
+	Size int `json:"size,omitempty"`
+
 	// Root is a filestore instance, users can create multiple filestore roots and RootID tells which root the file
 	// belongs too.
 	RootID uuid.UUID `json:"-"`
