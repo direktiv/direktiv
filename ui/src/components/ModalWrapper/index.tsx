@@ -33,7 +33,7 @@ export const ModalWrapper: FC<ModalWrapperProps> = ({
         {children}
       </div>
       <DialogFooter>
-        <Button type="button" onClick={onCancel}>
+        <Button type="button" variant="ghost" onClick={onCancel}>
           {t("components.modalWrapper.cancelBtn")}
         </Button>
         {showSaveBtn && (
