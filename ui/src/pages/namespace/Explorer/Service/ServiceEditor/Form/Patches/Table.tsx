@@ -6,7 +6,7 @@ import {
   TableRow,
 } from "~/design/Table";
 
-import { ContextMenu } from "~/pages/namespace/Explorer/Endpoint/EndpointEditor/Form/plugins/components/PluginsTable";
+import { ListContextMenu } from "~/components/ListContextMenu";
 import { PatchSchemaType } from "../../schema";
 
 type TableHeaderProps = PropsWithChildren & {
@@ -41,7 +41,7 @@ export const PatchRow: FC<PatchRowProps> = ({
     <TableCell>{patch.op}</TableCell>
     <TableCell>{patch.path}</TableCell>
     <TableCell className="text-right">
-      <ContextMenu
+      <ListContextMenu
         onDelete={onDelete}
         onMoveDown={onMoveDown}
         onMoveUp={onMoveUp}

@@ -1,4 +1,3 @@
-import { ContextMenu, TableHeader } from "../components/PluginsTable";
 import { Dialog, DialogTrigger } from "~/design/Dialog";
 import { FC, useState } from "react";
 import {
@@ -28,10 +27,12 @@ import { EndpointFormSchemaType } from "../../../schema";
 import { EventFilterForm } from "./EventFilterForm";
 import { InboundPluginFormSchemaType } from "../../../schema/plugins/inbound/schema";
 import { JsInboundForm } from "./JsInboundForm";
+import { ListContextMenu } from "~/components/ListContextMenu";
 import { ModalWrapper } from "~/components/ModalWrapper";
 import { PluginSelector } from "../components/PluginSelector";
 import { Plus } from "lucide-react";
 import { RequestConvertForm } from "./RequestConvertForm";
+import { TableHeader } from "../components/PluginsTable";
 import { useTranslation } from "react-i18next";
 
 type InboundPluginFormProps = {
@@ -123,7 +124,7 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({ form }) => {
                     )}
                   </TableCell>
                   <TableCell className="text-right">
-                    <ContextMenu
+                    <ListContextMenu
                       onDelete={onDelete}
                       onMoveDown={onMoveDown}
                       onMoveUp={onMoveUp}

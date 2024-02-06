@@ -263,9 +263,6 @@
             "methods": "methods",
             "allowAnonymous": "allow anonymous",
             "plugins": {
-              "deleteBtn": "Delete",
-              "moveUpBtn": "Move up",
-              "moveDownBtn": "Move down",
               "target": {
                 "table": {
                   "headline": "Target plugin",
@@ -1103,6 +1100,11 @@
       "gatewayRoutes": "Routes",
       "gatewayConsumers": "Consumers",
       "jqPlayground": "jq Playground"
+    },
+    "contextMenu": {
+      "deleteBtn": "Delete",
+      "moveUpBtn": "Move up",
+      "moveDownBtn": "Move down"
     },
     "namespaceEdit": {
       "title": {

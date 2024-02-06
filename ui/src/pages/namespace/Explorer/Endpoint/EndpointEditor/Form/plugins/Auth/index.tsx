@@ -1,4 +1,3 @@
-import { ContextMenu, TableHeader } from "../components/PluginsTable";
 import { Dialog, DialogTrigger } from "~/design/Dialog";
 import { FC, useState } from "react";
 import {
@@ -27,9 +26,11 @@ import { Card } from "~/design/Card";
 import { EndpointFormSchemaType } from "../../../schema";
 import { GithubWebhookAuthForm } from "./GithubWebhookAuthForm";
 import { KeyAuthForm } from "./KeyAuthForm";
+import { ListContextMenu } from "~/components/ListContextMenu";
 import { ModalWrapper } from "~/components/ModalWrapper";
 import { PluginSelector } from "../components/PluginSelector";
 import { Plus } from "lucide-react";
+import { TableHeader } from "../components/PluginsTable";
 import { useTranslation } from "react-i18next";
 
 type AuthPluginFormProps = {
@@ -119,7 +120,7 @@ export const AuthPluginForm: FC<AuthPluginFormProps> = ({ formControls }) => {
                     )}
                   </TableCell>
                   <TableCell className="text-right">
-                    <ContextMenu
+                    <ListContextMenu
                       onDelete={onDelete}
                       onMoveDown={onMoveDown}
                       onMoveUp={onMoveUp}
