@@ -1,3 +1,6 @@
+// Package dinit provides a simple mechanism to prepare containers for action without
+// a server listening to port 8080. This enables Direktiv to use standard containers from
+// e.g. DockerHub.
 package dinit
 
 import (
@@ -6,6 +9,10 @@ import (
 	"os"
 )
 
+// RunApplication runs if the Direktiv binary starts up as `init`. This happens when a action
+// uses the special command `/usr/share/direktiv/direktiv-cmd` in the configuration. It copies
+// the direktiv-cmd binary to a shared location of the function container and the container is
+// able to use this as a server to execute commands.
 func RunApplication() {
 	perm := 0o755
 
