@@ -4,22 +4,20 @@ import { Plus, X } from "lucide-react";
 import Button from "~/design/Button";
 import Input from "~/design/Input";
 import { UnknownObjectOfStrings } from "./types";
-import { useTranslation } from "react-i18next";
 
-type EnvItemFormProps = {
+type ItemFormProps = {
   item?: UnknownObjectOfStrings;
   onAdd?: (value: UnknownObjectOfStrings) => void;
   onUpdate?: (value: UnknownObjectOfStrings) => void;
   onDelete?: () => void;
 };
 
-export const EnvItemForm: FC<EnvItemFormProps> = ({
+export const ItemForm: FC<ItemFormProps> = ({
   item,
   onAdd,
   onUpdate,
   onDelete,
 }) => {
-  const { t } = useTranslation();
   const emptyItem = {
     name: "",
     value: "",

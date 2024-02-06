@@ -1,6 +1,6 @@
 import { FC, useState } from "react";
 
-import { EnvItemForm } from "./EnvItemForm";
+import { ItemForm } from "./EnvItemForm";
 import { UnknownObjectOfStrings } from "./types";
 
 type ObjArrayInputProps = {
@@ -38,14 +38,14 @@ const ObjArrayInput: FC<ObjArrayInputProps> = ({ defaultValue, onChange }) => {
   return (
     <>
       {items?.map((item, index) => (
-        <EnvItemForm
+        <ItemForm
           key={`${items.length}-${index}`}
           item={item}
           onUpdate={(value) => updateAtIndex(index, value)}
           onDelete={() => deleteAtIndex(index)}
         />
       ))}
-      <EnvItemForm onAdd={addItem} />
+      <ItemForm onAdd={addItem} />
     </>
   );
 };
