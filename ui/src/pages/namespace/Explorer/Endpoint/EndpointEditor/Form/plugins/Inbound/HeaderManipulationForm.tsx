@@ -7,8 +7,8 @@ import {
 } from "../../../schema/plugins/inbound/headerManipulation";
 
 import { ArrayInput } from "~/components/Form/ArrayInput";
-import EnvForm from "~/pages/namespace/Explorer/Service/ServiceEditor/Form/Envs";
 import { Fieldset } from "~/components/Form/Fieldset";
+import ObjArrayInput from "~/components/Form/ObjArrayInput";
 import { PluginWrapper } from "../components/Modal";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -73,7 +73,7 @@ export const HeaderManipulationForm: FC<FormProps> = ({
             control={control}
             name="configuration.headers_to_add"
             render={({ field }) => (
-              <EnvForm
+              <ObjArrayInput
                 defaultValue={field.value || []}
                 onChange={(changedValue) => {
                   field.onChange(changedValue);
@@ -92,7 +92,7 @@ export const HeaderManipulationForm: FC<FormProps> = ({
             control={control}
             name="configuration.headers_to_modify"
             render={({ field }) => (
-              <EnvForm
+              <ObjArrayInput
                 defaultValue={field.value || []}
                 onChange={(changedValue) => {
                   field.onChange(changedValue);

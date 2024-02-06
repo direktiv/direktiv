@@ -1,27 +1,24 @@
 import { FC, useState } from "react";
 
 import { EnvItemForm } from "./EnvItemForm";
-import { EnvironementVariableSchemaType } from "~/api/services/schema/services";
+import { ObjectShape } from "./types";
 
-type EnvFormProps = {
+type ObjArrayInputProps = {
   placeholder?: string;
-  defaultValue: EnvironementVariableSchemaType[];
-  onChange: (newValue: EnvironementVariableSchemaType[]) => void;
+  defaultValue: ObjectShape[];
+  onChange: (newValue: ObjectShape[]) => void;
 };
 
-const EnvForm: FC<EnvFormProps> = ({ defaultValue, onChange }) => {
+const ObjArrayInput: FC<ObjArrayInputProps> = ({ defaultValue, onChange }) => {
   const [items, setItems] = useState(defaultValue);
 
-  const addItem = (newItem: EnvironementVariableSchemaType) => {
+  const addItem = (newItem: ObjectShape) => {
     const newValue = [...items, newItem];
     setItems(newValue);
     onChange(newValue);
   };
 
-  const updateAtIndex = (
-    index: number,
-    value: EnvironementVariableSchemaType
-  ) => {
+  const updateAtIndex = (index: number, value: ObjectShape) => {
     const newItems = items.map((oldValue, oldIndex) => {
       if (oldIndex === index) {
         return value;
@@ -53,4 +50,4 @@ const EnvForm: FC<EnvFormProps> = ({ defaultValue, onChange }) => {
   );
 };
 
-export default EnvForm;
+export default ObjArrayInput;
