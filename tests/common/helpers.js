@@ -98,6 +98,40 @@ async function itShouldCreateDirV2(it, expect, ns, path, name) {
     })
 }
 
+async function itShouldUpdatePathV2(it, expect, ns, path, newPath) {
+    it(`should update file path ${path} to ${newPath}`, async () => {
+        const res = await request(common.config.getDirektivHost())
+            .patch(`/api/v2/namespaces/${ns}/files-tree${path}`)
+            .set('Content-Type', 'application/json')
+            .send({
+                absolutePath: newPath,
+            })
+        expect(res.statusCode).toEqual(200)
+        if(path === "/") {
+            path = ""
+        }
+        expect(res.body.data).toMatchObject({
+            path: newPath,
+            createdAt: expect.stringMatching(regex.timestampRegex),
+            updatedAt: expect.stringMatching(regex.timestampRegex),
+        })
+    })
+}
+
+
+async function itShouldCheckPathExistsV2(it, expect, ns, path, assertExits) {
+    it(`should check if path(${path}) exists(${assertExits})`, async () => {
+        const res = await request(common.config.getDirektivHost())
+            .get(`/api/v2/namespaces/${ns}/files-tree${path}`)
+
+        if(assertExits) {
+            expect(res.statusCode).toEqual(200)
+        } else {
+            expect(res.statusCode).toEqual(404)
+        }
+    })
+}
+
 
 
 
@@ -171,5 +205,7 @@ export default {
     itShouldCreateDirectory,
     dummyWorkflow,
     itShouldCreateDirV2,
-    itShouldCreateFileV2
+    itShouldCreateFileV2,
+    itShouldCheckPathExistsV2,
+    itShouldUpdatePathV2,
 }
