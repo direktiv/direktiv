@@ -122,7 +122,7 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 		Name     string             `json:"name"`
 		Typ      filestore.FileType `json:"type"`
 		MIMEType string             `json:"mimeType"`
-		Content  string             `json:"content"`
+		Data     string             `json:"data"`
 	}{}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -130,23 +130,23 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Validate if content is valid base64 encoded string.
-	decodedBytes, err := base64.StdEncoding.DecodeString(req.Content)
+	// Validate if data is valid base64 encoded string.
+	decodedBytes, err := base64.StdEncoding.DecodeString(req.Data)
 	if err != nil && req.Typ != filestore.FileTypeDirectory {
 		writeError(w, &Error{
 			Code:    "request_data_invalid",
-			Message: "file content has invalid base64 string",
+			Message: "file data has invalid base64 string",
 		})
 
 		return
 	}
-	// Validate if content is valid yaml with direktiv files.
+	// Validate if data is valid yaml with direktiv files.
 	isDirektivFile := req.Typ != filestore.FileTypeDirectory && req.Typ != filestore.FileTypeFile
 	var data struct{}
 	if err = yaml.Unmarshal(decodedBytes, &data); err != nil && isDirektivFile {
 		writeError(w, &Error{
 			Code:    "request_data_invalid",
-			Message: "file content has invalid yaml string",
+			Message: "file data has invalid yaml string",
 		})
 
 		return
@@ -190,7 +190,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 	// nolint:tagliatelle
 	req := struct {
 		AbsolutePath string `json:"absolutePath"`
-		Content      string `json:"content"`
+		Data         string `json:"data"`
 	}{}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -198,22 +198,22 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Validate if content is valid base64 encoded string.
-	decodedBytes, err := base64.StdEncoding.DecodeString(req.Content)
-	if err != nil && req.Content != "" {
+	// Validate if data is valid base64 encoded string.
+	decodedBytes, err := base64.StdEncoding.DecodeString(req.Data)
+	if err != nil && req.Data != "" {
 		writeError(w, &Error{
 			Code:    "request_data_invalid",
-			Message: "updated file content has invalid base64 string",
+			Message: "updated file data has invalid base64 string",
 		})
 
 		return
 	}
-	// Validate if content is valid yaml with direktiv files.
+	// Validate if data is valid yaml with direktiv files.
 	var data struct{}
-	if err = yaml.Unmarshal(decodedBytes, &data); req.Content != "" {
+	if err = yaml.Unmarshal(decodedBytes, &data); err != nil && req.Data != "" {
 		writeError(w, &Error{
 			Code:    "request_data_invalid",
-			Message: "updated file content has invalid yaml string",
+			Message: "updated file data has invalid yaml string",
 		})
 
 		return
@@ -227,7 +227,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.Content != "" {
+	if req.Data != "" {
 		_, err = fStore.ForFile(oldFile).SetData(r.Context(), decodedBytes)
 		if err != nil {
 			writeFileStoreError(w, err)
@@ -249,6 +249,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 		writeFileStoreError(w, err)
 		return
 	}
+	updatedFile.Data = decodedBytes
 
 	err = db.Commit(r.Context())
 	if err != nil {

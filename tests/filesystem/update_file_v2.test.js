@@ -21,6 +21,6 @@ describe('Test filesystem tree update operations', () => {
         "/dir1/foo1",
         {
             absolutePath: "/dir1/foo2",
-            content: btoa(common.helpers.dummyWorkflow("foo2"))},
+            data: btoa(common.helpers.dummyWorkflow("foo2"))},
         )
 })
