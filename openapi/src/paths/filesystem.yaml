@@ -1,0 +1,85 @@
+
+/api/v2/namespaces/{namespace}/files-tree:
+  get:
+    tags:
+      - files-tree
+    summary: Read any node in the filesystem tree
+    # description:
+    parameters:
+      - $ref: '../parameters.yaml#/namespace'
+      - name: path
+        in: path
+        schema:
+          type: string
+          description: path of the node to read (with slashes)
+        required: true
+    responses:
+      "200":
+        description: filesystem tree node data
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                      file:
+                        allOf: # Combines the BasicErrorModel and the inline model
+                          - $ref: '../objects.yaml#/FileNodeWithoutData'
+                          - type: object
+                            description: filesystem-tree node data
+                            properties:
+                              data:
+                                type: string
+                                description: (only with type != directory) base64 encoded string of the file content
+
+                      paths:
+                        type: array
+                        description: list of filesystem-tree child nodes
+                        items:
+                          $ref: '../objects.yaml#/FileNodeWithoutData'
+
+  delete:
+    tags:
+      - files-tree
+    summary: Delete any node in the filesystem tree
+    # description:
+    parameters:
+      - $ref: '../parameters.yaml#/namespace'
+      - name: path
+        in: path
+        schema:
+          type: string
+          description: path of the node to delete (with slashes)
+        required: true
+    responses:
+      "200":
+        description: filesystem tree node deleted successfully
+
+
+/api/v2/namespaces/{namespace}/files-tree/create:
+  post:
+    tags:
+      - files-tree
+    summary: Create a node in the filesystem tree
+    # description:
+    parameters:
+      - $ref: '../parameters.yaml#/namespace'
+      - name: path
+        in: path
+        schema:
+          type: string
+          description: path of the parent node (with slashes)
+        required: true
+    responses:
+      "200":
+        description: filesystem tree node created successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  $ref: '../objects.yaml#/FileNodeWithoutData'

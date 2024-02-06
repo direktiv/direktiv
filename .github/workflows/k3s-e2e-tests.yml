@@ -109,6 +109,9 @@ jobs:
       - name: Add Direktiv Helm repository
         run: helm repo add direktiv https://chart.direktiv.io
 
+      - name: Add fluentbit repository
+        run: helm repo add fluent-bit https://fluent.github.io/helm-charts
+
       - name: Clone Direktiv-charts repository
         run: |
           git clone https://github.com/direktiv/direktiv-charts.git direktiv-charts

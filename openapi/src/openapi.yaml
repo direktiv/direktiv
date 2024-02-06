@@ -79,9 +79,12 @@ tags:
     description: Endpoints for managing registries
   - name: gateway
     description: Endpoints for fetchig API gateway information
+  - name: files-tree
+    description: Endpoints reading and changing filesystem tree nodes
 x-tagGroups:
   - name: Endpoints
     tags:
+      - files-tree
       - services
       - registries
       - gateway
