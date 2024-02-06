@@ -7,7 +7,6 @@ import {
 import { FC, PropsWithChildren } from "react";
 
 import Button from "~/design/Button";
-import { Card } from "~/design/Card";
 import { useTranslation } from "react-i18next";
 
 type ModalWrapperProps = PropsWithChildren & {
@@ -34,30 +33,10 @@ export const ModalWrapper: FC<ModalWrapperProps> = ({
       {showSaveBtn && (
         <DialogFooter>
           <Button type="submit" form={formId ?? undefined}>
-            {t("pages.explorer.endpoint.editor.form.plugins.saveBtn")}
+            {t("components.modalWrapper.saveBtn")}
           </Button>
         </DialogFooter>
       )}
     </DialogContent>
   );
 };
-
-type PluginSelectorProps = PropsWithChildren & {
-  title: string;
-};
-
-export const PluginSelector: FC<PluginSelectorProps> = ({
-  title,
-  children,
-}) => (
-  <fieldset className="flex items-center gap-5">
-    <label className="text-sm">{title}</label>
-    {children}
-  </fieldset>
-);
-
-export const PluginWrapper: FC<PropsWithChildren> = ({ children }) => (
-  <Card className="flex flex-col gap-5 p-5" noShadow>
-    {children}
-  </Card>
-);

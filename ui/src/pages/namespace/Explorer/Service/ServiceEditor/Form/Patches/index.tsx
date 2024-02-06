@@ -7,7 +7,7 @@ import { UseFormReturn, useFieldArray, useWatch } from "react-hook-form";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
-import { ModalWrapper } from "~/pages/namespace/Explorer/Endpoint/EndpointEditor/Form/plugins/components/Modal";
+import { ModalWrapper } from "~/components/ModalWrapper";
 import { PatchItemForm } from "./Item";
 import { Plus } from "lucide-react";
 import { useTranslation } from "react-i18next";

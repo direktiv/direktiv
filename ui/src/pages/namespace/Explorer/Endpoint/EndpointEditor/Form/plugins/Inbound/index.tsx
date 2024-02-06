@@ -1,7 +1,6 @@
 import { ContextMenu, TableHeader } from "../components/PluginsTable";
 import { Dialog, DialogTrigger } from "~/design/Dialog";
 import { FC, useState } from "react";
-import { ModalWrapper, PluginSelector } from "../components/Modal";
 import {
   Select,
   SelectContent,
@@ -29,6 +28,8 @@ import { EndpointFormSchemaType } from "../../../schema";
 import { EventFilterForm } from "./EventFilterForm";
 import { InboundPluginFormSchemaType } from "../../../schema/plugins/inbound/schema";
 import { JsInboundForm } from "./JsInboundForm";
+import { ModalWrapper } from "~/components/ModalWrapper";
+import { PluginSelector } from "../components/PluginSelector";
 import { Plus } from "lucide-react";
 import { RequestConvertForm } from "./RequestConvertForm";
 import { useTranslation } from "react-i18next";

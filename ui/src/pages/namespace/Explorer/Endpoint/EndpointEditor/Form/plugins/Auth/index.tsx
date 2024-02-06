@@ -1,7 +1,6 @@
 import { ContextMenu, TableHeader } from "../components/PluginsTable";
 import { Dialog, DialogTrigger } from "~/design/Dialog";
 import { FC, useState } from "react";
-import { ModalWrapper, PluginSelector } from "../components/Modal";
 import {
   Select,
   SelectContent,
@@ -28,6 +27,8 @@ import { Card } from "~/design/Card";
 import { EndpointFormSchemaType } from "../../../schema";
 import { GithubWebhookAuthForm } from "./GithubWebhookAuthForm";
 import { KeyAuthForm } from "./KeyAuthForm";
+import { ModalWrapper } from "~/components/ModalWrapper";
+import { PluginSelector } from "../components/PluginSelector";
 import { Plus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 

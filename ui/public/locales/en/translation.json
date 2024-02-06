@@ -263,7 +263,6 @@
             "methods": "methods",
             "allowAnonymous": "allow anonymous",
             "plugins": {
-              "saveBtn": "Save",
               "deleteBtn": "Delete",
               "moveUpBtn": "Move up",
               "moveDownBtn": "Move down",
@@ -1238,6 +1237,9 @@
       "help": "Help",
       "docs": "Open the docs",
       "supportChannelOnSlack": "Support Channel on Slack"
+    },
+    "modalWrapper": {
+      "saveBtn": "Save"
     }
   },
   "api": {
