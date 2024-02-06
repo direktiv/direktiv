@@ -83,20 +83,25 @@ export const HeaderManipulationForm: FC<FormProps> = ({
                 itemIsValid={(item) => !!(item?.name && item?.value)}
                 renderItem={({ state, setState, onChange, handleKeyDown }) => (
                   <>
-                    {Object.entries(state).map(([key, value]) => (
-                      <Input
-                        placeholder={key} // TODO: move to translation file
-                        key={key}
-                        value={value}
-                        onKeyDown={handleKeyDown}
-                        onChange={(e) => {
-                          const newVal = { [key]: e.target.value };
-                          const newState = { ...state, ...newVal };
-                          setState(newState);
-                          onChange(newState);
-                        }}
-                      />
-                    ))}
+                    {Object.entries(state).map(([key, value]) => {
+                      const typedKey = key as keyof typeof state;
+                      return (
+                        <Input
+                          placeholder={t(
+                            `pages.explorer.endpoint.editor.form.plugins.inbound.headerManipulation.${typedKey}Placeholder`
+                          )}
+                          key={key}
+                          value={value}
+                          onKeyDown={handleKeyDown}
+                          onChange={(e) => {
+                            const newVal = { [key]: e.target.value };
+                            const newState = { ...state, ...newVal };
+                            setState(newState);
+                            onChange(newState);
+                          }}
+                        />
+                      );
+                    })}
                   </>
                 )}
               />
@@ -125,20 +130,25 @@ export const HeaderManipulationForm: FC<FormProps> = ({
                 itemIsValid={(item) => !!(item?.name && item?.value)}
                 renderItem={({ state, setState, onChange, handleKeyDown }) => (
                   <>
-                    {Object.entries(state).map(([key, value]) => (
-                      <Input
-                        placeholder={key} // TODO: move to translation file
-                        key={key}
-                        value={value}
-                        onKeyDown={handleKeyDown}
-                        onChange={(e) => {
-                          const newVal = { [key]: e.target.value };
-                          const newState = { ...state, ...newVal };
-                          setState(newState);
-                          onChange(newState);
-                        }}
-                      />
-                    ))}
+                    {Object.entries(state).map(([key, value]) => {
+                      const typedKey = key as keyof typeof state;
+                      return (
+                        <Input
+                          placeholder={t(
+                            `pages.explorer.endpoint.editor.form.plugins.inbound.headerManipulation.${typedKey}Placeholder`
+                          )}
+                          key={key}
+                          value={value}
+                          onKeyDown={handleKeyDown}
+                          onChange={(e) => {
+                            const newVal = { [key]: e.target.value };
+                            const newState = { ...state, ...newVal };
+                            setState(newState);
+                            onChange(newState);
+                          }}
+                        />
+                      );
+                    })}
                   </>
                 )}
               />
@@ -157,7 +167,7 @@ export const HeaderManipulationForm: FC<FormProps> = ({
             render={({ field }) => (
               <ArrayInput
                 placeholder={t(
-                  "pages.explorer.endpoint.editor.form.plugins.inbound.headerManipulation.headersPlaceholder"
+                  "pages.explorer.endpoint.editor.form.plugins.inbound.headerManipulation.namePlaceholder"
                 )}
                 defaultValue={field.value ?? []}
                 onChange={(changedValue) => {

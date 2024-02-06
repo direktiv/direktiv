@@ -345,7 +345,8 @@
                   "headers_to_add": "Headers to add (optional)",
                   "headers_to_modify": "Headers to modify (optional)",
                   "headers_to_remove": "Headers to remove (optional)",
-                  "headersPlaceholder": "Enter a header name"
+                  "namePlaceholder": "Enter a header name",
+                  "valuePlaceholder": "Enter a header value"
                 },
                 "eventFilter": {
                   "script": "JavaScript",
