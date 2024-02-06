@@ -60,7 +60,7 @@ async function itShouldCreateFileV2(it, expect, ns, path, name, type, mimeType, 
                 name: name,
                 type: type,
                 mimeType: mimeType,
-                content:  btoa(content),
+                content:  content,
             })
         expect(res.statusCode).toEqual(200)
         if (path === "/") {
@@ -107,14 +107,35 @@ async function itShouldUpdatePathV2(it, expect, ns, path, newPath) {
                 absolutePath: newPath,
             })
         expect(res.statusCode).toEqual(200)
-        if(path === "/") {
-            path = ""
-        }
         expect(res.body.data).toMatchObject({
             path: newPath,
             createdAt: expect.stringMatching(regex.timestampRegex),
             updatedAt: expect.stringMatching(regex.timestampRegex),
         })
+    })
+}
+
+async function itShouldUpdateFileV2(it, expect, ns, path, newPatch) {
+    it(`should update file path ${path}`, async () => {
+        const res = await request(common.config.getDirektivHost())
+            .patch(`/api/v2/namespaces/${ns}/files-tree${path}`)
+            .set('Content-Type', 'application/json')
+            .send(newPatch)
+        console.log(res.body)
+        expect(res.statusCode).toEqual(200)
+
+        let want = {
+                createdAt: expect.stringMatching(regex.timestampRegex),
+                updatedAt: expect.stringMatching(regex.timestampRegex),
+        }
+        if(newPatch.absolutePath !== undefined) {
+            want.path = newPatch.absolutePath
+        }
+        if(newPatch.content !== undefined) {
+            want.content = newPatch.content
+        }
+
+        expect(res.body.data).toMatchObject(want)
     })
 }
 
@@ -208,4 +229,5 @@ export default {
     itShouldCreateFileV2,
     itShouldCheckPathExistsV2,
     itShouldUpdatePathV2,
+    itShouldUpdateFileV2,
 }

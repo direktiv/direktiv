@@ -12,14 +12,14 @@ describe('Test filesystem tree read operations', () => {
         "foo1",
         "workflow",
         "text",
-        common.helpers.dummyWorkflow("foo1"))
+        btoa(common.helpers.dummyWorkflow("foo1")))
 
     common.helpers.itShouldCreateFileV2(it, expect, testNamespace,
         "/",
         "foo2",
         "workflow",
         "text",
-        common.helpers.dummyWorkflow("foo2"))
+        btoa(common.helpers.dummyWorkflow("foo2")))
 
 
     common.helpers.itShouldCreateDirV2(it, expect, testNamespace, "", "dir1")
