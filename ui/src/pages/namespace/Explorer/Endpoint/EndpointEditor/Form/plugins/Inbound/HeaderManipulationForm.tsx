@@ -18,6 +18,8 @@ type OptionalConfig = Partial<
 >;
 
 const predefinedConfig: OptionalConfig = {
+  headers_to_add: [],
+  headers_to_modify: [],
   headers_to_remove: [],
 };
 
