@@ -3,13 +3,13 @@ import { Plus, X } from "lucide-react";
 
 import Button from "~/design/Button";
 import Input from "~/design/Input";
-import { ObjectShape } from "./types";
+import { UnknownObjectOfStrings } from "./types";
 import { useTranslation } from "react-i18next";
 
 type EnvItemFormProps = {
-  item?: ObjectShape;
-  onAdd?: (value: ObjectShape) => void;
-  onUpdate?: (value: ObjectShape) => void;
+  item?: UnknownObjectOfStrings;
+  onAdd?: (value: UnknownObjectOfStrings) => void;
+  onUpdate?: (value: UnknownObjectOfStrings) => void;
   onDelete?: () => void;
 };
 
@@ -25,9 +25,9 @@ export const EnvItemForm: FC<EnvItemFormProps> = ({
     value: "",
   };
 
-  const [state, setState] = useState<ObjectShape>(item || emptyItem);
+  const [state, setState] = useState<UnknownObjectOfStrings>(item || emptyItem);
 
-  const handleChange = (object: Partial<ObjectShape>) => {
+  const handleChange = (object: Partial<UnknownObjectOfStrings>) => {
     const newState = { ...state, ...object };
     setState(newState);
     onUpdate && onUpdate(newState);
@@ -57,7 +57,17 @@ export const EnvItemForm: FC<EnvItemFormProps> = ({
 
   return (
     <div className="flex gap-3" data-testid="env-item-form">
-      <Input
+      {Object.keys(state).map((key) => (
+        <Input
+          key={key}
+          value={state[key]}
+          onChange={(event) => handleChange({ [key]: event.target.value })}
+          onKeyDown={handleKeyDown}
+          placeholder={key}
+          data-testid={`env-${key}`}
+        />
+      ))}
+      {/* <Input
         value={state.name}
         onChange={(event) => handleChange({ name: event.target.value })}
         onKeyDown={handleKeyDown}
@@ -74,7 +84,7 @@ export const EnvItemForm: FC<EnvItemFormProps> = ({
           "pages.explorer.service.editor.form.envs.valuePlaceholder"
         )}
         data-testid="env-value"
-      />
+      /> */}
       {onAdd && (
         <Button
           type="button"

@@ -1,4 +1,1 @@
-export type ObjectShape = {
-  name: string;
-  value: string;
-};
+export type UnknownObjectOfStrings = Record<string, string>;
