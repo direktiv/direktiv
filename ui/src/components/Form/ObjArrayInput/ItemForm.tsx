@@ -4,7 +4,7 @@ import { Plus, X } from "lucide-react";
 import Button from "~/design/Button";
 import { RenderItemType } from "./types";
 
-type ObjArrayInputType = <T extends Readonly<unknown>>(props: {
+type ObjArrayInputType = <T>(props: {
   item: T;
   renderItem: RenderItemType<T>;
   itemIsValid: (item?: T) => boolean;

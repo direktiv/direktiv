@@ -2,8 +2,8 @@ import { ItemForm } from "./ItemForm";
 import { RenderItemType } from "./types";
 import { useState } from "react";
 
-type ObjArrayInputType = <T extends Readonly<unknown>>(props: {
-  defaultValue: Readonly<T>[];
+type ObjArrayInputType = <T>(props: {
+  defaultValue: T[];
   emptyItem: T;
   onChange: (newValue: T[]) => void;
   itemIsValid?: (item?: T) => boolean;

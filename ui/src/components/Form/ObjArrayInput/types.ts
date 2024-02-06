@@ -1,6 +1,6 @@
 import { Dispatch, KeyboardEvent, SetStateAction } from "react";
 
-export type RenderItemType<T extends Readonly<unknown>> = ({
+export type RenderItemType<T> = ({
   state,
   onChange,
   setState,
