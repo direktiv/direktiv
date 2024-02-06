@@ -21,8 +21,7 @@ func (e *fsController) mountRouter(r chi.Router) {
 	r.Get("/*", e.read)
 	r.Delete("/*", e.delete)
 
-	r.Post("/create", e.createFile)
-	r.Post("/create/*", e.createFile)
+	r.Post("/*", e.createFile)
 }
 
 func (e *fsController) read(w http.ResponseWriter, r *http.Request) {
@@ -154,7 +153,7 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create file.
-	path := strings.Split(r.URL.Path, "/files-tree/create")[1]
+	path := strings.Split(r.URL.Path, "/files-tree")[1]
 	newFile, err := fStore.ForNamespace(ns.Name).CreateFile(r.Context(),
 		"/"+path+"/"+req.Name,
 		req.Typ,
