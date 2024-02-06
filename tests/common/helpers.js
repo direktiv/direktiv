@@ -34,7 +34,7 @@ async function itShouldCreateNamespace(it, expect, ns) {
     })
 }
 
-async function itShouldCreateFile(it, expect, ns, path, content) {
+async function itShouldCreateFile(it, expect, ns, path, data) {
     it(`should create a new file ${path}`, async () => {
         const res = await request(common.config.getDirektivHost())
             .put(`/api/namespaces/${ns}/tree${path}?op=create-workflow`)
@@ -42,7 +42,7 @@ async function itShouldCreateFile(it, expect, ns, path, content) {
                 'Content-Type': 'text/plain',
             })
 
-            .send(content)
+            .send(data)
 
         expect(res.statusCode).toEqual(200)
         expect(res.body).toMatchObject({
@@ -51,7 +51,7 @@ async function itShouldCreateFile(it, expect, ns, path, content) {
     })
 }
 
-async function itShouldCreateFileV2(it, expect, ns, path, name, type, mimeType, content) {
+async function itShouldCreateFileV2(it, expect, ns, path, name, type, mimeType, data) {
     it(`should create a new file ${path}`, async () => {
         const res = await request(common.config.getDirektivHost())
             .post(`/api/v2/namespaces/${ns}/files-tree${path}`)
@@ -60,7 +60,7 @@ async function itShouldCreateFileV2(it, expect, ns, path, name, type, mimeType, 
                 name: name,
                 type: type,
                 mimeType: mimeType,
-                content:  btoa(content),
+                data:  data,
             })
         expect(res.statusCode).toEqual(200)
         if (path === "/") {
@@ -98,6 +98,60 @@ async function itShouldCreateDirV2(it, expect, ns, path, name) {
     })
 }
 
+async function itShouldUpdatePathV2(it, expect, ns, path, newPath) {
+    it(`should update file path ${path} to ${newPath}`, async () => {
+        const res = await request(common.config.getDirektivHost())
+            .patch(`/api/v2/namespaces/${ns}/files-tree${path}`)
+            .set('Content-Type', 'application/json')
+            .send({
+                absolutePath: newPath,
+            })
+        expect(res.statusCode).toEqual(200)
+        expect(res.body.data).toMatchObject({
+            path: newPath,
+            createdAt: expect.stringMatching(regex.timestampRegex),
+            updatedAt: expect.stringMatching(regex.timestampRegex),
+        })
+    })
+}
+
+async function itShouldUpdateFileV2(it, expect, ns, path, newPatch) {
+    it(`should update file path ${path}`, async () => {
+        const res = await request(common.config.getDirektivHost())
+            .patch(`/api/v2/namespaces/${ns}/files-tree${path}`)
+            .set('Content-Type', 'application/json')
+            .send(newPatch)
+        expect(res.statusCode).toEqual(200)
+
+        let want = {
+                createdAt: expect.stringMatching(regex.timestampRegex),
+                updatedAt: expect.stringMatching(regex.timestampRegex),
+        }
+        if(newPatch.absolutePath !== undefined) {
+            want.path = newPatch.absolutePath
+        }
+        if(newPatch.data !== undefined) {
+            want.data = newPatch.data
+        }
+
+        expect(res.body.data).toMatchObject(want)
+    })
+}
+
+
+async function itShouldCheckPathExistsV2(it, expect, ns, path, assertExits) {
+    it(`should check if path(${path}) exists(${assertExits})`, async () => {
+        const res = await request(common.config.getDirektivHost())
+            .get(`/api/v2/namespaces/${ns}/files-tree${path}`)
+
+        if(assertExits) {
+            expect(res.statusCode).toEqual(200)
+        } else {
+            expect(res.statusCode).toEqual(404)
+        }
+    })
+}
+
 
 
 
@@ -123,7 +177,7 @@ async function itShouldCreateDirectory(it, expect, ns, path) {
     })
 }
 
-async function itShouldUpdateFile(it, expect, ns, path, content) {
+async function itShouldUpdateFile(it, expect, ns, path, data) {
     it(`should update existing file ${path}`, async () => {
         const res = await request(common.config.getDirektivHost())
             .post(`/api/namespaces/${ns}/tree${path}?op=update-workflow`)
@@ -131,7 +185,7 @@ async function itShouldUpdateFile(it, expect, ns, path, content) {
                 'Content-Type': 'text/plain',
             })
 
-            .send(content)
+            .send(data)
 
         expect(res.statusCode).toEqual(200)
         expect(res.body).toMatchObject({
@@ -171,5 +225,8 @@ export default {
     itShouldCreateDirectory,
     dummyWorkflow,
     itShouldCreateDirV2,
-    itShouldCreateFileV2
+    itShouldCreateFileV2,
+    itShouldCheckPathExistsV2,
+    itShouldUpdatePathV2,
+    itShouldUpdateFileV2,
 }
