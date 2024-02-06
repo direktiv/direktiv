@@ -1,4 +1,4 @@
-import { EnvironementVariableSchemaType } from "~/api/services/schema/services";
+import { EnvVarSchemaType } from "~/api/services/schema/services";
 import { PatchSchemaType } from "~/pages/namespace/Explorer/Service/ServiceEditor/schema";
 import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
 import { headers } from "e2e/utils/testutils";
@@ -13,7 +13,7 @@ const createPatchesYaml = (patches?: PatchSchemaType[]) =>
         .join("")
     : "[]";
 
-const createEnvsYaml = (envs?: EnvironementVariableSchemaType[]) =>
+const createEnvsYaml = (envs?: EnvVarSchemaType[]) =>
   envs
     ? envs
         .map((item) => `\n  - name: "${item.name}"\n    value: "${item.value}"`)
@@ -27,7 +27,7 @@ type Service = {
   size: string;
   cmd: string;
   patches?: PatchSchemaType[];
-  envs?: EnvironementVariableSchemaType[];
+  envs?: EnvVarSchemaType[];
 };
 
 export const createServiceYaml = ({

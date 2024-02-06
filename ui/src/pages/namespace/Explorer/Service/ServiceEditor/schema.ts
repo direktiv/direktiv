@@ -1,4 +1,4 @@
-import { EnvironementVariableSchema } from "~/api/services/schema/services";
+import { EnvVarSchema } from "~/api/services/schema/services";
 import { z } from "zod";
 
 /**
@@ -36,7 +36,7 @@ export const ServiceFormSchema = z.object({
   size: z.string().optional(),
   cmd: z.string().optional(),
   patches: z.array(PatchSchema).optional(),
-  envs: z.array(EnvironementVariableSchema).optional(),
+  envs: z.array(EnvVarSchema).optional(),
 });
 
 export type PatchOperationType = z.infer<typeof PatchOperationSchema>;

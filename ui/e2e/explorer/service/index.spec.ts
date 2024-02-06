@@ -7,7 +7,7 @@ import { createNamespace, deleteNamespace } from "e2e/utils/namespace";
 import { createService, createServiceYaml } from "./utils";
 import { expect, test } from "@playwright/test";
 
-import { EnvironementVariableSchemaType } from "~/api/services/schema/services";
+import { EnvVarSchemaType } from "~/api/services/schema/services";
 import { faker } from "@faker-js/faker";
 
 let namespace = "";
@@ -99,7 +99,7 @@ test("it is possible to create a service", async ({ page }) => {
     .filter({ hasText: "Environment variables" });
 
   for (let i = 0; i < envs.length; i++) {
-    const item = envs[i] as EnvironementVariableSchemaType;
+    const item = envs[i] as EnvVarSchemaType;
     await expect(
       envsElement.getByPlaceholder("NAME"),
       "it renders one set of inputs for every existing env +1 empty set"
@@ -363,7 +363,7 @@ test("it is possible to edit environment variables", async ({ page }) => {
   );
 
   /* edit one item */
-  const updatedEnv: EnvironementVariableSchemaType = {
+  const updatedEnv: EnvVarSchemaType = {
     name: faker.lorem.word(),
     value: faker.git.shortSha(),
   };
@@ -375,13 +375,13 @@ test("it is possible to edit environment variables", async ({ page }) => {
   await page.getByTestId("env-name").nth(3).fill(updatedEnv.name);
   await page.getByTestId("env-value").nth(3).fill(updatedEnv.value);
 
-  let expectNewEnvs: EnvironementVariableSchemaType[];
+  let expectNewEnvs: EnvVarSchemaType[];
 
   expectNewEnvs = [
-    envs[1] as EnvironementVariableSchemaType,
-    envs[2] as EnvironementVariableSchemaType,
+    envs[1] as EnvVarSchemaType,
+    envs[2] as EnvVarSchemaType,
     updatedEnv,
-    envs[4] as EnvironementVariableSchemaType,
+    envs[4] as EnvVarSchemaType,
   ];
 
   /* delete items and assert rendered list is updated*/
@@ -389,9 +389,9 @@ test("it is possible to edit environment variables", async ({ page }) => {
   await page.getByTestId("env-item-form").nth(2).getByRole("button").click();
 
   expectNewEnvs = [
-    envs[1] as EnvironementVariableSchemaType,
-    envs[2] as EnvironementVariableSchemaType,
-    envs[4] as EnvironementVariableSchemaType,
+    envs[1] as EnvVarSchemaType,
+    envs[2] as EnvVarSchemaType,
+    envs[4] as EnvVarSchemaType,
   ];
 
   await Promise.all(
