@@ -10,7 +10,7 @@ import { Fieldset } from "~/components/Form/Fieldset";
 import FilePicker from "~/components/FilePicker";
 import Input from "~/design/Input";
 import NamespaceSelector from "~/components/NamespaceSelector";
-import { PluginWrapper } from "../components/Modal";
+import { PluginWrapper } from "../components/PluginSelector";
 import { treatEmptyStringAsUndefined } from "~/pages/namespace/Explorer/utils";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
