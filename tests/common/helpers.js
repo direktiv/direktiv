@@ -2,6 +2,7 @@ import request from 'supertest'
 
 import config from "./config";
 import common from "./index";
+import regex from "./regex";
 
 async function deleteAllNamespaces() {
     let listResponse = await request(config.getDirektivHost()).get(`/api/namespaces`)
@@ -49,6 +50,57 @@ async function itShouldCreateFile(it, expect, ns, path, content) {
         })
     })
 }
+
+async function itShouldCreateFileV2(it, expect, ns, path, name, type, mimeType, content) {
+    it(`should create a new file ${path}`, async () => {
+        const res = await request(common.config.getDirektivHost())
+            .post(`/api/v2/namespaces/${ns}/files-tree/create${path}`)
+            .set('Content-Type', 'application/json')
+            .send({
+                name: name,
+                type: type,
+                mimeType: mimeType,
+                content:  btoa(content),
+            })
+        expect(res.statusCode).toEqual(200)
+        if (path === "/") {
+            path = ""
+        }
+        expect(res.body.data).toMatchObject({
+            path: `${path}/${name}`,
+            type: type,
+            createdAt: expect.stringMatching(regex.timestampRegex),
+            updatedAt: expect.stringMatching(regex.timestampRegex),
+        })
+    })
+}
+
+
+async function itShouldCreateDirV2(it, expect, ns, path, name) {
+    it(`should create a new dir ${path}`, async () => {
+        const res = await request(common.config.getDirektivHost())
+            .post(`/api/v2/namespaces/${ns}/files-tree/create${path}`)
+            .set('Content-Type', 'application/json')
+            .send({
+                name: name,
+                type: "directory",
+            })
+        expect(res.statusCode).toEqual(200)
+        if(path === "/") {
+            path = ""
+        }
+        expect(res.body.data).toMatchObject({
+            path: `${path}/${name}`,
+            type: "directory",
+            createdAt: expect.stringMatching(regex.timestampRegex),
+            updatedAt: expect.stringMatching(regex.timestampRegex),
+        })
+    })
+}
+
+
+
+
 
 function dummyWorkflow(someText) {
     return `
@@ -119,4 +171,6 @@ export default {
     itShouldUpdateFile,
     itShouldCreateDirectory,
     dummyWorkflow,
+    itShouldCreateDirV2,
+    itShouldCreateFileV2
 }

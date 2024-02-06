@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
@@ -96,6 +97,14 @@ func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.F
 	// check if root exists.
 	if err = q.checkRootExists(ctx); err != nil {
 		return nil, err
+	}
+
+	// check if file type is allowed.
+	allowedTypes := []string{"directory", "file", "workflow", "service", "endpoint", "consumer"}
+	if !slices.Contains(allowedTypes, string(typ)) {
+		return nil, fmt.Errorf("%w: %w",
+			filestore.ErrInvalidPathParameter,
+			fmt.Errorf("file type: %s is not allowed", typ))
 	}
 
 	count := 0
