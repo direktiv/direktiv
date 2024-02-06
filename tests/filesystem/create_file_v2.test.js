@@ -68,7 +68,7 @@ describe('Test filesystem tree read operations', () => {
                         type: "workflow",
                         createdAt: expect.stringMatching(regex.timestampRegex),
                         updatedAt: expect.stringMatching(regex.timestampRegex),
-                        size: 129,
+                        size: 134,
                     },
                 ]
             }

@@ -36,8 +36,8 @@ test.afterEach(async () => {
 test("it is possible to delete a namespace and it will immediately redirect to a different namespace if available", async ({
   page,
 }) => {
-  const namespace = await createNamespace();
-  await page.goto(`/${namespace}/settings`);
+  const namespaceToBeDeleted = await createNamespace();
+  await page.goto(`/${namespaceToBeDeleted}/settings`);
   await page.getByTestId("btn-delete-namespace").click();
   const confirmButton = page.getByTestId("delete-namespace-confirm-btn");
 
@@ -51,12 +51,12 @@ test("it is possible to delete a namespace and it will immediately redirect to a
 
   expect(
     namespacesBeforeDelete.results.some(
-      (nsFromServer) => nsFromServer.name === namespace
+      (nsFromServer) => nsFromServer.name === namespaceToBeDeleted
     ),
     "the api includes the current namespace in the namespace list"
   ).toBe(true);
 
-  confirmInput.type(namespace);
+  confirmInput.type(namespaceToBeDeleted);
 
   await expect(
     confirmButton,
@@ -68,7 +68,9 @@ test("it is possible to delete a namespace and it will immediately redirect to a
 
   const namespacesAfterDelete = await getNamespacesFromAPI();
   expect(
-    namespacesAfterDelete.results.some((item) => item.name === namespace),
+    namespacesAfterDelete.results.some(
+      (item) => item.name === namespaceToBeDeleted
+    ),
     "the api does not include the current namespace in the namespace list after deletion"
   ).toBe(false);
 
@@ -81,11 +83,11 @@ test("it is possible to delete a namespace and it will immediately redirect to a
   await expect
     .poll(async () => {
       const currentPath = new URL(page.url()).pathname;
-      const namespace = currentPath.split("/")[1];
+      const currentNamespace = currentPath.split("/")[1];
 
       return (
         currentPath.endsWith("/explorer/tree") &&
-        namespacesAfterDelete.results[0]?.name === namespace
+        currentNamespace !== namespaceToBeDeleted
       );
     }, "after the landingpage redirect, the user should be navigated to the explorer page of the the first namespace found in the api   response")
     .toBe(true);

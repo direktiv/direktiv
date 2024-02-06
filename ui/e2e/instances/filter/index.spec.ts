@@ -149,7 +149,7 @@ test("it is possible to filter by date using created before", async ({
 
   const today = new Date().getDate();
 
-  await page.getByText(today.toString(), { exact: true }).click();
+  await page.getByText(today.toString(), { exact: true }).last().click();
   await expect(
     page.getByTestId(/instance-row/),
     "there should be 0 rows when we filter before today"

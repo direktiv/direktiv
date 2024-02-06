@@ -54,7 +54,7 @@ async function itShouldCreateFile(it, expect, ns, path, content) {
 async function itShouldCreateFileV2(it, expect, ns, path, name, type, mimeType, content) {
     it(`should create a new file ${path}`, async () => {
         const res = await request(common.config.getDirektivHost())
-            .post(`/api/v2/namespaces/${ns}/files-tree/create${path}`)
+            .post(`/api/v2/namespaces/${ns}/files-tree${path}`)
             .set('Content-Type', 'application/json')
             .send({
                 name: name,
@@ -79,7 +79,7 @@ async function itShouldCreateFileV2(it, expect, ns, path, name, type, mimeType, 
 async function itShouldCreateDirV2(it, expect, ns, path, name) {
     it(`should create a new dir ${path}`, async () => {
         const res = await request(common.config.getDirektivHost())
-            .post(`/api/v2/namespaces/${ns}/files-tree/create${path}`)
+            .post(`/api/v2/namespaces/${ns}/files-tree${path}`)
             .set('Content-Type', 'application/json')
             .send({
                 name: name,
@@ -101,11 +101,10 @@ async function itShouldCreateDirV2(it, expect, ns, path, name) {
 
 
 
-
 function dummyWorkflow(someText) {
     return `
 direktiv_api: workflow/v1
-description: A simple 'no-op' state that returns 'Hello world!'
+description: A simple 'no-op' state that returns ${someText} 'Hello world!'
 states:
 - id: helloworld
   type: noop

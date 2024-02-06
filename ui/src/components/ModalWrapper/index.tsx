@@ -7,13 +7,13 @@ import {
 import { FC, PropsWithChildren } from "react";
 
 import Button from "~/design/Button";
-import { Card } from "~/design/Card";
 import { useTranslation } from "react-i18next";
 
 type ModalWrapperProps = PropsWithChildren & {
   title: string;
   formId?: string;
   showSaveBtn?: boolean;
+  onCancel: () => void;
 };
 
 export const ModalWrapper: FC<ModalWrapperProps> = ({
@@ -21,6 +21,7 @@ export const ModalWrapper: FC<ModalWrapperProps> = ({
   showSaveBtn = true,
   children,
   formId,
+  onCancel,
 }) => {
   const { t } = useTranslation();
   return (
@@ -31,33 +32,16 @@ export const ModalWrapper: FC<ModalWrapperProps> = ({
       <div className="flex max-h-[70vh] flex-col gap-5 overflow-y-auto p-[1px]">
         {children}
       </div>
-      {showSaveBtn && (
-        <DialogFooter>
+      <DialogFooter>
+        <Button type="button" variant="ghost" onClick={onCancel}>
+          {t("components.modalWrapper.cancelBtn")}
+        </Button>
+        {showSaveBtn && (
           <Button type="submit" form={formId ?? undefined}>
-            {t("pages.explorer.endpoint.editor.form.plugins.saveBtn")}
+            {t("components.modalWrapper.saveBtn")}
           </Button>
-        </DialogFooter>
-      )}
+        )}
+      </DialogFooter>
     </DialogContent>
   );
 };
-
-type PluginSelectorProps = PropsWithChildren & {
-  title: string;
-};
-
-export const PluginSelector: FC<PluginSelectorProps> = ({
-  title,
-  children,
-}) => (
-  <fieldset className="flex items-center gap-5">
-    <label className="text-sm">{title}</label>
-    {children}
-  </fieldset>
-);
-
-export const PluginWrapper: FC<PropsWithChildren> = ({ children }) => (
-  <Card className="flex flex-col gap-5 p-5" noShadow>
-    {children}
-  </Card>
-);

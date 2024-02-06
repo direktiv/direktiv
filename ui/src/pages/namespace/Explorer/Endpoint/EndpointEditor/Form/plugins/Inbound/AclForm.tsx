@@ -8,7 +8,7 @@ import FormErrors, { errorsType } from "~/components/FormErrors";
 
 import { ArrayInput } from "~/components/Form/ArrayInput";
 import { Fieldset } from "~/components/Form/Fieldset";
-import { PluginWrapper } from "../components/Modal";
+import { PluginWrapper } from "../components/PluginSelector";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
