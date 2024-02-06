@@ -4,9 +4,9 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/events"
-	"github.com/direktiv/direktiv/pkg/refactor/logcollection"
 	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
+	"github.com/direktiv/direktiv/pkg/refactor/plattform_logs"
 	"gorm.io/gorm"
 )
 
@@ -47,7 +47,7 @@ func (s *sqlStore) Logs() logengine.LogStore {
 	}
 }
 
-func (s *sqlStore) NewLogs() logcollection.LogStore {
+func (s *sqlStore) NewLogs() plattform_logs.LogStore {
 	return &sqlLogNewStore{
 		db: s.db,
 	}

@@ -1,4 +1,4 @@
-package logcollection
+package api
 
 import (
 	"context"
@@ -11,20 +11,21 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/plattform_logs"
 )
 
-type Manager struct {
-	store LogStore
+type logController struct {
+	store plattform_logs.LogStore
 }
 
-func NewManger(store LogStore) Manager {
-	return Manager{
+func NewLogManager(store plattform_logs.LogStore) core.LogCollectionManager {
+	return logController{
 		store: store,
 	}
 }
 
-func (m *Manager) Get(ctx context.Context, cursorTime time.Time, params map[string]string) ([]core.FeatureLogEntry, error) {
-	var r []LogEntry
+func (m logController) Get(ctx context.Context, cursorTime time.Time, params map[string]string) ([]core.FeatureLogEntry, error) {
+	var r []plattform_logs.LogEntry
 	var err error
 
 	// Determine the stream based on the provided parameters
@@ -46,7 +47,7 @@ func (m *Manager) Get(ctx context.Context, cursorTime time.Time, params map[stri
 
 	res := loglist{}
 	for _, le := range r {
-		e, err := le.toFeatureLogEntry()
+		e, err := le.ToFeatureLogEntry()
 		if err != nil {
 			return []core.FeatureLogEntry{}, err
 		}
@@ -68,7 +69,7 @@ func (m *Manager) Get(ctx context.Context, cursorTime time.Time, params map[stri
 }
 
 // Stream handles the SSE endpoint.
-func (m *Manager) Stream(params map[string]string) http.HandlerFunc {
+func (m logController) Stream(params map[string]string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Set the appropriate headers for SSE
 		w.Header().Set("Content-Type", "text/event-stream")
@@ -129,28 +130,6 @@ func (m *Manager) Stream(params map[string]string) http.HandlerFunc {
 	}
 }
 
-func (e LogEntry) toFeatureLogEntry() (core.FeatureLogEntry, error) {
-	entry, ok := e.Data["entry"].(string)
-	if !ok {
-		return core.FeatureLogEntry{}, fmt.Errorf("log-entry format is corrupt")
-	}
-
-	var m map[string]interface{}
-	if err := json.Unmarshal([]byte(entry), &m); err != nil {
-		return core.FeatureLogEntry{}, fmt.Errorf("failed to unmarshal log entry: %w", err)
-	}
-
-	return core.FeatureLogEntry{
-		Time:     e.Time,
-		Msg:      fmt.Sprint(m["msg"]),
-		Level:    fmt.Sprint(m["level"]),
-		Trace:    fmt.Sprint(m["trace"]),
-		State:    fmt.Sprint(m["state"]),
-		Branch:   fmt.Sprint(m["branch"]),
-		Metadata: map[string]string{},
-	}, nil
-}
-
 type loglist []core.FeatureLogEntry
 
 func (e *loglist) filterByBranch(branch string) {
@@ -196,4 +175,51 @@ func determineStream(params map[string]string) (string, error) {
 	}
 
 	return "", fmt.Errorf("requested logs for an unknown type")
+}
+
+// LogStoreWorker manages the log polling and channel communication.
+type logStoreWorker struct {
+	Get      func(ctx context.Context, cursorTime time.Time, params map[string]string) ([]core.FeatureLogEntry, error)
+	Interval time.Duration
+	LogCh    chan string
+	Params   map[string]string
+	Cursor   time.Time // Cursor instead of Offset
+}
+
+// Start starts the log polling worker.
+func (lw *logStoreWorker) start(ctx context.Context) {
+	go func() {
+		ticker := time.NewTicker(lw.Interval)
+		defer ticker.Stop()
+		defer close(lw.LogCh)
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				slog.Info("data", "message", lw.Params)
+				logs, err := lw.Get(ctx, lw.Cursor, lw.Params)
+				if err != nil {
+					slog.Error("TODO: should we quit with an error?", "error", err)
+
+					continue
+				}
+				for _, fle := range logs {
+					b, err := json.Marshal(fle)
+					if err != nil {
+						slog.Error("TODO: should we quit with an error?", "error", err)
+
+						continue
+					}
+					slog.Info("data", "message", string(b))
+					lw.LogCh <- string(b)
+				}
+
+				// Update cursorTime for the next iteration
+				if len(logs) > 0 {
+					lw.Cursor = logs[len(logs)-1].Time
+				}
+			}
+		}
+	}()
 }
