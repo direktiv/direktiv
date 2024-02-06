@@ -1,5 +1,3 @@
-import { compareYamlStructure, jsonToYaml } from "../../utils";
-
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
@@ -10,6 +8,7 @@ import { Form } from "./Form";
 import FormErrors from "~/components/FormErrors";
 import { Save } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
+import { jsonToYaml } from "../../utils";
 import { serializeConsumerFile } from "./utils";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useTheme } from "~/util/store/theme";
@@ -51,10 +50,7 @@ const ConsumerEditor: FC<ConsumerEditorProps> = ({ data, path }) => {
         values,
       }) => {
         const preview = jsonToYaml(values);
-        const filehasChanged = compareYamlStructure(
-          preview,
-          fileContentFromServer
-        );
+        const filehasChanged = preview === fileContentFromServer;
         const isDirty = !consumerConfigError && !filehasChanged;
         const disableButton = isLoading || !!consumerConfigError;
 
@@ -99,7 +95,7 @@ const ConsumerEditor: FC<ConsumerEditorProps> = ({ data, path }) => {
               <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
                 {isDirty && (
                   <div className="text-sm text-gray-8 dark:text-gray-dark-8">
-                    <span className="text-center">
+                    <span className="text-center" data-testid="unsaved-note">
                       {t("pages.explorer.consumer.editor.unsavedNote")}
                     </span>
                   </div>

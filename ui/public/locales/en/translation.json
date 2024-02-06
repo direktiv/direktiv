@@ -224,7 +224,7 @@
               "placeholder": "Select a scale"
             },
             "size": {
-              "label": "Size", 
+              "label": "Size",
               "placeholder": "Select a size"
             },
             "cmd": "Cmd",
@@ -1181,6 +1181,25 @@
       "placeholder": "Select Namespace",
       "loading": "loading...",
       "optionDoesNotExist": "{{namespace}} (does not exist)"
+    },
+    "namespaceVariablepicker": {
+      "title": "Variables in \"{{path}}\"",
+      "buttonText": "Browse Variables",
+      "placeholder": "No Variable selected",
+      "error": {
+        "pathNotFound": "The directory \"{{path}}\" was not found.",
+        "noVarsInNamespace": "No Variables found"
+      }
+    },
+    "workflowVariablepicker": {
+      "title": "Variables in \"{{path}}\"",
+      "buttonText": "Browse Variables",
+      "placeholder": "No Variable selected",
+      "error": {
+        "pathNotFound": "The workflow \"{{path}}\" was not found.",
+        "noVarsInWorkflow": "No Variables found in \"{{path}}\"",
+        "unselected": "Please select a workflow first."
+      }
     },
     "filepicker": {
       "buttonText": "Browse Files",

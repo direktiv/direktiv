@@ -93,4 +93,30 @@ route:
               description: configuration for the plugin. can be of any type.
               nullable: true
               example: 
-                flow: /directory/myflow.yaml 
+                flow: /directory/myflow.yaml
+
+FileNodeWithoutData:
+  type: object
+  description: filesystem node data
+  properties:
+    path:
+      type: string
+      description: path of the node
+    type:
+      type: string
+      enum: [ directory, file, workflow, service, endpoint, consumer ]
+      description: type of the node
+    mimeType:
+      type: string
+      description: (only with type != directory) mime type of the file content
+    size:
+      type: number
+      description: (only with type != directory) file size in bytes
+    createdAt:
+      type: string
+      description: timestamp of node creation date
+    updatedAt:
+      type: string
+      description: timestamp of node last updating date
+
+
