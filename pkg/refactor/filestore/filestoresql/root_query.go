@@ -129,17 +129,17 @@ func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.F
 
 	// first, we need to create a file entry for this new file.
 	f := &filestore.File{
-		ID:       uuid.New(),
-		Path:     path,
-		Depth:    filestore.GetPathDepth(path),
-		Typ:      typ,
-		RootID:   q.rootID,
-		MIMEType: mimeType,
+		ID:     uuid.New(),
+		Path:   path,
+		Depth:  filestore.GetPathDepth(path),
+		Typ:    typ,
+		RootID: q.rootID,
 	}
 
 	if typ != filestore.FileTypeDirectory {
 		f.Data = data
 		f.Checksum = string(q.checksumFunc(data))
+		f.MIMEType = mimeType
 	}
 
 	res := q.db.WithContext(ctx).Table("filesystem_files").Create(f)
