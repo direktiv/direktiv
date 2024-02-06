@@ -104,7 +104,7 @@ async function itShouldCreateDirV2(it, expect, ns, path, name) {
 function dummyWorkflow(someText) {
     return `
 direktiv_api: workflow/v1
-description: A simple 'no-op' state that returns 'Hello world!'
+description: A simple 'no-op' state that returns ${someText} 'Hello world!'
 states:
 - id: helloworld
   type: noop
