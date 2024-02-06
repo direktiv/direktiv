@@ -21,9 +21,14 @@ const (
 	FileTypeDirectory FileType = "directory"
 )
 
-const (
-	Latest = "latest"
-)
+var AllFileTypes = []FileType{
+	FileTypeWorkflow,
+	FileTypeEndpoint,
+	FileTypeConsumer,
+	FileTypeService,
+	FileTypeFile,
+	FileTypeDirectory,
+}
 
 // File represents a file in the filestore, File can be either ordinary file or directory.
 // nolint:tagliatelle
