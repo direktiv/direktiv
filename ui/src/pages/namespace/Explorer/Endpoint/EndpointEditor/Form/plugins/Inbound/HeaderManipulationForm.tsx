@@ -8,7 +8,8 @@ import {
 
 import { ArrayInput } from "~/components/Form/ArrayInput";
 import { Fieldset } from "~/components/Form/Fieldset";
-import ObjArrayInput from "~/components/Form/ObjArrayInput";
+import Input from "~/design/Input";
+import { ObjArrayInput } from "~/components/Form/ObjArrayInput";
 import { PluginWrapper } from "../components/Modal";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -78,6 +79,26 @@ export const HeaderManipulationForm: FC<FormProps> = ({
                 onChange={(changedValue) => {
                   field.onChange(changedValue);
                 }}
+                emptyItem={{ name: "", value: "" }}
+                itemIsValid={(item) => !!(item?.name && item?.value)}
+                renderItem={({ state, setState, onChange, handleKeyDown }) => (
+                  <>
+                    {Object.entries(state).map(([key, value]) => (
+                      <Input
+                        placeholder={key} // TODO: move to translation file
+                        key={key}
+                        value={value}
+                        onKeyDown={handleKeyDown}
+                        onChange={(e) => {
+                          const newVal = { [key]: e.target.value };
+                          const newState = { ...state, ...newVal };
+                          setState(newState);
+                          onChange(newState);
+                        }}
+                      />
+                    ))}
+                  </>
+                )}
               />
             )}
           />
@@ -97,6 +118,29 @@ export const HeaderManipulationForm: FC<FormProps> = ({
                 onChange={(changedValue) => {
                   field.onChange(changedValue);
                 }}
+                emptyItem={{
+                  name: "",
+                  value: "",
+                }}
+                itemIsValid={(item) => !!(item?.name && item?.value)}
+                renderItem={({ state, setState, onChange, handleKeyDown }) => (
+                  <>
+                    {Object.entries(state).map(([key, value]) => (
+                      <Input
+                        placeholder={key} // TODO: move to translation file
+                        key={key}
+                        value={value}
+                        onKeyDown={handleKeyDown}
+                        onChange={(e) => {
+                          const newVal = { [key]: e.target.value };
+                          const newState = { ...state, ...newVal };
+                          setState(newState);
+                          onChange(newState);
+                        }}
+                      />
+                    ))}
+                  </>
+                )}
               />
             )}
           />

@@ -1,23 +1,33 @@
-import { FC, useState } from "react";
-
 import { ItemForm } from "./ItemForm";
-import { UnknownObjectOfStrings } from "./types";
+import { RenderItemType } from "./types";
+import { useState } from "react";
 
-type ObjArrayInputProps = {
-  defaultValue: UnknownObjectOfStrings[];
-  onChange: (newValue: UnknownObjectOfStrings[]) => void;
-};
+type ObjArrayInputType = <T extends Readonly<unknown>>(props: {
+  defaultValue: Readonly<T>[];
+  emptyItem: T;
+  onChange: (newValue: T[]) => void;
+  itemIsValid?: (item?: T) => boolean;
+  renderItem: RenderItemType<T>;
+}) => JSX.Element;
 
-const ObjArrayInput: FC<ObjArrayInputProps> = ({ defaultValue, onChange }) => {
+export const ObjArrayInput: ObjArrayInputType = ({
+  defaultValue,
+  emptyItem,
+  renderItem,
+  onChange,
+  itemIsValid = () => true,
+}) => {
   const [items, setItems] = useState(defaultValue);
 
-  const addItem = (newItem: UnknownObjectOfStrings) => {
+  type OneItem = (typeof items)[number];
+
+  const addItem = (newItem: OneItem) => {
     const newValue = [...items, newItem];
     setItems(newValue);
     onChange(newValue);
   };
 
-  const updateAtIndex = (index: number, value: UnknownObjectOfStrings) => {
+  const updateAtIndex = (index: number, value: OneItem) => {
     const newItems = items.map((oldValue, oldIndex) => {
       if (oldIndex === index) {
         return value;
@@ -40,13 +50,20 @@ const ObjArrayInput: FC<ObjArrayInputProps> = ({ defaultValue, onChange }) => {
         <ItemForm
           key={`${items.length}-${index}`}
           item={item}
+          itemIsValid={itemIsValid}
+          renderItem={renderItem}
           onUpdate={(value) => updateAtIndex(index, value)}
           onDelete={() => deleteAtIndex(index)}
         />
       ))}
-      <ItemForm onAdd={addItem} />
+      <div>
+        <ItemForm
+          item={emptyItem}
+          itemIsValid={itemIsValid}
+          renderItem={renderItem}
+          onAdd={addItem}
+        />
+      </div>
     </>
   );
 };
-
-export default ObjArrayInput;

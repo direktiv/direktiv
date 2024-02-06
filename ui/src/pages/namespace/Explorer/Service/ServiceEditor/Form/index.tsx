@@ -23,7 +23,7 @@ import {
 import { FC } from "react";
 import { Fieldset } from "~/components/Form/Fieldset";
 import Input from "~/design/Input";
-import ObjArrayInput from "../../../../../../components/Form/ObjArrayInput";
+import { ObjArrayInput } from "../../../../../../components/Form/ObjArrayInput";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -152,6 +152,29 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
                 onChange={(changedValue) => {
                   field.onChange(changedValue);
                 }}
+                emptyItem={{ name: "", value: "" }}
+                itemIsValid={(item) => !!(item?.name && item?.value)}
+                renderItem={({ state, setState, onChange, handleKeyDown }) => (
+                  <>
+                    {Object.entries(state).map(([key, value]) => (
+                      <Input
+                        key={key}
+                        data-testid={`env-${key}`}
+                        placeholder={t(
+                          `pages.explorer.service.editor.form.envs.${key}Placeholder`
+                        )}
+                        value={value}
+                        onKeyDown={handleKeyDown}
+                        onChange={(e) => {
+                          const newVal = { [key]: e.target.value };
+                          const newState = { ...state, ...newVal };
+                          setState(newState);
+                          onChange(newState);
+                        }}
+                      />
+                    ))}
+                  </>
+                )}
               />
             )}
           />

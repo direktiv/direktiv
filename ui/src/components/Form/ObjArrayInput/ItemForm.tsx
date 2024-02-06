@@ -1,42 +1,38 @@
-import { FC, KeyboardEvent, useState } from "react";
+import { KeyboardEvent, useState } from "react";
 import { Plus, X } from "lucide-react";
 
 import Button from "~/design/Button";
-import Input from "~/design/Input";
-import { UnknownObjectOfStrings } from "./types";
+import { RenderItemType } from "./types";
 
-type ItemFormProps = {
-  item?: UnknownObjectOfStrings;
-  onAdd?: (value: UnknownObjectOfStrings) => void;
-  onUpdate?: (value: UnknownObjectOfStrings) => void;
+type ObjArrayInputType = <T extends Readonly<unknown>>(props: {
+  item: T;
+  renderItem: RenderItemType<T>;
+  itemIsValid: (item?: T) => boolean;
+  onAdd?: (value: T) => void;
+  onUpdate?: (value: T) => void;
   onDelete?: () => void;
-};
+}) => JSX.Element;
 
-export const ItemForm: FC<ItemFormProps> = ({
+export const ItemForm: ObjArrayInputType = ({
   item,
+  renderItem,
+  itemIsValid,
   onAdd,
   onUpdate,
   onDelete,
 }) => {
-  const emptyItem = {
-    name: "",
-    value: "",
-  };
+  type Item = typeof item;
+  const [state, setState] = useState<Item>(item);
 
-  const [state, setState] = useState<UnknownObjectOfStrings>(item || emptyItem);
-
-  const handleChange = (object: Partial<UnknownObjectOfStrings>) => {
-    const newState = { ...state, ...object };
-    setState(newState);
+  const handleChange = (newState: Item) => {
     onUpdate && onUpdate(newState);
   };
 
-  const isValid = state?.name && state?.value;
+  const isValid = itemIsValid(state);
 
   const handleAdd = () => {
-    if (!onAdd) return;
+    if (!onAdd || !state) return;
     onAdd(state);
-    setState(emptyItem);
   };
 
   const handleDelete = () => {
@@ -46,48 +42,28 @@ export const ItemForm: FC<ItemFormProps> = ({
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (!isValid) return;
     if (event.key === "Enter") {
-      if (!onAdd) return;
       event.preventDefault();
+      if (!onAdd) return;
       event.currentTarget.blur();
       handleAdd();
+      // set back to default value
+      setState(item);
     }
   };
 
   return (
     <div className="flex gap-3" data-testid="env-item-form">
-      {Object.keys(state).map((key) => (
-        <Input
-          key={key}
-          value={state[key]}
-          onChange={(event) => handleChange({ [key]: event.target.value })}
-          onKeyDown={handleKeyDown}
-          placeholder={key}
-          data-testid={`env-${key}`}
-        />
-      ))}
-      {/* <Input
-        value={state.name}
-        onChange={(event) => handleChange({ name: event.target.value })}
-        onKeyDown={handleKeyDown}
-        placeholder={t(
-          "pages.explorer.service.editor.form.envs.namePlaceholder"
-        )}
-        data-testid="env-name"
-      />
-      <Input
-        value={state.value}
-        onChange={(event) => handleChange({ value: event.target.value })}
-        onKeyDown={handleKeyDown}
-        placeholder={t(
-          "pages.explorer.service.editor.form.envs.valuePlaceholder"
-        )}
-        data-testid="env-value"
-      /> */}
+      {renderItem({
+        state,
+        setState,
+        onChange: handleChange,
+        handleKeyDown,
+      })}
       {onAdd && (
         <Button
           type="button"
           variant="outline"
-          onClick={() => handleAdd()}
+          onClick={handleAdd}
           disabled={!isValid}
         >
           <Plus />
