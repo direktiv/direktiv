@@ -30,7 +30,6 @@ describe('Test filesystem tree read operations', () => {
                         type: "directory",
                         createdAt: expect.stringMatching(regex.timestampRegex),
                         updatedAt: expect.stringMatching(regex.timestampRegex),
-
                     },
                     {
                         path: "/dir2",
@@ -69,7 +68,7 @@ describe('Test filesystem tree read operations', () => {
                         type: "workflow",
                         createdAt: expect.stringMatching(regex.timestampRegex),
                         updatedAt: expect.stringMatching(regex.timestampRegex),
-
+                        size: 129,
                     },
                 ]
             }
