@@ -11,21 +11,21 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/direktiv/direktiv/pkg/refactor/plattform_logs"
+	"github.com/direktiv/direktiv/pkg/refactor/plattformlogs"
 )
 
 type logController struct {
-	store plattform_logs.LogStore
+	store plattformlogs.LogStore
 }
 
-func NewLogManager(store plattform_logs.LogStore) core.LogCollectionManager {
+func NewLogManager(store plattformlogs.LogStore) core.LogCollectionManager {
 	return logController{
 		store: store,
 	}
 }
 
 func (m logController) Get(ctx context.Context, cursorTime time.Time, params map[string]string) ([]core.FeatureLogEntry, error) {
-	var r []plattform_logs.LogEntry
+	var r []plattformlogs.LogEntry
 	var err error
 
 	// Determine the stream based on the provided parameters

@@ -5,11 +5,11 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/refactor/plattform_logs"
+	"github.com/direktiv/direktiv/pkg/refactor/plattformlogs"
 	"gorm.io/gorm"
 )
 
-var _ plattform_logs.LogStore = &sqlLogNewStore{}
+var _ plattformlogs.LogStore = &sqlLogNewStore{}
 
 const pageSize = 200
 
@@ -23,7 +23,7 @@ type ScanResult struct {
 	Data []byte
 }
 
-func (s sqlLogNewStore) Get(ctx context.Context, stream string, cursorTime time.Time) ([]plattform_logs.LogEntry, error) {
+func (s sqlLogNewStore) Get(ctx context.Context, stream string, cursorTime time.Time) ([]plattformlogs.LogEntry, error) {
 	query := `
         SELECT time, tag, data
         FROM fluentbit
@@ -40,7 +40,7 @@ func (s sqlLogNewStore) Get(ctx context.Context, stream string, cursorTime time.
 	return convertScanResults(resultList)
 }
 
-func (s sqlLogNewStore) GetInstanceLogs(ctx context.Context, stream string, cursorTime time.Time) ([]plattform_logs.LogEntry, error) {
+func (s sqlLogNewStore) GetInstanceLogs(ctx context.Context, stream string, cursorTime time.Time) ([]plattformlogs.LogEntry, error) {
 	query := `
         SELECT time, tag, data
         FROM fluentbit
@@ -57,8 +57,8 @@ func (s sqlLogNewStore) GetInstanceLogs(ctx context.Context, stream string, curs
 	return convertScanResults(resultList)
 }
 
-func convertScanResults(scanResults []ScanResult) ([]plattform_logs.LogEntry, error) {
-	resultList := make([]plattform_logs.LogEntry, 0)
+func convertScanResults(scanResults []ScanResult) ([]plattformlogs.LogEntry, error) {
+	resultList := make([]plattformlogs.LogEntry, 0)
 
 	for _, result := range scanResults {
 		var dataMap map[string]interface{}
@@ -67,7 +67,7 @@ func convertScanResults(scanResults []ScanResult) ([]plattform_logs.LogEntry, er
 			return nil, err
 		}
 
-		resultList = append(resultList, plattform_logs.LogEntry{
+		resultList = append(resultList, plattformlogs.LogEntry{
 			Time: result.Time,
 			Tag:  result.Tag,
 			Data: dataMap,

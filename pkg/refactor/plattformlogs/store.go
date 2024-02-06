@@ -1,4 +1,4 @@
-package plattform_logs
+package plattformlogs
 
 import (
 	"context"
