@@ -10,6 +10,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/go-chi/chi/v5"
+	"gopkg.in/yaml.v3"
 )
 
 type fsController struct {
@@ -19,7 +20,8 @@ type fsController struct {
 func (e *fsController) mountRouter(r chi.Router) {
 	r.Get("/*", e.read)
 	r.Delete("/*", e.delete)
-	r.Post("/create/*", e.createFile)
+
+	r.Post("/*", e.createFile)
 }
 
 func (e *fsController) read(w http.ResponseWriter, r *http.Request) {
@@ -128,18 +130,30 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Validate if content is valid base64 encoded string.
 	decodedBytes, err := base64.StdEncoding.DecodeString(req.Content)
 	if err != nil && req.Typ != filestore.FileTypeDirectory {
 		writeError(w, &Error{
 			Code:    "request_data_invalid",
-			Message: "content filed has invalid base64 string",
+			Message: "file content has invalid base64 string",
+		})
+
+		return
+	}
+	// Validate if content is valid yaml with direktiv files.
+	isDirektivFile := req.Typ != filestore.FileTypeDirectory && req.Typ != filestore.FileTypeFile
+	var data struct{}
+	if err = yaml.Unmarshal(decodedBytes, &data); err != nil && isDirektivFile {
+		writeError(w, &Error{
+			Code:    "request_data_invalid",
+			Message: "file content has invalid yaml string",
 		})
 
 		return
 	}
 
-	// Create file
-	path := strings.Split(r.URL.Path, "/files-tree/create")[1]
+	// Create file.
+	path := strings.Split(r.URL.Path, "/files-tree")[1]
 	newFile, err := fStore.ForNamespace(ns.Name).CreateFile(r.Context(),
 		"/"+path+"/"+req.Name,
 		req.Typ,
