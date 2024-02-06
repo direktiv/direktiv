@@ -136,11 +136,15 @@ func (events *events) processWorkflowEvents(ctx context.Context, nsID uuid.UUID,
 		case "eventsAnd":
 			fEv.TriggerType = pkgevents.StartAnd // TODO: is this correct?
 		}
+		contextFilters := make([]string, 0, len(ms.Events))
 		for _, sed := range ms.Events {
 			fEv.ListeningForEventTypes = append(fEv.ListeningForEventTypes, sed.Type)
+			gateKeeper := ""
 			for k, v := range sed.Context {
 				fEv.GlobGatekeepers[sed.Type+"-"+k] = fmt.Sprintf("%v", v)
+				gateKeeper += fmt.Sprintf(" %v %v", k, v)
 			}
+			contextFilters = append(contextFilters, gateKeeper)
 		}
 
 		err := events.runSqlTx(ctx, func(tx *sqlTx) error {
@@ -149,8 +153,8 @@ func (events *events) processWorkflowEvents(ctx context.Context, nsID uuid.UUID,
 				return err
 			}
 
-			for _, t := range fEv.ListeningForEventTypes {
-				err = tx.DataStore().EventListenerTopics().Append(ctx, nsID, fEv.ID, nsID.String()+"-"+t)
+			for i, t := range fEv.ListeningForEventTypes {
+				err = tx.DataStore().EventListenerTopics().Append(ctx, nsID, fEv.ID, nsID.String()+"-"+t, contextFilters[i])
 				if err != nil {
 					return err
 				}
@@ -185,12 +189,15 @@ func (events *events) addInstanceEventListener(ctx context.Context, namespace, i
 		// LifespanOfReceivedEvents: , TODO?
 		GlobGatekeepers: make(map[string]string),
 	}
+	contextFilters := make([]string, 0, len(sevents))
 
 	for _, ced := range sevents {
 		fEv.ListeningForEventTypes = append(fEv.ListeningForEventTypes, ced.Type)
+		gateKeeper := ""
 		for k, v := range ced.Context {
 			fEv.GlobGatekeepers[ced.Type+"-"+k] = fmt.Sprintf("%v", v)
 		}
+		contextFilters = append(contextFilters, gateKeeper)
 	}
 	if all {
 		fEv.TriggerType = pkgevents.WaitAnd
@@ -204,9 +211,8 @@ func (events *events) addInstanceEventListener(ctx context.Context, namespace, i
 		if err != nil {
 			return err
 		}
-
-		for _, t := range fEv.ListeningForEventTypes {
-			err = tx.DataStore().EventListenerTopics().Append(ctx, namespace, fEv.ID, namespace.String()+"-"+t)
+		for i, t := range fEv.ListeningForEventTypes {
+			err = tx.DataStore().EventListenerTopics().Append(ctx, namespace, fEv.ID, namespace.String()+"-"+t, contextFilters[i])
 			if err != nil {
 				return err
 			}
