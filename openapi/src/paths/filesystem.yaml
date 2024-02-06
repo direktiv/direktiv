@@ -56,3 +56,30 @@
     responses:
       "200":
         description: filesystem tree node deleted successfully
+
+
+/api/v2/namespaces/{namespace}/files-tree/create:
+  post:
+    tags:
+      - files-tree
+    summary: Create a node in the filesystem tree
+    # description:
+    parameters:
+      - $ref: '../parameters.yaml#/namespace'
+      - name: path
+        in: path
+        schema:
+          type: string
+          description: path of the parent node (with slashes)
+        required: true
+    responses:
+      "200":
+        description: filesystem tree node created successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  $ref: '../objects.yaml#/FileNodeWithoutData'
