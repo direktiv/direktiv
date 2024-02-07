@@ -6,7 +6,6 @@ import {
   HeaderManipulationFormSchemaType,
 } from "../../../schema/plugins/inbound/headerManipulation";
 
-import { ArrayInput } from "~/components/Form/ArrayInput";
 import { Fieldset } from "~/components/Form/Fieldset";
 import Input from "~/design/Input";
 import { ObjArrayInput } from "~/components/Form/ObjArrayInput";
@@ -165,14 +164,38 @@ export const HeaderManipulationForm: FC<FormProps> = ({
             control={control}
             name="configuration.headers_to_remove"
             render={({ field }) => (
-              <ArrayInput
-                placeholder={t(
-                  "pages.explorer.endpoint.editor.form.plugins.inbound.headerManipulation.namePlaceholder"
-                )}
-                defaultValue={field.value ?? []}
+              <ObjArrayInput
+                defaultValue={field.value || []}
                 onChange={(changedValue) => {
                   field.onChange(changedValue);
                 }}
+                emptyItem={{
+                  name: "",
+                }}
+                itemIsValid={(item) => !!item?.name}
+                renderItem={({ state, setState, onChange, handleKeyDown }) => (
+                  <>
+                    {Object.entries(state).map(([key, value]) => {
+                      const typedKey = key as keyof typeof state;
+                      return (
+                        <Input
+                          placeholder={t(
+                            `pages.explorer.endpoint.editor.form.plugins.inbound.headerManipulation.${typedKey}Placeholder`
+                          )}
+                          key={key}
+                          value={value}
+                          onKeyDown={handleKeyDown}
+                          onChange={(e) => {
+                            const newVal = { [key]: e.target.value };
+                            const newState = { ...state, ...newVal };
+                            setState(newState);
+                            onChange(newState);
+                          }}
+                        />
+                      );
+                    })}
+                  </>
+                )}
               />
             )}
           />

@@ -6,13 +6,16 @@ const HeaderSchema = z.object({
   value: z.string(),
 });
 
+const HeaderRemoveSchema = z.object({
+  name: z.string(),
+});
+
 export const HeaderManipulationFormSchema = z.object({
   type: z.literal(inboundPluginTypes.headerManipulation.name),
   configuration: z.object({
-    // TODO: nonempty?
     headers_to_add: z.array(HeaderSchema).optional(),
     headers_to_modify: z.array(HeaderSchema).optional(),
-    headers_to_remove: z.array(z.string()).optional(),
+    headers_to_remove: z.array(HeaderRemoveSchema).optional(),
   }),
 });
 
