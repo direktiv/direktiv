@@ -2,21 +2,22 @@ import { beforeAll, describe, expect, it } from '@jest/globals'
 import request from 'supertest'
 
 import common from '../common'
+import {basename} from "path";
 
-const testNamespace = 'test-file-namespace'
+const namespace = basename(__filename)
 
 beforeAll(async () => {
 	// delete a 'test-namespace' if it's already exit.
-	await request(common.config.getDirektivHost()).delete(`/api/namespaces/${ testNamespace }?recursive=true`)
+	await request(common.config.getDirektivHost()).delete(`/api/namespaces/${ namespace }?recursive=true`)
 })
 
 describe('Test namespaces crud operations', () => {
-	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
+	common.helpers.itShouldCreateNamespace(it, expect, namespace)
 
 	it(`should create a new direktiv file`, async () => {
 
 		const res = await request(common.config.getDirektivHost())
-			.put(`/api/namespaces/${ testNamespace }/tree/my-workflow.yaml?op=create-workflow`)
+			.put(`/api/namespaces/${ namespace }/tree/my-workflow.yaml?op=create-workflow`)
 			.set({
 				'Content-Type': 'text/plain',
 			})
@@ -31,7 +32,7 @@ states:
 
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toMatchObject({
-			namespace: testNamespace,
+			namespace,
 		})
 	})
 })

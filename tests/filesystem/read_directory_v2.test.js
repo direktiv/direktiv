@@ -4,17 +4,18 @@ import request from 'supertest'
 import config from '../common/config'
 import helpers from '../common/helpers'
 import regex from '../common/regex'
+import {basename} from "path";
 
-const testNamespace = 'test-file-namespace'
+const namespace = basename(__filename)
 
 describe('Test filesystem tree read operations', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 
-	helpers.itShouldCreateNamespace(it, expect, testNamespace)
+	helpers.itShouldCreateNamespace(it, expect, namespace)
 
 	it(`should read empty root dir`, async () => {
 		const res = await request(config.getDirektivHost())
-			.get(`/api/v2/namespaces/${ testNamespace }/files-tree`)
+			.get(`/api/v2/namespaces/${ namespace }/files-tree`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toMatchObject({
 			data: {
@@ -29,15 +30,15 @@ describe('Test filesystem tree read operations', () => {
 		})
 	})
 
-	helpers.itShouldCreateDirectory(it, expect, testNamespace, '/dir1')
-	helpers.itShouldCreateDirectory(it, expect, testNamespace, '/dir2')
-	helpers.itShouldCreateFile(it, expect, testNamespace, '/foo.yaml', helpers.dummyWorkflow('foo'))
-	helpers.itShouldCreateFile(it, expect, testNamespace, '/dir1/foo11.yaml', helpers.dummyWorkflow('foo11'))
-	helpers.itShouldCreateFile(it, expect, testNamespace, '/dir1/foo12.yaml', helpers.dummyWorkflow('foo12'))
+	helpers.itShouldCreateDirectory(it, expect, namespace, '/dir1')
+	helpers.itShouldCreateDirectory(it, expect, namespace, '/dir2')
+	helpers.itShouldCreateFile(it, expect, namespace, '/foo.yaml', helpers.dummyWorkflow('foo'))
+	helpers.itShouldCreateFile(it, expect, namespace, '/dir1/foo11.yaml', helpers.dummyWorkflow('foo11'))
+	helpers.itShouldCreateFile(it, expect, namespace, '/dir1/foo12.yaml', helpers.dummyWorkflow('foo12'))
 
 	it(`should read root dir with three paths`, async () => {
 		const res = await request(config.getDirektivHost())
-			.get(`/api/v2/namespaces/${ testNamespace }/files-tree`)
+			.get(`/api/v2/namespaces/${ namespace }/files-tree`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toMatchObject({
 			data: {
@@ -77,7 +78,7 @@ describe('Test filesystem tree read operations', () => {
 
 	it(`should read dir1 with two files`, async () => {
 		const res = await request(config.getDirektivHost())
-			.get(`/api/v2/namespaces/${ testNamespace }/files-tree/dir1`)
+			.get(`/api/v2/namespaces/${ namespace }/files-tree/dir1`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toMatchObject({
 			data: {
@@ -111,7 +112,7 @@ describe('Test filesystem tree read operations', () => {
 
 	it(`should read dir2 with zero files`, async () => {
 		const res = await request(config.getDirektivHost())
-			.get(`/api/v2/namespaces/${ testNamespace }/files-tree/dir2`)
+			.get(`/api/v2/namespaces/${ namespace }/files-tree/dir2`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toMatchObject({
 			data: {
@@ -126,11 +127,11 @@ describe('Test filesystem tree read operations', () => {
 		})
 	})
 
-	helpers.itShouldDeleteFile(it, expect, testNamespace, '/foo.yaml')
+	helpers.itShouldDeleteFile(it, expect, namespace, '/foo.yaml')
 
 	it(`should read root dir two dirs`, async () => {
 		const res = await request(config.getDirektivHost())
-			.get(`/api/v2/namespaces/${ testNamespace }/files-tree`)
+			.get(`/api/v2/namespaces/${ namespace }/files-tree`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toMatchObject({
 			data: {
@@ -160,11 +161,11 @@ describe('Test filesystem tree read operations', () => {
 		})
 	})
 
-	helpers.itShouldDeleteFile(it, expect, testNamespace, '/dir2')
+	helpers.itShouldDeleteFile(it, expect, namespace, '/dir2')
 
 	it(`should read root dir one path`, async () => {
 		const res = await request(config.getDirektivHost())
-			.get(`/api/v2/namespaces/${ testNamespace }/files-tree`)
+			.get(`/api/v2/namespaces/${ namespace }/files-tree`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toMatchObject({
 			data: {
@@ -189,7 +190,7 @@ describe('Test filesystem tree read operations', () => {
 
 	it(`should read root not found`, async () => {
 		const res = await request(config.getDirektivHost())
-			.get(`/api/v2/namespaces/${ testNamespace }/files-tree/dir2`)
+			.get(`/api/v2/namespaces/${ namespace }/files-tree/dir2`)
 		expect(res.statusCode).toEqual(404)
 	})
 

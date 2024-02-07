@@ -1,23 +1,24 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
+import { basename } from 'path'
 import request from 'supertest'
 
 import config from '../common/config'
 import helpers from '../common/helpers'
 import regex from '../common/regex'
 
-const testNamespace = 'test-file-namespace'
+const namespace = basename(__filename)
 
 describe('Test filesystem tree read operations', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 
-	helpers.itShouldCreateNamespace(it, expect, testNamespace)
+	helpers.itShouldCreateNamespace(it, expect, namespace)
 
-	helpers.itShouldCreateDirV2(it, expect, testNamespace, '/', 'dir1')
-	helpers.itShouldCreateDirV2(it, expect, testNamespace, '/', 'dir2')
+	helpers.itShouldCreateDirV2(it, expect, namespace, '/', 'dir1')
+	helpers.itShouldCreateDirV2(it, expect, namespace, '/', 'dir2')
 
 	it(`should read root dir with two paths`, async () => {
 		const res = await request(config.getDirektivHost())
-			.get(`/api/v2/namespaces/${ testNamespace }/files-tree`)
+			.get(`/api/v2/namespaces/${ namespace }/files-tree`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toMatchObject({
 			data: {
@@ -46,7 +47,7 @@ describe('Test filesystem tree read operations', () => {
 		})
 	})
 
-	helpers.itShouldCreateFileV2(it, expect, testNamespace,
+	helpers.itShouldCreateFileV2(it, expect, namespace,
 		'/dir1',
 		'foo1',
 		'workflow',
@@ -55,7 +56,7 @@ describe('Test filesystem tree read operations', () => {
 
 	it(`should read root /dir1 with one path`, async () => {
 		const res = await request(config.getDirektivHost())
-			.get(`/api/v2/namespaces/${ testNamespace }/files-tree/dir1`)
+			.get(`/api/v2/namespaces/${ namespace }/files-tree/dir1`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toMatchObject({
 			data: {

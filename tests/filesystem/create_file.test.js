@@ -3,17 +3,17 @@ import request from 'supertest'
 
 import common from '../common'
 
-const testNamespace = 'test-file-namespace'
+const namespace = path.basename(__filename)
 
 describe('Test namespaces crud operations', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
 
-	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
+	common.helpers.itShouldCreateNamespace(it, expect, namespace)
 
 	it(`should create a new direktiv file`, async () => {
 
 		const res = await request(common.config.getDirektivHost())
-			.put(`/api/namespaces/${ testNamespace }/tree/my-workflow.yaml?op=create-workflow`)
+			.put(`/api/namespaces/${ namespace }/tree/my-workflow.yaml?op=create-workflow`)
 			.set({
 				'Content-Type': 'text/plain',
 			})
@@ -28,7 +28,7 @@ states:
 
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toMatchObject({
-			namespace: testNamespace,
+			namespace,
 		})
 	})
 })
