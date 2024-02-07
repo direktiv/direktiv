@@ -2,6 +2,7 @@ import Editor from "~/design/Editor";
 import { FC } from "react";
 import InfoText from "./OutputInfo";
 import Toolbar from "./Toolbar";
+import { decode } from "js-base64";
 import { prettifyJsonString } from "~/util/helpers";
 import { useInstanceId } from "../../store/instanceContext";
 import { useOutput } from "~/api/instances/query/output";
@@ -35,7 +36,7 @@ const Output: FC<{ instanceIsFinished: boolean }> = ({
     );
   }
 
-  const workflowOutput = atob(data?.data ?? "");
+  const workflowOutput = decode(data?.data ?? "");
   const workflowOutputPretty = prettifyJsonString(workflowOutput);
 
   return (

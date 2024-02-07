@@ -4,6 +4,7 @@ import { jsonSchemaFormWorkflow, jsonSchemaWithRequiredEnum } from "./utils";
 
 import { noop as basicWorkflow } from "~/pages/namespace/Explorer/Tree/components/modals/CreateNew/Workflow/templates";
 import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
+import { decode } from "js-base64";
 import { faker } from "@faker-js/faker";
 import { getInput } from "~/api/instances/query/input";
 import { headers } from "e2e/utils/testutils";
@@ -159,7 +160,7 @@ test("it is possible to run the workflow by setting an input JSON via the editor
     headers,
   });
 
-  const inputResponseString = atob(res.data);
+  const inputResponseString = decode(res.data);
 
   expect(
     inputResponseString,
@@ -307,7 +308,7 @@ test("it is possible to provide the input via generated form", async ({
     select: "guest",
     file: `data:text/plain;base64,SSBhbSBqdXN0IGEgdGVzdGZpbGUgdGhhdCBjYW4gYmUgdXNlZCB0byB0ZXN0IGFuIHVwbG9hZCBmb3JtIHdpdGhpbiBhIHBsYXl3cmlnaHQgdGVzdA==`,
   };
-  const inputResponseAsJson = JSON.parse(atob(res.data));
+  const inputResponseAsJson = JSON.parse(decode(res.data));
   expect(inputResponseAsJson).toEqual(expectedJson);
 });
 
@@ -399,6 +400,6 @@ test("it is possible to provide the input via generated form and resolve form er
     lastName: "McFly",
     select: "guest",
   };
-  const inputResponseAsJson = JSON.parse(atob(res.data));
+  const inputResponseAsJson = JSON.parse(decode(res.data));
   expect(inputResponseAsJson).toEqual(expectedJson);
 });
