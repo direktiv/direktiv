@@ -228,6 +228,23 @@
               "placeholder": "Select a size"
             },
             "cmd": "Cmd",
+            "patches": {
+              "label": "{{count}} Patches",
+              "label_one": "{{count}} Patch",
+              "addButton": "add patch",
+              "modal": {
+                "title": {
+                  "edit": "Edit patch",
+                  "create": "Create patch"
+                },
+                "op": {
+                  "label": "Operation",
+                  "placeholder": "Select an operation"
+                },
+                "path": "Path",
+                "value": "Value"
+              }
+            },
             "envs": {
               "label": "Environment variables",
               "namePlaceholder": "NAME",
@@ -246,10 +263,6 @@
             "methods": "methods",
             "allowAnonymous": "allow anonymous",
             "plugins": {
-              "saveBtn": "Save",
-              "deleteBtn": "Delete",
-              "moveUpBtn": "Move up",
-              "moveDownBtn": "Move down",
               "target": {
                 "table": {
                   "headline": "Target plugin",
@@ -1089,6 +1102,11 @@
       "gatewayConsumers": "Consumers",
       "jqPlayground": "jq Playground"
     },
+    "contextMenu": {
+      "deleteBtn": "Delete",
+      "moveUpBtn": "Move up",
+      "moveDownBtn": "Move down"
+    },
     "namespaceEdit": {
       "title": {
         "new": "Create a new namespace",
@@ -1222,6 +1240,10 @@
       "help": "Help",
       "docs": "Open the docs",
       "supportChannelOnSlack": "Support Channel on Slack"
+    },
+    "modalWrapper": {
+      "saveBtn": "Save",
+      "cancelBtn": "Cancel"
     }
   },
   "api": {

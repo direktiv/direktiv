@@ -1,27 +1,24 @@
 import { FC, useState } from "react";
 
 import { EnvItemForm } from "./EnvItemForm";
-import { EnvironementVariableSchemaType } from "~/api/services/schema/services";
+import { EnvVarSchemaType } from "~/api/services/schema/services";
 
 type EnvFormProps = {
   placeholder?: string;
-  defaultValue: EnvironementVariableSchemaType[];
-  onChange: (newValue: EnvironementVariableSchemaType[]) => void;
+  defaultValue: EnvVarSchemaType[];
+  onChange: (newValue: EnvVarSchemaType[]) => void;
 };
 
 const EnvForm: FC<EnvFormProps> = ({ defaultValue, onChange }) => {
   const [items, setItems] = useState(defaultValue);
 
-  const addItem = (newItem: EnvironementVariableSchemaType) => {
+  const addItem = (newItem: EnvVarSchemaType) => {
     const newValue = [...items, newItem];
     setItems(newValue);
     onChange(newValue);
   };
 
-  const updateAtIndex = (
-    index: number,
-    value: EnvironementVariableSchemaType
-  ) => {
+  const updateAtIndex = (index: number, value: EnvVarSchemaType) => {
     const newItems = items.map((oldValue, oldIndex) => {
       if (oldIndex === index) {
         return value;

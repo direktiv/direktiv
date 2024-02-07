@@ -7,7 +7,7 @@ import {
 
 import { Fieldset } from "~/components/Form/Fieldset";
 import Input from "~/design/Input";
-import { PluginWrapper } from "../components/Modal";
+import { PluginWrapper } from "../components/PluginSelector";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";

@@ -8,7 +8,7 @@ import {
 
 import { Fieldset } from "~/components/Form/Fieldset";
 import NamespaceSelector from "~/components/NamespaceSelector";
-import { PluginWrapper } from "../components/Modal";
+import { PluginWrapper } from "../components/PluginSelector";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
