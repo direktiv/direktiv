@@ -1,0 +1,29 @@
+{{- if or (index .Values.frontend.logos "icon-light") 
+  (index .Values.frontend.logos "icon-dark")
+  (index .Values.frontend.logos "logo-dark")
+  (index .Values.frontend.logos "logo-light")
+  (index .Values.frontend.logos "favicon")
+}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "direktiv.fullname" . }}-logos
+  labels:
+    {{- include "direktiv.labels" . | nindent 4 }}
+binaryData:
+  {{ if index .Values.frontend.logos "icon-light" -}} 
+  icon-light.svg: {{ index .Values.frontend.logos "icon-light" | b64enc }}
+  {{- end }}
+  {{ if index .Values.frontend.logos "icon-dark" -}} 
+  icon-dark.svg: {{ index .Values.frontend.logos "icon-dark" | b64enc }}
+  {{- end }}
+  {{ if index .Values.frontend.logos "logo-light" -}} 
+  logo-light.svg: {{ index .Values.frontend.logos "logo-light" | b64enc }}
+  {{- end }}
+  {{ if index .Values.frontend.logos "logo-dark" -}} 
+  logo-dark.svg: {{ index .Values.frontend.logos "logo-dark" | b64enc }}
+  {{- end }}
+  {{ if index .Values.frontend.logos "favicon" -}} 
+  favicon.png: {{ index .Values.frontend.logos "favicon" | b64enc }}
+  {{- end }}
+{{- end }}
