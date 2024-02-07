@@ -6,8 +6,9 @@ import { Controller, useForm } from "react-hook-form";
 import { FC, FormEvent } from "react";
 import FormErrors, { errorsType } from "~/components/FormErrors";
 
-import { ArrayInput } from "~/components/Form/ArrayInput";
 import { Fieldset } from "~/components/Form/Fieldset";
+import Input from "~/design/Input";
+import { ObjArrayInput } from "~/components/Form/ObjArrayInput";
 import { PluginWrapper } from "../components/Modal";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -67,15 +68,35 @@ export const AclForm: FC<FormProps> = ({ defaultConfig, onSubmit, formId }) => {
             control={control}
             name="configuration.allow_groups"
             render={({ field }) => (
-              <ArrayInput
-                placeholder={t(
-                  "pages.explorer.endpoint.editor.form.plugins.inbound.acl.groupPlaceholder"
-                )}
-                defaultValue={field.value ?? []}
-                onChange={(changedValue) => {
-                  field.onChange(changedValue);
-                }}
-              />
+              <div className="grid gap-5 sm:grid-cols-2">
+                <ObjArrayInput
+                  defaultValue={field.value || []}
+                  onChange={(changedValue) => {
+                    field.onChange(changedValue);
+                  }}
+                  emptyItem=""
+                  itemIsValid={(item) => item !== ""}
+                  renderItem={({
+                    state,
+                    setState,
+                    onChange,
+                    handleKeyDown,
+                  }) => (
+                    <Input
+                      placeholder={t(
+                        "pages.explorer.endpoint.editor.form.plugins.inbound.acl.groupPlaceholder"
+                      )}
+                      value={state}
+                      onKeyDown={handleKeyDown}
+                      onChange={(e) => {
+                        const newVal = e.target.value;
+                        setState(newVal);
+                        onChange(newVal);
+                      }}
+                    />
+                  )}
+                />
+              </div>
             )}
           />
         </Fieldset>
@@ -88,15 +109,35 @@ export const AclForm: FC<FormProps> = ({ defaultConfig, onSubmit, formId }) => {
             control={control}
             name="configuration.deny_groups"
             render={({ field }) => (
-              <ArrayInput
-                placeholder={t(
-                  "pages.explorer.endpoint.editor.form.plugins.inbound.acl.groupPlaceholder"
-                )}
-                defaultValue={field.value ?? []}
-                onChange={(changedValue) => {
-                  field.onChange(changedValue);
-                }}
-              />
+              <div className="grid gap-5 sm:grid-cols-2">
+                <ObjArrayInput
+                  defaultValue={field.value || []}
+                  onChange={(changedValue) => {
+                    field.onChange(changedValue);
+                  }}
+                  emptyItem=""
+                  itemIsValid={(item) => item !== ""}
+                  renderItem={({
+                    state,
+                    setState,
+                    onChange,
+                    handleKeyDown,
+                  }) => (
+                    <Input
+                      placeholder={t(
+                        "pages.explorer.endpoint.editor.form.plugins.inbound.acl.groupPlaceholder"
+                      )}
+                      value={state}
+                      onKeyDown={handleKeyDown}
+                      onChange={(e) => {
+                        const newVal = e.target.value;
+                        setState(newVal);
+                        onChange(newVal);
+                      }}
+                    />
+                  )}
+                />
+              </div>
             )}
           />
         </Fieldset>
@@ -109,15 +150,35 @@ export const AclForm: FC<FormProps> = ({ defaultConfig, onSubmit, formId }) => {
             control={control}
             name="configuration.allow_tags"
             render={({ field }) => (
-              <ArrayInput
-                placeholder={t(
-                  "pages.explorer.endpoint.editor.form.plugins.inbound.acl.tagPlaceholder"
-                )}
-                defaultValue={field.value ?? []}
-                onChange={(changedValue) => {
-                  field.onChange(changedValue);
-                }}
-              />
+              <div className="grid gap-5 sm:grid-cols-2">
+                <ObjArrayInput
+                  defaultValue={field.value || []}
+                  onChange={(changedValue) => {
+                    field.onChange(changedValue);
+                  }}
+                  emptyItem=""
+                  itemIsValid={(item) => item !== ""}
+                  renderItem={({
+                    state,
+                    setState,
+                    onChange,
+                    handleKeyDown,
+                  }) => (
+                    <Input
+                      placeholder={t(
+                        "pages.explorer.endpoint.editor.form.plugins.inbound.acl.tagPlaceholder"
+                      )}
+                      value={state}
+                      onKeyDown={handleKeyDown}
+                      onChange={(e) => {
+                        const newVal = e.target.value;
+                        setState(newVal);
+                        onChange(newVal);
+                      }}
+                    />
+                  )}
+                />
+              </div>
             )}
           />
         </Fieldset>
@@ -130,15 +191,35 @@ export const AclForm: FC<FormProps> = ({ defaultConfig, onSubmit, formId }) => {
             control={control}
             name="configuration.deny_tags"
             render={({ field }) => (
-              <ArrayInput
-                placeholder={t(
-                  "pages.explorer.endpoint.editor.form.plugins.inbound.acl.tagPlaceholder"
-                )}
-                defaultValue={field.value ?? []}
-                onChange={(changedValue) => {
-                  field.onChange(changedValue);
-                }}
-              />
+              <div className="grid gap-5 sm:grid-cols-2">
+                <ObjArrayInput
+                  defaultValue={field.value || []}
+                  onChange={(changedValue) => {
+                    field.onChange(changedValue);
+                  }}
+                  emptyItem=""
+                  itemIsValid={(item) => item !== ""}
+                  renderItem={({
+                    state,
+                    setState,
+                    onChange,
+                    handleKeyDown,
+                  }) => (
+                    <Input
+                      placeholder={t(
+                        "pages.explorer.endpoint.editor.form.plugins.inbound.acl.tagPlaceholder"
+                      )}
+                      value={state}
+                      onKeyDown={handleKeyDown}
+                      onChange={(e) => {
+                        const newVal = e.target.value;
+                        setState(newVal);
+                        onChange(newVal);
+                      }}
+                    />
+                  )}
+                />
+              </div>
             )}
           />
         </Fieldset>
