@@ -1,19 +1,21 @@
+import {describe, expect, it} from '@jest/globals'
 import request from 'supertest'
-import common from "../common";
+import helpers from "../common/helpers";
+import config from "../common/config";
 import regex from "../common/regex";
 
 const testNamespace = "test-file-namespace"
 
 describe('Test filesystem tree read operations', () => {
-    beforeAll(common.helpers.deleteAllNamespaces)
+    beforeAll(helpers.deleteAllNamespaces)
 
-    common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
+    helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-    common.helpers.itShouldCreateDirV2(it, expect, testNamespace, "/", "dir1")
-    common.helpers.itShouldCreateDirV2(it, expect, testNamespace, "/", "dir2")
+    helpers.itShouldCreateDirV2(it, expect, testNamespace, "/", "dir1")
+    helpers.itShouldCreateDirV2(it, expect, testNamespace, "/", "dir2")
 
     it(`should read root dir with two paths`, async () => {
-        const res = await request(common.config.getDirektivHost())
+        const res = await request(config.getDirektivHost())
             .get(`/api/v2/namespaces/${testNamespace}/files-tree`)
         expect(res.statusCode).toEqual(200)
         expect(res.body).toMatchObject({
@@ -43,15 +45,15 @@ describe('Test filesystem tree read operations', () => {
         })
     })
 
-    common.helpers.itShouldCreateFileV2(it, expect, testNamespace,
+    helpers.itShouldCreateFileV2(it, expect, testNamespace,
         "/dir1",
         "foo1",
         "workflow",
         "text/plain",
-        btoa(common.helpers.dummyWorkflow("foo1")))
+        btoa(helpers.dummyWorkflow("foo1")))
 
     it(`should read root /dir1 with one path`, async () => {
-        const res = await request(common.config.getDirektivHost())
+        const res = await request(config.getDirektivHost())
             .get(`/api/v2/namespaces/${testNamespace}/files-tree/dir1`)
         expect(res.statusCode).toEqual(200)
         expect(res.body).toMatchObject({

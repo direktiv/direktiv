@@ -1,16 +1,18 @@
+import {describe, expect, it} from '@jest/globals'
 import request from 'supertest'
-import common from "../common";
+import helpers from "../common/helpers";
 import regex from "../common/regex";
+import config from "../common/config";
 
 const testNamespace = "test-file-namespace"
 
 describe('Test filesystem tree read operations', () => {
-    beforeAll(common.helpers.deleteAllNamespaces)
+    beforeAll(helpers.deleteAllNamespaces)
 
-    common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
+    helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
     it(`should read empty root dir`, async () => {
-        const res = await request(common.config.getDirektivHost())
+        const res = await request(config.getDirektivHost())
             .get(`/api/v2/namespaces/${testNamespace}/files-tree`)
         expect(res.statusCode).toEqual(200)
         expect(res.body).toMatchObject({
@@ -26,14 +28,14 @@ describe('Test filesystem tree read operations', () => {
         })
     })
 
-    common.helpers.itShouldCreateDirectory(it, expect, testNamespace, "/dir1")
-    common.helpers.itShouldCreateDirectory(it, expect, testNamespace, "/dir2")
-    common.helpers.itShouldCreateFile(it, expect, testNamespace, "/foo.yaml", common.helpers.dummyWorkflow("foo"))
-    common.helpers.itShouldCreateFile(it, expect, testNamespace, "/dir1/foo11.yaml", common.helpers.dummyWorkflow("foo11"))
-    common.helpers.itShouldCreateFile(it, expect, testNamespace, "/dir1/foo12.yaml", common.helpers.dummyWorkflow("foo12"))
+    helpers.itShouldCreateDirectory(it, expect, testNamespace, "/dir1")
+    helpers.itShouldCreateDirectory(it, expect, testNamespace, "/dir2")
+    helpers.itShouldCreateFile(it, expect, testNamespace, "/foo.yaml", helpers.dummyWorkflow("foo"))
+    helpers.itShouldCreateFile(it, expect, testNamespace, "/dir1/foo11.yaml", helpers.dummyWorkflow("foo11"))
+    helpers.itShouldCreateFile(it, expect, testNamespace, "/dir1/foo12.yaml", helpers.dummyWorkflow("foo12"))
 
     it(`should read root dir with three paths`, async () => {
-        const res = await request(common.config.getDirektivHost())
+        const res = await request(config.getDirektivHost())
             .get(`/api/v2/namespaces/${testNamespace}/files-tree`)
         expect(res.statusCode).toEqual(200)
         expect(res.body).toMatchObject({
@@ -73,7 +75,7 @@ describe('Test filesystem tree read operations', () => {
     })
 
     it(`should read dir1 with two files`, async () => {
-        const res = await request(common.config.getDirektivHost())
+        const res = await request(config.getDirektivHost())
             .get(`/api/v2/namespaces/${testNamespace}/files-tree/dir1`)
         expect(res.statusCode).toEqual(200)
         expect(res.body).toMatchObject({
@@ -107,7 +109,7 @@ describe('Test filesystem tree read operations', () => {
     })
 
     it(`should read dir2 with zero files`, async () => {
-        const res = await request(common.config.getDirektivHost())
+        const res = await request(config.getDirektivHost())
             .get(`/api/v2/namespaces/${testNamespace}/files-tree/dir2`)
         expect(res.statusCode).toEqual(200)
         expect(res.body).toMatchObject({
@@ -123,10 +125,10 @@ describe('Test filesystem tree read operations', () => {
         })
     })
 
-    common.helpers.itShouldDeleteFile(it, expect, testNamespace, "/foo.yaml")
+    helpers.itShouldDeleteFile(it, expect, testNamespace, "/foo.yaml")
 
     it(`should read root dir two dirs`, async () => {
-        const res = await request(common.config.getDirektivHost())
+        const res = await request(config.getDirektivHost())
             .get(`/api/v2/namespaces/${testNamespace}/files-tree`)
         expect(res.statusCode).toEqual(200)
         expect(res.body).toMatchObject({
@@ -157,10 +159,10 @@ describe('Test filesystem tree read operations', () => {
         })
     })
 
-    common.helpers.itShouldDeleteFile(it, expect, testNamespace, "/dir2")
+    helpers.itShouldDeleteFile(it, expect, testNamespace, "/dir2")
 
     it(`should read root dir one path`, async () => {
-        const res = await request(common.config.getDirektivHost())
+        const res = await request(config.getDirektivHost())
             .get(`/api/v2/namespaces/${testNamespace}/files-tree`)
         expect(res.statusCode).toEqual(200)
         expect(res.body).toMatchObject({
@@ -185,7 +187,7 @@ describe('Test filesystem tree read operations', () => {
     })
 
     it(`should read root not found`, async () => {
-        const res = await request(common.config.getDirektivHost())
+        const res = await request(config.getDirektivHost())
             .get(`/api/v2/namespaces/${testNamespace}/files-tree/dir2`)
         expect(res.statusCode).toEqual(404)
     })

@@ -75,7 +75,6 @@ async function itShouldCreateFileV2(it, expect, ns, path, name, type, mimeType, 
     })
 }
 
-
 async function itShouldCreateDirV2(it, expect, ns, path, name) {
     it(`should create a new dir ${path}`, async () => {
         const res = await request(common.config.getDirektivHost())
@@ -138,7 +137,6 @@ async function itShouldUpdateFileV2(it, expect, ns, path, newPatch) {
     })
 }
 
-
 async function itShouldCheckPathExistsV2(it, expect, ns, path, assertExits) {
     it(`should check if path(${path}) exists(${assertExits})`, async () => {
         const res = await request(common.config.getDirektivHost())
@@ -152,9 +150,6 @@ async function itShouldCheckPathExistsV2(it, expect, ns, path, assertExits) {
     })
 }
 
-
-
-
 function dummyWorkflow(someText) {
     return `
 direktiv_api: workflow/v1
@@ -164,6 +159,7 @@ states:
   type: noop
 `
 }
+
 
 async function itShouldCreateDirectory(it, expect, ns, path) {
     it(`should create a directory ${path}`, async () => {
@@ -214,6 +210,9 @@ async function itShouldRenameFile(it, expect, ns, path, newPath) {
         expect(res.body).toMatchObject({})
     })
 }
+
+
+
 
 export default {
     deleteAllNamespaces,

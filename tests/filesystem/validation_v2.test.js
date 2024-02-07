@@ -1,16 +1,17 @@
+import {describe, expect, it} from '@jest/globals'
 import request from 'supertest'
-import common from "../common";
-import regex from "../common/regex";
+import helpers from "../common/helpers";
+import config from "../common/config";
 
 const testNamespace = "test-file-namespace"
 
 describe('Test filesystem tree read operations', () => {
-    beforeAll(common.helpers.deleteAllNamespaces)
+    beforeAll(helpers.deleteAllNamespaces)
 
-    common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
+    helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
     it(`should fail creating file with invalid base64 data`, async () => {
-        const res = await request(common.config.getDirektivHost())
+        const res = await request(config.getDirektivHost())
             .post(`/api/v2/namespaces/${testNamespace}/files-tree`)
             .set('Content-Type', 'application/json')
             .send({
@@ -29,7 +30,7 @@ describe('Test filesystem tree read operations', () => {
     })
 
     it(`should fail creating file with invalid yaml data`, async () => {
-        const res = await request(common.config.getDirektivHost())
+        const res = await request(config.getDirektivHost())
             .post(`/api/v2/namespaces/${testNamespace}/files-tree`)
             .set('Content-Type', 'application/json')
             .send({
