@@ -1,4 +1,4 @@
-import { describe, expect, it } from '@jest/globals'
+import { beforeAll, describe, expect, it } from '@jest/globals'
 import request from 'supertest'
 
 import config from '../common/config'
