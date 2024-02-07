@@ -1,7 +1,6 @@
 package inbound_test
 
 import (
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -16,27 +15,35 @@ func TestExecuteHeaderManipulationPlugin(t *testing.T) {
 	p, _ := plugins.GetPluginFromRegistry(inbound.HeaderManipulation)
 
 	config := &inbound.HeaderManipulationConfig{
-		HeadersToAdd: map[string]string{
-			"test/header": "added",
+		HeadersToAdd: []inbound.NameKeys{
+			{
+				Name:  "header3",
+				Value: "value3",
+			},
 		},
-		HeadersToModify: map[string]string{
-			"header1": "value was changed",
+		HeadersToModify: []inbound.NameKeys{
+			{
+				Name:  "header1",
+				Value: "newvalue",
+			},
 		},
-		HeadersToRemove: []string{
-			"header2",
+		HeadersToRemove: []inbound.NameKeys{
+			{
+				Name: "Header2",
+			},
 		},
 	}
 	p2, _ := p.Configure(config, core.MagicalGatewayNamespace)
 
-	r, _ := http.NewRequest(http.MethodGet, "/dummy?test=me", nil)
+	r, _ := http.NewRequest(http.MethodGet, "/dummy", nil)
 	r.Header.Add("Header1", "value1")
 	r.Header.Add("header2", "value2")
 
 	w := httptest.NewRecorder()
 	p2.ExecutePlugin(nil, w, r)
 
-	fmt.Println(r.URL)
-	assert.Equal(t, "value was changed", r.Header.Get("header1"))
-	assert.Equal(t, "added", r.Header.Get("test/header"))
-	assert.Equal(t, "", r.Header.Get("header2"))
+	assert.Empty(t, r.Header.Get("header2"))
+	assert.Equal(t, "value3", r.Header.Get("Header3"))
+	assert.Equal(t, "newvalue", r.Header.Get("header1"))
+
 }
