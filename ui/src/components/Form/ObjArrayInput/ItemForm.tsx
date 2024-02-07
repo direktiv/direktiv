@@ -15,7 +15,7 @@ type ObjArrayInputType = <T>(props: {
 }) => JSX.Element;
 
 export const ItemForm: ObjArrayInputType = ({
-  item,
+  item, // TODO: rename to defaultValue
   renderItem,
   itemIsValid,
   onAdd,
@@ -32,8 +32,10 @@ export const ItemForm: ObjArrayInputType = ({
   const isValid = itemIsValid(state);
 
   const handleAdd = () => {
-    if (!onAdd || !state) return;
+    if (!isValid || !onAdd) return;
     onAdd(state);
+    // clear all inputs
+    setState(item);
   };
 
   const handleDelete = () => {
@@ -47,8 +49,6 @@ export const ItemForm: ObjArrayInputType = ({
       if (!onAdd) return;
       event.currentTarget.blur();
       handleAdd();
-      // set back to default value
-      setState(item);
     }
   };
 
