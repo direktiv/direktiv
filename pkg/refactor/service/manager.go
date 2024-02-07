@@ -159,10 +159,10 @@ func (m *manager) runCycle() []error {
 
 func jitter(base time.Duration) time.Duration {
 	// add maximum jitter of +/-20%
-	x, _ := rand.Int(rand.Reader, big.NewInt(40)) //nolint:gomnd
-	percentage := x.Int64() - 20                  //nolint:gomnd
+	x, _ := rand.Int(rand.Reader, big.NewInt(40))
+	percentage := x.Int64() - 20
 
-	return time.Duration(int64(base) * percentage / 100) //nolint:gomnd
+	return time.Duration(int64(base) * percentage / 100)
 }
 
 func (m *manager) Start(done <-chan struct{}, wg *sync.WaitGroup) {

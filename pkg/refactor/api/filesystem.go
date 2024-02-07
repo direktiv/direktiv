@@ -34,12 +34,10 @@ func (e *fsController) read(w http.ResponseWriter, r *http.Request) {
 		writeInternalError(w, err)
 		return
 	}
-	//nolint:errcheck
 	defer db.Rollback()
 
 	fStore := db.FileStore()
 
-	//nolint:gomnd
 	path := strings.SplitN(r.URL.Path, "/files-tree", 2)[1]
 	path = filepath.Clean("/" + path)
 
@@ -86,12 +84,10 @@ func (e *fsController) delete(w http.ResponseWriter, r *http.Request) {
 		writeInternalError(w, err)
 		return
 	}
-	//nolint:errcheck
 	defer db.Rollback()
 
 	fStore := db.FileStore()
 
-	//nolint:gomnd
 	path := strings.SplitN(r.URL.Path, "/files-tree", 2)[1]
 	path = filepath.Clean("/" + path)
 
@@ -133,12 +129,10 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 		writeInternalError(w, err)
 		return
 	}
-	//nolint:errcheck
 	defer db.Rollback()
 
 	fStore := db.FileStore()
 
-	// nolint:tagliatelle
 	req := struct {
 		Name     string             `json:"name"`
 		Typ      filestore.FileType `json:"type"`
@@ -173,7 +167,6 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//nolint:gomnd
 	path := strings.SplitN(r.URL.Path, "/files-tree", 2)[1]
 	path = filepath.Clean("/" + path)
 
@@ -206,12 +199,10 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 		writeInternalError(w, err)
 		return
 	}
-	//nolint:errcheck
 	defer db.Rollback()
 
 	fStore := db.FileStore()
 
-	// nolint:tagliatelle
 	req := struct {
 		AbsolutePath string `json:"absolutePath"`
 		Data         string `json:"data"`
@@ -243,7 +234,6 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//nolint:gomnd
 	path := strings.SplitN(r.URL.Path, "/files-tree", 2)[1]
 	path = filepath.Clean("/" + path)
 
