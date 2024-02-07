@@ -25,7 +25,7 @@ func NewLogManager(store plattformlogs.LogStore) core.LogCollectionManager {
 	}
 }
 
-func (m logController) Get(ctx context.Context, cursorTime time.Time, params map[string]string) ([]core.FeatureLogEntry, error) {
+func (m logController) GetAfter(ctx context.Context, before time.Time, params map[string]string) ([]core.FeatureLogEntry, error) {
 	var r []plattformlogs.LogEntry
 	var err error
 
@@ -36,10 +36,61 @@ func (m logController) Get(ctx context.Context, cursorTime time.Time, params map
 	}
 
 	// Call the appropriate LogStore method with cursorTime
-	if _, ok := params["instance-id"]; ok {
-		r, err = m.store.GetInstanceLogs(ctx, stream, cursorTime)
+	if _, ok := params["instance"]; ok {
+		r, err = m.store.GetInstanceLogsBefore(ctx, stream, before)
 	} else {
-		r, err = m.store.Get(ctx, stream, cursorTime)
+		r, err = m.store.GetBefore(ctx, stream, before)
+	}
+
+	if err != nil {
+		return []core.FeatureLogEntry{}, err
+	}
+
+	res := loglist{}
+	for _, le := range r {
+		e, err := le.ToFeatureLogEntry()
+		if err != nil {
+			return []core.FeatureLogEntry{}, err
+		}
+		res = append(res, e)
+	}
+
+	// Apply filters based on additional parameters
+	if p, ok := params["level"]; ok {
+		res.filterByLevel(p)
+	}
+	if p, ok := params["branch"]; ok {
+		res.filterByBranch(p)
+	}
+	if p, ok := params["state"]; ok {
+		res.filterByState(p)
+	}
+
+	return res, nil
+}
+
+func (m logController) GetFirst(ctx context.Context, params map[string]string) ([]core.FeatureLogEntry, error) {
+	var r []plattformlogs.LogEntry
+	var err error
+
+	// Determine the stream based on the provided parameters
+	stream, err := determineStream(params)
+	if err != nil {
+		return []core.FeatureLogEntry{}, err
+	}
+	after := time.Now().UTC()
+	if t, ok := params["after"]; ok {
+		co, err := time.Parse(time.RFC3339Nano, t)
+		if err != nil {
+			return []core.FeatureLogEntry{}, err
+		}
+		after = co
+	}
+	// Call the appropriate LogStore method with cursorTime
+	if _, ok := params["instance"]; ok {
+		r, err = m.store.GetInstanceLogsAfter(ctx, stream, after)
+	} else {
+		r, err = m.store.GetAfter(ctx, stream, after)
 	}
 
 	if err != nil {
@@ -81,25 +132,15 @@ func (m logController) Stream(params map[string]string) http.HandlerFunc {
 		ctx, cancel := context.WithCancel(r.Context())
 		defer cancel()
 
-		// Extract cursor from request URL query
-		cursorTimeStr := r.URL.Query().Get("cursor")
-		cursorTime, err := time.Parse(time.RFC3339Nano, cursorTimeStr)
-		if err != nil {
-			// Handle error
-			http.Error(w, "Invalid cursor parameter", http.StatusBadRequest)
-
-			return
-		}
-
 		// Create a channel to send SSE messages
 		messageChannel := make(chan Event)
 		// Adjust the logStoreWorker to use cursor instead of offset
 		worker := logStoreWorker{
-			Get:      m.Get,
+			Get:      m.GetAfter,
 			Interval: time.Second,
 			Ch:       messageChannel,
 			Params:   params,
-			Cursor:   cursorTime,
+			Cursor:   time.Now().UTC(),
 		}
 		go worker.start(ctx)
 

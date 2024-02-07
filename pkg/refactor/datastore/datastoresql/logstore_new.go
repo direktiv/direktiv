@@ -24,7 +24,24 @@ type ScanResult struct {
 	Data []byte
 }
 
-func (s sqlLogNewStore) Get(ctx context.Context, stream string, cursorTime time.Time) ([]plattformlogs.LogEntry, error) {
+func (s sqlLogNewStore) GetBefore(ctx context.Context, stream string, before time.Time) ([]plattformlogs.LogEntry, error) {
+	query := `
+        SELECT id, time, tag, data
+        FROM fluentbit
+        WHERE tag = ? AND time <= ?
+        ORDER BY time ASC
+        LIMIT ?;
+    `
+	resultList := make([]ScanResult, 0)
+	tx := s.db.WithContext(ctx).Raw(query, stream, before, pageSize).Scan(&resultList)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	return convertScanResults(resultList)
+}
+
+func (s sqlLogNewStore) GetAfter(ctx context.Context, stream string, after time.Time) ([]plattformlogs.LogEntry, error) {
 	query := `
         SELECT id, time, tag, data
         FROM fluentbit
@@ -33,7 +50,7 @@ func (s sqlLogNewStore) Get(ctx context.Context, stream string, cursorTime time.
         LIMIT ?;
     `
 	resultList := make([]ScanResult, 0)
-	tx := s.db.WithContext(ctx).Raw(query, stream, cursorTime, pageSize).Scan(&resultList)
+	tx := s.db.WithContext(ctx).Raw(query, stream, after, pageSize).Scan(&resultList)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
@@ -41,7 +58,7 @@ func (s sqlLogNewStore) Get(ctx context.Context, stream string, cursorTime time.
 	return convertScanResults(resultList)
 }
 
-func (s sqlLogNewStore) GetInstanceLogs(ctx context.Context, stream string, cursorTime time.Time) ([]plattformlogs.LogEntry, error) {
+func (s sqlLogNewStore) GetInstanceLogsAfter(ctx context.Context, stream string, after time.Time) ([]plattformlogs.LogEntry, error) {
 	query := `
         SELECT id, time, tag, data
         FROM fluentbit
@@ -50,7 +67,24 @@ func (s sqlLogNewStore) GetInstanceLogs(ctx context.Context, stream string, curs
         LIMIT ?;
     `
 	resultList := make([]ScanResult, 0)
-	tx := s.db.WithContext(ctx).Raw(query, stream, cursorTime, pageSize).Scan(&resultList)
+	tx := s.db.WithContext(ctx).Raw(query, stream, after, pageSize).Scan(&resultList)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	return convertScanResults(resultList)
+}
+
+func (s sqlLogNewStore) GetInstanceLogsBefore(ctx context.Context, stream string, after time.Time) ([]plattformlogs.LogEntry, error) {
+	query := `
+        SELECT id, time, tag, data
+        FROM fluentbit
+        WHERE tag LIKE ? AND time <= ?
+        ORDER BY time ASC
+        LIMIT ?;
+    `
+	resultList := make([]ScanResult, 0)
+	tx := s.db.WithContext(ctx).Raw(query, stream, after, pageSize).Scan(&resultList)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}

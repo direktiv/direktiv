@@ -86,24 +86,8 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 
 			r.Get("/namespaces/{namespace}/logs", func(w http.ResponseWriter, r *http.Request) {
 				params := extractLogRequestParams(r)
-
-				// Extract the cursor parameter from the request URL query
-				cursorTimeStr := r.URL.Query().Get("cursor")
-				if cursorTimeStr == "" {
-					// Handle the case when cursor is not provided
-					writeInternalError(w, errors.New("cursor parameter is required"))
-
-					return
-				}
-				cursorTime, err := time.Parse(time.RFC3339Nano, cursorTimeStr)
-				if err != nil {
-					writeInternalError(w, err)
-
-					return
-				}
-
 				// Call the Get method with the cursor instead of offset
-				data, err := app.LogManager.Get(r.Context(), cursorTime, params)
+				data, err := app.LogManager.GetFirst(r.Context(), params)
 				if err != nil {
 					writeInternalError(w, err)
 
@@ -172,11 +156,11 @@ func extractLogRequestParams(r *http.Request) map[string]string {
 	if v := chi.URLParam(r, "namespace"); v != "" {
 		params["namespace"] = v
 	}
-	if v := chi.URLParam(r, "instance-id"); v != "" {
-		params["instance-id"] = v
+	if v := chi.URLParam(r, "route"); v != "" {
+		params["route"] = v
 	}
-	if v := chi.URLParam(r, "root-instance-id"); v != "" {
-		params["root-instance-id"] = v
+	if v := chi.URLParam(r, "instance"); v != "" {
+		params["instance"] = v
 	}
 	if v := chi.URLParam(r, "branch"); v != "" {
 		params["branch"] = v
@@ -184,8 +168,8 @@ func extractLogRequestParams(r *http.Request) map[string]string {
 	if v := chi.URLParam(r, "level"); v != "" {
 		params["level"] = v
 	}
-	if v := chi.URLParam(r, "WithInheritance"); v != "" {
-		params["WithInheritance"] = v
+	if v := chi.URLParam(r, "after"); v != "" {
+		params["after"] = v
 	}
 
 	return params
