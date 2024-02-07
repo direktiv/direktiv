@@ -2,7 +2,7 @@ import common from "../common";
 import request from "supertest";
 
 
-const testNamespace = "js-inbound";
+const testNamespace = "headers";
 
 
 const endpointJSFile = `
@@ -49,7 +49,6 @@ describe("Test header plugin", () => {
     beforeAll(common.helpers.deleteAllNamespaces);
   
     common.helpers.itShouldCreateNamespace(it, expect, testNamespace);
-    // common.helpers.itShouldCreateNamespace(it, expect, testNamespace);
   
     common.helpers.itShouldCreateFile(
       it,
@@ -72,7 +71,6 @@ describe("Test header plugin", () => {
         `/ns/` + testNamespace + `/target?Query1=value1&Query2=value2`
       ).set('Header', 'Value1').set('Header1', 'oldvalue').send({"hello":"world"});
 
-    console.log(req.body.result.headers)
       expect(req.statusCode).toEqual(200);
       expect(req.body.result.headers.Hello[0]).toEqual("world")
       expect(req.body.result.headers.Header).toBeUndefined()
