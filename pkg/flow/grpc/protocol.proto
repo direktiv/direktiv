@@ -72,6 +72,8 @@ service Flow {
 	rpc InstancesStream (InstancesRequest) returns (stream InstancesResponse) {}
 	rpc InstanceInput (InstanceInputRequest) returns (InstanceInputResponse) {}
 	rpc InstanceOutput (InstanceOutputRequest) returns (InstanceOutputResponse) {}
+	rpc InstanceMetadata (InstanceMetadataRequest) returns (InstanceMetadataResponse) {}
+	rpc ReleaseInstance (ReleaseInstanceRequest) returns (ReleaseInstanceResponse) {}
 
 
 	// workflows.
@@ -107,9 +109,11 @@ service Flow {
 	rpc DeleteInstanceVariable (DeleteInstanceVariableRequest) returns (google.protobuf.Empty) {}
 	rpc RenameInstanceVariable (RenameInstanceVariableRequest) returns (RenameInstanceVariableResponse) {}
 
+	//
 	rpc JQ (JQRequest) returns (JQResponse) {}
 	rpc WorkflowMetrics (WorkflowMetricsRequest) returns (WorkflowMetricsResponse) {}
 
+	// events.
 	rpc EventListeners (EventListenersRequest) returns (EventListenersResponse) {} 
 	rpc EventListenersStream (EventListenersRequest) returns (stream EventListenersResponse) {}
 	rpc EventHistory (EventHistoryRequest) returns (EventHistoryResponse) {}
@@ -117,17 +121,14 @@ service Flow {
 	rpc HistoricalEvent (HistoricalEventRequest) returns (HistoricalEventResponse) {}
 	rpc ReplayEvent (ReplayEventRequest) returns (google.protobuf.Empty) {}
 
-
+	//
 	rpc ResolveNamespaceUID (ResolveNamespaceUIDRequest) returns (NamespaceResponse) {}
 	rpc ResolveWorkflowUID (ResolveWorkflowUIDRequest) returns (WorkflowResponse) {}
 	rpc SetNamespaceConfig (SetNamespaceConfigRequest) returns (SetNamespaceConfigResponse) {}
 	rpc GetNamespaceConfig (GetNamespaceConfigRequest) returns (GetNamespaceConfigResponse) {}
-
 	rpc Build(google.protobuf.Empty) returns (BuildResponse) {}
-	rpc InstanceMetadata (InstanceMetadataRequest) returns (InstanceMetadataResponse) {}
-	rpc ReleaseInstance (ReleaseInstanceRequest) returns (ReleaseInstanceResponse) {}
 
-
+	// mirrors.
 	rpc CreateNamespaceMirror (CreateNamespaceMirrorRequest) returns (CreateNamespaceResponse) {}
 	rpc CreateDirectoryMirror (CreateDirectoryMirrorRequest) returns (CreateDirectoryResponse) {}
 	rpc UpdateMirrorSettings (UpdateMirrorSettingsRequest) returns (google.protobuf.Empty) {}
@@ -139,6 +140,7 @@ service Flow {
 	rpc MirrorInfoStream(MirrorInfoRequest) returns (stream MirrorInfoResponse) {}
 	rpc CancelMirrorActivity (CancelMirrorActivityRequest) returns (google.protobuf.Empty) {}
 
+	//
 	rpc File (FileRequest) returns (FileResponse) {}
 	rpc CreateFile (CreateFileRequest) returns (CreateFileResponse) {}
 	rpc UpdateFile (UpdateFileRequest) returns (UpdateFileResponse) {}
