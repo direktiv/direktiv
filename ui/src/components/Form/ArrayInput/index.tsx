@@ -1,16 +1,17 @@
+import { IsValidItem, RenderItem } from "./types";
+
 import { ArrayItem } from "./ArrayItem";
-import { RenderItemType } from "./types";
 import { useState } from "react";
 
-type ArrayInputType = <T>(props: {
+type ArrayInputProps = <T>(props: {
   defaultValue: T[];
   emptyItem: T;
-  onChange: (newValue: T[]) => void;
-  itemIsValid?: (item?: T) => boolean;
-  renderItem: RenderItemType<T>;
+  onChange: (newArray: T[]) => void;
+  itemIsValid: IsValidItem<T>;
+  renderItem: RenderItem<T>;
 }) => JSX.Element;
 
-export const ArrayInput: ArrayInputType = ({
+export const ArrayInput: ArrayInputProps = ({
   defaultValue,
   emptyItem,
   renderItem,

@@ -1,13 +1,15 @@
 import { Dispatch, KeyboardEvent, SetStateAction } from "react";
 
-export type RenderItemType<T> = ({
+export type RenderItem<T> = ({
   state,
   onChange,
   setState,
   handleKeyDown,
 }: {
   state: T;
-  onChange: (newValue: T) => void;
+  onChange: (item: T) => void;
   setState: Dispatch<SetStateAction<T>>;
   handleKeyDown: (event: KeyboardEvent<HTMLInputElement>) => void;
 }) => JSX.Element;
+
+export type IsValidItem<T> = (item?: T) => boolean;

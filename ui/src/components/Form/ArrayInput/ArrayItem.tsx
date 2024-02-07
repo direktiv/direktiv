@@ -1,20 +1,20 @@
+import { IsValidItem, RenderItem } from "./types";
 import { KeyboardEvent, useState } from "react";
 import { Plus, X } from "lucide-react";
 
 import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
-import { RenderItemType } from "./types";
 
-type ArrayItemType = <T>(props: {
+type ArrayItemProps = <T>(props: {
   item: T;
-  renderItem: RenderItemType<T>;
-  itemIsValid: (item?: T) => boolean;
-  onAdd?: (value: T) => void;
-  onUpdate?: (value: T) => void;
+  renderItem: RenderItem<T>;
+  itemIsValid: IsValidItem<T>;
+  onUpdate?: (item: T) => void;
+  onAdd?: (item: T) => void;
   onDelete?: () => void;
 }) => JSX.Element;
 
-export const ArrayItem: ArrayItemType = ({
+export const ArrayItem: ArrayItemProps = ({
   item, // TODO: rename to defaultValue
   renderItem,
   itemIsValid,
@@ -23,6 +23,7 @@ export const ArrayItem: ArrayItemType = ({
   onDelete,
 }) => {
   type Item = typeof item;
+
   const [state, setState] = useState<Item>(item);
 
   const handleChange = (newState: Item) => {
