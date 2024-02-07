@@ -7,10 +7,10 @@ import {
   useWatch,
 } from "react-hook-form";
 
-import { ArrayInput } from "~/components/Form/ArrayInput";
 import { FC } from "react";
 import { Fieldset } from "~/components/Form/Fieldset";
 import Input from "~/design/Input";
+import { ObjArrayInput } from "~/components/Form/ObjArrayInput";
 import { treatEmptyStringAsUndefined } from "../../../utils";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -90,15 +90,35 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
             control={control}
             name="groups"
             render={({ field }) => (
-              <ArrayInput
-                placeholder={t(
-                  "pages.explorer.consumer.editor.form.groupsPlaceholder"
-                )}
-                defaultValue={field.value ?? []}
-                onChange={(changedValue) => {
-                  field.onChange(changedValue);
-                }}
-              />
+              <div className="grid gap-5 sm:grid-cols-2">
+                <ObjArrayInput
+                  defaultValue={field.value || []}
+                  onChange={(changedValue) => {
+                    field.onChange(changedValue);
+                  }}
+                  emptyItem=""
+                  itemIsValid={(item) => item !== ""}
+                  renderItem={({
+                    state,
+                    setState,
+                    onChange,
+                    handleKeyDown,
+                  }) => (
+                    <Input
+                      placeholder={t(
+                        "pages.explorer.consumer.editor.form.groupsPlaceholder"
+                      )}
+                      value={state}
+                      onKeyDown={handleKeyDown}
+                      onChange={(e) => {
+                        const newVal = e.target.value;
+                        setState(newVal);
+                        onChange(newVal);
+                      }}
+                    />
+                  )}
+                />
+              </div>
             )}
           />
         </Fieldset>
@@ -107,15 +127,35 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
             control={control}
             name="tags"
             render={({ field }) => (
-              <ArrayInput
-                placeholder={t(
-                  "pages.explorer.consumer.editor.form.tagsPlaceholder"
-                )}
-                defaultValue={field.value ?? []}
-                onChange={(changedValue) => {
-                  field.onChange(changedValue);
-                }}
-              />
+              <div className="grid gap-5 sm:grid-cols-2">
+                <ObjArrayInput
+                  defaultValue={field.value || []}
+                  onChange={(changedValue) => {
+                    field.onChange(changedValue);
+                  }}
+                  emptyItem=""
+                  itemIsValid={(item) => item !== ""}
+                  renderItem={({
+                    state,
+                    setState,
+                    onChange,
+                    handleKeyDown,
+                  }) => (
+                    <Input
+                      placeholder={t(
+                        "pages.explorer.consumer.editor.form.tagsPlaceholder"
+                      )}
+                      value={state}
+                      onKeyDown={handleKeyDown}
+                      onChange={(e) => {
+                        const newVal = e.target.value;
+                        setState(newVal);
+                        onChange(newVal);
+                      }}
+                    />
+                  )}
+                />
+              </div>
             )}
           />
         </Fieldset>
