@@ -25,12 +25,11 @@ export const ArrayItem: ArrayItemProps = ({
   type Item = typeof item;
 
   const [state, setState] = useState<Item>(item);
+  const isValid = itemIsValid(state);
 
   const handleChange = (newState: Item) => {
-    onUpdate && onUpdate(newState);
+    onUpdate?.(newState);
   };
-
-  const isValid = itemIsValid(state);
 
   const handleAdd = () => {
     if (!isValid || !onAdd) return;
@@ -44,17 +43,16 @@ export const ArrayItem: ArrayItemProps = ({
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (!isValid) return;
     if (event.key === "Enter") {
+      // make sure not accidentally submitting a form
       event.preventDefault();
-      if (!onAdd) return;
-      event.currentTarget.blur();
+      if (!onAdd || !isValid) return;
       handleAdd();
     }
   };
 
   return (
-    <ButtonBar data-testid="env-item-form">
+    <ButtonBar>
       {renderItem({
         state,
         setState,
@@ -65,7 +63,7 @@ export const ArrayItem: ArrayItemProps = ({
         <Button
           type="button"
           variant="outline"
-          onClick={handleAdd}
+          onClick={() => handleAdd()}
           disabled={!isValid}
         >
           <Plus />
