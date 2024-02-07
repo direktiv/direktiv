@@ -8,7 +8,7 @@ import {
 
 import { Fieldset } from "~/components/Form/Fieldset";
 import Input from "~/design/Input";
-import { ObjArrayInput } from "~/components/Form/ObjArrayInput";
+import { ObjArrayInput } from "~/components/Form/ArrayInput";
 import { PluginWrapper } from "../components/Modal";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
