@@ -147,7 +147,7 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
             control={control}
             name="envs"
             render={({ field }) => (
-              <div className="grid gap-5">
+              <div className="grid gap-5" data-testid="env-item-form">
                 <ArrayInput
                   defaultValue={field.value || []}
                   onChange={(changedValue) => {
