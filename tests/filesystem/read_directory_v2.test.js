@@ -1,8 +1,9 @@
 import { describe, expect, it } from '@jest/globals'
 import request from 'supertest'
+
+import config from '../common/config'
 import helpers from '../common/helpers'
 import regex from '../common/regex'
-import config from '../common/config'
 
 const testNamespace = 'test-file-namespace'
 
