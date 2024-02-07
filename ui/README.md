@@ -43,9 +43,11 @@ This repository contains the user interface for [direktiv](https://github.com/di
 
 # Customize Logos
 
-The direktiv logos are located in the folder `public/assets/logo`. Your browser will look for the logos in `/assets/logo` when running the app.
+The direktiv logos are located in the folder `public/assets/logo` before the UI is built.
 
-You can overwrite the files in this folder or mount a folder with your own logos under this path in your web server.
+During the build process, the logos will be copied to `assets/logo` in the distribution folder, from where they will be served by the web server.
+
+You can overwrite the files of the folder or mount a folder with your own logos under one of these paths, depending on whether you do it before or after the build process.
 
 # Recommended Development Environment
 
