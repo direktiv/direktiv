@@ -25,14 +25,12 @@ const ConditionSchema = z.object({
     "value": "value"
   }
  */
-export const EnvironementVariableSchema = z.object({
+export const EnvVarSchema = z.object({
   name: z.string(),
   value: z.string(),
 });
 
-export type EnvironementVariableSchemaType = z.infer<
-  typeof EnvironementVariableSchema
->;
+export type EnvVarSchemaType = z.infer<typeof EnvVarSchema>;
 
 /**
   * example
@@ -59,7 +57,7 @@ const ServiceSchema = z.object({
   filePath: z.string(),
   image: z.string(),
   cmd: z.string(),
-  envs: z.array(EnvironementVariableSchema),
+  envs: z.array(EnvVarSchema),
   size: z.string(),
   scale: z.number(),
   error: z.string().nullable(),

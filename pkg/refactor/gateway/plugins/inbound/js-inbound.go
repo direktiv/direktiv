@@ -11,7 +11,6 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/outbound"
 	"github.com/dop251/goja"
 )
 
@@ -69,10 +68,16 @@ func (q Query) Delete(key string) {
 	q.U.Del(key)
 }
 
+type Values struct {
+	Something map[string][]string
+}
+
 type request struct {
-	Headers outbound.Headers
-	Queries Query
-	Body    string
+	Headers http.Header
+	// Headers shared.Headers
+	Queries url.Values
+	// Queries shared.Query
+	Body string
 }
 
 func (js *JSInboundPlugin) ExecutePlugin(_ *core.ConsumerFile,
@@ -94,16 +99,10 @@ func (js *JSInboundPlugin) ExecutePlugin(_ *core.ConsumerFile,
 		defer r.Body.Close()
 	}
 
-	// r.URL.Query()
-
 	req := request{
-		Headers: outbound.Headers{
-			H: r.Header,
-		},
-		Queries: Query{
-			U: r.URL.Query(),
-		},
-		Body: string(b),
+		Headers: r.Header,
+		Queries: r.URL.Query(),
+		Body:    string(b),
 	}
 
 	// extract all response headers and body
@@ -145,15 +144,14 @@ func (js *JSInboundPlugin) ExecutePlugin(_ *core.ConsumerFile,
 		if o.ExportType() == reflect.TypeOf(req) {
 			// nolint checked before
 			responseDone := o.Export().(request)
-			for k, v := range responseDone.Headers.H {
+			for k, v := range responseDone.Headers {
 				for a := range v {
 					r.Header.Add(k, v[a])
 				}
 			}
 
-			// newQuery := make(url.Values, 0)
 			newQuery := make(url.Values)
-			for k, v := range responseDone.Queries.U {
+			for k, v := range responseDone.Queries {
 				for a := range v {
 					newQuery.Add(k, v[a])
 				}

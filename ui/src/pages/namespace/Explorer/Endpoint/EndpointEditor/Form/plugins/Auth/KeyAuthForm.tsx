@@ -8,7 +8,7 @@ import {
 import { Checkbox } from "~/design/Checkbox";
 import { Fieldset } from "~/components/Form/Fieldset";
 import Input from "~/design/Input";
-import { PluginWrapper } from "../components/Modal";
+import { PluginWrapper } from "../components/PluginSelector";
 import { treatEmptyStringAsUndefined } from "~/pages/namespace/Explorer/utils";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";

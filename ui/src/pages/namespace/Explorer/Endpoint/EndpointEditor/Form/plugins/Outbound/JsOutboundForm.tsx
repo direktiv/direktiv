@@ -9,7 +9,7 @@ import {
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
 import { Fieldset } from "~/components/Form/Fieldset";
-import { PluginWrapper } from "../components/Modal";
+import { PluginWrapper } from "../components/PluginSelector";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
