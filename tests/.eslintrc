@@ -13,6 +13,7 @@
     "simple-import-sort/imports": "error",
     "simple-import-sort/exports": "error",
     "sort-imports": "off",
-    "import/no-nodejs-modules": "off"
+    "import/no-nodejs-modules": "off",
+    "eol-last": "error"
   }
 }
