@@ -20,15 +20,15 @@ export const ArrayInput: ArrayInputProps = ({
 }) => {
   const [items, setItems] = useState(defaultValue);
 
-  type OneItem = (typeof items)[number];
+  type Item = (typeof items)[number];
 
-  const addItem = (newItem: OneItem) => {
+  const addItem = (newItem: Item) => {
     const newValue = [...items, newItem];
     setItems(newValue);
     onChange(newValue);
   };
 
-  const updateAtIndex = (index: number, value: OneItem) => {
+  const updateAtIndex = (index: number, value: Item) => {
     const newItems = items.map((oldValue, oldIndex) => {
       if (oldIndex === index) {
         return value;
@@ -50,7 +50,7 @@ export const ArrayInput: ArrayInputProps = ({
       {items?.map((item, index) => (
         <ArrayItem
           key={`${items.length}-${index}`}
-          item={item}
+          defaultValue={item}
           itemIsValid={itemIsValid}
           renderItem={renderItem}
           onUpdate={(value) => updateAtIndex(index, value)}
@@ -58,7 +58,7 @@ export const ArrayInput: ArrayInputProps = ({
         />
       ))}
       <ArrayItem
-        item={emptyItem}
+        defaultValue={emptyItem}
         itemIsValid={itemIsValid}
         renderItem={renderItem}
         onAdd={addItem}

@@ -6,7 +6,7 @@ import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
 
 type ArrayItemProps = <T>(props: {
-  item: T;
+  defaultValue: T;
   renderItem: RenderItem<T>;
   itemIsValid: IsValidItem<T>;
   onUpdate?: (item: T) => void;
@@ -15,17 +15,17 @@ type ArrayItemProps = <T>(props: {
 }) => JSX.Element;
 
 export const ArrayItem: ArrayItemProps = ({
-  item, // TODO: rename to defaultValue
+  defaultValue,
   renderItem,
   itemIsValid,
   onAdd,
   onUpdate,
   onDelete,
 }) => {
-  type Item = typeof item;
+  type Item = typeof defaultValue;
 
-  const [state, setState] = useState<Item>(item);
-  const isValid = itemIsValid(state);
+  const [value, setValue] = useState<Item>(defaultValue);
+  const isValid = itemIsValid(value);
 
   const handleChange = (newState: Item) => {
     onUpdate?.(newState);
@@ -33,13 +33,12 @@ export const ArrayItem: ArrayItemProps = ({
 
   const handleAdd = () => {
     if (!isValid || !onAdd) return;
-    onAdd(state);
-    // clear all inputs
-    setState(item);
+    onAdd(value);
+    setValue(defaultValue);
   };
 
   const handleDelete = () => {
-    onDelete && onDelete();
+    onDelete?.();
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
@@ -54,8 +53,8 @@ export const ArrayItem: ArrayItemProps = ({
   return (
     <ButtonBar>
       {renderItem({
-        state,
-        setState,
+        value,
+        setValue,
         onChange: handleChange,
         handleKeyDown,
       })}

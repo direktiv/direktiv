@@ -156,14 +156,14 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
                   emptyItem={{ name: "", value: "" }}
                   itemIsValid={(item) => !!(item?.name && item?.value)}
                   renderItem={({
-                    state,
-                    setState,
+                    value: objectValue,
+                    setValue,
                     onChange,
                     handleKeyDown,
                   }) => (
                     <>
-                      {Object.entries(state).map(([key, value]) => {
-                        const typedKey = key as keyof typeof state;
+                      {Object.entries(objectValue).map(([key, value]) => {
+                        const typedKey = key as keyof typeof objectValue;
                         return (
                           <Input
                             key={key}
@@ -174,10 +174,14 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
                             value={value}
                             onKeyDown={handleKeyDown}
                             onChange={(e) => {
-                              const newVal = { [key]: e.target.value };
-                              const newState = { ...state, ...newVal };
-                              setState(newState);
-                              onChange(newState);
+                              // TODO: better naming
+                              const newObject = { [key]: e.target.value };
+                              const newObjectValue = {
+                                ...objectValue,
+                                ...newObject,
+                              };
+                              setValue(newObjectValue);
+                              onChange(newObjectValue);
                             }}
                           />
                         );

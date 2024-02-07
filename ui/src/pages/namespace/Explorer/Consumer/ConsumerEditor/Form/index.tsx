@@ -99,8 +99,8 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
                   emptyItem=""
                   itemIsValid={(item) => item !== ""}
                   renderItem={({
-                    state,
-                    setState,
+                    value,
+                    setValue,
                     onChange,
                     handleKeyDown,
                   }) => (
@@ -108,12 +108,12 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
                       placeholder={t(
                         "pages.explorer.consumer.editor.form.groupsPlaceholder"
                       )}
-                      value={state}
+                      value={value}
                       onKeyDown={handleKeyDown}
                       onChange={(e) => {
-                        const newVal = e.target.value;
-                        setState(newVal);
-                        onChange(newVal);
+                        const newValue = e.target.value;
+                        setValue(newValue);
+                        onChange(newValue);
                       }}
                     />
                   )}
@@ -136,8 +136,8 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
                   emptyItem=""
                   itemIsValid={(item) => item !== ""}
                   renderItem={({
-                    state,
-                    setState,
+                    value,
+                    setValue,
                     onChange,
                     handleKeyDown,
                   }) => (
@@ -145,12 +145,12 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
                       placeholder={t(
                         "pages.explorer.consumer.editor.form.tagsPlaceholder"
                       )}
-                      value={state}
+                      value={value}
                       onKeyDown={handleKeyDown}
                       onChange={(e) => {
-                        const newVal = e.target.value;
-                        setState(newVal);
-                        onChange(newVal);
+                        const newValue = e.target.value;
+                        setValue(newValue);
+                        onChange(newValue);
                       }}
                     />
                   )}

@@ -77,8 +77,8 @@ export const AclForm: FC<FormProps> = ({ defaultConfig, onSubmit, formId }) => {
                   emptyItem=""
                   itemIsValid={(item) => item !== ""}
                   renderItem={({
-                    state,
-                    setState,
+                    value,
+                    setValue,
                     onChange,
                     handleKeyDown,
                   }) => (
@@ -86,12 +86,12 @@ export const AclForm: FC<FormProps> = ({ defaultConfig, onSubmit, formId }) => {
                       placeholder={t(
                         "pages.explorer.endpoint.editor.form.plugins.inbound.acl.groupPlaceholder"
                       )}
-                      value={state}
+                      value={value}
                       onKeyDown={handleKeyDown}
                       onChange={(e) => {
-                        const newVal = e.target.value;
-                        setState(newVal);
-                        onChange(newVal);
+                        const newValue = e.target.value;
+                        setValue(newValue);
+                        onChange(newValue);
                       }}
                     />
                   )}
@@ -118,8 +118,8 @@ export const AclForm: FC<FormProps> = ({ defaultConfig, onSubmit, formId }) => {
                   emptyItem=""
                   itemIsValid={(item) => item !== ""}
                   renderItem={({
-                    state,
-                    setState,
+                    value,
+                    setValue,
                     onChange,
                     handleKeyDown,
                   }) => (
@@ -127,12 +127,12 @@ export const AclForm: FC<FormProps> = ({ defaultConfig, onSubmit, formId }) => {
                       placeholder={t(
                         "pages.explorer.endpoint.editor.form.plugins.inbound.acl.groupPlaceholder"
                       )}
-                      value={state}
+                      value={value}
                       onKeyDown={handleKeyDown}
                       onChange={(e) => {
-                        const newVal = e.target.value;
-                        setState(newVal);
-                        onChange(newVal);
+                        const newValue = e.target.value;
+                        setValue(newValue);
+                        onChange(newValue);
                       }}
                     />
                   )}
@@ -159,8 +159,8 @@ export const AclForm: FC<FormProps> = ({ defaultConfig, onSubmit, formId }) => {
                   emptyItem=""
                   itemIsValid={(item) => item !== ""}
                   renderItem={({
-                    state,
-                    setState,
+                    value,
+                    setValue,
                     onChange,
                     handleKeyDown,
                   }) => (
@@ -168,12 +168,12 @@ export const AclForm: FC<FormProps> = ({ defaultConfig, onSubmit, formId }) => {
                       placeholder={t(
                         "pages.explorer.endpoint.editor.form.plugins.inbound.acl.tagPlaceholder"
                       )}
-                      value={state}
+                      value={value}
                       onKeyDown={handleKeyDown}
                       onChange={(e) => {
-                        const newVal = e.target.value;
-                        setState(newVal);
-                        onChange(newVal);
+                        const newValue = e.target.value;
+                        setValue(newValue);
+                        onChange(newValue);
                       }}
                     />
                   )}
@@ -200,8 +200,8 @@ export const AclForm: FC<FormProps> = ({ defaultConfig, onSubmit, formId }) => {
                   emptyItem=""
                   itemIsValid={(item) => item !== ""}
                   renderItem={({
-                    state,
-                    setState,
+                    value,
+                    setValue,
                     onChange,
                     handleKeyDown,
                   }) => (
@@ -209,12 +209,12 @@ export const AclForm: FC<FormProps> = ({ defaultConfig, onSubmit, formId }) => {
                       placeholder={t(
                         "pages.explorer.endpoint.editor.form.plugins.inbound.acl.tagPlaceholder"
                       )}
-                      value={state}
+                      value={value}
                       onKeyDown={handleKeyDown}
                       onChange={(e) => {
-                        const newVal = e.target.value;
-                        setState(newVal);
-                        onChange(newVal);
+                        const newValue = e.target.value;
+                        setValue(newValue);
+                        onChange(newValue);
                       }}
                     />
                   )}

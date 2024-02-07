@@ -1,14 +1,14 @@
 import { Dispatch, KeyboardEvent, SetStateAction } from "react";
 
 export type RenderItem<T> = ({
-  state,
+  value,
+  setValue,
   onChange,
-  setState,
   handleKeyDown,
 }: {
-  state: T;
+  value: T;
+  setValue: Dispatch<SetStateAction<T>>;
   onChange: (item: T) => void;
-  setState: Dispatch<SetStateAction<T>>;
   handleKeyDown: (event: KeyboardEvent<HTMLInputElement>) => void;
 }) => JSX.Element;
 
