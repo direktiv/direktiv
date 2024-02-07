@@ -12,14 +12,14 @@ const (
 )
 
 type NameKeys struct {
-	Name  string `json:"name" yaml:"name"`
+	Name  string `json:"name"  yaml:"name"`
 	Value string `json:"value" yaml:"value"`
 }
 
 type HeaderManipulationConfig struct {
-	HeadersToAdd    []NameKeys `json:"headers_to_add"    mapstructure:"headers_to_add" yaml:"headers_to_add"`
-	HeadersToModify []NameKeys `json:"headers_to_modify"  mapstructure:"headers_to_modify" yaml:"headers_to_modify"`
-	HeadersToRemove []NameKeys `json:"headers_to_remove"  mapstructure:"headers_to_remove" yaml:"headers_to_remove"`
+	HeadersToAdd    []NameKeys `json:"headers_to_add"    mapstructure:"headers_to_add"    yaml:"headers_to_add"`
+	HeadersToModify []NameKeys `json:"headers_to_modify" mapstructure:"headers_to_modify" yaml:"headers_to_modify"`
+	HeadersToRemove []NameKeys `json:"headers_to_remove" mapstructure:"headers_to_remove" yaml:"headers_to_remove"`
 }
 
 type HeaderManipulationPlugin struct {
@@ -46,7 +46,6 @@ func (hp *HeaderManipulationPlugin) Config() interface{} {
 func (hp *HeaderManipulationPlugin) ExecutePlugin(_ *core.ConsumerFile,
 	_ http.ResponseWriter, r *http.Request,
 ) bool {
-
 	for a := range hp.configuration.HeadersToAdd {
 		h := hp.configuration.HeadersToAdd[a]
 		r.Header.Add(h.Name, h.Value)
