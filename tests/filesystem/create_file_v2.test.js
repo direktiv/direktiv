@@ -48,7 +48,7 @@ describe('Test filesystem tree read operations', () => {
         "foo1",
         "workflow",
         "text/plain",
-        common.helpers.dummyWorkflow("foo1"))
+        btoa(common.helpers.dummyWorkflow("foo1")))
 
     it(`should read root /dir1 with one path`, async () => {
         const res = await request(common.config.getDirektivHost())

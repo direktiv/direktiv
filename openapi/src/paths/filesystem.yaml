@@ -1,5 +1,5 @@
 
-/api/v2/namespaces/{namespace}/files-tree:
+/api/v2/namespaces/{namespace}/files-tree/{path}:
   get:
     tags:
       - files-tree
@@ -58,7 +58,6 @@
         description: filesystem tree node deleted successfully
 
 
-/api/v2/namespaces/{namespace}/files-tree/create:
   post:
     tags:
       - files-tree
@@ -72,6 +71,28 @@
           type: string
           description: path of the parent node (with slashes)
         required: true
+    requestBody:
+      description: User data
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+             name:
+               type: string
+               description: name of the node(file or directory name)
+             type:
+               type: string
+               enum: [ directory, file, workflow, service, endpoint, consumer ]
+               description: type of the node
+             mimeType:
+               type: string
+               description: (only with type != directory) mime type of the file content
+             data:
+               type: string
+               description: (only with type != directory) base64 encoded string of the file content
+
     responses:
       "200":
         description: filesystem tree node created successfully
@@ -83,3 +104,46 @@
                 data:
                   type: object
                   $ref: '../objects.yaml#/FileNodeWithoutData'
+
+  patch:
+    tags:
+      - files-tree
+    summary: Update a node in the filesystem tree (change path or data)
+    # description:
+    parameters:
+      - $ref: '../parameters.yaml#/namespace'
+      - name: path
+        in: path
+        schema:
+          type: string
+          description: path of the parent node (with slashes)
+        required: true
+    requestBody:
+      description: User data
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              absolutePath:
+                type: string
+                description: the new absolute path of the node(file or directory name)
+              data:
+                type: string
+                description: (only with type != directory) base64 encoded string of the file content
+    responses:
+      "200":
+        description: filesystem tree node updated successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              allOf: # Combines the BasicErrorModel and the inline model
+                - $ref: '../objects.yaml#/FileNodeWithoutData'
+                - type: object
+                  description: filesystem-tree node data
+                  properties:
+                    data:
+                      type: string
+                      description: (only with type != directory) base64 encoded string of the file content
