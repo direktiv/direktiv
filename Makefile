@@ -70,7 +70,8 @@ lint: ## Runs very strict linting on the project.
 	--rm \
 	-v `pwd`:/app \
 	-w /app \
-	golangci/golangci-lint:${VERSION} golangci-lint run
+	-e GOLANGCI_LINT_CACHE=/app/.cache/golangci-lint \
+	golangci/golangci-lint:${VERSION} golangci-lint run --verbose
 
 
 .PHONY: license-check 
