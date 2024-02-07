@@ -41,6 +41,14 @@ This repository contains the user interface for [direktiv](https://github.com/di
 - `yarn run e2e:ui` runs all Playwright e2e tests in ui mode
 - `yarn run preview` locally preview the production build (requires you to run `yarn build` first)
 
+# Customize Logos
+
+The direktiv logos are located in the folder `public/assets/logo` before the UI is built.
+
+During the build process, the logos will be copied to `assets/logo` in the distribution folder, from where they will be served by the web server.
+
+You can overwrite the files of the folder or mount a folder with your own logos under one of these paths, depending on whether you do it before or after the build process.
+
 # Recommended Development Environment
 
 ## Visual Studio Code Users
