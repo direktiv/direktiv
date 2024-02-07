@@ -25,7 +25,7 @@ func NewLogManager(store plattformlogs.LogStore) core.LogCollectionManager {
 	}
 }
 
-func (m logController) GetAfter(ctx context.Context, before time.Time, params map[string]string) ([]core.FeatureLogEntry, error) {
+func (m logController) GetNewer(ctx context.Context, t time.Time, params map[string]string) ([]core.FeatureLogEntry, error) {
 	var r []plattformlogs.LogEntry
 	var err error
 
@@ -37,9 +37,9 @@ func (m logController) GetAfter(ctx context.Context, before time.Time, params ma
 
 	// Call the appropriate LogStore method with cursorTime
 	if _, ok := params["instance"]; ok {
-		r, err = m.store.GetInstanceLogsBefore(ctx, stream, before)
+		r, err = m.store.GetInstanceLogsNewer(ctx, stream, t)
 	} else {
-		r, err = m.store.GetBefore(ctx, stream, before)
+		r, err = m.store.GetNewer(ctx, stream, t)
 	}
 
 	if err != nil {
@@ -69,7 +69,7 @@ func (m logController) GetAfter(ctx context.Context, before time.Time, params ma
 	return res, nil
 }
 
-func (m logController) GetFirst(ctx context.Context, params map[string]string) ([]core.FeatureLogEntry, error) {
+func (m logController) GetOlder(ctx context.Context, params map[string]string) ([]core.FeatureLogEntry, error) {
 	var r []plattformlogs.LogEntry
 	var err error
 
@@ -78,19 +78,19 @@ func (m logController) GetFirst(ctx context.Context, params map[string]string) (
 	if err != nil {
 		return []core.FeatureLogEntry{}, err
 	}
-	after := time.Now().UTC()
-	if t, ok := params["after"]; ok {
+	starting := time.Now().UTC()
+	if t, ok := params["before"]; ok {
 		co, err := time.Parse(time.RFC3339Nano, t)
 		if err != nil {
 			return []core.FeatureLogEntry{}, err
 		}
-		after = co
+		starting = co
 	}
 	// Call the appropriate LogStore method with cursorTime
 	if _, ok := params["instance"]; ok {
-		r, err = m.store.GetInstanceLogsAfter(ctx, stream, after)
+		r, err = m.store.GetInstanceLogsOlder(ctx, stream, starting)
 	} else {
-		r, err = m.store.GetAfter(ctx, stream, after)
+		r, err = m.store.GetOlder(ctx, stream, starting)
 	}
 
 	if err != nil {
@@ -136,7 +136,7 @@ func (m logController) Stream(params map[string]string) http.HandlerFunc {
 		messageChannel := make(chan Event)
 		// Adjust the logStoreWorker to use cursor instead of offset
 		worker := logStoreWorker{
-			Get:      m.GetAfter,
+			Get:      m.GetNewer,
 			Interval: time.Second,
 			Ch:       messageChannel,
 			Params:   params,
@@ -208,7 +208,7 @@ func (e *loglist) filterByLevel(level string) {
 }
 
 func determineStream(params map[string]string) (string, error) {
-	if p, ok := params["instance-id"]; ok {
+	if p, ok := params["instance"]; ok {
 		return "flow.instance." + "%" + p + "%", nil
 	} else if p, ok := params["namespace"]; ok {
 		return "flow.namespace." + p, nil

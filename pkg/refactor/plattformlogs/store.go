@@ -21,10 +21,10 @@ const (
 
 // LogStore manages storing and querying LogEntries.
 type LogStore interface {
-	GetAfter(ctx context.Context, stream string, after time.Time) ([]LogEntry, error)
-	GetBefore(ctx context.Context, stream string, before time.Time) ([]LogEntry, error)
-	GetInstanceLogsAfter(ctx context.Context, stream string, after time.Time) ([]LogEntry, error)
-	GetInstanceLogsBefore(ctx context.Context, stream string, before time.Time) ([]LogEntry, error)
+	GetNewer(ctx context.Context, stream string, t time.Time) ([]LogEntry, error)
+	GetOlder(ctx context.Context, stream string, t time.Time) ([]LogEntry, error)
+	GetInstanceLogsNewer(ctx context.Context, stream string, t time.Time) ([]LogEntry, error)
+	GetInstanceLogsOlder(ctx context.Context, stream string, t time.Time) ([]LogEntry, error)
 	DeleteOldLogs(ctx context.Context, t time.Time) error
 }
 

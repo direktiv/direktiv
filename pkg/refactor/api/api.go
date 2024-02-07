@@ -86,8 +86,9 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 
 			r.Get("/namespaces/{namespace}/logs", func(w http.ResponseWriter, r *http.Request) {
 				params := extractLogRequestParams(r)
+
 				// Call the Get method with the cursor instead of offset
-				data, err := app.LogManager.GetFirst(r.Context(), params)
+				data, err := app.LogManager.GetOlder(r.Context(), params)
 				if err != nil {
 					writeInternalError(w, err)
 
@@ -153,23 +154,23 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 
 func extractLogRequestParams(r *http.Request) map[string]string {
 	params := map[string]string{}
-	if v := chi.URLParam(r, "namespace"); v != "" {
+	if v := r.URL.Query().Get("namespace"); v != "" {
 		params["namespace"] = v
 	}
-	if v := chi.URLParam(r, "route"); v != "" {
+	if v := r.URL.Query().Get("route"); v != "" {
 		params["route"] = v
 	}
-	if v := chi.URLParam(r, "instance"); v != "" {
+	if v := r.URL.Query().Get("instance"); v != "" {
 		params["instance"] = v
 	}
-	if v := chi.URLParam(r, "branch"); v != "" {
+	if v := r.URL.Query().Get("branch"); v != "" {
 		params["branch"] = v
 	}
-	if v := chi.URLParam(r, "level"); v != "" {
+	if v := r.URL.Query().Get("level"); v != "" {
 		params["level"] = v
 	}
-	if v := chi.URLParam(r, "after"); v != "" {
-		params["after"] = v
+	if v := r.URL.Query().Get("before"); v != "" {
+		params["before"] = v
 	}
 
 	return params

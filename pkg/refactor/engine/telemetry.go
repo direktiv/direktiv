@@ -38,6 +38,9 @@ func (instance *Instance) GetSlogAttributes(ctx context.Context) []interface{} {
 	for _, v := range instance.DescentInfo.Descent {
 		callpath += "/" + v.ID.String()
 	}
+	if callpath == "" {
+		callpath = "/" + instance.Instance.ID.String()
+	}
 	span := trace.SpanFromContext(ctx)
 	TraceID := span.SpanContext().TraceID().String() // TODO: instance.TelemetryInfo.TraceID is broken.
 	SpanID := span.SpanContext().SpanID().String()

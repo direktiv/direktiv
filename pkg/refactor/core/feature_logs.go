@@ -7,8 +7,8 @@ import (
 )
 
 type LogCollectionManager interface {
-	GetAfter(ctx context.Context, after time.Time, params map[string]string) ([]FeatureLogEntry, error)
-	GetFirst(ctx context.Context, params map[string]string) ([]FeatureLogEntry, error)
+	GetNewer(ctx context.Context, t time.Time, params map[string]string) ([]FeatureLogEntry, error)
+	GetOlder(ctx context.Context, params map[string]string) ([]FeatureLogEntry, error)
 	Stream(params map[string]string) http.HandlerFunc
 }
 
