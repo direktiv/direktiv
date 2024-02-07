@@ -208,9 +208,17 @@ frontend:
   command: ""
   replicas: 1
   extraVariables: []
-  nginx: 
-    resolver: kube-dns.kube-system.svc.cluster.local valid=10s;
-    config: ""
+  logos:
+    # -- Path to small, light icon
+    icon-light:
+    # -- Path to small, dark icon
+    icon-dark:
+    # -- Path to light logo
+    logo-light:
+    # -- Path to dark logo
+    logo-dark:
+    # -- Path to favicon
+    favicon:
 
   # -- Logging setting for the UI
   logging:

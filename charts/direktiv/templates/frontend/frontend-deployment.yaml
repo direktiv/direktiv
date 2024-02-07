@@ -79,18 +79,32 @@ spec:
               containerPort: 2304
               protocol: TCP
           volumeMounts:
-          - name: nginx-conf
-            mountPath: /etc/nginx/templates
+          {{- if or (index .Values.frontend.logos "icon-light") 
+            (index .Values.frontend.logos "icon-dark")
+            (index .Values.frontend.logos "logo-dark")
+            (index .Values.frontend.logos "logo-light")
+            (index .Values.frontend.logos "favicon")
+          }}          
+          - name: logo-volume
+            mountPath: /usr/share/nginx/html/assets/logo
             readOnly: true
+          {{- end }}
           {{- if .Values.frontend.certificate }}
           - name: cert-volume
             mountPath: /etc/certs
             readOnly: true
           {{- end }}
       volumes:
-      - name: nginx-conf
+      {{- if or (index .Values.frontend.logos "icon-light") 
+        (index .Values.frontend.logos "icon-dark")
+        (index .Values.frontend.logos "logo-dark")
+        (index .Values.frontend.logos "logo-light")
+        (index .Values.frontend.logos "favicon")
+      }}
+      - name: logo-volume
         configMap:
-          name: {{ include "direktiv.fullname" . }}-config-frontend
+          name: {{ include "direktiv.fullname" . }}-logos
+      {{- end }}
       {{- if .Values.frontend.certificate }}
       - name: cert-volume
         secret:
