@@ -1,9 +1,10 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
+import { basename } from 'path'
 import request from 'supertest'
 
 import common from '../common'
 
-const namespace = path.basename(__filename)
+const namespace = basename(__filename)
 
 describe('Test namespaces crud operations', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)

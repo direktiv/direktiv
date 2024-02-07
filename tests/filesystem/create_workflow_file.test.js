@@ -1,8 +1,8 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
+import { basename } from 'path'
 import request from 'supertest'
 
 import common from '../common'
-import {basename} from "path";
 
 const namespace = basename(__filename)
 

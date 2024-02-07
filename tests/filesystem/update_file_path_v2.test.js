@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
+import { basename } from 'path'
 
 import helpers from '../common/helpers'
-import {basename} from "path";
 
 const namespace = basename(__filename)
 
