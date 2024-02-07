@@ -1,4 +1,4 @@
-import { createNamespace, deleteNamespace } from "../utils/namespace";
+import { createNamespace, deleteNamespace } from "e2e/utils/namespace";
 import { createRedisConsumerFile, findConsumerWithApiRequest } from "./utils";
 import { expect, test } from "@playwright/test";
 
@@ -68,11 +68,6 @@ test("Consumer list shows all available consumers", async ({ page }) => {
   ).toHaveCount(1);
 
   await expect(
-    page.getByTestId("consumer-table").getByRole("cell").nth(0),
-    "it renders the field for the username"
-  ).toBeVisible();
-
-  await expect(
     page.getByTestId("consumer-table").getByRole("cell").nth(0).locator("div"),
     "it renders the text for the username"
   ).toHaveText("userA");
@@ -83,26 +78,8 @@ test("Consumer list shows all available consumers", async ({ page }) => {
       .locator("tr")
       .getByRole("textbox")
       .first(),
-    "it renders the password field"
-  ).toBeVisible();
-
-  await expect(
-    page
-      .getByTestId("consumer-table")
-      .locator("tr")
-      .getByRole("textbox")
-      .first(),
     "it renders the text for the password"
   ).toHaveValue("password");
-
-  await expect(
-    page
-      .getByTestId("consumer-table")
-      .locator("tr")
-      .getByRole("textbox")
-      .nth(1),
-    "it renders the apikey field"
-  ).toBeVisible();
 
   await expect(
     page
