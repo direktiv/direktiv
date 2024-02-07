@@ -56,14 +56,12 @@ export const ObjArrayInput: ObjArrayInputType = ({
           onDelete={() => deleteAtIndex(index)}
         />
       ))}
-      <div>
-        <ItemForm
-          item={emptyItem}
-          itemIsValid={itemIsValid}
-          renderItem={renderItem}
-          onAdd={addItem}
-        />
-      </div>
+      <ItemForm
+        item={emptyItem}
+        itemIsValid={itemIsValid}
+        renderItem={renderItem}
+        onAdd={addItem}
+      />
     </>
   );
 };
