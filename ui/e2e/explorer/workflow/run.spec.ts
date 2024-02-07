@@ -1,6 +1,10 @@
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
 import { expect, test } from "@playwright/test";
-import { jsonSchemaFormWorkflow, jsonSchemaWithRequiredEnum } from "./utils";
+import {
+  jsonSchemaFormWorkflow,
+  jsonSchemaWithRequiredEnum,
+  testDiacriticsWorkflow,
+} from "./utils";
 
 import { noop as basicWorkflow } from "~/pages/namespace/Explorer/Tree/components/modals/CreateNew/Workflow/templates";
 import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
@@ -166,6 +170,43 @@ test("it is possible to run the workflow by setting an input JSON via the editor
     inputResponseString,
     "the server result is the same as the input that was sent"
   ).toBe(userInputString);
+});
+
+test("it is possible to run a workflow with input data containing special characters", async ({
+  page,
+}) => {
+  const name = "test-diacritics.yaml";
+
+  await createWorkflow({
+    payload: testDiacriticsWorkflow,
+    urlParams: {
+      baseUrl: process.env.VITE_DEV_API_DOMAIN,
+      namespace,
+      name,
+    },
+    headers,
+  });
+
+  await page.goto(`${namespace}/explorer/workflow/edit/${name}`);
+
+  await expect(
+    page.locator(".view-lines"),
+    "The editor renders special characters correctly"
+  ).toContainText("A workflow for testing characters like îèüñÆ");
+
+  await page.getByTestId("workflow-editor-btn-run").click();
+  await page.getByLabel("Name").fill("Kateřina Horáčková");
+  await page.getByTestId("run-workflow-submit-btn").click();
+
+  await expect(
+    page.locator(".lines-content"),
+    "The text from the input is rendered correctly in the workflow output"
+  ).toContainText(
+    `{    
+    "result": "Hello Kateřina Horáčková"
+}`,
+    { useInnerText: true }
+  );
 });
 
 test("it is not possible to run the workflow when the editor has unsaved changes", async ({
