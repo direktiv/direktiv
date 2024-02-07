@@ -117,12 +117,6 @@ service Flow {
 
 	rpc WorkflowMetrics (WorkflowMetricsRequest) returns (WorkflowMetricsResponse) {}
 
-	// COMING SOON:
-	//
-	// rpc ValidateWorkflow (ValidateWorkflowRequest) returns (ValidateWorkflowResponse) {}
-	// Dependencies // Return dependency graph.
-	// Crons // List of cron schedules on the namespace.
-	// Broadcast // Broadcast Cloudevent.
 	rpc EventListeners (EventListenersRequest) returns (EventListenersResponse) {} 
 	rpc EventListenersStream (EventListenersRequest) returns (stream EventListenersResponse) {} 
 
@@ -132,11 +126,6 @@ service Flow {
 	rpc HistoricalEvent (HistoricalEventRequest) returns (HistoricalEventResponse) {}
 
 	rpc ReplayEvent (ReplayEventRequest) returns (google.protobuf.Empty) {}
-
-	// Linting
-	// LintRevision
-	// LintPayload
-	// Workflow Metrics
 
 
 	rpc ResolveNamespaceUID (ResolveNamespaceUIDRequest) returns (NamespaceResponse) {}
@@ -175,7 +164,6 @@ service Flow {
 service Internal {
  	rpc ReportActionResults (ReportActionResultsRequest) returns (google.protobuf.Empty) {}
  	rpc ActionLog(ActionLogRequest) returns (google.protobuf.Empty) {}
-	// rpc Resume (ResumeRequest) returns (google.protobuf.Empty) {}
 
 	rpc NamespaceVariableParcels (VariableInternalRequest) returns (stream VariableInternalResponse) {}
 	rpc SetNamespaceVariableParcels (stream SetVariableInternalRequest) returns (SetVariableInternalResponse) {}
