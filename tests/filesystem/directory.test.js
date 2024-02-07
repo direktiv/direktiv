@@ -8,14 +8,14 @@ const createDirResponse = {
 	node: common.structs.nodeObject,
 }
 
-const readDirResponse = {
-	namespace: expect.anything(),
-	node: common.structs.nodeObject,
-	children: {
-		pageInfo: common.structs.pageInfoObject,
-		results: expect.anything(),
-	},
-}
+// const readDirResponse = {
+// 	namespace: expect.anything(),
+// 	node: common.structs.nodeObject,
+// 	children: {
+// 		pageInfo: common.structs.pageInfoObject,
+// 		results: expect.anything(),
+// 	},
+// }
 
 // TODO: test fail to rename a node into itself
 // TODO: test fail to rename a node out of itself
