@@ -73,37 +73,44 @@ export const HeaderManipulationForm: FC<FormProps> = ({
             control={control}
             name="configuration.headers_to_add"
             render={({ field }) => (
-              <ObjArrayInput
-                defaultValue={field.value || []}
-                onChange={(changedValue) => {
-                  field.onChange(changedValue);
-                }}
-                emptyItem={{ name: "", value: "" }}
-                itemIsValid={(item) => !!(item?.name && item?.value)}
-                renderItem={({ state, setState, onChange, handleKeyDown }) => (
-                  <>
-                    {Object.entries(state).map(([key, value]) => {
-                      const typedKey = key as keyof typeof state;
-                      return (
-                        <Input
-                          placeholder={t(
-                            `pages.explorer.endpoint.editor.form.plugins.inbound.headerManipulation.${typedKey}Placeholder`
-                          )}
-                          key={key}
-                          value={value}
-                          onKeyDown={handleKeyDown}
-                          onChange={(e) => {
-                            const newVal = { [key]: e.target.value };
-                            const newState = { ...state, ...newVal };
-                            setState(newState);
-                            onChange(newState);
-                          }}
-                        />
-                      );
-                    })}
-                  </>
-                )}
-              />
+              <div className="grid gap-5">
+                <ObjArrayInput
+                  defaultValue={field.value || []}
+                  onChange={(changedValue) => {
+                    field.onChange(changedValue);
+                  }}
+                  emptyItem={{ name: "", value: "" }}
+                  itemIsValid={(item) => !!(item?.name && item?.value)}
+                  renderItem={({
+                    state,
+                    setState,
+                    onChange,
+                    handleKeyDown,
+                  }) => (
+                    <>
+                      {Object.entries(state).map(([key, value]) => {
+                        const typedKey = key as keyof typeof state;
+                        return (
+                          <Input
+                            placeholder={t(
+                              `pages.explorer.endpoint.editor.form.plugins.inbound.headerManipulation.${typedKey}Placeholder`
+                            )}
+                            key={key}
+                            value={value}
+                            onKeyDown={handleKeyDown}
+                            onChange={(e) => {
+                              const newVal = { [key]: e.target.value };
+                              const newState = { ...state, ...newVal };
+                              setState(newState);
+                              onChange(newState);
+                            }}
+                          />
+                        );
+                      })}
+                    </>
+                  )}
+                />
+              </div>
             )}
           />
         </Fieldset>
@@ -117,40 +124,47 @@ export const HeaderManipulationForm: FC<FormProps> = ({
             control={control}
             name="configuration.headers_to_modify"
             render={({ field }) => (
-              <ObjArrayInput
-                defaultValue={field.value || []}
-                onChange={(changedValue) => {
-                  field.onChange(changedValue);
-                }}
-                emptyItem={{
-                  name: "",
-                  value: "",
-                }}
-                itemIsValid={(item) => !!(item?.name && item?.value)}
-                renderItem={({ state, setState, onChange, handleKeyDown }) => (
-                  <>
-                    {Object.entries(state).map(([key, value]) => {
-                      const typedKey = key as keyof typeof state;
-                      return (
-                        <Input
-                          placeholder={t(
-                            `pages.explorer.endpoint.editor.form.plugins.inbound.headerManipulation.${typedKey}Placeholder`
-                          )}
-                          key={key}
-                          value={value}
-                          onKeyDown={handleKeyDown}
-                          onChange={(e) => {
-                            const newVal = { [key]: e.target.value };
-                            const newState = { ...state, ...newVal };
-                            setState(newState);
-                            onChange(newState);
-                          }}
-                        />
-                      );
-                    })}
-                  </>
-                )}
-              />
+              <div className="grid gap-5">
+                <ObjArrayInput
+                  defaultValue={field.value || []}
+                  onChange={(changedValue) => {
+                    field.onChange(changedValue);
+                  }}
+                  emptyItem={{
+                    name: "",
+                    value: "",
+                  }}
+                  itemIsValid={(item) => !!(item?.name && item?.value)}
+                  renderItem={({
+                    state,
+                    setState,
+                    onChange,
+                    handleKeyDown,
+                  }) => (
+                    <>
+                      {Object.entries(state).map(([key, value]) => {
+                        const typedKey = key as keyof typeof state;
+                        return (
+                          <Input
+                            placeholder={t(
+                              `pages.explorer.endpoint.editor.form.plugins.inbound.headerManipulation.${typedKey}Placeholder`
+                            )}
+                            key={key}
+                            value={value}
+                            onKeyDown={handleKeyDown}
+                            onChange={(e) => {
+                              const newVal = { [key]: e.target.value };
+                              const newState = { ...state, ...newVal };
+                              setState(newState);
+                              onChange(newState);
+                            }}
+                          />
+                        );
+                      })}
+                    </>
+                  )}
+                />
+              </div>
             )}
           />
         </Fieldset>
@@ -164,39 +178,46 @@ export const HeaderManipulationForm: FC<FormProps> = ({
             control={control}
             name="configuration.headers_to_remove"
             render={({ field }) => (
-              <ObjArrayInput
-                defaultValue={field.value || []}
-                onChange={(changedValue) => {
-                  field.onChange(changedValue);
-                }}
-                emptyItem={{
-                  name: "",
-                }}
-                itemIsValid={(item) => !!item?.name}
-                renderItem={({ state, setState, onChange, handleKeyDown }) => (
-                  <>
-                    {Object.entries(state).map(([key, value]) => {
-                      const typedKey = key as keyof typeof state;
-                      return (
-                        <Input
-                          placeholder={t(
-                            `pages.explorer.endpoint.editor.form.plugins.inbound.headerManipulation.${typedKey}Placeholder`
-                          )}
-                          key={key}
-                          value={value}
-                          onKeyDown={handleKeyDown}
-                          onChange={(e) => {
-                            const newVal = { [key]: e.target.value };
-                            const newState = { ...state, ...newVal };
-                            setState(newState);
-                            onChange(newState);
-                          }}
-                        />
-                      );
-                    })}
-                  </>
-                )}
-              />
+              <div className="grid gap-5">
+                <ObjArrayInput
+                  defaultValue={field.value || []}
+                  onChange={(changedValue) => {
+                    field.onChange(changedValue);
+                  }}
+                  emptyItem={{
+                    name: "",
+                  }}
+                  itemIsValid={(item) => !!item?.name}
+                  renderItem={({
+                    state,
+                    setState,
+                    onChange,
+                    handleKeyDown,
+                  }) => (
+                    <>
+                      {Object.entries(state).map(([key, value]) => {
+                        const typedKey = key as keyof typeof state;
+                        return (
+                          <Input
+                            placeholder={t(
+                              `pages.explorer.endpoint.editor.form.plugins.inbound.headerManipulation.${typedKey}Placeholder`
+                            )}
+                            key={key}
+                            value={value}
+                            onKeyDown={handleKeyDown}
+                            onChange={(e) => {
+                              const newVal = { [key]: e.target.value };
+                              const newState = { ...state, ...newVal };
+                              setState(newState);
+                              onChange(newState);
+                            }}
+                          />
+                        );
+                      })}
+                    </>
+                  )}
+                />
+              </div>
             )}
           />
         </Fieldset>

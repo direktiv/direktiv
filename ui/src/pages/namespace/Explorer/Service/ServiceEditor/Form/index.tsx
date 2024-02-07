@@ -147,38 +147,45 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
             control={control}
             name="envs"
             render={({ field }) => (
-              <ObjArrayInput
-                defaultValue={field.value || []}
-                onChange={(changedValue) => {
-                  field.onChange(changedValue);
-                }}
-                emptyItem={{ name: "", value: "" }}
-                itemIsValid={(item) => !!(item?.name && item?.value)}
-                renderItem={({ state, setState, onChange, handleKeyDown }) => (
-                  <>
-                    {Object.entries(state).map(([key, value]) => {
-                      const typedKey = key as keyof typeof state;
-                      return (
-                        <Input
-                          key={key}
-                          data-testid={`env-${typedKey}`}
-                          placeholder={t(
-                            `pages.explorer.service.editor.form.envs.${typedKey}Placeholder`
-                          )}
-                          value={value}
-                          onKeyDown={handleKeyDown}
-                          onChange={(e) => {
-                            const newVal = { [key]: e.target.value };
-                            const newState = { ...state, ...newVal };
-                            setState(newState);
-                            onChange(newState);
-                          }}
-                        />
-                      );
-                    })}
-                  </>
-                )}
-              />
+              <div className="grid gap-5">
+                <ObjArrayInput
+                  defaultValue={field.value || []}
+                  onChange={(changedValue) => {
+                    field.onChange(changedValue);
+                  }}
+                  emptyItem={{ name: "", value: "" }}
+                  itemIsValid={(item) => !!(item?.name && item?.value)}
+                  renderItem={({
+                    state,
+                    setState,
+                    onChange,
+                    handleKeyDown,
+                  }) => (
+                    <>
+                      {Object.entries(state).map(([key, value]) => {
+                        const typedKey = key as keyof typeof state;
+                        return (
+                          <Input
+                            key={key}
+                            data-testid={`env-${typedKey}`}
+                            placeholder={t(
+                              `pages.explorer.service.editor.form.envs.${typedKey}Placeholder`
+                            )}
+                            value={value}
+                            onKeyDown={handleKeyDown}
+                            onChange={(e) => {
+                              const newVal = { [key]: e.target.value };
+                              const newState = { ...state, ...newVal };
+                              setState(newState);
+                              onChange(newState);
+                            }}
+                          />
+                        );
+                      })}
+                    </>
+                  )}
+                />
+              </div>
             )}
           />
         </Fieldset>
