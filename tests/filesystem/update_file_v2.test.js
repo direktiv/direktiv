@@ -1,26 +1,25 @@
-import request from 'supertest'
-import common from "../common";
-import regex from "../common/regex";
+import {describe, expect, it} from '@jest/globals'
+import helpers from "../common/helpers";
 
 const testNamespace = "test-file-namespace"
 
 describe('Test filesystem tree update operations', () => {
-    beforeAll(common.helpers.deleteAllNamespaces)
+    beforeAll(helpers.deleteAllNamespaces)
 
-    common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
+    helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-    common.helpers.itShouldCreateDirV2(it, expect, testNamespace, "/", "dir1")
-    common.helpers.itShouldCreateFileV2(it, expect, testNamespace,
+    helpers.itShouldCreateDirV2(it, expect, testNamespace, "/", "dir1")
+    helpers.itShouldCreateFileV2(it, expect, testNamespace,
         "/dir1",
         "foo1",
         "workflow",
         "text/plain",
-        btoa(common.helpers.dummyWorkflow("foo1")))
+        btoa(helpers.dummyWorkflow("foo1")))
 
-    common.helpers.itShouldUpdateFileV2(it, expect, testNamespace,
+    helpers.itShouldUpdateFileV2(it, expect, testNamespace,
         "/dir1/foo1",
         {
             absolutePath: "/dir1/foo2",
-            data: btoa(common.helpers.dummyWorkflow("foo2"))},
+            data: btoa(helpers.dummyWorkflow("foo2"))},
         )
 })
