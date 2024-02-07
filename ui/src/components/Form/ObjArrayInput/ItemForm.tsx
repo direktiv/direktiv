@@ -2,6 +2,7 @@ import { KeyboardEvent, useState } from "react";
 import { Plus, X } from "lucide-react";
 
 import Button from "~/design/Button";
+import { ButtonBar } from "~/design/ButtonBar";
 import { RenderItemType } from "./types";
 
 type ObjArrayInputType = <T>(props: {
@@ -52,7 +53,7 @@ export const ItemForm: ObjArrayInputType = ({
   };
 
   return (
-    <div className="flex gap-3" data-testid="env-item-form">
+    <ButtonBar data-testid="env-item-form">
       {renderItem({
         state,
         setState,
@@ -74,6 +75,6 @@ export const ItemForm: ObjArrayInputType = ({
           <X />
         </Button>
       )}
-    </div>
+    </ButtonBar>
   );
 };
