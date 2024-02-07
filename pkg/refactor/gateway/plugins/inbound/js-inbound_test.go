@@ -2,7 +2,6 @@ package inbound_test
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -19,33 +18,41 @@ func TestExecuteJSInboundPlugin(t *testing.T) {
 
 	config := &inbound.JSInboundConfig{
 		Script: `
-		log("JENS")
-		input["Headers"].Delete("Header1")
-		input["Headers"].Add("demo", "value")
-		input["Queries"].Add("new", "param")
+		input["Headers"].Del("Header1")
+		input["Headers"].Add("Header3", "value3")
+
+		input["Queries"].Del("Query1")
+		input["Queries"].Add("Query3", "value3")
+
 		b = JSON.parse(input["Body"])
-		b["newvalue"] = 200
+		b["addquery"] = input["Queries"].Get("Query3")
+		b["addheader"] = input["Headers"].Get("Header3")
 		input["Body"] = JSON.stringify(b) 
 		`,
 	}
 	p2, _ := p.Configure(config, core.MagicalGatewayNamespace)
 
-	r, _ := http.NewRequest(http.MethodGet, "/dummy?test=me", nil)
+	r, _ := http.NewRequest(http.MethodGet, "/dummy?Query1=value1&Query2=value2", nil)
 	r.Header.Add("Header1", "value1")
-	r.Header.Add("header2", "value2")
+	r.Header.Add("Header2", "value2")
 	r.Body = io.NopCloser(bytes.NewBufferString("{ \"string1\": \"value2\" }"))
 
 	w := httptest.NewRecorder()
 	p2.ExecutePlugin(nil, w, r)
 
-	fmt.Println(r.URL)
-	assert.Equal(t, "me", r.URL.Query().Get("test"))
-	assert.Equal(t, "param", r.URL.Query().Get("new"))
-
-	assert.Equal(t, "value", r.Header.Get("demo"))
+	// got deleted
 	assert.Empty(t, r.Header.Get("Header1"))
+	assert.Empty(t, r.URL.Query().Get("Query1"))
+
+	// newly set
+	assert.Equal(t, "value3", r.Header.Get("Header3"))
+	assert.Equal(t, "value3", r.URL.Query().Get("Query3"))
+
+	// still available
+	assert.NotEmpty(t, r.Header.Get("Header2"))
+	assert.NotEmpty(t, r.URL.Query().Get("Query2"))
 
 	b, _ := io.ReadAll(r.Body)
 	defer r.Body.Close()
-	assert.JSONEq(t, "{\"string1\":\"value2\",\"newvalue\":200}", string(b))
+	assert.JSONEq(t, "{\"string1\":\"value2\",\"addheader\":\"value3\", \"addquery\":\"value3\"}", string(b))
 }
