@@ -1,8 +1,8 @@
-import { ItemForm } from "./ItemForm";
+import { ArrayItem } from "./ArrayItem";
 import { RenderItemType } from "./types";
 import { useState } from "react";
 
-type ObjArrayInputType = <T>(props: {
+type ArrayInputType = <T>(props: {
   defaultValue: T[];
   emptyItem: T;
   onChange: (newValue: T[]) => void;
@@ -10,7 +10,7 @@ type ObjArrayInputType = <T>(props: {
   renderItem: RenderItemType<T>;
 }) => JSX.Element;
 
-export const ObjArrayInput: ObjArrayInputType = ({
+export const ArrayInput: ArrayInputType = ({
   defaultValue,
   emptyItem,
   renderItem,
@@ -47,7 +47,7 @@ export const ObjArrayInput: ObjArrayInputType = ({
   return (
     <>
       {items?.map((item, index) => (
-        <ItemForm
+        <ArrayItem
           key={`${items.length}-${index}`}
           item={item}
           itemIsValid={itemIsValid}
@@ -56,7 +56,7 @@ export const ObjArrayInput: ObjArrayInputType = ({
           onDelete={() => deleteAtIndex(index)}
         />
       ))}
-      <ItemForm
+      <ArrayItem
         item={emptyItem}
         itemIsValid={itemIsValid}
         renderItem={renderItem}

@@ -6,9 +6,9 @@ import { Controller, useForm } from "react-hook-form";
 import { FC, FormEvent } from "react";
 import FormErrors, { errorsType } from "~/components/FormErrors";
 
+import { ArrayInput } from "~/components/Form/ArrayInput";
 import { Fieldset } from "~/components/Form/Fieldset";
 import Input from "~/design/Input";
-import { ObjArrayInput } from "~/components/Form/ArrayInput";
 import { PluginWrapper } from "../components/Modal";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -69,7 +69,7 @@ export const AclForm: FC<FormProps> = ({ defaultConfig, onSubmit, formId }) => {
             name="configuration.allow_groups"
             render={({ field }) => (
               <div className="grid gap-5 sm:grid-cols-2">
-                <ObjArrayInput
+                <ArrayInput
                   defaultValue={field.value || []}
                   onChange={(changedValue) => {
                     field.onChange(changedValue);
@@ -110,7 +110,7 @@ export const AclForm: FC<FormProps> = ({ defaultConfig, onSubmit, formId }) => {
             name="configuration.deny_groups"
             render={({ field }) => (
               <div className="grid gap-5 sm:grid-cols-2">
-                <ObjArrayInput
+                <ArrayInput
                   defaultValue={field.value || []}
                   onChange={(changedValue) => {
                     field.onChange(changedValue);
@@ -151,7 +151,7 @@ export const AclForm: FC<FormProps> = ({ defaultConfig, onSubmit, formId }) => {
             name="configuration.allow_tags"
             render={({ field }) => (
               <div className="grid gap-5 sm:grid-cols-2">
-                <ObjArrayInput
+                <ArrayInput
                   defaultValue={field.value || []}
                   onChange={(changedValue) => {
                     field.onChange(changedValue);
@@ -192,7 +192,7 @@ export const AclForm: FC<FormProps> = ({ defaultConfig, onSubmit, formId }) => {
             name="configuration.deny_tags"
             render={({ field }) => (
               <div className="grid gap-5 sm:grid-cols-2">
-                <ObjArrayInput
+                <ArrayInput
                   defaultValue={field.value || []}
                   onChange={(changedValue) => {
                     field.onChange(changedValue);

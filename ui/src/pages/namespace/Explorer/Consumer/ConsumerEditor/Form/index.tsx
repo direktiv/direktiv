@@ -7,10 +7,10 @@ import {
   useWatch,
 } from "react-hook-form";
 
+import { ArrayInput } from "~/components/Form/ArrayInput";
 import { FC } from "react";
 import { Fieldset } from "~/components/Form/Fieldset";
 import Input from "~/design/Input";
-import { ObjArrayInput } from "~/components/Form/ArrayInput";
 import { treatEmptyStringAsUndefined } from "../../../utils";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -91,7 +91,7 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
             name="groups"
             render={({ field }) => (
               <div className="grid gap-5 sm:grid-cols-2">
-                <ObjArrayInput
+                <ArrayInput
                   defaultValue={field.value || []}
                   onChange={(changedValue) => {
                     field.onChange(changedValue);
@@ -128,7 +128,7 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
             name="tags"
             render={({ field }) => (
               <div className="grid gap-5 sm:grid-cols-2">
-                <ObjArrayInput
+                <ArrayInput
                   defaultValue={field.value || []}
                   onChange={(changedValue) => {
                     field.onChange(changedValue);

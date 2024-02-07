@@ -6,9 +6,9 @@ import {
   HeaderManipulationFormSchemaType,
 } from "../../../schema/plugins/inbound/headerManipulation";
 
+import { ArrayInput } from "~/components/Form/ArrayInput";
 import { Fieldset } from "~/components/Form/Fieldset";
 import Input from "~/design/Input";
-import { ObjArrayInput } from "~/components/Form/ArrayInput";
 import { PluginWrapper } from "../components/Modal";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -74,7 +74,7 @@ export const HeaderManipulationForm: FC<FormProps> = ({
             name="configuration.headers_to_add"
             render={({ field }) => (
               <div className="grid gap-5">
-                <ObjArrayInput
+                <ArrayInput
                   defaultValue={field.value || []}
                   onChange={(changedValue) => {
                     field.onChange(changedValue);
@@ -125,7 +125,7 @@ export const HeaderManipulationForm: FC<FormProps> = ({
             name="configuration.headers_to_modify"
             render={({ field }) => (
               <div className="grid gap-5">
-                <ObjArrayInput
+                <ArrayInput
                   defaultValue={field.value || []}
                   onChange={(changedValue) => {
                     field.onChange(changedValue);
@@ -179,7 +179,7 @@ export const HeaderManipulationForm: FC<FormProps> = ({
             name="configuration.headers_to_remove"
             render={({ field }) => (
               <div className="grid gap-5">
-                <ObjArrayInput
+                <ArrayInput
                   defaultValue={field.value || []}
                   onChange={(changedValue) => {
                     field.onChange(changedValue);

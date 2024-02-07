@@ -5,7 +5,7 @@ import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
 import { RenderItemType } from "./types";
 
-type ObjArrayInputType = <T>(props: {
+type ArrayItemType = <T>(props: {
   item: T;
   renderItem: RenderItemType<T>;
   itemIsValid: (item?: T) => boolean;
@@ -14,7 +14,7 @@ type ObjArrayInputType = <T>(props: {
   onDelete?: () => void;
 }) => JSX.Element;
 
-export const ItemForm: ObjArrayInputType = ({
+export const ArrayItem: ArrayItemType = ({
   item, // TODO: rename to defaultValue
   renderItem,
   itemIsValid,
