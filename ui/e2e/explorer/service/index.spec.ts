@@ -115,12 +115,11 @@ envs:${envsYaml}`;
 
   await Promise.all(
     envVariables.map(async (item, index) => {
-      const currentElement = page.getByTestId("env-item-form");
       await expect(
-        currentElement.getByTestId("env-name").nth(index)
+        page.getByTestId("env-item-form").getByTestId("env-name").nth(index)
       ).toHaveValue(item.name);
       await expect(
-        currentElement.getByTestId("env-value").nth(index)
+        page.getByTestId("env-item-form").getByTestId("env-value").nth(index)
       ).toHaveValue(item.value);
     })
   );
