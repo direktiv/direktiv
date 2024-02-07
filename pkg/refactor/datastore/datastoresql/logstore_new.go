@@ -18,6 +18,7 @@ type sqlLogNewStore struct {
 }
 
 type ScanResult struct {
+	ID   int
 	Time time.Time
 	Tag  string
 	Data []byte
@@ -25,7 +26,7 @@ type ScanResult struct {
 
 func (s sqlLogNewStore) Get(ctx context.Context, stream string, cursorTime time.Time) ([]plattformlogs.LogEntry, error) {
 	query := `
-        SELECT time, tag, data
+        SELECT id, time, tag, data
         FROM fluentbit
         WHERE tag = ? AND time > ?
         ORDER BY time ASC
@@ -42,7 +43,7 @@ func (s sqlLogNewStore) Get(ctx context.Context, stream string, cursorTime time.
 
 func (s sqlLogNewStore) GetInstanceLogs(ctx context.Context, stream string, cursorTime time.Time) ([]plattformlogs.LogEntry, error) {
 	query := `
-        SELECT time, tag, data
+        SELECT id, time, tag, data
         FROM fluentbit
         WHERE tag LIKE ? AND time > ?
         ORDER BY time ASC
@@ -68,6 +69,7 @@ func convertScanResults(scanResults []ScanResult) ([]plattformlogs.LogEntry, err
 		}
 
 		resultList = append(resultList, plattformlogs.LogEntry{
+			ID:   result.ID,
 			Time: result.Time,
 			Tag:  result.Tag,
 			Data: dataMap,

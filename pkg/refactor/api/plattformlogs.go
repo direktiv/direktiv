@@ -1,6 +1,7 @@
 package api
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -91,12 +92,12 @@ func (m logController) Stream(params map[string]string) http.HandlerFunc {
 		}
 
 		// Create a channel to send SSE messages
-		messageChannel := make(chan string)
+		messageChannel := make(chan Event)
 		// Adjust the logStoreWorker to use cursor instead of offset
 		worker := logStoreWorker{
 			Get:      m.Get,
 			Interval: time.Second,
-			LogCh:    messageChannel,
+			Ch:       messageChannel,
 			Params:   params,
 			Cursor:   cursorTime,
 		}
@@ -105,12 +106,12 @@ func (m logController) Stream(params map[string]string) http.HandlerFunc {
 		for {
 			select {
 			case <-ctx.Done():
-				slog.Info("context  done")
+				slog.Info("context done")
 
 				return
 			case message := <-messageChannel:
 				slog.Info("data", "message", message)
-				_, err := io.Copy(w, strings.NewReader(fmt.Sprintf("data: %s\n\n", message)))
+				_, err := io.Copy(w, strings.NewReader(fmt.Sprintf("id: %v\ntype: %v\ndata: %v\n\n", message.ID, message.Type, message.Data)))
 				if err != nil {
 					slog.Error("copy", "error", err)
 				}
@@ -177,11 +178,17 @@ func determineStream(params map[string]string) (string, error) {
 	return "", fmt.Errorf("requested logs for an unknown type")
 }
 
+type Event struct {
+	ID   string
+	Data string
+	Type string
+}
+
 // LogStoreWorker manages the log polling and channel communication.
 type logStoreWorker struct {
 	Get      func(ctx context.Context, cursorTime time.Time, params map[string]string) ([]core.FeatureLogEntry, error)
 	Interval time.Duration
-	LogCh    chan string
+	Ch       chan Event
 	Params   map[string]string
 	Cursor   time.Time // Cursor instead of Offset
 }
@@ -191,7 +198,7 @@ func (lw *logStoreWorker) start(ctx context.Context) {
 	go func() {
 		ticker := time.NewTicker(lw.Interval)
 		defer ticker.Stop()
-		defer close(lw.LogCh)
+		defer close(lw.Ch)
 		for {
 			select {
 			case <-ctx.Done():
@@ -211,8 +218,18 @@ func (lw *logStoreWorker) start(ctx context.Context) {
 
 						continue
 					}
+					dst := &bytes.Buffer{}
+					if err := json.Compact(dst, b); err != nil {
+						slog.Error("TODO: should we quit with an error?", "error", err)
+					}
+
 					slog.Info("data", "message", string(b))
-					lw.LogCh <- string(b)
+					e := Event{
+						ID:   fle.ID,
+						Data: dst.String(),
+						Type: "message",
+					}
+					lw.Ch <- e
 				}
 
 				// Update cursorTime for the next iteration

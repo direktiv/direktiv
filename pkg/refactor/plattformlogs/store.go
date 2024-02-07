@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
@@ -26,6 +27,7 @@ type LogStore interface {
 }
 
 type LogEntry struct {
+	ID   int
 	Time time.Time
 	Tag  string
 	Data map[string]interface{}
@@ -42,13 +44,22 @@ func (e LogEntry) ToFeatureLogEntry() (core.FeatureLogEntry, error) {
 		return core.FeatureLogEntry{}, fmt.Errorf("failed to unmarshal log entry: %w", err)
 	}
 
-	return core.FeatureLogEntry{
+	featureLogEntry := core.FeatureLogEntry{
+		ID:       strconv.Itoa(e.ID),
 		Time:     e.Time,
 		Msg:      fmt.Sprint(m["msg"]),
 		Level:    fmt.Sprint(m["level"]),
-		Trace:    fmt.Sprint(m["trace"]),
-		State:    fmt.Sprint(m["state"]),
-		Branch:   fmt.Sprint(m["branch"]),
 		Metadata: map[string]string{},
-	}, nil
+	}
+	if trace, ok := m["trace"].(string); ok {
+		featureLogEntry.Trace = trace
+	}
+	if state, ok := m["state"].(string); ok {
+		featureLogEntry.State = state
+	}
+	if branch, ok := m["branch"].(string); ok {
+		featureLogEntry.Branch = branch
+	}
+
+	return featureLogEntry, nil
 }

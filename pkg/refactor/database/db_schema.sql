@@ -149,6 +149,9 @@ CREATE TABLE IF NOT EXISTS "fluentbit" (
     "data" JSONB
 );
 
+ALTER TABLE "fluentbit"
+ADD COLUMN IF NOT EXISTS id SERIAL PRIMARY KEY;
+
 -- partitioning the logtable to speeds up pagination and queries
 CREATE INDEX IF NOT EXISTS "engine_messages_topic" ON "engine_messages" USING hash("topic");
 

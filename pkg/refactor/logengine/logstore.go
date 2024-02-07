@@ -29,6 +29,7 @@ type LogStore interface {
 
 // Represents an individual log entry.
 type LogEntry struct {
+	ID int
 	// the timestamp of the log-entry.
 	T   time.Time
 	Msg string
