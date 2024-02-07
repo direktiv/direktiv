@@ -5,14 +5,24 @@ import { Plus, X } from "lucide-react";
 import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
 
-type ArrayItemProps = <T>(props: {
-  defaultValue: T;
-  renderItem: RenderItem<T>;
-  itemIsValid: IsValidItem<T>;
-  onUpdate?: (item: T) => void;
-  onAdd?: (item: T) => void;
-  onDelete?: () => void;
-}) => JSX.Element;
+type ArrayItemProps = <T>(
+  props: {
+    defaultValue: T;
+    renderItem: RenderItem<T>;
+    itemIsValid: IsValidItem<T>;
+  } & ( // either allow onAdd or onUpdate and onDelete
+    | {
+        onAdd: (item: T) => void;
+        onUpdate?: never;
+        onDelete?: never;
+      }
+    | {
+        onAdd?: never;
+        onUpdate: (item: T) => void;
+        onDelete: () => void;
+      }
+  )
+) => JSX.Element;
 
 export const ArrayItem: ArrayItemProps = ({
   defaultValue,
