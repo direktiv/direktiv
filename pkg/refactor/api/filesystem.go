@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"net/http"
+	"path/filepath"
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
@@ -38,8 +39,11 @@ func (e *fsController) read(w http.ResponseWriter, r *http.Request) {
 
 	fStore := db.FileStore()
 
+	//nolint:gomnd
+	path := strings.SplitN(r.URL.Path, "/files-tree", 2)[1]
+	path = filepath.Clean("/" + path)
+
 	// Fetch file
-	path := strings.Split(r.URL.Path, "/files-tree")[1]
 	file, err := fStore.ForNamespace(ns.Name).GetFile(r.Context(), path)
 	if err != nil {
 		writeFileStoreError(w, err)
@@ -87,14 +91,31 @@ func (e *fsController) delete(w http.ResponseWriter, r *http.Request) {
 
 	fStore := db.FileStore()
 
+	//nolint:gomnd
+	path := strings.SplitN(r.URL.Path, "/files-tree", 2)[1]
+	path = filepath.Clean("/" + path)
+
 	// Fetch file
-	path := strings.Split(r.URL.Path, "/files-tree")[1]
 	file, err := fStore.ForNamespace(ns.Name).GetFile(r.Context(), path)
 	if err != nil {
 		writeFileStoreError(w, err)
 		return
 	}
 	err = fStore.ForFile(file).Delete(r.Context(), true)
+	if err != nil {
+		writeInternalError(w, err)
+		return
+	}
+
+	// Remove all associated runtime variables.
+	dStore := db.DataStore()
+	err = dStore.RuntimeVariables().DeleteForWorkflow(r.Context(), ns.Name, path)
+	if err != nil {
+		writeInternalError(w, err)
+		return
+	}
+
+	err = db.Commit(r.Context())
 	if err != nil {
 		writeInternalError(w, err)
 		return
@@ -152,8 +173,11 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//nolint:gomnd
+	path := strings.SplitN(r.URL.Path, "/files-tree", 2)[1]
+	path = filepath.Clean("/" + path)
+
 	// Create file.
-	path := strings.Split(r.URL.Path, "/files-tree")[1]
 	newFile, err := fStore.ForNamespace(ns.Name).CreateFile(r.Context(),
 		"/"+path+"/"+req.Name,
 		req.Typ,
@@ -219,8 +243,11 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//nolint:gomnd
+	path := strings.SplitN(r.URL.Path, "/files-tree", 2)[1]
+	path = filepath.Clean("/" + path)
+
 	// Fetch file.
-	path := strings.Split(r.URL.Path, "/files-tree")[1]
 	oldFile, err := fStore.ForNamespace(ns.Name).GetFile(r.Context(), path)
 	if err != nil {
 		writeFileStoreError(w, err)
@@ -250,6 +277,14 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	updatedFile.Data = decodedBytes
+
+	// Update workflow_path of all associated runtime variables.
+	dStore := db.DataStore()
+	err = dStore.RuntimeVariables().SetWorkflowPath(r.Context(), ns.Name, path, req.AbsolutePath)
+	if err != nil {
+		writeInternalError(w, err)
+		return
+	}
 
 	err = db.Commit(r.Context())
 	if err != nil {
