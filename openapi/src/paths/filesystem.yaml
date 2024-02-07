@@ -1,5 +1,5 @@
 
-/api/v2/namespaces/{namespace}/files-tree:
+/api/v2/namespaces/{namespace}/files-tree/{path}:
   get:
     tags:
       - files-tree
