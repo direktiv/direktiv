@@ -16,7 +16,9 @@ export const EnvsArrayInput = ({ field }: EnvsArrayInputProps) => {
         defaultValue={field.value || []}
         onChange={field.onChange}
         emptyItem={{ name: "", value: "" }}
-        itemIsValid={(item) => !!(item?.name && item?.value)}
+        itemIsValid={(item) =>
+          !!item && Object.values(item).every((v) => v !== "")
+        }
         renderItem={({ value: objectValue, setValue, handleKeyDown }) => (
           <>
             {Object.entries(objectValue).map(([key, value]) => {
