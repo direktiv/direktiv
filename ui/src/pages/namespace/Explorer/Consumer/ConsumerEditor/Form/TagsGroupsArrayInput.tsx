@@ -16,9 +16,7 @@ export const TagsGroupsArrayInput = ({ field }: TagsGroupsArrayInputProps) => {
     <div className="grid gap-5 sm:grid-cols-2">
       <ArrayInput
         defaultValue={field.value || []}
-        onChange={(changedValue) => {
-          field.onChange(changedValue);
-        }}
+        onChange={field.onChange}
         emptyItem=""
         itemIsValid={(item) => item !== ""}
         renderItem={({ value, setValue, handleKeyDown }) => (

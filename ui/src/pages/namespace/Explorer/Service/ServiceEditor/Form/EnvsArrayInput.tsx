@@ -14,9 +14,7 @@ export const EnvsArrayInput = ({ field }: EnvsArrayInputProps) => {
     <div className="grid gap-5" data-testid="env-item-form">
       <ArrayInput
         defaultValue={field.value || []}
-        onChange={(changedValue) => {
-          field.onChange(changedValue);
-        }}
+        onChange={field.onChange}
         emptyItem={{ name: "", value: "" }}
         itemIsValid={(item) => !!(item?.name && item?.value)}
         renderItem={({ value: objectValue, setValue, handleKeyDown }) => (

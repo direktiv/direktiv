@@ -28,12 +28,10 @@ export const HeaderArrayInput = ({ field }: HeaderArrayInputProps) => {
     <div className="grid gap-5">
       <ArrayInput
         defaultValue={field.value || []}
-        onChange={(changedValue) => {
-          field.onChange(changedValue);
-        }}
         // TODO:
         emptyItem={isHeadersToRemove ? { name: "" } : { name: "", value: "" }}
         itemIsValid={(item) => !!(item?.name && item?.value)}
+        onChange={field.onChange}
         renderItem={({ value: objectValue, setValue, handleKeyDown }) => (
           <>
             {Object.entries(objectValue).map(([key, value]) => {
