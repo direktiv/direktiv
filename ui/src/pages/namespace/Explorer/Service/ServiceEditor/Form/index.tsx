@@ -20,7 +20,7 @@ import {
   scaleOptions,
 } from "../schema";
 
-import { ArrayInput } from "../../../../../../components/Form/ArrayInput";
+import { EnvsArrayInput } from "./EnvsArrayInput";
 import { FC } from "react";
 import { Fieldset } from "~/components/Form/Fieldset";
 import Input from "~/design/Input";
@@ -146,51 +146,7 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
           <Controller
             control={control}
             name="envs"
-            render={({ field }) => (
-              <div className="grid gap-5" data-testid="env-item-form">
-                <ArrayInput
-                  defaultValue={field.value || []}
-                  onChange={(changedValue) => {
-                    field.onChange(changedValue);
-                  }}
-                  emptyItem={{ name: "", value: "" }}
-                  itemIsValid={(item) => !!(item?.name && item?.value)}
-                  renderItem={({
-                    value: objectValue,
-                    setValue,
-                    onChange,
-                    handleKeyDown,
-                  }) => (
-                    <>
-                      {Object.entries(objectValue).map(([key, value]) => {
-                        const typedKey = key as keyof typeof objectValue;
-                        return (
-                          <Input
-                            key={key}
-                            data-testid={`env-${typedKey}`}
-                            placeholder={t(
-                              `pages.explorer.service.editor.form.envs.${typedKey}Placeholder`
-                            )}
-                            value={value}
-                            onKeyDown={handleKeyDown}
-                            onChange={(e) => {
-                              // TODO: better naming
-                              const newObject = { [key]: e.target.value };
-                              const newObjectValue = {
-                                ...objectValue,
-                                ...newObject,
-                              };
-                              setValue(newObjectValue);
-                              onChange(newObjectValue);
-                            }}
-                          />
-                        );
-                      })}
-                    </>
-                  )}
-                />
-              </div>
-            )}
+            render={({ field }) => <EnvsArrayInput field={field} />}
           />
         </Fieldset>
       </div>
