@@ -66,14 +66,7 @@ export const AclForm: FC<FormProps> = ({ defaultConfig, onSubmit, formId }) => {
           <Controller
             control={control}
             name="configuration.allow_groups"
-            render={({ field }) => (
-              <AclArrayInput
-                field={field}
-                placeholder={t(
-                  "pages.explorer.endpoint.editor.form.plugins.inbound.acl.groupPlaceholder"
-                )}
-              />
-            )}
+            render={({ field }) => <AclArrayInput field={field} />}
           />
         </Fieldset>
         <Fieldset
@@ -84,14 +77,7 @@ export const AclForm: FC<FormProps> = ({ defaultConfig, onSubmit, formId }) => {
           <Controller
             control={control}
             name="configuration.deny_groups"
-            render={({ field }) => (
-              <AclArrayInput
-                field={field}
-                placeholder={t(
-                  "pages.explorer.endpoint.editor.form.plugins.inbound.acl.groupPlaceholder"
-                )}
-              />
-            )}
+            render={({ field }) => <AclArrayInput field={field} />}
           />
         </Fieldset>
         <Fieldset
@@ -102,14 +88,7 @@ export const AclForm: FC<FormProps> = ({ defaultConfig, onSubmit, formId }) => {
           <Controller
             control={control}
             name="configuration.allow_tags"
-            render={({ field }) => (
-              <AclArrayInput
-                field={field}
-                placeholder={t(
-                  "pages.explorer.endpoint.editor.form.plugins.inbound.acl.tagPlaceholder"
-                )}
-              />
-            )}
+            render={({ field }) => <AclArrayInput field={field} />}
           />
         </Fieldset>
         <Fieldset
@@ -120,14 +99,7 @@ export const AclForm: FC<FormProps> = ({ defaultConfig, onSubmit, formId }) => {
           <Controller
             control={control}
             name="configuration.deny_tags"
-            render={({ field }) => (
-              <AclArrayInput
-                field={field}
-                placeholder={t(
-                  "pages.explorer.endpoint.editor.form.plugins.inbound.acl.tagPlaceholder"
-                )}
-              />
-            )}
+            render={({ field }) => <AclArrayInput field={field} />}
           />
         </Fieldset>
       </PluginWrapper>
