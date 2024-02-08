@@ -7,10 +7,10 @@ import {
   useWatch,
 } from "react-hook-form";
 
-import { ArrayInput } from "~/components/Form/ArrayInput";
 import { FC } from "react";
 import { Fieldset } from "~/components/Form/Fieldset";
 import Input from "~/design/Input";
+import { TagsGroupsArrayInput } from "./TagsGroupsArrayInput";
 import { treatEmptyStringAsUndefined } from "../../../utils";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -89,74 +89,14 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
           <Controller
             control={control}
             name="groups"
-            render={({ field }) => (
-              <div className="grid gap-5 sm:grid-cols-2">
-                <ArrayInput
-                  defaultValue={field.value || []}
-                  onChange={(changedValue) => {
-                    field.onChange(changedValue);
-                  }}
-                  emptyItem=""
-                  itemIsValid={(item) => item !== ""}
-                  renderItem={({
-                    value,
-                    setValue,
-                    onChange,
-                    handleKeyDown,
-                  }) => (
-                    <Input
-                      placeholder={t(
-                        "pages.explorer.consumer.editor.form.groupsPlaceholder"
-                      )}
-                      value={value}
-                      onKeyDown={handleKeyDown}
-                      onChange={(e) => {
-                        const newValue = e.target.value;
-                        setValue(newValue);
-                        onChange(newValue);
-                      }}
-                    />
-                  )}
-                />
-              </div>
-            )}
+            render={({ field }) => <TagsGroupsArrayInput field={field} />}
           />
         </Fieldset>
         <Fieldset label={t("pages.explorer.consumer.editor.form.tags")}>
           <Controller
             control={control}
             name="tags"
-            render={({ field }) => (
-              <div className="grid gap-5 sm:grid-cols-2">
-                <ArrayInput
-                  defaultValue={field.value || []}
-                  onChange={(changedValue) => {
-                    field.onChange(changedValue);
-                  }}
-                  emptyItem=""
-                  itemIsValid={(item) => item !== ""}
-                  renderItem={({
-                    value,
-                    setValue,
-                    onChange,
-                    handleKeyDown,
-                  }) => (
-                    <Input
-                      placeholder={t(
-                        "pages.explorer.consumer.editor.form.tagsPlaceholder"
-                      )}
-                      value={value}
-                      onKeyDown={handleKeyDown}
-                      onChange={(e) => {
-                        const newValue = e.target.value;
-                        setValue(newValue);
-                        onChange(newValue);
-                      }}
-                    />
-                  )}
-                />
-              </div>
-            )}
+            render={({ field }) => <TagsGroupsArrayInput field={field} />}
           />
         </Fieldset>
       </div>
