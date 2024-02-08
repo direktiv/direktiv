@@ -23,13 +23,16 @@ type HeaderArrayInputProps = {
 export const HeaderArrayInput = ({ field }: HeaderArrayInputProps) => {
   const { t } = useTranslation();
   const isHeadersToRemove = field.name === "configuration.headers_to_remove";
+  const emptyItem = isHeadersToRemove ? { name: "" } : { name: "", value: "" };
   return (
     <div className="grid gap-5">
       <ArrayInput
         defaultValue={field.value || []}
         onChange={field.onChange}
-        emptyItem={isHeadersToRemove ? { name: "" } : { name: "", value: "" }}
-        itemIsValid={(item) => !!(item?.name && item?.value)}
+        emptyItem={emptyItem}
+        itemIsValid={(item) =>
+          !!item && Object.values(item).every((v) => v !== "")
+        }
         renderItem={({ value: objectValue, setValue, handleKeyDown }) => (
           <>
             {Object.entries(objectValue).map(([key, value]) => {
