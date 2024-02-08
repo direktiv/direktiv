@@ -48,13 +48,12 @@ export const HeaderArrayInput = ({ field }: HeaderArrayInputProps) => {
                   value={value}
                   onKeyDown={handleKeyDown}
                   onChange={(e) => {
-                    // TODO: better naming
-                    const newObject = { [key]: e.target.value };
-                    const newObjectValue = {
+                    const newEntry = { [key]: e.target.value };
+                    const newObjec = {
                       ...objectValue,
-                      ...newObject,
+                      ...newEntry,
                     };
-                    setValue(newObjectValue);
+                    setValue(newObjec);
                   }}
                 />
               );
