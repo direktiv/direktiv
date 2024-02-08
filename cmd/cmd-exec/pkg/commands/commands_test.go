@@ -198,3 +198,32 @@ func startHttpServer(b *bytes.Buffer) (*http.Server, int, *sync.WaitGroup) {
 
 	return srv, port, wgExit
 }
+
+func TestCommandEnvs(t *testing.T) {
+	b.Reset()
+
+	dir, _ := os.MkdirTemp(os.TempDir(), "prefix")
+	defer os.RemoveAll(dir)
+
+	se := &server.ExecutionInfo{
+		TmpDir: dir,
+		Log:    server.NewLogger("123"),
+	}
+
+	cmds := commands.Commands{
+		[]commands.Command{
+			{
+				Command: "bash -c 'env | grep HELLO'",
+				Envs: []commands.Env{
+					{
+						Name:  "HELLO",
+						Value: "WORLD",
+					},
+				},
+			},
+		},
+	}
+
+	commands.RunCommands(context.Background(), cmds, se)
+	assert.Contains(t, b.String(), "HELLO=WORLD")
+}

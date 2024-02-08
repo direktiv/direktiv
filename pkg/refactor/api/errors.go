@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
+	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 )
 
 type Error struct {
@@ -93,6 +94,46 @@ func writeDataStoreError(w http.ResponseWriter, err error) {
 			Message: "requested resource is not found",
 		})
 
+		return
+	}
+
+	writeInternalError(w, err)
+}
+
+func writeFileStoreError(w http.ResponseWriter, err error) {
+	if errors.Is(err, filestore.ErrNotFound) {
+		writeError(w, &Error{
+			Code:    "resource_not_found",
+			Message: "filesystem path is not found",
+		})
+		return
+	}
+	if errors.Is(err, filestore.ErrPathAlreadyExists) {
+		writeError(w, &Error{
+			Code:    "resource_already_exists",
+			Message: "filesystem path already exists",
+		})
+		return
+	}
+	if errors.Is(err, filestore.ErrNoParentDirectory) {
+		writeError(w, &Error{
+			Code:    "request_data_invalid",
+			Message: "filesystem path has no parent directory",
+		})
+		return
+	}
+	if errors.Is(err, filestore.ErrFileTypeIsDirectory) {
+		writeError(w, &Error{
+			Code:    "request_data_invalid",
+			Message: "filesystem path is a directory",
+		})
+		return
+	}
+	if errors.Is(err, filestore.ErrInvalidPathParameter) {
+		writeError(w, &Error{
+			Code:    "request_data_invalid",
+			Message: "filesystem path is invalid",
+		})
 		return
 	}
 

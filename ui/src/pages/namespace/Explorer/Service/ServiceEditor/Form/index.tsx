@@ -24,6 +24,7 @@ import { EnvsArrayInput } from "./EnvsArrayInput";
 import { FC } from "react";
 import { Fieldset } from "~/components/Form/Fieldset";
 import Input from "~/design/Input";
+import { PatchesForm } from "./Patches";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -137,6 +138,8 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
         >
           <Input {...register("cmd")} id="cmd" />
         </Fieldset>
+
+        <PatchesForm form={formControls} />
 
         <Fieldset
           label={t("pages.explorer.service.editor.form.envs.label")}

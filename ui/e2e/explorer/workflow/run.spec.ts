@@ -1,9 +1,14 @@
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
 import { expect, test } from "@playwright/test";
-import { jsonSchemaFormWorkflow, jsonSchemaWithRequiredEnum } from "./utils";
+import {
+  jsonSchemaFormWorkflow,
+  jsonSchemaWithRequiredEnum,
+  testDiacriticsWorkflow,
+} from "./utils";
 
 import { noop as basicWorkflow } from "~/pages/namespace/Explorer/Tree/components/modals/CreateNew/Workflow/templates";
 import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
+import { decode } from "js-base64";
 import { faker } from "@faker-js/faker";
 import { getInput } from "~/api/instances/query/input";
 import { headers } from "e2e/utils/testutils";
@@ -159,12 +164,49 @@ test("it is possible to run the workflow by setting an input JSON via the editor
     headers,
   });
 
-  const inputResponseString = atob(res.data);
+  const inputResponseString = decode(res.data);
 
   expect(
     inputResponseString,
     "the server result is the same as the input that was sent"
   ).toBe(userInputString);
+});
+
+test("it is possible to run a workflow with input data containing special characters", async ({
+  page,
+}) => {
+  const name = "test-diacritics.yaml";
+
+  await createWorkflow({
+    payload: testDiacriticsWorkflow,
+    urlParams: {
+      baseUrl: process.env.VITE_DEV_API_DOMAIN,
+      namespace,
+      name,
+    },
+    headers,
+  });
+
+  await page.goto(`${namespace}/explorer/workflow/edit/${name}`);
+
+  await expect(
+    page.locator(".view-lines"),
+    "The editor renders special characters correctly"
+  ).toContainText("A workflow for testing characters like îèüñÆ");
+
+  await page.getByTestId("workflow-editor-btn-run").click();
+  await page.getByLabel("Name").fill("Kateřina Horáčková");
+  await page.getByTestId("run-workflow-submit-btn").click();
+
+  await expect(
+    page.locator(".lines-content"),
+    "The text from the input is rendered correctly in the workflow output"
+  ).toContainText(
+    `{    
+    "result": "Hello Kateřina Horáčková"
+}`,
+    { useInnerText: true }
+  );
 });
 
 test("it is not possible to run the workflow when the editor has unsaved changes", async ({
@@ -307,7 +349,7 @@ test("it is possible to provide the input via generated form", async ({
     select: "guest",
     file: `data:text/plain;base64,SSBhbSBqdXN0IGEgdGVzdGZpbGUgdGhhdCBjYW4gYmUgdXNlZCB0byB0ZXN0IGFuIHVwbG9hZCBmb3JtIHdpdGhpbiBhIHBsYXl3cmlnaHQgdGVzdA==`,
   };
-  const inputResponseAsJson = JSON.parse(atob(res.data));
+  const inputResponseAsJson = JSON.parse(decode(res.data));
   expect(inputResponseAsJson).toEqual(expectedJson);
 });
 
@@ -399,6 +441,6 @@ test("it is possible to provide the input via generated form and resolve form er
     lastName: "McFly",
     select: "guest",
   };
-  const inputResponseAsJson = JSON.parse(atob(res.data));
+  const inputResponseAsJson = JSON.parse(decode(res.data));
   expect(inputResponseAsJson).toEqual(expectedJson);
 });

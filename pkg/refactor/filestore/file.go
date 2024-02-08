@@ -21,32 +21,39 @@ const (
 	FileTypeDirectory FileType = "directory"
 )
 
-const (
-	Latest = "latest"
-)
+var AllFileTypes = []FileType{
+	FileTypeWorkflow,
+	FileTypeEndpoint,
+	FileTypeConsumer,
+	FileTypeService,
+	FileTypeFile,
+	FileTypeDirectory,
+}
 
 // File represents a file in the filestore, File can be either ordinary file or directory.
 type File struct {
-	ID uuid.UUID
+	ID uuid.UUID `json:"-"`
 	// Path is the full path of the file, files and directories are only different when they have different paths. As
 	// in typical filesystems, paths are unique within the filesystem.
-	Path string
+	Path string `json:"path,omitempty"`
 
 	// Depth tells how many levels deep the file in the filesystem. This field is needed for sql querying purposes.
-	Depth int
-	Typ   FileType
+	Depth int      `json:"-"`
+	Typ   FileType `json:"type,omitempty"`
 
-	Data     []byte
-	Checksum string
+	Data     []byte `json:"data,omitempty"`
+	Checksum string `json:"checksum,omitempty"`
+
+	Size int `json:"size,omitempty"`
 
 	// Root is a filestore instance, users can create multiple filestore roots and RootID tells which root the file
 	// belongs too.
-	RootID uuid.UUID
+	RootID uuid.UUID `json:"-"`
 
-	MIMEType string
+	MIMEType string `json:"mimeType,omitempty"`
 
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 // Name gets file base name.

@@ -16,6 +16,13 @@ linters-settings:
         json: snake
         yaml: snake
 
+  nlreturn:
+    # Size of the block (including return statement that is still "OK")
+    # so no return split required.
+    # Default: 1
+    block-size: 2
+
+
 linters:
   enable-all: true
   disable:
@@ -42,6 +49,8 @@ linters:
     - deadcode
     - varcheck
     - scopelint
+    - gomnd
+    - tagliatelle
 
 issues:
   exclude-rules:
@@ -89,3 +98,10 @@ issues:
     - text: "ifElseChain: rewrite if-else to switch statement"
       linters:
         - gocritic
+    - text: "Rollback` is not checked"
+      linters:
+        - errcheck
+
+    - text: "encoding/json.Encoder"
+      linters:
+        - errchkjson

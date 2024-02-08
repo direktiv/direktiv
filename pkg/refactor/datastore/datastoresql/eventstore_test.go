@@ -240,7 +240,7 @@ func Test_TopicAddGet(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	err = topics.Append(context.Background(), ns, eID, ns.String()+"-a")
+	err = topics.Append(context.Background(), ns, eID, ns.String()+"-a", "")
 	if err != nil {
 		t.Error(err)
 	}

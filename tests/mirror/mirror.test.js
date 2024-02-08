@@ -769,7 +769,6 @@ describe('Test behaviour specific to the root node', () => {
         return
         const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/activities/${activityId}/logs`)
         expect(req.statusCode).toEqual(200)
-        // console.log(req.body)
         // TODO: the logic doesn't currently log many errors
     })
 

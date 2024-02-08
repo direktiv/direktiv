@@ -15,6 +15,7 @@ import FormInputHint from "./FormInputHint";
 import { JSONSchemaForm } from "~/design/JSONschemaForm";
 import { Play } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
+import { decode } from "js-base64";
 import { pages } from "~/util/router/pages";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -40,7 +41,7 @@ const RunWorkflow = ({ path }: { path: string }) => {
   const { data } = useNodeContent({ path });
   const submitButtonRef = useRef<HTMLButtonElement>(null);
   const validationSchema = getValidationSchemaFromYaml(
-    atob(data?.source ?? "")
+    decode(data?.source ?? "")
   );
 
   // tab handling

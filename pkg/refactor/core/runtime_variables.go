@@ -63,6 +63,12 @@ type RuntimeVariablesStore interface {
 	// SetName updates a variable name. if no record found it returns datastore.ErrNotFound error.
 	SetName(ctx context.Context, id uuid.UUID, name string) (*RuntimeVariable, error)
 
+	// DeleteForWorkflow removes all entries that are linked to a workflow.
+	DeleteForWorkflow(ctx context.Context, namespace string, workflowPath string) error
+
+	// SetWorkflowPath updates workflow path link.
+	SetWorkflowPath(ctx context.Context, namespace string, oldWorkflowPath string, newWorkflowPath string) error
+
 	// Delete removes the whole entry from store. if no record found it returns datastore.ErrNotFound error.
 	Delete(ctx context.Context, id uuid.UUID) error
 

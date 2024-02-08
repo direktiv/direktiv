@@ -10,7 +10,8 @@ import { Fieldset } from "~/components/Form/Fieldset";
 import FilePicker from "~/components/FilePicker";
 import Input from "~/design/Input";
 import NamespaceSelector from "~/components/NamespaceSelector";
-import { PluginWrapper } from "../components/Modal";
+import { PluginWrapper } from "../components/PluginSelector";
+import WorkflowVariablePicker from "~/components/WorkflowVariablepicker";
 import { treatEmptyStringAsUndefined } from "~/pages/namespace/Explorer/utils";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -33,6 +34,7 @@ export const TargetFlowVarForm: FC<FormProps> = ({
     control,
     register,
     watch,
+    setValue,
     handleSubmit,
     formState: { errors },
   } = useForm<TargetFlowVarFormSchemaType>({
@@ -102,7 +104,23 @@ export const TargetFlowVarForm: FC<FormProps> = ({
           )}
           htmlFor="variable"
         >
-          <Input {...register("configuration.variable")} id="variable" />
+          <Controller
+            control={control}
+            name="configuration.variable"
+            render={({ field }) => (
+              <WorkflowVariablePicker
+                namespace={watch("configuration.namespace")}
+                workflowPath={watch("configuration.flow")}
+                defaultVariable={watch("configuration.variable")}
+                onChange={(name, mimeType) => {
+                  field.onChange(name);
+                  if (mimeType) {
+                    setValue("configuration.content_type", mimeType);
+                  }
+                }}
+              />
+            )}
+          />
         </Fieldset>
         <Fieldset
           label={t(
@@ -114,10 +132,10 @@ export const TargetFlowVarForm: FC<FormProps> = ({
             {...register("configuration.content_type", {
               setValueAs: treatEmptyStringAsUndefined,
             })}
-            id="content-type"
             placeholder={t(
               "pages.explorer.endpoint.editor.form.plugins.target.targetFlowVar.contentTypePlaceholder"
             )}
+            id="content-type"
           />
         </Fieldset>
       </PluginWrapper>
