@@ -31,12 +31,11 @@ export const EnvsArrayInput = ({ field }: EnvsArrayInputProps) => {
                   value={value}
                   onKeyDown={handleKeyDown}
                   onChange={(e) => {
-                    const newEntry = { [key]: e.target.value };
-                    const newObjec = {
+                    const newObject = {
                       ...objectValue,
-                      ...newEntry,
+                      [key]: e.target.value,
                     };
-                    setValue(newObjec);
+                    setValue(newObject);
                   }}
                 />
               );
