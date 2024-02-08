@@ -21,7 +21,7 @@ export const TagsGroupsArrayInput = ({ field }: TagsGroupsArrayInputProps) => {
         }}
         emptyItem=""
         itemIsValid={(item) => item !== ""}
-        renderItem={({ value, setValue, onChange, handleKeyDown }) => (
+        renderItem={({ value, setValue, handleKeyDown }) => (
           <Input
             placeholder={t(
               `pages.explorer.consumer.editor.form.${field.name}Placeholder`
@@ -31,7 +31,6 @@ export const TagsGroupsArrayInput = ({ field }: TagsGroupsArrayInputProps) => {
             onChange={(e) => {
               const newValue = e.target.value;
               setValue(newValue);
-              onChange(newValue);
             }}
           />
         )}

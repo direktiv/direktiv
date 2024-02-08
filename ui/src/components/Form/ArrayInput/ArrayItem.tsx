@@ -37,10 +37,6 @@ export const ArrayItem: ArrayItemProps = ({
   const [value, setValue] = useState<Item>(defaultValue);
   const isValid = itemIsValid(value);
 
-  const handleChange = (newState: Item) => {
-    onUpdate?.(newState);
-  };
-
   const handleAdd = () => {
     if (!isValid || !onAdd) return;
     onAdd(value);
@@ -60,12 +56,16 @@ export const ArrayItem: ArrayItemProps = ({
     }
   };
 
+  const setValueAndTriggerCallback = (value: Item) => {
+    setValue(value);
+    onUpdate?.(value);
+  };
+
   return (
     <ButtonBar>
       {renderItem({
         value,
-        setValue,
-        onChange: handleChange,
+        setValue: setValueAndTriggerCallback,
         handleKeyDown,
       })}
       {onAdd && (

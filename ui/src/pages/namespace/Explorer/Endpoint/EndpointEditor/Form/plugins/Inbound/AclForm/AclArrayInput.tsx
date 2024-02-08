@@ -42,7 +42,7 @@ export const AclArrayInput = ({ field }: AclArrayInputProps) => {
         }}
         emptyItem=""
         itemIsValid={(item) => item !== ""}
-        renderItem={({ value, setValue, onChange, handleKeyDown }) => (
+        renderItem={({ value, setValue, handleKeyDown }) => (
           <Input
             placeholder={t(
               `pages.explorer.endpoint.editor.form.plugins.inbound.acl.${fieldNameToLanguageKey(
@@ -54,7 +54,6 @@ export const AclArrayInput = ({ field }: AclArrayInputProps) => {
             onChange={(e) => {
               const newValue = e.target.value;
               setValue(newValue);
-              onChange(newValue);
             }}
           />
         )}

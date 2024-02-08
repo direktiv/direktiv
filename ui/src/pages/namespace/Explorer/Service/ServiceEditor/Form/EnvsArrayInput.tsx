@@ -19,12 +19,7 @@ export const EnvsArrayInput = ({ field }: EnvsArrayInputProps) => {
         }}
         emptyItem={{ name: "", value: "" }}
         itemIsValid={(item) => !!(item?.name && item?.value)}
-        renderItem={({
-          value: objectValue,
-          setValue,
-          onChange,
-          handleKeyDown,
-        }) => (
+        renderItem={({ value: objectValue, setValue, handleKeyDown }) => (
           <>
             {Object.entries(objectValue).map(([key, value]) => {
               const typedKey = key as keyof typeof objectValue;
@@ -45,7 +40,6 @@ export const EnvsArrayInput = ({ field }: EnvsArrayInputProps) => {
                       ...newObject,
                     };
                     setValue(newObjectValue);
-                    onChange(newObjectValue);
                   }}
                 />
               );
