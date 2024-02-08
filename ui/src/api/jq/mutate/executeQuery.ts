@@ -1,6 +1,7 @@
 import { JqQueryResult, JqQueryResultType } from "../schema";
 
 import { apiFactory } from "~/api/apiFactory";
+import { encode } from "js-base64";
 import { getMessageFromApiError } from "~/api/errorHandling";
 import { useApiKey } from "~/util/store/apiKey";
 import useMutationWithPermissions from "~/api/useMutationWithPermissions";
@@ -32,7 +33,7 @@ export const useExecuteJQuery = ({
         urlParams: {},
         payload: {
           query,
-          data: btoa(inputJsonString),
+          data: encode(inputJsonString),
         },
       }),
     onSuccess: (res) => {
