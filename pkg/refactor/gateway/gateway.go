@@ -12,6 +12,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
@@ -47,12 +48,12 @@ func NewGatewayManager(db *database.DB) core.GatewayManager {
 }
 
 func (ep *gatewayManager) DeleteNamespace(ns string) {
-	slog.Info("deleting namespace from gateway", "namespace", ns)
+	slog.Info("deleting namespace from gateway", "namespace", ns, "stream", recipient.Namespace.String()+"."+ns)
 	delete(ep.nsGateways, ns)
 }
 
 func (ep *gatewayManager) UpdateNamespace(ns string) {
-	slog.Info("updating namespace gateway", slog.String("namespace", ns))
+	slog.Info("updating namespace gateway", slog.String("namespace", ns), "stream", recipient.Namespace.String()+"."+ns)
 
 	ep.lock.Lock()
 	defer ep.lock.Unlock()
@@ -71,7 +72,7 @@ func (ep *gatewayManager) UpdateNamespace(ns string) {
 
 	files, err := fStore.ForNamespace(ns).ListDirektivFiles(ctx)
 	if err != nil {
-		slog.Error("error listing files", slog.String("error", err.Error()))
+		slog.Error("error listing files", slog.String("error", err.Error()), "stream", recipient.Namespace.String()+"."+ns)
 
 		return
 	}
@@ -87,7 +88,7 @@ func (ep *gatewayManager) UpdateNamespace(ns string) {
 
 		data, err := fStore.ForFile(file).GetData(ctx)
 		if err != nil {
-			slog.Error("read file data", slog.String("error", err.Error()))
+			slog.Error("read file data", slog.String("error", err.Error()), "stream", recipient.Namespace.String()+"."+ns)
 
 			continue
 		}
@@ -95,7 +96,7 @@ func (ep *gatewayManager) UpdateNamespace(ns string) {
 		if file.Typ == filestore.FileTypeConsumer {
 			item, err := core.ParseConsumerFile(data)
 			if err != nil {
-				slog.Error("parse endpoint file", slog.String("error", err.Error()))
+				slog.Error("parse endpoint file", slog.String("error", err.Error()), "stream", recipient.Namespace.String()+"."+ns)
 
 				continue
 			}
@@ -103,7 +104,7 @@ func (ep *gatewayManager) UpdateNamespace(ns string) {
 			// username can not be empty or contain a colon for basic auth
 			if item.Username == "" ||
 				strings.Contains(item.Username, ":") {
-				slog.Warn("username invalid", slog.String("user", item.Username))
+				slog.Info("username invalid", slog.String("user", item.Username), "stream", recipient.Namespace.String()+"."+ns)
 
 				continue
 			}
@@ -126,7 +127,7 @@ func (ep *gatewayManager) UpdateNamespace(ns string) {
 			// if parsing fails, the endpoint is still getting added to report
 			// an error in the API
 			if err != nil {
-				slog.Error("parse endpoint file", slog.String("error", err.Error()))
+				slog.Error("parse endpoint file", slog.String("error", err.Error()), "stream", recipient.Namespace.String()+"."+ns)
 				ep.Errors = append(ep.Errors, err.Error())
 				eps = append(eps, ep)
 
@@ -203,7 +204,6 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	traceID := func() string {
 		return spanContext.TraceID().String()
 	}
-	slog := slog.With("trace", traceID(), "component", "gateway")
 	slog.Info("Serving gateway request")
 	chiCtx := chi.RouteContext(r.Context())
 	namespace := core.MagicalGatewayNamespace
@@ -213,6 +213,8 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if chiCtx.RoutePattern() == "/ns/{namespace}/*" {
 		namespace = chi.URLParam(r, "namespace")
 	}
+
+	slogNamespace := slog.With("trace", traceID(), "component", "gateway", "stream", recipient.Namespace.String()+"."+namespace)
 
 	gw, ok := ep.nsGateways[namespace]
 	if !ok {
@@ -227,6 +229,8 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
+
+	slogRoute := slog.With("trace", traceID(), "component", "gateway", "stream", recipient.Route.String()+"."+endpointEntry.Path)
 
 	// if there are configuration errors, return it
 	if len(endpointEntry.Errors) > 0 {
@@ -255,7 +259,8 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	traceID = func() string {
 		return spanContext.TraceID().String()
 	}
-	slog.Info("Serving plugins")
+	slogNamespace.Info("Serving plugins")
+	slogRoute.Info("Serving plugins")
 
 	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(t))
 	defer cancel()
@@ -270,7 +275,8 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		// check and exit if consumer is set in plugin
 		if c.Username != "" {
-			slog.Info("user authenticated", "user", c.Username)
+			slogNamespace.Info("user authenticated", "user", c.Username)
+			slogRoute.Info("user authenticated", "user", c.Username)
 
 			break
 		}
@@ -348,7 +354,8 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(tw.Code)
 		_, err := w.Write(tw.Body.Bytes())
 		if err != nil {
-			slog.Error("can not write api response", "error", err.Error())
+			slogRoute.Error("can not write api response", "error", err.Error())
+			slogNamespace.Error("can not write api response", "error", err.Error())
 		}
 	}
 }
