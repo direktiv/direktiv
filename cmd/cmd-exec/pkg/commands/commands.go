@@ -78,8 +78,7 @@ func RunCommands(ctx context.Context, in Commands, info *server.ExecutionInfo) (
 			// check if it has to stop here
 			if command.StopOnError {
 				commandOutput = append(commandOutput, cr)
-
-				break
+				return commandOutput, fmt.Errorf("stopped because command %d failed", a)
 			}
 		}
 
