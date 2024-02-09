@@ -35,23 +35,22 @@ type LogEntry struct {
 	Data map[string]interface{}
 }
 
-func (e LogEntry) ToFeatureLogEntry() (core.FeatureLogEntry, error) {
+func (e LogEntry) ToFeatureLogEntry() (core.PlattformLogEntry, error) {
 	entry, ok := e.Data["entry"].(string)
 	if !ok {
-		return core.FeatureLogEntry{}, fmt.Errorf("log-entry format is corrupt")
+		return core.PlattformLogEntry{}, fmt.Errorf("log-entry format is corrupt")
 	}
 
 	var m map[string]interface{}
 	if err := json.Unmarshal([]byte(entry), &m); err != nil {
-		return core.FeatureLogEntry{}, fmt.Errorf("failed to unmarshal log entry: %w", err)
+		return core.PlattformLogEntry{}, fmt.Errorf("failed to unmarshal log entry: %w", err)
 	}
 
-	featureLogEntry := core.FeatureLogEntry{
-		ID:       strconv.Itoa(e.ID),
-		Time:     e.Time,
-		Msg:      fmt.Sprint(m["msg"]),
-		Level:    fmt.Sprint(m["level"]),
-		Metadata: map[string]string{},
+	featureLogEntry := core.PlattformLogEntry{
+		ID:    strconv.Itoa(e.ID),
+		Time:  e.Time,
+		Msg:   fmt.Sprint(m["msg"]),
+		Level: fmt.Sprint(m["level"]),
 	}
 	if trace, ok := m["trace"].(string); ok {
 		featureLogEntry.Trace = trace

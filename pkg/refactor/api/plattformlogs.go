@@ -25,14 +25,14 @@ func NewLogManager(store plattformlogs.LogStore) core.LogCollectionManager {
 	}
 }
 
-func (m logController) GetNewer(ctx context.Context, t time.Time, params map[string]string) ([]core.FeatureLogEntry, error) {
+func (m logController) GetNewer(ctx context.Context, t time.Time, params map[string]string) ([]core.PlattformLogEntry, error) {
 	var r []plattformlogs.LogEntry
 	var err error
 
 	// Determine the stream based on the provided parameters
 	stream, err := determineStream(params)
 	if err != nil {
-		return []core.FeatureLogEntry{}, err
+		return []core.PlattformLogEntry{}, err
 	}
 
 	// Call the appropriate LogStore method with cursorTime
@@ -43,14 +43,14 @@ func (m logController) GetNewer(ctx context.Context, t time.Time, params map[str
 	}
 
 	if err != nil {
-		return []core.FeatureLogEntry{}, err
+		return []core.PlattformLogEntry{}, err
 	}
 
 	res := loglist{}
 	for _, le := range r {
 		e, err := le.ToFeatureLogEntry()
 		if err != nil {
-			return []core.FeatureLogEntry{}, err
+			return []core.PlattformLogEntry{}, err
 		}
 		res = append(res, e)
 	}
@@ -69,20 +69,20 @@ func (m logController) GetNewer(ctx context.Context, t time.Time, params map[str
 	return res, nil
 }
 
-func (m logController) GetOlder(ctx context.Context, params map[string]string) ([]core.FeatureLogEntry, error) {
+func (m logController) GetOlder(ctx context.Context, params map[string]string) ([]core.PlattformLogEntry, error) {
 	var r []plattformlogs.LogEntry
 	var err error
 
 	// Determine the stream based on the provided parameters
 	stream, err := determineStream(params)
 	if err != nil {
-		return []core.FeatureLogEntry{}, err
+		return []core.PlattformLogEntry{}, err
 	}
 	starting := time.Now().UTC()
 	if t, ok := params["before"]; ok {
 		co, err := time.Parse(time.RFC3339Nano, t)
 		if err != nil {
-			return []core.FeatureLogEntry{}, err
+			return []core.PlattformLogEntry{}, err
 		}
 		starting = co
 	}
@@ -94,14 +94,14 @@ func (m logController) GetOlder(ctx context.Context, params map[string]string) (
 	}
 
 	if err != nil {
-		return []core.FeatureLogEntry{}, err
+		return []core.PlattformLogEntry{}, err
 	}
 
 	res := loglist{}
 	for _, le := range r {
 		e, err := le.ToFeatureLogEntry()
 		if err != nil {
-			return []core.FeatureLogEntry{}, err
+			return []core.PlattformLogEntry{}, err
 		}
 		res = append(res, e)
 	}
@@ -172,7 +172,7 @@ func (m logController) Stream(params map[string]string) http.HandlerFunc {
 	}
 }
 
-type loglist []core.FeatureLogEntry
+type loglist []core.PlattformLogEntry
 
 func (e *loglist) filterByBranch(branch string) {
 	// TODO revisit this implementation
@@ -227,7 +227,7 @@ type Event struct {
 
 // LogStoreWorker manages the log polling and channel communication.
 type logStoreWorker struct {
-	Get      func(ctx context.Context, cursorTime time.Time, params map[string]string) ([]core.FeatureLogEntry, error)
+	Get      func(ctx context.Context, cursorTime time.Time, params map[string]string) ([]core.PlattformLogEntry, error)
 	Interval time.Duration
 	Ch       chan Event
 	Params   map[string]string

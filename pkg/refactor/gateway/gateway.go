@@ -214,7 +214,7 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		namespace = chi.URLParam(r, "namespace")
 	}
 
-	slogNamespace := slog.With("trace", traceID(), "component", "gateway", "stream", recipient.Namespace.String()+"."+namespace)
+	slogNamespace := slog.With("stream", recipient.Namespace.String()+"."+namespace)
 
 	gw, ok := ep.nsGateways[namespace]
 	if !ok {
