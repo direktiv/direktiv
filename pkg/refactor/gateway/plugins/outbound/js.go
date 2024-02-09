@@ -39,30 +39,9 @@ func ConfigureKeyAuthPlugin(config interface{}, _ string) (core.PluginInstance, 
 }
 
 type response struct {
-	// Headers http.Header
-	Headers Headers
+	Headers http.Header
 	Body    string
 	Code    int
-}
-
-type Headers struct {
-	H http.Header
-}
-
-func (h Headers) Get(key string) []string {
-	return h.H[key]
-}
-
-func (h Headers) Set(key string, value string) {
-	h.H.Set(key, value)
-}
-
-func (h Headers) Add(key string, value string) {
-	h.H.Add(key, value)
-}
-
-func (h Headers) Delete(key string) {
-	h.H.Del(key)
 }
 
 func (js *JSOutboundPlugin) ExecutePlugin(_ *core.ConsumerFile,
@@ -91,11 +70,9 @@ func (js *JSOutboundPlugin) ExecutePlugin(_ *core.ConsumerFile,
 	}
 
 	resp := response{
-		Headers: Headers{
-			H: r.Header,
-		},
-		Body: string(b),
-		Code: r.Response.StatusCode,
+		Headers: r.Header,
+		Body:    string(b),
+		Code:    r.Response.StatusCode,
 	}
 
 	// extract all response headers and body
@@ -149,7 +126,7 @@ func (js *JSOutboundPlugin) ExecutePlugin(_ *core.ConsumerFile,
 		if o.ExportType() == reflect.TypeOf(resp) {
 			// nolint checked before
 			responseDone := o.Export().(response)
-			for k, v := range responseDone.Headers.H {
+			for k, v := range responseDone.Headers {
 				for a := range v {
 					w.Header().Add(k, v[a])
 				}

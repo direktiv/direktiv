@@ -71,3 +71,25 @@ states:
           - admin
           - guest
       `;
+
+export const testDiacriticsWorkflow = `direktiv_api: workflow/v1
+description: A workflow for testing characters like îèüñÆ.
+states:
+- id: validate-input
+  type: validate
+  schema:
+    type: object
+    required:
+    - name
+    properties:
+      name:
+        type: string
+        description: Name to greet
+        title: Name
+  transition: sayhello
+
+- id: sayhello
+  type: noop
+  transform:
+    result: 'Hello jq(.name)'
+`;

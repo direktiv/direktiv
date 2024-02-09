@@ -21,7 +21,7 @@ export const Row: FC<RowProps> = ({ consumer }) => (
       <PasswordInput password={consumer.api_key} />
     </TableCell>
     <TableCell>
-      <div className="flex flex-wrap gap-1">
+      <div data-testid="consumer-groups" className="flex flex-wrap gap-1">
         {consumer.groups?.map((group) => (
           <Badge key={group} variant="outline">
             {group}
@@ -30,7 +30,7 @@ export const Row: FC<RowProps> = ({ consumer }) => (
       </div>
     </TableCell>
     <TableCell>
-      <div className="flex flex-wrap gap-1">
+      <div data-testid="consumer-tags" className="flex flex-wrap gap-1">
         {consumer.tags?.map((tag) => (
           <Badge key={tag} variant="outline">
             {tag}

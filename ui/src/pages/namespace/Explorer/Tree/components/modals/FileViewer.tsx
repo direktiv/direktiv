@@ -10,6 +10,7 @@ import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
 import { File } from "lucide-react";
 import { NodeSchemaType } from "~/api/tree/schema/node";
+import { decode } from "js-base64";
 import { mimeTypeToEditorSyntax } from "~/design/Editor/utils";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useTheme } from "~/util/store/theme";
@@ -36,7 +37,7 @@ const FileViewer = ({ node }: { node: NodeSchemaType }) => {
   const theme = useTheme();
   const { data } = useNodeContent({ path: node.path });
 
-  const fileContent = atob(data?.source ?? "");
+  const fileContent = decode(data?.source ?? "");
   const mimeType = data?.node.mimeType;
 
   const supportedLanguage = mimeTypeToEditorSyntax(mimeType);

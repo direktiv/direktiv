@@ -8,6 +8,7 @@ import { Diagram } from "./Diagram";
 import { EditorLayoutSwitcher } from "~/components/EditorLayoutSwitcher";
 import RunWorkflow from "../components/RunWorkflow";
 import { WorkspaceLayout } from "~/components/WorkspaceLayout";
+import { decode } from "js-base64";
 import { useEditorLayout } from "~/util/store/editor";
 import { useNamespace } from "~/util/store/namespace";
 import { useNamespaceLinting } from "~/api/namespaceLinting/query/useNamespaceLinting";
@@ -28,7 +29,7 @@ const WorkflowEditor: FC<{
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const { refetch: updateNotificationBell } = useNamespaceLinting();
 
-  const workflowDataFromServer = atob(data?.source ?? "");
+  const workflowDataFromServer = decode(data?.source ?? "");
 
   const { mutate: updateWorkflow, isLoading } = useUpdateWorkflow({
     onError: (error) => {

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"os"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/mitchellh/mapstructure"
@@ -82,8 +83,10 @@ func GetAllPlugins() map[string]Plugin {
 }
 
 func AddPluginToRegistry(plugin Plugin) {
-	slog.Info("adding plugin", slog.String("name", plugin.Name()))
-	registry[plugin.Name()] = plugin
+	if os.Getenv("DIREKTIV_APP") == "flow" {
+		slog.Info("adding plugin", slog.String("name", plugin.Name()))
+		registry[plugin.Name()] = plugin
+	}
 }
 
 func GetPluginFromRegistry(plugin string) (Plugin, error) {

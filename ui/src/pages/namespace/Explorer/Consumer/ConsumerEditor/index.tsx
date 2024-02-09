@@ -8,6 +8,7 @@ import { Form } from "./Form";
 import FormErrors from "~/components/FormErrors";
 import { Save } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
+import { decode } from "js-base64";
 import { jsonToYaml } from "../../utils";
 import { serializeConsumerFile } from "./utils";
 import { useNodeContent } from "~/api/tree/query/node";
@@ -25,7 +26,7 @@ type ConsumerEditorProps = {
 const ConsumerEditor: FC<ConsumerEditorProps> = ({ data, path }) => {
   const { t } = useTranslation();
   const theme = useTheme();
-  const fileContentFromServer = atob(data.source ?? "");
+  const fileContentFromServer = decode(data.source ?? "");
   const [consumerConfig, consumerConfigError] = serializeConsumerFile(
     fileContentFromServer
   );

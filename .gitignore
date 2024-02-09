@@ -109,3 +109,4 @@ openapi/output
 openapi/src/paths/paths.yaml
 
 direktiv.yaml
+.cache

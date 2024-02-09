@@ -14,7 +14,7 @@ import { Outlet, useParams } from "react-router-dom";
 import { useNamespace, useNamespaceActions } from "~/util/store/namespace";
 
 import Breadcrumb from "~/components/Breadcrumb";
-import Logo from "~/design/Logo";
+import Logo from "~/components/Logo";
 import { Menu } from "lucide-react";
 import Navigation from "~/components/Navigation";
 import NotificationMenu from "~/components/NotificationMenu";
@@ -42,7 +42,7 @@ const Layout = () => {
   return (
     <Root>
       <Drawer>
-        <Sidebar version={version?.api ?? ""}>
+        <Sidebar version={version?.data ?? ""}>
           <SidebarTop>
             <label className="justify-self-start px-1 lg:hidden" role="button">
               <DrawerTrigger asChild>

@@ -64,17 +64,19 @@ func NewServer[IN any](fn func(context.Context, IN, *ExecutionInfo) (interface{}
 	}
 }
 
+func errWriter(w http.ResponseWriter, status int, errMsg string) {
+	w.Header().Set(DirektivErrorCodeHeader, DirektivErrorCode)
+	w.Header().Set(DirektivErrorMessageHeader, errMsg)
+
+	w.WriteHeader(status)
+
+	// nolint
+	w.Write([]byte(errMsg))
+}
+
 // nolint
 func Handler[IN any](fn func(context.Context, IN, *ExecutionInfo) (interface{}, error)) http.Handler {
 	r := chi.NewRouter()
-
-	errWriter := func(w http.ResponseWriter, status int, errMsg string) {
-		w.WriteHeader(status)
-		w.Header().Set(DirektivErrorCodeHeader, DirektivErrorCode)
-		w.Header().Set(DirektivErrorMessageHeader, errMsg)
-
-		w.Write([]byte(errMsg))
-	}
 
 	r.Post("/", func(w http.ResponseWriter, r *http.Request) {
 		var in Payload[IN]
@@ -118,27 +120,14 @@ func Handler[IN any](fn func(context.Context, IN, *ExecutionInfo) (interface{}, 
 
 		for a := range in.Files {
 			f := in.Files[a]
-			file, err := os.Create(filepath.Join(tmpDir, f.Name))
-			if err != nil {
-				errWriter(w, http.StatusInternalServerError, err.Error())
 
-				return
-			}
-			defer file.Close()
-
-			_, err = file.WriteString(f.Content)
+			err = prepareFile(filepath.Join(tmpDir, f.Name), f.Content, f.Permission)
 			if err != nil {
 				errWriter(w, http.StatusInternalServerError, err.Error())
 
 				return
 			}
 
-			err = file.Chmod(fs.FileMode(f.Permission))
-			if err != nil {
-				errWriter(w, http.StatusInternalServerError, err.Error())
-
-				return
-			}
 		}
 
 		out, err := fn(r.Context(), in.Data, ei)
@@ -157,6 +146,22 @@ func Handler[IN any](fn func(context.Context, IN, *ExecutionInfo) (interface{}, 
 	})
 
 	return r
+}
+
+func prepareFile(path, content string, perm uint) error {
+	file, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+
+	defer file.Close()
+
+	_, err = file.WriteString(content)
+	if err != nil {
+		return err
+	}
+
+	return file.Chmod(fs.FileMode(perm))
 }
 
 func (s *Server[IN]) Start() {

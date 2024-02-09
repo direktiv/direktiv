@@ -1,7 +1,5 @@
-import { ContextMenu, TableHeader } from "../components/PluginsTable";
 import { Dialog, DialogTrigger } from "~/design/Dialog";
 import { FC, useState } from "react";
-import { ModalWrapper, PluginSelector } from "../components/Modal";
 import {
   Select,
   SelectContent,
@@ -20,8 +18,12 @@ import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import { EndpointFormSchemaType } from "../../../schema";
 import { JsOutboundForm } from "./JsOutboundForm";
+import { ListContextMenu } from "~/components/ListContextMenu";
+import { ModalWrapper } from "~/components/ModalWrapper";
 import { OutboundPluginFormSchemaType } from "../../../schema/plugins/outbound/schema";
+import { PluginSelector } from "../components/PluginSelector";
 import { Plus } from "lucide-react";
+import { TableHeader } from "../components/PluginsTable";
 import { getJsOutboundConfigAtIndex } from "../utils";
 import { useTranslation } from "react-i18next";
 
@@ -112,7 +114,7 @@ export const OutboundPluginForm: FC<OutboundPluginFormProps> = ({ form }) => {
                     )}
                   </TableCell>
                   <TableCell className="text-right">
-                    <ContextMenu
+                    <ListContextMenu
                       onDelete={onDelete}
                       onMoveDown={onMoveDown}
                       onMoveUp={onMoveUp}
@@ -137,6 +139,9 @@ export const OutboundPluginForm: FC<OutboundPluginFormProps> = ({ form }) => {
                 "pages.explorer.endpoint.editor.form.plugins.outbound.modal.headlineEdit"
               )
         }
+        onCancel={() => {
+          setDialogOpen(false);
+        }}
       >
         <PluginSelector
           title={t(
