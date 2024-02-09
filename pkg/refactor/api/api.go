@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"log"
+	"log/slog"
 	"net/http"
 	"sync"
 	"time"
@@ -90,6 +91,7 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 				// Call the Get method with the cursor instead of offset
 				data, err := app.LogManager.GetOlder(r.Context(), params)
 				if err != nil {
+					slog.Error("Get logs", "error", err)
 					writeInternalError(w, err)
 
 					return
@@ -154,7 +156,7 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 
 func extractLogRequestParams(r *http.Request) map[string]string {
 	params := map[string]string{}
-	if v := r.URL.Query().Get("namespace"); v != "" {
+	if v := chi.URLParam(r, "namespace"); v != "" {
 		params["namespace"] = v
 	}
 	if v := r.URL.Query().Get("route"); v != "" {
