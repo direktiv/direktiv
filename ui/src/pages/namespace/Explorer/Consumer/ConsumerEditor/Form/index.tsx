@@ -10,7 +10,7 @@ import {
 import { FC } from "react";
 import { Fieldset } from "~/components/Form/Fieldset";
 import Input from "~/design/Input";
-import { TagsGroupsArrayForm } from "./TagsGroupsArrayInput";
+import { TagsGroupsArrayForm } from "./TagsGroupsArrayForm";
 import { treatEmptyStringAsUndefined } from "../../../utils";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";

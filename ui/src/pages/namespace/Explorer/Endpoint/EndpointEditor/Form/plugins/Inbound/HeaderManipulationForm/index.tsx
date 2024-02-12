@@ -7,7 +7,7 @@ import {
 } from "../../../../schema/plugins/inbound/headerManipulation";
 
 import { Fieldset } from "~/components/Form/Fieldset";
-import { HeaderArrayForm } from "./HeaderArrayInput";
+import { HeaderArrayForm } from "./HeaderArrayForm";
 import { PluginWrapper } from "../../components/PluginSelector";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";

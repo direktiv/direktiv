@@ -20,7 +20,7 @@ import {
   scaleOptions,
 } from "../schema";
 
-import { EnvsArrayForm } from "./EnvsArrayInput";
+import { EnvsArrayForm } from "./EnvsArrayForm";
 import { FC } from "react";
 import { Fieldset } from "~/components/Form/Fieldset";
 import Input from "~/design/Input";
