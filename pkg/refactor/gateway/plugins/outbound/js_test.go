@@ -2,6 +2,7 @@ package outbound_test
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"net/http"
 	"testing"
@@ -18,7 +19,7 @@ func TestJSOutboundPlugin(t *testing.T) {
 
 	config := &outbound.JSOutboundConfig{
 		Script: `
-		input["Headers"].Delete("Header1")
+		input["Headers"].Del("Header1")
 		input["Headers"].Add("demo", "value")
 		input["Headers"].Add("demo2", "value2")
 		input["Code"] = 204
@@ -27,12 +28,19 @@ func TestJSOutboundPlugin(t *testing.T) {
 	p2, _ := p.Configure(config, core.MagicalGatewayNamespace)
 
 	r, _ := http.NewRequest(http.MethodGet, "/dummy", nil)
-	r.Header.Add("header1", "value1")
-	r.Header.Add("header2", "value2")
+	r.Header.Add("Header1", "value1")
+	r.Header.Add("Header2", "value2")
 	r.Body = io.NopCloser(bytes.NewBufferString("{ \"string1\": \"value2\" }"))
 
 	w := gateway.NewDummyWriter()
 	p2.ExecutePlugin(nil, w, r)
+
+	fmt.Println(w.Header())
+
+	assert.Equal(t, "value", w.Header().Get("demo"))
+	assert.Equal(t, "value2", w.Header().Get("demo2"))
+	assert.Empty(t, w.Header().Get("Header1"))
+	assert.NotEmpty(t, w.Header().Get("Header2"))
 
 	assert.Equal(t, 204, w.Code)
 }

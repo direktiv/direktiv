@@ -138,6 +138,39 @@ states:
   message: 'Missing or invalid value for required input.'
 `
 
+
+const endpointNoContentType = `direktiv_api: endpoint/v1
+allow_anonymous: true
+plugins:
+  target:
+    type: target-flow
+    configuration:
+      flow: /contentType.yaml
+methods: 
+  - GET
+path: /endpointct`
+
+const endpointContentType = `direktiv_api: endpoint/v1
+allow_anonymous: true
+plugins:
+  target:
+    type: target-flow
+    configuration:
+      flow: /contentType.yaml
+      content_type: test/me
+methods: 
+  - GET
+path: /endpointcttest`
+
+const contentType = `
+direktiv_api: workflow/v1
+states:
+- id: helloworld
+  type: noop
+  transform:
+    result: Hello world!
+`
+
 describe("Test target workflow wrong config", () => {
     beforeAll(common.helpers.deleteAllNamespaces);
 
@@ -407,4 +440,58 @@ describe("Test scope for target workflow plugin", () => {
     expect(req.statusCode).toEqual(200);
     expect(req.text).toEqual("{\"result\":\"Hello world!\"}")
   });
+});
+
+
+
+describe("Test target workflow default contenttype", () => {
+  beforeAll(common.helpers.deleteAllNamespaces);
+
+  common.helpers.itShouldCreateNamespace(it, expect, testNamespace);
+
+  common.helpers.itShouldCreateFile(
+    it,
+    expect,
+    testNamespace,
+    "/epnoct.yaml",
+    endpointNoContentType
+  );
+
+
+  common.helpers.itShouldCreateFile(
+    it,
+    expect,
+    testNamespace,
+    "/epct.yaml",
+    endpointContentType
+  );
+
+  common.helpers.itShouldCreateFile(
+    it,
+    expect,
+    testNamespace,
+    "/contentType.yaml",
+    contentType
+  );
+
+  it(`should return a json content type`, async () => {
+    const req = await request(common.config.getDirektivHost()).get(
+        `/gw/endpointct`
+    );
+
+    expect(req.headers["content-type"]).toEqual("application/json")
+    expect(req.statusCode).toEqual(200);
+
+   });  
+
+   it(`should return a configured content type`, async () => {
+    const req = await request(common.config.getDirektivHost()).get(
+        `/gw/endpointcttest`
+    );
+
+    expect(req.headers["content-type"]).toEqual("test/me")
+    expect(req.statusCode).toEqual(200);
+
+   });  
+
 });

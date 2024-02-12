@@ -14,7 +14,8 @@ import (
 )
 
 const (
-	FlowPluginName = "target-flow"
+	FlowPluginName     = "target-flow"
+	defaultContentType = "application/json"
 )
 
 type WorkflowConfig struct {
@@ -49,6 +50,11 @@ func ConfigureTargetFlowPlugin(config interface{}, ns string) (core.PluginInstan
 	// set default to gateway namespace
 	if targetflowConfig.Namespace == "" {
 		targetflowConfig.Namespace = ns
+	}
+
+	// if content type is not set use application/json
+	if targetflowConfig.ContentType == "" {
+		targetflowConfig.ContentType = defaultContentType
 	}
 
 	// throw error if non magic namespace targets different namespace

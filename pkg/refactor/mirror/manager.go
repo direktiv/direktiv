@@ -34,14 +34,14 @@ func (d *Manager) gc() {
 	ctx := context.Background()
 
 	jitter := 1000
-	interval := time.Second * 10    //nolint:gomnd
-	maxRunTime := 5 * time.Minute   //nolint:gomnd
-	maxRecordTime := time.Hour * 48 //nolint:gomnd
+	interval := time.Second * 10
+	maxRunTime := 5 * time.Minute
+	maxRecordTime := time.Hour * 48
 
 	// TODO: gracefully close the loop
 	for {
-		a, _ := rand.Int(rand.Reader, big.NewInt(int64(jitter)*2)) //nolint:gomnd
-		delta := int(a.Int64()) - jitter                           // this gets a value between +/- jitter
+		a, _ := rand.Int(rand.Reader, big.NewInt(int64(jitter)*2))
+		delta := int(a.Int64()) - jitter // this gets a value between +/- jitter
 		time.Sleep(interval + time.Duration(delta*int(time.Millisecond)))
 
 		// this first loop looks for operations that seem to have timed out
@@ -55,7 +55,7 @@ func (d *Manager) gc() {
 		for _, proc := range procs {
 			if time.Since(proc.CreatedAt) > maxRunTime {
 				d.callbacks.SysLogCrit(fmt.Sprintf("Detected an old unfinished mirror process '%s' for namespace '%s'. Terminating...", proc.ID.String(), proc.Namespace))
-				c, cancel := context.WithTimeout(ctx, 5*time.Second) //nolint:gomnd
+				c, cancel := context.WithTimeout(ctx, 5*time.Second)
 				err = d.Cancel(c, proc.ID)
 				cancel()
 				if err != nil {

@@ -83,8 +83,9 @@ type RootQuery interface {
 	// ListAllFiles lists all files and directories in the filestore, this method used to help testing filestore logic.
 	ListAllFiles(ctx context.Context) ([]*File, error)
 
-	// ListDirektivFiles lists all direktiv (workflows and services) files in the filestore.
-	ListDirektivFiles(ctx context.Context) ([]*File, error)
+	// ListDirektivFilesWithData lists all direktiv files(workflows and services, etc...) in the root.
+	// It returns list of files with data fields already loaded, so the caller don't have to call GetData().
+	ListDirektivFilesWithData(ctx context.Context) ([]*File, error)
 
 	SetNamespace(ctx context.Context, namespace string) error
 }

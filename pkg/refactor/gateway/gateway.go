@@ -70,7 +70,7 @@ func (ep *gatewayManager) UpdateNamespace(ns string) {
 	fStore := ep.db.FileStore()
 	ctx := context.Background()
 
-	files, err := fStore.ForNamespace(ns).ListDirektivFiles(ctx)
+	files, err := fStore.ForNamespace(ns).ListDirektivFilesWithData(ctx)
 	if err != nil {
 		slog.Error("error listing files", slog.String("error", err.Error()), "stream", recipient.Namespace.String()+"."+ns)
 
@@ -86,15 +86,8 @@ func (ep *gatewayManager) UpdateNamespace(ns string) {
 			continue
 		}
 
-		data, err := fStore.ForFile(file).GetData(ctx)
-		if err != nil {
-			slog.Error("read file data", slog.String("error", err.Error()), "stream", recipient.Namespace.String()+"."+ns)
-
-			continue
-		}
-
 		if file.Typ == filestore.FileTypeConsumer {
-			item, err := core.ParseConsumerFile(data)
+			item, err := core.ParseConsumerFile(file.Data)
 			if err != nil {
 				slog.Error("parse endpoint file", slog.String("error", err.Error()), "stream", recipient.Namespace.String()+"."+ns)
 
@@ -123,7 +116,7 @@ func (ep *gatewayManager) UpdateNamespace(ns string) {
 				Namespace:               ns,
 			}
 
-			item, err := core.ParseEndpointFile(data)
+			item, err := core.ParseEndpointFile(file.Data)
 			// if parsing fails, the endpoint is still getting added to report
 			// an error in the API
 			if err != nil {

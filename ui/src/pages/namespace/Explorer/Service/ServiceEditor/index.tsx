@@ -8,6 +8,7 @@ import FormErrors from "~/components/FormErrors";
 import { Save } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
 import { ServiceFormSchemaType } from "./schema";
+import { decode } from "js-base64";
 import { jsonToYaml } from "../../utils";
 import { serializeServiceFile } from "./utils";
 import { useNodeContent } from "~/api/tree/query/node";
@@ -26,7 +27,7 @@ const ServiceEditor: FC<ServiceEditorProps> = ({ data, path }) => {
   const { t } = useTranslation();
   const theme = useTheme();
 
-  const fileContentFromServer = atob(data.source ?? "");
+  const fileContentFromServer = decode(data.source ?? "");
 
   const [serviceConfig, serviceConfigError] = serializeServiceFile(
     fileContentFromServer

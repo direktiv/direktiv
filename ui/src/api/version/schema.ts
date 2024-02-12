@@ -4,11 +4,9 @@ import { z } from "zod";
  * example:
  * 
   {
-    "api": "d7403237",
-    "flow":"d7403237"
+    "data": "c898514fa"
   }
  */
 export const VersionSchema = z.object({
-  api: z.string(),
-  flow: z.string(),
+  data: z.string(),
 });

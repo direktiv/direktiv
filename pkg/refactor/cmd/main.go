@@ -187,21 +187,15 @@ func renderServiceManager(db *database.DB, serviceManager core.ServiceManager, l
 
 	for _, ns := range nsList {
 		logger = logger.With("ns", ns.Name)
-		files, err := fStore.ForNamespace(ns.Name).ListDirektivFiles(context.Background())
+		files, err := fStore.ForNamespace(ns.Name).ListDirektivFilesWithData(context.Background())
 		if err != nil {
 			logger.Error("listing direktiv files", "error", err)
 
 			continue
 		}
 		for _, file := range files {
-			data, err := fStore.ForFile(file).GetData(context.Background())
-			if err != nil {
-				logger.Error("read file data", "error", err)
-
-				continue
-			}
 			if file.Typ == filestore.FileTypeService {
-				serviceDef, err := spec.ParseServiceFile(data)
+				serviceDef, err := spec.ParseServiceFile(file.Data)
 				if err != nil {
 					logger.Error("parse service file", "error", err)
 
@@ -221,7 +215,7 @@ func renderServiceManager(db *database.DB, serviceManager core.ServiceManager, l
 					Patches:   serviceDef.Patches,
 				})
 			} else if file.Typ == filestore.FileTypeWorkflow {
-				sub, err := getWorkflowFunctionDefinitionsFromWorkflow(ns, file, data)
+				sub, err := getWorkflowFunctionDefinitionsFromWorkflow(ns, file)
 				if err != nil {
 					logger.Error("parse workflow def", "error", err)
 
@@ -235,10 +229,10 @@ func renderServiceManager(db *database.DB, serviceManager core.ServiceManager, l
 	serviceManager.SetServices(funConfigList)
 }
 
-func getWorkflowFunctionDefinitionsFromWorkflow(ns *core.Namespace, f *filestore.File, data []byte) ([]*core.ServiceConfig, error) {
+func getWorkflowFunctionDefinitionsFromWorkflow(ns *core.Namespace, f *filestore.File) ([]*core.ServiceConfig, error) {
 	var wf model.Workflow
 
-	err := wf.Load(data)
+	err := wf.Load(f.Data)
 	if err != nil {
 		return nil, err
 	}

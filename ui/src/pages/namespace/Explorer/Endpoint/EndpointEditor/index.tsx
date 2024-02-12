@@ -11,6 +11,7 @@ import FormErrors from "~/components/FormErrors";
 import { RouteSchemaType } from "~/api/gateway/schema";
 import { Save } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
+import { decode } from "js-base64";
 import { serializeEndpointFile } from "./utils";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useTheme } from "~/util/store/theme";
@@ -28,7 +29,7 @@ type EndpointEditorProps = {
 const EndpointEditor: FC<EndpointEditorProps> = ({ data, path }) => {
   const { t } = useTranslation();
   const theme = useTheme();
-  const fileContentFromServer = atob(data.source ?? "");
+  const fileContentFromServer = decode(data.source ?? "");
   const [endpointConfig, endpointConfigError] = serializeEndpointFile(
     fileContentFromServer
   );

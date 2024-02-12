@@ -2,14 +2,14 @@ import { FC, KeyboardEvent, useState } from "react";
 import { Plus, X } from "lucide-react";
 
 import Button from "~/design/Button";
-import { EnvironementVariableSchemaType } from "~/api/services/schema/services";
+import { EnvVarSchemaType } from "~/api/services/schema/services";
 import Input from "~/design/Input";
 import { useTranslation } from "react-i18next";
 
 type EnvItemFormProps = {
-  item?: EnvironementVariableSchemaType;
-  onAdd?: (value: EnvironementVariableSchemaType) => void;
-  onUpdate?: (value: EnvironementVariableSchemaType) => void;
+  item?: EnvVarSchemaType;
+  onAdd?: (value: EnvVarSchemaType) => void;
+  onUpdate?: (value: EnvVarSchemaType) => void;
   onDelete?: () => void;
 };
 
@@ -25,11 +25,9 @@ export const EnvItemForm: FC<EnvItemFormProps> = ({
     value: "",
   };
 
-  const [state, setState] = useState<EnvironementVariableSchemaType>(
-    item || emptyItem
-  );
+  const [state, setState] = useState<EnvVarSchemaType>(item || emptyItem);
 
-  const handleChange = (object: Partial<EnvironementVariableSchemaType>) => {
+  const handleChange = (object: Partial<EnvVarSchemaType>) => {
     const newState = { ...state, ...object };
     setState(newState);
     onUpdate && onUpdate(newState);

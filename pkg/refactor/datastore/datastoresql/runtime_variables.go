@@ -296,3 +296,25 @@ func (s *sqlRuntimeVariablesStore) LoadData(ctx context.Context, id uuid.UUID) (
 
 	return variable.Data, nil
 }
+
+func (s *sqlRuntimeVariablesStore) DeleteForWorkflow(ctx context.Context, namespace string, workflowPath string) error {
+	res := s.db.WithContext(ctx).Exec(
+		`DELETE FROM runtime_variables WHERE namespace=? AND workflow_path=?`,
+		namespace, workflowPath)
+	if res.Error != nil {
+		return res.Error
+	}
+
+	return nil
+}
+
+func (s *sqlRuntimeVariablesStore) SetWorkflowPath(ctx context.Context, namespace string, oldWorkflowPath string, newWorkflowPath string) error {
+	res := s.db.WithContext(ctx).Exec(
+		`UPDATE runtime_variables SET workflow_path=? WHERE namespace=? AND workflow_path=?`,
+		newWorkflowPath, namespace, oldWorkflowPath)
+	if res.Error != nil {
+		return res.Error
+	}
+
+	return nil
+}

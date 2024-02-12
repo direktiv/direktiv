@@ -46,7 +46,7 @@ const ConsumerTable = () => {
           </TableHeaderCell>
         </TableRow>
       </TableHead>
-      <TableBody>
+      <TableBody data-testid="consumer-table">
         {isAllowed ? (
           <>
             {noResults ? (

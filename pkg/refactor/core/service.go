@@ -25,7 +25,6 @@ type ServicePatch struct {
 	Value interface{} `json:"value"`
 }
 
-// nolint:tagliatelle
 type ServiceConfig struct {
 	// identification fields:
 	Typ       string `json:"type"`
@@ -54,7 +53,6 @@ func (c *ServiceConfig) GetID() string {
 	str = whitelist.ReplaceAllString(str, "-")
 
 	// Prevent too long ids
-	// nolint:gomnd
 	if len(str) > 50 {
 		str = str[:50]
 	}
