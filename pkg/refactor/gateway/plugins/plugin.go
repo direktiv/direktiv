@@ -83,7 +83,8 @@ func GetAllPlugins() map[string]Plugin {
 }
 
 func AddPluginToRegistry(plugin Plugin) {
-	if os.Getenv("DIREKTIV_APP") == "flow" {
+	if os.Getenv("DIREKTIV_APP") != "sidecar" &&
+		os.Getenv("DIREKTIV_APP") != "init" {
 		slog.Info("adding plugin", slog.String("name", plugin.Name()))
 		registry[plugin.Name()] = plugin
 	}
