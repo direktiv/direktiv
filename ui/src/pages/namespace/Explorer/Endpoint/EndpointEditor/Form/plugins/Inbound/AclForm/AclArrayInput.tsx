@@ -1,5 +1,5 @@
 import { AclFormSchemaType } from "../../../../schema/plugins/inbound/acl";
-import { ArrayForm } from "~/components/Form/ArrayInput";
+import { ArrayForm } from "~/components/Form/Array";
 import { ControllerRenderProps } from "react-hook-form";
 import Input from "~/design/Input";
 import { useTranslation } from "react-i18next";

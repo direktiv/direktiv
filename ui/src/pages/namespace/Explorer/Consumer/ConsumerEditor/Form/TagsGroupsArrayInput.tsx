@@ -1,4 +1,4 @@
-import { ArrayForm } from "~/components/Form/ArrayInput";
+import { ArrayForm } from "~/components/Form/Array";
 import { ConsumerFormSchemaType } from "../schema";
 import { ControllerRenderProps } from "react-hook-form";
 import Input from "~/design/Input";

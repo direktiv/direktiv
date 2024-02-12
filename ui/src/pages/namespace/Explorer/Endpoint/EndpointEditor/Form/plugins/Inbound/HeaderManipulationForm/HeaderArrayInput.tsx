@@ -1,4 +1,4 @@
-import { ArrayForm } from "~/components/Form/ArrayInput";
+import { ArrayForm } from "~/components/Form/Array";
 import { ControllerRenderProps } from "react-hook-form";
 import { HeaderManipulationFormSchemaType } from "../../../../schema/plugins/inbound/headerManipulation";
 import Input from "~/design/Input";
