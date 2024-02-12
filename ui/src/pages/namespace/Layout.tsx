@@ -42,7 +42,7 @@ const Layout = () => {
   return (
     <Root>
       <Drawer>
-        <Sidebar version={version?.api ?? ""}>
+        <Sidebar version={version?.data ?? ""}>
           <SidebarTop>
             <label className="justify-self-start px-1 lg:hidden" role="button">
               <DrawerTrigger asChild>

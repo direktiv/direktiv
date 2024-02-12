@@ -65,9 +65,10 @@ func NewServer[IN any](fn func(context.Context, IN, *ExecutionInfo) (interface{}
 }
 
 func errWriter(w http.ResponseWriter, status int, errMsg string) {
-	w.WriteHeader(status)
 	w.Header().Set(DirektivErrorCodeHeader, DirektivErrorCode)
 	w.Header().Set(DirektivErrorMessageHeader, errMsg)
+
+	w.WriteHeader(status)
 
 	// nolint
 	w.Write([]byte(errMsg))

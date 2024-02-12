@@ -55,7 +55,7 @@ test("the reload button on the error page reloads the current page", async ({
    * to test if the page will be reloaded, we wait for the request
    * to the version endpoint that should be made on every page load
    */
-  await page.waitForRequest("**/version");
+  await page.waitForRequest("/api/v2/version");
 });
 
 test("the home button on the error page navigates the user to the home page", async ({
