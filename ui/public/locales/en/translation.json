@@ -333,6 +333,7 @@
                 "types": {
                   "acl": "Access control list (acl)",
                   "js-inbound": "JavaScript",
+                  "header-manipulation": "Header manipulation",
                   "request-convert": "Request convert",
                   "event-filter": "Event filter"
                 },
@@ -352,6 +353,13 @@
                   "deny_tags": "Deny tags (optional)",
                   "groupPlaceholder": "Enter a group",
                   "tagPlaceholder": "Enter a tag"
+                },
+                "headerManipulation": {
+                  "headers_to_add": "Headers to add (optional)",
+                  "headers_to_modify": "Headers to modify (optional)",
+                  "headers_to_remove": "Headers to remove (optional)",
+                  "namePlaceholder": "Enter a header name",
+                  "valuePlaceholder": "Enter a header value"
                 },
                 "eventFilter": {
                   "script": "JavaScript",

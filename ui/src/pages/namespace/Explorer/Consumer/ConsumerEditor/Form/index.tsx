@@ -7,10 +7,10 @@ import {
   useWatch,
 } from "react-hook-form";
 
-import { ArrayInput } from "~/components/Form/ArrayInput";
 import { FC } from "react";
 import { Fieldset } from "~/components/Form/Fieldset";
 import Input from "~/design/Input";
+import { TagsGroupsArrayForm } from "./TagsGroupsArrayForm";
 import { treatEmptyStringAsUndefined } from "../../../utils";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -89,34 +89,14 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
           <Controller
             control={control}
             name="groups"
-            render={({ field }) => (
-              <ArrayInput
-                placeholder={t(
-                  "pages.explorer.consumer.editor.form.groupsPlaceholder"
-                )}
-                defaultValue={field.value ?? []}
-                onChange={(changedValue) => {
-                  field.onChange(changedValue);
-                }}
-              />
-            )}
+            render={({ field }) => <TagsGroupsArrayForm field={field} />}
           />
         </Fieldset>
         <Fieldset label={t("pages.explorer.consumer.editor.form.tags")}>
           <Controller
             control={control}
             name="tags"
-            render={({ field }) => (
-              <ArrayInput
-                placeholder={t(
-                  "pages.explorer.consumer.editor.form.tagsPlaceholder"
-                )}
-                defaultValue={field.value ?? []}
-                onChange={(changedValue) => {
-                  field.onChange(changedValue);
-                }}
-              />
-            )}
+            render={({ field }) => <TagsGroupsArrayForm field={field} />}
           />
         </Fieldset>
       </div>
