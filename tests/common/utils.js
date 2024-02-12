@@ -1,8 +1,9 @@
-import EventSource from "eventsource";
-import config from "./config";
+import EventSource from 'eventsource'
+
+import config from './config'
 
 export default {
-    /**
+	/**
      * This function returns a an object with a the following properties:
      *
      * dispatch: an async function to dispatch the sse request. It will return
@@ -24,37 +25,40 @@ export default {
      * two messages. We can extend this feature when we have the first very specific
      * use case.
      */
-    direktivSSE: ({
-                      path, // f.e. http://localhost:8080/api/namespaces/my-namespace/logs
-                      auth = {token: null, isEnterprice: false}, // optional auth token
-                      headers = {}, // optional additional headers
-                  }) => {
-        const {token = null, isEnterprice = false} = auth;
-        const sseListener = new EventSource(path, {
-            headers: {
-                ...config.getAuthHeader(token, isEnterprice),
-                ...headers,
-            },
-        });
+	direktivSSE: ({
+		path, // f.e. http://localhost:8080/api/namespaces/my-namespace/logs
+		auth = { token: null,
+			isEnterprice: false }, // optional auth token
+		headers = {}, // optional additional headers
+	}) => {
+		const { token = null, isEnterprice = false } = auth
+		const sseListener = new EventSource(path, {
+			headers: {
+				...config.getAuthHeader(token, isEnterprice),
+				...headers,
+			},
+		})
 
-        const onMessageMock = jest.fn();
-        const onErrorMock = jest.fn();
+		const onMessageMock = jest.fn()
+		const onErrorMock = jest.fn()
 
-        const dispatch = async () =>
-            await new Promise((resolve, reject) => {
-                sseListener.onmessage = (e) => {
-                    onMessageMock(JSON.parse(e.data));
-                    sseListener.close();
-                    resolve();
-                };
+		const dispatch = async () =>
+			await new Promise((resolve, reject) => {
+				sseListener.onmessage = e => {
+					onMessageMock(JSON.parse(e.data))
+					sseListener.close()
+					resolve()
+				}
 
-                sseListener.onerror = (e) => {
-                    onErrorMock(e);
-                    sseListener.close();
-                    resolve();
-                };
-            });
+				sseListener.onerror = e => {
+					onErrorMock(e)
+					sseListener.close()
+					resolve()
+				}
+			})
 
-        return {dispatch, onErrorMock, onMessageMock};
-    },
-};
+		return { dispatch,
+			onErrorMock,
+			onMessageMock }
+	},
+}

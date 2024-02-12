@@ -141,7 +141,6 @@ func writeJSON(w http.ResponseWriter, v any) {
 	}{
 		Data: v,
 	}
-	// nolint:errchkjson
 	_ = json.NewEncoder(w).Encode(payLoad)
 }
 
