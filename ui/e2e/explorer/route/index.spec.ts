@@ -1,6 +1,8 @@
 import { createNamespace, deleteNamespace } from "e2e/utils/namespace";
 import { expect, test } from "@playwright/test";
 
+import { createRouteYaml } from "./utils";
+
 let namespace = "";
 
 test.beforeEach(async () => {
@@ -16,20 +18,11 @@ test("it is possible to create a route file", async ({ page }) => {
   /* prepare data */
   const filename = "myroute.yaml";
 
-  const expectedYaml = `direktiv_api: "endpoint/v1"
-  path: "path"
-  timeout: 3000
-  methods:
-    - "GET"
-    - "POST"
-  plugins:
-    inbound: []
-    outbound: []
-    auth: []
-    target:
-      type: "instant-response"
-      configuration:
-        status_code: 200`;
+  const expectedYaml = createRouteYaml({
+    path: "path",
+    timeout: 3000,
+    methods: ["GET", "POST"],
+  });
 
   /* visit page */
   await page.goto(`/${namespace}/explorer/tree`, { waitUntil: "networkidle" });
