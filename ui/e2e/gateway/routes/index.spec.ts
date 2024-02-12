@@ -76,40 +76,29 @@ test("Route list shows all available routes", async ({ page }) => {
   await expect(
     page
       .getByTestId("route-table")
-      .getByRole("cell")
-      .nth(0)
-      .locator("div")
-      .nth(0)
-      .locator("a"),
+      .getByRole("link", { name: "/redis-route.yaml" }),
     "it renders the text for the file path"
-  ).toHaveText("/redis-route.yaml");
+  ).toBeVisible();
 
   await expect(
-    page
-      .getByTestId("route-table")
-      .getByRole("cell")
-      .nth(1)
-      .locator("div")
-      .first()
-      .locator("div")
-      .first(),
+    page.getByTestId("route-table").getByText("GET"),
     "it renders the text for the method"
-  ).toHaveText("GET");
+  ).toBeVisible();
 
   await expect(
-    page.getByTestId("route-table").locator("tr").getByRole("textbox").first(),
+    page.getByTestId("route-table").getByRole("textbox"),
     "it renders the text for the path"
   ).toHaveValue(`http://localhost:3333/ns/${namespace}/${path}`);
 
   await expect(
-    page.getByTestId("route-table").getByRole("cell").nth(3).locator("div"),
+    page.getByTestId("route-table").getByRole("cell", { name: "1 plugin" }),
     "it renders the correct number for plugins"
-  ).toHaveText("1 plugin");
+  ).toBeVisible();
 
   await expect(
-    page.getByTestId("route-table").getByRole("cell").nth(4).locator("div"),
+    page.getByTestId("route-table").getByText("yes"),
     "it renders the correct label for 'allow anonymous'"
-  ).toHaveText("yes");
+  ).toBeVisible();
 });
 
 test("Route list shows a warning", async ({ page }) => {
@@ -141,15 +130,10 @@ test("Route list shows a warning", async ({ page }) => {
   await expect(
     page.getByTestId("route-table").locator("tr"),
     "it renders one row of routes"
-  ).toHaveCount(1);
+  ).toBeVisible();
 
   await expect(
-    page
-      .getByTestId("route-table")
-      .getByRole("cell")
-      .first()
-      .locator("a")
-      .nth(1),
+    page.locator("a").filter({ hasText: "1 warning" }),
     "there is a link with 1 warning"
   ).toHaveText("1 warning");
 });
@@ -186,14 +170,9 @@ test("Route list shows an error", async ({ page }) => {
   ).toHaveCount(1);
 
   await expect(
-    page
-      .getByTestId("route-table")
-      .getByRole("cell")
-      .first()
-      .locator("a")
-      .nth(1),
+    page.getByTestId("route-table").locator("a").filter({ hasText: "1 error" }),
     "there is a link with 1 error"
-  ).toHaveText("1 error");
+  ).toBeVisible();
 });
 
 test("Route list links the file name to the route file", async ({ page }) => {
