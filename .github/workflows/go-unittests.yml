@@ -24,3 +24,5 @@ jobs:
       - name: Run unit tests
         run: |
             go test $(go list ./... | egrep -v '(direktiv/pkg/flow/grpc)') -coverprofile coverage.out -covermode count
+        env:
+          DIREKTIV_APP: flow

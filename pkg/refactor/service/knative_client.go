@@ -116,25 +116,13 @@ func (c *knativeClient) applyPatch(sv *core.ServiceConfig) error {
 }
 
 func (c *knativeClient) updateService(sv *core.ServiceConfig) error {
-	svcDef, err := buildService(c.config, sv, nil)
-	if err != nil {
-		return err
-	}
-	input, err := json.Marshal(&svcDef)
-	if err != nil {
-		return err
-	}
-	_, err = c.knativeCli.ServingV1().Services(c.config.KnativeNamespace).Patch(context.Background(), sv.GetID(), types.MergePatchType, input, metav1.PatchOptions{})
+	// Updating knative service is basically done by removing the old one and re-creating it.
+	err := c.deleteService(sv.GetID())
 	if err != nil {
 		return err
 	}
 
-	err = c.applyPatch(sv)
-	if err != nil {
-		return fmt.Errorf("applying patch: %w", err)
-	}
-
-	return nil
+	return c.createService(sv)
 }
 
 func (c *knativeClient) deleteService(id string) error {
