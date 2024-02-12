@@ -4,13 +4,13 @@ import { ControllerRenderProps } from "react-hook-form";
 import Input from "~/design/Input";
 import { useTranslation } from "react-i18next";
 
-type TagsGroupsArrayInputProps = {
+type TagsGroupsArrayFormProps = {
   field:
     | ControllerRenderProps<ConsumerFormSchemaType, "tags">
     | ControllerRenderProps<ConsumerFormSchemaType, "groups">;
 };
 
-export const TagsGroupsArrayInput = ({ field }: TagsGroupsArrayInputProps) => {
+export const TagsGroupsArrayForm = ({ field }: TagsGroupsArrayFormProps) => {
   const { t } = useTranslation();
   return (
     <div className="grid gap-5 sm:grid-cols-2">

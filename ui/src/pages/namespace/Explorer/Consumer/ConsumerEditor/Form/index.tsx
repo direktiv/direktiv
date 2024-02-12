@@ -10,7 +10,7 @@ import {
 import { FC } from "react";
 import { Fieldset } from "~/components/Form/Fieldset";
 import Input from "~/design/Input";
-import { TagsGroupsArrayInput } from "./TagsGroupsArrayInput";
+import { TagsGroupsArrayForm } from "./TagsGroupsArrayInput";
 import { treatEmptyStringAsUndefined } from "../../../utils";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -89,14 +89,14 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
           <Controller
             control={control}
             name="groups"
-            render={({ field }) => <TagsGroupsArrayInput field={field} />}
+            render={({ field }) => <TagsGroupsArrayForm field={field} />}
           />
         </Fieldset>
         <Fieldset label={t("pages.explorer.consumer.editor.form.tags")}>
           <Controller
             control={control}
             name="tags"
-            render={({ field }) => <TagsGroupsArrayInput field={field} />}
+            render={({ field }) => <TagsGroupsArrayForm field={field} />}
           />
         </Fieldset>
       </div>
