@@ -95,6 +95,16 @@ test("Route list shows all available routes", async ({ page }) => {
     "it renders the correct number for plugins"
   ).toBeVisible();
 
+  await page
+    .getByTestId("route-table")
+    .getByRole("cell", { name: "1 plugin" })
+    .hover();
+
+  await expect(
+    page.getByTestId("route-table").getByText("1 target plugin"),
+    "it shows the plugin details on hover"
+  ).toBeVisible();
+
   await expect(
     page.getByTestId("route-table").getByText("yes"),
     "it renders the correct label for 'allow anonymous'"
@@ -136,6 +146,13 @@ test("Route list shows a warning", async ({ page }) => {
     page.locator("a").filter({ hasText: "1 warning" }),
     "there is a link with 1 warning"
   ).toHaveText("1 warning");
+
+  await page.locator("a").filter({ hasText: "1 warning" }).hover();
+
+  await expect(
+    page.getByTestId("route-table").getByText("no target plugin set"),
+    "it shows the warning details on hover"
+  ).toBeVisible();
 });
 
 test("Route list shows an error", async ({ page }) => {
@@ -172,6 +189,19 @@ test("Route list shows an error", async ({ page }) => {
   await expect(
     page.getByTestId("route-table").locator("a").filter({ hasText: "1 error" }),
     "there is a link with 1 error"
+  ).toBeVisible();
+
+  await page
+    .getByTestId("route-table")
+    .locator("a")
+    .filter({ hasText: "1 error" })
+    .hover();
+
+  await expect(
+    page
+      .getByTestId("route-table")
+      .getByText("plugin this-plugin-does-not-exist does not exist"),
+    "it shows the error detail on hover"
   ).toBeVisible();
 });
 
