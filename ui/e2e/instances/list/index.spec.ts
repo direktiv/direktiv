@@ -250,7 +250,15 @@ test("it provides a proper pagination", async ({ page }) => {
     headers,
   });
 
+  /**
+   * child workflows are spawned asynchronously in the backend and the page
+   * does not refresh, so we need to wait until they are initialized before
+   * visiting the page.
+   */
+  await page.waitForTimeout(1000);
+
   await page.goto(`${namespace}/instances/`, { waitUntil: "networkidle" });
+
   await expect(
     page.getByTestId("pagination-wrapper"),
     "there should be pagination component"
