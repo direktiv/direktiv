@@ -4,7 +4,7 @@ import { ControllerRenderProps } from "react-hook-form";
 import Input from "~/design/Input";
 import { useTranslation } from "react-i18next";
 
-type AclArrayInputProps = {
+type AclArrayFormProps = {
   field:
     | ControllerRenderProps<AclFormSchemaType, "configuration.allow_groups">
     | ControllerRenderProps<AclFormSchemaType, "configuration.allow_tags">
@@ -31,7 +31,7 @@ const fieldNameToLanguageKey = (
   }
 };
 
-export const AclArrayInput = ({ field }: AclArrayInputProps) => {
+export const AclArrayForm = ({ field }: AclArrayFormProps) => {
   const { t } = useTranslation();
   return (
     <div className="grid gap-5 sm:grid-cols-2">

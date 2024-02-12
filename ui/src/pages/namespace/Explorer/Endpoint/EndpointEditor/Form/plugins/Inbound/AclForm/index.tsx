@@ -6,7 +6,7 @@ import { Controller, useForm } from "react-hook-form";
 import { FC, FormEvent } from "react";
 import FormErrors, { errorsType } from "~/components/FormErrors";
 
-import { AclArrayInput } from "./AclArrayInput";
+import { AclArrayForm } from "./AclArrayForm";
 import { Fieldset } from "~/components/Form/Fieldset";
 import { PluginWrapper } from "../../components/PluginSelector";
 import { useTranslation } from "react-i18next";
@@ -66,7 +66,7 @@ export const AclForm: FC<FormProps> = ({ defaultConfig, onSubmit, formId }) => {
           <Controller
             control={control}
             name="configuration.allow_groups"
-            render={({ field }) => <AclArrayInput field={field} />}
+            render={({ field }) => <AclArrayForm field={field} />}
           />
         </Fieldset>
         <Fieldset
@@ -77,7 +77,7 @@ export const AclForm: FC<FormProps> = ({ defaultConfig, onSubmit, formId }) => {
           <Controller
             control={control}
             name="configuration.deny_groups"
-            render={({ field }) => <AclArrayInput field={field} />}
+            render={({ field }) => <AclArrayForm field={field} />}
           />
         </Fieldset>
         <Fieldset
@@ -88,7 +88,7 @@ export const AclForm: FC<FormProps> = ({ defaultConfig, onSubmit, formId }) => {
           <Controller
             control={control}
             name="configuration.allow_tags"
-            render={({ field }) => <AclArrayInput field={field} />}
+            render={({ field }) => <AclArrayForm field={field} />}
           />
         </Fieldset>
         <Fieldset
@@ -99,7 +99,7 @@ export const AclForm: FC<FormProps> = ({ defaultConfig, onSubmit, formId }) => {
           <Controller
             control={control}
             name="configuration.deny_tags"
-            render={({ field }) => <AclArrayInput field={field} />}
+            render={({ field }) => <AclArrayForm field={field} />}
           />
         </Fieldset>
       </PluginWrapper>
