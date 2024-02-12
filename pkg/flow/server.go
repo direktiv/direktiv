@@ -124,55 +124,7 @@ func newServer(logger *zap.SugaredLogger) (*server, error) {
 	return srv, nil
 }
 
-type mirrorProcessLogger struct {
-	sugar  *zap.SugaredLogger
-	logger logengine.BetterLogger
-}
-
-func (log *mirrorProcessLogger) Debug(pid uuid.UUID, msg string, kv ...interface{}) {
-	log.sugar.Debugw(msg, kv...)
-	tags := map[string]string{
-		"recipientType": "mirror",
-		"mirror-id":     pid.String(),
-	}
-	msg += strings.Repeat(", %s = %v", len(kv)/2)
-	log.logger.Debugf(context.Background(), pid, tags, msg, kv...)
-}
-
-func (log *mirrorProcessLogger) Info(pid uuid.UUID, msg string, kv ...interface{}) {
-	log.sugar.Infow(msg, kv...)
-	tags := map[string]string{
-		"recipientType": "mirror",
-		"mirror-id":     pid.String(),
-	}
-	msg += strings.Repeat(", %s = %v", len(kv)/2)
-	log.logger.Infof(context.Background(), pid, tags, msg, kv...)
-}
-
-func (log *mirrorProcessLogger) Warn(pid uuid.UUID, msg string, kv ...interface{}) {
-	log.sugar.Warnw(msg, kv...)
-	tags := map[string]string{
-		"recipientType": "mirror",
-		"mirror-id":     pid.String(),
-	}
-	msg += strings.Repeat(", %s = %v", len(kv)/2)
-	log.logger.Warnf(context.Background(), pid, tags, msg, kv...)
-}
-
-func (log *mirrorProcessLogger) Error(pid uuid.UUID, msg string, kv ...interface{}) {
-	log.sugar.Errorw(msg, kv...)
-	tags := map[string]string{
-		"recipientType": "mirror",
-		"mirror-id":     pid.String(),
-	}
-	msg += strings.Repeat(", %s = %v", len(kv)/2)
-	log.logger.Errorf(context.Background(), pid, tags, msg, kv...)
-}
-
-var _ mirror.ProcessLogger = &mirrorProcessLogger{}
-
 type mirrorCallbacks struct {
-	logger    mirror.ProcessLogger
 	syslogger *zap.SugaredLogger
 	store     mirror.Store
 	fstore    filestore.FileStore
@@ -182,14 +134,6 @@ type mirrorCallbacks struct {
 
 func (c *mirrorCallbacks) ConfigureWorkflowFunc(ctx context.Context, nsID uuid.UUID, nsName string, file *filestore.File) error {
 	return c.wfconf(ctx, nsID, nsName, file)
-}
-
-func (c *mirrorCallbacks) ProcessLogger() mirror.ProcessLogger {
-	return c.logger
-}
-
-func (c *mirrorCallbacks) SysLogCrit(msg string) {
-	c.syslogger.Error(msg)
 }
 
 func (c *mirrorCallbacks) Store() mirror.Store {
@@ -416,10 +360,6 @@ func (srv *server) start(ctx context.Context) error {
 
 	srv.mirrorManager = mirror.NewManager(
 		&mirrorCallbacks{
-			logger: &mirrorProcessLogger{
-				sugar:  srv.sugar,
-				logger: srv.logger,
-			},
 			syslogger: srv.sugar,
 			store:     noTx.DataStore().Mirror(),
 			fstore:    noTx.FileStore(),
