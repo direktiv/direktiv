@@ -4,7 +4,7 @@ import { HeaderManipulationFormSchemaType } from "../../../../schema/plugins/inb
 import Input from "~/design/Input";
 import { useTranslation } from "react-i18next";
 
-type HeaderArrayInputProps = {
+type HeaderArrayFormProps = {
   field:
     | ControllerRenderProps<
         HeaderManipulationFormSchemaType,
@@ -20,7 +20,7 @@ type HeaderArrayInputProps = {
       >;
 };
 
-export const HeaderArrayInput = ({ field }: HeaderArrayInputProps) => {
+export const HeaderArrayForm = ({ field }: HeaderArrayFormProps) => {
   const { t } = useTranslation();
   const isHeadersToRemove = field.name === "configuration.headers_to_remove";
   const emptyItem = isHeadersToRemove ? { name: "" } : { name: "", value: "" };

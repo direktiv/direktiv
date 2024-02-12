@@ -7,7 +7,7 @@ import {
 } from "../../../../schema/plugins/inbound/headerManipulation";
 
 import { Fieldset } from "~/components/Form/Fieldset";
-import { HeaderArrayInput } from "./HeaderArrayInput";
+import { HeaderArrayForm } from "./HeaderArrayInput";
 import { PluginWrapper } from "../../components/PluginSelector";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -71,7 +71,7 @@ export const HeaderManipulationForm: FC<FormProps> = ({
           <Controller
             control={control}
             name="configuration.headers_to_add"
-            render={({ field }) => <HeaderArrayInput field={field} />}
+            render={({ field }) => <HeaderArrayForm field={field} />}
           />
         </Fieldset>
 
@@ -83,7 +83,7 @@ export const HeaderManipulationForm: FC<FormProps> = ({
           <Controller
             control={control}
             name="configuration.headers_to_modify"
-            render={({ field }) => <HeaderArrayInput field={field} />}
+            render={({ field }) => <HeaderArrayForm field={field} />}
           />
         </Fieldset>
 
@@ -95,7 +95,7 @@ export const HeaderManipulationForm: FC<FormProps> = ({
           <Controller
             control={control}
             name="configuration.headers_to_remove"
-            render={({ field }) => <HeaderArrayInput field={field} />}
+            render={({ field }) => <HeaderArrayForm field={field} />}
           />
         </Fieldset>
       </PluginWrapper>
