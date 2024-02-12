@@ -40,6 +40,9 @@ test("it is possible to create a route file", async ({ page }) => {
   await page.getByPlaceholder("route-name.yaml").fill(filename);
   await page.getByRole("button", { name: "Create" }).click();
 
+  /* close the toast, that covers the save button (makes this test 4 seconds faster) */
+  await page.getByTestId("toast-close").click();
+
   await expect(
     page,
     "it creates the service and opens the file in the explorer"
