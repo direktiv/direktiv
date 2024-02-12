@@ -1,5 +1,5 @@
 import { AclFormSchemaType } from "../../../../schema/plugins/inbound/acl";
-import { ArrayInput } from "~/components/Form/ArrayInput";
+import { ArrayForm } from "~/components/Form/ArrayInput";
 import { ControllerRenderProps } from "react-hook-form";
 import Input from "~/design/Input";
 import { useTranslation } from "react-i18next";
@@ -35,7 +35,7 @@ export const AclArrayInput = ({ field }: AclArrayInputProps) => {
   const { t } = useTranslation();
   return (
     <div className="grid gap-5 sm:grid-cols-2">
-      <ArrayInput
+      <ArrayForm
         defaultValue={field.value || []}
         onChange={field.onChange}
         emptyItem=""

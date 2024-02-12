@@ -3,7 +3,7 @@ import { IsValidItem, RenderItem } from "./types";
 import { ArrayItem } from "./ArrayItem";
 import { useState } from "react";
 
-type ArrayInputProps = <T>(props: {
+type ArrayFormProps = <T>(props: {
   defaultValue: T[];
   emptyItem: T;
   onChange: (newArray: T[]) => void;
@@ -11,7 +11,7 @@ type ArrayInputProps = <T>(props: {
   renderItem: RenderItem<T>;
 }) => JSX.Element;
 
-export const ArrayInput: ArrayInputProps = ({
+export const ArrayForm: ArrayFormProps = ({
   defaultValue,
   emptyItem,
   renderItem,

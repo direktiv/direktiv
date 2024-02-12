@@ -1,4 +1,4 @@
-import { ArrayInput } from "~/components/Form/ArrayInput";
+import { ArrayForm } from "~/components/Form/ArrayInput";
 import { ControllerRenderProps } from "react-hook-form";
 import Input from "~/design/Input";
 import { ServiceFormSchemaType } from "../schema";
@@ -12,7 +12,7 @@ export const EnvsArrayInput = ({ field }: EnvsArrayInputProps) => {
   const { t } = useTranslation();
   return (
     <div className="grid gap-5" data-testid="env-item-form">
-      <ArrayInput
+      <ArrayForm
         defaultValue={field.value || []}
         onChange={field.onChange}
         emptyItem={{ name: "", value: "" }}

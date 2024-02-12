@@ -1,4 +1,4 @@
-import { ArrayInput } from "~/components/Form/ArrayInput";
+import { ArrayForm } from "~/components/Form/ArrayInput";
 import { ConsumerFormSchemaType } from "../schema";
 import { ControllerRenderProps } from "react-hook-form";
 import Input from "~/design/Input";
@@ -14,7 +14,7 @@ export const TagsGroupsArrayInput = ({ field }: TagsGroupsArrayInputProps) => {
   const { t } = useTranslation();
   return (
     <div className="grid gap-5 sm:grid-cols-2">
-      <ArrayInput
+      <ArrayForm
         defaultValue={field.value || []}
         onChange={field.onChange}
         emptyItem=""

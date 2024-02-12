@@ -1,4 +1,4 @@
-import { ArrayInput } from "~/components/Form/ArrayInput";
+import { ArrayForm } from "~/components/Form/ArrayInput";
 import { ControllerRenderProps } from "react-hook-form";
 import { HeaderManipulationFormSchemaType } from "../../../../schema/plugins/inbound/headerManipulation";
 import Input from "~/design/Input";
@@ -26,7 +26,7 @@ export const HeaderArrayInput = ({ field }: HeaderArrayInputProps) => {
   const emptyItem = isHeadersToRemove ? { name: "" } : { name: "", value: "" };
   return (
     <div className="grid gap-5">
-      <ArrayInput
+      <ArrayForm
         defaultValue={field.value || []}
         onChange={field.onChange}
         emptyItem={emptyItem}
