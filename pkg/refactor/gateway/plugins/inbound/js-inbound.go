@@ -78,9 +78,17 @@ type request struct {
 	Queries url.Values
 	// Queries shared.Query
 	Body string
+
+	Consumer *core.ConsumerFile
+
+	// url params of type /{id}
+	URLParams map[string]string
+
+	// response code after executing
+	Status int
 }
 
-func (js *JSInboundPlugin) ExecutePlugin(_ *core.ConsumerFile,
+func (js *JSInboundPlugin) ExecutePlugin(c *core.ConsumerFile,
 	w http.ResponseWriter, r *http.Request,
 ) bool {
 	var (
@@ -99,14 +107,32 @@ func (js *JSInboundPlugin) ExecutePlugin(_ *core.ConsumerFile,
 		defer r.Body.Close()
 	}
 
+	vm := goja.New()
+
+	// add consumer
+	if c == nil {
+		c = &core.ConsumerFile{}
+	}
+
+	// add url param
+	urlParams := make(map[string]string)
+
+	up := r.Context().Value(plugins.URLParamCtxKey)
+	if up != nil {
+		// nolint we know it is from us
+		urlParams = up.(map[string]string)
+	}
+
 	req := request{
-		Headers: r.Header,
-		Queries: r.URL.Query(),
-		Body:    string(b),
+		Headers:   r.Header,
+		Queries:   r.URL.Query(),
+		Body:      string(b),
+		Consumer:  c,
+		URLParams: urlParams,
+		Status:    0,
 	}
 
 	// extract all response headers and body
-	vm := goja.New()
 	err = vm.Set("input", req)
 	if err != nil {
 		plugins.ReportError(w, http.StatusInternalServerError,
@@ -144,11 +170,7 @@ func (js *JSInboundPlugin) ExecutePlugin(_ *core.ConsumerFile,
 		if o.ExportType() == reflect.TypeOf(req) {
 			// nolint checked before
 			responseDone := o.Export().(request)
-			for k, v := range responseDone.Headers {
-				for a := range v {
-					r.Header.Add(k, v[a])
-				}
-			}
+			addHeader(responseDone.Headers, r.Header)
 
 			newQuery := make(url.Values)
 			for k, v := range responseDone.Queries {
@@ -158,6 +180,11 @@ func (js *JSInboundPlugin) ExecutePlugin(_ *core.ConsumerFile,
 			}
 			r.URL.RawQuery = newQuery.Encode()
 			r.Body = io.NopCloser(strings.NewReader(responseDone.Body))
+
+			// script set status code and stop executing other plugins
+			if responseDone.Status > 0 {
+				return serveResponse(w, responseDone)
+			}
 		}
 	}
 
@@ -170,4 +197,31 @@ func init() {
 		JSInboundPluginName,
 		plugins.InboundPluginType,
 		ConfigureJSInbound))
+}
+
+// serveResponse is writing the response directly to the client if the a status
+// code is set within the Javascript.
+func serveResponse(w http.ResponseWriter, req request) bool {
+	// writing headers to response
+	addHeader(req.Headers, w.Header())
+
+	// set was the incoming content-length
+	w.Header().Del("Content-Length")
+
+	// set status from script
+	w.WriteHeader(req.Status)
+
+	// write response body
+	// nolint
+	w.Write([]byte(req.Body))
+
+	return false
+}
+
+func addHeader(getHeader, setHeader http.Header) {
+	for k, v := range getHeader {
+		for a := range v {
+			setHeader.Add(k, v[a])
+		}
+	}
 }
