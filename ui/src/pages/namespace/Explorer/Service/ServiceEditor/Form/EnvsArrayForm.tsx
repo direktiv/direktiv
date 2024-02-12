@@ -4,11 +4,11 @@ import Input from "~/design/Input";
 import { ServiceFormSchemaType } from "../schema";
 import { useTranslation } from "react-i18next";
 
-type EnvsArrayInputProps = {
+type EnvsArrayFormProps = {
   field: ControllerRenderProps<ServiceFormSchemaType, "envs">;
 };
 
-export const EnvsArrayInput = ({ field }: EnvsArrayInputProps) => {
+export const EnvsArrayForm = ({ field }: EnvsArrayFormProps) => {
   const { t } = useTranslation();
   return (
     <div className="grid gap-5" data-testid="env-item-form">
