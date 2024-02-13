@@ -498,7 +498,6 @@ func (flow *flow) RenameNamespaceVariable(ctx context.Context, req *grpc.RenameN
 	updated, err := tx.DataStore().RuntimeVariables().Patch(ctx, item.ID, &core.RuntimeVariablePatch{
 		Name: &newName,
 	})
-
 	if err != nil {
 		return nil, err
 	}

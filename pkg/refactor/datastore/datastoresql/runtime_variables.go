@@ -165,6 +165,7 @@ func (s *sqlRuntimeVariablesStore) get(ctx context.Context, variable *core.Runti
 	return s.GetForNamespace(ctx, variable.Namespace, variable.Name)
 }
 
+// nolint:goconst
 func (s *sqlRuntimeVariablesStore) Set(ctx context.Context, variable *core.RuntimeVariable) (*core.RuntimeVariable, error) {
 	if variable.Name == "" {
 		return nil, core.ErrInvalidRuntimeVariableName
@@ -299,6 +300,7 @@ func (s *sqlRuntimeVariablesStore) SetWorkflowPath(ctx context.Context, namespac
 	return nil
 }
 
+// nolint:goconst
 func (s *sqlRuntimeVariablesStore) Create(ctx context.Context, variable *core.RuntimeVariable) (*core.RuntimeVariable, error) {
 	if variable.Name == "" {
 		return nil, core.ErrInvalidRuntimeVariableName
@@ -310,7 +312,7 @@ func (s *sqlRuntimeVariablesStore) Create(ctx context.Context, variable *core.Ru
 	fields := "id, namespace, name, mime_type, data"
 	holders := "?, ?, ?, ?, ?"
 	newUUID := uuid.New()
-	var args = []any{newUUID, variable.Namespace, variable.Name, variable.MimeType, variable.Data}
+	args := []any{newUUID, variable.Namespace, variable.Name, variable.MimeType, variable.Data}
 
 	if variable.WorkflowPath != "" {
 		fields += ", workflow_path"
@@ -327,7 +329,7 @@ func (s *sqlRuntimeVariablesStore) Create(ctx context.Context, variable *core.Ru
 				INSERT INTO runtime_variables(%s)
 				VALUES(%s`, fields, holders)
 
-	res := s.db.WithContext(ctx).Exec(query, args)
+	res := s.db.WithContext(ctx).Exec(query, args...)
 
 	if res.Error != nil {
 		return nil, res.Error
@@ -339,6 +341,7 @@ func (s *sqlRuntimeVariablesStore) Create(ctx context.Context, variable *core.Ru
 	return s.GetByID(ctx, newUUID)
 }
 
+// nolint:goconst
 func (s *sqlRuntimeVariablesStore) Patch(ctx context.Context, id uuid.UUID, patch *core.RuntimeVariablePatch) (*core.RuntimeVariable, error) {
 	if patch.Name != nil {
 		if *patch.Name == "" {
@@ -350,7 +353,7 @@ func (s *sqlRuntimeVariablesStore) Patch(ctx context.Context, id uuid.UUID, patc
 	}
 
 	fields := ""
-	var args = []any{}
+	args := []any{}
 
 	if patch.Name != nil {
 		fields += ", name=?"
