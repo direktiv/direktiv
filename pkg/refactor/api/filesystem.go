@@ -129,6 +129,7 @@ func (e *fsController) delete(w http.ResponseWriter, r *http.Request) {
 		}[file.Typ]
 		err = e.bus.Publish(deleteTopic, ns.Name)
 		if err != nil {
+			// nolint:bus
 			// TODO: log error here.
 		}
 	}
@@ -213,6 +214,7 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 		}[newFile.Typ]
 		err = e.bus.Publish(createTopic, ns.Name)
 		if err != nil {
+			// nolint:bus
 			// TODO: log error here.
 		}
 	}
@@ -322,6 +324,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 		}[oldFile.Typ]
 		err = e.bus.Publish(createTopic, ns.Name)
 		if err != nil {
+			// nolint:bus
 			// TODO: log error here.
 		}
 	}
