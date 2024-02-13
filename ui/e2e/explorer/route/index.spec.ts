@@ -22,6 +22,12 @@ test("it is possible to create a basic route file", async ({ page }) => {
     path: "path",
     timeout: 3000,
     methods: ["GET", "POST"],
+    plugins: {
+      target: `
+    type: "instant-response"
+    configuration:
+        status_code: 200`,
+    },
   });
 
   /* visit page */

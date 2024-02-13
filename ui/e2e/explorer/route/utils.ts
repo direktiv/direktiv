@@ -5,16 +5,21 @@ type Route = {
   path: string;
   timeout: number;
   methods: string[];
+  plugins: Plugins;
 };
 
-const targetPluginYaml = () => `type: "instant-response"
-    configuration:
-        status_code: 200`;
+type Plugins = {
+  inbound?: string;
+  outbound?: string;
+  auth?: string;
+  target: string;
+};
 
 export const createRouteYaml = ({
   path,
   timeout,
   methods,
+  plugins,
 }: Route) => `direktiv_api: "endpoint/v1"
 path: "${path}"
 timeout: ${timeout}
@@ -23,5 +28,4 @@ plugins:
   inbound: []
   outbound: []
   auth: []
-  target:
-    ${targetPluginYaml()}`;
+  target:${plugins.target}`;
