@@ -213,7 +213,7 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 			filestore.FileTypeConsumer: pubsub.ConsumerCreate,
 		}[newFile.Typ]
 		err = e.bus.Publish(createTopic, ns.Name)
-		// nolint:
+		// nolint
 		if err != nil {
 			// TODO: log error here.
 		}
