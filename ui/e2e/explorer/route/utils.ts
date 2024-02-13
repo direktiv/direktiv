@@ -25,7 +25,7 @@ path: "${path}"
 timeout: ${timeout}
 methods:${methodsYaml(methods)}  
 plugins:
-  inbound: []
-  outbound: []
-  auth: []
+  inbound: ${plugins.inbound ?? " []"}
+  outbound:${plugins.outbound ?? " []"}
+  auth:${plugins.auth ?? " []"}
   target:${plugins.target}`;
