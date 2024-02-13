@@ -122,7 +122,7 @@ test("Consumer list will update the consumers when refetch button is clicked", a
     urlParams: {
       baseUrl: process.env.VITE_DEV_API_DOMAIN,
       namespace,
-      name: "redis-service.yaml",
+      name: "http-service.yaml",
     },
     headers,
   });
@@ -155,7 +155,7 @@ test("Consumer list will update the consumers when refetch button is clicked", a
     urlParams: {
       baseUrl: process.env.VITE_DEV_API_DOMAIN,
       namespace,
-      path: "redis-service.yaml",
+      path: "http-service.yaml",
     },
     headers,
   });

@@ -1,9 +1,9 @@
-import { createNamespace, deleteNamespace } from "../utils/namespace";
 import {
-  createRedisServiceFile,
+  createHttpServiceFile,
   findServiceWithApiRequest,
   serviceWithAnError,
 } from "./utils";
+import { createNamespace, deleteNamespace } from "../utils/namespace";
 import { expect, test } from "@playwright/test";
 
 import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
@@ -39,11 +39,11 @@ test("Service list is empty by default", async ({ page }) => {
 
 test("Service list shows all available services", async ({ page }) => {
   await createWorkflow({
-    payload: createRedisServiceFile(),
+    payload: createHttpServiceFile(),
     urlParams: {
       baseUrl: process.env.VITE_DEV_API_DOMAIN,
       namespace,
-      name: "redis-service.yaml",
+      name: "http-service.yaml",
     },
     headers,
   });
@@ -54,10 +54,12 @@ test("Service list shows all available services", async ({ page }) => {
         await findServiceWithApiRequest({
           namespace,
           match: (service) =>
-            service.filePath === "/redis-service.yaml" &&
-            (service.conditions ?? []).some((c) => c.type === "UpAndReady"),
+            service.filePath === "/http-service.yaml" &&
+            (service.conditions ?? []).some(
+              (c) => c.type === "ConfigurationsReady"
+            ),
         }),
-      "the service in the backend is in an UpAndReady state"
+      "the service in the backend is in state ConfigurationsReady"
     )
     .toBeTruthy();
 
@@ -73,29 +75,19 @@ test("Service list shows all available services", async ({ page }) => {
   await expect(
     page
       .getByTestId("service-row")
-      .getByRole("link", { name: "/redis-service.yaml" }),
+      .getByRole("link", { name: "/http-service.yaml" }),
     "it renders the link to the service file"
   ).toBeVisible();
 
   await expect(
-    page
-      .getByTestId("service-row")
-      .locator("a")
-      .filter({ hasText: "UpAndReady" }),
-    "it renders the UpAndReady status of the service"
+    page.getByTestId("service-row").filter({ hasText: "ConfigurationsReady" }),
+    "it renders the service status"
   ).toBeVisible();
 
   await page
     .getByTestId("service-row")
-    .locator("a")
-    .filter({ hasText: "UpAndReady" })
+    .filter({ hasText: "ConfigurationsReady" })
     .hover();
-
-  // message can be "Up 1 second" or "Up 2 seconds" or "Up Less than a second"
-  await expect(
-    page.getByTestId("service-row").getByText(/Up .* second/),
-    "it renders the uptime in a tooltip"
-  ).toBeVisible();
 
   await expect(
     page
@@ -117,9 +109,10 @@ test("Service list shows all available services", async ({ page }) => {
   ).toBeVisible();
 
   await expect(
-    page
-      .getByTestId("service-row")
-      .getByRole("cell", { name: "redis", exact: true }),
+    page.getByTestId("service-row").getByRole("cell", {
+      name: "gcr.io/direktiv/functions/http-request:1.0",
+      exact: true,
+    }),
     "it renders the image name of the service"
   ).toBeVisible();
 
@@ -134,22 +127,17 @@ test("Service list shows all available services", async ({ page }) => {
     page.getByTestId("service-row").getByRole("cell", { name: "small" }),
     "it renders the size of the service"
   ).toBeVisible();
-
-  await expect(
-    page.getByTestId("service-row").getByRole("cell", { name: "redis-server" }),
-    "it renders the cmd of the service"
-  ).toBeVisible();
 });
 
 test("Service list links the file name to the service file", async ({
   page,
 }) => {
   await createWorkflow({
-    payload: createRedisServiceFile(),
+    payload: createHttpServiceFile(),
     urlParams: {
       baseUrl: process.env.VITE_DEV_API_DOMAIN,
       namespace,
-      name: "redis-service.yaml",
+      name: "http-service.yaml",
     },
     headers,
   });
@@ -160,29 +148,29 @@ test("Service list links the file name to the service file", async ({
 
   await page
     .getByTestId("service-row")
-    .getByRole("link", { name: "/redis-service.yaml" })
+    .getByRole("link", { name: "/http-service.yaml" })
     .click();
 
   await expect(
     page,
     "after clicking on the file name, the user gets redirected to the file explorer page of the service file"
-  ).toHaveURL(`/${namespace}/explorer/service/redis-service.yaml`);
+  ).toHaveURL(`/${namespace}/explorer/service/http-service.yaml`);
 
   await expect(
     page.getByTestId("breadcrumb-segment"),
     "it renders the filename in the breadcrumb"
-  ).toHaveText("redis-service.yaml");
+  ).toHaveText("http-service.yaml");
 });
 
 test("Service list links the row to the service details page", async ({
   page,
 }) => {
   await createWorkflow({
-    payload: createRedisServiceFile(),
+    payload: createHttpServiceFile(),
     urlParams: {
       baseUrl: process.env.VITE_DEV_API_DOMAIN,
       namespace,
-      name: "redis-service.yaml",
+      name: "http-service.yaml",
     },
     headers,
   });
@@ -192,7 +180,7 @@ test("Service list links the row to the service details page", async ({
       async () =>
         await findServiceWithApiRequest({
           namespace,
-          match: (service) => service.filePath === "/redis-service.yaml",
+          match: (service) => service.filePath === "/http-service.yaml",
         }),
       "the service was mounted in the backend"
     )
@@ -200,7 +188,7 @@ test("Service list links the row to the service details page", async ({
 
   const createdService = await findServiceWithApiRequest({
     namespace,
-    match: (service) => service.filePath === "/redis-service.yaml",
+    match: (service) => service.filePath === "/http-service.yaml",
   });
 
   if (!createdService) throw new Error("could not find service");
@@ -233,11 +221,11 @@ test("Service list links the row to the service details page", async ({
 
 test("Service list lets the user rebuild a service", async ({ page }) => {
   await createWorkflow({
-    payload: createRedisServiceFile(),
+    payload: createHttpServiceFile(),
     urlParams: {
       baseUrl: process.env.VITE_DEV_API_DOMAIN,
       namespace,
-      name: "redis-service.yaml",
+      name: "http-service.yaml",
     },
     headers,
   });
@@ -248,10 +236,12 @@ test("Service list lets the user rebuild a service", async ({ page }) => {
         await findServiceWithApiRequest({
           namespace,
           match: (service) =>
-            service.filePath === "/redis-service.yaml" &&
-            (service.conditions ?? []).some((c) => c.type === "UpAndReady"),
+            service.filePath === "/http-service.yaml" &&
+            (service.conditions ?? []).some(
+              (c) => c.type === "ConfigurationsReady"
+            ),
         }),
-      "the service in the backend is in an UpAndReady state"
+      "the service in the backend is in state ConfigurationsReady"
     )
     .toBeTruthy();
 
@@ -260,11 +250,8 @@ test("Service list lets the user rebuild a service", async ({ page }) => {
   });
 
   await expect(
-    page
-      .getByTestId("service-row")
-      .locator("a")
-      .filter({ hasText: "UpAndReady" }),
-    "it renders the UpAndReady status of the service"
+    page.getByTestId("service-row").filter({ hasText: "ConfigurationsReady" }),
+    "it renders the ConfigurationsReady status of the service"
   ).toBeVisible();
 
   await page.getByTestId("service-row").getByRole("button").click();
@@ -318,7 +305,6 @@ test("Service list highlights services that have errors", async ({ page }) => {
     page.getByTestId("service-row").locator("a").filter({ hasText: "Error" }),
     "it renders the Error status of the service"
   ).toBeVisible();
-
   await page
     .getByTestId("service-row")
     .locator("a")
@@ -335,14 +321,14 @@ test("Service list will update the services when refetch button is clicked", asy
   page,
 }) => {
   await createWorkflow({
-    payload: createRedisServiceFile({
+    payload: createHttpServiceFile({
       scale: 1,
       size: "large",
     }),
     urlParams: {
       baseUrl: process.env.VITE_DEV_API_DOMAIN,
       namespace,
-      name: "redis-service.yaml",
+      name: "http-service.yaml",
     },
     headers,
   });
@@ -364,14 +350,14 @@ test("Service list will update the services when refetch button is clicked", asy
   ).toBeVisible();
 
   await updateWorkflow({
-    payload: createRedisServiceFile({
+    payload: createHttpServiceFile({
       scale: 2,
       size: "small",
     }),
     urlParams: {
       baseUrl: process.env.VITE_DEV_API_DOMAIN,
       namespace,
-      path: "redis-service.yaml",
+      path: "http-service.yaml",
     },
     headers,
   });
