@@ -46,7 +46,7 @@ const RoutesTable = () => {
           </TableHeaderCell>
         </TableRow>
       </TableHead>
-      <TableBody>
+      <TableBody data-testid="route-table">
         {isAllowed ? (
           <>
             {noResults ? (

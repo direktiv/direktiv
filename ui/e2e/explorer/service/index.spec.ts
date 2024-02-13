@@ -150,13 +150,12 @@ test("it is possible to create a service", async ({ page }) => {
 
   await Promise.all(
     envs.map(async (item, index) => {
-      const currentElement = page.getByTestId("env-item-form").nth(index);
-      await expect(currentElement.getByTestId("env-name")).toHaveValue(
-        item.name
-      );
-      await expect(currentElement.getByTestId("env-value")).toHaveValue(
-        item.value
-      );
+      await expect(
+        page.getByTestId("env-item-form").getByTestId("env-name").nth(index)
+      ).toHaveValue(item.name);
+      await expect(
+        page.getByTestId("env-item-form").getByTestId("env-value").nth(index)
+      ).toHaveValue(item.value);
     })
   );
 
@@ -348,13 +347,12 @@ test("it is possible to edit environment variables", async ({ page }) => {
 
   await Promise.all(
     envs.map(async (item, index) => {
-      const currentElement = page.getByTestId("env-item-form").nth(index);
-      await expect(currentElement.getByTestId("env-name")).toHaveValue(
-        item.name
-      );
-      await expect(currentElement.getByTestId("env-value")).toHaveValue(
-        item.value
-      );
+      await expect(
+        page.getByTestId("env-item-form").getByTestId("env-name").nth(index)
+      ).toHaveValue(item.name);
+      await expect(
+        page.getByTestId("env-item-form").getByTestId("env-value").nth(index)
+      ).toHaveValue(item.value);
     })
   );
 
@@ -376,20 +374,19 @@ test("it is possible to edit environment variables", async ({ page }) => {
   expectNewEnvs = [envs[1], envs[2], updatedEnv, envs[4]] as EnvVarSchemaType[];
 
   /* delete items and assert rendered list is updated*/
-  await page.getByTestId("env-item-form").nth(0).getByRole("button").click();
-  await page.getByTestId("env-item-form").nth(2).getByRole("button").click();
+  await page.getByTestId("env-item-form").getByRole("button").nth(0).click();
+  await page.getByTestId("env-item-form").getByRole("button").nth(2).click();
 
   expectNewEnvs = [envs[1], envs[2], envs[4]] as EnvVarSchemaType[];
 
   await Promise.all(
     expectNewEnvs.map(async (item, index) => {
-      const currentElement = page.getByTestId("env-item-form").nth(index);
-      await expect(currentElement.getByTestId("env-name")).toHaveValue(
-        item.name
-      );
-      await expect(currentElement.getByTestId("env-value")).toHaveValue(
-        item.value
-      );
+      await expect(
+        page.getByTestId("env-item-form").getByTestId("env-name").nth(index)
+      ).toHaveValue(item.name);
+      await expect(
+        page.getByTestId("env-item-form").getByTestId("env-value").nth(index)
+      ).toHaveValue(item.value);
     })
   );
 

@@ -27,7 +27,8 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 	}
 
 	fsCtr := &fsController{
-		db: db,
+		db:  db,
+		bus: app.Bus,
 	}
 
 	regCtr := &registryController{

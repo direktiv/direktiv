@@ -67,6 +67,7 @@ func NewMain(config *core.Config, db *database.DB, pbus *pubsub.Bus, logger *zap
 		ServiceManager:  serviceManager,
 		RegistryManager: registryManager,
 		GatewayManager:  gatewayManager,
+		Bus:             pbus,
 		LogManager:      logManager,
 	}
 

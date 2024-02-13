@@ -3,6 +3,7 @@ import { AuthPluginFormSchemaType } from "../../schema/plugins/auth/schema";
 import { BasicAuthFormSchemaType } from "../../schema/plugins/auth/basicAuth";
 import { EventFilterFormSchemaType } from "../../schema/plugins/inbound/eventFilter";
 import { GithubWebhookAuthFormSchemaType } from "../../schema/plugins/auth/githubWebhookAuth";
+import { HeaderManipulationFormSchemaType } from "../../schema/plugins/inbound/headerManipulation";
 import { InboundPluginFormSchemaType } from "../../schema/plugins/inbound/schema";
 import { JsInboundFormSchemaType } from "../../schema/plugins/inbound/jsInbound";
 import { JsOutboundFormSchemaType } from "../../schema/plugins/outbound/jsOutbound";
@@ -39,6 +40,16 @@ export const getAclConfigAtIndex = (
 ): AclFormSchemaType["configuration"] | undefined => {
   const plugin = index !== undefined ? fields?.[index] : undefined;
   return plugin?.type === inboundPluginTypes.acl.name
+    ? plugin.configuration
+    : undefined;
+};
+
+export const getHeaderManipulationConfigAtIndex = (
+  fields: InboundPluginFormSchemaType[] | undefined,
+  index: number | undefined
+): HeaderManipulationFormSchemaType["configuration"] | undefined => {
+  const plugin = index !== undefined ? fields?.[index] : undefined;
+  return plugin?.type === inboundPluginTypes.headerManipulation.name
     ? plugin.configuration
     : undefined;
 };
