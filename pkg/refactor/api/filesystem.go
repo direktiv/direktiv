@@ -128,8 +128,8 @@ func (e *fsController) delete(w http.ResponseWriter, r *http.Request) {
 			filestore.FileTypeConsumer: pubsub.ConsumerDelete,
 		}[file.Typ]
 		err = e.bus.Publish(deleteTopic, ns.Name)
+		// nolint:bus
 		if err != nil {
-			// nolint:bus
 			// TODO: log error here.
 		}
 	}
@@ -213,8 +213,8 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 			filestore.FileTypeConsumer: pubsub.ConsumerCreate,
 		}[newFile.Typ]
 		err = e.bus.Publish(createTopic, ns.Name)
+		// nolint:bus
 		if err != nil {
-			// nolint:bus
 			// TODO: log error here.
 		}
 	}
@@ -323,8 +323,8 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 			filestore.FileTypeConsumer: pubsub.ConsumerRename,
 		}[oldFile.Typ]
 		err = e.bus.Publish(createTopic, ns.Name)
+		// nolint:bus
 		if err != nil {
-			// nolint:bus
 			// TODO: log error here.
 		}
 	}
