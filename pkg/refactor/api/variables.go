@@ -5,11 +5,10 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/google/uuid"
-
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
 )
 
 type varController struct {
@@ -32,6 +31,7 @@ func (e *varController) get(w http.ResponseWriter, r *http.Request) {
 			Code:    "request_data_invalid",
 			Message: "variable id is invalid uuid string",
 		})
+
 		return
 	}
 
@@ -60,6 +60,7 @@ func (e *varController) delete(w http.ResponseWriter, r *http.Request) {
 			Code:    "request_data_invalid",
 			Message: "variable id is invalid uuid string",
 		})
+
 		return
 	}
 
@@ -94,6 +95,7 @@ func (e *varController) update(w http.ResponseWriter, r *http.Request) {
 			Code:    "request_data_invalid",
 			Message: "variable id is invalid uuid string",
 		})
+
 		return
 	}
 
