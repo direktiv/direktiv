@@ -1,5 +1,3 @@
-import { compareYamlStructure, jsonToYaml } from "../../utils";
-
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
@@ -12,6 +10,7 @@ import { RouteSchemaType } from "~/api/gateway/schema";
 import { Save } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
 import { decode } from "js-base64";
+import { jsonToYaml } from "../../utils";
 import { serializeEndpointFile } from "./utils";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useTheme } from "~/util/store/theme";
@@ -54,10 +53,7 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data, path }) => {
         values,
       }) => {
         const preview = jsonToYaml(values);
-        const filehasChanged = compareYamlStructure(
-          preview,
-          fileContentFromServer
-        );
+        const filehasChanged = preview === fileContentFromServer;
         const isDirty = !endpointConfigError && !filehasChanged;
         const disableButton = isLoading || !!endpointConfigError;
 
