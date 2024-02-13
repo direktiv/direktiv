@@ -10,12 +10,14 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
+	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"github.com/go-chi/chi/v5"
 	"gopkg.in/yaml.v3"
 )
 
 type fsController struct {
-	db *database.DB
+	db  *database.DB
+	bus *pubsub.Bus
 }
 
 func (e *fsController) mountRouter(r chi.Router) {
@@ -117,6 +119,21 @@ func (e *fsController) delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Publish pubsub event.
+	if file.Typ != filestore.FileTypeDirectory && file.Typ != filestore.FileTypeFile {
+		deleteTopic := map[filestore.FileType]string{
+			filestore.FileTypeWorkflow: pubsub.WorkflowDelete,
+			filestore.FileTypeService:  pubsub.ServiceDelete,
+			filestore.FileTypeEndpoint: pubsub.EndpointDelete,
+			filestore.FileTypeConsumer: pubsub.ConsumerDelete,
+		}[file.Typ]
+		err = e.bus.Publish(deleteTopic, ns.Name)
+		// nolint
+		if err != nil {
+			// TODO: log error here.
+		}
+	}
+
 	writeOk(w)
 }
 
@@ -185,6 +202,21 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		writeInternalError(w, err)
 		return
+	}
+
+	// Publish pubsub event.
+	if newFile.Typ != filestore.FileTypeDirectory && newFile.Typ != filestore.FileTypeFile {
+		createTopic := map[filestore.FileType]string{
+			filestore.FileTypeWorkflow: pubsub.WorkflowCreate,
+			filestore.FileTypeService:  pubsub.ServiceCreate,
+			filestore.FileTypeEndpoint: pubsub.EndpointCreate,
+			filestore.FileTypeConsumer: pubsub.ConsumerCreate,
+		}[newFile.Typ]
+		err = e.bus.Publish(createTopic, ns.Name)
+		// nolint
+		if err != nil {
+			// TODO: log error here.
+		}
 	}
 
 	writeJSON(w, newFile)
@@ -280,6 +312,34 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		writeInternalError(w, err)
 		return
+	}
+
+	// Public pubsub events.
+	if oldFile.Typ != filestore.FileTypeDirectory && oldFile.Typ != filestore.FileTypeFile && req.AbsolutePath != "" {
+		createTopic := map[filestore.FileType]string{
+			filestore.FileTypeWorkflow: pubsub.WorkflowRename,
+			filestore.FileTypeService:  pubsub.ServiceRename,
+			filestore.FileTypeEndpoint: pubsub.EndpointRename,
+			filestore.FileTypeConsumer: pubsub.ConsumerRename,
+		}[oldFile.Typ]
+		err = e.bus.Publish(createTopic, ns.Name)
+		// nolint
+		if err != nil {
+			// TODO: log error here.
+		}
+	}
+	if oldFile.Typ != filestore.FileTypeDirectory && oldFile.Typ != filestore.FileTypeFile && req.Data != "" {
+		createTopic := map[filestore.FileType]string{
+			filestore.FileTypeWorkflow: pubsub.WorkflowUpdate,
+			filestore.FileTypeService:  pubsub.ServiceUpdate,
+			filestore.FileTypeEndpoint: pubsub.EndpointUpdate,
+			filestore.FileTypeConsumer: pubsub.ConsumerUpdate,
+		}[oldFile.Typ]
+		err = e.bus.Publish(createTopic, ns.Name)
+		// nolint
+		if err != nil {
+			// TODO: log error here.
+		}
 	}
 
 	writeJSON(w, updatedFile)
