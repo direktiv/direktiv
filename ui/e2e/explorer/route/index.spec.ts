@@ -121,7 +121,7 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
     waitUntil: "networkidle",
   });
 
-  /* configure inbound plugin: ACL  */
+  /* configure inbound plugin: ACL */
   await page.getByRole("button", { name: "add inbound plugin" }).click();
   await page.getByRole("combobox").click();
   await page.getByLabel("Access control list (acl)").click();
@@ -161,14 +161,14 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
   await page.getByText("Omit Consumer").click();
   await page.getByRole("button", { name: "Save" }).click();
 
-  /* configure outbound plugin: JavaScript  */
+  /* configure outbound plugin: JavaScript */
   await page.getByRole("button", { name: "add outbound plugin" }).click();
   await page.getByRole("combobox").click();
   await page.getByLabel("JavaScript").click();
   await page.getByRole("textbox").fill("// execute some JavaScript here");
   await page.getByRole("button", { name: "Save" }).click();
 
-  /* configure auth plugin: Request Convert  */
+  /* configure auth plugin: Request Convert */
   await page.getByRole("button", { name: "add auth plugin" }).click();
   await page.getByRole("combobox").click();
   await page.getByLabel("Github Webhook").click();
