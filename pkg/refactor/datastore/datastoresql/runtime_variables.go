@@ -241,26 +241,6 @@ func (s *sqlRuntimeVariablesStore) Set(ctx context.Context, variable *core.Runti
 	return s.GetByID(ctx, newUUID)
 }
 
-func (s *sqlRuntimeVariablesStore) SetName(ctx context.Context, id uuid.UUID, name string) (*core.RuntimeVariable, error) {
-	if matched, _ := regexp.MatchString(core.RuntimeVariableNameRegexPattern, name); !matched {
-		return nil, core.ErrInvalidRuntimeVariableName
-	}
-	res := s.db.WithContext(ctx).Exec(
-		`UPDATE runtime_variables SET name=? WHERE id=?`,
-		name, id)
-	if res.Error != nil {
-		return nil, res.Error
-	}
-	if res.RowsAffected == 0 {
-		return nil, datastore.ErrNotFound
-	}
-	if res.RowsAffected > 1 {
-		return nil, fmt.Errorf("unexpected runtime_variables update count, got: %d, want: %d", res.RowsAffected, 1)
-	}
-
-	return s.GetByID(ctx, id)
-}
-
 func (s *sqlRuntimeVariablesStore) Delete(ctx context.Context, id uuid.UUID) error {
 	res := s.db.WithContext(ctx).Exec(
 		`DELETE FROM runtime_variables WHERE id = ?`,
@@ -317,4 +297,88 @@ func (s *sqlRuntimeVariablesStore) SetWorkflowPath(ctx context.Context, namespac
 	}
 
 	return nil
+}
+
+func (s *sqlRuntimeVariablesStore) Create(ctx context.Context, variable *core.RuntimeVariable) (*core.RuntimeVariable, error) {
+	if variable.Name == "" {
+		return nil, core.ErrInvalidRuntimeVariableName
+	}
+	if matched, _ := regexp.MatchString(core.RuntimeVariableNameRegexPattern, variable.Name); !matched {
+		return nil, core.ErrInvalidRuntimeVariableName
+	}
+
+	fields := "id, namespace, name, mime_type, data"
+	holders := "?, ?, ?, ?, ?"
+	newUUID := uuid.New()
+	var args = []any{newUUID, variable.Namespace, variable.Name, variable.MimeType, variable.Data}
+
+	if variable.WorkflowPath != "" {
+		fields += ", workflow_path"
+		holders += ", ?"
+		args = append(args, variable.WorkflowPath)
+	}
+	if variable.InstanceID.String() != (uuid.UUID{}).String() && variable.WorkflowPath == "" {
+		fields += ", instance_id"
+		holders += ", ?"
+		args = append(args, variable.InstanceID)
+	}
+
+	query := fmt.Sprintf(`
+				INSERT INTO runtime_variables(%s)
+				VALUES(%s`, fields, holders)
+
+	res := s.db.WithContext(ctx).Exec(query, args)
+
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	if res.RowsAffected != 1 {
+		return nil, fmt.Errorf("unexpected gorm insert count, got: %d, want: %d", res.RowsAffected, 1)
+	}
+
+	return s.GetByID(ctx, newUUID)
+}
+
+func (s *sqlRuntimeVariablesStore) Patch(ctx context.Context, id uuid.UUID, patch *core.RuntimeVariablePatch) (*core.RuntimeVariable, error) {
+	if patch.Name != nil {
+		if *patch.Name == "" {
+			return nil, core.ErrInvalidRuntimeVariableName
+		}
+		if matched, _ := regexp.MatchString(core.RuntimeVariableNameRegexPattern, *patch.Name); !matched {
+			return nil, core.ErrInvalidRuntimeVariableName
+		}
+	}
+
+	fields := ""
+	var args = []any{}
+
+	if patch.Name != nil {
+		fields += ", name=?"
+		args = append(args, *patch.Name)
+	}
+	if patch.MimeType != nil {
+		fields += ", mime_type=?"
+		args = append(args, *patch.MimeType)
+	}
+	if patch.Data != nil {
+		fields += ", data=?"
+		args = append(args, patch.Data)
+	}
+	args = append(args, id)
+	fields = strings.Trim(fields, ",")
+
+	query := fmt.Sprintf(`UPDATE runtime_variables SET
+						%s
+					WHERE id=?`, fields)
+
+	res := s.db.WithContext(ctx).Exec(query, args...)
+
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	if res.RowsAffected != 1 {
+		return nil, fmt.Errorf("unexpected gorm update count, got: %d, want: %d", res.RowsAffected, 1)
+	}
+
+	return s.GetByID(ctx, id)
 }

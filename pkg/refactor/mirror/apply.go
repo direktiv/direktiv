@@ -261,7 +261,7 @@ func (o *DirektivApplyer) copyDeprecatedVariables(ctx context.Context) error {
 		mt := mimetype.Detect(v)
 		mtString := strings.Split(mt.String(), ";")
 
-		_, err := o.callbacks.VarStore().Set(ctx,
+		_, err := o.callbacks.VarStore().Create(ctx,
 			&core.RuntimeVariable{
 				Namespace: o.proc.Namespace,
 				Name:      k,
@@ -283,7 +283,7 @@ func (o *DirektivApplyer) copyDeprecatedVariables(ctx context.Context) error {
 			mt := mimetype.Detect(v)
 			mtString := strings.Split(mt.String(), ";")
 
-			_, err := o.callbacks.VarStore().Set(ctx,
+			_, err := o.callbacks.VarStore().Create(ctx,
 				&core.RuntimeVariable{
 					Namespace:    o.proc.Namespace,
 					WorkflowPath: file.Path,

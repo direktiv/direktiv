@@ -110,7 +110,8 @@ CREATE TABLE IF NOT EXISTS "instances_v2" (
 
 CREATE TABLE IF NOT EXISTS "runtime_variables" (
     "id" uuid,
-    "namespace" text,
+    "namespace" text NOT NULL,
+
     "workflow_path" text,
     "instance_id" uuid,
 
