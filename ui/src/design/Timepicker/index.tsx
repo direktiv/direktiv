@@ -3,7 +3,7 @@ import * as React from "react";
 import { FC } from "react";
 import { TimePickerInput } from "./timepicker-input";
 
-export function showOnlyTimeOfDate(date: Date) {
+export function getTimeString(date: Date) {
   const hours =
     date.getHours() < 10
       ? "0" + String(date.getHours())
@@ -26,9 +26,18 @@ type TimePickerProps = {
   date: Date;
   setDate: (date: Date) => void;
   time: string;
+  hours: string;
+  minutes: string;
+  seconds: string;
 };
 
-const TimePicker: FC<TimePickerProps> = ({ date, setDate }) => {
+const TimePicker: FC<TimePickerProps> = ({
+  date,
+  setDate,
+  hours,
+  minutes,
+  seconds,
+}) => {
   const minuteRef = React.useRef<HTMLInputElement>(null);
   const hourRef = React.useRef<HTMLInputElement>(null);
   const secondRef = React.useRef<HTMLInputElement>(null);
@@ -37,7 +46,7 @@ const TimePicker: FC<TimePickerProps> = ({ date, setDate }) => {
     <div className="flex items-end gap-2 p-2">
       <div className="grid gap-1 text-center">
         <label htmlFor="hours" className="text-xs">
-          Hours
+          {hours}
         </label>
         <TimePickerInput
           picker="hours"
@@ -49,7 +58,7 @@ const TimePicker: FC<TimePickerProps> = ({ date, setDate }) => {
       </div>
       <div className="grid gap-1 text-center">
         <label htmlFor="minutes" className="text-xs">
-          Minutes
+          {minutes}
         </label>
         <TimePickerInput
           picker="minutes"
@@ -62,7 +71,7 @@ const TimePicker: FC<TimePickerProps> = ({ date, setDate }) => {
       </div>
       <div className="grid gap-1 text-center">
         <label htmlFor="seconds" className="text-xs">
-          Seconds
+          {seconds}
         </label>
         <TimePickerInput
           picker="seconds"

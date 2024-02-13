@@ -3,7 +3,7 @@ import { Command, CommandGroup, CommandList } from "~/design/Command";
 
 import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 
-import TimePicker, { showOnlyTimeOfDate } from "./";
+import TimePicker, { getTimeString } from "./";
 
 import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
@@ -25,13 +25,22 @@ export default meta;
 
 export const Default = () => {
   const [date, setDate] = React.useState<Date>(new Date());
-  const time = showOnlyTimeOfDate(date);
-  return <TimePicker date={date} setDate={setDate} time={time} />;
+  const time = getTimeString(date);
+  return (
+    <TimePicker
+      hours="Hours"
+      minutes="Minutes"
+      seconds="Seconds"
+      date={date}
+      setDate={setDate}
+      time={time}
+    />
+  );
 };
 
 export const TimepickerWithTextinput = () => {
   const [date, setDate] = React.useState<Date>(new Date());
-  const time = showOnlyTimeOfDate(date);
+  const time = getTimeString(date);
   const [name, setName] = React.useState<string>(() => "filename.yaml");
 
   return (
@@ -85,7 +94,14 @@ export const TimepickerWithTextinput = () => {
             <Command>
               <CommandList>
                 <CommandGroup heading="filter by time">
-                  <TimePicker time={time} date={date} setDate={setDate} />
+                  <TimePicker
+                    hours="Hours"
+                    minutes="Minutes"
+                    seconds="Seconds"
+                    time={time}
+                    date={date}
+                    setDate={setDate}
+                  />
                 </CommandGroup>
               </CommandList>
             </Command>
@@ -104,7 +120,7 @@ export const ButtonBarWithTimepicker = () => {
 
   const [date, setDate] = React.useState<Date>(() => defaultDate);
 
-  const time = showOnlyTimeOfDate(date);
+  const time = getTimeString(date);
   return (
     <div className="m-2 flex flex-row flex-wrap gap-2">
       <ButtonBar>
@@ -142,7 +158,14 @@ export const ButtonBarWithTimepicker = () => {
             <Command>
               <CommandList>
                 <CommandGroup heading="filter by time">
-                  <TimePicker time={time} date={date} setDate={setDate} />
+                  <TimePicker
+                    hours="Hours"
+                    minutes="Minutes"
+                    seconds="Seconds"
+                    time={time}
+                    date={date}
+                    setDate={setDate}
+                  />
                 </CommandGroup>
               </CommandList>
             </Command>
