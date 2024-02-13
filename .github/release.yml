@@ -1,0 +1,26 @@
+changelog:
+  exclude:
+    labels:
+      - devops
+    authors:
+      - octocat
+  categories:
+    - title: User Interface
+      labels:
+        - ui
+    - title: Backend Features
+      labels:
+        - backend
+        - feature
+    - title: Backend Improvements
+      labels:
+        - backend
+        - improvement
+    - title: Backend Bugfixes
+      labels:
+        - backend
+        - bug
+
+    - title: Other Changes
+      labels:
+        - "*"
