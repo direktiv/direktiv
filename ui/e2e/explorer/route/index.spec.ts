@@ -2,6 +2,8 @@ import { createNamespace, deleteNamespace } from "e2e/utils/namespace";
 import { expect, test } from "@playwright/test";
 
 import { createRouteYaml } from "./utils";
+import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
+import { headers } from "e2e/utils/testutils";
 
 let namespace = "";
 
@@ -80,4 +82,89 @@ test("it is possible to create a basic route file", async ({ page }) => {
     editor,
     "all entered data is represented in the editor preview"
   ).toContainText(expectedYaml, { useInnerText: true });
+});
+
+test("it is possible to add plugins to a route file", async ({ page }) => {
+  /* prepare data */
+  const filename = "myroute.yaml";
+
+  const expectedYaml = createRouteYaml({
+    path: "path",
+    timeout: 3000,
+    methods: ["GET", "POST"],
+    plugins: {
+      target: `
+    type: "instant-response"
+    configuration:
+        status_code: 200`,
+    },
+  });
+
+  await createWorkflow({
+    payload: expectedYaml,
+    urlParams: {
+      baseUrl: process.env.VITE_DEV_API_DOMAIN,
+      namespace,
+      name: filename,
+    },
+    headers,
+  });
+
+  await page.goto(`/${namespace}/explorer/endpoint/${filename}`, {
+    waitUntil: "networkidle",
+  });
+
+  /* configure inbound plugin: ACL  */
+  await page.getByRole("button", { name: "add inbound plugin" }).click();
+  await page.getByRole("combobox").click();
+  await page.getByLabel("Access control list (acl)").click();
+  await page
+    .locator("fieldset")
+    .filter({ hasText: "Allow Groups (optional)" })
+    .getByPlaceholder("Enter a group")
+    .fill("allow this group 1");
+
+  await page
+    .locator("fieldset")
+    .filter({ hasText: "Allow Groups (optional)" })
+    .getByPlaceholder("Enter a group")
+    .press("Enter");
+
+  await page
+    .locator("fieldset")
+    .filter({ hasText: "Allow Groups (optional)" })
+    .getByPlaceholder("Enter a group")
+    .nth(1)
+    .fill("allow this group 2");
+
+  await page
+    .locator("fieldset")
+    .filter({ hasText: "Allow Groups (optional)" })
+    .getByPlaceholder("Enter a group")
+    .nth(1)
+    .press("Enter");
+
+  await page.getByRole("button", { name: "Save" }).click();
+
+  /* configure inbound plugin: Request Convert  */
+  await page.getByRole("button", { name: "add inbound plugin" }).click();
+  await page.getByRole("combobox").click();
+  await page.getByLabel("Request Convert").click();
+  await page.getByText("Omit Queries").click();
+  await page.getByText("Omit Consumer").click();
+  await page.getByRole("button", { name: "Save" }).click();
+
+  /* configure outbound plugin: JavaScript  */
+  await page.getByRole("button", { name: "add outbound plugin" }).click();
+  await page.getByRole("combobox").click();
+  await page.getByLabel("JavaScript").click();
+  await page.getByRole("textbox").fill("// execute some JavaScript here");
+  await page.getByRole("button", { name: "Save" }).click();
+
+  /* configure auth plugin: Request Convert  */
+  await page.getByRole("button", { name: "add auth plugin" }).click();
+  await page.getByRole("combobox").click();
+  await page.getByLabel("Github Webhook").click();
+  await page.getByLabel("secret").fill("my github secret");
+  await page.getByRole("button", { name: "Save" }).click();
 });
