@@ -166,7 +166,7 @@ func (d *Manager) Execute(ctx context.Context, p *Process, get func(ctx context.
 		}
 	}()
 
-	parser, err := NewParser(p.Namespace, src)
+	parser, err := NewParser(p.Namespace, p.ID.String(), src)
 	if err != nil {
 		//nolint:contextcheck
 		d.silentFailProcess(p)

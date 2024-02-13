@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
+	"github.com/google/uuid"
 	"github.com/psanford/memfs"
 )
 
@@ -92,7 +93,7 @@ func assertWorkflows(t *testing.T, p *mirror.Parser, paths []string) {
 func TestParseEmpty(t *testing.T) {
 	src := newMemSource()
 
-	p, err := mirror.NewParser("my-ns", src)
+	p, err := mirror.NewParser("my-ns", uuid.NewString(), src)
 	if err != nil {
 		t.Error(err)
 		return
@@ -123,7 +124,7 @@ states:
   type: noop
 `), 0o755)
 
-	p, err := mirror.NewParser("my-ns", src)
+	p, err := mirror.NewParser("my-ns", uuid.NewString(), src)
 	if err != nil {
 		t.Error(err)
 		return
@@ -189,7 +190,7 @@ states:
   type: noop
 `), 0o755)
 
-	p, err := mirror.NewParser("my-ns", src)
+	p, err := mirror.NewParser("my-ns", uuid.NewString(), src)
 	if err != nil {
 		t.Error(err)
 		return
