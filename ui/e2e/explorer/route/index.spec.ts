@@ -14,7 +14,7 @@ test.afterEach(async () => {
   namespace = "";
 });
 
-test("it is possible to create a route file", async ({ page }) => {
+test("it is possible to create a basic route file", async ({ page }) => {
   /* prepare data */
   const filename = "myroute.yaml";
 
