@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"log"
-	"log/slog"
 	"net/http"
 	"sync"
 	"time"
@@ -34,6 +33,11 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 	regCtr := &registryController{
 		manager: app.RegistryManager,
 	}
+
+	logCtr := &logController{
+		store: db.DataStore().NewLogs(),
+	}
+
 	mw := &appMiddlewares{dStore: db.DataStore()}
 
 	r := chi.NewRouter()
@@ -85,24 +89,8 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 				regCtr.mountRouter(r)
 			})
 
-			r.Get("/namespaces/{namespace}/logs", func(w http.ResponseWriter, r *http.Request) {
-				params := extractLogRequestParams(r)
-
-				// Call the Get method with the cursor instead of offset
-				data, err := app.LogManager.GetOlder(r.Context(), params)
-				if err != nil {
-					slog.Error("Get logs", "error", err)
-					writeInternalError(w, err)
-
-					return
-				}
-
-				writeJSON(w, data)
-			})
-
-			r.Get("/namespaces/{namespace}/logs/subscribe", func(w http.ResponseWriter, r *http.Request) {
-				params := extractLogRequestParams(r)
-				app.LogManager.Stream(params).ServeHTTP(w, r)
+			r.Route("/namespaces/{namespace}/logs", func(r chi.Router) {
+				logCtr.mountRouter(r)
 			})
 
 			r.Get("/namespaces/{namespace}/gateway/consumers", func(w http.ResponseWriter, r *http.Request) {
@@ -152,30 +140,6 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 		}
 		serverStopCtx()
 	}()
-}
-
-func extractLogRequestParams(r *http.Request) map[string]string {
-	params := map[string]string{}
-	if v := chi.URLParam(r, "namespace"); v != "" {
-		params["namespace"] = v
-	}
-	if v := r.URL.Query().Get("route"); v != "" {
-		params["route"] = v
-	}
-	if v := r.URL.Query().Get("instance"); v != "" {
-		params["instance"] = v
-	}
-	if v := r.URL.Query().Get("branch"); v != "" {
-		params["branch"] = v
-	}
-	if v := r.URL.Query().Get("level"); v != "" {
-		params["level"] = v
-	}
-	if v := r.URL.Query().Get("before"); v != "" {
-		params["before"] = v
-	}
-
-	return params
 }
 
 func writeJSON(w http.ResponseWriter, v any) {

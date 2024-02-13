@@ -13,6 +13,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/plattformlogs"
+	"github.com/go-chi/chi/v5"
 )
 
 type logController struct {
@@ -23,6 +24,28 @@ func NewLogManager(store plattformlogs.LogStore) core.LogCollectionManager {
 	return logController{
 		store: store,
 	}
+}
+
+func (m *logController) mountRouter(r chi.Router) {
+	r.Get("/subscribe", func(w http.ResponseWriter, r *http.Request) {
+		params := extractLogRequestParams(r)
+		m.Stream(params).ServeHTTP(w, r)
+	})
+
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		params := extractLogRequestParams(r)
+
+		// Call the Get method with the cursor instead of offset
+		data, err := m.GetOlder(r.Context(), params)
+		if err != nil {
+			slog.Error("Get logs", "error", err)
+			writeInternalError(w, err)
+
+			return
+		}
+
+		writeJSON(w, data)
+	})
 }
 
 func (m logController) GetNewer(ctx context.Context, t time.Time, params map[string]string) ([]core.PlattformLogEntry, error) {
@@ -214,6 +237,8 @@ func determineStream(params map[string]string) (string, error) {
 		return "flow.namespace." + p, nil
 	} else if p, ok := params["route"]; ok {
 		return "flow.gateway." + p, nil
+	} else if p, ok := params["mirror"]; ok {
+		return "flow.mirror." + p, nil
 	}
 
 	return "", fmt.Errorf("requested logs for an unknown type")
@@ -280,4 +305,28 @@ func (lw *logStoreWorker) start(ctx context.Context) {
 			}
 		}
 	}()
+}
+
+func extractLogRequestParams(r *http.Request) map[string]string {
+	params := map[string]string{}
+	if v := chi.URLParam(r, "namespace"); v != "" {
+		params["namespace"] = v
+	}
+	if v := r.URL.Query().Get("route"); v != "" {
+		params["route"] = v
+	}
+	if v := r.URL.Query().Get("instance"); v != "" {
+		params["instance"] = v
+	}
+	if v := r.URL.Query().Get("branch"); v != "" {
+		params["branch"] = v
+	}
+	if v := r.URL.Query().Get("level"); v != "" {
+		params["level"] = v
+	}
+	if v := r.URL.Query().Get("before"); v != "" {
+		params["before"] = v
+	}
+
+	return params
 }
