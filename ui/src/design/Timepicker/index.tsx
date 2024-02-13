@@ -1,5 +1,6 @@
 import * as React from "react";
 
+import { FC } from "react";
 import { TimePickerInput } from "./timepicker-input";
 
 export function showOnlyTimeOfDate(date: Date) {
@@ -17,27 +18,20 @@ export function showOnlyTimeOfDate(date: Date) {
       ? "0" + String(date.getSeconds())
       : String(date.getSeconds());
   const time = hours + ":" + minutes + ":" + seconds;
+
   return time;
 }
 
-interface TimePickerProps {
-  hours: string;
-  minutes: string;
-  seconds: string;
+type TimePickerProps = {
   date: Date;
   setDate: (date: Date) => void;
   time: string;
-}
+};
 
-function TimePicker({ date, setDate, time }: TimePickerProps) {
+const TimePicker: FC<TimePickerProps> = ({ date, setDate }) => {
   const minuteRef = React.useRef<HTMLInputElement>(null);
   const hourRef = React.useRef<HTMLInputElement>(null);
   const secondRef = React.useRef<HTMLInputElement>(null);
-  //const dateInit = new Date(new Date().setHours(0, 0, 0, 0));
-  // const showIndicator = !!data?.issues.length;
-
-  const date2 = date ?? new Date(new Date().setHours(0, 0, 0, 0));
-  time = showOnlyTimeOfDate(date2);
 
   return (
     <div className="flex items-end gap-2 p-2">
@@ -47,7 +41,7 @@ function TimePicker({ date, setDate, time }: TimePickerProps) {
         </label>
         <TimePickerInput
           picker="hours"
-          date={date2}
+          date={date}
           setDate={setDate}
           ref={hourRef}
           onRightFocus={() => minuteRef.current?.focus()}
@@ -59,7 +53,7 @@ function TimePicker({ date, setDate, time }: TimePickerProps) {
         </label>
         <TimePickerInput
           picker="minutes"
-          date={date2}
+          date={date}
           setDate={setDate}
           ref={minuteRef}
           onLeftFocus={() => hourRef.current?.focus()}
@@ -72,7 +66,7 @@ function TimePicker({ date, setDate, time }: TimePickerProps) {
         </label>
         <TimePickerInput
           picker="seconds"
-          date={date2}
+          date={date}
           setDate={setDate}
           ref={secondRef}
           onLeftFocus={() => minuteRef.current?.focus()}
@@ -80,6 +74,6 @@ function TimePicker({ date, setDate, time }: TimePickerProps) {
       </div>
     </div>
   );
-}
+};
 
 export default TimePicker;
