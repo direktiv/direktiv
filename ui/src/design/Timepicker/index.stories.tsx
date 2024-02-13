@@ -38,7 +38,7 @@ export const Default = () => {
   );
 };
 
-export const TimepickerWithTextinput = () => {
+export const TimepickerInButtonBar = () => {
   const [date, setDate] = React.useState<Date>(new Date());
   const time = getTimeString(date);
   const [name, setName] = React.useState<string>(() => "filename.yaml");
@@ -115,7 +115,7 @@ export const TimepickerWithTextinput = () => {
   );
 };
 
-export const ButtonBarWithTimepicker = () => {
+export const ButtonBarWithCombinationOfDatepickerAndTimepicker = () => {
   const defaultDate = new Date();
 
   const [date, setDate] = React.useState<Date>(() => defaultDate);
