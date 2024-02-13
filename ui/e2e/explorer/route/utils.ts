@@ -23,7 +23,7 @@ export const createRouteYaml = ({
 }: Route) => `direktiv_api: "endpoint/v1"
 path: "${path}"
 timeout: ${timeout}
-methods:${methodsYaml(methods)}  
+methods:${methodsYaml(methods)}
 plugins:
   target:${plugins.target}
   inbound: ${plugins.inbound ?? " []"}
