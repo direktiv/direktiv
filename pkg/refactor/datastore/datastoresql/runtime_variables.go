@@ -327,7 +327,7 @@ func (s *sqlRuntimeVariablesStore) Create(ctx context.Context, variable *core.Ru
 
 	query := fmt.Sprintf(`
 				INSERT INTO runtime_variables(%s)
-				VALUES(%s`, fields, holders)
+				VALUES(%s)`, fields, holders)
 
 	res := s.db.WithContext(ctx).Exec(query, args...)
 
