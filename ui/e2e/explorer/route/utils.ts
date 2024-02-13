@@ -7,6 +7,10 @@ type Route = {
   methods: string[];
 };
 
+const targetPluginYaml = () => `type: "instant-response"
+    configuration:
+        status_code: 200`;
+
 export const createRouteYaml = ({
   path,
   timeout,
@@ -20,6 +24,4 @@ plugins:
   outbound: []
   auth: []
   target:
-    type: "instant-response"
-    configuration:
-      status_code: 200`;
+    ${targetPluginYaml()}`;
