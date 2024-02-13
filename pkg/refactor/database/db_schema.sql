@@ -123,7 +123,6 @@ CREATE TABLE IF NOT EXISTS "runtime_variables" (
     "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     PRIMARY KEY ("id"),
-    UNIQUE(namespace, workflow_path, instance_id, name),
 
     CONSTRAINT "fk_namespaces_runtime_variables"
     FOREIGN KEY ("namespace") REFERENCES "namespaces"("name") ON DELETE CASCADE ON UPDATE CASCADE,
@@ -132,6 +131,8 @@ CREATE TABLE IF NOT EXISTS "runtime_variables" (
     CONSTRAINT "fk_instances_v2_runtime_variables"
     FOREIGN KEY ("instance_id") REFERENCES "instances_v2"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
+CREATE UNIQUE INDEX "runtime_variables_unique" ON runtime_variables(COALESCE(namespace, workflow_path, instance_id::text), name);
+
 
 CREATE TABLE IF NOT EXISTS "engine_messages" (
     "id" uuid,
