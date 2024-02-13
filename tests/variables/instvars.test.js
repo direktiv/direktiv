@@ -1,10 +1,11 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
+import { basename } from 'path'
 import request from 'supertest'
 
 import config from '../common/config'
 import helpers from '../common/helpers'
 
-const namespaceName = 'vars'
+const namespace = basename(__filename)
 
 const workflowName = 'wf.yaml'
 
@@ -65,12 +66,12 @@ describe('Test workflow variable operations', () => {
 
 
 	it(`should create a namespace`, async () => {
-		const createNamespaceResponse = await request(config.getDirektivHost()).put(`/api/namespaces/${ namespaceName }`)
+		const createNamespaceResponse = await request(config.getDirektivHost()).put(`/api/namespaces/${ namespace }`)
 		expect(createNamespaceResponse.statusCode).toEqual(200)
 	})
 
 	it(`should create a workflow`, async () => {
-		const createWorkflowResponse = await request(config.getDirektivHost()).put(`/api/namespaces/${ namespaceName }/tree/${ workflowName }?op=create-workflow`)
+		const createWorkflowResponse = await request(config.getDirektivHost()).put(`/api/namespaces/${ namespace }/tree/${ workflowName }?op=create-workflow`)
 			.send(simpleWorkflow)
 
 		expect(createWorkflowResponse.statusCode).toEqual(200)
@@ -79,7 +80,7 @@ describe('Test workflow variable operations', () => {
 	})
 
 	it(`should get variables from workflow getter`, async () => {
-		const workflowVarResponse = await request(config.getDirektivHost()).post(`/api/namespaces/${ namespaceName }/tree/${ workflowName }?op=wait&ref=latest`)
+		const workflowVarResponse = await request(config.getDirektivHost()).post(`/api/namespaces/${ namespace }/tree/${ workflowName }?op=wait&ref=latest`)
 
 		expect(workflowVarResponse.statusCode).toEqual(200)
 		expect(plainTxt).toEqual(Buffer.from(workflowVarResponse.body.var.plain, 'base64').toString())
