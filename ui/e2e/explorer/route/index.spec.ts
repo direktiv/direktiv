@@ -88,20 +88,27 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
   /* prepare data */
   const filename = "myroute.yaml";
 
-  const expectedYaml = createRouteYaml({
+  type CreateRouteYamlParam = Parameters<typeof createRouteYaml>[0];
+  const minimalRouteConfig: Omit<CreateRouteYamlParam, "plugins"> = {
     path: "path",
     timeout: 3000,
     methods: ["GET", "POST"],
-    plugins: {
-      target: `
+  };
+
+  const basicTargetPlugin = `
     type: "instant-response"
     configuration:
-        status_code: 200`,
+      status_code: 200`;
+
+  const initialRouteYaml = createRouteYaml({
+    ...minimalRouteConfig,
+    plugins: {
+      target: basicTargetPlugin,
     },
   });
 
   await createWorkflow({
-    payload: expectedYaml,
+    payload: initialRouteYaml,
     urlParams: {
       baseUrl: process.env.VITE_DEV_API_DOMAIN,
       namespace,
@@ -167,4 +174,10 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
   await page.getByLabel("Github Webhook").click();
   await page.getByLabel("secret").fill("my github secret");
   await page.getByRole("button", { name: "Save" }).click();
+
+  // const editor = page.locator(".lines-content");
+  // await expect(
+  //   editor,
+  //   "all entered data is represented in the editor preview"
+  // ).toContainText(initialRouteYaml, { useInnerText: true });
 });
