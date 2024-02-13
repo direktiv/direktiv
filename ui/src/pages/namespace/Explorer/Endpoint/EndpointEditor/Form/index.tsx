@@ -1,11 +1,16 @@
 import {
+  Control,
   Controller,
   DeepPartialSkipArrayKey,
   UseFormReturn,
   useForm,
   useWatch,
 } from "react-hook-form";
-import { EndpointFormSchema, EndpointFormSchemaType } from "../schema";
+import {
+  EndpointFormSchema,
+  EndpointFormSchemaType,
+  EndpointsPluginsSchema,
+} from "../schema";
 
 import { AuthPluginForm } from "./plugins/Auth";
 import Badge from "~/design/Badge";
@@ -19,6 +24,7 @@ import { Switch } from "~/design/Switch";
 import { TargetPluginForm } from "./plugins/Target";
 import { routeMethods } from "~/api/gateway/schema";
 import { treatAsNumberOrUndefined } from "../../../utils";
+import { useSortedValues } from "./utils";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -40,17 +46,7 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
     },
   });
 
-  const fieldsInOrder = EndpointFormSchema.keyof().options;
-
-  const watchedValues = useWatch({
-    control: formControls.control,
-  });
-
-  const values = fieldsInOrder.reduce(
-    (object, key) => ({ ...object, [key]: watchedValues[key] }),
-    {}
-  );
-
+  const values = useSortedValues(formControls.control);
   const { register, control } = formControls;
 
   return children({
