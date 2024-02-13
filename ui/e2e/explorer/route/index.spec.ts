@@ -77,10 +77,31 @@ test("it is possible to create a basic route file", async ({ page }) => {
   await page.getByLabel("Instant Response").click();
   await page.getByRole("button", { name: "Save" }).click();
 
+  /* check editor content */
   const editor = page.locator(".lines-content");
   await expect(
     editor,
     "all entered data is represented in the editor preview"
+  ).toContainText(expectedYaml, { useInnerText: true });
+
+  await expect(
+    page.getByText("unsaved changes"),
+    "it renders a hint that there are unsaved changes"
+  ).toBeVisible();
+
+  await page.getByRole("button", { name: "Save" }).click();
+
+  await expect(
+    page.getByText("unsaved changes"),
+    "it does not render a hint that there are unsaved changes"
+  ).not.toBeVisible();
+
+  /* reload */
+  await page.reload({ waitUntil: "networkidle" });
+
+  await expect(
+    editor,
+    "the editor shows the same content after reloading the page"
   ).toContainText(expectedYaml, { useInnerText: true });
 });
 
