@@ -34,6 +34,10 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 	regCtr := &registryController{
 		manager: app.RegistryManager,
 	}
+	varCtr := &varController{
+		db: db,
+	}
+
 	mw := &appMiddlewares{dStore: db.DataStore()}
 
 	r := chi.NewRouter()
@@ -72,6 +76,10 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 	r.Route("/api/v2", func(r chi.Router) {
 		r.Group(func(r chi.Router) {
 			r.Use(mw.injectNamespace)
+
+			r.Route("/namespaces/{namespace}/variables", func(r chi.Router) {
+				varCtr.mountRouter(r)
+			})
 
 			r.Route("/namespaces/{namespace}/files-tree", func(r chi.Router) {
 				fsCtr.mountRouter(r)
