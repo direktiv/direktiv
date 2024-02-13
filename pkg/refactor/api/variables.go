@@ -174,14 +174,23 @@ func (e *varController) create(w http.ResponseWriter, r *http.Request) {
 
 	// Parse request.
 	req := struct {
-		Name         string `json:"name"`
-		MimeType     string `json:"mimeType"`
-		Data         string `json:"data"`
-		InstanceID   string `json:"instanceId"`
-		WorkflowPath string `json:"workflowPath"`
+		Name             string `json:"name"`
+		MimeType         string `json:"mimeType"`
+		Data             string `json:"data"`
+		InstanceIDString string `json:"instanceId"`
+		WorkflowPath     string `json:"workflowPath"`
 	}{}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeNotJsonError(w, err)
+		return
+	}
+	instanceID, err := uuid.Parse(req.InstanceIDString)
+	if err != nil && req.InstanceIDString != "" {
+		writeError(w, &Error{
+			Code:    "request_data_invalid",
+			Message: "field instanceId has uuid string",
+		})
+
 		return
 	}
 
@@ -198,10 +207,12 @@ func (e *varController) create(w http.ResponseWriter, r *http.Request) {
 
 	// Create variable.
 	newVar, err := dStore.RuntimeVariables().Set(r.Context(), &core.RuntimeVariable{
-		Namespace: ns.Name,
-		Name:      req.Name,
-		Data:      decodedBytes,
-		MimeType:  req.MimeType,
+		Namespace:    ns.Name,
+		Name:         req.Name,
+		Data:         decodedBytes,
+		MimeType:     req.MimeType,
+		InstanceID:   instanceID,
+		WorkflowPath: req.WorkflowPath,
 	})
 	if err != nil {
 		writeDataStoreError(w, err)
