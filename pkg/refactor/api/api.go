@@ -25,16 +25,23 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 	funcCtr := &serviceController{
 		manager: app.ServiceManager,
 	}
-
 	fsCtr := &fsController{
 		db:  db,
 		bus: app.Bus,
 	}
-
 	regCtr := &registryController{
 		manager: app.RegistryManager,
 	}
 	varCtr := &varController{
+		db: db,
+	}
+	secCtr := &secretsController{
+		db: db,
+	}
+	nsCtr := &nsController{
+		db: db,
+	}
+	mirrorsCtr := &mirrorsController{
 		db: db,
 	}
 
@@ -74,21 +81,28 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 	})
 
 	r.Route("/api/v2", func(r chi.Router) {
+		r.Route("/namespaces", func(r chi.Router) {
+			nsCtr.mountRouter(r)
+		})
+
 		r.Group(func(r chi.Router) {
 			r.Use(mw.injectNamespace)
 
+			r.Route("/namespaces/{namespace}/mirrors", func(r chi.Router) {
+				mirrorsCtr.mountRouter(r)
+			})
+			r.Route("/namespaces/{namespace}/secrets", func(r chi.Router) {
+				secCtr.mountRouter(r)
+			})
 			r.Route("/namespaces/{namespace}/variables", func(r chi.Router) {
 				varCtr.mountRouter(r)
 			})
-
 			r.Route("/namespaces/{namespace}/files-tree", func(r chi.Router) {
 				fsCtr.mountRouter(r)
 			})
-
 			r.Route("/namespaces/{namespace}/services", func(r chi.Router) {
 				funcCtr.mountRouter(r)
 			})
-
 			r.Route("/namespaces/{namespace}/registries", func(r chi.Router) {
 				regCtr.mountRouter(r)
 			})
