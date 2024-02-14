@@ -51,15 +51,6 @@ message DeleteNamespaceRequest {
 	bool recursive = 3;
 }
 
-message RenameNamespaceRequest {
-	string old = 1;
-	string new = 2;
-}
-
-message RenameNamespaceResponse {
-	Namespace namespace = 1;
-}
-
 message LinterIssue {
 	string type = 1;
 	string id = 2;

@@ -29,7 +29,6 @@ service Flow {
 	rpc NamespacesStream (NamespacesRequest) returns (stream NamespacesResponse) {}
 	rpc CreateNamespace (CreateNamespaceRequest) returns (CreateNamespaceResponse) {}
 	rpc DeleteNamespace (DeleteNamespaceRequest) returns (google.protobuf.Empty) {}
-	rpc RenameNamespace (RenameNamespaceRequest) returns (RenameNamespaceResponse) {}
 
 	// logs.
 	rpc ServerLogs (ServerLogsRequest) returns (ServerLogsResponse) {}
