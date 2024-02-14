@@ -1,4 +1,3 @@
-// nolint
 package api
 
 import (
@@ -65,7 +64,7 @@ func (e *registryController) create(w http.ResponseWriter, r *http.Request) {
 	reg := &core.Registry{}
 
 	if err := json.NewDecoder(r.Body).Decode(&reg); err != nil {
-		writeNotJsonError(w, err)
+		writeNotJSONError(w, err)
 
 		return
 	}
@@ -85,7 +84,7 @@ func (e *registryController) test(w http.ResponseWriter, r *http.Request) {
 	reg := &core.Registry{}
 
 	if err := json.NewDecoder(r.Body).Decode(&reg); err != nil {
-		writeNotJsonError(w, err)
+		writeNotJSONError(w, err)
 
 		return
 	}

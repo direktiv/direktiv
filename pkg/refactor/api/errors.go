@@ -1,4 +1,3 @@
-// nolint
 package api
 
 import (
@@ -9,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
-
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 )
@@ -20,8 +18,6 @@ type Error struct {
 }
 
 func writeError(w http.ResponseWriter, err *Error) {
-	httpStatus := http.StatusInternalServerError
-
 	// access_token_denied
 	// access_token_missing
 	// access_token_invalid
@@ -35,7 +31,7 @@ func writeError(w http.ResponseWriter, err *Error) {
 
 	// request_data_invalid
 
-	httpStatus = http.StatusInternalServerError
+	httpStatus := http.StatusInternalServerError
 
 	if strings.HasPrefix(err.Code, "access") {
 		httpStatus = http.StatusForbidden
@@ -74,12 +70,13 @@ func writeInternalError(w http.ResponseWriter, err error) {
 	slog.Error("error", "err", err)
 }
 
-func writeNotJsonError(w http.ResponseWriter, err error) {
+func writeNotJSONError(w http.ResponseWriter, err error) {
 	if strings.Contains(err.Error(), "cannot unmarshal") {
 		writeError(w, &Error{
 			Code:    "request_body_bad_json_schema",
 			Message: "request payload has bad json schema",
 		})
+
 		return
 	}
 
@@ -116,6 +113,7 @@ func writeFileStoreError(w http.ResponseWriter, err error) {
 			Code:    "resource_not_found",
 			Message: "filesystem path is not found",
 		})
+
 		return
 	}
 	if errors.Is(err, filestore.ErrPathAlreadyExists) {
@@ -123,6 +121,7 @@ func writeFileStoreError(w http.ResponseWriter, err error) {
 			Code:    "resource_already_exists",
 			Message: "filesystem path already exists",
 		})
+
 		return
 	}
 	if errors.Is(err, filestore.ErrNoParentDirectory) {
@@ -130,6 +129,7 @@ func writeFileStoreError(w http.ResponseWriter, err error) {
 			Code:    "request_data_invalid",
 			Message: "filesystem path has no parent directory",
 		})
+
 		return
 	}
 	if errors.Is(err, filestore.ErrFileTypeIsDirectory) {
@@ -137,6 +137,7 @@ func writeFileStoreError(w http.ResponseWriter, err error) {
 			Code:    "request_data_invalid",
 			Message: "filesystem path is a directory",
 		})
+
 		return
 	}
 	if errors.Is(err, filestore.ErrInvalidPathParameter) {
@@ -144,6 +145,7 @@ func writeFileStoreError(w http.ResponseWriter, err error) {
 			Code:    "request_data_invalid",
 			Message: "filesystem path is invalid",
 		})
+
 		return
 	}
 

@@ -154,7 +154,7 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 	}{}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		writeNotJsonError(w, err)
+		writeNotJSONError(w, err)
 		return
 	}
 
@@ -236,7 +236,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 	}{}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		writeNotJsonError(w, err)
+		writeNotJSONError(w, err)
 		return
 	}
 
