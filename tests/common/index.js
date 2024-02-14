@@ -4,6 +4,7 @@ import helpers from './helpers.js'
 import regex from './regex.js'
 import structs from './structs.js'
 import utils from './utils.js'
+import request from './request.js'
 
 export default {
 	config,
@@ -12,4 +13,5 @@ export default {
 	structs,
 	filesystem,
 	helpers,
+	request,
 }
