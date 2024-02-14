@@ -1,4 +1,3 @@
-// nolint
 package api
 
 import (
@@ -9,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
-
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 )
@@ -80,6 +78,7 @@ func writeNotJsonError(w http.ResponseWriter, err error) {
 			Code:    "request_body_bad_json_schema",
 			Message: "request payload has bad json schema",
 		})
+
 		return
 	}
 
@@ -116,6 +115,7 @@ func writeFileStoreError(w http.ResponseWriter, err error) {
 			Code:    "resource_not_found",
 			Message: "filesystem path is not found",
 		})
+
 		return
 	}
 	if errors.Is(err, filestore.ErrPathAlreadyExists) {
@@ -123,6 +123,7 @@ func writeFileStoreError(w http.ResponseWriter, err error) {
 			Code:    "resource_already_exists",
 			Message: "filesystem path already exists",
 		})
+
 		return
 	}
 	if errors.Is(err, filestore.ErrNoParentDirectory) {
@@ -130,6 +131,7 @@ func writeFileStoreError(w http.ResponseWriter, err error) {
 			Code:    "request_data_invalid",
 			Message: "filesystem path has no parent directory",
 		})
+
 		return
 	}
 	if errors.Is(err, filestore.ErrFileTypeIsDirectory) {
@@ -137,6 +139,7 @@ func writeFileStoreError(w http.ResponseWriter, err error) {
 			Code:    "request_data_invalid",
 			Message: "filesystem path is a directory",
 		})
+
 		return
 	}
 	if errors.Is(err, filestore.ErrInvalidPathParameter) {
@@ -144,6 +147,7 @@ func writeFileStoreError(w http.ResponseWriter, err error) {
 			Code:    "request_data_invalid",
 			Message: "filesystem path is invalid",
 		})
+
 		return
 	}
 
