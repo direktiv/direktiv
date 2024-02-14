@@ -156,6 +156,11 @@ add_db_operator_helm_repo() {
     assert_success $? "Failed to add percona helm repository" "$output"
 }
 
+add_fluentbit_helm_repo() {
+    output=`helm repo add fluent-bit https://fluent.github.io/helm-charts 2>&1 | tee /dev/fd/3`
+    assert_success $? "Failed to add fluentbit helm repository" "$output"
+}
+
 check_is_db_namespace_exists() {
     kubectl get namespace postgres &>/dev/null
 
@@ -253,6 +258,12 @@ install_db() {
     log "Installing database..."
 
     add_db_operator_helm_repo
+    if [ $? -ne 0 ]
+    then 
+        exit 1
+    fi
+
+    add_fluentbit_helm_repo
     if [ $? -ne 0 ]
     then 
         exit 1

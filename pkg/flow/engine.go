@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net"
 	"net/http"
 	"path/filepath"
@@ -235,10 +236,8 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 
 	engine.pubsub.NotifyInstances(im.Namespace())
 	engine.logger.Infof(ctx, instance.Instance.NamespaceID, instance.GetAttributes(recipient.Namespace), "Workflow '%s' has been triggered by %s.", args.CalledAs, args.Invoker)
-	// TODO: alex, do we need to restore workflow logs?
-	// engine.logger.Infof(ctx, im.instance.Instance.WorkflowID, im.instance.GetAttributes(recipient.Workflow), "Instance '%s' created by %s.", im.ID().String(), args.Invoker)
 	engine.logger.Debugf(ctx, im.instance.Instance.ID, im.GetAttributes(), "Preparing workflow triggered by %s.", args.Invoker)
-
+	slog.Info(fmt.Sprintf("Workflow '%s' has been triggered by %s.", args.CalledAs, args.Invoker), im.GetSlogAttributes(ctx)...)
 	// Broadcast Event
 	err = engine.flow.BroadcastInstance(BroadcastEventTypeInstanceStarted, ctx,
 		broadcastInstanceInput{
@@ -261,9 +260,9 @@ func (engine *engine) start(im *instanceMemory) {
 
 	engine.sugar.Debugf("Starting workflow %v", im.ID().String())
 	engine.logger.Infof(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "Starting workflow %v", database.GetWorkflow(im.instance.Instance.WorkflowPath))
-	// TODO: alex, do we need to restore workflow logs?
-	// engine.logger.Infof(ctx, im.instance.Instance.WorkflowID, im.instance.GetAttributes(recipient.Workflow), "Starting workflow %v", database.GetWorkflow(im.instance.Instance.CalledAs))
+	slog.Info(fmt.Sprintf("Starting workflow %v", im.instance.Instance.WorkflowPath), "stream", string(recipient.Namespace)+"."+im.Namespace().Name)
 	engine.logger.Debugf(ctx, im.instance.Instance.ID, im.GetAttributes(), "Starting workflow %v.", database.GetWorkflow(im.instance.Instance.WorkflowPath))
+	slog.Info(fmt.Sprintf("Starting workflow %v.", im.instance.Instance.WorkflowPath), im.instance.GetSlogAttributes(ctx)...)
 
 	workflow, err := im.Model()
 	if err != nil {
@@ -543,11 +542,14 @@ failure:
 			matched, regErr := regexp.MatchString(errRegex, cerr.Code)
 			if regErr != nil {
 				engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), "Error catching regex failed to compile: %v", regErr)
+				slog.Error(fmt.Sprintf("Error catching regex failed to compile: %v", regErr), im.GetSlogAttributes(ctx)...)
 			}
 
 			if matched {
 				engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), "State failed with error '%s': %s", cerr.Code, cerr.Message)
+				slog.Error(fmt.Sprintf("State failed with error '%s': %s", cerr.Code, cerr.Message), im.GetSlogAttributes(ctx)...)
 				engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), "Error caught by error definition %d: %s", i, catch.Error)
+				slog.Error(fmt.Sprintf("Error caught by error definition %d: %s", i, catch.Error), im.GetSlogAttributes(ctx)...)
 
 				transition = &states.Transition{
 					Transform: "",
@@ -576,6 +578,7 @@ func (engine *engine) transformState(ctx context.Context, im *instanceMemory, tr
 	}
 
 	engine.logger.Debugf(ctx, im.GetInstanceID(), im.GetAttributes(), "Transforming state data.")
+	slog.Info("Transforming state data.", im.GetSlogAttributes(ctx)...)
 
 	x, err := jqObject(im.data, transition.Transform)
 	if err != nil {
@@ -601,6 +604,7 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 	if transition.NextState != "" {
 		engine.metricsCompleteState(ctx, im, transition.NextState, errCode, false)
 		engine.sugar.Debugf("Instance transitioning to next state: %s -> %s", im.ID().String(), transition.NextState)
+		slog.Info(fmt.Sprintf("Transitioning to next state: %s (%d).", transition.NextState, im.Step()+1), im.GetSlogAttributes(ctx)...)
 		engine.logger.Debugf(ctx, im.GetInstanceID(), im.GetAttributes(), "Transitioning to next state: %s (%d).", transition.NextState, im.Step()+1)
 		go engine.Transition(ctx, im, transition.NextState, 0)
 		return
@@ -622,7 +626,9 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 	im.updateArgs.Status = &im.instance.Instance.Status
 
 	engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), "Workflow %s completed.", database.GetWorkflow(im.instance.Instance.WorkflowPath))
+	slog.Info(fmt.Sprintf("Workflow %s completed.", database.GetWorkflow(im.instance.Instance.WorkflowPath)), im.GetSlogAttributes(ctx)...)
 	engine.logger.Infof(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "Workflow %s completed.", database.GetWorkflow(im.instance.Instance.WorkflowPath))
+	slog.Info(fmt.Sprintf("Workflow %s completed.", database.GetWorkflow(im.instance.Instance.WorkflowPath)), "stream", string(recipient.Namespace)+"."+im.Namespace().Name)
 
 	defer engine.pubsub.NotifyInstance(im.instance.Instance.ID)
 	defer engine.pubsub.NotifyInstances(im.Namespace())
@@ -744,7 +750,7 @@ func (engine *engine) retryWakeup(data []byte) {
 	}
 
 	engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), "Waking up to retry.")
-
+	slog.Info("Waking up to retry.", im.GetSlogAttributes(ctx)...)
 	engine.sugar.Debugf("Handling retry wakeup: %s", this())
 
 	go engine.runState(ctx, im, msg.Data, nil)
@@ -897,7 +903,9 @@ func (engine *engine) SetMemory(ctx context.Context, im *instanceMemory, x inter
 func (engine *engine) reportInstanceCrashed(ctx context.Context, im *instanceMemory, typ, code string, err error) {
 	engine.sugar.Errorf("Instance failed with %s error '%s': %v", typ, code, err)
 	engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), "Instance failed with %s error '%s': %s", typ, code, err.Error())
+	slog.Error(fmt.Sprintf("Instance failed with %s error '%s': %s", typ, code, err.Error()), im.GetSlogAttributes(ctx)...)
 	engine.logger.Errorf(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "Workflow failed %s Instance %s crashed with %s error '%s': %s", database.GetWorkflow(im.instance.Instance.WorkflowPath), im.GetInstanceID(), typ, code, err.Error())
+	slog.Error(fmt.Sprintf("Workflow failed %s Instance %s crashed with %s error '%s': %s", database.GetWorkflow(im.instance.Instance.WorkflowPath), im.GetInstanceID(), typ, code, err.Error()), "stream", im.Namespace().Name)
 }
 
 func (engine *engine) UserLog(ctx context.Context, im *instanceMemory, msg string, a ...interface{}) {
@@ -928,6 +936,7 @@ func (engine *engine) logRunState(ctx context.Context, im *instanceMemory, waked
 	engine.sugar.Debugf("Running state logic -- %s:%v (%s) (%v)", im.ID().String(), im.Step(), im.logic.GetID(), time.Now().UTC())
 	if im.GetMemory() == nil && len(wakedata) == 0 && err == nil {
 		engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), "Running state logic (step:%v) -- %s", im.Step(), im.logic.GetID())
+		slog.Info(fmt.Sprintf("Running state logic (step:%v) -- %s", im.Step(), im.logic.GetID()), im.GetSlogAttributes(ctx)...)
 	}
 }
 
