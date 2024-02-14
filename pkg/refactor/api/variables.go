@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"net/http"
+	"path/filepath"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
@@ -94,7 +95,6 @@ func (e *varController) update(w http.ResponseWriter, r *http.Request) {
 			Code:    "request_data_invalid",
 			Message: "variable id is invalid uuid string",
 		})
-
 		return
 	}
 
@@ -161,9 +161,8 @@ func (e *varController) create(w http.ResponseWriter, r *http.Request) {
 	if err != nil && req.InstanceIDString != "" {
 		writeError(w, &Error{
 			Code:    "request_data_invalid",
-			Message: "field instanceId has uuid string",
+			Message: "field instanceId has invalid uuid string",
 		})
-
 		return
 	}
 
@@ -205,6 +204,39 @@ func (e *varController) list(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer db.Rollback()
+	dStore := db.DataStore()
 
-	writeJSON(w, ns)
+	forInstanceID := chi.URLParam(r, "instanceId")
+	_, err = uuid.Parse(forInstanceID)
+	if err != nil && forInstanceID != "" {
+		writeError(w, &Error{
+			Code:    "request_data_invalid",
+			Message: "query param instanceId invalid uuid string",
+		})
+		return
+	}
+	forWorkflowPath := chi.URLParam(r, "workflowPath")
+	if forWorkflowPath != "" && forWorkflowPath != filepath.Clean(forWorkflowPath) {
+		writeError(w, &Error{
+			Code:    "request_data_invalid",
+			Message: "query param workflowPath invalid file path",
+		})
+		return
+	}
+
+	var list []*core.RuntimeVariable
+	if forInstanceID != "" {
+		list, err = dStore.RuntimeVariables().ListForInstance(r.Context(), uuid.MustParse(forInstanceID))
+	} else if forWorkflowPath != "" {
+		list, err = dStore.RuntimeVariables().ListForWorkflow(r.Context(), ns.Name, forWorkflowPath)
+	} else {
+		list, err = dStore.RuntimeVariables().ListForNamespace(r.Context(), ns.Name)
+	}
+
+	if err != nil {
+		writeDataStoreError(w, err)
+		return
+	}
+
+	writeJSON(w, list)
 }
