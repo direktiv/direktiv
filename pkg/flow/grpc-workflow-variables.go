@@ -481,7 +481,10 @@ func (flow *flow) RenameWorkflowVariable(ctx context.Context, req *grpc.RenameWo
 		return nil, err
 	}
 
-	updated, err := tx.DataStore().RuntimeVariables().SetName(ctx, item.ID, req.GetNew())
+	newName := req.GetNew()
+	updated, err := tx.DataStore().RuntimeVariables().Patch(ctx, item.ID, &core.RuntimeVariablePatch{
+		Name: &newName,
+	})
 	if err != nil {
 		return nil, err
 	}

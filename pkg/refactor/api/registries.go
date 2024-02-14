@@ -22,7 +22,7 @@ func (e *registryController) mountRouter(r chi.Router) {
 }
 
 func (e *registryController) all(w http.ResponseWriter, r *http.Request) {
-	ns := r.Context().Value(ctxKeyNamespace{}).(*core.Namespace)
+	ns := extractContextNamespace(r)
 
 	list, err := e.manager.ListRegistries(ns.Name)
 	if err != nil {
@@ -38,7 +38,7 @@ func (e *registryController) all(w http.ResponseWriter, r *http.Request) {
 }
 
 func (e *registryController) delete(w http.ResponseWriter, r *http.Request) {
-	ns := r.Context().Value(ctxKeyNamespace{}).(*core.Namespace)
+	ns := extractContextNamespace(r)
 	id := chi.URLParam(r, "id")
 
 	err := e.manager.DeleteRegistry(ns.Name, id)
@@ -60,7 +60,7 @@ func (e *registryController) delete(w http.ResponseWriter, r *http.Request) {
 }
 
 func (e *registryController) create(w http.ResponseWriter, r *http.Request) {
-	ns := r.Context().Value(ctxKeyNamespace{}).(*core.Namespace)
+	ns := extractContextNamespace(r)
 
 	reg := &core.Registry{}
 

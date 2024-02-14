@@ -34,6 +34,10 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 	regCtr := &registryController{
 		manager: app.RegistryManager,
 	}
+	varCtr := &varController{
+		db: db,
+	}
+
 	mw := &appMiddlewares{dStore: db.DataStore()}
 
 	r := chi.NewRouter()
@@ -72,6 +76,10 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 	r.Route("/api/v2", func(r chi.Router) {
 		r.Group(func(r chi.Router) {
 			r.Use(mw.injectNamespace)
+
+			r.Route("/namespaces/{namespace}/variables", func(r chi.Router) {
+				varCtr.mountRouter(r)
+			})
 
 			r.Route("/namespaces/{namespace}/files-tree", func(r chi.Router) {
 				fsCtr.mountRouter(r)
@@ -148,4 +156,11 @@ func writeJSON(w http.ResponseWriter, v any) {
 func writeOk(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
+}
+
+func extractContextNamespace(r *http.Request) *core.Namespace {
+	//nolint:forcetypeassert
+	ns := r.Context().Value(ctxKeyNamespace{}).(*core.Namespace)
+
+	return ns
 }

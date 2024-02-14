@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
@@ -28,8 +27,7 @@ func (e *fsController) mountRouter(r chi.Router) {
 }
 
 func (e *fsController) read(w http.ResponseWriter, r *http.Request) {
-	//nolint:forcetypeassert
-	ns := r.Context().Value(ctxKeyNamespace{}).(*core.Namespace)
+	ns := extractContextNamespace(r)
 
 	db, err := e.db.BeginTx(r.Context())
 	if err != nil {
@@ -78,8 +76,7 @@ func (e *fsController) read(w http.ResponseWriter, r *http.Request) {
 }
 
 func (e *fsController) delete(w http.ResponseWriter, r *http.Request) {
-	//nolint:forcetypeassert
-	ns := r.Context().Value(ctxKeyNamespace{}).(*core.Namespace)
+	ns := extractContextNamespace(r)
 
 	db, err := e.db.BeginTx(r.Context())
 	if err != nil {
@@ -138,8 +135,7 @@ func (e *fsController) delete(w http.ResponseWriter, r *http.Request) {
 }
 
 func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
-	//nolint:forcetypeassert
-	ns := r.Context().Value(ctxKeyNamespace{}).(*core.Namespace)
+	ns := extractContextNamespace(r)
 
 	db, err := e.db.BeginTx(r.Context())
 	if err != nil {
@@ -223,8 +219,7 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 }
 
 func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
-	//nolint:forcetypeassert
-	ns := r.Context().Value(ctxKeyNamespace{}).(*core.Namespace)
+	ns := extractContextNamespace(r)
 
 	db, err := e.db.BeginTx(r.Context())
 	if err != nil {

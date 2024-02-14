@@ -59,7 +59,6 @@ func TestExecuteJSInboundPlugin(t *testing.T) {
 }
 
 func TestExecuteJSInboundPluginConsumer(t *testing.T) {
-
 	p, _ := plugins.GetPluginFromRegistry(inbound.JSInboundPluginName)
 	config := &inbound.JSInboundConfig{
 		Script: `
@@ -85,7 +84,6 @@ func TestExecuteJSInboundPluginConsumer(t *testing.T) {
 }
 
 func TestExecuteJSInboundPluginURLParam(t *testing.T) {
-
 	p, _ := plugins.GetPluginFromRegistry(inbound.JSInboundPluginName)
 	config := &inbound.JSInboundConfig{
 		Script: `
@@ -115,7 +113,6 @@ func TestExecuteJSInboundPluginURLParam(t *testing.T) {
 }
 
 func TestExecuteJSInboundPluginStatus(t *testing.T) {
-
 	p, _ := plugins.GetPluginFromRegistry(inbound.JSInboundPluginName)
 	config := &inbound.JSInboundConfig{
 		Script: `

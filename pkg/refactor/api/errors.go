@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/direktiv/direktiv/pkg/refactor/core"
+
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 )
@@ -92,6 +94,14 @@ func writeDataStoreError(w http.ResponseWriter, err error) {
 		writeError(w, &Error{
 			Code:    "resource_not_found",
 			Message: "requested resource is not found",
+		})
+
+		return
+	}
+	if errors.Is(err, core.ErrInvalidRuntimeVariableName) {
+		writeError(w, &Error{
+			Code:    "request_data_invalid",
+			Message: "field name has invalid string",
 		})
 
 		return
