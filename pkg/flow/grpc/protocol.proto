@@ -123,7 +123,6 @@ service Flow {
 	//
 	rpc ResolveNamespaceUID (ResolveNamespaceUIDRequest) returns (NamespaceResponse) {}
 	rpc ResolveWorkflowUID (ResolveWorkflowUIDRequest) returns (WorkflowResponse) {}
-	rpc SetNamespaceConfig (SetNamespaceConfigRequest) returns (SetNamespaceConfigResponse) {}
 	rpc Build(google.protobuf.Empty) returns (BuildResponse) {}
 
 	// mirrors.

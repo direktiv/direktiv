@@ -37,50 +37,6 @@ func (flow *flow) ResolveNamespaceUID(ctx context.Context, req *grpc.ResolveName
 	return &resp, nil
 }
 
-func (flow *flow) SetNamespaceConfig(ctx context.Context, req *grpc.SetNamespaceConfigRequest) (*grpc.SetNamespaceConfigResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
-
-	tx, err := flow.beginSqlTx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer tx.Rollback()
-
-	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetName())
-	if err != nil {
-		return nil, err
-	}
-
-	patchCfg, err := loadNSConfig([]byte(req.Config))
-	if err != nil {
-		return nil, err
-	}
-
-	var newCfgData string
-
-	data, err := patchCfg.mergeIntoNamespaceConfig([]byte(ns.Config))
-	if err != nil {
-		return nil, err
-	}
-	newCfgData = string(data)
-
-	ns.Config = newCfgData
-	ns, err = tx.DataStore().Namespaces().Update(ctx, ns)
-	if err != nil {
-		return nil, err
-	}
-
-	if err = tx.Commit(ctx); err != nil {
-		return nil, err
-	}
-
-	var resp grpc.SetNamespaceConfigResponse
-	resp.Config = newCfgData
-	resp.Name = ns.Name
-
-	return &resp, nil
-}
-
 func (flow *flow) Namespace(ctx context.Context, req *grpc.NamespaceRequest) (*grpc.NamespaceResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 

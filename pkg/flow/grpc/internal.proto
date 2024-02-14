@@ -16,16 +16,6 @@ message ReportActionResultsRequest {
 	int32 iterator = 7;
 }
 
-message SetNamespaceConfigRequest {
-	string name = 1;
-	string config = 2;	
-}
-
-message SetNamespaceConfigResponse {
-	string name = 1;
-	string config = 2;	
-}
-
 message ActionLogRequest {
 	string instanceId = 1;
 	int32 iterator = 2;
