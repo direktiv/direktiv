@@ -1,7 +1,6 @@
 package api
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"net/http"
 
@@ -114,27 +113,15 @@ func (e *varController) update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Check if data is valid base64 encoded string.
-	decodedBytes, err := base64.StdEncoding.DecodeString(string(req.Data))
-	if err != nil && req.Data != nil {
-		writeError(w, &Error{
-			Code:    "request_data_invalid",
-			Message: "updated variable data has invalid base64 string",
-		})
-
-		return
-	}
-	if err == nil {
-		req.Data = decodedBytes
-	}
-
 	updatedVar, err := dStore.RuntimeVariables().Patch(r.Context(), id, req)
 	if err != nil {
 		writeDataStoreError(w, err)
 		return
 	}
-	if req.Data != nil {
-		updatedVar.Data = decodedBytes
+	updatedVar.Data, err = dStore.RuntimeVariables().LoadData(r.Context(), updatedVar.ID)
+	if err != nil {
+		writeDataStoreError(w, err)
+		return
 	}
 
 	err = db.Commit(r.Context())
@@ -162,7 +149,7 @@ func (e *varController) create(w http.ResponseWriter, r *http.Request) {
 	req := struct {
 		Name             string `json:"name"`
 		MimeType         string `json:"mimeType"`
-		Data             string `json:"data"`
+		Data             []byte `json:"data"`
 		InstanceIDString string `json:"instanceId"`
 		WorkflowPath     string `json:"workflowPath"`
 	}{}
@@ -180,22 +167,11 @@ func (e *varController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Check if data is valid base64 encoded string.
-	decodedBytes, err := base64.StdEncoding.DecodeString(req.Data)
-	if err != nil {
-		writeError(w, &Error{
-			Code:    "request_data_invalid",
-			Message: "field data has invalid base64 string",
-		})
-
-		return
-	}
-
 	// Create variable.
 	newVar, err := dStore.RuntimeVariables().Create(r.Context(), &core.RuntimeVariable{
 		Namespace:    ns.Name,
 		Name:         req.Name,
-		Data:         decodedBytes,
+		Data:         req.Data,
 		MimeType:     req.MimeType,
 		InstanceID:   instanceID,
 		WorkflowPath: req.WorkflowPath,
@@ -204,7 +180,11 @@ func (e *varController) create(w http.ResponseWriter, r *http.Request) {
 		writeDataStoreError(w, err)
 		return
 	}
-	newVar.Data = decodedBytes
+	newVar.Data, err = dStore.RuntimeVariables().LoadData(r.Context(), newVar.ID)
+	if err != nil {
+		writeDataStoreError(w, err)
+		return
+	}
 
 	err = db.Commit(r.Context())
 	if err != nil {
