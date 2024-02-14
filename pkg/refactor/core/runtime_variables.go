@@ -14,8 +14,8 @@ type RuntimeVariable struct {
 	ID uuid.UUID `json:"id"`
 
 	Namespace    string    `json:"namespace"`
-	WorkflowPath string    `json:"workflowPath,omitempty"`
-	InstanceID   uuid.UUID `json:"instanceId,omitempty"`
+	WorkflowPath string    `json:"workflowPath"`
+	InstanceID   uuid.UUID `json:"instanceId"`
 
 	Name string `json:"name"`
 

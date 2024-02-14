@@ -10,50 +10,97 @@ import regex from '../common/regex'
 const namespace = basename(__filename)
 
 
-describe('Test workflow variable operations', () => {
+describe('Test variable create operations', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
-	helpers.itShouldCreateFileV2(it, expect, namespace, '/', 'foo1', 'workflow', 'text',
-		btoa(helpers.dummyWorkflow('foo1')))
+	helpers.itShouldCreateFileV2(it, expect, namespace, '/', 'wf1.yaml', 'workflow', 'text',
+		btoa(helpers.dummyWorkflow('wf1.yaml')))
 
-	// todo: check zero list.
-
-	it(`should create a new variable`, async () => {
-		const res = await request(config.getDirektivHost())
-			.post(`/api/v2/namespaces/${ namespace }/variables`)
-			.send({
+	const testCases = [
+		{
+			input: {
 				name: 'foo1',
 				data: 'bar1',
 				mimeType: 'mime1',
-			})
-		expect(res.statusCode).toEqual(200)
-		expect(res.body.data).toMatchObject({
-			id: expect.stringMatching(common.regex.uuidRegex),
-			name: 'foo1',
-			data: 'bar1',
-			mimeType: 'mime1',
-			createdAt: expect.stringMatching(regex.timestampRegex),
-			updatedAt: expect.stringMatching(regex.timestampRegex),
-		})
-	})
-
-	it(`should create a new variable`, async () => {
-		const res = await request(config.getDirektivHost())
-			.post(`/api/v2/namespaces/${ namespace }/variables`)
-			.send({
+			},
+			want: {
 				name: 'foo1',
 				data: 'bar1',
 				mimeType: 'mime1',
+				size: 3,
+				instanceId: "00000000-0000-0000-0000-000000000000",
+				workflowPath: "",
+			}
+		},
+		{
+			input: {
+				name: 'foo2',
+				data: 'bar2',
+				mimeType: 'mime2',
+				size: 3,
+			},
+			want: {
+				name: 'foo2',
+				data: 'bar2',
+				mimeType: 'mime2',
+				size: 3,
+				instanceId: "00000000-0000-0000-0000-000000000000",
+				workflowPath: "",
+			}
+		},
+		{
+			input: {
+				name: 'foo3',
+				data: 'bar3',
+				mimeType: 'mime3',
+			},
+			want: {
+				name: 'foo3',
+				data: 'bar3',
+				mimeType: 'mime3',
+				size: 3,
+				instanceId: "00000000-0000-0000-0000-000000000000",
+				workflowPath: "",
+			}
+		},
+		{
+			input: {
+				name: 'foo4',
+				data: 'bar4',
+				mimeType: 'mime4',
+				workflowPath: '/wf1.yaml',
+			},
+			want: {
+				name: 'foo4',
+				data: 'bar4',
+				mimeType: 'mime4',
+				size: 3,
+				instanceId: "00000000-0000-0000-0000-000000000000",
+				workflowPath: '/wf1.yaml',
+			}
+		},
+	]
+
+	for (let i = 0; i < testCases.length; i++) {
+		const testCase = testCases[i]
+
+		it(`should create a new variable case ${i}`, async () => {
+			const res = await request(config.getDirektivHost())
+				.post(`/api/v2/namespaces/${ namespace }/variables`)
+				.send(testCase.input)
+			expect(res.statusCode).toEqual(200)
+			expect(res.body.data).toMatchObject({
+				id: expect.stringMatching(common.regex.uuidRegex),
+				namespace: namespace,
+
+				...testCase.want,
+
+				createdAt: expect.stringMatching(regex.timestampRegex),
+				updatedAt: expect.stringMatching(regex.timestampRegex),
 			})
-		expect(res.statusCode).toEqual(200)
-		expect(res.body.data).toMatchObject({
-			id: expect.stringMatching(common.regex.uuidRegex),
-			name: 'foo1',
-			data: 'bar1',
-			mimeType: 'mime1',
-			createdAt: expect.stringMatching(regex.timestampRegex),
-			updatedAt: expect.stringMatching(regex.timestampRegex),
 		})
-	})
+	}
 })
+
+
