@@ -3,7 +3,7 @@ import { fileTypeToExplorerSubpage, isPreviewable } from "~/api/tree/utils";
 
 import { DialogTrigger } from "~/design/Dialog";
 import { Link } from "react-router-dom";
-import { NodeSchemaType } from "~/api/tree/schema/node";
+import { NodeSchemaType } from "~/api/filesTree/schema";
 import { pages } from "~/util/router/pages";
 
 type ConditionalLinkProps = PropsWithChildren & {
@@ -41,7 +41,7 @@ export const ConditionalLink: FC<ConditionalLinkProps> = ({
 
   return (
     <Link
-      data-testid={`explorer-item-link-${node.name}`}
+      data-testid={`explorer-item-link-${node.path}`}
       to={linkTarget}
       className="flex-1 hover:underline"
     >

@@ -16,22 +16,23 @@ import FileViewer from "./components/modals/FileViewer";
 import { FolderUp } from "lucide-react";
 import { Link } from "react-router-dom";
 import NoResult from "./NoResult";
-import { NodeSchemaType } from "~/api/tree/schema/node";
+import { NodeSchemaType } from "~/api/filesTree/schema";
 import Rename from "./components/modals/Rename";
 import { analyzePath } from "~/util/router/utils";
 import { pages } from "~/util/router/pages";
 import { twMergeClsx } from "~/util/helpers";
 import { useNamespace } from "~/util/store/namespace";
-import { useNodeContent } from "~/api/tree/query/node";
+import { usePath } from "~/api/filesTree/query/path";
 import { useTranslation } from "react-i18next";
 
 const ExplorerPage: FC = () => {
   const namespace = useNamespace();
   const { path } = pages.explorer.useParams();
   const { data, isSuccess, isFetched, isAllowed, noPermissionMessage } =
-    useNodeContent({
+    usePath({
       path,
     });
+
   const { parent, isRoot } = analyzePath(path);
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -61,9 +62,9 @@ const ExplorerPage: FC = () => {
       </Card>
     );
 
-  const results = data?.children?.results ?? [];
-  const showTable = !isRoot || results.length > 0;
-  const noResults = isSuccess && results.length === 0;
+  const paths = data || [];
+  const showTable = !isRoot || paths.length > 0;
+  const noResults = isSuccess && paths.length === 0;
   const wideOverlay = !!previewNode;
 
   return (
@@ -93,11 +94,11 @@ const ExplorerPage: FC = () => {
                       </TableCell>
                     </TableRow>
                   )}
-                  {results.map((file) => (
+                  {paths.map((item) => (
                     <FileRow
-                      key={file.name}
+                      key={item.path}
                       namespace={namespace}
-                      node={file}
+                      node={item}
                       onDeleteClicked={setDeleteNode}
                       onRenameClicked={setRenameNode}
                       onPreviewClicked={setPreviewNode}

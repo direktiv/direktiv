@@ -4,14 +4,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/design/Dialog";
-import { NodeSchemaType, fileNameSchema } from "~/api/tree/schema/node";
 import { SubmitHandler, useForm } from "react-hook-form";
 
 import Button from "~/design/Button";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
+import { NodeSchemaType } from "~/api/filesTree/schema";
 import { TextCursorInput } from "lucide-react";
 import { addYamlFileExtension } from "../../utils";
+import { fileNameSchema } from "~/api/tree/schema/node";
 import { useRenameNode } from "~/api/tree/mutate/renameNode";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
@@ -57,7 +58,7 @@ const Rename = ({
       })
     ),
     defaultValues: {
-      name: node.name,
+      name: node.path,
     },
   });
 

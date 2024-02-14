@@ -12,7 +12,7 @@ import { TableCell, TableRow } from "~/design/Table";
 import Button from "~/design/Button";
 import { ConditionalLink } from "./ConditionalLink";
 import { DialogTrigger } from "~/design/Dialog";
-import { NodeSchemaType } from "~/api/tree/schema/node";
+import { NodeSchemaType } from "~/api/filesTree/schema";
 import { fileTypeToIcon } from "~/api/tree/utils";
 import moment from "moment";
 import { useTranslation } from "react-i18next";
@@ -34,7 +34,7 @@ const FileRow = ({
   const Icon = fileTypeToIcon(node.type);
 
   return (
-    <TableRow data-testid={`explorer-item-${node.name}`}>
+    <TableRow data-testid={`explorer-item-${node.path}`}>
       <TableCell>
         <div className="flex space-x-3">
           <Icon className="h-5" />
@@ -43,7 +43,7 @@ const FileRow = ({
             namespace={namespace}
             onPreviewClicked={onPreviewClicked}
           >
-            {node.name}
+            {node.path}
           </ConditionalLink>
           <span className="text-gray-9 dark:text-gray-dark-9">
             {moment(node.updatedAt).fromNow()}

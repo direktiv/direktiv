@@ -7,7 +7,7 @@ import {
 import { Trans, useTranslation } from "react-i18next";
 
 import Button from "~/design/Button";
-import { NodeSchemaType } from "~/api/tree/schema/node";
+import { NodeSchemaType } from "~/api/filesTree/schema";
 import { Trash } from "lucide-react";
 import { useDeleteNode } from "~/api/tree/mutate/deleteNode";
 
@@ -37,12 +37,12 @@ const Delete = ({
         {node.type === "directory" ? (
           <Trans
             i18nKey="pages.explorer.tree.delete.directoryMsg"
-            values={{ name: node.name }}
+            values={{ name: node.path }}
           />
         ) : (
           <Trans
             i18nKey="pages.explorer.tree.delete.fileMsg"
-            values={{ name: node.name }}
+            values={{ name: node.path }}
           />
         )}
       </div>
