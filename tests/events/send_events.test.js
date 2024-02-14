@@ -1,6 +1,6 @@
 // http://192.168.0.145/api/namespaces/test/broadcast
 
-import request from 'supertest'
+import request from "../common/request"
 
 import common from "../common"
 
