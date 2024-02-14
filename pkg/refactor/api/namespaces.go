@@ -1,3 +1,4 @@
+// nolint
 package api
 
 import (
@@ -30,7 +31,6 @@ func (e *nsController) update(w http.ResponseWriter, r *http.Request) {
 }
 
 func (e *nsController) create(w http.ResponseWriter, r *http.Request) {
-
 }
 
 func (e *nsController) list(w http.ResponseWriter, r *http.Request) {

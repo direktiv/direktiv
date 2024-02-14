@@ -1,3 +1,4 @@
+// nolint
 package api
 
 import (
@@ -17,7 +18,6 @@ func (e *mirrorsController) mountRouter(r chi.Router) {
 }
 
 func (e *mirrorsController) create(w http.ResponseWriter, r *http.Request) {
-
 }
 
 func (e *mirrorsController) list(w http.ResponseWriter, r *http.Request) {
