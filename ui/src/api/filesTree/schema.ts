@@ -7,6 +7,13 @@ const getFilenameFromPath = (path: string): string => {
   return fileName;
 };
 
+export const getParentFromPath = (path: string): string => {
+  const parentPath = path.split("/").slice(0, -1).join("/");
+  if (parentPath === undefined)
+    throw Error(`Parent path could not be extracted from ${path}`);
+  return parentPath;
+};
+
 /* directory example
   {
     path: "/folder",
@@ -91,6 +98,8 @@ export const PathListSchema = z.object({
     paths: z.array(NodeSchema),
   }),
 });
+
+export const PathDeletedSchema = z.null();
 
 export type NodeSchemaType = z.infer<typeof NodeSchema>;
 export type NodeSchemaReceivedType = z.infer<typeof NodeSchemaReceived>;

@@ -1,11 +1,23 @@
-export const nodeKeys = {
-  nodesList: (
+export const pathKeys = {
+  paths: (
     namespace: string,
     { apiKey, path }: { apiKey?: string; path?: string }
   ) =>
     [
       {
-        scope: "nodes-list",
+        scope: "paths",
+        apiKey,
+        namespace,
+        path,
+      },
+    ] as const,
+  file: (
+    namespace: string,
+    { apiKey, path }: { apiKey?: string; path?: string }
+  ) =>
+    [
+      {
+        scope: "file",
         apiKey,
         namespace,
         path,

@@ -62,7 +62,7 @@ const ExplorerPage: FC = () => {
       </Card>
     );
 
-  const paths = data || [];
+  const paths = data?.paths || [];
   const showTable = !isRoot || paths.length > 0;
   const noResults = isSuccess && paths.length === 0;
   const wideOverlay = !!previewNode;

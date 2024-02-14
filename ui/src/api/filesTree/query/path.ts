@@ -2,7 +2,7 @@ import { PathListSchema } from "../schema";
 import { QueryFunctionContext } from "@tanstack/react-query";
 import { apiFactory } from "~/api/apiFactory";
 import { forceLeadingSlash } from "~/api/tree/utils";
-import { nodeKeys } from "..";
+import { pathKeys } from "..";
 import { sortFoldersFirst } from "../utils";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
@@ -17,7 +17,7 @@ const getPath = apiFactory({
 
 const fetchPath = async ({
   queryKey: [{ apiKey, namespace, path }],
-}: QueryFunctionContext<ReturnType<(typeof nodeKeys)["nodesList"]>>) =>
+}: QueryFunctionContext<ReturnType<(typeof pathKeys)["paths"]>>) =>
   getPath({
     apiKey,
     urlParams: {
@@ -45,13 +45,16 @@ export const usePath = ({
   }
 
   return useQueryWithPermissions({
-    queryKey: nodeKeys.nodesList(namespace, {
+    queryKey: pathKeys.paths(namespace, {
       apiKey: apiKey ?? undefined,
       path,
     }),
     queryFn: fetchPath,
     select(data) {
-      return data.data.paths.sort(sortFoldersFirst);
+      return {
+        file: data.data.file,
+        paths: data.data.paths.sort(sortFoldersFirst),
+      };
     },
     enabled: !!namespace && enabled,
   });

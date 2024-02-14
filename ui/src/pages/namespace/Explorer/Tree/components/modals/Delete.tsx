@@ -9,7 +9,7 @@ import { Trans, useTranslation } from "react-i18next";
 import Button from "~/design/Button";
 import { NodeSchemaType } from "~/api/filesTree/schema";
 import { Trash } from "lucide-react";
-import { useDeleteNode } from "~/api/tree/mutate/deleteNode";
+import { useDeletePath } from "~/api/filesTree/mutate/delete";
 
 const Delete = ({
   node,
@@ -19,7 +19,7 @@ const Delete = ({
   close: () => void;
 }) => {
   const { t } = useTranslation();
-  const { mutate: deleteNode, isLoading } = useDeleteNode({
+  const { mutate: deleteNode, isLoading } = useDeletePath({
     onSuccess: () => {
       close();
     },
