@@ -18,8 +18,6 @@ type Error struct {
 }
 
 func writeError(w http.ResponseWriter, err *Error) {
-	httpStatus := http.StatusInternalServerError
-
 	// access_token_denied
 	// access_token_missing
 	// access_token_invalid
@@ -33,7 +31,7 @@ func writeError(w http.ResponseWriter, err *Error) {
 
 	// request_data_invalid
 
-	httpStatus = http.StatusInternalServerError
+	httpStatus := http.StatusInternalServerError
 
 	if strings.HasPrefix(err.Code, "access") {
 		httpStatus = http.StatusForbidden
