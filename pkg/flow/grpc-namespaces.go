@@ -81,27 +81,6 @@ func (flow *flow) SetNamespaceConfig(ctx context.Context, req *grpc.SetNamespace
 	return &resp, nil
 }
 
-func (flow *flow) GetNamespaceConfig(ctx context.Context, req *grpc.GetNamespaceConfigRequest) (*grpc.GetNamespaceConfigResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
-
-	tx, err := flow.beginSqlTx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer tx.Rollback()
-
-	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetName())
-	if err != nil {
-		return nil, err
-	}
-
-	var resp grpc.GetNamespaceConfigResponse
-	resp.Config = ns.Config
-	resp.Name = ns.Name
-
-	return &resp, nil
-}
-
 func (flow *flow) Namespace(ctx context.Context, req *grpc.NamespaceRequest) (*grpc.NamespaceResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
@@ -181,8 +160,7 @@ func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespace
 	defer tx.Rollback()
 
 	ns, err := tx.DataStore().Namespaces().Create(ctx, &core.Namespace{
-		Name:   req.GetName(),
-		Config: core.DefaultNamespaceConfig,
+		Name: req.GetName(),
 	})
 	if err != nil {
 		flow.sugar.Warnf("CreateNamespace failed to create namespace: %v", err)

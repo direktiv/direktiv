@@ -26,15 +26,6 @@ message SetNamespaceConfigResponse {
 	string config = 2;	
 }
 
-message GetNamespaceConfigRequest {
-	string name = 1;
-}
-
-message GetNamespaceConfigResponse {
-	string name = 1;
-	string config = 2;	
-}
-
 message ActionLogRequest {
 	string instanceId = 1;
 	int32 iterator = 2;

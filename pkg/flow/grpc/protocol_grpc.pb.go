@@ -101,7 +101,6 @@ const (
 	Flow_ResolveNamespaceUID_FullMethodName         = "/direktiv_flow.Flow/ResolveNamespaceUID"
 	Flow_ResolveWorkflowUID_FullMethodName          = "/direktiv_flow.Flow/ResolveWorkflowUID"
 	Flow_SetNamespaceConfig_FullMethodName          = "/direktiv_flow.Flow/SetNamespaceConfig"
-	Flow_GetNamespaceConfig_FullMethodName          = "/direktiv_flow.Flow/GetNamespaceConfig"
 	Flow_Build_FullMethodName                       = "/direktiv_flow.Flow/Build"
 	Flow_CreateNamespaceMirror_FullMethodName       = "/direktiv_flow.Flow/CreateNamespaceMirror"
 	Flow_CreateDirectoryMirror_FullMethodName       = "/direktiv_flow.Flow/CreateDirectoryMirror"
@@ -212,7 +211,6 @@ type FlowClient interface {
 	ResolveNamespaceUID(ctx context.Context, in *ResolveNamespaceUIDRequest, opts ...grpc.CallOption) (*NamespaceResponse, error)
 	ResolveWorkflowUID(ctx context.Context, in *ResolveWorkflowUIDRequest, opts ...grpc.CallOption) (*WorkflowResponse, error)
 	SetNamespaceConfig(ctx context.Context, in *SetNamespaceConfigRequest, opts ...grpc.CallOption) (*SetNamespaceConfigResponse, error)
-	GetNamespaceConfig(ctx context.Context, in *GetNamespaceConfigRequest, opts ...grpc.CallOption) (*GetNamespaceConfigResponse, error)
 	Build(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*BuildResponse, error)
 	// mirrors.
 	CreateNamespaceMirror(ctx context.Context, in *CreateNamespaceMirrorRequest, opts ...grpc.CallOption) (*CreateNamespaceResponse, error)
@@ -1526,15 +1524,6 @@ func (c *flowClient) SetNamespaceConfig(ctx context.Context, in *SetNamespaceCon
 	return out, nil
 }
 
-func (c *flowClient) GetNamespaceConfig(ctx context.Context, in *GetNamespaceConfigRequest, opts ...grpc.CallOption) (*GetNamespaceConfigResponse, error) {
-	out := new(GetNamespaceConfigResponse)
-	err := c.cc.Invoke(ctx, Flow_GetNamespaceConfig_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *flowClient) Build(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*BuildResponse, error) {
 	out := new(BuildResponse)
 	err := c.cc.Invoke(ctx, Flow_Build_FullMethodName, in, out, opts...)
@@ -1786,7 +1775,6 @@ type FlowServer interface {
 	ResolveNamespaceUID(context.Context, *ResolveNamespaceUIDRequest) (*NamespaceResponse, error)
 	ResolveWorkflowUID(context.Context, *ResolveWorkflowUIDRequest) (*WorkflowResponse, error)
 	SetNamespaceConfig(context.Context, *SetNamespaceConfigRequest) (*SetNamespaceConfigResponse, error)
-	GetNamespaceConfig(context.Context, *GetNamespaceConfigRequest) (*GetNamespaceConfigResponse, error)
 	Build(context.Context, *emptypb.Empty) (*BuildResponse, error)
 	// mirrors.
 	CreateNamespaceMirror(context.Context, *CreateNamespaceMirrorRequest) (*CreateNamespaceResponse, error)
@@ -2052,9 +2040,6 @@ func (UnimplementedFlowServer) ResolveWorkflowUID(context.Context, *ResolveWorkf
 }
 func (UnimplementedFlowServer) SetNamespaceConfig(context.Context, *SetNamespaceConfigRequest) (*SetNamespaceConfigResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetNamespaceConfig not implemented")
-}
-func (UnimplementedFlowServer) GetNamespaceConfig(context.Context, *GetNamespaceConfigRequest) (*GetNamespaceConfigResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetNamespaceConfig not implemented")
 }
 func (UnimplementedFlowServer) Build(context.Context, *emptypb.Empty) (*BuildResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Build not implemented")
@@ -3659,24 +3644,6 @@ func _Flow_SetNamespaceConfig_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Flow_GetNamespaceConfig_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetNamespaceConfigRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).GetNamespaceConfig(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_GetNamespaceConfig_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).GetNamespaceConfig(ctx, req.(*GetNamespaceConfigRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Flow_Build_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(emptypb.Empty)
 	if err := dec(in); err != nil {
@@ -4184,10 +4151,6 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SetNamespaceConfig",
 			Handler:    _Flow_SetNamespaceConfig_Handler,
-		},
-		{
-			MethodName: "GetNamespaceConfig",
-			Handler:    _Flow_GetNamespaceConfig_Handler,
 		},
 		{
 			MethodName: "Build",
