@@ -157,3 +157,10 @@ func writeOk(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 }
+
+func extractContextNamespace(r *http.Request) *core.Namespace {
+	//nolint:forcetypeassert
+	ns := r.Context().Value(ctxKeyNamespace{}).(*core.Namespace)
+
+	return ns
+}

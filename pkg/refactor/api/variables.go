@@ -134,8 +134,7 @@ func (e *varController) update(w http.ResponseWriter, r *http.Request) {
 }
 
 func (e *varController) create(w http.ResponseWriter, r *http.Request) {
-	//nolint:forcetypeassert
-	ns := r.Context().Value(ctxKeyNamespace{}).(*core.Namespace)
+	ns := extractContextNamespace(r)
 
 	db, err := e.db.BeginTx(r.Context())
 	if err != nil {
@@ -195,8 +194,7 @@ func (e *varController) create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (e *varController) list(w http.ResponseWriter, r *http.Request) {
-	//nolint:forcetypeassert
-	ns := r.Context().Value(ctxKeyNamespace{}).(*core.Namespace)
+	ns := extractContextNamespace(r)
 
 	db, err := e.db.BeginTx(r.Context())
 	if err != nil {

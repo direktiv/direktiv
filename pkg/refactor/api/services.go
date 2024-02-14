@@ -24,7 +24,7 @@ func (e *serviceController) mountRouter(r chi.Router) {
 }
 
 func (e *serviceController) all(w http.ResponseWriter, r *http.Request) {
-	ns := r.Context().Value(ctxKeyNamespace{}).(*core.Namespace)
+	ns := extractContextNamespace(r)
 
 	list, err := e.manager.GeAll(ns.Name)
 	if err != nil {
@@ -37,7 +37,7 @@ func (e *serviceController) all(w http.ResponseWriter, r *http.Request) {
 }
 
 func (e *serviceController) pods(w http.ResponseWriter, r *http.Request) {
-	ns := r.Context().Value(ctxKeyNamespace{}).(*core.Namespace)
+	ns := extractContextNamespace(r)
 	serviceID := chi.URLParam(r, "serviceID")
 
 	svc, err := e.manager.GetPods(ns.Name, serviceID)
@@ -59,7 +59,7 @@ func (e *serviceController) pods(w http.ResponseWriter, r *http.Request) {
 }
 
 func (e *serviceController) rebuild(w http.ResponseWriter, r *http.Request) {
-	ns := r.Context().Value(ctxKeyNamespace{}).(*core.Namespace)
+	ns := extractContextNamespace(r)
 	serviceID := chi.URLParam(r, "serviceID")
 
 	err := e.manager.Rebuild(ns.Name, serviceID)
@@ -81,7 +81,7 @@ func (e *serviceController) rebuild(w http.ResponseWriter, r *http.Request) {
 }
 
 func (e *serviceController) logs(w http.ResponseWriter, r *http.Request) {
-	ns := r.Context().Value(ctxKeyNamespace{}).(*core.Namespace)
+	ns := extractContextNamespace(r)
 	serviceID := chi.URLParam(r, "serviceID")
 	podID := chi.URLParam(r, "podID")
 
