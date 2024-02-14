@@ -20,7 +20,7 @@ type sqlNamespacesStore struct {
 func (s *sqlNamespacesStore) GetByID(ctx context.Context, id uuid.UUID) (*core.Namespace, error) {
 	namespace := &core.Namespace{}
 	res := s.db.WithContext(ctx).Raw(`
-							SELECT id, name, config, created_at, updated_at 
+							SELECT id, name, created_at, updated_at 
 							FROM namespaces 
 							WHERE id=?`,
 		id).
@@ -38,7 +38,7 @@ func (s *sqlNamespacesStore) GetByID(ctx context.Context, id uuid.UUID) (*core.N
 func (s *sqlNamespacesStore) GetByName(ctx context.Context, name string) (*core.Namespace, error) {
 	namespace := &core.Namespace{}
 	res := s.db.WithContext(ctx).Raw(`
-							SELECT id, name, config, created_at, updated_at 
+							SELECT id, name, created_at, updated_at 
 							FROM namespaces 
 							WHERE name=?`,
 		name).
@@ -56,7 +56,7 @@ func (s *sqlNamespacesStore) GetByName(ctx context.Context, name string) (*core.
 func (s *sqlNamespacesStore) GetAll(ctx context.Context) ([]*core.Namespace, error) {
 	var namespaces []*core.Namespace
 	res := s.db.WithContext(ctx).Raw(`
-							SELECT id, name, config, created_at, updated_at
+							SELECT id, name, created_at, updated_at
 							FROM namespaces`).
 		Find(&namespaces)
 	if res.Error != nil {
