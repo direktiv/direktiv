@@ -1,5 +1,5 @@
 import common from "../common";
-import request from 'supertest'
+import request from "../common/request"
 
 const testNamespace = "test-secrets-namespace"
 let testWorkflow = "test-secret"

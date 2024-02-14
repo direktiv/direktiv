@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
-import request from 'supertest'
+import request from "../common/request"
 
 import common from '../common'
 

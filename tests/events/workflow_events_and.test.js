@@ -1,6 +1,6 @@
 import common from "../common"
 import events from "./send_helper.js"
-import request from 'supertest'
+import request from "../common/request"
 
 const namespaceName = "sendeventsand"
 
