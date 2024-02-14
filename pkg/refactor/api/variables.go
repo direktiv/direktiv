@@ -110,7 +110,7 @@ func (e *varController) update(w http.ResponseWriter, r *http.Request) {
 	// Parse request body.
 	req := &core.RuntimeVariablePatch{}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		writeNotJsonError(w, err)
+		writeNotJSONError(w, err)
 		return
 	}
 
@@ -154,7 +154,7 @@ func (e *varController) create(w http.ResponseWriter, r *http.Request) {
 		WorkflowPath     string `json:"workflowPath"`
 	}{}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		writeNotJsonError(w, err)
+		writeNotJSONError(w, err)
 		return
 	}
 	instanceID, err := uuid.Parse(req.InstanceIDString)

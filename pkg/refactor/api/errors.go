@@ -72,7 +72,7 @@ func writeInternalError(w http.ResponseWriter, err error) {
 	slog.Error("error", "err", err)
 }
 
-func writeNotJsonError(w http.ResponseWriter, err error) {
+func writeNotJSONError(w http.ResponseWriter, err error) {
 	if strings.Contains(err.Error(), "cannot unmarshal") {
 		writeError(w, &Error{
 			Code:    "request_body_bad_json_schema",
