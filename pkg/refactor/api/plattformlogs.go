@@ -119,7 +119,6 @@ func (m logController) GetOlder(ctx context.Context, params map[string]string) (
 	if err != nil {
 		return []core.PlattformLogEntry{}, err
 	}
-
 	res := loglist{}
 	for _, le := range r {
 		e, err := le.ToFeatureLogEntry()
