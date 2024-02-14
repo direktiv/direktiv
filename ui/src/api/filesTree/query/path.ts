@@ -3,6 +3,7 @@ import { QueryFunctionContext } from "@tanstack/react-query";
 import { apiFactory } from "~/api/apiFactory";
 import { forceLeadingSlash } from "~/api/tree/utils";
 import { nodeKeys } from "..";
+import { sortFoldersFirst } from "../utils";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 import useQueryWithPermissions from "~/api/useQueryWithPermissions";
@@ -50,7 +51,7 @@ export const usePath = ({
     }),
     queryFn: fetchPath,
     select(data) {
-      return data.data.paths;
+      return data.data.paths.sort(sortFoldersFirst);
     },
     enabled: !!namespace && enabled,
   });

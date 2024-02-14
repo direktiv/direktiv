@@ -1,5 +1,12 @@
 import { z } from "zod";
 
+const getFilenameFromPath = (path: string): string => {
+  const fileName = path.split("/").pop();
+  if (fileName === undefined)
+    throw Error(`Filename could not be extracted from ${path}`);
+  return fileName;
+};
+
 /* directory example
   {
     path: "/folder",
@@ -31,14 +38,20 @@ export const direktivNodeTypes = [
 
 const direktivNodeTypeSchema = z.enum(direktivNodeTypes);
 
-const NodeSchema = z.object({
+const NodeSchemaReceived = z.object({
   type: direktivNodeTypeSchema,
   path: z.string().nonempty(),
-  size: z.number().optional(), // only files
-  mimeType: z.string().optional(), // only files
   createdAt: z.string(),
   updatedAt: z.string(),
+  size: z.number().optional(), // not for directories
+  mimeType: z.string().optional(), // not for directories
+  data: z.string().optional(), // not for directories
 });
+
+const NodeSchema = NodeSchemaReceived.transform((schema) => ({
+  ...schema,
+  name: getFilenameFromPath(schema.path),
+}));
 
 /**
  * /api/v2/namespaces/:namespace/files-tree/:path
@@ -80,4 +93,5 @@ export const PathListSchema = z.object({
 });
 
 export type NodeSchemaType = z.infer<typeof NodeSchema>;
+export type NodeSchemaReceivedType = z.infer<typeof NodeSchemaReceived>;
 export type PathListSchemaType = z.infer<typeof PathListSchema>;

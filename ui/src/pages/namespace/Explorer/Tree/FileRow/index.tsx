@@ -43,7 +43,7 @@ const FileRow = ({
             namespace={namespace}
             onPreviewClicked={onPreviewClicked}
           >
-            {node.path}
+            {node.name}
           </ConditionalLink>
           <span className="text-gray-9 dark:text-gray-dark-9">
             {moment(node.updatedAt).fromNow()}
