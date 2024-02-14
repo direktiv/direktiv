@@ -122,7 +122,6 @@ service Flow {
 
 	//
 	rpc ResolveNamespaceUID (ResolveNamespaceUIDRequest) returns (NamespaceResponse) {}
-	rpc Build(google.protobuf.Empty) returns (BuildResponse) {}
 
 	// mirrors.
 	rpc CreateNamespaceMirror (CreateNamespaceMirrorRequest) returns (CreateNamespaceResponse) {}
