@@ -23,8 +23,10 @@ const (
 type LogStore interface {
 	GetNewer(ctx context.Context, stream string, t time.Time) ([]LogEntry, error)
 	GetOlder(ctx context.Context, stream string, t time.Time) ([]LogEntry, error)
-	GetInstanceLogsNewer(ctx context.Context, stream string, t time.Time) ([]LogEntry, error)
-	GetInstanceLogsOlder(ctx context.Context, stream string, t time.Time) ([]LogEntry, error)
+	GetStartingIDUntilTime(ctx context.Context, stream string, lastID int, t time.Time) ([]LogEntry, error)
+	GetNewerInstance(ctx context.Context, stream string, t time.Time) ([]LogEntry, error)
+	GetOlderInstance(ctx context.Context, stream string, t time.Time) ([]LogEntry, error)
+	GetStartingIDUntilTimeInstance(ctx context.Context, stream string, lastID int, t time.Time) ([]LogEntry, error)
 	DeleteOldLogs(ctx context.Context, t time.Time) error
 }
 

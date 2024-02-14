@@ -41,6 +41,23 @@ func (s sqlLogNewStore) GetOlder(ctx context.Context, stream string, t time.Time
 	return convertScanResults(resultList)
 }
 
+func (s sqlLogNewStore) GetOlderInstance(ctx context.Context, stream string, t time.Time) ([]plattformlogs.LogEntry, error) {
+	query := `
+        SELECT id, time, tag, data
+        FROM fluentbit
+        WHERE tag LIKE ? AND time <= ?
+        ORDER BY time ASC
+        LIMIT ?;
+    `
+	resultList := make([]ScanResult, 0)
+	tx := s.db.WithContext(ctx).Raw(query, stream, t, pageSize).Scan(&resultList)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	return convertScanResults(resultList)
+}
+
 func (s sqlLogNewStore) GetNewer(ctx context.Context, stream string, t time.Time) ([]plattformlogs.LogEntry, error) {
 	query := `
         SELECT id, time, tag, data
@@ -58,7 +75,7 @@ func (s sqlLogNewStore) GetNewer(ctx context.Context, stream string, t time.Time
 	return convertScanResults(resultList)
 }
 
-func (s sqlLogNewStore) GetInstanceLogsNewer(ctx context.Context, stream string, t time.Time) ([]plattformlogs.LogEntry, error) {
+func (s sqlLogNewStore) GetNewerInstance(ctx context.Context, stream string, t time.Time) ([]plattformlogs.LogEntry, error) {
 	query := `
         SELECT id, time, tag, data
         FROM fluentbit
@@ -75,16 +92,31 @@ func (s sqlLogNewStore) GetInstanceLogsNewer(ctx context.Context, stream string,
 	return convertScanResults(resultList)
 }
 
-func (s sqlLogNewStore) GetInstanceLogsOlder(ctx context.Context, stream string, t time.Time) ([]plattformlogs.LogEntry, error) {
+func (s sqlLogNewStore) GetStartingIDUntilTime(ctx context.Context, stream string, lastID int, t time.Time) ([]plattformlogs.LogEntry, error) {
 	query := `
         SELECT id, time, tag, data
         FROM fluentbit
-        WHERE tag LIKE ? AND time <= ?
-        ORDER BY time ASC
-        LIMIT ?;
+        WHERE tag = ? AND id >= ? time <= ?
+        ORDER BY time ASC;
     `
 	resultList := make([]ScanResult, 0)
-	tx := s.db.WithContext(ctx).Raw(query, stream, t, pageSize).Scan(&resultList)
+	tx := s.db.WithContext(ctx).Raw(query, stream, lastID, t).Scan(&resultList)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	return convertScanResults(resultList)
+}
+
+func (s sqlLogNewStore) GetStartingIDUntilTimeInstance(ctx context.Context, stream string, lastID int, t time.Time) ([]plattformlogs.LogEntry, error) {
+	query := `
+        SELECT id, time, tag, data
+        FROM fluentbit
+        WHERE tag LIKE ? AND id >= ? time <= ?
+        ORDER BY time ASC;
+    `
+	resultList := make([]ScanResult, 0)
+	tx := s.db.WithContext(ctx).Raw(query, stream, lastID, t).Scan(&resultList)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}

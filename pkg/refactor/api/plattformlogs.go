@@ -8,6 +8,7 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -49,7 +50,7 @@ func (m *logController) mountRouter(r chi.Router) {
 }
 
 func (m logController) GetNewer(ctx context.Context, t time.Time, params map[string]string) ([]core.PlattformLogEntry, error) {
-	var r []plattformlogs.LogEntry
+	var logs []plattformlogs.LogEntry
 	var err error
 
 	// Determine the stream based on the provided parameters
@@ -59,18 +60,47 @@ func (m logController) GetNewer(ctx context.Context, t time.Time, params map[str
 	}
 
 	// Call the appropriate LogStore method with cursorTime
-	if _, ok := params["instance"]; ok {
-		r, err = m.store.GetInstanceLogsNewer(ctx, stream, t)
-	} else {
-		r, err = m.store.GetNewer(ctx, stream, t)
+	lastID, hasLastID := params["lastID"]
+	_, isInstanceRequest := params["instance"]
+	if hasLastID && isInstanceRequest {
+		id, err := strconv.Atoi(lastID)
+		if err != nil {
+			return []core.PlattformLogEntry{}, err
+		}
+		r, err := m.store.GetStartingIDUntilTimeInstance(ctx, stream, id, t)
+		if err != nil {
+			return []core.PlattformLogEntry{}, err
+		}
+		logs = append(logs, r...)
+	}
+	if hasLastID && !isInstanceRequest {
+		id, err := strconv.Atoi(lastID)
+		if err != nil {
+			return []core.PlattformLogEntry{}, err
+		}
+		r, err := m.store.GetStartingIDUntilTime(ctx, stream, id, t)
+		if err != nil {
+			return []core.PlattformLogEntry{}, err
+		}
+		logs = append(logs, r...)
 	}
 
-	if err != nil {
-		return []core.PlattformLogEntry{}, err
+	if _, ok := params["instance"]; ok {
+		r, err := m.store.GetNewerInstance(ctx, stream, t)
+		if err != nil {
+			return []core.PlattformLogEntry{}, err
+		}
+		logs = append(logs, r...)
+	} else {
+		r, err := m.store.GetNewer(ctx, stream, t)
+		if err != nil {
+			return []core.PlattformLogEntry{}, err
+		}
+		logs = append(logs, r...)
 	}
 
 	res := loglist{}
-	for _, le := range r {
+	for _, le := range logs {
 		e, err := le.ToFeatureLogEntry()
 		if err != nil {
 			return []core.PlattformLogEntry{}, err
@@ -109,13 +139,11 @@ func (m logController) GetOlder(ctx context.Context, params map[string]string) (
 		}
 		starting = co
 	}
-	// Call the appropriate LogStore method with cursorTime
 	if _, ok := params["instance"]; ok {
-		r, err = m.store.GetInstanceLogsOlder(ctx, stream, starting)
+		r, err = m.store.GetOlderInstance(ctx, stream, starting)
 	} else {
 		r, err = m.store.GetOlder(ctx, stream, starting)
 	}
-
 	if err != nil {
 		return []core.PlattformLogEntry{}, err
 	}
@@ -232,12 +260,12 @@ func (e *loglist) filterByLevel(level string) {
 func determineStream(params map[string]string) (string, error) {
 	if p, ok := params["instance"]; ok {
 		return "flow.instance." + "%" + p + "%", nil
-	} else if p, ok := params["namespace"]; ok {
-		return "flow.namespace." + p, nil
 	} else if p, ok := params["route"]; ok {
 		return "flow.gateway." + p, nil
 	} else if p, ok := params["mirror"]; ok {
 		return "flow.mirror." + p, nil
+	} else if p, ok := params["namespace"]; ok {
+		return "flow.namespace." + p, nil
 	}
 
 	return "", fmt.Errorf("requested logs for an unknown type")
@@ -308,6 +336,9 @@ func (lw *logStoreWorker) start(ctx context.Context) {
 
 func extractLogRequestParams(r *http.Request) map[string]string {
 	params := map[string]string{}
+	if v := r.Header.Get("Last-Event-ID"); v != "" {
+		params["lastID"] = v
+	}
 	if v := chi.URLParam(r, "namespace"); v != "" {
 		params["namespace"] = v
 	}

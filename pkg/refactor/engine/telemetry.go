@@ -3,6 +3,7 @@ package engine
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
@@ -34,13 +35,15 @@ func (instance *Instance) GetSlogAttributes(ctx context.Context) []interface{} {
 	callpath := ""
 	if len(instance.DescentInfo.Descent) > 0 {
 		rootInstanceID = instance.DescentInfo.Descent[0].ID
+		slog.Error("my error debug")
 	}
+	slog.Error("my error debug", "descent", instance.DescentInfo.Descent)
+
 	for _, v := range instance.DescentInfo.Descent {
 		callpath += "/" + v.ID.String()
 	}
-	if callpath == "" {
-		callpath = "/" + instance.Instance.ID.String()
-	}
+	callpath += "/" + instance.Instance.ID.String()
+
 	span := trace.SpanFromContext(ctx)
 	TraceID := span.SpanContext().TraceID().String() // TODO: instance.TelemetryInfo.TraceID is broken.
 	SpanID := span.SpanContext().SpanID().String()
@@ -48,12 +51,15 @@ func (instance *Instance) GetSlogAttributes(ctx context.Context) []interface{} {
 	tags = append(tags, "stream", fmt.Sprintf("%v.%v", recipient.Instance, callpath))
 	tags = append(tags, "instance-id", instance.Instance.ID)
 	tags = append(tags, "invoker", instance.Instance.Invoker)
+	slog.Error("my error", "callpath", callpath)
 	tags = append(tags, "callpath", callpath)
 	tags = append(tags, "workflow", instance.Instance.WorkflowPath)
 	tags = append(tags, "namespace", instance.Instance.Namespace)
 	tags = append(tags, "source", recipient.Instance)
 	tags = append(tags, "root-instance-id", rootInstanceID)
+	slog.Error("my error", "root-instance-id", rootInstanceID)
 	tags = append(tags, "trace", TraceID)
+	slog.Error("my error", "trace", TraceID)
 	tags = append(tags, "span", SpanID)
 	// tags = append(tags, "callpath", instance.TelemetryInfo.CallPath) // Todo: this is value is not filled
 
