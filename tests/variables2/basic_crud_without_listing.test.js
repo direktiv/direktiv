@@ -29,9 +29,9 @@ describe('Test variable create operations', () => {
 				data: 'bar1',
 				mimeType: 'mime1',
 				size: 3,
-				instanceId: "00000000-0000-0000-0000-000000000000",
-				workflowPath: "",
-			}
+				instanceId: '00000000-0000-0000-0000-000000000000',
+				workflowPath: '',
+			},
 		},
 		{
 			input: {
@@ -45,9 +45,9 @@ describe('Test variable create operations', () => {
 				data: 'bar2',
 				mimeType: 'mime2',
 				size: 3,
-				instanceId: "00000000-0000-0000-0000-000000000000",
-				workflowPath: "",
-			}
+				instanceId: '00000000-0000-0000-0000-000000000000',
+				workflowPath: '',
+			},
 		},
 		{
 			input: {
@@ -60,9 +60,9 @@ describe('Test variable create operations', () => {
 				data: 'bar3',
 				mimeType: 'mime3',
 				size: 3,
-				instanceId: "00000000-0000-0000-0000-000000000000",
-				workflowPath: "",
-			}
+				instanceId: '00000000-0000-0000-0000-000000000000',
+				workflowPath: '',
+			},
 		},
 		{
 			input: {
@@ -76,23 +76,23 @@ describe('Test variable create operations', () => {
 				data: 'bar4',
 				mimeType: 'mime4',
 				size: 3,
-				instanceId: "00000000-0000-0000-0000-000000000000",
+				instanceId: '00000000-0000-0000-0000-000000000000',
 				workflowPath: '/wf1.yaml',
-			}
+			},
 		},
 	]
 
 	for (let i = 0; i < testCases.length; i++) {
 		const testCase = testCases[i]
 
-		it(`should create a new variable case ${i}`, async () => {
+		it(`should create a new variable case ${ i }`, async () => {
 			const res = await request(config.getDirektivHost())
 				.post(`/api/v2/namespaces/${ namespace }/variables`)
 				.send(testCase.input)
 			expect(res.statusCode).toEqual(200)
 			expect(res.body.data).toMatchObject({
 				id: expect.stringMatching(common.regex.uuidRegex),
-				namespace: namespace,
+				namespace,
 
 				...testCase.want,
 
@@ -102,5 +102,3 @@ describe('Test variable create operations', () => {
 		})
 	}
 })
-
-
