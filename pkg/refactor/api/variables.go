@@ -95,6 +95,7 @@ func (e *varController) update(w http.ResponseWriter, r *http.Request) {
 			Code:    "request_data_invalid",
 			Message: "variable id is invalid uuid string",
 		})
+
 		return
 	}
 
@@ -162,6 +163,7 @@ func (e *varController) create(w http.ResponseWriter, r *http.Request) {
 			Code:    "request_data_invalid",
 			Message: "field instanceId has invalid uuid string",
 		})
+
 		return
 	}
 
@@ -211,6 +213,7 @@ func (e *varController) list(w http.ResponseWriter, r *http.Request) {
 			Code:    "request_data_invalid",
 			Message: "query param instanceId invalid uuid string",
 		})
+
 		return
 	}
 	forWorkflowPath := chi.URLParam(r, "workflowPath")
@@ -219,6 +222,7 @@ func (e *varController) list(w http.ResponseWriter, r *http.Request) {
 			Code:    "request_data_invalid",
 			Message: "query param workflowPath invalid file path",
 		})
+
 		return
 	}
 
