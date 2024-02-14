@@ -18,15 +18,6 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func (flow *flow) ResolveWorkflowUID(ctx context.Context, req *grpc.ResolveWorkflowUIDRequest) (*grpc.WorkflowResponse, error) {
-	// TODO: yassir, low priority. probably un used.
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
-
-	var resp *grpc.WorkflowResponse
-
-	return resp, nil
-}
-
 func (flow *flow) Workflow(ctx context.Context, req *grpc.WorkflowRequest) (*grpc.WorkflowResponse, error) {
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
