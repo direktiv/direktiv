@@ -19,6 +19,27 @@ type sqlMirrorStore struct {
 	configEncryptionKey string
 }
 
+func (s sqlMirrorStore) GetAllConfigs(ctx context.Context) ([]*mirror.Config, error) {
+	list := []*mirror.Config{}
+	res := s.db.WithContext(ctx).Raw(`
+					SELECT *
+					FROM mirror_configs`).
+		Find(&list)
+
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	for i := range list {
+		config, err := cryptDecryptConfig(list[i], s.configEncryptionKey, false)
+		if err != nil {
+			return nil, err
+		}
+		list[i] = config
+	}
+
+	return list, nil
+}
+
 func cryptDecryptConfig(config *mirror.Config, key string, encrypt bool) (*mirror.Config, error) {
 	resultConfig := &mirror.Config{}
 

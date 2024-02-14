@@ -107,6 +107,7 @@ func (tx *DB) BeginTx(ctx context.Context) (*DB, error) {
 	}
 
 	return &DB{
-		db: res,
+		db:        res,
+		secretKey: tx.secretKey,
 	}, nil
 }

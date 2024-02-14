@@ -9,12 +9,12 @@ import (
 )
 
 type Namespace struct {
-	ID uuid.UUID
+	ID uuid.UUID `json:"-"`
 
-	Name string
+	Name string `json:"name"`
 
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 func (ns *Namespace) GetAttributes() map[string]string {

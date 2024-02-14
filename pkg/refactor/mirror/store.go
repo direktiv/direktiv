@@ -74,6 +74,7 @@ type Store interface {
 	// GetConfig gets config by namespace from the store.
 	GetConfig(ctx context.Context, namespace string) (*Config, error)
 
+	GetAllConfigs(ctx context.Context) ([]*Config, error)
 	// CreateProcess stores a new process in the store.
 	CreateProcess(ctx context.Context, process *Process) (*Process, error)
 

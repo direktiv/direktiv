@@ -39,10 +39,12 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 		db: db,
 	}
 	nsCtr := &nsController{
-		db: db,
+		db:  db,
+		bus: app.Bus,
 	}
 	mirrorsCtr := &mirrorsController{
-		db: db,
+		db:  db,
+		bus: app.Bus,
 	}
 
 	mw := &appMiddlewares{dStore: db.DataStore()}
