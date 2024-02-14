@@ -4,24 +4,12 @@ import { Link } from "react-router-dom";
 import RefreshButton from "~/design/RefreshButton";
 import { StatusBadge } from "../components/StatusBadge";
 import Test from "./Test";
-import { decode } from "js-base64";
 import { linkToServiceSource } from "../components/utils";
-import { serializeServiceFile } from "../../Explorer/Service/ServiceEditor/utils";
-import { useNodeContent } from "~/api/tree/query/node";
 import { useService } from "~/api/services/query/services";
 import { useTranslation } from "react-i18next";
 
 const Header = ({ serviceId }: { serviceId: string }) => {
   const { data: service, refetch, isFetching } = useService(serviceId);
-
-  const { data: serviceData } = useNodeContent({
-    path: service?.filePath ?? "",
-    enabled: !!service?.filePath,
-  });
-
-  const fileContentFromServer = decode(serviceData?.source ?? "");
-
-  const [serviceConfig] = serializeServiceFile(fileContentFromServer);
 
   const { t } = useTranslation();
 
