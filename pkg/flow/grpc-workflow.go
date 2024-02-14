@@ -206,7 +206,6 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 			Parent: file.Dir(),
 			Live:   true,
 		}, ns)
-
 	if err != nil {
 		return nil, err
 	}
