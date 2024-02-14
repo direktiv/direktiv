@@ -1,4 +1,4 @@
-import request from 'supertest'
+import request from "./request"
 
 import config from './config'
 import common from './index'
