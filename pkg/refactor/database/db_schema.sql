@@ -1,7 +1,6 @@
 CREATE TABLE IF NOT EXISTS  "namespaces" (
     "id" uuid,
     "name" text NOT NULL UNIQUE,
-    "config" text NOT NULL,
     "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY ("id")

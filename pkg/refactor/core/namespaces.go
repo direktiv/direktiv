@@ -11,8 +11,7 @@ import (
 type Namespace struct {
 	ID uuid.UUID
 
-	Name   string
-	Config string
+	Name string
 
 	CreatedAt time.Time
 	UpdatedAt time.Time
@@ -43,9 +42,6 @@ type NamespacesStore interface {
 	// GetAll gets all namespaces from store.
 	GetAll(ctx context.Context) ([]*Namespace, error)
 
-	// Update changes a namespace data.
-	Update(ctx context.Context, namespace *Namespace) (*Namespace, error)
-
 	// Delete deletes a single namespace. if no record found,
 	// it returns datastore.ErrNotFound error.
 	Delete(ctx context.Context, name string) error
@@ -54,27 +50,3 @@ type NamespacesStore interface {
 	// already exists or ErrInvalidNamespaceName or when namespace name is invalid, too short or too long.
 	Create(ctx context.Context, namespace *Namespace) (*Namespace, error)
 }
-
-const DefaultNamespaceConfig = `
-{
-	"broadcast": {
-	  "workflow.create": false,
-	  "workflow.update": false,
-	  "workflow.delete": false,
-	  "directory.create": false,
-	  "directory.delete": false,
-	  "workflow.variable.create": false,
-	  "workflow.variable.update": false,
-	  "workflow.variable.delete": false,
-	  "namespace.variable.create": false,
-	  "namespace.variable.update": false,
-	  "namespace.variable.delete": false,
-	  "instance.variable.create": false,
-	  "instance.variable.update": false,
-	  "instance.variable.delete": false,
-	  "instance.started": false,
-	  "instance.success": false,
-	  "instance.failed": false
-	}
-  }
-`
