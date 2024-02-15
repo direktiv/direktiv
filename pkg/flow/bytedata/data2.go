@@ -6,6 +6,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
@@ -110,14 +111,14 @@ func ConvertMirrorProcessesToGrpcMirrorActivityInfoList(list []*mirror.Process) 
 	return result
 }
 
-func ConvertSecretToGrpcSecret(secret *core.Secret) *grpc.Secret {
+func ConvertSecretToGrpcSecret(secret *datastore.Secret) *grpc.Secret {
 	return &grpc.Secret{
 		Name:        secret.Name,
 		Initialized: secret.Data != nil,
 	}
 }
 
-func ConvertSecretsToGrpcSecretList(list []*core.Secret) []*grpc.Secret {
+func ConvertSecretsToGrpcSecretList(list []*datastore.Secret) []*grpc.Secret {
 	var result []*grpc.Secret
 	for _, f := range list {
 		result = append(result, ConvertSecretToGrpcSecret(f))

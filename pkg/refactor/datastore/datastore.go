@@ -24,7 +24,7 @@ type Store interface {
 	// Logs returns logengine.LogStore, is responsible for reading and writing logs
 	Logs() logengine.LogStore
 
-	Secrets() core.SecretsStore
+	Secrets() SecretsStore
 
 	RuntimeVariables() core.RuntimeVariablesStore
 

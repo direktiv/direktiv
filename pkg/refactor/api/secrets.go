@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -94,12 +94,11 @@ func (e *secretsController) update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = dStore.Secrets().Update(r.Context(), &core.Secret{
+	err = dStore.Secrets().Update(r.Context(), &datastore.Secret{
 		Namespace: ns.Name,
 		Name:      secretName,
 		Data:      req.Data,
 	})
-
 	if err != nil {
 		writeDataStoreError(w, err)
 		return
@@ -142,7 +141,7 @@ func (e *secretsController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Create secret.
-	err = dStore.Secrets().Set(r.Context(), &core.Secret{
+	err = dStore.Secrets().Set(r.Context(), &datastore.Secret{
 		Namespace: ns.Name,
 		Name:      req.Name,
 		Data:      req.Data,
@@ -179,9 +178,8 @@ func (e *secretsController) list(w http.ResponseWriter, r *http.Request) {
 	defer db.Rollback()
 	dStore := db.DataStore()
 
-	var list []*core.Secret
+	var list []*datastore.Secret
 	list, err = dStore.Secrets().GetAll(r.Context(), ns.Name)
-
 	if err != nil {
 		writeDataStoreError(w, err)
 		return
