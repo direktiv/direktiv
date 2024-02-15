@@ -200,7 +200,9 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
         omit_body: false
         omit_consumer: true`;
 
-  const currentExpectedEditorContent = createRouteYaml({
+  // TODO sort
+
+  let expectedEditorContent = createRouteYaml({
     ...minimalRouteConfig,
     plugins: {
       target: basicTargetPlugin,
@@ -214,12 +216,11 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
       .querySelector(".monaco-editor .monaco-scrollable-element")
       ?.scrollBy(0, 100000000);
   });
-  await page.waitForTimeout(500);
 
   await expect(
     editor,
     "all entered data is represented in the editor preview"
-  ).toContainText(removeLines(currentExpectedEditorContent, 4, "top"), {
+  ).toContainText(removeLines(expectedEditorContent, 4, "top"), {
     useInnerText: true,
   });
 
@@ -230,10 +231,55 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
   await page.getByRole("textbox").fill("// execute some JavaScript here");
   await page.getByRole("button", { name: "Save" }).click();
 
+  /* check editor content */
+  const outboundPlugins = `
+    - type: "js-outbound"
+      configuration:
+        script: "// execute some JavaScript here"`;
+
+  expectedEditorContent = createRouteYaml({
+    ...minimalRouteConfig,
+    plugins: {
+      target: basicTargetPlugin,
+      inbound: inboundPlugins,
+      outbound: outboundPlugins,
+    },
+  });
+
+  await expect(
+    editor,
+    "all entered data is represented in the editor preview"
+  ).toContainText(removeLines(expectedEditorContent, 7, "top"), {
+    useInnerText: true,
+  });
+
   /* configure auth plugin: Request Convert */
   await page.getByRole("button", { name: "add auth plugin" }).click();
   await page.getByRole("combobox").click();
   await page.getByLabel("Github Webhook").click();
   await page.getByLabel("secret").fill("my github secret");
   await page.getByRole("button", { name: "Save" }).click();
+
+  /* check editor content */
+  const authPlugins = `
+    - type: "github-webhook-auth"
+      configuration:
+        secret: "my github secret"`;
+
+  expectedEditorContent = createRouteYaml({
+    ...minimalRouteConfig,
+    plugins: {
+      target: basicTargetPlugin,
+      inbound: inboundPlugins,
+      outbound: outboundPlugins,
+      auth: authPlugins,
+    },
+  });
+
+  await expect(
+    editor,
+    "all entered data is represented in the editor preview"
+  ).toContainText(removeLines(expectedEditorContent, 10, "top"), {
+    useInnerText: true,
+  });
 });
