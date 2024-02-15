@@ -84,6 +84,7 @@ test("it is possible to create a basic route file", async ({ page }) => {
     "all entered data is represented in the editor preview"
   ).toContainText(expectedYaml, { useInnerText: true });
 
+  /* save file */
   await expect(
     page.getByText("unsaved changes"),
     "it renders a hint that there are unsaved changes"
