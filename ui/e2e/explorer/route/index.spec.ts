@@ -39,7 +39,7 @@ test("it is possible to create a basic route file", async ({ page }) => {
     "it navigates to the test namespace in the explorer"
   ).toHaveText(namespace);
 
-  /* create consumer */
+  /* create route */
   await page.getByRole("button", { name: "New" }).first().click();
   await page.getByRole("menuitem", { name: "Gateway" }).click();
   await page.getByRole("button", { name: "New Route" }).click();
@@ -48,15 +48,19 @@ test("it is possible to create a basic route file", async ({ page }) => {
   await page.getByPlaceholder("route-name.yaml").fill(filename);
   await page.getByRole("button", { name: "Create" }).click();
 
-  /* close the toast, that covers the save button (makes this test 4 seconds faster) */
+  /**
+   * close the toast, which covers the save button and prevents
+   * us from clicging it (makes this test 4 seconds faster)
+   */
   await page.getByTestId("toast-close").click();
 
+  debugger;
   await expect(
     page,
-    "it creates the service and opens the file in the explorer"
+    "it creates the route file and opens it in the explorer"
   ).toHaveURL(`/${namespace}/explorer/endpoint/${filename}`);
 
-  /* fill in form */
+  /* fill out form */
   await page.getByLabel("path").fill("path");
   await page.getByLabel("timeout").fill("3000");
   await page.getByLabel("GET").click();
@@ -67,7 +71,7 @@ test("it is possible to create a basic route file", async ({ page }) => {
 
   await expect(
     page.getByText("plugins : this field is invalid"),
-    "it can not save the route without a valid plugin"
+    "it can not save the route without a valid target plugin"
   ).toBeVisible();
 
   await page.getByRole("button", { name: "set target plugin" }).click();
@@ -102,7 +106,7 @@ test("it is possible to create a basic route file", async ({ page }) => {
 
   await expect(
     editor,
-    "the editor shows the same content after reloading the page"
+    "after reloading, the entered data is still in the editor preview"
   ).toContainText(expectedYaml, { useInnerText: true });
 });
 
@@ -225,7 +229,16 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
     },
   });
 
-  /* scroll the editor to the very bottom */
+  /**
+   * Note: the editor only shows a limited amount of lines, The Editor uses a
+   * virtualized list to render the content. This means that the invisible content
+   * is not even rendered in the DOM. So from now on we have to crop some lines
+   * in our assertions to make them pass. This is not a big problem, because we
+   * already tested the upper part of the file in the previous test.
+   *
+   * We will scroll the editor to the very bottom, now. The editor will automatically
+   * keep that scroll position when we change the content.
+   */
   await page.evaluate(() => {
     document
       .querySelector(".monaco-editor .monaco-scrollable-element")
@@ -234,7 +247,7 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
 
   await expect(
     editor,
-    "all entered data is represented in the editor preview"
+    "the inbound plugins are represented in the editor preview"
   ).toContainText(removeLines(expectedEditorContent, 4, "top"), {
     useInnerText: true,
   });
@@ -256,7 +269,7 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
 
   await expect(
     editor,
-    "all entered data is represented in the editor preview"
+    "the new inbound plugin order is represented in the editor preview"
   ).toContainText(removeLines(expectedEditorContent, 4, "top"), {
     useInnerText: true,
   });
@@ -285,12 +298,12 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
 
   await expect(
     editor,
-    "all entered data is represented in the editor preview"
+    "the outbound plugin is represented in the editor preview"
   ).toContainText(removeLines(expectedEditorContent, 7, "top"), {
     useInnerText: true,
   });
 
-  /* configure auth plugin: Request Convert */
+  /* configure auth plugin: Github Webhook */
   await page.getByRole("button", { name: "add auth plugin" }).click();
   await page.getByRole("combobox").click();
   await page.getByLabel("Github Webhook").click();
@@ -315,7 +328,7 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
 
   await expect(
     editor,
-    "all entered data is represented in the editor preview"
+    "the auth plugin is represented in the editor preview"
   ).toContainText(removeLines(expectedEditorContent, 10, "top"), {
     useInnerText: true,
   });
@@ -337,7 +350,7 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
   await page.reload({ waitUntil: "networkidle" });
   await expect(
     editor,
-    "all entered data is represented in the editor preview"
+    "after reloading, the entered data is still in the editor preview"
   ).toContainText(removeLines(expectedEditorContent, 9, "bottom"), {
     useInnerText: true,
   });
@@ -376,7 +389,7 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
 
   await expect(
     editor,
-    "all entered data is represented in the editor preview"
+    "the deleted plugins are also represented in the editor preview"
   ).toContainText(expectedEditorContent, {
     useInnerText: true,
   });
