@@ -16,6 +16,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/api"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway"
 	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
@@ -228,7 +229,7 @@ func renderServiceManager(db *database.DB, serviceManager core.ServiceManager, l
 	serviceManager.SetServices(funConfigList)
 }
 
-func getWorkflowFunctionDefinitionsFromWorkflow(ns *core.Namespace, f *filestore.File) ([]*core.ServiceConfig, error) {
+func getWorkflowFunctionDefinitionsFromWorkflow(ns *datastore.Namespace, f *filestore.File) ([]*core.ServiceConfig, error) {
 	var wf model.Workflow
 
 	err := wf.Load(f.Data)

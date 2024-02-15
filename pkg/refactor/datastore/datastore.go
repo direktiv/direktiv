@@ -15,7 +15,7 @@ import (
 //
 //nolint:interfacebloat
 type Store interface {
-	Namespaces() core.NamespacesStore
+	Namespaces() NamespacesStore
 
 	// Mirror returns datastore.MirrorStore, is responsible for reading and writing mirrors information.
 	Mirror() MirrorStore

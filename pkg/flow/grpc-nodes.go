@@ -11,7 +11,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
@@ -25,7 +24,7 @@ func (flow *flow) Node(ctx context.Context, req *grpc.NodeRequest) (*grpc.NodeRe
 
 	var file *filestore.File
 	var err error
-	var ns *core.Namespace
+	var ns *database.Namespace
 	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
 		if err != nil {
@@ -51,7 +50,7 @@ func (flow *flow) Directory(ctx context.Context, req *grpc.DirectoryRequest) (*g
 	var files []*filestore.File
 	var isMirrorNamespace bool
 	var err error
-	var ns *core.Namespace
+	var ns *database.Namespace
 	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
 		if err != nil {

@@ -18,7 +18,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/model"
-	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	pkgevents "github.com/direktiv/direktiv/pkg/refactor/events"
 	"github.com/google/uuid"
 	"github.com/jinzhu/copier"
@@ -72,7 +72,7 @@ func (events *events) sendEvent(data []byte) {
 
 	ctx := context.Background()
 
-	var ns *core.Namespace
+	var ns *database.Namespace
 	err = events.runSqlTx(ctx, func(tx *sqlTx) error {
 		ns, err = tx.DataStore().Namespaces().GetByID(ctx, id) // TODO: Alexander, I haven't updated this but I think it's no longer in use. Is that accurate?
 		return err
@@ -241,7 +241,7 @@ func (flow *flow) EventListeners(ctx context.Context, req *grpc.EventListenersRe
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	var resListeners []*pkgevents.EventListener
-	var ns *core.Namespace
+	var ns *database.Namespace
 	var err error
 
 	totalListeners := 0
@@ -280,7 +280,7 @@ func (flow *flow) EventListenersStream(req *grpc.EventListenersRequest, srv grpc
 	phash := ""
 	nhash := ""
 
-	var ns *core.Namespace
+	var ns *database.Namespace
 	var err error
 	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
@@ -377,7 +377,7 @@ func (flow *flow) BroadcastCloudevent(ctx context.Context, in *grpc.BroadcastClo
 		return nil, status.Errorf(codes.InvalidArgument, "invalid cloudevent: %v", err)
 	}
 
-	var ns *core.Namespace
+	var ns *database.Namespace
 	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, namespace)
 		endValidation()
@@ -410,7 +410,7 @@ func (flow *flow) HistoricalEvent(ctx context.Context, in *grpc.HistoricalEventR
 	}
 
 	var cevent *pkgevents.Event
-	var ns *core.Namespace
+	var ns *datastore.Namespace
 	var err error
 	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, in.GetNamespace())
@@ -470,7 +470,7 @@ func (flow *flow) EventHistory(ctx context.Context, req *grpc.EventHistoryReques
 	count := 0
 	var res []*pkgevents.Event
 	var err error
-	var ns *core.Namespace
+	var ns *database.Namespace
 	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
 		if err != nil {
@@ -535,7 +535,7 @@ func (flow *flow) EventHistoryStream(req *grpc.EventHistoryRequest, srv grpc.Flo
 	nhash := ""
 
 	var err error
-	var ns *core.Namespace
+	var ns *database.Namespace
 	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
 		return err
@@ -627,7 +627,7 @@ func (flow *flow) ReplayEvent(ctx context.Context, req *grpc.ReplayEventRequest)
 
 	var cevent *pkgevents.Event
 	var err error
-	var ns *core.Namespace
+	var ns *database.Namespace
 	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
 		if err != nil {

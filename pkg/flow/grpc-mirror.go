@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
+	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
@@ -39,7 +39,7 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 		return nil, err
 	}
 
-	ns, err = tx.DataStore().Namespaces().Create(ctx, &core.Namespace{
+	ns, err = tx.DataStore().Namespaces().Create(ctx, &database.Namespace{
 		Name: req.GetName(),
 	})
 	if err != nil {

@@ -19,7 +19,7 @@ type nsController struct {
 }
 
 type namespaceWithSettings struct {
-	*core.Namespace
+	*datastore.Namespace
 	MirrorSettings *datastore.MirrorConfig `json:"mirrorSettings"`
 }
 

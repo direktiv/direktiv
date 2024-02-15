@@ -5,12 +5,11 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/google/uuid"
 )
 
-func (d *Manager) NewProcess(ctx context.Context, ns *core.Namespace, processType string) (*datastore.MirrorProcess, error) {
+func (d *Manager) NewProcess(ctx context.Context, ns *datastore.Namespace, processType string) (*datastore.MirrorProcess, error) {
 	// TODO: make this check 100% threadsafe in HA
 
 	procs, err := d.callbacks.Store().GetProcessesByNamespace(ctx, ns.Name)

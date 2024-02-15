@@ -75,6 +75,6 @@ func (s *sqlStore) EventListenerTopics() events.EventTopicsStore {
 	return &sqlEventTopicsStore{db: s.db}
 }
 
-func (s *sqlStore) Namespaces() core.NamespacesStore {
+func (s *sqlStore) Namespaces() datastore.NamespacesStore {
 	return &sqlNamespacesStore{db: s.db}
 }

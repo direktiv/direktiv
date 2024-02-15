@@ -177,7 +177,7 @@ func ConvertInstancesToGrpcInstances(instances []instancestore.InstanceData) []*
 	return list
 }
 
-func ConvertNamespaceToGrpc(item *core.Namespace) *grpc.Namespace {
+func ConvertNamespaceToGrpc(item *datastore.Namespace) *grpc.Namespace {
 	ns := &grpc.Namespace{
 		Name: item.Name,
 
@@ -188,7 +188,7 @@ func ConvertNamespaceToGrpc(item *core.Namespace) *grpc.Namespace {
 	return ns
 }
 
-func ConvertNamespacesListToGrpc(list []*core.Namespace) []*grpc.Namespace {
+func ConvertNamespacesListToGrpc(list []*datastore.Namespace) []*grpc.Namespace {
 	var result []*grpc.Namespace
 	for idx := range list {
 		ns := list[idx]
