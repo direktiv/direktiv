@@ -319,4 +319,26 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
   ).toContainText(removeLines(expectedEditorContent, 10, "top"), {
     useInnerText: true,
   });
+
+  /* save file */
+  await expect(
+    page.getByText("unsaved changes"),
+    "it renders a hint that there are unsaved changes"
+  ).toBeVisible();
+
+  await page.getByRole("button", { name: "Save" }).click();
+
+  await expect(
+    page.getByText("unsaved changes"),
+    "it does not render a hint that there are unsaved changes"
+  ).not.toBeVisible();
+
+  /* reload */
+  await page.reload({ waitUntil: "networkidle" });
+  await expect(
+    editor,
+    "all entered data is represented in the editor preview"
+  ).toContainText(removeLines(expectedEditorContent, 9, "bottom"), {
+    useInnerText: true,
+  });
 });
