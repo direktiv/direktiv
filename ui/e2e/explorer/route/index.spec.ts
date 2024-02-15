@@ -341,4 +341,43 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
   ).toContainText(removeLines(expectedEditorContent, 9, "bottom"), {
     useInnerText: true,
   });
+
+  /* delete all optional plugins */
+  await page
+    .getByRole("row", { name: "Access control list (acl)" })
+    .getByRole("button")
+    .click();
+  await page.getByRole("button", { name: "Delete" }).click();
+
+  await page
+    .getByRole("row", { name: "Request convert" })
+    .getByRole("button")
+    .click();
+  await page.getByRole("button", { name: "Delete" }).click();
+
+  await page
+    .getByRole("row", { name: "Javascript" })
+    .getByRole("button")
+    .click();
+  await page.getByRole("button", { name: "Delete" }).click();
+
+  await page
+    .getByRole("row", { name: "Github Webhook" })
+    .getByRole("button")
+    .click();
+  await page.getByRole("button", { name: "Delete" }).click();
+
+  expectedEditorContent = createRouteYaml({
+    ...minimalRouteConfig,
+    plugins: {
+      target: basicTargetPlugin,
+    },
+  });
+
+  await expect(
+    editor,
+    "all entered data is represented in the editor preview"
+  ).toContainText(expectedEditorContent, {
+    useInnerText: true,
+  });
 });
