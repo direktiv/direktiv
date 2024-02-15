@@ -4,12 +4,15 @@ package api
 import (
 	"net/http"
 
+	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
+
 	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/go-chi/chi/v5"
 )
 
 type mirrorsController struct {
-	db *database.DB
+	db  *database.DB
+	bus *pubsub.Bus
 }
 
 func (e *mirrorsController) mountRouter(r chi.Router) {
