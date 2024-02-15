@@ -184,29 +184,43 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
   await page.getByRole("button", { name: "Save" }).click();
 
   /* check editor content */
-  const inboundPlugins = `
-    - type: "acl"
-      configuration:
-        allow_groups:
-          - "allow this group 1"
-          - "allow this group 2"
-        deny_groups: []
-        allow_tags: []
-        deny_tags: []
-    - type: "request-convert"
-      configuration:
-        omit_headers: false
-        omit_queries: true
-        omit_body: false
-        omit_consumer: true`;
+  const inboundPluginsBeforeSorting = `
+      - type: "acl"
+        configuration:
+          allow_groups:
+            - "allow this group 1"
+            - "allow this group 2"
+          deny_groups: []
+          allow_tags: []
+          deny_tags: []
+      - type: "request-convert"
+        configuration:
+          omit_headers: false
+          omit_queries: true
+          omit_body: false
+          omit_consumer: true`;
 
-  // TODO sort
+  const inboundPluginsAfterSorting = `
+      - type: "request-convert"
+        configuration:
+          omit_headers: false
+          omit_queries: true
+          omit_body: false
+          omit_consumer: true
+      - type: "acl"
+        configuration:
+        allow_groups:
+            - "allow this group 1"
+            - "allow this group 2"
+          deny_groups: []
+          allow_tags: []
+          deny_tags: []`;
 
   let expectedEditorContent = createRouteYaml({
     ...minimalRouteConfig,
     plugins: {
       target: basicTargetPlugin,
-      inbound: inboundPlugins,
+      inbound: inboundPluginsBeforeSorting,
     },
   });
 
@@ -215,6 +229,28 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
     document
       .querySelector(".monaco-editor .monaco-scrollable-element")
       ?.scrollBy(0, 100000000);
+  });
+
+  await expect(
+    editor,
+    "all entered data is represented in the editor preview"
+  ).toContainText(removeLines(expectedEditorContent, 4, "top"), {
+    useInnerText: true,
+  });
+
+  /* change sorting of inbound plugins */
+  await page
+    .getByRole("row", { name: "Access control list (acl)" })
+    .getByRole("button")
+    .click();
+  await page.getByRole("button", { name: "Move down" }).click();
+
+  expectedEditorContent = createRouteYaml({
+    ...minimalRouteConfig,
+    plugins: {
+      target: basicTargetPlugin,
+      inbound: inboundPluginsAfterSorting,
+    },
   });
 
   await expect(
@@ -241,7 +277,7 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
     ...minimalRouteConfig,
     plugins: {
       target: basicTargetPlugin,
-      inbound: inboundPlugins,
+      inbound: inboundPluginsAfterSorting,
       outbound: outboundPlugins,
     },
   });
@@ -270,7 +306,7 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
     ...minimalRouteConfig,
     plugins: {
       target: basicTargetPlugin,
-      inbound: inboundPlugins,
+      inbound: inboundPluginsAfterSorting,
       outbound: outboundPlugins,
       auth: authPlugins,
     },
