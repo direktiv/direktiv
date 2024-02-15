@@ -95,14 +95,6 @@ func writeDataStoreError(w http.ResponseWriter, err error) {
 
 		return
 	}
-	if errors.Is(err, datastore.ErrSecretNotFound) {
-		writeError(w, &Error{
-			Code:    "resource_not_found",
-			Message: "requested resource is not found",
-		})
-
-		return
-	}
 	if errors.Is(err, core.ErrInvalidRuntimeVariableName) {
 		writeError(w, &Error{
 			Code:    "request_data_invalid",

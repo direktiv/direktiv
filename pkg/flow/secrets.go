@@ -23,7 +23,7 @@ func (flow *flow) placeholdSecrets(ctx context.Context, tx *sqlTx, ns string, fi
 
 	for _, secretRef := range secretRefs {
 		_, err = tx.DataStore().Secrets().Get(ctx, ns, secretRef)
-		if errors.Is(err, datastore.ErrSecretNotFound) {
+		if errors.Is(err, datastore.ErrNotFound) {
 			err = tx.DataStore().Secrets().Set(ctx, &datastore.Secret{
 				Namespace: ns,
 				Name:      secretRef,

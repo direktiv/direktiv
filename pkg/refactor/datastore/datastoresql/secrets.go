@@ -43,7 +43,7 @@ func (s sqlSecretsStore) Delete(ctx context.Context, namespace string, name stri
 	}
 	// TODO: check if other delete queries check for row count == 0 and return not found error.
 	if res.RowsAffected == 0 {
-		return datastore.ErrSecretNotFound
+		return datastore.ErrNotFound
 	}
 	if res.RowsAffected != 1 {
 		return fmt.Errorf("unexpected gorm delete count, got: %d, want: %d", res.RowsAffected, 1)
@@ -59,7 +59,7 @@ func (s sqlSecretsStore) Get(ctx context.Context, namespace string, name string)
 		namespace, name).
 		First(secret)
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
-		return nil, datastore.ErrSecretNotFound
+		return nil, datastore.ErrNotFound
 	}
 	if res.Error != nil {
 		return nil, res.Error
@@ -79,7 +79,7 @@ func (s sqlSecretsStore) Set(ctx context.Context, secret *datastore.Secret) erro
 	var res *gorm.DB
 	x, err := s.Get(ctx, secret.Namespace, secret.Name)
 	//nolint:nestif
-	if errors.Is(err, datastore.ErrSecretNotFound) {
+	if errors.Is(err, datastore.ErrNotFound) {
 		if secret.Data == nil {
 			res = s.db.WithContext(ctx).Exec(`
 				INSERT INTO secrets(namespace, name) VALUES(?, ?)
