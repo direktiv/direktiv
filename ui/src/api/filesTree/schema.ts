@@ -7,12 +7,8 @@ export const getFilenameFromPath = (path: string): string => {
   return fileName;
 };
 
-export const getParentFromPath = (path: string): string => {
-  const parentPath = path.split("/").slice(0, -1).join("/");
-  if (parentPath === undefined)
-    throw Error(`Parent path could not be extracted from ${path}`);
-  return parentPath;
-};
+export const getParentFromPath = (path: string): string =>
+  `/${path.split("/").slice(0, -1).join("/")}`;
 
 /* directory example
   {
@@ -62,6 +58,11 @@ const CreateNodeSchema = z.object({
   data: z.string(), // base64 encoded file body
 });
 
+const PatchNodeSchema = z.object({
+  absolutePath: z.string().optional(),
+  data: z.string().optional(), // base64 encoded file body
+});
+
 /**
  * /api/v2/namespaces/:namespace/files-tree/:path
  * 
@@ -102,9 +103,10 @@ export const PathListSchema = z.object({
 });
 
 export const PathDeletedSchema = z.null();
-
 export const PathCreatedSchema = z.object({ data: NodeSchema });
+export const NodePatchedSchema = z.object({ data: NodeSchema });
 
 export type NodeSchemaType = z.infer<typeof NodeSchema>;
+export type PatchNodeSchemaType = z.infer<typeof PatchNodeSchema>;
 export type CreateNodeSchemaType = z.infer<typeof CreateNodeSchema>;
 export type PathListSchemaType = z.infer<typeof PathListSchema>;

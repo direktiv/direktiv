@@ -47,7 +47,7 @@ export const usePath = ({
   return useQueryWithPermissions({
     queryKey: pathKeys.paths(namespace, {
       apiKey: apiKey ?? undefined,
-      path,
+      path: forceLeadingSlash(path),
     }),
     queryFn: fetchPath,
     select(data) {

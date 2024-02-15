@@ -4,17 +4,21 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/design/Dialog";
+import {
+  NodeSchemaType,
+  getFilenameFromPath,
+  getParentFromPath,
+} from "~/api/filesTree/schema";
 import { SubmitHandler, useForm } from "react-hook-form";
 
 import Button from "~/design/Button";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
-import { NodeSchemaType } from "~/api/filesTree/schema";
 import { TextCursorInput } from "lucide-react";
 import { addYamlFileExtension } from "../../utils";
 import { fileNameSchema } from "~/api/tree/schema/node";
-import { useRenameNode } from "~/api/tree/mutate/renameNode";
 import { useTranslation } from "react-i18next";
+import { useUpdateNode } from "~/api/filesTree/mutate/updateNode";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -58,18 +62,23 @@ const Rename = ({
       })
     ),
     defaultValues: {
-      name: node.path,
+      name: getFilenameFromPath(node.path),
     },
   });
 
-  const { mutate: rename, isLoading } = useRenameNode({
+  const { mutate: rename, isLoading } = useUpdateNode({
     onSuccess: () => {
       close();
     },
   });
 
   const onSubmit: SubmitHandler<FormInput> = ({ name }) => {
-    rename({ node, newName: name });
+    rename({
+      node,
+      file: {
+        absolutePath: `${getParentFromPath(node.path)}/${name}`,
+      },
+    });
   };
 
   // you can not submit if the form has not changed or if there are any errors and
