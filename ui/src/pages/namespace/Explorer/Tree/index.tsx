@@ -7,6 +7,7 @@ import {
   TableCell,
   TableRow,
 } from "~/design/Table";
+import { NodeSchemaType, getFilenameFromPath } from "~/api/filesTree/schema";
 
 import { Card } from "~/design/Card";
 import Delete from "./components/modals/Delete";
@@ -16,7 +17,6 @@ import FileViewer from "./components/modals/FileViewer";
 import { FolderUp } from "lucide-react";
 import { Link } from "react-router-dom";
 import NoResult from "./NoResult";
-import { NodeSchemaType } from "~/api/filesTree/schema";
 import Rename from "./components/modals/Rename";
 import { analyzePath } from "~/util/router/utils";
 import { pages } from "~/util/router/pages";
@@ -127,7 +127,9 @@ const ExplorerPage: FC = () => {
                       setDialogOpen(false);
                     }}
                     unallowedNames={
-                      data?.children?.results.map((file) => file.name) || []
+                      data?.paths.map((file) =>
+                        getFilenameFromPath(file.path)
+                      ) || []
                     }
                   />
                 )}
