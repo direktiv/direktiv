@@ -9,7 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/gabriel-vasile/mimetype"
@@ -263,7 +262,7 @@ func (o *DirektivApplyer) copyDeprecatedVariables(ctx context.Context) error {
 		mtString := strings.Split(mt.String(), ";")
 
 		_, err := o.callbacks.VarStore().Create(ctx,
-			&core.RuntimeVariable{
+			&datastore.RuntimeVariable{
 				Namespace: o.proc.Namespace,
 				Name:      k,
 				MimeType:  mtString[0],
@@ -285,7 +284,7 @@ func (o *DirektivApplyer) copyDeprecatedVariables(ctx context.Context) error {
 			mtString := strings.Split(mt.String(), ";")
 
 			_, err := o.callbacks.VarStore().Create(ctx,
-				&core.RuntimeVariable{
+				&datastore.RuntimeVariable{
 					Namespace:    o.proc.Namespace,
 					WorkflowPath: file.Path,
 					Name:         k,

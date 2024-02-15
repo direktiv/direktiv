@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/google/uuid"
@@ -20,7 +19,7 @@ type Callbacks interface {
 
 	Store() datastore.MirrorStore
 	FileStore() filestore.FileStore
-	VarStore() core.RuntimeVariablesStore
+	VarStore() datastore.RuntimeVariablesStore
 }
 
 type ProcessLogger interface {

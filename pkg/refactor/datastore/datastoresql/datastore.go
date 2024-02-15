@@ -1,7 +1,6 @@
 package datastoresql
 
 import (
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/events"
 	"github.com/direktiv/direktiv/pkg/refactor/logengine"
@@ -53,7 +52,7 @@ func (s *sqlStore) Secrets() datastore.SecretsStore {
 	}
 }
 
-func (s *sqlStore) RuntimeVariables() core.RuntimeVariablesStore {
+func (s *sqlStore) RuntimeVariables() datastore.RuntimeVariablesStore {
 	return &sqlRuntimeVariablesStore{
 		db: s.db,
 	}

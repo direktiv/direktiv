@@ -7,7 +7,6 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -17,8 +16,8 @@ type sqlRuntimeVariablesStore struct {
 	db *gorm.DB
 }
 
-func (s *sqlRuntimeVariablesStore) GetForNamespace(ctx context.Context, namespace string, name string) (*core.RuntimeVariable, error) {
-	variable := &core.RuntimeVariable{}
+func (s *sqlRuntimeVariablesStore) GetForNamespace(ctx context.Context, namespace string, name string) (*datastore.RuntimeVariable, error) {
+	variable := &datastore.RuntimeVariable{}
 
 	if name == "" || namespace == "" {
 		return nil, datastore.ErrNotFound
@@ -41,8 +40,8 @@ func (s *sqlRuntimeVariablesStore) GetForNamespace(ctx context.Context, namespac
 	return variable, nil
 }
 
-func (s *sqlRuntimeVariablesStore) GetForInstance(ctx context.Context, instanceID uuid.UUID, name string) (*core.RuntimeVariable, error) {
-	variable := &core.RuntimeVariable{}
+func (s *sqlRuntimeVariablesStore) GetForInstance(ctx context.Context, instanceID uuid.UUID, name string) (*datastore.RuntimeVariable, error) {
+	variable := &datastore.RuntimeVariable{}
 
 	if name == "" || instanceID.String() == (uuid.UUID{}).String() {
 		return nil, datastore.ErrNotFound
@@ -65,8 +64,8 @@ func (s *sqlRuntimeVariablesStore) GetForInstance(ctx context.Context, instanceI
 	return variable, nil
 }
 
-func (s *sqlRuntimeVariablesStore) GetForWorkflow(ctx context.Context, namespace string, path string, name string) (*core.RuntimeVariable, error) {
-	variable := &core.RuntimeVariable{}
+func (s *sqlRuntimeVariablesStore) GetForWorkflow(ctx context.Context, namespace string, path string, name string) (*datastore.RuntimeVariable, error) {
+	variable := &datastore.RuntimeVariable{}
 
 	if name == "" || path == "" || namespace == "" {
 		return nil, datastore.ErrNotFound
@@ -89,8 +88,8 @@ func (s *sqlRuntimeVariablesStore) GetForWorkflow(ctx context.Context, namespace
 	return variable, nil
 }
 
-func (s *sqlRuntimeVariablesStore) GetByID(ctx context.Context, id uuid.UUID) (*core.RuntimeVariable, error) {
-	variable := &core.RuntimeVariable{}
+func (s *sqlRuntimeVariablesStore) GetByID(ctx context.Context, id uuid.UUID) (*datastore.RuntimeVariable, error) {
+	variable := &datastore.RuntimeVariable{}
 	res := s.db.WithContext(ctx).Raw(`
 							SELECT 
 								id, namespace, workflow_path, instance_id, 
@@ -108,8 +107,8 @@ func (s *sqlRuntimeVariablesStore) GetByID(ctx context.Context, id uuid.UUID) (*
 	return variable, nil
 }
 
-func (s *sqlRuntimeVariablesStore) listByFieldValue(ctx context.Context, fieldNames []string, fieldValues []interface{}) ([]*core.RuntimeVariable, error) {
-	var variables []*core.RuntimeVariable
+func (s *sqlRuntimeVariablesStore) listByFieldValue(ctx context.Context, fieldNames []string, fieldValues []interface{}) ([]*datastore.RuntimeVariable, error) {
+	var variables []*datastore.RuntimeVariable
 
 	conditions := make([]string, 0)
 	vals := make([]interface{}, 0)
@@ -139,19 +138,19 @@ func (s *sqlRuntimeVariablesStore) listByFieldValue(ctx context.Context, fieldNa
 	return variables, nil
 }
 
-func (s *sqlRuntimeVariablesStore) ListForInstance(ctx context.Context, instanceID uuid.UUID) ([]*core.RuntimeVariable, error) {
+func (s *sqlRuntimeVariablesStore) ListForInstance(ctx context.Context, instanceID uuid.UUID) ([]*datastore.RuntimeVariable, error) {
 	return s.listByFieldValue(ctx, []string{"instance_id"}, []interface{}{instanceID.String()})
 }
 
-func (s *sqlRuntimeVariablesStore) ListForWorkflow(ctx context.Context, namespace string, workflowPath string) ([]*core.RuntimeVariable, error) {
+func (s *sqlRuntimeVariablesStore) ListForWorkflow(ctx context.Context, namespace string, workflowPath string) ([]*datastore.RuntimeVariable, error) {
 	return s.listByFieldValue(ctx, []string{"namespace", "workflow_path"}, []interface{}{namespace, workflowPath})
 }
 
-func (s *sqlRuntimeVariablesStore) ListForNamespace(ctx context.Context, namespace string) ([]*core.RuntimeVariable, error) {
+func (s *sqlRuntimeVariablesStore) ListForNamespace(ctx context.Context, namespace string) ([]*datastore.RuntimeVariable, error) {
 	return s.listByFieldValue(ctx, []string{"namespace", "workflow_path", "instance_id"}, []interface{}{namespace, nil, nil})
 }
 
-func (s *sqlRuntimeVariablesStore) get(ctx context.Context, variable *core.RuntimeVariable) (*core.RuntimeVariable, error) {
+func (s *sqlRuntimeVariablesStore) get(ctx context.Context, variable *datastore.RuntimeVariable) (*datastore.RuntimeVariable, error) {
 	if variable.WorkflowPath != "" {
 		return s.GetForWorkflow(ctx, variable.Namespace, variable.WorkflowPath, variable.Name)
 	}
@@ -166,16 +165,16 @@ func (s *sqlRuntimeVariablesStore) get(ctx context.Context, variable *core.Runti
 }
 
 // nolint:goconst
-func (s *sqlRuntimeVariablesStore) Set(ctx context.Context, variable *core.RuntimeVariable) (*core.RuntimeVariable, error) {
+func (s *sqlRuntimeVariablesStore) Set(ctx context.Context, variable *datastore.RuntimeVariable) (*datastore.RuntimeVariable, error) {
 	if variable.Name == "" {
-		return nil, core.ErrInvalidRuntimeVariableName
+		return nil, datastore.ErrInvalidRuntimeVariableName
 	}
-	if matched, _ := regexp.MatchString(core.RuntimeVariableNameRegexPattern, variable.Name); !matched {
-		return nil, core.ErrInvalidRuntimeVariableName
+	if matched, _ := regexp.MatchString(datastore.RuntimeVariableNameRegexPattern, variable.Name); !matched {
+		return nil, datastore.ErrInvalidRuntimeVariableName
 	}
 	zeroUUID := (uuid.UUID{}).String()
 	if variable.InstanceID.String() == zeroUUID && variable.Namespace == "" && variable.WorkflowPath == "" {
-		return nil, core.ErrInvalidRuntimeVariableName
+		return nil, datastore.ErrInvalidRuntimeVariableName
 	}
 
 	selectorField := ""
@@ -260,7 +259,7 @@ func (s *sqlRuntimeVariablesStore) Delete(ctx context.Context, id uuid.UUID) err
 }
 
 func (s *sqlRuntimeVariablesStore) LoadData(ctx context.Context, id uuid.UUID) ([]byte, error) {
-	variable := &core.RuntimeVariable{}
+	variable := &datastore.RuntimeVariable{}
 	res := s.db.WithContext(ctx).Raw(`
 							SELECT 
 								id, namespace, workflow_path, instance_id, 
@@ -301,12 +300,12 @@ func (s *sqlRuntimeVariablesStore) SetWorkflowPath(ctx context.Context, namespac
 }
 
 // nolint:goconst
-func (s *sqlRuntimeVariablesStore) Create(ctx context.Context, variable *core.RuntimeVariable) (*core.RuntimeVariable, error) {
+func (s *sqlRuntimeVariablesStore) Create(ctx context.Context, variable *datastore.RuntimeVariable) (*datastore.RuntimeVariable, error) {
 	if variable.Name == "" {
-		return nil, core.ErrInvalidRuntimeVariableName
+		return nil, datastore.ErrInvalidRuntimeVariableName
 	}
-	if matched, _ := regexp.MatchString(core.RuntimeVariableNameRegexPattern, variable.Name); !matched {
-		return nil, core.ErrInvalidRuntimeVariableName
+	if matched, _ := regexp.MatchString(datastore.RuntimeVariableNameRegexPattern, variable.Name); !matched {
+		return nil, datastore.ErrInvalidRuntimeVariableName
 	}
 
 	fields := "id, namespace, name, mime_type, data"
@@ -342,13 +341,13 @@ func (s *sqlRuntimeVariablesStore) Create(ctx context.Context, variable *core.Ru
 }
 
 // nolint:goconst
-func (s *sqlRuntimeVariablesStore) Patch(ctx context.Context, id uuid.UUID, patch *core.RuntimeVariablePatch) (*core.RuntimeVariable, error) {
+func (s *sqlRuntimeVariablesStore) Patch(ctx context.Context, id uuid.UUID, patch *datastore.RuntimeVariablePatch) (*datastore.RuntimeVariable, error) {
 	if patch.Name != nil {
 		if *patch.Name == "" {
-			return nil, core.ErrInvalidRuntimeVariableName
+			return nil, datastore.ErrInvalidRuntimeVariableName
 		}
-		if matched, _ := regexp.MatchString(core.RuntimeVariableNameRegexPattern, *patch.Name); !matched {
-			return nil, core.ErrInvalidRuntimeVariableName
+		if matched, _ := regexp.MatchString(datastore.RuntimeVariableNameRegexPattern, *patch.Name); !matched {
+			return nil, datastore.ErrInvalidRuntimeVariableName
 		}
 	}
 

@@ -8,7 +8,6 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	"github.com/google/uuid"
@@ -39,7 +38,7 @@ var _ mirror.ProcessLogger = &testLogger{}
 type testCallbacks struct {
 	store    datastore.MirrorStore
 	fstore   filestore.FileStore
-	varstore core.RuntimeVariablesStore
+	varstore datastore.RuntimeVariablesStore
 	buf      *bytes.Buffer
 }
 
@@ -62,7 +61,7 @@ func (c *testCallbacks) FileStore() filestore.FileStore {
 	return c.fstore
 }
 
-func (c *testCallbacks) VarStore() core.RuntimeVariablesStore {
+func (c *testCallbacks) VarStore() datastore.RuntimeVariablesStore {
 	return c.varstore
 }
 

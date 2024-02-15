@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"path/filepath"
 
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 )
@@ -108,7 +108,7 @@ func (e *varController) update(w http.ResponseWriter, r *http.Request) {
 	dStore := db.DataStore()
 
 	// Parse request body.
-	req := &core.RuntimeVariablePatch{}
+	req := &datastore.RuntimeVariablePatch{}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeNotJSONError(w, err)
 		return
@@ -168,7 +168,7 @@ func (e *varController) create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create variable.
-	newVar, err := dStore.RuntimeVariables().Create(r.Context(), &core.RuntimeVariable{
+	newVar, err := dStore.RuntimeVariables().Create(r.Context(), &datastore.RuntimeVariable{
 		Namespace:    ns.Name,
 		Name:         req.Name,
 		Data:         req.Data,
@@ -226,7 +226,7 @@ func (e *varController) list(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var list []*core.RuntimeVariable
+	var list []*datastore.RuntimeVariable
 	if forInstanceID != "" {
 		list, err = dStore.RuntimeVariables().ListForInstance(r.Context(), uuid.MustParse(forInstanceID))
 	} else if forWorkflowPath != "" {

@@ -5,7 +5,6 @@ import (
 	"sort"
 
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
@@ -126,7 +125,7 @@ func ConvertSecretsToGrpcSecretList(list []*datastore.Secret) []*grpc.Secret {
 	return result
 }
 
-func ConvertRuntimeVariableToGrpcVariable(variable *core.RuntimeVariable) *grpc.Variable {
+func ConvertRuntimeVariableToGrpcVariable(variable *datastore.RuntimeVariable) *grpc.Variable {
 	return &grpc.Variable{
 		Name:      variable.Name,
 		Size:      int64(variable.Size),
@@ -136,7 +135,7 @@ func ConvertRuntimeVariableToGrpcVariable(variable *core.RuntimeVariable) *grpc.
 	}
 }
 
-func ConvertRuntimeVariablesToGrpcVariableList(list []*core.RuntimeVariable) []*grpc.Variable {
+func ConvertRuntimeVariablesToGrpcVariableList(list []*datastore.RuntimeVariable) []*grpc.Variable {
 	var result []*grpc.Variable
 	for _, f := range list {
 		result = append(result, ConvertRuntimeVariableToGrpcVariable(f))

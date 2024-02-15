@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"google.golang.org/grpc/codes"
@@ -42,7 +41,7 @@ func translateError(err error) error {
 		return err
 	}
 
-	if errors.Is(err, core.ErrInvalidRuntimeVariableName) {
+	if errors.Is(err, datastore.ErrInvalidRuntimeVariableName) {
 		err = status.Error(codes.InvalidArgument, "invalid runtime variable name")
 		return err
 	}

@@ -176,7 +176,7 @@ type mirrorCallbacks struct {
 	syslogger *zap.SugaredLogger
 	store     datastore.MirrorStore
 	fstore    filestore.FileStore
-	varstore  core.RuntimeVariablesStore
+	varstore  datastore.RuntimeVariablesStore
 	wfconf    func(ctx context.Context, nsID uuid.UUID, nsName string, file *filestore.File) error
 }
 
@@ -200,7 +200,7 @@ func (c *mirrorCallbacks) FileStore() filestore.FileStore {
 	return c.fstore
 }
 
-func (c *mirrorCallbacks) VarStore() core.RuntimeVariablesStore {
+func (c *mirrorCallbacks) VarStore() datastore.RuntimeVariablesStore {
 	return c.varstore
 }
 

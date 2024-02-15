@@ -3,7 +3,6 @@ package datastore
 import (
 	"errors"
 
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/events"
 	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 )
@@ -25,7 +24,7 @@ type Store interface {
 
 	Secrets() SecretsStore
 
-	RuntimeVariables() core.RuntimeVariablesStore
+	RuntimeVariables() RuntimeVariablesStore
 
 	EventHistory() events.EventHistoryStore
 	EventListener() events.EventListenerStore
