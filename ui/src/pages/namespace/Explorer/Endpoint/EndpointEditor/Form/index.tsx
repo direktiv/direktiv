@@ -1,16 +1,10 @@
 import {
-  Control,
   Controller,
   DeepPartialSkipArrayKey,
   UseFormReturn,
   useForm,
-  useWatch,
 } from "react-hook-form";
-import {
-  EndpointFormSchema,
-  EndpointFormSchemaType,
-  EndpointsPluginsSchema,
-} from "../schema";
+import { EndpointFormSchema, EndpointFormSchemaType } from "../schema";
 
 import { AuthPluginForm } from "./plugins/Auth";
 import Badge from "~/design/Badge";
