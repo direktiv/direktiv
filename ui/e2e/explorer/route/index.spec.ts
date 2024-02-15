@@ -54,7 +54,6 @@ test("it is possible to create a basic route file", async ({ page }) => {
    */
   await page.getByTestId("toast-close").click();
 
-  debugger;
   await expect(
     page,
     "it creates the route file and opens it in the explorer"
