@@ -10,14 +10,14 @@ var ErrSecretNotFound = errors.New("secret not found")
 
 // Secret are namespace level variables that are hold sensitive data, can be used inside workflows the same namespace.
 type Secret struct {
-	Name string
+	Name string `json:"name"`
 
-	Namespace string
+	Namespace string `json:"-"`
 
-	Data []byte
+	Data []byte `json:"-"`
 
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 // SecretsStore responsible for fetching and setting namespace secrets from datastore.
