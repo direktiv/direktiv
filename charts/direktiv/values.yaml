@@ -7,7 +7,6 @@ pullPolicy: Always
 # -- Container registry secrets.
 imagePullSecrets: []
 
-
 # -- image for main direktiv binary
 image: "direktiv/direktiv"
 
@@ -33,9 +32,10 @@ flow:
   encryptionKey:
   # -- number of flow replicas
   replicas: 1
-  # -- extra environment variables in flow pod 
-  extraVariables: []
-    # - name: 
+  # -- extra environment variables in flow pod
+  extraVariables:
+    []
+    # - name:
     #   value:
   # -- extra container in flow pod
   extraContainers: []
@@ -49,7 +49,8 @@ flow:
     #   configMap:
     #     name: service-template
   # -- affinity for flow pods
-  affinity: {}
+  affinity:
+    {}
     # podAntiAffinity:
     #   requiredDuringSchedulingIgnoredDuringExecution:
     #   - labelSelector:
@@ -153,7 +154,7 @@ eventing:
   enabled: true
 
 ingress:
-  # -- 
+  # --
   enabled: true
   # -- Host for external services, only required for TLS
   host:
@@ -170,8 +171,8 @@ ingress:
 fluent-bit:
   install: true
   envFrom:
-  - secretRef:
-      name: direktiv-fluentbit
+    - secretRef:
+        name: direktiv-fluentbit
   config:
     inputs: |
       [INPUT]
@@ -181,6 +182,13 @@ fluent-bit:
           Skip_Long_Lines         Off
           Tag                     input
           Parser                  prefix_tail
+      [INPUT]
+          Name                    tail
+          Path                    /var/log/containers/*flow*.log,/var/log/containers/*direktiv-sidecar*.log
+          Mem_Buf_Limit           5MB
+          Skip_Long_Lines         Off
+          Tag                     input_trace
+          Parser                  prefix_tail_trace
     outputs: |
       [OUTPUT]
           name                    pgsql
@@ -196,11 +204,22 @@ fluent-bit:
           Name rewrite_tag
           Match input
           Rule $stream ^.*$ flow.$stream false
+      [FILTER]
+          Name rewrite_tag
+          Match input_trace
+          Rule $trace ^.*$ flow.trace.$trace false
     customParsers: |
       [PARSER]
           Name                    prefix_tail
           Format                  regex
           Regex                   ^(?<time>[^ ]+) (?<source>\w+ \w+) (?<entry>{[^}]*?(?:"stream":"(?<stream>[^"]+)"[^}]*)}$)
+          Time_Key                time
+          Time_Format             %Y-%m-%dT%H:%M:%S.%L%z
+          Decode_Field_As         json log
+      [PARSER]
+          Name                    prefix_tail_trace
+          Format                  regex
+          Regex                   ^(?<time>[^ ]+) (?<source>\w+ \w+) (?<entry>{[^}]*?(?:"trace":"(?<trace>[^"]+)"[^}]*)}$)
           Time_Key                time
           Time_Format             %Y-%m-%dT%H:%M:%S.%L%z
           Decode_Field_As         json log
@@ -230,8 +249,8 @@ fluentbit:
   #           name stdout
   #           match application
 
-# -- service account for components. If preconfigured serviceaccounts are used the name ise the base 
-# and two additional service accounts are needed, e.g. service account name is myaccount then another two 
+# -- service account for components. If preconfigured serviceaccounts are used the name ise the base
+# and two additional service accounts are needed, e.g. service account name is myaccount then another two
 # acounts are needed: myaccount-functions and myaccount-functions-pod
 serviceAccount:
   annotations: {}
@@ -265,7 +284,7 @@ frontend:
     json: true
     # -- Enable/Disable debug mode
     debug: true
-  
+
   # -- certificate secret for frontend
   certificate:
   # -- Additional Annotations for frontend
@@ -280,7 +299,7 @@ frontend:
     url:
     # -- Skip verifing TLS certificate if TLS is configured
     skip-verify: false
-  extraConfig: 
+  extraConfig:
   resources:
     requests:
       memory: "128Mi"
@@ -295,8 +314,7 @@ https_proxy: ""
 no_proxy: ""
 
 functions:
-
-  # -- knative service limits 
+  # -- knative service limits
   limits:
     memory:
       small: 512
@@ -319,10 +337,10 @@ functions:
   replicas: 1
 
   # -- Egress/Ingress network limit for functions if supported by network
-  netShape: 
+  netShape:
 
   # -- Cleaning up tasks, Kubernetes < 1.20 does not clean finished tasks
-  podCleaner: true  # deprecated
+  podCleaner: true # deprecated
 
   # -- runtime to use, e.g. gvisor on GCP
   runtime: "default"
@@ -333,8 +351,7 @@ functions:
   extraContainersPod: []
 
   # -- extra volumes for tasks and knative pods
-  extraVolumes:
-    []
+  extraVolumes: []
   #   - configMap:
   #   name: otel-agent-conf
   #   items:
@@ -357,7 +374,7 @@ functions:
     #     requests:
     #       memory: "2Gi"
     #       cpu:    "1"
-  
+
   containers:
     functionscontroller:
       resources:
@@ -365,6 +382,3 @@ functions:
           memory: "128Mi"
         limits:
           memory: "1024Mi"
-
-
-

@@ -264,6 +264,8 @@ func determineStream(params map[string]string) (string, error) {
 		return "flow.gateway." + p, nil
 	} else if p, ok := params["mirror"]; ok {
 		return "flow.mirror." + p, nil
+	} else if p, ok := params["trace"]; ok {
+		return "flow.trace." + p, nil
 	} else if p, ok := params["namespace"]; ok {
 		return "flow.namespace." + p, nil
 	}

@@ -3,13 +3,16 @@ package sidecar
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"net"
 	"net/http"
 	"os"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/flow"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/gorilla/mux"
+	"go.opentelemetry.io/otel/trace"
 )
 
 const (
@@ -113,6 +116,24 @@ func (srv *NetworkServer) run() {
 }
 
 func (srv *NetworkServer) functions(w http.ResponseWriter, r *http.Request) {
+	traceID := r.Header.Get(flow.DirektivTraceIDHeader)
+	spanID := r.Header.Get(flow.DirektivSpanIDHeader)
+	spanContext := trace.NewSpanContext(trace.SpanContextConfig{
+		TraceID: trace.TraceID([]byte(traceID)),
+		SpanID:  trace.SpanID([]byte(spanID)),
+	})
+	tr := spanContext.TraceID()
+	slog.Info("xxx my3423213125243", "trace", tr.String())
+	tctx := trace.ContextWithSpanContext(r.Context(), spanContext)
+	r = r.WithContext(tctx)
+
+	slog.Error("xxx, db2", "trace", traceID)
+	slog.Error("xxx, db2", "trace", traceID)
+	ctx := r.Context()
+	span := trace.SpanFromContext(ctx)
+	tr = span.SpanContext().TraceID()
+	slog.Info("xxx my345243", "trace", tr.String())
+
 	req := &inboundRequest{
 		w:   w,
 		r:   r,

@@ -45,6 +45,8 @@ func SanitizeLabel(s string) string {
 const (
 	DirektivActionIDHeader    = "Direktiv-ActionID"
 	DirektivInstanceIDHeader  = "Direktiv-InstanceID"
+	DirektivTraceIDHeader     = "Direktiv-TraceID"
+	DirektivSpanIDHeader      = "Direktiv-SpanID"
 	DirektivExchangeKeyHeader = "Direktiv-ExchangeKey"
 	DirektivPingAddrHeader    = "Direktiv-PingAddr"
 	DirektivDeadlineHeader    = "Direktiv-Deadline"

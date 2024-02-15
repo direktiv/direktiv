@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"os"
 	"strconv"
@@ -15,6 +16,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/gorilla/mux"
+	"go.opentelemetry.io/otel/trace"
 )
 
 const (
@@ -169,7 +171,9 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 		log.Debugf("Log handler for '%s' received zero bytes.", actionId)
 		return
 	}
-
+	span := trace.SpanFromContext(req.ctx)
+	trace := span.SpanContext().TraceID()
+	slog.Info(msg, "trace", trace.String())
 	_, err := srv.flow.ActionLog(req.ctx, &grpc.ActionLogRequest{
 		InstanceId: req.instanceId,
 		Msg:        []string{msg},

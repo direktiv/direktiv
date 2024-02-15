@@ -2,8 +2,11 @@ package util
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"os"
+	"os/signal"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/middlewares"
@@ -12,7 +15,10 @@ import (
 	"go.opentelemetry.io/otel/codes"
 	otlp "go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	otlpgrpc "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
+	"go.opentelemetry.io/otel/exporters/stdout/stdoutmetric"
+	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
 	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.10.0"
@@ -80,9 +86,17 @@ func InitTelemetry(addr string, svcName, imName string) (func(), error) {
 	prop = propagation.TraceContext{}
 	otel.SetTracerProvider(otel.GetTracerProvider())
 	otel.SetTextMapPropagator(prop)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
 
 	if addr == "" {
-		return func() {}, nil
+		otelShutdown, err := setupOTelSDK(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return func() {
+			err = errors.Join(err, otelShutdown(context.Background()))
+		}, nil
 	}
 
 	driver := otlpgrpc.NewClient(
@@ -90,8 +104,6 @@ func InitTelemetry(addr string, svcName, imName string) (func(), error) {
 		otlpgrpc.WithEndpoint(addr),
 		otlpgrpc.WithDialOption(grpc.WithBlock()),
 	)
-
-	ctx := context.Background()
 
 	exp, err := otlp.New(ctx, driver)
 	if err != nil {
@@ -247,8 +259,8 @@ type telemetryHandler struct {
 
 func (h *telemetryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	prop := otel.GetTextMapPropagator()
-	ctx := prop.Extract(r.Context(), &httpCarrier{
-		r: r,
+	ctx := prop.Extract(r.Context(), &HttpCarrier{
+		R: r,
 	})
 
 	tp := otel.GetTracerProvider()
@@ -298,24 +310,24 @@ func Trace(ctx context.Context, msg string) {
 	span.AddEvent(msg)
 }
 
-type httpCarrier struct {
-	r *http.Request
+type HttpCarrier struct {
+	R *http.Request
 }
 
-func (c *httpCarrier) Get(key string) string {
-	return c.r.Header.Get(key)
+func (c *HttpCarrier) Get(key string) string {
+	return c.R.Header.Get(key)
 }
 
-func (c *httpCarrier) Keys() []string {
-	return c.r.Header.Values("oteltmckeys")
+func (c *HttpCarrier) Keys() []string {
+	return c.R.Header.Values("oteltmckeys")
 }
 
-func (c *httpCarrier) Set(key, val string) {
+func (c *HttpCarrier) Set(key, val string) {
 	prev := c.Get(key)
 	if prev == "" {
-		c.r.Header.Add("oteltmckeys", key)
+		c.R.Header.Add("oteltmckeys", key)
 	}
-	c.r.Header.Set(key, val)
+	c.R.Header.Set(key, val)
 }
 
 func TraceHTTPRequest(ctx context.Context, r *http.Request) (cleanup func()) {
@@ -324,8 +336,8 @@ func TraceHTTPRequest(ctx context.Context, r *http.Request) (cleanup func()) {
 	ctx, span := tr.Start(ctx, "function", trace.WithSpanKind(trace.SpanKindClient))
 
 	prop := otel.GetTextMapPropagator()
-	prop.Inject(ctx, &httpCarrier{
-		r: r,
+	prop.Inject(ctx, &HttpCarrier{
+		R: r,
 	})
 
 	return func() { span.End() }
@@ -337,8 +349,8 @@ func TraceGWHTTPRequest(ctx context.Context, r *http.Request, instrumentationNam
 	ctx, span := tr.Start(ctx, "gateway", trace.WithSpanKind(trace.SpanKindClient))
 
 	prop := otel.GetTextMapPropagator()
-	prop.Inject(ctx, &httpCarrier{
-		r: r,
+	prop.Inject(ctx, &HttpCarrier{
+		R: r,
 	})
 
 	return func() { span.End() }
@@ -373,4 +385,89 @@ func TransplantTelemetryContextInformation(a, b context.Context) context.Context
 	prop.Inject(a, carrier)
 	ctx := prop.Extract(b, carrier)
 	return ctx
+}
+
+// setupOTelSDK bootstraps the OpenTelemetry pipeline.
+// If it does not return an error, make sure to call shutdown for proper cleanup.
+func setupOTelSDK(ctx context.Context) (shutdown func(context.Context) error, err error) {
+	var shutdownFuncs []func(context.Context) error
+
+	// shutdown calls cleanup functions registered via shutdownFuncs.
+	// The errors from the calls are joined.
+	// Each registered cleanup will be invoked once.
+	shutdown = func(ctx context.Context) error {
+		var err error
+		for _, fn := range shutdownFuncs {
+			err = errors.Join(err, fn(ctx))
+		}
+		shutdownFuncs = nil
+		return err
+	}
+
+	// handleErr calls shutdown for cleanup and makes sure that all errors are returned.
+	handleErr := func(inErr error) {
+		err = errors.Join(inErr, shutdown(ctx))
+	}
+
+	// Set up propagator.
+	prop := newPropagator()
+	otel.SetTextMapPropagator(prop)
+
+	// Set up trace provider.
+	tracerProvider, err := newTraceProvider()
+	if err != nil {
+		handleErr(err)
+
+		return
+	}
+	shutdownFuncs = append(shutdownFuncs, tracerProvider.Shutdown)
+	otel.SetTracerProvider(tracerProvider)
+
+	// Set up meter provider.
+	meterProvider, err := newMeterProvider()
+	if err != nil {
+		handleErr(err)
+
+		return
+	}
+	shutdownFuncs = append(shutdownFuncs, meterProvider.Shutdown)
+	otel.SetMeterProvider(meterProvider)
+
+	return
+}
+
+func newPropagator() propagation.TextMapPropagator {
+	return propagation.NewCompositeTextMapPropagator(
+		propagation.TraceContext{},
+		propagation.Baggage{},
+	)
+}
+
+func newTraceProvider() (*sdktrace.TracerProvider, error) {
+	traceExporter, err := stdouttrace.New(
+		stdouttrace.WithPrettyPrint())
+	if err != nil {
+		return nil, err
+	}
+
+	traceProvider := sdktrace.NewTracerProvider(
+		sdktrace.WithBatcher(traceExporter,
+			// Default is 5s. Set to 1s for demonstrative purposes.
+			sdktrace.WithBatchTimeout(time.Second)),
+	)
+	return traceProvider, nil
+}
+
+func newMeterProvider() (*metric.MeterProvider, error) {
+	metricExporter, err := stdoutmetric.New()
+	if err != nil {
+		return nil, err
+	}
+
+	meterProvider := metric.NewMeterProvider(
+		metric.WithReader(metric.NewPeriodicReader(metricExporter,
+			// Default is 1m. Set to 3s for demonstrative purposes.
+			metric.WithInterval(3*time.Second))),
+	)
+	return meterProvider, nil
 }

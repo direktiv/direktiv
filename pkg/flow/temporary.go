@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"time"
@@ -24,6 +25,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/service"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // TEMPORARY EVERYTHING
@@ -318,6 +320,9 @@ func (im *instanceMemory) CreateChild(ctx context.Context, args states.CreateChi
 		if err != nil {
 			return nil, err
 		}
+		span := trace.SpanFromContext(ctx)
+		trace := span.SpanContext().TraceID()
+		slog.Info("xyx", "trace", trace.String())
 
 		ci.ID = sfim.ID().String()
 		ci.Type = "subflow"
@@ -386,7 +391,9 @@ func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory,
 		ar.Workflow.State = stateId
 		ar.Workflow.Step = im.Step()
 	}
-
+	span := trace.SpanFromContext(ctx)
+	trace := span.SpanContext().TraceID()
+	slog.Info("xyx", "trace", trace.String())
 	fnt := fn.GetType()
 	ar.Container.Type = fnt
 	ar.Container.Data = inputData
@@ -453,10 +460,11 @@ func (engine *engine) doActionRequest(ctx context.Context, ar *functionRequest) 
 	if ar.Workflow.Timeout == 0 {
 		ar.Workflow.Timeout = 5 * 60 // 5 mins default, knative's default
 	}
-
+	spanContext := trace.SpanContextFromContext(ctx)
+	bCtx := trace.ContextWithSpanContext(context.Background(), spanContext)
 	// Log warning if timeout exceeds max allowed timeout
 	if actionTimeout := time.Duration(ar.Workflow.Timeout) * time.Second; actionTimeout > engine.server.conf.GetFunctionsTimeout() {
-		_, err := engine.internal.ActionLog(context.Background(), &grpc.ActionLogRequest{
+		_, err := engine.internal.ActionLog(bCtx, &grpc.ActionLogRequest{
 			InstanceId: ar.Workflow.InstanceID, Msg: []string{fmt.Sprintf("Warning: Action timeout '%v' is longer than max allowed duariton '%v'", actionTimeout, engine.server.conf.GetFunctionsTimeout())},
 		})
 		if err != nil {
@@ -487,9 +495,10 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 
 	engine.sugar.Debugf("function request for image %s name %s addr %v:", ar.Container.Image, ar.Container.ID, addr)
 	engine.logger.Debugf(ctx, engine.flow.ID, engine.flow.GetAttributes(), "function request for image %s name %s", ar.Container.Image, ar.Container.ID)
-
+	spanContext := trace.SpanContextFromContext(ctx)
+	bCtx := trace.ContextWithSpanContext(context.Background(), spanContext)
 	deadline := time.Now().UTC().Add(time.Duration(ar.Workflow.Timeout) * time.Second)
-	rctx, cancel := context.WithDeadline(context.Background(), deadline)
+	rctx, cancel := context.WithDeadline(bCtx, deadline)
 	defer cancel()
 
 	engine.sugar.Debugf("deadline for request: %v", time.Until(deadline))
@@ -500,12 +509,17 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 		engine.reportError(ar, err)
 		return
 	}
-
+	traceID := spanContext.TraceID()
+	spanID := spanContext.SpanID()
 	// add headers
 	req.Header.Add(DirektivDeadlineHeader, deadline.Format(time.RFC3339))
 	req.Header.Add(DirektivNamespaceHeader, ar.Workflow.NamespaceName)
 	req.Header.Add(DirektivActionIDHeader, ar.ActionID)
 	req.Header.Add(DirektivInstanceIDHeader, ar.Workflow.InstanceID)
+
+	req.Header.Add(DirektivTraceIDHeader, traceID.String())
+	req.Header.Add(DirektivSpanIDHeader, spanID.String())
+
 	req.Header.Add(DirektivStepHeader, fmt.Sprintf("%d",
 		int64(ar.Workflow.Step)))
 	req.Header.Add(DirektivIteratorHeader, fmt.Sprintf("%d",

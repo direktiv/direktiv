@@ -257,23 +257,32 @@ func (engine *engine) start(im *instanceMemory) {
 		engine.sugar.Error(err)
 		return
 	}
+	traceIDStr := im.instance.TelemetryInfo.TraceID
+	spanIDStr := im.instance.TelemetryInfo.SpanID
+
+	spanContext := trace.NewSpanContext(trace.SpanContextConfig{
+		TraceID: trace.TraceID([]byte(traceIDStr)),
+		SpanID:  trace.SpanID([]byte(spanIDStr)),
+	})
+
+	tctx := trace.ContextWithSpanContext(ctx, spanContext)
 
 	engine.sugar.Debugf("Starting workflow %v", im.ID().String())
-	engine.logger.Infof(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "Starting workflow %v", database.GetWorkflow(im.instance.Instance.WorkflowPath))
+	engine.logger.Infof(tctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "Starting workflow %v", database.GetWorkflow(im.instance.Instance.WorkflowPath))
 	slog.Info(fmt.Sprintf("Starting workflow %v", im.instance.Instance.WorkflowPath), "stream", string(recipient.Namespace)+"."+im.Namespace().Name)
-	engine.logger.Debugf(ctx, im.instance.Instance.ID, im.GetAttributes(), "Starting workflow %v.", database.GetWorkflow(im.instance.Instance.WorkflowPath))
+	engine.logger.Debugf(tctx, im.instance.Instance.ID, im.GetAttributes(), "Starting workflow %v.", database.GetWorkflow(im.instance.Instance.WorkflowPath))
 	slog.Info(fmt.Sprintf("Starting workflow %v.", im.instance.Instance.WorkflowPath), im.instance.GetSlogAttributes(ctx)...)
 
 	workflow, err := im.Model()
 	if err != nil {
-		engine.CrashInstance(ctx, im, derrors.NewUncatchableError(ErrCodeWorkflowUnparsable, "failed to parse workflow YAML: %v", err))
-		engine.logger.Errorf(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "failed to parse workflow YAML")
+		engine.CrashInstance(tctx, im, derrors.NewUncatchableError(ErrCodeWorkflowUnparsable, "failed to parse workflow YAML: %v", err))
+		engine.logger.Errorf(tctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "failed to parse workflow YAML")
 		return
 	}
 
 	start := workflow.GetStartState()
 
-	engine.Transition(ctx, im, start.GetID(), 0)
+	engine.Transition(tctx, im, start.GetID(), 0)
 }
 
 func (engine *engine) loadStateLogic(im *instanceMemory, stateID string) error {
