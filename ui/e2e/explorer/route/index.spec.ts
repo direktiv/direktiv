@@ -186,36 +186,36 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
 
   /* check editor content */
   const inboundPluginsBeforeSorting = `
-      - type: "acl"
-        configuration:
-          allow_groups:
-            - "allow this group 1"
-            - "allow this group 2"
-          deny_groups: []
-          allow_tags: []
-          deny_tags: []
-      - type: "request-convert"
-        configuration:
-          omit_headers: false
-          omit_queries: true
-          omit_body: false
-          omit_consumer: true`;
+    - type: "acl"
+      configuration:
+        allow_groups:
+          - "allow this group 1"
+          - "allow this group 2"
+        deny_groups: []
+        allow_tags: []
+        deny_tags: []
+    - type: "request-convert"
+      configuration:
+        omit_headers: false
+        omit_queries: true
+        omit_body: false
+        omit_consumer: true`;
 
   const inboundPluginsAfterSorting = `
-      - type: "request-convert"
-        configuration:
-          omit_headers: false
-          omit_queries: true
-          omit_body: false
-          omit_consumer: true
-      - type: "acl"
-        configuration:
+    - type: "request-convert"
+      configuration:
+        omit_headers: false
+        omit_queries: true
+        omit_body: false
+        omit_consumer: true
+    - type: "acl"
+      configuration:
         allow_groups:
-            - "allow this group 1"
-            - "allow this group 2"
-          deny_groups: []
-          allow_tags: []
-          deny_tags: []`;
+          - "allow this group 1"
+          - "allow this group 2"
+        deny_groups: []
+        allow_tags: []
+        deny_tags: []`;
 
   let expectedEditorContent = createRouteYaml({
     ...minimalRouteConfig,
