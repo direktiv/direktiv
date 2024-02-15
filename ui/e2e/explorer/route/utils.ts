@@ -34,8 +34,10 @@ export const removeLines = (
   text: string,
   lines: number,
   from: "top" | "bottom" = "top"
-) =>
-  text
+) => {
+  const sliceArg = from === "top" ? [lines] : [0, -lines];
+  return text
     .split("\n")
-    .slice(from === "top" ? lines : -lines)
+    .slice(...sliceArg)
     .join("\n");
+};
