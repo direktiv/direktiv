@@ -1,4 +1,4 @@
-FROM nginx:bookworm
+FROM docker.io/library/nginx:bookworm
 
 RUN ls -la
 ADD dist /usr/share/nginx/html
