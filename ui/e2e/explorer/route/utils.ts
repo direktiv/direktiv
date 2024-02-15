@@ -26,6 +26,6 @@ timeout: ${timeout}
 methods:${methodsYaml(methods)}
 plugins:
   target:${plugins.target}
-  inbound: ${plugins.inbound ?? " []"}
+  inbound:${plugins.inbound ?? " []"}
   outbound:${plugins.outbound ?? " []"}
   auth:${plugins.auth ?? " []"}`;
