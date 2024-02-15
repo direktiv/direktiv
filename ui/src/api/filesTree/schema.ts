@@ -8,7 +8,7 @@ export const getFilenameFromPath = (path: string): string => {
 };
 
 export const getParentFromPath = (path: string): string =>
-  `/${path.split("/").slice(0, -1).join("/")}`;
+  path.split("/").slice(0, -1).join("/") || "/";
 
 /* directory example
   {
@@ -58,9 +58,12 @@ const CreateNodeSchema = z.object({
   data: z.string(), // base64 encoded file body
 });
 
-const PatchNodeSchema = z.object({
-  absolutePath: z.string().optional(),
-  data: z.string().optional(), // base64 encoded file body
+const RenameNodeSchema = z.object({
+  absolutePath: z.string(),
+});
+
+const UpdateFileSchema = z.object({
+  data: z.string(), // base64 encoded file body
 });
 
 /**
@@ -107,6 +110,8 @@ export const PathCreatedSchema = z.object({ data: NodeSchema });
 export const NodePatchedSchema = z.object({ data: NodeSchema });
 
 export type NodeSchemaType = z.infer<typeof NodeSchema>;
-export type PatchNodeSchemaType = z.infer<typeof PatchNodeSchema>;
+export type UpdateFileSchemaType = z.infer<typeof UpdateFileSchema>;
+export type RenameNodeSchemaType = z.infer<typeof RenameNodeSchema>;
+
 export type CreateNodeSchemaType = z.infer<typeof CreateNodeSchema>;
 export type PathListSchemaType = z.infer<typeof PathListSchema>;

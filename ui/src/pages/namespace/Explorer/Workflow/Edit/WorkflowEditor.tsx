@@ -1,6 +1,7 @@
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import { FC, useState } from "react";
 import { Play, Save } from "lucide-react";
+import { decode, encode } from "js-base64";
 
 import Button from "~/design/Button";
 import { CodeEditor } from "./CodeEditor";
@@ -8,13 +9,12 @@ import { Diagram } from "./Diagram";
 import { EditorLayoutSwitcher } from "~/components/EditorLayoutSwitcher";
 import RunWorkflow from "../components/RunWorkflow";
 import { WorkspaceLayout } from "~/components/WorkspaceLayout";
-import { decode } from "js-base64";
 import { useEditorLayout } from "~/util/store/editor";
 import { useNamespace } from "~/util/store/namespace";
 import { useNamespaceLinting } from "~/api/namespaceLinting/query/useNamespaceLinting";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useTranslation } from "react-i18next";
-import { useUpdateWorkflow } from "~/api/tree/mutate/updateWorkflow";
+import { useUpdateFile } from "~/api/filesTree/mutate/updateFile";
 
 export type NodeContentType = ReturnType<typeof useNodeContent>["data"];
 
@@ -31,7 +31,7 @@ const WorkflowEditor: FC<{
 
   const workflowDataFromServer = decode(data?.source ?? "");
 
-  const { mutate: updateWorkflow, isLoading } = useUpdateWorkflow({
+  const { mutate: updateWorkflow, isLoading } = useUpdateFile({
     onError: (error) => {
       error && setError(error);
     },
@@ -56,8 +56,8 @@ const WorkflowEditor: FC<{
     if (toSave) {
       setError(undefined);
       updateWorkflow({
-        path,
-        fileContent: toSave,
+        node: data.node,
+        file: { data: encode(toSave) },
       });
     }
   };

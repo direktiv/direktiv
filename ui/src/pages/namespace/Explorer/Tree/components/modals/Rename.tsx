@@ -17,8 +17,8 @@ import Input from "~/design/Input";
 import { TextCursorInput } from "lucide-react";
 import { addYamlFileExtension } from "../../utils";
 import { fileNameSchema } from "~/api/tree/schema/node";
+import { useRenameNode } from "~/api/filesTree/mutate/renameNode";
 import { useTranslation } from "react-i18next";
-import { useUpdateNode } from "~/api/filesTree/mutate/updateNode";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -66,7 +66,7 @@ const Rename = ({
     },
   });
 
-  const { mutate: rename, isLoading } = useUpdateNode({
+  const { mutate: rename, isLoading } = useRenameNode({
     onSuccess: () => {
       close();
     },

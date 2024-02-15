@@ -1,13 +1,11 @@
 import {
-  NodePatchedSchema,
   NodeSchemaType,
-  PatchNodeSchemaType,
+  RenameNodeSchemaType,
   getFilenameFromPath,
   getParentFromPath,
 } from "../schema";
 
-import { apiFactory } from "~/api/apiFactory";
-import { forceLeadingSlash } from "~/api/tree/utils";
+import { patchNode } from "./patchNode";
 import { pathKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import useMutationWithPermissions from "~/api/useMutationWithPermissions";
@@ -16,16 +14,11 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
-const updateNode = apiFactory({
-  url: ({ namespace, path }: { namespace: string; path: string }) =>
-    `/api/v2/namespaces/${namespace}/files-tree${forceLeadingSlash(path)}`,
-  method: "PATCH",
-  schema: NodePatchedSchema,
-});
-
-export const useUpdateNode = ({
+export const useRenameNode = ({
   onSuccess,
-}: { onSuccess?: () => void } = {}) => {
+}: {
+  onSuccess?: () => void;
+} = {}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
   const { toast } = useToast();
@@ -42,9 +35,9 @@ export const useUpdateNode = ({
       file,
     }: {
       node: NodeSchemaType;
-      file: PatchNodeSchemaType;
+      file: RenameNodeSchemaType;
     }) =>
-      updateNode({
+      patchNode({
         apiKey: apiKey ?? undefined,
         payload: file,
         urlParams: {
@@ -59,7 +52,6 @@ export const useUpdateNode = ({
           path: getParentFromPath(data.data.path),
         })
       );
-
       toast({
         title: t("api.tree.mutate.renameNode.success.title", {
           type: variables.node.type === "workflow" ? "workflow" : "directory",
