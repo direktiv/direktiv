@@ -320,9 +320,6 @@ func (im *instanceMemory) CreateChild(ctx context.Context, args states.CreateChi
 		if err != nil {
 			return nil, err
 		}
-		span := trace.SpanFromContext(ctx)
-		trace := span.SpanContext().TraceID()
-		slog.Info("xyx", "trace", trace.String())
 
 		ci.ID = sfim.ID().String()
 		ci.Type = "subflow"

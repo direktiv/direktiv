@@ -259,8 +259,8 @@ type telemetryHandler struct {
 
 func (h *telemetryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	prop := otel.GetTextMapPropagator()
-	ctx := prop.Extract(r.Context(), &HttpCarrier{
-		R: r,
+	ctx := prop.Extract(r.Context(), &httpCarrier{
+		r: r,
 	})
 
 	tp := otel.GetTracerProvider()
@@ -310,24 +310,24 @@ func Trace(ctx context.Context, msg string) {
 	span.AddEvent(msg)
 }
 
-type HttpCarrier struct {
-	R *http.Request
+type httpCarrier struct {
+	r *http.Request
 }
 
-func (c *HttpCarrier) Get(key string) string {
-	return c.R.Header.Get(key)
+func (c *httpCarrier) Get(key string) string {
+	return c.r.Header.Get(key)
 }
 
-func (c *HttpCarrier) Keys() []string {
-	return c.R.Header.Values("oteltmckeys")
+func (c *httpCarrier) Keys() []string {
+	return c.r.Header.Values("oteltmckeys")
 }
 
-func (c *HttpCarrier) Set(key, val string) {
+func (c *httpCarrier) Set(key, val string) {
 	prev := c.Get(key)
 	if prev == "" {
-		c.R.Header.Add("oteltmckeys", key)
+		c.r.Header.Add("oteltmckeys", key)
 	}
-	c.R.Header.Set(key, val)
+	c.r.Header.Set(key, val)
 }
 
 func TraceHTTPRequest(ctx context.Context, r *http.Request) (cleanup func()) {
@@ -336,8 +336,8 @@ func TraceHTTPRequest(ctx context.Context, r *http.Request) (cleanup func()) {
 	ctx, span := tr.Start(ctx, "function", trace.WithSpanKind(trace.SpanKindClient))
 
 	prop := otel.GetTextMapPropagator()
-	prop.Inject(ctx, &HttpCarrier{
-		R: r,
+	prop.Inject(ctx, &httpCarrier{
+		r: r,
 	})
 
 	return func() { span.End() }
@@ -349,8 +349,8 @@ func TraceGWHTTPRequest(ctx context.Context, r *http.Request, instrumentationNam
 	ctx, span := tr.Start(ctx, "gateway", trace.WithSpanKind(trace.SpanKindClient))
 
 	prop := otel.GetTextMapPropagator()
-	prop.Inject(ctx, &HttpCarrier{
-		R: r,
+	prop.Inject(ctx, &httpCarrier{
+		r: r,
 	})
 
 	return func() { span.End() }

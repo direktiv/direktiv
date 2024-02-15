@@ -443,10 +443,6 @@ func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
 	}
 
 	ctx := req.r.Context()
-	span := trace.SpanFromContext(ctx)
-	tr := span.SpanContext().TraceID()
-	slog.Info("xxx 345243", "trace", tr.String())
-
 	ctx, cancel := context.WithDeadline(ctx, ir.deadline)
 	defer cancel()
 
@@ -463,10 +459,6 @@ func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
 	defer cancel()
 
 	rctx = util.TransplantTelemetryContextInformation(ctx, rctx)
-
-	span = trace.SpanFromContext(rctx)
-	tr = span.SpanContext().TraceID()
-	slog.Info("yyy", "trace", tr.String())
 
 	worker.srv.registerActiveRequest(ir, rctx, cancel)
 	defer worker.srv.deregisterActiveRequest(ir.actionId)
