@@ -55,6 +55,13 @@ const NodeSchemaReceived = z.object({
   data: z.string().optional(), // not for directories
 });
 
+const CreateNodeSchema = z.object({
+  type: z.enum(["consumer", "endpoint", "service", "workflow"]),
+  name: z.string(),
+  mimeType: z.string(),
+  data: z.string(), // base64 encoded file body
+});
+
 const NodeSchema = NodeSchemaReceived.transform((schema) => ({
   ...schema,
   name: getFilenameFromPath(schema.path),
@@ -101,6 +108,9 @@ export const PathListSchema = z.object({
 
 export const PathDeletedSchema = z.null();
 
+export const PathCreatedSchema = z.object({ data: NodeSchema });
+
 export type NodeSchemaType = z.infer<typeof NodeSchema>;
+export type CreateNodeSchemaType = z.infer<typeof CreateNodeSchema>;
 export type NodeSchemaReceivedType = z.infer<typeof NodeSchemaReceived>;
 export type PathListSchemaType = z.infer<typeof PathListSchema>;
