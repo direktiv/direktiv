@@ -7,12 +7,12 @@ import {
   DropdownMenuTrigger,
 } from "~/design/Dropdown";
 import { MoreVertical, TextCursorInput, Trash } from "lucide-react";
+import { NodeSchemaType, getFilenameFromPath } from "~/api/filesTree/schema";
 import { TableCell, TableRow } from "~/design/Table";
 
 import Button from "~/design/Button";
 import { ConditionalLink } from "./ConditionalLink";
 import { DialogTrigger } from "~/design/Dialog";
-import { NodeSchemaType } from "~/api/filesTree/schema";
 import { fileTypeToIcon } from "~/api/tree/utils";
 import moment from "moment";
 import { useTranslation } from "react-i18next";
@@ -43,7 +43,7 @@ const FileRow = ({
             namespace={namespace}
             onPreviewClicked={onPreviewClicked}
           >
-            {node.name}
+            {getFilenameFromPath(node.path)}
           </ConditionalLink>
           <span className="text-gray-9 dark:text-gray-dark-9">
             {moment(node.updatedAt).fromNow()}

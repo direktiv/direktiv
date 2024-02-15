@@ -12,5 +12,5 @@ export const sortFoldersFirst = (
     return 1;
   }
 
-  return a.name.localeCompare(b.name);
+  return a.path.localeCompare(b.path);
 };

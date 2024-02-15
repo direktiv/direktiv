@@ -9,7 +9,7 @@ import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
 import { File } from "lucide-react";
-import { NodeSchemaType } from "~/api/tree/schema/node";
+import { NodeSchemaType } from "~/api/filesTree/schema";
 import { decode } from "js-base64";
 import { mimeTypeToEditorSyntax } from "~/design/Editor/utils";
 import { useNodeContent } from "~/api/tree/query/node";
