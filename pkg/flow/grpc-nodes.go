@@ -236,7 +236,6 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 				Path:   file.Path,
 				Parent: file.Dir(),
 			}, ns)
-
 		if err != nil {
 			return nil, err
 		}

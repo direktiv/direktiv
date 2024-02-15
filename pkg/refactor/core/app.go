@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"time"
+
+	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
 )
 
 var ErrNotFound = errors.New("ErrNotFound")
@@ -112,4 +114,5 @@ type App struct {
 	ServiceManager  ServiceManager
 	RegistryManager RegistryManager
 	GatewayManager  GatewayManager
+	Bus             *pubsub.Bus
 }

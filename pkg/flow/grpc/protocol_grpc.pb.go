@@ -25,13 +25,16 @@ const (
 	Flow_NamespacesStream_FullMethodName            = "/direktiv_flow.Flow/NamespacesStream"
 	Flow_CreateNamespace_FullMethodName             = "/direktiv_flow.Flow/CreateNamespace"
 	Flow_DeleteNamespace_FullMethodName             = "/direktiv_flow.Flow/DeleteNamespace"
-	Flow_RenameNamespace_FullMethodName             = "/direktiv_flow.Flow/RenameNamespace"
 	Flow_ServerLogs_FullMethodName                  = "/direktiv_flow.Flow/ServerLogs"
 	Flow_ServerLogsParcels_FullMethodName           = "/direktiv_flow.Flow/ServerLogsParcels"
 	Flow_NamespaceLogs_FullMethodName               = "/direktiv_flow.Flow/NamespaceLogs"
 	Flow_NamespaceLogsParcels_FullMethodName        = "/direktiv_flow.Flow/NamespaceLogsParcels"
 	Flow_WorkflowLogs_FullMethodName                = "/direktiv_flow.Flow/WorkflowLogs"
 	Flow_WorkflowLogsParcels_FullMethodName         = "/direktiv_flow.Flow/WorkflowLogsParcels"
+	Flow_InstanceLogs_FullMethodName                = "/direktiv_flow.Flow/InstanceLogs"
+	Flow_InstanceLogsParcels_FullMethodName         = "/direktiv_flow.Flow/InstanceLogsParcels"
+	Flow_MirrorActivityLogs_FullMethodName          = "/direktiv_flow.Flow/MirrorActivityLogs"
+	Flow_MirrorActivityLogsParcels_FullMethodName   = "/direktiv_flow.Flow/MirrorActivityLogsParcels"
 	Flow_Directory_FullMethodName                   = "/direktiv_flow.Flow/Directory"
 	Flow_DirectoryStream_FullMethodName             = "/direktiv_flow.Flow/DirectoryStream"
 	Flow_CreateDirectory_FullMethodName             = "/direktiv_flow.Flow/CreateDirectory"
@@ -56,8 +59,8 @@ const (
 	Flow_InstancesStream_FullMethodName             = "/direktiv_flow.Flow/InstancesStream"
 	Flow_InstanceInput_FullMethodName               = "/direktiv_flow.Flow/InstanceInput"
 	Flow_InstanceOutput_FullMethodName              = "/direktiv_flow.Flow/InstanceOutput"
-	Flow_InstanceLogs_FullMethodName                = "/direktiv_flow.Flow/InstanceLogs"
-	Flow_InstanceLogsParcels_FullMethodName         = "/direktiv_flow.Flow/InstanceLogsParcels"
+	Flow_InstanceMetadata_FullMethodName            = "/direktiv_flow.Flow/InstanceMetadata"
+	Flow_ReleaseInstance_FullMethodName             = "/direktiv_flow.Flow/ReleaseInstance"
 	Flow_StartWorkflow_FullMethodName               = "/direktiv_flow.Flow/StartWorkflow"
 	Flow_RunWorkflow_FullMethodName                 = "/direktiv_flow.Flow/RunWorkflow"
 	Flow_AwaitWorkflow_FullMethodName               = "/direktiv_flow.Flow/AwaitWorkflow"
@@ -96,12 +99,6 @@ const (
 	Flow_HistoricalEvent_FullMethodName             = "/direktiv_flow.Flow/HistoricalEvent"
 	Flow_ReplayEvent_FullMethodName                 = "/direktiv_flow.Flow/ReplayEvent"
 	Flow_ResolveNamespaceUID_FullMethodName         = "/direktiv_flow.Flow/ResolveNamespaceUID"
-	Flow_ResolveWorkflowUID_FullMethodName          = "/direktiv_flow.Flow/ResolveWorkflowUID"
-	Flow_SetNamespaceConfig_FullMethodName          = "/direktiv_flow.Flow/SetNamespaceConfig"
-	Flow_GetNamespaceConfig_FullMethodName          = "/direktiv_flow.Flow/GetNamespaceConfig"
-	Flow_Build_FullMethodName                       = "/direktiv_flow.Flow/Build"
-	Flow_InstanceMetadata_FullMethodName            = "/direktiv_flow.Flow/InstanceMetadata"
-	Flow_ReleaseInstance_FullMethodName             = "/direktiv_flow.Flow/ReleaseInstance"
 	Flow_CreateNamespaceMirror_FullMethodName       = "/direktiv_flow.Flow/CreateNamespaceMirror"
 	Flow_CreateDirectoryMirror_FullMethodName       = "/direktiv_flow.Flow/CreateDirectoryMirror"
 	Flow_UpdateMirrorSettings_FullMethodName        = "/direktiv_flow.Flow/UpdateMirrorSettings"
@@ -111,8 +108,6 @@ const (
 	Flow_HardSyncMirror_FullMethodName              = "/direktiv_flow.Flow/HardSyncMirror"
 	Flow_MirrorInfo_FullMethodName                  = "/direktiv_flow.Flow/MirrorInfo"
 	Flow_MirrorInfoStream_FullMethodName            = "/direktiv_flow.Flow/MirrorInfoStream"
-	Flow_MirrorActivityLogs_FullMethodName          = "/direktiv_flow.Flow/MirrorActivityLogs"
-	Flow_MirrorActivityLogsParcels_FullMethodName   = "/direktiv_flow.Flow/MirrorActivityLogsParcels"
 	Flow_CancelMirrorActivity_FullMethodName        = "/direktiv_flow.Flow/CancelMirrorActivity"
 	Flow_File_FullMethodName                        = "/direktiv_flow.Flow/File"
 	Flow_CreateFile_FullMethodName                  = "/direktiv_flow.Flow/CreateFile"
@@ -124,18 +119,24 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type FlowClient interface {
+	// namespaces.
 	Namespace(ctx context.Context, in *NamespaceRequest, opts ...grpc.CallOption) (*NamespaceResponse, error)
 	Namespaces(ctx context.Context, in *NamespacesRequest, opts ...grpc.CallOption) (*NamespacesResponse, error)
 	NamespacesStream(ctx context.Context, in *NamespacesRequest, opts ...grpc.CallOption) (Flow_NamespacesStreamClient, error)
 	CreateNamespace(ctx context.Context, in *CreateNamespaceRequest, opts ...grpc.CallOption) (*CreateNamespaceResponse, error)
 	DeleteNamespace(ctx context.Context, in *DeleteNamespaceRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	RenameNamespace(ctx context.Context, in *RenameNamespaceRequest, opts ...grpc.CallOption) (*RenameNamespaceResponse, error)
+	// logs.
 	ServerLogs(ctx context.Context, in *ServerLogsRequest, opts ...grpc.CallOption) (*ServerLogsResponse, error)
 	ServerLogsParcels(ctx context.Context, in *ServerLogsRequest, opts ...grpc.CallOption) (Flow_ServerLogsParcelsClient, error)
 	NamespaceLogs(ctx context.Context, in *NamespaceLogsRequest, opts ...grpc.CallOption) (*NamespaceLogsResponse, error)
 	NamespaceLogsParcels(ctx context.Context, in *NamespaceLogsRequest, opts ...grpc.CallOption) (Flow_NamespaceLogsParcelsClient, error)
 	WorkflowLogs(ctx context.Context, in *WorkflowLogsRequest, opts ...grpc.CallOption) (*WorkflowLogsResponse, error)
 	WorkflowLogsParcels(ctx context.Context, in *WorkflowLogsRequest, opts ...grpc.CallOption) (Flow_WorkflowLogsParcelsClient, error)
+	InstanceLogs(ctx context.Context, in *InstanceLogsRequest, opts ...grpc.CallOption) (*InstanceLogsResponse, error)
+	InstanceLogsParcels(ctx context.Context, in *InstanceLogsRequest, opts ...grpc.CallOption) (Flow_InstanceLogsParcelsClient, error)
+	MirrorActivityLogs(ctx context.Context, in *MirrorActivityLogsRequest, opts ...grpc.CallOption) (*MirrorActivityLogsResponse, error)
+	MirrorActivityLogsParcels(ctx context.Context, in *MirrorActivityLogsRequest, opts ...grpc.CallOption) (Flow_MirrorActivityLogsParcelsClient, error)
+	// filesystem.
 	Directory(ctx context.Context, in *DirectoryRequest, opts ...grpc.CallOption) (*DirectoryResponse, error)
 	DirectoryStream(ctx context.Context, in *DirectoryRequest, opts ...grpc.CallOption) (Flow_DirectoryStreamClient, error)
 	CreateDirectory(ctx context.Context, in *CreateDirectoryRequest, opts ...grpc.CallOption) (*CreateDirectoryResponse, error)
@@ -146,6 +147,7 @@ type FlowClient interface {
 	WorkflowStream(ctx context.Context, in *WorkflowRequest, opts ...grpc.CallOption) (Flow_WorkflowStreamClient, error)
 	CreateWorkflow(ctx context.Context, in *CreateWorkflowRequest, opts ...grpc.CallOption) (*CreateWorkflowResponse, error)
 	UpdateWorkflow(ctx context.Context, in *UpdateWorkflowRequest, opts ...grpc.CallOption) (*UpdateWorkflowResponse, error)
+	// secrets.
 	Secrets(ctx context.Context, in *SecretsRequest, opts ...grpc.CallOption) (*SecretsResponse, error)
 	SecretsStream(ctx context.Context, in *SecretsRequest, opts ...grpc.CallOption) (Flow_SecretsStreamClient, error)
 	SetSecret(ctx context.Context, in *SetSecretRequest, opts ...grpc.CallOption) (*SetSecretResponse, error)
@@ -154,19 +156,22 @@ type FlowClient interface {
 	DeleteSecretsFolder(ctx context.Context, in *DeleteSecretsFolderRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	SearchSecret(ctx context.Context, in *SearchSecretRequest, opts ...grpc.CallOption) (*SearchSecretResponse, error)
 	UpdateSecret(ctx context.Context, in *UpdateSecretRequest, opts ...grpc.CallOption) (*UpdateSecretResponse, error)
+	// instances.
 	Instance(ctx context.Context, in *InstanceRequest, opts ...grpc.CallOption) (*InstanceResponse, error)
 	InstanceStream(ctx context.Context, in *InstanceRequest, opts ...grpc.CallOption) (Flow_InstanceStreamClient, error)
 	Instances(ctx context.Context, in *InstancesRequest, opts ...grpc.CallOption) (*InstancesResponse, error)
 	InstancesStream(ctx context.Context, in *InstancesRequest, opts ...grpc.CallOption) (Flow_InstancesStreamClient, error)
 	InstanceInput(ctx context.Context, in *InstanceInputRequest, opts ...grpc.CallOption) (*InstanceInputResponse, error)
 	InstanceOutput(ctx context.Context, in *InstanceOutputRequest, opts ...grpc.CallOption) (*InstanceOutputResponse, error)
-	InstanceLogs(ctx context.Context, in *InstanceLogsRequest, opts ...grpc.CallOption) (*InstanceLogsResponse, error)
-	InstanceLogsParcels(ctx context.Context, in *InstanceLogsRequest, opts ...grpc.CallOption) (Flow_InstanceLogsParcelsClient, error)
+	InstanceMetadata(ctx context.Context, in *InstanceMetadataRequest, opts ...grpc.CallOption) (*InstanceMetadataResponse, error)
+	ReleaseInstance(ctx context.Context, in *ReleaseInstanceRequest, opts ...grpc.CallOption) (*ReleaseInstanceResponse, error)
+	// workflows.
 	StartWorkflow(ctx context.Context, in *StartWorkflowRequest, opts ...grpc.CallOption) (*StartWorkflowResponse, error)
 	RunWorkflow(ctx context.Context, in *RunWorkflowRequest, opts ...grpc.CallOption) (Flow_RunWorkflowClient, error)
 	AwaitWorkflow(ctx context.Context, in *AwaitWorkflowRequest, opts ...grpc.CallOption) (Flow_AwaitWorkflowClient, error)
 	CancelInstance(ctx context.Context, in *CancelInstanceRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	BroadcastCloudevent(ctx context.Context, in *BroadcastCloudeventRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// variables.
 	NamespaceVariable(ctx context.Context, in *NamespaceVariableRequest, opts ...grpc.CallOption) (*NamespaceVariableResponse, error)
 	NamespaceVariableParcels(ctx context.Context, in *NamespaceVariableRequest, opts ...grpc.CallOption) (Flow_NamespaceVariableParcelsClient, error)
 	NamespaceVariables(ctx context.Context, in *NamespaceVariablesRequest, opts ...grpc.CallOption) (*NamespaceVariablesResponse, error)
@@ -193,12 +198,7 @@ type FlowClient interface {
 	RenameInstanceVariable(ctx context.Context, in *RenameInstanceVariableRequest, opts ...grpc.CallOption) (*RenameInstanceVariableResponse, error)
 	JQ(ctx context.Context, in *JQRequest, opts ...grpc.CallOption) (*JQResponse, error)
 	WorkflowMetrics(ctx context.Context, in *WorkflowMetricsRequest, opts ...grpc.CallOption) (*WorkflowMetricsResponse, error)
-	// COMING SOON:
-	//
-	// rpc ValidateWorkflow (ValidateWorkflowRequest) returns (ValidateWorkflowResponse) {}
-	// Dependencies // Return dependency graph.
-	// Crons // List of cron schedules on the namespace.
-	// Broadcast // Broadcast Cloudevent.
+	// events.
 	EventListeners(ctx context.Context, in *EventListenersRequest, opts ...grpc.CallOption) (*EventListenersResponse, error)
 	EventListenersStream(ctx context.Context, in *EventListenersRequest, opts ...grpc.CallOption) (Flow_EventListenersStreamClient, error)
 	EventHistory(ctx context.Context, in *EventHistoryRequest, opts ...grpc.CallOption) (*EventHistoryResponse, error)
@@ -206,12 +206,7 @@ type FlowClient interface {
 	HistoricalEvent(ctx context.Context, in *HistoricalEventRequest, opts ...grpc.CallOption) (*HistoricalEventResponse, error)
 	ReplayEvent(ctx context.Context, in *ReplayEventRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	ResolveNamespaceUID(ctx context.Context, in *ResolveNamespaceUIDRequest, opts ...grpc.CallOption) (*NamespaceResponse, error)
-	ResolveWorkflowUID(ctx context.Context, in *ResolveWorkflowUIDRequest, opts ...grpc.CallOption) (*WorkflowResponse, error)
-	SetNamespaceConfig(ctx context.Context, in *SetNamespaceConfigRequest, opts ...grpc.CallOption) (*SetNamespaceConfigResponse, error)
-	GetNamespaceConfig(ctx context.Context, in *GetNamespaceConfigRequest, opts ...grpc.CallOption) (*GetNamespaceConfigResponse, error)
-	Build(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*BuildResponse, error)
-	InstanceMetadata(ctx context.Context, in *InstanceMetadataRequest, opts ...grpc.CallOption) (*InstanceMetadataResponse, error)
-	ReleaseInstance(ctx context.Context, in *ReleaseInstanceRequest, opts ...grpc.CallOption) (*ReleaseInstanceResponse, error)
+	// mirrors.
 	CreateNamespaceMirror(ctx context.Context, in *CreateNamespaceMirrorRequest, opts ...grpc.CallOption) (*CreateNamespaceResponse, error)
 	CreateDirectoryMirror(ctx context.Context, in *CreateDirectoryMirrorRequest, opts ...grpc.CallOption) (*CreateDirectoryResponse, error)
 	UpdateMirrorSettings(ctx context.Context, in *UpdateMirrorSettingsRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
@@ -221,8 +216,6 @@ type FlowClient interface {
 	HardSyncMirror(ctx context.Context, in *HardSyncMirrorRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	MirrorInfo(ctx context.Context, in *MirrorInfoRequest, opts ...grpc.CallOption) (*MirrorInfoResponse, error)
 	MirrorInfoStream(ctx context.Context, in *MirrorInfoRequest, opts ...grpc.CallOption) (Flow_MirrorInfoStreamClient, error)
-	MirrorActivityLogs(ctx context.Context, in *MirrorActivityLogsRequest, opts ...grpc.CallOption) (*MirrorActivityLogsResponse, error)
-	MirrorActivityLogsParcels(ctx context.Context, in *MirrorActivityLogsRequest, opts ...grpc.CallOption) (Flow_MirrorActivityLogsParcelsClient, error)
 	CancelMirrorActivity(ctx context.Context, in *CancelMirrorActivityRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	File(ctx context.Context, in *FileRequest, opts ...grpc.CallOption) (*FileResponse, error)
 	CreateFile(ctx context.Context, in *CreateFileRequest, opts ...grpc.CallOption) (*CreateFileResponse, error)
@@ -300,15 +293,6 @@ func (c *flowClient) CreateNamespace(ctx context.Context, in *CreateNamespaceReq
 func (c *flowClient) DeleteNamespace(ctx context.Context, in *DeleteNamespaceRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, Flow_DeleteNamespace_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) RenameNamespace(ctx context.Context, in *RenameNamespaceRequest, opts ...grpc.CallOption) (*RenameNamespaceResponse, error) {
-	out := new(RenameNamespaceResponse)
-	err := c.cc.Invoke(ctx, Flow_RenameNamespace_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -438,6 +422,88 @@ func (x *flowWorkflowLogsParcelsClient) Recv() (*WorkflowLogsResponse, error) {
 	return m, nil
 }
 
+func (c *flowClient) InstanceLogs(ctx context.Context, in *InstanceLogsRequest, opts ...grpc.CallOption) (*InstanceLogsResponse, error) {
+	out := new(InstanceLogsResponse)
+	err := c.cc.Invoke(ctx, Flow_InstanceLogs_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *flowClient) InstanceLogsParcels(ctx context.Context, in *InstanceLogsRequest, opts ...grpc.CallOption) (Flow_InstanceLogsParcelsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[4], Flow_InstanceLogsParcels_FullMethodName, opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &flowInstanceLogsParcelsClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Flow_InstanceLogsParcelsClient interface {
+	Recv() (*InstanceLogsResponse, error)
+	grpc.ClientStream
+}
+
+type flowInstanceLogsParcelsClient struct {
+	grpc.ClientStream
+}
+
+func (x *flowInstanceLogsParcelsClient) Recv() (*InstanceLogsResponse, error) {
+	m := new(InstanceLogsResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *flowClient) MirrorActivityLogs(ctx context.Context, in *MirrorActivityLogsRequest, opts ...grpc.CallOption) (*MirrorActivityLogsResponse, error) {
+	out := new(MirrorActivityLogsResponse)
+	err := c.cc.Invoke(ctx, Flow_MirrorActivityLogs_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *flowClient) MirrorActivityLogsParcels(ctx context.Context, in *MirrorActivityLogsRequest, opts ...grpc.CallOption) (Flow_MirrorActivityLogsParcelsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[5], Flow_MirrorActivityLogsParcels_FullMethodName, opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &flowMirrorActivityLogsParcelsClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Flow_MirrorActivityLogsParcelsClient interface {
+	Recv() (*MirrorActivityLogsResponse, error)
+	grpc.ClientStream
+}
+
+type flowMirrorActivityLogsParcelsClient struct {
+	grpc.ClientStream
+}
+
+func (x *flowMirrorActivityLogsParcelsClient) Recv() (*MirrorActivityLogsResponse, error) {
+	m := new(MirrorActivityLogsResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 func (c *flowClient) Directory(ctx context.Context, in *DirectoryRequest, opts ...grpc.CallOption) (*DirectoryResponse, error) {
 	out := new(DirectoryResponse)
 	err := c.cc.Invoke(ctx, Flow_Directory_FullMethodName, in, out, opts...)
@@ -448,7 +514,7 @@ func (c *flowClient) Directory(ctx context.Context, in *DirectoryRequest, opts .
 }
 
 func (c *flowClient) DirectoryStream(ctx context.Context, in *DirectoryRequest, opts ...grpc.CallOption) (Flow_DirectoryStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[4], Flow_DirectoryStream_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[6], Flow_DirectoryStream_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -525,7 +591,7 @@ func (c *flowClient) Workflow(ctx context.Context, in *WorkflowRequest, opts ...
 }
 
 func (c *flowClient) WorkflowStream(ctx context.Context, in *WorkflowRequest, opts ...grpc.CallOption) (Flow_WorkflowStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[5], Flow_WorkflowStream_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[7], Flow_WorkflowStream_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -584,7 +650,7 @@ func (c *flowClient) Secrets(ctx context.Context, in *SecretsRequest, opts ...gr
 }
 
 func (c *flowClient) SecretsStream(ctx context.Context, in *SecretsRequest, opts ...grpc.CallOption) (Flow_SecretsStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[6], Flow_SecretsStream_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[8], Flow_SecretsStream_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -679,7 +745,7 @@ func (c *flowClient) Instance(ctx context.Context, in *InstanceRequest, opts ...
 }
 
 func (c *flowClient) InstanceStream(ctx context.Context, in *InstanceRequest, opts ...grpc.CallOption) (Flow_InstanceStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[7], Flow_InstanceStream_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[9], Flow_InstanceStream_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -720,7 +786,7 @@ func (c *flowClient) Instances(ctx context.Context, in *InstancesRequest, opts .
 }
 
 func (c *flowClient) InstancesStream(ctx context.Context, in *InstancesRequest, opts ...grpc.CallOption) (Flow_InstancesStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[8], Flow_InstancesStream_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[10], Flow_InstancesStream_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -769,45 +835,22 @@ func (c *flowClient) InstanceOutput(ctx context.Context, in *InstanceOutputReque
 	return out, nil
 }
 
-func (c *flowClient) InstanceLogs(ctx context.Context, in *InstanceLogsRequest, opts ...grpc.CallOption) (*InstanceLogsResponse, error) {
-	out := new(InstanceLogsResponse)
-	err := c.cc.Invoke(ctx, Flow_InstanceLogs_FullMethodName, in, out, opts...)
+func (c *flowClient) InstanceMetadata(ctx context.Context, in *InstanceMetadataRequest, opts ...grpc.CallOption) (*InstanceMetadataResponse, error) {
+	out := new(InstanceMetadataResponse)
+	err := c.cc.Invoke(ctx, Flow_InstanceMetadata_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *flowClient) InstanceLogsParcels(ctx context.Context, in *InstanceLogsRequest, opts ...grpc.CallOption) (Flow_InstanceLogsParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[9], Flow_InstanceLogsParcels_FullMethodName, opts...)
+func (c *flowClient) ReleaseInstance(ctx context.Context, in *ReleaseInstanceRequest, opts ...grpc.CallOption) (*ReleaseInstanceResponse, error) {
+	out := new(ReleaseInstanceResponse)
+	err := c.cc.Invoke(ctx, Flow_ReleaseInstance_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &flowInstanceLogsParcelsClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-type Flow_InstanceLogsParcelsClient interface {
-	Recv() (*InstanceLogsResponse, error)
-	grpc.ClientStream
-}
-
-type flowInstanceLogsParcelsClient struct {
-	grpc.ClientStream
-}
-
-func (x *flowInstanceLogsParcelsClient) Recv() (*InstanceLogsResponse, error) {
-	m := new(InstanceLogsResponse)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
+	return out, nil
 }
 
 func (c *flowClient) StartWorkflow(ctx context.Context, in *StartWorkflowRequest, opts ...grpc.CallOption) (*StartWorkflowResponse, error) {
@@ -820,7 +863,7 @@ func (c *flowClient) StartWorkflow(ctx context.Context, in *StartWorkflowRequest
 }
 
 func (c *flowClient) RunWorkflow(ctx context.Context, in *RunWorkflowRequest, opts ...grpc.CallOption) (Flow_RunWorkflowClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[10], Flow_RunWorkflow_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[11], Flow_RunWorkflow_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -852,7 +895,7 @@ func (x *flowRunWorkflowClient) Recv() (*RunWorkflowResponse, error) {
 }
 
 func (c *flowClient) AwaitWorkflow(ctx context.Context, in *AwaitWorkflowRequest, opts ...grpc.CallOption) (Flow_AwaitWorkflowClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[11], Flow_AwaitWorkflow_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[12], Flow_AwaitWorkflow_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -911,7 +954,7 @@ func (c *flowClient) NamespaceVariable(ctx context.Context, in *NamespaceVariabl
 }
 
 func (c *flowClient) NamespaceVariableParcels(ctx context.Context, in *NamespaceVariableRequest, opts ...grpc.CallOption) (Flow_NamespaceVariableParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[12], Flow_NamespaceVariableParcels_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[13], Flow_NamespaceVariableParcels_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -952,7 +995,7 @@ func (c *flowClient) NamespaceVariables(ctx context.Context, in *NamespaceVariab
 }
 
 func (c *flowClient) NamespaceVariablesStream(ctx context.Context, in *NamespaceVariablesRequest, opts ...grpc.CallOption) (Flow_NamespaceVariablesStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[13], Flow_NamespaceVariablesStream_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[14], Flow_NamespaceVariablesStream_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -993,7 +1036,7 @@ func (c *flowClient) SetNamespaceVariable(ctx context.Context, in *SetNamespaceV
 }
 
 func (c *flowClient) SetNamespaceVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetNamespaceVariableParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[14], Flow_SetNamespaceVariableParcels_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[15], Flow_SetNamespaceVariableParcels_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1054,7 +1097,7 @@ func (c *flowClient) WorkflowVariable(ctx context.Context, in *WorkflowVariableR
 }
 
 func (c *flowClient) WorkflowVariableParcels(ctx context.Context, in *WorkflowVariableRequest, opts ...grpc.CallOption) (Flow_WorkflowVariableParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[15], Flow_WorkflowVariableParcels_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[16], Flow_WorkflowVariableParcels_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1095,7 +1138,7 @@ func (c *flowClient) WorkflowVariables(ctx context.Context, in *WorkflowVariable
 }
 
 func (c *flowClient) WorkflowVariablesStream(ctx context.Context, in *WorkflowVariablesRequest, opts ...grpc.CallOption) (Flow_WorkflowVariablesStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[16], Flow_WorkflowVariablesStream_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[17], Flow_WorkflowVariablesStream_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1136,7 +1179,7 @@ func (c *flowClient) SetWorkflowVariable(ctx context.Context, in *SetWorkflowVar
 }
 
 func (c *flowClient) SetWorkflowVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetWorkflowVariableParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[17], Flow_SetWorkflowVariableParcels_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[18], Flow_SetWorkflowVariableParcels_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1197,7 +1240,7 @@ func (c *flowClient) InstanceVariable(ctx context.Context, in *InstanceVariableR
 }
 
 func (c *flowClient) InstanceVariableParcels(ctx context.Context, in *InstanceVariableRequest, opts ...grpc.CallOption) (Flow_InstanceVariableParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[18], Flow_InstanceVariableParcels_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[19], Flow_InstanceVariableParcels_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1238,7 +1281,7 @@ func (c *flowClient) InstanceVariables(ctx context.Context, in *InstanceVariable
 }
 
 func (c *flowClient) InstanceVariablesStream(ctx context.Context, in *InstanceVariablesRequest, opts ...grpc.CallOption) (Flow_InstanceVariablesStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[19], Flow_InstanceVariablesStream_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[20], Flow_InstanceVariablesStream_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1279,7 +1322,7 @@ func (c *flowClient) SetInstanceVariable(ctx context.Context, in *SetInstanceVar
 }
 
 func (c *flowClient) SetInstanceVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetInstanceVariableParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[20], Flow_SetInstanceVariableParcels_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[21], Flow_SetInstanceVariableParcels_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1358,7 +1401,7 @@ func (c *flowClient) EventListeners(ctx context.Context, in *EventListenersReque
 }
 
 func (c *flowClient) EventListenersStream(ctx context.Context, in *EventListenersRequest, opts ...grpc.CallOption) (Flow_EventListenersStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[21], Flow_EventListenersStream_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[22], Flow_EventListenersStream_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1399,7 +1442,7 @@ func (c *flowClient) EventHistory(ctx context.Context, in *EventHistoryRequest, 
 }
 
 func (c *flowClient) EventHistoryStream(ctx context.Context, in *EventHistoryRequest, opts ...grpc.CallOption) (Flow_EventHistoryStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[22], Flow_EventHistoryStream_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[23], Flow_EventHistoryStream_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1451,60 +1494,6 @@ func (c *flowClient) ReplayEvent(ctx context.Context, in *ReplayEventRequest, op
 func (c *flowClient) ResolveNamespaceUID(ctx context.Context, in *ResolveNamespaceUIDRequest, opts ...grpc.CallOption) (*NamespaceResponse, error) {
 	out := new(NamespaceResponse)
 	err := c.cc.Invoke(ctx, Flow_ResolveNamespaceUID_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) ResolveWorkflowUID(ctx context.Context, in *ResolveWorkflowUIDRequest, opts ...grpc.CallOption) (*WorkflowResponse, error) {
-	out := new(WorkflowResponse)
-	err := c.cc.Invoke(ctx, Flow_ResolveWorkflowUID_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) SetNamespaceConfig(ctx context.Context, in *SetNamespaceConfigRequest, opts ...grpc.CallOption) (*SetNamespaceConfigResponse, error) {
-	out := new(SetNamespaceConfigResponse)
-	err := c.cc.Invoke(ctx, Flow_SetNamespaceConfig_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) GetNamespaceConfig(ctx context.Context, in *GetNamespaceConfigRequest, opts ...grpc.CallOption) (*GetNamespaceConfigResponse, error) {
-	out := new(GetNamespaceConfigResponse)
-	err := c.cc.Invoke(ctx, Flow_GetNamespaceConfig_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) Build(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*BuildResponse, error) {
-	out := new(BuildResponse)
-	err := c.cc.Invoke(ctx, Flow_Build_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) InstanceMetadata(ctx context.Context, in *InstanceMetadataRequest, opts ...grpc.CallOption) (*InstanceMetadataResponse, error) {
-	out := new(InstanceMetadataResponse)
-	err := c.cc.Invoke(ctx, Flow_InstanceMetadata_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) ReleaseInstance(ctx context.Context, in *ReleaseInstanceRequest, opts ...grpc.CallOption) (*ReleaseInstanceResponse, error) {
-	out := new(ReleaseInstanceResponse)
-	err := c.cc.Invoke(ctx, Flow_ReleaseInstance_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1584,7 +1573,7 @@ func (c *flowClient) MirrorInfo(ctx context.Context, in *MirrorInfoRequest, opts
 }
 
 func (c *flowClient) MirrorInfoStream(ctx context.Context, in *MirrorInfoRequest, opts ...grpc.CallOption) (Flow_MirrorInfoStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[23], Flow_MirrorInfoStream_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[24], Flow_MirrorInfoStream_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1609,47 +1598,6 @@ type flowMirrorInfoStreamClient struct {
 
 func (x *flowMirrorInfoStreamClient) Recv() (*MirrorInfoResponse, error) {
 	m := new(MirrorInfoResponse)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func (c *flowClient) MirrorActivityLogs(ctx context.Context, in *MirrorActivityLogsRequest, opts ...grpc.CallOption) (*MirrorActivityLogsResponse, error) {
-	out := new(MirrorActivityLogsResponse)
-	err := c.cc.Invoke(ctx, Flow_MirrorActivityLogs_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) MirrorActivityLogsParcels(ctx context.Context, in *MirrorActivityLogsRequest, opts ...grpc.CallOption) (Flow_MirrorActivityLogsParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[24], Flow_MirrorActivityLogsParcels_FullMethodName, opts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &flowMirrorActivityLogsParcelsClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-type Flow_MirrorActivityLogsParcelsClient interface {
-	Recv() (*MirrorActivityLogsResponse, error)
-	grpc.ClientStream
-}
-
-type flowMirrorActivityLogsParcelsClient struct {
-	grpc.ClientStream
-}
-
-func (x *flowMirrorActivityLogsParcelsClient) Recv() (*MirrorActivityLogsResponse, error) {
-	m := new(MirrorActivityLogsResponse)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -1705,18 +1653,24 @@ func (c *flowClient) NamespaceLint(ctx context.Context, in *NamespaceLintRequest
 // All implementations must embed UnimplementedFlowServer
 // for forward compatibility
 type FlowServer interface {
+	// namespaces.
 	Namespace(context.Context, *NamespaceRequest) (*NamespaceResponse, error)
 	Namespaces(context.Context, *NamespacesRequest) (*NamespacesResponse, error)
 	NamespacesStream(*NamespacesRequest, Flow_NamespacesStreamServer) error
 	CreateNamespace(context.Context, *CreateNamespaceRequest) (*CreateNamespaceResponse, error)
 	DeleteNamespace(context.Context, *DeleteNamespaceRequest) (*emptypb.Empty, error)
-	RenameNamespace(context.Context, *RenameNamespaceRequest) (*RenameNamespaceResponse, error)
+	// logs.
 	ServerLogs(context.Context, *ServerLogsRequest) (*ServerLogsResponse, error)
 	ServerLogsParcels(*ServerLogsRequest, Flow_ServerLogsParcelsServer) error
 	NamespaceLogs(context.Context, *NamespaceLogsRequest) (*NamespaceLogsResponse, error)
 	NamespaceLogsParcels(*NamespaceLogsRequest, Flow_NamespaceLogsParcelsServer) error
 	WorkflowLogs(context.Context, *WorkflowLogsRequest) (*WorkflowLogsResponse, error)
 	WorkflowLogsParcels(*WorkflowLogsRequest, Flow_WorkflowLogsParcelsServer) error
+	InstanceLogs(context.Context, *InstanceLogsRequest) (*InstanceLogsResponse, error)
+	InstanceLogsParcels(*InstanceLogsRequest, Flow_InstanceLogsParcelsServer) error
+	MirrorActivityLogs(context.Context, *MirrorActivityLogsRequest) (*MirrorActivityLogsResponse, error)
+	MirrorActivityLogsParcels(*MirrorActivityLogsRequest, Flow_MirrorActivityLogsParcelsServer) error
+	// filesystem.
 	Directory(context.Context, *DirectoryRequest) (*DirectoryResponse, error)
 	DirectoryStream(*DirectoryRequest, Flow_DirectoryStreamServer) error
 	CreateDirectory(context.Context, *CreateDirectoryRequest) (*CreateDirectoryResponse, error)
@@ -1727,6 +1681,7 @@ type FlowServer interface {
 	WorkflowStream(*WorkflowRequest, Flow_WorkflowStreamServer) error
 	CreateWorkflow(context.Context, *CreateWorkflowRequest) (*CreateWorkflowResponse, error)
 	UpdateWorkflow(context.Context, *UpdateWorkflowRequest) (*UpdateWorkflowResponse, error)
+	// secrets.
 	Secrets(context.Context, *SecretsRequest) (*SecretsResponse, error)
 	SecretsStream(*SecretsRequest, Flow_SecretsStreamServer) error
 	SetSecret(context.Context, *SetSecretRequest) (*SetSecretResponse, error)
@@ -1735,19 +1690,22 @@ type FlowServer interface {
 	DeleteSecretsFolder(context.Context, *DeleteSecretsFolderRequest) (*emptypb.Empty, error)
 	SearchSecret(context.Context, *SearchSecretRequest) (*SearchSecretResponse, error)
 	UpdateSecret(context.Context, *UpdateSecretRequest) (*UpdateSecretResponse, error)
+	// instances.
 	Instance(context.Context, *InstanceRequest) (*InstanceResponse, error)
 	InstanceStream(*InstanceRequest, Flow_InstanceStreamServer) error
 	Instances(context.Context, *InstancesRequest) (*InstancesResponse, error)
 	InstancesStream(*InstancesRequest, Flow_InstancesStreamServer) error
 	InstanceInput(context.Context, *InstanceInputRequest) (*InstanceInputResponse, error)
 	InstanceOutput(context.Context, *InstanceOutputRequest) (*InstanceOutputResponse, error)
-	InstanceLogs(context.Context, *InstanceLogsRequest) (*InstanceLogsResponse, error)
-	InstanceLogsParcels(*InstanceLogsRequest, Flow_InstanceLogsParcelsServer) error
+	InstanceMetadata(context.Context, *InstanceMetadataRequest) (*InstanceMetadataResponse, error)
+	ReleaseInstance(context.Context, *ReleaseInstanceRequest) (*ReleaseInstanceResponse, error)
+	// workflows.
 	StartWorkflow(context.Context, *StartWorkflowRequest) (*StartWorkflowResponse, error)
 	RunWorkflow(*RunWorkflowRequest, Flow_RunWorkflowServer) error
 	AwaitWorkflow(*AwaitWorkflowRequest, Flow_AwaitWorkflowServer) error
 	CancelInstance(context.Context, *CancelInstanceRequest) (*emptypb.Empty, error)
 	BroadcastCloudevent(context.Context, *BroadcastCloudeventRequest) (*emptypb.Empty, error)
+	// variables.
 	NamespaceVariable(context.Context, *NamespaceVariableRequest) (*NamespaceVariableResponse, error)
 	NamespaceVariableParcels(*NamespaceVariableRequest, Flow_NamespaceVariableParcelsServer) error
 	NamespaceVariables(context.Context, *NamespaceVariablesRequest) (*NamespaceVariablesResponse, error)
@@ -1774,12 +1732,7 @@ type FlowServer interface {
 	RenameInstanceVariable(context.Context, *RenameInstanceVariableRequest) (*RenameInstanceVariableResponse, error)
 	JQ(context.Context, *JQRequest) (*JQResponse, error)
 	WorkflowMetrics(context.Context, *WorkflowMetricsRequest) (*WorkflowMetricsResponse, error)
-	// COMING SOON:
-	//
-	// rpc ValidateWorkflow (ValidateWorkflowRequest) returns (ValidateWorkflowResponse) {}
-	// Dependencies // Return dependency graph.
-	// Crons // List of cron schedules on the namespace.
-	// Broadcast // Broadcast Cloudevent.
+	// events.
 	EventListeners(context.Context, *EventListenersRequest) (*EventListenersResponse, error)
 	EventListenersStream(*EventListenersRequest, Flow_EventListenersStreamServer) error
 	EventHistory(context.Context, *EventHistoryRequest) (*EventHistoryResponse, error)
@@ -1787,12 +1740,7 @@ type FlowServer interface {
 	HistoricalEvent(context.Context, *HistoricalEventRequest) (*HistoricalEventResponse, error)
 	ReplayEvent(context.Context, *ReplayEventRequest) (*emptypb.Empty, error)
 	ResolveNamespaceUID(context.Context, *ResolveNamespaceUIDRequest) (*NamespaceResponse, error)
-	ResolveWorkflowUID(context.Context, *ResolveWorkflowUIDRequest) (*WorkflowResponse, error)
-	SetNamespaceConfig(context.Context, *SetNamespaceConfigRequest) (*SetNamespaceConfigResponse, error)
-	GetNamespaceConfig(context.Context, *GetNamespaceConfigRequest) (*GetNamespaceConfigResponse, error)
-	Build(context.Context, *emptypb.Empty) (*BuildResponse, error)
-	InstanceMetadata(context.Context, *InstanceMetadataRequest) (*InstanceMetadataResponse, error)
-	ReleaseInstance(context.Context, *ReleaseInstanceRequest) (*ReleaseInstanceResponse, error)
+	// mirrors.
 	CreateNamespaceMirror(context.Context, *CreateNamespaceMirrorRequest) (*CreateNamespaceResponse, error)
 	CreateDirectoryMirror(context.Context, *CreateDirectoryMirrorRequest) (*CreateDirectoryResponse, error)
 	UpdateMirrorSettings(context.Context, *UpdateMirrorSettingsRequest) (*emptypb.Empty, error)
@@ -1802,8 +1750,6 @@ type FlowServer interface {
 	HardSyncMirror(context.Context, *HardSyncMirrorRequest) (*emptypb.Empty, error)
 	MirrorInfo(context.Context, *MirrorInfoRequest) (*MirrorInfoResponse, error)
 	MirrorInfoStream(*MirrorInfoRequest, Flow_MirrorInfoStreamServer) error
-	MirrorActivityLogs(context.Context, *MirrorActivityLogsRequest) (*MirrorActivityLogsResponse, error)
-	MirrorActivityLogsParcels(*MirrorActivityLogsRequest, Flow_MirrorActivityLogsParcelsServer) error
 	CancelMirrorActivity(context.Context, *CancelMirrorActivityRequest) (*emptypb.Empty, error)
 	File(context.Context, *FileRequest) (*FileResponse, error)
 	CreateFile(context.Context, *CreateFileRequest) (*CreateFileResponse, error)
@@ -1831,9 +1777,6 @@ func (UnimplementedFlowServer) CreateNamespace(context.Context, *CreateNamespace
 func (UnimplementedFlowServer) DeleteNamespace(context.Context, *DeleteNamespaceRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteNamespace not implemented")
 }
-func (UnimplementedFlowServer) RenameNamespace(context.Context, *RenameNamespaceRequest) (*RenameNamespaceResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RenameNamespace not implemented")
-}
 func (UnimplementedFlowServer) ServerLogs(context.Context, *ServerLogsRequest) (*ServerLogsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ServerLogs not implemented")
 }
@@ -1851,6 +1794,18 @@ func (UnimplementedFlowServer) WorkflowLogs(context.Context, *WorkflowLogsReques
 }
 func (UnimplementedFlowServer) WorkflowLogsParcels(*WorkflowLogsRequest, Flow_WorkflowLogsParcelsServer) error {
 	return status.Errorf(codes.Unimplemented, "method WorkflowLogsParcels not implemented")
+}
+func (UnimplementedFlowServer) InstanceLogs(context.Context, *InstanceLogsRequest) (*InstanceLogsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method InstanceLogs not implemented")
+}
+func (UnimplementedFlowServer) InstanceLogsParcels(*InstanceLogsRequest, Flow_InstanceLogsParcelsServer) error {
+	return status.Errorf(codes.Unimplemented, "method InstanceLogsParcels not implemented")
+}
+func (UnimplementedFlowServer) MirrorActivityLogs(context.Context, *MirrorActivityLogsRequest) (*MirrorActivityLogsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method MirrorActivityLogs not implemented")
+}
+func (UnimplementedFlowServer) MirrorActivityLogsParcels(*MirrorActivityLogsRequest, Flow_MirrorActivityLogsParcelsServer) error {
+	return status.Errorf(codes.Unimplemented, "method MirrorActivityLogsParcels not implemented")
 }
 func (UnimplementedFlowServer) Directory(context.Context, *DirectoryRequest) (*DirectoryResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Directory not implemented")
@@ -1924,11 +1879,11 @@ func (UnimplementedFlowServer) InstanceInput(context.Context, *InstanceInputRequ
 func (UnimplementedFlowServer) InstanceOutput(context.Context, *InstanceOutputRequest) (*InstanceOutputResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method InstanceOutput not implemented")
 }
-func (UnimplementedFlowServer) InstanceLogs(context.Context, *InstanceLogsRequest) (*InstanceLogsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method InstanceLogs not implemented")
+func (UnimplementedFlowServer) InstanceMetadata(context.Context, *InstanceMetadataRequest) (*InstanceMetadataResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method InstanceMetadata not implemented")
 }
-func (UnimplementedFlowServer) InstanceLogsParcels(*InstanceLogsRequest, Flow_InstanceLogsParcelsServer) error {
-	return status.Errorf(codes.Unimplemented, "method InstanceLogsParcels not implemented")
+func (UnimplementedFlowServer) ReleaseInstance(context.Context, *ReleaseInstanceRequest) (*ReleaseInstanceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReleaseInstance not implemented")
 }
 func (UnimplementedFlowServer) StartWorkflow(context.Context, *StartWorkflowRequest) (*StartWorkflowResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StartWorkflow not implemented")
@@ -2044,24 +1999,6 @@ func (UnimplementedFlowServer) ReplayEvent(context.Context, *ReplayEventRequest)
 func (UnimplementedFlowServer) ResolveNamespaceUID(context.Context, *ResolveNamespaceUIDRequest) (*NamespaceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ResolveNamespaceUID not implemented")
 }
-func (UnimplementedFlowServer) ResolveWorkflowUID(context.Context, *ResolveWorkflowUIDRequest) (*WorkflowResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ResolveWorkflowUID not implemented")
-}
-func (UnimplementedFlowServer) SetNamespaceConfig(context.Context, *SetNamespaceConfigRequest) (*SetNamespaceConfigResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SetNamespaceConfig not implemented")
-}
-func (UnimplementedFlowServer) GetNamespaceConfig(context.Context, *GetNamespaceConfigRequest) (*GetNamespaceConfigResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetNamespaceConfig not implemented")
-}
-func (UnimplementedFlowServer) Build(context.Context, *emptypb.Empty) (*BuildResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Build not implemented")
-}
-func (UnimplementedFlowServer) InstanceMetadata(context.Context, *InstanceMetadataRequest) (*InstanceMetadataResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method InstanceMetadata not implemented")
-}
-func (UnimplementedFlowServer) ReleaseInstance(context.Context, *ReleaseInstanceRequest) (*ReleaseInstanceResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ReleaseInstance not implemented")
-}
 func (UnimplementedFlowServer) CreateNamespaceMirror(context.Context, *CreateNamespaceMirrorRequest) (*CreateNamespaceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateNamespaceMirror not implemented")
 }
@@ -2088,12 +2025,6 @@ func (UnimplementedFlowServer) MirrorInfo(context.Context, *MirrorInfoRequest) (
 }
 func (UnimplementedFlowServer) MirrorInfoStream(*MirrorInfoRequest, Flow_MirrorInfoStreamServer) error {
 	return status.Errorf(codes.Unimplemented, "method MirrorInfoStream not implemented")
-}
-func (UnimplementedFlowServer) MirrorActivityLogs(context.Context, *MirrorActivityLogsRequest) (*MirrorActivityLogsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method MirrorActivityLogs not implemented")
-}
-func (UnimplementedFlowServer) MirrorActivityLogsParcels(*MirrorActivityLogsRequest, Flow_MirrorActivityLogsParcelsServer) error {
-	return status.Errorf(codes.Unimplemented, "method MirrorActivityLogsParcels not implemented")
 }
 func (UnimplementedFlowServer) CancelMirrorActivity(context.Context, *CancelMirrorActivityRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CancelMirrorActivity not implemented")
@@ -2216,24 +2147,6 @@ func _Flow_DeleteNamespace_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Flow_RenameNamespace_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RenameNamespaceRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).RenameNamespace(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_RenameNamespace_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).RenameNamespace(ctx, req.(*RenameNamespaceRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Flow_ServerLogs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ServerLogsRequest)
 	if err := dec(in); err != nil {
@@ -2348,6 +2261,84 @@ type flowWorkflowLogsParcelsServer struct {
 }
 
 func (x *flowWorkflowLogsParcelsServer) Send(m *WorkflowLogsResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _Flow_InstanceLogs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(InstanceLogsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).InstanceLogs(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Flow_InstanceLogs_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).InstanceLogs(ctx, req.(*InstanceLogsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Flow_InstanceLogsParcels_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(InstanceLogsRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(FlowServer).InstanceLogsParcels(m, &flowInstanceLogsParcelsServer{stream})
+}
+
+type Flow_InstanceLogsParcelsServer interface {
+	Send(*InstanceLogsResponse) error
+	grpc.ServerStream
+}
+
+type flowInstanceLogsParcelsServer struct {
+	grpc.ServerStream
+}
+
+func (x *flowInstanceLogsParcelsServer) Send(m *InstanceLogsResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _Flow_MirrorActivityLogs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MirrorActivityLogsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlowServer).MirrorActivityLogs(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Flow_MirrorActivityLogs_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).MirrorActivityLogs(ctx, req.(*MirrorActivityLogsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Flow_MirrorActivityLogsParcels_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(MirrorActivityLogsRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(FlowServer).MirrorActivityLogsParcels(m, &flowMirrorActivityLogsParcelsServer{stream})
+}
+
+type Flow_MirrorActivityLogsParcelsServer interface {
+	Send(*MirrorActivityLogsResponse) error
+	grpc.ServerStream
+}
+
+type flowMirrorActivityLogsParcelsServer struct {
+	grpc.ServerStream
+}
+
+func (x *flowMirrorActivityLogsParcelsServer) Send(m *MirrorActivityLogsResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -2798,43 +2789,40 @@ func _Flow_InstanceOutput_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Flow_InstanceLogs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(InstanceLogsRequest)
+func _Flow_InstanceMetadata_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(InstanceMetadataRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(FlowServer).InstanceLogs(ctx, in)
+		return srv.(FlowServer).InstanceMetadata(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Flow_InstanceLogs_FullMethodName,
+		FullMethod: Flow_InstanceMetadata_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).InstanceLogs(ctx, req.(*InstanceLogsRequest))
+		return srv.(FlowServer).InstanceMetadata(ctx, req.(*InstanceMetadataRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Flow_InstanceLogsParcels_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(InstanceLogsRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
+func _Flow_ReleaseInstance_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ReleaseInstanceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
 	}
-	return srv.(FlowServer).InstanceLogsParcels(m, &flowInstanceLogsParcelsServer{stream})
-}
-
-type Flow_InstanceLogsParcelsServer interface {
-	Send(*InstanceLogsResponse) error
-	grpc.ServerStream
-}
-
-type flowInstanceLogsParcelsServer struct {
-	grpc.ServerStream
-}
-
-func (x *flowInstanceLogsParcelsServer) Send(m *InstanceLogsResponse) error {
-	return x.ServerStream.SendMsg(m)
+	if interceptor == nil {
+		return srv.(FlowServer).ReleaseInstance(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Flow_ReleaseInstance_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlowServer).ReleaseInstance(ctx, req.(*ReleaseInstanceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _Flow_StartWorkflow_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -3575,114 +3563,6 @@ func _Flow_ResolveNamespaceUID_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Flow_ResolveWorkflowUID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ResolveWorkflowUIDRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).ResolveWorkflowUID(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_ResolveWorkflowUID_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).ResolveWorkflowUID(ctx, req.(*ResolveWorkflowUIDRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_SetNamespaceConfig_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SetNamespaceConfigRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).SetNamespaceConfig(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_SetNamespaceConfig_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).SetNamespaceConfig(ctx, req.(*SetNamespaceConfigRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_GetNamespaceConfig_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetNamespaceConfigRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).GetNamespaceConfig(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_GetNamespaceConfig_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).GetNamespaceConfig(ctx, req.(*GetNamespaceConfigRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_Build_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).Build(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_Build_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).Build(ctx, req.(*emptypb.Empty))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_InstanceMetadata_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(InstanceMetadataRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).InstanceMetadata(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_InstanceMetadata_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).InstanceMetadata(ctx, req.(*InstanceMetadataRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_ReleaseInstance_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ReleaseInstanceRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).ReleaseInstance(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_ReleaseInstance_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).ReleaseInstance(ctx, req.(*ReleaseInstanceRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Flow_CreateNamespaceMirror_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CreateNamespaceMirrorRequest)
 	if err := dec(in); err != nil {
@@ -3848,45 +3728,6 @@ func (x *flowMirrorInfoStreamServer) Send(m *MirrorInfoResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func _Flow_MirrorActivityLogs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MirrorActivityLogsRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).MirrorActivityLogs(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_MirrorActivityLogs_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).MirrorActivityLogs(ctx, req.(*MirrorActivityLogsRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_MirrorActivityLogsParcels_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(MirrorActivityLogsRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
-	return srv.(FlowServer).MirrorActivityLogsParcels(m, &flowMirrorActivityLogsParcelsServer{stream})
-}
-
-type Flow_MirrorActivityLogsParcelsServer interface {
-	Send(*MirrorActivityLogsResponse) error
-	grpc.ServerStream
-}
-
-type flowMirrorActivityLogsParcelsServer struct {
-	grpc.ServerStream
-}
-
-func (x *flowMirrorActivityLogsParcelsServer) Send(m *MirrorActivityLogsResponse) error {
-	return x.ServerStream.SendMsg(m)
-}
-
 func _Flow_CancelMirrorActivity_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CancelMirrorActivityRequest)
 	if err := dec(in); err != nil {
@@ -4001,10 +3842,6 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Flow_DeleteNamespace_Handler,
 		},
 		{
-			MethodName: "RenameNamespace",
-			Handler:    _Flow_RenameNamespace_Handler,
-		},
-		{
 			MethodName: "ServerLogs",
 			Handler:    _Flow_ServerLogs_Handler,
 		},
@@ -4015,6 +3852,14 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "WorkflowLogs",
 			Handler:    _Flow_WorkflowLogs_Handler,
+		},
+		{
+			MethodName: "InstanceLogs",
+			Handler:    _Flow_InstanceLogs_Handler,
+		},
+		{
+			MethodName: "MirrorActivityLogs",
+			Handler:    _Flow_MirrorActivityLogs_Handler,
 		},
 		{
 			MethodName: "Directory",
@@ -4093,8 +3938,12 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Flow_InstanceOutput_Handler,
 		},
 		{
-			MethodName: "InstanceLogs",
-			Handler:    _Flow_InstanceLogs_Handler,
+			MethodName: "InstanceMetadata",
+			Handler:    _Flow_InstanceMetadata_Handler,
+		},
+		{
+			MethodName: "ReleaseInstance",
+			Handler:    _Flow_ReleaseInstance_Handler,
 		},
 		{
 			MethodName: "StartWorkflow",
@@ -4197,30 +4046,6 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Flow_ResolveNamespaceUID_Handler,
 		},
 		{
-			MethodName: "ResolveWorkflowUID",
-			Handler:    _Flow_ResolveWorkflowUID_Handler,
-		},
-		{
-			MethodName: "SetNamespaceConfig",
-			Handler:    _Flow_SetNamespaceConfig_Handler,
-		},
-		{
-			MethodName: "GetNamespaceConfig",
-			Handler:    _Flow_GetNamespaceConfig_Handler,
-		},
-		{
-			MethodName: "Build",
-			Handler:    _Flow_Build_Handler,
-		},
-		{
-			MethodName: "InstanceMetadata",
-			Handler:    _Flow_InstanceMetadata_Handler,
-		},
-		{
-			MethodName: "ReleaseInstance",
-			Handler:    _Flow_ReleaseInstance_Handler,
-		},
-		{
 			MethodName: "CreateNamespaceMirror",
 			Handler:    _Flow_CreateNamespaceMirror_Handler,
 		},
@@ -4251,10 +4076,6 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "MirrorInfo",
 			Handler:    _Flow_MirrorInfo_Handler,
-		},
-		{
-			MethodName: "MirrorActivityLogs",
-			Handler:    _Flow_MirrorActivityLogs_Handler,
 		},
 		{
 			MethodName: "CancelMirrorActivity",
@@ -4299,6 +4120,16 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 			ServerStreams: true,
 		},
 		{
+			StreamName:    "InstanceLogsParcels",
+			Handler:       _Flow_InstanceLogsParcels_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "MirrorActivityLogsParcels",
+			Handler:       _Flow_MirrorActivityLogsParcels_Handler,
+			ServerStreams: true,
+		},
+		{
 			StreamName:    "DirectoryStream",
 			Handler:       _Flow_DirectoryStream_Handler,
 			ServerStreams: true,
@@ -4321,11 +4152,6 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "InstancesStream",
 			Handler:       _Flow_InstancesStream_Handler,
-			ServerStreams: true,
-		},
-		{
-			StreamName:    "InstanceLogsParcels",
-			Handler:       _Flow_InstanceLogsParcels_Handler,
 			ServerStreams: true,
 		},
 		{
@@ -4396,11 +4222,6 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "MirrorInfoStream",
 			Handler:       _Flow_MirrorInfoStream_Handler,
-			ServerStreams: true,
-		},
-		{
-			StreamName:    "MirrorActivityLogsParcels",
-			Handler:       _Flow_MirrorActivityLogsParcels_Handler,
 			ServerStreams: true,
 		},
 	},

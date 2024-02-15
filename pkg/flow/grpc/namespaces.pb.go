@@ -500,108 +500,6 @@ func (x *DeleteNamespaceRequest) GetRecursive() bool {
 	return false
 }
 
-type RenameNamespaceRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Old string `protobuf:"bytes,1,opt,name=old,proto3" json:"old,omitempty"`
-	New string `protobuf:"bytes,2,opt,name=new,proto3" json:"new,omitempty"`
-}
-
-func (x *RenameNamespaceRequest) Reset() {
-	*x = RenameNamespaceRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_flow_grpc_namespaces_proto_msgTypes[9]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *RenameNamespaceRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*RenameNamespaceRequest) ProtoMessage() {}
-
-func (x *RenameNamespaceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_flow_grpc_namespaces_proto_msgTypes[9]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use RenameNamespaceRequest.ProtoReflect.Descriptor instead.
-func (*RenameNamespaceRequest) Descriptor() ([]byte, []int) {
-	return file_pkg_flow_grpc_namespaces_proto_rawDescGZIP(), []int{9}
-}
-
-func (x *RenameNamespaceRequest) GetOld() string {
-	if x != nil {
-		return x.Old
-	}
-	return ""
-}
-
-func (x *RenameNamespaceRequest) GetNew() string {
-	if x != nil {
-		return x.New
-	}
-	return ""
-}
-
-type RenameNamespaceResponse struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Namespace *Namespace `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
-}
-
-func (x *RenameNamespaceResponse) Reset() {
-	*x = RenameNamespaceResponse{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_flow_grpc_namespaces_proto_msgTypes[10]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *RenameNamespaceResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*RenameNamespaceResponse) ProtoMessage() {}
-
-func (x *RenameNamespaceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_flow_grpc_namespaces_proto_msgTypes[10]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use RenameNamespaceResponse.ProtoReflect.Descriptor instead.
-func (*RenameNamespaceResponse) Descriptor() ([]byte, []int) {
-	return file_pkg_flow_grpc_namespaces_proto_rawDescGZIP(), []int{10}
-}
-
-func (x *RenameNamespaceResponse) GetNamespace() *Namespace {
-	if x != nil {
-		return x.Namespace
-	}
-	return nil
-}
-
 type LinterIssue struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -616,7 +514,7 @@ type LinterIssue struct {
 func (x *LinterIssue) Reset() {
 	*x = LinterIssue{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_flow_grpc_namespaces_proto_msgTypes[11]
+		mi := &file_pkg_flow_grpc_namespaces_proto_msgTypes[9]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -629,7 +527,7 @@ func (x *LinterIssue) String() string {
 func (*LinterIssue) ProtoMessage() {}
 
 func (x *LinterIssue) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_flow_grpc_namespaces_proto_msgTypes[11]
+	mi := &file_pkg_flow_grpc_namespaces_proto_msgTypes[9]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -642,7 +540,7 @@ func (x *LinterIssue) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LinterIssue.ProtoReflect.Descriptor instead.
 func (*LinterIssue) Descriptor() ([]byte, []int) {
-	return file_pkg_flow_grpc_namespaces_proto_rawDescGZIP(), []int{11}
+	return file_pkg_flow_grpc_namespaces_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *LinterIssue) GetType() string {
@@ -684,7 +582,7 @@ type NamespaceLintRequest struct {
 func (x *NamespaceLintRequest) Reset() {
 	*x = NamespaceLintRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_flow_grpc_namespaces_proto_msgTypes[12]
+		mi := &file_pkg_flow_grpc_namespaces_proto_msgTypes[10]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -697,7 +595,7 @@ func (x *NamespaceLintRequest) String() string {
 func (*NamespaceLintRequest) ProtoMessage() {}
 
 func (x *NamespaceLintRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_flow_grpc_namespaces_proto_msgTypes[12]
+	mi := &file_pkg_flow_grpc_namespaces_proto_msgTypes[10]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -710,7 +608,7 @@ func (x *NamespaceLintRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NamespaceLintRequest.ProtoReflect.Descriptor instead.
 func (*NamespaceLintRequest) Descriptor() ([]byte, []int) {
-	return file_pkg_flow_grpc_namespaces_proto_rawDescGZIP(), []int{12}
+	return file_pkg_flow_grpc_namespaces_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *NamespaceLintRequest) GetName() string {
@@ -732,7 +630,7 @@ type NamespaceLintResponse struct {
 func (x *NamespaceLintResponse) Reset() {
 	*x = NamespaceLintResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_flow_grpc_namespaces_proto_msgTypes[13]
+		mi := &file_pkg_flow_grpc_namespaces_proto_msgTypes[11]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -745,7 +643,7 @@ func (x *NamespaceLintResponse) String() string {
 func (*NamespaceLintResponse) ProtoMessage() {}
 
 func (x *NamespaceLintResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_flow_grpc_namespaces_proto_msgTypes[13]
+	mi := &file_pkg_flow_grpc_namespaces_proto_msgTypes[11]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -758,7 +656,7 @@ func (x *NamespaceLintResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NamespaceLintResponse.ProtoReflect.Descriptor instead.
 func (*NamespaceLintResponse) Descriptor() ([]byte, []int) {
-	return file_pkg_flow_grpc_namespaces_proto_rawDescGZIP(), []int{13}
+	return file_pkg_flow_grpc_namespaces_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *NamespaceLintResponse) GetNamespace() *Namespace {
@@ -841,37 +739,28 @@ var file_pkg_flow_grpc_namespaces_proto_rawDesc = []byte{
 	0x0a, 0x0a, 0x69, 0x64, 0x65, 0x6d, 0x70, 0x6f, 0x74, 0x65, 0x6e, 0x74, 0x18, 0x02, 0x20, 0x01,
 	0x28, 0x08, 0x52, 0x0a, 0x69, 0x64, 0x65, 0x6d, 0x70, 0x6f, 0x74, 0x65, 0x6e, 0x74, 0x12, 0x1c,
 	0x0a, 0x09, 0x72, 0x65, 0x63, 0x75, 0x72, 0x73, 0x69, 0x76, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28,
-	0x08, 0x52, 0x09, 0x72, 0x65, 0x63, 0x75, 0x72, 0x73, 0x69, 0x76, 0x65, 0x22, 0x3c, 0x0a, 0x16,
-	0x52, 0x65, 0x6e, 0x61, 0x6d, 0x65, 0x4e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x52,
-	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x10, 0x0a, 0x03, 0x6f, 0x6c, 0x64, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x03, 0x6f, 0x6c, 0x64, 0x12, 0x10, 0x0a, 0x03, 0x6e, 0x65, 0x77, 0x18,
-	0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6e, 0x65, 0x77, 0x22, 0x51, 0x0a, 0x17, 0x52, 0x65,
-	0x6e, 0x61, 0x6d, 0x65, 0x4e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x52, 0x65, 0x73,
-	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x36, 0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61,
-	0x63, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x18, 0x2e, 0x64, 0x69, 0x72, 0x65, 0x6b,
-	0x74, 0x69, 0x76, 0x5f, 0x66, 0x6c, 0x6f, 0x77, 0x2e, 0x4e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61,
-	0x63, 0x65, 0x52, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x22, 0x5d, 0x0a,
-	0x0b, 0x4c, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x49, 0x73, 0x73, 0x75, 0x65, 0x12, 0x12, 0x0a, 0x04,
-	0x74, 0x79, 0x70, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x74, 0x79, 0x70, 0x65,
-	0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64,
-	0x12, 0x14, 0x0a, 0x05, 0x69, 0x73, 0x73, 0x75, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52,
-	0x05, 0x69, 0x73, 0x73, 0x75, 0x65, 0x12, 0x14, 0x0a, 0x05, 0x6c, 0x65, 0x76, 0x65, 0x6c, 0x18,
-	0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x6c, 0x65, 0x76, 0x65, 0x6c, 0x22, 0x2a, 0x0a, 0x14,
-	0x4e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x4c, 0x69, 0x6e, 0x74, 0x52, 0x65, 0x71,
-	0x75, 0x65, 0x73, 0x74, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01,
-	0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x22, 0x83, 0x01, 0x0a, 0x15, 0x4e, 0x61, 0x6d,
-	0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x4c, 0x69, 0x6e, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
-	0x73, 0x65, 0x12, 0x36, 0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x18, 0x2e, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76,
-	0x5f, 0x66, 0x6c, 0x6f, 0x77, 0x2e, 0x4e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x52,
-	0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x32, 0x0a, 0x06, 0x69, 0x73,
-	0x73, 0x75, 0x65, 0x73, 0x18, 0x04, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x64, 0x69, 0x72,
-	0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f, 0x66, 0x6c, 0x6f, 0x77, 0x2e, 0x4c, 0x69, 0x6e, 0x74, 0x65,
-	0x72, 0x49, 0x73, 0x73, 0x75, 0x65, 0x52, 0x06, 0x69, 0x73, 0x73, 0x75, 0x65, 0x73, 0x42, 0x2c,
-	0x5a, 0x2a, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x64, 0x69, 0x72,
-	0x65, 0x6b, 0x74, 0x69, 0x76, 0x2f, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x2f, 0x70,
-	0x6b, 0x67, 0x2f, 0x66, 0x6c, 0x6f, 0x77, 0x2f, 0x67, 0x72, 0x70, 0x63, 0x62, 0x06, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x33,
+	0x08, 0x52, 0x09, 0x72, 0x65, 0x63, 0x75, 0x72, 0x73, 0x69, 0x76, 0x65, 0x22, 0x5d, 0x0a, 0x0b,
+	0x4c, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x49, 0x73, 0x73, 0x75, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x74,
+	0x79, 0x70, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x74, 0x79, 0x70, 0x65, 0x12,
+	0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x12,
+	0x14, 0x0a, 0x05, 0x69, 0x73, 0x73, 0x75, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05,
+	0x69, 0x73, 0x73, 0x75, 0x65, 0x12, 0x14, 0x0a, 0x05, 0x6c, 0x65, 0x76, 0x65, 0x6c, 0x18, 0x04,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x6c, 0x65, 0x76, 0x65, 0x6c, 0x22, 0x2a, 0x0a, 0x14, 0x4e,
+	0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x4c, 0x69, 0x6e, 0x74, 0x52, 0x65, 0x71, 0x75,
+	0x65, 0x73, 0x74, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x22, 0x83, 0x01, 0x0a, 0x15, 0x4e, 0x61, 0x6d, 0x65,
+	0x73, 0x70, 0x61, 0x63, 0x65, 0x4c, 0x69, 0x6e, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
+	0x65, 0x12, 0x36, 0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x0b, 0x32, 0x18, 0x2e, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x5f,
+	0x66, 0x6c, 0x6f, 0x77, 0x2e, 0x4e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x52, 0x09,
+	0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x32, 0x0a, 0x06, 0x69, 0x73, 0x73,
+	0x75, 0x65, 0x73, 0x18, 0x04, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x64, 0x69, 0x72, 0x65,
+	0x6b, 0x74, 0x69, 0x76, 0x5f, 0x66, 0x6c, 0x6f, 0x77, 0x2e, 0x4c, 0x69, 0x6e, 0x74, 0x65, 0x72,
+	0x49, 0x73, 0x73, 0x75, 0x65, 0x52, 0x06, 0x69, 0x73, 0x73, 0x75, 0x65, 0x73, 0x42, 0x2c, 0x5a,
+	0x2a, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x64, 0x69, 0x72, 0x65,
+	0x6b, 0x74, 0x69, 0x76, 0x2f, 0x64, 0x69, 0x72, 0x65, 0x6b, 0x74, 0x69, 0x76, 0x2f, 0x70, 0x6b,
+	0x67, 0x2f, 0x66, 0x6c, 0x6f, 0x77, 0x2f, 0x67, 0x72, 0x70, 0x63, 0x62, 0x06, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x33,
 }
 
 var (
@@ -886,7 +775,7 @@ func file_pkg_flow_grpc_namespaces_proto_rawDescGZIP() []byte {
 	return file_pkg_flow_grpc_namespaces_proto_rawDescData
 }
 
-var file_pkg_flow_grpc_namespaces_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
+var file_pkg_flow_grpc_namespaces_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
 var file_pkg_flow_grpc_namespaces_proto_goTypes = []interface{}{
 	(*Namespace)(nil),                  // 0: direktiv_flow.Namespace
 	(*ResolveNamespaceUIDRequest)(nil), // 1: direktiv_flow.ResolveNamespaceUIDRequest
@@ -897,33 +786,30 @@ var file_pkg_flow_grpc_namespaces_proto_goTypes = []interface{}{
 	(*CreateNamespaceRequest)(nil),     // 6: direktiv_flow.CreateNamespaceRequest
 	(*CreateNamespaceResponse)(nil),    // 7: direktiv_flow.CreateNamespaceResponse
 	(*DeleteNamespaceRequest)(nil),     // 8: direktiv_flow.DeleteNamespaceRequest
-	(*RenameNamespaceRequest)(nil),     // 9: direktiv_flow.RenameNamespaceRequest
-	(*RenameNamespaceResponse)(nil),    // 10: direktiv_flow.RenameNamespaceResponse
-	(*LinterIssue)(nil),                // 11: direktiv_flow.LinterIssue
-	(*NamespaceLintRequest)(nil),       // 12: direktiv_flow.NamespaceLintRequest
-	(*NamespaceLintResponse)(nil),      // 13: direktiv_flow.NamespaceLintResponse
-	nil,                                // 14: direktiv_flow.Namespace.NotesEntry
-	(*timestamppb.Timestamp)(nil),      // 15: google.protobuf.Timestamp
-	(*Pagination)(nil),                 // 16: direktiv_flow.Pagination
-	(*PageInfo)(nil),                   // 17: direktiv_flow.PageInfo
+	(*LinterIssue)(nil),                // 9: direktiv_flow.LinterIssue
+	(*NamespaceLintRequest)(nil),       // 10: direktiv_flow.NamespaceLintRequest
+	(*NamespaceLintResponse)(nil),      // 11: direktiv_flow.NamespaceLintResponse
+	nil,                                // 12: direktiv_flow.Namespace.NotesEntry
+	(*timestamppb.Timestamp)(nil),      // 13: google.protobuf.Timestamp
+	(*Pagination)(nil),                 // 14: direktiv_flow.Pagination
+	(*PageInfo)(nil),                   // 15: direktiv_flow.PageInfo
 }
 var file_pkg_flow_grpc_namespaces_proto_depIdxs = []int32{
-	15, // 0: direktiv_flow.Namespace.created_at:type_name -> google.protobuf.Timestamp
-	15, // 1: direktiv_flow.Namespace.updated_at:type_name -> google.protobuf.Timestamp
-	14, // 2: direktiv_flow.Namespace.notes:type_name -> direktiv_flow.Namespace.NotesEntry
+	13, // 0: direktiv_flow.Namespace.created_at:type_name -> google.protobuf.Timestamp
+	13, // 1: direktiv_flow.Namespace.updated_at:type_name -> google.protobuf.Timestamp
+	12, // 2: direktiv_flow.Namespace.notes:type_name -> direktiv_flow.Namespace.NotesEntry
 	0,  // 3: direktiv_flow.NamespaceResponse.namespace:type_name -> direktiv_flow.Namespace
-	16, // 4: direktiv_flow.NamespacesRequest.pagination:type_name -> direktiv_flow.Pagination
-	17, // 5: direktiv_flow.NamespacesResponse.pageInfo:type_name -> direktiv_flow.PageInfo
+	14, // 4: direktiv_flow.NamespacesRequest.pagination:type_name -> direktiv_flow.Pagination
+	15, // 5: direktiv_flow.NamespacesResponse.pageInfo:type_name -> direktiv_flow.PageInfo
 	0,  // 6: direktiv_flow.NamespacesResponse.results:type_name -> direktiv_flow.Namespace
 	0,  // 7: direktiv_flow.CreateNamespaceResponse.namespace:type_name -> direktiv_flow.Namespace
-	0,  // 8: direktiv_flow.RenameNamespaceResponse.namespace:type_name -> direktiv_flow.Namespace
-	0,  // 9: direktiv_flow.NamespaceLintResponse.namespace:type_name -> direktiv_flow.Namespace
-	11, // 10: direktiv_flow.NamespaceLintResponse.issues:type_name -> direktiv_flow.LinterIssue
-	11, // [11:11] is the sub-list for method output_type
-	11, // [11:11] is the sub-list for method input_type
-	11, // [11:11] is the sub-list for extension type_name
-	11, // [11:11] is the sub-list for extension extendee
-	0,  // [0:11] is the sub-list for field type_name
+	0,  // 8: direktiv_flow.NamespaceLintResponse.namespace:type_name -> direktiv_flow.Namespace
+	9,  // 9: direktiv_flow.NamespaceLintResponse.issues:type_name -> direktiv_flow.LinterIssue
+	10, // [10:10] is the sub-list for method output_type
+	10, // [10:10] is the sub-list for method input_type
+	10, // [10:10] is the sub-list for extension type_name
+	10, // [10:10] is the sub-list for extension extendee
+	0,  // [0:10] is the sub-list for field type_name
 }
 
 func init() { file_pkg_flow_grpc_namespaces_proto_init() }
@@ -1042,30 +928,6 @@ func file_pkg_flow_grpc_namespaces_proto_init() {
 			}
 		}
 		file_pkg_flow_grpc_namespaces_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*RenameNamespaceRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_pkg_flow_grpc_namespaces_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*RenameNamespaceResponse); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_pkg_flow_grpc_namespaces_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*LinterIssue); i {
 			case 0:
 				return &v.state
@@ -1077,7 +939,7 @@ func file_pkg_flow_grpc_namespaces_proto_init() {
 				return nil
 			}
 		}
-		file_pkg_flow_grpc_namespaces_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
+		file_pkg_flow_grpc_namespaces_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*NamespaceLintRequest); i {
 			case 0:
 				return &v.state
@@ -1089,7 +951,7 @@ func file_pkg_flow_grpc_namespaces_proto_init() {
 				return nil
 			}
 		}
-		file_pkg_flow_grpc_namespaces_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
+		file_pkg_flow_grpc_namespaces_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*NamespaceLintResponse); i {
 			case 0:
 				return &v.state
@@ -1108,7 +970,7 @@ func file_pkg_flow_grpc_namespaces_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_pkg_flow_grpc_namespaces_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   15,
+			NumMessages:   13,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

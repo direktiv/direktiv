@@ -20,7 +20,7 @@ import {
   scaleOptions,
 } from "../schema";
 
-import EnvForm from "./Envs";
+import { EnvsArrayForm } from "./EnvsArrayForm";
 import { FC } from "react";
 import { Fieldset } from "~/components/Form/Fieldset";
 import Input from "~/design/Input";
@@ -149,14 +149,7 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
           <Controller
             control={control}
             name="envs"
-            render={({ field }) => (
-              <EnvForm
-                defaultValue={field.value || []}
-                onChange={(changedValue) => {
-                  field.onChange(changedValue);
-                }}
-              />
-            )}
+            render={({ field }) => <EnvsArrayForm field={field} />}
           />
         </Fieldset>
       </div>

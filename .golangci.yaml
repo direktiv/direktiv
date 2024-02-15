@@ -51,6 +51,10 @@ linters:
     - scopelint
     - gomnd
     - tagliatelle
+    - musttag
+    - perfsprint # not needed, this one linting nano optimizations.
+    - spancheck # TODO: Alan, enable this one as it helps you fixing some telemetry bugs.
+    - revive
 
 issues:
   exclude-rules:
@@ -69,7 +73,6 @@ issues:
         - testpackage
         - asasalint
         - predeclared
-        - musttag
         - maintidx
         - interfacebloat
         - forcetypeassert

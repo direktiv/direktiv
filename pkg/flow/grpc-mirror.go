@@ -40,8 +40,7 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 	}
 
 	ns, err = tx.DataStore().Namespaces().Create(ctx, &core.Namespace{
-		Name:   req.GetName(),
-		Config: core.DefaultNamespaceConfig,
+		Name: req.GetName(),
 	})
 	if err != nil {
 		return nil, err

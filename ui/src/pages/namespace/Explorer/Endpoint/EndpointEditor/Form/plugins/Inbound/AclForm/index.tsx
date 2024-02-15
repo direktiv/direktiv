@@ -1,14 +1,14 @@
 import {
   AclFormSchema,
   AclFormSchemaType,
-} from "../../../schema/plugins/inbound/acl";
+} from "../../../../schema/plugins/inbound/acl";
 import { Controller, useForm } from "react-hook-form";
 import { FC, FormEvent } from "react";
 import FormErrors, { errorsType } from "~/components/FormErrors";
 
-import { ArrayInput } from "~/components/Form/ArrayInput";
+import { AclArrayForm } from "./AclArrayForm";
 import { Fieldset } from "~/components/Form/Fieldset";
-import { PluginWrapper } from "../components/PluginSelector";
+import { PluginWrapper } from "../../components/PluginSelector";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -66,17 +66,7 @@ export const AclForm: FC<FormProps> = ({ defaultConfig, onSubmit, formId }) => {
           <Controller
             control={control}
             name="configuration.allow_groups"
-            render={({ field }) => (
-              <ArrayInput
-                placeholder={t(
-                  "pages.explorer.endpoint.editor.form.plugins.inbound.acl.groupPlaceholder"
-                )}
-                defaultValue={field.value ?? []}
-                onChange={(changedValue) => {
-                  field.onChange(changedValue);
-                }}
-              />
-            )}
+            render={({ field }) => <AclArrayForm field={field} />}
           />
         </Fieldset>
         <Fieldset
@@ -87,17 +77,7 @@ export const AclForm: FC<FormProps> = ({ defaultConfig, onSubmit, formId }) => {
           <Controller
             control={control}
             name="configuration.deny_groups"
-            render={({ field }) => (
-              <ArrayInput
-                placeholder={t(
-                  "pages.explorer.endpoint.editor.form.plugins.inbound.acl.groupPlaceholder"
-                )}
-                defaultValue={field.value ?? []}
-                onChange={(changedValue) => {
-                  field.onChange(changedValue);
-                }}
-              />
-            )}
+            render={({ field }) => <AclArrayForm field={field} />}
           />
         </Fieldset>
         <Fieldset
@@ -108,17 +88,7 @@ export const AclForm: FC<FormProps> = ({ defaultConfig, onSubmit, formId }) => {
           <Controller
             control={control}
             name="configuration.allow_tags"
-            render={({ field }) => (
-              <ArrayInput
-                placeholder={t(
-                  "pages.explorer.endpoint.editor.form.plugins.inbound.acl.tagPlaceholder"
-                )}
-                defaultValue={field.value ?? []}
-                onChange={(changedValue) => {
-                  field.onChange(changedValue);
-                }}
-              />
-            )}
+            render={({ field }) => <AclArrayForm field={field} />}
           />
         </Fieldset>
         <Fieldset
@@ -129,17 +99,7 @@ export const AclForm: FC<FormProps> = ({ defaultConfig, onSubmit, formId }) => {
           <Controller
             control={control}
             name="configuration.deny_tags"
-            render={({ field }) => (
-              <ArrayInput
-                placeholder={t(
-                  "pages.explorer.endpoint.editor.form.plugins.inbound.acl.tagPlaceholder"
-                )}
-                defaultValue={field.value ?? []}
-                onChange={(changedValue) => {
-                  field.onChange(changedValue);
-                }}
-              />
-            )}
+            render={({ field }) => <AclArrayForm field={field} />}
           />
         </Fieldset>
       </PluginWrapper>

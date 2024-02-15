@@ -11,20 +11,27 @@ import (
 // RuntimeVariable are direktiv runtime variables that hold data, workflows performs getting and setting on these
 // data, RuntimeVariables also preserve state across multiple workflow runs.
 type RuntimeVariable struct {
-	ID uuid.UUID
+	ID uuid.UUID `json:"id"`
 
-	Namespace    string
-	WorkflowPath string
-	InstanceID   uuid.UUID
+	Namespace    string    `json:"-"`
+	WorkflowPath string    `json:"workflowPath"`
+	InstanceID   uuid.UUID `json:"instanceId"`
 
-	Name string
+	Name string `json:"name"`
 
-	Size     int
-	MimeType string
-	Data     []byte
+	Size     int    `json:"size"`
+	MimeType string `json:"mimeType"`
+	Data     []byte `json:"data"`
 
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+}
+
+// RuntimeVariablePatch is used to update a runtime variable.
+type RuntimeVariablePatch struct {
+	Name     *string `json:"name"`
+	MimeType *string `json:"mimeType"`
+	Data     []byte  `json:"data"`
 }
 
 // RuntimeVariablesStore responsible for fetching and setting direktiv runtime variables from datastore.
@@ -58,10 +65,11 @@ type RuntimeVariablesStore interface {
 
 	// Set tries to update runtime variable data and mimetype fields or insert a new one if no matching variable to
 	// update. Param variable should have one reference field set and name field set.
+	// Deprecated method, use Create or Patch.
 	Set(ctx context.Context, variable *RuntimeVariable) (*RuntimeVariable, error)
 
-	// SetName updates a variable name. if no record found it returns datastore.ErrNotFound error.
-	SetName(ctx context.Context, id uuid.UUID, name string) (*RuntimeVariable, error)
+	Create(ctx context.Context, variable *RuntimeVariable) (*RuntimeVariable, error)
+	Patch(ctx context.Context, id uuid.UUID, patch *RuntimeVariablePatch) (*RuntimeVariable, error)
 
 	// DeleteForWorkflow removes all entries that are linked to a workflow.
 	DeleteForWorkflow(ctx context.Context, namespace string, workflowPath string) error
