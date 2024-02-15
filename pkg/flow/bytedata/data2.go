@@ -10,7 +10,6 @@ import (
 	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
-	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -63,7 +62,7 @@ func ConvertFileToGrpcFile(file *filestore.File) *grpc.File {
 	}
 }
 
-func ConvertMirrorConfigToGrpcMirrorInfo(config *mirror.Config) *grpc.MirrorInfo {
+func ConvertMirrorConfigToGrpcMirrorInfo(config *datastore.MirrorConfig) *grpc.MirrorInfo {
 	return &grpc.MirrorInfo{
 		Url: config.URL,
 		Ref: config.GitRef,
@@ -77,7 +76,7 @@ func ConvertMirrorConfigToGrpcMirrorInfo(config *mirror.Config) *grpc.MirrorInfo
 	}
 }
 
-func ConvertMirrorProcessToGrpcMirrorActivity(mirror *mirror.Process) *grpc.MirrorActivityInfo {
+func ConvertMirrorProcessToGrpcMirrorActivity(mirror *datastore.MirrorProcess) *grpc.MirrorActivityInfo {
 	return &grpc.MirrorActivityInfo{
 		Id:        mirror.ID.String(),
 		Status:    mirror.Status,
@@ -87,15 +86,15 @@ func ConvertMirrorProcessToGrpcMirrorActivity(mirror *mirror.Process) *grpc.Mirr
 	}
 }
 
-// ConvertMirrorProcessesToGrpcMirrorActivityInfoList converts a slice of Process pointers
+// ConvertMirrorProcessesToGrpcMirrorActivityInfoList converts a slice of MirrorProcess pointers
 // into a slice of grpc.MirrorActivityInfo pointers. The resulting slice is sorted
 // by the UpdatedAt field in ascending order.
 // Parameters:
-// list: A slice of pointers to Process objects that need to be converted.
+// list: A slice of pointers to MirrorProcess objects that need to be converted.
 // Returns:
 // A slice of pointers to grpc.MirrorActivityInfo objects sorted by UpdatedAt.
-func ConvertMirrorProcessesToGrpcMirrorActivityInfoList(list []*mirror.Process) []*grpc.MirrorActivityInfo {
-	copiedList := make([]*mirror.Process, len(list))
+func ConvertMirrorProcessesToGrpcMirrorActivityInfoList(list []*datastore.MirrorProcess) []*grpc.MirrorActivityInfo {
+	copiedList := make([]*datastore.MirrorProcess, len(list))
 	copy(copiedList, list)
 
 	// Sort the copied list by UpdatedAt

@@ -5,9 +5,10 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
+
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
-	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"github.com/go-chi/chi/v5"
 )
@@ -19,7 +20,7 @@ type nsController struct {
 
 type namespaceWithSettings struct {
 	*core.Namespace
-	MirrorSettings *mirror.Config `json:"mirrorSettings"`
+	MirrorSettings *datastore.MirrorConfig `json:"mirrorSettings"`
 }
 
 func (e *nsController) mountRouter(r chi.Router) {
@@ -119,7 +120,7 @@ func (e *nsController) list(w http.ResponseWriter, r *http.Request) {
 		writeDataStoreError(w, err)
 		return
 	}
-	indexedMirrors := map[string]*mirror.Config{}
+	indexedMirrors := map[string]*datastore.MirrorConfig{}
 	for _, m := range mirrors {
 		indexedMirrors[m.Namespace] = m
 	}

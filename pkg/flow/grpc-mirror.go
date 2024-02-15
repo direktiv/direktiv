@@ -51,7 +51,7 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 		return nil, err
 	}
 
-	mirConfig, err := tx.DataStore().Mirror().CreateConfig(ctx, &mirror.Config{
+	mirConfig, err := tx.DataStore().Mirror().CreateConfig(ctx, &datastore.MirrorConfig{
 		Namespace:            ns.Name,
 		GitRef:               settings.Ref,
 		URL:                  settings.Url,
@@ -68,13 +68,13 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 		return nil, err
 	}
 
-	proc, err := flow.mirrorManager.NewProcess(ctx, ns, mirror.ProcessTypeInit)
+	proc, err := flow.mirrorManager.NewProcess(ctx, ns, datastore.ProcessTypeInit)
 	if err != nil {
 		return nil, err
 	}
 
 	go func() {
-		flow.mirrorManager.Execute(context.Background(), proc, mirConfig.GetSource, &mirror.DirektivApplyer{NamespaceID: ns.ID})
+		flow.mirrorManager.Execute(context.Background(), proc, mirConfig, &mirror.DirektivApplyer{NamespaceID: ns.ID})
 		err := flow.pBus.Publish(pubsub.MirrorSync, ns.Name)
 		if err != nil {
 			flow.sugar.Error("pubsub publish", "error", err)
@@ -145,13 +145,13 @@ func (flow *flow) UpdateMirrorSettings(ctx context.Context, req *grpc.UpdateMirr
 
 	flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Updated mirror configs for namespace: %s", ns.Name)
 
-	proc, err := flow.mirrorManager.NewProcess(ctx, ns, mirror.ProcessTypeSync)
+	proc, err := flow.mirrorManager.NewProcess(ctx, ns, datastore.ProcessTypeSync)
 	if err != nil {
 		return nil, err
 	}
 
 	go func() {
-		flow.mirrorManager.Execute(context.Background(), proc, mirConfig.GetSource, &mirror.DirektivApplyer{NamespaceID: ns.ID})
+		flow.mirrorManager.Execute(context.Background(), proc, mirConfig, &mirror.DirektivApplyer{NamespaceID: ns.ID})
 		err := flow.pBus.Publish(pubsub.MirrorSync, ns.Name)
 		if err != nil {
 			flow.sugar.Error("pubsub publish", "error", err)
@@ -203,13 +203,13 @@ func (flow *flow) HardSyncMirror(ctx context.Context, req *grpc.HardSyncMirrorRe
 		return nil, err
 	}
 
-	proc, err := flow.mirrorManager.NewProcess(ctx, ns, mirror.ProcessTypeSync)
+	proc, err := flow.mirrorManager.NewProcess(ctx, ns, datastore.ProcessTypeSync)
 	if err != nil {
 		return nil, err
 	}
 
 	go func() {
-		flow.mirrorManager.Execute(context.Background(), proc, mirConfig.GetSource, &mirror.DirektivApplyer{NamespaceID: ns.ID})
+		flow.mirrorManager.Execute(context.Background(), proc, mirConfig, &mirror.DirektivApplyer{NamespaceID: ns.ID})
 		err := flow.pBus.Publish(pubsub.MirrorSync, ns.Name)
 		if err != nil {
 			flow.sugar.Error("pubsub publish", "error", err)

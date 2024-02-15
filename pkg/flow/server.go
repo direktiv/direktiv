@@ -174,7 +174,7 @@ var _ mirror.ProcessLogger = &mirrorProcessLogger{}
 type mirrorCallbacks struct {
 	logger    mirror.ProcessLogger
 	syslogger *zap.SugaredLogger
-	store     mirror.Store
+	store     datastore.MirrorStore
 	fstore    filestore.FileStore
 	varstore  core.RuntimeVariablesStore
 	wfconf    func(ctx context.Context, nsID uuid.UUID, nsName string, file *filestore.File) error
@@ -192,7 +192,7 @@ func (c *mirrorCallbacks) SysLogCrit(msg string) {
 	c.syslogger.Error(msg)
 }
 
-func (c *mirrorCallbacks) Store() mirror.Store {
+func (c *mirrorCallbacks) Store() datastore.MirrorStore {
 	return c.store
 }
 

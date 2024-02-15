@@ -5,7 +5,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/events"
 	"github.com/direktiv/direktiv/pkg/refactor/logengine"
-	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	"gorm.io/gorm"
 )
 
@@ -20,7 +19,7 @@ var _ datastore.Store = &sqlStore{}
 
 // NewSQLStore builds direktiv data store. Param `db` should be an opened active connection to the database. Param
 // `mirrorConfigEncryptionKey` is a symmetric encryption key string used to encrypt and decrypt mirror data.
-// Database transactions management should be handled by the user of this datastore.Store implementation. The caller
+// Database transactions management should be handled by the user of this datastore.MirrorStore implementation. The caller
 // can start a transaction and pass it as Param `db`. After calling different operations on the store, the caller can
 // either commit or rollback the connection.
 
@@ -32,7 +31,7 @@ func NewSQLStore(db *gorm.DB, mirrorConfigEncryptionKey string) datastore.Store 
 }
 
 // Mirror returns mirror store.
-func (s *sqlStore) Mirror() mirror.Store {
+func (s *sqlStore) Mirror() datastore.MirrorStore {
 	return &sqlMirrorStore{
 		db:                  s.db,
 		configEncryptionKey: s.mirrorConfigEncryptionKey,

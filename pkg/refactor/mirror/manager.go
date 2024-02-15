@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/google/uuid"
 )
 
@@ -69,7 +70,7 @@ func (d *Manager) gc() {
 					continue
 				}
 
-				if p.Status != ProcessStatusFailed && p.Status != ProcessStatusComplete {
+				if p.Status != datastore.ProcessStatusFailed && p.Status != datastore.ProcessStatusComplete {
 					d.failProcess(p, errors.New("timed out"))
 				}
 			}
@@ -102,8 +103,8 @@ func (d *Manager) Cancel(_ context.Context, id uuid.UUID) error {
 	return nil
 }
 
-func (d *Manager) silentFailProcess(p *Process) {
-	p.Status = ProcessStatusFailed
+func (d *Manager) silentFailProcess(p *datastore.MirrorProcess) {
+	p.Status = datastore.ProcessStatusFailed
 	p.EndedAt = time.Now().UTC()
 	_, e := d.callbacks.Store().UpdateProcess(context.Background(), p)
 	if e != nil {
@@ -113,14 +114,14 @@ func (d *Manager) silentFailProcess(p *Process) {
 	}
 }
 
-func (d *Manager) failProcess(p *Process, err error) {
+func (d *Manager) failProcess(p *datastore.MirrorProcess, err error) {
 	d.silentFailProcess(p)
 	d.callbacks.ProcessLogger().Error(p.ID, fmt.Sprintf("Mirroring process failed %v", err), "process_id", p.ID)
 }
 
-func (d *Manager) setProcessStatus(ctx context.Context, process *Process, status string) error {
+func (d *Manager) setProcessStatus(ctx context.Context, process *datastore.MirrorProcess, status string) error {
 	process.Status = status
-	if status == ProcessStatusComplete || status == ProcessStatusFailed {
+	if status == datastore.ProcessStatusComplete || status == datastore.ProcessStatusFailed {
 		process.EndedAt = time.Now().UTC()
 	}
 
@@ -133,7 +134,7 @@ func (d *Manager) setProcessStatus(ctx context.Context, process *Process, status
 }
 
 // Execute ..
-func (d *Manager) Execute(ctx context.Context, p *Process, get func(ctx context.Context) (Source, error), applyer Applyer) {
+func (d *Manager) Execute(ctx context.Context, p *datastore.MirrorProcess, m *datastore.MirrorConfig, applyer Applyer) {
 	ctx, cancel := context.WithCancel(ctx)
 	defer func() {
 		cancel()
@@ -142,7 +143,7 @@ func (d *Manager) Execute(ctx context.Context, p *Process, get func(ctx context.
 	}()
 	d.local.Store(p.ID.String(), cancel)
 
-	err := d.setProcessStatus(ctx, p, ProcessStatusExecuting)
+	err := d.setProcessStatus(ctx, p, datastore.ProcessStatusExecuting)
 	if err != nil {
 		//nolint:contextcheck
 		d.failProcess(p, fmt.Errorf("updating process status: %w", err))
@@ -150,7 +151,7 @@ func (d *Manager) Execute(ctx context.Context, p *Process, get func(ctx context.
 		return
 	}
 
-	src, err := get(ctx)
+	src, err := GetSource(ctx, m)
 	if err != nil {
 		//nolint:contextcheck
 		d.failProcess(p, fmt.Errorf("initializing source: %w", err))
@@ -186,7 +187,7 @@ func (d *Manager) Execute(ctx context.Context, p *Process, get func(ctx context.
 		return
 	}
 
-	err = d.setProcessStatus(ctx, p, ProcessStatusComplete)
+	err = d.setProcessStatus(ctx, p, datastore.ProcessStatusComplete)
 	if err != nil {
 		//nolint:contextcheck
 		d.failProcess(p, fmt.Errorf("updating process status: %w", err))

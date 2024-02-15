@@ -12,8 +12,8 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
-	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -59,7 +59,7 @@ func (flow *flow) Directory(ctx context.Context, req *grpc.DirectoryRequest) (*g
 		}
 
 		_, err = tx.DataStore().Mirror().GetConfig(ctx, ns.Name)
-		if errors.Is(err, mirror.ErrNotFound) {
+		if errors.Is(err, datastore.ErrNotFound) {
 			isMirrorNamespace = false
 		} else if err != nil {
 			return err

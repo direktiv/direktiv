@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/google/uuid"
 )
@@ -17,7 +18,7 @@ type Callbacks interface {
 
 	SysLogCrit(msg string)
 
-	Store() Store
+	Store() datastore.MirrorStore
 	FileStore() filestore.FileStore
 	VarStore() core.RuntimeVariablesStore
 }
