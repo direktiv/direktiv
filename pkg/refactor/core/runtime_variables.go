@@ -13,7 +13,7 @@ import (
 type RuntimeVariable struct {
 	ID uuid.UUID `json:"id"`
 
-	Namespace    string    `json:"namespace"`
+	Namespace    string    `json:"-"`
 	WorkflowPath string    `json:"workflowPath"`
 	InstanceID   uuid.UUID `json:"instanceId"`
 

@@ -108,7 +108,6 @@ describe('Test variable update calls', () => {
 			expect(res.statusCode).toEqual(200)
 			expect(res.body.data).toMatchObject({
 				id: expect.stringMatching(common.regex.uuidRegex),
-				namespace,
 
 				...testCase.want,
 

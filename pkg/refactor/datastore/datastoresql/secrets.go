@@ -41,6 +41,10 @@ func (s sqlSecretsStore) Delete(ctx context.Context, namespace string, name stri
 	if res.Error != nil {
 		return res.Error
 	}
+	// TODO: check if other delete queries check for row count == 0 and return not found error.
+	if res.RowsAffected == 0 {
+		return core.ErrSecretNotFound
+	}
 	if res.RowsAffected != 1 {
 		return fmt.Errorf("unexpected gorm delete count, got: %d, want: %d", res.RowsAffected, 1)
 	}
