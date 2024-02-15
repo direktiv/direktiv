@@ -5,12 +5,6 @@ import {
   EndpointsPluginsSchema,
 } from "../schema";
 
-/**
- * The backend will always return the yaml keys in a predefined order, so we
- * need to make sure to match that order when generating a yaml on the client.
- * To have one deterministic order, we use the order of the keys as defined
- * in the schema.
- */
 export const useSortedValues = (control: Control<EndpointFormSchemaType>) => {
   const watchedValues = useWatch({
     control,
