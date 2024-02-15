@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 )
@@ -95,7 +94,7 @@ func writeDataStoreError(w http.ResponseWriter, err error) {
 
 		return
 	}
-	if errors.Is(err, core.ErrInvalidRuntimeVariableName) {
+	if errors.Is(err, datastore.ErrInvalidRuntimeVariableName) {
 		writeError(w, &Error{
 			Code:    "request_data_invalid",
 			Message: "field name has invalid string",

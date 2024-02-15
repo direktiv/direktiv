@@ -11,6 +11,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/middlewares"
 	"github.com/direktiv/direktiv/pkg/version"
 	"github.com/go-chi/chi/v5"
@@ -174,9 +175,9 @@ func writeOk(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func extractContextNamespace(r *http.Request) *core.Namespace {
+func extractContextNamespace(r *http.Request) *datastore.Namespace {
 	//nolint:forcetypeassert
-	ns := r.Context().Value(ctxKeyNamespace{}).(*core.Namespace)
+	ns := r.Context().Value(ctxKeyNamespace{}).(*datastore.Namespace)
 
 	return ns
 }

@@ -6,9 +6,9 @@ import (
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
+	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/flow/internallogger"
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"github.com/google/uuid"
@@ -163,7 +163,7 @@ func (flow *flow) NamespaceLogs(ctx context.Context, req *grpc.NamespaceLogsRequ
 
 	total := 0
 	var err error
-	var ns *core.Namespace
+	var ns *database.Namespace
 	le := make([]*logengine.LogEntry, 0)
 	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
@@ -208,7 +208,7 @@ func (flow *flow) NamespaceLogsParcels(req *grpc.NamespaceLogsRequest, srv grpc.
 	ctx := srv.Context()
 
 	var err error
-	var ns *core.Namespace
+	var ns *database.Namespace
 	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
 		return err

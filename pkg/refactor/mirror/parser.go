@@ -13,6 +13,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/spec"
 	"github.com/go-git/go-git/v5/plumbing/format/gitignore"
@@ -496,7 +497,7 @@ func (p *Parser) listOnlyFiles() ([]string, error) {
 }
 
 func (p *Parser) parseDeprecatedVariableFiles() error {
-	regex := regexp.MustCompile(core.RuntimeVariableNameRegexPattern)
+	regex := regexp.MustCompile(datastore.RuntimeVariableNameRegexPattern)
 
 	allFiles, err := p.listOnlyFiles()
 	if err != nil {

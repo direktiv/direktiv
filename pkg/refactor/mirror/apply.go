@@ -9,19 +9,19 @@ import (
 	"strings"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/google/uuid"
 )
 
 type Applyer interface {
-	apply(ctx context.Context, callbacks Callbacks, proc *Process, parser *Parser, notes map[string]string) error
+	apply(ctx context.Context, callbacks Callbacks, proc *datastore.MirrorProcess, parser *Parser, notes map[string]string) error
 }
 
 type DryrunApplyer struct{}
 
-func (o *DryrunApplyer) apply(_ context.Context, _ Callbacks, _ *Process, _ *Parser, _ map[string]string) error {
+func (o *DryrunApplyer) apply(_ context.Context, _ Callbacks, _ *datastore.MirrorProcess, _ *Parser, _ map[string]string) error {
 	return nil
 }
 
@@ -29,14 +29,14 @@ type DirektivApplyer struct {
 	NamespaceID uuid.UUID
 	log         FormatLogger
 	callbacks   Callbacks
-	proc        *Process
+	proc        *datastore.MirrorProcess
 	parser      *Parser
 
 	rootID uuid.UUID
 	notes  map[string]string
 }
 
-func (o *DirektivApplyer) apply(ctx context.Context, callbacks Callbacks, proc *Process, parser *Parser, notes map[string]string) error {
+func (o *DirektivApplyer) apply(ctx context.Context, callbacks Callbacks, proc *datastore.MirrorProcess, parser *Parser, notes map[string]string) error {
 	o.log = newPIDFormatLogger(callbacks.ProcessLogger(), proc.ID)
 	o.callbacks = callbacks
 	o.proc = proc
@@ -262,7 +262,7 @@ func (o *DirektivApplyer) copyDeprecatedVariables(ctx context.Context) error {
 		mtString := strings.Split(mt.String(), ";")
 
 		_, err := o.callbacks.VarStore().Create(ctx,
-			&core.RuntimeVariable{
+			&datastore.RuntimeVariable{
 				Namespace: o.proc.Namespace,
 				Name:      k,
 				MimeType:  mtString[0],
@@ -284,7 +284,7 @@ func (o *DirektivApplyer) copyDeprecatedVariables(ctx context.Context) error {
 			mtString := strings.Split(mt.String(), ";")
 
 			_, err := o.callbacks.VarStore().Create(ctx,
-				&core.RuntimeVariable{
+				&datastore.RuntimeVariable{
 					Namespace:    o.proc.Namespace,
 					WorkflowPath: file.Path,
 					Name:         k,

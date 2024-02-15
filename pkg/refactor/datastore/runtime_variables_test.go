@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore/datastoresql"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore/filestoresql"
@@ -28,7 +28,7 @@ func Test_sqlRuntimeVariablesStore_SetAndGet(t *testing.T) {
 
 	expect := []byte("some data")
 
-	testVar := &core.RuntimeVariable{
+	testVar := &datastore.RuntimeVariable{
 		Namespace:    ns.String(),
 		WorkflowPath: file.Path,
 		Name:         "myvar",
@@ -107,7 +107,7 @@ func Test_sqlRuntimeVariablesStore_Overwrite(t *testing.T) {
 
 	ns := uuid.New()
 
-	testVar := &core.RuntimeVariable{
+	testVar := &datastore.RuntimeVariable{
 		Namespace: ns.String(),
 		Name:      "myvar",
 		MimeType:  "text/json",
@@ -126,7 +126,7 @@ func Test_sqlRuntimeVariablesStore_Overwrite(t *testing.T) {
 	}
 
 	expect := []byte("some data 2")
-	testVar = &core.RuntimeVariable{
+	testVar = &datastore.RuntimeVariable{
 		Namespace: ns.String(),
 		Name:      "myvar",
 		MimeType:  "text/json",
@@ -173,7 +173,7 @@ func Test_sqlRuntimeVariablesStore_InvalidName(t *testing.T) {
 	fs := filestoresql.NewSQLFileStore(db)
 	file := createFile(t, fs)
 
-	testVar := &core.RuntimeVariable{
+	testVar := &datastore.RuntimeVariable{
 		Namespace:    uuid.New().String(),
 		WorkflowPath: file.Path,
 		Name:         "myvar$$",
@@ -201,7 +201,7 @@ func Test_sqlRuntimeVariablesStore_CrudOnList(t *testing.T) {
 	ns := uuid.New()
 
 	for _, i := range []int{0, 1, 2, 3} {
-		v := &core.RuntimeVariable{
+		v := &datastore.RuntimeVariable{
 			Namespace:    ns.String(),
 			WorkflowPath: file.Path,
 			Name:         fmt.Sprintf("var_%d", i),
@@ -299,7 +299,7 @@ func Test_sqlRuntimeVariablesStore_CreateAndUpdate(t *testing.T) {
 
 	expect := []byte("some data")
 
-	testVar := &core.RuntimeVariable{
+	testVar := &datastore.RuntimeVariable{
 		Namespace:    ns.String(),
 		WorkflowPath: file.Path,
 		Name:         "myvar",
@@ -354,7 +354,7 @@ func Test_sqlRuntimeVariablesStore_CreateAndUpdate(t *testing.T) {
 	}
 
 	newName := "new_name"
-	variable, err = ds.RuntimeVariables().Patch(context.Background(), variable.ID, &core.RuntimeVariablePatch{
+	variable, err = ds.RuntimeVariables().Patch(context.Background(), variable.ID, &datastore.RuntimeVariablePatch{
 		Name: &newName,
 	})
 	if err != nil {

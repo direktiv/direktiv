@@ -10,7 +10,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	libengine "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
@@ -306,7 +305,7 @@ func (flow *flow) SetWorkflowVariable(ctx context.Context, req *grpc.SetWorkflow
 		return nil, err
 	}
 
-	newVar, err := tx.DataStore().RuntimeVariables().Set(ctx, &core.RuntimeVariable{
+	newVar, err := tx.DataStore().RuntimeVariables().Set(ctx, &datastore.RuntimeVariable{
 		Namespace:    ns.Name,
 		WorkflowPath: file.Path,
 		Name:         req.GetKey(),
@@ -482,7 +481,7 @@ func (flow *flow) RenameWorkflowVariable(ctx context.Context, req *grpc.RenameWo
 	}
 
 	newName := req.GetNew()
-	updated, err := tx.DataStore().RuntimeVariables().Patch(ctx, item.ID, &core.RuntimeVariablePatch{
+	updated, err := tx.DataStore().RuntimeVariables().Patch(ctx, item.ID, &datastore.RuntimeVariablePatch{
 		Name: &newName,
 	})
 	if err != nil {

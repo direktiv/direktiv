@@ -7,7 +7,6 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -17,8 +16,8 @@ type sqlNamespacesStore struct {
 	db *gorm.DB
 }
 
-func (s *sqlNamespacesStore) GetByID(ctx context.Context, id uuid.UUID) (*core.Namespace, error) {
-	namespace := &core.Namespace{}
+func (s *sqlNamespacesStore) GetByID(ctx context.Context, id uuid.UUID) (*datastore.Namespace, error) {
+	namespace := &datastore.Namespace{}
 	res := s.db.WithContext(ctx).Raw(`
 							SELECT id, name, created_at, updated_at 
 							FROM namespaces 
@@ -35,8 +34,8 @@ func (s *sqlNamespacesStore) GetByID(ctx context.Context, id uuid.UUID) (*core.N
 	return namespace, nil
 }
 
-func (s *sqlNamespacesStore) GetByName(ctx context.Context, name string) (*core.Namespace, error) {
-	namespace := &core.Namespace{}
+func (s *sqlNamespacesStore) GetByName(ctx context.Context, name string) (*datastore.Namespace, error) {
+	namespace := &datastore.Namespace{}
 	res := s.db.WithContext(ctx).Raw(`
 							SELECT id, name, created_at, updated_at 
 							FROM namespaces 
@@ -53,8 +52,8 @@ func (s *sqlNamespacesStore) GetByName(ctx context.Context, name string) (*core.
 	return namespace, nil
 }
 
-func (s *sqlNamespacesStore) GetAll(ctx context.Context) ([]*core.Namespace, error) {
-	var namespaces []*core.Namespace
+func (s *sqlNamespacesStore) GetAll(ctx context.Context) ([]*datastore.Namespace, error) {
+	var namespaces []*datastore.Namespace
 	res := s.db.WithContext(ctx).Raw(`
 							SELECT id, name, created_at, updated_at
 							FROM namespaces`).
@@ -81,11 +80,11 @@ func (s *sqlNamespacesStore) Delete(ctx context.Context, name string) error {
 	return nil
 }
 
-func (s *sqlNamespacesStore) Create(ctx context.Context, namespace *core.Namespace) (*core.Namespace, error) {
+func (s *sqlNamespacesStore) Create(ctx context.Context, namespace *datastore.Namespace) (*datastore.Namespace, error) {
 	const nameRegex = `^(([a-z][a-z0-9_\-\.]*[a-z0-9])|([a-z]))$`
 	matched, _ := regexp.MatchString(nameRegex, namespace.Name)
 	if !matched {
-		return nil, core.ErrInvalidNamespaceName
+		return nil, datastore.ErrInvalidNamespaceName
 	}
 
 	newUUID := uuid.New()
@@ -94,7 +93,7 @@ func (s *sqlNamespacesStore) Create(ctx context.Context, namespace *core.Namespa
 							`, newUUID, namespace.Name)
 
 	if res.Error != nil && strings.Contains(res.Error.Error(), "duplicate key") {
-		return nil, core.ErrDuplicatedNamespaceName
+		return nil, datastore.ErrDuplicatedNamespaceName
 	}
 	if res.Error != nil {
 		return nil, res.Error
@@ -106,4 +105,4 @@ func (s *sqlNamespacesStore) Create(ctx context.Context, namespace *core.Namespa
 	return s.GetByID(ctx, newUUID)
 }
 
-var _ core.NamespacesStore = &sqlNamespacesStore{}
+var _ datastore.NamespacesStore = &sqlNamespacesStore{}
