@@ -1,4 +1,5 @@
 import { compareYamlStructure, jsonToYaml } from "../../utils";
+import { decode, encode } from "js-base64";
 
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
@@ -11,35 +12,33 @@ import FormErrors from "~/components/FormErrors";
 import { RouteSchemaType } from "~/api/gateway/schema";
 import { Save } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
-import { decode } from "js-base64";
 import { serializeEndpointFile } from "./utils";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
-import { useUpdateWorkflow } from "~/api/tree/mutate/updateWorkflow";
+import { useUpdateFile } from "~/api/filesTree/mutate/updateFile";
 
 type NodeContentType = ReturnType<typeof useNodeContent>["data"];
 
 type EndpointEditorProps = {
-  path: string;
   data: NonNullable<NodeContentType>;
   route?: RouteSchemaType;
 };
 
-const EndpointEditor: FC<EndpointEditorProps> = ({ data, path }) => {
+const EndpointEditor: FC<EndpointEditorProps> = ({ data }) => {
   const { t } = useTranslation();
   const theme = useTheme();
   const fileContentFromServer = decode(data.source ?? "");
   const [endpointConfig, endpointConfigError] = serializeEndpointFile(
     fileContentFromServer
   );
-  const { mutate: updateRoute, isLoading } = useUpdateWorkflow();
+  const { mutate: updateRoute, isLoading } = useUpdateFile();
 
-  const save = (data: EndpointFormSchemaType) => {
-    const toSave = jsonToYaml(data);
+  const save = (value: EndpointFormSchemaType) => {
+    const toSave = jsonToYaml(value);
     updateRoute({
-      path,
-      fileContent: toSave,
+      node: data.node,
+      file: { data: encode(toSave) },
     });
   };
 

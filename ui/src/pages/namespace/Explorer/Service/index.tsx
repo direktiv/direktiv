@@ -69,7 +69,7 @@ const ServicePage: FC = () => {
           )}
         </div>
       </div>
-      <ServiceEditor data={serviceData} path={path} />
+      <ServiceEditor data={serviceData} />
     </>
   );
 };

@@ -1,3 +1,5 @@
+import { decode, encode } from "js-base64";
+
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
@@ -8,22 +10,20 @@ import FormErrors from "~/components/FormErrors";
 import { Save } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
 import { ServiceFormSchemaType } from "./schema";
-import { decode } from "js-base64";
 import { jsonToYaml } from "../../utils";
 import { serializeServiceFile } from "./utils";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
-import { useUpdateWorkflow } from "~/api/tree/mutate/updateWorkflow";
+import { useUpdateFile } from "~/api/filesTree/mutate/updateFile";
 
 type NodeContentType = ReturnType<typeof useNodeContent>["data"];
 
 type ServiceEditorProps = {
-  path: string;
   data: NonNullable<NodeContentType>;
 };
 
-const ServiceEditor: FC<ServiceEditorProps> = ({ data, path }) => {
+const ServiceEditor: FC<ServiceEditorProps> = ({ data }) => {
   const { t } = useTranslation();
   const theme = useTheme();
 
@@ -33,13 +33,13 @@ const ServiceEditor: FC<ServiceEditorProps> = ({ data, path }) => {
     fileContentFromServer
   );
 
-  const { mutate: updateService, isLoading } = useUpdateWorkflow({});
+  const { mutate: updateService, isLoading } = useUpdateFile({});
 
-  const save = (data: ServiceFormSchemaType) => {
-    const toSave = jsonToYaml(data);
+  const save = (value: ServiceFormSchemaType) => {
+    const toSave = jsonToYaml(value);
     updateService({
-      path,
-      fileContent: toSave,
+      node: data.node,
+      file: { data: encode(toSave) },
     });
   };
 

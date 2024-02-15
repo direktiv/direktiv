@@ -59,7 +59,7 @@ const ConsumerPage: FC = () => {
           </Button>
         </div>
       </div>
-      <ConsumerEditor data={consumerData} path={path} />
+      <ConsumerEditor data={consumerData} />
     </>
   );
 };

@@ -75,7 +75,7 @@ const EndpointPage: FC = () => {
           </Button>
         </div>
       </div>
-      <EndpointEditor data={gatewayData} path={path} route={matchingRoute} />
+      <EndpointEditor data={gatewayData} route={matchingRoute} />
     </>
   );
 };

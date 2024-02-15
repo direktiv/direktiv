@@ -1,7 +1,6 @@
 import {
   NodeSchemaType,
   UpdateFileSchemaType,
-  getFilenameFromPath,
   getParentFromPath,
 } from "../schema";
 
@@ -12,8 +11,6 @@ import { useApiKey } from "~/util/store/apiKey";
 import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 import { useNamespace } from "~/util/store/namespace";
 import { useQueryClient } from "@tanstack/react-query";
-import { useToast } from "~/design/Toast";
-import { useTranslation } from "react-i18next";
 
 export const useUpdateFile = ({
   onSuccess,
@@ -24,9 +21,7 @@ export const useUpdateFile = ({
 } = {}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
-  const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { t } = useTranslation();
 
   if (!namespace) {
     throw new Error("namespace is undefined");
@@ -48,22 +43,13 @@ export const useUpdateFile = ({
           namespace,
         },
       }),
-    onSuccess(data, variables) {
+    onSuccess(data) {
       queryClient.invalidateQueries(
         pathKeys.paths(namespace, {
           apiKey: apiKey ?? undefined,
           path: getParentFromPath(data.data.path),
         })
       );
-      toast({
-        title: t("api.tree.mutate.renameNode.success.title", {
-          type: variables.node.type === "workflow" ? "workflow" : "directory",
-        }),
-        description: t("api.tree.mutate.renameNode.success.description", {
-          name: getFilenameFromPath(variables.node.path),
-        }),
-        variant: "success",
-      });
       onSuccess?.();
     },
     onError: (e) => {

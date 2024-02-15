@@ -11,7 +11,7 @@ const WorkflowOverviewPage: FC = () => {
   // Editor is moved into a separate component to give us a state where
   // data and path is alwawys defined. This makes handling side effects
   // much easier.
-  return <WorkflowEditor data={data} path={path} />;
+  return <WorkflowEditor data={data} />;
 };
 
 export default WorkflowOverviewPage;

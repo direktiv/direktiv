@@ -20,8 +20,7 @@ export type NodeContentType = ReturnType<typeof useNodeContent>["data"];
 
 const WorkflowEditor: FC<{
   data: NonNullable<NodeContentType>;
-  path: string;
-}> = ({ data, path }) => {
+}> = ({ data }) => {
   const currentLayout = useEditorLayout();
   const { t } = useTranslation();
   const namespace = useNamespace();
@@ -31,7 +30,7 @@ const WorkflowEditor: FC<{
 
   const workflowDataFromServer = decode(data?.source ?? "");
 
-  const { mutate: updateWorkflow, isLoading } = useUpdateFile({
+  const { mutate, isLoading } = useUpdateFile({
     onError: (error) => {
       error && setError(error);
     },
@@ -55,7 +54,7 @@ const WorkflowEditor: FC<{
   const onSave = (toSave: string | undefined) => {
     if (toSave) {
       setError(undefined);
-      updateWorkflow({
+      mutate({
         node: data.node,
         file: { data: encode(toSave) },
       });
@@ -97,7 +96,7 @@ const WorkflowEditor: FC<{
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-2xl">
-            <RunWorkflow path={path} />
+            <RunWorkflow path={data.node.path} />
           </DialogContent>
         </Dialog>
         <Button
