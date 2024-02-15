@@ -1,4 +1,9 @@
-import { CreateNodeSchemaType, PathCreatedSchema } from "../schema";
+import {
+  CreateNodeSchemaType,
+  PathCreatedSchema,
+  getFilenameFromPath,
+  getParentFromPath,
+} from "../schema";
 
 import { apiFactory } from "~/api/apiFactory";
 import { forceLeadingSlash } from "~/api/tree/utils";
@@ -59,8 +64,8 @@ export const useCreateFile = ({
       toast({
         title: t("api.tree.mutate.createWorkflow.success.title"),
         description: t("api.tree.mutate.createWorkflow.success.description", {
-          name: variables.name,
-          path: variables.path,
+          name: getFilenameFromPath(variables.file.name),
+          path: getParentFromPath(data.data.path),
         }),
         variant: "success",
       });

@@ -1,6 +1,7 @@
 import {
   NodeSchemaType,
   PathDeletedSchema,
+  getFilenameFromPath,
   getParentFromPath,
 } from "../schema";
 
@@ -55,7 +56,7 @@ export const useDeletePath = ({
           type: variables.node.type === "workflow" ? "workflow" : "directory",
         }),
         description: t("api.tree.mutate.deleteNode.success.description", {
-          name: variables.node.name,
+          name: getFilenameFromPath(variables.node.path),
         }),
         variant: "success",
       });
