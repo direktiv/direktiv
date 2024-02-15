@@ -1,7 +1,7 @@
 import { createNamespace, deleteNamespace } from "e2e/utils/namespace";
+import { createRouteYaml, removeLines } from "./utils";
 import { expect, test } from "@playwright/test";
 
-import { createRouteYaml } from "./utils";
 import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
 import { headers } from "e2e/utils/testutils";
 
@@ -108,6 +108,7 @@ test("it is possible to create a basic route file", async ({ page }) => {
 test("it is possible to add plugins to a route file", async ({ page }) => {
   /* prepare data */
   const filename = "myroute.yaml";
+  const editor = page.locator(".lines-content");
 
   type CreateRouteYamlParam = Parameters<typeof createRouteYaml>[0];
   const minimalRouteConfig: Omit<CreateRouteYamlParam, "plugins"> = {
@@ -174,13 +175,53 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
 
   await page.getByRole("button", { name: "Save" }).click();
 
-  /* configure inbound plugin: Request Convert  */
+  /* configure inbound plugin: Request Convert */
   await page.getByRole("button", { name: "add inbound plugin" }).click();
   await page.getByRole("combobox").click();
   await page.getByLabel("Request Convert").click();
   await page.getByText("Omit Queries").click();
   await page.getByText("Omit Consumer").click();
   await page.getByRole("button", { name: "Save" }).click();
+
+  /* check editor content */
+  const inboundPlugins = `
+    - type: "acl"
+      configuration:
+        allow_groups:
+          - "allow this group 1"
+          - "allow this group 2"
+        deny_groups: []
+        allow_tags: []
+        deny_tags: []
+    - type: "request-convert"
+      configuration:
+        omit_headers: false
+        omit_queries: true
+        omit_body: false
+        omit_consumer: true`;
+
+  const currentExpectedEditorContent = createRouteYaml({
+    ...minimalRouteConfig,
+    plugins: {
+      target: basicTargetPlugin,
+      inbound: inboundPlugins,
+    },
+  });
+
+  /* scroll the editor to the very bottom */
+  await page.evaluate(() => {
+    document
+      .querySelector(".monaco-editor .monaco-scrollable-element")
+      ?.scrollBy(0, 100000000);
+  });
+  await page.waitForTimeout(500);
+
+  await expect(
+    editor,
+    "all entered data is represented in the editor preview"
+  ).toContainText(removeLines(currentExpectedEditorContent, 4, "top"), {
+    useInnerText: true,
+  });
 
   /* configure outbound plugin: JavaScript */
   await page.getByRole("button", { name: "add outbound plugin" }).click();
@@ -195,10 +236,4 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
   await page.getByLabel("Github Webhook").click();
   await page.getByLabel("secret").fill("my github secret");
   await page.getByRole("button", { name: "Save" }).click();
-
-  // const editor = page.locator(".lines-content");
-  // await expect(
-  //   editor,
-  //   "all entered data is represented in the editor preview"
-  // ).toContainText(initialRouteYaml, { useInnerText: true });
 });

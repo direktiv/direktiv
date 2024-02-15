@@ -29,3 +29,13 @@ plugins:
   inbound:${plugins.inbound ?? " []"}
   outbound:${plugins.outbound ?? " []"}
   auth:${plugins.auth ?? " []"}`;
+
+export const removeLines = (
+  text: string,
+  lines: number,
+  from: "top" | "bottom" = "top"
+) =>
+  text
+    .split("\n")
+    .slice(from === "top" ? lines : -lines)
+    .join("\n");
