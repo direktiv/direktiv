@@ -10,7 +10,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log/slog"
 	"net/http"
 	"os"
 	"path"
@@ -22,7 +21,6 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
-	"go.opentelemetry.io/otel/trace"
 )
 
 type inboundWorker struct {
@@ -55,10 +53,6 @@ func (worker *inboundWorker) run() {
 			worker.lock.Unlock()
 			break
 		}
-
-		span := trace.SpanFromContext(req.r.Context())
-		tr := span.SpanContext().TraceID()
-		slog.Info("xxx 34", "trace", tr.String())
 
 		ctx, cancel := context.WithCancel(req.r.Context())
 		worker.cancel = cancel
