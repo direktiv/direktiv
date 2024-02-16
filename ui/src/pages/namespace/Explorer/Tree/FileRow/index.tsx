@@ -33,8 +33,10 @@ const FileRow = ({
   const { t } = useTranslation();
   const Icon = fileTypeToIcon(node.type);
 
+  const filename = getFilenameFromPath(node.path);
+
   return (
-    <TableRow data-testid={`explorer-item-${node.path}`}>
+    <TableRow data-testid={`explorer-item-${filename}`}>
       <TableCell>
         <div className="flex space-x-3">
           <Icon className="h-5" />
@@ -43,7 +45,7 @@ const FileRow = ({
             namespace={namespace}
             onPreviewClicked={onPreviewClicked}
           >
-            {getFilenameFromPath(node.path)}
+            {filename}
           </ConditionalLink>
           <span className="text-gray-9 dark:text-gray-dark-9">
             {moment(node.updatedAt).fromNow()}
