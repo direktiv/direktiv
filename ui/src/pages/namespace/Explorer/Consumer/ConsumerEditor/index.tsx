@@ -12,12 +12,12 @@ import { Save } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
 import { jsonToYaml } from "../../utils";
 import { serializeConsumerFile } from "./utils";
-import { useNodeContent } from "~/api/tree/query/node";
+import { useNode } from "~/api/filesTree/query/node";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 import { useUpdateFile } from "~/api/filesTree/mutate/updateFile";
 
-type NodeContentType = ReturnType<typeof useNodeContent>["data"];
+type NodeContentType = ReturnType<typeof useNode>["data"];
 
 type ConsumerEditorProps = {
   data: NonNullable<NodeContentType>;
@@ -26,7 +26,7 @@ type ConsumerEditorProps = {
 const ConsumerEditor: FC<ConsumerEditorProps> = ({ data }) => {
   const { t } = useTranslation();
   const theme = useTheme();
-  const fileContentFromServer = decode(data.source ?? "");
+  const fileContentFromServer = decode(data.file.data ?? "");
   const [consumerConfig, consumerConfigError] = serializeConsumerFile(
     fileContentFromServer
   );
@@ -35,7 +35,7 @@ const ConsumerEditor: FC<ConsumerEditorProps> = ({ data }) => {
   const save = (value: ConsumerFormSchemaType) => {
     const toSave = jsonToYaml(value);
     mutate({
-      node: data.node,
+      node: data.file,
       file: { data: encode(toSave) },
     });
   };
