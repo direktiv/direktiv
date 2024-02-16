@@ -1,5 +1,7 @@
 /api/v2/namespaces/{namespace}/logs:
   get:
+    tags:
+    - plattformlogs
     summary: Api for listing the first 200 log entries for a given resource.
     parameters:
       - name: namespace
@@ -70,6 +72,8 @@
                         type: string
 /api/v2/namespaces/{namespace}/logs/subscribe:
   get:
+    tags:
+    - plattformlogs
     summary: Api for SSE streaming of incoming logs stating the systems current time.
     parameters:
       - name: namespace

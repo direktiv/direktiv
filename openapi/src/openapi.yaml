@@ -91,6 +91,7 @@ x-tagGroups:
       - registries
       - gateway
       - server
+      - plattformlogs
 components:
   parameters:
     $ref: "./parameters.yaml"
