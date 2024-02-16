@@ -3,8 +3,9 @@ import { createRedisConsumerFile, findConsumerWithApiRequest } from "./utils";
 import { expect, test } from "@playwright/test";
 
 import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
+import { encode } from "js-base64";
 import { headers } from "e2e/utils/testutils";
-import { updateWorkflow } from "~/api/tree/mutate/updateWorkflow";
+import { patchNode } from "~/api/filesTree/mutate/patchNode";
 
 let namespace = "";
 
@@ -147,11 +148,15 @@ test("Consumer list will update the consumers when refetch button is clicked", a
     "it shows the (old) password"
   ).toHaveValue("passwordOld");
 
-  await updateWorkflow({
-    payload: createRedisConsumerFile({
-      username: "userNew",
-      password: "passwordNew",
-    }),
+  await patchNode({
+    payload: {
+      data: encode(
+        createRedisConsumerFile({
+          username: "userNew",
+          password: "passwordNew",
+        })
+      ),
+    },
     urlParams: {
       baseUrl: process.env.VITE_DEV_API_DOMAIN,
       namespace,

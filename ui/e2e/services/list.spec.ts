@@ -7,8 +7,9 @@ import {
 import { expect, test } from "@playwright/test";
 
 import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
+import { encode } from "js-base64";
 import { headers } from "e2e/utils/testutils";
-import { updateWorkflow } from "~/api/tree/mutate/updateWorkflow";
+import { patchNode } from "~/api/filesTree/mutate/patchNode";
 
 let namespace = "";
 
@@ -363,11 +364,15 @@ test("Service list will update the services when refetch button is clicked", asy
     "it shows the service's size"
   ).toBeVisible();
 
-  await updateWorkflow({
-    payload: createRedisServiceFile({
-      scale: 2,
-      size: "small",
-    }),
+  await patchNode({
+    payload: {
+      data: encode(
+        createRedisServiceFile({
+          scale: 2,
+          size: "small",
+        })
+      ),
+    },
     urlParams: {
       baseUrl: process.env.VITE_DEV_API_DOMAIN,
       namespace,
