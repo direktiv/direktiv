@@ -1,9 +1,6 @@
-import {
-  NodeSchemaType,
-  UpdateFileSchemaType,
-  getParentFromPath,
-} from "../schema";
+import { NodeSchemaType, UpdateFileSchemaType } from "../schema";
 
+import { forceLeadingSlash } from "~/api/tree/utils";
 import { getMessageFromApiError } from "~/api/errorHandling";
 import { patchNode } from "./patchNode";
 import { pathKeys } from "..";
@@ -47,7 +44,7 @@ export const useUpdateFile = ({
       queryClient.invalidateQueries(
         pathKeys.paths(namespace, {
           apiKey: apiKey ?? undefined,
-          path: getParentFromPath(data.data.path),
+          path: forceLeadingSlash(data.data.path),
         })
       );
       onSuccess?.();
