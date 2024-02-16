@@ -3,7 +3,6 @@ package mirror_test
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
@@ -15,28 +14,6 @@ import (
 	"github.com/google/uuid"
 )
 
-type testLogger struct {
-	buf *bytes.Buffer
-}
-
-func (l *testLogger) Error(processID uuid.UUID, msg string, keysAndValues ...interface{}) {
-	l.buf.WriteString(fmt.Sprintf("EROR %s\n", msg))
-}
-
-func (l *testLogger) Warn(processID uuid.UUID, msg string, keysAndValues ...interface{}) {
-	l.buf.WriteString(fmt.Sprintf("WARN %s\n", msg))
-}
-
-func (l *testLogger) Info(processID uuid.UUID, msg string, keysAndValues ...interface{}) {
-	l.buf.WriteString(fmt.Sprintf("INFO %s\n", msg))
-}
-
-func (l *testLogger) Debug(processID uuid.UUID, msg string, keysAndValues ...interface{}) {
-	// l.buf.WriteString(fmt.Sprintf("DBUG %s\n", msg))
-}
-
-var _ mirror.ProcessLogger = &testLogger{}
-
 type testCallbacks struct {
 	store    mirror.Store
 	fstore   filestore.FileStore
@@ -46,13 +23,6 @@ type testCallbacks struct {
 
 func (c *testCallbacks) ConfigureWorkflowFunc(ctx context.Context, nsID uuid.UUID, nsName string, file *filestore.File) error {
 	return nil
-}
-
-func (c *testCallbacks) ProcessLogger() mirror.ProcessLogger {
-	return &testLogger{buf: c.buf}
-}
-
-func (c *testCallbacks) SysLogCrit(msg string) {
 }
 
 func (c *testCallbacks) Store() mirror.Store {
