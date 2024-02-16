@@ -12,12 +12,12 @@ import { ScrollArea } from "~/design/ScrollArea";
 import { ServiceFormSchemaType } from "./schema";
 import { jsonToYaml } from "../../utils";
 import { serializeServiceFile } from "./utils";
-import { useNodeContent } from "~/api/tree/query/node";
+import { useNode } from "~/api/filesTree/query/node";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 import { useUpdateFile } from "~/api/filesTree/mutate/updateFile";
 
-type NodeContentType = ReturnType<typeof useNodeContent>["data"];
+type NodeContentType = ReturnType<typeof useNode>["data"];
 
 type ServiceEditorProps = {
   data: NonNullable<NodeContentType>;
@@ -27,7 +27,7 @@ const ServiceEditor: FC<ServiceEditorProps> = ({ data }) => {
   const { t } = useTranslation();
   const theme = useTheme();
 
-  const fileContentFromServer = decode(data.source ?? "");
+  const fileContentFromServer = decode(data.file.data ?? "");
 
   const [serviceConfig, serviceConfigError] = serializeServiceFile(
     fileContentFromServer
@@ -38,7 +38,7 @@ const ServiceEditor: FC<ServiceEditorProps> = ({ data }) => {
   const save = (value: ServiceFormSchemaType) => {
     const toSave = jsonToYaml(value);
     updateService({
-      node: data.node,
+      node: data.file,
       file: { data: encode(toSave) },
     });
   };

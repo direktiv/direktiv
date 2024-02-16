@@ -7,15 +7,16 @@ import NewDirectory from "./components/modals/CreateNew/Directory";
 import NewRoute from "./components/modals/CreateNew/Gateway/Route";
 import NewService from "./components/modals/CreateNew/Service";
 import NewWorkflow from "./components/modals/CreateNew/Workflow";
+import { getFilenameFromPath } from "~/api/filesTree/schema";
 import { twMergeClsx } from "~/util/helpers";
-import { useNodeContent } from "~/api/tree/query/node";
+import { useNode } from "~/api/filesTree/query/node";
 
 type NewFileDialogProps = {
   path: string | undefined;
 };
 
 export const NewFileDialog: FC<NewFileDialogProps> = ({ path }) => {
-  const { data } = useNodeContent({ path });
+  const { data } = useNode({ path });
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedDialog, setSelectedDialog] = useState<FileTypeSelection>();
@@ -36,38 +37,46 @@ export const NewFileDialog: FC<NewFileDialogProps> = ({ path }) => {
       >
         {selectedDialog === "new-dir" && (
           <NewDirectory
-            path={data?.node?.path}
-            unallowedNames={(data?.children?.results ?? []).map((x) => x.name)}
+            path={data?.file.path}
+            unallowedNames={
+              data?.paths?.map((file) => getFilenameFromPath(file.path)) || []
+            }
             close={() => setDialogOpen(false)}
           />
         )}
         {selectedDialog === "new-workflow" && (
           <NewWorkflow
-            path={data?.node?.path}
-            unallowedNames={(data?.children?.results ?? []).map(
-              (file) => file.name
-            )}
+            path={data?.file.path}
+            unallowedNames={
+              data?.paths?.map((file) => getFilenameFromPath(file.path)) || []
+            }
             close={() => setDialogOpen(false)}
           />
         )}
         {selectedDialog === "new-service" && (
           <NewService
-            path={data?.node?.path}
-            unallowedNames={(data?.children?.results ?? []).map((x) => x.name)}
+            path={data?.file.path}
+            unallowedNames={
+              data?.paths?.map((file) => getFilenameFromPath(file.path)) || []
+            }
             close={() => setDialogOpen(false)}
           />
         )}
         {selectedDialog === "new-route" && (
           <NewRoute
-            path={data?.node?.path}
-            unallowedNames={(data?.children?.results ?? []).map((x) => x.name)}
+            path={data?.file.path}
+            unallowedNames={
+              data?.paths?.map((file) => getFilenameFromPath(file.path)) || []
+            }
             close={() => setDialogOpen(false)}
           />
         )}
         {selectedDialog === "new-consumer" && (
           <NewConsumer
-            path={data?.node?.path}
-            unallowedNames={(data?.children?.results ?? []).map((x) => x.name)}
+            path={data?.file.path}
+            unallowedNames={
+              data?.paths?.map((file) => getFilenameFromPath(file.path)) || []
+            }
             close={() => setDialogOpen(false)}
           />
         )}

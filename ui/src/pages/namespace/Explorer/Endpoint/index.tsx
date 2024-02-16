@@ -11,7 +11,7 @@ import { analyzePath } from "~/util/router/utils";
 import { pages } from "~/util/router/pages";
 import { removeLeadingSlash } from "~/api/tree/utils";
 import { useNamespace } from "~/util/store/namespace";
-import { useNodeContent } from "~/api/tree/query/node";
+import { useNode } from "~/api/filesTree/query/node";
 import { useRoutes } from "~/api/gateway/query/getRoutes";
 import { useTranslation } from "react-i18next";
 
@@ -27,7 +27,7 @@ const EndpointPage: FC = () => {
     noPermissionMessage,
     data: gatewayData,
     isFetched: isPermissionCheckFetched,
-  } = useNodeContent({ path });
+  } = useNode({ path });
 
   const { data: routes, isFetched: isRouteListFetched } = useRoutes();
 

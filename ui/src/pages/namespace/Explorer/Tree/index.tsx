@@ -127,7 +127,7 @@ const ExplorerPage: FC = () => {
                       setDialogOpen(false);
                     }}
                     unallowedNames={
-                      data?.paths.map((file) =>
+                      data?.paths?.map((file) =>
                         getFilenameFromPath(file.path)
                       ) || []
                     }

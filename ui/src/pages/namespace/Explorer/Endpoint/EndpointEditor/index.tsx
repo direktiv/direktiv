@@ -13,12 +13,12 @@ import { RouteSchemaType } from "~/api/gateway/schema";
 import { Save } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
 import { serializeEndpointFile } from "./utils";
-import { useNodeContent } from "~/api/tree/query/node";
+import { useNode } from "~/api/filesTree/query/node";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 import { useUpdateFile } from "~/api/filesTree/mutate/updateFile";
 
-type NodeContentType = ReturnType<typeof useNodeContent>["data"];
+type NodeContentType = ReturnType<typeof useNode>["data"];
 
 type EndpointEditorProps = {
   data: NonNullable<NodeContentType>;
@@ -28,7 +28,7 @@ type EndpointEditorProps = {
 const EndpointEditor: FC<EndpointEditorProps> = ({ data }) => {
   const { t } = useTranslation();
   const theme = useTheme();
-  const fileContentFromServer = decode(data.source ?? "");
+  const fileContentFromServer = decode(data.file.data ?? "");
   const [endpointConfig, endpointConfigError] = serializeEndpointFile(
     fileContentFromServer
   );
@@ -37,7 +37,7 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data }) => {
   const save = (value: EndpointFormSchemaType) => {
     const toSave = jsonToYaml(value);
     updateRoute({
-      node: data.node,
+      node: data.file,
       file: { data: encode(toSave) },
     });
   };

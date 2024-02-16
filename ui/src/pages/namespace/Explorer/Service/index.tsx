@@ -10,7 +10,7 @@ import { analyzePath } from "~/util/router/utils";
 import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
 import { useNamespaceServices } from "~/api/services/query/services";
-import { useNodeContent } from "~/api/tree/query/node";
+import { useNode } from "~/api/filesTree/query/node";
 import { useTranslation } from "react-i18next";
 
 const ServicePage: FC = () => {
@@ -25,7 +25,7 @@ const ServicePage: FC = () => {
     noPermissionMessage,
     data: serviceData,
     isFetched: isPermissionCheckFetched,
-  } = useNodeContent({ path });
+  } = useNode({ path });
 
   const { data: servicesList } = useNamespaceServices();
 
@@ -43,7 +43,7 @@ const ServicePage: FC = () => {
     );
 
   const serviceId = servicesList.data.find(
-    (service) => serviceData.node.path === service.filePath
+    (service) => serviceData.file.path === service.filePath
   )?.id;
 
   return (
