@@ -5,7 +5,7 @@ import { FC } from "react";
 import { Link } from "react-router-dom";
 import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
-import { useNodeContent } from "~/api/tree/query/node";
+import { useNode } from "~/api/filesTree/query/node";
 
 const BreadcrumbSegment: FC<{
   absolute: string;
@@ -19,7 +19,7 @@ const BreadcrumbSegment: FC<{
    * icon to use
    */
 
-  const { data } = useNodeContent({
+  const { data } = useNode({
     path: absolute,
     enabled: isLast,
   });
@@ -27,12 +27,12 @@ const BreadcrumbSegment: FC<{
   if (!namespace) return null;
   if (isLast && !data) return null;
 
-  const Icon = fileTypeToIcon(data?.node.type ?? "directory");
+  const Icon = fileTypeToIcon(data?.file.type ?? "directory");
 
   const link = pages.explorer.createHref({
     namespace,
     path: absolute,
-    subpage: fileTypeToExplorerSubpage(data?.node.type ?? "directory"),
+    subpage: fileTypeToExplorerSubpage(data?.file.type ?? "directory"),
   });
 
   return (
