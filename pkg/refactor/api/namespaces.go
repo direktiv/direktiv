@@ -24,16 +24,16 @@ type namespaceWithSettings struct {
 }
 
 func (e *nsController) mountRouter(r chi.Router) {
-	r.Get("/{nsName}", e.get)
-	r.Delete("/{nsName}", e.delete)
-	r.Patch("/{nsName}", e.update)
+	r.Get("/{name}", e.get)
+	r.Delete("/{name}", e.delete)
+	r.Patch("/{name}", e.update)
 
 	r.Get("/", e.list)
 	r.Post("/", e.create)
 }
 
 func (e *nsController) get(w http.ResponseWriter, r *http.Request) {
-	name := chi.URLParam(r, "nsName")
+	name := chi.URLParam(r, "name")
 
 	db, err := e.db.BeginTx(r.Context())
 	if err != nil {
@@ -62,7 +62,7 @@ func (e *nsController) get(w http.ResponseWriter, r *http.Request) {
 }
 
 func (e *nsController) delete(w http.ResponseWriter, r *http.Request) {
-	name := chi.URLParam(r, "nsName")
+	name := chi.URLParam(r, "name")
 
 	db, err := e.db.BeginTx(r.Context())
 	if err != nil {
