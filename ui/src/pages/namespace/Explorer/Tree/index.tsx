@@ -22,14 +22,14 @@ import { analyzePath } from "~/util/router/utils";
 import { pages } from "~/util/router/pages";
 import { twMergeClsx } from "~/util/helpers";
 import { useNamespace } from "~/util/store/namespace";
-import { usePath } from "~/api/filesTree/query/path";
+import { useNode } from "~/api/filesTree/query/node";
 import { useTranslation } from "react-i18next";
 
 const ExplorerPage: FC = () => {
   const namespace = useNamespace();
   const { path } = pages.explorer.useParams();
   const { data, isSuccess, isFetched, isAllowed, noPermissionMessage } =
-    usePath({
+    useNode({
       path,
     });
 

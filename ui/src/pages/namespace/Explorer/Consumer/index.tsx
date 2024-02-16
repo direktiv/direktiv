@@ -9,7 +9,7 @@ import { NoPermissions } from "~/design/Table";
 import { analyzePath } from "~/util/router/utils";
 import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
-import { useNodeContent } from "~/api/tree/query/node";
+import { useNode } from "~/api/filesTree/query/node";
 import { useTranslation } from "react-i18next";
 
 const ConsumerPage: FC = () => {
@@ -24,7 +24,7 @@ const ConsumerPage: FC = () => {
     noPermissionMessage,
     data: consumerData,
     isFetched: isPermissionCheckFetched,
-  } = useNodeContent({ path });
+  } = useNode({ path });
 
   if (!namespace) return null;
   if (!path) return null;

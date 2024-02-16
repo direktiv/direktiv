@@ -101,7 +101,7 @@ const UpdateFileSchema = z.object({
 export const PathListSchema = z.object({
   data: z.object({
     file: NodeSchema,
-    paths: z.array(NodeSchema),
+    paths: z.array(NodeSchema).nullable(),
   }),
 });
 
