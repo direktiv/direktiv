@@ -118,5 +118,3 @@ FileNodeWithoutData:
     updatedAt:
       type: string
       description: timestamp of node last updating date
-
-
