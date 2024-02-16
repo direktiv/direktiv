@@ -12,11 +12,11 @@ import { WorkspaceLayout } from "~/components/WorkspaceLayout";
 import { useEditorLayout } from "~/util/store/editor";
 import { useNamespace } from "~/util/store/namespace";
 import { useNamespaceLinting } from "~/api/namespaceLinting/query/useNamespaceLinting";
-import { useNodeContent } from "~/api/tree/query/node";
+import { useNode } from "~/api/filesTree/query/node";
 import { useTranslation } from "react-i18next";
 import { useUpdateFile } from "~/api/filesTree/mutate/updateFile";
 
-export type NodeContentType = ReturnType<typeof useNodeContent>["data"];
+export type NodeContentType = ReturnType<typeof useNode>["data"];
 
 const WorkflowEditor: FC<{
   data: NonNullable<NodeContentType>;
@@ -28,7 +28,7 @@ const WorkflowEditor: FC<{
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const { refetch: updateNotificationBell } = useNamespaceLinting();
 
-  const workflowDataFromServer = decode(data?.source ?? "");
+  const workflowDataFromServer = decode(data?.file.data ?? "");
 
   const { mutate, isLoading } = useUpdateFile({
     onError: (error) => {
@@ -55,7 +55,7 @@ const WorkflowEditor: FC<{
     if (toSave) {
       setError(undefined);
       mutate({
-        node: data.node,
+        node: data.file,
         file: { data: encode(toSave) },
       });
     }
@@ -74,7 +74,7 @@ const WorkflowEditor: FC<{
           <CodeEditor
             value={editorContent}
             onValueChange={onEditorContentUpdate}
-            updatedAt={data.node.updatedAt}
+            updatedAt={data.file.updatedAt}
             error={error}
             hasUnsavedChanges={hasUnsavedChanges}
             onSave={onSave}
@@ -96,7 +96,7 @@ const WorkflowEditor: FC<{
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-2xl">
-            <RunWorkflow path={data.node.path} />
+            <RunWorkflow path={data.file.path} />
           </DialogContent>
         </Dialog>
         <Button

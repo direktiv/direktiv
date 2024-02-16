@@ -19,7 +19,7 @@ import { decode } from "js-base64";
 import { pages } from "~/util/router/pages";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { useNodeContent } from "~/api/tree/query/node";
+import { useNode } from "~/api/filesTree/query/node";
 import { useRunWorkflow } from "~/api/tree/mutate/runWorkflow";
 import { useTheme } from "~/util/store/theme";
 import { useToast } from "~/design/Toast";
@@ -38,10 +38,10 @@ const RunWorkflow = ({ path }: { path: string }) => {
   const { t } = useTranslation();
   const theme = useTheme();
   const navigate = useNavigate();
-  const { data } = useNodeContent({ path });
+  const { data } = useNode({ path });
   const submitButtonRef = useRef<HTMLButtonElement>(null);
   const validationSchema = getValidationSchemaFromYaml(
-    decode(data?.source ?? "")
+    decode(data?.file.data ?? "")
   );
 
   // tab handling

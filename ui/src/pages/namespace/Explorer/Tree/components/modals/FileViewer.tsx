@@ -12,7 +12,7 @@ import { File } from "lucide-react";
 import { NodeSchemaType } from "~/api/filesTree/schema";
 import { decode } from "js-base64";
 import { mimeTypeToEditorSyntax } from "~/design/Editor/utils";
-import { useNodeContent } from "~/api/tree/query/node";
+import { useNode } from "~/api/filesTree/query/node";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 
@@ -35,10 +35,10 @@ const imageSrc = (mimeType: string, source: string) =>
 const FileViewer = ({ node }: { node: NodeSchemaType }) => {
   const { t } = useTranslation();
   const theme = useTheme();
-  const { data } = useNodeContent({ path: node.path });
+  const { data } = useNode({ path: node.path });
 
-  const fileContent = decode(data?.source ?? "");
-  const mimeType = data?.node.mimeType;
+  const fileContent = decode(data?.file.data ?? "");
+  const mimeType = data?.file.mimeType;
 
   const supportedLanguage = mimeTypeToEditorSyntax(mimeType);
   const supportedImage = mimeType?.startsWith("image/");
@@ -59,7 +59,7 @@ const FileViewer = ({ node }: { node: NodeSchemaType }) => {
         <div className="flex h-[700px]">
           {showImage && (
             <img
-              src={imageSrc(mimeType ?? "", data?.source ?? "")}
+              src={imageSrc(mimeType ?? "", data?.file.data ?? "")}
               className="w-full object-contain"
             />
           )}
