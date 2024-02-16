@@ -70,7 +70,7 @@ describe('Test invalid variable delete calls', () => {
 				.delete(`/api/v2/namespaces/${ namespace }/variables/${ testCase.id }`)
 				.send(testCase.input)
 			expect(res.statusCode).toEqual(testCase.wantError.statusCode)
-			expect(res.body.error).toMatchObject(
+			expect(res.body.error).toEqual(
 				testCase.wantError.error,
 			)
 		})

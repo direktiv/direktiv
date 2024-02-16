@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"path/filepath"
+	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
@@ -49,8 +50,13 @@ func (e *varController) get(w http.ResponseWriter, r *http.Request) {
 		writeDataStoreError(w, err)
 		return
 	}
+	variable.Data, err = dStore.RuntimeVariables().LoadData(r.Context(), variable.ID)
+	if err != nil {
+		writeDataStoreError(w, err)
+		return
+	}
 
-	writeJSON(w, variable)
+	writeJSON(w, convertVariable(variable))
 }
 
 func (e *varController) delete(w http.ResponseWriter, r *http.Request) {
@@ -131,7 +137,7 @@ func (e *varController) update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, updatedVar)
+	writeJSON(w, convertVariable(updatedVar))
 }
 
 func (e *varController) create(w http.ResponseWriter, r *http.Request) {
@@ -192,7 +198,7 @@ func (e *varController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, newVar)
+	writeJSON(w, convertVariable(newVar))
 }
 
 func (e *varController) list(w http.ResponseWriter, r *http.Request) {
@@ -240,5 +246,48 @@ func (e *varController) list(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, list)
+	res := make([]any, len(list))
+	for i, _ := range list {
+		res[i] = convertVariable(list[i])
+	}
+
+	writeJSON(w, res)
+}
+
+func convertVariable(v *datastore.RuntimeVariable) any {
+	type variableForApi struct {
+		ID        uuid.UUID `json:"id"`
+		Typ       string    `json:"type"`
+		Reference string    `json:"reference"`
+		Name      string    `json:"name"`
+
+		Size      int       `json:"size"`
+		MimeType  string    `json:"mimeType"`
+		Data      []byte    `json:"data,omitempty"`
+		CreatedAt time.Time `json:"createdAt"`
+		UpdatedAt time.Time `json:"updatedAt"`
+	}
+
+	res := &variableForApi{
+		ID:        v.ID,
+		Name:      v.Name,
+		Size:      v.Size,
+		MimeType:  v.MimeType,
+		Data:      v.Data,
+		CreatedAt: v.CreatedAt,
+		UpdatedAt: v.UpdatedAt,
+	}
+
+	res.Typ = "namespace_variable"
+	res.Reference = v.Namespace
+	if v.InstanceID.String() != (uuid.UUID{}).String() {
+		res.Reference = v.InstanceID.String()
+		res.Typ = "instance_variable"
+	}
+	if v.WorkflowPath != "" {
+		res.Reference = v.WorkflowPath
+		res.Typ = "workflow_variable"
+	}
+
+	return res
 }

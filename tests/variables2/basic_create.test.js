@@ -28,8 +28,8 @@ describe('Test variable create calls', () => {
 				data: btoa('bar1'),
 				mimeType: 'mime1',
 				size: 4,
-				instanceId: '00000000-0000-0000-0000-000000000000',
-				workflowPath: '',
+				type: "namespace_variable",
+				reference: namespace,
 			},
 		},
 		{
@@ -44,8 +44,8 @@ describe('Test variable create calls', () => {
 				data: btoa('bar2'),
 				mimeType: 'mime2',
 				size: 4,
-				instanceId: '00000000-0000-0000-0000-000000000000',
-				workflowPath: '',
+				type: "namespace_variable",
+				reference: namespace,
 			},
 		},
 		{
@@ -59,8 +59,8 @@ describe('Test variable create calls', () => {
 				data: btoa('bar3'),
 				mimeType: 'mime3',
 				size: 4,
-				instanceId: '00000000-0000-0000-0000-000000000000',
-				workflowPath: '',
+				type: "namespace_variable",
+				reference: namespace,
 			},
 		},
 		{
@@ -75,8 +75,8 @@ describe('Test variable create calls', () => {
 				data: btoa('bar4'),
 				mimeType: 'mime4',
 				size: 4,
-				instanceId: '00000000-0000-0000-0000-000000000000',
-				workflowPath: '/wf1.yaml',
+				type: "workflow_variable",
+				reference: '/wf1.yaml',
 			},
 		},
 	]
@@ -89,7 +89,7 @@ describe('Test variable create calls', () => {
 				.post(`/api/v2/namespaces/${ namespace }/variables`)
 				.send(testCase.input)
 			expect(res.statusCode).toEqual(200)
-			expect(res.body.data).toMatchObject({
+			expect(res.body.data).toEqual({
 				id: expect.stringMatching(common.regex.uuidRegex),
 
 				...testCase.want,
@@ -146,7 +146,7 @@ describe('Test invalid variable create calls', () => {
 				.post(`/api/v2/namespaces/${ namespace }/variables`)
 				.send(testCase.input)
 			expect(res.statusCode).toEqual(testCase.wantError.statusCode)
-			expect(res.body.error).toMatchObject(
+			expect(res.body.error).toEqual(
 				testCase.wantError.error,
 			)
 		})

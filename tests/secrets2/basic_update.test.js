@@ -46,7 +46,7 @@ describe('Test secret update calls', () => {
 				.patch(`/api/v2/namespaces/${ namespace }/secrets/${ secretName }`)
 				.send(testCase.input)
 			expect(res.statusCode).toEqual(200)
-			expect(res.body.data).toMatchObject({
+			expect(res.body.data).toEqual({
 				...testCase.want,
 
 				createdAt: expect.stringMatching(regex.timestampRegex),
@@ -98,7 +98,7 @@ describe('Test invalid secret update calls', () => {
 				.patch(`/api/v2/namespaces/${ namespace }/secrets/${ secretName }`)
 				.send(testCase.input)
 			expect(res.statusCode).toEqual(testCase.wantError.statusCode)
-			expect(res.body.error).toMatchObject(
+			expect(res.body.error).toEqual(
 				testCase.wantError.error,
 			)
 		})

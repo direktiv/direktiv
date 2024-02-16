@@ -58,7 +58,7 @@ describe('Test invalid secret delete calls', () => {
 				.delete(`/api/v2/namespaces/${ namespace }/secrets/${ testCase.name }`)
 				.send(testCase.input)
 			expect(res.statusCode).toEqual(testCase.wantError.statusCode)
-			expect(res.body.error).toMatchObject(
+			expect(res.body.error).toEqual(
 				testCase.wantError.error,
 			)
 		})
