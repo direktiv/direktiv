@@ -10,19 +10,19 @@ import (
 // MirrorConfig holds configuration data that are needed to create a mirror (pulling mirror credentials, urls, keys
 // and any other details).
 type MirrorConfig struct {
-	Namespace string
+	Namespace string `json:"-"`
 
-	URL                  string
-	GitRef               string
-	GitCommitHash        string
-	PublicKey            string
-	PrivateKey           string
-	PrivateKeyPassphrase string
+	URL                  string `json:"url"`
+	GitRef               string `json:"gitRef"`
+	GitCommitHash        string `json:"gitCommitHash"`
+	PublicKey            string `json:"publicKey"`
+	PrivateKey           string `json:"-"`
+	PrivateKeyPassphrase string `json:"-"`
 
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 
-	Insecure bool
+	Insecure bool `json:"insecure"`
 }
 
 // MirrorProcess different statuses.
