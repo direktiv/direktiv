@@ -247,7 +247,7 @@ func (e *varController) list(w http.ResponseWriter, r *http.Request) {
 	}
 
 	res := make([]any, len(list))
-	for i, _ := range list {
+	for i := range list {
 		res[i] = convertVariable(list[i])
 	}
 
@@ -255,7 +255,7 @@ func (e *varController) list(w http.ResponseWriter, r *http.Request) {
 }
 
 func convertVariable(v *datastore.RuntimeVariable) any {
-	type variableForApi struct {
+	type variableForAPI struct {
 		ID        uuid.UUID `json:"id"`
 		Typ       string    `json:"type"`
 		Reference string    `json:"reference"`
@@ -268,7 +268,7 @@ func convertVariable(v *datastore.RuntimeVariable) any {
 		UpdatedAt time.Time `json:"updatedAt"`
 	}
 
-	res := &variableForApi{
+	res := &variableForAPI{
 		ID:        v.ID,
 		Name:      v.Name,
 		Size:      v.Size,
