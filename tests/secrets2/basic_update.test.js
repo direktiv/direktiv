@@ -1,7 +1,6 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 import { basename } from 'path'
 
-import common from '../common'
 import config from '../common/config'
 import helpers from '../common/helpers'
 import regex from '../common/regex'
@@ -40,6 +39,7 @@ describe('Test secret update calls', () => {
 	for (let i = 0; i < testCases.length; i++) {
 		const testCase = testCases[i]
 
+		// eslint-disable-next-line no-loop-func
 		it(`should update secret case ${ i }`, async () => {
 			const secretName = createRes.body.data.name
 			const res = await request(config.getDirektivHost())
@@ -91,7 +91,7 @@ describe('Test invalid secret update calls', () => {
 
 	for (let i = 0; i < testCases.length; i++) {
 		const testCase = testCases[i]
-
+		// eslint-disable-next-line no-loop-func
 		it(`should fail updating a secret case ${ i }`, async () => {
 			const secretName = createRes.body.data.name
 			const res = await request(config.getDirektivHost())

@@ -100,6 +100,7 @@ describe('Test variable update calls', () => {
 	for (let i = 0; i < testCases.length; i++) {
 		const testCase = testCases[i]
 
+		// eslint-disable-next-line no-loop-func
 		it(`should update variable case ${ i }`, async () => {
 			const varId = createRes.body.data.id
 			const res = await request(config.getDirektivHost())
@@ -167,6 +168,7 @@ describe('Test invalid variable update calls', () => {
 	for (let i = 0; i < testCases.length; i++) {
 		const testCase = testCases[i]
 
+		// eslint-disable-next-line no-loop-func
 		it(`should fail updating a variable case ${ i }`, async () => {
 			const varId = createRes.body.data.id
 			const res = await request(config.getDirektivHost())
