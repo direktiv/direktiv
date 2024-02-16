@@ -1,11 +1,11 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 import { basename } from 'path'
-import request from "../common/request"
 
 import common from '../common'
 import config from '../common/config'
 import helpers from '../common/helpers'
 import regex from '../common/regex'
+import request from '../common/request'
 
 const namespace = basename(__filename)
 
@@ -28,7 +28,7 @@ describe('Test variable create calls', () => {
 				data: btoa('bar1'),
 				mimeType: 'mime1',
 				size: 4,
-				type: "namespace_variable",
+				type: 'namespace_variable',
 				reference: namespace,
 			},
 		},
@@ -44,7 +44,7 @@ describe('Test variable create calls', () => {
 				data: btoa('bar2'),
 				mimeType: 'mime2',
 				size: 4,
-				type: "namespace_variable",
+				type: 'namespace_variable',
 				reference: namespace,
 			},
 		},
@@ -59,7 +59,7 @@ describe('Test variable create calls', () => {
 				data: btoa('bar3'),
 				mimeType: 'mime3',
 				size: 4,
-				type: "namespace_variable",
+				type: 'namespace_variable',
 				reference: namespace,
 			},
 		},
@@ -75,7 +75,7 @@ describe('Test variable create calls', () => {
 				data: btoa('bar4'),
 				mimeType: 'mime4',
 				size: 4,
-				type: "workflow_variable",
+				type: 'workflow_variable',
 				reference: '/wf1.yaml',
 			},
 		},

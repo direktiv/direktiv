@@ -1,11 +1,10 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 import { basename } from 'path'
-import request from "../common/request"
 
-import common from '../common'
 import config from '../common/config'
 import helpers from '../common/helpers'
 import regex from '../common/regex'
+import request from '../common/request'
 
 const namespace = basename(__filename)
 
@@ -47,7 +46,7 @@ describe('Test secrets get delete list calls', () => {
 			.get(`/api/v2/namespaces/${ namespace }/secrets`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toEqual({
-			data: [expectDummySecret('foo1'), expectDummySecret('foo2')]
+			data: [ expectDummySecret('foo1'), expectDummySecret('foo2') ],
 		})
 	})
 
@@ -62,22 +61,22 @@ describe('Test secrets get delete list calls', () => {
 			.get(`/api/v2/namespaces/${ namespace }/secrets`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toEqual({
-			data: [expectDummySecret('foo2')]
+			data: [ expectDummySecret('foo2') ],
 		})
 	})
 })
 
 
-function makeDummySecret(name) {
+function makeDummySecret (name) {
 	return {
-		name: name,
+		name,
 		data: btoa('value of' + name),
 	}
 }
 
-function expectDummySecret(name) {
+function expectDummySecret (name) {
 	return {
-		name: name,
+		name,
 		createdAt: expect.stringMatching(regex.timestampRegex),
 		updatedAt: expect.stringMatching(regex.timestampRegex),
 	}
