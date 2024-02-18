@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"log/slog"
 	"strings"
-	"sync"
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -49,41 +48,6 @@ func initEvents(srv *server, appendStagingEvent func(ctx context.Context, events
 func (events *events) Close() error {
 	return nil
 }
-
-func (events *events) sendEvent(data []byte) {
-	n := strings.SplitN(string(data), "/", 2)
-
-	if len(n) != 2 {
-		events.sugar.Errorf("namespace and id must be set for delayed events")
-		return
-	}
-
-	id, err := uuid.Parse(n[1])
-	if err != nil {
-		events.sugar.Errorf("namespace id invalid")
-		return
-	}
-
-	ctx := context.Background()
-
-	var ns *database.Namespace
-	err = events.runSqlTx(ctx, func(tx *sqlTx) error {
-		ns, err = tx.DataStore().Namespaces().GetByID(ctx, id) // TODO: Alexander, I haven't updated this but I think it's no longer in use. Is that accurate?
-		return err
-	})
-	if err != nil {
-		events.sugar.Error(err)
-		return
-	}
-
-	err = events.flushEvent(ctx, n[0], ns, true)
-	if err != nil {
-		events.sugar.Errorf("can not flush delayed event: %v", err)
-		return
-	}
-}
-
-var syncMtx sync.Mutex
 
 func (events *events) syncEventDelays() {
 	// syncMtx.Lock()
