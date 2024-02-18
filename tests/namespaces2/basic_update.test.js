@@ -52,7 +52,6 @@ describe('Test namespace update calls', () => {
 			const res = await request(config.getDirektivHost())
 				.put(`/api/v2/namespaces/${ createRes.body.data.name }`)
 				.send(testCase.input)
-			console.log(`/api/v2/namespaces/${ createRes.body.data.name }`, res.body)
 			expect(res.statusCode).toEqual(200)
 			expect(res.body.data).toEqual({
 				...testCase.want,
@@ -81,14 +80,14 @@ describe('Test invalid namespace update calls', () => {
 		{
 			input: {
 				mirrorSettings: {
-					url: "my_url_invalid",
+					url: 11,
 				}
 			},
 			wantError: {
 				statusCode: 400,
 				error: {
-					code: 'request_body_invalid',
-					message: "invalid url",
+					code: 'request_body_bad_json_schema',
+					message: "request payload has bad json schema",
 				},
 			},
 		},
