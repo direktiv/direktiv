@@ -123,8 +123,17 @@ func (e *nsController) update(w http.ResponseWriter, r *http.Request) {
 	// Update mirroring config.
 	req.MirrorSettings.Namespace = name
 	settings, err := dStore.Mirror().UpdateConfig(r.Context(), req.MirrorSettings)
-	if err != nil && !errors.Is(err, datastore.ErrNotFound) {
+	// If no mirroring config already set, create one.
+	if errors.Is(err, datastore.ErrNotFound) {
+		settings, err = dStore.Mirror().CreateConfig(r.Context(), req.MirrorSettings)
+	}
+	if err != nil {
 		writeDataStoreError(w, err)
+		return
+	}
+	err = db.Commit(r.Context())
+	if err != nil {
+		writeInternalError(w, err)
 		return
 	}
 

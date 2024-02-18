@@ -80,14 +80,14 @@ describe('Test invalid namespace update calls', () => {
 		{
 			input: {
 				mirrorSettings: {
-					url: "my_url_invalid",
+					url: 11,
 				}
 			},
 			wantError: {
 				statusCode: 400,
 				error: {
-					code: 'request_body_invalid',
-					message: "invalid url",
+					code: 'request_body_bad_json_schema',
+					message: "request payload has bad json schema",
 				},
 			},
 		},

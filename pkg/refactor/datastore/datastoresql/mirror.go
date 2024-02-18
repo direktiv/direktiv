@@ -106,6 +106,9 @@ func (s sqlMirrorStore) UpdateConfig(ctx context.Context, config *datastore.Mirr
 	if res.Error != nil {
 		return nil, res.Error
 	}
+	if res.RowsAffected == 0 {
+		return nil, datastore.ErrNotFound
+	}
 	if res.RowsAffected != 1 {
 		return nil, fmt.Errorf("unexpected gorm update count, got: %d, want: %d", res.RowsAffected, 1)
 	}
