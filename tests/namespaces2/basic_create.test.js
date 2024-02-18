@@ -8,27 +8,36 @@ import request from '../common/request'
 
 const namespace = basename(__filename)
 
-describe('Test secret create calls', () => {
+describe('Test namespace create calls', () => {
 	beforeAll(helpers.deleteAllNamespaces)
-	helpers.itShouldCreateNamespace(it, expect, namespace)
 
 	const testCases = [
 		{
 			input: {
 				name: 'foo1',
-				data: btoa('bar1'),
 			},
 			want: {
 				name: 'foo1',
-			},
+},
 		},
 		{
 			input: {
 				name: 'foo2',
-				data: btoa('bar2'),
+				mirrorSettings: {
+					url: "my_url"
+				}
 			},
 			want: {
 				name: 'foo2',
+				mirrorSettings: {
+					url: "my_url",
+					gitCommitHash: "",
+					gitRef: "",
+					insecure: false,
+					publicKey: "",
+					createdAt: expect.stringMatching(regex.timestampRegex),
+					updatedAt: expect.stringMatching(regex.timestampRegex),
+				}
 			},
 		},
 	]
@@ -36,9 +45,9 @@ describe('Test secret create calls', () => {
 	for (let i = 0; i < testCases.length; i++) {
 		const testCase = testCases[i]
 
-		it(`should create a new secret case ${ i }`, async () => {
+		it(`should create a new namespace case ${ i }`, async () => {
 			const res = await request(config.getDirektivHost())
-				.post(`/api/v2/namespaces/${ namespace }/secrets`)
+				.post(`/api/v2/namespaces`)
 				.send(testCase.input)
 			expect(res.statusCode).toEqual(200)
 			expect(res.body.data).toEqual({
@@ -51,23 +60,21 @@ describe('Test secret create calls', () => {
 	}
 })
 
-describe('Test invalid secret create calls', () => {
+
+describe('Test invalid namespace create calls', () => {
 	beforeAll(helpers.deleteAllNamespaces)
-	helpers.itShouldCreateNamespace(it, expect, namespace)
 
 	const testCases = [
 		{
 			input: {
 				// invalid data
-				name: 'foo1',
-				data: 'invalid-base-64',
-
+				name: '11',
 			},
 			wantError: {
 				statusCode: 400,
 				error: {
-					code: 'request_body_not_json',
-					message: "couldn't parse request payload in json format",
+					code: 'request_data_invalid',
+					message: "invalid namespace name",
 				},
 			},
 		},
@@ -76,9 +83,9 @@ describe('Test invalid secret create calls', () => {
 	for (let i = 0; i < testCases.length; i++) {
 		const testCase = testCases[i]
 
-		it(`should fail create a new secret case ${ i }`, async () => {
+		it(`should fail create a new namespace case ${ i }`, async () => {
 			const res = await request(config.getDirektivHost())
-				.post(`/api/v2/namespaces/${ namespace }/secrets`)
+				.post(`/api/v2/namespaces`)
 				.send(testCase.input)
 			expect(res.statusCode).toEqual(testCase.wantError.statusCode)
 			expect(res.body.error).toEqual(

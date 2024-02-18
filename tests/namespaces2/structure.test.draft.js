@@ -8,13 +8,12 @@ import request from '../common/request'
 
 const namespace = basename(__filename)
 
-describe('Test secret get delete list calls', () => {
+describe('Test namespace get delete list calls', () => {
 	beforeAll(helpers.deleteAllNamespaces)
-	helpers.itShouldCreateNamespace(it, expect, namespace)
 
-	it(`should create a new secret foo`, async () => {
+	it(`should create a new namespace foo`, async () => {
 		const res = await request(config.getDirektivHost())
-			.post(`/api/v2/namespaces/${ namespace }/secrets`)
+			.post(`/api/v2/namespaces`)
 			.send({
 				name: 'foo',
 				data: btoa('foo'),
@@ -23,9 +22,9 @@ describe('Test secret get delete list calls', () => {
 		expect(res.statusCode).toEqual(200)
 	})
 
-	it(`should get the new secret foo`, async () => {
+	it(`should get the new namespace foo`, async () => {
 		const res = await request(config.getDirektivHost())
-			.get(`/api/v2/namespaces/${ namespace }/secrets/foo`)
+			.get(`/api/v2/namespaces/foo`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.data).toEqual({
 			name: 'foo',
@@ -34,9 +33,9 @@ describe('Test secret get delete list calls', () => {
 		})
 	})
 
-	it(`should list the new secret foo`, async () => {
+	it(`should list the new namespace foo`, async () => {
 		const res = await request(config.getDirektivHost())
-			.get(`/api/v2/namespaces/${ namespace }/secrets`)
+			.get(`/api/v2/namespaces`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.data.length).toEqual(1)
 		expect(res.body.data[0]).toEqual({

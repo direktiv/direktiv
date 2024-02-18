@@ -6,20 +6,15 @@ import helpers from '../common/helpers'
 import regex from '../common/regex'
 import request from '../common/request'
 
-const namespace = basename(__filename)
-
-describe('Test secret update calls', () => {
+describe('Test namespace update calls', () => {
 	beforeAll(helpers.deleteAllNamespaces)
-	helpers.itShouldCreateNamespace(it, expect, namespace)
 
 	let createRes
-	it(`should create a secret case`, async () => {
+	it(`should create a namespace case`, async () => {
 		createRes = await request(config.getDirektivHost())
-			.post(`/api/v2/namespaces/${ namespace }/secrets`)
+			.post(`/api/v2/namespaces`)
 			.send({
 				name: 'foo',
-				data: btoa('bar'),
-
 			})
 
 		expect(createRes.statusCode).toEqual(200)
@@ -28,10 +23,23 @@ describe('Test secret update calls', () => {
 	const testCases = [
 		{
 			input: {
-				data: btoa('bar2--'),
+				mirrorSettings: {
+					url: "my_url",
+				}
 			},
 			want: {
 				name: 'foo',
+				createdAt: expect.stringMatching(regex.timestampRegex),
+				updatedAt: expect.stringMatching(regex.timestampRegex),
+				mirrorSettings: {
+					url: "my_url",
+					gitCommitHash: "",
+					gitRef: "",
+					insecure: false,
+					publicKey: "",
+					createdAt: expect.stringMatching(regex.timestampRegex),
+					updatedAt: expect.stringMatching(regex.timestampRegex),
+				}
 			},
 		},
 	]
@@ -40,30 +48,26 @@ describe('Test secret update calls', () => {
 		const testCase = testCases[i]
 
 		// eslint-disable-next-line no-loop-func
-		it(`should update secret case ${ i }`, async () => {
-			const secretName = createRes.body.data.name
+		it(`should update namespace case ${ i }`, async () => {
 			const res = await request(config.getDirektivHost())
-				.patch(`/api/v2/namespaces/${ namespace }/secrets/${ secretName }`)
+				.put(`/api/v2/namespaces/${ createRes.body.data.name }`)
 				.send(testCase.input)
+			console.log(`/api/v2/namespaces/${ createRes.body.data.name }`, res.body)
 			expect(res.statusCode).toEqual(200)
 			expect(res.body.data).toEqual({
 				...testCase.want,
-
-				createdAt: expect.stringMatching(regex.timestampRegex),
-				updatedAt: expect.stringMatching(regex.timestampRegex),
 			})
 		})
 	}
 })
 
-describe('Test invalid secret update calls', () => {
+describe('Test invalid namespace update calls', () => {
 	beforeAll(helpers.deleteAllNamespaces)
-	helpers.itShouldCreateNamespace(it, expect, namespace)
 
 	let createRes
-	it(`should create a secret case`, async () => {
+	it(`should create a namespace case`, async () => {
 		createRes = await request(config.getDirektivHost())
-			.post(`/api/v2/namespaces/${ namespace }/secrets`)
+			.post(`/api/v2/namespaces`)
 			.send({
 				name: 'foo',
 				data: btoa('bar'),
@@ -76,14 +80,15 @@ describe('Test invalid secret update calls', () => {
 	const testCases = [
 		{
 			input: {
-				// invalid data
-				data: 'some string',
+				mirrorSettings: {
+					url: "my_url_invalid",
+				}
 			},
 			wantError: {
 				statusCode: 400,
 				error: {
-					code: 'request_body_not_json',
-					message: "couldn't parse request payload in json format",
+					code: 'request_body_invalid',
+					message: "invalid url",
 				},
 			},
 		},
@@ -92,10 +97,9 @@ describe('Test invalid secret update calls', () => {
 	for (let i = 0; i < testCases.length; i++) {
 		const testCase = testCases[i]
 		// eslint-disable-next-line no-loop-func
-		it(`should fail updating a secret case ${ i }`, async () => {
-			const secretName = createRes.body.data.name
+		it(`should fail updating a namespace case ${ i }`, async () => {
 			const res = await request(config.getDirektivHost())
-				.patch(`/api/v2/namespaces/${ namespace }/secrets/${ secretName }`)
+				.put(`/api/v2/namespaces/${ createRes.body.data.name }`)
 				.send(testCase.input)
 			expect(res.statusCode).toEqual(testCase.wantError.statusCode)
 			expect(res.body.error).toEqual(

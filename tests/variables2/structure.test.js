@@ -1,11 +1,11 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 import { basename } from 'path'
-import request from "../common/request"
 
 import common from '../common'
 import config from '../common/config'
 import helpers from '../common/helpers'
 import regex from '../common/regex'
+import request from '../common/request'
 
 const namespace = basename(__filename)
 
@@ -27,7 +27,7 @@ describe('Test variable get delete list calls', () => {
 
 	it(`should get the new variable foo`, async () => {
 		const res = await request(config.getDirektivHost())
-			.get(`/api/v2/namespaces/${ namespace }/variables/${createRes.body.data.id}`)
+			.get(`/api/v2/namespaces/${ namespace }/variables/${ createRes.body.data.id }`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.data).toEqual({
 			id: expect.stringMatching(common.regex.uuidRegex),
@@ -36,7 +36,7 @@ describe('Test variable get delete list calls', () => {
 			data: btoa('foo'),
 			mimeType: 'mime_foo',
 			size: 3,
-			type: "namespace_variable",
+			type: 'namespace_variable',
 			reference: namespace,
 
 			createdAt: expect.stringMatching(regex.timestampRegex),
@@ -56,7 +56,7 @@ describe('Test variable get delete list calls', () => {
 
 			mimeType: 'mime_foo',
 			size: 3,
-			type: "namespace_variable",
+			type: 'namespace_variable',
 			reference: namespace,
 
 			createdAt: expect.stringMatching(regex.timestampRegex),

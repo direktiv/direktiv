@@ -102,6 +102,14 @@ func writeDataStoreError(w http.ResponseWriter, err error) {
 
 		return
 	}
+	if errors.Is(err, datastore.ErrInvalidNamespaceName) {
+		writeError(w, &Error{
+			Code:    "request_data_invalid",
+			Message: "invalid namespace name",
+		})
+
+		return
+	}
 
 	writeInternalError(w, err)
 }

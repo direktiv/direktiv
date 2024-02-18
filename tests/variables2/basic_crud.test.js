@@ -1,11 +1,9 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 import { basename } from 'path'
-import request from "../common/request"
 
-import common from '../common'
 import config from '../common/config'
 import helpers from '../common/helpers'
-import regex from '../common/regex'
+import request from '../common/request'
 
 const namespace = basename(__filename)
 
@@ -31,7 +29,7 @@ describe('Test variable get delete list calls', () => {
 
 	it(`should get the new variable foo1`, async () => {
 		const res = await request(config.getDirektivHost())
-			.get(`/api/v2/namespaces/${ namespace }/variables/${foo1Res.body.data.id}`)
+			.get(`/api/v2/namespaces/${ namespace }/variables/${ foo1Res.body.data.id }`)
 		expect(res.statusCode).toEqual(200)
 
 		expect(res.body.data).toMatchObject(expectDummyVar('foo1'))
@@ -39,7 +37,7 @@ describe('Test variable get delete list calls', () => {
 
 	it(`should get the new variable foo2`, async () => {
 		const res = await request(config.getDirektivHost())
-			.get(`/api/v2/namespaces/${ namespace }/variables/${foo2Res.body.data.id}`)
+			.get(`/api/v2/namespaces/${ namespace }/variables/${ foo2Res.body.data.id }`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.data).toMatchObject(expectDummyVar('foo2'))
 	})
@@ -49,13 +47,13 @@ describe('Test variable get delete list calls', () => {
 			.get(`/api/v2/namespaces/${ namespace }/variables`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toMatchObject({
-			data: [expectDummyVar('foo1'), expectDummyVar('foo2')]
+			data: [ expectDummyVar('foo1'), expectDummyVar('foo2') ],
 		})
 	})
 
 	it(`should delete foo1`, async () => {
 		const res = await request(config.getDirektivHost())
-			.delete(`/api/v2/namespaces/${ namespace }/variables/${foo1Res.body.data.id}`)
+			.delete(`/api/v2/namespaces/${ namespace }/variables/${ foo1Res.body.data.id }`)
 		expect(res.statusCode).toEqual(200)
 	})
 
@@ -64,22 +62,22 @@ describe('Test variable get delete list calls', () => {
 			.get(`/api/v2/namespaces/${ namespace }/variables`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toMatchObject({
-			data: [expectDummyVar('foo2')]
+			data: [ expectDummyVar('foo2') ],
 		})
 	})
 })
 
 
-function makeDummyVar(name) {
+function makeDummyVar (name) {
 	return {
-		name: name,
+		name,
 		data: btoa('value of' + name),
 		mimeType: 'mime_' + name,
 	}
 }
 
-function expectDummyVar(name) {
+function expectDummyVar (name) {
 	return {
-		name: name,
+		name,
 	}
 }

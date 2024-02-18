@@ -1,11 +1,11 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 import { basename } from 'path'
-import request from "../common/request"
 
 import common from '../common'
 import config from '../common/config'
 import helpers from '../common/helpers'
 import regex from '../common/regex'
+import request from '../common/request'
 
 const namespace = basename(__filename)
 
@@ -36,7 +36,7 @@ describe('Test variable update calls', () => {
 				data: btoa('bar'),
 				mimeType: 'mime',
 				size: 3,
-				type: "namespace_variable",
+				type: 'namespace_variable',
 				reference: namespace,
 			},
 		},
@@ -49,7 +49,7 @@ describe('Test variable update calls', () => {
 				data: btoa('bar2--'),
 				mimeType: 'mime',
 				size: 6,
-				type: "namespace_variable",
+				type: 'namespace_variable',
 				reference: namespace,
 			},
 		},
@@ -62,7 +62,7 @@ describe('Test variable update calls', () => {
 				data: btoa('bar2--'),
 				mimeType: 'mime2',
 				size: 6,
-				type: "namespace_variable",
+				type: 'namespace_variable',
 				reference: namespace,
 			},
 		},
@@ -76,7 +76,7 @@ describe('Test variable update calls', () => {
 				data: btoa('bar2--'),
 				mimeType: 'mime3',
 				size: 6,
-				type: "namespace_variable",
+				type: 'namespace_variable',
 				reference: namespace,
 			},
 		},
@@ -91,7 +91,7 @@ describe('Test variable update calls', () => {
 				data: btoa('bar4--'),
 				mimeType: 'mime4',
 				size: 6,
-				type: "namespace_variable",
+				type: 'namespace_variable',
 				reference: namespace,
 			},
 		},
@@ -100,6 +100,7 @@ describe('Test variable update calls', () => {
 	for (let i = 0; i < testCases.length; i++) {
 		const testCase = testCases[i]
 
+		// eslint-disable-next-line no-loop-func
 		it(`should update variable case ${ i }`, async () => {
 			const varId = createRes.body.data.id
 			const res = await request(config.getDirektivHost())
@@ -167,6 +168,7 @@ describe('Test invalid variable update calls', () => {
 	for (let i = 0; i < testCases.length; i++) {
 		const testCase = testCases[i]
 
+		// eslint-disable-next-line no-loop-func
 		it(`should fail updating a variable case ${ i }`, async () => {
 			const varId = createRes.body.data.id
 			const res = await request(config.getDirektivHost())
