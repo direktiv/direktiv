@@ -28,12 +28,6 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-const (
-	eventTypeString   = "type"
-	filterPrefix      = "filter-"
-	sendEventFunction = "sendEvent"
-)
-
 func init() {
 	gob.Register(new(event.EventContextV1))
 	gob.Register(new(event.EventContextV03))
