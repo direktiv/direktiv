@@ -124,7 +124,7 @@ func (e *fsController) delete(w http.ResponseWriter, r *http.Request) {
 			filestore.FileTypeEndpoint: pubsub.EndpointDelete,
 			filestore.FileTypeConsumer: pubsub.ConsumerDelete,
 		}[file.Typ]
-		err = e.bus.Publish(deleteTopic, ns.Name)
+		err = e.bus.DebouncedPublish(deleteTopic, ns.Name)
 		// nolint
 		if err != nil {
 			// TODO: log error here.
@@ -208,7 +208,7 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 			filestore.FileTypeEndpoint: pubsub.EndpointCreate,
 			filestore.FileTypeConsumer: pubsub.ConsumerCreate,
 		}[newFile.Typ]
-		err = e.bus.Publish(createTopic, ns.Name)
+		err = e.bus.DebouncedPublish(createTopic, ns.Name)
 		// nolint
 		if err != nil {
 			// TODO: log error here.
@@ -317,7 +317,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 			filestore.FileTypeEndpoint: pubsub.EndpointRename,
 			filestore.FileTypeConsumer: pubsub.ConsumerRename,
 		}[oldFile.Typ]
-		err = e.bus.Publish(createTopic, ns.Name)
+		err = e.bus.DebouncedPublish(createTopic, ns.Name)
 		// nolint
 		if err != nil {
 			// TODO: log error here.
@@ -330,7 +330,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 			filestore.FileTypeEndpoint: pubsub.EndpointUpdate,
 			filestore.FileTypeConsumer: pubsub.ConsumerUpdate,
 		}[oldFile.Typ]
-		err = e.bus.Publish(createTopic, ns.Name)
+		err = e.bus.DebouncedPublish(createTopic, ns.Name)
 		// nolint
 		if err != nil {
 			// TODO: log error here.

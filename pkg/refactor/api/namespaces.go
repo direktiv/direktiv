@@ -78,7 +78,7 @@ func (e *nsController) delete(w http.ResponseWriter, r *http.Request) {
 
 	// TODO: Alan, check if here we need to fire some pubsub events.
 
-	err = e.bus.Publish(pubsub.NamespaceDelete, name)
+	err = e.bus.DebouncedPublish(pubsub.NamespaceDelete, name)
 	// nolint
 	if err != nil {
 		// TODO: log error here.
@@ -177,7 +177,7 @@ func (e *nsController) create(w http.ResponseWriter, r *http.Request) {
 
 	// TODO: Alan, check if here we need to fire some pubsub events.
 
-	err = e.bus.Publish(pubsub.NamespaceCreate, req.Name)
+	err = e.bus.DebouncedPublish(pubsub.NamespaceCreate, req.Name)
 	// nolint
 	if err != nil {
 		// TODO: log error here.
