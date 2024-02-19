@@ -193,6 +193,7 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 		writeFileStoreError(w, err)
 		return
 	}
+	newFile.Data = decodedBytes
 
 	err = db.Commit(r.Context())
 	if err != nil {
