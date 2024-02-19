@@ -10,6 +10,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/refactor/reconcile"
+
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	dClient "github.com/docker/docker/client"
 	"go.uber.org/zap"
@@ -101,7 +103,7 @@ func (m *manager) runCycle() []error {
 	}
 
 	// clone the list
-	src := make([]Item, len(m.list))
+	src := make([]reconcile.Item, len(m.list))
 	for i, v := range m.list {
 		src[i] = v
 	}
@@ -116,14 +118,14 @@ func (m *manager) runCycle() []error {
 		return []error{err}
 	}
 
-	target := make([]Item, len(knList))
+	target := make([]reconcile.Item, len(knList))
 	for i, v := range knList {
 		target[i] = v
 	}
 
 	m.logger.Debugw("Run length", "src", len(src), "target", len(target))
 
-	result := Run(src, target)
+	result := reconcile.Run(src, target)
 
 	errs := []error{}
 	for _, id := range result.Deletes {
