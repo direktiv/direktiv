@@ -232,8 +232,8 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 	fStore := db.FileStore()
 
 	req := struct {
-		AbsolutePath string `json:"absolutePath"`
-		Data         string `json:"data"`
+		Path string `json:"path"`
+		Data string `json:"data"`
 	}{}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -280,13 +280,13 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if req.AbsolutePath != "" {
-		err = fStore.ForFile(oldFile).SetPath(r.Context(), req.AbsolutePath)
+	if req.Path != "" {
+		err = fStore.ForFile(oldFile).SetPath(r.Context(), req.Path)
 		if err != nil {
 			writeFileStoreError(w, err)
 			return
 		}
-		oldFile.Path = req.AbsolutePath
+		oldFile.Path = req.Path
 	}
 
 	updatedFile, err := fStore.ForNamespace(ns.Name).GetFile(r.Context(), oldFile.Path)
@@ -298,7 +298,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 
 	// Update workflow_path of all associated runtime variables.
 	dStore := db.DataStore()
-	err = dStore.RuntimeVariables().SetWorkflowPath(r.Context(), ns.Name, path, req.AbsolutePath)
+	err = dStore.RuntimeVariables().SetWorkflowPath(r.Context(), ns.Name, path, req.Path)
 	if err != nil {
 		writeInternalError(w, err)
 		return
@@ -311,7 +311,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Public pubsub events.
-	if oldFile.Typ != filestore.FileTypeDirectory && oldFile.Typ != filestore.FileTypeFile && req.AbsolutePath != "" {
+	if oldFile.Typ != filestore.FileTypeDirectory && oldFile.Typ != filestore.FileTypeFile && req.Path != "" {
 		createTopic := map[filestore.FileType]string{
 			filestore.FileTypeWorkflow: pubsub.WorkflowRename,
 			filestore.FileTypeService:  pubsub.ServiceRename,

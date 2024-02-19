@@ -106,7 +106,7 @@ async function itShouldUpdatePathV2 (it, expect, ns, path, newPath) {
 			.patch(`/api/v2/namespaces/${ ns }/files-tree${ path }`)
 			.set('Content-Type', 'application/json')
 			.send({
-				absolutePath: newPath,
+				path: newPath,
 			})
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.data).toMatchObject({
@@ -130,8 +130,8 @@ async function itShouldUpdateFileV2 (it, expect, ns, path, newPatch) {
 			createdAt: expect.stringMatching(regex.timestampRegex),
 			updatedAt: expect.stringMatching(regex.timestampRegex),
 		}
-		if (newPatch.absolutePath !== undefined)
-			want.path = newPatch.absolutePath
+		if (newPatch.path !== undefined)
+			want.path = newPatch.path
 
 		if (newPatch.data !== undefined)
 			want.data = newPatch.data
