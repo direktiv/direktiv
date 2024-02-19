@@ -66,9 +66,12 @@ async function itShouldCreateFileV2 (it, expect, ns, path, name, type, mimeType,
 		if (path === '/')
 			path = ''
 
-		expect(res.body.data).toMatchObject({
+		expect(res.body.data).toEqual({
 			path: `${ path }/${ name }`,
 			type,
+			data,
+			mimeType,
+			size: Buffer.from(data, 'base64').length,
 			createdAt: expect.stringMatching(regex.timestampRegex),
 			updatedAt: expect.stringMatching(regex.timestampRegex),
 		})
@@ -108,6 +111,7 @@ async function itShouldUpdatePathV2 (it, expect, ns, path, newPath) {
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.data).toMatchObject({
 			path: newPath,
+			type:expect.stringMatching("directory|file|workflow|service|endpoint|consumer"),
 			createdAt: expect.stringMatching(regex.timestampRegex),
 			updatedAt: expect.stringMatching(regex.timestampRegex),
 		})
