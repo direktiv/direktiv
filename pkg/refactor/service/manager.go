@@ -236,7 +236,9 @@ func (m *manager) getList(filterNamespace string, filterTyp string, filterPath s
 		}
 	}
 
-	sort.Sort(core.ServiceFileDataList(sList))
+	sort.Slice(sList, func(i, j int) bool {
+		return sList[i].FilePath < sList[j].FilePath
+	})
 
 	return sList, nil
 }

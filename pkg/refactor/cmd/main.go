@@ -202,16 +202,11 @@ func renderServiceManager(db *database.DB, serviceManager core.ServiceManager, l
 				}
 
 				funConfigList = append(funConfigList, &core.ServiceFileData{
-					Typ:       core.ServiceTypeNamespace,
-					Name:      "",
-					Namespace: ns.Name,
-					FilePath:  file.Path,
-					Image:     serviceDef.Image,
-					Cmd:       serviceDef.Cmd,
-					Size:      serviceDef.Size,
-					Scale:     serviceDef.Scale,
-					Envs:      serviceDef.Envs,
-					Patches:   serviceDef.Patches,
+					Typ:         core.ServiceTypeNamespace,
+					Name:        "",
+					Namespace:   ns.Name,
+					FilePath:    file.Path,
+					ServiceFile: *serviceDef,
 				})
 			} else if file.Typ == filestore.FileTypeWorkflow {
 				sub, err := getWorkflowFunctionDefinitionsFromWorkflow(ns, file)
@@ -254,11 +249,14 @@ func getWorkflowFunctionDefinitionsFromWorkflow(ns *datastore.Namespace, f *file
 			Name:      serviceDef.ID,
 			Namespace: ns.Name,
 			FilePath:  f.Path,
-			Image:     serviceDef.Image,
-			Cmd:       serviceDef.Cmd,
-			Size:      serviceDef.Size.String(),
-			Envs:      serviceDef.Envs,
-			Patches:   serviceDef.Patches,
+
+			ServiceFile: core.ServiceFile{
+				Image:   serviceDef.Image,
+				Cmd:     serviceDef.Cmd,
+				Size:    serviceDef.Size.String(),
+				Envs:    serviceDef.Envs,
+				Patches: serviceDef.Patches,
+			},
 		})
 	}
 

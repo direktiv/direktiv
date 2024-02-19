@@ -31,12 +31,12 @@ type ServicePatch struct {
 
 type ServiceFile struct {
 	DirektivAPI string                `yaml:"direktiv_api"`
-	Image       string                `yaml:"image"`
-	Cmd         string                `yaml:"cmd"`
-	Size        string                `yaml:"size"`
-	Scale       int                   `yaml:"scale"`
-	Envs        []EnvironmentVariable `yaml:"envs"`
-	Patches     []ServicePatch        `yaml:"patches"`
+	Image       string                `json:"image"   yaml:"image"`
+	Cmd         string                `json:"cmd"     yaml:"cmd"`
+	Size        string                `json:"size"    yaml:"size"`
+	Scale       int                   `json:"scale"   yaml:"scale"`
+	Envs        []EnvironmentVariable `json:"envs"    yaml:"envs"`
+	Patches     []ServicePatch        `json:"patches" yaml:"patches"`
 }
 
 func ParseServiceFile(data []byte) (*ServiceFile, error) {
@@ -59,13 +59,7 @@ type ServiceFileData struct {
 	FilePath  string `json:"filePath"`
 	Name      string `json:"name"`
 
-	// settings fields:
-	Image   string                `json:"image"`
-	Cmd     string                `json:"cmd"`
-	Size    string                `json:"size"`
-	Scale   int                   `json:"scale"`
-	Envs    []EnvironmentVariable `json:"envs"`
-	Patches []ServicePatch        `json:"patches"`
+	ServiceFile
 
 	Error *string `json:"error"`
 
@@ -104,21 +98,6 @@ func (c *ServiceFileData) GetValueHash() string {
 	sh := sha256.Sum256([]byte(str))
 
 	return hex.EncodeToString(sh[:10])
-}
-
-// ServiceFileDataList to implement sorting.
-type ServiceFileDataList []*ServiceFileData
-
-func (x ServiceFileDataList) Len() int {
-	return len(x)
-}
-
-func (x ServiceFileDataList) Less(i, j int) bool {
-	return x[i].FilePath < x[j].FilePath
-}
-
-func (x ServiceFileDataList) Swap(i, j int) {
-	x[i], x[j] = x[j], x[i]
 }
 
 type ServiceManager interface {
