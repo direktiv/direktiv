@@ -18,7 +18,7 @@ describe('Test filesystem tree read operations', () => {
 
 	it(`should read root dir with two paths`, async () => {
 		const res = await request(config.getDirektivHost())
-			.get(`/api/v2/namespaces/${ namespace }/files-tree`)
+			.get(`/api/v2/namespaces/${ namespace }/files`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toEqual({
 			data: {
@@ -54,7 +54,7 @@ describe('Test filesystem tree read operations', () => {
 
 	it(`should read root /dir1 with one path`, async () => {
 		const res = await request(config.getDirektivHost())
-			.get(`/api/v2/namespaces/${ namespace }/files-tree/dir1`)
+			.get(`/api/v2/namespaces/${ namespace }/files/dir1`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toEqual({
 			data: {

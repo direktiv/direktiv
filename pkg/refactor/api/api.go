@@ -100,7 +100,7 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 			r.Route("/namespaces/{namespace}/variables", func(r chi.Router) {
 				varCtr.mountRouter(r)
 			})
-			r.Route("/namespaces/{namespace}/files-tree", func(r chi.Router) {
+			r.Route("/namespaces/{namespace}/files", func(r chi.Router) {
 				fsCtr.mountRouter(r)
 			})
 			r.Route("/namespaces/{namespace}/services", func(r chi.Router) {

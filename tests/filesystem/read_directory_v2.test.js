@@ -15,7 +15,7 @@ describe('Test filesystem tree read operations', () => {
 
 	it(`should read empty root dir`, async () => {
 		const res = await request(config.getDirektivHost())
-			.get(`/api/v2/namespaces/${ namespace }/files-tree`)
+			.get(`/api/v2/namespaces/${ namespace }/files`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toMatchObject({
 			data: {
@@ -36,7 +36,7 @@ describe('Test filesystem tree read operations', () => {
 
 	it(`should read root dir with three paths`, async () => {
 		const res = await request(config.getDirektivHost())
-			.get(`/api/v2/namespaces/${ namespace }/files-tree`)
+			.get(`/api/v2/namespaces/${ namespace }/files`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toMatchObject({
 			data: {
@@ -74,7 +74,7 @@ describe('Test filesystem tree read operations', () => {
 
 	it(`should read dir1 with two files`, async () => {
 		const res = await request(config.getDirektivHost())
-			.get(`/api/v2/namespaces/${ namespace }/files-tree/dir1`)
+			.get(`/api/v2/namespaces/${ namespace }/files/dir1`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toMatchObject({
 			data: {
@@ -106,7 +106,7 @@ describe('Test filesystem tree read operations', () => {
 
 	it(`should read dir2 with zero files`, async () => {
 		const res = await request(config.getDirektivHost())
-			.get(`/api/v2/namespaces/${ namespace }/files-tree/dir2`)
+			.get(`/api/v2/namespaces/${ namespace }/files/dir2`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toMatchObject({
 			data: {
@@ -123,7 +123,7 @@ describe('Test filesystem tree read operations', () => {
 
 	it(`should read root dir two dirs`, async () => {
 		const res = await request(config.getDirektivHost())
-			.get(`/api/v2/namespaces/${ namespace }/files-tree`)
+			.get(`/api/v2/namespaces/${ namespace }/files`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toMatchObject({
 			data: {
@@ -155,7 +155,7 @@ describe('Test filesystem tree read operations', () => {
 
 	it(`should read root dir one path`, async () => {
 		const res = await request(config.getDirektivHost())
-			.get(`/api/v2/namespaces/${ namespace }/files-tree`)
+			.get(`/api/v2/namespaces/${ namespace }/files`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toMatchObject({
 			data: {
@@ -178,7 +178,7 @@ describe('Test filesystem tree read operations', () => {
 
 	it(`should read root not found`, async () => {
 		const res = await request(config.getDirektivHost())
-			.get(`/api/v2/namespaces/${ namespace }/files-tree/dir2`)
+			.get(`/api/v2/namespaces/${ namespace }/files/dir2`)
 		expect(res.statusCode).toEqual(404)
 	})
 

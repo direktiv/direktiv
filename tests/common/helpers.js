@@ -54,7 +54,7 @@ async function itShouldCreateFile (it, expect, ns, path, data) {
 async function itShouldCreateFileV2 (it, expect, ns, path, name, type, mimeType, data) {
 	it(`should create a new file ${ path }`, async () => {
 		const res = await request(common.config.getDirektivHost())
-			.post(`/api/v2/namespaces/${ ns }/files-tree${ path }`)
+			.post(`/api/v2/namespaces/${ ns }/files${ path }`)
 			.set('Content-Type', 'application/json')
 			.send({
 				name,
@@ -81,7 +81,7 @@ async function itShouldCreateFileV2 (it, expect, ns, path, name, type, mimeType,
 async function itShouldCreateDirV2 (it, expect, ns, path, name) {
 	it(`should create a new dir ${ path }`, async () => {
 		const res = await request(common.config.getDirektivHost())
-			.post(`/api/v2/namespaces/${ ns }/files-tree${ path }`)
+			.post(`/api/v2/namespaces/${ ns }/files${ path }`)
 			.set('Content-Type', 'application/json')
 			.send({
 				name,
@@ -103,7 +103,7 @@ async function itShouldCreateDirV2 (it, expect, ns, path, name) {
 async function itShouldUpdatePathV2 (it, expect, ns, path, newPath) {
 	it(`should update file path ${ path } to ${ newPath }`, async () => {
 		const res = await request(common.config.getDirektivHost())
-			.patch(`/api/v2/namespaces/${ ns }/files-tree${ path }`)
+			.patch(`/api/v2/namespaces/${ ns }/files${ path }`)
 			.set('Content-Type', 'application/json')
 			.send({
 				path: newPath,
@@ -121,7 +121,7 @@ async function itShouldUpdatePathV2 (it, expect, ns, path, newPath) {
 async function itShouldUpdateFileV2 (it, expect, ns, path, newPatch) {
 	it(`should update file path ${ path }`, async () => {
 		const res = await request(common.config.getDirektivHost())
-			.patch(`/api/v2/namespaces/${ ns }/files-tree${ path }`)
+			.patch(`/api/v2/namespaces/${ ns }/files${ path }`)
 			.set('Content-Type', 'application/json')
 			.send(newPatch)
 		expect(res.statusCode).toEqual(200)
@@ -144,7 +144,7 @@ async function itShouldUpdateFileV2 (it, expect, ns, path, newPatch) {
 async function itShouldCheckPathExistsV2 (it, expect, ns, path, assertExits) {
 	it(`should check if path(${ path }) exists(${ assertExits })`, async () => {
 		const res = await request(common.config.getDirektivHost())
-			.get(`/api/v2/namespaces/${ ns }/files-tree${ path }`)
+			.get(`/api/v2/namespaces/${ ns }/files${ path }`)
 
 		if (assertExits)
 			expect(res.statusCode).toEqual(200)

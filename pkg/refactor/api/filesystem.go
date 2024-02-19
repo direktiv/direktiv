@@ -38,7 +38,7 @@ func (e *fsController) read(w http.ResponseWriter, r *http.Request) {
 
 	fStore := db.FileStore()
 
-	path := strings.SplitN(r.URL.Path, "/files-tree", 2)[1]
+	path := strings.SplitN(r.URL.Path, "/files", 2)[1]
 	path = filepath.Clean("/" + path)
 
 	// Fetch file
@@ -87,7 +87,7 @@ func (e *fsController) delete(w http.ResponseWriter, r *http.Request) {
 
 	fStore := db.FileStore()
 
-	path := strings.SplitN(r.URL.Path, "/files-tree", 2)[1]
+	path := strings.SplitN(r.URL.Path, "/files", 2)[1]
 	path = filepath.Clean("/" + path)
 
 	// Fetch file
@@ -180,7 +180,7 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	path := strings.SplitN(r.URL.Path, "/files-tree", 2)[1]
+	path := strings.SplitN(r.URL.Path, "/files", 2)[1]
 	path = filepath.Clean("/" + path)
 
 	// Create file.
@@ -262,7 +262,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	path := strings.SplitN(r.URL.Path, "/files-tree", 2)[1]
+	path := strings.SplitN(r.URL.Path, "/files", 2)[1]
 	path = filepath.Clean("/" + path)
 
 	// Fetch file.
