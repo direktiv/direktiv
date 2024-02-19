@@ -1,10 +1,8 @@
 package service
 
 import (
-	"crypto/rand"
 	"fmt"
 	"io"
-	"math/big"
 	"slices"
 	"sort"
 	"sync"
@@ -25,7 +23,7 @@ import (
 type manager struct {
 	cfg *core.Config
 	// this list maintains all the service configurations that need to be running.
-	list []*core.ServiceConfig
+	list []*core.ServiceFileData
 
 	// the underlying service runtime used to create/schedule the services.
 	runtimeClient runtimeClient
@@ -54,7 +52,7 @@ func NewManager(c *core.Config, logger *zap.SugaredLogger, enableDocker bool) (c
 
 		return &manager{
 			cfg:           c,
-			list:          make([]*core.ServiceConfig, 0),
+			list:          make([]*core.ServiceFileData, 0),
 			runtimeClient: client,
 
 			logger: logger,
@@ -88,7 +86,7 @@ func newKnativeManager(c *core.Config, logger *zap.SugaredLogger) (*manager, err
 
 	return &manager{
 		cfg:           c,
-		list:          make([]*core.ServiceConfig, 0),
+		list:          make([]*core.ServiceFileData, 0),
 		runtimeClient: client,
 
 		logger: logger,
@@ -107,7 +105,7 @@ func (m *manager) runCycle() []error {
 		src[i] = v
 	}
 
-	searchSrc := map[string]*core.ServiceConfig{}
+	searchSrc := map[string]*core.ServiceFileData{}
 	for _, v := range m.list {
 		searchSrc[v.GetID()] = v
 	}
@@ -158,14 +156,6 @@ func (m *manager) runCycle() []error {
 	return errs
 }
 
-func jitter(base time.Duration) time.Duration {
-	// add maximum jitter of +/-20%
-	x, _ := rand.Int(rand.Reader, big.NewInt(40))
-	percentage := x.Int64() - 20
-
-	return time.Duration(int64(base) * percentage / 100)
-}
-
 func (m *manager) Start(done <-chan struct{}, wg *sync.WaitGroup) {
 	cycleTime := m.cfg.GetFunctionsReconcileInterval()
 
@@ -183,14 +173,15 @@ func (m *manager) Start(done <-chan struct{}, wg *sync.WaitGroup) {
 			for _, err := range errs {
 				m.logger.Errorw("run cycle", "error", err)
 			}
-			time.Sleep(cycleTime + jitter(cycleTime))
+
+			time.Sleep(cycleTime)
 		}
 
 		wg.Done()
 	}()
 }
 
-func (m *manager) SetServices(list []*core.ServiceConfig) {
+func (m *manager) SetServices(list []*core.ServiceFileData) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
@@ -204,23 +195,9 @@ func (m *manager) SetServices(list []*core.ServiceConfig) {
 	}
 }
 
-type serviceList []*core.ServiceStatus
-
-func (x serviceList) Len() int {
-	return len(x)
-}
-
-func (x serviceList) Less(i, j int) bool {
-	return x[i].FilePath < x[j].FilePath
-}
-
-func (x serviceList) Swap(i, j int) {
-	x[i], x[j] = x[j], x[i]
-}
-
-func (m *manager) getList(filterNamespace string, filterTyp string, filterPath string, filterName string) ([]*core.ServiceStatus, error) {
+func (m *manager) getList(filterNamespace string, filterTyp string, filterPath string, filterName string) ([]*core.ServiceFileData, error) {
 	// clone the list
-	sList := make([]*core.ServiceConfig, 0)
+	sList := make([]*core.ServiceFileData, 0)
 	for i, v := range m.list {
 		if filterNamespace != "" && filterNamespace != v.Namespace {
 			continue
@@ -247,33 +224,28 @@ func (m *manager) getList(filterNamespace string, filterTyp string, filterPath s
 		searchServices[v.GetID()] = v
 	}
 
-	result := []*core.ServiceStatus{}
-
+	// Populate id and conditions fields.
 	for _, v := range sList {
 		service := searchServices[v.GetID()]
 		// sometimes hashes might be different (not reconciled yet).
 		if service != nil && service.GetValueHash() == v.GetValueHash() {
-			result = append(result, &core.ServiceStatus{
-				ID:            v.GetID(),
-				ServiceConfig: *v,
-				Conditions:    service.GetConditions(),
-			})
+			v.ID = v.GetID()
+			v.Conditions = service.GetConditions()
 		} else {
-			result = append(result, &core.ServiceStatus{
-				ID:            v.GetID(),
-				ServiceConfig: *v,
-				Conditions:    make([]any, 0),
-			})
+			v.ID = v.GetID()
+			v.Conditions = make([]any, 0)
 		}
 	}
 
-	sort.Sort(serviceList(result))
+	sort.Slice(sList, func(i, j int) bool {
+		return sList[i].FilePath < sList[j].FilePath
+	})
 
-	return result, nil
+	return sList, nil
 }
 
 // nolint:unparam
-func (m *manager) getOne(namespace string, serviceID string) (*core.ServiceStatus, error) {
+func (m *manager) getOne(namespace string, serviceID string) (*core.ServiceFileData, error) {
 	list, err := m.getList(namespace, "", "", "")
 	if err != nil {
 		return nil, err
@@ -289,7 +261,7 @@ func (m *manager) getOne(namespace string, serviceID string) (*core.ServiceStatu
 	return nil, core.ErrNotFound
 }
 
-func (m *manager) GeAll(namespace string) ([]*core.ServiceStatus, error) {
+func (m *manager) GeAll(namespace string) ([]*core.ServiceFileData, error) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
@@ -340,7 +312,7 @@ func (m *manager) Rebuild(namespace string, serviceID string) error {
 	return m.runtimeClient.rebuildService(serviceID)
 }
 
-func (m *manager) setServiceDefaults(sv *core.ServiceConfig) {
+func (m *manager) setServiceDefaults(sv *core.ServiceFileData) {
 	// empty size string defaults to medium
 	if sv.Size == "" {
 		m.logger.Warnw("empty service size, defaulting to medium", "service_file", sv.FilePath)
