@@ -1,4 +1,13 @@
-import { Diamond } from "lucide-react";
+import { Diamond, HelpCircle, Info } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "~/design/Tooltip";
+
+import Button from "~/design/Button";
 import EnvsVariables from "../components/EnvVariables";
 import { Link } from "react-router-dom";
 import RefreshButton from "~/design/RefreshButton";
@@ -41,8 +50,19 @@ const Header = ({ serviceId }: { serviceId: string }) => {
           {service.image ? service.image : "-"}
         </div>
         <div className="text-sm">
-          <div className="text-gray-10 dark:text-gray-dark-10">
+          <div className="flex items-center text-gray-10 dark:text-gray-dark-10">
             {t("pages.services.list.tableHeader.scale")}
+            <Popover>
+              <PopoverTrigger asChild>
+                <HelpCircle className="ml-1 h-4 w-4" />
+              </PopoverTrigger>
+              <PopoverContent
+                className="bg-gray-1 p-1 text-sm text-gray-10 dark:bg-gray-dark-1 dark:text-gray-dark-10"
+                align="start"
+              >
+                Set scale / Current scale
+              </PopoverContent>
+            </Popover>
           </div>
           <Test path={service.filePath} scale={service.scale} />
         </div>
