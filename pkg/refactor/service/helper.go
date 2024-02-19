@@ -15,7 +15,7 @@ import (
 
 const direktivCmdExecValue = "/usr/share/direktiv/direktiv-cmd"
 
-func buildService(c *core.Config, sv *core.ServiceFileExtra, registrySecrets []corev1.LocalObjectReference) (*servingv1.Service, error) {
+func buildService(c *core.Config, sv *core.ServiceFileData, registrySecrets []corev1.LocalObjectReference) (*servingv1.Service, error) {
 	containers, err := buildContainers(c, sv)
 	if err != nil {
 		return nil, err
@@ -100,7 +100,7 @@ func buildService(c *core.Config, sv *core.ServiceFileExtra, registrySecrets []c
 	return svc, nil
 }
 
-func buildServiceMeta(c *core.Config, sv *core.ServiceFileExtra) metav1.ObjectMeta {
+func buildServiceMeta(c *core.Config, sv *core.ServiceFileData) metav1.ObjectMeta {
 	meta := metav1.ObjectMeta{
 		Name:        sv.GetID(),
 		Namespace:   c.KnativeNamespace,
@@ -115,7 +115,7 @@ func buildServiceMeta(c *core.Config, sv *core.ServiceFileExtra) metav1.ObjectMe
 	return meta
 }
 
-func buildPodMeta(c *core.Config, sv *core.ServiceFileExtra) metav1.ObjectMeta {
+func buildPodMeta(c *core.Config, sv *core.ServiceFileData) metav1.ObjectMeta {
 	metaSpec := metav1.ObjectMeta{
 		Namespace:   c.KnativeNamespace,
 		Labels:      make(map[string]string),
@@ -135,7 +135,7 @@ func buildPodMeta(c *core.Config, sv *core.ServiceFileExtra) metav1.ObjectMeta {
 }
 
 // nolint
-func buildVolumes(c *core.Config, sv *core.ServiceFileExtra) []corev1.Volume {
+func buildVolumes(c *core.Config, sv *core.ServiceFileData) []corev1.Volume {
 	volumes := []corev1.Volume{
 		{
 			Name: "workdir",
@@ -158,7 +158,7 @@ func buildVolumes(c *core.Config, sv *core.ServiceFileExtra) []corev1.Volume {
 	return volumes
 }
 
-func buildContainers(c *core.Config, sv *core.ServiceFileExtra) ([]corev1.Container, error) {
+func buildContainers(c *core.Config, sv *core.ServiceFileData) ([]corev1.Container, error) {
 	// set resource limits.
 	rl, err := buildResourceLimits(c, sv)
 	if err != nil {
@@ -231,7 +231,7 @@ func buildContainers(c *core.Config, sv *core.ServiceFileExtra) ([]corev1.Contai
 }
 
 // nolint
-func buildResourceLimits(cf *core.Config, sv *core.ServiceFileExtra) (*corev1.ResourceRequirements, error) {
+func buildResourceLimits(cf *core.Config, sv *core.ServiceFileData) (*corev1.ResourceRequirements, error) {
 	var (
 		m int
 		c string
@@ -295,7 +295,7 @@ func buildResourceLimits(cf *core.Config, sv *core.ServiceFileExtra) (*corev1.Re
 }
 
 // nolint
-func buildEnvVars(withGrpc bool, c *core.Config, sv *core.ServiceFileExtra) []corev1.EnvVar {
+func buildEnvVars(withGrpc bool, c *core.Config, sv *core.ServiceFileData) []corev1.EnvVar {
 	proxyEnvs := []corev1.EnvVar{}
 
 	if len(c.KnativeProxyHTTP) > 0 {

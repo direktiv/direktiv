@@ -39,7 +39,7 @@ func (c *knativeClient) streamServiceLogs(_ string, podID string) (io.ReadCloser
 	return logsStream, nil
 }
 
-func (c *knativeClient) createService(sv *core.ServiceFileExtra) error {
+func (c *knativeClient) createService(sv *core.ServiceFileData) error {
 	// Step1: prepare registry secrets
 	//nolint:prealloc
 	var registrySecrets []v1.LocalObjectReference
@@ -74,7 +74,7 @@ func (c *knativeClient) createService(sv *core.ServiceFileExtra) error {
 	return nil
 }
 
-func (c *knativeClient) applyPatch(sv *core.ServiceFileExtra) error {
+func (c *knativeClient) applyPatch(sv *core.ServiceFileData) error {
 	pathWhiteList := []string{
 		"/spec/template/metadata/labels",
 		"/spec/template/metadata/annotations",
@@ -115,7 +115,7 @@ func (c *knativeClient) applyPatch(sv *core.ServiceFileExtra) error {
 	return nil
 }
 
-func (c *knativeClient) updateService(sv *core.ServiceFileExtra) error {
+func (c *knativeClient) updateService(sv *core.ServiceFileData) error {
 	// Updating knative service is basically done by removing the old one and re-creating it.
 	err := c.deleteService(sv.GetID())
 	if err != nil {

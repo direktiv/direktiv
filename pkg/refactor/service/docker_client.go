@@ -59,7 +59,7 @@ func (c *dockerClient) cleanAll() error {
 }
 
 //nolint:goconst
-func (c *dockerClient) createService(sv *core.ServiceFileExtra) error {
+func (c *dockerClient) createService(sv *core.ServiceFileData) error {
 	// don't pull any image that has 'local' prefix.
 	if !strings.HasPrefix(sv.Image, "local") {
 		out, err := c.cli.ImagePull(context.Background(), sv.Image, types.ImagePullOptions{})
@@ -164,7 +164,7 @@ func (c *dockerClient) createService(sv *core.ServiceFileExtra) error {
 	return nil
 }
 
-func (c *dockerClient) updateService(sv *core.ServiceFileExtra) error {
+func (c *dockerClient) updateService(sv *core.ServiceFileData) error {
 	// Remove the container.
 	err := c.deleteService(sv.GetID())
 	if err != nil {

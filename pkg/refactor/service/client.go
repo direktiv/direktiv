@@ -10,8 +10,8 @@ import (
 // runtimeClient interface implements imperative commands to manipulates services in the underlying runtime driver
 // which is typically knative. Docker runtime driver is also implemented for demo purposes.
 type runtimeClient interface {
-	createService(sv *core.ServiceFileExtra) error
-	updateService(sv *core.ServiceFileExtra) error
+	createService(sv *core.ServiceFileData) error
+	updateService(sv *core.ServiceFileData) error
 	deleteService(id string) error
 	listServices() ([]status, error)
 	streamServiceLogs(id string, podID string) (io.ReadCloser, error)
