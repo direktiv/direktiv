@@ -68,6 +68,9 @@ type ServiceFileData struct {
 	Patches []ServicePatch        `json:"patches"`
 
 	Error *string `json:"error"`
+
+	ID         string `json:"id"`
+	Conditions any    `json:"conditions"`
 }
 
 // GetID calculates a unique id string based on identification fields. This id helps in comparison different
@@ -103,16 +106,25 @@ func (c *ServiceFileData) GetValueHash() string {
 	return hex.EncodeToString(sh[:10])
 }
 
-type ServiceStatus struct {
-	ServiceFileData
-	ID         string `json:"id"`
-	Conditions any    `json:"conditions"`
+// ServiceFileDataList to implement sorting.
+type ServiceFileDataList []*ServiceFileData
+
+func (x ServiceFileDataList) Len() int {
+	return len(x)
+}
+
+func (x ServiceFileDataList) Less(i, j int) bool {
+	return x[i].FilePath < x[j].FilePath
+}
+
+func (x ServiceFileDataList) Swap(i, j int) {
+	x[i], x[j] = x[j], x[i]
 }
 
 type ServiceManager interface {
 	Start(done <-chan struct{}, wg *sync.WaitGroup)
 	SetServices(list []*ServiceFileData)
-	GeAll(namespace string) ([]*ServiceStatus, error)
+	GeAll(namespace string) ([]*ServiceFileData, error)
 	GetPods(namespace string, serviceID string) (any, error)
 	StreamLogs(namespace string, serviceID string, podID string) (io.ReadCloser, error)
 	Rebuild(namespace string, serviceID string) error

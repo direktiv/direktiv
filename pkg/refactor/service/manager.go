@@ -194,21 +194,7 @@ func (m *manager) SetServices(list []*core.ServiceFileData) {
 	}
 }
 
-type serviceList []*core.ServiceStatus
-
-func (x serviceList) Len() int {
-	return len(x)
-}
-
-func (x serviceList) Less(i, j int) bool {
-	return x[i].FilePath < x[j].FilePath
-}
-
-func (x serviceList) Swap(i, j int) {
-	x[i], x[j] = x[j], x[i]
-}
-
-func (m *manager) getList(filterNamespace string, filterTyp string, filterPath string, filterName string) ([]*core.ServiceStatus, error) {
+func (m *manager) getList(filterNamespace string, filterTyp string, filterPath string, filterName string) ([]*core.ServiceFileData, error) {
 	// clone the list
 	sList := make([]*core.ServiceFileData, 0)
 	for i, v := range m.list {
@@ -237,33 +223,26 @@ func (m *manager) getList(filterNamespace string, filterTyp string, filterPath s
 		searchServices[v.GetID()] = v
 	}
 
-	result := []*core.ServiceStatus{}
-
+	// Populate id and conditions fields.
 	for _, v := range sList {
 		service := searchServices[v.GetID()]
 		// sometimes hashes might be different (not reconciled yet).
 		if service != nil && service.GetValueHash() == v.GetValueHash() {
-			result = append(result, &core.ServiceStatus{
-				ID:              v.GetID(),
-				ServiceFileData: *v,
-				Conditions:      service.GetConditions(),
-			})
+			v.ID = v.GetID()
+			v.Conditions = service.GetConditions()
 		} else {
-			result = append(result, &core.ServiceStatus{
-				ID:              v.GetID(),
-				ServiceFileData: *v,
-				Conditions:      make([]any, 0),
-			})
+			v.ID = v.GetID()
+			v.Conditions = make([]any, 0)
 		}
 	}
 
-	sort.Sort(serviceList(result))
+	sort.Sort(core.ServiceFileDataList(sList))
 
-	return result, nil
+	return sList, nil
 }
 
 // nolint:unparam
-func (m *manager) getOne(namespace string, serviceID string) (*core.ServiceStatus, error) {
+func (m *manager) getOne(namespace string, serviceID string) (*core.ServiceFileData, error) {
 	list, err := m.getList(namespace, "", "", "")
 	if err != nil {
 		return nil, err
@@ -279,7 +258,7 @@ func (m *manager) getOne(namespace string, serviceID string) (*core.ServiceStatu
 	return nil, core.ErrNotFound
 }
 
-func (m *manager) GeAll(namespace string) ([]*core.ServiceStatus, error) {
+func (m *manager) GeAll(namespace string) ([]*core.ServiceFileData, error) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
