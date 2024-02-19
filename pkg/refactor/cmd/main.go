@@ -22,7 +22,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"github.com/direktiv/direktiv/pkg/refactor/registry"
 	"github.com/direktiv/direktiv/pkg/refactor/service"
-	"github.com/direktiv/direktiv/pkg/refactor/spec"
 	"github.com/direktiv/direktiv/pkg/util"
 	"go.uber.org/zap"
 )
@@ -195,7 +194,7 @@ func renderServiceManager(db *database.DB, serviceManager core.ServiceManager, l
 		}
 		for _, file := range files {
 			if file.Typ == filestore.FileTypeService {
-				serviceDef, err := spec.ParseServiceFile(file.Data)
+				serviceDef, err := core.ParseServiceFile(file.Data)
 				if err != nil {
 					logger.Error("parse service file", "error", err)
 

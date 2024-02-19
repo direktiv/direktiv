@@ -3,10 +3,14 @@ package core
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io"
 	"regexp"
+	"strings"
 	"sync"
+
+	"gopkg.in/yaml.v3"
 )
 
 const (
@@ -23,6 +27,29 @@ type ServicePatch struct {
 	Op    string      `json:"op"`
 	Path  string      `json:"path"`
 	Value interface{} `json:"value"`
+}
+
+type ServiceFile struct {
+	DirektivAPI string                `yaml:"direktiv_api"`
+	Image       string                `yaml:"image"`
+	Cmd         string                `yaml:"cmd"`
+	Size        string                `yaml:"size"`
+	Scale       int                   `yaml:"scale"`
+	Envs        []EnvironmentVariable `yaml:"envs"`
+	Patches     []ServicePatch        `yaml:"patches"`
+}
+
+func ParseServiceFile(data []byte) (*ServiceFile, error) {
+	res := &ServiceFile{}
+	err := yaml.Unmarshal(data, res)
+	if err != nil {
+		return nil, err
+	}
+	if !strings.HasPrefix(res.DirektivAPI, "service/v1") {
+		return nil, errors.New("invalid service api version")
+	}
+
+	return res, nil
 }
 
 type ServiceConfig struct {
