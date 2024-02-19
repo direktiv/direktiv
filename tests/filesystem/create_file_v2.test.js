@@ -22,13 +22,13 @@ describe('Test filesystem tree read operations', () => {
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toMatchObject({
 			data: {
-				file: {
+				node: {
 					path: '/',
 					type: 'directory',
 					createdAt: expect.stringMatching(regex.timestampRegex),
 					updatedAt: expect.stringMatching(regex.timestampRegex),
 				},
-				paths: [
+				children: [
 					{
 						path: '/dir1',
 						type: 'directory',
@@ -60,13 +60,13 @@ describe('Test filesystem tree read operations', () => {
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toMatchObject({
 			data: {
-				file: {
+				node: {
 					path: '/dir1',
 					type: 'directory',
 					createdAt: expect.stringMatching(regex.timestampRegex),
 					updatedAt: expect.stringMatching(regex.timestampRegex),
 				},
-				paths: [
+				children: [
 					{
 						path: '/dir1/foo1',
 						type: 'workflow',
