@@ -22,7 +22,7 @@ import (
 type manager struct {
 	cfg *core.Config
 	// this list maintains all the service configurations that need to be running.
-	list []*core.ServiceConfig
+	list []*core.ServiceFileExtra
 
 	// the underlying service runtime used to create/schedule the services.
 	runtimeClient runtimeClient
@@ -51,7 +51,7 @@ func NewManager(c *core.Config, logger *zap.SugaredLogger, enableDocker bool) (c
 
 		return &manager{
 			cfg:           c,
-			list:          make([]*core.ServiceConfig, 0),
+			list:          make([]*core.ServiceFileExtra, 0),
 			runtimeClient: client,
 
 			logger: logger,
@@ -85,7 +85,7 @@ func newKnativeManager(c *core.Config, logger *zap.SugaredLogger) (*manager, err
 
 	return &manager{
 		cfg:           c,
-		list:          make([]*core.ServiceConfig, 0),
+		list:          make([]*core.ServiceFileExtra, 0),
 		runtimeClient: client,
 
 		logger: logger,
@@ -104,7 +104,7 @@ func (m *manager) runCycle() []error {
 		src[i] = v
 	}
 
-	searchSrc := map[string]*core.ServiceConfig{}
+	searchSrc := map[string]*core.ServiceFileExtra{}
 	for _, v := range m.list {
 		searchSrc[v.GetID()] = v
 	}
@@ -180,7 +180,7 @@ func (m *manager) Start(done <-chan struct{}, wg *sync.WaitGroup) {
 	}()
 }
 
-func (m *manager) SetServices(list []*core.ServiceConfig) {
+func (m *manager) SetServices(list []*core.ServiceFileExtra) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
@@ -210,7 +210,7 @@ func (x serviceList) Swap(i, j int) {
 
 func (m *manager) getList(filterNamespace string, filterTyp string, filterPath string, filterName string) ([]*core.ServiceStatus, error) {
 	// clone the list
-	sList := make([]*core.ServiceConfig, 0)
+	sList := make([]*core.ServiceFileExtra, 0)
 	for i, v := range m.list {
 		if filterNamespace != "" && filterNamespace != v.Namespace {
 			continue
@@ -244,15 +244,15 @@ func (m *manager) getList(filterNamespace string, filterTyp string, filterPath s
 		// sometimes hashes might be different (not reconciled yet).
 		if service != nil && service.GetValueHash() == v.GetValueHash() {
 			result = append(result, &core.ServiceStatus{
-				ID:            v.GetID(),
-				ServiceConfig: *v,
-				Conditions:    service.GetConditions(),
+				ID:               v.GetID(),
+				ServiceFileExtra: *v,
+				Conditions:       service.GetConditions(),
 			})
 		} else {
 			result = append(result, &core.ServiceStatus{
-				ID:            v.GetID(),
-				ServiceConfig: *v,
-				Conditions:    make([]any, 0),
+				ID:               v.GetID(),
+				ServiceFileExtra: *v,
+				Conditions:       make([]any, 0),
 			})
 		}
 	}
@@ -330,7 +330,7 @@ func (m *manager) Rebuild(namespace string, serviceID string) error {
 	return m.runtimeClient.rebuildService(serviceID)
 }
 
-func (m *manager) setServiceDefaults(sv *core.ServiceConfig) {
+func (m *manager) setServiceDefaults(sv *core.ServiceFileExtra) {
 	// empty size string defaults to medium
 	if sv.Size == "" {
 		m.logger.Warnw("empty service size, defaulting to medium", "service_file", sv.FilePath)

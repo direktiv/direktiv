@@ -182,7 +182,7 @@ func renderServiceManager(db *database.DB, serviceManager core.ServiceManager, l
 		return
 	}
 
-	funConfigList := []*core.ServiceConfig{}
+	funConfigList := []*core.ServiceFileExtra{}
 
 	for _, ns := range nsList {
 		logger = logger.With("ns", ns.Name)
@@ -201,7 +201,7 @@ func renderServiceManager(db *database.DB, serviceManager core.ServiceManager, l
 					continue
 				}
 
-				funConfigList = append(funConfigList, &core.ServiceConfig{
+				funConfigList = append(funConfigList, &core.ServiceFileExtra{
 					Typ:       core.ServiceTypeNamespace,
 					Name:      "",
 					Namespace: ns.Name,
@@ -228,7 +228,7 @@ func renderServiceManager(db *database.DB, serviceManager core.ServiceManager, l
 	serviceManager.SetServices(funConfigList)
 }
 
-func getWorkflowFunctionDefinitionsFromWorkflow(ns *datastore.Namespace, f *filestore.File) ([]*core.ServiceConfig, error) {
+func getWorkflowFunctionDefinitionsFromWorkflow(ns *datastore.Namespace, f *filestore.File) ([]*core.ServiceFileExtra, error) {
 	var wf model.Workflow
 
 	err := wf.Load(f.Data)
@@ -236,7 +236,7 @@ func getWorkflowFunctionDefinitionsFromWorkflow(ns *datastore.Namespace, f *file
 		return nil, err
 	}
 
-	list := make([]*core.ServiceConfig, 0)
+	list := make([]*core.ServiceFileExtra, 0)
 
 	for _, fn := range wf.Functions {
 		if fn.GetType() != model.ReusableContainerFunctionType {
@@ -249,7 +249,7 @@ func getWorkflowFunctionDefinitionsFromWorkflow(ns *datastore.Namespace, f *file
 			return nil, errors.New("parse workflow def cast incorrectly")
 		}
 
-		list = append(list, &core.ServiceConfig{
+		list = append(list, &core.ServiceFileExtra{
 			Typ:       core.ServiceTypeWorkflow,
 			Name:      serviceDef.ID,
 			Namespace: ns.Name,

@@ -52,7 +52,7 @@ func ParseServiceFile(data []byte) (*ServiceFile, error) {
 	return res, nil
 }
 
-type ServiceConfig struct {
+type ServiceFileExtra struct {
 	// identification fields:
 	Typ       string `json:"type"`
 	Namespace string `json:"namespace"`
@@ -72,7 +72,7 @@ type ServiceConfig struct {
 
 // GetID calculates a unique id string based on identification fields. This id helps in comparison different
 // lists of objects.
-func (c *ServiceConfig) GetID() string {
+func (c *ServiceFileExtra) GetID() string {
 	str := fmt.Sprintf("%s-%s-%s", c.Namespace, c.Name, c.FilePath)
 	sh := sha256.Sum256([]byte(str + c.Typ))
 
@@ -89,7 +89,7 @@ func (c *ServiceConfig) GetID() string {
 
 // GetValueHash calculates a unique hash string based on the settings fields. This hash helps in comparing
 // different lists of objects.
-func (c *ServiceConfig) GetValueHash() string {
+func (c *ServiceFileExtra) GetValueHash() string {
 	str := fmt.Sprintf("%s-%s-%s-%d", c.Image, c.CMD, c.Size, c.Scale)
 	for _, v := range c.Envs {
 		str += "-" + v.Name + "-" + v.Value
@@ -104,14 +104,14 @@ func (c *ServiceConfig) GetValueHash() string {
 }
 
 type ServiceStatus struct {
-	ServiceConfig
+	ServiceFileExtra
 	ID         string `json:"id"`
 	Conditions any    `json:"conditions"`
 }
 
 type ServiceManager interface {
 	Start(done <-chan struct{}, wg *sync.WaitGroup)
-	SetServices(list []*ServiceConfig)
+	SetServices(list []*ServiceFileExtra)
 	GeAll(namespace string) ([]*ServiceStatus, error)
 	GetPods(namespace string, serviceID string) (any, error)
 	StreamLogs(namespace string, serviceID string, podID string) (io.ReadCloser, error)
