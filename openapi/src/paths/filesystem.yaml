@@ -23,22 +23,19 @@
               properties:
                 data:
                   type: object
-                  properties:
-                      file:
-                        allOf: # Combines the BasicErrorModel and the inline model
-                          - $ref: '../objects.yaml#/FileNodeWithoutData'
-                          - type: object
-                            description: filesystem-tree node data
-                            properties:
-                              data:
-                                type: string
-                                description: (only with type != directory) base64 encoded string of the file content
-
-                      paths:
-                        type: array
-                        description: list of filesystem-tree child nodes
-                        items:
-                          $ref: '../objects.yaml#/FileNodeWithoutData'
+                  allOf: # Combines the BasicErrorModel and the inline model
+                    - $ref: '../objects.yaml#/FileNodeWithoutData'
+                    - type: object
+                      description: files-tree node data
+                      properties:
+                        data:
+                          type: string
+                          description: (only with type != directory) base64 encoded string of the file content
+                        children:
+                          type: array
+                          description: list of files-tree child nodes
+                          items:
+                            $ref: '../objects.yaml#/FileNodeWithoutData'
 
   delete:
     tags:
@@ -126,7 +123,7 @@
           schema:
             type: object
             properties:
-              absolutePath:
+              path:
                 type: string
                 description: the new absolute path of the node(file or directory name)
               data:
@@ -142,7 +139,7 @@
               allOf: # Combines the BasicErrorModel and the inline model
                 - $ref: '../objects.yaml#/FileNodeWithoutData'
                 - type: object
-                  description: filesystem-tree node data
+                  description: files-tree node data
                   properties:
                     data:
                       type: string
