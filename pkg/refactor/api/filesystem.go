@@ -65,10 +65,10 @@ func (e *fsController) read(w http.ResponseWriter, r *http.Request) {
 	}
 
 	res := struct {
-		Node     *filestore.File   `json:"node"`
+		*filestore.File
 		Children []*filestore.File `json:"children"`
 	}{
-		Node:     file,
+		File:     file,
 		Children: children,
 	}
 
