@@ -1,18 +1,11 @@
-import { Diamond, HelpCircle, Info } from "lucide-react";
+import { Diamond, HelpCircle } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "~/design/Tooltip";
 
-import Button from "~/design/Button";
 import EnvsVariables from "../components/EnvVariables";
 import { Link } from "react-router-dom";
 import RefreshButton from "~/design/RefreshButton";
+import ShowScale from "./ShowScale";
 import { StatusBadge } from "../components/StatusBadge";
-import Test from "./Test";
 import { linkToServiceSource } from "../components/utils";
 import { useService } from "~/api/services/query/services";
 import { useTranslation } from "react-i18next";
@@ -64,7 +57,7 @@ const Header = ({ serviceId }: { serviceId: string }) => {
               </PopoverContent>
             </Popover>
           </div>
-          <Test path={service.filePath} scale={service.scale} />
+          <ShowScale path={service.filePath} scale={service.scale} />
         </div>
         <div className="text-sm">
           <div className="text-gray-10 dark:text-gray-dark-10">
