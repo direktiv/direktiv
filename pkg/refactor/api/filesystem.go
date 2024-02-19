@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
@@ -28,8 +27,7 @@ func (e *fsController) mountRouter(r chi.Router) {
 }
 
 func (e *fsController) read(w http.ResponseWriter, r *http.Request) {
-	//nolint:forcetypeassert
-	ns := r.Context().Value(ctxKeyNamespace{}).(*core.Namespace)
+	ns := extractContextNamespace(r)
 
 	db, err := e.db.BeginTx(r.Context())
 	if err != nil {
@@ -40,7 +38,7 @@ func (e *fsController) read(w http.ResponseWriter, r *http.Request) {
 
 	fStore := db.FileStore()
 
-	path := strings.SplitN(r.URL.Path, "/files-tree", 2)[1]
+	path := strings.SplitN(r.URL.Path, "/files", 2)[1]
 	path = filepath.Clean("/" + path)
 
 	// Fetch file
@@ -67,19 +65,18 @@ func (e *fsController) read(w http.ResponseWriter, r *http.Request) {
 	}
 
 	res := struct {
-		File  *filestore.File   `json:"file"`
-		Paths []*filestore.File `json:"paths"`
+		*filestore.File
+		Children []*filestore.File `json:"children"`
 	}{
-		File:  file,
-		Paths: children,
+		File:     file,
+		Children: children,
 	}
 
 	writeJSON(w, res)
 }
 
 func (e *fsController) delete(w http.ResponseWriter, r *http.Request) {
-	//nolint:forcetypeassert
-	ns := r.Context().Value(ctxKeyNamespace{}).(*core.Namespace)
+	ns := extractContextNamespace(r)
 
 	db, err := e.db.BeginTx(r.Context())
 	if err != nil {
@@ -90,7 +87,7 @@ func (e *fsController) delete(w http.ResponseWriter, r *http.Request) {
 
 	fStore := db.FileStore()
 
-	path := strings.SplitN(r.URL.Path, "/files-tree", 2)[1]
+	path := strings.SplitN(r.URL.Path, "/files", 2)[1]
 	path = filepath.Clean("/" + path)
 
 	// Fetch file
@@ -127,7 +124,7 @@ func (e *fsController) delete(w http.ResponseWriter, r *http.Request) {
 			filestore.FileTypeEndpoint: pubsub.EndpointDelete,
 			filestore.FileTypeConsumer: pubsub.ConsumerDelete,
 		}[file.Typ]
-		err = e.bus.Publish(deleteTopic, ns.Name)
+		err = e.bus.DebouncedPublish(deleteTopic, ns.Name)
 		// nolint
 		if err != nil {
 			// TODO: log error here.
@@ -138,8 +135,7 @@ func (e *fsController) delete(w http.ResponseWriter, r *http.Request) {
 }
 
 func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
-	//nolint:forcetypeassert
-	ns := r.Context().Value(ctxKeyNamespace{}).(*core.Namespace)
+	ns := extractContextNamespace(r)
 
 	db, err := e.db.BeginTx(r.Context())
 	if err != nil {
@@ -158,7 +154,7 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 	}{}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		writeNotJsonError(w, err)
+		writeNotJSONError(w, err)
 		return
 	}
 
@@ -184,7 +180,7 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	path := strings.SplitN(r.URL.Path, "/files-tree", 2)[1]
+	path := strings.SplitN(r.URL.Path, "/files", 2)[1]
 	path = filepath.Clean("/" + path)
 
 	// Create file.
@@ -197,6 +193,7 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 		writeFileStoreError(w, err)
 		return
 	}
+	newFile.Data = decodedBytes
 
 	err = db.Commit(r.Context())
 	if err != nil {
@@ -212,7 +209,7 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 			filestore.FileTypeEndpoint: pubsub.EndpointCreate,
 			filestore.FileTypeConsumer: pubsub.ConsumerCreate,
 		}[newFile.Typ]
-		err = e.bus.Publish(createTopic, ns.Name)
+		err = e.bus.DebouncedPublish(createTopic, ns.Name)
 		// nolint
 		if err != nil {
 			// TODO: log error here.
@@ -223,8 +220,7 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 }
 
 func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
-	//nolint:forcetypeassert
-	ns := r.Context().Value(ctxKeyNamespace{}).(*core.Namespace)
+	ns := extractContextNamespace(r)
 
 	db, err := e.db.BeginTx(r.Context())
 	if err != nil {
@@ -236,12 +232,12 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 	fStore := db.FileStore()
 
 	req := struct {
-		AbsolutePath string `json:"absolutePath"`
-		Data         string `json:"data"`
+		Path string `json:"path"`
+		Data string `json:"data"`
 	}{}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		writeNotJsonError(w, err)
+		writeNotJSONError(w, err)
 		return
 	}
 
@@ -266,7 +262,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	path := strings.SplitN(r.URL.Path, "/files-tree", 2)[1]
+	path := strings.SplitN(r.URL.Path, "/files", 2)[1]
 	path = filepath.Clean("/" + path)
 
 	// Fetch file.
@@ -284,13 +280,13 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if req.AbsolutePath != "" {
-		err = fStore.ForFile(oldFile).SetPath(r.Context(), req.AbsolutePath)
+	if req.Path != "" {
+		err = fStore.ForFile(oldFile).SetPath(r.Context(), req.Path)
 		if err != nil {
 			writeFileStoreError(w, err)
 			return
 		}
-		oldFile.Path = req.AbsolutePath
+		oldFile.Path = req.Path
 	}
 
 	updatedFile, err := fStore.ForNamespace(ns.Name).GetFile(r.Context(), oldFile.Path)
@@ -302,7 +298,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 
 	// Update workflow_path of all associated runtime variables.
 	dStore := db.DataStore()
-	err = dStore.RuntimeVariables().SetWorkflowPath(r.Context(), ns.Name, path, req.AbsolutePath)
+	err = dStore.RuntimeVariables().SetWorkflowPath(r.Context(), ns.Name, path, req.Path)
 	if err != nil {
 		writeInternalError(w, err)
 		return
@@ -315,14 +311,14 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Public pubsub events.
-	if oldFile.Typ != filestore.FileTypeDirectory && oldFile.Typ != filestore.FileTypeFile && req.AbsolutePath != "" {
+	if oldFile.Typ != filestore.FileTypeDirectory && oldFile.Typ != filestore.FileTypeFile && req.Path != "" {
 		createTopic := map[filestore.FileType]string{
 			filestore.FileTypeWorkflow: pubsub.WorkflowRename,
 			filestore.FileTypeService:  pubsub.ServiceRename,
 			filestore.FileTypeEndpoint: pubsub.EndpointRename,
 			filestore.FileTypeConsumer: pubsub.ConsumerRename,
 		}[oldFile.Typ]
-		err = e.bus.Publish(createTopic, ns.Name)
+		err = e.bus.DebouncedPublish(createTopic, ns.Name)
 		// nolint
 		if err != nil {
 			// TODO: log error here.
@@ -335,7 +331,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 			filestore.FileTypeEndpoint: pubsub.EndpointUpdate,
 			filestore.FileTypeConsumer: pubsub.ConsumerUpdate,
 		}[oldFile.Typ]
-		err = e.bus.Publish(createTopic, ns.Name)
+		err = e.bus.DebouncedPublish(createTopic, ns.Name)
 		// nolint
 		if err != nil {
 			// TODO: log error here.

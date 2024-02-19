@@ -154,10 +154,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 		panic(err)
 	}
 
-	settings := &enginerefactor.InstanceSettings{
-		// TODO: alan, LogToEvents:
-		NamespaceConfig: []byte(args.Namespace.Config),
-	}
+	settings := &enginerefactor.InstanceSettings{}
 	settingsData, err := settings.MarshalJSON()
 	if err != nil {
 		panic(err)
@@ -656,9 +653,8 @@ func (engine *engine) subflowInvoke(ctx context.Context, pi *enginerefactor.Pare
 	args := &newInstanceArgs{
 		ID: uuid.New(),
 		Namespace: &database.Namespace{
-			ID:     instance.Instance.NamespaceID,
-			Name:   instance.TelemetryInfo.NamespaceName,
-			Config: string(instance.Settings.NamespaceConfig),
+			ID:   instance.Instance.NamespaceID,
+			Name: instance.TelemetryInfo.NamespaceName,
 		},
 		CalledAs:    name,
 		Input:       input,

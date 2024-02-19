@@ -1,4 +1,3 @@
-// nolint
 package registry
 
 import (
@@ -75,7 +74,7 @@ func (c *kManager) DeleteNamespace(namespace string) error {
 		List(context.Background(),
 			metav1.ListOptions{LabelSelector: fmt.Sprintf("%s=%s", annotationNamespace, namespace)})
 	if err != nil {
-		return fmt.Errorf("k8s secrets list: %s", err)
+		return fmt.Errorf("k8s secrets list: %w", err)
 	}
 	if len(secrets.Items) == 0 {
 		return core.ErrNotFound
@@ -84,7 +83,7 @@ func (c *kManager) DeleteNamespace(namespace string) error {
 	for _, s := range secrets.Items {
 		err = c.Clientset.CoreV1().Secrets(c.K8sNamespace).Delete(context.Background(), s.Name, metav1.DeleteOptions{})
 		if err != nil {
-			return fmt.Errorf("k8s secrets delete: %s", err)
+			return fmt.Errorf("k8s secrets delete: %w", err)
 		}
 	}
 

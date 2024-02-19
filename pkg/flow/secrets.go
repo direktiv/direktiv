@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 )
 
@@ -23,8 +23,8 @@ func (flow *flow) placeholdSecrets(ctx context.Context, tx *sqlTx, ns string, fi
 
 	for _, secretRef := range secretRefs {
 		_, err = tx.DataStore().Secrets().Get(ctx, ns, secretRef)
-		if errors.Is(err, core.ErrSecretNotFound) {
-			err = tx.DataStore().Secrets().Set(ctx, &core.Secret{
+		if errors.Is(err, datastore.ErrNotFound) {
+			err = tx.DataStore().Secrets().Set(ctx, &datastore.Secret{
 				Namespace: ns,
 				Name:      secretRef,
 				Data:      nil,

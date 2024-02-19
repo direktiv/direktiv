@@ -139,67 +139,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//       "$ref": '#/definitions/ErrorResponse'
 	r.HandleFunc("/namespaces/{ns}", h.CreateNamespace).Name(RN_AddNamespace).Methods(http.MethodPut)
 
-	// swagger:operation PATCH /api/namespaces/{namespace}/config Namespaces setNamespaceConfig
-	// ---
-	// summary: Sets a namespace config
-	// description: |
-	//   Sets a namespace config.
-	// parameters:
-	// - in: path
-	//   name: namespace
-	//   type: string
-	//   required: true
-	//   description: 'target namespace to update'
-	// - in: body
-	//   name: Config Payload
-	//   description: "Payload that contains the config information to set. Note: This payload only need to contain the properities you wish to set."
-	//   schema:
-	//     example:
-	//       broadcast:
-	//         directory.create: false
-	//         directory.delete: false
-	//         instance.failed: false
-	//         instance.started: false
-	//         instance.success: false
-	//         instance.variable.create: false
-	//         instance.variable.delete: false
-	//         instance.variable.update: false
-	//         namespace.variable.create: false
-	//         namespace.variable.delete: false
-	//         namespace.variable.update: false
-	//         workflow.create: false
-	//         workflow.delete: false
-	//         workflow.update: false
-	//         workflow.variable.create: false
-	//         workflow.variable.delete: false
-	//         workflow.variable.update: false
-	//     type: object
-	//     properties:
-	//       broadcast:
-	//         type: object
-	//         description: Configuration on which direktiv operations will trigger coud events on the namespace
-	// responses:
-	//   '200':
-	//     "description": "namespace config has been successfully been updated"
-	r.HandleFunc("/namespaces/{ns}/config", h.SetNamespaceConfig).Name(RN_SetNamespaceConfig).Methods(http.MethodPatch)
-
 	r.HandleFunc("/namespaces/{ns}/lint", h.NamespaceLint).Name(RN_GetNamespaceLogs).Methods(http.MethodGet)
-
-	// swagger:operation GET /api/namespaces/{namespace}/config Namespaces getNamespaceConfig
-	// ---
-	// summary: Gets a namespace config
-	// description: |
-	//   Gets a namespace config.
-	// parameters:
-	// - in: path
-	//   name: namespace
-	//   type: string
-	//   required: true
-	//   description: 'target namespace to update'
-	// responses:
-	//   '200':
-	//     "description": "successfully got namespace config"
-	r.HandleFunc("/namespaces/{ns}/config", h.GetNamespaceConfig).Name(RN_GetNamespaceConfig).Methods(http.MethodGet)
 
 	// swagger:operation DELETE /api/namespaces/{namespace} Namespaces deleteNamespace
 	// ---
@@ -1931,34 +1871,6 @@ func (h *flowHandler) UpdateMirror(w http.ResponseWriter, r *http.Request) {
 	respond(w, resp, err)
 }
 
-func (h *flowHandler) SetNamespaceConfig(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
-
-	ctx := r.Context()
-	namespace := mux.Vars(r)["ns"]
-
-	data, err := loadRawBody(r)
-	if err != nil {
-		respond(w, nil, err)
-		return
-	}
-
-	in := &grpc.SetNamespaceConfigRequest{
-		Name:   namespace,
-		Config: string(data),
-	}
-
-	grpcResp, err := h.client.SetNamespaceConfig(ctx, in)
-	if err != nil {
-		respond(w, grpcResp, err)
-		return
-	}
-
-	resp := make(map[string]interface{})
-	err = json.Unmarshal([]byte(grpcResp.Config), &resp)
-	respondJSON(w, resp, err)
-}
-
 func (h *flowHandler) NamespaceLint(w http.ResponseWriter, r *http.Request) {
 	h.logger.Debugf("Handling request: %s", this())
 
@@ -1976,27 +1888,6 @@ func (h *flowHandler) NamespaceLint(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respond(w, resp, nil)
-}
-
-func (h *flowHandler) GetNamespaceConfig(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
-
-	ctx := r.Context()
-	namespace := mux.Vars(r)["ns"]
-
-	in := &grpc.GetNamespaceConfigRequest{
-		Name: namespace,
-	}
-
-	grpcResp, err := h.client.GetNamespaceConfig(ctx, in)
-	if err != nil {
-		respond(w, grpcResp, err)
-		return
-	}
-
-	resp := make(map[string]interface{})
-	err = json.Unmarshal([]byte(grpcResp.Config), &resp)
-	respondJSON(w, resp, err)
 }
 
 func (h *flowHandler) DeleteNamespace(w http.ResponseWriter, r *http.Request) {

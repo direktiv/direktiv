@@ -8,6 +8,8 @@ import (
 	"net/http/httputil"
 	"testing"
 
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
+
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
@@ -20,7 +22,7 @@ import (
 func createNS(db *database.DB, ns string) {
 	ctx := context.Background()
 
-	db.DataStore().Namespaces().Create(ctx, &core.Namespace{
+	db.DataStore().Namespaces().Create(ctx, &datastore.Namespace{
 		Name: ns,
 	})
 	_, _ = db.FileStore().CreateRoot(ctx, uuid.New(), ns)

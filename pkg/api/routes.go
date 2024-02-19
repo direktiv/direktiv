@@ -24,10 +24,6 @@ const (
 	// namespace variable set routes.
 	RN_SetNamespaceVariable = "setNamespaceVariable"
 
-	// namespace config routes.
-	RN_GetNamespaceConfig = "getNamespaceConfiguration"
-	RN_SetNamespaceConfig = "setNamespaceConfiguration"
-
 	// explorer routes.
 	RN_GetNode              = "getNode"
 	RN_CreateDirectory      = "createDirectory"

@@ -47,7 +47,7 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 				selector.Scope = util.VarScopeNamespace
 			}
 
-			var item *core.RuntimeVariable
+			var item *datastore.RuntimeVariable
 
 			switch selector.Scope {
 			case util.VarScopeInstance:
@@ -190,7 +190,7 @@ func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.Variab
 	for idx := range vars {
 		v := vars[idx]
 
-		var item *core.RuntimeVariable
+		var item *datastore.RuntimeVariable
 
 		switch v.Scope {
 		case util.VarScopeInstance:
@@ -225,7 +225,7 @@ func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.Variab
 				}
 			}
 		} else {
-			newVar := &core.RuntimeVariable{
+			newVar := &datastore.RuntimeVariable{
 				Name:      v.Key,
 				MimeType:  v.MIMEType,
 				Data:      v.Data,

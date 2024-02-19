@@ -1,4 +1,4 @@
-import request from 'supertest'
+import request from "../common/request"
 import common from "../common";
 
 const testNamespace = "test-namespace"
