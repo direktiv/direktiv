@@ -1,26 +1,26 @@
 package service
 
-// reconcileObject interface helps reconcile logic to identify objects and differences in lists.
-type reconcileObject interface {
+// Item interface helps Run logic to identify objects and differences in lists.
+type Item interface {
 	GetID() string
 	GetValueHash() string
 }
 
-type reconcileResult struct {
-	deletes []string
-	creates []string
-	updates []string
+type Result struct {
+	Deletes []string
+	Creates []string
+	Updates []string
 }
 
-func reconcile(src []reconcileObject, target []reconcileObject) *reconcileResult {
-	return &reconcileResult{
-		deletes: reconcileDelete(src, target),
-		creates: reconcileCreate(src, target),
-		updates: reconcileUpdate(src, target),
+func Run(src []Item, target []Item) *Result {
+	return &Result{
+		Deletes: reconcileDelete(src, target),
+		Creates: reconcileCreate(src, target),
+		Updates: reconcileUpdate(src, target),
 	}
 }
 
-func reconcileDelete(src []reconcileObject, target []reconcileObject) []string {
+func reconcileDelete(src []Item, target []Item) []string {
 	result := []string{}
 	search := map[string]bool{}
 	for _, item := range src {
@@ -37,7 +37,7 @@ func reconcileDelete(src []reconcileObject, target []reconcileObject) []string {
 	return result
 }
 
-func reconcileCreate(src []reconcileObject, target []reconcileObject) []string {
+func reconcileCreate(src []Item, target []Item) []string {
 	result := []string{}
 
 	keys := map[string]bool{}
@@ -55,10 +55,10 @@ func reconcileCreate(src []reconcileObject, target []reconcileObject) []string {
 	return result
 }
 
-func reconcileUpdate(src []reconcileObject, target []reconcileObject) []string {
+func reconcileUpdate(src []Item, target []Item) []string {
 	result := []string{}
 
-	search := map[string]reconcileObject{}
+	search := map[string]Item{}
 	for _, item := range src {
 		search[item.GetID()] = item
 	}

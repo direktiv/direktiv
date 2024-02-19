@@ -20,7 +20,7 @@ import (
 
 // manager struct implements core.ServiceManager by wrapping runtimeClient. manager implementation manages
 // services in the system in a declarative manner. This implementation spans up a goroutine (via Start())
-// to reconcile the services in list param versus what is running in the runtime.
+// to Run the services in list param versus what is running in the runtime.
 type manager struct {
 	cfg *core.Config
 	// this list maintains all the service configurations that need to be running.
@@ -101,7 +101,7 @@ func (m *manager) runCycle() []error {
 	}
 
 	// clone the list
-	src := make([]reconcileObject, len(m.list))
+	src := make([]Item, len(m.list))
 	for i, v := range m.list {
 		src[i] = v
 	}
@@ -116,23 +116,23 @@ func (m *manager) runCycle() []error {
 		return []error{err}
 	}
 
-	target := make([]reconcileObject, len(knList))
+	target := make([]Item, len(knList))
 	for i, v := range knList {
 		target[i] = v
 	}
 
-	m.logger.Debugw("reconcile length", "src", len(src), "target", len(target))
+	m.logger.Debugw("Run length", "src", len(src), "target", len(target))
 
-	result := reconcile(src, target)
+	result := Run(src, target)
 
 	errs := []error{}
-	for _, id := range result.deletes {
+	for _, id := range result.Deletes {
 		if err := m.runtimeClient.deleteService(id); err != nil {
 			errs = append(errs, fmt.Errorf("delete service id: %s %w", id, err))
 		}
 	}
 
-	for _, id := range result.creates {
+	for _, id := range result.Creates {
 		v := searchSrc[id]
 		v.Error = nil
 		// v is passed un-cloned.
@@ -143,7 +143,7 @@ func (m *manager) runCycle() []error {
 		}
 	}
 
-	for _, id := range result.updates {
+	for _, id := range result.Updates {
 		v := searchSrc[id]
 		v.Error = nil
 		// v is passed un-cloned.

@@ -20,6 +20,6 @@ type runtimeClient interface {
 }
 
 type status interface {
-	reconcileObject
+	Item
 	GetConditions() any
 }
