@@ -28,7 +28,7 @@ type EndpointEditorProps = {
 const EndpointEditor: FC<EndpointEditorProps> = ({ data }) => {
   const { t } = useTranslation();
   const theme = useTheme();
-  const fileContentFromServer = decode(data.file.data ?? "");
+  const fileContentFromServer = decode(data.data ?? "");
   const [endpointConfig, endpointConfigError] = serializeEndpointFile(
     fileContentFromServer
   );
@@ -37,8 +37,8 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data }) => {
   const save = (value: EndpointFormSchemaType) => {
     const toSave = jsonToYaml(value);
     updateRoute({
-      node: data.file,
-      file: { data: encode(toSave) },
+      path: data.path,
+      payload: { data: encode(toSave) },
     });
   };
 

@@ -41,7 +41,7 @@ const RunWorkflow = ({ path }: { path: string }) => {
   const { data } = useNode({ path });
   const submitButtonRef = useRef<HTMLButtonElement>(null);
   const validationSchema = getValidationSchemaFromYaml(
-    decode(data?.file.data ?? "")
+    decode(data?.data ?? "")
   );
 
   // tab handling

@@ -4,7 +4,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/design/Dialog";
-import { NodeSchemaType, getFilenameFromPath } from "~/api/filesTree/schema";
+import { FileSchemaType, getFilenameFromPath } from "~/api/filesTree/schema";
 import { Trans, useTranslation } from "react-i18next";
 
 import Button from "~/design/Button";
@@ -15,7 +15,7 @@ const Delete = ({
   node,
   close,
 }: {
-  node: NodeSchemaType;
+  node: FileSchemaType;
   close: () => void;
 }) => {
   const { t } = useTranslation();

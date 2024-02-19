@@ -1,5 +1,5 @@
 import {
-  NodeSchemaType,
+  FileSchemaType,
   PathDeletedSchema,
   getFilenameFromPath,
   getParentFromPath,
@@ -17,7 +17,7 @@ import { useTranslation } from "react-i18next";
 
 const deleteNode = apiFactory({
   url: ({ namespace, path }: { namespace: string; path: string }) =>
-    `/api/v2/namespaces/${namespace}/files-tree${forceLeadingSlash(path)}`,
+    `/api/v2/namespaces/${namespace}/files${forceLeadingSlash(path)}`,
   method: "DELETE",
   schema: PathDeletedSchema,
 });
@@ -36,7 +36,7 @@ export const useDeletePath = ({
   }
 
   return useMutationWithPermissions({
-    mutationFn: ({ node }: { node: NodeSchemaType }) =>
+    mutationFn: ({ node }: { node: FileSchemaType }) =>
       deleteNode({
         apiKey: apiKey ?? undefined,
         urlParams: {

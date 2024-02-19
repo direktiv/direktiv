@@ -1,21 +1,21 @@
 import { FC, Fragment } from "react";
 import {
+  FileSchemaType,
+  getFilenameFromPath,
+  getParentFromPath,
+} from "~/api/filesTree/schema";
+import {
   FilepickerClose,
   FilepickerListItem,
   FilepickerSeparator,
 } from "~/design/Filepicker";
-import {
-  NodeSchemaType,
-  getFilenameFromPath,
-  getParentFromPath,
-} from "~/api/filesTree/schema";
 
 import { fileTypeToIcon } from "~/api/tree/utils";
 import { twMergeClsx } from "~/util/helpers";
 
 export type FileListProps = {
-  nodes: NodeSchemaType[];
-  selectable: ((node: NodeSchemaType) => boolean) | undefined;
+  nodes: FileSchemaType[];
+  selectable: ((node: FileSchemaType) => boolean) | undefined;
   setPath: (path: string) => void;
   setInputValue: (value: string) => void;
   onChange: (path: string) => void;

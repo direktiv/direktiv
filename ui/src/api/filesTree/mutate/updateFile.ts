@@ -1,5 +1,4 @@
-import { NodeSchemaType, UpdateFileSchemaType } from "../schema";
-
+import { UpdateFileSchemaType } from "../schema";
 import { forceLeadingSlash } from "~/api/tree/utils";
 import { getMessageFromApiError } from "~/api/errorHandling";
 import { patchNode } from "./patchNode";
@@ -26,17 +25,17 @@ export const useUpdateFile = ({
 
   return useMutationWithPermissions({
     mutationFn: ({
-      node,
-      file,
+      path,
+      payload,
     }: {
-      node: NodeSchemaType;
-      file: UpdateFileSchemaType;
+      path: string;
+      payload: UpdateFileSchemaType;
     }) =>
       patchNode({
         apiKey: apiKey ?? undefined,
-        payload: file,
+        payload,
         urlParams: {
-          path: node.path,
+          path,
           namespace,
         },
       }),

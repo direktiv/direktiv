@@ -1,5 +1,6 @@
 import { Dialog, DialogContent } from "~/design/Dialog";
 import { FC, useEffect, useState } from "react";
+import { FileSchemaType, getFilenameFromPath } from "~/api/filesTree/schema";
 import {
   NoPermissions,
   Table,
@@ -7,7 +8,6 @@ import {
   TableCell,
   TableRow,
 } from "~/design/Table";
-import { NodeSchemaType, getFilenameFromPath } from "~/api/filesTree/schema";
 
 import { Card } from "~/design/Card";
 import Delete from "./components/modals/Delete";
@@ -39,9 +39,9 @@ const ExplorerPage: FC = () => {
   // we only want to use one dialog component for the whole list,
   // so when the user clicks on the delete button in the list, we
   // set the pointer to that node for the dialog
-  const [deleteNode, setDeleteNode] = useState<NodeSchemaType>();
-  const [renameNode, setRenameNode] = useState<NodeSchemaType>();
-  const [previewNode, setPreviewNode] = useState<NodeSchemaType>();
+  const [deleteNode, setDeleteNode] = useState<FileSchemaType>();
+  const [renameNode, setRenameNode] = useState<FileSchemaType>();
+  const [previewNode, setPreviewNode] = useState<FileSchemaType>();
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -62,9 +62,9 @@ const ExplorerPage: FC = () => {
       </Card>
     );
 
-  const paths = data?.paths || [];
-  const showTable = !isRoot || paths.length > 0;
-  const noResults = isSuccess && paths.length === 0;
+  const children = data?.children || [];
+  const showTable = !isRoot || children.length > 0;
+  const noResults = isSuccess && children.length === 0;
   const wideOverlay = !!previewNode;
 
   return (
@@ -94,7 +94,7 @@ const ExplorerPage: FC = () => {
                       </TableCell>
                     </TableRow>
                   )}
-                  {paths.map((item) => (
+                  {children.map((item) => (
                     <FileRow
                       key={item.path}
                       namespace={namespace}
@@ -127,7 +127,7 @@ const ExplorerPage: FC = () => {
                       setDialogOpen(false);
                     }}
                     unallowedNames={
-                      data?.paths?.map((file) =>
+                      data?.children?.map((file) =>
                         getFilenameFromPath(file.path)
                       ) || []
                     }

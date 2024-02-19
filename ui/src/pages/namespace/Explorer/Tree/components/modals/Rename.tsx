@@ -5,7 +5,7 @@ import {
   DialogTitle,
 } from "~/design/Dialog";
 import {
-  NodeSchemaType,
+  FileSchemaType,
   getFilenameFromPath,
   getParentFromPath,
 } from "~/api/filesTree/schema";
@@ -31,7 +31,7 @@ const Rename = ({
   close,
   unallowedNames,
 }: {
-  node: NodeSchemaType;
+  node: FileSchemaType;
   close: () => void;
   unallowedNames: string[];
 }) => {

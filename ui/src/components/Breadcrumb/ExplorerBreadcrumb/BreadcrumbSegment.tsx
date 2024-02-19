@@ -27,12 +27,12 @@ const BreadcrumbSegment: FC<{
   if (!namespace) return null;
   if (isLast && !data) return null;
 
-  const Icon = fileTypeToIcon(data?.file.type ?? "directory");
+  const Icon = fileTypeToIcon(data?.type ?? "directory");
 
   const link = pages.explorer.createHref({
     namespace,
     path: absolute,
-    subpage: fileTypeToExplorerSubpage(data?.file.type ?? "directory"),
+    subpage: fileTypeToExplorerSubpage(data?.type ?? "directory"),
   });
 
   return (

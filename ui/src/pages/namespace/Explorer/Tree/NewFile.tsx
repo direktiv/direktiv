@@ -37,45 +37,50 @@ export const NewFileDialog: FC<NewFileDialogProps> = ({ path }) => {
       >
         {selectedDialog === "new-dir" && (
           <NewDirectory
-            path={data?.file.path}
+            path={data?.path}
             unallowedNames={
-              data?.paths?.map((file) => getFilenameFromPath(file.path)) || []
+              data?.children?.map((file) => getFilenameFromPath(file.path)) ||
+              []
             }
             close={() => setDialogOpen(false)}
           />
         )}
         {selectedDialog === "new-workflow" && (
           <NewWorkflow
-            path={data?.file.path}
+            path={data?.path}
             unallowedNames={
-              data?.paths?.map((file) => getFilenameFromPath(file.path)) || []
+              data?.children?.map((file) => getFilenameFromPath(file.path)) ||
+              []
             }
             close={() => setDialogOpen(false)}
           />
         )}
         {selectedDialog === "new-service" && (
           <NewService
-            path={data?.file.path}
+            path={data?.path}
             unallowedNames={
-              data?.paths?.map((file) => getFilenameFromPath(file.path)) || []
+              data?.children?.map((file) => getFilenameFromPath(file.path)) ||
+              []
             }
             close={() => setDialogOpen(false)}
           />
         )}
         {selectedDialog === "new-route" && (
           <NewRoute
-            path={data?.file.path}
+            path={data?.path}
             unallowedNames={
-              data?.paths?.map((file) => getFilenameFromPath(file.path)) || []
+              data?.children?.map((file) => getFilenameFromPath(file.path)) ||
+              []
             }
             close={() => setDialogOpen(false)}
           />
         )}
         {selectedDialog === "new-consumer" && (
           <NewConsumer
-            path={data?.file.path}
+            path={data?.path}
             unallowedNames={
-              data?.paths?.map((file) => getFilenameFromPath(file.path)) || []
+              data?.children?.map((file) => getFilenameFromPath(file.path)) ||
+              []
             }
             close={() => setDialogOpen(false)}
           />

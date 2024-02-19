@@ -9,7 +9,7 @@ import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
 import { File } from "lucide-react";
-import { NodeSchemaType } from "~/api/filesTree/schema";
+import { FileSchemaType } from "~/api/filesTree/schema";
 import { decode } from "js-base64";
 import { mimeTypeToEditorSyntax } from "~/design/Editor/utils";
 import { useNode } from "~/api/filesTree/query/node";
@@ -32,13 +32,13 @@ const NoPreview = ({ mimeType }: { mimeType?: string }) => {
 const imageSrc = (mimeType: string, source: string) =>
   `data:${mimeType};base64,${source}`;
 
-const FileViewer = ({ node }: { node: NodeSchemaType }) => {
+const FileViewer = ({ node }: { node: FileSchemaType }) => {
   const { t } = useTranslation();
   const theme = useTheme();
   const { data } = useNode({ path: node.path });
 
-  const fileContent = decode(data?.file.data ?? "");
-  const mimeType = data?.file.mimeType;
+  const fileContent = decode(data?.data ?? "");
+  const mimeType = data?.mimeType;
 
   const supportedLanguage = mimeTypeToEditorSyntax(mimeType);
   const supportedImage = mimeType?.startsWith("image/");
@@ -59,7 +59,7 @@ const FileViewer = ({ node }: { node: NodeSchemaType }) => {
         <div className="flex h-[700px]">
           {showImage && (
             <img
-              src={imageSrc(mimeType ?? "", data?.file.data ?? "")}
+              src={imageSrc(mimeType ?? "", data?.data ?? "")}
               className="w-full object-contain"
             />
           )}

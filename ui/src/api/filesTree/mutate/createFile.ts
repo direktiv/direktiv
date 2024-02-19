@@ -1,5 +1,5 @@
 import {
-  CreateNodeSchemaType,
+  CreateFileSchemaType,
   PathCreatedSchema,
   getFilenameFromPath,
   getParentFromPath,
@@ -23,9 +23,9 @@ export const createNode = apiFactory({
     namespace: string;
     path?: string;
   }) =>
-    `${
-      baseUrl ?? ""
-    }/api/v2/namespaces/${namespace}/files-tree${forceLeadingSlash(path)}`,
+    `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/files${forceLeadingSlash(
+      path
+    )}`,
   method: "POST",
   schema: PathCreatedSchema,
 });
@@ -50,7 +50,7 @@ export const useCreateNode = ({
       file,
     }: {
       path?: string;
-      file: CreateNodeSchemaType;
+      file: CreateFileSchemaType;
     }) =>
       createNode({
         apiKey: apiKey ?? undefined,

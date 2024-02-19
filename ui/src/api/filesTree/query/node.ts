@@ -1,4 +1,4 @@
-import { PathListSchema } from "../schema";
+import { FileListSchema } from "../schema";
 import { QueryFunctionContext } from "@tanstack/react-query";
 import { apiFactory } from "~/api/apiFactory";
 import { forceLeadingSlash } from "~/api/tree/utils";
@@ -10,9 +10,9 @@ import useQueryWithPermissions from "~/api/useQueryWithPermissions";
 
 const getNode = apiFactory({
   url: ({ namespace, path }: { namespace: string; path?: string }) =>
-    `/api/v2/namespaces/${namespace}/files-tree${forceLeadingSlash(path)}`,
+    `/api/v2/namespaces/${namespace}/files${forceLeadingSlash(path)}`,
   method: "GET",
-  schema: PathListSchema,
+  schema: FileListSchema,
 });
 
 const fetchNode = async ({
@@ -50,10 +50,11 @@ export const useNode = ({
       path: forceLeadingSlash(path),
     }),
     queryFn: fetchNode,
-    select(data) {
+    select(response) {
+      const { data } = response;
       return {
-        file: data.data.file,
-        paths: data.data.paths ? data.data.paths.sort(sortFoldersFirst) : null,
+        ...data,
+        children: data.children ? data.children.sort(sortFoldersFirst) : null,
       };
     },
     enabled: !!namespace && enabled,

@@ -34,7 +34,7 @@ const Diagram: FC<DiagramProps> = ({ workflowPath, flow, status }) => {
 
   if (!data) return null;
 
-  const workflowData = decode(data.file.data ?? "");
+  const workflowData = decode(data.data ?? "");
 
   return (
     <div className="relative flex grow">

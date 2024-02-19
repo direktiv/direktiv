@@ -27,7 +27,7 @@ const ServiceEditor: FC<ServiceEditorProps> = ({ data }) => {
   const { t } = useTranslation();
   const theme = useTheme();
 
-  const fileContentFromServer = decode(data.file.data ?? "");
+  const fileContentFromServer = decode(data.data ?? "");
 
   const [serviceConfig, serviceConfigError] = serializeServiceFile(
     fileContentFromServer
@@ -38,8 +38,8 @@ const ServiceEditor: FC<ServiceEditorProps> = ({ data }) => {
   const save = (value: ServiceFormSchemaType) => {
     const toSave = jsonToYaml(value);
     updateService({
-      node: data.file,
-      file: { data: encode(toSave) },
+      path: data.path,
+      payload: { data: encode(toSave) },
     });
   };
 

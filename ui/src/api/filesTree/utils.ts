@@ -1,8 +1,8 @@
-import { NodeSchemaType } from "./schema";
+import { FileSchemaType } from "./schema";
 
 export const sortFoldersFirst = (
-  a: NodeSchemaType,
-  b: NodeSchemaType
+  a: FileSchemaType,
+  b: FileSchemaType
 ): number => {
   if (a.type === "directory" && b.type !== "directory") {
     return -1;

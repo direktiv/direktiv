@@ -30,7 +30,7 @@ export const getParentFromPath = (path: string): string =>
   },
 */
 
-export const direktivNodeTypes = [
+export const direktivFileTypes = [
   "consumer",
   "directory",
   "endpoint",
@@ -39,16 +39,24 @@ export const direktivNodeTypes = [
   "workflow",
 ] as const;
 
-const direktivNodeTypeSchema = z.enum(direktivNodeTypes);
+const direktivFileTypeSchema = z.enum(direktivFileTypes);
 
-const NodeSchema = z.object({
-  type: direktivNodeTypeSchema,
+const BaseFileSchema = z.object({
+  type: direktivFileTypeSchema,
+  path: z.string().nonempty(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+
+const FileSchema = z.object({
+  type: direktivFileTypeSchema,
   path: z.string().nonempty(),
   createdAt: z.string(),
   updatedAt: z.string(),
   size: z.number().optional(), // not for directories
   mimeType: z.string().optional(), // not for directories
   data: z.string().optional(), // not for directories
+  children: z.array(BaseFileSchema).optional(), // only for directories
 });
 
 const CreateDirectorySchema = z.object({
@@ -96,7 +104,7 @@ const UpdateFileSchema = z.object({
 });
 
 /**
- * /api/v2/namespaces/:namespace/files-tree/:path
+ * /api/v2/namespaces/:namespace/files/:path
  * 
  * lists the files and directories found under the given path. 
  * "file" lists the item at the current path (this could be a directory).
@@ -127,20 +135,17 @@ const UpdateFileSchema = z.object({
 }
 */
 
-export const PathListSchema = z.object({
-  data: z.object({
-    file: NodeSchema,
-    paths: z.array(NodeSchema).nullable(),
-  }),
+export const FileListSchema = z.object({
+  data: FileSchema,
 });
 
 export const PathDeletedSchema = z.null();
-export const PathCreatedSchema = z.object({ data: NodeSchema });
-export const NodePatchedSchema = z.object({ data: NodeSchema });
+export const PathCreatedSchema = z.object({ data: FileSchema });
+export const NodePatchedSchema = z.object({ data: FileSchema });
 
-export type NodeSchemaType = z.infer<typeof NodeSchema>;
+export type FileSchemaType = z.infer<typeof FileSchema>;
 export type UpdateFileSchemaType = z.infer<typeof UpdateFileSchema>;
-export type RenameNodeSchemaType = z.infer<typeof RenameNodeSchema>;
+export type RenameFileSchemaType = z.infer<typeof RenameNodeSchema>;
 
-export type CreateNodeSchemaType = z.infer<typeof CreateNodeSchema>;
-export type PathListSchemaType = z.infer<typeof PathListSchema>;
+export type CreateFileSchemaType = z.infer<typeof CreateNodeSchema>;
+export type FileListSchemaType = z.infer<typeof FileListSchema>;

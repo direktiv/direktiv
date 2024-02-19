@@ -28,9 +28,9 @@ const WorkflowEditor: FC<{
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const { refetch: updateNotificationBell } = useNamespaceLinting();
 
-  const workflowDataFromServer = decode(data?.file.data ?? "");
+  const workflowDataFromServer = decode(data?.data ?? "");
 
-  const { mutate, isLoading } = useUpdateFile({
+  const { mutate: updateFile, isLoading } = useUpdateFile({
     onError: (error) => {
       error && setError(error);
     },
@@ -54,9 +54,9 @@ const WorkflowEditor: FC<{
   const onSave = (toSave: string | undefined) => {
     if (toSave) {
       setError(undefined);
-      mutate({
-        node: data.file,
-        file: { data: encode(toSave) },
+      updateFile({
+        path: data.path,
+        payload: { data: encode(toSave) },
       });
     }
   };
@@ -74,7 +74,7 @@ const WorkflowEditor: FC<{
           <CodeEditor
             value={editorContent}
             onValueChange={onEditorContentUpdate}
-            updatedAt={data.file.updatedAt}
+            updatedAt={data.updatedAt}
             error={error}
             hasUnsavedChanges={hasUnsavedChanges}
             onSave={onSave}
@@ -96,7 +96,7 @@ const WorkflowEditor: FC<{
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-2xl">
-            <RunWorkflow path={data.file.path} />
+            <RunWorkflow path={data.path} />
           </DialogContent>
         </Dialog>
         <Button

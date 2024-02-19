@@ -1,5 +1,5 @@
 import { FC, PropsWithChildren } from "react";
-import { NodeSchemaType, getFilenameFromPath } from "~/api/filesTree/schema";
+import { FileSchemaType, getFilenameFromPath } from "~/api/filesTree/schema";
 import { fileTypeToExplorerSubpage, isPreviewable } from "~/api/tree/utils";
 
 import { DialogTrigger } from "~/design/Dialog";
@@ -7,9 +7,9 @@ import { Link } from "react-router-dom";
 import { pages } from "~/util/router/pages";
 
 type ConditionalLinkProps = PropsWithChildren & {
-  node: NodeSchemaType;
+  node: FileSchemaType;
   namespace: string;
-  onPreviewClicked: (file: NodeSchemaType) => void;
+  onPreviewClicked: (file: FileSchemaType) => void;
 };
 
 export const ConditionalLink: FC<ConditionalLinkProps> = ({

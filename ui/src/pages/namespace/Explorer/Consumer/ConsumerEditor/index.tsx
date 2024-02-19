@@ -26,17 +26,17 @@ type ConsumerEditorProps = {
 const ConsumerEditor: FC<ConsumerEditorProps> = ({ data }) => {
   const { t } = useTranslation();
   const theme = useTheme();
-  const fileContentFromServer = decode(data.file.data ?? "");
+  const fileContentFromServer = decode(data.data ?? "");
   const [consumerConfig, consumerConfigError] = serializeConsumerFile(
     fileContentFromServer
   );
-  const { mutate, isLoading } = useUpdateFile();
+  const { mutate: updateFile, isLoading } = useUpdateFile();
 
   const save = (value: ConsumerFormSchemaType) => {
     const toSave = jsonToYaml(value);
-    mutate({
-      node: data.file,
-      file: { data: encode(toSave) },
+    updateFile({
+      path: data.path,
+      payload: { data: encode(toSave) },
     });
   };
 

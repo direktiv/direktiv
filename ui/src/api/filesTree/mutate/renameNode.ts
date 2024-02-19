@@ -1,6 +1,6 @@
 import {
-  NodeSchemaType,
-  RenameNodeSchemaType,
+  FileSchemaType,
+  RenameFileSchemaType,
   getFilenameFromPath,
   getParentFromPath,
 } from "../schema";
@@ -34,8 +34,8 @@ export const useRenameNode = ({
       node,
       file,
     }: {
-      node: NodeSchemaType;
-      file: RenameNodeSchemaType;
+      node: FileSchemaType;
+      file: RenameFileSchemaType;
     }) =>
       patchNode({
         apiKey: apiKey ?? undefined,

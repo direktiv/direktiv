@@ -43,7 +43,7 @@ const ServicePage: FC = () => {
     );
 
   const serviceId = servicesList.data.find(
-    (service) => serviceData.file.path === service.filePath
+    (service) => serviceData.path === service.filePath
   )?.id;
 
   return (
