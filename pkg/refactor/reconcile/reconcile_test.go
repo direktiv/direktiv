@@ -31,7 +31,7 @@ func Test_reconcile_case1(t *testing.T) {
 		&mockedObject{idStr: "svc5", hashStr: "hash5"},
 	}
 
-	result := Run(src, target)
+	result := Calculate(src, target)
 
 	got := fmt.Sprintf("delete:%s, create:%s, update:%s", result.Deletes, result.Creates, result.Updates)
 	want := "delete:[svc5], create:[svc3], update:[]"
@@ -50,7 +50,7 @@ func Test_reconcile_case2(t *testing.T) {
 
 	target := []Item{}
 
-	result := Run(src, target)
+	result := Calculate(src, target)
 
 	got := fmt.Sprintf("delete:%s, create:%s, update:%s", result.Deletes, result.Creates, result.Updates)
 	want := "delete:[], create:[svc1 svc2 svc3], update:[]"
@@ -69,7 +69,7 @@ func Test_reconcile_case3(t *testing.T) {
 		&mockedObject{idStr: "svc3", hashStr: "hash3"},
 	}
 
-	result := Run(src, target)
+	result := Calculate(src, target)
 
 	got := fmt.Sprintf("delete:%s, create:%s, update:%s", result.Deletes, result.Creates, result.Updates)
 	want := "delete:[svc1 svc2 svc3], create:[], update:[]"
@@ -92,7 +92,7 @@ func Test_reconcile_case4(t *testing.T) {
 		&mockedObject{idStr: "svc5", hashStr: "hash5"},
 	}
 
-	result := Run(src, target)
+	result := Calculate(src, target)
 
 	got := fmt.Sprintf("delete:%s, create:%s, update:%s", result.Deletes, result.Creates, result.Updates)
 	want := "delete:[svc5], create:[svc3], update:[svc2]"

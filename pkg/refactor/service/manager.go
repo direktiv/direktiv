@@ -123,9 +123,9 @@ func (m *manager) runCycle() []error {
 		target[i] = v
 	}
 
-	m.logger.Debugw("Run length", "src", len(src), "target", len(target))
+	m.logger.Debugw("reconcile", "src", len(src), "target", len(target))
 
-	result := reconcile.Run(src, target)
+	result := reconcile.Calculate(src, target)
 
 	errs := []error{}
 	for _, id := range result.Deletes {

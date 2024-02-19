@@ -12,7 +12,7 @@ type Result struct {
 	Updates []string
 }
 
-func Run(src []Item, target []Item) *Result {
+func Calculate(src []Item, target []Item) *Result {
 	return &Result{
 		Deletes: reconcileDelete(src, target),
 		Creates: reconcileCreate(src, target),
