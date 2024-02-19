@@ -174,8 +174,7 @@ func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.F
 		return nil, res.Error
 	}
 
-	// TODO: check if returned file has timestamps.
-	return f, nil
+	return q.GetFile(ctx, f.Path)
 }
 
 func (q *RootQuery) GetFile(ctx context.Context, path string) (*filestore.File, error) {

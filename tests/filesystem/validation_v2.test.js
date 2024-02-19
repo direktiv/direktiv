@@ -14,7 +14,7 @@ describe('Test filesystem tree read operations', () => {
 
 	it(`should fail creating file with invalid base64 data`, async () => {
 		const res = await request(config.getDirektivHost())
-			.post(`/api/v2/namespaces/${ namespace }/files-tree`)
+			.post(`/api/v2/namespaces/${ namespace }/files`)
 			.set('Content-Type', 'application/json')
 			.send({
 				name: 'foo',
@@ -33,7 +33,7 @@ describe('Test filesystem tree read operations', () => {
 
 	it(`should fail creating file with invalid yaml data`, async () => {
 		const res = await request(config.getDirektivHost())
-			.post(`/api/v2/namespaces/${ namespace }/files-tree`)
+			.post(`/api/v2/namespaces/${ namespace }/files`)
 			.set('Content-Type', 'application/json')
 			.send({
 				name: 'foo',
