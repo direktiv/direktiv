@@ -88,7 +88,7 @@ const NewRoute = ({
       file: {
         name,
         type: "endpoint",
-        mimeType: "application/direktiv",
+        mimeType: "application/yaml",
         data: encode(fileContent),
       },
     });

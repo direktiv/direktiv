@@ -56,7 +56,7 @@ const NewDirectory = ({
     resolver,
   });
 
-  const { mutate, isLoading } = useCreateNode({
+  const { mutate: createDirectory, isLoading } = useCreateNode({
     onSuccess: (data) => {
       namespace &&
         navigate(
@@ -67,7 +67,7 @@ const NewDirectory = ({
   });
 
   const onSubmit: SubmitHandler<FormInput> = ({ name }) => {
-    mutate({ path, file: { name, type: "directory" } });
+    createDirectory({ path, file: { name, type: "directory" } });
   };
 
   // you can not submit if the form has not changed or if there are any errors and

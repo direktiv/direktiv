@@ -86,7 +86,7 @@ const NewService = ({
       path,
       file: {
         name,
-        mimeType: "application/direktiv",
+        mimeType: "application/yaml",
         type: "service",
         data: encode(fileContent),
       },

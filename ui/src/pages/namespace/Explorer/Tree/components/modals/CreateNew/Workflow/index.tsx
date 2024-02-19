@@ -90,7 +90,7 @@ const NewWorkflow = ({
     },
   });
 
-  const { mutate, isLoading } = useCreateNode({
+  const { mutate: createFile, isLoading } = useCreateNode({
     onSuccess: (data) => {
       /**
        * creating a new workflow might introduce an uninitialized secret.
@@ -110,13 +110,13 @@ const NewWorkflow = ({
   });
 
   const onSubmit: SubmitHandler<FormInput> = ({ name, fileContent }) => {
-    mutate({
+    createFile({
       path,
       file: {
         name,
         data: encode(fileContent),
         type: "workflow",
-        mimeType: "application/direktiv",
+        mimeType: "application/yaml",
       },
     });
   };

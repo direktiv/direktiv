@@ -24,7 +24,7 @@ export const getParentFromPath = (path: string): string =>
     path: "/http.yaml",
     type: "service",
     size: 101,
-    mimeType: "application/direktiv",
+    mimeType: "application/yaml",
     createdAt: "2024-02-13T09:39:42.78317Z",
     updatedAt: "2024-02-13T09:39:50.137806Z",
   },
@@ -56,26 +56,26 @@ const CreateDirectorySchema = z.object({
   name: z.string().nonempty(),
 });
 
-const CreateFileSchema = z.object({
+const CreateYamlFileSchema = z.object({
   type: z.enum(["consumer", "endpoint", "service", "workflow"]),
   name: z.string().nonempty(),
-  mimeType: z.string(),
+  mimeType: z.literal("application/yaml"),
   data: z.string(), // base64 encoded file body
 });
 
-const CreateConsumerSchema = CreateFileSchema.extend({
+const CreateConsumerSchema = CreateYamlFileSchema.extend({
   type: z.literal("consumer"),
 });
 
-const CreateEndpointSchema = CreateFileSchema.extend({
+const CreateEndpointSchema = CreateYamlFileSchema.extend({
   type: z.literal("endpoint"),
 });
 
-const CreateServiceSchema = CreateFileSchema.extend({
+const CreateServiceSchema = CreateYamlFileSchema.extend({
   type: z.literal("service"),
 });
 
-const CreateWorkflowSchema = CreateFileSchema.extend({
+const CreateWorkflowSchema = CreateYamlFileSchema.extend({
   type: z.literal("workflow"),
 });
 
