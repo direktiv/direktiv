@@ -52,6 +52,7 @@ func ParseServiceFile(data []byte) (*ServiceFile, error) {
 	return res, nil
 }
 
+// ServiceFileData extends ServiceFile with identifications and status fields.
 type ServiceFileData struct {
 	// identification fields:
 	Typ       string `json:"type"`
