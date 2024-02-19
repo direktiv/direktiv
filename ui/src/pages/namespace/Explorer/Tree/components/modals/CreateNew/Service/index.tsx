@@ -12,9 +12,10 @@ import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { addYamlFileExtension } from "../../../../utils";
 import { defaultServiceYaml } from "~/pages/namespace/Explorer/Service/ServiceEditor/utils";
+import { encode } from "js-base64";
 import { fileNameSchema } from "~/api/tree/schema/node";
 import { pages } from "~/util/router/pages";
-import { useCreateWorkflow } from "~/api/tree/mutate/createWorkflow";
+import { useCreateNode } from "~/api/filesTree/mutate/createFile";
 import { useNamespace } from "~/util/store/namespace";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -66,13 +67,13 @@ const NewService = ({
     },
   });
 
-  const { mutate: createService, isLoading } = useCreateWorkflow({
+  const { mutate: createFile, isLoading } = useCreateNode({
     onSuccess: (data) => {
       namespace &&
         navigate(
           pages.explorer.createHref({
             namespace,
-            path: data.node.path,
+            path: data.data.path,
             subpage: "service",
           })
         );
@@ -81,7 +82,15 @@ const NewService = ({
   });
 
   const onSubmit: SubmitHandler<FormInput> = ({ name, fileContent }) => {
-    createService({ path, name, fileContent });
+    createFile({
+      path,
+      file: {
+        name,
+        mimeType: "application/direktiv",
+        type: "service",
+        data: encode(fileContent),
+      },
+    });
   };
 
   // you can not submit if the form has not changed or if there are any errors and

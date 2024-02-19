@@ -12,9 +12,10 @@ import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { addYamlFileExtension } from "../../../../utils";
 import { defaultEndpointFileYaml } from "~/pages/namespace/Explorer/Endpoint/EndpointEditor/utils";
+import { encode } from "js-base64";
 import { fileNameSchema } from "~/api/tree/schema/node";
 import { pages } from "~/util/router/pages";
-import { useCreateWorkflow } from "~/api/tree/mutate/createWorkflow";
+import { useCreateNode } from "~/api/filesTree/mutate/createFile";
 import { useNamespace } from "~/util/store/namespace";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -67,13 +68,13 @@ const NewRoute = ({
     },
   });
 
-  const { mutate: createEndpoint, isLoading } = useCreateWorkflow({
+  const { mutate: createFile, isLoading } = useCreateNode({
     onSuccess: (data) => {
       namespace &&
         navigate(
           pages.explorer.createHref({
             namespace,
-            path: data.node.path,
+            path: data.data.path,
             subpage: "endpoint",
           })
         );
@@ -82,7 +83,15 @@ const NewRoute = ({
   });
 
   const onSubmit: SubmitHandler<FormInput> = ({ name, fileContent }) => {
-    createEndpoint({ path, name, fileContent });
+    createFile({
+      path,
+      file: {
+        name,
+        type: "endpoint",
+        mimeType: "application/direktiv",
+        data: encode(fileContent),
+      },
+    });
   };
 
   // you can not submit if the form has not changed or if there are any errors and
