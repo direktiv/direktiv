@@ -10,9 +10,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/refactor/reconcile"
-
 	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/reconcile"
 	dClient "github.com/docker/docker/client"
 	"go.uber.org/zap"
 	"k8s.io/client-go/kubernetes"

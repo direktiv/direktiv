@@ -3,8 +3,6 @@ package service
 import (
 	"io"
 
-	"github.com/direktiv/direktiv/pkg/refactor/reconcile"
-
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 )
 
@@ -22,6 +20,7 @@ type runtimeClient interface {
 }
 
 type status interface {
-	reconcile.Item
+	GetID() string
+	GetValueHash() string
 	GetConditions() any
 }
