@@ -48,13 +48,10 @@ export const useCreateDirectory = ({
           path,
         },
       }),
-    onSuccess(data, variables) {
+    onSuccess(data) {
       toast({
-        title: t("api.tree.mutate.createDirectory.success.title"),
-        description: t("api.tree.mutate.createDirectory.success.description", {
-          directory: variables.directory,
-          path: variables.path,
-        }),
+        title: t("api.tree.mutate.directory.create.success.title"),
+        description: t("api.tree.mutate.file.create.success.description"),
         variant: "success",
       });
       onSuccess?.(data);
@@ -62,7 +59,7 @@ export const useCreateDirectory = ({
     onError: () => {
       toast({
         title: t("api.generic.error"),
-        description: t("api.tree.mutate.createDirectory.error.description"),
+        description: t("api.tree.mutate.file.create.error.description"),
         variant: "error",
       });
     },

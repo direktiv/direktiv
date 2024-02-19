@@ -61,8 +61,8 @@ export const useCreateWorkflow = ({
       }),
     onSuccess(data, variables) {
       toast({
-        title: t("api.tree.mutate.createWorkflow.success.title"),
-        description: t("api.tree.mutate.createWorkflow.success.description", {
+        title: t("api.tree.mutate.file.create.success.title"),
+        description: t("api.tree.mutate.file.create.success.description", {
           name: variables.name,
           path: variables.path,
         }),
@@ -73,7 +73,7 @@ export const useCreateWorkflow = ({
     onError: () => {
       toast({
         title: t("api.generic.error"),
-        description: t("api.tree.mutate.createWorkflow.error.description"),
+        description: t("api.tree.mutate.file.create.error.description"),
         variant: "error",
       });
     },

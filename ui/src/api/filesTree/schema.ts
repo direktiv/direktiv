@@ -51,12 +51,41 @@ const NodeSchema = z.object({
   data: z.string().optional(), // not for directories
 });
 
-const CreateNodeSchema = z.object({
+const CreateDirectorySchema = z.object({
+  type: z.literal("directory"),
+  name: z.string().nonempty(),
+});
+
+const CreateFileSchema = z.object({
   type: z.enum(["consumer", "endpoint", "service", "workflow"]),
-  name: z.string(),
+  name: z.string().nonempty(),
   mimeType: z.string(),
   data: z.string(), // base64 encoded file body
 });
+
+const CreateConsumerSchema = CreateFileSchema.extend({
+  type: z.literal("consumer"),
+});
+
+const CreateEndpointSchema = CreateFileSchema.extend({
+  type: z.literal("endpoint"),
+});
+
+const CreateServiceSchema = CreateFileSchema.extend({
+  type: z.literal("service"),
+});
+
+const CreateWorkflowSchema = CreateFileSchema.extend({
+  type: z.literal("workflow"),
+});
+
+const CreateNodeSchema = z.discriminatedUnion("type", [
+  CreateDirectorySchema,
+  CreateConsumerSchema,
+  CreateEndpointSchema,
+  CreateServiceSchema,
+  CreateWorkflowSchema,
+]);
 
 const RenameNodeSchema = z.object({
   absolutePath: z.string(),

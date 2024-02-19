@@ -52,20 +52,20 @@ export const useDeletePath = ({
         })
       );
       toast({
-        title: t("api.tree.mutate.deleteNode.success.title", {
-          type: variables.node.type === "workflow" ? "workflow" : "directory",
-        }),
-        description: t("api.tree.mutate.deleteNode.success.description", {
+        title: t("api.tree.mutate.file.delete.success.title"),
+        description: t("api.tree.mutate.file.delete.success.description", {
           name: getFilenameFromPath(variables.node.path),
         }),
         variant: "success",
       });
       onSuccess?.();
     },
-    onError: () => {
+    onError: (_, variables) => {
       toast({
         title: t("api.generic.error"),
-        description: t("api.tree.mutate.deleteNode.error.description"),
+        description: t("api.tree.mutate.file.delete.error.description", {
+          name: getFilenameFromPath(variables.node.path),
+        }),
         variant: "error",
       });
     },

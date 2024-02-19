@@ -24,7 +24,7 @@ import { addYamlFileExtension } from "../../../../utils";
 import { encode } from "js-base64";
 import { fileNameSchema } from "~/api/tree/schema/node";
 import { pages } from "~/util/router/pages";
-import { useCreateFile } from "~/api/filesTree/mutate/createFile";
+import { useCreateNode } from "~/api/filesTree/mutate/createFile";
 import { useNamespace } from "~/util/store/namespace";
 import { useNamespaceLinting } from "~/api/namespaceLinting/query/useNamespaceLinting";
 import { useNavigate } from "react-router-dom";
@@ -90,7 +90,7 @@ const NewWorkflow = ({
     },
   });
 
-  const { mutate: createFile, isLoading } = useCreateFile({
+  const { mutate, isLoading } = useCreateNode({
     onSuccess: (data) => {
       /**
        * creating a new workflow might introduce an uninitialized secret.
@@ -110,7 +110,7 @@ const NewWorkflow = ({
   });
 
   const onSubmit: SubmitHandler<FormInput> = ({ name, fileContent }) => {
-    createFile({
+    mutate({
       path,
       file: {
         name,

@@ -59,10 +59,8 @@ export const useRenameNode = ({
       );
 
       toast({
-        title: t("api.tree.mutate.renameNode.success.title", {
-          type: variables.node.type === "workflow" ? "workflow" : "directory",
-        }),
-        description: t("api.tree.mutate.renameNode.success.description", {
+        title: t("api.tree.mutate.file.rename.success.title"),
+        description: t("api.tree.mutate.file.rename.success.description", {
           name: variables.node.name,
         }),
         variant: "success",
@@ -72,7 +70,7 @@ export const useRenameNode = ({
     onError: () => {
       toast({
         title: t("api.generic.error"),
-        description: t("api.tree.mutate.renameNode.error.description"),
+        description: t("api.tree.mutate.file.rename.error.description"),
         variant: "error",
       });
     },
