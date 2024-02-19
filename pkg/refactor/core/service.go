@@ -61,7 +61,7 @@ type ServiceFileExtra struct {
 
 	// settings fields:
 	Image   string                `json:"image"`
-	CMD     string                `json:"cmd"`
+	Cmd     string                `json:"cmd"`
 	Size    string                `json:"size"`
 	Scale   int                   `json:"scale"`
 	Envs    []EnvironmentVariable `json:"envs"`
@@ -90,7 +90,7 @@ func (c *ServiceFileExtra) GetID() string {
 // GetValueHash calculates a unique hash string based on the settings fields. This hash helps in comparing
 // different lists of objects.
 func (c *ServiceFileExtra) GetValueHash() string {
-	str := fmt.Sprintf("%s-%s-%s-%d", c.Image, c.CMD, c.Size, c.Scale)
+	str := fmt.Sprintf("%s-%s-%s-%d", c.Image, c.Cmd, c.Size, c.Scale)
 	for _, v := range c.Envs {
 		str += "-" + v.Name + "-" + v.Value
 	}

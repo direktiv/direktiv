@@ -131,8 +131,8 @@ func (c *dockerClient) createService(sv *core.ServiceFileExtra) error {
 			AutoRemove:  false,
 		},
 	}
-	if sv.CMD != "" {
-		uContainerConfig.Config.Cmd = []string{sv.CMD}
+	if sv.Cmd != "" {
+		uContainerConfig.Config.Cmd = []string{sv.Cmd}
 	}
 
 	// Create a containers.

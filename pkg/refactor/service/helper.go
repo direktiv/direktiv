@@ -41,7 +41,7 @@ func buildService(c *core.Config, sv *core.ServiceFileExtra, registrySecrets []c
 	nonRoot := false
 
 	initContainers := []corev1.Container{}
-	if sv.CMD == direktivCmdExecValue {
+	if sv.Cmd == direktivCmdExecValue {
 		initContainers = append(initContainers, corev1.Container{
 			Name:  "init",
 			Image: c.KnativeSidecar,
@@ -146,7 +146,7 @@ func buildVolumes(c *core.Config, sv *core.ServiceFileExtra) []corev1.Volume {
 	}
 
 	// add extra folder if bin required
-	if sv.CMD == direktivCmdExecValue {
+	if sv.Cmd == direktivCmdExecValue {
 		volumes = append(volumes, corev1.Volume{
 			Name: "bindir",
 			VolumeSource: corev1.VolumeSource{
@@ -191,15 +191,15 @@ func buildContainers(c *core.Config, sv *core.ServiceFileExtra) ([]corev1.Contai
 	}
 
 	// add volume for binary or add command
-	if sv.CMD == direktivCmdExecValue {
+	if sv.Cmd == direktivCmdExecValue {
 		uc.VolumeMounts = append(uc.VolumeMounts, corev1.VolumeMount{
 			Name:      "bindir",
 			MountPath: "/usr/share/direktiv/",
 		})
 	}
 
-	if len(sv.CMD) > 0 {
-		args, err := shellwords.Parse(sv.CMD)
+	if len(sv.Cmd) > 0 {
+		args, err := shellwords.Parse(sv.Cmd)
 		if err != nil {
 			return []corev1.Container{}, err
 		}
