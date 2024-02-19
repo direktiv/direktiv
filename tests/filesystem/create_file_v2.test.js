@@ -20,7 +20,7 @@ describe('Test filesystem tree read operations', () => {
 		const res = await request(config.getDirektivHost())
 			.get(`/api/v2/namespaces/${ namespace }/files-tree`)
 		expect(res.statusCode).toEqual(200)
-		expect(res.body).toMatchObject({
+		expect(res.body).toEqual({
 			data: {
 				path: '/',
 				type: 'directory',
@@ -56,7 +56,7 @@ describe('Test filesystem tree read operations', () => {
 		const res = await request(config.getDirektivHost())
 			.get(`/api/v2/namespaces/${ namespace }/files-tree/dir1`)
 		expect(res.statusCode).toEqual(200)
-		expect(res.body).toMatchObject({
+		expect(res.body).toEqual({
 			data: {
 				path: '/dir1',
 				type: 'directory',
@@ -66,6 +66,7 @@ describe('Test filesystem tree read operations', () => {
 					{
 						path: '/dir1/foo1',
 						type: 'workflow',
+						mimeType: "text/plain",
 						createdAt: expect.stringMatching(regex.timestampRegex),
 						updatedAt: expect.stringMatching(regex.timestampRegex),
 						size: 134,
