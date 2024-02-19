@@ -55,17 +55,18 @@ func ParseServiceFile(data []byte) (*ServiceFile, error) {
 // ServiceFileData extends ServiceFile with identifications and status fields.
 type ServiceFileData struct {
 	// identification fields:
+	ID        string `json:"id"`
 	Typ       string `json:"type"`
 	Namespace string `json:"namespace"`
 	FilePath  string `json:"filePath"`
 	Name      string `json:"name"`
 
+	// data fields:
 	ServiceFile
 
-	Error *string `json:"error"`
-
-	ID         string `json:"id"`
-	Conditions any    `json:"conditions"`
+	// status fields:
+	Error      *string `json:"error"`
+	Conditions any     `json:"conditions"`
 }
 
 // GetID calculates a unique id string based on identification fields. This id helps in comparison different
