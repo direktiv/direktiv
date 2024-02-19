@@ -15,7 +15,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
-	"github.com/direktiv/direktiv/pkg/refactor/spec"
 	"github.com/go-git/go-git/v5/plumbing/format/gitignore"
 )
 
@@ -290,7 +289,7 @@ func (p *Parser) scanAndPruneDirektivResourceFile(path string) error {
 		if err != nil {
 			return err
 		}
-	case *spec.ServiceFile:
+	case *core.ServiceFile:
 		err = p.handleService(path, data)
 		if err != nil {
 			return err
