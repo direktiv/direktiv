@@ -1,10 +1,8 @@
 package service
 
 import (
-	"crypto/rand"
 	"fmt"
 	"io"
-	"math/big"
 	"slices"
 	"sort"
 	"sync"
@@ -157,14 +155,6 @@ func (m *manager) runCycle() []error {
 	return errs
 }
 
-func jitter(base time.Duration) time.Duration {
-	// add maximum jitter of +/-20%
-	x, _ := rand.Int(rand.Reader, big.NewInt(40))
-	percentage := x.Int64() - 20
-
-	return time.Duration(int64(base) * percentage / 100)
-}
-
 func (m *manager) Start(done <-chan struct{}, wg *sync.WaitGroup) {
 	cycleTime := m.cfg.GetFunctionsReconcileInterval()
 
@@ -182,7 +172,8 @@ func (m *manager) Start(done <-chan struct{}, wg *sync.WaitGroup) {
 			for _, err := range errs {
 				m.logger.Errorw("run cycle", "error", err)
 			}
-			time.Sleep(cycleTime + jitter(cycleTime))
+
+			time.Sleep(cycleTime)
 		}
 
 		wg.Done()
