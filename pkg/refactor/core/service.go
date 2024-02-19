@@ -31,12 +31,12 @@ type ServicePatch struct {
 
 type ServiceFile struct {
 	DirektivAPI string                `yaml:"direktiv_api"`
-	Image       string                `json:"image"   yaml:"image"`
-	Cmd         string                `json:"cmd"     yaml:"cmd"`
-	Size        string                `json:"size"    yaml:"size"`
-	Scale       int                   `json:"scale"   yaml:"scale"`
-	Envs        []EnvironmentVariable `json:"envs"    yaml:"envs"`
-	Patches     []ServicePatch        `json:"patches" yaml:"patches"`
+	Image       string                `json:"image"        yaml:"image"`
+	Cmd         string                `json:"cmd"          yaml:"cmd"`
+	Size        string                `json:"size"         yaml:"size"`
+	Scale       int                   `json:"scale"        yaml:"scale"`
+	Envs        []EnvironmentVariable `json:"envs"         yaml:"envs"`
+	Patches     []ServicePatch        `json:"patches"      yaml:"patches"`
 }
 
 func ParseServiceFile(data []byte) (*ServiceFile, error) {
