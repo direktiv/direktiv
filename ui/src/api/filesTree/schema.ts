@@ -56,7 +56,7 @@ const FileSchema = z.object({
   size: z.number().optional(), // not for directories
   mimeType: z.string().optional(), // not for directories
   data: z.string().optional(), // not for directories
-  children: z.array(BaseFileSchema).optional(), // only for directories
+  children: z.array(BaseFileSchema).nullable(), // only for directories
 });
 
 const CreateDirectorySchema = z.object({
