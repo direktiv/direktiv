@@ -1,6 +1,6 @@
-package service
+package reconcile
 
-// Item interface helps Run logic to identify objects and differences in lists.
+// Item interface helps reconcile logic to identify objects and differences in lists.
 type Item interface {
 	GetID() string
 	GetValueHash() string
