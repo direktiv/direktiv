@@ -88,7 +88,7 @@ async function itShouldCreateDirV2 (it, expect, ns, path, name) {
 		if (path === '/')
 			path = ''
 
-		expect(res.body.data).toMatchObject({
+		expect(res.body.data).toEqual({
 			path: `${ path }/${ name }`,
 			type: 'directory',
 			createdAt: expect.stringMatching(regex.timestampRegex),
