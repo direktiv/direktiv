@@ -18,6 +18,7 @@ import {
   ServiceFormSchema,
   ServiceFormSchemaType,
   scaleOptions,
+  sizeOptions,
 } from "../schema";
 
 import { EnvsArrayForm } from "./EnvsArrayForm";
@@ -93,7 +94,9 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
-                  <SelectLabel>Size</SelectLabel>
+                  <SelectLabel>
+                    {t("pages.explorer.service.editor.form.scale.label")}
+                  </SelectLabel>
                   {scaleOptions.map((value, index) => (
                     <SelectItem key={index} value={value}>
                       {value}
@@ -121,10 +124,14 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
-                  <SelectLabel>Size</SelectLabel>
-                  <SelectItem value="small">small</SelectItem>
-                  <SelectItem value="medium">medium</SelectItem>
-                  <SelectItem value="large">large</SelectItem>
+                  <SelectLabel>
+                    {t("pages.explorer.service.editor.form.size.label")}
+                  </SelectLabel>
+                  {sizeOptions.map((value, index) => (
+                    <SelectItem key={index} value={value}>
+                      {value}
+                    </SelectItem>
+                  ))}
                 </SelectGroup>
               </SelectContent>
             </Select>
