@@ -53,7 +53,7 @@ const Header = ({ serviceId }: { serviceId: string }) => {
                 className="bg-gray-1 p-1 text-sm text-gray-10 dark:bg-gray-dark-1 dark:text-gray-dark-10"
                 align="start"
               >
-                Set scale / Current scale
+                {t("pages.services.list.tableHeader.tooltip")}
               </PopoverContent>
             </Popover>
           </div>

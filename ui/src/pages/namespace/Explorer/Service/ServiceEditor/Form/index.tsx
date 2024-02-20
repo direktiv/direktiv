@@ -5,6 +5,7 @@ import {
   useForm,
   useWatch,
 } from "react-hook-form";
+import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 import {
   Select,
   SelectContent,
@@ -23,6 +24,7 @@ import {
 import { EnvsArrayForm } from "./EnvsArrayForm";
 import { FC } from "react";
 import { Fieldset } from "~/components/Form/Fieldset";
+import { HelpCircle } from "lucide-react";
 import Input from "~/design/Input";
 import { PatchesForm } from "./Patches";
 import { useTranslation } from "react-i18next";
@@ -73,11 +75,23 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
         </Fieldset>
 
         <div className="grid grid-cols-2 gap-4">
-          <Fieldset
-            label={t("pages.explorer.service.editor.form.scale.label")}
-            htmlFor="scale"
-            className="grow"
-          >
+          <fieldset className="mb-2 flex grow flex-col gap-2">
+            <div className="inline-flex items-center">
+              <label className="text-sm" htmlFor="scale">
+                {t("pages.explorer.service.editor.form.scale.label")}
+              </label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <HelpCircle className="ml-1 h-4 w-4" />
+                </PopoverTrigger>
+                <PopoverContent
+                  className="bg-gray-1 p-1 text-sm dark:bg-gray-dark-1 "
+                  align="start"
+                >
+                  {t("pages.explorer.service.editor.form.scale.tooltip")}
+                </PopoverContent>
+              </Popover>
+            </div>
             <Select
               value={formControls.getValues("scale")?.toString()}
               onValueChange={(value) =>
@@ -102,7 +116,7 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
                 </SelectGroup>
               </SelectContent>
             </Select>
-          </Fieldset>
+          </fieldset>
           <Fieldset
             label={t("pages.explorer.service.editor.form.size.label")}
             htmlFor="size"
