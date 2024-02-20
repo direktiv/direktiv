@@ -45,5 +45,4 @@ func TestExecuteHeaderManipulationPlugin(t *testing.T) {
 	assert.Empty(t, r.Header.Get("header2"))
 	assert.Equal(t, "value3", r.Header.Get("Header3"))
 	assert.Equal(t, "newvalue", r.Header.Get("header1"))
-
 }

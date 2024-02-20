@@ -7,10 +7,8 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/middlewares"
-	"github.com/direktiv/direktiv/pkg/version"
 	"github.com/gorilla/mux"
 	"go.uber.org/zap"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 var logger *zap.SugaredLogger
@@ -53,16 +51,6 @@ func NewServer(l *zap.SugaredLogger, config *core.Config) (*Server, error) {
 		},
 	}
 
-	// swagger:operation GET /api/version Other version
-	// ---
-	// description: |
-	//   Returns version information for servers in the cluster.
-	// summary: Returns version information for servers in the cluster.
-	// responses:
-	//   '200':
-	//     "description": "version query was successful"
-	r.HandleFunc("/version", s.version).Name(RN_Version).Methods(http.MethodGet)
-
 	// cast to gorilla mux type
 	var gorillaMiddlewares []mux.MiddlewareFunc
 	for i := range middlewares.GetMiddlewares() {
@@ -85,20 +73,6 @@ func NewServer(l *zap.SugaredLogger, config *core.Config) (*Server, error) {
 	s.prepareHelperRoutes()
 
 	return s, nil
-}
-
-func (s *Server) version(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	m := make(map[string]string)
-	m["api"] = version.Version
-
-	flowResp, _ := s.flowHandler.client.Build(ctx, &emptypb.Empty{})
-	if flowResp != nil {
-		m["flow"] = flowResp.GetBuild()
-	}
-
-	respondJSON(w, m, nil)
 }
 
 // Start starts API server.

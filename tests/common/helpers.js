@@ -1,4 +1,4 @@
-import request from 'supertest'
+import request from "./request"
 
 import config from './config'
 import common from './index'
@@ -54,7 +54,7 @@ async function itShouldCreateFile (it, expect, ns, path, data) {
 async function itShouldCreateFileV2 (it, expect, ns, path, name, type, mimeType, data) {
 	it(`should create a new file ${ path }`, async () => {
 		const res = await request(common.config.getDirektivHost())
-			.post(`/api/v2/namespaces/${ ns }/files-tree${ path }`)
+			.post(`/api/v2/namespaces/${ ns }/files${ path }`)
 			.set('Content-Type', 'application/json')
 			.send({
 				name,
@@ -66,9 +66,12 @@ async function itShouldCreateFileV2 (it, expect, ns, path, name, type, mimeType,
 		if (path === '/')
 			path = ''
 
-		expect(res.body.data).toMatchObject({
+		expect(res.body.data).toEqual({
 			path: `${ path }/${ name }`,
 			type,
+			data,
+			mimeType,
+			size: Buffer.from(data, 'base64').length,
 			createdAt: expect.stringMatching(regex.timestampRegex),
 			updatedAt: expect.stringMatching(regex.timestampRegex),
 		})
@@ -78,7 +81,7 @@ async function itShouldCreateFileV2 (it, expect, ns, path, name, type, mimeType,
 async function itShouldCreateDirV2 (it, expect, ns, path, name) {
 	it(`should create a new dir ${ path }`, async () => {
 		const res = await request(common.config.getDirektivHost())
-			.post(`/api/v2/namespaces/${ ns }/files-tree${ path }`)
+			.post(`/api/v2/namespaces/${ ns }/files${ path }`)
 			.set('Content-Type', 'application/json')
 			.send({
 				name,
@@ -88,7 +91,7 @@ async function itShouldCreateDirV2 (it, expect, ns, path, name) {
 		if (path === '/')
 			path = ''
 
-		expect(res.body.data).toMatchObject({
+		expect(res.body.data).toEqual({
 			path: `${ path }/${ name }`,
 			type: 'directory',
 			createdAt: expect.stringMatching(regex.timestampRegex),
@@ -100,14 +103,15 @@ async function itShouldCreateDirV2 (it, expect, ns, path, name) {
 async function itShouldUpdatePathV2 (it, expect, ns, path, newPath) {
 	it(`should update file path ${ path } to ${ newPath }`, async () => {
 		const res = await request(common.config.getDirektivHost())
-			.patch(`/api/v2/namespaces/${ ns }/files-tree${ path }`)
+			.patch(`/api/v2/namespaces/${ ns }/files${ path }`)
 			.set('Content-Type', 'application/json')
 			.send({
-				absolutePath: newPath,
+				path: newPath,
 			})
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.data).toMatchObject({
 			path: newPath,
+			type:expect.stringMatching("directory|file|workflow|service|endpoint|consumer"),
 			createdAt: expect.stringMatching(regex.timestampRegex),
 			updatedAt: expect.stringMatching(regex.timestampRegex),
 		})
@@ -117,7 +121,7 @@ async function itShouldUpdatePathV2 (it, expect, ns, path, newPath) {
 async function itShouldUpdateFileV2 (it, expect, ns, path, newPatch) {
 	it(`should update file path ${ path }`, async () => {
 		const res = await request(common.config.getDirektivHost())
-			.patch(`/api/v2/namespaces/${ ns }/files-tree${ path }`)
+			.patch(`/api/v2/namespaces/${ ns }/files${ path }`)
 			.set('Content-Type', 'application/json')
 			.send(newPatch)
 		expect(res.statusCode).toEqual(200)
@@ -126,8 +130,8 @@ async function itShouldUpdateFileV2 (it, expect, ns, path, newPatch) {
 			createdAt: expect.stringMatching(regex.timestampRegex),
 			updatedAt: expect.stringMatching(regex.timestampRegex),
 		}
-		if (newPatch.absolutePath !== undefined)
-			want.path = newPatch.absolutePath
+		if (newPatch.path !== undefined)
+			want.path = newPatch.path
 
 		if (newPatch.data !== undefined)
 			want.data = newPatch.data
@@ -140,7 +144,7 @@ async function itShouldUpdateFileV2 (it, expect, ns, path, newPatch) {
 async function itShouldCheckPathExistsV2 (it, expect, ns, path, assertExits) {
 	it(`should check if path(${ path }) exists(${ assertExits })`, async () => {
 		const res = await request(common.config.getDirektivHost())
-			.get(`/api/v2/namespaces/${ ns }/files-tree${ path }`)
+			.get(`/api/v2/namespaces/${ ns }/files${ path }`)
 
 		if (assertExits)
 			expect(res.statusCode).toEqual(200)

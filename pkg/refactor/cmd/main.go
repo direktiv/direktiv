@@ -16,12 +16,12 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/api"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway"
 	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"github.com/direktiv/direktiv/pkg/refactor/registry"
 	"github.com/direktiv/direktiv/pkg/refactor/service"
-	"github.com/direktiv/direktiv/pkg/refactor/spec"
 	"github.com/direktiv/direktiv/pkg/util"
 	"go.uber.org/zap"
 )
@@ -182,7 +182,7 @@ func renderServiceManager(db *database.DB, serviceManager core.ServiceManager, l
 		return
 	}
 
-	funConfigList := []*core.ServiceConfig{}
+	funConfigList := []*core.ServiceFileData{}
 
 	for _, ns := range nsList {
 		logger = logger.With("ns", ns.Name)
@@ -194,24 +194,19 @@ func renderServiceManager(db *database.DB, serviceManager core.ServiceManager, l
 		}
 		for _, file := range files {
 			if file.Typ == filestore.FileTypeService {
-				serviceDef, err := spec.ParseServiceFile(file.Data)
+				serviceDef, err := core.ParseServiceFile(file.Data)
 				if err != nil {
 					logger.Error("parse service file", "error", err)
 
 					continue
 				}
 
-				funConfigList = append(funConfigList, &core.ServiceConfig{
-					Typ:       core.ServiceTypeNamespace,
-					Name:      "",
-					Namespace: ns.Name,
-					FilePath:  file.Path,
-					Image:     serviceDef.Image,
-					CMD:       serviceDef.Cmd,
-					Size:      serviceDef.Size,
-					Scale:     serviceDef.Scale,
-					Envs:      serviceDef.Envs,
-					Patches:   serviceDef.Patches,
+				funConfigList = append(funConfigList, &core.ServiceFileData{
+					Typ:         core.ServiceTypeNamespace,
+					Name:        "",
+					Namespace:   ns.Name,
+					FilePath:    file.Path,
+					ServiceFile: *serviceDef,
 				})
 			} else if file.Typ == filestore.FileTypeWorkflow {
 				sub, err := getWorkflowFunctionDefinitionsFromWorkflow(ns, file)
@@ -228,7 +223,7 @@ func renderServiceManager(db *database.DB, serviceManager core.ServiceManager, l
 	serviceManager.SetServices(funConfigList)
 }
 
-func getWorkflowFunctionDefinitionsFromWorkflow(ns *core.Namespace, f *filestore.File) ([]*core.ServiceConfig, error) {
+func getWorkflowFunctionDefinitionsFromWorkflow(ns *datastore.Namespace, f *filestore.File) ([]*core.ServiceFileData, error) {
 	var wf model.Workflow
 
 	err := wf.Load(f.Data)
@@ -236,7 +231,7 @@ func getWorkflowFunctionDefinitionsFromWorkflow(ns *core.Namespace, f *filestore
 		return nil, err
 	}
 
-	list := make([]*core.ServiceConfig, 0)
+	list := make([]*core.ServiceFileData, 0)
 
 	for _, fn := range wf.Functions {
 		if fn.GetType() != model.ReusableContainerFunctionType {
@@ -249,16 +244,19 @@ func getWorkflowFunctionDefinitionsFromWorkflow(ns *core.Namespace, f *filestore
 			return nil, errors.New("parse workflow def cast incorrectly")
 		}
 
-		list = append(list, &core.ServiceConfig{
+		list = append(list, &core.ServiceFileData{
 			Typ:       core.ServiceTypeWorkflow,
 			Name:      serviceDef.ID,
 			Namespace: ns.Name,
 			FilePath:  f.Path,
-			Image:     serviceDef.Image,
-			CMD:       serviceDef.Cmd,
-			Size:      serviceDef.Size.String(),
-			Envs:      serviceDef.Envs,
-			Patches:   serviceDef.Patches,
+
+			ServiceFile: core.ServiceFile{
+				Image:   serviceDef.Image,
+				Cmd:     serviceDef.Cmd,
+				Size:    serviceDef.Size.String(),
+				Envs:    serviceDef.Envs,
+				Patches: serviceDef.Patches,
+			},
 		})
 	}
 

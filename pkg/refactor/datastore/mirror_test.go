@@ -4,9 +4,10 @@ import (
 	"context"
 	"testing"
 
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
+
 	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore/datastoresql"
-	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	"github.com/google/uuid"
 )
 
@@ -17,7 +18,7 @@ func Test_sqlMirrorStore_Process_SetAndGet(t *testing.T) {
 	}
 	ds := datastoresql.NewSQLStore(db, "some_secret_key_")
 
-	newProcess := &mirror.Process{
+	newProcess := &datastore.MirrorProcess{
 		ID:        uuid.New(),
 		Namespace: uuid.New().String(),
 		Status:    "new",
@@ -61,7 +62,7 @@ func Test_sqlMirrorStore_Process_SetAndGet(t *testing.T) {
 		t.Errorf("unexpected GetProcess().Status, want: %v, got %v", newProcess.Status, process.Status)
 	}
 
-	secondProcess := &mirror.Process{
+	secondProcess := &datastore.MirrorProcess{
 		ID:        uuid.New(),
 		Namespace: newProcess.Namespace,
 		Status:    "new",
@@ -98,7 +99,7 @@ func Test_sqlMirrorStore_Config_SetAndGet(t *testing.T) {
 
 	// test create.
 
-	newConfig := &mirror.Config{
+	newConfig := &datastore.MirrorConfig{
 		Namespace: uuid.New().String(),
 		URL:       "some_url",
 	}
@@ -112,7 +113,7 @@ func Test_sqlMirrorStore_Config_SetAndGet(t *testing.T) {
 	if newConfig.URL != config.URL {
 		t.Errorf("unexpected CreateConfig().Status, want: %v, got %v", newConfig.URL, config.URL)
 	}
-	secondConfig := &mirror.Config{
+	secondConfig := &datastore.MirrorConfig{
 		Namespace: uuid.New().String(),
 		URL:       "some_url",
 	}

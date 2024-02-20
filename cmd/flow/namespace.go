@@ -128,25 +128,3 @@ var deleteNamespaceCmd = &cobra.Command{
 		print(resp)
 	},
 }
-
-var renameNamespaceCmd = &cobra.Command{
-	Use:  "rename-namespace OLDNAME NEWNAME",
-	Args: cobra.ExactArgs(2),
-	Run: func(cmd *cobra.Command, args []string) {
-		c, closer, err := client()
-		if err != nil {
-			exit(err)
-		}
-		defer closer.Close()
-
-		resp, err := c.RenameNamespace(ctx, &grpc.RenameNamespaceRequest{
-			Old: args[0],
-			New: args[1],
-		})
-		if err != nil {
-			exit(err)
-		}
-
-		print(resp)
-	},
-}

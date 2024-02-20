@@ -18,8 +18,6 @@ import "pkg/flow/grpc/cloudevent.proto";
 import "pkg/flow/grpc/util.proto";
 import "pkg/flow/grpc/eventing.proto";
 
-import "pkg/flow/grpc/build.proto";
-
 import "pkg/flow/grpc/mirror.proto";
 
 service Flow {
@@ -29,7 +27,6 @@ service Flow {
 	rpc NamespacesStream (NamespacesRequest) returns (stream NamespacesResponse) {}
 	rpc CreateNamespace (CreateNamespaceRequest) returns (CreateNamespaceResponse) {}
 	rpc DeleteNamespace (DeleteNamespaceRequest) returns (google.protobuf.Empty) {}
-	rpc RenameNamespace (RenameNamespaceRequest) returns (RenameNamespaceResponse) {}
 
 	// logs.
 	rpc ServerLogs (ServerLogsRequest) returns (ServerLogsResponse) {}
@@ -123,10 +120,6 @@ service Flow {
 
 	//
 	rpc ResolveNamespaceUID (ResolveNamespaceUIDRequest) returns (NamespaceResponse) {}
-	rpc ResolveWorkflowUID (ResolveWorkflowUIDRequest) returns (WorkflowResponse) {}
-	rpc SetNamespaceConfig (SetNamespaceConfigRequest) returns (SetNamespaceConfigResponse) {}
-	rpc GetNamespaceConfig (GetNamespaceConfigRequest) returns (GetNamespaceConfigResponse) {}
-	rpc Build(google.protobuf.Empty) returns (BuildResponse) {}
 
 	// mirrors.
 	rpc CreateNamespaceMirror (CreateNamespaceMirrorRequest) returns (CreateNamespaceResponse) {}

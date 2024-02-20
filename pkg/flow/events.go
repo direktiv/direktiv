@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"log/slog"
 	"strings"
-	"sync"
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -18,7 +17,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/model"
-	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	pkgevents "github.com/direktiv/direktiv/pkg/refactor/events"
 	"github.com/google/uuid"
 	"github.com/jinzhu/copier"
@@ -26,12 +25,6 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
-)
-
-const (
-	eventTypeString   = "type"
-	filterPrefix      = "filter-"
-	sendEventFunction = "sendEvent"
 )
 
 func init() {
@@ -55,41 +48,6 @@ func initEvents(srv *server, appendStagingEvent func(ctx context.Context, events
 func (events *events) Close() error {
 	return nil
 }
-
-func (events *events) sendEvent(data []byte) {
-	n := strings.SplitN(string(data), "/", 2)
-
-	if len(n) != 2 {
-		events.sugar.Errorf("namespace and id must be set for delayed events")
-		return
-	}
-
-	id, err := uuid.Parse(n[1])
-	if err != nil {
-		events.sugar.Errorf("namespace id invalid")
-		return
-	}
-
-	ctx := context.Background()
-
-	var ns *core.Namespace
-	err = events.runSqlTx(ctx, func(tx *sqlTx) error {
-		ns, err = tx.DataStore().Namespaces().GetByID(ctx, id) // TODO: Alexander, I haven't updated this but I think it's no longer in use. Is that accurate?
-		return err
-	})
-	if err != nil {
-		events.sugar.Error(err)
-		return
-	}
-
-	err = events.flushEvent(ctx, n[0], ns, true)
-	if err != nil {
-		events.sugar.Errorf("can not flush delayed event: %v", err)
-		return
-	}
-}
-
-var syncMtx sync.Mutex
 
 func (events *events) syncEventDelays() {
 	// syncMtx.Lock()
@@ -241,7 +199,7 @@ func (flow *flow) EventListeners(ctx context.Context, req *grpc.EventListenersRe
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	var resListeners []*pkgevents.EventListener
-	var ns *core.Namespace
+	var ns *database.Namespace
 	var err error
 
 	totalListeners := 0
@@ -280,7 +238,7 @@ func (flow *flow) EventListenersStream(req *grpc.EventListenersRequest, srv grpc
 	phash := ""
 	nhash := ""
 
-	var ns *core.Namespace
+	var ns *database.Namespace
 	var err error
 	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
@@ -377,7 +335,7 @@ func (flow *flow) BroadcastCloudevent(ctx context.Context, in *grpc.BroadcastClo
 		return nil, status.Errorf(codes.InvalidArgument, "invalid cloudevent: %v", err)
 	}
 
-	var ns *core.Namespace
+	var ns *database.Namespace
 	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, namespace)
 		endValidation()
@@ -410,7 +368,7 @@ func (flow *flow) HistoricalEvent(ctx context.Context, in *grpc.HistoricalEventR
 	}
 
 	var cevent *pkgevents.Event
-	var ns *core.Namespace
+	var ns *datastore.Namespace
 	var err error
 	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, in.GetNamespace())
@@ -470,7 +428,7 @@ func (flow *flow) EventHistory(ctx context.Context, req *grpc.EventHistoryReques
 	count := 0
 	var res []*pkgevents.Event
 	var err error
-	var ns *core.Namespace
+	var ns *database.Namespace
 	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
 		if err != nil {
@@ -535,7 +493,7 @@ func (flow *flow) EventHistoryStream(req *grpc.EventHistoryRequest, srv grpc.Flo
 	nhash := ""
 
 	var err error
-	var ns *core.Namespace
+	var ns *database.Namespace
 	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
 		return err
@@ -627,7 +585,7 @@ func (flow *flow) ReplayEvent(ctx context.Context, req *grpc.ReplayEventRequest)
 
 	var cevent *pkgevents.Event
 	var err error
-	var ns *core.Namespace
+	var ns *database.Namespace
 	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
 		if err != nil {
