@@ -123,7 +123,7 @@ test("Consumer list will update the consumers when refetch button is clicked", a
     urlParams: {
       baseUrl: process.env.VITE_DEV_API_DOMAIN,
       namespace,
-      name: "redis-service.yaml",
+      name: "consumer.yaml",
     },
     headers,
   });
@@ -160,10 +160,12 @@ test("Consumer list will update the consumers when refetch button is clicked", a
     urlParams: {
       baseUrl: process.env.VITE_DEV_API_DOMAIN,
       namespace,
-      path: "redis-service.yaml",
+      path: "/consumer.yaml",
     },
     headers,
   });
+
+  await page.waitForTimeout(500);
 
   await page.getByLabel("Refetch consumers").click();
 
