@@ -1,10 +1,8 @@
-import Broadcasts from "./Broadcasts";
 import DeleteNamespace from "./DeleteNamespace";
 import { FC } from "react";
 import RegistriesList from "./Registries";
 import SecretsList from "./Secrets";
 import VariablesList from "./Variables";
-import { useBroadcasts } from "~/api/broadcasts/query/useBroadcasts";
 import { useRegistries } from "~/api/registries/query/get";
 import { useSecrets } from "~/api/secrets/query/get";
 import { useVars } from "~/api/variables/query/useVariables";
@@ -15,16 +13,10 @@ import { useVars } from "~/api/variables/query/useVariables";
 // all components are rendered at the same time and data comes in at different
 // times.
 const usePrefetchData = () => {
-  const { isFetched: isFetchedBroadcasts } = useBroadcasts();
   const { isFetched: isFetchedSecrets } = useSecrets();
   const { isFetched: isFetchedRegistries } = useRegistries();
   const { isFetched: isFetchedVars } = useVars();
-  return (
-    isFetchedBroadcasts &&
-    isFetchedSecrets &&
-    isFetchedRegistries &&
-    isFetchedVars
-  );
+  return isFetchedSecrets && isFetchedRegistries && isFetchedVars;
 };
 
 const SettingsPage: FC = () => {
@@ -46,10 +38,6 @@ const SettingsPage: FC = () => {
 
       <section data-testid="variables-section">
         <VariablesList />
-      </section>
-
-      <section data-testid="broadcasts-section">
-        <Broadcasts />
       </section>
 
       <section data-testid="namespace-section">
