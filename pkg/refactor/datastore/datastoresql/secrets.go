@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/util"
 	"gorm.io/gorm"
 )
@@ -15,7 +15,7 @@ type sqlSecretsStore struct {
 	secretKey string
 }
 
-func (s sqlSecretsStore) Update(ctx context.Context, secret *core.Secret) error {
+func (s sqlSecretsStore) Update(ctx context.Context, secret *datastore.Secret) error {
 	if secret.Data != nil {
 		var err error
 		secret.Data, err = util.EncryptData([]byte(s.secretKey), secret.Data)
@@ -41,6 +41,10 @@ func (s sqlSecretsStore) Delete(ctx context.Context, namespace string, name stri
 	if res.Error != nil {
 		return res.Error
 	}
+	// TODO: check if other delete queries check for row count == 0 and return not found error.
+	if res.RowsAffected == 0 {
+		return datastore.ErrNotFound
+	}
 	if res.RowsAffected != 1 {
 		return fmt.Errorf("unexpected gorm delete count, got: %d, want: %d", res.RowsAffected, 1)
 	}
@@ -48,14 +52,14 @@ func (s sqlSecretsStore) Delete(ctx context.Context, namespace string, name stri
 	return nil
 }
 
-func (s sqlSecretsStore) Get(ctx context.Context, namespace string, name string) (*core.Secret, error) {
-	secret := &core.Secret{}
+func (s sqlSecretsStore) Get(ctx context.Context, namespace string, name string) (*datastore.Secret, error) {
+	secret := &datastore.Secret{}
 	res := s.db.WithContext(ctx).Raw(`
 			SELECT * FROM secrets WHERE namespace=? AND name=?`,
 		namespace, name).
 		First(secret)
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
-		return nil, core.ErrSecretNotFound
+		return nil, datastore.ErrNotFound
 	}
 	if res.Error != nil {
 		return nil, res.Error
@@ -71,11 +75,11 @@ func (s sqlSecretsStore) Get(ctx context.Context, namespace string, name string)
 	return secret, nil
 }
 
-func (s sqlSecretsStore) Set(ctx context.Context, secret *core.Secret) error {
+func (s sqlSecretsStore) Set(ctx context.Context, secret *datastore.Secret) error {
 	var res *gorm.DB
 	x, err := s.Get(ctx, secret.Namespace, secret.Name)
 	//nolint:nestif
-	if errors.Is(err, core.ErrSecretNotFound) {
+	if errors.Is(err, datastore.ErrNotFound) {
 		if secret.Data == nil {
 			res = s.db.WithContext(ctx).Exec(`
 				INSERT INTO secrets(namespace, name) VALUES(?, ?)
@@ -116,8 +120,8 @@ func (s sqlSecretsStore) Set(ctx context.Context, secret *core.Secret) error {
 	return nil
 }
 
-func (s sqlSecretsStore) GetAll(ctx context.Context, namespace string) ([]*core.Secret, error) {
-	var secrets []*core.Secret
+func (s sqlSecretsStore) GetAll(ctx context.Context, namespace string) ([]*datastore.Secret, error) {
+	var secrets []*datastore.Secret
 
 	res := s.db.WithContext(ctx).Raw(`
 							SELECT * FROM secrets WHERE namespace=?`,
@@ -139,4 +143,4 @@ func (s sqlSecretsStore) GetAll(ctx context.Context, namespace string) ([]*core.
 	return secrets, nil
 }
 
-var _ core.SecretsStore = &sqlSecretsStore{}
+var _ datastore.SecretsStore = &sqlSecretsStore{}

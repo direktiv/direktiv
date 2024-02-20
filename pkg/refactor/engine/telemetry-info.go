@@ -40,7 +40,6 @@ func (info *InstanceTelemetryInfo) MarshalJSON() ([]byte, error) {
 	})
 }
 
-//nolint:musttag
 type instanceTelemetryInfoV1 struct {
 	Version  string `json:"version"`
 	TraceID  string `json:"trace_id"`

@@ -6,9 +6,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
-	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 	pubsub2 "github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -35,71 +33,6 @@ func (flow *flow) ResolveNamespaceUID(ctx context.Context, req *grpc.ResolveName
 
 	var resp grpc.NamespaceResponse
 	resp.Namespace = bytedata.ConvertNamespaceToGrpc(ns)
-
-	return &resp, nil
-}
-
-func (flow *flow) SetNamespaceConfig(ctx context.Context, req *grpc.SetNamespaceConfigRequest) (*grpc.SetNamespaceConfigResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
-
-	tx, err := flow.beginSqlTx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer tx.Rollback()
-
-	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetName())
-	if err != nil {
-		return nil, err
-	}
-
-	patchCfg, err := loadNSConfig([]byte(req.Config))
-	if err != nil {
-		return nil, err
-	}
-
-	var newCfgData string
-
-	data, err := patchCfg.mergeIntoNamespaceConfig([]byte(ns.Config))
-	if err != nil {
-		return nil, err
-	}
-	newCfgData = string(data)
-
-	ns.Config = newCfgData
-	ns, err = tx.DataStore().Namespaces().Update(ctx, ns)
-	if err != nil {
-		return nil, err
-	}
-
-	if err = tx.Commit(ctx); err != nil {
-		return nil, err
-	}
-
-	var resp grpc.SetNamespaceConfigResponse
-	resp.Config = newCfgData
-	resp.Name = ns.Name
-
-	return &resp, nil
-}
-
-func (flow *flow) GetNamespaceConfig(ctx context.Context, req *grpc.GetNamespaceConfigRequest) (*grpc.GetNamespaceConfigResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
-
-	tx, err := flow.beginSqlTx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer tx.Rollback()
-
-	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetName())
-	if err != nil {
-		return nil, err
-	}
-
-	var resp grpc.GetNamespaceConfigResponse
-	resp.Config = ns.Config
-	resp.Name = ns.Name
 
 	return &resp, nil
 }
@@ -182,9 +115,8 @@ func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespace
 	}
 	defer tx.Rollback()
 
-	ns, err := tx.DataStore().Namespaces().Create(ctx, &core.Namespace{
-		Name:   req.GetName(),
-		Config: core.DefaultNamespaceConfig,
+	ns, err := tx.DataStore().Namespaces().Create(ctx, &database.Namespace{
+		Name: req.GetName(),
 	})
 	if err != nil {
 		flow.sugar.Warnf("CreateNamespace failed to create namespace: %v", err)
@@ -257,42 +189,4 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 	}
 
 	return &resp, err
-}
-
-func (flow *flow) RenameNamespace(ctx context.Context, req *grpc.RenameNamespaceRequest) (*grpc.RenameNamespaceResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
-
-	tx, err := flow.beginSqlTx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer tx.Rollback()
-
-	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetOld())
-	if err != nil {
-		return nil, err
-	}
-	if err != nil {
-		return nil, err
-	}
-
-	ns.Name = req.GetNew()
-	ns, err = tx.DataStore().Namespaces().Update(ctx, ns)
-	if err != nil {
-		return nil, err
-	}
-
-	if err = tx.Commit(ctx); err != nil {
-		return nil, err
-	}
-
-	flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Renamed namespace from '%s' to '%s'.", req.GetOld(), req.GetNew())
-	flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Renamed namespace from '%s' to '%s'.", req.GetOld(), req.GetNew())
-	flow.pubsub.NotifyNamespaces()
-	flow.pubsub.CloseNamespace(ns)
-
-	var resp grpc.RenameNamespaceResponse
-	resp.Namespace = bytedata.ConvertNamespaceToGrpc(ns)
-
-	return &resp, nil
 }

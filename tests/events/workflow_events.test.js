@@ -1,8 +1,6 @@
-import request from 'supertest'
-
 import common from "../common"
-
 import events from "./send_helper.js"
+import request from "../common/request"
 
 const namespaceName = "wfevents"
 
@@ -27,7 +25,6 @@ states:
   transform:
     result: Hello world!
 `)
-
 
     it(`should fail to invoke the '/listener.yml' workflow`, async () => {
         const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/listener.yml?op=wait`)
@@ -86,6 +83,108 @@ states:
                 results: expect.arrayContaining([
                     {
                         as: "/listener.yml",
+                        createdAt: expect.stringMatching(common.regex.timestampRegex),
+                        updatedAt: expect.stringMatching(common.regex.timestampRegex),
+                        errorCode: "",
+                        errorMessage: "",
+                        id: expect.stringMatching(common.regex.uuidRegex),
+                        invoker: "cloudevent",
+                        status: "complete", // TODO: polling
+                    },
+                ]),
+            },
+        })
+    })
+})
+
+describe('Test workflow events with filter/context', () => {
+    beforeAll(common.helpers.deleteAllNamespaces)
+
+    it(`should create namespace`, async () => {
+        var createNamespaceResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${namespaceName}`)
+        expect(createNamespaceResponse.statusCode).toEqual(200)
+    })
+
+    common.helpers.itShouldCreateFile(it, expect, namespaceName,
+        "/startlistener.yml", `
+start:
+  type: event
+  event:
+    type: greeting
+    context:
+        state: "started"
+  state: helloworld
+states:
+- id: helloworld
+  type: noop
+  transform:
+    result: Hello world!
+`)
+
+common.helpers.itShouldCreateFile(it, expect, namespaceName,
+    "/stoplistener.yml", `
+    start:
+      type: event
+      event:
+        type: greeting
+        context:
+            state: "stopped"
+      state: helloworld
+    states:
+    - id: helloworld
+      type: noop
+      transform:
+        result: Hello world!
+`)
+
+    it(`should invoke the '/stoplistener.yml' workflow with an event`, async () => {
+        var req = await request(common.config.getDirektivHost()).post(`/api/namespaces/${namespaceName}/broadcast`).send({
+            "specversion": "1.0",
+            "type": "greeting",
+            "source": "https://github.com/cloudevents/spec/pull",
+            "state": "stopped",
+            "time": "2018-04-05T17:31:00Z",
+            "comexampleextension1": "value",
+            "comexampleothervalue": 5,
+            "datacontenttype": "text/xml",
+            "data": "<much wow=\"xml\"/>",
+        })
+        expect(req.statusCode).toEqual(200)
+        expect(req.body).toMatchObject({})
+
+        var invoked = false
+        var counter = -1
+        do {
+
+            counter++
+            if (counter > 100) {
+                fail('invoke workflow took too long')
+            }
+
+            await sleep(100)
+
+            req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/instances`)
+            expect(req.statusCode).toEqual(200)
+
+            if (req.body.instances.pageInfo.total === 1) {
+                invoked = true
+            }
+
+        } while (!invoked)
+
+        expect(req.body).toMatchObject({
+            namespace: namespaceName,
+            instances: {
+                pageInfo: {
+                    limit: 0,
+                    offset: 0,
+                    total: 1,
+                    order: [],
+                    filter: [],
+                },
+                results: expect.arrayContaining([
+                    {
+                        as: "/stoplistener.yml",
                         createdAt: expect.stringMatching(common.regex.timestampRegex),
                         updatedAt: expect.stringMatching(common.regex.timestampRegex),
                         errorCode: "",

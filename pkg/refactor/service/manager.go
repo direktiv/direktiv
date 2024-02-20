@@ -1,16 +1,15 @@
 package service
 
 import (
-	"crypto/rand"
 	"fmt"
 	"io"
-	"math/big"
 	"slices"
 	"sort"
 	"sync"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/reconcile"
 	dClient "github.com/docker/docker/client"
 	"go.uber.org/zap"
 	"k8s.io/client-go/kubernetes"
@@ -20,11 +19,11 @@ import (
 
 // manager struct implements core.ServiceManager by wrapping runtimeClient. manager implementation manages
 // services in the system in a declarative manner. This implementation spans up a goroutine (via Start())
-// to reconcile the services in list param versus what is running in the runtime.
+// to Run the services in list param versus what is running in the runtime.
 type manager struct {
 	cfg *core.Config
 	// this list maintains all the service configurations that need to be running.
-	list []*core.ServiceConfig
+	list []*core.ServiceFileData
 
 	// the underlying service runtime used to create/schedule the services.
 	runtimeClient runtimeClient
@@ -53,7 +52,7 @@ func NewManager(c *core.Config, logger *zap.SugaredLogger, enableDocker bool) (c
 
 		return &manager{
 			cfg:           c,
-			list:          make([]*core.ServiceConfig, 0),
+			list:          make([]*core.ServiceFileData, 0),
 			runtimeClient: client,
 
 			logger: logger,
@@ -87,7 +86,7 @@ func newKnativeManager(c *core.Config, logger *zap.SugaredLogger) (*manager, err
 
 	return &manager{
 		cfg:           c,
-		list:          make([]*core.ServiceConfig, 0),
+		list:          make([]*core.ServiceFileData, 0),
 		runtimeClient: client,
 
 		logger: logger,
@@ -101,12 +100,12 @@ func (m *manager) runCycle() []error {
 	}
 
 	// clone the list
-	src := make([]reconcileObject, len(m.list))
+	src := make([]reconcile.Item, len(m.list))
 	for i, v := range m.list {
 		src[i] = v
 	}
 
-	searchSrc := map[string]*core.ServiceConfig{}
+	searchSrc := map[string]*core.ServiceFileData{}
 	for _, v := range m.list {
 		searchSrc[v.GetID()] = v
 	}
@@ -116,23 +115,23 @@ func (m *manager) runCycle() []error {
 		return []error{err}
 	}
 
-	target := make([]reconcileObject, len(knList))
+	target := make([]reconcile.Item, len(knList))
 	for i, v := range knList {
 		target[i] = v
 	}
 
-	m.logger.Debugw("reconcile length", "src", len(src), "target", len(target))
+	m.logger.Debugw("reconcile", "src", len(src), "target", len(target))
 
-	result := reconcile(src, target)
+	result := reconcile.Calculate(src, target)
 
 	errs := []error{}
-	for _, id := range result.deletes {
+	for _, id := range result.Deletes {
 		if err := m.runtimeClient.deleteService(id); err != nil {
 			errs = append(errs, fmt.Errorf("delete service id: %s %w", id, err))
 		}
 	}
 
-	for _, id := range result.creates {
+	for _, id := range result.Creates {
 		v := searchSrc[id]
 		v.Error = nil
 		// v is passed un-cloned.
@@ -143,7 +142,7 @@ func (m *manager) runCycle() []error {
 		}
 	}
 
-	for _, id := range result.updates {
+	for _, id := range result.Updates {
 		v := searchSrc[id]
 		v.Error = nil
 		// v is passed un-cloned.
@@ -155,14 +154,6 @@ func (m *manager) runCycle() []error {
 	}
 
 	return errs
-}
-
-func jitter(base time.Duration) time.Duration {
-	// add maximum jitter of +/-20%
-	x, _ := rand.Int(rand.Reader, big.NewInt(40)) //nolint:gomnd
-	percentage := x.Int64() - 20                  //nolint:gomnd
-
-	return time.Duration(int64(base) * percentage / 100) //nolint:gomnd
 }
 
 func (m *manager) Start(done <-chan struct{}, wg *sync.WaitGroup) {
@@ -182,14 +173,15 @@ func (m *manager) Start(done <-chan struct{}, wg *sync.WaitGroup) {
 			for _, err := range errs {
 				m.logger.Errorw("run cycle", "error", err)
 			}
-			time.Sleep(cycleTime + jitter(cycleTime))
+
+			time.Sleep(cycleTime)
 		}
 
 		wg.Done()
 	}()
 }
 
-func (m *manager) SetServices(list []*core.ServiceConfig) {
+func (m *manager) SetServices(list []*core.ServiceFileData) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
@@ -203,23 +195,9 @@ func (m *manager) SetServices(list []*core.ServiceConfig) {
 	}
 }
 
-type serviceList []*core.ServiceStatus
-
-func (x serviceList) Len() int {
-	return len(x)
-}
-
-func (x serviceList) Less(i, j int) bool {
-	return x[i].FilePath < x[j].FilePath
-}
-
-func (x serviceList) Swap(i, j int) {
-	x[i], x[j] = x[j], x[i]
-}
-
-func (m *manager) getList(filterNamespace string, filterTyp string, filterPath string, filterName string) ([]*core.ServiceStatus, error) {
+func (m *manager) getList(filterNamespace string, filterTyp string, filterPath string, filterName string) ([]*core.ServiceFileData, error) {
 	// clone the list
-	sList := make([]*core.ServiceConfig, 0)
+	sList := make([]*core.ServiceFileData, 0)
 	for i, v := range m.list {
 		if filterNamespace != "" && filterNamespace != v.Namespace {
 			continue
@@ -246,33 +224,28 @@ func (m *manager) getList(filterNamespace string, filterTyp string, filterPath s
 		searchServices[v.GetID()] = v
 	}
 
-	result := []*core.ServiceStatus{}
-
+	// Populate id and conditions fields.
 	for _, v := range sList {
 		service := searchServices[v.GetID()]
 		// sometimes hashes might be different (not reconciled yet).
 		if service != nil && service.GetValueHash() == v.GetValueHash() {
-			result = append(result, &core.ServiceStatus{
-				ID:            v.GetID(),
-				ServiceConfig: *v,
-				Conditions:    service.GetConditions(),
-			})
+			v.ID = v.GetID()
+			v.Conditions = service.GetConditions()
 		} else {
-			result = append(result, &core.ServiceStatus{
-				ID:            v.GetID(),
-				ServiceConfig: *v,
-				Conditions:    make([]any, 0),
-			})
+			v.ID = v.GetID()
+			v.Conditions = make([]any, 0)
 		}
 	}
 
-	sort.Sort(serviceList(result))
+	sort.Slice(sList, func(i, j int) bool {
+		return sList[i].FilePath < sList[j].FilePath
+	})
 
-	return result, nil
+	return sList, nil
 }
 
 // nolint:unparam
-func (m *manager) getOne(namespace string, serviceID string) (*core.ServiceStatus, error) {
+func (m *manager) getOne(namespace string, serviceID string) (*core.ServiceFileData, error) {
 	list, err := m.getList(namespace, "", "", "")
 	if err != nil {
 		return nil, err
@@ -288,7 +261,7 @@ func (m *manager) getOne(namespace string, serviceID string) (*core.ServiceStatu
 	return nil, core.ErrNotFound
 }
 
-func (m *manager) GeAll(namespace string) ([]*core.ServiceStatus, error) {
+func (m *manager) GeAll(namespace string) ([]*core.ServiceFileData, error) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
@@ -339,7 +312,7 @@ func (m *manager) Rebuild(namespace string, serviceID string) error {
 	return m.runtimeClient.rebuildService(serviceID)
 }
 
-func (m *manager) setServiceDefaults(sv *core.ServiceConfig) {
+func (m *manager) setServiceDefaults(sv *core.ServiceFileData) {
 	// empty size string defaults to medium
 	if sv.Size == "" {
 		m.logger.Warnw("empty service size, defaulting to medium", "service_file", sv.FilePath)

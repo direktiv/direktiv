@@ -1,5 +1,6 @@
 import Editor from "~/design/Editor";
 import Toolbar from "./Toolbar";
+import { decode } from "js-base64";
 import { prettifyJsonString } from "~/util/helpers";
 import { useInput } from "~/api/instances/query/input";
 import { useInstanceId } from "../../store/instanceContext";
@@ -10,7 +11,7 @@ const Input = () => {
   const { data } = useInput({ instanceId });
   const theme = useTheme();
 
-  const workflowInput = atob(data?.data ?? "");
+  const workflowInput = decode(data?.data ?? "");
   const workflowInputPretty = prettifyJsonString(workflowInput);
 
   return (

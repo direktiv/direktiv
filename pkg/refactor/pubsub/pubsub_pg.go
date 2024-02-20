@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -12,9 +13,12 @@ import (
 type Bus struct {
 	coreBus CoreBus
 
-	subscribers sync.Map
-	logger      *zap.SugaredLogger
+	subscribers  sync.Map
+	logger       *zap.SugaredLogger
+	fingerprints sync.Map
 }
+
+const defaultDebouncePublishDuration = 200 * time.Millisecond
 
 func NewBus(logger *zap.SugaredLogger, coreBus CoreBus) *Bus {
 	return &Bus{
@@ -42,6 +46,31 @@ func (p *Bus) Start(done <-chan struct{}, wg *sync.WaitGroup) {
 
 func (p *Bus) Publish(channel string, data string) error {
 	return p.coreBus.Publish(channel, data)
+}
+
+func (p *Bus) debouncedPublishWithInterval(i time.Duration, channel string, data string) error {
+	// This function works by associating input with a signature, sleep for a duration and nly publish the message
+	// when the signature matches.
+
+	input := fmt.Sprintf("%d_%s_%s", i, channel, data)
+	signature := uuid.New()
+	p.fingerprints.Store(input, signature)
+
+	go func() {
+		time.Sleep(i)
+		currentSignature, _ := p.fingerprints.Load(input)
+		// When signature matches, this means no later async publish was recorded.
+		if signature == currentSignature {
+			_ = p.coreBus.Publish(channel, data)
+		}
+	}()
+
+	return nil
+}
+
+// DebouncedPublish prevents multiple concussive publishes of the same input during an interval.
+func (p *Bus) DebouncedPublish(channel string, data string) error {
+	return p.debouncedPublishWithInterval(defaultDebouncePublishDuration, channel, data)
 }
 
 func (p *Bus) Subscribe(handler func(data string), channels ...string) {

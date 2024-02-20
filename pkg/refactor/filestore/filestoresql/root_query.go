@@ -5,8 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"slices"
 	"strings"
 
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -36,7 +38,12 @@ func (q *RootQuery) ListAllFiles(ctx context.Context) ([]*filestore.File, error)
 		return nil, err
 	}
 
-	res := q.db.WithContext(ctx).Table("filesystem_files").Where("root_id", q.rootID).Order("path ASC").Find(&list)
+	res := q.db.WithContext(ctx).Raw(`
+						SELECT id, root_id, path, depth, typ, created_at, updated_at, mime_type, length(data) AS size
+						FROM filesystem_files 
+						WHERE root_id=?
+						ORDER BY path ASC
+						`, q.rootID).Find(&list)
 
 	if res.Error != nil {
 		return nil, res.Error
@@ -45,7 +52,7 @@ func (q *RootQuery) ListAllFiles(ctx context.Context) ([]*filestore.File, error)
 	return list, nil
 }
 
-func (q *RootQuery) ListDirektivFiles(ctx context.Context) ([]*filestore.File, error) {
+func (q *RootQuery) ListDirektivFilesWithData(ctx context.Context) ([]*filestore.File, error) {
 	var list []*filestore.File
 
 	// check if root exists.
@@ -54,7 +61,7 @@ func (q *RootQuery) ListDirektivFiles(ctx context.Context) ([]*filestore.File, e
 	}
 
 	res := q.db.WithContext(ctx).Raw(`
-						SELECT * 
+						SELECT *, length(data) AS size
 						FROM filesystem_files 
 						WHERE root_id=? AND typ <> 'directory' AND typ <> 'file'
 						`, q.rootID).Find(&list)
@@ -98,6 +105,13 @@ func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.F
 		return nil, err
 	}
 
+	// check if file type is allowed.
+	if !slices.Contains(filestore.AllFileTypes, typ) {
+		return nil, fmt.Errorf("%w: %w",
+			filestore.ErrInvalidPathParameter,
+			fmt.Errorf("file type: %s is not allowed", typ))
+	}
+
 	count := 0
 	tx := q.db.WithContext(ctx).Raw("SELECT count(id) FROM filesystem_files WHERE root_id = ? AND path = ?", q.rootID, path).Scan(&count)
 	if tx.Error != nil {
@@ -121,20 +135,29 @@ func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.F
 
 	// first, we need to create a file entry for this new file.
 	f := &filestore.File{
-		ID:       uuid.New(),
-		Path:     path,
-		Depth:    filestore.GetPathDepth(path),
-		Typ:      typ,
-		RootID:   q.rootID,
-		MIMEType: mimeType,
+		ID:     uuid.New(),
+		Path:   path,
+		Depth:  filestore.GetPathDepth(path),
+		Size:   len(data),
+		Typ:    typ,
+		RootID: q.rootID,
 	}
 
 	if typ != filestore.FileTypeDirectory {
 		f.Data = data
 		f.Checksum = string(q.checksumFunc(data))
+		f.MIMEType = mimeType
 	}
 
-	res := q.db.WithContext(ctx).Table("filesystem_files").Create(f)
+	res := q.db.WithContext(ctx).Exec(`
+							INSERT INTO 
+								filesystem_files(id, root_id, path, depth, typ, data, checksum, mime_type) 
+								VALUES(?, ?, ?, ?, ?, ?, ?, ?);
+							`, f.ID, f.RootID, f.Path, f.Depth, f.Typ, f.Data, f.Checksum, f.MIMEType)
+
+	if res.Error != nil && strings.Contains(res.Error.Error(), "duplicate key") {
+		return nil, datastore.ErrDuplicatedNamespaceName
+	}
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -151,7 +174,7 @@ func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.F
 		return nil, res.Error
 	}
 
-	return f, nil
+	return q.GetFile(ctx, f.Path)
 }
 
 func (q *RootQuery) GetFile(ctx context.Context, path string) (*filestore.File, error) {
@@ -176,7 +199,7 @@ func (q *RootQuery) GetFile(ctx context.Context, path string) (*filestore.File, 
 	path = filepath.Clean(path)
 
 	res := q.db.WithContext(ctx).Raw(`
-					SELECT id, root_id, path, depth, typ, created_at, updated_at, mime_type
+					SELECT id, root_id, path, depth, typ, created_at, updated_at, mime_type, length(data) AS size
 					FROM filesystem_files
 					WHERE root_id=? AND path=?`, q.rootID, path).
 		First(f)
@@ -217,7 +240,7 @@ func (q *RootQuery) ReadDirectory(ctx context.Context, path string) ([]*filestor
 	}
 
 	res := q.db.WithContext(ctx).Raw(`
-					SELECT id, path, depth, typ, root_id, created_at, updated_at, mime_type
+					SELECT id, path, depth, typ, root_id, created_at, updated_at, mime_type, length(data) AS size
 					FROM filesystem_files
 					WHERE root_id=? AND depth=? AND path LIKE ?
 					ORDER BY path ASC`,

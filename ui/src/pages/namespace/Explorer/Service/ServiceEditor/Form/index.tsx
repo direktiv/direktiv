@@ -20,10 +20,11 @@ import {
   scaleOptions,
 } from "../schema";
 
-import EnvForm from "./Envs";
+import { EnvsArrayForm } from "./EnvsArrayForm";
 import { FC } from "react";
 import { Fieldset } from "~/components/Form/Fieldset";
 import Input from "~/design/Input";
+import { PatchesForm } from "./Patches";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -138,6 +139,8 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
           <Input {...register("cmd")} id="cmd" />
         </Fieldset>
 
+        <PatchesForm form={formControls} />
+
         <Fieldset
           label={t("pages.explorer.service.editor.form.envs.label")}
           htmlFor="size"
@@ -146,14 +149,7 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
           <Controller
             control={control}
             name="envs"
-            render={({ field }) => (
-              <EnvForm
-                defaultValue={field.value || []}
-                onChange={(changedValue) => {
-                  field.onChange(changedValue);
-                }}
-              />
-            )}
+            render={({ field }) => <EnvsArrayForm field={field} />}
           />
         </Fieldset>
       </div>

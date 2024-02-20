@@ -1,4 +1,4 @@
-import request from 'supertest'
+import request from "../common/request"
 import common from "../common";
 
 describe('Test services crud operations', () => {

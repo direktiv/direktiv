@@ -3,10 +3,14 @@ package core
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io"
 	"regexp"
+	"strings"
 	"sync"
+
+	"gopkg.in/yaml.v3"
 )
 
 const (
@@ -25,28 +29,49 @@ type ServicePatch struct {
 	Value interface{} `json:"value"`
 }
 
-// nolint:tagliatelle
-type ServiceConfig struct {
+type ServiceFile struct {
+	DirektivAPI string                `yaml:"direktiv_api"`
+	Image       string                `json:"image"        yaml:"image"`
+	Cmd         string                `json:"cmd"          yaml:"cmd"`
+	Size        string                `json:"size"         yaml:"size"`
+	Scale       int                   `json:"scale"        yaml:"scale"`
+	Envs        []EnvironmentVariable `json:"envs"         yaml:"envs"`
+	Patches     []ServicePatch        `json:"patches"      yaml:"patches"`
+}
+
+func ParseServiceFile(data []byte) (*ServiceFile, error) {
+	res := &ServiceFile{}
+	err := yaml.Unmarshal(data, res)
+	if err != nil {
+		return nil, err
+	}
+	if !strings.HasPrefix(res.DirektivAPI, "service/v1") {
+		return nil, errors.New("invalid service api version")
+	}
+
+	return res, nil
+}
+
+// ServiceFileData extends ServiceFile with identifications and status fields.
+type ServiceFileData struct {
 	// identification fields:
+	ID        string `json:"id"`
 	Typ       string `json:"type"`
 	Namespace string `json:"namespace"`
 	FilePath  string `json:"filePath"`
 	Name      string `json:"name"`
 
-	// settings fields:
-	Image   string                `json:"image"`
-	CMD     string                `json:"cmd"`
-	Size    string                `json:"size"`
-	Scale   int                   `json:"scale"`
-	Envs    []EnvironmentVariable `json:"envs"`
-	Patches []ServicePatch        `json:"patches"`
+	// data fields:
+	ServiceFile
 
-	Error *string `json:"error"`
+	// status fields:
+	Error      *string `json:"error"`
+	Conditions any     `json:"conditions"`
 }
 
 // GetID calculates a unique id string based on identification fields. This id helps in comparison different
 // lists of objects.
-func (c *ServiceConfig) GetID() string {
+func (c *ServiceFileData) GetID() string {
 	str := fmt.Sprintf("%s-%s-%s", c.Namespace, c.Name, c.FilePath)
 	sh := sha256.Sum256([]byte(str + c.Typ))
 
@@ -54,7 +79,6 @@ func (c *ServiceConfig) GetID() string {
 	str = whitelist.ReplaceAllString(str, "-")
 
 	// Prevent too long ids
-	// nolint:gomnd
 	if len(str) > 50 {
 		str = str[:50]
 	}
@@ -64,8 +88,8 @@ func (c *ServiceConfig) GetID() string {
 
 // GetValueHash calculates a unique hash string based on the settings fields. This hash helps in comparing
 // different lists of objects.
-func (c *ServiceConfig) GetValueHash() string {
-	str := fmt.Sprintf("%s-%s-%s-%d", c.Image, c.CMD, c.Size, c.Scale)
+func (c *ServiceFileData) GetValueHash() string {
+	str := fmt.Sprintf("%s-%s-%s-%d", c.Image, c.Cmd, c.Size, c.Scale)
 	for _, v := range c.Envs {
 		str += "-" + v.Name + "-" + v.Value
 	}
@@ -78,16 +102,10 @@ func (c *ServiceConfig) GetValueHash() string {
 	return hex.EncodeToString(sh[:10])
 }
 
-type ServiceStatus struct {
-	ServiceConfig
-	ID         string `json:"id"`
-	Conditions any    `json:"conditions"`
-}
-
 type ServiceManager interface {
 	Start(done <-chan struct{}, wg *sync.WaitGroup)
-	SetServices(list []*ServiceConfig)
-	GeAll(namespace string) ([]*ServiceStatus, error)
+	SetServices(list []*ServiceFileData)
+	GeAll(namespace string) ([]*ServiceFileData, error)
 	GetPods(namespace string, serviceID string) (any, error)
 	StreamLogs(namespace string, serviceID string, podID string) (io.ReadCloser, error)
 	Rebuild(namespace string, serviceID string) error

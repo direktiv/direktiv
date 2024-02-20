@@ -10,9 +10,19 @@ import (
 	"github.com/mattn/go-shellwords"
 )
 
+type Env struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
+}
+
+func (e Env) toKV() string {
+	return fmt.Sprintf("%s=%s", e.Name, e.Value)
+}
+
 // nolint
 type Command struct {
 	Command         string `json:"command"`
+	Envs            []Env  `json:"envs"`
 	StopOnError     bool   `json:"stop"`
 	SuppressCommand bool   `json:"suppress_command"`
 	SuppressOutput  bool   `json:"suppress_output"`
@@ -68,8 +78,7 @@ func RunCommands(ctx context.Context, in Commands, info *server.ExecutionInfo) (
 			// check if it has to stop here
 			if command.StopOnError {
 				commandOutput = append(commandOutput, cr)
-
-				break
+				return commandOutput, fmt.Errorf("stopped because command %d failed", a)
 			}
 		}
 
@@ -105,8 +114,15 @@ func runCmd(command Command, ei *server.ExecutionInfo) error {
 	cmd.Stdout = ei.Log
 	cmd.Stderr = ei.Log
 
-	curEnvs := append(os.Environ(), fmt.Sprintf("HOME=%s", ei.TmpDir))
-	cmd.Env = curEnvs
+	envs := make([]string, 0)
+	envs = append(envs, fmt.Sprintf("HOME=%s", ei.TmpDir))
+	envs = append(envs, os.Environ()...)
+
+	for i := range command.Envs {
+		envs = append(envs, command.Envs[i].toKV())
+	}
+
+	cmd.Env = envs
 
 	return cmd.Run()
 }

@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore/datastoresql"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore/filestoresql"
@@ -28,7 +28,7 @@ func Test_sqlRuntimeVariablesStore_SetAndGet(t *testing.T) {
 
 	expect := []byte("some data")
 
-	testVar := &core.RuntimeVariable{
+	testVar := &datastore.RuntimeVariable{
 		Namespace:    ns.String(),
 		WorkflowPath: file.Path,
 		Name:         "myvar",
@@ -107,7 +107,7 @@ func Test_sqlRuntimeVariablesStore_Overwrite(t *testing.T) {
 
 	ns := uuid.New()
 
-	testVar := &core.RuntimeVariable{
+	testVar := &datastore.RuntimeVariable{
 		Namespace: ns.String(),
 		Name:      "myvar",
 		MimeType:  "text/json",
@@ -126,7 +126,7 @@ func Test_sqlRuntimeVariablesStore_Overwrite(t *testing.T) {
 	}
 
 	expect := []byte("some data 2")
-	testVar = &core.RuntimeVariable{
+	testVar = &datastore.RuntimeVariable{
 		Namespace: ns.String(),
 		Name:      "myvar",
 		MimeType:  "text/json",
@@ -173,7 +173,7 @@ func Test_sqlRuntimeVariablesStore_InvalidName(t *testing.T) {
 	fs := filestoresql.NewSQLFileStore(db)
 	file := createFile(t, fs)
 
-	testVar := &core.RuntimeVariable{
+	testVar := &datastore.RuntimeVariable{
 		Namespace:    uuid.New().String(),
 		WorkflowPath: file.Path,
 		Name:         "myvar$$",
@@ -201,7 +201,7 @@ func Test_sqlRuntimeVariablesStore_CrudOnList(t *testing.T) {
 	ns := uuid.New()
 
 	for _, i := range []int{0, 1, 2, 3} {
-		v := &core.RuntimeVariable{
+		v := &datastore.RuntimeVariable{
 			Namespace:    ns.String(),
 			WorkflowPath: file.Path,
 			Name:         fmt.Sprintf("var_%d", i),
@@ -282,6 +282,108 @@ func Test_sqlRuntimeVariablesStore_CrudOnList(t *testing.T) {
 
 			return
 		}
+	}
+}
+
+func Test_sqlRuntimeVariablesStore_CreateAndUpdate(t *testing.T) {
+	db, err := database.NewMockGorm()
+	if err != nil {
+		t.Fatalf("unepxected NewMockGorm() error = %v", err)
+	}
+
+	ds := datastoresql.NewSQLStore(db, "some_secret_key_")
+	fs := filestoresql.NewSQLFileStore(db)
+	file := createFile(t, fs)
+
+	ns := uuid.New()
+
+	expect := []byte("some data")
+
+	testVar := &datastore.RuntimeVariable{
+		Namespace:    ns.String(),
+		WorkflowPath: file.Path,
+		Name:         "myvar",
+		MimeType:     "text/json",
+		Data:         expect,
+	}
+	variable, err := ds.RuntimeVariables().Create(context.Background(), testVar)
+	if err != nil {
+		t.Errorf("unexpected Create() error: %v", err)
+
+		return
+	}
+	if variable == nil {
+		t.Errorf("unexpected Create() nil result")
+
+		return
+	}
+
+	variable, err = ds.RuntimeVariables().GetByID(context.Background(), variable.ID)
+	if err != nil {
+		t.Errorf("unexpected Create() error: %v", err)
+
+		return
+	}
+	if variable == nil {
+		t.Errorf("unexpected Create() nil result")
+
+		return
+	}
+	if variable.WorkflowPath != testVar.WorkflowPath || variable.Name != testVar.Name {
+		t.Errorf("unexpected GetByID() result: %v", variable)
+
+		return
+	}
+
+	variable, err = ds.RuntimeVariables().GetForWorkflow(context.Background(), ns.String(), file.Path, "myvar")
+	if err != nil {
+		t.Errorf("unexpected GetForWorkflow() error: %v", err)
+
+		return
+	}
+	data, err := ds.RuntimeVariables().LoadData(context.Background(), variable.ID)
+	if err != nil {
+		t.Errorf("unexpected LoadData() error: %v", err)
+
+		return
+	}
+	if string(data) != string(expect) {
+		t.Errorf("unexpected GetForWorkflow() result: %s", variable.Data)
+
+		return
+	}
+
+	newName := "new_name"
+	variable, err = ds.RuntimeVariables().Patch(context.Background(), variable.ID, &datastore.RuntimeVariablePatch{
+		Name: &newName,
+	})
+	if err != nil {
+		t.Errorf("unexpected Patch() error: %v", err)
+
+		return
+	}
+	if variable == nil {
+		t.Errorf("unexpected Patch() nil result")
+
+		return
+	}
+	if variable.WorkflowPath != testVar.WorkflowPath || variable.Name != newName {
+		t.Errorf("unexpected GetByID() result: %v", variable)
+
+		return
+	}
+
+	list, err := ds.RuntimeVariables().ListForWorkflow(context.Background(), ns.String(), file.Path)
+	if err != nil {
+		t.Errorf("unexpected ListForWorkflow() error: %v", err)
+
+		return
+	}
+
+	if len(list) != 1 {
+		t.Errorf("unexpected ListForWorkflow() result: %v", list)
+
+		return
 	}
 }
 

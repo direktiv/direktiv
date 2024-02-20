@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/refactor/mirror"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -19,8 +19,29 @@ type sqlMirrorStore struct {
 	configEncryptionKey string
 }
 
-func cryptDecryptConfig(config *mirror.Config, key string, encrypt bool) (*mirror.Config, error) {
-	resultConfig := &mirror.Config{}
+func (s sqlMirrorStore) GetAllConfigs(ctx context.Context) ([]*datastore.MirrorConfig, error) {
+	list := []*datastore.MirrorConfig{}
+	res := s.db.WithContext(ctx).Raw(`
+					SELECT *
+					FROM mirror_configs`).
+		Find(&list)
+
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	for i := range list {
+		config, err := cryptDecryptConfig(list[i], s.configEncryptionKey, false)
+		if err != nil {
+			return nil, err
+		}
+		list[i] = config
+	}
+
+	return list, nil
+}
+
+func cryptDecryptConfig(config *datastore.MirrorConfig, key string, encrypt bool) (*datastore.MirrorConfig, error) {
+	resultConfig := &datastore.MirrorConfig{}
 
 	*resultConfig = *config
 
@@ -51,7 +72,7 @@ func cryptDecryptConfig(config *mirror.Config, key string, encrypt bool) (*mirro
 	return resultConfig, nil
 }
 
-func (s sqlMirrorStore) CreateConfig(ctx context.Context, config *mirror.Config) (*mirror.Config, error) {
+func (s sqlMirrorStore) CreateConfig(ctx context.Context, config *datastore.MirrorConfig) (*datastore.MirrorConfig, error) {
 	newConfig, err := cryptDecryptConfig(config, s.configEncryptionKey, true)
 	if err != nil {
 		return nil, err
@@ -65,7 +86,7 @@ func (s sqlMirrorStore) CreateConfig(ctx context.Context, config *mirror.Config)
 	return s.GetConfig(ctx, newConfig.Namespace)
 }
 
-func (s sqlMirrorStore) UpdateConfig(ctx context.Context, config *mirror.Config) (*mirror.Config, error) {
+func (s sqlMirrorStore) UpdateConfig(ctx context.Context, config *datastore.MirrorConfig) (*datastore.MirrorConfig, error) {
 	config, err := cryptDecryptConfig(config, s.configEncryptionKey, true)
 	if err != nil {
 		return nil, err
@@ -85,6 +106,9 @@ func (s sqlMirrorStore) UpdateConfig(ctx context.Context, config *mirror.Config)
 	if res.Error != nil {
 		return nil, res.Error
 	}
+	if res.RowsAffected == 0 {
+		return nil, datastore.ErrNotFound
+	}
 	if res.RowsAffected != 1 {
 		return nil, fmt.Errorf("unexpected gorm update count, got: %d, want: %d", res.RowsAffected, 1)
 	}
@@ -92,8 +116,8 @@ func (s sqlMirrorStore) UpdateConfig(ctx context.Context, config *mirror.Config)
 	return s.GetConfig(ctx, config.Namespace)
 }
 
-func (s sqlMirrorStore) GetConfig(ctx context.Context, namespace string) (*mirror.Config, error) {
-	config := &mirror.Config{}
+func (s sqlMirrorStore) GetConfig(ctx context.Context, namespace string) (*datastore.MirrorConfig, error) {
+	config := &datastore.MirrorConfig{}
 	res := s.db.WithContext(ctx).Raw(`
 					SELECT *
 					FROM mirror_configs
@@ -101,7 +125,7 @@ func (s sqlMirrorStore) GetConfig(ctx context.Context, namespace string) (*mirro
 		First(config)
 
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
-		return nil, mirror.ErrNotFound
+		return nil, datastore.ErrNotFound
 	}
 	if res.Error != nil {
 		return nil, res.Error
@@ -115,7 +139,7 @@ func (s sqlMirrorStore) GetConfig(ctx context.Context, namespace string) (*mirro
 	return config, nil
 }
 
-func (s sqlMirrorStore) CreateProcess(ctx context.Context, process *mirror.Process) (*mirror.Process, error) {
+func (s sqlMirrorStore) CreateProcess(ctx context.Context, process *datastore.MirrorProcess) (*datastore.MirrorProcess, error) {
 	newProcess := *process
 	res := s.db.WithContext(ctx).Table("mirror_processes").Create(&newProcess)
 	if res.Error != nil {
@@ -125,7 +149,7 @@ func (s sqlMirrorStore) CreateProcess(ctx context.Context, process *mirror.Proce
 	return &newProcess, nil
 }
 
-func (s sqlMirrorStore) UpdateProcess(ctx context.Context, process *mirror.Process) (*mirror.Process, error) {
+func (s sqlMirrorStore) UpdateProcess(ctx context.Context, process *datastore.MirrorProcess) (*datastore.MirrorProcess, error) {
 	res := s.db.WithContext(ctx).Table("mirror_processes").
 		Where("id", process.ID).
 		Updates(process)
@@ -139,8 +163,8 @@ func (s sqlMirrorStore) UpdateProcess(ctx context.Context, process *mirror.Proce
 	return s.GetProcess(ctx, process.ID)
 }
 
-func (s sqlMirrorStore) GetProcess(ctx context.Context, id uuid.UUID) (*mirror.Process, error) {
-	process := &mirror.Process{}
+func (s sqlMirrorStore) GetProcess(ctx context.Context, id uuid.UUID) (*datastore.MirrorProcess, error) {
+	process := &datastore.MirrorProcess{}
 	res := s.db.WithContext(ctx).Raw(`
 					SELECT *
 					FROM mirror_processes
@@ -148,7 +172,7 @@ func (s sqlMirrorStore) GetProcess(ctx context.Context, id uuid.UUID) (*mirror.P
 		First(process)
 
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
-		return nil, mirror.ErrNotFound
+		return nil, datastore.ErrNotFound
 	}
 	if res.Error != nil {
 		return nil, res.Error
@@ -157,8 +181,8 @@ func (s sqlMirrorStore) GetProcess(ctx context.Context, id uuid.UUID) (*mirror.P
 	return process, nil
 }
 
-func (s sqlMirrorStore) GetProcessesByNamespace(ctx context.Context, namespace string) ([]*mirror.Process, error) {
-	var process []*mirror.Process
+func (s sqlMirrorStore) GetProcessesByNamespace(ctx context.Context, namespace string) ([]*datastore.MirrorProcess, error) {
+	var process []*datastore.MirrorProcess
 
 	res := s.db.WithContext(ctx).Raw(`
 					SELECT *
@@ -173,8 +197,8 @@ func (s sqlMirrorStore) GetProcessesByNamespace(ctx context.Context, namespace s
 	return process, nil
 }
 
-func (s sqlMirrorStore) GetUnfinishedProcesses(ctx context.Context) ([]*mirror.Process, error) {
-	var process []*mirror.Process
+func (s sqlMirrorStore) GetUnfinishedProcesses(ctx context.Context) ([]*datastore.MirrorProcess, error) {
+	var process []*datastore.MirrorProcess
 
 	res := s.db.WithContext(ctx).Raw(`
 					SELECT *
@@ -190,7 +214,7 @@ func (s sqlMirrorStore) GetUnfinishedProcesses(ctx context.Context) ([]*mirror.P
 }
 
 func (s sqlMirrorStore) DeleteOldProcesses(ctx context.Context, before time.Time) error {
-	var process []*mirror.Process
+	var process []*datastore.MirrorProcess
 
 	res := s.db.WithContext(ctx).Raw(`
 					DELETE FROM mirror_processes
@@ -204,4 +228,4 @@ func (s sqlMirrorStore) DeleteOldProcesses(ctx context.Context, before time.Time
 	return nil
 }
 
-var _ mirror.Store = sqlMirrorStore{}
+var _ datastore.MirrorStore = sqlMirrorStore{}

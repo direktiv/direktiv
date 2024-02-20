@@ -1,4 +1,4 @@
-import request from 'supertest'
+import request from "../common/request"
 import retry from "jest-retries";
 import common from "../common";
 

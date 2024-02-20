@@ -1,6 +1,5 @@
 import { Dialog, DialogTrigger } from "~/design/Dialog";
 import { FC, useState } from "react";
-import { ModalWrapper, PluginSelector } from "../components/Modal";
 import {
   Select,
   SelectContent,
@@ -19,6 +18,8 @@ import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import { EndpointFormSchemaType } from "../../../schema";
 import { InstantResponseForm } from "./InstantResponseForm";
+import { ModalWrapper } from "~/components/ModalWrapper";
+import { PluginSelector } from "../components/PluginSelector";
 import { Settings } from "lucide-react";
 import { TableHeader } from "../components/PluginsTable";
 import { TargetEventForm } from "./TargetEventForm";
@@ -128,6 +129,9 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({ form }) => {
         title={t(
           "pages.explorer.endpoint.editor.form.plugins.target.modal.headline"
         )}
+        onCancel={() => {
+          setDialogOpen(false);
+        }}
       >
         <PluginSelector
           title={t(

@@ -21,12 +21,16 @@ const (
 	FileTypeDirectory FileType = "directory"
 )
 
-const (
-	Latest = "latest"
-)
+var AllFileTypes = []FileType{
+	FileTypeWorkflow,
+	FileTypeEndpoint,
+	FileTypeConsumer,
+	FileTypeService,
+	FileTypeFile,
+	FileTypeDirectory,
+}
 
 // File represents a file in the filestore, File can be either ordinary file or directory.
-// nolint:tagliatelle
 type File struct {
 	ID uuid.UUID `json:"-"`
 	// Path is the full path of the file, files and directories are only different when they have different paths. As
@@ -39,6 +43,8 @@ type File struct {
 
 	Data     []byte `json:"data,omitempty"`
 	Checksum string `json:"checksum,omitempty"`
+
+	Size int `json:"size,omitempty"`
 
 	// Root is a filestore instance, users can create multiple filestore roots and RootID tells which root the file
 	// belongs too.

@@ -4,8 +4,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
+
 	"github.com/direktiv/direktiv/pkg/refactor/logengine"
-	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	"github.com/google/uuid"
 )
 
@@ -34,16 +35,16 @@ func TestConvertLogMsgForOutput(t *testing.T) {
 
 func TestConvertMirrorProcessesToGrpcMirrorActivityInfoList(t *testing.T) {
 	// Test data
-	process1 := &mirror.Process{
+	process1 := &datastore.MirrorProcess{
 		ID:        uuid.New(),
 		UpdatedAt: time.Date(2022, time.January, 1, 0, 0, 0, 0, time.UTC),
 	}
-	process2 := &mirror.Process{
+	process2 := &datastore.MirrorProcess{
 		ID:        uuid.New(),
 		UpdatedAt: time.Date(2023, time.January, 1, 0, 0, 0, 0, time.UTC),
 	}
 
-	list := []*mirror.Process{process2, process1} // Intentionally out of order
+	list := []*datastore.MirrorProcess{process2, process1} // Intentionally out of order
 
 	// Invoke the function
 	result := ConvertMirrorProcessesToGrpcMirrorActivityInfoList(list)

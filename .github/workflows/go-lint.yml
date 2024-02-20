@@ -22,6 +22,6 @@ jobs:
           go-version-file: go.mod
 
       - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v3
+        uses: golangci/golangci-lint-action@v4
         with:
-          version: v1.55
+          version: v1.56

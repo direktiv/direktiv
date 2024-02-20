@@ -64,13 +64,14 @@ godoc: ## Hosts a godoc server for the project on http port 6060.
 	godoc -http=:6060
 
 .PHONY: lint 
-lint: VERSION="v1.55"
+lint: VERSION="v1.56"
 lint: ## Runs very strict linting on the project.
 	docker run \
 	--rm \
 	-v `pwd`:/app \
 	-w /app \
-	golangci/golangci-lint:${VERSION} golangci-lint run
+	-e GOLANGCI_LINT_CACHE=/app/.cache/golangci-lint \
+	golangci/golangci-lint:${VERSION} golangci-lint run --verbose
 
 
 .PHONY: license-check 

@@ -14,6 +14,7 @@ import Button from "~/design/Button";
 import { FC } from "react";
 import { InstanceSchemaType } from "~/api/instances/schema";
 import WorkflowDiagram from "~/design/WorkflowDiagram";
+import { decode } from "js-base64";
 import { instanceStatusToDiagramStatus } from "./utils";
 import { useNodeContent } from "~/api/tree/query/node";
 import { useTranslation } from "react-i18next";
@@ -33,7 +34,7 @@ const Diagram: FC<DiagramProps> = ({ workflowPath, flow, status }) => {
 
   if (!data) return null;
 
-  const workflowData = atob(data.source ?? "");
+  const workflowData = decode(data.source ?? "");
 
   return (
     <div className="relative flex grow">

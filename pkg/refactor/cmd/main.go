@@ -16,12 +16,12 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/api"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway"
 	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"github.com/direktiv/direktiv/pkg/refactor/registry"
 	"github.com/direktiv/direktiv/pkg/refactor/service"
-	"github.com/direktiv/direktiv/pkg/refactor/spec"
 	"github.com/direktiv/direktiv/pkg/util"
 	"go.uber.org/zap"
 )
@@ -66,6 +66,7 @@ func NewMain(config *core.Config, db *database.DB, pbus *pubsub.Bus, logger *zap
 		ServiceManager:  serviceManager,
 		RegistryManager: registryManager,
 		GatewayManager:  gatewayManager,
+		Bus:             pbus,
 	}
 
 	pbus.Subscribe(func(_ string) {
@@ -181,45 +182,34 @@ func renderServiceManager(db *database.DB, serviceManager core.ServiceManager, l
 		return
 	}
 
-	funConfigList := []*core.ServiceConfig{}
+	funConfigList := []*core.ServiceFileData{}
 
 	for _, ns := range nsList {
 		logger = logger.With("ns", ns.Name)
-		files, err := fStore.ForNamespace(ns.Name).ListDirektivFiles(context.Background())
+		files, err := fStore.ForNamespace(ns.Name).ListDirektivFilesWithData(context.Background())
 		if err != nil {
 			logger.Error("listing direktiv files", "error", err)
 
 			continue
 		}
 		for _, file := range files {
-			data, err := fStore.ForFile(file).GetData(context.Background())
-			if err != nil {
-				logger.Error("read file data", "error", err)
-
-				continue
-			}
 			if file.Typ == filestore.FileTypeService {
-				serviceDef, err := spec.ParseServiceFile(data)
+				serviceDef, err := core.ParseServiceFile(file.Data)
 				if err != nil {
 					logger.Error("parse service file", "error", err)
 
 					continue
 				}
 
-				funConfigList = append(funConfigList, &core.ServiceConfig{
-					Typ:       core.ServiceTypeNamespace,
-					Name:      "",
-					Namespace: ns.Name,
-					FilePath:  file.Path,
-					Image:     serviceDef.Image,
-					CMD:       serviceDef.Cmd,
-					Size:      serviceDef.Size,
-					Scale:     serviceDef.Scale,
-					Envs:      serviceDef.Envs,
-					Patches:   serviceDef.Patches,
+				funConfigList = append(funConfigList, &core.ServiceFileData{
+					Typ:         core.ServiceTypeNamespace,
+					Name:        "",
+					Namespace:   ns.Name,
+					FilePath:    file.Path,
+					ServiceFile: *serviceDef,
 				})
 			} else if file.Typ == filestore.FileTypeWorkflow {
-				sub, err := getWorkflowFunctionDefinitionsFromWorkflow(ns, file, data)
+				sub, err := getWorkflowFunctionDefinitionsFromWorkflow(ns, file)
 				if err != nil {
 					logger.Error("parse workflow def", "error", err)
 
@@ -233,15 +223,15 @@ func renderServiceManager(db *database.DB, serviceManager core.ServiceManager, l
 	serviceManager.SetServices(funConfigList)
 }
 
-func getWorkflowFunctionDefinitionsFromWorkflow(ns *core.Namespace, f *filestore.File, data []byte) ([]*core.ServiceConfig, error) {
+func getWorkflowFunctionDefinitionsFromWorkflow(ns *datastore.Namespace, f *filestore.File) ([]*core.ServiceFileData, error) {
 	var wf model.Workflow
 
-	err := wf.Load(data)
+	err := wf.Load(f.Data)
 	if err != nil {
 		return nil, err
 	}
 
-	list := make([]*core.ServiceConfig, 0)
+	list := make([]*core.ServiceFileData, 0)
 
 	for _, fn := range wf.Functions {
 		if fn.GetType() != model.ReusableContainerFunctionType {
@@ -254,16 +244,19 @@ func getWorkflowFunctionDefinitionsFromWorkflow(ns *core.Namespace, f *filestore
 			return nil, errors.New("parse workflow def cast incorrectly")
 		}
 
-		list = append(list, &core.ServiceConfig{
+		list = append(list, &core.ServiceFileData{
 			Typ:       core.ServiceTypeWorkflow,
 			Name:      serviceDef.ID,
 			Namespace: ns.Name,
 			FilePath:  f.Path,
-			Image:     serviceDef.Image,
-			CMD:       serviceDef.Cmd,
-			Size:      serviceDef.Size.String(),
-			Envs:      serviceDef.Envs,
-			Patches:   serviceDef.Patches,
+
+			ServiceFile: core.ServiceFile{
+				Image:   serviceDef.Image,
+				Cmd:     serviceDef.Cmd,
+				Size:    serviceDef.Size.String(),
+				Envs:    serviceDef.Envs,
+				Patches: serviceDef.Patches,
+			},
 		})
 	}
 

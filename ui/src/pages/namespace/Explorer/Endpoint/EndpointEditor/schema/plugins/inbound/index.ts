@@ -13,6 +13,10 @@ export const inboundPluginTypes = {
     name: "request-convert",
     enterpriseOnly: false,
   },
+  headerManipulation: {
+    name: "header-manipulation",
+    enterpriseOnly: false,
+  },
   eventFilter: {
     name: "event-filter",
     enterpriseOnly: true,

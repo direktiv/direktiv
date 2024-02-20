@@ -14,7 +14,7 @@ import Button from "~/design/Button";
 import FormErrors from "../FormErrors";
 import Input from "~/design/Input";
 import { InputWithButton } from "~/design/InputWithButton";
-import Logo from "~/design/Logo";
+import Logo from "~/components/Logo";
 import { useAuthenticate } from "~/api/authenticate/mutate/authenticate";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";

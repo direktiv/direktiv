@@ -1,4 +1,3 @@
-// nolint
 package api
 
 import (
@@ -18,8 +17,6 @@ type Error struct {
 }
 
 func writeError(w http.ResponseWriter, err *Error) {
-	httpStatus := http.StatusInternalServerError
-
 	// access_token_denied
 	// access_token_missing
 	// access_token_invalid
@@ -33,7 +30,7 @@ func writeError(w http.ResponseWriter, err *Error) {
 
 	// request_data_invalid
 
-	httpStatus = http.StatusInternalServerError
+	httpStatus := http.StatusInternalServerError
 
 	if strings.HasPrefix(err.Code, "access") {
 		httpStatus = http.StatusForbidden
@@ -72,12 +69,13 @@ func writeInternalError(w http.ResponseWriter, err error) {
 	slog.Error("error", "err", err)
 }
 
-func writeNotJsonError(w http.ResponseWriter, err error) {
+func writeNotJSONError(w http.ResponseWriter, err error) {
 	if strings.Contains(err.Error(), "cannot unmarshal") {
 		writeError(w, &Error{
 			Code:    "request_body_bad_json_schema",
 			Message: "request payload has bad json schema",
 		})
+
 		return
 	}
 
@@ -96,6 +94,22 @@ func writeDataStoreError(w http.ResponseWriter, err error) {
 
 		return
 	}
+	if errors.Is(err, datastore.ErrInvalidRuntimeVariableName) {
+		writeError(w, &Error{
+			Code:    "request_data_invalid",
+			Message: "field name has invalid string",
+		})
+
+		return
+	}
+	if errors.Is(err, datastore.ErrInvalidNamespaceName) {
+		writeError(w, &Error{
+			Code:    "request_data_invalid",
+			Message: "invalid namespace name",
+		})
+
+		return
+	}
 
 	writeInternalError(w, err)
 }
@@ -104,7 +118,39 @@ func writeFileStoreError(w http.ResponseWriter, err error) {
 	if errors.Is(err, filestore.ErrNotFound) {
 		writeError(w, &Error{
 			Code:    "resource_not_found",
-			Message: "requested resource is not found",
+			Message: "filesystem path is not found",
+		})
+
+		return
+	}
+	if errors.Is(err, filestore.ErrPathAlreadyExists) {
+		writeError(w, &Error{
+			Code:    "resource_already_exists",
+			Message: "filesystem path already exists",
+		})
+
+		return
+	}
+	if errors.Is(err, filestore.ErrNoParentDirectory) {
+		writeError(w, &Error{
+			Code:    "request_data_invalid",
+			Message: "filesystem path has no parent directory",
+		})
+
+		return
+	}
+	if errors.Is(err, filestore.ErrFileTypeIsDirectory) {
+		writeError(w, &Error{
+			Code:    "request_data_invalid",
+			Message: "filesystem path is a directory",
+		})
+
+		return
+	}
+	if errors.Is(err, filestore.ErrInvalidPathParameter) {
+		writeError(w, &Error{
+			Code:    "request_data_invalid",
+			Message: "filesystem path is invalid",
 		})
 
 		return
