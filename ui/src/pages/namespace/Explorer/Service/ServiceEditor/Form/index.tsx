@@ -127,9 +127,9 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
                   <SelectLabel>
                     {t("pages.explorer.service.editor.form.size.label")}
                   </SelectLabel>
-                  {sizeOptions.map((value, index) => (
-                    <SelectItem key={index} value={value}>
-                      {value}
+                  {sizeOptions.map((size) => (
+                    <SelectItem key={size} value={size}>
+                      {size}
                     </SelectItem>
                   ))}
                 </SelectGroup>
