@@ -702,6 +702,17 @@ type sqlTx struct {
 	secretKey string
 }
 
+func (tx *sqlTx) MakeSerializable() error {
+	res := tx.res.Exec(`set transaction isolation level serializable`)
+	if res.Error != nil {
+		return fmt.Errorf("failed to set transaction isolation level to serializable: %w", res.Error)
+	}
+
+	tx.res = res
+
+	return nil
+}
+
 func (tx *sqlTx) FileStore() filestore.FileStore {
 	return filestoresql.NewSQLFileStore(tx.res)
 }

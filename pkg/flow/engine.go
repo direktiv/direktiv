@@ -56,6 +56,7 @@ type newInstanceArgs struct {
 	Invoker       string
 	DescentInfo   *enginerefactor.InstanceDescentInfo
 	TelemetryInfo *enginerefactor.InstanceTelemetryInfo
+	tx            *sqlTx
 }
 
 const (
@@ -176,11 +177,15 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 		panic(err)
 	}
 
-	tx, err := engine.flow.beginSqlTx(ctx)
-	if err != nil {
-		return nil, err
+	tx := args.tx
+
+	if tx == nil {
+		tx, err = engine.flow.beginSqlTx(ctx)
+		if err != nil {
+			return nil, err
+		}
+		defer tx.Rollback()
 	}
-	defer tx.Rollback()
 
 	idata, err := tx.InstanceStore().CreateInstanceData(ctx, &instancestore.CreateInstanceDataArgs{
 		ID:             args.ID,

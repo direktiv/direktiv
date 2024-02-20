@@ -14,7 +14,6 @@ import (
 	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
-	"github.com/direktiv/direktiv/pkg/refactor/instancestore/instancestoresql"
 	"github.com/google/uuid"
 	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc/codes"
@@ -145,12 +144,19 @@ func (flow *flow) cronHandler(data []byte) {
 		return
 	}
 
+	// tx is hopefully committed in NewInstance call.
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		flow.sugar.Error(err)
 		return
 	}
 	defer tx.Rollback()
+
+	err = tx.MakeSerializable()
+	if err != nil {
+		flow.sugar.Error(err)
+		return
+	}
 
 	file, err := tx.FileStore().GetFileByID(ctx, id)
 	if err != nil {
@@ -175,16 +181,7 @@ func (flow *flow) cronHandler(data []byte) {
 		return
 	}
 
-	tx.Rollback()
-
-	ctx, conn, err := flow.engine.lock(id.String(), defaultLockWait)
-	if err != nil {
-		flow.sugar.Error(err)
-		return
-	}
-	defer flow.engine.unlock(id.String(), conn)
-
-	err = instancestoresql.NewSQLInstanceStore(flow.gormDB).AssertNoParallelCron(ctx, file.Path)
+	err = tx.InstanceStore().AssertNoParallelCron(ctx, file.Path)
 	if errors.Is(err, instancestore.ErrParallelCron) {
 		// already triggered
 		return
@@ -207,6 +204,7 @@ func (flow *flow) cronHandler(data []byte) {
 			// TODO: alan, CallPath: ,
 			NamespaceName: ns.Name,
 		},
+		tx: tx,
 	}
 
 	im, err := flow.engine.NewInstance(ctx, args)
