@@ -15,7 +15,7 @@ import { defaultServiceYaml } from "~/pages/namespace/Explorer/Service/ServiceEd
 import { encode } from "js-base64";
 import { fileNameSchema } from "~/api/tree/schema/node";
 import { pages } from "~/util/router/pages";
-import { useCreateNode } from "~/api/filesTree/mutate/createFile";
+import { useCreateNode } from "~/api/files/mutate/createFile";
 import { useNamespace } from "~/util/store/namespace";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";

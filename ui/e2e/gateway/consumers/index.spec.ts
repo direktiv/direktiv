@@ -5,7 +5,7 @@ import { expect, test } from "@playwright/test";
 import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
 import { encode } from "js-base64";
 import { headers } from "e2e/utils/testutils";
-import { patchNode } from "~/api/filesTree/mutate/patchNode";
+import { patchNode } from "~/api/files/mutate/patchNode";
 
 let namespace = "";
 

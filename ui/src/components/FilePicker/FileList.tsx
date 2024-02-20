@@ -2,7 +2,7 @@ import {
   BaseFileSchemaType,
   getFilenameFromPath,
   getParentFromPath,
-} from "~/api/filesTree/schema";
+} from "~/api/files/schema";
 import { FC, Fragment } from "react";
 import {
   FilepickerClose,

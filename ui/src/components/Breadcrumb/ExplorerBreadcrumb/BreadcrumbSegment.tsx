@@ -5,7 +5,7 @@ import { FC } from "react";
 import { Link } from "react-router-dom";
 import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
-import { useNode } from "~/api/filesTree/query/node";
+import { useNode } from "~/api/files/query/node";
 
 const BreadcrumbSegment: FC<{
   absolute: string;

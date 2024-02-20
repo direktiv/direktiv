@@ -5,14 +5,14 @@ import {
   DialogTitle,
 } from "~/design/Dialog";
 
-import { BaseFileSchemaType } from "~/api/filesTree/schema";
+import { BaseFileSchemaType } from "~/api/files/schema";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
 import { File } from "lucide-react";
 import { decode } from "js-base64";
 import { mimeTypeToEditorSyntax } from "~/design/Editor/utils";
-import { useNode } from "~/api/filesTree/query/node";
+import { useNode } from "~/api/files/query/node";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 

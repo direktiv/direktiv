@@ -16,7 +16,7 @@ import { InstanceSchemaType } from "~/api/instances/schema";
 import WorkflowDiagram from "~/design/WorkflowDiagram";
 import { decode } from "js-base64";
 import { instanceStatusToDiagramStatus } from "./utils";
-import { useNode } from "~/api/filesTree/query/node";
+import { useNode } from "~/api/files/query/node";
 import { useTranslation } from "react-i18next";
 
 type DiagramProps = {

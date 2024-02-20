@@ -1,7 +1,4 @@
-import {
-  BaseFileSchemaType,
-  getFilenameFromPath,
-} from "~/api/filesTree/schema";
+import { BaseFileSchemaType, getFilenameFromPath } from "~/api/files/schema";
 import {
   DropdownMenu,
   DropdownMenuContent,

@@ -2,7 +2,7 @@ import {
   BaseFileSchemaType,
   getFilenameFromPath,
   getParentFromPath,
-} from "~/api/filesTree/schema";
+} from "~/api/files/schema";
 import {
   DialogClose,
   DialogFooter,
@@ -17,7 +17,7 @@ import Input from "~/design/Input";
 import { TextCursorInput } from "lucide-react";
 import { addYamlFileExtension } from "../../utils";
 import { fileNameSchema } from "~/api/tree/schema/node";
-import { useRenameNode } from "~/api/filesTree/mutate/renameNode";
+import { useRenameNode } from "~/api/files/mutate/renameNode";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";

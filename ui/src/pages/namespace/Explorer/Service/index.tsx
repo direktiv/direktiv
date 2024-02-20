@@ -10,7 +10,7 @@ import { analyzePath } from "~/util/router/utils";
 import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
 import { useNamespaceServices } from "~/api/services/query/services";
-import { useNode } from "~/api/filesTree/query/node";
+import { useNode } from "~/api/files/query/node";
 import { useTranslation } from "react-i18next";
 
 const ServicePage: FC = () => {

@@ -26,7 +26,7 @@ import RunWorkflow from "./components/RunWorkflow";
 import { analyzePath } from "~/util/router/utils";
 import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
-import { useNode } from "~/api/filesTree/query/node";
+import { useNode } from "~/api/files/query/node";
 import { useTranslation } from "react-i18next";
 
 const Header: FC = () => {

@@ -1,7 +1,7 @@
 import { FC } from "react";
 import WorkflowEditor from "./WorkflowEditor";
 import { pages } from "~/util/router/pages";
-import { useNode } from "~/api/filesTree/query/node";
+import { useNode } from "~/api/files/query/node";
 
 const WorkflowOverviewPage: FC = () => {
   const { path } = pages.explorer.useParams();

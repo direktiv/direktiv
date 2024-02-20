@@ -19,7 +19,7 @@ import { decode } from "js-base64";
 import { pages } from "~/util/router/pages";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { useNode } from "~/api/filesTree/query/node";
+import { useNode } from "~/api/files/query/node";
 import { useRunWorkflow } from "~/api/tree/mutate/runWorkflow";
 import { useTheme } from "~/util/store/theme";
 import { useToast } from "~/design/Toast";

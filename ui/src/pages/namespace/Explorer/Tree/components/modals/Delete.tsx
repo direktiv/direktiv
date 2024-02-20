@@ -1,7 +1,4 @@
-import {
-  BaseFileSchemaType,
-  getFilenameFromPath,
-} from "~/api/filesTree/schema";
+import { BaseFileSchemaType, getFilenameFromPath } from "~/api/files/schema";
 import {
   DialogClose,
   DialogFooter,
@@ -12,7 +9,7 @@ import { Trans, useTranslation } from "react-i18next";
 
 import Button from "~/design/Button";
 import { Trash } from "lucide-react";
-import { useDeletePath } from "~/api/filesTree/mutate/delete";
+import { useDeletePath } from "~/api/files/mutate/delete";
 
 const Delete = ({
   node,

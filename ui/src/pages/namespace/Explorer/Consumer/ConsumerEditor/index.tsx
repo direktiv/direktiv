@@ -12,10 +12,10 @@ import { Save } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
 import { jsonToYaml } from "../../utils";
 import { serializeConsumerFile } from "./utils";
-import { useNode } from "~/api/filesTree/query/node";
+import { useNode } from "~/api/files/query/node";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
-import { useUpdateFile } from "~/api/filesTree/mutate/updateFile";
+import { useUpdateFile } from "~/api/files/mutate/updateFile";
 
 type NodeContentType = ReturnType<typeof useNode>["data"];
 

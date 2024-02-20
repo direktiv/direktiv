@@ -9,13 +9,13 @@ import {
   FilepickerSeparator,
 } from "~/design/Filepicker";
 
-import { BaseFileSchemaType } from "~/api/filesTree/schema";
+import { BaseFileSchemaType } from "~/api/files/schema";
 import { ButtonBar } from "~/design/ButtonBar";
 import { FileList } from "./FileList";
 import { FilePathSegments } from "./FilepathSegments";
 import Input from "~/design/Input";
 import { analyzePath } from "~/util/router/utils";
-import { useNode } from "~/api/filesTree/query/node";
+import { useNode } from "~/api/files/query/node";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 

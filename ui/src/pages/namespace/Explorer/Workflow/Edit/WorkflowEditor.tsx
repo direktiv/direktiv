@@ -12,9 +12,9 @@ import { WorkspaceLayout } from "~/components/WorkspaceLayout";
 import { useEditorLayout } from "~/util/store/editor";
 import { useNamespace } from "~/util/store/namespace";
 import { useNamespaceLinting } from "~/api/namespaceLinting/query/useNamespaceLinting";
-import { useNode } from "~/api/filesTree/query/node";
+import { useNode } from "~/api/files/query/node";
 import { useTranslation } from "react-i18next";
-import { useUpdateFile } from "~/api/filesTree/mutate/updateFile";
+import { useUpdateFile } from "~/api/files/mutate/updateFile";
 
 export type NodeContentType = ReturnType<typeof useNode>["data"];
 
