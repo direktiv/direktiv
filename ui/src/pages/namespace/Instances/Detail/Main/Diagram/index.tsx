@@ -32,7 +32,7 @@ const Diagram: FC<DiagramProps> = ({ workflowPath, flow, status }) => {
   const maximizedPanel = useLogsPreferencesMaximizedPanel();
   const isMaximized = maximizedPanel === "diagram";
 
-  if (!data) return null;
+  if (data?.type !== "workflow") return null;
 
   const workflowData = decode(data.data ?? "");
 
