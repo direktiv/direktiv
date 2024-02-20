@@ -40,9 +40,10 @@ const RunWorkflow = ({ path }: { path: string }) => {
   const navigate = useNavigate();
   const { data } = useFile({ path });
   const submitButtonRef = useRef<HTMLButtonElement>(null);
-  const validationSchema = getValidationSchemaFromYaml(
-    decode(data?.data ?? "")
-  );
+  const validationSchema =
+    data?.type === "workflow"
+      ? getValidationSchemaFromYaml(decode(data?.data ?? ""))
+      : null;
 
   // tab handling
   const isFormAvailable = validationSchema !== null;
