@@ -209,7 +209,12 @@ func (flow *flow) cronHandler(data []byte) {
 
 	im, err := flow.engine.NewInstance(ctx, args)
 	if err != nil {
+		if strings.Contains(err.Error(), "could not serialize access") {
+			return
+		}
+
 		flow.sugar.Errorf("Error returned to gRPC request %s: %v", this(), err)
+
 		return
 	}
 
