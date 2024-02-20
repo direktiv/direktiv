@@ -16,6 +16,7 @@ import {
   FilepickerHeading,
   FilepickerList,
   FilepickerListItem,
+  FilepickerSeparator,
 } from "./";
 import { Fragment, useState } from "react";
 
@@ -25,7 +26,6 @@ import Button from "../Button";
 import { ButtonBar } from "../ButtonBar";
 
 import Input from "../Input";
-import { DropdownMenuSeparator } from "../Dropdown";
 
 const meta = {
   title: "Components/Filepicker",
@@ -48,15 +48,15 @@ export const Default: Story = {
 export const WithFewItems = () => (
   <Filepicker buttonText="Browse Files">
     <FilepickerHeading>Collection of Files</FilepickerHeading>
-    <DropdownMenuSeparator />
+    <FilepickerSeparator />
     <FilepickerListItem icon={FolderUp}>..</FilepickerListItem>
-    <DropdownMenuSeparator />
+    <FilepickerSeparator />
     <FilepickerListItem icon={Folder}>Images</FilepickerListItem>
-    <DropdownMenuSeparator />
+    <FilepickerSeparator />
     <FilepickerListItem icon={Folder}>Text</FilepickerListItem>
-    <DropdownMenuSeparator />
+    <FilepickerSeparator />
     <FilepickerListItem icon={File}>Readme.txt</FilepickerListItem>
-    <DropdownMenuSeparator />
+    <FilepickerSeparator />
     <FilepickerListItem icon={File}>Icon.jpg</FilepickerListItem>
   </Filepicker>
 );
@@ -110,11 +110,11 @@ export const WithManyItemsBreadcrumbHeadingAndCloseFunctionAtItemClick = () => {
             </Breadcrumb>
           </BreadcrumbRoot>
         </FilepickerHeading>
-        <DropdownMenuSeparator />
+        <FilepickerSeparator />
         <div className="h-auto w-full cursor-pointer p-0 font-normal text-gray-11 hover:underline focus:bg-transparent focus:ring-0 focus:ring-transparent focus:ring-offset-0 dark:text-gray-dark-11 dark:focus:bg-transparent">
           <FilepickerListItem icon={FolderUp}>..</FilepickerListItem>
         </div>
-        <DropdownMenuSeparator />
+        <FilepickerSeparator />
 
         <FilepickerList>
           {items.map((element) => (
@@ -130,7 +130,7 @@ export const WithManyItemsBreadcrumbHeadingAndCloseFunctionAtItemClick = () => {
                 </FilepickerListItem>
               </FilepickerClose>
 
-              <DropdownMenuSeparator />
+              <FilepickerSeparator />
             </Fragment>
           ))}
         </FilepickerList>
@@ -170,11 +170,11 @@ export const InAModal = () => {
                 </Breadcrumb>
               </BreadcrumbRoot>
             </FilepickerHeading>
-            <DropdownMenuSeparator />
+            <FilepickerSeparator />
             <div className="h-auto w-full cursor-pointer p-0 font-normal text-gray-11 hover:underline focus:bg-transparent focus:ring-0 focus:ring-transparent focus:ring-offset-0 dark:text-gray-dark-11 dark:focus:bg-transparent">
               <FilepickerListItem icon={FolderUp}>..</FilepickerListItem>
             </div>
-            <DropdownMenuSeparator />
+            <FilepickerSeparator />
 
             <FilepickerList>
               {items.map((element) => (
@@ -190,7 +190,7 @@ export const InAModal = () => {
                     </FilepickerListItem>
                   </FilepickerClose>
 
-                  <DropdownMenuSeparator />
+                  <FilepickerSeparator />
                 </Fragment>
               ))}
             </FilepickerList>

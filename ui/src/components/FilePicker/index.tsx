@@ -6,11 +6,11 @@ import {
   FilepickerList,
   FilepickerListItem,
   FilepickerMessage,
+  FilepickerSeparator,
 } from "~/design/Filepicker";
 import { Fragment, useState } from "react";
 
 import { ButtonBar } from "~/design/ButtonBar";
-import { DropdownMenuSeparator } from "~/design/Dropdown";
 import { FileList } from "./FileList";
 import { FilePathSegments } from "./FilepathSegments";
 import Input from "~/design/Input";
@@ -67,7 +67,7 @@ const FilePicker = ({
             setPath={(path) => setPath(path)}
           />
         </FilepickerHeading>
-        <DropdownMenuSeparator />
+        <FilepickerSeparator />
         {folderUpButton && (
           <>
             <FilepickerButton
@@ -77,7 +77,7 @@ const FilePicker = ({
             >
               <FilepickerListItem icon={FolderUp}>..</FilepickerListItem>
             </FilepickerButton>
-            <DropdownMenuSeparator />
+            <FilepickerSeparator />
           </>
         )}
         {emptyDirectory && (
@@ -96,7 +96,7 @@ const FilePicker = ({
                 {t("components.filepicker.error.linkText")}
               </FilepickerListItem>
             </FilepickerButton>
-            <DropdownMenuSeparator />
+            <FilepickerSeparator />
             <FilepickerMessage>
               {t("components.filepicker.error.title", { path })}
             </FilepickerMessage>
@@ -111,7 +111,7 @@ const FilePicker = ({
               setInputValue={(value) => setInputValue(value)}
               onChange={(path) => onChange?.(path)}
             />
-            <DropdownMenuSeparator />
+            <FilepickerSeparator />
           </FilepickerList>
         )}
       </Filepicker>
