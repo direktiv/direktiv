@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/direktiv/direktiv/pkg/refactor/spec"
 	"gopkg.in/yaml.v3"
 )
 
@@ -83,10 +82,10 @@ func LoadResource(data []byte) (interface{}, error) {
 		return wf, nil
 
 	case ServiceAPIV1:
-		sf := new(spec.ServiceFile)
+		sf := new(core.ServiceFile)
 		err = yaml.Unmarshal(data, &sf)
 		if err != nil {
-			return &spec.ServiceFile{
+			return &core.ServiceFile{
 				DirektivAPI: s,
 			}, fmt.Errorf("error parsing direktiv resource (%s): %w", s, err)
 		}
