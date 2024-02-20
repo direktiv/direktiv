@@ -69,7 +69,6 @@ func RunApplication() {
 	rootCmd.AddCommand(namespacesCmd)
 	rootCmd.AddCommand(createNamespaceCmd)
 	rootCmd.AddCommand(deleteNamespaceCmd)
-	rootCmd.AddCommand(renameNamespaceCmd)
 
 	rootCmd.AddCommand(directoryCmd)
 	rootCmd.AddCommand(createDirectoryCmd)

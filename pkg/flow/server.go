@@ -174,9 +174,9 @@ var _ mirror.ProcessLogger = &mirrorProcessLogger{}
 type mirrorCallbacks struct {
 	logger    mirror.ProcessLogger
 	syslogger *zap.SugaredLogger
-	store     mirror.Store
+	store     datastore.MirrorStore
 	fstore    filestore.FileStore
-	varstore  core.RuntimeVariablesStore
+	varstore  datastore.RuntimeVariablesStore
 	wfconf    func(ctx context.Context, nsID uuid.UUID, nsName string, file *filestore.File) error
 }
 
@@ -192,7 +192,7 @@ func (c *mirrorCallbacks) SysLogCrit(msg string) {
 	c.syslogger.Error(msg)
 }
 
-func (c *mirrorCallbacks) Store() mirror.Store {
+func (c *mirrorCallbacks) Store() datastore.MirrorStore {
 	return c.store
 }
 
@@ -200,7 +200,7 @@ func (c *mirrorCallbacks) FileStore() filestore.FileStore {
 	return c.fstore
 }
 
-func (c *mirrorCallbacks) VarStore() core.RuntimeVariablesStore {
+func (c *mirrorCallbacks) VarStore() datastore.RuntimeVariablesStore {
 	return c.varstore
 }
 
@@ -605,9 +605,7 @@ func (srv *server) registerFunctions() {
 	srv.pubsub.RegisterFunction(pubsub.PubsubUpdateEventDelays, srv.events.updateEventDelaysHandler)
 
 	srv.timers.registerFunction(timeoutFunction, srv.engine.timeoutHandler)
-	srv.timers.registerFunction(sleepWakeupFunction, srv.engine.sleepWakeup)
 	srv.timers.registerFunction(wfCron, srv.flow.cronHandler)
-	srv.timers.registerFunction(sendEventFunction, srv.events.sendEvent)
 	srv.timers.registerFunction(retryWakeupFunction, srv.flow.engine.retryWakeup)
 
 	srv.pubsub.RegisterFunction(pubsub.PubsubDeleteActivityTimersFunction, srv.timers.deleteActivityTimersHandler)

@@ -3,30 +3,28 @@ package datastore
 import (
 	"errors"
 
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/events"
 	"github.com/direktiv/direktiv/pkg/refactor/logengine"
-	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 )
 
 // Direktiv application data (namespaces, mirrors, etc..) are stored in a sql database. For each different
-// application data, there is a Store responsible for doing all the reading and writing database operations.
+// application data, there is a MirrorStore responsible for doing all the reading and writing database operations.
 
 // Store object wraps all different direktiv application stores.
 //
 //nolint:interfacebloat
 type Store interface {
-	Namespaces() core.NamespacesStore
+	Namespaces() NamespacesStore
 
-	// Mirror returns mirror.Store, is responsible for reading and writing mirrors information.
-	Mirror() mirror.Store
+	// Mirror returns datastore.MirrorStore, is responsible for reading and writing mirrors information.
+	Mirror() MirrorStore
 
 	// Logs returns logengine.LogStore, is responsible for reading and writing logs
 	Logs() logengine.LogStore
 
-	Secrets() core.SecretsStore
+	Secrets() SecretsStore
 
-	RuntimeVariables() core.RuntimeVariablesStore
+	RuntimeVariables() RuntimeVariablesStore
 
 	EventHistory() events.EventHistoryStore
 	EventListener() events.EventListenerStore

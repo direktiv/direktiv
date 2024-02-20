@@ -1,8 +1,8 @@
 
-/api/v2/namespaces/{namespace}/files-tree/{path}:
+/api/v2/namespaces/{namespace}/files/{path}:
   get:
     tags:
-      - files-tree
+      - files
     summary: Read any node in the filesystem tree
     # description:
     parameters:
@@ -23,26 +23,23 @@
               properties:
                 data:
                   type: object
-                  properties:
-                      file:
-                        allOf: # Combines the BasicErrorModel and the inline model
-                          - $ref: '../objects.yaml#/FileNodeWithoutData'
-                          - type: object
-                            description: filesystem-tree node data
-                            properties:
-                              data:
-                                type: string
-                                description: (only with type != directory) base64 encoded string of the file content
-
-                      paths:
-                        type: array
-                        description: list of filesystem-tree child nodes
-                        items:
-                          $ref: '../objects.yaml#/FileNodeWithoutData'
+                  allOf: # Combines the BasicErrorModel and the inline model
+                    - $ref: '../objects.yaml#/FileNodeWithoutData'
+                    - type: object
+                      description: files node data
+                      properties:
+                        data:
+                          type: string
+                          description: (only with type != directory) base64 encoded string of the file content
+                        children:
+                          type: array
+                          description: list of files child nodes
+                          items:
+                            $ref: '../objects.yaml#/FileNodeWithoutData'
 
   delete:
     tags:
-      - files-tree
+      - files
     summary: Delete any node in the filesystem tree
     # description:
     parameters:
@@ -60,7 +57,7 @@
 
   post:
     tags:
-      - files-tree
+      - files
     summary: Create a node in the filesystem tree
     # description:
     parameters:
@@ -107,7 +104,7 @@
 
   patch:
     tags:
-      - files-tree
+      - files
     summary: Update a node in the filesystem tree (change path or data)
     # description:
     parameters:
@@ -126,7 +123,7 @@
           schema:
             type: object
             properties:
-              absolutePath:
+              path:
                 type: string
                 description: the new absolute path of the node(file or directory name)
               data:
@@ -142,7 +139,7 @@
               allOf: # Combines the BasicErrorModel and the inline model
                 - $ref: '../objects.yaml#/FileNodeWithoutData'
                 - type: object
-                  description: filesystem-tree node data
+                  description: files node data
                   properties:
                     data:
                       type: string

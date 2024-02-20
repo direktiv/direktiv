@@ -12,13 +12,7 @@ import (
 )
 
 const (
-	timerCleanServer           = "cleanServer"
-	timerSchedWorkflow         = "schedWorkflow"
-	timerCleanInstanceRecords  = "cleanInstanceRecords"
-	timerCleanNamespaceRecords = "cleanNamespaceRecords"
-	timerCleanExpiredEvents    = "timerCleanExpiredEvents"
-	wfCron                     = "wfcron"
-	syncerCron                 = "syncercron"
+	wfCron = "wfcron"
 )
 
 const (

@@ -37,6 +37,7 @@ func sqlLiteSchema() string {
 		liteSchema = strings.ReplaceAll(liteSchema, " "+k+",", " "+v+",")
 		liteSchema = strings.ReplaceAll(liteSchema, " "+k+" ", " "+v+" ")
 	}
+	liteSchema = strings.ReplaceAll(liteSchema, "CREATE UNIQUE INDEX", "--")
 	liteSchema = strings.ReplaceAll(liteSchema, "CREATE INDEX", "--")
 	liteSchema = strings.ReplaceAll(liteSchema, "ALTER TABLE", "--")
 	liteSchema = strings.ReplaceAll(liteSchema, "DROP TABLE", "--")
@@ -106,6 +107,7 @@ func (tx *DB) BeginTx(ctx context.Context) (*DB, error) {
 	}
 
 	return &DB{
-		db: res,
+		db:        res,
+		secretKey: tx.secretKey,
 	}, nil
 }
