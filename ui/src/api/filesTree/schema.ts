@@ -96,7 +96,7 @@ const CreateNodeSchema = z.discriminatedUnion("type", [
 ]);
 
 const RenameNodeSchema = z.object({
-  absolutePath: z.string(),
+  path: z.string(),
 });
 
 const UpdateFileSchema = z.object({
@@ -144,6 +144,7 @@ export const PathCreatedSchema = z.object({ data: FileSchema });
 export const NodePatchedSchema = z.object({ data: FileSchema });
 
 export type FileSchemaType = z.infer<typeof FileSchema>;
+export type BaseFileSchemaType = z.infer<typeof BaseFileSchema>;
 export type UpdateFileSchemaType = z.infer<typeof UpdateFileSchema>;
 export type RenameFileSchemaType = z.infer<typeof RenameNodeSchema>;
 

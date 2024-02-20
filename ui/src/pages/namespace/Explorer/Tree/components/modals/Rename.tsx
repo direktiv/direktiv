@@ -76,7 +76,7 @@ const Rename = ({
     rename({
       node,
       file: {
-        absolutePath: `${getParentFromPath(node.path)}/${name}`,
+        path: `${getParentFromPath(node.path)}/${name}`,
       },
     });
   };
