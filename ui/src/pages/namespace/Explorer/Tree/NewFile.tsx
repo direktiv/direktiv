@@ -9,14 +9,14 @@ import NewService from "./components/modals/CreateNew/Service";
 import NewWorkflow from "./components/modals/CreateNew/Workflow";
 import { getFilenameFromPath } from "~/api/files/schema";
 import { twMergeClsx } from "~/util/helpers";
-import { useNode } from "~/api/files/query/node";
+import { useFile } from "~/api/files/query/file";
 
 type NewFileDialogProps = {
   path: string | undefined;
 };
 
 export const NewFileDialog: FC<NewFileDialogProps> = ({ path }) => {
-  const { data } = useNode({ path });
+  const { data } = useFile({ path });
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedDialog, setSelectedDialog] = useState<FileTypeSelection>();

@@ -1,11 +1,12 @@
 import {
   BaseFileSchemaType,
-  RenameFileSchemaType,
+  PathDeletedSchema,
   getFilenameFromPath,
   getParentFromPath,
 } from "../schema";
 
-import { patchNode } from "./patchNode";
+import { apiFactory } from "~/api/apiFactory";
+import { forceLeadingSlash } from "~/api/tree/utils";
 import { pathKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import useMutationWithPermissions from "~/api/useMutationWithPermissions";
@@ -14,11 +15,16 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
-export const useRenameNode = ({
+const deleteFile = apiFactory({
+  url: ({ namespace, path }: { namespace: string; path: string }) =>
+    `/api/v2/namespaces/${namespace}/files${forceLeadingSlash(path)}`,
+  method: "DELETE",
+  schema: PathDeletedSchema,
+});
+
+export const useDeleteFile = ({
   onSuccess,
-}: {
-  onSuccess?: () => void;
-} = {}) => {
+}: { onSuccess?: () => void } = {}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
   const { toast } = useToast();
@@ -30,43 +36,36 @@ export const useRenameNode = ({
   }
 
   return useMutationWithPermissions({
-    mutationFn: ({
-      node,
-      file,
-    }: {
-      node: BaseFileSchemaType;
-      file: RenameFileSchemaType;
-    }) =>
-      patchNode({
+    mutationFn: ({ node }: { node: BaseFileSchemaType }) =>
+      deleteFile({
         apiKey: apiKey ?? undefined,
-        payload: file,
         urlParams: {
           path: node.path,
           namespace,
         },
       }),
-    onSuccess(data, variables) {
+    onSuccess(_, variables) {
       queryClient.invalidateQueries(
         pathKeys.paths(namespace, {
           apiKey: apiKey ?? undefined,
-          path: getParentFromPath(data.data.path),
+          path: getParentFromPath(variables.node.path),
         })
       );
       toast({
-        title: t("api.tree.mutate.file.rename.success.title", {
-          type: variables.node.type === "workflow" ? "workflow" : "directory",
-        }),
-        description: t("api.tree.mutate.file.rename.success.description", {
+        title: t("api.tree.mutate.file.delete.success.title"),
+        description: t("api.tree.mutate.file.delete.success.description", {
           name: getFilenameFromPath(variables.node.path),
         }),
         variant: "success",
       });
       onSuccess?.();
     },
-    onError: () => {
+    onError: (_, variables) => {
       toast({
         title: t("api.generic.error"),
-        description: t("api.tree.mutate.file.rename.error.description"),
+        description: t("api.tree.mutate.file.delete.error.description", {
+          name: getFilenameFromPath(variables.node.path),
+        }),
         variant: "error",
       });
     },

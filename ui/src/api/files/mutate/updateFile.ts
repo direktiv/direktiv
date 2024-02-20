@@ -1,7 +1,7 @@
 import { UpdateFileSchemaType } from "../schema";
 import { forceLeadingSlash } from "~/api/tree/utils";
 import { getMessageFromApiError } from "~/api/errorHandling";
-import { patchNode } from "./patchNode";
+import { patchFile } from "./patchFile";
 import { pathKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import useMutationWithPermissions from "~/api/useMutationWithPermissions";
@@ -31,7 +31,7 @@ export const useUpdateFile = ({
       path: string;
       payload: UpdateFileSchemaType;
     }) =>
-      patchNode({
+      patchFile({
         apiKey: apiKey ?? undefined,
         payload,
         urlParams: {

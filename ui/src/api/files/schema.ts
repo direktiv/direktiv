@@ -140,7 +140,7 @@ export const PathDeletedSchema = z.null();
 export const PathCreatedSchema = z.object({ data: FileSchema });
 
 // data is only returned in the response when it has changed.
-export const NodePatchedSchema = z.object({
+export const FilePatchedSchema = z.object({
   data: BaseFileSchema.extend({ data: z.string().optional() }),
 });
 

@@ -16,7 +16,7 @@ import { InstanceSchemaType } from "~/api/instances/schema";
 import WorkflowDiagram from "~/design/WorkflowDiagram";
 import { decode } from "js-base64";
 import { instanceStatusToDiagramStatus } from "./utils";
-import { useNode } from "~/api/files/query/node";
+import { useFile } from "~/api/files/query/file";
 import { useTranslation } from "react-i18next";
 
 type DiagramProps = {
@@ -26,7 +26,7 @@ type DiagramProps = {
 };
 
 const Diagram: FC<DiagramProps> = ({ workflowPath, flow, status }) => {
-  const { data } = useNode({ path: workflowPath });
+  const { data } = useFile({ path: workflowPath });
   const { setMaximizedPanel } = useLogsPreferencesActions();
   const { t } = useTranslation();
   const maximizedPanel = useLogsPreferencesMaximizedPanel();

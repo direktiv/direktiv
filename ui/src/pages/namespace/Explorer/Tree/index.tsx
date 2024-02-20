@@ -21,15 +21,15 @@ import Rename from "./components/modals/Rename";
 import { analyzePath } from "~/util/router/utils";
 import { pages } from "~/util/router/pages";
 import { twMergeClsx } from "~/util/helpers";
+import { useFile } from "~/api/files/query/file";
 import { useNamespace } from "~/util/store/namespace";
-import { useNode } from "~/api/files/query/node";
 import { useTranslation } from "react-i18next";
 
 const ExplorerPage: FC = () => {
   const namespace = useNamespace();
   const { path } = pages.explorer.useParams();
   const { data, isSuccess, isFetched, isAllowed, noPermissionMessage } =
-    useNode({
+    useFile({
       path,
     });
 
@@ -40,7 +40,7 @@ const ExplorerPage: FC = () => {
   // so when the user clicks on the delete button in the list, we
   // set the pointer to that node for the dialog
   const [deleteNode, setDeleteNode] = useState<BaseFileSchemaType>();
-  const [renameNode, setRenameNode] = useState<BaseFileSchemaType>();
+  const [renameFile, setRenameNode] = useState<BaseFileSchemaType>();
   const [previewNode, setPreviewNode] = useState<BaseFileSchemaType>();
   const { t } = useTranslation();
 
@@ -120,9 +120,9 @@ const ExplorerPage: FC = () => {
                     }}
                   />
                 )}
-                {renameNode && (
+                {renameFile && (
                   <Rename
-                    node={renameNode}
+                    node={renameFile}
                     close={() => {
                       setDialogOpen(false);
                     }}

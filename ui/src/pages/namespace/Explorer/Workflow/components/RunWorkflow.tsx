@@ -17,9 +17,9 @@ import { Play } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
 import { decode } from "js-base64";
 import { pages } from "~/util/router/pages";
+import { useFile } from "~/api/files/query/file";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { useNode } from "~/api/files/query/node";
 import { useRunWorkflow } from "~/api/tree/mutate/runWorkflow";
 import { useTheme } from "~/util/store/theme";
 import { useToast } from "~/design/Toast";
@@ -38,7 +38,7 @@ const RunWorkflow = ({ path }: { path: string }) => {
   const { t } = useTranslation();
   const theme = useTheme();
   const navigate = useNavigate();
-  const { data } = useNode({ path });
+  const { data } = useFile({ path });
   const submitButtonRef = useRef<HTMLButtonElement>(null);
   const validationSchema = getValidationSchemaFromYaml(
     decode(data?.data ?? "")

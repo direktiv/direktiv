@@ -4,8 +4,8 @@ import { Breadcrumb as BreadcrumbLink } from "~/design/Breadcrumbs";
 import { FC } from "react";
 import { Link } from "react-router-dom";
 import { pages } from "~/util/router/pages";
+import { useFile } from "~/api/files/query/file";
 import { useNamespace } from "~/util/store/namespace";
-import { useNode } from "~/api/files/query/node";
 
 const BreadcrumbSegment: FC<{
   absolute: string;
@@ -19,7 +19,7 @@ const BreadcrumbSegment: FC<{
    * icon to use
    */
 
-  const { data } = useNode({
+  const { data } = useFile({
     path: absolute,
     enabled: isLast,
   });

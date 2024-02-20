@@ -8,8 +8,8 @@ import { Link } from "react-router-dom";
 import { NoPermissions } from "~/design/Table";
 import { analyzePath } from "~/util/router/utils";
 import { pages } from "~/util/router/pages";
+import { useFile } from "~/api/files/query/file";
 import { useNamespace } from "~/util/store/namespace";
-import { useNode } from "~/api/files/query/node";
 import { useTranslation } from "react-i18next";
 
 const ConsumerPage: FC = () => {
@@ -24,7 +24,7 @@ const ConsumerPage: FC = () => {
     noPermissionMessage,
     data: consumerData,
     isFetched: isPermissionCheckFetched,
-  } = useNode({ path });
+  } = useFile({ path });
 
   if (!namespace) return null;
   if (!path) return null;

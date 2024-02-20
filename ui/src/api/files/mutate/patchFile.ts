@@ -1,8 +1,8 @@
-import { NodePatchedSchema } from "../schema";
+import { FilePatchedSchema } from "../schema";
 import { apiFactory } from "~/api/apiFactory";
 import { forceLeadingSlash } from "~/api/tree/utils";
 
-export const patchNode = apiFactory({
+export const patchFile = apiFactory({
   url: ({
     baseUrl,
     namespace,
@@ -16,5 +16,5 @@ export const patchNode = apiFactory({
       path
     )}`,
   method: "PATCH",
-  schema: NodePatchedSchema,
+  schema: FilePatchedSchema,
 });

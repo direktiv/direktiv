@@ -15,7 +15,7 @@ import { FileList } from "./FileList";
 import { FilePathSegments } from "./FilepathSegments";
 import Input from "~/design/Input";
 import { analyzePath } from "~/util/router/utils";
-import { useNode } from "~/api/files/query/node";
+import { useFile } from "~/api/files/query/file";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -36,7 +36,7 @@ const FilePicker = ({
   const [path, setPath] = useState(convertFileToPath(defaultPath));
   const [inputValue, setInputValue] = useState(defaultPath ? defaultPath : "");
 
-  const { data, isError } = useNode({
+  const { data, isError } = useFile({
     path,
     namespace,
   });

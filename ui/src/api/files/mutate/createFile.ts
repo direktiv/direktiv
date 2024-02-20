@@ -13,7 +13,7 @@ import { useNamespace } from "~/util/store/namespace";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
-export const createNode = apiFactory({
+export const createFile = apiFactory({
   url: ({
     baseUrl,
     namespace,
@@ -30,9 +30,9 @@ export const createNode = apiFactory({
   schema: PathCreatedSchema,
 });
 
-type ResolvedCreateFile = Awaited<ReturnType<typeof createNode>>;
+type ResolvedCreateFile = Awaited<ReturnType<typeof createFile>>;
 
-export const useCreateNode = ({
+export const useCreateFile = ({
   onSuccess,
 }: { onSuccess?: (data: ResolvedCreateFile) => void } = {}) => {
   const apiKey = useApiKey();
@@ -52,7 +52,7 @@ export const useCreateNode = ({
       path?: string;
       file: CreateFileSchemaType;
     }) =>
-      createNode({
+      createFile({
         apiKey: apiKey ?? undefined,
         payload: file,
         urlParams: {
@@ -61,10 +61,10 @@ export const useCreateNode = ({
         },
       }),
     onSuccess(data, variables) {
-      const nodeType =
+      const fileType =
         variables.file.type === "directory" ? "directory" : "file";
       toast({
-        title: t(`api.tree.mutate.${nodeType}.create.success.title`),
+        title: t(`api.tree.mutate.${fileType}.create.success.title`),
         description: t(`api.tree.mutate.file.create.success.description`, {
           name: getFilenameFromPath(variables.file.name),
           path: getParentFromPath(data.data.path),
@@ -73,10 +73,12 @@ export const useCreateNode = ({
       });
       onSuccess?.(data);
     },
-    onError: () => {
+    onError: (_, variables) => {
       toast({
         title: t("api.generic.error"),
-        description: t(`api.tree.mutate.file.create.error.description`),
+        description: t(`api.tree.mutate.file.create.error.description`, {
+          name: getFilenameFromPath(variables.file.name),
+        }),
         variant: "error",
       });
     },

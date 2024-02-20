@@ -5,7 +5,7 @@ import { expect, test } from "@playwright/test";
 import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
 import { encode } from "js-base64";
 import { headers } from "e2e/utils/testutils";
-import { patchNode } from "~/api/files/mutate/patchNode";
+import { patchFile } from "~/api/files/mutate/patchFile";
 
 let namespace = "";
 
@@ -148,7 +148,7 @@ test("Consumer list will update the consumers when refetch button is clicked", a
     "it shows the (old) password"
   ).toHaveValue("passwordOld");
 
-  await patchNode({
+  await patchFile({
     payload: {
       data: encode(
         createRedisConsumerFile({

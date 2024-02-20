@@ -13,12 +13,12 @@ import { RouteSchemaType } from "~/api/gateway/schema";
 import { Save } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
 import { serializeEndpointFile } from "./utils";
-import { useNode } from "~/api/files/query/node";
+import { useFile } from "~/api/files/query/file";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 import { useUpdateFile } from "~/api/files/mutate/updateFile";
 
-type NodeContentType = ReturnType<typeof useNode>["data"];
+type NodeContentType = ReturnType<typeof useFile>["data"];
 
 type EndpointEditorProps = {
   data: NonNullable<NodeContentType>;

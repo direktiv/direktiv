@@ -1,11 +1,11 @@
 import { FC } from "react";
 import WorkflowEditor from "./WorkflowEditor";
 import { pages } from "~/util/router/pages";
-import { useNode } from "~/api/files/query/node";
+import { useFile } from "~/api/files/query/file";
 
 const WorkflowOverviewPage: FC = () => {
   const { path } = pages.explorer.useParams();
-  const { data } = useNode({ path });
+  const { data } = useFile({ path });
   if (!data || !path) return null;
 
   // Editor is moved into a separate component to give us a state where

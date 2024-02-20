@@ -12,7 +12,7 @@ import Editor from "~/design/Editor";
 import { File } from "lucide-react";
 import { decode } from "js-base64";
 import { mimeTypeToEditorSyntax } from "~/design/Editor/utils";
-import { useNode } from "~/api/files/query/node";
+import { useFile } from "~/api/files/query/file";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 
@@ -35,7 +35,7 @@ const imageSrc = (mimeType: string, source: string) =>
 const FileViewer = ({ node }: { node: BaseFileSchemaType }) => {
   const { t } = useTranslation();
   const theme = useTheme();
-  const { data } = useNode({ path: node.path });
+  const { data } = useFile({ path: node.path });
 
   const fileContent = decode(data?.data ?? "");
   const mimeType = data?.mimeType;

@@ -30,7 +30,7 @@ const {
   createNode,
   createMirrorNode,
   deleteNode,
-  renameNode,
+  renameFile,
 } = useNodes(
   Config.url,
   streamNodes,
@@ -48,7 +48,7 @@ The state of `pageHandler.pageParams` from the previous example can be manipulat
 ```js
 const PAGE_SIZE = 10
 const pageHandler = usePageHandler(PAGE_SIZE)
-const {data, err, templates, pageInfo, createNode, createMirrorNode, deleteNode, renameNode } = useNodes(Config.url, streamNodes, namespace, path, localStorage.getItem("apikey"), pageHandler.pageParams)
+const {data, err, templates, pageInfo, createNode, createMirrorNode, deleteNode, renameFile } = useNodes(Config.url, streamNodes, namespace, path, localStorage.getItem("apikey"), pageHandler.pageParams)
 
 ...
 <Pagination pageHandler={pageHandler} pageInfo={pageInfo}/>

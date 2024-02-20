@@ -10,13 +10,13 @@ import { EditorLayoutSwitcher } from "~/components/EditorLayoutSwitcher";
 import RunWorkflow from "../components/RunWorkflow";
 import { WorkspaceLayout } from "~/components/WorkspaceLayout";
 import { useEditorLayout } from "~/util/store/editor";
+import { useFile } from "~/api/files/query/file";
 import { useNamespace } from "~/util/store/namespace";
 import { useNamespaceLinting } from "~/api/namespaceLinting/query/useNamespaceLinting";
-import { useNode } from "~/api/files/query/node";
 import { useTranslation } from "react-i18next";
 import { useUpdateFile } from "~/api/files/mutate/updateFile";
 
-export type NodeContentType = ReturnType<typeof useNode>["data"];
+export type NodeContentType = ReturnType<typeof useFile>["data"];
 
 const WorkflowEditor: FC<{
   data: NonNullable<NodeContentType>;

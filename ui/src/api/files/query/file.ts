@@ -8,17 +8,17 @@ import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 import useQueryWithPermissions from "~/api/useQueryWithPermissions";
 
-const getNode = apiFactory({
+const getFile = apiFactory({
   url: ({ namespace, path }: { namespace: string; path?: string }) =>
     `/api/v2/namespaces/${namespace}/files${forceLeadingSlash(path)}`,
   method: "GET",
   schema: FileListSchema,
 });
 
-const fetchNode = async ({
+const fetchFile = async ({
   queryKey: [{ apiKey, namespace, path }],
 }: QueryFunctionContext<ReturnType<(typeof pathKeys)["paths"]>>) =>
-  getNode({
+  getFile({
     apiKey,
     urlParams: {
       namespace,
@@ -26,7 +26,7 @@ const fetchNode = async ({
     },
   });
 
-export const useNode = ({
+export const useFile = ({
   path,
   enabled = true,
   namespace: givenNamespace,
@@ -49,7 +49,7 @@ export const useNode = ({
       apiKey: apiKey ?? undefined,
       path: forceLeadingSlash(path),
     }),
-    queryFn: fetchNode,
+    queryFn: fetchFile,
     select(response) {
       const { data } = response;
       return {
