@@ -25,7 +25,7 @@ const EndpointPage: FC = () => {
   const {
     isAllowed,
     noPermissionMessage,
-    data: gatewayData,
+    data: endpointData,
     isFetched: isPermissionCheckFetched,
   } = useFile({ path });
 
@@ -33,7 +33,7 @@ const EndpointPage: FC = () => {
 
   if (!namespace) return null;
   if (!path) return null;
-  if (!gatewayData) return null;
+  if (!endpointData || endpointData.type !== "endpoint") return null;
   if (!isPermissionCheckFetched) return null;
   if (!isRouteListFetched) return null;
 
@@ -75,7 +75,7 @@ const EndpointPage: FC = () => {
           </Button>
         </div>
       </div>
-      <EndpointEditor data={gatewayData} route={matchingRoute} />
+      <EndpointEditor data={endpointData} />
     </>
   );
 };

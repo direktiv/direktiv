@@ -37,6 +37,8 @@ const FileViewer = ({ node }: { node: BaseFileSchemaType }) => {
   const theme = useTheme();
   const { data } = useFile({ path: node.path });
 
+  if (data?.type === "directory") return null;
+
   const fileContent = decode(data?.data ?? "");
   const mimeType = data?.mimeType;
 

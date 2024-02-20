@@ -62,10 +62,15 @@ const ExplorerPage: FC = () => {
       </Card>
     );
 
-  const children = data?.children || [];
+  const children = data?.type === "directory" ? data?.children : [];
   const showTable = !isRoot || children.length > 0;
   const noResults = isSuccess && children.length === 0;
   const wideOverlay = !!previewNode;
+
+  const existingNames =
+    data?.type === "directory"
+      ? data.children?.map((file) => getFilenameFromPath(file.path))
+      : [];
 
   return (
     <>
@@ -126,11 +131,7 @@ const ExplorerPage: FC = () => {
                     close={() => {
                       setDialogOpen(false);
                     }}
-                    unallowedNames={
-                      data?.children?.map((file) =>
-                        getFilenameFromPath(file.path)
-                      ) || []
-                    }
+                    unallowedNames={existingNames}
                   />
                 )}
               </DialogContent>

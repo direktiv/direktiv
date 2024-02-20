@@ -28,7 +28,7 @@ const ConsumerPage: FC = () => {
 
   if (!namespace) return null;
   if (!path) return null;
-  if (!consumerData) return null;
+  if (!consumerData || consumerData.type !== "consumer") return null;
   if (!isPermissionCheckFetched) return null;
 
   if (isAllowed === false)

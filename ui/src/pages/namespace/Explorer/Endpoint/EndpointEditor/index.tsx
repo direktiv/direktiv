@@ -7,22 +7,18 @@ import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
 import { EndpointFormSchemaType } from "./schema";
 import { FC } from "react";
+import { FileSchemaType } from "~/api/files/schema";
 import { Form } from "./Form";
 import FormErrors from "~/components/FormErrors";
-import { RouteSchemaType } from "~/api/gateway/schema";
 import { Save } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
 import { serializeEndpointFile } from "./utils";
-import { useFile } from "~/api/files/query/file";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 import { useUpdateFile } from "~/api/files/mutate/updateFile";
 
-type NodeContentType = ReturnType<typeof useFile>["data"];
-
 type EndpointEditorProps = {
-  data: NonNullable<NodeContentType>;
-  route?: RouteSchemaType;
+  data: NonNullable<FileSchemaType>;
 };
 
 const EndpointEditor: FC<EndpointEditorProps> = ({ data }) => {

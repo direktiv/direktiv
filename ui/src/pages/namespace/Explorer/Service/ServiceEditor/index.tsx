@@ -5,6 +5,7 @@ import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
 import { FC } from "react";
+import { FileSchemaType } from "~/api/files/schema";
 import { Form } from "./Form";
 import FormErrors from "~/components/FormErrors";
 import { Save } from "lucide-react";
@@ -12,15 +13,12 @@ import { ScrollArea } from "~/design/ScrollArea";
 import { ServiceFormSchemaType } from "./schema";
 import { jsonToYaml } from "../../utils";
 import { serializeServiceFile } from "./utils";
-import { useFile } from "~/api/files/query/file";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 import { useUpdateFile } from "~/api/files/mutate/updateFile";
 
-type NodeContentType = ReturnType<typeof useFile>["data"];
-
 type ServiceEditorProps = {
-  data: NonNullable<NodeContentType>;
+  data: NonNullable<FileSchemaType>;
 };
 
 const ServiceEditor: FC<ServiceEditorProps> = ({ data }) => {

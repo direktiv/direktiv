@@ -27,6 +27,11 @@ export const NewFileDialog: FC<NewFileDialogProps> = ({ path }) => {
 
   const wideOverlay = !!selectedDialog && selectedDialog === "new-workflow";
 
+  const existingNames =
+    data?.type === "directory"
+      ? data.children?.map((file) => getFilenameFromPath(file.path))
+      : [];
+
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <NewFileButton setSelectedDialog={setSelectedDialog} />
@@ -38,50 +43,35 @@ export const NewFileDialog: FC<NewFileDialogProps> = ({ path }) => {
         {selectedDialog === "new-dir" && (
           <NewDirectory
             path={data?.path}
-            unallowedNames={
-              data?.children?.map((file) => getFilenameFromPath(file.path)) ||
-              []
-            }
+            unallowedNames={existingNames}
             close={() => setDialogOpen(false)}
           />
         )}
         {selectedDialog === "new-workflow" && (
           <NewWorkflow
             path={data?.path}
-            unallowedNames={
-              data?.children?.map((file) => getFilenameFromPath(file.path)) ||
-              []
-            }
+            unallowedNames={existingNames}
             close={() => setDialogOpen(false)}
           />
         )}
         {selectedDialog === "new-service" && (
           <NewService
             path={data?.path}
-            unallowedNames={
-              data?.children?.map((file) => getFilenameFromPath(file.path)) ||
-              []
-            }
+            unallowedNames={existingNames}
             close={() => setDialogOpen(false)}
           />
         )}
         {selectedDialog === "new-route" && (
           <NewRoute
             path={data?.path}
-            unallowedNames={
-              data?.children?.map((file) => getFilenameFromPath(file.path)) ||
-              []
-            }
+            unallowedNames={existingNames}
             close={() => setDialogOpen(false)}
           />
         )}
         {selectedDialog === "new-consumer" && (
           <NewConsumer
             path={data?.path}
-            unallowedNames={
-              data?.children?.map((file) => getFilenameFromPath(file.path)) ||
-              []
-            }
+            unallowedNames={existingNames}
             close={() => setDialogOpen(false)}
           />
         )}

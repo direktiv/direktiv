@@ -70,6 +70,7 @@ export const direktivFileTypes = [
 
 const direktivFileTypeSchema = z.enum(direktivFileTypes);
 
+/* All filesystem records (including "directories") have these properties. */
 const BaseFileSchema = z.object({
   type: direktivFileTypeSchema,
   path: z.string().nonempty(),
@@ -77,15 +78,16 @@ const BaseFileSchema = z.object({
   updatedAt: z.string(),
 });
 
-const FileSchema = z.object({
-  type: direktivFileTypeSchema,
-  path: z.string().nonempty(),
-  createdAt: z.string(),
-  updatedAt: z.string(),
-  size: z.number().optional(), // not for directories
-  mimeType: z.string().optional(), // not for directories
-  data: z.string().optional(), // not for directories
-  children: z.array(BaseFileSchema).nullable().optional(), // only for directories
+const FileSchema = BaseFileSchema.extend({
+  type: direktivFileTypeSchema.exclude(["directory"]),
+  size: z.number(),
+  mimeType: z.string(),
+  data: z.string(),
+});
+
+export const DirectorySchema = BaseFileSchema.extend({
+  type: z.literal("directory"),
+  children: z.array(BaseFileSchema), // not accurate
 });
 
 const CreateDirectorySchema = z.object({
@@ -133,10 +135,11 @@ const UpdateFileSchema = z.object({
 });
 
 export const FileListSchema = z.object({
-  data: FileSchema,
+  data: DirectorySchema.or(FileSchema),
 });
 
 export const FileDeletedSchema = z.null();
+
 export const FileCreatedSchema = z.object({ data: FileSchema });
 
 // data is only returned in the response when it has changed.
@@ -144,10 +147,11 @@ export const FilePatchedSchema = z.object({
   data: BaseFileSchema.extend({ data: z.string().optional() }),
 });
 
-export type FileSchemaType = z.infer<typeof FileSchema>;
 export type BaseFileSchemaType = z.infer<typeof BaseFileSchema>;
+export type DirectorySchemaType = z.infer<typeof DirectorySchema>;
+export type FileSchemaType = z.infer<typeof FileSchema>;
+
 export type UpdateFileSchemaType = z.infer<typeof UpdateFileSchema>;
 export type RenameFileSchemaType = z.infer<typeof RenameFileSchema>;
-
 export type CreateFileSchemaType = z.infer<typeof CreateFileSchema>;
 export type FileListSchemaType = z.infer<typeof FileListSchema>;

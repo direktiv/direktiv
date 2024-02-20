@@ -45,8 +45,8 @@ const FilePicker = ({
 
   const { parent, isRoot, segments } = analyzePath(path);
 
-  const results = data?.children ?? [];
-  const noResults = data?.children?.length ? false : true;
+  const results = data?.type === "directory" ? data?.children ?? [] : [];
+  const noResults = results.length ? false : true;
 
   const pathNotFound = isError;
   const emptyDirectory = !isError && noResults;

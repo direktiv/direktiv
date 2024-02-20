@@ -52,10 +52,10 @@ export const useFile = ({
     queryFn: fetchFile,
     select(response) {
       const { data } = response;
-      return {
-        ...data,
-        children: data.children ? data.children.sort(sortFoldersFirst) : null,
-      };
+      if (data.type === "directory") {
+        data.children = data.children.sort(sortFoldersFirst);
+      }
+      return data;
     },
     enabled: !!namespace && enabled,
   });

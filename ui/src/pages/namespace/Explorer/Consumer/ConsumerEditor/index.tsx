@@ -6,21 +6,19 @@ import { Card } from "~/design/Card";
 import { ConsumerFormSchemaType } from "./schema";
 import Editor from "~/design/Editor";
 import { FC } from "react";
+import { FileSchemaType } from "~/api/files/schema";
 import { Form } from "./Form";
 import FormErrors from "~/components/FormErrors";
 import { Save } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
 import { jsonToYaml } from "../../utils";
 import { serializeConsumerFile } from "./utils";
-import { useFile } from "~/api/files/query/file";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 import { useUpdateFile } from "~/api/files/mutate/updateFile";
 
-type NodeContentType = ReturnType<typeof useFile>["data"];
-
 type ConsumerEditorProps = {
-  data: NonNullable<NodeContentType>;
+  data: NonNullable<FileSchemaType>;
 };
 
 const ConsumerEditor: FC<ConsumerEditorProps> = ({ data }) => {
