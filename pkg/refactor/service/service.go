@@ -21,7 +21,7 @@ const (
 var GetServiceURL func(namespace string, typ string, file string, name string) string
 
 func getKnativeServiceURL(knativeNamespace string, namespace string, typ string, file string, name string) string {
-	id := (&core.ServiceConfig{
+	id := (&core.ServiceFileData{
 		Typ:       typ,
 		Namespace: namespace,
 		FilePath:  file,
@@ -32,7 +32,7 @@ func getKnativeServiceURL(knativeNamespace string, namespace string, typ string,
 }
 
 func getDockerServiceURL(namespace string, typ string, file string, name string) string {
-	id := (&core.ServiceConfig{
+	id := (&core.ServiceFileData{
 		Typ:       typ,
 		Namespace: namespace,
 		FilePath:  file,
