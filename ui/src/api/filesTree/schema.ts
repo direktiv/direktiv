@@ -141,7 +141,11 @@ export const FileListSchema = z.object({
 
 export const PathDeletedSchema = z.null();
 export const PathCreatedSchema = z.object({ data: FileSchema });
-export const NodePatchedSchema = z.object({ data: FileSchema });
+
+// data is only returned in the response when it has changed.
+export const NodePatchedSchema = z.object({
+  data: BaseFileSchema.extend({ data: z.string().optional() }),
+});
 
 export type FileSchemaType = z.infer<typeof FileSchema>;
 export type BaseFileSchemaType = z.infer<typeof BaseFileSchema>;
