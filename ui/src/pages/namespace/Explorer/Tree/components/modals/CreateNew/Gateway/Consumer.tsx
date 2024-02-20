@@ -88,7 +88,7 @@ const NewConsumer = ({
       file: {
         name,
         mimeType: "application/yaml",
-        type: "endpoint",
+        type: "consumer",
         data: encode(fileContent),
       },
     });
