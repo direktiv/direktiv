@@ -52,7 +52,7 @@ export const useFile = ({
     queryFn: fetchFile,
     select(response) {
       const { data } = response;
-      if (data.type === "directory") {
+      if (data.type === "directory" && data.children) {
         data.children = data.children.sort(sortFoldersFirst);
       }
       return data;

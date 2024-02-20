@@ -7,19 +7,17 @@ import Button from "~/design/Button";
 import { CodeEditor } from "./CodeEditor";
 import { Diagram } from "./Diagram";
 import { EditorLayoutSwitcher } from "~/components/EditorLayoutSwitcher";
+import { FileSchemaType } from "~/api/files/schema";
 import RunWorkflow from "../components/RunWorkflow";
 import { WorkspaceLayout } from "~/components/WorkspaceLayout";
 import { useEditorLayout } from "~/util/store/editor";
-import { useFile } from "~/api/files/query/file";
 import { useNamespace } from "~/util/store/namespace";
 import { useNamespaceLinting } from "~/api/namespaceLinting/query/useNamespaceLinting";
 import { useTranslation } from "react-i18next";
 import { useUpdateFile } from "~/api/files/mutate/updateFile";
 
-export type NodeContentType = ReturnType<typeof useFile>["data"];
-
 const WorkflowEditor: FC<{
-  data: NonNullable<NodeContentType>;
+  data: NonNullable<FileSchemaType>;
 }> = ({ data }) => {
   const currentLayout = useEditorLayout();
   const { t } = useTranslation();

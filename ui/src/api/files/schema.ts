@@ -87,7 +87,7 @@ const FileSchema = BaseFileSchema.extend({
 
 export const DirectorySchema = BaseFileSchema.extend({
   type: z.literal("directory"),
-  children: z.array(BaseFileSchema), // not accurate
+  children: z.array(BaseFileSchema).optional(), // TODO: this isn't accurate
 });
 
 const CreateDirectorySchema = z.object({
@@ -140,7 +140,16 @@ export const FileListSchema = z.object({
 
 export const FileDeletedSchema = z.null();
 
-export const FileCreatedSchema = z.object({ data: FileSchema });
+/**
+ * expected response for
+ * POST /api/v2/namespaces/:namespace/files/
+ *
+ * The actual response contains more data, but since we do not use
+ * it, we do not bother with defining it here.
+ */
+export const FileCreatedSchema = z.object({
+  data: BaseFileSchema,
+});
 
 // data is only returned in the response when it has changed.
 export const FilePatchedSchema = z.object({

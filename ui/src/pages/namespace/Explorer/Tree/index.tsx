@@ -62,13 +62,13 @@ const ExplorerPage: FC = () => {
       </Card>
     );
 
-  const children = data?.type === "directory" ? data?.children : [];
+  const children = (data?.type === "directory" && data?.children) || [];
   const showTable = !isRoot || children.length > 0;
   const noResults = isSuccess && children.length === 0;
   const wideOverlay = !!previewNode;
 
   const existingNames =
-    data?.type === "directory"
+    data?.type === "directory" && data.children
       ? data.children?.map((file) => getFilenameFromPath(file.path))
       : [];
 
