@@ -5,11 +5,11 @@ import {
   DialogTitle,
 } from "~/design/Dialog";
 
+import { BaseFileSchemaType } from "~/api/filesTree/schema";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
 import { File } from "lucide-react";
-import { FileSchemaType } from "~/api/filesTree/schema";
 import { decode } from "js-base64";
 import { mimeTypeToEditorSyntax } from "~/design/Editor/utils";
 import { useNode } from "~/api/filesTree/query/node";
@@ -32,7 +32,7 @@ const NoPreview = ({ mimeType }: { mimeType?: string }) => {
 const imageSrc = (mimeType: string, source: string) =>
   `data:${mimeType};base64,${source}`;
 
-const FileViewer = ({ node }: { node: FileSchemaType }) => {
+const FileViewer = ({ node }: { node: BaseFileSchemaType }) => {
   const { t } = useTranslation();
   const theme = useTheme();
   const { data } = useNode({ path: node.path });

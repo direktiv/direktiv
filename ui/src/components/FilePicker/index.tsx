@@ -8,15 +8,15 @@ import {
   FilepickerMessage,
   FilepickerSeparator,
 } from "~/design/Filepicker";
-import { Fragment, useState } from "react";
 
+import { BaseFileSchemaType } from "~/api/filesTree/schema";
 import { ButtonBar } from "~/design/ButtonBar";
 import { FileList } from "./FileList";
 import { FilePathSegments } from "./FilepathSegments";
-import { FileSchemaType } from "~/api/filesTree/schema";
 import Input from "~/design/Input";
 import { analyzePath } from "~/util/router/utils";
 import { useNode } from "~/api/filesTree/query/node";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 const convertFileToPath = (string?: string) =>
@@ -31,7 +31,7 @@ const FilePicker = ({
   namespace?: string;
   defaultPath?: string;
   onChange?: (filePath: string) => void;
-  selectable?: (node: FileSchemaType) => boolean;
+  selectable?: (node: BaseFileSchemaType) => boolean;
 }) => {
   const [path, setPath] = useState(convertFileToPath(defaultPath));
   const [inputValue, setInputValue] = useState(defaultPath ? defaultPath : "");

@@ -1,5 +1,5 @@
 import {
-  FileSchemaType,
+  BaseFileSchemaType,
   PathDeletedSchema,
   getFilenameFromPath,
   getParentFromPath,
@@ -36,7 +36,7 @@ export const useDeletePath = ({
   }
 
   return useMutationWithPermissions({
-    mutationFn: ({ node }: { node: FileSchemaType }) =>
+    mutationFn: ({ node }: { node: BaseFileSchemaType }) =>
       deleteNode({
         apiKey: apiKey ?? undefined,
         urlParams: {

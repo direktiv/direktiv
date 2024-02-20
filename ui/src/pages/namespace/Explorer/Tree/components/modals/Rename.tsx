@@ -1,14 +1,14 @@
 import {
+  BaseFileSchemaType,
+  getFilenameFromPath,
+  getParentFromPath,
+} from "~/api/filesTree/schema";
+import {
   DialogClose,
   DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "~/design/Dialog";
-import {
-  FileSchemaType,
-  getFilenameFromPath,
-  getParentFromPath,
-} from "~/api/filesTree/schema";
 import { SubmitHandler, useForm } from "react-hook-form";
 
 import Button from "~/design/Button";
@@ -31,7 +31,7 @@ const Rename = ({
   close,
   unallowedNames,
 }: {
-  node: FileSchemaType;
+  node: BaseFileSchemaType;
   close: () => void;
   unallowedNames: string[];
 }) => {

@@ -1,6 +1,9 @@
+import {
+  BaseFileSchemaType,
+  getFilenameFromPath,
+} from "~/api/filesTree/schema";
 import { Dialog, DialogContent } from "~/design/Dialog";
 import { FC, useEffect, useState } from "react";
-import { FileSchemaType, getFilenameFromPath } from "~/api/filesTree/schema";
 import {
   NoPermissions,
   Table,
@@ -39,9 +42,9 @@ const ExplorerPage: FC = () => {
   // we only want to use one dialog component for the whole list,
   // so when the user clicks on the delete button in the list, we
   // set the pointer to that node for the dialog
-  const [deleteNode, setDeleteNode] = useState<FileSchemaType>();
-  const [renameNode, setRenameNode] = useState<FileSchemaType>();
-  const [previewNode, setPreviewNode] = useState<FileSchemaType>();
+  const [deleteNode, setDeleteNode] = useState<BaseFileSchemaType>();
+  const [renameNode, setRenameNode] = useState<BaseFileSchemaType>();
+  const [previewNode, setPreviewNode] = useState<BaseFileSchemaType>();
   const { t } = useTranslation();
 
   useEffect(() => {

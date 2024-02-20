@@ -1,4 +1,8 @@
 import {
+  BaseFileSchemaType,
+  getFilenameFromPath,
+} from "~/api/filesTree/schema";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -6,7 +10,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/design/Dropdown";
-import { FileSchemaType, getFilenameFromPath } from "~/api/filesTree/schema";
 import { MoreVertical, TextCursorInput, Trash } from "lucide-react";
 import { TableCell, TableRow } from "~/design/Table";
 
@@ -24,11 +27,11 @@ const FileRow = ({
   onDeleteClicked,
   onPreviewClicked,
 }: {
-  node: FileSchemaType;
+  node: BaseFileSchemaType;
   namespace: string;
-  onRenameClicked: (node: FileSchemaType) => void;
-  onDeleteClicked: (node: FileSchemaType) => void;
-  onPreviewClicked: (node: FileSchemaType) => void;
+  onRenameClicked: (node: BaseFileSchemaType) => void;
+  onDeleteClicked: (node: BaseFileSchemaType) => void;
+  onPreviewClicked: (node: BaseFileSchemaType) => void;
 }) => {
   const { t } = useTranslation();
   const Icon = fileTypeToIcon(node.type);
