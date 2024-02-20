@@ -300,14 +300,18 @@ func (flow *flow) MirrorActivityLogs(ctx context.Context, req *grpc.MirrorActivi
 	if err != nil {
 		return nil, err
 	}
-
-	mirProcess, err := tx.DataStore().Mirror().GetProcess(ctx, ns.ID)
+	id, err := uuid.Parse(req.Activity)
+	if err != nil {
+		return nil, err
+	}
+	mirProcess, err := tx.DataStore().Mirror().GetProcess(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
 	qu := make(map[string]interface{})
-	qu["source"] = mirProcess
+	qu["source"] = id
+	qu["type"] = "mirror"
 	qu, err = addFiltersToQuery(qu, req.Pagination.Filter...)
 	if err != nil {
 		return nil, err
@@ -365,6 +369,7 @@ func (flow *flow) MirrorActivityLogsParcels(req *grpc.MirrorActivityLogsRequest,
 resend:
 	qu := make(map[string]interface{})
 	qu["source"] = mirProcessID
+	qu["type"] = "mirror"
 	qu, err = addFiltersToQuery(qu, req.Pagination.Filter...)
 	if err != nil {
 		return err
