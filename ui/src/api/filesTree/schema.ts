@@ -10,25 +10,54 @@ export const getFilenameFromPath = (path: string): string => {
 export const getParentFromPath = (path: string): string =>
   path.split("/").slice(0, -1).join("/") || "/";
 
-/* directory example
+/**
+ * /api/v2/namespaces/:namespace/files/:path
+ * 
+ * lists the files and directories found under the given path. 
+ * "file" lists the item at the current path (this could be a directory).
+ * If the returned item is a directory, "paths" will list the items
+ * contained in it.
+ * 
+ * Example response for directory:
   {
-    path: "/folder",
-    type: "directory",
-    createdAt: "2024-02-13T15:24:05.856667Z",
-    updatedAt: "2024-02-13T15:24:05.856667Z",
-  },
-*/
-
-/* file example 
+    "data": {
+      "path": "/",
+      "type": "directory",
+      "createdAt": "2024-02-12T10:32:58.986418Z",
+      "updatedAt": "2024-02-12T10:32:58.986418Z",
+      "children": [
+        {
+          "path": "/aaa",
+          "type": "directory",
+          "createdAt": "2024-02-13T15:24:05.856667Z",
+          "updatedAt": "2024-02-15T16:33:13.79461Z"
+        },
+        {
+          "path": "/aaaa.yaml",
+          "type": "service",
+          "size": 212,
+          "mimeType": "application/direktiv",
+          "createdAt": "2024-02-13T10:39:57.730916Z",
+          "updatedAt": "2024-02-15T16:33:13.79461Z"
+        },   
+      ]  
+    }
+ *
+ * Example response for file:
+ * 
   {
-    path: "/http.yaml",
-    type: "service",
-    size: 101,
-    mimeType: "application/yaml",
-    createdAt: "2024-02-13T09:39:42.78317Z",
-    updatedAt: "2024-02-13T09:39:50.137806Z",
-  },
-*/
+    "data": {
+      "path": "/aaaa.yaml",
+      "type": "service",
+      "data": "base64-encoded-string",
+      "size": 212,
+      "mimeType": "application/direktiv",
+      "createdAt": "2024-02-13T10:39:57.730916Z",
+      "updatedAt": "2024-02-15T16:33:13.79461Z",
+      "children": null
+    }
+  }
+ */
 
 export const direktivFileTypes = [
   "consumer",
@@ -87,7 +116,7 @@ const CreateWorkflowSchema = CreateYamlFileSchema.extend({
   type: z.literal("workflow"),
 });
 
-const CreateNodeSchema = z.discriminatedUnion("type", [
+const CreateFileSchema = z.discriminatedUnion("type", [
   CreateDirectorySchema,
   CreateConsumerSchema,
   CreateEndpointSchema,
@@ -95,45 +124,13 @@ const CreateNodeSchema = z.discriminatedUnion("type", [
   CreateWorkflowSchema,
 ]);
 
-const RenameNodeSchema = z.object({
+const RenameFileSchema = z.object({
   path: z.string(),
 });
 
 const UpdateFileSchema = z.object({
   data: z.string(), // base64 encoded file body
 });
-
-/**
- * /api/v2/namespaces/:namespace/files/:path
- * 
- * lists the files and directories found under the given path. 
- * "file" lists the item at the current path (this could be a directory).
- * If the returned item is a directory, "paths" will list the items
- * contained in it.
- * 
- * All items are metadata. To request a file's body, make a request to
- * /api/v2/namespaces/:namespace/? TBD
-* 
-{
-  "file": {
-    "path": "/",
-    "type": "directory",
-    "createdAt": "2024-02-12T10:32:58.986418Z",
-    "updatedAt": "2024-02-12T10:32:58.986418Z"
-  },
-  "paths": [
-    {
-      "path": "/action.yaml",
-      "type": "workflow",
-      "size": 318,
-      "mimeType": "application/direktiv",
-      "createdAt": "2024-02-13T08:57:03.81109Z",
-      "updatedAt": "2024-02-13T08:57:03.81109Z"
-    },
-    ..
-  ]
-}
-*/
 
 export const FileListSchema = z.object({
   data: FileSchema,
@@ -150,7 +147,7 @@ export const NodePatchedSchema = z.object({
 export type FileSchemaType = z.infer<typeof FileSchema>;
 export type BaseFileSchemaType = z.infer<typeof BaseFileSchema>;
 export type UpdateFileSchemaType = z.infer<typeof UpdateFileSchema>;
-export type RenameFileSchemaType = z.infer<typeof RenameNodeSchema>;
+export type RenameFileSchemaType = z.infer<typeof RenameFileSchema>;
 
-export type CreateFileSchemaType = z.infer<typeof CreateNodeSchema>;
+export type CreateFileSchemaType = z.infer<typeof CreateFileSchema>;
 export type FileListSchemaType = z.infer<typeof FileListSchema>;
