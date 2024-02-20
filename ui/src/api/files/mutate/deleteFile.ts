@@ -1,6 +1,6 @@
 import {
   BaseFileSchemaType,
-  PathDeletedSchema,
+  FileDeletedSchema,
   getFilenameFromPath,
   getParentFromPath,
 } from "../schema";
@@ -19,7 +19,7 @@ const deleteFile = apiFactory({
   url: ({ namespace, path }: { namespace: string; path: string }) =>
     `/api/v2/namespaces/${namespace}/files${forceLeadingSlash(path)}`,
   method: "DELETE",
-  schema: PathDeletedSchema,
+  schema: FileDeletedSchema,
 });
 
 export const useDeleteFile = ({

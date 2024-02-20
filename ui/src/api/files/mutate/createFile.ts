@@ -1,6 +1,6 @@
 import {
   CreateFileSchemaType,
-  PathCreatedSchema,
+  FileCreatedSchema,
   getFilenameFromPath,
   getParentFromPath,
 } from "../schema";
@@ -27,7 +27,7 @@ export const createFile = apiFactory({
       path
     )}`,
   method: "POST",
-  schema: PathCreatedSchema,
+  schema: FileCreatedSchema,
 });
 
 type ResolvedCreateFile = Awaited<ReturnType<typeof createFile>>;

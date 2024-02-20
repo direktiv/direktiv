@@ -85,7 +85,7 @@ const FileSchema = z.object({
   size: z.number().optional(), // not for directories
   mimeType: z.string().optional(), // not for directories
   data: z.string().optional(), // not for directories
-  children: z.array(BaseFileSchema).nullable(), // only for directories
+  children: z.array(BaseFileSchema).nullable().optional(), // only for directories
 });
 
 const CreateDirectorySchema = z.object({
@@ -136,8 +136,8 @@ export const FileListSchema = z.object({
   data: FileSchema,
 });
 
-export const PathDeletedSchema = z.null();
-export const PathCreatedSchema = z.object({ data: FileSchema });
+export const FileDeletedSchema = z.null();
+export const FileCreatedSchema = z.object({ data: FileSchema });
 
 // data is only returned in the response when it has changed.
 export const FilePatchedSchema = z.object({
