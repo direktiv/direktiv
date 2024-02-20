@@ -1,8 +1,6 @@
 import { createNamespace, deleteNamespace } from "../utils/namespace";
 import { expect, test } from "@playwright/test";
 
-import { BroadcastsSchemaKeys } from "~/api/broadcasts/schema";
-import { createBroadcasts } from "../utils/broadcasts";
 import { createRegistries } from "../utils/registries";
 import { createSecrets } from "../utils/secrets";
 import { createVariables } from "../utils/variables";
@@ -279,38 +277,4 @@ test("it is possible to edit variables", async ({ page }) => {
     page.locator("select"),
     "MimeTypeSelect is set to the updated mimeType"
   ).toHaveValue("application/yaml");
-});
-
-test("it is possible to update broadcasts", async ({ page }) => {
-  const { broadcast: broadcasts } = await createBroadcasts(namespace);
-  expect(broadcasts, "test data has been created").toBeTruthy();
-
-  await page.goto(`/${namespace}/settings`);
-
-  // check the initial state
-  for (let i = 0; i < BroadcastsSchemaKeys.length; i++) {
-    const key = BroadcastsSchemaKeys[i] || "directory.create";
-    const checkbox = page.getByTestId(`check.${key}`);
-    const isChecked = await checkbox.isChecked();
-    expect(isChecked, `checkbox for ${key} has the expected value`).toBe(
-      broadcasts[key]
-    );
-  }
-
-  // update random fields and check their status
-  const randomElements = faker.helpers.arrayElements(BroadcastsSchemaKeys, 3);
-
-  for (let i = 0; i < randomElements.length; i++) {
-    const key = randomElements[i] || "directory.create";
-    const checkbox = page.getByTestId(`check.${key}`);
-    await checkbox.click();
-
-    // expect() without .poll() would fail, because it would not wait for the DOM to update
-    await expect
-      .poll(
-        async () => await checkbox.isChecked(),
-        `checkbox for ${key} has been toggled to the inverse value: `
-      )
-      .toBe(!broadcasts[key]);
-  }
 });

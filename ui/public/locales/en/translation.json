@@ -957,25 +957,6 @@
           "noPreview": "Only text based mime types are supported for preview and editing"
         }
       },
-      "broadcasts": {
-        "title": "Broadcasts",
-        "columns": {
-          "success": "Success",
-          "start": "Started",
-          "fail": "Failed",
-          "create": "Created",
-          "update": "Updated",
-          "delete": "Deleted"
-        },
-        "rows": {
-          "instance": "Instance",
-          "directory": "Directory",
-          "workflow": "Workflow",
-          "instanceVariable": "Instance Variable",
-          "namespaceVariable": "Namespace Variable",
-          "workflowVariable": "Workflow Variable"
-        }
-      },
       "deleteNamespace": {
         "title": "Delete namespace",
         "description": "This will permanently delete the current active namespace and all resources associated with it.",
