@@ -59,7 +59,7 @@ export const getParentFromPath = (path: string): string =>
   }
  */
 
-export const direktivFileTypes = [
+export const fileTypes = [
   "consumer",
   "directory",
   "endpoint",
@@ -68,18 +68,18 @@ export const direktivFileTypes = [
   "workflow",
 ] as const;
 
-const direktivFileTypeSchema = z.enum(direktivFileTypes);
+const FileTypeSchema = z.enum(fileTypes);
 
 /* All filesystem records (including "directories") have these properties. */
 const BaseFileSchema = z.object({
-  type: direktivFileTypeSchema,
+  type: FileTypeSchema,
   path: z.string().nonempty(),
   createdAt: z.string(),
   updatedAt: z.string(),
 });
 
 const FileSchema = BaseFileSchema.extend({
-  type: direktivFileTypeSchema.exclude(["directory"]),
+  type: FileTypeSchema.exclude(["directory"]),
   size: z.number(),
   mimeType: z.string(),
   data: z.string(),
@@ -159,6 +159,7 @@ export const FilePatchedSchema = z.object({
 export type BaseFileSchemaType = z.infer<typeof BaseFileSchema>;
 export type DirectorySchemaType = z.infer<typeof DirectorySchema>;
 export type FileSchemaType = z.infer<typeof FileSchema>;
+export type FileTypeType = z.infer<typeof FileTypeSchema>;
 
 export type UpdateFileSchemaType = z.infer<typeof UpdateFileSchema>;
 export type RenameFileSchemaType = z.infer<typeof RenameFileSchema>;

@@ -2,7 +2,7 @@ import { createNamespace, deleteNamespace } from "../../utils/namespace";
 import { expect, test } from "@playwright/test";
 
 import { noop as basicWorkflow } from "~/pages/namespace/Explorer/Tree/components/modals/CreateNew/Workflow/templates";
-import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
+import { createFile } from "e2e/utils/files";
 import { createWorkflowVariables } from "e2e/utils/variables";
 import { faker } from "@faker-js/faker";
 import { headers } from "e2e/utils/testutils";
@@ -16,14 +16,11 @@ test.beforeEach(async () => {
   namespace = await createNamespace();
   workflow = faker.system.commonFileName("yaml");
 
-  await createWorkflow({
-    payload: basicWorkflow.data,
-    urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
-      namespace,
-      name: workflow,
-    },
-    headers,
+  await createFile({
+    yaml: basicWorkflow.data,
+    type: "workflow",
+    namespace,
+    name: workflow,
   });
 });
 

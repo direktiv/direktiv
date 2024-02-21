@@ -1,8 +1,7 @@
 import { createNamespace, deleteNamespace } from "../utils/namespace";
 import { expect, test } from "@playwright/test";
 
-import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
-import { headers } from "e2e/utils/testutils";
+import { createFile } from "e2e/utils/files";
 import { workflowWithSecrets } from "./utils";
 
 let namespace = "";
@@ -40,14 +39,11 @@ test("Notification Bell has an inactive state by default", async ({ page }) => {
 test("Notification Bell updates depending on the count of Notification Messages", async ({
   page,
 }) => {
-  await createWorkflow({
-    payload: workflowWithSecrets,
-    urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
-      namespace,
-      name: "worfklow-with-secrets.yaml",
-    },
-    headers,
+  await createFile({
+    yaml: workflowWithSecrets,
+    namespace,
+    name: "worfklow-with-secrets.yaml",
+    type: "workflow",
   });
 
   await page.goto(`/${namespace}/explorer/tree`, {

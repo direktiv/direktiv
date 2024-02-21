@@ -1,13 +1,12 @@
 import { createNamespace, deleteNamespace } from "e2e/utils/namespace";
 import { expect, test } from "@playwright/test";
 
-import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
-import { headers } from "e2e/utils/testutils";
+import { createFile } from "e2e/utils/files";
 
 let namespace = "";
 
 const createListener = async (name: string) => {
-  const payload = `direktiv_api: workflow/v1
+  const yaml = `direktiv_api: workflow/v1
 description: This workflow spawns an event listener as soon as the file is created
 start:
   type: event
@@ -20,14 +19,11 @@ states:
   transform:
     result: Hello world!`;
 
-  await createWorkflow({
-    payload,
-    urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
-      namespace,
-      name,
-    },
-    headers,
+  await createFile({
+    type: "workflow",
+    name,
+    yaml,
+    namespace,
   });
 };
 

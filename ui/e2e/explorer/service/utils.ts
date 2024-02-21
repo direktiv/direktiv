@@ -1,7 +1,6 @@
 import { EnvVarSchemaType } from "~/api/services/schema/services";
 import { PatchSchemaType } from "~/pages/namespace/Explorer/Service/ServiceEditor/schema";
-import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
-import { headers } from "e2e/utils/testutils";
+import { createFile } from "e2e/utils/files";
 
 const createPatchesYaml = (patches?: PatchSchemaType[]) =>
   patches
@@ -46,15 +45,12 @@ patches: ${createPatchesYaml(patches)}
 envs: ${createEnvsYaml(envs)}`;
 
 export const createService = async (namespace: string, service: Service) => {
-  const payload = createServiceYaml(service);
+  const yaml = createServiceYaml(service);
 
-  await createWorkflow({
-    payload,
-    urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
-      namespace,
-      name: service.name,
-    },
-    headers,
+  await createFile({
+    yaml,
+    namespace,
+    name: service.name,
+    type: "service",
   });
 };

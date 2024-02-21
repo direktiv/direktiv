@@ -2,7 +2,7 @@ import { createNamespace, deleteNamespace } from "e2e/utils/namespace";
 import { createRedisConsumerFile, findConsumerWithApiRequest } from "./utils";
 import { expect, test } from "@playwright/test";
 
-import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
+import { createFile } from "e2e/utils/files";
 import { encode } from "js-base64";
 import { headers } from "e2e/utils/testutils";
 import { patchFile } from "~/api/files/mutate/patchFile";
@@ -35,17 +35,14 @@ test("Consumer list is empty by default", async ({ page }) => {
 });
 
 test("Consumer list shows all available consumers", async ({ page }) => {
-  await createWorkflow({
-    payload: createRedisConsumerFile({
+  await createFile({
+    yaml: createRedisConsumerFile({
       username: "userA",
       password: "password",
     }),
-    urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
-      namespace,
-      name: "redis-consumer.yaml",
-    },
-    headers,
+    type: "consumer",
+    namespace,
+    name: "redis-consumer.yaml",
   });
 
   await expect
@@ -115,17 +112,14 @@ test("Consumer list shows all available consumers", async ({ page }) => {
 test("Consumer list will update the consumers when refetch button is clicked", async ({
   page,
 }) => {
-  await createWorkflow({
-    payload: createRedisConsumerFile({
+  await createFile({
+    yaml: createRedisConsumerFile({
       username: "userOld",
       password: "passwordOld",
     }),
-    urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
-      namespace,
-      name: "consumer.yaml",
-    },
-    headers,
+    type: "consumer",
+    namespace,
+    name: "consumer.yaml",
   });
 
   await page.goto(`/${namespace}/gateway/consumers`, {

@@ -2,9 +2,8 @@ import { Page, expect, test } from "@playwright/test";
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
 
 import { consumeEvent as consumeEventWorkflow } from "~/pages/namespace/Explorer/Tree/components/modals/CreateNew/Workflow/templates";
-import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
+import { createFile } from "e2e/utils/files";
 import { faker } from "@faker-js/faker";
-import { headers } from "e2e/utils/testutils";
 
 let namespace = "";
 let workflow = "";
@@ -30,14 +29,11 @@ const getCommonPageElements = (page: Page) => {
 test.beforeEach(async () => {
   namespace = await createNamespace();
   workflow = `${faker.system.commonFileName("yaml")}`;
-  await createWorkflow({
-    payload: consumeEventWorkflow.data,
-    urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
-      namespace,
-      name: workflow,
-    },
-    headers,
+  await createFile({
+    type: "workflow",
+    name: workflow,
+    namespace,
+    yaml: consumeEventWorkflow.data,
   });
 });
 
