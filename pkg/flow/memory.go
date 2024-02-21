@@ -71,6 +71,7 @@ func (im *instanceMemory) flushUpdates(ctx context.Context) error {
 	}
 
 	im.updateArgs = new(instancestore.UpdateInstanceDataArgs)
+	im.updateArgs.Server = &im.engine.ID
 
 	im.engine.pubsub.NotifyInstance(im.instance.Instance.ID)
 	im.engine.pubsub.NotifyInstances(im.Namespace())
@@ -271,6 +272,7 @@ func (engine *engine) getInstanceMemory(ctx context.Context, id string) (*instan
 	im.engine = engine
 	im.instance = instance
 	im.updateArgs = new(instancestore.UpdateInstanceDataArgs)
+	im.updateArgs.Server = &engine.ID
 
 	err = json.Unmarshal(im.instance.Instance.LiveData, &im.data)
 	if err != nil {

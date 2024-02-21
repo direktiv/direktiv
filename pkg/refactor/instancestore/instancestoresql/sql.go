@@ -16,6 +16,7 @@ const (
 	fieldNamespaceID    = "namespace_id"
 	fieldNamespace      = "namespace"
 	fieldRootInstanceID = "root_instance_id"
+	fieldServer         = "server"
 	fieldCreatedAt      = "created_at"
 	fieldUpdatedAt      = "updated_at"
 	fieldEndedAt        = "ended_at"
@@ -81,6 +82,7 @@ func (s *sqlInstanceStore) CreateInstanceData(ctx context.Context, args *instanc
 		NamespaceID:    args.NamespaceID,
 		Namespace:      args.Namespace,
 		RootInstanceID: args.RootInstanceID,
+		Server:         args.Server,
 		Status:         instancestore.InstanceStatusPending,
 		WorkflowPath:   args.WorkflowPath,
 		ErrorCode:      "",

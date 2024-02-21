@@ -190,6 +190,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 		NamespaceID:    args.Namespace.ID,
 		Namespace:      args.Namespace.Name,
 		RootInstanceID: root,
+		Server:         engine.ID,
 		Invoker:        args.Invoker,
 		WorkflowPath:   file.Path,
 		Definition:     data,
@@ -219,6 +220,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	im.engine = engine
 	im.instance = instance
 	im.updateArgs = new(instancestore.UpdateInstanceDataArgs)
+	im.updateArgs.Server = &engine.ID
 
 	err = json.Unmarshal(im.instance.Instance.LiveData, &im.data)
 	if err != nil {
@@ -426,6 +428,7 @@ func (engine *engine) setEndAt(im *instanceMemory) {
 }
 
 type noCancelCtx struct {
+	//nolint:containedctx
 	ctx context.Context
 }
 
@@ -521,12 +524,6 @@ func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata
 
 next:
 	engine.transitionState(ctx, im, transition, code)
-
-	err = im.flushUpdates(ctx)
-	if err != nil {
-		engine.CrashInstance(ctx, im, err)
-		return
-	}
 
 	return
 

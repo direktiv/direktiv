@@ -111,6 +111,7 @@ type InstanceData struct {
 	NamespaceID    uuid.UUID
 	Namespace      string
 	RootInstanceID uuid.UUID
+	Server         uuid.UUID
 	CreatedAt      time.Time
 	UpdatedAt      time.Time
 	EndedAt        *time.Time
@@ -145,6 +146,7 @@ type CreateInstanceDataArgs struct {
 	NamespaceID    uuid.UUID
 	Namespace      string
 	RootInstanceID uuid.UUID
+	Server         uuid.UUID
 	Invoker        string
 	WorkflowPath   string
 	Definition     []byte
@@ -159,6 +161,7 @@ type CreateInstanceDataArgs struct {
 
 // UpdateInstanceDataArgs defines the possible arguments for updating an existing instance data record.
 type UpdateInstanceDataArgs struct {
+	Server        *uuid.UUID      `json:"server,omitempty"`
 	EndedAt       *time.Time      `json:"ended_at,omitempty"`
 	Deadline      *time.Time      `json:"deadline,omitempty"`
 	Status        *InstanceStatus `json:"status,omitempty"`

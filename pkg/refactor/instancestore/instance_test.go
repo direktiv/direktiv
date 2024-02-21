@@ -194,6 +194,8 @@ func assertInstanceStoreCorrectInstanceDataCreation(t *testing.T, is instancesto
 
 // nolint
 func Test_sqlInstanceStore_CreateInstanceData(t *testing.T) {
+	server := uuid.New()
+
 	db, err := database.NewMockGorm()
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
@@ -209,6 +211,7 @@ func Test_sqlInstanceStore_CreateInstanceData(t *testing.T) {
 			ID:             id,
 			NamespaceID:    uuid.New(),
 			RootInstanceID: id,
+			Server:         server,
 			Invoker:        "api",
 			WorkflowPath:   "/test.yaml",
 			Definition: []byte(`
@@ -387,6 +390,8 @@ func assertInstanceStoreCorrectGetNamespaceInstances(t *testing.T, is instancest
 
 // nolint
 func Test_sqlInstanceStore_GetNamespaceInstances(t *testing.T) {
+	server := uuid.New()
+
 	db, err := database.NewMockGorm()
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
@@ -397,6 +402,7 @@ func Test_sqlInstanceStore_GetNamespaceInstances(t *testing.T) {
 
 	args := &instancestore.CreateInstanceDataArgs{
 		ID:           uuid.New(),
+		Server:       server,
 		Invoker:      "api",
 		WorkflowPath: "/test.yaml",
 		Definition: []byte(`
@@ -495,6 +501,8 @@ type: noop
 
 // nolint
 func Test_sqlInstanceStore_GetHangingInstances(t *testing.T) {
+	server := uuid.New()
+
 	db, err := database.NewMockGorm()
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
@@ -518,6 +526,7 @@ func Test_sqlInstanceStore_GetHangingInstances(t *testing.T) {
 
 	args := &instancestore.CreateInstanceDataArgs{
 		ID:           id,
+		Server:       server,
 		Invoker:      instancestore.InvokerCron,
 		WorkflowPath: "/test.yaml",
 		Definition: []byte(`
@@ -625,6 +634,8 @@ type: noop
 
 // nolint
 func Test_sqlInstanceStore_DeleteOldInstances(t *testing.T) {
+	server := uuid.New()
+
 	db, err := database.NewMockGorm()
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
@@ -642,6 +653,7 @@ func Test_sqlInstanceStore_DeleteOldInstances(t *testing.T) {
 
 	args := &instancestore.CreateInstanceDataArgs{
 		ID:           id,
+		Server:       server,
 		Invoker:      instancestore.InvokerCron,
 		WorkflowPath: "/test.yaml",
 		Definition: []byte(`
@@ -717,6 +729,8 @@ type: noop
 
 // nolint
 func Test_sqlInstanceStore_AssertNoParallelCron(t *testing.T) {
+	server := uuid.New()
+
 	db, err := database.NewMockGorm()
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
@@ -733,6 +747,7 @@ func Test_sqlInstanceStore_AssertNoParallelCron(t *testing.T) {
 
 	args := &instancestore.CreateInstanceDataArgs{
 		ID:           uuid.New(),
+		Server:       server,
 		Invoker:      instancestore.InvokerCron,
 		WorkflowPath: "/test2.yaml",
 		Definition: []byte(`

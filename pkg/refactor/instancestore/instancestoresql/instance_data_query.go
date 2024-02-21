@@ -23,6 +23,11 @@ func (q *instanceDataQuery) UpdateInstanceData(ctx context.Context, args *instan
 	var clauses []string
 	query := fmt.Sprintf("UPDATE %s", table)
 
+	if args.Server != nil {
+		clauses = append(clauses, fmt.Sprintf("%s = ?", fieldServer))
+		vals = append(vals, args.Server.String())
+	}
+
 	if args.EndedAt != nil {
 		clauses = append(clauses, fmt.Sprintf("%s = ?", fieldEndedAt))
 		vals = append(vals, args.EndedAt.UTC())
@@ -82,10 +87,6 @@ func (q *instanceDataQuery) UpdateInstanceData(ctx context.Context, args *instan
 		clauses = append(clauses, fmt.Sprintf("%s = ?", fieldMetadata))
 		vals = append(vals, *args.Metadata)
 	}
-
-	// if len(clauses) == 0 {
-	// 	return
-	// }
 
 	query += fmt.Sprintf(" SET %s", strings.Join(clauses, ", "))
 
