@@ -215,7 +215,9 @@ async function itShouldRenameFile (it, expect, ns, path, newPath) {
 	})
 }
 
-
+function sleep(ms) {
+	return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 
 export default {
@@ -232,4 +234,5 @@ export default {
 	itShouldCheckPathExistsV2,
 	itShouldUpdatePathV2,
 	itShouldUpdateFileV2,
+	sleep,
 }
