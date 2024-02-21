@@ -521,12 +521,6 @@ func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata
 next:
 	engine.transitionState(ctx, im, transition, code)
 
-	err = im.flushUpdates(ctx)
-	if err != nil {
-		engine.CrashInstance(ctx, im, err)
-		return
-	}
-
 	return
 
 failure:
