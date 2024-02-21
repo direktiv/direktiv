@@ -181,10 +181,6 @@ fluent-bit:
           Skip_Long_Lines         Off
           Tag                     input
           Parser                  tail_catchall prefix_tail
-      [PARSER]
-          Name tail_catchall
-          Format regex
-          Regex .*  # Match everything
     outputs: |
       [OUTPUT]
           name                    pgsql
@@ -213,6 +209,10 @@ fluent-bit:
           Time_Key                time
           Time_Format             %Y-%m-%dT%H:%M:%S.%L%z
           Decode_Field_As         json log
+      [PARSER]
+          Name tail_catchall
+          Format regex
+          Regex .*  # Match everything
 
 # -- nginx ingress controller configuration
 ingress-nginx:
