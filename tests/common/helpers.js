@@ -1,8 +1,7 @@
-import request from "./request"
-
 import config from './config'
 import common from './index'
 import regex from './regex'
+import request from './request'
 
 async function deleteAllNamespaces () {
 	const listResponse = await request(config.getDirektivHost()).get(`/api/namespaces`)
@@ -111,7 +110,7 @@ async function itShouldUpdatePathV2 (it, expect, ns, path, newPath) {
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.data).toMatchObject({
 			path: newPath,
-			type:expect.stringMatching("directory|file|workflow|service|endpoint|consumer"),
+			type: expect.stringMatching('directory|file|workflow|service|endpoint|consumer'),
 			createdAt: expect.stringMatching(regex.timestampRegex),
 			updatedAt: expect.stringMatching(regex.timestampRegex),
 		})
@@ -215,8 +214,8 @@ async function itShouldRenameFile (it, expect, ns, path, newPath) {
 	})
 }
 
-function sleep(ms) {
-	return new Promise(resolve => setTimeout(resolve, ms));
+function sleep (ms) {
+	return new Promise(resolve => setTimeout(resolve, ms))
 }
 
 

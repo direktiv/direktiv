@@ -24,22 +24,22 @@ describe('Test namespace update calls', () => {
 		{
 			input: {
 				mirrorSettings: {
-					url: "my_url",
-				}
+					url: 'my_url',
+				},
 			},
 			want: {
 				name: 'foo',
 				createdAt: expect.stringMatching(regex.timestampRegex),
 				updatedAt: expect.stringMatching(regex.timestampRegex),
 				mirrorSettings: {
-					url: "my_url",
-					gitCommitHash: "",
-					gitRef: "",
+					url: 'my_url',
+					gitCommitHash: '',
+					gitRef: '',
 					insecure: false,
-					publicKey: "",
+					publicKey: '',
 					createdAt: expect.stringMatching(regex.timestampRegex),
 					updatedAt: expect.stringMatching(regex.timestampRegex),
-				}
+				},
 			},
 		},
 	]
@@ -81,13 +81,13 @@ describe('Test invalid namespace update calls', () => {
 			input: {
 				mirrorSettings: {
 					url: 11,
-				}
+				},
 			},
 			wantError: {
 				statusCode: 400,
 				error: {
 					code: 'request_body_bad_json_schema',
-					message: "request payload has bad json schema",
+					message: 'request payload has bad json schema',
 				},
 			},
 		},
