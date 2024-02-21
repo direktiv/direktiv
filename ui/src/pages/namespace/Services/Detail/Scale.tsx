@@ -9,8 +9,8 @@ const Scale = ({ path, scale }: { path: string; scale: number }) => {
 
   if (!isSuccess) return null;
 
-  const fileContentFromServer = decode(serviceData.source ?? "");
-  const [serviceConfig] = serializeServiceFile(fileContentFromServer);
+  const fileContent = decode(serviceData.source ?? "");
+  const [serviceConfig] = serializeServiceFile(fileContent);
 
   return (
     <div>
