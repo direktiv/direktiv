@@ -1,6 +1,6 @@
 import common from '../common'
 import request from '../common/request'
-import {retry10} from "../common/retry";
+import { retry10 } from '../common/retry'
 
 
 const testNamespace = 'js-inbound'

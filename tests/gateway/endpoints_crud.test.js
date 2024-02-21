@@ -1,6 +1,6 @@
 import common from '../common'
 import request from '../common/request'
-import {retry10} from "../common/retry";
+import { retry10 } from '../common/retry'
 
 const testNamespace = 'gateway'
 
@@ -116,7 +116,7 @@ describe('Test wrong endpoint config', () => {
 		endpointBroken,
 	)
 
-	retry10(`should list all endpoints`,  async () => {
+	retry10(`should list all endpoints`, async () => {
 		const listRes = await request(common.config.getDirektivHost()).get(
 			`/api/v2/namespaces/${ testNamespace }/gateway/routes`,
 		)
