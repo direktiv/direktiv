@@ -41,7 +41,7 @@ export const useUpdateFile = ({
       }),
     onSuccess(data) {
       queryClient.invalidateQueries(
-        fileKeys.children(namespace, {
+        fileKeys.file(namespace, {
           apiKey: apiKey ?? undefined,
           path: forceLeadingSlash(data.data.path),
         })

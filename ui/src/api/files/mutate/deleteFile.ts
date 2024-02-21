@@ -46,7 +46,7 @@ export const useDeleteFile = ({
       }),
     onSuccess(_, variables) {
       queryClient.invalidateQueries(
-        fileKeys.children(namespace, {
+        fileKeys.file(namespace, {
           apiKey: apiKey ?? undefined,
           path: getParentFromPath(variables.node.path),
         })

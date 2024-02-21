@@ -17,7 +17,7 @@ const getFile = apiFactory({
 
 const fetchFile = async ({
   queryKey: [{ apiKey, namespace, path }],
-}: QueryFunctionContext<ReturnType<(typeof fileKeys)["children"]>>) =>
+}: QueryFunctionContext<ReturnType<(typeof fileKeys)["file"]>>) =>
   getFile({
     apiKey,
     urlParams: {
@@ -45,7 +45,7 @@ export const useFile = ({
   }
 
   return useQueryWithPermissions({
-    queryKey: fileKeys.children(namespace, {
+    queryKey: fileKeys.file(namespace, {
       apiKey: apiKey ?? undefined,
       path: forceLeadingSlash(path),
     }),

@@ -47,7 +47,7 @@ export const useRenameFile = ({
       }),
     onSuccess(data, variables) {
       queryClient.invalidateQueries(
-        fileKeys.children(namespace, {
+        fileKeys.file(namespace, {
           apiKey: apiKey ?? undefined,
           path: getParentFromPath(data.data.path),
         })

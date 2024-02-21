@@ -11,16 +11,4 @@ export const fileKeys = {
         path,
       },
     ] as const,
-  children: (
-    namespace: string,
-    { apiKey, path }: { apiKey?: string; path?: string }
-  ) =>
-    [
-      {
-        scope: "children",
-        apiKey,
-        namespace,
-        path,
-      },
-    ] as const,
 };
