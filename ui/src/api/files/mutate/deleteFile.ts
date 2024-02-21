@@ -6,8 +6,8 @@ import {
 } from "../schema";
 
 import { apiFactory } from "~/api/apiFactory";
+import { fileKeys } from "..";
 import { forceLeadingSlash } from "~/api/tree/utils";
-import { pathKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 import { useNamespace } from "~/util/store/namespace";
@@ -46,7 +46,7 @@ export const useDeleteFile = ({
       }),
     onSuccess(_, variables) {
       queryClient.invalidateQueries(
-        pathKeys.paths(namespace, {
+        fileKeys.children(namespace, {
           apiKey: apiKey ?? undefined,
           path: getParentFromPath(variables.node.path),
         })

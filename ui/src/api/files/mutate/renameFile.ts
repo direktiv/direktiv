@@ -5,8 +5,8 @@ import {
   getParentFromPath,
 } from "../schema";
 
+import { fileKeys } from "..";
 import { patchFile } from "./patchFile";
-import { pathKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 import { useNamespace } from "~/util/store/namespace";
@@ -47,7 +47,7 @@ export const useRenameFile = ({
       }),
     onSuccess(data, variables) {
       queryClient.invalidateQueries(
-        pathKeys.paths(namespace, {
+        fileKeys.children(namespace, {
           apiKey: apiKey ?? undefined,
           path: getParentFromPath(data.data.path),
         })

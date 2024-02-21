@@ -1,8 +1,8 @@
 import { UpdateFileSchemaType } from "../schema";
+import { fileKeys } from "..";
 import { forceLeadingSlash } from "~/api/tree/utils";
 import { getMessageFromApiError } from "~/api/errorHandling";
 import { patchFile } from "./patchFile";
-import { pathKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 import { useNamespace } from "~/util/store/namespace";
@@ -41,7 +41,7 @@ export const useUpdateFile = ({
       }),
     onSuccess(data) {
       queryClient.invalidateQueries(
-        pathKeys.paths(namespace, {
+        fileKeys.children(namespace, {
           apiKey: apiKey ?? undefined,
           path: forceLeadingSlash(data.data.path),
         })

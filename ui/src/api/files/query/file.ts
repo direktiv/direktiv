@@ -1,8 +1,8 @@
 import { FileListSchema } from "../schema";
 import { QueryFunctionContext } from "@tanstack/react-query";
 import { apiFactory } from "~/api/apiFactory";
+import { fileKeys } from "..";
 import { forceLeadingSlash } from "~/api/tree/utils";
-import { pathKeys } from "..";
 import { sortFoldersFirst } from "../utils";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
@@ -17,7 +17,7 @@ const getFile = apiFactory({
 
 const fetchFile = async ({
   queryKey: [{ apiKey, namespace, path }],
-}: QueryFunctionContext<ReturnType<(typeof pathKeys)["paths"]>>) =>
+}: QueryFunctionContext<ReturnType<(typeof fileKeys)["children"]>>) =>
   getFile({
     apiKey,
     urlParams: {
@@ -45,7 +45,7 @@ export const useFile = ({
   }
 
   return useQueryWithPermissions({
-    queryKey: pathKeys.paths(namespace, {
+    queryKey: fileKeys.children(namespace, {
       apiKey: apiKey ?? undefined,
       path: forceLeadingSlash(path),
     }),
