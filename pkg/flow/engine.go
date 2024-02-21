@@ -425,6 +425,7 @@ func (engine *engine) setEndAt(im *instanceMemory) {
 }
 
 type noCancelCtx struct {
+	// nolint
 	ctx context.Context
 }
 
