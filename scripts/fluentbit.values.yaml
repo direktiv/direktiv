@@ -8,9 +8,9 @@ config:
         Time_Format %Y-%m-%dT%H:%M:%S.%L%z
         Decode_Field_As json log
     [PARSER]
-      Name tail_catchall
-      Format regex
-      Regex .*  # Match everything
+        Name tail_catchall
+        Format regex
+        Regex .*  # Match everything
   inputs: |
     [INPUT]
         Name tail
