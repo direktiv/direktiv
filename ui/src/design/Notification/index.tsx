@@ -1,4 +1,3 @@
-import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu";
 import * as React from "react";
 
 import { Bell, Loader2, LucideIcon } from "lucide-react";
@@ -11,26 +10,12 @@ import {
 } from "~/design/Popover";
 
 import Button from "~/design/Button";
+import { DropdownMenuSeparator } from "../Dropdown";
 import { twMergeClsx } from "~/util/helpers";
 
 const NotificationClose = PopoverClose;
 
-const NotificationMenuSeparator = React.forwardRef<
-  React.ElementRef<typeof DropdownMenuPrimitive.Separator>,
-  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Separator>
->(({ className, ...props }, ref) => (
-  <DropdownMenuPrimitive.Separator
-    ref={ref}
-    className={twMergeClsx(
-      "my-1 h-px bg-gray-3 dark:bg-gray-dark-3",
-      className
-    )}
-    {...props}
-  />
-));
-
-NotificationMenuSeparator.displayName =
-  DropdownMenuPrimitive.Separator.displayName;
+const NotificationMenuSeparator = DropdownMenuSeparator;
 
 const NotificationTitle: FC<PropsWithChildren> = ({ children }) => (
   <div className="px-2 py-1.5 text-sm font-semibold text-gray-9 dark:text-gray-dark-9">
