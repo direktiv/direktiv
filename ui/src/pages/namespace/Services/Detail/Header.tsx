@@ -4,7 +4,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 import EnvsVariables from "../components/EnvVariables";
 import { Link } from "react-router-dom";
 import RefreshButton from "~/design/RefreshButton";
-import ShowScale from "./ShowScale";
+import Scale from "./Scale";
 import { StatusBadge } from "../components/StatusBadge";
 import { linkToServiceSource } from "../components/utils";
 import { useService } from "~/api/services/query/services";
@@ -57,7 +57,7 @@ const Header = ({ serviceId }: { serviceId: string }) => {
               </PopoverContent>
             </Popover>
           </div>
-          <ShowScale path={service.filePath} scale={service.scale} />
+          <Scale path={service.filePath} scale={service.scale} />
         </div>
         <div className="text-sm">
           <div className="text-gray-10 dark:text-gray-dark-10">
