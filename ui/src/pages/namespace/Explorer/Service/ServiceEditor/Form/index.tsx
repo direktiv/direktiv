@@ -5,7 +5,6 @@ import {
   useForm,
   useWatch,
 } from "react-hook-form";
-import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 import {
   Select,
   SelectContent,
@@ -21,6 +20,12 @@ import {
   scaleOptions,
   sizeOptions,
 } from "../schema";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "~/design/Tooltip";
 
 import { EnvsArrayForm } from "./EnvsArrayForm";
 import { FC } from "react";
@@ -81,17 +86,16 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
               <label className="text-sm" htmlFor="scale">
                 {t("pages.explorer.service.editor.form.scale.label")}
               </label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <HelpCircle className="ml-1 h-4 w-4" />
-                </PopoverTrigger>
-                <PopoverContent
-                  className="bg-gray-1 p-1 text-sm dark:bg-gray-dark-1 "
-                  align="start"
-                >
-                  {t("pages.explorer.service.editor.form.scale.tooltip")}
-                </PopoverContent>
-              </Popover>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <HelpCircle className="ml-1 h-4 w-4" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {t("pages.explorer.service.editor.form.scale.tooltip")}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
             <Select
               value={formControls.getValues("scale")?.toString()}
