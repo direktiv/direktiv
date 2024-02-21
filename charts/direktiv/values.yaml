@@ -200,6 +200,10 @@ fluent-bit:
           Name rewrite_tag
           Match input
           Rule $stream ^.*$ flow.$stream false
+      [FILTER]
+          Name rewrite_tag
+          Match input_trace
+          Rule $trace ^.*$ flow.trace.$trace false
     customParsers: |
       [PARSER]
           Name                    prefix_tail
