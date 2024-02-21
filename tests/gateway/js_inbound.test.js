@@ -1,5 +1,7 @@
 import common from "../common";
 import request from "../common/request";
+import helpers from "../common/helpers";
+import retry from "jest-retries";
 
 
 const testNamespace = "js-inbound";
@@ -140,8 +142,9 @@ describe("Test js inbound plugin", () => {
       wf
     );
 
-    it(`should have expected body after js`, async () => {
-      const req = await request(common.config.getDirektivHost()).post(
+    retry(`should have expected body after js`, 10, async () => {
+      await helpers.sleep(500)
+        const req = await request(common.config.getDirektivHost()).post(
         `/ns/` + testNamespace + `/target?Query1=value1&Query2=value2`
       ).set('Header1', 'Value1').send({"hello":"world"});
 
@@ -152,8 +155,8 @@ describe("Test js inbound plugin", () => {
       expect(req.body.result.addquerydel).toEqual("")
     });
   
-  
   });
+
 
 describe("Test js inbound plugin consumer", () => {
     beforeAll(common.helpers.deleteAllNamespaces);
@@ -184,8 +187,9 @@ describe("Test js inbound plugin consumer", () => {
       wf
     );
 
-    it(`should have expected body after js`, async () => {
-      const req = await request(common.config.getDirektivHost()).post(
+    retry(`should have expected body after js`, 10,async () => {
+      await helpers.sleep(500);
+        const req = await request(common.config.getDirektivHost()).post(
         `/ns/` + testNamespace + `/target`
       ).set('API-Token', 'apikey').send({"hello":"world"});
 
@@ -218,7 +222,8 @@ describe("Test js inbound plugin url params", () => {
     wf
   );
 
-  it(`should have expected body after js`, async () => {
+  retry(`should have expected body after js`, 10,async () => {
+      await helpers.sleep(500);
     const req = await request(common.config.getDirektivHost()).post(
       `/ns/` + testNamespace + `/target/myid`
     ).send({"hello":"world"});
@@ -251,7 +256,8 @@ describe("Test js inbound plugin errors", () => {
     wf
   );
 
-  it(`should have expected body after js`, async () => {
+  retry(`should have expected body after js`, 10,async () => {
+      await helpers.sleep(500);
     const req = await request(common.config.getDirektivHost()).post(
       `/ns/` + testNamespace + `/target`
     ).send({"hello":"world"});

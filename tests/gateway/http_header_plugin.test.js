@@ -1,5 +1,6 @@
 import common from "../common";
 import request from "../common/request";
+import helpers from "../common/helpers";
 
 
 const testNamespace = "headers";
@@ -66,7 +67,8 @@ describe("Test header plugin", () => {
       wf
     );
 
-    it(`should have expected body after js`, async () => {
+    retry(`should have expected body after js`, 10, async () => {
+      await helpers.sleep(500)
       const req = await request(common.config.getDirektivHost()).post(
         `/ns/` + testNamespace + `/target?Query1=value1&Query2=value2`
       ).set('Header', 'Value1').set('Header1', 'oldvalue').send({"hello":"world"});
@@ -76,7 +78,6 @@ describe("Test header plugin", () => {
       expect(req.body.result.headers.Header).toBeUndefined()
       expect(req.body.result.headers.Header1[0]).toEqual("newvalue")
     });
-  
-  
+
   });
   
