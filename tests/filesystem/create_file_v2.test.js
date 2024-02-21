@@ -1,10 +1,10 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 import { basename } from 'path'
-import request from "../common/request"
 
 import config from '../common/config'
 import helpers from '../common/helpers'
 import regex from '../common/regex'
+import request from '../common/request'
 
 const namespace = basename(__filename)
 
@@ -66,7 +66,7 @@ describe('Test filesystem tree read operations', () => {
 					{
 						path: '/dir1/foo1',
 						type: 'workflow',
-						mimeType: "text/plain",
+						mimeType: 'text/plain',
 						createdAt: expect.stringMatching(regex.timestampRegex),
 						updatedAt: expect.stringMatching(regex.timestampRegex),
 						size: 134,
