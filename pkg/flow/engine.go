@@ -407,7 +407,7 @@ func (engine *engine) CrashInstance(ctx context.Context, im *instanceMemory, err
 
 	engine.SetInstanceFailed(ctx, im, err)
 
-	broadcastErr := engine.flow.BroadcastInstance(BroadcastEventTypeInstanceFailed, ctx, broadcastInstanceInput{
+	broadcastErr := engine.flow.BroadcastInstance(BroadcastEventTypeInstanceFailed, NoCancelContext(ctx), broadcastInstanceInput{
 		WorkflowPath: GetInodePath(im.instance.Instance.WorkflowPath),
 		InstanceID:   im.instance.Instance.ID.String(),
 	}, im.instance)
