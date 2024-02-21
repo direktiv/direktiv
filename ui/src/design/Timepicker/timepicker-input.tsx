@@ -66,8 +66,10 @@ const TimePickerInput = React.forwardRef<
     );
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+      console.log("keydown " + e.key);
+
       if (e.key === "Tab") return;
-      e.preventDefault();
+      // e.preventDefault(); When I take this away, it works, that it updates immediately, which I like !
       if (e.key === "ArrowRight") onRightFocus?.();
       if (e.key === "ArrowLeft") onLeftFocus?.();
       if (["ArrowUp", "ArrowDown"].includes(e.key)) {
