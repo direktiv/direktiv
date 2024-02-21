@@ -180,7 +180,7 @@ fluent-bit:
           Mem_Buf_Limit           5MB
           Skip_Long_Lines         Off
           Tag                     input
-          Parser                  tail_catchall prefix_tail
+          Parser                  tail_catchall prefix_tail docker
     outputs: |
       [OUTPUT]
           name                    pgsql
@@ -212,6 +212,11 @@ fluent-bit:
           Name tail_catchall
           Format regex
           Regex .*  # Match everything
+      [PARSER]
+          Name        docker
+          Format      json
+          Time_Key    time
+          Time_Format %Y-%m-%dT%H:%M:%S.%L%z
 
 # -- nginx ingress controller configuration
 ingress-nginx:
