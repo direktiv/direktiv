@@ -10,7 +10,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 )
 
-func (engine *engine) SetInstanceFailed(ctx context.Context, im *instanceMemory, err error) error {
+func (engine *engine) SetInstanceFailed(ctx context.Context, im *instanceMemory, err error) {
 	var status instancestore.InstanceStatus
 	var code, message string
 	status = instancestore.InstanceStatusFailed
@@ -44,7 +44,6 @@ func (engine *engine) SetInstanceFailed(ctx context.Context, im *instanceMemory,
 	im.updateArgs.Status = &im.instance.Instance.Status
 	im.updateArgs.ErrorCode = &im.instance.Instance.ErrorCode
 	im.updateArgs.ErrorMessage = &im.instance.Instance.ErrorMessage
-	return nil
 }
 
 func (engine *engine) InstanceRaise(ctx context.Context, im *instanceMemory, cerr *derrors.CatchableError) error {
