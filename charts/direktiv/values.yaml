@@ -180,7 +180,11 @@ fluent-bit:
           Mem_Buf_Limit           5MB
           Skip_Long_Lines         Off
           Tag                     input
-          Parser                  prefix_tail
+          Parser                  tail_catchall prefix_tail
+      [PARSER]
+          Name tail_catchall
+          Format regex
+          Regex .*  # Match everything
     outputs: |
       [OUTPUT]
           name                    pgsql
@@ -191,6 +195,11 @@ fluent-bit:
           database                direktiv
           host                    ${PG_HOST}
           password                ${PG_PASSWORD}
+      [OUTPUT]
+          name   stdout
+          match  *
+          type   stdout
+          format message
     filters: |
       [FILTER]
           Name rewrite_tag
