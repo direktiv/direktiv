@@ -478,7 +478,7 @@ func (srv *server) start(ctx context.Context) error {
 		event := pubsub2.FileChangeEvent{}
 		err := json.Unmarshal([]byte(data), &event)
 		if err != nil {
-			return err
+			panic("unmarshal file change event")
 		}
 		file, err := noTx.FileStore().ForNamespace(event.Namespace).GetFile(ctx, event.FilePath)
 		if err != nil {
