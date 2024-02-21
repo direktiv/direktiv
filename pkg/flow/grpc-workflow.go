@@ -76,8 +76,7 @@ func (flow *flow) WorkflowStream(req *grpc.WorkflowRequest, srv grpc.Flow_Workfl
 	}
 }
 
-func (flow *flow) createFileSystemObject(ctx context.Context, fileType filestore.FileType,
-	pubSub string, req *grpc.CreateWorkflowRequest,
+func (flow *flow) createFileSystemObject(ctx context.Context, fileType filestore.FileType, req *grpc.CreateWorkflowRequest,
 ) (*grpc.CreateWorkflowResponse, error) {
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
@@ -110,12 +109,11 @@ func (flow *flow) createFileSystemObject(ctx context.Context, fileType filestore
 	}
 	flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Created %s '%s'.", fileType, file.Path)
 
-	// do we need the path for services?
-	if fileType == filestore.FileTypeService {
-		err = flow.pBus.Publish(pubSub, file.Path)
-	} else {
-		err = flow.pBus.Publish(pubSub, ns.Name)
-	}
+	err = helpers.PublishEventDirektivFileChange(flow.pBus, file.Typ, "create", &pubsub.FileChangeEvent{
+		Namespace:   ns.Name,
+		NamespaceID: ns.ID,
+		FilePath:    file.Path,
+	})
 	if err != nil {
 		flow.sugar.Error("pubsub publish", "error", err)
 	}
@@ -143,11 +141,11 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 	// check for other file types first
 	switch apiFile.DirektivAPI {
 	case model.ServiceAPIV1:
-		return flow.createFileSystemObject(ctx, filestore.FileTypeService, pubsub.ServiceCreate, req)
+		return flow.createFileSystemObject(ctx, filestore.FileTypeService, req)
 	case model.EndpointAPIV1:
-		return flow.createFileSystemObject(ctx, filestore.FileTypeEndpoint, pubsub.EndpointCreate, req)
+		return flow.createFileSystemObject(ctx, filestore.FileTypeEndpoint, req)
 	case model.ConsumerAPIV1:
-		return flow.createFileSystemObject(ctx, filestore.FileTypeConsumer, pubsub.ConsumerCreate, req)
+		return flow.createFileSystemObject(ctx, filestore.FileTypeConsumer, req)
 	}
 
 	// do workflow if no other type detected
