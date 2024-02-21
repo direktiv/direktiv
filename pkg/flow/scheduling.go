@@ -7,12 +7,13 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 )
 
-func (engine *engine) InstanceYield(im *instanceMemory) {
+func (engine *engine) InstanceYield(ctx context.Context, im *instanceMemory) {
 	engine.sugar.Debugf("Instance going to sleep: %s", im.ID().String())
 
-	e := im.flushUpdates(context.Background())
+	e := im.flushUpdates(ctx)
 	if e != nil {
-		engine.sugar.Errorf("Failed to flush updates: %v", e)
+		engine.CrashInstance(ctx, im, e)
+		return
 	}
 
 	engine.freeResources(im)
@@ -23,7 +24,7 @@ func (engine *engine) InstanceYield(im *instanceMemory) {
 }
 
 func (engine *engine) WakeInstanceCaller(ctx context.Context, im *instanceMemory) {
-	caller := engine.InstanceCaller(ctx, im)
+	caller := engine.InstanceCaller(im)
 
 	if caller != nil {
 		engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), "Reporting results to calling workflow.")
