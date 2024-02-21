@@ -124,6 +124,7 @@ func (e *fsController) delete(w http.ResponseWriter, r *http.Request) {
 			NamespaceID: ns.ID,
 			FilePath:    file.Path,
 		})
+		// nolint:staticcheck
 		if err != nil {
 			// TODO: need to log error here.
 		}
@@ -206,6 +207,7 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 			NamespaceID: ns.ID,
 			FilePath:    newFile.Path,
 		})
+		// nolint:staticcheck
 		if err != nil {
 			// TODO: need to log error here.
 		}
@@ -313,6 +315,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 			FilePath:    updatedFile.Path,
 			OldPath:     oldFile.Path,
 		})
+		// nolint:staticcheck
 		if err != nil {
 			// TODO: need to log error here.
 		}
@@ -325,6 +328,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 			NamespaceID: ns.ID,
 			FilePath:    updatedFile.Path,
 		})
+		// nolint:staticcheck
 		if err != nil {
 			// TODO: need to log error here.
 		}
