@@ -7,11 +7,15 @@ config:
         Time_Key    time
         Time_Format %Y-%m-%dT%H:%M:%S.%L%z
         Decode_Field_As json log
+    [PARSER]
+      Name tail_catchall
+      Format regex
+      Regex .*  # Match everything
   inputs: |
     [INPUT]
         Name tail
         Path /var/log/containers/*flow*.log
-        Parser prefix_tail
+        Parser tail_catchall prefix_tail
         Tag kube.*
         Mem_Buf_Limit 5MB
         Skip_Long_Lines Off
@@ -35,3 +39,8 @@ config:
         line_format json
         auto_kubernetes_labels off
         labels job=fluent-bit, level=$log['level'], stream=$log['stream'], component=$log['component'], build=$log['build'], trace=$log['trace'], namespace=$log['namespace'], workflow=$log['workflow'], httppath=$log['httppath'], log-recipient=$log['log-recipient'], invoker=$log['invoker'], callpath=$log['callpath'], mirrorid=$log['mirror-id'], recipient=$log['recipientType'], source=$log['source']
+    [OUTPUT]
+      name   stdout
+      match  *
+      type   stdout
+      format message
