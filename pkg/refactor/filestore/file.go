@@ -30,6 +30,10 @@ var AllFileTypes = []FileType{
 	FileTypeDirectory,
 }
 
+func (t FileType) IsDirektivSpecFile() bool {
+	return t != FileTypeDirectory && t != FileTypeFile
+}
+
 // File represents a file in the filestore, File can be either ordinary file or directory.
 type File struct {
 	ID uuid.UUID `json:"-"`
