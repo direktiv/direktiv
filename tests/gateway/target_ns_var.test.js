@@ -1,5 +1,3 @@
-import retry from 'jest-retries'
-
 import common from '../common'
 import request from '../common/request'
 import { retry10 } from '../common/retry'
@@ -58,8 +56,7 @@ describe('Test target workflow var wrong config', () => {
 		endpointNSVarBroken,
 	)
 
-	retry(`should list all services`, 10, async () => {
-		await sleep(500)
+	retry10(`should list all services`, async () => {
 		const listRes = await request(common.config.getDirektivHost()).get(
 			`/api/v2/namespaces/${ testNamespace }/gateway/routes`,
 		)
@@ -85,10 +82,6 @@ describe('Test target workflow var wrong config', () => {
 	})
 
 })
-
-function sleep (ms) {
-	return new Promise(resolve => setTimeout(resolve, ms))
-}
 
 describe('Test target namespace variable plugin', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)

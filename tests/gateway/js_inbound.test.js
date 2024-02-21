@@ -1,5 +1,3 @@
-import retry from 'jest-retries'
-
 import common from '../common'
 import helpers from '../common/helpers'
 import request from '../common/request'
@@ -142,8 +140,7 @@ describe('Test js inbound plugin', () => {
 		wf,
 	)
 
-	retry(`should have expected body after js`, 10, async () => {
-		await helpers.sleep(500)
+	retry10(`should have expected body after js`, async () => {
 		const req = await request(common.config.getDirektivHost()).post(
 			`/ns/` + testNamespace + `/target?Query1=value1&Query2=value2`,
 		)
@@ -189,8 +186,7 @@ describe('Test js inbound plugin consumer', () => {
 		wf,
 	)
 
-	retry(`should have expected body after js`, 10, async () => {
-		await helpers.sleep(500)
+	retry10(`should have expected body after js`, async () => {
 		const req = await request(common.config.getDirektivHost()).post(
 			`/ns/` + testNamespace + `/target`,
 		)
@@ -226,8 +222,7 @@ describe('Test js inbound plugin url params', () => {
 		wf,
 	)
 
-	retry(`should have expected body after js`, 10, async () => {
-		await helpers.sleep(500)
+	retry10(`should have expected body after js`, async () => {
 		const req = await request(common.config.getDirektivHost()).post(
 			`/ns/` + testNamespace + `/target/myid`,
 		)
@@ -261,8 +256,7 @@ describe('Test js inbound plugin errors', () => {
 		wf,
 	)
 
-	retry(`should have expected body after js`, 10, async () => {
-		await helpers.sleep(500)
+	retry10(`should have expected body after js`, async () => {
 		const req = await request(common.config.getDirektivHost()).post(
 			`/ns/` + testNamespace + `/target`,
 		)
