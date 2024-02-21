@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - cycle*
   pull_request:
 
 jobs:
