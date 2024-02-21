@@ -1,6 +1,7 @@
 import common from "../common";
 import request from "../common/request";
 import helpers from "../common/helpers";
+import {retry10} from "../common/retry";
 
 
 const testNamespace = "headers";
@@ -67,8 +68,7 @@ describe("Test header plugin", () => {
       wf
     );
 
-    retry(`should have expected body after js`, 10, async () => {
-      await helpers.sleep(500)
+    retry10(`should have expected body after js`,  async () => {
       const req = await request(common.config.getDirektivHost()).post(
         `/ns/` + testNamespace + `/target?Query1=value1&Query2=value2`
       ).set('Header', 'Value1').set('Header1', 'oldvalue').send({"hello":"world"});

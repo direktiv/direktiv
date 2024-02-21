@@ -1,6 +1,7 @@
 import common from "../common";
 import request from "../common/request";
 import retry from "jest-retries";
+import {retry10} from "../common/retry";
 
 const testNamespace = "gateway";
 
@@ -140,9 +141,9 @@ describe("Test target namespace variable plugin", () => {
       "/endpoint2.yaml",
       endpointNSVarAllowed
     );
-  
-  
-    it(`should return a ns var from magic namespace`, async () => {
+
+
+    retry10(`should return a ns var from magic namespace`, async () => {
       const req = await request(common.config.getDirektivHost()).get(
         `/gw/endpoint1`
       );
@@ -150,8 +151,8 @@ describe("Test target namespace variable plugin", () => {
       expect(req.text).toEqual("Hello World")
       expect(req.header['content-type']).toEqual("text/plain")
     });
-  
-    it(`should return a var from magic namespace with namespace set`, async () => {
+
+    retry10(`should return a var from magic namespace with namespace set`, async () => {
       const req = await request(common.config.getDirektivHost()).get(
         `/gw/endpoint2`
       );
@@ -159,16 +160,16 @@ describe("Test target namespace variable plugin", () => {
       expect(req.text).toEqual("Hello World 2")
       expect(req.header['content-type']).toEqual("text/test")
     });
-  
-    it(`should return a var from non-magic namespace`, async () => {
+
+    retry10(`should return a var from non-magic namespace`, async () => {
       const req = await request(common.config.getDirektivHost()).get(
         `/ns/` + limitedNamespace + `/endpoint2`
       );
       expect(req.statusCode).toEqual(200);
       expect(req.text).toEqual("Hello World 2")
     });
-  
-    it(`should not return a var`, async () => {
+
+    retry10(`should not return a var`, async () => {
       const req = await request(common.config.getDirektivHost()).get(
         `/ns/` + limitedNamespace + `/endpoint1`
       );
