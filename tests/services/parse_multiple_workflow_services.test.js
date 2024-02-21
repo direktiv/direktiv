@@ -1,16 +1,17 @@
-import request from "../common/request"
-import retry from "jest-retries";
-import common from "../common";
+import retry from 'jest-retries'
 
-const testNamespace = "test-services"
+import common from '../common'
+import request from '../common/request'
+
+const testNamespace = 'test-services'
 
 describe('Test services crud operations', () => {
-    beforeAll(common.helpers.deleteAllNamespaces)
+	beforeAll(common.helpers.deleteAllNamespaces)
 
-    common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
+	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-    common.helpers.itShouldCreateFile(it, expect, testNamespace,
-        "/s2.yaml", `
+	common.helpers.itShouldCreateFile(it, expect, testNamespace,
+		'/s2.yaml', `
 direktiv_api: workflow/v1
 
 functions:
@@ -38,30 +39,30 @@ states:
       - ls -la
 `)
 
-    retry(`should list all services`, 10, async () => {
-        await sleep(500)
-        const listRes = await request(common.config.getDirektivHost())
-            .get(`/api/v2/namespaces/${testNamespace}/services`)
-        expect(listRes.statusCode).toEqual(200)
-        expect(listRes.body).toMatchObject({
-            data: [
-                {
-                    type: 'workflow-service',
-                    namespace: 'test-services',
-                    filePath: '/s2.yaml',
-                    name: 'image-magick',
-                    image: 'gcr.io/direktiv/functions/image-magick:1.0',
-                    cmd: '',
-                    size: 'small',
-                    scale: 0,
-                    error: null,
-                    id: 'test-services-image-magick-s2-yaml-864bf960ad',
-                }
-            ]
-        })
-    })
-});
+	retry(`should list all services`, 10, async () => {
+		await sleep(500)
+		const listRes = await request(common.config.getDirektivHost())
+			.get(`/api/v2/namespaces/${ testNamespace }/services`)
+		expect(listRes.statusCode).toEqual(200)
+		expect(listRes.body).toMatchObject({
+			data: [
+				{
+					type: 'workflow-service',
+					namespace: 'test-services',
+					filePath: '/s2.yaml',
+					name: 'image-magick',
+					image: 'gcr.io/direktiv/functions/image-magick:1.0',
+					cmd: '',
+					size: 'small',
+					scale: 0,
+					error: null,
+					id: 'test-services-image-magick-s2-yaml-864bf960ad',
+				},
+			],
+		})
+	})
+})
 
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+function sleep (ms) {
+	return new Promise(resolve => setTimeout(resolve, ms))
 }
