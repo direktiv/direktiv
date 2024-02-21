@@ -1,10 +1,11 @@
-import common from "../common";
-import request from "../common/request";
-import helpers from "../common/helpers";
-import retry from "jest-retries";
+import retry from 'jest-retries'
+
+import common from '../common'
+import helpers from '../common/helpers'
+import request from '../common/request'
 
 
-const testNamespace = "js-inbound";
+const testNamespace = 'js-inbound'
 
 
 const endpointJSFile = `
@@ -119,150 +120,155 @@ methods:
 path: /target`
 
 
+describe('Test js inbound plugin', () => {
+	beforeAll(common.helpers.deleteAllNamespaces)
 
-describe("Test js inbound plugin", () => {
-    beforeAll(common.helpers.deleteAllNamespaces);
-  
-    common.helpers.itShouldCreateNamespace(it, expect, testNamespace);
-    // common.helpers.itShouldCreateNamespace(it, expect, testNamespace);
-  
-    common.helpers.itShouldCreateFile(
-      it,
-      expect,
-      testNamespace,
-      "/endpoint1.yaml",
-      endpointJSFile
-    );
-  
-    common.helpers.itShouldCreateFile(
-      it,
-      expect,
-      testNamespace,
-      "/target.yaml",
-      wf
-    );
+	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
+	// common.helpers.itShouldCreateNamespace(it, expect, testNamespace);
 
-    retry(`should have expected body after js`, 10, async () => {
-      await helpers.sleep(500)
-        const req = await request(common.config.getDirektivHost()).post(
-        `/ns/` + testNamespace + `/target?Query1=value1&Query2=value2`
-      ).set('Header1', 'Value1').send({"hello":"world"});
+	common.helpers.itShouldCreateFile(
+		it,
+		expect,
+		testNamespace,
+		'/endpoint1.yaml',
+		endpointJSFile,
+	)
 
-      expect(req.statusCode).toEqual(200);
-      expect(req.body.result.addheader).toEqual("value3")
-      expect(req.body.result.addheaderdel).toEqual("")
-      expect(req.body.result.addquery).toEqual("value1")
-      expect(req.body.result.addquerydel).toEqual("")
-    });
-  
-  });
+	common.helpers.itShouldCreateFile(
+		it,
+		expect,
+		testNamespace,
+		'/target.yaml',
+		wf,
+	)
+
+	retry(`should have expected body after js`, 10, async () => {
+		await helpers.sleep(500)
+		const req = await request(common.config.getDirektivHost()).post(
+			`/ns/` + testNamespace + `/target?Query1=value1&Query2=value2`,
+		)
+			.set('Header1', 'Value1')
+			.send({ hello: 'world' })
+
+		expect(req.statusCode).toEqual(200)
+		expect(req.body.result.addheader).toEqual('value3')
+		expect(req.body.result.addheaderdel).toEqual('')
+		expect(req.body.result.addquery).toEqual('value1')
+		expect(req.body.result.addquerydel).toEqual('')
+	})
+
+})
 
 
-describe("Test js inbound plugin consumer", () => {
-    beforeAll(common.helpers.deleteAllNamespaces);
-  
-    common.helpers.itShouldCreateNamespace(it, expect, testNamespace);
+describe('Test js inbound plugin consumer', () => {
+	beforeAll(common.helpers.deleteAllNamespaces)
 
-    common.helpers.itShouldCreateFile(
-      it,
-      expect,
-      testNamespace,
-      "/consumer.yaml",
-      consumer
-    );
+	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-    common.helpers.itShouldCreateFile(
-      it,
-      expect,
-      testNamespace,
-      "/endpoint1.yaml",
-      endpointConsumerFile
-    );
-  
-    common.helpers.itShouldCreateFile(
-      it,
-      expect,
-      testNamespace,
-      "/target.yaml",
-      wf
-    );
+	common.helpers.itShouldCreateFile(
+		it,
+		expect,
+		testNamespace,
+		'/consumer.yaml',
+		consumer,
+	)
 
-    retry(`should have expected body after js`, 10,async () => {
-      await helpers.sleep(500);
-        const req = await request(common.config.getDirektivHost()).post(
-        `/ns/` + testNamespace + `/target`
-      ).set('API-Token', 'apikey').send({"hello":"world"});
+	common.helpers.itShouldCreateFile(
+		it,
+		expect,
+		testNamespace,
+		'/endpoint1.yaml',
+		endpointConsumerFile,
+	)
 
-      expect(req.statusCode).toEqual(200);
-      expect(req.body.result.user).toEqual("demo")
+	common.helpers.itShouldCreateFile(
+		it,
+		expect,
+		testNamespace,
+		'/target.yaml',
+		wf,
+	)
 
-    });
-  
-  
-});
+	retry(`should have expected body after js`, 10, async () => {
+		await helpers.sleep(500)
+		const req = await request(common.config.getDirektivHost()).post(
+			`/ns/` + testNamespace + `/target`,
+		)
+			.set('API-Token', 'apikey')
+			.send({ hello: 'world' })
 
-describe("Test js inbound plugin url params", () => {
-  beforeAll(common.helpers.deleteAllNamespaces);
+		expect(req.statusCode).toEqual(200)
+		expect(req.body.result.user).toEqual('demo')
 
-  common.helpers.itShouldCreateNamespace(it, expect, testNamespace);
+	})
 
-  common.helpers.itShouldCreateFile(
-    it,
-    expect,
-    testNamespace,
-    "/endpoint1.yaml",
-    endpointParamFile
-  );
 
-  common.helpers.itShouldCreateFile(
-    it,
-    expect,
-    testNamespace,
-    "/target.yaml",
-    wf
-  );
+})
 
-  retry(`should have expected body after js`, 10,async () => {
-      await helpers.sleep(500);
-    const req = await request(common.config.getDirektivHost()).post(
-      `/ns/` + testNamespace + `/target/myid`
-    ).send({"hello":"world"});
+describe('Test js inbound plugin url params', () => {
+	beforeAll(common.helpers.deleteAllNamespaces)
 
-    expect(req.statusCode).toEqual(200);
-    expect(req.body.result.params).toEqual("myid")
+	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-  });
-});
-  
+	common.helpers.itShouldCreateFile(
+		it,
+		expect,
+		testNamespace,
+		'/endpoint1.yaml',
+		endpointParamFile,
+	)
 
-describe("Test js inbound plugin errors", () => {
-  beforeAll(common.helpers.deleteAllNamespaces);
+	common.helpers.itShouldCreateFile(
+		it,
+		expect,
+		testNamespace,
+		'/target.yaml',
+		wf,
+	)
 
-  common.helpers.itShouldCreateNamespace(it, expect, testNamespace);
+	retry(`should have expected body after js`, 10, async () => {
+		await helpers.sleep(500)
+		const req = await request(common.config.getDirektivHost()).post(
+			`/ns/` + testNamespace + `/target/myid`,
+		)
+			.send({ hello: 'world' })
 
-  common.helpers.itShouldCreateFile(
-    it,
-    expect,
-    testNamespace,
-    "/endpoint1.yaml",
-    endpointErrorFile
-  );
+		expect(req.statusCode).toEqual(200)
+		expect(req.body.result.params).toEqual('myid')
 
-  common.helpers.itShouldCreateFile(
-    it,
-    expect,
-    testNamespace,
-    "/target.yaml",
-    wf
-  );
+	})
+})
 
-  retry(`should have expected body after js`, 10,async () => {
-      await helpers.sleep(500);
-    const req = await request(common.config.getDirektivHost()).post(
-      `/ns/` + testNamespace + `/target`
-    ).send({"hello":"world"});
 
-    expect(req.statusCode).toEqual(403);
+describe('Test js inbound plugin errors', () => {
+	beforeAll(common.helpers.deleteAllNamespaces)
 
-  });
-});
+	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
+
+	common.helpers.itShouldCreateFile(
+		it,
+		expect,
+		testNamespace,
+		'/endpoint1.yaml',
+		endpointErrorFile,
+	)
+
+	common.helpers.itShouldCreateFile(
+		it,
+		expect,
+		testNamespace,
+		'/target.yaml',
+		wf,
+	)
+
+	retry(`should have expected body after js`, 10, async () => {
+		await helpers.sleep(500)
+		const req = await request(common.config.getDirektivHost()).post(
+			`/ns/` + testNamespace + `/target`,
+		)
+			.send({ hello: 'world' })
+
+		expect(req.statusCode).toEqual(403)
+
+	})
+})

@@ -1,10 +1,10 @@
-import common from "../common";
-import request from "../common/request";
-import helpers from "../common/helpers";
-import {retry10} from "../common/retry";
+import common from '../common'
+import helpers from '../common/helpers'
+import request from '../common/request'
+import { retry10 } from '../common/retry'
 
 
-const testNamespace = "headers";
+const testNamespace = 'headers'
 
 
 const endpointJSFile = `
@@ -47,37 +47,39 @@ states:
     result: jq(.)
 `
 
-describe("Test header plugin", () => {
-    beforeAll(common.helpers.deleteAllNamespaces);
-  
-    common.helpers.itShouldCreateNamespace(it, expect, testNamespace);
-  
-    common.helpers.itShouldCreateFile(
-      it,
-      expect,
-      testNamespace,
-      "/endpoint1.yaml",
-      endpointJSFile
-    );
-  
-    common.helpers.itShouldCreateFile(
-      it,
-      expect,
-      testNamespace,
-      "/target.yaml",
-      wf
-    );
+describe('Test header plugin', () => {
+	beforeAll(common.helpers.deleteAllNamespaces)
 
-    retry10(`should have expected body after js`,  async () => {
-      const req = await request(common.config.getDirektivHost()).post(
-        `/ns/` + testNamespace + `/target?Query1=value1&Query2=value2`
-      ).set('Header', 'Value1').set('Header1', 'oldvalue').send({"hello":"world"});
+	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-      expect(req.statusCode).toEqual(200);
-      expect(req.body.result.headers.Hello[0]).toEqual("world")
-      expect(req.body.result.headers.Header).toBeUndefined()
-      expect(req.body.result.headers.Header1[0]).toEqual("newvalue")
-    });
+	common.helpers.itShouldCreateFile(
+		it,
+		expect,
+		testNamespace,
+		'/endpoint1.yaml',
+		endpointJSFile,
+	)
 
-  });
-  
+	common.helpers.itShouldCreateFile(
+		it,
+		expect,
+		testNamespace,
+		'/target.yaml',
+		wf,
+	)
+
+	retry10(`should have expected body after js`, async () => {
+		const req = await request(common.config.getDirektivHost()).post(
+			`/ns/` + testNamespace + `/target?Query1=value1&Query2=value2`,
+		)
+			.set('Header', 'Value1')
+			.set('Header1', 'oldvalue')
+			.send({ hello: 'world' })
+
+		expect(req.statusCode).toEqual(200)
+		expect(req.body.result.headers.Hello[0]).toEqual('world')
+		expect(req.body.result.headers.Header).toBeUndefined()
+		expect(req.body.result.headers.Header1[0]).toEqual('newvalue')
+	})
+
+})
