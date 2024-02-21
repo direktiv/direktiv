@@ -725,8 +725,8 @@ func (tx *sqlTx) Rollback() {
 	}
 }
 
-func (srv *server) beginSqlTx(ctx context.Context) (*sqlTx, error) {
-	res := srv.gormDB.WithContext(ctx).Begin()
+func (srv *server) beginSqlTx(ctx context.Context, opts ...*sql.TxOptions) (*sqlTx, error) {
+	res := srv.gormDB.WithContext(ctx).Begin(opts...)
 	if res.Error != nil {
 		return nil, res.Error
 	}
