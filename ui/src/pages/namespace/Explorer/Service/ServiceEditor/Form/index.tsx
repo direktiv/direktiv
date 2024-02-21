@@ -20,10 +20,17 @@ import {
   scaleOptions,
   sizeOptions,
 } from "../schema";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "~/design/Tooltip";
 
 import { EnvsArrayForm } from "./EnvsArrayForm";
 import { FC } from "react";
 import { Fieldset } from "~/components/Form/Fieldset";
+import { HelpCircle } from "lucide-react";
 import Input from "~/design/Input";
 import { PatchesForm } from "./Patches";
 import { useTranslation } from "react-i18next";
@@ -74,11 +81,22 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
         </Fieldset>
 
         <div className="grid grid-cols-2 gap-4">
-          <Fieldset
-            label={t("pages.explorer.service.editor.form.scale.label")}
-            htmlFor="scale"
-            className="grow"
-          >
+          <fieldset className="mb-2 flex grow flex-col gap-2">
+            <div className="inline-flex items-center">
+              <label className="text-sm" htmlFor="scale">
+                {t("pages.explorer.service.editor.form.scale.label")}
+              </label>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <HelpCircle className="ml-1 h-4 w-4" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {t("pages.explorer.service.editor.form.scale.tooltip")}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
             <Select
               value={formControls.getValues("scale")?.toString()}
               onValueChange={(value) =>
@@ -105,7 +123,7 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
                 </SelectGroup>
               </SelectContent>
             </Select>
-          </Fieldset>
+          </fieldset>
           <Fieldset
             label={t("pages.explorer.service.editor.form.size.label")}
             htmlFor="size"
