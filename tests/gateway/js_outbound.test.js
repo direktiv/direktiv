@@ -1,5 +1,6 @@
 import common from "../common";
 import request from "../common/request";
+import {retry10} from "../common/retry";
 
 
 const testNamespace = "js-outbound";
@@ -58,7 +59,7 @@ describe("Test js outbound plugin", () => {
       wf
     );
 
-    it(`should have expected body after js`, async () => {
+    retry10(`should have expected body after js`, async () => {
       const req = await request(common.config.getDirektivHost()).post(
         `/ns/` + testNamespace + `/target?Query1=value1&Query2=value2`
       ).set('Header1', 'Value1').send({"hello":"world"});

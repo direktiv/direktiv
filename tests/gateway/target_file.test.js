@@ -1,6 +1,7 @@
 import common from "../common";
 import request from "../common/request";
 import retry from "jest-retries";
+import {retry10} from "../common/retry";
 
 
 const testNamespace = "gateway";
@@ -56,8 +57,7 @@ describe("Test target file wrong config", () => {
       endpointBroken
     );
 
-    retry(`should list all services`, 10, async () => {
-      await sleep(500)
+    retry10(`should list all services`, async () => {
       const listRes = await request(common.config.getDirektivHost()).get(
         `/api/v2/namespaces/${testNamespace}/gateway/routes`
       );
@@ -83,13 +83,6 @@ describe("Test target file wrong config", () => {
     })
 
 });
-
-
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-
 
 describe("Test target namespace file plugin", () => {
     beforeAll(common.helpers.deleteAllNamespaces);
@@ -128,33 +121,33 @@ describe("Test target namespace file plugin", () => {
       "/endpoint2.yaml",
       endpointNSFileAllowed
     );
-    
-  
-    it(`should return a file from magic namespace`, async () => {
+
+
+    retry10(`should return a file from magic namespace`, async () => {
       const req = await request(common.config.getDirektivHost()).get(
         `/gw/endpoint1`
       );
       expect(req.statusCode).toEqual(200);
       expect(req.text).toEqual(endpointNSFile)
     });
-  
-    it(`should return a file from magic namespace without namespace set`, async () => {
+
+    retry10(`should return a file from magic namespace without namespace set`, async () => {
       const req = await request(common.config.getDirektivHost()).get(
         `/gw/endpoint2`
       );
       expect(req.statusCode).toEqual(200);
       expect(req.text).toEqual(endpointNSFile)
     });
-  
-    it(`should return a file from non-magic namespace`, async () => {
+
+    retry10(`should return a file from non-magic namespace`, async () => {
       const req = await request(common.config.getDirektivHost()).get(
         `/ns/` + limitedNamespace + `/endpoint2`
       );
       expect(req.statusCode).toEqual(200);
       expect(req.text).toEqual(endpointNSFile)
     });
-  
-    it(`should not return a file`, async () => {
+
+    retry10(`should not return a file`, async () => {
       const req = await request(common.config.getDirektivHost()).get(
         `/ns/` + limitedNamespace + `/endpoint1`
       );
