@@ -12,7 +12,6 @@ start:
   type: event
   event:
     type: fake.event.one
-
 states:
 - id: helloworld
   type: noop
