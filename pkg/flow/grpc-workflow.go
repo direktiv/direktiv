@@ -201,10 +201,10 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 		return nil, err
 	}
 
-	eventData, err := json.Marshal(pubsub.ChangeWorkflowEvent{
-		Namespace:    ns.Name,
-		NamespaceID:  ns.ID,
-		WorkflowPath: file.Path,
+	eventData, err := json.Marshal(pubsub.FileChangeEvent{
+		Namespace:   ns.Name,
+		NamespaceID: ns.ID,
+		FilePath:    file.Path,
 	})
 	if err != nil {
 		flow.sugar.Error("pubsub publish", "error", err)
@@ -263,10 +263,10 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 
 	// has to move past the commit to get the changes to services
 	if file.Typ == filestore.FileTypeWorkflow {
-		eventData, err := json.Marshal(pubsub.ChangeWorkflowEvent{
-			Namespace:    ns.Name,
-			NamespaceID:  ns.ID,
-			WorkflowPath: file.Path,
+		eventData, err := json.Marshal(pubsub.FileChangeEvent{
+			Namespace:   ns.Name,
+			NamespaceID: ns.ID,
+			FilePath:    file.Path,
 		})
 		if err != nil {
 			flow.sugar.Error("pubsub publish", "error", err)

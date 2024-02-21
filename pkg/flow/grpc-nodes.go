@@ -216,10 +216,10 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 		if err != nil {
 			return nil, err
 		}
-		eventData, err := json.Marshal(pubsub.ChangeWorkflowEvent{
-			Namespace:    ns.Name,
-			NamespaceID:  ns.ID,
-			WorkflowPath: file.Path,
+		eventData, err := json.Marshal(pubsub.FileChangeEvent{
+			Namespace:   ns.Name,
+			NamespaceID: ns.ID,
+			FilePath:    file.Path,
 		})
 		if err != nil {
 			flow.sugar.Error("pubsub publish", "error", err)

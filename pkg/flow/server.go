@@ -475,12 +475,12 @@ func (srv *server) start(ctx context.Context) error {
 	dbManager := database2.NewDB(srv.gormDB, srv.conf.SecretKey)
 
 	configureWorkflow := func(data string) error {
-		event := pubsub2.ChangeWorkflowEvent{}
+		event := pubsub2.FileChangeEvent{}
 		err := json.Unmarshal([]byte(data), &event)
 		if err != nil {
 			return err
 		}
-		file, err := noTx.FileStore().ForNamespace(event.Namespace).GetFile(ctx, event.WorkflowPath)
+		file, err := noTx.FileStore().ForNamespace(event.Namespace).GetFile(ctx, event.FilePath)
 		if err != nil {
 			return err
 		}
