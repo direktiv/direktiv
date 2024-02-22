@@ -1,4 +1,3 @@
-import { BaseFileSchemaType, getFilenameFromPath } from "~/api/files/schema";
 import {
   DialogClose,
   DialogFooter,
@@ -7,8 +6,10 @@ import {
 } from "~/design/Dialog";
 import { Trans, useTranslation } from "react-i18next";
 
+import { BaseFileSchemaType } from "~/api/files/schema";
 import Button from "~/design/Button";
 import { Trash } from "lucide-react";
+import { getFilenameFromPath } from "~/api/files/utils";
 import { useDeleteFile } from "~/api/files/mutate/deleteFile";
 
 const Delete = ({

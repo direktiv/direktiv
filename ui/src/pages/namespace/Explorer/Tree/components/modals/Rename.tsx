@@ -1,16 +1,13 @@
 import {
-  BaseFileSchemaType,
-  getFilenameFromPath,
-  getParentFromPath,
-} from "~/api/files/schema";
-import {
   DialogClose,
   DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "~/design/Dialog";
 import { SubmitHandler, useForm } from "react-hook-form";
+import { getFilenameFromPath, getParentFromPath } from "~/api/files/utils";
 
+import { BaseFileSchemaType } from "~/api/files/schema";
 import Button from "~/design/Button";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";

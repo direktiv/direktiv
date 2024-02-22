@@ -1,13 +1,12 @@
+import { BaseFileSchemaType, FileDeletedSchema } from "../schema";
 import {
-  BaseFileSchemaType,
-  FileDeletedSchema,
+  forceLeadingSlash,
   getFilenameFromPath,
   getParentFromPath,
-} from "../schema";
+} from "~/api/files/utils";
 
 import { apiFactory } from "~/api/apiFactory";
 import { fileKeys } from "..";
-import { forceLeadingSlash } from "~/api/files/utils";
 import { useApiKey } from "~/util/store/apiKey";
 import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 import { useNamespace } from "~/util/store/namespace";

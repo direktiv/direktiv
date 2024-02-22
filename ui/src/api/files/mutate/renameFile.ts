@@ -1,9 +1,5 @@
-import {
-  BaseFileSchemaType,
-  RenameFileSchemaType,
-  getFilenameFromPath,
-  getParentFromPath,
-} from "../schema";
+import { BaseFileSchemaType, RenameFileSchemaType } from "../schema";
+import { getFilenameFromPath, getParentFromPath } from "../utils";
 
 import { fileKeys } from "..";
 import { patchFile } from "./patchFile";

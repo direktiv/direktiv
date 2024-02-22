@@ -7,7 +7,7 @@ import NewDirectory from "./components/modals/CreateNew/Directory";
 import NewRoute from "./components/modals/CreateNew/Gateway/Route";
 import NewService from "./components/modals/CreateNew/Service";
 import NewWorkflow from "./components/modals/CreateNew/Workflow";
-import { getFilenameFromPath } from "~/api/files/schema";
+import { getFilenameFromPath } from "~/api/files/utils";
 import { twMergeClsx } from "~/util/helpers";
 import { useFile } from "~/api/files/query/file";
 

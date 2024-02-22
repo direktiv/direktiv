@@ -1,4 +1,3 @@
-import { BaseFileSchemaType, getFilenameFromPath } from "~/api/files/schema";
 import { Dialog, DialogContent } from "~/design/Dialog";
 import { FC, useEffect, useState } from "react";
 import {
@@ -9,6 +8,7 @@ import {
   TableRow,
 } from "~/design/Table";
 
+import { BaseFileSchemaType } from "~/api/files/schema";
 import { Card } from "~/design/Card";
 import Delete from "./components/modals/Delete";
 import ExplorerHeader from "./Header";
@@ -19,6 +19,7 @@ import { Link } from "react-router-dom";
 import NoResult from "./NoResult";
 import Rename from "./components/modals/Rename";
 import { analyzePath } from "~/util/router/utils";
+import { getFilenameFromPath } from "~/api/files/utils";
 import { pages } from "~/util/router/pages";
 import { twMergeClsx } from "~/util/helpers";
 import { useFile } from "~/api/files/query/file";

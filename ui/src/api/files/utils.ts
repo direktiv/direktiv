@@ -3,6 +3,16 @@ import { File, Folder, Layers, Play, Users, Workflow } from "lucide-react";
 import { BaseFileSchemaType } from "./schema";
 import { ExplorerSubpages } from "~/util/router/pages";
 
+export const getFilenameFromPath = (path: string): string => {
+  const fileName = path.split("/").pop();
+  if (fileName === undefined)
+    throw Error(`Filename could not be extracted from ${path}`);
+  return fileName;
+};
+
+export const getParentFromPath = (path: string): string =>
+  path.split("/").slice(0, -1).join("/") || "/";
+
 export const sortFoldersFirst = (
   a: BaseFileSchemaType,
   b: BaseFileSchemaType

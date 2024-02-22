@@ -1,16 +1,16 @@
-import {
-  BaseFileSchemaType,
-  getFilenameFromPath,
-  getParentFromPath,
-} from "~/api/files/schema";
 import { FC, Fragment } from "react";
 import {
   FilepickerClose,
   FilepickerListItem,
   FilepickerSeparator,
 } from "~/design/Filepicker";
+import {
+  fileTypeToIcon,
+  getFilenameFromPath,
+  getParentFromPath,
+} from "~/api/files/utils";
 
-import { fileTypeToIcon } from "~/api/files/utils";
+import { BaseFileSchemaType } from "~/api/files/schema";
 import { twMergeClsx } from "~/util/helpers";
 
 export type FileListProps = {

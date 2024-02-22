@@ -1,7 +1,11 @@
-import { BaseFileSchemaType, getFilenameFromPath } from "~/api/files/schema";
 import { FC, PropsWithChildren } from "react";
-import { fileTypeToExplorerSubpage, isPreviewable } from "~/api/files/utils";
+import {
+  fileTypeToExplorerSubpage,
+  getFilenameFromPath,
+  isPreviewable,
+} from "~/api/files/utils";
 
+import { BaseFileSchemaType } from "~/api/files/schema";
 import { DialogTrigger } from "~/design/Dialog";
 import { Link } from "react-router-dom";
 import { pages } from "~/util/router/pages";

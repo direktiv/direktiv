@@ -1,4 +1,3 @@
-import { BaseFileSchemaType, getFilenameFromPath } from "~/api/files/schema";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,11 +8,12 @@ import {
 } from "~/design/Dropdown";
 import { MoreVertical, TextCursorInput, Trash } from "lucide-react";
 import { TableCell, TableRow } from "~/design/Table";
+import { fileTypeToIcon, getFilenameFromPath } from "~/api/files/utils";
 
+import { BaseFileSchemaType } from "~/api/files/schema";
 import Button from "~/design/Button";
 import { ConditionalLink } from "./ConditionalLink";
 import { DialogTrigger } from "~/design/Dialog";
-import { fileTypeToIcon } from "~/api/files/utils";
 import moment from "moment";
 import { useTranslation } from "react-i18next";
 
