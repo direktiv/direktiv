@@ -260,7 +260,7 @@ func (engine *engine) start(im *instanceMemory) {
 
 	engine.sugar.Debugf("Starting workflow %v", im.ID().String())
 	engine.logger.Infof(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "Starting workflow %v", database.GetWorkflow(im.instance.Instance.WorkflowPath))
-	slog.Info(fmt.Sprintf("Starting workflow %v", im.instance.Instance.WorkflowPath), "stream", string(recipient.Namespace)+"."+im.Namespace().Name)
+	slog.Info(fmt.Sprintf("Starting workflow %v", im.instance.Instance.WorkflowPath), "track", string(recipient.Namespace)+"."+im.Namespace().Name)
 	engine.logger.Debugf(ctx, im.instance.Instance.ID, im.GetAttributes(), "Starting workflow %v.", database.GetWorkflow(im.instance.Instance.WorkflowPath))
 	slog.Info(fmt.Sprintf("Starting workflow %v.", im.instance.Instance.WorkflowPath), im.instance.GetSlogAttributes(ctx)...)
 
@@ -628,7 +628,7 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 	engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), "Workflow %s completed.", database.GetWorkflow(im.instance.Instance.WorkflowPath))
 	slog.Info(fmt.Sprintf("Workflow %s completed.", database.GetWorkflow(im.instance.Instance.WorkflowPath)), im.GetSlogAttributes(ctx)...)
 	engine.logger.Infof(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "Workflow %s completed.", database.GetWorkflow(im.instance.Instance.WorkflowPath))
-	slog.Info(fmt.Sprintf("Workflow %s completed.", database.GetWorkflow(im.instance.Instance.WorkflowPath)), "stream", string(recipient.Namespace)+"."+im.Namespace().Name)
+	slog.Info(fmt.Sprintf("Workflow %s completed.", database.GetWorkflow(im.instance.Instance.WorkflowPath)), "track", string(recipient.Namespace)+"."+im.Namespace().Name)
 
 	defer engine.pubsub.NotifyInstance(im.instance.Instance.ID)
 	defer engine.pubsub.NotifyInstances(im.Namespace())
@@ -905,7 +905,7 @@ func (engine *engine) reportInstanceCrashed(ctx context.Context, im *instanceMem
 	engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), "Instance failed with %s error '%s': %s", typ, code, err.Error())
 	slog.Error(fmt.Sprintf("Instance failed with %s error '%s': %s", typ, code, err.Error()), im.GetSlogAttributes(ctx)...)
 	engine.logger.Errorf(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "Workflow failed %s Instance %s crashed with %s error '%s': %s", database.GetWorkflow(im.instance.Instance.WorkflowPath), im.GetInstanceID(), typ, code, err.Error())
-	slog.Error(fmt.Sprintf("Workflow failed %s Instance %s crashed with %s error '%s': %s", database.GetWorkflow(im.instance.Instance.WorkflowPath), im.GetInstanceID(), typ, code, err.Error()), "stream", im.Namespace().Name)
+	slog.Error(fmt.Sprintf("Workflow failed %s Instance %s crashed with %s error '%s': %s", database.GetWorkflow(im.instance.Instance.WorkflowPath), im.GetInstanceID(), typ, code, err.Error()), "track", im.Namespace().Name)
 }
 
 func (engine *engine) UserLog(ctx context.Context, im *instanceMemory, msg string, a ...interface{}) {

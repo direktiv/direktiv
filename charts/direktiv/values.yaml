@@ -204,12 +204,12 @@ fluent-bit:
       [FILTER]
           Name rewrite_tag
           Match input
-          Rule $stream ^.*$ flow.$stream false
+          Rule $track ^.*$ flow.$track false
     customParsers: |
       [PARSER]
           Name                    prefix_tail
           Format                  regex
-          Regex                   ^(?<time>[^ ]+) (?<source>\w+ \w+) (?<entry>{[^}]*?(?:"stream":"(?<stream>[^"]+)"[^}]*)}$)
+          Regex                   ^(?<time>[^ ]+) (?<source>\w+ \w+) (?<entry>{[^}]*?(?:"track":"(?<track>[^"]+)"[^}]*)}$)
           Time_Key                time
           Time_Format             %Y-%m-%dT%H:%M:%S.%L%z
           Decode_Field_As         json log
