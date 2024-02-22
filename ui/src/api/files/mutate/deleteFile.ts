@@ -35,11 +35,11 @@ export const useDeleteFile = ({
   }
 
   return useMutationWithPermissions({
-    mutationFn: ({ node }: { node: BaseFileSchemaType }) =>
+    mutationFn: ({ file }: { file: BaseFileSchemaType }) =>
       deleteFile({
         apiKey: apiKey ?? undefined,
         urlParams: {
-          path: node.path,
+          path: file.path,
           namespace,
         },
       }),
@@ -47,13 +47,13 @@ export const useDeleteFile = ({
       queryClient.invalidateQueries(
         fileKeys.file(namespace, {
           apiKey: apiKey ?? undefined,
-          path: getParentFromPath(variables.node.path),
+          path: getParentFromPath(variables.file.path),
         })
       );
       toast({
         title: t("api.tree.mutate.file.delete.success.title"),
         description: t("api.tree.mutate.file.delete.success.description", {
-          name: getFilenameFromPath(variables.node.path),
+          name: getFilenameFromPath(variables.file.path),
         }),
         variant: "success",
       });
@@ -63,7 +63,7 @@ export const useDeleteFile = ({
       toast({
         title: t("api.generic.error"),
         description: t("api.tree.mutate.file.delete.error.description", {
-          name: getFilenameFromPath(variables.node.path),
+          name: getFilenameFromPath(variables.file.path),
         }),
         variant: "error",
       });

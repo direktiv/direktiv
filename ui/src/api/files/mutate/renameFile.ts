@@ -27,17 +27,17 @@ export const useRenameFile = ({
 
   return useMutationWithPermissions({
     mutationFn: ({
-      node,
       file,
+      payload,
     }: {
-      node: BaseFileSchemaType;
-      file: RenameFileSchemaType;
+      file: BaseFileSchemaType;
+      payload: RenameFileSchemaType;
     }) =>
       patchFile({
         apiKey: apiKey ?? undefined,
-        payload: file,
+        payload,
         urlParams: {
-          path: node.path,
+          path: file.path,
           namespace,
         },
       }),
@@ -50,10 +50,10 @@ export const useRenameFile = ({
       );
       toast({
         title: t("api.tree.mutate.file.rename.success.title", {
-          type: variables.node.type === "workflow" ? "workflow" : "directory",
+          type: variables.file.type === "workflow" ? "workflow" : "directory",
         }),
         description: t("api.tree.mutate.file.rename.success.description", {
-          name: getFilenameFromPath(variables.node.path),
+          name: getFilenameFromPath(variables.file.path),
         }),
         variant: "success",
       });

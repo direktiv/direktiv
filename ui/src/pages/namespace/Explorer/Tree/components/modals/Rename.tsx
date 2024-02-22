@@ -24,11 +24,11 @@ type FormInput = {
 };
 
 const Rename = ({
-  node,
+  file,
   close,
   unallowedNames,
 }: {
-  node: BaseFileSchemaType;
+  file: BaseFileSchemaType;
   close: () => void;
   unallowedNames: string[];
 }) => {
@@ -42,7 +42,7 @@ const Rename = ({
       z.object({
         name: fileNameSchema
           .transform((enteredName) => {
-            if (node.type !== "directory" && node.type !== "file") {
+            if (file.type !== "directory" && file.type !== "file") {
               return addYamlFileExtension(enteredName);
             }
             return enteredName;
@@ -59,7 +59,7 @@ const Rename = ({
       })
     ),
     defaultValues: {
-      name: getFilenameFromPath(node.path),
+      name: getFilenameFromPath(file.path),
     },
   });
 
@@ -71,9 +71,9 @@ const Rename = ({
 
   const onSubmit: SubmitHandler<FormInput> = ({ name }) => {
     rename({
-      node,
-      file: {
-        path: `${getParentFromPath(node.path)}/${name}`,
+      file,
+      payload: {
+        path: `${getParentFromPath(file.path)}/${name}`,
       },
     });
   };
@@ -82,7 +82,7 @@ const Rename = ({
   // you have already submitted the form (errors will first show up after submit)
   const disableSubmit = !isDirty || (isSubmitted && !isValid);
 
-  const formId = `new-dir-${node.path}`;
+  const formId = `new-dir-${file.path}`;
 
   return (
     <>

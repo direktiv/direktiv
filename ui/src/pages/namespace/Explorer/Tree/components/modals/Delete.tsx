@@ -13,10 +13,10 @@ import { getFilenameFromPath } from "~/api/files/utils";
 import { useDeleteFile } from "~/api/files/mutate/deleteFile";
 
 const Delete = ({
-  node,
+  file,
   close,
 }: {
-  node: BaseFileSchemaType;
+  file: BaseFileSchemaType;
   close: () => void;
 }) => {
   const { t } = useTranslation();
@@ -35,15 +35,15 @@ const Delete = ({
       </DialogHeader>
 
       <div className="my-3">
-        {node.type === "directory" ? (
+        {file.type === "directory" ? (
           <Trans
             i18nKey="pages.explorer.tree.delete.directoryMsg"
-            values={{ name: getFilenameFromPath(node.path) }}
+            values={{ name: getFilenameFromPath(file.path) }}
           />
         ) : (
           <Trans
             i18nKey="pages.explorer.tree.delete.fileMsg"
-            values={{ name: getFilenameFromPath(node.path) }}
+            values={{ name: getFilenameFromPath(file.path) }}
           />
         )}
       </div>
@@ -56,7 +56,7 @@ const Delete = ({
         <Button
           data-testid="node-delete-confirm"
           onClick={() => {
-            deleteNode({ node });
+            deleteNode({ file });
           }}
           variant="destructive"
           loading={isLoading}

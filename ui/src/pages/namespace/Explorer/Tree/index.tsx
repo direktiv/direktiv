@@ -120,7 +120,7 @@ const ExplorerPage: FC = () => {
                 {previewNode && <FileViewer node={previewNode} />}
                 {deleteNode && (
                   <Delete
-                    node={deleteNode}
+                    file={deleteNode}
                     close={() => {
                       setDialogOpen(false);
                     }}
@@ -128,7 +128,7 @@ const ExplorerPage: FC = () => {
                 )}
                 {renameFile && (
                   <Rename
-                    node={renameFile}
+                    file={renameFile}
                     close={() => {
                       setDialogOpen(false);
                     }}
