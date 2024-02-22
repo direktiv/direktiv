@@ -1,11 +1,9 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 import { basename } from 'path'
-import request from "../common/request"
 
-import common from '../common'
 import config from '../common/config'
 import helpers from '../common/helpers'
-import regex from '../common/regex'
+import request from '../common/request'
 
 const namespace = basename(__filename)
 
@@ -58,7 +56,7 @@ describe('Test invalid secret delete calls', () => {
 				.delete(`/api/v2/namespaces/${ namespace }/secrets/${ testCase.name }`)
 				.send(testCase.input)
 			expect(res.statusCode).toEqual(testCase.wantError.statusCode)
-			expect(res.body.error).toMatchObject(
+			expect(res.body.error).toEqual(
 				testCase.wantError.error,
 			)
 		})

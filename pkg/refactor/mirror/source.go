@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	gitssh "github.com/go-git/go-git/v5/plumbing/transport/ssh"
@@ -154,7 +155,7 @@ func NewGitSourceSSH(conf GitSourceConfig, auth GitSourceSSHAuthConf) (Source, e
 	return clone(conf, cloneOpts)
 }
 
-func (cfg *Config) GetSource(_ context.Context) (Source, error) {
+func GetSource(_ context.Context, cfg *datastore.MirrorConfig) (Source, error) {
 	insecureSkipTLS := cfg.Insecure
 	tempDir := ""
 

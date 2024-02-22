@@ -1,11 +1,11 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 import { basename } from 'path'
-import request from "../common/request"
 
 import common from '../common'
 import config from '../common/config'
 import helpers from '../common/helpers'
 import regex from '../common/regex'
+import request from '../common/request'
 
 const namespace = basename(__filename)
 
@@ -36,8 +36,8 @@ describe('Test variable update calls', () => {
 				data: btoa('bar'),
 				mimeType: 'mime',
 				size: 3,
-				instanceId: '00000000-0000-0000-0000-000000000000',
-				workflowPath: '',
+				type: 'namespace_variable',
+				reference: namespace,
 			},
 		},
 		{
@@ -49,8 +49,8 @@ describe('Test variable update calls', () => {
 				data: btoa('bar2--'),
 				mimeType: 'mime',
 				size: 6,
-				instanceId: '00000000-0000-0000-0000-000000000000',
-				workflowPath: '',
+				type: 'namespace_variable',
+				reference: namespace,
 			},
 		},
 		{
@@ -62,8 +62,8 @@ describe('Test variable update calls', () => {
 				data: btoa('bar2--'),
 				mimeType: 'mime2',
 				size: 6,
-				instanceId: '00000000-0000-0000-0000-000000000000',
-				workflowPath: '',
+				type: 'namespace_variable',
+				reference: namespace,
 			},
 		},
 		{
@@ -76,8 +76,8 @@ describe('Test variable update calls', () => {
 				data: btoa('bar2--'),
 				mimeType: 'mime3',
 				size: 6,
-				instanceId: '00000000-0000-0000-0000-000000000000',
-				workflowPath: '',
+				type: 'namespace_variable',
+				reference: namespace,
 			},
 		},
 		{
@@ -91,8 +91,8 @@ describe('Test variable update calls', () => {
 				data: btoa('bar4--'),
 				mimeType: 'mime4',
 				size: 6,
-				instanceId: '00000000-0000-0000-0000-000000000000',
-				workflowPath: '',
+				type: 'namespace_variable',
+				reference: namespace,
 			},
 		},
 	]
@@ -100,13 +100,14 @@ describe('Test variable update calls', () => {
 	for (let i = 0; i < testCases.length; i++) {
 		const testCase = testCases[i]
 
+		// eslint-disable-next-line no-loop-func
 		it(`should update variable case ${ i }`, async () => {
 			const varId = createRes.body.data.id
 			const res = await request(config.getDirektivHost())
 				.patch(`/api/v2/namespaces/${ namespace }/variables/${ varId }`)
 				.send(testCase.input)
 			expect(res.statusCode).toEqual(200)
-			expect(res.body.data).toMatchObject({
+			expect(res.body.data).toEqual({
 				id: expect.stringMatching(common.regex.uuidRegex),
 
 				...testCase.want,
@@ -167,13 +168,14 @@ describe('Test invalid variable update calls', () => {
 	for (let i = 0; i < testCases.length; i++) {
 		const testCase = testCases[i]
 
+		// eslint-disable-next-line no-loop-func
 		it(`should fail updating a variable case ${ i }`, async () => {
 			const varId = createRes.body.data.id
 			const res = await request(config.getDirektivHost())
 				.patch(`/api/v2/namespaces/${ namespace }/variables/${ varId }`)
 				.send(testCase.input)
 			expect(res.statusCode).toEqual(testCase.wantError.statusCode)
-			expect(res.body.error).toMatchObject(
+			expect(res.body.error).toEqual(
 				testCase.wantError.error,
 			)
 		})

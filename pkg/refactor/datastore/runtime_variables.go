@@ -1,4 +1,4 @@
-package core
+package datastore
 
 import (
 	"context"
@@ -11,20 +11,20 @@ import (
 // RuntimeVariable are direktiv runtime variables that hold data, workflows performs getting and setting on these
 // data, RuntimeVariables also preserve state across multiple workflow runs.
 type RuntimeVariable struct {
-	ID uuid.UUID `json:"id"`
+	ID uuid.UUID
 
-	Namespace    string    `json:"-"`
-	WorkflowPath string    `json:"workflowPath"`
-	InstanceID   uuid.UUID `json:"instanceId"`
+	Namespace    string
+	WorkflowPath string
+	InstanceID   uuid.UUID
 
-	Name string `json:"name"`
+	Name string
 
-	Size     int    `json:"size"`
-	MimeType string `json:"mimeType"`
-	Data     []byte `json:"data"`
+	Size     int
+	MimeType string
+	Data     []byte
 
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 // RuntimeVariablePatch is used to update a runtime variable.

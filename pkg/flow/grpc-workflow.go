@@ -2,7 +2,6 @@ package flow
 
 import (
 	"context"
-	"encoding/json"
 	"path/filepath"
 	"time"
 
@@ -12,6 +11,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
+	"github.com/direktiv/direktiv/pkg/refactor/helpers"
 	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -76,8 +76,7 @@ func (flow *flow) WorkflowStream(req *grpc.WorkflowRequest, srv grpc.Flow_Workfl
 	}
 }
 
-func (flow *flow) createFileSystemObject(ctx context.Context, fileType filestore.FileType,
-	pubSub string, req *grpc.CreateWorkflowRequest,
+func (flow *flow) createFileSystemObject(ctx context.Context, fileType filestore.FileType, req *grpc.CreateWorkflowRequest,
 ) (*grpc.CreateWorkflowResponse, error) {
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
@@ -110,12 +109,11 @@ func (flow *flow) createFileSystemObject(ctx context.Context, fileType filestore
 	}
 	flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Created %s '%s'.", fileType, file.Path)
 
-	// do we need the path for services?
-	if fileType == filestore.FileTypeService {
-		err = flow.pBus.Publish(pubSub, file.Path)
-	} else {
-		err = flow.pBus.Publish(pubSub, ns.Name)
-	}
+	err = helpers.PublishEventDirektivFileChange(flow.pBus, file.Typ, "create", &pubsub.FileChangeEvent{
+		Namespace:   ns.Name,
+		NamespaceID: ns.ID,
+		FilePath:    file.Path,
+	})
 	if err != nil {
 		flow.sugar.Error("pubsub publish", "error", err)
 	}
@@ -143,11 +141,11 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 	// check for other file types first
 	switch apiFile.DirektivAPI {
 	case model.ServiceAPIV1:
-		return flow.createFileSystemObject(ctx, filestore.FileTypeService, pubsub.ServiceCreate, req)
+		return flow.createFileSystemObject(ctx, filestore.FileTypeService, req)
 	case model.EndpointAPIV1:
-		return flow.createFileSystemObject(ctx, filestore.FileTypeEndpoint, pubsub.EndpointCreate, req)
+		return flow.createFileSystemObject(ctx, filestore.FileTypeEndpoint, req)
 	case model.ConsumerAPIV1:
-		return flow.createFileSystemObject(ctx, filestore.FileTypeConsumer, pubsub.ConsumerCreate, req)
+		return flow.createFileSystemObject(ctx, filestore.FileTypeConsumer, req)
 	}
 
 	// do workflow if no other type detected
@@ -201,17 +199,15 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 		return nil, err
 	}
 
-	eventData, err := json.Marshal(pubsub.ChangeWorkflowEvent{
-		Namespace:    ns.Name,
-		NamespaceID:  ns.ID,
-		WorkflowPath: file.Path,
-	})
-	if err != nil {
-		flow.sugar.Error("pubsub publish", "error", err)
-	}
-	err = flow.pBus.Publish(pubsub.WorkflowCreate, string(eventData))
-	if err != nil {
-		flow.sugar.Error("pubsub publish", "error", err)
+	if file.Typ.IsDirektivSpecFile() {
+		err = helpers.PublishEventDirektivFileChange(flow.pBus, file.Typ, "create", &pubsub.FileChangeEvent{
+			Namespace:   ns.Name,
+			NamespaceID: ns.ID,
+			FilePath:    file.Path,
+		})
+		if err != nil {
+			flow.sugar.Error("pubsub publish", "error", err)
+		}
 	}
 
 	resp := &grpc.CreateWorkflowResponse{}
@@ -261,38 +257,12 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 		return nil, err
 	}
 
-	// has to move past the commit to get the changes to services
-	if file.Typ == filestore.FileTypeWorkflow {
-		eventData, err := json.Marshal(pubsub.ChangeWorkflowEvent{
-			Namespace:    ns.Name,
-			NamespaceID:  ns.ID,
-			WorkflowPath: file.Path,
+	if file.Typ.IsDirektivSpecFile() {
+		err = helpers.PublishEventDirektivFileChange(flow.pBus, file.Typ, "update", &pubsub.FileChangeEvent{
+			Namespace:   ns.Name,
+			NamespaceID: ns.ID,
+			FilePath:    file.Path,
 		})
-		if err != nil {
-			flow.sugar.Error("pubsub publish", "error", err)
-		}
-		err = flow.pBus.Publish(pubsub.WorkflowUpdate, string(eventData))
-		if err != nil {
-			flow.sugar.Error("pubsub publish", "error", err)
-		}
-	}
-
-	if file.Typ == filestore.FileTypeService {
-		err = flow.pBus.Publish(pubsub.ServiceUpdate, ns.Name)
-		if err != nil {
-			flow.sugar.Error("pubsub publish", "error", err)
-		}
-	}
-
-	if file.Typ == filestore.FileTypeEndpoint {
-		err = flow.pBus.Publish(pubsub.EndpointUpdate, ns.Name)
-		if err != nil {
-			flow.sugar.Error("pubsub publish", "error", err)
-		}
-	}
-
-	if file.Typ == filestore.FileTypeConsumer {
-		err = flow.pBus.Publish(pubsub.ConsumerUpdate, ns.Name)
 		if err != nil {
 			flow.sugar.Error("pubsub publish", "error", err)
 		}

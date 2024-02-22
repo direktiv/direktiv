@@ -1,11 +1,10 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 import { basename } from 'path'
-import request from "../common/request"
 
-import common from '../common'
 import config from '../common/config'
 import helpers from '../common/helpers'
 import regex from '../common/regex'
+import request from '../common/request'
 
 const namespace = basename(__filename)
 
@@ -20,7 +19,7 @@ describe('Test secret update calls', () => {
 			.send({
 				name: 'foo',
 				data: btoa('bar'),
-				
+
 			})
 
 		expect(createRes.statusCode).toEqual(200)
@@ -40,13 +39,14 @@ describe('Test secret update calls', () => {
 	for (let i = 0; i < testCases.length; i++) {
 		const testCase = testCases[i]
 
+		// eslint-disable-next-line no-loop-func
 		it(`should update secret case ${ i }`, async () => {
 			const secretName = createRes.body.data.name
 			const res = await request(config.getDirektivHost())
 				.patch(`/api/v2/namespaces/${ namespace }/secrets/${ secretName }`)
 				.send(testCase.input)
 			expect(res.statusCode).toEqual(200)
-			expect(res.body.data).toMatchObject({
+			expect(res.body.data).toEqual({
 				...testCase.want,
 
 				createdAt: expect.stringMatching(regex.timestampRegex),
@@ -67,7 +67,7 @@ describe('Test invalid secret update calls', () => {
 			.send({
 				name: 'foo',
 				data: btoa('bar'),
-				
+
 			})
 
 		expect(createRes.statusCode).toEqual(200)
@@ -91,14 +91,14 @@ describe('Test invalid secret update calls', () => {
 
 	for (let i = 0; i < testCases.length; i++) {
 		const testCase = testCases[i]
-
+		// eslint-disable-next-line no-loop-func
 		it(`should fail updating a secret case ${ i }`, async () => {
 			const secretName = createRes.body.data.name
 			const res = await request(config.getDirektivHost())
 				.patch(`/api/v2/namespaces/${ namespace }/secrets/${ secretName }`)
 				.send(testCase.input)
 			expect(res.statusCode).toEqual(testCase.wantError.statusCode)
-			expect(res.body.error).toMatchObject(
+			expect(res.body.error).toEqual(
 				testCase.wantError.error,
 			)
 		})
