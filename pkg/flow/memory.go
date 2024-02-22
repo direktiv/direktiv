@@ -210,7 +210,7 @@ func (im *instanceMemory) GetAttributes() map[string]string {
 		tags["state-type"] = im.logic.GetType().String()
 	}
 
-	pi := im.engine.InstanceCaller(context.Background(), im)
+	pi := im.engine.InstanceCaller(im)
 	if pi != nil {
 		a := strings.Split(pi.State, ":")
 		if len(a) >= 1 && a[0] != "" {
@@ -272,13 +272,6 @@ func (engine *engine) getInstanceMemory(ctx context.Context, id string) (*instan
 	im.instance = instance
 	im.updateArgs = new(instancestore.UpdateInstanceDataArgs)
 
-	defer func() {
-		e := im.flushUpdates(ctx)
-		if e != nil {
-			err = e
-		}
-	}()
-
 	err = json.Unmarshal(im.instance.Instance.LiveData, &im.data)
 	if err != nil {
 		engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", err.Error()))
@@ -334,7 +327,7 @@ func (engine *engine) loadInstanceMemory(id string, step int) (context.Context, 
 	return ctx, im, nil
 }
 
-func (engine *engine) InstanceCaller(ctx context.Context, im *instanceMemory) *enginerefactor.ParentInfo {
+func (engine *engine) InstanceCaller(im *instanceMemory) *enginerefactor.ParentInfo {
 	di := im.instance.DescentInfo
 	if len(di.Descent) == 0 {
 		return nil

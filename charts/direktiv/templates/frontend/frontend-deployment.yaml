@@ -74,6 +74,24 @@ spec:
           - name: "NO_PROXY"
             value: "{{ .Values.no_proxy }}"
           {{- end }} 
+          - name: DIREKTIV_KNATIVE_SIZE_MEMORY_SMALL
+            value: "{{ .Values.functions.limits.memory.small }}"
+          - name: DIREKTIV_KNATIVE_SIZE_CPU_SMALL
+            value: "{{ .Values.functions.limits.cpu.small }}"
+          - name: DIREKTIV_KNATIVE_SIZE_DISK_SMALL
+            value: "{{ .Values.functions.limits.disk.small }}"
+          - name: DIREKTIV_KNATIVE_SIZE_MEMORY_MEDIUM
+            value: "{{ .Values.functions.limits.memory.medium }}"
+          - name: DIREKTIV_KNATIVE_SIZE_CPU_MEDIUM
+            value: "{{ .Values.functions.limits.cpu.medium }}"
+          - name: DIREKTIV_KNATIVE_SIZE_DISK_MEDIUM
+            value: "{{ .Values.functions.limits.disk.medium }}"
+          - name: DIREKTIV_KNATIVE_SIZE_MEMORY_LARGE
+            value: "{{ .Values.functions.limits.memory.large }}"
+          - name: DIREKTIV_KNATIVE_SIZE_CPU_LARGE
+            value: "{{ .Values.functions.limits.cpu.large }}"
+          - name: DIREKTIV_KNATIVE_SIZE_DISK_LARGE
+            value: "{{ .Values.functions.limits.disk.large }}"
           ports:
             - name: frontend
               containerPort: 2304

@@ -31,8 +31,8 @@ func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, level lo
 
 	query := `
 		INSERT INTO engine_messages 
-		(id, timestamp, level, topic, source, entry) 
-		VALUES (?, ?, ?, ?, ?, ?)
+		(id, timestamp, level, topic, source, log_instance_call_path, entry) 
+		VALUES (?, ?, ?, ?, ?, ?, ?)
 	`
 
 	vals := []interface{}{
@@ -41,6 +41,7 @@ func (sl *sqlLogStore) Append(ctx context.Context, timestamp time.Time, level lo
 		level,
 		topic,
 		valuesCopy["source"],
+		valuesCopy["log_instance_call_path"],
 	}
 
 	b, err := json.Marshal(valuesCopy)
@@ -68,11 +69,11 @@ func (sl *sqlLogStore) Get(ctx context.Context, keysAndValues map[string]interfa
 	delete(keysAndValues, "root_instance_id")
 
 	wEq := []string{
-		fmt.Sprintf(`topic = '%s' OR topic = '%s'`, today, yesterday), // we query only the logs for the last 2 days
+		fmt.Sprintf(`( topic = '%s' OR topic = '%s' )`, today, yesterday), // we query only the logs for the last 2 days
 	}
 
 	addCondition(&wEq, "source", keysAndValues)
-	addCondition(&wEq, "level", keysAndValues)
+	// addCondition(&wEq, "level", keysAndValues)
 	addConditionPrefix(&wEq, "log_instance_call_path", keysAndValues)
 
 	query := buildQuery("timestamp, level, log_instance_call_path, source, entry", wEq, limit, offset)
