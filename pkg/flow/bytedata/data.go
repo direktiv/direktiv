@@ -233,7 +233,7 @@ func ConvertEventListeners(in []*events.EventListener) []*grpc.EventListener {
 		ins := ""
 		// step := ""
 		if el.TriggerWorkflow != "" {
-			wf = "/" + strings.Split(el.Metadata, " ")[0]
+			wf = el.Metadata
 		}
 		if el.TriggerInstance != "" {
 			ins = el.TriggerInstance
