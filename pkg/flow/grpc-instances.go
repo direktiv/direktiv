@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
+	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/google/uuid"
@@ -398,7 +398,7 @@ func (flow *flow) InstanceStream(req *grpc.InstanceRequest, srv grpc.Flow_Instan
 	nhash := ""
 
 	var err error
-	var ns *core.Namespace
+	var ns *database.Namespace
 	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
 		return err
@@ -477,7 +477,7 @@ func (flow *flow) StartWorkflow(ctx context.Context, req *grpc.StartWorkflowRequ
 	flow.sugar.Debugf("Handling gRPC request: %s", this())
 
 	var err error
-	var ns *core.Namespace
+	var ns *database.Namespace
 	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
 		return err
@@ -612,7 +612,7 @@ func (flow *flow) AwaitWorkflow(req *grpc.AwaitWorkflowRequest, srv grpc.Flow_Aw
 	nhash := ""
 
 	var err error
-	var ns *core.Namespace
+	var ns *database.Namespace
 	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
 		return err

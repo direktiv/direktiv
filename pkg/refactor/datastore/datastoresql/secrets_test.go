@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore/datastoresql"
 )
 
@@ -15,7 +15,7 @@ func Test_Secrets(t *testing.T) {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
 	}
 	ds := datastoresql.NewSQLStore(db, "some_secret_key_")
-	err = ds.Secrets().Set(context.Background(), &core.Secret{
+	err = ds.Secrets().Set(context.Background(), &datastore.Secret{
 		Name:      "test",
 		Namespace: "ns",
 		Data:      []byte("value"),

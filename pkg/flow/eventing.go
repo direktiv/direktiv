@@ -12,8 +12,8 @@ import (
 	"github.com/cloudevents/sdk-go/v2/binding"
 	protocol "github.com/cloudevents/sdk-go/v2/protocol/http"
 	"github.com/direktiv/direktiv/pkg/dlog"
+	"github.com/direktiv/direktiv/pkg/flow/database"
 	igrpc "github.com/direktiv/direktiv/pkg/flow/grpc"
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/gorilla/mux"
 	"go.uber.org/zap"
@@ -69,7 +69,7 @@ func (rcv *eventReceiver) sendToNamespace(name string, r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	var ns *core.Namespace
+	var ns *database.Namespace
 	err = rcv.flow.runSqlTx(ctx, func(tx *sqlTx) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, name)
 		return err
@@ -101,7 +101,7 @@ func (rcv *eventReceiver) NamespaceHandler(w http.ResponseWriter, r *http.Reques
 func (rcv *eventReceiver) MultiNamespaceHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := context.Background()
 
-	var nss []*core.Namespace
+	var nss []*database.Namespace
 	var err error
 	err = rcv.flow.runSqlTx(context.Background(), func(tx *sqlTx) error {
 		nss, err = tx.DataStore().Namespaces().GetAll(ctx)

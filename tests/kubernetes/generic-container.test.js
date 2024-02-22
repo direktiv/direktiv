@@ -1,9 +1,10 @@
-import common from "../common";
-import request from "supertest";
-import retry from "jest-retries";
+import retry from 'jest-retries'
+
+import common from '../common'
+import request from '../common/request'
 
 
-const testNamespace = "patches";
+const testNamespace = 'patches'
 
 
 const genericContainerWorkflow = `
@@ -25,31 +26,31 @@ states:
 `
 
 
-describe("Test generic container", () => {
-  beforeAll(common.helpers.deleteAllNamespaces);
+describe('Test generic container', () => {
+	beforeAll(common.helpers.deleteAllNamespaces)
 
-  common.helpers.itShouldCreateNamespace(it, expect, testNamespace);
+	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-  common.helpers.itShouldCreateFile(
-    it,
-    expect,
-    testNamespace,
-    "/wf1.yaml",
-    genericContainerWorkflow
-  );
-
-
-  retry(`should invoke workflow`, 10, async () => {
-    await sleep(500);
-    const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/${testNamespace}/tree/wf1.yaml?op=wait`)
-    expect(res.statusCode).toEqual(200)
-    expect(res.body.return[0].Output).toEqual("data")
-  })
+	common.helpers.itShouldCreateFile(
+		it,
+		expect,
+		testNamespace,
+		'/wf1.yaml',
+		genericContainerWorkflow,
+	)
 
 
-});
+	retry(`should invoke workflow`, 10, async () => {
+		await sleep(500)
+		const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ testNamespace }/tree/wf1.yaml?op=wait`)
+		expect(res.statusCode).toEqual(200)
+		expect(res.body.return[0].Output).toEqual('data')
+	})
 
 
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+})
+
+
+function sleep (ms) {
+	return new Promise(resolve => setTimeout(resolve, ms))
 }

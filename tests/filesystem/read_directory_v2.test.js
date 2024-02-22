@@ -1,10 +1,10 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 import { basename } from 'path'
-import request from 'supertest'
 
 import config from '../common/config'
 import helpers from '../common/helpers'
 import regex from '../common/regex'
+import request from '../common/request'
 
 const namespace = basename(__filename)
 
@@ -15,17 +15,15 @@ describe('Test filesystem tree read operations', () => {
 
 	it(`should read empty root dir`, async () => {
 		const res = await request(config.getDirektivHost())
-			.get(`/api/v2/namespaces/${ namespace }/files-tree`)
+			.get(`/api/v2/namespaces/${ namespace }/files`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toMatchObject({
 			data: {
-				file: {
-					path: '/',
-					type: 'directory',
-					createdAt: expect.stringMatching(regex.timestampRegex),
-					updatedAt: expect.stringMatching(regex.timestampRegex),
-				},
-				paths: [],
+				path: '/',
+				type: 'directory',
+				createdAt: expect.stringMatching(regex.timestampRegex),
+				updatedAt: expect.stringMatching(regex.timestampRegex),
+				children: [],
 			},
 		})
 	})
@@ -38,17 +36,15 @@ describe('Test filesystem tree read operations', () => {
 
 	it(`should read root dir with three paths`, async () => {
 		const res = await request(config.getDirektivHost())
-			.get(`/api/v2/namespaces/${ namespace }/files-tree`)
+			.get(`/api/v2/namespaces/${ namespace }/files`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toMatchObject({
 			data: {
-				file: {
-					path: '/',
-					type: 'directory',
-					createdAt: expect.stringMatching(regex.timestampRegex),
-					updatedAt: expect.stringMatching(regex.timestampRegex),
-				},
-				paths: [
+				path: '/',
+				type: 'directory',
+				createdAt: expect.stringMatching(regex.timestampRegex),
+				updatedAt: expect.stringMatching(regex.timestampRegex),
+				children: [
 					{
 						path: '/dir1',
 						type: 'directory',
@@ -78,17 +74,15 @@ describe('Test filesystem tree read operations', () => {
 
 	it(`should read dir1 with two files`, async () => {
 		const res = await request(config.getDirektivHost())
-			.get(`/api/v2/namespaces/${ namespace }/files-tree/dir1`)
+			.get(`/api/v2/namespaces/${ namespace }/files/dir1`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toMatchObject({
 			data: {
-				file: {
-					path: '/dir1',
-					type: 'directory',
-					createdAt: expect.stringMatching(regex.timestampRegex),
-					updatedAt: expect.stringMatching(regex.timestampRegex),
-				},
-				paths: [
+				path: '/dir1',
+				type: 'directory',
+				createdAt: expect.stringMatching(regex.timestampRegex),
+				updatedAt: expect.stringMatching(regex.timestampRegex),
+				children: [
 					{
 						mimeType: 'application/direktiv',
 						path: '/dir1/foo11.yaml',
@@ -112,17 +106,15 @@ describe('Test filesystem tree read operations', () => {
 
 	it(`should read dir2 with zero files`, async () => {
 		const res = await request(config.getDirektivHost())
-			.get(`/api/v2/namespaces/${ namespace }/files-tree/dir2`)
+			.get(`/api/v2/namespaces/${ namespace }/files/dir2`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toMatchObject({
 			data: {
-				file: {
-					path: '/dir2',
-					type: 'directory',
-					createdAt: expect.stringMatching(regex.timestampRegex),
-					updatedAt: expect.stringMatching(regex.timestampRegex),
-				},
-				paths: [],
+				path: '/dir2',
+				type: 'directory',
+				createdAt: expect.stringMatching(regex.timestampRegex),
+				updatedAt: expect.stringMatching(regex.timestampRegex),
+				children: [],
 			},
 		})
 	})
@@ -131,17 +123,15 @@ describe('Test filesystem tree read operations', () => {
 
 	it(`should read root dir two dirs`, async () => {
 		const res = await request(config.getDirektivHost())
-			.get(`/api/v2/namespaces/${ namespace }/files-tree`)
+			.get(`/api/v2/namespaces/${ namespace }/files`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toMatchObject({
 			data: {
-				file: {
-					path: '/',
-					type: 'directory',
-					createdAt: expect.stringMatching(regex.timestampRegex),
-					updatedAt: expect.stringMatching(regex.timestampRegex),
-				},
-				paths: [
+				path: '/',
+				type: 'directory',
+				createdAt: expect.stringMatching(regex.timestampRegex),
+				updatedAt: expect.stringMatching(regex.timestampRegex),
+				children: [
 					{
 						path: '/dir1',
 						type: 'directory',
@@ -165,17 +155,15 @@ describe('Test filesystem tree read operations', () => {
 
 	it(`should read root dir one path`, async () => {
 		const res = await request(config.getDirektivHost())
-			.get(`/api/v2/namespaces/${ namespace }/files-tree`)
+			.get(`/api/v2/namespaces/${ namespace }/files`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toMatchObject({
 			data: {
-				file: {
-					path: '/',
-					type: 'directory',
-					createdAt: expect.stringMatching(regex.timestampRegex),
-					updatedAt: expect.stringMatching(regex.timestampRegex),
-				},
-				paths: [
+				path: '/',
+				type: 'directory',
+				createdAt: expect.stringMatching(regex.timestampRegex),
+				updatedAt: expect.stringMatching(regex.timestampRegex),
+				children: [
 					{
 						path: '/dir1',
 						type: 'directory',
@@ -190,7 +178,7 @@ describe('Test filesystem tree read operations', () => {
 
 	it(`should read root not found`, async () => {
 		const res = await request(config.getDirektivHost())
-			.get(`/api/v2/namespaces/${ namespace }/files-tree/dir2`)
+			.get(`/api/v2/namespaces/${ namespace }/files/dir2`)
 		expect(res.statusCode).toEqual(404)
 	})
 

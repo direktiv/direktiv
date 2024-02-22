@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
-	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 )
 
 type HasAttributes interface {
@@ -23,7 +23,7 @@ func GetAttributes(recipientType recipient.RecipientType, a ...HasAttributes) ma
 	return m
 }
 
-type Namespace = core.Namespace
+type Namespace = datastore.Namespace
 
 func GetWorkflow(path string) string {
 	return strings.Split(path, ":")[0]

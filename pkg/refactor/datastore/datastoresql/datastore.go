@@ -1,11 +1,9 @@
 package datastoresql
 
 import (
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/events"
 	"github.com/direktiv/direktiv/pkg/refactor/logengine"
-	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	"gorm.io/gorm"
 )
 
@@ -20,7 +18,7 @@ var _ datastore.Store = &sqlStore{}
 
 // NewSQLStore builds direktiv data store. Param `db` should be an opened active connection to the database. Param
 // `mirrorConfigEncryptionKey` is a symmetric encryption key string used to encrypt and decrypt mirror data.
-// Database transactions management should be handled by the user of this datastore.Store implementation. The caller
+// Database transactions management should be handled by the user of this datastore.MirrorStore implementation. The caller
 // can start a transaction and pass it as Param `db`. After calling different operations on the store, the caller can
 // either commit or rollback the connection.
 
@@ -32,7 +30,7 @@ func NewSQLStore(db *gorm.DB, mirrorConfigEncryptionKey string) datastore.Store 
 }
 
 // Mirror returns mirror store.
-func (s *sqlStore) Mirror() mirror.Store {
+func (s *sqlStore) Mirror() datastore.MirrorStore {
 	return &sqlMirrorStore{
 		db:                  s.db,
 		configEncryptionKey: s.mirrorConfigEncryptionKey,
@@ -47,14 +45,14 @@ func (s *sqlStore) Logs() logengine.LogStore {
 }
 
 // Secrets returns secrets store.
-func (s *sqlStore) Secrets() core.SecretsStore {
+func (s *sqlStore) Secrets() datastore.SecretsStore {
 	return &sqlSecretsStore{
 		db:        s.db,
 		secretKey: s.mirrorConfigEncryptionKey,
 	}
 }
 
-func (s *sqlStore) RuntimeVariables() core.RuntimeVariablesStore {
+func (s *sqlStore) RuntimeVariables() datastore.RuntimeVariablesStore {
 	return &sqlRuntimeVariablesStore{
 		db: s.db,
 	}
@@ -76,6 +74,6 @@ func (s *sqlStore) EventListenerTopics() events.EventTopicsStore {
 	return &sqlEventTopicsStore{db: s.db}
 }
 
-func (s *sqlStore) Namespaces() core.NamespacesStore {
+func (s *sqlStore) Namespaces() datastore.NamespacesStore {
 	return &sqlNamespacesStore{db: s.db}
 }

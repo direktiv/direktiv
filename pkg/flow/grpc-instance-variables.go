@@ -9,7 +9,6 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	libengine "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"google.golang.org/grpc/codes"
@@ -264,7 +263,7 @@ func (flow *flow) SetInstanceVariable(ctx context.Context, req *grpc.SetInstance
 	}
 	defer tx.Rollback()
 
-	newVar, err := tx.DataStore().RuntimeVariables().Set(ctx, &core.RuntimeVariable{
+	newVar, err := tx.DataStore().RuntimeVariables().Set(ctx, &datastore.RuntimeVariable{
 		Namespace:  inst.Instance.Namespace,
 		InstanceID: inst.Instance.ID,
 		Name:       req.GetKey(),

@@ -175,7 +175,7 @@ const DropdownMenuSeparator = React.forwardRef<
   <DropdownMenuPrimitive.Separator
     ref={ref}
     className={twMergeClsx(
-      "-mx-1 my-1 h-px bg-gray-3 dark:bg-gray-dark-3",
+      "my-1 h-px bg-gray-3 dark:bg-gray-dark-3",
       className
     )}
     {...props}

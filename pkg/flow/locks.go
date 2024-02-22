@@ -97,7 +97,6 @@ func (locks *locks) unlockDB(id uint64, conn *sql.Conn) (err error) {
 
 	_, err = conn.ExecContext(context.Background(),
 		"SELECT pg_advisory_unlock($1)", int64(id))
-
 	if err != nil {
 		err = fmt.Errorf("can not unlock lock %d: %w", id, err)
 	}
