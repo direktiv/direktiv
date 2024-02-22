@@ -75,9 +75,10 @@ const FileSchema = BaseFileSchema.extend({
   data: z.string(),
 });
 
+/* Additional properties exist for files in "children", but aren't currently used. */
 export const DirectorySchema = BaseFileSchema.extend({
   type: z.literal("directory"),
-  children: z.array(BaseFileSchema).optional(), // TODO: this isn't accurate
+  children: z.array(BaseFileSchema).optional(),
 });
 
 const CreateDirectorySchema = z.object({
