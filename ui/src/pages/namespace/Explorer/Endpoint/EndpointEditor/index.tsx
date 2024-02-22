@@ -1,4 +1,3 @@
-import { compareYamlStructure, jsonToYaml } from "../../utils";
 import { decode, encode } from "js-base64";
 
 import Alert from "~/design/Alert";
@@ -12,6 +11,7 @@ import { Form } from "./Form";
 import FormErrors from "~/components/FormErrors";
 import { Save } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
+import { jsonToYaml } from "../../utils";
 import { serializeEndpointFile } from "./utils";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
@@ -49,10 +49,7 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data }) => {
         values,
       }) => {
         const preview = jsonToYaml(values);
-        const filehasChanged = compareYamlStructure(
-          preview,
-          fileContentFromServer
-        );
+        const filehasChanged = preview === fileContentFromServer;
         const isDirty = !endpointConfigError && !filehasChanged;
         const disableButton = isLoading || !!endpointConfigError;
 
