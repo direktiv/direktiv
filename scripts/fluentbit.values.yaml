@@ -40,7 +40,7 @@ config:
         auto_kubernetes_labels off
         labels job=fluent-bit, level=$log['level'], stream=$log['stream'], component=$log['component'], build=$log['build'], trace=$log['trace'], namespace=$log['namespace'], workflow=$log['workflow'], httppath=$log['httppath'], log-recipient=$log['log-recipient'], invoker=$log['invoker'], callpath=$log['callpath'], mirrorid=$log['mirror-id'], recipient=$log['recipientType'], source=$log['source']
     [OUTPUT]
-        name   stdout
-        match  *
-        type   stdout
-        format message
+      name   stdout
+      match  *
+      type   stdout
+      format message
