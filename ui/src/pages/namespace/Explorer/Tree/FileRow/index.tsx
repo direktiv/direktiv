@@ -18,22 +18,22 @@ import moment from "moment";
 import { useTranslation } from "react-i18next";
 
 const FileRow = ({
-  node,
+  file,
   namespace,
   onRenameClicked,
   onDeleteClicked,
   onPreviewClicked,
 }: {
-  node: BaseFileSchemaType;
+  file: BaseFileSchemaType;
   namespace: string;
-  onRenameClicked: (node: BaseFileSchemaType) => void;
-  onDeleteClicked: (node: BaseFileSchemaType) => void;
-  onPreviewClicked: (node: BaseFileSchemaType) => void;
+  onRenameClicked: (file: BaseFileSchemaType) => void;
+  onDeleteClicked: (file: BaseFileSchemaType) => void;
+  onPreviewClicked: (file: BaseFileSchemaType) => void;
 }) => {
   const { t } = useTranslation();
-  const Icon = fileTypeToIcon(node.type);
+  const Icon = fileTypeToIcon(file.type);
 
-  const filename = getFilenameFromPath(node.path);
+  const filename = getFilenameFromPath(file.path);
 
   return (
     <TableRow data-testid={`explorer-item-${filename}`}>
@@ -41,14 +41,14 @@ const FileRow = ({
         <div className="flex space-x-3">
           <Icon className="h-5" />
           <ConditionalLink
-            node={node}
+            file={file}
             namespace={namespace}
             onPreviewClicked={onPreviewClicked}
           >
             {filename}
           </ConditionalLink>
           <span className="text-gray-9 dark:text-gray-dark-9">
-            {moment(node.updatedAt).fromNow()}
+            {moment(file.updatedAt).fromNow()}
           </span>
         </div>
       </TableCell>
@@ -74,7 +74,7 @@ const FileRow = ({
               className="w-full"
               data-testid="node-actions-delete"
               onClick={() => {
-                onDeleteClicked(node);
+                onDeleteClicked(file);
               }}
             >
               <DropdownMenuItem>
@@ -86,7 +86,7 @@ const FileRow = ({
               className="w-full"
               data-testid="node-actions-rename"
               onClick={() => {
-                onRenameClicked(node);
+                onRenameClicked(file);
               }}
             >
               <DropdownMenuItem>

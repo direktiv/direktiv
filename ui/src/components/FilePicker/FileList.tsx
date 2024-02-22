@@ -14,24 +14,24 @@ import { BaseFileSchemaType } from "~/api/files/schema";
 import { twMergeClsx } from "~/util/helpers";
 
 export type FileListProps = {
-  nodes: BaseFileSchemaType[];
-  selectable: ((node: BaseFileSchemaType) => boolean) | undefined;
+  files: BaseFileSchemaType[];
+  selectable: ((file: BaseFileSchemaType) => boolean) | undefined;
   setPath: (path: string) => void;
   setInputValue: (value: string) => void;
   onChange: (path: string) => void;
 };
 
 export const FileList: FC<FileListProps> = ({
-  nodes,
+  files,
   selectable,
   setPath,
   setInputValue,
   onChange,
 }) => (
   <>
-    {nodes.map((file, index) => {
+    {files.map((file, index) => {
       const isSelectable = selectable?.(file) ?? true;
-      const isLastListItem = index === nodes.length - 1;
+      const isLastListItem = index === files.length - 1;
       const filename = getFilenameFromPath(file.path);
       const parent = getParentFromPath(file.path);
       return (

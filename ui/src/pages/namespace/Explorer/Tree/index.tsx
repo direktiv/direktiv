@@ -104,7 +104,7 @@ const ExplorerPage: FC = () => {
                     <FileRow
                       key={item.path}
                       namespace={namespace}
-                      node={item}
+                      file={item}
                       onDeleteClicked={setDeleteNode}
                       onRenameClicked={setRenameNode}
                       onPreviewClicked={setPreviewNode}
@@ -117,7 +117,7 @@ const ExplorerPage: FC = () => {
                   wideOverlay && "sm:max-w-xl md:max-w-2xl lg:max-w-3xl"
                 )}
               >
-                {previewNode && <FileViewer node={previewNode} />}
+                {previewNode && <FileViewer file={previewNode} />}
                 {deleteNode && (
                   <Delete
                     file={deleteNode}

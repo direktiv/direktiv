@@ -31,7 +31,7 @@ const FilePicker = ({
   namespace?: string;
   defaultPath?: string;
   onChange?: (filePath: string) => void;
-  selectable?: (node: BaseFileSchemaType) => boolean;
+  selectable?: (file: BaseFileSchemaType) => boolean;
 }) => {
   const [path, setPath] = useState(convertFileToPath(defaultPath));
   const [inputValue, setInputValue] = useState(defaultPath ? defaultPath : "");
@@ -105,7 +105,7 @@ const FilePicker = ({
         {results && (
           <FilepickerList>
             <FileList
-              nodes={results}
+              files={results}
               selectable={selectable}
               setPath={(path) => setPath(path)}
               setInputValue={(value) => setInputValue(value)}

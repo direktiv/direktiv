@@ -32,10 +32,10 @@ const NoPreview = ({ mimeType }: { mimeType?: string }) => {
 const imageSrc = (mimeType: string, source: string) =>
   `data:${mimeType};base64,${source}`;
 
-const FileViewer = ({ node }: { node: BaseFileSchemaType }) => {
+const FileViewer = ({ file }: { file: BaseFileSchemaType }) => {
   const { t } = useTranslation();
   const theme = useTheme();
-  const { data } = useFile({ path: node.path });
+  const { data } = useFile({ path: file.path });
 
   if (data?.type === "directory") return null;
 
@@ -54,7 +54,7 @@ const FileViewer = ({ node }: { node: BaseFileSchemaType }) => {
     <>
       <DialogHeader>
         <DialogTitle>
-          <File /> {t("pages.explorer.tree.fileViewer.title")} {node.path}
+          <File /> {t("pages.explorer.tree.fileViewer.title")} {file.path}
         </DialogTitle>
       </DialogHeader>
       <Card className="grow p-4" background="weight-1">

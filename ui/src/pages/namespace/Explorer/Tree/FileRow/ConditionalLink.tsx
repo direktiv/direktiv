@@ -11,25 +11,25 @@ import { Link } from "react-router-dom";
 import { pages } from "~/util/router/pages";
 
 type ConditionalLinkProps = PropsWithChildren & {
-  node: BaseFileSchemaType;
+  file: BaseFileSchemaType;
   namespace: string;
   onPreviewClicked: (file: BaseFileSchemaType) => void;
 };
 
 export const ConditionalLink: FC<ConditionalLinkProps> = ({
-  node,
+  file,
   namespace,
   onPreviewClicked,
   children,
 }) => {
-  const linkToPreview = isPreviewable(node.type);
+  const linkToPreview = isPreviewable(file.type);
   if (linkToPreview)
     return (
       <DialogTrigger
         className="flex-1 hover:underline"
         role="button"
         onClick={() => {
-          onPreviewClicked(node);
+          onPreviewClicked(file);
         }}
         asChild
       >
@@ -39,13 +39,13 @@ export const ConditionalLink: FC<ConditionalLinkProps> = ({
 
   const linkTarget = pages.explorer.createHref({
     namespace,
-    path: node.path,
-    subpage: fileTypeToExplorerSubpage(node.type),
+    path: file.path,
+    subpage: fileTypeToExplorerSubpage(file.type),
   });
 
   return (
     <Link
-      data-testid={`explorer-item-link-${getFilenameFromPath(node.path)}`}
+      data-testid={`explorer-item-link-${getFilenameFromPath(file.path)}`}
       to={linkTarget}
       className="flex-1 hover:underline"
     >
