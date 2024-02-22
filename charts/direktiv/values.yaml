@@ -194,6 +194,7 @@ fluent-bit:
       [OUTPUT]
           name   stdout
           match  *
+          type   stdout
           format message
     filters: |
       [FILTER]
