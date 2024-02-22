@@ -48,9 +48,9 @@ export const createService = async (namespace: string, service: Service) => {
   const yaml = createServiceYaml(service);
 
   await createFile({
-    yaml,
-    namespace,
     name: service.name,
+    namespace,
     type: "service",
+    yaml,
   });
 };

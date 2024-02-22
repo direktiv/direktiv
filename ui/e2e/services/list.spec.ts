@@ -40,10 +40,10 @@ test("Service list is empty by default", async ({ page }) => {
 
 test("Service list shows all available services", async ({ page }) => {
   await createFile({
-    yaml: createRedisServiceFile(),
     name: "redis-service.yaml",
     namespace,
     type: "service",
+    yaml: createRedisServiceFile(),
   });
 
   await expect
@@ -143,10 +143,10 @@ test("Service list links the file name to the service file", async ({
   page,
 }) => {
   await createFile({
-    yaml: createRedisServiceFile(),
-    type: "service",
-    namespace,
     name: "redis-service.yaml",
+    namespace,
+    type: "service",
+    yaml: createRedisServiceFile(),
   });
 
   await page.goto(`/${namespace}/services`, {
@@ -173,11 +173,10 @@ test("Service list links the row to the service details page", async ({
   page,
 }) => {
   await createFile({
-    yaml: createRedisServiceFile(),
-
-    namespace,
     name: "redis-service.yaml",
+    namespace,
     type: "service",
+    yaml: createRedisServiceFile(),
   });
 
   await expect
@@ -226,10 +225,10 @@ test("Service list links the row to the service details page", async ({
 
 test("Service list lets the user rebuild a service", async ({ page }) => {
   await createFile({
-    yaml: createRedisServiceFile(),
-    type: "service",
-    namespace,
     name: "redis-service.yaml",
+    namespace,
+    type: "service",
+    yaml: createRedisServiceFile(),
   });
 
   await expect
@@ -278,10 +277,10 @@ test("Service list lets the user rebuild a service", async ({ page }) => {
 
 test("Service list highlights services that have errors", async ({ page }) => {
   await createFile({
-    yaml: serviceWithAnError,
-    type: "service",
-    namespace,
     name: "failed-service.yaml",
+    namespace,
+    type: "service",
+    yaml: serviceWithAnError,
   });
 
   await expect
@@ -322,14 +321,13 @@ test("Service list will update the services when refetch button is clicked", asy
   page,
 }) => {
   await createFile({
+    name: "redis-service.yaml",
+    namespace,
+    type: "service",
     yaml: createRedisServiceFile({
       scale: 1,
       size: "large",
     }),
-
-    namespace,
-    name: "redis-service.yaml",
-    type: "service",
   });
 
   await page.goto(`/${namespace}/services`, {

@@ -19,10 +19,10 @@ states:
     result: Hello world!`;
 
   await createFile({
-    type: "workflow",
     name,
-    yaml,
     namespace,
+    type: "workflow",
+    yaml,
   });
 };
 

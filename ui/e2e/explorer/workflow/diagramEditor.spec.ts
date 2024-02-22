@@ -30,9 +30,9 @@ test.beforeEach(async () => {
   namespace = await createNamespace();
   workflow = `${faker.system.commonFileName("yaml")}`;
   await createFile({
-    type: "workflow",
     name: workflow,
     namespace,
+    type: "workflow",
     yaml: consumeEventWorkflow.data,
   });
 });

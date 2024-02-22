@@ -24,17 +24,17 @@ test.beforeEach(async () => {
   namespace = await createNamespace();
   // place some workflows in the namespace that we can use to create instances
   await createFile({
-    yaml: simpleWorkflowContent,
     name: simpleWorkflowName,
-    type: "workflow",
     namespace,
+    type: "workflow",
+    yaml: simpleWorkflowContent,
   });
 
   await createFile({
-    yaml: workflowThatFailsContent,
     name: failingWorkflowName,
-    type: "workflow",
     namespace,
+    type: "workflow",
+    yaml: workflowThatFailsContent,
   });
 });
 
@@ -228,10 +228,10 @@ test("it provides a proper pagination", async ({ page }) => {
   });
 
   await createFile({
-    yaml,
     name: parentWorkflow,
     namespace,
     type: "workflow",
+    yaml,
   });
 
   await runWorkflow({
@@ -313,13 +313,13 @@ test("It will display child instances as well", async ({ page }) => {
   const parentWorkflow = faker.system.commonFileName("yaml");
 
   await createFile({
+    name: parentWorkflow,
+    namespace,
+    type: "workflow",
     yaml: parentWorkflowContent({
       childPath: `/${simpleWorkflowName}`,
       children: 1,
     }),
-    namespace,
-    name: parentWorkflow,
-    type: "workflow",
   });
 
   const parentInstance = await runWorkflow({

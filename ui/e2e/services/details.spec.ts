@@ -23,13 +23,12 @@ test("Service details page provides information about the service", async ({
   page,
 }) => {
   await createFile({
+    name: "redis-service.yaml",
+    namespace,
+    type: "service",
     yaml: createRedisServiceFile({
       scale: 2,
     }),
-
-    namespace,
-    name: "redis-service.yaml",
-    type: "service",
   });
 
   await expect
@@ -151,10 +150,10 @@ test("Service details page renders no logs when the service did not mount", asyn
   page,
 }) => {
   await createFile({
-    yaml: serviceWithAnError,
-    namespace,
     name: "redis-service.yaml",
+    namespace,
     type: "service",
+    yaml: serviceWithAnError,
   });
 
   await expect

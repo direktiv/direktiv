@@ -39,14 +39,14 @@ test("Route list is empty by default", async ({ page }) => {
 test("Route list shows all available routes", async ({ page }) => {
   const path = "newPath";
   await createFile({
+    name: "redis-route.yaml",
+    namespace,
+    type: "endpoint",
     yaml: createRedisRouteFile({
       path,
       targetType: "instant-response",
       targetConfigurationStatus: "202",
     }),
-    name: "redis-route.yaml",
-    type: "endpoint",
-    namespace,
   });
 
   await expect
@@ -109,10 +109,10 @@ test("Route list shows all available routes", async ({ page }) => {
 
 test("Route list shows a warning", async ({ page }) => {
   await createFile({
-    yaml: routeWithAWarning,
-    type: "endpoint",
-    namespace,
     name: "redis-route.yaml",
+    namespace,
+    type: "endpoint",
+    yaml: routeWithAWarning,
   });
 
   await expect
@@ -150,11 +150,10 @@ test("Route list shows a warning", async ({ page }) => {
 
 test("Route list shows an error", async ({ page }) => {
   await createFile({
-    yaml: routeWithAnError,
-
-    namespace,
     name: "redis-route.yaml",
+    namespace,
     type: "endpoint",
+    yaml: routeWithAnError,
   });
 
   await expect
@@ -198,10 +197,10 @@ test("Route list shows an error", async ({ page }) => {
 
 test("Route list links the file name to the route file", async ({ page }) => {
   await createFile({
-    yaml: createRedisRouteFile(),
-    type: "endpoint",
-    namespace,
     name: "redis-route.yaml",
+    namespace,
+    type: "endpoint",
+    yaml: createRedisRouteFile(),
   });
 
   await page.goto(`/${namespace}/gateway/routes`, {

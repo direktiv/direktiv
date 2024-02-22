@@ -29,10 +29,10 @@ test("it is possible to open and use the run workflow modal from the editor and 
 }) => {
   const workflowName = faker.system.commonFileName("yaml");
   await createFile({
-    yaml: basicWorkflow.data,
     name: workflowName,
-    type: "workflow",
     namespace,
+    type: "workflow",
+    yaml: basicWorkflow.data,
   });
 
   await page.goto(`${namespace}/explorer/workflow/edit/${workflowName}`);
@@ -97,10 +97,10 @@ test("it is possible to run the workflow by setting an input JSON via the editor
 }) => {
   const workflowName = faker.system.commonFileName("yaml");
   await createFile({
-    yaml: basicWorkflow.data,
-    namespace,
     name: workflowName,
+    namespace,
     type: "workflow",
+    yaml: basicWorkflow.data,
   });
 
   await page.goto(`${namespace}/explorer/workflow/edit/${workflowName}`);
@@ -172,10 +172,10 @@ test("it is possible to run a workflow with input data containing special charac
   const name = "test-diacritics.yaml";
 
   await createFile({
-    yaml: testDiacriticsWorkflow,
-    namespace,
     name,
+    namespace,
     type: "workflow",
+    yaml: testDiacriticsWorkflow,
   });
 
   await page.goto(`${namespace}/explorer/workflow/edit/${name}`);
@@ -205,10 +205,10 @@ test("it is not possible to run the workflow when the editor has unsaved changes
 }) => {
   const workflowName = faker.system.commonFileName("yaml");
   await createFile({
-    yaml: basicWorkflow.data,
     name: workflowName,
-    type: "workflow",
     namespace,
+    type: "workflow",
+    yaml: basicWorkflow.data,
   });
 
   await page.goto(`${namespace}/explorer/workflow/edit/${workflowName}`);
@@ -225,10 +225,10 @@ test("it is possible to provide the input via generated form", async ({
 }) => {
   const workflowName = faker.system.commonFileName("yaml");
   await createFile({
-    yaml: jsonSchemaFormWorkflow,
+    name: workflowName,
     namespace,
     type: "workflow",
-    name: workflowName,
+    yaml: jsonSchemaFormWorkflow,
   });
 
   await page.goto(`${namespace}/explorer/workflow/edit/${workflowName}`);
@@ -343,10 +343,10 @@ test("it is possible to provide the input via generated form and resolve form er
 }) => {
   const workflowName = faker.system.commonFileName("yaml");
   await createFile({
-    yaml: jsonSchemaWithRequiredEnum,
     name: workflowName,
     namespace,
     type: "workflow",
+    yaml: jsonSchemaWithRequiredEnum,
   });
 
   await page.goto(`${namespace}/explorer/workflow/edit/${workflowName}`);

@@ -20,17 +20,17 @@ test.beforeEach(async () => {
   namespace = await createNamespace();
   /* create workflows we can use to create instances later */
   await createFile({
-    yaml: simpleWorkflowContent,
-    type: "workflow",
-    namespace,
     name: simpleWorkflowName,
+    namespace,
+    type: "workflow",
+    yaml: simpleWorkflowContent,
   });
 
   await createFile({
-    yaml: workflowThatFailsContent,
-    type: "workflow",
-    namespace,
     name: failingWorkflowName,
+    namespace,
+    type: "workflow",
+    yaml: workflowThatFailsContent,
   });
 });
 
@@ -53,13 +53,13 @@ const createTriggerFilterInstances = async () => {
   const parentWorkflowName = faker.system.commonFileName("yaml");
 
   await createFile({
+    name: parentWorkflowName,
+    namespace,
+    type: "workflow",
     yaml: parentWorkflowContent({
       childPath: `/${simpleWorkflowName}`,
       children: 2,
     }),
-    type: "workflow",
-    namespace,
-    name: parentWorkflowName,
   });
 
   await runWorkflow({

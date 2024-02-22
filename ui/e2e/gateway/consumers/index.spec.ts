@@ -36,13 +36,13 @@ test("Consumer list is empty by default", async ({ page }) => {
 
 test("Consumer list shows all available consumers", async ({ page }) => {
   await createFile({
+    name: "redis-consumer.yaml",
+    namespace,
+    type: "consumer",
     yaml: createRedisConsumerFile({
       username: "userA",
       password: "password",
     }),
-    type: "consumer",
-    namespace,
-    name: "redis-consumer.yaml",
   });
 
   await expect
@@ -113,13 +113,13 @@ test("Consumer list will update the consumers when refetch button is clicked", a
   page,
 }) => {
   await createFile({
+    name: "consumer.yaml",
+    namespace,
+    type: "consumer",
     yaml: createRedisConsumerFile({
       username: "userOld",
       password: "passwordOld",
     }),
-    type: "consumer",
-    namespace,
-    name: "consumer.yaml",
   });
 
   await page.goto(`/${namespace}/gateway/consumers`, {

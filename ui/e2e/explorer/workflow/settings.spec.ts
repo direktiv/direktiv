@@ -17,10 +17,10 @@ test.beforeEach(async () => {
   workflow = faker.system.commonFileName("yaml");
 
   await createFile({
-    yaml: basicWorkflow.data,
-    type: "workflow",
-    namespace,
     name: workflow,
+    namespace,
+    type: "workflow",
+    yaml: basicWorkflow.data,
   });
 });
 

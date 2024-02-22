@@ -40,10 +40,10 @@ test("Notification Bell updates depending on the count of Notification Messages"
   page,
 }) => {
   await createFile({
-    yaml: workflowWithSecrets,
-    namespace,
     name: "worfklow-with-secrets.yaml",
+    namespace,
     type: "workflow",
+    yaml: workflowWithSecrets,
   });
 
   await page.goto(`/${namespace}/explorer/tree`, {
