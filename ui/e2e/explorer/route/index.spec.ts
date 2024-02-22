@@ -50,7 +50,7 @@ test("it is possible to create a basic route file", async ({ page }) => {
 
   /**
    * close the toast, which covers the save button and prevents
-   * us from clicging it (makes this test 4 seconds faster)
+   * us from clicking it (makes this test 4 seconds faster)
    */
   await page.getByTestId("toast-close").click();
 
