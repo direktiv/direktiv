@@ -10,7 +10,7 @@ import {
   FilepickerSeparator,
 } from "~/design/Filepicker";
 
-import { fileTypeToIcon } from "~/api/tree/utils";
+import { fileTypeToIcon } from "~/api/files/utils";
 import { twMergeClsx } from "~/util/helpers";
 
 export type FileListProps = {

@@ -9,7 +9,7 @@ import { NoPermissions } from "~/design/Table";
 import PublicPathInput from "../../Gateway/Routes/Table/Row/PublicPath";
 import { analyzePath } from "~/util/router/utils";
 import { pages } from "~/util/router/pages";
-import { removeLeadingSlash } from "~/api/tree/utils";
+import { removeLeadingSlash } from "~/api/files/utils";
 import { useFile } from "~/api/files/query/file";
 import { useNamespace } from "~/util/store/namespace";
 import { useRoutes } from "~/api/gateway/query/getRoutes";

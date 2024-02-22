@@ -1,6 +1,6 @@
 import { FilePatchedSchema } from "../schema";
 import { apiFactory } from "~/api/apiFactory";
-import { forceLeadingSlash } from "~/api/tree/utils";
+import { forceLeadingSlash } from "~/api/files/utils";
 
 export const patchFile = apiFactory({
   url: ({

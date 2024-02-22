@@ -2,7 +2,7 @@ import type { QueryFunctionContext } from "@tanstack/react-query";
 import type { ResponseParser } from "../../apiFactory";
 import { WorkflowVariableContentSchema } from "../schema/workflowVariable";
 import { apiFactory } from "../../apiFactory";
-import { forceLeadingSlash } from "../utils";
+import { forceLeadingSlash } from "~/api/files/utils";
 import { treeKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";

@@ -6,7 +6,7 @@ import {
 } from "../schema";
 
 import { apiFactory } from "~/api/apiFactory";
-import { forceLeadingSlash } from "~/api/tree/utils";
+import { forceLeadingSlash } from "~/api/files/utils";
 import { useApiKey } from "~/util/store/apiKey";
 import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 import { useNamespace } from "~/util/store/namespace";

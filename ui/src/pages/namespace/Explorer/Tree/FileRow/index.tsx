@@ -13,7 +13,7 @@ import { TableCell, TableRow } from "~/design/Table";
 import Button from "~/design/Button";
 import { ConditionalLink } from "./ConditionalLink";
 import { DialogTrigger } from "~/design/Dialog";
-import { fileTypeToIcon } from "~/api/tree/utils";
+import { fileTypeToIcon } from "~/api/files/utils";
 import moment from "moment";
 import { useTranslation } from "react-i18next";
 

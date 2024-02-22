@@ -7,39 +7,33 @@ import {
   sortFoldersFirst,
 } from "../utils";
 
-import { NodeSchemaType } from "../schema/node";
+import { BaseFileSchemaType } from "../schema";
 
-const itemTemplate: NodeSchemaType = {
+const itemTemplate: BaseFileSchemaType = {
   createdAt: "2023-03-13T13:39:05.832664Z",
   updatedAt: "2023-03-13T13:39:06.118436Z",
-  name: "demo-workflow",
   path: "/demo-workflow",
-  parent: "/",
   type: "directory",
-  attributes: [],
-  readOnly: true,
-  expandedType: "git",
-  mimeType: "text/plain; charset=utf-8",
 };
 
 describe("sortFoldersFirst", () => {
   test("will sort all directories to the top, followed by directories and sort them alphabetically", () => {
-    const results: NodeSchemaType[] = [
-      { ...itemTemplate, name: "workflowB", type: "workflow" },
-      { ...itemTemplate, name: "workflowA", type: "workflow" },
-      { ...itemTemplate, name: "directoryB", type: "directory" },
-      { ...itemTemplate, name: "workflowC", type: "workflow" },
-      { ...itemTemplate, name: "directoryA", type: "directory" },
+    const results: BaseFileSchemaType[] = [
+      { ...itemTemplate, path: "/b-service.yaml", type: "service" },
+      { ...itemTemplate, path: "/c-workflow.yaml", type: "workflow" },
+      { ...itemTemplate, path: "/b-directory", type: "directory" },
+      { ...itemTemplate, path: "/a-workflow.yaml", type: "workflow" },
+      { ...itemTemplate, path: "/a-directory", type: "directory" },
     ];
 
     const resultSorted = results.sort(sortFoldersFirst);
 
-    expect(resultSorted.map((x) => x.name)).toStrictEqual([
-      "directoryA",
-      "directoryB",
-      "workflowA",
-      "workflowB",
-      "workflowC",
+    expect(resultSorted.map((x) => x.path)).toStrictEqual([
+      "/a-directory",
+      "/b-directory",
+      "/a-workflow.yaml",
+      "/b-service.yaml",
+      "/c-workflow.yaml",
     ]);
   });
 });

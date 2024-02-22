@@ -1,6 +1,6 @@
 import { UpdateFileSchemaType } from "../schema";
 import { fileKeys } from "..";
-import { forceLeadingSlash } from "~/api/tree/utils";
+import { forceLeadingSlash } from "~/api/files/utils";
 import { getMessageFromApiError } from "~/api/errorHandling";
 import { patchFile } from "./patchFile";
 import { useApiKey } from "~/util/store/apiKey";

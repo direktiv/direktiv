@@ -1,9 +1,9 @@
+import { forceLeadingSlash, sortFoldersFirst } from "../utils";
+
 import { FileListSchema } from "../schema";
 import { QueryFunctionContext } from "@tanstack/react-query";
 import { apiFactory } from "~/api/apiFactory";
 import { fileKeys } from "..";
-import { forceLeadingSlash } from "~/api/tree/utils";
-import { sortFoldersFirst } from "../utils";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 import useQueryWithPermissions from "~/api/useQueryWithPermissions";

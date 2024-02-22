@@ -1,4 +1,4 @@
-import { fileTypeToExplorerSubpage, fileTypeToIcon } from "~/api/tree/utils";
+import { fileTypeToExplorerSubpage, fileTypeToIcon } from "~/api/files/utils";
 
 import { Breadcrumb as BreadcrumbLink } from "~/design/Breadcrumbs";
 import { FC } from "react";
