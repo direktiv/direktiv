@@ -64,7 +64,7 @@ func NewParser(namespace string, processID string, src Source) (*Parser, error) 
 
 	err = p.parse()
 	if err != nil {
-		slog.Error("Processing repository in temporary directory", "error", err, "namespace", p.namespace, "track", recipient.Mirror.String()+"."+p.processID)
+		slog.Error("Processing repository in temporary directory", "error", err, "namespace", p.namespace, "stream", recipient.Mirror.String()+"."+p.processID)
 		_ = p.Close()
 
 		return nil, err
@@ -114,7 +114,7 @@ func (p *Parser) parse() error {
 func (p *Parser) loadIgnores() error {
 	f, err := p.src.FS().Open(".direktivignore")
 	if errors.Is(err, os.ErrNotExist) {
-		slog.Debug("No .direktivignore file detected", "track", recipient.Mirror.String()+"."+p.processID)
+		slog.Debug("No .direktivignore file detected", "stream", recipient.Mirror.String()+"."+p.processID)
 
 		return nil
 	}
@@ -263,7 +263,7 @@ func (p *Parser) scanAndPruneDirektivResourceFile(path string) error {
 		return nil
 	}
 	if err != nil {
-		slog.Error("loading possible Direktiv resource definition", "error", err, "namespace", p.namespace, "track", recipient.Mirror.String()+"."+p.processID)
+		slog.Error("loading possible Direktiv resource definition", "error", err, "namespace", p.namespace, "stream", recipient.Mirror.String()+"."+p.processID)
 
 		return nil
 	}
@@ -338,7 +338,7 @@ func (p *Parser) scanAndPruneAmbiguousDirektivWorkflowFile(path string) error {
 	wf := new(model.Workflow)
 	err = wf.Load(data)
 	if err != nil {
-		slog.Error("Error loading possible Direktiv workflow definition (ambiguous)", "path", path, "error", err, "track", recipient.Mirror.String()+"."+p.processID)
+		slog.Error("Error loading possible Direktiv workflow definition (ambiguous)", "path", path, "error", err, "stream", recipient.Mirror.String()+"."+p.processID)
 
 		return nil
 	}
@@ -511,7 +511,7 @@ func (p *Parser) parseDeprecatedVariableFiles() error {
 		vname := strings.TrimPrefix(base, prefix)
 
 		if !regex.MatchString(vname) {
-			slog.Error("Detected a possible deprecated namespace variable definition with an invalid name", "path", fpath, "track", recipient.Mirror.String()+"."+p.processID, "namespace", p.namespace)
+			slog.Error("Detected a possible deprecated namespace variable definition with an invalid name", "path", fpath, "stream", recipient.Mirror.String()+"."+p.processID, "namespace", p.namespace)
 
 			continue
 		}
@@ -525,7 +525,7 @@ func (p *Parser) parseDeprecatedVariableFiles() error {
 			}
 
 			p.DeprecatedNamespaceVars[vname] = data
-			slog.Error("Detected deprecated namespace variable definition", "path", fpath, "track", recipient.Mirror.String()+"."+p.processID, "namespace", p.namespace)
+			slog.Error("Detected deprecated namespace variable definition", "path", fpath, "stream", recipient.Mirror.String()+"."+p.processID, "namespace", p.namespace)
 		}
 	}
 
@@ -539,7 +539,7 @@ func (p *Parser) parseDeprecatedVariableFiles() error {
 			prefix := wpath + "."
 			vname := strings.TrimPrefix(fpath, prefix)
 			if !regex.MatchString(vname) {
-				slog.Error("Detected a possible deprecated workflow variable definition with an invalid name", "path", fpath, "track", recipient.Mirror.String()+"."+p.processID, "namespace", p.namespace)
+				slog.Error("Detected a possible deprecated workflow variable definition with an invalid name", "path", fpath, "stream", recipient.Mirror.String()+"."+p.processID, "namespace", p.namespace)
 
 				continue
 			}
@@ -559,7 +559,7 @@ func (p *Parser) parseDeprecatedVariableFiles() error {
 				}
 
 				m[vname] = data
-				slog.Error("Detected deprecated workflow variable definition at", "path", fpath, "track", recipient.Mirror.String()+"."+p.processID, "namespace", p.namespace)
+				slog.Error("Detected deprecated workflow variable definition at", "path", fpath, "stream", recipient.Mirror.String()+"."+p.processID, "namespace", p.namespace)
 			}
 		}
 	}

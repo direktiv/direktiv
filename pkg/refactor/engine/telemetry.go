@@ -48,7 +48,7 @@ func (instance *Instance) GetSlogAttributes(ctx context.Context) []interface{} {
 	TraceID := span.SpanContext().TraceID().String() // TODO: instance.TelemetryInfo.TraceID is broken.
 	SpanID := span.SpanContext().SpanID().String()
 
-	tags = append(tags, "track", fmt.Sprintf("%v.%v", recipient.Instance, callpath))
+	tags = append(tags, "stream", fmt.Sprintf("%v.%v", recipient.Instance, callpath))
 	tags = append(tags, "instance-id", instance.Instance.ID)
 	tags = append(tags, "invoker", instance.Instance.Invoker)
 	slog.Error("my error", "callpath", callpath)

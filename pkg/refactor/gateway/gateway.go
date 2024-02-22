@@ -48,12 +48,12 @@ func NewGatewayManager(db *database.DB) core.GatewayManager {
 }
 
 func (ep *gatewayManager) DeleteNamespace(ns string) {
-	slog.Info("deleting namespace from gateway", "namespace", ns, "track", recipient.Namespace.String()+"."+ns)
+	slog.Info("deleting namespace from gateway", "namespace", ns, "stream", recipient.Namespace.String()+"."+ns)
 	delete(ep.nsGateways, ns)
 }
 
 func (ep *gatewayManager) UpdateNamespace(ns string) {
-	slog.Info("updating namespace gateway", slog.String("namespace", ns), "track", recipient.Namespace.String()+"."+ns)
+	slog.Info("updating namespace gateway", slog.String("namespace", ns), "stream", recipient.Namespace.String()+"."+ns)
 
 	ep.lock.Lock()
 	defer ep.lock.Unlock()
@@ -72,7 +72,7 @@ func (ep *gatewayManager) UpdateNamespace(ns string) {
 
 	files, err := fStore.ForNamespace(ns).ListDirektivFilesWithData(ctx)
 	if err != nil {
-		slog.Error("error listing files", slog.String("error", err.Error()), "track", recipient.Namespace.String()+"."+ns)
+		slog.Error("error listing files", slog.String("error", err.Error()), "stream", recipient.Namespace.String()+"."+ns)
 
 		return
 	}
@@ -89,7 +89,7 @@ func (ep *gatewayManager) UpdateNamespace(ns string) {
 		if file.Typ == filestore.FileTypeConsumer {
 			item, err := core.ParseConsumerFile(file.Data)
 			if err != nil {
-				slog.Error("parse endpoint file", slog.String("error", err.Error()), "track", recipient.Namespace.String()+"."+ns)
+				slog.Error("parse endpoint file", slog.String("error", err.Error()), "stream", recipient.Namespace.String()+"."+ns)
 
 				continue
 			}
@@ -97,7 +97,7 @@ func (ep *gatewayManager) UpdateNamespace(ns string) {
 			// username can not be empty or contain a colon for basic auth
 			if item.Username == "" ||
 				strings.Contains(item.Username, ":") {
-				slog.Info("username invalid", slog.String("user", item.Username), "track", recipient.Namespace.String()+"."+ns)
+				slog.Info("username invalid", slog.String("user", item.Username), "stream", recipient.Namespace.String()+"."+ns)
 
 				continue
 			}
@@ -120,7 +120,7 @@ func (ep *gatewayManager) UpdateNamespace(ns string) {
 			// if parsing fails, the endpoint is still getting added to report
 			// an error in the API
 			if err != nil {
-				slog.Error("parse endpoint file", slog.String("error", err.Error()), "track", recipient.Namespace.String()+"."+ns)
+				slog.Error("parse endpoint file", slog.String("error", err.Error()), "stream", recipient.Namespace.String()+"."+ns)
 				ep.Errors = append(ep.Errors, err.Error())
 				eps = append(eps, ep)
 
@@ -207,7 +207,7 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		namespace = chi.URLParam(r, "namespace")
 	}
 
-	slogNamespace := slog.With("track", recipient.Namespace.String()+"."+namespace)
+	slogNamespace := slog.With("stream", recipient.Namespace.String()+"."+namespace)
 
 	gw, ok := ep.nsGateways[namespace]
 	if !ok {
@@ -223,7 +223,7 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	slogRoute := slog.With("trace", traceID(), "component", "gateway", "track", recipient.Route.String()+"."+endpointEntry.Path)
+	slogRoute := slog.With("trace", traceID(), "component", "gateway", "stream", recipient.Route.String()+"."+endpointEntry.Path)
 
 	// if there are configuration errors, return it
 	if len(endpointEntry.Errors) > 0 {

@@ -56,17 +56,17 @@ func (d *Manager) gc() {
 
 		for _, proc := range procs {
 			if time.Since(proc.CreatedAt) > maxRunTime {
-				slog.Error("Detected an old unfinished mirror process for namespace", "process_id", proc.ID.String(), "namespace", proc.Namespace, "track", recipient.Namespace.String()+"."+proc.Namespace)
+				slog.Error("Detected an old unfinished mirror process for namespace", "process_id", proc.ID.String(), "namespace", proc.Namespace, "stream", recipient.Namespace.String()+"."+proc.Namespace)
 				c, cancel := context.WithTimeout(ctx, 5*time.Second)
 				err = d.Cancel(c, proc.ID)
 				cancel()
 				if err != nil {
-					slog.Error("cancelling old unfinished mirror process", "process_id", proc.ID.String(), "namespace", proc.Namespace, "error", err, "track", recipient.Namespace.String()+"."+proc.Namespace)
+					slog.Error("cancelling old unfinished mirror process", "process_id", proc.ID.String(), "namespace", proc.Namespace, "error", err, "stream", recipient.Namespace.String()+"."+proc.Namespace)
 				}
 
 				p, err := d.callbacks.Store().GetProcess(ctx, proc.ID)
 				if err != nil {
-					slog.Error("requerying old unfinished mirror process", "process_id", proc.ID.String(), "namespace", proc.Namespace, "error", err, "track", recipient.Namespace.String()+"."+proc.Namespace)
+					slog.Error("requerying old unfinished mirror process", "process_id", proc.ID.String(), "namespace", proc.Namespace, "error", err, "stream", recipient.Namespace.String()+"."+proc.Namespace)
 
 					continue
 				}
@@ -109,7 +109,7 @@ func (d *Manager) silentFailProcess(p *Process) {
 	p.EndedAt = time.Now().UTC()
 	_, err := d.callbacks.Store().UpdateProcess(context.Background(), p)
 	if err != nil {
-		slog.Error("Error updating failed mirror process record in database", "error", err, "namespace", p.Namespace, "track", recipient.Namespace.String()+"."+p.Namespace)
+		slog.Error("Error updating failed mirror process record in database", "error", err, "namespace", p.Namespace, "stream", recipient.Namespace.String()+"."+p.Namespace)
 
 		return
 	}
@@ -117,7 +117,7 @@ func (d *Manager) silentFailProcess(p *Process) {
 
 func (d *Manager) failProcess(p *Process, err error) {
 	d.silentFailProcess(p)
-	slog.Error("Mirroring process failed", "error", err, "namespace", p.Namespace, "process_id", p.ID, "track", recipient.Namespace.String()+"."+p.Namespace)
+	slog.Error("Mirroring process failed", "error", err, "namespace", p.Namespace, "process_id", p.ID, "stream", recipient.Namespace.String()+"."+p.Namespace)
 }
 
 func (d *Manager) setProcessStatus(ctx context.Context, process *Process, status string) error {
@@ -162,7 +162,7 @@ func (d *Manager) Execute(ctx context.Context, p *Process, get func(ctx context.
 	defer func() {
 		err := src.Free()
 		if err != nil {
-			slog.Error("Error freeing mirror source", "error", err, "namespace", p.Namespace, "process_id", p.ID, "track", recipient.Namespace.String()+"."+p.Namespace)
+			slog.Error("Error freeing mirror source", "error", err, "namespace", p.Namespace, "process_id", p.ID, "stream", recipient.Namespace.String()+"."+p.Namespace)
 		}
 	}()
 
@@ -176,7 +176,7 @@ func (d *Manager) Execute(ctx context.Context, p *Process, get func(ctx context.
 	defer func() {
 		err := parser.Close()
 		if err != nil {
-			slog.Error("Error freeing mirror temporary files", "error", err, "namespace", p.Namespace, "process_id", p.ID, "track", recipient.Namespace.String()+"."+p.Namespace)
+			slog.Error("Error freeing mirror temporary files", "error", err, "namespace", p.Namespace, "process_id", p.ID, "stream", recipient.Namespace.String()+"."+p.Namespace)
 		}
 	}()
 
