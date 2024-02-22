@@ -1,0 +1,57 @@
+changelog:
+  exclude:
+    labels:
+      - devops
+  categories:
+    - title: UI Feature
+      labels:
+        - ui
+        - feature 
+    - title: UI Improvements
+      labels:
+        - ui
+        - improvement
+    - title: UI Bugfixes
+      labels:
+        - ui
+        - bug
+    - title: Backend Features
+      labels:
+        - backend
+        - feature
+    - title: Backend Improvements
+      labels:
+        - backend
+        - improvement
+    - title: Backend Bugfixes
+      labels:
+        - backend
+        - bug
+    - title: Gateway Features
+      labels:
+        - gateway
+        - feature
+    - title: Gateway Improvements
+      labels:
+        - gateway
+        - improvement
+    - title: Gateway Bugfixes
+      labels:
+        - gateway
+        - bug
+    - title: CLI Features
+      labels:
+        - cli
+        - feature
+    - title: CLI Improvements
+      labels:
+        - cli
+        - improvement
+    - title: CLI Bugfixes
+      labels:
+        - cli
+        - bug
+
+    - title: Other Changes
+      labels:
+        - "*"

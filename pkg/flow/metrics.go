@@ -272,7 +272,7 @@ func (engine *engine) metricsCompleteState(ctx context.Context, im *instanceMemo
 	args.Workflow = workflow
 	args.Instance = im.instance.Instance.ID.String()
 
-	caller := engine.InstanceCaller(ctx, im)
+	caller := engine.InstanceCaller(im)
 	if caller != nil {
 		args.Invoker = caller.ID.String()
 	}

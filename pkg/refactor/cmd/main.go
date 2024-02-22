@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"log"
 	"log/slog"
@@ -95,8 +96,16 @@ func NewMain(config *core.Config, db *database.DB, pbus *pubsub.Bus, logger *zap
 		pubsub.WorkflowCreate,
 		pubsub.WorkflowUpdate,
 		pubsub.WorkflowDelete,
+		pubsub.WorkflowRename,
 	)
 
+	// endpoint manager
+	pbus.Subscribe(func(ns string) {
+		gatewayManager.UpdateNamespace(ns)
+	},
+		pubsub.NamespaceCreate,
+		pubsub.MirrorSync,
+	)
 	// endpoint manager deletes routes/consumers on namespace delete
 	pbus.Subscribe(func(ns string) {
 		gatewayManager.DeleteNamespace(ns)
@@ -105,11 +114,14 @@ func NewMain(config *core.Config, db *database.DB, pbus *pubsub.Bus, logger *zap
 	)
 
 	// on sync redo all consumers and routes on sync or single file updates
-	pbus.Subscribe(func(ns string) {
-		gatewayManager.UpdateNamespace(ns)
+	pbus.Subscribe(func(data string) {
+		event := pubsub.FileChangeEvent{}
+		err := json.Unmarshal([]byte(data), &event)
+		if err != nil {
+			panic("unmarshal file change event" + err.Error())
+		}
+		gatewayManager.UpdateNamespace(event.Namespace)
 	},
-		pubsub.NamespaceCreate,
-		pubsub.MirrorSync,
 		pubsub.EndpointCreate,
 		pubsub.EndpointUpdate,
 		pubsub.EndpointDelete,

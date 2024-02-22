@@ -1,4 +1,3 @@
-import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu";
 import * as React from "react";
 
 import { FC, PropsWithChildren } from "react";
@@ -10,27 +9,14 @@ import {
 } from "~/design/Popover";
 
 import Button from "~/design/Button";
+import { DropdownMenuSeparator } from "../Dropdown";
 import { LucideIcon } from "lucide-react";
 import { Slot } from "@radix-ui/react-slot";
 import { twMergeClsx } from "~/util/helpers";
 
 const FilepickerClose = PopoverClose;
 
-const FilepickerSeparator = React.forwardRef<
-  React.ElementRef<typeof DropdownMenuPrimitive.Separator>,
-  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Separator>
->(({ className, ...props }, ref) => (
-  <DropdownMenuPrimitive.Separator
-    ref={ref}
-    className={twMergeClsx(
-      "my-1 h-px bg-gray-3 dark:bg-gray-dark-3",
-      className
-    )}
-    {...props}
-  />
-));
-
-FilepickerSeparator.displayName = DropdownMenuPrimitive.Separator.displayName;
+const FilepickerSeparator = DropdownMenuSeparator;
 
 const FilepickerHeading: FC<PropsWithChildren> = ({ children }) => (
   <div className="px-2 text-sm font-semibold text-gray-9 dark:text-gray-dark-9">

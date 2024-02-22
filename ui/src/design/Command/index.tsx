@@ -108,10 +108,7 @@ const CommandSeparator = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <CommandPrimitive.Separator
     ref={ref}
-    className={twMergeClsx(
-      "-mx-1 h-px bg-gray-3 dark:bg-gray-dark-3",
-      className
-    )}
+    className={twMergeClsx("h-px bg-gray-3 dark:bg-gray-dark-3", className)}
     {...props}
   />
 ));
@@ -123,10 +120,7 @@ const CommandStaticSeparator = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={twMergeClsx(
-      "-mx-1 h-px bg-gray-3 dark:bg-gray-dark-3",
-      className
-    )}
+    className={twMergeClsx("h-px bg-gray-3 dark:bg-gray-dark-3", className)}
     {...props}
   />
 ));

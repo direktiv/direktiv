@@ -18,26 +18,26 @@ describe('Test namespace create calls', () => {
 			},
 			want: {
 				name: 'foo1',
-},
+			},
 		},
 		{
 			input: {
 				name: 'foo2',
 				mirrorSettings: {
-					url: "my_url"
-				}
+					url: 'my_url',
+				},
 			},
 			want: {
 				name: 'foo2',
 				mirrorSettings: {
-					url: "my_url",
-					gitCommitHash: "",
-					gitRef: "",
+					url: 'my_url',
+					gitCommitHash: '',
+					gitRef: '',
 					insecure: false,
-					publicKey: "",
+					publicKey: '',
 					createdAt: expect.stringMatching(regex.timestampRegex),
 					updatedAt: expect.stringMatching(regex.timestampRegex),
-				}
+				},
 			},
 		},
 	]
@@ -74,7 +74,7 @@ describe('Test invalid namespace create calls', () => {
 				statusCode: 400,
 				error: {
 					code: 'request_data_invalid',
-					message: "invalid namespace name",
+					message: 'invalid namespace name',
 				},
 			},
 		},

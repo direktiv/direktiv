@@ -1,10 +1,12 @@
-import common from "../common";
-import request from "../common/request";
-import retry from "jest-retries";
+import { beforeAll, describe, expect, it } from '@jest/globals'
 
-const testNamespace = "gateway";
+import common from '../common'
+import request from '../common/request'
+import { retry10 } from '../common/retry'
 
-const limitedNamespace = "limited_namespace";
+const testNamespace = 'gateway'
+
+const limitedNamespace = 'limited_namespace'
 
 const workflow = `
   direktiv_api: workflow/v1
@@ -45,7 +47,7 @@ const endpointWorkflowVarAllowed = `
     - GET
   path: endpoint2`
 
-  const endpointWorkflkowVarBroken = `
+const endpointWorkflkowVarBroken = `
   direktiv_api: endpoint/v1
   allow_anonymous: true
   plugins:
@@ -55,154 +57,148 @@ const endpointWorkflowVarAllowed = `
     - GET
   path: ep3`
 
-  describe("Test target workflow var wrong config", () => {
-    beforeAll(common.helpers.deleteAllNamespaces);
+describe('Test target workflow var wrong config', () => {
+	beforeAll(common.helpers.deleteAllNamespaces)
 
-    common.helpers.itShouldCreateNamespace(it, expect, testNamespace);
+	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-    common.helpers.itShouldCreateFile(
-      it,
-      expect,
-      testNamespace,
-      "/ep3.yaml",
-      endpointWorkflkowVarBroken
-    );
+	common.helpers.itShouldCreateFile(
+		it,
+		expect,
+		testNamespace,
+		'/ep3.yaml',
+		endpointWorkflkowVarBroken,
+	)
 
-    retry(`should list all services`, 10, async () => {
-      await sleep(500)
-      const listRes = await request(common.config.getDirektivHost()).get(
-        `/api/v2/namespaces/${testNamespace}/gateway/routes`
-      );
-      expect(listRes.statusCode).toEqual(200);
-      expect(listRes.body.data.length).toEqual(1);
-      expect(listRes.body.data).toEqual(
-        expect.arrayContaining(
-          [
-            {
-              file_path: '/ep3.yaml',
-              path: '/ep3',
-              methods: [ 'GET' ],
-              allow_anonymous: true,
-              timeout: 0,
-              server_path: '/gw/ep3',
-              errors: [ 'flow and variable required' ],
-              warnings: [],
-              plugins: { target: {"type": "target-flow-var"} }
-            }
-          ]
-        )
-      );
-    })
+	retry10(`should list all services`, async () => {
+		const listRes = await request(common.config.getDirektivHost()).get(
+			`/api/v2/namespaces/${ testNamespace }/gateway/routes`,
+		)
+		expect(listRes.statusCode).toEqual(200)
+		expect(listRes.body.data.length).toEqual(1)
+		expect(listRes.body.data).toEqual(
+			expect.arrayContaining(
+				[
+					{
+						file_path: '/ep3.yaml',
+						path: '/ep3',
+						methods: [ 'GET' ],
+						allow_anonymous: true,
+						timeout: 0,
+						server_path: '/gw/ep3',
+						errors: [ 'flow and variable required' ],
+						warnings: [],
+						plugins: { target: { type: 'target-flow-var' } },
+					},
+				],
+			),
+		)
+	})
 
-});
+})
+
+describe('Test target workflow variable plugin', () => {
+	beforeAll(common.helpers.deleteAllNamespaces)
+
+	common.helpers.itShouldCreateNamespace(it, expect, limitedNamespace)
+	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
+
+	common.helpers.itShouldCreateFile(
+		it,
+		expect,
+		testNamespace,
+		'/workflow.yaml',
+		workflow,
+	)
+
+	common.helpers.itShouldCreateFile(
+		it,
+		expect,
+		limitedNamespace,
+		'/workflow.yaml',
+		workflow,
+	)
+
+	common.helpers.itShouldCreateFile(
+		it,
+		expect,
+		limitedNamespace,
+		'/endpoint1.yaml',
+		endpointWorkflowVar,
+	)
+
+	common.helpers.itShouldCreateFile(
+		it,
+		expect,
+		limitedNamespace,
+		'/endpoint2.yaml',
+		endpointWorkflowVarAllowed,
+	)
+
+	common.helpers.itShouldCreateFile(
+		it,
+		expect,
+		testNamespace,
+		'/endpoint1.yaml',
+		endpointWorkflowVar,
+	)
+
+	common.helpers.itShouldCreateFile(
+		it,
+		expect,
+		testNamespace,
+		'/endpoint2.yaml',
+		endpointWorkflowVarAllowed,
+	)
+
+	it(`should set plain text variable for worklfow`, async () => {
+		const workflowVarResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${ testNamespace }/tree/workflow.yaml?op=set-var&var=test`)
+			.set('Content-Type', 'text/plain')
+			.send('Hello World')
+		expect(workflowVarResponse.statusCode).toEqual(200)
+	})
 
 
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
+	it(`should set plain text variable for worklfow in limited namespace`, async () => {
+		const workflowVarResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${ limitedNamespace }/tree/workflow.yaml?op=set-var&var=test`)
+			.set('Content-Type', 'text/plain')
+			.send('Hello World 2')
+		expect(workflowVarResponse.statusCode).toEqual(200)
+	})
 
-describe("Test target workflow variable plugin", () => {
-    beforeAll(common.helpers.deleteAllNamespaces);
-  
-    common.helpers.itShouldCreateNamespace(it, expect, limitedNamespace);
-    common.helpers.itShouldCreateNamespace(it, expect, testNamespace);
-  
-    common.helpers.itShouldCreateFile(
-      it,
-      expect,
-      testNamespace,
-      "/workflow.yaml",
-      workflow
-    );
 
-    common.helpers.itShouldCreateFile(
-        it,
-        expect,
-        limitedNamespace,
-        "/workflow.yaml",
-        workflow
-    );
-  
-    common.helpers.itShouldCreateFile(
-        it,
-        expect,
-        limitedNamespace,
-        "/endpoint1.yaml",
-        endpointWorkflowVar
-    );
+	retry10(`should return a workflow var from magic namespace`, async () => {
+		const req = await request(common.config.getDirektivHost()).get(
+			`/gw/endpoint1`,
+		)
+		expect(req.statusCode).toEqual(200)
+		expect(req.text).toEqual('Hello World')
+		expect(req.header['content-type']).toEqual('text/plain')
+	})
 
-    common.helpers.itShouldCreateFile(
-        it,
-        expect,
-        limitedNamespace,
-        "/endpoint2.yaml",
-        endpointWorkflowVarAllowed
-    );
+	retry10(`should return a var from magic namespace with namespace set`, async () => {
+		const req = await request(common.config.getDirektivHost()).get(
+			`/gw/endpoint2`,
+		)
+		expect(req.statusCode).toEqual(200)
+		expect(req.text).toEqual('Hello World 2')
+		expect(req.header['content-type']).toEqual('text/test')
+	})
 
-    common.helpers.itShouldCreateFile(
-        it,
-        expect,
-        testNamespace,
-        "/endpoint1.yaml",
-        endpointWorkflowVar
-    );
+	retry10(`should return a workflow var from non-magic namespace`, async () => {
+		const req = await request(common.config.getDirektivHost()).get(
+			`/ns/` + limitedNamespace + `/endpoint2`,
+		)
+		expect(req.statusCode).toEqual(200)
+		expect(req.text).toEqual('Hello World 2')
+	})
 
-    common.helpers.itShouldCreateFile(
-        it,
-        expect,
-        testNamespace,
-        "/endpoint2.yaml",
-        endpointWorkflowVarAllowed
-    );
+	retry10(`should not return a var`, async () => {
+		const req = await request(common.config.getDirektivHost()).get(
+			`/ns/` + limitedNamespace + `/endpoint1`,
+		)
+		expect(req.statusCode).toEqual(500)
+	})
 
-    it(`should set plain text variable for worklfow`, async () => {
-      var workflowVarResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${testNamespace}/tree/workflow.yaml?op=set-var&var=test`)
-          .set('Content-Type', 'text/plain')
-          .send("Hello World")
-      expect(workflowVarResponse.statusCode).toEqual(200)
-    })
-  
 
-    it(`should set plain text variable for worklfow in limited namespace`, async () => {
-        var workflowVarResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${limitedNamespace}/tree/workflow.yaml?op=set-var&var=test`)
-            .set('Content-Type', 'text/plain')
-            .send("Hello World 2")
-        expect(workflowVarResponse.statusCode).toEqual(200)
-      })
-    
-
-    it(`should return a workflow var from magic namespace`, async () => {
-    const req = await request(common.config.getDirektivHost()).get(
-        `/gw/endpoint1`
-    );
-        expect(req.statusCode).toEqual(200);
-        expect(req.text).toEqual("Hello World")
-        expect(req.header['content-type']).toEqual("text/plain")
-    });
-
-    it(`should return a var from magic namespace with namespace set`, async () => {
-        const req = await request(common.config.getDirektivHost()).get(
-            `/gw/endpoint2`
-        );
-        expect(req.statusCode).toEqual(200);
-        expect(req.text).toEqual("Hello World 2")
-        expect(req.header['content-type']).toEqual("text/test")
-    });
-
-    it(`should return a workflow var from non-magic namespace`, async () => {
-    const req = await request(common.config.getDirektivHost()).get(
-        `/ns/` + limitedNamespace + `/endpoint2`
-    );
-        expect(req.statusCode).toEqual(200);
-        expect(req.text).toEqual("Hello World 2")
-    });
-
-    it(`should not return a var`, async () => {
-    const req = await request(common.config.getDirektivHost()).get(
-        `/ns/` + limitedNamespace + `/endpoint1`
-    );
-        expect(req.statusCode).toEqual(500);
-    });
-
-  
-  });
+})

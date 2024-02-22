@@ -2,7 +2,6 @@ package flow
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"path/filepath"
 	"time"
@@ -13,6 +12,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
+	"github.com/direktiv/direktiv/pkg/refactor/helpers"
 	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -216,18 +216,6 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 		if err != nil {
 			return nil, err
 		}
-		eventData, err := json.Marshal(pubsub.ChangeWorkflowEvent{
-			Namespace:    ns.Name,
-			NamespaceID:  ns.ID,
-			WorkflowPath: file.Path,
-		})
-		if err != nil {
-			flow.sugar.Error("pubsub publish", "error", err)
-		}
-		err = flow.pBus.Publish(pubsub.WorkflowDelete, string(eventData))
-		if err != nil {
-			flow.sugar.Error("pubsub publish", "error", err)
-		}
 	} else {
 		// Broadcast Event
 		err = flow.BroadcastDirectory(ctx, BroadcastEventTypeDelete,
@@ -240,22 +228,12 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 		}
 	}
 
-	if file.Typ == filestore.FileTypeService {
-		err = flow.pBus.Publish(pubsub.ServiceDelete, ns.Name)
-		if err != nil {
-			flow.sugar.Error("pubsub publish", "error", err)
-		}
-	}
-
-	if file.Typ == filestore.FileTypeEndpoint {
-		err = flow.pBus.Publish(pubsub.EndpointDelete, ns.Name)
-		if err != nil {
-			flow.sugar.Error("pubsub publish", "error", err)
-		}
-	}
-
-	if file.Typ == filestore.FileTypeConsumer {
-		err = flow.pBus.Publish(pubsub.ConsumerDelete, ns.Name)
+	if file.Typ.IsDirektivSpecFile() {
+		err = helpers.PublishEventDirektivFileChange(flow.pBus, file.Typ, "delete", &pubsub.FileChangeEvent{
+			Namespace:   ns.Name,
+			NamespaceID: ns.ID,
+			FilePath:    file.Path,
+		})
 		if err != nil {
 			flow.sugar.Error("pubsub publish", "error", err)
 		}
@@ -307,16 +285,16 @@ func (flow *flow) RenameNode(ctx context.Context, req *grpc.RenameNodeRequest) (
 		return nil, err
 	}
 
-	renameTopic := map[filestore.FileType]string{
-		filestore.FileTypeWorkflow: pubsub.WorkflowRename,
-		filestore.FileTypeService:  pubsub.ServiceRename,
-		filestore.FileTypeEndpoint: pubsub.EndpointRename,
-		filestore.FileTypeConsumer: pubsub.ConsumerRename,
-	}[file.Typ]
-
-	err = flow.pBus.Publish(renameTopic, ns.Name)
-	if err != nil {
-		flow.sugar.Error("pubsub publish", "error", err)
+	if file.Typ.IsDirektivSpecFile() {
+		err = helpers.PublishEventDirektivFileChange(flow.pBus, file.Typ, "rename", &pubsub.FileChangeEvent{
+			Namespace:   ns.Name,
+			NamespaceID: ns.ID,
+			FilePath:    file.Path,
+			OldPath:     req.GetOld(),
+		})
+		if err != nil {
+			flow.sugar.Error("pubsub publish", "error", err)
+		}
 	}
 
 	flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Renamed %s from '%s' to '%s'.", file.Typ, req.GetOld(), req.GetNew())

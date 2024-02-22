@@ -1,4 +1,3 @@
-import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu";
 import * as React from "react";
 
 import { FC, PropsWithChildren } from "react";
@@ -13,26 +12,11 @@ import {
 } from "../Select";
 
 import Button from "../Button";
+import { DropdownMenuSeparator } from "../Dropdown";
 import { FileJson } from "lucide-react";
 import { RxChevronDown } from "react-icons/rx";
-import { twMergeClsx } from "~/util/helpers";
 
-const VariablepickerSeparator = React.forwardRef<
-  React.ElementRef<typeof DropdownMenuPrimitive.Separator>,
-  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Separator>
->(({ className, ...props }, ref) => (
-  <DropdownMenuPrimitive.Separator
-    ref={ref}
-    className={twMergeClsx(
-      "my-1 h-px bg-gray-3 dark:bg-gray-dark-3",
-      className
-    )}
-    {...props}
-  />
-));
-
-VariablepickerSeparator.displayName =
-  DropdownMenuPrimitive.Separator.displayName;
+const VariablepickerSeparator = DropdownMenuSeparator;
 
 type VariablepickerCloseProps = PropsWithChildren & {
   onClick: React.MouseEventHandler;

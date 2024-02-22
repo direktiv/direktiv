@@ -379,7 +379,7 @@ func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextSt
 
 	err = im.flushUpdates(ctx)
 	if err != nil {
-		engine.sugar.Errorf("Failed to update database record: %v", err) // TODO: how often does this happens? And what are the consequences when we continue running?
+		engine.CrashInstance(ctx, im, err)
 		return
 	}
 
@@ -401,12 +401,9 @@ func (engine *engine) CrashInstance(ctx context.Context, im *instanceMemory, err
 		engine.reportInstanceCrashed(ctx, im, "unknown", fmt.Sprintf("thrown by %s:%d", file, line), err)
 	}
 
-	err = engine.SetInstanceFailed(ctx, im, err)
-	if err != nil {
-		engine.sugar.Error(err)
-	}
+	engine.SetInstanceFailed(ctx, im, err)
 
-	broadcastErr := engine.flow.BroadcastInstance(BroadcastEventTypeInstanceFailed, ctx, broadcastInstanceInput{
+	broadcastErr := engine.flow.BroadcastInstance(BroadcastEventTypeInstanceFailed, NoCancelContext(ctx), broadcastInstanceInput{
 		WorkflowPath: GetInodePath(im.instance.Instance.WorkflowPath),
 		InstanceID:   im.instance.Instance.ID.String(),
 	}, im.instance)
@@ -423,13 +420,29 @@ func (engine *engine) setEndAt(im *instanceMemory) {
 	im.updateArgs.EndedAt = im.instance.Instance.EndedAt
 }
 
+type noCancelCtx struct {
+	// nolint
+	ctx context.Context
+}
+
+func (c noCancelCtx) Deadline() (time.Time, bool)       { return time.Time{}, false }
+func (c noCancelCtx) Done() <-chan struct{}             { return nil }
+func (c noCancelCtx) Err() error                        { return nil }
+func (c noCancelCtx) Value(key interface{}) interface{} { return c.ctx.Value(key) }
+
+// WithoutCancel returns a context that is never canceled.
+func NoCancelContext(ctx context.Context) context.Context {
+	return noCancelCtx{ctx: ctx}
+}
+
 func (engine *engine) TerminateInstance(ctx context.Context, im *instanceMemory) {
+	ctx = NoCancelContext(ctx)
+
 	engine.setEndAt(im)
 
 	err := im.flushUpdates(ctx)
 	if err != nil {
 		engine.sugar.Errorf("Failed to update database record: %v", err)
-		return
 	}
 
 	if im.logic != nil {
@@ -442,13 +455,6 @@ func (engine *engine) TerminateInstance(ctx context.Context, im *instanceMemory)
 }
 
 func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata []byte, err error) {
-	defer func() {
-		e := im.flushUpdates(ctx)
-		if e != nil {
-			err = e
-		}
-	}()
-
 	engine.logRunState(ctx, im, wakedata, err)
 
 	var code string
@@ -511,6 +517,7 @@ func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata
 
 next:
 	engine.transitionState(ctx, im, transition, code)
+
 	return
 
 failure:
@@ -590,11 +597,12 @@ func (engine *engine) transformState(ctx context.Context, im *instanceMemory, tr
 func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, transition *states.Transition, errCode string) {
 	e := im.flushUpdates(ctx)
 	if e != nil {
-		engine.sugar.Errorf("Failed to flush updates: %v", e)
+		engine.CrashInstance(ctx, im, e)
+		return
 	}
 
 	if transition == nil {
-		engine.InstanceYield(im)
+		engine.InstanceYield(ctx, im)
 		return
 	}
 
