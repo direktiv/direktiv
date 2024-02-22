@@ -67,7 +67,7 @@ const NewDirectory = ({
   });
 
   const onSubmit: SubmitHandler<FormInput> = ({ name }) => {
-    createDirectory({ path, file: { name, type: "directory" } });
+    createDirectory({ path, payload: { name, type: "directory" } });
   };
 
   // you can not submit if the form has not changed or if there are any errors and

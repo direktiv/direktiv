@@ -46,14 +46,14 @@ export const useCreateFile = ({
   return useMutationWithPermissions({
     mutationFn: ({
       path,
-      file,
+      payload,
     }: {
       path?: string;
-      file: CreateFileSchemaType;
+      payload: CreateFileSchemaType;
     }) =>
       createFile({
         apiKey: apiKey ?? undefined,
-        payload: file,
+        payload,
         urlParams: {
           namespace,
           path,
@@ -61,11 +61,11 @@ export const useCreateFile = ({
       }),
     onSuccess(data, variables) {
       const fileType =
-        variables.file.type === "directory" ? "directory" : "file";
+        variables.payload.type === "directory" ? "directory" : "file";
       toast({
         title: t(`api.tree.mutate.${fileType}.create.success.title`),
         description: t(`api.tree.mutate.file.create.success.description`, {
-          name: getFilenameFromPath(variables.file.name),
+          name: getFilenameFromPath(variables.payload.name),
           path: getParentFromPath(data.data.path),
         }),
         variant: "success",
@@ -76,7 +76,7 @@ export const useCreateFile = ({
       toast({
         title: t("api.generic.error"),
         description: t(`api.tree.mutate.file.create.error.description`, {
-          name: getFilenameFromPath(variables.file.name),
+          name: getFilenameFromPath(variables.payload.name),
         }),
         variant: "error",
       });

@@ -112,7 +112,7 @@ const NewWorkflow = ({
   const onSubmit: SubmitHandler<FormInput> = ({ name, fileContent }) => {
     createFile({
       path,
-      file: {
+      payload: {
         name,
         data: encode(fileContent),
         type: "workflow",

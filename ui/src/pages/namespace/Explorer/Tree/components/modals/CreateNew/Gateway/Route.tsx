@@ -85,7 +85,7 @@ const NewRoute = ({
   const onSubmit: SubmitHandler<FormInput> = ({ name, fileContent }) => {
     createFile({
       path,
-      file: {
+      payload: {
         name,
         type: "endpoint",
         mimeType: "application/yaml",

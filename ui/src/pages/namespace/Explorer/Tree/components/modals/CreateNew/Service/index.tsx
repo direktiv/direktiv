@@ -84,7 +84,7 @@ const NewService = ({
   const onSubmit: SubmitHandler<FormInput> = ({ name, fileContent }) => {
     createFile({
       path,
-      file: {
+      payload: {
         name,
         mimeType: "application/yaml",
         type: "service",
