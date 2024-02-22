@@ -68,6 +68,7 @@ const BaseFileSchema = z.object({
   updatedAt: z.string(),
 });
 
+/* When a specific single file is returned, it also has these properties */
 const FileSchema = BaseFileSchema.extend({
   type: FileTypeSchema.exclude(["directory"]),
   size: z.number(),
@@ -75,7 +76,7 @@ const FileSchema = BaseFileSchema.extend({
   data: z.string(),
 });
 
-/* Additional properties exist for files in "children", but aren't currently used. */
+/* Additional properties exist on files in "children", but aren't currently used. */
 export const DirectorySchema = BaseFileSchema.extend({
   type: z.literal("directory"),
   children: z.array(BaseFileSchema).optional(),
@@ -136,13 +137,13 @@ export const FileDeletedSchema = z.null();
  * POST /api/v2/namespaces/:namespace/files/
  *
  * The actual response contains more data, but since we do not use
- * it, we do not bother with defining it here.
+ * it, we do not bother defining it here.
  */
 export const FileCreatedSchema = z.object({
   data: BaseFileSchema,
 });
 
-// data is only returned in the response when it has changed.
+/* data is only present in the response when it has changed. */
 export const FilePatchedSchema = z.object({
   data: BaseFileSchema.extend({ data: z.string().optional() }),
 });
