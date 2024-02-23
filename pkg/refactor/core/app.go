@@ -115,4 +115,5 @@ type App struct {
 	RegistryManager RegistryManager
 	GatewayManager  GatewayManager
 	Bus             *pubsub.Bus
+	LogManager      LogCollectionManager
 }

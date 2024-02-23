@@ -57,6 +57,7 @@ func NewMain(config *core.Config, db *database.DB, pbus *pubsub.Bus, logger *zap
 
 	// Create endpoint manager
 	gatewayManager := gateway.NewGatewayManager(db)
+	logManager := api.NewLogManager(db.DataStore().NewLogs())
 
 	// Create App
 	app := core.App{
@@ -68,6 +69,7 @@ func NewMain(config *core.Config, db *database.DB, pbus *pubsub.Bus, logger *zap
 		RegistryManager: registryManager,
 		GatewayManager:  gatewayManager,
 		Bus:             pbus,
+		LogManager:      logManager,
 	}
 
 	pbus.Subscribe(func(_ string) {

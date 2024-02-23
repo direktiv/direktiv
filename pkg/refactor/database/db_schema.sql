@@ -132,6 +132,13 @@ CREATE TABLE IF NOT EXISTS "runtime_variables" (
 );
 CREATE UNIQUE INDEX IF NOT EXISTS "runtime_variables_unique" ON runtime_variables(namespace, COALESCE(workflow_path, instance_id::text), name);
 
+CREATE TABLE IF NOT EXISTS "fluentbit" (
+    "tag" VARCHAR(255),
+    "time" TIMESTAMP,
+    "data" JSONB
+);
+
+ALTER TABLE "fluentbit" ADD COLUMN IF NOT EXISTS id SERIAL PRIMARY KEY;
 
 CREATE TABLE IF NOT EXISTS "engine_messages" (
     "id" uuid,

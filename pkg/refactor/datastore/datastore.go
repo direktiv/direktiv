@@ -5,6 +5,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/refactor/events"
 	"github.com/direktiv/direktiv/pkg/refactor/logengine"
+	"github.com/direktiv/direktiv/pkg/refactor/plattformlogs"
 )
 
 // Direktiv application data (namespaces, mirrors, etc..) are stored in a sql database. For each different
@@ -21,6 +22,7 @@ type Store interface {
 
 	// Logs returns logengine.LogStore, is responsible for reading and writing logs
 	Logs() logengine.LogStore
+	NewLogs() plattformlogs.LogStore
 
 	Secrets() SecretsStore
 

@@ -8,6 +8,7 @@ const (
 	Workflow  RecipientType = "workflow"
 	Instance  RecipientType = "instance"
 	Mirror    RecipientType = "mirror"
+	Route     RecipientType = "route"
 )
 
 func (rt RecipientType) String() string {
