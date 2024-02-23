@@ -203,11 +203,11 @@ fluent-bit:
       [FILTER]
           Name                    rewrite_tag
           Match                   input
-          Rule                    $log ^.*"track":"(.*)".*$ flow.$1 true
+          Rule                    $log ^.*"track":"([^"]+)"[^}]*}$ flow.$1 true
       [FILTER]
           Name                    rewrite_tag
           Match                   input
-          Rule                    $log ^.*"trace":"(.*)".*$ flow.trace.$1 true  
+          Rule                    $log ^.*"trace":"([^"]+)"[^}]*}$ flow.trace.$1 true
     customParsers: |
       [PARSER]
           Name                    cri_direktiv
@@ -215,7 +215,7 @@ fluent-bit:
           Regex                   ^(?<time>[^ ]+) (?<stream>stdout|stderr) (?<logtag>[^ ]*) (?<log>.*)$
           Time_Key                time
           Time_Format             %Y-%m-%dT%H:%M:%S.%L%z
-          Decode_Field_As         json log
+
 
 # -- nginx ingress controller configuration
 ingress-nginx:

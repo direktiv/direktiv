@@ -38,7 +38,7 @@ type LogEntry struct {
 }
 
 func ToFeatureLogEntry(e LogEntry) (core.PlattformLogEntry, error) {
-	entry, ok := e.Data["entry"].(string)
+	entry, ok := e.Data["log"].(string)
 	if !ok {
 		return core.PlattformLogEntry{}, fmt.Errorf("log-entry format is corrupt")
 	}
