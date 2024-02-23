@@ -3,6 +3,7 @@ package engine
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
@@ -34,15 +35,18 @@ func (instance *Instance) GetSlogAttributes(ctx context.Context) []interface{} {
 	callpath := ""
 	if len(instance.DescentInfo.Descent) > 0 {
 		rootInstanceID = instance.DescentInfo.Descent[0].ID
+		slog.Error("my error debug")
 	}
 	for _, v := range instance.DescentInfo.Descent {
 		callpath += "/" + v.ID.String()
 	}
+	callpath += "/" + instance.Instance.ID.String()
+
 	span := trace.SpanFromContext(ctx)
 	TraceID := span.SpanContext().TraceID().String() // TODO: instance.TelemetryInfo.TraceID is broken.
 	SpanID := span.SpanContext().SpanID().String()
 
-	tags = append(tags, "stream", fmt.Sprintf("%v.%v", recipient.Instance, callpath))
+	tags = append(tags, "track", fmt.Sprintf("%v.%v", recipient.Instance, callpath))
 	tags = append(tags, "instance-id", instance.Instance.ID)
 	tags = append(tags, "invoker", instance.Instance.Invoker)
 	tags = append(tags, "callpath", callpath)

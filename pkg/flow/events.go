@@ -710,7 +710,7 @@ func (events *events) listenForEvents(ctx context.Context, im *instanceMemory, c
 	}
 
 	events.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), "Registered to receive events.")
-	slog.Info("Registered to receive events.", "stream", recipient.Namespace.String()+"."+im.Namespace().Name)
+	slog.Info("Registered to receive events.", "track", recipient.Namespace.String()+"."+im.Namespace().Name)
 
 	return nil
 }

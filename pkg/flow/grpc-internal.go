@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net"
 	"strings"
 
@@ -107,6 +108,7 @@ func (internal *internal) ActionLog(ctx context.Context, req *grpc.ActionLogRequ
 	tags["state-type"] = "action"
 	for _, msg := range req.GetMsg() {
 		res := truncateLogsMsg(msg, 1024)
+		slog.Info(res, instance.GetSlogAttributes(ctx)...)
 		internal.logger.Infof(ctx, instance.Instance.ID, tags, res)
 	}
 

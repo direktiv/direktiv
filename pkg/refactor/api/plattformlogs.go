@@ -101,7 +101,7 @@ func (m logController) GetNewer(ctx context.Context, t time.Time, params map[str
 
 	res := loglist{}
 	for _, le := range logs {
-		e, err := le.ToFeatureLogEntry()
+		e, err := plattformlogs.ToFeatureLogEntry(le)
 		if err != nil {
 			return []core.PlattformLogEntry{}, err
 		}
@@ -149,7 +149,7 @@ func (m logController) GetOlder(ctx context.Context, params map[string]string) (
 	}
 	res := loglist{}
 	for _, le := range r {
-		e, err := le.ToFeatureLogEntry()
+		e, err := plattformlogs.ToFeatureLogEntry(le)
 		if err != nil {
 			return []core.PlattformLogEntry{}, err
 		}
