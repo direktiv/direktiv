@@ -210,7 +210,110 @@
                   type: array
                   items:
                     $ref: '../objects.yaml#/route'
-
+/api/v2/namespaces/{namespace}/logs:
+  get:
+    tags:
+    - plattformlogs
+    summary: Api for listing the first 200 log entries for a given resource.
+    parameters:
+      - name: namespace
+        in: path
+        required: true
+        schema:
+            type: string
+            pattern: '^(([a-z][a-z0-9_\-\.]*[a-z0-9])|([a-z]))$'
+        style: simple
+      - name: instance
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+      - name: route
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: after
+        in: query
+        required: false
+        description: Optional argument for using to request logs older then the given time.
+        schema: 
+          type: string 
+          format: RFC3339Nano
+    responses:
+      '200':
+        description: OK
+        content:
+          'application/json':
+            example:
+              nextPage: '2024-01-17T01:44:08.128136Z'
+              data:
+              - time: '2024-01-17T01:44:08.128136Z'
+                level: 'error'
+                msg: 'Pungin xy failed.'
+                trace: "00000000000000000000000000000000"
+                branch: 1
+                state: "noop"
+            schema:
+              type: object
+              properties:
+                pageInfo:
+                  type: object 
+                  properties:
+                    next:
+                      type: string
+                      format: RFC3339Nano
+                data:
+                  type: array
+                  items: 
+                    type: object
+                    properties:
+                      time: 
+                        type: string 
+                        format: RFC3339Nano
+                      level: 
+                        type: string 
+                        enum: ["info", "error"]
+                      msg: 
+                        type: string
+/api/v2/namespaces/{namespace}/logs/subscribe:
+  get:
+    tags:
+    - plattformlogs
+    summary: Api for SSE streaming of incoming logs stating the systems current time.
+    parameters:
+      - name: namespace
+        in: path
+        required: true
+        schema:
+            type: string
+            pattern: '^(([a-z][a-z0-9_\-\.]*[a-z0-9])|([a-z]))$'
+        style: simple
+      - name: instance
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+      - name: route
+        in: query
+        required: false
+        schema:
+          type: string
+    responses:
+      '200':
+        description: OK
+        content:
+          text/event-stream:
+            example: |
+              id: 4
+              event: message
+              data: {'id':'4','time':'2024-02-07T08:59:52.666925Z','msg':'Starting workflow /action.yaml','level':'INFO'}
+              
+              id: 6
+              event: message
+              data: {'id':'6','time':'2024-02-07T09:00:01.770604Z','msg':'Workflow /action.yaml completed.','level':'INFO'}
 /api/v2/namespaces/{namespace}/registries:
   get:
     tags:
