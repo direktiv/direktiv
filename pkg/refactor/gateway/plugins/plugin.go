@@ -123,14 +123,14 @@ func ReportError(ctx context.Context, w http.ResponseWriter, status int, msg str
 	if !ok {
 		slog.Error("TODO: This must be a bug, fixme")
 	}
-	routePath, ok := ctx.Value("route_path").(string)
+	routePath, ok := ctx.Value("route").(string)
 	if !ok {
 		slog.Error("TODO: This must be a bug, fixme")
 	}
 	slog.Error("can not process plugin",
 		"namespace", ns,
 		"endpoint", endP,
-		"route_path", routePath,
+		"route", routePath,
 		"track", "track", recipient.Route.String()+"."+endP,
 		slog.String("error", err.Error()),
 	)
@@ -138,7 +138,7 @@ func ReportError(ctx context.Context, w http.ResponseWriter, status int, msg str
 	slog.Error("can not process plugin",
 		"namespace", ns,
 		"endpoint", endP,
-		"route_path", routePath,
+		"route", routePath,
 		"track", "track", recipient.Namespace.String()+"."+ns,
 		slog.String("error", err.Error()),
 	)

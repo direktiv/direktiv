@@ -54,29 +54,38 @@ func ToFeatureLogEntry(e LogEntry) (core.PlattformLogEntry, error) {
 		Msg:   fmt.Sprint(m["msg"]),
 		Level: fmt.Sprint(m["level"]),
 	}
-	if trace, ok := m["trace"].(string); ok {
-		featureLogEntry.Trace = trace
+	if s, ok := m["trace"]; ok {
+		featureLogEntry.Trace = fmt.Sprint(s)
 	}
-	if trace, ok := m["span"].(string); ok {
-		featureLogEntry.Trace = trace
+	if s, ok := m["span"]; ok {
+		featureLogEntry.Span = fmt.Sprint(s)
 	}
-	if state, ok := m["state"].(string); ok {
-		featureLogEntry.State = state
+	if s, ok := m["state"]; ok {
+		featureLogEntry.State = fmt.Sprint(s)
 	}
-	if s, ok := m["namespace"].(string); ok {
-		featureLogEntry.Namespace = s
+	if s, ok := m["namespace"]; ok {
+		featureLogEntry.Namespace = fmt.Sprint(s)
 	}
-	if s, ok := m["workflow"].(string); ok {
-		featureLogEntry.Workflow = s
+	if s, ok := m["workflow"]; ok {
+		featureLogEntry.Workflow = fmt.Sprint(s)
 	}
-	if s, ok := m["instance"].(string); ok {
-		featureLogEntry.Instance = s
+	if s, ok := m["instance"]; ok {
+		featureLogEntry.Instance = fmt.Sprint(s)
 	}
-	if s, ok := m["route"].(string); ok {
-		featureLogEntry.Route = s
+	if s, ok := m["route"]; ok {
+		featureLogEntry.Route = fmt.Sprint(s)
 	}
-	if s, ok := m["activity"].(string); ok {
-		featureLogEntry.Activity = s
+	if s, ok := m["activity"]; ok {
+		featureLogEntry.Activity = fmt.Sprint(s)
+	}
+	if s, ok := m["branch"]; ok {
+		featureLogEntry.Branch = fmt.Sprint(s)
+	}
+	if s, ok := m["error"]; ok {
+		featureLogEntry.Error = fmt.Sprint(s)
+	}
+	if s, ok := m["path"]; ok {
+		featureLogEntry.Path = fmt.Sprint(s)
 	}
 
 	return featureLogEntry, nil

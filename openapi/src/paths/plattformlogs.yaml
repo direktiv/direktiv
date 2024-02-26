@@ -2,7 +2,7 @@
   get:
     tags:
     - plattformlogs
-    summary: Api for listing the first 200 log entries for a given resource.
+    summary: Api for listing the last 200 log entries for a given resource.
     parameters:
       - name: namespace
         in: path
