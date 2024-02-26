@@ -1,12 +1,14 @@
 package plugins
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
 
+	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/mitchellh/mapstructure"
 	"github.com/pkg/errors"
@@ -112,8 +114,35 @@ func (k *ContextKey) String() string {
 	return "plugin context value " + k.name
 }
 
-func ReportError(w http.ResponseWriter, status int, msg string, err error) {
-	slog.Error("can not process plugin", slog.String("error", err.Error()))
+func ReportError(ctx context.Context, w http.ResponseWriter, status int, msg string, err error) {
+	ns, ok := ctx.Value("namespace").(string)
+	if !ok {
+		slog.Error("TODO: This must be a bug, fixme")
+	}
+	endP, ok := ctx.Value("endpoint").(string)
+	if !ok {
+		slog.Error("TODO: This must be a bug, fixme")
+	}
+	routePath, ok := ctx.Value("route_path").(string)
+	if !ok {
+		slog.Error("TODO: This must be a bug, fixme")
+	}
+	slog.Error("can not process plugin",
+		"namespace", ns,
+		"endpoint", endP,
+		"route_path", routePath,
+		"track", "track", recipient.Route.String()+"."+endP,
+		slog.String("error", err.Error()),
+	)
+
+	slog.Error("can not process plugin",
+		"namespace", ns,
+		"endpoint", endP,
+		"route_path", routePath,
+		"track", "track", recipient.Namespace.String()+"."+ns,
+		slog.String("error", err.Error()),
+	)
+
 	w.WriteHeader(status)
 	errMsg := fmt.Sprintf("%s: %s", msg, err.Error())
 

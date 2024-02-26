@@ -263,13 +263,16 @@ func determineStream(params map[string]string) (string, error) {
 	if p, ok := params["instance"]; ok {
 		return "flow.instance." + "%" + p + "%", nil
 	} else if p, ok := params["route"]; ok {
-		return "flow.gateway." + p, nil
+		return "flow.route." + p, nil
 	} else if p, ok := params["mirror"]; ok {
+		return "flow.mirror." + p, nil
+	} else if p, ok := params["activity"]; ok {
 		return "flow.mirror." + p, nil
 	} else if p, ok := params["namespace"]; ok {
 		return "flow.namespace." + p, nil
+	} else if p, ok := params["trace"]; ok {
+		return "flow.trace" + p, nil
 	}
-
 	return "", fmt.Errorf("requested logs for an unknown type")
 }
 
@@ -368,5 +371,6 @@ func extractLogRequestParams(r *http.Request) map[string]string {
 	if v := r.URL.Query().Get("activity"); v != "" {
 		params["activity"] = v
 	}
+
 	return params
 }
