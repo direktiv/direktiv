@@ -7,7 +7,7 @@ import Entry from "./Entry";
 import { Logs } from "~/design/Logs";
 import { twMergeClsx } from "~/util/helpers";
 import { useInstanceDetails } from "~/api/instances/query/details";
-import { useLogs } from "~/api/logs/query/get";
+import { useLogs } from "~/api/logs_DEBRECATED/query/get";
 import { useLogsPreferencesWordWrap } from "~/util/store/logs";
 import { useTranslation } from "react-i18next";
 import { useVirtualizer } from "@tanstack/react-virtual";

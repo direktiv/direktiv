@@ -2,7 +2,7 @@ import { ComponentPropsWithoutRef, forwardRef } from "react";
 import { formatLogTime, logLevelToLogEntryVariant } from "~/util/helpers";
 
 import { LogEntry } from "~/design/Logs";
-import { LogEntryType } from "~/api/logs/schema";
+import { LogEntryType } from "~/api/logs_DEBRECATED/schema";
 import { useLogsPreferencesVerboseLogs } from "~/util/store/logs";
 
 type LogEntryProps = ComponentPropsWithoutRef<typeof LogEntry>;

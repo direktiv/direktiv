@@ -6,7 +6,7 @@ import {
 
 import { InstanceStreamingSubscriber } from "~/api/instances/query/details";
 import InstancesDetail from "./InstanceDetail";
-import { LogStreamingSubscriber } from "~/api/logs/query/get";
+import { LogStreamingSubscriber } from "~/api/logs_DEBRECATED/query/get";
 import { pages } from "~/util/router/pages";
 
 const InstanceStreaming = () => {

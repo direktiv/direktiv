@@ -4,7 +4,7 @@ import { useActions, useFilters } from "../../../store/instanceContext";
 
 import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
-import { FiltersObj } from "~/api/logs/query/get";
+import { FiltersObj } from "~/api/logs_DEBRECATED/query/get";
 import { SelectFieldMenu } from "./SelectFieldMenu";
 import TextInput from "./TextInput";
 import { useState } from "react";
