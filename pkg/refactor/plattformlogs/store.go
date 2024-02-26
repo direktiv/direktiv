@@ -57,29 +57,26 @@ func ToFeatureLogEntry(e LogEntry) (core.PlattformLogEntry, error) {
 	if trace, ok := m["trace"].(string); ok {
 		featureLogEntry.Trace = trace
 	}
-	if trace, ok := m["trace"].(string); ok {
-		featureLogEntry.Trace = trace
-	}
 	if trace, ok := m["span"].(string); ok {
 		featureLogEntry.Trace = trace
 	}
 	if state, ok := m["state"].(string); ok {
 		featureLogEntry.State = state
 	}
-	if branch, ok := m["namespace"].(string); ok {
-		featureLogEntry.Namespace = branch
+	if s, ok := m["namespace"].(string); ok {
+		featureLogEntry.Namespace = s
 	}
-	if branch, ok := m["workflow"].(string); ok {
-		featureLogEntry.Workflow = branch
+	if s, ok := m["workflow"].(string); ok {
+		featureLogEntry.Workflow = s
 	}
-	if branch, ok := m["instance"].(string); ok {
-		featureLogEntry.Instance = branch
+	if s, ok := m["instance"].(string); ok {
+		featureLogEntry.Instance = s
 	}
-	if branch, ok := m["route"].(string); ok {
-		featureLogEntry.Route = branch
+	if s, ok := m["route"].(string); ok {
+		featureLogEntry.Route = s
 	}
-	if branch, ok := m["activity"].(string); ok {
-		featureLogEntry.Activity = branch
+	if s, ok := m["activity"].(string); ok {
+		featureLogEntry.Activity = s
 	}
 
 	return featureLogEntry, nil

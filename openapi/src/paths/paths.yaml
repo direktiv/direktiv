@@ -214,7 +214,7 @@
   get:
     tags:
     - plattformlogs
-    summary: Api for listing the first 200 log entries for a given resource.
+    summary: Api for listing the last 200 log entries for a given resource.
     parameters:
       - name: namespace
         in: path
@@ -234,7 +234,7 @@
         required: false
         schema:
           type: string
-      - name: after
+      - name: before
         in: query
         required: false
         description: Optional argument for using to request logs older then the given time.
@@ -281,7 +281,7 @@
   get:
     tags:
     - plattformlogs
-    summary: Api for SSE streaming of incoming logs stating the systems current time.
+    summary: Api for SSE streaming of incoming logs after the systems current time or the Last-Event-ID.
     parameters:
       - name: namespace
         in: path
@@ -298,6 +298,11 @@
           format: uuid
       - name: route
         in: query
+        required: false
+        schema:
+          type: string
+      - name: Last-Event-ID
+        in: header
         required: false
         schema:
           type: string

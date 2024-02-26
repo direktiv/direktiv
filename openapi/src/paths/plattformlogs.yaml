@@ -22,7 +22,7 @@
         required: false
         schema:
           type: string
-      - name: after
+      - name: before
         in: query
         required: false
         description: Optional argument for using to request logs older then the given time.
@@ -86,6 +86,11 @@
           format: uuid
       - name: route
         in: query
+        required: false
+        schema:
+          type: string
+      - name: Last-Event-ID
+        in: header
         required: false
         schema:
           type: string

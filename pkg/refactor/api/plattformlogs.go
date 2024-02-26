@@ -44,7 +44,9 @@ func (m *logController) mountRouter(r chi.Router) {
 
 			return
 		}
-
+		if len(data) == 0 {
+			data = nil
+		}
 		writeJSON(w, data)
 	})
 }
@@ -357,6 +359,14 @@ func extractLogRequestParams(r *http.Request) map[string]string {
 	if v := r.URL.Query().Get("before"); v != "" {
 		params["before"] = v
 	}
-
+	if v := r.URL.Query().Get("trace"); v != "" {
+		params["trace"] = v
+	}
+	if v := r.URL.Query().Get("span"); v != "" {
+		params["span"] = v
+	}
+	if v := r.URL.Query().Get("activity"); v != "" {
+		params["activity"] = v
+	}
 	return params
 }
