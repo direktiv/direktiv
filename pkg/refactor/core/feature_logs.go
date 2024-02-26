@@ -26,5 +26,6 @@ type PlattformLogEntry struct {
 	Namespace string    `json:"namespace,omitempty"`
 	Activity  string    `json:"activity,omitempty"`
 	Route     string    `json:"route,omitempty"`
+	Path      string    `json:"path,omitempty"`
 	Error     string    `json:"error,omitempty"`
 }

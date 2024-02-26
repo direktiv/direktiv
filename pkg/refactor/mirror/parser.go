@@ -541,7 +541,7 @@ func (p *Parser) parseDeprecatedVariableFiles() error {
 			prefix := wpath + "."
 			vname := strings.TrimPrefix(fpath, prefix)
 			if !regex.MatchString(vname) {
-				slog.Error("Detected a possible deprecated workflow variable definition with an invalid name", "path", fpath, "track", recipient.Mirror.String()+"."+p.activity.String(), "namespace", p.namespace)
+				slog.Debug("Detected a possible deprecated workflow variable definition with an invalid name", "path", fpath, "namespace", p.namespace)
 
 				continue
 			}
@@ -562,7 +562,7 @@ func (p *Parser) parseDeprecatedVariableFiles() error {
 
 				m[vname] = data
 
-				slog.Error("Detected deprecated workflow variable definition at", "path", fpath, "track", recipient.Mirror.String()+"."+p.activity.String(), "namespace", p.namespace)
+				slog.Debug("Detected deprecated workflow variable definition at", "path", fpath, "namespace", p.namespace)
 			}
 		}
 	}

@@ -208,7 +208,7 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		namespace = chi.URLParam(r, "namespace")
 	}
 
-	slogNamespace := slog.With("track", recipient.Namespace.String()+"."+namespace, "namespace", namespace, "route_path", routePath)
+	slogNamespace := slog.With("track", recipient.Namespace.String()+"."+namespace, "namespace", namespace, "route", routePath)
 
 	gw, ok := ep.nsGateways[namespace]
 	if !ok {
@@ -224,7 +224,7 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	slogRoute := slog.With("trace", traceID(), "track", recipient.Route.String()+"."+endpointEntry.Path, "namespace", namespace, "endpoint", endpointEntry.Path, "route_path", routePath)
+	slogRoute := slog.With("trace", traceID(), "track", recipient.Route.String()+"."+endpointEntry.Path, "namespace", namespace, "endpoint", endpointEntry.Path, "route", routePath)
 
 	// if there are configuration errors, return it
 	if len(endpointEntry.Errors) > 0 {
@@ -257,9 +257,9 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(t))
 	defer cancel()
 
-	ctx = context.WithValue(ctx, "namespace", namespace)
-	ctx = context.WithValue(ctx, "endpoint", endpointEntry.Path)
-	ctx = context.WithValue(ctx, "route_path", routePath)
+	ctx = context.WithValue(ctx, "namespace", namespace)         // nolint
+	ctx = context.WithValue(ctx, "endpoint", endpointEntry.Path) // nolint
+	ctx = context.WithValue(ctx, "route", routePath)             // nolint
 
 	r = r.WithContext(ctx)
 

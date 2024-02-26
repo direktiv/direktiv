@@ -234,6 +234,17 @@
         required: false
         schema:
           type: string
+      - name: activity
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+      - name: trace
+        in: query
+        required: false
+        schema:
+          type: string
       - name: before
         in: query
         required: false
@@ -281,7 +292,7 @@
   get:
     tags:
     - plattformlogs
-    summary: Api for SSE streaming of incoming logs after the systems current time or the Last-Event-ID.
+    summary: Api for SSE streaming of incoming logs stating the systems current time.
     parameters:
       - name: namespace
         in: path
@@ -297,6 +308,17 @@
           type: string
           format: uuid
       - name: route
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: activity
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+      - name: trace
         in: query
         required: false
         schema:
