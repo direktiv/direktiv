@@ -59,7 +59,7 @@ test("Service details page provides information about the service", async ({
   ).toBeVisible();
 
   await expect(
-    page.getByRole("link", { name: "/http-service.yaml", exact: true }),
+    page.getByRole("link", { name: serviceFile.data.path, exact: true }),
     "it renders a link to the service file"
   ).toBeVisible();
 
