@@ -12,7 +12,7 @@ import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { fileNameSchema } from "~/api/tree/schema/node";
 import { pages } from "~/util/router/pages";
-import { useCreateDirectory } from "~/api/tree/mutate/createDirectory";
+import { useCreateFile } from "~/api/files/mutate/createFile";
 import { useNamespace } from "~/util/store/namespace";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -56,18 +56,18 @@ const NewDirectory = ({
     resolver,
   });
 
-  const { mutate: createDirectory, isLoading } = useCreateDirectory({
+  const { mutate: createDirectory, isLoading } = useCreateFile({
     onSuccess: (data) => {
       namespace &&
         navigate(
-          pages.explorer.createHref({ namespace, path: data.node.path })
+          pages.explorer.createHref({ namespace, path: data.data.path })
         );
       close();
     },
   });
 
   const onSubmit: SubmitHandler<FormInput> = ({ name }) => {
-    createDirectory({ path, directory: name });
+    createDirectory({ path, payload: { name, type: "directory" } });
   };
 
   // you can not submit if the form has not changed or if there are any errors and

@@ -1,36 +1,39 @@
-import { WorkflowCreatedSchema } from "../schema/node";
+import { CreateFileSchemaType, FileCreatedSchema } from "../schema";
+import {
+  forceLeadingSlash,
+  getFilenameFromPath,
+  getParentFromPath,
+} from "../utils";
+
 import { apiFactory } from "~/api/apiFactory";
-import { forceLeadingSlash } from "../utils";
 import { useApiKey } from "~/util/store/apiKey";
 import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 import { useNamespace } from "~/util/store/namespace";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
-export const createWorkflow = apiFactory({
+export const createFile = apiFactory({
   url: ({
     baseUrl,
     namespace,
     path,
-    name,
   }: {
     baseUrl?: string;
     namespace: string;
     path?: string;
-    name: string;
   }) =>
-    `${baseUrl ?? ""}/api/namespaces/${namespace}/tree${forceLeadingSlash(
+    `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/files${forceLeadingSlash(
       path
-    )}/${name}?op=create-workflow`,
-  method: "PUT",
-  schema: WorkflowCreatedSchema,
+    )}`,
+  method: "POST",
+  schema: FileCreatedSchema,
 });
 
-type ResolvedCreateWorkflow = Awaited<ReturnType<typeof createWorkflow>>;
+type ResolvedCreateFile = Awaited<ReturnType<typeof createFile>>;
 
-export const useCreateWorkflow = ({
+export const useCreateFile = ({
   onSuccess,
-}: { onSuccess?: (data: ResolvedCreateWorkflow) => void } = {}) => {
+}: { onSuccess?: (data: ResolvedCreateFile) => void } = {}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
   const { toast } = useToast();
@@ -43,37 +46,38 @@ export const useCreateWorkflow = ({
   return useMutationWithPermissions({
     mutationFn: ({
       path,
-      name,
-      fileContent,
+      payload,
     }: {
       path?: string;
-      name: string;
-      fileContent: string;
+      payload: CreateFileSchemaType;
     }) =>
-      createWorkflow({
+      createFile({
         apiKey: apiKey ?? undefined,
-        payload: fileContent,
+        payload,
         urlParams: {
           namespace,
           path,
-          name,
         },
       }),
     onSuccess(data, variables) {
+      const fileType =
+        variables.payload.type === "directory" ? "directory" : "file";
       toast({
-        title: t("api.tree.mutate.createWorkflow.success.title"),
-        description: t("api.tree.mutate.createWorkflow.success.description", {
-          name: variables.name,
-          path: variables.path,
+        title: t(`api.tree.mutate.${fileType}.create.success.title`),
+        description: t(`api.tree.mutate.file.create.success.description`, {
+          name: getFilenameFromPath(variables.payload.name),
+          path: getParentFromPath(data.data.path),
         }),
         variant: "success",
       });
       onSuccess?.(data);
     },
-    onError: () => {
+    onError: (_, variables) => {
       toast({
         title: t("api.generic.error"),
-        description: t("api.tree.mutate.createWorkflow.error.description"),
+        description: t(`api.tree.mutate.file.create.error.description`, {
+          name: getFilenameFromPath(variables.payload.name),
+        }),
         variant: "error",
       });
     },

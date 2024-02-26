@@ -1,6 +1,6 @@
 import { WorkflowStartedSchema } from "../schema/node";
 import { apiFactory } from "~/api/apiFactory";
-import { forceLeadingSlash } from "../utils";
+import { forceLeadingSlash } from "~/api/files/utils";
 import { getMessageFromApiError } from "~/api/errorHandling";
 import { useApiKey } from "~/util/store/apiKey";
 import useMutationWithPermissions from "~/api/useMutationWithPermissions";

@@ -2,7 +2,7 @@ import { QueryFunctionContext, useQuery } from "@tanstack/react-query";
 
 import { MetricsListSchema } from "../schema/metrics";
 import { apiFactory } from "~/api/apiFactory";
-import { forceLeadingSlash } from "../utils";
+import { forceLeadingSlash } from "~/api/files/utils";
 import { treeKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";

@@ -4,15 +4,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/design/Dialog";
-import { NodeSchemaType, fileNameSchema } from "~/api/tree/schema/node";
 import { SubmitHandler, useForm } from "react-hook-form";
+import { getFilenameFromPath, getParentFromPath } from "~/api/files/utils";
 
+import { BaseFileSchemaType } from "~/api/files/schema";
 import Button from "~/design/Button";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { TextCursorInput } from "lucide-react";
 import { addYamlFileExtension } from "../../utils";
-import { useRenameNode } from "~/api/tree/mutate/renameNode";
+import { fileNameSchema } from "~/api/tree/schema/node";
+import { useRenameFile } from "~/api/files/mutate/renameFile";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -22,11 +24,11 @@ type FormInput = {
 };
 
 const Rename = ({
-  node,
+  file,
   close,
   unallowedNames,
 }: {
-  node: NodeSchemaType;
+  file: BaseFileSchemaType;
   close: () => void;
   unallowedNames: string[];
 }) => {
@@ -40,7 +42,7 @@ const Rename = ({
       z.object({
         name: fileNameSchema
           .transform((enteredName) => {
-            if (node.type !== "directory" && node.type !== "file") {
+            if (file.type !== "directory" && file.type !== "file") {
               return addYamlFileExtension(enteredName);
             }
             return enteredName;
@@ -57,25 +59,30 @@ const Rename = ({
       })
     ),
     defaultValues: {
-      name: node.name,
+      name: getFilenameFromPath(file.path),
     },
   });
 
-  const { mutate: rename, isLoading } = useRenameNode({
+  const { mutate: rename, isLoading } = useRenameFile({
     onSuccess: () => {
       close();
     },
   });
 
   const onSubmit: SubmitHandler<FormInput> = ({ name }) => {
-    rename({ node, newName: name });
+    rename({
+      file,
+      payload: {
+        path: `${getParentFromPath(file.path)}/${name}`,
+      },
+    });
   };
 
   // you can not submit if the form has not changed or if there are any errors and
   // you have already submitted the form (errors will first show up after submit)
   const disableSubmit = !isDirty || (isSubmitted && !isValid);
 
-  const formId = `new-dir-${node.path}`;
+  const formId = `new-dir-${file.path}`;
 
   return (
     <>

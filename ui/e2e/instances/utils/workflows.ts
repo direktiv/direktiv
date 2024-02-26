@@ -15,15 +15,15 @@ states:
 `;
 
 export const parentWorkflow = ({
-  childName,
+  childPath,
   children = 1,
 }: {
-  childName: string;
+  childPath: string;
   children?: number;
 }) => `description: I will spawn multiple instances of the child.yaml
 functions:
 - id: get
-  workflow: ${childName}
+  workflow: ${childPath}
   type: subflow
 states:
 - id: prep 

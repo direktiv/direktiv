@@ -1,4 +1,4 @@
-import { forceLeadingSlash, sortFoldersFirst } from "../utils";
+import { forceLeadingSlash, sortFoldersFirst } from "~/api/files/utils";
 
 import { NodeListSchema } from "../schema/node";
 import type { QueryFunctionContext } from "@tanstack/react-query";
@@ -9,7 +9,7 @@ import { useNamespace } from "~/util/store/namespace";
 import useQueryWithPermissions from "~/api/useQueryWithPermissions";
 
 // a node can be a directory or a file, the returned content could either
-// be the list of files (if it's a direkctory) or the content of the file
+// be the list of files (if it's a directory) or the content of the file
 const getNodeContent = apiFactory({
   url: ({ namespace, path }: { namespace: string; path?: string }) =>
     `/api/namespaces/${namespace}/tree${forceLeadingSlash(path)}`,

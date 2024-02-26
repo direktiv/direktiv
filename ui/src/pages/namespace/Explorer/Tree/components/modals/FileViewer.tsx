@@ -5,14 +5,14 @@ import {
   DialogTitle,
 } from "~/design/Dialog";
 
+import { BaseFileSchemaType } from "~/api/files/schema";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
 import { File } from "lucide-react";
-import { NodeSchemaType } from "~/api/tree/schema/node";
 import { decode } from "js-base64";
 import { mimeTypeToEditorSyntax } from "~/design/Editor/utils";
-import { useNodeContent } from "~/api/tree/query/node";
+import { useFile } from "~/api/files/query/file";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 
@@ -32,13 +32,15 @@ const NoPreview = ({ mimeType }: { mimeType?: string }) => {
 const imageSrc = (mimeType: string, source: string) =>
   `data:${mimeType};base64,${source}`;
 
-const FileViewer = ({ node }: { node: NodeSchemaType }) => {
+const FileViewer = ({ file }: { file: BaseFileSchemaType }) => {
   const { t } = useTranslation();
   const theme = useTheme();
-  const { data } = useNodeContent({ path: node.path });
+  const { data } = useFile({ path: file.path });
 
-  const fileContent = decode(data?.source ?? "");
-  const mimeType = data?.node.mimeType;
+  if (data?.type === "directory") return null;
+
+  const fileContent = decode(data?.data ?? "");
+  const mimeType = data?.mimeType;
 
   const supportedLanguage = mimeTypeToEditorSyntax(mimeType);
   const supportedImage = mimeType?.startsWith("image/");
@@ -52,14 +54,14 @@ const FileViewer = ({ node }: { node: NodeSchemaType }) => {
     <>
       <DialogHeader>
         <DialogTitle>
-          <File /> {t("pages.explorer.tree.fileViewer.title")} {node.path}
+          <File /> {t("pages.explorer.tree.fileViewer.title")} {file.path}
         </DialogTitle>
       </DialogHeader>
       <Card className="grow p-4" background="weight-1">
         <div className="flex h-[700px]">
           {showImage && (
             <img
-              src={imageSrc(mimeType ?? "", data?.source ?? "")}
+              src={imageSrc(mimeType ?? "", data?.data ?? "")}
               className="w-full object-contain"
             />
           )}

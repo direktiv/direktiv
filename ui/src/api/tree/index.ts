@@ -1,4 +1,4 @@
-import { forceLeadingSlash } from "./utils";
+import { forceLeadingSlash } from "../files/utils";
 
 export const treeKeys = {
   nodeContent: (

@@ -8,9 +8,9 @@ import { NoPermissions } from "~/design/Table";
 import ServiceEditor from "./ServiceEditor";
 import { analyzePath } from "~/util/router/utils";
 import { pages } from "~/util/router/pages";
+import { useFile } from "~/api/files/query/file";
 import { useNamespace } from "~/util/store/namespace";
 import { useNamespaceServices } from "~/api/services/query/services";
-import { useNodeContent } from "~/api/tree/query/node";
 import { useTranslation } from "react-i18next";
 
 const ServicePage: FC = () => {
@@ -25,13 +25,13 @@ const ServicePage: FC = () => {
     noPermissionMessage,
     data: serviceData,
     isFetched: isPermissionCheckFetched,
-  } = useNodeContent({ path });
+  } = useFile({ path });
 
   const { data: servicesList } = useNamespaceServices();
 
   if (!namespace) return null;
   if (!path) return null;
-  if (!serviceData) return null;
+  if (serviceData?.type !== "service") return null;
   if (!isPermissionCheckFetched) return null;
   if (!servicesList) return null;
 
@@ -43,7 +43,7 @@ const ServicePage: FC = () => {
     );
 
   const serviceId = servicesList.data.find(
-    (service) => serviceData.node.path === service.filePath
+    (service) => serviceData.path === service.filePath
   )?.id;
 
   return (
@@ -69,7 +69,7 @@ const ServicePage: FC = () => {
           )}
         </div>
       </div>
-      <ServiceEditor data={serviceData} path={path} />
+      <ServiceEditor data={serviceData} />
     </>
   );
 };

@@ -1,7 +1,40 @@
 import { File, Folder, Layers, Play, Users, Workflow } from "lucide-react";
 
+import { BaseFileSchemaType } from "./schema";
 import { ExplorerSubpages } from "~/util/router/pages";
-import { NodeSchemaType } from "./schema/node";
+
+export const getFilenameFromPath = (path: string): string => {
+  const fileName = path.split("/").pop();
+  if (fileName === undefined)
+    throw Error(`Filename could not be extracted from ${path}`);
+  return fileName;
+};
+
+export const getParentFromPath = (path: string): string => {
+  switch (path) {
+    case "":
+      throw Error("Cannot infer parent from empty string");
+    case "/":
+      throw Error("Cannot infer parent from '/'");
+    default:
+      return path.split("/").slice(0, -1).join("/") || "/";
+  }
+};
+
+export const sortFoldersFirst = (
+  a: BaseFileSchemaType,
+  b: BaseFileSchemaType
+): number => {
+  if (a.type === "directory" && b.type !== "directory") {
+    return -1;
+  }
+
+  if (b.type === "directory" && a.type !== "directory") {
+    return 1;
+  }
+
+  return a.path.localeCompare(b.path);
+};
 
 export const forceLeadingSlash = (path?: string) => {
   if (!path) {
@@ -24,25 +57,10 @@ export const removeTrailingSlash = (path?: string) => {
   return path.endsWith("/") ? path.slice(0, -1) : path;
 };
 
-export const sortFoldersFirst = (
-  a: NodeSchemaType,
-  b: NodeSchemaType
-): number => {
-  if (a.type === "directory" && b.type !== "directory") {
-    return -1;
-  }
-
-  if (b.type === "directory" && a.type !== "directory") {
-    return 1;
-  }
-
-  return a.name.localeCompare(b.name);
-};
-
 export const sortByName = (a: { name: string }, b: { name: string }): number =>
   a.name.localeCompare(b.name);
 
-export const fileTypeToIcon = (type: NodeSchemaType["type"]) => {
+export const fileTypeToIcon = (type: BaseFileSchemaType["type"]) => {
   switch (type) {
     case "directory":
       return Folder;
@@ -60,7 +78,7 @@ export const fileTypeToIcon = (type: NodeSchemaType["type"]) => {
 };
 
 export const fileTypeToExplorerSubpage = (
-  type: NodeSchemaType["type"]
+  type: BaseFileSchemaType["type"]
 ): ExplorerSubpages | undefined => {
   switch (type) {
     case "workflow":
@@ -76,4 +94,5 @@ export const fileTypeToExplorerSubpage = (
   }
 };
 
-export const isPreviewable = (type: NodeSchemaType["type"]) => type === "file";
+export const isPreviewable = (type: BaseFileSchemaType["type"]) =>
+  type === "file";
