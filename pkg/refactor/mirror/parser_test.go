@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
+	"github.com/google/uuid"
 	"github.com/psanford/memfs"
-	"go.uber.org/zap"
 )
 
 type memSource struct {
@@ -91,10 +91,10 @@ func assertWorkflows(t *testing.T, p *mirror.Parser, paths []string) {
 }
 
 func TestParseEmpty(t *testing.T) {
-	log := zap.NewNop().Sugar()
+
 	src := newMemSource()
 
-	p, err := mirror.NewParser(log, src)
+	p, err := mirror.NewParser("my-ns", uuid.New(), src)
 	if err != nil {
 		t.Error(err)
 		return
@@ -104,7 +104,6 @@ func TestParseEmpty(t *testing.T) {
 }
 
 func TestParseSimple(t *testing.T) {
-	log := zap.NewNop().Sugar()
 	src := newMemSource()
 	_ = src.fs.WriteFile(".direktivignore", []byte(``), 0o755)
 	_ = src.fs.WriteFile("x.yaml", []byte(`x: 5`), 0o755)
@@ -126,7 +125,7 @@ states:
   type: noop
 `), 0o755)
 
-	p, err := mirror.NewParser(log, src)
+	p, err := mirror.NewParser("my-ns", uuid.New(), src)
 	if err != nil {
 		t.Error(err)
 		return
@@ -147,7 +146,6 @@ states:
 }
 
 func TestParseComplex(t *testing.T) {
-	log := zap.NewNop().Sugar()
 	src := newMemSource()
 	_ = src.fs.WriteFile(".direktivignore", []byte(`*.csv
 a/b/e.yaml
@@ -193,7 +191,7 @@ states:
   type: noop
 `), 0o755)
 
-	p, err := mirror.NewParser(log, src)
+	p, err := mirror.NewParser("my-ns", uuid.New(), src)
 	if err != nil {
 		t.Error(err)
 		return

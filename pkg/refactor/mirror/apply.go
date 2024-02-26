@@ -3,6 +3,7 @@ package mirror
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"sort"
@@ -27,7 +28,6 @@ func (o *DryrunApplyer) apply(_ context.Context, _ Callbacks, _ *datastore.Mirro
 
 type DirektivApplyer struct {
 	NamespaceID uuid.UUID
-	log         FormatLogger
 	callbacks   Callbacks
 	proc        *datastore.MirrorProcess
 	parser      *Parser
@@ -37,7 +37,6 @@ type DirektivApplyer struct {
 }
 
 func (o *DirektivApplyer) apply(ctx context.Context, callbacks Callbacks, proc *datastore.MirrorProcess, parser *Parser, notes map[string]string) error {
-	o.log = newPIDFormatLogger(callbacks.ProcessLogger(), proc.ID)
 	o.callbacks = callbacks
 	o.proc = proc
 	o.parser = parser
@@ -124,7 +123,7 @@ func (o *DirektivApplyer) copyFilesIntoRoot(ctx context.Context) error {
 				return err
 			}
 
-			o.log.Debugf("Created directory in database: %s", path)
+			slog.Debug("Created directory in database.", "path", path, "namespace", o.proc.Namespace)
 
 			continue
 		}
@@ -141,7 +140,7 @@ func (o *DirektivApplyer) copyFilesIntoRoot(ctx context.Context) error {
 			return err
 		}
 
-		o.log.Debugf("Created file in database: %s", path)
+		slog.Debug("Created directory in database.", "path", path, "namespace", o.proc.Namespace)
 	}
 
 	return nil
@@ -162,7 +161,7 @@ func (o *DirektivApplyer) copyWorkflowsIntoRoot(ctx context.Context) error {
 			return err
 		}
 
-		o.log.Debugf("Created workflow in database: %s", path)
+		slog.Debug("Created workflow in database.", "path", path, "namespace", o.proc.Namespace)
 	}
 
 	return nil
@@ -183,7 +182,7 @@ func (o *DirektivApplyer) copyServicesIntoRoot(ctx context.Context) error {
 			return err
 		}
 
-		o.log.Debugf("Created service in database: %s", path)
+		slog.Debug("Created service in database.", "path", path, "namespace", o.proc.Namespace)
 	}
 
 	return nil
@@ -204,7 +203,7 @@ func (o *DirektivApplyer) copyEndpointsIntoRoot(ctx context.Context) error {
 			return err
 		}
 
-		o.log.Debugf("Created endpoint in database: %s", path)
+		slog.Debug("Created endpoint in database.", "path", path, "namespace", o.proc.Namespace)
 	}
 
 	return nil
@@ -225,7 +224,7 @@ func (o *DirektivApplyer) copyConsumersIntoRoot(ctx context.Context) error {
 			return err
 		}
 
-		o.log.Debugf("Created consumer in database: %s", path)
+		slog.Debug("Created consumer in database.", "path", path, "namespace", o.proc.Namespace)
 	}
 
 	return nil
@@ -250,7 +249,7 @@ func (o *DirektivApplyer) configureWorkflows(ctx context.Context) error {
 			return err
 		}
 
-		o.log.Debugf("Configured workflow in database: %s", path)
+		slog.Debug("Configured workflow in database.", "path", path, "namespace", o.proc.Namespace)
 	}
 
 	return nil

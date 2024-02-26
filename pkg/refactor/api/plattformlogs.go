@@ -264,8 +264,6 @@ func determineStream(params map[string]string) (string, error) {
 		return "flow.instance." + "%" + p + "%", nil
 	} else if p, ok := params["route"]; ok {
 		return "flow.route." + p, nil
-	} else if p, ok := params["mirror"]; ok {
-		return "flow.mirror." + p, nil
 	} else if p, ok := params["activity"]; ok {
 		return "flow.mirror." + p, nil
 	} else if p, ok := params["namespace"]; ok {
@@ -273,6 +271,7 @@ func determineStream(params map[string]string) (string, error) {
 	} else if p, ok := params["trace"]; ok {
 		return "flow.trace" + p, nil
 	}
+
 	return "", fmt.Errorf("requested logs for an unknown type")
 }
 

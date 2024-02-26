@@ -22,6 +22,17 @@
         required: false
         schema:
           type: string
+      - name: activity
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+      - name: trace
+        in: query
+        required: false
+        schema:
+          type: string
       - name: before
         in: query
         required: false
@@ -85,6 +96,17 @@
           type: string
           format: uuid
       - name: route
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: activity
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+      - name: trace
         in: query
         required: false
         schema:
