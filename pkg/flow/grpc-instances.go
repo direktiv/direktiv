@@ -2,7 +2,6 @@ package flow
 
 import (
 	"context"
-	"errors"
 	"os"
 	"path/filepath"
 	"time"
@@ -517,36 +516,10 @@ func (flow *flow) StartWorkflow(ctx context.Context, req *grpc.StartWorkflowRequ
 	}
 
 	if !req.GetHold() {
-		flow.engine.queue(im)
+		go flow.engine.start(im)
 	}
 
 	var resp grpc.StartWorkflowResponse
-
-	resp.Namespace = req.GetNamespace()
-	resp.Instance = im.ID().String()
-
-	return &resp, nil
-}
-
-func (flow *flow) ReleaseInstance(ctx context.Context, req *grpc.ReleaseInstanceRequest) (*grpc.ReleaseInstanceResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
-
-	im, err := flow.engine.getInstanceMemory(ctx, req.GetInstance())
-	if err != nil {
-		return nil, err
-	}
-
-	if im.instance.TelemetryInfo.NamespaceName != req.GetNamespace() {
-		return nil, errors.New("instance not found")
-	}
-
-	if im.instance.Instance.Status != instancestore.InstanceStatusPending {
-		return nil, errors.New("instance already released")
-	}
-
-	flow.engine.queue(im)
-
-	var resp grpc.ReleaseInstanceResponse
 
 	resp.Namespace = req.GetNamespace()
 	resp.Instance = im.ID().String()
@@ -657,7 +630,7 @@ func (flow *flow) AwaitWorkflow(req *grpc.AwaitWorkflowRequest, srv grpc.Flow_Aw
 	sub := flow.pubsub.SubscribeInstance(im.instance.Instance.ID)
 	defer flow.cleanup(sub.Close)
 
-	flow.engine.queue(im)
+	go flow.engine.start(im)
 
 	var instance *enginerefactor.Instance
 

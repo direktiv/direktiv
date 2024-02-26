@@ -5,10 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 
-	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/flow/states"
-	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/google/uuid"
 )
 
@@ -70,27 +68,27 @@ func (engine *engine) CancelInstanceChildren(ctx context.Context, im *instanceMe
 }
 
 func (engine *engine) cancelInstance(id, code, message string, soft bool) {
-	engine.cancelRunning(id)
+	ctx := context.Background()
 
-	ctx, im, err := engine.loadInstanceMemory(id, -1)
+	uid, err := uuid.Parse(id)
 	if err != nil {
-		engine.sugar.Error(err)
+		engine.sugar.Errorf("failed to parse instance uuid for cancelInstance: %v", err)
 		return
 	}
 
-	if im.instance.Instance.Status != instancestore.InstanceStatusPending {
+	err = engine.enqueueInstanceMessage(ctx, uid, "cancel", cancelMessage{
+		Soft:    soft,
+		Code:    code,
+		Message: message,
+	})
+	if err != nil {
+		engine.sugar.Errorf("failed to enqueue instance message for cancelInstance: %v", err)
 		return
 	}
 
-	if soft {
-		err = derrors.NewCatchableError(code, message)
-	} else {
-		err = derrors.NewUncatchableError(code, message)
+	if !soft {
+		engine.cancelRunning(id)
 	}
-
-	engine.sugar.Debugf("Handling cancel instance: %s", this())
-
-	go engine.runState(ctx, im, nil, err)
 }
 
 func (engine *engine) finishCancelWorkflow(req *pubsub.PubsubUpdate) {
@@ -139,17 +137,12 @@ bad:
 }
 
 func (engine *engine) cancelRunning(id string) {
-	im, err := engine.getInstanceMemory(context.Background(), id)
-	if err == nil {
-		engine.timers.deleteTimerByName(im.Controller(), engine.pubsub.Hostname, id)
+	uid, err := uuid.Parse(id)
+	if err != nil {
+		return
 	}
 
-	engine.cancellersLock.Lock()
-	cancel, exists := engine.cancellers[id]
-	if exists {
-		cancel()
-	}
-	engine.cancellersLock.Unlock()
+	engine.sendCancelToScheduled(uid)
 }
 
 func (engine *engine) finishCancelMirrorProcess(req *pubsub.PubsubUpdate) {

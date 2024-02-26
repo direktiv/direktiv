@@ -31,8 +31,8 @@ import (
 
 type engine struct {
 	*server
-	cancellers     map[string]func()
-	cancellersLock sync.Mutex
+
+	scheduled sync.Map
 }
 
 func initEngine(srv *server) (*engine, error) {
@@ -40,7 +40,7 @@ func initEngine(srv *server) (*engine, error) {
 
 	engine.server = srv
 
-	engine.cancellers = make(map[string]func())
+	engine.pBus.Subscribe(engine.instanceMessagesChannelHandler, engineInstanceMessagesChannel)
 
 	return engine, nil
 }
@@ -123,19 +123,6 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 			return nil, derrors.NewUncatchableError("direktiv.workflow.invoke", "cannot invoke event-based workflow as a subflow")
 		}
 	}
-
-	/*
-		as := args.Path
-		if args.Ref != "" {
-			as += ":" + args.Ref
-		}
-		callerInstanceID := ""
-		if strings.HasPrefix(args.Caller, "instance:") {
-			callerInstanceID = strings.Split(args.Caller, ":")[1]
-		}
-		TODO: alan, put this somewhere else
-		callpath := internallogger.AppendInstanceID(args.CallPath, callerInstanceID)
-	*/
 
 	root := args.ID
 	iterator := 0
@@ -220,7 +207,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	im.engine = engine
 	im.instance = instance
 	im.updateArgs = new(instancestore.UpdateInstanceDataArgs)
-	im.updateArgs.Server = &engine.ID
+	im.updateArgs.Server = engine.ID
 
 	err = json.Unmarshal(im.instance.Instance.LiveData, &im.data)
 	if err != nil {
@@ -255,31 +242,6 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	return im, nil
 }
 
-func (engine *engine) start(im *instanceMemory) {
-	ctx, err := engine.InstanceLock(im, defaultLockWait)
-	if err != nil {
-		engine.sugar.Error(err)
-		return
-	}
-
-	engine.sugar.Debugf("Starting workflow %v", im.ID().String())
-	engine.logger.Infof(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "Starting workflow %v", database.GetWorkflow(im.instance.Instance.WorkflowPath))
-	slog.Info(fmt.Sprintf("Starting workflow %v", im.instance.Instance.WorkflowPath), "stream", string(recipient.Namespace)+"."+im.Namespace().Name)
-	engine.logger.Debugf(ctx, im.instance.Instance.ID, im.GetAttributes(), "Starting workflow %v.", database.GetWorkflow(im.instance.Instance.WorkflowPath))
-	slog.Info(fmt.Sprintf("Starting workflow %v.", im.instance.Instance.WorkflowPath), im.instance.GetSlogAttributes(ctx)...)
-
-	workflow, err := im.Model()
-	if err != nil {
-		engine.CrashInstance(ctx, im, derrors.NewUncatchableError(ErrCodeWorkflowUnparsable, "failed to parse workflow YAML: %v", err))
-		engine.logger.Errorf(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "failed to parse workflow YAML")
-		return
-	}
-
-	start := workflow.GetStartState()
-
-	engine.Transition(ctx, im, start.GetID(), 0)
-}
-
 func (engine *engine) loadStateLogic(im *instanceMemory, stateID string) error {
 	workflow, err := im.Model()
 	if err != nil {
@@ -300,11 +262,11 @@ func (engine *engine) loadStateLogic(im *instanceMemory, stateID string) error {
 	return nil
 }
 
-func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextState string, attempt int) {
+func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextState string, attempt int) *states.Transition {
 	workflow, err := im.Model()
 	if err != nil {
 		engine.CrashInstance(ctx, im, err)
-		return
+		return nil
 	}
 
 	oldController := im.Controller()
@@ -321,7 +283,7 @@ func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextSt
 				d, err := duration.ParseISO8601(s)
 				if err != nil {
 					engine.CrashInstance(ctx, im, err)
-					return
+					return nil
 				}
 				tSoft = d.Shift(t)
 				tHard = tSoft.Add(time.Minute * 5)
@@ -333,7 +295,7 @@ func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextSt
 				d, err := duration.ParseISO8601(s)
 				if err != nil {
 					engine.CrashInstance(ctx, im, err)
-					return
+					return nil
 				}
 				tHard = d.Shift(t)
 			}
@@ -350,7 +312,7 @@ func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextSt
 	err = engine.loadStateLogic(im, nextState)
 	if err != nil {
 		engine.CrashInstance(ctx, im, err)
-		return
+		return nil
 	}
 
 	flow := append(im.Flow(), nextState)
@@ -359,13 +321,13 @@ func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextSt
 	err = engine.SetMemory(ctx, im, nil)
 	if err != nil {
 		engine.CrashInstance(ctx, im, err)
-		return
+		return nil
 	}
 
 	ctx, cleanup, err := traceStateGenericBegin(ctx, im)
 	if err != nil {
 		engine.CrashInstance(ctx, im, err)
-		return
+		return nil
 	}
 	defer cleanup()
 
@@ -387,12 +349,12 @@ func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextSt
 	err = im.flushUpdates(ctx)
 	if err != nil {
 		engine.CrashInstance(ctx, im, err)
-		return
+		return nil
 	}
 
 	engine.ScheduleSoftTimeout(im, oldController, deadline)
 
-	engine.runState(ctx, im, nil, nil)
+	return engine.runState(ctx, im, nil, nil)
 }
 
 func (engine *engine) CrashInstance(ctx context.Context, im *instanceMemory, err error) {
@@ -443,13 +405,22 @@ func NoCancelContext(ctx context.Context) context.Context {
 }
 
 func (engine *engine) TerminateInstance(ctx context.Context, im *instanceMemory) {
-	ctx = NoCancelContext(ctx)
+	if engine.GetIsInstanceCrashed(im) {
+		ctx = NoCancelContext(ctx)
+	}
 
 	engine.setEndAt(im)
 
-	err := im.flushUpdates(ctx)
+	engine.freeArtefacts(im)
+	err := engine.freeMemory(ctx, im)
 	if err != nil {
-		engine.sugar.Errorf("Failed to update database record: %v", err)
+		if !engine.GetIsInstanceCrashed(im) {
+			engine.CrashInstance(ctx, im, err)
+			return
+		}
+
+		engine.forceFreeCriticalMemory(ctx, im)
+		engine.sugar.Errorf("Failed to free memory during during a crash: %v.", err)
 	}
 
 	if im.logic != nil {
@@ -457,11 +428,11 @@ func (engine *engine) TerminateInstance(ctx context.Context, im *instanceMemory)
 	}
 
 	engine.metricsCompleteInstance(ctx, im)
-	engine.FreeInstanceMemory(im)
+
 	engine.WakeInstanceCaller(ctx, im)
 }
 
-func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata []byte, err error) {
+func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata []byte, err error) *states.Transition {
 	engine.logRunState(ctx, im, wakedata, err)
 
 	var code string
@@ -523,9 +494,7 @@ func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata
 	}
 
 next:
-	engine.transitionState(ctx, im, transition, code)
-
-	return
+	return engine.transitionState(ctx, im, transition, code)
 
 failure:
 
@@ -577,6 +546,7 @@ failure:
 	}
 
 	engine.CrashInstance(ctx, im, err)
+	return nil
 }
 
 func (engine *engine) transformState(ctx context.Context, im *instanceMemory, transition *states.Transition) error {
@@ -601,16 +571,16 @@ func (engine *engine) transformState(ctx context.Context, im *instanceMemory, tr
 	return nil
 }
 
-func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, transition *states.Transition, errCode string) {
+func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, transition *states.Transition, errCode string) *states.Transition {
 	e := im.flushUpdates(ctx)
 	if e != nil {
 		engine.CrashInstance(ctx, im, e)
-		return
+		return nil
 	}
 
 	if transition == nil {
 		engine.InstanceYield(ctx, im)
-		return
+		return nil
 	}
 
 	if transition.NextState != "" {
@@ -618,8 +588,8 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 		engine.sugar.Debugf("Instance transitioning to next state: %s -> %s", im.ID().String(), transition.NextState)
 		slog.Info(fmt.Sprintf("Transitioning to next state: %s (%d).", transition.NextState, im.Step()+1), im.GetSlogAttributes(ctx)...)
 		engine.logger.Debugf(ctx, im.GetInstanceID(), im.GetAttributes(), "Transitioning to next state: %s (%d).", transition.NextState, im.Step()+1)
-		go engine.Transition(ctx, im, transition.NextState, 0)
-		return
+
+		return transition
 	}
 
 	status := instancestore.InstanceStatusComplete
@@ -654,6 +624,8 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 	}
 
 	engine.TerminateInstance(ctx, im)
+
+	return nil
 }
 
 func (engine *engine) subflowInvoke(ctx context.Context, pi *enginerefactor.ParentInfo, instance *enginerefactor.Instance, name string, input []byte) (*instanceMemory, error) {
@@ -750,21 +722,23 @@ func (engine *engine) retryWakeup(data []byte) {
 
 	err := json.Unmarshal(data, msg)
 	if err != nil {
-		engine.sugar.Error(err)
+		engine.sugar.Errorf("failed to unmarshal retryMessage: %v", err)
 		return
 	}
 
-	ctx, im, err := engine.loadInstanceMemory(msg.InstanceID, msg.Step)
+	uid, err := uuid.Parse(msg.InstanceID)
 	if err != nil {
-		engine.sugar.Error(err)
+		engine.sugar.Errorf("failed to parse instanceID in retryMessage: %v", err)
 		return
 	}
 
-	engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), "Waking up to retry.")
-	slog.Info("Waking up to retry.", im.GetSlogAttributes(ctx)...)
-	engine.sugar.Debugf("Handling retry wakeup: %s", this())
+	ctx := context.Background()
 
-	go engine.runState(ctx, im, msg.Data, nil)
+	err = engine.enqueueInstanceMessage(ctx, uid, "wake", msg)
+	if err != nil {
+		engine.sugar.Errorf("failed to enqueue instance message for retryWakeup: %v", err)
+		return
+	}
 }
 
 type actionResultPayload struct {
@@ -800,30 +774,13 @@ func (engine *engine) createTransport() *http.Transport {
 }
 
 func (engine *engine) wakeEventsWaiter(instance uuid.UUID, step int, events []*cloudevents.Event) {
-	ctx, im, err := engine.loadInstanceMemory(instance.String(), step)
+	ctx := context.Background()
+
+	err := engine.enqueueInstanceMessage(ctx, instance, "event", events)
 	if err != nil {
-		err = fmt.Errorf("cannot load workflow logic instance: %w", err)
-		engine.sugar.Error(err)
+		engine.sugar.Errorf("faied to enqueue instance message for wakeEventsWaiter: %v", err)
 		return
 	}
-
-	wakedata, err := json.Marshal(events)
-	if err != nil {
-		err = fmt.Errorf("cannot marshal the action results payload: %w", err)
-		engine.CrashInstance(ctx, im, err)
-		return
-	}
-
-	engine.sugar.Debugf("Handling events wakeup: %s", this())
-
-	ctx, cleanup, err := traceStateGenericBegin(ctx, im)
-	if err != nil {
-		engine.CrashInstance(ctx, im, err)
-		return
-	}
-	defer cleanup()
-
-	engine.runState(ctx, im, wakedata, nil)
 }
 
 func (engine *engine) EventsInvoke(workflowID uuid.UUID, events ...*cloudevents.Event) {
@@ -894,7 +851,7 @@ func (engine *engine) EventsInvoke(workflowID uuid.UUID, events ...*cloudevents.
 		return
 	}
 
-	engine.queue(im)
+	go engine.start(im)
 }
 
 func (engine *engine) SetMemory(ctx context.Context, im *instanceMemory, x interface{}) error {

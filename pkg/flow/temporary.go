@@ -363,7 +363,7 @@ type subflowHandle struct {
 }
 
 func (child *subflowHandle) Run(ctx context.Context) {
-	child.engine.queue(child.im)
+	go child.engine.start(child.im)
 }
 
 func (child *subflowHandle) Info() states.ChildInfo {

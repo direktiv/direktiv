@@ -560,6 +560,7 @@ type: noop
 
 	tf := time.Now().Add(30 * time.Second)
 	err = instances.ForInstanceID(id).UpdateInstanceData(context.Background(), &instancestore.UpdateInstanceDataArgs{
+		Server:   server,
 		Deadline: &tf,
 	})
 	if err != nil {
@@ -584,6 +585,7 @@ type: noop
 	tf = time.Now().Add(-30 * time.Second)
 	status := instancestore.InstanceStatusComplete
 	err = instances.ForInstanceID(id).UpdateInstanceData(context.Background(), &instancestore.UpdateInstanceDataArgs{
+		Server:   server,
 		Deadline: &tf,
 		Status:   &status,
 	})
@@ -609,6 +611,7 @@ type: noop
 	tf = time.Now().Add(-30 * time.Second)
 	status = instancestore.InstanceStatusPending
 	err = instances.ForInstanceID(id).UpdateInstanceData(context.Background(), &instancestore.UpdateInstanceDataArgs{
+		Server:   server,
 		Deadline: &tf,
 		Status:   &status,
 	})
@@ -689,6 +692,7 @@ type: noop
 	status := instancestore.InstanceStatusComplete
 	tf := time.Now().Add(-5 * time.Second)
 	err = instances.ForInstanceID(id).UpdateInstanceData(context.Background(), &instancestore.UpdateInstanceDataArgs{
+		Server:  server,
 		Status:  &status,
 		EndedAt: &tf,
 	})

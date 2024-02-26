@@ -216,7 +216,7 @@ func (flow *flow) cronHandler(data []byte) {
 		return
 	}
 
-	flow.engine.queue(im)
+	go flow.engine.start(im)
 }
 
 func (flow *flow) configureWorkflowStarts(ctx context.Context, tx *sqlTx, nsID uuid.UUID, file *filestore.File) error {

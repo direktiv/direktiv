@@ -64,7 +64,6 @@ type server struct {
 	// the new pubsub bus
 	pBus *pubsub2.Bus
 
-	locks  *locks
 	timers *timers
 	engine *engine
 
@@ -223,15 +222,7 @@ func (srv *server) start(ctx context.Context) error {
 		}
 	}()
 
-	srv.sugar.Info("Initializing locks.")
-
 	db := srv.conf.DB
-
-	srv.locks, err = initLocks(db)
-	if err != nil {
-		return err
-	}
-	defer srv.cleanup(srv.locks.Close)
 
 	srv.sugar.Info("Initializing database.")
 	gormConf := &gorm.Config{
@@ -305,14 +296,6 @@ func (srv *server) start(ctx context.Context) error {
 
 	srv.metrics = metrics.NewClient(srv.gormDB)
 
-	srv.sugar.Info("Initializing engine.")
-
-	srv.engine, err = initEngine(srv)
-	if err != nil {
-		return err
-	}
-	defer srv.cleanup(srv.engine.Close)
-
 	var lock sync.Mutex
 	var wg sync.WaitGroup
 
@@ -329,6 +312,14 @@ func (srv *server) start(ctx context.Context) error {
 
 	srv.pBus = pubsub2.NewBus(srv.sugar, coreBus)
 	go srv.pBus.Start(cctx.Done(), &wg)
+
+	srv.sugar.Info("Initializing engine.")
+
+	srv.engine, err = initEngine(srv)
+	if err != nil {
+		return err
+	}
+	defer srv.cleanup(srv.engine.Close)
 
 	srv.sugar.Info("Initializing internal grpc server.")
 

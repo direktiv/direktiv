@@ -111,7 +111,7 @@ CREATE TABLE IF NOT EXISTS "instances_v2" (
 CREATE TABLE IF NOT EXISTS "instance_messages" (
     "id" uuid NOT NULL,
     "instance_id" uuid NOT NULL,
-    "created_at" timestamptz NOT NULL,
+    "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "payload" bytea NOT NULL,
     PRIMARY KEY ("id"),
     CONSTRAINT "fk_instances_v2_instance_messages"

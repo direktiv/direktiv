@@ -161,7 +161,7 @@ type CreateInstanceDataArgs struct {
 
 // UpdateInstanceDataArgs defines the possible arguments for updating an existing instance data record.
 type UpdateInstanceDataArgs struct {
-	Server        *uuid.UUID      `json:"server,omitempty"`
+	Server        uuid.UUID       `json:"server"`
 	EndedAt       *time.Time      `json:"ended_at,omitempty"`
 	Deadline      *time.Time      `json:"deadline,omitempty"`
 	Status        *InstanceStatus `json:"status,omitempty"`
@@ -174,6 +174,20 @@ type UpdateInstanceDataArgs struct {
 	Output        *[]byte         `json:"output,omitempty"`
 	ErrorMessage  *[]byte         `json:"error_message,omitempty"`
 	Metadata      *[]byte         `json:"metadata,omitempty"`
+}
+
+// InstanceMessageData is the struct that matches the instance messages table.
+type InstanceMessageData struct {
+	ID         uuid.UUID
+	InstanceID uuid.UUID
+	CreatedAt  time.Time
+	Payload    []byte
+}
+
+// EnqueueInstanceMessageArgs defines the required arguments for enqueueing an instance message.
+type EnqueueInstanceMessageArgs struct {
+	InstanceID uuid.UUID
+	Payload    []byte
 }
 
 type InstanceDataQuery interface {
@@ -194,6 +208,12 @@ type InstanceDataQuery interface {
 
 	// GetSummaryWithMetadata returns everything GetSummary does, as well as the metadata field.
 	GetSummaryWithMetadata(ctx context.Context) (*InstanceData, error)
+
+	// EnqueueMessage adds a message to the instance's message queue.
+	EnqueueMessage(ctx context.Context, args *EnqueueInstanceMessageArgs) error
+
+	// PopMessage returns the most recent message out of the queue.
+	PopMessage(ctx context.Context) (*InstanceMessageData, error)
 }
 
 type Store interface {

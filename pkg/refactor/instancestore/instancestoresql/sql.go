@@ -38,6 +38,12 @@ const (
 	fieldErrorMessage   = "error_message"
 	fieldMetadata       = "metadata"
 
+	messagesTable                  = "instance_messages"
+	fieldInstanceMessageID         = "id"
+	fieldInstanceMessageInstanceID = "instance_id"
+	fieldInstanceMessageCreatedAt  = "created_at"
+	fieldInstanceMessagePayload    = "payload"
+
 	desc = "desc"
 )
 
