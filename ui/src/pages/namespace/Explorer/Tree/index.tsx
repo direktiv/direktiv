@@ -68,10 +68,7 @@ const ExplorerPage: FC = () => {
   const noResults = isSuccess && children.length === 0;
   const wideOverlay = !!previewNode;
 
-  const existingNames =
-    data?.type === "directory" && data.children
-      ? data.children?.map((file) => getFilenameFromPath(file.path))
-      : [];
+  const existingNames = children?.map((file) => getFilenameFromPath(file.path));
 
   return (
     <>

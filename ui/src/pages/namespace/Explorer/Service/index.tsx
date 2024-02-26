@@ -31,7 +31,7 @@ const ServicePage: FC = () => {
 
   if (!namespace) return null;
   if (!path) return null;
-  if (!serviceData || serviceData.type !== "service") return null;
+  if (serviceData?.type !== "service") return null;
   if (!isPermissionCheckFetched) return null;
   if (!servicesList) return null;
 

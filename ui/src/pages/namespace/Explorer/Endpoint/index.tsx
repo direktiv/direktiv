@@ -33,7 +33,7 @@ const EndpointPage: FC = () => {
 
   if (!namespace) return null;
   if (!path) return null;
-  if (!endpointData || endpointData.type !== "endpoint") return null;
+  if (endpointData?.type !== "endpoint") return null;
   if (!isPermissionCheckFetched) return null;
   if (!isRouteListFetched) return null;
 
