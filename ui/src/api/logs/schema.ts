@@ -25,7 +25,5 @@ export const LogListSchema = z.object({
   results: z.array(LogEntrySchema),
 });
 
-export const InstanceCancelSchema = z.null();
-
 export type LogListSchemaType = z.infer<typeof LogListSchema>;
 export type LogEntryType = z.infer<typeof LogEntrySchema>;
