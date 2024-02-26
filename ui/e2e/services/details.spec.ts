@@ -22,7 +22,7 @@ test.afterEach(async () => {
 test("Service details page provides information about the service", async ({
   page,
 }) => {
-  const service = await createFile({
+  const serviceFile = await createFile({
     name: "http-service.yaml",
     namespace,
     type: "service",
@@ -34,9 +34,9 @@ test("Service details page provides information about the service", async ({
       async () =>
         await findServiceWithApiRequest({
           namespace,
-          match: (item) =>
-            item.filePath === service.data.path &&
-            (item.conditions ?? []).some(
+          match: (service) =>
+            service.filePath === serviceFile.data.path &&
+            (service.conditions ?? []).some(
               (c) => c.type === "ConfigurationsReady" && c.status === "True"
             ),
         }),
@@ -46,7 +46,7 @@ test("Service details page provides information about the service", async ({
 
   const createdService = await findServiceWithApiRequest({
     namespace,
-    match: (item) => item.filePath === service.data.path,
+    match: (service) => service.filePath === serviceFile.data.path,
   });
 
   if (!createdService) throw new Error("could not find service");

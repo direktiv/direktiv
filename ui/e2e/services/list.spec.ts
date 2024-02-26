@@ -40,7 +40,7 @@ test("Service list is empty by default", async ({ page }) => {
 });
 
 test("Service list shows all available services", async ({ page }) => {
-  const service = await createFile({
+  const serviceFile = await createFile({
     name: "http-service.yaml",
     namespace,
     type: "service",
@@ -52,9 +52,9 @@ test("Service list shows all available services", async ({ page }) => {
       async () =>
         await findServiceWithApiRequest({
           namespace,
-          match: (item) =>
-            item.filePath === service.data.path &&
-            (item.conditions ?? []).some(
+          match: (service) =>
+            service.filePath === serviceFile.data.path &&
+            (service.conditions ?? []).some(
               (c) => c.type === "ConfigurationsReady" && c.status === "True"
             ),
         }),
@@ -74,7 +74,7 @@ test("Service list shows all available services", async ({ page }) => {
   await expect(
     page
       .getByTestId("service-row")
-      .getByRole("link", { name: service.data.path }),
+      .getByRole("link", { name: serviceFile.data.path }),
     "it renders the link to the service file"
   ).toBeVisible();
 
