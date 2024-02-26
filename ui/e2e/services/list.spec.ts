@@ -208,11 +208,11 @@ test("Service list links the row to the service details page", async ({
 });
 
 test("Service list lets the user rebuild a service", async ({ page }) => {
-  await createFile({
-    name: "redis-service.yaml",
+  const serviceFile = await createFile({
+    name: "http-service.yaml",
     namespace,
     type: "service",
-    yaml: createRedisServiceFile(),
+    yaml: createHttpServiceFile(),
   });
 
   await expect
@@ -221,10 +221,12 @@ test("Service list lets the user rebuild a service", async ({ page }) => {
         await findServiceWithApiRequest({
           namespace,
           match: (service) =>
-            service.filePath === "/redis-service.yaml" &&
-            (service.conditions ?? []).some((c) => c.type === "UpAndReady"),
+            service.filePath === serviceFile.data.path &&
+            (service.conditions ?? []).some(
+              (c) => c.type === "ConfigurationsReady" && c.status === "True"
+            ),
         }),
-      "the service in the backend is in an UpAndReady state"
+      "the service in the backend is in state ConfigurationsReady"
     )
     .toBeTruthy();
 
@@ -233,11 +235,8 @@ test("Service list lets the user rebuild a service", async ({ page }) => {
   });
 
   await expect(
-    page
-      .getByTestId("service-row")
-      .locator("a")
-      .filter({ hasText: "UpAndReady" }),
-    "it renders the UpAndReady status of the service"
+    page.getByTestId("service-row").filter({ hasText: "ConfigurationsReady" }),
+    "it renders the ConfigurationsReady status of the service"
   ).toBeVisible();
 
   await page.getByTestId("service-row").getByRole("button").click();
@@ -260,7 +259,7 @@ test("Service list lets the user rebuild a service", async ({ page }) => {
 });
 
 test("Service list highlights services that have errors", async ({ page }) => {
-  await createFile({
+  const serviceFile = await createFile({
     name: "failed-service.yaml",
     namespace,
     type: "service",
@@ -273,8 +272,10 @@ test("Service list highlights services that have errors", async ({ page }) => {
         await findServiceWithApiRequest({
           namespace,
           match: (service) =>
-            service.filePath === "/failed-service.yaml" &&
-            service.error !== null,
+            service.filePath === serviceFile.data.path &&
+            (service.conditions ?? []).some(
+              (c) => c.type === "ConfigurationsReady" && c.status === "False"
+            ),
         }),
       "the service in the backend is in an error state"
     )
@@ -284,19 +285,16 @@ test("Service list highlights services that have errors", async ({ page }) => {
     waitUntil: "networkidle",
   });
 
-  await expect(
-    page.getByTestId("service-row").locator("a").filter({ hasText: "Error" }),
-    "it renders the Error status of the service"
-  ).toBeVisible();
-
   await page
     .getByTestId("service-row")
     .locator("a")
-    .filter({ hasText: "Error" })
+    .filter({ hasText: "ConfigurationsReady" })
     .hover();
 
-  await expect(
-    page.getByTestId("service-row").getByText("image pull, err:"),
+  await await expect(
+    page
+      .getByTestId("service-row")
+      .getByText("failed with message: Unable to fetch image"),
     "it renders the error in a tooltip"
   ).toBeVisible();
 });
@@ -305,10 +303,10 @@ test("Service list will update the services when refetch button is clicked", asy
   page,
 }) => {
   await createFile({
-    name: "redis-service.yaml",
+    name: "http-service.yaml",
     namespace,
     type: "service",
-    yaml: createRedisServiceFile({
+    yaml: createHttpServiceFile({
       scale: 1,
       size: "large",
     }),
@@ -333,7 +331,7 @@ test("Service list will update the services when refetch button is clicked", asy
   await patchFile({
     payload: {
       data: encode(
-        createRedisServiceFile({
+        createHttpServiceFile({
           scale: 2,
           size: "small",
         })
@@ -342,10 +340,12 @@ test("Service list will update the services when refetch button is clicked", asy
     urlParams: {
       baseUrl: process.env.VITE_DEV_API_DOMAIN,
       namespace,
-      path: "redis-service.yaml",
+      path: "/http-service.yaml",
     },
     headers,
   });
+
+  await page.waitForTimeout(1000);
 
   await page.getByLabel("Refetch services").click();
 
