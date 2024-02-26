@@ -1,6 +1,5 @@
 import {
   createHttpServiceFile,
-  createRedisServiceFile,
   findServiceWithApiRequest,
   serviceWithAnError,
 } from "./utils";
@@ -126,11 +125,11 @@ test("Service list shows all available services", async ({ page }) => {
 test("Service list links the file name to the service file", async ({
   page,
 }) => {
-  await createFile({
-    name: "redis-service.yaml",
+  const serviceFile = await createFile({
+    name: "http-service.yaml",
     namespace,
     type: "service",
-    yaml: createRedisServiceFile(),
+    yaml: createHttpServiceFile(),
   });
 
   await page.goto(`/${namespace}/services`, {
@@ -139,28 +138,28 @@ test("Service list links the file name to the service file", async ({
 
   await page
     .getByTestId("service-row")
-    .getByRole("link", { name: "/redis-service.yaml" })
+    .getByRole("link", { name: serviceFile.data.path })
     .click();
 
   await expect(
     page,
     "after clicking on the file name, the user gets redirected to the file explorer page of the service file"
-  ).toHaveURL(`/${namespace}/explorer/service/redis-service.yaml`);
+  ).toHaveURL(`/${namespace}/explorer/service/http-service.yaml`);
 
   await expect(
     page.getByTestId("breadcrumb-segment"),
     "it renders the filename in the breadcrumb"
-  ).toHaveText("redis-service.yaml");
+  ).toHaveText("http-service.yaml");
 });
 
 test("Service list links the row to the service details page", async ({
   page,
 }) => {
-  await createFile({
-    name: "redis-service.yaml",
+  const serviceFile = await createFile({
+    name: "http-service.yaml",
     namespace,
     type: "service",
-    yaml: createRedisServiceFile(),
+    yaml: createHttpServiceFile(),
   });
 
   await expect
@@ -168,7 +167,7 @@ test("Service list links the row to the service details page", async ({
       async () =>
         await findServiceWithApiRequest({
           namespace,
-          match: (service) => service.filePath === "/redis-service.yaml",
+          match: (service) => service.filePath === serviceFile.data.path,
         }),
       "the service was mounted in the backend"
     )
@@ -176,7 +175,7 @@ test("Service list links the row to the service details page", async ({
 
   const createdService = await findServiceWithApiRequest({
     namespace,
-    match: (service) => service.filePath === "/redis-service.yaml",
+    match: (service) => service.filePath === serviceFile.data.path,
   });
 
   if (!createdService) throw new Error("could not find service");
