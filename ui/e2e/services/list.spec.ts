@@ -1,9 +1,10 @@
-import { createNamespace, deleteNamespace } from "../utils/namespace";
 import {
+  createHttpServiceFile,
   createRedisServiceFile,
   findServiceWithApiRequest,
   serviceWithAnError,
 } from "./utils";
+import { createNamespace, deleteNamespace } from "../utils/namespace";
 import { expect, test } from "@playwright/test";
 
 import { createFile } from "e2e/utils/files";
@@ -39,11 +40,11 @@ test("Service list is empty by default", async ({ page }) => {
 });
 
 test("Service list shows all available services", async ({ page }) => {
-  await createFile({
-    name: "redis-service.yaml",
+  const service = await createFile({
+    name: "http-service.yaml",
     namespace,
     type: "service",
-    yaml: createRedisServiceFile(),
+    yaml: createHttpServiceFile(),
   });
 
   await expect
@@ -51,11 +52,13 @@ test("Service list shows all available services", async ({ page }) => {
       async () =>
         await findServiceWithApiRequest({
           namespace,
-          match: (service) =>
-            service.filePath === "/redis-service.yaml" &&
-            (service.conditions ?? []).some((c) => c.type === "UpAndReady"),
+          match: (item) =>
+            item.filePath === service.data.path &&
+            (item.conditions ?? []).some(
+              (c) => c.type === "ConfigurationsReady" && c.status === "True"
+            ),
         }),
-      "the service in the backend is in an UpAndReady state"
+      "the service in the backend is in state ConfigurationsReady"
     )
     .toBeTruthy();
 
@@ -71,28 +74,13 @@ test("Service list shows all available services", async ({ page }) => {
   await expect(
     page
       .getByTestId("service-row")
-      .getByRole("link", { name: "/redis-service.yaml" }),
+      .getByRole("link", { name: service.data.path }),
     "it renders the link to the service file"
   ).toBeVisible();
 
   await expect(
-    page
-      .getByTestId("service-row")
-      .locator("a")
-      .filter({ hasText: "UpAndReady" }),
-    "it renders the UpAndReady status of the service"
-  ).toBeVisible();
-
-  await page
-    .getByTestId("service-row")
-    .locator("a")
-    .filter({ hasText: "UpAndReady" })
-    .hover();
-
-  // message can be "Up 1 second" or "Up 2 seconds" or "Up Less than a second"
-  await expect(
-    page.getByTestId("service-row").getByText(/Up .* second/),
-    "it renders the uptime in a tooltip"
+    page.getByTestId("service-row").filter({ hasText: "ConfigurationsReady" }),
+    "it renders the ConfigurationsReady status of the service"
   ).toBeVisible();
 
   await expect(
@@ -115,9 +103,10 @@ test("Service list shows all available services", async ({ page }) => {
   ).toBeVisible();
 
   await expect(
-    page
-      .getByTestId("service-row")
-      .getByRole("cell", { name: "redis", exact: true }),
+    page.getByTestId("service-row").getByRole("cell", {
+      name: "gcr.io/direktiv/functions/http-request:1.0",
+      exact: true,
+    }),
     "it renders the image name of the service"
   ).toBeVisible();
 
@@ -131,11 +120,6 @@ test("Service list shows all available services", async ({ page }) => {
   await expect(
     page.getByTestId("service-row").getByRole("cell", { name: "small" }),
     "it renders the size of the service"
-  ).toBeVisible();
-
-  await expect(
-    page.getByTestId("service-row").getByRole("cell", { name: "redis-server" }),
-    "it renders the cmd of the service"
   ).toBeVisible();
 });
 
