@@ -46,6 +46,16 @@ describe("getParentFromPath()", () => {
   test("nested directory", () => {
     expect(getParentFromPath("/examples/nested")).toBe("/examples");
   });
+  test("empty string", () => {
+    expect(() => getParentFromPath("")).toThrowError(
+      "Cannot infer parent from empty string"
+    );
+  });
+  test("root", () => {
+    expect(() => getParentFromPath("/")).toThrowError(
+      "Cannot infer parent from '/'"
+    );
+  });
 });
 
 describe("sortFoldersFirst", () => {

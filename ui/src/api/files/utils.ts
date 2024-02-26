@@ -10,8 +10,16 @@ export const getFilenameFromPath = (path: string): string => {
   return fileName;
 };
 
-export const getParentFromPath = (path: string): string =>
-  path.split("/").slice(0, -1).join("/") || "/";
+export const getParentFromPath = (path: string): string => {
+  switch (path) {
+    case "":
+      throw Error("Cannot infer parent from empty string");
+    case "/":
+      throw Error("Cannot infer parent from '/'");
+    default:
+      return path.split("/").slice(0, -1).join("/") || "/";
+  }
+};
 
 export const sortFoldersFirst = (
   a: BaseFileSchemaType,
