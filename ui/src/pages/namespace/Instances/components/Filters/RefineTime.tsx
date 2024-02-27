@@ -4,8 +4,6 @@ import TimePicker, { getTimeString } from "~/design/Timepicker";
 import { ArrowRight } from "lucide-react";
 import Button from "~/design/Button";
 import { FiltersObj } from "~/api/events/query/get";
-import Input from "~/design/Input";
-import { InputWithButton } from "~/design/InputWithButton";
 import moment from "moment";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -20,7 +18,7 @@ const RefineTime = ({
   setFilter: (filter: FiltersObj) => void;
 }) => {
   const { t } = useTranslation();
-  const [time, setTime] = useState<string>(moment(date).format("HH:mm:ss"));
+  const [time, setTime] = useState<string>(getTimeString(date));
 
   const [dateNew, setDate] = useState<Date>(date ?? new Date());
 
@@ -39,7 +37,6 @@ const RefineTime = ({
   };
 
   const handleKeyDown = (event: { key: string }) => {
-    console.log("upperKEY");
     event.key === "Enter" && setTimeOnDate();
   };
 
@@ -49,43 +46,33 @@ const RefineTime = ({
         <CommandGroup
           heading={t("pages.events.history.filter.menuHeading.time")}
         >
-          <TimePicker
-            onTimeChange={(time) => {
-              setTime(time);
-              console.log("here");
-              handleKeyDown;
-            }}
-            time={time}
-            setTime={(time) => setTime(time)}
-            date={dateNew}
-            setDate={setDate}
-            hours="Hours"
-            minutes="Minutes"
-            seconds="Seconds"
-            onKeyDown={() => {
-              handleKeyDown;
-              console.log("There");
-            }}
-          />
-
-          <Button icon variant="ghost" onClick={() => setTimeOnDate()}>
-            <ArrowRight />
-          </Button>
-          <InputWithButton>
-            <Input
-              type="time"
-              step={1}
-              value={time}
-              onChange={(event) => setTime(event.target.value)}
+          <div className="flex items-end">
+            <TimePicker
+              onTimeChange={(time) => {
+                setTime(time);
+                handleKeyDown;
+              }}
+              time={time}
+              setTime={(time) => setTime(time)}
+              date={dateNew}
+              setDate={setDate}
+              hours="Hours"
+              minutes="Minutes"
+              seconds="Seconds"
               onKeyDown={() => {
                 handleKeyDown;
-                console.log("XThere");
               }}
             />
-            <Button icon variant="ghost" onClick={() => setTimeOnDate()}>
+
+            <Button
+              className="mb-2"
+              icon
+              variant="ghost"
+              onClick={() => setTimeOnDate()}
+            >
               <ArrowRight />
             </Button>
-          </InputWithButton>
+          </div>
         </CommandGroup>
       </CommandList>
     </Command>

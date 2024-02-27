@@ -26,19 +26,13 @@ export function getTimeString(date: Date) {
 type TimePickerProps = {
   date: Date;
   setDate: (date: Date) => void;
-  //setTime: (time: string) => React.SetStateAction<string>;
   setTime: (time: string) => void;
   time: string;
   hours: string;
   minutes: string;
   seconds: string;
   onKeyDown?: (event: KeyboardEvent) => void;
-  // KeyboardEvent<HTMLInputElement> // this produces error "Type is not generic"
-  // onKeyDown?: KeyboardEventHandler; // did not work because it does not do anything
   onTimeChange: (time: string) => void;
-  //onChange: (time: string) => void; // hat nur mit ^ funktioniert: ChangeEventHandler | undefined; // maybe? ChangeEventHandler<T> | undefined;
-  //  onChange: (date: Date) => getTimeString(date);
-  // onChange: (date: Date) => void;
 };
 
 const TimePicker: FC<TimePickerProps> = ({
@@ -72,7 +66,6 @@ const TimePicker: FC<TimePickerProps> = ({
             ref={hourRef}
             onRightFocus={() => minuteRef.current?.focus()}
             onChange={() => {
-              console.log("change1 " + time);
               onTimeChange(time);
               onKeyDown;
             }}
@@ -91,9 +84,7 @@ const TimePicker: FC<TimePickerProps> = ({
             onRightFocus={() => secondRef.current?.focus()}
             value={minutesValue}
             onChange={() => {
-              console.log("change2 " + time);
               onTimeChange(time);
-              //onKeyDown;
             }}
           />
         </div>
@@ -108,9 +99,7 @@ const TimePicker: FC<TimePickerProps> = ({
             ref={secondRef}
             onLeftFocus={() => minuteRef.current?.focus()}
             onChange={() => {
-              console.log("change3 " + time);
               onTimeChange(time);
-              //onKeyDown;
             }}
           />
         </div>
