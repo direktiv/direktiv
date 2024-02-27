@@ -1,6 +1,6 @@
+import { LogEntrySchema, LogsSchema } from "../schema";
 import { QueryFunctionContext, useQuery } from "@tanstack/react-query";
 
-import { LogsSchema } from "../schema";
 import { apiFactory } from "~/api/apiFactory";
 import { buildSearchParamsString } from "~/api/utils";
 import { logKeys } from "..";
@@ -75,7 +75,7 @@ export const useLogsStream = (params: LogsQueryParams) => {
       ...params,
     }),
     apiKey: apiKey ?? undefined,
-    schema: LogsSchema,
+    schema: LogEntrySchema,
     onMessage: (msg) => {
       console.log("🚀 received a msg", msg);
       // queryClient.setQueryData<LogsSchemaType>(

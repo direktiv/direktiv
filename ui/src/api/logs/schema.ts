@@ -14,7 +14,7 @@ import { z } from "zod";
   "span": "0000000000000000", // only for instances?
 }
  */
-const LogEntrySchema = z.object({
+export const LogEntrySchema = z.object({
   id: z.string().nonempty(),
   time: z.string().nonempty(),
   msg: z.string().nonempty(),
