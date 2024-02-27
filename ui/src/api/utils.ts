@@ -30,6 +30,11 @@ export const buildSearchParamsString = (
       queryParams.append(name, value);
     }
   });
+
   const queryParamsString = queryParams.toString();
+  if (queryParamsString === "") {
+    return queryParamsString;
+  }
+
   return withoutQuestionmark ? queryParamsString : `?${queryParamsString}`;
 };
