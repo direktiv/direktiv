@@ -1,14 +1,32 @@
 export const logKeys = {
   detail: (
     namespace: string,
-    { apiKey, instanceId }: { apiKey?: string; instanceId: string; j }
+    {
+      apiKey,
+      instance,
+      route,
+      activity,
+      before,
+      trace,
+    }: {
+      apiKey?: string;
+      instance?: string;
+      route?: string;
+      activity?: string;
+      before?: string;
+      trace?: string;
+    }
   ) =>
     [
       {
         scope: "logs",
         apiKey,
         namespace,
-        instanceId,
+        instance,
+        route,
+        activity,
+        before,
+        trace,
       },
     ] as const,
 };
