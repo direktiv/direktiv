@@ -6,7 +6,8 @@ import {
 
 import { InstanceStreamingSubscriber } from "~/api/instances/query/details";
 import InstancesDetail from "./InstanceDetail";
-import { LogStreamingSubscriber } from "~/api/logs_DEBRECATED/query/get";
+import { LogStreamingSubscriber } from "~/api/logs/query/logs";
+import { LogStreamingSubscriber as LogStreamingSubscriberDebrecated } from "~/api/logs_DEBRECATED/query/get";
 import { pages } from "~/util/router/pages";
 
 const InstanceStreaming = () => {
@@ -15,7 +16,11 @@ const InstanceStreaming = () => {
   return (
     <>
       <InstanceStreamingSubscriber instanceId={instanceId} />
-      <LogStreamingSubscriber filters={filters} instanceId={instanceId} />
+      <LogStreamingSubscriberDebrecated
+        filters={filters}
+        instanceId={instanceId}
+      />
+      <LogStreamingSubscriber instance={instanceId} />
       <InstancesDetail />
     </>
   );
