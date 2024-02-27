@@ -1,3 +1,5 @@
+import { object } from "zod";
+
 const isEnterprise = !!process.env.VITE?.VITE_IS_ENTERPRISE;
 
 type AuthHeader =
@@ -18,4 +20,18 @@ export const getAuthHeader = (apiKey: string): AuthHeader => {
   return {
     "direktiv-token": apiKey,
   };
+};
+
+export const buildSearchParamsString = (
+  searchParmsObj: Record<string, string | undefined>,
+  withoutQuestionmark?: true
+) => {
+  const queryParams = new URLSearchParams();
+  Object.entries(searchParmsObj).forEach(([name, value]) => {
+    if (value) {
+      queryParams.append(name, value);
+    }
+  });
+  const queryParamsString = queryParams.toString();
+  return withoutQuestionmark ? queryParamsString : `?${queryParamsString}`;
 };
