@@ -2,7 +2,6 @@ package flow
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -28,22 +27,18 @@ type instanceMessageChannelData struct {
 }
 
 func (engine *engine) enqueueInstanceMessage(ctx context.Context, id uuid.UUID, kind string, data interface{}) error {
-	payloadData, err := json.Marshal(data)
-	if err != nil {
-		panic(err)
-	}
-
 	payload, err := json.Marshal(map[string]interface{}{
 		"type": kind,
-		"data": payloadData,
+		"data": data,
 	})
 	if err != nil {
 		panic(err)
 	}
 
-	tx, err := engine.flow.beginSqlTx(ctx, &sql.TxOptions{
+	// NOTE: we don't do serializable here. We don't need to. This is a best effort logic.
+	tx, err := engine.flow.beginSqlTx(ctx) /*&sql.TxOptions{
 		Isolation: sql.LevelSerializable,
-	})
+	}*/
 	if err != nil {
 		return err
 	}
@@ -93,7 +88,6 @@ func (engine *engine) enqueueInstanceMessage(ctx context.Context, id uuid.UUID, 
 }
 
 func (engine *engine) instanceMessagesChannelHandler(data string) {
-
 	var args instanceMessageChannelData
 
 	err := json.Unmarshal([]byte(data), &args)
@@ -215,13 +209,13 @@ func (engine *engine) handleEventMessage(ctx context.Context, im *instanceMemory
 }
 
 func (engine *engine) handleTransitionMessage(ctx context.Context, im *instanceMemory, data []byte) *states.Transition {
-	var t states.Transition
+	var state string
 
-	err := json.Unmarshal(data, &t)
+	err := json.Unmarshal(data, &state)
 	if err != nil {
 		engine.sugar.Errorf("handleTransitionMessage failed to unmarshal transition message args: %v", err)
 		return nil
 	}
 
-	return engine.Transition(ctx, im, t.NextState, 0)
+	return engine.Transition(ctx, im, state, 0)
 }

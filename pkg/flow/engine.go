@@ -248,10 +248,17 @@ func (engine *engine) loadStateLogic(im *instanceMemory, stateID string) error {
 		return err
 	}
 
-	wfstates := workflow.GetStatesMap()
-	state, exists := wfstates[stateID]
-	if !exists {
-		return fmt.Errorf("workflow %s cannot resolve state: %s", database.GetWorkflow(im.instance.Instance.WorkflowPath), stateID)
+	var state model.State
+
+	if stateID == "" {
+		state = workflow.GetStartState()
+	} else {
+		wfstates := workflow.GetStatesMap()
+		var exists bool
+		state, exists = wfstates[stateID]
+		if !exists {
+			return fmt.Errorf("workflow %s cannot resolve state: %s", database.GetWorkflow(im.instance.Instance.WorkflowPath), stateID)
+		}
 	}
 
 	im.logic, err = states.StateLogic(im, state)
@@ -654,12 +661,6 @@ func (engine *engine) subflowInvoke(ctx context.Context, pi *enginerefactor.Pare
 			NamespaceName: instance.TelemetryInfo.NamespaceName,
 		},
 	}
-
-	tx, err := engine.flow.beginSqlTx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer tx.Rollback()
 
 	if !filepath.IsAbs(args.CalledAs) {
 		dir, _ := filepath.Split(instance.Instance.WorkflowPath)

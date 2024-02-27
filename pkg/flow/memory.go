@@ -55,9 +55,9 @@ func (im *instanceMemory) flushUpdates(ctx context.Context) error {
 
 	im.updateArgs.Server = im.engine.ID
 
-	tx, err := im.engine.flow.beginSqlTx(ctx, &sql.TxOptions{
+	tx, err := im.engine.flow.beginSqlTx(ctx) /*&sql.TxOptions{
 		Isolation: sql.LevelSerializable,
-	})
+	}*/
 	if err != nil {
 		return err
 	}
@@ -65,6 +65,9 @@ func (im *instanceMemory) flushUpdates(ctx context.Context) error {
 
 	err = tx.InstanceStore().ForInstanceID(im.instance.Instance.ID).UpdateInstanceData(ctx, im.updateArgs)
 	if err != nil {
+		if strings.Contains(err.Error(), "got 0") {
+			return errors.New("node no longer believes it should modify this instance")
+		}
 		return err
 	}
 
@@ -306,6 +309,19 @@ func (engine *engine) getInstanceMemory(ctx context.Context, id uuid.UUID) (*ins
 	err = json.Unmarshal(im.instance.Instance.StateMemory, &im.memory)
 	if err != nil {
 		engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", err.Error()))
+		return nil, err
+	}
+
+	flow := im.instance.RuntimeInfo.Flow
+	stateID := ""
+
+	if len(flow) > 0 {
+		stateID = flow[len(flow)-1]
+	}
+
+	err = engine.loadStateLogic(im, stateID)
+	if err != nil {
+		engine.CrashInstance(ctx, im, err)
 		return nil, err
 	}
 

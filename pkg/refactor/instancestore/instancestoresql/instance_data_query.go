@@ -165,7 +165,7 @@ func (q *instanceDataQuery) EnqueueMessage(ctx context.Context, args *instancest
 	columns := []string{
 		fieldInstanceMessageID, fieldInstanceMessageInstanceID, fieldInstanceMessagePayload,
 	}
-	query := generateInsertQuery(columns)
+	query := generateInsertQuery(messagesTable, columns)
 
 	res := q.db.WithContext(ctx).Exec(query,
 		idata.ID, idata.InstanceID, idata.Payload)
@@ -193,7 +193,7 @@ func (q *instanceDataQuery) PopMessage(ctx context.Context) (*instancestore.Inst
 		return nil, res.Error
 	}
 
-	res = q.db.WithContext(ctx).Exec(`DELETE FROM %s WHERE %s = ?`, messagesTable, msg.ID)
+	res = q.db.WithContext(ctx).Exec(fmt.Sprintf(`DELETE FROM %s WHERE %s = ?`, messagesTable, fieldInstanceMessageID), msg.ID)
 	if res.Error != nil {
 		return nil, res.Error
 	}

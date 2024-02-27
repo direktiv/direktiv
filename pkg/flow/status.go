@@ -64,6 +64,7 @@ func (engine *engine) SetInstanceFailed(ctx context.Context, im *instanceMemory,
 		message = "an internal error occurred"
 	} else {
 		engine.sugar.Error(fmt.Errorf("unhandled error: %w", err))
+		status = instancestore.InstanceStatusCrashed
 		code = ErrCodeInternal
 		message = err.Error()
 	}

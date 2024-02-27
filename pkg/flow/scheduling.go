@@ -75,7 +75,7 @@ func (engine *engine) transitionLoop(ctx context.Context, im *instanceMemory, ms
 
 		payload, err := json.Marshal(map[string]interface{}{
 			"type": "transition",
-			"data": transition,
+			"data": transition.NextState,
 		})
 		if err != nil {
 			panic(err)
