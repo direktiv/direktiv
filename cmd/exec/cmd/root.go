@@ -46,5 +46,4 @@ func cmdPrepareSharedValues() {
 
 	UrlPrefix = fmt.Sprintf("%s/api/namespaces/%s", strings.Trim(addr, "/"), strings.Trim(namespace, "/"))
 	UrlPrefixV2 = fmt.Sprintf("%s/api/v2/namespaces/%s", strings.Trim(addr, "/"), strings.Trim(namespace, "/"))
-
 }

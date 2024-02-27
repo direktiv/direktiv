@@ -48,6 +48,7 @@ func getLogsV2(cmd *cobra.Command, query string) {
 	if err != nil {
 		cmd.PrintErr(err)
 	}
+	defer resp.Body.Close()
 	var d data
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
