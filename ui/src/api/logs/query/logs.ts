@@ -20,18 +20,22 @@ type LogsQueryParams = {
 type LogsParams = {
   baseUrl?: string;
   namespace: string;
+  useStreaming?: boolean;
 } & LogsQueryParams;
 
 const getUrl = (params: LogsParams) => {
-  const { baseUrl, namespace, ...queryParams } = params;
+  const { baseUrl, namespace, useStreaming, ...queryParams } = params;
 
   const queryParamsString = buildSearchParamsString({
     ...queryParams,
   });
 
-  return `${
-    baseUrl ?? ""
-  }/api/v2/namespaces/${namespace}/logs${queryParamsString}`;
+  let urlPath = `/api/v2/namespaces/${namespace}/logs`;
+  if (useStreaming) {
+    urlPath = `${urlPath}/subscribe`;
+  }
+
+  return `${baseUrl ?? ""}${urlPath}${queryParamsString}`;
 };
 
 const getLogs = apiFactory({
@@ -66,6 +70,7 @@ export const useLogsStream = (params: LogsQueryParams) => {
 
   return useStreaming({
     url: getUrl({
+      useStreaming: true,
       namespace,
       ...params,
     }),
