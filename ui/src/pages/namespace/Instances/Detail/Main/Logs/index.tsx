@@ -78,25 +78,6 @@ const LogsPanel = () => {
                 {t("pages.instances.detail.logs.tooltips.verbose")}
               </TooltipContent>
             </Tooltip>
-            {/* <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="flex grow">
-                  <Toggle
-                    size="sm"
-                    className="grow"
-                    pressed={wordWrap}
-                    onClick={() => {
-                      setWordWrap(!wordWrap);
-                    }}
-                  >
-                    <WrapText />
-                  </Toggle>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                {t("pages.instances.detail.logs.tooltips.wordWrap")}
-              </TooltipContent>
-            </Tooltip> */}
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="flex grow">
