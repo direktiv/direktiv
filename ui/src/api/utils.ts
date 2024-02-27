@@ -1,5 +1,3 @@
-import { object } from "zod";
-
 const isEnterprise = !!process.env.VITE?.VITE_IS_ENTERPRISE;
 
 type AuthHeader =
