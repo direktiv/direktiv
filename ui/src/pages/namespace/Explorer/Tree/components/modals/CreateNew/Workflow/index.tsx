@@ -21,9 +21,10 @@ import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { Textarea } from "~/design/TextArea";
 import { addYamlFileExtension } from "../../../../utils";
+import { encode } from "js-base64";
 import { fileNameSchema } from "~/api/tree/schema/node";
 import { pages } from "~/util/router/pages";
-import { useCreateWorkflow } from "~/api/tree/mutate/createWorkflow";
+import { useCreateFile } from "~/api/files/mutate/createFile";
 import { useNamespace } from "~/util/store/namespace";
 import { useNamespaceLinting } from "~/api/namespaceLinting/query/useNamespaceLinting";
 import { useNavigate } from "react-router-dom";
@@ -89,7 +90,7 @@ const NewWorkflow = ({
     },
   });
 
-  const { mutate: createWorkflow, isLoading } = useCreateWorkflow({
+  const { mutate: createFile, isLoading } = useCreateFile({
     onSuccess: (data) => {
       /**
        * creating a new workflow might introduce an uninitialized secret.
@@ -100,7 +101,7 @@ const NewWorkflow = ({
         navigate(
           pages.explorer.createHref({
             namespace,
-            path: data.node.path,
+            path: data.data.path,
             subpage: "workflow",
           })
         );
@@ -109,7 +110,15 @@ const NewWorkflow = ({
   });
 
   const onSubmit: SubmitHandler<FormInput> = ({ name, fileContent }) => {
-    createWorkflow({ path, name, fileContent });
+    createFile({
+      path,
+      payload: {
+        name,
+        data: encode(fileContent),
+        type: "workflow",
+        mimeType: "application/yaml",
+      },
+    });
   };
 
   // you can not submit if the form has not changed or if there are any errors and

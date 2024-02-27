@@ -6,8 +6,7 @@ import {
 } from "./utils";
 import { expect, test } from "@playwright/test";
 
-import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
-import { headers } from "e2e/utils/testutils";
+import { createFile } from "e2e/utils/files";
 
 let namespace = "";
 
@@ -23,16 +22,13 @@ test.afterEach(async () => {
 test("Service details page provides information about the service", async ({
   page,
 }) => {
-  await createWorkflow({
-    payload: createRedisServiceFile({
+  await createFile({
+    name: "redis-service.yaml",
+    namespace,
+    type: "service",
+    yaml: createRedisServiceFile({
       scale: 2,
     }),
-    urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
-      namespace,
-      name: "redis-service.yaml",
-    },
-    headers,
   });
 
   await expect
@@ -153,14 +149,11 @@ test("Service details page provides information about the service", async ({
 test("Service details page renders no logs when the service did not mount", async ({
   page,
 }) => {
-  await createWorkflow({
-    payload: serviceWithAnError,
-    urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
-      namespace,
-      name: "redis-service.yaml",
-    },
-    headers,
+  await createFile({
+    name: "redis-service.yaml",
+    namespace,
+    type: "service",
+    yaml: serviceWithAnError,
   });
 
   await expect

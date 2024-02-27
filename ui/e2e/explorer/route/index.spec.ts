@@ -2,8 +2,7 @@ import { createNamespace, deleteNamespace } from "e2e/utils/namespace";
 import { createRouteYaml, removeLines } from "./utils";
 import { expect, test } from "@playwright/test";
 
-import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
-import { headers } from "e2e/utils/testutils";
+import { createFile } from "e2e/utils/files";
 
 let namespace = "";
 
@@ -133,14 +132,11 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
     },
   });
 
-  await createWorkflow({
-    payload: initialRouteYaml,
-    urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
-      namespace,
-      name: filename,
-    },
-    headers,
+  await createFile({
+    namespace,
+    name: filename,
+    type: "endpoint",
+    yaml: initialRouteYaml,
   });
 
   await page.goto(`/${namespace}/explorer/endpoint/${filename}`, {

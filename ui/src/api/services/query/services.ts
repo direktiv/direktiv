@@ -2,7 +2,7 @@ import { ServicesListSchema, ServicesListSchemaType } from "../schema/services";
 
 import { QueryFunctionContext } from "@tanstack/react-query";
 import { apiFactory } from "~/api/apiFactory";
-import { forceLeadingSlash } from "~/api/tree/utils";
+import { forceLeadingSlash } from "~/api/files/utils";
 import { serviceKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";

@@ -8,15 +8,15 @@ import {
   FilepickerMessage,
   FilepickerSeparator,
 } from "~/design/Filepicker";
-import { Fragment, useState } from "react";
 
+import { BaseFileSchemaType } from "~/api/files/schema";
 import { ButtonBar } from "~/design/ButtonBar";
 import { FileList } from "./FileList";
 import { FilePathSegments } from "./FilepathSegments";
 import Input from "~/design/Input";
-import { NodeSchemaType } from "~/api/tree/schema/node";
 import { analyzePath } from "~/util/router/utils";
-import { useNodeContent } from "~/api/tree/query/node";
+import { useFile } from "~/api/files/query/file";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 const convertFileToPath = (string?: string) =>
@@ -31,12 +31,12 @@ const FilePicker = ({
   namespace?: string;
   defaultPath?: string;
   onChange?: (filePath: string) => void;
-  selectable?: (node: NodeSchemaType) => boolean;
+  selectable?: (file: BaseFileSchemaType) => boolean;
 }) => {
   const [path, setPath] = useState(convertFileToPath(defaultPath));
   const [inputValue, setInputValue] = useState(defaultPath ? defaultPath : "");
 
-  const { data, isError } = useNodeContent({
+  const { data, isError } = useFile({
     path,
     namespace,
   });
@@ -45,8 +45,8 @@ const FilePicker = ({
 
   const { parent, isRoot, segments } = analyzePath(path);
 
-  const results = data?.children?.results ?? [];
-  const noResults = data?.children?.results.length ? false : true;
+  const results = data?.type === "directory" ? data?.children ?? [] : [];
+  const noResults = results.length ? false : true;
 
   const pathNotFound = isError;
   const emptyDirectory = !isError && noResults;
@@ -105,7 +105,7 @@ const FilePicker = ({
         {results && (
           <FilepickerList>
             <FileList
-              results={results}
+              files={results}
               selectable={selectable}
               setPath={(path) => setPath(path)}
               setInputValue={(value) => setInputValue(value)}

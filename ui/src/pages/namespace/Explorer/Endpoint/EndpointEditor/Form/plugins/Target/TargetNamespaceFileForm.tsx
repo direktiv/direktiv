@@ -92,7 +92,7 @@ export const TargetNamespaceFileForm: FC<FormProps> = ({
                 namespace={watch("configuration.namespace")}
                 onChange={field.onChange}
                 defaultPath={field.value}
-                selectable={(node) => node.type === "file"}
+                selectable={(file) => file.type === "file"}
               />
             )}
           />

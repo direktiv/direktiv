@@ -6,9 +6,10 @@ import {
 } from "./utils";
 import { expect, test } from "@playwright/test";
 
-import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
+import { createFile } from "e2e/utils/files";
+import { encode } from "js-base64";
 import { headers } from "e2e/utils/testutils";
-import { updateWorkflow } from "~/api/tree/mutate/updateWorkflow";
+import { patchFile } from "~/api/files/mutate/patchFile";
 
 let namespace = "";
 
@@ -38,14 +39,11 @@ test("Service list is empty by default", async ({ page }) => {
 });
 
 test("Service list shows all available services", async ({ page }) => {
-  await createWorkflow({
-    payload: createRedisServiceFile(),
-    urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
-      namespace,
-      name: "redis-service.yaml",
-    },
-    headers,
+  await createFile({
+    name: "redis-service.yaml",
+    namespace,
+    type: "service",
+    yaml: createRedisServiceFile(),
   });
 
   await expect
@@ -144,14 +142,11 @@ test("Service list shows all available services", async ({ page }) => {
 test("Service list links the file name to the service file", async ({
   page,
 }) => {
-  await createWorkflow({
-    payload: createRedisServiceFile(),
-    urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
-      namespace,
-      name: "redis-service.yaml",
-    },
-    headers,
+  await createFile({
+    name: "redis-service.yaml",
+    namespace,
+    type: "service",
+    yaml: createRedisServiceFile(),
   });
 
   await page.goto(`/${namespace}/services`, {
@@ -177,14 +172,11 @@ test("Service list links the file name to the service file", async ({
 test("Service list links the row to the service details page", async ({
   page,
 }) => {
-  await createWorkflow({
-    payload: createRedisServiceFile(),
-    urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
-      namespace,
-      name: "redis-service.yaml",
-    },
-    headers,
+  await createFile({
+    name: "redis-service.yaml",
+    namespace,
+    type: "service",
+    yaml: createRedisServiceFile(),
   });
 
   await expect
@@ -232,14 +224,11 @@ test("Service list links the row to the service details page", async ({
 });
 
 test("Service list lets the user rebuild a service", async ({ page }) => {
-  await createWorkflow({
-    payload: createRedisServiceFile(),
-    urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
-      namespace,
-      name: "redis-service.yaml",
-    },
-    headers,
+  await createFile({
+    name: "redis-service.yaml",
+    namespace,
+    type: "service",
+    yaml: createRedisServiceFile(),
   });
 
   await expect
@@ -287,14 +276,11 @@ test("Service list lets the user rebuild a service", async ({ page }) => {
 });
 
 test("Service list highlights services that have errors", async ({ page }) => {
-  await createWorkflow({
-    payload: serviceWithAnError,
-    urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
-      namespace,
-      name: "failed-service.yaml",
-    },
-    headers,
+  await createFile({
+    name: "failed-service.yaml",
+    namespace,
+    type: "service",
+    yaml: serviceWithAnError,
   });
 
   await expect
@@ -334,17 +320,14 @@ test("Service list highlights services that have errors", async ({ page }) => {
 test("Service list will update the services when refetch button is clicked", async ({
   page,
 }) => {
-  await createWorkflow({
-    payload: createRedisServiceFile({
+  await createFile({
+    name: "redis-service.yaml",
+    namespace,
+    type: "service",
+    yaml: createRedisServiceFile({
       scale: 1,
       size: "large",
     }),
-    urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
-      namespace,
-      name: "redis-service.yaml",
-    },
-    headers,
   });
 
   await page.goto(`/${namespace}/services`, {
@@ -363,11 +346,15 @@ test("Service list will update the services when refetch button is clicked", asy
     "it shows the service's size"
   ).toBeVisible();
 
-  await updateWorkflow({
-    payload: createRedisServiceFile({
-      scale: 2,
-      size: "small",
-    }),
+  await patchFile({
+    payload: {
+      data: encode(
+        createRedisServiceFile({
+          scale: 2,
+          size: "small",
+        })
+      ),
+    },
     urlParams: {
       baseUrl: process.env.VITE_DEV_API_DOMAIN,
       namespace,
