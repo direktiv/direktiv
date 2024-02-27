@@ -20,7 +20,8 @@ import ScrollContainer from "./ScrollContainer";
 import { Toggle } from "~/design/Toggle";
 import { formatLogTime } from "~/util/helpers";
 import { useInstanceDetails } from "~/api/instances/query/details";
-import { useLogs } from "~/api/logs_DEBRECATED/query/get";
+import { useLogs } from "~/api/logs/query/logs";
+import { useLogs as useLogsDebrecated } from "~/api/logs_DEBRECATED/query/get";
 import { useTranslation } from "react-i18next";
 
 const LogsPanel = () => {
@@ -30,9 +31,13 @@ const LogsPanel = () => {
   const instanceId = useInstanceId();
   const filters = useFilters();
   const { data: instanceDetailsData } = useInstanceDetails({ instanceId });
-  const { data: logData } = useLogs({
+  const { data: logDataDebrecated } = useLogsDebrecated({
     instanceId,
     filters,
+  });
+
+  const { data: logData } = useLogs({
+    instance: instanceId,
   });
 
   // get user preferences
@@ -42,11 +47,11 @@ const LogsPanel = () => {
   const isMaximized = maximizedPanel === "logs";
 
   const copyValue =
-    logData?.results
+    logDataDebrecated?.results
       .map((logEntry) => `${formatLogTime(logEntry.t)} ${logEntry.msg}`)
       .join("\n") ?? "";
 
-  const resultCount = logData?.results.length ?? 0;
+  const resultCount = logDataDebrecated?.results.length ?? 0;
   const isPending = instanceDetailsData?.instance.status === "pending";
 
   return (
