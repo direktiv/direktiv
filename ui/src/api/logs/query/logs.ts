@@ -23,20 +23,15 @@ type LogsParams = {
 } & LogsQueryParams;
 
 const getUrl = (params: LogsParams) => {
-  const { baseUrl, namespace, instance, route, activity, before, trace } =
-    params;
+  const { baseUrl, namespace, ...queryParams } = params;
+
   const queryParamsString = buildSearchParamsString({
-    instance,
-    route,
-    activity,
-    before,
-    trace,
+    ...queryParams,
   });
 
-  return new URL(
-    `/api/v2/namespaces/${namespace}/logs${queryParamsString}`,
-    baseUrl
-  ).toString();
+  return `${
+    baseUrl ?? ""
+  }/api/v2/namespaces/${namespace}/logs${queryParamsString}`;
 };
 
 const getLogs = apiFactory({
