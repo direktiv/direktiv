@@ -15,7 +15,7 @@ export const createFile = async ({
   namespace: string;
   type: FileTypeType;
   path?: string;
-}) => {
+}) =>
   await apiCreateFile({
     payload: {
       data: encode(yaml),
@@ -30,4 +30,3 @@ export const createFile = async ({
     },
     headers,
   });
-};

@@ -1,6 +1,6 @@
 import { createNamespace, deleteNamespace } from "../utils/namespace";
 import {
-  createRedisServiceFile,
+  createRequestServiceFile,
   findServiceWithApiRequest,
   serviceWithAnError,
 } from "./utils";
@@ -22,13 +22,11 @@ test.afterEach(async () => {
 test("Service details page provides information about the service", async ({
   page,
 }) => {
-  await createFile({
-    name: "redis-service.yaml",
+  const serviceFile = await createFile({
+    name: "request-service.yaml",
     namespace,
     type: "service",
-    yaml: createRedisServiceFile({
-      scale: 2,
-    }),
+    yaml: createRequestServiceFile({ scale: 2 }),
   });
 
   await expect
@@ -37,16 +35,18 @@ test("Service details page provides information about the service", async ({
         await findServiceWithApiRequest({
           namespace,
           match: (service) =>
-            service.filePath === "/redis-service.yaml" &&
-            (service.conditions ?? []).some((c) => c.type === "UpAndReady"),
+            service.filePath === serviceFile.data.path &&
+            (service.conditions ?? []).some(
+              (c) => c.type === "ConfigurationsReady" && c.status === "True"
+            ),
         }),
-      "the service in the backend is in an UpAndReady state"
+      "the service in the backend is in state ConfigurationsReady"
     )
     .toBeTruthy();
 
   const createdService = await findServiceWithApiRequest({
     namespace,
-    match: (service) => service.filePath === "/redis-service.yaml",
+    match: (service) => service.filePath === serviceFile.data.path,
   });
 
   if (!createdService) throw new Error("could not find service");
@@ -59,17 +59,17 @@ test("Service details page provides information about the service", async ({
   ).toBeVisible();
 
   await expect(
-    page.getByRole("link", { name: "/redis-service.yaml", exact: true }),
+    page.getByRole("link", { name: serviceFile.data.path, exact: true }),
     "it renders a link to the service file"
   ).toBeVisible();
 
   await expect(
-    page.getByTestId("service-detail-header").getByText("imageredis"),
+    page.getByTestId("service-detail-header").getByText("direktiv/request:v4"),
     "it renders the service image name"
   ).toBeVisible();
 
   await expect(
-    page.getByTestId("service-detail-header").getByText("scale2"),
+    page.getByTestId("service-detail-header").getByText("2 / 2"),
     "it renders the service scale"
   ).toBeVisible();
 
@@ -79,16 +79,10 @@ test("Service details page provides information about the service", async ({
   ).toBeVisible();
 
   await expect(
-    page.getByTestId("service-detail-header").getByText("redis-server"),
-    "it renders the service cmd"
-  ).toBeVisible();
-
-  await expect(
     page
       .getByTestId("service-detail-header")
-      .locator("a")
-      .filter({ hasText: "UpAndReady" }),
-    "it renders the UpAndReady status"
+      .filter({ hasText: "ConfigurationsReady" }),
+    "it renders the ConfigurationsReady status"
   ).toBeVisible();
 
   await expect(
@@ -100,17 +94,24 @@ test("Service details page provides information about the service", async ({
   ).toBeVisible();
 
   await expect(
-    page.getByText(`Logs for ${createdService.id}_1`),
-    "it renders the headline for the first pods logs"
+    page.getByText("cmd/request"),
+    "it renders the cmd"
   ).toBeVisible();
 
   await expect(
-    page.getByText("Ready to accept connections tcp"),
+    page.getByText("Logs for"),
+    "it renders the headline for the pods logs"
+  ).toBeVisible();
+
+  const firstPodLogHeadline = await page.getByText("Logs for").innerText();
+
+  await expect(
+    page.getByText("Starting server."),
     "it renders the log entries"
   ).toBeVisible();
 
   await expect(
-    page.getByText("log entries"),
+    page.getByText(/received [0-9]+ log (entry|entries)/),
     "it renders the log summary"
   ).toBeVisible();
 
@@ -127,9 +128,14 @@ test("Service details page provides information about the service", async ({
   await page.click("text=Pod 2 of 2");
 
   await expect(
-    page.getByText(`Logs for ${createdService.id}_2`),
-    "after clicking on the second pod tab, it renders the headline for the second pods logs"
+    page.getByText("Logs for"),
+    "it renders the headline for the pods logs"
   ).toBeVisible();
+
+  await expect(
+    await page.getByText("Logs for").innerText(),
+    "after clicking on the second pod button, it has updated the headline for the corresponding pod logs"
+  ).not.toEqual(firstPodLogHeadline);
 
   const waitForRefresh = page.waitForResponse((response) => {
     const servicesApiCall = `/api/v2/namespaces/${namespace}/services`;
@@ -138,7 +144,11 @@ test("Service details page provides information about the service", async ({
     );
   });
 
-  await page.getByTestId("service-detail-header").getByRole("button").click();
+  await page
+    .getByTestId("service-detail-header")
+    .getByRole("button")
+    .nth(1)
+    .click();
 
   await expect(
     await waitForRefresh,
@@ -149,8 +159,8 @@ test("Service details page provides information about the service", async ({
 test("Service details page renders no logs when the service did not mount", async ({
   page,
 }) => {
-  await createFile({
-    name: "redis-service.yaml",
+  const serviceFile = await createFile({
+    name: "error-service.yaml",
     namespace,
     type: "service",
     yaml: serviceWithAnError,
@@ -162,8 +172,10 @@ test("Service details page renders no logs when the service did not mount", asyn
         await findServiceWithApiRequest({
           namespace,
           match: (service) =>
-            service.filePath === "/redis-service.yaml" &&
-            service.error !== null,
+            service.filePath === serviceFile.data.path &&
+            (service.conditions ?? []).some(
+              (c) => c.type === "ConfigurationsReady" && c.status === "False"
+            ),
         }),
       "the service in the backend is in an Error state"
     )
@@ -171,7 +183,7 @@ test("Service details page renders no logs when the service did not mount", asyn
 
   const createdService = await findServiceWithApiRequest({
     namespace,
-    match: (service) => service.filePath === "/redis-service.yaml",
+    match: (service) => service.filePath === serviceFile.data.path,
   });
 
   if (!createdService) throw new Error("could not find service");
