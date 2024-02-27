@@ -46,7 +46,7 @@
         content:
           'application/json':
             example:
-              nextPage: '2024-01-17T01:44:08.128136Z'
+              next_page: '2024-01-17T01:44:08.128136Z'
               data:
               - time: '2024-01-17T01:44:08.128136Z'
                 level: 'error'
@@ -57,12 +57,9 @@
             schema:
               type: object
               properties:
-                pageInfo:
-                  type: object 
-                  properties:
-                    next:
-                      type: string
-                      format: RFC3339Nano
+                next_page:
+                  type: string
+                  format: RFC3339Nano
                 data:
                   type: array
                   items: 
