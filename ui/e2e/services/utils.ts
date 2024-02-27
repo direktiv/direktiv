@@ -19,6 +19,19 @@ envs:
     value: "env-var-value"
 `;
 
+export const createRequestServiceFile = ({
+  scale = 1,
+  size = "small",
+}: CreateServiceFileParams = {}) => `direktiv_api: service/v1
+image: "direktiv/request:v4"
+scale: ${scale}
+size: ${size}
+cmd: "/request"
+envs:
+  - name: "MY_ENV_VAR"
+    value: "env-var-value"
+`;
+
 export const serviceWithAnError = `direktiv_api: service/v1
 image: "this-image-does-not-exist"
 scale: 1

@@ -1,9 +1,9 @@
+import { createNamespace, deleteNamespace } from "../utils/namespace";
 import {
-  createHttpServiceFile,
+  createRequestServiceFile,
   findServiceWithApiRequest,
   serviceWithAnError,
 } from "./utils";
-import { createNamespace, deleteNamespace } from "../utils/namespace";
 import { expect, test } from "@playwright/test";
 
 import { createFile } from "e2e/utils/files";
@@ -23,10 +23,10 @@ test("Service details page provides information about the service", async ({
   page,
 }) => {
   const serviceFile = await createFile({
-    name: "http-service.yaml",
+    name: "request-service.yaml",
     namespace,
     type: "service",
-    yaml: createHttpServiceFile({ scale: 2 }),
+    yaml: createRequestServiceFile({ scale: 2 }),
   });
 
   await expect
@@ -64,9 +64,7 @@ test("Service details page provides information about the service", async ({
   ).toBeVisible();
 
   await expect(
-    page
-      .getByTestId("service-detail-header")
-      .getByText("gcr.io/direktiv/functions/http-request:1.0"),
+    page.getByTestId("service-detail-header").getByText("direktiv/request:v4"),
     "it renders the service image name"
   ).toBeVisible();
 
@@ -96,6 +94,11 @@ test("Service details page provides information about the service", async ({
   ).toBeVisible();
 
   await expect(
+    page.getByText("cmd/request"),
+    "it renders the cmd"
+  ).toBeVisible();
+
+  await expect(
     page.getByText("Logs for"),
     "it renders the headline for the pods logs"
   ).toBeVisible();
@@ -103,7 +106,7 @@ test("Service details page provides information about the service", async ({
   const firstPodLogHeadline = await page.getByText("Logs for").innerText();
 
   await expect(
-    page.getByText("Serving HTTP request at http://[::]:8080"),
+    page.getByText("Starting server."),
     "it renders the log entries"
   ).toBeVisible();
 
