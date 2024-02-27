@@ -1,30 +1,41 @@
+import { QueryFunctionContext, useQuery } from "@tanstack/react-query";
+
 import { LogsSchema } from "../schema";
 import { apiFactory } from "~/api/apiFactory";
 import { buildSearchParamsString } from "~/api/utils";
+import { logKeys } from "..";
+import { useApiKey } from "~/util/store/apiKey";
+import { useNamespace } from "~/util/store/namespace";
 
-type GetLogsParams = {
-  baseUrl?: string;
-  namespace: string;
+type LogsQueryParams = {
+  instance?: string;
   route?: string;
   activity?: string;
-  trace?: string;
   before?: string;
+  trace?: string;
 };
+
+type LogsParams = {
+  baseUrl?: string;
+  namespace: string;
+} & LogsQueryParams;
 
 const getLogs = apiFactory({
   url: ({
     baseUrl,
     namespace,
+    instance,
     route,
     activity,
-    trace,
     before,
-  }: GetLogsParams) => {
+    trace,
+  }: LogsParams) => {
     const queryParamsString = buildSearchParamsString({
+      instance,
       route,
       activity,
-      trace,
       before,
+      trace,
     });
 
     return new URL(
@@ -36,17 +47,20 @@ const getLogs = apiFactory({
   schema: LogsSchema,
 });
 
-// const fetchLogs = async ({
-//   queryKey: [{ apiKey, instanceId, namespace }],
-// }: QueryFunctionContext<ReturnType<(typeof logKeys)["detail"]>>) =>
-//   getLogs({
-//     apiKey,
-//     urlParams: {
-//       namespace,
-//       instanceId,
-//       filters,
-//     },
-//   });
+const fetchLogs = async ({
+  queryKey: [{ apiKey, namespace, instance, route, activity, before, trace }],
+}: QueryFunctionContext<ReturnType<(typeof logKeys)["detail"]>>) =>
+  getLogs({
+    apiKey,
+    urlParams: {
+      namespace,
+      instance,
+      route,
+      activity,
+      before,
+      trace,
+    },
+  });
 
 // export const useLogsStream = (
 //   {
@@ -99,27 +113,30 @@ const getLogs = apiFactory({
 
 // LogStreamingSubscriber.displayName = "LogStreamingSubscriber";
 
-// export const useLogs = ({
-//   instanceId,
-//   filters,
-// }: {
-//   instanceId: string;
-//   filters?: FiltersObj;
-// }) => {
-//   const apiKey = useApiKey();
-//   const namespace = useNamespace();
+export const useLogs = ({
+  instance,
+  route,
+  activity,
+  before,
+  trace,
+}: LogsQueryParams) => {
+  const apiKey = useApiKey();
+  const namespace = useNamespace();
 
-//   if (!namespace) {
-//     throw new Error("namespace is undefined");
-//   }
+  if (!namespace) {
+    throw new Error("namespace is undefined");
+  }
 
-//   return useQuery({
-//     queryKey: logKeys.detail(namespace, {
-//       apiKey: apiKey ?? undefined,
-//       instanceId,
-//       filters: filters ?? {},
-//     }),
-//     queryFn: fetchLogs,
-//     enabled: !!namespace,
-//   });
-// };
+  return useQuery({
+    queryKey: logKeys.detail(namespace, {
+      apiKey: apiKey ?? undefined,
+      instance,
+      route,
+      activity,
+      before,
+      trace,
+    }),
+    queryFn: fetchLogs,
+    enabled: !!namespace,
+  });
+};
