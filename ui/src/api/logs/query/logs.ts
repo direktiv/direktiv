@@ -4,8 +4,10 @@ import { LogsSchema } from "../schema";
 import { apiFactory } from "~/api/apiFactory";
 import { buildSearchParamsString } from "~/api/utils";
 import { logKeys } from "..";
+import { memo } from "react";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
+import { useStreaming } from "~/api/streaming";
 
 type LogsQueryParams = {
   instance?: string;
@@ -20,29 +22,25 @@ type LogsParams = {
   namespace: string;
 } & LogsQueryParams;
 
-const getLogs = apiFactory({
-  url: ({
-    baseUrl,
-    namespace,
+const getUrl = (params: LogsParams) => {
+  const { baseUrl, namespace, instance, route, activity, before, trace } =
+    params;
+  const queryParamsString = buildSearchParamsString({
     instance,
     route,
     activity,
     before,
     trace,
-  }: LogsParams) => {
-    const queryParamsString = buildSearchParamsString({
-      instance,
-      route,
-      activity,
-      before,
-      trace,
-    });
+  });
 
-    return new URL(
-      `/api/v2/namespaces/${namespace}/logs${queryParamsString}`,
-      baseUrl
-    ).toString();
-  },
+  return new URL(
+    `/api/v2/namespaces/${namespace}/logs${queryParamsString}`,
+    baseUrl
+  ).toString();
+};
+
+const getLogs = apiFactory({
+  url: getUrl,
   method: "GET",
   schema: LogsSchema,
 });
@@ -62,56 +60,42 @@ const fetchLogs = async ({
     },
   });
 
-// export const useLogsStream = (
-//   {
-//     instanceId,
-//     filters,
-//   }: {
-//     instanceId: string;
-//     filters?: FiltersObj;
-//   },
-//   { enabled = true }: { enabled?: boolean } = {}
-// ) => {
-//   const apiKey = useApiKey();
-//   const namespace = useNamespace();
-//   const queryClient = useQueryClient();
+export const useLogsStream = (params: LogsQueryParams) => {
+  const apiKey = useApiKey();
+  const namespace = useNamespace();
+  // const queryClient = useQueryClient();
 
-//   if (!namespace) {
-//     throw new Error("namespace is undefined");
-//   }
+  if (!namespace) {
+    throw new Error("namespace is undefined");
+  }
 
-//   return useStreaming({
-//     url: getUrl({ namespace, instanceId, filters }),
-//     apiKey: apiKey ?? undefined,
-//     enabled,
-//     schema: LogListSchema,
-//     onMessage: (msg) => {
-//       queryClient.setQueryData<LogListSchemaType>(
-//         logKeys.detail(namespace, {
-//           apiKey: apiKey ?? undefined,
-//           instanceId,
-//           filters: filters ?? {},
-//         }),
-//         (oldData) => updateCache(oldData, msg)
-//       );
-//     },
-//   });
-// };
+  return useStreaming({
+    url: getUrl({
+      namespace,
+      ...params,
+    }),
+    apiKey: apiKey ?? undefined,
+    schema: LogsSchema,
+    onMessage: (msg) => {
+      console.log("🚀 received a msg", msg);
+      // queryClient.setQueryData<LogsSchemaType>(
+      //   logKeys.detail(namespace, {
+      //     apiKey: apiKey ?? undefined,
+      //     instanceId,
+      //     filters: filters ?? {},
+      //   }),
+      //   (oldData) => updateCache(oldData, msg)
+      // );
+    },
+  });
+};
 
-// type LogStreamingSubscriberType = {
-//   instanceId: string;
-//   filters?: FiltersObj;
-//   enabled?: boolean;
-// };
+export const LogStreamingSubscriber = memo((params: LogsQueryParams) => {
+  useLogsStream(params);
+  return null;
+});
 
-// export const LogStreamingSubscriber = memo(
-//   ({ instanceId, filters, enabled }: LogStreamingSubscriberType) => {
-//     useLogsStream({ instanceId, filters }, { enabled: enabled ?? true });
-//     return null;
-//   }
-// );
-
-// LogStreamingSubscriber.displayName = "LogStreamingSubscriber";
+LogStreamingSubscriber.displayName = "LogStreamingSubscriber";
 
 export const useLogs = ({
   instance,
