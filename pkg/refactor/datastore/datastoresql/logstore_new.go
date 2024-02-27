@@ -29,7 +29,7 @@ func (s sqlLogNewStore) GetOlder(ctx context.Context, stream string, t time.Time
         SELECT id, time, tag, data
         FROM fluentbit
         WHERE tag = ? AND time <= ?
-        ORDER BY time ASC
+        ORDER BY time DESC
         LIMIT ?;
     `
 	resultList := make([]ScanResult, 0)
@@ -46,7 +46,7 @@ func (s sqlLogNewStore) GetOlderInstance(ctx context.Context, stream string, t t
         SELECT id, time, tag, data
         FROM fluentbit
         WHERE tag LIKE ? AND time <= ?
-        ORDER BY time ASC
+        ORDER BY time DESC
         LIMIT ?;
     `
 	resultList := make([]ScanResult, 0)
