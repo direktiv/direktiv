@@ -21,7 +21,7 @@ const ScrollContainer = () => {
 
   const filters = useFilters();
 
-  const { data: logData } = useLogsDebrecated({
+  const { data: logDataDebrecated } = useLogsDebrecated({
     instanceId,
     filters,
   });
@@ -32,7 +32,7 @@ const ScrollContainer = () => {
 
   // The virtualizer
   const rowVirtualizer = useVirtualizer({
-    count: logData?.results.length ?? 0,
+    count: logDataDebrecated?.results.length ?? 0,
     getScrollElement: () => parentRef.current,
     estimateSize: () => 20,
     /**
@@ -46,15 +46,15 @@ const ScrollContainer = () => {
   });
 
   useEffect(() => {
-    if (logData?.results.length && watch) {
-      rowVirtualizer.scrollToIndex(logData?.results.length - 1),
+    if (logDataDebrecated?.results.length && watch) {
+      rowVirtualizer.scrollToIndex(logDataDebrecated?.results.length - 1),
         { align: "end" };
     }
-  }, [logData?.results.length, rowVirtualizer, watch]);
+  }, [logDataDebrecated?.results.length, rowVirtualizer, watch]);
 
   const isPending = instanceDetailsData?.instance?.status === "pending";
 
-  if (!logData) return null;
+  if (!logDataDebrecated) return null;
 
   const items = rowVirtualizer.getVirtualItems();
 
@@ -89,7 +89,7 @@ const ScrollContainer = () => {
           }}
         >
           {items.map((virtualItem) => {
-            const logEntry = logData.results[virtualItem.index];
+            const logEntry = logDataDebrecated.results[virtualItem.index];
             if (!logEntry) return null;
             return (
               <Entry
