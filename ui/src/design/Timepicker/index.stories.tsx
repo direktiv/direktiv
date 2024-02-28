@@ -25,7 +25,7 @@ export default meta;
 
 export const Default = () => {
   const [date, setDate] = React.useState<Date>(new Date());
-  const time = getTimeString(date);
+
   return (
     <TimePicker
       hours="Hours"
@@ -33,7 +33,6 @@ export const Default = () => {
       seconds="Seconds"
       date={date}
       setDate={setDate}
-      time={time}
     />
   );
 };
@@ -98,7 +97,6 @@ export const TimepickerInButtonBar = () => {
                     hours="Hours"
                     minutes="Minutes"
                     seconds="Seconds"
-                    time={time}
                     date={date}
                     setDate={setDate}
                   />
@@ -162,7 +160,6 @@ export const ButtonBarWithCombinationOfDatepickerAndTimepicker = () => {
                     hours="Hours"
                     minutes="Minutes"
                     seconds="Seconds"
-                    time={time}
                     date={date}
                     setDate={setDate}
                   />
