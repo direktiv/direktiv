@@ -36,7 +36,12 @@ const LogsPanel = () => {
     filters,
   });
 
-  const { data: logData } = useLogs({
+  const {
+    data: logData,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+  } = useLogs({
     instance: instanceId,
   });
 
@@ -54,6 +59,8 @@ const LogsPanel = () => {
   const resultCount = logDataDebrecated?.results.length ?? 0;
   const isPending = instanceDetailsData?.instance.status === "pending";
 
+  const entries = logData?.pages.map((page) => page.data).flat() ?? [];
+
   return (
     <>
       <div className="mb-5 flex flex-col gap-5 sm:flex-row">
@@ -62,6 +69,15 @@ const LogsPanel = () => {
           {t("pages.instances.detail.logs.title")}
         </h3>
         <Filters />
+
+        <Button
+          size="sm"
+          disabled={!hasNextPage}
+          loading={isFetchingNextPage}
+          onClick={() => fetchNextPage()}
+        >
+          log lines received: {entries.length}
+        </Button>
         <ButtonBar>
           <TooltipProvider>
             <Tooltip>

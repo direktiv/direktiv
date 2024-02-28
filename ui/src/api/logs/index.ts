@@ -6,14 +6,12 @@ export const logKeys = {
       instance,
       route,
       activity,
-      before,
       trace,
     }: {
       apiKey?: string;
       instance?: string;
       route?: string;
       activity?: string;
-      before?: string;
       trace?: string;
     }
   ) =>
@@ -25,7 +23,6 @@ export const logKeys = {
         instance,
         route,
         activity,
-        before,
         trace,
       },
     ] as const,

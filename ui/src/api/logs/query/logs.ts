@@ -1,5 +1,5 @@
 import { LogEntrySchema, LogsSchema } from "../schema";
-import { QueryFunctionContext, useQuery } from "@tanstack/react-query";
+import { QueryFunctionContext, useInfiniteQuery } from "@tanstack/react-query";
 
 import { apiFactory } from "~/api/apiFactory";
 import { buildSearchParamsString } from "~/api/utils";
@@ -45,7 +45,8 @@ const getLogs = apiFactory({
 });
 
 const fetchLogs = async ({
-  queryKey: [{ apiKey, namespace, instance, route, activity, before, trace }],
+  pageParam,
+  queryKey: [{ apiKey, namespace, instance, route, activity, trace }],
 }: QueryFunctionContext<ReturnType<(typeof logKeys)["detail"]>>) =>
   getLogs({
     apiKey,
@@ -54,7 +55,7 @@ const fetchLogs = async ({
       instance,
       route,
       activity,
-      before,
+      before: pageParam,
       trace,
     },
   });
@@ -101,7 +102,6 @@ export const useLogs = ({
   instance,
   route,
   activity,
-  before,
   trace,
 }: LogsQueryParams) => {
   const apiKey = useApiKey();
@@ -111,16 +111,27 @@ export const useLogs = ({
     throw new Error("namespace is undefined");
   }
 
-  return useQuery({
+  /**
+   * The API returns data as an infinite list, which means it returns a cursor in form of a timestamp
+   * to the next page of data. The end of the list is not known until the last page is reached and the
+   * cursor is null.
+   *
+   * The API only returns navigation into one direction, which means we always have to start with querying
+   * the most recent logs and then navigate to older ones. It is not possible to start at a specific time
+   * and then move to newer logs.
+   */
+  return useInfiniteQuery({
     queryKey: logKeys.detail(namespace, {
       apiKey: apiKey ?? undefined,
       instance,
       route,
       activity,
-      before,
       trace,
     }),
     queryFn: fetchLogs,
+    getNextPageParam: (firstPage) =>
+      firstPage.next_page === "" ? undefined : firstPage.next_page,
+    getPreviousPageParam: () => undefined,
     enabled: !!namespace,
   });
 };
