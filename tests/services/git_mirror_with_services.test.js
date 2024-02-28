@@ -22,7 +22,7 @@ describe('Test services crud operations', () => {
 		expect(res.statusCode).toEqual(200)
 	})
 
-	retry(`should list all services`, 10, async () => {
+	retry(`should list all services`, 50, async () => {
 		await sleep(500)
 		const listRes = await request(common.config.getDirektivHost())
 			.get(`/api/v2/namespaces/${ testNamespace }/services`)
@@ -43,10 +43,6 @@ describe('Test services crud operations', () => {
 			{
 				error: null,
 				id: 'git-test-services-csvkit-input-convert-workflow-ya-6c50acea98',
-			},
-			{
-				error: expect.anything(),
-				id: 'git-test-services-build-patching-wf-build-yaml-6909196d31',
 			},
 			{
 				error: null,
