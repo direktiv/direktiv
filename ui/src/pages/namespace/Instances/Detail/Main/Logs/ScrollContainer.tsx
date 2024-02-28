@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { useFilters, useInstanceId } from "../../store/instanceContext";
 
 import { ArrowDown } from "lucide-react";
 import Button from "~/design/Button";
@@ -7,7 +6,8 @@ import Entry from "./Entry";
 import { Logs } from "~/design/Logs";
 import { twMergeClsx } from "~/util/helpers";
 import { useInstanceDetails } from "~/api/instances/query/details";
-import { useLogs as useLogsDebrecated } from "~/api/logs_DEBRECATED/query/get";
+import { useInstanceId } from "../../store/instanceContext";
+import { useLogs } from "~/api/logs/query/logs";
 import { useLogsPreferencesWordWrap } from "~/util/store/logs";
 import { useTranslation } from "react-i18next";
 import { useVirtualizer } from "@tanstack/react-virtual";
@@ -19,12 +19,14 @@ const ScrollContainer = () => {
 
   const { t } = useTranslation();
 
-  const filters = useFilters();
-
-  const { data: logDataDebrecated } = useLogsDebrecated({
-    instanceId,
-    filters,
+  const { data: logData } = useLogs({
+    instance: instanceId,
   });
+
+  const pages = logData?.pages.map((page) => page.data) ?? [];
+  const allLogs = pages.flat();
+  const numberOfLogs = allLogs.length;
+
   const [watch, setWatch] = useState(true);
 
   // The scrollable element for the list
@@ -32,7 +34,7 @@ const ScrollContainer = () => {
 
   // The virtualizer
   const rowVirtualizer = useVirtualizer({
-    count: logDataDebrecated?.results.length ?? 0,
+    count: numberOfLogs,
     getScrollElement: () => parentRef.current,
     estimateSize: () => 20,
     /**
@@ -46,15 +48,14 @@ const ScrollContainer = () => {
   });
 
   useEffect(() => {
-    if (logDataDebrecated?.results.length && watch) {
-      rowVirtualizer.scrollToIndex(logDataDebrecated?.results.length - 1),
-        { align: "end" };
+    if (numberOfLogs > 0 && watch) {
+      rowVirtualizer.scrollToIndex(numberOfLogs), { align: "end" };
     }
-  }, [logDataDebrecated?.results.length, rowVirtualizer, watch]);
+  }, [numberOfLogs, rowVirtualizer, watch]);
 
   const isPending = instanceDetailsData?.instance?.status === "pending";
 
-  if (!logDataDebrecated) return null;
+  if (!logData) return null;
 
   const items = rowVirtualizer.getVirtualItems();
 
@@ -89,7 +90,7 @@ const ScrollContainer = () => {
           }}
         >
           {items.map((virtualItem) => {
-            const logEntry = logDataDebrecated.results[virtualItem.index];
+            const logEntry = allLogs[virtualItem.index];
             if (!logEntry) return null;
             return (
               <Entry
