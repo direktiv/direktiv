@@ -6,8 +6,8 @@ import {
   workflowThatFails as workflowThatFailsContent,
 } from "../utils/workflows";
 
+import { createFile } from "e2e/utils/files";
 import { createInstance } from "../utils";
-import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
 import { faker } from "@faker-js/faker";
 import { headers } from "e2e/utils/testutils";
 import { runWorkflow } from "~/api/tree/mutate/runWorkflow";
@@ -19,24 +19,18 @@ const failingWorkflowName = faker.system.commonFileName("yaml");
 test.beforeEach(async () => {
   namespace = await createNamespace();
   /* create workflows we can use to create instances later */
-  await createWorkflow({
-    payload: simpleWorkflowContent,
-    urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
-      namespace,
-      name: simpleWorkflowName,
-    },
-    headers,
+  await createFile({
+    name: simpleWorkflowName,
+    namespace,
+    type: "workflow",
+    yaml: simpleWorkflowContent,
   });
 
-  await createWorkflow({
-    payload: workflowThatFailsContent,
-    urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
-      namespace,
-      name: failingWorkflowName,
-    },
-    headers,
+  await createFile({
+    name: failingWorkflowName,
+    namespace,
+    type: "workflow",
+    yaml: workflowThatFailsContent,
   });
 });
 
@@ -58,17 +52,14 @@ const createStatusFilterInstances = async () => {
 const createTriggerFilterInstances = async () => {
   const parentWorkflowName = faker.system.commonFileName("yaml");
 
-  await createWorkflow({
-    payload: parentWorkflowContent({
-      childName: simpleWorkflowName,
+  await createFile({
+    name: parentWorkflowName,
+    namespace,
+    type: "workflow",
+    yaml: parentWorkflowContent({
+      childPath: `/${simpleWorkflowName}`,
       children: 2,
     }),
-    urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
-      namespace,
-      name: parentWorkflowName,
-    },
-    headers,
   });
 
   await runWorkflow({
@@ -269,14 +260,11 @@ test("it is possible to filter by AS (name)", async ({ page }) => {
 
   await Promise.all(
     workflowNames.map((name) =>
-      createWorkflow({
-        payload: simpleWorkflowContent,
-        urlParams: {
-          baseUrl: process.env.VITE_DEV_API_DOMAIN,
-          namespace,
-          name,
-        },
-        headers,
+      createFile({
+        yaml: simpleWorkflowContent,
+        namespace,
+        name,
+        type: "workflow",
       })
     )
   );
@@ -342,14 +330,11 @@ test("it is possible to apply multiple filters", async ({ page }) => {
 
   await Promise.all(
     workflowNames.map((name) =>
-      createWorkflow({
-        payload: simpleWorkflowContent,
-        urlParams: {
-          baseUrl: process.env.VITE_DEV_API_DOMAIN,
-          namespace,
-          name,
-        },
-        headers,
+      createFile({
+        yaml: simpleWorkflowContent,
+        name,
+        namespace,
+        type: "workflow",
       })
     )
   );

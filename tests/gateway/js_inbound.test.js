@@ -1,8 +1,11 @@
-import common from "../common";
-import request from "supertest";
+import { beforeAll, describe, expect, it } from '@jest/globals'
+
+import common from '../common'
+import request from '../common/request'
+import { retry10 } from '../common/retry'
 
 
-const testNamespace = "js-inbound";
+const testNamespace = 'js-inbound'
 
 
 const endpointJSFile = `
@@ -42,40 +45,226 @@ states:
     result: jq(.)
 `
 
-describe("Test js inbound plugin", () => {
-    beforeAll(common.helpers.deleteAllNamespaces);
-  
-    common.helpers.itShouldCreateNamespace(it, expect, testNamespace);
-    // common.helpers.itShouldCreateNamespace(it, expect, testNamespace);
-  
-    common.helpers.itShouldCreateFile(
-      it,
-      expect,
-      testNamespace,
-      "/endpoint1.yaml",
-      endpointJSFile
-    );
-  
-    common.helpers.itShouldCreateFile(
-      it,
-      expect,
-      testNamespace,
-      "/target.yaml",
-      wf
-    );
+const consumer = `
+direktiv_api: "consumer/v1"
+username: "demo"
+api_key: "apikey"
+groups:
+  - "group1"
+`
 
-    it(`should have expected body after js`, async () => {
-      const req = await request(common.config.getDirektivHost()).post(
-        `/ns/` + testNamespace + `/target?Query1=value1&Query2=value2`
-      ).set('Header1', 'Value1').send({"hello":"world"});
+const endpointConsumerFile = `
+direktiv_api: endpoint/v1
+allow_anonymous: false
+plugins:
+  target:
+    type: target-flow
+    configuration:
+        flow: /target.yaml
+        content_type: application/json
+  auth:
+    - type: key-auth
+  inbound:
+    - type: js-inbound
+      configuration:
+        script: |
+          b = JSON.parse(input["Body"])
+          b["user"] = input["Consumer"].Username
+          input["Body"] = JSON.stringify(b) 
+methods: 
+  - POST
+path: /target`
 
-      expect(req.statusCode).toEqual(200);
-      expect(req.body.result.addheader).toEqual("value3")
-      expect(req.body.result.addheaderdel).toEqual("")
-      expect(req.body.result.addquery).toEqual("value1")
-      expect(req.body.result.addquerydel).toEqual("")
-    });
-  
-  
-  });
-  
+
+const endpointParamFile = `
+direktiv_api: endpoint/v1
+allow_anonymous: true
+plugins:
+  target:
+    type: target-flow
+    configuration:
+        flow: /target.yaml
+        content_type: application/json
+  inbound:
+    - type: js-inbound
+      configuration:
+        script: |
+          b = JSON.parse(input["Body"])
+          b["params"] = input["URLParams"].id
+          input["Body"] = JSON.stringify(b) 
+methods: 
+  - POST
+path: /target/{id}`
+
+
+const endpointErrorFile = `
+direktiv_api: endpoint/v1
+allow_anonymous: true
+plugins:
+  target:
+    type: target-flow
+    configuration:
+        flow: /target.yaml
+        content_type: application/json
+  inbound:
+    - type: js-inbound
+      configuration:
+        script: |
+          b = JSON.parse(input["Body"])
+          b["error"] = "no access" 
+          input["Body"] = JSON.stringify(b) 
+          input["Headers"].Add("permission", "denied")
+          input.Status = 403        
+methods: 
+  - POST
+path: /target`
+
+
+describe('Test js inbound plugin', () => {
+	beforeAll(common.helpers.deleteAllNamespaces)
+
+	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
+	// common.helpers.itShouldCreateNamespace(it, expect, testNamespace);
+
+	common.helpers.itShouldCreateFile(
+		it,
+		expect,
+		testNamespace,
+		'/endpoint1.yaml',
+		endpointJSFile,
+	)
+
+	common.helpers.itShouldCreateFile(
+		it,
+		expect,
+		testNamespace,
+		'/target.yaml',
+		wf,
+	)
+
+	retry10(`should have expected body after js`, async () => {
+		const req = await request(common.config.getDirektivHost()).post(
+			`/ns/` + testNamespace + `/target?Query1=value1&Query2=value2`,
+		)
+			.set('Header1', 'Value1')
+			.send({ hello: 'world' })
+
+		expect(req.statusCode).toEqual(200)
+		expect(req.body.result.addheader).toEqual('value3')
+		expect(req.body.result.addheaderdel).toEqual('')
+		expect(req.body.result.addquery).toEqual('value1')
+		expect(req.body.result.addquerydel).toEqual('')
+	})
+
+})
+
+
+describe('Test js inbound plugin consumer', () => {
+	beforeAll(common.helpers.deleteAllNamespaces)
+
+	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
+
+	common.helpers.itShouldCreateFile(
+		it,
+		expect,
+		testNamespace,
+		'/consumer.yaml',
+		consumer,
+	)
+
+	common.helpers.itShouldCreateFile(
+		it,
+		expect,
+		testNamespace,
+		'/endpoint1.yaml',
+		endpointConsumerFile,
+	)
+
+	common.helpers.itShouldCreateFile(
+		it,
+		expect,
+		testNamespace,
+		'/target.yaml',
+		wf,
+	)
+
+	retry10(`should have expected body after js`, async () => {
+		const req = await request(common.config.getDirektivHost()).post(
+			`/ns/` + testNamespace + `/target`,
+		)
+			.set('API-Token', 'apikey')
+			.send({ hello: 'world' })
+
+		expect(req.statusCode).toEqual(200)
+		expect(req.body.result.user).toEqual('demo')
+
+	})
+
+
+})
+
+describe('Test js inbound plugin url params', () => {
+	beforeAll(common.helpers.deleteAllNamespaces)
+
+	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
+
+	common.helpers.itShouldCreateFile(
+		it,
+		expect,
+		testNamespace,
+		'/endpoint1.yaml',
+		endpointParamFile,
+	)
+
+	common.helpers.itShouldCreateFile(
+		it,
+		expect,
+		testNamespace,
+		'/target.yaml',
+		wf,
+	)
+
+	retry10(`should have expected body after js`, async () => {
+		const req = await request(common.config.getDirektivHost()).post(
+			`/ns/` + testNamespace + `/target/myid`,
+		)
+			.send({ hello: 'world' })
+
+		expect(req.statusCode).toEqual(200)
+		expect(req.body.result.params).toEqual('myid')
+
+	})
+})
+
+
+describe('Test js inbound plugin errors', () => {
+	beforeAll(common.helpers.deleteAllNamespaces)
+
+	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
+
+	common.helpers.itShouldCreateFile(
+		it,
+		expect,
+		testNamespace,
+		'/endpoint1.yaml',
+		endpointErrorFile,
+	)
+
+	common.helpers.itShouldCreateFile(
+		it,
+		expect,
+		testNamespace,
+		'/target.yaml',
+		wf,
+	)
+
+	retry10(`should have expected body after js`, async () => {
+		const req = await request(common.config.getDirektivHost()).post(
+			`/ns/` + testNamespace + `/target`,
+		)
+			.send({ hello: 'world' })
+
+		expect(req.statusCode).toEqual(403)
+
+	})
+})

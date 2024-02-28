@@ -7,10 +7,10 @@ const extendedNodeTypeWorkflow = 'workflow'
 const extendedNodeTypeMirror = 'git'
 
 export default {
-    nodeTypeDirectory,
-    nodeTypeWorkflow,
-    nodeTypeFile,
-    extendedNodeTypeDirectory,
-    extendedNodeTypeWorkflow,
-    extendedNodeTypeMirror,
+	nodeTypeDirectory,
+	nodeTypeWorkflow,
+	nodeTypeFile,
+	extendedNodeTypeDirectory,
+	extendedNodeTypeWorkflow,
+	extendedNodeTypeMirror,
 }

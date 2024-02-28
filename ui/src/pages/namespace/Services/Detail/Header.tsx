@@ -1,7 +1,15 @@
-import { Diamond } from "lucide-react";
+import { Diamond, HelpCircle } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "~/design/Tooltip";
+
 import EnvsVariables from "../components/EnvVariables";
 import { Link } from "react-router-dom";
 import RefreshButton from "~/design/RefreshButton";
+import Scale from "./Scale";
 import { StatusBadge } from "../components/StatusBadge";
 import { linkToServiceSource } from "../components/utils";
 import { useService } from "~/api/services/query/services";
@@ -9,6 +17,7 @@ import { useTranslation } from "react-i18next";
 
 const Header = ({ serviceId }: { serviceId: string }) => {
   const { data: service, refetch, isFetching } = useService(serviceId);
+
   const { t } = useTranslation();
 
   if (!service) return null;
@@ -39,10 +48,20 @@ const Header = ({ serviceId }: { serviceId: string }) => {
           {service.image ? service.image : "-"}
         </div>
         <div className="text-sm">
-          <div className="text-gray-10 dark:text-gray-dark-10">
+          <div className="flex items-center text-gray-10 dark:text-gray-dark-10">
             {t("pages.services.list.tableHeader.scale")}
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>
+                  <HelpCircle className="ml-1 h-4 w-4" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  {t("pages.services.list.tableHeader.tooltip")}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
-          {service.scale}
+          <Scale path={service.filePath} scale={service.scale} />
         </div>
         <div className="text-sm">
           <div className="text-gray-10 dark:text-gray-dark-10">

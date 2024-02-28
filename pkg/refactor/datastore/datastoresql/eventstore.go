@@ -215,7 +215,6 @@ func (s *sqlEventTopicsStore) Append(ctx context.Context, namespaceID uuid.UUID,
 	return nil
 }
 
-//nolint:musttag
 type triggerInfo struct {
 	WorkflowID string
 	InstanceID string
@@ -303,6 +302,7 @@ func (s *sqlEventListenerStore) Append(ctx context.Context, listener *events.Eve
 	q := `INSERT INTO event_listeners
 	 (id, namespace_id, created_at, updated_at, deleted, received_events, trigger_type, events_lifespan, event_types, trigger_info, metadata, glob_gates) 
 	  VALUES ( $1 , $2 , $3 , $4 , $5 , $6 , $7 , $8 , $9 , $10 , $11, $12);`
+
 	trigger := triggerInfo{
 		WorkflowID: listener.TriggerWorkflow,
 		InstanceID: listener.TriggerInstance,

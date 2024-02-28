@@ -2,7 +2,7 @@ import { ArrowLeft, Home, RefreshCcw } from "lucide-react";
 import { Link, isRouteErrorResponse, useRouteError } from "react-router-dom";
 
 import Button from "~/design/Button";
-import Logo from "~/design/Logo";
+import Logo from "~/components/Logo";
 import { useTranslation } from "react-i18next";
 
 const ErrorPage = () => {

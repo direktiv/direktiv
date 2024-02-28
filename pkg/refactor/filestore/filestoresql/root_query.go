@@ -8,7 +8,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -156,7 +156,7 @@ func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.F
 							`, f.ID, f.RootID, f.Path, f.Depth, f.Typ, f.Data, f.Checksum, f.MIMEType)
 
 	if res.Error != nil && strings.Contains(res.Error.Error(), "duplicate key") {
-		return nil, core.ErrDuplicatedNamespaceName
+		return nil, datastore.ErrDuplicatedNamespaceName
 	}
 	if res.Error != nil {
 		return nil, res.Error
@@ -174,8 +174,7 @@ func (q *RootQuery) CreateFile(ctx context.Context, path string, typ filestore.F
 		return nil, res.Error
 	}
 
-	// TODO: check if returned file has timestamps.
-	return f, nil
+	return q.GetFile(ctx, f.Path)
 }
 
 func (q *RootQuery) GetFile(ctx context.Context, path string) (*filestore.File, error) {

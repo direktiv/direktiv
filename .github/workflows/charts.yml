@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - cycle*
   pull_request:
 
 jobs:
@@ -18,11 +19,11 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: main
       - name: Configure Git
         run: |
           helm repo add prometheus https://prometheus-community.github.io/helm-charts
           helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+          helm repo add fluent-bit https://fluent.github.io/helm-charts
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
       - name: Helm Lint

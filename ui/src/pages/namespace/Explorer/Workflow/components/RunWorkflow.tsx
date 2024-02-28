@@ -15,10 +15,11 @@ import FormInputHint from "./FormInputHint";
 import { JSONSchemaForm } from "~/design/JSONschemaForm";
 import { Play } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
+import { decode } from "js-base64";
 import { pages } from "~/util/router/pages";
+import { useFile } from "~/api/files/query/file";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { useNodeContent } from "~/api/tree/query/node";
 import { useRunWorkflow } from "~/api/tree/mutate/runWorkflow";
 import { useTheme } from "~/util/store/theme";
 import { useToast } from "~/design/Toast";
@@ -37,11 +38,12 @@ const RunWorkflow = ({ path }: { path: string }) => {
   const { t } = useTranslation();
   const theme = useTheme();
   const navigate = useNavigate();
-  const { data } = useNodeContent({ path });
+  const { data } = useFile({ path });
   const submitButtonRef = useRef<HTMLButtonElement>(null);
-  const validationSchema = getValidationSchemaFromYaml(
-    atob(data?.source ?? "")
-  );
+  const validationSchema =
+    data?.type === "workflow"
+      ? getValidationSchemaFromYaml(decode(data?.data ?? ""))
+      : null;
 
   // tab handling
   const isFormAvailable = validationSchema !== null;

@@ -14,8 +14,9 @@ import Button from "~/design/Button";
 import { FC } from "react";
 import { InstanceSchemaType } from "~/api/instances/schema";
 import WorkflowDiagram from "~/design/WorkflowDiagram";
+import { decode } from "js-base64";
 import { instanceStatusToDiagramStatus } from "./utils";
-import { useNodeContent } from "~/api/tree/query/node";
+import { useFile } from "~/api/files/query/file";
 import { useTranslation } from "react-i18next";
 
 type DiagramProps = {
@@ -25,15 +26,15 @@ type DiagramProps = {
 };
 
 const Diagram: FC<DiagramProps> = ({ workflowPath, flow, status }) => {
-  const { data } = useNodeContent({ path: workflowPath });
+  const { data } = useFile({ path: workflowPath });
   const { setMaximizedPanel } = useLogsPreferencesActions();
   const { t } = useTranslation();
   const maximizedPanel = useLogsPreferencesMaximizedPanel();
   const isMaximized = maximizedPanel === "diagram";
 
-  if (!data) return null;
+  if (data?.type !== "workflow") return null;
 
-  const workflowData = atob(data.source ?? "");
+  const workflowData = decode(data.data ?? "");
 
   return (
     <div className="relative flex grow">

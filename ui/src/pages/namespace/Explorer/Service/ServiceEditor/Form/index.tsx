@@ -18,11 +18,19 @@ import {
   ServiceFormSchema,
   ServiceFormSchemaType,
   scaleOptions,
+  sizeOptions,
 } from "../schema";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "~/design/Tooltip";
 
-import EnvForm from "./Envs";
+import { EnvsArrayForm } from "./EnvsArrayForm";
 import { FC } from "react";
 import { Fieldset } from "~/components/Form/Fieldset";
+import { HelpCircle } from "lucide-react";
 import Input from "~/design/Input";
 import { PatchesForm } from "./Patches";
 import { useTranslation } from "react-i18next";
@@ -73,11 +81,22 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
         </Fieldset>
 
         <div className="grid grid-cols-2 gap-4">
-          <Fieldset
-            label={t("pages.explorer.service.editor.form.scale.label")}
-            htmlFor="scale"
-            className="grow"
-          >
+          <fieldset className="mb-2 flex grow flex-col gap-2">
+            <div className="inline-flex items-center">
+              <label className="text-sm" htmlFor="scale">
+                {t("pages.explorer.service.editor.form.scale.label")}
+              </label>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <HelpCircle className="ml-1 h-4 w-4" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {t("pages.explorer.service.editor.form.scale.tooltip")}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
             <Select
               value={formControls.getValues("scale")?.toString()}
               onValueChange={(value) =>
@@ -93,16 +112,18 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
-                  <SelectLabel>Size</SelectLabel>
-                  {scaleOptions.map((value, index) => (
-                    <SelectItem key={index} value={value}>
-                      {value}
+                  <SelectLabel>
+                    {t("pages.explorer.service.editor.form.scale.label")}
+                  </SelectLabel>
+                  {scaleOptions.map((scale) => (
+                    <SelectItem key={scale} value={scale}>
+                      {scale}
                     </SelectItem>
                   ))}
                 </SelectGroup>
               </SelectContent>
             </Select>
-          </Fieldset>
+          </fieldset>
           <Fieldset
             label={t("pages.explorer.service.editor.form.size.label")}
             htmlFor="size"
@@ -121,10 +142,14 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
-                  <SelectLabel>Size</SelectLabel>
-                  <SelectItem value="small">small</SelectItem>
-                  <SelectItem value="medium">medium</SelectItem>
-                  <SelectItem value="large">large</SelectItem>
+                  <SelectLabel>
+                    {t("pages.explorer.service.editor.form.size.label")}
+                  </SelectLabel>
+                  {sizeOptions.map((size) => (
+                    <SelectItem key={size} value={size}>
+                      {size}
+                    </SelectItem>
+                  ))}
                 </SelectGroup>
               </SelectContent>
             </Select>
@@ -149,14 +174,7 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
           <Controller
             control={control}
             name="envs"
-            render={({ field }) => (
-              <EnvForm
-                defaultValue={field.value || []}
-                onChange={(changedValue) => {
-                  field.onChange(changedValue);
-                }}
-              />
-            )}
+            render={({ field }) => <EnvsArrayForm field={field} />}
           />
         </Fieldset>
       </div>

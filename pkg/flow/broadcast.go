@@ -52,24 +52,14 @@ type broadcastWorkflowInput struct {
 
 func (flow *flow) BroadcastWorkflow(ctx context.Context, eventType string, input broadcastWorkflowInput, ns *database.Namespace) error {
 	// BROADCAST EVENT
-
 	target := fmt.Sprintf("%s.%s", BroadcastEventPrefixWorkflow, eventType)
-	cfg, err := loadNSConfig([]byte(ns.Config))
-	if err != nil {
-		return fmt.Errorf("failed to load namespace config: %w", err)
-	}
-
-	// skip if broad target is not enabled
-	if !cfg.broadcastEnabled(target) {
-		return nil
-	}
 
 	event := cloudevents.NewEvent(cloudevents.VersionV03)
 	uid := uuid.New()
 	event.SetID(uid.String())
 	event.SetType(target)
 	event.SetSource("direktiv")
-	err = event.SetData("application/json", input)
+	err := event.SetData("application/json", input)
 	if err != nil {
 		return fmt.Errorf("failed to create CloudEvent: %w", err)
 	}
@@ -85,22 +75,13 @@ type broadcastDirectoryInput struct {
 func (flow *flow) BroadcastDirectory(ctx context.Context, eventType string, input broadcastDirectoryInput, ns *database.Namespace) error {
 	// BROADCAST EVENT
 	target := fmt.Sprintf("%s.%s", BroadcastEventPrefixDirectory, eventType)
-	cfg, err := loadNSConfig([]byte(ns.Config))
-	if err != nil {
-		return fmt.Errorf("failed to load namespace config: %w", err)
-	}
-
-	// skip if broad target is not enabled
-	if !cfg.broadcastEnabled(target) {
-		return nil
-	}
 
 	event := cloudevents.NewEvent(cloudevents.VersionV03)
 	uid := uuid.New()
 	event.SetID(uid.String())
 	event.SetType(target)
 	event.SetSource("direktiv")
-	err = event.SetData("application/json", input)
+	err := event.SetData("application/json", input)
 	if err != nil {
 		return fmt.Errorf("failed to create CloudEvent: %w", err)
 	}
@@ -119,22 +100,13 @@ type broadcastVariableInput struct {
 func (flow *flow) BroadcastVariable(ctx context.Context, eventType string, eventScope string, input broadcastVariableInput, ns *database.Namespace) error {
 	// BROADCAST EVENT
 	target := fmt.Sprintf("%s.%s.%s", eventScope, BroadcastEventPrefixVariable, eventType)
-	cfg, err := loadNSConfig([]byte(ns.Config))
-	if err != nil {
-		return fmt.Errorf("failed to load namespace config: %w", err)
-	}
-
-	// skip if broad target is not enabled
-	if !cfg.broadcastEnabled(target) {
-		return nil
-	}
 
 	event := cloudevents.NewEvent(cloudevents.VersionV03)
 	uid := uuid.New()
 	event.SetID(uid.String())
 	event.SetType(target)
 	event.SetSource("direktiv")
-	err = event.SetData("application/json", input)
+	err := event.SetData("application/json", input)
 	if err != nil {
 		return fmt.Errorf("failed to create CloudEvent: %w", err)
 	}
@@ -151,22 +123,13 @@ type broadcastInstanceInput struct {
 func (flow *flow) BroadcastInstance(eventType string, ctx context.Context, input broadcastInstanceInput, instance *enginerefactor.Instance) error {
 	// BROADCAST EVENT
 	target := fmt.Sprintf("%s.%s", BroadcastEventPrefixInstance, eventType)
-	cfg, err := loadNSConfig(instance.Settings.NamespaceConfig)
-	if err != nil {
-		return fmt.Errorf("failed to load namespace config: %w", err)
-	}
-
-	// skip if broad target is not enabled
-	if !cfg.broadcastEnabled(target) {
-		return nil
-	}
 
 	event := cloudevents.NewEvent(cloudevents.VersionV03)
 	uid := uuid.New()
 	event.SetID(uid.String())
 	event.SetType(target)
 	event.SetSource("direktiv")
-	err = event.SetData("application/json", input)
+	err := event.SetData("application/json", input)
 	if err != nil {
 		return fmt.Errorf("failed to create CloudEvent: %w", err)
 	}

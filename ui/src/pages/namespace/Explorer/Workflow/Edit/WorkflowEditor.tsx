@@ -1,26 +1,24 @@
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import { FC, useState } from "react";
 import { Play, Save } from "lucide-react";
+import { decode, encode } from "js-base64";
 
 import Button from "~/design/Button";
 import { CodeEditor } from "./CodeEditor";
 import { Diagram } from "./Diagram";
 import { EditorLayoutSwitcher } from "~/components/EditorLayoutSwitcher";
+import { FileSchemaType } from "~/api/files/schema";
 import RunWorkflow from "../components/RunWorkflow";
 import { WorkspaceLayout } from "~/components/WorkspaceLayout";
 import { useEditorLayout } from "~/util/store/editor";
 import { useNamespace } from "~/util/store/namespace";
 import { useNamespaceLinting } from "~/api/namespaceLinting/query/useNamespaceLinting";
-import { useNodeContent } from "~/api/tree/query/node";
 import { useTranslation } from "react-i18next";
-import { useUpdateWorkflow } from "~/api/tree/mutate/updateWorkflow";
-
-export type NodeContentType = ReturnType<typeof useNodeContent>["data"];
+import { useUpdateFile } from "~/api/files/mutate/updateFile";
 
 const WorkflowEditor: FC<{
-  data: NonNullable<NodeContentType>;
-  path: string;
-}> = ({ data, path }) => {
+  data: NonNullable<FileSchemaType>;
+}> = ({ data }) => {
   const currentLayout = useEditorLayout();
   const { t } = useTranslation();
   const namespace = useNamespace();
@@ -28,9 +26,9 @@ const WorkflowEditor: FC<{
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const { refetch: updateNotificationBell } = useNamespaceLinting();
 
-  const workflowDataFromServer = atob(data?.source ?? "");
+  const workflowDataFromServer = decode(data?.data ?? "");
 
-  const { mutate: updateWorkflow, isLoading } = useUpdateWorkflow({
+  const { mutate: updateFile, isLoading } = useUpdateFile({
     onError: (error) => {
       error && setError(error);
     },
@@ -54,9 +52,9 @@ const WorkflowEditor: FC<{
   const onSave = (toSave: string | undefined) => {
     if (toSave) {
       setError(undefined);
-      updateWorkflow({
-        path,
-        fileContent: toSave,
+      updateFile({
+        path: data.path,
+        payload: { data: encode(toSave) },
       });
     }
   };
@@ -74,7 +72,7 @@ const WorkflowEditor: FC<{
           <CodeEditor
             value={editorContent}
             onValueChange={onEditorContentUpdate}
-            updatedAt={data.node.updatedAt}
+            updatedAt={data.updatedAt}
             error={error}
             hasUnsavedChanges={hasUnsavedChanges}
             onSave={onSave}
@@ -96,7 +94,7 @@ const WorkflowEditor: FC<{
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-2xl">
-            <RunWorkflow path={path} />
+            <RunWorkflow path={data.path} />
           </DialogContent>
         </Dialog>
         <Button

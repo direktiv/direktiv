@@ -221,7 +221,8 @@
             "image": "Image",
             "scale": {
               "label": "Scale",
-              "placeholder": "Select a scale"
+              "placeholder": "Select a scale",
+              "tooltip": "\"Scale\" configures the desired instances of this resource in Kubernetes."
             },
             "size": {
               "label": "Size",
@@ -333,6 +334,7 @@
                 "types": {
                   "acl": "Access control list (acl)",
                   "js-inbound": "JavaScript",
+                  "header-manipulation": "Header manipulation",
                   "request-convert": "Request convert",
                   "event-filter": "Event filter"
                 },
@@ -352,6 +354,13 @@
                   "deny_tags": "Deny tags (optional)",
                   "groupPlaceholder": "Enter a group",
                   "tagPlaceholder": "Enter a tag"
+                },
+                "headerManipulation": {
+                  "headers_to_add": "Headers to add (optional)",
+                  "headers_to_modify": "Headers to modify (optional)",
+                  "headers_to_remove": "Headers to remove (optional)",
+                  "namePlaceholder": "Enter a header name",
+                  "valuePlaceholder": "Enter a header value"
                 },
                 "eventFilter": {
                   "script": "JavaScript",
@@ -714,7 +723,8 @@
           "image": "image",
           "scale": "scale",
           "size": "size",
-          "cmd": "cmd"
+          "cmd": "cmd",
+          "tooltip": "Desired instances / currently running instances in Kubernetes"
         },
         "tableRow": {
           "errorLabel": "Error",
@@ -954,25 +964,6 @@
             "label": "Upload a file"
           },
           "noPreview": "Only text based mime types are supported for preview and editing"
-        }
-      },
-      "broadcasts": {
-        "title": "Broadcasts",
-        "columns": {
-          "success": "Success",
-          "start": "Started",
-          "fail": "Failed",
-          "create": "Created",
-          "update": "Updated",
-          "delete": "Deleted"
-        },
-        "rows": {
-          "instance": "Instance",
-          "directory": "Directory",
-          "workflow": "Workflow",
-          "instanceVariable": "Instance Variable",
-          "namespaceVariable": "Namespace Variable",
-          "workflowVariable": "Workflow Variable"
         }
       },
       "deleteNamespace": {
@@ -1271,6 +1262,48 @@
     },
     "tree": {
       "mutate": {
+        "directory": {
+          "create": {
+            "success": {
+              "title": "Directory created"
+            },
+            "delete": {
+              "title": "Directory deleted"
+            },
+            "rename": {
+              "title": "Directory renamed"
+            }
+          }
+        },
+        "file": {
+          "create": {
+            "success": {
+              "title": "File created",
+              "description": "{{name}} was created in {{path}}"
+            },
+            "error": {
+              "description": "could not create {{name}} 😢"
+            }
+          },
+          "delete": {
+            "success": {
+              "title": "File deleted",
+              "description": "{{name}} was deleted"
+            },
+            "error": {
+              "description": "could not delete {{name}} 😢"
+            }
+          },
+          "rename": {
+            "success": {
+              "title": "File renamed",
+              "description": "{{name}} was renamed"
+            },
+            "error": {
+              "description": "could not rename {{name}} 😢"
+            }
+          }
+        },
         "setVariable": {
           "success": {
             "title": "Worfklow variable saved",
@@ -1278,42 +1311,6 @@
           },
           "error": {
             "description": "could not save workflow variable 😢"
-          }
-        },
-        "createDirectory": {
-          "success": {
-            "title": "Directory created",
-            "description": "Directory {{directory}} was created in {{path}}"
-          },
-          "error": {
-            "description": "could not create directory 😢"
-          }
-        },
-        "createWorkflow": {
-          "success": {
-            "title": "File created",
-            "description": "File {{name}} was created in {{path}}"
-          },
-          "error": {
-            "description": "could not create File 😢"
-          }
-        },
-        "deleteNode": {
-          "success": {
-            "title": "{{type}} deleted",
-            "description": "{{name}} was deleted"
-          },
-          "error": {
-            "description": "could not delete 😢"
-          }
-        },
-        "renameNode": {
-          "success": {
-            "title": "{{type}} renamed",
-            "description": "{{name}} was renamed"
-          },
-          "error": {
-            "description": "could not rename 😢"
           }
         },
         "downloadVariable": {

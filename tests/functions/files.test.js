@@ -1,26 +1,25 @@
-import request from 'supertest'
+import common from '../common'
+import request from '../common/request'
 
-import common from "../common"
-
-const namespaceName = "functionsfiles"
+const namespaceName = 'functionsfiles'
 
 describe('Test function files behaviour', () => {
-    beforeAll(common.helpers.deleteAllNamespaces)
+	beforeAll(common.helpers.deleteAllNamespaces)
 
-    it(`should create a namespace`, async () => {
-        var req = await request(common.config.getDirektivHost()).put(`/api/namespaces/${namespaceName}`)
-        expect(req.statusCode).toEqual(200)
-        expect(req.body).toMatchObject({
-            namespace: {
-                createdAt: expect.stringMatching(common.regex.timestampRegex),
-                updatedAt: expect.stringMatching(common.regex.timestampRegex),
-                name: namespaceName,
-            },
-        })
-    })
+	it(`should create a namespace`, async () => {
+		const req = await request(common.config.getDirektivHost()).put(`/api/namespaces/${ namespaceName }`)
+		expect(req.statusCode).toEqual(200)
+		expect(req.body).toMatchObject({
+			namespace: {
+				createdAt: expect.stringMatching(common.regex.timestampRegex),
+				updatedAt: expect.stringMatching(common.regex.timestampRegex),
+				name: namespaceName,
+			},
+		})
+	})
 
-    common.helpers.itShouldCreateFile(it, expect, namespaceName,
-      "/bash.yaml", `
+	common.helpers.itShouldCreateFile(it, expect, namespaceName,
+		'/bash.yaml', `
 direktiv_api: service/v1
 name: bash
 image: direktiv/bash:dev
@@ -28,14 +27,14 @@ cmd: ""
 scale: 1
 `)
 
-    it(`should create a workflow called /a.yaml`, async () => {
+	it(`should create a workflow called /a.yaml`, async () => {
 
-        const res = await request(common.config.getDirektivHost())
-            .put(`/api/namespaces/${namespaceName}/tree/a.yaml?op=create-workflow`)
-            .set({
-                'Content-Type': 'text/plain',
-            })
-            .send(`
+		const res = await request(common.config.getDirektivHost())
+			.put(`/api/namespaces/${ namespaceName }/tree/a.yaml?op=create-workflow`)
+			.set({
+				'Content-Type': 'text/plain',
+			})
+			.send(`
 functions:
 - id: bash
   type: knative-namespace
@@ -95,91 +94,91 @@ states:
     scope: file
 `)
 
-        expect(res.statusCode).toEqual(200)
-        expect(res.body).toMatchObject({
-            namespace: namespaceName,
-        })
-    })
+		expect(res.statusCode).toEqual(200)
+		expect(res.body).toMatchObject({
+			namespace: namespaceName,
+		})
+	})
 
-    it(`should invoke the '/a.yaml' workflow on a fresh namespace`, async () => {
-        const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/a.yaml?op=wait`)
-        expect(req.statusCode).toEqual(200)
-        expect(req.body).toMatchObject({
-            var: {
-                a: 5,
-                b: 7,
-                c: 11,
-                d: 13,
-                e: null
-            }
-        })
-        expect(req.body.return.bash[0]).toMatchObject({
-            result: "",
-            success: true
-        })
-        expect(req.body.return.bash[2]).toMatchObject({
-            result: "",
-            success: true
-        })
-        expect(req.body.return.bash[4]).toMatchObject({
-            result: 11,
-            success: true
-        })
-        expect(req.body.return.bash[6]).toMatchObject({
-            result: "",
-            success: true
-        })
-        expect(req.body.return.bash[8].result).toBe("")
-    })
+	it(`should invoke the '/a.yaml' workflow on a fresh namespace`, async () => {
+		const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/tree/a.yaml?op=wait`)
+		expect(req.statusCode).toEqual(200)
+		expect(req.body).toMatchObject({
+			var: {
+				a: 5,
+				b: 7,
+				c: 11,
+				d: 13,
+				e: null,
+			},
+		})
+		expect(req.body.return.bash[0]).toMatchObject({
+			result: '',
+			success: true,
+		})
+		expect(req.body.return.bash[2]).toMatchObject({
+			result: '',
+			success: true,
+		})
+		expect(req.body.return.bash[4]).toMatchObject({
+			result: 11,
+			success: true,
+		})
+		expect(req.body.return.bash[6]).toMatchObject({
+			result: '',
+			success: true,
+		})
+		expect(req.body.return.bash[8].result).toBe('')
+	})
 
-    it(`should create a workflow called /e.yaml`, async () => {
+	it(`should create a workflow called /e.yaml`, async () => {
 
-        const res = await request(common.config.getDirektivHost())
-            .put(`/api/namespaces/${namespaceName}/tree/e.yaml?op=create-workflow`)
-            .set({
-                'Content-Type': 'text/plain',
-            })
-            .send(`
+		const res = await request(common.config.getDirektivHost())
+			.put(`/api/namespaces/${ namespaceName }/tree/e.yaml?op=create-workflow`)
+			.set({
+				'Content-Type': 'text/plain',
+			})
+			.send(`
 states:
 - id: a
   type: noop
   transform:
     result: x`)
 
-        expect(res.statusCode).toEqual(200)
-        expect(res.body).toMatchObject({
-            namespace: namespaceName,
-        })
-    })
+		expect(res.statusCode).toEqual(200)
+		expect(res.body).toMatchObject({
+			namespace: namespaceName,
+		})
+	})
 
-    it(`should invoke the '/a.yaml' workflow on a non-fresh namespace`, async () => {
-        const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/a.yaml?op=wait`)
-        expect(req.statusCode).toEqual(200)
-        expect(req.body).toMatchObject({
-            var: {
-                a: 5,
-                b: 7,
-                c: 11,
-                d: 13,
-                e: "CnN0YXRlczoKLSBpZDogYQogIHR5cGU6IG5vb3AKICB0cmFuc2Zvcm06CiAgICByZXN1bHQ6IHg="
-            }
-        })
-        expect(req.body.return.bash[0]).toMatchObject({
-            result: 5,
-            success: true
-        })
-        expect(req.body.return.bash[2]).toMatchObject({
-            result: 7,
-            success: true
-        })
-        expect(req.body.return.bash[4]).toMatchObject({
-            result: 11,
-            success: true
-        })
-        expect(req.body.return.bash[6]).toMatchObject({
-            result: "",
-            success: true
-        })
-        expect(req.body.return.bash[8].result).not.toBe("")
-    })
+	it(`should invoke the '/a.yaml' workflow on a non-fresh namespace`, async () => {
+		const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/tree/a.yaml?op=wait`)
+		expect(req.statusCode).toEqual(200)
+		expect(req.body).toMatchObject({
+			var: {
+				a: 5,
+				b: 7,
+				c: 11,
+				d: 13,
+				e: 'CnN0YXRlczoKLSBpZDogYQogIHR5cGU6IG5vb3AKICB0cmFuc2Zvcm06CiAgICByZXN1bHQ6IHg=',
+			},
+		})
+		expect(req.body.return.bash[0]).toMatchObject({
+			result: 5,
+			success: true,
+		})
+		expect(req.body.return.bash[2]).toMatchObject({
+			result: 7,
+			success: true,
+		})
+		expect(req.body.return.bash[4]).toMatchObject({
+			result: 11,
+			success: true,
+		})
+		expect(req.body.return.bash[6]).toMatchObject({
+			result: '',
+			success: true,
+		})
+		expect(req.body.return.bash[8].result).not.toBe('')
+	})
 })

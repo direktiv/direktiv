@@ -1,7 +1,6 @@
 CREATE TABLE IF NOT EXISTS  "namespaces" (
     "id" uuid,
     "name" text NOT NULL UNIQUE,
-    "config" text NOT NULL,
     "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY ("id")
@@ -110,7 +109,8 @@ CREATE TABLE IF NOT EXISTS "instances_v2" (
 
 CREATE TABLE IF NOT EXISTS "runtime_variables" (
     "id" uuid,
-    "namespace" text,
+    "namespace" text NOT NULL,
+
     "workflow_path" text,
     "instance_id" uuid,
 
@@ -122,7 +122,6 @@ CREATE TABLE IF NOT EXISTS "runtime_variables" (
     "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     PRIMARY KEY ("id"),
-    UNIQUE(namespace, workflow_path, instance_id, name),
 
     CONSTRAINT "fk_namespaces_runtime_variables"
     FOREIGN KEY ("namespace") REFERENCES "namespaces"("name") ON DELETE CASCADE ON UPDATE CASCADE,
@@ -131,6 +130,8 @@ CREATE TABLE IF NOT EXISTS "runtime_variables" (
     CONSTRAINT "fk_instances_v2_runtime_variables"
     FOREIGN KEY ("instance_id") REFERENCES "instances_v2"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
+CREATE UNIQUE INDEX IF NOT EXISTS "runtime_variables_unique" ON runtime_variables(namespace, COALESCE(workflow_path, instance_id::text), name);
+
 
 CREATE TABLE IF NOT EXISTS "engine_messages" (
     "id" uuid,
@@ -225,6 +226,7 @@ CREATE TABLE IF NOT EXISTS "metrics" (
     PRIMARY KEY ("id")
 );
 
+
 -- Remove file_annotations.
 DROP TABLE IF EXISTS "file_annotations";
 
@@ -235,3 +237,5 @@ DROP TABLE IF EXISTS "filesystem_revisions";
 ALTER TABLE "filesystem_files" ADD COLUMN IF NOT EXISTS "data" bytea;
 ALTER TABLE "filesystem_files" ADD COLUMN IF NOT EXISTS "checksum" text;
 ALTER TABLE "event_topics" ADD COLUMN IF NOT EXISTS "filter" text;
+
+ALTER TABLE "namespaces" DROP COLUMN IF EXISTS "config";

@@ -15,10 +15,8 @@ var ErrInvalidInstanceSettings = errors.New("invalid instance settings")
 
 // InstanceSettings keeps a local copy of various namespace and workflow settings so that the engine doesn't have to look them up separately.
 type InstanceSettings struct {
-	Version         string // to let us identify and correct outdated versions of this struct
-	LogToEvents     string
-	NamespaceConfig []byte
-	// NOTE: only one field for now, but soon this could take a copy of namespace event settings, as well as whether to print debug logs
+	Version     string // to let us identify and correct outdated versions of this struct
+	LogToEvents string
 }
 
 func (info *InstanceSettings) MarshalJSON() ([]byte, error) {
@@ -29,9 +27,8 @@ func (info *InstanceSettings) MarshalJSON() ([]byte, error) {
 	}
 
 	return json.Marshal(&instanceSettingsV1{
-		Version:         instanceSettingsVersion1,
-		LogToEvents:     info.LogToEvents,
-		NamespaceConfig: info.NamespaceConfig,
+		Version:     instanceSettingsVersion1,
+		LogToEvents: info.LogToEvents,
 	})
 }
 
@@ -68,9 +65,8 @@ func LoadInstanceSettings(data []byte) (*InstanceSettings, error) {
 		}
 
 		info = &InstanceSettings{
-			Version:         v1.Version,
-			LogToEvents:     v1.LogToEvents,
-			NamespaceConfig: v1.NamespaceConfig,
+			Version:     v1.Version,
+			LogToEvents: v1.LogToEvents,
 		}
 
 	default:

@@ -19,6 +19,8 @@ export const scaleOptions = [
   "9",
 ] as const;
 
+export const sizeOptions = ["small", "medium", "large"] as const;
+
 export const PatchOperations = ["add", "replace", "remove"] as const;
 
 export const PatchOperationSchema = z.enum(PatchOperations);

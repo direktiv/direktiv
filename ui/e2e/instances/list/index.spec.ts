@@ -6,8 +6,8 @@ import {
   workflowThatFails as workflowThatFailsContent,
 } from "../utils/workflows";
 
+import { createFile } from "e2e/utils/files";
 import { createInstance } from "../utils";
-import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
 import { faker } from "@faker-js/faker";
 import { getInstances } from "~/api/instances/query/get";
 import { headers } from "e2e/utils/testutils";
@@ -23,24 +23,18 @@ const failingWorkflowName = faker.system.commonFileName("yaml");
 test.beforeEach(async () => {
   namespace = await createNamespace();
   // place some workflows in the namespace that we can use to create instances
-  await createWorkflow({
-    payload: simpleWorkflowContent,
-    urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
-      namespace,
-      name: simpleWorkflowName,
-    },
-    headers,
+  await createFile({
+    name: simpleWorkflowName,
+    namespace,
+    type: "workflow",
+    yaml: simpleWorkflowContent,
   });
 
-  await createWorkflow({
-    payload: workflowThatFailsContent,
-    urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
-      namespace,
-      name: failingWorkflowName,
-    },
-    headers,
+  await createFile({
+    name: failingWorkflowName,
+    namespace,
+    type: "workflow",
+    yaml: workflowThatFailsContent,
   });
 });
 
@@ -228,17 +222,16 @@ test("it provides a proper pagination", async ({ page }) => {
 
   const parentWorkflow = faker.system.commonFileName("yaml");
 
-  await createWorkflow({
-    payload: parentWorkflowContent({
-      childName: simpleWorkflowName,
-      children: totalCount - 1,
-    }),
-    urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
-      namespace,
-      name: parentWorkflow,
-    },
-    headers,
+  const yaml = parentWorkflowContent({
+    childPath: `/${simpleWorkflowName}`,
+    children: totalCount - 1,
+  });
+
+  await createFile({
+    name: parentWorkflow,
+    namespace,
+    type: "workflow",
+    yaml,
   });
 
   await runWorkflow({
@@ -250,7 +243,15 @@ test("it provides a proper pagination", async ({ page }) => {
     headers,
   });
 
+  /**
+   * child workflows are spawned asynchronously in the backend and the page
+   * does not refresh, so we need to wait until they are initialized before
+   * visiting the page.
+   */
+  await page.waitForTimeout(500);
+
   await page.goto(`${namespace}/instances/`, { waitUntil: "networkidle" });
+
   await expect(
     page.getByTestId("pagination-wrapper"),
     "there should be pagination component"
@@ -317,17 +318,14 @@ test("it provides a proper pagination", async ({ page }) => {
 test("It will display child instances as well", async ({ page }) => {
   const parentWorkflow = faker.system.commonFileName("yaml");
 
-  await createWorkflow({
-    payload: parentWorkflowContent({
-      childName: simpleWorkflowName,
+  await createFile({
+    name: parentWorkflow,
+    namespace,
+    type: "workflow",
+    yaml: parentWorkflowContent({
+      childPath: `/${simpleWorkflowName}`,
       children: 1,
     }),
-    urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
-      namespace,
-      name: parentWorkflow,
-    },
-    headers,
   });
 
   const parentInstance = await runWorkflow({

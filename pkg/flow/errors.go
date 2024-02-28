@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
-	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -41,19 +41,19 @@ func translateError(err error) error {
 		return err
 	}
 
-	if errors.Is(err, core.ErrInvalidRuntimeVariableName) {
+	if errors.Is(err, datastore.ErrInvalidRuntimeVariableName) {
 		err = status.Error(codes.InvalidArgument, "invalid runtime variable name")
 		return err
 	}
 
-	if errors.Is(err, core.ErrInvalidNamespaceName) {
+	if errors.Is(err, datastore.ErrInvalidNamespaceName) {
 		err = status.Error(codes.InvalidArgument, "invalid namespace name")
 		return err
 	}
 
 	if strings.Contains(err.Error(), "already exists") ||
 		errors.Is(err, filestore.ErrPathAlreadyExists) ||
-		errors.Is(err, core.ErrDuplicatedNamespaceName) {
+		errors.Is(err, datastore.ErrDuplicatedNamespaceName) {
 		err = status.Error(codes.AlreadyExists, "resource already exists")
 		return err
 	}

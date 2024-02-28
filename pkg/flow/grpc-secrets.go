@@ -6,7 +6,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
-	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
@@ -110,7 +110,7 @@ func (flow *flow) SetSecret(ctx context.Context, req *grpc.SetSecretRequest) (*g
 		return nil, err
 	}
 
-	err = tx.DataStore().Secrets().Set(ctx, &core.Secret{
+	err = tx.DataStore().Secrets().Set(ctx, &datastore.Secret{
 		Namespace: ns.Name,
 		Name:      req.GetKey(),
 		Data:      req.GetData(),
@@ -202,7 +202,7 @@ func (flow *flow) UpdateSecret(ctx context.Context, req *grpc.UpdateSecretReques
 		return nil, err
 	}
 
-	err = tx.DataStore().Secrets().Update(ctx, &core.Secret{
+	err = tx.DataStore().Secrets().Update(ctx, &datastore.Secret{
 		Namespace: ns.Name,
 		Name:      req.GetKey(),
 		Data:      req.GetData(),

@@ -5,7 +5,7 @@ import { InstanceCard } from "~/pages/namespace/Monitoring/Instances/InstanceCar
 import { InstanceRow } from "~/pages/namespace/Monitoring/Instances/Row";
 import RefreshButton from "~/design/RefreshButton";
 import { ScrollArea } from "~/design/ScrollArea";
-import { forceLeadingSlash } from "~/api/tree/utils";
+import { forceLeadingSlash } from "~/api/files/utils";
 import { useInstances } from "~/api/instances/query/get";
 import { useTranslation } from "react-i18next";
 

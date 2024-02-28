@@ -22,6 +22,7 @@ linters-settings:
     # Default: 1
     block-size: 2
 
+
 linters:
   enable-all: true
   disable:
@@ -48,6 +49,12 @@ linters:
     - deadcode
     - varcheck
     - scopelint
+    - gomnd
+    - tagliatelle
+    - musttag
+    - perfsprint # not needed, this one linting nano optimizations.
+    - spancheck # TODO: Alan, enable this one as it helps you fixing some telemetry bugs.
+    - revive
 
 issues:
   exclude-rules:
@@ -66,7 +73,6 @@ issues:
         - testpackage
         - asasalint
         - predeclared
-        - musttag
         - maintidx
         - interfacebloat
         - forcetypeassert
@@ -95,3 +101,10 @@ issues:
     - text: "ifElseChain: rewrite if-else to switch statement"
       linters:
         - gocritic
+    - text: "Rollback` is not checked"
+      linters:
+        - errcheck
+
+    - text: "encoding/json.Encoder"
+      linters:
+        - errchkjson

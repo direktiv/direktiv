@@ -64,16 +64,16 @@ func (locks *locks) lockDB(id uint64, wait int) (*sql.Conn, error) {
 		}
 	}()
 
-	ctx, cancel := context.WithTimeout(context.Background(),
-		time.Duration(wait)*5*time.Second)
-	defer cancel()
+	// ctx, cancel := context.WithTimeout(context.Background(),
+	// 	time.Duration(wait)*5*time.Second)
+	// defer cancel()
 
-	conn, err = locks.db.Conn(ctx)
+	conn, err = locks.db.Conn(context.Background())
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = conn.ExecContext(ctx, "SELECT pg_advisory_lock($1)", int64(id))
+	_, err = conn.ExecContext(context.Background(), "SELECT pg_advisory_lock($1)", int64(id))
 
 	perr := new(pq.Error)
 
@@ -97,7 +97,6 @@ func (locks *locks) unlockDB(id uint64, conn *sql.Conn) (err error) {
 
 	_, err = conn.ExecContext(context.Background(),
 		"SELECT pg_advisory_unlock($1)", int64(id))
-
 	if err != nil {
 		err = fmt.Errorf("can not unlock lock %d: %w", id, err)
 	}

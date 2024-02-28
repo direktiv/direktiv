@@ -9,9 +9,9 @@ import { NoPermissions } from "~/design/Table";
 import PublicPathInput from "../../Gateway/Routes/Table/Row/PublicPath";
 import { analyzePath } from "~/util/router/utils";
 import { pages } from "~/util/router/pages";
-import { removeLeadingSlash } from "~/api/tree/utils";
+import { removeLeadingSlash } from "~/api/files/utils";
+import { useFile } from "~/api/files/query/file";
 import { useNamespace } from "~/util/store/namespace";
-import { useNodeContent } from "~/api/tree/query/node";
 import { useRoutes } from "~/api/gateway/query/getRoutes";
 import { useTranslation } from "react-i18next";
 
@@ -25,15 +25,15 @@ const EndpointPage: FC = () => {
   const {
     isAllowed,
     noPermissionMessage,
-    data: gatewayData,
+    data: endpointData,
     isFetched: isPermissionCheckFetched,
-  } = useNodeContent({ path });
+  } = useFile({ path });
 
   const { data: routes, isFetched: isRouteListFetched } = useRoutes();
 
   if (!namespace) return null;
   if (!path) return null;
-  if (!gatewayData) return null;
+  if (endpointData?.type !== "endpoint") return null;
   if (!isPermissionCheckFetched) return null;
   if (!isRouteListFetched) return null;
 
@@ -75,7 +75,7 @@ const EndpointPage: FC = () => {
           </Button>
         </div>
       </div>
-      <EndpointEditor data={gatewayData} path={path} route={matchingRoute} />
+      <EndpointEditor data={endpointData} />
     </>
   );
 };

@@ -1,4 +1,4 @@
-FROM golang:1.21 as builder
+FROM docker.io/library/golang:1.21 as builder
 
 ARG RELEASE_VERSION
 ENV RELEASE=$RELEASE_VERSION
@@ -23,7 +23,7 @@ RUN --mount=type=cache,target=/root/.cache/go-build cd src && \
     CGO_ENABLED=false go build -tags osusergo,netgo -o /direktiv-cmd cmd/cmd-exec/*.go;
 
 
-FROM ubuntu:22.04
+FROM docker.io/library/ubuntu:22.04
 
 RUN apt-get update && apt-get install git -y
 

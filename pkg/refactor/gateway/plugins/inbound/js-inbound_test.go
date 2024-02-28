@@ -2,6 +2,7 @@ package inbound_test
 
 import (
 	"bytes"
+	"context"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -55,4 +56,86 @@ func TestExecuteJSInboundPlugin(t *testing.T) {
 	b, _ := io.ReadAll(r.Body)
 	defer r.Body.Close()
 	assert.JSONEq(t, "{\"string1\":\"value2\",\"addheader\":\"value3\", \"addquery\":\"value3\"}", string(b))
+}
+
+func TestExecuteJSInboundPluginConsumer(t *testing.T) {
+	p, _ := plugins.GetPluginFromRegistry(inbound.JSInboundPluginName)
+	config := &inbound.JSInboundConfig{
+		Script: `
+		b = JSON.parse(input["Body"])
+	    b["user"] = input["Consumer"].Username
+		input["Body"] = JSON.stringify(b) 
+		`,
+	}
+	p2, _ := p.Configure(config, core.MagicalGatewayNamespace)
+
+	r, _ := http.NewRequest(http.MethodGet, "/dummy", nil)
+	r.Body = io.NopCloser(bytes.NewBufferString("{ }"))
+
+	w := httptest.NewRecorder()
+
+	p2.ExecutePlugin(&core.ConsumerFile{
+		Username: "test",
+	}, w, r)
+
+	b, _ := io.ReadAll(r.Body)
+	defer r.Body.Close()
+	assert.JSONEq(t, "{\"user\":\"test\"}", string(b))
+}
+
+func TestExecuteJSInboundPluginURLParam(t *testing.T) {
+	p, _ := plugins.GetPluginFromRegistry(inbound.JSInboundPluginName)
+	config := &inbound.JSInboundConfig{
+		Script: `
+		b = JSON.parse(input["Body"])
+	    b["params"] = input["URLParams"].id
+		input["Body"] = JSON.stringify(b) 
+		`,
+	}
+	p2, _ := p.Configure(config, core.MagicalGatewayNamespace)
+
+	urlParams := map[string]string{
+		"id": "123",
+	}
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, plugins.URLParamCtxKey, urlParams)
+
+	r, _ := http.NewRequestWithContext(ctx, http.MethodGet, "/dummy/thisismyid", nil)
+	r.Body = io.NopCloser(bytes.NewBufferString("{ }"))
+
+	w := httptest.NewRecorder()
+
+	p2.ExecutePlugin(nil, w, r)
+
+	b, _ := io.ReadAll(r.Body)
+	defer r.Body.Close()
+	assert.JSONEq(t, "{\"params\":\"123\"}", string(b))
+}
+
+func TestExecuteJSInboundPluginStatus(t *testing.T) {
+	p, _ := plugins.GetPluginFromRegistry(inbound.JSInboundPluginName)
+	config := &inbound.JSInboundConfig{
+		Script: `
+		b = JSON.parse(input["Body"])
+	    b["error"] = "no access" 
+		input["Body"] = JSON.stringify(b) 
+		input["Headers"].Add("permission", "denied")
+		input.Status = 403
+		`,
+	}
+	p2, _ := p.Configure(config, core.MagicalGatewayNamespace)
+
+	r, _ := http.NewRequest(http.MethodGet, "/dummy", nil)
+	r.Body = io.NopCloser(bytes.NewBufferString("{ }"))
+
+	w := httptest.NewRecorder()
+
+	p2.ExecutePlugin(nil, w, r)
+
+	assert.Equal(t, "denied", r.Header.Get("permission"))
+	assert.Equal(t, http.StatusForbidden, w.Result().StatusCode)
+
+	b, _ := io.ReadAll(r.Body)
+	defer r.Body.Close()
+	assert.JSONEq(t, "{\"error\":\"no access\"}", string(b))
 }

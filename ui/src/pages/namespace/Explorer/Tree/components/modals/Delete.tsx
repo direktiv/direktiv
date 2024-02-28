@@ -6,20 +6,21 @@ import {
 } from "~/design/Dialog";
 import { Trans, useTranslation } from "react-i18next";
 
+import { BaseFileSchemaType } from "~/api/files/schema";
 import Button from "~/design/Button";
-import { NodeSchemaType } from "~/api/tree/schema/node";
 import { Trash } from "lucide-react";
-import { useDeleteNode } from "~/api/tree/mutate/deleteNode";
+import { getFilenameFromPath } from "~/api/files/utils";
+import { useDeleteFile } from "~/api/files/mutate/deleteFile";
 
 const Delete = ({
-  node,
+  file,
   close,
 }: {
-  node: NodeSchemaType;
+  file: BaseFileSchemaType;
   close: () => void;
 }) => {
   const { t } = useTranslation();
-  const { mutate: deleteNode, isLoading } = useDeleteNode({
+  const { mutate: deleteNode, isLoading } = useDeleteFile({
     onSuccess: () => {
       close();
     },
@@ -34,15 +35,15 @@ const Delete = ({
       </DialogHeader>
 
       <div className="my-3">
-        {node.type === "directory" ? (
+        {file.type === "directory" ? (
           <Trans
             i18nKey="pages.explorer.tree.delete.directoryMsg"
-            values={{ name: node.name }}
+            values={{ name: getFilenameFromPath(file.path) }}
           />
         ) : (
           <Trans
             i18nKey="pages.explorer.tree.delete.fileMsg"
-            values={{ name: node.name }}
+            values={{ name: getFilenameFromPath(file.path) }}
           />
         )}
       </div>
@@ -55,7 +56,7 @@ const Delete = ({
         <Button
           data-testid="node-delete-confirm"
           onClick={() => {
-            deleteNode({ node });
+            deleteNode({ file });
           }}
           variant="destructive"
           loading={isLoading}

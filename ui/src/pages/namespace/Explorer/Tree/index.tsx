@@ -8,6 +8,7 @@ import {
   TableRow,
 } from "~/design/Table";
 
+import { BaseFileSchemaType } from "~/api/files/schema";
 import { Card } from "~/design/Card";
 import Delete from "./components/modals/Delete";
 import ExplorerHeader from "./Header";
@@ -16,31 +17,32 @@ import FileViewer from "./components/modals/FileViewer";
 import { FolderUp } from "lucide-react";
 import { Link } from "react-router-dom";
 import NoResult from "./NoResult";
-import { NodeSchemaType } from "~/api/tree/schema/node";
 import Rename from "./components/modals/Rename";
 import { analyzePath } from "~/util/router/utils";
+import { getFilenameFromPath } from "~/api/files/utils";
 import { pages } from "~/util/router/pages";
 import { twMergeClsx } from "~/util/helpers";
+import { useFile } from "~/api/files/query/file";
 import { useNamespace } from "~/util/store/namespace";
-import { useNodeContent } from "~/api/tree/query/node";
 import { useTranslation } from "react-i18next";
 
 const ExplorerPage: FC = () => {
   const namespace = useNamespace();
   const { path } = pages.explorer.useParams();
   const { data, isSuccess, isFetched, isAllowed, noPermissionMessage } =
-    useNodeContent({
+    useFile({
       path,
     });
+
   const { parent, isRoot } = analyzePath(path);
   const [dialogOpen, setDialogOpen] = useState(false);
 
   // we only want to use one dialog component for the whole list,
   // so when the user clicks on the delete button in the list, we
   // set the pointer to that node for the dialog
-  const [deleteNode, setDeleteNode] = useState<NodeSchemaType>();
-  const [renameNode, setRenameNode] = useState<NodeSchemaType>();
-  const [previewNode, setPreviewNode] = useState<NodeSchemaType>();
+  const [deleteNode, setDeleteNode] = useState<BaseFileSchemaType>();
+  const [renameFile, setRenameNode] = useState<BaseFileSchemaType>();
+  const [previewNode, setPreviewNode] = useState<BaseFileSchemaType>();
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -61,10 +63,12 @@ const ExplorerPage: FC = () => {
       </Card>
     );
 
-  const results = data?.children?.results ?? [];
-  const showTable = !isRoot || results.length > 0;
-  const noResults = isSuccess && results.length === 0;
+  const children = (data?.type === "directory" && data?.children) || [];
+  const showTable = !isRoot || children.length > 0;
+  const noResults = isSuccess && children.length === 0;
   const wideOverlay = !!previewNode;
+
+  const existingNames = children?.map((file) => getFilenameFromPath(file.path));
 
   return (
     <>
@@ -93,11 +97,11 @@ const ExplorerPage: FC = () => {
                       </TableCell>
                     </TableRow>
                   )}
-                  {results.map((file) => (
+                  {children.map((item) => (
                     <FileRow
-                      key={file.name}
+                      key={item.path}
                       namespace={namespace}
-                      node={file}
+                      file={item}
                       onDeleteClicked={setDeleteNode}
                       onRenameClicked={setRenameNode}
                       onPreviewClicked={setPreviewNode}
@@ -110,24 +114,22 @@ const ExplorerPage: FC = () => {
                   wideOverlay && "sm:max-w-xl md:max-w-2xl lg:max-w-3xl"
                 )}
               >
-                {previewNode && <FileViewer node={previewNode} />}
+                {previewNode && <FileViewer file={previewNode} />}
                 {deleteNode && (
                   <Delete
-                    node={deleteNode}
+                    file={deleteNode}
                     close={() => {
                       setDialogOpen(false);
                     }}
                   />
                 )}
-                {renameNode && (
+                {renameFile && (
                   <Rename
-                    node={renameNode}
+                    file={renameFile}
                     close={() => {
                       setDialogOpen(false);
                     }}
-                    unallowedNames={
-                      data?.children?.results.map((file) => file.name) || []
-                    }
+                    unallowedNames={existingNames}
                   />
                 )}
               </DialogContent>

@@ -74,23 +74,55 @@ spec:
           - name: "NO_PROXY"
             value: "{{ .Values.no_proxy }}"
           {{- end }} 
+          - name: DIREKTIV_KNATIVE_SIZE_MEMORY_SMALL
+            value: "{{ .Values.functions.limits.memory.small }}"
+          - name: DIREKTIV_KNATIVE_SIZE_CPU_SMALL
+            value: "{{ .Values.functions.limits.cpu.small }}"
+          - name: DIREKTIV_KNATIVE_SIZE_DISK_SMALL
+            value: "{{ .Values.functions.limits.disk.small }}"
+          - name: DIREKTIV_KNATIVE_SIZE_MEMORY_MEDIUM
+            value: "{{ .Values.functions.limits.memory.medium }}"
+          - name: DIREKTIV_KNATIVE_SIZE_CPU_MEDIUM
+            value: "{{ .Values.functions.limits.cpu.medium }}"
+          - name: DIREKTIV_KNATIVE_SIZE_DISK_MEDIUM
+            value: "{{ .Values.functions.limits.disk.medium }}"
+          - name: DIREKTIV_KNATIVE_SIZE_MEMORY_LARGE
+            value: "{{ .Values.functions.limits.memory.large }}"
+          - name: DIREKTIV_KNATIVE_SIZE_CPU_LARGE
+            value: "{{ .Values.functions.limits.cpu.large }}"
+          - name: DIREKTIV_KNATIVE_SIZE_DISK_LARGE
+            value: "{{ .Values.functions.limits.disk.large }}"
           ports:
             - name: frontend
               containerPort: 2304
               protocol: TCP
           volumeMounts:
-          - name: nginx-conf
-            mountPath: /etc/nginx/templates
+          {{- if or (index .Values.frontend.logos "icon-light") 
+            (index .Values.frontend.logos "icon-dark")
+            (index .Values.frontend.logos "logo-dark")
+            (index .Values.frontend.logos "logo-light")
+            (index .Values.frontend.logos "favicon")
+          }}          
+          - name: logo-volume
+            mountPath: /usr/share/nginx/html/assets/logo
             readOnly: true
+          {{- end }}
           {{- if .Values.frontend.certificate }}
           - name: cert-volume
             mountPath: /etc/certs
             readOnly: true
           {{- end }}
       volumes:
-      - name: nginx-conf
+      {{- if or (index .Values.frontend.logos "icon-light") 
+        (index .Values.frontend.logos "icon-dark")
+        (index .Values.frontend.logos "logo-dark")
+        (index .Values.frontend.logos "logo-light")
+        (index .Values.frontend.logos "favicon")
+      }}
+      - name: logo-volume
         configMap:
-          name: {{ include "direktiv.fullname" . }}-config-frontend
+          name: {{ include "direktiv.fullname" . }}-logos
+      {{- end }}
       {{- if .Values.frontend.certificate }}
       - name: cert-volume
         secret:

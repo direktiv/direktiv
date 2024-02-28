@@ -5,5 +5,8 @@ dependencies:
 - name: ingress-nginx
   repository: https://kubernetes.github.io/ingress-nginx
   version: 4.9.0
-digest: sha256:90bb32d4e66ca215c319aaeb482037becf7c65ea6be732aa31aaf404e87d1d8c
-generated: "2024-02-01T10:47:39.018712849Z"
+- name: fluent-bit
+  repository: https://fluent.github.io/helm-charts
+  version: 0.43.0
+digest: sha256:6e5124c167b743b62e442db1f6242022a4945dff69eb0abd890ca7a380efeee1
+generated: "2024-02-05T10:29:19.013620086+01:00"
