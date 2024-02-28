@@ -21,15 +21,8 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
         ref={ref}
         {...props}
       >
-        {/* {verbose && tags["loop-index"] && (
-          <>
-            <span className="opacity-75">{tags["loop-index"]}</span>{" "}
-          </>
-        )} */}
         {verbose && workflow && <span className="opacity-75">{workflow}</span>}
-        {/* {verbose && tags["state-id"] && (
-          <span className="opacity-60">/{tags["state-id"]}</span>
-        )}{" "} */}
+        {verbose && workflow && " "}
         {msg}
       </LogEntry>
     );
