@@ -103,17 +103,6 @@ func (engine *engine) mux(ctx context.Context, ns *database.Namespace, calledAs 
 	return file, data, nil
 }
 
-const (
-	rcfNone       = 0
-	rcfNoPriors   = 1 << iota
-	rcfBreaking   // don't throw a router validation error if the router was already invalid before the change
-	rcfNoValidate // skip validation of new workflow if old router has one or fewer routes
-)
-
-func hasFlag(flags, flag int) bool {
-	return flags&flag != 0
-}
-
 func (flow *flow) configureRouterHandler(req *pubsub.PubsubUpdate) {
 	msg := new(pubsub.ConfigureRouterMessage)
 

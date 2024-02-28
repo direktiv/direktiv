@@ -136,7 +136,12 @@ func (engine *engine) handleInstanceMessage(ctx context.Context, im *instanceMem
 		return nil
 	}
 
-	x, _ = m["data"]
+	x, ok = m["data"]
+	if !ok {
+		engine.sugar.Errorf("handleInstanceMessage got invalid message payload: missing 'data' field")
+		return nil
+	}
+
 	data, _ := json.Marshal(x)
 
 	switch msgType {

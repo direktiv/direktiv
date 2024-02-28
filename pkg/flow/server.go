@@ -38,7 +38,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
-	_ "github.com/lib/pq" // postgres for ent
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 	libgrpc "google.golang.org/grpc"

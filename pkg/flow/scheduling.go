@@ -47,7 +47,7 @@ func (engine *engine) sendCancelToScheduled(instance uuid.UUID) {
 }
 
 func (engine *engine) executor(ctx context.Context, id uuid.UUID) {
-	ctx, err := engine.registerScheduled(context.Background(), id)
+	ctx, err := engine.registerScheduled(ctx, id)
 	if err != nil {
 		engine.sugar.Errorf("failed to registerScheduled in executor: %v", err)
 		return
