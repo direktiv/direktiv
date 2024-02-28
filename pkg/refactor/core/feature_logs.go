@@ -17,15 +17,15 @@ type PlattformLogEntry struct {
 	Time      time.Time `json:"time"`
 	Msg       string    `json:"msg"`
 	Level     string    `json:"level"`
-	Trace     string    `json:"trace,omitempty"`
-	Span      string    `json:"span,omitempty"`
-	State     string    `json:"state,omitempty"`
-	Branch    string    `json:"branch,omitempty"`
-	Workflow  string    `json:"workflow,omitempty"`
-	Instance  string    `json:"instance,omitempty"`
-	Namespace string    `json:"namespace,omitempty"`
-	Activity  string    `json:"activity,omitempty"`
-	Route     string    `json:"route,omitempty"`
-	Path      string    `json:"path,omitempty"`
-	Error     string    `json:"error,omitempty"`
+	Trace     string    `json:"trace"`
+	Span      string    `json:"span"`
+	State     string    `json:"state"`
+	Branch    string    `json:"branch"`
+	Workflow  string    `json:"workflow"`
+	Instance  string    `json:"instance"`
+	Namespace string    `json:"namespace"`
+	Activity  string    `json:"activity"`
+	Route     string    `json:"route"`
+	Path      string    `json:"path"`
+	Error     string    `json:"error"`
 }
