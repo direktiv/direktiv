@@ -49,7 +49,7 @@ const LogsPanel = () => {
 
   const pages = logData?.pages.map((page) => page.data) ?? [];
   const allLogs = pages.flat();
-  const resultCount = allLogs.length;
+  const numberOfLogs = allLogs.length;
 
   const copyValue =
     allLogs
@@ -69,7 +69,7 @@ const LogsPanel = () => {
           loading={isFetchingNextPage}
           onClick={() => fetchNextPage()}
         >
-          {resultCount} entries on {pages.length} pages
+          {numberOfLogs} entries on {pages.length} pages
         </Button>
         <ButtonBar>
           <TooltipProvider>
@@ -142,7 +142,7 @@ const LogsPanel = () => {
             <span className="relative inline-flex h-3 w-3 rounded-full bg-gray-11 dark:bg-gray-dark-11"></span>
           </span>
         )}
-        {t("pages.instances.detail.logs.logsCount", { count: resultCount })}
+        {t("pages.instances.detail.logs.logsCount", { count: numberOfLogs })}
       </div>
     </>
   );
