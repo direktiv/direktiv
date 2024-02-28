@@ -40,8 +40,9 @@ var (
 	SecretUpdate = "secret_update"
 )
 
-type ChangeWorkflowEvent struct {
-	Namespace    string
-	NamespaceID  uuid.UUID
-	WorkflowPath string
+type FileChangeEvent struct {
+	Namespace   string
+	NamespaceID uuid.UUID
+	FilePath    string
+	OldPath     string
 }

@@ -7,7 +7,7 @@ import {
 } from "./utils";
 
 import { noop as basicWorkflow } from "~/pages/namespace/Explorer/Tree/components/modals/CreateNew/Workflow/templates";
-import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
+import { createFile } from "e2e/utils/files";
 import { decode } from "js-base64";
 import { faker } from "@faker-js/faker";
 import { getInput } from "~/api/instances/query/input";
@@ -28,14 +28,11 @@ test("it is possible to open and use the run workflow modal from the editor and 
   page,
 }) => {
   const workflowName = faker.system.commonFileName("yaml");
-  await createWorkflow({
-    payload: basicWorkflow.data,
-    urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
-      namespace,
-      name: workflowName,
-    },
-    headers,
+  await createFile({
+    name: workflowName,
+    namespace,
+    type: "workflow",
+    yaml: basicWorkflow.data,
   });
 
   await page.goto(`${namespace}/explorer/workflow/edit/${workflowName}`);
@@ -99,14 +96,11 @@ test("it is possible to run the workflow by setting an input JSON via the editor
   browserName,
 }) => {
   const workflowName = faker.system.commonFileName("yaml");
-  await createWorkflow({
-    payload: basicWorkflow.data,
-    urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
-      namespace,
-      name: workflowName,
-    },
-    headers,
+  await createFile({
+    name: workflowName,
+    namespace,
+    type: "workflow",
+    yaml: basicWorkflow.data,
   });
 
   await page.goto(`${namespace}/explorer/workflow/edit/${workflowName}`);
@@ -177,14 +171,11 @@ test("it is possible to run a workflow with input data containing special charac
 }) => {
   const name = "test-diacritics.yaml";
 
-  await createWorkflow({
-    payload: testDiacriticsWorkflow,
-    urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
-      namespace,
-      name,
-    },
-    headers,
+  await createFile({
+    name,
+    namespace,
+    type: "workflow",
+    yaml: testDiacriticsWorkflow,
   });
 
   await page.goto(`${namespace}/explorer/workflow/edit/${name}`);
@@ -213,14 +204,11 @@ test("it is not possible to run the workflow when the editor has unsaved changes
   page,
 }) => {
   const workflowName = faker.system.commonFileName("yaml");
-  await createWorkflow({
-    payload: basicWorkflow.data,
-    urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
-      namespace,
-      name: workflowName,
-    },
-    headers,
+  await createFile({
+    name: workflowName,
+    namespace,
+    type: "workflow",
+    yaml: basicWorkflow.data,
   });
 
   await page.goto(`${namespace}/explorer/workflow/edit/${workflowName}`);
@@ -236,14 +224,11 @@ test("it is possible to provide the input via generated form", async ({
   page,
 }) => {
   const workflowName = faker.system.commonFileName("yaml");
-  await createWorkflow({
-    payload: jsonSchemaFormWorkflow,
-    urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
-      namespace,
-      name: workflowName,
-    },
-    headers,
+  await createFile({
+    name: workflowName,
+    namespace,
+    type: "workflow",
+    yaml: jsonSchemaFormWorkflow,
   });
 
   await page.goto(`${namespace}/explorer/workflow/edit/${workflowName}`);
@@ -357,14 +342,11 @@ test("it is possible to provide the input via generated form and resolve form er
   page,
 }) => {
   const workflowName = faker.system.commonFileName("yaml");
-  await createWorkflow({
-    payload: jsonSchemaWithRequiredEnum,
-    urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
-      namespace,
-      name: workflowName,
-    },
-    headers,
+  await createFile({
+    name: workflowName,
+    namespace,
+    type: "workflow",
+    yaml: jsonSchemaWithRequiredEnum,
   });
 
   await page.goto(`${namespace}/explorer/workflow/edit/${workflowName}`);

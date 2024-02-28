@@ -221,7 +221,8 @@
             "image": "Image",
             "scale": {
               "label": "Scale",
-              "placeholder": "Select a scale"
+              "placeholder": "Select a scale",
+              "tooltip": "\"Scale\" configures the desired instances of this resource in Kubernetes."
             },
             "size": {
               "label": "Size",
@@ -715,7 +716,8 @@
           "image": "image",
           "scale": "scale",
           "size": "size",
-          "cmd": "cmd"
+          "cmd": "cmd",
+          "tooltip": "Desired instances / currently running instances in Kubernetes"
         },
         "tableRow": {
           "errorLabel": "Error",
@@ -1253,6 +1255,48 @@
     },
     "tree": {
       "mutate": {
+        "directory": {
+          "create": {
+            "success": {
+              "title": "Directory created"
+            },
+            "delete": {
+              "title": "Directory deleted"
+            },
+            "rename": {
+              "title": "Directory renamed"
+            }
+          }
+        },
+        "file": {
+          "create": {
+            "success": {
+              "title": "File created",
+              "description": "{{name}} was created in {{path}}"
+            },
+            "error": {
+              "description": "could not create {{name}} 😢"
+            }
+          },
+          "delete": {
+            "success": {
+              "title": "File deleted",
+              "description": "{{name}} was deleted"
+            },
+            "error": {
+              "description": "could not delete {{name}} 😢"
+            }
+          },
+          "rename": {
+            "success": {
+              "title": "File renamed",
+              "description": "{{name}} was renamed"
+            },
+            "error": {
+              "description": "could not rename {{name}} 😢"
+            }
+          }
+        },
         "setVariable": {
           "success": {
             "title": "Worfklow variable saved",
@@ -1260,42 +1304,6 @@
           },
           "error": {
             "description": "could not save workflow variable 😢"
-          }
-        },
-        "createDirectory": {
-          "success": {
-            "title": "Directory created",
-            "description": "Directory {{directory}} was created in {{path}}"
-          },
-          "error": {
-            "description": "could not create directory 😢"
-          }
-        },
-        "createWorkflow": {
-          "success": {
-            "title": "File created",
-            "description": "File {{name}} was created in {{path}}"
-          },
-          "error": {
-            "description": "could not create File 😢"
-          }
-        },
-        "deleteNode": {
-          "success": {
-            "title": "{{type}} deleted",
-            "description": "{{name}} was deleted"
-          },
-          "error": {
-            "description": "could not delete 😢"
-          }
-        },
-        "renameNode": {
-          "success": {
-            "title": "{{type}} renamed",
-            "description": "{{name}} was renamed"
-          },
-          "error": {
-            "description": "could not rename 😢"
           }
         },
         "downloadVariable": {

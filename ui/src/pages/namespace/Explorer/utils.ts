@@ -1,4 +1,3 @@
-import { isEqual } from "lodash";
 import { stringify as jsonToPrettyYamlStringify } from "json-to-pretty-yaml";
 import yamljs from "js-yaml";
 
@@ -19,14 +18,6 @@ export const yamlToJsonOrNull = (yaml: string) => {
   }
   return json;
 };
-
-/**
- * Compares two yaml strings. Please note that this function will make a
- * structural comparison, so it will return true if the yaml strings are
- * structurally equal, even if the order of the keys is different.
- */
-export const compareYamlStructure = (aYaml: string, bYaml: string) =>
-  isEqual(yamlToJsonOrNull(aYaml), yamlToJsonOrNull(bYaml));
 
 export const treatEmptyStringAsUndefined = (value: unknown) => {
   if (value === "") {

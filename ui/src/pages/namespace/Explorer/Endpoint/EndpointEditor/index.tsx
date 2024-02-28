@@ -1,4 +1,4 @@
-import { compareYamlStructure, jsonToYaml } from "../../utils";
+import { decode, encode } from "js-base64";
 
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
@@ -6,40 +6,35 @@ import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
 import { EndpointFormSchemaType } from "./schema";
 import { FC } from "react";
+import { FileSchemaType } from "~/api/files/schema";
 import { Form } from "./Form";
 import FormErrors from "~/components/FormErrors";
-import { RouteSchemaType } from "~/api/gateway/schema";
 import { Save } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
-import { decode } from "js-base64";
+import { jsonToYaml } from "../../utils";
 import { serializeEndpointFile } from "./utils";
-import { useNodeContent } from "~/api/tree/query/node";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
-import { useUpdateWorkflow } from "~/api/tree/mutate/updateWorkflow";
-
-type NodeContentType = ReturnType<typeof useNodeContent>["data"];
+import { useUpdateFile } from "~/api/files/mutate/updateFile";
 
 type EndpointEditorProps = {
-  path: string;
-  data: NonNullable<NodeContentType>;
-  route?: RouteSchemaType;
+  data: NonNullable<FileSchemaType>;
 };
 
-const EndpointEditor: FC<EndpointEditorProps> = ({ data, path }) => {
+const EndpointEditor: FC<EndpointEditorProps> = ({ data }) => {
   const { t } = useTranslation();
   const theme = useTheme();
-  const fileContentFromServer = decode(data.source ?? "");
+  const fileContentFromServer = decode(data.data ?? "");
   const [endpointConfig, endpointConfigError] = serializeEndpointFile(
     fileContentFromServer
   );
-  const { mutate: updateRoute, isLoading } = useUpdateWorkflow();
+  const { mutate: updateRoute, isLoading } = useUpdateFile();
 
-  const save = (data: EndpointFormSchemaType) => {
-    const toSave = jsonToYaml(data);
+  const save = (value: EndpointFormSchemaType) => {
+    const toSave = jsonToYaml(value);
     updateRoute({
-      path,
-      fileContent: toSave,
+      path: data.path,
+      payload: { data: encode(toSave) },
     });
   };
 
@@ -54,10 +49,7 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data, path }) => {
         values,
       }) => {
         const preview = jsonToYaml(values);
-        const filehasChanged = compareYamlStructure(
-          preview,
-          fileContentFromServer
-        );
+        const filehasChanged = preview === fileContentFromServer;
         const isDirty = !endpointConfigError && !filehasChanged;
         const disableButton = isLoading || !!endpointConfigError;
 

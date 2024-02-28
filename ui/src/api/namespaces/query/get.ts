@@ -2,7 +2,7 @@ import { NamespaceListSchema } from "../schema";
 import type { QueryFunctionContext } from "@tanstack/react-query";
 import { apiFactory } from "~/api/apiFactory";
 import { namespaceKeys } from "../";
-import { sortByName } from "~/api/tree/utils";
+import { sortByName } from "~/api/files/utils";
 import { useApiKey } from "~/util/store/apiKey";
 import { useQuery } from "@tanstack/react-query";
 

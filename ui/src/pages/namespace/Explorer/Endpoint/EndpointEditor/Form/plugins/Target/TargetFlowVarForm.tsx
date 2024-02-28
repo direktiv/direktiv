@@ -93,7 +93,7 @@ export const TargetFlowVarForm: FC<FormProps> = ({
                 namespace={watch("configuration.namespace")}
                 onChange={field.onChange}
                 defaultPath={field.value}
-                selectable={(node) => node.type === "workflow"}
+                selectable={(file) => file.type === "workflow"}
               />
             )}
           />

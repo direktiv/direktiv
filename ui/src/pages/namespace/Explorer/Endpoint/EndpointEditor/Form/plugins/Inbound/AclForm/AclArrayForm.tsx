@@ -21,13 +21,11 @@ const fieldNameToLanguageKey = (
 ) => {
   switch (field) {
     case "configuration.allow_groups":
-      return "allow_groups";
-    case "configuration.allow_tags":
-      return "allow_tags";
     case "configuration.deny_groups":
-      return "deny_groups";
+      return "groupPlaceholder";
+    case "configuration.allow_tags":
     case "configuration.deny_tags":
-      return "deny_tags";
+      return "tagPlaceholder";
   }
 };
 

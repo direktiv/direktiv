@@ -7,8 +7,7 @@ import {
 } from "./utils";
 import { expect, test } from "@playwright/test";
 
-import { createWorkflow } from "~/api/tree/mutate/createWorkflow";
-import { headers } from "e2e/utils/testutils";
+import { createFile } from "e2e/utils/files";
 
 let namespace = "";
 
@@ -39,18 +38,15 @@ test("Route list is empty by default", async ({ page }) => {
 
 test("Route list shows all available routes", async ({ page }) => {
   const path = "newPath";
-  await createWorkflow({
-    payload: createRedisRouteFile({
+  await createFile({
+    name: "redis-route.yaml",
+    namespace,
+    type: "endpoint",
+    yaml: createRedisRouteFile({
       path,
       targetType: "instant-response",
       targetConfigurationStatus: "202",
     }),
-    urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
-      namespace,
-      name: "redis-route.yaml",
-    },
-    headers,
   });
 
   await expect
@@ -112,14 +108,11 @@ test("Route list shows all available routes", async ({ page }) => {
 });
 
 test("Route list shows a warning", async ({ page }) => {
-  await createWorkflow({
-    payload: routeWithAWarning,
-    urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
-      namespace,
-      name: "redis-route.yaml",
-    },
-    headers,
+  await createFile({
+    name: "redis-route.yaml",
+    namespace,
+    type: "endpoint",
+    yaml: routeWithAWarning,
   });
 
   await expect
@@ -156,14 +149,11 @@ test("Route list shows a warning", async ({ page }) => {
 });
 
 test("Route list shows an error", async ({ page }) => {
-  await createWorkflow({
-    payload: routeWithAnError,
-    urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
-      namespace,
-      name: "redis-route.yaml",
-    },
-    headers,
+  await createFile({
+    name: "redis-route.yaml",
+    namespace,
+    type: "endpoint",
+    yaml: routeWithAnError,
   });
 
   await expect
@@ -206,14 +196,11 @@ test("Route list shows an error", async ({ page }) => {
 });
 
 test("Route list links the file name to the route file", async ({ page }) => {
-  await createWorkflow({
-    payload: createRedisRouteFile(),
-    urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
-      namespace,
-      name: "redis-route.yaml",
-    },
-    headers,
+  await createFile({
+    name: "redis-route.yaml",
+    namespace,
+    type: "endpoint",
+    yaml: createRedisRouteFile(),
   });
 
   await page.goto(`/${namespace}/gateway/routes`, {

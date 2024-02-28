@@ -3,7 +3,7 @@ import { NamespaceCreatedSchema } from "../schema";
 import type { NamespaceListSchemaType } from "../schema";
 import { apiFactory } from "~/api/apiFactory";
 import { namespaceKeys } from "..";
-import { sortByName } from "~/api/tree/utils";
+import { sortByName } from "~/api/files/utils";
 import { useApiKey } from "~/util/store/apiKey";
 import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 import { useQueryClient } from "@tanstack/react-query";

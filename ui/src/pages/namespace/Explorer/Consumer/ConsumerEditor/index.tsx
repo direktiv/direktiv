@@ -1,42 +1,40 @@
+import { decode, encode } from "js-base64";
+
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import { ConsumerFormSchemaType } from "./schema";
 import Editor from "~/design/Editor";
 import { FC } from "react";
+import { FileSchemaType } from "~/api/files/schema";
 import { Form } from "./Form";
 import FormErrors from "~/components/FormErrors";
 import { Save } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
-import { decode } from "js-base64";
 import { jsonToYaml } from "../../utils";
 import { serializeConsumerFile } from "./utils";
-import { useNodeContent } from "~/api/tree/query/node";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
-import { useUpdateWorkflow } from "~/api/tree/mutate/updateWorkflow";
-
-type NodeContentType = ReturnType<typeof useNodeContent>["data"];
+import { useUpdateFile } from "~/api/files/mutate/updateFile";
 
 type ConsumerEditorProps = {
-  path: string;
-  data: NonNullable<NodeContentType>;
+  data: NonNullable<FileSchemaType>;
 };
 
-const ConsumerEditor: FC<ConsumerEditorProps> = ({ data, path }) => {
+const ConsumerEditor: FC<ConsumerEditorProps> = ({ data }) => {
   const { t } = useTranslation();
   const theme = useTheme();
-  const fileContentFromServer = decode(data.source ?? "");
+  const fileContentFromServer = decode(data.data ?? "");
   const [consumerConfig, consumerConfigError] = serializeConsumerFile(
     fileContentFromServer
   );
-  const { mutate: updateRoute, isLoading } = useUpdateWorkflow();
+  const { mutate: updateFile, isLoading } = useUpdateFile();
 
-  const save = (data: ConsumerFormSchemaType) => {
-    const toSave = jsonToYaml(data);
-    updateRoute({
-      path,
-      fileContent: toSave,
+  const save = (value: ConsumerFormSchemaType) => {
+    const toSave = jsonToYaml(value);
+    updateFile({
+      path: data.path,
+      payload: { data: encode(toSave) },
     });
   };
 
