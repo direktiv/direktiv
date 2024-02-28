@@ -32,9 +32,9 @@ const LogsPanel = () => {
 
   const {
     data: logData,
-    hasNextPage,
-    fetchNextPage,
-    isFetchingNextPage,
+    hasPreviousPage,
+    fetchPreviousPage,
+    isFetchingPreviousPage,
   } = useLogs({
     instance: instanceId,
   });
@@ -65,9 +65,9 @@ const LogsPanel = () => {
         </h3>
         <Button
           size="sm"
-          disabled={!hasNextPage}
-          loading={isFetchingNextPage}
-          onClick={() => fetchNextPage()}
+          disabled={!hasPreviousPage}
+          loading={isFetchingPreviousPage}
+          onClick={() => fetchPreviousPage()}
         >
           {numberOfLogs} entries on {pages.length} pages
         </Button>
