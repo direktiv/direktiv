@@ -180,7 +180,15 @@ func (engine *engine) handleCancelMessage(ctx context.Context, im *instanceMemor
 }
 
 func (engine *engine) handleWakeMessage(ctx context.Context, im *instanceMemory, data []byte) *states.Transition {
-	return engine.runState(ctx, im, data, nil)
+	var pl retryMessage
+
+	err := json.Unmarshal(data, &pl)
+	if err != nil {
+		engine.sugar.Errorf("handleWakeMessage failed to unmarshal wakeup message args: %v", err)
+		return nil
+	}
+
+	return engine.runState(ctx, im, pl.Data, nil)
 }
 
 func (engine *engine) handleActionMessage(ctx context.Context, im *instanceMemory, data []byte) *states.Transition {
