@@ -5,7 +5,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "~/design/Tooltip";
-import { useFilters, useInstanceId } from "../../store/instanceContext";
 import {
   useLogsPreferencesActions,
   useLogsPreferencesMaximizedPanel,
@@ -15,13 +14,12 @@ import {
 import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
 import CopyButton from "~/design/CopyButton";
-import Filters from "./Filters";
 import ScrollContainer from "./ScrollContainer";
 import { Toggle } from "~/design/Toggle";
 import { formatLogTime } from "~/util/helpers";
 import { useInstanceDetails } from "~/api/instances/query/details";
+import { useInstanceId } from "../../store/instanceContext";
 import { useLogs } from "~/api/logs/query/logs";
-import { useLogs as useLogsDebrecated } from "~/api/logs_DEBRECATED/query/get";
 import { useTranslation } from "react-i18next";
 
 const LogsPanel = () => {
@@ -29,12 +27,8 @@ const LogsPanel = () => {
   const { setVerboseLogs, setMaximizedPanel } = useLogsPreferencesActions();
 
   const instanceId = useInstanceId();
-  const filters = useFilters();
+
   const { data: instanceDetailsData } = useInstanceDetails({ instanceId });
-  const { data: logDataDebrecated } = useLogsDebrecated({
-    instanceId,
-    filters,
-  });
 
   const {
     data: logData,
@@ -51,15 +45,16 @@ const LogsPanel = () => {
 
   const isMaximized = maximizedPanel === "logs";
 
-  const copyValue =
-    logDataDebrecated?.results
-      .map((logEntry) => `${formatLogTime(logEntry.t)} ${logEntry.msg}`)
-      .join("\n") ?? "";
-
-  const resultCount = logDataDebrecated?.results.length ?? 0;
   const isPending = instanceDetailsData?.instance.status === "pending";
 
-  const entries = logData?.pages.map((page) => page.data).flat() ?? [];
+  const pages = logData?.pages.map((page) => page.data) ?? [];
+  const allLogs = pages.flat();
+  const resultCount = allLogs.length;
+
+  const copyValue =
+    allLogs
+      .map((logEntry) => `${formatLogTime(logEntry.time)} ${logEntry.msg}`)
+      .join("\n") ?? "";
 
   return (
     <>
@@ -68,15 +63,13 @@ const LogsPanel = () => {
           <ScrollText className="h-5" />
           {t("pages.instances.detail.logs.title")}
         </h3>
-        <Filters />
-
         <Button
           size="sm"
           disabled={!hasNextPage}
           loading={isFetchingNextPage}
           onClick={() => fetchNextPage()}
         >
-          log lines received: {entries.length}
+          {resultCount} entries on {pages.length} pages
         </Button>
         <ButtonBar>
           <TooltipProvider>
