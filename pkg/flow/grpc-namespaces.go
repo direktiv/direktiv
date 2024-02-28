@@ -134,8 +134,8 @@ func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespace
 		return nil, err
 	}
 
-	flow.sugar.Infof("Created namespace '%s'.", ns.Name)
-	flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Created namespace '%s'.", ns.Name)
+	flow.sugar.Debugf("Created namespace '%s'.", ns.Name)
+	flow.logger.Debugf(ctx, flow.ID, flow.GetAttributes(), "Created namespace '%s'.", ns.Name)
 	flow.pubsub.NotifyNamespaces()
 
 	var resp grpc.CreateNamespaceResponse
@@ -176,7 +176,7 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 		return nil, err
 	}
 
-	flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Deleted namespace '%s'.", ns.Name)
+	flow.logger.Debugf(ctx, flow.ID, flow.GetAttributes(), "Deleted namespace '%s'.", ns.Name)
 	flow.pubsub.NotifyNamespaces()
 	flow.pubsub.CloseNamespace(ns)
 

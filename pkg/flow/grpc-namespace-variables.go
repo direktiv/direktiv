@@ -343,11 +343,6 @@ func (flow *flow) SetNamespaceVariable(ctx context.Context, req *grpc.SetNamespa
 		return nil, err
 	}
 
-	// TODO: Alex, please fix here.
-
-	// flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Set namespace variable '%s'.", req.GetKey())
-	// flow.pubsub.NotifyNamespaceVariables(cached.Namespace)
-
 	var resp grpc.SetNamespaceVariableResponse
 
 	resp.Namespace = ns.Name
@@ -453,22 +448,6 @@ func (flow *flow) DeleteNamespaceVariable(ctx context.Context, req *grpc.DeleteN
 		return nil, err
 	}
 
-	// TODO: nned fix here.
-	// flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Deleted namespace variable '%s'.", vref.Name)
-	// flow.pubsub.NotifyNamespaceVariables(cached.Namespace)
-
-	// Broadcast Event
-	//broadcastInput := broadcastVariableInput{
-	//	WorkflowPath: "",
-	//	Key:          req.GetKey(),
-	//	TotalSize:    int64(vdata.Size),
-	//	Scope:        BroadcastEventScopeNamespace,
-	//}
-	//err = flow.BroadcastVariable(ctx, BroadcastEventTypeDelete, BroadcastEventScopeNamespace, broadcastInput, cached.Namespace)
-	//if err != nil {
-	//	return nil, err
-	//}
-
 	var resp emptypb.Empty
 
 	return &resp, nil
@@ -503,10 +482,6 @@ func (flow *flow) RenameNamespaceVariable(ctx context.Context, req *grpc.RenameN
 	if err = tx.Commit(ctx); err != nil {
 		return nil, err
 	}
-
-	// TODO: need fix.
-	// flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Renamed namespace variable from '%s' to '%s'.", req.GetOld(), req.GetNew())
-	// flow.pubsub.NotifyNamespaceVariables(cached.Namespace)
 
 	var resp grpc.RenameNamespaceVariableResponse
 

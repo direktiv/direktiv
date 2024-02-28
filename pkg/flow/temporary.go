@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"time"
@@ -132,13 +133,17 @@ func (im *instanceMemory) ListenForEvents(ctx context.Context, events []*model.C
 func (im *instanceMemory) Log(ctx context.Context, level log.Level, a string, x ...interface{}) {
 	switch level {
 	case log.Info:
-		im.engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
+		slog.Info(fmt.Sprintf(a, x...), im.GetSlogAttributes(ctx)...)
+		// im.engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
 	case log.Debug:
-		im.engine.logger.Debugf(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
+		slog.Debug(fmt.Sprintf(a, x...), im.GetSlogAttributes(ctx)...)
+		// im.engine.logger.Debugf(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
 	case log.Error:
-		im.engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
+		slog.Error(fmt.Sprintf(a, x...), im.GetSlogAttributes(ctx)...)
+		// im.engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
 	case log.Panic:
-		im.engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
+		slog.Error(fmt.Sprintf(a, x...), im.GetSlogAttributes(ctx)...)
+		// im.engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
 	}
 }
 
@@ -460,7 +465,7 @@ func (engine *engine) doActionRequest(ctx context.Context, ar *functionRequest) 
 			InstanceId: ar.Workflow.InstanceID, Msg: []string{fmt.Sprintf("Warning: Action timeout '%v' is longer than max allowed duariton '%v'", actionTimeout, engine.server.conf.GetFunctionsTimeout())},
 		})
 		if err != nil {
-			engine.sugar.Errorf("Failed to log: %v.", err)
+			slog.Error("failed to write action log", "error", err.Error())
 		}
 	}
 
@@ -579,6 +584,6 @@ func (engine *engine) reportError(ar *functionRequest, err error) {
 
 	_, err = engine.internal.ReportActionResults(context.Background(), r)
 	if err != nil {
-		engine.sugar.Errorf("can not respond to flow: %v", err)
+		slog.Error("failed to respond to flow", "error", err.Error())
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"log/slog"
 
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/flow/states"
@@ -62,7 +63,7 @@ func (engine *engine) CancelInstanceChildren(ctx context.Context, im *instanceMe
 		case "subflow":
 			engine.pubsub.CancelWorkflow(child.Id, ErrCodeCancelledByParent, "cancelled by parent workflow", false)
 		default:
-			engine.sugar.Errorf("unrecognized child type: %s", child.Type)
+			slog.Error("unrecognized child type", "error", child.Type)
 		}
 	}
 }
@@ -72,7 +73,7 @@ func (engine *engine) cancelInstance(id, code, message string, soft bool) {
 
 	uid, err := uuid.Parse(id)
 	if err != nil {
-		engine.sugar.Errorf("failed to parse instance uuid for cancelInstance: %v", err)
+		slog.Error("failed to parse instance uuid for cancelInstance", "error", err.Error())
 		return
 	}
 
@@ -82,7 +83,7 @@ func (engine *engine) cancelInstance(id, code, message string, soft bool) {
 		Message: message,
 	})
 	if err != nil {
-		engine.sugar.Errorf("failed to enqueue instance message for cancelInstance: %v", err)
+		slog.Error("failed to enqueue instance message for cancelInstance", "error", err.Error())
 		return
 	}
 

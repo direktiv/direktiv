@@ -49,13 +49,13 @@ func (engine *engine) sendCancelToScheduled(instance uuid.UUID) {
 func (engine *engine) executor(ctx context.Context, id uuid.UUID) {
 	ctx, err := engine.registerScheduled(ctx, id)
 	if err != nil {
-		engine.sugar.Errorf("failed to registerScheduled in executor: %v", err)
+		slog.Error("failed to registerScheduled in executor", "error", err.Error())
 		return
 	}
 
 	im, err := engine.getInstanceMemory(ctx, id)
 	if err != nil {
-		engine.sugar.Errorf("failed to getInstanceMemory in executor: %v", err)
+		slog.Error("failed to getInstanceMemory in executor", "error", err.Error())
 		engine.deregisterScheduled(id)
 
 		return
@@ -135,7 +135,7 @@ func (engine *engine) WakeInstanceCaller(ctx context.Context, im *instanceMemory
 	caller := engine.InstanceCaller(im)
 
 	if caller != nil {
-		engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), "Reporting results to calling workflow.")
+		engine.logger.Debugf(ctx, im.GetInstanceID(), im.GetAttributes(), "Reporting results to calling workflow.")
 		slog.Info("Reporting results to calling workflow.", im.GetSlogAttributes(ctx)...)
 
 		msg := &actionResultMessage{
@@ -177,7 +177,7 @@ func (engine *engine) start(im *instanceMemory) {
 	ctx := context.Background()
 
 	engine.sugar.Debugf("Starting workflow %v", im.ID().String())
-	engine.logger.Infof(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "Starting workflow %v", database.GetWorkflow(im.instance.Instance.WorkflowPath))
+	engine.logger.Debugf(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "Starting workflow %v", database.GetWorkflow(im.instance.Instance.WorkflowPath))
 	slog.Info(fmt.Sprintf("Starting workflow %v", im.instance.Instance.WorkflowPath), "stream", string(recipient.Namespace)+"."+im.Namespace().Name)
 	engine.logger.Debugf(ctx, im.instance.Instance.ID, im.GetAttributes(), "Starting workflow %v.", database.GetWorkflow(im.instance.Instance.WorkflowPath))
 	slog.Info(fmt.Sprintf("Starting workflow %v.", im.instance.Instance.WorkflowPath), im.instance.GetSlogAttributes(ctx)...)
@@ -195,7 +195,7 @@ func (engine *engine) start(im *instanceMemory) {
 
 	ctx, err = engine.registerScheduled(ctx, id)
 	if err != nil {
-		engine.sugar.Errorf("failed to registerScheduled in start: %v", err)
+		slog.Error("failed to registerScheduled in start", "error", err.Error())
 		return
 	}
 

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"time"
 
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
@@ -92,7 +93,7 @@ func (engine *engine) instanceMessagesChannelHandler(data string) {
 
 	err := json.Unmarshal([]byte(data), &args)
 	if err != nil {
-		engine.sugar.Errorf("failed to unmarshal channel data: %v", err)
+		slog.Error("instanceMessagesChannelHandler failed to unmarshal channel data", "error", err.Error())
 		return
 	}
 
@@ -109,7 +110,7 @@ func (engine *engine) instanceMessagesChannelHandler(data string) {
 func (engine *engine) handleInstanceMessage(ctx context.Context, im *instanceMemory, msg *instancestore.InstanceMessageData) *states.Transition {
 
 	if im.instance.Instance.EndedAt != nil && !im.instance.Instance.EndedAt.IsZero() {
-		engine.sugar.Errorf("handleInstanceMessage skipping message because instance has ended")
+		slog.Warn("handleInstanceMessage skipping message because instance has ended")
 		return nil
 	}
 
@@ -117,7 +118,7 @@ func (engine *engine) handleInstanceMessage(ctx context.Context, im *instanceMem
 
 	err := json.Unmarshal(msg.Payload, &m)
 	if err != nil {
-		engine.sugar.Errorf("handleInstanceMessage failed to unmarshal message payload: %v", err)
+		slog.Error("handleInstanceMessage failed to unmarshal message payload", "error", err.Error())
 		return nil
 	}
 
@@ -126,19 +127,19 @@ func (engine *engine) handleInstanceMessage(ctx context.Context, im *instanceMem
 
 	x, ok := m["type"]
 	if !ok {
-		engine.sugar.Errorf("handleInstanceMessage failed to unmarshal message payload: missing 'type' field")
+		slog.Error("handleInstanceMessage failed to unmarshal message payload", "error", "missing 'type' field")
 		return nil
 	}
 
 	msgType, ok = x.(string)
 	if !ok {
-		engine.sugar.Errorf("handleInstanceMessage failed to unmarshal message payload: 'type' field not a string")
+		slog.Error("handleInstanceMessage failed to unmarshal message payload", "error", "'type' field not a string")
 		return nil
 	}
 
 	x, ok = m["data"]
 	if !ok {
-		engine.sugar.Errorf("handleInstanceMessage got invalid message payload: missing 'data' field")
+		slog.Error("handleInstanceMessage got invalid message payload", "error", "missing 'data' field")
 		return nil
 	}
 
@@ -171,7 +172,7 @@ func (engine *engine) handleCancelMessage(ctx context.Context, im *instanceMemor
 
 	err := json.Unmarshal(data, &args)
 	if err != nil {
-		engine.sugar.Errorf("handleCancelMessage failed to unmarshal cancel message args: %v", err)
+		slog.Error("handleCancelMessage failed to unmarshal cancel message args", "error", err.Error())
 		return nil
 	}
 
@@ -189,7 +190,7 @@ func (engine *engine) handleWakeMessage(ctx context.Context, im *instanceMemory,
 
 	err := json.Unmarshal(data, &pl)
 	if err != nil {
-		engine.sugar.Errorf("handleWakeMessage failed to unmarshal wakeup message args: %v", err)
+		slog.Error("handleWakeMessage failed to unmarshal wakeup message args", "error", err.Error())
 		return nil
 	}
 
@@ -201,7 +202,7 @@ func (engine *engine) handleActionMessage(ctx context.Context, im *instanceMemor
 
 	err := json.Unmarshal(data, &pl)
 	if err != nil {
-		engine.sugar.Errorf("handleActionMessage failed to unmarshal action results message args: %v", err)
+		slog.Error("handleActionMessage failed to unmarshal action results message args", "error", err.Error())
 		return nil
 	}
 
@@ -213,7 +214,7 @@ func (engine *engine) handleActionMessage(ctx context.Context, im *instanceMemor
 func (engine *engine) handleEventMessage(ctx context.Context, im *instanceMemory, data []byte) *states.Transition {
 	ctx, cleanup, err := traceStateGenericBegin(ctx, im)
 	if err != nil {
-		engine.sugar.Errorf("handleEventMessage failed to begin trace: %v", err)
+		slog.Error("handleEventMessage failed to begin trace", "error", err.Error())
 		return nil
 	}
 	defer cleanup()
@@ -226,7 +227,7 @@ func (engine *engine) handleTransitionMessage(ctx context.Context, im *instanceM
 
 	err := json.Unmarshal(data, &state)
 	if err != nil {
-		engine.sugar.Errorf("handleTransitionMessage failed to unmarshal transition message args: %v", err)
+		slog.Error("handleTransitionMessage failed to unmarshal transition message args", "error", err.Error())
 		return nil
 	}
 
