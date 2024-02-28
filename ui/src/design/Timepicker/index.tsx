@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { ChangeEventHandler, FC, KeyboardEventHandler } from "react";
+import { FC, KeyboardEventHandler } from "react";
 
 import { TimePickerInput } from "./timepicker-input";
 
@@ -26,13 +26,10 @@ export function getTimeString(date: Date) {
 type TimePickerProps = {
   date: Date;
   setDate: (date: Date) => void;
-  setTime: (time: string) => void;
-  time: string;
   hours: string;
   minutes: string;
   seconds: string;
-  onKeyDown?: (event: KeyboardEvent) => void;
-  onTimeChange: (time: string) => void;
+  onKeyDown?: KeyboardEventHandler<HTMLInputElement> | undefined;
 };
 
 const TimePicker: FC<TimePickerProps> = ({
@@ -41,15 +38,11 @@ const TimePicker: FC<TimePickerProps> = ({
   hours,
   minutes,
   seconds,
-  onTimeChange,
   onKeyDown,
 }) => {
-  const minuteRef = React.useRef<HTMLInputElement>(null);
   const hourRef = React.useRef<HTMLInputElement>(null);
+  const minuteRef = React.useRef<HTMLInputElement>(null);
   const secondRef = React.useRef<HTMLInputElement>(null);
-
-  const time = getTimeString(date);
-  const minutesValue = 0;
 
   return (
     <>
@@ -65,10 +58,7 @@ const TimePicker: FC<TimePickerProps> = ({
             setDate={setDate}
             ref={hourRef}
             onRightFocus={() => minuteRef.current?.focus()}
-            onChange={() => {
-              onTimeChange(time);
-              onKeyDown;
-            }}
+            onKeyDown={onKeyDown}
           />
         </div>
         <div className="grid gap-1 text-center">
@@ -82,10 +72,7 @@ const TimePicker: FC<TimePickerProps> = ({
             ref={minuteRef}
             onLeftFocus={() => hourRef.current?.focus()}
             onRightFocus={() => secondRef.current?.focus()}
-            value={minutesValue}
-            onChange={() => {
-              onTimeChange(time);
-            }}
+            onKeyDown={onKeyDown}
           />
         </div>
         <div className="grid gap-1 text-center">
@@ -98,9 +85,7 @@ const TimePicker: FC<TimePickerProps> = ({
             setDate={setDate}
             ref={secondRef}
             onLeftFocus={() => minuteRef.current?.focus()}
-            onChange={() => {
-              onTimeChange(time);
-            }}
+            onKeyDown={onKeyDown}
           />
         </div>
       </div>

@@ -4,7 +4,6 @@ import TimePicker, { getTimeString } from "~/design/Timepicker";
 import { ArrowRight } from "lucide-react";
 import Button from "~/design/Button";
 import { FiltersObj } from "~/api/events/query/get";
-import moment from "moment";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -18,9 +17,10 @@ const RefineTime = ({
   setFilter: (filter: FiltersObj) => void;
 }) => {
   const { t } = useTranslation();
-  const [time, setTime] = useState<string>(getTimeString(date));
 
   const [dateNew, setDate] = useState<Date>(date ?? new Date());
+
+  const time = getTimeString(dateNew);
 
   const setTimeOnDate = () => {
     const [hr, min, sec] = time.split(":").map((item) => Number(item));
@@ -36,8 +36,8 @@ const RefineTime = ({
     });
   };
 
-  const handleKeyDown = (event: { key: string }) => {
-    event.key === "Enter" && setTimeOnDate();
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    e.key === "Enter" && setTimeOnDate();
   };
 
   return (
@@ -46,30 +46,19 @@ const RefineTime = ({
         <CommandGroup
           heading={t("pages.events.history.filter.menuHeading.time")}
         >
-          <div className="flex items-end">
+          <div className="flex items-center">
             <TimePicker
-              onTimeChange={(time) => {
-                setTime(time);
-                handleKeyDown;
+              onKeyDown={(e) => {
+                handleKeyDown(e);
               }}
-              time={time}
-              setTime={(time) => setTime(time)}
               date={dateNew}
               setDate={setDate}
               hours="Hours"
               minutes="Minutes"
               seconds="Seconds"
-              onKeyDown={() => {
-                handleKeyDown;
-              }}
             />
 
-            <Button
-              className="mb-2"
-              icon
-              variant="ghost"
-              onClick={() => setTimeOnDate()}
-            >
+            <Button icon variant="ghost" onClick={() => setTimeOnDate()}>
               <ArrowRight />
             </Button>
           </div>
