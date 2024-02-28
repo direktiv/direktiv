@@ -9,7 +9,7 @@ import { useTranslation } from "react-i18next";
 
 const RefineTime = ({
   field,
-  date,
+  date: givenDate,
   setFilter,
 }: {
   field: "AFTER" | "BEFORE";
@@ -18,9 +18,9 @@ const RefineTime = ({
 }) => {
   const { t } = useTranslation();
 
-  const [dateNew, setDate] = useState<Date>(date ?? new Date());
+  const [date, setDate] = useState<Date>(givenDate ?? new Date());
 
-  const time = getTimeString(dateNew);
+  const time = getTimeString(date);
 
   const setTimeOnDate = () => {
     const [hr, min, sec] = time.split(":").map((item) => Number(item));
@@ -30,9 +30,9 @@ const RefineTime = ({
       return;
     }
 
-    date.setHours(hr, min, sec);
+    givenDate.setHours(hr, min, sec);
     setFilter({
-      [field]: { type: field, value: date },
+      [field]: { type: field, value: givenDate },
     });
   };
 
@@ -51,7 +51,7 @@ const RefineTime = ({
               onKeyDown={(e) => {
                 handleKeyDown(e);
               }}
-              date={dateNew}
+              date={date}
               setDate={setDate}
               hours="Hours"
               minutes="Minutes"
