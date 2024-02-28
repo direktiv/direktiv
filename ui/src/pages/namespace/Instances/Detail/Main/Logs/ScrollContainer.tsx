@@ -7,7 +7,7 @@ import Entry from "./Entry";
 import { Logs } from "~/design/Logs";
 import { twMergeClsx } from "~/util/helpers";
 import { useInstanceDetails } from "~/api/instances/query/details";
-import { useLogs } from "~/api/logs_DEBRECATED/query/get";
+import { useLogs as useLogsDebrecated } from "~/api/logs_DEBRECATED/query/get";
 import { useLogsPreferencesWordWrap } from "~/util/store/logs";
 import { useTranslation } from "react-i18next";
 import { useVirtualizer } from "@tanstack/react-virtual";
@@ -21,7 +21,7 @@ const ScrollContainer = () => {
 
   const filters = useFilters();
 
-  const { data: logData } = useLogs({
+  const { data: logData } = useLogsDebrecated({
     instanceId,
     filters,
   });
