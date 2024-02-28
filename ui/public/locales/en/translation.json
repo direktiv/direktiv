@@ -484,6 +484,13 @@
             "TEXT": "search cloudevent content",
             "AFTER": "filter by received after",
             "BEFORE": "filter by received before"
+          },
+          "menuLabels": {
+            "time": {
+              "hours": "Hours",
+              "minutes": "Minutes",
+              "seconds": "Seconds"
+            }
           }
         }
       },

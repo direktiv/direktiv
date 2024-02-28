@@ -51,9 +51,9 @@ const RefineTime = ({
               }}
               date={date}
               setDate={setDate}
-              hours="Hours"
-              minutes="Minutes"
-              seconds="Seconds"
+              hours={t("pages.events.history.filter.menuLabels.time.hours")}
+              minutes={t("pages.events.history.filter.menuLabels.time.minutes")}
+              seconds={t("pages.events.history.filter.menuLabels.time.seconds")}
             />
 
             <Button icon variant="ghost" onClick={() => setTimeOnDate()}>
