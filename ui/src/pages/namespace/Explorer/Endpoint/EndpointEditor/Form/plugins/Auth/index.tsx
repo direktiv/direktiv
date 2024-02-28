@@ -15,8 +15,8 @@ import {
 } from "../../../schema/plugins/auth";
 import {
   getBasicAuthConfigAtIndex,
-  getGithubWebhookAuthConfigAtIndex,
   getKeyAuthConfigAtIndex,
+  getWebhookAuthConfigAtIndex,
 } from "../utils";
 
 import { AuthPluginFormSchemaType } from "../../../schema/plugins/auth/schema";
@@ -24,13 +24,13 @@ import { BasicAuthForm } from "./BasicAuthForm";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import { EndpointFormSchemaType } from "../../../schema";
-import { GithubWebhookAuthForm } from "./GithubWebhookAuthForm";
 import { KeyAuthForm } from "./KeyAuthForm";
 import { ListContextMenu } from "~/components/ListContextMenu";
 import { ModalWrapper } from "~/components/ModalWrapper";
 import { PluginSelector } from "../components/PluginSelector";
 import { Plus } from "lucide-react";
 import { TableHeader } from "../components/PluginsTable";
+import { WebhookAuthForm } from "./WebhookAuthForm";
 import { useTranslation } from "react-i18next";
 
 type AuthPluginFormProps = {
@@ -209,9 +209,54 @@ export const AuthPluginForm: FC<AuthPluginFormProps> = ({ formControls }) => {
           />
         )}
         {selectedPlugin === authPluginTypes.githubWebhookAuth.name && (
-          <GithubWebhookAuthForm
+          <WebhookAuthForm
+            type={authPluginTypes.githubWebhookAuth.name}
             formId={formId}
-            defaultConfig={getGithubWebhookAuthConfigAtIndex(fields, editIndex)}
+            defaultConfig={getWebhookAuthConfigAtIndex(
+              authPluginTypes.githubWebhookAuth.name,
+              fields,
+              editIndex
+            )}
+            onSubmit={(configuration) => {
+              setDialogOpen(false);
+              if (editIndex === undefined) {
+                addPlugin(configuration);
+              } else {
+                editPlugin(editIndex, configuration);
+              }
+              setEditIndex(undefined);
+            }}
+          />
+        )}
+        {selectedPlugin === authPluginTypes.gitlabWebhookAuth.name && (
+          <WebhookAuthForm
+            type={authPluginTypes.gitlabWebhookAuth.name}
+            formId={formId}
+            defaultConfig={getWebhookAuthConfigAtIndex(
+              authPluginTypes.gitlabWebhookAuth.name,
+              fields,
+              editIndex
+            )}
+            onSubmit={(configuration) => {
+              setDialogOpen(false);
+              if (editIndex === undefined) {
+                addPlugin(configuration);
+              } else {
+                editPlugin(editIndex, configuration);
+              }
+              setEditIndex(undefined);
+            }}
+          />
+        )}
+        {selectedPlugin === authPluginTypes.slackWebhookAuth.name && (
+          <WebhookAuthForm
+            type={authPluginTypes.slackWebhookAuth.name}
+            formId={formId}
+            defaultConfig={getWebhookAuthConfigAtIndex(
+              authPluginTypes.slackWebhookAuth.name,
+              fields,
+              editIndex
+            )}
             onSubmit={(configuration) => {
               setDialogOpen(false);
               if (editIndex === undefined) {
