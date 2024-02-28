@@ -1,17 +1,15 @@
 import { Command, CommandGroup, CommandList } from "~/design/Command";
+import TimePicker, { getTimeString } from "~/design/Timepicker";
 
 import { ArrowRight } from "lucide-react";
 import Button from "~/design/Button";
 import { FiltersObj } from "~/api/events/query/get";
-import Input from "~/design/Input";
-import { InputWithButton } from "~/design/InputWithButton";
-import moment from "moment";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 const RefineTime = ({
   field,
-  date,
+  date: givenDate,
   setFilter,
 }: {
   field: "AFTER" | "BEFORE";
@@ -19,8 +17,9 @@ const RefineTime = ({
   setFilter: (filter: FiltersObj) => void;
 }) => {
   const { t } = useTranslation();
-  const [time, setTime] = useState<string>(moment(date).format("HH:mm:ss"));
+  const [date, setDate] = useState<Date>(givenDate ?? new Date());
 
+  const time = getTimeString(date);
   const setTimeOnDate = () => {
     const [hr, min, sec] = time.split(":").map((item) => Number(item));
 
@@ -29,9 +28,9 @@ const RefineTime = ({
       return;
     }
 
-    date.setHours(hr, min, sec);
+    givenDate.setHours(hr, min, sec);
     setFilter({
-      [field]: { type: field, value: date },
+      [field]: { type: field, value: givenDate },
     });
   };
 
@@ -45,18 +44,22 @@ const RefineTime = ({
         <CommandGroup
           heading={t("pages.events.history.filter.menuHeading.time")}
         >
-          <InputWithButton>
-            <Input
-              type="time"
-              step={1}
-              value={time}
-              onChange={(event) => setTime(event.target.value)}
-              onKeyDown={handleKeyDown}
+          <div className="flex items-center">
+            <TimePicker
+              onKeyDown={(e) => {
+                handleKeyDown(e);
+              }}
+              date={date}
+              setDate={setDate}
+              hours="Hours"
+              minutes="Minutes"
+              seconds="Seconds"
             />
+
             <Button icon variant="ghost" onClick={() => setTimeOnDate()}>
               <ArrowRight />
             </Button>
-          </InputWithButton>
+          </div>
         </CommandGroup>
       </CommandList>
     </Command>
