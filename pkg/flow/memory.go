@@ -228,8 +228,7 @@ func (im *instanceMemory) GetSlogAttributes(ctx context.Context) []interface{} {
 	tags := im.instance.GetSlogAttributes(ctx)
 
 	if im.logic != nil {
-		tags = append(tags, "state-id", im.logic.GetID())
-		tags = append(tags, "state-type", im.logic.GetType())
+		tags = append(tags, "state", im.logic.GetID())
 	}
 	im.userLogger = slog.Default().With(tags...)
 	return tags

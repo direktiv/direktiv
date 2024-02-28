@@ -47,13 +47,13 @@ func (instance *Instance) GetSlogAttributes(ctx context.Context) []interface{} {
 	SpanID := span.SpanContext().SpanID().String()
 
 	tags = append(tags, "track", fmt.Sprintf("%v.%v", recipient.Instance, callpath))
-	tags = append(tags, "instance-id", instance.Instance.ID)
 	tags = append(tags, "invoker", instance.Instance.Invoker)
 	tags = append(tags, "callpath", callpath)
+	tags = append(tags, "instance", instance.Instance.ID)
 	tags = append(tags, "workflow", instance.Instance.WorkflowPath)
 	tags = append(tags, "namespace", instance.Instance.Namespace)
 	tags = append(tags, "source", recipient.Instance)
-	tags = append(tags, "root-instance-id", rootInstanceID)
+	tags = append(tags, "root-instance", rootInstanceID)
 	tags = append(tags, "trace", TraceID)
 	tags = append(tags, "span", SpanID)
 	// tags = append(tags, "callpath", instance.TelemetryInfo.CallPath) // Todo: this is value is not filled
