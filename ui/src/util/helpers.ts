@@ -38,7 +38,7 @@ export const formatLogTime = (time: string) =>
 
 type LogEntryVariant = ComponentProps<typeof LogEntry>["variant"];
 
-export const logLevelToLogEntryVariant = (
+export const logLevelToLogEntryVariant_DEPRECATED = (
   level: LogLevelSchemaType
 ): LogEntryVariant => {
   switch (level) {

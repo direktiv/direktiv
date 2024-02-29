@@ -1,5 +1,8 @@
 import { ComponentPropsWithoutRef, forwardRef } from "react";
-import { formatLogTime, logLevelToLogEntryVariant } from "~/util/helpers";
+import {
+  formatLogTime,
+  logLevelToLogEntryVariant_DEPRECATED,
+} from "~/util/helpers";
 
 import { LogEntry } from "~/design/Logs";
 import { NamespaceLogSchemaType } from "~/api/namespaces/schema";
@@ -14,7 +17,7 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
 
     return (
       <LogEntry
-        variant={logLevelToLogEntryVariant(level)}
+        variant={logLevelToLogEntryVariant_DEPRECATED(level)}
         time={time}
         ref={ref}
         {...props}
