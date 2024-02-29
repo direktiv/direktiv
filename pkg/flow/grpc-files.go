@@ -45,7 +45,7 @@ func (flow *flow) CreateFile(ctx context.Context, req *grpc.CreateFileRequest) (
 		return nil, err
 	}
 
-	flow.logger.Debugf(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Created file '%s'.", file.Path)
+	flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Created file '%s'.", file.Path)
 
 	resp := &grpc.CreateFileResponse{}
 	resp.Namespace = ns.Name
@@ -100,7 +100,7 @@ func (flow *flow) UpdateFile(ctx context.Context, req *grpc.UpdateFileRequest) (
 		return nil, err
 	}
 
-	flow.logger.Debugf(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Updated file '%s'.", file.Path)
+	flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Updated file '%s'.", file.Path)
 
 	var resp grpc.UpdateFileResponse
 

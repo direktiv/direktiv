@@ -47,12 +47,12 @@ func NewGatewayManager(db *database.DB) core.GatewayManager {
 }
 
 func (ep *gatewayManager) DeleteNamespace(ns string) {
-	slog.Debug("deleting namespace from gateway", "namespace", ns)
+	slog.Info("deleting namespace from gateway", "namespace", ns)
 	delete(ep.nsGateways, ns)
 }
 
 func (ep *gatewayManager) UpdateNamespace(ns string) {
-	slog.Debug("updating namespace gateway", slog.String("namespace", ns))
+	slog.Info("updating namespace gateway", slog.String("namespace", ns))
 
 	ep.lock.Lock()
 	defer ep.lock.Unlock()

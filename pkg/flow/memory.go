@@ -378,7 +378,7 @@ func (engine *engine) freeMemory(ctx context.Context, im *instanceMemory) error 
 func (engine *engine) forceFreeCriticalMemory(ctx context.Context, im *instanceMemory) {
 	err := im.flushUpdates(ctx)
 	if err != nil {
-		slog.Error("failed to force flush updates during instance crash", "error", err.Error())
+		engine.sugar.Errorf("Failed to force flush updates during during a crash: %v.", err)
 	}
 
 	engine.deregisterScheduled(im.ID())

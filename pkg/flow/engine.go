@@ -144,6 +144,7 @@ func trim(s string) string {
 func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*instanceMemory, error) {
 	file, data, err := engine.mux(ctx, args.Namespace, args.CalledAs)
 	if err != nil {
+		engine.sugar.Debugf("Failed to create new instance: %v", err)
 		engine.logger.Errorf(ctx, engine.flow.ID, engine.flow.GetAttributes(), "Failed to receive workflow %s", args.CalledAs)
 		if derrors.IsNotFound(err) {
 			return nil, derrors.NewUncatchableError("direktiv.workflow.notfound", "workflow not found: %v", err.Error())
@@ -268,7 +269,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	im.AddAttribute("loop-index", fmt.Sprintf("%d", iterator))
 
 	engine.pubsub.NotifyInstances(im.Namespace())
-	engine.logger.Debugf(ctx, instance.Instance.NamespaceID, instance.GetAttributes(recipient.Namespace), "Workflow '%s' has been triggered by %s.", args.CalledAs, args.Invoker)
+	engine.logger.Infof(ctx, instance.Instance.NamespaceID, instance.GetAttributes(recipient.Namespace), "Workflow '%s' has been triggered by %s.", args.CalledAs, args.Invoker)
 	engine.logger.Debugf(ctx, im.instance.Instance.ID, im.GetAttributes(), "Preparing workflow triggered by %s.", args.Invoker)
 	slog.Info(fmt.Sprintf("Workflow '%s' has been triggered by %s.", args.CalledAs, args.Invoker), im.GetSlogAttributes(ctx)...)
 	// Broadcast Event
@@ -426,7 +427,7 @@ func (engine *engine) CrashInstance(ctx context.Context, im *instanceMemory, err
 		InstanceID:   im.instance.Instance.ID.String(),
 	}, im.instance)
 	if broadcastErr != nil {
-		slog.Error("failed to broadcast in CrashInstance", "error", broadcastErr.Error())
+		engine.sugar.Errorf("Failed to broadcast: %v", broadcastErr)
 	}
 
 	engine.TerminateInstance(ctx, im)
@@ -469,7 +470,7 @@ func (engine *engine) TerminateInstance(ctx context.Context, im *instanceMemory)
 		}
 
 		engine.forceFreeCriticalMemory(ctx, im)
-		slog.Error("failed to free memory during an instance crash", "error", err.Error())
+		engine.sugar.Errorf("Failed to free memory during during a crash: %v.", err)
 	}
 
 	if im.logic != nil {
@@ -570,14 +571,14 @@ failure:
 
 			matched, regErr := regexp.MatchString(errRegex, cerr.Code)
 			if regErr != nil {
-				// engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), "Error catching regex failed to compile: %v", regErr)
+				engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), "Error catching regex failed to compile: %v", regErr)
 				slog.Error(fmt.Sprintf("Error catching regex failed to compile: %v", regErr), im.GetSlogAttributes(ctx)...)
 			}
 
 			if matched {
-				// engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), "State failed with error '%s': %s", cerr.Code, cerr.Message)
+				engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), "State failed with error '%s': %s", cerr.Code, cerr.Message)
 				slog.Error(fmt.Sprintf("State failed with error '%s': %s", cerr.Code, cerr.Message), im.GetSlogAttributes(ctx)...)
-				// engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), "Error caught by error definition %d: %s", i, catch.Error)
+				engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), "Error caught by error definition %d: %s", i, catch.Error)
 				slog.Error(fmt.Sprintf("Error caught by error definition %d: %s", i, catch.Error), im.GetSlogAttributes(ctx)...)
 
 				transition = &states.Transition{
@@ -644,8 +645,8 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 	status := instancestore.InstanceStatusComplete
 	if im.ErrorCode() != "" {
 		status = instancestore.InstanceStatusFailed
-		slog.Error(fmt.Sprintf("Workflow failed with error '%s': %s", im.ErrorCode(), im.instance.Instance.ErrorMessage), im.GetSlogAttributes(ctx)...)
-		// engine.logger.Errorf(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "Workflow failed with error '%s': %s", im.ErrorCode(), im.instance.Instance.ErrorMessage)
+		engine.sugar.Debugf("Instance failed: %s", im.ID().String())
+		engine.logger.Errorf(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "Workflow failed with error '%s': %s", im.ErrorCode(), im.instance.Instance.ErrorMessage)
 	}
 
 	engine.sugar.Debugf("Instance terminated: %s", im.ID().String())
@@ -656,9 +657,9 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 	im.instance.Instance.Status = status
 	im.updateArgs.Status = &im.instance.Instance.Status
 
-	engine.logger.Debugf(ctx, im.GetInstanceID(), im.GetAttributes(), "Workflow %s completed.", database.GetWorkflow(im.instance.Instance.WorkflowPath))
+	engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), "Workflow %s completed.", database.GetWorkflow(im.instance.Instance.WorkflowPath))
 	slog.Info(fmt.Sprintf("Workflow %s completed.", database.GetWorkflow(im.instance.Instance.WorkflowPath)), im.GetSlogAttributes(ctx)...)
-	engine.logger.Debugf(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "Workflow %s completed.", database.GetWorkflow(im.instance.Instance.WorkflowPath))
+	engine.logger.Infof(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "Workflow %s completed.", database.GetWorkflow(im.instance.Instance.WorkflowPath))
 	slog.Info(fmt.Sprintf("Workflow %s completed.", database.GetWorkflow(im.instance.Instance.WorkflowPath)), "stream", string(recipient.Namespace)+"."+im.Namespace().Name)
 
 	defer engine.pubsub.NotifyInstance(im.instance.Instance.ID)
@@ -669,7 +670,7 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 		InstanceID:   im.instance.Instance.ID.String(),
 	}, im.instance)
 	if broadcastErr != nil {
-		slog.Error("failed to broadcase in transitionState", "error", broadcastErr.Error())
+		engine.sugar.Errorf("Failed to broadcast: %v", broadcastErr)
 	}
 
 	engine.TerminateInstance(ctx, im)
@@ -760,13 +761,13 @@ func (engine *engine) retryWakeup(data []byte) {
 
 	err := json.Unmarshal(data, msg)
 	if err != nil {
-		slog.Error("failed to unmarshal retryMessage", "error", err.Error())
+		engine.sugar.Errorf("failed to unmarshal retryMessage: %v", err)
 		return
 	}
 
 	uid, err := uuid.Parse(msg.InstanceID)
 	if err != nil {
-		slog.Error("failed to parse instance ID in retryMessage", "error", err.Error())
+		engine.sugar.Errorf("failed to parse instanceID in retryMessage: %v", err)
 		return
 	}
 
@@ -774,7 +775,7 @@ func (engine *engine) retryWakeup(data []byte) {
 
 	err = engine.enqueueInstanceMessage(ctx, uid, "wake", msg)
 	if err != nil {
-		slog.Error("failed to enqueue instance message for retryWakeup", "error", err.Error())
+		engine.sugar.Errorf("failed to enqueue instance message for retryWakeup: %v", err)
 		return
 	}
 }
@@ -816,7 +817,7 @@ func (engine *engine) wakeEventsWaiter(instance uuid.UUID, events []*cloudevents
 
 	err := engine.enqueueInstanceMessage(ctx, instance, "event", events)
 	if err != nil {
-		slog.Error("failed to enqueue instance message for wakeEventsWaiter", "error", err.Error())
+		engine.sugar.Errorf("faied to enqueue instance message for wakeEventsWaiter: %v", err)
 		return
 	}
 }
@@ -863,7 +864,7 @@ func (engine *engine) EventsInvoke(workflowID uuid.UUID, events ...*cloudevents.
 
 	input, err = json.Marshal(m)
 	if err != nil {
-		slog.Error("failed to marshal during EventsInvoke", "error", err.Error())
+		engine.sugar.Errorf("Internal error on EventsInvoke: %v", err)
 		return
 	}
 
@@ -906,10 +907,10 @@ func (engine *engine) SetMemory(ctx context.Context, im *instanceMemory, x inter
 }
 
 func (engine *engine) reportInstanceCrashed(ctx context.Context, im *instanceMemory, typ, code string, err error) {
-	// engine.sugar.Errorf("Instance failed with %s error '%s': %v", typ, code, err)
-	// engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), "Instance failed with %s error '%s': %s", typ, code, err.Error())
+	engine.sugar.Errorf("Instance failed with %s error '%s': %v", typ, code, err)
+	engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), "Instance failed with %s error '%s': %s", typ, code, err.Error())
 	slog.Error(fmt.Sprintf("Instance failed with %s error '%s': %s", typ, code, err.Error()), im.GetSlogAttributes(ctx)...)
-	// engine.logger.Errorf(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "Workflow failed %s Instance %s crashed with %s error '%s': %s", database.GetWorkflow(im.instance.Instance.WorkflowPath), im.GetInstanceID(), typ, code, err.Error())
+	engine.logger.Errorf(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "Workflow failed %s Instance %s crashed with %s error '%s': %s", database.GetWorkflow(im.instance.Instance.WorkflowPath), im.GetInstanceID(), typ, code, err.Error())
 	slog.Error(fmt.Sprintf("Workflow failed %s Instance %s crashed with %s error '%s': %s", database.GetWorkflow(im.instance.Instance.WorkflowPath), im.GetInstanceID(), typ, code, err.Error()), "stream", im.Namespace().Name)
 }
 
@@ -926,12 +927,12 @@ func (engine *engine) UserLog(ctx context.Context, im *instanceMemory, msg strin
 		event.SetDataContentType("application/json")
 		err := event.SetData("application/json", s)
 		if err != nil {
-			slog.Error("failed to create cloudevent", "error", err.Error())
+			engine.sugar.Errorf("Failed to create CloudEvent: %v.", err)
 		}
 
 		err = engine.events.BroadcastCloudevent(ctx, im.Namespace(), &event, 0)
 		if err != nil {
-			slog.Error("failed to broadcast cloudevent", "error", err.Error())
+			engine.sugar.Errorf("Failed to broadcast CloudEvent: %v.", err)
 			return
 		}
 	}
@@ -940,7 +941,7 @@ func (engine *engine) UserLog(ctx context.Context, im *instanceMemory, msg strin
 func (engine *engine) logRunState(ctx context.Context, im *instanceMemory, wakedata []byte, err error) {
 	engine.sugar.Debugf("Running state logic -- %s:%v (%s) (%v)", im.ID().String(), im.Step(), im.logic.GetID(), time.Now().UTC())
 	if im.GetMemory() == nil && len(wakedata) == 0 && err == nil {
-		engine.logger.Debugf(ctx, im.GetInstanceID(), im.GetAttributes(), "Running state logic (step:%v) -- %s", im.Step(), im.logic.GetID())
+		engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), "Running state logic (step:%v) -- %s", im.Step(), im.logic.GetID())
 		slog.Info(fmt.Sprintf("Running state logic (step:%v) -- %s", im.Step(), im.logic.GetID()), im.GetSlogAttributes(ctx)...)
 	}
 }

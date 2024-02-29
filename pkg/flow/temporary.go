@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log/slog"
 	"net/http"
 	"strconv"
 	"time"
@@ -133,17 +132,13 @@ func (im *instanceMemory) ListenForEvents(ctx context.Context, events []*model.C
 func (im *instanceMemory) Log(ctx context.Context, level log.Level, a string, x ...interface{}) {
 	switch level {
 	case log.Info:
-		slog.Info(fmt.Sprintf(a, x...), im.GetSlogAttributes(ctx)...)
-		// im.engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
+		im.engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
 	case log.Debug:
-		slog.Debug(fmt.Sprintf(a, x...), im.GetSlogAttributes(ctx)...)
-		// im.engine.logger.Debugf(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
+		im.engine.logger.Debugf(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
 	case log.Error:
-		slog.Error(fmt.Sprintf(a, x...), im.GetSlogAttributes(ctx)...)
-		// im.engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
+		im.engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
 	case log.Panic:
-		slog.Error(fmt.Sprintf(a, x...), im.GetSlogAttributes(ctx)...)
-		// im.engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
+		im.engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
 	}
 }
 
@@ -463,7 +458,7 @@ func (engine *engine) doActionRequest(ctx context.Context, ar *functionRequest) 
 			InstanceId: ar.Workflow.InstanceID, Msg: []string{fmt.Sprintf("Warning: Action timeout '%v' is longer than max allowed duariton '%v'", actionTimeout, engine.server.conf.GetFunctionsTimeout())},
 		})
 		if err != nil {
-			slog.Error("failed to write action log", "error", err.Error())
+			engine.sugar.Errorf("Failed to log: %v.", err)
 		}
 	}
 
@@ -582,6 +577,6 @@ func (engine *engine) reportError(ar *functionRequest, err error) {
 
 	_, err = engine.internal.ReportActionResults(context.Background(), r)
 	if err != nil {
-		slog.Error("failed to respond to flow", "error", err.Error())
+		engine.sugar.Errorf("can not respond to flow: %v", err)
 	}
 }

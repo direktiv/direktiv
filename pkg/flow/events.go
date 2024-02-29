@@ -593,7 +593,7 @@ func (flow *flow) ReplayEvent(ctx context.Context, req *grpc.ReplayEventRequest)
 func (events *events) ReplayCloudevent(ctx context.Context, ns *database.Namespace, cevent *pkgevents.Event) error {
 	event := cevent.Event
 
-	events.logger.Debugf(ctx, ns.ID, ns.GetAttributes(), "Replaying event: %s (%s / %s)", event.ID(), event.Type(), event.Source())
+	events.logger.Infof(ctx, ns.ID, ns.GetAttributes(), "Replaying event: %s (%s / %s)", event.ID(), event.Type(), event.Source())
 
 	err := events.handleEvent(ctx, ns.ID, ns.Name, event)
 	if err != nil {
@@ -610,6 +610,8 @@ func (events *events) ReplayCloudevent(ctx context.Context, ns *database.Namespa
 }
 
 func (events *events) BroadcastCloudevent(ctx context.Context, ns *database.Namespace, event *cloudevents.Event, timer int64) error {
+	// events.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Event received: %s (%s / %s) target time: %v", event.ID(), event.Type(), event.Source(), time.Unix(timer, 0))
+
 	metricsCloudEventsReceived.WithLabelValues(ns.Name, event.Type(), event.Source(), ns.Name).Inc()
 	ctx, end := traceBrokerMessage(ctx, *event)
 	defer end()
@@ -685,8 +687,8 @@ func (events *events) listenForEvents(ctx context.Context, im *instanceMemory, c
 		return err
 	}
 
-	events.logger.Debugf(ctx, im.GetInstanceID(), im.GetAttributes(), "Registered to receive events.")
-	slog.Debug("Registered to receive events.", "stream", recipient.Namespace.String()+"."+im.Namespace().Name)
+	events.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), "Registered to receive events.")
+	slog.Info("Registered to receive events.", "stream", recipient.Namespace.String()+"."+im.Namespace().Name)
 
 	return nil
 }

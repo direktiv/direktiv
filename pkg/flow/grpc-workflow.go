@@ -107,7 +107,7 @@ func (flow *flow) createFileSystemObject(ctx context.Context, fileType filestore
 	if err = tx.Commit(ctx); err != nil {
 		return nil, err
 	}
-	flow.logger.Debugf(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Created %s '%s'.", fileType, file.Path)
+	flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Created %s '%s'.", fileType, file.Path)
 
 	err = helpers.PublishEventDirektivFileChange(flow.pBus, file.Typ, "create", &pubsub.FileChangeEvent{
 		Namespace:   ns.Name,
@@ -186,7 +186,7 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 	metricsWf.WithLabelValues(ns.Name, ns.Name).Inc()
 	metricsWfUpdated.WithLabelValues(ns.Name, file.Path, ns.Name).Inc()
 
-	flow.logger.Debugf(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Created workflow '%s'.", file.Path)
+	flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Created workflow '%s'.", file.Path)
 
 	err = flow.BroadcastWorkflow(ctx, BroadcastEventTypeCreate,
 		broadcastWorkflowInput{

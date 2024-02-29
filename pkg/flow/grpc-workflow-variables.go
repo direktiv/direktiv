@@ -320,6 +320,10 @@ func (flow *flow) SetWorkflowVariable(ctx context.Context, req *grpc.SetWorkflow
 		return nil, err
 	}
 
+	// TODO: need fix here.
+	// flow.logger.Infof(ctx, file.ID, database.GetAttributes(recipient.Workflow, ns, fileAttributes(*file)), "Set workflow variable '%s'.", key)
+	// flow.pubsub.NotifyWorkflowVariables(file.ID)
+
 	var resp grpc.SetWorkflowVariableResponse
 
 	resp.Namespace = ns.Name
@@ -432,6 +436,22 @@ func (flow *flow) DeleteWorkflowVariable(ctx context.Context, req *grpc.DeleteWo
 		return nil, err
 	}
 
+	// TODO: need fix here.
+	//flow.logger.Infof(ctx, file.ID, database.GetAttributes(recipient.Workflow, ns, fileAttributes(*file)), "Deleted workflow variable '%s'.", vref.Name)
+	//flow.pubsub.NotifyWorkflowVariables(file.ID)
+	//
+	//// Broadcast Event
+	//broadcastInput := broadcastVariableInput{
+	//	WorkflowPath: req.GetPath(),
+	//	Key:          req.GetKey(),
+	//	TotalSize:    int64(item.Size),
+	//	Scope:        BroadcastEventScopeWorkflow,
+	//}
+	//err = flow.BroadcastVariable(ctx, BroadcastEventTypeDelete, BroadcastEventScopeNamespace, broadcastInput, ns)
+	//if err != nil {
+	//	return nil, err
+	//}
+
 	var resp emptypb.Empty
 
 	return &resp, nil
@@ -470,6 +490,10 @@ func (flow *flow) RenameWorkflowVariable(ctx context.Context, req *grpc.RenameWo
 	if err = tx.Commit(ctx); err != nil {
 		return nil, err
 	}
+
+	// TODO: fix here.
+	// flow.logger.Infof(ctx, file.ID, database.GetAttributes(recipient.Workflow, ns, fileAttributes(*file)), "Renamed workflow variable from '%s' to '%s'.", req.GetOld(), req.GetNew())
+	// flow.pubsub.NotifyWorkflowVariables(file.ID)
 
 	var resp grpc.RenameWorkflowVariableResponse
 

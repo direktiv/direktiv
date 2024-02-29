@@ -122,6 +122,9 @@ func (flow *flow) SetSecret(ctx context.Context, req *grpc.SetSecretRequest) (*g
 	if err = tx.Commit(ctx); err != nil {
 		return nil, err
 	}
+	// TODO: Alax, please look into this.
+	// flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Created namespace secret '%s'.", req.GetKey())
+	// flow.pubsub.NotifyNamespaceSecrets(cached.Namespace)
 
 	err = flow.pBus.Publish(pubsub.SecretCreate, ns.Name)
 	if err != nil {
@@ -170,6 +173,10 @@ func (flow *flow) DeleteSecret(ctx context.Context, req *grpc.DeleteSecretReques
 		flow.sugar.Error("pubsub publish", "error", err)
 	}
 
+	// TODO: Alex please look into this.
+	// flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Deleted namespace secret '%s'.", req.GetKey())
+	// flow.pubsub.NotifyNamespaceSecrets(cached.Namespace)
+
 	var resp emptypb.Empty
 
 	return &resp, nil
@@ -207,6 +214,10 @@ func (flow *flow) UpdateSecret(ctx context.Context, req *grpc.UpdateSecretReques
 	if err = tx.Commit(ctx); err != nil {
 		return nil, err
 	}
+
+	// TODO: Alex, please look into this.
+	// flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Updated namespace secret '%s'.", req.GetKey())
+	// flow.pubsub.NotifyNamespaceSecrets(cached.Namespace)
 
 	err = flow.pBus.Publish(pubsub.SecretUpdate, ns.Name)
 	if err != nil {

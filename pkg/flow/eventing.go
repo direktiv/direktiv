@@ -49,7 +49,7 @@ func newEventReceiver(events *events, flow *flow) (*eventReceiver, error) {
 
 	publishLogger = logger
 
-	logger.Debugf("creating event receiver")
+	logger.Infof("creating event receiver")
 
 	return &eventReceiver{
 		logger: logger,
@@ -152,7 +152,7 @@ func PublishKnativeEvent(ce *cloudevents.Event) {
 }
 
 func (rcv *eventReceiver) RequestEvents(req *igrpc.EventingRequest, stream igrpc.Eventing_RequestEventsServer) error {
-	rcv.logger.Debugf("client connected: %v", req.GetUuid())
+	rcv.logger.Infof("client connected: %v", req.GetUuid())
 
 	knativeClients.Store(req.GetUuid(), client{stream: stream})
 
@@ -160,13 +160,13 @@ func (rcv *eventReceiver) RequestEvents(req *igrpc.EventingRequest, stream igrpc
 
 	<-ctx.Done()
 
-	rcv.logger.Debugf("client %s has disconnected", req.GetUuid())
+	rcv.logger.Infof("client %s has disconnected", req.GetUuid())
 	knativeClients.Delete(req.GetUuid())
 	return nil
 }
 
 func (rcv *eventReceiver) startGRPC() {
-	rcv.logger.Debugf("Starting eventing gRPC server.")
+	rcv.logger.Infof("Starting eventing gRPC server.")
 
 	var grpcServer *grpc.Server
 
@@ -187,7 +187,7 @@ func (rcv *eventReceiver) Start() {
 
 	go rcv.startGRPC()
 
-	rcv.logger.Debugf("starting event receiver")
+	rcv.logger.Infof("starting event receiver")
 
 	err := http.ListenAndServe(":1644", r)
 	if err != nil {
