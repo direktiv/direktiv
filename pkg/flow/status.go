@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log/slog"
 
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
@@ -21,9 +20,7 @@ func (engine *engine) SetInstanceFailed(ctx context.Context, im *instanceMemory,
 	cerr := new(derrors.CatchableError)
 	ierr := new(derrors.InternalError)
 	engine.logger.Errorf(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "Workflow %s canceled due to instance %s failed", im.instance.Instance.WorkflowPath, im.GetInstanceID())
-	slog.Error(fmt.Sprintf("Workflow %s canceled due to instance %s failed", im.instance.Instance.WorkflowPath, im.GetInstanceID()), "stream", recipient.Namespace.String()+"."+im.Namespace().Name)
 	engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), "Workflow %s canceled due to instance %s failed", im.instance.Instance.WorkflowPath, im.GetInstanceID())
-	slog.Error(fmt.Sprintf("Workflow %s canceled due to instance %s failed", im.instance.Instance.WorkflowPath, im.GetInstanceID()), im.GetSlogAttributes(ctx)...)
 	if errors.As(err, &uerr) {
 		code = uerr.Code
 		message = uerr.Message
