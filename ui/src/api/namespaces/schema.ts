@@ -1,4 +1,4 @@
-import { LogLevelSchema } from "../schema";
+import { LogLevelSchema_DEPRECATED } from "../schema";
 import { z } from "zod";
 
 export const NamespaceSchema = z.object({
@@ -43,7 +43,7 @@ export const NamespaceCreatedSchema = z.object({
  */
 export const NamespaceLogSchema = z.object({
   t: z.string(), // 2023-08-07T08:09:49.406596Z
-  level: LogLevelSchema,
+  level: LogLevelSchema_DEPRECATED,
   msg: z.string(), // Starting workflow /stable-diffusion.yaml
 });
 

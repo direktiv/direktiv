@@ -1,9 +1,9 @@
-import { LogLevelSchema } from "../schema";
+import { LogLevelSchema_DEPRECATED } from "../schema";
 import { z } from "zod";
 
 const LogEntrySchema = z.object({
   t: z.string(), // "2023-07-27T09:49:58.408869Z"
-  level: LogLevelSchema,
+  level: LogLevelSchema_DEPRECATED,
   msg: z.string(), // "Preparing workflow triggered by api."
   tags: z.object({
     callpath: z.string(), // "/"

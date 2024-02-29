@@ -2,7 +2,7 @@ import { ComponentProps, FC } from "react";
 import clsx, { ClassValue } from "clsx";
 
 import { LogEntry } from "~/design/Logs";
-import { LogLevelSchemaType } from "~/api/schema";
+import { LogLevelSchemaType_DEPRECATED } from "~/api/schema";
 import moment from "moment";
 import { twMerge } from "tailwind-merge";
 
@@ -38,8 +38,24 @@ export const formatLogTime = (time: string) =>
 
 type LogEntryVariant = ComponentProps<typeof LogEntry>["variant"];
 
+export const logLevelToLogEntryVariant = (
+  level: LogLevelSchemaType_DEPRECATED
+): LogEntryVariant => {
+  switch (level) {
+    case "error":
+    case "warn":
+      return "error";
+    case "info":
+      return "info";
+    case "debug":
+      return undefined;
+    default:
+      break;
+  }
+};
+
 export const logLevelToLogEntryVariant_DEPRECATED = (
-  level: LogLevelSchemaType
+  level: LogLevelSchemaType_DEPRECATED
 ): LogEntryVariant => {
   switch (level) {
     case "error":

@@ -1,4 +1,4 @@
-import { LogLevelSchema, PageinfoSchema } from "../../../schema";
+import { LogLevelSchema_DEPRECATED, PageinfoSchema } from "../../../schema";
 
 import { gitUrlSchema } from "./validation";
 import { z } from "zod";
@@ -104,7 +104,7 @@ export const MirrorInfoSchema = z.object({
 
 export const MirrorActivityLogItemSchema = z.object({
   t: z.string(),
-  level: LogLevelSchema,
+  level: LogLevelSchema_DEPRECATED,
   msg: z.string(),
 });
 
