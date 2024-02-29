@@ -46,15 +46,15 @@ func (m *logController) mountRouter(r chi.Router) {
 		}
 		if len(data) == 0 {
 			data = nil
-			writeJSONWithNextPage(w, data, "")
+			writeJSONWithNextPage(w, data, nil)
 
 			return
 		}
-		nextPage := data[len(data)-1].Time.UTC().Format(time.RFC3339Nano)
+		previousPage := data[len(data)-1].Time.UTC().Format(time.RFC3339Nano)
 		if len(data) < 200 {
-			nextPage = ""
+			previousPage = ""
 		}
-		writeJSONWithNextPage(w, data, nextPage)
+		writeJSONWithNextPage(w, data, previousPage)
 	})
 }
 

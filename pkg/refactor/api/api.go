@@ -176,16 +176,16 @@ func writeJSON(w http.ResponseWriter, v any) {
 	_ = json.NewEncoder(w).Encode(payLoad)
 }
 
-func writeJSONWithNextPage(w http.ResponseWriter, data any, nextPage any) {
+func writeJSONWithNextPage(w http.ResponseWriter, data any, previousPage any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
 	payLoad := struct {
-		NextPage any `json:"next_page"`
-		Data     any `json:"data"`
+		PreviousPage any `json:"previousPage"`
+		Data         any `json:"data"`
 	}{
-		Data:     data,
-		NextPage: nextPage,
+		Data:         data,
+		PreviousPage: previousPage,
 	}
 	_ = json.NewEncoder(w).Encode(payLoad)
 }
