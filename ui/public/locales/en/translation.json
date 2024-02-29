@@ -630,6 +630,9 @@
               "workflowName": "/path/filename.yaml",
               "stateName": "someStateName"
             }
+          },
+          "entry": {
+            "workflowTooltip": "open workflow in new window"
           }
         },
         "diagram": {
