@@ -1,5 +1,15 @@
-import { LogEntrySchema, LogsSchema } from "../schema";
-import { QueryFunctionContext, useInfiniteQuery } from "@tanstack/react-query";
+import {
+  InfiniteData,
+  QueryFunctionContext,
+  useInfiniteQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import {
+  LogEntrySchema,
+  LogEntryType,
+  LogsSchema,
+  LogsSchemaType,
+} from "../schema";
 
 import { apiFactory } from "~/api/apiFactory";
 import { buildSearchParamsString } from "~/api/utils";
@@ -8,6 +18,71 @@ import { memo } from "react";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 import { useStreaming } from "~/api/streaming";
+
+/**
+ * example of a InfiniteData<LogsSchemaType> object. All of these
+ * data share one cache key. The pages and pageParams properties
+ * are part of useInfiniteQuery hook.
+  {
+      // the result of every page request is stored here
+    "pages": [
+      {
+        "previousPage": "FIRST_TIMESTAMP",
+        "data": []
+      },
+      {
+        "previousPage": "SECOND_TIMESTAMP",
+        "data": []
+      },
+      {
+        "previousPage": null, // last page
+        "data": []
+      }
+    ]
+    // all page pointers that were found in the page request results are stored here
+    "pageParams": [
+      "FIRST_TIMESTAMP",
+      "SECOND_TIMESTAMP",
+      null
+    ]
+  }
+*/
+type LogsCache = InfiniteData<LogsSchemaType>;
+
+const updateCache = (
+  oldData: LogsCache | undefined,
+  newLogEntry: LogEntryType
+): LogsCache => {
+  if (oldData === undefined) {
+    // TODO: handle this case
+    return {
+      pages: [],
+      pageParams: [],
+    };
+  }
+
+  const pages = oldData.pages;
+  const [firstPage, ...otherPages] = pages;
+
+  if (firstPage === undefined) {
+    // TODO: handle this case
+    return {
+      pages: [],
+      pageParams: [],
+    };
+  }
+
+  return {
+    ...oldData,
+    pages: [
+      {
+        ...firstPage,
+        data: [...firstPage.data, newLogEntry],
+      },
+      ...otherPages,
+    ],
+  };
+};
 
 type LogsQueryParams = {
   instance?: string;
@@ -63,7 +138,7 @@ const fetchLogs = async ({
 export const useLogsStream = (params: LogsQueryParams) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
-  // const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
 
   if (!namespace) {
     throw new Error("namespace is undefined");
@@ -78,15 +153,16 @@ export const useLogsStream = (params: LogsQueryParams) => {
     apiKey: apiKey ?? undefined,
     schema: LogEntrySchema,
     onMessage: (msg) => {
-      console.log("🚀 received a msg", msg);
-      // queryClient.setQueryData<LogsSchemaType>(
-      //   logKeys.detail(namespace, {
-      //     apiKey: apiKey ?? undefined,
-      //     instanceId,
-      //     filters: filters ?? {},
-      //   }),
-      //   (oldData) => updateCache(oldData, msg)
-      // );
+      queryClient.setQueryData<LogsCache>(
+        logKeys.detail(namespace, {
+          apiKey: apiKey ?? undefined,
+          activity: params.activity,
+          instance: params.instance,
+          route: params.route,
+          trace: params.trace,
+        }),
+        (oldData) => updateCache(oldData, msg)
+      );
     },
   });
 };
