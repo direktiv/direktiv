@@ -190,7 +190,7 @@ func (q *instanceDataQuery) PopMessage(ctx context.Context) (*instancestore.Inst
 	res := q.db.WithContext(ctx).Raw(query, q.instanceID).First(msg)
 	if res.Error != nil {
 		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
-			return nil, nil
+			return nil, instancestore.ErrNoMessages
 		}
 
 		return nil, res.Error

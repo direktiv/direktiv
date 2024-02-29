@@ -3,6 +3,7 @@ package flow
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 	"time"
@@ -102,12 +103,12 @@ func (engine *engine) executorLoop(ctx context.Context, im *instanceMemory) {
 
 		msg, err := tx.InstanceStore().ForInstanceID(im.ID()).PopMessage(ctx)
 		if err != nil {
-			engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", err.Error()))
-			return
-		}
+			if errors.Is(err, instancestore.ErrNoMessages) {
+				// yield
+				return
+			}
 
-		if msg == nil {
-			// yield
+			engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", err.Error()))
 			return
 		}
 

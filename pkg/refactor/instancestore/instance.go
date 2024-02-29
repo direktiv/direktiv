@@ -16,6 +16,7 @@ var (
 	ErrNotFound     = errors.New("not found")
 	ErrParallelCron = errors.New("a parallel cron already exists")
 	ErrBadListOpts  = errors.New("unsupported list option")
+	ErrNoMessages   = errors.New("no messages")
 )
 
 // InstanceStatus enum allows us to perform arithmetic comparisons on the database.

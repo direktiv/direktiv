@@ -79,11 +79,14 @@ func (engine *engine) kickWaitingInstances() {
 	for idx := range instances {
 		instance := instances[idx]
 
-		data, _ := json.Marshal(&instanceMessageChannelData{
+		data, err := json.Marshal(&instanceMessageChannelData{
 			InstanceID:        instance.ID,
 			LastKnownServer:   instance.Server,
 			LastKnownUpdateAt: instance.UpdatedAt,
 		})
+		if err != nil {
+			slog.Error("kickWaitingInstances failed to marshal data", "error", err.Error())
+		}
 
 		engine.instanceMessagesChannelHandler(string(data))
 	}

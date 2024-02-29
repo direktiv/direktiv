@@ -61,8 +61,7 @@ func (im *instanceMemory) flushUpdates(ctx context.Context) error {
 	//		therefore we will need to test heavily and potentially implement retries.
 	tx, err := im.engine.flow.beginSqlTx(ctx) /*&sql.TxOptions{
 		Isolation: sql.LevelSerializable,
-	}*/
-	if err != nil {
+	}*/if err != nil {
 		return err
 	}
 	defer tx.Rollback()

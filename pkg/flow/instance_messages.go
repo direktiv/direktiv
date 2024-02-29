@@ -40,8 +40,7 @@ func (engine *engine) enqueueInstanceMessage(ctx context.Context, id uuid.UUID, 
 	// NOTE: we don't do serializable here. We don't need to. This is a best effort logic.
 	tx, err := engine.flow.beginSqlTx(ctx) /*&sql.TxOptions{
 		Isolation: sql.LevelSerializable,
-	}*/
-	if err != nil {
+	}*/if err != nil {
 		return err
 	}
 	defer tx.Rollback()
@@ -109,7 +108,6 @@ func (engine *engine) instanceMessagesChannelHandler(data string) {
 }
 
 func (engine *engine) handleInstanceMessage(ctx context.Context, im *instanceMemory, msg *instancestore.InstanceMessageData) *states.Transition {
-
 	if im.instance.Instance.EndedAt != nil && !im.instance.Instance.EndedAt.IsZero() {
 		slog.Warn("handleInstanceMessage skipping message because instance has ended")
 		return nil
@@ -144,6 +142,7 @@ func (engine *engine) handleInstanceMessage(ctx context.Context, im *instanceMem
 		return nil
 	}
 
+	//nolint:errchkjson
 	data, _ := json.Marshal(x)
 
 	switch msgType {
