@@ -13,19 +13,19 @@ type LogCollectionManager interface {
 }
 
 type PlattformLogEntry struct {
-	ID        string    `json:"id"`
-	Time      time.Time `json:"time"`
-	Msg       string    `json:"msg"`
-	Level     string    `json:"level"`
-	Trace     string    `json:"trace"`
-	Span      string    `json:"span"`
-	State     string    `json:"state"`
-	Branch    string    `json:"branch"`
-	Workflow  string    `json:"workflow"`
-	Instance  string    `json:"instance"`
-	Namespace string    `json:"namespace"`
-	Activity  string    `json:"activity"`
-	Route     string    `json:"route"`
-	Path      string    `json:"path"`
-	Error     string    `json:"error"`
+	ID        string      `json:"id"`
+	Time      time.Time   `json:"time"`
+	Msg       interface{} `json:"msg"`
+	Level     interface{} `json:"level"`
+	Trace     interface{} `json:"trace"`
+	Span      interface{} `json:"span"`
+	State     interface{} `json:"state"`
+	Branch    interface{} `json:"branch"`
+	Workflow  interface{} `json:"workflow"`
+	Instance  interface{} `json:"instance"`
+	Namespace interface{} `json:"namespace"`
+	Activity  interface{} `json:"activity"`
+	Route     interface{} `json:"route"`
+	Path      interface{} `json:"path"`
+	Error     interface{} `json:"error"`
 }
