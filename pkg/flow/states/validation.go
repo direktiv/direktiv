@@ -2,7 +2,6 @@ package states
 
 import (
 	"errors"
-	"fmt"
 
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 )
@@ -52,7 +51,6 @@ func scheduleTwiceConst(logic Logic, wakedata []byte, expect string) (bool, erro
 	}
 
 	if string(wakedata) != expect {
-		fmt.Println("|", string(wakedata), "|", expect, "|")
 		return false, derrors.NewInternalError(errors.New("got unexpected wakedata"))
 	}
 

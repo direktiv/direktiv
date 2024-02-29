@@ -161,19 +161,20 @@ type CreateInstanceDataArgs struct {
 
 // UpdateInstanceDataArgs defines the possible arguments for updating an existing instance data record.
 type UpdateInstanceDataArgs struct {
-	Server        uuid.UUID       `json:"server"`
-	EndedAt       *time.Time      `json:"ended_at,omitempty"`
-	Deadline      *time.Time      `json:"deadline,omitempty"`
-	Status        *InstanceStatus `json:"status,omitempty"`
-	ErrorCode     *string         `json:"error_code,omitempty"`
-	TelemetryInfo *[]byte         `json:"telemetry_info,omitempty"`
-	RuntimeInfo   *[]byte         `json:"runtime_info,omitempty"`
-	ChildrenInfo  *[]byte         `json:"children_info,omitempty"`
-	LiveData      *[]byte         `json:"live_data,omitempty"`
-	StateMemory   *[]byte         `json:"state_memory,omitempty"`
-	Output        *[]byte         `json:"output,omitempty"`
-	ErrorMessage  *[]byte         `json:"error_message,omitempty"`
-	Metadata      *[]byte         `json:"metadata,omitempty"`
+	BypassOwnershipCheck bool            `json:"bypass_ownership_check"`
+	Server               uuid.UUID       `json:"server"`
+	EndedAt              *time.Time      `json:"ended_at,omitempty"`
+	Deadline             *time.Time      `json:"deadline,omitempty"`
+	Status               *InstanceStatus `json:"status,omitempty"`
+	ErrorCode            *string         `json:"error_code,omitempty"`
+	TelemetryInfo        *[]byte         `json:"telemetry_info,omitempty"`
+	RuntimeInfo          *[]byte         `json:"runtime_info,omitempty"`
+	ChildrenInfo         *[]byte         `json:"children_info,omitempty"`
+	LiveData             *[]byte         `json:"live_data,omitempty"`
+	StateMemory          *[]byte         `json:"state_memory,omitempty"`
+	Output               *[]byte         `json:"output,omitempty"`
+	ErrorMessage         *[]byte         `json:"error_message,omitempty"`
+	Metadata             *[]byte         `json:"metadata,omitempty"`
 }
 
 // InstanceMessageData is the struct that matches the instance messages table.
@@ -231,6 +232,9 @@ type Store interface {
 
 	// GetHangingInstances returns a list of all instances where deadline has been exceeded and status is unfinished
 	GetHangingInstances(ctx context.Context) ([]InstanceData, error)
+
+	// GetHomelessInstances returns a list of all unfinished instances where updated_at hasn't been touched in a while, so that the engine can attempt to auto-resume work on them
+	GetHomelessInstances(ctx context.Context, t time.Time) ([]InstanceData, error)
 
 	// DeleteOldInstances deletes all instances that have terminated and end_at a long time ago
 	DeleteOldInstances(ctx context.Context, before time.Time) error

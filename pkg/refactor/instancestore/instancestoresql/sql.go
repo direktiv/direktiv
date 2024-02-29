@@ -3,6 +3,7 @@ package instancestoresql
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
@@ -193,6 +194,26 @@ func (s *sqlInstanceStore) GetHangingInstances(ctx context.Context) ([]instances
 	idatas, _, err := s.performGetInstancesQuery(ctx, summaryFields, opts)
 	if err != nil {
 		return nil, err
+	}
+
+	return idatas, nil
+}
+
+func (s *sqlInstanceStore) GetHomelessInstances(ctx context.Context, t time.Time) ([]instancestore.InstanceData, error) {
+	query := fmt.Sprintf(`
+SELECT DISTINCT {table0}.%s, {table0}.%s, {table0}.%s
+FROM {table0}
+INNER JOIN {table1} ON {table0}.%s={table1}.%s
+WHERE {table0}.%s < ? AND {table0}.%s < ?
+`, fieldID, fieldServer, fieldUpdatedAt, fieldID, fieldInstanceMessageInstanceID, fieldStatus, fieldUpdatedAt)
+	query = strings.ReplaceAll(query, "{table0}", table)
+	query = strings.ReplaceAll(query, "{table1}", messagesTable)
+
+	var idatas []instancestore.InstanceData
+
+	res := s.db.WithContext(ctx).Raw(query, instancestore.InstanceStatusComplete, t).Find(&idatas)
+	if res.Error != nil {
+		return nil, res.Error
 	}
 
 	return idatas, nil

@@ -55,6 +55,10 @@ func (im *instanceMemory) flushUpdates(ctx context.Context) error {
 
 	im.updateArgs.Server = im.engine.ID
 
+	// NOTE: no need to make this serializable because only a single operation is performed. If we
+	// 		expand the number of queries here in the future we should make it serializable. Be
+	// 		warned however that making this serializable opens us up to serialization failures, and
+	//		therefore we will need to test heavily and potentially implement retries.
 	tx, err := im.engine.flow.beginSqlTx(ctx) /*&sql.TxOptions{
 		Isolation: sql.LevelSerializable,
 	}*/
@@ -278,7 +282,8 @@ func (engine *engine) getInstanceMemory(ctx context.Context, id uuid.UUID) (*ins
 	}
 
 	err = tx.InstanceStore().ForInstanceID(id).UpdateInstanceData(ctx, &instancestore.UpdateInstanceDataArgs{
-		Server: engine.ID,
+		BypassOwnershipCheck: true,
+		Server:               engine.ID,
 	})
 	if err != nil {
 		return nil, err
@@ -353,7 +358,7 @@ func (engine *engine) freeArtefacts(im *instanceMemory) {
 
 func (engine *engine) freeMemory(ctx context.Context, im *instanceMemory) error {
 	for i := range im.eventQueue {
-		err := engine.events.flushEvent(ctx, im.eventQueue[i], im.Namespace(), true)
+		err := engine.events.flushEvent(true)
 		if err != nil {
 			return fmt.Errorf("failed to flush event [%d]: %w", i, err)
 		}

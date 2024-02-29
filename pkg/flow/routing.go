@@ -185,9 +185,8 @@ func (flow *flow) cronHandler(data []byte) {
 		Input:     make([]byte, 0),
 		Invoker:   instancestore.InvokerCron,
 		TelemetryInfo: &enginerefactor.InstanceTelemetryInfo{
-			TraceID: span.SpanContext().TraceID().String(),
-			SpanID:  span.SpanContext().SpanID().String(),
-			// TODO: alan, CallPath: ,
+			TraceID:       span.SpanContext().TraceID().String(),
+			SpanID:        span.SpanContext().SpanID().String(),
 			NamespaceName: ns.Name,
 		},
 	}

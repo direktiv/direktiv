@@ -501,9 +501,8 @@ func (flow *flow) StartWorkflow(ctx context.Context, req *grpc.StartWorkflowRequ
 		Input:     input,
 		Invoker:   apiCaller,
 		TelemetryInfo: &enginerefactor.InstanceTelemetryInfo{
-			TraceID: span.SpanContext().TraceID().String(),
-			SpanID:  span.SpanContext().SpanID().String(),
-			// TODO: alan, CallPath: ,
+			TraceID:       span.SpanContext().TraceID().String(),
+			SpanID:        span.SpanContext().SpanID().String(),
 			NamespaceName: ns.Name,
 		},
 	}
@@ -613,9 +612,8 @@ func (flow *flow) AwaitWorkflow(req *grpc.AwaitWorkflowRequest, srv grpc.Flow_Aw
 		Input:     input,
 		Invoker:   apiCaller,
 		TelemetryInfo: &enginerefactor.InstanceTelemetryInfo{
-			TraceID: span.SpanContext().TraceID().String(),
-			SpanID:  span.SpanContext().SpanID().String(),
-			// TODO: alan, CallPath: ,
+			TraceID:       span.SpanContext().TraceID().String(),
+			SpanID:        span.SpanContext().SpanID().String(),
 			NamespaceName: ns.Name,
 		},
 	}

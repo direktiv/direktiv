@@ -73,11 +73,7 @@ func (flow *flow) Namespaces(ctx context.Context, req *grpc.NamespacesRequest) (
 
 	resp := new(grpc.NamespacesResponse)
 	resp.PageInfo = nil
-
 	resp.Results = bytedata.ConvertNamespacesListToGrpc(list)
-	if err != nil {
-		return nil, err
-	}
 
 	return resp, nil
 }
@@ -160,9 +156,6 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 	defer tx.Rollback()
 
 	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetName())
-	if err != nil {
-		return nil, err
-	}
 	if err != nil {
 		return nil, err
 	}

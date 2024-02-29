@@ -28,6 +28,7 @@ type instanceMessageChannelData struct {
 }
 
 func (engine *engine) enqueueInstanceMessage(ctx context.Context, id uuid.UUID, kind string, data interface{}) error {
+	// TODO: should this add state and step data? At some point these fields died so I have removed them.
 	payload, err := json.Marshal(map[string]interface{}{
 		"type": kind,
 		"data": data,

@@ -495,8 +495,6 @@ type: noop
 
 		return
 	}
-
-	// TODO: alan, test filters
 }
 
 // nolint

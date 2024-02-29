@@ -299,7 +299,7 @@ func (im *instanceMemory) ScheduleRetry(ctx context.Context, d time.Duration, st
 
 	t := time.Now().UTC().Add(d)
 
-	err = im.engine.scheduleRetry(im.ID().String(), stateID, im.Step(), t, data)
+	err = im.engine.scheduleRetry(im.ID().String(), t, data)
 	if err != nil {
 		return err
 	}
@@ -317,8 +317,6 @@ func (im *instanceMemory) CreateChild(ctx context.Context, args states.CreateChi
 			Step:   im.Step(),
 			Branch: args.Iterator,
 		}
-		// TODO: alan
-		// caller.CallPath = im.instance.TelemetryInfo.CallPath
 		sfim, err := im.engine.subflowInvoke(ctx, pi, im.instance, args.Definition.(*model.SubflowFunctionDefinition).Workflow, args.Input)
 		if err != nil {
 			return nil, err
@@ -344,7 +342,7 @@ func (im *instanceMemory) CreateChild(ctx context.Context, args states.CreateChi
 
 	uid := uuid.New()
 
-	ar, err := im.engine.newIsolateRequest(ctx, im, im.logic.GetID(), args.Timeout, args.Definition, args.Input, uid, args.Async, args.Files, args.Iterator)
+	ar, err := im.engine.newIsolateRequest(im, im.logic.GetID(), args.Timeout, args.Definition, args.Input, uid, args.Async, args.Files, args.Iterator)
 	if err != nil {
 		return nil, err
 	}
@@ -375,7 +373,7 @@ func (child *subflowHandle) Info() states.ChildInfo {
 	return child.info
 }
 
-func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory, stateId string, timeout int,
+func (engine *engine) newIsolateRequest(im *instanceMemory, stateId string, timeout int,
 	fn model.FunctionDefinition, inputData []byte,
 	uid uuid.UUID, async bool, files []model.FunctionFileDefinition, iterator int,
 ) (*functionRequest, error) {

@@ -380,10 +380,6 @@ resend:
 	}
 	le = append(le, res...)
 
-	if err != nil {
-		return err
-	}
-
 	resp := new(grpc.MirrorActivityLogsResponse)
 	resp.Namespace = ns.Name
 	resp.Activity = mirProcessID.String()

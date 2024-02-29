@@ -97,11 +97,14 @@ func (q *instanceDataQuery) UpdateInstanceData(ctx context.Context, args *instan
 
 	query += fmt.Sprintf(" SET %s", strings.Join(clauses, ", "))
 
-	query += fmt.Sprintf(" WHERE %s = ? AND %s = ? AND %s > ?", fieldID, fieldServer, fieldUpdatedAt)
-
+	query += fmt.Sprintf(" WHERE %s = ?", fieldID)
 	vals = append(vals, q.instanceID)
-	vals = append(vals, args.Server)
-	vals = append(vals, time.Now().UTC().Add(-maxWriteDT))
+
+	if !args.BypassOwnershipCheck {
+		query += fmt.Sprintf(" AND %s = ? AND %s > ?", fieldServer, fieldUpdatedAt)
+		vals = append(vals, args.Server)
+		vals = append(vals, time.Now().UTC().Add(-maxWriteDT))
+	}
 
 	res := q.db.WithContext(ctx).Exec(query, vals...)
 	if res.Error != nil {

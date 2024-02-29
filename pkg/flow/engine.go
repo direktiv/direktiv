@@ -42,11 +42,51 @@ func initEngine(srv *server) (*engine, error) {
 
 	engine.pBus.Subscribe(engine.instanceMessagesChannelHandler, engineInstanceMessagesChannel)
 
+	go engine.instanceKicker()
+
 	return engine, nil
 }
 
 func (engine *engine) Close() error {
 	return nil
+}
+
+func (engine *engine) instanceKicker() {
+	<-time.After(1 * time.Minute)
+	ticker := time.NewTicker(5 * time.Second)
+	for {
+		<-ticker.C
+		go engine.kickWaitingInstances()
+	}
+}
+
+func (engine *engine) kickWaitingInstances() {
+	ctx := context.Background()
+
+	tx, err := engine.beginSqlTx(ctx)
+	if err != nil {
+		slog.Error("kickWaitingInstances failed to open transaction", "error", err.Error())
+		return
+	}
+	defer tx.Rollback()
+
+	instances, err := tx.InstanceStore().GetHomelessInstances(ctx, time.Now().UTC().Add(-engineSchedulingTimeout))
+	if err != nil {
+		slog.Error("kickWaitingInstances failed to list homeless instances", "error", err.Error())
+		return
+	}
+
+	for idx := range instances {
+		instance := instances[idx]
+
+		data, _ := json.Marshal(&instanceMessageChannelData{
+			InstanceID:        instance.ID,
+			LastKnownServer:   instance.Server,
+			LastKnownUpdateAt: instance.UpdatedAt,
+		})
+
+		engine.instanceMessagesChannelHandler(string(data))
+	}
 }
 
 type newInstanceArgs struct {
@@ -430,10 +470,10 @@ func (engine *engine) TerminateInstance(ctx context.Context, im *instanceMemory)
 	}
 
 	if im.logic != nil {
-		engine.metricsCompleteState(ctx, im, "", im.ErrorCode(), false)
+		engine.metricsCompleteState(im, "", im.ErrorCode(), false)
 	}
 
-	engine.metricsCompleteInstance(ctx, im)
+	engine.metricsCompleteInstance(im)
 
 	engine.WakeInstanceCaller(ctx, im)
 }
@@ -590,7 +630,7 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 	}
 
 	if transition.NextState != "" {
-		engine.metricsCompleteState(ctx, im, transition.NextState, errCode, false)
+		engine.metricsCompleteState(im, transition.NextState, errCode, false)
 		engine.sugar.Debugf("Instance transitioning to next state: %s -> %s", im.ID().String(), transition.NextState)
 		slog.Info(fmt.Sprintf("Transitioning to next state: %s (%d).", transition.NextState, im.Step()+1), im.GetSlogAttributes(ctx)...)
 		engine.logger.Debugf(ctx, im.GetInstanceID(), im.GetAttributes(), "Transitioning to next state: %s (%d).", transition.NextState, im.Step()+1)
@@ -654,9 +694,8 @@ func (engine *engine) subflowInvoke(ctx context.Context, pi *enginerefactor.Pare
 		Invoker:     fmt.Sprintf("instance:%v", pi.ID),
 		DescentInfo: di,
 		TelemetryInfo: &enginerefactor.InstanceTelemetryInfo{
-			TraceID: span.SpanContext().TraceID().String(),
-			SpanID:  span.SpanContext().SpanID().String(),
-			// TODO: alan, CallPath: ,
+			TraceID:       span.SpanContext().TraceID().String(),
+			SpanID:        span.SpanContext().SpanID().String(),
 			NamespaceName: instance.TelemetryInfo.NamespaceName,
 		},
 	}
@@ -682,19 +721,15 @@ func (engine *engine) subflowInvoke(ctx context.Context, pi *enginerefactor.Pare
 
 type retryMessage struct {
 	InstanceID string
-	// State      string
-	Step int
-	Data []byte
+	Data       []byte
 }
 
 const retryWakeupFunction = "retryWakeup"
 
-func (engine *engine) scheduleRetry(id, state string, step int, t time.Time, data []byte) error {
+func (engine *engine) scheduleRetry(id string, t time.Time, data []byte) error {
 	data, err := json.Marshal(&retryMessage{
 		InstanceID: id,
-		// State:      state,
-		Step: step,
-		Data: data,
+		Data:       data,
 	})
 	if err != nil {
 		panic(err)
@@ -773,7 +808,7 @@ func (engine *engine) createTransport() *http.Transport {
 	return tr
 }
 
-func (engine *engine) wakeEventsWaiter(instance uuid.UUID, step int, events []*cloudevents.Event) {
+func (engine *engine) wakeEventsWaiter(instance uuid.UUID, events []*cloudevents.Event) {
 	ctx := context.Background()
 
 	err := engine.enqueueInstanceMessage(ctx, instance, "event", events)
@@ -838,9 +873,8 @@ func (engine *engine) EventsInvoke(workflowID uuid.UUID, events ...*cloudevents.
 		Input:     input,
 		Invoker:   "cloudevent",
 		TelemetryInfo: &enginerefactor.InstanceTelemetryInfo{
-			TraceID: span.SpanContext().TraceID().String(),
-			SpanID:  span.SpanContext().SpanID().String(),
-			// TODO: alan, CallPath: ,
+			TraceID:       span.SpanContext().TraceID().String(),
+			SpanID:        span.SpanContext().SpanID().String(),
 			NamespaceName: ns.Name,
 		},
 	}
