@@ -131,7 +131,7 @@ export const useLogs = ({
     queryFn: fetchLogs,
     getNextPageParam: () => undefined,
     getPreviousPageParam: (firstPage) =>
-      firstPage.next_page === "" ? undefined : firstPage.next_page,
+      firstPage.previousPage === "" ? undefined : firstPage.previousPage, // TODO: update this when previousPage is nullable
     enabled: !!namespace,
   });
 };
