@@ -2,7 +2,6 @@ package flow
 
 import (
 	"context"
-	"log/slog"
 
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 )
@@ -28,7 +27,6 @@ func (engine *engine) WakeInstanceCaller(ctx context.Context, im *instanceMemory
 
 	if caller != nil {
 		engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), "Reporting results to calling workflow.")
-		slog.Info("Reporting results to calling workflow.", im.GetSlogAttributes(ctx)...)
 
 		msg := &actionResultMessage{
 			InstanceID: caller.ID.String(),
