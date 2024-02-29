@@ -241,7 +241,7 @@ func traceGetListenersByTopic(ctx context.Context, topic string) (context.Contex
 	return ctx, finish
 }
 
-func traceProcessingMessage(ctx context.Context, ev event.Event) (context.Context, func()) {
+func traceProcessingMessage(ctx context.Context) (context.Context, func()) {
 	tp := otel.GetTracerProvider()
 	tr := tp.Tracer("direktiv/flow")
 	ctx, span := tr.Start(ctx, "processingCloudevent", trace.WithSpanKind(trace.SpanKindInternal))

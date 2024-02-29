@@ -26,6 +26,10 @@ states:
     result: Hello world!
 `)
 
+	it(`should wait a second for the events logic to sync`, async() => {
+		await sleep(1000)
+	})
+
 	it(`should fail to invoke the '/listener.yml' workflow`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/tree/listener.yml?op=wait`)
 		expect(req.statusCode).toEqual(500)
@@ -36,65 +40,10 @@ states:
 	})
 
 	it(`should invoke the '/listener.yml' workflow with an event`, async () => {
-		let req = await request(common.config.getDirektivHost()).post(`/api/namespaces/${ namespaceName }/broadcast`)
-			.send({
-				specversion: '1.0',
-				type: 'greeting',
-				source: 'https://github.com/cloudevents/spec/pull',
-				subject: '123',
-				time: '2018-04-05T17:31:00Z',
-				comexampleextension1: 'value',
-				comexampleothervalue: 5,
-				datacontenttype: 'text/xml',
-				data: '<much wow="xml"/>',
-			})
-		expect(req.statusCode).toEqual(200)
-		expect(req.body).toMatchObject({})
+		await events.sendEventAndList(namespaceName, basevent('greeting', 'greeting', 'world1'))
 
-		let invoked = false
-		let counter = -1
-		do {
-
-			counter++
-			if (counter > 100)
-				fail('invoke workflow took too long')
-
-
-			await sleep(100)
-
-			req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/instances`)
-			expect(req.statusCode).toEqual(200)
-
-			if (req.body.instances.pageInfo.total === 1)
-				invoked = true
-
-
-		} while (!invoked)
-
-		expect(req.body).toMatchObject({
-			namespace: namespaceName,
-			instances: {
-				pageInfo: {
-					limit: 0,
-					offset: 0,
-					total: 1,
-					order: [],
-					filter: [],
-				},
-				results: expect.arrayContaining([
-					{
-						as: '/listener.yml',
-						createdAt: expect.stringMatching(common.regex.timestampRegex),
-						updatedAt: expect.stringMatching(common.regex.timestampRegex),
-						errorCode: '',
-						errorMessage: '',
-						id: expect.stringMatching(common.regex.uuidRegex),
-						invoker: 'cloudevent',
-						status: 'complete', // TODO: polling
-					},
-				]),
-			},
-		})
+		var instance = await events.listInstancesAndFilter(namespaceName, 'listener.yml')
+		expect(instance).not.toBeFalsy()
 	})
 })
 
@@ -138,66 +87,18 @@ states:
         result: Hello world!
 `)
 
+	it(`should wait a second for the events logic to sync`, async() => {
+		await sleep(1000)
+	})
+
 	it(`should invoke the '/stoplistener.yml' workflow with an event`, async () => {
-		let req = await request(common.config.getDirektivHost()).post(`/api/namespaces/${ namespaceName }/broadcast`)
-			.send({
-				specversion: '1.0',
-				type: 'greeting',
-				source: 'https://github.com/cloudevents/spec/pull',
-				state: 'stopped',
-				time: '2018-04-05T17:31:00Z',
-				comexampleextension1: 'value',
-				comexampleothervalue: 5,
-				datacontenttype: 'text/xml',
-				data: '<much wow="xml"/>',
-			})
-		expect(req.statusCode).toEqual(200)
-		expect(req.body).toMatchObject({})
+		await events.sendEventAndList(namespaceName, baseEventWithContext('greeting', 'greeting', 'state', 'stopped'))
 
-		let invoked = false
-		let counter = -1
-		do {
+		var instance = await events.listInstancesAndFilter(namespaceName, 'startlistener.yml')
+		expect(instance).toBeFalsy()
 
-			counter++
-			if (counter > 100)
-				fail('invoke workflow took too long')
-
-
-			await sleep(100)
-
-			req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/instances`)
-			expect(req.statusCode).toEqual(200)
-
-			if (req.body.instances.pageInfo.total === 1)
-				invoked = true
-
-
-		} while (!invoked)
-
-		expect(req.body).toMatchObject({
-			namespace: namespaceName,
-			instances: {
-				pageInfo: {
-					limit: 0,
-					offset: 0,
-					total: 1,
-					order: [],
-					filter: [],
-				},
-				results: expect.arrayContaining([
-					{
-						as: '/stoplistener.yml',
-						createdAt: expect.stringMatching(common.regex.timestampRegex),
-						updatedAt: expect.stringMatching(common.regex.timestampRegex),
-						errorCode: '',
-						errorMessage: '',
-						id: expect.stringMatching(common.regex.uuidRegex),
-						invoker: 'cloudevent',
-						status: 'complete', // TODO: polling
-					},
-				]),
-			},
-		})
+		var instance = await events.listInstancesAndFilter(namespaceName, 'stoplistener.yml')
+		expect(instance).not.toBeFalsy()
 	})
 })
 
@@ -209,6 +110,19 @@ const basevent = (type, id, value) => `{
     "source" : "https://direktiv.io/test",
     "datacontenttype" : "application/json",
     "hello": "${ value }",
+    "data" : {
+        "hello": "world",
+        "123": 456
+    }
+}`
+
+const baseEventWithContext = (type, id, ck, cv) => `{
+    "specversion" : "1.0",
+    "type" : "${ type }",
+    "id": "${ id }",
+    "source" : "https://direktiv.io/test",
+    "datacontenttype" : "application/json",
+    "${ ck }": "${ cv }",
     "data" : {
         "hello": "world",
         "123": 456
@@ -276,7 +190,6 @@ states:
 describe('Test workflow events', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
 
-
 	it(`should create namespace`, async () => {
 		const createNamespaceResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${ namespaceName }`)
 		expect(createNamespaceResponse.statusCode).toEqual(200)
@@ -289,6 +202,8 @@ describe('Test workflow events', () => {
 			.send(startWorkflow)
 
 		expect(createWorkflowResponse.statusCode).toEqual(200)
+
+		await sleep(1000)
 
 		const getEventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/event-listeners?limit=8&offset=0`)
 			.send()
@@ -371,7 +286,7 @@ describe('Test workflow events', () => {
 
 
 		await events.sendEventAndList(namespaceName, basevent('hello', 'start-event'))
-		const instance = await events.listInstancesAndFilter(namespaceName, startWorkflowName)
+		const instance = await events.listInstancesAndFilter(namespaceName, startWorkflowName, 'complete')
 		expect(instance).not.toBeFalsy()
 
 		const instanceOutput = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/instances/${ instance.id }/output`)

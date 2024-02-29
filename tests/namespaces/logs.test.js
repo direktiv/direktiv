@@ -45,13 +45,13 @@ describe('Test that basic namespace operations generate expected logs.', () => {
 		expect(logsResponse.statusCode).toEqual(200)
 		expect(logsResponse.body.results).toEqual(expect.arrayContaining([
 			{
-				level: 'info',
+				level: 'debug',
 				t: expect.anything(),
 				msg: `Deleted namespace '${ testNamespace }'.`,
 				tags: expect.anything(),
 			},
 			{
-				level: 'info',
+				level: 'debug',
 				t: expect.anything(),
 				msg: `Created namespace '${ testNamespace }'.`,
 				tags: expect.anything(),

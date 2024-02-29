@@ -82,6 +82,7 @@ CREATE TABLE IF NOT EXISTS "instances_v2" (
     "namespace_id" uuid NOT NULL,
     "namespace" text NOT NULL,
     "root_instance_id" uuid NOT NULL,
+    "server" uuid,
     "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "ended_at" timestamptz,
@@ -105,6 +106,16 @@ CREATE TABLE IF NOT EXISTS "instances_v2" (
     PRIMARY KEY ("id"),
     CONSTRAINT "fk_namespaces_instances"
     FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS "instance_messages" (
+    "id" uuid NOT NULL,
+    "instance_id" uuid NOT NULL,
+    "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "payload" bytea NOT NULL,
+    PRIMARY KEY ("id"),
+    CONSTRAINT "fk_instances_v2_instance_messages"
+    FOREIGN KEY ("instance_id") REFERENCES "instances_v2"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS "runtime_variables" (
@@ -232,6 +243,7 @@ DROP TABLE IF EXISTS "file_annotations";
 
 -- Remove filesystem_revisions table and move its columns to filesystem_file table.
 ALTER TABLE "instances_v2" DROP COLUMN IF EXISTS "revision_id";
+ALTER TABLE "instances_v2" ADD COLUMN IF NOT EXISTS "server" uuid;
 ALTER TABLE "metrics" DROP COLUMN IF EXISTS "revision";
 DROP TABLE IF EXISTS "filesystem_revisions";
 ALTER TABLE "filesystem_files" ADD COLUMN IF NOT EXISTS "data" bytea;

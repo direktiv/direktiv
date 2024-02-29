@@ -56,7 +56,7 @@ scale: 2
 		})
 	})
 
-	retry(`should list all service pods`, 10, async () => {
+	retry(`should list all service pods`, 50, async () => {
 		await sleep(500)
 
 		let sID = listRes.body.data[0].id

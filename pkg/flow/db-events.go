@@ -14,10 +14,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func (events *events) addEvent(ctx context.Context, eventin *cloudevents.Event, ns *database.Namespace, delay int64) error {
-	// t := time.Now().UTC().Unix() + delay
-
-	// processed := delay == 0 //TODO:
+func (events *events) addEvent(ctx context.Context, eventin *cloudevents.Event, ns *database.Namespace) error {
 	ctx, end := traceAddtoEventlog(ctx)
 	defer end()
 	li := make([]*pkgevents.Event, 0)

@@ -240,14 +240,14 @@ func Test_generateGetInstancesFilters(t *testing.T) {
 }
 
 func Test_generateInsertQuery(t *testing.T) {
-	res := generateInsertQuery([]string{fieldID})
+	res := generateInsertQuery(table, []string{fieldID})
 	expect := `INSERT INTO instances_v2(id) VALUES (?)`
 
 	if res != expect {
 		t.Errorf("generateInsertQuery failed with one column: expected '%s', but got '%s'", expect, res)
 	}
 
-	res = generateInsertQuery([]string{fieldID, fieldNamespaceID, fieldWorkflowPath})
+	res = generateInsertQuery(table, []string{fieldID, fieldNamespaceID, fieldWorkflowPath})
 	expect = `INSERT INTO instances_v2(id, namespace_id, workflow_path) VALUES (?, ?, ?)`
 
 	if res != expect {

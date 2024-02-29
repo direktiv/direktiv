@@ -10,6 +10,34 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 )
 
+func (engine *engine) GetIsInstanceFailed(im *instanceMemory) bool {
+	if engine.GetIsInstanceCrashed(im) {
+		return true
+	}
+
+	if im.instance.Instance.Status == instancestore.InstanceStatusFailed {
+		return true
+	}
+
+	if im.updateArgs.Status != nil && (*im.updateArgs.Status) == instancestore.InstanceStatusFailed {
+		return true
+	}
+
+	return false
+}
+
+func (engine *engine) GetIsInstanceCrashed(im *instanceMemory) bool {
+	if im.instance.Instance.Status == instancestore.InstanceStatusCrashed {
+		return true
+	}
+
+	if im.updateArgs.Status != nil && (*im.updateArgs.Status) == instancestore.InstanceStatusCrashed {
+		return true
+	}
+
+	return false
+}
+
 func (engine *engine) SetInstanceFailed(ctx context.Context, im *instanceMemory, err error) {
 	var status instancestore.InstanceStatus
 	var code, message string
@@ -33,6 +61,7 @@ func (engine *engine) SetInstanceFailed(ctx context.Context, im *instanceMemory,
 		message = "an internal error occurred"
 	} else {
 		engine.sugar.Error(fmt.Errorf("unhandled error: %w", err))
+		status = instancestore.InstanceStatusCrashed
 		code = ErrCodeInternal
 		message = err.Error()
 	}

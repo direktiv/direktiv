@@ -173,9 +173,8 @@ describe('Test workflow events and', () => {
 
 
 	it(`should kick off start event workflow`, async () => {
-
 		await events.sendEventAndList(namespaceName, basevent('eventtype3', 'eventtype3', 'world1'))
-		const instance = await events.listInstancesAndFilter(namespaceName, startWorkflowName)
+		const instance = await events.listInstancesAndFilter(namespaceName, startWorkflowName, 'complete')
 
 		expect(instance).not.toBeFalsy()
 
