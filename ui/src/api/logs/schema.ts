@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const LogLevelSchema = z.enum(["INFO", "ERROR"]);
+export type LogLevelSchemaType = z.infer<typeof LogLevelSchema>;
 
 /**
  * example
