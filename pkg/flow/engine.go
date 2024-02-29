@@ -469,7 +469,7 @@ func (engine *engine) TerminateInstance(ctx context.Context, im *instanceMemory)
 		}
 
 		engine.forceFreeCriticalMemory(ctx, im)
-		engine.sugar.Errorf("Failed to free memory during during a crash: %v.", err)
+		engine.sugar.Errorf("Failed to free memory during a crash: %v.", err)
 	}
 
 	if im.logic != nil {
