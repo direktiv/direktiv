@@ -243,6 +243,7 @@ DROP TABLE IF EXISTS "file_annotations";
 
 -- Remove filesystem_revisions table and move its columns to filesystem_file table.
 ALTER TABLE "instances_v2" DROP COLUMN IF EXISTS "revision_id";
+ALTER TABLE "instances_v2" ADD COLUMN IF NOT EXISTS "server" uuid;
 ALTER TABLE "metrics" DROP COLUMN IF EXISTS "revision";
 DROP TABLE IF EXISTS "filesystem_revisions";
 ALTER TABLE "filesystem_files" ADD COLUMN IF NOT EXISTS "data" bytea;
