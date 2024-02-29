@@ -458,7 +458,7 @@ func (engine *engine) doActionRequest(ctx context.Context, ar *functionRequest) 
 			InstanceId: ar.Workflow.InstanceID, Msg: []string{fmt.Sprintf("Warning: Action timeout '%v' is longer than max allowed duariton '%v'", actionTimeout, engine.server.conf.GetFunctionsTimeout())},
 		})
 		if err != nil {
-			engine.sugar.Errorf("Failed to log: %v.", err)
+			engine.sugar.Errorf("failed to write action log: %v.", err)
 		}
 	}
 
@@ -577,6 +577,6 @@ func (engine *engine) reportError(ar *functionRequest, err error) {
 
 	_, err = engine.internal.ReportActionResults(context.Background(), r)
 	if err != nil {
-		engine.sugar.Errorf("can not respond to flow: %v", err)
+		engine.sugar.Errorf("failed to respond to flow: %v", err)
 	}
 }

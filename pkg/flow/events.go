@@ -591,7 +591,7 @@ func (flow *flow) ReplayEvent(ctx context.Context, req *grpc.ReplayEventRequest)
 func (events *events) ReplayCloudevent(ctx context.Context, ns *database.Namespace, cevent *pkgevents.Event) error {
 	event := cevent.Event
 
-	events.logger.Infof(ctx, ns.ID, ns.GetAttributes(), "Replaying event: %s (%s / %s)", event.ID(), event.Type(), event.Source())
+	events.logger.Debugf(ctx, ns.ID, ns.GetAttributes(), "Replaying event: %s (%s / %s)", event.ID(), event.Type(), event.Source())
 
 	err := events.handleEvent(ctx, ns.ID, ns.Name, event)
 	if err != nil {
@@ -685,7 +685,7 @@ func (events *events) listenForEvents(ctx context.Context, im *instanceMemory, c
 		return err
 	}
 
-	events.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), "Registered to receive events.")
+	events.logger.Debugf(ctx, im.GetInstanceID(), im.GetAttributes(), "Registered to receive events.")
 
 	return nil
 }

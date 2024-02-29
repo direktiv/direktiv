@@ -135,7 +135,7 @@ func (engine *engine) WakeInstanceCaller(ctx context.Context, im *instanceMemory
 	caller := engine.InstanceCaller(im)
 
 	if caller != nil {
-		engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), "Reporting results to calling workflow.")
+		engine.logger.Debugf(ctx, im.GetInstanceID(), im.GetAttributes(), "Reporting results to calling workflow.")
 
 		msg := &actionResultMessage{
 			InstanceID: caller.ID.String(),
@@ -176,7 +176,7 @@ func (engine *engine) start(im *instanceMemory) {
 	ctx := context.Background()
 
 	engine.sugar.Debugf("Starting workflow %v", im.ID().String())
-	engine.logger.Infof(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "Starting workflow %v", database.GetWorkflow(im.instance.Instance.WorkflowPath))
+	engine.logger.Debugf(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "Starting workflow %v", database.GetWorkflow(im.instance.Instance.WorkflowPath))
 	engine.logger.Debugf(ctx, im.instance.Instance.ID, im.GetAttributes(), "Starting workflow %v.", database.GetWorkflow(im.instance.Instance.WorkflowPath))
 
 	workflow, err := im.Model()
@@ -192,7 +192,7 @@ func (engine *engine) start(im *instanceMemory) {
 
 	ctx, err = engine.registerScheduled(ctx, id)
 	if err != nil {
-		engine.sugar.Errorf("failed to registerScheduled in start: %v", err)
+		engine.sugar.Debugf("failed to registerScheduled in start: %v", err)
 		return
 	}
 

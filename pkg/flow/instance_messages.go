@@ -92,7 +92,7 @@ func (engine *engine) instanceMessagesChannelHandler(data string) {
 
 	err := json.Unmarshal([]byte(data), &args)
 	if err != nil {
-		engine.sugar.Errorf("failed to unmarshal channel data: %v", err)
+		engine.sugar.Errorf("instanceMessagesChannelHandler failed to unmarshal channel data %v", err)
 		return
 	}
 
@@ -108,7 +108,7 @@ func (engine *engine) instanceMessagesChannelHandler(data string) {
 
 func (engine *engine) handleInstanceMessage(ctx context.Context, im *instanceMemory, msg *instancestore.InstanceMessageData) *states.Transition {
 	if im.instance.Instance.EndedAt != nil && !im.instance.Instance.EndedAt.IsZero() {
-		engine.sugar.Errorf("handleInstanceMessage skipping message because instance has ended")
+		engine.sugar.Warn("handleInstanceMessage skipping message because instance has ended")
 		return nil
 	}
 

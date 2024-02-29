@@ -81,7 +81,7 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 		}
 	}()
 
-	flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Created namespace as git mirror '%s'.", ns.Name)
+	flow.logger.Debugf(ctx, flow.ID, flow.GetAttributes(), "Created namespace as git mirror '%s'.", ns.Name)
 
 	var resp grpc.CreateNamespaceResponse
 	resp.Namespace = bytedata.ConvertNamespaceToGrpc(ns)
@@ -143,7 +143,7 @@ func (flow *flow) UpdateMirrorSettings(ctx context.Context, req *grpc.UpdateMirr
 		return nil, err
 	}
 
-	flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Updated mirror configs for namespace: %s", ns.Name)
+	flow.logger.Debugf(ctx, flow.ID, flow.GetAttributes(), "Updated mirror configs for namespace: %s", ns.Name)
 
 	proc, err := flow.mirrorManager.NewProcess(ctx, ns, datastore.ProcessTypeSync)
 	if err != nil {
@@ -216,7 +216,7 @@ func (flow *flow) HardSyncMirror(ctx context.Context, req *grpc.HardSyncMirrorRe
 		}
 	}()
 
-	flow.logger.Infof(ctx, flow.ID, flow.GetAttributes(), "Starting mirror process for namespace: %s", ns.Name)
+	flow.logger.Debugf(ctx, flow.ID, flow.GetAttributes(), "Starting mirror process for namespace: %s", ns.Name)
 
 	var resp emptypb.Empty
 
