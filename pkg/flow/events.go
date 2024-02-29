@@ -5,7 +5,6 @@ import (
 	"encoding/gob"
 	"encoding/json"
 	"fmt"
-	"log/slog"
 	"strings"
 	"time"
 
@@ -688,7 +687,6 @@ func (events *events) listenForEvents(ctx context.Context, im *instanceMemory, c
 	}
 
 	events.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), "Registered to receive events.")
-	slog.Info("Registered to receive events.", "stream", recipient.Namespace.String()+"."+im.Namespace().Name)
 
 	return nil
 }
