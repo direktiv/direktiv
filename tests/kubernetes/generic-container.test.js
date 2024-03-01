@@ -33,11 +33,11 @@ describe('Test generic container', () => {
 
 	helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	helpers.itShouldCreateFile(
+	helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/wf1.yaml',
+		'/','wf1.yaml',
 		genericContainerWorkflow,
 	)
 

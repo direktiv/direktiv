@@ -11,15 +11,15 @@ describe('Test services crud operations', () => {
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateFile(it, expect, testNamespace,
-		'/s1.yaml', `
+	common.helpers.itShouldCreateYamlFileV2(it, expect, testNamespace,
+		'/','s1.yaml', `
 direktiv_api: service/v1
 image: direktiv/request
 scale: 1
 `)
 
-	common.helpers.itShouldCreateFile(it, expect, testNamespace,
-		'/s2.yaml', `
+	common.helpers.itShouldCreateYamlFileV2(it, expect, testNamespace,
+		'/','s2.yaml', `
 direktiv_api: service/v1
 image: direktiv/request
 scale: 2

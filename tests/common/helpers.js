@@ -31,23 +31,6 @@ async function itShouldCreateNamespace (it, expect, ns) {
 	})
 }
 
-async function itShouldCreateFile (it, expect, ns, path, data) {
-	it(`should create a new file ${ path }`, async () => {
-		const res = await request(common.config.getDirektivHost())
-			.put(`/api/namespaces/${ ns }/tree${ path }?op=create-workflow`)
-			.set({
-				'Content-Type': 'text/plain',
-			})
-
-			.send(data)
-
-		expect(res.statusCode).toEqual(200)
-		expect(res.body).toMatchObject({
-			namespace: ns,
-		})
-	})
-}
-
 async function itShouldCreateFileV2 (it, expect, ns, path, name, type, mimeType, data) {
 	it(`should create a new file ${ path }`, async () => {
 		const res = await request(common.config.getDirektivHost())
@@ -73,6 +56,10 @@ async function itShouldCreateFileV2 (it, expect, ns, path, name, type, mimeType,
 			updatedAt: expect.stringMatching(regex.timestampRegex),
 		})
 	})
+}
+
+async function itShouldCreateYamlFileV2 (it, expect, ns, path, name, type, data) {
+	await itShouldCreateFileV2(it, expect, ns, path, name, type, 'application/yaml', data)
 }
 
 async function itShouldCreateDirV2 (it, expect, ns, path, name) {
@@ -216,7 +203,7 @@ function sleep (ms) {
 export default {
 	deleteAllNamespaces,
 	itShouldCreateNamespace,
-	itShouldCreateFile,
+	itShouldCreateYamlFileV2,
 	itShouldDeleteFile,
 	itShouldRenameFile,
 	itShouldUpdateFile,

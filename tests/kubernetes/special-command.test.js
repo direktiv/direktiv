@@ -126,11 +126,11 @@ describe('Test special command with files and permission', () => {
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/wf1.yaml',
+		'/','wf1.yaml',
 		filesWorkflow,
 	)
 
@@ -150,11 +150,11 @@ describe('Test special command with env', () => {
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/wf1.yaml',
+		'/','wf1.yaml',
 		genericContainerWorkflow,
 	)
 
@@ -173,11 +173,11 @@ describe('Test special command with supress', () => {
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/wf1.yaml',
+		'/','wf1.yaml',
 		supressWorkflow,
 	)
 
@@ -196,19 +196,19 @@ describe('Test special command with stop', () => {
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/wf1.yaml',
+		'/','wf1.yaml',
 		stopWorkflow,
 	)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/wf2.yaml',
+		'/','wf2.yaml',
 		stopWorkflow2,
 	)
 
