@@ -63,14 +63,17 @@ jobs:
             "filesystem/",
             "logparser/",
             "variables/",
+            "variables2/",
             "errors/",
             "mirror/",
             "namespaces/",
+            "namespaces2/",
             # "functions/",
             "gateway/",
             # "kubernetes/",
             "registry/",
             "secrets/",
+            "secrets2/",
             # "services/",
           ]
     steps:
