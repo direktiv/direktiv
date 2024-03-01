@@ -98,9 +98,9 @@ describe('Test workflow events and', () => {
 	it(`should have one event listeners`, async () => {
 
 		// workflow with start
-		const createWorkflowResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${ namespaceName }/tree/${ startWorkflowName }?op=create-workflow`)
-			.send(startEventWorkflow)
-		expect(createWorkflowResponse.statusCode).toEqual(200)
+		await helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
+			'', startWorkflowName, 'workflow',
+			startEventWorkflow)
 
 		await helpers.sleep(1000)
 		const getEventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/event-listeners?limit=8&offset=0`)
@@ -124,9 +124,9 @@ describe('Test workflow events and', () => {
 	it(`should have two event listeners`, async () => {
 
 		// workflow with start
-		const createWorkflowResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${ namespaceName }/tree/${ waitWorkflowName }?op=create-workflow`)
-			.send(waitEventWorkflow)
-		expect(createWorkflowResponse.statusCode).toEqual(200)
+		await helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
+			'', waitWorkflowName, 'workflow',
+			waitEventWorkflow)
 
 		// start workflow
 		const runWorkflowResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${ namespaceName }/tree/${ waitWorkflowName }?op=execute`)
@@ -210,9 +210,9 @@ describe('Test workflow events and', () => {
 	it(`start context`, async () => {
 
 		// timeout workflow
-		const createWorkflowResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${ namespaceName }/tree/${ startWorkflowContextName }?op=create-workflow`)
-			.send(startEventContextWorkflow)
-		expect(createWorkflowResponse.statusCode).toEqual(200)
+		await helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
+			'', startWorkflowContextName, 'workflow',
+			startEventContextWorkflow)
 
 		await helpers.sleep(1000)
 
@@ -233,9 +233,9 @@ describe('Test workflow events and', () => {
 	it(`flow context`, async () => {
 
 		// timeout workflow
-		const createWorkflowResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${ namespaceName }/tree/${ waitWorkflowContextName }?op=create-workflow`)
-			.send(waitEventContextimeout)
-		expect(createWorkflowResponse.statusCode).toEqual(200)
+		await helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
+			'', waitWorkflowContextName, 'workflow',
+			waitEventContextimeout)
 
 		// start workflow
 		const runWorkflowResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${ namespaceName }/tree/${ waitWorkflowContextName }?op=execute`)

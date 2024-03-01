@@ -201,10 +201,9 @@ describe('Test workflow events', () => {
 	it(`should have one event listeners`, async () => {
 
 		// workflow with start
-		const createWorkflowResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${ namespaceName }/tree/${ startWorkflowName }?op=create-workflow`)
-			.send(startWorkflow)
-
-		expect(createWorkflowResponse.statusCode).toEqual(200)
+		await helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
+			'', startWorkflowName, 'workflow',
+			startWorkflow)
 
 		await helpers.sleep(1000)
 
@@ -228,9 +227,9 @@ describe('Test workflow events', () => {
 	it(`should have two event listeners`, async () => {
 
 		// workflow with start
-		const createWorkflowResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${ namespaceName }/tree/${ waitWorkflowName }?op=create-workflow`)
-			.send(waitWorkflow)
-		expect(createWorkflowResponse.statusCode).toEqual(200)
+		await helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
+			'', waitWorkflowName, 'workflow',
+			waitWorkflow)
 
 		// start workflow
 		const runWorkflowResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${ namespaceName }/tree/${ waitWorkflowName }?op=execute`)
@@ -305,10 +304,9 @@ describe('Test workflow events', () => {
 
 
 	it(`should kick off start event workflow with context filter`, async () => {
-
-		const createWorkflowResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${ namespaceName }/tree/${ startWorkflowNameContext }?op=create-workflow`)
-			.send(startEventWorkflowContext)
-		expect(createWorkflowResponse.statusCode).toEqual(200)
+		await helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
+			'', startWorkflowNameContext, 'workflow',
+			startEventWorkflowContext)
 
 		// send event with same type but without context
 		await events.sendEventAndList(namespaceName, basevent('helloctx', 'ctx-test'))
@@ -327,10 +325,9 @@ describe('Test workflow events', () => {
 
 
 	it(`should kick off running workflow with context filter`, async () => {
-
-		const createWorkflowResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${ namespaceName }/tree/${ waitWorkflowNameContext }?op=create-workflow`)
-			.send(waitWorkflowContext)
-		expect(createWorkflowResponse.statusCode).toEqual(200)
+		await helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
+			'', waitWorkflowNameContext, 'workflow',
+			waitWorkflowContext)
 
 		// start workflow
 		const runWorkflowResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${ namespaceName }/tree/${ waitWorkflowNameContext }?op=execute`)
