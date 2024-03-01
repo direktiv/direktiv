@@ -52,7 +52,7 @@ describe('Test target file wrong config', () => {
 		it,
 		expect,
 		testNamespace,
-		'/','ep3.yaml', 'endpoint',
+		'/', 'ep3.yaml', 'endpoint',
 		endpointBroken,
 	)
 
@@ -92,7 +92,7 @@ describe('Test target namespace file plugin', () => {
 		it,
 		expect,
 		testNamespace,
-		'/','endpoint1.yaml', 'endpoint',
+		'/', 'endpoint1.yaml', 'endpoint',
 		endpointNSFile,
 	)
 
@@ -100,7 +100,7 @@ describe('Test target namespace file plugin', () => {
 		it,
 		expect,
 		testNamespace,
-		'/','endpoint2.yaml','endpoint',
+		'/', 'endpoint2.yaml', 'endpoint',
 		endpointNSFileAllowed,
 	)
 
@@ -108,7 +108,7 @@ describe('Test target namespace file plugin', () => {
 		it,
 		expect,
 		limitedNamespace,
-		'/','endpoint1.yaml','endpoint',
+		'/', 'endpoint1.yaml', 'endpoint',
 		endpointNSFile,
 	)
 
@@ -116,7 +116,7 @@ describe('Test target namespace file plugin', () => {
 		it,
 		expect,
 		limitedNamespace,
-		'/','endpoint2.yaml','endpoint',
+		'/', 'endpoint2.yaml', 'endpoint',
 		endpointNSFileAllowed,
 	)
 

@@ -54,7 +54,7 @@ describe('Test header plugin', () => {
 		it,
 		expect,
 		testNamespace,
-		'/','endpoint1.yaml','endpoint',
+		'/', 'endpoint1.yaml', 'endpoint',
 		endpointJSFile,
 	)
 
@@ -62,7 +62,7 @@ describe('Test header plugin', () => {
 		it,
 		expect,
 		testNamespace,
-		'/','target.yaml','workflow',
+		'/', 'target.yaml', 'workflow',
 		wf,
 	)
 

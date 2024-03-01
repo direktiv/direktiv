@@ -46,7 +46,7 @@ describe('Test js outbound plugin', () => {
 		it,
 		expect,
 		testNamespace,
-		'/','endpoint1.yaml','endpoint',
+		'/', 'endpoint1.yaml', 'endpoint',
 		endpointJSFile,
 	)
 
@@ -54,7 +54,7 @@ describe('Test js outbound plugin', () => {
 		it,
 		expect,
 		testNamespace,
-		'/','target.yaml', 'workflow',
+		'/', 'target.yaml', 'workflow',
 		wf,
 	)
 

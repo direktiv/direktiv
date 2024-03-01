@@ -170,7 +170,7 @@ describe('Test gateway get single endpoint', () => {
 		it,
 		expect,
 		testNamespace,
-		'/','endpoint1.yaml', 'endpoint',
+		'/', 'endpoint1.yaml', 'endpoint',
 		endpoint1,
 	)
 
@@ -178,7 +178,7 @@ describe('Test gateway get single endpoint', () => {
 		it,
 		expect,
 		testNamespace,
-		'/','endpoint2.yaml','endpoint',
+		'/', 'endpoint2.yaml', 'endpoint',
 		endpoint2,
 	)
 
@@ -186,7 +186,7 @@ describe('Test gateway get single endpoint', () => {
 		it,
 		expect,
 		testNamespace,
-		'/','endpoint3.yaml','endpoint',
+		'/', 'endpoint3.yaml', 'endpoint',
 		endpoint3,
 	)
 
@@ -194,7 +194,7 @@ describe('Test gateway get single endpoint', () => {
 		it,
 		expect,
 		testNamespace,
-		'/','endpoint4.yaml','endpoint',
+		'/', 'endpoint4.yaml', 'endpoint',
 		endpoint4,
 	)
 
@@ -299,7 +299,7 @@ describe('Test gateway endpoints crud operations', () => {
 		it,
 		expect,
 		testNamespace,
-		'/','endpoint1.yaml','endpoint',
+		'/', 'endpoint1.yaml', 'endpoint',
 		endpoint1,
 	)
 
@@ -307,7 +307,7 @@ describe('Test gateway endpoints crud operations', () => {
 		it,
 		expect,
 		testNamespace,
-		'/','endpoint2.yaml','endpoint',
+		'/', 'endpoint2.yaml', 'endpoint',
 		endpoint2,
 	)
 
@@ -315,7 +315,7 @@ describe('Test gateway endpoints crud operations', () => {
 		it,
 		expect,
 		testNamespace,
-		'/','consumer1.yaml','consumer',
+		'/', 'consumer1.yaml', 'consumer',
 		consumer1,
 	)
 
@@ -323,7 +323,7 @@ describe('Test gateway endpoints crud operations', () => {
 		it,
 		expect,
 		testNamespace,
-		'/','consumer2.yaml','consumer',
+		'/', 'consumer2.yaml', 'consumer',
 		consumer2,
 	)
 
@@ -438,7 +438,7 @@ describe('Test availability of gateway endpoints', () => {
 		it,
 		expect,
 		testNamespace,
-		'/','endpoint1.yaml','endpoint',
+		'/', 'endpoint1.yaml', 'endpoint',
 		endpoint1,
 	)
 
@@ -446,7 +446,7 @@ describe('Test availability of gateway endpoints', () => {
 		it,
 		expect,
 		testNamespace,
-		'/','endpoint2.yaml','endpoint',
+		'/', 'endpoint2.yaml', 'endpoint',
 		endpoint2,
 	)
 
@@ -454,7 +454,7 @@ describe('Test availability of gateway endpoints', () => {
 		it,
 		expect,
 		testNamespace,
-		'/','consumer1.yaml','consumer',
+		'/', 'consumer1.yaml', 'consumer',
 		consumer1,
 	)
 
@@ -462,7 +462,7 @@ describe('Test availability of gateway endpoints', () => {
 		it,
 		expect,
 		testNamespace,
-		'/','consumer2.yaml','consumer',
+		'/', 'consumer2.yaml', 'consumer',
 		consumer2,
 	)
 

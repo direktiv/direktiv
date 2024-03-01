@@ -30,9 +30,9 @@ describe('Test filesystem tree read operations', () => {
 
 	helpers.itShouldCreateDirectory(it, expect, namespace, '/dir1')
 	helpers.itShouldCreateDirectory(it, expect, namespace, '/dir2')
-	helpers.itShouldCreateYamlFileV2(it, expect, namespace, '/','foo.yaml', 'workflow', helpers.dummyWorkflow('foo'))
-	helpers.itShouldCreateYamlFileV2(it, expect, namespace, '/dir1','foo11.yaml', 'workflow', helpers.dummyWorkflow('foo11'))
-	helpers.itShouldCreateYamlFileV2(it, expect, namespace, '/dir1','foo12.yaml', 'workflow', helpers.dummyWorkflow('foo12'))
+	helpers.itShouldCreateYamlFileV2(it, expect, namespace, '/', 'foo.yaml', 'workflow', helpers.dummyWorkflow('foo'))
+	helpers.itShouldCreateYamlFileV2(it, expect, namespace, '/dir1', 'foo11.yaml', 'workflow', helpers.dummyWorkflow('foo11'))
+	helpers.itShouldCreateYamlFileV2(it, expect, namespace, '/dir1', 'foo12.yaml', 'workflow', helpers.dummyWorkflow('foo12'))
 
 	it(`should read root dir with three paths`, async () => {
 		const res = await request(config.getDirektivHost())

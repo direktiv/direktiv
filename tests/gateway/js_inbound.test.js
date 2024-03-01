@@ -124,7 +124,7 @@ describe('Test js inbound plugin', () => {
 		it,
 		expect,
 		testNamespace,
-		'/','endpoint1.yaml','endpoint',
+		'/', 'endpoint1.yaml', 'endpoint',
 		endpointJSFile,
 	)
 
@@ -132,7 +132,7 @@ describe('Test js inbound plugin', () => {
 		it,
 		expect,
 		testNamespace,
-		'/','target.yaml','workflow',
+		'/', 'target.yaml', 'workflow',
 		wf,
 	)
 
@@ -160,7 +160,7 @@ describe('Test js inbound plugin consumer', () => {
 		it,
 		expect,
 		testNamespace,
-		'/','consumer.yaml', 'consumer',
+		'/', 'consumer.yaml', 'consumer',
 		consumer,
 	)
 
@@ -168,7 +168,7 @@ describe('Test js inbound plugin consumer', () => {
 		it,
 		expect,
 		testNamespace,
-		'/','endpoint1.yaml', 'endpoint',
+		'/', 'endpoint1.yaml', 'endpoint',
 		endpointConsumerFile,
 	)
 
@@ -176,7 +176,7 @@ describe('Test js inbound plugin consumer', () => {
 		it,
 		expect,
 		testNamespace,
-		'/','target.yaml', 'workflow',
+		'/', 'target.yaml', 'workflow',
 		wf,
 	)
 
@@ -201,7 +201,7 @@ describe('Test js inbound plugin url params', () => {
 		it,
 		expect,
 		testNamespace,
-		'/','endpoint1.yaml','endpoint',
+		'/', 'endpoint1.yaml', 'endpoint',
 		endpointParamFile,
 	)
 
@@ -209,7 +209,7 @@ describe('Test js inbound plugin url params', () => {
 		it,
 		expect,
 		testNamespace,
-		'/','target.yaml', 'workflow',
+		'/', 'target.yaml', 'workflow',
 		wf,
 	)
 
@@ -233,7 +233,7 @@ describe('Test js inbound plugin errors', () => {
 		it,
 		expect,
 		testNamespace,
-		'/','endpoint1.yaml','endpoint',
+		'/', 'endpoint1.yaml', 'endpoint',
 		endpointErrorFile,
 	)
 
@@ -241,7 +241,7 @@ describe('Test js inbound plugin errors', () => {
 		it,
 		expect,
 		testNamespace,
-		'/','target.yaml','workflow',
+		'/', 'target.yaml', 'workflow',
 		wf,
 	)
 

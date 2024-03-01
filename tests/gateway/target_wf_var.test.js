@@ -66,7 +66,7 @@ describe('Test target workflow var wrong config', () => {
 		it,
 		expect,
 		testNamespace,
-		'/','ep3.yaml', 'endpoint',
+		'/', 'ep3.yaml', 'endpoint',
 		endpointWorkflkowVarBroken,
 	)
 
@@ -106,7 +106,7 @@ describe('Test target workflow variable plugin', () => {
 		it,
 		expect,
 		testNamespace,
-		'/','workflow.yaml','workflow',
+		'/', 'workflow.yaml', 'workflow',
 		workflow,
 	)
 
@@ -114,7 +114,7 @@ describe('Test target workflow variable plugin', () => {
 		it,
 		expect,
 		limitedNamespace,
-		'/','workflow.yaml','workflow',
+		'/', 'workflow.yaml', 'workflow',
 		workflow,
 	)
 
@@ -122,7 +122,7 @@ describe('Test target workflow variable plugin', () => {
 		it,
 		expect,
 		limitedNamespace,
-		'/','endpoint1.yaml','endpoint',
+		'/', 'endpoint1.yaml', 'endpoint',
 		endpointWorkflowVar,
 	)
 
@@ -130,7 +130,7 @@ describe('Test target workflow variable plugin', () => {
 		it,
 		expect,
 		limitedNamespace,
-		'/','endpoint2.yaml','endpoint',
+		'/', 'endpoint2.yaml', 'endpoint',
 		endpointWorkflowVarAllowed,
 	)
 
@@ -138,7 +138,7 @@ describe('Test target workflow variable plugin', () => {
 		it,
 		expect,
 		testNamespace,
-		'/','endpoint1.yaml','endpoint',
+		'/', 'endpoint1.yaml', 'endpoint',
 		endpointWorkflowVar,
 	)
 
@@ -146,7 +146,7 @@ describe('Test target workflow variable plugin', () => {
 		it,
 		expect,
 		testNamespace,
-		'/','endpoint2.yaml','endpoint',
+		'/', 'endpoint2.yaml', 'endpoint',
 		endpointWorkflowVarAllowed,
 	)
 

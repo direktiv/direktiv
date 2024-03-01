@@ -12,7 +12,7 @@ describe('Test services operations with envs', () => {
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
 	common.helpers.itShouldCreateYamlFileV2(it, expect, testNamespace,
-		'/','s1.yaml', 'service', `
+		'/', 's1.yaml', 'service', `
 direktiv_api: service/v1
 image: direktiv/request
 scale: 1
@@ -123,7 +123,7 @@ describe('Test workflow operations with envs', () => {
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
 	common.helpers.itShouldCreateYamlFileV2(it, expect, testNamespace,
-		'/','w2.yaml', 'workflow', `
+		'/', 'w2.yaml', 'workflow', `
 description: something
 functions:
 - id: get
