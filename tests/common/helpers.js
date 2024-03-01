@@ -167,10 +167,10 @@ async function itShouldUpdateFile (it, expect, ns, path, data) {
 async function itShouldDeleteFile (it, expect, ns, path) {
 	it(`should delete a file ${ path }`, async () => {
 		const res = await request(common.config.getDirektivHost())
-			.delete(`/api/namespaces/${ ns }/tree${ path }?op=delete-node`)
+			.delete(`/api/v2/namespaces/${ ns }/files${ path }`)
 
 		expect(res.statusCode).toEqual(200)
-		expect(res.body).toMatchObject({})
+		expect(res.body).toEqual("")
 	})
 }
 
@@ -192,10 +192,10 @@ function sleep (ms) {
 export default {
 	deleteAllNamespaces,
 	itShouldCreateNamespace,
-	itShouldDeleteFile,
 	itShouldRenameFile,
 	itShouldUpdateFile,
 
+	itShouldDeleteFile,
 	dummyWorkflow,
 	itShouldCreateYamlFileV2,
 	itShouldCreateDirV2,
