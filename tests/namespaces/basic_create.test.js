@@ -91,7 +91,6 @@ describe('Test invalid namespace create calls', () => {
 	}
 })
 
-
 describe('Test invalid namespace name', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 
@@ -127,8 +126,6 @@ describe('Test invalid namespace name', () => {
 		})
 	}
 })
-
-
 
 describe('Test valid namespace name', () => {
 	beforeAll(helpers.deleteAllNamespaces)
