@@ -23,26 +23,18 @@ describe('Test cancel state behaviour', () => {
 		})
 	})
 
-	it(`should create a workflow called /cancel.yaml`, async () => {
-
-		const res = await request(common.config.getDirektivHost())
-			.put(`/api/namespaces/${ namespaceName }/tree/cancel.yaml?op=create-workflow`)
-			.set({
-				'Content-Type': 'text/plain',
-			})
-			.send(`
+	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+		'',
+		'cancel.yaml',
+		'workflow',
+		'text/plain',
+		btoa(`
 states:
 - id: a
   type: delay
   duration: PT5S
   transform:
-    result: x`)
-
-		expect(res.statusCode).toEqual(200)
-		expect(res.body).toMatchObject({
-			namespace: namespaceName,
-		})
-	})
+    result: x`))
 
 	it(`should invoke the '/cancel.yaml' workflow`, async () => {
 		const xreq = await request(common.config.getDirektivHost()).post(`/api/namespaces/${ namespaceName }/tree/cancel.yaml?op=execute`)

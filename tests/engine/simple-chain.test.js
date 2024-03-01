@@ -2,6 +2,7 @@ import { beforeAll, describe, expect, it } from '@jest/globals'
 
 import common from '../common'
 import request from '../common/request'
+import helpers from "../common/helpers";
 
 const namespaceName = 'simplechaintest'
 
@@ -22,14 +23,12 @@ describe('Test a simple chain of noop states', () => {
 		})
 	})
 
-	it(`should create a workflow called /simple-chain.yaml`, async () => {
-
-		const res = await request(common.config.getDirektivHost())
-			.put(`/api/namespaces/${ namespaceName }/tree/simple-chain.yaml?op=create-workflow`)
-			.set({
-				'Content-Type': 'text/plain',
-			})
-			.send(`
+	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+		'',
+		'simple-chain.yaml',
+		'workflow',
+		'text/plain',
+		btoa(`
 states:
 - id: a
   type: noop
@@ -43,13 +42,7 @@ states:
 - id: c
   type: noop
   transform: 'jq(.c = "z")'
-`)
-
-		expect(res.statusCode).toEqual(200)
-		expect(res.body).toMatchObject({
-			namespace: namespaceName,
-		})
-	})
+`))
 
 	it(`should invoke the '/simple-chain.yaml' workflow`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/tree/simple-chain.yaml?op=wait`)
