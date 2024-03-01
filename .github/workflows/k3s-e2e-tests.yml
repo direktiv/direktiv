@@ -174,15 +174,6 @@ jobs:
       - name: Print DIREKTIV_HOST
         run: echo "DIREKTIV_HOST is set to ${{ env.DIREKTIV_HOST }}"
 
-      - name: List all pods and sleep 10
-        run: |
-          kubectl get pods 
-          kubectl logs deployments/direktiv-flow | tail -n 100
-          sleep 10
-      - name: Show logs
-        run: |
-          kubectl logs deployments/direktiv-flow | tail -n 100  
-
       - name: Wait until API is healthy
         run: |
           endpoint="http://${{ env.DIREKTIV_HOST }}/api/v2/version"
