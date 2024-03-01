@@ -28,8 +28,8 @@ describe('Test filesystem tree read operations', () => {
 		})
 	})
 
-	helpers.itShouldCreateDirV2(it, expect, namespace, '','dir1')
-	helpers.itShouldCreateDirV2(it, expect, namespace, '','dir2')
+	helpers.itShouldCreateDirV2(it, expect, namespace, '', 'dir1')
+	helpers.itShouldCreateDirV2(it, expect, namespace, '', 'dir2')
 	helpers.itShouldCreateYamlFileV2(it, expect, namespace, '/', 'foo.yaml', 'workflow', helpers.dummyWorkflow('foo'))
 	helpers.itShouldCreateYamlFileV2(it, expect, namespace, '/dir1', 'foo11.yaml', 'workflow', helpers.dummyWorkflow('foo11'))
 	helpers.itShouldCreateYamlFileV2(it, expect, namespace, '/dir1', 'foo12.yaml', 'workflow', helpers.dummyWorkflow('foo12'))
