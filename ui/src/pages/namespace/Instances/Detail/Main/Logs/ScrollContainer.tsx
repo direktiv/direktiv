@@ -19,7 +19,12 @@ const ScrollContainer = () => {
 
   const { t } = useTranslation();
 
-  const { data: logData } = useLogs({
+  const {
+    data: logData,
+    hasPreviousPage,
+    fetchPreviousPage,
+    isFetchingPreviousPage,
+  } = useLogs({
     instance: instanceId,
   });
 
@@ -38,6 +43,13 @@ const ScrollContainer = () => {
     getScrollElement: () => parentRef.current,
     estimateSize: () => 20,
     /**
+     * Start at the bottom, this is especially important to avoid
+     * triggering fetchPreviousPage right away when the page loads.
+     * It also avoids flickering, because the useEffect will initiate
+     * a bottom scroll anyway.
+     */
+    initialOffset: 999999,
+    /**
      * overscan is the number of items to render above and below
      * the visible window. More items = less flickering when
      * scrolling, but more memory usage and initial load time.
@@ -52,6 +64,24 @@ const ScrollContainer = () => {
       rowVirtualizer.scrollToIndex(numberOfLogs), { align: "end" };
     }
   }, [numberOfLogs, rowVirtualizer, watch]);
+
+  const virtualItems = rowVirtualizer.getVirtualItems();
+  useEffect(() => {
+    const [firstLogEntry] = virtualItems;
+    if (
+      firstLogEntry?.index === 0 &&
+      hasPreviousPage &&
+      !isFetchingPreviousPage
+    ) {
+      fetchPreviousPage();
+    }
+  }, [
+    virtualItems,
+    fetchPreviousPage,
+    hasPreviousPage,
+    isFetchingPreviousPage,
+    numberOfLogs,
+  ]);
 
   const isPending = instanceDetailsData?.instance?.status === "pending";
 
