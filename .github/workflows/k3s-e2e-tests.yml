@@ -73,7 +73,7 @@ jobs:
             "registry/",
             "secrets/",
             "secrets2/",
-            # "services/",
+            "services/",
           ]
     steps:
       - name: Checkout code
