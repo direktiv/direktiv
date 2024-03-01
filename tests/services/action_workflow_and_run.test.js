@@ -23,14 +23,12 @@ describe('Test workflow function invoke', () => {
 		})
 	})
 
-	it(`should create a workflow /${ testWorkflow } to invoke the a function`, async () => {
-		const res = await request(common.config.getDirektivHost())
-			.put(`/api/namespaces/${ testNamespace }/tree/${ testWorkflow }?op=create-workflow`)
-			.set({
-				'Content-Type': 'text/plain',
-			})
-
-			.send(`
+	helpers.itShouldCreateFileV2(it, expect, testNamespace,
+		'',
+		testWorkflow,
+		'workflow',
+		'text/plain',
+		btoa(`
 description: A simple 'action' state that sends a get request
 functions:
 - id: get
@@ -44,13 +42,7 @@ states:
     input: 
       method: "GET"
       url: "https://jsonplaceholder.typicode.com/todos/1"
-`)
-
-		expect(res.statusCode).toEqual(200)
-		expect(res.body).toMatchObject({
-			namespace: testNamespace,
-		})
-	})
+`))
 
 	it(`should invoke the ${ testWorkflow } workflow`, async () => {
 		await helpers.sleep(500)

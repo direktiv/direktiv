@@ -116,7 +116,7 @@ describe('Test workflow variable operations', () => {
 		expect(buf).toEqual(binData)
 	})
 
-	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateFileV2(it, expect, namespace,
 		'',
 		workflowName,
 		'workflow',

@@ -68,7 +68,7 @@ describe('Test workflow variable operations', () => {
 		expect(createNamespaceResponse.statusCode).toEqual(200)
 	})
 
-	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateFileV2(it, expect, namespace,
 		'',
 		workflowName,
 		'workflow',
