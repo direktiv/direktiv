@@ -39,7 +39,7 @@ describe('Test behaviour specific to the root node', () => {
 		do {
 			counter++
 			if (counter > 100)
-				fail('init activity took too long')
+				throw new Error('init activity took too long')
 
 			await helpers.sleep(100)
 
@@ -758,12 +758,11 @@ describe('Test behaviour specific to the root node', () => {
 		})
 	})
 
-	it(`should check the activity logs for errors`, async () => {
-		// TODO: this test need to expect stream response.
-		return
+	// TODO: this test need to expect stream response.
+	// TODO: the logic doesn't currently log many errors
+	it.skip(`should check the activity logs for errors`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/activities/${ activityId }/logs`)
 		expect(req.statusCode).toEqual(200)
-		// TODO: the logic doesn't currently log many errors
 	})
 
 	it(`should invoke the '/a.yaml' workflow`, async () => {
@@ -800,10 +799,8 @@ describe('Test behaviour specific to the root node', () => {
 	})
 
 	// TODO: find a way to enable this as an optional test, because it takes too long to run in most cases.
-	it(`should invoke the '/banana/util/caller.yaml' workflow`, async () => {
-		// TODO: yassir enable this test before release.
-		// disabled for WIP.
-		return
+	// TODO: yassir enable this test before release.
+	it.skip(`should invoke the '/banana/util/caller.yaml' workflow`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/tree/banana/util/caller.yaml?op=wait`)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body.return.return.status).toEqual('200 OK')
