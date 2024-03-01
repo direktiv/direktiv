@@ -1,10 +1,10 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 
 import common from '../common'
+import helpers from '../common/helpers'
 import request from '../common/request'
 
 const namespaceName = 'simplesubflowtest'
-
 
 describe('Test subflow behaviour', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
@@ -27,34 +27,24 @@ describe('Test subflow behaviour', () => {
 		expect(createDirectoryResponse.statusCode).toEqual(200)
 	})
 
-	it(`should create a workflow called /a/child.yaml`, async () => {
-
-		const res = await request(common.config.getDirektivHost())
-			.put(`/api/namespaces/${ namespaceName }/tree/a/child.yaml?op=create-workflow`)
-			.set({
-				'Content-Type': 'text/plain',
-			})
-			.send(`
+	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+		'/a',
+		'child.yaml',
+		'workflow',
+		'text/plain',
+		btoa(`
 states:
 - id: a
   type: noop
   transform:
-    result: 'jq(.input + 1)'`)
+    result: 'jq(.input + 1)'`))
 
-		expect(res.statusCode).toEqual(200)
-		expect(res.body).toMatchObject({
-			namespace: namespaceName,
-		})
-	})
-
-	it(`should create a workflow called /a/parent1.yaml`, async () => {
-
-		const res = await request(common.config.getDirektivHost())
-			.put(`/api/namespaces/${ namespaceName }/tree/a/parent1.yaml?op=create-workflow`)
-			.set({
-				'Content-Type': 'text/plain',
-			})
-			.send(`
+	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+		'/a',
+		'parent1.yaml',
+		'workflow',
+		'text/plain',
+		btoa(`
 functions:
 - id: child
   type: subflow
@@ -68,13 +58,7 @@ states:
       input: 1
   transform:
     result: 'jq(.return.result)'
-`)
-
-		expect(res.statusCode).toEqual(200)
-		expect(res.body).toMatchObject({
-			namespace: namespaceName,
-		})
-	})
+`))
 
 	it(`should invoke the '/a/parent1.yaml' workflow`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/tree/a/parent1.yaml?op=wait`)
@@ -84,14 +68,12 @@ states:
 		})
 	})
 
-	it(`should create a workflow called /a/parent2.yaml`, async () => {
-
-		const res = await request(common.config.getDirektivHost())
-			.put(`/api/namespaces/${ namespaceName }/tree/a/parent2.yaml?op=create-workflow`)
-			.set({
-				'Content-Type': 'text/plain',
-			})
-			.send(`
+	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+		'/a',
+		'parent2.yaml',
+		'workflow',
+		'text/plain',
+		btoa(`
 functions:
 - id: child
   type: subflow
@@ -105,13 +87,7 @@ states:
       input: 1
   transform:
     result: 'jq(.return.result)'
-`)
-
-		expect(res.statusCode).toEqual(200)
-		expect(res.body).toMatchObject({
-			namespace: namespaceName,
-		})
-	})
+`))
 
 	it(`should invoke the '/a/parent2.yaml' workflow`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/tree/a/parent2.yaml?op=wait`)
@@ -121,14 +97,12 @@ states:
 		})
 	})
 
-	it(`should create a workflow called /a/parent3.yaml`, async () => {
-
-		const res = await request(common.config.getDirektivHost())
-			.put(`/api/namespaces/${ namespaceName }/tree/a/parent3.yaml?op=create-workflow`)
-			.set({
-				'Content-Type': 'text/plain',
-			})
-			.send(`
+	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+		'/a',
+		'parent3.yaml',
+		'workflow',
+		'text/plain',
+		btoa(`
 functions:
 - id: child
   type: subflow
@@ -142,13 +116,7 @@ states:
       input: 1
   transform:
     result: 'jq(.return.result)'
-`)
-
-		expect(res.statusCode).toEqual(200)
-		expect(res.body).toMatchObject({
-			namespace: namespaceName,
-		})
-	})
+`))
 
 	it(`should invoke the '/a/parent3.yaml' workflow`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/tree/a/parent3.yaml?op=wait`)
@@ -158,14 +126,12 @@ states:
 		})
 	})
 
-	it(`should create a workflow called /a/parent4.yaml`, async () => {
-
-		const res = await request(common.config.getDirektivHost())
-			.put(`/api/namespaces/${ namespaceName }/tree/a/parent4.yaml?op=create-workflow`)
-			.set({
-				'Content-Type': 'text/plain',
-			})
-			.send(`
+	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+		'/a',
+		'parent4.yaml',
+		'workflow',
+		'text/plain',
+		btoa(`
 functions:
 - id: child
   type: subflow
@@ -179,13 +145,7 @@ states:
       input: 1
   transform:
     result: 'jq(.return.result)'
-`)
-
-		expect(res.statusCode).toEqual(200)
-		expect(res.body).toMatchObject({
-			namespace: namespaceName,
-		})
-	})
+`))
 
 	it(`should invoke the '/a/parent4.yaml' workflow`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/tree/a/parent4.yaml?op=wait`)
@@ -200,7 +160,6 @@ states:
 		expect(instances.statusCode).toEqual(200)
 		expect(instances.body.instances.results.length).not.toBeLessThan(1)
 	})
-
 
 	it(`check if instance logs are present`, async () => {
 		const instances = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/instances`)
@@ -220,5 +179,4 @@ states:
 		expect(logsResponse.statusCode).toEqual(200)
 		expect(logsResponse.body.results.length).not.toBeLessThan(1)
 	})
-
 })

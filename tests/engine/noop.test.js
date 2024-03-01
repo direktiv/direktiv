@@ -1,10 +1,10 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 
 import common from '../common'
+import helpers from '../common/helpers'
 import request from '../common/request'
 
 const namespaceName = 'nooptest'
-
 
 describe('Test noop state behaviour', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
@@ -22,25 +22,17 @@ describe('Test noop state behaviour', () => {
 		})
 	})
 
-	it(`should create a workflow called /noop.yaml`, async () => {
-
-		const res = await request(common.config.getDirektivHost())
-			.put(`/api/namespaces/${ namespaceName }/tree/noop.yaml?op=create-workflow`)
-			.set({
-				'Content-Type': 'text/plain',
-			})
-			.send(`
+	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+		'',
+		'noop.yaml',
+		'workflow',
+		'text/plain',
+		btoa(`
 states:
 - id: a
   type: noop
   transform:
-    result: x`)
-
-		expect(res.statusCode).toEqual(200)
-		expect(res.body).toMatchObject({
-			namespace: namespaceName,
-		})
-	})
+    result: x`))
 
 	it(`should invoke the '/noop.yaml' workflow`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/tree/noop.yaml?op=wait`)
@@ -49,5 +41,4 @@ states:
 			result: 'x',
 		})
 	})
-
 })

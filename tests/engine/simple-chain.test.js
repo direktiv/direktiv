@@ -1,11 +1,10 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 
 import common from '../common'
+import helpers from '../common/helpers'
 import request from '../common/request'
-import helpers from "../common/helpers";
 
 const namespaceName = 'simplechaintest'
-
 
 describe('Test a simple chain of noop states', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
@@ -53,5 +52,4 @@ states:
 			c: 'z',
 		})
 	})
-
 })
