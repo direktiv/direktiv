@@ -1,6 +1,7 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 
 import common from '../common'
+import helpers from '../common/helpers'
 import request from '../common/request'
 
 const testNamespace = 'test-services'
@@ -52,13 +53,9 @@ states:
 	})
 
 	it(`should invoke the ${ testWorkflow } workflow`, async () => {
-		await sleep(500)
+		await helpers.sleep(500)
 		const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ testNamespace }/tree/${ testWorkflow }?op=wait`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.return.status).toBe('200 OK')
 	})
 })
-
-function sleep (ms) {
-	return new Promise(resolve => setTimeout(resolve, ms))
-}

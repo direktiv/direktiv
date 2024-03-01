@@ -54,7 +54,3 @@ describe('Test generic container', () => {
 
 })
 
-
-function sleep (ms) {
-	return new Promise(resolve => setTimeout(resolve, ms))
-}

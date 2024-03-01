@@ -3,6 +3,7 @@ import { beforeAll, describe, expect, it } from '@jest/globals'
 import common from '../common'
 import request from '../common/request'
 import events from './send_helper.js'
+import helpers from "../common/helpers";
 
 const namespaceName = 'sendeventsand'
 
@@ -101,7 +102,7 @@ describe('Test workflow events and', () => {
 			.send(startEventWorkflow)
 		expect(createWorkflowResponse.statusCode).toEqual(200)
 
-		await sleep(1000)
+		await helpers.sleep(1000)
 		const getEventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/event-listeners?limit=8&offset=0`)
 			.send()
 
@@ -213,7 +214,7 @@ describe('Test workflow events and', () => {
 			.send(startEventContextWorkflow)
 		expect(createWorkflowResponse.statusCode).toEqual(200)
 
-		await sleep(1000)
+		await helpers.sleep(1000)
 
 		await events.sendEventAndList(namespaceName, basevent('eventtype9', 'eventtype9', 'world1'))
 		await events.sendEventAndList(namespaceName, basevent('eventtype10', 'eventtype10', 'world3'))
@@ -241,7 +242,7 @@ describe('Test workflow events and', () => {
 			.send()
 		expect(runWorkflowResponse.statusCode).toEqual(200)
 
-		await sleep(1000)
+		await helpers.sleep(1000)
 
 		await events.sendEventAndList(namespaceName, basevent('eventtype11', 'eventtype11', 'world1'))
 		await events.sendEventAndList(namespaceName, basevent('eventtype12', 'eventtype12', 'world3'))
@@ -258,6 +259,3 @@ describe('Test workflow events and', () => {
 
 })
 
-function sleep (ms) {
-	return new Promise(resolve => setTimeout(resolve, ms))
-}

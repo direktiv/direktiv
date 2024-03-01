@@ -4,6 +4,7 @@ import retry from 'jest-retries'
 import common from '../common'
 import request from '../common/request'
 import { retry10 } from '../common/retry'
+import helpers from "../common/helpers";
 
 
 const testNamespace = 'command'
@@ -212,7 +213,7 @@ describe('Test special command with stop', () => {
 	)
 
 	it(`should wait a second for the services to sync`, async () => {
-		await sleep(1000)
+		await helpers.sleep(1000)
 	})
 
 	retry10(`should invoke workflow`, async () => {
@@ -228,6 +229,3 @@ describe('Test special command with stop', () => {
 
 })
 
-function sleep (ms) {
-	return new Promise(resolve => setTimeout(resolve, ms))
-}

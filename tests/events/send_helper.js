@@ -2,10 +2,8 @@ import { expect } from '@jest/globals'
 
 import common from '../common'
 import request from '../common/request'
+import helpers from "../common/helpers";
 
-function sleep (ms) {
-	return new Promise(resolve => setTimeout(resolve, ms))
-}
 
 async function listInstancesAndFilter (ns, wf, status) {
 
@@ -30,7 +28,7 @@ async function listInstancesAndFilter (ns, wf, status) {
 			} else if (instancesResponse.body.instances.pageInfo.total == 1)
 				return instancesResponse.body.instances.results[0]
 
-			await sleep(100)
+			await helpers.sleep(100)
 			instancesResponse = (function () {
 
 			})()
@@ -66,7 +64,7 @@ async function sendEventAndList (ns, event) {
 		if (idFind)
 			break
 
-		await sleep(100)
+		await helpers.sleep(100)
 	}
 	return idFind
 }
@@ -74,5 +72,4 @@ async function sendEventAndList (ns, event) {
 export default {
 	sendEventAndList,
 	listInstancesAndFilter,
-	sleep,
 }
