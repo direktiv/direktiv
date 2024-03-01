@@ -188,7 +188,7 @@ jobs:
 
           echo "API failed to be healthy"
           kubectl get pods 
-          kubectl logs deployments/direktiv-flow | tail -n 100
+          kubectl logs deployments/direktiv-flow
           exit 1
 
       - name: Run E2E tests
