@@ -15,6 +15,7 @@
     "sort-imports": "off",
     "import/no-nodejs-modules": "off",
     "no-multiple-empty-lines": ["error", { "max": 2, "maxEOF": 0 }],
+    "padded-blocks": ["error", "never"],
     "eol-last": "error"
   },
   "ignorePatterns": [

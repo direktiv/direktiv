@@ -38,7 +38,6 @@ describe('Test secret read operations', () => {
 	})
 
 	it(`should create the first workflow in a pair to test secret read`, async () => {
-
 		const res = await request(common.config.getDirektivHost())
 			.put(`/api/namespaces/${ testNamespace }/tree/${ testWorkflow }-parent.yaml?op=create-workflow`)
 			.set({
@@ -69,7 +68,6 @@ states:
 	})
 
 	it(`should create the second workflow in a pair to test secret read`, async () => {
-
 		const res = await request(common.config.getDirektivHost())
 			.put(`/api/namespaces/${ testNamespace }/tree/${ testWorkflow }-child.yaml?op=create-workflow`)
 			.set({

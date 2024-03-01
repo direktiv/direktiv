@@ -94,7 +94,6 @@ describe('Test target workflow var wrong config', () => {
 			),
 		)
 	})
-
 })
 
 describe('Test target workflow variable plugin', () => {
@@ -199,6 +198,4 @@ describe('Test target workflow variable plugin', () => {
 		)
 		expect(req.statusCode).toEqual(500)
 	})
-
-
 })

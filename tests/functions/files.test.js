@@ -30,7 +30,6 @@ scale: 1
 `)
 
 	it(`should create a workflow called /a.yaml`, async () => {
-
 		const res = await request(common.config.getDirektivHost())
 			.put(`/api/namespaces/${ namespaceName }/tree/a.yaml?op=create-workflow`)
 			.set({
@@ -134,7 +133,6 @@ states:
 	})
 
 	it(`should create a workflow called /e.yaml`, async () => {
-
 		const res = await request(common.config.getDirektivHost())
 			.put(`/api/namespaces/${ namespaceName }/tree/e.yaml?op=create-workflow`)
 			.set({

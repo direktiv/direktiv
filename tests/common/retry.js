@@ -10,7 +10,6 @@ function runTest (handler) {
 			result.catch(reject).then(resolve)
 		else
 			resolve()
-
 	})
 }
 

@@ -14,7 +14,6 @@ async function deleteAllNamespaces () {
 
 		if (response.statusCode !== 200)
 			throw Error(`none ok namespace(${ namespace.name }) delete statusCode(${ response.statusCode })`)
-
 	}
 }
 
@@ -149,7 +148,6 @@ async function itShouldCheckPathExistsV2 (it, expect, ns, path, assertExits) {
 			expect(res.statusCode).toEqual(200)
 		else
 			expect(res.statusCode).toEqual(404)
-
 	})
 }
 

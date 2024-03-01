@@ -144,7 +144,6 @@ describe('Test wrong endpoint config', () => {
 			),
 		)
 	})
-
 })
 
 describe('Test gateway endpoints on create', () => {

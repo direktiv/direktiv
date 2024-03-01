@@ -82,7 +82,6 @@ describe('Test target file wrong config', () => {
 			),
 		)
 	})
-
 })
 
 describe('Test target namespace file plugin', () => {
@@ -154,6 +153,4 @@ describe('Test target namespace file plugin', () => {
 		)
 		expect(req.statusCode).toEqual(500)
 	})
-
-
 })

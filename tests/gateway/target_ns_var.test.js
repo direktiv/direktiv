@@ -82,7 +82,6 @@ describe('Test target workflow var wrong config', () => {
 			),
 		)
 	})
-
 })
 
 describe('Test target namespace variable plugin', () => {
@@ -171,6 +170,4 @@ describe('Test target namespace variable plugin', () => {
 		)
 		expect(req.statusCode).toEqual(500)
 	})
-
-
 })

@@ -67,7 +67,6 @@ describe('Test workflow variable operations', () => {
 		expect(workflowVarResponse.statusCode).toEqual(200)
 		expect(workflowVarResponse.body.key).toEqual('plain')
 		expect(workflowVarResponse.body.totalSize).toEqual(plainText.length.toString())
-
 	})
 
 
@@ -82,7 +81,6 @@ describe('Test workflow variable operations', () => {
 	})
 
 	it(`should set binary variable`, async () => {
-
 		const buf = Buffer.from(binData, 'base64')
 
 		const workflowVarResponse = await request(config.getDirektivHost()).put(`/api/namespaces/${ namespace }/vars/binary`)
@@ -143,7 +141,6 @@ describe('Test workflow variable operations', () => {
 		expect(workflowVarResponse.body.text).toEqual(plainText)
 		expect(workflowVarResponse.body.json).toEqual(JSON.parse(jsonData))
 		expect(workflowVarResponse.body.binary).toEqual(binData)
-
 	})
 
 	it(`should delete one variable`, async () => {
@@ -158,5 +155,4 @@ describe('Test workflow variable operations', () => {
 		expect(workflowVarListResponse.statusCode).toEqual(200)
 		expect(workflowVarListResponse.body.variables.results.length).toEqual(2)
 	})
-
 })

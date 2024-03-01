@@ -181,6 +181,4 @@ describe('Test filesystem tree read operations', () => {
 			.get(`/api/v2/namespaces/${ namespace }/files/dir2`)
 		expect(res.statusCode).toEqual(404)
 	})
-
-
 })

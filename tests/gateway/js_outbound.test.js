@@ -75,6 +75,4 @@ describe('Test js outbound plugin', () => {
 		// added random data in the script
 		expect(req.body.random).toEqual('data')
 	})
-
-
 })

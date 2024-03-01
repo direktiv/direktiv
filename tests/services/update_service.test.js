@@ -115,7 +115,6 @@ scale: 1
 			],
 		})
 	})
-
 })
 
 describe('Test workflow operations with envs', () => {
@@ -236,6 +235,4 @@ states:
 			],
 		})
 	})
-
-
 })

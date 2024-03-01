@@ -155,7 +155,6 @@ describe('Test js inbound plugin', () => {
 		expect(req.body.result.addquery).toEqual('value1')
 		expect(req.body.result.addquerydel).toEqual('')
 	})
-
 })
 
 
@@ -197,10 +196,7 @@ describe('Test js inbound plugin consumer', () => {
 
 		expect(req.statusCode).toEqual(200)
 		expect(req.body.result.user).toEqual('demo')
-
 	})
-
-
 })
 
 describe('Test js inbound plugin url params', () => {
@@ -232,7 +228,6 @@ describe('Test js inbound plugin url params', () => {
 
 		expect(req.statusCode).toEqual(200)
 		expect(req.body.result.params).toEqual('myid')
-
 	})
 })
 
@@ -265,6 +260,5 @@ describe('Test js inbound plugin errors', () => {
 			.send({ hello: 'world' })
 
 		expect(req.statusCode).toEqual(403)
-
 	})
 })

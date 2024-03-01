@@ -82,5 +82,4 @@ describe('Test header plugin', () => {
 		expect(req.body.result.headers.Header).toBeUndefined()
 		expect(req.body.result.headers.Header1[0]).toEqual('newvalue')
 	})
-
 })

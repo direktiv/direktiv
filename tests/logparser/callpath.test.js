@@ -28,7 +28,6 @@ describe('Test subflow behaviour', () => {
 	})
 
 	it(`should create a workflow called /a/child.yaml`, async () => {
-
 		const res = await request(common.config.getDirektivHost())
 			.put(`/api/namespaces/${ namespaceName }/tree/a/child.yaml?op=create-workflow`)
 			.set({
@@ -48,7 +47,6 @@ states:
 	})
 
 	it(`should create a workflow called /a/parent1.yaml`, async () => {
-
 		const res = await request(common.config.getDirektivHost())
 			.put(`/api/namespaces/${ namespaceName }/tree/a/parent1.yaml?op=create-workflow`)
 			.set({
@@ -131,5 +129,4 @@ states:
 	//         expect(logEntry["tags"]["revision-id"]).toMatch(/^.{8}-.{4}-.{4}-.{4}-.{12}$/)
 	//     }))
 	// })
-
 })

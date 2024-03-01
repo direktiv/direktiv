@@ -4,7 +4,6 @@ export default {
 			return process.env.DIREKTIV_HOST
 
 		return 'http://localhost:80'
-
 	},
 	getAuthHeader: (authToken, isEnterprice = false) => {
 		if (!authToken)

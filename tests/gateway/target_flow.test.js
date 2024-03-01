@@ -240,7 +240,6 @@ describe('Test target workflow with errors', () => {
 		expect(req.statusCode).toEqual(500)
 		expect(req.text).toContain('error executing workflow: badinput: Missing or invalid value for required input.')
 	})
-
 })
 
 
@@ -329,8 +328,6 @@ describe('Test target workflow plugin', () => {
 		)
 		expect(req.statusCode).toEqual(500)
 	})
-
-
 })
 
 describe('Test POST method for target workflow plugin', () => {
@@ -475,7 +472,6 @@ describe('Test target workflow default contenttype', () => {
 
 		expect(req.headers['content-type']).toEqual('application/json')
 		expect(req.statusCode).toEqual(200)
-
 	})
 
 	retry10(`should return a configured content type`, async () => {
@@ -485,7 +481,5 @@ describe('Test target workflow default contenttype', () => {
 
 		expect(req.headers['content-type']).toEqual('test/me')
 		expect(req.statusCode).toEqual(200)
-
 	})
-
 })
