@@ -11,24 +11,24 @@ describe('Test renaming services operations', () => {
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateFile(it, expect, testNamespace,
-		'/s1.yaml', `
+	common.helpers.itShouldCreateYamlFileV2(it, expect, testNamespace,
+		'/', 's1.yaml', 'service', `
 direktiv_api: service/v1
 image: redis
 cmd: redis-server
 scale: 1
 `)
 
-	common.helpers.itShouldCreateFile(it, expect, testNamespace,
-		'/s2.yaml', `
+	common.helpers.itShouldCreateYamlFileV2(it, expect, testNamespace,
+		'/', 's2.yaml', 'service', `
 direktiv_api: service/v1
 image: redis
 cmd: redis-server
 scale: 2
 `)
 
-	common.helpers.itShouldCreateFile(it, expect, testNamespace,
-		'/w1.yaml', `
+	common.helpers.itShouldCreateYamlFileV2(it, expect, testNamespace,
+		'/', 'w1.yaml', 'workflow', `
 description: something
 functions:
 - id: get
@@ -39,8 +39,8 @@ states:
   type: noop
 `)
 
-	common.helpers.itShouldCreateFile(it, expect, testNamespace,
-		'/w2.yaml', `
+	common.helpers.itShouldCreateYamlFileV2(it, expect, testNamespace,
+		'/', 'w2.yaml', 'workflow', `
 description: something
 functions:
 - id: get

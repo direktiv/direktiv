@@ -28,11 +28,11 @@ describe('Test filesystem tree read operations', () => {
 		})
 	})
 
-	helpers.itShouldCreateDirectory(it, expect, namespace, '/dir1')
-	helpers.itShouldCreateDirectory(it, expect, namespace, '/dir2')
-	helpers.itShouldCreateFile(it, expect, namespace, '/foo.yaml', helpers.dummyWorkflow('foo'))
-	helpers.itShouldCreateFile(it, expect, namespace, '/dir1/foo11.yaml', helpers.dummyWorkflow('foo11'))
-	helpers.itShouldCreateFile(it, expect, namespace, '/dir1/foo12.yaml', helpers.dummyWorkflow('foo12'))
+	helpers.itShouldCreateDirV2(it, expect, namespace, '','dir1')
+	helpers.itShouldCreateDirV2(it, expect, namespace, '','dir2')
+	helpers.itShouldCreateYamlFileV2(it, expect, namespace, '/', 'foo.yaml', 'workflow', helpers.dummyWorkflow('foo'))
+	helpers.itShouldCreateYamlFileV2(it, expect, namespace, '/dir1', 'foo11.yaml', 'workflow', helpers.dummyWorkflow('foo11'))
+	helpers.itShouldCreateYamlFileV2(it, expect, namespace, '/dir1', 'foo12.yaml', 'workflow', helpers.dummyWorkflow('foo12'))
 
 	it(`should read root dir with three paths`, async () => {
 		const res = await request(config.getDirektivHost())
@@ -62,7 +62,7 @@ describe('Test filesystem tree read operations', () => {
 					{
 						path: '/foo.yaml',
 						type: 'workflow',
-						mimeType: 'application/direktiv',
+						mimeType: 'application/yaml',
 						createdAt: expect.stringMatching(regex.timestampRegex),
 						updatedAt: expect.stringMatching(regex.timestampRegex),
 
@@ -84,7 +84,7 @@ describe('Test filesystem tree read operations', () => {
 				updatedAt: expect.stringMatching(regex.timestampRegex),
 				children: [
 					{
-						mimeType: 'application/direktiv',
+						mimeType: 'application/yaml',
 						path: '/dir1/foo11.yaml',
 						type: 'workflow',
 						createdAt: expect.stringMatching(regex.timestampRegex),
@@ -92,7 +92,7 @@ describe('Test filesystem tree read operations', () => {
 
 					},
 					{
-						mimeType: 'application/direktiv',
+						mimeType: 'application/yaml',
 						path: '/dir1/foo12.yaml',
 						type: 'workflow',
 						createdAt: expect.stringMatching(regex.timestampRegex),

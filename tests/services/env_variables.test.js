@@ -11,8 +11,8 @@ describe('Test services crud operations', () => {
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateFile(it, expect, testNamespace,
-		'/s1.yaml', `
+	common.helpers.itShouldCreateYamlFileV2(it, expect, testNamespace,
+		'/', 's1.yaml', 'service', `
 direktiv_api: service/v1
 image: redis
 cmd: redis-server
@@ -24,8 +24,8 @@ envs:
   value: bar2
 `)
 
-	common.helpers.itShouldCreateFile(it, expect, testNamespace,
-		'/s2.yaml', `
+	common.helpers.itShouldCreateYamlFileV2(it, expect, testNamespace,
+		'/', 's2.yaml', 'service', `
 direktiv_api: service/v1
 image: redis
 cmd: redis-server

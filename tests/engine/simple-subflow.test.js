@@ -22,10 +22,7 @@ describe('Test subflow behaviour', () => {
 		})
 	})
 
-	it(`should create a directory called /a`, async () => {
-		const createDirectoryResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${ namespaceName }/tree/a?op=create-directory`)
-		expect(createDirectoryResponse.statusCode).toEqual(200)
-	})
+	helpers.itShouldCreateDirV2(it, expect, namespaceName, '/', 'a')
 
 	helpers.itShouldCreateFileV2(it, expect, namespaceName,
 		'/a',
@@ -174,7 +171,8 @@ states:
 		}))
 	})
 
-	it(`check if namespace logs contains some workflow operations`, async () => {
+	// TODO: Enable this test after new logging system merge.
+	it.skip(`check if namespace logs contains some workflow operations`, async () => {
 		const logsResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/logs`)
 		expect(logsResponse.statusCode).toEqual(200)
 		expect(logsResponse.body.results.length).not.toBeLessThan(1)

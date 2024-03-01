@@ -31,25 +31,11 @@ async function itShouldCreateNamespace (it, expect, ns) {
 	})
 }
 
-async function itShouldCreateFile (it, expect, ns, path, data) {
-	it(`should create a new file ${ path }`, async () => {
-		const res = await request(common.config.getDirektivHost())
-			.put(`/api/namespaces/${ ns }/tree${ path }?op=create-workflow`)
-			.set({
-				'Content-Type': 'text/plain',
-			})
-
-			.send(data)
-
-		expect(res.statusCode).toEqual(200)
-		expect(res.body).toMatchObject({
-			namespace: ns,
-		})
-	})
-}
-
 async function itShouldCreateFileV2 (it, expect, ns, path, name, type, mimeType, data) {
 	it(`should create a new file ${ path }`, async () => {
+		if (path === '/')
+			path = ''
+
 		const res = await request(common.config.getDirektivHost())
 			.post(`/api/v2/namespaces/${ ns }/files${ path }`)
 			.set('Content-Type', 'application/json')
@@ -60,8 +46,6 @@ async function itShouldCreateFileV2 (it, expect, ns, path, name, type, mimeType,
 				data,
 			})
 		expect(res.statusCode).toEqual(200)
-		if (path === '/')
-			path = ''
 
 		expect(res.body.data).toEqual({
 			path: `${ path }/${ name }`,
@@ -73,6 +57,10 @@ async function itShouldCreateFileV2 (it, expect, ns, path, name, type, mimeType,
 			updatedAt: expect.stringMatching(regex.timestampRegex),
 		})
 	})
+}
+
+function itShouldCreateYamlFileV2 (it, expect, ns, path, name, type, data) {
+	return itShouldCreateFileV2(it, expect, ns, path, name, type, 'application/yaml', btoa(data))
 }
 
 async function itShouldCreateDirV2 (it, expect, ns, path, name) {
@@ -159,18 +147,6 @@ states:
 `
 }
 
-async function itShouldCreateDirectory (it, expect, ns, path) {
-	it(`should create a directory ${ path }`, async () => {
-		const res = await request(common.config.getDirektivHost())
-			.put(`/api/namespaces/${ ns }/tree${ path }?op=create-directory`)
-
-		expect(res.statusCode).toEqual(200)
-		expect(res.body).toMatchObject({
-			namespace: ns,
-		})
-	})
-}
-
 async function itShouldUpdateFile (it, expect, ns, path, data) {
 	it(`should update existing file ${ path }`, async () => {
 		const res = await request(common.config.getDirektivHost())
@@ -191,10 +167,10 @@ async function itShouldUpdateFile (it, expect, ns, path, data) {
 async function itShouldDeleteFile (it, expect, ns, path) {
 	it(`should delete a file ${ path }`, async () => {
 		const res = await request(common.config.getDirektivHost())
-			.delete(`/api/namespaces/${ ns }/tree${ path }?op=delete-node`)
+			.delete(`/api/v2/namespaces/${ ns }/files${ path }`)
 
 		expect(res.statusCode).toEqual(200)
-		expect(res.body).toMatchObject({})
+		expect(res.body).toEqual("")
 	})
 }
 
@@ -216,12 +192,12 @@ function sleep (ms) {
 export default {
 	deleteAllNamespaces,
 	itShouldCreateNamespace,
-	itShouldCreateFile,
-	itShouldDeleteFile,
 	itShouldRenameFile,
 	itShouldUpdateFile,
-	itShouldCreateDirectory,
+
+	itShouldDeleteFile,
 	dummyWorkflow,
+	itShouldCreateYamlFileV2,
 	itShouldCreateDirV2,
 	itShouldCreateFileV2,
 	itShouldCheckPathExistsV2,

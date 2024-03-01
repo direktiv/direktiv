@@ -15,8 +15,8 @@ describe('Test basic workflow events', () => {
 		expect(createNamespaceResponse.statusCode).toEqual(200)
 	})
 
-	common.helpers.itShouldCreateFile(it, expect, namespaceName,
-		'/listener.yml', `
+	common.helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
+		'/','listener.yml', 'workflow',`
 start:
   type: event
   event:
@@ -58,8 +58,8 @@ describe('Test workflow events with filter/context', () => {
 		expect(createNamespaceResponse.statusCode).toEqual(200)
 	})
 
-	common.helpers.itShouldCreateFile(it, expect, namespaceName,
-		'/startlistener.yml', `
+	common.helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
+		'/','startlistener.yml', 'workflow'`
 start:
   type: event
   event:
@@ -74,8 +74,8 @@ states:
     result: Hello world!
 `)
 
-	common.helpers.itShouldCreateFile(it, expect, namespaceName,
-		'/stoplistener.yml', `
+	common.helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
+		'/','stoplistener.yml', 'workflow'`
     start:
       type: event
       event:
