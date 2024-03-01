@@ -33,6 +33,9 @@ async function itShouldCreateNamespace (it, expect, ns) {
 
 async function itShouldCreateFileV2 (it, expect, ns, path, name, type, mimeType, data) {
 	it(`should create a new file ${ path }`, async () => {
+		if (path === '/')
+			path = ''
+
 		const res = await request(common.config.getDirektivHost())
 			.post(`/api/v2/namespaces/${ ns }/files${ path }`)
 			.set('Content-Type', 'application/json')
@@ -43,8 +46,6 @@ async function itShouldCreateFileV2 (it, expect, ns, path, name, type, mimeType,
 				data,
 			})
 		expect(res.statusCode).toEqual(200)
-		if (path === '/')
-			path = ''
 
 		expect(res.body.data).toEqual({
 			path: `${ path }/${ name }`,
@@ -58,8 +59,8 @@ async function itShouldCreateFileV2 (it, expect, ns, path, name, type, mimeType,
 	})
 }
 
-async function itShouldCreateYamlFileV2 (it, expect, ns, path, name, type, data) {
-	await itShouldCreateFileV2(it, expect, ns, path, name, type, 'application/yaml', data)
+function itShouldCreateYamlFileV2 (it, expect, ns, path, name, type, data) {
+	return itShouldCreateFileV2(it, expect, ns, path, name, type, 'application/yaml', btoa(data))
 }
 
 async function itShouldCreateDirV2 (it, expect, ns, path, name) {

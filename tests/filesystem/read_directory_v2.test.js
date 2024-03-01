@@ -62,7 +62,7 @@ describe('Test filesystem tree read operations', () => {
 					{
 						path: '/foo.yaml',
 						type: 'workflow',
-						mimeType: 'application/direktiv',
+						mimeType: 'application/yaml',
 						createdAt: expect.stringMatching(regex.timestampRegex),
 						updatedAt: expect.stringMatching(regex.timestampRegex),
 
@@ -84,7 +84,7 @@ describe('Test filesystem tree read operations', () => {
 				updatedAt: expect.stringMatching(regex.timestampRegex),
 				children: [
 					{
-						mimeType: 'application/direktiv',
+						mimeType: 'application/yaml',
 						path: '/dir1/foo11.yaml',
 						type: 'workflow',
 						createdAt: expect.stringMatching(regex.timestampRegex),
@@ -92,7 +92,7 @@ describe('Test filesystem tree read operations', () => {
 
 					},
 					{
-						mimeType: 'application/direktiv',
+						mimeType: 'application/yaml',
 						path: '/dir1/foo12.yaml',
 						type: 'workflow',
 						createdAt: expect.stringMatching(regex.timestampRegex),
