@@ -1,9 +1,9 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 
 import common from '../common'
+import helpers from '../common/helpers'
 import request from '../common/request'
 import events from './send_helper.js'
-import helpers from "../common/helpers";
 
 const namespaceName = 'wfevents'
 
@@ -16,7 +16,7 @@ describe('Test basic workflow events', () => {
 	})
 
 	common.helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
-		'/','listener.yml', 'workflow',`
+		'/', 'listener.yml', 'workflow', `
 start:
   type: event
   event:
@@ -59,7 +59,7 @@ describe('Test workflow events with filter/context', () => {
 	})
 
 	common.helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
-		'/','startlistener.yml', 'workflow'`
+		'/', 'startlistener.yml', 'workflow'`
 start:
   type: event
   event:
@@ -75,7 +75,7 @@ states:
 `)
 
 	common.helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
-		'/','stoplistener.yml', 'workflow'`
+		'/', 'stoplistener.yml', 'workflow'`
     start:
       type: event
       event:
@@ -104,7 +104,6 @@ states:
 		expect(instance).not.toBeFalsy()
 	})
 })
-
 
 const basevent = (type, id, value) => `{
     "specversion" : "1.0",
@@ -199,7 +198,6 @@ describe('Test workflow events', () => {
 	})
 
 	it(`should have one event listeners`, async () => {
-
 		// workflow with start
 		await helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
 			'', startWorkflowName, 'workflow',
@@ -221,11 +219,9 @@ describe('Test workflow events', () => {
 		})
 
 		expect(getEventListenerResponse.body.pageInfo.total).toEqual(1)
-
 	})
 
 	it(`should have two event listeners`, async () => {
-
 		// workflow with start
 		await helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
 			'', waitWorkflowName, 'workflow',
@@ -254,12 +250,9 @@ describe('Test workflow events', () => {
 			events: [ { type: 'hellowait',
 				filters: {} } ],
 		})
-
-
 	})
 
 	it(`should kick off in flow workflow with custom attributes`, async () => {
-
 		// should not continue workflow
 		await events.sendEventAndList(namespaceName, basevent('no-kick', 'json-event'))
 
@@ -280,13 +273,9 @@ describe('Test workflow events', () => {
 
 		// custom value set
 		expect(outputJSON.hellowait.hello).toEqual('world')
-
 	})
 
-
 	it(`should kick off start event workflow`, async () => {
-
-
 		await events.sendEventAndList(namespaceName, basevent('hello', 'start-event'))
 		const instance = await events.listInstancesAndFilter(namespaceName, startWorkflowName, 'complete')
 		expect(instance).not.toBeFalsy()
@@ -299,9 +288,7 @@ describe('Test workflow events', () => {
 
 		// custom data set
 		expect(outputJSON.hello.data.hello).toEqual('world')
-
 	})
-
 
 	it(`should kick off start event workflow with context filter`, async () => {
 		await helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
@@ -320,9 +307,7 @@ describe('Test workflow events', () => {
 
 		// instance fired
 		expect(instancesResponse).not.toBeFalsy()
-
 	})
-
 
 	it(`should kick off running workflow with context filter`, async () => {
 		await helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
@@ -347,8 +332,5 @@ describe('Test workflow events', () => {
 
 		// instance fired
 		expect(instancesResponse).not.toBeFalsy()
-
 	})
-
 })
-

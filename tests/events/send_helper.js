@@ -1,17 +1,14 @@
 import { expect } from '@jest/globals'
 
 import common from '../common'
+import helpers from '../common/helpers'
 import request from '../common/request'
-import helpers from "../common/helpers";
-
 
 async function listInstancesAndFilter (ns, wf, status) {
-
 	let append = ''
 
 	if (wf)
 		append = '&filter.field=AS&filter.type=CONTAINS&filter.val=' + wf
-
 
 	let instancesResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ ns }/instances?limit=10&offset=0` + append)
 		.send()
@@ -24,7 +21,6 @@ async function listInstancesAndFilter (ns, wf, status) {
 				const idFind = instancesResponse.body.instances.results.find(item => item.status === status)
 				if (idFind)
 					return idFind
-
 			} else if (instancesResponse.body.instances.pageInfo.total == 1)
 				return instancesResponse.body.instances.results[0]
 
@@ -34,16 +30,12 @@ async function listInstancesAndFilter (ns, wf, status) {
 			})()
 		}
 
-
 	if (instancesResponse)
 		return instancesResponse.body
-
-
 }
 
 // send event and wait for it to appear in the event list baesd on id
 async function sendEventAndList (ns, event) {
-
 	const eventObject = JSON.parse(event)
 	let idFind
 
