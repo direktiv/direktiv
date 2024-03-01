@@ -46,14 +46,12 @@ describe('Test workflow variable operations', () => {
 		expect(createNamespaceResponse.statusCode).toEqual(200)
 	})
 
-	it(`should create a workflow`, async () => {
-		const createWorkflowResponse = await request(config.getDirektivHost()).put(`/api/namespaces/${ namespace }/tree/${ workflowName }?op=create-workflow`)
-			.send(simpleWorkflow)
-
-		expect(createWorkflowResponse.statusCode).toEqual(200)
-		const buf = Buffer.from(createWorkflowResponse.body.source, 'base64')
-		expect(buf.toString()).toEqual(simpleWorkflow)
-	})
+	helpers.itShouldCreateFileV2(it, expect, namespace,
+		'',
+		workflowName,
+		'workflow',
+		'text/plain',
+		btoa(simpleWorkflow))
 
 	it(`should fail invalid name`, async () => {
 		const workflowVarResponse = await request(config.getDirektivHost()).put(`/api/namespaces/${ namespace }/tree/${ workflowName }?op=set-var&var=hel$$o`)
