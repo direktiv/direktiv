@@ -130,7 +130,7 @@ describe('Test special command with files and permission', () => {
 		it,
 		expect,
 		testNamespace,
-		'/','wf1.yaml',
+		'/','wf1.yaml', 'workflow',
 		filesWorkflow,
 	)
 
@@ -154,7 +154,7 @@ describe('Test special command with env', () => {
 		it,
 		expect,
 		testNamespace,
-		'/','wf1.yaml',
+		'/','wf1.yaml','workflow',
 		genericContainerWorkflow,
 	)
 
@@ -177,7 +177,7 @@ describe('Test special command with supress', () => {
 		it,
 		expect,
 		testNamespace,
-		'/','wf1.yaml',
+		'/','wf1.yaml','workflow',
 		supressWorkflow,
 	)
 
@@ -200,7 +200,7 @@ describe('Test special command with stop', () => {
 		it,
 		expect,
 		testNamespace,
-		'/','wf1.yaml',
+		'/','wf1.yaml','workflow',
 		stopWorkflow,
 	)
 
@@ -208,7 +208,7 @@ describe('Test special command with stop', () => {
 		it,
 		expect,
 		testNamespace,
-		'/','wf2.yaml',
+		'/','wf2.yaml','workflow',
 		stopWorkflow2,
 	)
 
