@@ -137,7 +137,7 @@ states:
 `
 }
 
-function itShouldUpdateFile (it, expect, ns, path, data) {
+function itShouldUpdateYamlFileV2 (it, expect, ns, path, data) {
 	return itShouldUpdateFileV2(it, expect, ns, path, { data: btoa(data) })
 }
 
@@ -159,7 +159,7 @@ export default {
 	deleteAllNamespaces,
 	itShouldCreateNamespace,
 
-	itShouldUpdateFile,
+	itShouldUpdateYamlFileV2,
 	itShouldDeleteFileV2,
 	dummyWorkflow,
 	itShouldCreateYamlFileV2,
