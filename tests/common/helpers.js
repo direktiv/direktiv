@@ -137,21 +137,8 @@ states:
 `
 }
 
-async function itShouldUpdateFile (it, expect, ns, path, data) {
-	it(`should update existing file ${ path }`, async () => {
-		const res = await request(common.config.getDirektivHost())
-			.post(`/api/namespaces/${ ns }/tree${ path }?op=update-workflow`)
-			.set({
-				'Content-Type': 'text/plain',
-			})
-
-			.send(data)
-
-		expect(res.statusCode).toEqual(200)
-		expect(res.body).toMatchObject({
-			namespace: ns,
-		})
-	})
+function itShouldUpdateFile (it, expect, ns, path, data) {
+	return itShouldUpdateFileV2(it, expect, ns, path, { data: btoa(data) })
 }
 
 async function itShouldDeleteFile (it, expect, ns, path) {
@@ -171,8 +158,8 @@ function sleep (ms) {
 export default {
 	deleteAllNamespaces,
 	itShouldCreateNamespace,
-	itShouldUpdateFile,
 
+	itShouldUpdateFile,
 	itShouldDeleteFile,
 	dummyWorkflow,
 	itShouldCreateYamlFileV2,
