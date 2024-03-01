@@ -21,7 +21,6 @@
   "ignorePatterns": [
     "/events/*.js",
     "/kubernetes/*.js",
-    "/mirror/*.js",
     "/cli/*.js"
   ]
 }

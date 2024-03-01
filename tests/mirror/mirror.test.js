@@ -1,8 +1,8 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 
 import common from '../common'
+import helpers from '../common/helpers'
 import request from '../common/request'
-import helpers from "../common/helpers";
 
 const namespaceName = 'mirtest'
 const url = 'https://github.com/direktiv/direktiv-test-project.git'
@@ -37,11 +37,9 @@ describe('Test behaviour specific to the root node', () => {
 		let status = 'pending'
 		let counter = -1
 		do {
-
 			counter++
 			if (counter > 100)
 				fail('init activity took too long')
-
 
 			await helpers.sleep(100)
 
@@ -75,9 +73,7 @@ describe('Test behaviour specific to the root node', () => {
 
 			activityId = req.body.activities.results[0].id
 			status = req.body.activities.results[0].status
-
-		} while (status == 'pending')
-
+		} while (status === 'pending')
 	})
 
 	it(`should read the root directory`, async () => {
