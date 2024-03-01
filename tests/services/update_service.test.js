@@ -1,9 +1,8 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
-import retry from 'jest-retries'
 
 import common from '../common'
 import request from '../common/request'
-import { retry10 } from '../common/retry'
+import { retry10, retry50 } from '../common/retry'
 
 const testNamespace = 'test-services'
 
@@ -171,8 +170,7 @@ states:
   type: noop
 `)
 
-	retry(`should list all services`, 30, async () => {
-		await sleep(1000)
+	retry50(`should list all services`, async () => {
 		listRes = await request(common.config.getDirektivHost())
 			.get(`/api/v2/namespaces/${ testNamespace }/services`)
 		expect(listRes.statusCode).toEqual(200)
@@ -214,8 +212,7 @@ states:
 `)
 
 
-	retry(`should list all services`, 30, async () => {
-		await sleep(1000)
+	retry50(`should list all services`, async () => {
 		listRes = await request(common.config.getDirektivHost())
 			.get(`/api/v2/namespaces/${ testNamespace }/services`)
 		expect(listRes.statusCode).toEqual(200)
@@ -242,7 +239,3 @@ states:
 
 
 })
-
-function sleep (ms) {
-	return new Promise(resolve => setTimeout(resolve, ms))
-}
