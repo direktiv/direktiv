@@ -3,6 +3,7 @@ import retry from 'jest-retries'
 
 import common from '../common'
 import request from '../common/request'
+import { retry10 } from '../common/retry'
 
 
 const testNamespace = 'command'
@@ -133,8 +134,7 @@ describe('Test special command with files and permission', () => {
 	)
 
 
-	retry(`should invoke workflow`, 10, async () => {
-		await sleep(500)
+	retry10(`should invoke workflow`, async () => {
 		const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ testNamespace }/tree/wf1.yaml?op=wait`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.return[0].Output).toEqual('HELLO')
@@ -158,8 +158,7 @@ describe('Test special command with env', () => {
 	)
 
 
-	retry(`should invoke workflow`, 10, async () => {
-		await sleep(500)
+	retry10(`should invoke workflow`, async () => {
 		const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ testNamespace }/tree/wf1.yaml?op=wait`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.return[0].Output).toEqual('HELLO=WORLD\n')
@@ -182,8 +181,7 @@ describe('Test special command with supress', () => {
 	)
 
 
-	retry(`should invoke workflow`, 10, async () => {
-		await sleep(500)
+	retry10(`should invoke workflow`, async () => {
 		const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ testNamespace }/tree/wf1.yaml?op=wait`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.return[0].Output).toEqual('hello\n')
