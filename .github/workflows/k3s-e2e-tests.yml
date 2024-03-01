@@ -63,15 +63,19 @@ jobs:
             "filesystem/",
             "logparser/",
             "variables/",
+            "variables2/",
             "errors/",
             "mirror/",
             "namespaces/",
-            # "functions/",
+            "namespaces2/",
+            "functions/",
             "gateway/",
-            # "kubernetes/",
+            "kubernetes/",
             "registry/",
             "secrets/",
-            # "services/",
+            "secrets2/",
+            "services/",
+            "events/",
           ]
     steps:
       - name: Checkout code
