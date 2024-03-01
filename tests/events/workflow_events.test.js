@@ -26,7 +26,7 @@ states:
     result: Hello world!
 `)
 
-	it(`should wait a second for the events logic to sync`, async() => {
+	it(`should wait a second for the events logic to sync`, async () => {
 		await sleep(1000)
 	})
 
@@ -42,7 +42,7 @@ states:
 	it(`should invoke the '/listener.yml' workflow with an event`, async () => {
 		await events.sendEventAndList(namespaceName, basevent('greeting', 'greeting', 'world1'))
 
-		var instance = await events.listInstancesAndFilter(namespaceName, 'listener.yml')
+		const instance = await events.listInstancesAndFilter(namespaceName, 'listener.yml')
 		expect(instance).not.toBeFalsy()
 	})
 })
@@ -87,7 +87,7 @@ states:
         result: Hello world!
 `)
 
-	it(`should wait a second for the events logic to sync`, async() => {
+	it(`should wait a second for the events logic to sync`, async () => {
 		await sleep(1000)
 	})
 

@@ -49,7 +49,7 @@ describe('Test variable get delete list calls', () => {
 
 		const reduced = res.body.data.map(item => ({ name: item.name }))
 
-		expect(reduced).toEqual(expect.arrayContaining([ {"name": 'foo1'}, {"name": 'foo2'} ]))
+		expect(reduced).toEqual(expect.arrayContaining([ { name: 'foo1' }, { name: 'foo2' } ]))
 	})
 
 	it(`should delete foo1`, async () => {

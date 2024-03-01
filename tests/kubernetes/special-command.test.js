@@ -212,7 +212,7 @@ describe('Test special command with stop', () => {
 		stopWorkflow2,
 	)
 
-	it(`should wait a second for the services to sync`, async() => {
+	it(`should wait a second for the services to sync`, async () => {
 		await sleep(1000)
 	})
 
