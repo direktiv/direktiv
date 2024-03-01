@@ -54,7 +54,7 @@ describe('Test target workflow var wrong config', () => {
 		it,
 		expect,
 		testNamespace,
-		'/','ep3.yaml',
+		'/','ep3.yaml', 'endpoint',
 		endpointNSVarBroken,
 	)
 
@@ -108,7 +108,7 @@ describe('Test target namespace variable plugin', () => {
 		it,
 		expect,
 		testNamespace,
-		'/','endpoint1.yaml',
+		'/','endpoint1.yaml', 'endpoint',
 		endpointNSVar,
 	)
 
@@ -116,7 +116,7 @@ describe('Test target namespace variable plugin', () => {
 		it,
 		expect,
 		testNamespace,
-		'/','endpoint2.yaml',
+		'/','endpoint2.yaml', 'endpoint',
 		endpointNSVarAllowed,
 	)
 
@@ -124,7 +124,7 @@ describe('Test target namespace variable plugin', () => {
 		it,
 		expect,
 		limitedNamespace,
-		'/','endpoint1.yaml',
+		'/','endpoint1.yaml', 'endpoint',
 		endpointNSVar,
 	)
 
@@ -132,7 +132,7 @@ describe('Test target namespace variable plugin', () => {
 		it,
 		expect,
 		limitedNamespace,
-		'/','endpoint2.yaml',
+		'/','endpoint2.yaml','endpoint',
 		endpointNSVarAllowed,
 	)
 

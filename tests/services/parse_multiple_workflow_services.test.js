@@ -12,7 +12,7 @@ describe('Test services crud operations', () => {
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
 	common.helpers.itShouldCreateYamlFileV2(it, expect, testNamespace,
-		'/','s2.yaml', `
+		'/','s2.yaml', 'workflow', `
 direktiv_api: workflow/v1
 
 functions:

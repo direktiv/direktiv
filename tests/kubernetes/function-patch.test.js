@@ -40,7 +40,7 @@ describe('Test generic container', () => {
 		it,
 		expect,
 		testNamespace,
-		'/','wf1.yaml',
+		'/','wf1.yaml', 'workflow',
 		genericContainerWorkflow,
 	)
 

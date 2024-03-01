@@ -16,7 +16,7 @@ describe('Test basic workflow events', () => {
 	})
 
 	common.helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
-		'/','listener.yml', `
+		'/','listener.yml', 'workflow',`
 start:
   type: event
   event:
@@ -59,7 +59,7 @@ describe('Test workflow events with filter/context', () => {
 	})
 
 	common.helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
-		'/','startlistener.yml', `
+		'/','startlistener.yml', 'workflow'`
 start:
   type: event
   event:
@@ -75,7 +75,7 @@ states:
 `)
 
 	common.helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
-		'/','stoplistener.yml', `
+		'/','stoplistener.yml', 'workflow'`
     start:
       type: event
       event:
