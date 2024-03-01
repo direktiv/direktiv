@@ -85,26 +85,16 @@ async function itShouldCreateDirV2 (it, expect, ns, path, name) {
 	})
 }
 
-async function itShouldUpdatePathV2 (it, expect, ns, path, newPath) {
-	it(`should update file path ${ path } to ${ newPath }`, async () => {
-		const res = await request(common.config.getDirektivHost())
-			.patch(`/api/v2/namespaces/${ ns }/files${ path }`)
-			.set('Content-Type', 'application/json')
-			.send({
-				path: newPath,
-			})
-		expect(res.statusCode).toEqual(200)
-		expect(res.body.data).toMatchObject({
-			path: newPath,
-			type: expect.stringMatching('directory|file|workflow|service|endpoint|consumer'),
-			createdAt: expect.stringMatching(regex.timestampRegex),
-			updatedAt: expect.stringMatching(regex.timestampRegex),
-		})
-	})
+function itShouldUpdateFilePathV2 (it, expect, ns, path, newPath) {
+	return itShouldUpdateFileV2(it, expect, ns, path, { path: newPath })
 }
 
 async function itShouldUpdateFileV2 (it, expect, ns, path, newPatch) {
-	it(`should update file path ${ path }`, async () => {
+	let title = `should update file path ${ path }`
+	if (newPatch.path !== undefined)
+		title = `should update file path ${ path } to ${ newPatch.path }`
+
+	it(title, async () => {
 		const res = await request(common.config.getDirektivHost())
 			.patch(`/api/v2/namespaces/${ ns }/files${ path }`)
 			.set('Content-Type', 'application/json')
@@ -189,7 +179,7 @@ export default {
 	itShouldCreateDirV2,
 	itShouldCreateFileV2,
 	itShouldCheckPathExistsV2,
-	itShouldUpdatePathV2,
+	itShouldUpdateFilePathV2,
 	itShouldUpdateFileV2,
 	sleep,
 }
