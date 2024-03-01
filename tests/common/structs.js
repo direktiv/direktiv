@@ -1,3 +1,5 @@
+import { expect } from '@jest/globals'
+
 import regex from './regex.js'
 
 const errorResponse = {

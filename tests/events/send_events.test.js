@@ -1,5 +1,7 @@
 // http://192.168.0.145/api/namespaces/test/broadcast
 
+import { beforeAll, describe, expect, it } from '@jest/globals'
+
 import common from '../common'
 import request from '../common/request'
 
