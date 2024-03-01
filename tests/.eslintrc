@@ -24,6 +24,7 @@
     "/kubernetes/*.js",
     "/mirror/*.js",
     "/namespaces/*.js",
+    "/namespaces/*.js",
     "/cli/*.js"
   ]
 }
