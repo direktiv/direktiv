@@ -7,7 +7,6 @@ import { retry10 } from '../common/retry'
 const testNamespace = 'gateway'
 const limitedNamespace = 'limited_namespace'
 
-
 const workflow = `
   direktiv_api: workflow/v1
   description: A simple 'no-op' state that returns 'Hello world!'
@@ -17,7 +16,6 @@ const workflow = `
     transform:
       result: Hello world!
 `
-
 
 const workflowNotToBetriggered = `
   direktiv_api: workflow/v1
@@ -95,7 +93,6 @@ const endpointComplexPOSTWorkflow = `
     - POST
   path: /endpoint1`
 
-
 const endpointWorkflowAllowed = `
   direktiv_api: endpoint/v1
   allow_anonymous: true
@@ -120,7 +117,6 @@ const endpointBroken = `
     - GET
   path: /endpoint3`
 
-
 const endpointErrorWorkflow = `direktiv_api: endpoint/v1
 allow_anonymous: true
 plugins:
@@ -139,7 +135,6 @@ states:
   error: badinput
   message: 'Missing or invalid value for required input.'
 `
-
 
 const endpointNoContentType = `direktiv_api: endpoint/v1
 allow_anonymous: true
@@ -240,9 +235,7 @@ describe('Test target workflow with errors', () => {
 		expect(req.statusCode).toEqual(500)
 		expect(req.text).toContain('error executing workflow: badinput: Missing or invalid value for required input.')
 	})
-
 })
-
 
 describe('Test target workflow plugin', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
@@ -329,8 +322,6 @@ describe('Test target workflow plugin', () => {
 		)
 		expect(req.statusCode).toEqual(500)
 	})
-
-
 })
 
 describe('Test POST method for target workflow plugin', () => {
@@ -364,7 +355,6 @@ describe('Test POST method for target workflow plugin', () => {
 		expect(req.text).toEqual('{"result":{"message":"Hi"}}')
 	})
 })
-
 
 describe('Test Complex POST method for target workflow plugin', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
@@ -437,7 +427,6 @@ describe('Test scope for target workflow plugin', () => {
 	})
 })
 
-
 describe('Test target workflow default contenttype', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
 
@@ -450,7 +439,6 @@ describe('Test target workflow default contenttype', () => {
 		'/epnoct.yaml',
 		endpointNoContentType,
 	)
-
 
 	common.helpers.itShouldCreateFile(
 		it,
@@ -475,7 +463,6 @@ describe('Test target workflow default contenttype', () => {
 
 		expect(req.headers['content-type']).toEqual('application/json')
 		expect(req.statusCode).toEqual(200)
-
 	})
 
 	retry10(`should return a configured content type`, async () => {
@@ -485,7 +472,5 @@ describe('Test target workflow default contenttype', () => {
 
 		expect(req.headers['content-type']).toEqual('test/me')
 		expect(req.statusCode).toEqual(200)
-
 	})
-
 })

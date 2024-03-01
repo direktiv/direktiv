@@ -28,10 +28,13 @@ jobs:
           - logparser
           - mirror
           - namespace
+          - namespace2
           - registry
           - secrets
+          - secrets2
           - services
           - variables
+          - variables2
 
     steps:
       - uses: actions/checkout@v4

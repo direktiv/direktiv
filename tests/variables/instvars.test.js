@@ -60,10 +60,8 @@ states:
     as: binary2
 `
 
-
 describe('Test workflow variable operations', () => {
 	beforeAll(helpers.deleteAllNamespaces)
-
 
 	it(`should create a namespace`, async () => {
 		const createNamespaceResponse = await request(config.getDirektivHost()).put(`/api/namespaces/${ namespace }`)

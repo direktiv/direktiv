@@ -1,15 +1,14 @@
+import { beforeAll, describe, expect, it } from '@jest/globals'
+
 import common from '../common'
 import request from '../common/request'
+import helpers from "../common/helpers";
 
 const namespaceName = 'mirtest'
 const url = 'https://github.com/direktiv/direktiv-test-project.git'
 const branch = 'main'
 
 let activityId = ''
-
-function sleep (ms) {
-	return new Promise(resolve => setTimeout(resolve, ms))
-}
 
 describe('Test behaviour specific to the root node', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
@@ -44,7 +43,7 @@ describe('Test behaviour specific to the root node', () => {
 				fail('init activity took too long')
 
 
-			await sleep(100)
+			await helpers.sleep(100)
 
 			const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/tree/?op=mirror-info`)
 			// expect(req.statusCode).toEqual(200)
@@ -82,7 +81,7 @@ describe('Test behaviour specific to the root node', () => {
 	})
 
 	it(`should read the root directory`, async () => {
-		await sleep(5000)
+		await helpers.sleep(5000)
 		const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/tree/`)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({

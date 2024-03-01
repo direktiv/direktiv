@@ -1,7 +1,10 @@
+import { beforeAll, describe, expect, it } from '@jest/globals'
 import retry from 'jest-retries'
 
 import common from '../common'
 import request from '../common/request'
+import { retry10 } from '../common/retry'
+import helpers from "../common/helpers";
 
 
 const testNamespace = 'command'
@@ -132,8 +135,7 @@ describe('Test special command with files and permission', () => {
 	)
 
 
-	retry(`should invoke workflow`, 10, async () => {
-		await sleep(500)
+	retry10(`should invoke workflow`, async () => {
 		const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ testNamespace }/tree/wf1.yaml?op=wait`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.return[0].Output).toEqual('HELLO')
@@ -157,8 +159,7 @@ describe('Test special command with env', () => {
 	)
 
 
-	retry(`should invoke workflow`, 10, async () => {
-		await sleep(500)
+	retry10(`should invoke workflow`, async () => {
 		const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ testNamespace }/tree/wf1.yaml?op=wait`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.return[0].Output).toEqual('HELLO=WORLD\n')
@@ -181,8 +182,7 @@ describe('Test special command with supress', () => {
 	)
 
 
-	retry(`should invoke workflow`, 10, async () => {
-		await sleep(500)
+	retry10(`should invoke workflow`, async () => {
 		const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ testNamespace }/tree/wf1.yaml?op=wait`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.return[0].Output).toEqual('hello\n')
@@ -212,18 +212,16 @@ describe('Test special command with stop', () => {
 		stopWorkflow2,
 	)
 
-	it(`should wait a second for the services to sync`, async() => {
-		await sleep(1000)
+	it(`should wait a second for the services to sync`, async () => {
+		await helpers.sleep(1000)
 	})
 
-	retry(`should invoke workflow`, 3, async () => {
-		await sleep(500)
+	retry10(`should invoke workflow`, async () => {
 		const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ testNamespace }/tree/wf1.yaml?op=wait`)
 		expect(res.statusCode).toEqual(500)
 	})
 
-	retry(`should invoke workflow`, 3, async () => {
-		await sleep(500)
+	retry10(`should invoke workflow`, async () => {
 		const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ testNamespace }/tree/wf2.yaml?op=wait`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.return.length).toBe(2)
@@ -231,6 +229,3 @@ describe('Test special command with stop', () => {
 
 })
 
-function sleep (ms) {
-	return new Promise(resolve => setTimeout(resolve, ms))
-}

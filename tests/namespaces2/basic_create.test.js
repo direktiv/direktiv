@@ -1,12 +1,9 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
-import { basename } from 'path'
 
 import config from '../common/config'
 import helpers from '../common/helpers'
 import regex from '../common/regex'
 import request from '../common/request'
-
-const namespace = basename(__filename)
 
 describe('Test namespace create calls', () => {
 	beforeAll(helpers.deleteAllNamespaces)
@@ -59,7 +56,6 @@ describe('Test namespace create calls', () => {
 		})
 	}
 })
-
 
 describe('Test invalid namespace create calls', () => {
 	beforeAll(helpers.deleteAllNamespaces)

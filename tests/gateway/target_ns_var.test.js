@@ -82,7 +82,6 @@ describe('Test target workflow var wrong config', () => {
 			),
 		)
 	})
-
 })
 
 describe('Test target namespace variable plugin', () => {
@@ -105,7 +104,6 @@ describe('Test target namespace variable plugin', () => {
 		expect(workflowVarResponse.statusCode).toEqual(200)
 	})
 
-
 	common.helpers.itShouldCreateFile(
 		it,
 		expect,
@@ -137,7 +135,6 @@ describe('Test target namespace variable plugin', () => {
 		'/endpoint2.yaml',
 		endpointNSVarAllowed,
 	)
-
 
 	retry10(`should return a ns var from magic namespace`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(
@@ -171,6 +168,4 @@ describe('Test target namespace variable plugin', () => {
 		)
 		expect(req.statusCode).toEqual(500)
 	})
-
-
 })

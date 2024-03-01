@@ -14,7 +14,17 @@
     "simple-import-sort/exports": "error",
     "sort-imports": "off",
     "import/no-nodejs-modules": "off",
-    "no-multiple-empty-lines": ["error", { "max": 2, "maxEOF": 0 }],
+    "no-multiple-empty-lines": ["error", { "max": 1, "maxEOF": 0 }],
+    "padded-blocks": ["error", "never"],
     "eol-last": "error"
-  }
+  },
+  "ignorePatterns": [
+    "/events/*.js",
+    "/engine/*.js",
+    "/kubernetes/*.js",
+    "/mirror/*.js",
+    "/namespaces/*.js",
+    "/namespaces/*.js",
+    "/cli/*.js"
+  ]
 }

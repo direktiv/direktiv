@@ -5,7 +5,6 @@ import config from '../common/config'
 import helpers from '../common/helpers'
 import request from '../common/request'
 
-
 const namespace = basename(__filename)
 
 const workflowName = 'wf.yaml'
@@ -37,13 +36,10 @@ const plainText = `this is plain text`
 
 const jsonData = `{ "hello": "world" }`
 
-
 const jdata = JSON.stringify(JSON.parse(jsonData))
-
 
 describe('Test workflow variable operations', () => {
 	beforeAll(helpers.deleteAllNamespaces)
-
 
 	it(`should create a namespace`, async () => {
 		const createNamespaceResponse = await request(config.getDirektivHost()).put(`/api/namespaces/${ namespace }`)
@@ -67,7 +63,6 @@ describe('Test workflow variable operations', () => {
 		expect(workflowVarResponse.statusCode).toEqual(406)
 	})
 
-
 	it(`should set plain text variable`, async () => {
 		const workflowVarResponse = await request(config.getDirektivHost()).put(`/api/namespaces/${ namespace }/tree/${ workflowName }?op=set-var&var=plain`)
 			.set('Content-Type', 'text/plain')
@@ -76,9 +71,7 @@ describe('Test workflow variable operations', () => {
 		expect(workflowVarResponse.statusCode).toEqual(200)
 		expect(workflowVarResponse.body.key).toEqual('plain')
 		expect(workflowVarResponse.body.totalSize).toEqual(plainText.length.toString())
-
 	})
-
 
 	it(`should set json variable`, async () => {
 		const workflowVarResponse = await request(config.getDirektivHost()).put(`/api/namespaces/${ namespace }/tree/${ workflowName }?op=set-var&var=json`)
@@ -91,7 +84,6 @@ describe('Test workflow variable operations', () => {
 	})
 
 	it(`should set binary variable`, async () => {
-
 		const buf = Buffer.from(binData, 'base64')
 
 		const workflowVarResponse = await request(config.getDirektivHost()).put(`/api/namespaces/${ namespace }/tree/${ workflowName }?op=set-var&var=binary`)
@@ -103,14 +95,12 @@ describe('Test workflow variable operations', () => {
 		expect(workflowVarResponse.body.totalSize).toEqual(Buffer.byteLength(buf).toString())
 	})
 
-
 	it(`should list all variable`, async () => {
 		const workflowVarResponse = await request(config.getDirektivHost()).get(`/api/namespaces/${ namespace }/tree/${ workflowName }?op=vars`)
 
 		expect(workflowVarResponse.statusCode).toEqual(200)
 		expect(workflowVarResponse.body.variables.results.length).toEqual(3)
 	})
-
 
 	it(`should get json variable`, async () => {
 		const workflowVarResponse = await request(config.getDirektivHost()).get(`/api/namespaces/${ namespace }/tree/${ workflowName }?op=var&var=json`)
@@ -135,7 +125,6 @@ describe('Test workflow variable operations', () => {
 		expect(buf).toEqual(binData)
 	})
 
-
 	it(`should get variables from workflow getter`, async () => {
 		const workflowVarResponse = await request(config.getDirektivHost()).post(`/api/namespaces/${ namespace }/tree/${ workflowName }?op=wait&ref=latest`)
 
@@ -143,7 +132,6 @@ describe('Test workflow variable operations', () => {
 		expect(workflowVarResponse.body.text).toEqual(plainText)
 		expect(workflowVarResponse.body.json).toEqual(JSON.parse(jsonData))
 		expect(workflowVarResponse.body.binary).toEqual(binData)
-
 	})
 
 	it(`should delete one variable`, async () => {
@@ -157,6 +145,5 @@ describe('Test workflow variable operations', () => {
 
 		expect(workflowVarListResponse.statusCode).toEqual(200)
 		expect(workflowVarListResponse.body.variables.results.length).toEqual(2)
-
 	})
 })

@@ -46,10 +46,9 @@ describe('Test variable get delete list calls', () => {
 		const res = await request(config.getDirektivHost())
 			.get(`/api/v2/namespaces/${ namespace }/variables`)
 		expect(res.statusCode).toEqual(200)
-
-		const reduced = res.body.data.map(item => ({ name: item.name }))
-
-		expect(reduced).toEqual(expect.arrayContaining([ {"name": 'foo1'}, {"name": 'foo2'} ]))
+		expect(res.body).toMatchObject({
+			data: [ expectDummyVar('foo1'), expectDummyVar('foo2') ],
+		})
 	})
 
 	it(`should delete foo1`, async () => {
@@ -67,7 +66,6 @@ describe('Test variable get delete list calls', () => {
 		})
 	})
 })
-
 
 function makeDummyVar (name) {
 	return {

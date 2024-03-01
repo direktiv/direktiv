@@ -1,6 +1,9 @@
+import { beforeAll, describe, expect, it } from '@jest/globals'
+
 import common from '../common'
 import request from '../common/request'
 import events from './send_helper.js'
+import helpers from "../common/helpers";
 
 const namespaceName = 'wfevents'
 
@@ -26,8 +29,8 @@ states:
     result: Hello world!
 `)
 
-	it(`should wait a second for the events logic to sync`, async() => {
-		await sleep(1000)
+	it(`should wait a second for the events logic to sync`, async () => {
+		await helpers.sleep(1000)
 	})
 
 	it(`should fail to invoke the '/listener.yml' workflow`, async () => {
@@ -42,7 +45,7 @@ states:
 	it(`should invoke the '/listener.yml' workflow with an event`, async () => {
 		await events.sendEventAndList(namespaceName, basevent('greeting', 'greeting', 'world1'))
 
-		var instance = await events.listInstancesAndFilter(namespaceName, 'listener.yml')
+		const instance = await events.listInstancesAndFilter(namespaceName, 'listener.yml')
 		expect(instance).not.toBeFalsy()
 	})
 })
@@ -87,8 +90,8 @@ states:
         result: Hello world!
 `)
 
-	it(`should wait a second for the events logic to sync`, async() => {
-		await sleep(1000)
+	it(`should wait a second for the events logic to sync`, async () => {
+		await helpers.sleep(1000)
 	})
 
 	it(`should invoke the '/stoplistener.yml' workflow with an event`, async () => {
@@ -203,7 +206,7 @@ describe('Test workflow events', () => {
 
 		expect(createWorkflowResponse.statusCode).toEqual(200)
 
-		await sleep(1000)
+		await helpers.sleep(1000)
 
 		const getEventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/event-listeners?limit=8&offset=0`)
 			.send()
@@ -352,7 +355,3 @@ describe('Test workflow events', () => {
 
 })
 
-
-function sleep (time) {
-	return new Promise(resolve => setTimeout(resolve, time))
-}

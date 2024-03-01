@@ -4,9 +4,7 @@ import common from '../common'
 import request from '../common/request'
 import { retry10 } from '../common/retry'
 
-
 const testNamespace = 'js-outbound'
-
 
 const endpointJSFile = `
 direktiv_api: endpoint/v1
@@ -28,7 +26,6 @@ plugins:
 methods: 
   - POST
 path: /target`
-
 
 const wf = `
 direktiv_api: workflow/v1
@@ -75,6 +72,4 @@ describe('Test js outbound plugin', () => {
 		// added random data in the script
 		expect(req.body.random).toEqual('data')
 	})
-
-
 })

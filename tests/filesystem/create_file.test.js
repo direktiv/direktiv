@@ -12,7 +12,6 @@ describe('Test namespaces crud operations', () => {
 	common.helpers.itShouldCreateNamespace(it, expect, namespace)
 
 	it(`should create a new direktiv file`, async () => {
-
 		const res = await request(common.config.getDirektivHost())
 			.put(`/api/namespaces/${ namespace }/tree/my-workflow.yaml?op=create-workflow`)
 			.set({
@@ -33,7 +32,6 @@ states:
 		})
 	})
 })
-
 
 // Current response structure:
 // {

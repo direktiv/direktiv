@@ -22,7 +22,6 @@ methods:
   - GET
 path: /endpoint1`
 
-
 const endpoint2 = `
 direktiv_api: endpoint/v1
 allow_anonymous: true
@@ -40,7 +39,6 @@ plugins:
 methods: 
   - GET
 path: /endpoint2`
-
 
 const endpoint3 = `
 direktiv_api: endpoint/v1
@@ -94,7 +92,6 @@ tags:
 groups:
 - group2`
 
-
 const endpointBroken = `direktiv_api: endpoint/v1
 allow_anonymous: true
 plugins:
@@ -103,7 +100,6 @@ plugins:
 methods: 
   - GET
 path: ep4`
-
 
 describe('Test wrong endpoint config', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
@@ -144,7 +140,6 @@ describe('Test wrong endpoint config', () => {
 			),
 		)
 	})
-
 })
 
 describe('Test gateway endpoints on create', () => {
@@ -194,7 +189,6 @@ describe('Test gateway get single endpoint', () => {
 		'/endpoint3.yaml',
 		endpoint3,
 	)
-
 
 	common.helpers.itShouldCreateFile(
 		it,
@@ -296,7 +290,6 @@ describe('Test gateway get single endpoint', () => {
 	})
 })
 
-
 describe('Test gateway endpoints crud operations', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
 
@@ -387,7 +380,6 @@ describe('Test gateway endpoints crud operations', () => {
 			),
 		)
 	})
-
 
 	retry10(`should list all consumers`, async () => {
 		const listRes = await request(common.config.getDirektivHost()).get(

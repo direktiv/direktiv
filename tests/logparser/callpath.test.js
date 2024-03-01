@@ -1,8 +1,9 @@
+import { beforeAll, describe, expect, it } from '@jest/globals'
+
 import common from '../common'
 import request from '../common/request'
 
 const namespaceName = 'callpathtest'
-
 
 describe('Test subflow behaviour', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
@@ -26,7 +27,6 @@ describe('Test subflow behaviour', () => {
 	})
 
 	it(`should create a workflow called /a/child.yaml`, async () => {
-
 		const res = await request(common.config.getDirektivHost())
 			.put(`/api/namespaces/${ namespaceName }/tree/a/child.yaml?op=create-workflow`)
 			.set({
@@ -46,7 +46,6 @@ states:
 	})
 
 	it(`should create a workflow called /a/parent1.yaml`, async () => {
-
 		const res = await request(common.config.getDirektivHost())
 			.put(`/api/namespaces/${ namespaceName }/tree/a/parent1.yaml?op=create-workflow`)
 			.set({
@@ -88,7 +87,6 @@ states:
 		expect(instances.body.instances.results.length).not.toBeLessThan(1)
 	})
 
-
 	// it(`check if parentslogs contain child logs`, async () => {
 	//     var instancesSource = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/instances?filter.field=AS&filter.type=WORKFLOW&filter.val=a/parent1.yaml`)
 	//     var instancesChild = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/instances?filter.field=AS&filter.type=WORKFLOW&filter.val=/a/child.yaml`)
@@ -129,5 +127,4 @@ states:
 	//         expect(logEntry["tags"]["revision-id"]).toMatch(/^.{8}-.{4}-.{4}-.{4}-.{12}$/)
 	//     }))
 	// })
-
 })

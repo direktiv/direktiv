@@ -35,7 +35,6 @@ const expectedChildNodeObject = {
 describe('Test basic directory operations', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
 
-
 	it(`should fail to create a workflow because of a missing namespace`, async () => {
 		const createWorkflowResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${ namespaceName }/tree/${ workflowName }?op=create-workflow`)
 

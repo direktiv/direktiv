@@ -1,7 +1,8 @@
-import retry from 'jest-retries'
+import { beforeAll, describe, expect, it } from '@jest/globals'
 
 import common from '../common'
 import request from '../common/request'
+import { retry10 } from '../common/retry'
 
 const testNamespace = 'test-services'
 
@@ -38,7 +39,6 @@ states:
   type: noop
 `)
 
-
 	common.helpers.itShouldCreateFile(it, expect, testNamespace,
 		'/w2.yaml', `
 description: something
@@ -52,8 +52,7 @@ states:
 `)
 
 	let listRes
-	retry(`should list all services`, 10, async () => {
-		await sleep(500)
+	retry10(`should list all services`, async () => {
 		listRes = await request(common.config.getDirektivHost())
 			.get(`/api/v2/namespaces/${ testNamespace }/services`)
 		expect(listRes.statusCode).toEqual(200)
@@ -103,8 +102,7 @@ states:
 	common.helpers.itShouldRenameFile(it, expect, testNamespace, '/s2.yaml', '/s3.yaml')
 	common.helpers.itShouldRenameFile(it, expect, testNamespace, '/w2.yaml', '/w3.yaml')
 
-	retry(`should list all services`, 10, async () => {
-		await sleep(500)
+	retry10(`should list all services`, async () => {
 		listRes = await request(common.config.getDirektivHost())
 			.get(`/api/v2/namespaces/${ testNamespace }/services`)
 		expect(listRes.statusCode).toEqual(200)
@@ -154,8 +152,7 @@ states:
 	common.helpers.itShouldDeleteFile(it, expect, testNamespace, '/s1.yaml')
 	common.helpers.itShouldDeleteFile(it, expect, testNamespace, '/w1.yaml')
 
-	retry(`should list all services`, 10, async () => {
-		await sleep(500)
+	retry10(`should list all services`, async () => {
 		listRes = await request(common.config.getDirektivHost())
 			.get(`/api/v2/namespaces/${ testNamespace }/services`)
 		expect(listRes.statusCode).toEqual(200)
@@ -184,8 +181,3 @@ states:
 		})
 	})
 })
-
-
-function sleep (ms) {
-	return new Promise(resolve => setTimeout(resolve, ms))
-}

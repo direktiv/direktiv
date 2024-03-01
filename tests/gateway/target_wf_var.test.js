@@ -94,7 +94,6 @@ describe('Test target workflow var wrong config', () => {
 			),
 		)
 	})
-
 })
 
 describe('Test target workflow variable plugin', () => {
@@ -158,14 +157,12 @@ describe('Test target workflow variable plugin', () => {
 		expect(workflowVarResponse.statusCode).toEqual(200)
 	})
 
-
 	it(`should set plain text variable for worklfow in limited namespace`, async () => {
 		const workflowVarResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${ limitedNamespace }/tree/workflow.yaml?op=set-var&var=test`)
 			.set('Content-Type', 'text/plain')
 			.send('Hello World 2')
 		expect(workflowVarResponse.statusCode).toEqual(200)
 	})
-
 
 	retry10(`should return a workflow var from magic namespace`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(
@@ -199,6 +196,4 @@ describe('Test target workflow variable plugin', () => {
 		)
 		expect(req.statusCode).toEqual(500)
 	})
-
-
 })

@@ -1,11 +1,11 @@
+import { beforeAll, describe, expect, it } from '@jest/globals'
+
 import common from '../common'
 import request from '../common/request'
+import helpers from "../common/helpers";
 
 const namespaceName = 'canceltest'
 
-function sleep (ms) {
-	return new Promise(resolve => setTimeout(resolve, ms))
-}
 
 describe('Test cancel state behaviour', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
@@ -50,12 +50,12 @@ states:
 
 		const instanceID = xreq.body.instance
 
-		await sleep(50)
+		await helpers.sleep(50)
 
 		const creq = await request(common.config.getDirektivHost()).post(`/api/namespaces/${ namespaceName }/instances/${ instanceID }/cancel`)
 		expect(creq.statusCode).toEqual(200)
 
-		await sleep(50)
+		await helpers.sleep(50)
 
 		const ireq = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/instances/${ instanceID }`)
 		expect(ireq.statusCode).toEqual(200)
@@ -93,12 +93,12 @@ states:
 
 		const instanceID = xreq.body.instance
 
-		await sleep(50)
+		await helpers.sleep(50)
 
 		const creq = await request(common.config.getDirektivHost()).post(`/api/namespaces/${ namespaceName }/instances/${ instanceID }/cancel`)
 		expect(creq.statusCode).toEqual(200)
 
-		await sleep(50)
+		await helpers.sleep(50)
 
 		const ireq = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/instances/${ instanceID }`)
 		expect(ireq.statusCode).toEqual(200)
