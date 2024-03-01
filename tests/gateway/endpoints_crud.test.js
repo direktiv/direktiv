@@ -409,8 +409,8 @@ describe('Test gateway endpoints crud operations', () => {
 		)
 	})
 
-	common.helpers.itShouldDeleteFile(it, expect, testNamespace, '/endpoint1.yaml')
-	common.helpers.itShouldDeleteFile(it, expect, testNamespace, '/consumer1.yaml')
+	common.helpers.itShouldDeleteFileV2(it, expect, testNamespace, '/endpoint1.yaml')
+	common.helpers.itShouldDeleteFileV2(it, expect, testNamespace, '/consumer1.yaml')
 
 	retry10(`should list one route after delete`, async () => {
 		const listRes = await request(common.config.getDirektivHost()).get(

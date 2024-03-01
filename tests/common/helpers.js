@@ -141,7 +141,7 @@ function itShouldUpdateFile (it, expect, ns, path, data) {
 	return itShouldUpdateFileV2(it, expect, ns, path, { data: btoa(data) })
 }
 
-async function itShouldDeleteFile (it, expect, ns, path) {
+async function itShouldDeleteFileV2 (it, expect, ns, path) {
 	it(`should delete a file ${ path }`, async () => {
 		const res = await request(common.config.getDirektivHost())
 			.delete(`/api/v2/namespaces/${ ns }/files${ path }`)
@@ -160,7 +160,7 @@ export default {
 	itShouldCreateNamespace,
 
 	itShouldUpdateFile,
-	itShouldDeleteFile,
+	itShouldDeleteFileV2,
 	dummyWorkflow,
 	itShouldCreateYamlFileV2,
 	itShouldCreateDirV2,

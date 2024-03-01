@@ -119,7 +119,7 @@ describe('Test filesystem tree read operations', () => {
 		})
 	})
 
-	helpers.itShouldDeleteFile(it, expect, namespace, '/foo.yaml')
+	helpers.itShouldDeleteFileV2(it, expect, namespace, '/foo.yaml')
 
 	it(`should read root dir two dirs`, async () => {
 		const res = await request(config.getDirektivHost())
@@ -151,7 +151,7 @@ describe('Test filesystem tree read operations', () => {
 		})
 	})
 
-	helpers.itShouldDeleteFile(it, expect, namespace, '/dir2')
+	helpers.itShouldDeleteFileV2(it, expect, namespace, '/dir2')
 
 	it(`should read root dir one path`, async () => {
 		const res = await request(config.getDirektivHost())
