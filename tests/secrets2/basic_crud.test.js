@@ -66,7 +66,6 @@ describe('Test secrets get delete list calls', () => {
 	})
 })
 
-
 function makeDummySecret (name) {
 	return {
 		name,

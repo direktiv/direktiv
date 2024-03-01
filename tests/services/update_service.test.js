@@ -194,7 +194,6 @@ states:
 		})
 	})
 
-
 	common.helpers.itShouldUpdateFile(it, expect, testNamespace,
 		'/w2.yaml', `
 description: something
@@ -209,7 +208,6 @@ states:
 - id: foo
   type: noop
 `)
-
 
 	retry50(`should list all services`, async () => {
 		listRes = await request(common.config.getDirektivHost())

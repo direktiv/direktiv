@@ -8,7 +8,6 @@ async function deleteAllNamespaces () {
 	if (listResponse.statusCode !== 200)
 		throw Error(`none ok namespaces list statusCode(${ listResponse.statusCode })`)
 
-
 	for (const namespace of listResponse.body.results) {
 		const response = await request(config.getDirektivHost()).delete(`/api/namespaces/${ namespace.name }?recursive=true`)
 
@@ -134,7 +133,6 @@ async function itShouldUpdateFileV2 (it, expect, ns, path, newPatch) {
 		if (newPatch.data !== undefined)
 			want.data = newPatch.data
 
-
 		expect(res.body.data).toMatchObject(want)
 	})
 }
@@ -160,7 +158,6 @@ states:
   type: noop
 `
 }
-
 
 async function itShouldCreateDirectory (it, expect, ns, path) {
 	it(`should create a directory ${ path }`, async () => {
@@ -215,7 +212,6 @@ async function itShouldRenameFile (it, expect, ns, path, newPath) {
 function sleep (ms) {
 	return new Promise(resolve => setTimeout(resolve, ms))
 }
-
 
 export default {
 	deleteAllNamespaces,

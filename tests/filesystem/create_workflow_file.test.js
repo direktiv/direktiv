@@ -36,7 +36,6 @@ states:
 	})
 })
 
-
 // Current response structure:
 // {
 //    "namespace": "test-namespace",

@@ -5,7 +5,6 @@ import request from '../common/request'
 
 const namespaceName = 'callpathtest'
 
-
 describe('Test subflow behaviour', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
 
@@ -87,7 +86,6 @@ states:
 		expect(instances.statusCode).toEqual(200)
 		expect(instances.body.instances.results.length).not.toBeLessThan(1)
 	})
-
 
 	// it(`check if parentslogs contain child logs`, async () => {
 	//     var instancesSource = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/instances?filter.field=AS&filter.type=WORKFLOW&filter.val=a/parent1.yaml`)

@@ -62,7 +62,6 @@ describe('Test namespaces get delete list calls', () => {
 	})
 })
 
-
 function makeDummyNamespace (name) {
 	return {
 		name,

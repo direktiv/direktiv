@@ -57,7 +57,6 @@ describe('Test namespace create calls', () => {
 	}
 })
 
-
 describe('Test invalid namespace create calls', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 

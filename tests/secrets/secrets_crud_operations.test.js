@@ -51,7 +51,6 @@ describe('Test secret crud operations', () => {
 		})
 	})
 
-
 	it(`should list all secrets`, async () => {
 		const res = await request(common.config.getDirektivHost())
 			.get(`/api/namespaces/${ testNamespace }/secrets`)
@@ -86,7 +85,6 @@ describe('Test secret crud operations', () => {
 			},
 		})
 	})
-
 
 	it(`should delete the second secret`, async () => {
 		const res = await request(common.config.getDirektivHost())

@@ -39,7 +39,6 @@ states:
   type: noop
 `)
 
-
 	common.helpers.itShouldCreateFile(it, expect, testNamespace,
 		'/w2.yaml', `
 description: something

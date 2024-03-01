@@ -19,7 +19,6 @@ const requestWithHeaders
 			if (!authHeader)
 				return request(appConfig)[method](args)
 
-
 			return request(appConfig)[method](args)
 				.set(...authHeader)
 		}

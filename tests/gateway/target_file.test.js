@@ -4,7 +4,6 @@ import common from '../common'
 import request from '../common/request'
 import { retry10 } from '../common/retry'
 
-
 const testNamespace = 'gateway'
 
 const limitedNamespace = 'limited_namespace'
@@ -33,7 +32,6 @@ const endpointNSFileAllowed = `
   methods: 
     - GET
   path: /endpoint2`
-
 
 const endpointBroken = `
   direktiv_api: endpoint/v1
@@ -121,7 +119,6 @@ describe('Test target namespace file plugin', () => {
 		'/endpoint2.yaml',
 		endpointNSFileAllowed,
 	)
-
 
 	retry10(`should return a file from magic namespace`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(

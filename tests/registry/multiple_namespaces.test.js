@@ -14,7 +14,6 @@ describe('Test services crud operations', () => {
 	itShouldCreateSecret(it, expect, 'test_namespace_b', 'b_domain_1.io', 'b_name_1', 'b_password1')
 	itShouldCreateSecret(it, expect, 'test_namespace_b', 'b_domain_2.io', 'b_name_2', 'b_password2')
 
-
 	it(`should list all registries in namespace test_namespace_b`, async () => {
 		const listRes = await request(common.config.getDirektivHost())
 			.get(`/api/v2/namespaces/test_namespace_a/registries`)

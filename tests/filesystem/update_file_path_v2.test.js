@@ -20,14 +20,12 @@ describe('Test filesystem tree update paths', () => {
 	helpers.itShouldCheckPathExistsV2(it, expect, namespace, '/dir1', true)
 	helpers.itShouldCheckPathExistsV2(it, expect, namespace, '/foo1', true)
 
-
 	helpers.itShouldUpdatePathV2(it, expect, namespace, '/foo1', '/foo2')
 
 	helpers.itShouldCheckPathExistsV2(it, expect, namespace, '/dir1', true)
 	helpers.itShouldCheckPathExistsV2(it, expect, namespace, '/foo1', false)
 	helpers.itShouldCheckPathExistsV2(it, expect, namespace, '/foo2', true)
 })
-
 
 describe('Test filesystem tree change dir', () => {
 	beforeAll(helpers.deleteAllNamespaces)
@@ -40,7 +38,6 @@ describe('Test filesystem tree change dir', () => {
 	helpers.itShouldCheckPathExistsV2(it, expect, namespace, '/dir1', true)
 	helpers.itShouldCheckPathExistsV2(it, expect, namespace, '/dir2', false)
 	helpers.itShouldCheckPathExistsV2(it, expect, namespace, '/dir1/dir2', true)
-
 
 	helpers.itShouldUpdatePathV2(it, expect, namespace, '/dir1/dir2', '/dir2')
 
