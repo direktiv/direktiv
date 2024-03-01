@@ -146,18 +146,6 @@ states:
 `
 }
 
-async function itShouldCreateDirectory (it, expect, ns, path) {
-	it(`should create a directory ${ path }`, async () => {
-		const res = await request(common.config.getDirektivHost())
-			.put(`/api/namespaces/${ ns }/tree${ path }?op=create-directory`)
-
-		expect(res.statusCode).toEqual(200)
-		expect(res.body).toMatchObject({
-			namespace: ns,
-		})
-	})
-}
-
 async function itShouldUpdateFile (it, expect, ns, path, data) {
 	it(`should update existing file ${ path }`, async () => {
 		const res = await request(common.config.getDirektivHost())
@@ -203,12 +191,12 @@ function sleep (ms) {
 export default {
 	deleteAllNamespaces,
 	itShouldCreateNamespace,
-	itShouldCreateYamlFileV2,
 	itShouldDeleteFile,
 	itShouldRenameFile,
 	itShouldUpdateFile,
-	itShouldCreateDirectory,
+
 	dummyWorkflow,
+	itShouldCreateYamlFileV2,
 	itShouldCreateDirV2,
 	itShouldCreateFileV2,
 	itShouldCheckPathExistsV2,
