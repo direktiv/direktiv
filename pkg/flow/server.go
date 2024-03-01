@@ -207,6 +207,7 @@ var _ mirror.Callbacks = &mirrorCallbacks{}
 func (srv *server) start(ctx context.Context) error {
 	var err error
 
+	defer srv.sugar.Sync()
 	srv.sugar.Info("Initializing telemetry.")
 	telend, err := util.InitTelemetry(srv.conf.OpenTelemetry, "direktiv/flow", "direktiv")
 	if err != nil {
