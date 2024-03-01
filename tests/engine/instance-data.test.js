@@ -1,10 +1,10 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 
 import common from '../common'
+import helpers from '../common/helpers'
 import request from '../common/request'
 
 const namespaceName = 'datatest'
-
 
 describe('Test instance data behaviour', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
@@ -22,24 +22,16 @@ describe('Test instance data behaviour', () => {
 		})
 	})
 
-	it(`should create a workflow called /data.yaml`, async () => {
-
-		const res = await request(common.config.getDirektivHost())
-			.put(`/api/namespaces/${ namespaceName }/tree/data.yaml?op=create-workflow`)
-			.set({
-				'Content-Type': 'text/plain',
-			})
-			.send(`
+	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+		'',
+		'data.yaml',
+		'workflow',
+		'text/plain',
+		btoa(`
 states:
 - id: a
   type: noop
-`)
-
-		expect(res.statusCode).toEqual(200)
-		expect(res.body).toMatchObject({
-			namespace: namespaceName,
-		})
-	})
+`))
 
 	it(`should invoke the '/data.yaml' workflow with no input`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/tree/data.yaml?op=wait`)
@@ -73,5 +65,4 @@ states:
 			input: 'SGVsbG8sIHdvcmxkIQ==',
 		})
 	})
-
 })

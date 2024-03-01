@@ -1,10 +1,10 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 
 import common from '../common'
+import helpers from '../common/helpers'
 import request from '../common/request'
 
 const namespaceName = 'errorstatetest'
-
 
 describe('Test error state behaviour', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
@@ -22,14 +22,12 @@ describe('Test error state behaviour', () => {
 		})
 	})
 
-	it(`should create a workflow called /error.yaml`, async () => {
-
-		const res = await request(common.config.getDirektivHost())
-			.put(`/api/namespaces/${ namespaceName }/tree/error.yaml?op=create-workflow`)
-			.set({
-				'Content-Type': 'text/plain',
-			})
-			.send(`
+	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+		'',
+		'error.yaml',
+		'workflow',
+		'text/plain',
+		btoa(`
 states:
 - id: a
   type: error
@@ -37,13 +35,7 @@ states:
   message: 'this is a test error'
   transform: 
     result: x
-`)
-
-		expect(res.statusCode).toEqual(200)
-		expect(res.body).toMatchObject({
-			namespace: namespaceName,
-		})
-	})
+`))
 
 	it(`should invoke the '/error.yaml' workflow`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/tree/error.yaml?op=wait`)
@@ -54,14 +46,12 @@ states:
 		expect(req.body).toMatchObject({})
 	})
 
-	it(`should create a workflow called /caller.yaml`, async () => {
-
-		const res = await request(common.config.getDirektivHost())
-			.put(`/api/namespaces/${ namespaceName }/tree/caller.yaml?op=create-workflow`)
-			.set({
-				'Content-Type': 'text/plain',
-			})
-			.send(`
+	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+		'',
+		'caller.yaml',
+		'workflow',
+		'text/plain',
+		btoa(`
 functions:
 - id: child
   type: subflow
@@ -71,13 +61,7 @@ states:
   type: action
   action:
     function: child
-`)
-
-		expect(res.statusCode).toEqual(200)
-		expect(res.body).toMatchObject({
-			namespace: namespaceName,
-		})
-	})
+`))
 
 	it(`should invoke the '/caller.yaml' workflow`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/tree/caller.yaml?op=wait`)
@@ -88,14 +72,12 @@ states:
 		expect(req.body).toMatchObject({})
 	})
 
-	it(`should create a workflow called /error-and-continue.yaml`, async () => {
-
-		const res = await request(common.config.getDirektivHost())
-			.put(`/api/namespaces/${ namespaceName }/tree/error-and-continue.yaml?op=create-workflow`)
-			.set({
-				'Content-Type': 'text/plain',
-			})
-			.send(`
+	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+		'',
+		'error-and-continue.yaml',
+		'workflow',
+		'text/plain',
+		btoa(`
 states:
 - id: a
   type: error
@@ -104,13 +86,7 @@ states:
   transition: b
 - id: b
   type: noop
-`)
-
-		expect(res.statusCode).toEqual(200)
-		expect(res.body).toMatchObject({
-			namespace: namespaceName,
-		})
-	})
+`))
 
 	it(`should invoke the '/error-and-continue.yaml' workflow`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/tree/error-and-continue.yaml?op=wait`)
@@ -121,14 +97,12 @@ states:
 		expect(req.body).toMatchObject({})
 	})
 
-	it(`should create a workflow called /double-error.yaml`, async () => {
-
-		const res = await request(common.config.getDirektivHost())
-			.put(`/api/namespaces/${ namespaceName }/tree/double-error.yaml?op=create-workflow`)
-			.set({
-				'Content-Type': 'text/plain',
-			})
-			.send(`
+	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+		'',
+		'double-error.yaml',
+		'workflow',
+		'text/plain',
+		btoa(`
 states:
 - id: a
   type: error
@@ -139,21 +113,5 @@ states:
   type: error
   error: testcode2
   message: 'this is a test error 2'
-`)
-
-		expect(res.statusCode).toEqual(200)
-		expect(res.body).toMatchObject({
-			namespace: namespaceName,
-		})
-	})
-
-	// it(`should invoke the '/double-error.yaml' workflow`, async () => {
-	//     const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/tree/double-error.yaml?op=wait`)
-	//
-	//     expect(req.statusCode).toEqual(500)
-	//     expect(req.headers["direktiv-instance-error-code"]).toEqual('direktiv.workflow.multipleErrors')
-	//     expect(req.headers["direktiv-instance-error-message"]).toEqual('the workflow instance tried to throw multiple errors')
-	//     expect(req.body).toMatchObject({})
-	// })
-
+`))
 })

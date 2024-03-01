@@ -20,7 +20,6 @@
   },
   "ignorePatterns": [
     "/events/*.js",
-    "/engine/*.js",
     "/kubernetes/*.js",
     "/mirror/*.js",
     "/namespaces/*.js",
