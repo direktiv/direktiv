@@ -215,14 +215,12 @@ describe('Test special command with stop', () => {
 		await sleep(1000)
 	})
 
-	retry(`should invoke workflow`, 3, async () => {
-		await sleep(500)
+	retry10(`should invoke workflow`, async () => {
 		const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ testNamespace }/tree/wf1.yaml?op=wait`)
 		expect(res.statusCode).toEqual(500)
 	})
 
-	retry(`should invoke workflow`, 3, async () => {
-		await sleep(500)
+	retry10(`should invoke workflow`, async () => {
 		const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ testNamespace }/tree/wf2.yaml?op=wait`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.return.length).toBe(2)

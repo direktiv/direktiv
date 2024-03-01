@@ -1,9 +1,8 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
-import retry from 'jest-retries'
 
 import common from '../common'
 import request from '../common/request'
-import { retry10 } from '../common/retry'
+import { retry10, retry50 } from '../common/retry'
 
 const testNamespace = 'test-services'
 
@@ -57,9 +56,7 @@ scale: 2
 		})
 	})
 
-	retry(`should list all service pods`, 50, async () => {
-		await sleep(500)
-
+	retry50(`should list all service pods`, async () => {
 		let sID = listRes.body.data[0].id
 		let res = await request(common.config.getDirektivHost())
 			.get(`/api/v2/namespaces/${ testNamespace }/services/${ sID }/pods`)
@@ -130,7 +127,3 @@ scale: 2
 		expect(res.body).toEqual('')
 	})
 })
-
-function sleep (ms) {
-	return new Promise(resolve => setTimeout(resolve, ms))
-}
