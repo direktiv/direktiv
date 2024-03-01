@@ -12,18 +12,17 @@ const getAuthHeader = () => {
 }
 
 const requestWithHeaders
-  = (appConfig, method = 'post') =>
-  	args => {
-  		const authHeader = getAuthHeader()
+	= (appConfig, method = 'post') =>
+		args => {
+			const authHeader = getAuthHeader()
 
-  		if (!authHeader)
-  			return request(appConfig)[method](args)
+			if (!authHeader)
+				return request(appConfig)[method](args)
 
 
-  		return request(appConfig)
-  			[method](args)
-  			.set(...authHeader)
-  	}
+			return request(appConfig)[method](args)
+				.set(...authHeader)
+		}
 
 /**
  * overwrites the http methods (get, head, post, put, delete, patch)

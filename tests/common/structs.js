@@ -1,6 +1,6 @@
 import { expect } from '@jest/globals'
 
-import regex from './regex.js'
+import regex from './regex'
 
 const errorResponse = {
 	code: expect.anything(),

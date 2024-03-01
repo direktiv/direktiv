@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals'
 import EventSource from 'eventsource'
 
 import config from './config'
@@ -43,7 +44,7 @@ export default {
 		const onErrorMock = jest.fn()
 
 		const dispatch = async () =>
-			await new Promise((resolve, reject) => {
+			await new Promise(resolve => {
 				sseListener.onmessage = e => {
 					onMessageMock(JSON.parse(e.data))
 					sseListener.close()

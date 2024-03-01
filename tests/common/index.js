@@ -1,10 +1,10 @@
 import config from './config'
-import filesystem from './filesystem.js'
-import helpers from './helpers.js'
-import regex from './regex.js'
-import request from './request.js'
-import structs from './structs.js'
-import utils from './utils.js'
+import filesystem from './filesystem'
+import helpers from './helpers'
+import regex from './regex'
+import request from './request'
+import structs from './structs'
+import utils from './utils'
 
 export default {
 	config,

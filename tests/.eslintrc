@@ -16,5 +16,13 @@
     "import/no-nodejs-modules": "off",
     "no-multiple-empty-lines": ["error", { "max": 2, "maxEOF": 0 }],
     "eol-last": "error"
-  }
+  },
+  "ignorePatterns": [
+    "/events/*.js",
+    "/engine/*.js",
+    "/kubernetes/*.js",
+    "/mirror/*.js",
+    "/namespaces/*.js",
+    "/cli/*.js"
+  ]
 }
