@@ -67,7 +67,6 @@ jobs:
             "errors/",
             "mirror/",
             "namespaces/",
-            "namespaces2/",
             # "functions/",
             "gateway/",
             # "kubernetes/",

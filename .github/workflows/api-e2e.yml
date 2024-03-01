@@ -28,7 +28,6 @@ jobs:
           - logparser
           - mirror
           - namespace
-          - namespace2
           - registry
           - secrets
           - secrets2
