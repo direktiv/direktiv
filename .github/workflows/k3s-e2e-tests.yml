@@ -180,13 +180,13 @@ jobs:
 
           for attempt in {1..20}; do
             status_code=$(curl -s -o /dev/null -w "%{http_code}" $endpoint)
-            echo "API not ready yet: Status Code - $status_code"
+            echo "API status code: $status_code"
 
             [ $status_code -eq 200 ] && { echo "API ready"; exit 0; }
             sleep 1
           done
 
-          echo "Unhealthy API"
+          echo "API failed to be healthy"
           exit 1
 
       - name: Run E2E tests
