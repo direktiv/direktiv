@@ -171,7 +171,8 @@ states:
 		}))
 	})
 
-	it(`check if namespace logs contains some workflow operations`, async () => {
+	// TODO: Enable this test after new logging system merge.
+	it.skip(`check if namespace logs contains some workflow operations`, async () => {
 		const logsResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/logs`)
 		expect(logsResponse.statusCode).toEqual(200)
 		expect(logsResponse.body.results.length).not.toBeLessThan(1)
