@@ -19,7 +19,6 @@
     "eol-last": "error"
   },
   "ignorePatterns": [
-    "/events/*.js",
     "/cli/*.js"
   ]
 }

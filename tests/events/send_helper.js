@@ -21,13 +21,12 @@ async function listInstancesAndFilter (ns, wf, status) {
 				const idFind = instancesResponse.body.instances.results.find(item => item.status === status)
 				if (idFind)
 					return idFind
-			} else if (instancesResponse.body.instances.pageInfo.total == 1)
+			} else if (instancesResponse.body.instances.pageInfo.total === 1)
 				return instancesResponse.body.instances.results[0]
 
 			await helpers.sleep(100)
-			instancesResponse = (function () {
-
-			})()
+			// eslint-disable-next-line
+			instancesResponse = (function () {})()
 		}
 
 	if (instancesResponse)

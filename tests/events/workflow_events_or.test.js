@@ -3,7 +3,7 @@ import { beforeAll, describe, expect, it } from '@jest/globals'
 import common from '../common'
 import helpers from '../common/helpers'
 import request from '../common/request'
-import events from './send_helper.js'
+import events from './send_helper'
 
 const namespaceName = 'sendeventsor'
 
@@ -138,7 +138,7 @@ describe('Test workflow events and', () => {
 		// should fire workflow
 		await events.sendEventAndList(namespaceName, basevent('eventtype1', 'eventtype1', 'world1'))
 
-		var instancesResponse = await events.listInstancesAndFilter(namespaceName, waitWorkflowName, 'complete')
+		let instancesResponse = await events.listInstancesAndFilter(namespaceName, waitWorkflowName, 'complete')
 		expect(instancesResponse).not.toBeFalsy()
 
 		const instanceOutput = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/instances/${ instancesResponse.id }/output`)
@@ -159,7 +159,7 @@ describe('Test workflow events and', () => {
 		await events.sendEventAndList(namespaceName, basevent('eventtype2', 'eventtype2a', 'world2'))
 
 		// there are two workflows now
-		var instancesResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/instances?limit=10&offset=0&filter.field=AS&filter.type=CONTAINS&filter.val=` + waitWorkflowName)
+		instancesResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/instances?limit=10&offset=0&filter.field=AS&filter.type=CONTAINS&filter.val=` + waitWorkflowName)
 			.send()
 		expect(instancesResponse.body.instances.pageInfo.total).toEqual(2)
 	})

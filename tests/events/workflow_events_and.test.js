@@ -3,7 +3,7 @@ import { beforeAll, describe, expect, it } from '@jest/globals'
 import common from '../common'
 import helpers from '../common/helpers'
 import request from '../common/request'
-import events from './send_helper.js'
+import events from './send_helper'
 
 const namespaceName = 'sendeventsand'
 
@@ -154,12 +154,12 @@ describe('Test workflow events and', () => {
 		await events.sendEventAndList(namespaceName, basevent('eventtype1', 'eventtype1', 'world1'))
 
 		// the waiting workflow is running but nothing triggered by event, state pending
-		var instancesResponse = await events.listInstancesAndFilter(namespaceName, waitWorkflowName, 'pending')
+		let instancesResponse = await events.listInstancesAndFilter(namespaceName, waitWorkflowName, 'pending')
 		expect(instancesResponse).not.toBeFalsy()
 
 		//  await events.sendEventAndList(namespaceName, basevent("eventtype1", "eventtype1", "world"))
 		await events.sendEventAndList(namespaceName, basevent('eventtype2', 'eventtype2', 'world2'))
-		var instancesResponse = await events.listInstancesAndFilter(namespaceName, waitWorkflowName, 'complete')
+		instancesResponse = await events.listInstancesAndFilter(namespaceName, waitWorkflowName, 'complete')
 		expect(instancesResponse).not.toBeFalsy()
 
 		const instanceOutput = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/instances/${ instancesResponse.id }/output`)
@@ -175,12 +175,12 @@ describe('Test workflow events and', () => {
 
 	it(`should kick off start event workflow`, async () => {
 		await events.sendEventAndList(namespaceName, basevent('eventtype3', 'eventtype3', 'world1'))
-		var instance = await events.listInstancesAndFilter(namespaceName, startWorkflowName)
+		let instance = await events.listInstancesAndFilter(namespaceName, startWorkflowName)
 
 		expect(instance).toBeFalsy()
 
 		await events.sendEventAndList(namespaceName, basevent('eventtype4', 'eventtype4', 'world2'))
-		var instance = await events.listInstancesAndFilter(namespaceName, startWorkflowName, 'complete')
+		instance = await events.listInstancesAndFilter(namespaceName, startWorkflowName, 'complete')
 
 		const instanceOutput = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/instances/${ instance.id }/output`)
 			.send()
@@ -204,12 +204,12 @@ describe('Test workflow events and', () => {
 		await events.sendEventAndList(namespaceName, basevent('eventtype9', 'eventtype9', 'world1'))
 		await events.sendEventAndList(namespaceName, basevent('eventtype10', 'eventtype10', 'world3'))
 
-		var instance = await events.listInstancesAndFilter(namespaceName, startWorkflowContextName)
+		let instance = await events.listInstancesAndFilter(namespaceName, startWorkflowContextName)
 		expect(instance).toBeFalsy()
 
 		await events.sendEventAndList(namespaceName, basevent('eventtype10', 'eventtype10a', 'world2'))
 
-		var instance = await events.listInstancesAndFilter(namespaceName, startWorkflowContextName)
+		instance = await events.listInstancesAndFilter(namespaceName, startWorkflowContextName)
 		expect(instance).not.toBeFalsy()
 	})
 
@@ -229,12 +229,12 @@ describe('Test workflow events and', () => {
 		await events.sendEventAndList(namespaceName, basevent('eventtype11', 'eventtype11', 'world1'))
 		await events.sendEventAndList(namespaceName, basevent('eventtype12', 'eventtype12', 'world3'))
 
-		var instance = await events.listInstancesAndFilter(namespaceName, waitWorkflowContextName, 'pending')
+		let instance = await events.listInstancesAndFilter(namespaceName, waitWorkflowContextName, 'pending')
 		expect(instance).not.toBeFalsy()
 
 		await events.sendEventAndList(namespaceName, basevent('eventtype12', 'eventtype12a', 'world2'))
 
-		var instance = await events.listInstancesAndFilter(namespaceName, startWorkflowContextName, 'complete')
+		instance = await events.listInstancesAndFilter(namespaceName, startWorkflowContextName, 'complete')
 		expect(instance).not.toBeFalsy()
 	})
 })
