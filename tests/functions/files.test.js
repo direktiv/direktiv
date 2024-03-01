@@ -2,8 +2,8 @@ import { beforeAll, describe, expect, it } from '@jest/globals'
 
 import config from '../common/config'
 import helpers from '../common/helpers'
+import regex from '../common/regex'
 import request from '../common/request'
-import regex from "../common/regex";
 
 const namespaceName = 'functionsfiles'
 
