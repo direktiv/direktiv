@@ -1,8 +1,9 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 
-import common from '../common'
 import request from '../common/request'
 import { retry10 } from '../common/retry'
+import config from "../common/config";
+import helpers from "../common/helpers";
 
 
 const testNamespace = 'patches'
@@ -28,11 +29,11 @@ states:
 
 
 describe('Test generic container', () => {
-	beforeAll(common.helpers.deleteAllNamespaces)
+	beforeAll(helpers.deleteAllNamespaces)
 
-	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
+	helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateFile(
+	helpers.itShouldCreateFile(
 		it,
 		expect,
 		testNamespace,
@@ -42,7 +43,7 @@ describe('Test generic container', () => {
 
 
 	retry10(`should invoke workflow`, async () => {
-		const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ testNamespace }/tree/wf1.yaml?op=wait`)
+		const res = await request(config.getDirektivHost()).get(`/api/namespaces/${ testNamespace }/tree/wf1.yaml?op=wait`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.return[0].Output).toEqual('data')
 	})
