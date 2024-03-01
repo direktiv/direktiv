@@ -99,8 +99,8 @@ states:
 		})
 	})
 
-	common.helpers.itShouldRenameFile(it, expect, testNamespace, '/s2.yaml', '/s3.yaml')
-	common.helpers.itShouldRenameFile(it, expect, testNamespace, '/w2.yaml', '/w3.yaml')
+	common.helpers.itShouldUpdateFilePathV2(it, expect, testNamespace, '/s2.yaml', '/s3.yaml')
+	common.helpers.itShouldUpdateFilePathV2(it, expect, testNamespace, '/w2.yaml', '/w3.yaml')
 
 	retry10(`should list all services`, async () => {
 		listRes = await request(common.config.getDirektivHost())
@@ -149,8 +149,8 @@ states:
 		})
 	})
 
-	common.helpers.itShouldDeleteFile(it, expect, testNamespace, '/s1.yaml')
-	common.helpers.itShouldDeleteFile(it, expect, testNamespace, '/w1.yaml')
+	common.helpers.itShouldDeleteFileV2(it, expect, testNamespace, '/s1.yaml')
+	common.helpers.itShouldDeleteFileV2(it, expect, testNamespace, '/w1.yaml')
 
 	retry10(`should list all services`, async () => {
 		listRes = await request(common.config.getDirektivHost())

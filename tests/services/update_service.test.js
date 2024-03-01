@@ -38,7 +38,7 @@ scale: 1
 		})
 	})
 
-	common.helpers.itShouldUpdateFile(it, expect, testNamespace,
+	common.helpers.itShouldUpdateYamlFileV2(it, expect, testNamespace,
 		'/s1.yaml', `
     direktiv_api: service/v1
     image: direktiv/request
@@ -74,7 +74,7 @@ scale: 1
 		})
 	})
 
-	common.helpers.itShouldUpdateFile(it, expect, testNamespace,
+	common.helpers.itShouldUpdateYamlFileV2(it, expect, testNamespace,
 		'/s1.yaml', `
     direktiv_api: service/v1
     image: direktiv/request:v4
@@ -154,7 +154,7 @@ states:
 		})
 	})
 
-	common.helpers.itShouldUpdateFile(it, expect, testNamespace,
+	common.helpers.itShouldUpdateYamlFileV2(it, expect, testNamespace,
 		'/w2.yaml', `
 description: something
 functions:
@@ -194,7 +194,7 @@ states:
 		})
 	})
 
-	common.helpers.itShouldUpdateFile(it, expect, testNamespace,
+	common.helpers.itShouldUpdateYamlFileV2(it, expect, testNamespace,
 		'/w2.yaml', `
 description: something
 functions:
