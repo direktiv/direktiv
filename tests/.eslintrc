@@ -20,7 +20,6 @@
   },
   "ignorePatterns": [
     "/events/*.js",
-    "/kubernetes/*.js",
     "/cli/*.js"
   ]
 }
