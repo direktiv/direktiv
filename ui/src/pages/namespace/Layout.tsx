@@ -30,7 +30,7 @@ const Layout = () => {
   const { setNamespace } = useNamespaceActions();
   const { namespace: namespaceFromUrl } = useParams();
 
-  const { isError, error } = useFile({ path: "/", enabled: !!namespace });
+  const { isError, error } = useFile({ path: "/" });
 
   // when url with namespace is called directly, this updates ns in local store
   useEffect(() => {
@@ -43,6 +43,7 @@ const Layout = () => {
     }
   }, [namespace, setNamespace, namespaceFromUrl]);
 
+  // this will error will redirect to the error page, when the namespace does not exist
   if (isError && isApiErrorSchema(error) && error.response.status === 404) {
     throw error;
   }
