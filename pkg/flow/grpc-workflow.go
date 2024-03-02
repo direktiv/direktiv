@@ -89,7 +89,7 @@ func (flow *flow) createFileSystemObject(ctx context.Context, fileType filestore
 		return nil, err
 	}
 	file, err := tx.FileStore().ForNamespace(ns.Name).CreateFile(ctx, req.GetPath(),
-		fileType, "application/direktiv", req.GetSource())
+		fileType, "application/yaml", req.GetSource())
 	if err != nil {
 		return nil, err
 	}
@@ -163,7 +163,7 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 	if len(req.GetSource()) == 0 {
 		return nil, status.Error(codes.InvalidArgument, "empty workflow is not allowed")
 	}
-	file, err := tx.FileStore().ForNamespace(ns.Name).CreateFile(ctx, req.GetPath(), filestore.FileTypeWorkflow, "application/direktiv", req.GetSource())
+	file, err := tx.FileStore().ForNamespace(ns.Name).CreateFile(ctx, req.GetPath(), filestore.FileTypeWorkflow, "application/yaml", req.GetSource())
 	if err != nil {
 		return nil, err
 	}

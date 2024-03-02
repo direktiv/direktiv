@@ -157,7 +157,7 @@ func (o *DirektivApplyer) copyWorkflowsIntoRoot(ctx context.Context) error {
 
 	for _, path := range paths {
 		data := o.parser.Workflows[path]
-		_, err := o.callbacks.FileStore().ForRootID(o.rootID).CreateFile(ctx, path, filestore.FileTypeWorkflow, "application/direktiv", data)
+		_, err := o.callbacks.FileStore().ForRootID(o.rootID).CreateFile(ctx, path, filestore.FileTypeWorkflow, "application/yaml", data)
 		if err != nil {
 			return err
 		}
@@ -178,7 +178,7 @@ func (o *DirektivApplyer) copyServicesIntoRoot(ctx context.Context) error {
 
 	for _, path := range paths {
 		data := o.parser.Services[path]
-		_, err := o.callbacks.FileStore().ForRootID(o.rootID).CreateFile(ctx, path, filestore.FileTypeService, "application/direktiv", data)
+		_, err := o.callbacks.FileStore().ForRootID(o.rootID).CreateFile(ctx, path, filestore.FileTypeService, "application/yaml", data)
 		if err != nil {
 			return err
 		}
@@ -199,7 +199,7 @@ func (o *DirektivApplyer) copyEndpointsIntoRoot(ctx context.Context) error {
 
 	for _, path := range paths {
 		data := o.parser.Endpoints[path]
-		_, err := o.callbacks.FileStore().ForRootID(o.rootID).CreateFile(ctx, path, filestore.FileTypeEndpoint, "application/direktiv", data)
+		_, err := o.callbacks.FileStore().ForRootID(o.rootID).CreateFile(ctx, path, filestore.FileTypeEndpoint, "application/yaml", data)
 		if err != nil {
 			return err
 		}
@@ -220,7 +220,7 @@ func (o *DirektivApplyer) copyConsumersIntoRoot(ctx context.Context) error {
 
 	for _, path := range paths {
 		data := o.parser.Consumers[path]
-		_, err := o.callbacks.FileStore().ForRootID(o.rootID).CreateFile(ctx, path, filestore.FileTypeConsumer, "application/direktiv", data)
+		_, err := o.callbacks.FileStore().ForRootID(o.rootID).CreateFile(ctx, path, filestore.FileTypeConsumer, "application/yaml", data)
 		if err != nil {
 			return err
 		}
