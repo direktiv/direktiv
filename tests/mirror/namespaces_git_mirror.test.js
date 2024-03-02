@@ -1,8 +1,8 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 
 import common from '../common'
+import helpers from '../common/helpers'
 import request from '../common/request'
-import helpers from "../common/helpers";
 
 const testNamespace = 'test-git-namespace'
 
@@ -55,4 +55,3 @@ describe('Test namespace git mirroring', () => {
 		})
 	})
 })
-

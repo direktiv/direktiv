@@ -4,9 +4,7 @@ import common from '../common'
 import request from '../common/request'
 import { retry10 } from '../common/retry'
 
-
 const testNamespace = 'patches'
-
 
 const genericContainerWorkflow = `
 direktiv_api: workflow/v1
@@ -30,7 +28,6 @@ states:
         - command: echo -n $MYENV
 `
 
-
 describe('Test generic container', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
 
@@ -40,17 +37,13 @@ describe('Test generic container', () => {
 		it,
 		expect,
 		testNamespace,
-		'/','wf1.yaml', 'workflow',
+		'/', 'wf1.yaml', 'workflow',
 		genericContainerWorkflow,
 	)
-
 
 	retry10(`should invoke workflow`, async () => {
 		const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ testNamespace }/tree/wf1.yaml?op=wait`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.return[0].Output).toEqual('value')
 	})
-
-
 })
-

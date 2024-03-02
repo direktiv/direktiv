@@ -3,6 +3,7 @@ import { beforeAll, describe, expect, it } from '@jest/globals'
 import common from '../common'
 import request from '../common/request'
 import { retry10, retry50 } from '../common/retry'
+import helpers from "../common/helpers";
 
 const testNamespace = 'test-services'
 
@@ -57,6 +58,7 @@ scale: 2
 	})
 
 	retry50(`should list all service pods`, async () => {
+		await helpers.sleep(1000)
 		let sID = listRes.body.data[0].id
 		let res = await request(common.config.getDirektivHost())
 			.get(`/api/v2/namespaces/${ testNamespace }/services/${ sID }/pods`)

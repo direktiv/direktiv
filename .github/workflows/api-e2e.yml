@@ -18,7 +18,6 @@ jobs:
       matrix:
         test-section:
           - api
-          - cli
           - engine
           - errors
           - events

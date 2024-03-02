@@ -60,20 +60,21 @@ jobs:
         jest_prefix: [
             "api/",
             "engine/",
-            "filesystem/",
-            "logparser/",
-            "variables/",
-            "variables2/",
             "errors/",
-            "mirror/",
-            "namespaces/",
+            # "events/",
+            "filesystem/",
             # "functions/",
             "gateway/",
             # "kubernetes/",
+            "logparser/",
+            "mirror/",
+            "namespaces/",
             "registry/",
             "secrets/",
             "secrets2/",
             # "services/",
+            "variables/",
+            "variables2/",
           ]
     steps:
       - name: Checkout code

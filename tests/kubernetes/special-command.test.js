@@ -1,14 +1,11 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
-import retry from 'jest-retries'
 
 import common from '../common'
+import helpers from '../common/helpers'
 import request from '../common/request'
 import { retry10 } from '../common/retry'
-import helpers from "../common/helpers";
-
 
 const testNamespace = 'command'
-
 
 const genericContainerWorkflow = `
 direktiv_api: workflow/v1
@@ -30,7 +27,6 @@ states:
           - name: HELLO
             value: WORLD
 `
-
 
 const stopWorkflow = `
 direktiv_api: workflow/v1
@@ -130,10 +126,9 @@ describe('Test special command with files and permission', () => {
 		it,
 		expect,
 		testNamespace,
-		'/','wf1.yaml', 'workflow',
+		'/', 'wf1.yaml', 'workflow',
 		filesWorkflow,
 	)
-
 
 	retry10(`should invoke workflow`, async () => {
 		const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ testNamespace }/tree/wf1.yaml?op=wait`)
@@ -141,8 +136,6 @@ describe('Test special command with files and permission', () => {
 		expect(res.body.return[0].Output).toEqual('HELLO')
 		expect(res.body.return[1].Output).toEqual('444\n')
 	})
-
-
 })
 
 describe('Test special command with env', () => {
@@ -154,18 +147,15 @@ describe('Test special command with env', () => {
 		it,
 		expect,
 		testNamespace,
-		'/','wf1.yaml','workflow',
+		'/', 'wf1.yaml', 'workflow',
 		genericContainerWorkflow,
 	)
-
 
 	retry10(`should invoke workflow`, async () => {
 		const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ testNamespace }/tree/wf1.yaml?op=wait`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.return[0].Output).toEqual('HELLO=WORLD\n')
 	})
-
-
 })
 
 describe('Test special command with supress', () => {
@@ -177,10 +167,9 @@ describe('Test special command with supress', () => {
 		it,
 		expect,
 		testNamespace,
-		'/','wf1.yaml','workflow',
+		'/', 'wf1.yaml', 'workflow',
 		supressWorkflow,
 	)
-
 
 	retry10(`should invoke workflow`, async () => {
 		const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ testNamespace }/tree/wf1.yaml?op=wait`)
@@ -188,7 +177,6 @@ describe('Test special command with supress', () => {
 		expect(res.body.return[0].Output).toEqual('hello\n')
 		expect(res.body.return[1].Output).toEqual('')
 	})
-
 })
 
 describe('Test special command with stop', () => {
@@ -200,7 +188,7 @@ describe('Test special command with stop', () => {
 		it,
 		expect,
 		testNamespace,
-		'/','wf1.yaml','workflow',
+		'/', 'wf1.yaml', 'workflow',
 		stopWorkflow,
 	)
 
@@ -208,7 +196,7 @@ describe('Test special command with stop', () => {
 		it,
 		expect,
 		testNamespace,
-		'/','wf2.yaml','workflow',
+		'/', 'wf2.yaml', 'workflow',
 		stopWorkflow2,
 	)
 
@@ -226,6 +214,4 @@ describe('Test special command with stop', () => {
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.return.length).toBe(2)
 	})
-
 })
-

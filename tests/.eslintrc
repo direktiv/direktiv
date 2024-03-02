@@ -17,13 +17,5 @@
     "no-multiple-empty-lines": ["error", { "max": 1, "maxEOF": 0 }],
     "padded-blocks": ["error", "never"],
     "eol-last": "error"
-  },
-  "ignorePatterns": [
-    "/events/*.js",
-    "/kubernetes/*.js",
-    "/mirror/*.js",
-    "/namespaces/*.js",
-    "/namespaces/*.js",
-    "/cli/*.js"
-  ]
+  }
 }
