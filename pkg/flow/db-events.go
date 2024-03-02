@@ -41,9 +41,9 @@ func (events *events) addEvent(ctx context.Context, eventin *cloudevents.Event, 
 	return nil
 }
 
-func (events *events) deleteWorkflowEventListeners(ctx context.Context, nsID uuid.UUID, file *filestore.File) error {
+func (events *events) deleteWorkflowEventListeners(ctx context.Context, nsID uuid.UUID, fileID uuid.UUID) error {
 	err := events.runSqlTx(ctx, func(tx *sqlTx) error {
-		ids, err := tx.DataStore().EventListener().DeleteAllForWorkflow(ctx, file.ID)
+		ids, err := tx.DataStore().EventListener().DeleteAllForWorkflow(ctx, fileID)
 		if err != nil {
 			return err
 		}
@@ -92,7 +92,7 @@ func (events *events) deleteInstanceEventListeners(ctx context.Context, im *inst
 }
 
 func (events *events) processWorkflowEvents(ctx context.Context, nsID uuid.UUID, file *filestore.File, ms *muxStart) error {
-	err := events.deleteWorkflowEventListeners(ctx, nsID, file)
+	err := events.deleteWorkflowEventListeners(ctx, nsID, file.ID)
 	if err != nil {
 		return err
 	}
