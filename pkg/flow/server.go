@@ -472,6 +472,10 @@ func (srv *server) start(ctx context.Context) error {
 		if err != nil {
 			panic("unmarshal file change event")
 		}
+		// If this is a delete workflow file
+		if event.DeleteFileID.String() != (uuid.UUID{}).String() {
+			return srv.flow.events.deleteWorkflowEventListeners(context.Background(), event.NamespaceID, event.DeleteFileID)
+		}
 		file, err := noTx.FileStore().ForNamespace(event.Namespace).GetFile(ctx, event.FilePath)
 		if err != nil {
 			return err

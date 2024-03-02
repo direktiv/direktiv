@@ -230,9 +230,10 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 
 	if file.Typ.IsDirektivSpecFile() {
 		err = helpers.PublishEventDirektivFileChange(flow.pBus, file.Typ, "delete", &pubsub.FileChangeEvent{
-			Namespace:   ns.Name,
-			NamespaceID: ns.ID,
-			FilePath:    file.Path,
+			Namespace:    ns.Name,
+			NamespaceID:  ns.ID,
+			FilePath:     file.Path,
+			DeleteFileID: file.ID,
 		})
 		if err != nil {
 			flow.sugar.Error("pubsub publish", "error", err)
