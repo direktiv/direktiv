@@ -431,6 +431,255 @@
       "200":
         description: Service rebuilds successfully
 
+/api/v2/namespaces/{namespace}/variables:
+  get:
+    tags:
+      - variables
+    summary: Gets all direktiv variables in a namespace
+    parameters:
+      - $ref: '../parameters.yaml#/namespace'
+    responses:
+      "200":
+        description: list of direktiv variables
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        description: a unique string that represent id of the variable
+                      type:
+                        type: string
+                        description: enum value ("namespace-variable", "workflow-variable", "instance-variable")
+                      reference:
+                        type: string
+                        description: a reference to the object the variable linked to
+                      name:
+                        type: string
+                        description: a unique name string of the variable (unique within the referenced object)
+                      size:
+                        type: string
+                        description: data size (in bytes) of the variable's data
+                      mimeType:
+                        type: string
+                        description: mime type of the variable's data
+                      data:
+                        type: string
+                        description: base64 encoded string of the variable's data
+                      createdAt:
+                        type: string
+                        description: timestamp of creation date
+                      updatedAt:
+                        type: string
+                        description: timestamp of last updating date
+
+  post:
+    tags:
+      - variables
+    summary: Creates a new direktiv variable
+    parameters:
+      - $ref: '../parameters.yaml#/namespace'
+    requestBody:
+      description: Variable's creating data
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                description: a unique name string of the variable (unique within the referenced object)
+              mimeType:
+                type: string
+                description: mime type of the variable's data
+              data:
+                type: string
+                description: base64 encoded string of the variable's data
+              workflowPath:
+                type: string
+                description: (only when linking to a workflow) path string to a workflow file
+    responses:
+      "200":
+        description: data of the created direktiv variable
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: a unique string that represent id of the variable
+                    type:
+                      type: string
+                      description: enum value ("namespace-variable", "workflow-variable", "instance-variable")
+                    reference:
+                      type: string
+                      description: a reference to the object the variable linked to
+                    name:
+                      type: string
+                      description: a unique name string of the variable (unique within the referenced object)
+                    size:
+                      type: string
+                      description: data size (in bytes) of the variable's data
+                    mimeType:
+                      type: string
+                      description: mime type of the variable's data
+                    data:
+                      type: string
+                      description: base64 encoded string of the variable's data
+                    createdAt:
+                      type: string
+                      description: timestamp of creation date
+                    updatedAt:
+                      type: string
+                      description: timestamp of last updating date
+
+/api/v2/namespaces/{namespace}/variables/{variableID}:
+  get:
+    tags:
+      - variables
+    summary: Fetches a direktiv variable
+    parameters:
+      - $ref: '../parameters.yaml#/namespace'
+      - name: variableID
+        in: path
+        required: true
+        schema:
+          type: string
+          description: id string of the variable
+    responses:
+      "200":
+        description: data of the direktiv  variable
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: a unique string that represent id of the variable
+                    type:
+                      type: string
+                      description: enum value ("namespace-variable", "workflow-variable", "instance-variable")
+                    reference:
+                      type: string
+                      description: a reference to the object the variable linked to
+                    name:
+                      type: string
+                      description: a unique name string of the variable (unique within the referenced object)
+                    size:
+                      type: string
+                      description: data size (in bytes) of the variable's data
+                    mimeType:
+                      type: string
+                      description: mime type of the variable's data
+                    data:
+                      type: string
+                      description: base64 encoded string of the variable's data
+                    createdAt:
+                      type: string
+                      description: timestamp of creation date
+                    updatedAt:
+                      type: string
+                      description: timestamp of last updating date
+
+  delete:
+    tags:
+      - variables
+    summary: Removes a direktiv  variable
+    parameters:
+      - $ref: '../parameters.yaml#/namespace'
+      - name: variableID
+        in: path
+        required: true
+        schema:
+          type: string
+          description: id string of the variable
+    responses:
+      "200":
+        description:  object deleted successfully
+
+  patch:
+    tags:
+      - variables
+    summary: Updates a direktiv variable
+    parameters:
+      - $ref: '../parameters.yaml#/namespace'
+      - name: variableID
+        in: path
+        required: true
+        schema:
+          type: string
+          description: id string of the variable
+    requestBody:
+      description: Variable's patching data
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                description: a unique name string of the variable (unique within the referenced object)
+              mimeType:
+                type: string
+                description: mime type of the variable's data
+              data:
+                type: string
+                description: base64 encoded string of the variable's data
+    responses:
+      "200":
+        description: data of the updated direktiv variable
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: a unique string that represent id of the variable
+                    type:
+                      type: string
+                      description: enum value ("namespace-variable", "workflow-variable", "instance-variable")
+                    reference:
+                      type: string
+                      description: a reference to the object the variable linked to
+                    name:
+                      type: string
+                      description: a unique name string of the variable (unique within the referenced object)
+                    size:
+                      type: string
+                      description: data size (in bytes) of the variable's data
+                    mimeType:
+                      type: string
+                      description: mime type of the variable's data
+                    data:
+                      type: string
+                      description: base64 encoded string of the variable's data
+                    createdAt:
+                      type: string
+                      description: timestamp of creation date
+                    updatedAt:
+                      type: string
+                      description: timestamp of last updating date
+
 /api/v2/version:
   get:
     summary: Get server version information.
