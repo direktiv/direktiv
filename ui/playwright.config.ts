@@ -2,13 +2,14 @@ import * as dotenv from "dotenv";
 
 import { defineConfig, devices } from "@playwright/test";
 
-import { envVariablesSchema } from "./src/config/env/schema";
 import { storageState } from "./e2e/setup/auth";
 
 dotenv.config();
 
-const env = envVariablesSchema.parse(process.env);
-const baseURL = new URL(`${env.PLAYWRIGHT_UI_BASE_URL}`);
+if (!process.env.PLAYWRIGHT_UI_BASE_URL)
+  throw new Error("PLAYWRIGHT_UI_BASE_URL is not set");
+
+const baseURL = new URL(`${process.env.PLAYWRIGHT_UI_BASE_URL}`);
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -77,12 +78,13 @@ export default defineConfig({
   ],
 
   /* Run your local dev server before starting the tests */
-  webServer: env.PLAYWRIGHT_USE_VITE
-    ? {
-        timeout: 60000,
-        command: `yarn run vite --port ${baseURL.port}`,
-        url: baseURL.toString(),
-        reuseExistingServer: !process.env.CI,
-      }
-    : undefined,
+  webServer:
+    process.env.PLAYWRIGHT_USE_VITE === "TRUE"
+      ? {
+          timeout: 60000,
+          command: `yarn run vite --port ${baseURL.port}`,
+          url: baseURL.toString(),
+          reuseExistingServer: !process.env.CI,
+        }
+      : undefined,
 });
