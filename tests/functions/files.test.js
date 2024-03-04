@@ -23,7 +23,7 @@ describe('Test function files behaviour', () => {
 	})
 
 	helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
-		'/', 'bash.yaml', 'workflow', `
+		'/', 'bash.yaml', 'service', `
 direktiv_api: service/v1
 name: bash
 image: direktiv/bash:dev
