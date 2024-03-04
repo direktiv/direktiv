@@ -61,7 +61,7 @@ jobs:
             "api/",
             "engine/",
             "errors/",
-            # "events/",
+            "events/",
             "filesystem/",
             # "functions/",
             "gateway/",
