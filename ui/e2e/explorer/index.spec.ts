@@ -641,3 +641,38 @@ test(`it is possible to rename a directory`, async ({ page }) => {
   const isRenamed = await checkIfNodeExists(namespace, newname);
   await expect(isRenamed).toBeTruthy();
 });
+
+test("it is not possible to navigate to a workflow that does not exist", async ({
+  page,
+}) => {
+  await page.goto(
+    `${namespace}/explorer/workflow/edit/this-file-does-not-exists.yaml`
+  );
+
+  await expect(page.getByTestId("error-title")).toContainText("404");
+  await expect(page.getByTestId("error-message")).toContainText(
+    "The resource you are trying to access does not exist. This might be due to a typo in the  URL or the resource might have been deleted or renamed."
+  );
+});
+
+test("it is not possible to navigate to a folder that does not exist", async ({
+  page,
+}) => {
+  await page.goto(`${namespace}/explorer/tree/this-folder-does-not-exist`);
+
+  await expect(page.getByTestId("error-title")).toContainText("404");
+  await expect(page.getByTestId("error-message")).toContainText(
+    "The resource you are trying to access does not exist. This might be due to a typo in the  URL or the resource might have been deleted or renamed."
+  );
+});
+
+test("it is not possible to navigate to a namespace that does not exist", async ({
+  page,
+}) => {
+  await page.goto(`this-namespace-does-not-exist/explorer/tree`);
+
+  await expect(page.getByTestId("error-title")).toContainText("404");
+  await expect(page.getByTestId("error-message")).toContainText(
+    "The resource you are trying to access does not exist. This might be due to a typo in the  URL or the resource might have been deleted or renamed."
+  );
+});
