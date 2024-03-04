@@ -4,9 +4,13 @@ import { Link, isRouteErrorResponse, useRouteError } from "react-router-dom";
 import Button from "~/design/Button";
 import Logo from "~/components/Logo";
 import { isApiErrorSchema } from "~/api/errorHandling";
+import { twMergeClsx } from "../helpers";
 import { useTranslation } from "react-i18next";
 
-const ErrorPage = () => {
+type ErrorPageProps = {
+  className?: string;
+};
+const ErrorPage = ({ className }: ErrorPageProps) => {
   const { t } = useTranslation();
   const error = useRouteError();
 
@@ -24,7 +28,12 @@ const ErrorPage = () => {
   }
 
   return (
-    <main className="flex h-screen w-full flex-col items-center justify-center">
+    <main
+      className={twMergeClsx(
+        "flex h-screen w-full flex-col items-center justify-center",
+        className
+      )}
+    >
       <div className="flex max-w-xs flex-col items-center gap-3">
         <Logo />
         <div className="text-4xl font-bold" data-testid="error-title">

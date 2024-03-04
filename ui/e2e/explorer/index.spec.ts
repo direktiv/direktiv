@@ -653,6 +653,11 @@ test("it is not possible to navigate to a workflow that does not exist", async (
   await expect(page.getByTestId("error-message")).toContainText(
     "The resource you are trying to access does not exist. This might be due to a typo in the  URL or the resource might have been deleted or renamed."
   );
+
+  await expect(
+    page.getByRole("link", { name: "Explorer" }),
+    "it still shows the main navigation"
+  ).toBeVisible();
 });
 
 test("it is not possible to navigate to a folder that does not exist", async ({
@@ -664,6 +669,11 @@ test("it is not possible to navigate to a folder that does not exist", async ({
   await expect(page.getByTestId("error-message")).toContainText(
     "The resource you are trying to access does not exist. This might be due to a typo in the  URL or the resource might have been deleted or renamed."
   );
+
+  await expect(
+    page.getByRole("link", { name: "Explorer" }),
+    "it still shows the main navigation"
+  ).toBeVisible();
 });
 
 test("it is not possible to navigate to a namespace that does not exist", async ({
@@ -675,4 +685,9 @@ test("it is not possible to navigate to a namespace that does not exist", async 
   await expect(page.getByTestId("error-message")).toContainText(
     "The resource you are trying to access does not exist. This might be due to a typo in the  URL or the resource might have been deleted or renamed."
   );
+
+  await expect(
+    page.getByRole("link", { name: "Explorer" }),
+    "it does not show the main navigation"
+  ).not.toBeVisible();
 });
