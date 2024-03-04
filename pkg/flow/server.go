@@ -207,6 +207,8 @@ var _ mirror.Callbacks = &mirrorCallbacks{}
 func (srv *server) start(ctx context.Context) error {
 	var err error
 
+	// nolint:errcheck
+	defer srv.sugar.Sync()
 	srv.sugar.Info("Initializing telemetry.")
 	telend, err := util.InitTelemetry(srv.conf.OpenTelemetry, "direktiv/flow", "direktiv")
 	if err != nil {
@@ -469,6 +471,10 @@ func (srv *server) start(ctx context.Context) error {
 		err := json.Unmarshal([]byte(data), &event)
 		if err != nil {
 			panic("unmarshal file change event")
+		}
+		// If this is a delete workflow file
+		if event.DeleteFileID.String() != (uuid.UUID{}).String() {
+			return srv.flow.events.deleteWorkflowEventListeners(context.Background(), event.NamespaceID, event.DeleteFileID)
 		}
 		file, err := noTx.FileStore().ForNamespace(event.Namespace).GetFile(ctx, event.FilePath)
 		if err != nil {

@@ -1,11 +1,11 @@
-import retry from 'jest-retries'
+import { beforeAll, describe, expect, it } from '@jest/globals'
 
 import common from '../common'
+import helpers from '../common/helpers'
 import request from '../common/request'
-
+import { retry10 } from '../common/retry'
 
 const testNamespace = 'command'
-
 
 const genericContainerWorkflow = `
 direktiv_api: workflow/v1
@@ -27,7 +27,6 @@ states:
           - name: HELLO
             value: WORLD
 `
-
 
 const stopWorkflow = `
 direktiv_api: workflow/v1
@@ -123,24 +122,20 @@ describe('Test special command with files and permission', () => {
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/wf1.yaml',
+		'/', 'wf1.yaml', 'workflow',
 		filesWorkflow,
 	)
 
-
-	retry(`should invoke workflow`, 10, async () => {
-		await sleep(500)
+	retry10(`should invoke workflow`, async () => {
 		const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ testNamespace }/tree/wf1.yaml?op=wait`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.return[0].Output).toEqual('HELLO')
 		expect(res.body.return[1].Output).toEqual('444\n')
 	})
-
-
 })
 
 describe('Test special command with env', () => {
@@ -148,23 +143,19 @@ describe('Test special command with env', () => {
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/wf1.yaml',
+		'/', 'wf1.yaml', 'workflow',
 		genericContainerWorkflow,
 	)
 
-
-	retry(`should invoke workflow`, 10, async () => {
-		await sleep(500)
+	retry10(`should invoke workflow`, async () => {
 		const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ testNamespace }/tree/wf1.yaml?op=wait`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.return[0].Output).toEqual('HELLO=WORLD\n')
 	})
-
-
 })
 
 describe('Test special command with supress', () => {
@@ -172,23 +163,20 @@ describe('Test special command with supress', () => {
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/wf1.yaml',
+		'/', 'wf1.yaml', 'workflow',
 		supressWorkflow,
 	)
 
-
-	retry(`should invoke workflow`, 10, async () => {
-		await sleep(500)
+	retry10(`should invoke workflow`, async () => {
 		const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ testNamespace }/tree/wf1.yaml?op=wait`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.return[0].Output).toEqual('hello\n')
 		expect(res.body.return[1].Output).toEqual('')
 	})
-
 })
 
 describe('Test special command with stop', () => {
@@ -196,41 +184,34 @@ describe('Test special command with stop', () => {
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/wf1.yaml',
+		'/', 'wf1.yaml', 'workflow',
 		stopWorkflow,
 	)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/wf2.yaml',
+		'/', 'wf2.yaml', 'workflow',
 		stopWorkflow2,
 	)
 
-	it(`should wait a second for the services to sync`, async() => {
-		await sleep(1000)
+	it(`should wait a second for the services to sync`, async () => {
+		await helpers.sleep(1000)
 	})
 
-	retry(`should invoke workflow`, 3, async () => {
-		await sleep(500)
+	retry10(`should invoke workflow`, async () => {
 		const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ testNamespace }/tree/wf1.yaml?op=wait`)
 		expect(res.statusCode).toEqual(500)
 	})
 
-	retry(`should invoke workflow`, 3, async () => {
-		await sleep(500)
+	retry10(`should invoke workflow`, async () => {
 		const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ testNamespace }/tree/wf2.yaml?op=wait`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.return.length).toBe(2)
 	})
-
 })
-
-function sleep (ms) {
-	return new Promise(resolve => setTimeout(resolve, ms))
-}

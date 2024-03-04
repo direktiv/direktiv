@@ -1,4 +1,7 @@
+import { beforeAll, describe, expect, it } from '@jest/globals'
+
 import common from '../common'
+import helpers from '../common/helpers'
 import request from '../common/request'
 
 const testNamespace = 'test-git-namespace'
@@ -29,7 +32,7 @@ describe('Test namespace git mirroring', () => {
 	})
 
 	it(`should get the new git namespace`, async () => {
-		await sleep(7000)
+		await helpers.sleep(7000)
 		const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ testNamespace }/tree/aws`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toMatchObject({
@@ -52,7 +55,3 @@ describe('Test namespace git mirroring', () => {
 		})
 	})
 })
-
-function sleep (time) {
-	return new Promise(resolve => setTimeout(resolve, time))
-}

@@ -10,15 +10,12 @@ function runTest (handler) {
 			result.catch(reject).then(resolve)
 		else
 			resolve()
-
 	})
 }
-
 
 async function _retry (description, retries, handler, delay) {
 	if (!description || typeof description !== 'string')
 		throw new Error('Invalid argument, description must be a string')
-
 
 	if (typeof retries === 'function' && !handler) {
 		handler = retries
@@ -27,7 +24,6 @@ async function _retry (description, retries, handler, delay) {
 
 	if (!retries || typeof retries !== 'number' || retries < 1)
 		throw new Error('Invalid argument, retries must be a greather than 0')
-
 
 	test(description, async () => {
 		let latestError
@@ -40,11 +36,13 @@ async function _retry (description, retries, handler, delay) {
 				latestError = error
 			}
 
-
 		throw latestError
 	})
 }
 
 export function retry10 (description, handler) {
 	return _retry(description, 10, handler, 500)
+}
+export function retry50 (description, handler) {
+	return _retry(description, 50, handler, 500)
 }

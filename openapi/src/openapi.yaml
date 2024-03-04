@@ -75,6 +75,8 @@ tags:
     description: Miscellaneous server endpoints
   - name: services
     description: Endpoints for managing services
+  - name: variables
+    description: Endpoints for managing direktiv variables
   - name: registries
     description: Endpoints for managing registries
   - name: gateway
@@ -86,6 +88,7 @@ x-tagGroups:
     tags:
       - files
       - services
+      - variables
       - registries
       - gateway
       - server

@@ -1,7 +1,8 @@
-import retry from 'jest-retries'
+import { beforeAll, describe, expect, it } from '@jest/globals'
 
 import common from '../common'
 import request from '../common/request'
+import { retry10, retry50 } from '../common/retry'
 
 const testNamespace = 'test-services'
 
@@ -10,16 +11,15 @@ describe('Test services operations with envs', () => {
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateFile(it, expect, testNamespace,
-		'/s1.yaml', `
+	common.helpers.itShouldCreateYamlFileV2(it, expect, testNamespace,
+		'/', 's1.yaml', 'service', `
 direktiv_api: service/v1
 image: direktiv/request
 scale: 1
 `)
 
 	let listRes
-	retry(`should list all services`, 10, async () => {
-		await sleep(500)
+	retry10(`should list all services`, async () => {
 		listRes = await request(common.config.getDirektivHost())
 			.get(`/api/v2/namespaces/${ testNamespace }/services`)
 		expect(listRes.statusCode).toEqual(200)
@@ -38,7 +38,7 @@ scale: 1
 		})
 	})
 
-	common.helpers.itShouldUpdateFile(it, expect, testNamespace,
+	common.helpers.itShouldUpdateYamlFileV2(it, expect, testNamespace,
 		'/s1.yaml', `
     direktiv_api: service/v1
     image: direktiv/request
@@ -48,8 +48,7 @@ scale: 1
       value: world
     `)
 
-	retry(`should list all services`, 10, async () => {
-		await sleep(500)
+	retry10(`should list all services`, async () => {
 		listRes = await request(common.config.getDirektivHost())
 			.get(`/api/v2/namespaces/${ testNamespace }/services`)
 
@@ -75,7 +74,7 @@ scale: 1
 		})
 	})
 
-	common.helpers.itShouldUpdateFile(it, expect, testNamespace,
+	common.helpers.itShouldUpdateYamlFileV2(it, expect, testNamespace,
 		'/s1.yaml', `
     direktiv_api: service/v1
     image: direktiv/request:v4
@@ -87,8 +86,7 @@ scale: 1
       value: world1
     `)
 
-	retry(`should list all services`, 10, async () => {
-		await sleep(500)
+	retry10(`should list all services`, async () => {
 		listRes = await request(common.config.getDirektivHost())
 			.get(`/api/v2/namespaces/${ testNamespace }/services`)
 
@@ -117,7 +115,6 @@ scale: 1
 			],
 		})
 	})
-
 })
 
 describe('Test workflow operations with envs', () => {
@@ -125,8 +122,8 @@ describe('Test workflow operations with envs', () => {
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateFile(it, expect, testNamespace,
-		'/w2.yaml', `
+	common.helpers.itShouldCreateYamlFileV2(it, expect, testNamespace,
+		'/', 'w2.yaml', 'workflow', `
 description: something
 functions:
 - id: get
@@ -138,8 +135,7 @@ states:
 `)
 
 	let listRes
-	retry(`should list all services`, 10, async () => {
-		await sleep(500)
+	retry10(`should list all services`, async () => {
 		listRes = await request(common.config.getDirektivHost())
 			.get(`/api/v2/namespaces/${ testNamespace }/services`)
 		expect(listRes.statusCode).toEqual(200)
@@ -158,7 +154,7 @@ states:
 		})
 	})
 
-	common.helpers.itShouldUpdateFile(it, expect, testNamespace,
+	common.helpers.itShouldUpdateYamlFileV2(it, expect, testNamespace,
 		'/w2.yaml', `
 description: something
 functions:
@@ -173,8 +169,7 @@ states:
   type: noop
 `)
 
-	retry(`should list all services`, 30, async () => {
-		await sleep(1000)
+	retry50(`should list all services`, async () => {
 		listRes = await request(common.config.getDirektivHost())
 			.get(`/api/v2/namespaces/${ testNamespace }/services`)
 		expect(listRes.statusCode).toEqual(200)
@@ -199,8 +194,7 @@ states:
 		})
 	})
 
-
-	common.helpers.itShouldUpdateFile(it, expect, testNamespace,
+	common.helpers.itShouldUpdateYamlFileV2(it, expect, testNamespace,
 		'/w2.yaml', `
 description: something
 functions:
@@ -215,9 +209,7 @@ states:
   type: noop
 `)
 
-
-	retry(`should list all services`, 30, async () => {
-		await sleep(1000)
+	retry50(`should list all services`, async () => {
 		listRes = await request(common.config.getDirektivHost())
 			.get(`/api/v2/namespaces/${ testNamespace }/services`)
 		expect(listRes.statusCode).toEqual(200)
@@ -241,10 +233,4 @@ states:
 			],
 		})
 	})
-
-
 })
-
-function sleep (ms) {
-	return new Promise(resolve => setTimeout(resolve, ms))
-}

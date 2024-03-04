@@ -1,11 +1,8 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
-import { basename } from 'path'
 
 import config from '../common/config'
 import helpers from '../common/helpers'
 import request from '../common/request'
-
-const namespace = basename(__filename)
 
 describe('Test namespace delete calls', () => {
 	beforeAll(helpers.deleteAllNamespaces)

@@ -55,23 +55,26 @@ jobs:
     timeout-minutes: 18
     strategy:
       fail-fast: false
-      max-parallel: 2
+      max-parallel: 20
       matrix:
         jest_prefix: [
             "api/",
             "engine/",
-            "filesystem/",
-            "logparser/",
-            "variables/",
             "errors/",
-            "mirror/",
-            "namespaces/",
+            "events/",
+            "filesystem/",
             # "functions/",
             "gateway/",
             # "kubernetes/",
+            "logparser/",
+            "mirror/",
+            "namespaces/",
             "registry/",
             "secrets/",
+            "secrets2/",
             # "services/",
+            "variables/",
+            "variables2/",
           ]
     steps:
       - name: Checkout code
@@ -172,15 +175,23 @@ jobs:
       - name: Print DIREKTIV_HOST
         run: echo "DIREKTIV_HOST is set to ${{ env.DIREKTIV_HOST }}"
 
-      - name: List all pods and sleep 10
+      - name: Wait until API is healthy
         run: |
+          endpoint="http://${{ env.DIREKTIV_HOST }}/api/v2/version"
+
+          for attempt in {1..20}; do
+            status_code=$(curl -s -o /dev/null -w "%{http_code}" $endpoint)
+            echo "API status code: $status_code"
+
+            [ $status_code -eq 200 ] && { echo "API ready"; exit 0; }
+            sleep 1
+          done
+
+          echo "API failed to be healthy"
           kubectl get pods 
-          kubectl logs deployments/direktiv-flow | tail -n 100
-          sleep 10
-      - name: Show logs
-        run: |
-          kubectl logs deployments/direktiv-flow | tail -n 100  
-     
+          kubectl logs deployments/direktiv-flow
+          exit 1
+
       - name: Run E2E tests
         run: |
           npm -prefix tests run all -- ${{ env.JEST_PREFIX }}

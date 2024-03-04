@@ -62,11 +62,11 @@ describe('Test target workflow var wrong config', () => {
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/ep3.yaml',
+		'/', 'ep3.yaml', 'endpoint',
 		endpointWorkflkowVarBroken,
 	)
 
@@ -94,7 +94,6 @@ describe('Test target workflow var wrong config', () => {
 			),
 		)
 	})
-
 })
 
 describe('Test target workflow variable plugin', () => {
@@ -103,51 +102,51 @@ describe('Test target workflow variable plugin', () => {
 	common.helpers.itShouldCreateNamespace(it, expect, limitedNamespace)
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/workflow.yaml',
+		'/', 'workflow.yaml', 'workflow',
 		workflow,
 	)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		limitedNamespace,
-		'/workflow.yaml',
+		'/', 'workflow.yaml', 'workflow',
 		workflow,
 	)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		limitedNamespace,
-		'/endpoint1.yaml',
+		'/', 'endpoint1.yaml', 'endpoint',
 		endpointWorkflowVar,
 	)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		limitedNamespace,
-		'/endpoint2.yaml',
+		'/', 'endpoint2.yaml', 'endpoint',
 		endpointWorkflowVarAllowed,
 	)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/endpoint1.yaml',
+		'/', 'endpoint1.yaml', 'endpoint',
 		endpointWorkflowVar,
 	)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/endpoint2.yaml',
+		'/', 'endpoint2.yaml', 'endpoint',
 		endpointWorkflowVarAllowed,
 	)
 
@@ -158,14 +157,12 @@ describe('Test target workflow variable plugin', () => {
 		expect(workflowVarResponse.statusCode).toEqual(200)
 	})
 
-
 	it(`should set plain text variable for worklfow in limited namespace`, async () => {
 		const workflowVarResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${ limitedNamespace }/tree/workflow.yaml?op=set-var&var=test`)
 			.set('Content-Type', 'text/plain')
 			.send('Hello World 2')
 		expect(workflowVarResponse.statusCode).toEqual(200)
 	})
-
 
 	retry10(`should return a workflow var from magic namespace`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(
@@ -199,6 +196,4 @@ describe('Test target workflow variable plugin', () => {
 		)
 		expect(req.statusCode).toEqual(500)
 	})
-
-
 })

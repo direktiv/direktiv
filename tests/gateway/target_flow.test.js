@@ -7,7 +7,6 @@ import { retry10 } from '../common/retry'
 const testNamespace = 'gateway'
 const limitedNamespace = 'limited_namespace'
 
-
 const workflow = `
   direktiv_api: workflow/v1
   description: A simple 'no-op' state that returns 'Hello world!'
@@ -17,7 +16,6 @@ const workflow = `
     transform:
       result: Hello world!
 `
-
 
 const workflowNotToBetriggered = `
   direktiv_api: workflow/v1
@@ -95,7 +93,6 @@ const endpointComplexPOSTWorkflow = `
     - POST
   path: /endpoint1`
 
-
 const endpointWorkflowAllowed = `
   direktiv_api: endpoint/v1
   allow_anonymous: true
@@ -120,7 +117,6 @@ const endpointBroken = `
     - GET
   path: /endpoint3`
 
-
 const endpointErrorWorkflow = `direktiv_api: endpoint/v1
 allow_anonymous: true
 plugins:
@@ -139,7 +135,6 @@ states:
   error: badinput
   message: 'Missing or invalid value for required input.'
 `
-
 
 const endpointNoContentType = `direktiv_api: endpoint/v1
 allow_anonymous: true
@@ -178,11 +173,11 @@ describe('Test target workflow wrong config', () => {
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/ep3.yaml',
+		'/', 'ep3.yaml', 'endpoint',
 		endpointBroken,
 	)
 
@@ -217,19 +212,19 @@ describe('Test target workflow with errors', () => {
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/ep3.yaml',
+		'/', 'ep3.yaml', 'workflow',
 		errorWorkflow,
 	)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/eperr3.yaml',
+		'/', 'eperr3.yaml', 'endpoint',
 		endpointErrorWorkflow,
 	)
 
@@ -240,9 +235,7 @@ describe('Test target workflow with errors', () => {
 		expect(req.statusCode).toEqual(500)
 		expect(req.text).toContain('error executing workflow: badinput: Missing or invalid value for required input.')
 	})
-
 })
-
 
 describe('Test target workflow plugin', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
@@ -250,51 +243,51 @@ describe('Test target workflow plugin', () => {
 	common.helpers.itShouldCreateNamespace(it, expect, limitedNamespace)
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/workflow.yaml',
+		'/', 'workflow.yaml', 'workflow',
 		workflow,
 	)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		limitedNamespace,
-		'/workflow.yaml',
+		'/', 'workflow.yaml', 'workflow',
 		workflow,
 	)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		limitedNamespace,
-		'/endpoint1.yaml',
+		'/', 'endpoint1.yaml', 'endpoint',
 		endpointWorkflow,
 	)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		limitedNamespace,
-		'/endpoint2.yaml',
+		'/', 'endpoint2.yaml', 'endpoint',
 		endpointWorkflowAllowed,
 	)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/endpoint1.yaml',
+		'/', 'endpoint1.yaml', 'endpoint',
 		endpointWorkflow,
 	)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/endpoint2.yaml',
+		'/', 'endpoint2.yaml', 'endpoint',
 		endpointWorkflowAllowed,
 	)
 
@@ -329,8 +322,6 @@ describe('Test target workflow plugin', () => {
 		)
 		expect(req.statusCode).toEqual(500)
 	})
-
-
 })
 
 describe('Test POST method for target workflow plugin', () => {
@@ -339,19 +330,19 @@ describe('Test POST method for target workflow plugin', () => {
 	common.helpers.itShouldCreateNamespace(it, expect, limitedNamespace)
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/workflow.yaml',
+		'/', 'workflow.yaml', 'workflow',
 		workflowEcho,
 	)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/endpoint1.yaml',
+		'/', 'endpoint1.yaml', 'endpoint',
 		endpointPOSTWorkflow,
 	)
 
@@ -365,26 +356,25 @@ describe('Test POST method for target workflow plugin', () => {
 	})
 })
 
-
 describe('Test Complex POST method for target workflow plugin', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
 
 	common.helpers.itShouldCreateNamespace(it, expect, limitedNamespace)
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/workflow.yaml',
+		'/', 'workflow.yaml', 'workflow',
 		workflowEcho,
 	)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/endpoint1.yaml',
+		'/', 'endpoint1.yaml', 'endpoint',
 		endpointComplexPOSTWorkflow,
 	)
 
@@ -404,27 +394,27 @@ describe('Test scope for target workflow plugin', () => {
 	common.helpers.itShouldCreateNamespace(it, expect, limitedNamespace)
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		limitedNamespace,
-		'/workflow.yaml',
+		'/', 'workflow.yaml', 'workflow',
 		workflow,
 	)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/workflow.yaml',
+		'/', 'workflow.yaml', 'workflow',
 		workflowNotToBetriggered,
 	)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/endpoint7.yaml',
+		'/', 'endpoint7.yaml', 'endpoint',
 		endpointTargetLimitedNamespaceWorkflow,
 	)
 
@@ -437,34 +427,32 @@ describe('Test scope for target workflow plugin', () => {
 	})
 })
 
-
 describe('Test target workflow default contenttype', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/epnoct.yaml',
+		'/', 'epnoct.yaml', 'endpoint',
 		endpointNoContentType,
 	)
 
-
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/epct.yaml',
+		'/', 'epct.yaml', 'endpoint',
 		endpointContentType,
 	)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/contentType.yaml',
+		'/', 'contentType.yaml', 'workflow',
 		contentType,
 	)
 
@@ -475,7 +463,6 @@ describe('Test target workflow default contenttype', () => {
 
 		expect(req.headers['content-type']).toEqual('application/json')
 		expect(req.statusCode).toEqual(200)
-
 	})
 
 	retry10(`should return a configured content type`, async () => {
@@ -485,7 +472,5 @@ describe('Test target workflow default contenttype', () => {
 
 		expect(req.headers['content-type']).toEqual('test/me')
 		expect(req.statusCode).toEqual(200)
-
 	})
-
 })

@@ -50,11 +50,11 @@ describe('Test target workflow var wrong config', () => {
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/ep3.yaml',
+		'/', 'ep3.yaml', 'endpoint',
 		endpointNSVarBroken,
 	)
 
@@ -82,7 +82,6 @@ describe('Test target workflow var wrong config', () => {
 			),
 		)
 	})
-
 })
 
 describe('Test target namespace variable plugin', () => {
@@ -105,39 +104,37 @@ describe('Test target namespace variable plugin', () => {
 		expect(workflowVarResponse.statusCode).toEqual(200)
 	})
 
-
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/endpoint1.yaml',
+		'/', 'endpoint1.yaml', 'endpoint',
 		endpointNSVar,
 	)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/endpoint2.yaml',
+		'/', 'endpoint2.yaml', 'endpoint',
 		endpointNSVarAllowed,
 	)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		limitedNamespace,
-		'/endpoint1.yaml',
+		'/', 'endpoint1.yaml', 'endpoint',
 		endpointNSVar,
 	)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		limitedNamespace,
-		'/endpoint2.yaml',
+		'/', 'endpoint2.yaml', 'endpoint',
 		endpointNSVarAllowed,
 	)
-
 
 	retry10(`should return a ns var from magic namespace`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(
@@ -171,6 +168,4 @@ describe('Test target namespace variable plugin', () => {
 		)
 		expect(req.statusCode).toEqual(500)
 	})
-
-
 })
