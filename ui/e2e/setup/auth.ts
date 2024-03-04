@@ -31,7 +31,7 @@ export const storageState = {
   cookies: [],
   origins: [
     {
-      origin: process.env.PLAYWRIGHT_UI_BASE_URL,
+      origin: `${process.env.PLAYWRIGHT_UI_BASE_URL}`,
       localStorage: [
         {
           name: "direktiv-store-api-key",
