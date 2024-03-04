@@ -78,13 +78,14 @@ describe('Test workflow events and', () => {
 		expect(createNamespaceResponse.statusCode).toEqual(200)
 	})
 
-	it(`should have one event listeners`, async () => {
-		// workflow with start
-		await helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
-			'', startWorkflowName, 'workflow',
-			startEventWorkflow)
+	// workflow with start
+	helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
+		'', startWorkflowName, 'workflow',
+		startEventWorkflow)
 
+	it(`should have one event listeners`, async () => {
 		await helpers.sleep(1000)
+
 		const getEventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/event-listeners?limit=8&offset=0`)
 			.send()
 
@@ -102,11 +103,13 @@ describe('Test workflow events and', () => {
 		expect(getEventListenerResponse.body.pageInfo.total).toEqual(1)
 	})
 
+	// workflow with start
+	helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
+		'', waitWorkflowName, 'workflow',
+		waitEventWorkflow)
+
 	it(`should have two event listeners`, async () => {
-		// workflow with start
-		await helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
-			'', waitWorkflowName, 'workflow',
-			waitEventWorkflow)
+		await helpers.sleep(1000)
 
 		// start workflow
 		const runWorkflowResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${ namespaceName }/tree/${ waitWorkflowName }?op=execute`)
@@ -186,11 +189,13 @@ describe('Test workflow events and', () => {
 		expect(instancesResponse.body.instances.pageInfo.total).toEqual(2)
 	})
 
+	// timeout workflow
+	helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
+		'', waitWorkflowTimeoutName, 'workflow',
+		waitEventWorkflowTimeout)
+
 	it(`should timeout flow`, async () => {
-		// timeout workflow
-		await helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
-			'', waitWorkflowTimeoutName, 'workflow',
-			waitEventWorkflowTimeout)
+		await helpers.sleep(1000)
 
 		// start workflow
 		const runWorkflowResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${ namespaceName }/tree/${ waitWorkflowTimeoutName }?op=execute`)
