@@ -6,7 +6,8 @@ export const envVariablesSchema = z.object({
     .string()
     .optional()
     .transform((value) => `${value}`.toLocaleLowerCase() === "true"),
-  VITE_E2E_UI_DOMAIN: z.string().optional(),
+  PLAYWRIGHT_UI_BASE_URL: z.string().optional(),
+    .transform((value) => `${value}`.toLocaleLowerCase() === "true"),
   VITE_RQ_DEV_TOOLS: z
     .string()
     .optional()

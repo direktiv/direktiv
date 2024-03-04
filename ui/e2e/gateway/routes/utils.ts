@@ -66,7 +66,7 @@ export const findRouteWithApiRequest = async ({
 }: FindRouteWithApiRequestParams) => {
   const { data: routes } = await getRoutes({
     urlParams: {
-      baseUrl: process.env.VITE_E2E_UI_DOMAIN,
+      baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
       namespace,
     },
   });

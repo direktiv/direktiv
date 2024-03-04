@@ -31,7 +31,7 @@ export const storageState = {
   cookies: [],
   origins: [
     {
-      origin: process.env.VITE_E2E_UI_DOMAIN,
+      origin: process.env.PLAYWRIGHT_UI_BASE_URL,
       localStorage: [
         {
           name: "direktiv-store-api-key",

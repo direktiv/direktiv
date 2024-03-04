@@ -20,7 +20,7 @@ export const createVariables = async (namespace: string, amount = 5) => {
       updateVar({
         payload: variable.content,
         urlParams: {
-          baseUrl: process.env.VITE_E2E_UI_DOMAIN,
+          baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
           namespace,
           name: variable.name,
         },
@@ -54,7 +54,7 @@ export const createWorkflowVariables = async (
       setVariable({
         payload: variable?.content,
         urlParams: {
-          baseUrl: process.env.VITE_E2E_UI_DOMAIN,
+          baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
           namespace,
           path: workflow,
           name: variable?.name || "",

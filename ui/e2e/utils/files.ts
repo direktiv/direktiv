@@ -24,7 +24,7 @@ export const createFile = async ({
       type,
     },
     urlParams: {
-      baseUrl: process.env.VITE_E2E_UI_DOMAIN,
+      baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
       namespace,
       path,
     },

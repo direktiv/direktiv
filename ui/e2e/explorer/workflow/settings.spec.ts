@@ -104,7 +104,7 @@ test("it is possible to update variables", async ({ page }) => {
   const subject = await setVariable({
     payload: "edit me",
     urlParams: {
-      baseUrl: process.env.VITE_E2E_UI_DOMAIN,
+      baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
       namespace,
       path: workflow,
       name: "editable-var",

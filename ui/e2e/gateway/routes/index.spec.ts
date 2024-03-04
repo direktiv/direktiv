@@ -84,7 +84,9 @@ test("Route list shows all available routes", async ({ page }) => {
   await expect(
     page.getByTestId("route-table").getByRole("textbox"),
     "it renders the text for the path"
-  ).toHaveValue(`${process.env.VITE_E2E_UI_DOMAIN}/ns/${namespace}/${path}`);
+  ).toHaveValue(
+    `${process.env.PLAYWRIGHT_UI_BASE_URL}/ns/${namespace}/${path}`
+  );
 
   await expect(
     page.getByTestId("route-table").getByRole("cell", { name: "1 plugin" }),

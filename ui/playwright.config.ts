@@ -8,7 +8,7 @@ import { storageState } from "./e2e/setup/auth";
 dotenv.config();
 
 const env = envVariablesSchema.parse(process.env);
-const baseURL = new URL(`${env.VITE_E2E_UI_DOMAIN}`);
+const baseURL = new URL(`${env.PLAYWRIGHT_UI_BASE_URL}`);
 
 /**
  * See https://playwright.dev/docs/test-configuration.

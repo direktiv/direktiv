@@ -49,7 +49,7 @@ export const findServiceWithApiRequest = async ({
 }: FindServiceWithApiRequestParams) => {
   const { data: services } = await getServices({
     urlParams: {
-      baseUrl: process.env.VITE_E2E_UI_DOMAIN,
+      baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
       namespace,
     },
   });

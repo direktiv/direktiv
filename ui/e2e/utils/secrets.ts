@@ -13,7 +13,7 @@ export const createSecrets = async (namespace: string, amount = 5) => {
       updateSecret({
         payload: secret.value,
         urlParams: {
-          baseUrl: process.env.VITE_E2E_UI_DOMAIN,
+          baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
           namespace,
           name: secret.name,
         },

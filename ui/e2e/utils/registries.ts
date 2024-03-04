@@ -18,7 +18,7 @@ export const createRegistries = async (namespace: string, amount = 5) => {
           url: registry.url,
         },
         urlParams: {
-          baseUrl: process.env.VITE_E2E_UI_DOMAIN,
+          baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
           namespace,
         },
         headers,
