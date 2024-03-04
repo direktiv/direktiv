@@ -7,6 +7,9 @@ export const envVariablesSchema = z.object({
     .optional()
     .transform((value) => `${value}`.toLocaleLowerCase() === "true"),
   PLAYWRIGHT_UI_BASE_URL: z.string().optional(),
+  PLAYWRIGHT_USE_VITE: z
+    .string()
+    .optional()
     .transform((value) => `${value}`.toLocaleLowerCase() === "true"),
   VITE_RQ_DEV_TOOLS: z
     .string()

@@ -77,10 +77,12 @@ export default defineConfig({
   ],
 
   /* Run your local dev server before starting the tests */
-  webServer: {
-    timeout: 60000,
-    command: `yarn run vite --port ${baseURL.port}`,
-    url: baseURL.toString(),
-    reuseExistingServer: !process.env.CI,
-  },
+  webServer: env.PLAYWRIGHT_USE_VITE
+    ? {
+        timeout: 60000,
+        command: `yarn run vite --port ${baseURL.port}`,
+        url: baseURL.toString(),
+        reuseExistingServer: !process.env.CI,
+      }
+    : undefined,
 });
