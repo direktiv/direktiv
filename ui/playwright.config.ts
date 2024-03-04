@@ -6,8 +6,9 @@ import { envVariablesSchema } from "./src/config/env/schema";
 import { storageState } from "./e2e/setup/auth";
 
 dotenv.config();
+
 const env = envVariablesSchema.parse(process.env);
-const baseURL = `${env.VITE_E2E_UI_HOST}:${env.VITE_E2E_UI_PORT}`;
+const baseURL = new URL(`${env.VITE_E2E_UI_DOMAIN}`);
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -28,7 +29,7 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL,
+    baseURL: baseURL.toString(),
     storageState,
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     // trace: "on-first-retry",
@@ -78,8 +79,8 @@ export default defineConfig({
   /* Run your local dev server before starting the tests */
   webServer: {
     timeout: 60000,
-    command: `yarn run vite --port ${process.env.VITE_E2E_UI_PORT}`,
-    url: baseURL,
+    command: `yarn run vite --port ${baseURL.port}`,
+    url: baseURL.toString(),
     reuseExistingServer: !process.env.CI,
   },
 });

@@ -2,7 +2,7 @@ import { NamespaceListSchemaType } from "~/api/namespaces/schema";
 import { faker } from "@faker-js/faker";
 import { headers } from "./testutils";
 
-const apiUrl = process.env.VITE_DEV_API_DOMAIN;
+const apiUrl = process.env.VITE_E2E_UI_DOMAIN;
 
 export const createNamespaceName = () => `playwright-${faker.git.shortSha()}`;
 

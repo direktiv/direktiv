@@ -134,28 +134,6 @@ test("it is possible to run the workflow by setting an input JSON via the editor
     "submit is enabled when the json is valid"
   ).toEqual(true);
 
-  // this works
-  const apiUrl = `${process.env.VITE_DEV_API_DOMAIN}/api/v2/version`;
-  console.log("apiUrl: ", apiUrl); // output: apiUrl:  http://localhost/api/v2/version
-  const fetchFromAPI = await fetch(apiUrl);
-  console.log(fetchFromAPI.status); // output: 200
-
-  // this does NOT work???
-  const proxiedApiUrl = `${process.env.VITE_E2E_UI_HOST}:${process.env.VITE_E2E_UI_PORT}/api/v2/version`;
-
-  console.log("proxiedApiUrl: ", proxiedApiUrl); // output: proxiedApiUrl:  http://localhost:3333/api/v2/version
-
-  // when I set a debugger here, and open http://localhost:3333/api/v2/version in the browser,
-  // it works, but somehow the fetch call gets ECONNREFUSED
-
-  try {
-    const fetchFromProxiedAPI = await fetch(proxiedApiUrl);
-    console.log(fetchFromProxiedAPI.status);
-  } catch (error) {
-    debugger;
-    console.log(error); // ECONNREFUSED
-  }
-
   // submit to run the workflow
   await page.getByTestId("run-workflow-submit-btn").click();
 
@@ -173,7 +151,7 @@ test("it is possible to run the workflow by setting an input JSON via the editor
   // check the server state of the input
   const res = await getInput({
     urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
+      baseUrl: process.env.VITE_E2E_UI_DOMAIN,
       instanceId,
       namespace,
     },
@@ -341,7 +319,7 @@ test("it is possible to provide the input via generated form", async ({
   // check the server state of the input
   const res = await getInput({
     urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
+      baseUrl: process.env.VITE_E2E_UI_DOMAIN,
       instanceId,
       namespace,
     },
@@ -433,7 +411,7 @@ test("it is possible to provide the input via generated form and resolve form er
   // check the server state of the input
   const res = await getInput({
     urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
+      baseUrl: process.env.VITE_E2E_UI_DOMAIN,
       instanceId,
       namespace,
     },

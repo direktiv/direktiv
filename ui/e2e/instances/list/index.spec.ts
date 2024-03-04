@@ -68,7 +68,7 @@ test("it renders the instance item correctly for failed and success status", asy
   const checkInstanceRender = async (instance: Instance) => {
     const instancesList = await getInstances({
       urlParams: {
-        baseUrl: process.env.VITE_DEV_API_DOMAIN,
+        baseUrl: process.env.VITE_E2E_UI_DOMAIN,
         namespace,
         limit: 10,
         offset: 0,
@@ -236,7 +236,7 @@ test("it provides a proper pagination", async ({ page }) => {
 
   await runWorkflow({
     urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
+      baseUrl: process.env.VITE_E2E_UI_DOMAIN,
       namespace,
       path: parentWorkflow,
     },
@@ -296,7 +296,7 @@ test("it provides a proper pagination", async ({ page }) => {
   // check with api response
   const instancesListPage3 = await getInstances({
     urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
+      baseUrl: process.env.VITE_E2E_UI_DOMAIN,
       namespace,
       limit: pageSize,
       offset: 2 * pageSize,
@@ -330,7 +330,7 @@ test("It will display child instances as well", async ({ page }) => {
 
   const parentInstance = await runWorkflow({
     urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
+      baseUrl: process.env.VITE_E2E_UI_DOMAIN,
       namespace,
       path: parentWorkflow,
     },
@@ -341,7 +341,7 @@ test("It will display child instances as well", async ({ page }) => {
 
   const instancesList = await getInstances({
     urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
+      baseUrl: process.env.VITE_E2E_UI_DOMAIN,
       namespace,
       limit: 15,
       offset: 0,
