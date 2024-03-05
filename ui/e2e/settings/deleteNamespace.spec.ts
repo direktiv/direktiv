@@ -8,7 +8,7 @@ import { headers } from "e2e/utils/testutils";
 const getNamespacesFromAPI = () =>
   getNamespaces({
     urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
+      baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
     },
     headers,
   });

@@ -152,7 +152,7 @@ test("Consumer list will update the consumers when refetch button is clicked", a
       ),
     },
     urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
+      baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
       namespace,
       path: "/consumer.yaml",
     },

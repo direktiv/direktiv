@@ -10,7 +10,7 @@ export const createInstance = async ({
 }) =>
   await runWorkflow({
     urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
+      baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
       namespace,
       path,
     },

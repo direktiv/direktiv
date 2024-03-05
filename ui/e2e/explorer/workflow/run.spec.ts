@@ -151,7 +151,7 @@ test("it is possible to run the workflow by setting an input JSON via the editor
   // check the server state of the input
   const res = await getInput({
     urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
+      baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
       instanceId,
       namespace,
     },
@@ -319,7 +319,7 @@ test("it is possible to provide the input via generated form", async ({
   // check the server state of the input
   const res = await getInput({
     urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
+      baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
       instanceId,
       namespace,
     },
@@ -411,7 +411,7 @@ test("it is possible to provide the input via generated form and resolve form er
   // check the server state of the input
   const res = await getInput({
     urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
+      baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
       instanceId,
       namespace,
     },
