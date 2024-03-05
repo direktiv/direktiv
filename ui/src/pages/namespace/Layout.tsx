@@ -19,7 +19,9 @@ import { Menu } from "lucide-react";
 import Navigation from "~/components/Navigation";
 import NotificationMenu from "~/components/NotificationMenu";
 import UserMenu from "~/components/UserMenu";
+import { isApiErrorSchema } from "~/api/errorHandling";
 import { useEffect } from "react";
+import { useFile } from "~/api/files/query/file";
 import { useVersion } from "~/api/version/query/get";
 
 const Layout = () => {
@@ -27,6 +29,8 @@ const Layout = () => {
   const namespace = useNamespace();
   const { setNamespace } = useNamespaceActions();
   const { namespace: namespaceFromUrl } = useParams();
+
+  const { isError, error } = useFile({ path: "/" });
 
   // when url with namespace is called directly, this updates ns in local store
   useEffect(() => {
@@ -38,6 +42,11 @@ const Layout = () => {
       setNamespace(namespaceFromUrl);
     }
   }, [namespace, setNamespace, namespaceFromUrl]);
+
+  // this error will redirect to the error page, when the namespace does not exist
+  if (isError && isApiErrorSchema(error) && error.response.status === 404) {
+    throw error;
+  }
 
   return (
     <Root>
