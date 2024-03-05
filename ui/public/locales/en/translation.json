@@ -1005,7 +1005,7 @@
             "yes": "yes",
             "no": "no"
           },
-          "errors": {
+          "error": {
             "count": "{{count}} errors",
             "count_one": "{{count}} error"
           },
