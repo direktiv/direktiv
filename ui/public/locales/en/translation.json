@@ -6,9 +6,7 @@
       "goBack": "Go back",
       "reload": "Reload",
       "goHome": "Go to homepage",
-      "error": {
-        "notFound": "The resource you are trying to access does not exist. This might be due to a typo in the URL or the resource might have been deleted or renamed."
-      }
+      "notFound": "The resource you are trying to access does not exist. This might be due to a typo in the URL or the resource might have been deleted or renamed."
     },
     "onboarding": {
       "welcomeTo": "Welcome to",

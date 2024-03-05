@@ -24,7 +24,7 @@ const ErrorPage = ({ className }: ErrorPageProps) => {
 
   if (isApiErrorSchema(error) && error.response.status === 404) {
     errorTitle = `${error.response.status}`;
-    errorMessage = t("pages.error.error.notFound");
+    errorMessage = t("pages.error.notFound");
   }
 
   return (
