@@ -24,7 +24,6 @@
  * (e.g., theme and initial workflow). See below for original json.
  */
 
-const port = process.env.VITE_E2E_UI_PORT;
 const token = process.env.VITE_E2E_API_TOKEN || "";
 
 // if token is "", no token is added to the request.
@@ -32,7 +31,7 @@ export const storageState = {
   cookies: [],
   origins: [
     {
-      origin: `http://localhost:${port}`,
+      origin: `${process.env.PLAYWRIGHT_UI_BASE_URL}`,
       localStorage: [
         {
           name: "direktiv-store-api-key",

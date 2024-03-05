@@ -337,7 +337,7 @@ test("Service list will update the services when refetch button is clicked", asy
       ),
     },
     urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
+      baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
       namespace,
       path: "/http-service.yaml",
     },
