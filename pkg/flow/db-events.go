@@ -119,7 +119,7 @@ func (events *events) processWorkflowEvents(ctx context.Context, nsID uuid.UUID,
 			TriggerType:              pkgevents.StartSimple,
 			ListeningForEventTypes:   []string{},
 			TriggerWorkflow:          file.ID.String(),
-			Metadata:                 file.Name(),
+			Metadata:                 file.Path,
 			LifespanOfReceivedEvents: int(lifespan.Milliseconds()),
 			GlobGatekeepers:          make(map[string]string),
 		}
