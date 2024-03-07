@@ -57,13 +57,11 @@ func addFiltersToQuery(query map[string]interface{}, filters ...*grpc.PageFilter
 }
 
 func (flow *flow) ServerLogs(ctx context.Context, req *grpc.ServerLogsRequest) (*grpc.ServerLogsResponse, error) {
-
 	return nil, fmt.Errorf("Depriciated")
 }
 
 func (flow *flow) ServerLogsParcels(req *grpc.ServerLogsRequest, srv grpc.Flow_ServerLogsParcelsServer) error {
 	return fmt.Errorf("Depriciated")
-
 }
 
 func (flow *flow) NamespaceLogs(ctx context.Context, req *grpc.NamespaceLogsRequest) (*grpc.NamespaceLogsResponse, error) {
