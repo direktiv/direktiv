@@ -83,6 +83,8 @@ tags:
     description: Endpoints for fetchig API gateway information
   - name: files
     description: Endpoints reading and changing filesystem tree nodes
+  - name: plattformlogs
+    description: Endpoints to access logs that are exposed by the components
 x-tagGroups:
   - name: Endpoints
     tags:
@@ -92,6 +94,7 @@ x-tagGroups:
       - registries
       - gateway
       - server
+      - plattformlogs
 components:
   parameters:
     $ref: "./parameters.yaml"

@@ -82,6 +82,9 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 	r.Get("/api/v2/version", func(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, version.Version)
 	})
+	logCtr := &logController{
+		store: db.DataStore().NewLogs(),
+	}
 
 	r.Route("/api/v2", func(r chi.Router) {
 		r.Route("/namespaces", func(r chi.Router) {
@@ -108,6 +111,9 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 			})
 			r.Route("/namespaces/{namespace}/registries", func(r chi.Router) {
 				regCtr.mountRouter(r)
+			})
+			r.Route("/namespaces/{namespace}/logs", func(r chi.Router) {
+				logCtr.mountRouter(r)
 			})
 			r.Get("/namespaces/{namespace}/gateway/consumers", func(w http.ResponseWriter, r *http.Request) {
 				data, err := app.GatewayManager.GetConsumers(chi.URLParam(r, "namespace"))
@@ -166,6 +172,20 @@ func writeJSON(w http.ResponseWriter, v any) {
 		Data any `json:"data"`
 	}{
 		Data: v,
+	}
+	_ = json.NewEncoder(w).Encode(payLoad)
+}
+
+func writeJSONWithNextPage(w http.ResponseWriter, data any, previousPage any) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	payLoad := struct {
+		PreviousPage any `json:"previousPage"`
+		Data         any `json:"data"`
+	}{
+		Data:         data,
+		PreviousPage: previousPage,
 	}
 	_ = json.NewEncoder(w).Encode(payLoad)
 }
