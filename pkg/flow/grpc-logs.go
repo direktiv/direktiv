@@ -182,105 +182,11 @@ resend:
 }
 
 func (flow *flow) WorkflowLogs(ctx context.Context, req *grpc.WorkflowLogsRequest) (*grpc.WorkflowLogsResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
-
-	ns, f, err := flow.getWorkflow(ctx, req.GetNamespace(), req.GetPath())
-	if err != nil {
-		return nil, err
-	}
-	qu := make(map[string]interface{})
-	qu["source"] = f.ID
-	qu["type"] = wf
-	qu, err = addFiltersToQuery(qu, req.Pagination.Filter...)
-	if err != nil {
-		return nil, err
-	}
-	le := make([]*logengine.LogEntry, 0)
-	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
-		res, _, err := tx.DataStore().Logs().Get(ctx, qu, int(req.Pagination.Limit), int(req.Pagination.Offset))
-		if err != nil {
-			return err
-		}
-		le = append(le, res...)
-		return nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	resp := new(grpc.WorkflowLogsResponse)
-	resp.Namespace = ns.Name
-	resp.Path = f.Path
-	resp.PageInfo = &grpc.PageInfo{Total: int32(len(le))}
-	resp.Results, err = bytedata.ConvertLogMsgForOutput(le)
-	if err != nil {
-		return nil, err
-	}
-
-	return resp, nil
+	return nil, fmt.Errorf("Depreciated")
 }
 
 func (flow *flow) WorkflowLogsParcels(req *grpc.WorkflowLogsRequest, srv grpc.Flow_WorkflowLogsParcelsServer) error {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
-
-	ctx := srv.Context()
-
-	ns, f, err := flow.getWorkflow(ctx, req.GetNamespace(), req.GetPath())
-	if err != nil {
-		return err
-	}
-
-	sub := flow.pubsub.SubscribeWorkflowLogs(f.ID)
-	defer flow.cleanup(sub.Close)
-
-	var tailing bool
-
-resend:
-	qu := make(map[string]interface{})
-	qu["source"] = f.ID
-	qu["type"] = wf
-	qu, err = addFiltersToQuery(qu, req.Pagination.Filter...)
-	if err != nil {
-		return err
-	}
-	le := make([]*logengine.LogEntry, 0)
-	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
-		res, _, err := tx.DataStore().Logs().Get(ctx, qu, int(req.Pagination.Limit), int(req.Pagination.Offset))
-		if err != nil {
-			return err
-		}
-		le = append(le, res...)
-		return nil
-	})
-	if err != nil {
-		return err
-	}
-
-	resp := new(grpc.WorkflowLogsResponse)
-	resp.Namespace = ns.Name
-	resp.Path = f.Path
-	resp.Results, err = bytedata.ConvertLogMsgForOutput(le)
-	resp.PageInfo = &grpc.PageInfo{Total: int32(len(le))}
-	if err != nil {
-		return err
-	}
-
-	if len(resp.Results) != 0 || !tailing {
-		tailing = true
-
-		err = srv.Send(resp)
-		if err != nil {
-			return err
-		}
-
-		req.Pagination.Offset += int32(len(le))
-	}
-
-	more := sub.Wait(ctx)
-	if !more {
-		return nil
-	}
-
-	goto resend
+	return fmt.Errorf("Depreciated")
 }
 
 func (flow *flow) InstanceLogs(ctx context.Context, req *grpc.InstanceLogsRequest) (*grpc.InstanceLogsResponse, error) {
