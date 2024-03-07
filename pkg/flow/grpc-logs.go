@@ -57,93 +57,13 @@ func addFiltersToQuery(query map[string]interface{}, filters ...*grpc.PageFilter
 }
 
 func (flow *flow) ServerLogs(ctx context.Context, req *grpc.ServerLogsRequest) (*grpc.ServerLogsResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
-	le := make([]*logengine.LogEntry, 0)
-	qu := make(map[string]interface{})
-	qu["type"] = "server"
-	qu, err := addFiltersToQuery(qu, req.Pagination.Filter...)
-	if err != nil {
-		return nil, err
-	}
-	total := 0
-	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
-		res, t, err := tx.DataStore().Logs().Get(ctx, qu, -1, -1)
-		if err != nil {
-			return err
-		}
-		total = t
-		le = append(le, res...)
-		return nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	resp := new(grpc.ServerLogsResponse)
-	resp.PageInfo = &grpc.PageInfo{Total: int32(total)}
 
-	resp.Results, err = bytedata.ConvertLogMsgForOutput(le)
-	if err != nil {
-		return nil, err
-	}
-
-	return resp, nil
+	return nil, fmt.Errorf("Depriciated")
 }
 
 func (flow *flow) ServerLogsParcels(req *grpc.ServerLogsRequest, srv grpc.Flow_ServerLogsParcelsServer) error {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
-	ctx := srv.Context()
+	return fmt.Errorf("Depriciated")
 
-	var tailing bool
-
-	sub := flow.pubsub.SubscribeServerLogs()
-	defer flow.cleanup(sub.Close)
-
-resend:
-
-	le := make([]*logengine.LogEntry, 0)
-	qu := make(map[string]interface{})
-	qu["type"] = "server"
-	qu, err := addFiltersToQuery(qu, req.Pagination.Filter...)
-	if err != nil {
-		return err
-	}
-	total := 0
-	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
-		res, t, err := tx.DataStore().Logs().Get(ctx, qu, int(req.Pagination.Limit), int(req.Pagination.Offset))
-		if err != nil {
-			return err
-		}
-		total = t
-		le = append(le, res...)
-		return nil
-	})
-	if err != nil {
-		return err
-	}
-	resp := new(grpc.ServerLogsResponse)
-	resp.PageInfo = &grpc.PageInfo{Limit: req.Pagination.Limit, Offset: req.Pagination.Offset, Total: int32(total)}
-	resp.Results, err = bytedata.ConvertLogMsgForOutput(le)
-	if err != nil {
-		return err
-	}
-
-	if len(resp.Results) != 0 || !tailing {
-		tailing = true
-
-		err = srv.Send(resp)
-		if err != nil {
-			return err
-		}
-
-		req.Pagination.Offset += int32(len(le))
-	}
-
-	more := sub.Wait(ctx)
-	if !more {
-		return nil
-	}
-
-	goto resend
 }
 
 func (flow *flow) NamespaceLogs(ctx context.Context, req *grpc.NamespaceLogsRequest) (*grpc.NamespaceLogsResponse, error) {
