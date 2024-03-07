@@ -192,6 +192,56 @@ fluentbit:
   #           name stdout
   #           match application
 
+# --  fluentbit configuration
+fluent-bit:
+  install: true
+  envFrom:
+  - secretRef:
+      name: direktiv-fluentbit
+  config:
+    inputs: |
+      [INPUT]
+          Name                    tail
+          Path                    /var/log/containers/*flow*.log,/var/log/containers/*direktiv-sidecar*.log
+          Mem_Buf_Limit           5MB
+          Skip_Long_Lines         Off
+          Tag                     input
+          Parser                  cri_direktiv
+    outputs: |
+      [OUTPUT]
+          name                    pgsql
+          match                   flow.*
+          port                    5432
+          table                   fluentbit
+          user                    ${PG_USER}
+          database                direktiv
+          host                    ${PG_HOST}
+          password                ${PG_PASSWORD}
+    filters: |
+      [FILTER]
+          Name                    rewrite_tag
+          Match                   input
+          Rule                    $log ^.*\"track\":\"(.*)\".*$ flow.$1 true
+      [FILTER]
+          Name                    rewrite_tag
+          Match                   input
+          Rule                    $log ^.*\"trace\":\"(.*)\".*$ flow.trace.$1 true
+      [FILTER]
+          Name                    rewrite_tag
+          Match                   input
+          Rule                    $log ^.*"track":"([^"]+)"[^}]*}$ flow.$1 true
+      [FILTER]
+          Name                    rewrite_tag
+          Match                   input
+          Rule                    $log ^.*"trace":"([^"]+)"[^}]*}$ flow.trace.$1 true
+    customParsers: |
+      [PARSER]
+          Name                    cri_direktiv
+          Format                  regex
+          Regex                   ^(?<time>[^ ]+) (?<stream>stdout|stderr) (?<logtag>[^ ]*) (?<log>.*)$
+          Time_Key                time
+          Time_Format             %Y-%m-%dT%H:%M:%S.%L%z
+
 # -- service account for components. If preconfigured serviceaccounts are used the name ise the base 
 # and two additional service accounts are needed, e.g. service account name is myaccount then another two 
 # acounts are needed: myaccount-functions and myaccount-functions-pod
