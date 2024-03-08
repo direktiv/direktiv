@@ -272,7 +272,7 @@ func determineStream(params map[string]string) (string, error) {
 	} else if p, ok := params["route"]; ok {
 		return "flow.route." + p, nil
 	} else if p, ok := params["activity"]; ok {
-		return "flow.mirror." + p, nil
+		return "flow.activity." + p, nil
 	} else if p, ok := params["namespace"]; ok {
 		return "flow.namespace." + p, nil
 	} else if p, ok := params["trace"]; ok {
