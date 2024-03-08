@@ -6,6 +6,22 @@ import (
 	"time"
 )
 
+type Status string
+
+const (
+	ErrStatus       Status = "error"
+	RunningStatus   Status = "running"
+	FailedStatus    Status = "failed"
+	CompletedStatus Status = "completed"
+)
+
+type ContextKey string
+
+const (
+	TrackKey ContextKey = "track"
+	TagsKey  ContextKey = "tags"
+)
+
 type LogCollectionManager interface {
 	GetNewer(ctx context.Context, t time.Time, params map[string]string) ([]PlattformLogEntry, error)
 	GetOlder(ctx context.Context, params map[string]string) ([]PlattformLogEntry, error)
