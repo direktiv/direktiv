@@ -63,7 +63,7 @@ func (ba *BasicAuthPlugin) ExecutePlugin(c *core.ConsumerFile,
 	}
 	consumerList, ok := gwObj.(*consumer.List)
 	if !ok {
-		plugins.ReportError(w, http.StatusInternalServerError,
+		plugins.ReportError(r.Context(), w, http.StatusInternalServerError,
 			"consumerlist", fmt.Errorf("wrong object in context"))
 
 		return false

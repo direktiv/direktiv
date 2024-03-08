@@ -85,7 +85,7 @@ func (tfv FlowVarPlugin) ExecutePlugin(_ *core.ConsumerFile,
 
 	_, err := io.Copy(w, resp.Body)
 	if err != nil {
-		plugins.ReportError(w, http.StatusInternalServerError,
+		plugins.ReportError(r.Context(), w, http.StatusInternalServerError,
 			"can not serve variable", err)
 
 		return false
