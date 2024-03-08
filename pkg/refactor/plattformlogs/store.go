@@ -72,6 +72,12 @@ func ToFeatureLogEntry(e LogEntry) (core.PlattformLogEntry, error) {
 	if s, ok := m["instance"]; ok {
 		featureLogEntry.Instance = fmt.Sprint(s)
 	}
+	if s, ok := m["calledAs"]; ok {
+		featureLogEntry.CalledAs = fmt.Sprint(s)
+	}
+	if s, ok := m["status"]; ok {
+		featureLogEntry.Status = fmt.Sprint(s)
+	}
 	if s, ok := m["route"]; ok {
 		featureLogEntry.Route = fmt.Sprint(s)
 	}

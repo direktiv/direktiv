@@ -236,7 +236,7 @@ func (im *instanceMemory) GetAttributes() map[string]string {
 }
 
 func (im *instanceMemory) WithTags(ctx context.Context) context.Context {
-	im.instance.WithTags(ctx)
+	ctx = im.instance.WithTags(ctx)
 	tags, ok := ctx.Value(core.TagsKey).([]interface{})
 	if !ok {
 		tags = make([]interface{}, 0)

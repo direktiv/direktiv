@@ -10,6 +10,7 @@ type Status string
 
 const (
 	ErrStatus       Status = "error"
+	UnknownStatus   Status = "unknown"
 	RunningStatus   Status = "running"
 	FailedStatus    Status = "failed"
 	CompletedStatus Status = "completed"
@@ -38,10 +39,12 @@ type PlattformLogEntry struct {
 	State     interface{} `json:"state"`
 	Branch    interface{} `json:"branch"`
 	Workflow  interface{} `json:"workflow"`
+	CalledAs  interface{} `json:"calledAs"`
 	Instance  interface{} `json:"instance"`
 	Namespace interface{} `json:"namespace"`
 	Activity  interface{} `json:"activity"`
 	Route     interface{} `json:"route"`
 	Path      interface{} `json:"path"`
+	Status    interface{} `json:"status"`
 	Error     interface{} `json:"error"`
 }

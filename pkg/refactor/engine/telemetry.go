@@ -34,30 +34,31 @@ func (instance *Instance) WithTags(ctx context.Context) context.Context {
 		tags = make([]interface{}, 0)
 	}
 
-	rootInstanceID := instance.Instance.ID
 	callpath := ""
-	if len(instance.DescentInfo.Descent) > 0 {
-		rootInstanceID = instance.DescentInfo.Descent[0].ID
-	}
+
 	for _, v := range instance.DescentInfo.Descent {
 		callpath += "/" + v.ID.String()
 	}
 
-	tags = append(tags, "instance-id", instance.Instance.ID)
-	tags = append(tags, "invoker", instance.Instance.Invoker)
+	tags = append(tags, "instance", instance.Instance.ID)
+	tags = append(tags, "invoker", instance.Instance.Invoker) // TODO: value is empty.
 	tags = append(tags, "callpath", callpath)
-	tags = append(tags, "workflow", instance.Instance.WorkflowPath)
-	tags = append(tags, "namespace", instance.Instance.Namespace)
-	tags = append(tags, "root-instance-id", rootInstanceID)
-
-	if trackValue, ok := ctx.Value(core.TrackKey).(string); ok {
-		tags = append(tags, "track", trackValue)
-	}
+	tags = append(tags, "workflow", instance.Instance.WorkflowPath) // TODO: value is empty.
 
 	return context.WithValue(ctx, core.TagsKey, tags)
 }
 
-func GetSlogAttributes(ctx context.Context) []interface{} {
+func AddTag(ctx context.Context, key, value interface{}) context.Context {
+	tags, ok := ctx.Value(core.TagsKey).([]interface{})
+	if !ok {
+		tags = make([]interface{}, 0)
+	}
+	tags = append(tags, key, value)
+
+	return context.WithValue(ctx, core.TagsKey, tags)
+}
+
+func getSlogAttributes(ctx context.Context) []interface{} {
 	tags, ok := ctx.Value(core.TagsKey).([]interface{})
 	if !ok {
 		tags = make([]interface{}, 0)
@@ -77,14 +78,14 @@ func GetSlogAttributes(ctx context.Context) []interface{} {
 }
 
 func GetSlogAttributesWithStatus(ctx context.Context, status core.Status) []interface{} {
-	tags := GetSlogAttributes(ctx)
+	tags := getSlogAttributes(ctx)
 	tags = append(tags, "status", status)
 
 	return tags
 }
 
 func GetSlogAttributesWithError(ctx context.Context, err error) []interface{} {
-	tags := GetSlogAttributes(ctx)
+	tags := getSlogAttributes(ctx)
 	tags = append(tags, "error", err)
 	tags = append(tags, "status", "error")
 
@@ -95,14 +96,17 @@ func WithTrack(ctx context.Context, track string) context.Context {
 	return context.WithValue(ctx, core.TrackKey, track)
 }
 
-func buildNamespaceTrack(namespace string) string {
+func BuildNamespaceTrack(namespace string) string {
 	return fmt.Sprintf("%v.%v", "namespace", namespace)
 }
 
-func buildInstanceTrack(instance *Instance) string {
+func BuildInstanceTrack(instance *Instance) string {
 	callpath := ""
 	for _, v := range instance.DescentInfo.Descent {
 		callpath += "/" + v.ID.String()
+	}
+	if callpath == "" {
+		callpath = instance.Instance.ID.String()
 	}
 
 	return fmt.Sprintf("%v.%v", "instance", callpath)

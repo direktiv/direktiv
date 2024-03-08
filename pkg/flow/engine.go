@@ -22,6 +22,7 @@ import (
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/states"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/google/uuid"
@@ -143,8 +144,12 @@ func trim(s string) string {
 
 func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*instanceMemory, error) {
 	file, data, err := engine.mux(ctx, args.Namespace, args.CalledAs)
+	loggingCtx := args.Namespace.WithTags(ctx)
+	loggingCtx = enginerefactor.AddTag(loggingCtx, "calledAs", args.CalledAs)
+	loggingCtx = enginerefactor.AddTag(loggingCtx, "invoker", args.Invoker)
 	if err != nil {
 		engine.sugar.Debugf("Failed to create new instance: %v", err)
+		slog.Debug("workflow not found", enginerefactor.GetSlogAttributesWithError(loggingCtx, err)...)
 		engine.logger.Errorf(ctx, engine.flow.ID, engine.flow.GetAttributes(), "Failed to receive workflow %s", args.CalledAs)
 		if derrors.IsNotFound(err) {
 			return nil, derrors.NewUncatchableError("direktiv.workflow.notfound", "workflow not found: %v", err.Error())
@@ -269,6 +274,9 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	im.AddAttribute("loop-index", fmt.Sprintf("%d", iterator))
 
 	engine.pubsub.NotifyInstances(im.Namespace())
+	namespaceTrackCtx := enginerefactor.WithTrack(loggingCtx, enginerefactor.BuildNamespaceTrack(im.instance.Instance.Namespace))
+	slog.Info("Workflow has been triggered", enginerefactor.GetSlogAttributesWithStatus(namespaceTrackCtx, core.RunningStatus)...)
+
 	engine.logger.Infof(ctx, instance.Instance.NamespaceID, instance.GetAttributes(recipient.Namespace), "Workflow '%s' has been triggered by %s.", args.CalledAs, args.Invoker)
 	engine.logger.Debugf(ctx, im.instance.Instance.ID, im.GetAttributes(), "Preparing workflow triggered by %s.", args.Invoker)
 	// Broadcast Event
@@ -482,6 +490,10 @@ func (engine *engine) TerminateInstance(ctx context.Context, im *instanceMemory)
 }
 
 func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata []byte, err error) *states.Transition {
+	loggingCtx := im.Namespace().WithTags(ctx)
+	instanceTrackCtx := enginerefactor.WithTrack(loggingCtx, enginerefactor.BuildInstanceTrack(im.instance))
+	// namespaceTrackCtx := enginerefactor.WithTrack(ctx, enginerefactor.BuildInstanceTrack(im.instance))
+
 	engine.logRunState(ctx, im, wakedata, err)
 
 	var code string
@@ -570,10 +582,15 @@ failure:
 
 			matched, regErr := regexp.MatchString(errRegex, cerr.Code)
 			if regErr != nil {
+				slog.Error("Error catching regex failed to compile", enginerefactor.GetSlogAttributesWithError(instanceTrackCtx, regErr)...)
+
 				engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), "Error catching regex failed to compile: %v", regErr)
 			}
 
 			if matched {
+				slog.Error("State failed with error", enginerefactor.GetSlogAttributesWithError(instanceTrackCtx, fmt.Errorf("State failed with error '%s': %s", cerr.Code, cerr.Message))...)
+				slog.Info("Error caught by error definition", enginerefactor.GetSlogAttributesWithStatus(instanceTrackCtx, core.ErrStatus)...)
+
 				engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), "State failed with error '%s': %s", cerr.Code, cerr.Message)
 				engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), "Error caught by error definition %d: %s", i, catch.Error)
 
@@ -603,7 +620,12 @@ func (engine *engine) transformState(ctx context.Context, im *instanceMemory, tr
 	if s, ok := transition.Transform.(string); ok && (s == "" || s == ".") {
 		return nil
 	}
-
+	loggingCtx := im.Namespace().WithTags(ctx)
+	slog.Debug("Transforming state data.",
+		enginerefactor.GetSlogAttributesWithStatus(
+			enginerefactor.WithTrack(im.WithTags(loggingCtx),
+				enginerefactor.BuildInstanceTrack(im.instance)), core.RunningStatus,
+		)...)
 	engine.logger.Debugf(ctx, im.GetInstanceID(), im.GetAttributes(), "Transforming state data.")
 
 	x, err := jqObject(im.data, transition.Transform)
@@ -627,10 +649,16 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 		engine.InstanceYield(ctx, im)
 		return nil
 	}
+	loggingCtx := im.Namespace().WithTags(ctx)
+	instanceTrackCtx := enginerefactor.WithTrack(im.WithTags(loggingCtx), enginerefactor.BuildInstanceTrack(im.instance))
+	namespaceTrackCtx := enginerefactor.WithTrack(im.WithTags(loggingCtx), enginerefactor.BuildNamespaceTrack(im.Namespace().Name))
 
 	if transition.NextState != "" {
 		engine.metricsCompleteState(im, transition.NextState, errCode, false)
 		engine.sugar.Debugf("Instance transitioning to next state: %s -> %s", im.ID().String(), transition.NextState)
+		slog.Debug("Transitioning to next state.",
+			enginerefactor.GetSlogAttributesWithStatus(instanceTrackCtx, core.RunningStatus)...)
+
 		engine.logger.Debugf(ctx, im.GetInstanceID(), im.GetAttributes(), "Transitioning to next state: %s (%d).", transition.NextState, im.Step()+1)
 
 		return transition
@@ -639,6 +667,7 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 	status := instancestore.InstanceStatusComplete
 	if im.ErrorCode() != "" {
 		status = instancestore.InstanceStatusFailed
+		slog.Debug("Workflow failed with an error.", enginerefactor.GetSlogAttributesWithError(instanceTrackCtx, fmt.Errorf("'%s': %s", im.ErrorCode(), im.instance.Instance.ErrorMessage))...)
 		engine.logger.Errorf(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "Workflow failed with error '%s': %s", im.ErrorCode(), im.instance.Instance.ErrorMessage)
 	}
 
@@ -649,6 +678,9 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 	im.updateArgs.Output = &im.instance.Instance.Output
 	im.instance.Instance.Status = status
 	im.updateArgs.Status = &im.instance.Instance.Status
+
+	slog.Info("Workflow completed.", enginerefactor.GetSlogAttributesWithStatus(instanceTrackCtx, core.CompletedStatus)...)
+	slog.Info("Workflow completed.", enginerefactor.GetSlogAttributesWithStatus(namespaceTrackCtx, core.CompletedStatus)...)
 
 	engine.logger.Debugf(ctx, im.GetInstanceID(), im.GetAttributes(), "Workflow %s completed.", database.GetWorkflow(im.instance.Instance.WorkflowPath))
 	engine.logger.Debugf(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "Workflow %s completed.", database.GetWorkflow(im.instance.Instance.WorkflowPath))
@@ -899,11 +931,24 @@ func (engine *engine) SetMemory(ctx context.Context, im *instanceMemory, x inter
 
 func (engine *engine) reportInstanceCrashed(ctx context.Context, im *instanceMemory, typ, code string, err error) {
 	engine.sugar.Errorf("Instance failed with %s error '%s': %v", typ, code, err)
+	loggingCtx := im.Namespace().WithTags(ctx)
+
+	instanceTrackCtx := enginerefactor.WithTrack(im.WithTags(loggingCtx), enginerefactor.BuildInstanceTrack(im.instance))
+	namespaceTrackCtx := enginerefactor.WithTrack(im.WithTags(loggingCtx), enginerefactor.BuildNamespaceTrack(im.Namespace().Name))
+
+	slog.Debug("Workflow failed.", enginerefactor.GetSlogAttributesWithError(instanceTrackCtx, err)...)
+	slog.Debug("Workflow failed.", enginerefactor.GetSlogAttributesWithError(namespaceTrackCtx, err)...)
+
 	engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), "Instance failed with %s error '%s': %s", typ, code, err.Error())
 	engine.logger.Errorf(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "Workflow failed %s Instance %s crashed with %s error '%s': %s", database.GetWorkflow(im.instance.Instance.WorkflowPath), im.GetInstanceID(), typ, code, err.Error())
 }
 
 func (engine *engine) UserLog(ctx context.Context, im *instanceMemory, msg string, a ...interface{}) {
+	loggingCtx := im.Namespace().WithTags(ctx)
+	instanceTrackCtx := enginerefactor.WithTrack(im.WithTags(loggingCtx), enginerefactor.BuildInstanceTrack(im.instance))
+
+	slog.Info(fmt.Sprintf(msg, a...), enginerefactor.GetSlogAttributesWithStatus(instanceTrackCtx, core.UnknownStatus)...)
+
 	engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), msg, a...)
 
 	if attr := im.instance.Settings.LogToEvents; attr != "" {
@@ -930,6 +975,10 @@ func (engine *engine) UserLog(ctx context.Context, im *instanceMemory, msg strin
 func (engine *engine) logRunState(ctx context.Context, im *instanceMemory, wakedata []byte, err error) {
 	engine.sugar.Debugf("Running state logic -- %s:%v (%s) (%v)", im.ID().String(), im.Step(), im.logic.GetID(), time.Now().UTC())
 	if im.GetMemory() == nil && len(wakedata) == 0 && err == nil {
+		loggingCtx := im.Namespace().WithTags(ctx)
+		instanceTrackCtx := enginerefactor.WithTrack(im.WithTags(loggingCtx), enginerefactor.BuildInstanceTrack(im.instance))
+
+		slog.Info("Running state logic", enginerefactor.GetSlogAttributesWithStatus(instanceTrackCtx, core.RunningStatus)...)
 		engine.logger.Debugf(ctx, im.GetInstanceID(), im.GetAttributes(), "Running state logic (step:%v) -- %s", im.Step(), im.logic.GetID())
 	}
 }
