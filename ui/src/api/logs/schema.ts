@@ -40,7 +40,7 @@ export const WorkflowLogData = z.object({
 }
  */
 export const LogEntrySchema = z.object({
-  id: z.string().nonempty(),
+  id: z.number(),
   time: z.string().nonempty(),
   msg: z.string().nonempty(),
   level: LogLevelSchema,
