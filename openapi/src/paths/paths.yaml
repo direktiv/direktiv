@@ -325,6 +325,14 @@
                         enum: ["INFO", "ERROR", "WARNING", "DEBUG"]
                       msg: 
                         type: string
+                      id: 
+                        type: string
+                      trace: 
+                        type: string
+                      span: 
+                        type: string
+                      namespace: 
+                        type: string
                       error:
                         type: object
                         nullable: true
