@@ -24,7 +24,7 @@ import { useStreaming } from "~/api/streaming";
  * data share one cache key. The pages and pageParams properties
  * are part of useInfiniteQuery hook.
   {
-      // the result of every page request is stored here
+    // the result of every page request is stored here
     "pages": [
       {
         "previousPage": "FIRST_TIMESTAMP",
