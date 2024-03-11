@@ -194,10 +194,9 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	span := trace.SpanFromContext(ctx)
 	defer span.End()
 	spanContext := span.SpanContext()
-	traceID := func() string {
-		return spanContext.TraceID().String()
-	}
-	slog := slog.With("trace", traceID(), "component", "gateway")
+	traceID := spanContext.TraceID().String()
+	spanID := spanContext.SpanID()
+	slog := slog.With("trace", traceID, "span", spanID, "component", "gateway")
 	slog.Info("Serving gateway request")
 	chiCtx := chi.RouteContext(r.Context())
 	namespace := core.MagicalGatewayNamespace
@@ -230,7 +229,8 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-	slogRoute := slog.With("trace", traceID(), "track", recipient.Route.String()+"."+endpointEntry.Path, "namespace", namespace, "endpoint", endpointEntry.Path, "route", routePath)
+
+	slogRoute := slog.With("trace", traceID, "span", spanID, "track", recipient.Route.String()+"."+endpointEntry.Path, "namespace", namespace, "endpoint", endpointEntry.Path, "route", routePath)
 
 	// add url params e.g. /{id}
 	ctx = context.WithValue(ctx, plugins.URLParamCtxKey, urlParams)
@@ -247,17 +247,16 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	tracer := trace.SpanFromContext(ctx).TracerProvider().Tracer("direktiv/flow")
 	ctx, childSpan := tracer.Start(ctx, "plugins-processing")
 	defer childSpan.End()
-	spanContext = childSpan.SpanContext()
-	traceID = func() string {
-		return spanContext.TraceID().String()
-	}
+
 	slogNamespace.Info("Serving plugins")
 	slogRoute.Info("Serving plugins")
 
 	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(t))
 	defer cancel()
+	ctx = context.WithValue(ctx, plugins.NamespaceCtxKey, namespace)
+	ctx = context.WithValue(ctx, plugins.EndpointCtxKey, endpointEntry.Path)
+	ctx = context.WithValue(ctx, plugins.RouteCtxKey, routePath)
 	r = r.WithContext(ctx)
-
 	c := &core.ConsumerFile{}
 	for i := range endpointEntry.AuthPluginInstances {
 		authPlugin := endpointEntry.AuthPluginInstances[i]
