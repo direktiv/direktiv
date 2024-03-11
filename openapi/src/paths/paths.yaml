@@ -258,18 +258,58 @@
         content:
           'application/json':
             example:
-              next_page: '2024-01-17T01:44:08.128136Z'
+              previousPage: '2024-01-17T01:44:08.128136Z'
+              startingFrom: '2024-01-16T01:44:08.128136Z'
               data:
-              - time: '2024-01-17T01:44:08.128136Z'
-                level: 'error'
-                msg: 'Pungin xy failed.'
+              - id: 0,
+                time: '2024-01-17T01:44:08.128136Z'
+                level: 'INFO'
+                msg: 'Running state logic'
                 trace: "00000000000000000000000000000000"
-                branch: 1
-                state: "noop"
+                span: "0000000000000000"
+                workflow:
+                  status: "running"
+                  state: null,
+                  branch: null,
+                  path: "/test.yaml"
+                  calledAs: null,
+                  instance: 1bdf4042-1708-4212-b21d-7240f4685e4a
+              - id: 13976,
+                time: "2024-03-11T12:30:00.007424Z"
+                msg: "Workflow has been triggered"
+                level: "INFO"
+                namespace: "nsfad"
+                trace: "00000000000000000000000000000000"
+                span: "0000000000000000"
+                error: null
+              - id: 14943
+                time: "2024-03-11T12:35:55.978736Z"
+                msg: "File 'variables/README.md' loaded."
+                level: "INFO"
+                namespace: null,
+                trace: null,
+                span: null,
+                activity:
+                  id: "29960091-2797-493e-a262-1a7765146cd4"
+                error: null
+              - id: 16138
+                time: "2024-03-11T12:56:51.268669Z"
+                msg: "can not process plugin"
+                level: "ERROR"
+                namespace: "myns"
+                trace: 00000000000000000000000000000000
+                span: 0000000000000000
+                route: 
+                  path: "/consumer"
+                error: "forbidden"
             schema:
               type: object
               properties:
-                next_page:
+                previousPage:
+                  type: string
+                  format: RFC3339Nano
+                  nullable: true
+                startingFrom:
                   type: string
                   format: RFC3339Nano
                 data:
@@ -282,9 +322,45 @@
                         format: RFC3339Nano
                       level: 
                         type: string 
-                        enum: ["info", "error"]
+                        enum: ["INFO", "ERROR", "WARNING", "DEBUG"]
                       msg: 
                         type: string
+                      error:
+                        type: object
+                        nullable: true
+                      workflow:
+                        type: object
+                        nullable: true
+                        properties:
+                          status:
+                            type: string
+                          state:
+                            type: string
+                          branch:
+                            type: string
+                            nullable: true
+                          workflow:
+                            type: string
+                          calledAs:
+                            type: string
+                            nullable: true
+                          instance:
+                            type: string
+                      activity:
+                        type: object
+                        nullable: true
+                        properties:
+                          id:
+                            type: string
+                            format: uuid
+                            nullable: true
+                      route:
+                        type: object
+                        nullable: true
+                        properties:
+                          path:
+                            type: string
+                            nullable: true
 /api/v2/namespaces/{namespace}/logs/subscribe:
   get:
     tags:
