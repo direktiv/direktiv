@@ -54,10 +54,9 @@ func ToFeatureLogEntry(e LogEntry) (core.PlattformLogEntry, error) {
 		Level: m["level"],
 	}
 	featureLogEntry.Error = m["error"]
-	logCtx := core.EntryContext{}
-	logCtx.Trace = m["trace"]
-	logCtx.Span = m["span"]
-	logCtx.Namespace = m["namespace"]
+	featureLogEntry.Trace = m["trace"]
+	featureLogEntry.Span = m["span"]
+	featureLogEntry.Namespace = m["namespace"]
 	wfLogCtx := core.WorkflowEntryContext{}
 	wfLogCtx.State = m["state"]
 	wfLogCtx.Workflow = m["workflow"]
@@ -65,18 +64,20 @@ func ToFeatureLogEntry(e LogEntry) (core.PlattformLogEntry, error) {
 	wfLogCtx.CalledAs = m["calledAs"]
 	wfLogCtx.Status = m["status"]
 	wfLogCtx.Branch = m["branch"]
-	logCtx.Workflow = wfLogCtx
-	actLogCtx := core.ActivityEntryContext{}
-	actLogCtx.ID = m["activity"]
-	logCtx.Activity = actLogCtx
-	routeLogCtx := core.RouteEntryContext{}
-	routeLogCtx.Path = m["route"]
-	logCtx.Route = routeLogCtx
+	featureLogEntry.Workflow = &wfLogCtx
+	if wfLogCtx.Workflow == nil && wfLogCtx.Instance == nil {
+		featureLogEntry.Workflow = nil
+	}
+	if id, ok := m["activity"]; ok && id != nil {
+		featureLogEntry.Activity = &core.ActivityEntryContext{ID: id}
+	}
+	if path, ok := m["route"]; ok && path != nil {
+		featureLogEntry.Route = &core.RouteEntryContext{Path: path}
+	}
 	// TODO Remove path log-key
 	// if s, ok := m["path"]; ok {
 	// 	featureLogEntry.Path = fmt.Sprint(s)
 	// }
-	featureLogEntry.Context = logCtx
 
 	return featureLogEntry, nil
 }

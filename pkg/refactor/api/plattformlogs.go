@@ -50,9 +50,9 @@ func (m *logController) mountRouter(r chi.Router) {
 
 			return
 		}
-		previousPage := data[len(data)-1].Time.UTC().Format(time.RFC3339Nano)
+		var previousPage interface{} = data[len(data)-1].Time.UTC().Format(time.RFC3339Nano)
 		if len(data) < 200 {
-			previousPage = ""
+			previousPage = nil
 		}
 		metaInfo := map[string]any{
 			"previousPage": previousPage,
