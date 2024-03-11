@@ -47,7 +47,7 @@ const LogsPanel = () => {
 
   const isPending = instanceDetailsData?.instance.status === "pending";
 
-  const pages = logData?.pages.map((page) => page.data) ?? [];
+  const pages = logData?.pages.map((page) => page.data ?? []) ?? [];
   const allLogs = pages.flat();
   const numberOfLogs = allLogs.length;
 
