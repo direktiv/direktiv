@@ -25,7 +25,7 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
     const verbose = useLogsPreferencesVerboseLogs();
 
     const link = pages.explorer.createHref({
-      path: workflow,
+      path: workflow?.workflow,
       namespace,
       subpage: "workflow",
     });
@@ -46,7 +46,7 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
                   className=" underline opacity-75"
                   target="_blank"
                 >
-                  {workflow}
+                  {workflow?.workflow}
                 </Link>
               </TooltipTrigger>
               <TooltipContent>
