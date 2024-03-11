@@ -59,13 +59,13 @@ func ToFeatureLogEntry(e LogEntry) (core.PlattformLogEntry, error) {
 	featureLogEntry.Namespace = m["namespace"]
 	wfLogCtx := core.WorkflowEntryContext{}
 	wfLogCtx.State = m["state"]
-	wfLogCtx.Workflow = m["workflow"]
+	wfLogCtx.Path = m["workflow"]
 	wfLogCtx.Instance = m["instance"]
 	wfLogCtx.CalledAs = m["calledAs"]
 	wfLogCtx.Status = m["status"]
 	wfLogCtx.Branch = m["branch"]
 	featureLogEntry.Workflow = &wfLogCtx
-	if wfLogCtx.Workflow == nil && wfLogCtx.Instance == nil {
+	if wfLogCtx.Path == nil && wfLogCtx.Instance == nil {
 		featureLogEntry.Workflow = nil
 	}
 	if id, ok := m["activity"]; ok && id != nil {
