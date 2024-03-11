@@ -37,7 +37,7 @@ func (m *logController) mountRouter(r chi.Router) {
 		params := extractLogRequestParams(r)
 
 		// Call the Get method with the cursor instead of offset
-		data, err := m.GetOlder(r.Context(), params)
+		data, starting, err := m.GetOlder(r.Context(), params)
 		if err != nil {
 			slog.Error("Get logs", "error", err)
 			writeInternalError(w, err)
@@ -46,15 +46,19 @@ func (m *logController) mountRouter(r chi.Router) {
 		}
 		if len(data) == 0 {
 			data = nil
-			writeJSONWithNextPage(w, data, nil)
+			writeJSONWithMeta(w, data, nil)
 
 			return
 		}
-		previousPage := data[0].Time.UTC().Format(time.RFC3339Nano)
+		previousPage := data[len(data)-1].Time.UTC().Format(time.RFC3339Nano)
 		if len(data) < 200 {
 			previousPage = ""
 		}
-		writeJSONWithNextPage(w, data, previousPage)
+		metaInfo := map[string]any{
+			"previousPage": previousPage,
+			"startingFrom": starting,
+		}
+		writeJSONWithMeta(w, data, metaInfo)
 	})
 }
 
@@ -117,34 +121,34 @@ func (m logController) GetNewer(ctx context.Context, t time.Time, params map[str
 		res = append(res, e)
 	}
 
-	// Apply filters based on additional parameters
-	if p, ok := params["level"]; ok {
-		res.filterByLevel(p)
-	}
-	if p, ok := params["branch"]; ok {
-		res.filterByBranch(p)
-	}
-	if p, ok := params["state"]; ok {
-		res.filterByState(p)
-	}
+	// // Apply filters based on additional parameters
+	// if p, ok := params["level"]; ok {
+	// 	res.filterByLevel(p)
+	// }
+	// if p, ok := params["branch"]; ok {
+	// 	res.filterByBranch(p)
+	// }
+	// if p, ok := params["state"]; ok {
+	// 	res.filterByState(p)
+	// }
 
 	return res, nil
 }
 
-func (m logController) GetOlder(ctx context.Context, params map[string]string) ([]core.PlattformLogEntry, error) {
+func (m logController) GetOlder(ctx context.Context, params map[string]string) ([]core.PlattformLogEntry, time.Time, error) {
 	var r []plattformlogs.LogEntry
 	var err error
 
 	// Determine the stream based on the provided parameters
 	stream, err := determineStream(params)
 	if err != nil {
-		return []core.PlattformLogEntry{}, err
+		return []core.PlattformLogEntry{}, time.Time{}, err
 	}
 	starting := time.Now().UTC()
 	if t, ok := params["before"]; ok {
 		co, err := time.Parse(time.RFC3339Nano, t)
 		if err != nil {
-			return []core.PlattformLogEntry{}, err
+			return []core.PlattformLogEntry{}, time.Time{}, err
 		}
 		starting = co
 	}
@@ -154,29 +158,29 @@ func (m logController) GetOlder(ctx context.Context, params map[string]string) (
 		r, err = m.store.GetOlder(ctx, stream, starting)
 	}
 	if err != nil {
-		return []core.PlattformLogEntry{}, err
+		return []core.PlattformLogEntry{}, time.Time{}, err
 	}
 	res := loglist{}
 	for _, le := range r {
 		e, err := plattformlogs.ToFeatureLogEntry(le)
 		if err != nil {
-			return []core.PlattformLogEntry{}, err
+			return []core.PlattformLogEntry{}, time.Time{}, err
 		}
 		res = append(res, e)
 	}
 
-	// Apply filters based on additional parameters
-	if p, ok := params["level"]; ok {
-		res.filterByLevel(p)
-	}
-	if p, ok := params["branch"]; ok {
-		res.filterByBranch(p)
-	}
-	if p, ok := params["state"]; ok {
-		res.filterByState(p)
-	}
+	// // Apply filters based on additional parameters
+	// if p, ok := params["level"]; ok {
+	// 	res.filterByLevel(p)
+	// }
+	// if p, ok := params["branch"]; ok {
+	// 	res.filterByBranch(p)
+	// }
+	// if p, ok := params["state"]; ok {
+	// 	res.filterByState(p)
+	// }
 
-	return res, nil
+	return res, starting, nil
 }
 
 // Stream handles the SSE endpoint.
@@ -233,38 +237,38 @@ func (m logController) Stream(params map[string]string) http.HandlerFunc {
 
 type loglist []core.PlattformLogEntry
 
-func (e *loglist) filterByBranch(branch string) {
-	// TODO revisit this implementation
-	filteredEntries := make(loglist, 0)
-	for _, entry := range *e {
-		if entry.Branch == branch {
-			filteredEntries = append(filteredEntries, entry)
-		}
-	}
-	*e = filteredEntries
-}
+// func (e *loglist) filterByBranch(branch string) {
+// 	// TODO revisit this implementation
+// 	filteredEntries := make(loglist, 0)
+// 	for _, entry := range *e {
+// 		if entry.Branch == branch {
+// 			filteredEntries = append(filteredEntries, entry)
+// 		}
+// 	}
+// 	*e = filteredEntries
+// }
 
-func (e *loglist) filterByState(state string) {
-	// TODO revisit this implementation
-	filteredEntries := make(loglist, 0)
-	for _, entry := range *e {
-		if entry.State == state {
-			filteredEntries = append(filteredEntries, entry)
-		}
-	}
-	*e = filteredEntries
-}
+// func (e *loglist) filterByState(state string) {
+// 	// TODO revisit this implementation
+// 	filteredEntries := make(loglist, 0)
+// 	for _, entry := range *e {
+// 		if entry.State == state {
+// 			filteredEntries = append(filteredEntries, entry)
+// 		}
+// 	}
+// 	*e = filteredEntries
+// }
 
-func (e *loglist) filterByLevel(level string) {
-	// TODO revisit this implementation
-	filteredEntries := make(loglist, 0)
-	for _, entry := range *e {
-		if entry.Level == level {
-			filteredEntries = append(filteredEntries, entry)
-		}
-	}
-	*e = filteredEntries
-}
+// func (e *loglist) filterByLevel(level string) {
+// 	// TODO revisit this implementation
+// 	filteredEntries := make(loglist, 0)
+// 	for _, entry := range *e {
+// 		if entry.Level == level {
+// 			filteredEntries = append(filteredEntries, entry)
+// 		}
+// 	}
+// 	*e = filteredEntries
+// }
 
 func determineStream(params map[string]string) (string, error) {
 	if p, ok := params["instance"]; ok {
@@ -329,7 +333,7 @@ func (lw *logStoreWorker) start(ctx context.Context) {
 
 					slog.Info("data", "message", string(b))
 					e := Event{
-						ID:   fle.ID,
+						ID:   fmt.Sprint(fle.ID),
 						Data: dst.String(),
 						Type: "message",
 					}
