@@ -77,7 +77,7 @@ const updateCache = (
     pages: [
       {
         ...firstPage,
-        data: [...firstPage.data, newLogEntry],
+        data: [...(firstPage.data ?? []), newLogEntry],
       },
       ...otherPages,
     ],
