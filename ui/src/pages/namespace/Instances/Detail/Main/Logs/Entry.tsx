@@ -24,11 +24,19 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
     const timeFormated = formatLogTime(time);
     const verbose = useLogsPreferencesVerboseLogs();
 
+    const workflowPath = workflow?.workflow;
+
     const link = pages.explorer.createHref({
-      path: workflow?.workflow,
+      path: workflowPath,
       namespace,
       subpage: "workflow",
     });
+
+    const workflowState = workflow?.state ? (
+      <span className="opacity-75">
+        {t("pages.instances.detail.logs.entry.stateLabel")} {workflow.state}
+      </span>
+    ) : null;
 
     return (
       <LogEntry
@@ -37,16 +45,16 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
         ref={ref}
         {...props}
       >
-        {verbose && workflow && (
+        {verbose && workflowPath && (
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
                   to={link}
-                  className=" underline opacity-75"
+                  className="underline opacity-75"
                   target="_blank"
                 >
-                  {workflow?.workflow}
+                  {workflowPath}
                 </Link>
               </TooltipTrigger>
               <TooltipContent side="right">
@@ -55,7 +63,9 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
             </Tooltip>
           </TooltipProvider>
         )}
-        {verbose && workflow && " "}
+        {verbose && workflowPath && " "}
+        {verbose && workflowState}
+        {verbose && workflowState && " "}
         {msg}
       </LogEntry>
     );

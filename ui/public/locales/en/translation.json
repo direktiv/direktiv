@@ -633,7 +633,8 @@
             }
           },
           "entry": {
-            "workflowTooltip": "open workflow in new window"
+            "workflowTooltip": "open workflow in new window",
+            "stateLabel": "state:"
           }
         },
         "diagram": {
