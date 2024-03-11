@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { ArrowDown } from "lucide-react";
 import Button from "~/design/Button";
@@ -42,6 +42,15 @@ const ScrollContainer = () => {
     count: numberOfLogs,
     getScrollElement: () => parentRef.current,
     estimateSize: () => 20,
+    getItemKey: useCallback(
+      (index: number) => {
+        const uniqueId = allLogs[index]?.id;
+        if (!uniqueId)
+          throw new Error("Could not find a log id for the virtualizer.");
+        return uniqueId;
+      },
+      [allLogs]
+    ),
     /**
      * Start at the bottom, this is especially important to avoid
      * triggering fetchPreviousPage right away when the page loads.
