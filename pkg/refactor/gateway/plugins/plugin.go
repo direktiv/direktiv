@@ -12,6 +12,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/mitchellh/mapstructure"
 	"github.com/pkg/errors"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // nolint
@@ -104,6 +105,9 @@ func GetPluginFromRegistry(plugin string) (Plugin, error) {
 var (
 	URLParamCtxKey       = &ContextKey{"URLParamContext"}
 	ConsumersParamCtxKey = &ContextKey{"ConsumersParamCtxKey"}
+	NamespaceCtxKey      = &ContextKey{"namespace"}
+	EndpointCtxKey       = &ContextKey{"endpoint"}
+	RouteCtxKey          = &ContextKey{"route"}
 )
 
 type ContextKey struct {
@@ -115,32 +119,41 @@ func (k *ContextKey) String() string {
 }
 
 func ReportError(ctx context.Context, w http.ResponseWriter, status int, msg string, err error) {
-	ns, ok := ctx.Value("namespace").(string)
+	span := trace.SpanFromContext(ctx)
+	defer span.End()
+	spanContext := span.SpanContext()
+	traceID := spanContext.TraceID().String()
+	spanID := spanContext.SpanID()
+	ns, ok := ctx.Value(NamespaceCtxKey).(string)
 	if !ok {
 		slog.Error("TODO: This must be a bug, fixme")
 	}
-	endP, ok := ctx.Value("endpoint").(string)
+	endP, ok := ctx.Value(EndpointCtxKey).(string)
 	if !ok {
 		slog.Error("TODO: This must be a bug, fixme")
 	}
-	routePath, ok := ctx.Value("route").(string)
+	routePath, ok := ctx.Value(RouteCtxKey).(string)
 	if !ok {
 		slog.Error("TODO: This must be a bug, fixme")
 	}
 	slog.Error("can not process plugin",
 		"namespace", ns,
+		"trace", traceID,
+		"span", spanID,
 		"endpoint", endP,
 		"route", routePath,
-		"track", "track", recipient.Route.String()+"."+endP,
-		slog.String("error", err.Error()),
+		"track", recipient.Route.String()+"."+endP,
+		"error", err.Error(),
 	)
 
 	slog.Error("can not process plugin",
 		"namespace", ns,
+		"trace", traceID,
+		"span", spanID,
 		"endpoint", endP,
 		"route", routePath,
-		"track", "track", recipient.Namespace.String()+"."+ns,
-		slog.String("error", err.Error()),
+		"track", recipient.Namespace.String()+"."+ns,
+		"error", err.Error(),
 	)
 	w.WriteHeader(status)
 	errMsg := fmt.Sprintf("%s: %s", msg, err.Error())

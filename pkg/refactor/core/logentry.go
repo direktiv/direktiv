@@ -48,7 +48,7 @@ type WorkflowEntryContext struct {
 
 	State    interface{} `json:"state"`
 	Branch   interface{} `json:"branch"`
-	Workflow interface{} `json:"workflow"`
+	Path     interface{} `json:"workflow"`
 	CalledAs interface{} `json:"calledAs"`
 	Instance interface{} `json:"instance"`
 }
