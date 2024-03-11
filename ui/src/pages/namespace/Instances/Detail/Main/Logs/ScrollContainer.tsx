@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { ArrowDown } from "lucide-react";
 import Button from "~/design/Button";
@@ -28,8 +28,11 @@ const ScrollContainer = () => {
     instance: instanceId,
   });
 
-  const pages = logData?.pages.map((page) => page.data) ?? [];
-  const allLogs = pages.flat();
+  const pages = useMemo(
+    () => logData?.pages.map((page) => page.data) ?? [],
+    [logData]
+  );
+  const allLogs = useMemo(() => pages.flat(), [pages]);
   const numberOfLogs = allLogs.length;
 
   const [watch, setWatch] = useState(true);
