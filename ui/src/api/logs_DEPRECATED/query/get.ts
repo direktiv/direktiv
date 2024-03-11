@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import type { QueryFunctionContext } from "@tanstack/react-query";
 import { apiFactory } from "~/api/apiFactory";
-import { logKeys } from "../";
+import { logKeys } from "..";
 import { memo } from "react";
 import moment from "moment";
 import { useApiKey } from "~/util/store/apiKey";

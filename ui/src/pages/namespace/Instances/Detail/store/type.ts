@@ -1,4 +1,4 @@
-import { FiltersObj } from "~/api/logs/query/get";
+import { FiltersObj } from "~/api/logs_DEPRECATED/query/get";
 
 export type StateType = {
   instanceId: string;

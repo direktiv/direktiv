@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { useFilters, useInstanceId } from "../../store/instanceContext";
 
 import { ArrowDown } from "lucide-react";
 import Button from "~/design/Button";
@@ -7,7 +6,8 @@ import Entry from "./Entry";
 import { Logs } from "~/design/Logs";
 import { twMergeClsx } from "~/util/helpers";
 import { useInstanceDetails } from "~/api/instances/query/details";
-import { useLogs } from "~/api/logs/query/get";
+import { useInstanceId } from "../../store/instanceContext";
+import { useLogs } from "~/api/logs/query/logs";
 import { useLogsPreferencesWordWrap } from "~/util/store/logs";
 import { useTranslation } from "react-i18next";
 import { useVirtualizer } from "@tanstack/react-virtual";
@@ -19,12 +19,19 @@ const ScrollContainer = () => {
 
   const { t } = useTranslation();
 
-  const filters = useFilters();
-
-  const { data: logData } = useLogs({
-    instanceId,
-    filters,
+  const {
+    data: logData,
+    hasPreviousPage,
+    fetchPreviousPage,
+    isFetchingPreviousPage,
+  } = useLogs({
+    instance: instanceId,
   });
+
+  const pages = logData?.pages.map((page) => page.data) ?? [];
+  const allLogs = pages.flat();
+  const numberOfLogs = allLogs.length;
+
   const [watch, setWatch] = useState(true);
 
   // The scrollable element for the list
@@ -32,9 +39,16 @@ const ScrollContainer = () => {
 
   // The virtualizer
   const rowVirtualizer = useVirtualizer({
-    count: logData?.results.length ?? 0,
+    count: numberOfLogs,
     getScrollElement: () => parentRef.current,
     estimateSize: () => 20,
+    /**
+     * Start at the bottom, this is especially important to avoid
+     * triggering fetchPreviousPage right away when the page loads.
+     * It also avoids flickering, because the useEffect will initiate
+     * a bottom scroll anyway.
+     */
+    initialOffset: 999999,
     /**
      * overscan is the number of items to render above and below
      * the visible window. More items = less flickering when
@@ -46,11 +60,28 @@ const ScrollContainer = () => {
   });
 
   useEffect(() => {
-    if (logData?.results.length && watch) {
-      rowVirtualizer.scrollToIndex(logData?.results.length - 1),
-        { align: "end" };
+    if (numberOfLogs > 0 && watch) {
+      rowVirtualizer.scrollToIndex(numberOfLogs), { align: "end" };
     }
-  }, [logData?.results.length, rowVirtualizer, watch]);
+  }, [numberOfLogs, rowVirtualizer, watch]);
+
+  const virtualItems = rowVirtualizer.getVirtualItems();
+  useEffect(() => {
+    const [firstLogEntry] = virtualItems;
+    if (
+      firstLogEntry?.index === 0 &&
+      hasPreviousPage &&
+      !isFetchingPreviousPage
+    ) {
+      fetchPreviousPage();
+    }
+  }, [
+    virtualItems,
+    fetchPreviousPage,
+    hasPreviousPage,
+    isFetchingPreviousPage,
+    numberOfLogs,
+  ]);
 
   const isPending = instanceDetailsData?.instance?.status === "pending";
 
@@ -89,7 +120,7 @@ const ScrollContainer = () => {
           }}
         >
           {items.map((virtualItem) => {
-            const logEntry = logData.results[virtualItem.index];
+            const logEntry = allLogs[virtualItem.index];
             if (!logEntry) return null;
             return (
               <Entry

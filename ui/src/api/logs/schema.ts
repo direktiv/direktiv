@@ -1,31 +1,59 @@
-import { LogLevelSchema } from "../schema";
 import { z } from "zod";
 
-const LogEntrySchema = z.object({
-  t: z.string(), // "2023-07-27T09:49:58.408869Z"
+export const LogLevelSchema = z.enum(["INFO", "ERROR"]);
+export type LogLevelSchemaType = z.infer<typeof LogLevelSchema>;
+
+/**
+ * example
+ * 
+{
+  "id": "7",
+  "time": "2024-02-29T09:22:50.768872Z",
+  "msg": "Workflow 'delay.yaml' has been triggered by api.",
+  "level": "INFO",
+  "trace": "00000000000000000000000000000000",
+  "span": "0000000000000000",
+  "state": null,
+  "branch": null,
+  "workflow": "/delay.yaml",
+  "instance": "a0f049b0-c04c-4810-8e12-a061ae0f17c5",
+  "namespace": "demo",
+  "activity": null,
+  "route": null,
+  "path": null,
+  "error": null
+}
+ */
+export const LogEntrySchema = z.object({
+  id: z.string().nonempty(),
+  time: z.string().nonempty(),
+  msg: z.string().nonempty(),
   level: LogLevelSchema,
-  msg: z.string(), // "Preparing workflow triggered by api."
-  tags: z.object({
-    callpath: z.string(), // "/"
-    "instance-id": z.string(), // "4b833cfd-a0ef-4f4c-994b-4b63c7301778"
-    invoker: z.string(), // "api", "cron", "cloudevent", "complete" (if it's created as a subflow from another instance it's something like instance:%v, where %v is the instance ID of its parent
-    "loop-index": z.string().optional(), // ""
-    namespace: z.string(), // "workflow"
-    "namespace-id": z.string(), // "d1df8d21-96ce-49eb-98b7-5af7571ab28f"
-    recipientType: z.string(), // "instance"
-    workflow: z.string(), // "workflow.yaml"
-    "workflow-id": z.string().optional(), // "a3acd2eb-75de-4369-bb1e-41d5364ea6b7"
-    "state-id": z.string().optional(), // "a3acd2eb-75de-4369-bb1e-41d5364ea6b7"
-  }),
+  trace: z.string().nonempty().nullable(),
+  span: z.string().nonempty().nullable(),
+  state: z.string().nonempty().nullable(),
+  branch: z.string().nonempty().nullable(),
+  workflow: z.string().nonempty(),
+  instance: z.string().nullable(),
+  namespace: z.string().nonempty(),
+  activity: z.string().nullable(),
+  route: z.string().nullable(),
+  path: z.string().nullable(),
+  error: z.string().nullable(),
 });
 
-export const LogListSchema = z.object({
-  namespace: z.string(),
-  instance: z.string(),
-  results: z.array(LogEntrySchema),
+/**
+ * example
+ * 
+  {
+    "nextPage": "2024-01-17T01:44:08.128136Z",
+    "data": []
+  }
+ */
+export const LogsSchema = z.object({
+  previousPage: z.string(), // TODO:  must be z.string().nonempty().nullable() and must be changed to next_page
+  data: z.array(LogEntrySchema),
 });
 
-export const InstanceCancelSchema = z.null();
-
-export type LogListSchemaType = z.infer<typeof LogListSchema>;
+export type LogsSchemaType = z.infer<typeof LogsSchema>;
 export type LogEntryType = z.infer<typeof LogEntrySchema>;

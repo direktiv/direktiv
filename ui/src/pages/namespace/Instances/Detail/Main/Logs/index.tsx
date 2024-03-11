@@ -5,7 +5,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "~/design/Tooltip";
-import { useFilters, useInstanceId } from "../../store/instanceContext";
 import {
   useLogsPreferencesActions,
   useLogsPreferencesMaximizedPanel,
@@ -15,12 +14,12 @@ import {
 import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
 import CopyButton from "~/design/CopyButton";
-import Filters from "./Filters";
 import ScrollContainer from "./ScrollContainer";
 import { Toggle } from "~/design/Toggle";
 import { formatLogTime } from "~/util/helpers";
 import { useInstanceDetails } from "~/api/instances/query/details";
-import { useLogs } from "~/api/logs/query/get";
+import { useInstanceId } from "../../store/instanceContext";
+import { useLogs } from "~/api/logs/query/logs";
 import { useTranslation } from "react-i18next";
 
 const LogsPanel = () => {
@@ -28,11 +27,16 @@ const LogsPanel = () => {
   const { setVerboseLogs, setMaximizedPanel } = useLogsPreferencesActions();
 
   const instanceId = useInstanceId();
-  const filters = useFilters();
+
   const { data: instanceDetailsData } = useInstanceDetails({ instanceId });
-  const { data: logData } = useLogs({
-    instanceId,
-    filters,
+
+  const {
+    data: logData,
+    hasPreviousPage,
+    fetchPreviousPage,
+    isFetchingPreviousPage,
+  } = useLogs({
+    instance: instanceId,
   });
 
   // get user preferences
@@ -41,13 +45,16 @@ const LogsPanel = () => {
 
   const isMaximized = maximizedPanel === "logs";
 
-  const copyValue =
-    logData?.results
-      .map((logEntry) => `${formatLogTime(logEntry.t)} ${logEntry.msg}`)
-      .join("\n") ?? "";
-
-  const resultCount = logData?.results.length ?? 0;
   const isPending = instanceDetailsData?.instance.status === "pending";
+
+  const pages = logData?.pages.map((page) => page.data) ?? [];
+  const allLogs = pages.flat();
+  const numberOfLogs = allLogs.length;
+
+  const copyValue =
+    allLogs
+      .map((logEntry) => `${formatLogTime(logEntry.time)} ${logEntry.msg}`)
+      .join("\n") ?? "";
 
   return (
     <>
@@ -56,7 +63,14 @@ const LogsPanel = () => {
           <ScrollText className="h-5" />
           {t("pages.instances.detail.logs.title")}
         </h3>
-        <Filters />
+        <Button
+          size="sm"
+          disabled={!hasPreviousPage}
+          loading={isFetchingPreviousPage}
+          onClick={() => fetchPreviousPage()}
+        >
+          {numberOfLogs} entries on {pages.length} pages
+        </Button>
         <ButtonBar>
           <TooltipProvider>
             <Tooltip>
@@ -78,25 +92,6 @@ const LogsPanel = () => {
                 {t("pages.instances.detail.logs.tooltips.verbose")}
               </TooltipContent>
             </Tooltip>
-            {/* <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="flex grow">
-                  <Toggle
-                    size="sm"
-                    className="grow"
-                    pressed={wordWrap}
-                    onClick={() => {
-                      setWordWrap(!wordWrap);
-                    }}
-                  >
-                    <WrapText />
-                  </Toggle>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                {t("pages.instances.detail.logs.tooltips.wordWrap")}
-              </TooltipContent>
-            </Tooltip> */}
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="flex grow">
@@ -147,7 +142,7 @@ const LogsPanel = () => {
             <span className="relative inline-flex h-3 w-3 rounded-full bg-gray-11 dark:bg-gray-dark-11"></span>
           </span>
         )}
-        {t("pages.instances.detail.logs.logsCount", { count: resultCount })}
+        {t("pages.instances.detail.logs.logsCount", { count: numberOfLogs })}
       </div>
     </>
   );

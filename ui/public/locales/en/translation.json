@@ -611,7 +611,6 @@
           "logsCount_one": "received {{count}} log entry",
           "tooltips": {
             "verbose": "Verbose logs",
-            "wordWrap": "Word wrap",
             "copy": "Copy logs",
             "minimize": "Minimize logs",
             "maximize": "Maximize logs"
@@ -632,6 +631,9 @@
               "workflowName": "/path/filename.yaml",
               "stateName": "someStateName"
             }
+          },
+          "entry": {
+            "workflowTooltip": "open workflow in new window"
           }
         },
         "diagram": {

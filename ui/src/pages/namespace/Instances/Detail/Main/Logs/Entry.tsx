@@ -1,37 +1,61 @@
 import { ComponentPropsWithoutRef, forwardRef } from "react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "~/design/Tooltip";
 import { formatLogTime, logLevelToLogEntryVariant } from "~/util/helpers";
 
+import { Link } from "react-router-dom";
 import { LogEntry } from "~/design/Logs";
 import { LogEntryType } from "~/api/logs/schema";
+import { pages } from "~/util/router/pages";
 import { useLogsPreferencesVerboseLogs } from "~/util/store/logs";
+import { useTranslation } from "react-i18next";
 
 type LogEntryProps = ComponentPropsWithoutRef<typeof LogEntry>;
 type Props = { logEntry: LogEntryType } & LogEntryProps;
 
 export const Entry = forwardRef<HTMLDivElement, Props>(
   ({ logEntry, ...props }, ref) => {
-    const { msg, t, level, tags } = logEntry;
-    const time = formatLogTime(t);
+    const { t } = useTranslation();
+    const { msg, level, time, workflow, namespace } = logEntry;
+    const timeFormated = formatLogTime(time);
     const verbose = useLogsPreferencesVerboseLogs();
+
+    const link = pages.explorer.createHref({
+      path: workflow,
+      namespace,
+      subpage: "workflow",
+    });
 
     return (
       <LogEntry
         variant={logLevelToLogEntryVariant(level)}
-        time={time}
+        time={timeFormated}
         ref={ref}
         {...props}
       >
-        {verbose && tags["loop-index"] && (
-          <>
-            <span className="opacity-75">{tags["loop-index"]}</span>{" "}
-          </>
+        {verbose && workflow && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  to={link}
+                  className=" underline opacity-75"
+                  target="_blank"
+                >
+                  {workflow}
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent>
+                {t("pages.instances.detail.logs.entry.workflowTooltip")}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         )}
-        {verbose && tags["workflow"] && (
-          <span className="opacity-75">{tags["workflow"]}</span>
-        )}
-        {verbose && tags["state-id"] && (
-          <span className="opacity-60">/{tags["state-id"]}</span>
-        )}{" "}
+        {verbose && workflow && " "}
         {msg}
       </LogEntry>
     );
