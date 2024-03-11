@@ -1,6 +1,9 @@
+import { beforeAll, describe, expect, it } from '@jest/globals'
+
 import common from '../common'
+import helpers from '../common/helpers'
 import request from '../common/request'
-import events from './send_helper.js'
+import events from './send_helper'
 
 const namespaceName = 'sendeventsor'
 
@@ -70,20 +73,19 @@ const basevent = (type, id, value) => `{
 describe('Test workflow events and', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
 
-
 	it(`should create namespace`, async () => {
 		const createNamespaceResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${ namespaceName }`)
 		expect(createNamespaceResponse.statusCode).toEqual(200)
 	})
 
+	// workflow with start
+	helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
+		'', startWorkflowName, 'workflow',
+		startEventWorkflow)
+
 	it(`should have one event listeners`, async () => {
+		await helpers.sleep(1000)
 
-		// workflow with start
-		const createWorkflowResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${ namespaceName }/tree/${ startWorkflowName }?op=create-workflow`)
-			.send(startEventWorkflow)
-		expect(createWorkflowResponse.statusCode).toEqual(200)
-
-		await sleep(1000)
 		const getEventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/event-listeners?limit=8&offset=0`)
 			.send()
 
@@ -99,16 +101,15 @@ describe('Test workflow events and', () => {
 		})
 
 		expect(getEventListenerResponse.body.pageInfo.total).toEqual(1)
-
 	})
 
+	// workflow with start
+	helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
+		'', waitWorkflowName, 'workflow',
+		waitEventWorkflow)
+
 	it(`should have two event listeners`, async () => {
-
-		// workflow with start
-		const createWorkflowResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${ namespaceName }/tree/${ waitWorkflowName }?op=create-workflow`)
-			.send(waitEventWorkflow)
-
-		expect(createWorkflowResponse.statusCode).toEqual(200)
+		await helpers.sleep(1000)
 
 		// start workflow
 		const runWorkflowResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${ namespaceName }/tree/${ waitWorkflowName }?op=execute`)
@@ -134,16 +135,13 @@ describe('Test workflow events and', () => {
 				filters: {} }, { type: 'eventtype2',
 				filters: {} } ],
 		})
-
-
 	})
 
 	it(`should kick off in flow workflow`, async () => {
-
 		// should fire workflow
 		await events.sendEventAndList(namespaceName, basevent('eventtype1', 'eventtype1', 'world1'))
 
-		var instancesResponse = await events.listInstancesAndFilter(namespaceName, waitWorkflowName, 'complete')
+		let instancesResponse = await events.listInstancesAndFilter(namespaceName, waitWorkflowName, 'complete')
 		expect(instancesResponse).not.toBeFalsy()
 
 		const instanceOutput = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/instances/${ instancesResponse.id }/output`)
@@ -161,21 +159,17 @@ describe('Test workflow events and', () => {
 		expect(runWorkflowResponse.statusCode).toEqual(200)
 		await new Promise(r => setTimeout(r, 250))
 
-
 		await events.sendEventAndList(namespaceName, basevent('eventtype2', 'eventtype2a', 'world2'))
 
 		// there are two workflows now
-		var instancesResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/instances?limit=10&offset=0&filter.field=AS&filter.type=CONTAINS&filter.val=` + waitWorkflowName)
+		instancesResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/instances?limit=10&offset=0&filter.field=AS&filter.type=CONTAINS&filter.val=` + waitWorkflowName)
 			.send()
 		expect(instancesResponse.body.instances.pageInfo.total).toEqual(2)
-
 	})
 
-
 	it(`should kick off start event workflow`, async () => {
-
 		await events.sendEventAndList(namespaceName, basevent('eventtype3', 'eventtype3', 'world1'))
-		const instance = await events.listInstancesAndFilter(namespaceName, startWorkflowName)
+		const instance = await events.listInstancesAndFilter(namespaceName, startWorkflowName, 'complete')
 
 		expect(instance).not.toBeFalsy()
 
@@ -193,15 +187,15 @@ describe('Test workflow events and', () => {
 		const instancesResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/instances?limit=10&offset=0&filter.field=AS&filter.type=CONTAINS&filter.val=` + startWorkflowName)
 			.send()
 		expect(instancesResponse.body.instances.pageInfo.total).toEqual(2)
-
 	})
 
-	it(`should timeout flow`, async () => {
+	// timeout workflow
+	helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
+		'', waitWorkflowTimeoutName, 'workflow',
+		waitEventWorkflowTimeout)
 
-		// timeout workflow
-		const createWorkflowResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${ namespaceName }/tree/${ waitWorkflowTimeoutName }?op=create-workflow`)
-			.send(waitEventWorkflowTimeout)
-		expect(createWorkflowResponse.statusCode).toEqual(200)
+	it(`should timeout flow`, async () => {
+		await helpers.sleep(1000)
 
 		// start workflow
 		const runWorkflowResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${ namespaceName }/tree/${ waitWorkflowTimeoutName }?op=execute`)
@@ -211,12 +205,5 @@ describe('Test workflow events and', () => {
 
 		const instancesResponse = await events.listInstancesAndFilter(namespaceName, waitWorkflowTimeoutName, 'failed')
 		expect(instancesResponse).not.toBeFalsy()
-
 	})
-
 })
-
-
-function sleep (ms) {
-	return new Promise(resolve => setTimeout(resolve, ms))
-}

@@ -9,21 +9,9 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/flow/internallogger"
-	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"github.com/google/uuid"
 )
-
-type fileAttributes filestore.File
-
-func (f fileAttributes) GetAttributes() map[string]string {
-	m := make(map[string]string)
-	m["namespace-id"] = f.RootID.String()
-	if f.Typ == filestore.FileTypeWorkflow {
-		m["workflow-id"] = f.ID.String()
-	}
-	return m
-}
 
 const (
 	namespaceType = "namespace"

@@ -1,4 +1,7 @@
+import { beforeAll, describe, expect, it } from '@jest/globals'
+
 import common from '../common'
+import helpers from '../common/helpers'
 import request from '../common/request'
 
 const namespaceName = 'mirtest'
@@ -6,10 +9,6 @@ const url = 'https://github.com/direktiv/direktiv-test-project.git'
 const branch = 'main'
 
 let activityId = ''
-
-function sleep (ms) {
-	return new Promise(resolve => setTimeout(resolve, ms))
-}
 
 describe('Test behaviour specific to the root node', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
@@ -38,13 +37,11 @@ describe('Test behaviour specific to the root node', () => {
 		let status = 'pending'
 		let counter = -1
 		do {
-
 			counter++
 			if (counter > 100)
-				fail('init activity took too long')
+				throw new Error('init activity took too long')
 
-
-			await sleep(100)
+			await helpers.sleep(100)
 
 			const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/tree/?op=mirror-info`)
 			// expect(req.statusCode).toEqual(200)
@@ -76,13 +73,11 @@ describe('Test behaviour specific to the root node', () => {
 
 			activityId = req.body.activities.results[0].id
 			status = req.body.activities.results[0].status
-
-		} while (status == 'pending')
-
+		} while (status === 'pending')
 	})
 
 	it(`should read the root directory`, async () => {
-		await sleep(5000)
+		await helpers.sleep(5000)
 		const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/tree/`)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({
@@ -125,7 +120,7 @@ describe('Test behaviour specific to the root node', () => {
 						type: common.filesystem.nodeTypeWorkflow,
 						attributes: [],
 						readOnly: false,
-						mimeType: 'application/direktiv',
+						mimeType: 'application/yaml',
 						expandedType: common.filesystem.extendedNodeTypeWorkflow,
 						createdAt: expect.stringMatching(common.regex.timestampRegex),
 						updatedAt: expect.stringMatching(common.regex.timestampRegex),
@@ -137,7 +132,7 @@ describe('Test behaviour specific to the root node', () => {
 						type: common.filesystem.nodeTypeWorkflow,
 						attributes: [],
 						readOnly: false,
-						mimeType: 'application/direktiv',
+						mimeType: 'application/yaml',
 						expandedType: common.filesystem.extendedNodeTypeWorkflow,
 						createdAt: expect.stringMatching(common.regex.timestampRegex),
 						updatedAt: expect.stringMatching(common.regex.timestampRegex),
@@ -185,7 +180,7 @@ describe('Test behaviour specific to the root node', () => {
 						type: common.filesystem.nodeTypeWorkflow,
 						attributes: [],
 						readOnly: false,
-						mimeType: 'application/direktiv',
+						mimeType: 'application/yaml',
 						expandedType: common.filesystem.extendedNodeTypeWorkflow,
 						createdAt: expect.stringMatching(common.regex.timestampRegex),
 						updatedAt: expect.stringMatching(common.regex.timestampRegex),
@@ -318,7 +313,7 @@ describe('Test behaviour specific to the root node', () => {
 				expandedType: common.filesystem.extendedNodeTypeWorkflow,
 				attributes: expect.anything(),
 				readOnly: false,
-				mimeType: 'application/direktiv',
+				mimeType: 'application/yaml',
 			},
 			source: expect.stringMatching(common.regex.base64Regex),
 		})
@@ -360,7 +355,7 @@ describe('Test behaviour specific to the root node', () => {
 				expandedType: common.filesystem.extendedNodeTypeWorkflow,
 				attributes: expect.anything(),
 				readOnly: false,
-				mimeType: 'application/direktiv',
+				mimeType: 'application/yaml',
 			},
 			source: expect.stringMatching(common.regex.base64Regex),
 		})
@@ -431,7 +426,7 @@ describe('Test behaviour specific to the root node', () => {
 						parent: '/banana',
 						path: '/banana/css.yaml',
 						readOnly: false,
-						mimeType: 'application/direktiv',
+						mimeType: 'application/yaml',
 					},
 					{
 						attributes: [],
@@ -489,7 +484,7 @@ describe('Test behaviour specific to the root node', () => {
 				expandedType: common.filesystem.extendedNodeTypeWorkflow,
 				attributes: expect.anything(),
 				readOnly: false,
-				mimeType: 'application/direktiv',
+				mimeType: 'application/yaml',
 			},
 			source: expect.stringMatching(common.regex.base64Regex),
 		})
@@ -553,7 +548,7 @@ describe('Test behaviour specific to the root node', () => {
 				expandedType: common.filesystem.extendedNodeTypeWorkflow,
 				attributes: expect.anything(),
 				readOnly: false,
-				mimeType: 'application/direktiv',
+				mimeType: 'application/yaml',
 			},
 			source: expect.stringMatching(common.regex.base64Regex),
 		})
@@ -617,7 +612,7 @@ describe('Test behaviour specific to the root node', () => {
 						parent: '/banana/util',
 						path: '/banana/util/caller.yaml',
 						readOnly: false,
-						mimeType: 'application/direktiv',
+						mimeType: 'application/yaml',
 					},
 					{
 						attributes: [],
@@ -629,7 +624,7 @@ describe('Test behaviour specific to the root node', () => {
 						parent: '/banana/util',
 						path: '/banana/util/curler.yaml',
 						readOnly: false,
-						mimeType: 'application/direktiv',
+						mimeType: 'application/yaml',
 					},
 				]),
 			},
@@ -651,7 +646,7 @@ describe('Test behaviour specific to the root node', () => {
 				expandedType: common.filesystem.extendedNodeTypeWorkflow,
 				attributes: expect.anything(),
 				readOnly: false,
-				mimeType: 'application/direktiv',
+				mimeType: 'application/yaml',
 			},
 			source: expect.stringMatching(common.regex.base64Regex),
 		})
@@ -672,7 +667,7 @@ describe('Test behaviour specific to the root node', () => {
 				expandedType: common.filesystem.extendedNodeTypeWorkflow,
 				attributes: expect.anything(),
 				readOnly: false,
-				mimeType: 'application/direktiv',
+				mimeType: 'application/yaml',
 			},
 			source: expect.stringMatching(common.regex.base64Regex),
 		})
@@ -763,12 +758,11 @@ describe('Test behaviour specific to the root node', () => {
 		})
 	})
 
-	it(`should check the activity logs for errors`, async () => {
-		// TODO: this test need to expect stream response.
-		return
+	// TODO: this test need to expect stream response.
+	// TODO: the logic doesn't currently log many errors
+	it.skip(`should check the activity logs for errors`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/activities/${ activityId }/logs`)
 		expect(req.statusCode).toEqual(200)
-		// TODO: the logic doesn't currently log many errors
 	})
 
 	it(`should invoke the '/a.yaml' workflow`, async () => {
@@ -805,10 +799,8 @@ describe('Test behaviour specific to the root node', () => {
 	})
 
 	// TODO: find a way to enable this as an optional test, because it takes too long to run in most cases.
-	it(`should invoke the '/banana/util/caller.yaml' workflow`, async () => {
-		// TODO: yassir enable this test before release.
-		// disabled for WIP.
-		return
+	// TODO: yassir enable this test before release.
+	it.skip(`should invoke the '/banana/util/caller.yaml' workflow`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/tree/banana/util/caller.yaml?op=wait`)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body.return.return.status).toEqual('200 OK')

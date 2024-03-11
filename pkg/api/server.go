@@ -35,7 +35,7 @@ func (s *Server) GetRouter() *mux.Router {
 // NewServer return new API server.
 func NewServer(l *zap.SugaredLogger, config *core.Config) (*Server, error) {
 	logger = l
-	logger.Infof("starting api server")
+	logger.Debugf("starting api server")
 
 	baseRouter := mux.NewRouter()
 	r := baseRouter.PathPrefix("/api").Subrouter()
@@ -78,7 +78,7 @@ func NewServer(l *zap.SugaredLogger, config *core.Config) (*Server, error) {
 // Start starts API server.
 func (s *Server) Start() error {
 	defer s.telend()
-	logger.Infof("start listening")
+	logger.Debugf("start listening")
 	return s.srv.ListenAndServe()
 }
 

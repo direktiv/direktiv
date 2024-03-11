@@ -2,6 +2,7 @@ package flow
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -14,7 +15,6 @@ import (
 	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
-	"github.com/direktiv/direktiv/pkg/refactor/instancestore/instancestoresql"
 	"github.com/google/uuid"
 	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc/codes"
@@ -103,17 +103,6 @@ func (engine *engine) mux(ctx context.Context, ns *database.Namespace, calledAs 
 	return file, data, nil
 }
 
-const (
-	rcfNone       = 0
-	rcfNoPriors   = 1 << iota
-	rcfBreaking   // don't throw a router validation error if the router was already invalid before the change
-	rcfNoValidate // skip validation of new workflow if old router has one or fewer routes
-)
-
-func hasFlag(flags, flag int) bool {
-	return flags&flag != 0
-}
-
 func (flow *flow) configureRouterHandler(req *pubsub.PubsubUpdate) {
 	msg := new(pubsub.ConfigureRouterMessage)
 
@@ -145,7 +134,10 @@ func (flow *flow) cronHandler(data []byte) {
 		return
 	}
 
-	tx, err := flow.beginSqlTx(ctx)
+	// tx is to be committed in the NewInstance call.
+	tx, err := flow.beginSqlTx(ctx, &sql.TxOptions{
+		Isolation: sql.LevelSerializable,
+	})
 	if err != nil {
 		flow.sugar.Error(err)
 		return
@@ -175,16 +167,7 @@ func (flow *flow) cronHandler(data []byte) {
 		return
 	}
 
-	tx.Rollback()
-
-	ctx, conn, err := flow.engine.lock(id.String(), defaultLockWait)
-	if err != nil {
-		flow.sugar.Error(err)
-		return
-	}
-	defer flow.engine.unlock(id.String(), conn)
-
-	err = instancestoresql.NewSQLInstanceStore(flow.gormDB).AssertNoParallelCron(ctx, file.Path)
+	err = tx.InstanceStore().AssertNoParallelCron(ctx, file.Path)
 	if errors.Is(err, instancestore.ErrParallelCron) {
 		// already triggered
 		return
@@ -196,26 +179,32 @@ func (flow *flow) cronHandler(data []byte) {
 	span := trace.SpanFromContext(ctx)
 
 	args := &newInstanceArgs{
+		tx:        tx,
 		ID:        uuid.New(),
 		Namespace: ns,
 		CalledAs:  file.Path,
 		Input:     make([]byte, 0),
 		Invoker:   instancestore.InvokerCron,
 		TelemetryInfo: &enginerefactor.InstanceTelemetryInfo{
-			TraceID: span.SpanContext().TraceID().String(),
-			SpanID:  span.SpanContext().SpanID().String(),
-			// TODO: alan, CallPath: ,
+			TraceID:       span.SpanContext().TraceID().String(),
+			SpanID:        span.SpanContext().SpanID().String(),
 			NamespaceName: ns.Name,
 		},
 	}
 
 	im, err := flow.engine.NewInstance(ctx, args)
 	if err != nil {
+		if strings.Contains(err.Error(), "could not serialize access") {
+			// return without logging because this attempt to create an instance clashed with another server
+			return
+		}
+
 		flow.sugar.Errorf("Error returned to gRPC request %s: %v", this(), err)
+
 		return
 	}
 
-	flow.engine.queue(im)
+	go flow.engine.start(im)
 }
 
 func (flow *flow) configureWorkflowStarts(ctx context.Context, tx *sqlTx, nsID uuid.UUID, file *filestore.File) error {

@@ -1,8 +1,10 @@
+import { beforeAll, describe, expect, it } from '@jest/globals'
+
 import common from '../common'
+import helpers from '../common/helpers'
 import request from '../common/request'
 
 const namespaceName = 'gettersettertest'
-
 
 describe('Test getter & setter state behaviour', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
@@ -20,14 +22,12 @@ describe('Test getter & setter state behaviour', () => {
 		})
 	})
 
-	it(`should create a workflow called /test.yaml`, async () => {
-
-		const res = await request(common.config.getDirektivHost())
-			.put(`/api/namespaces/${ namespaceName }/tree/test.yaml?op=create-workflow`)
-			.set({
-				'Content-Type': 'text/plain',
-			})
-			.send(`
+	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+		'',
+		'test.yaml',
+		'workflow',
+		'text/plain',
+		btoa(`
 states:
 - id: a
   type: getter
@@ -65,13 +65,7 @@ states:
   - key: x
     scope: instance
     value: 'jq(.inx)'
-`)
-
-		expect(res.statusCode).toEqual(200)
-		expect(res.body).toMatchObject({
-			namespace: namespaceName,
-		})
-	})
+`))
 
 	it(`should invoke the '/test.yaml' workflow`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/tree/test.yaml?op=wait`)
@@ -93,14 +87,12 @@ states:
 		})
 	})
 
-	it(`should create a duplicate called /test2.yaml`, async () => {
-
-		const res = await request(common.config.getDirektivHost())
-			.put(`/api/namespaces/${ namespaceName }/tree/test2.yaml?op=create-workflow`)
-			.set({
-				'Content-Type': 'text/plain',
-			})
-			.send(`
+	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+		'',
+		'test2.yaml',
+		'workflow',
+		'text/plain',
+		btoa(`
 states:
 - id: a
   type: getter
@@ -138,13 +130,7 @@ states:
   - key: x
     scope: instance
     value: 'jq(.inx)'
-`)
-
-		expect(res.statusCode).toEqual(200)
-		expect(res.body).toMatchObject({
-			namespace: namespaceName,
-		})
-	})
+`))
 
 	it(`should invoke the '/test2.yaml' workflow`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/tree/test2.yaml?op=wait`)
@@ -156,14 +142,12 @@ states:
 		})
 	})
 
-	it(`should create a workflow called /nuller.yaml`, async () => {
-
-		const res = await request(common.config.getDirektivHost())
-			.put(`/api/namespaces/${ namespaceName }/tree/nuller.yaml?op=create-workflow`)
-			.set({
-				'Content-Type': 'text/plain',
-			})
-			.send(`
+	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+		'',
+		'nuller.yaml',
+		'workflow',
+		'text/plain',
+		btoa(`
 states:
 - id: a
   type: setter
@@ -171,13 +155,7 @@ states:
   - key: x
     scope: namespace
     value: null
-`)
-
-		expect(res.statusCode).toEqual(200)
-		expect(res.body).toMatchObject({
-			namespace: namespaceName,
-		})
-	})
+`))
 
 	it(`should invoke the '/nuller.yaml' workflow`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/tree/nuller.yaml?op=wait`)
@@ -194,5 +172,4 @@ states:
 			inx: 100,
 		})
 	})
-
 })

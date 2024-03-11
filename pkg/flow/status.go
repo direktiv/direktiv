@@ -4,12 +4,39 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log/slog"
 
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 )
+
+func (engine *engine) GetIsInstanceFailed(im *instanceMemory) bool {
+	if engine.GetIsInstanceCrashed(im) {
+		return true
+	}
+
+	if im.instance.Instance.Status == instancestore.InstanceStatusFailed {
+		return true
+	}
+
+	if im.updateArgs.Status != nil && (*im.updateArgs.Status) == instancestore.InstanceStatusFailed {
+		return true
+	}
+
+	return false
+}
+
+func (engine *engine) GetIsInstanceCrashed(im *instanceMemory) bool {
+	if im.instance.Instance.Status == instancestore.InstanceStatusCrashed {
+		return true
+	}
+
+	if im.updateArgs.Status != nil && (*im.updateArgs.Status) == instancestore.InstanceStatusCrashed {
+		return true
+	}
+
+	return false
+}
 
 func (engine *engine) SetInstanceFailed(ctx context.Context, im *instanceMemory, err error) {
 	var status instancestore.InstanceStatus
@@ -21,9 +48,7 @@ func (engine *engine) SetInstanceFailed(ctx context.Context, im *instanceMemory,
 	cerr := new(derrors.CatchableError)
 	ierr := new(derrors.InternalError)
 	engine.logger.Errorf(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "Workflow %s canceled due to instance %s failed", im.instance.Instance.WorkflowPath, im.GetInstanceID())
-	slog.Error("Workflow canceled. Instance failed", "workflow", im.instance.Instance.WorkflowPath, "instance", im.GetInstanceID(), "namespace", im.Namespace().Name, "track", recipient.Namespace.String()+"."+im.Namespace().Name)
 	engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), "Workflow %s canceled due to instance %s failed", im.instance.Instance.WorkflowPath, im.GetInstanceID())
-	slog.Error("Workflow canceled. Instance failed", im.GetSlogAttributes(ctx)...)
 	if errors.As(err, &uerr) {
 		code = uerr.Code
 		message = uerr.Message
@@ -36,6 +61,7 @@ func (engine *engine) SetInstanceFailed(ctx context.Context, im *instanceMemory,
 		message = "an internal error occurred"
 	} else {
 		engine.sugar.Error(fmt.Errorf("unhandled error: %w", err))
+		status = instancestore.InstanceStatusCrashed
 		code = ErrCodeInternal
 		message = err.Error()
 	}

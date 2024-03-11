@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
-	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/util"
 	libgrpc "google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -126,15 +125,8 @@ func (flow *flow) kickExpiredInstances() {
 	}
 
 	for i := range list {
-		info, err := enginerefactor.LoadInstanceRuntimeInfo(list[i].RuntimeInfo)
-		if err != nil {
-			flow.sugar.Error(err)
-			continue
-		}
-
 		data, err := json.Marshal(&retryMessage{
 			InstanceID: list[i].ID.String(),
-			Step:       len(info.Flow),
 		})
 		if err != nil {
 			panic(err)

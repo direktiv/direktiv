@@ -41,8 +41,9 @@ var (
 )
 
 type FileChangeEvent struct {
-	Namespace   string
-	NamespaceID uuid.UUID
-	FilePath    string
-	OldPath     string
+	Namespace    string
+	NamespaceID  uuid.UUID
+	FilePath     string
+	OldPath      string
+	DeleteFileID uuid.UUID
 }

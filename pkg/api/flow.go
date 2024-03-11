@@ -50,7 +50,7 @@ func newSingleHostReverseProxy(patchReq func(req *http.Request) *http.Request) *
 
 func newFlowHandler(logger *zap.SugaredLogger, base *mux.Router, router *mux.Router, conf *core.Config) (*flowHandler, error) {
 	flowAddr := fmt.Sprintf("localhost:%d", conf.GrpcPort)
-	logger.Infof("connecting to flow %s", flowAddr)
+	logger.Debugf("connecting to flow %s", flowAddr)
 
 	flowConn, err := util.GetEndpointTLS(flowAddr)
 	if err != nil {
@@ -65,7 +65,7 @@ func newFlowHandler(logger *zap.SugaredLogger, base *mux.Router, router *mux.Rou
 	}
 
 	prometheusAddr := fmt.Sprintf("http://%s", conf.Prometheus)
-	logger.Infof("connecting to prometheus %s", prometheusAddr)
+	logger.Debugf("connecting to prometheus %s", prometheusAddr)
 	h.prometheus, err = prometheus.NewClient(prometheus.Config{
 		Address: prometheusAddr,
 	})

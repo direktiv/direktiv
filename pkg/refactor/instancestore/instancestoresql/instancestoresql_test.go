@@ -16,12 +16,14 @@ func Test_NewSQLInstanceStore(t *testing.T) {
 		t.Fatal(err)
 	}
 	ns := uuid.New()
+	server := uuid.New()
 
 	store := instancestoresql.NewSQLInstanceStore(db)
 	_, err = store.CreateInstanceData(context.Background(), &instancestore.CreateInstanceDataArgs{
 		ID:             uuid.New(),
 		NamespaceID:    ns,
 		RootInstanceID: uuid.New(),
+		Server:         server,
 		Invoker:        "api",
 		WorkflowPath:   "someRandomWfPath",
 		Definition:     []byte{},
@@ -40,6 +42,7 @@ func Test_NewSQLInstanceStore(t *testing.T) {
 		ID:             uuid.New(),
 		NamespaceID:    ns,
 		RootInstanceID: uuid.New(),
+		Server:         server,
 		Invoker:        "api",
 		WorkflowPath:   "someRandomWfPathPlus",
 		Definition:     []byte{},
@@ -58,6 +61,7 @@ func Test_NewSQLInstanceStore(t *testing.T) {
 		ID:             uuid.New(),
 		NamespaceID:    ns,
 		RootInstanceID: uuid.New(),
+		Server:         server,
 		Invoker:        "api",
 		WorkflowPath:   "-someRandomWfPath",
 		Definition:     []byte{},
