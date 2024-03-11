@@ -30,22 +30,17 @@ type LogCollectionManager interface {
 }
 
 type PlattformLogEntry struct {
-	ID      int          `json:"id"`
-	Time    time.Time    `json:"time"`
-	Msg     interface{}  `json:"msg"`
-	Level   interface{}  `json:"level"`
-	Context EntryContext `json:"context,omitempty"`
-	Error   interface{}  `json:"error"`
-}
-
-type EntryContext struct {
-	Namespace interface{} `json:"namespace"`
-
-	Trace    interface{}          `json:"trace"`
-	Span     interface{}          `json:"span"`
-	Workflow WorkflowEntryContext `json:"workflow,omitempty"`
-	Activity ActivityEntryContext `json:"activity,omitempty"`
-	Route    RouteEntryContext    `json:"route,omitempty"`
+	ID        int                   `json:"id"`
+	Time      time.Time             `json:"time"`
+	Msg       interface{}           `json:"msg"`
+	Level     interface{}           `json:"level"`
+	Namespace interface{}           `json:"namespace"`
+	Trace     interface{}           `json:"trace"`
+	Span      interface{}           `json:"span"`
+	Workflow  *WorkflowEntryContext `json:"workflow,omitempty"`
+	Activity  *ActivityEntryContext `json:"activity,omitempty"`
+	Route     *RouteEntryContext    `json:"route,omitempty"`
+	Error     interface{}           `json:"error"`
 }
 
 type WorkflowEntryContext struct {
