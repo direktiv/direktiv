@@ -28,7 +28,7 @@ func (s sqlLogNewStore) GetOlder(ctx context.Context, stream string, t time.Time
 	query := `
         SELECT id, time, tag, data
         FROM fluentbit
-        WHERE tag = ? AND time <= ?
+        WHERE tag = ? AND time < ?
         ORDER BY time ASC
         LIMIT ?;
     `
@@ -45,7 +45,7 @@ func (s sqlLogNewStore) GetOlderInstance(ctx context.Context, stream string, t t
 	query := `
         SELECT id, time, tag, data
         FROM fluentbit
-        WHERE tag LIKE ? AND time <= ?
+        WHERE tag LIKE ? AND time < ?
         ORDER BY time ASC
         LIMIT ?;
     `
@@ -62,7 +62,7 @@ func (s sqlLogNewStore) GetNewer(ctx context.Context, stream string, t time.Time
 	query := `
         SELECT id, time, tag, data
         FROM fluentbit
-        WHERE tag = ? AND time > ?
+        WHERE tag = ? AND time >= ?
         ORDER BY time ASC
         LIMIT ?;
     `
@@ -79,7 +79,7 @@ func (s sqlLogNewStore) GetNewerInstance(ctx context.Context, stream string, t t
 	query := `
         SELECT id, time, tag, data
         FROM fluentbit
-        WHERE tag LIKE ? AND time > ?
+        WHERE tag LIKE ? AND time >= ?
         ORDER BY time ASC
         LIMIT ?;
     `
