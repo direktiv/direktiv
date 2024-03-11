@@ -46,13 +46,21 @@ export const LogEntrySchema = z.object({
  * example
  * 
   {
-    "nextPage": "2024-01-17T01:44:08.128136Z",
+    "meta": {
+      "previousPage": null,
+      "startingFrom": "2024-03-11T13:35:33.318740761Z"
+    },
     "data": []
   }
  */
 export const LogsSchema = z.object({
-  previousPage: z.string(), // TODO:  must be z.string().nonempty().nullable() and must be changed to next_page
-  data: z.array(LogEntrySchema),
+  meta: z
+    .object({
+      previousPage: z.string().nonempty().nullable(),
+      startingFrom: z.string().nonempty(),
+    })
+    .nullable(), // TODO: should not be nullable
+  data: z.array(LogEntrySchema).nullable(), // TODO: should not be nullable
 });
 
 export type LogsSchemaType = z.infer<typeof LogsSchema>;
