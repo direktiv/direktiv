@@ -1,26 +1,41 @@
 import { z } from "zod";
 
-export const LogLevelSchema = z.enum(["INFO", "ERROR"]);
+export const LogLevelSchema = z.enum(["INFO", "ERROR", "WARNING", "DEBUG"]);
 export type LogLevelSchemaType = z.infer<typeof LogLevelSchema>;
 
 /**
  * example
  * 
 {
-  "id": "7",
-  "time": "2024-02-29T09:22:50.768872Z",
-  "msg": "Workflow 'delay.yaml' has been triggered by api.",
+  "status": "completed",
+  "state": "loop",
+  "branch": null,
+  "workflow": "/wf.yaml",
+  "calledAs": null,
+  "instance": "f1242c40-3cd9-48bb-82aa-02275df6e1da" 
+}
+ */
+export const WorkflowEntrySchema = z.object({
+  status: z.string().nonempty(),
+  state: z.string().nonempty(), //
+  branch: z.string().nullable(),
+  workflow: z.string().nonempty(),
+  calledAs: z.string().nullable(),
+  instance: z.string().nonempty(),
+});
+
+/**
+ * example
+ * 
+{
+  "id": 1731,
+  "time": "2024-03-11T13:39:13.214148Z",
+  "msg": "Running state logic",
   "level": "INFO",
+  "namespace": "test",
   "trace": "00000000000000000000000000000000",
   "span": "0000000000000000",
-  "state": null,
-  "branch": null,
-  "workflow": "/delay.yaml",
-  "instance": "a0f049b0-c04c-4810-8e12-a061ae0f17c5",
-  "namespace": "demo",
-  "activity": null,
-  "route": null,
-  "path": null,
+  "workflow": {...},
   "error": null
 }
  */
@@ -29,17 +44,11 @@ export const LogEntrySchema = z.object({
   time: z.string().nonempty(),
   msg: z.string().nonempty(),
   level: LogLevelSchema,
+  namespace: z.string().nonempty(),
   trace: z.string().nonempty().nullable(),
   span: z.string().nonempty().nullable(),
-  state: z.string().nonempty().nullable(),
-  branch: z.string().nonempty().nullable(),
-  workflow: z.string().nonempty(),
-  instance: z.string().nullable(),
-  namespace: z.string().nonempty(),
-  activity: z.string().nullable(),
-  route: z.string().nullable(),
-  path: z.string().nullable(),
   error: z.string().nullable(),
+  workflow: WorkflowEntrySchema.nullable(),
 });
 
 /**
