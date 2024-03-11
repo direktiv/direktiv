@@ -49,7 +49,7 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
                   {workflow?.workflow}
                 </Link>
               </TooltipTrigger>
-              <TooltipContent>
+              <TooltipContent side="right">
                 {t("pages.instances.detail.logs.entry.workflowTooltip")}
               </TooltipContent>
             </Tooltip>
