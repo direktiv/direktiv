@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
@@ -49,50 +48,35 @@ func ToFeatureLogEntry(e LogEntry) (core.PlattformLogEntry, error) {
 	}
 
 	featureLogEntry := core.PlattformLogEntry{
-		ID:    strconv.Itoa(e.ID),
+		ID:    e.ID,
 		Time:  e.Time,
-		Msg:   fmt.Sprint(m["msg"]),
-		Level: fmt.Sprint(m["level"]),
+		Msg:   m["msg"],
+		Level: m["level"],
 	}
-	if s, ok := m["trace"]; ok {
-		featureLogEntry.Trace = fmt.Sprint(s)
-	}
-	if s, ok := m["span"]; ok {
-		featureLogEntry.Span = fmt.Sprint(s)
-	}
-	if s, ok := m["state"]; ok {
-		featureLogEntry.State = fmt.Sprint(s)
-	}
-	if s, ok := m["namespace"]; ok {
-		featureLogEntry.Namespace = fmt.Sprint(s)
-	}
-	if s, ok := m["workflow"]; ok {
-		featureLogEntry.Workflow = fmt.Sprint(s)
-	}
-	if s, ok := m["instance"]; ok {
-		featureLogEntry.Instance = fmt.Sprint(s)
-	}
-	if s, ok := m["calledAs"]; ok {
-		featureLogEntry.CalledAs = fmt.Sprint(s)
-	}
-	if s, ok := m["status"]; ok {
-		featureLogEntry.Status = fmt.Sprint(s)
-	}
-	if s, ok := m["route"]; ok {
-		featureLogEntry.Route = fmt.Sprint(s)
-	}
-	if s, ok := m["activity"]; ok {
-		featureLogEntry.Activity = fmt.Sprint(s)
-	}
-	if s, ok := m["branch"]; ok {
-		featureLogEntry.Branch = fmt.Sprint(s)
-	}
-	if s, ok := m["error"]; ok {
-		featureLogEntry.Error = fmt.Sprint(s)
-	}
-	if s, ok := m["path"]; ok {
-		featureLogEntry.Path = fmt.Sprint(s)
-	}
+	featureLogEntry.Error = m["error"]
+	logCtx := core.EntryContext{}
+	logCtx.Trace = m["trace"]
+	logCtx.Span = m["span"]
+	logCtx.Namespace = m["namespace"]
+	wfLogCtx := core.WorkflowEntryContext{}
+	wfLogCtx.State = m["state"]
+	wfLogCtx.Workflow = m["workflow"]
+	wfLogCtx.Instance = m["instance"]
+	wfLogCtx.CalledAs = m["calledAs"]
+	wfLogCtx.Status = m["status"]
+	wfLogCtx.Branch = m["branch"]
+	logCtx.Workflow = wfLogCtx
+	actLogCtx := core.ActivityEntryContext{}
+	actLogCtx.ID = m["activity"]
+	logCtx.Activity = actLogCtx
+	routeLogCtx := core.RouteEntryContext{}
+	routeLogCtx.Path = m["route"]
+	logCtx.Route = routeLogCtx
+	// TODO Remove path log-key
+	// if s, ok := m["path"]; ok {
+	// 	featureLogEntry.Path = fmt.Sprint(s)
+	// }
+	featureLogEntry.Context = logCtx
 
 	return featureLogEntry, nil
 }
