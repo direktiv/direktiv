@@ -8,6 +8,7 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -58,6 +59,7 @@ func (m *logController) mountRouter(r chi.Router) {
 			"previousPage": previousPage,
 			"startingFrom": starting,
 		}
+		slices.Reverse(data)
 		writeJSONWithMeta(w, data, metaInfo)
 	})
 }
