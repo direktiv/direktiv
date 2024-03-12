@@ -24,7 +24,7 @@ type ScanResult struct {
 	Data []byte
 }
 
-func (s sqlLogNewStore) GetOlder(ctx context.Context, stream string, t time.Time) ([]plattformlogs.LogEntry, error) {
+func (s sqlLogNewStore) GetOlder(ctx context.Context, track string, t time.Time) ([]plattformlogs.LogEntry, error) {
 	query := `
         SELECT id, time, tag, data
         FROM fluentbit
@@ -33,7 +33,7 @@ func (s sqlLogNewStore) GetOlder(ctx context.Context, stream string, t time.Time
         LIMIT ?;
     `
 	resultList := make([]ScanResult, 0)
-	tx := s.db.WithContext(ctx).Raw(query, stream, t, pageSize).Scan(&resultList)
+	tx := s.db.WithContext(ctx).Raw(query, track, t, pageSize).Scan(&resultList)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
@@ -41,7 +41,7 @@ func (s sqlLogNewStore) GetOlder(ctx context.Context, stream string, t time.Time
 	return convertScanResults(resultList)
 }
 
-func (s sqlLogNewStore) GetOlderInstance(ctx context.Context, stream string, t time.Time) ([]plattformlogs.LogEntry, error) {
+func (s sqlLogNewStore) GetOlderInstance(ctx context.Context, track string, t time.Time) ([]plattformlogs.LogEntry, error) {
 	query := `
         SELECT id, time, tag, data
         FROM fluentbit
@@ -50,7 +50,7 @@ func (s sqlLogNewStore) GetOlderInstance(ctx context.Context, stream string, t t
         LIMIT ?;
     `
 	resultList := make([]ScanResult, 0)
-	tx := s.db.WithContext(ctx).Raw(query, stream, t, pageSize).Scan(&resultList)
+	tx := s.db.WithContext(ctx).Raw(query, track, t, pageSize).Scan(&resultList)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
@@ -58,7 +58,7 @@ func (s sqlLogNewStore) GetOlderInstance(ctx context.Context, stream string, t t
 	return convertScanResults(resultList)
 }
 
-func (s sqlLogNewStore) GetNewer(ctx context.Context, stream string, t time.Time) ([]plattformlogs.LogEntry, error) {
+func (s sqlLogNewStore) GetNewer(ctx context.Context, track string, t time.Time) ([]plattformlogs.LogEntry, error) {
 	query := `
         SELECT id, time, tag, data
         FROM fluentbit
@@ -67,7 +67,7 @@ func (s sqlLogNewStore) GetNewer(ctx context.Context, stream string, t time.Time
         LIMIT ?;
     `
 	resultList := make([]ScanResult, 0)
-	tx := s.db.WithContext(ctx).Raw(query, stream, t, pageSize).Scan(&resultList)
+	tx := s.db.WithContext(ctx).Raw(query, track, t, pageSize).Scan(&resultList)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
@@ -75,7 +75,7 @@ func (s sqlLogNewStore) GetNewer(ctx context.Context, stream string, t time.Time
 	return convertScanResults(resultList)
 }
 
-func (s sqlLogNewStore) GetNewerInstance(ctx context.Context, stream string, t time.Time) ([]plattformlogs.LogEntry, error) {
+func (s sqlLogNewStore) GetNewerInstance(ctx context.Context, track string, t time.Time) ([]plattformlogs.LogEntry, error) {
 	query := `
         SELECT id, time, tag, data
         FROM fluentbit
@@ -84,7 +84,7 @@ func (s sqlLogNewStore) GetNewerInstance(ctx context.Context, stream string, t t
         LIMIT ?;
     `
 	resultList := make([]ScanResult, 0)
-	tx := s.db.WithContext(ctx).Raw(query, stream, t, pageSize).Scan(&resultList)
+	tx := s.db.WithContext(ctx).Raw(query, track, t, pageSize).Scan(&resultList)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
@@ -92,7 +92,7 @@ func (s sqlLogNewStore) GetNewerInstance(ctx context.Context, stream string, t t
 	return convertScanResults(resultList)
 }
 
-func (s sqlLogNewStore) GetStartingIDUntilTime(ctx context.Context, stream string, lastID int, t time.Time) ([]plattformlogs.LogEntry, error) {
+func (s sqlLogNewStore) GetStartingIDUntilTime(ctx context.Context, track string, lastID int, t time.Time) ([]plattformlogs.LogEntry, error) {
 	query := `
         SELECT id, time, tag, data
         FROM fluentbit
@@ -100,7 +100,7 @@ func (s sqlLogNewStore) GetStartingIDUntilTime(ctx context.Context, stream strin
         ORDER BY time ASC;
     `
 	resultList := make([]ScanResult, 0)
-	tx := s.db.WithContext(ctx).Raw(query, stream, lastID, t).Scan(&resultList)
+	tx := s.db.WithContext(ctx).Raw(query, track, lastID, t).Scan(&resultList)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
@@ -108,7 +108,7 @@ func (s sqlLogNewStore) GetStartingIDUntilTime(ctx context.Context, stream strin
 	return convertScanResults(resultList)
 }
 
-func (s sqlLogNewStore) GetStartingIDUntilTimeInstance(ctx context.Context, stream string, lastID int, t time.Time) ([]plattformlogs.LogEntry, error) {
+func (s sqlLogNewStore) GetStartingIDUntilTimeInstance(ctx context.Context, track string, lastID int, t time.Time) ([]plattformlogs.LogEntry, error) {
 	query := `
         SELECT id, time, tag, data
         FROM fluentbit
@@ -116,7 +116,7 @@ func (s sqlLogNewStore) GetStartingIDUntilTimeInstance(ctx context.Context, stre
         ORDER BY time ASC;
     `
 	resultList := make([]ScanResult, 0)
-	tx := s.db.WithContext(ctx).Raw(query, stream, lastID, t).Scan(&resultList)
+	tx := s.db.WithContext(ctx).Raw(query, track, lastID, t).Scan(&resultList)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}

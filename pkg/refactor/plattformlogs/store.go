@@ -20,12 +20,12 @@ const (
 
 // LogStore manages storing and querying LogEntries.
 type LogStore interface {
-	GetNewer(ctx context.Context, stream string, t time.Time) ([]LogEntry, error)
-	GetOlder(ctx context.Context, stream string, t time.Time) ([]LogEntry, error)
-	GetStartingIDUntilTime(ctx context.Context, stream string, lastID int, t time.Time) ([]LogEntry, error)
-	GetNewerInstance(ctx context.Context, stream string, t time.Time) ([]LogEntry, error)
-	GetOlderInstance(ctx context.Context, stream string, t time.Time) ([]LogEntry, error)
-	GetStartingIDUntilTimeInstance(ctx context.Context, stream string, lastID int, t time.Time) ([]LogEntry, error)
+	GetNewer(ctx context.Context, track string, t time.Time) ([]LogEntry, error)
+	GetOlder(ctx context.Context, track string, t time.Time) ([]LogEntry, error)
+	GetStartingIDUntilTime(ctx context.Context, track string, lastID int, t time.Time) ([]LogEntry, error)
+	GetNewerInstance(ctx context.Context, track string, t time.Time) ([]LogEntry, error)
+	GetOlderInstance(ctx context.Context, track string, t time.Time) ([]LogEntry, error)
+	GetStartingIDUntilTimeInstance(ctx context.Context, track string, lastID int, t time.Time) ([]LogEntry, error)
 	DeleteOldLogs(ctx context.Context, t time.Time) error
 }
 
