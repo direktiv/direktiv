@@ -209,5 +209,6 @@ export const useLogs = ({
     getPreviousPageParam: (firstPage) =>
       firstPage.meta?.previousPage ?? undefined,
     enabled: !!namespace,
+    refetchOnWindowFocus: false,
   });
 };
