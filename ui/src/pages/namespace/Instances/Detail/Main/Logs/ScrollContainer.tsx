@@ -81,6 +81,14 @@ const ScrollContainer = () => {
      * to have no flickering with pretty high scrolling speed.
      */
     overscan: 40,
+    onChange(instance) {
+      if (!instance.range) return;
+      const { startIndex } = instance.range;
+      lastScrollPos.current = {
+        startIndex,
+        numberOfLogs,
+      };
+    },
   });
 
   useEffect(() => {
@@ -153,15 +161,6 @@ const ScrollContainer = () => {
       ref={parentRef}
       onScroll={(e) => {
         const element = e.target as HTMLDivElement;
-
-        if (rowVirtualizer.range) {
-          const { startIndex } = rowVirtualizer.range;
-          lastScrollPos.current = {
-            startIndex,
-            numberOfLogs,
-          };
-        }
-        console.log("onscroll");
         if (element) {
           const { scrollHeight, scrollTop, clientHeight } = element;
           const scrollDistanceToBottom =
