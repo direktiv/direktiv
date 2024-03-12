@@ -29,11 +29,10 @@ const ScrollContainer = () => {
     instance: instanceId,
   });
 
-  const pages = useMemo(
-    () => logData?.pages.map((page) => page.data) ?? [],
-    [logData]
+  const allLogs = useMemo(
+    () => (logData?.pages ?? []).flatMap((x) => x.data ?? []),
+    [logData?.pages]
   );
-  const allLogs = useMemo(() => pages.flat(), [pages]);
   const numberOfLogs = allLogs.length;
 
   const [watch, setWatch] = useState(true);
