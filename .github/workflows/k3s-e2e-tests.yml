@@ -75,6 +75,7 @@ jobs:
             # "services/",
             "variables/",
             "variables2/",
+            "logs/", 
           ]
     steps:
       - name: Checkout code
