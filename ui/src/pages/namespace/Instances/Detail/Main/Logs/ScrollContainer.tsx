@@ -92,7 +92,6 @@ const ScrollContainer = () => {
 
   useEffect(() => {
     if (numberOfLogs > 0 && watch) {
-      console.log("scrollToIndex (watch)");
       rowVirtualizer.scrollToIndex(numberOfLogs, { align: "end" });
     }
   }, [numberOfLogs, rowVirtualizer, watch]);
@@ -112,12 +111,9 @@ const ScrollContainer = () => {
        * we can utilize the diff to detect if the update was added via a pagination of
        * a new log entry that has been streamed
        */
-
-      console.log("scrollToIndex (pagination)");
       const diff = numberOfLogs - lastScrollPos.current.numberOfLogs;
-      rowVirtualizer.scrollToIndex(lastScrollPos.current.startIndex + diff, {
-        align: "start",
-      });
+      const newIndex = lastScrollPos.current.startIndex + diff;
+      rowVirtualizer.scrollToIndex(newIndex, { align: "start" });
     }
   }, [numberOfLogs, rowVirtualizer, watch]);
 
