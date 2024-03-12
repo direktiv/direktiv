@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { ArrowDown } from "lucide-react";
 import Button from "~/design/Button";
+import { Card } from "~/design/Card";
 import Entry from "./Entry";
 import { Logs } from "~/design/Logs";
 import { twMergeClsx } from "~/util/helpers";
@@ -201,37 +202,30 @@ const ScrollContainer = () => {
           })}
         </div>
       </div>
-      <div className="absolute top-0 box-border flex w-full justify-center gap-3 pr-10">
-        <Button
-          size="sm"
-          onClick={() => {
-            setStop(false);
-          }}
-          disabled={stop === false}
-        >
-          Enable auto fetch
-        </Button>
-        <Button
-          size="sm"
-          onClick={() => {
-            // rowVirtualizer.scrollToIndex(range.startIndex);
-            rowVirtualizer.scrollToIndex(0, { align: "start" });
-          }}
-        >
-          top
-        </Button>
-        <Button
-          size="sm"
-          onClick={() => {
-            rowVirtualizer.scrollToIndex(99999999999, { align: "end" });
-          }}
-        >
-          bottom
-        </Button>
+      <Card className="absolute left-0 -top-28 box-border flex w-full items-center justify-center gap-3 bg-white p-4 pr-10">
+        <div className="flex flex-col gap-1">
+          <Button
+            size="sm"
+            onClick={() => {
+              // rowVirtualizer.scrollToIndex(range.startIndex);
+              rowVirtualizer.scrollToIndex(0, { align: "start" });
+            }}
+          >
+            top
+          </Button>
+          <Button
+            size="sm"
+            onClick={() => {
+              rowVirtualizer.scrollToIndex(300, { align: "start" });
+            }}
+          >
+            bottom
+          </Button>
+        </div>
         <div className="grow">
-          {firstLogEntry?.index} {firstLogEntry?.key} :: {lastLogEntry?.index}{" "}
-          :: size {itemSize} startindex {range?.startIndex}(
-          {lastScrollPos.current?.startIndex}) {watch ? "watch" : "no watch"}
+          1st virtual idx {firstLogEntry?.index} <br />
+          1st visual idx {range?.startIndex}({lastScrollPos.current?.startIndex}
+          ) {watch ? "watch" : "no watch"}
         </div>
         <div className="flex h-1 w-40 items-center rounded-sm bg-gray-9 p-1">
           <div
@@ -241,7 +235,7 @@ const ScrollContainer = () => {
             }}
           ></div>
         </div>
-      </div>
+      </Card>
       {isPending && (
         <div
           className={twMergeClsx(
