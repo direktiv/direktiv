@@ -22,7 +22,6 @@ const ScrollContainer = () => {
     numberOfLogs: number;
   } | null>(null);
 
-  const [stop, setStop] = useState(false);
   const { t } = useTranslation();
 
   const {
@@ -136,7 +135,6 @@ const ScrollContainer = () => {
       fetchPreviousPage();
     }
   }, [
-    stop,
     virtualItems,
     fetchPreviousPage,
     hasPreviousPage,
