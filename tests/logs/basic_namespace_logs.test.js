@@ -9,7 +9,7 @@ import request from '../common/request'
 
 const namespace = basename(__filename)
 
-describe('Test secret create calls', () => {
+describe('Test log api calls', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
