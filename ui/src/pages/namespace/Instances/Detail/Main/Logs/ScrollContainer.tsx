@@ -151,11 +151,14 @@ const ScrollContainer = () => {
       ref={parentRef}
       onScroll={(e) => {
         const element = e.target as HTMLDivElement;
-        const { startIndex } = rowVirtualizer.range;
-        lastScrollPos.current = {
-          startIndex,
-          numberOfLogs,
-        };
+
+        if (rowVirtualizer.range) {
+          const { startIndex } = rowVirtualizer.range;
+          lastScrollPos.current = {
+            startIndex,
+            numberOfLogs,
+          };
+        }
         console.log("onscroll");
         if (element) {
           const { scrollHeight, scrollTop, clientHeight } = element;
@@ -225,7 +228,7 @@ const ScrollContainer = () => {
         <div className="grow">
           {firstLogEntry?.index} {firstLogEntry?.key} :: {lastLogEntry?.index}{" "}
           :: size {itemSize}
-          startindex {range.startIndex}({lastScrollPos.current?.startIndex}){" "}
+          startindex {range?.startIndex}({lastScrollPos.current?.startIndex}){" "}
           {watch ? "watch" : "no watch"}
         </div>
       </div>
