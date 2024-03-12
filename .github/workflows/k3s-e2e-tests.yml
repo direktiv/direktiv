@@ -75,6 +75,7 @@ jobs:
             # "services/",
             "variables/",
             "variables2/",
+            "logs/", 
           ]
     steps:
       - name: Checkout code
@@ -132,7 +133,7 @@ jobs:
           pullPolicy: IfNotPresent
           tag: "${{ env.SRVTAG }}"
           flow:
-            logging: console
+            logging: json
 
           database:
             host: "psql-single-postgresql"
