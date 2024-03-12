@@ -84,6 +84,7 @@ const ScrollContainer = () => {
 
   useEffect(() => {
     if (numberOfLogs > 0 && watch) {
+      console.log("scrollToIndex (watch)");
       rowVirtualizer.scrollToIndex(numberOfLogs, { align: "end" });
     }
   }, [numberOfLogs, rowVirtualizer, watch]);
@@ -104,7 +105,7 @@ const ScrollContainer = () => {
        * a new log entry that has been streamed
        */
 
-      console.log("🚀🚀🚀🚀🚀");
+      console.log("scrollToIndex (pagination)");
       const diff = numberOfLogs - lastScrollPos.current.numberOfLogs;
       rowVirtualizer.scrollToIndex(lastScrollPos.current.startIndex + diff, {
         align: "start",
@@ -155,7 +156,7 @@ const ScrollContainer = () => {
           startIndex,
           numberOfLogs,
         };
-        console.log("onscroll", lastScrollPos.current);
+        console.log("onscroll");
         if (element) {
           const { scrollHeight, scrollTop, clientHeight } = element;
           const scrollDistanceToBottom =
