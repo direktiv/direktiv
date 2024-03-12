@@ -116,8 +116,6 @@ const ScrollContainer = () => {
 
   const virtualItems = rowVirtualizer.getVirtualItems();
   const [firstLogEntry] = virtualItems;
-  const lastLogEntry = virtualItems.at(-1);
-  const itemSize = (lastLogEntry?.index ?? 0) - (firstLogEntry?.index ?? 0);
 
   useEffect(() => {
     const [firstLogEntry] = virtualItems;
@@ -207,7 +205,6 @@ const ScrollContainer = () => {
           <Button
             size="sm"
             onClick={() => {
-              // rowVirtualizer.scrollToIndex(range.startIndex);
               rowVirtualizer.scrollToIndex(0, { align: "start" });
             }}
           >
@@ -224,8 +221,8 @@ const ScrollContainer = () => {
         </div>
         <div className="grow">
           1st virtual idx {firstLogEntry?.index} <br />
-          1st visual idx {range?.startIndex}({lastScrollPos.current?.startIndex}
-          ) {watch ? "watch" : "no watch"}
+          1st visual idx {range?.startIndex} (
+          {lastScrollPos.current?.startIndex}) {watch ? "watch" : "no watch"}
         </div>
         <div className="flex h-1 w-40 items-center rounded-sm bg-gray-9 p-1">
           <div
