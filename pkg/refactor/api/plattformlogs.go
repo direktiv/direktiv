@@ -216,7 +216,6 @@ func (m logController) Stream(params map[string]string) http.HandlerFunc {
 
 				return
 			case message := <-messageChannel:
-				slog.Info("data", "message", message)
 				_, err := io.Copy(w, strings.NewReader(fmt.Sprintf("id: %v\nevent: %v\ndata: %v\n\n", message.ID, message.Type, message.Data)))
 				if err != nil {
 					slog.Error("copy", "error", err)
