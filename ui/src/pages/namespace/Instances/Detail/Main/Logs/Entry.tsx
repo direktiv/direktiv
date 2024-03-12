@@ -18,7 +18,7 @@ type LogEntryProps = ComponentPropsWithoutRef<typeof LogEntry>;
 type Props = { logEntry: LogEntryType; test: number } & LogEntryProps;
 
 export const Entry = forwardRef<HTMLDivElement, Props>(
-  ({ logEntry, test, ...props }, ref) => {
+  ({ logEntry, ...props }, ref) => {
     const { t } = useTranslation();
     const { msg, level, time, workflow, namespace } = logEntry;
     const timeFormated = formatLogTime(time);
@@ -40,7 +40,7 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
 
     return (
       <LogEntry
-        variant={test >= 5147 ? "info" : "error"}
+        variant={logLevelToLogEntryVariant(level)}
         time={timeFormated}
         ref={ref}
         {...props}

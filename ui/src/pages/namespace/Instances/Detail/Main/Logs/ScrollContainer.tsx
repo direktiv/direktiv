@@ -16,6 +16,10 @@ const ScrollContainer = () => {
   const instanceId = useInstanceId();
   const wordWrap = useLogsPreferencesWordWrap();
   const { data: instanceDetailsData } = useInstanceDetails({ instanceId });
+  const lastScrollPos = useRef<{
+    startIndex: number;
+    numberOfLogs: number;
+  } | null>(null);
 
   const [stop, setStop] = useState(false);
   const { t } = useTranslation();
@@ -33,6 +37,13 @@ const ScrollContainer = () => {
     () => (logData?.pages ?? []).flatMap((x) => x.data ?? []),
     [logData?.pages]
   );
+
+  const allLogIds = new Set(allLogs.map((log) => log.id));
+
+  if (allLogs.length !== allLogIds.size) {
+    throw new Error("Duplicate log ids found");
+  }
+
   const numberOfLogs = allLogs.length;
 
   const [watch, setWatch] = useState(true);
@@ -73,7 +84,31 @@ const ScrollContainer = () => {
 
   useEffect(() => {
     if (numberOfLogs > 0 && watch) {
-      rowVirtualizer.scrollToIndex(numberOfLogs), { align: "end" };
+      rowVirtualizer.scrollToIndex(numberOfLogs, { align: "end" });
+    }
+  }, [numberOfLogs, rowVirtualizer, watch]);
+
+  useEffect(() => {
+    /**
+     * the last scroll position is cached in a ref in form of a the startIndex
+     * and the number of logs. When the number of logs changes, we need to translate
+     * the last scroll position to the new index of the same log entry.
+     */
+    if (
+      !watch &&
+      lastScrollPos.current &&
+      lastScrollPos.current.numberOfLogs !== numberOfLogs
+    ) {
+      /**
+       * we can utilize the diff to detect if the update was added via a pagination of
+       * a new log entry that has been streamed
+       */
+
+      console.log("🚀🚀🚀🚀🚀");
+      const diff = numberOfLogs - lastScrollPos.current.numberOfLogs;
+      rowVirtualizer.scrollToIndex(lastScrollPos.current.startIndex + diff, {
+        align: "start",
+      });
     }
   }, [numberOfLogs, rowVirtualizer, watch]);
 
@@ -81,33 +116,32 @@ const ScrollContainer = () => {
   const [firstLogEntry] = virtualItems;
   const lastLogEntry = virtualItems.at(-1);
   const itemSize = (lastLogEntry?.index ?? 0) - (firstLogEntry?.index ?? 0);
-  // useEffect(() => {
-  //   const [firstLogEntry] = virtualItems;
-  //   if (
-  //     firstLogEntry?.index === 0 &&
-  //     hasPreviousPage &&
-  //     !isFetchingPreviousPage
-  //   ) {
-  //     console.log("🚀", firstLogEntry?.index, numberOfLogs);
-  //     if (stop === false) {
-  //       setStop(true);
-  //       fetchPreviousPage();
-  //     }
-  //   }
-  // }, [
-  //   stop,
-  //   virtualItems,
-  //   fetchPreviousPage,
-  //   hasPreviousPage,
-  //   isFetchingPreviousPage,
-  //   numberOfLogs,
-  // ]);
+
+  useEffect(() => {
+    const [firstLogEntry] = virtualItems;
+    if (
+      firstLogEntry?.index === 0 &&
+      hasPreviousPage &&
+      !isFetchingPreviousPage &&
+      numberOfLogs === lastScrollPos?.current?.numberOfLogs
+    ) {
+      fetchPreviousPage();
+    }
+  }, [
+    stop,
+    virtualItems,
+    fetchPreviousPage,
+    hasPreviousPage,
+    isFetchingPreviousPage,
+    numberOfLogs,
+  ]);
 
   const isPending = instanceDetailsData?.instance?.status === "pending";
 
   if (!logData) return null;
 
   const items = rowVirtualizer.getVirtualItems();
+  const range = rowVirtualizer.range;
 
   return (
     <Logs
@@ -116,6 +150,12 @@ const ScrollContainer = () => {
       ref={parentRef}
       onScroll={(e) => {
         const element = e.target as HTMLDivElement;
+        const { startIndex } = rowVirtualizer.range;
+        lastScrollPos.current = {
+          startIndex,
+          numberOfLogs,
+        };
+        console.log("onscroll", lastScrollPos.current);
         if (element) {
           const { scrollHeight, scrollTop, clientHeight } = element;
           const scrollDistanceToBottom =
@@ -167,15 +207,25 @@ const ScrollContainer = () => {
         <Button
           size="sm"
           onClick={() => {
-            fetchPreviousPage();
+            // rowVirtualizer.scrollToIndex(range.startIndex);
+            rowVirtualizer.scrollToIndex(0, { align: "start" });
           }}
-          disabled={!hasPreviousPage}
         >
-          Enable auto fetch
+          top
+        </Button>
+        <Button
+          size="sm"
+          onClick={() => {
+            rowVirtualizer.scrollToIndex(99999999999, { align: "end" });
+          }}
+        >
+          bottom
         </Button>
         <div className="grow">
           {firstLogEntry?.index} {firstLogEntry?.key} :: {lastLogEntry?.index}{" "}
           :: size {itemSize}
+          startindex {range.startIndex}({lastScrollPos.current?.startIndex}){" "}
+          {watch ? "watch" : "no watch"}
         </div>
       </div>
       {isPending && (
