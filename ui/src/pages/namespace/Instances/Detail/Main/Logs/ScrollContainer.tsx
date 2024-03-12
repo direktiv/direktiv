@@ -144,6 +144,9 @@ const ScrollContainer = () => {
   const items = rowVirtualizer.getVirtualItems();
   const range = rowVirtualizer.range;
 
+  const progress =
+    ((lastScrollPos.current?.startIndex ?? 0) / numberOfLogs) * 100;
+
   return (
     <Logs
       wordWrap={wordWrap}
@@ -227,9 +230,16 @@ const ScrollContainer = () => {
         </Button>
         <div className="grow">
           {firstLogEntry?.index} {firstLogEntry?.key} :: {lastLogEntry?.index}{" "}
-          :: size {itemSize}
-          startindex {range?.startIndex}({lastScrollPos.current?.startIndex}){" "}
-          {watch ? "watch" : "no watch"}
+          :: size {itemSize} startindex {range?.startIndex}(
+          {lastScrollPos.current?.startIndex}) {watch ? "watch" : "no watch"}
+        </div>
+        <div className="flex h-1 w-40 items-center rounded-sm bg-gray-9 p-1">
+          <div
+            className="h-1 bg-white"
+            style={{
+              width: `${progress}%`,
+            }}
+          ></div>
         </div>
       </div>
       {isPending && (
