@@ -17,6 +17,7 @@ const ScrollContainer = () => {
   const wordWrap = useLogsPreferencesWordWrap();
   const { data: instanceDetailsData } = useInstanceDetails({ instanceId });
 
+  const [stop, setStop] = useState(false);
   const { t } = useTranslation();
 
   const {
@@ -78,22 +79,30 @@ const ScrollContainer = () => {
   }, [numberOfLogs, rowVirtualizer, watch]);
 
   const virtualItems = rowVirtualizer.getVirtualItems();
-  useEffect(() => {
-    const [firstLogEntry] = virtualItems;
-    if (
-      firstLogEntry?.index === 0 &&
-      hasPreviousPage &&
-      !isFetchingPreviousPage
-    ) {
-      fetchPreviousPage();
-    }
-  }, [
-    virtualItems,
-    fetchPreviousPage,
-    hasPreviousPage,
-    isFetchingPreviousPage,
-    numberOfLogs,
-  ]);
+  const [firstLogEntry] = virtualItems;
+  const lastLogEntry = virtualItems.at(-1);
+  const itemSize = (lastLogEntry?.index ?? 0) - (firstLogEntry?.index ?? 0);
+  // useEffect(() => {
+  //   const [firstLogEntry] = virtualItems;
+  //   if (
+  //     firstLogEntry?.index === 0 &&
+  //     hasPreviousPage &&
+  //     !isFetchingPreviousPage
+  //   ) {
+  //     console.log("🚀", firstLogEntry?.index, numberOfLogs);
+  //     if (stop === false) {
+  //       setStop(true);
+  //       fetchPreviousPage();
+  //     }
+  //   }
+  // }, [
+  //   stop,
+  //   virtualItems,
+  //   fetchPreviousPage,
+  //   hasPreviousPage,
+  //   isFetchingPreviousPage,
+  //   numberOfLogs,
+  // ]);
 
   const isPending = instanceDetailsData?.instance?.status === "pending";
 
@@ -137,12 +146,37 @@ const ScrollContainer = () => {
             return (
               <Entry
                 key={virtualItem.key}
+                test={virtualItem.key as number}
                 data-index={virtualItem.key}
                 ref={rowVirtualizer.measureElement}
                 logEntry={logEntry}
               />
             );
           })}
+        </div>
+      </div>
+      <div className="absolute top-0 box-border flex w-full justify-center gap-3 pr-10">
+        <Button
+          size="sm"
+          onClick={() => {
+            setStop(false);
+          }}
+          disabled={stop === false}
+        >
+          Enable auto fetch
+        </Button>
+        <Button
+          size="sm"
+          onClick={() => {
+            fetchPreviousPage();
+          }}
+          disabled={!hasPreviousPage}
+        >
+          Enable auto fetch
+        </Button>
+        <div className="grow">
+          {firstLogEntry?.index} {firstLogEntry?.key} :: {lastLogEntry?.index}{" "}
+          :: size {itemSize}
         </div>
       </div>
       {isPending && (

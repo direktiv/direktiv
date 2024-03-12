@@ -15,10 +15,10 @@ import { useLogsPreferencesVerboseLogs } from "~/util/store/logs";
 import { useTranslation } from "react-i18next";
 
 type LogEntryProps = ComponentPropsWithoutRef<typeof LogEntry>;
-type Props = { logEntry: LogEntryType } & LogEntryProps;
+type Props = { logEntry: LogEntryType; test: number } & LogEntryProps;
 
 export const Entry = forwardRef<HTMLDivElement, Props>(
-  ({ logEntry, ...props }, ref) => {
+  ({ logEntry, test, ...props }, ref) => {
     const { t } = useTranslation();
     const { msg, level, time, workflow, namespace } = logEntry;
     const timeFormated = formatLogTime(time);
@@ -40,7 +40,7 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
 
     return (
       <LogEntry
-        variant={logLevelToLogEntryVariant(level)}
+        variant={test >= 5147 ? "info" : "error"}
         time={timeFormated}
         ref={ref}
         {...props}
@@ -66,7 +66,7 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
         {verbose && workflowPath && " "}
         {verbose && workflowState}
         {verbose && workflowState && " "}
-        {msg}
+        {msg} {logEntry.id}
       </LogEntry>
     );
   }
