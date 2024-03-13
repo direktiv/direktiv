@@ -55,9 +55,19 @@ export const useLogVirtualizer = ({
      */
     overscan: 40,
     onChange(instance) {
-      if (!instance.range) return;
+      /**
+       * remember the last scroll position and the number of logs
+       */
       const { scrollOffset } = instance;
       lastScrollPos.current = { scrollOffset, numberOfLogs };
+      /**
+       * when the last x loglines are visible, the user is considered
+       * to be at the bottom of the list and we enable the watch mode
+       */
+      if (!instance.range) return;
+      const { endIndex: lastVisibleIndex } = instance.range;
+      const loglinesThreashold = 10;
+      setWatch(lastVisibleIndex >= numberOfLogs - 1 - loglinesThreashold);
     },
   });
 
@@ -71,7 +81,7 @@ export const useLogVirtualizer = ({
 
   useEffect(() => {
     /**
-     * the last scroll position is cached in a ref in form of a the startIndex
+     * the last scroll position is cached in a ref in form of a the scrollOffset
      * and the number of logs. When the number of logs changes, we need to translate
      * the last scroll position to the new index of the same log entry.
      */

@@ -50,19 +50,7 @@ const ScrollContainer = () => {
   const items = rowVirtualizer.getVirtualItems();
 
   return (
-    <Logs
-      className="h-full overflow-scroll"
-      ref={parentRef}
-      onScroll={(e) => {
-        const element = e.target as HTMLDivElement;
-        if (element) {
-          const { scrollHeight, scrollTop, clientHeight } = element;
-          const scrollDistanceToBottom =
-            scrollHeight - scrollTop - clientHeight;
-          setWatch(scrollDistanceToBottom < 100);
-        }
-      }}
-    >
+    <Logs className="h-full overflow-scroll" ref={parentRef}>
       <div
         className="relative w-full"
         style={{
