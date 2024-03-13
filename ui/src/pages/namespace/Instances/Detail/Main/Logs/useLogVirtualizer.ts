@@ -19,7 +19,8 @@ export const useLogVirtualizer = ({ queryLogsBy }: useLogVirtualizerParams) => {
 
   const [scrolledToBottom, setScrolledToBottom] = useState(true);
 
-  const lastNumberOfLogs = useRef<number | null>(null);
+  const prevNumberOfLogs = useRef<number | null>(null);
+  const prevOldersLogId = useRef<number | null>(null);
 
   const {
     data: logData,
@@ -64,7 +65,8 @@ export const useLogVirtualizer = ({ queryLogsBy }: useLogVirtualizerParams) => {
      */
     overscan: 40,
     onChange(instance) {
-      lastNumberOfLogs.current = numberOfLogs;
+      prevNumberOfLogs.current = numberOfLogs;
+      prevOldersLogId.current = logs?.[0]?.id ?? null;
       /**
        * when the last x loglines are visible in the list (x being
        * loglinesThreashold), the user is considered to be at the
@@ -90,7 +92,7 @@ export const useLogVirtualizer = ({ queryLogsBy }: useLogVirtualizerParams) => {
       firstLogEntry?.index === 0 &&
       hasPreviousPage &&
       !isFetchingPreviousPage &&
-      numberOfLogs === lastNumberOfLogs?.current
+      numberOfLogs === prevNumberOfLogs?.current
     ) {
       fetchPreviousPage();
     }
@@ -114,14 +116,16 @@ export const useLogVirtualizer = ({ queryLogsBy }: useLogVirtualizerParams) => {
   }, [numberOfLogs, rowVirtualizer, scrolledToBottom]);
 
   /**
-   * maintain the scroll position when a set of new logs is added to the TOP
+   * maintain the scroll position when a set of new logs is added to the top
    * of the list
    */
   useEffect(() => {
     if (
       !scrolledToBottom &&
-      lastNumberOfLogs.current &&
-      lastNumberOfLogs.current !== numberOfLogs
+      prevNumberOfLogs.current &&
+      prevNumberOfLogs.current !== numberOfLogs &&
+      // this will make sure the new received logs were added at the top
+      prevOldersLogId.current !== (logs?.[0]?.id ?? null)
     ) {
       /**
        * To maintin the old scroll position we need to know how many logs
@@ -134,11 +138,11 @@ export const useLogVirtualizer = ({ queryLogsBy }: useLogVirtualizerParams) => {
        * same scroll position.
        */
       const { scrollOffset: currentOffset } = rowVirtualizer;
-      const numberOfNewLogs = numberOfLogs - lastNumberOfLogs.current;
+      const numberOfNewLogs = numberOfLogs - prevNumberOfLogs.current;
       const newOffset = currentOffset + numberOfNewLogs * defaultLogHeight;
       rowVirtualizer.scrollToOffset(newOffset);
     }
-  }, [numberOfLogs, rowVirtualizer, scrolledToBottom]);
+  }, [logs, numberOfLogs, rowVirtualizer, scrolledToBottom]);
 
   return {
     rowVirtualizer,
