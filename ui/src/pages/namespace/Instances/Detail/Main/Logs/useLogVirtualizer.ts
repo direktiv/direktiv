@@ -71,22 +71,31 @@ export const useLogVirtualizer = ({ queryLogsBy }: useLogVirtualizerParams) => {
       setScrolledToBottom(
         lastVisibleIndex >= numberOfLogs - 1 - loglinesThreashold
       );
-
-      /**
-       * fetch the previous log page when a users is scrolling
-       * near to the top.
-       */
-      const [firstLogEntry] = instance.getVirtualItems();
-      if (
-        firstLogEntry?.index === 0 &&
-        hasPreviousPage &&
-        !isFetchingPreviousPage &&
-        numberOfLogs === lastNumberOfLogs?.current
-      ) {
-        fetchPreviousPage();
-      }
     },
   });
+
+  const virtualItems = rowVirtualizer.getVirtualItems();
+
+  /**
+   * fetch the previous log page when a users scrolls to the top
+   */
+  useEffect(() => {
+    const [firstLogEntry] = virtualItems;
+    if (
+      firstLogEntry?.index === 0 &&
+      hasPreviousPage &&
+      !isFetchingPreviousPage &&
+      numberOfLogs === lastNumberOfLogs?.current
+    ) {
+      fetchPreviousPage();
+    }
+  }, [
+    fetchPreviousPage,
+    hasPreviousPage,
+    isFetchingPreviousPage,
+    numberOfLogs,
+    virtualItems,
+  ]);
 
   /**
    * when the user reached the bottom of the list we need to keep the scoll
