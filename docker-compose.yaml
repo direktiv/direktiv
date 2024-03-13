@@ -58,7 +58,7 @@ services:
     depends_on:
       - flow
 
-  e2e-tests:
+  e2e-api:
     image: node:lts-alpine3.18
     volumes:
       - ./tests:/tests
