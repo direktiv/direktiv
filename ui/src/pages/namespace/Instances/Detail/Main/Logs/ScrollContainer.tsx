@@ -14,12 +14,17 @@ const ScrollContainer = () => {
   const { data: instanceDetailsData } = useInstanceDetails({ instanceId });
   const isPending = instanceDetailsData?.instance?.status === "pending";
 
-  const { rowVirtualizer, parentRef, logs, watch, setWatch } =
-    useLogVirtualizer({
-      queryLogs: {
-        instance: instanceId,
-      },
-    });
+  const {
+    rowVirtualizer,
+    parentRef,
+    logs,
+    scrolledToBottom,
+    setScrolledToBottom,
+  } = useLogVirtualizer({
+    queryLogsBy: {
+      instance: instanceId,
+    },
+  });
 
   const virtualItems = rowVirtualizer.getVirtualItems();
 
@@ -63,14 +68,14 @@ const ScrollContainer = () => {
             "aria-[hidden=true]:pointer-events-none aria-[hidden=true]:bottom-11 aria-[hidden=true]:opacity-0",
             "aria-[hidden=false]:bottom-16 aria-[hidden=false]:opacity-100"
           )}
-          aria-hidden={watch ? "true" : "false"}
+          aria-hidden={scrolledToBottom ? "true" : "false"}
         >
           <Button
             className="bg-white dark:bg-black"
             variant="outline"
             size="sm"
             onClick={() => {
-              setWatch(true);
+              setScrolledToBottom(true);
             }}
           >
             <ArrowDown />

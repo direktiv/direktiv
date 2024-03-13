@@ -6,31 +6,30 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 const defaultLogHeight = 20;
 
 type useLogVirtualizerParams = {
-  queryLogs: Parameters<typeof useLogs>[0];
+  queryLogsBy: Parameters<typeof useLogs>[0];
 };
 
-export const useLogVirtualizer = ({ queryLogs }: useLogVirtualizerParams) => {
-  const lastScrollPos = useRef<{
-    scrollOffset: number;
-    numberOfLogs: number;
-  } | null>(null);
+export const useLogVirtualizer = ({ queryLogsBy }: useLogVirtualizerParams) => {
+  const parentRef = useRef<HTMLDivElement | null>(null);
+
+  const [scrolledToBottom, setScrolledToBottom] = useState(true);
+
+  const lastNumberOfLogs = useRef<number | null>(null);
 
   const {
     data: logData,
     hasPreviousPage,
     fetchPreviousPage,
     isFetchingPreviousPage,
-  } = useLogs(queryLogs);
+  } = useLogs(queryLogsBy);
 
+  // merge all logs pages into to one array
   const logs = useMemo(
     () => (logData?.pages ?? []).flatMap((x) => x.data ?? []),
     [logData?.pages]
   );
-
-  // The scrollable element for the list
-  const parentRef = useRef<HTMLDivElement | null>(null);
   const numberOfLogs = logs.length;
-  const [watch, setWatch] = useState(true);
+
   const rowVirtualizer = useVirtualizer({
     count: numberOfLogs,
     getScrollElement: () => parentRef.current,
@@ -60,58 +59,71 @@ export const useLogVirtualizer = ({ queryLogs }: useLogVirtualizerParams) => {
      */
     overscan: 40,
     onChange(instance) {
+      lastNumberOfLogs.current = numberOfLogs;
       /**
-       * remember the last scroll position and the number of logs
-       */
-      const { scrollOffset } = instance;
-      lastScrollPos.current = { scrollOffset, numberOfLogs };
-      /**
-       * when the last x loglines are visible, the user is considered
-       * to be at the bottom of the list and we enable the watch mode
+       * when the last x loglines are visible in the list (x being
+       * loglinesThreashold), the user is considered to be at the
+       * bottom of the list.
        */
       if (!instance.range) return;
       const { endIndex: lastVisibleIndex } = instance.range;
       const loglinesThreashold = 10;
-      setWatch(lastVisibleIndex >= numberOfLogs - 1 - loglinesThreashold);
+      setScrolledToBottom(
+        lastVisibleIndex >= numberOfLogs - 1 - loglinesThreashold
+      );
     },
   });
 
   const virtualItems = rowVirtualizer.getVirtualItems();
 
+  /**
+   * when the user reached the bottom of the list we need to keep the scoll
+   * position to the very bottom to make sure new log entries are in the
+   * viewport.
+   */
   useEffect(() => {
-    if (numberOfLogs > 0 && watch) {
-      rowVirtualizer.scrollToIndex(numberOfLogs, { align: "end" });
+    if (numberOfLogs > 0 && scrolledToBottom) {
+      rowVirtualizer.scrollToIndex(numberOfLogs - 1, { align: "end" });
     }
-  }, [numberOfLogs, rowVirtualizer, watch]);
+  }, [numberOfLogs, rowVirtualizer, scrolledToBottom]);
 
+  /**
+   * maintain the scroll position when a set of new logs is added to the TOP
+   * of the list
+   */
   useEffect(() => {
-    /**
-     * the last scroll position is cached in a ref in form of a the scrollOffset
-     * and the number of logs. When the number of logs changes, we need to translate
-     * the last scroll position to the new index of the same log entry.
-     */
     if (
-      !watch &&
-      lastScrollPos.current &&
-      lastScrollPos.current.numberOfLogs !== numberOfLogs
+      !scrolledToBottom &&
+      lastNumberOfLogs.current &&
+      lastNumberOfLogs.current !== numberOfLogs
     ) {
       /**
-       * we can utilize the diff to detect if the update was added via a pagination of
-       * a new log entry that has been streamed
+       * To maintin the old scroll position we need to know how many logs
+       * were added to the top of the list.
+       *
+       * Example:
+       * The user was at a scrollOffset of 100 and then 200 new logs have
+       * been added to the top. We now need to add 200 times the height of
+       * a log entry (200 * defaultLogHeight) to that offset to stay at the
+       * same scroll position.
        */
-      const diff = numberOfLogs - lastScrollPos.current.numberOfLogs;
-      const newOffset = rowVirtualizer.scrollOffset + diff * defaultLogHeight;
+      const { scrollOffset: currentOffset } = rowVirtualizer;
+      const numberOfNewLogs = numberOfLogs - lastNumberOfLogs.current;
+      const newOffset = currentOffset + numberOfNewLogs * defaultLogHeight;
       rowVirtualizer.scrollToOffset(newOffset);
     }
-  }, [numberOfLogs, rowVirtualizer, watch]);
+  }, [numberOfLogs, rowVirtualizer, scrolledToBottom]);
 
+  /**
+   * fetch the previous log pahe when a users scrolls to the top
+   */
   useEffect(() => {
     const [firstLogEntry] = virtualItems;
     if (
       firstLogEntry?.index === 0 &&
       hasPreviousPage &&
       !isFetchingPreviousPage &&
-      numberOfLogs === lastScrollPos?.current?.numberOfLogs
+      numberOfLogs === lastNumberOfLogs?.current
     ) {
       fetchPreviousPage();
     }
@@ -123,5 +135,11 @@ export const useLogVirtualizer = ({ queryLogs }: useLogVirtualizerParams) => {
     numberOfLogs,
   ]);
 
-  return { rowVirtualizer, parentRef, logs, watch, setWatch };
+  return {
+    rowVirtualizer,
+    parentRef,
+    logs,
+    scrolledToBottom,
+    setScrolledToBottom,
+  };
 };
