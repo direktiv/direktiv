@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import Entry from "./Entry";
+import { LogEntryType } from "~/api/logs/schema";
 import { Logs } from "~/design/Logs";
 import { twMergeClsx } from "~/util/helpers";
 import { useInstanceDetails } from "~/api/instances/query/details";
@@ -13,56 +14,40 @@ import { useTranslation } from "react-i18next";
 import { useVirtualizer } from "@tanstack/react-virtual";
 
 const defaultLogHeight = 20;
-const ScrollContainer = () => {
-  const instanceId = useInstanceId();
-  const { data: instanceDetailsData } = useInstanceDetails({ instanceId });
+
+type UseLogVirtualizerParams = {
+  logs: LogEntryType[];
+  fetchPreviousPage: () => void;
+  hasPreviousPage: boolean | undefined;
+  isFetchingPreviousPage: boolean;
+};
+
+const useLogVirtualizer = ({
+  logs,
+  fetchPreviousPage,
+  hasPreviousPage,
+  isFetchingPreviousPage,
+}: UseLogVirtualizerParams) => {
   const lastScrollPos = useRef<{
     scrollOffset: number;
     numberOfLogs: number;
   } | null>(null);
-
-  const { t } = useTranslation();
-
-  const {
-    data: logData,
-    hasPreviousPage,
-    fetchPreviousPage,
-    isFetchingPreviousPage,
-  } = useLogs({
-    instance: instanceId,
-  });
-
-  const allLogs = useMemo(
-    () => (logData?.pages ?? []).flatMap((x) => x.data ?? []),
-    [logData?.pages]
-  );
-
-  const allLogIds = new Set(allLogs.map((log) => log.id));
-
-  if (allLogs.length !== allLogIds.size) {
-    throw new Error("Duplicate log ids found");
-  }
-
-  const numberOfLogs = allLogs.length;
-
-  const [watch, setWatch] = useState(true);
-
   // The scrollable element for the list
   const parentRef = useRef<HTMLDivElement | null>(null);
-
-  // The virtualizer
+  const numberOfLogs = logs.length;
+  const [watch, setWatch] = useState(true);
   const rowVirtualizer = useVirtualizer({
     count: numberOfLogs,
     getScrollElement: () => parentRef.current,
     estimateSize: () => defaultLogHeight,
     getItemKey: useCallback(
       (index: number) => {
-        const uniqueId = allLogs[index]?.id;
+        const uniqueId = logs[index]?.id;
         if (!uniqueId)
           throw new Error("Could not find a log id for the virtualizer.");
         return uniqueId;
       },
-      [allLogs]
+      [logs]
     ),
     /**
      * Start at the bottom, this is especially important to avoid
@@ -85,6 +70,8 @@ const ScrollContainer = () => {
       lastScrollPos.current = { scrollOffset, numberOfLogs };
     },
   });
+
+  const virtualItems = rowVirtualizer.getVirtualItems();
 
   useEffect(() => {
     if (numberOfLogs > 0 && watch) {
@@ -113,9 +100,6 @@ const ScrollContainer = () => {
     }
   }, [numberOfLogs, rowVirtualizer, watch]);
 
-  const virtualItems = rowVirtualizer.getVirtualItems();
-  const [firstLogEntry] = virtualItems;
-
   useEffect(() => {
     const [firstLogEntry] = virtualItems;
     if (
@@ -133,6 +117,48 @@ const ScrollContainer = () => {
     isFetchingPreviousPage,
     numberOfLogs,
   ]);
+
+  return { rowVirtualizer, parentRef, lastScrollPos, setWatch, watch };
+};
+
+const ScrollContainer = () => {
+  const instanceId = useInstanceId();
+  const { data: instanceDetailsData } = useInstanceDetails({ instanceId });
+
+  const { t } = useTranslation();
+
+  const {
+    data: logData,
+    hasPreviousPage,
+    fetchPreviousPage,
+    isFetchingPreviousPage,
+  } = useLogs({
+    instance: instanceId,
+  });
+
+  const allLogs = useMemo(
+    () => (logData?.pages ?? []).flatMap((x) => x.data ?? []),
+    [logData?.pages]
+  );
+
+  const allLogIds = new Set(allLogs.map((log) => log.id));
+
+  if (allLogs.length !== allLogIds.size) {
+    throw new Error("Duplicate log ids found");
+  }
+
+  const { rowVirtualizer, parentRef, lastScrollPos, setWatch, watch } =
+    useLogVirtualizer({
+      logs: allLogs,
+      fetchPreviousPage,
+      hasPreviousPage,
+      isFetchingPreviousPage,
+    });
+
+  const numberOfLogs = allLogs.length;
+
+  const virtualItems = rowVirtualizer.getVirtualItems();
+  const [firstLogEntry] = virtualItems;
 
   const isPending = instanceDetailsData?.instance?.status === "pending";
 
