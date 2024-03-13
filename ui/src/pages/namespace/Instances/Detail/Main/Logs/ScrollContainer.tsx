@@ -19,6 +19,7 @@ const ScrollContainer = () => {
   const { data: instanceDetailsData } = useInstanceDetails({ instanceId });
   const lastScrollPos = useRef<{
     startIndex: number;
+    scrollOffset: number;
     numberOfLogs: number;
   } | null>(null);
 
@@ -83,10 +84,8 @@ const ScrollContainer = () => {
     onChange(instance) {
       if (!instance.range) return;
       const { startIndex } = instance.range;
-      lastScrollPos.current = {
-        startIndex,
-        numberOfLogs,
-      };
+      const { scrollOffset } = instance;
+      lastScrollPos.current = { startIndex, scrollOffset, numberOfLogs };
     },
   });
 
@@ -112,8 +111,9 @@ const ScrollContainer = () => {
        * a new log entry that has been streamed
        */
       const diff = numberOfLogs - lastScrollPos.current.numberOfLogs;
-      const newIndex = lastScrollPos.current.startIndex + diff;
-      rowVirtualizer.scrollToIndex(newIndex, { align: "start" });
+      const newOffset = rowVirtualizer.scrollOffset + diff * 20;
+      rowVirtualizer.scrollToOffset(newOffset);
+      // rowVirtualizer.scrollToIndex(newIndex, { align: "start" });
     }
   }, [numberOfLogs, rowVirtualizer, watch]);
 
@@ -212,10 +212,18 @@ const ScrollContainer = () => {
             bottom
           </Button>
         </div>
-        <div className="grow">
-          1st virtual idx {firstLogEntry?.index} <br />
-          1st visual idx {range?.startIndex} (
-          {lastScrollPos.current?.startIndex}) {watch ? "watch" : "no watch"}
+        <div className="grid grow grid-cols-2 gap-3">
+          <div className="flex flex-col gap-1">
+            1st virtual idx {firstLogEntry?.index}
+            <br />
+            1st visual idx {range?.startIndex} (
+            {lastScrollPos.current?.startIndex})
+          </div>
+          <div className="flex flex-col gap-1">
+            offset {rowVirtualizer.scrollOffset} (
+            {lastScrollPos.current?.scrollOffset})<br /> watch{" "}
+            {watch ? "✅" : "❌"}
+          </div>
         </div>
         <div className="flex h-1 w-40 items-center rounded-sm bg-gray-9 p-1">
           <div
