@@ -54,7 +54,8 @@ const updateCache = (
   newLogEntry: LogEntryType
 ): LogsCache => {
   if (oldData === undefined) {
-    // TODO: handle this case
+    // TODO:
+    console.error("no old cache");
     return {
       pages: [],
       pageParams: [],
@@ -62,31 +63,35 @@ const updateCache = (
   }
 
   const pages = oldData.pages;
-  const [firstPage, ...otherPages] = pages;
+  const olderPages = pages.slice(0, -1);
+  const recentPage = pages.at(-1);
 
-  if (firstPage === undefined) {
-    // TODO: handle this case
+  if (recentPage === undefined) {
+    // TODO:
+    console.error("no recentPage");
     return {
       pages: [],
       pageParams: [],
     };
   }
 
-  const firstPageDate = firstPage.data ?? [];
-  if (firstPageDate.some((logEntry) => logEntry.id === newLogEntry.id)) {
+  const recentPageData = recentPage.data ?? [];
+
+  if (recentPageData.some((logEntry) => logEntry.id === newLogEntry.id)) {
     console.error(
       `skipping cache update, log entry ${newLogEntry.id} already exists`
     );
     return oldData;
   }
+
   return {
     ...oldData,
     pages: [
+      ...olderPages,
       {
-        ...firstPage,
-        data: [...firstPageDate, newLogEntry],
+        ...recentPage,
+        data: [...recentPageData, newLogEntry],
       },
-      ...otherPages,
     ],
   };
 };
