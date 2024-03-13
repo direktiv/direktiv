@@ -4,9 +4,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/design/Dialog";
+import { ElementRef, useEffect, useRef, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/design/Tabs";
 import { getValidationSchemaFromYaml, workflowInputSchema } from "./utils";
-import { useEffect, useRef, useState } from "react";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
@@ -40,6 +40,7 @@ const RunWorkflow = ({ path }: { path: string }) => {
   const navigate = useNavigate();
   const { data } = useFile({ path });
   const submitButtonRef = useRef<HTMLButtonElement>(null);
+  const jsonSchemaFormRef = useRef<ElementRef<typeof JSONSchemaForm>>(null);
   const validationSchema =
     data?.type === "workflow"
       ? getValidationSchemaFromYaml(decode(data?.data ?? ""))
@@ -52,15 +53,17 @@ const RunWorkflow = ({ path }: { path: string }) => {
     isFormAvailable ? "form" : "json"
   );
 
+  const [jsonInput, setJsonInput] = useState("");
+  const [formInput, setFormInput] = useState({});
+
   // it is possible that no data (or stale cache data) is available when this component mounts
-  // and the initial value of activeTab is out of synch with the actual isFormAvailable value
+  // and the initial value of activeTab is out of sync with the actual isFormAvailable value
   useEffect(() => {
     setActiveTab(isFormAvailable ? "form" : "json");
   }, [isFormAvailable]);
 
   const {
     setValue,
-    getValues,
     formState: { isValid },
   } = useForm<FormInput>({
     defaultValues: {
@@ -87,18 +90,38 @@ const RunWorkflow = ({ path }: { path: string }) => {
   const runButtonOnClick = () => {
     // if this workflow supports a JSON form and the json form
     // tab is active we need to trigger this form via a ref to an
-    // invisble submit button (this should be optimized but a ref
+    // invisible submit button (this should be optimized but a ref
     // to the form did not work)
     if (isFormAvailable && activeTab === "form") {
-      // this will implcitly trigger the JSONschema forms onSubmit callback
+      // this will implicitly trigger the JSONschema forms onSubmit callback
       submitButtonRef.current?.click();
     }
 
     if (activeTab === "json") {
       runWorkflow({
         path,
-        payload: getValues("payload"),
+        payload: jsonInput,
       });
+    }
+  };
+
+  const syncInputData = (tabValueParsed: "form" | "json") => {
+    const object = jsonSchemaFormRef.current?.state.formData;
+    const objectString = JSON.stringify(
+      jsonSchemaFormRef.current?.state.formData
+    );
+
+    if (tabValueParsed === "json") {
+      setJsonInput(objectString);
+      setFormInput(object);
+    }
+
+    if (tabValueParsed === "form") {
+      if (objectString !== undefined) {
+        setFormInput(object);
+      } else {
+        setFormInput(JSON.parse(jsonInput));
+      }
     }
   };
 
@@ -125,6 +148,7 @@ const RunWorkflow = ({ path }: { path: string }) => {
             const tabValueParsed = z.enum(tabs).safeParse(value);
             if (tabValueParsed.success) {
               setActiveTab(tabValueParsed.data);
+              syncInputData(tabValueParsed.data);
             }
           }}
         >
@@ -152,12 +176,14 @@ const RunWorkflow = ({ path }: { path: string }) => {
               data-testid="run-workflow-editor"
             >
               <Editor
-                value={getValues("payload")}
+                value={jsonInput}
                 onMount={(editor) => {
                   editor.focus();
                   editor.setPosition({ lineNumber: 2, column: 5 });
                 }}
                 onChange={(newData) => {
+                  if (newData != undefined) setJsonInput(newData);
+
                   if (typeof newData === "string") {
                     setValue("payload", newData, {
                       shouldValidate: true,
@@ -174,6 +200,8 @@ const RunWorkflow = ({ path }: { path: string }) => {
               {isFormAvailable ? (
                 <ScrollArea className="h-full">
                   <JSONSchemaForm
+                    formData={formInput}
+                    ref={jsonSchemaFormRef}
                     schema={validationSchema}
                     action="submit"
                     onSubmit={jsonSchemaFormSubmit}
