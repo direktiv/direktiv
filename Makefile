@@ -119,6 +119,13 @@ docker-tests: docker-stop docker-build
 docker-tests: ## Perform backend end-to-end tests against the docker deployment.
 	DIREKTIV_UI_IMAGE=direktiv-ui-dev DIREKTIV_IMAGE=direktiv-dev  docker compose run e2e-tests
 
+.PHONY: docker-playwright
+docker-playwright: docker-build docker-stop
+docker-playwright: ## Create a local docker deployment.
+	cd ui && docker build -t direktiv-ui-dev .
+	DIREKTIV_UI_IMAGE=direktiv-ui-dev DIREKTIV_IMAGE=direktiv-dev  docker compose run e2e-playwright
+
+
 # 
 # Targets for running a complete k3s local development deployment.
 #
