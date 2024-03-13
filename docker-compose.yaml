@@ -82,7 +82,7 @@ services:
     command: >
       bash -c "cd ui
       && yarn
-      && npx playwright chromium
+      && npx playwright install --with-deps chromium
       && yarn run e2e:headless-chromium-only"
     depends_on:
       - ui
