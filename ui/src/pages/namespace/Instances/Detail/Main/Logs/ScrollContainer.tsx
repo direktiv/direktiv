@@ -1,8 +1,7 @@
-import { ArrowDown, ArrowUp } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { ArrowDown } from "lucide-react";
 import Button from "~/design/Button";
-import { Card } from "~/design/Card";
 import Entry from "./Entry";
 import { LogEntryType } from "~/api/logs/schema";
 import { Logs } from "~/design/Logs";
@@ -118,7 +117,7 @@ const useLogVirtualizer = ({
     numberOfLogs,
   ]);
 
-  return { rowVirtualizer, parentRef, lastScrollPos, setWatch, watch };
+  return { rowVirtualizer, parentRef, setWatch, watch };
 };
 
 const ScrollContainer = () => {
@@ -147,28 +146,18 @@ const ScrollContainer = () => {
     throw new Error("Duplicate log ids found");
   }
 
-  const { rowVirtualizer, parentRef, lastScrollPos, setWatch, watch } =
-    useLogVirtualizer({
-      logs: allLogs,
-      fetchPreviousPage,
-      hasPreviousPage,
-      isFetchingPreviousPage,
-    });
-
-  const numberOfLogs = allLogs.length;
-
-  const virtualItems = rowVirtualizer.getVirtualItems();
-  const [firstLogEntry] = virtualItems;
+  const { rowVirtualizer, parentRef, setWatch, watch } = useLogVirtualizer({
+    logs: allLogs,
+    fetchPreviousPage,
+    hasPreviousPage,
+    isFetchingPreviousPage,
+  });
 
   const isPending = instanceDetailsData?.instance?.status === "pending";
 
   if (!logData) return null;
 
   const items = rowVirtualizer.getVirtualItems();
-  const range = rowVirtualizer.range;
-  const [lastLineOffset] = rowVirtualizer.getOffsetForIndex(numberOfLogs - 1);
-  const progress =
-    ((lastScrollPos.current?.scrollOffset ?? 0) / lastLineOffset) * 100;
 
   return (
     <Logs
@@ -214,50 +203,6 @@ const ScrollContainer = () => {
           })}
         </div>
       </div>
-      <Card className="absolute left-0 -top-28 box-border flex w-full items-center justify-center gap-3 bg-white p-4 pr-10">
-        <div className="flex flex-col gap-1">
-          <Button
-            icon
-            size="sm"
-            onClick={() => {
-              rowVirtualizer.scrollToIndex(0, { align: "start" });
-            }}
-          >
-            <ArrowUp />
-          </Button>
-          <Button
-            icon
-            size="sm"
-            onClick={() => {
-              rowVirtualizer.scrollToIndex(numberOfLogs - 1, {
-                align: "start",
-              });
-            }}
-          >
-            <ArrowDown />
-          </Button>
-        </div>
-        <div className="grid grow grid-cols-2 gap-3">
-          <div className="flex flex-col gap-1">
-            1st virtual idx {firstLogEntry?.index}
-            <br />
-            1st visual idx {range?.startIndex}
-          </div>
-          <div className="flex flex-col gap-1">
-            offset {rowVirtualizer.scrollOffset} (
-            {lastScrollPos.current?.scrollOffset})<br /> watch{" "}
-            {watch ? "✅" : "❌"}
-          </div>
-        </div>
-        <div className="flex h-1 w-40 items-center rounded-sm bg-gray-9 p-1">
-          <div
-            className="h-1 bg-white"
-            style={{
-              width: `${progress}%`,
-            }}
-          ></div>
-        </div>
-      </Card>
       {isPending && (
         <div
           className={twMergeClsx(
