@@ -6,6 +6,7 @@ import config from '../common/config'
 import helpers from '../common/helpers'
 import regex from '../common/regex'
 import request from '../common/request'
+import { retry50 } from '../common/retry'
 
 const namespace = basename(__filename)
 
@@ -27,59 +28,23 @@ states:
   transform:
     result: x`))
 
-	it(`should contain instance log entries`, async () => {
+	retry50(`should contain instance log entries`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespace }/tree/noop.yaml?op=wait`)
 		expect(req.statusCode).toEqual(200)
 		const req1 = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespace }/instances`)
 		expect(req.statusCode).toEqual(200)
 
-		const req2 = await requestWithRetry(`/api/v2/namespaces/${namespace}/logs?instance=${req1.body.instances.results[0].id}`);
-		expect(req2.statusCode).toEqual(200);
-		if (req.body.data == null) {
-			expect(false).toBeTruthy
-		}
-		if (req.body.data != null) {
-			expect(req.body.data.length).toBeGreaterThanOrEqual(1)
-		}
-		
-	})
-	it(`should contain namespace log entries`, async () => {
-		const req = await requestWithRetry(`/api/v2/namespaces/${ namespace }/logs`)
+		const req2 = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespace }/logs?instance=${ req1.body.instances.results[0].id }`)
+		expect(req2.statusCode).toEqual(200)
+		expect(req2.body.data).not.toBeNull()
+		expect(req2.body.data.length).toBeGreaterThanOrEqual(1)
+	},
+	)
+	retry50(`should contain namespace log entries`, async () => {
+		const req = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespace }/logs`)
 		expect(req.statusCode).toEqual(200)
-		if (req.body.data == null) {
-			expect(false).toBeTruthy
-		}
-		if (req.body.data != null) {
-			expect(req.body.data.length).toBeGreaterThanOrEqual(1)
-		}
+		expect(req.body.data).not.toBeNull()
+		expect(req.body.data).not.toBeNull()
+		expect(req.body.data.length).toBeGreaterThanOrEqual(1)
 	})
 })
-
-const requestWithRetry = (url, retries = 10) => {
-	return new Promise((resolve, reject) => {
-	  const attempt = () => {
-		request(common.config.getDirektivHost()).get(url)
-		  .then(response => {
-			if (response.statusCode === 200) {
-			  resolve(response);
-			} else {
-			  if (retries > 0) {
-				console.log(`Retrying... ${retries} attempts left`);
-				attempt(retries - 1);
-			  } else {
-				reject(`Failed after several attempts`);
-			  }
-			}
-		  })
-		  .catch(error => {
-			if (retries > 0) {
-			  console.log(`Retrying due to error... ${retries} attempts left`);
-			  attempt(retries - 1);
-			} else {
-			  reject(error);
-			}
-		  });
-	  };
-	  attempt();
-	});
-  };
