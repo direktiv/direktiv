@@ -83,9 +83,8 @@ const ScrollContainer = () => {
     overscan: 40,
     onChange(instance) {
       if (!instance.range) return;
-      const { startIndex } = instance.range;
       const { scrollOffset } = instance;
-      lastScrollPos.current = { startIndex, scrollOffset, numberOfLogs };
+      lastScrollPos.current = { scrollOffset, numberOfLogs };
     },
   });
 
@@ -144,9 +143,9 @@ const ScrollContainer = () => {
 
   const items = rowVirtualizer.getVirtualItems();
   const range = rowVirtualizer.range;
-
+  const [lastLineOffset] = rowVirtualizer.getOffsetForIndex(numberOfLogs - 1);
   const progress =
-    ((lastScrollPos.current?.startIndex ?? 0) / numberOfLogs) * 100;
+    ((lastScrollPos.current?.scrollOffset ?? 0) / lastLineOffset) * 100;
 
   return (
     <Logs
@@ -216,8 +215,7 @@ const ScrollContainer = () => {
           <div className="flex flex-col gap-1">
             1st virtual idx {firstLogEntry?.index}
             <br />
-            1st visual idx {range?.startIndex} (
-            {lastScrollPos.current?.startIndex})
+            1st visual idx {range?.startIndex}
           </div>
           <div className="flex flex-col gap-1">
             offset {rowVirtualizer.scrollOffset} (
