@@ -9,6 +9,11 @@ type useLogVirtualizerParams = {
   queryLogsBy: Parameters<typeof useLogs>[0];
 };
 
+/**
+ * this hook is used to render a virtualized list of log entries. It utilizes
+ * tanstack/react-virtual and adds data fetching, pagination and some custom
+ * scrolling logic on top of that.
+ */
 export const useLogVirtualizer = ({ queryLogsBy }: useLogVirtualizerParams) => {
   const parentRef = useRef<HTMLDivElement | null>(null);
 
