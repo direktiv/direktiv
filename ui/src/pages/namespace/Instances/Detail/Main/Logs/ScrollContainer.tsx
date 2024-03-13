@@ -9,14 +9,12 @@ import { twMergeClsx } from "~/util/helpers";
 import { useInstanceDetails } from "~/api/instances/query/details";
 import { useInstanceId } from "../../store/instanceContext";
 import { useLogs } from "~/api/logs/query/logs";
-import { useLogsPreferencesWordWrap } from "~/util/store/logs";
 import { useTranslation } from "react-i18next";
 import { useVirtualizer } from "@tanstack/react-virtual";
 
 const defaultLogHeight = 20;
 const ScrollContainer = () => {
   const instanceId = useInstanceId();
-  const wordWrap = useLogsPreferencesWordWrap();
   const { data: instanceDetailsData } = useInstanceDetails({ instanceId });
   const lastScrollPos = useRef<{
     scrollOffset: number;
@@ -148,7 +146,6 @@ const ScrollContainer = () => {
 
   return (
     <Logs
-      wordWrap={wordWrap}
       className="h-full overflow-scroll"
       ref={parentRef}
       onScroll={(e) => {
