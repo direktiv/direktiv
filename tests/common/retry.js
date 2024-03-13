@@ -46,3 +46,6 @@ export function retry10 (description, handler) {
 export function retry50 (description, handler) {
 	return _retry(description, 50, handler, 500)
 }
+export function retry70 (description, handler) {
+	return _retry(description, 70, handler, 500)
+}
