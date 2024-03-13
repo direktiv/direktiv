@@ -150,6 +150,11 @@ jobs:
         run: |
           sudo k3s ctr images import direktiv.tar
 
+      - name: Wait for Direktiv pods to be ready
+        run: |
+          sleep 1
+          kubectl wait -n postgres --for=condition=Ready pod -l app.kubernetes.io/instance=direktiv-cluster --timeout=120s
+
       - name: Install Direktiv chart
         run: helm install direktiv -f dev.yaml ./charts/direktiv/
 
