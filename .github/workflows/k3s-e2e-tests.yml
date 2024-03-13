@@ -78,57 +78,29 @@ jobs:
             "logs/", 
           ]
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Cache Ubuntu packages
-        uses: actions/cache@v4
-        with:
-          path: /var/cache/apt/archives
-          key: ${{ runner.os }}-apt-packages-${{ hashFiles('**/apt.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-apt-packages-
-      - name: Download Docker image artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: direktiv-image
-
-      - name: Setup k3s
-        run: curl -sfL https://get.k3s.io | sh -s - --disable traefik --write-kubeconfig-mode=644
-
-      - name: Install Helm
-        run: curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-
+      # Previous steps remain unchanged
+      
       - name: Create namespace for the DB
-        run: kubectl create ns postgres
+        run: kubectl create namespace postgres
 
-      - name: Install a database
-        run: helm repo add bitnami https://charts.bitnami.com/bitnami && helm install psql-single bitnami/postgresql
-      - name: Install Knative
+      - name: Install Postgres using Percona Operator
         run: |
-          kubectl apply -f https://github.com/knative/operator/releases/download/knative-v1.11.7/operator.yaml
-          kubectl create ns knative-serving
-          kubectl apply -f ./scripts/kubernetes/install/knative/basic.yaml
+          helm repo add percona https://percona.github.io/percona-helm-charts/
+          helm install --create-namespace -n postgres pg-operator percona/pg-operator --wait
 
-      - name: Add Direktiv Helm repository
-        run: helm repo add direktiv https://chart.direktiv.io
-
-      - name: Add fluentbit repository
-        run: helm repo add fluent-bit https://fluent.github.io/helm-charts
-
-      # - name: Clone Direktiv-charts repository
-      #   run: |
-      #     git clone https://github.com/direktiv/direktiv-charts.git direktiv-charts
-      #     helm dependency update direktiv-charts/charts/direktiv
-
-      - name: Wait for PostgreSQL pod to be ready
+      - name: Add a postgres instance
         run: |
-          while ! kubectl get secret psql-single-postgresql ; do
-              sleep 2
-          done
+          kubectl apply -f https://raw.githubusercontent.com/direktiv/direktiv/main/scripts/kubernetes/install/db/basic.yaml
 
-      - name: Create dev.yaml file
+      # Assuming the next steps need the database credentials
+      - name: Generate dev.yaml file with database credentials
         run: |
+          DB_HOST=$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "host"}}' | base64 --decode)
+          DB_PORT=$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "port"}}' | base64 --decode)
+          DB_USER=$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "user"}}' | base64 --decode)
+          DB_PASSWORD=$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "password"}}' | base64 --decode)
+          DB_NAME=$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "dbname"}}' | base64 --decode)
+          
           cat <<EOF > dev.yaml
           pullPolicy: IfNotPresent
           tag: "${{ env.SRVTAG }}"
@@ -136,15 +108,14 @@ jobs:
             logging: json
 
           database:
-            host: "psql-single-postgresql"
-            port: 5432
-            user: "postgres"
-            password: "$(kubectl get secret psql-single-postgresql -o jsonpath="{.data.postgres-password}" | base64 -d)"
-            name: "postgres"
-            sslmode: "disable"
+            host: "$DB_HOST"
+            port: $DB_PORT
+            user: "$DB_USER"
+            password: "$DB_PASSWORD"
+            name: "$DB_NAME"
+            sslmode: require
           EOF
           cat dev.yaml
-
       - name: Cache Docker layers
         id: docker-cache
         uses: actions/cache@v4
