@@ -75,6 +75,7 @@ jobs:
             # "services/",
             "variables/",
             "variables2/",
+            "logs/", 
           ]
     steps:
       - name: Checkout code
@@ -112,6 +113,9 @@ jobs:
       - name: Add Direktiv Helm repository
         run: helm repo add direktiv https://chart.direktiv.io
 
+      - name: Add fluentbit repository
+        run: helm repo add fluent-bit https://fluent.github.io/helm-charts
+
       - name: Clone Direktiv-charts repository
         run: |
           git clone https://github.com/direktiv/direktiv-charts.git direktiv-charts
@@ -129,7 +133,7 @@ jobs:
           pullPolicy: IfNotPresent
           tag: "${{ env.SRVTAG }}"
           flow:
-            logging: console
+            logging: json
 
           database:
             host: "psql-single-postgresql"

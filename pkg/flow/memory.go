@@ -14,6 +14,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/google/uuid"
@@ -232,6 +233,18 @@ func (im *instanceMemory) GetAttributes() map[string]string {
 	}
 
 	return tags
+}
+
+func (im *instanceMemory) WithTags(ctx context.Context) context.Context {
+	ctx = im.instance.WithTags(ctx)
+	tags, ok := ctx.Value(core.LogTagsKey).([]interface{})
+	if !ok {
+		tags = make([]interface{}, 0)
+	}
+	if im.logic != nil {
+		tags = append(tags, "state", im.logic.GetID())
+	}
+	return context.WithValue(ctx, core.LogTagsKey, tags)
 }
 
 func (im *instanceMemory) GetState() string {

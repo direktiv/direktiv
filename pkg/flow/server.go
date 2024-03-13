@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"log/slog"
 	"os"
 	"os/signal"
 	"runtime"
@@ -135,6 +136,7 @@ func (log *mirrorProcessLogger) Debug(pid uuid.UUID, msg string, kv ...interface
 	}
 	msg += strings.Repeat(", %s = %v", len(kv)/2)
 	log.logger.Debugf(context.Background(), pid, tags, msg, kv...)
+	slog.Debug(fmt.Sprintf(msg, kv...), "activity", pid, "track", "activity."+pid.String())
 }
 
 func (log *mirrorProcessLogger) Info(pid uuid.UUID, msg string, kv ...interface{}) {
@@ -145,6 +147,7 @@ func (log *mirrorProcessLogger) Info(pid uuid.UUID, msg string, kv ...interface{
 	}
 	msg += strings.Repeat(", %s = %v", len(kv)/2)
 	log.logger.Infof(context.Background(), pid, tags, msg, kv...)
+	slog.Info(fmt.Sprintf(msg, kv...), "activity", pid, "track", "activity."+pid.String())
 }
 
 func (log *mirrorProcessLogger) Warn(pid uuid.UUID, msg string, kv ...interface{}) {
@@ -155,6 +158,7 @@ func (log *mirrorProcessLogger) Warn(pid uuid.UUID, msg string, kv ...interface{
 	}
 	msg += strings.Repeat(", %s = %v", len(kv)/2)
 	log.logger.Warnf(context.Background(), pid, tags, msg, kv...)
+	slog.Warn(fmt.Sprintf(msg, kv...), "activity", pid, "track", "activity"+"."+pid.String())
 }
 
 func (log *mirrorProcessLogger) Error(pid uuid.UUID, msg string, kv ...interface{}) {
@@ -165,6 +169,7 @@ func (log *mirrorProcessLogger) Error(pid uuid.UUID, msg string, kv ...interface
 	}
 	msg += strings.Repeat(", %s = %v", len(kv)/2)
 	log.logger.Errorf(context.Background(), pid, tags, msg, kv...)
+	slog.Error(fmt.Sprintf(msg, kv...), "activity", pid, "track", "activity"+"."+pid.String())
 }
 
 var _ mirror.ProcessLogger = &mirrorProcessLogger{}

@@ -7,7 +7,8 @@ const (
 	Namespace RecipientType = "namespace"
 	Workflow  RecipientType = "workflow"
 	Instance  RecipientType = "instance"
-	Mirror    RecipientType = "mirror"
+	Mirror    RecipientType = "activity"
+	Route     RecipientType = "route"
 )
 
 func (rt RecipientType) String() string {

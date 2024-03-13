@@ -1,6 +1,7 @@
 package inbound
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -48,10 +49,10 @@ func (acl *ACLPlugin) Type() string {
 }
 
 func (acl *ACLPlugin) ExecutePlugin(c *core.ConsumerFile,
-	w http.ResponseWriter, _ *http.Request,
+	w http.ResponseWriter, r *http.Request,
 ) bool {
 	if c == nil {
-		deny("missing consumer", w)
+		deny(r.Context(), "missing consumer", w)
 
 		return false
 	}
@@ -61,7 +62,7 @@ func (acl *ACLPlugin) ExecutePlugin(c *core.ConsumerFile,
 	}
 
 	if result(acl.config.DenyGroups, c.Groups) {
-		deny("group", w)
+		deny(r.Context(), "group", w)
 
 		return false
 	}
@@ -71,12 +72,12 @@ func (acl *ACLPlugin) ExecutePlugin(c *core.ConsumerFile,
 	}
 
 	if result(acl.config.DenyTags, c.Tags) {
-		deny("tag", w)
+		deny(r.Context(), "tag", w)
 
 		return false
 	}
 
-	deny("fallback", w)
+	deny(r.Context(), "fallback", w)
 
 	return false
 }
@@ -94,9 +95,9 @@ func result(userValues []string, configValues []string) bool {
 	return false
 }
 
-func deny(t string, w http.ResponseWriter) {
+func deny(ctx context.Context, t string, w http.ResponseWriter) {
 	msg := fmt.Sprintf("access denied by %s", t)
-	plugins.ReportError(w, http.StatusForbidden, msg, fmt.Errorf("forbidden"))
+	plugins.ReportError(ctx, w, http.StatusForbidden, msg, fmt.Errorf("forbidden"))
 }
 
 //nolint:gochecknoinits

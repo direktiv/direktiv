@@ -211,6 +211,219 @@
                   items:
                     $ref: '../objects.yaml#/route'
 
+/api/v2/namespaces/{namespace}/logs:
+  get:
+    tags:
+    - plattformlogs
+    summary: Api for listing the last 200 log entries for a given resource.
+    parameters:
+      - name: namespace
+        in: path
+        required: true
+        schema:
+            type: string
+            pattern: '^(([a-z][a-z0-9_\-\.]*[a-z0-9])|([a-z]))$'
+        style: simple
+      - name: instance
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+      - name: route
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: activity
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+      - name: trace
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: before
+        in: query
+        required: false
+        description: Optional argument for using to request logs older then the given time.
+        schema: 
+          type: string 
+          format: RFC3339Nano
+    responses:
+      '200':
+        description: OK
+        content:
+          'application/json':
+            example:
+              previousPage: '2024-01-17T01:44:08.128136Z'
+              startingFrom: '2024-01-16T01:44:08.128136Z'
+              data:
+              - id: 0,
+                time: '2024-01-17T01:44:08.128136Z'
+                level: 'INFO'
+                msg: 'Running state logic'
+                trace: "00000000000000000000000000000000"
+                span: "0000000000000000"
+                workflow:
+                  status: "running"
+                  state: null,
+                  branch: null,
+                  path: "/test.yaml"
+                  calledAs: null,
+                  instance: 1bdf4042-1708-4212-b21d-7240f4685e4a
+              - id: 13976,
+                time: "2024-03-11T12:30:00.007424Z"
+                msg: "Workflow has been triggered"
+                level: "INFO"
+                namespace: "nsfad"
+                trace: "00000000000000000000000000000000"
+                span: "0000000000000000"
+                error: null
+              - id: 14943
+                time: "2024-03-11T12:35:55.978736Z"
+                msg: "File 'variables/README.md' loaded."
+                level: "INFO"
+                namespace: null,
+                trace: null,
+                span: null,
+                activity:
+                  id: "29960091-2797-493e-a262-1a7765146cd4"
+                error: null
+              - id: 16138
+                time: "2024-03-11T12:56:51.268669Z"
+                msg: "can not process plugin"
+                level: "ERROR"
+                namespace: "myns"
+                trace: 00000000000000000000000000000000
+                span: 0000000000000000
+                route: 
+                  path: "/consumer"
+                error: "forbidden"
+            schema:
+              type: object
+              properties:
+                previousPage:
+                  type: string
+                  format: RFC3339Nano
+                  nullable: true
+                startingFrom:
+                  type: string
+                  format: RFC3339Nano
+                data:
+                  type: array
+                  items: 
+                    type: object
+                    properties:
+                      time: 
+                        type: string 
+                        format: RFC3339Nano
+                      level: 
+                        type: string 
+                        enum: ["INFO", "ERROR", "WARNING", "DEBUG"]
+                      msg: 
+                        type: string
+                      id: 
+                        type: string
+                      trace: 
+                        type: string
+                      span: 
+                        type: string
+                      namespace: 
+                        type: string
+                      error:
+                        type: object
+                        nullable: true
+                      workflow:
+                        type: object
+                        nullable: true
+                        properties:
+                          status:
+                            type: string
+                          state:
+                            type: string
+                          branch:
+                            type: string
+                            nullable: true
+                          workflow:
+                            type: string
+                          calledAs:
+                            type: string
+                            nullable: true
+                          instance:
+                            type: string
+                      activity:
+                        type: object
+                        nullable: true
+                        properties:
+                          id:
+                            type: string
+                            format: uuid
+                            nullable: true
+                      route:
+                        type: object
+                        nullable: true
+                        properties:
+                          path:
+                            type: string
+                            nullable: true
+/api/v2/namespaces/{namespace}/logs/subscribe:
+  get:
+    tags:
+    - plattformlogs
+    summary: Api for SSE streaming of incoming logs stating the systems current time.
+    parameters:
+      - name: namespace
+        in: path
+        required: true
+        schema:
+            type: string
+            pattern: '^(([a-z][a-z0-9_\-\.]*[a-z0-9])|([a-z]))$'
+        style: simple
+      - name: instance
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+      - name: route
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: activity
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+      - name: trace
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: Last-Event-ID
+        in: header
+        required: false
+        schema:
+          type: string
+    responses:
+      '200':
+        description: OK
+        content:
+          text/event-stream:
+            example: |
+              id: 4
+              event: message
+              data: {'id':'4','time':'2024-02-07T08:59:52.666925Z','msg':'Starting workflow /action.yaml','level':'INFO'}
+              
+              id: 6
+              event: message
+              data: {'id':'6','time':'2024-02-07T09:00:01.770604Z','msg':'Workflow /action.yaml completed.','level':'INFO'}
+
 /api/v2/namespaces/{namespace}/registries:
   get:
     tags:
