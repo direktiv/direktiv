@@ -128,16 +128,6 @@ jobs:
         run: |
           sleep 1
           kubectl wait -n postgres --for=condition=Ready pod -l app.kubernetes.io/instance=direktiv-cluster --timeout=120s
-
-      - name: Install Direktiv chart
-        run: helm install direktiv -f dev.yaml ./charts/direktiv/
-
-      - name: Wait for Direktiv pods to be ready
-        run: |
-          sleep 1
-          kubectl wait --for=condition=Ready pod -l app.kubernetes.io/instance=direktiv --timeout=120s
-          kubectl wait --for=condition=Ready pod -l app.kubernetes.io/name=direktiv-frontend --timeout=120s
-      # Assuming the next steps need the database credentials
       - name: Generate dev.yaml file with database credentials
         run: |
           DB_HOST=$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "host"}}' | base64 --decode)
@@ -161,6 +151,14 @@ jobs:
             sslmode: require
           EOF
           cat dev.yaml
+      - name: Install Direktiv chart
+        run: helm install direktiv -f dev.yaml ./charts/direktiv/
+
+      - name: Wait for Direktiv pods to be ready
+        run: |
+          sleep 1
+          kubectl wait --for=condition=Ready pod -l app.kubernetes.io/instance=direktiv --timeout=120s
+          kubectl wait --for=condition=Ready pod -l app.kubernetes.io/name=direktiv-frontend --timeout=120s
 
       - name: Get Internal IP
         id: getInternalIP
