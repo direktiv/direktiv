@@ -72,12 +72,19 @@ const updateCache = (
     };
   }
 
+  const firstPageDate = firstPage.data ?? [];
+  if (firstPageDate.some((logEntry) => logEntry.id === newLogEntry.id)) {
+    console.error(
+      `skipping cache update, log entry ${newLogEntry.id} already exists`
+    );
+    return oldData;
+  }
   return {
     ...oldData,
     pages: [
       {
         ...firstPage,
-        data: [...(firstPage.data ?? []), newLogEntry],
+        data: [...firstPageDate, newLogEntry],
       },
       ...otherPages,
     ],
