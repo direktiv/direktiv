@@ -1,6 +1,6 @@
+import { ArrowDown, ArrowUp } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { ArrowDown } from "lucide-react";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import Entry from "./Entry";
@@ -191,20 +191,24 @@ const ScrollContainer = () => {
       <Card className="absolute left-0 -top-28 box-border flex w-full items-center justify-center gap-3 bg-white p-4 pr-10">
         <div className="flex flex-col gap-1">
           <Button
+            icon
             size="sm"
             onClick={() => {
               rowVirtualizer.scrollToIndex(0, { align: "start" });
             }}
           >
-            top
+            <ArrowUp />
           </Button>
           <Button
+            icon
             size="sm"
             onClick={() => {
-              rowVirtualizer.scrollToIndex(300, { align: "start" });
+              rowVirtualizer.scrollToIndex(numberOfLogs - 1, {
+                align: "start",
+              });
             }}
           >
-            bottom
+            <ArrowDown />
           </Button>
         </div>
         <div className="grid grow grid-cols-2 gap-3">
