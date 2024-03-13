@@ -81,7 +81,8 @@ services:
       - PLAYWRIGHT_UI_BASE_URL=http://ui:8080
     command: >
       bash -c "cd ui
-      && npx playwright install --with-deps chromium
+      && yarn
+      && npx playwright chromium
       && yarn run e2e:headless-chromium-only"
     depends_on:
       - ui
