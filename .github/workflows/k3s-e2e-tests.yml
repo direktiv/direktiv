@@ -197,6 +197,7 @@ jobs:
           exit 1
       - name: Show fluentbit logs
         run: |
+          kubectl get all -A
           kubectl describe daemonsets/direktiv-fluent-bit  | tail -n 100
           kubectl logs daemonsets/direktiv-fluent-bit | head -n 80
       - name: Run E2E tests
