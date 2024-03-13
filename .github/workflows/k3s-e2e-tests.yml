@@ -111,32 +111,6 @@ jobs:
         run: |
           kubectl apply -f https://raw.githubusercontent.com/direktiv/direktiv/main/scripts/kubernetes/install/db/basic.yaml
 
-      # Assuming the next steps need the database credentials
-      - name: Generate dev.yaml file with database credentials
-        run: |
-          DB_HOST=$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "host"}}' | base64 --decode)
-          DB_PORT=$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "port"}}' | base64 --decode)
-          DB_USER=$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "user"}}' | base64 --decode)
-          DB_PASSWORD=$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "password"}}' | base64 --decode)
-          DB_NAME=$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "dbname"}}' | base64 --decode)
-          
-          cat <<EOF > dev.yaml
-          pullPolicy: IfNotPresent
-          tag: "${{ env.SRVTAG }}"
-          flow:
-            logging: json
-
-          database:
-            host: "$DB_HOST"
-            port: $DB_PORT
-            user: "$DB_USER"
-            password: "$DB_PASSWORD"
-            name: "$DB_NAME"
-            sslmode: require
-          EOF
-          cat dev.yaml
-
-
       - name: Cache Docker layers
         id: docker-cache
         uses: actions/cache@v4
@@ -163,6 +137,30 @@ jobs:
           sleep 1
           kubectl wait --for=condition=Ready pod -l app.kubernetes.io/instance=direktiv --timeout=120s
           kubectl wait --for=condition=Ready pod -l app.kubernetes.io/name=direktiv-frontend --timeout=120s
+      # Assuming the next steps need the database credentials
+      - name: Generate dev.yaml file with database credentials
+        run: |
+          DB_HOST=$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "host"}}' | base64 --decode)
+          DB_PORT=$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "port"}}' | base64 --decode)
+          DB_USER=$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "user"}}' | base64 --decode)
+          DB_PASSWORD=$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "password"}}' | base64 --decode)
+          DB_NAME=$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "dbname"}}' | base64 --decode)
+          
+          cat <<EOF > dev.yaml
+          pullPolicy: IfNotPresent
+          tag: "${{ env.SRVTAG }}"
+          flow:
+            logging: json
+
+          database:
+            host: "$DB_HOST"
+            port: $DB_PORT
+            user: "$DB_USER"
+            password: "$DB_PASSWORD"
+            name: "$DB_NAME"
+            sslmode: require
+          EOF
+          cat dev.yaml
 
       - name: Get Internal IP
         id: getInternalIP
