@@ -13,12 +13,12 @@ import { useLogsPreferencesWordWrap } from "~/util/store/logs";
 import { useTranslation } from "react-i18next";
 import { useVirtualizer } from "@tanstack/react-virtual";
 
+const defaultLogHeight = 20;
 const ScrollContainer = () => {
   const instanceId = useInstanceId();
   const wordWrap = useLogsPreferencesWordWrap();
   const { data: instanceDetailsData } = useInstanceDetails({ instanceId });
   const lastScrollPos = useRef<{
-    startIndex: number;
     scrollOffset: number;
     numberOfLogs: number;
   } | null>(null);
@@ -56,7 +56,7 @@ const ScrollContainer = () => {
   const rowVirtualizer = useVirtualizer({
     count: numberOfLogs,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 20,
+    estimateSize: () => defaultLogHeight,
     getItemKey: useCallback(
       (index: number) => {
         const uniqueId = allLogs[index]?.id;
@@ -110,9 +110,8 @@ const ScrollContainer = () => {
        * a new log entry that has been streamed
        */
       const diff = numberOfLogs - lastScrollPos.current.numberOfLogs;
-      const newOffset = rowVirtualizer.scrollOffset + diff * 20;
+      const newOffset = rowVirtualizer.scrollOffset + diff * defaultLogHeight;
       rowVirtualizer.scrollToOffset(newOffset);
-      // rowVirtualizer.scrollToIndex(newIndex, { align: "start" });
     }
   }, [numberOfLogs, rowVirtualizer, watch]);
 
