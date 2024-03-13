@@ -207,6 +207,8 @@ fluent-bit:
           Skip_Long_Lines         Off
           Tag                     input
           Parser                  cri_direktiv
+          Refresh_Interval        1
+          Buffer_Max_Size         64k
     outputs: |
       [OUTPUT]
           name                    pgsql
