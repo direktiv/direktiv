@@ -44,6 +44,13 @@ func (s *sqlStore) Logs() logengine.LogStore {
 	}
 }
 
+// Logs returns a log store.
+func (s *sqlStore) NewLogs() datastore.LogStore {
+	return &sqlLogNewStore{
+		db: s.db,
+	}
+}
+
 // Secrets returns secrets store.
 func (s *sqlStore) Secrets() datastore.SecretsStore {
 	return &sqlSecretsStore{

@@ -294,7 +294,7 @@ func (im *instanceMemory) ScheduleRetry(ctx context.Context, d time.Duration, st
 
 	t := time.Now().UTC().Add(d)
 
-	err = im.engine.scheduleRetry(im.ID().String(), stateID, im.Step(), t, data)
+	err = im.engine.scheduleRetry(im.ID().String(), t, data)
 	if err != nil {
 		return err
 	}
@@ -312,8 +312,6 @@ func (im *instanceMemory) CreateChild(ctx context.Context, args states.CreateChi
 			Step:   im.Step(),
 			Branch: args.Iterator,
 		}
-		// TODO: alan
-		// caller.CallPath = im.instance.TelemetryInfo.CallPath
 		sfim, err := im.engine.subflowInvoke(ctx, pi, im.instance, args.Definition.(*model.SubflowFunctionDefinition).Workflow, args.Input)
 		if err != nil {
 			return nil, err
@@ -339,7 +337,7 @@ func (im *instanceMemory) CreateChild(ctx context.Context, args states.CreateChi
 
 	uid := uuid.New()
 
-	ar, err := im.engine.newIsolateRequest(ctx, im, im.logic.GetID(), args.Timeout, args.Definition, args.Input, uid, args.Async, args.Files, args.Iterator)
+	ar, err := im.engine.newIsolateRequest(im, im.logic.GetID(), args.Timeout, args.Definition, args.Input, uid, args.Async, args.Files, args.Iterator)
 	if err != nil {
 		return nil, err
 	}
@@ -363,14 +361,14 @@ type subflowHandle struct {
 }
 
 func (child *subflowHandle) Run(ctx context.Context) {
-	child.engine.queue(child.im)
+	go child.engine.start(child.im)
 }
 
 func (child *subflowHandle) Info() states.ChildInfo {
 	return child.info
 }
 
-func (engine *engine) newIsolateRequest(ctx context.Context, im *instanceMemory, stateId string, timeout int,
+func (engine *engine) newIsolateRequest(im *instanceMemory, stateId string, timeout int,
 	fn model.FunctionDefinition, inputData []byte,
 	uid uuid.UUID, async bool, files []model.FunctionFileDefinition, iterator int,
 ) (*functionRequest, error) {
@@ -460,7 +458,7 @@ func (engine *engine) doActionRequest(ctx context.Context, ar *functionRequest) 
 			InstanceId: ar.Workflow.InstanceID, Msg: []string{fmt.Sprintf("Warning: Action timeout '%v' is longer than max allowed duariton '%v'", actionTimeout, engine.server.conf.GetFunctionsTimeout())},
 		})
 		if err != nil {
-			engine.sugar.Errorf("Failed to log: %v.", err)
+			engine.sugar.Errorf("failed to write action log: %v.", err)
 		}
 	}
 
@@ -579,6 +577,6 @@ func (engine *engine) reportError(ar *functionRequest, err error) {
 
 	_, err = engine.internal.ReportActionResults(context.Background(), r)
 	if err != nil {
-		engine.sugar.Errorf("can not respond to flow: %v", err)
+		engine.sugar.Errorf("failed to respond to flow: %v", err)
 	}
 }

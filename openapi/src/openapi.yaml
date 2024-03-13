@@ -75,20 +75,26 @@ tags:
     description: Miscellaneous server endpoints
   - name: services
     description: Endpoints for managing services
+  - name: variables
+    description: Endpoints for managing direktiv variables
   - name: registries
     description: Endpoints for managing registries
   - name: gateway
     description: Endpoints for fetchig API gateway information
   - name: files
     description: Endpoints reading and changing filesystem tree nodes
+  - name: plattformlogs
+    description: Endpoints to access logs that are exposed by the components
 x-tagGroups:
   - name: Endpoints
     tags:
       - files
       - services
+      - variables
       - registries
       - gateway
       - server
+      - plattformlogs
 components:
   parameters:
     $ref: "./parameters.yaml"

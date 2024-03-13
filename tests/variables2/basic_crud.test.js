@@ -67,7 +67,6 @@ describe('Test variable get delete list calls', () => {
 	})
 })
 
-
 function makeDummyVar (name) {
 	return {
 		name,

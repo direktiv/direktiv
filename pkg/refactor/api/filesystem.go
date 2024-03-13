@@ -120,9 +120,10 @@ func (e *fsController) delete(w http.ResponseWriter, r *http.Request) {
 	// Publish pubsub event.
 	if file.Typ.IsDirektivSpecFile() {
 		err = helpers.PublishEventDirektivFileChange(e.bus, file.Typ, "delete", &pubsub.FileChangeEvent{
-			Namespace:   ns.Name,
-			NamespaceID: ns.ID,
-			FilePath:    file.Path,
+			Namespace:    ns.Name,
+			NamespaceID:  ns.ID,
+			FilePath:     file.Path,
+			DeleteFileID: file.ID,
 		})
 		// nolint:staticcheck
 		if err != nil {

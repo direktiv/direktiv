@@ -14,6 +14,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/google/uuid"
@@ -22,7 +23,6 @@ import (
 type instanceMemory struct {
 	engine *engine
 
-	lock   *sql.Conn
 	data   interface{}
 	memory interface{}
 	logic  stateLogic
@@ -54,14 +54,24 @@ func (im *instanceMemory) flushUpdates(ctx context.Context) error {
 		return nil
 	}
 
-	tx, err := im.engine.flow.beginSqlTx(ctx)
-	if err != nil {
+	im.updateArgs.Server = im.engine.ID
+
+	// NOTE: no need to make this serializable because only a single operation is performed. If we
+	// 		expand the number of queries here in the future we should make it serializable. Be
+	// 		warned however that making this serializable opens us up to serialization failures, and
+	//		therefore we will need to test heavily and potentially implement retries.
+	tx, err := im.engine.flow.beginSqlTx(ctx) /*&sql.TxOptions{
+		Isolation: sql.LevelSerializable,
+	}*/if err != nil {
 		return err
 	}
 	defer tx.Rollback()
 
 	err = tx.InstanceStore().ForInstanceID(im.instance.Instance.ID).UpdateInstanceData(ctx, im.updateArgs)
 	if err != nil {
+		if strings.Contains(err.Error(), "got 0") {
+			return errors.New("node no longer believes it should modify this instance")
+		}
 		return err
 	}
 
@@ -71,6 +81,7 @@ func (im *instanceMemory) flushUpdates(ctx context.Context) error {
 	}
 
 	im.updateArgs = new(instancestore.UpdateInstanceDataArgs)
+	im.updateArgs.Server = im.engine.ID
 
 	im.engine.pubsub.NotifyInstance(im.instance.Instance.ID)
 	im.engine.pubsub.NotifyInstances(im.Namespace())
@@ -224,15 +235,16 @@ func (im *instanceMemory) GetAttributes() map[string]string {
 	return tags
 }
 
-func (im *instanceMemory) GetSlogAttributes(ctx context.Context) []interface{} {
-	tags := im.instance.GetSlogAttributes(ctx)
-
-	if im.logic != nil {
-		tags = append(tags, "state-id", im.logic.GetID())
-		tags = append(tags, "state-type", im.logic.GetType())
+func (im *instanceMemory) WithTags(ctx context.Context) context.Context {
+	ctx = im.instance.WithTags(ctx)
+	tags, ok := ctx.Value(core.LogTagsKey).([]interface{})
+	if !ok {
+		tags = make([]interface{}, 0)
 	}
-	im.userLogger = slog.Default().With(tags...)
-	return tags
+	if im.logic != nil {
+		tags = append(tags, "state", im.logic.GetID())
+	}
+	return context.WithValue(ctx, core.LogTagsKey, tags)
 }
 
 func (im *instanceMemory) GetState() string {
@@ -243,24 +255,45 @@ func (im *instanceMemory) GetState() string {
 	return tags["workflow"]
 }
 
-func (engine *engine) getInstanceMemory(ctx context.Context, id string) (*instanceMemory, error) {
-	instID, err := uuid.Parse(id)
-	if err != nil {
-		return nil, err
-	}
-
-	tx, err := engine.flow.beginSqlTx(ctx)
+func (engine *engine) getInstanceMemory(ctx context.Context, id uuid.UUID) (*instanceMemory, error) {
+	tx, err := engine.flow.beginSqlTx(ctx, &sql.TxOptions{
+		Isolation: sql.LevelSerializable,
+	})
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
 
-	idata, err := tx.InstanceStore().ForInstanceID(instID).GetMost(ctx)
+	idata, err := tx.InstanceStore().ForInstanceID(id).GetMost(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	tx.Rollback()
+	if idata.Server != engine.ID {
+		if time.Now().Add(-1 * engineOwnershipTimeout).Before(idata.UpdatedAt) {
+			return nil, errors.New("instance appears to be under control of another node")
+		}
+
+		// TODO: alan DIR-1313
+		// we need to ensure there's an auto-reattempter somewhere in the code
+	}
+
+	if idata.EndedAt != nil && !idata.EndedAt.IsZero() {
+		return nil, derrors.NewInternalError(fmt.Errorf("aborting workflow logic: database records instance terminated"))
+	}
+
+	err = tx.InstanceStore().ForInstanceID(id).UpdateInstanceData(ctx, &instancestore.UpdateInstanceDataArgs{
+		BypassOwnershipCheck: true,
+		Server:               engine.ID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	err = tx.Commit(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	instance, err := enginerefactor.ParseInstanceData(idata)
 	if err != nil {
@@ -271,6 +304,7 @@ func (engine *engine) getInstanceMemory(ctx context.Context, id string) (*instan
 	im.engine = engine
 	im.instance = instance
 	im.updateArgs = new(instancestore.UpdateInstanceDataArgs)
+	im.updateArgs.Server = engine.ID
 
 	err = json.Unmarshal(im.instance.Instance.LiveData, &im.data)
 	if err != nil {
@@ -285,11 +319,11 @@ func (engine *engine) getInstanceMemory(ctx context.Context, id string) (*instan
 	}
 
 	flow := im.instance.RuntimeInfo.Flow
-	if len(flow)-1 < 0 {
-		engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", "failed to initialize (likely due to high load)"))
-		return nil, fmt.Errorf("unable to retrieve stateID. Possible data race occurred, causing the instance to crash")
+	stateID := ""
+
+	if len(flow) > 0 {
+		stateID = flow[len(flow)-1]
 	}
-	stateID := flow[len(flow)-1]
 
 	err = engine.loadStateLogic(im, stateID)
 	if err != nil {
@@ -298,33 +332,6 @@ func (engine *engine) getInstanceMemory(ctx context.Context, id string) (*instan
 	}
 
 	return im, nil
-}
-
-func (engine *engine) loadInstanceMemory(id string, step int) (context.Context, *instanceMemory, error) {
-	ctx, conn, err := engine.lock(id, defaultLockWait)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	im, err := engine.getInstanceMemory(ctx, id)
-	if err != nil {
-		engine.unlock(id, conn)
-		return nil, nil, err
-	}
-
-	im.lock = conn
-
-	if im.instance.Instance.EndedAt != nil && !im.instance.Instance.EndedAt.IsZero() {
-		engine.InstanceUnlock(im)
-		return nil, nil, derrors.NewInternalError(fmt.Errorf("aborting workflow logic: database records instance terminated"))
-	}
-
-	if step >= 0 && step != im.Step() {
-		engine.InstanceUnlock(im)
-		return nil, nil, derrors.NewInternalError(fmt.Errorf("aborting workflow logic: steps out of sync (expect/actual - %d/%d)", step, im.Step()))
-	}
-
-	return ctx, im, nil
 }
 
 func (engine *engine) InstanceCaller(im *instanceMemory) *enginerefactor.ParentInfo {
@@ -341,38 +348,40 @@ func (engine *engine) StoreMetadata(ctx context.Context, im *instanceMemory, dat
 	im.updateArgs.Metadata = &im.instance.Instance.Metadata
 }
 
-func (engine *engine) FreeInstanceMemory(im *instanceMemory) {
-	engine.freeResources(im)
-
-	if im.lock != nil {
-		engine.InstanceUnlock(im)
-	}
-
+func (engine *engine) freeArtefacts(im *instanceMemory) {
 	engine.timers.deleteTimersForInstance(im.ID().String())
 
-	ctx := context.Background()
-
-	err := engine.events.deleteInstanceEventListeners(ctx, im)
+	err := engine.events.deleteInstanceEventListeners(context.Background(), im)
 	if err != nil {
 		engine.sugar.Error(err)
 	}
 }
 
-func (engine *engine) freeResources(im *instanceMemory) {
-	ctx := context.Background()
-
+func (engine *engine) freeMemory(ctx context.Context, im *instanceMemory) error {
 	for i := range im.eventQueue {
-		err := engine.events.flushEvent(ctx, im.eventQueue[i], im.Namespace(), true)
+		err := engine.events.flushEvent(true)
 		if err != nil {
-			engine.sugar.Errorf("Failed to flush event: %v.", err)
+			return fmt.Errorf("failed to flush event [%d]: %w", i, err)
 		}
 	}
 
-	// do we actually want to delete variables here? There could be value in keeping them around for a little while.
+	im.eventQueue = make([]string, 0)
 
-	// var namespace, workflow, instance string
-	// namespace = rec.Edges.Workflow.Edges.Namespace.ID
-	// workflow = rec.Edges.Workflow.ID.String()
-	// instance = rec.InstanceID
-	// we.server.variableStorage.DeleteAllInScope(context.Background(), namespace, workflow, instance)
+	err := im.flushUpdates(ctx)
+	if err != nil {
+		return err
+	}
+
+	engine.deregisterScheduled(im.ID())
+
+	return nil
+}
+
+func (engine *engine) forceFreeCriticalMemory(ctx context.Context, im *instanceMemory) {
+	err := im.flushUpdates(ctx)
+	if err != nil {
+		engine.sugar.Errorf("failed to force flush updates during instance crash: %v.", err)
+	}
+
+	engine.deregisterScheduled(im.ID())
 }

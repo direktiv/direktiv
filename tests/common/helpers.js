@@ -8,13 +8,11 @@ async function deleteAllNamespaces () {
 	if (listResponse.statusCode !== 200)
 		throw Error(`none ok namespaces list statusCode(${ listResponse.statusCode })`)
 
-
 	for (const namespace of listResponse.body.results) {
 		const response = await request(config.getDirektivHost()).delete(`/api/namespaces/${ namespace.name }?recursive=true`)
 
 		if (response.statusCode !== 200)
 			throw Error(`none ok namespace(${ namespace.name }) delete statusCode(${ response.statusCode })`)
-
 	}
 }
 
@@ -33,25 +31,11 @@ async function itShouldCreateNamespace (it, expect, ns) {
 	})
 }
 
-async function itShouldCreateFile (it, expect, ns, path, data) {
-	it(`should create a new file ${ path }`, async () => {
-		const res = await request(common.config.getDirektivHost())
-			.put(`/api/namespaces/${ ns }/tree${ path }?op=create-workflow`)
-			.set({
-				'Content-Type': 'text/plain',
-			})
-
-			.send(data)
-
-		expect(res.statusCode).toEqual(200)
-		expect(res.body).toMatchObject({
-			namespace: ns,
-		})
-	})
-}
-
 async function itShouldCreateFileV2 (it, expect, ns, path, name, type, mimeType, data) {
 	it(`should create a new file ${ path }`, async () => {
+		if (path === '/')
+			path = ''
+
 		const res = await request(common.config.getDirektivHost())
 			.post(`/api/v2/namespaces/${ ns }/files${ path }`)
 			.set('Content-Type', 'application/json')
@@ -62,8 +46,6 @@ async function itShouldCreateFileV2 (it, expect, ns, path, name, type, mimeType,
 				data,
 			})
 		expect(res.statusCode).toEqual(200)
-		if (path === '/')
-			path = ''
 
 		expect(res.body.data).toEqual({
 			path: `${ path }/${ name }`,
@@ -75,6 +57,10 @@ async function itShouldCreateFileV2 (it, expect, ns, path, name, type, mimeType,
 			updatedAt: expect.stringMatching(regex.timestampRegex),
 		})
 	})
+}
+
+function itShouldCreateYamlFileV2 (it, expect, ns, path, name, type, data) {
+	return itShouldCreateFileV2(it, expect, ns, path, name, type, 'application/yaml', btoa(data))
 }
 
 async function itShouldCreateDirV2 (it, expect, ns, path, name) {
@@ -99,26 +85,16 @@ async function itShouldCreateDirV2 (it, expect, ns, path, name) {
 	})
 }
 
-async function itShouldUpdatePathV2 (it, expect, ns, path, newPath) {
-	it(`should update file path ${ path } to ${ newPath }`, async () => {
-		const res = await request(common.config.getDirektivHost())
-			.patch(`/api/v2/namespaces/${ ns }/files${ path }`)
-			.set('Content-Type', 'application/json')
-			.send({
-				path: newPath,
-			})
-		expect(res.statusCode).toEqual(200)
-		expect(res.body.data).toMatchObject({
-			path: newPath,
-			type: expect.stringMatching('directory|file|workflow|service|endpoint|consumer'),
-			createdAt: expect.stringMatching(regex.timestampRegex),
-			updatedAt: expect.stringMatching(regex.timestampRegex),
-		})
-	})
+function itShouldUpdateFilePathV2 (it, expect, ns, path, newPath) {
+	return itShouldUpdateFileV2(it, expect, ns, path, { path: newPath })
 }
 
 async function itShouldUpdateFileV2 (it, expect, ns, path, newPatch) {
-	it(`should update file path ${ path }`, async () => {
+	let title = `should update file path ${ path }`
+	if (newPatch.path !== undefined)
+		title = `should update file path ${ path } to ${ newPatch.path }`
+
+	it(title, async () => {
 		const res = await request(common.config.getDirektivHost())
 			.patch(`/api/v2/namespaces/${ ns }/files${ path }`)
 			.set('Content-Type', 'application/json')
@@ -135,7 +111,6 @@ async function itShouldUpdateFileV2 (it, expect, ns, path, newPatch) {
 		if (newPatch.data !== undefined)
 			want.data = newPatch.data
 
-
 		expect(res.body.data).toMatchObject(want)
 	})
 }
@@ -149,7 +124,6 @@ async function itShouldCheckPathExistsV2 (it, expect, ns, path, assertExits) {
 			expect(res.statusCode).toEqual(200)
 		else
 			expect(res.statusCode).toEqual(404)
-
 	})
 }
 
@@ -163,54 +137,17 @@ states:
 `
 }
 
-
-async function itShouldCreateDirectory (it, expect, ns, path) {
-	it(`should create a directory ${ path }`, async () => {
-		const res = await request(common.config.getDirektivHost())
-			.put(`/api/namespaces/${ ns }/tree${ path }?op=create-directory`)
-
-		expect(res.statusCode).toEqual(200)
-		expect(res.body).toMatchObject({
-			namespace: ns,
-		})
-	})
+function itShouldUpdateYamlFileV2 (it, expect, ns, path, data) {
+	return itShouldUpdateFileV2(it, expect, ns, path, { data: btoa(data) })
 }
 
-async function itShouldUpdateFile (it, expect, ns, path, data) {
-	it(`should update existing file ${ path }`, async () => {
-		const res = await request(common.config.getDirektivHost())
-			.post(`/api/namespaces/${ ns }/tree${ path }?op=update-workflow`)
-			.set({
-				'Content-Type': 'text/plain',
-			})
-
-			.send(data)
-
-		expect(res.statusCode).toEqual(200)
-		expect(res.body).toMatchObject({
-			namespace: ns,
-		})
-	})
-}
-
-async function itShouldDeleteFile (it, expect, ns, path) {
+async function itShouldDeleteFileV2 (it, expect, ns, path) {
 	it(`should delete a file ${ path }`, async () => {
 		const res = await request(common.config.getDirektivHost())
-			.delete(`/api/namespaces/${ ns }/tree${ path }?op=delete-node`)
+			.delete(`/api/v2/namespaces/${ ns }/files${ path }`)
 
 		expect(res.statusCode).toEqual(200)
-		expect(res.body).toMatchObject({})
-	})
-}
-
-async function itShouldRenameFile (it, expect, ns, path, newPath) {
-	it(`should delete a file ${ path }`, async () => {
-		const res = await request(common.config.getDirektivHost())
-			.post(`/api/namespaces/${ ns }/tree${ path }?op=rename-node`)
-			.send({ new: newPath })
-
-		expect(res.statusCode).toEqual(200)
-		expect(res.body).toMatchObject({})
+		expect(res.body).toEqual('')
 	})
 }
 
@@ -218,20 +155,18 @@ function sleep (ms) {
 	return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-
 export default {
 	deleteAllNamespaces,
 	itShouldCreateNamespace,
-	itShouldCreateFile,
-	itShouldDeleteFile,
-	itShouldRenameFile,
-	itShouldUpdateFile,
-	itShouldCreateDirectory,
+
+	itShouldUpdateYamlFileV2,
+	itShouldDeleteFileV2,
 	dummyWorkflow,
+	itShouldCreateYamlFileV2,
 	itShouldCreateDirV2,
 	itShouldCreateFileV2,
 	itShouldCheckPathExistsV2,
-	itShouldUpdatePathV2,
+	itShouldUpdateFilePathV2,
 	itShouldUpdateFileV2,
 	sleep,
 }

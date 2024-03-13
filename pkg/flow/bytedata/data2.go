@@ -34,7 +34,7 @@ func ConvertFileToGrpcNode(f *filestore.File) *grpc.Node {
 		node.MimeType = ""
 	case string(filestore.FileTypeWorkflow):
 		node.ExpandedType = string(filestore.FileTypeWorkflow)
-		node.MimeType = "application/direktiv"
+		node.MimeType = "application/yaml"
 	default:
 		node.ExpandedType = string(filestore.FileTypeFile)
 		node.MimeType = f.MIMEType

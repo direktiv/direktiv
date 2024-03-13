@@ -4,9 +4,7 @@ import common from '../common'
 import request from '../common/request'
 import { retry10 } from '../common/retry'
 
-
 const testNamespace = 'headers'
-
 
 const endpointJSFile = `
 direktiv_api: endpoint/v1
@@ -38,7 +36,6 @@ methods:
   - POST
 path: /target`
 
-
 const wf = `
 direktiv_api: workflow/v1
 states:
@@ -53,19 +50,19 @@ describe('Test header plugin', () => {
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/endpoint1.yaml',
+		'/', 'endpoint1.yaml', 'endpoint',
 		endpointJSFile,
 	)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/target.yaml',
+		'/', 'target.yaml', 'workflow',
 		wf,
 	)
 
@@ -82,5 +79,4 @@ describe('Test header plugin', () => {
 		expect(req.body.result.headers.Header).toBeUndefined()
 		expect(req.body.result.headers.Header1[0]).toEqual('newvalue')
 	})
-
 })

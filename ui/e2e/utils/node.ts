@@ -1,7 +1,7 @@
 import { NodeListSchemaType } from "~/api/tree/schema/node";
 import { headers } from "./testutils";
 
-const apiUrl = process.env.VITE_DEV_API_DOMAIN;
+const apiUrl = process.env.PLAYWRIGHT_UI_BASE_URL;
 
 export const workflowExamples = {
   noop: `\

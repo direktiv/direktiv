@@ -1,12 +1,9 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
-import { basename } from 'path'
 
 import config from '../common/config'
 import helpers from '../common/helpers'
 import regex from '../common/regex'
 import request from '../common/request'
-
-const namespace = basename(__filename)
 
 describe('Test namespace create calls', () => {
 	beforeAll(helpers.deleteAllNamespaces)
@@ -60,7 +57,6 @@ describe('Test namespace create calls', () => {
 	}
 })
 
-
 describe('Test invalid namespace create calls', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 
@@ -91,6 +87,66 @@ describe('Test invalid namespace create calls', () => {
 			expect(res.body.error).toEqual(
 				testCase.wantError.error,
 			)
+		})
+	}
+})
+
+describe('Test invalid namespace name', () => {
+	beforeAll(helpers.deleteAllNamespaces)
+
+	const testCases = [
+		'test-flow-namespace-regex-A',
+		'Test-flow-namespace-regex-a',
+		'test-flow-namespace-reGex-a',
+		'1test-flow-namespace-regex-a',
+		'.test-flow-namespace-regex-a',
+		'_test-flow-namespace-regex-a',
+		'test-flow-namespace-regex-a_',
+		'test-flow-namespace-regex-a.',
+		'test-flow-namespace@regex-a',
+		'test-flow-namespace+regex-a',
+		'test-flow-namespace regex-a',
+		'test-flow-namespace%20regex-a',
+	]
+
+	for (let i = 0; i < testCases.length; i++) {
+		const testCase = testCases[i]
+
+		it(`should fail create a new namespace case ${ i }`, async () => {
+			const res = await request(config.getDirektivHost())
+				.post(`/api/v2/namespaces`)
+				.send({
+					name: testCase,
+				})
+			expect(res.statusCode).toEqual(400)
+			expect(res.body.error).toEqual({
+				code: 'request_data_invalid',
+				message: 'invalid namespace name',
+			})
+		})
+	}
+})
+
+describe('Test valid namespace name', () => {
+	beforeAll(helpers.deleteAllNamespaces)
+
+	const testCases = [
+		'a',
+		'test-flow-namespace-regex-a',
+		'test-flow-namespace-regex-1',
+		'test-flow-namespace-regex-a_b.c',
+	]
+
+	for (let i = 0; i < testCases.length; i++) {
+		const testCase = testCases[i]
+
+		it(`should fail create a new namespace case ${ i }`, async () => {
+			const res = await request(config.getDirektivHost())
+				.post(`/api/v2/namespaces`)
+				.send({
+					name: testCase,
+				})
+			expect(res.statusCode).toEqual(200)
 		})
 	}
 })
