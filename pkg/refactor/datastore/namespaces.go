@@ -19,13 +19,13 @@ type Namespace struct {
 }
 
 func (ns *Namespace) WithTags(ctx context.Context) context.Context {
-	tags, ok := ctx.Value(core.TagsKey).([]interface{})
+	tags, ok := ctx.Value(core.LogTagsKey).([]interface{})
 	if !ok {
 		tags = make([]interface{}, 0)
 	}
 	tags = append(tags, "namespace", ns.Name)
 
-	return context.WithValue(ctx, core.TagsKey, tags)
+	return context.WithValue(ctx, core.LogTagsKey, tags)
 }
 
 func (ns *Namespace) GetAttributes() map[string]string {

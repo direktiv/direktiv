@@ -29,7 +29,7 @@ func (instance *Instance) GetAttributes(recipientType recipient.RecipientType) m
 }
 
 func (instance *Instance) WithTags(ctx context.Context) context.Context {
-	tags, ok := ctx.Value(core.TagsKey).([]interface{})
+	tags, ok := ctx.Value(core.LogTagsKey).([]interface{})
 	if !ok {
 		tags = make([]interface{}, 0)
 	}
@@ -45,25 +45,25 @@ func (instance *Instance) WithTags(ctx context.Context) context.Context {
 	tags = append(tags, "callpath", callpath)
 	tags = append(tags, "workflow", instance.Instance.WorkflowPath) // TODO: value is empty.
 
-	return context.WithValue(ctx, core.TagsKey, tags)
+	return context.WithValue(ctx, core.LogTagsKey, tags)
 }
 
 func AddTag(ctx context.Context, key, value interface{}) context.Context {
-	tags, ok := ctx.Value(core.TagsKey).([]interface{})
+	tags, ok := ctx.Value(core.LogTagsKey).([]interface{})
 	if !ok {
 		tags = make([]interface{}, 0)
 	}
 	tags = append(tags, key, value)
 
-	return context.WithValue(ctx, core.TagsKey, tags)
+	return context.WithValue(ctx, core.LogTagsKey, tags)
 }
 
 func getSlogAttributes(ctx context.Context) []interface{} {
-	tags, ok := ctx.Value(core.TagsKey).([]interface{})
+	tags, ok := ctx.Value(core.LogTagsKey).([]interface{})
 	if !ok {
 		tags = make([]interface{}, 0)
 	}
-	if trackValue, ok := ctx.Value(core.TrackKey).(string); ok {
+	if trackValue, ok := ctx.Value(core.LogTrackKey).(string); ok {
 		tags = append(tags, "track", trackValue)
 	}
 
@@ -77,7 +77,7 @@ func getSlogAttributes(ctx context.Context) []interface{} {
 	return tags
 }
 
-func GetSlogAttributesWithStatus(ctx context.Context, status core.Status) []interface{} {
+func GetSlogAttributesWithStatus(ctx context.Context, status core.LogStatus) []interface{} {
 	tags := getSlogAttributes(ctx)
 	tags = append(tags, "status", status)
 
@@ -93,7 +93,7 @@ func GetSlogAttributesWithError(ctx context.Context, err error) []interface{} {
 }
 
 func WithTrack(ctx context.Context, track string) context.Context {
-	return context.WithValue(ctx, core.TrackKey, track)
+	return context.WithValue(ctx, core.LogTrackKey, track)
 }
 
 func BuildNamespaceTrack(namespace string) string {
