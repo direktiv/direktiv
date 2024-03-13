@@ -66,7 +66,7 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
         {verbose && workflowPath && " "}
         {verbose && workflowState}
         {verbose && workflowState && " "}
-        {msg} {logEntry.id}
+        {msg}
       </LogEntry>
     );
   }
