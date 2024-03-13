@@ -435,7 +435,8 @@ The Workflow can be executed with input data by passing it via stdin or the inpu
 			root.Fail(cmd, "Failed to execute workflow: %v\n", err)
 		}
 		cmd.Printf("Successfully Executed Instance: %s\n", instanceDetails.Instance)
-		urlOutput := root.GetLogs(cmd, instanceDetails.Instance, "")
+		urlOutput := fmt.Sprintf("%s/instances/%s/output", root.UrlPrefix, instanceDetails.Instance)
+		root.GetLogsSSE(cmd, "?instance="+instanceDetails.Instance)
 		output, err := getOutput(urlOutput)
 		if err != nil {
 			root.Fail(cmd, "%s", err)
