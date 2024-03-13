@@ -114,14 +114,14 @@ docker-stop: ## Stop an existing docker deployment.
 docker-tail: ## Tail the logs for the direktiv container in the docker deployment.
 	DIREKTIV_UI_IMAGE=direktiv-ui-dev DIREKTIV_IMAGE=direktiv-dev  docker compose logs -f
 
-.PHONY: docker-tests
-docker-tests: docker-stop docker-build
-docker-tests: ## Perform backend end-to-end tests against the docker deployment.
+.PHONY: docker-e2e-api
+docker-e2e-api: docker-stop docker-build
+docker-e2e-api: ## Perform backend end-to-end tests against the docker deployment.
 	DIREKTIV_UI_IMAGE=direktiv-ui-dev DIREKTIV_IMAGE=direktiv-dev  docker compose run e2e-api
 
-.PHONY: docker-playwright
-docker-playwright: docker-build docker-stop
-docker-playwright: ## Create a local docker deployment.
+.PHONY: docker-e2e-playwright
+docker-e2e-playwright: docker-build docker-stop
+docker-e2e-playwright: ## Create a local docker deployment.
 	cd ui && docker build -t direktiv-ui-dev .
 	DIREKTIV_UI_IMAGE=direktiv-ui-dev DIREKTIV_IMAGE=direktiv-dev  docker compose run e2e-playwright
 
