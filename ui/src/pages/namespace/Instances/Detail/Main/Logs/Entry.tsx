@@ -15,7 +15,7 @@ import { useLogsPreferencesVerboseLogs } from "~/util/store/logs";
 import { useTranslation } from "react-i18next";
 
 type LogEntryProps = ComponentPropsWithoutRef<typeof LogEntry>;
-type Props = { logEntry: LogEntryType; test: number } & LogEntryProps;
+type Props = { logEntry: LogEntryType } & LogEntryProps;
 
 export const Entry = forwardRef<HTMLDivElement, Props>(
   ({ logEntry, ...props }, ref) => {

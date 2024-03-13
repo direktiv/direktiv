@@ -51,7 +51,6 @@ const ScrollContainer = () => {
             return (
               <Entry
                 key={virtualItem.key}
-                test={virtualItem.key as number}
                 data-index={virtualItem.key}
                 ref={rowVirtualizer.measureElement}
                 logEntry={logEntry}
