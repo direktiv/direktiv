@@ -1,27 +1,32 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { LogEntryType } from "~/api/logs/schema";
+import { useLogs } from "~/api/logs/query/logs";
 import { useVirtualizer } from "@tanstack/react-virtual";
 
 const defaultLogHeight = 20;
 
-type UseLogVirtualizerParams = {
-  logs: LogEntryType[];
-  fetchPreviousPage: () => void;
-  hasPreviousPage: boolean | undefined;
-  isFetchingPreviousPage: boolean;
+type useLogVirtualizerParams = {
+  queryLogs: Parameters<typeof useLogs>[0];
 };
 
-export const useLogVirtualizer = ({
-  logs,
-  fetchPreviousPage,
-  hasPreviousPage,
-  isFetchingPreviousPage,
-}: UseLogVirtualizerParams) => {
+export const useLogVirtualizer = ({ queryLogs }: useLogVirtualizerParams) => {
   const lastScrollPos = useRef<{
     scrollOffset: number;
     numberOfLogs: number;
   } | null>(null);
+
+  const {
+    data: logData,
+    hasPreviousPage,
+    fetchPreviousPage,
+    isFetchingPreviousPage,
+  } = useLogs(queryLogs);
+
+  const logs = useMemo(
+    () => (logData?.pages ?? []).flatMap((x) => x.data ?? []),
+    [logData?.pages]
+  );
+
   // The scrollable element for the list
   const parentRef = useRef<HTMLDivElement | null>(null);
   const numberOfLogs = logs.length;
@@ -118,5 +123,5 @@ export const useLogVirtualizer = ({
     numberOfLogs,
   ]);
 
-  return { rowVirtualizer, parentRef, setWatch, watch };
+  return { rowVirtualizer, parentRef, logs, watch, setWatch };
 };

@@ -6,48 +6,22 @@ import { twMergeClsx } from "~/util/helpers";
 import { useInstanceDetails } from "~/api/instances/query/details";
 import { useInstanceId } from "../../store/instanceContext";
 import { useLogVirtualizer } from "./useLogVirtualizer";
-import { useLogs } from "~/api/logs/query/logs";
-import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 const ScrollContainer = () => {
+  const { t } = useTranslation();
   const instanceId = useInstanceId();
   const { data: instanceDetailsData } = useInstanceDetails({ instanceId });
-
-  const { t } = useTranslation();
-
-  const {
-    data: logData,
-    hasPreviousPage,
-    fetchPreviousPage,
-    isFetchingPreviousPage,
-  } = useLogs({
-    instance: instanceId,
-  });
-
-  const allLogs = useMemo(
-    () => (logData?.pages ?? []).flatMap((x) => x.data ?? []),
-    [logData?.pages]
-  );
-
-  const allLogIds = new Set(allLogs.map((log) => log.id));
-
-  if (allLogs.length !== allLogIds.size) {
-    throw new Error("Duplicate log ids found");
-  }
-
-  const { rowVirtualizer, parentRef, setWatch, watch } = useLogVirtualizer({
-    logs: allLogs,
-    fetchPreviousPage,
-    hasPreviousPage,
-    isFetchingPreviousPage,
-  });
-
   const isPending = instanceDetailsData?.instance?.status === "pending";
 
-  if (!logData) return null;
+  const { rowVirtualizer, parentRef, logs, watch, setWatch } =
+    useLogVirtualizer({
+      queryLogs: {
+        instance: instanceId,
+      },
+    });
 
-  const items = rowVirtualizer.getVirtualItems();
+  const virtualItems = rowVirtualizer.getVirtualItems();
 
   return (
     <Logs className="h-full overflow-scroll" ref={parentRef}>
@@ -63,11 +37,11 @@ const ScrollContainer = () => {
             top: 0,
             left: 0,
             width: "100%",
-            transform: `translateY(${items[0]?.start}px)`,
+            transform: `translateY(${virtualItems[0]?.start}px)`,
           }}
         >
-          {items.map((virtualItem) => {
-            const logEntry = allLogs[virtualItem.index];
+          {virtualItems.map((virtualItem) => {
+            const logEntry = logs[virtualItem.index];
             if (!logEntry) return null;
             return (
               <Entry
