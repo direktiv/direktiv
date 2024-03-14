@@ -206,20 +206,15 @@ func (m logController) stream(w http.ResponseWriter, r *http.Request) {
 	for {
 		select {
 		case <-ctx.Done():
-			slog.Info("context done")
-
 			return
 		case message := <-messageChannel:
 			_, err := io.Copy(w, strings.NewReader(fmt.Sprintf("id: %v\nevent: %v\ndata: %v\n\n", message.ID, message.Type, message.Data)))
 			if err != nil {
-				slog.Error("copy", "error", err)
 			}
 
 			f, ok := w.(http.Flusher)
 			if !ok {
 				// TODO Handle case where response writer is not a http.Flusher
-				slog.Error("Response writer is not a http.Flusher")
-
 				return
 			}
 			if f != nil {
