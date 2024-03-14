@@ -215,6 +215,7 @@ func (m logController) stream(w http.ResponseWriter, r *http.Request) {
 		case message := <-messageChannel:
 			_, err := io.Copy(w, strings.NewReader(fmt.Sprintf("id: %v\nevent: %v\ndata: %v\n\n", message.ID, message.Type, message.Data)))
 			if err != nil {
+				slog.Error("sse error", "error", err)
 			}
 
 			f, ok := w.(http.Flusher)
