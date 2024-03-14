@@ -97,7 +97,7 @@ func (s sqlLogNewStore) GetStartingIDUntilTime(ctx context.Context, track string
 	query := `
         SELECT id, time, tag, data
         FROM fluentbit
-        WHERE tag = ? AND id >= ? time <= ?
+        WHERE tag = ? AND id > ? time <= ?
         ORDER BY time ASC;
     `
 	resultList := make([]ScanResult, 0)
