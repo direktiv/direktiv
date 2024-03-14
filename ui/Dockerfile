@@ -7,9 +7,12 @@ WORKDIR /app
 
 ENV PATH /app/node_modules/.bin:$PATH
 
+COPY yarn.lock yarn.lock
+COPY package.json package.json
+RUN yarn install
+
 COPY . .
 
-RUN yarn install
 # If this causes problems on github actions: A potential fix is to change the builder image to `node:alpine`
 RUN VITE_APP_VERSION=$FULL_VERSION yarn build
 
