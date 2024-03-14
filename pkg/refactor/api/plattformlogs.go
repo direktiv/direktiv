@@ -14,31 +14,22 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/direktiv/direktiv/pkg/refactor/plattformlogs"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/go-chi/chi/v5"
 )
 
 type logController struct {
-	store plattformlogs.LogStore
-}
-
-func NewLogManager(store plattformlogs.LogStore) core.LogCollectionManager {
-	return logController{
-		store: store,
-	}
+	store datastore.LogStore
 }
 
 func (m *logController) mountRouter(r chi.Router) {
-	r.Get("/subscribe", func(w http.ResponseWriter, r *http.Request) {
-		params := extractLogRequestParams(r)
-		m.Stream(params).ServeHTTP(w, r)
-	})
+	r.Get("/subscribe", m.stream)
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		params := extractLogRequestParams(r)
 
 		// Call the Get method with the cursor instead of offset
-		data, starting, err := m.GetOlder(r.Context(), params)
+		data, starting, err := m.getOlder(r.Context(), params)
 		if err != nil {
 			slog.Error("Get logs", "error", err)
 			writeInternalError(w, err)
@@ -64,14 +55,14 @@ func (m *logController) mountRouter(r chi.Router) {
 	})
 }
 
-func (m logController) GetNewer(ctx context.Context, t time.Time, params map[string]string) ([]core.PlattformLogEntry, error) {
-	var logs []plattformlogs.LogEntry
+func (m logController) getNewer(ctx context.Context, t time.Time, params map[string]string) ([]logEntry, error) {
+	var logs []core.LogEntry
 	var err error
 
 	// Determine the stream based on the provided parameters
 	stream, err := determineStream(params)
 	if err != nil {
-		return []core.PlattformLogEntry{}, err
+		return []logEntry{}, err
 	}
 
 	// Call the appropriate LogStore method with cursorTime
@@ -80,22 +71,22 @@ func (m logController) GetNewer(ctx context.Context, t time.Time, params map[str
 	if hasLastID && isInstanceRequest {
 		id, err := strconv.Atoi(lastID)
 		if err != nil {
-			return []core.PlattformLogEntry{}, err
+			return []logEntry{}, err
 		}
 		r, err := m.store.GetStartingIDUntilTimeInstance(ctx, stream, id, t)
 		if err != nil {
-			return []core.PlattformLogEntry{}, err
+			return []logEntry{}, err
 		}
 		logs = append(logs, r...)
 	}
 	if hasLastID && !isInstanceRequest {
 		id, err := strconv.Atoi(lastID)
 		if err != nil {
-			return []core.PlattformLogEntry{}, err
+			return []logEntry{}, err
 		}
 		r, err := m.store.GetStartingIDUntilTime(ctx, stream, id, t)
 		if err != nil {
-			return []core.PlattformLogEntry{}, err
+			return []logEntry{}, err
 		}
 		logs = append(logs, r...)
 	}
@@ -103,22 +94,22 @@ func (m logController) GetNewer(ctx context.Context, t time.Time, params map[str
 	if _, ok := params["instance"]; ok {
 		r, err := m.store.GetNewerInstance(ctx, stream, t)
 		if err != nil {
-			return []core.PlattformLogEntry{}, err
+			return []logEntry{}, err
 		}
 		logs = append(logs, r...)
 	} else {
 		r, err := m.store.GetNewer(ctx, stream, t)
 		if err != nil {
-			return []core.PlattformLogEntry{}, err
+			return []logEntry{}, err
 		}
 		logs = append(logs, r...)
 	}
 
-	res := loglist{}
+	res := []logEntry{}
 	for _, le := range logs {
-		e, err := plattformlogs.ToFeatureLogEntry(le)
+		e, err := toFeatureLogEntry(le)
 		if err != nil {
-			return []core.PlattformLogEntry{}, err
+			return []logEntry{}, err
 		}
 		res = append(res, e)
 	}
@@ -137,20 +128,20 @@ func (m logController) GetNewer(ctx context.Context, t time.Time, params map[str
 	return res, nil
 }
 
-func (m logController) GetOlder(ctx context.Context, params map[string]string) ([]core.PlattformLogEntry, time.Time, error) {
-	var r []plattformlogs.LogEntry
+func (m logController) getOlder(ctx context.Context, params map[string]string) ([]logEntry, time.Time, error) {
+	var r []core.LogEntry
 	var err error
 
 	// Determine the stream based on the provided parameters
 	stream, err := determineStream(params)
 	if err != nil {
-		return []core.PlattformLogEntry{}, time.Time{}, err
+		return []logEntry{}, time.Time{}, err
 	}
 	starting := time.Now().UTC()
 	if t, ok := params["before"]; ok {
 		co, err := time.Parse(time.RFC3339Nano, t)
 		if err != nil {
-			return []core.PlattformLogEntry{}, time.Time{}, err
+			return []logEntry{}, time.Time{}, err
 		}
 		starting = co
 	}
@@ -160,13 +151,13 @@ func (m logController) GetOlder(ctx context.Context, params map[string]string) (
 		r, err = m.store.GetOlder(ctx, stream, starting)
 	}
 	if err != nil {
-		return []core.PlattformLogEntry{}, time.Time{}, err
+		return []logEntry{}, time.Time{}, err
 	}
-	res := loglist{}
+	res := []logEntry{}
 	for _, le := range r {
-		e, err := plattformlogs.ToFeatureLogEntry(le)
+		e, err := toFeatureLogEntry(le)
 		if err != nil {
-			return []core.PlattformLogEntry{}, time.Time{}, err
+			return []logEntry{}, time.Time{}, err
 		}
 		res = append(res, e)
 	}
@@ -185,92 +176,56 @@ func (m logController) GetOlder(ctx context.Context, params map[string]string) (
 	return res, starting, nil
 }
 
-// Stream handles the SSE endpoint.
-func (m logController) Stream(params map[string]string) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		// Set the appropriate headers for SSE
-		w.Header().Set("Content-Type", "text/event-stream")
-		w.Header().Set("Cache-Control", "no-cache")
-		w.Header().Set("Connection", "keep-alive")
+// stream handles the SSE endpoint.
+func (m logController) stream(w http.ResponseWriter, r *http.Request) {
+	params := extractLogRequestParams(r)
 
-		// Create a context with cancellation
-		ctx, cancel := context.WithCancel(r.Context())
-		defer cancel()
+	// Set the appropriate headers for SSE
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
 
-		// Create a channel to send SSE messages
-		messageChannel := make(chan Event)
-		// Adjust the logStoreWorker to use cursor instead of offset
-		worker := logStoreWorker{
-			Get:      m.GetNewer,
-			Interval: time.Second,
-			Ch:       messageChannel,
-			Params:   params,
-			Cursor:   time.Now().UTC(),
-		}
-		go worker.start(ctx)
+	// Create a context with cancellation
+	ctx, cancel := context.WithCancel(r.Context())
+	defer cancel()
 
-		for {
-			select {
-			case <-ctx.Done():
-				slog.Info("context done")
+	// Create a channel to send SSE messages
+	messageChannel := make(chan Event)
+	// Adjust the logStoreWorker to use cursor instead of offset
+	worker := logStoreWorker{
+		Get:      m.getNewer,
+		Interval: time.Second,
+		Ch:       messageChannel,
+		Params:   params,
+		Cursor:   time.Now().UTC(),
+	}
+	go worker.start(ctx)
+
+	for {
+		select {
+		case <-ctx.Done():
+			slog.Info("context done")
+
+			return
+		case message := <-messageChannel:
+			_, err := io.Copy(w, strings.NewReader(fmt.Sprintf("id: %v\nevent: %v\ndata: %v\n\n", message.ID, message.Type, message.Data)))
+			if err != nil {
+				slog.Error("copy", "error", err)
+			}
+
+			f, ok := w.(http.Flusher)
+			if !ok {
+				// TODO Handle case where response writer is not a http.Flusher
+				slog.Error("Response writer is not a http.Flusher")
 
 				return
-			case message := <-messageChannel:
-				slog.Info("data", "message", message)
-				_, err := io.Copy(w, strings.NewReader(fmt.Sprintf("id: %v\nevent: %v\ndata: %v\n\n", message.ID, message.Type, message.Data)))
-				if err != nil {
-					slog.Error("copy", "error", err)
-				}
-
-				f, ok := w.(http.Flusher)
-				if !ok {
-					// TODO Handle case where response writer is not a http.Flusher
-					slog.Error("Response writer is not a http.Flusher")
-
-					return
-				}
-				if f != nil {
-					f.Flush()
-				}
+			}
+			if f != nil {
+				f.Flush()
 			}
 		}
 	}
 }
-
-type loglist []core.PlattformLogEntry
-
-// func (e *loglist) filterByBranch(branch string) {
-// 	// TODO revisit this implementation
-// 	filteredEntries := make(loglist, 0)
-// 	for _, entry := range *e {
-// 		if entry.Branch == branch {
-// 			filteredEntries = append(filteredEntries, entry)
-// 		}
-// 	}
-// 	*e = filteredEntries
-// }
-
-// func (e *loglist) filterByState(state string) {
-// 	// TODO revisit this implementation
-// 	filteredEntries := make(loglist, 0)
-// 	for _, entry := range *e {
-// 		if entry.State == state {
-// 			filteredEntries = append(filteredEntries, entry)
-// 		}
-// 	}
-// 	*e = filteredEntries
-// }
-
-// func (e *loglist) filterByLevel(level string) {
-// 	// TODO revisit this implementation
-// 	filteredEntries := make(loglist, 0)
-// 	for _, entry := range *e {
-// 		if entry.Level == level {
-// 			filteredEntries = append(filteredEntries, entry)
-// 		}
-// 	}
-// 	*e = filteredEntries
-// }
 
 func determineStream(params map[string]string) (string, error) {
 	if p, ok := params["instance"]; ok {
@@ -296,7 +251,7 @@ type Event struct {
 
 // LogStoreWorker manages the log polling and channel communication.
 type logStoreWorker struct {
-	Get      func(ctx context.Context, cursorTime time.Time, params map[string]string) ([]core.PlattformLogEntry, error)
+	Get      func(ctx context.Context, cursorTime time.Time, params map[string]string) ([]logEntry, error)
 	Interval time.Duration
 	Ch       chan Event
 	Params   map[string]string
@@ -385,4 +340,81 @@ func extractLogRequestParams(r *http.Request) map[string]string {
 	}
 
 	return params
+}
+
+type logEntry struct {
+	ID        int                   `json:"id"`
+	Time      time.Time             `json:"time"`
+	Msg       interface{}           `json:"msg"`
+	Level     interface{}           `json:"level"`
+	Namespace interface{}           `json:"namespace"`
+	Trace     interface{}           `json:"trace"`
+	Span      interface{}           `json:"span"`
+	Workflow  *WorkflowEntryContext `json:"workflow,omitempty"`
+	Activity  *ActivityEntryContext `json:"activity,omitempty"`
+	Route     *RouteEntryContext    `json:"route,omitempty"`
+	Error     interface{}           `json:"error"`
+}
+
+type WorkflowEntryContext struct {
+	Status interface{} `json:"status"`
+
+	State    interface{} `json:"state"`
+	Branch   interface{} `json:"branch"`
+	Path     interface{} `json:"workflow"`
+	CalledAs interface{} `json:"calledAs"`
+	Instance interface{} `json:"instance"`
+}
+
+type ActivityEntryContext struct {
+	ID interface{} `json:"id,omitempty"`
+}
+type RouteEntryContext struct {
+	Path interface{} `json:"path,omitempty"`
+}
+
+func toFeatureLogEntry(e core.LogEntry) (logEntry, error) {
+	entry, ok := e.Data["log"].(string)
+	if !ok {
+		return logEntry{}, fmt.Errorf("log-entry format is corrupt")
+	}
+
+	var m map[string]interface{}
+	if err := json.Unmarshal([]byte(entry), &m); err != nil {
+		return logEntry{}, fmt.Errorf("failed to unmarshal log entry: %w", err)
+	}
+
+	featureLogEntry := logEntry{
+		ID:    e.ID,
+		Time:  e.Time,
+		Msg:   m["msg"],
+		Level: m["level"],
+	}
+	featureLogEntry.Error = m["error"]
+	featureLogEntry.Trace = m["trace"]
+	featureLogEntry.Span = m["span"]
+	featureLogEntry.Namespace = m["namespace"]
+	wfLogCtx := WorkflowEntryContext{}
+	wfLogCtx.State = m["state"]
+	wfLogCtx.Path = m["workflow"]
+	wfLogCtx.Instance = m["instance"]
+	wfLogCtx.CalledAs = m["calledAs"]
+	wfLogCtx.Status = m["status"]
+	wfLogCtx.Branch = m["branch"]
+	featureLogEntry.Workflow = &wfLogCtx
+	if wfLogCtx.Path == nil && wfLogCtx.Instance == nil {
+		featureLogEntry.Workflow = nil
+	}
+	if id, ok := m["activity"]; ok && id != nil {
+		featureLogEntry.Activity = &ActivityEntryContext{ID: id}
+	}
+	if path, ok := m["route"]; ok && path != nil {
+		featureLogEntry.Route = &RouteEntryContext{Path: path}
+	}
+	// TODO Remove path log-key
+	// if s, ok := m["path"]; ok {
+	// 	featureLogEntry.Path = fmt.Sprint(s)
+	// }
+
+	return featureLogEntry, nil
 }

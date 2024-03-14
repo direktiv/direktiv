@@ -5,11 +5,12 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/refactor/plattformlogs"
+	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"gorm.io/gorm"
 )
 
-var _ plattformlogs.LogStore = &sqlLogNewStore{}
+var _ datastore.LogStore = &sqlLogNewStore{}
 
 const pageSize = 200
 
@@ -24,7 +25,7 @@ type ScanResult struct {
 	Data []byte
 }
 
-func (s sqlLogNewStore) GetOlder(ctx context.Context, track string, t time.Time) ([]plattformlogs.LogEntry, error) {
+func (s sqlLogNewStore) GetOlder(ctx context.Context, track string, t time.Time) ([]core.LogEntry, error) {
 	query := `
         SELECT id, time, tag, data
         FROM fluentbit
@@ -41,7 +42,7 @@ func (s sqlLogNewStore) GetOlder(ctx context.Context, track string, t time.Time)
 	return convertScanResults(resultList)
 }
 
-func (s sqlLogNewStore) GetOlderInstance(ctx context.Context, track string, t time.Time) ([]plattformlogs.LogEntry, error) {
+func (s sqlLogNewStore) GetOlderInstance(ctx context.Context, track string, t time.Time) ([]core.LogEntry, error) {
 	query := `
         SELECT id, time, tag, data
         FROM fluentbit
@@ -58,7 +59,7 @@ func (s sqlLogNewStore) GetOlderInstance(ctx context.Context, track string, t ti
 	return convertScanResults(resultList)
 }
 
-func (s sqlLogNewStore) GetNewer(ctx context.Context, track string, t time.Time) ([]plattformlogs.LogEntry, error) {
+func (s sqlLogNewStore) GetNewer(ctx context.Context, track string, t time.Time) ([]core.LogEntry, error) {
 	query := `
         SELECT id, time, tag, data
         FROM fluentbit
@@ -75,7 +76,7 @@ func (s sqlLogNewStore) GetNewer(ctx context.Context, track string, t time.Time)
 	return convertScanResults(resultList)
 }
 
-func (s sqlLogNewStore) GetNewerInstance(ctx context.Context, track string, t time.Time) ([]plattformlogs.LogEntry, error) {
+func (s sqlLogNewStore) GetNewerInstance(ctx context.Context, track string, t time.Time) ([]core.LogEntry, error) {
 	query := `
         SELECT id, time, tag, data
         FROM fluentbit
@@ -92,7 +93,7 @@ func (s sqlLogNewStore) GetNewerInstance(ctx context.Context, track string, t ti
 	return convertScanResults(resultList)
 }
 
-func (s sqlLogNewStore) GetStartingIDUntilTime(ctx context.Context, track string, lastID int, t time.Time) ([]plattformlogs.LogEntry, error) {
+func (s sqlLogNewStore) GetStartingIDUntilTime(ctx context.Context, track string, lastID int, t time.Time) ([]core.LogEntry, error) {
 	query := `
         SELECT id, time, tag, data
         FROM fluentbit
@@ -108,7 +109,7 @@ func (s sqlLogNewStore) GetStartingIDUntilTime(ctx context.Context, track string
 	return convertScanResults(resultList)
 }
 
-func (s sqlLogNewStore) GetStartingIDUntilTimeInstance(ctx context.Context, track string, lastID int, t time.Time) ([]plattformlogs.LogEntry, error) {
+func (s sqlLogNewStore) GetStartingIDUntilTimeInstance(ctx context.Context, track string, lastID int, t time.Time) ([]core.LogEntry, error) {
 	query := `
         SELECT id, time, tag, data
         FROM fluentbit
@@ -124,8 +125,8 @@ func (s sqlLogNewStore) GetStartingIDUntilTimeInstance(ctx context.Context, trac
 	return convertScanResults(resultList)
 }
 
-func convertScanResults(scanResults []ScanResult) ([]plattformlogs.LogEntry, error) {
-	resultList := make([]plattformlogs.LogEntry, 0)
+func convertScanResults(scanResults []ScanResult) ([]core.LogEntry, error) {
+	resultList := make([]core.LogEntry, 0)
 
 	for _, result := range scanResults {
 		var dataMap map[string]interface{}
@@ -134,7 +135,7 @@ func convertScanResults(scanResults []ScanResult) ([]plattformlogs.LogEntry, err
 			return nil, err
 		}
 
-		resultList = append(resultList, plattformlogs.LogEntry{
+		resultList = append(resultList, core.LogEntry{
 			ID:   result.ID,
 			Time: result.Time,
 			Tag:  result.Tag,

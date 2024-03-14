@@ -107,7 +107,7 @@ func (internal *internal) ActionLog(ctx context.Context, req *grpc.ActionLogRequ
 	loggingCtx = instance.WithTags(loggingCtx)
 	for _, msg := range req.GetMsg() {
 		res := truncateLogsMsg(msg, 1024)
-		slog.Info(res, enginerefactor.GetSlogAttributesWithStatus(loggingCtx, core.RunningStatus)...)
+		slog.Info(res, enginerefactor.GetSlogAttributesWithStatus(loggingCtx, core.LogRunningStatus)...)
 		internal.logger.Infof(ctx, instance.Instance.ID, tags, res)
 	}
 	var resp emptypb.Empty

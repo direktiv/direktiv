@@ -4,7 +4,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/events"
 	"github.com/direktiv/direktiv/pkg/refactor/logengine"
-	"github.com/direktiv/direktiv/pkg/refactor/plattformlogs"
 	"gorm.io/gorm"
 )
 
@@ -46,7 +45,7 @@ func (s *sqlStore) Logs() logengine.LogStore {
 }
 
 // Logs returns a log store.
-func (s *sqlStore) NewLogs() plattformlogs.LogStore {
+func (s *sqlStore) NewLogs() datastore.LogStore {
 	return &sqlLogNewStore{
 		db: s.db,
 	}

@@ -275,7 +275,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 
 	engine.pubsub.NotifyInstances(im.Namespace())
 	namespaceTrackCtx := enginerefactor.WithTrack(loggingCtx, enginerefactor.BuildNamespaceTrack(im.instance.Instance.Namespace))
-	slog.Info("Workflow has been triggered", enginerefactor.GetSlogAttributesWithStatus(namespaceTrackCtx, core.RunningStatus)...)
+	slog.Info("Workflow has been triggered", enginerefactor.GetSlogAttributesWithStatus(namespaceTrackCtx, core.LogRunningStatus)...)
 
 	engine.logger.Infof(ctx, instance.Instance.NamespaceID, instance.GetAttributes(recipient.Namespace), "Workflow '%s' has been triggered by %s.", args.CalledAs, args.Invoker)
 	engine.logger.Debugf(ctx, im.instance.Instance.ID, im.GetAttributes(), "Preparing workflow triggered by %s.", args.Invoker)
@@ -589,7 +589,7 @@ failure:
 
 			if matched {
 				slog.Error("State failed with error", enginerefactor.GetSlogAttributesWithError(instanceTrackCtx, fmt.Errorf("State failed with error '%s': %s", cerr.Code, cerr.Message))...)
-				slog.Info("Error caught by error definition", enginerefactor.GetSlogAttributesWithStatus(instanceTrackCtx, core.ErrStatus)...)
+				slog.Info("Error caught by error definition", enginerefactor.GetSlogAttributesWithStatus(instanceTrackCtx, core.LogErrStatus)...)
 
 				engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), "State failed with error '%s': %s", cerr.Code, cerr.Message)
 				engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), "Error caught by error definition %d: %s", i, catch.Error)
@@ -624,7 +624,7 @@ func (engine *engine) transformState(ctx context.Context, im *instanceMemory, tr
 	slog.Debug("Transforming state data.",
 		enginerefactor.GetSlogAttributesWithStatus(
 			enginerefactor.WithTrack(im.WithTags(loggingCtx),
-				enginerefactor.BuildInstanceTrack(im.instance)), core.RunningStatus,
+				enginerefactor.BuildInstanceTrack(im.instance)), core.LogRunningStatus,
 		)...)
 	engine.logger.Debugf(ctx, im.GetInstanceID(), im.GetAttributes(), "Transforming state data.")
 
@@ -657,7 +657,7 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 		engine.metricsCompleteState(im, transition.NextState, errCode, false)
 		engine.sugar.Debugf("Instance transitioning to next state: %s -> %s", im.ID().String(), transition.NextState)
 		slog.Debug("Transitioning to next state.",
-			enginerefactor.GetSlogAttributesWithStatus(instanceTrackCtx, core.RunningStatus)...)
+			enginerefactor.GetSlogAttributesWithStatus(instanceTrackCtx, core.LogRunningStatus)...)
 
 		engine.logger.Debugf(ctx, im.GetInstanceID(), im.GetAttributes(), "Transitioning to next state: %s (%d).", transition.NextState, im.Step()+1)
 
@@ -679,8 +679,8 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 	im.instance.Instance.Status = status
 	im.updateArgs.Status = &im.instance.Instance.Status
 
-	slog.Info("Workflow completed.", enginerefactor.GetSlogAttributesWithStatus(instanceTrackCtx, core.CompletedStatus)...)
-	slog.Info("Workflow completed.", enginerefactor.GetSlogAttributesWithStatus(namespaceTrackCtx, core.CompletedStatus)...)
+	slog.Info("Workflow completed.", enginerefactor.GetSlogAttributesWithStatus(instanceTrackCtx, core.LogCompletedStatus)...)
+	slog.Info("Workflow completed.", enginerefactor.GetSlogAttributesWithStatus(namespaceTrackCtx, core.LogCompletedStatus)...)
 
 	engine.logger.Debugf(ctx, im.GetInstanceID(), im.GetAttributes(), "Workflow %s completed.", database.GetWorkflow(im.instance.Instance.WorkflowPath))
 	engine.logger.Debugf(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "Workflow %s completed.", database.GetWorkflow(im.instance.Instance.WorkflowPath))
@@ -947,7 +947,7 @@ func (engine *engine) UserLog(ctx context.Context, im *instanceMemory, msg strin
 	loggingCtx := im.Namespace().WithTags(ctx)
 	instanceTrackCtx := enginerefactor.WithTrack(im.WithTags(loggingCtx), enginerefactor.BuildInstanceTrack(im.instance))
 
-	slog.Info(fmt.Sprintf(msg, a...), enginerefactor.GetSlogAttributesWithStatus(instanceTrackCtx, core.UnknownStatus)...)
+	slog.Info(fmt.Sprintf(msg, a...), enginerefactor.GetSlogAttributesWithStatus(instanceTrackCtx, core.LogUnknownStatus)...)
 
 	engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), msg, a...)
 
@@ -978,7 +978,7 @@ func (engine *engine) logRunState(ctx context.Context, im *instanceMemory, waked
 		loggingCtx := im.Namespace().WithTags(ctx)
 		instanceTrackCtx := enginerefactor.WithTrack(im.WithTags(loggingCtx), enginerefactor.BuildInstanceTrack(im.instance))
 
-		slog.Info("Running state logic", enginerefactor.GetSlogAttributesWithStatus(instanceTrackCtx, core.RunningStatus)...)
+		slog.Info("Running state logic", enginerefactor.GetSlogAttributesWithStatus(instanceTrackCtx, core.LogRunningStatus)...)
 		engine.logger.Debugf(ctx, im.GetInstanceID(), im.GetAttributes(), "Running state logic (step:%v) -- %s", im.Step(), im.logic.GetID())
 	}
 }
