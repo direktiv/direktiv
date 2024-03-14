@@ -1,24 +1,44 @@
-import { ComponentPropsWithoutRef, forwardRef } from "react";
+import {
+  ComponentPropsWithoutRef,
+  FC,
+  PropsWithChildren,
+  forwardRef,
+} from "react";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "~/design/Tooltip";
-import { formatLogTime, logLevelToLogEntryVariant } from "~/util/helpers";
+import {
+  formatLogTime,
+  logLevelToLogEntryVariant,
+  twMergeClsx,
+} from "~/util/helpers";
 
 import { Link } from "react-router-dom";
 import { LogEntry } from "~/design/Logs";
 import { LogEntryType } from "~/api/logs/schema";
 import { pages } from "~/util/router/pages";
+import { useInstanceId } from "../../store/instanceContext";
 import { useLogsPreferencesVerboseLogs } from "~/util/store/logs";
 import { useTranslation } from "react-i18next";
 
+type LogSegmentProps = PropsWithChildren & {
+  className?: string;
+  display: boolean;
+};
+
+const LogSegment: FC<LogSegmentProps> = ({ display, className, children }) => {
+  if (!display) return <></>;
+  return <span className={twMergeClsx("pr-3", className)}>{children}</span>;
+};
+
 type LogEntryProps = ComponentPropsWithoutRef<typeof LogEntry>;
 type Props = { logEntry: LogEntryType } & LogEntryProps;
-
 export const Entry = forwardRef<HTMLDivElement, Props>(
   ({ logEntry, ...props }, ref) => {
+    const instanceId = useInstanceId();
     const { t } = useTranslation();
     const { msg, level, time, workflow, namespace } = logEntry;
     const timeFormated = formatLogTime(time);
@@ -26,17 +46,18 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
 
     const workflowPath = workflow?.workflow;
 
-    const link = pages.explorer.createHref({
+    const workflowLink = pages.explorer.createHref({
       path: workflowPath,
       namespace,
       subpage: "workflow",
     });
 
-    const workflowState = workflow?.state ? (
-      <span className="opacity-75">
-        {t("pages.instances.detail.logs.entry.stateLabel")} {workflow.state}
-      </span>
-    ) : null;
+    const instanceLink = pages.instances.createHref({
+      namespace,
+      instance: workflow?.instance,
+    });
+
+    if (!workflow) return <></>;
 
     return (
       <LogEntry
@@ -45,13 +66,13 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
         ref={ref}
         {...props}
       >
-        {verbose && workflowPath && (
+        <LogSegment display={verbose}>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
-                  to={link}
-                  className="underline opacity-75"
+                  to={workflowLink}
+                  className="underline opacity-60"
                   target="_blank"
                 >
                   {workflowPath}
@@ -62,11 +83,32 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-        )}
-        {verbose && workflowPath && " "}
-        {verbose && workflowState}
-        {verbose && workflowState && " "}
-        {msg}
+        </LogSegment>
+        <LogSegment display={verbose} className="opacity-60">
+          {t("pages.instances.detail.logs.entry.stateLabel")} {workflow.state}
+        </LogSegment>
+        <LogSegment display={true}>
+          {t("pages.instances.detail.logs.entry.messageLabel")} {msg}
+        </LogSegment>
+        <LogSegment display={instanceId !== workflow.instance}>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  to={instanceLink}
+                  className="underline opacity-60"
+                  target="_blank"
+                >
+                  {t("pages.instances.detail.logs.entry.instanceLabel")}{" "}
+                  {workflow.instance.slice(0, 8)}
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                {t("pages.instances.detail.logs.entry.instanceTooltip")}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </LogSegment>
       </LogEntry>
     );
   }

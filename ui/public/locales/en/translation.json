@@ -634,7 +634,10 @@
           },
           "entry": {
             "workflowTooltip": "open workflow in new window",
-            "stateLabel": "state:"
+            "instanceTooltip": "open instance new window",
+            "messageLabel": "msg:",
+            "stateLabel": "state:",
+            "instanceLabel": "instance:"
           }
         },
         "diagram": {
