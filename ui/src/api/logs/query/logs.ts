@@ -217,7 +217,6 @@ export const useLogs = ({
       trace,
     }),
     queryFn: fetchLogs,
-    getNextPageParam: () => undefined,
     getPreviousPageParam: (firstPage) =>
       firstPage.meta?.previousPage ?? undefined,
     enabled: !!namespace,
