@@ -29,7 +29,7 @@ func (s sqlLogNewStore) GetOlder(ctx context.Context, track string, t time.Time)
 	query := `
         SELECT id, time, tag, data
         FROM fluentbit
-        WHERE tag = ? AND time <= ?
+        WHERE tag = ? AND time < ?
         ORDER BY time DESC
         LIMIT ?;
     `
@@ -46,7 +46,7 @@ func (s sqlLogNewStore) GetOlderInstance(ctx context.Context, track string, t ti
 	query := `
         SELECT id, time, tag, data
         FROM fluentbit
-        WHERE tag LIKE ? AND time <= ?
+        WHERE tag LIKE ? AND time < ?
         ORDER BY time DESC
         LIMIT ?;
     `

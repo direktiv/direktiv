@@ -37,20 +37,22 @@ func (m *logController) mountRouter(r chi.Router) {
 			return
 		}
 		if len(data) == 0 {
-			data = nil
-			writeJSONWithMeta(w, data, nil)
+			writeJSONWithMeta(w, []any{}, nil)
 
 			return
 		}
-		var previousPage interface{} = data[len(data)-1].Time.UTC().Format(time.RFC3339Nano)
-		if len(data) < 200 {
-			previousPage = nil
+
+		slices.Reverse(data)
+		var previousPage interface{} = data[0].Time.UTC().Format(time.RFC3339Nano)
+		var lastID interface{} = data[0].ID
+		if len(data) > 1 {
+			lastID = data[len(data)-1].ID
 		}
 		metaInfo := map[string]any{
 			"previousPage": previousPage,
 			"startingFrom": starting,
+			"lastID":       lastID,
 		}
-		slices.Reverse(data)
 		writeJSONWithMeta(w, data, metaInfo)
 	})
 }

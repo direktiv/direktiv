@@ -94,13 +94,19 @@
             schema:
               type: object
               properties:
-                previousPage:
-                  type: string
-                  format: RFC3339Nano
+                meta:
+                  type: object
                   nullable: true
-                startingFrom:
-                  type: string
-                  format: RFC3339Nano
+                  properties:
+                    previousPage:
+                      type: string
+                      format: RFC3339Nano
+                      nullable: true
+                    startingFrom:
+                      type: string
+                      format: RFC3339Nano
+                    lastID:
+                      type: integer
                 data:
                   type: array
                   items: 
@@ -197,7 +203,7 @@
         in: header
         required: false
         schema:
-          type: string
+          type: integer
     responses:
       '200':
         description: OK
