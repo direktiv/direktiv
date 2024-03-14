@@ -317,8 +317,6 @@
                     startingFrom:
                       type: string
                       format: RFC3339Nano
-                    lastID:
-                      type: integer
                 data:
                   type: array
                   items: 
@@ -411,6 +409,11 @@
         required: false
         schema:
           type: string
+      - name: after
+        in: query
+        required: false
+        schema:
+          format: RFC3339Nano
       - name: Last-Event-ID
         in: header
         required: false

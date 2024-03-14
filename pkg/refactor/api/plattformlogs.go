@@ -44,14 +44,10 @@ func (m *logController) mountRouter(r chi.Router) {
 
 		slices.Reverse(data)
 		var previousPage interface{} = data[0].Time.UTC().Format(time.RFC3339Nano)
-		var lastID interface{} = data[0].ID
-		if len(data) > 1 {
-			lastID = data[len(data)-1].ID
-		}
+
 		metaInfo := map[string]any{
 			"previousPage": previousPage,
 			"startingFrom": starting,
-			"lastID":       lastID,
 		}
 		writeJSONWithMeta(w, data, metaInfo)
 	})
@@ -190,7 +186,16 @@ func (m logController) stream(w http.ResponseWriter, r *http.Request) {
 	// Create a context with cancellation
 	ctx, cancel := context.WithCancel(r.Context())
 	defer cancel()
+	cursor := time.Now().UTC()
+	if t, ok := params["after"]; ok {
+		co, err := time.Parse(time.RFC3339Nano, t)
+		if err != nil {
+			slog.Error("cloud not parse time", "error", err)
 
+			return
+		}
+		cursor = co
+	}
 	// Create a channel to send SSE messages
 	messageChannel := make(chan Event)
 	// Adjust the logStoreWorker to use cursor instead of offset
@@ -199,7 +204,7 @@ func (m logController) stream(w http.ResponseWriter, r *http.Request) {
 		Interval: time.Second,
 		Ch:       messageChannel,
 		Params:   params,
-		Cursor:   time.Now().UTC(),
+		Cursor:   cursor,
 	}
 	go worker.start(ctx)
 
@@ -325,6 +330,9 @@ func extractLogRequestParams(r *http.Request) map[string]string {
 	}
 	if v := r.URL.Query().Get("before"); v != "" {
 		params["before"] = v
+	}
+	if v := r.URL.Query().Get("after"); v != "" {
+		params["after"] = v
 	}
 	if v := r.URL.Query().Get("trace"); v != "" {
 		params["trace"] = v
