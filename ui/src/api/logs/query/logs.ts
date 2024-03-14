@@ -217,9 +217,8 @@ export const useLogs = ({
       trace,
     }),
     queryFn: fetchLogs,
-    getNextPageParam: () => undefined,
-    getPreviousPageParam: (firstPage) =>
-      firstPage.meta?.previousPage ?? undefined,
+    getPreviousPageParam: () => undefined,
+    getNextPageParam: (lastPage) => lastPage.meta?.previousPage ?? undefined,
     enabled: !!namespace,
     refetchOnWindowFocus: false,
   });
