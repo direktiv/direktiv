@@ -24,9 +24,9 @@ export const useLogVirtualizer = ({ queryLogsBy }: useLogVirtualizerParams) => {
 
   const {
     data: logData,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
+    hasPreviousPage,
+    fetchPreviousPage,
+    isFetchingPreviousPage,
   } = useLogs(queryLogsBy);
 
   // merge all logs pages into to one array
@@ -90,16 +90,16 @@ export const useLogVirtualizer = ({ queryLogsBy }: useLogVirtualizerParams) => {
     const [firstLogEntry] = virtualItems;
     if (
       firstLogEntry?.index === 0 &&
-      hasNextPage &&
-      !isFetchingNextPage &&
+      hasPreviousPage &&
+      !isFetchingPreviousPage &&
       numberOfLogs === prevNumberOfLogs?.current
     ) {
-      fetchNextPage();
+      fetchPreviousPage();
     }
   }, [
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
+    fetchPreviousPage,
+    hasPreviousPage,
+    isFetchingPreviousPage,
     numberOfLogs,
     virtualItems,
   ]);
