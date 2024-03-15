@@ -26,16 +26,16 @@ Run Workflows and Create Services in Seconds
 
 <p align="center">
     <a href="https://docs.direktiv.io">Documentation</a>
-    .
+    ·
     <a href="https://blog.direktiv.io">Blog</a>
-    . 
+    ·
     <a href="https://github.com/direktiv/direktiv/issues/new?assignees=&labels=&projects=&template=bug_report.md&title=">Report Bug</a>
     ·
     <a href="https://github.com/direktiv/direktiv/issues/new?assignees=&labels=&projects=&template=feature_request.md&title=">Request Feature</a>
 </p>
 
 
-<div align="center"><img src="assets/images/direktiv.gif" width="40%" ></div>
+<div align="center"><img src="assets/images/direktiv.gif" ></div>
 
 ## Features & Standards
 
@@ -69,8 +69,7 @@ If you are not using Linux please follow the [installation instructions](https:/
 
 Direktiv is an event-driven workflow engine made for **orchestration**, **integration**, and **automation**. In it's core it is a state machine which uses containers as functions within workflows and passes JSON structured data between states. It offers key features like retries, error handling, and conditional logic. The flow's state, stored as JSON, allows for dynamic transformations during execution using JQ or JavaScript.
 
-<div align="center">
-<table>
+<table align="center">
   <tr>
   <td>
 
@@ -94,13 +93,48 @@ states:
   </td>
   </tr>
 </table>
-</div>
 
 Workflows can be triggered by events, start periodically via crons or can be started by a HTTP POST request where the data is the initial state fo the workflow. 
 
-
 ## Writing Workflows
 
+Writing workflows is a very simple task. The basic idea is that there are multiple states where the workflow steps through. These states are of different types to provide switches, errors or other functionality. The most important type is the `action` state. This state calls a function which is basically a simple container.
+
+Writing workflows is quite simple. Essentially, a workflow is progressing through different states with a JSOJ payload passed between those states. These states come in various types, providing switches, error management, and more. The most important type is the `action` state. The `action` state is basically a call to a container. Internally Direktiv spins up a serverless Knative function and passes data to that container. The response of that call becomes part of the JSON state of the flow.
+
+```yaml
+direktiv_api: workflow/v1
+
+functions:
+- id: request
+  image: gcr.io/direktiv/functions/http-request:1.0
+  type: knative-workflow
+
+states:
+- id: joke 
+  type: action
+  action:
+    function: request
+    input: 
+      method: GET
+      url: https://api.chucknorris.io/jokes/random?category=jq(.category // "dev")
+  transform:
+    joke: jq(.return[0].result.value)
+
+```
+
+The above example is a very simple one-step workflow. It uses the `http-request` function. This function accepts multiple input parameters e.g. the HTTP method or the URL. The section under `input` defines the data send to the function as JSON. In this case Direktiv would post the following payload to the container:
+
+```json
+{
+  "method": "GET",
+  "url": "https://api.chucknorris.io/jokes/random?category=dev"
+}
+```
+
+In this example, there's a JQ statement, `jq(.category // "dev")`, which is getting evaluated at runtime. If the 'category' value is defined in the state, it's utilized in the URL; otherwise, `dev` is used as the default. For instance, initiating the workflow with a payload like `{ "category": "animal" }` would result in the URL: `https://api.chucknorris.io/jokes/random?category=animal`.
+
+The state can be transformed after each state of the workflow. In this case the JQ command fetches the joke from the return values of the function and sets it as new state.
 
 ### Custom Functions
 
