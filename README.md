@@ -39,20 +39,80 @@ Run Workflows and Create Services in Seconds
 
 ## Features & Standards
 
-* __YAML__: Define flows and subflows with simple YAML including if/else switches, error handling, retries and validations.
-* __Serverless__: Call multiple serverless functions from a flow and merge and modify the responses.
-* __Event-Based__: Catch events within the system or from external sources like AWS or Github.
-* __JSON Inputs & States__: Use JSON as input for flows and respond with JSON to the caller.
-* __API Gateway__: Includes an API gateway to expose flows as services for third-party consumers.
-* __CloudEvents__: Supports CNCF's [CloudEvents](https://cloudevents.io/).
-* __GitOps Approach__: All configurations, services and flows can be synced from Git.
+* __YAML__: Define flows and subflows with simple YAML including if/else switches, error handling, retries, validations and more.
+* __Serverless__: Call multiple serverless functions from a flow and merge and modify the responses to a single consumable function call.
+* __Event-Based__: Catch events within the system or from external sources like AWS or Github and execute flows based on that event.
+* __JSON Inputs & States__: Use JSON as input for flows and respond with JSON to the caller. JSON will be saved between the states fo a flow.
+* __API Gateway__: Includes an API gateway to expose flows as services for third-party consumers including authentication.
+* __CloudEvents__: Supports CNCF's [CloudEvents](https://cloudevents.io/) natively.
+* __GitOps Approach__: All configurations, services and flows can be synced from Git. Git becomes the single source of truth.
 * __Observability__: Integrated into Prometheus (metrics), Fluent Bit (logging) & OpenTelemetry (instrumentation & tracing).
-* __Periodic Tasks__: Call flows periodically via cron jobs. 
-* __Scalable__: Direktiv scales on flow as well as function level with [Knative's](https://knative.dev/docs/) and Kubernetes scaling approach.
+* __Periodic Tasks__: Call flows periodically via cron jobs for repeating tasks. 
+* __Scalable__: Direktiv scales on mulitple levels with Kubernetes scaling and [Knative's](https://knative.dev/docs/) scaling features.
 * __Easily Extendable__: Add custom functions with simple Docker containers.
 
+## Quick Start
 
-# What is direktiv?
+Direktiv provides a Docker container with all required components pre-installed (Linux only). The initial startup can take a couple of minutes to download all required images.
+
+```sh
+docker run --privileged -p 8080:80 -ti direktiv/direktiv-kube
+```
+
+> If the upper limit for inotify instances is too low the pods might be stuck in *pending*. Increase that limit if necessary with the command `sudo sysctl fs.inotify.max_user_instances=4096`
+
+If you are not using Linux please follow the [installation instructions](https://docs.direktiv.io/installation/kubernetes/) on the documentation page. 
+
+
+
+## About Direktiv
+
+Direktiv is an event-driven workflow engine made for **orchestration**, **integration**, and **automation**. In it's core it is a state machine which uses containers as functions within workflows and passes JSON structured data between states. It offers key features like retries, error handling, and conditional logic. The flow's state, stored as JSON, allows for dynamic transformations during execution using JQ or JavaScript.
+
+<div align="center">
+<table>
+  <tr>
+  <td>
+
+```yaml
+direktiv_api: workflow/v1
+states:
+- id: start
+  type: noop
+  transform:
+    result: Hello world!
+  transition: second
+- id: second
+  type: noop
+  log: second state
+  transform:
+    final: this value is from state one jq(.result)
+```
+  </td>
+  <td>
+    <img src="assets/images/flow.png" >
+  </td>
+  </tr>
+</table>
+</div>
+
+Workflows can be triggered by events, start periodically via crons or can be started by a HTTP POST request where the data is the initial state fo the workflow. 
+
+
+## Writing Workflows
+
+
+### Custom Functions
+
+
+## See Also
+
+* The [direktiv.io](https://direktiv.io/) website.
+* The direktiv [documentation](https://docs.direktiv.io/).
+* The direktiv [blog](https://blog.direktiv.io/).
+* The [Godoc](https://godoc.org/github.com/direktiv/direktiv) library documentation.
+
+<!-- # What is direktiv?
 
 Direktiv is an event-driven container orchestration engine, running on Kubernetes and Knative. The following key concepts:
 
@@ -247,4 +307,4 @@ Distributed under the Apache 2.0 License. See `LICENSE` for more information.
 * The [direktiv.io](https://direktiv.io/) website.
 * The direktiv [documentation](https://docs.direktiv.io/).
 * The direktiv [blog](https://blog.direktiv.io/).
-* The [Godoc](https://godoc.org/github.com/direktiv/direktiv) library documentation.
+* The [Godoc](https://godoc.org/github.com/direktiv/direktiv) library documentation. -->
