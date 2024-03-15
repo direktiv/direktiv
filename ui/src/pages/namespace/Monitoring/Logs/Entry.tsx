@@ -40,8 +40,9 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
     const { msg, level, time, workflow, namespace } = logEntry;
     const timeFormated = formatLogTime(time);
 
-    const isWorkflowLog = !!workflow;
+    if (!namespace) return <></>;
 
+    const isWorkflowLog = !!workflow;
     const workflowPath = workflow?.workflow;
     const workflowLink = pages.explorer.createHref({
       path: workflow?.workflow,

@@ -46,6 +46,9 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
 
     const workflowPath = workflow?.workflow;
 
+    if (!workflow) return <></>;
+    if (!namespace) return <></>;
+
     const workflowLink = pages.explorer.createHref({
       path: workflow?.workflow,
       namespace,
@@ -56,8 +59,6 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
       namespace,
       instance: workflow?.instance,
     });
-
-    if (!workflow) return <></>;
 
     const isChildInstanceEntry = instanceId !== workflow.instance;
 
