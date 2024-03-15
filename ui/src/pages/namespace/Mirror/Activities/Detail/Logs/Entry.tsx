@@ -1,28 +1,47 @@
-import { ComponentPropsWithoutRef, forwardRef } from "react";
+import {
+  ComponentPropsWithoutRef,
+  FC,
+  PropsWithChildren,
+  forwardRef,
+} from "react";
 import {
   formatLogTime,
-  logLevelToLogEntryVariant_DEPRECATED,
+  logLevelToLogEntryVariant,
+  twMergeClsx,
 } from "~/util/helpers";
 
 import { LogEntry } from "~/design/Logs";
-import { NamespaceLogSchemaType } from "~/api/namespaces/schema";
+import { LogEntryType } from "~/api/logs/schema";
+import { useTranslation } from "react-i18next";
+
+type LogSegmentProps = PropsWithChildren & {
+  className?: string;
+  display: boolean;
+};
+
+const LogSegment: FC<LogSegmentProps> = ({ display, className, children }) => {
+  if (!display) return <></>;
+  return <span className={twMergeClsx("pr-3", className)}>{children}</span>;
+};
 
 type LogEntryProps = ComponentPropsWithoutRef<typeof LogEntry>;
-type Props = { logEntry: NamespaceLogSchemaType } & LogEntryProps;
-
+type Props = { logEntry: LogEntryType } & LogEntryProps;
 export const Entry = forwardRef<HTMLDivElement, Props>(
   ({ logEntry, ...props }, ref) => {
-    const { msg, t, level } = logEntry;
-    const time = formatLogTime(t);
+    const { t } = useTranslation();
+    const { msg, level, time } = logEntry;
+    const timeFormated = formatLogTime(time);
 
     return (
       <LogEntry
-        variant={logLevelToLogEntryVariant_DEPRECATED(level)}
-        time={time}
+        variant={logLevelToLogEntryVariant(level)}
+        time={timeFormated}
         ref={ref}
         {...props}
       >
-        {msg}
+        <LogSegment display={true}>
+          {t("components.logEntry.messageLabel")} {msg}
+        </LogSegment>
       </LogEntry>
     );
   }
