@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const LogLevelSchema = z.enum(["INFO", "ERROR", "WARNING", "DEBUG"]);
+export const LogLevelSchema = z.enum(["INFO", "ERROR", "WARN", "DEBUG"]);
 export type LogLevelSchemaType = z.infer<typeof LogLevelSchema>;
 
 /**
@@ -44,7 +44,7 @@ export const LogEntrySchema = z.object({
   time: z.string().nonempty(),
   msg: z.string().nonempty(),
   level: LogLevelSchema,
-  namespace: z.string().nonempty(),
+  namespace: z.string().nonempty().nullable(),
   trace: z.string().nonempty().nullable(),
   span: z.string().nonempty().nullable(),
   error: z.string().nullable(),

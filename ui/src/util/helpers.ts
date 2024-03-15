@@ -44,7 +44,7 @@ export const logLevelToLogEntryVariant = (
 ): LogEntryVariant => {
   switch (level) {
     case "ERROR":
-    case "WARNING":
+    case "WARN":
       return "error";
     case "INFO":
       return "info";
