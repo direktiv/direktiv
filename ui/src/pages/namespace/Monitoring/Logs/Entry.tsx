@@ -62,7 +62,7 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
         {...props}
       >
         <LogSegment display={true}>
-          {t("pages.instances.detail.logs.entry.messageLabel")} {msg}
+          {t("components.logEntry.messageLabel")} {msg}
         </LogSegment>
         <LogSegment display={isWorkflowLog}>
           <TooltipProvider>
@@ -77,7 +77,7 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
                 </Link>
               </TooltipTrigger>
               <TooltipContent side="right">
-                {t("pages.instances.detail.logs.entry.workflowTooltip")}
+                {t("components.logEntry.workflowTooltip")}
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>{" "}
@@ -90,12 +90,12 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
                   className="underline opacity-60"
                   target="_blank"
                 >
-                  {t("pages.instances.detail.logs.entry.instanceLabel")}{" "}
+                  {t("components.logEntry.instanceLabel")}{" "}
                   {workflow?.instance.slice(0, 8)}
                 </Link>
               </TooltipTrigger>
               <TooltipContent side="right">
-                {t("pages.instances.detail.logs.entry.instanceTooltip")}
+                {t("components.logEntry.instanceTooltip")}
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
