@@ -3,7 +3,6 @@ import clsx, { ClassValue } from "clsx";
 
 import { LogEntry } from "~/design/Logs";
 import { LogLevelSchemaType } from "~/api/logs/schema";
-import { LogLevelSchemaType_DEPRECATED } from "~/api/schema";
 import moment from "moment";
 import { twMerge } from "tailwind-merge";
 
@@ -49,22 +48,6 @@ export const logLevelToLogEntryVariant = (
     case "INFO":
       return "info";
     case "DEBUG":
-      return undefined;
-    default:
-      break;
-  }
-};
-
-export const logLevelToLogEntryVariant_DEPRECATED = (
-  level: LogLevelSchemaType_DEPRECATED
-): LogEntryVariant => {
-  switch (level) {
-    case "error":
-    case "warn":
-      return "error";
-    case "info":
-      return "info";
-    case "debug":
       return undefined;
     default:
       break;
