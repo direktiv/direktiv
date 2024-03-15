@@ -30,12 +30,7 @@ const LogsPanel = () => {
 
   const { data: instanceDetailsData } = useInstanceDetails({ instanceId });
 
-  const {
-    data: logData,
-    hasPreviousPage,
-    fetchPreviousPage,
-    isFetchingPreviousPage,
-  } = useLogs({
+  const { data: allLogs = [] } = useLogs({
     instance: instanceId,
   });
 
@@ -47,8 +42,6 @@ const LogsPanel = () => {
 
   const isPending = instanceDetailsData?.instance.status === "pending";
 
-  const pages = logData?.pages.map((page) => page.data ?? []) ?? [];
-  const allLogs = pages.flat();
   const numberOfLogs = allLogs.length;
 
   const copyValue = allLogs.map(generateLogEntryForClipboard).join("\n") ?? "";
@@ -62,14 +55,6 @@ const LogsPanel = () => {
             path: instanceDetailsData?.instance.as,
           })}
         </h3>
-        <Button
-          size="sm"
-          disabled={!hasPreviousPage}
-          loading={isFetchingPreviousPage}
-          onClick={() => fetchPreviousPage()}
-        >
-          {numberOfLogs} entries on {pages.length} pages
-        </Button>
         <ButtonBar>
           <TooltipProvider>
             <Tooltip>

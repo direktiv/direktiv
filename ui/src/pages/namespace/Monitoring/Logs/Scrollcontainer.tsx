@@ -14,9 +14,7 @@ const ScrollContainer = () => {
     logs,
     scrolledToBottom,
     setScrolledToBottom,
-  } = useLogVirtualizer({
-    queryLogsBy: {},
-  });
+  } = useLogVirtualizer();
 
   const virtualItems = rowVirtualizer.getVirtualItems();
 

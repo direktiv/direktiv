@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { useLogs } from "~/api/logs/query/logs";
 import { useVirtualizer } from "@tanstack/react-virtual";
@@ -25,17 +25,12 @@ export const useLogVirtualizer = ({
   const prevOlderstLogId = useRef<number | null>(null);
 
   const {
-    data: logData,
+    data: logs = [],
     hasPreviousPage,
     fetchPreviousPage,
     isFetchingPreviousPage,
   } = useLogs(queryLogsBy);
 
-  // merge all logs pages into to one array
-  const logs = useMemo(
-    () => (logData?.pages ?? []).flatMap((x) => x.data ?? []),
-    [logData?.pages]
-  );
   const numberOfLogs = logs.length;
 
   const rowVirtualizer = useVirtualizer({

@@ -237,7 +237,7 @@ export const useLogs = ({
    * the most recent logs and then navigate to older ones. It is not possible to start at a specific time
    * and then move to more recent logs.
    */
-  return useInfiniteQuery({
+  const queryReturn = useInfiniteQuery({
     queryKey: logKeys.detail(namespace, {
       apiKey: apiKey ?? undefined,
       instance,
@@ -251,4 +251,19 @@ export const useLogs = ({
     enabled: !!namespace,
     refetchOnWindowFocus: false,
   });
+
+  /**
+   * expose a simpler data structure to the consumer of the hook by stripping
+   * out the pages and flattening the data into a single array
+   */
+  let logData: LogEntryType[] | undefined = undefined;
+  if (queryReturn.data) {
+    const pages = queryReturn.data?.pages.map((page) => page.data ?? []) ?? [];
+    logData = pages.flat();
+  }
+
+  return {
+    ...queryReturn,
+    data: logData,
+  };
 };
