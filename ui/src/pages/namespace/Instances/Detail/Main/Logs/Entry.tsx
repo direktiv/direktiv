@@ -47,7 +47,7 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
     const workflowPath = workflow?.workflow;
 
     const workflowLink = pages.explorer.createHref({
-      path: workflowPath,
+      path: workflow?.workflow,
       namespace,
       subpage: "workflow",
     });
@@ -59,6 +59,8 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
 
     if (!workflow) return <></>;
 
+    const isChildInstanceEntry = instanceId !== workflow.instance;
+
     return (
       <LogEntry
         variant={logLevelToLogEntryVariant(level)}
@@ -66,7 +68,13 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
         ref={ref}
         {...props}
       >
-        <LogSegment display={verbose}>
+        <LogSegment display={verbose} className="opacity-60">
+          {t("pages.instances.detail.logs.entry.stateLabel")} {workflow.state}
+        </LogSegment>
+        <LogSegment display={true}>
+          {t("pages.instances.detail.logs.entry.messageLabel")} {msg}
+        </LogSegment>
+        <LogSegment display={isChildInstanceEntry}>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -82,15 +90,8 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
                 {t("pages.instances.detail.logs.entry.workflowTooltip")}
               </TooltipContent>
             </Tooltip>
-          </TooltipProvider>
-        </LogSegment>
-        <LogSegment display={verbose} className="opacity-60">
-          {t("pages.instances.detail.logs.entry.stateLabel")} {workflow.state}
-        </LogSegment>
-        <LogSegment display={true}>
-          {t("pages.instances.detail.logs.entry.messageLabel")} {msg}
-        </LogSegment>
-        <LogSegment display={instanceId !== workflow.instance}>
+          </TooltipProvider>{" "}
+          (
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -108,6 +109,7 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
+          )
         </LogSegment>
       </LogEntry>
     );
