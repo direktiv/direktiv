@@ -2,6 +2,7 @@ package jqer
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"reflect"
@@ -226,6 +227,20 @@ func recurseIntoString(data interface{}, s string) ([]interface{}, error) {
 			defer func(b chan bool) {
 				b <- true
 			}(done)
+
+			// decoding base64
+			vm.Set("atob", func(txt string) string {
+				r, err := base64.StdEncoding.DecodeString(txt)
+				if err != nil {
+					return err.Error()
+				}
+				return string(r)
+			})
+
+			// encoding base64
+			vm.Set("btoa", func(txt string) string {
+				return base64.StdEncoding.EncodeToString([]byte(txt))
+			})
 
 			// execute and get results
 			v, err := fnExe(goja.Undefined(), vm.ToValue(data))
