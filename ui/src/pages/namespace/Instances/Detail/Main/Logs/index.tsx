@@ -53,7 +53,14 @@ const LogsPanel = () => {
 
   const copyValue =
     allLogs
-      .map((logEntry) => `${formatLogTime(logEntry.time)} ${logEntry.msg}`)
+      .map(
+        (logEntry) =>
+          `${logEntry.id} - ${formatLogTime(logEntry.time)} - ${
+            logEntry?.level
+          } - ${logEntry?.workflow?.workflow} - ${
+            logEntry?.workflow?.state
+          } - ${logEntry.msg}`
+      )
       .join("\n") ?? "";
 
   return (
