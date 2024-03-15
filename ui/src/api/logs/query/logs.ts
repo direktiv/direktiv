@@ -27,15 +27,24 @@ import { useStreaming } from "~/api/streaming";
     // the result of every page request is stored here
     "pages": [
       {
-        "previousPage": "FIRST_TIMESTAMP",
+        "meta": {
+          "previousPage": "FIRST_TIMESTAMP",
+          "startingFrom": "..."
+        },
         "data": []
       },
       {
-        "previousPage": "SECOND_TIMESTAMP",
+        "meta": {
+          "previousPage": "SECOND_TIMESTAMP",
+          "startingFrom": "..."
+        },
         "data": []
       },
       {
-        "previousPage": null, // last page
+        "meta": {
+          "previousPage": null, // last page
+          "startingFrom": "..."
+        },
         "data": []
       }
     ]
