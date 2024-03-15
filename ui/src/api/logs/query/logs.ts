@@ -116,6 +116,9 @@ type LogsParams = {
 
 const getUrl = (params: LogsParams) => {
   const { baseUrl, namespace, useStreaming, ...queryParams } = params;
+
+  let urlPath = `/api/v2/namespaces/${namespace}/logs`;
+
   /**
    * to avoid a gap in the log entries, we will pass the optional "after"
    * parameter to the streaming url to start streaming the logs from 5
@@ -125,18 +128,19 @@ const getUrl = (params: LogsParams) => {
    * already have in the cache. So we have to filter duplicates when
    * populating the cache.
    */
-  const now = new Date();
-  now.setSeconds(now.getSeconds() - 5);
-  const after = now.toISOString();
+
+  let after = undefined;
+  if (useStreaming) {
+    const now = new Date();
+    now.setSeconds(now.getSeconds() - 5);
+    after = now.toISOString();
+    urlPath = `${urlPath}/subscribe`;
+  }
+
   const queryParamsString = buildSearchParamsString({
     ...queryParams,
     after,
   });
-
-  let urlPath = `/api/v2/namespaces/${namespace}/logs`;
-  if (useStreaming) {
-    urlPath = `${urlPath}/subscribe`;
-  }
 
   return `${baseUrl ?? ""}${urlPath}${queryParamsString}`;
 };
