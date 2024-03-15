@@ -5,7 +5,7 @@ import { Logs } from "~/design/Logs";
 import { twMergeClsx } from "~/util/helpers";
 import { useInstanceDetails } from "~/api/instances/query/details";
 import { useInstanceId } from "../../store/instanceContext";
-import { useLogVirtualizer } from "./useLogVirtualizer";
+import { useLogVirtualizer } from "~/hooks/useLogVirtualizer";
 import { useTranslation } from "react-i18next";
 
 const ScrollContainer = () => {
