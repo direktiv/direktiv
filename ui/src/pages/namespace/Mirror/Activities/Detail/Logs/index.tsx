@@ -10,20 +10,20 @@ import { Card } from "~/design/Card";
 import CopyButton from "~/design/CopyButton";
 import ScrollContainer from "./ScrollContainer";
 import { ScrollText } from "lucide-react";
-import { formatLogTime } from "~/util/helpers";
-import { useMirrorActivityLog } from "~/api/tree/query/mirrorActivity";
+import { generateLogEntryForClipboard } from "./utils";
+import { useLogs } from "~/api/logs/query/logs";
 import { useTranslation } from "react-i18next";
 
 const Logs = ({ activityId }: { activityId: string }) => {
-  const { data } = useMirrorActivityLog({ activityId });
   const { t } = useTranslation();
 
-  const copyValue =
-    data?.results
-      .map((logEntry) => `${formatLogTime(logEntry.t)} ${logEntry.msg}`)
-      .join("\n") ?? "";
+  const { data: allLogs = [] } = useLogs({
+    activity: activityId,
+  });
 
-  const resultCount = data?.results.length ?? 0;
+  const numberOfLogs = allLogs.length;
+
+  const copyValue = allLogs.map(generateLogEntryForClipboard).join("\n") ?? "";
 
   return (
     <Card className="relative m-5 grid h-[500px] grid-rows-[auto,1fr,auto] p-5">
@@ -60,7 +60,7 @@ const Logs = ({ activityId }: { activityId: string }) => {
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-gray-11 opacity-75 dark:bg-gray-dark-11"></span>
           <span className="relative inline-flex h-3 w-3 rounded-full bg-gray-11 dark:bg-gray-dark-11"></span>
         </span>
-        {t("pages.monitoring.logs.logsCount", { count: resultCount })}
+        {t("pages.monitoring.logs.logsCount", { count: numberOfLogs })}
       </div>
     </Card>
   );
