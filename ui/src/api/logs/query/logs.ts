@@ -77,8 +77,12 @@ const updateCache = (
 
   const recentPageData = recentPage.data ?? [];
 
+  /**
+   * we the streamign was passed a "after" parameter, we might get log entries
+   * that we already have in the cache. So we have to filter duplicates.
+   */
   if (recentPageData.some((logEntry) => logEntry.id === newLogEntry.id)) {
-    console.error(
+    console.warn(
       `skipping cache update, log entry ${newLogEntry.id} already exists`
     );
     return oldData;
