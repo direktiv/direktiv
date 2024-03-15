@@ -15,7 +15,6 @@ import (
 
 const (
 	SlackWebhookPluginName = "slack-webhook-auth"
-	// GitlabHeaderName        = "X-Gitlab-Token"
 )
 
 type SlackWebhookPluginConfig struct {
