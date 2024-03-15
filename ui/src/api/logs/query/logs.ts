@@ -211,7 +211,7 @@ export const useLogs = ({
   route,
   activity,
   trace,
-}: LogsQueryParams) => {
+}: LogsQueryParams = {}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
 
