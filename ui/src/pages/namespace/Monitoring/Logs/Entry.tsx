@@ -1,28 +1,106 @@
-import { ComponentPropsWithoutRef, forwardRef } from "react";
+import {
+  ComponentPropsWithoutRef,
+  FC,
+  PropsWithChildren,
+  forwardRef,
+} from "react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "~/design/Tooltip";
 import {
   formatLogTime,
-  logLevelToLogEntryVariant_DEPRECATED,
+  logLevelToLogEntryVariant,
+  twMergeClsx,
 } from "~/util/helpers";
 
+import { Link } from "react-router-dom";
 import { LogEntry } from "~/design/Logs";
-import { NamespaceLogSchemaType } from "~/api/namespaces/schema";
+import { LogEntryType } from "~/api/logs/schema";
+import { pages } from "~/util/router/pages";
+import { useTranslation } from "react-i18next";
+
+type LogSegmentProps = PropsWithChildren & {
+  className?: string;
+  display: boolean;
+};
+
+const LogSegment: FC<LogSegmentProps> = ({ display, className, children }) => {
+  if (!display) return <></>;
+  return <span className={twMergeClsx("pr-3", className)}>{children}</span>;
+};
 
 type LogEntryProps = ComponentPropsWithoutRef<typeof LogEntry>;
-type Props = { logEntry: NamespaceLogSchemaType } & LogEntryProps;
-
+type Props = { logEntry: LogEntryType } & LogEntryProps;
 export const Entry = forwardRef<HTMLDivElement, Props>(
   ({ logEntry, ...props }, ref) => {
-    const { msg, t, level } = logEntry;
-    const time = formatLogTime(t);
+    const { t } = useTranslation();
+    const { msg, level, time, workflow, namespace } = logEntry;
+    const timeFormated = formatLogTime(time);
+
+    const isWorkflowLog = !!workflow;
+
+    const workflowPath = workflow?.workflow;
+    const workflowLink = pages.explorer.createHref({
+      path: workflow?.workflow,
+      namespace,
+      subpage: "workflow",
+    });
+
+    const instanceLink = pages.instances.createHref({
+      namespace,
+      instance: workflow?.instance,
+    });
 
     return (
       <LogEntry
-        variant={logLevelToLogEntryVariant_DEPRECATED(level)}
-        time={time}
+        variant={logLevelToLogEntryVariant(level)}
+        time={timeFormated}
         ref={ref}
         {...props}
       >
-        {msg}
+        <LogSegment display={true}>
+          {t("pages.instances.detail.logs.entry.messageLabel")} {msg}
+        </LogSegment>
+        <LogSegment display={isWorkflowLog}>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  to={workflowLink}
+                  className="underline opacity-60"
+                  target="_blank"
+                >
+                  {workflowPath}
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                {t("pages.instances.detail.logs.entry.workflowTooltip")}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>{" "}
+          (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  to={instanceLink}
+                  className="underline opacity-60"
+                  target="_blank"
+                >
+                  {t("pages.instances.detail.logs.entry.instanceLabel")}{" "}
+                  {workflow?.instance.slice(0, 8)}
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                {t("pages.instances.detail.logs.entry.instanceTooltip")}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          )
+        </LogSegment>
       </LogEntry>
     );
   }
