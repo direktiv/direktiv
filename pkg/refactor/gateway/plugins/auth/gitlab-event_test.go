@@ -37,7 +37,7 @@ func executeGitlab(config auth.GitlabWebhookPluginConfig, c *core.ConsumerFile, 
 	p2, _ := p.Configure(config, core.MagicalGatewayNamespace)
 
 	r, _ := http.NewRequest(http.MethodGet, "/dummy", nil)
-	r.Header.Add(auth.GitlabSecretHeaderName, secret)
+	r.Header.Add(auth.GitlabHeaderName, secret)
 
 	w := httptest.NewRecorder()
 

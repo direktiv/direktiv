@@ -9,7 +9,7 @@ import (
 
 const (
 	GitlabWebhookPluginName = "gitlab-webhook-auth"
-	GitlabSecretHeaderName  = "X-Gitlab-Token"
+	GitlabHeaderName        = "X-Gitlab-Token"
 )
 
 type GitlabWebhookPluginConfig struct {
@@ -38,7 +38,7 @@ func (p *GitlabWebhookPlugin) Config() interface{} {
 }
 
 func (p *GitlabWebhookPlugin) ExecutePlugin(c *core.ConsumerFile, _ http.ResponseWriter, r *http.Request) bool {
-	secret := r.Header.Get(GitlabSecretHeaderName)
+	secret := r.Header.Get(GitlabHeaderName)
 
 	if secret != p.config.Secret {
 		return false
