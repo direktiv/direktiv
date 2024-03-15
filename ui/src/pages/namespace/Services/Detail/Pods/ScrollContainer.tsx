@@ -4,13 +4,10 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowDown } from "lucide-react";
 import Button from "~/design/Button";
 import { twMergeClsx } from "~/util/helpers";
-import { useLogsPreferencesWordWrap } from "~/util/store/logs";
 import { useTranslation } from "react-i18next";
 import { useVirtualizer } from "@tanstack/react-virtual";
 
 const ScrollContainer = ({ logs }: { logs: string[] }) => {
-  const wordWrap = useLogsPreferencesWordWrap();
-
   const { t } = useTranslation();
 
   const [watch, setWatch] = useState(true);
@@ -43,7 +40,6 @@ const ScrollContainer = ({ logs }: { logs: string[] }) => {
 
   return (
     <Logs
-      wordWrap={wordWrap}
       className="h-full overflow-scroll"
       ref={parentRef}
       onScroll={(e) => {
