@@ -229,6 +229,7 @@ func recurseIntoString(data interface{}, s string) ([]interface{}, error) {
 			}(done)
 
 			// decoding base64
+			// nolint:errcheck
 			vm.Set("atob", func(txt string) string {
 				r, err := base64.StdEncoding.DecodeString(txt)
 				if err != nil {
@@ -238,6 +239,7 @@ func recurseIntoString(data interface{}, s string) ([]interface{}, error) {
 			})
 
 			// encoding base64
+			// nolint:errcheck
 			vm.Set("btoa", func(txt string) string {
 				return base64.StdEncoding.EncodeToString([]byte(txt))
 			})
