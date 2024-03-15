@@ -1,5 +1,4 @@
-import { LogLevelSchema_DEPRECATED, PageinfoSchema } from "../../../schema";
-
+import { PageinfoSchema } from "../../../schema";
 import { gitUrlSchema } from "./validation";
 import { z } from "zod";
 
@@ -73,48 +72,6 @@ export const MirrorInfoSchema = z.object({
   }),
 });
 
-/**
- * Example for mirror activity log response (streaming only)
- {
-  "pageInfo": {
-    "order": [],
-    "filter": [],
-    "limit": 0,
-    "offset": 0,
-    "total": 136
-  },
-  "namespace": "examples",
-  "activity": "2d92ecec-1f88-4fcd-a525-4e8c8594e6cc",
-  "results": [
-    {
-      "t": "2023-08-22T08:57:10.581391Z",
-      "level": "info",
-      "msg": "starting mirroring process, type = sync, process_id = 2d92ecec-1f88-4fcd-a525-4e8c8594e6cc",
-      "tags": {
-        "level": "info",
-        "mirror-id": "2d92ecec-1f88-4fcd-a525-4e8c8594e6cc",
-        "recipientType": "mirror",
-        "source": "2d92ecec-1f88-4fcd-a525-4e8c8594e6cc",
-        "trace": "00000000000000000000000000000000",
-        "type": "mirror"
-      }
-    },
-  }
- */
-
-export const MirrorActivityLogItemSchema = z.object({
-  t: z.string(),
-  level: LogLevelSchema_DEPRECATED,
-  msg: z.string(),
-});
-
-export const MirrorActivityLogSchema = z.object({
-  pageInfo: PageinfoSchema,
-  namespace: z.string(),
-  activity: z.string(),
-  results: z.array(MirrorActivityLogItemSchema),
-});
-
 export const MirrorSyncResponseSchema = z.null();
 
 export const UpdateMirrorResponseSchema = z.null();
@@ -161,9 +118,7 @@ const mirrorFormType = z.enum([
 ]);
 
 export type MirrorActivitySchemaType = z.infer<typeof MirrorActivitySchema>;
-export type MirrorActivityLogSchemaType = z.infer<
-  typeof MirrorActivityLogSchema
->;
+
 export type MirrorActivityTypeSchemaType = z.infer<
   typeof MirrorActivityTypeSchema
 >;

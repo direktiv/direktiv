@@ -36,13 +36,3 @@ export const FileSchema = z.custom<File>((value) => {
     return false;
   }
 });
-
-export const LogLevelSchema_DEPRECATED = z.enum([
-  "debug",
-  "info",
-  "error",
-  "warn",
-]);
-export type LogLevelSchemaType_DEPRECATED = z.infer<
-  typeof LogLevelSchema_DEPRECATED
->;
