@@ -11,7 +11,6 @@ import CopyButton from "~/design/CopyButton";
 import ScrollContainer from "./ScrollContainer";
 import { ScrollText } from "lucide-react";
 import { generateLogEntryForClipboard } from "./utils";
-import { twMergeClsx } from "~/util/helpers";
 import { useLogs } from "~/api/logs/query/logs";
 import { useTranslation } from "react-i18next";
 
