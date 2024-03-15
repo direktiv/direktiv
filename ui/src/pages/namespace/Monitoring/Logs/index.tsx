@@ -7,6 +7,7 @@ import {
 
 import { ButtonBar } from "~/design/ButtonBar";
 import CopyButton from "~/design/CopyButton";
+import { NoPermissions } from "~/design/Table";
 import ScrollContainer from "./Scrollcontainer";
 import { ScrollText } from "lucide-react";
 import { generateClipboardLogEntry } from "./utils";
@@ -16,7 +17,12 @@ import { useTranslation } from "react-i18next";
 const LogsPanel = () => {
   const { t } = useTranslation();
 
-  const { data: allLogs = [], isFetched } = useLogs();
+  const {
+    data: allLogs = [],
+    isFetched,
+    isAllowed,
+    noPermissionMessage,
+  } = useLogs();
 
   const numberOfLogs = allLogs.length;
 
@@ -24,8 +30,7 @@ const LogsPanel = () => {
 
   if (!isFetched) return null;
 
-  // TODO:
-  // if (!isAllowed) return <NoPermissions>{noPermissionMessage}</NoPermissions>;
+  if (!isAllowed) return <NoPermissions>{noPermissionMessage}</NoPermissions>;
 
   return (
     <>
