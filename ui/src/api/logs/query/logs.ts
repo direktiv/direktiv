@@ -1,7 +1,6 @@
 import {
   InfiniteData,
   QueryFunctionContext,
-  useInfiniteQuery,
   useQueryClient,
 } from "@tanstack/react-query";
 import {
@@ -16,6 +15,7 @@ import { buildSearchParamsString } from "~/api/utils";
 import { logKeys } from "..";
 import { memo } from "react";
 import { useApiKey } from "~/util/store/apiKey";
+import useInfiniteQueryWithPermissions from "~/api/useInfiniteQueryWithPermissions";
 import { useNamespace } from "~/util/store/namespace";
 import { useStreaming } from "~/api/streaming";
 
@@ -237,7 +237,7 @@ export const useLogs = ({
    * the most recent logs and then navigate to older ones. It is not possible to start at a specific time
    * and then move to more recent logs.
    */
-  const queryReturn = useInfiniteQuery({
+  const queryReturn = useInfiniteQueryWithPermissions({
     queryKey: logKeys.detail(namespace, {
       apiKey: apiKey ?? undefined,
       instance,
