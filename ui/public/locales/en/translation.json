@@ -605,7 +605,7 @@
           "realtiveTime": "{{relativeTime}} ago"
         },
         "logs": {
-          "title": "Logs",
+          "title": "Logs for {{path}}",
           "followLogs": "Follow logs",
           "logsCount": "received {{count}} log entries",
           "logsCount_one": "received {{count}} log entry",
