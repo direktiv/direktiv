@@ -6,7 +6,7 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 const defaultLogHeight = 20;
 
 type useLogVirtualizerParams = {
-  queryLogsBy: Parameters<typeof useLogs>[0];
+  queryLogsBy?: Parameters<typeof useLogs>[0];
 };
 
 /**
@@ -14,7 +14,9 @@ type useLogVirtualizerParams = {
  * tanstack/react-virtual and adds data fetching, pagination and some custom
  * scrolling logic on top of that.
  */
-export const useLogVirtualizer = ({ queryLogsBy }: useLogVirtualizerParams) => {
+export const useLogVirtualizer = ({
+  queryLogsBy,
+}: useLogVirtualizerParams = {}) => {
   const parentRef = useRef<HTMLDivElement | null>(null);
 
   const [scrolledToBottom, setScrolledToBottom] = useState(true);
