@@ -48,7 +48,7 @@ export const LogEntrySchema = z.object({
   trace: z.string().nonempty().nullable(),
   span: z.string().nonempty().nullable(),
   error: z.string().nullable(),
-  workflow: WorkflowLogData.nullable(),
+  workflow: WorkflowLogData.optional(),
 });
 
 /**
