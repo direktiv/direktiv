@@ -1,16 +1,55 @@
-# direktiv
+<p align="center">
+  <img src="assets/images/direktiv-logo-50.png" alt="direktiv">
+</p>
 
-<br />
+<br>
+
+<div align="center">
+
+[![License](https://img.shields.io/badge/License-Apache--2.0-blue)](#license)
+[![Go Report Card](https://goreportcard.com/badge/github.com/direktiv/direktiv)](https://goreportcard.com/report/github.com/direktiv/direktiv) 
+[![GitHub release](https://img.shields.io/github/release/direktiv/direktiv.svg)](https://github.com/direktiv/direktiv/releases/)
+[![GitHub stars](https://badgen.net/github/stars/direktiv/direktiv)](https://github.com/direktiv/direktiv/stargazers/)
+[![GitHub contributors](https://img.shields.io/github/contributors/direktiv/direktiv.svg)](https://github.com/direktiv/badges/graphs/contributors/)
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/direktiv/direktiv/graphs/commit-activity)
+[![made-with-Go](https://img.shields.io/badge/Made%20with-Go-1f425f.svg)](https://go.dev/)
+[![Slack](https://img.shields.io/badge/Slack-Join%20Direktiv-4a154b?style=flat&logo=slack)](https://join.slack.com/t/direktiv-io/shared_invite/zt-zf7gmfaa-rYxxBiB9RpuRGMuIasNO~g)
+
+</div>
+
+
+<h1 align="center">Event-Driven Serverless Orchestration, Integration and Automation</h1>
+<div align="center">
+Run Workflows and Create Services in Seconds
+</div>
+</br>
 
 <p align="center">
-  <a href="https://github.com/direktiv/direktiv">
-    <img src="assets/images/direktiv-logo.png" alt="direktiv">
-  </a>
-    <h5 align="center">event-driven serverless orchestration</h5>
+    <a href="https://docs.direktiv.io">Documentation</a>
+    .
+    <a href="https://blog.direktiv.io">Blog</a>
+    . 
+    <a href="https://github.com/direktiv/direktiv/issues/new?assignees=&labels=&projects=&template=bug_report.md&title=">Report Bug</a>
+    ·
+    <a href="https://github.com/direktiv/direktiv/issues/new?assignees=&labels=&projects=&template=feature_request.md&title=">Request Feature</a>
 </p>
-<hr/>
 
- [![Go Report Card](https://goreportcard.com/badge/github.com/direktiv/direktiv)](https://goreportcard.com/report/github.com/direktiv/direktiv) [![Slack](https://img.shields.io/badge/Slack-Join%20Direktiv-4a154b?style=flat&logo=slack)](https://join.slack.com/t/direktiv-io/shared_invite/zt-zf7gmfaa-rYxxBiB9RpuRGMuIasNO~g)
+
+<div align="center"><img src="assets/images/direktiv.gif" width="40%" ></div>
+
+## Features & Standards
+
+* __YAML__: Define flows and subflows with simple YAML including if/else switches, error handling, retries and validations.
+* __Serverless__: Call multiple serverless functions from a flow and merge and modify the responses.
+* __Event-Based__: Catch events within the system or from external sources like AWS or Github.
+* __JSON Inputs & States__: Use JSON as input for flows and respond with JSON to the caller.
+* __API Gateway__: Includes an API gateway to expose flows as services for third-party consumers.
+* __CloudEvents__: Supports CNCF's [CloudEvents](https://cloudevents.io/).
+* __GitOps Approach__: All configurations, services and flows can be synced from Git.
+* __Observability__: Integrated into Prometheus (metrics), Fluent Bit (logging) & OpenTelemetry (instrumentation & tracing).
+* __Periodic Tasks__: Call flows periodically via cron jobs. 
+* __Scalable__: Direktiv scales on flow as well as function level with [Knative's](https://knative.dev/docs/) and Kubernetes scaling approach.
+* __Easily Extendable__: Add custom functions with simple Docker containers.
 
 
 # What is direktiv?
