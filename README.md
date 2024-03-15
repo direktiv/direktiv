@@ -35,7 +35,7 @@ Run Workflows and Create Services in Seconds
 </p>
 
 
-<div align="center"><img src="assets/images/direktiv.gif" width="40%" ></div>
+<div align="center"><img src="assets/images/direktiv.gif" ></div>
 
 ## Features & Standards
 
@@ -69,8 +69,7 @@ If you are not using Linux please follow the [installation instructions](https:/
 
 Direktiv is an event-driven workflow engine made for **orchestration**, **integration**, and **automation**. In it's core it is a state machine which uses containers as functions within workflows and passes JSON structured data between states. It offers key features like retries, error handling, and conditional logic. The flow's state, stored as JSON, allows for dynamic transformations during execution using JQ or JavaScript.
 
-<div align="center">
-<table>
+<table align="center">
   <tr>
   <td>
 
@@ -94,7 +93,6 @@ states:
   </td>
   </tr>
 </table>
-</div>
 
 Workflows can be triggered by events, start periodically via crons or can be started by a HTTP POST request where the data is the initial state fo the workflow. 
 
