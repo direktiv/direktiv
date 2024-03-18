@@ -310,16 +310,22 @@ func runHelm() {
 		panic(err)
 	}
 
-	log.Printf("running direktiv helm\n")
-	cmd := exec.Command("helm", "install", "-f", "/direktiv.yaml", "direktiv", ".")
-	cmd.Dir = "/direktiv-charts/charts/direktiv"
-	cmd.Env = []string{"KUBECONFIG=/etc/rancher/k3s/k3s.yaml"}
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stdout
-	err = cmd.Run()
-	if err != nil {
-		panic(err)
+	execHelm := func(args ...string) {
+		cmd := exec.Command("helm", args...)
+		cmd.Env = []string{"KUBECONFIG=/etc/rancher/k3s/k3s.yaml"}
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stdout
+		err = cmd.Run()
+		if err != nil {
+			panic(err)
+		}
+
 	}
+
+	log.Printf("running direktiv helm\n")
+
+	execHelm("repo", "add", "direktiv", "https://charts.direktiv.io")
+	execHelm("install", "-f", "/direktiv.yaml", "direktiv", "direktiv/direktiv")
 }
 
 func runRegistry() {
