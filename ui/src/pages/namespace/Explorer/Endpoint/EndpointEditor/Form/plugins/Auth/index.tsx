@@ -12,6 +12,7 @@ import { UseFormReturn, useFieldArray } from "react-hook-form";
 import {
   authPluginTypes,
   availablePlugins,
+  webhookAuthPluginTypes,
 } from "../../../schema/plugins/auth";
 import {
   getBasicAuthConfigAtIndex,
@@ -210,41 +211,21 @@ export const AuthPluginForm: FC<AuthPluginFormProps> = ({ formControls }) => {
             onSubmit={handleSubmit}
           />
         )}
-        {selectedPlugin === authPluginTypes.githubWebhookAuth.name && (
-          <WebhookAuthForm
-            type={authPluginTypes.githubWebhookAuth.name}
-            formId={formId}
-            defaultConfig={getWebhookAuthConfigAtIndex(
-              authPluginTypes.githubWebhookAuth.name,
-              fields,
-              editIndex
-            )}
-            onSubmit={handleSubmit}
-          />
-        )}
-        {selectedPlugin === authPluginTypes.gitlabWebhookAuth.name && (
-          <WebhookAuthForm
-            type={authPluginTypes.gitlabWebhookAuth.name}
-            formId={formId}
-            defaultConfig={getWebhookAuthConfigAtIndex(
-              authPluginTypes.gitlabWebhookAuth.name,
-              fields,
-              editIndex
-            )}
-            onSubmit={handleSubmit}
-          />
-        )}
-        {selectedPlugin === authPluginTypes.slackWebhookAuth.name && (
-          <WebhookAuthForm
-            type={authPluginTypes.slackWebhookAuth.name}
-            formId={formId}
-            defaultConfig={getWebhookAuthConfigAtIndex(
-              authPluginTypes.slackWebhookAuth.name,
-              fields,
-              editIndex
-            )}
-            onSubmit={handleSubmit}
-          />
+        {Object.entries(webhookAuthPluginTypes).map(
+          ([_, plugin]) =>
+            selectedPlugin === plugin.name && (
+              <WebhookAuthForm
+                key={plugin.name}
+                type={plugin.name}
+                formId={formId}
+                defaultConfig={getWebhookAuthConfigAtIndex(
+                  plugin.name,
+                  fields,
+                  editIndex
+                )}
+                onSubmit={handleSubmit}
+              />
+            )
         )}
       </ModalWrapper>
     </Dialog>
