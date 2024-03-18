@@ -10,9 +10,12 @@ import {
 import { Table, TableBody, TableCell, TableRow } from "~/design/Table";
 import { UseFormReturn, useFieldArray } from "react-hook-form";
 import {
+  WebhookAuthFormSchemaType,
+  webhookAuthPluginNames,
+} from "../../../schema/plugins/auth/webhookAuth";
+import {
   authPluginTypes,
   availablePlugins,
-  webhookAuthPluginTypes,
 } from "../../../schema/plugins/auth";
 import {
   getBasicAuthConfigAtIndex,
@@ -34,7 +37,6 @@ import { PluginSelector } from "../components/PluginSelector";
 import { Plus } from "lucide-react";
 import { TableHeader } from "../components/PluginsTable";
 import { WebhookAuthForm } from "./WebhookAuthForm";
-import { WebhookAuthFormSchemaType } from "../../../schema/plugins/auth/webhookAuth";
 import { useTranslation } from "react-i18next";
 
 type AuthPluginFormProps = {
@@ -211,15 +213,15 @@ export const AuthPluginForm: FC<AuthPluginFormProps> = ({ formControls }) => {
             onSubmit={handleSubmit}
           />
         )}
-        {Object.entries(webhookAuthPluginTypes).map(
-          ([_, plugin]) =>
-            selectedPlugin === plugin.name && (
+        {webhookAuthPluginNames.map(
+          (name) =>
+            selectedPlugin === name && (
               <WebhookAuthForm
-                key={plugin.name}
-                type={plugin.name}
+                key={name}
+                type={name}
                 formId={formId}
                 defaultConfig={getWebhookAuthConfigAtIndex(
-                  plugin.name,
+                  name,
                   fields,
                   editIndex
                 )}
