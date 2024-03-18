@@ -47,13 +47,6 @@ export const useLogVirtualizer = ({
       [logs]
     ),
     /**
-     * Start at the bottom, this is especially important to avoid
-     * triggering fetchPreviousPage right away when the page loads.
-     * It also avoids flickering, because the useEffect will initiate
-     * a bottom scroll anyway.
-     */
-    initialOffset: 999999,
-    /**
      * overscan is the number of items to render above and below
      * the visible window. More items = less flickering when
      * scrolling, but more memory usage and initial load time.
