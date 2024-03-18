@@ -104,6 +104,15 @@ docker-build-cross-ui: ## Build a cross platform UI docker image
 	cd ui && docker buildx build --platform linux/amd64,linux/arm64 -t direktiv-ui-dev .
 
 
+.PHONY: docker-push-local
+docker-push-local: REGISTRY="localhost:5000"
+docker-push-local: docker-build-api docker-build-ui
+docker-push-local: ## Tag and push images to local registry
+	docker tag direktiv-dev ${REGISTRY}/direktiv
+	docker push ${REGISTRY}/direktiv
+	docker tag direktiv-ui-dev ${REGISTRY}/frontend
+	docker push ${REGISTRY}/frontend
+
 .PHONY: docker-start
 docker-start: docker-build-api docker-stop
 docker-start: ## Create a local docker deployment.
