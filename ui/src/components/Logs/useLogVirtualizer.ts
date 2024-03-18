@@ -22,7 +22,7 @@ export const useLogVirtualizer = ({
   const [scrolledToBottom, setScrolledToBottom] = useState(true);
 
   const prevNumberOfLogs = useRef<number | null>(null);
-  const prevOlderstLogId = useRef<number | null>(null);
+  const prevOldestLogId = useRef<number | null>(null);
 
   const {
     data: logs = [],
@@ -63,7 +63,7 @@ export const useLogVirtualizer = ({
     overscan: 40,
     onChange(instance) {
       prevNumberOfLogs.current = numberOfLogs;
-      prevOlderstLogId.current = logs?.[0]?.id ?? null;
+      prevOldestLogId.current = logs?.[0]?.id ?? null;
       /**
        * when the last x loglines are visible in the list (x being
        * loglinesThreashold), the user is considered to be at the
@@ -122,7 +122,7 @@ export const useLogVirtualizer = ({
       prevNumberOfLogs.current &&
       prevNumberOfLogs.current !== numberOfLogs &&
       // this will make sure the new received logs were added at the top
-      prevOlderstLogId.current !== (logs?.[0]?.id ?? null)
+      prevOldestLogId.current !== (logs?.[0]?.id ?? null)
     ) {
       /**
        * To maintin the old scroll position we need to know how many logs
