@@ -1237,8 +1237,6 @@
       "cancelBtn": "Cancel"
     },
     "logEntry": {
-      "workflowTooltip": "open workflow in new window",
-      "instanceTooltip": "open instance in new window",
       "messageLabel": "msg:",
       "stateLabel": "state:",
       "instanceLabel": "instance:"

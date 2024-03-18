@@ -5,12 +5,6 @@ import {
   forwardRef,
 } from "react";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "~/design/Tooltip";
-import {
   formatLogTime,
   logLevelToLogEntryVariant,
   twMergeClsx,
@@ -66,41 +60,17 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
           {t("components.logEntry.messageLabel")} {msg}
         </LogSegment>
         <LogSegment display={isWorkflowLog}>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  to={workflowLink}
-                  className="underline opacity-60"
-                  target="_blank"
-                >
-                  {workflowPath}
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">
-                {t("components.logEntry.workflowTooltip")}
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>{" "}
-          (
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  to={instanceLink}
-                  className="underline opacity-60"
-                  target="_blank"
-                >
-                  {t("components.logEntry.instanceLabel")}{" "}
-                  {workflow?.instance.slice(0, 8)}
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">
-                {t("components.logEntry.instanceTooltip")}
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          )
+          <span className="opacity-60">
+            <Link to={workflowLink} className="underline" target="_blank">
+              {workflowPath}
+            </Link>{" "}
+            (
+            <Link to={instanceLink} className="underline" target="_blank">
+              {t("components.logEntry.instanceLabel")}{" "}
+              {workflow?.instance.slice(0, 8)}
+            </Link>
+            )
+          </span>
         </LogSegment>
       </LogEntry>
     );
