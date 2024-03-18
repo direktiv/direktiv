@@ -12,6 +12,8 @@ import (
 
 var _ datastore.LogStore = &sqlLogNewStore{}
 
+// A fixed page size prevents request with unreasonable high numbers,
+// that would cause the system to freeze.
 const pageSize = 200
 
 type sqlLogNewStore struct {

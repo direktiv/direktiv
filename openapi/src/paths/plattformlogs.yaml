@@ -135,6 +135,7 @@
                         properties:
                           status:
                             type: string
+                            enum: ["error", "unknown", "running", "failed", "completed"]
                           state:
                             type: string
                           branch:
@@ -197,11 +198,6 @@
         required: false
         schema:
           type: string
-      - name: after
-        in: query
-        required: false
-        schema:
-          format: RFC3339Nano
       - name: Last-Event-ID
         in: header
         required: false
