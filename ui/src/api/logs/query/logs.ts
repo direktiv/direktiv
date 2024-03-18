@@ -86,10 +86,6 @@ const updateCache = (
 
   const recentPageData = recentPage.data ?? [];
 
-  /**
-   * we the streamign was passed a "after" parameter, we might get log entries
-   * that we already have in the cache. So we have to filter duplicates.
-   */
   if (recentPageData.some((logEntry) => logEntry.id === newLogEntry.id)) {
     console.warn(
       `skipping cache update, log entry ${newLogEntry.id} already exists`
@@ -128,27 +124,12 @@ const getUrl = (params: LogsParams) => {
 
   let urlPath = `/api/v2/namespaces/${namespace}/logs`;
 
-  /**
-   * to avoid a gap in the log entries, we will pass the optional "after"
-   * parameter to the streaming url to start streaming the logs from 5
-   * seconds ago.
-   *
-   * This comes with the caveat that we might get log entries that we
-   * already have in the cache. So we have to filter duplicates when
-   * populating the cache.
-   */
-
-  let after = undefined;
   if (useStreaming) {
-    const now = new Date();
-    now.setSeconds(now.getSeconds() - 1);
-    after = now.toISOString();
     urlPath = `${urlPath}/subscribe`;
   }
 
   const queryParamsString = buildSearchParamsString({
     ...queryParams,
-    after,
   });
 
   return `${baseUrl ?? ""}${urlPath}${queryParamsString}`;
