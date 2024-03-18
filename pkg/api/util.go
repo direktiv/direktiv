@@ -601,30 +601,3 @@ func (s *Server) logMiddleware(h http.Handler) http.Handler {
 		next: h,
 	}
 }
-
-// readSingularFromQueryOrBody : Reads a single key passed in params from
-// query and body and returns value of that key to corresponding read values.
-func readSingularFromQueryOrBody(r *http.Request, key string) (string, error) {
-	in := make(map[string]string)
-
-	value := r.URL.Query().Get(key)
-
-	err := unmarshalBody(r, &in)
-	if errors.Is(err, io.EOF) && value == "" {
-		return "", fmt.Errorf("%s is missing from query and body", key)
-	} else if err != nil && !errors.Is(err, io.EOF) {
-		return "", err
-	}
-
-	if val, ok := in[key]; ok {
-		if value != "" {
-			return "", fmt.Errorf("%s exists in both query and body", key)
-		}
-
-		return val, nil
-	} else if value == "" {
-		return "", fmt.Errorf("%s is missing from query and body", key)
-	}
-
-	return value, nil
-}
