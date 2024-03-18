@@ -190,16 +190,16 @@ func (m logController) stream(w http.ResponseWriter, r *http.Request) {
 	// Create a context with cancellation
 	ctx, cancel := context.WithCancel(r.Context())
 	defer cancel()
-	cursor := time.Now().UTC()
-	if t, ok := params["after"]; ok {
-		co, err := time.Parse(time.RFC3339Nano, t)
-		if err != nil {
-			slog.Error("cloud not parse time", "error", err)
+	cursor := time.Now().UTC().Add(-time.Second)
+	// if t, ok := params["after"]; ok {
+	// 	co, err := time.Parse(time.RFC3339Nano, t)
+	// 	if err != nil {
+	// 		slog.Error("cloud not parse time", "error", err)
 
-			return
-		}
-		cursor = co
-	}
+	// 		return
+	// 	}
+	// 	cursor = co
+	// }
 	// Create a channel to send SSE messages
 	messageChannel := make(chan Event)
 	// Adjust the logStoreWorker to use cursor instead of offset
