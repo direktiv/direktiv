@@ -1,35 +1,18 @@
-import {
-  ComponentPropsWithoutRef,
-  FC,
-  PropsWithChildren,
-  forwardRef,
-} from "react";
-import {
-  formatLogTime,
-  logLevelToLogEntryVariant,
-  twMergeClsx,
-} from "~/util/helpers";
+import { ComponentPropsWithoutRef, forwardRef } from "react";
+import { formatLogTime, logLevelToLogEntryVariant } from "~/util/helpers";
 
 import { Link } from "react-router-dom";
 import { LogEntry } from "~/design/Logs";
 import { LogEntryType } from "~/api/logs/schema";
+import { LogSegment } from "~/components/Logs/LogSegment";
 import { pages } from "~/util/router/pages";
 import { useInstanceId } from "../../store/instanceContext";
 import { useLogsPreferencesVerboseLogs } from "~/util/store/logs";
 import { useTranslation } from "react-i18next";
 
-type LogSegmentProps = PropsWithChildren & {
-  className?: string;
-  display: boolean;
-};
-
-const LogSegment: FC<LogSegmentProps> = ({ display, className, children }) => {
-  if (!display) return <></>;
-  return <span className={twMergeClsx("pr-3", className)}>{children}</span>;
-};
-
 type LogEntryProps = ComponentPropsWithoutRef<typeof LogEntry>;
 type Props = { logEntry: LogEntryType } & LogEntryProps;
+
 export const Entry = forwardRef<HTMLDivElement, Props>(
   ({ logEntry, ...props }, ref) => {
     const instanceId = useInstanceId();
