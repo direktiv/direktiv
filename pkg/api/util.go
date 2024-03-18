@@ -188,22 +188,6 @@ func badRequest(w http.ResponseWriter, err error) {
 	http.Error(w, msg, code)
 }
 
-func respondStruct(w http.ResponseWriter, resp interface{}, code int, err error) {
-	w.WriteHeader(code)
-
-	if err != nil {
-		logger.Errorf("grpc error: %v", err.Error())
-		msg := http.StatusText(code)
-		http.Error(w, msg, code)
-		return
-	}
-
-	if err := json.NewEncoder(w).Encode(resp); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-}
-
 // OkBody is an arbitrary placeholder response that represents an ok response body
 //
 // swagger:model
@@ -377,24 +361,6 @@ func sse(w http.ResponseWriter, ch <-chan interface{}) {
 				return
 			}
 		}
-	}
-}
-
-func sseOnce(w http.ResponseWriter, ch <-chan interface{}) {
-	x, more := <-ch
-	if !more {
-		return
-	}
-
-	err, ok := x.(error)
-	if ok {
-		sseError(w, nil, err)
-		return
-	}
-
-	err = sseWriteJSON(w, nil, x)
-	if err != nil {
-		return
 	}
 }
 
@@ -600,31 +566,4 @@ func (s *Server) logMiddleware(h http.Handler) http.Handler {
 		srv:  s,
 		next: h,
 	}
-}
-
-// readSingularFromQueryOrBody : Reads a single key passed in params from
-// query and body and returns value of that key to corresponding read values.
-func readSingularFromQueryOrBody(r *http.Request, key string) (string, error) {
-	in := make(map[string]string)
-
-	value := r.URL.Query().Get(key)
-
-	err := unmarshalBody(r, &in)
-	if errors.Is(err, io.EOF) && value == "" {
-		return "", fmt.Errorf("%s is missing from query and body", key)
-	} else if err != nil && !errors.Is(err, io.EOF) {
-		return "", err
-	}
-
-	if val, ok := in[key]; ok {
-		if value != "" {
-			return "", fmt.Errorf("%s exists in both query and body", key)
-		}
-
-		return val, nil
-	} else if value == "" {
-		return "", fmt.Errorf("%s is missing from query and body", key)
-	}
-
-	return value, nil
 }

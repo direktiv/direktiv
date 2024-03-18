@@ -90,12 +90,31 @@ unittest: ## Runs all Go unit tests. Or, you can run a specific set of unit test
 # Targets for running a simple local deployment using docker compose.
 #
 
-.PHONY: docker-build
-docker-build:
+.PHONY: docker-build-api
+docker-build-api:
 	docker build -t direktiv-dev .
 
+
+.PHONY: docker-build-ui
+docker-build-ui: ## Build UI docker image
+	cd ui && docker build -t direktiv-ui-dev .
+
+.PHONY: docker-build-cross-ui
+docker-build-cross-ui: ## Build a cross platform UI docker image
+	cd ui && docker buildx build --platform linux/amd64,linux/arm64 -t direktiv-ui-dev .
+
+
+.PHONY: docker-push-local
+docker-push-local: REGISTRY="localhost:5000"
+docker-push-local: docker-build-api docker-build-ui
+docker-push-local: ## Tag and push images to local registry
+	docker tag direktiv-dev ${REGISTRY}/direktiv
+	docker push ${REGISTRY}/direktiv
+	docker tag direktiv-ui-dev ${REGISTRY}/frontend
+	docker push ${REGISTRY}/frontend
+
 .PHONY: docker-start
-docker-start: docker-build docker-stop
+docker-start: docker-build-api docker-stop
 docker-start: ## Create a local docker deployment.
 	cd ui && docker build -t direktiv-ui-dev .
 	DIREKTIV_UI_IMAGE=direktiv-ui-dev DIREKTIV_IMAGE=direktiv-dev  docker compose up -d --scale e2e-api=0
@@ -115,12 +134,12 @@ docker-tail: ## Tail the logs for the direktiv container in the docker deploymen
 	DIREKTIV_UI_IMAGE=direktiv-ui-dev DIREKTIV_IMAGE=direktiv-dev  docker compose logs -f
 
 .PHONY: docker-e2e-api
-docker-e2e-api: docker-stop docker-build
+docker-e2e-api: docker-stop docker-build-api
 docker-e2e-api: ## Perform backend end-to-end tests against the docker deployment.
 	DIREKTIV_UI_IMAGE=direktiv-ui-dev DIREKTIV_IMAGE=direktiv-dev  docker compose run e2e-api
 
 .PHONY: docker-e2e-playwright
-docker-e2e-playwright: docker-build docker-stop
+docker-e2e-playwright: docker-build-api docker-stop
 docker-e2e-playwright: ## Create a local docker deployment.
 	cd ui && docker build -t direktiv-ui-dev .
 	DIREKTIV_UI_IMAGE=direktiv-ui-dev DIREKTIV_IMAGE=direktiv-dev  docker compose run e2e-playwright
