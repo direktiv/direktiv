@@ -96,9 +96,12 @@ docker-build-api:
 
 
 .PHONY: docker-build-ui
-docker-build-ui: ## Build UI image
+docker-build-ui: ## Build UI docker image
 	cd ui && docker build -t direktiv-ui-dev .
 
+.PHONY: docker-build-cross-ui
+docker-build-cross-ui: ## Build a cross platform UI docker image
+	cd ui && docker buildx build --platform linux/amd64,linux/arm64 -t direktiv-ui-dev .
 
 
 .PHONY: docker-start
