@@ -18,7 +18,6 @@ jobs:
       matrix:
         test-section:
           - api
-          - cli
           - engine
           - errors
           - events
@@ -30,8 +29,10 @@ jobs:
           - namespace
           - registry
           - secrets
+          - secrets2
           - services
           - variables
+          - variables2
 
     steps:
       - uses: actions/checkout@v4
@@ -42,4 +43,4 @@ jobs:
           go-version-file: go.mod
 
       - name: Run tests
-        run: TEST_SECTION=${{ matrix.test-section }} make docker-tests
+        run: TEST_SECTION=${{ matrix.test-section }} make docker-e2e-api

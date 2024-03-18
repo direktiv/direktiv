@@ -1,11 +1,11 @@
-import retry from 'jest-retries'
+import { beforeAll, describe, expect, it } from '@jest/globals'
 
-import common from '../common'
+import config from '../common/config'
+import helpers from '../common/helpers'
 import request from '../common/request'
-
+import { retry10 } from '../common/retry'
 
 const testNamespace = 'patches'
-
 
 const genericContainerWorkflow = `
 direktiv_api: workflow/v1
@@ -25,32 +25,22 @@ states:
         - command: echo -n data
 `
 
-
 describe('Test generic container', () => {
-	beforeAll(common.helpers.deleteAllNamespaces)
+	beforeAll(helpers.deleteAllNamespaces)
 
-	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
+	helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateFile(
+	helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/wf1.yaml',
+		'/', 'wf1.yaml', 'workflow',
 		genericContainerWorkflow,
 	)
 
-
-	retry(`should invoke workflow`, 10, async () => {
-		await sleep(500)
-		const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ testNamespace }/tree/wf1.yaml?op=wait`)
+	retry10(`should invoke workflow`, async () => {
+		const res = await request(config.getDirektivHost()).get(`/api/namespaces/${ testNamespace }/tree/wf1.yaml?op=wait`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.return[0].Output).toEqual('data')
 	})
-
-
 })
-
-
-function sleep (ms) {
-	return new Promise(resolve => setTimeout(resolve, ms))
-}

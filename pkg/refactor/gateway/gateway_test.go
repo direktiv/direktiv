@@ -122,10 +122,10 @@ func TestBasicGateway(t *testing.T) {
 
 	// create endpoint in magical and custom namespace
 	db.FileStore().ForNamespace(ns1).CreateFile(context.Background(), "/test.yaml",
-		filestore.FileTypeEndpoint, "application/direktiv", []byte(wf1))
+		filestore.FileTypeEndpoint, "application/yaml", []byte(wf1))
 
 	db.FileStore().ForNamespace(core.MagicalGatewayNamespace).CreateFile(context.Background(),
-		"/test.yaml", filestore.FileTypeEndpoint, "application/direktiv", []byte(wf1))
+		"/test.yaml", filestore.FileTypeEndpoint, "application/yaml", []byte(wf1))
 
 	gm := gateway.NewGatewayManager(db)
 	gm.UpdateAll()
@@ -150,10 +150,10 @@ func TestAuthGateway(t *testing.T) {
 	db := database.NewDB(dbMock, "dummy")
 	createNS(db, core.MagicalGatewayNamespace)
 	db.FileStore().ForNamespace(core.MagicalGatewayNamespace).CreateFile(context.Background(),
-		"/test.yaml", filestore.FileTypeEndpoint, "application/direktiv", []byte(wfAuth))
+		"/test.yaml", filestore.FileTypeEndpoint, "application/yaml", []byte(wfAuth))
 
 	db.FileStore().ForNamespace(core.MagicalGatewayNamespace).CreateFile(context.Background(),
-		"/consumer.yaml", filestore.FileTypeConsumer, "application/direktiv", []byte(consumerAuth))
+		"/consumer.yaml", filestore.FileTypeConsumer, "application/yaml", []byte(consumerAuth))
 
 	gm := gateway.NewGatewayManager(db)
 	gm.UpdateAll()
@@ -174,7 +174,7 @@ func TestOutputPlugins(t *testing.T) {
 	db := database.NewDB(dbMock, "dummy")
 	createNS(db, core.MagicalGatewayNamespace)
 	db.FileStore().ForNamespace(core.MagicalGatewayNamespace).CreateFile(context.Background(),
-		"/test.yaml", filestore.FileTypeEndpoint, "application/direktiv", []byte(wfOutbound))
+		"/test.yaml", filestore.FileTypeEndpoint, "application/yaml", []byte(wfOutbound))
 
 	gm := gateway.NewGatewayManager(db)
 	gm.UpdateAll()
@@ -210,7 +210,7 @@ func TestTimeoutRequest(t *testing.T) {
 	db := database.NewDB(dbMock, "dummy")
 	createNS(db, core.MagicalGatewayNamespace)
 	db.FileStore().ForNamespace(core.MagicalGatewayNamespace).CreateFile(context.Background(),
-		"/test.yaml", filestore.FileTypeEndpoint, "application/direktiv", []byte(timeout))
+		"/test.yaml", filestore.FileTypeEndpoint, "application/yaml", []byte(timeout))
 
 	gm := gateway.NewGatewayManager(db)
 	gm.UpdateAll()
@@ -225,7 +225,7 @@ func TestGetAllEndpoints(t *testing.T) {
 	db := database.NewDB(dbMock, "dummy")
 	createNS(db, core.MagicalGatewayNamespace)
 	db.FileStore().ForNamespace(core.MagicalGatewayNamespace).CreateFile(context.Background(),
-		"/test.yaml", filestore.FileTypeEndpoint, "application/direktiv", []byte(timeout))
+		"/test.yaml", filestore.FileTypeEndpoint, "application/yaml", []byte(timeout))
 
 	gm := gateway.NewGatewayManager(db)
 	gm.UpdateAll()

@@ -5,7 +5,6 @@ import (
 	"encoding/gob"
 	"encoding/json"
 	"fmt"
-	"log/slog"
 	"strings"
 	"time"
 
@@ -13,7 +12,6 @@ import (
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
-	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/model"
@@ -101,34 +99,12 @@ func (events *events) syncEventDelays() {
 	// }
 }
 
-func (events *events) flushEvent(ctx context.Context, eventID string, ns *database.Namespace, rearm bool) error {
-	// tctx, tx, err := events.database.Tx(ctx)
-	// if err != nil {
-	// 	return err
-	// }
-	// defer rollback(tx)
-
-	// e, err := events.markEventAsProcessed(tctx, ns, eventID)
-	// if err != nil {
-	// 	return err
-	// }
-
-	// err = tx.Commit()
-	// if err != nil {
-	// 	return err
-	// }
-	// TODO is this needed?
-
+func (events *events) flushEvent(rearm bool) error {
 	defer func(r bool) {
 		if r {
 			events.syncEventDelays()
 		}
 	}(rearm)
-
-	// err = events.handleEvent(ns, e)
-	// if err != nil {
-	// 	return err
-	// }
 
 	return nil
 }
@@ -147,7 +123,7 @@ func (events *events) handleEvent(ctx context.Context, ns uuid.UUID, nsName stri
 			events.logger.Debugf(ctx, ns, events.flow.GetAttributes(), "invoking instance %v", instanceID)
 			_, end := traceMessageTrigger(ctx, "ins: "+instanceID.String()+" step: "+fmt.Sprint(step))
 			defer end()
-			events.engine.wakeEventsWaiter(instanceID, step, ev) // TODO
+			events.engine.wakeEventsWaiter(instanceID, ev)
 		},
 		GetListenersByTopic: func(ctx context.Context, s string) ([]*pkgevents.EventListener, error) {
 			ctx, end := traceGetListenersByTopic(ctx, s)
@@ -183,7 +159,7 @@ func (events *events) handleEvent(ctx context.Context, ns uuid.UUID, nsName stri
 			return nil
 		},
 	}
-	ctx, end := traceProcessingMessage(ctx, *ce)
+	ctx, end := traceProcessingMessage(ctx)
 	defer end()
 	// tx, err := events.beginSqlTx(ctx)
 	// if err != nil {
@@ -615,7 +591,7 @@ func (flow *flow) ReplayEvent(ctx context.Context, req *grpc.ReplayEventRequest)
 func (events *events) ReplayCloudevent(ctx context.Context, ns *database.Namespace, cevent *pkgevents.Event) error {
 	event := cevent.Event
 
-	events.logger.Infof(ctx, ns.ID, ns.GetAttributes(), "Replaying event: %s (%s / %s)", event.ID(), event.Type(), event.Source())
+	events.logger.Debugf(ctx, ns.ID, ns.GetAttributes(), "Replaying event: %s (%s / %s)", event.ID(), event.Type(), event.Source())
 
 	err := events.handleEvent(ctx, ns.ID, ns.Name, event)
 	if err != nil {
@@ -632,13 +608,13 @@ func (events *events) ReplayCloudevent(ctx context.Context, ns *database.Namespa
 }
 
 func (events *events) BroadcastCloudevent(ctx context.Context, ns *database.Namespace, event *cloudevents.Event, timer int64) error {
-	events.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Event received: %s (%s / %s) target time: %v", event.ID(), event.Type(), event.Source(), time.Unix(timer, 0))
+	// events.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Event received: %s (%s / %s) target time: %v", event.ID(), event.Type(), event.Source(), time.Unix(timer, 0))
 
 	metricsCloudEventsReceived.WithLabelValues(ns.Name, event.Type(), event.Source(), ns.Name).Inc()
 	ctx, end := traceBrokerMessage(ctx, *event)
 	defer end()
-	// add event to db
-	err := events.addEvent(ctx, event, ns, timer)
+
+	err := events.addEvent(ctx, event, ns)
 	if err != nil {
 		return err
 	}
@@ -709,8 +685,7 @@ func (events *events) listenForEvents(ctx context.Context, im *instanceMemory, c
 		return err
 	}
 
-	events.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), "Registered to receive events.")
-	slog.Info("Registered to receive events.", "stream", recipient.Namespace.String()+"."+im.Namespace().Name)
+	events.logger.Debugf(ctx, im.GetInstanceID(), im.GetAttributes(), "Registered to receive events.")
 
 	return nil
 }

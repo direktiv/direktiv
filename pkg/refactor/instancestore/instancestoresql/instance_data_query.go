@@ -5,10 +5,16 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+)
+
+const (
+	maxWriteDT = time.Minute / 2
 )
 
 type instanceDataQuery struct {
@@ -22,6 +28,12 @@ func (q *instanceDataQuery) UpdateInstanceData(ctx context.Context, args *instan
 	var vals []interface{}
 	var clauses []string
 	query := fmt.Sprintf("UPDATE %s", table)
+
+	clauses = append(clauses, fmt.Sprintf("%s = ?", fieldUpdatedAt))
+	vals = append(vals, time.Now().UTC())
+
+	clauses = append(clauses, fmt.Sprintf("%s = ?", fieldServer))
+	vals = append(vals, args.Server.String())
 
 	if args.EndedAt != nil {
 		clauses = append(clauses, fmt.Sprintf("%s = ?", fieldEndedAt))
@@ -83,20 +95,21 @@ func (q *instanceDataQuery) UpdateInstanceData(ctx context.Context, args *instan
 		vals = append(vals, *args.Metadata)
 	}
 
-	// if len(clauses) == 0 {
-	// 	return
-	// }
-
 	query += fmt.Sprintf(" SET %s", strings.Join(clauses, ", "))
 
 	query += fmt.Sprintf(" WHERE %s = ?", fieldID)
-
 	vals = append(vals, q.instanceID)
+
+	if !args.BypassOwnershipCheck {
+		query += fmt.Sprintf(" AND %s = ? AND %s > ?", fieldServer, fieldUpdatedAt)
+		vals = append(vals, args.Server)
+		vals = append(vals, time.Now().UTC().Add(-maxWriteDT))
+	}
 
 	res := q.db.WithContext(ctx).Exec(query, vals...)
 	if res.Error != nil {
 		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
-			return fmt.Errorf("instance '%s': %w", q.instanceID, instancestore.ErrNotFound)
+			return fmt.Errorf("instance '%s' not found or not allowed to write: %w", q.instanceID, instancestore.ErrNotFound)
 		}
 
 		return res.Error
@@ -143,4 +156,56 @@ func (q *instanceDataQuery) GetSummaryWithOutput(ctx context.Context) (*instance
 
 func (q *instanceDataQuery) GetSummaryWithMetadata(ctx context.Context) (*instancestore.InstanceData, error) {
 	return q.get(ctx, append(summaryFields, fieldMetadata))
+}
+
+func (q *instanceDataQuery) EnqueueMessage(ctx context.Context, args *instancestore.EnqueueInstanceMessageArgs) error {
+	idata := &instancestore.InstanceMessageData{
+		ID:         uuid.New(),
+		InstanceID: q.instanceID,
+		Payload:    args.Payload,
+	}
+
+	columns := []string{
+		fieldInstanceMessageID, fieldInstanceMessageInstanceID, fieldInstanceMessagePayload,
+	}
+	query := generateInsertQuery(messagesTable, columns)
+
+	res := q.db.WithContext(ctx).Exec(query,
+		idata.ID, idata.InstanceID, idata.Payload)
+	if res.Error != nil {
+		return res.Error
+	}
+	if res.RowsAffected != 1 {
+		return fmt.Errorf("unexpected gorm create count, got: %d, want: %d", res.RowsAffected, 1)
+	}
+
+	return nil
+}
+
+func (q *instanceDataQuery) PopMessage(ctx context.Context) (*instancestore.InstanceMessageData, error) {
+	columns := []string{fieldInstanceMessageID, fieldInstanceMessageInstanceID, fieldInstanceMessageCreatedAt, fieldInstanceMessagePayload}
+	query := fmt.Sprintf(`SELECT %s FROM %s WHERE %s = ? ORDER BY %s ASC LIMIT 1`, strings.Join(columns, ", "), messagesTable, fieldInstanceMessageInstanceID, fieldInstanceMessageCreatedAt)
+
+	msg := &instancestore.InstanceMessageData{}
+	res := q.db.WithContext(ctx).Raw(query, q.instanceID).First(msg)
+	if res.Error != nil {
+		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+			return nil, instancestore.ErrNoMessages
+		}
+
+		return nil, res.Error
+	}
+
+	res = q.db.WithContext(ctx).Exec(fmt.Sprintf(`DELETE FROM %s WHERE %s = ?`, messagesTable, fieldInstanceMessageID), msg.ID)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	if res.RowsAffected == 0 {
+		return nil, datastore.ErrNotFound
+	}
+	if res.RowsAffected > 1 {
+		return nil, fmt.Errorf("unexpected instance_messages delete count, got: %d, want: %d", res.RowsAffected, 1)
+	}
+
+	return msg, nil
 }

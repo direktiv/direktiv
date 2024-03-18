@@ -4,7 +4,6 @@ import common from '../common'
 import request from '../common/request'
 import { retry10 } from '../common/retry'
 
-
 const testNamespace = 'gateway'
 
 const limitedNamespace = 'limited_namespace'
@@ -34,7 +33,6 @@ const endpointNSFileAllowed = `
     - GET
   path: /endpoint2`
 
-
 const endpointBroken = `
   direktiv_api: endpoint/v1
   allow_anonymous: true
@@ -50,11 +48,11 @@ describe('Test target file wrong config', () => {
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/ep3.yaml',
+		'/', 'ep3.yaml', 'endpoint',
 		endpointBroken,
 	)
 
@@ -82,7 +80,6 @@ describe('Test target file wrong config', () => {
 			),
 		)
 	})
-
 })
 
 describe('Test target namespace file plugin', () => {
@@ -91,38 +88,37 @@ describe('Test target namespace file plugin', () => {
 	common.helpers.itShouldCreateNamespace(it, expect, limitedNamespace)
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/endpoint1.yaml',
+		'/', 'endpoint1.yaml', 'endpoint',
 		endpointNSFile,
 	)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/endpoint2.yaml',
+		'/', 'endpoint2.yaml', 'endpoint',
 		endpointNSFileAllowed,
 	)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		limitedNamespace,
-		'/endpoint1.yaml',
+		'/', 'endpoint1.yaml', 'endpoint',
 		endpointNSFile,
 	)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		limitedNamespace,
-		'/endpoint2.yaml',
+		'/', 'endpoint2.yaml', 'endpoint',
 		endpointNSFileAllowed,
 	)
-
 
 	retry10(`should return a file from magic namespace`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(
@@ -154,6 +150,4 @@ describe('Test target namespace file plugin', () => {
 		)
 		expect(req.statusCode).toEqual(500)
 	})
-
-
 })

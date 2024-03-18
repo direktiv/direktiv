@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
-	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/util"
 	libgrpc "google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -84,10 +83,17 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 		<-time.After(3 * time.Minute)
 		for {
 			<-time.After(time.Hour)
-			t := time.Now().UTC().Add(time.Hour * -24)
+			t := time.Now().UTC().Add(time.Hour * -48) // TODO make this a config option.
 			flow.sugar.Error(fmt.Sprintf("deleting all logs since %v", t))
 			err = srv.flow.runSqlTx(ctx, func(tx *sqlTx) error {
 				return tx.DataStore().Logs().DeleteOldLogs(context.TODO(), t)
+			})
+			if err != nil {
+				flow.sugar.Error(fmt.Errorf("failed to cleanup old logs: %w", err))
+				continue
+			}
+			err = srv.flow.runSqlTx(ctx, func(tx *sqlTx) error {
+				return tx.DataStore().NewLogs().DeleteOldLogs(ctx, t)
 			})
 			if err != nil {
 				flow.sugar.Error(fmt.Errorf("failed to cleanup old logs: %w", err))
@@ -126,15 +132,8 @@ func (flow *flow) kickExpiredInstances() {
 	}
 
 	for i := range list {
-		info, err := enginerefactor.LoadInstanceRuntimeInfo(list[i].RuntimeInfo)
-		if err != nil {
-			flow.sugar.Error(err)
-			continue
-		}
-
 		data, err := json.Marshal(&retryMessage{
 			InstanceID: list[i].ID.String(),
-			Step:       len(info.Flow),
 		})
 		if err != nil {
 			panic(err)

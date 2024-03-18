@@ -4,9 +4,7 @@ import common from '../common'
 import request from '../common/request'
 import { retry10 } from '../common/retry'
 
-
 const testNamespace = 'js-inbound'
-
 
 const endpointJSFile = `
 direktiv_api: endpoint/v1
@@ -34,7 +32,6 @@ plugins:
 methods: 
   - POST
 path: /target`
-
 
 const wf = `
 direktiv_api: workflow/v1
@@ -75,7 +72,6 @@ methods:
   - POST
 path: /target`
 
-
 const endpointParamFile = `
 direktiv_api: endpoint/v1
 allow_anonymous: true
@@ -95,7 +91,6 @@ plugins:
 methods: 
   - POST
 path: /target/{id}`
-
 
 const endpointErrorFile = `
 direktiv_api: endpoint/v1
@@ -119,26 +114,25 @@ methods:
   - POST
 path: /target`
 
-
 describe('Test js inbound plugin', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 	// common.helpers.itShouldCreateNamespace(it, expect, testNamespace);
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/endpoint1.yaml',
+		'/', 'endpoint1.yaml', 'endpoint',
 		endpointJSFile,
 	)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/target.yaml',
+		'/', 'target.yaml', 'workflow',
 		wf,
 	)
 
@@ -155,36 +149,34 @@ describe('Test js inbound plugin', () => {
 		expect(req.body.result.addquery).toEqual('value1')
 		expect(req.body.result.addquerydel).toEqual('')
 	})
-
 })
-
 
 describe('Test js inbound plugin consumer', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/consumer.yaml',
+		'/', 'consumer.yaml', 'consumer',
 		consumer,
 	)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/endpoint1.yaml',
+		'/', 'endpoint1.yaml', 'endpoint',
 		endpointConsumerFile,
 	)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/target.yaml',
+		'/', 'target.yaml', 'workflow',
 		wf,
 	)
 
@@ -197,10 +189,7 @@ describe('Test js inbound plugin consumer', () => {
 
 		expect(req.statusCode).toEqual(200)
 		expect(req.body.result.user).toEqual('demo')
-
 	})
-
-
 })
 
 describe('Test js inbound plugin url params', () => {
@@ -208,19 +197,19 @@ describe('Test js inbound plugin url params', () => {
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/endpoint1.yaml',
+		'/', 'endpoint1.yaml', 'endpoint',
 		endpointParamFile,
 	)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/target.yaml',
+		'/', 'target.yaml', 'workflow',
 		wf,
 	)
 
@@ -232,29 +221,27 @@ describe('Test js inbound plugin url params', () => {
 
 		expect(req.statusCode).toEqual(200)
 		expect(req.body.result.params).toEqual('myid')
-
 	})
 })
-
 
 describe('Test js inbound plugin errors', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/endpoint1.yaml',
+		'/', 'endpoint1.yaml', 'endpoint',
 		endpointErrorFile,
 	)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/target.yaml',
+		'/', 'target.yaml', 'workflow',
 		wf,
 	)
 
@@ -265,6 +252,5 @@ describe('Test js inbound plugin errors', () => {
 			.send({ hello: 'world' })
 
 		expect(req.statusCode).toEqual(403)
-
 	})
 })

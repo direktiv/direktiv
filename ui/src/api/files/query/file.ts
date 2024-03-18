@@ -40,12 +40,8 @@ export const useFile = ({
   const namespace = givenNamespace ? givenNamespace : defaultNamespace;
   const apiKey = useApiKey();
 
-  if (!namespace) {
-    throw new Error("namespace is undefined");
-  }
-
   return useQueryWithPermissions({
-    queryKey: fileKeys.file(namespace, {
+    queryKey: fileKeys.file(namespace ?? "", {
       apiKey: apiKey ?? undefined,
       path: forceLeadingSlash(path),
     }),

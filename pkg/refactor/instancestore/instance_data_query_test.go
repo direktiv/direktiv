@@ -36,6 +36,8 @@ func assertInstanceStoreCorrectGetMost(t *testing.T, is instancestore.Store, arg
 
 // nolint
 func TestInstanceDataQuery_sqlInstanceStore_GetMost(t *testing.T) {
+	server := uuid.New()
+
 	db, err := database.NewMockGorm()
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
@@ -51,6 +53,7 @@ func TestInstanceDataQuery_sqlInstanceStore_GetMost(t *testing.T) {
 			ID:             id,
 			NamespaceID:    uuid.New(),
 			RootInstanceID: id,
+			Server:         server,
 			Invoker:        "api",
 			WorkflowPath:   "/test.yaml",
 			Definition: []byte(`
@@ -101,6 +104,8 @@ func assertInstanceStoreCorrectGetSummary(t *testing.T, is instancestore.Store, 
 
 // nolint
 func TestInstanceDataQuery_sqlInstanceStore_GetSummary(t *testing.T) {
+	server := uuid.New()
+
 	db, err := database.NewMockGorm()
 	if err != nil {
 		t.Fatalf("unepxected NewMockGorm() error = %v", err)
@@ -116,6 +121,7 @@ func TestInstanceDataQuery_sqlInstanceStore_GetSummary(t *testing.T) {
 			ID:             id,
 			NamespaceID:    uuid.New(),
 			RootInstanceID: id,
+			Server:         server,
 			Invoker:        "api",
 			WorkflowPath:   "/test.yaml",
 			Definition: []byte(`

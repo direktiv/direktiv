@@ -2,14 +2,17 @@ package flow
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net"
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/refactor/core"
+	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/google/uuid"
 	libgrpc "google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -57,8 +60,6 @@ func (internal *internal) Run() error {
 }
 
 func (internal *internal) ReportActionResults(ctx context.Context, req *grpc.ReportActionResultsRequest) (*emptypb.Empty, error) {
-	internal.sugar.Debugf("Handling gRPC request: %s", this())
-
 	payload := &actionResultPayload{
 		ActionID:     req.GetActionId(),
 		ErrorCode:    req.GetErrorCode(),
@@ -66,23 +67,17 @@ func (internal *internal) ReportActionResults(ctx context.Context, req *grpc.Rep
 		Output:       req.GetOutput(),
 	}
 
-	wakedata, err := json.Marshal(payload)
+	uid, err := uuid.Parse(req.GetInstanceId())
 	if err != nil {
-		internal.sugar.Error(err)
+		internal.engine.sugar.Errorf("failed to parse instanceID in ReportActionResults: %v", err)
 		return nil, err
 	}
 
-	ctx2, im, err := internal.engine.loadInstanceMemory(req.GetInstanceId(), int(req.GetStep()))
+	err = internal.engine.enqueueInstanceMessage(ctx, uid, "action", payload)
 	if err != nil {
-		internal.sugar.Error(err)
+		internal.engine.sugar.Errorf("failed to enqueue instance message for ReportActionResults: %v", err)
 		return nil, err
 	}
-
-	internal.sugar.Debugf("Handling report action results: %s", this())
-
-	traceActionResult(ctx2, payload)
-
-	go internal.engine.runState(ctx2, im, wakedata, nil)
 
 	var resp emptypb.Empty
 
@@ -105,11 +100,16 @@ func (internal *internal) ActionLog(ctx context.Context, req *grpc.ActionLogRequ
 	tags["loop-index"] = fmt.Sprintf("%d", req.Iterator)
 	tags["state-id"] = stateID
 	tags["state-type"] = "action"
+	loggingCtx := enginerefactor.AddTag(ctx, "state", stateID)
+	loggingCtx = enginerefactor.AddTag(loggingCtx, "branch", req.Iterator)
+	loggingCtx = enginerefactor.WithTrack(loggingCtx, enginerefactor.BuildInstanceTrack(instance))
+	loggingCtx = enginerefactor.AddTag(loggingCtx, "namespace", instance.Instance.Namespace)
+	loggingCtx = instance.WithTags(loggingCtx)
 	for _, msg := range req.GetMsg() {
 		res := truncateLogsMsg(msg, 1024)
+		slog.Info(res, enginerefactor.GetSlogAttributesWithStatus(loggingCtx, core.LogRunningStatus)...)
 		internal.logger.Infof(ctx, instance.Instance.ID, tags, res)
 	}
-
 	var resp emptypb.Empty
 
 	return &resp, nil

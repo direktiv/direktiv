@@ -58,7 +58,7 @@ services:
     depends_on:
       - flow
 
-  e2e-tests:
+  e2e-api:
     image: node:lts-alpine3.18
     volumes:
       - ./tests:/tests
@@ -69,3 +69,20 @@ services:
     command: npm --prefix /tests run without-k8s
     depends_on:
       - flow
+
+  e2e-playwright:
+    scale: 0
+    image: node:18
+    volumes:
+      - ./ui:/ui
+    environment:
+      - NODE_TLS_REJECT_UNAUTHORIZED=0
+      - PLAYWRIGHT_USE_VITE=FALSE
+      - PLAYWRIGHT_UI_BASE_URL=http://ui:8080
+    command: >
+      bash -c "cd ui
+      && yarn
+      && npx playwright install --with-deps chromium
+      && yarn run e2e:headless-chromium-only"
+    depends_on:
+      - ui

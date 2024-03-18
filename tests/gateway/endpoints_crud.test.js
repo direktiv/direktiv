@@ -22,7 +22,6 @@ methods:
   - GET
 path: /endpoint1`
 
-
 const endpoint2 = `
 direktiv_api: endpoint/v1
 allow_anonymous: true
@@ -40,7 +39,6 @@ plugins:
 methods: 
   - GET
 path: /endpoint2`
-
 
 const endpoint3 = `
 direktiv_api: endpoint/v1
@@ -94,7 +92,6 @@ tags:
 groups:
 - group2`
 
-
 const endpointBroken = `direktiv_api: endpoint/v1
 allow_anonymous: true
 plugins:
@@ -104,17 +101,16 @@ methods:
   - GET
 path: ep4`
 
-
 describe('Test wrong endpoint config', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/endpointbroken.yaml',
+		'/', 'endpointbroken.yaml', 'endpoint',
 		endpointBroken,
 	)
 
@@ -144,7 +140,6 @@ describe('Test wrong endpoint config', () => {
 			),
 		)
 	})
-
 })
 
 describe('Test gateway endpoints on create', () => {
@@ -171,36 +166,35 @@ describe('Test gateway get single endpoint', () => {
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/endpoint1.yaml',
+		'/', 'endpoint1.yaml', 'endpoint',
 		endpoint1,
 	)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/endpoint2.yaml',
+		'/', 'endpoint2.yaml', 'endpoint',
 		endpoint2,
 	)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/endpoint3.yaml',
+		'/', 'endpoint3.yaml', 'endpoint',
 		endpoint3,
 	)
 
-
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/endpoint4.yaml',
+		'/', 'endpoint4.yaml', 'endpoint',
 		endpoint4,
 	)
 
@@ -296,41 +290,40 @@ describe('Test gateway get single endpoint', () => {
 	})
 })
 
-
 describe('Test gateway endpoints crud operations', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/endpoint1.yaml',
+		'/', 'endpoint1.yaml', 'endpoint',
 		endpoint1,
 	)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/endpoint2.yaml',
+		'/', 'endpoint2.yaml', 'endpoint',
 		endpoint2,
 	)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/consumer1.yaml',
+		'/', 'consumer1.yaml', 'consumer',
 		consumer1,
 	)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/consumer2.yaml',
+		'/', 'consumer2.yaml', 'consumer',
 		consumer2,
 	)
 
@@ -388,7 +381,6 @@ describe('Test gateway endpoints crud operations', () => {
 		)
 	})
 
-
 	retry10(`should list all consumers`, async () => {
 		const listRes = await request(common.config.getDirektivHost()).get(
 			`/api/v2/namespaces/${ testNamespace }/gateway/consumers`,
@@ -417,8 +409,8 @@ describe('Test gateway endpoints crud operations', () => {
 		)
 	})
 
-	common.helpers.itShouldDeleteFile(it, expect, testNamespace, '/endpoint1.yaml')
-	common.helpers.itShouldDeleteFile(it, expect, testNamespace, '/consumer1.yaml')
+	common.helpers.itShouldDeleteFileV2(it, expect, testNamespace, '/endpoint1.yaml')
+	common.helpers.itShouldDeleteFileV2(it, expect, testNamespace, '/consumer1.yaml')
 
 	retry10(`should list one route after delete`, async () => {
 		const listRes = await request(common.config.getDirektivHost()).get(
@@ -442,35 +434,35 @@ describe('Test availability of gateway endpoints', () => {
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/endpoint1.yaml',
+		'/', 'endpoint1.yaml', 'endpoint',
 		endpoint1,
 	)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/endpoint2.yaml',
+		'/', 'endpoint2.yaml', 'endpoint',
 		endpoint2,
 	)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/consumer1.yaml',
+		'/', 'consumer1.yaml', 'consumer',
 		consumer1,
 	)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/consumer2.yaml',
+		'/', 'consumer2.yaml', 'consumer',
 		consumer2,
 	)
 

@@ -31,7 +31,7 @@ export const findConsumerWithApiRequest = async ({
 }: FindConsumerWithApiRequestParams) => {
   const { data: consumers } = await getConsumers({
     urlParams: {
-      baseUrl: process.env.VITE_DEV_API_DOMAIN,
+      baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
       namespace,
     },
   });

@@ -16,7 +16,9 @@ import { useMatches, useParams, useSearchParams } from "react-router-dom";
 import Activities from "~/pages/namespace/Mirror/Activities";
 import ConsumerEditorPage from "~/pages/namespace/Explorer/Consumer";
 import EndpointEditorPage from "~/pages/namespace/Explorer/Endpoint";
+import ErrorPage from "./ErrorPage";
 import EventsPage from "~/pages/namespace/Events";
+import ExplorerPage from "~/pages/namespace/Explorer";
 import GatewayConsumersPage from "~/pages/namespace/Gateway/Consumers";
 import GatewayPage from "~/pages/namespace/Gateway";
 import GatewayRoutesPage from "~/pages/namespace/Gateway/Routes";
@@ -384,6 +386,8 @@ export const pages: PageType & EnterprisePageType = {
     },
     route: {
       path: "explorer/",
+      errorElement: <ErrorPage className="h-full" />,
+      element: <ExplorerPage />,
       handle: { explorer: true },
       children: [
         {

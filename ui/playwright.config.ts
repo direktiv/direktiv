@@ -2,12 +2,14 @@ import * as dotenv from "dotenv";
 
 import { defineConfig, devices } from "@playwright/test";
 
-import { envVariablesSchema } from "./src/config/env/schema";
 import { storageState } from "./e2e/setup/auth";
 
 dotenv.config();
-const env = envVariablesSchema.parse(process.env);
-const baseURL = `${env.VITE_E2E_UI_HOST}:${env.VITE_E2E_UI_PORT}`;
+
+if (!process.env.PLAYWRIGHT_UI_BASE_URL)
+  throw new Error("PLAYWRIGHT_UI_BASE_URL is not set");
+
+const baseURL = new URL(`${process.env.PLAYWRIGHT_UI_BASE_URL}`);
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -21,14 +23,14 @@ export default defineConfig({
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
   /* Opt out of parallel tests per default. Enable parallel tests by setting
-     VITE_E2E_PARALLEL to TRUE. */
-  workers: process.env.VITE_E2E_PARALLEL === "TRUE" ? undefined : 1,
+     PLAYWRIGHT_PARALLEL to TRUE. */
+  workers: process.env.PLAYWRIGHT_PARALLEL === "TRUE" ? undefined : 1,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: "html",
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL,
+    baseURL: baseURL.toString(),
     storageState,
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     // trace: "on-first-retry",
@@ -76,10 +78,13 @@ export default defineConfig({
   ],
 
   /* Run your local dev server before starting the tests */
-  webServer: {
-    timeout: 60000,
-    command: `yarn run vite --port ${process.env.VITE_E2E_UI_PORT}`,
-    url: baseURL,
-    reuseExistingServer: !process.env.CI,
-  },
+  webServer:
+    process.env.PLAYWRIGHT_USE_VITE === "TRUE"
+      ? {
+          timeout: 60000,
+          command: `yarn run vite --port ${baseURL.port}`,
+          url: baseURL.toString(),
+          reuseExistingServer: !process.env.CI,
+        }
+      : undefined,
 });

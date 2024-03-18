@@ -16,6 +16,7 @@ var (
 	ErrNotFound     = errors.New("not found")
 	ErrParallelCron = errors.New("a parallel cron already exists")
 	ErrBadListOpts  = errors.New("unsupported list option")
+	ErrNoMessages   = errors.New("no messages")
 )
 
 // InstanceStatus enum allows us to perform arithmetic comparisons on the database.
@@ -111,6 +112,7 @@ type InstanceData struct {
 	NamespaceID    uuid.UUID
 	Namespace      string
 	RootInstanceID uuid.UUID
+	Server         uuid.UUID
 	CreatedAt      time.Time
 	UpdatedAt      time.Time
 	EndedAt        *time.Time
@@ -145,6 +147,7 @@ type CreateInstanceDataArgs struct {
 	NamespaceID    uuid.UUID
 	Namespace      string
 	RootInstanceID uuid.UUID
+	Server         uuid.UUID
 	Invoker        string
 	WorkflowPath   string
 	Definition     []byte
@@ -159,18 +162,34 @@ type CreateInstanceDataArgs struct {
 
 // UpdateInstanceDataArgs defines the possible arguments for updating an existing instance data record.
 type UpdateInstanceDataArgs struct {
-	EndedAt       *time.Time      `json:"ended_at,omitempty"`
-	Deadline      *time.Time      `json:"deadline,omitempty"`
-	Status        *InstanceStatus `json:"status,omitempty"`
-	ErrorCode     *string         `json:"error_code,omitempty"`
-	TelemetryInfo *[]byte         `json:"telemetry_info,omitempty"`
-	RuntimeInfo   *[]byte         `json:"runtime_info,omitempty"`
-	ChildrenInfo  *[]byte         `json:"children_info,omitempty"`
-	LiveData      *[]byte         `json:"live_data,omitempty"`
-	StateMemory   *[]byte         `json:"state_memory,omitempty"`
-	Output        *[]byte         `json:"output,omitempty"`
-	ErrorMessage  *[]byte         `json:"error_message,omitempty"`
-	Metadata      *[]byte         `json:"metadata,omitempty"`
+	BypassOwnershipCheck bool            `json:"bypass_ownership_check"`
+	Server               uuid.UUID       `json:"server"`
+	EndedAt              *time.Time      `json:"ended_at,omitempty"`
+	Deadline             *time.Time      `json:"deadline,omitempty"`
+	Status               *InstanceStatus `json:"status,omitempty"`
+	ErrorCode            *string         `json:"error_code,omitempty"`
+	TelemetryInfo        *[]byte         `json:"telemetry_info,omitempty"`
+	RuntimeInfo          *[]byte         `json:"runtime_info,omitempty"`
+	ChildrenInfo         *[]byte         `json:"children_info,omitempty"`
+	LiveData             *[]byte         `json:"live_data,omitempty"`
+	StateMemory          *[]byte         `json:"state_memory,omitempty"`
+	Output               *[]byte         `json:"output,omitempty"`
+	ErrorMessage         *[]byte         `json:"error_message,omitempty"`
+	Metadata             *[]byte         `json:"metadata,omitempty"`
+}
+
+// InstanceMessageData is the struct that matches the instance messages table.
+type InstanceMessageData struct {
+	ID         uuid.UUID
+	InstanceID uuid.UUID
+	CreatedAt  time.Time
+	Payload    []byte
+}
+
+// EnqueueInstanceMessageArgs defines the required arguments for enqueueing an instance message.
+type EnqueueInstanceMessageArgs struct {
+	InstanceID uuid.UUID
+	Payload    []byte
 }
 
 type InstanceDataQuery interface {
@@ -191,6 +210,12 @@ type InstanceDataQuery interface {
 
 	// GetSummaryWithMetadata returns everything GetSummary does, as well as the metadata field.
 	GetSummaryWithMetadata(ctx context.Context) (*InstanceData, error)
+
+	// EnqueueMessage adds a message to the instance's message queue.
+	EnqueueMessage(ctx context.Context, args *EnqueueInstanceMessageArgs) error
+
+	// PopMessage returns the most recent message out of the queue.
+	PopMessage(ctx context.Context) (*InstanceMessageData, error)
 }
 
 type Store interface {
@@ -208,6 +233,9 @@ type Store interface {
 
 	// GetHangingInstances returns a list of all instances where deadline has been exceeded and status is unfinished
 	GetHangingInstances(ctx context.Context) ([]InstanceData, error)
+
+	// GetHomelessInstances returns a list of all unfinished instances where updated_at hasn't been touched in a while, so that the engine can attempt to auto-resume work on them
+	GetHomelessInstances(ctx context.Context, t time.Time) ([]InstanceData, error)
 
 	// DeleteOldInstances deletes all instances that have terminated and end_at a long time ago
 	DeleteOldInstances(ctx context.Context, before time.Time) error

@@ -228,10 +228,6 @@ func (timers *timers) deleteTimersForInstance(name string) {
 	timers.pubsub.ClusterDeleteInstanceTimers(name)
 }
 
-func (timers *timers) deleteTimersForActivity(name string) {
-	timers.pubsub.ClusterDeleteActivityTimers(name)
-}
-
 func (timers *timers) deleteTimersForInstanceNoBroadcast(name string) {
 	var keys []string
 
@@ -330,9 +326,5 @@ func (timers *timers) deleteTimerByName(oldController, newController, name strin
 }
 
 func (timers *timers) deleteCronForWorkflow(id string) {
-	timers.deleteTimerByName("", timers.hostname, fmt.Sprintf("cron:%s", id))
-}
-
-func (timers *timers) deleteCronForSyncer(id string) {
 	timers.deleteTimerByName("", timers.hostname, fmt.Sprintf("cron:%s", id))
 }
