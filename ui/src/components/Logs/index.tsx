@@ -13,6 +13,7 @@ type LogsContainerProps = {
   virtualOffset: number;
   isStreaming?: boolean;
   scrolledToBottom: boolean;
+  scrollButtonClassName?: string;
   setScrolledToBottom: (scrolledToBottom: boolean) => void;
 } & ComponentProps<typeof Logs>;
 
@@ -24,6 +25,7 @@ export const LogList = forwardRef<LogRef, LogsContainerProps>(
       isStreaming = true,
       scrolledToBottom,
       setScrolledToBottom,
+      scrollButtonClassName,
       children,
       ...props
     },
@@ -58,7 +60,8 @@ export const LogList = forwardRef<LogRef, LogsContainerProps>(
               "absolute box-border flex w-full pr-10",
               "justify-center transition-all",
               "aria-[hidden=true]:pointer-events-none aria-[hidden=true]:bottom-11 aria-[hidden=true]:opacity-0",
-              "aria-[hidden=false]:bottom-16 aria-[hidden=false]:opacity-100"
+              "aria-[hidden=false]:bottom-16 aria-[hidden=false]:opacity-100",
+              scrollButtonClassName
             )}
             aria-hidden={scrolledToBottom ? "true" : "false"}
           >
