@@ -87,9 +87,7 @@ const PodsWithData = ({
                   }}
                 />
               </TooltipTrigger>
-              <TooltipContent>
-                {t("pages.services.detail.logs.tooltips.copy")}
-              </TooltipContent>
+              <TooltipContent>{t("components.logs.copy")}</TooltipContent>
             </Tooltip>
           </TooltipProvider>
         </div>
@@ -108,7 +106,7 @@ const PodsWithData = ({
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-gray-11 opacity-75 dark:bg-gray-dark-11"></span>
               <span className="relative inline-flex h-3 w-3 rounded-full bg-gray-11 dark:bg-gray-dark-11"></span>
             </span>
-            {t("pages.services.detail.logs.logsCount", {
+            {t("components.logs.logsCount", {
               count: logs.length,
             })}
           </div>

@@ -89,9 +89,7 @@ const LogsPanel = () => {
                   />
                 </div>
               </TooltipTrigger>
-              <TooltipContent>
-                {t("pages.instances.detail.logs.tooltips.copy")}
-              </TooltipContent>
+              <TooltipContent>{t("components.logs.copy")}</TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -126,7 +124,7 @@ const LogsPanel = () => {
             <span className="relative inline-flex h-3 w-3 rounded-full bg-gray-11 dark:bg-gray-dark-11"></span>
           </span>
         )}
-        {t("pages.instances.detail.logs.logsCount", { count: numberOfLogs })}
+        {t("components.logs.logsCount", { count: numberOfLogs })}
       </div>
     </>
   );

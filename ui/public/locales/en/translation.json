@@ -521,12 +521,7 @@
     "monitoring": {
       "title": "Monitoring",
       "logs": {
-        "title": "Logs",
-        "logsCount": "received {{count}} log entries",
-        "logsCount_one": "received {{count}} log entry",
-        "tooltips": {
-          "copy": "Copy logs"
-        }
+        "title": "Logs"
       },
       "instances": {
         "openWorkflowTooltip": "click to open workflow {{name}}",
@@ -605,11 +600,8 @@
         },
         "logs": {
           "title": "Logs for {{path}}",
-          "logsCount": "received {{count}} log entries",
-          "logsCount_one": "received {{count}} log entry",
           "tooltips": {
             "verbose": "Verbose logs",
-            "copy": "Copy logs",
             "minimize": "Minimize logs",
             "maximize": "Maximize logs"
           },
@@ -739,12 +731,7 @@
         "logs": {
           "noPods": "No running pods",
           "title": "Logs for {{name}}",
-          "logsCount": "received {{count}} log entries",
-          "logsCount_one": "received {{count}} log entry",
-          "tab": "Pod {{number}} of {{total}}",
-          "tooltips": {
-            "copy": "Copy logs"
-          }
+          "tab": "Pod {{number}} of {{total}}"
         }
       }
     },
@@ -1235,12 +1222,15 @@
     },
     "logs": {
       "followLogs": "Follow logs",
+      "logsCount": "received {{count}} log entries",
+      "logsCount_one": "received {{count}} log entry",
+      "copy": "Copy logs",
       "logEntry": {
         "messageLabel": "msg:",
         "stateLabel": "state:",
         "instanceLabel": "instance:"
       }
-    },
+    }
   },
   "api": {
     "generic": {
