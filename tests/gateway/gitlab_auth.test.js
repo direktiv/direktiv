@@ -35,7 +35,7 @@ path: /target`
 describe('Test gitlab auth plugin', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
 
-    common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
+	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
 	common.helpers.itShouldCreateYamlFileV2(
 		it,
@@ -45,7 +45,7 @@ describe('Test gitlab auth plugin', () => {
 		wf,
 	)
 
-    common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
@@ -53,26 +53,23 @@ describe('Test gitlab auth plugin', () => {
 		endpointFile,
 	)
 
-    retry10(`should execute`, async () => {
+	retry10(`should execute`, async () => {
 		const req = await request(common.config.getDirektivHost()).post(
 			`/ns/` + testNamespace + `/target`,
 		)
-        .set('X-Gitlab-Token', 'secret')
-        .send({ hello: 'world' })
-
+			.set('X-Gitlab-Token', 'secret')
+			.send({ hello: 'world' })
 
 		expect(req.statusCode).toEqual(200)
 	})
 
-    retry10(`should fail`, async () => {
+	retry10(`should fail`, async () => {
 		const req = await request(common.config.getDirektivHost()).post(
 			`/ns/` + testNamespace + `/target`,
 		)
-        .set('X-Gitlab-Token', 'wrongsecret')
-        .send({ hello: 'world' })
-
+			.set('X-Gitlab-Token', 'wrongsecret')
+			.send({ hello: 'world' })
 
 		expect(req.statusCode).toEqual(401)
 	})
-
 })

@@ -159,11 +159,6 @@ func executeEvent(cmd *cobra.Command, url string, args []string) (string, error)
 	return string(b), err
 }
 
-type getFilterResp struct {
-	Filtername string `json:"filtername"`
-	JsCode     string `json:"jsCode"`
-}
-
 func init() {
 	root.RootCmd.AddCommand(eventsCmd)
 	eventsCmd.AddCommand(sendEventCmd)

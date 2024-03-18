@@ -46,7 +46,6 @@ linters:
     - interfacer
     - nosnakecase
     - golint
-    - deadcode
     - varcheck
     - scopelint
     - gomnd

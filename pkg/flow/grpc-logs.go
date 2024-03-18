@@ -15,7 +15,6 @@ import (
 
 const (
 	namespaceType = "namespace"
-	wf            = "workflow"
 	ins           = "instance"
 )
 
