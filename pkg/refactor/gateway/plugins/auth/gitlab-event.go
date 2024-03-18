@@ -21,15 +21,15 @@ type GitlabWebhookPlugin struct {
 }
 
 func ConfigureGitlabWebhook(config interface{}, _ string) (core.PluginInstance, error) {
-	requestConvertConfig := &GitlabWebhookPluginConfig{}
+	gitlabConfig := &GitlabWebhookPluginConfig{}
 
-	err := plugins.ConvertConfig(config, requestConvertConfig)
+	err := plugins.ConvertConfig(config, gitlabConfig)
 	if err != nil {
 		return nil, err
 	}
 
 	return &GitlabWebhookPlugin{
-		config: requestConvertConfig,
+		config: gitlabConfig,
 	}, nil
 }
 
