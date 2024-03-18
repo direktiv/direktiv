@@ -137,6 +137,7 @@ export const useLogVirtualizer = ({
       const { scrollOffset: currentOffset } = rowVirtualizer;
       const numberOfNewLogs = numberOfLogs - prevNumberOfLogs.current;
       const newOffset = currentOffset + numberOfNewLogs * defaultLogHeight;
+      prevNumberOfLogs.current = numberOfLogs;
       rowVirtualizer.scrollToOffset(newOffset);
     }
   }, [logs, numberOfLogs, rowVirtualizer, scrolledToBottom]);
