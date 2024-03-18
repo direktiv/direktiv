@@ -89,7 +89,7 @@ export const useLogVirtualizer = ({
       firstLogEntry?.index === 0 &&
       hasPreviousPage &&
       !isFetchingPreviousPage &&
-      numberOfLogs === prevNumberOfLogs?.current
+      prevNumberOfLogs?.current === numberOfLogs
     ) {
       fetchPreviousPage();
     }
