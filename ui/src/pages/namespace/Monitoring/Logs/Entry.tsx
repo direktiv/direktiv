@@ -57,7 +57,7 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
         {...props}
       >
         <LogSegment display={true}>
-          {t("components.logEntry.messageLabel")} {msg}
+          {t("components.logs.logEntry.messageLabel")} {msg}
         </LogSegment>
         <LogSegment display={isWorkflowLog}>
           <span className="opacity-60">
@@ -66,7 +66,7 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
             </Link>{" "}
             (
             <Link to={instanceLink} className="underline" target="_blank">
-              {t("components.logEntry.instanceLabel")}{" "}
+              {t("components.logs.logEntry.instanceLabel")}{" "}
               {workflow?.instance.slice(0, 8)}
             </Link>
             )

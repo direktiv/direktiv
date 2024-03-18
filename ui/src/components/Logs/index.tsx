@@ -74,7 +74,7 @@ export const LogList = forwardRef<LogRef, LogsContainerProps>(
               }}
             >
               <ArrowDown />
-              {t("pages.monitoring.logs.followLogs")} {/* TODO:  */}
+              {t("components.logs.followLogs")}
               <ArrowDown />
             </Button>
           </div>

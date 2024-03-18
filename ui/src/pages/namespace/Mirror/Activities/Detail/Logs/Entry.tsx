@@ -40,7 +40,7 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
         {...props}
       >
         <LogSegment display={true}>
-          {t("components.logEntry.messageLabel")} {msg}
+          {t("components.logs.logEntry.messageLabel")} {msg}
         </LogSegment>
       </LogEntry>
     );

@@ -522,7 +522,6 @@
       "title": "Monitoring",
       "logs": {
         "title": "Logs",
-        "followLogs": "Follow logs",
         "logsCount": "received {{count}} log entries",
         "logsCount_one": "received {{count}} log entry",
         "tooltips": {
@@ -606,7 +605,6 @@
         },
         "logs": {
           "title": "Logs for {{path}}",
-          "followLogs": "Follow logs",
           "logsCount": "received {{count}} log entries",
           "logsCount_one": "received {{count}} log entry",
           "tooltips": {
@@ -741,7 +739,6 @@
         "logs": {
           "noPods": "No running pods",
           "title": "Logs for {{name}}",
-          "followLogs": "Follow logs",
           "logsCount": "received {{count}} log entries",
           "logsCount_one": "received {{count}} log entry",
           "tab": "Pod {{number}} of {{total}}",
@@ -1236,11 +1233,14 @@
       "saveBtn": "Save",
       "cancelBtn": "Cancel"
     },
-    "logEntry": {
-      "messageLabel": "msg:",
-      "stateLabel": "state:",
-      "instanceLabel": "instance:"
-    }
+    "logs": {
+      "followLogs": "Follow logs",
+      "logEntry": {
+        "messageLabel": "msg:",
+        "stateLabel": "state:",
+        "instanceLabel": "instance:"
+      }
+    },
   },
   "api": {
     "generic": {
