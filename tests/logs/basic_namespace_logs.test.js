@@ -2,9 +2,7 @@ import { beforeAll, describe, expect, it } from '@jest/globals'
 import { basename } from 'path'
 
 import common from '../common'
-import config from '../common/config'
 import helpers from '../common/helpers'
-import regex from '../common/regex'
 import request from '../common/request'
 import { retry50, retry70 } from '../common/retry'
 
