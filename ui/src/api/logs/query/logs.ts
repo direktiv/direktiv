@@ -141,7 +141,7 @@ const getUrl = (params: LogsParams) => {
   let after = undefined;
   if (useStreaming) {
     const now = new Date();
-    now.setSeconds(now.getSeconds() - 5);
+    now.setSeconds(now.getSeconds() - 1);
     after = now.toISOString();
     urlPath = `${urlPath}/subscribe`;
   }
