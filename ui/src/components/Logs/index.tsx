@@ -22,7 +22,7 @@ export const LogList = forwardRef<LogRef, LogsContainerProps>(
       height,
       virtualOffset,
       scrolledToBottom,
-      isStreaming,
+      isStreaming = true,
       setScrolledToBottom,
       children,
     },
