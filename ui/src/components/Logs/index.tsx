@@ -1,4 +1,4 @@
-import { ElementRef, PropsWithChildren, forwardRef } from "react";
+import { ComponentProps, ElementRef, forwardRef } from "react";
 
 import { ArrowDown } from "lucide-react";
 import Button from "~/design/Button";
@@ -14,24 +14,25 @@ type LogsContainerProps = {
   isStreaming?: boolean;
   scrolledToBottom: boolean;
   setScrolledToBottom: (scrolledToBottom: boolean) => void;
-} & PropsWithChildren;
+} & ComponentProps<typeof Logs>;
 
 export const LogList = forwardRef<LogRef, LogsContainerProps>(
   (
     {
       height,
       virtualOffset,
-      scrolledToBottom,
       isStreaming = true,
+      scrolledToBottom,
       setScrolledToBottom,
       children,
+      ...props
     },
     ref
   ) => {
     const { t } = useTranslation();
 
     return (
-      <Logs className="h-full overflow-scroll" ref={ref}>
+      <Logs className="h-full overflow-scroll" ref={ref} {...props}>
         <div
           className="relative w-full"
           style={{
