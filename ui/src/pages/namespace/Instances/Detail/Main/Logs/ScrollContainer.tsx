@@ -1,19 +1,13 @@
-import { ArrowDown } from "lucide-react";
-import Button from "~/design/Button";
 import Entry from "./Entry";
-import { Logs } from "~/design/Logs";
-import { twMergeClsx } from "~/util/helpers";
+import LogList from "~/components/Logs";
 import { useInstanceDetails } from "~/api/instances/query/details";
 import { useInstanceId } from "../../store/instanceContext";
 import { useLogVirtualizer } from "~/hooks/useLogVirtualizer";
-import { useTranslation } from "react-i18next";
 
 const ScrollContainer = () => {
-  const { t } = useTranslation();
   const instanceId = useInstanceId();
   const { data: instanceDetailsData } = useInstanceDetails({ instanceId });
-  const isPending = instanceDetailsData?.instance?.status === "pending";
-
+  const isStreaming = instanceDetailsData?.instance?.status === "pending";
   const {
     rowVirtualizer,
     parentRef,
@@ -29,61 +23,27 @@ const ScrollContainer = () => {
   const virtualItems = rowVirtualizer.getVirtualItems();
 
   return (
-    <Logs className="h-full overflow-scroll" ref={parentRef}>
-      <div
-        className="relative w-full"
-        style={{
-          height: `${rowVirtualizer.getTotalSize()}px`,
-        }}
-      >
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100%",
-            transform: `translateY(${virtualItems[0]?.start}px)`,
-          }}
-        >
-          {virtualItems.map((virtualItem) => {
-            const logEntry = logs[virtualItem.index];
-            if (!logEntry) return null;
-            return (
-              <Entry
-                key={virtualItem.key}
-                data-index={virtualItem.key}
-                ref={rowVirtualizer.measureElement}
-                logEntry={logEntry}
-              />
-            );
-          })}
-        </div>
-      </div>
-      {isPending && (
-        <div
-          className={twMergeClsx(
-            "absolute box-border flex w-full pr-10",
-            "justify-center transition-all",
-            "aria-[hidden=true]:pointer-events-none aria-[hidden=true]:bottom-11 aria-[hidden=true]:opacity-0",
-            "aria-[hidden=false]:bottom-16 aria-[hidden=false]:opacity-100"
-          )}
-          aria-hidden={scrolledToBottom ? "true" : "false"}
-        >
-          <Button
-            className="bg-white dark:bg-black"
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              setScrolledToBottom(true);
-            }}
-          >
-            <ArrowDown />
-            {t("pages.instances.detail.logs.followLogs")}
-            <ArrowDown />
-          </Button>
-        </div>
-      )}
-    </Logs>
+    <LogList
+      ref={parentRef}
+      height={rowVirtualizer.getTotalSize()}
+      virtualOffset={virtualItems[0]?.start ?? 0}
+      isStreaming={isStreaming}
+      scrolledToBottom={scrolledToBottom}
+      setScrolledToBottom={setScrolledToBottom}
+    >
+      {virtualItems.map((virtualItem) => {
+        const logEntry = logs[virtualItem.index];
+        if (!logEntry) return null;
+        return (
+          <Entry
+            key={virtualItem.key}
+            data-index={virtualItem.key}
+            ref={rowVirtualizer.measureElement}
+            logEntry={logEntry}
+          />
+        );
+      })}
+    </LogList>
   );
 };
 
