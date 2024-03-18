@@ -71,7 +71,7 @@ export const useLogVirtualizer = ({
        */
       if (!instance.range) return;
       const { endIndex: lastVisibleIndex } = instance.range;
-      const loglinesThreashold = 10;
+      const loglinesThreashold = 5;
       setScrolledToBottom(
         lastVisibleIndex >= numberOfLogs - 1 - loglinesThreashold
       );
