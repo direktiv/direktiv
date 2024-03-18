@@ -1,6 +1,8 @@
-FROM node:18.18.1 as build
+FROM --platform=$BUILDPLATFORM node:18.18.1 as build
 
 ARG FULL_VERSION
+ARG IS_ENTERPRISE=FALSE
+ARG UI_BASE=/
 
 RUN echo "building $FULL_VERSION"
 WORKDIR /app
@@ -13,11 +15,10 @@ RUN yarn install
 
 COPY . .
 
-# If this causes problems on github actions: A potential fix is to change the builder image to `node:alpine`
-RUN VITE_APP_VERSION=$FULL_VERSION yarn build
+RUN VITE_APP_VERSION=$FULL_VERSION VITE_BASE=${UI_BASE} VITE_IS_ENTERPRISE=${IS_ENTERPRISE} yarn build
 
 # production environment
-FROM nginx:bookworm
+FROM --platform=$TARGETPLATFORM nginx:bookworm
 
 COPY --from=build /app/dist /usr/share/nginx/html
 COPY conf/nginx.conf /etc/nginx/conf.d/default.conf
