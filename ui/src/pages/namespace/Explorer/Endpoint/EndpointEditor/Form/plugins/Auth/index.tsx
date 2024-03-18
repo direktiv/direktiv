@@ -21,16 +21,19 @@ import {
 
 import { AuthPluginFormSchemaType } from "../../../schema/plugins/auth/schema";
 import { BasicAuthForm } from "./BasicAuthForm";
+import { BasicAuthFormSchemaType } from "../../../schema/plugins/auth/basicAuth";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import { EndpointFormSchemaType } from "../../../schema";
 import { KeyAuthForm } from "./KeyAuthForm";
+import { KeyAuthFormSchemaType } from "../../../schema/plugins/auth/keyAuth";
 import { ListContextMenu } from "~/components/ListContextMenu";
 import { ModalWrapper } from "~/components/ModalWrapper";
 import { PluginSelector } from "../components/PluginSelector";
 import { Plus } from "lucide-react";
 import { TableHeader } from "../components/PluginsTable";
 import { WebhookAuthForm } from "./WebhookAuthForm";
+import { WebhookAuthFormSchemaType } from "../../../schema/plugins/auth/webhookAuth";
 import { useTranslation } from "react-i18next";
 
 type AuthPluginFormProps = {
@@ -58,6 +61,21 @@ export const AuthPluginForm: FC<AuthPluginFormProps> = ({ formControls }) => {
 
   const pluginsCount = fields.length;
   const formId = "authPluginForm";
+
+  type PluginConfigSchema =
+    | BasicAuthFormSchemaType
+    | KeyAuthFormSchemaType
+    | WebhookAuthFormSchemaType;
+
+  const handleSubmit = (configuration: PluginConfigSchema) => {
+    setDialogOpen(false);
+    if (editIndex === undefined) {
+      addPlugin(configuration);
+    } else {
+      editPlugin(editIndex, configuration);
+    }
+    setEditIndex(undefined);
+  };
 
   return (
     <Dialog
@@ -182,30 +200,14 @@ export const AuthPluginForm: FC<AuthPluginFormProps> = ({ formControls }) => {
           <BasicAuthForm
             formId={formId}
             defaultConfig={getBasicAuthConfigAtIndex(fields, editIndex)}
-            onSubmit={(configuration) => {
-              setDialogOpen(false);
-              if (editIndex === undefined) {
-                addPlugin(configuration);
-              } else {
-                editPlugin(editIndex, configuration);
-              }
-              setEditIndex(undefined);
-            }}
+            onSubmit={handleSubmit}
           />
         )}
         {selectedPlugin === authPluginTypes.keyAuth.name && (
           <KeyAuthForm
             formId={formId}
             defaultConfig={getKeyAuthConfigAtIndex(fields, editIndex)}
-            onSubmit={(configuration) => {
-              setDialogOpen(false);
-              if (editIndex === undefined) {
-                addPlugin(configuration);
-              } else {
-                editPlugin(editIndex, configuration);
-              }
-              setEditIndex(undefined);
-            }}
+            onSubmit={handleSubmit}
           />
         )}
         {selectedPlugin === authPluginTypes.githubWebhookAuth.name && (
@@ -217,15 +219,7 @@ export const AuthPluginForm: FC<AuthPluginFormProps> = ({ formControls }) => {
               fields,
               editIndex
             )}
-            onSubmit={(configuration) => {
-              setDialogOpen(false);
-              if (editIndex === undefined) {
-                addPlugin(configuration);
-              } else {
-                editPlugin(editIndex, configuration);
-              }
-              setEditIndex(undefined);
-            }}
+            onSubmit={handleSubmit}
           />
         )}
         {selectedPlugin === authPluginTypes.gitlabWebhookAuth.name && (
@@ -237,15 +231,7 @@ export const AuthPluginForm: FC<AuthPluginFormProps> = ({ formControls }) => {
               fields,
               editIndex
             )}
-            onSubmit={(configuration) => {
-              setDialogOpen(false);
-              if (editIndex === undefined) {
-                addPlugin(configuration);
-              } else {
-                editPlugin(editIndex, configuration);
-              }
-              setEditIndex(undefined);
-            }}
+            onSubmit={handleSubmit}
           />
         )}
         {selectedPlugin === authPluginTypes.slackWebhookAuth.name && (
@@ -257,15 +243,7 @@ export const AuthPluginForm: FC<AuthPluginFormProps> = ({ formControls }) => {
               fields,
               editIndex
             )}
-            onSubmit={(configuration) => {
-              setDialogOpen(false);
-              if (editIndex === undefined) {
-                addPlugin(configuration);
-              } else {
-                editPlugin(editIndex, configuration);
-              }
-              setEditIndex(undefined);
-            }}
+            onSubmit={handleSubmit}
           />
         )}
       </ModalWrapper>
