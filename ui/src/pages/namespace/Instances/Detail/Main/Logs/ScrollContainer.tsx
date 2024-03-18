@@ -2,7 +2,7 @@ import Entry from "./Entry";
 import LogList from "~/components/Logs";
 import { useInstanceDetails } from "~/api/instances/query/details";
 import { useInstanceId } from "../../store/instanceContext";
-import { useLogVirtualizer } from "~/hooks/useLogVirtualizer";
+import { useLogVirtualizer } from "~/components/Logs/useLogVirtualizer";
 
 const ScrollContainer = () => {
   const instanceId = useInstanceId();

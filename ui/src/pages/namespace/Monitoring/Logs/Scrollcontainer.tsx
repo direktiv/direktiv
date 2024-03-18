@@ -1,6 +1,6 @@
 import Entry from "./Entry";
 import LogList from "~/components/Logs";
-import { useLogVirtualizer } from "~/hooks/useLogVirtualizer";
+import { useLogVirtualizer } from "~/components/Logs/useLogVirtualizer";
 
 const ScrollContainer = () => {
   const {
