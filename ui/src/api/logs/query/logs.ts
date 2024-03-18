@@ -86,10 +86,8 @@ const updateCache = (
 
   const recentPageData = recentPage.data ?? [];
 
+  // skip cache if the log entry is already in the cache
   if (recentPageData.some((logEntry) => logEntry.id === newLogEntry.id)) {
-    console.warn(
-      `skipping cache update, log entry ${newLogEntry.id} already exists`
-    );
     return oldData;
   }
 
