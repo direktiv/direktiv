@@ -73,7 +73,11 @@ spec:
             value: "{{ .Values.https_proxy }}"
           - name: "NO_PROXY"
             value: "{{ .Values.no_proxy }}"
-          {{- end }} 
+          {{- end }}
+          - name: UI_PORT
+            value: "2304"
+          - name: UI_BACKEND
+            value: "http://localhost/api"
           - name: DIREKTIV_KNATIVE_SIZE_MEMORY_SMALL
             value: "{{ .Values.functions.limits.memory.small }}"
           - name: DIREKTIV_KNATIVE_SIZE_CPU_SMALL
