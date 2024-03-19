@@ -148,7 +148,7 @@ const RunWorkflow = ({ path }: { path: string }) => {
             const tabValueParsed = z.enum(tabs).safeParse(value);
             if (tabValueParsed.success) {
               setActiveTab(tabValueParsed.data);
-              syncInputData(tabValueParsed.data);
+              if (isFormAvailable) syncInputData(tabValueParsed.data);
             }
           }}
         >

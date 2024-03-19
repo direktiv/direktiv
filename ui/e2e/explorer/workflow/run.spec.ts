@@ -392,6 +392,7 @@ test("it is possible to provide the input via generated form and resolve form er
     page.getByTestId("jsonschema-form-error"),
     "error message should be \"must have required property 'role'\""
   ).toContainText("must have required property 'role'");
+
   // interact with the select input
   await page.getByRole("combobox", { name: "role" }).click();
   await page.getByRole("option", { name: "guest" }).click();
@@ -425,4 +426,337 @@ test("it is possible to provide the input via generated form and resolve form er
   };
   const inputResponseAsJson = JSON.parse(decode(res.data));
   expect(inputResponseAsJson).toEqual(expectedJson);
+});
+
+test("it is possible to provide the input via Form Input and see the same data in the tab JSON Input", async ({
+  page,
+}) => {
+  const workflowName = faker.system.commonFileName("yaml");
+  await createFile({
+    name: workflowName,
+    namespace,
+    type: "workflow",
+    yaml: jsonSchemaWithRequiredEnum,
+  });
+
+  await page.goto(`${namespace}/explorer/workflow/edit/${workflowName}`);
+
+  await page.getByTestId("workflow-editor-btn-run").click();
+  expect(
+    await page.getByTestId("run-workflow-dialog"),
+    "it opens the dialog"
+  ).toBeVisible();
+
+  expect(
+    await page
+      .getByTestId("run-workflow-form-tab-btn")
+      .getAttribute("aria-selected"),
+    "it detects the validate step and makes the form tab active by default"
+  ).toBe("true");
+
+  // it generated a form (first and last name are required)
+  await expect(page.getByLabel("First Name")).toBeVisible();
+  await expect(page.getByLabel("Last Name")).toBeVisible();
+  await expect(page.getByRole("combobox", { name: "role" })).toBeVisible();
+
+  await page.getByLabel("First Name").fill("Marty");
+  await page.getByLabel("Last Name").fill("McFly");
+
+  // interact with the select input
+  await page.getByRole("combobox", { name: "role" }).click();
+  await page.getByRole("option", { name: "guest" }).click();
+
+  // switch to tab json input
+  await page.getByTestId("run-workflow-json-tab-btn").click();
+
+  expect(
+    await page
+      .getByTestId("run-workflow-json-tab-btn")
+      .getAttribute("aria-selected"),
+    "the json tab is selected"
+  ).toBe("true");
+
+  // run the workflow in the json tab
+  await page.getByTestId("run-workflow-submit-btn").click();
+
+  const reg = new RegExp(`${namespace}/instances/(.*)`);
+  await expect(
+    page,
+    "workflow was triggered with our input and user was redirected to the instances page"
+  ).toHaveURL(reg);
+  const instanceId = page.url().match(reg)?.[1];
+
+  if (!instanceId) {
+    throw new Error("instanceId not found");
+  }
+
+  // check the server state of the input
+  const res = await getInput({
+    urlParams: {
+      baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
+      instanceId,
+      namespace,
+    },
+    headers,
+  });
+
+  const expectedJson = {
+    firstName: "Marty",
+    lastName: "McFly",
+    select: "guest",
+  };
+  const inputResponseAsJson = JSON.parse(decode(res.data));
+
+  // the data in the json input is the same
+  await expect(
+    inputResponseAsJson,
+    "workflow was triggered and the input is the same as initially set in the other tab"
+  ).toEqual(expectedJson);
+
+  // the input in the workflow is the same like entered in the form
+  expect(
+    await page.locator(".view-line > span"),
+    "the Input was set as expected"
+  ).toContainText(["Marty", "McFly"]);
+});
+
+test("it is possible to provide the input via JSON Input and see the same data in the tab Form Input", async ({
+  page,
+}) => {
+  const workflowName = faker.system.commonFileName("yaml");
+  await createFile({
+    name: workflowName,
+    namespace,
+    type: "workflow",
+    yaml: jsonSchemaWithRequiredEnum,
+  });
+
+  await page.goto(`${namespace}/explorer/workflow/edit/${workflowName}`);
+
+  await page.getByTestId("workflow-editor-btn-run").click();
+  expect(
+    await page.getByTestId("run-workflow-dialog"),
+    "it opens the dialog"
+  ).toBeVisible();
+
+  // switch to tab JSON input
+  await page.getByTestId("run-workflow-json-tab-btn").click();
+
+  expect(
+    await page
+      .getByTestId("run-workflow-json-tab-btn")
+      .getAttribute("aria-selected"),
+    "the json tab is selected"
+  ).toBe("true");
+
+  // give valid JSON data
+  await page.getByRole("textbox").fill("");
+
+  await page
+    .getByRole("textbox")
+    .fill('{"firstName":"Marty","lastName":"McFly","select":"guest"}');
+
+  // switch to tab Form input
+  await page.getByTestId("run-workflow-form-tab-btn").click();
+
+  // the generated form is visible
+  await expect(page.getByLabel("First Name")).toBeVisible();
+  await expect(page.getByLabel("Last Name")).toBeVisible();
+  await expect(page.getByRole("combobox", { name: "role" })).toBeVisible();
+
+  expect(
+    await page.getByLabel("First Name"),
+    "the value for first name was set automatically"
+  ).toHaveValue("Marty");
+
+  expect(
+    await page.getByLabel("Last Name"),
+    "the value for last name was set automatically"
+  ).toHaveValue("McFly");
+
+  expect(
+    await page.getByRole("combobox").locator("span"),
+    "the value for role was set automatically"
+  ).toContainText("guest");
+
+  await page.getByTestId("run-workflow-submit-btn").click();
+
+  const reg = new RegExp(`${namespace}/instances/(.*)`);
+  await expect(
+    page,
+    "workflow was triggered with our input and user was redirected to the instances page"
+  ).toHaveURL(reg);
+  const instanceId = page.url().match(reg)?.[1];
+
+  if (!instanceId) {
+    throw new Error("instanceId not found");
+  }
+
+  // check the server state of the input
+  const res = await getInput({
+    urlParams: {
+      baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
+      instanceId,
+      namespace,
+    },
+    headers,
+  });
+
+  const expectedJson = {
+    firstName: "Marty",
+    lastName: "McFly",
+    select: "guest",
+  };
+
+  const inputResponseAsJson = JSON.parse(decode(res.data));
+
+  // the data in the json input is the same
+  await expect(
+    inputResponseAsJson,
+    "workflow was triggered and the input is the same as initially set in the other tab"
+  ).toEqual(expectedJson);
+
+  await expect(
+    page,
+    "workflow was triggered with our input and user was redirected to the instances page"
+  ).toHaveURL(reg);
+
+  await expect(
+    page.locator("div").getByText("complete", { exact: true }),
+    "wait until workflow is complete"
+  ).toBeVisible();
+
+  await expect(
+    page.getByRole("tab", { name: "Input" }),
+    "tab for input is visible"
+  ).toBeVisible();
+
+  await page.getByRole("tab", { name: "Input" }).click();
+
+  expect(
+    await page.locator(".view-line > span"),
+    "the Input was set as expected"
+  ).toContainText(["Marty", "McFly"]);
+});
+
+test("the input is synchronized between tabs, but the data that is currently in the view will be sent", async ({
+  page,
+}) => {
+  const workflowName = faker.system.commonFileName("yaml");
+  await createFile({
+    name: workflowName,
+    namespace,
+    type: "workflow",
+    yaml: jsonSchemaWithRequiredEnum,
+  });
+
+  await page.goto(`${namespace}/explorer/workflow/edit/${workflowName}`);
+
+  await page.getByTestId("workflow-editor-btn-run").click();
+  expect(
+    await page.getByTestId("run-workflow-dialog"),
+    "it opens the dialog"
+  ).toBeVisible();
+
+  // switch to tab JSON input
+  await page.getByTestId("run-workflow-json-tab-btn").click();
+
+  expect(
+    await page
+      .getByTestId("run-workflow-json-tab-btn")
+      .getAttribute("aria-selected"),
+    "the json tab is selected"
+  ).toBe("true");
+
+  // give valid JSON data
+  await page.getByRole("textbox").fill("");
+
+  await page
+    .getByRole("textbox")
+    .fill('{"firstName":"Marty","lastName":"McFly","select":"guest"}');
+
+  // switch to tab Form input
+  await page.getByTestId("run-workflow-form-tab-btn").click();
+
+  // the generated form is visible
+  await expect(page.getByLabel("First Name")).toBeVisible();
+  await expect(page.getByLabel("Last Name")).toBeVisible();
+  await expect(page.getByRole("combobox", { name: "role" })).toBeVisible();
+
+  expect(
+    await page.getByLabel("First Name"),
+    "the value for first name was set automatically"
+  ).toHaveValue("Marty");
+
+  expect(
+    await page.getByLabel("Last Name"),
+    "the value for last name was set automatically"
+  ).toHaveValue("McFly");
+
+  expect(
+    await page.getByRole("combobox").locator("span"),
+    "the value for role was set automatically"
+  ).toContainText("guest");
+
+  // change data again
+  await page.getByLabel("Last Name").fill("McDonald");
+
+  await page.getByTestId("run-workflow-submit-btn").click();
+
+  const reg = new RegExp(`${namespace}/instances/(.*)`);
+  await expect(
+    page,
+    "workflow was triggered with our input and user was redirected to the instances page"
+  ).toHaveURL(reg);
+  const instanceId = page.url().match(reg)?.[1];
+
+  if (!instanceId) {
+    throw new Error("instanceId not found");
+  }
+
+  // check the server state of the input
+  const res = await getInput({
+    urlParams: {
+      baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
+      instanceId,
+      namespace,
+    },
+    headers,
+  });
+
+  const expectedJson = {
+    firstName: "Marty",
+    lastName: "McDonald",
+    select: "guest",
+  };
+
+  const inputResponseAsJson = JSON.parse(decode(res.data));
+
+  // the data in the json input is the same
+  await expect(
+    inputResponseAsJson,
+    "workflow was triggered and the input is the same as initially set in the other tab"
+  ).toEqual(expectedJson);
+
+  await expect(
+    page,
+    "workflow was triggered with our input and user was redirected to the instances page"
+  ).toHaveURL(reg);
+
+  await expect(
+    page.locator("div").getByText("complete", { exact: true }),
+    "wait until workflow is complete"
+  ).toBeVisible();
+
+  await expect(
+    page.getByRole("tab", { name: "Input" }),
+    "tab for input is visible"
+  ).toBeVisible();
+
+  await page.getByRole("tab", { name: "Input" }).click();
+
+  expect(
+    await page.locator(".view-line > span"),
+    "the Input was set as expected"
+  ).toContainText(["Marty", "McDonald"]);
 });
