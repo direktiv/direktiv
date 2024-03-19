@@ -1,4 +1,7 @@
+import { beforeAll, describe, expect, it } from '@jest/globals'
+
 import common from '../common'
+import helpers from '../common/helpers'
 import request from '../common/request'
 
 const testNamespace = 'test-secrets-namespace'
@@ -35,15 +38,12 @@ describe('Test secret read operations', () => {
 		})
 	})
 
-	it(`should create the first workflow in a pair to test secret read`, async () => {
-
-		const res = await request(common.config.getDirektivHost())
-			.put(`/api/namespaces/${ testNamespace }/tree/${ testWorkflow }-parent.yaml?op=create-workflow`)
-			.set({
-				'Content-Type': 'text/plain',
-			})
-
-			.send(`
+	helpers.itShouldCreateFileV2(it, expect, testNamespace,
+		'',
+		`${ testWorkflow }-parent.yaml`,
+		'workflow',
+		'text/plain',
+		btoa(`
 functions:
 - id: echo
   workflow: ${ testWorkflow }-child.yaml
@@ -58,33 +58,18 @@ states:
       secret: 'jq(.secrets.key1)'
   transform: 
     result: 'jq(.return.secret)'
-`)
+`))
 
-		expect(res.statusCode).toEqual(200)
-		expect(res.body).toMatchObject({
-			namespace: testNamespace,
-		})
-	})
-
-	it(`should create the second workflow in a pair to test secret read`, async () => {
-
-		const res = await request(common.config.getDirektivHost())
-			.put(`/api/namespaces/${ testNamespace }/tree/${ testWorkflow }-child.yaml?op=create-workflow`)
-			.set({
-				'Content-Type': 'text/plain',
-			})
-
-			.send(`
+	helpers.itShouldCreateFileV2(it, expect, testNamespace,
+		'',
+		`${ testWorkflow }-child.yaml`,
+		'workflow',
+		'text/plain',
+		btoa(`
 states:
 - id: helloworld
   type: noop
-`)
-
-		expect(res.statusCode).toEqual(200)
-		expect(res.body).toMatchObject({
-			namespace: testNamespace,
-		})
-	})
+`))
 
 	it(`should invoke the '/${ testWorkflow }-parent.yaml' workflow`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ testNamespace }/tree/${ testWorkflow }-parent.yaml?op=wait`)

@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"log/slog"
 	"os"
 	"os/signal"
 	"runtime"
@@ -38,7 +39,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
-	_ "github.com/lib/pq" // postgres for ent
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 	libgrpc "google.golang.org/grpc"
@@ -64,7 +64,6 @@ type server struct {
 	// the new pubsub bus
 	pBus *pubsub2.Bus
 
-	locks  *locks
 	timers *timers
 	engine *engine
 
@@ -137,6 +136,7 @@ func (log *mirrorProcessLogger) Debug(pid uuid.UUID, msg string, kv ...interface
 	}
 	msg += strings.Repeat(", %s = %v", len(kv)/2)
 	log.logger.Debugf(context.Background(), pid, tags, msg, kv...)
+	slog.Debug(fmt.Sprintf(msg, kv...), "activity", pid, "track", "activity."+pid.String())
 }
 
 func (log *mirrorProcessLogger) Info(pid uuid.UUID, msg string, kv ...interface{}) {
@@ -147,6 +147,7 @@ func (log *mirrorProcessLogger) Info(pid uuid.UUID, msg string, kv ...interface{
 	}
 	msg += strings.Repeat(", %s = %v", len(kv)/2)
 	log.logger.Infof(context.Background(), pid, tags, msg, kv...)
+	slog.Info(fmt.Sprintf(msg, kv...), "activity", pid, "track", "activity."+pid.String())
 }
 
 func (log *mirrorProcessLogger) Warn(pid uuid.UUID, msg string, kv ...interface{}) {
@@ -157,6 +158,7 @@ func (log *mirrorProcessLogger) Warn(pid uuid.UUID, msg string, kv ...interface{
 	}
 	msg += strings.Repeat(", %s = %v", len(kv)/2)
 	log.logger.Warnf(context.Background(), pid, tags, msg, kv...)
+	slog.Warn(fmt.Sprintf(msg, kv...), "activity", pid, "track", "activity"+"."+pid.String())
 }
 
 func (log *mirrorProcessLogger) Error(pid uuid.UUID, msg string, kv ...interface{}) {
@@ -167,6 +169,7 @@ func (log *mirrorProcessLogger) Error(pid uuid.UUID, msg string, kv ...interface
 	}
 	msg += strings.Repeat(", %s = %v", len(kv)/2)
 	log.logger.Errorf(context.Background(), pid, tags, msg, kv...)
+	slog.Error(fmt.Sprintf(msg, kv...), "activity", pid, "track", "activity"+"."+pid.String())
 }
 
 var _ mirror.ProcessLogger = &mirrorProcessLogger{}
@@ -209,6 +212,8 @@ var _ mirror.Callbacks = &mirrorCallbacks{}
 func (srv *server) start(ctx context.Context) error {
 	var err error
 
+	// nolint:errcheck
+	defer srv.sugar.Sync()
 	srv.sugar.Info("Initializing telemetry.")
 	telend, err := util.InitTelemetry(srv.conf.OpenTelemetry, "direktiv/flow", "direktiv")
 	if err != nil {
@@ -223,15 +228,7 @@ func (srv *server) start(ctx context.Context) error {
 		}
 	}()
 
-	srv.sugar.Info("Initializing locks.")
-
 	db := srv.conf.DB
-
-	srv.locks, err = initLocks(db)
-	if err != nil {
-		return err
-	}
-	defer srv.cleanup(srv.locks.Close)
 
 	srv.sugar.Info("Initializing database.")
 	gormConf := &gorm.Config{
@@ -305,14 +302,6 @@ func (srv *server) start(ctx context.Context) error {
 
 	srv.metrics = metrics.NewClient(srv.gormDB)
 
-	srv.sugar.Info("Initializing engine.")
-
-	srv.engine, err = initEngine(srv)
-	if err != nil {
-		return err
-	}
-	defer srv.cleanup(srv.engine.Close)
-
 	var lock sync.Mutex
 	var wg sync.WaitGroup
 
@@ -329,6 +318,14 @@ func (srv *server) start(ctx context.Context) error {
 
 	srv.pBus = pubsub2.NewBus(srv.sugar, coreBus)
 	go srv.pBus.Start(cctx.Done(), &wg)
+
+	srv.sugar.Info("Initializing engine.")
+
+	srv.engine, err = initEngine(srv)
+	if err != nil {
+		return err
+	}
+	defer srv.cleanup(srv.engine.Close)
 
 	srv.sugar.Info("Initializing internal grpc server.")
 
@@ -479,6 +476,10 @@ func (srv *server) start(ctx context.Context) error {
 		err := json.Unmarshal([]byte(data), &event)
 		if err != nil {
 			panic("unmarshal file change event")
+		}
+		// If this is a delete workflow file
+		if event.DeleteFileID.String() != (uuid.UUID{}).String() {
+			return srv.flow.events.deleteWorkflowEventListeners(context.Background(), event.NamespaceID, event.DeleteFileID)
 		}
 		file, err := noTx.FileStore().ForNamespace(event.Namespace).GetFile(ctx, event.FilePath)
 		if err != nil {
@@ -725,8 +726,8 @@ func (tx *sqlTx) Rollback() {
 	}
 }
 
-func (srv *server) beginSqlTx(ctx context.Context) (*sqlTx, error) {
-	res := srv.gormDB.WithContext(ctx).Begin()
+func (srv *server) beginSqlTx(ctx context.Context, opts ...*sql.TxOptions) (*sqlTx, error) {
+	res := srv.gormDB.WithContext(ctx).Begin(opts...)
 	if res.Error != nil {
 		return nil, res.Error
 	}

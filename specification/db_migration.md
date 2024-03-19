@@ -1,3 +1,13 @@
+# 0.8.3
+
+## DB Schema Change
+
+Exec the following sql queries:
+
+```sql
+ALTER TABLE "instances_v2" ADD COLUMN IF NOT EXISTS "server" uuid;
+```
+
 # 0.8.2
 
 ## DB Schema Change

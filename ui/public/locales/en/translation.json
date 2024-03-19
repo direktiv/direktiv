@@ -5,7 +5,8 @@
       "message": "Something went wrong here....",
       "goBack": "Go back",
       "reload": "Reload",
-      "goHome": "Go to homepage"
+      "goHome": "Go to homepage",
+      "notFound": "The resource you are trying to access does not exist. This might be due to a typo in the URL or the resource might have been deleted or renamed."
     },
     "onboarding": {
       "welcomeTo": "Welcome to",
@@ -401,6 +402,8 @@
                 "types": {
                   "basic-auth": "Basic Auth",
                   "github-webhook-auth": "Github Webhook",
+                  "gitlab-webhook-auth": "Gitlab Webhook",
+                  "slack-webhook-auth": "Slack Webhook",
                   "key-auth": "Key Auth"
                 },
                 "basciAuth": {
@@ -1009,7 +1012,7 @@
             "yes": "yes",
             "no": "no"
           },
-          "errors": {
+          "error": {
             "count": "{{count}} errors",
             "count_one": "{{count}} error"
           },

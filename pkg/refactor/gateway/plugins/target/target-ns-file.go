@@ -85,7 +85,7 @@ func (tnf NamespaceFilePlugin) ExecutePlugin(
 
 	data, err := fetchObjectData(resp)
 	if err != nil {
-		plugins.ReportError(w, http.StatusInternalServerError,
+		plugins.ReportError(r.Context(), w, http.StatusInternalServerError,
 			"can not fetch file data", err)
 
 		return false

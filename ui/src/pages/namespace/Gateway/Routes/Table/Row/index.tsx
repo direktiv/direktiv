@@ -44,7 +44,7 @@ export const Row: FC<RowProps> = ({ gateway }) => {
             <MessagesOverlay messages={gateway.errors} variant="error">
               {(errorCount) => (
                 <Badge variant="destructive">
-                  {t("pages.gateway.routes.row.errors.count", {
+                  {t("pages.gateway.routes.row.error.count", {
                     count: errorCount,
                   })}
                 </Badge>

@@ -156,7 +156,7 @@ func generateGetInstancesFilters(opts *instancestore.ListOpts) ([]string, []inte
 	return clauses, vals, nil
 }
 
-func generateInsertQuery(columns []string) string {
+func generateInsertQuery(table string, columns []string) string {
 	into := strings.Join(columns, ", ")
 	valPlaceholders := strings.Repeat("?, ", len(columns)-1) + "?"
 	query := fmt.Sprintf(`INSERT INTO %s(%s) VALUES (%s)`, table, into, valPlaceholders)

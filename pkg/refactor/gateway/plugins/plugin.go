@@ -1,15 +1,18 @@
 package plugins
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
 
+	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/mitchellh/mapstructure"
 	"github.com/pkg/errors"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // nolint
@@ -102,6 +105,9 @@ func GetPluginFromRegistry(plugin string) (Plugin, error) {
 var (
 	URLParamCtxKey       = &ContextKey{"URLParamContext"}
 	ConsumersParamCtxKey = &ContextKey{"ConsumersParamCtxKey"}
+	NamespaceCtxKey      = &ContextKey{"namespace"}
+	EndpointCtxKey       = &ContextKey{"endpoint"}
+	RouteCtxKey          = &ContextKey{"route"}
 )
 
 type ContextKey struct {
@@ -112,8 +118,43 @@ func (k *ContextKey) String() string {
 	return "plugin context value " + k.name
 }
 
-func ReportError(w http.ResponseWriter, status int, msg string, err error) {
-	slog.Error("can not process plugin", slog.String("error", err.Error()))
+func ReportError(ctx context.Context, w http.ResponseWriter, status int, msg string, err error) {
+	span := trace.SpanFromContext(ctx)
+	defer span.End()
+	spanContext := span.SpanContext()
+	traceID := spanContext.TraceID().String()
+	spanID := spanContext.SpanID()
+	ns, ok := ctx.Value(NamespaceCtxKey).(string)
+	if !ok {
+		slog.Error("TODO: This must be a bug, fixme")
+	}
+	endP, ok := ctx.Value(EndpointCtxKey).(string)
+	if !ok {
+		slog.Error("TODO: This must be a bug, fixme")
+	}
+	routePath, ok := ctx.Value(RouteCtxKey).(string)
+	if !ok {
+		slog.Error("TODO: This must be a bug, fixme")
+	}
+	slog.Error("can not process plugin",
+		"namespace", ns,
+		"trace", traceID,
+		"span", spanID,
+		"endpoint", endP,
+		"route", routePath,
+		"track", recipient.Route.String()+"."+endP,
+		"error", err.Error(),
+	)
+
+	slog.Error("can not process plugin",
+		"namespace", ns,
+		"trace", traceID,
+		"span", spanID,
+		"endpoint", endP,
+		"route", routePath,
+		"track", recipient.Namespace.String()+"."+ns,
+		"error", err.Error(),
+	)
 	w.WriteHeader(status)
 	errMsg := fmt.Sprintf("%s: %s", msg, err.Error())
 

@@ -1,5 +1,7 @@
 // http://192.168.0.145/api/namespaces/test/broadcast
 
+import { beforeAll, describe, expect, it } from '@jest/globals'
+
 import common from '../common'
 import request from '../common/request'
 
@@ -33,7 +35,6 @@ const eventDuplicate = `{
 
 describe('Test send events', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
-
 
 	it(`should create namespace`, async () => {
 		const createNamespaceResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${ namespaceName }`)
@@ -79,7 +80,6 @@ describe('Test send events', () => {
 		const workflowEventResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/events?limit=10&offset=0`)
 			.send()
 
-
 		expect(workflowEventResponse.statusCode).toEqual(200)
 
 		// test there are the four created
@@ -93,7 +93,6 @@ describe('Test send events', () => {
 				}),
 			]),
 		)
-
 
 		expect(workflowEventResponse.body.events.results).toEqual(
 			expect.arrayContaining([
@@ -118,14 +117,12 @@ describe('Test send events', () => {
 				}),
 			]),
 		)
-
 	})
 
 	it(`bad filter value applied on the eventlog`, async () => {
 		// &filter.field=TEXT&filter.type=CONTAINS&filter.val=dfda&filter.field=CREATED&filter.type=AFTER&filter.val=2023-07-11T22%3A00%3A00.000Z
 		const workflowEventResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/events?limit=10&offset=0&filter.field=TEXT&filter.type=CONTAINS&filter.val=dfda`)
 			.send()
-
 
 		expect(workflowEventResponse.statusCode).toEqual(200)
 
@@ -135,13 +132,11 @@ describe('Test send events', () => {
 		expect(workflowEventResponse.body.events.results).toEqual(
 			expect.arrayContaining([]),
 		)
-
 	})
 
 	it(`should filter the eventlog by TEXT`, async () => {
 		const workflowEventResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/events?limit=10&offset=0&filter.field=TEXT&filter.type=CONTAINS&filter.val=world`)
 			.send()
-
 
 		expect(workflowEventResponse.statusCode).toEqual(200)
 
@@ -160,7 +155,6 @@ describe('Test send events', () => {
 	it(`should filter the eventlog by TYPE`, async () => {
 		const workflowEventResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/events?limit=10&offset=0&filter.field=TYPE&filter.type=CONTAINS&filter.val=testerJSON`)
 			.send()
-
 
 		expect(workflowEventResponse.statusCode).toEqual(200)
 

@@ -3,6 +3,7 @@ package instancestoresql
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
@@ -16,6 +17,7 @@ const (
 	fieldNamespaceID    = "namespace_id"
 	fieldNamespace      = "namespace"
 	fieldRootInstanceID = "root_instance_id"
+	fieldServer         = "server"
 	fieldCreatedAt      = "created_at"
 	fieldUpdatedAt      = "updated_at"
 	fieldEndedAt        = "ended_at"
@@ -37,19 +39,25 @@ const (
 	fieldErrorMessage   = "error_message"
 	fieldMetadata       = "metadata"
 
+	messagesTable                  = "instance_messages"
+	fieldInstanceMessageID         = "id"
+	fieldInstanceMessageInstanceID = "instance_id"
+	fieldInstanceMessageCreatedAt  = "created_at"
+	fieldInstanceMessagePayload    = "payload"
+
 	desc = "desc"
 )
 
 var (
 	mostFields = []string{
-		fieldID, fieldNamespaceID, fieldNamespace, fieldRootInstanceID,
+		fieldID, fieldNamespaceID, fieldNamespace, fieldRootInstanceID, fieldServer,
 		fieldCreatedAt, fieldUpdatedAt, fieldEndedAt, fieldDeadline, fieldStatus, fieldWorkflowPath,
 		fieldErrorCode, fieldInvoker, fieldDefinition, fieldSettings, fieldDescentInfo, fieldTelemetryInfo,
 		fieldRuntimeInfo, fieldChildrenInfo, fieldLiveData, fieldStateMemory, fieldErrorMessage,
 	}
 
 	summaryFields = []string{
-		fieldID, fieldNamespaceID, fieldNamespace, fieldRootInstanceID,
+		fieldID, fieldNamespaceID, fieldNamespace, fieldRootInstanceID, fieldServer,
 		fieldCreatedAt, fieldUpdatedAt, fieldEndedAt, fieldDeadline, fieldStatus, fieldWorkflowPath,
 		fieldErrorCode, fieldInvoker, fieldSettings, fieldDescentInfo, fieldTelemetryInfo,
 		fieldRuntimeInfo, fieldChildrenInfo, fieldErrorMessage,
@@ -81,6 +89,7 @@ func (s *sqlInstanceStore) CreateInstanceData(ctx context.Context, args *instanc
 		NamespaceID:    args.NamespaceID,
 		Namespace:      args.Namespace,
 		RootInstanceID: args.RootInstanceID,
+		Server:         args.Server,
 		Status:         instancestore.InstanceStatusPending,
 		WorkflowPath:   args.WorkflowPath,
 		ErrorCode:      "",
@@ -100,15 +109,15 @@ func (s *sqlInstanceStore) CreateInstanceData(ctx context.Context, args *instanc
 	}
 
 	columns := []string{
-		fieldID, fieldNamespaceID, fieldNamespace, fieldRootInstanceID,
+		fieldID, fieldNamespaceID, fieldNamespace, fieldRootInstanceID, fieldServer,
 		fieldStatus, fieldWorkflowPath, fieldErrorCode, fieldInvoker, fieldDefinition,
 		fieldSettings, fieldDescentInfo, fieldTelemetryInfo, fieldRuntimeInfo,
 		fieldChildrenInfo, fieldInput, fieldLiveData, fieldStateMemory,
 	}
-	query := generateInsertQuery(columns)
+	query := generateInsertQuery(table, columns)
 
 	res := s.db.WithContext(ctx).Exec(query,
-		idata.ID, idata.NamespaceID, idata.Namespace, idata.RootInstanceID,
+		idata.ID, idata.NamespaceID, idata.Namespace, idata.RootInstanceID, idata.Server,
 		idata.Status, idata.WorkflowPath, idata.ErrorCode, idata.Invoker, idata.Definition,
 		idata.Settings, idata.DescentInfo, idata.TelemetryInfo, idata.RuntimeInfo,
 		idata.ChildrenInfo, idata.Input, idata.LiveData, idata.StateMemory)
@@ -185,6 +194,26 @@ func (s *sqlInstanceStore) GetHangingInstances(ctx context.Context) ([]instances
 	idatas, _, err := s.performGetInstancesQuery(ctx, summaryFields, opts)
 	if err != nil {
 		return nil, err
+	}
+
+	return idatas, nil
+}
+
+func (s *sqlInstanceStore) GetHomelessInstances(ctx context.Context, t time.Time) ([]instancestore.InstanceData, error) {
+	query := fmt.Sprintf(`
+SELECT DISTINCT {table0}.%s, {table0}.%s, {table0}.%s
+FROM {table0}
+INNER JOIN {table1} ON {table0}.%s={table1}.%s
+WHERE {table0}.%s < ? AND {table0}.%s < ?
+`, fieldID, fieldServer, fieldUpdatedAt, fieldID, fieldInstanceMessageInstanceID, fieldStatus, fieldUpdatedAt)
+	query = strings.ReplaceAll(query, "{table0}", table)
+	query = strings.ReplaceAll(query, "{table1}", messagesTable)
+
+	var idatas []instancestore.InstanceData
+
+	res := s.db.WithContext(ctx).Raw(query, instancestore.InstanceStatusComplete, t).Find(&idatas)
+	if res.Error != nil {
+		return nil, res.Error
 	}
 
 	return idatas, nil

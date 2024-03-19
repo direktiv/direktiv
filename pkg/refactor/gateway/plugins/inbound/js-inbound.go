@@ -99,7 +99,7 @@ func (js *JSInboundPlugin) ExecutePlugin(c *core.ConsumerFile,
 	if r.Body != nil {
 		b, err = io.ReadAll(r.Body)
 		if err != nil {
-			plugins.ReportError(w, http.StatusInternalServerError,
+			plugins.ReportError(r.Context(), w, http.StatusInternalServerError,
 				"can not set read body for js inbound plugin", err)
 
 			return false
@@ -135,7 +135,7 @@ func (js *JSInboundPlugin) ExecutePlugin(c *core.ConsumerFile,
 	// extract all response headers and body
 	err = vm.Set("input", req)
 	if err != nil {
-		plugins.ReportError(w, http.StatusInternalServerError,
+		plugins.ReportError(r.Context(), w, http.StatusInternalServerError,
 			"can not set input object", err)
 
 		return false
@@ -145,7 +145,7 @@ func (js *JSInboundPlugin) ExecutePlugin(c *core.ConsumerFile,
 		slog.Info("js log", slog.Any("log", txt))
 	})
 	if err != nil {
-		plugins.ReportError(w, http.StatusInternalServerError,
+		plugins.ReportError(r.Context(), w, http.StatusInternalServerError,
 			"can not set log function", err)
 
 		return false
@@ -156,7 +156,7 @@ func (js *JSInboundPlugin) ExecutePlugin(c *core.ConsumerFile,
 
 	val, err := vm.RunScript("plugin", script)
 	if err != nil {
-		plugins.ReportError(w, http.StatusInternalServerError,
+		plugins.ReportError(r.Context(), w, http.StatusInternalServerError,
 			"can not execute script", err)
 
 		return false

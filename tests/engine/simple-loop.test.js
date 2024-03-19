@@ -1,8 +1,10 @@
+import { beforeAll, describe, expect, it } from '@jest/globals'
+
 import common from '../common'
+import helpers from '../common/helpers'
 import request from '../common/request'
 
 const namespaceName = 'simplelooptest'
-
 
 describe('Test a simple loop', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
@@ -20,14 +22,12 @@ describe('Test a simple loop', () => {
 		})
 	})
 
-	it(`should create a workflow called /simple-loop.yaml`, async () => {
-
-		const res = await request(common.config.getDirektivHost())
-			.put(`/api/namespaces/${ namespaceName }/tree/simple-loop.yaml?op=create-workflow`)
-			.set({
-				'Content-Type': 'text/plain',
-			})
-			.send(`
+	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+		'',
+		'simple-loop.yaml',
+		'workflow',
+		'text/plain',
+		btoa(`
 states:
 - id: init
   type: noop
@@ -41,13 +41,7 @@ states:
   - condition: 'jq(.i)'
     transform: 'jq(.result += [.i] | .i -= 1)'
     transition: check
-`)
-
-		expect(res.statusCode).toEqual(200)
-		expect(res.body).toMatchObject({
-			namespace: namespaceName,
-		})
-	})
+`))
 
 	it(`should invoke the '/simple-loop.yaml' workflow`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/tree/simple-loop.yaml?op=wait`)
@@ -57,5 +51,4 @@ states:
 			result: [ 5, 4, 3, 2, 1 ],
 		})
 	})
-
 })

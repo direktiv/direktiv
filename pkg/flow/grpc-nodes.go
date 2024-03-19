@@ -140,7 +140,7 @@ func (flow *flow) CreateDirectory(ctx context.Context, req *grpc.CreateDirectory
 		return nil, err
 	}
 
-	flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Created directory '%s'.", file.Path)
+	flow.logger.Debugf(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Created directory '%s'.", file.Path)
 
 	// Broadcast
 	err = flow.BroadcastDirectory(ctx, BroadcastEventTypeCreate,
@@ -230,16 +230,17 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 
 	if file.Typ.IsDirektivSpecFile() {
 		err = helpers.PublishEventDirektivFileChange(flow.pBus, file.Typ, "delete", &pubsub.FileChangeEvent{
-			Namespace:   ns.Name,
-			NamespaceID: ns.ID,
-			FilePath:    file.Path,
+			Namespace:    ns.Name,
+			NamespaceID:  ns.ID,
+			FilePath:     file.Path,
+			DeleteFileID: file.ID,
 		})
 		if err != nil {
 			flow.sugar.Error("pubsub publish", "error", err)
 		}
 	}
 
-	flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Deleted %s '%s'.", file.Typ, file.Path)
+	flow.logger.Debugf(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Deleted %s '%s'.", file.Typ, file.Path)
 
 	var resp emptypb.Empty
 
@@ -297,7 +298,7 @@ func (flow *flow) RenameNode(ctx context.Context, req *grpc.RenameNodeRequest) (
 		}
 	}
 
-	flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Renamed %s from '%s' to '%s'.", file.Typ, req.GetOld(), req.GetNew())
+	flow.logger.Debugf(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Renamed %s from '%s' to '%s'.", file.Typ, req.GetOld(), req.GetNew())
 
 	var resp grpc.RenameNodeResponse
 

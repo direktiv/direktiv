@@ -89,7 +89,7 @@ func (flow *flow) createFileSystemObject(ctx context.Context, fileType filestore
 		return nil, err
 	}
 	file, err := tx.FileStore().ForNamespace(ns.Name).CreateFile(ctx, req.GetPath(),
-		fileType, "application/direktiv", req.GetSource())
+		fileType, "application/yaml", req.GetSource())
 	if err != nil {
 		return nil, err
 	}
@@ -107,7 +107,7 @@ func (flow *flow) createFileSystemObject(ctx context.Context, fileType filestore
 	if err = tx.Commit(ctx); err != nil {
 		return nil, err
 	}
-	flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Created %s '%s'.", fileType, file.Path)
+	flow.logger.Debugf(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Created %s '%s'.", fileType, file.Path)
 
 	err = helpers.PublishEventDirektivFileChange(flow.pBus, file.Typ, "create", &pubsub.FileChangeEvent{
 		Namespace:   ns.Name,
@@ -163,7 +163,7 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 	if len(req.GetSource()) == 0 {
 		return nil, status.Error(codes.InvalidArgument, "empty workflow is not allowed")
 	}
-	file, err := tx.FileStore().ForNamespace(ns.Name).CreateFile(ctx, req.GetPath(), filestore.FileTypeWorkflow, "application/direktiv", req.GetSource())
+	file, err := tx.FileStore().ForNamespace(ns.Name).CreateFile(ctx, req.GetPath(), filestore.FileTypeWorkflow, "application/yaml", req.GetSource())
 	if err != nil {
 		return nil, err
 	}
@@ -186,7 +186,7 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 	metricsWf.WithLabelValues(ns.Name, ns.Name).Inc()
 	metricsWfUpdated.WithLabelValues(ns.Name, file.Path, ns.Name).Inc()
 
-	flow.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Created workflow '%s'.", file.Path)
+	flow.logger.Debugf(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Created workflow '%s'.", file.Path)
 
 	err = flow.BroadcastWorkflow(ctx, BroadcastEventTypeCreate,
 		broadcastWorkflowInput{

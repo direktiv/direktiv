@@ -4,9 +4,7 @@ import common from '../common'
 import request from '../common/request'
 import { retry10 } from '../common/retry'
 
-
 const testNamespace = 'js-outbound'
-
 
 const endpointJSFile = `
 direktiv_api: endpoint/v1
@@ -29,7 +27,6 @@ methods:
   - POST
 path: /target`
 
-
 const wf = `
 direktiv_api: workflow/v1
 states:
@@ -45,19 +42,19 @@ describe('Test js outbound plugin', () => {
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 	// common.helpers.itShouldCreateNamespace(it, expect, testNamespace);
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/endpoint1.yaml',
+		'/', 'endpoint1.yaml', 'endpoint',
 		endpointJSFile,
 	)
 
-	common.helpers.itShouldCreateFile(
+	common.helpers.itShouldCreateYamlFileV2(
 		it,
 		expect,
 		testNamespace,
-		'/target.yaml',
+		'/', 'target.yaml', 'workflow',
 		wf,
 	)
 
@@ -75,6 +72,4 @@ describe('Test js outbound plugin', () => {
 		// added random data in the script
 		expect(req.body.random).toEqual('data')
 	})
-
-
 })
