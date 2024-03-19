@@ -1,11 +1,11 @@
 import { BasicAuthFormSchema } from "./basicAuth";
-import { GithubWebhookAuthFormSchema } from "./githubWebhookAuth";
 import { KeyAuthFormSchema } from "./keyAuth";
+import { WebhookAuthFormSchema } from "./webhookAuth";
 import { z } from "zod";
 
 export const AuthPluginFormSchema = z.discriminatedUnion("type", [
   BasicAuthFormSchema,
-  GithubWebhookAuthFormSchema,
+  WebhookAuthFormSchema,
   KeyAuthFormSchema,
 ]);
 

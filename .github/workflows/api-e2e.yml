@@ -43,4 +43,4 @@ jobs:
           go-version-file: go.mod
 
       - name: Run tests
-        run: TEST_SECTION=${{ matrix.test-section }} make docker-tests
+        run: TEST_SECTION=${{ matrix.test-section }} make docker-e2e-api

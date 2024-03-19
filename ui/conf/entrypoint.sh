@@ -4,7 +4,7 @@
 if [ -z "$UI_BACKEND" ]; then
     echo "The environment variable UI_BACKEND is not present or empty."
 fi
-pattern="^(http|https)://([a-zA-Z0-9.-]+):([1-9][0-9]{0,4})(/.*)?$"
+pattern="^(http|https)://([a-zA-Z0-9.-]+)(:[1-9][0-9]{0,4})?(/.*)?$"
 if ! [[ $UI_BACKEND =~ $pattern ]]; then
       echo "The environment UI_BACKEND variable is not a valid http(s) host and port >$UI_BACKEND<";
       exit 1;
