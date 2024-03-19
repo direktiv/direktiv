@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/r3labs/sse"
 	"github.com/spf13/cobra"
 )
@@ -17,9 +18,9 @@ var instance string
 
 func init() {
 	RootCmd.AddCommand(logsCmd)
-	logsCmd.Flags().StringVarP(&instance, "instance", "i", "", "Id of the instance for which to grab the logs.")
+	logsCmd.Flags().StringVarP(&instance, "instance", "i", "", "Specify the instance ID to retrieve its logs.")
 	RootCmd.AddCommand(logsCmdSSE)
-	logsCmdSSE.Flags().StringVarP(&instance, "instance", "i", "", "Id of the instance for which to grab the logs.")
+	logsCmdSSE.Flags().StringVarP(&instance, "instance", "i", "", "Specify the instance ID to subscribe to and stream logs in real-time.")
 }
 
 var logsCmd = &cobra.Command{
@@ -100,7 +101,7 @@ func GetLogsSSE(ctx context.Context, printToConsole LoggerFunc, urlsse string) e
 
 			printToConsole(FormatLogEntry(data))
 
-			if wf, ok := data["workflow"].(map[string]interface{}); ok && wf["status"] == "completed" {
+			if wf, ok := data["workflow"].(map[string]interface{}); ok && (wf["status"] == string(core.LogCompletedStatus) || wf["status"] == string(core.LogFailedStatus) || wf["status"] == string(core.LogErrStatus)) {
 				printToConsole("Instance SSE complete")
 				cancel()
 				errCh <- nil
@@ -137,6 +138,11 @@ func GetLogsV2(ctx context.Context, printToConsole LoggerFunc, urlGet string) er
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		errMsg, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("failed to get logs, server responded with status code %d: %s", resp.StatusCode, string(errMsg))
+	}
+
 	var d data
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -158,9 +164,15 @@ func FormatLogEntry(data map[string]interface{}) string {
 	var logEntries []string
 	for key, value := range data {
 		// Special handling for nested maps
+		if value == nil || value == "" {
+			continue
+		}
 		if nestedMap, ok := value.(map[string]interface{}); ok {
 			nestedEntries := make([]string, 0, len(nestedMap))
 			for k, v := range nestedMap {
+				if v == nil || v == "" {
+					continue
+				}
 				nestedEntries = append(nestedEntries, fmt.Sprintf("%s: %v", k, v))
 			}
 			logEntries = append(logEntries, fmt.Sprintf("%s: {%s}", key, strings.Join(nestedEntries, ", ")))
