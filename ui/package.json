@@ -59,7 +59,6 @@
     "jest": "^29.4.0",
     "jest-watch-typeahead": "^2.2.2",
     "js-base64": "^3.7.6",
-    "js-yaml": "^4.1.0",
     "lodash": "^4.17.21",
     "lucide-react": "^0.274.0",
     "moment": "^2.29.4",
