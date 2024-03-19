@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -82,28 +81,6 @@ func getImpactedFiles(start string, filesAllowed, recursive bool) ([]string, err
 	}
 
 	return pathsToUpdate, nil
-}
-
-var (
-	ErrNotFound       = errors.New("resource was not found")
-	ErrNodeIsReadOnly = errors.New("resource is read-only")
-	ErrNotGit         = errors.New("resource is not a git folder")
-)
-
-type node struct {
-	Namespace string `json:"namespace"`
-	Node      struct {
-		CreatedAt    time.Time     `json:"createdAt"`
-		UpdatedAt    time.Time     `json:"updatedAt"`
-		Name         string        `json:"name"`
-		Path         string        `json:"path"`
-		Parent       string        `json:"parent"`
-		Type         string        `json:"type"`
-		Attributes   []interface{} `json:"attributes"`
-		Oid          string        `json:"oid"`
-		ReadOnly     bool          `json:"readOnly"`
-		ExpandedType string        `json:"expandedType"`
-	} `json:"node"`
 }
 
 var pushCmd = &cobra.Command{

@@ -2,7 +2,6 @@ import { AclFormSchemaType } from "../../schema/plugins/inbound/acl";
 import { AuthPluginFormSchemaType } from "../../schema/plugins/auth/schema";
 import { BasicAuthFormSchemaType } from "../../schema/plugins/auth/basicAuth";
 import { EventFilterFormSchemaType } from "../../schema/plugins/inbound/eventFilter";
-import { GithubWebhookAuthFormSchemaType } from "../../schema/plugins/auth/githubWebhookAuth";
 import { HeaderManipulationFormSchemaType } from "../../schema/plugins/inbound/headerManipulation";
 import { InboundPluginFormSchemaType } from "../../schema/plugins/inbound/schema";
 import { JsInboundFormSchemaType } from "../../schema/plugins/inbound/jsInbound";
@@ -10,6 +9,7 @@ import { JsOutboundFormSchemaType } from "../../schema/plugins/outbound/jsOutbou
 import { KeyAuthFormSchemaType } from "../../schema/plugins/auth/keyAuth";
 import { OutboundPluginFormSchemaType } from "../../schema/plugins/outbound/schema";
 import { RequestConvertFormSchemaType } from "../../schema/plugins/inbound/requestConvert";
+import { WebhookAuthFormSchemaType } from "../../schema/plugins/auth/webhookAuth";
 import { authPluginTypes } from "../../schema/plugins/auth";
 import { inboundPluginTypes } from "../../schema/plugins/inbound";
 import { outboundPluginTypes } from "../../schema/plugins/outbound";
@@ -94,12 +94,11 @@ export const getKeyAuthConfigAtIndex = (
     : undefined;
 };
 
-export const getGithubWebhookAuthConfigAtIndex = (
+export const getWebhookAuthConfigAtIndex = (
+  type: WebhookAuthFormSchemaType["type"],
   fields: AuthPluginFormSchemaType[] | undefined,
   index: number | undefined
-): GithubWebhookAuthFormSchemaType["configuration"] | undefined => {
+): WebhookAuthFormSchemaType["configuration"] | undefined => {
   const plugin = index !== undefined ? fields?.[index] : undefined;
-  return plugin?.type === authPluginTypes.githubWebhookAuth.name
-    ? plugin.configuration
-    : undefined;
+  return plugin?.type === type ? plugin.configuration : undefined;
 };
