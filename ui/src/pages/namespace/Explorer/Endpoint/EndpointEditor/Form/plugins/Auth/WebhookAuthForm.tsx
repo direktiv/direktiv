@@ -1,9 +1,9 @@
 import { FC, FormEvent } from "react";
 import FormErrors, { errorsType } from "~/components/FormErrors";
 import {
-  GithubWebhookAuthFormSchema,
-  GithubWebhookAuthFormSchemaType,
-} from "../../../schema/plugins/auth/githubWebhookAuth";
+  WebhookAuthFormSchema,
+  WebhookAuthFormSchemaType,
+} from "../../../schema/plugins/auth/webhookAuth";
 
 import { Fieldset } from "~/components/Form/Fieldset";
 import Input from "~/design/Input";
@@ -12,28 +12,30 @@ import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-type OptionalConfig = Partial<GithubWebhookAuthFormSchemaType["configuration"]>;
+type OptionalConfig = Partial<WebhookAuthFormSchemaType["configuration"]>;
 
 type FormProps = {
-  formId: string;
   defaultConfig?: OptionalConfig;
-  onSubmit: (data: GithubWebhookAuthFormSchemaType) => void;
+  formId: string;
+  type: WebhookAuthFormSchemaType["type"];
+  onSubmit: (data: WebhookAuthFormSchemaType) => void;
 };
 
-export const GithubWebhookAuthForm: FC<FormProps> = ({
+export const WebhookAuthForm: FC<FormProps> = ({
   defaultConfig,
-  onSubmit,
   formId,
+  type,
+  onSubmit,
 }) => {
   const { t } = useTranslation();
   const {
     handleSubmit,
     register,
     formState: { errors },
-  } = useForm<GithubWebhookAuthFormSchemaType>({
-    resolver: zodResolver(GithubWebhookAuthFormSchema),
+  } = useForm<WebhookAuthFormSchemaType>({
+    resolver: zodResolver(WebhookAuthFormSchema),
     defaultValues: {
-      type: "github-webhook-auth",
+      type,
       configuration: {
         ...defaultConfig,
       },

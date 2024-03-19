@@ -402,6 +402,8 @@
                 "types": {
                   "basic-auth": "Basic Auth",
                   "github-webhook-auth": "Github Webhook",
+                  "gitlab-webhook-auth": "Gitlab Webhook",
+                  "slack-webhook-auth": "Slack Webhook",
                   "key-auth": "Key Auth"
                 },
                 "basciAuth": {

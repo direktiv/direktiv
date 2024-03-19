@@ -10,27 +10,33 @@ import {
 import { Table, TableBody, TableCell, TableRow } from "~/design/Table";
 import { UseFormReturn, useFieldArray } from "react-hook-form";
 import {
+  WebhookAuthFormSchemaType,
+  webhookAuthPluginNames,
+} from "../../../schema/plugins/auth/webhookAuth";
+import {
   authPluginTypes,
   availablePlugins,
 } from "../../../schema/plugins/auth";
 import {
   getBasicAuthConfigAtIndex,
-  getGithubWebhookAuthConfigAtIndex,
   getKeyAuthConfigAtIndex,
+  getWebhookAuthConfigAtIndex,
 } from "../utils";
 
 import { AuthPluginFormSchemaType } from "../../../schema/plugins/auth/schema";
 import { BasicAuthForm } from "./BasicAuthForm";
+import { BasicAuthFormSchemaType } from "../../../schema/plugins/auth/basicAuth";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import { EndpointFormSchemaType } from "../../../schema";
-import { GithubWebhookAuthForm } from "./GithubWebhookAuthForm";
 import { KeyAuthForm } from "./KeyAuthForm";
+import { KeyAuthFormSchemaType } from "../../../schema/plugins/auth/keyAuth";
 import { ListContextMenu } from "~/components/ListContextMenu";
 import { ModalWrapper } from "~/components/ModalWrapper";
 import { PluginSelector } from "../components/PluginSelector";
 import { Plus } from "lucide-react";
 import { TableHeader } from "../components/PluginsTable";
+import { WebhookAuthForm } from "./WebhookAuthForm";
 import { useTranslation } from "react-i18next";
 
 type AuthPluginFormProps = {
@@ -58,6 +64,21 @@ export const AuthPluginForm: FC<AuthPluginFormProps> = ({ formControls }) => {
 
   const pluginsCount = fields.length;
   const formId = "authPluginForm";
+
+  type PluginConfigSchema =
+    | BasicAuthFormSchemaType
+    | KeyAuthFormSchemaType
+    | WebhookAuthFormSchemaType;
+
+  const handleSubmit = (configuration: PluginConfigSchema) => {
+    setDialogOpen(false);
+    if (editIndex === undefined) {
+      addPlugin(configuration);
+    } else {
+      editPlugin(editIndex, configuration);
+    }
+    setEditIndex(undefined);
+  };
 
   return (
     <Dialog
@@ -182,46 +203,31 @@ export const AuthPluginForm: FC<AuthPluginFormProps> = ({ formControls }) => {
           <BasicAuthForm
             formId={formId}
             defaultConfig={getBasicAuthConfigAtIndex(fields, editIndex)}
-            onSubmit={(configuration) => {
-              setDialogOpen(false);
-              if (editIndex === undefined) {
-                addPlugin(configuration);
-              } else {
-                editPlugin(editIndex, configuration);
-              }
-              setEditIndex(undefined);
-            }}
+            onSubmit={handleSubmit}
           />
         )}
         {selectedPlugin === authPluginTypes.keyAuth.name && (
           <KeyAuthForm
             formId={formId}
             defaultConfig={getKeyAuthConfigAtIndex(fields, editIndex)}
-            onSubmit={(configuration) => {
-              setDialogOpen(false);
-              if (editIndex === undefined) {
-                addPlugin(configuration);
-              } else {
-                editPlugin(editIndex, configuration);
-              }
-              setEditIndex(undefined);
-            }}
+            onSubmit={handleSubmit}
           />
         )}
-        {selectedPlugin === authPluginTypes.githubWebhookAuth.name && (
-          <GithubWebhookAuthForm
-            formId={formId}
-            defaultConfig={getGithubWebhookAuthConfigAtIndex(fields, editIndex)}
-            onSubmit={(configuration) => {
-              setDialogOpen(false);
-              if (editIndex === undefined) {
-                addPlugin(configuration);
-              } else {
-                editPlugin(editIndex, configuration);
-              }
-              setEditIndex(undefined);
-            }}
-          />
+        {webhookAuthPluginNames.map(
+          (name) =>
+            selectedPlugin === name && (
+              <WebhookAuthForm
+                key={name}
+                type={name}
+                formId={formId}
+                defaultConfig={getWebhookAuthConfigAtIndex(
+                  name,
+                  fields,
+                  editIndex
+                )}
+                onSubmit={handleSubmit}
+              />
+            )
         )}
       </ModalWrapper>
     </Dialog>
