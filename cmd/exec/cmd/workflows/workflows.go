@@ -412,7 +412,16 @@ The Workflow can be executed with input data by passing it via stdin or the inpu
 			root.Fail(cmd, "Failed to execute workflow: %v\n", err)
 		}
 		cmd.Printf("Successfully Executed Instance: %s\n", instanceDetails.Instance)
-		urlOutput := root.GetLogs(cmd, instanceDetails.Instance, "")
+		urlOutput := fmt.Sprintf("%s/instances/%s/output", root.UrlPrefix, instanceDetails.Instance)
+		urlsse := fmt.Sprintf("%s/logs/subscribe?instance=%s", root.UrlPrefixV2, instanceDetails.Instance) // Construct SSE log subscription URL
+		out := func(msg string) {
+			cmd.Println(msg)
+		}
+		err = root.GetLogsSSE(cmd.Context(), out, urlsse) // Use the refactored function
+		if err != nil {
+			cmd.PrintErr("Error fetching logs: ", err)
+		}
+
 		output, err := getOutput(urlOutput)
 		if err != nil {
 			root.Fail(cmd, "%s", err)
