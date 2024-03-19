@@ -5,10 +5,8 @@ import { parse, stringify } from "yaml";
  * but it will serialize an empty object to an empty string instead
  * of "{}"
  */
-export const jsonToYaml = (json: Record<string, unknown>) => {
-  const yaml = Object.keys(json).length === 0 ? "" : stringify(json);
-  return yaml;
-};
+export const jsonToYaml = (json: Record<string, unknown>) =>
+  Object.keys(json).length === 0 ? "" : stringify(json);
 
 export const yamlToJsonOrNull = (yaml: string) => {
   let json;
