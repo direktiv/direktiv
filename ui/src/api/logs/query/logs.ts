@@ -61,28 +61,13 @@ type LogsCache = InfiniteData<LogsSchemaType>;
 const updateCache = (
   oldData: LogsCache | undefined,
   newLogEntry: LogEntryType
-): LogsCache => {
-  if (oldData === undefined) {
-    // TODO:
-    console.error("no old cache");
-    return {
-      pages: [],
-      pageParams: [],
-    };
-  }
+): LogsCache | undefined => {
+  if (oldData === undefined) return undefined;
 
   const pages = oldData.pages;
   const olderPages = pages.slice(0, -1);
   const recentPage = pages.at(-1);
-
-  if (recentPage === undefined) {
-    // TODO:
-    console.error("no recentPage");
-    return {
-      pages: [],
-      pageParams: [],
-    };
-  }
+  if (recentPage === undefined) return undefined;
 
   const recentPageData = recentPage.data ?? [];
 
