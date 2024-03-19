@@ -159,6 +159,10 @@ func (m logController) getOlder(ctx context.Context, params map[string]string) (
 // stream handles log streaming requests using Server-Sent Events (SSE).
 // Clients subscribing to this endpoint will receive real-time log updates.
 func (m logController) stream(w http.ResponseWriter, r *http.Request) {
+	// cursor is set to multiple seconds before the current time to mitigate data loss
+	// that may occur due to delays between submitting and processing the request, or when a sequence of client requests is necessary.
+	cursor := time.Now().UTC().Add(-time.Second * 3)
+
 	// TODO: we may need to replace with a SSE-Server library instead of using our custom implementation.
 	params := extractLogRequestParams(r)
 
@@ -170,9 +174,6 @@ func (m logController) stream(w http.ResponseWriter, r *http.Request) {
 	// Create a context with cancellation
 	ctx, cancel := context.WithCancel(r.Context())
 	defer cancel()
-	// cursor is set to one second before the current time to mitigate data loss
-	// that may occur due to delays between submitting and processing the request, or when a sequence of client requests is necessary.
-	cursor := time.Now().UTC().Add(-time.Second)
 
 	// Create a channel to send SSE messages
 	messageChannel := make(chan Event)
