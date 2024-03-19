@@ -13,7 +13,6 @@ import {
 import { apiFactory } from "~/api/apiFactory";
 import { buildSearchParamsString } from "~/api/utils";
 import { logKeys } from "..";
-import { memo } from "react";
 import { useApiKey } from "~/util/store/apiKey";
 import useInfiniteQueryWithPermissions from "~/api/useInfiniteQueryWithPermissions";
 import { useNamespace } from "~/util/store/namespace";
@@ -88,7 +87,7 @@ const updateCache = (
   };
 };
 
-type LogsQueryParams = {
+export type LogsQueryParams = {
   instance?: string;
   route?: string;
   activity?: string;
@@ -140,7 +139,9 @@ const fetchLogs = async ({
     },
   });
 
-export const useLogsStream = (params: LogsQueryParams) => {
+export type UseLogsStreamParams = LogsQueryParams & { enabled?: boolean };
+
+export const useLogsStream = ({ enabled, ...params }: UseLogsStreamParams) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
   const queryClient = useQueryClient();
@@ -157,6 +158,7 @@ export const useLogsStream = (params: LogsQueryParams) => {
     }),
     apiKey: apiKey ?? undefined,
     schema: LogEntrySchema,
+    enabled,
     onMessage: (msg) => {
       queryClient.setQueryData<LogsCache>(
         logKeys.detail(namespace, {
@@ -171,13 +173,6 @@ export const useLogsStream = (params: LogsQueryParams) => {
     },
   });
 };
-
-export const LogStreamingSubscriber = memo((params: LogsQueryParams) => {
-  useLogsStream(params);
-  return null;
-});
-
-LogStreamingSubscriber.displayName = "LogStreamingSubscriber";
 
 export const useLogs = ({
   instance,

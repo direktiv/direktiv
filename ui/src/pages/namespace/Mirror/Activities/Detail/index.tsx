@@ -1,6 +1,6 @@
 import ActivityDetail from "./ActivityDetail";
 import { Card } from "~/design/Card";
-import { LogStreamingSubscriber } from "~/api/logs/query/logs";
+import { LogStreamingSubscriber } from "~/api/logs/query/LogStreamingSubscriber";
 import { NoPermissions } from "~/design/Table";
 import { pages } from "~/util/router/pages";
 import { useMirrorActivity } from "~/api/tree/query/mirrorInfo";
