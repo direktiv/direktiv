@@ -36,21 +36,23 @@ func (m *logController) mountRouter(r chi.Router) {
 
 			return
 		}
+		metaInfo := map[string]any{
+			"previousPage": nil, // setting them to nil make ensure matching the specicied types for the clients
+			"startingFrom": nil,
+		}
 		if len(data) == 0 {
-			data = nil
-			writeJSONWithMeta(w, data, nil)
+			writeJSONWithMeta(w, []logEntry{}, metaInfo)
 
 			return
 		}
-		var previousPage interface{} = data[len(data)-1].Time.UTC().Format(time.RFC3339Nano)
-		if len(data) < 200 {
-			previousPage = nil
-		}
-		metaInfo := map[string]any{
+
+		slices.Reverse(data)
+		var previousPage interface{} = data[0].Time.UTC().Format(time.RFC3339Nano)
+
+		metaInfo = map[string]any{
 			"previousPage": previousPage,
 			"startingFrom": starting,
 		}
-		slices.Reverse(data)
 		writeJSONWithMeta(w, data, metaInfo)
 	})
 }
@@ -59,8 +61,8 @@ func (m logController) getNewer(ctx context.Context, t time.Time, params map[str
 	var logs []core.LogEntry
 	var err error
 
-	// Determine the stream based on the provided parameters
-	stream, err := determineStream(params)
+	// Determine the track based on the provided parameters
+	stream, err := determineTrack(params)
 	if err != nil {
 		return []logEntry{}, err
 	}
@@ -114,17 +116,6 @@ func (m logController) getNewer(ctx context.Context, t time.Time, params map[str
 		res = append(res, e)
 	}
 
-	// // Apply filters based on additional parameters
-	// if p, ok := params["level"]; ok {
-	// 	res.filterByLevel(p)
-	// }
-	// if p, ok := params["branch"]; ok {
-	// 	res.filterByBranch(p)
-	// }
-	// if p, ok := params["state"]; ok {
-	// 	res.filterByState(p)
-	// }
-
 	return res, nil
 }
 
@@ -132,8 +123,8 @@ func (m logController) getOlder(ctx context.Context, params map[string]string) (
 	var r []core.LogEntry
 	var err error
 
-	// Determine the stream based on the provided parameters
-	stream, err := determineStream(params)
+	// Determine the track based on the provided parameters
+	stream, err := determineTrack(params)
 	if err != nil {
 		return []logEntry{}, time.Time{}, err
 	}
@@ -162,22 +153,17 @@ func (m logController) getOlder(ctx context.Context, params map[string]string) (
 		res = append(res, e)
 	}
 
-	// // Apply filters based on additional parameters
-	// if p, ok := params["level"]; ok {
-	// 	res.filterByLevel(p)
-	// }
-	// if p, ok := params["branch"]; ok {
-	// 	res.filterByBranch(p)
-	// }
-	// if p, ok := params["state"]; ok {
-	// 	res.filterByState(p)
-	// }
-
 	return res, starting, nil
 }
 
-// stream handles the SSE endpoint.
+// stream handles log streaming requests using Server-Sent Events (SSE).
+// Clients subscribing to this endpoint will receive real-time log updates.
 func (m logController) stream(w http.ResponseWriter, r *http.Request) {
+	// cursor is set to multiple seconds before the current time to mitigate data loss
+	// that may occur due to delays between submitting and processing the request, or when a sequence of client requests is necessary.
+	cursor := time.Now().UTC().Add(-time.Second * 3)
+
+	// TODO: we may need to replace with a SSE-Server library instead of using our custom implementation.
 	params := extractLogRequestParams(r)
 
 	// Set the appropriate headers for SSE
@@ -191,33 +177,29 @@ func (m logController) stream(w http.ResponseWriter, r *http.Request) {
 
 	// Create a channel to send SSE messages
 	messageChannel := make(chan Event)
-	// Adjust the logStoreWorker to use cursor instead of offset
+
 	worker := logStoreWorker{
 		Get:      m.getNewer,
 		Interval: time.Second,
 		Ch:       messageChannel,
 		Params:   params,
-		Cursor:   time.Now().UTC(),
+		Cursor:   cursor,
 	}
 	go worker.start(ctx)
 
 	for {
 		select {
 		case <-ctx.Done():
-			slog.Info("context done")
-
 			return
 		case message := <-messageChannel:
 			_, err := io.Copy(w, strings.NewReader(fmt.Sprintf("id: %v\nevent: %v\ndata: %v\n\n", message.ID, message.Type, message.Data)))
 			if err != nil {
-				slog.Error("copy", "error", err)
+				slog.Error("sse error", "error", err)
 			}
 
 			f, ok := w.(http.Flusher)
 			if !ok {
 				// TODO Handle case where response writer is not a http.Flusher
-				slog.Error("Response writer is not a http.Flusher")
-
 				return
 			}
 			if f != nil {
@@ -227,7 +209,9 @@ func (m logController) stream(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func determineStream(params map[string]string) (string, error) {
+// determineTrack determines the log track based on provided parameters.
+// It constructs a track string used for filtering logs in datastore queries.
+func determineTrack(params map[string]string) (string, error) {
 	if p, ok := params["instance"]; ok {
 		return "flow.instance." + "%" + p + "%", nil
 	} else if p, ok := params["route"]; ok {
@@ -251,11 +235,12 @@ type Event struct {
 
 // LogStoreWorker manages the log polling and channel communication.
 type logStoreWorker struct {
+	// TODO: maybe we should move this to become a more general solution.
 	Get      func(ctx context.Context, cursorTime time.Time, params map[string]string) ([]logEntry, error)
 	Interval time.Duration
 	Ch       chan Event
 	Params   map[string]string
-	Cursor   time.Time // Cursor instead of Offset
+	Cursor   time.Time // Cursor instead of Offset.
 }
 
 // Start starts the log polling worker.
@@ -288,7 +273,6 @@ func (lw *logStoreWorker) start(ctx context.Context) {
 						slog.Error("TODO: should we quit with an error?", "error", err)
 					}
 
-					slog.Info("data", "message", string(b))
 					e := Event{
 						ID:   fmt.Sprint(fle.ID),
 						Data: dst.String(),
@@ -297,7 +281,7 @@ func (lw *logStoreWorker) start(ctx context.Context) {
 					lw.Ch <- e
 				}
 
-				// Update cursorTime for the next iteration
+				// Update cursorTime for the next iteration.
 				if len(logs) > 0 {
 					lw.Cursor = logs[len(logs)-1].Time
 				}
@@ -328,6 +312,9 @@ func extractLogRequestParams(r *http.Request) map[string]string {
 	}
 	if v := r.URL.Query().Get("before"); v != "" {
 		params["before"] = v
+	}
+	if v := r.URL.Query().Get("after"); v != "" {
+		params["after"] = v
 	}
 	if v := r.URL.Query().Get("trace"); v != "" {
 		params["trace"] = v
@@ -411,10 +398,6 @@ func toFeatureLogEntry(e core.LogEntry) (logEntry, error) {
 	if path, ok := m["route"]; ok && path != nil {
 		featureLogEntry.Route = &RouteEntryContext{Path: path}
 	}
-	// TODO Remove path log-key
-	// if s, ok := m["path"]; ok {
-	// 	featureLogEntry.Path = fmt.Sprint(s)
-	// }
 
 	return featureLogEntry, nil
 }

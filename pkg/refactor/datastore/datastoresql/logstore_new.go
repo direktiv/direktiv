@@ -12,6 +12,8 @@ import (
 
 var _ datastore.LogStore = &sqlLogNewStore{}
 
+// A fixed page size prevents request with unreasonable high numbers,
+// that would cause the system to freeze.
 const pageSize = 200
 
 type sqlLogNewStore struct {
@@ -63,7 +65,7 @@ func (s sqlLogNewStore) GetNewer(ctx context.Context, track string, t time.Time)
 	query := `
         SELECT id, time, tag, data
         FROM fluentbit
-        WHERE tag = ? AND time >= ?
+        WHERE tag = ? AND time > ?
         ORDER BY time ASC
         LIMIT ?;
     `
@@ -80,7 +82,7 @@ func (s sqlLogNewStore) GetNewerInstance(ctx context.Context, track string, t ti
 	query := `
         SELECT id, time, tag, data
         FROM fluentbit
-        WHERE tag LIKE ? AND time >= ?
+        WHERE tag LIKE ? AND time > ?
         ORDER BY time ASC
         LIMIT ?;
     `
@@ -97,7 +99,7 @@ func (s sqlLogNewStore) GetStartingIDUntilTime(ctx context.Context, track string
 	query := `
         SELECT id, time, tag, data
         FROM fluentbit
-        WHERE tag = ? AND id >= ? time <= ?
+        WHERE tag = ? AND id > ? time <= ?
         ORDER BY time ASC;
     `
 	resultList := make([]ScanResult, 0)
@@ -113,7 +115,7 @@ func (s sqlLogNewStore) GetStartingIDUntilTimeInstance(ctx context.Context, trac
 	query := `
         SELECT id, time, tag, data
         FROM fluentbit
-        WHERE tag LIKE ? AND id >= ? time <= ?
+        WHERE tag LIKE ? AND id > ? time <= ?
         ORDER BY time ASC;
     `
 	resultList := make([]ScanResult, 0)
