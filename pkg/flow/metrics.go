@@ -310,7 +310,7 @@ func (engine *engine) metricsCompleteInstance(im *instanceMemory) {
 	now := time.Now().UTC()
 	empty := time.Time{}
 
-	if im.Status() == util.InstanceStatusFailed || im.Status() == util.InstanceStatusCrashed {
+	if im.Status() == util.InstanceStatusFailed || im.Status() == util.InstanceStatusCrashed || im.Status() == util.InstanceStatusCancelled {
 		metricsWfFail.WithLabelValues(namespace, workflow, namespace).Inc()
 	} else {
 		metricsWfSuccess.WithLabelValues(namespace, workflow, namespace).Inc()

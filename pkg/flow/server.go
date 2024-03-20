@@ -493,7 +493,19 @@ func (srv *server) start(ctx context.Context) error {
 		return srv.flow.placeholdSecrets(ctx, noTx, event.Namespace, file)
 	}
 
-	newMainWG := cmd.NewMain(srv.conf, dbManager, srv.pBus, srv.sugar, configureWorkflow)
+	instanceManager := &instancestore.InstanceManager{
+		Start:  srv.engine.StartWorkflow,
+		Cancel: srv.engine.CancelInstance,
+	}
+
+	newMainWG := cmd.NewMain(&cmd.NewMainArgs{
+		Config:            srv.conf,
+		Database:          dbManager,
+		PubSubBus:         srv.pBus,
+		Logger:            srv.sugar,
+		ConfigureWorkflow: configureWorkflow,
+		InstanceManager:   instanceManager,
+	})
 
 	srv.sugar.Info("Flow server started.")
 

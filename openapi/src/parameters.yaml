@@ -5,6 +5,13 @@ namespace:
     type: string
   required: true
 
+instanceID:
+  name: instanceID
+  in: path
+  schema:
+    type: string
+  required: true
+
 serviceID:
   name: serviceID
   in: path
