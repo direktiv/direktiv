@@ -177,35 +177,38 @@ func (e *instController) metadata(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, marshalForAPI(data))
 }
 
-func (e *instController) getOnce(r *http.Request) (*instancestore.InstanceData, *Error) {
+func (e *instController) getOnce(r *http.Request, instanceID uuid.UUID) (*instancestore.InstanceData, error) {
 	ctx := r.Context()
 	ns := extractContextNamespace(r)
-	instanceID := chi.URLParam(r, "instanceID")
 
-	id, err := uuid.Parse(instanceID)
+	data, err := e.db.InstanceStore().ForInstanceID(instanceID).GetSummary(ctx)
 	if err != nil {
-		return nil, &Error{
-			Code:    "request_data_invalid",
-			Message: fmt.Errorf("unparsable instance UUID: %w", err).Error(),
-		}
-	}
-
-	data, err := e.db.InstanceStore().ForInstanceID(id).GetSummary(ctx)
-	if err != nil {
-		return nil, translateInstanceStoreError(err)
+		return nil, err
 	}
 
 	if data.Namespace != ns.Name {
-		return nil, translateInstanceStoreError(instancestore.ErrNotFound)
+		return nil, instancestore.ErrNotFound
 	}
 
 	return data, nil
 }
 
 func (e *instController) get(w http.ResponseWriter, r *http.Request) {
-	data, err := e.getOnce(r)
+	instanceID := chi.URLParam(r, "instanceID")
+
+	id, err := uuid.Parse(instanceID)
 	if err != nil {
-		writeError(w, err)
+		writeError(w, &Error{
+			Code:    "request_data_invalid",
+			Message: fmt.Errorf("unparsable instance UUID: %w", err).Error(),
+		})
+
+		return
+	}
+
+	data, err := e.getOnce(r, id)
+	if err != nil {
+		writeInstanceStoreError(w, err)
 
 		return
 	}
@@ -608,8 +611,20 @@ func (e *instController) stream(w http.ResponseWriter, r *http.Request) {
 
 	// TODO: do we need to deduplicate events?
 
+	instanceID := chi.URLParam(r, "instanceID")
+
+	id, err := uuid.Parse(instanceID)
+	if err != nil {
+		writeError(w, &Error{
+			Code:    "request_data_invalid",
+			Message: fmt.Errorf("unparsable instance UUID: %w", err).Error(),
+		})
+
+		return
+	}
+
 	for {
-		data, err := e.getOnce(r)
+		data, err := e.getOnce(r, id)
 		if err != nil {
 			return // TODO: how are we supposed to report errors in SSE?
 		}
