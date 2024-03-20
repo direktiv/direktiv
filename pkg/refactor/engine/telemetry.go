@@ -101,12 +101,9 @@ func BuildNamespaceTrack(namespace string) string {
 }
 
 func BuildInstanceTrack(instance *Instance) string {
-	callpath := ""
+	callpath := instance.Instance.ID.String()
 	for _, v := range instance.DescentInfo.Descent {
 		callpath += "/" + v.ID.String()
-	}
-	if callpath == "" {
-		callpath = instance.Instance.ID.String()
 	}
 
 	return fmt.Sprintf("%v.%v", "instance", callpath)
