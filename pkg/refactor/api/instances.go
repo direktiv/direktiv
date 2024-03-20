@@ -648,27 +648,24 @@ func (e *instController) stream(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func translateInstanceStoreError(err error) *Error {
+func writeInstanceStoreError(w http.ResponseWriter, err error) {
 	if errors.Is(err, instancestore.ErrNotFound) {
-		return &Error{
+		writeError(w, &Error{
 			Code:    "resource_not_found",
 			Message: err.Error(),
-		}
+		})
+
+		return
 	}
 
 	if errors.Is(err, instancestore.ErrBadListOpts) {
-		return &Error{
+		writeError(w, &Error{
 			Code:    "request_invalid_list_options",
 			Message: err.Error(),
-		}
+		})
+
+		return
 	}
 
-	return &Error{
-		Code:    "internal",
-		Message: "internal server error",
-	}
-}
-
-func writeInstanceStoreError(w http.ResponseWriter, err error) {
-	writeError(w, translateInstanceStoreError(err))
+	writeInternalError(w, err)
 }
