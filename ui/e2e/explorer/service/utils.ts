@@ -7,7 +7,7 @@ const createPatchesYaml = (patches?: PatchSchemaType[]) =>
     ? patches
         .map(
           (item) =>
-            `\n  - op: "${item.op}"\n    path: "${item.path}"\n    value: "${item.value}"`
+            `\n  - op: ${item.op}\n    path: ${item.path}\n    value: ${item.value}`
         )
         .join("")
     : "[]";
@@ -15,7 +15,7 @@ const createPatchesYaml = (patches?: PatchSchemaType[]) =>
 const createEnvsYaml = (envs?: EnvVarSchemaType[]) =>
   envs
     ? envs
-        .map((item) => `\n  - name: "${item.name}"\n    value: "${item.value}"`)
+        .map((item) => `\n  - name: ${item.name}\n    value: ${item.value}`)
         .join("")
     : "[]";
 
@@ -36,11 +36,11 @@ export const createServiceYaml = ({
   cmd,
   patches,
   envs,
-}: Service) => `direktiv_api: "service/v1"
-image: "${image}"
+}: Service) => `direktiv_api: service/v1
+image: ${image}
 scale: ${scale}
-size: "${size}"
-cmd: "${cmd}"
+size: ${size}
+cmd: ${cmd}
 patches: ${createPatchesYaml(patches)}
 envs: ${createEnvsYaml(envs)}`;
 

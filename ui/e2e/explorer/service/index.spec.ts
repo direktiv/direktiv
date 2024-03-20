@@ -271,9 +271,11 @@ test("it is possible to edit patches", async ({ page }) => {
   await page.getByLabel(updatedPatch.op).click();
 
   await page.getByLabel("Path").fill(updatedPatch.path);
-  const editorTarget = await page.getByText(patchToEdit.value, {
-    exact: true,
-  });
+  const editorTarget = await page
+    .getByRole("dialog")
+    .getByText(patchToEdit.value, {
+      exact: true,
+    });
 
   await editorTarget.click();
   await page.locator("textarea").last().fill(updatedPatch.value);

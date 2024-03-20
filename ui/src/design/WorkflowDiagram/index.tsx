@@ -4,8 +4,8 @@ import { useMemo, useState } from "react";
 
 import Alert from "../Alert";
 import { ReactFlowProvider } from "reactflow";
-import YAML from "js-yaml";
 import { ZoomPanDiagram } from "./ZoomPanDiagram";
+import { parse } from "yaml";
 
 /**
  * Renders a diagram of a workflow and optionally its current state position during a instance.
@@ -40,7 +40,7 @@ export default function WorkflowDiagram(props: WorkflowDiagramProps) {
       return null;
     }
     try {
-      const workflowObj = YAML.load(workflow) as Workflow;
+      const workflowObj = parse(workflow) as Workflow;
       setInvalidWorkflow(null);
       return workflowObj;
     } catch (error: unknown) {
