@@ -77,7 +77,6 @@ func NewMain(args *NewMainArgs) *sync.WaitGroup {
 		ServiceManager:  serviceManager,
 		RegistryManager: registryManager,
 		GatewayManager:  gatewayManager,
-		Bus:             args.PubSubBus,
 	}
 
 	args.PubSubBus.Subscribe(func(_ string) {
@@ -157,7 +156,7 @@ func NewMain(args *NewMainArgs) *sync.WaitGroup {
 
 	// Start api v2 server
 	wg.Add(1)
-	api.Start(app, args.Database, args.InstanceManager, "0.0.0.0:6667", done, wg)
+	api.Start(app, args.Database, args.PubSubBus, args.InstanceManager, "0.0.0.0:6667", done, wg)
 
 	go func() {
 		// Listen for syscall signals for process to interrupt/quit
