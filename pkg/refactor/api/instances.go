@@ -13,7 +13,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/gabriel-vasile/mimetype"
@@ -62,7 +61,7 @@ func marshalForAPI(data *instancestore.InstanceData) interface{} {
 
 type instController struct {
 	db      *database.DB
-	manager core.InstanceManager
+	manager instancestore.InstanceManager
 }
 
 func (e *instController) mountRouter(r chi.Router) {

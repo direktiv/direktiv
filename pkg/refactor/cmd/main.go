@@ -28,18 +28,13 @@ import (
 	"go.uber.org/zap"
 )
 
-type NewMainFunctions struct {
-	StartInstance  func(ctx context.Context, namespace, path string, input []byte) (*instancestore.InstanceData, error)
-	CancelInstance func(ctx context.Context, namespace, instanceID string) error
-}
-
 type NewMainArgs struct {
 	Config            *core.Config
 	Database          *database.DB
 	PubSubBus         *pubsub.Bus
 	Logger            *zap.SugaredLogger
 	ConfigureWorkflow func(data string) error
-	InstanceManager   core.InstanceManager
+	InstanceManager   instancestore.InstanceManager
 }
 
 func NewMain(args *NewMainArgs) *sync.WaitGroup {

@@ -246,3 +246,28 @@ type Store interface {
 	// It does this by checking if a record of an instance was created within the last 30s for the given workflow ID.
 	AssertNoParallelCron(ctx context.Context, wfPath string) error
 }
+
+type InstanceManager interface {
+	CancelInstance(ctx context.Context, namespace, instanceID string) error
+	StartInstance(ctx context.Context, namespace, path string, input []byte) (*InstanceData, error)
+}
+
+func NewInstanceManager(starter func(ctx context.Context, namespace, path string, input []byte) (*InstanceData, error), canceller func(ctx context.Context, namespace, instanceID string) error) InstanceManager {
+	return &instanceManager{
+		canceller: canceller,
+		start:     starter,
+	}
+}
+
+type instanceManager struct {
+	canceller func(ctx context.Context, namespace, instanceID string) error
+	start     func(ctx context.Context, namespace, path string, input []byte) (*InstanceData, error)
+}
+
+func (mgr *instanceManager) StartInstance(ctx context.Context, namespace, path string, input []byte) (*InstanceData, error) {
+	return mgr.start(ctx, namespace, path, input)
+}
+
+func (mgr *instanceManager) CancelInstance(ctx context.Context, namespace, instanceID string) error {
+	return mgr.canceller(ctx, namespace, instanceID)
+}

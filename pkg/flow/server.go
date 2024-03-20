@@ -493,7 +493,7 @@ func (srv *server) start(ctx context.Context) error {
 		return srv.flow.placeholdSecrets(ctx, noTx, event.Namespace, file)
 	}
 
-	instanceManager := core.NewInstanceManager(srv.engine.StartWorkflow, srv.engine.CancelInstance)
+	instanceManager := instancestore.NewInstanceManager(srv.engine.StartWorkflow, srv.engine.CancelInstance)
 
 	newMainWG := cmd.NewMain(&cmd.NewMainArgs{
 		Config:            srv.conf,

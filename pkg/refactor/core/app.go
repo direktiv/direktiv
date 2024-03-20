@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
+
 	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
 )
 
@@ -111,7 +113,7 @@ type App struct {
 	Version *Version
 	Config  *Config
 
-	InstanceManager InstanceManager
+	InstanceManager instancestore.InstanceManager
 	ServiceManager  ServiceManager
 	RegistryManager RegistryManager
 	GatewayManager  GatewayManager
