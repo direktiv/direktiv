@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"log/slog"
 
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/flow/states"
@@ -22,13 +24,12 @@ func (engine *engine) Children(ctx context.Context, im *instanceMemory) ([]*stat
 	return children, nil
 }
 
-func (engine *engine) LivingChildren(ctx context.Context, im *instanceMemory) []stateChild {
+func (engine *engine) LivingChildren(ctx context.Context, im *instanceMemory) ([]stateChild, error) {
 	living := make([]stateChild, 0)
 
 	children, err := engine.Children(ctx, im)
 	if err != nil {
-		engine.sugar.Error(err)
-		return living
+		return living, err
 	}
 
 	for _, logic := range children {
@@ -45,26 +46,29 @@ func (engine *engine) LivingChildren(ctx context.Context, im *instanceMemory) []
 		})
 	}
 
-	return living
+	return living, nil
 }
 
-func (engine *engine) CancelInstanceChildren(ctx context.Context, im *instanceMemory) {
-	children := engine.LivingChildren(ctx, im)
-
+func (engine *engine) CancelInstanceChildren(ctx context.Context, im *instanceMemory) error {
+	children, err := engine.LivingChildren(ctx, im)
+	if err != nil {
+		return fmt.Errorf("canceling a child failed %w", err)
+	}
 	for _, child := range children {
 		switch child.Type {
 		case "isolate":
 			if child.ServiceName != "" {
 				// TODO: yassir handle workflow children services.
 			} else {
-				engine.sugar.Warn("missing child service name")
+				slog.Warn("missing child service name")
 			}
 		case "subflow":
 			engine.pubsub.CancelWorkflow(child.Id, ErrCodeCancelledByParent, "cancelled by parent workflow", false)
 		default:
-			engine.sugar.Errorf("unrecognized child type: %s", child.Type)
+			slog.Error("unrecognized child type", "error", child.Type)
 		}
 	}
+	return nil
 }
 
 func (engine *engine) cancelInstance(id, code, message string, soft bool) {
@@ -72,7 +76,7 @@ func (engine *engine) cancelInstance(id, code, message string, soft bool) {
 
 	uid, err := uuid.Parse(id)
 	if err != nil {
-		engine.sugar.Errorf("failed to parse instance uuid for cancelInstance: %v", err)
+		slog.Error("failed to parse instance uuid for cancelInstance: %v", err)
 		return
 	}
 
@@ -82,7 +86,7 @@ func (engine *engine) cancelInstance(id, code, message string, soft bool) {
 		Message: message,
 	})
 	if err != nil {
-		engine.sugar.Errorf("failed to enqueue instance message for cancelInstance: %v", err)
+		slog.Error("failed to enqueue instance message for cancelInstance", "error", err)
 		return
 	}
 
@@ -96,7 +100,7 @@ func (engine *engine) finishCancelWorkflow(req *pubsub.PubsubUpdate) {
 
 	err := json.Unmarshal([]byte(req.Key), &args)
 	if err != nil {
-		engine.sugar.Error(err)
+		slog.Error("finishCancelWorkflow", "error", err)
 		return
 	}
 
@@ -133,7 +137,7 @@ func (engine *engine) finishCancelWorkflow(req *pubsub.PubsubUpdate) {
 
 bad:
 
-	engine.sugar.Error(errors.New("bad input to workflow cancel pubsub"))
+	slog.Error("cancel a workflow", "error", errors.New("bad input to workflow cancel pubsub"))
 }
 
 func (engine *engine) cancelRunning(id string) {
@@ -150,7 +154,7 @@ func (engine *engine) finishCancelMirrorProcess(req *pubsub.PubsubUpdate) {
 
 	err := json.Unmarshal([]byte(req.Key), &args)
 	if err != nil {
-		engine.sugar.Error(err)
+		slog.Error("cancel mirror", "error", err)
 		return
 	}
 
@@ -178,5 +182,5 @@ func (engine *engine) finishCancelMirrorProcess(req *pubsub.PubsubUpdate) {
 
 bad:
 
-	engine.sugar.Error(errors.New("bad input to mirror process cancel pubsub"))
+	slog.Error("mirror process", "error", errors.New("bad input to mirror process cancel pubsub"))
 }

@@ -3,6 +3,7 @@ package flow
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
@@ -19,7 +20,7 @@ import (
 )
 
 func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNamespaceMirrorRequest) (*grpc.CreateNamespaceResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
@@ -77,11 +78,11 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 		flow.mirrorManager.Execute(context.Background(), proc, mirConfig, &mirror.DirektivApplyer{NamespaceID: ns.ID})
 		err := flow.pBus.Publish(pubsub.MirrorSync, ns.Name)
 		if err != nil {
-			flow.sugar.Error("pubsub publish", "error", err)
+			slog.Error("pubsub publish", "error", err)
 		}
 	}()
 
-	flow.logger.Debugf(ctx, flow.ID, flow.GetAttributes(), "Created namespace as git mirror '%s'.", ns.Name)
+	slog.Debug("Created namespace as git mirror", "namespace", ns.Name)
 
 	var resp grpc.CreateNamespaceResponse
 	resp.Namespace = bytedata.ConvertNamespaceToGrpc(ns)
@@ -90,13 +91,13 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 }
 
 func (flow *flow) CreateDirectoryMirror(ctx context.Context, req *grpc.CreateDirectoryMirrorRequest) (*grpc.CreateDirectoryResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	return nil, status.Error(codes.Unimplemented, "mirroring in directory is not allowed.")
 }
 
 func (flow *flow) UpdateMirrorSettings(ctx context.Context, req *grpc.UpdateMirrorSettingsRequest) (*emptypb.Empty, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
@@ -143,7 +144,7 @@ func (flow *flow) UpdateMirrorSettings(ctx context.Context, req *grpc.UpdateMirr
 		return nil, err
 	}
 
-	flow.logger.Debugf(ctx, flow.ID, flow.GetAttributes(), "Updated mirror configs for namespace: %s", ns.Name)
+	slog.Debug("Updated mirror configs for namespace", "namespace", ns.Name)
 
 	proc, err := flow.mirrorManager.NewProcess(ctx, ns, datastore.ProcessTypeSync)
 	if err != nil {
@@ -154,7 +155,7 @@ func (flow *flow) UpdateMirrorSettings(ctx context.Context, req *grpc.UpdateMirr
 		flow.mirrorManager.Execute(context.Background(), proc, mirConfig, &mirror.DirektivApplyer{NamespaceID: ns.ID})
 		err := flow.pBus.Publish(pubsub.MirrorSync, ns.Name)
 		if err != nil {
-			flow.sugar.Error("pubsub publish", "error", err)
+			slog.Error("pubsub publish", "error", err)
 		}
 	}()
 
@@ -164,19 +165,19 @@ func (flow *flow) UpdateMirrorSettings(ctx context.Context, req *grpc.UpdateMirr
 }
 
 func (flow *flow) LockMirror(ctx context.Context, req *grpc.LockMirrorRequest) (*emptypb.Empty, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	return nil, status.Error(codes.Unimplemented, "locking/unlocking mirror is not allowed.")
 }
 
 func (flow *flow) UnlockMirror(ctx context.Context, req *grpc.UnlockMirrorRequest) (*emptypb.Empty, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	return nil, status.Error(codes.Unimplemented, "locking/unlocking mirror is not allowed.")
 }
 
 func (flow *flow) SoftSyncMirror(ctx context.Context, req *grpc.SoftSyncMirrorRequest) (*emptypb.Empty, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	return flow.HardSyncMirror(ctx, &grpc.HardSyncMirrorRequest{
 		Namespace: req.GetNamespace(),
@@ -185,7 +186,7 @@ func (flow *flow) SoftSyncMirror(ctx context.Context, req *grpc.SoftSyncMirrorRe
 }
 
 func (flow *flow) HardSyncMirror(ctx context.Context, req *grpc.HardSyncMirrorRequest) (*emptypb.Empty, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
@@ -212,11 +213,11 @@ func (flow *flow) HardSyncMirror(ctx context.Context, req *grpc.HardSyncMirrorRe
 		flow.mirrorManager.Execute(context.Background(), proc, mirConfig, &mirror.DirektivApplyer{NamespaceID: ns.ID})
 		err := flow.pBus.Publish(pubsub.MirrorSync, ns.Name)
 		if err != nil {
-			flow.sugar.Error("pubsub publish", "error", err)
+			slog.Error("pubsub publish", "error", err)
 		}
 	}()
 
-	flow.logger.Debugf(ctx, flow.ID, flow.GetAttributes(), "Starting mirror process for namespace: %s", ns.Name)
+	slog.Debug("Starting mirror process for namespace", "namespace", ns.Name)
 
 	var resp emptypb.Empty
 
@@ -224,7 +225,7 @@ func (flow *flow) HardSyncMirror(ctx context.Context, req *grpc.HardSyncMirrorRe
 }
 
 func (flow *flow) MirrorInfo(ctx context.Context, req *grpc.MirrorInfoRequest) (*grpc.MirrorInfoResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
@@ -264,7 +265,7 @@ func (flow *flow) MirrorInfo(ctx context.Context, req *grpc.MirrorInfoRequest) (
 }
 
 func (flow *flow) MirrorInfoStream(req *grpc.MirrorInfoRequest, srv grpc.Flow_MirrorInfoStreamServer) error {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 	ctx := srv.Context()
 
 	resp, err := flow.MirrorInfo(ctx, req)
@@ -287,7 +288,7 @@ func (flow *flow) MirrorInfoStream(req *grpc.MirrorInfoRequest, srv grpc.Flow_Mi
 }
 
 func (flow *flow) MirrorActivityLogs(ctx context.Context, req *grpc.MirrorActivityLogsRequest) (*grpc.MirrorActivityLogsResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
@@ -335,7 +336,7 @@ func (flow *flow) MirrorActivityLogs(ctx context.Context, req *grpc.MirrorActivi
 }
 
 func (flow *flow) MirrorActivityLogsParcels(req *grpc.MirrorActivityLogsRequest, srv grpc.Flow_MirrorActivityLogsParcelsServer) error {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	ctx := srv.Context()
 
@@ -409,14 +410,14 @@ resend:
 }
 
 func (flow *flow) CancelMirrorActivity(ctx context.Context, req *grpc.CancelMirrorActivityRequest) (*emptypb.Empty, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	mirProcessID, err := uuid.Parse(req.GetActivity())
 	if err != nil {
 		return nil, err
 	}
 
-	flow.logger.Debugf(ctx, flow.ID, flow.GetAttributes(), "cancelled by api request")
+	slog.Debug("cancelled by api request", "namespace", req.Namespace)
 	flow.pubsub.CancelMirrorProcess(mirProcessID)
 
 	// err = flow.mirrorManager.Cancel(ctx, mirProcessID)

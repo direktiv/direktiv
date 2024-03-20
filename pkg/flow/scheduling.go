@@ -5,10 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/flow/database"
-	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
@@ -49,13 +48,13 @@ func (engine *engine) sendCancelToScheduled(instance uuid.UUID) {
 func (engine *engine) executor(ctx context.Context, id uuid.UUID) {
 	ctx, err := engine.registerScheduled(ctx, id)
 	if err != nil {
-		engine.sugar.Errorf("failed to registerScheduled in executor: %v", err)
+		slog.Error("failed to registerScheduled in executor", "error", err)
 		return
 	}
 
 	im, err := engine.getInstanceMemory(ctx, id)
 	if err != nil {
-		engine.sugar.Errorf("failed to getInstanceMemory in executor: %v", err)
+		slog.Error("failed to getInstanceMemory in executor", "error", err)
 		engine.deregisterScheduled(id)
 
 		return
@@ -122,7 +121,7 @@ func (engine *engine) executorLoop(ctx context.Context, im *instanceMemory) {
 }
 
 func (engine *engine) InstanceYield(ctx context.Context, im *instanceMemory) {
-	engine.sugar.Debugf("Instance going to sleep: %s", im.ID().String())
+	slog.Debug("Instance going to sleep", "instance", im.ID().String(), "namespace", im.Namespace())
 
 	err := engine.freeMemory(ctx, im)
 	if err != nil {
@@ -135,7 +134,7 @@ func (engine *engine) WakeInstanceCaller(ctx context.Context, im *instanceMemory
 	caller := engine.InstanceCaller(im)
 
 	if caller != nil {
-		engine.logger.Debugf(ctx, im.GetInstanceID(), im.GetAttributes(), "Reporting results to calling workflow.")
+		slog.Debug("Reporting results to calling workflow.", "namespace", im.Namespace())
 
 		msg := &actionResultMessage{
 			InstanceID: caller.ID.String(),
@@ -160,7 +159,7 @@ func (engine *engine) WakeInstanceCaller(ctx context.Context, im *instanceMemory
 			Output:       msg.Payload.Output,
 		})
 		if err != nil {
-			engine.sugar.Error(err)
+			slog.Error("wake instance", "error", err)
 			return
 		}
 	}
@@ -175,14 +174,12 @@ func (engine *engine) start(im *instanceMemory) {
 
 	ctx := context.Background()
 
-	engine.sugar.Debugf("Starting workflow %v", im.ID().String())
-	engine.logger.Debugf(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "Starting workflow %v", database.GetWorkflow(im.instance.Instance.WorkflowPath))
-	engine.logger.Debugf(ctx, im.instance.Instance.ID, im.GetAttributes(), "Starting workflow %v.", database.GetWorkflow(im.instance.Instance.WorkflowPath))
+	slog.Debug("Starting workflow", "namespace", im.Namespace())
 
 	workflow, err := im.Model()
 	if err != nil {
 		engine.CrashInstance(ctx, im, derrors.NewUncatchableError(ErrCodeWorkflowUnparsable, "failed to parse workflow YAML: %v", err))
-		engine.logger.Errorf(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "failed to parse workflow YAML")
+		slog.Error("failed to parse workflow YAML", "namespace", im.Namespace())
 		return
 	}
 
@@ -192,7 +189,7 @@ func (engine *engine) start(im *instanceMemory) {
 
 	ctx, err = engine.registerScheduled(ctx, id)
 	if err != nil {
-		engine.sugar.Debugf("failed to registerScheduled in start: %v", err)
+		slog.Debug("failed to registerScheduled in start", "error", err)
 		return
 	}
 

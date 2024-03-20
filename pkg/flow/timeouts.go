@@ -3,6 +3,7 @@ package flow
 import (
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"time"
 )
 
@@ -42,7 +43,7 @@ func (engine *engine) scheduleTimeout(im *instanceMemory, oldController string, 
 
 	err = engine.timers.addOneShot(id, timeoutFunction, deadline, data)
 	if err != nil {
-		engine.sugar.Error(err)
+		slog.Error("scheduleTimeout", "error", err)
 	}
 }
 
@@ -74,7 +75,7 @@ func (engine *engine) timeoutHandler(input []byte) {
 	args := new(timeoutArgs)
 	err := json.Unmarshal(input, args)
 	if err != nil {
-		engine.sugar.Error(err)
+		slog.Error("timeoutHandler", "error", err)
 		return
 	}
 

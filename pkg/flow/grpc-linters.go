@@ -3,6 +3,7 @@ package flow
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
@@ -10,7 +11,7 @@ import (
 )
 
 func (flow *flow) NamespaceLint(ctx context.Context, req *grpc.NamespaceLintRequest) (*grpc.NamespaceLintResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {

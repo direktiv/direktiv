@@ -1,26 +1,22 @@
 package api
 
 import (
-	"log"
+	"context"
+	"fmt"
 
-	"github.com/direktiv/direktiv/pkg/dlog"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 )
 
-func RunApplication(config *core.Config) {
-	logger, err := dlog.ApplicationLogger("api")
+func RunApplication(ctx context.Context, config *core.Config) error {
+	s, err := NewServer(ctx, config)
 	if err != nil {
-		log.Fatalf("can not get logger: %v", err)
-	}
-
-	s, err := NewServer(logger, config)
-	if err != nil {
-		logger.Errorf("can not create api server: %v", err)
+		return fmt.Errorf("cannot create API server: %w", err)
 	}
 
 	err = s.Start()
 	if err != nil {
-		logger.Errorf("can not start api server: %v", err)
-		log.Fatal(err.Error())
+		return fmt.Errorf("cannot start API server: %w", err)
 	}
+
+	return nil
 }

@@ -5,17 +5,16 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"log/slog"
 	"os"
 	"os/exec"
 	"os/signal"
 	"runtime/debug"
 	"strings"
 
-	"github.com/direktiv/direktiv/pkg/dlog"
 	"github.com/direktiv/direktiv/pkg/flow"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/spf13/cobra"
-	"go.uber.org/zap"
 	libgrpc "google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
@@ -37,21 +36,8 @@ var (
 	filein string
 )
 
-var logger *zap.SugaredLogger
-
 func RunApplication() {
 	var err error
-
-	logger, err = dlog.ApplicationLogger("flow")
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to initialize logger: %v\n", err)
-		os.Exit(1)
-	}
-	defer func() {
-		err := logger.Sync()
-		fmt.Fprintf(os.Stderr, "Failed to sync logger: %v\n", err)
-		os.Exit(1)
-	}()
 
 	rootCmd.PersistentFlags().StringVar(&addr, "addr", "localhost:8080", "")
 	rootCmd.AddCommand(serverCmd)
@@ -116,6 +102,7 @@ func client() (grpc.FlowClient, io.Closer, error) {
 	return grpc.NewFlowClient(conn), conn, nil
 }
 
+// Todo evaluate if we can remove this.
 func print(x interface{}) {
 	data, err := protojson.MarshalOptions{
 		Multiline:       true,
@@ -133,7 +120,7 @@ func print(x interface{}) {
 func exit(err error) {
 	desc := status.Convert(err)
 
-	logger.Error(desc)
+	slog.Error("terminating", "status", desc)
 
 	os.Exit(1)
 }
@@ -151,8 +138,7 @@ var serverCmd = &cobra.Command{
 		// TODO: yassir: need to be cleaned.
 		defer func() {
 			if r := recover(); r != nil {
-				fmt.Println("Recovered in run", r)
-				fmt.Println("stacktrace from panic: \n" + string(debug.Stack()))
+				slog.Info("Recovered in run", "run", r, "stack_trace", string(debug.Stack()))
 				panic(r)
 			}
 		}()
@@ -161,9 +147,10 @@ var serverCmd = &cobra.Command{
 		ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 		defer cancel()
 
-		err := flow.Run(ctx, logger)
+		err := flow.Run(ctx)
 		if err != nil {
-			exit(err)
+			slog.Error("terminating", "error", err)
+			os.Exit(1)
 		}
 	},
 }
@@ -177,7 +164,7 @@ func shutdown() {
 			log.Printf("direktiv machine, powering off")
 
 			if err := exec.Command("/sbin/poweroff").Run(); err != nil {
-				fmt.Println("error shutting down:", err)
+				slog.Error("error shutting down", "error", err)
 			}
 		}
 	}

@@ -158,23 +158,23 @@ states:
 		expect(instances.body.instances.results.length).not.toBeLessThan(1)
 	})
 
-	it(`check if instance logs are present`, async () => {
-		const instances = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/instances`)
-		// create a new array containing the ids
-		const ids = instances.body.instances.results.map(result => result.id)
+	// it(`check if instance logs are present`, async () => {
+	// 	const instances = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/instances`)
+	// 	// create a new array containing the ids
+	// 	const ids = instances.body.instances.results.map(result => result.id)
 
-		// iterate over that array
-		await Promise.all(ids.map(async id => {
-			const logsResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/instances/${ id }/logs`)
-			expect(logsResponse.statusCode).toEqual(200)
-			expect(logsResponse.body.results.length).not.toBeLessThan(1)
-		}))
-	})
+	// 	// iterate over that array
+	// 	await Promise.all(ids.map(async id => {
+	// 		const logsResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/instances/${ id }/logs`)
+	// 		expect(logsResponse.statusCode).toEqual(200)
+	// 		expect(logsResponse.body.results.length).not.toBeLessThan(1)
+	// 	}))
+	// })
 
-	// TODO: Enable this test after new logging system merge.
-	it.skip(`check if namespace logs contains some workflow operations`, async () => {
-		const logsResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/logs`)
-		expect(logsResponse.statusCode).toEqual(200)
-		expect(logsResponse.body.results.length).not.toBeLessThan(1)
-	})
+	// // TODO: Enable this test after new logging system merge.
+	// it.skip(`check if namespace logs contains some workflow operations`, async () => {
+	// 	const logsResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/logs`)
+	// 	expect(logsResponse.statusCode).toEqual(200)
+	// 	expect(logsResponse.body.results.length).not.toBeLessThan(1)
+	// })
 })

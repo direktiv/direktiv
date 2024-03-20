@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"os"
 	"path"
@@ -34,7 +35,7 @@ func (worker *inboundWorker) Cancel() {
 	worker.lock.Lock()
 
 	if worker.cancel != nil {
-		log.Debugf("Cancelling worker %d.", worker.id)
+		slog.Debug("Cancelling worker.", "worker_id", worker.id)
 		worker.cancel()
 	}
 
@@ -42,7 +43,7 @@ func (worker *inboundWorker) Cancel() {
 }
 
 func (worker *inboundWorker) run() {
-	log.Debugf("Starting worker %d.", worker.id)
+	slog.Debug("Starting worker", "worker_id", worker.id)
 
 	for {
 		worker.lock.Lock()
@@ -61,12 +62,12 @@ func (worker *inboundWorker) run() {
 		worker.lock.Unlock()
 
 		id := req.r.Header.Get(actionIDHeader)
-		log.Debugf("Worker %d picked up request '%s'.", worker.id, id)
+		slog.Debug("Worker picked up request.", "worker_id", worker.id, "action_id", id)
 
 		worker.handleFunctionRequest(req)
 	}
 
-	log.Debugf("Worker %d shut down.", worker.id)
+	slog.Debug("Worker shut down.", "worker_id", worker.id)
 }
 
 func (worker *inboundWorker) fileReader(ctx context.Context, ir *functionRequest, f *functionFiles, pw *io.PipeWriter) error {
@@ -85,7 +86,7 @@ type outcome struct {
 }
 
 func (worker *inboundWorker) doFunctionRequest(ctx context.Context, ir *functionRequest) (*outcome, error) {
-	log.Debugf("Forwarding request '%s' to service.", ir.actionId)
+	slog.Debug("Forwarding request to service.", "action_id", ir.actionId)
 
 	url := "http://localhost:8080"
 
@@ -387,7 +388,7 @@ func (worker *inboundWorker) cleanupFunctionRequest(ir *functionRequest) {
 	dir := worker.functionDir(ir)
 	err := os.RemoveAll(dir)
 	if err != nil {
-		log.Error(err)
+		slog.Error("cleanup function", "error", err)
 	}
 }
 
@@ -617,16 +618,16 @@ func (worker *inboundWorker) respondToFlow(ctx context.Context, ir *functionRequ
 		ErrorMessage: out.errMsg,
 	})
 	if err != nil {
-		log.Errorf("Failed to report results for request '%s': %v.", ir.actionId, err)
+		slog.Error("Failed to report results for request.", "action_id", ir.actionId, "error", err)
 		return
 	}
 
 	if out.errCode != "" {
-		log.Errorf("Request '%s' failed with catchable error '%s': %s.", ir.actionId, out.errCode, out.errMsg)
+		slog.Error("Request failed with catchable", "action_id", ir.actionId, "action_err_code", out.errCode, "error", out.errMsg)
 	} else if out.errMsg != "" {
-		log.Errorf("Request '%s' failed with uncatchable service error: %s.", ir.actionId, out.errMsg)
+		slog.Error("Request failed with uncatchable service error.", "action_id", ir.actionId, "error", out.errMsg)
 	} else {
-		log.Infof("Request '%s' completed successfully.", ir.actionId)
+		slog.Info("Request completed successfully.", "action_id", ir.actionId)
 	}
 }
 
@@ -645,7 +646,7 @@ func (worker *inboundWorker) reportValidationError(req *inboundRequest, code int
 
 	http.Error(req.w, msg, code)
 
-	log.Warnf("Request '%s' returned %v due to failed validation: %v.", id, code, err)
+	slog.Warn("Request returned due to failed validation.", "action_id", id, "action_err_code", code, "error", err)
 }
 
 func (worker *inboundWorker) getRequiredStringHeader(req *inboundRequest, x *string, hdr string) bool {

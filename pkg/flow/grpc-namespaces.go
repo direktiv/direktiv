@@ -2,6 +2,7 @@ package flow
 
 import (
 	"context"
+	"log/slog"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
@@ -13,7 +14,7 @@ import (
 )
 
 func (flow *flow) ResolveNamespaceUID(ctx context.Context, req *grpc.ResolveNamespaceUIDRequest) (*grpc.NamespaceResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	id, err := uuid.Parse(req.GetId())
 	if err != nil {
@@ -38,7 +39,7 @@ func (flow *flow) ResolveNamespaceUID(ctx context.Context, req *grpc.ResolveName
 }
 
 func (flow *flow) Namespace(ctx context.Context, req *grpc.NamespaceRequest) (*grpc.NamespaceResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
@@ -58,7 +59,7 @@ func (flow *flow) Namespace(ctx context.Context, req *grpc.NamespaceRequest) (*g
 }
 
 func (flow *flow) Namespaces(ctx context.Context, req *grpc.NamespacesRequest) (*grpc.NamespacesResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
@@ -79,7 +80,7 @@ func (flow *flow) Namespaces(ctx context.Context, req *grpc.NamespacesRequest) (
 }
 
 func (flow *flow) NamespacesStream(req *grpc.NamespacesRequest, srv grpc.Flow_NamespacesStreamServer) error {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 	ctx := srv.Context()
 
 	resp, err := flow.Namespaces(ctx, req)
@@ -102,11 +103,11 @@ func (flow *flow) NamespacesStream(req *grpc.NamespacesRequest, srv grpc.Flow_Na
 }
 
 func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespaceRequest) (*grpc.CreateNamespaceResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
-		flow.sugar.Warnf("CreateNamespace failed to begin database transaction: %v", err)
+		slog.Warn("CreateNamespace failed to begin database transaction", "error", err)
 		return nil, err
 	}
 	defer tx.Rollback()
@@ -115,23 +116,22 @@ func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespace
 		Name: req.GetName(),
 	})
 	if err != nil {
-		flow.sugar.Warnf("CreateNamespace failed to create namespace: %v", err)
+		slog.Warn("CreateNamespace failed to create namespace", "error", err)
 		return nil, err
 	}
 
 	_, err = tx.FileStore().CreateRoot(ctx, uuid.New(), ns.Name)
 	if err != nil {
-		flow.sugar.Warnf("CreateNamespace failed to create file-system root: %v", err)
+		slog.Warn("CreateNamespace failed to create file-system root", "error", err)
 		return nil, err
 	}
 
 	if err = tx.Commit(ctx); err != nil {
-		flow.sugar.Warnf("CreateNamespace failed to commit database transaction: %v", err)
+		slog.Warn("CreateNamespace failed to commit database transaction", "error", err)
 		return nil, err
 	}
 
-	flow.sugar.Debugf("Created namespace '%s'.", ns.Name)
-	flow.logger.Debugf(ctx, flow.ID, flow.GetAttributes(), "Created namespace '%s'.", ns.Name)
+	slog.Debug("Created namespace", "namespace", ns.Name)
 	flow.pubsub.NotifyNamespaces()
 
 	var resp grpc.CreateNamespaceResponse
@@ -139,14 +139,14 @@ func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespace
 
 	err = flow.pBus.Publish(pubsub2.NamespaceCreate, ns.Name)
 	if err != nil {
-		flow.sugar.Error("pubsub publish", "error", err)
+		slog.Error("pubsub publish", "error", err)
 	}
 
 	return &resp, nil
 }
 
 func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespaceRequest) (*emptypb.Empty, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 	var resp emptypb.Empty
 
 	tx, err := flow.beginSqlTx(ctx)
@@ -169,7 +169,7 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 		return nil, err
 	}
 
-	flow.logger.Debugf(ctx, flow.ID, flow.GetAttributes(), "Deleted namespace '%s'.", ns.Name)
+	slog.Debug("Deleted namespace.", "namespace", ns.Name)
 	flow.pubsub.NotifyNamespaces()
 	flow.pubsub.CloseNamespace(ns)
 
@@ -178,7 +178,7 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 
 	err = flow.pBus.Publish(pubsub2.NamespaceDelete, ns.Name)
 	if err != nil {
-		flow.sugar.Error("pubsub publish", "error", err)
+		slog.Error("pubsub publish", "error", err)
 	}
 
 	return &resp, err

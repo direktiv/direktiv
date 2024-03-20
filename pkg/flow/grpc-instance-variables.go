@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"io"
+	"log/slog"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
@@ -17,7 +18,7 @@ import (
 )
 
 func (internal *internal) InstanceVariableParcels(req *grpc.VariableInternalRequest, srv grpc.Internal_InstanceVariableParcelsServer) error {
-	internal.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	ctx := srv.Context()
 
@@ -103,7 +104,7 @@ func (srv *setInstanceVariableParcelsTranslator) Recv() (*grpc.SetInstanceVariab
 }
 
 func (internal *internal) SetInstanceVariableParcels(srv grpc.Internal_SetInstanceVariableParcelsServer) error {
-	internal.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	fsrv := &setInstanceVariableParcelsTranslator{
 		internal: internal,
@@ -119,7 +120,7 @@ func (internal *internal) SetInstanceVariableParcels(srv grpc.Internal_SetInstan
 }
 
 func (flow *flow) InstanceVariable(ctx context.Context, req *grpc.InstanceVariableRequest) (*grpc.InstanceVariableResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	inst, err := flow.getInstance(ctx, req.GetNamespace(), req.GetInstance())
 	if err != nil {
@@ -176,7 +177,7 @@ func (flow *flow) InstanceVariable(ctx context.Context, req *grpc.InstanceVariab
 }
 
 func (flow *flow) InstanceVariableParcels(req *grpc.InstanceVariableRequest, srv grpc.Flow_InstanceVariableParcelsServer) error {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	ctx := srv.Context()
 
@@ -197,7 +198,7 @@ func (flow *flow) InstanceVariableParcels(req *grpc.InstanceVariableRequest, srv
 }
 
 func (flow *flow) InstanceVariables(ctx context.Context, req *grpc.InstanceVariablesRequest) (*grpc.InstanceVariablesResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	instance, err := flow.getInstance(ctx, req.GetNamespace(), req.GetInstance())
 	if err != nil {
@@ -227,7 +228,7 @@ func (flow *flow) InstanceVariables(ctx context.Context, req *grpc.InstanceVaria
 }
 
 func (flow *flow) InstanceVariablesStream(req *grpc.InstanceVariablesRequest, srv grpc.Flow_InstanceVariablesStreamServer) error {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 	ctx := srv.Context()
 
 	resp, err := flow.InstanceVariables(ctx, req)
@@ -250,7 +251,7 @@ func (flow *flow) InstanceVariablesStream(req *grpc.InstanceVariablesRequest, sr
 }
 
 func (flow *flow) SetInstanceVariable(ctx context.Context, req *grpc.SetInstanceVariableRequest) (*grpc.SetInstanceVariableResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	inst, err := flow.getInstance(ctx, req.GetNamespace(), req.GetInstance())
 	if err != nil {
@@ -297,7 +298,7 @@ func (flow *flow) SetInstanceVariable(ctx context.Context, req *grpc.SetInstance
 }
 
 func (flow *flow) SetInstanceVariableParcels(srv grpc.Flow_SetInstanceVariableParcelsServer) error {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 	ctx := srv.Context()
 
 	req, err := srv.Recv()

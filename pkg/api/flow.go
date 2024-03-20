@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"net/http/httputil"
 	"strconv"
@@ -24,11 +25,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	prometheus "github.com/prometheus/client_golang/api"
-	"go.uber.org/zap"
 )
 
 type flowHandler struct {
-	logger     *zap.SugaredLogger
 	client     grpc.FlowClient
 	prometheus prometheus.Client
 
@@ -48,32 +47,35 @@ func newSingleHostReverseProxy(patchReq func(req *http.Request) *http.Request) *
 	}
 }
 
-func newFlowHandler(logger *zap.SugaredLogger, base *mux.Router, router *mux.Router, conf *core.Config) (*flowHandler, error) {
+func newFlowHandler(base *mux.Router, router *mux.Router, conf *core.Config) (*flowHandler, error) {
 	flowAddr := fmt.Sprintf("localhost:%d", conf.GrpcPort)
-	logger.Debugf("connecting to flow %s", flowAddr)
+	slog.Debug("connecting to flow", "addr", flowAddr)
 
 	flowConn, err := util.GetEndpointTLS(flowAddr)
 	if err != nil {
-		logger.Errorf("can not connect to direktiv flows: %v", err)
+		slog.Debug("can not connect to direktiv flows: %v", err)
 		return nil, err
 	}
+	slog.Info("connected to flow", "addr", flowAddr)
 
 	h := &flowHandler{
-		logger:       logger,
 		client:       grpc.NewFlowClient(flowConn),
 		apiV2Address: fmt.Sprintf("localhost:%d", conf.ApiV2Port),
 	}
 
 	prometheusAddr := fmt.Sprintf("http://%s", conf.Prometheus)
-	logger.Debugf("connecting to prometheus %s", prometheusAddr)
+	slog.Debug("connecting to prometheus", "addr", prometheusAddr)
 	h.prometheus, err = prometheus.NewClient(prometheus.Config{
 		Address: prometheusAddr,
 	})
 	if err != nil {
 		return nil, err
 	}
+	slog.Info("connected to prometheus", "addr", flowAddr)
+	slog.Debug("initailizing router")
 
 	h.initRoutes(router)
+	slog.Debug("routet initalited")
 
 	proxy := newSingleHostReverseProxy(func(req *http.Request) *http.Request {
 		req.Host = ""
@@ -1593,7 +1595,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 }
 
 func (h *flowHandler) EventListeners(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	p, err := pagination(r)
@@ -1613,7 +1615,7 @@ func (h *flowHandler) EventListeners(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) EventListenersSSE(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 	namespace := mux.Vars(r)["ns"]
 
 	ctx := r.Context()
@@ -1664,7 +1666,7 @@ func (h *flowHandler) EventListenersSSE(w http.ResponseWriter, r *http.Request) 
 }
 
 func (h *flowHandler) EventHistory(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	p, err := pagination(r)
@@ -1684,7 +1686,7 @@ func (h *flowHandler) EventHistory(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) EventHistorySSE(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 	namespace := mux.Vars(r)["ns"]
 
 	ctx := r.Context()
@@ -1735,7 +1737,7 @@ func (h *flowHandler) EventHistorySSE(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) Namespaces(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 
@@ -1754,7 +1756,7 @@ func (h *flowHandler) Namespaces(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) NamespacesSSE(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 
@@ -1805,7 +1807,7 @@ func (h *flowHandler) NamespacesSSE(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) CreateNamespace(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -1842,7 +1844,7 @@ func (h *flowHandler) CreateNamespace(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) UpdateMirror(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -1872,7 +1874,7 @@ func (h *flowHandler) UpdateMirror(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) NamespaceLint(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -1891,7 +1893,7 @@ func (h *flowHandler) NamespaceLint(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) DeleteNamespace(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -1911,7 +1913,7 @@ func (h *flowHandler) DeleteNamespace(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) ServerLogs(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 
@@ -1930,7 +1932,7 @@ func (h *flowHandler) ServerLogs(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) ServerLogsSSE(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 
@@ -1981,7 +1983,7 @@ func (h *flowHandler) ServerLogsSSE(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) NamespaceLogs(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2002,7 +2004,7 @@ func (h *flowHandler) NamespaceLogs(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) NamespaceLogsSSE(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2055,7 +2057,7 @@ func (h *flowHandler) NamespaceLogsSSE(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) WorkflowLogs(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2078,7 +2080,7 @@ func (h *flowHandler) WorkflowLogs(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) WorkflowLogsSSE(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2133,7 +2135,7 @@ func (h *flowHandler) WorkflowLogsSSE(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) InstanceLogs(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2156,7 +2158,7 @@ func (h *flowHandler) InstanceLogs(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) InstanceLogsSSE(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2211,7 +2213,7 @@ func (h *flowHandler) InstanceLogsSSE(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) MirrorActivityLogs(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2234,7 +2236,7 @@ func (h *flowHandler) MirrorActivityLogs(w http.ResponseWriter, r *http.Request)
 }
 
 func (h *flowHandler) MirrorActivityLogsSSE(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2289,8 +2291,8 @@ func (h *flowHandler) MirrorActivityLogsSSE(w http.ResponseWriter, r *http.Reque
 }
 
 func (h *flowHandler) GetNode(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("method: %s\nuri: %s\n", r.Method, r.URL.String())
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("get node", "method", r.Method, "uri", r.URL.String())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2341,7 +2343,7 @@ func (h *flowHandler) GetNode(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) GetNodeSSE(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2462,7 +2464,7 @@ workflow:
 }
 
 func (h *flowHandler) CreateDirectory(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2502,7 +2504,7 @@ func (h *flowHandler) CreateDirectory(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) CreateWorkflow(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2525,7 +2527,7 @@ func (h *flowHandler) CreateWorkflow(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) CreateFile(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2549,7 +2551,7 @@ func (h *flowHandler) CreateFile(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) UpdateWorkflow(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2572,7 +2574,7 @@ func (h *flowHandler) UpdateWorkflow(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) UpdateFile(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2596,7 +2598,7 @@ func (h *flowHandler) UpdateFile(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) LockMirror(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2612,7 +2614,7 @@ func (h *flowHandler) LockMirror(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) UnlockMirror(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2628,7 +2630,7 @@ func (h *flowHandler) UnlockMirror(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) SyncMirror(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2658,7 +2660,7 @@ func (h *flowHandler) SyncMirror(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) RenameNode(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2685,7 +2687,7 @@ func (h *flowHandler) RenameNode(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) DeleteNode(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2704,7 +2706,7 @@ func (h *flowHandler) DeleteNode(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) MirrorInfo(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2727,7 +2729,7 @@ func (h *flowHandler) MirrorInfo(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) MirrorInfoSSE(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2782,7 +2784,7 @@ func (h *flowHandler) MirrorInfoSSE(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) Secrets(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2824,7 +2826,7 @@ func (h *flowHandler) Secrets(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) SecretsSSE(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2879,7 +2881,7 @@ func (h *flowHandler) SecretsSSE(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) SetSecret(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2902,7 +2904,7 @@ func (h *flowHandler) SetSecret(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) OverwriteSecret(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2924,7 +2926,7 @@ func (h *flowHandler) OverwriteSecret(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) DeleteSecret(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2939,7 +2941,7 @@ func (h *flowHandler) DeleteSecret(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) DeleteSecretsFolder(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2954,7 +2956,7 @@ func (h *flowHandler) DeleteSecretsFolder(w http.ResponseWriter, r *http.Request
 }
 
 func (h *flowHandler) CreateSecretsFolder(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2970,7 +2972,7 @@ func (h *flowHandler) CreateSecretsFolder(w http.ResponseWriter, r *http.Request
 }
 
 func (h *flowHandler) Instance(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2986,7 +2988,7 @@ func (h *flowHandler) Instance(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) InstanceSSE(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -3034,7 +3036,7 @@ func (h *flowHandler) InstanceSSE(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) Instances(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -3055,7 +3057,7 @@ func (h *flowHandler) Instances(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) InstancesSSE(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -3108,7 +3110,7 @@ func (h *flowHandler) InstancesSSE(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) InstanceInput(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -3124,7 +3126,7 @@ func (h *flowHandler) InstanceInput(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) InstanceOutput(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -3140,7 +3142,7 @@ func (h *flowHandler) InstanceOutput(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) InstanceMetadata(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -3156,7 +3158,7 @@ func (h *flowHandler) InstanceMetadata(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) InstanceCancel(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -3172,7 +3174,7 @@ func (h *flowHandler) InstanceCancel(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) MirrorActivityCancel(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -3188,7 +3190,7 @@ func (h *flowHandler) MirrorActivityCancel(w http.ResponseWriter, r *http.Reques
 }
 
 func (h *flowHandler) ExecuteWorkflow(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -3211,7 +3213,7 @@ func (h *flowHandler) ExecuteWorkflow(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) WaitWorkflow(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -3261,7 +3263,7 @@ func (h *flowHandler) WaitWorkflow(w http.ResponseWriter, r *http.Request) {
 	defer func() {
 		err := c.CloseSend()
 		if err != nil {
-			h.logger.Errorf("Failed to close connection: %v.", err)
+			slog.Error("Failed to close connection.", "error", err)
 		}
 	}()
 
@@ -3283,7 +3285,7 @@ func (h *flowHandler) WaitWorkflow(w http.ResponseWriter, r *http.Request) {
 
 			err = c.CloseSend()
 			if err != nil {
-				h.logger.Errorf("Failed to close connection: %v.", err)
+				slog.Error("Failed to close connection.", "error", err)
 			}
 
 			field := r.URL.Query().Get("field")
@@ -3344,7 +3346,7 @@ func (h *flowHandler) WaitWorkflow(w http.ResponseWriter, r *http.Request) {
 
 			_, err = io.Copy(w, bytes.NewReader(data))
 			if err != nil {
-				h.logger.Errorf("Failed to send response: %v.", err)
+				slog.Error("Failed to send response.", "error", err)
 			}
 
 			return
@@ -3518,13 +3520,13 @@ func (h *flowHandler) doBroadcast(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) BroadcastCloudevent(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	h.doBroadcast(w, r)
 }
 
 func (h *flowHandler) ReplayEvent(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -3540,7 +3542,7 @@ func (h *flowHandler) ReplayEvent(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) JQ(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 
@@ -3557,7 +3559,7 @@ func (h *flowHandler) JQ(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) NamespaceVariables(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -3578,7 +3580,7 @@ func (h *flowHandler) NamespaceVariables(w http.ResponseWriter, r *http.Request)
 }
 
 func (h *flowHandler) NamespaceVariablesSSE(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -3631,7 +3633,7 @@ func (h *flowHandler) NamespaceVariablesSSE(w http.ResponseWriter, r *http.Reque
 }
 
 func (h *flowHandler) NamespaceVariable(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -3676,7 +3678,7 @@ func (h *flowHandler) NamespaceVariable(w http.ResponseWriter, r *http.Request) 
 }
 
 func (h *flowHandler) SetNamespaceVariable(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -3755,7 +3757,7 @@ func (h *flowHandler) SetNamespaceVariable(w http.ResponseWriter, r *http.Reques
 }
 
 func (h *flowHandler) DeleteNamespaceVariable(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -3771,7 +3773,7 @@ func (h *flowHandler) DeleteNamespaceVariable(w http.ResponseWriter, r *http.Req
 }
 
 func (h *flowHandler) InstanceVariables(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -3794,7 +3796,7 @@ func (h *flowHandler) InstanceVariables(w http.ResponseWriter, r *http.Request) 
 }
 
 func (h *flowHandler) InstanceVariablesSSE(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -3849,7 +3851,7 @@ func (h *flowHandler) InstanceVariablesSSE(w http.ResponseWriter, r *http.Reques
 }
 
 func (h *flowHandler) InstanceVariable(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -3896,7 +3898,7 @@ func (h *flowHandler) InstanceVariable(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) SetInstanceVariable(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -3972,7 +3974,7 @@ func (h *flowHandler) SetInstanceVariable(w http.ResponseWriter, r *http.Request
 }
 
 func (h *flowHandler) DeleteInstanceVariable(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -3990,7 +3992,7 @@ func (h *flowHandler) DeleteInstanceVariable(w http.ResponseWriter, r *http.Requ
 }
 
 func (h *flowHandler) WorkflowVariables(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -4013,7 +4015,7 @@ func (h *flowHandler) WorkflowVariables(w http.ResponseWriter, r *http.Request) 
 }
 
 func (h *flowHandler) WorkflowVariablesSSE(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -4068,7 +4070,7 @@ func (h *flowHandler) WorkflowVariablesSSE(w http.ResponseWriter, r *http.Reques
 }
 
 func (h *flowHandler) WorkflowVariable(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -4115,7 +4117,7 @@ func (h *flowHandler) WorkflowVariable(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) SetWorkflowVariable(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -4191,7 +4193,7 @@ func (h *flowHandler) SetWorkflowVariable(w http.ResponseWriter, r *http.Request
 }
 
 func (h *flowHandler) DeleteWorkflowVariable(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]

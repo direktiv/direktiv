@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"log"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -24,22 +23,29 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/registry"
 	"github.com/direktiv/direktiv/pkg/refactor/service"
 	"github.com/direktiv/direktiv/pkg/util"
-	"go.uber.org/zap"
 )
 
-func NewMain(config *core.Config, db *database.DB, pbus *pubsub.Bus, logger *zap.SugaredLogger, configureWorkflow func(data string) error) *sync.WaitGroup {
+func NewMain(ctx context.Context, config *core.Config, db *database.DB, pbus *pubsub.Bus, configureWorkflow func(data string) error) *sync.WaitGroup {
 	initSLog()
-
+	ctx, cancel := context.WithCancel(ctx)
 	wg := &sync.WaitGroup{}
 
-	go api2.RunApplication(config)
+	go func() {
+		err := api2.RunApplication(ctx, config)
+		if err != nil {
+			slog.Error("API sever", "error", err)
+			cancel()
+		}
+	}()
 
 	done := make(chan struct{})
 
 	// Create service manager
-	serviceManager, err := service.NewManager(config, logger, config.EnableDocker)
+	//nolint
+	serviceManager, err := service.NewManager(config, config.EnableDocker)
 	if err != nil {
-		log.Fatalf("error creating service manager: %v\n", err)
+		slog.Error("error creating service manage", "error", err)
+		cancel()
 	}
 
 	// Setup GetServiceURL function
@@ -52,7 +58,8 @@ func NewMain(config *core.Config, db *database.DB, pbus *pubsub.Bus, logger *zap
 	// Create registry manager
 	registryManager, err := registry.NewManager(config.EnableDocker)
 	if err != nil {
-		log.Fatalf("error creating service manager: %v\n", err)
+		slog.Error("error creating service manage", "error", err)
+		cancel()
 	}
 
 	// Create endpoint manager
@@ -71,7 +78,7 @@ func NewMain(config *core.Config, db *database.DB, pbus *pubsub.Bus, logger *zap
 	}
 
 	pbus.Subscribe(func(_ string) {
-		renderServiceManager(db, serviceManager, logger)
+		renderServiceManager(ctx, db, serviceManager)
 	},
 		pubsub.WorkflowCreate,
 		pubsub.WorkflowUpdate,
@@ -85,12 +92,12 @@ func NewMain(config *core.Config, db *database.DB, pbus *pubsub.Bus, logger *zap
 		pubsub.NamespaceDelete,
 	)
 	// Call at least once before booting
-	renderServiceManager(db, serviceManager, logger)
+	renderServiceManager(ctx, db, serviceManager)
 
 	pbus.Subscribe(func(data string) {
 		err := configureWorkflow(data)
 		if err != nil {
-			logger.Errorw("configure workflow", "error", err)
+			slog.Error("configure workflow", "error", err)
 		}
 	},
 		pubsub.WorkflowCreate,
@@ -118,7 +125,8 @@ func NewMain(config *core.Config, db *database.DB, pbus *pubsub.Bus, logger *zap
 		event := pubsub.FileChangeEvent{}
 		err := json.Unmarshal([]byte(data), &event)
 		if err != nil {
-			panic("unmarshal file change event" + err.Error())
+			slog.Error("unmarshal file change event", "error", err)
+			cancel()
 		}
 		gatewayManager.UpdateNamespace(event.Namespace)
 	},
@@ -139,7 +147,7 @@ func NewMain(config *core.Config, db *database.DB, pbus *pubsub.Bus, logger *zap
 	pbus.Subscribe(func(ns string) {
 		err := registryManager.DeleteNamespace(ns)
 		if err != nil {
-			logger.Errorw("deleting registry namespace", "error", err)
+			slog.Error("deleting registry namespace", "error", err)
 		}
 	},
 		pubsub.NamespaceDelete,
@@ -147,6 +155,7 @@ func NewMain(config *core.Config, db *database.DB, pbus *pubsub.Bus, logger *zap
 
 	// Start api v2 server
 	wg.Add(1)
+	//nolint
 	api.Start(app, db, "0.0.0.0:6667", done, wg)
 
 	go func() {
@@ -182,14 +191,14 @@ func initSLog() {
 	slog.SetDefault(slogger)
 }
 
-func renderServiceManager(db *database.DB, serviceManager core.ServiceManager, logger *zap.SugaredLogger) {
-	logger = logger.With("subscriber", "services file watcher")
+func renderServiceManager(ctx context.Context, db *database.DB, serviceManager core.ServiceManager) {
+	slog := slog.With("subscriber", "services file watcher")
 
 	fStore, dStore := db.FileStore(), db.DataStore()
 
-	nsList, err := dStore.Namespaces().GetAll(context.Background())
+	nsList, err := dStore.Namespaces().GetAll(ctx)
 	if err != nil {
-		logger.Error("listing namespaces", "error", err)
+		slog.Error("listing namespaces", "error", err)
 
 		return
 	}
@@ -197,10 +206,10 @@ func renderServiceManager(db *database.DB, serviceManager core.ServiceManager, l
 	funConfigList := []*core.ServiceFileData{}
 
 	for _, ns := range nsList {
-		logger = logger.With("ns", ns.Name)
-		files, err := fStore.ForNamespace(ns.Name).ListDirektivFilesWithData(context.Background())
+		slog = slog.With("namespace", ns.Name)
+		files, err := fStore.ForNamespace(ns.Name).ListDirektivFilesWithData(ctx)
 		if err != nil {
-			logger.Error("listing direktiv files", "error", err)
+			slog.Error("listing direktiv files", "error", err)
 
 			continue
 		}
@@ -208,7 +217,7 @@ func renderServiceManager(db *database.DB, serviceManager core.ServiceManager, l
 			if file.Typ == filestore.FileTypeService {
 				serviceDef, err := core.ParseServiceFile(file.Data)
 				if err != nil {
-					logger.Error("parse service file", "error", err)
+					slog.Error("parse service file", "error", err)
 
 					continue
 				}
@@ -223,7 +232,7 @@ func renderServiceManager(db *database.DB, serviceManager core.ServiceManager, l
 			} else if file.Typ == filestore.FileTypeWorkflow {
 				sub, err := getWorkflowFunctionDefinitionsFromWorkflow(ns, file)
 				if err != nil {
-					logger.Error("parse workflow def", "error", err)
+					slog.Error("parse workflow def", "error", err)
 
 					continue
 				}

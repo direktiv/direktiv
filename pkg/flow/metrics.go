@@ -3,6 +3,7 @@ package flow
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -159,7 +160,7 @@ func setupPrometheusEndpoint() error {
 // WorkflowMetrics - Gets the Workflow metrics of a given Workflow Revision Ref
 // if ref is not set in the request, it will be automatically be set to latest.
 func (flow *flow) WorkflowMetrics(ctx context.Context, req *grpc.WorkflowMetricsRequest) (*grpc.WorkflowMetricsResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
@@ -298,7 +299,7 @@ func (engine *engine) metricsCompleteState(im *instanceMemory, nextState, errCod
 
 	err := engine.metrics.InsertRecord(args)
 	if err != nil {
-		engine.sugar.Error(err)
+		slog.Error("metrics", "error", err)
 	}
 }
 

@@ -3,12 +3,12 @@ package sql
 import (
 	"database/sql"
 	"fmt"
+	"log/slog"
 	"strings"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"github.com/lib/pq"
-	"go.uber.org/zap"
 )
 
 const globalPostgresChannel = "direktiv_pubsub_events"
@@ -63,13 +63,13 @@ func (p *postgresBus) Publish(channel string, data string) error {
 	return nil
 }
 
-func (p *postgresBus) Loop(done <-chan struct{}, logger *zap.SugaredLogger, handler func(channel string, data string)) {
+func (p *postgresBus) Loop(done <-chan struct{}, handler func(channel string, data string)) {
 	for {
 		select {
 		case msg := <-p.listener.Notify:
 			channel, data, err := splitNotificationText(msg.Extra)
 			if err != nil {
-				logger.Error("parsing notify message", "msg", msg.Extra, "err", err)
+				slog.Error("parsing notify message", "msg", msg.Extra, "err", err)
 			} else {
 				handler(channel, data)
 			}

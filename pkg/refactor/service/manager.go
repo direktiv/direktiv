@@ -3,6 +3,7 @@ package service
 import (
 	"fmt"
 	"io"
+	"log/slog"
 	"slices"
 	"sort"
 	"sync"
@@ -11,7 +12,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/reconcile"
 	dClient "github.com/docker/docker/client"
-	"go.uber.org/zap"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"knative.dev/serving/pkg/client/clientset/versioned"
@@ -28,15 +28,14 @@ type manager struct {
 	// the underlying service runtime used to create/schedule the services.
 	runtimeClient runtimeClient
 
-	logger *zap.SugaredLogger
-	lock   *sync.Mutex
+	lock *sync.Mutex
 
 	servicesListHasBeenSet bool // NOTE: set to true the first time SetServices is called, and used to prevent any reconciles before that has happened.
 }
 
-func NewManager(c *core.Config, logger *zap.SugaredLogger, enableDocker bool) (core.ServiceManager, error) {
-	logger = logger.With("module", "service manager")
+func NewManager(c *core.Config, enableDocker bool) (core.ServiceManager, error) {
 	if enableDocker {
+		slog.Debug("creating docker client")
 		cli, err := dClient.NewClientWithOpts(dClient.FromEnv, dClient.WithAPIVersionNegotiation())
 		if err != nil {
 			return nil, fmt.Errorf("creating docker client: %w", err)
@@ -55,15 +54,15 @@ func NewManager(c *core.Config, logger *zap.SugaredLogger, enableDocker bool) (c
 			list:          make([]*core.ServiceFileData, 0),
 			runtimeClient: client,
 
-			logger: logger,
-			lock:   &sync.Mutex{},
+			lock: &sync.Mutex{},
 		}, nil
 	}
+	slog.Debug("creating knative manger")
 
-	return newKnativeManager(c, logger)
+	return newKnativeManager(c)
 }
 
-func newKnativeManager(c *core.Config, logger *zap.SugaredLogger) (*manager, error) {
+func newKnativeManager(c *core.Config) (*manager, error) {
 	config, err := rest.InClusterConfig()
 	if err != nil {
 		return nil, err
@@ -89,8 +88,7 @@ func newKnativeManager(c *core.Config, logger *zap.SugaredLogger) (*manager, err
 		list:          make([]*core.ServiceFileData, 0),
 		runtimeClient: client,
 
-		logger: logger,
-		lock:   &sync.Mutex{},
+		lock: &sync.Mutex{},
 	}, nil
 }
 
@@ -120,7 +118,7 @@ func (m *manager) runCycle() []error {
 		target[i] = v
 	}
 
-	m.logger.Debugw("reconcile", "src", len(src), "target", len(target))
+	slog.Debug("reconcile", "src", len(src), "target", len(target))
 
 	result := reconcile.Calculate(src, target)
 
@@ -171,7 +169,7 @@ func (m *manager) Start(done <-chan struct{}, wg *sync.WaitGroup) {
 			errs := m.runCycle()
 			m.lock.Unlock()
 			for _, err := range errs {
-				m.logger.Errorw("run cycle", "error", err)
+				slog.Error("run cycle", "error", err)
 			}
 
 			time.Sleep(cycleTime)
@@ -315,14 +313,14 @@ func (m *manager) Rebuild(namespace string, serviceID string) error {
 func (m *manager) setServiceDefaults(sv *core.ServiceFileData) {
 	// empty size string defaults to medium
 	if sv.Size == "" {
-		m.logger.Warnw("empty service size, defaulting to medium", "service_file", sv.FilePath)
+		slog.Warn("empty service size, defaulting to medium", "service_file", sv.FilePath, "track", "namespace."+sv.Namespace)
 		sv.Size = "medium"
 	}
 	if sv.Scale > m.cfg.KnativeMaxScale {
-		m.logger.Warnw("service_scale is bigger than allowed max_scale, defaulting to max_scale",
+		slog.Warn("service_scale is bigger than allowed max_scale, defaulting to max_scale",
 			"service_scale", sv.Scale,
 			"max_scale", m.cfg.KnativeMaxScale,
-			"service_file", sv.FilePath)
+			"service_file", sv.FilePath, "track", "namespace."+sv.Namespace)
 		sv.Scale = m.cfg.KnativeMaxScale
 	}
 	if len(sv.Envs) == 0 {

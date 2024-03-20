@@ -17,9 +17,7 @@ import (
 	"time"
 
 	"github.com/caarlos0/env/v10"
-	"github.com/direktiv/direktiv/pkg/dlog"
 	"github.com/direktiv/direktiv/pkg/flow/database"
-	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/metrics"
 	"github.com/direktiv/direktiv/pkg/refactor/cmd"
@@ -32,14 +30,12 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/filestore/filestoresql"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore/instancestoresql"
-	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	pubsub2 "github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	pubsubSQL "github.com/direktiv/direktiv/pkg/refactor/pubsub/sql"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
-	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 	libgrpc "google.golang.org/grpc"
 	"gorm.io/driver/postgres"
@@ -54,9 +50,7 @@ const (
 type server struct {
 	ID uuid.UUID
 
-	sugar    *zap.SugaredLogger
-	fnLogger *zap.SugaredLogger
-	conf     *core.Config
+	conf *core.Config
 
 	// db       *ent.Client
 	pubsub *pubsub.Pubsub
@@ -78,11 +72,10 @@ type server struct {
 	events   *events
 
 	metrics *metrics.Client
-	logger  logengine.BetterLogger
 }
 
-func Run(ctx context.Context, logger *zap.SugaredLogger) error {
-	srv, err := newServer(logger)
+func Run(ctx context.Context) error {
+	srv, err := newServer()
 	if err != nil {
 		return err
 	}
@@ -105,70 +98,30 @@ func Run(ctx context.Context, logger *zap.SugaredLogger) error {
 	return nil
 }
 
-func newServer(logger *zap.SugaredLogger) (*server, error) {
-	var err error
-
+func newServer() (*server, error) {
 	srv := new(server)
 	srv.ID = uuid.New()
-
-	srv.sugar = logger
-
-	srv.fnLogger, err = dlog.FunctionsLogger()
-	if err != nil {
-		return nil, err
-	}
 
 	srv.initJQ()
 
 	return srv, nil
 }
 
-type mirrorProcessLogger struct {
-	sugar  *zap.SugaredLogger
-	logger logengine.BetterLogger
-}
+type mirrorProcessLogger struct{}
 
 func (log *mirrorProcessLogger) Debug(pid uuid.UUID, msg string, kv ...interface{}) {
-	log.sugar.Debugw(msg, kv...)
-	tags := map[string]string{
-		"recipientType": "mirror",
-		"mirror-id":     pid.String(),
-	}
-	msg += strings.Repeat(", %s = %v", len(kv)/2)
-	log.logger.Debugf(context.Background(), pid, tags, msg, kv...)
 	slog.Debug(fmt.Sprintf(msg, kv...), "activity", pid, "track", "activity."+pid.String())
 }
 
 func (log *mirrorProcessLogger) Info(pid uuid.UUID, msg string, kv ...interface{}) {
-	log.sugar.Infow(msg, kv...)
-	tags := map[string]string{
-		"recipientType": "mirror",
-		"mirror-id":     pid.String(),
-	}
-	msg += strings.Repeat(", %s = %v", len(kv)/2)
-	log.logger.Infof(context.Background(), pid, tags, msg, kv...)
 	slog.Info(fmt.Sprintf(msg, kv...), "activity", pid, "track", "activity."+pid.String())
 }
 
 func (log *mirrorProcessLogger) Warn(pid uuid.UUID, msg string, kv ...interface{}) {
-	log.sugar.Warnw(msg, kv...)
-	tags := map[string]string{
-		"recipientType": "mirror",
-		"mirror-id":     pid.String(),
-	}
-	msg += strings.Repeat(", %s = %v", len(kv)/2)
-	log.logger.Warnf(context.Background(), pid, tags, msg, kv...)
 	slog.Warn(fmt.Sprintf(msg, kv...), "activity", pid, "track", "activity"+"."+pid.String())
 }
 
 func (log *mirrorProcessLogger) Error(pid uuid.UUID, msg string, kv ...interface{}) {
-	log.sugar.Errorw(msg, kv...)
-	tags := map[string]string{
-		"recipientType": "mirror",
-		"mirror-id":     pid.String(),
-	}
-	msg += strings.Repeat(", %s = %v", len(kv)/2)
-	log.logger.Errorf(context.Background(), pid, tags, msg, kv...)
 	slog.Error(fmt.Sprintf(msg, kv...), "activity", pid, "track", "activity"+"."+pid.String())
 }
 
@@ -211,26 +164,25 @@ var _ mirror.Callbacks = &mirrorCallbacks{}
 
 func (srv *server) start(ctx context.Context) error {
 	var err error
-
-	// nolint:errcheck
-	defer srv.sugar.Sync()
-	srv.sugar.Info("Initializing telemetry.")
+	slog.Debug("Starting Flow server")
+	slog.Debug("Initializing telemetry.")
 	telend, err := util.InitTelemetry(srv.conf.OpenTelemetry, "direktiv/flow", "direktiv")
 	if err != nil {
 		return err
 	}
 	defer telend()
+	slog.Info("Telemetry initialized successfully.")
 
 	go func() {
 		err := setupPrometheusEndpoint()
 		if err != nil {
-			srv.sugar.Errorf("Failed to set up Prometheus endpoint: %v.", err)
+			slog.Error("Failed to set up Prometheus endpoint", "error", err)
 		}
 	}()
 
 	db := srv.conf.DB
 
-	srv.sugar.Info("Initializing database.")
+	slog.Debug("Initializing database.")
 	gormConf := &gorm.Config{
 		Logger: logger.New(
 			log.New(os.Stdout, "\r\n", log.LstdFlags),
@@ -242,7 +194,7 @@ func (srv *server) start(ctx context.Context) error {
 	}
 
 	for i := 0; i < 10; i++ {
-		srv.sugar.Info("Connecting to database...")
+		slog.Debug("Connecting to database...")
 
 		srv.gormDB, err = gorm.Open(postgres.New(postgres.Config{
 			DSN:                  db,
@@ -250,6 +202,7 @@ func (srv *server) start(ctx context.Context) error {
 			// Conn:                 edb.DB(),
 		}), gormConf)
 		if err == nil {
+			slog.Debug("Successfully connected to the database.")
 			break
 		}
 		time.Sleep(time.Second)
@@ -258,11 +211,13 @@ func (srv *server) start(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("creating gorm db driver, err: %w", err)
 	}
+	slog.Info("Database connection established.")
 
 	res := srv.gormDB.Exec(database2.Schema)
 	if res.Error != nil {
 		return fmt.Errorf("provisioning schema, err: %w", res.Error)
 	}
+	slog.Info("Schema provisioned successfully")
 
 	gdb, err := srv.gormDB.DB()
 	if err != nil {
@@ -270,6 +225,7 @@ func (srv *server) start(ctx context.Context) error {
 	}
 	gdb.SetMaxIdleConns(32)
 	gdb.SetMaxOpenConns(16)
+	slog.Debug("Database connection pool limits set", "maxIdleConns", 32, "maxOpenConns", 16)
 
 	srv.rawDB, err = sql.Open("postgres", db)
 	if err == nil {
@@ -278,29 +234,34 @@ func (srv *server) start(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("creating raw db driver, err: %w", err)
 	}
+	slog.Debug("Successfully connected to database with raw driver")
 
 	// Repeat SecretKey length to 16 chars.
 	srv.conf.SecretKey = srv.conf.SecretKey + "1234567890123456"
 	srv.conf.SecretKey = srv.conf.SecretKey[0:16]
 
-	srv.sugar.Info("Initializing pub-sub.")
+	slog.Debug("Initializing pub-sub.")
 
-	srv.pubsub, err = pubsub.InitPubSub(srv.sugar, srv, db)
+	srv.pubsub, err = pubsub.InitPubSub(srv, db)
 	if err != nil {
 		return err
 	}
 	defer srv.cleanup(srv.pubsub.Close)
-	srv.sugar.Info("Initializing timers.")
+	slog.Info("pub-sub was initialized successfully.")
+
+	slog.Debug("Initializing timers.")
 
 	srv.timers, err = initTimers(srv.pubsub)
 	if err != nil {
 		return err
 	}
 	defer srv.cleanup(srv.timers.Close)
+	slog.Info("timers where initialized successfully.")
 
-	srv.sugar.Info("Initializing metrics.")
+	slog.Debug("Initializing metrics.")
 
 	srv.metrics = metrics.NewClient(srv.gormDB)
+	slog.Info("Metrics Client was created.")
 
 	var lock sync.Mutex
 	var wg sync.WaitGroup
@@ -310,91 +271,59 @@ func (srv *server) start(ctx context.Context) error {
 	cctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	srv.sugar.Info("Initializing pubsub routine.")
+	slog.Debug("Initializing pubsub routine.")
 	coreBus, err := pubsubSQL.NewPostgresCoreBus(srv.rawDB, srv.conf.DB)
 	if err != nil {
 		return fmt.Errorf("creating pubsub core bus, err: %w", err)
 	}
+	slog.Info("pubsub routine was initialized.")
 
-	srv.pBus = pubsub2.NewBus(srv.sugar, coreBus)
+	srv.pBus = pubsub2.NewBus(coreBus)
 	go srv.pBus.Start(cctx.Done(), &wg)
 
-	srv.sugar.Info("Initializing engine.")
+	slog.Debug("Initializing engine.")
 
 	srv.engine, err = initEngine(srv)
 	if err != nil {
 		return err
 	}
 	defer srv.cleanup(srv.engine.Close)
+	slog.Info("engine was started.")
 
-	srv.sugar.Info("Initializing internal grpc server.")
+	slog.Debug("Initializing internal grpc server.")
 
 	srv.internal, err = initInternalServer(cctx, srv)
 	if err != nil {
 		return err
 	}
-
-	srv.sugar.Info("Initializing flow grpc server.")
+	slog.Info("Internal grpc server started.")
 
 	srv.flow, err = initFlowServer(cctx, srv)
 	if err != nil {
 		return err
 	}
 
-	srv.sugar.Info("Initializing mirror manager.")
+	slog.Debug("Initializing mirror manager.")
 	noTx := &sqlTx{
 		res:       srv.gormDB,
 		secretKey: srv.conf.SecretKey,
 	}
-	dbLogger, logworker, closelogworker := logengine.NewCachedLogger(1024,
-		noTx.DataStore().Logs().Append,
-		func(objectID uuid.UUID, objectType string) {
-			srv.pubsub.NotifyLogs(objectID, recipient.RecipientType(objectType))
-		},
-		srv.sugar.Errorf,
-	)
+	slog.Debug("mirror manager was started.")
 
-	addTrace := func(ctx context.Context, toTags map[string]string) map[string]string {
-		span := trace.SpanFromContext(ctx)
-		tid := span.SpanContext().TraceID()
-		toTags["trace"] = tid.String()
-		return toTags
-	}
-
-	var sugarBetterLogger logengine.BetterLogger
-	sugarBetterLogger = logengine.SugarBetterJSONLogger{
-		Sugar:        srv.sugar.Named("userLogger"),
-		AddTraceFrom: addTrace,
-	}
-	if os.Getenv(util.DirektivLogFormat) != "json" {
-		sugarBetterLogger = logengine.SugarBetterConsoleLogger{
-			Sugar:        srv.sugar.Named("userLogger"),
-			AddTraceFrom: addTrace,
-			RetainTags:   []string{"caller", "Caller"}, // if set to nil all tags will be retained
-		}
-	}
-	srv.logger = logengine.ChainedBetterLogger{
-		sugarBetterLogger,
-		dbLogger,
-	}
-
-	go func() {
-		logworker()
-	}()
-
-	srv.sugar.Info("Initializing events.")
+	slog.Debug("Initializing events.")
 	srv.events, err = initEvents(srv, noTx.DataStore().StagingEvents().Append)
 	if err != nil {
 		return err
 	}
 	defer srv.cleanup(srv.events.Close)
 
-	srv.sugar.Info("Initializing EventWorkers.")
+	slog.Debug("Initializing EventWorkers.")
 
 	interval := 1 * time.Second // TODO: Adjust the polling interval
-	eventWorker := eventsstore.NewEventWorker(noTx.DataStore().StagingEvents(), interval, srv.sugar.Named("eventworker"), srv.events.handleEvent)
+	eventWorker := eventsstore.NewEventWorker(noTx.DataStore().StagingEvents(), interval, srv.events.handleEvent)
 
 	go eventWorker.Start(ctx)
+	slog.Info("Events-engine was started.")
 
 	cc := func(ctx context.Context, nsID uuid.UUID, nsName string, file *filestore.File) error {
 		err = srv.flow.configureWorkflowStarts(ctx, noTx, nsID, file)
@@ -404,8 +333,7 @@ func (srv *server) start(ctx context.Context) error {
 
 		err = srv.flow.placeholdSecrets(ctx, noTx, nsName, file)
 		if err != nil {
-			srv.sugar.Debugf("Error setting up placeholder secrets: %v", err)
-			srv.flow.logger.Errorf(ctx, nsID, nil, "Error setting up placeholder secrets: %v", err)
+			slog.Debug("Error setting up placeholder secrets", "error", err, "track", "namespace."+nsName, "namespace", nsName, "file", file.Path)
 		}
 
 		return nil
@@ -414,19 +342,17 @@ func (srv *server) start(ctx context.Context) error {
 	srv.mirrorManager = mirror.NewManager(
 		&mirrorCallbacks{
 			logger: &mirrorProcessLogger{
-				sugar:  srv.sugar,
-				logger: srv.logger,
+				// logger: srv.logger,
 			},
-			syslogger: srv.sugar,
-			store:     noTx.DataStore().Mirror(),
-			fstore:    noTx.FileStore(),
-			varstore:  noTx.DataStore().RuntimeVariables(),
-			wfconf:    cc,
+			store:    noTx.DataStore().Mirror(),
+			fstore:   noTx.FileStore(),
+			varstore: noTx.DataStore().RuntimeVariables(),
+			wfconf:   cc,
 		},
 	)
 
 	if srv.conf.EnableEventing {
-		srv.sugar.Info("Initializing knative eventing receiver.")
+		slog.Debug("Initializing knative eventing receiver.")
 		rcv, err := newEventReceiver(srv.events, srv.flow)
 		if err != nil {
 			return err
@@ -445,7 +371,7 @@ func (srv *server) start(ctx context.Context) error {
 		defer cancel()
 		e := srv.internal.Run()
 		if e != nil {
-			srv.sugar.Error(err)
+			slog.Error("srv.internal.Run()", "error", err)
 			lock.Lock()
 			if err == nil {
 				err = e
@@ -459,7 +385,7 @@ func (srv *server) start(ctx context.Context) error {
 		defer cancel()
 		e := srv.flow.Run()
 		if e != nil {
-			srv.sugar.Error(err)
+			slog.Error("srv.flow.Run()", "error", err)
 			lock.Lock()
 			if err == nil {
 				err = e
@@ -475,11 +401,12 @@ func (srv *server) start(ctx context.Context) error {
 		event := pubsub2.FileChangeEvent{}
 		err := json.Unmarshal([]byte(data), &event)
 		if err != nil {
+			slog.Error("critical! unmarshal file change event error", "error", err)
 			panic("unmarshal file change event")
 		}
 		// If this is a delete workflow file
 		if event.DeleteFileID.String() != (uuid.UUID{}).String() {
-			return srv.flow.events.deleteWorkflowEventListeners(context.Background(), event.NamespaceID, event.DeleteFileID)
+			return srv.flow.events.deleteWorkflowEventListeners(ctx, event.NamespaceID, event.DeleteFileID)
 		}
 		file, err := noTx.FileStore().ForNamespace(event.Namespace).GetFile(ctx, event.FilePath)
 		if err != nil {
@@ -493,9 +420,9 @@ func (srv *server) start(ctx context.Context) error {
 		return srv.flow.placeholdSecrets(ctx, noTx, event.Namespace, file)
 	}
 
-	newMainWG := cmd.NewMain(srv.conf, dbManager, srv.pBus, srv.sugar, configureWorkflow)
+	newMainWG := cmd.NewMain(ctx, srv.conf, dbManager, srv.pBus, configureWorkflow)
 
-	srv.sugar.Info("Flow server started.")
+	slog.Info("Flow server started.")
 
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
@@ -509,8 +436,6 @@ func (srv *server) start(ctx context.Context) error {
 
 	newMainWG.Wait()
 
-	closelogworker()
-
 	if err != nil {
 		return err
 	}
@@ -521,7 +446,7 @@ func (srv *server) start(ctx context.Context) error {
 func (srv *server) cleanup(closer func() error) {
 	err := closer()
 	if err != nil {
-		srv.sugar.Error(err)
+		slog.Error("server cleanup", "error", err)
 	}
 }
 
@@ -539,7 +464,7 @@ func (srv *server) NotifyCluster(msg string) error {
 	perr := new(pq.Error)
 
 	if errors.As(err, &perr) {
-		srv.sugar.Errorf("db notification failed: %v", perr)
+		slog.Error("db notification failed", "error", perr)
 		if perr.Code == "57014" {
 			return fmt.Errorf("canceled query")
 		}
@@ -603,7 +528,6 @@ func (srv *server) registerFunctions() {
 	srv.pubsub.RegisterFunction(pubsub.PubsubCancelWorkflowFunction, srv.engine.finishCancelWorkflow)
 	srv.pubsub.RegisterFunction(pubsub.PubsubCancelMirrorProcessFunction, srv.engine.finishCancelMirrorProcess)
 	srv.pubsub.RegisterFunction(pubsub.PubsubConfigureRouterFunction, srv.flow.configureRouterHandler)
-	srv.pubsub.RegisterFunction(pubsub.PubsubUpdateEventDelays, srv.events.updateEventDelaysHandler)
 
 	srv.timers.registerFunction(timeoutFunction, srv.engine.timeoutHandler)
 	srv.timers.registerFunction(wfCron, srv.flow.cronHandler)
@@ -621,24 +545,23 @@ func (srv *server) cronPoller() {
 
 func (srv *server) cronPoll() {
 	ctx := context.Background()
-
 	tx, err := srv.flow.beginSqlTx(ctx)
 	if err != nil {
-		srv.sugar.Error(err)
+		slog.Error("cronPoll executing transaction", "error", err)
 		return
 	}
 	defer tx.Rollback()
 
 	roots, err := tx.FileStore().GetAllRoots(ctx)
 	if err != nil {
-		srv.sugar.Error(err)
+		slog.Error("cronPoll fetching all Roots from db", "error", err)
 		return
 	}
 
 	for _, root := range roots {
 		files, err := tx.FileStore().ForRootID(root.ID).ListAllFiles(ctx)
 		if err != nil {
-			srv.sugar.Error(err)
+			slog.Error("cronPoll fetching RootID from db", "error", err)
 			return
 		}
 
@@ -665,11 +588,11 @@ func (srv *server) cronPollerWorkflow(ctx context.Context, tx *sqlTx, file *file
 	if ms.Cron != "" {
 		err := srv.timers.addCron(file.ID.String(), wfCron, ms.Cron, []byte(file.ID.String()))
 		if err != nil {
-			srv.sugar.Error(err)
+			slog.Error("executing ms.cron", "error", err)
 			return
 		}
 
-		srv.sugar.Debugf("Loaded cron: %s", file.ID.String())
+		slog.Debug("Loaded cron", "file", file.Path)
 	}
 }
 

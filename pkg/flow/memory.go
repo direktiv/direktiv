@@ -30,8 +30,7 @@ type instanceMemory struct {
 	// stores the events to be fired on schedule
 	eventQueue []string
 
-	tags       map[string]string
-	userLogger *slog.Logger
+	tags map[string]string
 
 	instance   *enginerefactor.Instance
 	updateArgs *instancestore.UpdateInstanceDataArgs
@@ -353,18 +352,11 @@ func (engine *engine) freeArtefacts(im *instanceMemory) {
 
 	err := engine.events.deleteInstanceEventListeners(context.Background(), im)
 	if err != nil {
-		engine.sugar.Error(err)
+		slog.Error("storing metadata", "error", err)
 	}
 }
 
 func (engine *engine) freeMemory(ctx context.Context, im *instanceMemory) error {
-	for i := range im.eventQueue {
-		err := engine.events.flushEvent(true)
-		if err != nil {
-			return fmt.Errorf("failed to flush event [%d]: %w", i, err)
-		}
-	}
-
 	im.eventQueue = make([]string, 0)
 
 	err := im.flushUpdates(ctx)
@@ -380,7 +372,7 @@ func (engine *engine) freeMemory(ctx context.Context, im *instanceMemory) error 
 func (engine *engine) forceFreeCriticalMemory(ctx context.Context, im *instanceMemory) {
 	err := im.flushUpdates(ctx)
 	if err != nil {
-		engine.sugar.Errorf("failed to force flush updates during instance crash: %v.", err)
+		slog.Error("failed to force flush updates during instance crash", "error", err)
 	}
 
 	engine.deregisterScheduled(im.ID())

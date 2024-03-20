@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
@@ -108,7 +109,7 @@ func (flow *flow) configureRouterHandler(req *pubsub.PubsubUpdate) {
 
 	err := json.Unmarshal([]byte(req.Key), msg)
 	if err != nil {
-		flow.sugar.Error(err)
+		slog.Error("router", "error", err)
 		return
 	}
 
@@ -119,7 +120,7 @@ func (flow *flow) configureRouterHandler(req *pubsub.PubsubUpdate) {
 	if msg.Cron != "" {
 		err = flow.timers.addCron(msg.ID, wfCron, msg.Cron, []byte(msg.ID))
 		if err != nil {
-			flow.sugar.Error(err)
+			slog.Error("cron", "error", err)
 			return
 		}
 	}
@@ -130,7 +131,7 @@ func (flow *flow) cronHandler(data []byte) {
 
 	id, err := uuid.Parse(string(data))
 	if err != nil {
-		flow.sugar.Error(err)
+		slog.Error("cron", "error", err)
 		return
 	}
 
@@ -139,7 +140,7 @@ func (flow *flow) cronHandler(data []byte) {
 		Isolation: sql.LevelSerializable,
 	})
 	if err != nil {
-		flow.sugar.Error(err)
+		slog.Error("sql", "error", err)
 		return
 	}
 	defer tx.Rollback()
@@ -147,23 +148,23 @@ func (flow *flow) cronHandler(data []byte) {
 	file, err := tx.FileStore().GetFileByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, filestore.ErrNotFound) {
-			flow.sugar.Infof("Cron failed to find workflow. Deleting cron.")
+			slog.Info("Cron failed to find workflow. Deleting cron.")
 			flow.timers.deleteCronForWorkflow(id.String())
 			return
 		}
-		flow.sugar.Error(err)
+		slog.Error("cron getting files", "error", err)
 		return
 	}
 
 	root, err := tx.FileStore().GetRoot(ctx, file.RootID)
 	if err != nil {
-		flow.sugar.Error(err)
+		slog.Error("cron getting files", "error", err)
 		return
 	}
 
 	ns, err := tx.DataStore().Namespaces().GetByName(ctx, root.Namespace)
 	if err != nil {
-		flow.sugar.Error(err)
+		slog.Error("cron getting files", "error", err)
 		return
 	}
 
@@ -172,7 +173,7 @@ func (flow *flow) cronHandler(data []byte) {
 		// already triggered
 		return
 	} else if err != nil {
-		flow.sugar.Error(err)
+		slog.Error("cron getting files", "error", err)
 		return
 	}
 
@@ -199,7 +200,7 @@ func (flow *flow) cronHandler(data []byte) {
 			return
 		}
 
-		flow.sugar.Errorf("Error returned to gRPC request %s: %v", this(), err)
+		slog.Error("Error returned to gRPC request", "this", this(), "error", err)
 
 		return
 	}

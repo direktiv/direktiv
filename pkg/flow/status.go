@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 
-	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 )
@@ -47,8 +47,7 @@ func (engine *engine) SetInstanceFailed(ctx context.Context, im *instanceMemory,
 	uerr := new(derrors.UncatchableError)
 	cerr := new(derrors.CatchableError)
 	ierr := new(derrors.InternalError)
-	engine.logger.Errorf(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "Workflow %s canceled due to instance %s failed", im.instance.Instance.WorkflowPath, im.GetInstanceID())
-	engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), "Workflow %s canceled due to instance %s failed", im.instance.Instance.WorkflowPath, im.GetInstanceID())
+	slog.Error("Workflow canceled due to failed instance", "path", im.instance.Instance.WorkflowPath, "instance", im.GetInstanceID(), "namespace", im.Namespace()) // TODO
 	if errors.As(err, &uerr) {
 		code = uerr.Code
 		message = uerr.Message
@@ -56,11 +55,11 @@ func (engine *engine) SetInstanceFailed(ctx context.Context, im *instanceMemory,
 		code = cerr.Code
 		message = cerr.Message
 	} else if errors.As(err, &ierr) {
-		engine.sugar.Error(fmt.Errorf("internal error: %w", ierr))
+		slog.Error("instance failing", "error", fmt.Errorf("internal error: %w", ierr), "instance", im.GetInstanceID(), "namespace", im.Namespace())
 		status = instancestore.InstanceStatusCrashed
 		message = "an internal error occurred"
 	} else {
-		engine.sugar.Error(fmt.Errorf("unhandled error: %w", err))
+		slog.Error("instance failing", "error", fmt.Errorf("unhandled error: %w", err), "instance", im.GetInstanceID(), "namespace", im.Namespace())
 		status = instancestore.InstanceStatusCrashed
 		code = ErrCodeInternal
 		message = err.Error()

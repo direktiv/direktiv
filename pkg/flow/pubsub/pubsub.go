@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"os"
 	"sync"
 	"time"
@@ -14,7 +15,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
-	"go.uber.org/zap"
 )
 
 const (
@@ -25,7 +25,6 @@ const (
 	PubsubDeleteActivityTimersFunction = "deleteActivityTimers"
 	PubsubCancelWorkflowFunction       = "cancelWorkflow"
 	PubsubConfigureRouterFunction      = "configureRouter"
-	PubsubUpdateEventDelays            = "updateEventDelays"
 	FlowSync                           = "flowsync"
 	PubsubCancelMirrorProcessFunction  = "cancelMirrorProcess"
 )
@@ -33,7 +32,6 @@ const (
 type Pubsub struct {
 	id       uuid.UUID
 	notifier Notifier
-	Log      *zap.SugaredLogger
 
 	handlers map[string]func(*PubsubUpdate)
 
@@ -71,11 +69,12 @@ type Notifier interface {
 	NotifyHostname(hostname string, msg string) error
 }
 
-func InitPubSub(log *zap.SugaredLogger, notifier Notifier, database string) (*Pubsub, error) {
+func InitPubSub(notifier Notifier, database string) (*Pubsub, error) {
 	reportProblem := func(ev pq.ListenerEventType, err error) {
 		if err != nil {
-			log.Errorf("pubsub error: %v %v\n", ev, err)
+			slog.Error("pubsub", "error", err, "event_type", ev)
 			os.Exit(1)
+			return
 		}
 	}
 
@@ -88,7 +87,6 @@ func InitPubSub(log *zap.SugaredLogger, notifier Notifier, database string) (*Pu
 
 	pubsub := new(Pubsub)
 	pubsub.id = uuid.New()
-	pubsub.Log = log
 	pubsub.buffer = make([]*PubsubUpdate, 1024)
 
 	pubsub.Hostname, err = os.Hostname()
@@ -111,7 +109,7 @@ func InitPubSub(log *zap.SugaredLogger, notifier Notifier, database string) (*Pu
 			err := pubsub.Close()
 			if err != nil {
 				if !errors.Is(err, os.ErrClosed) {
-					log.Errorf("Error closing pubsub: %v.", err)
+					slog.Error("Error closing pubsub", "error", err)
 				}
 			}
 		}()
@@ -119,7 +117,7 @@ func InitPubSub(log *zap.SugaredLogger, notifier Notifier, database string) (*Pu
 		defer func() {
 			err := l.UnlistenAll()
 			if err != nil {
-				log.Errorf("Error deregistering listeners: %v.", err)
+				slog.Error("Error deregistering listeners", "error", err)
 			}
 		}()
 
@@ -131,7 +129,7 @@ func InitPubSub(log *zap.SugaredLogger, notifier Notifier, database string) (*Pu
 			case <-pubsub.closer:
 			case notification, more = <-l.Notify:
 				if !more {
-					log.Errorf("database listener closed\n")
+					slog.Error("database listener closed")
 					return
 				}
 			}
@@ -143,7 +141,7 @@ func InitPubSub(log *zap.SugaredLogger, notifier Notifier, database string) (*Pu
 			reqs := make([]*PubsubUpdate, 0)
 			err = json.Unmarshal([]byte(notification.Extra), &reqs)
 			if err != nil {
-				log.Errorf("unexpected notification on database listener: %v\n", err)
+				slog.Error("unexpected notification on database listener", "error", err)
 				continue
 			}
 
@@ -158,7 +156,7 @@ func InitPubSub(log *zap.SugaredLogger, notifier Notifier, database string) (*Pu
 
 				handler, exists := pubsub.handlers[req.Handler]
 				if !exists {
-					log.Errorf("unexpected notification type on database listener: %v\n", err)
+					slog.Error("unexpected notification type on database listener", "error", err)
 					continue
 				}
 
@@ -304,7 +302,7 @@ func (pubsub *Pubsub) flush() {
 
 		handler, exists := pubsub.handlers[req.Handler]
 		if !exists {
-			pubsub.Log.Errorf("unexpected notification type on database listener: %v\n", req.Handler)
+			slog.Error("unexpected notification type on database listener", "handler", req.Handler)
 		} else {
 			go handler(req)
 		}
@@ -320,7 +318,7 @@ func (pubsub *Pubsub) flush() {
 		}
 
 		if err != nil {
-			pubsub.Log.Errorf("pubsub error: %v\n", err)
+			slog.Error("pubsub error", "error", err)
 			os.Exit(1)
 		}
 	}
@@ -337,7 +335,7 @@ func (pubsub *Pubsub) flush() {
 			msg += "]"
 			err := pubsub.notifier.NotifyCluster(msg)
 			if err != nil {
-				pubsub.Log.Errorf("pubsub error: %v\n", err)
+				slog.Error("pubsub", "error", err)
 				os.Exit(1)
 			}
 
@@ -359,7 +357,7 @@ func (pubsub *Pubsub) flush() {
 		msg += "]"
 		err := pubsub.notifier.NotifyCluster(msg)
 		if err != nil {
-			pubsub.Log.Errorf("pubsub error: %v\n", err)
+			slog.Error("pubsub", "error", err)
 			os.Exit(1)
 		}
 	}
@@ -659,12 +657,6 @@ func (pubsub *Pubsub) CancelWorkflow(id, code, message string, soft bool) {
 	pubsub.Publish(&PubsubUpdate{
 		Handler: PubsubCancelWorkflowFunction,
 		Key:     string(data),
-	})
-}
-
-func (pubsub *Pubsub) UpdateEventDelays() {
-	pubsub.Publish(&PubsubUpdate{
-		Handler: PubsubUpdateEventDelays,
 	})
 }
 

@@ -1,21 +1,19 @@
 package api
 
 import (
+	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/middlewares"
 	"github.com/gorilla/mux"
-	"go.uber.org/zap"
 )
-
-var logger *zap.SugaredLogger
 
 // Server struct for API server.
 type Server struct {
-	logger *zap.SugaredLogger
 	router *mux.Router
 	srv    *http.Server
 
@@ -33,16 +31,14 @@ func (s *Server) GetRouter() *mux.Router {
 }
 
 // NewServer return new API server.
-func NewServer(l *zap.SugaredLogger, config *core.Config) (*Server, error) {
-	logger = l
-	logger.Debugf("starting api server")
+func NewServer(ctx context.Context, config *core.Config) (*Server, error) {
+	slog.Debug("starting api server")
 
 	baseRouter := mux.NewRouter()
 	r := baseRouter.PathPrefix("/api").Subrouter()
 
 	s := &Server{
 		config: config,
-		logger: l,
 		router: r,
 		srv: &http.Server{
 			Handler:           baseRouter,
@@ -53,32 +49,33 @@ func NewServer(l *zap.SugaredLogger, config *core.Config) (*Server, error) {
 
 	// cast to gorilla mux type
 	var gorillaMiddlewares []mux.MiddlewareFunc
+	slog.Debug("Adding middlewares")
 	for i := range middlewares.GetMiddlewares() {
 		gorillaMiddlewares = append(gorillaMiddlewares, mux.MiddlewareFunc(middlewares.GetMiddlewares()[i]))
 	}
 	gorillaMiddlewares = append(gorillaMiddlewares, s.logMiddleware)
 
 	r.Use(gorillaMiddlewares...)
-
+	slog.Info("Middlewares where added")
 	var err error
 
-	s.flowHandler, err = newFlowHandler(logger, baseRouter, r, s.config)
+	s.flowHandler, err = newFlowHandler(baseRouter, r, s.config)
 	if err != nil {
-		logger.Error("can not get flow handler: %v", err)
+		slog.Error("can not get flow handler", "error", err)
 		s.telend()
 		return nil, err
 	}
 
-	logger.Debug("adding options routes")
+	slog.Debug("adding options routes")
 	s.prepareHelperRoutes()
-
+	slog.Info("API server started")
 	return s, nil
 }
 
 // Start starts API server.
 func (s *Server) Start() error {
 	defer s.telend()
-	logger.Debugf("start listening")
+	slog.Debug("server starts listening")
 	return s.srv.ListenAndServe()
 }
 

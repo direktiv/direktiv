@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"sync"
 
@@ -11,12 +12,10 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/binding"
 	protocol "github.com/cloudevents/sdk-go/v2/protocol/http"
-	"github.com/direktiv/direktiv/pkg/dlog"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	igrpc "github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/gorilla/mux"
-	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
@@ -28,7 +27,6 @@ type EventingCtxKey string
 const EventingCtxKeySource EventingCtxKey = "source"
 
 type eventReceiver struct {
-	logger *zap.SugaredLogger
 	events *events
 	flow   *flow
 
@@ -39,20 +37,10 @@ type client struct {
 	stream igrpc.Eventing_RequestEventsServer
 }
 
-var publishLogger *zap.SugaredLogger
-
 func newEventReceiver(events *events, flow *flow) (*eventReceiver, error) {
-	logger, err := dlog.ApplicationLogger("eventing")
-	if err != nil {
-		return nil, err
-	}
-
-	publishLogger = logger
-
-	logger.Infof("creating event receiver")
+	slog.Info("creating event receiver")
 
 	return &eventReceiver{
-		logger: logger,
 		events: events,
 		flow:   flow,
 	}, nil
@@ -62,7 +50,7 @@ func (rcv *eventReceiver) sendToNamespace(name string, r *http.Request) error {
 	ctx := r.Context()
 	ctx, end := startIncomingEvent(ctx, "http")
 	defer end()
-	rcv.logger.Debugf("event for namespace %s", name)
+	slog.Debug("event for namespace", "namespace", name)
 
 	m := protocol.NewMessageFromHttpRequest(r)
 	ev, err := binding.ToEvent(ctx, m)
@@ -75,7 +63,7 @@ func (rcv *eventReceiver) sendToNamespace(name string, r *http.Request) error {
 		return err
 	})
 	if err != nil {
-		rcv.logger.Errorf("error getting namespace: %s", err.Error())
+		slog.Error("error getting namespace:", "error", err)
 		return err
 	}
 
@@ -85,7 +73,7 @@ func (rcv *eventReceiver) sendToNamespace(name string, r *http.Request) error {
 }
 
 func (rcv *eventReceiver) NamespaceHandler(w http.ResponseWriter, r *http.Request) {
-	rcv.logger.Debugf("namespace knative event")
+	slog.Debug("namespace knative event")
 
 	ns := mux.Vars(r)["ns"]
 
@@ -108,7 +96,7 @@ func (rcv *eventReceiver) MultiNamespaceHandler(w http.ResponseWriter, r *http.R
 		return err
 	})
 	if err != nil {
-		rcv.logger.Errorf("can not get namespaces: %s", err.Error())
+		slog.Error("can not get namespace", "error", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -116,7 +104,7 @@ func (rcv *eventReceiver) MultiNamespaceHandler(w http.ResponseWriter, r *http.R
 	for i := range nss {
 		err := rcv.sendToNamespace(nss[i].Name, r)
 		if err != nil {
-			rcv.logger.Errorf("error sending event: %s", err.Error())
+			slog.Error("error sending event", "error", err.Error())
 		}
 	}
 }
@@ -130,7 +118,7 @@ func PublishKnativeEvent(ce *cloudevents.Event) {
 
 		b, err := format.Protobuf.Marshal(ce)
 		if err != nil {
-			publishLogger.Errorf("can not marshal cloud event: %v", err)
+			slog.Error("can not marshal cloud event", "error", err)
 			return false
 		}
 
@@ -139,7 +127,7 @@ func PublishKnativeEvent(ce *cloudevents.Event) {
 		}
 
 		if err := c.stream.Send(ce); err != nil {
-			publishLogger.Errorf("can not send event for client %s: %v", id, err)
+			slog.Error("can not send event for client", "id", id, "error", err)
 			errorClients = append(errorClients, id)
 		}
 		return true
@@ -152,7 +140,7 @@ func PublishKnativeEvent(ce *cloudevents.Event) {
 }
 
 func (rcv *eventReceiver) RequestEvents(req *igrpc.EventingRequest, stream igrpc.Eventing_RequestEventsServer) error {
-	rcv.logger.Debugf("client connected: %v", req.GetUuid())
+	slog.Debug("client connected", "client", req.GetUuid())
 
 	knativeClients.Store(req.GetUuid(), client{stream: stream})
 
@@ -160,13 +148,13 @@ func (rcv *eventReceiver) RequestEvents(req *igrpc.EventingRequest, stream igrpc
 
 	<-ctx.Done()
 
-	rcv.logger.Debugf("client %s has disconnected", req.GetUuid())
+	slog.Debug("client %s has disconnected", "client", req.GetUuid())
 	knativeClients.Delete(req.GetUuid())
 	return nil
 }
 
 func (rcv *eventReceiver) startGRPC() {
-	rcv.logger.Debugf("Starting eventing gRPC server.")
+	slog.Debug("Starting eventing gRPC server.")
 
 	var grpcServer *grpc.Server
 
@@ -176,7 +164,7 @@ func (rcv *eventReceiver) startGRPC() {
 			reflection.Register(srv)
 		})
 	if err != nil {
-		rcv.logger.Errorf("Failed to start gRPC server: %v.", err)
+		slog.Error("Failed to start gRPC server", "error", err)
 	}
 }
 
@@ -187,12 +175,12 @@ func (rcv *eventReceiver) Start() {
 
 	go rcv.startGRPC()
 
-	rcv.logger.Debugf("starting event receiver")
+	slog.Debug("starting event receiver")
 
 	err := http.ListenAndServe(":1644", r)
 	if err != nil {
 		if !errors.Is(err, http.ErrServerClosed) {
-			rcv.logger.Errorf("Failed to start HTTP server: %v.", err)
+			slog.Error("Failed to start HTTP server.", "error", err)
 		}
 	}
 }
