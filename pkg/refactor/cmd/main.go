@@ -39,7 +39,7 @@ type NewMainArgs struct {
 	PubSubBus         *pubsub.Bus
 	Logger            *zap.SugaredLogger
 	ConfigureWorkflow func(data string) error
-	Functions         NewMainFunctions
+	InstanceManager   core.InstanceManager
 }
 
 func NewMain(args *NewMainArgs) *sync.WaitGroup {
@@ -50,9 +50,6 @@ func NewMain(args *NewMainArgs) *sync.WaitGroup {
 	go api2.RunApplication(args.Config)
 
 	done := make(chan struct{})
-
-	// Create instance manager
-	instanceManager := core.NewInstanceManager(args.Functions.StartInstance, args.Functions.CancelInstance)
 
 	// Create service manager
 	serviceManager, err := service.NewManager(args.Config, args.Logger, args.Config.EnableDocker)
@@ -82,7 +79,7 @@ func NewMain(args *NewMainArgs) *sync.WaitGroup {
 			UnixTime: time.Now().Unix(),
 		},
 		Config:          args.Config,
-		InstanceManager: instanceManager,
+		InstanceManager: args.InstanceManager,
 		ServiceManager:  serviceManager,
 		RegistryManager: registryManager,
 		GatewayManager:  gatewayManager,
