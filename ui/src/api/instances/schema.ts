@@ -6,7 +6,7 @@ const InstanceSchema = z.object({
   updatedAt: z.string(),
   id: z.string(),
   as: z.string(), // f.e. "some.yaml",
-  status: z.enum(["pending", "failed", "crashed", "complete"]),
+  status: z.enum(["pending", "failed", "cancelled", "crashed", "complete"]),
   errorCode: z.string(),
   errorMessage: z.string(),
   invoker: z.string(), // "api", "cron", "cloudevent", "complete" (if it's created as a subflow from another instance it's something like instance:%v, where %v is the instance ID of its parent
