@@ -111,6 +111,7 @@ type App struct {
 	Version *Version
 	Config  *Config
 
+	InstanceManager InstanceManager
 	ServiceManager  ServiceManager
 	RegistryManager RegistryManager
 	GatewayManager  GatewayManager

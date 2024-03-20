@@ -50,7 +50,7 @@ states:
 
 		const ireq = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/instances/${ instanceID }`)
 		expect(ireq.statusCode).toEqual(200)
-		expect(ireq.body.instance.status).toEqual('failed')
+		expect(ireq.body.instance.status).toEqual('cancelled')
 		expect(ireq.body.instance.errorCode).toEqual('direktiv.cancels.api')
 		expect(ireq.body.instance.errorMessage).toEqual('cancelled by api request')
 	})
@@ -84,7 +84,7 @@ states:
 
 		const ireq = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/instances/${ instanceID }`)
 		expect(ireq.statusCode).toEqual(200)
-		expect(ireq.body.instance.status).toEqual('failed')
+		expect(ireq.body.instance.status).toEqual('cancelled')
 		expect(ireq.body.instance.errorCode).toEqual('direktiv.cancels.api')
 		expect(ireq.body.instance.errorMessage).toEqual('cancelled by api request')
 	})

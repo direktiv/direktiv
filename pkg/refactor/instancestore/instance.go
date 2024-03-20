@@ -27,6 +27,7 @@ const (
 	InstanceStatusComplete
 	InstanceStatusFailed
 	InstanceStatusCrashed
+	InstanceStatusCancelled
 )
 
 var instanceStatusStrings = []string{
@@ -34,6 +35,7 @@ var instanceStatusStrings = []string{
 	util.InstanceStatusComplete,
 	util.InstanceStatusFailed,
 	util.InstanceStatusCrashed,
+	util.InstanceStatusCancelled,
 }
 
 func (status InstanceStatus) String() string {

@@ -47,6 +47,10 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 		db:  db,
 		bus: app.Bus,
 	}
+	instCtr := &instController{
+		db:      db,
+		manager: app.InstanceManager,
+	}
 
 	mw := &appMiddlewares{dStore: db.DataStore()}
 
@@ -94,6 +98,9 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 		r.Group(func(r chi.Router) {
 			r.Use(mw.injectNamespace)
 
+			r.Route("/namespaces/{namespace}/instances", func(r chi.Router) {
+				instCtr.mountRouter(r)
+			})
 			r.Route("/namespaces/{namespace}/mirrors", func(r chi.Router) {
 				mirrorsCtr.mountRouter(r)
 			})

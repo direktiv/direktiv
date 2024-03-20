@@ -20,6 +20,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway"
+	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"github.com/direktiv/direktiv/pkg/refactor/registry"
 	"github.com/direktiv/direktiv/pkg/refactor/service"
@@ -27,51 +28,69 @@ import (
 	"go.uber.org/zap"
 )
 
-func NewMain(config *core.Config, db *database.DB, pbus *pubsub.Bus, logger *zap.SugaredLogger, configureWorkflow func(data string) error) *sync.WaitGroup {
+type NewMainFunctions struct {
+	ConfigureWorkflow func(data string) error
+	StartInstance     func(ctx context.Context, namespace, path string, input []byte) (*instancestore.InstanceData, error)
+	CancelInstance    func(ctx context.Context, namespace, instanceID string) error
+}
+
+type NewMainArgs struct {
+	Config    *core.Config
+	Database  *database.DB
+	PubSubBus *pubsub.Bus
+	Logger    *zap.SugaredLogger
+	Functions NewMainFunctions
+}
+
+func NewMain(args *NewMainArgs) *sync.WaitGroup {
 	initSLog()
 
 	wg := &sync.WaitGroup{}
 
-	go api2.RunApplication(config)
+	go api2.RunApplication(args.Config)
 
 	done := make(chan struct{})
 
+	// Create instance manager
+	instanceManager := core.NewInstanceManager(args.Functions.StartInstance, args.Functions.CancelInstance)
+
 	// Create service manager
-	serviceManager, err := service.NewManager(config, logger, config.EnableDocker)
+	serviceManager, err := service.NewManager(args.Config, args.Logger, args.Config.EnableDocker)
 	if err != nil {
 		log.Fatalf("error creating service manager: %v\n", err)
 	}
 
 	// Setup GetServiceURL function
-	service.SetupGetServiceURLFunc(config, config.EnableDocker)
+	service.SetupGetServiceURLFunc(args.Config, args.Config.EnableDocker)
 
 	// Start service manager
 	wg.Add(1)
 	serviceManager.Start(done, wg)
 
 	// Create registry manager
-	registryManager, err := registry.NewManager(config.EnableDocker)
+	registryManager, err := registry.NewManager(args.Config.EnableDocker)
 	if err != nil {
 		log.Fatalf("error creating service manager: %v\n", err)
 	}
 
 	// Create endpoint manager
-	gatewayManager := gateway.NewGatewayManager(db)
+	gatewayManager := gateway.NewGatewayManager(args.Database)
 
 	// Create App
 	app := core.App{
 		Version: &core.Version{
 			UnixTime: time.Now().Unix(),
 		},
-		Config:          config,
+		Config:          args.Config,
+		InstanceManager: instanceManager,
 		ServiceManager:  serviceManager,
 		RegistryManager: registryManager,
 		GatewayManager:  gatewayManager,
-		Bus:             pbus,
+		Bus:             args.PubSubBus,
 	}
 
-	pbus.Subscribe(func(_ string) {
-		renderServiceManager(db, serviceManager, logger)
+	args.PubSubBus.Subscribe(func(_ string) {
+		renderServiceManager(args.Database, serviceManager, args.Logger)
 	},
 		pubsub.WorkflowCreate,
 		pubsub.WorkflowUpdate,
@@ -85,12 +104,12 @@ func NewMain(config *core.Config, db *database.DB, pbus *pubsub.Bus, logger *zap
 		pubsub.NamespaceDelete,
 	)
 	// Call at least once before booting
-	renderServiceManager(db, serviceManager, logger)
+	renderServiceManager(args.Database, serviceManager, args.Logger)
 
-	pbus.Subscribe(func(data string) {
-		err := configureWorkflow(data)
+	args.PubSubBus.Subscribe(func(data string) {
+		err := args.Functions.ConfigureWorkflow(data)
 		if err != nil {
-			logger.Errorw("configure workflow", "error", err)
+			args.Logger.Errorw("configure workflow", "error", err)
 		}
 	},
 		pubsub.WorkflowCreate,
@@ -100,21 +119,21 @@ func NewMain(config *core.Config, db *database.DB, pbus *pubsub.Bus, logger *zap
 	)
 
 	// endpoint manager
-	pbus.Subscribe(func(ns string) {
+	args.PubSubBus.Subscribe(func(ns string) {
 		gatewayManager.UpdateNamespace(ns)
 	},
 		pubsub.NamespaceCreate,
 		pubsub.MirrorSync,
 	)
 	// endpoint manager deletes routes/consumers on namespace delete
-	pbus.Subscribe(func(ns string) {
+	args.PubSubBus.Subscribe(func(ns string) {
 		gatewayManager.DeleteNamespace(ns)
 	},
 		pubsub.NamespaceDelete,
 	)
 
 	// on sync redo all consumers and routes on sync or single file updates
-	pbus.Subscribe(func(data string) {
+	args.PubSubBus.Subscribe(func(data string) {
 		event := pubsub.FileChangeEvent{}
 		err := json.Unmarshal([]byte(data), &event)
 		if err != nil {
@@ -136,10 +155,10 @@ func NewMain(config *core.Config, db *database.DB, pbus *pubsub.Bus, logger *zap
 	gatewayManager.UpdateAll()
 
 	// TODO: yassir, this subscribe need to be removed when /api/v2/namespace delete endpoint is migrated.
-	pbus.Subscribe(func(ns string) {
+	args.PubSubBus.Subscribe(func(ns string) {
 		err := registryManager.DeleteNamespace(ns)
 		if err != nil {
-			logger.Errorw("deleting registry namespace", "error", err)
+			args.Logger.Errorw("deleting registry namespace", "error", err)
 		}
 	},
 		pubsub.NamespaceDelete,
@@ -147,7 +166,7 @@ func NewMain(config *core.Config, db *database.DB, pbus *pubsub.Bus, logger *zap
 
 	// Start api v2 server
 	wg.Add(1)
-	api.Start(app, db, "0.0.0.0:6667", done, wg)
+	api.Start(app, args.Database, "0.0.0.0:6667", done, wg)
 
 	go func() {
 		// Listen for syscall signals for process to interrupt/quit

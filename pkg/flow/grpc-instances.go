@@ -472,24 +472,22 @@ resend:
 	goto resend
 }
 
-func (flow *flow) StartWorkflow(ctx context.Context, req *grpc.StartWorkflowRequest) (*grpc.StartWorkflowResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
-
+func (engine *engine) StartWorkflow(ctx context.Context, namespace, path string, input []byte) (*instancestore.InstanceData, error) {
 	var err error
 	var ns *database.Namespace
-	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
-		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+
+	err = engine.runSqlTx(ctx, func(tx *sqlTx) error {
+		ns, err = tx.DataStore().Namespaces().GetByName(ctx, namespace)
 		return err
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	calledAs := req.GetPath()
+	calledAs := path
 
 	span := trace.SpanFromContext(ctx)
 
-	input := req.GetInput()
 	if input == nil {
 		input = make([]byte, 0)
 	}
@@ -507,35 +505,46 @@ func (flow *flow) StartWorkflow(ctx context.Context, req *grpc.StartWorkflowRequ
 		},
 	}
 
-	im, err := flow.engine.NewInstance(ctx, args)
+	im, err := engine.NewInstance(ctx, args)
 	if err != nil {
-		flow.sugar.Debugf("Error returned to gRPC request %s: %v", this(), err)
-		flow.logger.Errorf(ctx, flow.ID, flow.GetAttributes(), "Failed starting a Workflow")
 		return nil, err
 	}
 
-	if !req.GetHold() {
-		go flow.engine.start(im)
+	go engine.start(im)
+
+	return im.instance.Instance, nil
+}
+
+func (flow *flow) StartWorkflow(ctx context.Context, req *grpc.StartWorkflowRequest) (*grpc.StartWorkflowResponse, error) {
+	inst, err := flow.engine.StartWorkflow(ctx, req.GetNamespace(), req.GetPath(), req.GetInput())
+	if err != nil {
+		return nil, err
 	}
 
 	var resp grpc.StartWorkflowResponse
 
 	resp.Namespace = req.GetNamespace()
-	resp.Instance = im.ID().String()
+	resp.Instance = inst.ID.String()
 
 	return &resp, nil
 }
 
-func (flow *flow) CancelInstance(ctx context.Context, req *grpc.CancelInstanceRequest) (*emptypb.Empty, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
-
-	instance, err := flow.getInstance(ctx, req.GetNamespace(), req.GetInstance())
+func (engine *engine) CancelInstance(ctx context.Context, namespace, instanceID string) error {
+	instance, err := engine.getInstance(ctx, namespace, instanceID)
 	if err != nil {
-		flow.logger.Errorf(ctx, flow.ID, flow.GetAttributes(), "Failed to resolve instance %s", req.GetInstance())
-		return nil, err
+		return err
 	}
 
-	flow.engine.cancelInstance(instance.Instance.ID.String(), "direktiv.cancels.api", "cancelled by api request", false)
+	engine.cancelInstance(instance.Instance.ID.String(), "direktiv.cancels.api", "cancelled by api request", false)
+
+	return nil
+}
+
+func (flow *flow) CancelInstance(ctx context.Context, req *grpc.CancelInstanceRequest) (*emptypb.Empty, error) {
+	err := flow.engine.CancelInstance(ctx, req.GetNamespace(), req.GetInstance())
+	if err != nil {
+		return nil, err
+	}
 
 	var resp emptypb.Empty
 
