@@ -9,7 +9,10 @@ import (
 	"github.com/spf13/viper"
 )
 
-var UrlPrefix string
+var (
+	UrlPrefix   string
+	UrlPrefixV2 string
+)
 
 func init() {
 	RootCmd.PersistentFlags().StringP("profile", "P", "", "Select the named profile configuration file.")
@@ -42,4 +45,5 @@ func cmdPrepareSharedValues() {
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = GetTLSConfig()
 
 	UrlPrefix = fmt.Sprintf("%s/api/namespaces/%s", strings.Trim(addr, "/"), strings.Trim(namespace, "/"))
+	UrlPrefixV2 = fmt.Sprintf("%s/api/v2/namespaces/%s", strings.Trim(addr, "/"), strings.Trim(namespace, "/"))
 }
