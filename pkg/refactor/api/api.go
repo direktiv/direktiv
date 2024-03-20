@@ -9,6 +9,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
+
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
@@ -22,7 +24,7 @@ const (
 	readHeaderTimeout = 5 * time.Second
 )
 
-func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg *sync.WaitGroup) {
+func Start(app core.App, db *database.DB, instanceManager instancestore.InstanceManager, addr string, done <-chan struct{}, wg *sync.WaitGroup) {
 	funcCtr := &serviceController{
 		manager: app.ServiceManager,
 	}
@@ -49,7 +51,7 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 	}
 	instCtr := &instController{
 		db:      db,
-		manager: app.InstanceManager,
+		manager: instanceManager,
 	}
 
 	mw := &appMiddlewares{dStore: db.DataStore()}
