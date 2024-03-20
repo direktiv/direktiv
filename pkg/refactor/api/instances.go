@@ -513,7 +513,6 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (e *instController) handleWait(ctx context.Context, w http.ResponseWriter, r *http.Request, data *instancestore.InstanceData) {
-
 	var err error
 
 	id := data.ID
@@ -561,8 +560,10 @@ recheck:
 
 		x, exists := m[field]
 		if exists {
+			//nolint:errchkjson
 			raw, _ = json.Marshal(x)
 		} else {
+			//nolint:errchkjson
 			raw, _ = json.Marshal(nil)
 		}
 	}
@@ -614,6 +615,7 @@ func (e *instController) stream(w http.ResponseWriter, r *http.Request) {
 			return // TODO: how are we supposed to report errors in SSE?
 		}
 
+		//nolint:errchkjson
 		raw, _ := json.Marshal(marshalForAPI(data))
 
 		dst := &bytes.Buffer{}
@@ -621,6 +623,7 @@ func (e *instController) stream(w http.ResponseWriter, r *http.Request) {
 
 		_, _ = io.Copy(w, strings.NewReader(fmt.Sprintf("id: %v\nevent: message\ndata: %v\n\n", uuid.New(), dst.String())))
 
+		//nolint:forcetypeassert
 		w.(http.Flusher).Flush()
 
 		select {
