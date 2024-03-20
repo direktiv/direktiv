@@ -458,13 +458,17 @@
             schema:
               type: object
               properties:
-                previousPage:
-                  type: string
-                  format: RFC3339Nano
+                meta:
+                  type: object
                   nullable: true
-                startingFrom:
-                  type: string
-                  format: RFC3339Nano
+                  properties:
+                    previousPage:
+                      type: string
+                      format: RFC3339Nano
+                      nullable: true
+                    startingFrom:
+                      type: string
+                      format: RFC3339Nano
                 data:
                   type: array
                   items: 
@@ -495,6 +499,7 @@
                         properties:
                           status:
                             type: string
+                            enum: ["error", "unknown", "running", "failed", "completed"]
                           state:
                             type: string
                           branch:
@@ -561,7 +566,7 @@
         in: header
         required: false
         schema:
-          type: string
+          type: integer
     responses:
       '200':
         description: OK
