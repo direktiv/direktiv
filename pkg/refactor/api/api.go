@@ -12,7 +12,9 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
+	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/direktiv/direktiv/pkg/refactor/middlewares"
+	pubsub2 "github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"github.com/direktiv/direktiv/pkg/version"
 	"github.com/go-chi/chi/v5"
 )
@@ -22,13 +24,13 @@ const (
 	readHeaderTimeout = 5 * time.Second
 )
 
-func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg *sync.WaitGroup) {
+func Start(app core.App, db *database.DB, bus *pubsub2.Bus, instanceManager *instancestore.InstanceManager, addr string, done <-chan struct{}, wg *sync.WaitGroup) {
 	funcCtr := &serviceController{
 		manager: app.ServiceManager,
 	}
 	fsCtr := &fsController{
 		db:  db,
-		bus: app.Bus,
+		bus: bus,
 	}
 	regCtr := &registryController{
 		manager: app.RegistryManager,
@@ -41,15 +43,15 @@ func Start(app core.App, db *database.DB, addr string, done <-chan struct{}, wg 
 	}
 	nsCtr := &nsController{
 		db:  db,
-		bus: app.Bus,
+		bus: bus,
 	}
 	mirrorsCtr := &mirrorsController{
 		db:  db,
-		bus: app.Bus,
+		bus: bus,
 	}
 	instCtr := &instController{
 		db:      db,
-		manager: app.InstanceManager,
+		manager: instanceManager,
 	}
 
 	mw := &appMiddlewares{dStore: db.DataStore()}

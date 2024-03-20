@@ -28,18 +28,13 @@ import (
 	"go.uber.org/zap"
 )
 
-type NewMainFunctions struct {
-	ConfigureWorkflow func(data string) error
-	StartInstance     func(ctx context.Context, namespace, path string, input []byte) (*instancestore.InstanceData, error)
-	CancelInstance    func(ctx context.Context, namespace, instanceID string) error
-}
-
 type NewMainArgs struct {
-	Config    *core.Config
-	Database  *database.DB
-	PubSubBus *pubsub.Bus
-	Logger    *zap.SugaredLogger
-	Functions NewMainFunctions
+	Config            *core.Config
+	Database          *database.DB
+	PubSubBus         *pubsub.Bus
+	Logger            *zap.SugaredLogger
+	ConfigureWorkflow func(data string) error
+	InstanceManager   *instancestore.InstanceManager
 }
 
 func NewMain(args *NewMainArgs) *sync.WaitGroup {
@@ -50,9 +45,6 @@ func NewMain(args *NewMainArgs) *sync.WaitGroup {
 	go api2.RunApplication(args.Config)
 
 	done := make(chan struct{})
-
-	// Create instance manager
-	instanceManager := core.NewInstanceManager(args.Functions.StartInstance, args.Functions.CancelInstance)
 
 	// Create service manager
 	serviceManager, err := service.NewManager(args.Config, args.Logger, args.Config.EnableDocker)
@@ -82,11 +74,9 @@ func NewMain(args *NewMainArgs) *sync.WaitGroup {
 			UnixTime: time.Now().Unix(),
 		},
 		Config:          args.Config,
-		InstanceManager: instanceManager,
 		ServiceManager:  serviceManager,
 		RegistryManager: registryManager,
 		GatewayManager:  gatewayManager,
-		Bus:             args.PubSubBus,
 	}
 
 	args.PubSubBus.Subscribe(func(_ string) {
@@ -107,7 +97,7 @@ func NewMain(args *NewMainArgs) *sync.WaitGroup {
 	renderServiceManager(args.Database, serviceManager, args.Logger)
 
 	args.PubSubBus.Subscribe(func(data string) {
-		err := args.Functions.ConfigureWorkflow(data)
+		err := args.ConfigureWorkflow(data)
 		if err != nil {
 			args.Logger.Errorw("configure workflow", "error", err)
 		}
@@ -166,7 +156,7 @@ func NewMain(args *NewMainArgs) *sync.WaitGroup {
 
 	// Start api v2 server
 	wg.Add(1)
-	api.Start(app, args.Database, "0.0.0.0:6667", done, wg)
+	api.Start(app, args.Database, args.PubSubBus, args.InstanceManager, "0.0.0.0:6667", done, wg)
 
 	go func() {
 		// Listen for syscall signals for process to interrupt/quit

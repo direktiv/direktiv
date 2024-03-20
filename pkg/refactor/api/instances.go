@@ -13,7 +13,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/gabriel-vasile/mimetype"
@@ -62,7 +61,7 @@ func marshalForAPI(data *instancestore.InstanceData) interface{} {
 
 type instController struct {
 	db      *database.DB
-	manager core.InstanceManager
+	manager *instancestore.InstanceManager
 }
 
 func (e *instController) mountRouter(r chi.Router) {
@@ -178,35 +177,38 @@ func (e *instController) metadata(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, marshalForAPI(data))
 }
 
-func (e *instController) getOnce(r *http.Request) (*instancestore.InstanceData, *Error) {
+func (e *instController) getOnce(r *http.Request, instanceID uuid.UUID) (*instancestore.InstanceData, error) {
 	ctx := r.Context()
 	ns := extractContextNamespace(r)
-	instanceID := chi.URLParam(r, "instanceID")
 
-	id, err := uuid.Parse(instanceID)
+	data, err := e.db.InstanceStore().ForInstanceID(instanceID).GetSummary(ctx)
 	if err != nil {
-		return nil, &Error{
-			Code:    "request_data_invalid",
-			Message: fmt.Errorf("unparsable instance UUID: %w", err).Error(),
-		}
-	}
-
-	data, err := e.db.InstanceStore().ForInstanceID(id).GetSummary(ctx)
-	if err != nil {
-		return nil, translateInstanceStoreError(err)
+		return nil, err
 	}
 
 	if data.Namespace != ns.Name {
-		return nil, translateInstanceStoreError(instancestore.ErrNotFound)
+		return nil, instancestore.ErrNotFound
 	}
 
 	return data, nil
 }
 
 func (e *instController) get(w http.ResponseWriter, r *http.Request) {
-	data, err := e.getOnce(r)
+	instanceID := chi.URLParam(r, "instanceID")
+
+	id, err := uuid.Parse(instanceID)
 	if err != nil {
-		writeError(w, err)
+		writeError(w, &Error{
+			Code:    "request_data_invalid",
+			Message: fmt.Errorf("unparsable instance UUID: %w", err).Error(),
+		})
+
+		return
+	}
+
+	data, err := e.getOnce(r, id)
+	if err != nil {
+		writeInstanceStoreError(w, err)
 
 		return
 	}
@@ -247,7 +249,7 @@ func (e *instController) update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = e.manager.CancelInstance(ctx, ns.Name, instanceID)
+	err = e.manager.Cancel(ctx, ns.Name, instanceID)
 	if err != nil {
 		writeError(w, &Error{
 			Code:    err.Error(),
@@ -493,7 +495,7 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, err := e.manager.StartInstance(ctx, ns.Name, path, input)
+	data, err := e.manager.Start(ctx, ns.Name, path, input)
 	if err != nil {
 		writeError(w, &Error{
 			Code:    err.Error(),
@@ -609,8 +611,20 @@ func (e *instController) stream(w http.ResponseWriter, r *http.Request) {
 
 	// TODO: do we need to deduplicate events?
 
+	instanceID := chi.URLParam(r, "instanceID")
+
+	id, err := uuid.Parse(instanceID)
+	if err != nil {
+		writeError(w, &Error{
+			Code:    "request_data_invalid",
+			Message: fmt.Errorf("unparsable instance UUID: %w", err).Error(),
+		})
+
+		return
+	}
+
 	for {
-		data, err := e.getOnce(r)
+		data, err := e.getOnce(r, id)
 		if err != nil {
 			return // TODO: how are we supposed to report errors in SSE?
 		}
@@ -634,27 +648,24 @@ func (e *instController) stream(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func translateInstanceStoreError(err error) *Error {
+func writeInstanceStoreError(w http.ResponseWriter, err error) {
 	if errors.Is(err, instancestore.ErrNotFound) {
-		return &Error{
+		writeError(w, &Error{
 			Code:    "resource_not_found",
 			Message: err.Error(),
-		}
+		})
+
+		return
 	}
 
 	if errors.Is(err, instancestore.ErrBadListOpts) {
-		return &Error{
+		writeError(w, &Error{
 			Code:    "request_invalid_list_options",
 			Message: err.Error(),
-		}
+		})
+
+		return
 	}
 
-	return &Error{
-		Code:    "internal",
-		Message: "internal server error",
-	}
-}
-
-func writeInstanceStoreError(w http.ResponseWriter, err error) {
-	writeError(w, translateInstanceStoreError(err))
+	writeInternalError(w, err)
 }
