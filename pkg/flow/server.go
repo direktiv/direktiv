@@ -494,14 +494,14 @@ func (srv *server) start(ctx context.Context) error {
 	}
 
 	newMainWG := cmd.NewMain(&cmd.NewMainArgs{
-		Config:    srv.conf,
-		Database:  dbManager,
-		PubSubBus: srv.pBus,
-		Logger:    srv.sugar,
+		Config:            srv.conf,
+		Database:          dbManager,
+		PubSubBus:         srv.pBus,
+		Logger:            srv.sugar,
+		ConfigureWorkflow: configureWorkflow,
 		Functions: cmd.NewMainFunctions{
-			ConfigureWorkflow: configureWorkflow,
-			StartInstance:     srv.engine.StartWorkflow,
-			CancelInstance:    srv.engine.CancelInstance,
+			StartInstance:  srv.engine.StartWorkflow,
+			CancelInstance: srv.engine.CancelInstance,
 		},
 	})
 

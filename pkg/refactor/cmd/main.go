@@ -29,17 +29,17 @@ import (
 )
 
 type NewMainFunctions struct {
-	ConfigureWorkflow func(data string) error
-	StartInstance     func(ctx context.Context, namespace, path string, input []byte) (*instancestore.InstanceData, error)
-	CancelInstance    func(ctx context.Context, namespace, instanceID string) error
+	StartInstance  func(ctx context.Context, namespace, path string, input []byte) (*instancestore.InstanceData, error)
+	CancelInstance func(ctx context.Context, namespace, instanceID string) error
 }
 
 type NewMainArgs struct {
-	Config    *core.Config
-	Database  *database.DB
-	PubSubBus *pubsub.Bus
-	Logger    *zap.SugaredLogger
-	Functions NewMainFunctions
+	Config            *core.Config
+	Database          *database.DB
+	PubSubBus         *pubsub.Bus
+	Logger            *zap.SugaredLogger
+	ConfigureWorkflow func(data string) error
+	Functions         NewMainFunctions
 }
 
 func NewMain(args *NewMainArgs) *sync.WaitGroup {
@@ -107,7 +107,7 @@ func NewMain(args *NewMainArgs) *sync.WaitGroup {
 	renderServiceManager(args.Database, serviceManager, args.Logger)
 
 	args.PubSubBus.Subscribe(func(data string) {
-		err := args.Functions.ConfigureWorkflow(data)
+		err := args.ConfigureWorkflow(data)
 		if err != nil {
 			args.Logger.Errorw("configure workflow", "error", err)
 		}
