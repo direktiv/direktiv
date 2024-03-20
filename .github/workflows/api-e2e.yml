@@ -33,6 +33,7 @@ jobs:
           - services
           - variables
           - variables2
+          - instances
 
     steps:
       - uses: actions/checkout@v4
