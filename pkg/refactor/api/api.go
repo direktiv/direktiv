@@ -9,14 +9,12 @@ import (
 	"sync"
 	"time"
 
-	pubsub2 "github.com/direktiv/direktiv/pkg/refactor/pubsub"
-
-	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
-
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
+	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/direktiv/direktiv/pkg/refactor/middlewares"
+	pubsub2 "github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"github.com/direktiv/direktiv/pkg/version"
 	"github.com/go-chi/chi/v5"
 )

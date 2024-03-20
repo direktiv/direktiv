@@ -247,8 +247,10 @@ type Store interface {
 	AssertNoParallelCron(ctx context.Context, wfPath string) error
 }
 
-type InstanceCanceller func(ctx context.Context, namespace, instanceID string) error
-type InstanceStarter func(ctx context.Context, namespace, path string, input []byte) (*InstanceData, error)
+type (
+	InstanceCanceller func(ctx context.Context, namespace, instanceID string) error
+	InstanceStarter   func(ctx context.Context, namespace, path string, input []byte) (*InstanceData, error)
+)
 
 type InstanceManager struct {
 	Cancel InstanceCanceller
