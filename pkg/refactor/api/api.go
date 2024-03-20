@@ -26,7 +26,7 @@ const (
 	readHeaderTimeout = 5 * time.Second
 )
 
-func Start(app core.App, db *database.DB, bus *pubsub2.Bus, instanceManager instancestore.InstanceManager, addr string, done <-chan struct{}, wg *sync.WaitGroup) {
+func Start(app core.App, db *database.DB, bus *pubsub2.Bus, instanceManager *instancestore.InstanceManager, addr string, done <-chan struct{}, wg *sync.WaitGroup) {
 	funcCtr := &serviceController{
 		manager: app.ServiceManager,
 	}

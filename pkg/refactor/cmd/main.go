@@ -34,7 +34,7 @@ type NewMainArgs struct {
 	PubSubBus         *pubsub.Bus
 	Logger            *zap.SugaredLogger
 	ConfigureWorkflow func(data string) error
-	InstanceManager   instancestore.InstanceManager
+	InstanceManager   *instancestore.InstanceManager
 }
 
 func NewMain(args *NewMainArgs) *sync.WaitGroup {

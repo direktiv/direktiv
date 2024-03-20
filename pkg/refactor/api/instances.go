@@ -61,7 +61,7 @@ func marshalForAPI(data *instancestore.InstanceData) interface{} {
 
 type instController struct {
 	db      *database.DB
-	manager instancestore.InstanceManager
+	manager *instancestore.InstanceManager
 }
 
 func (e *instController) mountRouter(r chi.Router) {
@@ -246,7 +246,7 @@ func (e *instController) update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = e.manager.CancelInstance(ctx, ns.Name, instanceID)
+	err = e.manager.Cancel(ctx, ns.Name, instanceID)
 	if err != nil {
 		writeError(w, &Error{
 			Code:    err.Error(),
@@ -492,7 +492,7 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, err := e.manager.StartInstance(ctx, ns.Name, path, input)
+	data, err := e.manager.Start(ctx, ns.Name, path, input)
 	if err != nil {
 		writeError(w, &Error{
 			Code:    err.Error(),
