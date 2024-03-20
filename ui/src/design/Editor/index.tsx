@@ -76,8 +76,8 @@ const Editor: FC<
             // options reference: https://microsoft.github.io/monaco-editor/typedoc/interfaces/editor.IEditorOptions.html
             scrollBeyondLastLine: false,
             cursorBlinking: "smooth",
-            wordWrap: true,
-            fontSize: "13px",
+            wordWrap: "on",
+            fontSize: 13,
             minimap: {
               enabled: false,
             },
