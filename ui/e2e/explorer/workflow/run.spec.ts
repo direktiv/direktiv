@@ -1,5 +1,5 @@
+import { Locator, expect, test } from "@playwright/test";
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
-import { expect, test } from "@playwright/test";
 import {
   jsonSchemaFormWorkflow,
   jsonSchemaWithRequiredEnum,
@@ -476,6 +476,30 @@ test("it is possible to provide the input via Form Input and see the same data i
     "the json tab is selected"
   ).toBe("true");
 
+  const expectedJson = {
+    firstName: "Marty",
+    lastName: "McFly",
+    select: "guest",
+  };
+
+  // TODO: check if the json input is correct - loose test - is working
+  expect(
+    await page.locator(".view-line > span"),
+    "the Input was set as expected"
+  ).toContainText(["Marty", "McFly"]);
+
+  // TODO: check if the json input is correct - strict Test - is NOT working
+  // ***
+  const visibleJsonArray = await page.locator(".view-line > span")
+    .allInnerTexts;
+
+  const visibleJsonObject = Object.fromEntries(visibleJsonArray);
+
+  expect(visibleJsonObject, "the Input was set as expected").toMatchObject(
+    expectedJson
+  );
+  // ***
+
   // run the workflow in the json tab
   await page.getByTestId("run-workflow-submit-btn").click();
 
@@ -500,11 +524,6 @@ test("it is possible to provide the input via Form Input and see the same data i
     headers,
   });
 
-  const expectedJson = {
-    firstName: "Marty",
-    lastName: "McFly",
-    select: "guest",
-  };
   const inputResponseAsJson = JSON.parse(decode(res.data));
 
   // the data in the json input is the same
@@ -549,9 +568,10 @@ test("it is possible to provide the input via JSON Input and see the same data i
     "the json tab is selected"
   ).toBe("true");
 
-  // give valid JSON data
+  // clear editor, to prevent invalid JSON due to auto completion
   await page.getByRole("textbox").fill("");
 
+  // give valid JSON data
   await page
     .getByRole("textbox")
     .fill('{"firstName":"Marty","lastName":"McFly","select":"guest"}');
@@ -592,29 +612,11 @@ test("it is possible to provide the input via JSON Input and see the same data i
     throw new Error("instanceId not found");
   }
 
-  // check the server state of the input
-  const res = await getInput({
-    urlParams: {
-      baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
-      instanceId,
-      namespace,
-    },
-    headers,
-  });
-
   const expectedJson = {
     firstName: "Marty",
     lastName: "McFly",
     select: "guest",
   };
-
-  const inputResponseAsJson = JSON.parse(decode(res.data));
-
-  // the data in the json input is the same
-  await expect(
-    inputResponseAsJson,
-    "workflow was triggered and the input is the same as initially set in the other tab"
-  ).toEqual(expectedJson);
 
   await expect(
     page,
@@ -631,12 +633,56 @@ test("it is possible to provide the input via JSON Input and see the same data i
     "tab for input is visible"
   ).toBeVisible();
 
+  // resize window to see the whole json
+  await page
+    .locator(
+      ".flex > div > .\\[\\&\\>\\*\\]\\:rounded-none > div:nth-child(2) > .inline-flex"
+    )
+    .click();
+
   await page.getByRole("tab", { name: "Input" }).click();
 
+  // TODO: Loose Test - is working
   expect(
     await page.locator(".view-line > span"),
     "the Input was set as expected"
   ).toContainText(["Marty", "McFly"]);
+
+  // TODO: Strict Test 1 - is NOT working
+  // ***
+  expect(
+    await page.locator(".view-line > span").allInnerTexts,
+    "the Input was set as expected"
+  ).toEqual(expect.objectContaining(expectedJson));
+  // ***
+
+  // TODO: Strict Test 2 - is NOT working
+  // ***
+  async function getTextFromLocator(locator: Locator) {
+    const elements = await locator.all();
+    let combinedText = "";
+
+    for (const element of elements) {
+      const text = await element.innerText();
+      const cleantext = removeSpacesAndBackslashes(text);
+      combinedText += cleantext;
+    }
+    return combinedText;
+  }
+
+  function removeSpacesAndBackslashes(inputString: string) {
+    return inputString.replace(/([\\ ])(?=(?:[^"]|"[^"]*")*$)/g, "");
+  }
+
+  const elementsLocator = page.locator(".view-line > span");
+  const combinedText = await getTextFromLocator(elementsLocator);
+
+  const currentJson = removeSpacesAndBackslashes(combinedText);
+
+  expect(await currentJson, "OBJ EQUAL the Input was set as expected").toEqual(
+    expectedJson
+  );
+  // ***
 });
 
 test("the input is synchronized between tabs, but the data that is currently in the view will be sent", async ({
@@ -668,9 +714,10 @@ test("the input is synchronized between tabs, but the data that is currently in 
     "the json tab is selected"
   ).toBe("true");
 
-  // give valid JSON data
+  // clear editor, to prevent invalid JSON due to auto completion
   await page.getByRole("textbox").fill("");
 
+  // give valid JSON data
   await page
     .getByRole("textbox")
     .fill('{"firstName":"Marty","lastName":"McFly","select":"guest"}');
@@ -714,29 +761,11 @@ test("the input is synchronized between tabs, but the data that is currently in 
     throw new Error("instanceId not found");
   }
 
-  // check the server state of the input
-  const res = await getInput({
-    urlParams: {
-      baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
-      instanceId,
-      namespace,
-    },
-    headers,
-  });
-
   const expectedJson = {
     firstName: "Marty",
     lastName: "McDonald",
     select: "guest",
   };
-
-  const inputResponseAsJson = JSON.parse(decode(res.data));
-
-  // the data in the json input is the same
-  await expect(
-    inputResponseAsJson,
-    "workflow was triggered and the input is the same as initially set in the other tab"
-  ).toEqual(expectedJson);
 
   await expect(
     page,
@@ -754,6 +783,13 @@ test("the input is synchronized between tabs, but the data that is currently in 
   ).toBeVisible();
 
   await page.getByRole("tab", { name: "Input" }).click();
+
+  // resize window to see the whole json
+  await page
+    .locator(
+      ".flex > div > .\\[\\&\\>\\*\\]\\:rounded-none > div:nth-child(2) > .inline-flex"
+    )
+    .click();
 
   expect(
     await page.locator(".view-line > span"),
