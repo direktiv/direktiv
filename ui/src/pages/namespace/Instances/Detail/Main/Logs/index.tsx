@@ -42,7 +42,7 @@ const LogsPanel = () => {
 
   const isPending = instanceDetailsData?.instance.status === "pending";
 
-  const numberOfLogs = logLines.length;
+  const numberOfLogLines = logLines.length;
 
   const copyValue =
     logLines.map(getInstanceLogEntryForClipboard).join("\n") ?? "";
@@ -125,7 +125,7 @@ const LogsPanel = () => {
             <span className="relative inline-flex h-3 w-3 rounded-full bg-gray-11 dark:bg-gray-dark-11"></span>
           </span>
         )}
-        {t("components.logs.logsCount", { count: numberOfLogs })}
+        {t("components.logs.logsCount", { count: numberOfLogLines })}
       </div>
     </>
   );
