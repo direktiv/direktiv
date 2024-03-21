@@ -1,21 +1,29 @@
-import { FiltersObj } from "./query/get";
-
 export const logKeys = {
   detail: (
     namespace: string,
     {
       apiKey,
-      instanceId,
-      filters,
-    }: { apiKey?: string; instanceId: string; filters: FiltersObj }
+      instance,
+      route,
+      activity,
+      trace,
+    }: {
+      apiKey?: string;
+      instance?: string;
+      route?: string;
+      activity?: string;
+      trace?: string;
+    }
   ) =>
     [
       {
-        scope: "log-detail",
+        scope: "logs",
         apiKey,
         namespace,
-        instanceId,
-        filters,
+        instance,
+        route,
+        activity,
+        trace,
       },
     ] as const,
 };
