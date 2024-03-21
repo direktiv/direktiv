@@ -34,7 +34,11 @@ export const LogList = forwardRef<LogRef, LogsContainerProps>(
     const { t } = useTranslation();
 
     return (
-      <Logs className="h-full overflow-scroll" ref={ref} {...props}>
+      <Logs
+        className="h-full overflow-scroll overflow-x-hidden"
+        ref={ref}
+        {...props}
+      >
         <div
           className="relative w-full"
           style={{
