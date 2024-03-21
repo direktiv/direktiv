@@ -49,14 +49,14 @@ func newSingleHostReverseProxy(patchReq func(req *http.Request) *http.Request) *
 
 func newFlowHandler(base *mux.Router, router *mux.Router, conf *core.Config) (*flowHandler, error) {
 	flowAddr := fmt.Sprintf("localhost:%d", conf.GrpcPort)
-	slog.Debug("connecting to flow", "addr", flowAddr)
+	slog.Debug("Connecting to Direktiv flows.", "addr", flowAddr)
 
 	flowConn, err := util.GetEndpointTLS(flowAddr)
 	if err != nil {
-		slog.Debug("can not connect to direktiv flows: %v", err)
+		slog.Error("Failed to connect to Direktiv flows.", "addr", flowAddr, "error", err)
 		return nil, err
 	}
-	slog.Info("connected to flow", "addr", flowAddr)
+	slog.Info("Connected to Direktiv flows.", "addr", flowAddr)
 
 	h := &flowHandler{
 		client:       grpc.NewFlowClient(flowConn),
@@ -64,39 +64,36 @@ func newFlowHandler(base *mux.Router, router *mux.Router, conf *core.Config) (*f
 	}
 
 	prometheusAddr := fmt.Sprintf("http://%s", conf.Prometheus)
-	slog.Debug("connecting to prometheus", "addr", prometheusAddr)
-	h.prometheus, err = prometheus.NewClient(prometheus.Config{
-		Address: prometheusAddr,
-	})
+	slog.Debug("Connecting to Prometheus.", "addr", prometheusAddr)
+	h.prometheus, err = prometheus.NewClient(prometheus.Config{Address: prometheusAddr})
 	if err != nil {
+		slog.Error("Failed to connect to Prometheus.", "addr", prometheusAddr, "error", err)
 		return nil, err
 	}
-	slog.Info("connected to prometheus", "addr", flowAddr)
-	slog.Debug("initailizing router")
+	slog.Info("Connected to Prometheus.", "addr", prometheusAddr)
 
+	slog.Debug("Initializing API routes on the router.")
 	h.initRoutes(router)
-	slog.Debug("router initailized")
+	slog.Debug("API routes have been successfully added to the router.")
 
+	slog.Debug("Setting up reverse proxy handlers for API and namespace endpoints.")
+	setupReverseProxyHandlers(base, router, h.apiV2Address)
+
+	return h, nil
+}
+
+func setupReverseProxyHandlers(base *mux.Router, router *mux.Router, apiV2Address string) {
 	proxy := newSingleHostReverseProxy(func(req *http.Request) *http.Request {
 		req.Host = ""
-		req.URL.Host = h.apiV2Address
+		req.URL.Host = apiV2Address
 		req.URL.Scheme = "http"
 
 		return req
 	})
-	router.PathPrefix("/v2").Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		proxy.ServeHTTP(w, r)
-	}))
 
-	base.PathPrefix("/gw").Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		proxy.ServeHTTP(w, r)
-	}))
-
-	base.PathPrefix("/ns").Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		proxy.ServeHTTP(w, r)
-	}))
-
-	return h, nil
+	router.PathPrefix("/v2").Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { proxy.ServeHTTP(w, r) }))
+	base.PathPrefix("/gw").Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { proxy.ServeHTTP(w, r) }))
+	base.PathPrefix("/ns").Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { proxy.ServeHTTP(w, r) }))
 }
 
 func (h *flowHandler) initRoutes(r *mux.Router) {

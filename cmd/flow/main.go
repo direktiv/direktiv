@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log"
 	"log/slog"
 	"os"
 	"os/exec"
@@ -115,7 +114,7 @@ func print(x interface{}) {
 func exit(err error) {
 	desc := status.Convert(err)
 
-	slog.Error("terminating", "status", desc)
+	slog.Error("Terminating flow (main)", "status", desc, "error", err)
 
 	os.Exit(1)
 }
@@ -133,34 +132,41 @@ var serverCmd = &cobra.Command{
 		// TODO: yassir: need to be cleaned.
 		defer func() {
 			if r := recover(); r != nil {
-				slog.Info("Recovered in run", "run", r, "stack_trace", string(debug.Stack()))
+				slog.Error("Unexpected server crash", "reason", r, "stack_trace", string(debug.Stack()))
 				panic(r)
 			}
 		}()
 		defer shutdown()
 
 		serverCtx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
-		defer cancel()
-
+		defer func() {
+			cancel()
+			slog.Info("Graceful shutdown initiated.")
+			shutdown()
+		}()
+		slog.Info("Server starting.")
 		err := flow.Run(serverCtx)
 		if err != nil {
-			slog.Error("terminating", "error", err)
+			slog.Error("Server termination due to error", "error", err)
 			os.Exit(1)
 		}
 	},
 }
 
 func shutdown() {
-	// just in case, stop DNS server
+	// Attempt to read the system version to identify if running on a Direktiv machine.
 	pv, err := os.ReadFile("/proc/version")
-	if err == nil {
-		// this is a direktiv machine, so we press poweroff
-		if strings.Contains(string(pv), "#direktiv") {
-			log.Printf("direktiv machine, powering off")
+	if err != nil {
+		slog.Debug("Unable to read /proc/version for shutdown determination.", "error", err)
+		return
+	}
 
-			if err := exec.Command("/sbin/poweroff").Run(); err != nil {
-				slog.Error("error shutting down", "error", err)
-			}
+	// Check if running on a Direktiv machine to safely initiate system poweroff.
+	if strings.Contains(string(pv), "#direktiv") {
+		slog.Info("Detected Direktiv machine, initiating poweroff.")
+		if err := exec.Command("/sbin/poweroff").Run(); err != nil {
+			slog.Error("Failed to execute poweroff command.", "error", err)
+			// TODO: now what?
 		}
 	}
 }

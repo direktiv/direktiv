@@ -32,7 +32,7 @@ func (s *Server) GetRouter() *mux.Router {
 
 // NewServer return new API server.
 func NewServer(ctx context.Context, config *core.Config) (*Server, error) {
-	slog.Debug("starting api server")
+	slog.Debug("Initializing API V1 Server.", "port", config.ApiV1Port)
 
 	baseRouter := mux.NewRouter()
 	r := baseRouter.PathPrefix("/api").Subrouter()
@@ -49,26 +49,28 @@ func NewServer(ctx context.Context, config *core.Config) (*Server, error) {
 
 	// cast to gorilla mux type
 	var gorillaMiddlewares []mux.MiddlewareFunc
-	slog.Debug("Adding middlewares")
+	slog.Debug("Configuring middlewares for the server.")
 	for i := range middlewares.GetMiddlewares() {
 		gorillaMiddlewares = append(gorillaMiddlewares, mux.MiddlewareFunc(middlewares.GetMiddlewares()[i]))
 	}
 	gorillaMiddlewares = append(gorillaMiddlewares, s.logMiddleware)
 
 	r.Use(gorillaMiddlewares...)
-	slog.Info("Middlewares where added")
+	slog.Info("Middlewares configured successfully.")
 	var err error
 
 	s.flowHandler, err = newFlowHandler(baseRouter, r, s.config)
 	if err != nil {
-		slog.Error("can not get flow handler", "error", err)
+		slog.Error("Failed to initialize flow handler.", "error", err)
 		s.telend()
 		return nil, err
 	}
 
-	slog.Debug("adding options routes")
+	slog.Debug("Configuring helper routes for the server.")
 	s.prepareHelperRoutes()
-	slog.Info("API server started")
+	slog.Debug("Added helper routes for the server.")
+
+	slog.Debug("Configuring helper routes for the server.")
 	return s, nil
 }
 

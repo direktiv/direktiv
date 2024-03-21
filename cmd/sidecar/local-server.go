@@ -183,7 +183,7 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 		Iterator:   int32(req.iterator),
 	})
 	if err != nil {
-		slog.Error("Failed to forward log to Flow.", "error", err)
+		slog.Error("Failed to forward log to Flow.", "action_id", actionId, "error", err)
 	}
 
 	slog.Debug("Log handler successfully processed message.", "action_id", actionId)
@@ -198,7 +198,7 @@ func (srv *LocalServer) varHandler(w http.ResponseWriter, r *http.Request) {
 
 	reportError := func(code int, err error) {
 		http.Error(w, err.Error(), code)
-		slog.Warn("Var handler returned", "action_id", actionId, "action_err_code", code, "error", err)
+		slog.Warn("Variable retrieval failed.", "action_id", actionId, "error", err)
 	}
 
 	if !ok {
@@ -233,24 +233,29 @@ func (srv *LocalServer) varHandler(w http.ResponseWriter, r *http.Request) {
 		err := srv.getVar(ctx, ir, w, setTotalSize, scope, key)
 		if err != nil {
 			reportError(http.StatusInternalServerError, err)
+			slog.Warn("Failed retrieving a Variable.", "action_id", actionId, "key", key, "scope", scope)
+
 			return
 		}
 
-		slog.Debug("Var handler retrieved", "action_id", actionId, "key", key, "scope", scope)
+		slog.Debug("Variable successfully retrieved.", "action_id", actionId, "key", key, "scope", scope)
 
 	case http.MethodPost:
 
 		err := srv.setVar(ctx, ir, r.ContentLength, r.Body, scope, key, vMimeType)
 		if err != nil {
 			reportError(http.StatusInternalServerError, err)
+			slog.Warn("Failed to set a Variable.", "action_id", actionId, "key", key, "scope", scope)
+
 			return
 		}
 
-		slog.Debug("Var handler stored", "action_id", actionId, "key", key, "scope", scope)
+		slog.Debug("Variable successfully stored.", "action_id", actionId, "key", key, "scope", scope, "mime_type", vMimeType)
 
 	default:
 		code := http.StatusMethodNotAllowed
 		reportError(code, errors.New(http.StatusText(code)))
+		slog.Warn("Unsupported HTTP method for var handler.", "action_id", actionId, "method", r.Method)
 
 		return
 	}
@@ -358,7 +363,7 @@ func (srv *LocalServer) run() {
 
 	err := srv.server.ListenAndServe()
 	if err != nil && !errors.Is(err, http.ErrServerClosed) {
-		slog.Error("Error running localhost server", "error", err)
+		slog.Error("Error running local server", "error", err)
 		Shutdown(ERROR)
 
 		return

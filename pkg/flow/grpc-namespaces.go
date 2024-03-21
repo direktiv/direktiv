@@ -107,7 +107,7 @@ func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespace
 
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
-		slog.Warn("CreateNamespace failed to begin database transaction", "error", err)
+		slog.Warn("Creating a Namespace failed to begin database transaction", "error", err)
 		return nil, err
 	}
 	defer tx.Rollback()
@@ -116,18 +116,18 @@ func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespace
 		Name: req.GetName(),
 	})
 	if err != nil {
-		slog.Warn("CreateNamespace failed to create namespace", "error", err)
+		slog.Warn("Creating a Namespace failed to create namespace", "error", err)
 		return nil, err
 	}
 
 	_, err = tx.FileStore().CreateRoot(ctx, uuid.New(), ns.Name)
 	if err != nil {
-		slog.Warn("CreateNamespace failed to create file-system root", "error", err)
+		slog.Warn("Creating a Namespace failed to create file-system root", "error", err)
 		return nil, err
 	}
 
 	if err = tx.Commit(ctx); err != nil {
-		slog.Warn("CreateNamespace failed to commit database transaction", "error", err)
+		slog.Warn("Creating a Namespace failed to commit database transaction", "error", err)
 		return nil, err
 	}
 

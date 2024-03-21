@@ -63,21 +63,28 @@ func (engine *engine) instanceKicker() {
 func (engine *engine) kickWaitingInstances() {
 	ctx := context.Background()
 
+	slog.Debug("Starting to kick waiting (homeless) instances.")
 	tx, err := engine.beginSqlTx(ctx)
 	if err != nil {
-		slog.Error("kickWaitingInstances failed to open transaction", "error", err.Error())
+		slog.Error("Failed to begin SQL transaction in kickWaitingInstances.", "error", err)
 		return
 	}
 	defer tx.Rollback()
 
 	instances, err := tx.InstanceStore().GetHomelessInstances(ctx, time.Now().UTC().Add(-engineSchedulingTimeout))
 	if err != nil {
-		slog.Error("kickWaitingInstances failed to list homeless instances", "error", err.Error())
+		slog.Error("Failed to list homeless instances in kickWaitingInstances. Some instances may remain unprocessed.", "error", err)
 		return
 	}
+	if len(instances) == 0 {
+		slog.Debug("No homeless instances found to kick.")
+		return
+	}
+	slog.Info("Processing homeless instances.", "count", len(instances))
 
 	for idx := range instances {
 		instance := instances[idx]
+		slog.Debug("Kicking instance.", "instance_id", instance.ID)
 
 		data, err := json.Marshal(&instanceMessageChannelData{
 			InstanceID:        instance.ID,
@@ -85,7 +92,7 @@ func (engine *engine) kickWaitingInstances() {
 			LastKnownUpdateAt: instance.UpdatedAt,
 		})
 		if err != nil {
-			slog.Error("kickWaitingInstances failed to marshal data", "error", err.Error())
+			slog.Error("Failed to marshal instance data in kickWaitingInstances.", "instance", instance.ID, "error", err)
 		}
 
 		engine.instanceMessagesChannelHandler(string(data))
@@ -142,13 +149,15 @@ func trim(s string) string {
 }
 
 func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*instanceMemory, error) {
+	slog.Debug("Initializing new instance creation.", "namespace", args.Namespace.Name, "workflow", args.CalledAs, "invoker", args.Invoker)
 	file, data, err := engine.mux(ctx, args.Namespace, args.CalledAs)
 	loggingCtx := args.Namespace.WithTags(ctx)
 	loggingCtx = enginerefactor.AddTag(loggingCtx, "calledAs", args.CalledAs)
 	loggingCtx = enginerefactor.AddTag(loggingCtx, "invoker", args.Invoker)
+	loggingCtx = enginerefactor.WithTrack(loggingCtx, enginerefactor.BuildNamespaceTrack(args.Namespace.Name))
+
 	if err != nil {
-		slog.Debug("Failed to create new instance", "error", err)
-		slog.Debug("workflow not found", enginerefactor.GetSlogAttributesWithError(loggingCtx, err)...)
+		slog.Debug("Failed to retrieve workflow for new instance.", enginerefactor.GetSlogAttributesWithError(loggingCtx, err)...)
 		if derrors.IsNotFound(err) {
 			return nil, derrors.NewUncatchableError("direktiv.workflow.notfound", "workflow not found: %v", err.Error())
 		}
@@ -158,6 +167,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	var wf model.Workflow
 	err = wf.Load(data)
 	if err != nil {
+		slog.Error("Failed to parse workflow definition.", enginerefactor.GetSlogAttributesWithError(loggingCtx, err)...)
 		return nil, derrors.NewUncatchableError("direktiv.workflow.invalid", "cannot parse workflow '%s': %v", trim(file.Path), err)
 	}
 
@@ -217,6 +227,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 		}
 		defer tx.Rollback()
 	}
+	slog.Debug("Preparing to commit new instance transaction.", "instance", args.ID.String(), "namespace", args.Namespace)
 
 	idata, err := tx.InstanceStore().CreateInstanceData(ctx, &instancestore.CreateInstanceDataArgs{
 		ID:             args.ID,
@@ -243,6 +254,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	if err != nil {
 		return nil, err
 	}
+	slog.Info("New instance transaction committed successfully.", "instance", args.ID.String(), "namespace", args.Namespace)
 
 	instance, err := enginerefactor.ParseInstanceData(idata)
 	if err != nil {
@@ -488,9 +500,11 @@ func (engine *engine) TerminateInstance(ctx context.Context, im *instanceMemory)
 func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata []byte, err error) *states.Transition {
 	loggingCtx := im.Namespace().WithTags(ctx)
 	instanceTrackCtx := enginerefactor.WithTrack(loggingCtx, enginerefactor.BuildInstanceTrack(im.instance))
-	// namespaceTrackCtx := enginerefactor.WithTrack(ctx, enginerefactor.BuildInstanceTrack(im.instance))
+	slog.Debug("Starting state execution.", enginerefactor.GetSlogAttributesWithStatus(ctx, core.LogRunningStatus)...)
 
 	engine.logRunState(ctx, im, wakedata, err)
+	slog.Debug("State logic executed. Processing post-execution actions.", enginerefactor.GetSlogAttributesWithStatus(instanceTrackCtx, core.LogRunningStatus)...)
+	slog.Debug("Processing post-execution actions.", enginerefactor.GetSlogAttributesWithStatus(instanceTrackCtx, core.LogRunningStatus)...)
 
 	var code string
 	var transition *states.Transition
@@ -510,6 +524,8 @@ func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata
 		var object interface{}
 		object, err = jqOne(im.data, lq)
 		if err != nil {
+			slog.Error("Failed to process jq query on state data.", enginerefactor.GetSlogAttributesWithError(instanceTrackCtx, fmt.Errorf("query failed %v, err: %w", lq, err))...)
+
 			goto failure
 		}
 
@@ -517,6 +533,8 @@ func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata
 		data, err = json.MarshalIndent(object, "", "  ")
 		if err != nil {
 			err = derrors.NewInternalError(fmt.Errorf("failed to marshal state data: %w", err))
+			slog.Error("Failed to marshal jq query result for logging.", enginerefactor.GetSlogAttributesWithError(instanceTrackCtx, fmt.Errorf("failed to marshal state data: %w", err))...)
+
 			goto failure
 		}
 
@@ -539,11 +557,13 @@ func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata
 
 		engine.StoreMetadata(ctx, im, string(data))
 	}
+	slog.Debug("Executing state logic.", enginerefactor.GetSlogAttributesWithStatus(instanceTrackCtx, core.LogRunningStatus)...)
 
 	transition, err = im.logic.Run(ctx, wakedata)
 	if err != nil {
 		goto failure
 	}
+	slog.Debug("Applying state transformation based on logic run.", enginerefactor.GetSlogAttributesWithStatus(instanceTrackCtx, core.LogRunningStatus)...)
 
 	err = engine.transformState(ctx, im, transition)
 	if err != nil {
@@ -551,6 +571,7 @@ func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata
 	}
 
 next:
+	slog.Debug("Initiating state logic run.", enginerefactor.GetSlogAttributesWithStatus(instanceTrackCtx, core.LogRunningStatus)...)
 	return engine.transitionState(ctx, im, transition, code)
 
 failure:
@@ -565,7 +586,7 @@ failure:
 
 	err1 := engine.CancelInstanceChildren(ctx, im)
 	if err1 != nil {
-		slog.Error("engine.LivingChildren", "error", err1)
+		slog.Error("Canceling Instance's chrildren failed", enginerefactor.GetSlogAttributesWithError(instanceTrackCtx, err1)...)
 	}
 	cerr := new(derrors.CatchableError)
 
@@ -580,12 +601,12 @@ failure:
 
 			matched, regErr := regexp.MatchString(errRegex, cerr.Code)
 			if regErr != nil {
-				slog.Error("Error catching regex failed to compile", enginerefactor.GetSlogAttributesWithError(instanceTrackCtx, regErr)...)
+				slog.Error("Regex compilation failed for error catch definition.", enginerefactor.GetSlogAttributesWithError(instanceTrackCtx, regErr)...)
 			}
 
 			if matched {
-				slog.Error("State failed with error", enginerefactor.GetSlogAttributesWithError(instanceTrackCtx, fmt.Errorf("State failed with error '%s': %s", cerr.Code, cerr.Message))...)
-				slog.Info("Error caught by error definition", enginerefactor.GetSlogAttributesWithStatus(instanceTrackCtx, core.LogErrStatus)...)
+				slog.Info("Catchable error matched; executing defined transition.", enginerefactor.GetSlogAttributesWithStatus(instanceTrackCtx, core.LogErrStatus)...)
+				slog.Error("State failed with an error", enginerefactor.GetSlogAttributesWithError(instanceTrackCtx, fmt.Errorf("State failed with an error '%s': %s", cerr.Code, cerr.Message))...)
 
 				transition = &states.Transition{
 					Transform: "",
@@ -600,7 +621,7 @@ failure:
 			}
 		}
 	}
-
+	slog.Error("Unrecoverable error encountered; initiating instance crash.", enginerefactor.GetSlogAttributesWithError(instanceTrackCtx, err)...)
 	engine.CrashInstance(ctx, im, err)
 	return nil
 }
@@ -623,9 +644,15 @@ func (engine *engine) transformState(ctx context.Context, im *instanceMemory, tr
 	x, err := jqObject(im.data, transition.Transform)
 	if err != nil {
 		return derrors.WrapCatchableError("unable to apply transform: %v", err)
+		// return derrors.WrapCatchableError("Failed to apply jq transformation on state data. Transformation: '%v', Error: %v", transition.Transform, err)
 	}
 
 	im.replaceData(x)
+	slog.Debug("Successfully transformed state data.",
+		enginerefactor.GetSlogAttributesWithStatus(
+			enginerefactor.WithTrack(im.WithTags(loggingCtx),
+				enginerefactor.BuildInstanceTrack(im.instance)), core.LogRunningStatus,
+		)...)
 
 	return nil
 }
@@ -633,6 +660,7 @@ func (engine *engine) transformState(ctx context.Context, im *instanceMemory, tr
 func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, transition *states.Transition, errCode string) *states.Transition {
 	e := im.flushUpdates(ctx)
 	if e != nil {
+		slog.Error("Failed to flush updates for instance.", "instance", im.ID(), "namespace", im.Namespace(), "error", e)
 		engine.CrashInstance(ctx, im, e)
 		return nil
 	}
@@ -643,7 +671,6 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 	}
 	loggingCtx := im.Namespace().WithTags(ctx)
 	instanceTrackCtx := enginerefactor.WithTrack(im.WithTags(loggingCtx), enginerefactor.BuildInstanceTrack(im.instance))
-	namespaceTrackCtx := enginerefactor.WithTrack(im.WithTags(loggingCtx), enginerefactor.BuildNamespaceTrack(im.Namespace().Name))
 
 	if transition.NextState != "" {
 		engine.metricsCompleteState(im, transition.NextState, errCode, false)
@@ -671,7 +698,6 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 	im.updateArgs.Status = &im.instance.Instance.Status
 
 	slog.Info("Workflow completed.", enginerefactor.GetSlogAttributesWithStatus(instanceTrackCtx, core.LogCompletedStatus)...)
-	slog.Info("Workflow completed.", enginerefactor.GetSlogAttributesWithStatus(namespaceTrackCtx, core.LogCompletedStatus)...)
 
 	defer engine.pubsub.NotifyInstance(im.instance.Instance.ID)
 	defer engine.pubsub.NotifyInstances(im.Namespace())
@@ -681,7 +707,7 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 		InstanceID:   im.instance.Instance.ID.String(),
 	}, im.instance)
 	if broadcastErr != nil {
-		slog.Error("failed to broadcast in CrashInstance", "error", broadcastErr)
+		slog.Error("Failed to broadcast instance event upon completion.", "instance", im.ID().String(), "namespace", im.Namespace(), "error", broadcastErr)
 	}
 
 	engine.TerminateInstance(ctx, im)
@@ -838,26 +864,26 @@ func (engine *engine) EventsInvoke(workflowID uuid.UUID, events ...*cloudevents.
 
 	tx, err := engine.flow.beginSqlTx(ctx)
 	if err != nil {
-		slog.Error("invoking", "error", err)
+		slog.Error("Failed to begin SQL transaction in EventsInvoke.", "error", err)
 		return
 	}
 	defer tx.Rollback()
 
 	file, err := tx.FileStore().GetFileByID(ctx, workflowID)
 	if err != nil {
-		slog.Error("fetching files from db", "error", err)
+		slog.Error("Failed to fetch file from database.", "workflowID", workflowID, "error", err)
 		return
 	}
 
 	root, err := tx.FileStore().GetRoot(ctx, file.RootID)
 	if err != nil {
-		slog.Error("fetching from db", "error", err)
+		slog.Error("Failed to fetch Root from database.", "workflowID", workflowID, "error", err)
 		return
 	}
 
 	ns, err := tx.DataStore().Namespaces().GetByName(ctx, root.Namespace)
 	if err != nil {
-		slog.Error("fetching namespace", "error", err)
+		slog.Error("Failed to fetch namespace from database.", "namespace", root.Namespace, "error", err)
 		return
 	}
 
@@ -875,7 +901,7 @@ func (engine *engine) EventsInvoke(workflowID uuid.UUID, events ...*cloudevents.
 
 	input, err = json.Marshal(m)
 	if err != nil {
-		slog.Error("failed to marshal during EventsInvoke", "error", err)
+		slog.Error("Failed to marshal event data in EventsInvoke.", "error", err)
 		return
 	}
 
@@ -899,6 +925,7 @@ func (engine *engine) EventsInvoke(workflowID uuid.UUID, events ...*cloudevents.
 		slog.Error("new instance", "error", err)
 		return
 	}
+	slog.Debug("Successfully invoked new workflow instance.", "instanceID", im.ID().String(), "workflowPath", file.Path)
 
 	go engine.start(im)
 }

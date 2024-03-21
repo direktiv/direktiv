@@ -57,7 +57,7 @@ func (events *events) handleEvent(ctx context.Context, ns uuid.UUID, nsName stri
 		WorkflowStart: func(workflowID uuid.UUID, ev ...*cloudevents.Event) {
 			// events.metrics.InsertRecord
 
-			slog.Debug("invoking workflow via cloudevent")
+			slog.Debug("Starting workflow via CloudEvent.")
 			_, end := traceMessageTrigger(ctx, "wf: "+workflowID.String())
 			defer end()
 			events.engine.EventsInvoke(workflowID, ev...)
@@ -76,6 +76,7 @@ func (events *events) handleEvent(ctx context.Context, ns uuid.UUID, nsName stri
 			err := events.runSqlTx(ctx, func(tx *sqlTx) error {
 				r, err := tx.DataStore().EventListenerTopics().GetListeners(ctx, s)
 				if err != nil {
+					slog.Error("Error fetching event-listener-topics.", "error", err)
 					return err
 				}
 				res = r
@@ -87,11 +88,12 @@ func (events *events) handleEvent(ctx context.Context, ns uuid.UUID, nsName stri
 			return res, nil
 		},
 		UpdateListeners: func(ctx context.Context, listener []*pkgevents.EventListener) []error {
-			slog.Debug("update listener")
+			slog.Debug("Updating listeners starting.")
 			err := events.runSqlTx(ctx, func(tx *sqlTx) error {
 				errs := tx.DataStore().EventListener().UpdateOrDelete(ctx, listener)
 				for _, err2 := range errs {
 					if err2 != nil {
+						slog.Debug("Error updating listeners.", "error", err2)
 						return err2
 					}
 				}
@@ -100,6 +102,7 @@ func (events *events) handleEvent(ctx context.Context, ns uuid.UUID, nsName stri
 			if err != nil {
 				return []error{fmt.Errorf("%w", err)}
 			}
+			slog.Debug("Updating listeners complete.")
 			return nil
 		},
 	}

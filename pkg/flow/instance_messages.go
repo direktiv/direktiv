@@ -109,7 +109,7 @@ func (engine *engine) instanceMessagesChannelHandler(data string) {
 
 func (engine *engine) handleInstanceMessage(ctx context.Context, im *instanceMemory, msg *instancestore.InstanceMessageData) *states.Transition {
 	if im.instance.Instance.EndedAt != nil && !im.instance.Instance.EndedAt.IsZero() {
-		slog.Warn("handleInstanceMessage skipping message because instance has ended")
+		slog.Warn("Skipping message because instance has ended.", "instance", im.ID(), "namespace", im.Namespace())
 		return nil
 	}
 
@@ -117,7 +117,7 @@ func (engine *engine) handleInstanceMessage(ctx context.Context, im *instanceMem
 
 	err := json.Unmarshal(msg.Payload, &m)
 	if err != nil {
-		slog.Error("handleInstanceMessage failed to unmarshal message payload", "error", err)
+		slog.Error("Failed to unmarshal message payload", "error", err, "instance", im.ID(), "namespace", im.Namespace())
 		return nil
 	}
 
@@ -126,19 +126,19 @@ func (engine *engine) handleInstanceMessage(ctx context.Context, im *instanceMem
 
 	x, ok := m["type"]
 	if !ok {
-		slog.Error("handleInstanceMessage failed to unmarshal message payload: missing 'type' field")
+		slog.Error("Invalid message payload: missing 'type' field", "instance", im.ID(), "namespace", im.Namespace())
 		return nil
 	}
 
 	msgType, ok = x.(string)
 	if !ok {
-		slog.Error("handleInstanceMessage failed to unmarshal message payload: 'type' field not a string")
+		slog.Error("failed to unmarshal message payload: 'type' field not a string", "instance", im.ID(), "namespace", im.Namespace())
 		return nil
 	}
 
 	x, ok = m["data"]
 	if !ok {
-		slog.Error("handleInstanceMessage got invalid message payload: missing 'data' field")
+		slog.Error("Invalid message payload: missing 'data' field", "instance", im.ID(), "namespace", im.Namespace())
 		return nil
 	}
 
@@ -157,6 +157,7 @@ func (engine *engine) handleInstanceMessage(ctx context.Context, im *instanceMem
 	case "transition":
 		return engine.handleTransitionMessage(ctx, im, data)
 	default:
+		slog.Error("Encountered unrecognized instance message type.", "msgType", msgType, "instance", im.ID().String(), "namespace", im.Namespace())
 		panic(fmt.Sprintf("unrecognized instance message type: %s", msgType))
 	}
 }

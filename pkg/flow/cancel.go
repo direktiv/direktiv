@@ -3,7 +3,6 @@ package flow
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log/slog"
 
@@ -100,12 +99,17 @@ func (engine *engine) finishCancelWorkflow(req *pubsub.PubsubUpdate) {
 
 	err := json.Unmarshal([]byte(req.Key), &args)
 	if err != nil {
-		slog.Error("finishCancelWorkflow", "error", err)
+		slog.Error("Failed to unmarshal pubsub update for finishing cancel workflow.", "error", err)
 		return
 	}
 
 	var soft, ok bool
 	var id, code, msg string
+
+	if len(args) != 4 {
+		slog.Error("Invalid input received for canceling a workflow via pubsub: incorrect argument count.", "expected", 4, "actual", len(args))
+		return
+	}
 
 	if len(args) != 4 {
 		goto bad
@@ -137,7 +141,7 @@ func (engine *engine) finishCancelWorkflow(req *pubsub.PubsubUpdate) {
 
 bad:
 
-	slog.Error("cancel a workflow", "error", errors.New("bad input to workflow cancel pubsub"))
+	slog.Error("Invalid input received for canceling a workflow via pubsub.", "input", req.Key)
 }
 
 func (engine *engine) cancelRunning(id string) {
@@ -154,33 +158,27 @@ func (engine *engine) finishCancelMirrorProcess(req *pubsub.PubsubUpdate) {
 
 	err := json.Unmarshal([]byte(req.Key), &args)
 	if err != nil {
-		slog.Error("cancel mirror", "error", err)
+		slog.Error("Failed to unmarshal pubsub update for canceling mirror process.", "error", err)
 		return
 	}
 
-	var ok bool
-	var id string
-	var uid uuid.UUID
-
 	if len(args) != 1 {
-		goto bad
+		slog.Error("Invalid input received for canceling mirror process: incorrect number of arguments.", "expected", 1, "actual", len(args))
+		return
 	}
 
-	id, ok = args[0].(string)
+	id, ok := args[0].(string)
 	if !ok {
-		goto bad
+		slog.Error("Invalid input received for canceling mirror process: argument is not a string.", "arg", args[0])
+		return
 	}
 
-	uid, err = uuid.Parse(id)
+	uid, err := uuid.Parse(id)
 	if err != nil {
-		goto bad
+		slog.Error("Failed to parse UUID for mirror process cancellation.", "activity_id", id, "error", err)
+		return
 	}
 
 	_ = engine.mirrorManager.Cancel(context.Background(), uid)
-
-	return
-
-bad:
-
-	slog.Error("mirror process", "error", errors.New("bad input to mirror process cancel pubsub"))
+	slog.Info("Requested cancellation of mirror process.", "activity_id", uid)
 }

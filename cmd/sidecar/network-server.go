@@ -27,25 +27,33 @@ type NetworkServer struct {
 	stopper chan *time.Time
 }
 
+// waitForUserContainer waits for a user-defined container to start and become
+// available by attempting to connect to localhost:8080. It waits for up to 2 minutes
+// before terminating the wait and panicking.
 func waitForUserContainer() {
+	slog.Debug("Waiting for user container to become available.")
+
 	ticker := time.NewTicker(250 * time.Millisecond)
+	defer ticker.Stop()
 
-	go func() {
-		time.Sleep(2 * time.Minute)
-		ticker.Stop()
-	}()
+	timeout := time.After(2 * time.Minute)
 
-	for range ticker.C {
-		conn, _ := net.DialTimeout("tcp", "localhost:8080", time.Second)
-		if conn != nil {
-			slog.Debug("user container connected")
+	for {
+		select {
+		case <-ticker.C:
+			conn, err := net.DialTimeout("tcp", "localhost:8080", time.Second)
+			if err != nil {
+				slog.Debug("Failed to connect to user container.", "error", err)
+				continue
+			}
+			slog.Debug("User container is now available.", "address", "localhost:8080")
 			_ = conn.Close()
 
 			return
+		case <-timeout:
+			panic("User container did not start in time. Timeout waiting for connection to localhost:8080")
 		}
 	}
-
-	panic("user container did not start in time")
 }
 
 // Start starts the network server for the sidecar.
