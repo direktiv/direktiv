@@ -74,7 +74,7 @@ type server struct {
 	metrics *metrics.Client
 }
 
-func Run(ctx context.Context) error {
+func Run(serverCtx context.Context) error {
 	srv, err := newServer()
 	if err != nil {
 		return err
@@ -90,7 +90,7 @@ func Run(ctx context.Context) error {
 
 	srv.conf = config
 
-	err = srv.start(ctx)
+	err = srv.start(serverCtx)
 	if err != nil {
 		return err
 	}
@@ -162,7 +162,7 @@ func (c *mirrorCallbacks) VarStore() datastore.RuntimeVariablesStore {
 
 var _ mirror.Callbacks = &mirrorCallbacks{}
 
-func (srv *server) start(ctx context.Context) error {
+func (srv *server) start(serverCtx context.Context) error {
 	var err error
 	slog.Debug("Starting Flow server")
 	slog.Debug("Initializing telemetry.")
@@ -268,7 +268,7 @@ func (srv *server) start(ctx context.Context) error {
 
 	wg.Add(5)
 
-	cctx, cancel := context.WithCancel(ctx)
+	cctx, cancel := context.WithCancel(serverCtx)
 	defer cancel()
 
 	slog.Debug("Initializing pubsub routine.")
@@ -322,7 +322,7 @@ func (srv *server) start(ctx context.Context) error {
 	interval := 1 * time.Second // TODO: Adjust the polling interval
 	eventWorker := eventsstore.NewEventWorker(noTx.DataStore().StagingEvents(), interval, srv.events.handleEvent)
 
-	go eventWorker.Start(ctx)
+	go eventWorker.Start(serverCtx)
 	slog.Info("Events-engine was started.")
 
 	cc := func(ctx context.Context, nsID uuid.UUID, nsName string, file *filestore.File) error {
@@ -406,21 +406,32 @@ func (srv *server) start(ctx context.Context) error {
 		}
 		// If this is a delete workflow file
 		if event.DeleteFileID.String() != (uuid.UUID{}).String() {
-			return srv.flow.events.deleteWorkflowEventListeners(ctx, event.NamespaceID, event.DeleteFileID)
+			return srv.flow.events.deleteWorkflowEventListeners(serverCtx, event.NamespaceID, event.DeleteFileID)
 		}
-		file, err := noTx.FileStore().ForNamespace(event.Namespace).GetFile(ctx, event.FilePath)
+		file, err := noTx.FileStore().ForNamespace(event.Namespace).GetFile(serverCtx, event.FilePath)
 		if err != nil {
 			return err
 		}
-		err = srv.flow.configureWorkflowStarts(ctx, noTx, event.NamespaceID, file)
+		err = srv.flow.configureWorkflowStarts(serverCtx, noTx, event.NamespaceID, file)
 		if err != nil {
 			return err
 		}
 
-		return srv.flow.placeholdSecrets(ctx, noTx, event.Namespace, file)
+		return srv.flow.placeholdSecrets(serverCtx, noTx, event.Namespace, file)
 	}
 
-	newMainWG := cmd.NewMain(ctx, srv.conf, dbManager, srv.pBus, configureWorkflow)
+	instanceManager := &instancestore.InstanceManager{
+		Start:  srv.engine.StartWorkflow,
+		Cancel: srv.engine.CancelInstance,
+	}
+
+	newMainWG := cmd.NewMain(serverCtx, &cmd.NewMainArgs{
+		Config:            srv.conf,
+		Database:          dbManager,
+		PubSubBus:         srv.pBus,
+		ConfigureWorkflow: configureWorkflow,
+		InstanceManager:   instanceManager,
+	})
 
 	slog.Info("Flow server started.")
 

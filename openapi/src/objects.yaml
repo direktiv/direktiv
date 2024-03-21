@@ -119,4 +119,49 @@ FileNodeWithoutData:
       type: string
       description: timestamp of node last updating date
 
+InstanceData:
+  type: object
+  description: filesystem node data
+  properties:
+    id:
+      type: string 
+      description: instance uuid
+    created_at:
+      type: string
+      description: timestamp
+    ended_at:
+      type: string
+      description: will be null if the instance is still running
+    status:
+      type: string
+      description: enum describing the current state of the instance
+      enum: [ pending, complete, failed, crashed, cancelled ]
+    path:
+      type: string
+      description: filepath of the workflow 
+    error_code:
+      type: string
+      description: error code of a failed workflow
+    invoker:
+      type: string
+      description: information about how the instance was instantiated
+    definition:
+      type: string
+      description: binary data containing a copy of the workflow at the time the instance was created
+    input:
+      type: string
+      description: binary data containing the input to the instance. Will be null unless specifically requested.
+    output:
+      type: string
+      description: binary data containing the output of a finished workflow. Will be null unless specifically requested.
+    metadata:
+      type: string
+      description: binary metadata. Will be null unless requested.
+    error_message:
+      type: string
+      description: binary information about the error, if any.
+
+
+
+
 

@@ -59,7 +59,7 @@ var (
 	summaryFields = []string{
 		fieldID, fieldNamespaceID, fieldNamespace, fieldRootInstanceID, fieldServer,
 		fieldCreatedAt, fieldUpdatedAt, fieldEndedAt, fieldDeadline, fieldStatus, fieldWorkflowPath,
-		fieldErrorCode, fieldInvoker, fieldSettings, fieldDescentInfo, fieldTelemetryInfo,
+		fieldErrorCode, fieldInvoker, fieldDefinition, fieldSettings, fieldDescentInfo, fieldTelemetryInfo,
 		fieldRuntimeInfo, fieldChildrenInfo, fieldErrorMessage,
 	}
 )

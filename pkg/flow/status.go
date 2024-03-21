@@ -15,7 +15,7 @@ func (engine *engine) GetIsInstanceFailed(im *instanceMemory) bool {
 		return true
 	}
 
-	if im.instance.Instance.Status == instancestore.InstanceStatusFailed {
+	if im.instance.Instance.Status == instancestore.InstanceStatusFailed || im.instance.Instance.Status == instancestore.InstanceStatusCancelled {
 		return true
 	}
 
@@ -63,6 +63,10 @@ func (engine *engine) SetInstanceFailed(ctx context.Context, im *instanceMemory,
 		status = instancestore.InstanceStatusCrashed
 		code = ErrCodeInternal
 		message = err.Error()
+	}
+
+	if code == "direktiv.cancels.parent" || code == "direktiv.cancels.api" {
+		status = instancestore.InstanceStatusCancelled
 	}
 
 	im.instance.Instance.Status = status

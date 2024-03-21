@@ -144,10 +144,10 @@ var serverCmd = &cobra.Command{
 		}()
 		defer shutdown()
 
-		ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+		serverCtx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 		defer cancel()
 
-		err := flow.Run(ctx)
+		err := flow.Run(serverCtx)
 		if err != nil {
 			slog.Error("terminating", "error", err)
 			os.Exit(1)
