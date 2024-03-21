@@ -42,7 +42,7 @@ func NewMain(serverCtx context.Context, args *NewMainArgs) *sync.WaitGroup {
 	go func() {
 		err := api2.RunApplication(serverCtx, args.Config)
 		if err != nil {
-			slog.Error("Failed to API V2 Server.", "error", err)
+			slog.Error("Failed to run API V2 Server.", "error", err)
 			quit()
 		}
 	}()
@@ -70,7 +70,7 @@ func NewMain(serverCtx context.Context, args *NewMainArgs) *sync.WaitGroup {
 	// Create registry manager
 	registryManager, err := registry.NewManager(args.Config.EnableDocker)
 	if err != nil {
-		slog.Error("error creating service manage", "error", err)
+		slog.Error("Failed creating service manager", "error", err)
 		quit()
 	}
 	slog.Debug("Registry manager initialized successfully.")

@@ -358,7 +358,7 @@ func (pubsub *Pubsub) flush() {
 		msg += "]"
 		err := pubsub.notifier.NotifyCluster(msg)
 		if err != nil {
-			slog.Error("pubsub", "error", err)
+			slog.Error("Failed to notify Cluster", "error", err)
 			os.Exit(1)
 		}
 	}

@@ -35,10 +35,10 @@ type manager struct {
 
 func NewManager(c *core.Config, enableDocker bool) (core.ServiceManager, error) {
 	if enableDocker {
-		slog.Debug("creating docker client")
+		slog.Debug("Creating docker client")
 		cli, err := dClient.NewClientWithOpts(dClient.FromEnv, dClient.WithAPIVersionNegotiation())
 		if err != nil {
-			return nil, fmt.Errorf("creating docker client: %w", err)
+			return nil, fmt.Errorf("failed creating docker client: %w", err)
 		}
 
 		client := &dockerClient{
@@ -46,7 +46,7 @@ func NewManager(c *core.Config, enableDocker bool) (core.ServiceManager, error) 
 		}
 		err = client.cleanAll()
 		if err != nil {
-			return nil, fmt.Errorf("cleaning docker client: %w", err)
+			return nil, fmt.Errorf("failed cleaning docker client: %w", err)
 		}
 
 		return &manager{
@@ -57,7 +57,7 @@ func NewManager(c *core.Config, enableDocker bool) (core.ServiceManager, error) 
 			lock: &sync.Mutex{},
 		}, nil
 	}
-	slog.Debug("creating knative manger")
+	slog.Debug("Creating knative manger")
 
 	return newKnativeManager(c)
 }
@@ -118,7 +118,7 @@ func (m *manager) runCycle() []error {
 		target[i] = v
 	}
 
-	slog.Debug("reconcile", "src", len(src), "target", len(target))
+	// slog.Debug("services reconcile", "src", len(src), "target", len(target))
 
 	result := reconcile.Calculate(src, target)
 
