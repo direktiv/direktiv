@@ -15,7 +15,7 @@ export type LogLevelSchemaType = z.infer<typeof LogLevelSchema>;
   "instance": "f1242c40-3cd9-48bb-82aa-02275df6e1da" 
 }
  */
-export const WorkflowLogData = z.object({
+export const WorkflowStatusData = z.object({
   status: z.string().nonempty(),
   state: z.string().nonempty(),
   branch: z.number().nullable(),
@@ -48,7 +48,7 @@ export const LogEntrySchema = z.object({
   trace: z.string().nonempty().nullable(),
   span: z.string().nonempty().nullable(),
   error: z.string().nullable(),
-  workflow: WorkflowLogData.optional(),
+  workflow: WorkflowStatusData.optional(),
 });
 
 /**
