@@ -72,7 +72,7 @@ type Notifier interface {
 func InitPubSub(notifier Notifier, database string) (*Pubsub, error) {
 	reportProblem := func(ev pq.ListenerEventType, err error) {
 		if err != nil {
-			slog.Error("pubsub", "error", err, "event_type", ev)
+			slog.Error("PubSub listener encountered an error.", "error", err, "event_type", ev)
 			os.Exit(1)
 			return
 		}
@@ -109,7 +109,7 @@ func InitPubSub(notifier Notifier, database string) (*Pubsub, error) {
 			err := pubsub.Close()
 			if err != nil {
 				if !errors.Is(err, os.ErrClosed) {
-					slog.Error("Error closing pubsub", "error", err)
+					slog.Error("Failed to close PubSub system cleanly.", "error", err)
 				}
 			}
 		}()
@@ -117,7 +117,7 @@ func InitPubSub(notifier Notifier, database string) (*Pubsub, error) {
 		defer func() {
 			err := l.UnlistenAll()
 			if err != nil {
-				slog.Error("Error deregistering listeners", "error", err)
+				slog.Error("Failed to deregister all database notification listeners.", "error", err)
 			}
 		}()
 
@@ -129,7 +129,7 @@ func InitPubSub(notifier Notifier, database string) (*Pubsub, error) {
 			case <-pubsub.closer:
 			case notification, more = <-l.Notify:
 				if !more {
-					slog.Error("database listener closed")
+					slog.Error("Database notification listener has unexpectedly closed")
 					return
 				}
 			}
@@ -141,7 +141,7 @@ func InitPubSub(notifier Notifier, database string) (*Pubsub, error) {
 			reqs := make([]*PubsubUpdate, 0)
 			err = json.Unmarshal([]byte(notification.Extra), &reqs)
 			if err != nil {
-				slog.Error("unexpected notification on database listener", "error", err)
+				slog.Error("Received unexpected notification format from database listener.", "error", err)
 				continue
 			}
 
@@ -156,7 +156,7 @@ func InitPubSub(notifier Notifier, database string) (*Pubsub, error) {
 
 				handler, exists := pubsub.handlers[req.Handler]
 				if !exists {
-					slog.Error("unexpected notification type on database listener", "error", err)
+					slog.Error("Received notification with unhandled type from database listener.", "handler", req.Handler, "error", err)
 					continue
 				}
 
@@ -292,7 +292,8 @@ func (pubsub *Pubsub) flush() {
 
 		b, err := json.Marshal(req)
 		if err != nil {
-			panic(err)
+			slog.Error("Could not unmarshal Pubsub Update.", "error", err)
+			panic(err) // TODO ?
 		}
 
 		if _, exists := set[string(b)]; exists {
@@ -302,7 +303,7 @@ func (pubsub *Pubsub) flush() {
 
 		handler, exists := pubsub.handlers[req.Handler]
 		if !exists {
-			slog.Error("unexpected notification type on database listener", "handler", req.Handler)
+			slog.Error("Received unexpected notification type.", "handler", req.Handler)
 		} else {
 			go handler(req)
 		}
@@ -318,7 +319,7 @@ func (pubsub *Pubsub) flush() {
 		}
 
 		if err != nil {
-			slog.Error("pubsub error", "error", err)
+			slog.Error("Failed to notify specific hostname.", "hostname", req.Hostname, "error", err)
 			os.Exit(1)
 		}
 	}
@@ -335,7 +336,7 @@ func (pubsub *Pubsub) flush() {
 			msg += "]"
 			err := pubsub.notifier.NotifyCluster(msg)
 			if err != nil {
-				slog.Error("pubsub", "error", err)
+				slog.Error("Failed to notify cluster.", "error", err, "current_message_batch", msg)
 				os.Exit(1)
 			}
 

@@ -354,8 +354,8 @@ func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextSt
 			}
 		}
 
-		engine.ScheduleSoftTimeout(im, oldController, tSoft)
-		engine.ScheduleHardTimeout(im, oldController, tHard)
+		engine.ScheduleSoftTimeout(ctx, im, oldController, tSoft)
+		engine.ScheduleHardTimeout(ctx, im, oldController, tHard)
 	}
 
 	if nextState == "" {
@@ -405,7 +405,7 @@ func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextSt
 		return nil
 	}
 
-	engine.ScheduleSoftTimeout(im, oldController, deadline)
+	engine.ScheduleSoftTimeout(ctx, im, oldController, deadline)
 
 	return engine.runState(ctx, im, nil, nil)
 }

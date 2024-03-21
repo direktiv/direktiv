@@ -1,13 +1,14 @@
 package flow
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log/slog"
 	"time"
 )
 
-func (engine *engine) scheduleTimeout(im *instanceMemory, oldController string, t time.Time, soft bool) {
+func (engine *engine) scheduleTimeout(_ context.Context, im *instanceMemory, oldController string, t time.Time, soft bool) {
 	var err error
 	deadline := t
 
@@ -24,6 +25,7 @@ func (engine *engine) scheduleTimeout(im *instanceMemory, oldController string, 
 	}
 
 	// cancel existing timeouts
+	slog.Debug("Cancelling existing timeouts.", "namespace", im.Namespace(), "instance", im.ID(), "timeout_type", prefix, "step", im.Step(), "error", err)
 
 	engine.timers.deleteTimerByName(oldController, engine.pubsub.Hostname, oldId)
 	engine.timers.deleteTimerByName(oldController, engine.pubsub.Hostname, id)
@@ -43,16 +45,18 @@ func (engine *engine) scheduleTimeout(im *instanceMemory, oldController string, 
 
 	err = engine.timers.addOneShot(id, timeoutFunction, deadline, data)
 	if err != nil {
-		slog.Error("scheduleTimeout", "error", err)
+		slog.Error("Failed to schedule a timeout.", "namespace", im.Namespace(), "instance", im.ID(), "timeout_type", prefix, "step", im.Step(), "error", err)
+	} else {
+		slog.Debug("Successfully scheduled a new timeout.", "namespace", im.Namespace(), "instance", im.ID(), "timeout_type", prefix, "step", im.Step(), "error", err)
 	}
 }
 
-func (engine *engine) ScheduleHardTimeout(im *instanceMemory, oldController string, t time.Time) {
-	engine.scheduleTimeout(im, oldController, t, false)
+func (engine *engine) ScheduleHardTimeout(ctx context.Context, im *instanceMemory, oldController string, t time.Time) {
+	engine.scheduleTimeout(ctx, im, oldController, t, false)
 }
 
-func (engine *engine) ScheduleSoftTimeout(im *instanceMemory, oldController string, t time.Time) {
-	engine.scheduleTimeout(im, oldController, t, true)
+func (engine *engine) ScheduleSoftTimeout(ctx context.Context, im *instanceMemory, oldController string, t time.Time) {
+	engine.scheduleTimeout(ctx, im, oldController, t, true)
 }
 
 type timeoutArgs struct {
@@ -75,13 +79,17 @@ func (engine *engine) timeoutHandler(input []byte) {
 	args := new(timeoutArgs)
 	err := json.Unmarshal(input, args)
 	if err != nil {
-		slog.Error("timeoutHandler", "error", err)
+		slog.Error("Failed to unmarshal timeout handler arguments.", "error", err)
 		return
 	}
 
 	if args.Soft {
+		slog.Error("Initiating soft cancellation due to timeout.", "instance", args.InstanceId)
 		engine.softCancelInstance(args.InstanceId, ErrCodeSoftTimeout, "operation timed out")
+		slog.Error("Soft cancellation complete.", "instance", args.InstanceId)
 	} else {
+		slog.Error("Initiating hard cancellation due to timeout.", "instance", args.InstanceId)
 		engine.hardCancelInstance(args.InstanceId, ErrCodeHardTimeout, "workflow timed out")
+		slog.Error("Hard cancellation complete.", "instance", args.InstanceId)
 	}
 }

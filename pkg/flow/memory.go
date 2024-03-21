@@ -352,7 +352,7 @@ func (engine *engine) freeArtefacts(im *instanceMemory) {
 
 	err := engine.events.deleteInstanceEventListeners(context.Background(), im)
 	if err != nil {
-		slog.Error("storing metadata", "error", err)
+		slog.Error("Failed to delete instance event listeners.", "error", err, "instance", im.instance, "namespace", im.Namespace())
 	}
 }
 
@@ -372,7 +372,7 @@ func (engine *engine) freeMemory(ctx context.Context, im *instanceMemory) error 
 func (engine *engine) forceFreeCriticalMemory(ctx context.Context, im *instanceMemory) {
 	err := im.flushUpdates(ctx)
 	if err != nil {
-		slog.Error("failed to force flush updates during instance crash", "error", err)
+		slog.Error("Failed to force flush updates for instance memory during critical memory release.", "instance", im.ID().String(), "namespace", im.Namespace(), "error", err)
 	}
 
 	engine.deregisterScheduled(im.ID())

@@ -60,12 +60,12 @@ func (engine *engine) CancelInstanceChildren(ctx context.Context, im *instanceMe
 			if child.ServiceName != "" {
 				// TODO: yassir handle workflow children services.
 			} else {
-				slog.Warn("missing child service name")
+				slog.Warn("Isolate child missing service name.", "child_id", child.Id)
 			}
 		case "subflow":
 			engine.pubsub.CancelWorkflow(child.Id, ErrCodeCancelledByParent, "cancelled by parent workflow", false)
 		default:
-			slog.Error("unrecognized child type", "error", child.Type)
+			slog.Error("Encountered unrecognized child type.", "error", child.Type)
 		}
 	}
 	return nil
@@ -76,7 +76,7 @@ func (engine *engine) cancelInstance(id, code, message string, soft bool) {
 
 	uid, err := uuid.Parse(id)
 	if err != nil {
-		slog.Error("failed to parse instance uuid for cancelInstance: %v", err)
+		slog.Error("Failed to parse instance UUID.", "error", err)
 		return
 	}
 
@@ -86,7 +86,7 @@ func (engine *engine) cancelInstance(id, code, message string, soft bool) {
 		Message: message,
 	})
 	if err != nil {
-		slog.Error("failed to enqueue instance message for cancelInstance", "error", err)
+		slog.Error("Failed to enqueue cancel instance message", "error", err, "instance", uid)
 		return
 	}
 

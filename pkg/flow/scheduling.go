@@ -48,19 +48,21 @@ func (engine *engine) sendCancelToScheduled(instance uuid.UUID) {
 func (engine *engine) executor(ctx context.Context, id uuid.UUID) {
 	ctx, err := engine.registerScheduled(ctx, id)
 	if err != nil {
-		slog.Error("failed to registerScheduled in executor", "error", err)
+		slog.Error("Failed to register instance for scheduled execution.", "instance", id, "error", err)
 		return
 	}
-
+	slog.Debug("Successfully registered instance for scheduled execution.", "instance", id)
 	im, err := engine.getInstanceMemory(ctx, id)
 	if err != nil {
-		slog.Error("failed to getInstanceMemory in executor", "error", err)
+		slog.Error("Failed to retrieve instance memory in executor.", "instance", id, "error", err)
 		engine.deregisterScheduled(id)
 
 		return
 	}
+	slog.Debug("Beginning instance execution loop.", "instance", id)
 
 	engine.executorLoop(ctx, im)
+	slog.Debug("Successfully deregistered instance after execution.", "instance", id)
 
 	engine.deregisterScheduled(id)
 }
@@ -121,10 +123,11 @@ func (engine *engine) executorLoop(ctx context.Context, im *instanceMemory) {
 }
 
 func (engine *engine) InstanceYield(ctx context.Context, im *instanceMemory) {
-	slog.Debug("Instance going to sleep", "instance", im.ID().String(), "namespace", im.Namespace())
+	slog.Debug("Instance preparing to yield and release resources.", "instance", im.ID().String(), "namespace", im.Namespace())
 
 	err := engine.freeMemory(ctx, im)
 	if err != nil {
+		slog.Error("Failed to free memory for instance. Initiating crash sequence.", "instance", im.ID().String(), "namespace", im.Namespace(), "error", err)
 		engine.CrashInstance(ctx, im, err)
 		return
 	}
@@ -134,7 +137,7 @@ func (engine *engine) WakeInstanceCaller(ctx context.Context, im *instanceMemory
 	caller := engine.InstanceCaller(im)
 
 	if caller != nil {
-		slog.Debug("Reporting results to calling workflow.", "namespace", im.Namespace())
+		slog.Debug("Initiating result report to calling workflow.", "namespace", im.Namespace(), "instance", im.ID())
 
 		msg := &actionResultMessage{
 			InstanceID: caller.ID.String(),
@@ -159,7 +162,7 @@ func (engine *engine) WakeInstanceCaller(ctx context.Context, im *instanceMemory
 			Output:       msg.Payload.Output,
 		})
 		if err != nil {
-			slog.Error("wake instance", "error", err)
+			slog.Error("Failed to report action results to caller workflow.", "namespace", im.Namespace(), "instance", im.ID(), "error", err)
 			return
 		}
 	}
@@ -174,12 +177,12 @@ func (engine *engine) start(im *instanceMemory) {
 
 	ctx := context.Background()
 
-	slog.Debug("Starting workflow", "namespace", im.Namespace())
+	slog.Debug("Workflow execution initiated.", "namespace", namespace, "workflow", workflowPath, "instance", im.ID())
 
 	workflow, err := im.Model()
 	if err != nil {
 		engine.CrashInstance(ctx, im, derrors.NewUncatchableError(ErrCodeWorkflowUnparsable, "failed to parse workflow YAML: %v", err))
-		slog.Error("failed to parse workflow YAML", "namespace", im.Namespace())
+		slog.Error("Failed to parse workflow YAML. Workflow execution halted.", "namespace", namespace, "workflow", workflowPath, "instance", im.ID(), "error", err)
 		return
 	}
 
@@ -189,7 +192,7 @@ func (engine *engine) start(im *instanceMemory) {
 
 	ctx, err = engine.registerScheduled(ctx, id)
 	if err != nil {
-		slog.Debug("failed to registerScheduled in start", "error", err)
+		slog.Debug("Failed to register workflow as scheduled. Workflow execution may be delayed or halted.", "namespace", namespace, "workflow", workflowPath, "instance", id, "error", err)
 		return
 	}
 
@@ -198,7 +201,8 @@ func (engine *engine) start(im *instanceMemory) {
 		"data": workflow.GetStartState().GetID(),
 	})
 	if err != nil {
-		panic(err)
+		slog.Error("Failed to marshal start state payload. Halting workflow execution.", "namespace", namespace, "workflow", workflowPath, "instance", id, "error", err)
+		panic(err) // TODO?
 	}
 
 	engine.transitionLoop(ctx, im, &instancestore.InstanceMessageData{

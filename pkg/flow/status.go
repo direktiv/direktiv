@@ -7,6 +7,7 @@ import (
 	"log/slog"
 
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
+	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 )
 
@@ -43,11 +44,11 @@ func (engine *engine) SetInstanceFailed(ctx context.Context, im *instanceMemory,
 	var code, message string
 	status = instancestore.InstanceStatusFailed
 	code = ErrCodeInternal
-
+	namespaceCtx := enginerefactor.WithTrack(im.WithTags(ctx), enginerefactor.BuildNamespaceTrack(im.Namespace().Name))
 	uerr := new(derrors.UncatchableError)
 	cerr := new(derrors.CatchableError)
 	ierr := new(derrors.InternalError)
-	slog.Error("Workflow canceled due to failed instance", "path", im.instance.Instance.WorkflowPath, "instance", im.GetInstanceID(), "namespace", im.Namespace()) // TODO
+	slog.Error("Workflow canceled due to failed instance", enginerefactor.GetSlogAttributesWithError(namespaceCtx, err)...)
 	if errors.As(err, &uerr) {
 		code = uerr.Code
 		message = uerr.Message
@@ -55,11 +56,11 @@ func (engine *engine) SetInstanceFailed(ctx context.Context, im *instanceMemory,
 		code = cerr.Code
 		message = cerr.Message
 	} else if errors.As(err, &ierr) {
-		slog.Error("instance failing", "error", fmt.Errorf("internal error: %w", ierr), "instance", im.GetInstanceID(), "namespace", im.Namespace())
+		slog.Error("Workflow instance encountered an internal error.", enginerefactor.GetSlogAttributesWithError(namespaceCtx, fmt.Errorf("internal error: %w", ierr))...)
 		status = instancestore.InstanceStatusCrashed
 		message = "an internal error occurred"
 	} else {
-		slog.Error("instance failing", "error", fmt.Errorf("unhandled error: %w", err), "instance", im.GetInstanceID(), "namespace", im.Namespace())
+		slog.Error("Workflow instance failed due to an unhandled error.", enginerefactor.GetSlogAttributesWithError(namespaceCtx, fmt.Errorf("unhandled error: %w", err))...)
 		status = instancestore.InstanceStatusCrashed
 		code = ErrCodeInternal
 		message = err.Error()

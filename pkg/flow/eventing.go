@@ -140,7 +140,7 @@ func PublishKnativeEvent(ce *cloudevents.Event) {
 }
 
 func (rcv *eventReceiver) RequestEvents(req *igrpc.EventingRequest, stream igrpc.Eventing_RequestEventsServer) error {
-	slog.Debug("client connected", "client", req.GetUuid())
+	slog.Debug("Client connected to event stream.", "client", req.GetUuid())
 
 	knativeClients.Store(req.GetUuid(), client{stream: stream})
 
@@ -148,13 +148,13 @@ func (rcv *eventReceiver) RequestEvents(req *igrpc.EventingRequest, stream igrpc
 
 	<-ctx.Done()
 
-	slog.Debug("client %s has disconnected", "client", req.GetUuid())
+	slog.Debug("Client has disconnected from event stream.", "client", req.GetUuid())
 	knativeClients.Delete(req.GetUuid())
 	return nil
 }
 
 func (rcv *eventReceiver) startGRPC() {
-	slog.Debug("Starting eventing gRPC server.")
+	slog.Debug("Starting the eventing gRPC server.", "port", 3333)
 
 	var grpcServer *grpc.Server
 
@@ -164,7 +164,7 @@ func (rcv *eventReceiver) startGRPC() {
 			reflection.Register(srv)
 		})
 	if err != nil {
-		slog.Error("Failed to start gRPC server", "error", err)
+		slog.Error("Failed to start the eventing gRPC server.", "error", err, "port", 3333)
 	}
 }
 

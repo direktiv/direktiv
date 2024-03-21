@@ -129,7 +129,7 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 
 	reportError := func(code int, err error) {
 		http.Error(w, err.Error(), code)
-		slog.Warn("Log handler for returned.", "action_id", actionId, "action_err_code", code, "error", err)
+		slog.Warn("Log handler error occurred.", "action_id", actionId, "action_err_code", code, "error", err)
 	}
 
 	if !ok {
@@ -173,7 +173,7 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(msg) == 0 {
-		slog.Debug("Log handler for received zero bytes.", "action_id", actionId)
+		slog.Debug("Log handler received an empty message body.", "action_id", actionId)
 		return
 	}
 
@@ -183,10 +183,10 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 		Iterator:   int32(req.iterator),
 	})
 	if err != nil {
-		slog.Error("Failed to forward log to diretiv: %v.", "error", err)
+		slog.Error("Failed to forward log to Flow.", "error", err)
 	}
 
-	slog.Debug("Log handler for posted some bytes.", "action_id", actionId)
+	slog.Debug("Log handler successfully processed message.", "action_id", actionId)
 }
 
 func (srv *LocalServer) varHandler(w http.ResponseWriter, r *http.Request) {
@@ -344,7 +344,7 @@ func (srv *LocalServer) drainRequest(req *inboundRequest) {
 	http.Error(req.w, msg, code)
 
 	id := req.r.Header.Get(actionIDHeader)
-	slog.Warn("Aborting request early.", "actions_id", id)
+	slog.Warn("Request aborted due to server unavailability", "action_id", id, "http_status_code", code, "reason", msg)
 
 	defer func() {
 		_ = recover()

@@ -299,8 +299,9 @@ func (engine *engine) metricsCompleteState(im *instanceMemory, nextState, errCod
 
 	err := engine.metrics.InsertRecord(args)
 	if err != nil {
-		slog.Error("metrics", "error", err)
+		slog.Error("Failed to insert metrics record for instance.", "namespace", args.Namespace, "workflow", args.Workflow, "instance", args.Instance, "error", err)
 	}
+	slog.Debug("Successfully inserted metrics record for instance.", "namespace", args.Namespace, "workflow", args.Workflow, "instance_id", args.Instance)
 }
 
 func (engine *engine) metricsCompleteInstance(im *instanceMemory) {

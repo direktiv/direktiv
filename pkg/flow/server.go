@@ -457,7 +457,7 @@ func (srv *server) start(serverCtx context.Context) error {
 func (srv *server) cleanup(closer func() error) {
 	err := closer()
 	if err != nil {
-		slog.Error("server cleanup", "error", err)
+		slog.Error("Server cleanup failed.", "error", err)
 	}
 }
 
@@ -475,7 +475,7 @@ func (srv *server) NotifyCluster(msg string) error {
 	perr := new(pq.Error)
 
 	if errors.As(err, &perr) {
-		slog.Error("db notification failed", "error", perr)
+		slog.Error("Database notification to cluster failed.", "error", perr)
 		if perr.Code == "57014" {
 			return fmt.Errorf("canceled query")
 		}
@@ -589,6 +589,7 @@ func (srv *server) cronPoll() {
 func (srv *server) cronPollerWorkflow(ctx context.Context, tx *sqlTx, file *filestore.File) {
 	ms, err := srv.validateRouter(ctx, tx, file)
 	if err != nil {
+		slog.Error("Failed to validate Routing for a cron schedule.", "error", err)
 		return
 	}
 
@@ -599,11 +600,11 @@ func (srv *server) cronPollerWorkflow(ctx context.Context, tx *sqlTx, file *file
 	if ms.Cron != "" {
 		err := srv.timers.addCron(file.ID.String(), wfCron, ms.Cron, []byte(file.ID.String()))
 		if err != nil {
-			slog.Error("executing ms.cron", "error", err)
+			slog.Error("Failed to add cron schedule for workflow", "error", err, "cron_expression", ms.Cron)
 			return
 		}
 
-		slog.Debug("Loaded cron", "file", file.Path)
+		slog.Debug("Successfully loaded cron schedule for workflow", "workflow", file.Path, "cron_expression", ms.Cron)
 	}
 }
 

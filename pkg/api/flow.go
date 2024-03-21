@@ -75,7 +75,7 @@ func newFlowHandler(base *mux.Router, router *mux.Router, conf *core.Config) (*f
 	slog.Debug("initailizing router")
 
 	h.initRoutes(router)
-	slog.Debug("routet initalited")
+	slog.Debug("router initailized")
 
 	proxy := newSingleHostReverseProxy(func(req *http.Request) *http.Request {
 		req.Host = ""
@@ -140,6 +140,8 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     schema:
 	//       "$ref": '#/definitions/ErrorResponse'
 	r.HandleFunc("/namespaces/{ns}", h.CreateNamespace).Name(RN_AddNamespace).Methods(http.MethodPut)
+
+	r.HandleFunc("/namespaces/{ns}/lint", h.NamespaceLint).Name("getNamespaceLogs").Methods(http.MethodGet)
 
 	// swagger:operation DELETE /api/namespaces/{namespace} Namespaces deleteNamespace
 	// ---

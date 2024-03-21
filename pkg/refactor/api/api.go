@@ -154,6 +154,7 @@ func Start(ctx context.Context, app core.App, db *database.DB, bus *pubsub2.Bus,
 		// Run api server
 		err := apiServer.ListenAndServe()
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
+			slog.Debug("API v2 Server Closed", "error", err)
 			log.Fatal(err)
 		}
 		// Wait for server context to be stopped
@@ -168,9 +169,10 @@ func Start(ctx context.Context, app core.App, db *database.DB, bus *pubsub2.Bus,
 
 		err := apiServer.Shutdown(shutdownCtx)
 		if err != nil {
-			slog.Error("api server", "error", err)
+			slog.Error("Failed to start API server", "addr", addr, "error", err)
 			panic(err)
 		}
+		slog.Debug("Shutting down API server", "addr", addr)
 		serverStopCtx()
 	}()
 }
