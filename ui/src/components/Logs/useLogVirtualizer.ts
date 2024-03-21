@@ -21,30 +21,30 @@ export const useLogVirtualizer = ({
 
   const [scrolledToBottom, setScrolledToBottom] = useState(true);
 
-  const prevNumberOfLogs = useRef<number | null>(null);
-  const prevOldestLogId = useRef<number | null>(null);
+  const prevNumberOfLogLines = useRef<number | null>(null);
+  const prevOldestLogLineId = useRef<number | null>(null);
 
   const {
-    data: logs = [],
+    data: logLines = [],
     hasPreviousPage,
     fetchPreviousPage,
     isFetchingPreviousPage,
   } = useLogs(queryLogsBy);
 
-  const numberOfLogs = logs.length;
+  const numberOfLogLines = logLines.length;
 
   const rowVirtualizer = useVirtualizer({
-    count: numberOfLogs,
+    count: numberOfLogLines,
     getScrollElement: () => parentRef.current,
     estimateSize: () => defaultLogHeight,
     getItemKey: useCallback(
       (index: number) => {
-        const uniqueId = logs[index]?.id;
+        const uniqueId = logLines[index]?.id;
         if (!uniqueId)
-          throw new Error("Could not find a log id for the virtualizer.");
+          throw new Error("Could not find a log line id for the virtualizer.");
         return uniqueId;
       },
-      [logs]
+      [logLines]
     ),
     /**
      * overscan is the number of items to render above and below
@@ -55,18 +55,18 @@ export const useLogVirtualizer = ({
      */
     overscan: 40,
     onChange(instance) {
-      prevNumberOfLogs.current = numberOfLogs;
-      prevOldestLogId.current = logs?.[0]?.id ?? null;
+      prevNumberOfLogLines.current = numberOfLogLines;
+      prevOldestLogLineId.current = logLines?.[0]?.id ?? null;
       /**
-       * when the last x loglines are visible in the list (x being
-       * loglinesThreashold), the user is considered to be at the
+       * when the last x log lines are visible in the list (x being
+       * logLinesThreshold), the user is considered to be at the
        * bottom of the list.
        */
       if (!instance.range) return;
       const { endIndex: lastVisibleIndex } = instance.range;
-      const loglinesThreashold = 5;
+      const logLinesThreshold = 5;
       setScrolledToBottom(
-        lastVisibleIndex >= numberOfLogs - 1 - loglinesThreashold
+        lastVisibleIndex >= numberOfLogLines - 1 - logLinesThreshold
       );
     },
   });
@@ -77,12 +77,12 @@ export const useLogVirtualizer = ({
    * fetch the previous log page when a users scrolls to the top
    */
   useEffect(() => {
-    const [firstLogEntry] = virtualItems;
+    const [firstLogLine] = virtualItems;
     if (
-      firstLogEntry?.index === 0 &&
+      firstLogLine?.index === 0 &&
       hasPreviousPage &&
       !isFetchingPreviousPage &&
-      prevNumberOfLogs?.current === numberOfLogs
+      prevNumberOfLogLines?.current === numberOfLogLines
     ) {
       fetchPreviousPage();
     }
@@ -90,7 +90,7 @@ export const useLogVirtualizer = ({
     fetchPreviousPage,
     hasPreviousPage,
     isFetchingPreviousPage,
-    numberOfLogs,
+    numberOfLogLines,
     virtualItems,
   ]);
 
@@ -100,45 +100,46 @@ export const useLogVirtualizer = ({
    * viewport.
    */
   useEffect(() => {
-    if (numberOfLogs > 0 && scrolledToBottom) {
-      rowVirtualizer.scrollToIndex(numberOfLogs - 1, { align: "end" });
+    if (numberOfLogLines > 0 && scrolledToBottom) {
+      rowVirtualizer.scrollToIndex(numberOfLogLines - 1, { align: "end" });
     }
-  }, [numberOfLogs, rowVirtualizer, scrolledToBottom]);
+  }, [numberOfLogLines, rowVirtualizer, scrolledToBottom]);
 
   /**
-   * maintain the scroll position when a set of new logs is added to the top
+   * maintain the scroll position when a set of new log lines is added to the top
    * of the list
    */
   useEffect(() => {
     if (
       !scrolledToBottom &&
-      prevNumberOfLogs.current &&
-      prevNumberOfLogs.current !== numberOfLogs &&
-      // this will make sure the new received logs were added at the top
-      prevOldestLogId.current !== (logs?.[0]?.id ?? null)
+      prevNumberOfLogLines.current &&
+      prevNumberOfLogLines.current !== numberOfLogLines &&
+      // this will make sure the new received log lines were added at the top
+      prevOldestLogLineId.current !== (logLines?.[0]?.id ?? null)
     ) {
       /**
-       * To maintin the old scroll position we need to know how many logs
-       * were added to the top of the list.
+       * To maintain the old scroll position we need to know how many log
+       * lines were added to the top of the list.
        *
        * Example:
-       * The user was at a scrollOffset of 100 and then 200 new logs have
+       * The user was at a scrollOffset of 100 and then 200 new lines have
        * been added to the top. We now need to add 200 times the height of
        * a log entry (200 * defaultLogHeight) to that offset to stay at the
        * same scroll position.
        */
       const { scrollOffset: currentOffset } = rowVirtualizer;
-      const numberOfNewLogs = numberOfLogs - prevNumberOfLogs.current;
-      const newOffset = currentOffset + numberOfNewLogs * defaultLogHeight;
-      prevNumberOfLogs.current = numberOfLogs;
+      const numberOfNewLogLines =
+        numberOfLogLines - prevNumberOfLogLines.current;
+      const newOffset = currentOffset + numberOfNewLogLines * defaultLogHeight;
+      prevNumberOfLogLines.current = numberOfLogLines;
       rowVirtualizer.scrollToOffset(newOffset);
     }
-  }, [logs, numberOfLogs, rowVirtualizer, scrolledToBottom]);
+  }, [logLines, numberOfLogLines, rowVirtualizer, scrolledToBottom]);
 
   return {
     rowVirtualizer,
     parentRef,
-    logs,
+    logLines,
     scrolledToBottom,
     setScrolledToBottom,
   };

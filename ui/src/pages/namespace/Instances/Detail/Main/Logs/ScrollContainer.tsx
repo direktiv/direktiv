@@ -11,7 +11,7 @@ const ScrollContainer = () => {
   const {
     rowVirtualizer,
     parentRef,
-    logs,
+    logLines,
     scrolledToBottom,
     setScrolledToBottom,
   } = useLogVirtualizer({
@@ -32,7 +32,7 @@ const ScrollContainer = () => {
       setScrolledToBottom={setScrolledToBottom}
     >
       {virtualItems.map((virtualItem) => {
-        const logEntry = logs[virtualItem.index];
+        const logEntry = logLines[virtualItem.index];
         if (!logEntry) return null;
         return (
           <Entry
