@@ -7,6 +7,7 @@ import {
 import { ElementRef, useEffect, useRef, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/design/Tabs";
 import { getValidationSchemaFromYaml, workflowInputSchema } from "./utils";
+import { isObject, prettifyJsonString } from "~/util/helpers";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
@@ -33,6 +34,8 @@ type FormInput = {
 
 type JSONSchemaFormSubmit = Parameters<typeof JSONSchemaForm>[0]["onSubmit"];
 
+const defaultEmptyJson = "{\n    \n}";
+
 const RunWorkflow = ({ path }: { path: string }) => {
   const { toast } = useToast();
   const { t } = useTranslation();
@@ -53,7 +56,7 @@ const RunWorkflow = ({ path }: { path: string }) => {
     isFormAvailable ? "form" : "json"
   );
 
-  const [jsonInput, setJsonInput] = useState("");
+  const [jsonInput, setJsonInput] = useState(defaultEmptyJson);
   const [formInput, setFormInput] = useState({});
 
   // it is possible that no data (or stale cache data) is available when this component mounts
@@ -67,7 +70,7 @@ const RunWorkflow = ({ path }: { path: string }) => {
     formState: { isValid },
   } = useForm<FormInput>({
     defaultValues: {
-      payload: "{\n    \n}",
+      payload: defaultEmptyJson,
     },
     resolver: zodResolver(z.object({ payload: workflowInputSchema })),
   });
@@ -105,28 +108,29 @@ const RunWorkflow = ({ path }: { path: string }) => {
     }
   };
 
-  const syncInputData = (tabValueParsed: "form" | "json") => {
-    const object = jsonSchemaFormRef.current?.state.formData;
-    const objectString = JSON.stringify(
-      jsonSchemaFormRef.current?.state.formData
-    );
-
-    if (tabValueParsed === "json") {
-      setJsonInput(objectString);
-      setFormInput(object);
-    }
-
-    if (tabValueParsed === "form") {
-      if (objectString !== undefined) {
-        setFormInput(object);
-      } else {
-        setFormInput(JSON.parse(jsonInput));
-      }
-    }
-  };
-
   const jsonSchemaFormSubmit: JSONSchemaFormSubmit = (form) => {
     runWorkflow({ path, payload: JSON.stringify(form.formData) });
+  };
+
+  const syncInputData = (selectedTab: "form" | "json") => {
+    if (selectedTab === "json") {
+      const formState = jsonSchemaFormRef.current?.state.formData as unknown;
+      const formDataObj = isObject(formState) ? formState : {};
+      const formDataString = prettifyJsonString(JSON.stringify(formDataObj));
+      const formIsEmpty = Object.keys(formDataObj).length === 0;
+
+      setJsonInput(formIsEmpty ? defaultEmptyJson : formDataString);
+    }
+
+    if (selectedTab === "form") {
+      let jsonInputObj: object;
+      try {
+        jsonInputObj = JSON.parse(jsonInput);
+      } catch (e) {
+        jsonInputObj = {};
+      }
+      setFormInput(jsonInputObj);
+    }
   };
 
   const disableSubmit = !isValid;
@@ -179,7 +183,9 @@ const RunWorkflow = ({ path }: { path: string }) => {
                 value={jsonInput}
                 onMount={(editor) => {
                   editor.focus();
-                  editor.setPosition({ lineNumber: 2, column: 5 });
+                  if (jsonInput === defaultEmptyJson) {
+                    editor.setPosition({ lineNumber: 2, column: 5 });
+                  }
                 }}
                 onChange={(newData) => {
                   if (newData != undefined) setJsonInput(newData);
@@ -203,6 +209,7 @@ const RunWorkflow = ({ path }: { path: string }) => {
                     formData={formInput}
                     ref={jsonSchemaFormRef}
                     schema={validationSchema}
+                    omitExtraData={true}
                     action="submit"
                     onSubmit={jsonSchemaFormSubmit}
                   >
