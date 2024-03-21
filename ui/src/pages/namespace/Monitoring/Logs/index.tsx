@@ -18,16 +18,16 @@ const LogsPanel = () => {
   const { t } = useTranslation();
 
   const {
-    data: allLogs = [],
+    data: logLines = [],
     isFetched,
     isAllowed,
     noPermissionMessage,
   } = useLogs();
 
-  const numberOfLogs = allLogs.length;
+  const numberOfLogs = logLines.length;
 
   const copyValue =
-    allLogs.map(getMonitoringLogEntryForClipboard).join("\n") ?? "";
+    logLines.map(getMonitoringLogEntryForClipboard).join("\n") ?? "";
 
   if (!isFetched) return null;
 

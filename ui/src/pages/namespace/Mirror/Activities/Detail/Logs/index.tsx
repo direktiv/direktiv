@@ -17,13 +17,14 @@ import { useTranslation } from "react-i18next";
 const Logs = ({ activityId }: { activityId: string }) => {
   const { t } = useTranslation();
 
-  const { data: allLogs = [] } = useLogs({
+  const { data: logLines = [] } = useLogs({
     activity: activityId,
   });
 
-  const numberOfLogs = allLogs.length;
+  const numberOfLogs = logLines.length;
 
-  const copyValue = allLogs.map(getMirrorLogEntryForClipboard).join("\n") ?? "";
+  const copyValue =
+    logLines.map(getMirrorLogEntryForClipboard).join("\n") ?? "";
 
   return (
     <div className="grid grid-rows-[calc(100vh-10rem)]">

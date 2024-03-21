@@ -30,7 +30,7 @@ const LogsPanel = () => {
 
   const { data: instanceDetailsData } = useInstanceDetails({ instanceId });
 
-  const { data: allLogs = [] } = useLogs({
+  const { data: logLines = [] } = useLogs({
     instance: instanceId,
   });
 
@@ -42,10 +42,10 @@ const LogsPanel = () => {
 
   const isPending = instanceDetailsData?.instance.status === "pending";
 
-  const numberOfLogs = allLogs.length;
+  const numberOfLogs = logLines.length;
 
   const copyValue =
-    allLogs.map(getInstanceLogEntryForClipboard).join("\n") ?? "";
+    logLines.map(getInstanceLogEntryForClipboard).join("\n") ?? "";
 
   return (
     <>
