@@ -10,7 +10,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
-	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"github.com/google/uuid"
@@ -285,128 +284,6 @@ func (flow *flow) MirrorInfoStream(req *grpc.MirrorInfoRequest, srv grpc.Flow_Mi
 			time.Sleep(time.Second * 5)
 		}
 	}
-}
-
-func (flow *flow) MirrorActivityLogs(ctx context.Context, req *grpc.MirrorActivityLogsRequest) (*grpc.MirrorActivityLogsResponse, error) {
-	slog.Debug("Handling gRPC request", "this", this())
-
-	tx, err := flow.beginSqlTx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer tx.Rollback()
-
-	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
-	id, err := uuid.Parse(req.Activity)
-	if err != nil {
-		return nil, err
-	}
-	mirProcess, err := tx.DataStore().Mirror().GetProcess(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-
-	qu := make(map[string]interface{})
-	qu["source"] = id
-	qu["type"] = "mirror"
-	qu, err = addFiltersToQuery(qu, req.Pagination.Filter...)
-	if err != nil {
-		return nil, err
-	}
-	le := make([]*logengine.LogEntry, 0)
-	res, total, err := tx.DataStore().Logs().Get(ctx, qu, int(req.Pagination.Limit), int(req.Pagination.Offset))
-	if err != nil {
-		return nil, err
-	}
-	le = append(le, res...)
-
-	resp := new(grpc.MirrorActivityLogsResponse)
-	resp.Namespace = ns.Name
-	resp.Activity = mirProcess.ID.String()
-	resp.PageInfo = &grpc.PageInfo{Limit: req.Pagination.Limit, Offset: req.Pagination.Offset, Total: int32(total)}
-	resp.Results, err = bytedata.ConvertLogMsgForOutput(le)
-	if err != nil {
-		return nil, err
-	}
-
-	return resp, nil
-}
-
-func (flow *flow) MirrorActivityLogsParcels(req *grpc.MirrorActivityLogsRequest, srv grpc.Flow_MirrorActivityLogsParcelsServer) error {
-	slog.Debug("Handling gRPC request", "this", this())
-
-	ctx := srv.Context()
-
-	mirProcessID, err := uuid.Parse(req.GetActivity())
-	if err != nil {
-		return err
-	}
-
-	tx, err := flow.beginSqlTx(ctx)
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-
-	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
-	if err != nil {
-		return err
-	}
-
-	var tailing bool
-
-	mirProcess, err := tx.DataStore().Mirror().GetProcess(ctx, mirProcessID)
-	if err != nil {
-		return err
-	}
-
-	sub := flow.pubsub.SubscribeMirrorActivityLogs(ns.ID, mirProcess.ID)
-	defer flow.cleanup(sub.Close)
-
-resend:
-	qu := make(map[string]interface{})
-	qu["source"] = mirProcessID
-	qu["type"] = "mirror"
-	qu, err = addFiltersToQuery(qu, req.Pagination.Filter...)
-	if err != nil {
-		return err
-	}
-	le := make([]*logengine.LogEntry, 0)
-	res, total, err := tx.DataStore().Logs().Get(ctx, qu, int(req.Pagination.Limit), int(req.Pagination.Offset))
-	if err != nil {
-		return err
-	}
-	le = append(le, res...)
-
-	resp := new(grpc.MirrorActivityLogsResponse)
-	resp.Namespace = ns.Name
-	resp.Activity = mirProcessID.String()
-	resp.PageInfo = &grpc.PageInfo{Limit: req.Pagination.Limit, Offset: req.Pagination.Offset, Total: int32(total)}
-	resp.Results, err = bytedata.ConvertLogMsgForOutput(le)
-	if err != nil {
-		return err
-	}
-
-	if len(resp.Results) != 0 || !tailing {
-		tailing = true
-
-		err = srv.Send(resp)
-		if err != nil {
-			return err
-		}
-
-		req.Pagination.Offset += int32(len(resp.Results))
-	}
-
-	more := sub.Wait(ctx)
-	if !more {
-		return nil
-	}
-
-	goto resend
 }
 
 func (flow *flow) CancelMirrorActivity(ctx context.Context, req *grpc.CancelMirrorActivityRequest) (*emptypb.Empty, error) {

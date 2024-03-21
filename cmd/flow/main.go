@@ -42,11 +42,6 @@ func RunApplication() {
 	rootCmd.PersistentFlags().StringVar(&addr, "addr", "localhost:8080", "")
 	rootCmd.AddCommand(serverCmd)
 
-	rootCmd.AddCommand(serverLogsCmd)
-	rootCmd.AddCommand(namespaceLogsCmd)
-	rootCmd.AddCommand(workflowLogsCmd)
-	rootCmd.AddCommand(instanceLogsCmd)
-
 	rootCmd.AddCommand(eventListenersCmd)
 	rootCmd.AddCommand(eventHistoryCmd)
 	rootCmd.AddCommand(eventReplayCmd)
