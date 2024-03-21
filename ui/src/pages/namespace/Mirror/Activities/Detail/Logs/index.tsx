@@ -10,7 +10,7 @@ import { Card } from "~/design/Card";
 import CopyButton from "~/design/CopyButton";
 import ScrollContainer from "./ScrollContainer";
 import { ScrollText } from "lucide-react";
-import { generateLogEntryForClipboard } from "./utils";
+import { getMirrorLogEntryForClipboard } from "~/components/Logs/utils";
 import { useLogs } from "~/api/logs/query/logs";
 import { useTranslation } from "react-i18next";
 
@@ -23,7 +23,7 @@ const Logs = ({ activityId }: { activityId: string }) => {
 
   const numberOfLogs = allLogs.length;
 
-  const copyValue = allLogs.map(generateLogEntryForClipboard).join("\n") ?? "";
+  const copyValue = allLogs.map(getMirrorLogEntryForClipboard).join("\n") ?? "";
 
   return (
     <div className="grid grid-rows-[calc(100vh-10rem)]">

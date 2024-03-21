@@ -16,7 +16,7 @@ import { ButtonBar } from "~/design/ButtonBar";
 import CopyButton from "~/design/CopyButton";
 import ScrollContainer from "./ScrollContainer";
 import { Toggle } from "~/design/Toggle";
-import { generateLogEntryForClipboard } from "./utils";
+import { getInstanceLogEntryForClipboard } from "~/components/Logs/utils";
 import { useInstanceDetails } from "~/api/instances/query/details";
 import { useInstanceId } from "../../store/instanceContext";
 import { useLogs } from "~/api/logs/query/logs";
@@ -44,7 +44,8 @@ const LogsPanel = () => {
 
   const numberOfLogs = allLogs.length;
 
-  const copyValue = allLogs.map(generateLogEntryForClipboard).join("\n") ?? "";
+  const copyValue =
+    allLogs.map(getInstanceLogEntryForClipboard).join("\n") ?? "";
 
   return (
     <>

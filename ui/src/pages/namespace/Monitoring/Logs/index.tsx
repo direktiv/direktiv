@@ -10,7 +10,7 @@ import CopyButton from "~/design/CopyButton";
 import { NoPermissions } from "~/design/Table";
 import ScrollContainer from "./Scrollcontainer";
 import { ScrollText } from "lucide-react";
-import { generateClipboardLogEntry } from "./utils";
+import { getMonitoringLogEntryForClipboard } from "~/components/Logs/utils";
 import { useLogs } from "~/api/logs/query/logs";
 import { useTranslation } from "react-i18next";
 
@@ -26,7 +26,8 @@ const LogsPanel = () => {
 
   const numberOfLogs = allLogs.length;
 
-  const copyValue = allLogs.map(generateClipboardLogEntry).join("\n") ?? "";
+  const copyValue =
+    allLogs.map(getMonitoringLogEntryForClipboard).join("\n") ?? "";
 
   if (!isFetched) return null;
 
