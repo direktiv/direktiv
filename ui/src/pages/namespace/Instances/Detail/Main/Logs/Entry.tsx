@@ -18,7 +18,7 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
     const instanceId = useInstanceId();
     const { t } = useTranslation();
     const { msg, level, time, workflow, namespace } = logEntry;
-    const timeFormated = formatLogTime(time);
+    const formattedTime = formatLogTime(time);
     const verbose = useLogsPreferencesVerboseLogs();
 
     const workflowPath = workflow?.workflow;
@@ -42,7 +42,7 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
     return (
       <LogEntry
         variant={logLevelToLogEntryVariant(level)}
-        time={timeFormated}
+        time={formattedTime}
         ref={ref}
         {...props}
       >

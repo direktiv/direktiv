@@ -13,12 +13,12 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
   ({ logEntry, ...props }, ref) => {
     const { t } = useTranslation();
     const { msg, level, time } = logEntry;
-    const timeFormated = formatLogTime(time);
+    const formattedTime = formatLogTime(time);
 
     return (
       <LogEntry
         variant={logLevelToLogEntryVariant(level)}
-        time={timeFormated}
+        time={formattedTime}
         ref={ref}
         {...props}
       >
