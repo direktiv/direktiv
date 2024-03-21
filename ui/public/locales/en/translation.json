@@ -523,13 +523,7 @@
     "monitoring": {
       "title": "Monitoring",
       "logs": {
-        "title": "Logs",
-        "followLogs": "Follow logs",
-        "logsCount": "received {{count}} log entries",
-        "logsCount_one": "received {{count}} log entry",
-        "tooltips": {
-          "copy": "Copy logs"
-        }
+        "title": "Logs"
       },
       "instances": {
         "openWorkflowTooltip": "click to open workflow {{name}}",
@@ -607,14 +601,9 @@
           "realtiveTime": "{{relativeTime}} ago"
         },
         "logs": {
-          "title": "Logs",
-          "followLogs": "Follow logs",
-          "logsCount": "received {{count}} log entries",
-          "logsCount_one": "received {{count}} log entry",
+          "title": "Logs for {{path}}",
           "tooltips": {
             "verbose": "Verbose logs",
-            "wordWrap": "Word wrap",
-            "copy": "Copy logs",
             "minimize": "Minimize logs",
             "maximize": "Maximize logs"
           },
@@ -744,13 +733,7 @@
         "logs": {
           "noPods": "No running pods",
           "title": "Logs for {{name}}",
-          "followLogs": "Follow logs",
-          "logsCount": "received {{count}} log entries",
-          "logsCount_one": "received {{count}} log entry",
-          "tab": "Pod {{number}} of {{total}}",
-          "tooltips": {
-            "copy": "Copy logs"
-          }
+          "tab": "Pod {{number}} of {{total}}"
         }
       }
     },
@@ -1238,6 +1221,17 @@
     "modalWrapper": {
       "saveBtn": "Save",
       "cancelBtn": "Cancel"
+    },
+    "logs": {
+      "followLogs": "Follow logs",
+      "logsCount": "received {{count}} log entries",
+      "logsCount_one": "received {{count}} log entry",
+      "copy": "Copy logs",
+      "logEntry": {
+        "messageLabel": "msg:",
+        "stateLabel": "state:",
+        "instanceLabel": "instance:"
+      }
     }
   },
   "api": {

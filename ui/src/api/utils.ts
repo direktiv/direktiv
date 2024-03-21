@@ -19,3 +19,22 @@ export const getAuthHeader = (apiKey: string): AuthHeader => {
     "direktiv-token": apiKey,
   };
 };
+
+export const buildSearchParamsString = (
+  searchParmsObj: Record<string, string | undefined>,
+  withoutQuestionmark?: true
+) => {
+  const queryParams = new URLSearchParams();
+  Object.entries(searchParmsObj).forEach(([name, value]) => {
+    if (value) {
+      queryParams.append(name, value);
+    }
+  });
+
+  const queryParamsString = queryParams.toString();
+  if (queryParamsString === "") {
+    return queryParamsString;
+  }
+
+  return withoutQuestionmark ? queryParamsString : `?${queryParamsString}`;
+};
