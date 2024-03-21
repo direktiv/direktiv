@@ -65,13 +65,13 @@ const updateCache = (
 
   const pages = oldData.pages;
   const olderPages = pages.slice(0, -1);
-  const recentPage = pages.at(-1);
-  if (recentPage === undefined) return undefined;
+  const newestPage = pages.at(-1);
+  if (newestPage === undefined) return undefined;
 
-  const recentPageData = recentPage.data ?? [];
+  const newestPageData = newestPage.data ?? [];
 
   // skip cache if the log entry is already in the cache
-  if (recentPageData.some((logEntry) => logEntry.id === newLogEntry.id)) {
+  if (newestPageData.some((logEntry) => logEntry.id === newLogEntry.id)) {
     return oldData;
   }
 
@@ -80,8 +80,8 @@ const updateCache = (
     pages: [
       ...olderPages,
       {
-        ...recentPage,
-        data: [...recentPageData, newLogEntry],
+        ...newestPage,
+        data: [...newestPageData, newLogEntry],
       },
     ],
   };
