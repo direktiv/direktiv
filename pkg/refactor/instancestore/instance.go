@@ -27,6 +27,7 @@ const (
 	InstanceStatusComplete
 	InstanceStatusFailed
 	InstanceStatusCrashed
+	InstanceStatusCancelled
 )
 
 var instanceStatusStrings = []string{
@@ -34,6 +35,7 @@ var instanceStatusStrings = []string{
 	util.InstanceStatusComplete,
 	util.InstanceStatusFailed,
 	util.InstanceStatusCrashed,
+	util.InstanceStatusCancelled,
 }
 
 func (status InstanceStatus) String() string {
@@ -243,4 +245,14 @@ type Store interface {
 	// AssertNoParallelCron attempts to detect if another machine in a HA environment may have already triggered an instance that we're just about to create ourselves.
 	// It does this by checking if a record of an instance was created within the last 30s for the given workflow ID.
 	AssertNoParallelCron(ctx context.Context, wfPath string) error
+}
+
+type (
+	InstanceCanceller func(ctx context.Context, namespace, instanceID string) error
+	InstanceStarter   func(ctx context.Context, namespace, path string, input []byte) (*InstanceData, error)
+)
+
+type InstanceManager struct {
+	Cancel InstanceCanceller
+	Start  InstanceStarter
 }

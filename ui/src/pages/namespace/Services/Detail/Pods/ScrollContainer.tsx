@@ -1,19 +1,11 @@
-import { LogEntry, Logs } from "~/design/Logs";
 import { useEffect, useRef, useState } from "react";
 
-import { ArrowDown } from "lucide-react";
-import Button from "~/design/Button";
-import { twMergeClsx } from "~/util/helpers";
-import { useLogsPreferencesWordWrap } from "~/util/store/logs";
-import { useTranslation } from "react-i18next";
+import { LogEntry } from "~/design/Logs";
+import LogList from "~/components/Logs";
 import { useVirtualizer } from "@tanstack/react-virtual";
 
 const ScrollContainer = ({ logs }: { logs: string[] }) => {
-  const wordWrap = useLogsPreferencesWordWrap();
-
-  const { t } = useTranslation();
-
-  const [watch, setWatch] = useState(true);
+  const [scrolledToBottom, setScrolledToBottom] = useState(true);
 
   // The scrollable element for the list
   const parentRef = useRef<HTMLDivElement | null>(null);
@@ -34,80 +26,45 @@ const ScrollContainer = ({ logs }: { logs: string[] }) => {
   });
 
   useEffect(() => {
-    if (logs.length && watch) {
+    if (logs.length && scrolledToBottom) {
       rowVirtualizer.scrollToIndex(logs.length - 1), { align: "end" };
     }
-  }, [logs.length, rowVirtualizer, watch]);
+  }, [logs.length, rowVirtualizer, scrolledToBottom]);
 
-  const items = rowVirtualizer.getVirtualItems();
+  const virtualItems = rowVirtualizer.getVirtualItems();
 
   return (
-    <Logs
-      wordWrap={wordWrap}
-      className="h-full overflow-scroll"
+    <LogList
       ref={parentRef}
+      height={rowVirtualizer.getTotalSize()}
+      virtualOffset={virtualItems[0]?.start ?? 0}
+      scrolledToBottom={scrolledToBottom}
+      setScrolledToBottom={setScrolledToBottom}
+      scrollButtonClassName="aria-[hidden=true]:bottom-6, aria-[hidden=false]:bottom-11"
       onScroll={(e) => {
         const element = e.target as HTMLDivElement;
         if (element) {
           const { scrollHeight, scrollTop, clientHeight } = element;
           const scrollDistanceToBottom =
             scrollHeight - scrollTop - clientHeight;
-          setWatch(scrollDistanceToBottom < 100);
+          setScrolledToBottom(scrollDistanceToBottom < 100);
         }
       }}
     >
-      <div
-        className="relative w-full"
-        style={{
-          height: `${rowVirtualizer.getTotalSize()}px`,
-        }}
-      >
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100%",
-            transform: `translateY(${items[0]?.start}px)`,
-          }}
-        >
-          {items.map((virtualItem) => {
-            const line = logs[virtualItem.index] ?? "";
-            return (
-              <LogEntry
-                key={virtualItem.key}
-                data-index={virtualItem.key}
-                ref={rowVirtualizer.measureElement}
-              >
-                {line}
-              </LogEntry>
-            );
-          })}
-        </div>
-      </div>
-      <div
-        className={twMergeClsx(
-          "absolute box-border flex w-full pr-10",
-          "justify-center transition-all",
-          "aria-[hidden=true]:pointer-events-none aria-[hidden=true]:bottom-6 aria-[hidden=true]:opacity-0",
-          "aria-[hidden=false]:bottom-11 aria-[hidden=false]:opacity-100"
-        )}
-        aria-hidden={watch ? "true" : "false"}
-      >
-        <Button
-          className="bg-white dark:bg-black"
-          variant="outline"
-          size="sm"
-          onClick={() => {
-            setWatch(true);
-          }}
-        >
-          <ArrowDown />
-          {t("pages.services.detail.logs.followLogs")}
-          <ArrowDown />
-        </Button>
-      </div>
-    </Logs>
+      {virtualItems.map((virtualItem) => {
+        const logEntry = logs[virtualItem.index];
+        if (!logEntry) return null;
+        return (
+          <LogEntry
+            key={virtualItem.key}
+            data-index={virtualItem.key}
+            ref={rowVirtualizer.measureElement}
+          >
+            {logEntry}
+          </LogEntry>
+        );
+      })}
+    </LogList>
   );
 };
 

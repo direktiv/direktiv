@@ -3348,7 +3348,7 @@ func (h *flowHandler) WaitWorkflow(w http.ResponseWriter, r *http.Request) {
 			}
 
 			return
-		} else if s == util.InstanceStatusFailed {
+		} else if s == util.InstanceStatusFailed || s == util.InstanceStatusCancelled {
 			w.Header().Set("Direktiv-Instance-Error-Code", status.Instance.ErrorCode)
 			w.Header().Set("Direktiv-Instance-Error-Message", status.Instance.ErrorMessage)
 			code := http.StatusInternalServerError

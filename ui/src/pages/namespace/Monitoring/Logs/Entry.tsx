@@ -1,25 +1,59 @@
 import { ComponentPropsWithoutRef, forwardRef } from "react";
 import { formatLogTime, logLevelToLogEntryVariant } from "~/util/helpers";
 
+import { Link } from "react-router-dom";
 import { LogEntry } from "~/design/Logs";
-import { NamespaceLogSchemaType } from "~/api/namespaces/schema";
+import { LogEntryType } from "~/api/logs/schema";
+import { LogSegment } from "~/components/Logs/LogSegment";
+import { pages } from "~/util/router/pages";
+import { useTranslation } from "react-i18next";
 
 type LogEntryProps = ComponentPropsWithoutRef<typeof LogEntry>;
-type Props = { logEntry: NamespaceLogSchemaType } & LogEntryProps;
-
+type Props = { logEntry: LogEntryType } & LogEntryProps;
 export const Entry = forwardRef<HTMLDivElement, Props>(
   ({ logEntry, ...props }, ref) => {
-    const { msg, t, level } = logEntry;
-    const time = formatLogTime(t);
+    const { t } = useTranslation();
+    const { msg, level, time, workflow, namespace } = logEntry;
+    const formattedTime = formatLogTime(time);
+
+    if (!namespace) return <></>;
+
+    const isWorkflowLog = !!workflow;
+    const workflowPath = workflow?.workflow;
+    const workflowLink = pages.explorer.createHref({
+      path: workflow?.workflow,
+      namespace,
+      subpage: "workflow",
+    });
+
+    const instanceLink = pages.instances.createHref({
+      namespace,
+      instance: workflow?.instance,
+    });
 
     return (
       <LogEntry
         variant={logLevelToLogEntryVariant(level)}
-        time={time}
+        time={formattedTime}
         ref={ref}
         {...props}
       >
-        {msg}
+        <LogSegment display={true}>
+          {t("components.logs.logEntry.messageLabel")} {msg}
+        </LogSegment>
+        <LogSegment display={isWorkflowLog}>
+          <span className="opacity-60">
+            <Link to={workflowLink} className="underline" target="_blank">
+              {workflowPath}
+            </Link>{" "}
+            (
+            <Link to={instanceLink} className="underline" target="_blank">
+              {t("components.logs.logEntry.instanceLabel")}{" "}
+              {workflow?.instance.slice(0, 8)}
+            </Link>
+            )
+          </span>
+        </LogSegment>
       </LogEntry>
     );
   }

@@ -36,6 +36,3 @@ export const FileSchema = z.custom<File>((value) => {
     return false;
   }
 });
-
-export const LogLevelSchema = z.enum(["debug", "info", "error", "warn"]);
-export type LogLevelSchemaType = z.infer<typeof LogLevelSchema>;

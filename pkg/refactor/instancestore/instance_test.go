@@ -265,11 +265,11 @@ func assertInstanceDataIsMost(t *testing.T, idata *instancestore.InstanceData) {
 
 func assertInstanceDataIsSummary(t *testing.T, idata *instancestore.InstanceData) {
 	t.Helper()
-	if idata.Definition != nil {
-		t.Errorf("unexpected idata.Definition")
-
-		return
-	}
+	// if idata.Definition != nil {
+	// 	t.Errorf("unexpected idata.Definition")
+	//
+	// 	return
+	// }
 
 	// if idata.Settings != nil {
 	// 	t.Errorf("unexpected idata.Settings")

@@ -667,6 +667,9 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 	status := instancestore.InstanceStatusComplete
 	if im.ErrorCode() != "" {
 		status = instancestore.InstanceStatusFailed
+		if im.ErrorCode() == "direktiv.cancels.parent" || im.ErrorCode() == "direktiv.cancels.api" {
+			status = instancestore.InstanceStatusCancelled
+		}
 		slog.Debug("Workflow failed with an error.", enginerefactor.GetSlogAttributesWithError(instanceTrackCtx, fmt.Errorf("'%s': %s", im.ErrorCode(), im.instance.Instance.ErrorMessage))...)
 		engine.logger.Errorf(ctx, im.instance.Instance.NamespaceID, im.instance.GetAttributes(recipient.Namespace), "Workflow failed with error '%s': %s", im.ErrorCode(), im.instance.Instance.ErrorMessage)
 	}
