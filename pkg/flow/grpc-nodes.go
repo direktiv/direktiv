@@ -3,12 +3,12 @@ package flow
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"path/filepath"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
-	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
@@ -20,7 +20,7 @@ import (
 )
 
 func (flow *flow) Node(ctx context.Context, req *grpc.NodeRequest) (*grpc.NodeResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	var file *filestore.File
 	var err error
@@ -44,7 +44,7 @@ func (flow *flow) Node(ctx context.Context, req *grpc.NodeRequest) (*grpc.NodeRe
 }
 
 func (flow *flow) Directory(ctx context.Context, req *grpc.DirectoryRequest) (*grpc.DirectoryResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	var node *filestore.File
 	var files []*filestore.File
@@ -97,7 +97,7 @@ func (flow *flow) Directory(ctx context.Context, req *grpc.DirectoryRequest) (*g
 }
 
 func (flow *flow) DirectoryStream(req *grpc.DirectoryRequest, srv grpc.Flow_DirectoryStreamServer) error {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 	ctx := srv.Context()
 
 	resp, err := flow.Directory(ctx, req)
@@ -120,7 +120,7 @@ func (flow *flow) DirectoryStream(req *grpc.DirectoryRequest, srv grpc.Flow_Dire
 }
 
 func (flow *flow) CreateDirectory(ctx context.Context, req *grpc.CreateDirectoryRequest) (*grpc.CreateDirectoryResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	var file *filestore.File
 
@@ -140,7 +140,7 @@ func (flow *flow) CreateDirectory(ctx context.Context, req *grpc.CreateDirectory
 		return nil, err
 	}
 
-	flow.logger.Debugf(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Created directory '%s'.", file.Path)
+	slog.Debug("Created directory.", "path", file.Path)
 
 	// Broadcast
 	err = flow.BroadcastDirectory(ctx, BroadcastEventTypeCreate,
@@ -165,7 +165,7 @@ func (flow *flow) CreateDirectory(ctx context.Context, req *grpc.CreateDirectory
 }
 
 func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (*emptypb.Empty, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
@@ -236,11 +236,11 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 			DeleteFileID: file.ID,
 		})
 		if err != nil {
-			flow.sugar.Error("pubsub publish", "error", err)
+			slog.Error("pubsub publish", "error", err)
 		}
 	}
 
-	flow.logger.Debugf(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Deleted %s '%s'.", file.Typ, file.Path)
+	slog.Debug("Deleted file", "type", file.Typ, "path", file.Path)
 
 	var resp emptypb.Empty
 
@@ -249,7 +249,7 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 
 //nolint:goconst
 func (flow *flow) RenameNode(ctx context.Context, req *grpc.RenameNodeRequest) (*grpc.RenameNodeResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
@@ -294,11 +294,11 @@ func (flow *flow) RenameNode(ctx context.Context, req *grpc.RenameNodeRequest) (
 			OldPath:     req.GetOld(),
 		})
 		if err != nil {
-			flow.sugar.Error("pubsub publish", "error", err)
+			slog.Error("pubsub publish", "error", err)
 		}
 	}
 
-	flow.logger.Debugf(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Renamed %s from '%s' to '%s'.", file.Typ, req.GetOld(), req.GetNew())
+	slog.Debug("Renamed file.", "path_old", req.GetOld(), "path", req.GetNew())
 
 	var resp grpc.RenameNodeResponse
 

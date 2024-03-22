@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
@@ -108,7 +109,7 @@ func (flow *flow) configureRouterHandler(req *pubsub.PubsubUpdate) {
 
 	err := json.Unmarshal([]byte(req.Key), msg)
 	if err != nil {
-		flow.sugar.Error(err)
+		slog.Error("Failed to unmarshal router configuration message.", "error", err)
 		return
 	}
 
@@ -119,7 +120,7 @@ func (flow *flow) configureRouterHandler(req *pubsub.PubsubUpdate) {
 	if msg.Cron != "" {
 		err = flow.timers.addCron(msg.ID, wfCron, msg.Cron, []byte(msg.ID))
 		if err != nil {
-			flow.sugar.Error(err)
+			slog.Error("Failed to add cron schedule for workflow.", "error", err, "cron_expression", msg.Cron)
 			return
 		}
 	}
@@ -130,7 +131,7 @@ func (flow *flow) cronHandler(data []byte) {
 
 	id, err := uuid.Parse(string(data))
 	if err != nil {
-		flow.sugar.Error(err)
+		slog.Error("Failed to parse UUID from cron data.", "error", err, "data", string(data))
 		return
 	}
 
@@ -139,7 +140,7 @@ func (flow *flow) cronHandler(data []byte) {
 		Isolation: sql.LevelSerializable,
 	})
 	if err != nil {
-		flow.sugar.Error(err)
+		slog.Error("Failed to begin SQL transaction in cron handler.", "error", err)
 		return
 	}
 	defer tx.Rollback()
@@ -147,23 +148,23 @@ func (flow *flow) cronHandler(data []byte) {
 	file, err := tx.FileStore().GetFileByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, filestore.ErrNotFound) {
-			flow.sugar.Infof("Cron failed to find workflow. Deleting cron.")
+			slog.Info("Workflow for cron not found, deleting associated cron entry.")
 			flow.timers.deleteCronForWorkflow(id.String())
 			return
 		}
-		flow.sugar.Error(err)
+		slog.Error("Failed to retrieve file by ID in cron handler.", "error", err)
 		return
 	}
 
 	root, err := tx.FileStore().GetRoot(ctx, file.RootID)
 	if err != nil {
-		flow.sugar.Error(err)
+		slog.Error("cron getting files", "error", err)
 		return
 	}
 
 	ns, err := tx.DataStore().Namespaces().GetByName(ctx, root.Namespace)
 	if err != nil {
-		flow.sugar.Error(err)
+		slog.Error("Failed to retrieve namespace in cron handler.", "error", err, "namespace", root.Namespace)
 		return
 	}
 
@@ -172,7 +173,7 @@ func (flow *flow) cronHandler(data []byte) {
 		// already triggered
 		return
 	} else if err != nil {
-		flow.sugar.Error(err)
+		slog.Error("Failed to assert no parallel cron executions.", "error", err, "workflow", file.Path)
 		return
 	}
 
@@ -195,11 +196,12 @@ func (flow *flow) cronHandler(data []byte) {
 	im, err := flow.engine.NewInstance(ctx, args)
 	if err != nil {
 		if strings.Contains(err.Error(), "could not serialize access") {
-			// return without logging because this attempt to create an instance clashed with another server
+			slog.Debug("Instance creation clash detected, likely due to parallel execution. Retrying may be required.", "workflow_path", file.Path)
+			// this happens on a attempt to create an instance clashed with another server
 			return
 		}
 
-		flow.sugar.Errorf("Error returned to gRPC request %s: %v", this(), err)
+		slog.Error("Failed to create new instance from cron job.", "workflow_path", file.Path, "error", err)
 
 		return
 	}

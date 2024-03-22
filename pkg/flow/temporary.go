@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"time"
@@ -130,15 +131,17 @@ func (im *instanceMemory) ListenForEvents(ctx context.Context, events []*model.C
 }
 
 func (im *instanceMemory) Log(ctx context.Context, level log.Level, a string, x ...interface{}) {
+	ctx = im.WithTags(ctx)
+	slog.With(enginerefactor.GetSlogAttributesWithStatus(ctx, core.LogRunningStatus)...)
 	switch level {
 	case log.Info:
-		im.engine.logger.Infof(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
+		slog.Info(fmt.Sprintf(a, x...))
 	case log.Debug:
-		im.engine.logger.Debugf(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
+		slog.Debug(fmt.Sprintf(a, x...))
 	case log.Error:
-		im.engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
+		slog.Error(fmt.Sprintf(a, x...))
 	case log.Panic:
-		im.engine.logger.Errorf(ctx, im.GetInstanceID(), im.GetAttributes(), a, x...)
+		slog.Error(fmt.Sprintf("Panic: "+a, x...))
 	}
 }
 
@@ -458,7 +461,7 @@ func (engine *engine) doActionRequest(ctx context.Context, ar *functionRequest) 
 			InstanceId: ar.Workflow.InstanceID, Msg: []string{fmt.Sprintf("Warning: Action timeout '%v' is longer than max allowed duariton '%v'", actionTimeout, engine.server.conf.GetFunctionsTimeout())},
 		})
 		if err != nil {
-			engine.sugar.Errorf("failed to write action log: %v.", err)
+			slog.Error("failed to write action log", "error", err)
 		}
 	}
 
@@ -483,14 +486,13 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 
 	addr := ar.Container.Service
 
-	engine.sugar.Debugf("function request for image %s name %s addr %v:", ar.Container.Image, ar.Container.ID, addr)
-	engine.logger.Debugf(ctx, engine.flow.ID, engine.flow.GetAttributes(), "function request for image %s name %s", ar.Container.Image, ar.Container.ID)
+	slog.Debug("function request for image", "name", ar.Container.Image, "addr", addr, "image_id", ar.Container.ID)
 
 	deadline := time.Now().UTC().Add(time.Duration(ar.Workflow.Timeout) * time.Second)
 	rctx, cancel := context.WithDeadline(context.Background(), deadline)
 	defer cancel()
 
-	engine.sugar.Debugf("deadline for request: %v", time.Until(deadline))
+	slog.Debug("deadline for request", "deadline", time.Until(deadline))
 
 	req, err := http.NewRequestWithContext(rctx, http.MethodPost, addr,
 		bytes.NewReader(ar.Container.Data))
@@ -531,19 +533,19 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	defer cleanup()
 
 	for i := 0; i < 300; i++ { // 5 minutes retries.
-		engine.sugar.Debugf("functions request (%d): %v", i, addr)
+		slog.Debug("functions request", "i", i, "addr", addr)
 		resp, err = client.Do(req)
 		if err != nil {
 			if ctxErr := rctx.Err(); ctxErr != nil {
-				engine.sugar.Debugf("context error in knative call")
+				slog.Debug("context error in knative call", "error", rctx.Err())
 				return
 			}
-			engine.logger.Debugf(ctx, engine.flow.ID, engine.flow.GetAttributes(), "function request for image %s name %s returned an error: %v", ar.Container.Image, ar.Container.ID, err)
+			slog.Debug("function request", "image", ar.Container.Image, "image_id", ar.Container.ID, "error", err)
 
 			time.Sleep(time.Second)
 		} else {
 			defer resp.Body.Close()
-			engine.sugar.Debugf("successfully created function with image %s name %s", ar.Container.Image, ar.Container.ID)
+			slog.Debug("successfully created function", "image", ar.Container.Image, "image_id", ar.Container.ID)
 			break
 		}
 	}
@@ -559,7 +561,7 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 			resp.StatusCode))
 	}
 
-	engine.sugar.Debugf("function request done")
+	slog.Debug("function request done")
 }
 
 func (engine *engine) reportError(ar *functionRequest, err error) {
@@ -577,6 +579,6 @@ func (engine *engine) reportError(ar *functionRequest, err error) {
 
 	_, err = engine.internal.ReportActionResults(context.Background(), r)
 	if err != nil {
-		engine.sugar.Errorf("failed to respond to flow: %v", err)
+		slog.Error("failed to respond to flow", "error", err)
 	}
 }

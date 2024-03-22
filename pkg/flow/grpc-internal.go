@@ -69,13 +69,13 @@ func (internal *internal) ReportActionResults(ctx context.Context, req *grpc.Rep
 
 	uid, err := uuid.Parse(req.GetInstanceId())
 	if err != nil {
-		internal.engine.sugar.Errorf("failed to parse instanceID in ReportActionResults: %v", err)
+		slog.Debug("Error returned to gRPC request", "this", this(), "error", err)
 		return nil, err
 	}
 
 	err = internal.engine.enqueueInstanceMessage(ctx, uid, "action", payload)
 	if err != nil {
-		internal.engine.sugar.Errorf("failed to enqueue instance message for ReportActionResults: %v", err)
+		slog.Debug("Error returned to gRPC request", "this", this(), "error", err)
 		return nil, err
 	}
 
@@ -85,11 +85,11 @@ func (internal *internal) ReportActionResults(ctx context.Context, req *grpc.Rep
 }
 
 func (internal *internal) ActionLog(ctx context.Context, req *grpc.ActionLogRequest) (*emptypb.Empty, error) {
-	internal.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	instance, err := internal.getInstance(ctx, req.GetInstanceId())
 	if err != nil {
-		internal.sugar.Error(err)
+		slog.Error("get instance", "error", err)
 		return nil, err
 	}
 
@@ -108,7 +108,6 @@ func (internal *internal) ActionLog(ctx context.Context, req *grpc.ActionLogRequ
 	for _, msg := range req.GetMsg() {
 		res := truncateLogsMsg(msg, 1024)
 		slog.Info(res, enginerefactor.GetSlogAttributesWithStatus(loggingCtx, core.LogRunningStatus)...)
-		internal.logger.Infof(ctx, instance.Instance.ID, tags, res)
 	}
 	var resp emptypb.Empty
 

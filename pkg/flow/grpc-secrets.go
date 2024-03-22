@@ -2,6 +2,7 @@ package flow
 
 import (
 	"context"
+	"log/slog"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
@@ -12,7 +13,7 @@ import (
 )
 
 func (flow *flow) Secrets(ctx context.Context, req *grpc.SecretsRequest) (*grpc.SecretsResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
@@ -43,7 +44,7 @@ func (flow *flow) Secrets(ctx context.Context, req *grpc.SecretsRequest) (*grpc.
 }
 
 func (flow *flow) SecretsStream(req *grpc.SecretsRequest, srv grpc.Flow_SecretsStreamServer) error {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 	ctx := srv.Context()
 
 	resp, err := flow.Secrets(ctx, req)
@@ -66,7 +67,7 @@ func (flow *flow) SecretsStream(req *grpc.SecretsRequest, srv grpc.Flow_SecretsS
 }
 
 func (flow *flow) SearchSecret(ctx context.Context, req *grpc.SearchSecretRequest) (*grpc.SearchSecretResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
@@ -97,7 +98,7 @@ func (flow *flow) SearchSecret(ctx context.Context, req *grpc.SearchSecretReques
 }
 
 func (flow *flow) SetSecret(ctx context.Context, req *grpc.SetSecretRequest) (*grpc.SetSecretResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
@@ -128,7 +129,7 @@ func (flow *flow) SetSecret(ctx context.Context, req *grpc.SetSecretRequest) (*g
 
 	err = flow.pBus.Publish(pubsub.SecretCreate, ns.Name)
 	if err != nil {
-		flow.sugar.Error("pubsub publish", "error", err)
+		slog.Error("pubsub publish", "error", err)
 	}
 
 	var resp grpc.SetSecretResponse
@@ -146,7 +147,7 @@ func (flow *flow) CreateSecretsFolder(ctx context.Context, req *grpc.CreateSecre
 }
 
 func (flow *flow) DeleteSecret(ctx context.Context, req *grpc.DeleteSecretRequest) (*emptypb.Empty, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
@@ -170,7 +171,7 @@ func (flow *flow) DeleteSecret(ctx context.Context, req *grpc.DeleteSecretReques
 
 	err = flow.pBus.Publish(pubsub.SecretDelete, ns.Name)
 	if err != nil {
-		flow.sugar.Error("pubsub publish", "error", err)
+		slog.Error("pubsub publish", "error", err)
 	}
 
 	// TODO: Alex please look into this.
@@ -189,7 +190,7 @@ func (flow *flow) DeleteSecretsFolder(ctx context.Context, req *grpc.DeleteSecre
 }
 
 func (flow *flow) UpdateSecret(ctx context.Context, req *grpc.UpdateSecretRequest) (*grpc.UpdateSecretResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
@@ -221,7 +222,7 @@ func (flow *flow) UpdateSecret(ctx context.Context, req *grpc.UpdateSecretReques
 
 	err = flow.pBus.Publish(pubsub.SecretUpdate, ns.Name)
 	if err != nil {
-		flow.sugar.Error("pubsub publish", "error", err)
+		slog.Error("pubsub publish", "error", err)
 	}
 
 	var resp grpc.UpdateSecretResponse

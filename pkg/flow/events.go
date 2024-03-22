@@ -5,6 +5,7 @@ import (
 	"encoding/gob"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"strings"
 	"time"
 
@@ -13,12 +14,12 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
-	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	pkgevents "github.com/direktiv/direktiv/pkg/refactor/events"
 	"github.com/google/uuid"
 	"github.com/jinzhu/copier"
+	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -47,80 +48,23 @@ func (events *events) Close() error {
 	return nil
 }
 
-func (events *events) syncEventDelays() {
-	// syncMtx.Lock()
-	// defer syncMtx.Unlock()
-
-	// // disable old timer
-	// events.timers.mtx.Lock()
-	// for i := range events.timers.timers {
-	// 	ti := events.timers.timers[i]
-	// 	if ti.name == "sendEventTimer" {
-	// 		events.timers.disableTimer(ti)
-	// 		break
-	// 	}
-	// }
-	// events.timers.mtx.Unlock()
-	// TODO:
-	// ctx := context.Background()
-
-	// for {
-	// 	e, err := events.getEarliestEvent(ctx)
-	// 	if err != nil {
-	// 		if derrors.IsNotFound(err) {
-	// 			return
-	// 		}
-
-	// 		events.sugar.Errorf("can not sync event delays: %v", err)
-	// 		return
-	// 	}
-
-	//
-	// 	err = events.database.Namespace(ctx, cached, e.Edges.Namespace.ID)
-	// 	if err != nil {
-	// 		return
-	// 	}
-
-	// 	if e.Fire.Before(time.Now()) {
-	// 		err = events.flushEvent(ctx, e.EventId, cached.Namespace, false)
-	// 		if err != nil {
-	// 			events.sugar.Errorf("can not flush event %s: %v", e.ID, err)
-	// 		}
-	// 		continue
-	// 	}
-
-	// 	err = events.timers.addOneShot("sendEventTimer", sendEventFunction,
-	// 		e.Fire, []byte(fmt.Sprintf("%s/%s", e.ID, e.Edges.Namespace.ID.String())))
-	// 	if err != nil {
-	// 		events.sugar.Errorf("can not reschedule event timer: %v", err)
-	// 	}
-
-	// 	break
-	// }
-}
-
-func (events *events) flushEvent(rearm bool) error {
-	defer func(r bool) {
-		if r {
-			events.syncEventDelays()
-		}
-	}(rearm)
-
-	return nil
-}
-
 func (events *events) handleEvent(ctx context.Context, ns uuid.UUID, nsName string, ce *cloudevents.Event) error {
+	span := trace.SpanFromContext(ctx)
+	traceID := span.SpanContext().TraceID()
+	spanID := span.SpanContext().SpanID()
+	slog := *slog.With("trace", traceID, "span", spanID, "namespace", nsName)
 	e := pkgevents.EventEngine{
 		WorkflowStart: func(workflowID uuid.UUID, ev ...*cloudevents.Event) {
 			// events.metrics.InsertRecord
-			events.logger.Debugf(ctx, ns, events.flow.GetAttributes(), "invoking workflow")
+
+			slog.Debug("Starting workflow via CloudEvent.")
 			_, end := traceMessageTrigger(ctx, "wf: "+workflowID.String())
 			defer end()
 			events.engine.EventsInvoke(workflowID, ev...)
 		},
 		WakeInstance: func(instanceID uuid.UUID, step int, ev []*cloudevents.Event) {
 			// events.metrics.InsertRecord
-			events.logger.Debugf(ctx, ns, events.flow.GetAttributes(), "invoking instance %v", instanceID)
+			slog.Debug("invoking instance via cloudevent", "instance", instanceID)
 			_, end := traceMessageTrigger(ctx, "ins: "+instanceID.String()+" step: "+fmt.Sprint(step))
 			defer end()
 			events.engine.wakeEventsWaiter(instanceID, ev)
@@ -132,6 +76,7 @@ func (events *events) handleEvent(ctx context.Context, ns uuid.UUID, nsName stri
 			err := events.runSqlTx(ctx, func(tx *sqlTx) error {
 				r, err := tx.DataStore().EventListenerTopics().GetListeners(ctx, s)
 				if err != nil {
+					slog.Error("Error fetching event-listener-topics.", "error", err)
 					return err
 				}
 				res = r
@@ -143,11 +88,12 @@ func (events *events) handleEvent(ctx context.Context, ns uuid.UUID, nsName stri
 			return res, nil
 		},
 		UpdateListeners: func(ctx context.Context, listener []*pkgevents.EventListener) []error {
-			events.logger.Debugf(ctx, ns, events.flow.GetAttributes(), "update listener")
+			slog.Debug("Updating listeners starting.")
 			err := events.runSqlTx(ctx, func(tx *sqlTx) error {
 				errs := tx.DataStore().EventListener().UpdateOrDelete(ctx, listener)
 				for _, err2 := range errs {
 					if err2 != nil {
+						slog.Debug("Error updating listeners.", "error", err2)
 						return err2
 					}
 				}
@@ -156,6 +102,7 @@ func (events *events) handleEvent(ctx context.Context, ns uuid.UUID, nsName stri
 			if err != nil {
 				return []error{fmt.Errorf("%w", err)}
 			}
+			slog.Debug("Updating listeners complete.")
 			return nil
 		},
 	}
@@ -165,14 +112,16 @@ func (events *events) handleEvent(ctx context.Context, ns uuid.UUID, nsName stri
 	// if err != nil {
 	// 	return err
 	// }
-	e.ProcessEvents(ctx, ns, []event.Event{*ce}, events.sugar.Errorf)
+	e.ProcessEvents(ctx, ns, []event.Event{*ce}, func(template string, args ...interface{}) {
+		slog.Error(fmt.Sprintf(template, args...))
+	})
 	// tx.Commit(ctx)
 	metricsCloudEventsCaptured.WithLabelValues(nsName, ce.Type(), ce.Source(), nsName).Inc()
 	return nil
 }
 
 func (flow *flow) EventListeners(ctx context.Context, req *grpc.EventListenersRequest) (*grpc.EventListenersResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	var resListeners []*pkgevents.EventListener
 	var ns *database.Namespace
@@ -208,7 +157,7 @@ func (flow *flow) EventListeners(ctx context.Context, req *grpc.EventListenersRe
 }
 
 func (flow *flow) EventListenersStream(req *grpc.EventListenersRequest, srv grpc.Flow_EventListenersStreamServer) error {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	ctx := srv.Context()
 	phash := ""
@@ -266,7 +215,7 @@ resend:
 }
 
 func (flow *flow) BroadcastCloudevent(ctx context.Context, in *grpc.BroadcastCloudeventRequest) (*emptypb.Empty, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 	ctx, end := startIncomingEvent(ctx, "flow")
 	defer end()
 
@@ -336,7 +285,7 @@ func (flow *flow) BroadcastCloudevent(ctx context.Context, in *grpc.BroadcastClo
 }
 
 func (flow *flow) HistoricalEvent(ctx context.Context, in *grpc.HistoricalEventRequest) (*grpc.HistoricalEventResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	eid := in.GetId()
 	if eid == "" {
@@ -399,7 +348,7 @@ const (
 )
 
 func (flow *flow) EventHistory(ctx context.Context, req *grpc.EventHistoryRequest) (*grpc.EventHistoryResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	count := 0
 	var res []*pkgevents.Event
@@ -462,7 +411,7 @@ func (flow *flow) EventHistory(ctx context.Context, req *grpc.EventHistoryReques
 }
 
 func (flow *flow) EventHistoryStream(req *grpc.EventHistoryRequest, srv grpc.Flow_EventHistoryStreamServer) error {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	ctx := srv.Context()
 	phash := ""
@@ -552,7 +501,7 @@ resend:
 }
 
 func (flow *flow) ReplayEvent(ctx context.Context, req *grpc.ReplayEventRequest) (*emptypb.Empty, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	eid := req.GetId()
 	if eid == "" {
@@ -590,8 +539,11 @@ func (flow *flow) ReplayEvent(ctx context.Context, req *grpc.ReplayEventRequest)
 
 func (events *events) ReplayCloudevent(ctx context.Context, ns *database.Namespace, cevent *pkgevents.Event) error {
 	event := cevent.Event
+	span := trace.SpanFromContext(ctx)
+	traceID := span.SpanContext().TraceID()
+	spanID := span.SpanContext().SpanID()
 
-	events.logger.Debugf(ctx, ns.ID, ns.GetAttributes(), "Replaying event: %s (%s / %s)", event.ID(), event.Type(), event.Source())
+	slog.Debug("Replaying event", "trace", traceID, "span", spanID, "namespace", ns.Name, "event", event.ID(), "event_type", event.Type(), "event_source", event.Source())
 
 	err := events.handleEvent(ctx, ns.ID, ns.Name, event)
 	if err != nil {
@@ -609,6 +561,11 @@ func (events *events) ReplayCloudevent(ctx context.Context, ns *database.Namespa
 
 func (events *events) BroadcastCloudevent(ctx context.Context, ns *database.Namespace, event *cloudevents.Event, timer int64) error {
 	// events.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Event received: %s (%s / %s) target time: %v", event.ID(), event.Type(), event.Source(), time.Unix(timer, 0))
+	span := trace.SpanFromContext(ctx)
+	traceID := span.SpanContext().TraceID()
+	spanID := span.SpanContext().SpanID()
+
+	slog.With("trace", traceID, "span", spanID, "namespace", "event", event.ID(), "event_type", event.Type(), "event_source", event.Source())
 
 	metricsCloudEventsReceived.WithLabelValues(ns.Name, event.Type(), event.Source(), ns.Name).Inc()
 	ctx, end := traceBrokerMessage(ctx, *event)
@@ -640,7 +597,7 @@ func (events *events) BroadcastCloudevent(ctx context.Context, ns *database.Name
 		})
 		for _, err2 := range errs {
 			if err2 != nil {
-				events.logger.Errorf(ctx, ns.ID, ns.GetAttributes(), "failed to create delayed event: %v", err2)
+				slog.Error("failed to create delayed event", "error", err2)
 			}
 		}
 	}
@@ -654,12 +611,13 @@ func (events *events) BroadcastCloudevent(ctx context.Context, ns *database.Name
 	return nil
 }
 
-func (events *events) updateEventDelaysHandler(req *pubsub.PubsubUpdate) {
-	events.syncEventDelays()
-}
-
 func (events *events) listenForEvents(ctx context.Context, im *instanceMemory, ceds []*model.ConsumeEventDefinition, all bool) error {
 	var transformedEvents []*model.ConsumeEventDefinition
+	span := trace.SpanFromContext(ctx)
+	traceID := span.SpanContext().TraceID()
+	spanID := span.SpanContext().SpanID()
+
+	slog.With("trace", traceID, "span", spanID, "namespace", im.Namespace(), "track", "namespace."+im.Namespace().Name, "instance", im.ID())
 
 	for i := range ceds {
 		ev := new(model.ConsumeEventDefinition)
@@ -685,7 +643,7 @@ func (events *events) listenForEvents(ctx context.Context, im *instanceMemory, c
 		return err
 	}
 
-	events.logger.Debugf(ctx, im.GetInstanceID(), im.GetAttributes(), "Registered to receive events.")
+	slog.Debug("Registered to receive events.")
 
 	return nil
 }

@@ -3,7 +3,6 @@ package datastoresql
 import (
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/events"
-	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"gorm.io/gorm"
 )
 
@@ -34,13 +33,6 @@ func (s *sqlStore) Mirror() datastore.MirrorStore {
 	return &sqlMirrorStore{
 		db:                  s.db,
 		configEncryptionKey: s.mirrorConfigEncryptionKey,
-	}
-}
-
-// Logs returns a log store.
-func (s *sqlStore) Logs() logengine.LogStore {
-	return &sqlLogStore{
-		db: s.db,
 	}
 }
 

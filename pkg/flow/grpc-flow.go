@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net"
 	"time"
 
@@ -57,20 +58,20 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 
 			tx, err := srv.flow.beginSqlTx(ctx)
 			if err != nil {
-				flow.sugar.Error(fmt.Errorf("failed to get transaction to cleanup old instances: %w", err))
+				slog.Error("garbage collector", "error", fmt.Errorf("failed to get transaction to cleanup old instances: %w", err))
 				continue
 			}
 
 			err = tx.InstanceStore().DeleteOldInstances(ctx, t)
 			if err != nil {
 				tx.Rollback()
-				flow.sugar.Error(fmt.Errorf("failed to cleanup old instances: %w", err))
+				slog.Error("garbage collector", "error", fmt.Errorf("failed to cleanup old instances: %w", err))
 				continue
 			}
 
 			err = tx.Commit(ctx)
 			if err != nil {
-				flow.sugar.Error(fmt.Errorf("failed to commit tx to cleanup old instances: %w", err))
+				slog.Error("garbage collector", "error", fmt.Errorf("failed to commit tx to cleanup old instances: %w", err))
 				continue
 			}
 
@@ -84,19 +85,12 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 		for {
 			<-time.After(time.Hour)
 			t := time.Now().UTC().Add(time.Hour * -48) // TODO make this a config option.
-			flow.sugar.Error(fmt.Sprintf("deleting all logs since %v", t))
-			err = srv.flow.runSqlTx(ctx, func(tx *sqlTx) error {
-				return tx.DataStore().Logs().DeleteOldLogs(context.TODO(), t)
-			})
-			if err != nil {
-				flow.sugar.Error(fmt.Errorf("failed to cleanup old logs: %w", err))
-				continue
-			}
+			slog.Debug("deleting all logs since", "since", t)
 			err = srv.flow.runSqlTx(ctx, func(tx *sqlTx) error {
 				return tx.DataStore().NewLogs().DeleteOldLogs(ctx, t)
 			})
 			if err != nil {
-				flow.sugar.Error(fmt.Errorf("failed to cleanup old logs: %w", err))
+				slog.Error("garbage collector", "error", fmt.Errorf("failed to cleanup old logs: %w", err))
 				continue
 			}
 		}
@@ -120,14 +114,14 @@ func (flow *flow) kickExpiredInstances() {
 
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
-		flow.sugar.Error(err)
+		slog.Error("Failed to begin SQL transaction in kickExpiredInstances.", "error", err)
 		return
 	}
 	defer tx.Rollback()
 
 	list, err := tx.InstanceStore().GetHangingInstances(ctx)
 	if err != nil {
-		flow.sugar.Error(err)
+		slog.Error("Failed to retrieve hanging instances.", "error", err)
 		return
 	}
 
@@ -136,7 +130,8 @@ func (flow *flow) kickExpiredInstances() {
 			InstanceID: list[i].ID.String(),
 		})
 		if err != nil {
-			panic(err)
+			slog.Error("Failed to marshal retry message for instance.", "error", err)
+			panic(err) // TODO ?
 		}
 
 		flow.engine.retryWakeup(data)
@@ -153,7 +148,7 @@ func (flow *flow) Run() error {
 }
 
 func (flow *flow) JQ(ctx context.Context, req *grpc.JQRequest) (*grpc.JQResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	var input interface{}
 

@@ -4,18 +4,16 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log"
+	"log/slog"
 	"os"
 	"os/exec"
 	"os/signal"
 	"runtime/debug"
 	"strings"
 
-	"github.com/direktiv/direktiv/pkg/dlog"
 	"github.com/direktiv/direktiv/pkg/flow"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/spf13/cobra"
-	"go.uber.org/zap"
 	libgrpc "google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
@@ -37,29 +35,11 @@ var (
 	filein string
 )
 
-var logger *zap.SugaredLogger
-
 func RunApplication() {
 	var err error
 
-	logger, err = dlog.ApplicationLogger("flow")
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to initialize logger: %v\n", err)
-		os.Exit(1)
-	}
-	defer func() {
-		err := logger.Sync()
-		fmt.Fprintf(os.Stderr, "Failed to sync logger: %v\n", err)
-		os.Exit(1)
-	}()
-
 	rootCmd.PersistentFlags().StringVar(&addr, "addr", "localhost:8080", "")
 	rootCmd.AddCommand(serverCmd)
-
-	rootCmd.AddCommand(serverLogsCmd)
-	rootCmd.AddCommand(namespaceLogsCmd)
-	rootCmd.AddCommand(workflowLogsCmd)
-	rootCmd.AddCommand(instanceLogsCmd)
 
 	rootCmd.AddCommand(eventListenersCmd)
 	rootCmd.AddCommand(eventHistoryCmd)
@@ -116,6 +96,7 @@ func client() (grpc.FlowClient, io.Closer, error) {
 	return grpc.NewFlowClient(conn), conn, nil
 }
 
+// Todo evaluate if we can remove this.
 func print(x interface{}) {
 	data, err := protojson.MarshalOptions{
 		Multiline:       true,
@@ -133,7 +114,7 @@ func print(x interface{}) {
 func exit(err error) {
 	desc := status.Convert(err)
 
-	logger.Error(desc)
+	slog.Error("Terminating flow (main)", "status", desc, "error", err)
 
 	os.Exit(1)
 }
@@ -151,34 +132,41 @@ var serverCmd = &cobra.Command{
 		// TODO: yassir: need to be cleaned.
 		defer func() {
 			if r := recover(); r != nil {
-				fmt.Println("Recovered in run", r)
-				fmt.Println("stacktrace from panic: \n" + string(debug.Stack()))
+				slog.Error("Unexpected server crash", "reason", r, "stack_trace", string(debug.Stack()))
 				panic(r)
 			}
 		}()
 		defer shutdown()
 
-		ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
-		defer cancel()
-
-		err := flow.Run(ctx, logger)
+		serverCtx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+		defer func() {
+			cancel()
+			slog.Info("Graceful shutdown initiated.")
+			shutdown()
+		}()
+		slog.Info("Server starting.")
+		err := flow.Run(serverCtx)
 		if err != nil {
-			exit(err)
+			slog.Error("Server termination due to error", "error", err)
+			os.Exit(1)
 		}
 	},
 }
 
 func shutdown() {
-	// just in case, stop DNS server
+	// Attempt to read the system version to identify if running on a Direktiv machine.
 	pv, err := os.ReadFile("/proc/version")
-	if err == nil {
-		// this is a direktiv machine, so we press poweroff
-		if strings.Contains(string(pv), "#direktiv") {
-			log.Printf("direktiv machine, powering off")
+	if err != nil {
+		slog.Debug("Unable to read /proc/version for shutdown determination.", "error", err)
+		return
+	}
 
-			if err := exec.Command("/sbin/poweroff").Run(); err != nil {
-				fmt.Println("error shutting down:", err)
-			}
+	// Check if running on a Direktiv machine to safely initiate system poweroff.
+	if strings.Contains(string(pv), "#direktiv") {
+		slog.Info("Detected Direktiv machine, initiating poweroff.")
+		if err := exec.Command("/sbin/poweroff").Run(); err != nil {
+			slog.Error("Failed to execute poweroff command.", "error", err)
+			// TODO: now what?
 		}
 	}
 }

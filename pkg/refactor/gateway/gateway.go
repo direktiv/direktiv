@@ -48,12 +48,12 @@ func NewGatewayManager(db *database.DB) core.GatewayManager {
 }
 
 func (ep *gatewayManager) DeleteNamespace(ns string) {
-	slog.Debug("deleting namespace from gateway", "namespace", ns, "track", recipient.Namespace.String()+"."+ns)
+	slog.Debug("Deleting namespace from gateway", "namespace", ns, "track", recipient.Namespace.String()+"."+ns)
 	delete(ep.nsGateways, ns)
 }
 
 func (ep *gatewayManager) UpdateNamespace(ns string) {
-	slog.Debug("updating namespace gateway", slog.String("namespace", ns), "track", recipient.Namespace.String()+"."+ns)
+	slog.Debug("Updating namespace gateway", slog.String("namespace", ns), "track", recipient.Namespace.String()+"."+ns)
 
 	ep.lock.Lock()
 	defer ep.lock.Unlock()
@@ -72,7 +72,7 @@ func (ep *gatewayManager) UpdateNamespace(ns string) {
 
 	files, err := fStore.ForNamespace(ns).ListDirektivFilesWithData(ctx)
 	if err != nil {
-		slog.Error("error listing files", slog.String("error", err.Error()), "track", recipient.Namespace.String()+"."+ns)
+		slog.Error("Failed to list files", slog.String("error", err.Error()), "track", recipient.Namespace.String()+"."+ns)
 
 		return
 	}

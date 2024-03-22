@@ -3,6 +3,7 @@ package sidecar
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"net"
 	"net/http"
 	"os"
@@ -26,24 +27,33 @@ type NetworkServer struct {
 	stopper chan *time.Time
 }
 
+// waitForUserContainer waits for a user-defined container to start and become
+// available by attempting to connect to localhost:8080. It waits for up to 2 minutes
+// before terminating the wait and panicking.
 func waitForUserContainer() {
+	slog.Debug("Waiting for user container to become available.")
+
 	ticker := time.NewTicker(250 * time.Millisecond)
+	defer ticker.Stop()
 
-	go func() {
-		time.Sleep(2 * time.Minute)
-		ticker.Stop()
-	}()
+	timeout := time.After(2 * time.Minute)
 
-	for range ticker.C {
-		conn, _ := net.DialTimeout("tcp", "localhost:8080", time.Second)
-		if conn != nil {
-			log.Debug("user container connected")
+	for {
+		select {
+		case <-ticker.C:
+			conn, err := net.DialTimeout("tcp", "localhost:8080", time.Second)
+			if err != nil {
+				slog.Debug("Failed to connect to user container.", "error", err)
+				continue
+			}
+			slog.Debug("User container is now available.", "address", "localhost:8080")
 			_ = conn.Close()
+
 			return
+		case <-timeout:
+			panic("User container did not start in time. Timeout waiting for connection to localhost:8080")
 		}
 	}
-
-	panic("user container did not start in time")
 }
 
 // Start starts the network server for the sidecar.
@@ -69,7 +79,7 @@ func (srv *NetworkServer) Start() {
 
 	srv.end = threads.Register(srv.stopper)
 
-	log.Debug("Network-facing server thread registered.")
+	slog.Debug("Network-facing server thread registered.")
 
 	go srv.run()
 	go srv.wait()
@@ -86,28 +96,30 @@ func (srv *NetworkServer) wait() {
 
 	t := <-srv.stopper
 
-	log.Debug("Network-facing server shutting down.")
+	slog.Debug("Network-facing server shutting down.")
 
 	ctx, cancel := context.WithDeadline(context.Background(), t.Add(15*time.Second))
 	defer cancel()
 
 	err := srv.server.Shutdown(ctx)
 	if err != nil {
-		log.Errorf("Error shutting down network-facing server: %v", err)
+		slog.Error("Error shutting down network-facing server", "error", err)
 		Shutdown(ERROR)
+
 		return
 	}
 
-	log.Debug("Network-facing server shut down successfully.")
+	slog.Debug("Network-facing server shut down successfully.")
 }
 
 func (srv *NetworkServer) run() {
-	log.Infof("Starting network-facing HTTP server on %s.", srv.server.Addr)
+	slog.Info("Starting network-facing HTTP server.", "addr", srv.server.Addr)
 
 	err := srv.server.ListenAndServe()
 	if err != nil && !errors.Is(err, http.ErrServerClosed) {
-		log.Errorf("Error running network-facing server: %v", err)
+		slog.Error("Error running network-facing server", "error", err)
 		Shutdown(ERROR)
+
 		return
 	}
 }
@@ -124,7 +136,7 @@ func (srv *NetworkServer) functions(w http.ResponseWriter, r *http.Request) {
 	defer func(req *inboundRequest) {
 		r := recover()
 		if r != nil {
-			log.Errorf("Request '%s' panicked: %v.", id, r)
+			slog.Error("Request panicked.", "action_id", id, "request", r)
 			srv.local.drainRequest(req)
 		} else {
 			_ = req.r.Body.Close()
@@ -136,9 +148,9 @@ func (srv *NetworkServer) functions(w http.ResponseWriter, r *http.Request) {
 		select {
 		case srv.local.queue <- req:
 			waiting = false
-			log.Debugf("Request '%s' queued.", id)
+			slog.Debug("Request queued.", "action_id", id)
 		case <-time.After(time.Second * 30):
-			log.Warnf("Request '%s' is starving!", id)
+			slog.Warn("Request is starving!", "action_id", id)
 		}
 	}
 
@@ -147,9 +159,9 @@ func (srv *NetworkServer) functions(w http.ResponseWriter, r *http.Request) {
 		select {
 		case <-req.end:
 			waiting = false
-			log.Debugf("Request '%s' returned.", id)
+			slog.Debug("Request returned.", "action_id", id)
 		case <-time.After(time.Minute * 5):
-			log.Infof("Request '%s' hasn't returned yet.", id)
+			slog.Info("Request hasn't returned yet.", "action_id", id)
 		}
 	}
 }
