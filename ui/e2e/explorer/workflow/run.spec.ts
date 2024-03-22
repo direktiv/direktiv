@@ -12,6 +12,7 @@ import { decode } from "js-base64";
 import { faker } from "@faker-js/faker";
 import { getInput } from "~/api/instances/query/input";
 import { headers } from "e2e/utils/testutils";
+import { prettifyJsonString } from "~/util/helpers";
 
 let namespace = "";
 
@@ -482,23 +483,16 @@ test("it is possible to provide the input via Form Input and see the same data i
     select: "guest",
   };
 
-  // TODO: check if the json input is correct - loose test - is working
-  expect(
-    await page.locator(".view-line > span"),
-    "the Input was set as expected"
-  ).toContainText(["Marty", "McFly"]);
-
-  // TODO: check if the json input is correct - strict Test - is NOT working
-  // ***
-  const visibleJsonArray = await page.locator(".view-line > span")
-    .allInnerTexts;
-
-  const visibleJsonObject = Object.fromEntries(visibleJsonArray);
-
-  expect(visibleJsonObject, "the Input was set as expected").toMatchObject(
-    expectedJson
+  const expectedJsonFormattedString = prettifyJsonString(
+    JSON.stringify(expectedJson)
   );
-  // ***
+
+  await expect(
+    page.getByTestId("run-workflow-editor").locator(".lines-content"),
+    "all entered data is represented in the editor preview"
+  ).toContainText(expectedJsonFormattedString, {
+    useInnerText: true,
+  });
 
   // run the workflow in the json tab
   await page.getByTestId("run-workflow-submit-btn").click();
@@ -612,11 +606,13 @@ test("it is possible to provide the input via JSON Input and see the same data i
     throw new Error("instanceId not found");
   }
 
-  const expectedJson = {
-    firstName: "Marty",
-    lastName: "McFly",
-    select: "guest",
-  };
+  const expectedEditorInput = prettifyJsonString(
+    JSON.stringify({
+      firstName: "Marty",
+      lastName: "McFly",
+      select: "guest",
+    })
+  );
 
   await expect(
     page,
@@ -642,47 +638,12 @@ test("it is possible to provide the input via JSON Input and see the same data i
 
   await page.getByRole("tab", { name: "Input" }).click();
 
-  // TODO: Loose Test - is working
-  expect(
-    await page.locator(".view-line > span"),
-    "the Input was set as expected"
-  ).toContainText(["Marty", "McFly"]);
-
-  // TODO: Strict Test 1 - is NOT working
-  // ***
-  expect(
-    await page.locator(".view-line > span").allInnerTexts,
-    "the Input was set as expected"
-  ).toEqual(expect.objectContaining(expectedJson));
-  // ***
-
-  // TODO: Strict Test 2 - is NOT working
-  // ***
-  async function getTextFromLocator(locator: Locator) {
-    const elements = await locator.all();
-    let combinedText = "";
-
-    for (const element of elements) {
-      const text = await element.innerText();
-      const cleantext = removeSpacesAndBackslashes(text);
-      combinedText += cleantext;
-    }
-    return combinedText;
-  }
-
-  function removeSpacesAndBackslashes(inputString: string) {
-    return inputString.replace(/([\\ ])(?=(?:[^"]|"[^"]*")*$)/g, "");
-  }
-
-  const elementsLocator = page.locator(".view-line > span");
-  const combinedText = await getTextFromLocator(elementsLocator);
-
-  const currentJson = removeSpacesAndBackslashes(combinedText);
-
-  expect(await currentJson, "OBJ EQUAL the Input was set as expected").toEqual(
-    expectedJson
-  );
-  // ***
+  await expect(
+    page.locator(".lines-content"),
+    "all entered data is represented in the editor preview"
+  ).toContainText(expectedEditorInput, {
+    useInnerText: true,
+  });
 });
 
 test("the input is synchronized between tabs, but the data that is currently in the view will be sent", async ({
