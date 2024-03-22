@@ -2,11 +2,11 @@ package events
 
 import (
 	"context"
+	"log/slog"
 	"time"
 
 	ce "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
-	"go.uber.org/zap"
 )
 
 type EventWorker struct {
@@ -15,17 +15,15 @@ type EventWorker struct {
 	signal chan struct{}
 	// eventQueue  chan []*events.StagingEvent
 	handleEvent func(ctx context.Context, ns uuid.UUID, nsName string, ce *ce.Event) error
-	logger      zap.SugaredLogger
 }
 
-func NewEventWorker(store StagingEventStore, interval time.Duration, logger *zap.SugaredLogger, handleEvent func(ctx context.Context, ns uuid.UUID, nsName string, ce *ce.Event) error) *EventWorker {
+func NewEventWorker(store StagingEventStore, interval time.Duration, handleEvent func(ctx context.Context, ns uuid.UUID, nsName string, ce *ce.Event) error) *EventWorker {
 	return &EventWorker{
 		store:  store,
 		ticker: time.NewTicker(interval),
 		signal: make(chan struct{}),
 		// eventQueue:  events,
 		handleEvent: handleEvent,
-		logger:      *logger,
 	}
 }
 
@@ -58,8 +56,7 @@ func (w *EventWorker) getDelayedEvents(ctx context.Context) {
 	offset := 0
 	receivedEvents, _, err := w.store.GetDelayedEvents(ctx, currentTime, limit, offset)
 	if err != nil {
-		// panic(err)
-		w.logger.Errorf("Error fetching delayed events: %v\n", err)
+		slog.Error("Failed fetching delayed events", "error", err)
 
 		return
 	}
@@ -70,14 +67,13 @@ func (w *EventWorker) getDelayedEvents(ctx context.Context) {
 		return
 	}
 
-	w.logger.Debugf("Processing %d delayed events...\n", len(receivedEvents))
+	slog.Debug("Starting processing delayed events")
 
-	// TODO:process in bulk
+	// TODO: possible process events in bulk
 	for _, se := range receivedEvents {
 		err := w.handleEvent(ctx, se.Namespace, se.NamespaceName, se.Event.Event)
 		if err != nil {
-			// panic(err)
-			w.logger.Errorf("got an error handling a event: %v", err)
+			slog.Error("Failed to handle a event", "error", err)
 		}
 	}
 
@@ -87,18 +83,10 @@ func (w *EventWorker) getDelayedEvents(ctx context.Context) {
 		databaseIDs = append(databaseIDs, event.DatabaseID)
 	}
 	if err := w.store.DeleteByDatabaseIDs(ctx, databaseIDs...); err != nil {
-		w.logger.Errorf("Error deleting processed events: %v\n", err)
+		slog.Error("Failed deleting processed events", "error", err)
 
 		return
 	}
 
-	w.logger.Debugf("Processed and deleted %d delayed events.\n", len(receivedEvents))
+	slog.Debug("Processed and deleted delayed events")
 }
-
-// func (w *EventWorker) EnqueueEvent(event *events.StagingEvent) {
-// 	select {
-// 	case w.eventQueue <- []*events.StagingEvent{event}:
-// 	default:
-// 		// TODO: Queue is full or blocking, log here
-// 	}
-// }

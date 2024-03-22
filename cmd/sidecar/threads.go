@@ -1,6 +1,7 @@
 package sidecar
 
 import (
+	"log/slog"
 	"sync"
 	"time"
 )
@@ -25,7 +26,7 @@ type Threads struct {
 // Wait waits until all the threads have been returned.
 func (t *Threads) Wait() {
 	<-t.finished
-	log.Info("All threads returned.")
+	slog.Info("All threads returned.")
 }
 
 // Register adds a new channel to the threads.

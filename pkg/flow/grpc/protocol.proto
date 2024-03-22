@@ -7,7 +7,6 @@ option go_package = "github.com/direktiv/direktiv/pkg/flow/grpc";
 import "google/protobuf/empty.proto";
 
 import "pkg/flow/grpc/namespaces.proto";
-import "pkg/flow/grpc/logs.proto";
 import "pkg/flow/grpc/nodes.proto";
 import "pkg/flow/grpc/workflows.proto";
 import "pkg/flow/grpc/variables.proto";
@@ -27,18 +26,6 @@ service Flow {
 	rpc NamespacesStream (NamespacesRequest) returns (stream NamespacesResponse) {}
 	rpc CreateNamespace (CreateNamespaceRequest) returns (CreateNamespaceResponse) {}
 	rpc DeleteNamespace (DeleteNamespaceRequest) returns (google.protobuf.Empty) {}
-
-	// logs.
-	rpc ServerLogs (ServerLogsRequest) returns (ServerLogsResponse) {}
-	rpc ServerLogsParcels (ServerLogsRequest) returns (stream ServerLogsResponse) {}
-	rpc NamespaceLogs (NamespaceLogsRequest) returns (NamespaceLogsResponse) {}
-	rpc NamespaceLogsParcels (NamespaceLogsRequest) returns (stream NamespaceLogsResponse) {}
-	rpc WorkflowLogs (WorkflowLogsRequest) returns (WorkflowLogsResponse) {}
-	rpc WorkflowLogsParcels (WorkflowLogsRequest) returns (stream WorkflowLogsResponse) {}
-	rpc InstanceLogs (InstanceLogsRequest) returns (InstanceLogsResponse) {}
-	rpc InstanceLogsParcels (InstanceLogsRequest) returns (stream InstanceLogsResponse) {}
-	rpc MirrorActivityLogs (MirrorActivityLogsRequest) returns (MirrorActivityLogsResponse) {}
-	rpc MirrorActivityLogsParcels (MirrorActivityLogsRequest) returns (stream MirrorActivityLogsResponse) {}
 
 	// filesystem.
 	rpc Directory (DirectoryRequest) returns (DirectoryResponse) {}

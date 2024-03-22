@@ -2,12 +2,11 @@ package flow
 
 import (
 	"context"
+	"log/slog"
 	"path/filepath"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
-	"github.com/direktiv/direktiv/pkg/flow/database"
-	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
@@ -19,7 +18,7 @@ import (
 )
 
 func (flow *flow) Workflow(ctx context.Context, req *grpc.WorkflowRequest) (*grpc.WorkflowResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
@@ -54,7 +53,7 @@ func (flow *flow) Workflow(ctx context.Context, req *grpc.WorkflowRequest) (*grp
 }
 
 func (flow *flow) WorkflowStream(req *grpc.WorkflowRequest, srv grpc.Flow_WorkflowStreamServer) error {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 	ctx := srv.Context()
 
 	resp, err := flow.Workflow(ctx, req)
@@ -107,7 +106,7 @@ func (flow *flow) createFileSystemObject(ctx context.Context, fileType filestore
 	if err = tx.Commit(ctx); err != nil {
 		return nil, err
 	}
-	flow.logger.Debugf(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Created %s '%s'.", fileType, file.Path)
+	slog.Debug("Created file.", "type", fileType, "path", file.Path)
 
 	err = helpers.PublishEventDirektivFileChange(flow.pBus, file.Typ, "create", &pubsub.FileChangeEvent{
 		Namespace:   ns.Name,
@@ -115,14 +114,14 @@ func (flow *flow) createFileSystemObject(ctx context.Context, fileType filestore
 		FilePath:    file.Path,
 	})
 	if err != nil {
-		flow.sugar.Error("pubsub publish", "error", err)
+		slog.Error("pubsub publish", "error", err)
 	}
 
 	return resp, nil
 }
 
 func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRequest) (*grpc.CreateWorkflowResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	if filepath.Ext(req.GetPath()) != ".yaml" && filepath.Ext(req.GetPath()) != ".yml" {
 		return nil, status.Error(codes.InvalidArgument, "direktiv spec file name should have either .yaml or .yaml extension")
@@ -186,7 +185,7 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 	metricsWf.WithLabelValues(ns.Name, ns.Name).Inc()
 	metricsWfUpdated.WithLabelValues(ns.Name, file.Path, ns.Name).Inc()
 
-	flow.logger.Debugf(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Created workflow '%s'.", file.Path)
+	slog.Debug("Created workflow.", "path", file.Path, "namespace", req.Namespace)
 
 	err = flow.BroadcastWorkflow(ctx, BroadcastEventTypeCreate,
 		broadcastWorkflowInput{
@@ -206,7 +205,7 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 			FilePath:    file.Path,
 		})
 		if err != nil {
-			flow.sugar.Error("pubsub publish", "error", err)
+			slog.Error("pubsub publish", "error", err)
 		}
 	}
 
@@ -221,7 +220,7 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRequest) (*grpc.UpdateWorkflowResponse, error) {
 	// This is being called by the frontend when a user changes a workflow via a UI and press save button.
 
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
@@ -264,7 +263,7 @@ func (flow *flow) UpdateWorkflow(ctx context.Context, req *grpc.UpdateWorkflowRe
 			FilePath:    file.Path,
 		})
 		if err != nil {
-			flow.sugar.Error("pubsub publish", "error", err)
+			slog.Error("pubsub publish", "error", err)
 		}
 	}
 

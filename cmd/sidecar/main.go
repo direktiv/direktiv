@@ -2,15 +2,12 @@ package sidecar
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/dlog"
 	"github.com/direktiv/direktiv/pkg/util"
-	"go.uber.org/zap"
 )
-
-var log *zap.SugaredLogger
 
 const (
 	direktivFlowEndpoint  = "DIREKTIV_FLOW_ENDPOINT"
@@ -19,18 +16,6 @@ const (
 
 func RunApplication() {
 	var err error
-
-	log, err = dlog.ApplicationLogger("sidecar")
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "failed to initialize logger: %v\n", err)
-		os.Exit(1)
-	}
-	defer func() {
-		err := log.Sync()
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "failed to sync logs: %v\n", err)
-		}
-	}()
 
 	sl := new(SignalListener)
 	sl.Start()
@@ -58,7 +43,7 @@ func RunApplication() {
 	threads.Wait()
 
 	if code := threads.ExitStatus(); code != 0 {
-		log.Errorf("Exiting with exit status: %d.", code)
+		slog.Error("Exiting with exit.", "status_code", code)
 		os.Exit(code)
 	}
 }
@@ -74,6 +59,6 @@ func Shutdown(code int) {
 }
 
 func ForceQuit() {
-	log.Warn("Performing force-quit.")
+	slog.Warn("Performing force-quit.")
 	os.Exit(1)
 }

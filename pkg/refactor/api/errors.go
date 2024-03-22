@@ -66,7 +66,7 @@ func writeInternalError(w http.ResponseWriter, err error) {
 		Message: "internal server error",
 	})
 
-	slog.Error("error", "err", err)
+	slog.Error("Responding with internal server error", "err", err)
 }
 
 func writeNotJSONError(w http.ResponseWriter, err error) {

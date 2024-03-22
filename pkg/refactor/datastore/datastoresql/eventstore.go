@@ -403,16 +403,16 @@ func (s *sqlEventListenerStore) DeleteAllForWorkflow(ctx context.Context, workfl
 	return res, nil
 }
 
-func (s *sqlEventListenerStore) Get(ctx context.Context, namespace uuid.UUID, limit int, offet int) ([]*events.EventListener, int, error) {
+func (s *sqlEventListenerStore) Get(ctx context.Context, namespace uuid.UUID, limit int, offset int) ([]*events.EventListener, int, error) {
 	q := `SELECT 
 	id, namespace_id, created_at, updated_at, deleted, received_events, trigger_type, events_lifespan, event_types, trigger_info, metadata, glob_gates
 	FROM event_listeners WHERE namespace_id = $1 `
 	q += " ORDER BY created_at DESC "
 	if limit > 0 {
-		q += fmt.Sprintf("LIMIT %v", limit)
+		q += fmt.Sprintf(" LIMIT %v", limit)
 	}
-	if offet > 0 {
-		q += fmt.Sprintf("OFFSET %v", offet)
+	if offset > 0 {
+		q += fmt.Sprintf(" OFFSET %v", offset)
 	}
 	qCount := `SELECT count(id) FROM event_listeners WHERE namespace_id = $1 and deleted = false;`
 	var count int

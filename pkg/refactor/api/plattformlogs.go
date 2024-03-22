@@ -31,7 +31,7 @@ func (m *logController) mountRouter(r chi.Router) {
 		// Call the Get method with the cursor instead of offset
 		data, starting, err := m.getOlder(r.Context(), params)
 		if err != nil {
-			slog.Error("Get logs", "error", err)
+			slog.Error("Fetching logs for request failed.", "error", err)
 			writeInternalError(w, err)
 
 			return
@@ -194,7 +194,7 @@ func (m logController) stream(w http.ResponseWriter, r *http.Request) {
 		case message := <-messageChannel:
 			_, err := io.Copy(w, strings.NewReader(fmt.Sprintf("id: %v\nevent: %v\ndata: %v\n\n", message.ID, message.Type, message.Data)))
 			if err != nil {
-				slog.Error("sse error", "error", err)
+				slog.Error("Failed to serve to SSE", "error", err)
 			}
 
 			f, ok := w.(http.Flusher)
@@ -254,7 +254,6 @@ func (lw *logStoreWorker) start(ctx context.Context) {
 			case <-ctx.Done():
 				return
 			case <-ticker.C:
-				slog.Info("data", "message", lw.Params)
 				logs, err := lw.Get(ctx, lw.Cursor, lw.Params)
 				if err != nil {
 					slog.Error("TODO: should we quit with an error?", "error", err)

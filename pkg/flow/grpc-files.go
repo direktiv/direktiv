@@ -3,10 +3,9 @@ package flow
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
-	"github.com/direktiv/direktiv/pkg/flow/database"
-	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/gabriel-vasile/mimetype"
@@ -15,7 +14,7 @@ import (
 )
 
 func (flow *flow) CreateFile(ctx context.Context, req *grpc.CreateFileRequest) (*grpc.CreateFileResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
@@ -45,7 +44,7 @@ func (flow *flow) CreateFile(ctx context.Context, req *grpc.CreateFileRequest) (
 		return nil, err
 	}
 
-	flow.logger.Debugf(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Created file '%s'.", file.Path)
+	slog.Debug("Created file", "path", file.Path, "namespace", req.Namespace)
 
 	resp := &grpc.CreateFileResponse{}
 	resp.Namespace = ns.Name
@@ -57,7 +56,7 @@ func (flow *flow) CreateFile(ctx context.Context, req *grpc.CreateFileRequest) (
 }
 
 func (flow *flow) UpdateFile(ctx context.Context, req *grpc.UpdateFileRequest) (*grpc.UpdateFileResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
@@ -100,7 +99,7 @@ func (flow *flow) UpdateFile(ctx context.Context, req *grpc.UpdateFileRequest) (
 		return nil, err
 	}
 
-	flow.logger.Debugf(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Updated file '%s'.", file.Path)
+	slog.Debug("Updated file.", "path", file.Path, "namespace", ns)
 
 	var resp grpc.UpdateFileResponse
 
@@ -113,7 +112,7 @@ func (flow *flow) UpdateFile(ctx context.Context, req *grpc.UpdateFileRequest) (
 }
 
 func (flow *flow) File(ctx context.Context, req *grpc.FileRequest) (*grpc.FileResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {

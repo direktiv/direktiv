@@ -4,7 +4,6 @@ import (
 	"errors"
 
 	"github.com/direktiv/direktiv/pkg/refactor/events"
-	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 )
 
 // Direktiv application data (namespaces, mirrors, etc..) are stored in a sql database. For each different
@@ -19,8 +18,6 @@ type Store interface {
 	// Mirror returns datastore.MirrorStore, is responsible for reading and writing mirrors information.
 	Mirror() MirrorStore
 
-	// Logs returns logengine.LogStore, is responsible for reading and writing logs
-	Logs() logengine.LogStore
 	NewLogs() LogStore
 
 	Secrets() SecretsStore

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"log"
+	"log/slog"
 	"net/http"
 	"sync"
 	"time"
@@ -24,7 +25,7 @@ const (
 	readHeaderTimeout = 5 * time.Second
 )
 
-func Start(app core.App, db *database.DB, bus *pubsub2.Bus, instanceManager *instancestore.InstanceManager, addr string, done <-chan struct{}, wg *sync.WaitGroup) {
+func Start(ctx context.Context, app core.App, db *database.DB, bus *pubsub2.Bus, instanceManager *instancestore.InstanceManager, addr string, done <-chan struct{}, wg *sync.WaitGroup) {
 	funcCtr := &serviceController{
 		manager: app.ServiceManager,
 	}
@@ -147,12 +148,13 @@ func Start(app core.App, db *database.DB, bus *pubsub2.Bus, instanceManager *ins
 
 	apiServer := &http.Server{Addr: addr, Handler: r, ReadHeaderTimeout: readHeaderTimeout}
 	// Server run context
-	serverCtx, serverStopCtx := context.WithCancel(context.Background())
+	serverCtx, serverStopCtx := context.WithCancel(ctx)
 
 	go func() {
 		// Run api server
 		err := apiServer.ListenAndServe()
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
+			slog.Debug("API v2 Server Closed", "error", err)
 			log.Fatal(err)
 		}
 		// Wait for server context to be stopped
@@ -167,8 +169,10 @@ func Start(app core.App, db *database.DB, bus *pubsub2.Bus, instanceManager *ins
 
 		err := apiServer.Shutdown(shutdownCtx)
 		if err != nil {
-			log.Fatal(err)
+			slog.Error("Failed to start API server", "addr", addr, "error", err)
+			panic(err)
 		}
+		slog.Debug("Shutting down API server", "addr", addr)
 		serverStopCtx()
 	}()
 }

@@ -12,7 +12,7 @@ const FormInputHint = () => {
       >
         {t("pages.explorer.tree.workflow.runWorkflow.formInputHint")}
       </span>
-      <Button variant="outline" asChild>
+      <Button variant="outline" asChild isAnchor>
         <a
           href="https://docs.direktiv.io/spec/workflow-yaml/validate/"
           target="_blank"

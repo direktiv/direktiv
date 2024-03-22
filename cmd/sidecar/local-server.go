@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"os"
 	"strconv"
@@ -51,8 +52,9 @@ func (srv *LocalServer) initFlow() error {
 func (srv *LocalServer) Start() {
 	err := srv.initFlow()
 	if err != nil {
-		log.Errorf("Localhost server unable to connect to flow: %v", err)
+		slog.Error("Localhost server unable to connect to flow", "error", err)
 		Shutdown(ERROR)
+
 		return
 	}
 
@@ -73,7 +75,7 @@ func (srv *LocalServer) Start() {
 
 	srv.end = threads.Register(srv.stopper)
 
-	log.Debug("Localhost server thread registered.")
+	slog.Debug("Localhost server thread registered.")
 
 	for i := 0; i < workerThreads; i++ {
 		worker := new(inboundWorker)
@@ -94,7 +96,7 @@ func (srv *LocalServer) wait() {
 	t := <-srv.stopper
 	close(srv.queue)
 
-	log.Debug("Localhost server shutting down.")
+	slog.Debug("Localhost server shutting down.")
 
 	for req := range srv.queue {
 		go srv.drainRequest(req)
@@ -109,12 +111,13 @@ func (srv *LocalServer) wait() {
 
 	err := srv.server.Shutdown(ctx)
 	if err != nil {
-		log.Errorf("Error shutting down localhost server: %v", err)
+		slog.Error("Error shutting down localhost server", "error", err)
 		Shutdown(ERROR)
+
 		return
 	}
 
-	log.Debug("Primary localhost server thread shut down successfully.")
+	slog.Debug("Primary localhost server thread shut down successfully.")
 }
 
 func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
@@ -126,19 +129,21 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 
 	reportError := func(code int, err error) {
 		http.Error(w, err.Error(), code)
-		log.Warnf("Log handler for '%s' returned %v: %v.", actionId, code, err)
+		slog.Warn("Log handler error occurred.", "action_id", actionId, "action_err_code", code, "error", err)
 	}
 
 	if !ok {
 		err := errors.New("the action id went missing")
 		code := http.StatusInternalServerError
 		reportError(code, err)
+
 		return
 	}
 
 	if req == nil {
 		code := http.StatusNotFound
 		reportError(code, fmt.Errorf("actionId %s not found", actionId))
+
 		return
 	}
 
@@ -149,6 +154,7 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 		if r.ContentLength > cap {
 			code := http.StatusRequestEntityTooLarge
 			reportError(code, errors.New(http.StatusText(code)))
+
 			return
 		}
 		r := io.LimitReader(r.Body, cap)
@@ -157,6 +163,7 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			code := http.StatusBadRequest
 			reportError(code, err)
+
 			return
 		}
 
@@ -166,7 +173,7 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(msg) == 0 {
-		log.Debugf("Log handler for '%s' received zero bytes.", actionId)
+		slog.Debug("Log handler received an empty message body.", "action_id", actionId)
 		return
 	}
 
@@ -176,10 +183,10 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 		Iterator:   int32(req.iterator),
 	})
 	if err != nil {
-		log.Errorf("Failed to forward log to diretiv: %v.", err)
+		slog.Error("Failed to forward log to Flow.", "action_id", actionId, "error", err)
 	}
 
-	log.Debugf("Log handler for '%s' posted %d bytes.", actionId, len(msg))
+	slog.Debug("Log handler successfully processed message.", "action_id", actionId)
 }
 
 func (srv *LocalServer) varHandler(w http.ResponseWriter, r *http.Request) {
@@ -191,19 +198,21 @@ func (srv *LocalServer) varHandler(w http.ResponseWriter, r *http.Request) {
 
 	reportError := func(code int, err error) {
 		http.Error(w, err.Error(), code)
-		log.Warnf("Var handler for '%s' returned %v: %v.", actionId, code, err)
+		slog.Warn("Variable retrieval failed.", "action_id", actionId, "error", err)
 	}
 
 	if !ok {
 		err := errors.New("the action id went missing")
 		code := http.StatusInternalServerError
 		reportError(code, err)
+
 		return
 	}
 
 	if req == nil {
 		code := http.StatusNotFound
 		reportError(code, fmt.Errorf("actionId %s not found", actionId))
+
 		return
 	}
 
@@ -224,24 +233,30 @@ func (srv *LocalServer) varHandler(w http.ResponseWriter, r *http.Request) {
 		err := srv.getVar(ctx, ir, w, setTotalSize, scope, key)
 		if err != nil {
 			reportError(http.StatusInternalServerError, err)
+			slog.Warn("Failed retrieving a Variable.", "action_id", actionId, "key", key, "scope", scope)
+
 			return
 		}
 
-		log.Debugf("Var handler for '%s' retrieved %s (%s)", actionId, key, scope)
+		slog.Debug("Variable successfully retrieved.", "action_id", actionId, "key", key, "scope", scope)
 
 	case http.MethodPost:
 
 		err := srv.setVar(ctx, ir, r.ContentLength, r.Body, scope, key, vMimeType)
 		if err != nil {
 			reportError(http.StatusInternalServerError, err)
+			slog.Warn("Failed to set a Variable.", "action_id", actionId, "key", key, "scope", scope)
+
 			return
 		}
 
-		log.Debugf("Var handler for '%s' stored %s (%s)", actionId, key, scope)
+		slog.Debug("Variable successfully stored.", "action_id", actionId, "key", key, "scope", scope, "mime_type", vMimeType)
 
 	default:
 		code := http.StatusMethodNotAllowed
 		reportError(code, errors.New(http.StatusText(code)))
+		slog.Warn("Unsupported HTTP method for var handler.", "action_id", actionId, "method", r.Method)
+
 		return
 	}
 }
@@ -263,7 +278,7 @@ func (srv *LocalServer) registerActiveRequest(ir *functionRequest, ctx context.C
 
 	srv.requestsLock.Unlock()
 
-	log.Infof("Serving '%s'.", ir.actionId)
+	slog.Info("Serving.", "action_id", ir.actionId)
 }
 
 func (srv *LocalServer) deregisterActiveRequest(actionId string) {
@@ -273,7 +288,7 @@ func (srv *LocalServer) deregisterActiveRequest(actionId string) {
 
 	srv.requestsLock.Unlock()
 
-	log.Debugf("Request deregistered '%s'.", actionId)
+	slog.Debug("Request deregistered.", "action_id", actionId)
 }
 
 func (srv *LocalServer) cancelActiveRequest(ctx context.Context, actionId string) {
@@ -285,14 +300,14 @@ func (srv *LocalServer) cancelActiveRequest(ctx context.Context, actionId string
 		return
 	}
 
-	log.Infof("Attempting to cancel '%s'.", actionId)
+	slog.Info("Attempting to cancel.", "action_id", actionId)
 
 	go srv.sendCancelToService(ctx, req.functionRequest)
 
 	select {
 	case <-req.ctx.Done():
 	case <-time.After(10 * time.Second):
-		log.Warnf("Request '%s' failed to cancel punctually.", actionId)
+		slog.Warn("Request failed to cancel punctually.", "action_id", actionId)
 		req.cancel()
 	}
 }
@@ -302,7 +317,7 @@ func (srv *LocalServer) sendCancelToService(ctx context.Context, ir *functionReq
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, url, nil)
 	if err != nil {
-		log.Errorf("Failed to create cancel request for '%s': %v.", ir.actionId, err)
+		slog.Error("Failed to create cancel request.", "action_id", ir.actionId, "error", err)
 		return
 	}
 
@@ -310,13 +325,13 @@ func (srv *LocalServer) sendCancelToService(ctx context.Context, ir *functionReq
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		log.Errorf("Failed to send cancel to service for '%s': %v.", ir.actionId, err)
+		slog.Error("Failed to send cancel to service.", "action_id", ir.actionId, "error", err)
 		return
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		log.Warnf("Service responded to cancel request for '%s' with %v.", ir.actionId, resp.StatusCode)
+		slog.Warn("Service responded to cancel request.", "action_id", ir.actionId, "resp_code", resp.StatusCode)
 	}
 }
 
@@ -334,7 +349,7 @@ func (srv *LocalServer) drainRequest(req *inboundRequest) {
 	http.Error(req.w, msg, code)
 
 	id := req.r.Header.Get(actionIDHeader)
-	log.Warnf("Aborting request '%s' early.", id)
+	slog.Warn("Request aborted due to server unavailability", "action_id", id, "http_status_code", code, "reason", msg)
 
 	defer func() {
 		_ = recover()
@@ -344,12 +359,13 @@ func (srv *LocalServer) drainRequest(req *inboundRequest) {
 }
 
 func (srv *LocalServer) run() {
-	log.Infof("Starting localhost HTTP server on %s.", srv.server.Addr)
+	slog.Info("Starting localhost HTTP server.", "addr", srv.server.Addr)
 
 	err := srv.server.ListenAndServe()
 	if err != nil && !errors.Is(err, http.ErrServerClosed) {
-		log.Errorf("Error running localhost server: %v", err)
+		slog.Error("Error running local server", "error", err)
 		Shutdown(ERROR)
+
 		return
 	}
 }
@@ -435,7 +451,6 @@ func (srv *LocalServer) requestVar(ctx context.Context, ir *functionRequest, sco
 	default:
 		panic(scope)
 	}
-
 	return
 }
 
@@ -473,6 +488,7 @@ func (srv *LocalServer) setVar(ctx context.Context, ir *functionRequest, totalSi
 			req.TotalSize = x.TotalSize
 			req.Data = x.Value
 			req.MimeType = vMimeType
+
 			return nvClient.Send(req)
 		}
 
@@ -491,6 +507,7 @@ func (srv *LocalServer) setVar(ctx context.Context, ir *functionRequest, totalSi
 			req.TotalSize = x.TotalSize
 			req.Data = x.Value
 			req.MimeType = vMimeType
+
 			return wvClient.Send(req)
 		}
 
@@ -512,6 +529,7 @@ func (srv *LocalServer) setVar(ctx context.Context, ir *functionRequest, totalSi
 			req.TotalSize = x.TotalSize
 			req.Data = x.Value
 			req.MimeType = vMimeType
+
 			return ivClient.Send(req)
 		}
 
