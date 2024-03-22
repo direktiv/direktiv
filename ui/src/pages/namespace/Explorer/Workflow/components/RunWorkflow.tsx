@@ -4,9 +4,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/design/Dialog";
+import { ElementRef, useEffect, useRef, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/design/Tabs";
 import { getValidationSchemaFromYaml, workflowInputSchema } from "./utils";
-import { useEffect, useRef, useState } from "react";
+import { isObject, prettifyJsonString } from "~/util/helpers";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
@@ -33,6 +34,8 @@ type FormInput = {
 
 type JSONSchemaFormSubmit = Parameters<typeof JSONSchemaForm>[0]["onSubmit"];
 
+const defaultEmptyJson = "{\n    \n}";
+
 const RunWorkflow = ({ path }: { path: string }) => {
   const { toast } = useToast();
   const { t } = useTranslation();
@@ -40,6 +43,7 @@ const RunWorkflow = ({ path }: { path: string }) => {
   const navigate = useNavigate();
   const { data } = useFile({ path });
   const submitButtonRef = useRef<HTMLButtonElement>(null);
+  const jsonSchemaFormRef = useRef<ElementRef<typeof JSONSchemaForm>>(null);
   const validationSchema =
     data?.type === "workflow"
       ? getValidationSchemaFromYaml(decode(data?.data ?? ""))
@@ -52,19 +56,21 @@ const RunWorkflow = ({ path }: { path: string }) => {
     isFormAvailable ? "form" : "json"
   );
 
+  const [jsonInput, setJsonInput] = useState(defaultEmptyJson);
+  const [formInput, setFormInput] = useState({});
+
   // it is possible that no data (or stale cache data) is available when this component mounts
-  // and the initial value of activeTab is out of synch with the actual isFormAvailable value
+  // and the initial value of activeTab is out of sync with the actual isFormAvailable value
   useEffect(() => {
     setActiveTab(isFormAvailable ? "form" : "json");
   }, [isFormAvailable]);
 
   const {
     setValue,
-    getValues,
     formState: { isValid },
   } = useForm<FormInput>({
     defaultValues: {
-      payload: "{\n    \n}",
+      payload: defaultEmptyJson,
     },
     resolver: zodResolver(z.object({ payload: workflowInputSchema })),
   });
@@ -87,23 +93,44 @@ const RunWorkflow = ({ path }: { path: string }) => {
   const runButtonOnClick = () => {
     // if this workflow supports a JSON form and the json form
     // tab is active we need to trigger this form via a ref to an
-    // invisble submit button (this should be optimized but a ref
+    // invisible submit button (this should be optimized but a ref
     // to the form did not work)
     if (isFormAvailable && activeTab === "form") {
-      // this will implcitly trigger the JSONschema forms onSubmit callback
+      // this will implicitly trigger the JSONschema forms onSubmit callback
       submitButtonRef.current?.click();
     }
 
     if (activeTab === "json") {
       runWorkflow({
         path,
-        payload: getValues("payload"),
+        payload: jsonInput,
       });
     }
   };
 
   const jsonSchemaFormSubmit: JSONSchemaFormSubmit = (form) => {
     runWorkflow({ path, payload: JSON.stringify(form.formData) });
+  };
+
+  const syncInputData = (selectedTab: "form" | "json") => {
+    if (selectedTab === "json") {
+      const formState = jsonSchemaFormRef.current?.state.formData as unknown;
+      const formDataObj = isObject(formState) ? formState : {};
+      const formDataString = prettifyJsonString(JSON.stringify(formDataObj));
+      const formIsEmpty = Object.keys(formDataObj).length === 0;
+
+      setJsonInput(formIsEmpty ? defaultEmptyJson : formDataString);
+    }
+
+    if (selectedTab === "form") {
+      let jsonInputObj: object;
+      try {
+        jsonInputObj = JSON.parse(jsonInput);
+      } catch (e) {
+        jsonInputObj = {};
+      }
+      setFormInput(jsonInputObj);
+    }
   };
 
   const disableSubmit = !isValid;
@@ -125,6 +152,7 @@ const RunWorkflow = ({ path }: { path: string }) => {
             const tabValueParsed = z.enum(tabs).safeParse(value);
             if (tabValueParsed.success) {
               setActiveTab(tabValueParsed.data);
+              if (isFormAvailable) syncInputData(tabValueParsed.data);
             }
           }}
         >
@@ -152,12 +180,16 @@ const RunWorkflow = ({ path }: { path: string }) => {
               data-testid="run-workflow-editor"
             >
               <Editor
-                value={getValues("payload")}
+                value={jsonInput}
                 onMount={(editor) => {
                   editor.focus();
-                  editor.setPosition({ lineNumber: 2, column: 5 });
+                  if (jsonInput === defaultEmptyJson) {
+                    editor.setPosition({ lineNumber: 2, column: 5 });
+                  }
                 }}
                 onChange={(newData) => {
+                  if (newData != undefined) setJsonInput(newData);
+
                   if (typeof newData === "string") {
                     setValue("payload", newData, {
                       shouldValidate: true,
@@ -174,7 +206,10 @@ const RunWorkflow = ({ path }: { path: string }) => {
               {isFormAvailable ? (
                 <ScrollArea className="h-full">
                   <JSONSchemaForm
+                    formData={formInput}
+                    ref={jsonSchemaFormRef}
                     schema={validationSchema}
+                    omitExtraData={true}
                     action="submit"
                     onSubmit={jsonSchemaFormSubmit}
                   >

@@ -12,6 +12,7 @@ import { decode } from "js-base64";
 import { faker } from "@faker-js/faker";
 import { getInput } from "~/api/instances/query/input";
 import { headers } from "e2e/utils/testutils";
+import { prettifyJsonString } from "~/util/helpers";
 
 let namespace = "";
 
@@ -392,6 +393,7 @@ test("it is possible to provide the input via generated form and resolve form er
     page.getByTestId("jsonschema-form-error"),
     "error message should be \"must have required property 'role'\""
   ).toContainText("must have required property 'role'");
+
   // interact with the select input
   await page.getByRole("combobox", { name: "role" }).click();
   await page.getByRole("option", { name: "guest" }).click();
@@ -425,4 +427,299 @@ test("it is possible to provide the input via generated form and resolve form er
   };
   const inputResponseAsJson = JSON.parse(decode(res.data));
   expect(inputResponseAsJson).toEqual(expectedJson);
+});
+
+test("it is possible to provide the input via Form Input and see the same data in the tab JSON Input", async ({
+  page,
+}) => {
+  const workflowName = faker.system.commonFileName("yaml");
+  await createFile({
+    name: workflowName,
+    namespace,
+    type: "workflow",
+    yaml: jsonSchemaWithRequiredEnum,
+  });
+
+  await page.goto(`${namespace}/explorer/workflow/edit/${workflowName}`);
+
+  await page.getByTestId("workflow-editor-btn-run").click();
+  expect(
+    await page.getByTestId("run-workflow-dialog"),
+    "it opens the dialog"
+  ).toBeVisible();
+
+  expect(
+    await page
+      .getByTestId("run-workflow-form-tab-btn")
+      .getAttribute("aria-selected"),
+    "it detects the validate step and makes the form tab active by default"
+  ).toBe("true");
+
+  // it generated a form (first and last name are required)
+  await expect(page.getByLabel("First Name")).toBeVisible();
+  await expect(page.getByLabel("Last Name")).toBeVisible();
+  await expect(page.getByRole("combobox", { name: "role" })).toBeVisible();
+
+  await page.getByLabel("First Name").fill("Marty");
+  await page.getByLabel("Last Name").fill("McFly");
+
+  // interact with the select input
+  await page.getByRole("combobox", { name: "role" }).click();
+  await page.getByRole("option", { name: "guest" }).click();
+
+  // switch to tab json input
+  await page.getByTestId("run-workflow-json-tab-btn").click();
+
+  expect(
+    await page
+      .getByTestId("run-workflow-json-tab-btn")
+      .getAttribute("aria-selected"),
+    "the json tab is selected"
+  ).toBe("true");
+
+  const expectedEditorInput = prettifyJsonString(
+    JSON.stringify({
+      firstName: "Marty",
+      lastName: "McFly",
+      select: "guest",
+    })
+  );
+
+  await expect(
+    page.getByTestId("run-workflow-editor").locator(".lines-content"),
+    "all entered data is represented in the editor preview"
+  ).toContainText(expectedEditorInput, {
+    useInnerText: true,
+  });
+
+  // run the workflow from the json tab
+  await page.getByTestId("run-workflow-submit-btn").click();
+
+  const reg = new RegExp(`${namespace}/instances/(.*)`);
+  await expect(
+    page,
+    "workflow was triggered and the user was redirected to the instances page"
+  ).toHaveURL(reg);
+
+  await page.getByRole("tab", { name: "Input" }).click();
+
+  // turn the input/output panel to full screen
+  await page
+    .locator(".grid > div:nth-child(2) > div:nth-child(3)")
+    .getByRole("button")
+    .nth(1)
+    .click();
+
+  await expect(
+    page.locator(".lines-content"),
+    "all entered data is represented in the editor preview"
+  ).toContainText(expectedEditorInput, {
+    useInnerText: true,
+  });
+});
+
+test("it is possible to provide the input via JSON Input and see the same data in the tab Form Input", async ({
+  page,
+}) => {
+  const workflowName = faker.system.commonFileName("yaml");
+
+  await createFile({
+    name: workflowName,
+    namespace,
+    type: "workflow",
+    yaml: jsonSchemaWithRequiredEnum,
+  });
+
+  await page.goto(`${namespace}/explorer/workflow/edit/${workflowName}`);
+
+  await page.getByTestId("workflow-editor-btn-run").click();
+  expect(
+    await page.getByTestId("run-workflow-dialog"),
+    "it opens the dialog"
+  ).toBeVisible();
+
+  // switch to tab JSON input
+  await page.getByTestId("run-workflow-json-tab-btn").click();
+
+  expect(
+    await page
+      .getByTestId("run-workflow-json-tab-btn")
+      .getAttribute("aria-selected"),
+    "the json tab is selected"
+  ).toBe("true");
+
+  // clear editor, to prevent invalid JSON due to auto completion
+  await page.getByRole("textbox").fill("");
+
+  // give valid JSON data
+  await page
+    .getByRole("textbox")
+    .fill('{"firstName":"Marty","lastName":"McFly","select":"guest"}');
+
+  // switch to tab Form input
+  await page.getByTestId("run-workflow-form-tab-btn").click();
+
+  // the generated form is visible
+  await expect(page.getByLabel("First Name")).toBeVisible();
+  await expect(page.getByLabel("Last Name")).toBeVisible();
+  await expect(page.getByRole("combobox", { name: "role" })).toBeVisible();
+
+  expect(
+    await page.getByLabel("First Name"),
+    "the value for first name was set automatically"
+  ).toHaveValue("Marty");
+
+  expect(
+    await page.getByLabel("Last Name"),
+    "the value for last name was set automatically"
+  ).toHaveValue("McFly");
+
+  expect(
+    await page.getByRole("combobox").locator("span"),
+    "the value for role was set automatically"
+  ).toContainText("guest");
+
+  await page.getByTestId("run-workflow-submit-btn").click();
+
+  const reg = new RegExp(`${namespace}/instances/(.*)`);
+  await expect(
+    page,
+    "workflow was triggered and user was redirected to the instances page"
+  ).toHaveURL(reg);
+
+  const expectedEditorInput = prettifyJsonString(
+    JSON.stringify({
+      firstName: "Marty",
+      lastName: "McFly",
+      select: "guest",
+    })
+  );
+
+  await page.getByRole("tab", { name: "Input" }).click();
+
+  // turn the input/output panel to full screen
+  await page
+    .locator(".grid > div:nth-child(2) > div:nth-child(3)")
+    .getByRole("button")
+    .nth(1)
+    .click();
+
+  await expect(
+    page.locator(".lines-content"),
+    "all entered data is represented in the editor preview"
+  ).toContainText(expectedEditorInput, {
+    useInnerText: true,
+  });
+});
+
+test("the input is synchronized between tabs, but the data that is currently in the view will be sent", async ({
+  page,
+}) => {
+  const workflowName = faker.system.commonFileName("yaml");
+
+  await createFile({
+    name: workflowName,
+    namespace,
+    type: "workflow",
+    yaml: jsonSchemaWithRequiredEnum,
+  });
+
+  await page.goto(`${namespace}/explorer/workflow/edit/${workflowName}`);
+
+  await page.getByTestId("workflow-editor-btn-run").click();
+  expect(
+    await page.getByTestId("run-workflow-dialog"),
+    "it opens the dialog"
+  ).toBeVisible();
+
+  // switch to tab JSON input
+  await page.getByTestId("run-workflow-json-tab-btn").click();
+
+  expect(
+    await page
+      .getByTestId("run-workflow-json-tab-btn")
+      .getAttribute("aria-selected"),
+    "the json tab is selected"
+  ).toBe("true");
+
+  // clear editor, to prevent invalid JSON due to auto completion
+  await page.getByRole("textbox").fill("");
+
+  // give valid JSON data
+  await page
+    .getByRole("textbox")
+    .fill(
+      '{"firstName":"Marty","lastName":"McFly","select":"guest", "obsoleteData": "random"}'
+    );
+
+  // switch to tab Form input
+  await page.getByTestId("run-workflow-form-tab-btn").click();
+
+  // the generated form is visible
+  await expect(page.getByLabel("First Name")).toBeVisible();
+  await expect(page.getByLabel("Last Name")).toBeVisible();
+  await expect(page.getByRole("combobox", { name: "role" })).toBeVisible();
+
+  expect(
+    await page.getByLabel("First Name"),
+    "the value for first name was set automatically"
+  ).toHaveValue("Marty");
+
+  expect(
+    await page.getByLabel("Last Name"),
+    "the value for last name was set automatically"
+  ).toHaveValue("McFly");
+
+  expect(
+    await page.getByRole("combobox").locator("span"),
+    "the value for role was set automatically"
+  ).toContainText("guest");
+
+  // change data again
+  await page.getByLabel("Last Name").fill("McDonald");
+
+  await page.getByTestId("run-workflow-submit-btn").click();
+
+  const reg = new RegExp(`${namespace}/instances/(.*)`);
+  await expect(
+    page,
+    "workflow was triggered with our input and user was redirected to the instances page"
+  ).toHaveURL(reg);
+
+  await expect(
+    page.getByRole("tab", { name: "Input" }),
+    "tab for input is visible"
+  ).toBeVisible();
+
+  await page.getByRole("tab", { name: "Input" }).click();
+
+  // turn the input/output panel to full screen
+  await page
+    .locator(".grid > div:nth-child(2) > div:nth-child(3)")
+    .getByRole("button")
+    .nth(1)
+    .click();
+
+  const expectedEditorInput = prettifyJsonString(
+    JSON.stringify({
+      firstName: "Marty",
+      lastName: "McDonald",
+      select: "guest",
+    })
+  );
+
+  await expect(
+    page.locator(".lines-content"),
+    "all entered data is represented in the editor preview"
+  ).toContainText(expectedEditorInput, {
+    useInnerText: true,
+  });
+
+  // check if the data from the JSON Input was overwritten when we switched to Form Input and sent the new data
+  await expect(
+    page.locator(".lines-content"),
+    "overwritten data does not exist anymore in the editor preview"
+  ).not.toContainText("obsoleteData", {
+    useInnerText: true,
+  });
 });
