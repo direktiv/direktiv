@@ -492,34 +492,14 @@ test("it is possible to provide the input via Form Input and see the same data i
     useInnerText: true,
   });
 
-  // run the workflow in the json tab
+  // run the workflow from the json tab
   await page.getByTestId("run-workflow-submit-btn").click();
 
   const reg = new RegExp(`${namespace}/instances/(.*)`);
   await expect(
     page,
-    "workflow was triggered with our input and user was redirected to the instances page"
+    "workflow was triggered and the user was redirected to the instances page"
   ).toHaveURL(reg);
-  const instanceId = page.url().match(reg)?.[1];
-
-  if (!instanceId) {
-    throw new Error("instanceId not found");
-  }
-
-  await expect(
-    page,
-    "workflow was triggered with our input and user was redirected to the instances page"
-  ).toHaveURL(reg);
-
-  await expect(
-    page.locator("div").getByText("complete", { exact: true }),
-    "wait until workflow is complete"
-  ).toBeVisible();
-
-  await expect(
-    page.getByRole("tab", { name: "Input" }),
-    "tab for input is visible"
-  ).toBeVisible();
 
   await page.getByRole("tab", { name: "Input" }).click();
 
@@ -542,6 +522,7 @@ test("it is possible to provide the input via JSON Input and see the same data i
   page,
 }) => {
   const workflowName = faker.system.commonFileName("yaml");
+
   await createFile({
     name: workflowName,
     namespace,
@@ -603,13 +584,8 @@ test("it is possible to provide the input via JSON Input and see the same data i
   const reg = new RegExp(`${namespace}/instances/(.*)`);
   await expect(
     page,
-    "workflow was triggered with our input and user was redirected to the instances page"
+    "workflow was triggered and user was redirected to the instances page"
   ).toHaveURL(reg);
-  const instanceId = page.url().match(reg)?.[1];
-
-  if (!instanceId) {
-    throw new Error("instanceId not found");
-  }
 
   const expectedEditorInput = prettifyJsonString(
     JSON.stringify({
@@ -618,21 +594,6 @@ test("it is possible to provide the input via JSON Input and see the same data i
       select: "guest",
     })
   );
-
-  await expect(
-    page,
-    "workflow was triggered with our input and user was redirected to the instances page"
-  ).toHaveURL(reg);
-
-  await expect(
-    page.locator("div").getByText("complete", { exact: true }),
-    "wait until workflow is complete"
-  ).toBeVisible();
-
-  await expect(
-    page.getByRole("tab", { name: "Input" }),
-    "tab for input is visible"
-  ).toBeVisible();
 
   await page.getByRole("tab", { name: "Input" }).click();
 
@@ -655,6 +616,7 @@ test("the input is synchronized between tabs, but the data that is currently in 
   page,
 }) => {
   const workflowName = faker.system.commonFileName("yaml");
+
   await createFile({
     name: workflowName,
     namespace,
@@ -723,21 +685,6 @@ test("the input is synchronized between tabs, but the data that is currently in 
     page,
     "workflow was triggered with our input and user was redirected to the instances page"
   ).toHaveURL(reg);
-  const instanceId = page.url().match(reg)?.[1];
-
-  if (!instanceId) {
-    throw new Error("instanceId not found");
-  }
-
-  await expect(
-    page,
-    "workflow was triggered with our input and user was redirected to the instances page"
-  ).toHaveURL(reg);
-
-  await expect(
-    page.locator("div").getByText("complete", { exact: true }),
-    "wait until workflow is complete"
-  ).toBeVisible();
 
   await expect(
     page.getByRole("tab", { name: "Input" }),
