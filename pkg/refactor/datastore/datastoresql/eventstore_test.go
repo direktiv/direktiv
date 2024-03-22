@@ -416,3 +416,75 @@ func Test_ListenerAddDeleteByWf(t *testing.T) {
 		t.Error("expected this listener to be deleted")
 	}
 }
+
+func Test_ListenerAddDeleteGetWithPaginationAndBoundaryCheck(t *testing.T) {
+	ns := uuid.New()
+	db, err := database.NewMockGorm()
+	if err != nil {
+		t.Fatalf("unexpected NewMockGorm() error = %v", err)
+	}
+	store := datastoresql.NewSQLStore(db, "some key")
+	listeners := store.EventListener()
+
+	// Adding 11 entries
+	for i := 0; i < 11; i++ {
+		eID := uuid.New()
+		wf := uuid.New()
+		err = listeners.Append(context.Background(), &events.EventListener{
+			ID:                          eID,
+			CreatedAt:                   time.Now().UTC(),
+			UpdatedAt:                   time.Now().UTC(),
+			Deleted:                     false,
+			NamespaceID:                 ns,
+			ListeningForEventTypes:      []string{"a"},
+			ReceivedEventsForAndTrigger: make([]*events.Event, 0),
+			LifespanOfReceivedEvents:    10000,
+			TriggerType:                 1,
+			TriggerWorkflow:             wf.String(),
+		})
+		if err != nil {
+			t.Errorf("failed to append listener %d: %v", i, err)
+		}
+	}
+
+	// First pagination test with offset = 5, limit = 3
+	offset := 5
+	limit := 3
+	got, count, err := listeners.Get(context.Background(), ns, limit, offset)
+	if err != nil {
+		t.Error(err)
+	}
+	if len(got) != limit {
+		t.Errorf("expected %d results, got %d", limit, len(got))
+	}
+	if count != 11 {
+		t.Errorf("expected total count to be 11, got %d", count)
+	}
+
+	// Second pagination test with offset = 10, limit = 10
+	offset = 10
+	limit = 10
+	got, count, err = listeners.Get(context.Background(), ns, offset, limit)
+	if err != nil {
+		t.Error(err)
+	}
+	// Expecting 1 result because there are 11 entries and we are starting from the 10th index
+	if len(got) != 1 {
+		t.Errorf("expected 1 result, got %d", len(got))
+	}
+	if count != 11 {
+		t.Errorf("expected total count to be 11, got %d", count)
+	}
+	// Clean-up by deleting the entries (optional in terms of this test case logic)
+	for _, listener := range got {
+		listener.UpdatedAt = time.Now().UTC()
+		listener.Deleted = true
+		errs := listeners.UpdateOrDelete(context.Background(), []*events.EventListener{listener})
+		for _, err := range errs {
+			if err != nil {
+				t.Error(err)
+				return
+			}
+		}
+	}
+}
