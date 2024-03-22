@@ -1,5 +1,5 @@
-import { Locator, expect, test } from "@playwright/test";
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
+import { expect, test } from "@playwright/test";
 import {
   jsonSchemaFormWorkflow,
   jsonSchemaWithRequiredEnum,
@@ -477,20 +477,18 @@ test("it is possible to provide the input via Form Input and see the same data i
     "the json tab is selected"
   ).toBe("true");
 
-  const expectedJson = {
-    firstName: "Marty",
-    lastName: "McFly",
-    select: "guest",
-  };
-
-  const expectedJsonFormattedString = prettifyJsonString(
-    JSON.stringify(expectedJson)
+  const expectedEditorInput = prettifyJsonString(
+    JSON.stringify({
+      firstName: "Marty",
+      lastName: "McFly",
+      select: "guest",
+    })
   );
 
   await expect(
     page.getByTestId("run-workflow-editor").locator(".lines-content"),
     "all entered data is represented in the editor preview"
-  ).toContainText(expectedJsonFormattedString, {
+  ).toContainText(expectedEditorInput, {
     useInnerText: true,
   });
 
@@ -508,29 +506,36 @@ test("it is possible to provide the input via Form Input and see the same data i
     throw new Error("instanceId not found");
   }
 
-  // check the server state of the input
-  const res = await getInput({
-    urlParams: {
-      baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
-      instanceId,
-      namespace,
-    },
-    headers,
-  });
-
-  const inputResponseAsJson = JSON.parse(decode(res.data));
-
-  // the data in the json input is the same
   await expect(
-    inputResponseAsJson,
-    "workflow was triggered and the input is the same as initially set in the other tab"
-  ).toEqual(expectedJson);
+    page,
+    "workflow was triggered with our input and user was redirected to the instances page"
+  ).toHaveURL(reg);
 
-  // the input in the workflow is the same like entered in the form
-  expect(
-    await page.locator(".view-line > span"),
-    "the Input was set as expected"
-  ).toContainText(["Marty", "McFly"]);
+  await expect(
+    page.locator("div").getByText("complete", { exact: true }),
+    "wait until workflow is complete"
+  ).toBeVisible();
+
+  await expect(
+    page.getByRole("tab", { name: "Input" }),
+    "tab for input is visible"
+  ).toBeVisible();
+
+  await page.getByRole("tab", { name: "Input" }).click();
+
+  // turn the input/output panel to full screen
+  await page
+    .locator(".grid > div:nth-child(2) > div:nth-child(3)")
+    .getByRole("button")
+    .nth(1)
+    .click();
+
+  await expect(
+    page.locator(".lines-content"),
+    "all entered data is represented in the editor preview"
+  ).toContainText(expectedEditorInput, {
+    useInnerText: true,
+  });
 });
 
 test("it is possible to provide the input via JSON Input and see the same data in the tab Form Input", async ({
@@ -629,14 +634,14 @@ test("it is possible to provide the input via JSON Input and see the same data i
     "tab for input is visible"
   ).toBeVisible();
 
+  await page.getByRole("tab", { name: "Input" }).click();
+
   // turn the input/output panel to full screen
   await page
     .locator(".grid > div:nth-child(2) > div:nth-child(3)")
     .getByRole("button")
     .nth(1)
     .click();
-
-  await page.getByRole("tab", { name: "Input" }).click();
 
   await expect(
     page.locator(".lines-content"),
@@ -681,7 +686,9 @@ test("the input is synchronized between tabs, but the data that is currently in 
   // give valid JSON data
   await page
     .getByRole("textbox")
-    .fill('{"firstName":"Marty","lastName":"McFly","select":"guest"}');
+    .fill(
+      '{"firstName":"Marty","lastName":"McFly","select":"guest", "obsoleteData": "random"}'
+    );
 
   // switch to tab Form input
   await page.getByTestId("run-workflow-form-tab-btn").click();
@@ -722,12 +729,6 @@ test("the input is synchronized between tabs, but the data that is currently in 
     throw new Error("instanceId not found");
   }
 
-  const expectedJson = {
-    firstName: "Marty",
-    lastName: "McDonald",
-    select: "guest",
-  };
-
   await expect(
     page,
     "workflow was triggered with our input and user was redirected to the instances page"
@@ -745,15 +746,33 @@ test("the input is synchronized between tabs, but the data that is currently in 
 
   await page.getByRole("tab", { name: "Input" }).click();
 
-  // resize window to see the whole json
+  // turn the input/output panel to full screen
   await page
-    .locator(
-      ".flex > div > .\\[\\&\\>\\*\\]\\:rounded-none > div:nth-child(2) > .inline-flex"
-    )
+    .locator(".grid > div:nth-child(2) > div:nth-child(3)")
+    .getByRole("button")
+    .nth(1)
     .click();
 
-  expect(
-    await page.locator(".view-line > span"),
-    "the Input was set as expected"
-  ).toContainText(["Marty", "McDonald"]);
+  const expectedEditorInput = prettifyJsonString(
+    JSON.stringify({
+      firstName: "Marty",
+      lastName: "McDonald",
+      select: "guest",
+    })
+  );
+
+  await expect(
+    page.locator(".lines-content"),
+    "all entered data is represented in the editor preview"
+  ).toContainText(expectedEditorInput, {
+    useInnerText: true,
+  });
+
+  // check if the data from the JSON Input was overwritten when we switched to Form Input and sent the new data
+  await expect(
+    page.locator(".lines-content"),
+    "overwritten data does not exist anymore in the editor preview"
+  ).not.toContainText("obsoleteData", {
+    useInnerText: true,
+  });
 });
