@@ -1,6 +1,8 @@
+import * as monaco from "monaco-editor";
+
 // for reference:
 // https://github.com/Microsoft/vscode/blob/913e891c34f8b4fe2c0767ec9f8bfd3b9dbe30d9/src/vs/editor/standalone/common/themes.ts#L13
-export default {
+const theme: monaco.editor.IStandaloneThemeData = {
   base: "vs-dark",
   inherit: true,
   rules: [
@@ -111,4 +113,6 @@ export default {
     "editor.background": "#000000",
     "editor.selectionBackground": "#ffffff2e", // whiteA.whiteA7
   },
-} as const;
+};
+
+export default theme;
