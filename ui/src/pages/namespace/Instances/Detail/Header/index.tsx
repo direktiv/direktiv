@@ -12,7 +12,7 @@ import ChildInstances from "./ChildInstances";
 import { Link } from "react-router-dom";
 import { pages } from "~/util/router/pages";
 import { statusToBadgeVariant } from "../../utils";
-import { useCancelInstance } from "~/api/logs/mutate/cancel";
+import { useCancelInstance } from "~/api/instances/mutate/cancel";
 import { useInstanceDetails } from "~/api/instances/query/details";
 import { useInstanceId } from "../store/instanceContext";
 import { useTranslation } from "react-i18next";

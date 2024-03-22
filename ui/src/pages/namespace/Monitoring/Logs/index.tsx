@@ -10,23 +10,27 @@ import CopyButton from "~/design/CopyButton";
 import { NoPermissions } from "~/design/Table";
 import ScrollContainer from "./Scrollcontainer";
 import { ScrollText } from "lucide-react";
-import { formatLogTime } from "~/util/helpers";
-import { useNamespacelogs } from "~/api/namespaces/query/logs";
+import { getMonitoringLogEntryForClipboard } from "~/components/Logs/utils";
+import { useLogs } from "~/api/logs/query/logs";
 import { useTranslation } from "react-i18next";
 
 const LogsPanel = () => {
   const { t } = useTranslation();
-  const { data, isFetched, isAllowed, noPermissionMessage } =
-    useNamespacelogs();
+
+  const {
+    data: logLines = [],
+    isFetched,
+    isAllowed,
+    noPermissionMessage,
+  } = useLogs();
+
+  const numberOfLogLines = logLines.length;
 
   const copyValue =
-    data?.results
-      .map((logEntry) => `${formatLogTime(logEntry.t)} ${logEntry.msg}`)
-      .join("\n") ?? "";
-
-  const resultCount = data?.results.length ?? 0;
+    logLines.map(getMonitoringLogEntryForClipboard).join("\n") ?? "";
 
   if (!isFetched) return null;
+
   if (!isAllowed) return <NoPermissions>{noPermissionMessage}</NoPermissions>;
 
   return (
@@ -51,9 +55,7 @@ const LogsPanel = () => {
                   />
                 </div>
               </TooltipTrigger>
-              <TooltipContent>
-                {t("pages.monitoring.logs.tooltips.copy")}
-              </TooltipContent>
+              <TooltipContent>{t("components.logs.copy")}</TooltipContent>
             </Tooltip>
           </TooltipProvider>
         </ButtonBar>
@@ -64,7 +66,7 @@ const LogsPanel = () => {
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-gray-11 opacity-75 dark:bg-gray-dark-11"></span>
           <span className="relative inline-flex h-3 w-3 rounded-full bg-gray-11 dark:bg-gray-dark-11"></span>
         </span>
-        {t("pages.monitoring.logs.logsCount", { count: resultCount })}
+        {t("components.logs.logsCount", { count: numberOfLogLines })}
       </div>
     </>
   );

@@ -1,5 +1,5 @@
 const methodsYaml = (methods: string[]) =>
-  methods.map((method) => `\n  - "${method}"`).join("");
+  methods.map((method) => `\n  - ${method}`).join("");
 
 type Route = {
   path: string;
@@ -20,8 +20,8 @@ export const createRouteYaml = ({
   timeout,
   methods,
   plugins,
-}: Route) => `direktiv_api: "endpoint/v1"
-path: "${path}"
+}: Route) => `direktiv_api: endpoint/v1
+path: ${path}
 timeout: ${timeout}
 methods:${methodsYaml(methods)}
 plugins:

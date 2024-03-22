@@ -5,7 +5,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "~/design/Tooltip";
-import { useFilters, useInstanceId } from "../../store/instanceContext";
 import {
   useLogsPreferencesActions,
   useLogsPreferencesMaximizedPanel,
@@ -15,12 +14,12 @@ import {
 import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
 import CopyButton from "~/design/CopyButton";
-import Filters from "./Filters";
 import ScrollContainer from "./ScrollContainer";
 import { Toggle } from "~/design/Toggle";
-import { formatLogTime } from "~/util/helpers";
+import { getInstanceLogEntryForClipboard } from "~/components/Logs/utils";
 import { useInstanceDetails } from "~/api/instances/query/details";
-import { useLogs } from "~/api/logs/query/get";
+import { useInstanceId } from "../../store/instanceContext";
+import { useLogs } from "~/api/logs/query/logs";
 import { useTranslation } from "react-i18next";
 
 const LogsPanel = () => {
@@ -28,11 +27,11 @@ const LogsPanel = () => {
   const { setVerboseLogs, setMaximizedPanel } = useLogsPreferencesActions();
 
   const instanceId = useInstanceId();
-  const filters = useFilters();
+
   const { data: instanceDetailsData } = useInstanceDetails({ instanceId });
-  const { data: logData } = useLogs({
-    instanceId,
-    filters,
+
+  const { data: logLines = [] } = useLogs({
+    instance: instanceId,
   });
 
   // get user preferences
@@ -41,22 +40,22 @@ const LogsPanel = () => {
 
   const isMaximized = maximizedPanel === "logs";
 
-  const copyValue =
-    logData?.results
-      .map((logEntry) => `${formatLogTime(logEntry.t)} ${logEntry.msg}`)
-      .join("\n") ?? "";
-
-  const resultCount = logData?.results.length ?? 0;
   const isPending = instanceDetailsData?.instance.status === "pending";
+
+  const numberOfLogLines = logLines.length;
+
+  const copyValue =
+    logLines.map(getInstanceLogEntryForClipboard).join("\n") ?? "";
 
   return (
     <>
       <div className="mb-5 flex flex-col gap-5 sm:flex-row">
         <h3 className="flex grow items-center gap-x-2 font-medium">
           <ScrollText className="h-5" />
-          {t("pages.instances.detail.logs.title")}
+          {t("pages.instances.detail.logs.title", {
+            path: instanceDetailsData?.instance.as,
+          })}
         </h3>
-        <Filters />
         <ButtonBar>
           <TooltipProvider>
             <Tooltip>
@@ -78,25 +77,6 @@ const LogsPanel = () => {
                 {t("pages.instances.detail.logs.tooltips.verbose")}
               </TooltipContent>
             </Tooltip>
-            {/* <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="flex grow">
-                  <Toggle
-                    size="sm"
-                    className="grow"
-                    pressed={wordWrap}
-                    onClick={() => {
-                      setWordWrap(!wordWrap);
-                    }}
-                  >
-                    <WrapText />
-                  </Toggle>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                {t("pages.instances.detail.logs.tooltips.wordWrap")}
-              </TooltipContent>
-            </Tooltip> */}
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="flex grow">
@@ -110,9 +90,7 @@ const LogsPanel = () => {
                   />
                 </div>
               </TooltipTrigger>
-              <TooltipContent>
-                {t("pages.instances.detail.logs.tooltips.copy")}
-              </TooltipContent>
+              <TooltipContent>{t("components.logs.copy")}</TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -147,7 +125,7 @@ const LogsPanel = () => {
             <span className="relative inline-flex h-3 w-3 rounded-full bg-gray-11 dark:bg-gray-dark-11"></span>
           </span>
         )}
-        {t("pages.instances.detail.logs.logsCount", { count: resultCount })}
+        {t("components.logs.logsCount", { count: numberOfLogLines })}
       </div>
     </>
   );

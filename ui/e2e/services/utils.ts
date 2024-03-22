@@ -10,32 +10,32 @@ export const createHttpServiceFile = ({
   scale = 1,
   size = "small",
 }: CreateServiceFileParams = {}) => `direktiv_api: service/v1
-image: "gcr.io/direktiv/functions/http-request:1.0"
+image: gcr.io/direktiv/functions/http-request:1.0
 scale: ${scale}
 size: ${size}
-cmd: ""
+cmd: 
 envs:
-  - name: "MY_ENV_VAR"
-    value: "env-var-value"
+  - name: MY_ENV_VAR
+    value: env-var-value
 `;
 
 export const createRequestServiceFile = ({
   scale = 1,
   size = "small",
 }: CreateServiceFileParams = {}) => `direktiv_api: service/v1
-image: "direktiv/request:v4"
+image: direktiv/request:v4
 scale: ${scale}
 size: ${size}
-cmd: "/request"
+cmd: /request
 envs:
-  - name: "MY_ENV_VAR"
-    value: "env-var-value"
+  - name: MY_ENV_VAR
+    value: env-var-value
 `;
 
 export const serviceWithAnError = `direktiv_api: service/v1
-image: "this-image-does-not-exist"
+image: this-image-does-not-exist
 scale: 1
-size: "small"
+size: small
 `;
 
 type FindServiceWithApiRequestParams = {

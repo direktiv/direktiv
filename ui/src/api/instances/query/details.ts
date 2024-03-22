@@ -62,12 +62,11 @@ export const useInstanceDetailsStream = (
 
 type InstanceStreamingSubscriberType = {
   instanceId: string;
-  enabled?: boolean;
 };
 
 export const InstanceStreamingSubscriber = memo(
-  ({ instanceId, enabled }: InstanceStreamingSubscriberType) => {
-    useInstanceDetailsStream({ instanceId }, { enabled: enabled ?? true });
+  ({ instanceId }: InstanceStreamingSubscriberType) => {
+    useInstanceDetailsStream({ instanceId });
     return null;
   }
 );

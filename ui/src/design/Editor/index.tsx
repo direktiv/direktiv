@@ -1,11 +1,15 @@
+import * as monaco from "monaco-editor";
+
 import { FC, useRef } from "react";
+import MonacoEditor, { loader } from "@monaco-editor/react";
 
 import AutoSizer from "react-virtualized-auto-sizer";
 import type { EditorProps } from "@monaco-editor/react";
-import MonacoEditor from "@monaco-editor/react";
 import { supportedLanguages } from "./utils";
 import themeDark from "./theme-dark";
 import themeLight from "./theme-light";
+
+loader.config({ monaco });
 
 const beforeMount: EditorProps["beforeMount"] = (monaco) => {
   monaco.editor.defineTheme("direktiv-dark", themeDark);
@@ -72,8 +76,8 @@ const Editor: FC<
             // options reference: https://microsoft.github.io/monaco-editor/typedoc/interfaces/editor.IEditorOptions.html
             scrollBeyondLastLine: false,
             cursorBlinking: "smooth",
-            wordWrap: true,
-            fontSize: "13px",
+            wordWrap: "on",
+            fontSize: 13,
             minimap: {
               enabled: false,
             },
