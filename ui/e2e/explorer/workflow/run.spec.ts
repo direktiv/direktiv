@@ -629,11 +629,11 @@ test("it is possible to provide the input via JSON Input and see the same data i
     "tab for input is visible"
   ).toBeVisible();
 
-  // resize window to see the whole json
+  // turn the input/output panel to full screen
   await page
-    .locator(
-      ".flex > div > .\\[\\&\\>\\*\\]\\:rounded-none > div:nth-child(2) > .inline-flex"
-    )
+    .locator(".grid > div:nth-child(2) > div:nth-child(3)")
+    .getByRole("button")
+    .nth(1)
     .click();
 
   await page.getByRole("tab", { name: "Input" }).click();
