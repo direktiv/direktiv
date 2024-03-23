@@ -6,7 +6,7 @@ import request from '../common/request'
 
 const namespaceName = 'canceltest'
 
-var id = ''
+let id = ''
 
 describe('Test wait success API behaviour', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
@@ -42,20 +42,20 @@ states:
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({
 			data: {
-                created_at: expect.stringMatching(common.regex.timestampRegex),
-                definition: expect.stringMatching(common.regex.base64Regex),
-                ended_at: null,
-                error_code: "",
-                id: expect.stringMatching(common.regex.uuidRegex),
-                invoker: "api",
-                path: "/delay.yaml",
-                status: "pending",
-            },
+				created_at: expect.stringMatching(common.regex.timestampRegex),
+				definition: expect.stringMatching(common.regex.base64Regex),
+				ended_at: null,
+				error_code: '',
+				id: expect.stringMatching(common.regex.uuidRegex),
+				invoker: 'api',
+				path: '/delay.yaml',
+				status: 'pending',
+			},
 		})
 
-        id = req.body.data.id
+		id = req.body.data.id
 
-        await sleep(200)
+		await sleep(200)
 	})
 
 	it(`should fail to cancel the instance`, async () => {
@@ -63,35 +63,35 @@ states:
 		expect(req.statusCode).toEqual(400)
 		expect(req.body).toMatchObject({})
 
-        await sleep(500)
+		await sleep(500)
 	})
 
-    it(`should cancel the instance`, async () => {
+	it(`should cancel the instance`, async () => {
 		const req = await request(common.config.getDirektivHost()).patch(`/api/v2/namespaces/${ namespaceName }/instances/${ id }`)
-		.set('Content-Type', 'application/json')
-		.send({
-			status: 'cancelled'
-		})
+			.set('Content-Type', 'application/json')
+			.send({
+				status: 'cancelled',
+			})
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({})
 
-        await sleep(500)
+		await sleep(500)
 	})
 
-    it(`should verify that the instance has been cancelled`, async () => {
+	it(`should verify that the instance has been cancelled`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/instances/${ id }`)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({
 			data: {
-                created_at: expect.stringMatching(common.regex.timestampRegex),
-                definition: expect.stringMatching(common.regex.base64Regex),
-                ended_at: expect.stringMatching(common.regex.timestampRegex),
-                error_code: "direktiv.cancels.api",
-                id: expect.stringMatching(common.regex.uuidRegex),
-                invoker: "api",
-                path: "/delay.yaml",
-                status: "cancelled",
-            },
+				created_at: expect.stringMatching(common.regex.timestampRegex),
+				definition: expect.stringMatching(common.regex.base64Regex),
+				ended_at: expect.stringMatching(common.regex.timestampRegex),
+				error_code: 'direktiv.cancels.api',
+				id: expect.stringMatching(common.regex.uuidRegex),
+				invoker: 'api',
+				path: '/delay.yaml',
+				status: 'cancelled',
+			},
 		})
 	})
 })
