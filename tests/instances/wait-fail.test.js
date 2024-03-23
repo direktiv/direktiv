@@ -40,13 +40,13 @@ states:
 		const req = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=error.yaml&wait=true`)
 
 		expect(req.statusCode).toEqual(500)
-        expect(req.header['direktiv-instance-error-code']).toEqual("errA")
-        expect(req.header['direktiv-instance-error-message']).toEqual("error A")
+		expect(req.header['direktiv-instance-error-code']).toEqual('errA')
+		expect(req.header['direktiv-instance-error-message']).toEqual('error A')
 		expect(req.body).toMatchObject({
-            error: {
-                code: 'errA',
-                message: 'error A'
-            }
+			error: {
+				code: 'errA',
+				message: 'error A',
+			},
 		})
 	})
 
@@ -54,13 +54,13 @@ states:
 		const req = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=%2Ferror.yaml&wait=true`)
 
 		expect(req.statusCode).toEqual(500)
-        expect(req.header['direktiv-instance-error-code']).toEqual("errA")
-        expect(req.header['direktiv-instance-error-message']).toEqual("error A")
+		expect(req.header['direktiv-instance-error-code']).toEqual('errA')
+		expect(req.header['direktiv-instance-error-message']).toEqual('error A')
 		expect(req.body).toMatchObject({
-            error: {
-                code: 'errA',
-                message: 'error A'
-            }
+			error: {
+				code: 'errA',
+				message: 'error A',
+			},
 		})
 	})
 })
