@@ -36,7 +36,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
-	"go.uber.org/zap"
 	libgrpc "google.golang.org/grpc"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -128,12 +127,11 @@ func (log *mirrorProcessLogger) Error(pid uuid.UUID, msg string, kv ...interface
 var _ mirror.ProcessLogger = &mirrorProcessLogger{}
 
 type mirrorCallbacks struct {
-	logger    mirror.ProcessLogger
-	syslogger *zap.SugaredLogger
-	store     datastore.MirrorStore
-	fstore    filestore.FileStore
-	varstore  datastore.RuntimeVariablesStore
-	wfconf    func(ctx context.Context, nsID uuid.UUID, nsName string, file *filestore.File) error
+	logger   mirror.ProcessLogger
+	store    datastore.MirrorStore
+	fstore   filestore.FileStore
+	varstore datastore.RuntimeVariablesStore
+	wfconf   func(ctx context.Context, nsID uuid.UUID, nsName string, file *filestore.File) error
 }
 
 func (c *mirrorCallbacks) ConfigureWorkflowFunc(ctx context.Context, nsID uuid.UUID, nsName string, file *filestore.File) error {
@@ -142,10 +140,6 @@ func (c *mirrorCallbacks) ConfigureWorkflowFunc(ctx context.Context, nsID uuid.U
 
 func (c *mirrorCallbacks) ProcessLogger() mirror.ProcessLogger {
 	return c.logger
-}
-
-func (c *mirrorCallbacks) SysLogCrit(msg string) {
-	c.syslogger.Error(msg)
 }
 
 func (c *mirrorCallbacks) Store() datastore.MirrorStore {

@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"errors"
 	"fmt"
+	"log/slog"
 	"math/big"
 	"sync"
 	"time"
@@ -48,24 +49,24 @@ func (d *Manager) gc() {
 		// this first loop looks for operations that seem to have timed out
 		procs, err := d.callbacks.Store().GetUnfinishedProcesses(ctx)
 		if err != nil {
-			d.callbacks.SysLogCrit(fmt.Sprintf("Failed to query unfinished mirror processes: %v", err))
+			slog.Error(fmt.Sprintf("Failed to query unfinished mirror processes: %v", err))
 
 			continue
 		}
 
 		for _, proc := range procs {
 			if time.Since(proc.CreatedAt) > maxRunTime {
-				d.callbacks.SysLogCrit(fmt.Sprintf("Detected an old unfinished mirror process '%s' for namespace '%s'. Terminating...", proc.ID.String(), proc.Namespace))
+				slog.Error(fmt.Sprintf("Detected an old unfinished mirror process '%s' for namespace '%s'. Terminating...", proc.ID.String(), proc.Namespace))
 				c, cancel := context.WithTimeout(ctx, 5*time.Second)
 				err = d.Cancel(c, proc.ID)
 				cancel()
 				if err != nil {
-					d.callbacks.SysLogCrit(fmt.Sprintf("Error cancelling old unfinished mirror process '%s' for namespace '%s': %v", proc.ID.String(), proc.Namespace, err))
+					slog.Error(fmt.Sprintf("Error cancelling old unfinished mirror process '%s' for namespace '%s': %v", proc.ID.String(), proc.Namespace, err))
 				}
 
 				p, err := d.callbacks.Store().GetProcess(ctx, proc.ID)
 				if err != nil {
-					d.callbacks.SysLogCrit(fmt.Sprintf("Error requerying old unfinished mirror process '%s' for namespace '%s': %v", proc.ID.String(), proc.Namespace, err))
+					slog.Error(fmt.Sprintf("Error requerying old unfinished mirror process '%s' for namespace '%s': %v", proc.ID.String(), proc.Namespace, err))
 
 					continue
 				}
@@ -79,7 +80,7 @@ func (d *Manager) gc() {
 		// this second loop deletes really old processes from the database so that it doesn't grow endlessly
 		err = d.callbacks.Store().DeleteOldProcesses(ctx, time.Now().Add(-1*maxRecordTime))
 		if err != nil {
-			d.callbacks.SysLogCrit(fmt.Sprintf("Failed to query old mirror processes: %v", err))
+			slog.Error(fmt.Sprintf("Failed to query old mirror processes: %v", err))
 
 			continue
 		}
@@ -108,7 +109,7 @@ func (d *Manager) silentFailProcess(p *datastore.MirrorProcess) {
 	p.EndedAt = time.Now().UTC()
 	_, e := d.callbacks.Store().UpdateProcess(context.Background(), p)
 	if e != nil {
-		d.callbacks.SysLogCrit(fmt.Sprintf("Error updating failed mirror process record in database: %v", e))
+		slog.Error(fmt.Sprintf("Error updating failed mirror process record in database: %v", e))
 
 		return
 	}
@@ -161,7 +162,7 @@ func (d *Manager) Execute(ctx context.Context, p *datastore.MirrorProcess, m *da
 	defer func() {
 		err := src.Free()
 		if err != nil {
-			d.callbacks.SysLogCrit(fmt.Sprintf("Error freeing mirror source: %v", err))
+			slog.Error(fmt.Sprintf("Error freeing mirror source: %v", err))
 		}
 	}()
 
@@ -175,7 +176,7 @@ func (d *Manager) Execute(ctx context.Context, p *datastore.MirrorProcess, m *da
 	defer func() {
 		err := parser.Close()
 		if err != nil {
-			d.callbacks.SysLogCrit(fmt.Sprintf("Error freeing mirror temporary files: %v", err))
+			slog.Error(fmt.Sprintf("Error freeing mirror temporary files: %v", err))
 		}
 	}()
 

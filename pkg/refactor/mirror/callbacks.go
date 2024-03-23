@@ -15,8 +15,6 @@ type Callbacks interface {
 
 	ProcessLogger() ProcessLogger
 
-	SysLogCrit(msg string)
-
 	Store() datastore.MirrorStore
 	FileStore() filestore.FileStore
 	VarStore() datastore.RuntimeVariablesStore
