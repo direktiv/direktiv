@@ -1,4 +1,4 @@
-FROM docker.io/library/golang:1.21 as builder
+FROM docker.io/library/golang:1.22 as builder
 
 ARG RELEASE_VERSION
 ENV RELEASE=$RELEASE_VERSION

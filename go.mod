@@ -1,6 +1,6 @@
 module github.com/direktiv/direktiv
 
-go 1.21
+go 1.22
 
 require (
 	github.com/bbuck/go-lexer v1.0.0
