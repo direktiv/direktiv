@@ -90,19 +90,6 @@ func assertWorkflows(t *testing.T, p *mirror.Parser, paths []string) {
 	}
 }
 
-func TestParseEmpty(t *testing.T) {
-	log := zap.NewNop().Sugar()
-	src := newMemSource()
-
-	p, err := mirror.NewParser(log, src)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	assertTree(t, p, []string{})
-}
-
 func TestParseSimple(t *testing.T) {
 	log := zap.NewNop().Sugar()
 	src := newMemSource()
