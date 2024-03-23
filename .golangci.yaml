@@ -54,6 +54,8 @@ linters:
     - perfsprint # not needed, this one linting nano optimizations.
     - spancheck # TODO: Alan, enable this one as it helps you fixing some telemetry bugs.
     - revive
+    - intrange # TODO: should be activated.
+    - copyloopvar # TODO: should be activated.
 
 issues:
   exclude-rules:
