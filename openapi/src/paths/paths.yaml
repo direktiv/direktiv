@@ -210,158 +210,158 @@
                   type: array
                   items:
                     $ref: '../objects.yaml#/route'
-
-/api/v2/namespaces/{namespace}/instances:
-  get:
-    tags:
-      - instances
-    summary: Get all instances
-    parameters:
-      - $ref: '../parameters.yaml#/namespace'
-      # TODO: pagination params
-    responses:
-      "200":
-        description: Instances list returned
-        content:
-          application/json:
-            schema:
-              type: object
-  post:
-    tags:
-      - instances
-    summary: Create an instance
-    parameters:
-      - $ref: '../parameters.yaml#/namespace'
-      - name: path 
-        in: query
-        schema:
-          type: string
-          description: filepath of the workflow to base the instance on
-        required: true
-    responses:
-      "200":
-        description: Instance created.
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                data:
-                  $ref: '../objects.yaml#/'
-              
-
-/api/v2/namespaces/{namespace}/instances/{instanceID}:
-  get:
-    tags:
-      - instances
-    summary: Get detailed instance information
-    parameters:
-      - $ref: '../parameters.yaml#/namespace'
-      - $ref: '../parameters.yaml#/instanceID'
-    responses:
-      "200":
-        description: Instance summary information only returned.
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                data:
-                  $ref: '../objects.yaml#/'
-              
-  patch:
-    tags:
-      - instances
-    summary: Change information about an instance. Right now this can only be used to cancel an instance.
-    parameters:
-      - $ref: '../parameters.yaml#/namespace'
-      - $ref: '../parameters.yaml#/instanceID'
-    requestBody:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              status:
-                type: string
-                description: Must be 'cancelled'.
-    responses:
-      "200":
-        description: This request returns nothing.
-
-
-/api/v2/namespaces/{namespace}/instances/{instancesID}/input:
-  get:
-    tags:
-      - instances
-    summary: Get instance information with input data
-    parameters:
-      - $ref: '../parameters.yaml#/namespace'
-      - $ref: '../parameters.yaml#/instanceID'
-    responses:
-      "200":
-        description: Instance summary information with input as well.
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                data:
-                  $ref: '../objects.yaml#/'
-
-/api/v2/namespaces/{namespace}/instances/{instancesID}/output:
-  get:
-    tags:
-      - instances
-    summary: Get instance information with output data
-    parameters:
-      - $ref: '../parameters.yaml#/namespace'
-      - $ref: '../parameters.yaml#/instanceID'
-    responses:
-      "200":
-        description: Instance summary information with output as well.
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                data:
-                  $ref: '../objects.yaml#/'
-
-/api/v2/namespaces/{namespace}/instances/{instancesID}/metadata:
-  get:
-    tags:
-      - instances
-    summary: Get instance information with metadata
-    parameters:
-      - $ref: '../parameters.yaml#/namespace'
-      - $ref: '../parameters.yaml#/instanceID'
-    responses:
-      "200":
-        description: Instance summary information with metadata as well.
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                data:
-                  $ref: '../objects.yaml#/'
-
-/api/v2/namespaces/{namespace}/instances/{instancesID}/subscribe:
-  get:
-    tags:
-      - instances
-    summary: API for SSE streaming of instance data
-    parameters:
-      - $ref: '../parameters.yaml#/namespace'
-      - $ref: '../parameters.yaml#/instanceID'
-    responses:
-      "200":
-        description: Instance summary information only returned.
-        content:
-          text/event-stream:
-
+#
+#/api/v2/namespaces/{namespace}/instances:
+#  get:
+#    tags:
+#      - instances
+#    summary: Get all instances
+#    parameters:
+#      - $ref: '../parameters.yaml#/namespace'
+#      # TODO: pagination params
+#    responses:
+#      "200":
+#        description: Instances list returned
+#        content:
+#          application/json:
+#            schema:
+#              type: object
+#  post:
+#    tags:
+#      - instances
+#    summary: Create an instance
+#    parameters:
+#      - $ref: '../parameters.yaml#/namespace'
+#      - name: path
+#        in: query
+#        schema:
+#          type: string
+#          description: filepath of the workflow to base the instance on
+#        required: true
+#    responses:
+#      "200":
+#        description: Instance created.
+#        content:
+#          application/json:
+#            schema:
+#              type: object
+#              properties:
+#                data:
+#                  $ref: '../objects.yaml#/'
+#
+#
+#/api/v2/namespaces/{namespace}/instances/{instanceID}:
+#  get:
+#    tags:
+#      - instances
+#    summary: Get detailed instance information
+#    parameters:
+#      - $ref: '../parameters.yaml#/namespace'
+#      - $ref: '../parameters.yaml#/instanceID'
+#    responses:
+#      "200":
+#        description: Instance summary information only returned.
+#        content:
+#          application/json:
+#            schema:
+#              type: object
+#              properties:
+#                data:
+#                  $ref: '../objects.yaml#/'
+#
+#  patch:
+#    tags:
+#      - instances
+#    summary: Change information about an instance. Right now this can only be used to cancel an instance.
+#    parameters:
+#      - $ref: '../parameters.yaml#/namespace'
+#      - $ref: '../parameters.yaml#/instanceID'
+#    requestBody:
+#      required: true
+#      content:
+#        application/json:
+#          schema:
+#            type: object
+#            properties:
+#              status:
+#                type: string
+#                description: Must be 'cancelled'.
+#    responses:
+#      "200":
+#        description: This request returns nothing.
+#
+#
+#/api/v2/namespaces/{namespace}/instances/{instancesID}/input:
+#  get:
+#    tags:
+#      - instances
+#    summary: Get instance information with input data
+#    parameters:
+#      - $ref: '../parameters.yaml#/namespace'
+#      - $ref: '../parameters.yaml#/instanceID'
+#    responses:
+#      "200":
+#        description: Instance summary information with input as well.
+#        content:
+#          application/json:
+#            schema:
+#              type: object
+#              properties:
+#                data:
+#                  $ref: '../objects.yaml#/'
+#
+#/api/v2/namespaces/{namespace}/instances/{instancesID}/output:
+#  get:
+#    tags:
+#      - instances
+#    summary: Get instance information with output data
+#    parameters:
+#      - $ref: '../parameters.yaml#/namespace'
+#      - $ref: '../parameters.yaml#/instanceID'
+#    responses:
+#      "200":
+#        description: Instance summary information with output as well.
+#        content:
+#          application/json:
+#            schema:
+#              type: object
+#              properties:
+#                data:
+#                  $ref: '../objects.yaml#/'
+#
+#/api/v2/namespaces/{namespace}/instances/{instancesID}/metadata:
+#  get:
+#    tags:
+#      - instances
+#    summary: Get instance information with metadata
+#    parameters:
+#      - $ref: '../parameters.yaml#/namespace'
+#      - $ref: '../parameters.yaml#/instanceID'
+#    responses:
+#      "200":
+#        description: Instance summary information with metadata as well.
+#        content:
+#          application/json:
+#            schema:
+#              type: object
+#              properties:
+#                data:
+#                  $ref: '../objects.yaml#/'
+#
+#/api/v2/namespaces/{namespace}/instances/{instancesID}/subscribe:
+#  get:
+#    tags:
+#      - instances
+#    summary: API for SSE streaming of instance data
+#    parameters:
+#      - $ref: '../parameters.yaml#/namespace'
+#      - $ref: '../parameters.yaml#/instanceID'
+#    responses:
+#      "200":
+#        description: Instance summary information only returned.
+#        content:
+#          text/event-stream:
+#
 
 /api/v2/namespaces/{namespace}/logs:
   get:
@@ -667,6 +667,171 @@
     responses:
       "200":
         description:  Registry object deleted
+/api/v2/namespaces/{namespace}/secrets:
+  get:
+    tags:
+      - secrets
+    summary: Gets all direktiv secrets in a namespace
+    parameters:
+      - $ref: '../parameters.yaml#/namespace'
+    responses:
+      "200":
+        description: list of direktiv secrets
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        description: a unique string that represent name of the secret
+                      createdAt:
+                        type: string
+                        description: timestamp of creation date
+                      updatedAt:
+                        type: string
+                        description: timestamp of last updating date
+
+  post:
+    tags:
+      - secrets
+    summary: Creates a new direktiv secret
+    parameters:
+      - $ref: '../parameters.yaml#/namespace'
+    requestBody:
+      description: Secret's creating data
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                description: a unique name string of the secret
+              data:
+                type: string
+                description: base64 encoded string of the secret's data
+    responses:
+      "200":
+        description: data of the created direktiv secret
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      description: a unique name string of the secret
+                    createdAt:
+                      type: string
+                      description: timestamp of creation date
+                    updatedAt:
+                      type: string
+                      description: timestamp of last updating date
+
+/api/v2/namespaces/{namespace}/secrets/{secretName}:
+  get:
+    tags:
+      - secrets
+    summary: Fetches a direktiv secret
+    parameters:
+      - $ref: '../parameters.yaml#/namespace'
+      - name: secretName
+        in: path
+        required: true
+        schema:
+          type: string
+          description: name of the secret
+    responses:
+      "200":
+        description: data of the direktiv  secret
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      description: a unique name string of the secret
+                    createdAt:
+                      type: string
+                      description: timestamp of creation date
+                    updatedAt:
+                      type: string
+                      description: timestamp of last updating date
+
+  delete:
+    tags:
+      - secrets
+    summary: Removes a direktiv  secret
+    parameters:
+      - $ref: '../parameters.yaml#/namespace'
+      - name: secretName
+        in: path
+        required: true
+        schema:
+          type: string
+          description: name of the secret
+    responses:
+      "200":
+        description:  object deleted successfully
+
+  patch:
+    tags:
+      - secrets
+    summary: Updates a direktiv secret
+    parameters:
+      - $ref: '../parameters.yaml#/namespace'
+      - name: secretName
+        in: path
+        required: true
+        schema:
+          type: string
+          description: name of the secret
+    requestBody:
+      description: Secret's patching data
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                description: a unique name string of the secret
+              mimeType:
+                type: string
+                description: mime type of the secret's data
+              data:
+                type: string
+                description: base64 encoded string of the secret's data
+    responses:
+      "200":
+        description: data of the updated direktiv secret
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    data:
+                      type: string
+                      description: base64 encoded string of the secret's data
+
 /api/v2/namespaces/{namespace}/services:
   get:
     tags:
