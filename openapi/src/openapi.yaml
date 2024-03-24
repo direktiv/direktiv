@@ -77,6 +77,8 @@ tags:
     description: Endpoints for managing services
   - name: variables
     description: Endpoints for managing direktiv variables
+  - name: secrets
+    description: Endpoints for managing direktiv secrets
   - name: registries
     description: Endpoints for managing registries
   - name: gateway
@@ -91,6 +93,7 @@ x-tagGroups:
       - files
       - services
       - variables
+      - secrets
       - registries
       - gateway
       - server
