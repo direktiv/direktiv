@@ -1,12 +1,13 @@
 import Editor from "~/design/Editor";
 import Toolbar from "./Toolbar";
 import { decode } from "js-base64";
+import { forwardRef } from "react";
 import { prettifyJsonString } from "~/util/helpers";
 import { useInput } from "~/api/instances/query/input";
 import { useInstanceId } from "../../store/instanceContext";
 import { useTheme } from "~/util/store/theme";
 
-const Input = () => {
+const Input = forwardRef<HTMLDivElement>((_, ref) => {
   const instanceId = useInstanceId();
   const { data } = useInput({ instanceId });
   const theme = useTheme();
@@ -15,7 +16,7 @@ const Input = () => {
   const workflowInputPretty = prettifyJsonString(workflowInput);
 
   return (
-    <div className="flex grow flex-col gap-5 pb-12">
+    <div className="flex grow flex-col gap-5 pb-12" ref={ref}>
       <Toolbar copyText={workflowInputPretty} variant="input" />
       <Editor
         value={workflowInputPretty}
@@ -25,6 +26,8 @@ const Input = () => {
       />
     </div>
   );
-};
+});
+
+Input.displayName = "Input";
 
 export default Input;
