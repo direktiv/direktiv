@@ -15,19 +15,19 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
     const { t } = useTranslation();
     const { msg, level, time, workflow, namespace } = logEntry;
     const formattedTime = formatLogTime(time);
-
-    if (!namespace) return <></>;
+    const hasNamespaceInformation = !!namespace;
 
     const isWorkflowLog = !!workflow;
     const workflowPath = workflow?.workflow;
+
     const workflowLink = pages.explorer.createHref({
       path: workflow?.workflow,
-      namespace,
+      namespace: namespace ?? "",
       subpage: "workflow",
     });
 
     const instanceLink = pages.instances.createHref({
-      namespace,
+      namespace: namespace ?? "",
       instance: workflow?.instance,
     });
 
@@ -41,7 +41,7 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
         <LogSegment display={true}>
           {t("components.logs.logEntry.messageLabel")} {msg}
         </LogSegment>
-        <LogSegment display={isWorkflowLog}>
+        <LogSegment display={isWorkflowLog && hasNamespaceInformation}>
           <span className="opacity-60">
             <Link to={workflowLink} className="underline" target="_blank">
               {workflowPath}
