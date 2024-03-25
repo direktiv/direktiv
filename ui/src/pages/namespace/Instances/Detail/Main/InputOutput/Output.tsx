@@ -1,17 +1,20 @@
 import Editor from "~/design/Editor";
-import { FC } from "react";
 import InfoText from "./OutputInfo";
 import Toolbar from "./Toolbar";
 import { decode } from "js-base64";
+import { forwardRef } from "react";
 import { prettifyJsonString } from "~/util/helpers";
 import { useInstanceId } from "../../store/instanceContext";
 import { useOutput } from "~/api/instances/query/output";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 
-const Output: FC<{ instanceIsFinished: boolean }> = ({
-  instanceIsFinished,
-}) => {
+const Output = forwardRef<
+  HTMLDivElement,
+  {
+    instanceIsFinished: boolean;
+  }
+>(({ instanceIsFinished }, ref) => {
   const instanceId = useInstanceId();
   const { t } = useTranslation();
   const { data, isError } = useOutput({
@@ -40,7 +43,7 @@ const Output: FC<{ instanceIsFinished: boolean }> = ({
   const workflowOutputPretty = prettifyJsonString(workflowOutput);
 
   return (
-    <div className="flex grow flex-col gap-5 pb-12">
+    <div className="flex grow flex-col gap-5 pb-12" ref={ref}>
       <Toolbar copyText={workflowOutput} variant="output" />
       <Editor
         value={workflowOutputPretty}
@@ -50,6 +53,8 @@ const Output: FC<{ instanceIsFinished: boolean }> = ({
       />
     </div>
   );
-};
+});
+
+Output.displayName = "Output";
 
 export default Output;
