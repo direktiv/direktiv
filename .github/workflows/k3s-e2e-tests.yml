@@ -65,7 +65,7 @@ jobs:
             "filesystem/",
             # "functions/",
             "gateway/",
-            # "kubernetes/",
+            "kubernetes/",
             "logparser/",
             "mirror/",
             "namespaces/",
