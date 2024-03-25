@@ -23,21 +23,22 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
 
     const workflowPath = workflow?.workflow;
 
-    if (!workflow) return <></>;
-    if (!namespace) return <></>;
+    const hasWorkflowInformation = !!workflow;
 
     const workflowLink = pages.explorer.createHref({
       path: workflow?.workflow,
-      namespace,
+      namespace: namespace ?? "",
       subpage: "workflow",
     });
 
     const instanceLink = pages.instances.createHref({
-      namespace,
+      namespace: namespace ?? "",
       instance: workflow?.instance,
     });
 
-    const isChildInstanceEntry = instanceId !== workflow.instance;
+    const isChildInstanceEntry = workflow
+      ? instanceId !== workflow.instance
+      : false;
 
     return (
       <LogEntry
@@ -46,13 +47,16 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
         ref={ref}
         {...props}
       >
-        <LogSegment display={verbose} className="opacity-60">
-          {t("components.logs.logEntry.stateLabel")} {workflow.state}
+        <LogSegment
+          display={verbose && hasWorkflowInformation}
+          className="opacity-60"
+        >
+          {t("components.logs.logEntry.stateLabel")} {workflow?.state}
         </LogSegment>
         <LogSegment display={true}>
           {t("components.logs.logEntry.messageLabel")} {msg}
         </LogSegment>
-        <LogSegment display={isChildInstanceEntry}>
+        <LogSegment display={isChildInstanceEntry && hasWorkflowInformation}>
           <span className="opacity-60">
             <Link to={workflowLink} className="underline" target="_blank">
               {workflowPath}
@@ -60,7 +64,7 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
             (
             <Link to={instanceLink} className="underline" target="_blank">
               {t("components.logs.logEntry.instanceLabel")}{" "}
-              {workflow.instance.slice(0, 8)}
+              {workflow?.instance.slice(0, 8)}
             </Link>
             )
           </span>
