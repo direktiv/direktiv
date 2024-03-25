@@ -63,7 +63,7 @@ jobs:
             "errors/",
             "events/",
             "filesystem/",
-            # "functions/",
+            "functions/",
             "gateway/",
             "kubernetes/",
             "logparser/",
