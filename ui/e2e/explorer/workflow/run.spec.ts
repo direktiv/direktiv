@@ -724,7 +724,7 @@ test("the input is synchronized between tabs, but the data that is currently in 
   });
 });
 
-test("the input values are sent, although the window focus was switched before sending the data", async ({
+test("switching the window focus will preserve the state of the form", async ({
   page,
 }) => {
   const workflowName = faker.system.commonFileName("yaml");
@@ -755,7 +755,7 @@ test("the input values are sent, although the window focus was switched before s
   await page.getByRole("combobox", { name: "role" }).click();
   await page.getByRole("option", { name: "guest" }).click();
 
-  // switch focus to another window
+  // dispatch visibilitychange event to emulate switching
   page.evaluate(() => {
     window.dispatchEvent(new Event("visibilitychange"));
   });
