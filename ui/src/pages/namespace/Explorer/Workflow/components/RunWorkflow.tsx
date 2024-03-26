@@ -114,11 +114,10 @@ const RunWorkflow = ({ path }: { path: string }) => {
 
   const syncInputData = (selectedTab: "form" | "json") => {
     if (selectedTab === "json") {
-      const formState = jsonSchemaFormRef.current?.state.formData as unknown;
+      const formState = jsonSchemaFormRef.current?.state.formData;
       const formDataObj = isObject(formState) ? formState : {};
       const formDataString = prettifyJsonString(JSON.stringify(formDataObj));
       const formIsEmpty = Object.keys(formDataObj).length === 0;
-
       setJsonInput(formIsEmpty ? defaultEmptyJson : formDataString);
     }
 
