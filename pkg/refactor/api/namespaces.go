@@ -105,7 +105,7 @@ func (e *nsController) update(w http.ResponseWriter, r *http.Request) {
 
 	// Parse request.
 	req := struct {
-		MirrorSettings *datastore.MirrorConfig `json:"mirrorSettings"`
+		MirrorSettings *datastore.MirrorConfig `json:"mirror"`
 	}{}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeNotJSONError(w, err)
@@ -114,7 +114,7 @@ func (e *nsController) update(w http.ResponseWriter, r *http.Request) {
 	if req.MirrorSettings == nil {
 		writeError(w, &Error{
 			Code:    "request_data_invalid",
-			Message: "field mirrorSettings must be provided",
+			Message: "field mirror must be provided",
 		})
 
 		return
@@ -146,7 +146,7 @@ func (e *nsController) create(w http.ResponseWriter, r *http.Request) {
 	// Parse request.
 	req := struct {
 		Name           string                  `json:"name"`
-		MirrorSettings *datastore.MirrorConfig `json:"mirrorSettings"`
+		MirrorSettings *datastore.MirrorConfig `json:"mirror"`
 	}{}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeNotJSONError(w, err)
@@ -232,7 +232,7 @@ func (e *nsController) list(w http.ResponseWriter, r *http.Request) {
 func namespaceApiObject(ns *datastore.Namespace, mConfig *datastore.MirrorConfig) any {
 	type apiObject struct {
 		*datastore.Namespace
-		MirrorSettings *datastore.MirrorConfig `json:"mirrorSettings,omitempty"`
+		MirrorSettings *datastore.MirrorConfig `json:"mirror,omitempty"`
 	}
 
 	return &apiObject{

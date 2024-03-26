@@ -13,7 +13,6 @@ describe('Test namespace delete calls', () => {
 			.post(`/api/v2/namespaces`)
 			.send({
 				name: 'foo',
-				data: btoa('bar'),
 			})
 		expect(createRes.statusCode).toEqual(200)
 	})
