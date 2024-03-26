@@ -205,8 +205,11 @@ const RunWorkflow = ({ path }: { path: string }) => {
               {isFormAvailable ? (
                 <ScrollArea className="h-full">
                   <JSONSchemaForm
-                    onChange={() => {
-                      setFormInput(jsonSchemaFormRef.current?.state.formData);
+                    onChange={(e) => {
+                      const newFormInput = isObject(e.formData)
+                        ? e.formData
+                        : {};
+                      setFormInput(newFormInput);
                     }}
                     formData={formInput}
                     ref={jsonSchemaFormRef}
