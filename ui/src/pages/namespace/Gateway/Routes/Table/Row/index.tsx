@@ -1,9 +1,9 @@
+import { Link, useNavigate } from "react-router-dom";
 import { TableCell, TableRow } from "~/design/Table";
 
 import { AllowAnonymous } from "./Anonymous";
 import Badge from "~/design/Badge";
 import { FC } from "react";
-import { Link } from "react-router-dom";
 import MessagesOverlay from "./MessagesOverlay";
 import { Methods } from "./Methods";
 import Plugins from "./Plugins";
@@ -20,6 +20,7 @@ type RowProps = {
 export const Row: FC<RowProps> = ({ gateway }) => {
   const namespace = useNamespace();
   const { t } = useTranslation();
+  const navigate = useNavigate();
   if (!namespace) return null;
 
   const path = gateway.server_path
@@ -27,10 +28,24 @@ export const Row: FC<RowProps> = ({ gateway }) => {
     : undefined;
 
   return (
-    <TableRow>
+    <TableRow
+      onClick={() => {
+        navigate(
+          pages.gateway.createHref({
+            namespace,
+            subpage: "routeDetail",
+            routePath: gateway.file_path,
+          })
+        );
+      }}
+      className="cursor-pointer"
+    >
       <TableCell>
         <div className="flex flex-col gap-3">
           <Link
+            onClick={(e) => {
+              e.stopPropagation(); // prevent the onClick on the row from firing when clicking the workflow link
+            }}
             className="whitespace-normal break-all hover:underline"
             to={pages.explorer.createHref({
               namespace,
