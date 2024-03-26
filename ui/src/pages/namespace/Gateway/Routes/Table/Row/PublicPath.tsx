@@ -8,7 +8,11 @@ type PublicPathInputProps = {
 };
 
 const PublicPathInput: FC<PublicPathInputProps> = ({ path }) => (
-  <InputWithButton>
+  <InputWithButton
+    onClick={(e) => {
+      e.stopPropagation(); // prevent the onClick on the row from firing when clicking the workflow link
+    }}
+  >
     <Input value={path} readOnly />
     <CopyButton
       value={path}
