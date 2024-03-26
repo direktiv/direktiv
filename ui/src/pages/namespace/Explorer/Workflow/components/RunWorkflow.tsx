@@ -57,7 +57,7 @@ const RunWorkflow = ({ path }: { path: string }) => {
   );
 
   const [jsonInput, setJsonInput] = useState(defaultEmptyJson);
-  const [formInput, setFormInput] = useState({});
+  const [formInput, setFormInput] = useState<object>({});
 
   // it is possible that no data (or stale cache data) is available when this component mounts
   // and the initial value of activeTab is out of sync with the actual isFormAvailable value
@@ -114,11 +114,10 @@ const RunWorkflow = ({ path }: { path: string }) => {
 
   const syncInputData = (selectedTab: "form" | "json") => {
     if (selectedTab === "json") {
-      const formState = jsonSchemaFormRef.current?.state.formData as unknown;
+      const formState = jsonSchemaFormRef.current?.state.formData;
       const formDataObj = isObject(formState) ? formState : {};
       const formDataString = prettifyJsonString(JSON.stringify(formDataObj));
       const formIsEmpty = Object.keys(formDataObj).length === 0;
-
       setJsonInput(formIsEmpty ? defaultEmptyJson : formDataString);
     }
 
@@ -206,6 +205,12 @@ const RunWorkflow = ({ path }: { path: string }) => {
               {isFormAvailable ? (
                 <ScrollArea className="h-full">
                   <JSONSchemaForm
+                    onChange={(e) => {
+                      const newFormInput = isObject(e.formData)
+                        ? e.formData
+                        : {};
+                      setFormInput(newFormInput);
+                    }}
                     formData={formInput}
                     ref={jsonSchemaFormRef}
                     schema={validationSchema}
