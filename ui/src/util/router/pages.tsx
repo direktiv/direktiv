@@ -48,6 +48,7 @@ import WorkflowPageOverview from "~/pages/namespace/Explorer/Workflow/Overview";
 import WorkflowPageServices from "~/pages/namespace/Explorer/Workflow/Services";
 import WorkflowPageSettings from "~/pages/namespace/Explorer/Workflow/Settings";
 import { checkHandlerInMatcher as checkHandler } from "./utils";
+import { removeLeadingSlash } from "~/api/files/utils";
 
 type PageBase = {
   name: string;
@@ -192,14 +193,21 @@ type JqPlaygroundPageSetup = Record<
 type GatewayPageSetup = Record<
   "gateway",
   PageBase & {
-    createHref: (params: {
-      namespace: string;
-      subpage?: "consumers";
-    }) => string;
+    createHref: (
+      params: { namespace: string } & (
+        | { subpage?: "consumers" }
+        | {
+            subpage: "routeDetail";
+            routePath: string;
+          }
+      )
+    ) => string;
     useParams: () => {
       isGatewayPage: boolean;
       isGatewayRoutesPage: boolean;
+      isGatewayRoutesDetailPage: boolean;
       isGatewayConsumerPage: boolean;
+      routePath?: string;
     };
   }
 >;
@@ -541,11 +549,18 @@ export const pages: PageType & EnterprisePageType = {
   gateway: {
     name: "components.mainMenu.gateway",
     icon: Network,
-    createHref: (params) =>
-      `/${params.namespace}/gateway/${
-        params?.subpage === "consumers" ? `consumers` : "routes"
-      }`,
+    createHref: (params) => {
+      let subpage = "routes";
+      if (params.subpage === "routeDetail") {
+        subpage = `routes/${removeLeadingSlash(params.routePath)}`;
+      }
+      if (params.subpage === "consumers") {
+        subpage = "consumers";
+      }
+      return `/${params.namespace}/gateway/${subpage}`;
+    },
     useParams: () => {
+      const { "*": path } = useParams();
       const [, secondLevel, thirdLevel] = useMatches(); // first level is namespace level
       const isGatewayPage = checkHandler(secondLevel, "isGatewayPage");
       const isGatewayRoutesPage = checkHandler(
@@ -556,10 +571,17 @@ export const pages: PageType & EnterprisePageType = {
         thirdLevel,
         "isGatewayConsumerPage"
       );
+
+      const isGatewayRoutesDetailPage = checkHandler(
+        thirdLevel,
+        "isGatewayRoutesDetailPage"
+      );
       return {
         isGatewayPage,
         isGatewayRoutesPage,
         isGatewayConsumerPage,
+        isGatewayRoutesDetailPage,
+        routePath: isGatewayRoutesDetailPage ? path : undefined,
       };
     },
     route: {
@@ -571,6 +593,11 @@ export const pages: PageType & EnterprisePageType = {
           path: "routes",
           element: <GatewayRoutesPage />,
           handle: { isGatewayRoutesPage: true },
+        },
+        {
+          path: "routes/*",
+          element: <h1>ROUTES DETAILS PAGE</h1>,
+          handle: { isGatewayRoutesDetailPage: true },
         },
         {
           path: "consumers",
