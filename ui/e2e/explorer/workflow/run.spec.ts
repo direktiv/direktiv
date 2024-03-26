@@ -723,3 +723,79 @@ test("the input is synchronized between tabs, but the data that is currently in 
     useInnerText: true,
   });
 });
+
+test("the input values are sent, although the window focus was switched before sending the data", async ({
+  page,
+}) => {
+  const workflowName = faker.system.commonFileName("yaml");
+
+  await createFile({
+    name: workflowName,
+    namespace,
+    type: "workflow",
+    yaml: jsonSchemaWithRequiredEnum,
+  });
+
+  await page.goto(`${namespace}/explorer/workflow/edit/${workflowName}`);
+
+  await page.getByTestId("workflow-editor-btn-run").click();
+  expect(
+    await page.getByTestId("run-workflow-dialog"),
+    "it opens the dialog"
+  ).toBeVisible();
+
+  // the generated form is visible
+  await expect(page.getByLabel("First Name")).toBeVisible();
+  await expect(page.getByLabel("Last Name")).toBeVisible();
+  await expect(page.getByRole("combobox", { name: "role" })).toBeVisible();
+
+  // fill data
+  await page.getByLabel("First Name").fill("Marty");
+  await page.getByLabel("Last Name").fill("Mortensen");
+  await page.getByRole("combobox", { name: "role" }).click();
+  await page.getByRole("option", { name: "guest" }).click();
+
+  // switch focus to another window
+  page.evaluate(() => {
+    window.dispatchEvent(new Event("visibilitychange"));
+  });
+
+  // run the workflow
+  await page.getByTestId("run-workflow-submit-btn").click();
+
+  const reg = new RegExp(`${namespace}/instances/(.*)`);
+  await expect(
+    page,
+    "workflow was triggered with our input and user was redirected to the instances page"
+  ).toHaveURL(reg);
+
+  await expect(
+    page.getByRole("tab", { name: "Input" }),
+    "tab for input is visible"
+  ).toBeVisible();
+
+  await page.getByRole("tab", { name: "Input" }).click();
+
+  // turn the input/output panel to full screen
+  await page
+    .locator(".grid > div:nth-child(2) > div:nth-child(3)")
+    .getByRole("button")
+    .nth(1)
+    .click();
+
+  const expectedEditorInput = prettifyJsonString(
+    JSON.stringify({
+      firstName: "Marty",
+      lastName: "Mortensen",
+      select: "guest",
+    })
+  );
+
+  // the data from the input fields was sent correctly
+  await expect(
+    page.locator(".lines-content"),
+    "all entered data is represented in the editor preview"
+  ).toContainText(expectedEditorInput, {
+    useInnerText: true,
+  });
+});
