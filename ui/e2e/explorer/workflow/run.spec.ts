@@ -755,7 +755,7 @@ test("switching the window focus will preserve the state of the form", async ({
   await page.getByRole("combobox", { name: "role" }).click();
   await page.getByRole("option", { name: "guest" }).click();
 
-  // dispatch visibilitychange event to emulate switching
+  // dispatch visibilitychange event to emulate switching the window focus
   page.evaluate(() => {
     window.dispatchEvent(new Event("visibilitychange"));
   });
