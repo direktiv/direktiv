@@ -57,7 +57,7 @@ const RunWorkflow = ({ path }: { path: string }) => {
   );
 
   const [jsonInput, setJsonInput] = useState(defaultEmptyJson);
-  const [formInput, setFormInput] = useState({});
+  const [formInput, setFormInput] = useState<object>({});
 
   // it is possible that no data (or stale cache data) is available when this component mounts
   // and the initial value of activeTab is out of sync with the actual isFormAvailable value
