@@ -1,17 +1,17 @@
 import { RouteSchemaType } from "~/api/gateway/schema";
 import { getRoutes } from "~/api/gateway/query/getRoutes";
 
-type CreateRedisRouteFileParams = {
+type CreateRouteFileParams = {
   path?: string;
   targetType?: string;
   targetConfigurationStatus?: string;
 };
 
-export const createRedisRouteFile = ({
+export const createRouteFile = ({
   path = "defaultPath",
   targetType = "instant-response",
   targetConfigurationStatus = "200",
-}: CreateRedisRouteFileParams = {}) =>
+}: CreateRouteFileParams = {}) =>
   `direktiv_api: "endpoint/v1"
 path: ${path}
 methods:

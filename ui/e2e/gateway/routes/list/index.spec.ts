@@ -1,6 +1,6 @@
 import { createNamespace, deleteNamespace } from "e2e/utils/namespace";
 import {
-  createRedisRouteFile,
+  createRouteFile,
   findRouteWithApiRequest,
   routeWithAWarning,
   routeWithAnError,
@@ -39,10 +39,10 @@ test("Route list is empty by default", async ({ page }) => {
 test("Route list shows all available routes", async ({ page }) => {
   const path = "newPath";
   await createFile({
-    name: "redis-route.yaml",
+    name: "my-route.yaml",
     namespace,
     type: "endpoint",
-    yaml: createRedisRouteFile({
+    yaml: createRouteFile({
       path,
       targetType: "instant-response",
       targetConfigurationStatus: "202",
@@ -54,7 +54,7 @@ test("Route list shows all available routes", async ({ page }) => {
       async () =>
         await findRouteWithApiRequest({
           namespace,
-          match: (route) => route.file_path === "/redis-route.yaml",
+          match: (route) => route.file_path === "/my-route.yaml",
         }),
       "the route was created and is available"
     )
@@ -72,7 +72,7 @@ test("Route list shows all available routes", async ({ page }) => {
   await expect(
     page
       .getByTestId("route-table")
-      .getByRole("link", { name: "/redis-route.yaml" }),
+      .getByRole("link", { name: "/my-route.yaml" }),
     "it renders the text for the file path"
   ).toBeVisible();
 
@@ -111,7 +111,7 @@ test("Route list shows all available routes", async ({ page }) => {
 
 test("Route list shows a warning", async ({ page }) => {
   await createFile({
-    name: "redis-route.yaml",
+    name: "my-route.yaml",
     namespace,
     type: "endpoint",
     yaml: routeWithAWarning,
@@ -122,7 +122,7 @@ test("Route list shows a warning", async ({ page }) => {
       async () =>
         await findRouteWithApiRequest({
           namespace,
-          match: (route) => route.file_path === "/redis-route.yaml",
+          match: (route) => route.file_path === "/my-route.yaml",
         }),
       "the route was created and is available"
     )
@@ -152,7 +152,7 @@ test("Route list shows a warning", async ({ page }) => {
 
 test("Route list shows an error", async ({ page }) => {
   await createFile({
-    name: "redis-route.yaml",
+    name: "my-route.yaml",
     namespace,
     type: "endpoint",
     yaml: routeWithAnError,
@@ -163,7 +163,7 @@ test("Route list shows an error", async ({ page }) => {
       async () =>
         await findRouteWithApiRequest({
           namespace,
-          match: (route) => route.file_path === "/redis-route.yaml",
+          match: (route) => route.file_path === "/my-route.yaml",
         }),
       "the route was created and is available"
     )
@@ -199,10 +199,10 @@ test("Route list shows an error", async ({ page }) => {
 
 test("Route list links the file name to the route file", async ({ page }) => {
   await createFile({
-    name: "redis-route.yaml",
+    name: "my-route.yaml",
     namespace,
     type: "endpoint",
-    yaml: createRedisRouteFile(),
+    yaml: createRouteFile(),
   });
 
   await page.goto(`/${namespace}/gateway/routes`, {
@@ -211,11 +211,11 @@ test("Route list links the file name to the route file", async ({ page }) => {
 
   await page
     .getByTestId("route-table")
-    .getByRole("link", { name: "/redis-route.yaml" })
+    .getByRole("link", { name: "/my-route.yaml" })
     .click();
 
   await expect(
     page,
     "after clicking on the file name, the user gets redirected to the file explorer page of the service file"
-  ).toHaveURL(`/${namespace}/explorer/endpoint/redis-route.yaml`);
+  ).toHaveURL(`/${namespace}/explorer/endpoint/my-route.yaml`);
 });
