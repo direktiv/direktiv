@@ -99,10 +99,14 @@ docker-build-api:
 docker-build-ui: ## Build UI docker image
 	cd ui && docker build -t direktiv-ui-dev .
 
+enterprise = $(if $(ENTERPRISE),$(ENTERPRISE),FALSE)
 .PHONY: docker-build-cross-ui
 docker-build-cross-ui: ## Build a cross platform UI docker image
-	cd ui && docker buildx build --platform linux/amd64,linux/arm64 -t direktiv-ui-dev .
-
+	@if [ "${RELEASE}" = "" ]; then\
+		echo "setting release to dev"; \
+		$(eval RELEASE=dev) \
+    fi
+	cd ui && docker buildx build --build-arg IS_ENTERPRISE=${enterprise} --platform linux/amd64,linux/arm64 -t ${DOCKER_REPO}/frontend:${RELEASE} . --push
 
 .PHONY: docker-push-local
 docker-push-local: REGISTRY="localhost:5000"
