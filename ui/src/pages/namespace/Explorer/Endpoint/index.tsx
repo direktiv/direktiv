@@ -38,7 +38,6 @@ const EndpointPage: FC = () => {
   if (endpointData?.type !== "endpoint") return null;
   if (!isPermissionCheckFetched) return null;
   if (!isRouteListFetched) return null;
-  if (!route) return null;
 
   if (isAllowed === false)
     return (
