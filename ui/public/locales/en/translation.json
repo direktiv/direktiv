@@ -1000,7 +1000,10 @@
             "countType_one": "{{count}} {{type}} plugin"
           }
         },
-        "empty": "No routes exist yet"
+        "empty": "No routes exist yet",
+        "detail": {
+          "editRoute": "edit route"
+        }
       },
       "consumer": {
         "refetchLabel": "Refetch consumers",
