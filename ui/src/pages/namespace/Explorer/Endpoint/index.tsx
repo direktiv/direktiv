@@ -9,10 +9,9 @@ import { NoPermissions } from "~/design/Table";
 import PublicPathInput from "../../Gateway/Routes/Table/Row/PublicPath";
 import { analyzePath } from "~/util/router/utils";
 import { pages } from "~/util/router/pages";
-import { removeLeadingSlash } from "~/api/files/utils";
 import { useFile } from "~/api/files/query/file";
 import { useNamespace } from "~/util/store/namespace";
-import { useRoutes } from "~/api/gateway/query/getRoutes";
+import { useRoute } from "~/api/gateway/query/getRoutes";
 import { useTranslation } from "react-i18next";
 
 const EndpointPage: FC = () => {
@@ -29,13 +28,17 @@ const EndpointPage: FC = () => {
     isFetched: isPermissionCheckFetched,
   } = useFile({ path });
 
-  const { data: routes, isFetched: isRouteListFetched } = useRoutes();
+  const { data: route, isFetched: isRouteListFetched } = useRoute({
+    routePath: path ?? "",
+    enabled: !!path,
+  });
 
   if (!namespace) return null;
   if (!path) return null;
   if (endpointData?.type !== "endpoint") return null;
   if (!isPermissionCheckFetched) return null;
   if (!isRouteListFetched) return null;
+  if (!route) return null;
 
   if (isAllowed === false)
     return (
@@ -44,12 +47,8 @@ const EndpointPage: FC = () => {
       </Card>
     );
 
-  const matchingRoute = routes?.data.find(
-    (route) => removeLeadingSlash(route.file_path) === removeLeadingSlash(path)
-  );
-
-  const publicPath = matchingRoute?.server_path
-    ? `${window.location.origin}${matchingRoute.server_path}`
+  const publicPath = route?.server_path
+    ? `${window.location.origin}${route.server_path}`
     : undefined;
 
   return (
