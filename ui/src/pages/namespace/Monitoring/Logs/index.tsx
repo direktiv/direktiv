@@ -38,7 +38,7 @@ const LogsPanel = () => {
       <div className="mb-5 flex flex-col gap-5 sm:flex-row">
         <h3 className="flex grow items-center gap-x-2 font-medium">
           <ScrollText className="h-5" />
-          {t("pages.monitoring.logs.title")}
+          {t("components.logs.title")}
         </h3>
         <ButtonBar>
           <TooltipProvider>

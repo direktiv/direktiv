@@ -522,9 +522,6 @@
     },
     "monitoring": {
       "title": "Monitoring",
-      "logs": {
-        "title": "Logs"
-      },
       "instances": {
         "openWorkflowTooltip": "click to open workflow {{name}}",
         "successfulExecutions": {
@@ -1223,6 +1220,7 @@
       "cancelBtn": "Cancel"
     },
     "logs": {
+      "title": "Logs",
       "followLogs": "Follow logs",
       "logsCount": "received {{count}} log entries",
       "logsCount_one": "received {{count}} log entry",

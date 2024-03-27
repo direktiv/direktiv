@@ -28,17 +28,12 @@ const LogsPanel = ({ path }: LogsPanelProps) => {
 
   const copyValue = logLines.map(getRouteLogEntryForClipboard).join("\n") ?? "";
 
-  // TODO: translate
-
   return (
     <>
       <div className="mb-5 flex flex-col gap-5 sm:flex-row">
         <h3 className="flex grow items-center gap-x-2 font-medium">
           <ScrollText className="h-5" />
-
-          {t("pages.instances.detail.logs.title", {
-            path: "",
-          })}
+          {t("components.logs.title")}
         </h3>
         <ButtonBar>
           <TooltipProvider>
