@@ -4,7 +4,7 @@ import {
   findRouteWithApiRequest,
   routeWithAWarning,
   routeWithAnError,
-} from "./utils";
+} from "../utils";
 import { expect, test } from "@playwright/test";
 
 import { createFile } from "e2e/utils/files";
