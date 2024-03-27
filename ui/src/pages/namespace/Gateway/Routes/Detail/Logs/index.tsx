@@ -9,6 +9,7 @@ import { ButtonBar } from "~/design/ButtonBar";
 import CopyButton from "~/design/CopyButton";
 import ScrollContainer from "./ScrollContainer";
 import { ScrollText } from "lucide-react";
+import { getRouteLogEntryForClipboard } from "~/components/Logs/utils";
 import { useLogs } from "~/api/logs/query/logs";
 import { useTranslation } from "react-i18next";
 
@@ -25,11 +26,7 @@ const LogsPanel = ({ path }: LogsPanelProps) => {
 
   const numberOfLogLines = logLines.length;
 
-  // TODO: implement
-  const copyValue = "";
-
-  // const copyValue =
-  //   logLines.map(getInstanceLogEntryForClipboard).join("\n") ?? "";
+  const copyValue = logLines.map(getRouteLogEntryForClipboard).join("\n") ?? "";
 
   // TODO: translate
 
