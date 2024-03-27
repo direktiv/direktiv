@@ -21,7 +21,8 @@ const LogsPanel = ({ path }: LogsPanelProps) => {
   const { t } = useTranslation();
 
   const { data: logLines = [] } = useLogs({
-    route: path, //  TODO: don*t trigger request if path is undefined
+    route: path,
+    enabled: !!path,
   });
 
   const numberOfLogLines = logLines.length;

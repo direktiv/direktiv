@@ -15,7 +15,8 @@ const ScrollContainer = ({ path }: ScrollContainerProps) => {
     setScrolledToBottom,
   } = useLogVirtualizer({
     queryLogsBy: {
-      route: path, //  TODO: don*t trigger request if path is undefined
+      route: path,
+      enabled: !!path,
     },
   });
 
