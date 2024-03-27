@@ -1,4 +1,4 @@
-import { FileSymlink, Square } from "lucide-react";
+import { Pencil, Square } from "lucide-react";
 
 import { AllowAnonymous } from "../components/Anonymous";
 import Badge from "~/design/Badge";
@@ -84,7 +84,7 @@ const Header = () => {
                 path: route.file_path,
               })}
             >
-              <FileSymlink />
+              <Pencil />
               {t("pages.gateway.routes.detail.editRoute")}
             </Link>
           </Button>
