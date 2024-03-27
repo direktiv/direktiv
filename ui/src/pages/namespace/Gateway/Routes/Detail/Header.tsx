@@ -1,8 +1,10 @@
 import { FileSymlink, Square } from "lucide-react";
 
 import { AllowAnonymous } from "../components/Anonymous";
+import Badge from "~/design/Badge";
 import Button from "~/design/Button";
 import { Link } from "react-router-dom";
+import MessagesOverlay from "../components/MessagesOverlay";
 import { Methods } from "../components/Methods";
 import Plugins from "../components/Plugins";
 import PublicPathInput from "../components/PublicPath";
@@ -31,6 +33,26 @@ const Header = () => {
           <h3 className="flex items-center gap-x-2 font-bold text-primary-500">
             <Square className="h-5" /> {route.file_path}
           </h3>
+          <div className="flex gap-1">
+            <MessagesOverlay messages={route.errors} variant="error">
+              {(errorCount) => (
+                <Badge variant="destructive">
+                  {t("pages.gateway.routes.row.error.count", {
+                    count: errorCount,
+                  })}
+                </Badge>
+              )}
+            </MessagesOverlay>
+            <MessagesOverlay messages={route.warnings} variant="warning">
+              {(warningCount) => (
+                <Badge variant="secondary">
+                  {t("pages.gateway.routes.row.warnings.count", {
+                    count: warningCount,
+                  })}
+                </Badge>
+              )}
+            </MessagesOverlay>
+          </div>
         </div>
         <div className="text-sm">
           <div className="text-gray-10 dark:text-gray-dark-10">
