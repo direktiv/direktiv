@@ -256,7 +256,7 @@
         }
       },
       "endpoint": {
-        "goToRoutes": "Go to routes",
+        "openRouteLogs": "Open Logs",
         "editor": {
           "form": {
             "serialisationError": "There was an error serializing the form data",

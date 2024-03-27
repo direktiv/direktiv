@@ -1,4 +1,4 @@
-import { FileSymlink, Workflow } from "lucide-react";
+import { ScrollText, Workflow } from "lucide-react";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
@@ -66,11 +66,13 @@ const EndpointPage: FC = () => {
           <Button isAnchor asChild variant="primary">
             <Link
               to={pages.gateway.createHref({
+                subpage: "routeDetail",
                 namespace,
+                routePath: path,
               })}
             >
-              <FileSymlink />
-              {t("pages.explorer.endpoint.goToRoutes")}
+              <ScrollText />
+              {t("pages.explorer.endpoint.openRouteLogs")}
             </Link>
           </Button>
         </div>
