@@ -7,21 +7,24 @@ type PublicPathInputProps = {
   path: string;
 };
 
-const PublicPathInput: FC<PublicPathInputProps> = ({ path }) => (
-  <InputWithButton
-    onClick={(e) => {
-      e.stopPropagation(); // prevent the onClick on the row from firing when clicking the workflow link
-    }}
-  >
-    <Input value={path} readOnly />
-    <CopyButton
-      value={path}
-      buttonProps={{
-        variant: "ghost",
-        icon: true,
+const PublicPathInput: FC<PublicPathInputProps> = ({ path }) => {
+  const absolutePath = `${window.location.origin}${path}`;
+  return (
+    <InputWithButton
+      onClick={(e) => {
+        e.stopPropagation(); // prevent the onClick on the row from firing when clicking the workflow link
       }}
-    />
-  </InputWithButton>
-);
+    >
+      <Input value={absolutePath} readOnly />
+      <CopyButton
+        value={absolutePath}
+        buttonProps={{
+          variant: "ghost",
+          icon: true,
+        }}
+      />
+    </InputWithButton>
+  );
+};
 
 export default PublicPathInput;

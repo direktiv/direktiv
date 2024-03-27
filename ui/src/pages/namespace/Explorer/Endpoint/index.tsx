@@ -47,10 +47,6 @@ const EndpointPage: FC = () => {
       </Card>
     );
 
-  const publicPath = route?.server_path
-    ? `${window.location.origin}${route.server_path}`
-    : undefined;
-
   return (
     <>
       <div className="border-b border-gray-5 bg-gray-1 p-5 dark:border-gray-dark-5 dark:bg-gray-dark-1">
@@ -60,7 +56,9 @@ const EndpointPage: FC = () => {
             {filename?.relative}
           </h3>
           <div className="grow">
-            {publicPath && <PublicPathInput path={publicPath} />}
+            {route?.server_path && (
+              <PublicPathInput path={route?.server_path} />
+            )}
           </div>
           <Button isAnchor asChild variant="primary">
             <Link

@@ -23,10 +23,6 @@ export const Row: FC<RowProps> = ({ gateway }) => {
   const navigate = useNavigate();
   if (!namespace) return null;
 
-  const path = gateway.server_path
-    ? `${window.location.origin}${gateway.server_path}`
-    : undefined;
-
   return (
     <TableRow
       onClick={() => {
@@ -81,7 +77,7 @@ export const Row: FC<RowProps> = ({ gateway }) => {
         <Methods methods={gateway.methods} />
       </TableCell>
       <TableCell className="whitespace-normal break-all">
-        {path && <PublicPathInput path={path} />}
+        {gateway.server_path && <PublicPathInput path={gateway.server_path} />}
       </TableCell>
       <TableCell>
         <Plugins plugins={gateway.plugins} />
