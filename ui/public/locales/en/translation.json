@@ -1228,6 +1228,7 @@
       "logsCount_one": "received {{count}} log entry",
       "copy": "Copy logs",
       "logEntry": {
+        "pathLabel": "path:",
         "messageLabel": "msg:",
         "stateLabel": "state:",
         "instanceLabel": "instance:"

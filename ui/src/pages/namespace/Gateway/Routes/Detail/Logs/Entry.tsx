@@ -12,7 +12,7 @@ type Props = { logEntry: LogEntryType } & LogEntryProps;
 export const Entry = forwardRef<HTMLDivElement, Props>(
   ({ logEntry, ...props }, ref) => {
     const { t } = useTranslation();
-    const { msg, level, time } = logEntry;
+    const { msg, level, time, route } = logEntry;
     const formattedTime = formatLogTime(time);
 
     return (
@@ -22,6 +22,9 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
         ref={ref}
         {...props}
       >
+        <LogSegment display={!!route}>
+          {t("components.logs.logEntry.pathLabel")} {route?.path}
+        </LogSegment>
         <LogSegment display={true}>
           {t("components.logs.logEntry.messageLabel")} {msg}
         </LogSegment>
