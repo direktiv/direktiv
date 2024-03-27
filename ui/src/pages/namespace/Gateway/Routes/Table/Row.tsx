@@ -1,13 +1,13 @@
 import { Link, useNavigate } from "react-router-dom";
 import { TableCell, TableRow } from "~/design/Table";
 
-import { AllowAnonymous } from "../../components/Anonymous";
+import { AllowAnonymous } from "../components/Anonymous";
 import Badge from "~/design/Badge";
 import { FC } from "react";
-import MessagesOverlay from "../../components/MessagesOverlay";
-import { Methods } from "../../components/Methods";
-import Plugins from "../../components/Plugins";
-import PublicPathInput from "../../components/PublicPath";
+import MessagesOverlay from "../components/MessagesOverlay";
+import { Methods } from "../components/Methods";
+import Plugins from "../components/Plugins";
+import PublicPathInput from "../components/PublicPath";
 import { RouteSchemaType } from "~/api/gateway/schema";
 import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
@@ -76,14 +76,14 @@ export const Row: FC<RowProps> = ({ route }) => {
       <TableCell>
         <Methods methods={route.methods} />
       </TableCell>
-      <TableCell className="whitespace-normal break-all">
-        {route.server_path && <PublicPathInput path={route.server_path} />}
-      </TableCell>
       <TableCell>
         <Plugins plugins={route.plugins} />
       </TableCell>
       <TableCell>
         <AllowAnonymous allow={route.allow_anonymous} />
+      </TableCell>
+      <TableCell className="whitespace-normal break-all">
+        {route.server_path && <PublicPathInput path={route.server_path} />}
       </TableCell>
     </TableRow>
   );

@@ -35,14 +35,14 @@ const RoutesTable = () => {
           <TableHeaderCell className="w-32">
             {t("pages.gateway.routes.columns.methods")}
           </TableHeaderCell>
-          <TableHeaderCell className="w-80">
-            {t("pages.gateway.routes.columns.path")}
-          </TableHeaderCell>
           <TableHeaderCell className="w-32">
             {t("pages.gateway.routes.columns.plugins")}
           </TableHeaderCell>
           <TableHeaderCell className="w-40">
             {t("pages.gateway.routes.columns.anonymous")}
+          </TableHeaderCell>
+          <TableHeaderCell className="w-80">
+            {t("pages.gateway.routes.columns.path")}
           </TableHeaderCell>
         </TableRow>
       </TableHead>
