@@ -14,10 +14,10 @@ import { useNamespace } from "~/util/store/namespace";
 import { useTranslation } from "react-i18next";
 
 type RowProps = {
-  gateway: RouteSchemaType;
+  route: RouteSchemaType;
 };
 
-export const Row: FC<RowProps> = ({ gateway }) => {
+export const Row: FC<RowProps> = ({ route }) => {
   const namespace = useNamespace();
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -30,7 +30,7 @@ export const Row: FC<RowProps> = ({ gateway }) => {
           pages.gateway.createHref({
             namespace,
             subpage: "routeDetail",
-            routePath: gateway.file_path,
+            routePath: route.file_path,
           })
         );
       }}
@@ -45,14 +45,14 @@ export const Row: FC<RowProps> = ({ gateway }) => {
             className="whitespace-normal break-all hover:underline"
             to={pages.explorer.createHref({
               namespace,
-              path: gateway.file_path,
+              path: route.file_path,
               subpage: "endpoint",
             })}
           >
-            {gateway.file_path}
+            {route.file_path}
           </Link>
           <div className="flex gap-1">
-            <MessagesOverlay messages={gateway.errors} variant="error">
+            <MessagesOverlay messages={route.errors} variant="error">
               {(errorCount) => (
                 <Badge variant="destructive">
                   {t("pages.gateway.routes.row.error.count", {
@@ -61,7 +61,7 @@ export const Row: FC<RowProps> = ({ gateway }) => {
                 </Badge>
               )}
             </MessagesOverlay>
-            <MessagesOverlay messages={gateway.warnings} variant="warning">
+            <MessagesOverlay messages={route.warnings} variant="warning">
               {(warningCount) => (
                 <Badge variant="secondary">
                   {t("pages.gateway.routes.row.warnings.count", {
@@ -74,16 +74,16 @@ export const Row: FC<RowProps> = ({ gateway }) => {
         </div>
       </TableCell>
       <TableCell>
-        <Methods methods={gateway.methods} />
+        <Methods methods={route.methods} />
       </TableCell>
       <TableCell className="whitespace-normal break-all">
-        {gateway.server_path && <PublicPathInput path={gateway.server_path} />}
+        {route.server_path && <PublicPathInput path={route.server_path} />}
       </TableCell>
       <TableCell>
-        <Plugins plugins={gateway.plugins} />
+        <Plugins plugins={route.plugins} />
       </TableCell>
       <TableCell>
-        <AllowAnonymous allow={gateway.allow_anonymous} />
+        <AllowAnonymous allow={route.allow_anonymous} />
       </TableCell>
     </TableRow>
   );
