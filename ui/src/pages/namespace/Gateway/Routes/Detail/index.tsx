@@ -1,4 +1,5 @@
 import { Card } from "~/design/Card";
+import Header from "./Header";
 import { LogStreamingSubscriber } from "~/api/logs/query/LogStreamingSubscriber";
 import { NoPermissions } from "~/design/Table";
 import { pages } from "~/util/router/pages";
@@ -22,10 +23,10 @@ const RoutesDetailPage = () => {
   if (!data) return null;
 
   return (
-    <div className="space-y-5 border-b border-gray-5 bg-gray-1 p-5 dark:border-gray-dark-5 dark:bg-gray-dark-1">
+    <>
       {data.path && <LogStreamingSubscriber route={data.path} />}
-      Details for {routePath} {data.path}
-    </div>
+      <Header />
+    </>
   );
 };
 
