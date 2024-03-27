@@ -20,7 +20,7 @@ const GatewayPage = () => {
   const tabs = [
     {
       value: "endpoints",
-      active: isGatewayRoutesPage || isGatewayRoutesDetailPage,
+      active: isGatewayRoutesPage,
       icon: <Workflow aria-hidden="true" />,
       title: t("pages.gateway.tabs.routes"),
       link: pages.gateway.createHref({
@@ -41,20 +41,22 @@ const GatewayPage = () => {
 
   return (
     <>
-      <div className="space-y-5 border-b border-gray-5 bg-gray-1 p-5 pb-0 dark:border-gray-dark-5 dark:bg-gray-dark-1">
-        <Tabs value={tabs.find((tab) => tab.active)?.value}>
-          <TabsList>
-            {tabs.map((tab) => (
-              <TabsTrigger asChild value={tab.value} key={tab.value}>
-                <Link to={tab.link}>
-                  {tab.icon}
-                  {tab.title}
-                </Link>
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
-      </div>
+      {!isGatewayRoutesDetailPage && (
+        <div className="space-y-5 border-b border-gray-5 bg-gray-1 p-5 pb-0 dark:border-gray-dark-5 dark:bg-gray-dark-1">
+          <Tabs value={tabs.find((tab) => tab.active)?.value}>
+            <TabsList>
+              {tabs.map((tab) => (
+                <TabsTrigger asChild value={tab.value} key={tab.value}>
+                  <Link to={tab.link}>
+                    {tab.icon}
+                    {tab.title}
+                  </Link>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+        </div>
+      )}
       <Outlet />
     </>
   );
