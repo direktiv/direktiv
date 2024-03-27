@@ -982,6 +982,7 @@
         },
         "row": {
           "methods": {
+            "none": "no methods set",
             "tooltipLabel": "+{{count}}"
           },
           "allowAnonymous": {

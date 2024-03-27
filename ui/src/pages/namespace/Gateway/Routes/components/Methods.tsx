@@ -17,7 +17,8 @@ const methodDisplayCount = 2;
 
 export const Methods: FC<AllowAnonymousProps> = ({ methods }) => {
   const { t } = useTranslation();
-  const numberOfHiddenMethods = (methods?.length ?? 0) - methodDisplayCount;
+  const numberOfMethods = methods?.length ?? 0;
+  const numberOfHiddenMethods = numberOfMethods - methodDisplayCount;
   const needsTooltip = numberOfHiddenMethods > 0;
 
   const methodsToDisplay = methods?.slice(0, methodDisplayCount) ?? [];
@@ -25,6 +26,11 @@ export const Methods: FC<AllowAnonymousProps> = ({ methods }) => {
 
   return (
     <div className="flex gap-1">
+      {numberOfMethods === 0 && (
+        <Badge variant="secondary">
+          {t("pages.gateway.routes.row.methods.none")}
+        </Badge>
+      )}
       {methodsToDisplay.map((method) => (
         <Badge key={method} variant="outline">
           {method}
