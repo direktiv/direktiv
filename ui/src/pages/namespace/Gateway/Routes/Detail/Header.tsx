@@ -73,7 +73,7 @@ const Header = () => {
           <AllowAnonymous allow={route.allow_anonymous} />
         </div>
         <div className="grow text-sm">
-          {route.path && <PublicPathInput path={route.path} />}
+          {route.server_path && <PublicPathInput path={route.server_path} />}
         </div>
         <div className="flex gap-5">
           <Button asChild isAnchor variant="primary" className="max-md:w-full">
