@@ -100,13 +100,24 @@ docker-build-ui: ## Build UI docker image
 	cd ui && docker build -t direktiv-ui-dev .
 
 enterprise = $(if $(ENTERPRISE),$(ENTERPRISE),FALSE)
+frontend = $(if $(FRONTEND),$(FRONTEND),"frontend")
+
+.PHONY: docker-build-ui-push
+docker-build-ui-push: ## Build UI docker image
+	@if [ "${RELEASE}" = "" ]; then\
+		echo "setting release to dev"; \
+		$(eval RELEASE=dev) \
+    fi
+	cd ui && docker build --build-arg IS_ENTERPRISE=${enterprise} -t ${DOCKER_REPO}/${frontend}:${RELEASE} . --push
+
 .PHONY: docker-build-cross-ui
 docker-build-cross-ui: ## Build a cross platform UI docker image
 	@if [ "${RELEASE}" = "" ]; then\
 		echo "setting release to dev"; \
 		$(eval RELEASE=dev) \
     fi
-	cd ui && docker buildx build --build-arg IS_ENTERPRISE=${enterprise} --platform linux/amd64,linux/arm64 -t ${DOCKER_REPO}/frontend:${RELEASE} . --push
+	@docker buildx create --use --name=direktiv --node=direktiv
+	cd ui && docker buildx build --build-arg IS_ENTERPRISE=${enterprise} --platform linux/amd64,linux/arm64 -t ${DOCKER_REPO}/${frontend}:${RELEASE} . --push
 
 .PHONY: docker-push-local
 docker-push-local: REGISTRY="localhost:5000"
