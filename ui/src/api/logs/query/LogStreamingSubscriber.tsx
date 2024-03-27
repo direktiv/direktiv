@@ -1,5 +1,5 @@
 import {
-  LogsQueryParams,
+  UseLogsParams,
   UseLogsStreamParams,
   useLogs,
   useLogsStream,
@@ -14,8 +14,9 @@ const MemoizedLogsStream = memo((params: UseLogsStreamParams) => {
 
 MemoizedLogsStream.displayName = "MemoizedLogsStream";
 
-export const LogStreamingSubscriber = (params: LogsQueryParams) => {
+export const LogStreamingSubscriber = (params: UseLogsParams) => {
   const { isFetching } = useLogs(params);
+
   /**
    * when the logs are fetched (via non-streaming api), the subscription
    * must be paused/reinitialized to prevent losing some logs. Because
@@ -27,7 +28,8 @@ export const LogStreamingSubscriber = (params: LogsQueryParams) => {
    * subscription will retrieve all realtime logs plus a couple of
    * seconds of old logs to prevent race conditions.
    */
-  return <MemoizedLogsStream {...params} enabled={!isFetching} />;
+  const enableStreaming = params.enabled && !isFetching;
+  return <MemoizedLogsStream {...params} enabled={enableStreaming} />;
 };
 
 LogStreamingSubscriber.displayName = "LogStreamingSubscriber";

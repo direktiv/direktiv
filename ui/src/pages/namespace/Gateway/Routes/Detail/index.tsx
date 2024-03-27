@@ -26,7 +26,7 @@ const RoutesDetailPage = () => {
 
   return (
     <div className="grid grow grid-rows-[auto_1fr]">
-      {data.path && <LogStreamingSubscriber route={data.path} />}
+      <LogStreamingSubscriber route={data.path} enabled={!!data.path} />
       <Header />
       <div
         className={twMergeClsx(
