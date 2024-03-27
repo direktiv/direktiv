@@ -1,13 +1,13 @@
 import { Link, useNavigate } from "react-router-dom";
 import { TableCell, TableRow } from "~/design/Table";
 
-import { AllowAnonymous } from "./Anonymous";
+import { AllowAnonymous } from "../../components/Anonymous";
 import Badge from "~/design/Badge";
 import { FC } from "react";
-import MessagesOverlay from "./MessagesOverlay";
-import { Methods } from "./Methods";
-import Plugins from "./Plugins";
-import PublicPathInput from "./PublicPath";
+import MessagesOverlay from "../../components/MessagesOverlay";
+import { Methods } from "../../components/Methods";
+import Plugins from "../../components/Plugins";
+import PublicPathInput from "../../components/PublicPath";
 import { RouteSchemaType } from "~/api/gateway/schema";
 import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";

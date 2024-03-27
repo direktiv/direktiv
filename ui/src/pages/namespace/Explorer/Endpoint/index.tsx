@@ -6,7 +6,7 @@ import EndpointEditor from "./EndpointEditor";
 import { FC } from "react";
 import { Link } from "react-router-dom";
 import { NoPermissions } from "~/design/Table";
-import PublicPathInput from "../../Gateway/Routes/Table/Row/PublicPath";
+import PublicPathInput from "../../Gateway/Routes/components/PublicPath";
 import { analyzePath } from "~/util/router/utils";
 import { pages } from "~/util/router/pages";
 import { useFile } from "~/api/files/query/file";

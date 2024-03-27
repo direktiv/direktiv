@@ -1,11 +1,11 @@
 import { FileSymlink, Square } from "lucide-react";
 
-import { AllowAnonymous } from "../Table/Row/Anonymous";
+import { AllowAnonymous } from "../components/Anonymous";
 import Button from "~/design/Button";
 import { Link } from "react-router-dom";
-import { Methods } from "../Table/Row/Methods";
-import Plugins from "../Table/Row/Plugins";
-import PublicPathInput from "../Table/Row/PublicPath";
+import { Methods } from "../components/Methods";
+import Plugins from "../components/Plugins";
+import PublicPathInput from "../components/PublicPath";
 import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
 import { useRoute } from "~/api/gateway/query/getRoutes";
