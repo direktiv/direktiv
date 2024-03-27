@@ -35,6 +35,7 @@ import MonitoringPage from "~/pages/namespace/Monitoring";
 import PermissionsPage from "~/pages/namespace/Permissions";
 import PolicyPage from "~/pages/namespace/Permissions/Policy";
 import type { RouteObject } from "react-router-dom";
+import RoutesPageDetail from "~/pages/namespace/Gateway/Routes/Detail";
 import ServiceDetailPage from "~/pages/namespace/Services/Detail";
 import ServiceEditorPage from "~/pages/namespace/Explorer/Service";
 import ServicesListPage from "~/pages/namespace/Services/List";
@@ -596,7 +597,7 @@ export const pages: PageType & EnterprisePageType = {
         },
         {
           path: "routes/*",
-          element: <h1>ROUTES DETAILS PAGE</h1>,
+          element: <RoutesPageDetail />,
           handle: { isGatewayRoutesDetailPage: true },
         },
         {
