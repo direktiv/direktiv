@@ -1006,7 +1006,7 @@
         },
         "empty": "No routes exist yet",
         "detail": {
-          "editRoute": "edit route"
+          "editRoute": "Edit Route"
         }
       },
       "consumer": {
