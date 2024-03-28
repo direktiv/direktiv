@@ -84,6 +84,23 @@ test("Route list shows all available routes", async ({ page }) => {
   );
 
   await expect(
+    page.getByTestId("route-table").getByText("GET", { exact: true }),
+    "it renders the text for the method"
+  ).toBeVisible();
+
+  await page.getByTestId("route-table").getByText("+7").hover();
+
+  await expect(
+    page
+      .getByTestId("route-table")
+      .getByText("OPTIONSPUTPOSTHEADCONNECTPATCHTRACE"),
+    'it shows more methods when hovering over the "+7"'
+  ).toBeVisible();
+
+  // hover over somethiing else to make the overlay disappear
+  await page.getByTestId("route-table").getByText("yes").hover();
+
+  await expect(
     page.getByTestId("route-table").getByRole("cell", { name: "1 plugin" }),
     "it renders the correct number for plugins"
   ).toBeVisible();
@@ -96,20 +113,6 @@ test("Route list shows all available routes", async ({ page }) => {
   await expect(
     page.getByTestId("route-table").getByText("1 target plugin"),
     "it shows the plugin details on hover"
-  ).toBeVisible();
-
-  await expect(
-    page.getByTestId("route-table").getByText("GET", { exact: true }),
-    "it renders the text for the method"
-  ).toBeVisible();
-
-  await page.getByTestId("route-table").getByText("+7").hover();
-
-  await expect(
-    page
-      .getByTestId("route-table")
-      .getByText("OPTIONSPUTPOSTHEADCONNECTPATCHTRACE"),
-    'it shows more methods when hovering over the "+7"'
   ).toBeVisible();
 
   await expect(
