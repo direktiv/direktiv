@@ -17,13 +17,13 @@ import { useTranslation } from "react-i18next";
 const RoutesTable = () => {
   const { t } = useTranslation();
   const {
-    data: gatewayList,
+    data: routes,
     isSuccess,
     isAllowed,
     noPermissionMessage,
   } = useRoutes();
 
-  const noResults = isSuccess && gatewayList.data.length === 0;
+  const noResults = isSuccess && routes.data.length === 0;
 
   return (
     <Table className="border-t border-gray-5 dark:border-gray-dark-5">
@@ -35,14 +35,14 @@ const RoutesTable = () => {
           <TableHeaderCell className="w-32">
             {t("pages.gateway.routes.columns.methods")}
           </TableHeaderCell>
-          <TableHeaderCell className="w-80">
-            {t("pages.gateway.routes.columns.path")}
-          </TableHeaderCell>
           <TableHeaderCell className="w-32">
             {t("pages.gateway.routes.columns.plugins")}
           </TableHeaderCell>
           <TableHeaderCell className="w-40">
             {t("pages.gateway.routes.columns.anonymous")}
+          </TableHeaderCell>
+          <TableHeaderCell className="w-80">
+            {t("pages.gateway.routes.columns.path")}
           </TableHeaderCell>
         </TableRow>
       </TableHead>
@@ -58,8 +58,8 @@ const RoutesTable = () => {
                 </TableCell>
               </TableRow>
             ) : (
-              gatewayList?.data?.map((gateway) => (
-                <Row key={gateway.file_path} gateway={gateway} />
+              routes?.data?.map((route) => (
+                <Row key={route.file_path} route={route} />
               ))
             )}
           </>

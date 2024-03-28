@@ -1,4 +1,4 @@
-import { FileSymlink, Workflow } from "lucide-react";
+import { ScrollText, Workflow } from "lucide-react";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
@@ -6,13 +6,12 @@ import EndpointEditor from "./EndpointEditor";
 import { FC } from "react";
 import { Link } from "react-router-dom";
 import { NoPermissions } from "~/design/Table";
-import PublicPathInput from "../../Gateway/Routes/Table/Row/PublicPath";
+import PublicPathInput from "../../Gateway/Routes/components/PublicPath";
 import { analyzePath } from "~/util/router/utils";
 import { pages } from "~/util/router/pages";
-import { removeLeadingSlash } from "~/api/files/utils";
 import { useFile } from "~/api/files/query/file";
 import { useNamespace } from "~/util/store/namespace";
-import { useRoutes } from "~/api/gateway/query/getRoutes";
+import { useRoute } from "~/api/gateway/query/getRoutes";
 import { useTranslation } from "react-i18next";
 
 const EndpointPage: FC = () => {
@@ -29,7 +28,10 @@ const EndpointPage: FC = () => {
     isFetched: isPermissionCheckFetched,
   } = useFile({ path });
 
-  const { data: routes, isFetched: isRouteListFetched } = useRoutes();
+  const { data: route, isFetched: isRouteListFetched } = useRoute({
+    routePath: path ?? "",
+    enabled: !!path,
+  });
 
   if (!namespace) return null;
   if (!path) return null;
@@ -44,14 +46,6 @@ const EndpointPage: FC = () => {
       </Card>
     );
 
-  const matchingRoute = routes?.data.find(
-    (route) => removeLeadingSlash(route.file_path) === removeLeadingSlash(path)
-  );
-
-  const publicPath = matchingRoute?.server_path
-    ? `${window.location.origin}${matchingRoute.server_path}`
-    : undefined;
-
   return (
     <>
       <div className="border-b border-gray-5 bg-gray-1 p-5 dark:border-gray-dark-5 dark:bg-gray-dark-1">
@@ -61,16 +55,20 @@ const EndpointPage: FC = () => {
             {filename?.relative}
           </h3>
           <div className="grow">
-            {publicPath && <PublicPathInput path={publicPath} />}
+            {route?.server_path && (
+              <PublicPathInput path={route?.server_path} />
+            )}
           </div>
           <Button isAnchor asChild variant="primary">
             <Link
               to={pages.gateway.createHref({
+                subpage: "routeDetail",
                 namespace,
+                routePath: path,
               })}
             >
-              <FileSymlink />
-              {t("pages.explorer.endpoint.goToRoutes")}
+              <ScrollText />
+              {t("pages.explorer.endpoint.openRouteLogs")}
             </Link>
           </Button>
         </div>

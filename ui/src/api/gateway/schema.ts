@@ -91,6 +91,8 @@ export const RoutesListSchema = z.object({
   data: z.array(RouteSchema),
 });
 
+export type RoutesListSchemaType = z.infer<typeof RoutesListSchema>;
+
 /**
  * example
 {

@@ -9,8 +9,11 @@ import { useTranslation } from "react-i18next";
 const GatewayPage = () => {
   const namespace = useNamespace();
   const { t } = useTranslation();
-  const { isGatewayRoutesPage, isGatewayConsumerPage } =
-    pages.gateway.useParams();
+  const {
+    isGatewayRoutesPage,
+    isGatewayConsumerPage,
+    isGatewayRoutesDetailPage,
+  } = pages.gateway.useParams();
 
   if (!namespace) return null;
 
@@ -38,20 +41,22 @@ const GatewayPage = () => {
 
   return (
     <>
-      <div className="space-y-5 border-b border-gray-5 bg-gray-1 p-5 pb-0 dark:border-gray-dark-5 dark:bg-gray-dark-1">
-        <Tabs value={tabs.find((tab) => tab.active)?.value}>
-          <TabsList>
-            {tabs.map((tab) => (
-              <TabsTrigger asChild value={tab.value} key={tab.value}>
-                <Link to={tab.link}>
-                  {tab.icon}
-                  {tab.title}
-                </Link>
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
-      </div>
+      {!isGatewayRoutesDetailPage && (
+        <div className="space-y-5 border-b border-gray-5 bg-gray-1 p-5 pb-0 dark:border-gray-dark-5 dark:bg-gray-dark-1">
+          <Tabs value={tabs.find((tab) => tab.active)?.value}>
+            <TabsList>
+              {tabs.map((tab) => (
+                <TabsTrigger asChild value={tab.value} key={tab.value}>
+                  <Link to={tab.link}>
+                    {tab.icon}
+                    {tab.title}
+                  </Link>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+        </div>
+      )}
       <Outlet />
     </>
   );
