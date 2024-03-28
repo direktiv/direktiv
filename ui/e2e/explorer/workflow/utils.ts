@@ -1,5 +1,24 @@
 import { Page, expect } from "@playwright/test";
 
+import { headers } from "e2e/utils/testutils";
+import { runWorkflow } from "~/api/tree/mutate/runWorkflow";
+
+export const createInstance = async ({
+  namespace,
+  path,
+}: {
+  namespace: string;
+  path: string;
+}) =>
+  await runWorkflow({
+    urlParams: {
+      baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
+      namespace,
+      path,
+    },
+    headers,
+  });
+
 export const waitForSuccessToast = async (page: Page) => {
   const successToast = page.getByTestId("toast-success");
   await expect(successToast, "a success toast appears").toBeVisible();
@@ -9,6 +28,14 @@ export const waitForSuccessToast = async (page: Page) => {
     "success toast disappears after clicking toast-close"
   ).toBeHidden();
 };
+
+export const simpleWorkflow = `description: A simple 'no-op' state that returns 'Hello world!'
+states:
+- id: helloworld
+  type: noop
+  transform:
+    result: Hello world!
+`;
 
 export const jsonSchemaFormWorkflow = `description: A workflow with a complex json schema form'
 states:
