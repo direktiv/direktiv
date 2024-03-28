@@ -78,6 +78,9 @@ test("Route details page shows all important information about the route", async
     "it renders the correct number for plugins"
   ).toBeVisible();
 
+  // hover over something else to make the overlay disappear
+  page.getByTestId("route-details-header").getByText("yes").hover();
+
   await page
     .getByTestId("route-details-header")
     .locator("a")
