@@ -1,5 +1,9 @@
 import { createNamespace, deleteNamespace } from "e2e/utils/namespace";
-import { createRouteFile, findRouteWithApiRequest } from "../utils";
+import {
+  createRouteFile,
+  findRouteWithApiRequest,
+  routeWithAnError,
+} from "../utils";
 import { expect, test } from "@playwright/test";
 
 import { createFile } from "e2e/utils/files";
@@ -112,4 +116,48 @@ test("Route details page shows all important information about the route", async
     page,
     "when the edit route link is clicked, page should navigate to the route editor page"
   ).toHaveURL(`/${namespace}/explorer/endpoint/${fileName}`);
+});
+
+test("Route details page shows warning if the route was not configured correctly", async ({
+  page,
+}) => {
+  const fileName = "my-route.yaml";
+
+  await createFile({
+    name: fileName,
+    namespace,
+    type: "endpoint",
+    yaml: routeWithAnError,
+  });
+
+  await expect
+    .poll(
+      async () =>
+        await findRouteWithApiRequest({
+          namespace,
+          match: (route) => route.file_path === "/my-route.yaml",
+        }),
+      "the route was created and is available"
+    )
+    .toBeTruthy();
+
+  await page.goto(`/${namespace}/gateway/routes/${fileName}`);
+
+  await page
+    .getByTestId("route-details-header")
+    .locator("a")
+    .filter({ hasText: "1 error" })
+    .hover();
+
+  await expect(
+    page
+      .getByTestId("route-details-header")
+      .getByText("plugin this-plugin-does-not-exist does not exist"),
+    "it shows an error with error detail on hover"
+  ).toBeVisible();
+
+  await expect(
+    page.getByTestId("route-details-header").getByText("no methods set"),
+    "it renders the a note that no methods are set"
+  ).toBeVisible();
 });
