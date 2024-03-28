@@ -142,19 +142,11 @@ func ReportError(ctx context.Context, w http.ResponseWriter, status int, msg str
 		"span", spanID,
 		"endpoint", endP,
 		"route", routePath,
-		"track", recipient.Route.String()+"."+endP,
+		"track", recipient.Route.String()+"."+ns+"."+endP,
 		"error", err.Error(),
 	)
 
-	slog.Error("can not process plugin",
-		"namespace", ns,
-		"trace", traceID,
-		"span", spanID,
-		"endpoint", endP,
-		"route", routePath,
-		"track", recipient.Namespace.String()+"."+ns,
-		"error", err.Error(),
-	)
+	// TODO: Metrics
 	w.WriteHeader(status)
 	errMsg := fmt.Sprintf("%s: %s", msg, err.Error())
 
