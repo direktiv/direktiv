@@ -61,6 +61,15 @@ test("Route details page shows all important information about the route", async
     "it renders the text for the method"
   ).toBeVisible();
 
+  await page.getByTestId("route-details-header").getByText("+7").hover();
+
+  await expect(
+    page
+      .getByTestId("route-details-header")
+      .getByText("OPTIONSPUTPOSTHEADCONNECTPATCHTRACE"),
+    'it shows more methods when hovering over the "+7"'
+  ).toBeVisible();
+
   await expect(
     page
       .getByTestId("route-details-header")

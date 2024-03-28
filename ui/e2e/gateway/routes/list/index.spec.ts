@@ -77,11 +77,6 @@ test("Route list shows all available routes", async ({ page }) => {
   ).toBeVisible();
 
   await expect(
-    page.getByTestId("route-table").getByText("GET"),
-    "it renders the text for the method"
-  ).toBeVisible();
-
-  await expect(
     page.getByTestId("route-table").getByRole("textbox"),
     "it renders the text for the path"
   ).toHaveValue(
@@ -101,6 +96,20 @@ test("Route list shows all available routes", async ({ page }) => {
   await expect(
     page.getByTestId("route-table").getByText("1 target plugin"),
     "it shows the plugin details on hover"
+  ).toBeVisible();
+
+  await expect(
+    page.getByTestId("route-table").getByText("GET", { exact: true }),
+    "it renders the text for the method"
+  ).toBeVisible();
+
+  await page.getByTestId("route-table").getByText("+7").hover();
+
+  await expect(
+    page
+      .getByTestId("route-table")
+      .getByText("OPTIONSPUTPOSTHEADCONNECTPATCHTRACE"),
+    'it shows more methods when hovering over the "+7"'
   ).toBeVisible();
 
   await expect(
