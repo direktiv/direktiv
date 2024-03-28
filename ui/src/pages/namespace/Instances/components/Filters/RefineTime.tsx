@@ -1,17 +1,15 @@
 import { Command, CommandGroup, CommandList } from "~/design/Command";
+import TimePicker, { getTimeString } from "~/design/Timepicker";
 
 import { ArrowRight } from "lucide-react";
 import Button from "~/design/Button";
-import { FiltersObj } from "~/api/instances/query/get";
-import Input from "~/design/Input";
-import { InputWithButton } from "~/design/InputWithButton";
-import moment from "moment";
+import { FiltersObj } from "~/api/events/query/get";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 const RefineTime = ({
   field,
-  date,
+  date: givenDate,
   setFilter,
 }: {
   field: "AFTER" | "BEFORE";
@@ -19,7 +17,10 @@ const RefineTime = ({
   setFilter: (filter: FiltersObj) => void;
 }) => {
   const { t } = useTranslation();
-  const [time, setTime] = useState<string>(moment(date).format("HH:mm:ss"));
+
+  const [date, setDate] = useState<Date>(givenDate ?? new Date());
+
+  const time = getTimeString(date);
 
   const setTimeOnDate = () => {
     const [hr, min, sec] = time.split(":").map((item) => Number(item));
@@ -29,34 +30,38 @@ const RefineTime = ({
       return;
     }
 
-    date.setHours(hr, min, sec);
+    givenDate.setHours(hr, min, sec);
     setFilter({
-      [field]: { type: field, value: date },
+      [field]: { type: field, value: givenDate },
     });
   };
 
-  const handleKeyDown = (event: { key: string }) => {
-    event.key === "Enter" && setTimeOnDate();
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    e.key === "Enter" && setTimeOnDate();
   };
 
   return (
     <Command>
       <CommandList className="max-h-[460px]">
         <CommandGroup
-          heading={t("pages.instances.list.filter.menuHeading.time")}
+          heading={t("pages.events.history.filter.menuHeading.time")}
         >
-          <InputWithButton>
-            <Input
-              type="time"
-              step={1}
-              value={time}
-              onChange={(event) => setTime(event.target.value)}
-              onKeyDown={handleKeyDown}
+          <div className="flex items-center">
+            <TimePicker
+              onKeyDown={(e) => {
+                handleKeyDown(e);
+              }}
+              date={date}
+              setDate={setDate}
+              hours={t("pages.events.history.filter.menuLabels.time.hours")}
+              minutes={t("pages.events.history.filter.menuLabels.time.minutes")}
+              seconds={t("pages.events.history.filter.menuLabels.time.seconds")}
             />
+
             <Button icon variant="ghost" onClick={() => setTimeOnDate()}>
               <ArrowRight />
             </Button>
-          </InputWithButton>
+          </div>
         </CommandGroup>
       </CommandList>
     </Command>
