@@ -27,51 +27,16 @@ test.afterEach(async () => {
   namespace = "";
 });
 
-/* create instance with status: completed */
-const createStatusFilterInstances = async () => {
-  await createInstance({ namespace, path: simpleWorkflowName });
-};
-
-test.beforeEach(async () => {
-  await createStatusFilterInstances();
-  namespace = await createNamespace();
-  /* create workflow we can use to create instances later */
-  await createFile({
-    name: simpleWorkflowName,
-    namespace,
-    type: "workflow",
-    yaml: simpleWorkflowContent,
-  });
-});
-
-test.afterEach(async () => {
-  await deleteNamespace(namespace);
-  namespace = "";
-});
-
 test("the header of the instance page shows the relevant data for the workflow", async ({
   page,
 }) => {
-  await expect
-    .poll(
-      async () =>
-        await createInstance({
-          namespace,
-          path: simpleWorkflowName,
-        }),
+  const newInstance = createInstance({ namespace, path: simpleWorkflowName });
 
-      "the route was created and is available"
-    )
-    .toBeTruthy();
+  await expect(newInstance, "wait until process was completed").toBeDefined();
 
-  const test = createInstance({ namespace, path: simpleWorkflowName });
-  const instanceID = (await test).instance;
+  const instanceID = (await newInstance).instance;
 
-  //   await page.goto(`/test/instances/${instanceID}`, {
-  //     waitUntil: "networkidle",
-  //   });
-
-  await page.goto(`/test/instances/${instanceID}`);
+  await page.goto(`/${namespace}/instances/${instanceID}`);
 
   const header = page.getByTestId("instance-header-container");
   await expect(header, "the header is visible").toBeVisible();
