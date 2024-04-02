@@ -1,16 +1,16 @@
 import { z } from "zod";
 
 const VarTypeSchema = z.enum([
-  "namespace_variable",
-  "workflow_variable",
-  "instance_variable",
+  "namespace-variable",
+  "workflow-variable",
+  "instance-variable",
 ]);
 
 /**
  * example:
   {
     "id": "01c9accc-49ab-4acb-a764-551e8ee1eed7",
-    "type": "namespace_variable",
+    "type": "namespace-variable",
     "reference": "vars",
     "name": "variable",
     "size": 1,
