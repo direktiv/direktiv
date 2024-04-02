@@ -16,7 +16,6 @@ describe('Test variable list calls', () => {
 	helpers.itShouldCreateFileV2(it, expect, namespace, '/', 'wf.yaml', 'workflow', 'text',
 		btoa(helpers.dummyWorkflow('wf.yaml')))
 
-
 	let createRes
 	it(`should create a new variable foo1`, async () => {
 		createRes = await request(config.getDirektivHost())
@@ -36,7 +35,7 @@ describe('Test variable list calls', () => {
 				name: 'foo2',
 				data: btoa('foo2'),
 				mimeType: 'mime_foo2',
-				workflowPath: '/wf.yaml'
+				workflowPath: '/wf.yaml',
 			})
 		expect(createRes.statusCode).toEqual(200)
 	})
