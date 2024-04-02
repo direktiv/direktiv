@@ -13,10 +13,10 @@ import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 import { varKeys } from "..";
 
-export const createVar = apiFactory({
+const createVar = apiFactory({
   url: ({ baseUrl, namespace }: { baseUrl?: string; namespace: string }) =>
     `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/variables`,
-  method: "PUT",
+  method: "POST",
   schema: VarCreatedSchema,
 });
 
