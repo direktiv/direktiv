@@ -28,7 +28,13 @@ export const LogStreamingSubscriber = (params: UseLogsParams) => {
    * subscription will retrieve all realtime logs plus a couple of
    * seconds of old logs to prevent race conditions.
    */
-  const enableStreaming = !!params.enabled || !isFetching;
+  let enableStreaming = !isFetching;
+
+  // if explicitely disabled by params
+  if (params.enabled === false) {
+    enableStreaming = false;
+  }
+
   return <MemoizedLogsStream {...params} enabled={enableStreaming} />;
 };
 
