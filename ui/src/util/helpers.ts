@@ -71,6 +71,23 @@ export const triggerDownloadFromBlob = ({
   window.URL.revokeObjectURL(url);
 };
 
+export const triggerDownloadFromBase64String = ({
+  filename,
+  base64String,
+  mimeType,
+}: {
+  filename: string;
+  base64String: string;
+  mimeType: string;
+}) => {
+  const aTag = document.createElement("a");
+  aTag.href = `data:${mimeType};base64,${base64String}`;
+  aTag.download = filename;
+  document.body.appendChild(aTag);
+  aTag.click();
+  document.body.removeChild(aTag);
+};
+
 // takes a json input string and format it with 4 spaces indentation
 export const prettifyJsonString = (jsonString: string) => {
   try {

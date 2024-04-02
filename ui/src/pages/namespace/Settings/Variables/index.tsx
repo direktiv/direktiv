@@ -13,9 +13,9 @@ import Input from "~/design/Input";
 import ItemRow from "../components/ItemRow";
 import PaginationProvider from "~/components/PaginationProvider";
 import { VarSchemaType } from "~/api/variables/schema";
-import { triggerDownloadFromBlob } from "~/util/helpers";
+import { triggerDownloadFromBase64String } from "~/util/helpers";
 import { useDeleteVar } from "~/api/variables/mutate/delete";
-import { useDownloadVar } from "~/api/variables_obsolete/mutate/downloadVariable";
+import { useDownloadVar } from "~/api/variables/mutate/download";
 import { useTranslation } from "react-i18next";
 import { useVars } from "~/api/variables/query/get";
 
@@ -52,10 +52,12 @@ const VariablesList: FC = () => {
   });
 
   const { mutate: downloadVar } = useDownloadVar({
-    onSuccess: (response, name) => {
-      triggerDownloadFromBlob({
-        blob: response.blob,
-        filename: name,
+    onSuccess: (response) => {
+      const { name: filename, data: base64String, mimeType } = response.data;
+      triggerDownloadFromBase64String({
+        filename,
+        base64String,
+        mimeType,
       });
     },
   });
@@ -70,8 +72,8 @@ const VariablesList: FC = () => {
 
   if (!isFetched) return null;
 
-  const download = (name: string) => {
-    downloadVar(name);
+  const download = (variableId: string) => {
+    downloadVar(variableId);
   };
 
   return (
@@ -123,7 +125,7 @@ const VariablesList: FC = () => {
                             key={i}
                             onDelete={setDeleteItem}
                             onEdit={() => setEditItem(item)}
-                            onDownload={() => download(item.name)}
+                            onDownload={() => download(item.id)}
                           >
                             {item.name}
                           </ItemRow>
