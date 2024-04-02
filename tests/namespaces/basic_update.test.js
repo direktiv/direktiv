@@ -22,7 +22,7 @@ describe('Test namespace update calls', () => {
 	const testCases = [
 		{
 			input: {
-				mirrorSettings: {
+				mirror: {
 					url: 'my_url',
 				},
 			},
@@ -30,7 +30,7 @@ describe('Test namespace update calls', () => {
 				name: 'foo',
 				createdAt: expect.stringMatching(regex.timestampRegex),
 				updatedAt: expect.stringMatching(regex.timestampRegex),
-				mirrorSettings: {
+				mirror: {
 					url: 'my_url',
 					gitCommitHash: '',
 					gitRef: '',
@@ -68,8 +68,6 @@ describe('Test invalid namespace update calls', () => {
 			.post(`/api/v2/namespaces`)
 			.send({
 				name: 'foo',
-				data: btoa('bar'),
-
 			})
 
 		expect(createRes.statusCode).toEqual(200)
@@ -78,7 +76,7 @@ describe('Test invalid namespace update calls', () => {
 	const testCases = [
 		{
 			input: {
-				mirrorSettings: {
+				mirror: {
 					url: 11,
 				},
 			},

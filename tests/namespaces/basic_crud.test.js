@@ -65,7 +65,6 @@ describe('Test namespaces get delete list calls', () => {
 function makeDummyNamespace (name) {
 	return {
 		name,
-		data: btoa('value of' + name),
 	}
 }
 
