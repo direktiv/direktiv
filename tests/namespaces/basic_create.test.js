@@ -20,13 +20,13 @@ describe('Test namespace create calls', () => {
 		{
 			input: {
 				name: 'foo2',
-				mirrorSettings: {
+				mirror: {
 					url: 'my_url',
 				},
 			},
 			want: {
 				name: 'foo2',
-				mirrorSettings: {
+				mirror: {
 					url: 'my_url',
 					gitCommitHash: '',
 					gitRef: '',
