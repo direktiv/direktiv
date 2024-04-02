@@ -11,23 +11,24 @@ import { TableCell, TableRow } from "~/design/Table";
 
 import Button from "~/design/Button";
 import { DialogTrigger } from "~/design/Dialog";
+import { VarSchemaType } from "~/api/variables/schema";
 import { useTranslation } from "react-i18next";
 
-type ItemRowProps<TItem> = {
-  item: TItem;
-  onDelete: (item: TItem) => void;
+type ItemRowProps = {
+  item: VarSchemaType;
+  onDelete: (item: VarSchemaType) => void;
   onEdit?: () => void;
   onDownload?: () => void;
   children?: React.ReactNode;
 };
 
-const ItemRow = <ItemType,>({
+const ItemRow = ({
   item,
   onDelete,
   onDownload,
   onEdit,
   children,
-}: ItemRowProps<ItemType & { name: string }>) => {
+}: ItemRowProps) => {
   const { t } = useTranslation();
 
   return (
