@@ -88,6 +88,11 @@ const ConsumerEditor: FC<ConsumerEditorProps> = ({ data }) => {
                     options={{
                       readOnly: true,
                     }}
+                    navigationWarning={
+                      isDirty
+                        ? t("components.blocker.unsavedChangesWarning")
+                        : null
+                    }
                   />
                 </Card>
               </div>
