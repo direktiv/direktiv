@@ -14,20 +14,18 @@ import MimeTypeSelect, {
   mimeTypeToLanguageDict,
 } from "./MimeTypeSelect";
 import { SubmitHandler, useForm } from "react-hook-form";
-import {
-  VarFormSchema,
-  VarFormSchemaType,
-} from "~/api/variables_obsolete/schema";
+import { VarFormSchema, VarFormSchemaType } from "~/api/variables/schema";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { PlusCircle } from "lucide-react";
+import { encode } from "js-base64";
+import { useCreateVar } from "~/api/variables/mutate/createVariable";
 import { useState } from "react";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
-import { useUpdateVar } from "~/api/variables_obsolete/mutate/updateVariable";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 type CreateProps = { onSuccess: () => void };
@@ -39,7 +37,7 @@ const Create = ({ onSuccess }: CreateProps) => {
   const theme = useTheme();
 
   const [name, setName] = useState("");
-  const [body, setBody] = useState<string | File>("");
+  const [body, setBody] = useState("");
   const [mimeType, setMimeType] = useState<MimeTypeType>(defaultMimeType);
   const [editorLanguage, setEditorLanguage] = useState<EditorLanguagesType>(
     mimeTypeToLanguageDict[defaultMimeType]
@@ -56,7 +54,7 @@ const Create = ({ onSuccess }: CreateProps) => {
     // MimeTypeSelect
     values: {
       name,
-      content: body,
+      data: encode(body),
       mimeType,
     },
   });
@@ -69,12 +67,12 @@ const Create = ({ onSuccess }: CreateProps) => {
     }
   };
 
-  const { mutate: createVarMutation } = useUpdateVar({
+  const { mutate: createVar } = useCreateVar({
     onSuccess,
   });
 
   const onSubmit: SubmitHandler<VarFormSchemaType> = (data) => {
-    createVarMutation(data);
+    createVar(data);
   };
 
   const onFilepickerChange = async (
