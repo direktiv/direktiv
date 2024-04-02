@@ -41,3 +41,5 @@ export type VarSchemaType = z.infer<typeof VarSchema>;
 export const VarListSchema = z.object({
   data: z.array(VarSchema),
 });
+
+export const VarDeletedSchema = z.null();
