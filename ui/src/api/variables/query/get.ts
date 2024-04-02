@@ -25,18 +25,22 @@ const getVars = apiFactory({
 });
 
 const fetchVars = async ({
-  queryKey: [{ apiKey, namespace }],
+  queryKey: [{ apiKey, namespace, workflowPath }],
 }: QueryFunctionContext<ReturnType<(typeof varKeys)["varList"]>>) =>
   getVars({
     apiKey,
-    urlParams: { namespace },
+    urlParams: { namespace, workflowPath },
   });
 
 type UseVarsParams = {
   namespace?: string;
+  workflowPath?: string;
 };
 
-export const useVars = ({ namespace: givenNamespace }: UseVarsParams = {}) => {
+export const useVars = ({
+  namespace: givenNamespace,
+  workflowPath,
+}: UseVarsParams = {}) => {
   const apiKey = useApiKey();
   const defaultNamespace = useNamespace();
 
@@ -49,6 +53,7 @@ export const useVars = ({ namespace: givenNamespace }: UseVarsParams = {}) => {
   return useQueryWithPermissions({
     queryKey: varKeys.varList(namespace, {
       apiKey: apiKey ?? undefined,
+      workflowPath,
     }),
     queryFn: fetchVars,
     enabled: !!namespace,
