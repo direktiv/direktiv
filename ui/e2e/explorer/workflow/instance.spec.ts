@@ -52,11 +52,24 @@ test.afterEach(async () => {
 test("the header of the instance page shows the relevant data for the workflow", async ({
   page,
 }) => {
-  await createInstance({ namespace, path: simpleWorkflowName });
+  await expect
+    .poll(
+      async () =>
+        await createInstance({
+          namespace,
+          path: simpleWorkflowName,
+        }),
+
+      "the route was created and is available"
+    )
+    .toBeTruthy();
 
   const test = createInstance({ namespace, path: simpleWorkflowName });
-
   const instanceID = (await test).instance;
+
+  //   await page.goto(`/test/instances/${instanceID}`, {
+  //     waitUntil: "networkidle",
+  //   });
 
   await page.goto(`/test/instances/${instanceID}`);
 
