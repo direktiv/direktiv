@@ -5,7 +5,7 @@ import SecretsList from "./Secrets";
 import VariablesList from "./Variables";
 import { useRegistries } from "~/api/registries/query/get";
 import { useSecrets } from "~/api/secrets/query/get";
-import { useVars } from "~/api/variables_obsolete/query/useVariables";
+import { useVars } from "~/api/variables/query/get";
 
 // this hook uses all initial data fetching hooks from the components on
 // this page and returns true if all of them are fetched. This is used to

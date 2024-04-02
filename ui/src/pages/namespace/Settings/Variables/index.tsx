@@ -12,12 +12,12 @@ import { FileJson } from "lucide-react";
 import Input from "~/design/Input";
 import ItemRow from "../components/ItemRow";
 import PaginationProvider from "~/components/PaginationProvider";
-import { VarSchemaType } from "~/api/variables_obsolete/schema";
+import { VarSchemaType } from "~/api/variables/schema";
 import { triggerDownloadFromBlob } from "~/util/helpers";
 import { useDeleteVar } from "~/api/variables_obsolete/mutate/deleteVariable";
 import { useDownloadVar } from "~/api/variables_obsolete/mutate/downloadVariable";
 import { useTranslation } from "react-i18next";
-import { useVars } from "~/api/variables_obsolete/query/useVariables";
+import { useVars } from "~/api/variables/query/get";
 
 const pageSize = 10;
 
@@ -30,14 +30,19 @@ const VariablesList: FC = () => {
   const [search, setSearch] = useState("");
   const isSearch = search.length > 0;
 
-  const { data, isFetched, isAllowed, noPermissionMessage } = useVars();
+  const {
+    data: variables,
+    isFetched,
+    isAllowed,
+    noPermissionMessage,
+  } = useVars();
 
   const filteredItems = useMemo(
     () =>
-      (data?.variables?.results ?? [])?.filter(
+      (variables?.data ?? [])?.filter(
         (item) => !isSearch || item.name.includes(search)
       ),
-    [data?.variables?.results, isSearch, search]
+    [isSearch, search, variables?.data]
   );
 
   const { mutate: deleteVarMutation } = useDeleteVar({
