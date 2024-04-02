@@ -37,9 +37,6 @@
                       mimeType:
                         type: string
                         description: mime type of the variable's data
-                      data:
-                        type: string
-                        description: base64 encoded string of the variable's data
                       createdAt:
                         type: string
                         description: timestamp of creation date
