@@ -32,14 +32,11 @@
                         type: string
                         description: a unique name string of the variable (unique within the referenced object)
                       size:
-                        type: string
+                        type: number
                         description: data size (in bytes) of the variable's data
                       mimeType:
                         type: string
                         description: mime type of the variable's data
-                      data:
-                        type: string
-                        description: base64 encoded string of the variable's data
                       createdAt:
                         type: string
                         description: timestamp of creation date
@@ -97,7 +94,7 @@
                       type: string
                       description: a unique name string of the variable (unique within the referenced object)
                     size:
-                      type: string
+                      type: number
                       description: data size (in bytes) of the variable's data
                     mimeType:
                       type: string
@@ -149,7 +146,7 @@
                       type: string
                       description: a unique name string of the variable (unique within the referenced object)
                     size:
-                      type: string
+                      type: number
                       description: data size (in bytes) of the variable's data
                     mimeType:
                       type: string
@@ -233,7 +230,7 @@
                       type: string
                       description: a unique name string of the variable (unique within the referenced object)
                     size:
-                      type: string
+                      type: number
                       description: data size (in bytes) of the variable's data
                     mimeType:
                       type: string

@@ -278,15 +278,15 @@ func convertVariable(v *datastore.RuntimeVariable) any {
 		UpdatedAt: v.UpdatedAt,
 	}
 
-	res.Typ = "namespace_variable"
+	res.Typ = "namespace-variable"
 	res.Reference = v.Namespace
 	if v.InstanceID.String() != (uuid.UUID{}).String() {
 		res.Reference = v.InstanceID.String()
-		res.Typ = "instance_variable"
+		res.Typ = "instance-variable"
 	}
 	if v.WorkflowPath != "" {
 		res.Reference = v.WorkflowPath
-		res.Typ = "workflow_variable"
+		res.Typ = "workflow-variable"
 	}
 
 	return res

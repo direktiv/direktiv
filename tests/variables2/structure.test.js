@@ -36,7 +36,7 @@ describe('Test variable get delete list calls', () => {
 			data: btoa('foo'),
 			mimeType: 'mime_foo',
 			size: 3,
-			type: 'namespace_variable',
+			type: 'namespace-variable',
 			reference: namespace,
 
 			createdAt: expect.stringMatching(regex.timestampRegex),
@@ -56,7 +56,7 @@ describe('Test variable get delete list calls', () => {
 
 			mimeType: 'mime_foo',
 			size: 3,
-			type: 'namespace_variable',
+			type: 'namespace-variable',
 			reference: namespace,
 
 			createdAt: expect.stringMatching(regex.timestampRegex),
