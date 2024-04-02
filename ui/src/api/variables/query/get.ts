@@ -1,14 +1,25 @@
 import type { QueryFunctionContext } from "@tanstack/react-query";
 import { VarListSchema } from "../schema";
 import { apiFactory } from "../../apiFactory";
+import { buildSearchParamsString } from "~/api/utils";
 import { useApiKey } from "../../../util/store/apiKey";
 import { useNamespace } from "../../../util/store/namespace";
 import useQueryWithPermissions from "~/api/useQueryWithPermissions";
 import { varKeys } from "..";
 
+type GetVarsParams = {
+  namespace?: string;
+  workflowPath?: string;
+};
+
 const getVars = apiFactory({
-  url: ({ namespace }: { namespace: string }) =>
-    `/api/v2/namespaces/${namespace}/variables`,
+  url: ({ namespace, ...queryParams }: GetVarsParams) => {
+    const queryParamsString = buildSearchParamsString({
+      ...queryParams,
+    });
+
+    return `/api/v2/namespaces/${namespace}/variables${queryParamsString}`;
+  },
   method: "GET",
   schema: VarListSchema,
 });
