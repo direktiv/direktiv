@@ -14,7 +14,7 @@ import ItemRow from "../components/ItemRow";
 import PaginationProvider from "~/components/PaginationProvider";
 import { VarSchemaType } from "~/api/variables/schema";
 import { triggerDownloadFromBlob } from "~/util/helpers";
-import { useDeleteVar } from "~/api/variables_obsolete/mutate/deleteVariable";
+import { useDeleteVar } from "~/api/variables/mutate/delete";
 import { useDownloadVar } from "~/api/variables_obsolete/mutate/downloadVariable";
 import { useTranslation } from "react-i18next";
 import { useVars } from "~/api/variables/query/get";
@@ -45,7 +45,7 @@ const VariablesList: FC = () => {
     [isSearch, search, variables?.data]
   );
 
-  const { mutate: deleteVarMutation } = useDeleteVar({
+  const { mutate: deleteVar } = useDeleteVar({
     onSuccess: () => {
       setDialogOpen(false);
     },
@@ -170,7 +170,7 @@ const VariablesList: FC = () => {
         <Delete
           name={deleteItem.name}
           onConfirm={() => {
-            deleteVarMutation({ variable: deleteItem });
+            deleteVar({ variable: deleteItem });
           }}
         />
       )}
