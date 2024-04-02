@@ -212,7 +212,7 @@ func (e *varController) list(w http.ResponseWriter, r *http.Request) {
 	defer db.Rollback()
 	dStore := db.DataStore()
 
-	forInstanceID := chi.URLParam(r, "instanceId")
+	forInstanceID := r.URL.Query().Get("instanceId")
 	_, err = uuid.Parse(forInstanceID)
 	if err != nil && forInstanceID != "" {
 		writeError(w, &Error{
@@ -222,7 +222,7 @@ func (e *varController) list(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-	forWorkflowPath := chi.URLParam(r, "workflowPath")
+	forWorkflowPath := r.URL.Query().Get("workflowPath")
 	if forWorkflowPath != "" && forWorkflowPath != filepath.Clean(forWorkflowPath) {
 		writeError(w, &Error{
 			Code:    "request_data_invalid",
