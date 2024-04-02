@@ -2,7 +2,7 @@ import { EditorMimeTypeSchema } from "~/pages/namespace/Settings/Variables/MimeT
 import { faker } from "@faker-js/faker";
 import { headers } from "./testutils";
 import { setVariable } from "~/api/tree/mutate/setVariable";
-import { updateVar } from "~/api/variables/mutate/updateVariable";
+import { updateVar } from "~/api/variables_obsolete/mutate/updateVariable";
 
 // Note: This makes sure only mimeTypes supported by the form are used,
 // but the generated content isn't really in that format.

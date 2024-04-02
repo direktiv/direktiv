@@ -14,7 +14,10 @@ import MimeTypeSelect, {
   mimeTypeToLanguageDict,
 } from "./MimeTypeSelect";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { VarFormSchema, VarFormSchemaType } from "~/api/variables/schema";
+import {
+  VarFormSchema,
+  VarFormSchemaType,
+} from "~/api/variables_obsolete/schema";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
@@ -24,7 +27,7 @@ import { PlusCircle } from "lucide-react";
 import { useState } from "react";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
-import { useUpdateVar } from "~/api/variables/mutate/updateVariable";
+import { useUpdateVar } from "~/api/variables_obsolete/mutate/updateVariable";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 type CreateProps = { onSuccess: () => void };

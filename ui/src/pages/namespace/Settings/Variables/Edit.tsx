@@ -19,7 +19,7 @@ import {
   VarFormSchema,
   VarFormSchemaType,
   VarSchemaType,
-} from "~/api/variables/schema";
+} from "~/api/variables_obsolete/schema";
 import { useEffect, useState } from "react";
 
 import Alert from "~/design/Alert";
@@ -29,8 +29,8 @@ import { FileJson } from "lucide-react";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { useTheme } from "~/util/store/theme";
-import { useUpdateVar } from "~/api/variables/mutate/updateVariable";
-import { useVarContent } from "~/api/variables/query/useVariableContent";
+import { useUpdateVar } from "~/api/variables_obsolete/mutate/updateVariable";
+import { useVarContent } from "~/api/variables_obsolete/query/useVariableContent";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 type EditProps = {

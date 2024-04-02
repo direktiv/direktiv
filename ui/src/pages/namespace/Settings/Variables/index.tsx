@@ -12,12 +12,12 @@ import { FileJson } from "lucide-react";
 import Input from "~/design/Input";
 import ItemRow from "../components/ItemRow";
 import PaginationProvider from "~/components/PaginationProvider";
-import { VarSchemaType } from "~/api/variables/schema";
+import { VarSchemaType } from "~/api/variables_obsolete/schema";
 import { triggerDownloadFromBlob } from "~/util/helpers";
-import { useDeleteVar } from "~/api/variables/mutate/deleteVariable";
-import { useDownloadVar } from "~/api/variables/mutate/downloadVariable";
+import { useDeleteVar } from "~/api/variables_obsolete/mutate/deleteVariable";
+import { useDownloadVar } from "~/api/variables_obsolete/mutate/downloadVariable";
 import { useTranslation } from "react-i18next";
-import { useVars } from "~/api/variables/query/useVariables";
+import { useVars } from "~/api/variables_obsolete/query/useVariables";
 
 const pageSize = 10;
 

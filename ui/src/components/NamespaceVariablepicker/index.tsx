@@ -11,7 +11,7 @@ import Input from "~/design/Input";
 import { VariablePickerError } from "./VariablePickerError";
 import { useNamespace } from "~/util/store/namespace";
 import { useTranslation } from "react-i18next";
-import { useVars } from "~/api/variables/query/useVariables";
+import { useVars } from "~/api/variables_obsolete/query/useVariables";
 
 type NamespaceVariablePickerProps = {
   namespace?: string;
