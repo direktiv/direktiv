@@ -973,6 +973,16 @@
     summary: Gets all direktiv variables in a namespace
     parameters:
       - $ref: '../parameters.yaml#/namespace'
+      - in: query
+        name: workflowPath
+        schema:
+          type: string
+        description: When set, the list will contain all variables under this workflow path
+      - in: query
+        name: instanceId
+        schema:
+          type: string
+        description: When set, the list will contain all variables under this instance id
     responses:
       "200":
         description: list of direktiv variables
