@@ -67,7 +67,7 @@ export const useCreateVar = ({
         title: t("api.variables.mutate.updateVariable.success.title"),
         description: t(
           "api.variables.mutate.updateVariable.success.description",
-          { name: data.key }
+          { name: data.data.name }
         ),
         variant: "success",
       });
