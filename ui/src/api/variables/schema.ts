@@ -49,3 +49,18 @@ export const VarContentSchema = z.object({
 });
 
 export const VarDeletedSchema = z.null();
+
+export const VarCreatedSchema = z.object({
+  data: VarSchema,
+});
+
+export type VarCreatedSchemaType = z.infer<typeof VarCreatedSchema>;
+
+export const VarFormSchema = z.object({
+  name: z.string().nonempty(),
+  mimeType: z.string().nonempty(),
+  data: z.string().nonempty(),
+  workflowPath: z.string().nonempty().optional(),
+});
+
+export type VarFormSchemaType = z.infer<typeof VarFormSchema>;
