@@ -1,9 +1,9 @@
 import { z } from "zod";
 
 const VarTypeSchema = z.enum([
-  "namespace-variable",
-  "workflow-variable",
-  "instance-variable",
+  "namespace_variable",
+  "workflow_variable",
+  "instance_variable",
 ]);
 
 /**
