@@ -30,6 +30,8 @@ export const VarSchema = z.object({
   updatedAt: z.string(),
 });
 
+export type VarSchemaType = z.infer<typeof VarSchema>;
+
 /**
  * example:
   {
