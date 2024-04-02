@@ -42,4 +42,10 @@ export const VarListSchema = z.object({
   data: z.array(VarSchema),
 });
 
+export const VarContentSchema = z.object({
+  data: VarSchema.extend({
+    data: z.string(),
+  }),
+});
+
 export const VarDeletedSchema = z.null();
