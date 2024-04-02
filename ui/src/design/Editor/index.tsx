@@ -5,9 +5,37 @@ import MonacoEditor, { loader } from "@monaco-editor/react";
 
 import AutoSizer from "react-virtualized-auto-sizer";
 import type { EditorProps } from "@monaco-editor/react";
+// eslint-disable-next-line import/default
+import cssWorker from "monaco-editor/esm/vs/language/css/css.worker?worker";
+// eslint-disable-next-line import/default
+import editorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
+// eslint-disable-next-line import/default
+import htmlWorker from "monaco-editor/esm/vs/language/html/html.worker?worker";
+// eslint-disable-next-line import/default
+import jsonWorker from "monaco-editor/esm/vs/language/json/json.worker?worker";
 import { supportedLanguages } from "./utils";
 import themeDark from "./theme-dark";
 import themeLight from "./theme-light";
+// eslint-disable-next-line import/default
+import tsWorker from "monaco-editor/esm/vs/language/typescript/ts.worker?worker";
+
+self.MonacoEnvironment = {
+  getWorker(_, label) {
+    if (label === "json") {
+      return new jsonWorker();
+    }
+    if (label === "css" || label === "scss" || label === "less") {
+      return new cssWorker();
+    }
+    if (label === "html" || label === "handlebars" || label === "razor") {
+      return new htmlWorker();
+    }
+    if (label === "typescript" || label === "javascript") {
+      return new tsWorker();
+    }
+    return new editorWorker();
+  },
+};
 
 loader.config({ monaco });
 
