@@ -1,9 +1,10 @@
+import { BlockerFunction, useBlocker } from "react-router-dom";
+import { FC, useEffect } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 
 import { Bug } from "lucide-react";
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
-import { FC } from "react";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 import useUpdatedAt from "~/hooks/useUpdatedAt";
@@ -26,8 +27,40 @@ export const CodeEditor: FC<EditorProps> = ({
   error,
 }) => {
   const { t } = useTranslation();
+
   const theme = useTheme();
   const updatedAtInWords = useUpdatedAt(updatedAt);
+
+  const beforeUnloadHandler = (event: BeforeUnloadEvent) => {
+    event.preventDefault();
+    event.returnValue = true;
+  };
+
+  useEffect(() => {
+    if (hasUnsavedChanges) {
+      window.addEventListener("beforeunload", beforeUnloadHandler);
+    } else {
+      window.removeEventListener("beforeunload", beforeUnloadHandler);
+    }
+
+    return () =>
+      window.removeEventListener("beforeunload", beforeUnloadHandler);
+  });
+
+  const blockerFunction: BlockerFunction = ({
+    currentLocation,
+    nextLocation,
+  }) => hasUnsavedChanges && currentLocation !== nextLocation;
+
+  const blocker = useBlocker(blockerFunction);
+
+  const blockerMsg = t("components.blocker.unsavedChangesWarning");
+
+  useEffect(() => {
+    blocker.state === "blocked" && window.confirm(blockerMsg)
+      ? blocker.proceed()
+      : blocker.reset?.();
+  }, [blocker, blocker.state, blockerMsg]);
 
   return (
     <Card className="flex grow flex-col p-4">
