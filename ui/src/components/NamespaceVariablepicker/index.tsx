@@ -11,7 +11,7 @@ import Input from "~/design/Input";
 import { VariablePickerError } from "./VariablePickerError";
 import { useNamespace } from "~/util/store/namespace";
 import { useTranslation } from "react-i18next";
-import { useVars } from "~/api/variables_obsolete/query/useVariables";
+import { useVars } from "~/api/variables/query/get";
 
 type NamespaceVariablePickerProps = {
   namespace?: string;
@@ -28,12 +28,15 @@ const NamespaceVariablePicker = ({
 
   const [inputValue, setInput] = useState(defaultVariable ?? "");
 
-  const defaultNamespace = useNamespace();
+  const defaultNamespace = useNamespace() ?? undefined;
+
   const namespace = givenNamespace ?? defaultNamespace;
 
-  const { data, isError: pathNotFound } = useVars({ namespace });
+  const { data, isError: pathNotFound } = useVars({
+    namespace,
+  });
 
-  const variables = data?.variables.results ?? [];
+  const variables = data?.data ?? [];
   const noVarsInNamespace = variables.length === 0;
 
   const setNewVariable = (name: string) => {
