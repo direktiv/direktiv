@@ -104,7 +104,7 @@ func Start(ctx context.Context, app core.App, db *database.DB, bus *pubsub2.Bus,
 			r.Route("/namespaces/{namespace}/instances", func(r chi.Router) {
 				instCtr.mountRouter(r)
 			})
-			r.Route("/namespaces/{namespace}/mirrors", func(r chi.Router) {
+			r.Route("/namespaces/{namespace}/syncs", func(r chi.Router) {
 				mirrorsCtr.mountRouter(r)
 			})
 			r.Route("/namespaces/{namespace}/secrets", func(r chi.Router) {
