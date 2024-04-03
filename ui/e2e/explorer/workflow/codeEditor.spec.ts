@@ -103,6 +103,27 @@ test("it is possible to save the workflow", async ({ page }) => {
   ).toHaveText("Updated a few seconds ago");
 });
 
+test("it is possible to navigate to another route from the editor", async ({
+  page,
+}) => {
+  let dialogTriggered = false;
+
+  page.on("dialog", async (dialog) => {
+    dialogTriggered = true;
+    return dialog.dismiss();
+  });
+
+  await page.goto(`${namespace}/explorer/workflow/edit/${workflow}`);
+  await page.getByText(defaultDescription);
+
+  await page.getByRole("link", { name: "Settings" }).click();
+  await expect(dialogTriggered).toBe(false);
+
+  await expect(page, "it navigates to the new route").toHaveURL(
+    `${namespace}/settings`
+  );
+});
+
 test("it prevents navigation to another route with unsaved changes", async ({
   page,
 }) => {
@@ -162,6 +183,27 @@ test("with confirmation, it navigates to another route despite unsaved changes",
     page,
     "after confirming the dialog, it navigates to the new route"
   ).toHaveURL(`${namespace}/settings`);
+});
+
+test("it is possible to leave the app from the editor", async ({ page }) => {
+  let dialogTriggered = false;
+
+  page.on("dialog", async (dialog) => {
+    await expect(dialog.type()).toBe("beforeunload");
+    dialogTriggered = true;
+    await dialog.dismiss();
+  });
+
+  await page.goto(`${namespace}/explorer/workflow/edit/${workflow}`);
+  await page.getByText(defaultDescription);
+
+  await page.goto("https://example.com");
+
+  await expect(dialogTriggered).toBe(false);
+
+  await expect(page, "it navigates to the new document").toHaveURL(
+    "https://example.com"
+  );
 });
 
 test("it prevents navigation away from the app with unsaved changes", async ({
