@@ -5,6 +5,11 @@ import helpers from '../common/helpers'
 import regex from '../common/regex'
 import request from '../common/request'
 
+const timestamps = {
+	createdAt: expect.stringMatching(regex.timestampRegex),
+	updatedAt: expect.stringMatching(regex.timestampRegex),
+}
+
 describe('Test namespace update calls', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 
@@ -28,16 +33,32 @@ describe('Test namespace update calls', () => {
 			},
 			want: {
 				name: 'foo',
-				createdAt: expect.stringMatching(regex.timestampRegex),
-				updatedAt: expect.stringMatching(regex.timestampRegex),
+				...timestamps,
 				mirror: {
 					url: 'my_url',
-					gitCommitHash: '',
-					gitRef: '',
 					insecure: false,
-					publicKey: '',
-					createdAt: expect.stringMatching(regex.timestampRegex),
-					updatedAt: expect.stringMatching(regex.timestampRegex),
+					...timestamps,
+				},
+			},
+		},
+		{
+			input: {
+				mirror: {
+					url: 'my_url2',
+					insecure: true,
+					gitRef: 'master',
+					gitCommitHash: '1234',
+				},
+			},
+			want: {
+				name: 'foo',
+				...timestamps,
+				mirror: {
+					url: 'my_url2',
+					insecure: true,
+					gitRef: 'master',
+					gitCommitHash: '1234',
+					...timestamps,
 				},
 			},
 		},
