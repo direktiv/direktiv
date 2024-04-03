@@ -19,7 +19,7 @@ const FileUpload = ({ onChange }: FileUploadProps) => {
       const parsedDataUrl = parseDataUrl(fileContent);
       if (parsedDataUrl) {
         onChange({
-          base64String: parsedDataUrl.data,
+          base64String: parsedDataUrl.base64String,
           mimeType: parsedDataUrl.mimeType,
         });
       }
