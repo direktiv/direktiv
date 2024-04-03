@@ -8,8 +8,6 @@ import {
 import Editor, { EditorLanguagesType } from "~/design/Editor";
 import MimeTypeSelect, {
   EditorMimeTypeSchema,
-  MimeTypeType,
-  TextMimeTypeType,
   getLanguageFromMimeType,
   mimeTypeToLanguageDict,
 } from "./MimeTypeSelect";
@@ -21,7 +19,6 @@ import { Card } from "~/design/Card";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { PlusCircle } from "lucide-react";
-import { encode } from "js-base64";
 import { useCreateVar } from "~/api/variables/mutate/createVariable";
 import { useState } from "react";
 import { useTheme } from "~/util/store/theme";
@@ -30,7 +27,21 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 type CreateProps = { onSuccess: () => void };
 
-const defaultMimeType: TextMimeTypeType = "application/json";
+const defaultMimeType = "application/json";
+
+const parseDataUrl = (dataUrl: string) => {
+  const splitUrl = dataUrl.split(";");
+  if (!splitUrl || !splitUrl[0] || !splitUrl[1]) return null;
+
+  const mimeType = splitUrl[0].split(":")[1];
+  const data = splitUrl[1].split(",")[1];
+
+  if (!mimeType || !data) return null;
+  return {
+    mimeType,
+    data,
+  };
+};
 
 const Create = ({ onSuccess }: CreateProps) => {
   const { t } = useTranslation();
@@ -38,7 +49,8 @@ const Create = ({ onSuccess }: CreateProps) => {
 
   const [name, setName] = useState("");
   const [body, setBody] = useState("");
-  const [mimeType, setMimeType] = useState<MimeTypeType>(defaultMimeType);
+  const [allowPreview, setAllowPreview] = useState(true);
+  const [mimeType, setMimeType] = useState(defaultMimeType);
   const [editorLanguage, setEditorLanguage] = useState<EditorLanguagesType>(
     mimeTypeToLanguageDict[defaultMimeType]
   );
@@ -54,12 +66,12 @@ const Create = ({ onSuccess }: CreateProps) => {
     // MimeTypeSelect
     values: {
       name,
-      data: encode(body),
+      data: body,
       mimeType,
     },
   });
 
-  const onMimeTypeChange = (value: MimeTypeType) => {
+  const onMimeTypeChange = (value: string) => {
     setMimeType(value);
     const editorLanguage = getLanguageFromMimeType(value);
     if (editorLanguage) {
@@ -80,18 +92,22 @@ const Create = ({ onSuccess }: CreateProps) => {
   ) => {
     const file = event.target.files?.[0];
     if (!file) return;
-
-    const fileContent = await file.text();
-    const mimeType = file?.type ?? defaultMimeType;
-    const parsedMimetype = EditorMimeTypeSchema.safeParse(mimeType);
-
-    setValue("mimeType", mimeType);
-    onMimeTypeChange(mimeType);
-    if (parsedMimetype.success) {
-      setBody(fileContent);
-    } else {
-      setBody(file);
-    }
+    const fileReader = new FileReader();
+    fileReader.onload = function (e) {
+      const fileContent = e.target?.result;
+      if (typeof fileContent === "string") {
+        const parsedDataUrl = parseDataUrl(fileContent);
+        if (parsedDataUrl) {
+          setBody(parsedDataUrl.data);
+          const mimeType = parsedDataUrl.mimeType ?? defaultMimeType;
+          const parsedMimetype = EditorMimeTypeSchema.safeParse(mimeType);
+          setAllowPreview(parsedMimetype.success);
+          setValue("mimeType", mimeType);
+          onMimeTypeChange(mimeType);
+        }
+      }
+    };
+    fileReader.readAsDataURL(file);
   };
 
   return (
@@ -148,7 +164,7 @@ const Create = ({ onSuccess }: CreateProps) => {
           data-testid="variable-create-card"
         >
           <div className="flex h-[400px]">
-            {typeof body === "string" ? (
+            {allowPreview ? (
               <Editor
                 value={body}
                 onChange={(newData) => {
