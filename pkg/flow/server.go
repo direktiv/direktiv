@@ -425,6 +425,24 @@ func (srv *server) start(serverCtx context.Context) error {
 		PubSubBus:         srv.pBus,
 		ConfigureWorkflow: configureWorkflow,
 		InstanceManager:   instanceManager,
+		SyncNamespace: func(namespace any, mirrorConfig any) (any, error) {
+			ns := namespace.(*datastore.Namespace)
+			mConfig := mirrorConfig.(*datastore.MirrorConfig)
+			proc, err := srv.mirrorManager.NewProcess(context.Background(), ns, datastore.ProcessTypeSync)
+			if err != nil {
+				return nil, err
+			}
+
+			go func() {
+				srv.mirrorManager.Execute(context.Background(), proc, mConfig, &mirror.DirektivApplyer{NamespaceID: ns.ID})
+				err := srv.pBus.Publish(pubsub2.MirrorSync, ns.Name)
+				if err != nil {
+					slog.Error("pubsub publish", "error", err)
+				}
+			}()
+
+			return proc, nil
+		},
 	})
 
 	slog.Info("Flow server started.")
