@@ -28,6 +28,17 @@ export const WorkflowStatusData = z.object({
  * example
  * 
 {
+  "path": "/mypath" 
+}
+ */
+export const RouteData = z.object({
+  path: z.string().nonempty(),
+});
+
+/**
+ * example
+ * 
+{
   "id": 1731,
   "time": "2024-03-11T13:39:13.214148Z",
   "msg": "Running state logic",
@@ -49,6 +60,7 @@ export const LogEntrySchema = z.object({
   span: z.string().nonempty().nullable(),
   error: z.string().nullable(),
   workflow: WorkflowStatusData.optional(),
+  route: RouteData.optional(),
 });
 
 /**

@@ -1,21 +1,29 @@
 import { RouteSchemaType } from "~/api/gateway/schema";
 import { getRoutes } from "~/api/gateway/query/getRoutes";
 
-type CreateRedisRouteFileParams = {
+type CreateRouteFileParams = {
   path?: string;
   targetType?: string;
   targetConfigurationStatus?: string;
 };
 
-export const createRedisRouteFile = ({
+export const createRouteFile = ({
   path = "defaultPath",
   targetType = "instant-response",
   targetConfigurationStatus = "200",
-}: CreateRedisRouteFileParams = {}) =>
+}: CreateRouteFileParams = {}) =>
   `direktiv_api: "endpoint/v1"
 path: ${path}
 methods:
   - "GET"
+  - "DELETE"
+  - "OPTIONS"
+  - "PUT"
+  - "POST"
+  - "HEAD"
+  - "CONNECT"
+  - "PATCH"
+  - "TRACE"
 allow_anonymous: true
 plugins:
   inbound: []
@@ -41,9 +49,7 @@ export const routeWithAnError = `direktiv_api: "endpoint/v1"
 allow_anonymous: true
 path: "test"
 timeout: 10000
-methods:
-  - "CONNECT"
-  - "DELETE"
+methods: []
 plugins:
   target:
     type: "this-plugin-does-not-exist"

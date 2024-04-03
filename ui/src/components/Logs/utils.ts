@@ -48,5 +48,14 @@ export const getMonitoringLogEntryForClipboardNew = (
   ]);
 };
 
+export const getRouteLogEntryForClipboard = (logEntry: LogEntryType) =>
+  createLogEntryForClipboard([
+    logEntry.id,
+    formatLogTime(logEntry.time),
+    logEntry?.level,
+    logEntry?.route?.path,
+    logEntry.msg,
+  ]);
+
 const createLogEntryForClipboard = (parts: (string | number | undefined)[]) =>
   parts.filter((entry) => entry !== undefined).join(" - ");

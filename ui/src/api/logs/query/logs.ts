@@ -174,12 +174,15 @@ export const useLogsStream = ({ enabled, ...params }: UseLogsStreamParams) => {
   });
 };
 
+export type UseLogsParams = LogsQueryParams & { enabled?: boolean };
+
 export const useLogs = ({
   instance,
   route,
   activity,
   trace,
-}: LogsQueryParams = {}) => {
+  enabled = true,
+}: UseLogsParams = {}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
 
@@ -207,7 +210,7 @@ export const useLogs = ({
     queryFn: fetchLogs,
     getPreviousPageParam: (firstPage) =>
       firstPage.meta?.previousPage ?? undefined,
-    enabled: !!namespace,
+    enabled: !!namespace && enabled,
     refetchOnWindowFocus: false,
   });
 
