@@ -1,12 +1,10 @@
-import {
-  createInstance,
-  simpleWorkflow as simpleWorkflowContent,
-} from "./utils";
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
 import { expect, test } from "@playwright/test";
 
 import { createFile } from "e2e/utils/files";
+import { createInstance } from "../utils/index";
 import { faker } from "@faker-js/faker";
+import { simpleWorkflow as simpleWorkflowContent } from "../utils/workflows";
 
 let namespace = "";
 const simpleWorkflowName = faker.system.commonFileName("yaml");
