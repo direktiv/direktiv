@@ -32,6 +32,7 @@ type NewMainArgs struct {
 	PubSubBus         *pubsub.Bus
 	ConfigureWorkflow func(data string) error
 	InstanceManager   *instancestore.InstanceManager
+	SyncNamespace     core.SyncNamespace
 }
 
 func NewMain(serverCtx context.Context, args *NewMainArgs) *sync.WaitGroup {
@@ -89,6 +90,7 @@ func NewMain(serverCtx context.Context, args *NewMainArgs) *sync.WaitGroup {
 		ServiceManager:  serviceManager,
 		RegistryManager: registryManager,
 		GatewayManager:  gatewayManager,
+		SyncNamespace:   args.SyncNamespace,
 	}
 	slog.Debug("Setting up pub/sub subscription for service manager events.")
 	args.PubSubBus.Subscribe(func(_ string) {

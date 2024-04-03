@@ -4,8 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 var ErrNotFound = errors.New("ErrNotFound")
@@ -109,7 +107,7 @@ type Version struct {
 
 // TODO: Fix this temp type.
 // SyncNamespace is a temporary type until we fix mirroring logic.
-type SyncNamespace func(namespaceID uuid.UUID, namespaceName string, typ string, mirrorConfig any) (any, error)
+type SyncNamespace func(namespace any, mirrorConfig any) (any, error)
 
 type App struct {
 	Version *Version

@@ -6,7 +6,6 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
-	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"github.com/go-chi/chi/v5"
 )
@@ -38,7 +37,7 @@ func (e *mirrorsController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	proc, err := e.SyncNamespace(ns.ID, ns.Name, datastore.ProcessTypeInit, mirConfig)
+	proc, err := e.SyncNamespace(ns, mirConfig)
 	if err != nil {
 		writeDataStoreError(w, err)
 		return
