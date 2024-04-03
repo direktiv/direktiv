@@ -116,7 +116,7 @@ test("Route details page shows all important information about the route", async
 
   await expect(
     page.getByText("received 1 log entry"),
-    "It does have any 1 log entry, after the request to the gateway was made"
+    "It does have 1 log entry, after the request to the gateway was made"
   ).toBeVisible();
 
   page
@@ -170,6 +170,6 @@ test("Route details page shows warning if the route was not configured correctly
 
   await expect(
     page.getByTestId("route-details-header").getByText("no methods set"),
-    "it renders the a note that no methods are set"
+    "it renders the note that no methods are set"
   ).toBeVisible();
 });
