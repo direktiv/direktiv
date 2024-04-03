@@ -6,6 +6,7 @@ import {
   DialogTitle,
 } from "~/design/Dialog";
 import Editor, { EditorLanguagesType } from "~/design/Editor";
+import { Loader2, PlusCircle } from "lucide-react";
 import MimeTypeSelect, {
   EditorMimeTypeSchema,
   getLanguageFromMimeType,
@@ -18,7 +19,8 @@ import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
-import { PlusCircle } from "lucide-react";
+import { InputWithButton } from "~/design/InputWithButton";
+import { encode } from "js-base64";
 import { useCreateVar } from "~/api/variables/mutate/createVariable";
 import { useState } from "react";
 import { useTheme } from "~/util/store/theme";
@@ -48,8 +50,10 @@ const Create = ({ onSuccess }: CreateProps) => {
   const theme = useTheme();
 
   const [name, setName] = useState("");
-  const [body, setBody] = useState("");
-  const [allowPreview, setAllowPreview] = useState(true);
+  const [editorText, setEditorText] = useState("");
+  const [base64String, setBase64String] = useState("");
+  const [isEditable, setIsEditable] = useState(true);
+  const [isUploading, setIsUploading] = useState(false);
   const [mimeType, setMimeType] = useState(defaultMimeType);
   const [editorLanguage, setEditorLanguage] = useState<EditorLanguagesType>(
     mimeTypeToLanguageDict[defaultMimeType]
@@ -66,7 +70,7 @@ const Create = ({ onSuccess }: CreateProps) => {
     // MimeTypeSelect
     values: {
       name,
-      data: body,
+      data: base64String,
       mimeType,
     },
   });
@@ -98,15 +102,22 @@ const Create = ({ onSuccess }: CreateProps) => {
       if (typeof fileContent === "string") {
         const parsedDataUrl = parseDataUrl(fileContent);
         if (parsedDataUrl) {
-          setBody(parsedDataUrl.data);
+          setBase64String(parsedDataUrl.data);
           const mimeType = parsedDataUrl.mimeType ?? defaultMimeType;
           const parsedMimetype = EditorMimeTypeSchema.safeParse(mimeType);
-          setAllowPreview(parsedMimetype.success);
+          setIsEditable(parsedMimetype.success);
           setValue("mimeType", mimeType);
           onMimeTypeChange(mimeType);
         }
       }
+      setIsUploading(false);
     };
+
+    fileReader.onerror = function () {
+      setIsUploading(false);
+    };
+
+    setIsUploading(true);
     fileReader.readAsDataURL(file);
   };
 
@@ -125,9 +136,7 @@ const Create = ({ onSuccess }: CreateProps) => {
             </DialogTitle>
           </DialogHeader>
         </DialogHeader>
-
         <FormErrors errors={errors} className="mb-5" />
-
         <fieldset className="flex items-center gap-5">
           <label className="w-[150px] text-right" htmlFor="name">
             {t("pages.settings.variables.create.name.label")}
@@ -139,7 +148,6 @@ const Create = ({ onSuccess }: CreateProps) => {
             onChange={(event) => setName(event.target.value)}
           />
         </fieldset>
-
         <fieldset className="flex items-center gap-5">
           <label className="w-[150px] text-right" htmlFor="mimetype">
             {t("pages.settings.variables.edit.mimeType.label")}
@@ -150,26 +158,29 @@ const Create = ({ onSuccess }: CreateProps) => {
             onChange={onMimeTypeChange}
           />
         </fieldset>
-
         <fieldset className="flex items-center gap-5">
           <label className="w-[150px] text-right" htmlFor="file-upload">
             {t("pages.settings.variables.create.file.label")}
           </label>
-          <Input id="file-upload" type="file" onChange={onFilepickerChange} />
-        </fieldset>
 
+          <InputWithButton>
+            <Input id="file-upload" type="file" onChange={onFilepickerChange} />
+            {isUploading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          </InputWithButton>
+        </fieldset>
         <Card
           className="grow p-4 pl-0"
           background="weight-1"
           data-testid="variable-create-card"
         >
           <div className="flex h-[400px]">
-            {allowPreview ? (
+            {isEditable ? (
               <Editor
-                value={body}
+                value={editorText}
                 onChange={(newData) => {
                   if (newData) {
-                    setBody(newData);
+                    setEditorText(newData);
+                    setBase64String(encode(newData));
                   }
                 }}
                 theme={theme ?? undefined}
