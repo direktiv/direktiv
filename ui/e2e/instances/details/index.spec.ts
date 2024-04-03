@@ -32,20 +32,20 @@ test("the header of the instance page shows the relevant data for the workflow",
 
   await expect(newInstance, "wait until process was completed").toBeDefined();
 
-  const instanceID = (await newInstance).instance;
+  const instanceId = (await newInstance).instance;
 
-  await page.goto(`/${namespace}/instances/${instanceID}`);
+  await page.goto(`/${namespace}/instances/${instanceId}`);
 
   const header = page.getByTestId("instance-header-container");
   await expect(header, "the header is visible").toBeVisible();
 
-  const instanceID_Header = header.locator("h3");
-  await expect(instanceID_Header, "the instance ID is visible").toBeVisible();
+  const instanceIdHeader = header.locator("h3");
+  await expect(instanceIdHeader, "the instance ID is visible").toBeVisible();
 
-  const instanceID_navLink = page.locator("ul").locator("a").nth(2);
+  const instanceIdNavLink = page.locator("ul").locator("a").nth(2);
 
-  expect(instanceID_Header.innerText, "the instance IDs are the same").toEqual(
-    instanceID_navLink.innerText
+  expect(instanceIdHeader.innerText, "the instance IDs are the same").toEqual(
+    instanceIdNavLink.innerText
   );
 
   await expect(
