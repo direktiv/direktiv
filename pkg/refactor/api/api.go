@@ -47,8 +47,9 @@ func Start(ctx context.Context, app core.App, db *database.DB, bus *pubsub2.Bus,
 		bus: bus,
 	}
 	mirrorsCtr := &mirrorsController{
-		db:  db,
-		bus: bus,
+		db:            db,
+		bus:           bus,
+		syncNamespace: app.SyncNamespace,
 	}
 	instCtr := &instController{
 		db:      db,
