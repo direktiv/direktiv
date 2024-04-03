@@ -6,7 +6,6 @@ import {
   DialogTitle,
 } from "~/design/Dialog";
 import Editor, { EditorLanguagesType } from "~/design/Editor";
-import { Loader2, PlusCircle } from "lucide-react";
 import MimeTypeSelect, {
   EditorMimeTypeSchema,
   getLanguageFromMimeType,
@@ -14,13 +13,14 @@ import MimeTypeSelect, {
 } from "./MimeTypeSelect";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { VarFormSchema, VarFormSchemaType } from "~/api/variables/schema";
+import { decode, encode } from "js-base64";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
+import FileUpload from "../components/FileUpload";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
-import { InputWithButton } from "~/design/InputWithButton";
-import { encode } from "js-base64";
+import { PlusCircle } from "lucide-react";
 import { useCreateVar } from "~/api/variables/mutate/createVariable";
 import { useState } from "react";
 import { useTheme } from "~/util/store/theme";
@@ -31,20 +31,6 @@ type CreateProps = { onSuccess: () => void };
 
 const defaultMimeType = "application/json";
 
-const parseDataUrl = (dataUrl: string) => {
-  const splitUrl = dataUrl.split(";");
-  if (!splitUrl || !splitUrl[0] || !splitUrl[1]) return null;
-
-  const mimeType = splitUrl[0].split(":")[1];
-  const data = splitUrl[1].split(",")[1];
-
-  if (!mimeType || !data) return null;
-  return {
-    mimeType,
-    data,
-  };
-};
-
 const Create = ({ onSuccess }: CreateProps) => {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -53,7 +39,6 @@ const Create = ({ onSuccess }: CreateProps) => {
   const [editorText, setEditorText] = useState("");
   const [base64String, setBase64String] = useState("");
   const [isEditable, setIsEditable] = useState(true);
-  const [isUploading, setIsUploading] = useState(false);
   const [mimeType, setMimeType] = useState(defaultMimeType);
   const [editorLanguage, setEditorLanguage] = useState<EditorLanguagesType>(
     mimeTypeToLanguageDict[defaultMimeType]
@@ -65,9 +50,6 @@ const Create = ({ onSuccess }: CreateProps) => {
     formState: { errors },
   } = useForm<VarFormSchemaType>({
     resolver: zodResolver(VarFormSchema),
-    // mimeType should always be initialized to avoid backend defaulting to
-    // "text/plain, charset=utf-8", which does not fit the options in
-    // MimeTypeSelect
     values: {
       name,
       data: base64String,
@@ -89,36 +71,6 @@ const Create = ({ onSuccess }: CreateProps) => {
 
   const onSubmit: SubmitHandler<VarFormSchemaType> = (data) => {
     createVar(data);
-  };
-
-  const onFilepickerChange = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    const fileReader = new FileReader();
-    fileReader.onload = function (e) {
-      const fileContent = e.target?.result;
-      if (typeof fileContent === "string") {
-        const parsedDataUrl = parseDataUrl(fileContent);
-        if (parsedDataUrl) {
-          setBase64String(parsedDataUrl.data);
-          const mimeType = parsedDataUrl.mimeType ?? defaultMimeType;
-          const parsedMimetype = EditorMimeTypeSchema.safeParse(mimeType);
-          setIsEditable(parsedMimetype.success);
-          setValue("mimeType", mimeType);
-          onMimeTypeChange(mimeType);
-        }
-      }
-      setIsUploading(false);
-    };
-
-    fileReader.onerror = function () {
-      setIsUploading(false);
-    };
-
-    setIsUploading(true);
-    fileReader.readAsDataURL(file);
   };
 
   return (
@@ -158,16 +110,21 @@ const Create = ({ onSuccess }: CreateProps) => {
             onChange={onMimeTypeChange}
           />
         </fieldset>
-        <fieldset className="flex items-center gap-5">
-          <label className="w-[150px] text-right" htmlFor="file-upload">
-            {t("pages.settings.variables.create.file.label")}
-          </label>
+        <FileUpload
+          onChange={({ base64String, mimeType }) => {
+            const parsedMimetype = EditorMimeTypeSchema.safeParse(mimeType);
+            const isEditable = parsedMimetype.success;
+            setIsEditable(isEditable);
+            if (isEditable) {
+              setEditorText(decode(base64String));
+            }
+            // TODO: can setValue be moved to onMimeTypeChange?
+            setValue("mimeType", mimeType);
+            onMimeTypeChange(mimeType);
+            setBase64String(base64String);
+          }}
+        />
 
-          <InputWithButton>
-            <Input id="file-upload" type="file" onChange={onFilepickerChange} />
-            {isUploading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          </InputWithButton>
-        </fieldset>
         <Card
           className="grow p-4 pl-0"
           background="weight-1"
