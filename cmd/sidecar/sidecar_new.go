@@ -58,7 +58,7 @@ func main() {
 	slog.Debug("Initializing external routes")
 	externalRouter := setupExternalRouter(config, &dataMap)
 
-	// Internal router, accessable only to the user service.
+	// Internal router, accessible only to the user service.
 	slog.Debug("Initializing external routes")
 	internalRouter := setupInternalRouter(&dataMap)
 
@@ -87,21 +87,25 @@ func setupExternalRouter(config Config, dataMap *sync.Map) *chi.Mux {
 		actionID := r.URL.Query().Get("action_id")
 		value, loaded := dataMap.Load(actionID)
 		if !loaded {
-			http.Error(w, "Error action with this is is not known", http.StatusInternalServerError)
+			http.Error(w, "Error action with this ID is not known", http.StatusInternalServerError)
+
 			return
 		}
 		action, ok := value.(Action)
 		if !ok {
 			http.Error(w, "Error Sidecar in invalid state", http.StatusInternalServerError)
+
 			return
 		}
 		defer action.cancel()
-		resp, err := cancelRequest(config.UserServiceURL, actionID)
+		resp, err := cancelRequest(r.Context(), config.UserServiceURL, actionID)
 		if err != nil {
 			http.Error(w, "Error Sidecar in invalid state", http.StatusInternalServerError)
+
 			return
 		}
-		if resp.StatusCode != 200 {
+		defer resp.Body.Close()
+		if resp.StatusCode != http.StatusOK {
 			http.Error(w, "Error forwarding request or non-200 status received", http.StatusInternalServerError)
 		}
 	})
@@ -109,11 +113,12 @@ func setupExternalRouter(config Config, dataMap *sync.Map) *chi.Mux {
 	return router
 }
 
-func cancelRequest(userServiceURL string, actionID string) (*http.Response, error) {
-	req, err := http.NewRequest("DELETE", userServiceURL, nil)
+func cancelRequest(ctx context.Context, userServiceURL string, actionID string) (*http.Response, error) {
+	req, err := http.NewRequest(http.MethodDelete, userServiceURL, nil)
 	if err != nil {
 		return nil, err
 	}
+	req = req.WithContext(ctx)
 	req.Header.Add(ActionIDHeader, actionID)
 	client := &http.Client{}
 	return client.Do(req)
@@ -124,24 +129,27 @@ func setupInternalRouter(dataMap *sync.Map) *chi.Mux {
 	router.Use(middleware.Logger)
 
 	router.Get("/var", func(w http.ResponseWriter, r *http.Request) {
-		//TODO:
+		// TODO: .
 	})
 	router.Get("/log", func(w http.ResponseWriter, r *http.Request) {
 		actionID := r.URL.Query().Get(actionIDHeader)
 		if actionID == "" {
 			http.Error(w, "Missing actionID header", http.StatusBadRequest)
+
 			return
 		}
 		logLevel := r.URL.Query().Get(LogLevelHeader) // this header is optional
 		value, loaded := dataMap.Load(actionID)
 
 		if !loaded {
-			http.Error(w, "Error action with this is is not known", http.StatusInternalServerError)
+			http.Error(w, "Error action with this ID is not known", http.StatusInternalServerError)
+
 			return
 		}
 		action, ok := value.(Action)
 		if !ok {
 			http.Error(w, "Error Sidecar in invalid state", http.StatusInternalServerError)
+
 			return
 		}
 		actionLog := slog.Debug
@@ -159,6 +167,7 @@ func setupInternalRouter(dataMap *sync.Map) *chi.Mux {
 		_, err := r.Body.Read(req)
 		if err != nil {
 			http.Error(w, "Failed to read the body", http.StatusInternalServerError)
+
 			return
 		}
 		defer r.Body.Close()
@@ -168,18 +177,21 @@ func setupInternalRouter(dataMap *sync.Map) *chi.Mux {
 		actionID := r.URL.Query().Get(actionIDHeader)
 		if actionID == "" {
 			http.Error(w, "Missing actionID header", http.StatusBadRequest)
+
 			return
 		}
 		logLevel := r.URL.Query().Get(LogLevelHeader) // this header is optional
 		value, loaded := dataMap.Load(actionID)
 
 		if !loaded {
-			http.Error(w, "Error action with this is is not known", http.StatusInternalServerError)
+			http.Error(w, "Error action with this ID is not known", http.StatusInternalServerError)
+
 			return
 		}
 		action, ok := value.(Action)
 		if !ok {
 			http.Error(w, "Error Sidecar in invalid state", http.StatusInternalServerError)
+
 			return
 		}
 		actionLog := slog.Debug
@@ -197,11 +209,13 @@ func setupInternalRouter(dataMap *sync.Map) *chi.Mux {
 		_, err := r.Body.Read(req)
 		if err != nil {
 			http.Error(w, "Failed to read the body", http.StatusInternalServerError)
+
 			return
 		}
 		defer r.Body.Close()
 		actionLog(string(req), "trace", action.Trace, "span", action.Span, "branch", action.Branch, "instance", action.Instance, "namespace", action.Namespace, "state", action.State, "track", "instance."+action.Callpath)
 	})
+
 	return router
 }
 
@@ -249,7 +263,6 @@ type ResponseCarrier struct {
 }
 
 func prepare(config Config, dataMap *sync.Map, r *http.Request) http.HandlerFunc {
-
 	actionID := r.URL.Query().Get("action_id")
 	dec := json.NewDecoder(r.Body)
 	var c RequestCarrier
@@ -257,7 +270,6 @@ func prepare(config Config, dataMap *sync.Map, r *http.Request) http.HandlerFunc
 	if err != nil {
 		return func(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Error reading request body", http.StatusInternalServerError)
-			return
 		}
 	}
 	ctx, cancel := context.WithCancel(r.Context())
@@ -277,12 +289,14 @@ func prepare(config Config, dataMap *sync.Map, r *http.Request) http.HandlerFunc
 		_, err := buffer.Write(c.UserInput)
 		if err != nil {
 			http.Error(w, "Error preparing request body", http.StatusInternalServerError)
+
 			return
 		}
 
-		req, err := http.NewRequest("POST", config.UserServiceURL+"?action_id="+actionID, buffer)
+		req, err := http.NewRequest(http.MethodPost, config.UserServiceURL+"?action_id="+actionID, buffer)
 		if err != nil {
 			http.Error(w, "Error creating new request", http.StatusInternalServerError)
+
 			return
 		}
 
@@ -306,6 +320,7 @@ func prepare(config Config, dataMap *sync.Map, r *http.Request) http.HandlerFunc
 					Err:     err,
 				}
 				writeJSON(w, rC)
+
 				return
 			}
 
@@ -318,6 +333,7 @@ func prepare(config Config, dataMap *sync.Map, r *http.Request) http.HandlerFunc
 					Err:     fmt.Errorf(errMsg),
 				}
 				writeJSON(w, rC)
+
 				return
 			}
 			capValue := config.MaxResponseSize
@@ -328,8 +344,8 @@ func prepare(config Config, dataMap *sync.Map, r *http.Request) http.HandlerFunc
 					Err:     err,
 				}
 				writeJSON(w, rC)
-				return
 
+				return
 			}
 			if resp.ContentLength > int64(cap) {
 				rC := ResponseCarrier{
@@ -337,6 +353,7 @@ func prepare(config Config, dataMap *sync.Map, r *http.Request) http.HandlerFunc
 					Err:     fmt.Errorf("response content is too large"),
 				}
 				writeJSON(w, rC)
+
 				return
 			}
 
@@ -346,6 +363,7 @@ func prepare(config Config, dataMap *sync.Map, r *http.Request) http.HandlerFunc
 					Err:     fmt.Errorf("container failed with status %v", resp.StatusCode),
 				}
 				writeJSON(w, rC)
+
 				return
 			}
 
@@ -358,6 +376,7 @@ func prepare(config Config, dataMap *sync.Map, r *http.Request) http.HandlerFunc
 					Err:     fmt.Errorf("Error reading response body"),
 				}
 				writeJSON(w, rC)
+
 				return
 			}
 
@@ -366,45 +385,44 @@ func prepare(config Config, dataMap *sync.Map, r *http.Request) http.HandlerFunc
 			}
 			writeJSON(w, rC)
 		}
-
 	}
 }
 
 func writeFiles(location string, files []FunctionFileDefinition) error {
-	// Create the target directory with appropriate permissions
+	// Create the target directory with appropriate permissions.
 	if err := os.MkdirAll(location, 0o750); err != nil {
 		return err
 	}
 
-	// Process each file definition
+	// Process each file definition.
 	for _, f := range files {
 		path := filepath.Join(location, f.Key)
 		data, err := base64.StdEncoding.DecodeString(f.Content)
 		if err != nil {
 			return err
 		}
-		// Handle different file types
+		// Handle different file types.
 		switch f.Type {
 		case "plain":
-			// Write plain text content
-			err := os.WriteFile(path, data, 0640)
-			if err != nil {
+			// Write plain text content.
+			if err := os.WriteFile(path, data, 0o640); err != nil {
 				return err
 			}
+
 		case "base64":
-			err := os.WriteFile(path, data, 0640)
-			if err != nil {
+			if err := os.WriteFile(path, data, 0o640); err != nil {
 				return err
 			}
+
 		case "tar":
-			// Extract the contents of a TAR archive
+			// Extract the contents of a TAR archive.
 			buf := bytes.NewBuffer(data)
 			err := untar(location, f.Permissions, buf)
 			if err != nil {
 				return err
 			}
 		case "tar.gz":
-			// Call wrapper function for gzip decompression and untar
+			// Call wrapper function for gzip decompression and untar.
 			err := decompressAndUntar(location, f.Permissions, data)
 			if err != nil {
 				return err
@@ -413,6 +431,7 @@ func writeFiles(location string, files []FunctionFileDefinition) error {
 		default:
 			return fmt.Errorf("unsupported file type: %s", f.Type)
 		}
+
 		if f.Permissions != "" {
 			p, err := strconv.ParseUint(f.Permissions, 8, 32)
 			if err != nil {
