@@ -21,7 +21,7 @@ import FileUpload from "../components/FileUpload";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { PlusCircle } from "lucide-react";
-import { useCreateVar } from "~/api/variables/mutate/createVariable";
+import { useCreateVar } from "~/api/variables/mutate/create";
 import { useState } from "react";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
