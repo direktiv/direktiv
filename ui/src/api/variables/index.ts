@@ -11,22 +11,22 @@ export const varKeys = {
         namespace,
       },
     ] as const,
-  varContent: (
+  varDetails: (
     namespace: string,
     {
       apiKey,
-      name,
+      id,
     }: {
       apiKey?: string;
-      name: string;
+      id: string;
     }
   ) =>
     [
       {
-        scope: "variables-content",
+        scope: "variables-details",
         apiKey,
         namespace,
-        name,
+        id,
       },
     ] as const,
 };

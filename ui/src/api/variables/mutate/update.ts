@@ -59,7 +59,7 @@ export const useUpdateVar = ({
     mutationFn,
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries(
-        varKeys.varContent(namespace, {
+        varKeys.varDetails(namespace, {
           apiKey: apiKey ?? undefined,
           name: variables.name,
         })

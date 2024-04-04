@@ -1,4 +1,4 @@
-import { VarContentType, getVariableContent } from "../query/details";
+import { VarDetailsType, getVariableDetails } from "../query/details";
 
 import { useApiKey } from "~/util/store/apiKey";
 import useMutationWithPermissions from "~/api/useMutationWithPermissions";
@@ -9,7 +9,7 @@ import { useTranslation } from "react-i18next";
 export const useDownloadVar = ({
   onSuccess,
 }: {
-  onSuccess?: (varContent: VarContentType, name: string) => void;
+  onSuccess?: (variable: VarDetailsType) => void;
 } = {}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
@@ -20,19 +20,19 @@ export const useDownloadVar = ({
     throw new Error("namespace is undefined");
   }
 
-  const mutationFn = (variableID: string) =>
-    getVariableContent({
+  const mutationFn = (id: string) =>
+    getVariableDetails({
       apiKey: apiKey ?? undefined,
       urlParams: {
         namespace,
-        variableID,
+        id,
       },
     });
 
   return useMutationWithPermissions({
     mutationFn,
-    onSuccess: (data, name) => {
-      onSuccess?.(data, name);
+    onSuccess: (data) => {
+      onSuccess?.(data);
     },
     onError: () => {
       toast({
