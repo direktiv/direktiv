@@ -1,3 +1,4 @@
+import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import {
   DialogClose,
   DialogContent,
@@ -11,7 +12,6 @@ import MimeTypeSelect, {
   getLanguageFromMimeType,
   mimeTypeToLanguageDict,
 } from "./MimeTypeSelect";
-import { SubmitHandler, useForm } from "react-hook-form";
 import { VarFormSchema, VarFormSchemaType } from "~/api/variables/schema";
 import { decode, encode } from "js-base64";
 
@@ -35,10 +35,8 @@ const Create = ({ onSuccess }: CreateProps) => {
   const { t } = useTranslation();
   const theme = useTheme();
 
-  const [editorText, setEditorText] = useState("");
-  const [base64String, setBase64String] = useState("");
   const [isEditable, setIsEditable] = useState(true);
-  const [mimeType, setMimeType] = useState(defaultMimeType);
+  const [mimeType] = useState(defaultMimeType);
   const [editorLanguage, setEditorLanguage] = useState<EditorLanguagesType>(
     mimeTypeToLanguageDict[defaultMimeType]
   );
@@ -46,18 +44,20 @@ const Create = ({ onSuccess }: CreateProps) => {
   const {
     register,
     handleSubmit,
+    control,
+    setValue,
     formState: { errors },
   } = useForm<VarFormSchemaType>({
     resolver: zodResolver(VarFormSchema),
-    values: {
+    defaultValues: {
       name: "",
-      data: base64String,
+      data: "",
       mimeType,
     },
   });
 
   const onMimeTypeChange = (value: string) => {
-    setMimeType(value);
+    setValue("mimeType", value);
     const editorLanguage = getLanguageFromMimeType(value);
     if (editorLanguage) {
       setEditorLanguage(editorLanguage);
@@ -103,10 +103,16 @@ const Create = ({ onSuccess }: CreateProps) => {
           <label className="w-[150px] text-right" htmlFor="mimetype">
             {t("pages.settings.variables.edit.mimeType.label")}
           </label>
-          <MimeTypeSelect
-            id="mimetype"
-            mimeType={mimeType}
-            onChange={onMimeTypeChange}
+          <Controller
+            control={control}
+            name="mimeType"
+            render={({ field }) => (
+              <MimeTypeSelect
+                id="mimetype"
+                mimeType={field.value}
+                onChange={onMimeTypeChange}
+              />
+            )}
           />
         </fieldset>
         <FileUpload
@@ -114,14 +120,10 @@ const Create = ({ onSuccess }: CreateProps) => {
             const parsedMimetype = EditorMimeTypeSchema.safeParse(mimeType);
             const isEditable = parsedMimetype.success;
             setIsEditable(isEditable);
-            if (isEditable) {
-              setEditorText(decode(base64String));
-            }
+            setValue("data", base64String);
             onMimeTypeChange(mimeType);
-            setBase64String(base64String);
           }}
         />
-
         <Card
           className="grow p-4 pl-0"
           background="weight-1"
@@ -129,17 +131,22 @@ const Create = ({ onSuccess }: CreateProps) => {
         >
           <div className="flex h-[400px]">
             {isEditable ? (
-              <Editor
-                value={editorText}
-                onChange={(newData) => {
-                  if (newData) {
-                    setEditorText(newData);
-                    setBase64String(encode(newData));
-                  }
-                }}
-                theme={theme ?? undefined}
-                data-testid="variable-editor"
-                language={editorLanguage}
+              <Controller
+                control={control}
+                name="data"
+                render={({ field }) => (
+                  <Editor
+                    data-testid="variable-editor"
+                    theme={theme ?? undefined}
+                    language={editorLanguage}
+                    value={decode(field.value)}
+                    onChange={(newData) => {
+                      if (newData) {
+                        field.onChange(encode(newData));
+                      }
+                    }}
+                  />
+                )}
               />
             ) : (
               <div className="flex grow p-10 text-center">
