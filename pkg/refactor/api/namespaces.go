@@ -6,6 +6,8 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/google/uuid"
+
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 
 	"github.com/direktiv/direktiv/pkg/refactor/database"
@@ -159,9 +161,8 @@ func (e *nsController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer db.Rollback()
-	dStore := db.DataStore()
 
-	ns, err := dStore.Namespaces().Create(r.Context(), &datastore.Namespace{
+	ns, err := db.DataStore().Namespaces().Create(r.Context(), &datastore.Namespace{
 		Name: req.Name,
 	})
 	if err != nil {
@@ -172,11 +173,17 @@ func (e *nsController) create(w http.ResponseWriter, r *http.Request) {
 	var mConfig *datastore.MirrorConfig
 	if req.MirrorSettings != nil {
 		req.MirrorSettings.Namespace = req.Name
-		mConfig, err = dStore.Mirror().CreateConfig(r.Context(), req.MirrorSettings)
+		mConfig, err = db.DataStore().Mirror().CreateConfig(r.Context(), req.MirrorSettings)
 		if err != nil {
 			writeDataStoreError(w, err)
 			return
 		}
+	}
+
+	_, err = db.FileStore().CreateRoot(r.Context(), uuid.New(), ns.Name)
+	if err != nil {
+		writeFileStoreError(w, err)
+		return
 	}
 
 	err = db.Commit(r.Context())

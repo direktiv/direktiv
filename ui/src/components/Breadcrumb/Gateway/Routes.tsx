@@ -1,18 +1,20 @@
+import { SquareGanttIcon, Workflow } from "lucide-react";
+
 import { Breadcrumb as BreadcrumbLink } from "~/design/Breadcrumbs";
 import { Link } from "react-router-dom";
-import { Workflow } from "lucide-react";
 import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
 import { useTranslation } from "react-i18next";
 
 const RoutesBreadcrumb = () => {
   const namespace = useNamespace();
-  const { isGatewayRoutesPage } = pages.gateway.useParams();
+  const { isGatewayRoutesPage, isGatewayRoutesDetailPage, routePath } =
+    pages.gateway.useParams();
 
   const { t } = useTranslation();
 
   if (!namespace) return null;
-  if (!isGatewayRoutesPage) return null;
+  if (!isGatewayRoutesPage && !isGatewayRoutesDetailPage) return null;
 
   return (
     <>
@@ -26,6 +28,20 @@ const RoutesBreadcrumb = () => {
           {t("components.breadcrumb.gatewayRoutes")}
         </Link>
       </BreadcrumbLink>
+      {routePath && (
+        <BreadcrumbLink data-testid="breadcrumb-routes">
+          <Link
+            to={pages.gateway.createHref({
+              namespace,
+              subpage: "routeDetail",
+              routePath,
+            })}
+          >
+            <SquareGanttIcon aria-hidden="true" />
+            {routePath}
+          </Link>
+        </BreadcrumbLink>
+      )}
     </>
   );
 };
