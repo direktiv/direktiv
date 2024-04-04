@@ -61,7 +61,7 @@ export const useUpdateVar = ({
       queryClient.invalidateQueries(
         varKeys.varDetails(namespace, {
           apiKey: apiKey ?? undefined,
-          name: variables.name,
+          id: variables.id,
         })
       );
       // the list also needs to be invalidated because the variable's name could have changed
