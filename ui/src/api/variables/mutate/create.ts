@@ -46,18 +46,7 @@ export const useCreateVar = ({
 
   return useMutationWithPermissions({
     mutationFn,
-    onSuccess: (data, variables) => {
-      // Two cache invalidations are needed due to the current API,
-      // which uses the same endpoint for creating and editing.
-      // varContent needs a refresh after editing, varList needs a
-      // refresh after creating (the variable's content is not
-      // included in the list)
-      queryClient.invalidateQueries(
-        varKeys.varContent(namespace, {
-          apiKey: apiKey ?? undefined,
-          name: variables.name,
-        })
-      );
+    onSuccess: (data) => {
       queryClient.invalidateQueries(
         varKeys.varList(namespace, {
           apiKey: apiKey ?? undefined,
