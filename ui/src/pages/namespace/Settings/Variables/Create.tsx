@@ -63,6 +63,7 @@ export const Generic = ({ onMutate, defaultValues }: GenericProps) => {
   const { t } = useTranslation();
   const theme = useTheme();
 
+  // TODO: default isEditable must be set (test with edit an image)
   const [isEditable, setIsEditable] = useState(true);
 
   const [editorLanguage, setEditorLanguage] = useState<EditorLanguagesType>(
