@@ -35,7 +35,6 @@ const Create = ({ onSuccess }: CreateProps) => {
   const { t } = useTranslation();
   const theme = useTheme();
 
-  const [name, setName] = useState("");
   const [editorText, setEditorText] = useState("");
   const [base64String, setBase64String] = useState("");
   const [isEditable, setIsEditable] = useState(true);
@@ -45,12 +44,13 @@ const Create = ({ onSuccess }: CreateProps) => {
   );
 
   const {
+    register,
     handleSubmit,
     formState: { errors },
   } = useForm<VarFormSchemaType>({
     resolver: zodResolver(VarFormSchema),
     values: {
-      name,
+      name: "",
       data: base64String,
       mimeType,
     },
@@ -94,9 +94,9 @@ const Create = ({ onSuccess }: CreateProps) => {
           </label>
           <Input
             id="name"
+            {...register("name")}
             data-testid="new-variable-name"
             placeholder={t("pages.settings.variables.create.name.placeholder")}
-            onChange={(event) => setName(event.target.value)}
           />
         </fieldset>
         <fieldset className="flex items-center gap-5">
