@@ -92,6 +92,11 @@ const ServiceEditor: FC<ServiceEditorProps> = ({ data }) => {
                     options={{
                       readOnly: true,
                     }}
+                    navigationWarning={
+                      isDirty
+                        ? t("components.blocker.unsavedChangesWarning")
+                        : null
+                    }
                   />
                 </Card>
               </div>
