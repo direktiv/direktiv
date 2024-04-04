@@ -5,6 +5,11 @@ import helpers from '../common/helpers'
 import regex from '../common/regex'
 import request from '../common/request'
 
+const timestamps = {
+	createdAt: expect.stringMatching(regex.timestampRegex),
+	updatedAt: expect.stringMatching(regex.timestampRegex),
+}
+
 describe('Test namespaces get delete list calls', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 
@@ -65,14 +70,12 @@ describe('Test namespaces get delete list calls', () => {
 function makeDummyNamespace (name) {
 	return {
 		name,
-		data: btoa('value of' + name),
 	}
 }
 
 function expectDummyNamespace (name) {
 	return {
 		name,
-		createdAt: expect.stringMatching(regex.timestampRegex),
-		updatedAt: expect.stringMatching(regex.timestampRegex),
+		...timestamps,
 	}
 }

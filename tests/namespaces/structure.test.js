@@ -5,6 +5,11 @@ import helpers from '../common/helpers'
 import regex from '../common/regex'
 import request from '../common/request'
 
+const timestamps = {
+	createdAt: expect.stringMatching(regex.timestampRegex),
+	updatedAt: expect.stringMatching(regex.timestampRegex),
+}
+
 describe('Test namespace get delete list calls', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 
@@ -13,8 +18,6 @@ describe('Test namespace get delete list calls', () => {
 			.post(`/api/v2/namespaces`)
 			.send({
 				name: 'foo',
-				data: btoa('foo'),
-				mimeType: 'mime_foo',
 			})
 		expect(res.statusCode).toEqual(200)
 	})
@@ -25,8 +28,7 @@ describe('Test namespace get delete list calls', () => {
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.data).toEqual({
 			name: 'foo',
-			createdAt: expect.stringMatching(regex.timestampRegex),
-			updatedAt: expect.stringMatching(regex.timestampRegex),
+			...timestamps,
 		})
 	})
 
@@ -37,8 +39,7 @@ describe('Test namespace get delete list calls', () => {
 		expect(res.body.data.length).toEqual(1)
 		expect(res.body.data[0]).toEqual({
 			name: 'foo',
-			createdAt: expect.stringMatching(regex.timestampRegex),
-			updatedAt: expect.stringMatching(regex.timestampRegex),
+			...timestamps,
 		})
 	})
 })

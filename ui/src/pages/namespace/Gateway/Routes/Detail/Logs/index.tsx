@@ -7,31 +7,27 @@ import {
 
 import { ButtonBar } from "~/design/ButtonBar";
 import CopyButton from "~/design/CopyButton";
-import { NoPermissions } from "~/design/Table";
-import ScrollContainer from "./Scrollcontainer";
+import ScrollContainer from "./ScrollContainer";
 import { ScrollText } from "lucide-react";
-import { getMonitoringLogEntryForClipboard } from "~/components/Logs/utils";
+import { getRouteLogEntryForClipboard } from "~/components/Logs/utils";
 import { useLogs } from "~/api/logs/query/logs";
 import { useTranslation } from "react-i18next";
 
-const LogsPanel = () => {
+type LogsPanelProps = {
+  path?: string;
+};
+
+const LogsPanel = ({ path }: LogsPanelProps) => {
   const { t } = useTranslation();
 
-  const {
-    data: logLines = [],
-    isFetched,
-    isAllowed,
-    noPermissionMessage,
-  } = useLogs();
+  const { data: logLines = [] } = useLogs({
+    route: path,
+    enabled: !!path,
+  });
 
   const numberOfLogLines = logLines.length;
 
-  const copyValue =
-    logLines.map(getMonitoringLogEntryForClipboard).join("\n") ?? "";
-
-  if (!isFetched) return null;
-
-  if (!isAllowed) return <NoPermissions>{noPermissionMessage}</NoPermissions>;
+  const copyValue = logLines.map(getRouteLogEntryForClipboard).join("\n") ?? "";
 
   return (
     <>
@@ -60,7 +56,7 @@ const LogsPanel = () => {
           </TooltipProvider>
         </ButtonBar>
       </div>
-      <ScrollContainer />
+      <ScrollContainer path={path} />
       <div className="flex items-center justify-center pt-2 text-sm text-gray-11 dark:text-gray-dark-11">
         <span className="relative mr-2 flex h-3 w-3">
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-gray-11 opacity-75 dark:bg-gray-dark-11"></span>
