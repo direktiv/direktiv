@@ -37,7 +37,7 @@ export const OutboundPluginForm: FC<OutboundPluginFormProps> = ({
   onSave,
 }) => {
   const { t } = useTranslation();
-  const { control, handleSubmit } = form;
+  const { control, handleSubmit: parentSubmit } = form;
   const {
     append: addPlugin,
     remove: deletePlugin,
@@ -187,7 +187,7 @@ export const OutboundPluginForm: FC<OutboundPluginFormProps> = ({
               } else {
                 editPlugin(editIndex, configuration);
               }
-              handleSubmit(onSave)();
+              parentSubmit(onSave)();
               setEditIndex(undefined);
             }}
           />
