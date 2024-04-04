@@ -66,3 +66,9 @@ export const VarFormCreateSchema = z.object({
 });
 
 export type VarFormCreateSchemaType = z.infer<typeof VarFormCreateSchema>;
+
+export const VarFormUpdateSchema = VarFormCreateSchema.omit({
+  workflowPath: true,
+});
+
+export type VarFormUpdateSchemaType = z.infer<typeof VarFormUpdateSchema>;
