@@ -218,7 +218,7 @@ func (s sqlMirrorStore) DeleteOldProcesses(ctx context.Context, before time.Time
 
 	res := s.db.WithContext(ctx).Raw(`
 					DELETE FROM mirror_processes
-					WHERE ended_at < ?`, before).
+					WHERE ended_at <> '0001-01-01T00:00:00Z' AND ended_at < ?`, before).
 		Find(&process)
 
 	if res.Error != nil {

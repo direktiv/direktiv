@@ -256,7 +256,7 @@
         }
       },
       "endpoint": {
-        "goToRoutes": "Go to routes",
+        "openRouteLogs": "Open Logs",
         "editor": {
           "form": {
             "serialisationError": "There was an error serializing the form data",
@@ -522,9 +522,6 @@
     },
     "monitoring": {
       "title": "Monitoring",
-      "logs": {
-        "title": "Logs"
-      },
       "instances": {
         "openWorkflowTooltip": "click to open workflow {{name}}",
         "successfulExecutions": {
@@ -984,6 +981,10 @@
           "anonymous": "allow anonymous"
         },
         "row": {
+          "methods": {
+            "none": "no methods set",
+            "tooltipLabel": "+{{count}}"
+          },
           "allowAnonymous": {
             "yes": "yes",
             "no": "no"
@@ -1003,7 +1004,10 @@
             "countType_one": "{{count}} {{type}} plugin"
           }
         },
-        "empty": "No routes exist yet"
+        "empty": "No routes exist yet",
+        "detail": {
+          "editRoute": "Edit Route"
+        }
       },
       "consumer": {
         "refetchLabel": "Refetch consumers",
@@ -1223,15 +1227,20 @@
       "cancelBtn": "Cancel"
     },
     "logs": {
+      "title": "Logs",
       "followLogs": "Follow logs",
       "logsCount": "received {{count}} log entries",
       "logsCount_one": "received {{count}} log entry",
       "copy": "Copy logs",
       "logEntry": {
+        "pathLabel": "path:",
         "messageLabel": "msg:",
         "stateLabel": "state:",
         "instanceLabel": "instance:"
       }
+    },
+    "blocker": {
+      "unsavedChangesWarning": "You have unsaved changes that will be lost when leaving this route. Are you sure you want to leave?"
     }
   },
   "api": {
