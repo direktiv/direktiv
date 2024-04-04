@@ -46,7 +46,6 @@ const Create = ({ onSuccess }: CreateProps) => {
 
   const {
     handleSubmit,
-    setValue,
     formState: { errors },
   } = useForm<VarFormSchemaType>({
     resolver: zodResolver(VarFormSchema),
@@ -118,8 +117,6 @@ const Create = ({ onSuccess }: CreateProps) => {
             if (isEditable) {
               setEditorText(decode(base64String));
             }
-            // TODO: can setValue be moved to onMimeTypeChange?
-            setValue("mimeType", mimeType);
             onMimeTypeChange(mimeType);
             setBase64String(base64String);
           }}
