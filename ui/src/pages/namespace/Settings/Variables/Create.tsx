@@ -39,7 +39,7 @@ const Create = ({ onSuccess }: CreateProps) => {
   const theme = useTheme();
 
   const [isEditable, setIsEditable] = useState(true);
-  const [mimeType] = useState(defaultMimeType);
+
   const [editorLanguage, setEditorLanguage] = useState<EditorLanguagesType>(
     mimeTypeToLanguageDict[defaultMimeType]
   );
@@ -55,7 +55,7 @@ const Create = ({ onSuccess }: CreateProps) => {
     defaultValues: {
       name: "",
       data: "",
-      mimeType,
+      mimeType: defaultMimeType,
     },
   });
 
