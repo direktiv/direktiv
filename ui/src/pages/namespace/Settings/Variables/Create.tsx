@@ -12,7 +12,10 @@ import MimeTypeSelect, {
   getLanguageFromMimeType,
   mimeTypeToLanguageDict,
 } from "./MimeTypeSelect";
-import { VarFormSchema, VarFormSchemaType } from "~/api/variables/schema";
+import {
+  VarFormCreateSchema,
+  VarFormCreateSchemaType,
+} from "~/api/variables/schema";
 import { decode, encode } from "js-base64";
 
 import Button from "~/design/Button";
@@ -47,8 +50,8 @@ const Create = ({ onSuccess }: CreateProps) => {
     control,
     setValue,
     formState: { errors },
-  } = useForm<VarFormSchemaType>({
-    resolver: zodResolver(VarFormSchema),
+  } = useForm<VarFormCreateSchemaType>({
+    resolver: zodResolver(VarFormCreateSchema),
     defaultValues: {
       name: "",
       data: "",
@@ -68,7 +71,7 @@ const Create = ({ onSuccess }: CreateProps) => {
     onSuccess,
   });
 
-  const onSubmit: SubmitHandler<VarFormSchemaType> = (data) => {
+  const onSubmit: SubmitHandler<VarFormCreateSchemaType> = (data) => {
     createVar(data);
   };
 

@@ -1,7 +1,7 @@
 import {
-  VarCreatedSchema,
-  VarCreatedSchemaType,
-  VarFormSchemaType,
+  VarCreatedUpdatedSchema,
+  VarCreatedUpdatedSchemaType,
+  VarFormCreateSchemaType,
 } from "../schema";
 
 import { apiFactory } from "~/api/apiFactory";
@@ -17,13 +17,13 @@ const createVar = apiFactory({
   url: ({ baseUrl, namespace }: { baseUrl?: string; namespace: string }) =>
     `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/variables`,
   method: "POST",
-  schema: VarCreatedSchema,
+  schema: VarCreatedUpdatedSchema,
 });
 
 export const useCreateVar = ({
   onSuccess,
 }: {
-  onSuccess?: (data: VarCreatedSchemaType) => void;
+  onSuccess?: (data: VarCreatedUpdatedSchemaType) => void;
 } = {}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
@@ -35,7 +35,7 @@ export const useCreateVar = ({
     throw new Error("namespace is undefined");
   }
 
-  const mutationFn = (payload: VarFormSchemaType) =>
+  const mutationFn = (payload: VarFormCreateSchemaType) =>
     createVar({
       apiKey: apiKey ?? undefined,
       payload,
