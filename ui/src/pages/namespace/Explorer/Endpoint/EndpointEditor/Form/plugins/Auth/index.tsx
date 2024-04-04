@@ -41,11 +41,15 @@ import { useTranslation } from "react-i18next";
 
 type AuthPluginFormProps = {
   formControls: UseFormReturn<EndpointFormSchemaType>;
+  onSave: (value: EndpointFormSchemaType) => void;
 };
 
-export const AuthPluginForm: FC<AuthPluginFormProps> = ({ formControls }) => {
+export const AuthPluginForm: FC<AuthPluginFormProps> = ({
+  formControls,
+  onSave,
+}) => {
   const { t } = useTranslation();
-  const { control } = formControls;
+  const { control, handleSubmit: parentSubmit } = formControls;
   const {
     append: addPlugin,
     remove: deletePlugin,
@@ -77,6 +81,7 @@ export const AuthPluginForm: FC<AuthPluginFormProps> = ({ formControls }) => {
     } else {
       editPlugin(editIndex, configuration);
     }
+    parentSubmit(onSave)();
     setEditIndex(undefined);
   };
 

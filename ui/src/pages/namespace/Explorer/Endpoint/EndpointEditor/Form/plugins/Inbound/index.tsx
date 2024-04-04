@@ -39,11 +39,15 @@ import { useTranslation } from "react-i18next";
 
 type InboundPluginFormProps = {
   form: UseFormReturn<EndpointFormSchemaType>;
+  onSave: (value: EndpointFormSchemaType) => void;
 };
 
-export const InboundPluginForm: FC<InboundPluginFormProps> = ({ form }) => {
+export const InboundPluginForm: FC<InboundPluginFormProps> = ({
+  form,
+  onSave,
+}) => {
   const { t } = useTranslation();
-  const { control } = form;
+  const { control, handleSubmit: parentSubmit } = form;
   const {
     append: addPlugin,
     remove: deletePlugin,
@@ -62,6 +66,17 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({ form }) => {
 
   const { jsInbound, requestConvert, acl, eventFilter, headerManipulation } =
     inboundPluginTypes;
+
+  const handleSubmit = (configuration: InboundPluginFormSchemaType) => {
+    setDialogOpen(false);
+    if (editIndex === undefined) {
+      addPlugin(configuration);
+    } else {
+      editPlugin(editIndex, configuration);
+    }
+    parentSubmit(onSave)();
+    setEditIndex(undefined);
+  };
 
   const pluginsCount = fields.length;
   const formId = "inboundPluginForm";
@@ -189,45 +204,21 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({ form }) => {
           <RequestConvertForm
             formId={formId}
             defaultConfig={getRequestConvertConfigAtIndex(fields, editIndex)}
-            onSubmit={(configuration) => {
-              setDialogOpen(false);
-              if (editIndex === undefined) {
-                addPlugin(configuration);
-              } else {
-                editPlugin(editIndex, configuration);
-              }
-              setEditIndex(undefined);
-            }}
+            onSubmit={handleSubmit}
           />
         )}
         {selectedPlugin === jsInbound.name && (
           <JsInboundForm
             formId={formId}
             defaultConfig={getJsInboundConfigAtIndex(fields, editIndex)}
-            onSubmit={(configuration) => {
-              setDialogOpen(false);
-              if (editIndex === undefined) {
-                addPlugin(configuration);
-              } else {
-                editPlugin(editIndex, configuration);
-              }
-              setEditIndex(undefined);
-            }}
+            onSubmit={handleSubmit}
           />
         )}
         {selectedPlugin === acl.name && (
           <AclForm
             formId={formId}
             defaultConfig={getAclConfigAtIndex(fields, editIndex)}
-            onSubmit={(configuration) => {
-              setDialogOpen(false);
-              if (editIndex === undefined) {
-                addPlugin(configuration);
-              } else {
-                editPlugin(editIndex, configuration);
-              }
-              setEditIndex(undefined);
-            }}
+            onSubmit={handleSubmit}
           />
         )}
 
@@ -238,30 +229,14 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({ form }) => {
               fields,
               editIndex
             )}
-            onSubmit={(configuration) => {
-              setDialogOpen(false);
-              if (editIndex === undefined) {
-                addPlugin(configuration);
-              } else {
-                editPlugin(editIndex, configuration);
-              }
-              setEditIndex(undefined);
-            }}
+            onSubmit={handleSubmit}
           />
         )}
         {selectedPlugin === eventFilter.name && (
           <EventFilterForm
             formId={formId}
             defaultConfig={getEventFilterConfigAtIndex(fields, editIndex)}
-            onSubmit={(configuration) => {
-              setDialogOpen(false);
-              if (editIndex === undefined) {
-                addPlugin(configuration);
-              } else {
-                editPlugin(editIndex, configuration);
-              }
-              setEditIndex(undefined);
-            }}
+            onSubmit={handleSubmit}
           />
         )}
       </ModalWrapper>

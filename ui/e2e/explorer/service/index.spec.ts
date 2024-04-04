@@ -315,12 +315,7 @@ test("it is possible to edit patches", async ({ page }) => {
     "all entered data is represented in the editor preview"
   ).toContainText(expectedYaml, { useInnerText: true });
 
-  await expect(
-    page.getByTestId("unsaved-note"),
-    "it renders a hint that there are unsaved changes"
-  ).toBeVisible();
-  await page.getByRole("button", { name: "Save" }).click();
-
+  /* note: saving the plugin should have saved the whole file. */
   await expect(
     page.getByTestId("unsaved-note"),
     "it does not render a hint that there are unsaved changes"

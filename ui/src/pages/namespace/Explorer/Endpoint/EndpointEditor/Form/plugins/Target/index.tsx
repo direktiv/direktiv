@@ -31,10 +31,14 @@ import { useTranslation } from "react-i18next";
 
 type TargetPluginFormProps = {
   form: UseFormReturn<EndpointFormSchemaType>;
+  onSave: (value: EndpointFormSchemaType) => void;
 };
 
-export const TargetPluginForm: FC<TargetPluginFormProps> = ({ form }) => {
-  const { control } = form;
+export const TargetPluginForm: FC<TargetPluginFormProps> = ({
+  form,
+  onSave,
+}) => {
+  const { control, handleSubmit } = form;
   const values = useWatch({ control });
   const { t } = useTranslation();
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -170,6 +174,7 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({ form }) => {
             onSubmit={(configuration) => {
               setDialogOpen(false);
               form.setValue("plugins.target", configuration);
+              handleSubmit(onSave)();
             }}
           />
         )}

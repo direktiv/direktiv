@@ -42,7 +42,7 @@ const ServiceEditor: FC<ServiceEditorProps> = ({ data }) => {
   };
 
   return (
-    <Form defaultConfig={serviceConfig}>
+    <Form defaultConfig={serviceConfig} onSave={save}>
       {({
         formControls: {
           formState: { errors },
