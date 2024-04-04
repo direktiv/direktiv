@@ -404,19 +404,8 @@ func writeFiles(location string, files []FunctionFileDefinition) error {
 				return err
 			}
 		case "tar.gz":
-			// Extract the contents of a TAR.GZ archive
-			buf := bytes.NewBuffer(data)
-
-			gr, err := gzip.NewReader(buf)
-			if err != nil {
-				return err
-			}
-			err = untar(location, f.Permissions, gr)
-			if err != nil {
-				gr.Close()
-				return err
-			}
-			err = gr.Close()
+			// Call wrapper function for gzip decompression and untar
+			err := decompressAndUntar(location, f.Permissions, data)
 			if err != nil {
 				return err
 			}
@@ -455,4 +444,15 @@ func writeJSON(w http.ResponseWriter, v any) {
 		Data: v,
 	}
 	_ = json.NewEncoder(w).Encode(payLoad)
+}
+
+func decompressAndUntar(location string, perms string, encodedData []byte) error {
+	gr, err := gzip.NewReader(bytes.NewBuffer(encodedData))
+	if err != nil {
+		return err
+	}
+	defer gr.Close()
+
+	// Untar directly from the gzip reader
+	return untar(location, perms, gr)
 }
