@@ -1,32 +1,46 @@
 
 /api/v2/namespaces:
-#  get:
-#    tags:
-#      - namespaces
-#    summary: List all direktiv namespaces
-#    responses:
-#      "200":
-#        description: list of direktiv namespaces
-#        content:
-#          application/json:
-#            schema:
-#              type: object
-#              properties:
-#                data:
-#                  type: array
-#                  items:
-#                    type: object
-#                    properties:
-#                      name:
-#                        type: string
-#                        description: a unique string that represent name of the namespace
-#                      createdAt:
-#                        type: string
-#                        description: timestamp of creation date
-#                      updatedAt:
-#                        type: string
-#                        description: timestamp of last updating date
-#
+  get:
+    tags:
+      - namespaces
+    summary: List all direktiv namespaces
+    responses:
+      "200":
+        description: list of direktiv namespaces
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        description: a unique string that represent name of the namespace
+                      mirror:
+                        type: object
+                        nullable: true
+                        description: git mirror settings associated with the namespace (only with git mirrored namespace). Null value means this is a none mirrored (ordinary) namespace
+                        properties:
+                          url:
+                            type: string
+                            description: url of the git repo
+                          createdAt:
+                            type: string
+                            description: timestamp of creation date
+                          updatedAt:
+                            type: string
+                            description: timestamp of last updating date
+                      createdAt:
+                        type: string
+                        description: timestamp of creation date
+                      updatedAt:
+                        type: string
+                        description: timestamp of last updating date
+
 #  post:
 #    tags:
 #      - namespaces

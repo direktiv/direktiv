@@ -239,7 +239,7 @@ func (e *nsController) list(w http.ResponseWriter, r *http.Request) {
 func namespaceApiObject(ns *datastore.Namespace, mConfig *datastore.MirrorConfig) any {
 	type apiObject struct {
 		*datastore.Namespace
-		MirrorSettings *datastore.MirrorConfig `json:"mirror,omitempty"`
+		MirrorSettings *datastore.MirrorConfig `json:"mirror"`
 	}
 
 	return &apiObject{
