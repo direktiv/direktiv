@@ -1,19 +1,10 @@
-import { VarContentSchema } from "../schema";
-import { apiFactory } from "~/api/apiFactory";
+import { VarContentType, getVariableContent } from "../query/details";
+
 import { useApiKey } from "~/util/store/apiKey";
 import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 import { useNamespace } from "~/util/store/namespace";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
-
-export const getVariableContent = apiFactory({
-  url: ({ namespace, variableID }: { namespace: string; variableID: string }) =>
-    `/api/v2/namespaces/${namespace}/variables/${variableID}`,
-  method: "GET",
-  schema: VarContentSchema,
-});
-
-type VarContentType = Awaited<ReturnType<typeof getVariableContent>>;
 
 export const useDownloadVar = ({
   onSuccess,
