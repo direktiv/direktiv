@@ -40,9 +40,16 @@ test("the header of the instance page shows the relevant data for the workflow",
   await expect(header, "It renders the header").toBeVisible();
 
   const instanceIdHeader = header.locator("h3");
-  await expect(instanceIdHeader, "It renders the instance ID").toBeVisible();
+  await expect(
+    instanceIdHeader,
+    "It renders the instance ID in the header"
+  ).toBeVisible();
 
   const instanceIdNavLink = page.locator("ul").locator("a").nth(2);
+  await expect(
+    instanceIdNavLink,
+    "It renders the instance ID in the breadcrumb navigation"
+  ).toBeVisible();
 
   expect(instanceIdHeader.innerText, "the instance IDs are the same").toEqual(
     instanceIdNavLink.innerText
@@ -53,22 +60,25 @@ test("the header of the instance page shows the relevant data for the workflow",
     "the badge complete is visible"
   ).toContainText("complete");
 
-  const trigger = header.locator('div.text-sm:has-text("trigger")');
-  await expect(trigger, "the trigger is set to api").toContainText("api");
-
-  // check visibility of the time categories but not the exact time stamp, because it is too divergent
-  const startedAt = header.locator('div.text-sm:has-text("started at")');
-  await expect(startedAt, "It renders the category 'startedAt'").toBeVisible();
-  const lastUpdated = header.locator('div.text-sm:has-text("last updated")');
   await expect(
-    lastUpdated,
-    "It renders the category 'lastUpdated'"
+    header.getByText("triggerapi"),
+    "It renders the instance trigger"
   ).toBeVisible();
 
-  const spawned = header.locator('div.text-sm:has-text("spawned")');
-  await expect(spawned, "category spawned shows 0 instances").toContainText(
-    "0 instances"
-  );
+  // check visibility of the time categories but not the exact time stamp, because it is too divergent
+  await expect(
+    header.getByText("started at"),
+    "It renders the category 'started at'"
+  ).toBeVisible();
+  await expect(
+    header.getByText("last updated"),
+    "It renders the category 'last updated'"
+  ).toBeVisible();
+
+  await expect(
+    header.getByText("spawned0 instances"),
+    "category spawned shows 0 instances"
+  ).toBeVisible();
 
   await expect(
     header.getByRole("button").locator("svg.lucide-xcircle"),
