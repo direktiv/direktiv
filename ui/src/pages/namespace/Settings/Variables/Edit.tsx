@@ -18,7 +18,6 @@ import { Trans, useTranslation } from "react-i18next";
 import {
   VarFormSchema,
   VarFormSchemaType,
-  VarSchemaType,
 } from "~/api/variables_obsolete/schema";
 import { useEffect, useState } from "react";
 
@@ -28,9 +27,10 @@ import { Card } from "~/design/Card";
 import { FileJson } from "lucide-react";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
+import { VarSchemaType } from "~/api/variables/schema";
 import { useTheme } from "~/util/store/theme";
 import { useUpdateVar } from "~/api/variables_obsolete/mutate/updateVariable";
-import { useVarContent } from "~/api/variables_obsolete/query/useVariableContent";
+import { useVarDetails } from "~/api/variables/query/details";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 type EditProps = {
@@ -46,7 +46,7 @@ const Edit = ({ item, onSuccess }: EditProps) => {
   const { t } = useTranslation();
   const theme = useTheme();
 
-  const { data, isSuccess: isInitialized, isError } = useVarContent(item.name);
+  const { data, isSuccess: isInitialized, isError } = useVarDetails(item.id);
 
   const [body, setBody] = useState<string | File>("");
   const [mimeType, setMimeType] = useState<MimeTypeType>(fallbackMimeType);
@@ -86,19 +86,19 @@ const Edit = ({ item, onSuccess }: EditProps) => {
     }
   };
 
-  useEffect(() => {
-    if (isInitialized) {
-      const contentType = data.headers["content-type"];
-      const safeParsedContentType = EditorMimeTypeSchema.safeParse(contentType);
-      setValue("mimeType", contentType ?? "");
-      onMimeTypeChange(contentType ?? "");
-      if (safeParsedContentType.success) {
-        setBody(data.body);
-      } else {
-        setSaveable(false);
-      }
-    }
-  }, [data, isInitialized, setValue]);
+  // useEffect(() => {
+  //   if (isInitialized) {
+  //     const contentType = data.headers["content-type"];
+  //     const safeParsedContentType = EditorMimeTypeSchema.safeParse(contentType);
+  //     setValue("mimeType", contentType ?? "");
+  //     onMimeTypeChange(contentType ?? "");
+  //     if (safeParsedContentType.success) {
+  //       setBody(data.body);
+  //     } else {
+  //       setSaveable(false);
+  //     }
+  //   }
+  // }, [data, isInitialized, setValue]);
 
   const { mutate: updateVarMutation } = useUpdateVar({
     onSuccess,
