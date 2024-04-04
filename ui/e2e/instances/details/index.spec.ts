@@ -37,10 +37,10 @@ test("the header of the instance page shows the relevant data for the workflow",
   await page.goto(`/${namespace}/instances/${instanceId}`);
 
   const header = page.getByTestId("instance-header-container");
-  await expect(header, "the header is visible").toBeVisible();
+  await expect(header, "It renders the header").toBeVisible();
 
   const instanceIdHeader = header.locator("h3");
-  await expect(instanceIdHeader, "the instance ID is visible").toBeVisible();
+  await expect(instanceIdHeader, "It renders the instance ID").toBeVisible();
 
   const instanceIdNavLink = page.locator("ul").locator("a").nth(2);
 
@@ -58,11 +58,11 @@ test("the header of the instance page shows the relevant data for the workflow",
 
   // check visibility of the time categories but not the exact time stamp, because it is too divergent
   const startedAt = header.locator('div.text-sm:has-text("started at")');
-  await expect(startedAt, "the category 'startedAt' is visible").toBeVisible();
+  await expect(startedAt, "It renders the category 'startedAt'").toBeVisible();
   const lastUpdated = header.locator('div.text-sm:has-text("last updated")');
   await expect(
     lastUpdated,
-    "the category 'lastUpdated' is visible"
+    "It renders the category 'lastUpdated'"
   ).toBeVisible();
 
   const spawned = header.locator('div.text-sm:has-text("spawned")');
