@@ -39,21 +39,16 @@ test("the header of the instance page shows the relevant data for the workflow",
   const header = page.getByTestId("instance-header-container");
   await expect(header, "It renders the header").toBeVisible();
 
-  const instanceIdHeader = header.locator("h3");
+  const instanceIdShort = instanceId.slice(0, 8);
   await expect(
-    instanceIdHeader,
+    header.locator("h3"),
     "It renders the instance ID in the header"
-  ).toBeVisible();
+  ).toHaveText(instanceIdShort);
 
-  const instanceIdNavLink = page.locator("ul").locator("a").nth(2);
   await expect(
-    instanceIdNavLink,
+    page.locator("ul").locator("a").nth(2),
     "It renders the instance ID in the breadcrumb navigation"
-  ).toBeVisible();
-
-  expect(instanceIdHeader.innerText, "the instance IDs are the same").toEqual(
-    instanceIdNavLink.innerText
-  );
+  ).toHaveText(instanceIdShort);
 
   await expect(
     header.locator("div").first(),
