@@ -1,10 +1,4 @@
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
-import {
-  DialogClose,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "~/design/Dialog";
 import Editor, { EditorLanguagesType } from "~/design/Editor";
 import {
   VarFormCreateSchema,
@@ -18,13 +12,12 @@ import {
   mimeTypeToLanguageDict,
 } from "../utils";
 
-import Button from "~/design/Button";
 import { Card } from "~/design/Card";
+import { DialogHeader } from "~/design/Dialog";
 import FileUpload from "../../components/FileUpload";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import MimeTypeSelect from "../MimeTypeSelect/";
-import { PlusCircle } from "lucide-react";
 import { useState } from "react";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
@@ -34,10 +27,18 @@ const defaultMimeType = "application/json";
 
 type VariableForm = {
   defaultValues: VarFormCreateSchemaType & VarFormUpdateSchemaType;
+
+  dialogTitle: JSX.Element;
+  dialogFooter: JSX.Element;
   onMutate: (data: VarFormCreateSchemaType & VarFormUpdateSchemaType) => void;
 };
 
-export const VariableForm = ({ onMutate, defaultValues }: VariableForm) => {
+export const VariableForm = ({
+  defaultValues,
+  dialogTitle,
+  dialogFooter,
+  onMutate,
+}: VariableForm) => {
   const { t } = useTranslation();
   const theme = useTheme();
 
@@ -77,17 +78,11 @@ export const VariableForm = ({ onMutate, defaultValues }: VariableForm) => {
     onMutate(data);
   };
 
-  // TODO: add header and footer slot
   // TODO: clean up translation keys
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col space-y-5">
       <DialogHeader>
-        <DialogHeader>
-          <DialogTitle>
-            <PlusCircle />
-            {t("pages.settings.variables.create.title")}
-          </DialogTitle>
-        </DialogHeader>
+        <DialogHeader>{dialogTitle}</DialogHeader>
       </DialogHeader>
       <FormErrors errors={errors} className="mb-5" />
       <fieldset className="flex items-center gap-5">
@@ -158,14 +153,7 @@ export const VariableForm = ({ onMutate, defaultValues }: VariableForm) => {
           )}
         </div>
       </Card>
-      <DialogFooter>
-        <DialogClose asChild>
-          <Button variant="ghost">{t("components.button.label.cancel")}</Button>
-        </DialogClose>
-        <Button data-testid="variable-create-submit" type="submit">
-          {t("components.button.label.create")}
-        </Button>
-      </DialogFooter>
+      {dialogFooter}
     </form>
   );
 };
