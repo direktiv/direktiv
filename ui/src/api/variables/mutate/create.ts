@@ -5,6 +5,7 @@ import {
 } from "../schema";
 
 import { apiFactory } from "~/api/apiFactory";
+import { forceLeadingSlash } from "~/api/files/utils";
 import { useApiKey } from "~/util/store/apiKey";
 import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 import { useNamespace } from "~/util/store/namespace";
@@ -38,7 +39,12 @@ export const useCreateVar = ({
   const mutationFn = (payload: VarFormCreateSchemaType) =>
     createVar({
       apiKey: apiKey ?? undefined,
-      payload,
+      payload: {
+        ...payload,
+        workflowPath: payload.workflowPath
+          ? forceLeadingSlash(payload.workflowPath)
+          : undefined,
+      },
       urlParams: {
         namespace,
       },
