@@ -56,6 +56,10 @@ export const useCreateVar = ({
       queryClient.invalidateQueries(
         varKeys.varList(namespace, {
           apiKey: apiKey ?? undefined,
+          workflowPath:
+            data.data.type === "workflow-variable"
+              ? data.data.reference
+              : undefined,
         })
       );
       toast({
