@@ -287,16 +287,6 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	namespaceTrackCtx := enginerefactor.WithTrack(loggingCtx, enginerefactor.BuildNamespaceTrack(im.instance.Instance.Namespace))
 	slog.Info("Workflow has been triggered", enginerefactor.GetSlogAttributesWithStatus(namespaceTrackCtx, core.LogRunningStatus)...)
 
-	// Broadcast Event
-	err = engine.flow.BroadcastInstance(BroadcastEventTypeInstanceStarted, ctx,
-		broadcastInstanceInput{
-			WorkflowPath: args.CalledAs,
-			InstanceID:   im.ID().String(),
-			Caller:       args.Invoker,
-		}, im.instance)
-	if err != nil {
-		return nil, fmt.Errorf("failed to broadcast instance: %w", err)
-	}
 	return im, nil
 }
 
@@ -436,15 +426,6 @@ func (engine *engine) CrashInstance(ctx context.Context, im *instanceMemory, err
 	}
 
 	engine.SetInstanceFailed(ctx, im, err)
-
-	broadcastErr := engine.flow.BroadcastInstance(BroadcastEventTypeInstanceFailed, NoCancelContext(ctx), broadcastInstanceInput{
-		WorkflowPath: GetInodePath(im.instance.Instance.WorkflowPath),
-		InstanceID:   im.instance.Instance.ID.String(),
-	}, im.instance)
-	if broadcastErr != nil {
-		slog.Error("failed to broadcast in transitionState", "error", broadcastErr)
-	}
-
 	engine.TerminateInstance(ctx, im)
 }
 
@@ -701,14 +682,6 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 
 	defer engine.pubsub.NotifyInstance(im.instance.Instance.ID)
 	defer engine.pubsub.NotifyInstances(im.Namespace())
-
-	broadcastErr := engine.flow.BroadcastInstance(BroadcastEventTypeInstanceSuccess, ctx, broadcastInstanceInput{
-		WorkflowPath: GetInodePath(im.instance.Instance.WorkflowPath),
-		InstanceID:   im.instance.Instance.ID.String(),
-	}, im.instance)
-	if broadcastErr != nil {
-		slog.Error("Failed to broadcast instance event upon completion.", "instance", im.ID().String(), "namespace", im.Namespace(), "error", broadcastErr)
-	}
 
 	engine.TerminateInstance(ctx, im)
 

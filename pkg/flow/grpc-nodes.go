@@ -142,16 +142,6 @@ func (flow *flow) CreateDirectory(ctx context.Context, req *grpc.CreateDirectory
 
 	slog.Debug("Created directory.", "path", file.Path)
 
-	// Broadcast
-	err = flow.BroadcastDirectory(ctx, BroadcastEventTypeCreate,
-		broadcastDirectoryInput{
-			Path:   req.GetPath(),
-			Parent: file.Dir(),
-		}, ns)
-	if err != nil {
-		return nil, err
-	}
-
 	if err := tx.Commit(ctx); err != nil {
 		return nil, err
 	}
@@ -204,40 +194,6 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 	if file.Typ == filestore.FileTypeWorkflow {
 		metricsWf.WithLabelValues(ns.Name, ns.Name).Dec()
 		metricsWfUpdated.WithLabelValues(ns.Name, file.Path, ns.Name).Inc()
-
-		// Broadcast Event
-		err = flow.BroadcastWorkflow(ctx, BroadcastEventTypeDelete,
-			broadcastWorkflowInput{
-				Name:   file.Name(),
-				Path:   file.Path,
-				Parent: file.Dir(),
-				Live:   false,
-			}, ns)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		// Broadcast Event
-		err = flow.BroadcastDirectory(ctx, BroadcastEventTypeDelete,
-			broadcastDirectoryInput{
-				Path:   file.Path,
-				Parent: file.Dir(),
-			}, ns)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	if file.Typ.IsDirektivSpecFile() {
-		err = helpers.PublishEventDirektivFileChange(flow.pBus, file.Typ, "delete", &pubsub.FileChangeEvent{
-			Namespace:    ns.Name,
-			NamespaceID:  ns.ID,
-			FilePath:     file.Path,
-			DeleteFileID: file.ID,
-		})
-		if err != nil {
-			slog.Error("pubsub publish", "error", err)
-		}
 	}
 
 	slog.Debug("Deleted file", "type", file.Typ, "path", file.Path)
