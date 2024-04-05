@@ -27,6 +27,7 @@ import { TargetFlowForm } from "./TargetFlowForm";
 import { TargetFlowVarForm } from "./TargetFlowVarForm";
 import { TargetNamespaceFileForm } from "./TargetNamespaceFileForm";
 import { TargetNamespaceVarForm } from "./TargetNamespaceVarForm";
+import { TargetPluginFormSchemaType } from "../../../schema/plugins/target/schema";
 import { useTranslation } from "react-i18next";
 
 type TargetPluginFormProps = {
@@ -45,6 +46,12 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({
 
   const currentType = values.plugins?.target?.type;
   const [selectedPlugin, setSelectedPlugin] = useState(currentType);
+
+  const handleSubmit = (configuration: TargetPluginFormSchemaType) => {
+    setDialogOpen(false);
+    form.setValue("plugins.target", configuration);
+    parentSubmit(onSave)();
+  };
 
   const {
     instantResponse,
@@ -171,61 +178,42 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({
           <InstantResponseForm
             formId={formId}
             defaultConfig={currentInstantResponseConfig}
-            onSubmit={(configuration) => {
-              setDialogOpen(false);
-              form.setValue("plugins.target", configuration);
-              parentSubmit(onSave)();
-            }}
+            onSubmit={handleSubmit}
           />
         )}
         {selectedPlugin === targetFlow.name && (
           <TargetFlowForm
             formId={formId}
             defaultConfig={currentTargetFlowConfig}
-            onSubmit={(configuration) => {
-              setDialogOpen(false);
-              form.setValue("plugins.target", configuration);
-            }}
+            onSubmit={handleSubmit}
           />
         )}
         {selectedPlugin === targetFlowVar.name && (
           <TargetFlowVarForm
             formId={formId}
             defaultConfig={currentTargetFlowVarConfig}
-            onSubmit={(configuration) => {
-              setDialogOpen(false);
-              form.setValue("plugins.target", configuration);
-            }}
+            onSubmit={handleSubmit}
           />
         )}
         {selectedPlugin === targetNamespaceFile.name && (
           <TargetNamespaceFileForm
             formId={formId}
             defaultConfig={currentTargetNamespaceFileConfig}
-            onSubmit={(configuration) => {
-              setDialogOpen(false);
-              form.setValue("plugins.target", configuration);
-            }}
+            onSubmit={handleSubmit}
           />
         )}
         {selectedPlugin === targetNamespaceVar.name && (
           <TargetNamespaceVarForm
             formId={formId}
             defaultConfig={currentTargetNamespaceVarConfig}
-            onSubmit={(configuration) => {
-              setDialogOpen(false);
-              form.setValue("plugins.target", configuration);
-            }}
+            onSubmit={handleSubmit}
           />
         )}
         {selectedPlugin === targetEvent.name && (
           <TargetEventForm
             formId={formId}
             defaultConfig={currentTargetEventConfig}
-            onSubmit={(configuration) => {
-              setDialogOpen(false);
-              form.setValue("plugins.target", configuration);
-            }}
+            onSubmit={handleSubmit}
           />
         )}
       </ModalWrapper>
