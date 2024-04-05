@@ -144,7 +144,7 @@ spec:
           - name: DIREKTIV_KNATIVE_SIDECAR
             value: "{{ .Values.registry }}/{{ .Values.image }}:{{ .Values.tag | default .Chart.AppVersion }}"
           - name: DIREKTIV_KNATIVE_MAX_SCALE
-            value: "5"
+            value: {{ .Values.flow.max_scale | quote }}
           {{- if .Values.netShape }}
           - name: DIREKTIV_KNATIVE_NET_SHAPE
             value: {{ .Values.netShape | quote }}

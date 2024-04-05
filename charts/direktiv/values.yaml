@@ -66,6 +66,9 @@ flow:
           memory: "128Mi"
         limits:
           memory: "512Mi"
+  
+  # -- Knative max scale
+  max_scale: 5
 
 database:
   # -- database host
