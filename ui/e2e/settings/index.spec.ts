@@ -194,7 +194,9 @@ test("it is possible to create and delete variables", async ({
     "there are 4 variables"
   ).toHaveCount(4);
 
-  await page.getByTestId(`dropdown-trg-item-${variableToDelete.key}`).click();
+  await page
+    .getByTestId(`dropdown-trg-item-${variableToDelete.data.name}`)
+    .click();
   await page.getByTestId("dropdown-actions-delete").click();
   await page.getByTestId("registry-delete-confirm").click();
 
@@ -205,7 +207,9 @@ test("it is possible to create and delete variables", async ({
   ).toHaveCount(3);
 
   await expect(
-    page.getByTestId("item-name").filter({ hasText: variableToDelete.key }),
+    page
+      .getByTestId("item-name")
+      .filter({ hasText: variableToDelete.data.name }),
     "the deleted variable is no longer in the list"
   ).toHaveCount(0);
 
@@ -224,7 +228,7 @@ test("it is possible to edit variables", async ({ page }) => {
 
   /* visit page and edit variable */
   await page.goto(`/${namespace}/settings`);
-  await page.getByTestId(`dropdown-trg-item-${subject.key}`).click();
+  await page.getByTestId(`dropdown-trg-item-${subject.data.name}`).click();
   await page.getByRole("button", { name: "edit" }).click();
 
   const textArea = page
@@ -241,7 +245,7 @@ test("it is possible to edit variables", async ({ page }) => {
   await expect(
     page.locator("select"),
     "MimeTypeSelect is set to the subject's mimeType"
-  ).toHaveValue(subject.mimeType);
+  ).toHaveValue(subject.data.mimeType);
 
   await page.locator(".view-lines").click();
   await page.locator(".view-lines").click();
@@ -263,7 +267,7 @@ test("it is possible to edit variables", async ({ page }) => {
     waitUntil: "networkidle",
   });
 
-  await page.getByTestId(`dropdown-trg-item-${subject.key}`).click();
+  await page.getByTestId(`dropdown-trg-item-${subject.data.name}`).click();
   await page.getByRole("button", { name: "edit" }).click();
 
   await expect
