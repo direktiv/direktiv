@@ -1,7 +1,7 @@
 import { VarFormUpdateSchemaType, VarSchemaType } from "~/api/variables/schema";
 
 import { DialogContent } from "~/design/Dialog";
-import { Generic } from "./Create";
+import { VariableForm } from "./Form";
 import { useUpdateVar } from "~/api/variables/mutate/update";
 import { useVarDetails } from "~/api/variables/query/details";
 
@@ -26,7 +26,7 @@ const Edit = ({ item, onSuccess }: EditProps) => {
   return (
     <DialogContent>
       {isSuccess && (
-        <Generic
+        <VariableForm
           onMutate={onMutate}
           defaultValues={{
             name: data.data.name,
