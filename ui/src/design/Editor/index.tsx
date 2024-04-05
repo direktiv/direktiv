@@ -18,7 +18,6 @@ import themeDark from "./theme-dark";
 import themeLight from "./theme-light";
 // eslint-disable-next-line import/default
 import tsWorker from "monaco-editor/esm/vs/language/typescript/ts.worker?worker";
-import useNavigationBlocker from "~/hooks/useNavigationBlocker";
 
 self.MonacoEnvironment = {
   getWorker(_, label) {
@@ -56,7 +55,6 @@ const Editor: FC<
     onChange?: (value: string | undefined) => void;
     onMount?: EditorProps["onMount"];
     language?: EditorLanguagesType;
-    navigationWarning?: string | null;
   }
 > = ({
   options,
@@ -65,7 +63,6 @@ const Editor: FC<
   onChange,
   onMount,
   language = "yaml",
-  navigationWarning = null,
   ...props
 }) => {
   const monacoRef = useRef<EditorType>();
@@ -73,8 +70,6 @@ const Editor: FC<
   const handleChange = () => {
     onChange && onChange(monacoRef.current?.getValue());
   };
-
-  useNavigationBlocker(navigationWarning);
 
   // this is the shared onMount function, that will be called for
   // every Editor component. Each Editor can implement their own
