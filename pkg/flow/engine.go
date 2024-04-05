@@ -277,7 +277,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 		panic(err)
 	}
 
-	ctx, err = traceFullAddWorkflowInstance(ctx, im)
+	_, err = traceFullAddWorkflowInstance(ctx, im) // TODO.
 	if err != nil {
 		return nil, fmt.Errorf("failed to traceFullAddWorkflowInstance: %w", err)
 	}
