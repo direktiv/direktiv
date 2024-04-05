@@ -12,12 +12,12 @@ import { FileJson } from "lucide-react";
 import Input from "~/design/Input";
 import ItemRow from "~/pages/namespace/Settings/components/ItemRow";
 import PaginationProvider from "~/components/PaginationProvider";
-import { WorkflowVariableSchemaType } from "~/api/tree/schema/workflowVariable";
-import { triggerDownloadFromBlob } from "~/util/helpers";
-import { useDeleteWorkflowVariable } from "~/api/tree/mutate/deleteVariable";
-import { useDownloadVar } from "~/api/tree/mutate/downloadVariable";
+import { VarSchemaType } from "~/api/variables/schema";
+import { triggerDownloadFromBase64String } from "~/util/helpers";
+import { useDeleteVar } from "~/api/variables/mutate/delete";
+import { useDownloadVar } from "~/api/variables/mutate/download";
 import { useTranslation } from "react-i18next";
-import { useWorkflowVariables } from "~/api/tree/query/variables";
+import { useVars } from "~/api/variables/query/get";
 
 const pageSize = 10;
 
@@ -25,35 +25,37 @@ const VariablesList = ({ path }: { path: string }) => {
   const { t } = useTranslation();
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [deleteItem, setDeleteItem] = useState<WorkflowVariableSchemaType>();
-  const [editItem, setEditItem] = useState<WorkflowVariableSchemaType>();
+  const [deleteItem, setDeleteItem] = useState<VarSchemaType>();
+  const [editItem, setEditItem] = useState<VarSchemaType>();
   const [createItem, setCreateItem] = useState(false);
   const [search, setSearch] = useState("");
   const isSearch = search.length > 0;
 
-  const { data, isFetched } = useWorkflowVariables({ path });
+  const { data, isFetched } = useVars({ workflowPath: path });
 
-  const { mutate: deleteWorkflowVariable } = useDeleteWorkflowVariable({
+  const { mutate: deleteWorkflowVariable } = useDeleteVar({
     onSuccess: () => {
       setDialogOpen(false);
     },
   });
 
   const { mutate: downloadVar } = useDownloadVar({
-    onSuccess: (response, name) => {
-      triggerDownloadFromBlob({
-        blob: response.blob,
-        filename: name,
+    onSuccess: (response) => {
+      const { name: filename, data: base64String, mimeType } = response.data;
+      triggerDownloadFromBase64String({
+        filename,
+        base64String,
+        mimeType,
       });
     },
   });
 
   const filteredItems = useMemo(
     () =>
-      (data?.variables?.results ?? [])?.filter(
+      (data?.data ?? [])?.filter(
         (item) => !isSearch || item.name.includes(search)
       ),
-    [data?.variables?.results, isSearch, search]
+    [data?.data, isSearch, search]
   );
 
   useEffect(() => {
@@ -65,13 +67,6 @@ const VariablesList = ({ path }: { path: string }) => {
   }, [dialogOpen]);
 
   if (!isFetched) return null;
-
-  const download = (name: string) => {
-    downloadVar({
-      name,
-      path,
-    });
-  };
 
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -124,7 +119,7 @@ const VariablesList = ({ path }: { path: string }) => {
                         key={i}
                         onDelete={setDeleteItem}
                         onEdit={() => setEditItem(item)}
-                        onDownload={() => download(item.name)}
+                        onDownload={() => downloadVar(item.id)}
                       >
                         {item.name}
                       </ItemRow>
@@ -172,7 +167,9 @@ const VariablesList = ({ path }: { path: string }) => {
         <Delete
           name={deleteItem.name}
           onConfirm={() => {
-            deleteWorkflowVariable({ variable: deleteItem, path });
+            deleteWorkflowVariable({
+              variable: deleteItem,
+            });
             setDeleteItem(undefined);
           }}
         />
@@ -189,7 +186,6 @@ const VariablesList = ({ path }: { path: string }) => {
       {editItem && path && (
         <Edit
           item={editItem}
-          path={path}
           onSuccess={() => {
             setDialogOpen(false);
           }}
