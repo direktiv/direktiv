@@ -2,6 +2,7 @@ import type { QueryFunctionContext } from "@tanstack/react-query";
 import { VarListSchema } from "../schema";
 import { apiFactory } from "../../apiFactory";
 import { buildSearchParamsString } from "~/api/utils";
+import { forceLeadingSlash } from "~/api/files/utils";
 import { useApiKey } from "../../../util/store/apiKey";
 import { useNamespace } from "../../../util/store/namespace";
 import useQueryWithPermissions from "~/api/useQueryWithPermissions";
@@ -53,7 +54,7 @@ export const useVars = ({
   return useQueryWithPermissions({
     queryKey: varKeys.varList(namespace, {
       apiKey: apiKey ?? undefined,
-      workflowPath,
+      workflowPath: workflowPath ? forceLeadingSlash(workflowPath) : undefined,
     }),
     queryFn: fetchVars,
     enabled: !!namespace,
