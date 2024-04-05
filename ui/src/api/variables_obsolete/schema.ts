@@ -1,5 +1,5 @@
 import { FileSchema } from "../schema";
-import { MimeTypeSchema } from "~/pages/namespace/Settings/Variables/MimeTypeSelect";
+import { MimeTypeSchema } from "~/pages/namespace/Settings/Variables/utils";
 import { z } from "zod";
 
 export const VarSchema = z.object({

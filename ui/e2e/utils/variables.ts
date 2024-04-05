@@ -1,4 +1,4 @@
-import { EditorMimeTypeSchema } from "~/pages/namespace/Settings/Variables/MimeTypeSelect";
+import { EditorMimeTypeSchema } from "~/pages/namespace/Settings/Variables/utils";
 import { faker } from "@faker-js/faker";
 import { headers } from "./testutils";
 import { setVariable } from "~/api/tree/mutate/setVariable";

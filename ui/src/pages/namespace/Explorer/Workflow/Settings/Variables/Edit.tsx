@@ -6,13 +6,13 @@ import {
   DialogTitle,
 } from "~/design/Dialog";
 import Editor, { EditorLanguagesType } from "~/design/Editor";
-import MimeTypeSelect, {
+import {
   EditorMimeTypeSchema,
   MimeTypeType,
   TextMimeTypeType,
   getLanguageFromMimeType,
   mimeTypeToLanguageDict,
-} from "~/pages/namespace/Settings/Variables/MimeTypeSelect";
+} from "~/pages/namespace/Settings/Variables/utils";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { Trans, useTranslation } from "react-i18next";
 import {
@@ -28,6 +28,7 @@ import { Card } from "~/design/Card";
 import { FileJson } from "lucide-react";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
+import MimeTypeSelect from "~/pages/namespace/Settings/Variables/MimeTypeSelect";
 import { useSetWorkflowVariable } from "~/api/tree/mutate/setVariable";
 import { useTheme } from "~/util/store/theme";
 import { useWorkflowVariableContent } from "~/api/tree/query/variableContent";
