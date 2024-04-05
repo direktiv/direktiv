@@ -32,12 +32,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 const defaultMimeType = "application/json";
 
-type GenericProps = {
+type VariableForm = {
   defaultValues: VarFormCreateSchemaType & VarFormUpdateSchemaType;
   onMutate: (data: VarFormCreateSchemaType & VarFormUpdateSchemaType) => void;
 };
 
-export const VariableForm = ({ onMutate, defaultValues }: GenericProps) => {
+export const VariableForm = ({ onMutate, defaultValues }: VariableForm) => {
   const { t } = useTranslation();
   const theme = useTheme();
 
@@ -46,7 +46,11 @@ export const VariableForm = ({ onMutate, defaultValues }: GenericProps) => {
   );
 
   const [editorLanguage, setEditorLanguage] = useState<EditorLanguagesType>(
-    mimeTypeToLanguageDict[defaultMimeType]
+    mimeTypeToLanguageDict[
+      isMimeTypeEditable(defaultValues.mimeType)
+        ? defaultValues.mimeType
+        : defaultMimeType
+    ]
   );
 
   const {

@@ -40,7 +40,9 @@ export const EditorMimeTypeSchema = z.enum([
 
 export type TextMimeTypeType = z.infer<typeof EditorMimeTypeSchema>;
 
-export const isMimeTypeEditable = (mimeType: string) => {
+export const isMimeTypeEditable = (
+  mimeType: string
+): mimeType is TextMimeTypeType => {
   const parsedMimetype = EditorMimeTypeSchema.safeParse(mimeType);
   return parsedMimetype.success;
 };
