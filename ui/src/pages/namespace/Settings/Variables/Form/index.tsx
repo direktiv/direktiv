@@ -6,23 +6,24 @@ import {
   DialogTitle,
 } from "~/design/Dialog";
 import Editor, { EditorLanguagesType } from "~/design/Editor";
-import MimeTypeSelect, {
-  EditorMimeTypeSchema,
-  getLanguageFromMimeType,
-  mimeTypeToLanguageDict,
-} from "./MimeTypeSelect";
 import {
   VarFormCreateSchema,
   VarFormCreateSchemaType,
   VarFormUpdateSchemaType,
 } from "~/api/variables/schema";
 import { decode, encode } from "js-base64";
+import {
+  getLanguageFromMimeType,
+  isMimeTypeEditable,
+  mimeTypeToLanguageDict,
+} from "../utils";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
-import FileUpload from "../components/FileUpload";
+import FileUpload from "../../components/FileUpload";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
+import MimeTypeSelect from "../MimeTypeSelect/";
 import { PlusCircle } from "lucide-react";
 import { useState } from "react";
 import { useTheme } from "~/util/store/theme";
@@ -40,8 +41,9 @@ export const VariableForm = ({ onMutate, defaultValues }: GenericProps) => {
   const { t } = useTranslation();
   const theme = useTheme();
 
-  // TODO: default isEditable must be set (test with edit an image)
-  const [isEditable, setIsEditable] = useState(true);
+  const [isEditable, setIsEditable] = useState(
+    isMimeTypeEditable(defaultValues.mimeType)
+  );
 
   const [editorLanguage, setEditorLanguage] = useState<EditorLanguagesType>(
     mimeTypeToLanguageDict[defaultMimeType]
@@ -113,8 +115,7 @@ export const VariableForm = ({ onMutate, defaultValues }: GenericProps) => {
       </fieldset>
       <FileUpload
         onChange={({ base64String, mimeType }) => {
-          const parsedMimetype = EditorMimeTypeSchema.safeParse(mimeType);
-          const isEditable = parsedMimetype.success;
+          const isEditable = isMimeTypeEditable(mimeType);
           setIsEditable(isEditable);
           setValue("data", base64String);
           onMimeTypeChange(mimeType);
