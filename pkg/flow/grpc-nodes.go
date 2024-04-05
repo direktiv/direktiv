@@ -196,6 +196,18 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 		metricsWfUpdated.WithLabelValues(ns.Name, file.Path, ns.Name).Inc()
 	}
 
+	if file.Typ.IsDirektivSpecFile() {
+		err = helpers.PublishEventDirektivFileChange(flow.pBus, file.Typ, "delete", &pubsub.FileChangeEvent{
+			Namespace:    ns.Name,
+			NamespaceID:  ns.ID,
+			FilePath:     file.Path,
+			DeleteFileID: file.ID,
+		})
+		if err != nil {
+			slog.Error("pubsub publish", "error", err)
+		}
+	}
+
 	slog.Debug("Deleted file", "type", file.Typ, "path", file.Path)
 
 	var resp emptypb.Empty
