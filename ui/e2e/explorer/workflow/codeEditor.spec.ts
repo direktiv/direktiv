@@ -111,7 +111,6 @@ test("it renders response errors when saving an invalid workflow", async ({
   const editor = page.locator(".lines-content");
 
   await editor.click();
-  /* enter text under existing content with wrong indentation */
   await editor.type("notvalidyaml");
 
   await expect(
