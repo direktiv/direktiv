@@ -14,10 +14,11 @@ import { useTranslation } from "react-i18next";
 
 type PatchesFormProps = {
   form: UseFormReturn<ServiceFormSchemaType>;
+  onSave: (value: ServiceFormSchemaType) => void;
 };
 
-export const PatchesForm: FC<PatchesFormProps> = ({ form }) => {
-  const { control } = form;
+export const PatchesForm: FC<PatchesFormProps> = ({ form, onSave }) => {
+  const { control, handleSubmit: handleParentSubmit } = form;
   const values = useWatch({ control });
   const { t } = useTranslation();
 
@@ -43,6 +44,7 @@ export const PatchesForm: FC<PatchesFormProps> = ({ form }) => {
     } else {
       updateItem(indexToEdit, item);
     }
+    handleParentSubmit(onSave)();
     setDialogOpen(false);
   };
 
