@@ -39,7 +39,7 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({
   form,
   onSave,
 }) => {
-  const { control, handleSubmit: parentSubmit } = form;
+  const { control, handleSubmit: handleParentSubmit } = form;
   const values = useWatch({ control });
   const { t } = useTranslation();
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -50,7 +50,7 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({
   const handleSubmit = (configuration: TargetPluginFormSchemaType) => {
     setDialogOpen(false);
     form.setValue("plugins.target", configuration);
-    parentSubmit(onSave)();
+    handleParentSubmit(onSave)();
   };
 
   const {

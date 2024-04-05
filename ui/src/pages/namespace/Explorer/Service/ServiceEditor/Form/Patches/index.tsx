@@ -18,7 +18,7 @@ type PatchesFormProps = {
 };
 
 export const PatchesForm: FC<PatchesFormProps> = ({ form, onSave }) => {
-  const { control, handleSubmit: parentSubmit } = form;
+  const { control, handleSubmit: handleParentSubmit } = form;
   const values = useWatch({ control });
   const { t } = useTranslation();
 
@@ -44,7 +44,7 @@ export const PatchesForm: FC<PatchesFormProps> = ({ form, onSave }) => {
     } else {
       updateItem(indexToEdit, item);
     }
-    parentSubmit(onSave)();
+    handleParentSubmit(onSave)();
     setDialogOpen(false);
   };
 

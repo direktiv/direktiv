@@ -49,7 +49,7 @@ export const AuthPluginForm: FC<AuthPluginFormProps> = ({
   onSave,
 }) => {
   const { t } = useTranslation();
-  const { control, handleSubmit: parentSubmit } = formControls;
+  const { control, handleSubmit: handleParentSubmit } = formControls;
   const {
     append: addPlugin,
     remove: deletePlugin,
@@ -81,7 +81,7 @@ export const AuthPluginForm: FC<AuthPluginFormProps> = ({
     } else {
       editPlugin(editIndex, configuration);
     }
-    parentSubmit(onSave)();
+    handleParentSubmit(onSave)();
     setEditIndex(undefined);
   };
 
