@@ -46,6 +46,10 @@ export const useDeleteVar = ({
       queryClient.invalidateQueries(
         varKeys.varList(namespace, {
           apiKey: apiKey ?? undefined,
+          workflowPath:
+            variables.variable.type === "workflow-variable"
+              ? variables.variable.reference
+              : undefined,
         })
       );
       toast({
