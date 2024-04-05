@@ -4,6 +4,7 @@ import { expect, test } from "@playwright/test";
 import { createRegistries } from "../utils/registries";
 import { createSecrets } from "../utils/secrets";
 import { createVariables } from "../utils/variables";
+import { decode } from "js-base64";
 import { faker } from "@faker-js/faker";
 import { radixClick } from "../utils/testutils";
 import { waitForSuccessToast } from "../explorer/workflow/utils";
@@ -240,7 +241,7 @@ test("it is possible to edit variables", async ({ page }) => {
       async () => await textArea.inputValue(),
       "the variable's content is loaded into the editor"
     )
-    .toBe(subject.content);
+    .toBe(decode(subject.content));
 
   await expect(
     page.locator("select"),
