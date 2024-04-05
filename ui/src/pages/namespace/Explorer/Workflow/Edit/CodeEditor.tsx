@@ -26,6 +26,7 @@ export const CodeEditor: FC<EditorProps> = ({
   error,
 }) => {
   const { t } = useTranslation();
+
   const theme = useTheme();
   const updatedAtInWords = useUpdatedAt(updatedAt);
 
@@ -42,6 +43,11 @@ export const CodeEditor: FC<EditorProps> = ({
           }}
           theme={theme ?? undefined}
           onSave={onSave}
+          navigationWarning={
+            hasUnsavedChanges
+              ? t("components.blocker.unsavedChangesWarning")
+              : null
+          }
         />
       </div>
       <div
