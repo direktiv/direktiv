@@ -44,7 +44,7 @@ const Edit = ({ item, onSuccess }: EditProps) => {
           dialogTitle={
             <DialogTitle>
               <PlusCircle />
-              {t("pages.settings.variables.edit.title", {
+              {t("pages.explorer.tree.workflow.settings.variables.edit.title", {
                 name: data.data.name,
               })}
             </DialogTitle>
