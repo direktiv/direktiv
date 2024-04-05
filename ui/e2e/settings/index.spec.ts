@@ -185,7 +185,7 @@ test("it is possible to create and delete variables", async ({
     "MimeTypeSelect is set to the subject's mimeType"
   ).toHaveValue("text/html");
 
-  const cancelButton = page.getByTestId("var-edit-cancel");
+  const cancelButton = page.getByRole("button", { name: "Cancel" });
   await radixClick(browserName, cancelButton);
 
   /* delete one variable */

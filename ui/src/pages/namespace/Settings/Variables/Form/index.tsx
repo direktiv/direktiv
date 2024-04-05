@@ -123,7 +123,7 @@ export const VariableForm = ({
       <Card
         className="grow p-4 pl-0"
         background="weight-1"
-        data-testid="variable-create-card"
+        data-testid="variable-editor-card"
       >
         <div className="flex h-[400px]">
           {isEditable ? (
