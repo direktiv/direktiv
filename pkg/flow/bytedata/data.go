@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
-	"fmt"
 	"io"
 	"reflect"
 	"strings"
@@ -13,7 +12,6 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/refactor/events"
-	"github.com/direktiv/direktiv/pkg/refactor/logengine"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -197,29 +195,6 @@ func ConvertDataForOutput(a, b interface{}) error {
 	}
 
 	return nil
-}
-
-func ConvertLogMsgForOutput(a []*logengine.LogEntry) ([]*grpc.Log, error) {
-	results := make([]*grpc.Log, 0, len(a))
-	for _, v := range a {
-		t := timestamppb.New(v.T)
-		err := t.CheckValid()
-		if err != nil {
-			return nil, err
-		}
-		convertedFields := make(map[string]string)
-		for k, e := range v.Fields {
-			convertedFields[k] = fmt.Sprintf("%v", e)
-		}
-		r := grpc.Log{
-			T:     t,
-			Level: convertedFields["level"],
-			Msg:   v.Msg,
-			Tags:  convertedFields,
-		}
-		results = append(results, &r)
-	}
-	return results, nil
 }
 
 func ConvertEventListeners(in []*events.EventListener) []*grpc.EventListener {

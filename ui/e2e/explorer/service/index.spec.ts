@@ -271,9 +271,11 @@ test("it is possible to edit patches", async ({ page }) => {
   await page.getByLabel(updatedPatch.op).click();
 
   await page.getByLabel("Path").fill(updatedPatch.path);
-  const editorTarget = await page.getByText(patchToEdit.value, {
-    exact: true,
-  });
+  const editorTarget = await page
+    .getByRole("dialog")
+    .getByText(patchToEdit.value, {
+      exact: true,
+    });
 
   await editorTarget.click();
   await page.locator("textarea").last().fill(updatedPatch.value);
@@ -313,12 +315,7 @@ test("it is possible to edit patches", async ({ page }) => {
     "all entered data is represented in the editor preview"
   ).toContainText(expectedYaml, { useInnerText: true });
 
-  await expect(
-    page.getByTestId("unsaved-note"),
-    "it renders a hint that there are unsaved changes"
-  ).toBeVisible();
-  await page.getByRole("button", { name: "Save" }).click();
-
+  /* note: saving the plugin should have saved the whole file. */
   await expect(
     page.getByTestId("unsaved-note"),
     "it does not render a hint that there are unsaved changes"

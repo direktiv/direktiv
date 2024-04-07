@@ -2,6 +2,7 @@ package flow
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 	"strings"
 	"sync"
@@ -163,7 +164,7 @@ func (timers *timers) addCron(name, fn, pattern string, data []byte) error {
 	timers.deleteCronForWorkflow(name)
 	name = fmt.Sprintf("cron:%s", name)
 
-	timers.pubsub.Log.Debugf("Adding cron %s: %s", name, pattern)
+	slog.Debug("Scheduling new cron job.", "cron_name", name, "cron_pattern", pattern)
 
 	// check if cron pattern matches
 	c := cron.NewParser(cron.Minute | cron.Hour | cron.Dom |

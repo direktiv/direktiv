@@ -2,12 +2,11 @@ package pubsub
 
 import (
 	"github.com/google/uuid"
-	"go.uber.org/zap"
 )
 
 type CoreBus interface {
 	Publish(channel string, data string) error
-	Loop(done <-chan struct{}, logger *zap.SugaredLogger, handler func(channel string, data string))
+	Loop(done <-chan struct{}, handler func(channel string, data string))
 }
 
 var (

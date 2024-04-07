@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"path/filepath"
 	"strings"
@@ -43,7 +44,7 @@ func (h *flowHandler) queryPrometheus(ctx context.Context, str string, t time.Ti
 }
 
 func (h *flowHandler) MetricsSankey(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -77,7 +78,7 @@ func (h *flowHandler) MetricsSankey(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) NamespaceMetricsInvoked(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -87,7 +88,7 @@ func (h *flowHandler) NamespaceMetricsInvoked(w http.ResponseWriter, r *http.Req
 }
 
 func (h *flowHandler) WorkflowMetricsInvoked(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -99,7 +100,7 @@ func (h *flowHandler) WorkflowMetricsInvoked(w http.ResponseWriter, r *http.Requ
 }
 
 func (h *flowHandler) NamespaceMetricsSuccessful(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -109,7 +110,7 @@ func (h *flowHandler) NamespaceMetricsSuccessful(w http.ResponseWriter, r *http.
 }
 
 func (h *flowHandler) WorkflowMetricsSuccessful(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -121,7 +122,7 @@ func (h *flowHandler) WorkflowMetricsSuccessful(w http.ResponseWriter, r *http.R
 }
 
 func (h *flowHandler) NamespaceMetricsFailed(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -131,7 +132,7 @@ func (h *flowHandler) NamespaceMetricsFailed(w http.ResponseWriter, r *http.Requ
 }
 
 func (h *flowHandler) WorkflowMetricsFailed(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -143,7 +144,7 @@ func (h *flowHandler) WorkflowMetricsFailed(w http.ResponseWriter, r *http.Reque
 }
 
 func (h *flowHandler) NamespaceMetricsMilliseconds(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -153,7 +154,7 @@ func (h *flowHandler) NamespaceMetricsMilliseconds(w http.ResponseWriter, r *htt
 }
 
 func (h *flowHandler) WorkflowMetricsMilliseconds(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -165,7 +166,7 @@ func (h *flowHandler) WorkflowMetricsMilliseconds(w http.ResponseWriter, r *http
 }
 
 func (h *flowHandler) WorkflowMetricsStateMilliseconds(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]

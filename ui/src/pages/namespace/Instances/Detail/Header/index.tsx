@@ -12,7 +12,7 @@ import ChildInstances from "./ChildInstances";
 import { Link } from "react-router-dom";
 import { pages } from "~/util/router/pages";
 import { statusToBadgeVariant } from "../../utils";
-import { useCancelInstance } from "~/api/logs/mutate/cancel";
+import { useCancelInstance } from "~/api/instances/mutate/cancel";
 import { useInstanceDetails } from "~/api/instances/query/details";
 import { useInstanceId } from "../store/instanceContext";
 import { useTranslation } from "react-i18next";
@@ -44,7 +44,10 @@ const Header = () => {
   const canBeCanceled = data.instance.status === "pending";
 
   return (
-    <div className="space-y-5 border-b border-gray-5 bg-gray-1 p-5 dark:border-gray-dark-5 dark:bg-gray-dark-1">
+    <div
+      data-testid="instance-header-container"
+      className="space-y-5 border-b border-gray-5 bg-gray-1 p-5 dark:border-gray-dark-5 dark:bg-gray-dark-1"
+    >
       <div className="flex flex-col gap-x-7 max-md:space-y-4 md:flex-row md:items-center md:justify-start">
         <div className="flex flex-col items-start gap-2">
           <h3 className="flex items-center gap-x-2 font-bold text-primary-500">

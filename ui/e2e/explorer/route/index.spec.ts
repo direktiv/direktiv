@@ -25,7 +25,7 @@ test("it is possible to create a basic route file", async ({ page }) => {
     methods: ["GET", "POST"],
     plugins: {
       target: `
-    type: "instant-response"
+    type: instant-response
     configuration:
         status_code: 200`,
     },
@@ -86,14 +86,7 @@ test("it is possible to create a basic route file", async ({ page }) => {
     "all entered data is represented in the editor preview"
   ).toContainText(expectedYaml, { useInnerText: true });
 
-  /* save file */
-  await expect(
-    page.getByText("unsaved changes"),
-    "it renders a hint that there are unsaved changes"
-  ).toBeVisible();
-
-  await page.getByRole("button", { name: "Save" }).click();
-
+  /* note: saving the plugin should have saved the whole file. */
   await expect(
     page.getByText("unsaved changes"),
     "it does not render a hint that there are unsaved changes"
@@ -106,6 +99,13 @@ test("it is possible to create a basic route file", async ({ page }) => {
     editor,
     "after reloading, the entered data is still in the editor preview"
   ).toContainText(expectedYaml, { useInnerText: true });
+
+  page.getByRole("link", { name: "Open Logs" }).click();
+
+  await expect(
+    page,
+    "when the open logs link is clicked, page should navigate to the route detail page"
+  ).toHaveURL(`/${namespace}/gateway/routes/${filename}`);
 });
 
 test("it is possible to add plugins to a route file", async ({ page }) => {
@@ -121,7 +121,7 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
   };
 
   const basicTargetPlugin = `
-    type: "instant-response"
+    type: instant-response
     configuration:
       status_code: 200`;
 
@@ -188,15 +188,15 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
 
   /* check editor content */
   const inboundPluginsBeforeSorting = `
-    - type: "acl"
+    - type: acl
       configuration:
         allow_groups:
-          - "allow this group 1"
-          - "allow this group 2"
+          - allow this group 1
+          - allow this group 2
         deny_groups: []
         allow_tags: []
         deny_tags: []
-    - type: "request-convert"
+    - type: request-convert
       configuration:
         omit_headers: false
         omit_queries: true
@@ -204,17 +204,17 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
         omit_consumer: true`;
 
   const inboundPluginsAfterSorting = `
-    - type: "request-convert"
+    - type: request-convert
       configuration:
         omit_headers: false
         omit_queries: true
         omit_body: false
         omit_consumer: true
-    - type: "acl"
+    - type: acl
       configuration:
         allow_groups:
-          - "allow this group 1"
-          - "allow this group 2"
+          - allow this group 1
+          - allow this group 2
         deny_groups: []
         allow_tags: []
         deny_tags: []`;
@@ -281,9 +281,9 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
 
   /* check editor content */
   const outboundPlugins = `
-    - type: "js-outbound"
+    - type: js-outbound
       configuration:
-        script: "// execute some JavaScript here"`;
+        script: // execute some JavaScript here`;
 
   expectedEditorContent = createRouteYaml({
     ...minimalRouteConfig,
@@ -310,9 +310,9 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
 
   /* check editor content */
   const authPlugins = `
-    - type: "github-webhook-auth"
+    - type: github-webhook-auth
       configuration:
-        secret: "my github secret"`;
+        secret: my github secret`;
 
   expectedEditorContent = createRouteYaml({
     ...minimalRouteConfig,
@@ -331,14 +331,7 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
     useInnerText: true,
   });
 
-  /* save file */
-  await expect(
-    page.getByText("unsaved changes"),
-    "it renders a hint that there are unsaved changes"
-  ).toBeVisible();
-
-  await page.getByRole("button", { name: "Save" }).click();
-
+  /* note: saving the plugin should have saved the whole file. */
   await expect(
     page.getByText("unsaved changes"),
     "it does not render a hint that there are unsaved changes"

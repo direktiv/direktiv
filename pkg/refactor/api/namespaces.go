@@ -6,6 +6,8 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/google/uuid"
+
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 
 	"github.com/direktiv/direktiv/pkg/refactor/database"
@@ -105,7 +107,7 @@ func (e *nsController) update(w http.ResponseWriter, r *http.Request) {
 
 	// Parse request.
 	req := struct {
-		MirrorSettings *datastore.MirrorConfig `json:"mirrorSettings"`
+		MirrorSettings *datastore.MirrorConfig `json:"mirror"`
 	}{}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeNotJSONError(w, err)
@@ -114,7 +116,7 @@ func (e *nsController) update(w http.ResponseWriter, r *http.Request) {
 	if req.MirrorSettings == nil {
 		writeError(w, &Error{
 			Code:    "request_data_invalid",
-			Message: "field mirrorSettings must be provided",
+			Message: "field mirror must be provided",
 		})
 
 		return
@@ -146,7 +148,7 @@ func (e *nsController) create(w http.ResponseWriter, r *http.Request) {
 	// Parse request.
 	req := struct {
 		Name           string                  `json:"name"`
-		MirrorSettings *datastore.MirrorConfig `json:"mirrorSettings"`
+		MirrorSettings *datastore.MirrorConfig `json:"mirror"`
 	}{}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeNotJSONError(w, err)
@@ -159,9 +161,8 @@ func (e *nsController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer db.Rollback()
-	dStore := db.DataStore()
 
-	ns, err := dStore.Namespaces().Create(r.Context(), &datastore.Namespace{
+	ns, err := db.DataStore().Namespaces().Create(r.Context(), &datastore.Namespace{
 		Name: req.Name,
 	})
 	if err != nil {
@@ -172,11 +173,17 @@ func (e *nsController) create(w http.ResponseWriter, r *http.Request) {
 	var mConfig *datastore.MirrorConfig
 	if req.MirrorSettings != nil {
 		req.MirrorSettings.Namespace = req.Name
-		mConfig, err = dStore.Mirror().CreateConfig(r.Context(), req.MirrorSettings)
+		mConfig, err = db.DataStore().Mirror().CreateConfig(r.Context(), req.MirrorSettings)
 		if err != nil {
 			writeDataStoreError(w, err)
 			return
 		}
+	}
+
+	_, err = db.FileStore().CreateRoot(r.Context(), uuid.New(), ns.Name)
+	if err != nil {
+		writeFileStoreError(w, err)
+		return
 	}
 
 	err = db.Commit(r.Context())
@@ -232,7 +239,7 @@ func (e *nsController) list(w http.ResponseWriter, r *http.Request) {
 func namespaceApiObject(ns *datastore.Namespace, mConfig *datastore.MirrorConfig) any {
 	type apiObject struct {
 		*datastore.Namespace
-		MirrorSettings *datastore.MirrorConfig `json:"mirrorSettings,omitempty"`
+		MirrorSettings *datastore.MirrorConfig `json:"mirror,omitempty"`
 	}
 
 	return &apiObject{

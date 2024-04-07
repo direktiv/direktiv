@@ -1,6 +1,7 @@
 package sidecar
 
 import (
+	"log/slog"
 	"os"
 	"os/signal"
 	"time"
@@ -20,7 +21,7 @@ func (sl *SignalListener) Start() {
 	sl.stopper = make(chan *time.Time, 1)
 	signal.Notify(sl.signals, os.Interrupt, unix.SIGTERM)
 
-	log.Debug("Listening for signals.")
+	slog.Debug("Listening for signals.")
 
 	end := threads.Register(sl.stopper)
 
@@ -32,10 +33,10 @@ func (sl *SignalListener) listen(end func()) {
 
 	select {
 	case <-sl.signals:
-		log.Info("Received shutdown signal.")
+		slog.Info("Received shutdown signal.")
 		Shutdown(SUCCESS)
 	case <-sl.stopper:
-		log.Debug("Stopping signal listener.")
+		slog.Debug("Stopping signal listener.")
 	}
 
 	go func() {

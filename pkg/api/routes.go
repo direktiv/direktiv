@@ -4,8 +4,7 @@ package api
 const (
 
 	// admin only routes.
-	RN_AddNamespace  = "addNamespace"
-	RN_GetServerLogs = "getServerLogs"
+	RN_AddNamespace = "addNamespace"
 
 	// misc route for azure.
 	RN_Preflight = "preflight"
@@ -35,9 +34,7 @@ const (
 	// instance routes.
 	RN_ListInstances         = "listInstances"
 	RN_GetInstance           = "getInstance"
-	RN_GetInstanceLogs       = "getInstanceLogs"
 	RN_GetInstanceVariable   = "getInstanceVariable"
-	RN_GetNamespaceLogs      = "getNamespaceLogs"
 	RN_CancelInstance        = "cancelInstance"
 	RN_ListInstanceVariables = "listInstanceVariables"
 	RN_SetInstanceVariable   = "setInstanceVariable"
@@ -48,7 +45,6 @@ const (
 	RN_GetWorkflowRefs       = "getWorkflowRefs"
 	RN_GetWorkflowRouter     = "getWorkflowRouter"
 	RN_GetWorkflowMetrics    = "getWorkflowMetrics"
-	RN_GetWorkflowLogs       = "getWorkflowLogs"
 	RN_ListWorkflowVariables = "listWorkflowVariables"
 	RN_GetWorkflowVariable   = "getWorkflowVariable"
 	RN_ListWorkflowServices  = "listWorkflowServices"
@@ -123,6 +119,5 @@ const (
 	RN_CancelMirrorActivity = "cancelMirrorActivity"
 
 	// git get routes.
-	RN_GetMirrorActivityLogs = "getMirrorActivityLogs"
-	RN_GetMirrorInfo         = "getMirrorInfo"
+	RN_GetMirrorInfo = "getMirrorInfo"
 )

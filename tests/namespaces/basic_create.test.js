@@ -5,6 +5,11 @@ import helpers from '../common/helpers'
 import regex from '../common/regex'
 import request from '../common/request'
 
+const timestamps = {
+	createdAt: expect.stringMatching(regex.timestampRegex),
+	updatedAt: expect.stringMatching(regex.timestampRegex),
+}
+
 describe('Test namespace create calls', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 
@@ -20,20 +25,37 @@ describe('Test namespace create calls', () => {
 		{
 			input: {
 				name: 'foo2',
-				mirrorSettings: {
+				mirror: {
 					url: 'my_url',
 				},
 			},
 			want: {
 				name: 'foo2',
-				mirrorSettings: {
+				mirror: {
 					url: 'my_url',
-					gitCommitHash: '',
-					gitRef: '',
 					insecure: false,
-					publicKey: '',
-					createdAt: expect.stringMatching(regex.timestampRegex),
-					updatedAt: expect.stringMatching(regex.timestampRegex),
+					...timestamps,
+				},
+			},
+		},
+		{
+			input: {
+				name: 'foo3',
+				mirror: {
+					url: 'my_url',
+					insecure: true,
+					gitRef: 'master',
+					gitCommitHash: '1234',
+				},
+			},
+			want: {
+				name: 'foo3',
+				mirror: {
+					url: 'my_url',
+					insecure: true,
+					gitRef: 'master',
+					gitCommitHash: '1234',
+					...timestamps,
 				},
 			},
 		},
@@ -49,9 +71,7 @@ describe('Test namespace create calls', () => {
 			expect(res.statusCode).toEqual(200)
 			expect(res.body.data).toEqual({
 				...testCase.want,
-
-				createdAt: expect.stringMatching(regex.timestampRegex),
-				updatedAt: expect.stringMatching(regex.timestampRegex),
+				...timestamps,
 			})
 		})
 	}

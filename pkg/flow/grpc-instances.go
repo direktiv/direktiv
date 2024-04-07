@@ -2,6 +2,7 @@ package flow
 
 import (
 	"context"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"time"
@@ -79,7 +80,7 @@ func (internal *internal) getInstance(ctx context.Context, instanceID string) (*
 }
 
 func (flow *flow) InstanceInput(ctx context.Context, req *grpc.InstanceInputRequest) (*grpc.InstanceInputResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	instID, err := uuid.Parse(req.GetInstance())
 	if err != nil {
@@ -118,7 +119,7 @@ func (flow *flow) InstanceInput(ctx context.Context, req *grpc.InstanceInputRequ
 }
 
 func (flow *flow) InstanceOutput(ctx context.Context, req *grpc.InstanceOutputRequest) (*grpc.InstanceOutputResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	instID, err := uuid.Parse(req.GetInstance())
 	if err != nil {
@@ -157,7 +158,7 @@ func (flow *flow) InstanceOutput(ctx context.Context, req *grpc.InstanceOutputRe
 }
 
 func (flow *flow) InstanceMetadata(ctx context.Context, req *grpc.InstanceMetadataRequest) (*grpc.InstanceMetadataResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	instID, err := uuid.Parse(req.GetInstance())
 	if err != nil {
@@ -196,7 +197,7 @@ func (flow *flow) InstanceMetadata(ctx context.Context, req *grpc.InstanceMetada
 }
 
 func (flow *flow) Instances(ctx context.Context, req *grpc.InstancesRequest) (*grpc.InstancesResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	opts := new(instancestore.ListOpts)
 	if req.Pagination != nil {
@@ -313,7 +314,7 @@ func (flow *flow) Instances(ctx context.Context, req *grpc.InstancesRequest) (*g
 }
 
 func (flow *flow) InstancesStream(req *grpc.InstancesRequest, srv grpc.Flow_InstancesStreamServer) error {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 	ctx := srv.Context()
 
 	resp, err := flow.Instances(ctx, req)
@@ -336,7 +337,7 @@ func (flow *flow) InstancesStream(req *grpc.InstancesRequest, srv grpc.Flow_Inst
 }
 
 func (flow *flow) Instance(ctx context.Context, req *grpc.InstanceRequest) (*grpc.InstanceResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	instID, err := uuid.Parse(req.GetInstance())
 	if err != nil {
@@ -390,7 +391,7 @@ func (flow *flow) Instance(ctx context.Context, req *grpc.InstanceRequest) (*grp
 }
 
 func (flow *flow) InstanceStream(req *grpc.InstanceRequest, srv grpc.Flow_InstanceStreamServer) error {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	ctx := srv.Context()
 	phash := ""
@@ -472,24 +473,22 @@ resend:
 	goto resend
 }
 
-func (flow *flow) StartWorkflow(ctx context.Context, req *grpc.StartWorkflowRequest) (*grpc.StartWorkflowResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
-
+func (engine *engine) StartWorkflow(ctx context.Context, namespace, path string, input []byte) (*instancestore.InstanceData, error) {
 	var err error
 	var ns *database.Namespace
-	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
-		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+
+	err = engine.runSqlTx(ctx, func(tx *sqlTx) error {
+		ns, err = tx.DataStore().Namespaces().GetByName(ctx, namespace)
 		return err
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	calledAs := req.GetPath()
+	calledAs := path
 
 	span := trace.SpanFromContext(ctx)
 
-	input := req.GetInput()
 	if input == nil {
 		input = make([]byte, 0)
 	}
@@ -507,35 +506,47 @@ func (flow *flow) StartWorkflow(ctx context.Context, req *grpc.StartWorkflowRequ
 		},
 	}
 
-	im, err := flow.engine.NewInstance(ctx, args)
+	im, err := engine.NewInstance(ctx, args)
 	if err != nil {
-		flow.sugar.Debugf("Error returned to gRPC request %s: %v", this(), err)
-		flow.logger.Errorf(ctx, flow.ID, flow.GetAttributes(), "Failed starting a Workflow")
 		return nil, err
 	}
 
-	if !req.GetHold() {
-		go flow.engine.start(im)
+	go engine.start(im)
+
+	return im.instance.Instance, nil
+}
+
+func (flow *flow) StartWorkflow(ctx context.Context, req *grpc.StartWorkflowRequest) (*grpc.StartWorkflowResponse, error) {
+	inst, err := flow.engine.StartWorkflow(ctx, req.GetNamespace(), req.GetPath(), req.GetInput())
+	if err != nil {
+		return nil, err
 	}
 
 	var resp grpc.StartWorkflowResponse
 
 	resp.Namespace = req.GetNamespace()
-	resp.Instance = im.ID().String()
+	resp.Instance = inst.ID.String()
 
 	return &resp, nil
 }
 
-func (flow *flow) CancelInstance(ctx context.Context, req *grpc.CancelInstanceRequest) (*emptypb.Empty, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
-
-	instance, err := flow.getInstance(ctx, req.GetNamespace(), req.GetInstance())
+func (engine *engine) CancelInstance(ctx context.Context, namespace, instanceID string) error {
+	instance, err := engine.getInstance(ctx, namespace, instanceID)
 	if err != nil {
-		flow.logger.Errorf(ctx, flow.ID, flow.GetAttributes(), "Failed to resolve instance %s", req.GetInstance())
-		return nil, err
+		return err
 	}
 
-	flow.engine.cancelInstance(instance.Instance.ID.String(), "direktiv.cancels.api", "cancelled by api request", false)
+	engine.cancelInstance(instance.Instance.ID.String(), "direktiv.cancels.api", "cancelled by api request", false)
+
+	return nil
+}
+
+func (flow *flow) CancelInstance(ctx context.Context, req *grpc.CancelInstanceRequest) (*emptypb.Empty, error) {
+	err := flow.engine.CancelInstance(ctx, req.GetNamespace(), req.GetInstance())
+	if err != nil {
+		slog.Debug("Error returned to gRPC request", "this", this(), "error", err)
+		return nil, err
+	}
 
 	var resp emptypb.Empty
 
@@ -571,7 +582,7 @@ func (tmc *grpcMetadataTMC) Set(k, v string) {
 }
 
 func (flow *flow) AwaitWorkflow(req *grpc.AwaitWorkflowRequest, srv grpc.Flow_AwaitWorkflowServer) error {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	ctx := srv.Context()
 	prop := otel.GetTextMapPropagator()
@@ -620,8 +631,7 @@ func (flow *flow) AwaitWorkflow(req *grpc.AwaitWorkflowRequest, srv grpc.Flow_Aw
 
 	im, err := flow.engine.NewInstance(ctx, args)
 	if err != nil {
-		flow.logger.Errorf(ctx, flow.ID, flow.GetAttributes(), "Failed to create instance: %v", err)
-		flow.sugar.Debugf("Error returned to gRPC request %s: %v", this(), err)
+		slog.Debug("Error returned to gRPC request", "this", this(), "error", err)
 		return err
 	}
 
@@ -636,7 +646,7 @@ resend:
 
 	instance, err = flow.getInstance(ctx, req.GetNamespace(), im.instance.Instance.ID.String())
 	if err != nil {
-		flow.sugar.Debugf("Error returned to gRPC request %s: %v", this(), err)
+		slog.Debug("Error returned to gRPC request", "this", this(), "error", err)
 		return err
 	}
 
@@ -655,14 +665,14 @@ resend:
 	if instance.Instance.Status == instancestore.InstanceStatusComplete {
 		tx, err := flow.beginSqlTx(ctx)
 		if err != nil {
-			flow.sugar.Debugf("Error returned to gRPC request %s: %v", this(), err)
+			slog.Debug("Error returned to gRPC request", "this", this(), "error", err)
 			return err
 		}
 		defer tx.Rollback()
 
 		idata, err := tx.InstanceStore().ForInstanceID(instance.Instance.ID).GetSummaryWithOutput(ctx)
 		if err != nil {
-			flow.sugar.Debugf("Error returned to gRPC request %s: %v", this(), err)
+			slog.Debug("Error returned to gRPC request", "this", this(), "error", err)
 			return err
 		}
 
@@ -675,7 +685,7 @@ resend:
 	if nhash != phash {
 		err = srv.Send(resp)
 		if err != nil {
-			flow.sugar.Debugf("Error returned to gRPC request %s: %v", this(), err)
+			slog.Debug("Error returned to gRPC request", "this", this(), "error", err)
 			return err
 		}
 	}

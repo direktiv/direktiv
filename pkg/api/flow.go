@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"net/http/httputil"
 	"strconv"
@@ -24,11 +25,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	prometheus "github.com/prometheus/client_golang/api"
-	"go.uber.org/zap"
 )
 
 type flowHandler struct {
-	logger     *zap.SugaredLogger
 	client     grpc.FlowClient
 	prometheus prometheus.Client
 
@@ -48,53 +47,53 @@ func newSingleHostReverseProxy(patchReq func(req *http.Request) *http.Request) *
 	}
 }
 
-func newFlowHandler(logger *zap.SugaredLogger, base *mux.Router, router *mux.Router, conf *core.Config) (*flowHandler, error) {
+func newFlowHandler(base *mux.Router, router *mux.Router, conf *core.Config) (*flowHandler, error) {
 	flowAddr := fmt.Sprintf("localhost:%d", conf.GrpcPort)
-	logger.Debugf("connecting to flow %s", flowAddr)
+	slog.Debug("Connecting to Direktiv flows.", "addr", flowAddr)
 
 	flowConn, err := util.GetEndpointTLS(flowAddr)
 	if err != nil {
-		logger.Errorf("can not connect to direktiv flows: %v", err)
+		slog.Error("Failed to connect to Direktiv flows.", "addr", flowAddr, "error", err)
 		return nil, err
 	}
+	slog.Info("Connected to Direktiv flows.", "addr", flowAddr)
 
 	h := &flowHandler{
-		logger:       logger,
 		client:       grpc.NewFlowClient(flowConn),
 		apiV2Address: fmt.Sprintf("localhost:%d", conf.ApiV2Port),
 	}
 
 	prometheusAddr := fmt.Sprintf("http://%s", conf.Prometheus)
-	logger.Debugf("connecting to prometheus %s", prometheusAddr)
-	h.prometheus, err = prometheus.NewClient(prometheus.Config{
-		Address: prometheusAddr,
-	})
+	slog.Debug("Connecting to Prometheus.", "addr", prometheusAddr)
+	h.prometheus, err = prometheus.NewClient(prometheus.Config{Address: prometheusAddr})
 	if err != nil {
+		slog.Error("Failed to connect to Prometheus.", "addr", prometheusAddr, "error", err)
 		return nil, err
 	}
+	slog.Info("Connected to Prometheus.", "addr", prometheusAddr)
 
+	slog.Debug("Initializing API routes on the router.")
 	h.initRoutes(router)
+	slog.Debug("API routes have been successfully added to the router.")
 
+	slog.Debug("Setting up reverse proxy handlers for API and namespace endpoints.")
+	setupReverseProxyHandlers(base, router, h.apiV2Address)
+
+	return h, nil
+}
+
+func setupReverseProxyHandlers(base *mux.Router, router *mux.Router, apiV2Address string) {
 	proxy := newSingleHostReverseProxy(func(req *http.Request) *http.Request {
 		req.Host = ""
-		req.URL.Host = h.apiV2Address
+		req.URL.Host = apiV2Address
 		req.URL.Scheme = "http"
 
 		return req
 	})
-	router.PathPrefix("/v2").Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		proxy.ServeHTTP(w, r)
-	}))
 
-	base.PathPrefix("/gw").Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		proxy.ServeHTTP(w, r)
-	}))
-
-	base.PathPrefix("/ns").Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		proxy.ServeHTTP(w, r)
-	}))
-
-	return h, nil
+	router.PathPrefix("/v2").Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { proxy.ServeHTTP(w, r) }))
+	base.PathPrefix("/gw").Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { proxy.ServeHTTP(w, r) }))
+	base.PathPrefix("/ns").Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { proxy.ServeHTTP(w, r) }))
 }
 
 func (h *flowHandler) initRoutes(r *mux.Router) {
@@ -139,7 +138,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//       "$ref": '#/definitions/ErrorResponse'
 	r.HandleFunc("/namespaces/{ns}", h.CreateNamespace).Name(RN_AddNamespace).Methods(http.MethodPut)
 
-	r.HandleFunc("/namespaces/{ns}/lint", h.NamespaceLint).Name(RN_GetNamespaceLogs).Methods(http.MethodGet)
+	r.HandleFunc("/namespaces/{ns}/lint", h.NamespaceLint).Name("getNamespaceLogs").Methods(http.MethodGet)
 
 	// swagger:operation DELETE /api/namespaces/{namespace} Namespaces deleteNamespace
 	// ---
@@ -205,81 +204,6 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//   '200':
 	//     "description": "jq query was successful"
 	r.HandleFunc("/jq", h.JQ).Name(RN_JQPlayground).Methods(http.MethodPost)
-
-	// swagger:operation GET /api/logs Logs serverLogs
-	// ---
-	// description: |
-	//   Gets Direktiv Server Logs.
-	// summary: Get Direktiv Server Logs
-	// parameters:
-	// - "": "#/parameters/PaginationQuery/order.field"
-	// - "": "#/parameters/PaginationQuery/order.direction"
-	// - "": "#/parameters/PaginationQuery/filter.field"
-	// - "": "#/parameters/PaginationQuery/filter.type"
-	// responses:
-	//   200:
-	//     produces: application/json
-	//     description: "successfully got server logs"
-	//     schema:
-	//       "$ref": '#/definitions/OkBody'
-	//   default:
-	//     produces: application/json
-	//     description: an error has occurred
-	//     schema:
-	//       "$ref": '#/definitions/ErrorResponse'
-	handlerPair(r, RN_GetServerLogs, "/logs", h.ServerLogs, h.ServerLogsSSE)
-
-	// swagger:operation GET /api/namespaces/{namespace}/logs Logs namespaceLogs
-	// ---
-	// description: |
-	//   Gets Namespace Level Logs.
-	// summary: Gets Namespace Level Logs
-	// parameters:
-	// - "": "#/parameters/PaginationQuery/order.field"
-	// - "": "#/parameters/PaginationQuery/order.direction"
-	// - "": "#/parameters/PaginationQuery/filter.field"
-	// - "": "#/parameters/PaginationQuery/filter.type"
-	// - in: path
-	//   name: namespace
-	//   type: string
-	//   required: true
-	//   description: 'target namespace'
-	// responses:
-	//   '200':
-	//     "description": "successfully got namespace logs"
-	handlerPair(r, RN_GetNamespaceLogs, "/namespaces/{ns}/logs", h.NamespaceLogs, h.NamespaceLogsSSE)
-
-	// swagger:operation GET /api/namespaces/{namespace}/instances/{instance}/logs Logs instanceLogs
-	// ---
-	// description: |
-	//   Gets the logs of an executed instance.
-	// summary: Gets Instance Logs
-	// parameters:
-	// - "": "#/parameters/PaginationQuery/order.field"
-	// - "": "#/parameters/PaginationQuery/order.direction"
-	// - "": "#/parameters/PaginationQuery/filter.field"
-	// - "": "#/parameters/PaginationQuery/filter.type"
-	// - in: path
-	//   name: namespace
-	//   type: string
-	//   required: true
-	//   description: 'target namespace'
-	// - in: path
-	//   name: instance
-	//   type: string
-	//   required: true
-	//   description: 'target instance id'
-	// responses:
-	//   '200':
-	//     "description": "successfully got instance logs"
-	//     schema:
-	//       "$ref": '#/definitions/OkBody'
-	//   default:
-	//     produces: application/json
-	//     description: an error has occurred
-	//     schema:
-	//       "$ref": '#/definitions/ErrorResponse'
-	handlerPair(r, RN_GetInstanceLogs, "/namespaces/{ns}/instances/{instance}/logs", h.InstanceLogs, h.InstanceLogsSSE)
 
 	// swagger:operation GET /api/namespaces/{namespace}/tree/{workflow}?op=metrics-invoked Metrics workflowMetricsInvoked
 	// ---
@@ -1163,34 +1087,6 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully sent cloud event"
 	r.HandleFunc("/namespaces/{ns}/broadcast", h.BroadcastCloudevent).Name(RN_NamespaceEvent).Methods(http.MethodPost)
 
-	// swagger:operation GET /api/namespaces/{namespace}/tree/{workflow}?op=logs Logs getWorkflowLogs
-	// ---
-	// description: |
-	//   Get workflow level logs.
-	// summary: Get Workflow Level Logs
-	// parameters:
-	// - "": "#/parameters/PaginationQuery/order.field"
-	//   enum:
-	//     - CREATED
-	//     - UPDATED
-	// - "": "#/parameters/PaginationQuery/order.direction"
-	// - "": "#/parameters/PaginationQuery/filter.field"
-	// - "": "#/parameters/PaginationQuery/filter.type"
-	// - in: path
-	//   name: namespace
-	//   type: string
-	//   required: true
-	//   description: 'target namespace'
-	// - in: path
-	//   name: workflow
-	//   type: string
-	//   required: true
-	//   description: 'path to target workflow'
-	// responses:
-	//   '200':
-	//     "description": "successfully got workflow logs"
-	pathHandlerPair(r, RN_GetWorkflowLogs, "logs", h.WorkflowLogs, h.WorkflowLogsSSE)
-
 	// swagger:operation PUT /api/namespaces/{namespace}/tree/{directory}?op=create-directory Directory createDirectory
 	// ---
 	// description: |
@@ -1367,7 +1263,6 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	pathHandler(r, http.MethodPost, RN_LockMirror, "unlock-mirror", h.UnlockMirror)
 	pathHandler(r, http.MethodPost, RN_SyncMirror, "sync-mirror", h.SyncMirror)
 	pathHandlerPair(r, RN_GetMirrorInfo, "mirror-info", h.MirrorInfo, h.MirrorInfoSSE)
-	handlerPair(r, RN_GetMirrorActivityLogs, "/namespaces/{ns}/activities/{activity}/logs", h.MirrorActivityLogs, h.MirrorActivityLogsSSE)
 	r.HandleFunc("/namespaces/{ns}/activities/{activity}/cancel", h.MirrorActivityCancel).Name(RN_CancelMirrorActivity).Methods(http.MethodPost)
 
 	// swagger:operation GET /api/namespaces/{namespace}/event-listeners Events getEventListeners
@@ -1593,7 +1488,7 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 }
 
 func (h *flowHandler) EventListeners(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	p, err := pagination(r)
@@ -1613,7 +1508,7 @@ func (h *flowHandler) EventListeners(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) EventListenersSSE(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 	namespace := mux.Vars(r)["ns"]
 
 	ctx := r.Context()
@@ -1664,7 +1559,7 @@ func (h *flowHandler) EventListenersSSE(w http.ResponseWriter, r *http.Request) 
 }
 
 func (h *flowHandler) EventHistory(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	p, err := pagination(r)
@@ -1684,7 +1579,7 @@ func (h *flowHandler) EventHistory(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) EventHistorySSE(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 	namespace := mux.Vars(r)["ns"]
 
 	ctx := r.Context()
@@ -1735,7 +1630,7 @@ func (h *flowHandler) EventHistorySSE(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) Namespaces(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 
@@ -1754,7 +1649,7 @@ func (h *flowHandler) Namespaces(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) NamespacesSSE(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 
@@ -1805,7 +1700,7 @@ func (h *flowHandler) NamespacesSSE(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) CreateNamespace(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -1842,7 +1737,7 @@ func (h *flowHandler) CreateNamespace(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) UpdateMirror(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -1872,7 +1767,7 @@ func (h *flowHandler) UpdateMirror(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) NamespaceLint(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -1891,7 +1786,7 @@ func (h *flowHandler) NamespaceLint(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) DeleteNamespace(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -1910,387 +1805,9 @@ func (h *flowHandler) DeleteNamespace(w http.ResponseWriter, r *http.Request) {
 	respond(w, resp, err)
 }
 
-func (h *flowHandler) ServerLogs(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
-
-	ctx := r.Context()
-
-	p, err := pagination(r)
-	if err != nil {
-		badRequest(w, err)
-		return
-	}
-
-	in := &grpc.ServerLogsRequest{
-		Pagination: p,
-	}
-
-	resp, err := h.client.ServerLogs(ctx, in)
-	respond(w, resp, err)
-}
-
-func (h *flowHandler) ServerLogsSSE(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
-
-	ctx := r.Context()
-
-	p, err := pagination(r)
-	if err != nil {
-		badRequest(w, err)
-		return
-	}
-
-	in := &grpc.ServerLogsRequest{
-		Pagination: p,
-	}
-
-	resp, err := h.client.ServerLogsParcels(ctx, in)
-	if err != nil {
-		respond(w, resp, err)
-		return
-	}
-
-	ch := make(chan interface{}, 1)
-
-	defer func() {
-		_ = resp.CloseSend()
-
-		for {
-			_, more := <-ch
-			if !more {
-				return
-			}
-		}
-	}()
-
-	go func() {
-		defer close(ch)
-
-		for {
-			x, err := resp.Recv()
-			if err != nil {
-				ch <- err
-				return
-			}
-
-			ch <- x
-		}
-	}()
-
-	sse(w, ch)
-}
-
-func (h *flowHandler) NamespaceLogs(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
-
-	ctx := r.Context()
-	namespace := mux.Vars(r)["ns"]
-
-	p, err := pagination(r)
-	if err != nil {
-		badRequest(w, err)
-		return
-	}
-
-	in := &grpc.NamespaceLogsRequest{
-		Pagination: p,
-		Namespace:  namespace,
-	}
-
-	resp, err := h.client.NamespaceLogs(ctx, in)
-	respond(w, resp, err)
-}
-
-func (h *flowHandler) NamespaceLogsSSE(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
-
-	ctx := r.Context()
-	namespace := mux.Vars(r)["ns"]
-
-	p, err := pagination(r)
-	if err != nil {
-		badRequest(w, err)
-		return
-	}
-
-	in := &grpc.NamespaceLogsRequest{
-		Pagination: p,
-		Namespace:  namespace,
-	}
-
-	resp, err := h.client.NamespaceLogsParcels(ctx, in)
-	if err != nil {
-		respond(w, resp, err)
-		return
-	}
-
-	ch := make(chan interface{}, 1)
-
-	defer func() {
-		_ = resp.CloseSend()
-
-		for {
-			_, more := <-ch
-			if !more {
-				return
-			}
-		}
-	}()
-
-	go func() {
-		defer close(ch)
-
-		for {
-			x, err := resp.Recv()
-			if err != nil {
-				ch <- err
-				return
-			}
-
-			ch <- x
-		}
-	}()
-
-	sse(w, ch)
-}
-
-func (h *flowHandler) WorkflowLogs(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
-
-	ctx := r.Context()
-	namespace := mux.Vars(r)["ns"]
-	path, _ := pathAndRef(r)
-
-	p, err := pagination(r)
-	if err != nil {
-		badRequest(w, err)
-		return
-	}
-
-	in := &grpc.WorkflowLogsRequest{
-		Pagination: p,
-		Namespace:  namespace,
-		Path:       path,
-	}
-
-	resp, err := h.client.WorkflowLogs(ctx, in)
-	respond(w, resp, err)
-}
-
-func (h *flowHandler) WorkflowLogsSSE(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
-
-	ctx := r.Context()
-	namespace := mux.Vars(r)["ns"]
-	path, _ := pathAndRef(r)
-
-	p, err := pagination(r)
-	if err != nil {
-		badRequest(w, err)
-		return
-	}
-
-	in := &grpc.WorkflowLogsRequest{
-		Pagination: p,
-		Namespace:  namespace,
-		Path:       path,
-	}
-
-	resp, err := h.client.WorkflowLogsParcels(ctx, in)
-	if err != nil {
-		respond(w, resp, err)
-		return
-	}
-
-	ch := make(chan interface{}, 1)
-
-	defer func() {
-		_ = resp.CloseSend()
-
-		for {
-			_, more := <-ch
-			if !more {
-				return
-			}
-		}
-	}()
-
-	go func() {
-		defer close(ch)
-
-		for {
-			x, err := resp.Recv()
-			if err != nil {
-				ch <- err
-				return
-			}
-
-			ch <- x
-		}
-	}()
-
-	sse(w, ch)
-}
-
-func (h *flowHandler) InstanceLogs(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
-
-	ctx := r.Context()
-	namespace := mux.Vars(r)["ns"]
-	instance := mux.Vars(r)["instance"]
-
-	p, err := pagination(r)
-	if err != nil {
-		badRequest(w, err)
-		return
-	}
-
-	in := &grpc.InstanceLogsRequest{
-		Pagination: p,
-		Namespace:  namespace,
-		Instance:   instance,
-	}
-
-	resp, err := h.client.InstanceLogs(ctx, in)
-	respond(w, resp, err)
-}
-
-func (h *flowHandler) InstanceLogsSSE(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
-
-	ctx := r.Context()
-	namespace := mux.Vars(r)["ns"]
-	instance := mux.Vars(r)["instance"]
-
-	p, err := pagination(r)
-	if err != nil {
-		badRequest(w, err)
-		return
-	}
-
-	in := &grpc.InstanceLogsRequest{
-		Pagination: p,
-		Namespace:  namespace,
-		Instance:   instance,
-	}
-
-	resp, err := h.client.InstanceLogsParcels(ctx, in)
-	if err != nil {
-		respond(w, resp, err)
-		return
-	}
-
-	ch := make(chan interface{}, 1)
-
-	defer func() {
-		_ = resp.CloseSend()
-
-		for {
-			_, more := <-ch
-			if !more {
-				return
-			}
-		}
-	}()
-
-	go func() {
-		defer close(ch)
-
-		for {
-			x, err := resp.Recv()
-			if err != nil {
-				ch <- err
-				return
-			}
-
-			ch <- x
-		}
-	}()
-
-	sse(w, ch)
-}
-
-func (h *flowHandler) MirrorActivityLogs(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
-
-	ctx := r.Context()
-	namespace := mux.Vars(r)["ns"]
-	activity := mux.Vars(r)["activity"]
-
-	p, err := pagination(r)
-	if err != nil {
-		badRequest(w, err)
-		return
-	}
-
-	in := &grpc.MirrorActivityLogsRequest{
-		Pagination: p,
-		Namespace:  namespace,
-		Activity:   activity,
-	}
-
-	resp, err := h.client.MirrorActivityLogs(ctx, in)
-	respond(w, resp, err)
-}
-
-func (h *flowHandler) MirrorActivityLogsSSE(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
-
-	ctx := r.Context()
-	namespace := mux.Vars(r)["ns"]
-	activity := mux.Vars(r)["activity"]
-
-	p, err := pagination(r)
-	if err != nil {
-		badRequest(w, err)
-		return
-	}
-
-	in := &grpc.MirrorActivityLogsRequest{
-		Pagination: p,
-		Namespace:  namespace,
-		Activity:   activity,
-	}
-
-	resp, err := h.client.MirrorActivityLogsParcels(ctx, in)
-	if err != nil {
-		respond(w, resp, err)
-		return
-	}
-
-	ch := make(chan interface{}, 1)
-
-	defer func() {
-		_ = resp.CloseSend()
-
-		for {
-			_, more := <-ch
-			if !more {
-				return
-			}
-		}
-	}()
-
-	go func() {
-		defer close(ch)
-
-		for {
-			x, err := resp.Recv()
-			if err != nil {
-				ch <- err
-				return
-			}
-
-			ch <- x
-		}
-	}()
-
-	sse(w, ch)
-}
-
 func (h *flowHandler) GetNode(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("method: %s\nuri: %s\n", r.Method, r.URL.String())
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("get node", "method", r.Method, "uri", r.URL.String())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2341,7 +1858,7 @@ func (h *flowHandler) GetNode(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) GetNodeSSE(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2462,7 +1979,7 @@ workflow:
 }
 
 func (h *flowHandler) CreateDirectory(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2502,7 +2019,7 @@ func (h *flowHandler) CreateDirectory(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) CreateWorkflow(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2525,7 +2042,7 @@ func (h *flowHandler) CreateWorkflow(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) CreateFile(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2549,7 +2066,7 @@ func (h *flowHandler) CreateFile(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) UpdateWorkflow(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2572,7 +2089,7 @@ func (h *flowHandler) UpdateWorkflow(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) UpdateFile(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2596,7 +2113,7 @@ func (h *flowHandler) UpdateFile(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) LockMirror(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2612,7 +2129,7 @@ func (h *flowHandler) LockMirror(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) UnlockMirror(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2628,7 +2145,7 @@ func (h *flowHandler) UnlockMirror(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) SyncMirror(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2658,7 +2175,7 @@ func (h *flowHandler) SyncMirror(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) RenameNode(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2685,7 +2202,7 @@ func (h *flowHandler) RenameNode(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) DeleteNode(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2704,7 +2221,7 @@ func (h *flowHandler) DeleteNode(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) MirrorInfo(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2727,7 +2244,7 @@ func (h *flowHandler) MirrorInfo(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) MirrorInfoSSE(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2782,7 +2299,7 @@ func (h *flowHandler) MirrorInfoSSE(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) Secrets(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2824,7 +2341,7 @@ func (h *flowHandler) Secrets(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) SecretsSSE(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2879,7 +2396,7 @@ func (h *flowHandler) SecretsSSE(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) SetSecret(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2902,7 +2419,7 @@ func (h *flowHandler) SetSecret(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) OverwriteSecret(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2924,7 +2441,7 @@ func (h *flowHandler) OverwriteSecret(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) DeleteSecret(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2939,7 +2456,7 @@ func (h *flowHandler) DeleteSecret(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) DeleteSecretsFolder(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2954,7 +2471,7 @@ func (h *flowHandler) DeleteSecretsFolder(w http.ResponseWriter, r *http.Request
 }
 
 func (h *flowHandler) CreateSecretsFolder(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2970,7 +2487,7 @@ func (h *flowHandler) CreateSecretsFolder(w http.ResponseWriter, r *http.Request
 }
 
 func (h *flowHandler) Instance(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -2986,7 +2503,7 @@ func (h *flowHandler) Instance(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) InstanceSSE(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -3034,7 +2551,7 @@ func (h *flowHandler) InstanceSSE(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) Instances(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -3055,7 +2572,7 @@ func (h *flowHandler) Instances(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) InstancesSSE(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -3108,7 +2625,7 @@ func (h *flowHandler) InstancesSSE(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) InstanceInput(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -3124,7 +2641,7 @@ func (h *flowHandler) InstanceInput(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) InstanceOutput(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -3140,7 +2657,7 @@ func (h *flowHandler) InstanceOutput(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) InstanceMetadata(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -3156,7 +2673,7 @@ func (h *flowHandler) InstanceMetadata(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) InstanceCancel(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -3172,7 +2689,7 @@ func (h *flowHandler) InstanceCancel(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) MirrorActivityCancel(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -3188,7 +2705,7 @@ func (h *flowHandler) MirrorActivityCancel(w http.ResponseWriter, r *http.Reques
 }
 
 func (h *flowHandler) ExecuteWorkflow(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -3211,7 +2728,7 @@ func (h *flowHandler) ExecuteWorkflow(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) WaitWorkflow(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -3261,7 +2778,7 @@ func (h *flowHandler) WaitWorkflow(w http.ResponseWriter, r *http.Request) {
 	defer func() {
 		err := c.CloseSend()
 		if err != nil {
-			h.logger.Errorf("Failed to close connection: %v.", err)
+			slog.Error("Failed to close connection.", "error", err)
 		}
 	}()
 
@@ -3283,7 +2800,7 @@ func (h *flowHandler) WaitWorkflow(w http.ResponseWriter, r *http.Request) {
 
 			err = c.CloseSend()
 			if err != nil {
-				h.logger.Errorf("Failed to close connection: %v.", err)
+				slog.Error("Failed to close connection.", "error", err)
 			}
 
 			field := r.URL.Query().Get("field")
@@ -3344,11 +2861,11 @@ func (h *flowHandler) WaitWorkflow(w http.ResponseWriter, r *http.Request) {
 
 			_, err = io.Copy(w, bytes.NewReader(data))
 			if err != nil {
-				h.logger.Errorf("Failed to send response: %v.", err)
+				slog.Error("Failed to send response.", "error", err)
 			}
 
 			return
-		} else if s == util.InstanceStatusFailed {
+		} else if s == util.InstanceStatusFailed || s == util.InstanceStatusCancelled {
 			w.Header().Set("Direktiv-Instance-Error-Code", status.Instance.ErrorCode)
 			w.Header().Set("Direktiv-Instance-Error-Message", status.Instance.ErrorMessage)
 			code := http.StatusInternalServerError
@@ -3518,13 +3035,13 @@ func (h *flowHandler) doBroadcast(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) BroadcastCloudevent(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	h.doBroadcast(w, r)
 }
 
 func (h *flowHandler) ReplayEvent(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -3540,7 +3057,7 @@ func (h *flowHandler) ReplayEvent(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) JQ(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 
@@ -3557,7 +3074,7 @@ func (h *flowHandler) JQ(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) NamespaceVariables(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -3578,7 +3095,7 @@ func (h *flowHandler) NamespaceVariables(w http.ResponseWriter, r *http.Request)
 }
 
 func (h *flowHandler) NamespaceVariablesSSE(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -3631,7 +3148,7 @@ func (h *flowHandler) NamespaceVariablesSSE(w http.ResponseWriter, r *http.Reque
 }
 
 func (h *flowHandler) NamespaceVariable(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -3676,7 +3193,7 @@ func (h *flowHandler) NamespaceVariable(w http.ResponseWriter, r *http.Request) 
 }
 
 func (h *flowHandler) SetNamespaceVariable(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -3755,7 +3272,7 @@ func (h *flowHandler) SetNamespaceVariable(w http.ResponseWriter, r *http.Reques
 }
 
 func (h *flowHandler) DeleteNamespaceVariable(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -3771,7 +3288,7 @@ func (h *flowHandler) DeleteNamespaceVariable(w http.ResponseWriter, r *http.Req
 }
 
 func (h *flowHandler) InstanceVariables(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -3794,7 +3311,7 @@ func (h *flowHandler) InstanceVariables(w http.ResponseWriter, r *http.Request) 
 }
 
 func (h *flowHandler) InstanceVariablesSSE(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -3849,7 +3366,7 @@ func (h *flowHandler) InstanceVariablesSSE(w http.ResponseWriter, r *http.Reques
 }
 
 func (h *flowHandler) InstanceVariable(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -3896,7 +3413,7 @@ func (h *flowHandler) InstanceVariable(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) SetInstanceVariable(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -3972,7 +3489,7 @@ func (h *flowHandler) SetInstanceVariable(w http.ResponseWriter, r *http.Request
 }
 
 func (h *flowHandler) DeleteInstanceVariable(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -3990,7 +3507,7 @@ func (h *flowHandler) DeleteInstanceVariable(w http.ResponseWriter, r *http.Requ
 }
 
 func (h *flowHandler) WorkflowVariables(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -4013,7 +3530,7 @@ func (h *flowHandler) WorkflowVariables(w http.ResponseWriter, r *http.Request) 
 }
 
 func (h *flowHandler) WorkflowVariablesSSE(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -4068,7 +3585,7 @@ func (h *flowHandler) WorkflowVariablesSSE(w http.ResponseWriter, r *http.Reques
 }
 
 func (h *flowHandler) WorkflowVariable(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -4115,7 +3632,7 @@ func (h *flowHandler) WorkflowVariable(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *flowHandler) SetWorkflowVariable(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]
@@ -4191,7 +3708,7 @@ func (h *flowHandler) SetWorkflowVariable(w http.ResponseWriter, r *http.Request
 }
 
 func (h *flowHandler) DeleteWorkflowVariable(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("Handling request: %s", this())
+	slog.Debug("Handling request", "this", this())
 
 	ctx := r.Context()
 	namespace := mux.Vars(r)["ns"]

@@ -63,16 +63,16 @@ jobs:
             "errors/",
             "events/",
             "filesystem/",
-            # "functions/",
+            "functions/",
             "gateway/",
-            # "kubernetes/",
+            "kubernetes/",
             "logparser/",
             "mirror/",
             "namespaces/",
             "registry/",
             "secrets/",
             "secrets2/",
-            # "services/",
+            "services/",
             "variables/",
             "variables2/",
             "logs/", 
@@ -110,6 +110,14 @@ jobs:
       - name: Add a postgres instance
         run: |
           kubectl apply -f https://raw.githubusercontent.com/direktiv/direktiv/main/scripts/kubernetes/install/db/basic.yaml
+
+      - name: Install Knative
+        run: |
+          kubectl apply -f https://github.com/knative/operator/releases/download/knative-v1.12.2/operator.yaml
+          kubectl create ns knative-serving
+          kubectl apply -f https://raw.githubusercontent.com/direktiv/direktiv/main/scripts/kubernetes/install/knative/basic.yaml
+          kubectl apply --filename https://github.com/knative/net-contour/releases/download/knative-v1.11.1/contour.yaml
+          kubectl delete namespace contour-external
 
       - name: Cache Docker layers
         id: docker-cache

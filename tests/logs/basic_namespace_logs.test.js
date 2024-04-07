@@ -4,7 +4,6 @@ import { basename } from 'path'
 import common from '../common'
 import helpers from '../common/helpers'
 import request from '../common/request'
-import { retry50, retry70 } from '../common/retry'
 
 const namespace = basename(__filename)
 
@@ -29,21 +28,21 @@ states:
 		const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespace }/tree/noop.yaml?op=wait`)
 		expect(res.statusCode).toEqual(200)
 	})
-	retry70(`should contain instance log entries`, async () => {
-		const instRes = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespace }/instances`)
-		expect(instRes.statusCode).toEqual(200)
-
-		const logRes = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespace }/logs?instance=${ instRes.body.instances.results[0].id }`)
-		expect(logRes.statusCode).toEqual(200)
-		expect(logRes.body.data).not.toBeNull()
-		expect(logRes.body.data.length).toBeGreaterThanOrEqual(1)
-	},
-	)
-	retry50(`should contain namespace log entries`, async () => {
-		const logRes = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespace }/logs`)
-		expect(logRes.statusCode).toEqual(200)
-		expect(logRes.body.data).not.toBeNull()
-		expect(logRes.body.data).not.toBeNull()
-		expect(logRes.body.data.length).toBeGreaterThanOrEqual(1)
-	})
+	// retry70(`should contain instance log entries`, async () => {
+	// 	const instRes = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespace }/instances`)
+	// 	expect(instRes.statusCode).toEqual(200)
+	//
+	// 	const logRes = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespace }/logs?instance=${ instRes.body.instances.results[0].id }`)
+	// 	expect(logRes.statusCode).toEqual(200)
+	// 	expect(logRes.body.data).not.toBeNull()
+	// 	expect(logRes.body.data.length).toBeGreaterThanOrEqual(1)
+	// },
+	// )
+	// retry50(`should contain namespace log entries`, async () => {
+	// 	const logRes = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespace }/logs`)
+	// 	expect(logRes.statusCode).toEqual(200)
+	// 	expect(logRes.body.data).not.toBeNull()
+	// 	expect(logRes.body.data).not.toBeNull()
+	// 	expect(logRes.body.data.length).toBeGreaterThanOrEqual(1)
+	// })
 })

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"runtime"
 	"strconv"
@@ -556,7 +557,7 @@ func (h *telemetryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// response
 	// token
 
-	h.srv.logger.Debugw("Handling request", annotations...)
+	slog.Debug("Handling request", annotations...)
 
 	h.next.ServeHTTP(w, r)
 }

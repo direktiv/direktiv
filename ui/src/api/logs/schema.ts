@@ -1,31 +1,86 @@
-import { LogLevelSchema } from "../schema";
 import { z } from "zod";
 
-const LogEntrySchema = z.object({
-  t: z.string(), // "2023-07-27T09:49:58.408869Z"
+export const LogLevelSchema = z.enum(["INFO", "ERROR", "WARN", "DEBUG"]);
+export type LogLevelSchemaType = z.infer<typeof LogLevelSchema>;
+
+/**
+ * example
+ * 
+{
+  "status": "completed",
+  "state": "loop",
+  "branch": null,
+  "workflow": "/wf.yaml",
+  "calledAs": null,
+  "instance": "f1242c40-3cd9-48bb-82aa-02275df6e1da" 
+}
+ */
+export const WorkflowStatusData = z.object({
+  status: z.string().nonempty(),
+  state: z.string().nonempty(),
+  branch: z.number().nullable(),
+  workflow: z.string().nonempty(),
+  calledAs: z.string().nullable(),
+  instance: z.string().nonempty(),
+});
+
+/**
+ * example
+ * 
+{
+  "path": "/mypath" 
+}
+ */
+export const RouteData = z.object({
+  path: z.string().nonempty(),
+});
+
+/**
+ * example
+ * 
+{
+  "id": 1731,
+  "time": "2024-03-11T13:39:13.214148Z",
+  "msg": "Running state logic",
+  "level": "INFO",
+  "namespace": "test",
+  "trace": "00000000000000000000000000000000",
+  "span": "0000000000000000",
+  "workflow": {...},
+  "error": null
+}
+ */
+export const LogEntrySchema = z.object({
+  id: z.number(),
+  time: z.string().nonempty(),
+  msg: z.string().nonempty(),
   level: LogLevelSchema,
-  msg: z.string(), // "Preparing workflow triggered by api."
-  tags: z.object({
-    callpath: z.string(), // "/"
-    "instance-id": z.string(), // "4b833cfd-a0ef-4f4c-994b-4b63c7301778"
-    invoker: z.string(), // "api", "cron", "cloudevent", "complete" (if it's created as a subflow from another instance it's something like instance:%v, where %v is the instance ID of its parent
-    "loop-index": z.string().optional(), // ""
-    namespace: z.string(), // "workflow"
-    "namespace-id": z.string(), // "d1df8d21-96ce-49eb-98b7-5af7571ab28f"
-    recipientType: z.string(), // "instance"
-    workflow: z.string(), // "workflow.yaml"
-    "workflow-id": z.string().optional(), // "a3acd2eb-75de-4369-bb1e-41d5364ea6b7"
-    "state-id": z.string().optional(), // "a3acd2eb-75de-4369-bb1e-41d5364ea6b7"
+  namespace: z.string().nonempty().nullable(),
+  trace: z.string().nonempty().nullable(),
+  span: z.string().nonempty().nullable(),
+  error: z.string().nullable(),
+  workflow: WorkflowStatusData.optional(),
+  route: RouteData.optional(),
+});
+
+/**
+ * example
+ * 
+  {
+    "meta": {
+      "previousPage": null,
+      "startingFrom": "2024-03-11T13:35:33.318740761Z"
+    },
+    "data": []
+  }
+ */
+export const LogsSchema = z.object({
+  meta: z.object({
+    previousPage: z.string().nonempty().nullable(),
+    startingFrom: z.string().nonempty().nullable(),
   }),
+  data: z.array(LogEntrySchema),
 });
 
-export const LogListSchema = z.object({
-  namespace: z.string(),
-  instance: z.string(),
-  results: z.array(LogEntrySchema),
-});
-
-export const InstanceCancelSchema = z.null();
-
-export type LogListSchemaType = z.infer<typeof LogListSchema>;
+export type LogsSchemaType = z.infer<typeof LogsSchema>;
 export type LogEntryType = z.infer<typeof LogEntrySchema>;

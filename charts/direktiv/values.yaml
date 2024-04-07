@@ -66,6 +66,9 @@ flow:
           memory: "128Mi"
         limits:
           memory: "512Mi"
+  
+  # -- Knative max scale
+  max_scale: 5
 
 database:
   # -- database host
@@ -223,19 +226,7 @@ fluent-bit:
       [FILTER]
           Name                    rewrite_tag
           Match                   input
-          Rule                    $log ^.*\"track\":\"(.*)\".*$ flow.$1 true
-      [FILTER]
-          Name                    rewrite_tag
-          Match                   input
-          Rule                    $log ^.*\"trace\":\"(.*)\".*$ flow.trace.$1 true
-      [FILTER]
-          Name                    rewrite_tag
-          Match                   input
           Rule                    $log ^.*"track":"([^"]+)"[^}]*}$ flow.$1 true
-      [FILTER]
-          Name                    rewrite_tag
-          Match                   input
-          Rule                    $log ^.*"trace":"([^"]+)"[^}]*}$ flow.trace.$1 true
     customParsers: |
       [PARSER]
           Name                    cri_direktiv

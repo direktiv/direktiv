@@ -19,7 +19,7 @@ export const useEventSource = ({
   onOpen,
   onMessage,
   onError,
-  enabled,
+  enabled = true,
 }: {
   url: string;
   apiKey?: string;
@@ -76,7 +76,7 @@ export const useStreaming = <T>({
 }: {
   url: string;
   apiKey?: string;
-  enabled: boolean;
+  enabled?: boolean;
   schema: z.ZodSchema<T>;
   onMessage: (msg: T) => void;
 }) =>

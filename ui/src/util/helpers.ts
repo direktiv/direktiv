@@ -2,9 +2,10 @@ import { ComponentProps, FC } from "react";
 import clsx, { ClassValue } from "clsx";
 
 import { LogEntry } from "~/design/Logs";
-import { LogLevelSchemaType } from "~/api/schema";
+import { LogLevelSchemaType } from "~/api/logs/schema";
 import moment from "moment";
 import { twMerge } from "tailwind-merge";
+import { z } from "zod";
 
 /**
  * this method combines the usage of two utility libraries:
@@ -42,12 +43,12 @@ export const logLevelToLogEntryVariant = (
   level: LogLevelSchemaType
 ): LogEntryVariant => {
   switch (level) {
-    case "error":
-    case "warn":
+    case "ERROR":
+    case "WARN":
       return "error";
-    case "info":
+    case "INFO":
       return "info";
-    case "debug":
+    case "DEBUG":
       return undefined;
     default:
       break;
@@ -79,3 +80,6 @@ export const prettifyJsonString = (jsonString: string) => {
     return "{}";
   }
 };
+
+export const isObject = (input: unknown): input is object =>
+  z.object({}).safeParse(input).success;

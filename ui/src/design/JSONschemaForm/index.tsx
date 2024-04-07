@@ -224,28 +224,27 @@ type JSONSchemaFormProps = Omit<
   schema: RJSFSchema;
 };
 
-export const JSONSchemaForm: React.FC<JSONSchemaFormProps> = ({
-  schema,
-  className,
-  ...props
-}) => (
-  <Form
-    schema={schema}
-    templates={{
-      BaseInputTemplate,
-      TitleFieldTemplate,
-      ArrayFieldTemplate,
-      DescriptionFieldTemplate,
-      ErrorListTemplate,
-      ButtonTemplates: {
-        SubmitButton,
-      },
-    }}
-    validator={validator}
-    widgets={widgets}
-    {...props}
-    className={twMergeClsx("p-1", className)}
-  />
+export const JSONSchemaForm = React.forwardRef<Form, JSONSchemaFormProps>(
+  ({ schema, className, ...props }, ref) => (
+    <Form
+      ref={ref}
+      schema={schema}
+      templates={{
+        BaseInputTemplate,
+        TitleFieldTemplate,
+        ArrayFieldTemplate,
+        DescriptionFieldTemplate,
+        ErrorListTemplate,
+        ButtonTemplates: {
+          SubmitButton,
+        },
+      }}
+      validator={validator}
+      widgets={widgets}
+      {...props}
+      className={twMergeClsx("p-1", className)}
+    />
+  )
 );
 
 JSONSchemaForm.displayName = "JSONSchemaForm";

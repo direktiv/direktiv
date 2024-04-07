@@ -1,5 +1,5 @@
 import { RJSFSchema } from "@rjsf/utils";
-import YAML from "js-yaml";
+import { parse } from "yaml";
 import { z } from "zod";
 
 export const workflowInputSchema = z.string().refine((string) => {
@@ -24,7 +24,7 @@ const workflowSchema = z.object({
 export const getValidationSchemaFromYaml = (
   workflowContent: string | undefined
 ) => {
-  const workflowDataJson = YAML.load(workflowContent ?? "");
+  const workflowDataJson = parse(workflowContent ?? "");
   const parsed = workflowSchema.passthrough().safeParse(workflowDataJson);
   if (!parsed.success) return null;
   return parsed.data.states[0].schema as RJSFSchema;

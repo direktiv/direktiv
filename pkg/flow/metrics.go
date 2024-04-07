@@ -3,6 +3,7 @@ package flow
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -159,7 +160,7 @@ func setupPrometheusEndpoint() error {
 // WorkflowMetrics - Gets the Workflow metrics of a given Workflow Revision Ref
 // if ref is not set in the request, it will be automatically be set to latest.
 func (flow *flow) WorkflowMetrics(ctx context.Context, req *grpc.WorkflowMetricsRequest) (*grpc.WorkflowMetricsResponse, error) {
-	flow.sugar.Debugf("Handling gRPC request: %s", this())
+	slog.Debug("Handling gRPC request", "this", this())
 
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
@@ -298,8 +299,9 @@ func (engine *engine) metricsCompleteState(im *instanceMemory, nextState, errCod
 
 	err := engine.metrics.InsertRecord(args)
 	if err != nil {
-		engine.sugar.Error(err)
+		slog.Error("Failed to insert metrics record for instance.", "namespace", args.Namespace, "workflow", args.Workflow, "instance", args.Instance, "error", err)
 	}
+	slog.Debug("Successfully inserted metrics record for instance.", "namespace", args.Namespace, "workflow", args.Workflow, "instance_id", args.Instance)
 }
 
 func (engine *engine) metricsCompleteInstance(im *instanceMemory) {
@@ -310,7 +312,7 @@ func (engine *engine) metricsCompleteInstance(im *instanceMemory) {
 	now := time.Now().UTC()
 	empty := time.Time{}
 
-	if im.Status() == util.InstanceStatusFailed || im.Status() == util.InstanceStatusCrashed {
+	if im.Status() == util.InstanceStatusFailed || im.Status() == util.InstanceStatusCrashed || im.Status() == util.InstanceStatusCancelled {
 		metricsWfFail.WithLabelValues(namespace, workflow, namespace).Inc()
 	} else {
 		metricsWfSuccess.WithLabelValues(namespace, workflow, namespace).Inc()

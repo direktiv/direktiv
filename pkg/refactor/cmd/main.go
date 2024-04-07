@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"log"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -20,58 +19,83 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway"
+	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"github.com/direktiv/direktiv/pkg/refactor/registry"
 	"github.com/direktiv/direktiv/pkg/refactor/service"
 	"github.com/direktiv/direktiv/pkg/util"
-	"go.uber.org/zap"
 )
 
-func NewMain(config *core.Config, db *database.DB, pbus *pubsub.Bus, logger *zap.SugaredLogger, configureWorkflow func(data string) error) *sync.WaitGroup {
-	initSLog()
+type NewMainArgs struct {
+	Config            *core.Config
+	Database          *database.DB
+	PubSubBus         *pubsub.Bus
+	ConfigureWorkflow func(data string) error
+	InstanceManager   *instancestore.InstanceManager
+	SyncNamespace     core.SyncNamespace
+}
 
+func NewMain(serverCtx context.Context, args *NewMainArgs) *sync.WaitGroup {
+	initSLog()
+	serverCtx, quit := context.WithCancel(serverCtx)
 	wg := &sync.WaitGroup{}
 
-	go api2.RunApplication(config)
+	go func() {
+		err := api2.RunApplication(serverCtx, args.Config)
+		if err != nil {
+			slog.Error("Failed to run API V2 Server.", "error", err)
+			quit()
+		}
+	}()
 
 	done := make(chan struct{})
 
+	slog.Debug("Initializing service manager.")
 	// Create service manager
-	serviceManager, err := service.NewManager(config, logger, config.EnableDocker)
+	//nolint
+	serviceManager, err := service.NewManager(args.Config, args.Config.EnableDocker)
 	if err != nil {
-		log.Fatalf("error creating service manager: %v\n", err)
+		slog.Error("Failed to unmarshal file change event for pub/sub notification", "error", err)
+		quit()
 	}
+	slog.Debug("Service manager initialized successfully.")
 
 	// Setup GetServiceURL function
-	service.SetupGetServiceURLFunc(config, config.EnableDocker)
+	service.SetupGetServiceURLFunc(args.Config, args.Config.EnableDocker)
 
 	// Start service manager
 	wg.Add(1)
 	serviceManager.Start(done, wg)
 
+	slog.Debug("Initializing registry manager.")
 	// Create registry manager
-	registryManager, err := registry.NewManager(config.EnableDocker)
+	registryManager, err := registry.NewManager(args.Config.EnableDocker)
 	if err != nil {
-		log.Fatalf("error creating service manager: %v\n", err)
+		slog.Error("Failed creating service manager", "error", err)
+		quit()
 	}
+	slog.Debug("Registry manager initialized successfully.")
 
+	slog.Debug("Initializing Gateway manager.")
 	// Create endpoint manager
-	gatewayManager := gateway.NewGatewayManager(db)
+	gatewayManager := gateway.NewGatewayManager(args.Database)
+	slog.Debug("Gateway manager initialized.")
 
 	// Create App
 	app := core.App{
 		Version: &core.Version{
 			UnixTime: time.Now().Unix(),
 		},
-		Config:          config,
+		Config:          args.Config,
 		ServiceManager:  serviceManager,
 		RegistryManager: registryManager,
 		GatewayManager:  gatewayManager,
-		Bus:             pbus,
+		SyncNamespace:   args.SyncNamespace,
 	}
-
-	pbus.Subscribe(func(_ string) {
-		renderServiceManager(db, serviceManager, logger)
+	slog.Debug("Setting up pub/sub subscription for service manager events.")
+	args.PubSubBus.Subscribe(func(_ string) {
+		renderServiceManager(serverCtx, args.Database, serviceManager)
+		slog.Debug("Service Manager was triggered via pub/sub event.")
 	},
 		pubsub.WorkflowCreate,
 		pubsub.WorkflowUpdate,
@@ -85,41 +109,46 @@ func NewMain(config *core.Config, db *database.DB, pbus *pubsub.Bus, logger *zap
 		pubsub.NamespaceDelete,
 	)
 	// Call at least once before booting
-	renderServiceManager(db, serviceManager, logger)
-
-	pbus.Subscribe(func(data string) {
-		err := configureWorkflow(data)
+	renderServiceManager(serverCtx, args.Database, serviceManager)
+	slog.Debug("Setting up pub/sub subscription for workflow configuration changes.")
+	args.PubSubBus.Subscribe(func(data string) {
+		err := args.ConfigureWorkflow(data)
 		if err != nil {
-			logger.Errorw("configure workflow", "error", err)
+			slog.Error("configure workflow", "error", err)
 		}
+		slog.Debug("Configuring a workflow triggered via pub/sub event.")
 	},
 		pubsub.WorkflowCreate,
 		pubsub.WorkflowUpdate,
 		pubsub.WorkflowDelete,
 		pubsub.WorkflowRename,
 	)
-
+	slog.Debug("Setting up pub/sub subscription for gateway manager namespace updates.")
 	// endpoint manager
-	pbus.Subscribe(func(ns string) {
+	args.PubSubBus.Subscribe(func(ns string) {
 		gatewayManager.UpdateNamespace(ns)
+		slog.Debug("Updating namespace configurations based on pub/sub event.", "namespace", ns)
 	},
 		pubsub.NamespaceCreate,
 		pubsub.MirrorSync,
 	)
 	// endpoint manager deletes routes/consumers on namespace delete
-	pbus.Subscribe(func(ns string) {
+	args.PubSubBus.Subscribe(func(ns string) {
 		gatewayManager.DeleteNamespace(ns)
+		slog.Debug("Deleting namespace based on pub/sub event.", "namespace", ns)
 	},
 		pubsub.NamespaceDelete,
 	)
 
 	// on sync redo all consumers and routes on sync or single file updates
-	pbus.Subscribe(func(data string) {
+	args.PubSubBus.Subscribe(func(data string) {
 		event := pubsub.FileChangeEvent{}
 		err := json.Unmarshal([]byte(data), &event)
 		if err != nil {
-			panic("unmarshal file change event" + err.Error())
+			slog.Error("unmarshal file change event", "error", err)
+			quit()
 		}
+		slog.Debug("Updating namespace configurations based on pub/sub event.", "namespace", event.Namespace)
 		gatewayManager.UpdateNamespace(event.Namespace)
 	},
 		pubsub.EndpointCreate,
@@ -136,26 +165,31 @@ func NewMain(config *core.Config, db *database.DB, pbus *pubsub.Bus, logger *zap
 	gatewayManager.UpdateAll()
 
 	// TODO: yassir, this subscribe need to be removed when /api/v2/namespace delete endpoint is migrated.
-	pbus.Subscribe(func(ns string) {
+	slog.Debug("Setting up pub/sub subscription for service manager events.")
+	args.PubSubBus.Subscribe(func(ns string) {
 		err := registryManager.DeleteNamespace(ns)
 		if err != nil {
-			logger.Errorw("deleting registry namespace", "error", err)
+			slog.Error("deleting registry namespace", "error", err)
 		}
 	},
 		pubsub.NamespaceDelete,
 	)
+	slog.Debug("Starting API V2 server.", "addr", "0.0.0.0:6667")
 
 	// Start api v2 server
 	wg.Add(1)
-	api.Start(app, db, "0.0.0.0:6667", done, wg)
+	api.Start(serverCtx, app, args.Database, args.PubSubBus, args.InstanceManager, "0.0.0.0:6667", done, wg)
+	slog.Debug("API V2 server started.", "addr", "0.0.0.0:6667")
 
 	go func() {
 		// Listen for syscall signals for process to interrupt/quit
 		sig := make(chan os.Signal, 1)
 		signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
 		<-sig
+		slog.Info("Shutdown signal received, initiating graceful shutdown.")
 		close(done)
 	}()
+	slog.Debug("New Main application setup complete. Listening for shutdown signals.")
 
 	return wg
 }
@@ -182,14 +216,14 @@ func initSLog() {
 	slog.SetDefault(slogger)
 }
 
-func renderServiceManager(db *database.DB, serviceManager core.ServiceManager, logger *zap.SugaredLogger) {
-	logger = logger.With("subscriber", "services file watcher")
+func renderServiceManager(ctx context.Context, db *database.DB, serviceManager core.ServiceManager) {
+	slog := slog.With("subscriber", "services file watcher")
 
 	fStore, dStore := db.FileStore(), db.DataStore()
 
-	nsList, err := dStore.Namespaces().GetAll(context.Background())
+	nsList, err := dStore.Namespaces().GetAll(ctx)
 	if err != nil {
-		logger.Error("listing namespaces", "error", err)
+		slog.Error("listing namespaces", "error", err)
 
 		return
 	}
@@ -197,10 +231,10 @@ func renderServiceManager(db *database.DB, serviceManager core.ServiceManager, l
 	funConfigList := []*core.ServiceFileData{}
 
 	for _, ns := range nsList {
-		logger = logger.With("ns", ns.Name)
-		files, err := fStore.ForNamespace(ns.Name).ListDirektivFilesWithData(context.Background())
+		slog = slog.With("namespace", ns.Name)
+		files, err := fStore.ForNamespace(ns.Name).ListDirektivFilesWithData(ctx)
 		if err != nil {
-			logger.Error("listing direktiv files", "error", err)
+			slog.Error("listing direktiv files", "error", err)
 
 			continue
 		}
@@ -208,7 +242,7 @@ func renderServiceManager(db *database.DB, serviceManager core.ServiceManager, l
 			if file.Typ == filestore.FileTypeService {
 				serviceDef, err := core.ParseServiceFile(file.Data)
 				if err != nil {
-					logger.Error("parse service file", "error", err)
+					slog.Error("parse service file", "error", err)
 
 					continue
 				}
@@ -223,7 +257,7 @@ func renderServiceManager(db *database.DB, serviceManager core.ServiceManager, l
 			} else if file.Typ == filestore.FileTypeWorkflow {
 				sub, err := getWorkflowFunctionDefinitionsFromWorkflow(ns, file)
 				if err != nil {
-					logger.Error("parse workflow def", "error", err)
+					slog.Error("parse workflow def", "error", err)
 
 					continue
 				}

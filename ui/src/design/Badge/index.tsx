@@ -6,7 +6,7 @@ import { twMergeClsx } from "~/util/helpers";
 export type BadgeProps = React.HTMLAttributes<HTMLDivElement> &
   PropsWithChildren & {
     variant?: "secondary" | "destructive" | "outline" | "success";
-    icon?: "pending" | "complete" | "failed" | "crashed";
+    icon?: "pending" | "complete" | "failed" | "cancelled" | "crashed";
   };
 
 const Badge: FC<BadgeProps> = ({
@@ -37,7 +37,9 @@ const Badge: FC<BadgeProps> = ({
     {children}
     {icon === "pending" && <Loader2 className="h-3 animate-spin" />}
     {icon === "complete" && <Check className="h-3" />}
-    {(icon === "failed" || icon === "crashed") && <X className="h-3" />}
+    {(icon === "failed" || icon === "crashed" || icon === "cancelled") && (
+      <X className="h-3" />
+    )}
   </div>
 );
 
