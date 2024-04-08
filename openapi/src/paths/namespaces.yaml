@@ -93,32 +93,58 @@
 #                      description: timestamp of last updating date
 
 /api/v2/namespaces/{namespace}:
-#  get:
-#    tags:
-#      - namespaces
-#    summary: Fetches a direktiv namespace
-#    parameters:
-#      - $ref: '../parameters.yaml#/namespace'
-#    responses:
-#      "200":
-#        description: data of the direktiv  namespace
-#        content:
-#          application/json:
-#            schema:
-#              type: object
-#              properties:
-#                data:
-#                  type: object
-#                  properties:
-#                    name:
-#                      type: string
-#                      description: a unique name string of the namespace
-#                    createdAt:
-#                      type: string
-#                      description: timestamp of creation date
-#                    updatedAt:
-#                      type: string
-#                      description: timestamp of last updating date
+  get:
+    tags:
+      - namespaces
+    summary: Fetches a direktiv namespace
+    parameters:
+      - $ref: '../parameters.yaml#/namespace'
+    responses:
+      "200":
+        description: data of the direktiv  namespace
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      description: a unique name string of the namespace
+                    mirror:
+                      type: object
+                      nullable: true
+                      description: git mirror settings associated with the namespace (only with git mirrored namespace). Null value means this is a none mirrored (ordinary) namespace
+                      properties:
+                        url:
+                          type: string
+                          description: url of the git repo
+                        gitRef:
+                          type: string
+                          description: git branch name
+                        gitCommitHash:
+                          type: string(optional)
+                          description: git commit hash
+                        publicKey:
+                          type: string(optional)
+                          description: associated publish key ssh credential
+                        insecure:
+                          type: boolean
+                          description: to ignore insecure ssl certificates
+                        createdAt:
+                          type: string
+                          description: timestamp of creation date
+                        updatedAt:
+                          type: string
+                          description: timestamp of last updating date
+                    createdAt:
+                      type: string
+                      description: timestamp of creation date
+                    updatedAt:
+                      type: string
+                      description: timestamp of last updating date
 
   delete:
     tags:
