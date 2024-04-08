@@ -8,13 +8,6 @@ export function isValidHour(value: string) {
 }
 
 /**
- * regular expression to check for valid 12 hour format (01-12)
- */
-export function isValid12Hour(value: string) {
-  return /^(0[1-9]|1[0-2])$/.test(value);
-}
-
-/**
  * regular expression to check for valid minute format (00-59)
  */
 export function isValidMinuteOrSecond(value: string) {
@@ -46,11 +39,6 @@ export function getValidNumber(
 export function getValidHour(value: string) {
   if (isValidHour(value)) return value;
   return getValidNumber(value, { max: 23 });
-}
-
-export function getValid12Hour(value: string) {
-  if (isValid12Hour(value)) return value;
-  return getValidNumber(value, { max: 12 });
 }
 
 export function getValidMinuteOrSecond(value: string) {
@@ -102,7 +90,7 @@ export function setHours(date: Date, value: string) {
   return date;
 }
 
-export type TimePickerType = "minutes" | "seconds" | "hours"; // | "12hours";
+export type TimePickerType = "minutes" | "seconds" | "hours";
 
 export function setDateByType(date: Date, value: string, type: TimePickerType) {
   switch (type) {
