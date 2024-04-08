@@ -35,28 +35,27 @@ type NewMainArgs struct {
 	SyncNamespace     core.SyncNamespace
 }
 
-func NewMain(serverCtx context.Context, args *NewMainArgs) *sync.WaitGroup {
+func NewMain(args *NewMainArgs) *sync.WaitGroup {
 	initSLog()
-	serverCtx, quit := context.WithCancel(serverCtx)
 	wg := &sync.WaitGroup{}
 
 	go func() {
-		err := api2.RunApplication(serverCtx, args.Config)
+		err := api2.RunApplication(args.Config)
 		if err != nil {
-			slog.Error("Failed to run API V2 Server.", "error", err)
-			quit()
+			slog.Error("booting v1 api server", "error", err)
+			os.Exit(1)
 		}
 	}()
 
 	done := make(chan struct{})
 
-	slog.Debug("Initializing service manager.")
 	// Create service manager
 	//nolint
+	slog.Info("initializing service manager")
 	serviceManager, err := service.NewManager(args.Config, args.Config.EnableDocker)
 	if err != nil {
 		slog.Error("Failed to unmarshal file change event for pub/sub notification", "error", err)
-		quit()
+		os.Exit(1)
 	}
 	slog.Debug("Service manager initialized successfully.")
 
@@ -72,7 +71,7 @@ func NewMain(serverCtx context.Context, args *NewMainArgs) *sync.WaitGroup {
 	registryManager, err := registry.NewManager(args.Config.EnableDocker)
 	if err != nil {
 		slog.Error("Failed creating service manager", "error", err)
-		quit()
+		os.Exit(1)
 	}
 	slog.Debug("Registry manager initialized successfully.")
 
@@ -94,7 +93,7 @@ func NewMain(serverCtx context.Context, args *NewMainArgs) *sync.WaitGroup {
 	}
 	slog.Debug("Setting up pub/sub subscription for service manager events.")
 	args.PubSubBus.Subscribe(func(_ string) {
-		renderServiceManager(serverCtx, args.Database, serviceManager)
+		renderServiceManager(args.Database, serviceManager)
 		slog.Debug("Service Manager was triggered via pub/sub event.")
 	},
 		pubsub.WorkflowCreate,
@@ -109,7 +108,7 @@ func NewMain(serverCtx context.Context, args *NewMainArgs) *sync.WaitGroup {
 		pubsub.NamespaceDelete,
 	)
 	// Call at least once before booting
-	renderServiceManager(serverCtx, args.Database, serviceManager)
+	renderServiceManager(args.Database, serviceManager)
 	slog.Debug("Setting up pub/sub subscription for workflow configuration changes.")
 	args.PubSubBus.Subscribe(func(data string) {
 		err := args.ConfigureWorkflow(data)
@@ -146,7 +145,7 @@ func NewMain(serverCtx context.Context, args *NewMainArgs) *sync.WaitGroup {
 		err := json.Unmarshal([]byte(data), &event)
 		if err != nil {
 			slog.Error("unmarshal file change event", "error", err)
-			quit()
+			os.Exit(1)
 		}
 		slog.Debug("Updating namespace configurations based on pub/sub event.", "namespace", event.Namespace)
 		gatewayManager.UpdateNamespace(event.Namespace)
@@ -178,7 +177,7 @@ func NewMain(serverCtx context.Context, args *NewMainArgs) *sync.WaitGroup {
 
 	// Start api v2 server
 	wg.Add(1)
-	api.Start(serverCtx, app, args.Database, args.PubSubBus, args.InstanceManager, "0.0.0.0:6667", done, wg)
+	api.Start(app, args.Database, args.PubSubBus, args.InstanceManager, "0.0.0.0:6667", done, wg)
 	slog.Debug("API V2 server started.", "addr", "0.0.0.0:6667")
 
 	go func() {
@@ -216,7 +215,8 @@ func initSLog() {
 	slog.SetDefault(slogger)
 }
 
-func renderServiceManager(ctx context.Context, db *database.DB, serviceManager core.ServiceManager) {
+func renderServiceManager(db *database.DB, serviceManager core.ServiceManager) {
+	ctx := context.Background()
 	slog := slog.With("subscriber", "services file watcher")
 
 	fStore, dStore := db.FileStore(), db.DataStore()
