@@ -51,13 +51,12 @@ func NewMain(args *NewMainArgs) *sync.WaitGroup {
 
 	// Create service manager
 	//nolint
-	slog.Info("initializing service manager")
 	serviceManager, err := service.NewManager(args.Config, args.Config.EnableDocker)
 	if err != nil {
-		slog.Error("Failed to unmarshal file change event for pub/sub notification", "error", err)
+		slog.Error("initializing service manager", "error", err)
 		os.Exit(1)
 	}
-	slog.Debug("Service manager initialized successfully.")
+	slog.Info("service manager initialized successfully")
 
 	// Setup GetServiceURL function
 	service.SetupGetServiceURLFunc(args.Config, args.Config.EnableDocker)
@@ -66,19 +65,17 @@ func NewMain(args *NewMainArgs) *sync.WaitGroup {
 	wg.Add(1)
 	serviceManager.Start(done, wg)
 
-	slog.Debug("Initializing registry manager.")
 	// Create registry manager
 	registryManager, err := registry.NewManager(args.Config.EnableDocker)
 	if err != nil {
-		slog.Error("Failed creating service manager", "error", err)
+		slog.Error("registry manager", "error", err)
 		os.Exit(1)
 	}
-	slog.Debug("Registry manager initialized successfully.")
+	slog.Info("registry manager initialized successfully")
 
-	slog.Debug("Initializing Gateway manager.")
 	// Create endpoint manager
 	gatewayManager := gateway.NewGatewayManager(args.Database)
-	slog.Debug("Gateway manager initialized.")
+	slog.Info("gateway manager initialized successfully")
 
 	// Create App
 	app := core.App{
@@ -91,10 +88,9 @@ func NewMain(args *NewMainArgs) *sync.WaitGroup {
 		GatewayManager:  gatewayManager,
 		SyncNamespace:   args.SyncNamespace,
 	}
-	slog.Debug("Setting up pub/sub subscription for service manager events.")
+
 	args.PubSubBus.Subscribe(func(_ string) {
 		renderServiceManager(args.Database, serviceManager)
-		slog.Debug("Service Manager was triggered via pub/sub event.")
 	},
 		pubsub.WorkflowCreate,
 		pubsub.WorkflowUpdate,
@@ -107,34 +103,33 @@ func NewMain(args *NewMainArgs) *sync.WaitGroup {
 		pubsub.MirrorSync,
 		pubsub.NamespaceDelete,
 	)
+
 	// Call at least once before booting
 	renderServiceManager(args.Database, serviceManager)
-	slog.Debug("Setting up pub/sub subscription for workflow configuration changes.")
+
 	args.PubSubBus.Subscribe(func(data string) {
 		err := args.ConfigureWorkflow(data)
 		if err != nil {
 			slog.Error("configure workflow", "error", err)
 		}
-		slog.Debug("Configuring a workflow triggered via pub/sub event.")
 	},
 		pubsub.WorkflowCreate,
 		pubsub.WorkflowUpdate,
 		pubsub.WorkflowDelete,
 		pubsub.WorkflowRename,
 	)
-	slog.Debug("Setting up pub/sub subscription for gateway manager namespace updates.")
+
 	// endpoint manager
 	args.PubSubBus.Subscribe(func(ns string) {
 		gatewayManager.UpdateNamespace(ns)
-		slog.Debug("Updating namespace configurations based on pub/sub event.", "namespace", ns)
 	},
 		pubsub.NamespaceCreate,
 		pubsub.MirrorSync,
 	)
+
 	// endpoint manager deletes routes/consumers on namespace delete
 	args.PubSubBus.Subscribe(func(ns string) {
 		gatewayManager.DeleteNamespace(ns)
-		slog.Debug("Deleting namespace based on pub/sub event.", "namespace", ns)
 	},
 		pubsub.NamespaceDelete,
 	)
@@ -147,7 +142,6 @@ func NewMain(args *NewMainArgs) *sync.WaitGroup {
 			slog.Error("unmarshal file change event", "error", err)
 			os.Exit(1)
 		}
-		slog.Debug("Updating namespace configurations based on pub/sub event.", "namespace", event.Namespace)
 		gatewayManager.UpdateNamespace(event.Namespace)
 	},
 		pubsub.EndpointCreate,
@@ -164,7 +158,6 @@ func NewMain(args *NewMainArgs) *sync.WaitGroup {
 	gatewayManager.UpdateAll()
 
 	// TODO: yassir, this subscribe need to be removed when /api/v2/namespace delete endpoint is migrated.
-	slog.Debug("Setting up pub/sub subscription for service manager events.")
 	args.PubSubBus.Subscribe(func(ns string) {
 		err := registryManager.DeleteNamespace(ns)
 		if err != nil {
@@ -173,22 +166,21 @@ func NewMain(args *NewMainArgs) *sync.WaitGroup {
 	},
 		pubsub.NamespaceDelete,
 	)
-	slog.Debug("Starting API V2 server.", "addr", "0.0.0.0:6667")
 
 	// Start api v2 server
 	wg.Add(1)
 	api.Start(app, args.Database, args.PubSubBus, args.InstanceManager, "0.0.0.0:6667", done, wg)
-	slog.Debug("API V2 server started.", "addr", "0.0.0.0:6667")
+	slog.Info("api server v2 started.", "addr", "0.0.0.0:6667")
 
 	go func() {
 		// Listen for syscall signals for process to interrupt/quit
 		sig := make(chan os.Signal, 1)
 		signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
 		<-sig
-		slog.Info("Shutdown signal received, initiating graceful shutdown.")
+		slog.Info("shutdown signal received, initiating graceful shutdown")
 		close(done)
 	}()
-	slog.Debug("New Main application setup complete. Listening for shutdown signals.")
+	slog.Info("application is ready")
 
 	return wg
 }
