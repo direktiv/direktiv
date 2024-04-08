@@ -568,8 +568,7 @@
             "STATUS": "filter by status",
             "TRIGGER": "filter by trigger",
             "AFTER": "filter created after",
-            "BEFORE": "filter created before",
-            "time": "Refine time"
+            "BEFORE": "filter created before"
           },
           "field": {
             "AS": "name",
