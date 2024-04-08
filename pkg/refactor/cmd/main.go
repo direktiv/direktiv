@@ -43,7 +43,7 @@ func NewMain(args *NewMainArgs) *sync.WaitGroup {
 		err := api2.RunApplication(args.Config)
 		if err != nil {
 			slog.Error("booting v1 api server", "error", err)
-			os.Exit(1)
+			panic(err)
 		}
 	}()
 
@@ -54,7 +54,7 @@ func NewMain(args *NewMainArgs) *sync.WaitGroup {
 	serviceManager, err := service.NewManager(args.Config, args.Config.EnableDocker)
 	if err != nil {
 		slog.Error("initializing service manager", "error", err)
-		os.Exit(1)
+		panic(err)
 	}
 	slog.Info("service manager initialized successfully")
 
@@ -69,7 +69,7 @@ func NewMain(args *NewMainArgs) *sync.WaitGroup {
 	registryManager, err := registry.NewManager(args.Config.EnableDocker)
 	if err != nil {
 		slog.Error("registry manager", "error", err)
-		os.Exit(1)
+		panic(err)
 	}
 	slog.Info("registry manager initialized successfully")
 
@@ -140,7 +140,7 @@ func NewMain(args *NewMainArgs) *sync.WaitGroup {
 		err := json.Unmarshal([]byte(data), &event)
 		if err != nil {
 			slog.Error("unmarshal file change event", "error", err)
-			os.Exit(1)
+			panic(err)
 		}
 		gatewayManager.UpdateNamespace(event.Namespace)
 	},
