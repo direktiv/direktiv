@@ -159,7 +159,7 @@ test("it is possible to create and delete variables", async ({
   await page.goto(`/${namespace}/settings`);
   await page.getByTestId("variable-create").click();
 
-  await page.getByTestId("new-variable-name").type("awesome-variable");
+  await page.getByTestId("variable-name").type("awesome-variable");
 
   await page.locator(".view-lines").click();
   await page.locator(".view-lines").type("<div>Hello world</div>");
@@ -245,7 +245,7 @@ test("it is possible to edit variables", async ({ page }) => {
     )
     .toBe(decode(subject.content));
 
-  await page.getByTestId("new-variable-name").fill(newName);
+  await page.getByTestId("variable-name").fill(newName);
 
   await expect(
     page.locator("select"),
@@ -283,7 +283,7 @@ test("it is possible to edit variables", async ({ page }) => {
     .toBe("data: this is supposed to be YAML");
 
   await expect(
-    await page.getByTestId("new-variable-name").inputValue(),
+    await page.getByTestId("variable-name").inputValue(),
     "the updated variable name is shown in the name input"
   ).toBe(newName);
 

@@ -922,28 +922,11 @@
           "description": "Are you sure you want to delete <b>{{name}}</b>?<br/> This cannot be undone."
         },
         "create": {
-          "title": "Add a variable",
-          "name": {
-            "label": "Name",
-            "placeholder": "variable-name"
-          },
-          "file": {
-            "label": "Upload a file"
-          },
-          "noPreview": "Only text based mime types are supported for preview and editing"
+          "title": "Add a variable"
         },
         "edit": {
           "title": "Edit {{name}}",
-          "fetchError": "There was an error fetching the variable's content",
-          "mimeType": {
-            "label": "Mimetype",
-            "empty": "Mimetype is empty",
-            "placeholder": "Select a mimetype"
-          },
-          "file": {
-            "label": "Upload a file"
-          },
-          "noPreview": "Only text based mime types are supported for preview and editing"
+          "fetchError": "There was an error fetching the variable's content"
         }
       },
       "deleteNamespace": {
@@ -1178,6 +1161,21 @@
       "placeholder": "Select Namespace",
       "loading": "loading...",
       "optionDoesNotExist": "{{namespace}} (does not exist)"
+    },
+    "variableForm": {
+      "name": {
+        "label": "Name",
+        "placeholder": "variable-name"
+      },
+      "mimeType": {
+        "label": "Mimetype",
+        "empty": "Mimetype is empty",
+        "placeholder": "Select a mimetype"
+      },
+      "file": {
+        "label": "Upload a file"
+      },
+      "noPreview": "Only text based mime types are supported for preview and editing"
     },
     "namespaceVariablepicker": {
       "title": "Variables in \"{{path}}\"",

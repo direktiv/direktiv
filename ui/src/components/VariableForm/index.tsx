@@ -83,18 +83,18 @@ export const VariableForm = ({
       <FormErrors errors={errors} className="mb-5" />
       <fieldset className="flex items-center gap-5">
         <label className="w-[150px] text-right" htmlFor="name">
-          {t("pages.settings.variables.create.name.label")}
+          {t("components.variableForm.name.label")}
         </label>
         <Input
           id="name"
           {...register("name")}
-          data-testid="new-variable-name"
-          placeholder={t("pages.settings.variables.create.name.placeholder")}
+          data-testid="variable-name"
+          placeholder={t("components.variableForm.name.placeholder")}
         />
       </fieldset>
       <fieldset className="flex items-center gap-5">
         <label className="w-[150px] text-right" htmlFor="mimetype">
-          {t("pages.settings.variables.edit.mimeType.label")}
+          {t("components.variableForm.mimeType.label")}
         </label>
         <Controller
           control={control}
@@ -143,7 +143,7 @@ export const VariableForm = ({
           ) : (
             <div className="flex grow p-10 text-center">
               <div className="flex items-center justify-center text-sm">
-                {t("pages.settings.variables.create.noPreview")}
+                {t("components.variableForm.noPreview")}
               </div>
             </div>
           )}

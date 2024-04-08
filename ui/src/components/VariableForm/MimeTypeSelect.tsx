@@ -37,10 +37,10 @@ const MimeTypeSelect = ({
         disabled={!hasEditableMimeType}
       >
         <SelectValue
-          placeholder={t("pages.settings.variables.edit.mimeType.placeholder")}
+          placeholder={t("components.variableForm.mimeType.placeholder")}
         >
           {mimeTypeIsEmpty ? (
-            <i>{t("pages.settings.variables.edit.mimeType.empty")}</i>
+            <i>{t("components.variableForm.mimeType.empty")}</i>
           ) : (
             mimeType
           )}

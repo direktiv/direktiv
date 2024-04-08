@@ -46,7 +46,7 @@ const FileUpload = ({ onChange }: FileUploadProps) => {
   return (
     <fieldset className="flex items-center gap-5">
       <label className="w-[150px] text-right" htmlFor="file-upload">
-        {t("pages.settings.variables.create.file.label")}
+        {t("components.variableForm.file.label")}
       </label>
       <InputWithButton>
         <Input id="file-upload" type="file" onChange={onFilepickerChange} />
