@@ -20,6 +20,7 @@ describe('Test namespace create calls', () => {
 			},
 			want: {
 				name: 'foo1',
+				mirror: null,
 			},
 		},
 		{
