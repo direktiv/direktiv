@@ -22,6 +22,7 @@ const MimeTypeSelect = ({
 }) => {
   const { t } = useTranslation();
   const hasEditableMimeType = !!mimeType;
+  const mimeTypeIsEmpty = mimeType === "";
   return (
     <Select
       onValueChange={onChange}
@@ -38,7 +39,11 @@ const MimeTypeSelect = ({
         <SelectValue
           placeholder={t("pages.settings.variables.edit.mimeType.placeholder")}
         >
-          {mimeType}
+          {mimeTypeIsEmpty ? (
+            <i>{t("pages.settings.variables.edit.mimeType.empty")}</i>
+          ) : (
+            mimeType
+          )}
         </SelectValue>
       </SelectTrigger>
       <SelectContent>

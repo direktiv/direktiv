@@ -937,6 +937,7 @@
           "fetchError": "There was an error fetching the variable's content",
           "mimeType": {
             "label": "Mimetype",
+            "empty": "Mimetype is empty",
             "placeholder": "Select a mimetype"
           },
           "file": {
