@@ -66,6 +66,7 @@ func (m logController) getNewer(ctx context.Context, t time.Time, params map[str
 	if err != nil {
 		return []logEntry{}, err
 	}
+	slog.Debug("Determined logging-track", "track", stream)
 
 	// Call the appropriate LogStore method with cursorTime
 	lastID, hasLastID := params["lastID"]
@@ -122,12 +123,13 @@ func (m logController) getNewer(ctx context.Context, t time.Time, params map[str
 func (m logController) getOlder(ctx context.Context, params map[string]string) ([]logEntry, time.Time, error) {
 	var r []core.LogEntry
 	var err error
-
 	// Determine the track based on the provided parameters
 	stream, err := determineTrack(params)
 	if err != nil {
 		return []logEntry{}, time.Time{}, err
 	}
+	slog.Debug("Determined logging-track", "track", stream)
+
 	starting := time.Now().UTC()
 	if t, ok := params["before"]; ok {
 		co, err := time.Parse(time.RFC3339Nano, t)
@@ -215,7 +217,7 @@ func determineTrack(params map[string]string) (string, error) {
 	if p, ok := params["instance"]; ok {
 		return "flow.instance." + "%" + p + "%", nil
 	} else if p, ok := params["route"]; ok {
-		return "flow.route." + p, nil
+		return "flow.route." + params["namespace"] + "." + p, nil
 	} else if p, ok := params["activity"]; ok {
 		return "flow.activity." + p, nil
 	} else if p, ok := params["namespace"]; ok {

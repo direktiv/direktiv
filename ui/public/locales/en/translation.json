@@ -1238,6 +1238,9 @@
         "stateLabel": "state:",
         "instanceLabel": "instance:"
       }
+    },
+    "blocker": {
+      "unsavedChangesWarning": "You have unsaved changes that will be lost when leaving this route. Are you sure you want to leave?"
     }
   },
   "api": {

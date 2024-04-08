@@ -187,17 +187,6 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 
 	slog.Debug("Created workflow.", "path", file.Path, "namespace", req.Namespace)
 
-	err = flow.BroadcastWorkflow(ctx, BroadcastEventTypeCreate,
-		broadcastWorkflowInput{
-			Name:   file.Name(),
-			Path:   file.Path,
-			Parent: file.Dir(),
-			Live:   true,
-		}, ns)
-	if err != nil {
-		return nil, err
-	}
-
 	if file.Typ.IsDirektivSpecFile() {
 		err = helpers.PublishEventDirektivFileChange(flow.pBus, file.Typ, "create", &pubsub.FileChangeEvent{
 			Namespace:   ns.Name,

@@ -4,6 +4,7 @@ import { Bug } from "lucide-react";
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
 import { FC } from "react";
+import useNavigationBlocker from "~/hooks/useNavigationBlocker";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 import useUpdatedAt from "~/hooks/useUpdatedAt";
@@ -26,8 +27,13 @@ export const CodeEditor: FC<EditorProps> = ({
   error,
 }) => {
   const { t } = useTranslation();
+
   const theme = useTheme();
   const updatedAtInWords = useUpdatedAt(updatedAt);
+
+  useNavigationBlocker(
+    hasUnsavedChanges ? t("components.blocker.unsavedChangesWarning") : null
+  );
 
   return (
     <Card className="flex grow flex-col p-4">

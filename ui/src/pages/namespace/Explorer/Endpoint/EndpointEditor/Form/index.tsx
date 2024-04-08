@@ -24,6 +24,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 type FormProps = {
   defaultConfig?: EndpointFormSchemaType;
+  onSave: (value: EndpointFormSchemaType) => void;
   children: (args: {
     formControls: UseFormReturn<EndpointFormSchemaType>;
     formMarkup: JSX.Element;
@@ -31,7 +32,7 @@ type FormProps = {
   }) => JSX.Element;
 };
 
-export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
+export const Form: FC<FormProps> = ({ defaultConfig, children, onSave }) => {
   const { t } = useTranslation();
   const formControls = useForm<EndpointFormSchemaType>({
     resolver: zodResolver(EndpointFormSchema),
@@ -128,10 +129,10 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
             )}
           />
         </Fieldset>
-        <TargetPluginForm form={formControls} />
-        <InboundPluginForm form={formControls} />
-        <OutboundPluginForm form={formControls} />
-        <AuthPluginForm formControls={formControls} />
+        <TargetPluginForm form={formControls} onSave={onSave} />
+        <InboundPluginForm form={formControls} onSave={onSave} />
+        <OutboundPluginForm form={formControls} onSave={onSave} />
+        <AuthPluginForm formControls={formControls} onSave={onSave} />
       </div>
     ),
   });
