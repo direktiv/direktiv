@@ -46,7 +46,7 @@ export const useCreateNamespace = ({
         namespaceKeys.all(apiKey ?? undefined),
         (oldData) => {
           if (!oldData) return undefined;
-          const oldResults = oldData?.results;
+          const oldResults = oldData?.data;
           return {
             ...oldData,
             results: [...oldResults, data.namespace].sort(sortByName),

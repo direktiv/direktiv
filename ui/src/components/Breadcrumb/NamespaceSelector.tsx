@@ -45,7 +45,7 @@ const NamespaceSelector = () => {
 
   if (!namespace) return null;
 
-  const hasResults = isSuccess && availableNamespaces?.results.length > 0;
+  const hasResults = isSuccess && availableNamespaces?.data.length > 0;
 
   const onNameSpaceChange = (namespace: string) => {
     setNamespace(namespace);
@@ -84,7 +84,7 @@ const NamespaceSelector = () => {
                     {t("components.breadcrumb.notFound")}
                   </CommandEmpty>
                   <CommandGroup>
-                    {availableNamespaces?.results.map((ns) => (
+                    {availableNamespaces?.data.map((ns) => (
                       <CommandItem
                         key={ns.name}
                         value={ns.name}

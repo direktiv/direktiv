@@ -50,7 +50,7 @@ test("it is possible to delete a namespace and it will immediately redirect to a
   const namespacesBeforeDelete = await getNamespacesFromAPI();
 
   expect(
-    namespacesBeforeDelete.results.some(
+    namespacesBeforeDelete.data.some(
       (nsFromServer) => nsFromServer.name === namespaceToBeDeleted
     ),
     "the api includes the current namespace in the namespace list"
@@ -68,7 +68,7 @@ test("it is possible to delete a namespace and it will immediately redirect to a
 
   const namespacesAfterDelete = await getNamespacesFromAPI();
   expect(
-    namespacesAfterDelete.results.some(
+    namespacesAfterDelete.data.some(
       (item) => item.name === namespaceToBeDeleted
     ),
     "the api does not include the current namespace in the namespace list after deletion"
@@ -109,7 +109,7 @@ test("it is possible to delete the last namespace and it will redirect to the la
    */
 
   const mockedNamespaces: NamespaceListSchemaType = {
-    results: [],
+    data: [],
   };
 
   await page.route("**/api/namespaces", (route, reg) => {

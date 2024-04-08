@@ -58,7 +58,7 @@ const NamespaceEdit = ({
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const existingNamespaces = data?.results.map((n) => n.name) || [];
+  const existingNamespaces = data?.data.map((n) => n.name) || [];
 
   const newNameSchema = fileNameSchema.and(
     z.string().refine((name) => !existingNamespaces.some((n) => n === name), {

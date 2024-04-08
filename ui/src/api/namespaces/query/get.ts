@@ -7,7 +7,8 @@ import { useApiKey } from "~/util/store/apiKey";
 import { useQuery } from "@tanstack/react-query";
 
 export const getNamespaces = apiFactory({
-  url: ({ baseUrl }: { baseUrl?: string }) => `${baseUrl ?? ""}/api/namespaces`,
+  url: ({ baseUrl }: { baseUrl?: string }) =>
+    `${baseUrl ?? ""}/api/v2/namespaces`,
   method: "GET",
   schema: NamespaceListSchema,
 });
@@ -27,9 +28,9 @@ export const useListNamespaces = () => {
     queryKey: namespaceKeys.all(apiKey ?? undefined),
     queryFn: fetchNamespaces,
     select(data) {
-      if (data?.results) {
+      if (data) {
         return {
-          results: data.results.sort(sortByName),
+          data: data.data.sort(sortByName),
         };
       }
       return data;

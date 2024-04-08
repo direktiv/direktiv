@@ -39,7 +39,7 @@ export const checkIfNamespaceExists = async (namespace: string) => {
   const namespaceInResponse = await response
     .json()
     .then((json: NamespaceListSchemaType) =>
-      json.results.find((ns) => ns.name === namespace)
+      json.data.find((ns) => ns.name === namespace)
     );
   return !!namespaceInResponse;
 };
@@ -53,7 +53,7 @@ export const cleanupNamespaces = async () => {
   const namespaces = await response
     .json()
     .then((json: NamespaceListSchemaType) =>
-      json.results.filter((ns) => ns.name.includes("playwright"))
+      json.data.filter((ns) => ns.name.includes("playwright"))
     );
   const requests = namespaces.map((ns) =>
     fetch(`${apiUrl}/api/namespaces/${ns.name}?recursive=true`, {
