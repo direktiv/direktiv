@@ -1,7 +1,10 @@
+import {
+  noop as basicWorkflow,
+  workflowThatCreatesVariable,
+} from "~/pages/namespace/Explorer/Tree/components/modals/CreateNew/Workflow/templates";
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
 import { expect, test } from "@playwright/test";
 
-import { noop as basicWorkflow } from "~/pages/namespace/Explorer/Tree/components/modals/CreateNew/Workflow/templates";
 import { createFile } from "e2e/utils/files";
 import { createVar } from "~/api/variables/mutate/create";
 import { createWorkflowVariables } from "e2e/utils/variables";
@@ -9,6 +12,7 @@ import { encode } from "js-base64";
 import { faker } from "@faker-js/faker";
 import { forceLeadingSlash } from "~/api/files/utils";
 import { headers } from "e2e/utils/testutils";
+import { runWorkflow } from "~/api/tree/mutate/runWorkflow";
 import { waitForSuccessToast } from "./utils";
 
 let namespace = "";
@@ -196,4 +200,51 @@ test("it is possible to delete variables", async ({ page }) => {
     page.getByTestId("variable-row"),
     "the variable is no longer rendered in the list"
   ).toHaveCount(variables.length - 1);
+});
+
+test("it is possible to have a variable with an empty mimeType and rename it", async ({
+  page,
+}) => {
+  const workflowName = faker.system.commonFileName("yaml");
+
+  await createFile({
+    name: workflowName,
+    namespace,
+    type: "workflow",
+    yaml: workflowThatCreatesVariable.data,
+  });
+
+  await runWorkflow({
+    urlParams: {
+      baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
+      namespace,
+      path: workflowName,
+    },
+    headers,
+  });
+
+  await page.goto(`/${namespace}/explorer/workflow/settings/${workflowName}`);
+  await page.getByTestId(`dropdown-trg-item-workflow`).click();
+  await page.getByRole("button", { name: "edit" }).click();
+
+  await page.getByLabel("Name").fill("new-name");
+
+  await expect(
+    page.getByText("Mimetype is empty", { exact: true }),
+    "it renders the empty mime type"
+  ).toBeVisible();
+
+  await expect(
+    page.getByText(
+      "Only text based mime types are supported for preview and editing"
+    ),
+    "it renders the message that indicated that only text based mime types are supported for preview and editing"
+  ).toBeVisible();
+
+  await page.getByRole("button", { name: "Save" }).click();
+
+  await expect(
+    page.getByTestId("item-name").getByText("new-name"),
+    "It renders the new variable name"
+  ).toBeVisible();
 });
