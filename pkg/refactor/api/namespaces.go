@@ -107,13 +107,13 @@ func (e *nsController) update(w http.ResponseWriter, r *http.Request) {
 
 	// Parse request.
 	req := struct {
-		MirrorSettings *datastore.MirrorConfig `json:"mirror"`
+		Mirror *datastore.MirrorConfig `json:"mirror"`
 	}{}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeNotJSONError(w, err)
 		return
 	}
-	if req.MirrorSettings == nil {
+	if req.Mirror == nil {
 		writeError(w, &Error{
 			Code:    "request_data_invalid",
 			Message: "field mirror must be provided",
@@ -123,11 +123,11 @@ func (e *nsController) update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Update mirroring config.
-	req.MirrorSettings.Namespace = name
-	settings, err := dStore.Mirror().UpdateConfig(r.Context(), req.MirrorSettings)
+	req.Mirror.Namespace = name
+	settings, err := dStore.Mirror().UpdateConfig(r.Context(), req.Mirror)
 	// If no mirroring config already set, create one.
 	if errors.Is(err, datastore.ErrNotFound) {
-		settings, err = dStore.Mirror().CreateConfig(r.Context(), req.MirrorSettings)
+		settings, err = dStore.Mirror().CreateConfig(r.Context(), req.Mirror)
 	}
 	if err != nil {
 		writeDataStoreError(w, err)
@@ -147,8 +147,8 @@ func (e *nsController) update(w http.ResponseWriter, r *http.Request) {
 func (e *nsController) create(w http.ResponseWriter, r *http.Request) {
 	// Parse request.
 	req := struct {
-		Name           string                  `json:"name"`
-		MirrorSettings *datastore.MirrorConfig `json:"mirror"`
+		Name   string                  `json:"name"`
+		Mirror *datastore.MirrorConfig `json:"mirror"`
 	}{}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeNotJSONError(w, err)
@@ -171,9 +171,9 @@ func (e *nsController) create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var mConfig *datastore.MirrorConfig
-	if req.MirrorSettings != nil {
-		req.MirrorSettings.Namespace = req.Name
-		mConfig, err = db.DataStore().Mirror().CreateConfig(r.Context(), req.MirrorSettings)
+	if req.Mirror != nil {
+		req.Mirror.Namespace = req.Name
+		mConfig, err = db.DataStore().Mirror().CreateConfig(r.Context(), req.Mirror)
 		if err != nil {
 			writeDataStoreError(w, err)
 			return
@@ -239,11 +239,11 @@ func (e *nsController) list(w http.ResponseWriter, r *http.Request) {
 func namespaceApiObject(ns *datastore.Namespace, mConfig *datastore.MirrorConfig) any {
 	type apiObject struct {
 		*datastore.Namespace
-		MirrorSettings *datastore.MirrorConfig `json:"mirror"`
+		Mirror *datastore.MirrorConfig `json:"mirror"`
 	}
 
 	return &apiObject{
-		Namespace:      ns,
-		MirrorSettings: mConfig,
+		Namespace: ns,
+		Mirror:    mConfig,
 	}
 }
