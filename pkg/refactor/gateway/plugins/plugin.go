@@ -143,7 +143,7 @@ func ReportError(ctx context.Context, w http.ResponseWriter, status int, msg str
 		"endpoint", endP,
 		"route", routePath,
 		"track", recipient.Route.String()+"."+ns+"."+endP,
-		"error", err.Error(),
+		"err", err,
 	)
 
 	// TODO: Metrics
