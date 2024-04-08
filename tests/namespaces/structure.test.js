@@ -28,6 +28,7 @@ describe('Test namespace get delete list calls', () => {
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.data).toEqual({
 			name: 'foo',
+			mirror: null,
 			...timestamps,
 		})
 	})
@@ -39,6 +40,7 @@ describe('Test namespace get delete list calls', () => {
 		expect(res.body.data.length).toEqual(1)
 		expect(res.body.data[0]).toEqual({
 			name: 'foo',
+			mirror: null,
 			...timestamps,
 		})
 	})

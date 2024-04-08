@@ -48,15 +48,15 @@ const (
 // MirrorProcess represents an instance of mirroring process that happened or is currently happened. For every mirroring
 // process gets executing, a MirrorProcess instance should be created with datastore.MirrorStore.
 type MirrorProcess struct {
-	ID        uuid.UUID
-	Namespace string
+	ID        uuid.UUID `json:"id"`
+	Namespace string    `json:"namespace"`
 
-	Status string
-	Typ    string
+	Status string `json:"status"`
+	Typ    string `json:"type"`
 
-	EndedAt   time.Time
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	EndedAt   time.Time `json:"endedAt"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 // MirrorStore *doesn't* lunch any mirroring process. MirrorStore is only responsible for fetching and setting datastore.MirrorConfig and

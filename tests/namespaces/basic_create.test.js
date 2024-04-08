@@ -20,6 +20,7 @@ describe('Test namespace create calls', () => {
 			},
 			want: {
 				name: 'foo1',
+				mirror: null,
 			},
 		},
 		{
@@ -27,12 +28,14 @@ describe('Test namespace create calls', () => {
 				name: 'foo2',
 				mirror: {
 					url: 'my_url',
+					gitRef: 'main',
 				},
 			},
 			want: {
 				name: 'foo2',
 				mirror: {
 					url: 'my_url',
+					gitRef: 'main',
 					insecure: false,
 					...timestamps,
 				},
