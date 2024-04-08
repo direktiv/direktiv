@@ -26,9 +26,6 @@ export const getLanguageFromMimeType = (mimeType: string) => {
   return undefined;
 };
 
-export const MimeTypeSchema = z.string();
-export type MimeTypeType = z.infer<typeof MimeTypeSchema>;
-
 export const EditorMimeTypeSchema = z.enum([
   "application/json",
   "application/yaml",

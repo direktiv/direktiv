@@ -1,4 +1,3 @@
-import { EditorMimeTypeSchema, MimeTypeType, mimeTypes } from "../utils";
 import {
   Select,
   SelectContent,
@@ -7,6 +6,7 @@ import {
   SelectValue,
 } from "~/design/Select";
 
+import { mimeTypes } from "../utils";
 import { useTranslation } from "react-i18next";
 
 const MimeTypeSelect = ({
@@ -18,12 +18,10 @@ const MimeTypeSelect = ({
   id?: string;
   loading?: boolean;
   mimeType: string | undefined;
-  onChange: (value: MimeTypeType) => void;
+  onChange: (value: string) => void;
 }) => {
   const { t } = useTranslation();
-
-  const hasEditableMimeType = EditorMimeTypeSchema.safeParse(mimeType).success;
-
+  const hasEditableMimeType = !!mimeType;
   return (
     <Select
       onValueChange={onChange}
