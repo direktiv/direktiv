@@ -571,35 +571,93 @@
       "200":
         description:  object deleted successfully
 
-#  patch:
-#    tags:
-#      - namespaces
-#    summary: Updates a direktiv namespace
-#    parameters:
-#      - $ref: '../parameters.yaml#/namespace'
-#    requestBody:
-#      description: Namespace's patching data
-#      required: true
-#      content:
-#        application/json:
-#          schema:
-#            type: object
-#            properties:
-#              name:
-#                type: string
-#                description: a unique name string of the namespace
-#
-#    responses:
-#      "200":
-#        description: data of the updated direktiv namespace
-#        content:
-#          application/json:
-#            schema:
-#              type: object
-#              properties:
-#                data:
-#                  type: object
-#                  properties:
+  put:
+    tags:
+      - namespaces
+    summary: Updates a direktiv namespace
+    parameters:
+      - $ref: '../parameters.yaml#/namespace'
+    requestBody:
+      description: Namespace's updated data
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              mirror:
+                type: object
+                nullable: true
+                description: git mirror settings associated with the namespace (only with git mirrored namespace). Null value means this is a none mirrored (ordinary) namespace
+                properties:
+                  url:
+                    type: string
+                    description: url of the git repo
+                  gitRef:
+                    type: string
+                    description: git branch name
+                  gitCommitHash:
+                    type: string(optional)
+                    description: git commit hash
+                  publicKey:
+                    type: string(optional)
+                    description: associated publish key ssh credential
+                  privateKey:
+                    type: string(optional)
+                    description: associated private key ssh credential
+                  privateKeyPassphrase:
+                    type: string(optional)
+                    description: associated private key passphrase ssh credential
+                  insecure:
+                    type: boolean
+                    description: to ignore insecure ssl certificates
+
+    responses:
+      "200":
+        description: data of the updated direktiv namespace
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      description: a unique string that represent name of the namespace
+                    mirror:
+                      type: object
+                      nullable: true
+                      description: git mirror settings associated with the namespace (only with git mirrored namespace). Null value means this is a none mirrored (ordinary) namespace
+                      properties:
+                        url:
+                          type: string
+                          description: url of the git repo
+                        gitRef:
+                          type: string
+                          description: git branch name
+                        gitCommitHash:
+                          type: string(optional)
+                          description: git commit hash
+                        publicKey:
+                          type: string(optional)
+                          description: associated publish key ssh credential
+                        insecure:
+                          type: boolean
+                          description: to ignore insecure ssl certificates
+                        createdAt:
+                          type: string
+                          description: timestamp of creation date
+                        updatedAt:
+                          type: string
+                          description: timestamp of last updating date
+                    createdAt:
+                      type: string
+                      description: timestamp of creation date
+                    updatedAt:
+                      type: string
+                      description: timestamp of last updating date
 
 /api/v2/namespaces/{namespace}/logs:
   get:
