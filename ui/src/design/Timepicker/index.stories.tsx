@@ -1,16 +1,12 @@
 import { ArrowRight, Plus, X } from "lucide-react";
 import { Command, CommandGroup, CommandList } from "~/design/Command";
-
 import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
-
 import TimePicker, { getTimeString } from "./";
 
 import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
 import { Datepicker } from "../Datepicker";
-
 import Input from "~/design/Input";
-
 import { InputWithButton } from "~/design/InputWithButton";
 import type { Meta } from "@storybook/react";
 import React from "react";
@@ -28,9 +24,9 @@ export const Default = () => {
 
   return (
     <TimePicker
-      hours="Hours"
-      minutes="Minutes"
-      seconds="Seconds"
+      hoursLabel="Hours"
+      minutesLabel="Minutes"
+      secondsLabel="Seconds"
       date={date}
       setDate={setDate}
     />
@@ -94,9 +90,9 @@ export const TimepickerInButtonBar = () => {
               <CommandList>
                 <CommandGroup heading="filter by time">
                   <TimePicker
-                    hours="Hours"
-                    minutes="Minutes"
-                    seconds="Seconds"
+                    hoursLabel="Hours"
+                    minutesLabel="Minutes"
+                    secondsLabel="Seconds"
                     date={date}
                     setDate={setDate}
                   />
@@ -157,9 +153,9 @@ export const ButtonBarWithCombinationOfDatepickerAndTimepicker = () => {
               <CommandList>
                 <CommandGroup heading="filter by time">
                   <TimePicker
-                    hours="Hours"
-                    minutes="Minutes"
-                    seconds="Seconds"
+                    hoursLabel="Hours"
+                    minutesLabel="Minutes"
+                    secondsLabel="Seconds"
                     date={date}
                     setDate={setDate}
                   />

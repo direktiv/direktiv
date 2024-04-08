@@ -491,18 +491,10 @@
           },
           "menuHeading": {
             "main": "Select filter",
-            "time": "refine time",
             "TYPE": "filter by type",
             "TEXT": "search cloudevent content",
             "AFTER": "filter by received after",
             "BEFORE": "filter by received before"
-          },
-          "menuLabels": {
-            "time": {
-              "hours": "Hours",
-              "minutes": "Minutes",
-              "seconds": "Seconds"
-            }
           }
         }
       },
@@ -1248,6 +1240,14 @@
     },
     "blocker": {
       "unsavedChangesWarning": "You have unsaved changes that will be lost when leaving this route. Are you sure you want to leave?"
+    },
+    "timepicker": {
+      "menuHeading": "refine time",
+      "menuLabels": {
+        "hours": "Hours",
+        "minutes": "Minutes",
+        "seconds": "Seconds"
+      }
     }
   },
   "api": {

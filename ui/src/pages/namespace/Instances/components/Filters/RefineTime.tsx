@@ -43,9 +43,7 @@ const RefineTime = ({
   return (
     <Command>
       <CommandList className="max-h-[460px]">
-        <CommandGroup
-          heading={t("pages.events.history.filter.menuHeading.time")}
-        >
+        <CommandGroup heading={t("components.timepicker.menuHeading")}>
           <div className="flex items-center">
             <TimePicker
               onKeyDown={(e) => {
@@ -53,12 +51,17 @@ const RefineTime = ({
               }}
               date={date}
               setDate={setDate}
-              hours={t("pages.events.history.filter.menuLabels.time.hours")}
-              minutes={t("pages.events.history.filter.menuLabels.time.minutes")}
-              seconds={t("pages.events.history.filter.menuLabels.time.seconds")}
+              hoursLabel={t("components.timepicker.menuLabels.hours")}
+              minutesLabel={t("components.timepicker.menuLabels.minutes")}
+              secondsLabel={t("components.timepicker.menuLabels.seconds")}
             />
 
-            <Button icon variant="ghost" onClick={() => setTimeOnDate()}>
+            <Button
+              className="mt-5"
+              icon
+              variant="ghost"
+              onClick={() => setTimeOnDate()}
+            >
               <ArrowRight />
             </Button>
           </div>
