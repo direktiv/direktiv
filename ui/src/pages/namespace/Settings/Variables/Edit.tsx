@@ -11,7 +11,7 @@ import {
 
 import Button from "~/design/Button";
 import { PlusCircle } from "lucide-react";
-import { VariableForm } from "./Form";
+import { VariableForm } from "../../../../components/VariableForm";
 import { useTranslation } from "react-i18next";
 import { useUpdateVar } from "~/api/variables/mutate/update";
 import { useVarDetails } from "~/api/variables/query/details";

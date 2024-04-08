@@ -8,7 +8,7 @@ import {
 import Button from "~/design/Button";
 import { PlusCircle } from "lucide-react";
 import { VarFormCreateEditSchemaType } from "~/api/variables/schema";
-import VariableForm from "~/pages/namespace/Settings/Variables/Form";
+import VariableForm from "~/components/VariableForm";
 import { useCreateVar } from "~/api/variables/mutate/create";
 import { useTranslation } from "react-i18next";
 

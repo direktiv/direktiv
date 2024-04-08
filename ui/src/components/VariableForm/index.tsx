@@ -9,14 +9,14 @@ import {
   getLanguageFromMimeType,
   isMimeTypeEditable,
   mimeTypeToLanguageDict,
-} from "../utils";
+} from "./utils";
 
 import { Card } from "~/design/Card";
 import { DialogHeader } from "~/design/Dialog";
-import FileUpload from "../../components/FileUpload";
+import FileUpload from "./FileUpload";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
-import MimeTypeSelect from "../MimeTypeSelect/";
+import MimeTypeSelect from "./MimeTypeSelect";
 import { useState } from "react";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
@@ -26,7 +26,6 @@ const defaultMimeType = "application/json";
 
 type VariableForm = {
   defaultValues: VarFormCreateEditSchemaType;
-
   dialogTitle: JSX.Element;
   dialogFooter: JSX.Element;
   onMutate: (data: VarFormCreateEditSchemaType) => void;
@@ -75,7 +74,7 @@ export const VariableForm = ({
   const onSubmit: SubmitHandler<VarFormCreateEditSchemaType> = (data) => {
     onMutate(data);
   };
-  // TODO: clean up translation keys and move component up?
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col space-y-5">
       <DialogHeader>

@@ -1,4 +1,4 @@
-import { EditorMimeTypeSchema } from "~/pages/namespace/Settings/Variables/utils";
+import { EditorMimeTypeSchema } from "~/components/VariableForm/utils";
 import { createVar } from "~/api/variables/mutate/create";
 import { encode } from "js-base64";
 import { faker } from "@faker-js/faker";

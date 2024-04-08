@@ -6,7 +6,7 @@ import {
   SelectValue,
 } from "~/design/Select";
 
-import { mimeTypes } from "../utils";
+import { mimeTypes } from "./utils";
 import { useTranslation } from "react-i18next";
 
 const MimeTypeSelect = ({
