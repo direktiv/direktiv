@@ -5,7 +5,7 @@ import {
   getArrowByType,
   getDateByType,
   setDateByType,
-} from "./timepicker-utils";
+} from "./utils";
 
 import Input from "../Input";
 import React from "react";
