@@ -72,7 +72,7 @@ func (ep *gatewayManager) UpdateNamespace(ns string) {
 
 	files, err := fStore.ForNamespace(ns).ListDirektivFilesWithData(ctx)
 	if err != nil {
-		slog.Error("Failed to list files", slog.String("error", err.Error()), "track", recipient.Namespace.String()+"."+ns)
+		slog.Error("Failed to list files", "err", err, "track", recipient.Namespace.String()+"."+ns)
 
 		return
 	}
@@ -120,7 +120,7 @@ func (ep *gatewayManager) UpdateNamespace(ns string) {
 			// if parsing fails, the endpoint is still getting added to report
 			// an error in the API
 			if err != nil {
-				slog.Error("Failed to parse endpoint file", slog.String("error", err.Error()))
+				slog.Error("Failed to parse endpoint file", "err", err)
 				ep.Errors = append(ep.Errors, err.Error())
 				eps = append(eps, ep)
 
@@ -153,7 +153,7 @@ func (ep *gatewayManager) UpdateAll() {
 
 	nsList, err := dStore.Namespaces().GetAll(context.Background())
 	if err != nil {
-		slog.Error("Failed listing namespaces", slog.String("error", err.Error()))
+		slog.Error("Failed listing namespaces", "err", err)
 
 		return
 	}
@@ -347,7 +347,7 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(tw.Code)
 		_, err := w.Write(tw.Body.Bytes())
 		if err != nil {
-			slogRoute.Error("Failed to write api response", "error", err.Error())
+			slogRoute.Error("Failed to write api response", "err", err)
 		}
 	}
 }
