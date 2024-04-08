@@ -6,7 +6,7 @@ import { createFile } from "e2e/utils/files";
 import { createWorkflowVariables } from "e2e/utils/variables";
 import { faker } from "@faker-js/faker";
 import { headers } from "e2e/utils/testutils";
-import { setVariable } from "~/api/tree/mutate/setVariable";
+import { setVariable } from "~/api/tree/mutate/obsoleteSetVariable";
 import { waitForSuccessToast } from "./utils";
 
 let namespace = "";

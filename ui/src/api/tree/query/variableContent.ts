@@ -1,6 +1,6 @@
 import type { QueryFunctionContext } from "@tanstack/react-query";
 import type { ResponseParser } from "../../apiFactory";
-import { WorkflowVariableContentSchema } from "../schema/workflowVariable";
+import { WorkflowVariableContentSchema } from "../schema/obsoleteWorkflowVariable";
 import { apiFactory } from "../../apiFactory";
 import { forceLeadingSlash } from "~/api/files/utils";
 import { treeKeys } from "..";

@@ -1,6 +1,6 @@
 import { ResponseParser, apiFactory } from "~/api/apiFactory";
 
-import { WorkflowVariableDownloadSchema } from "../schema/workflowVariable";
+import { WorkflowVariableDownloadSchema } from "../schema/obsoleteWorkflowVariable";
 import { forceLeadingSlash } from "~/api/files/utils";
 import { useApiKey } from "~/util/store/apiKey";
 import useMutationWithPermissions from "~/api/useMutationWithPermissions";

@@ -3,7 +3,7 @@ import { createVar } from "~/api/variables/mutate/create";
 import { encode } from "js-base64";
 import { faker } from "@faker-js/faker";
 import { headers } from "./testutils";
-import { setVariable } from "~/api/tree/mutate/setVariable";
+import { setVariable } from "~/api/tree/mutate/obsoleteSetVariable";
 
 // Note: This makes sure only mimeTypes supported by the form are used,
 // but the generated content isn't really in that format.

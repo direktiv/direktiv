@@ -1,7 +1,7 @@
 import {
   WorkflowVariableDeletedSchema,
   WorkflowVariableSchemaType,
-} from "../schema/workflowVariable";
+} from "../schema/obsoleteWorkflowVariable";
 
 import { apiFactory } from "~/api/apiFactory";
 import { forceLeadingSlash } from "~/api/files/utils";

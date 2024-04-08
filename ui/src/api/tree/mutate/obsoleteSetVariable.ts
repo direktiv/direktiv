@@ -2,7 +2,7 @@ import {
   WorkflowVariableCreatedSchema,
   WorkflowVariableCreatedSchemaType,
   WorkflowVariableFormSchemaType,
-} from "../schema/workflowVariable";
+} from "../schema/obsoleteWorkflowVariable";
 
 import { apiFactory } from "~/api/apiFactory";
 import { forceLeadingSlash } from "~/api/files/utils";
