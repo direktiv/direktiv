@@ -4,40 +4,33 @@ import { FC, KeyboardEventHandler } from "react";
 
 import { TimePickerInput } from "./timepicker-input";
 
-export function getTimeString(date: Date) {
-  const hours =
-    date.getHours() < 10
-      ? "0" + String(date.getHours())
-      : String(date.getHours());
-  const minutes =
-    date.getMinutes() < 10
-      ? "0" + String(date.getMinutes())
-      : String(date.getMinutes());
+const padTime = (date: number) => date.toString().padStart(2, "0");
 
-  const seconds =
-    date.getSeconds() < 10
-      ? "0" + String(date.getSeconds())
-      : String(date.getSeconds());
+export const getTimeString = (date: Date) => {
+  const hours = padTime(date.getHours());
+  const minutes = padTime(date.getMinutes());
+  const seconds = padTime(date.getSeconds());
+
   const time = hours + ":" + minutes + ":" + seconds;
 
   return time;
-}
+};
 
 type TimePickerProps = {
   date: Date;
   setDate: (date: Date) => void;
-  hours: string;
-  minutes: string;
-  seconds: string;
+  hoursLabel: string;
+  minutesLabel: string;
+  secondsLabel: string;
   onKeyDown?: KeyboardEventHandler<HTMLInputElement> | undefined;
 };
 
 const TimePicker: FC<TimePickerProps> = ({
   date,
   setDate,
-  hours,
-  minutes,
-  seconds,
+  hoursLabel: hours,
+  minutesLabel: minutes,
+  secondsLabel: seconds,
   onKeyDown,
 }) => {
   const hourRef = React.useRef<HTMLInputElement>(null);
