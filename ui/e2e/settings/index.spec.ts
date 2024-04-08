@@ -225,6 +225,8 @@ test("it is possible to edit variables", async ({ page }) => {
   const variables = await createVariables(namespace, 3);
   const subject = variables[2];
 
+  const newName = "new-name";
+
   if (!subject) throw "There was an error setting up test data";
 
   /* visit page and edit variable */
@@ -242,6 +244,8 @@ test("it is possible to edit variables", async ({ page }) => {
       "the variable's content is loaded into the editor"
     )
     .toBe(decode(subject.content));
+
+  await page.getByTestId("new-variable-name").fill(newName);
 
   await expect(
     page.locator("select"),
@@ -268,7 +272,7 @@ test("it is possible to edit variables", async ({ page }) => {
     waitUntil: "networkidle",
   });
 
-  await page.getByTestId(`dropdown-trg-item-${subject.data.name}`).click();
+  await page.getByTestId(`dropdown-trg-item-${newName}`).click();
   await page.getByRole("button", { name: "edit" }).click();
 
   await expect
@@ -277,6 +281,11 @@ test("it is possible to edit variables", async ({ page }) => {
       "the updated variable content is loaded into the editor"
     )
     .toBe("data: this is supposed to be YAML");
+
+  await expect(
+    await page.getByTestId("new-variable-name").inputValue(),
+    "the updated variable name is shown in the name input"
+  ).toBe(newName);
 
   await expect(
     page.locator("select"),
