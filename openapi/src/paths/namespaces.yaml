@@ -28,6 +28,18 @@
                           url:
                             type: string
                             description: url of the git repo
+                          gitRef:
+                            type: string
+                            description: git branch name
+                          gitCommitHash:
+                            type: string(optional)
+                            description: git commit hash
+                          publicKey:
+                            type: string(optional)
+                            description: associated publish key ssh credential
+                          insecure:
+                            type: boolean
+                            description: to ignore insecure ssl certificates
                           createdAt:
                             type: string
                             description: timestamp of creation date
