@@ -3,10 +3,12 @@ import { expect, test } from "@playwright/test";
 
 import { noop as basicWorkflow } from "~/pages/namespace/Explorer/Tree/components/modals/CreateNew/Workflow/templates";
 import { createFile } from "e2e/utils/files";
+import { createVar } from "~/api/variables/mutate/create";
 import { createWorkflowVariables } from "e2e/utils/variables";
+import { encode } from "js-base64";
 import { faker } from "@faker-js/faker";
+import { forceLeadingSlash } from "~/api/files/utils";
 import { headers } from "e2e/utils/testutils";
-import { setVariable } from "~/api/tree/mutate/obsoleteSetVariable";
 import { waitForSuccessToast } from "./utils";
 
 let namespace = "";
@@ -101,18 +103,18 @@ test("it is possible to create a variable", async ({ page }) => {
 
 test("it is possible to update variables", async ({ page }) => {
   /* set up test data */
-  const subject = await setVariable({
-    payload: "edit me",
+  const subject = await createVar({
+    payload: {
+      name: "editable-var",
+      mimeType: "text/plain",
+      data: encode("edit me"),
+      workflowPath: forceLeadingSlash(workflow),
+    },
     urlParams: {
       baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
       namespace,
-      path: workflow,
-      name: "editable-var",
     },
-    headers: {
-      ...headers,
-      "content-type": "text/plain",
-    },
+    headers,
   });
 
   if (!subject) {
@@ -122,15 +124,17 @@ test("it is possible to update variables", async ({ page }) => {
   /* visit page and edit variable */
   await page.goto(`/${namespace}/explorer/workflow/settings/${workflow}`);
 
-  await page.getByTestId(`dropdown-trg-item-${subject.key}`).click();
+  await page.getByTestId(`dropdown-trg-item-${subject.data.name}`).click();
   await page.getByRole("button", { name: "edit" }).click();
 
   await expect(
-    page.getByRole("heading", { name: `Edit ${subject.key}` }),
+    page.getByRole("heading", { name: `Edit ${subject.data.name}` }),
     "it opens the edit form"
   ).toBeVisible();
 
-  await expect(page.getByLabel("Mimetype")).toContainText(subject.mimeType);
+  await expect(page.getByLabel("Mimetype")).toContainText(
+    subject.data.mimeType
+  );
   await page.getByLabel("Mimetype").click();
   await page.getByLabel("JSON").click();
 
@@ -156,7 +160,7 @@ test("it is possible to update variables", async ({ page }) => {
     "there should be 1 variable in the list"
   ).toHaveCount(1);
 
-  await page.getByTestId(`dropdown-trg-item-${subject.key}`).click();
+  await page.getByTestId(`dropdown-trg-item-${subject.data.name}`).click();
   await page.getByRole("button", { name: "edit" }).click();
 
   await expect(page.getByLabel("Mimetype")).toContainText("application/json");
@@ -178,11 +182,11 @@ test("it is possible to delete variables", async ({ page }) => {
   /* visit page and delete variable */
   await page.goto(`/${namespace}/explorer/workflow/settings/${workflow}`);
 
-  await page.getByTestId(`dropdown-trg-item-${subject.key}`).click();
+  await page.getByTestId(`dropdown-trg-item-${subject.data.name}`).click();
   await page.getByRole("button", { name: "delete" }).click();
 
   await expect(
-    page.getByLabel("Confirmation required").getByText(subject.key),
+    page.getByLabel("Confirmation required").getByText(subject.data.name),
     "it renders the confirmation dialog"
   ).toBeVisible();
   await page.getByRole("button", { name: "Delete" }).click();
