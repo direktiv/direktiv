@@ -72,7 +72,7 @@ func (ep *gatewayManager) UpdateNamespace(ns string) {
 
 	files, err := fStore.ForNamespace(ns).ListDirektivFilesWithData(ctx)
 	if err != nil {
-		slog.Error("Failed to list files", "err", err, "track", recipient.Namespace.String()+"."+ns)
+		slog.Error("list files", "err", err, "track", recipient.Namespace.String()+"."+ns)
 
 		return
 	}
@@ -89,7 +89,7 @@ func (ep *gatewayManager) UpdateNamespace(ns string) {
 		if file.Typ == filestore.FileTypeConsumer {
 			item, err := core.ParseConsumerFile(file.Data)
 			if err != nil {
-				slog.Error("Failed to parse endpoint file", "err", err, "track", recipient.Namespace.String()+"."+ns)
+				slog.Error("parse endpoint file", "err", err, "track", recipient.Namespace.String()+"."+ns)
 
 				continue
 			}
@@ -120,7 +120,7 @@ func (ep *gatewayManager) UpdateNamespace(ns string) {
 			// if parsing fails, the endpoint is still getting added to report
 			// an error in the API
 			if err != nil {
-				slog.Error("Failed to parse endpoint file", "err", err)
+				slog.Error("parse endpoint file", "err", err)
 				ep.Errors = append(ep.Errors, err.Error())
 				eps = append(eps, ep)
 
@@ -153,7 +153,7 @@ func (ep *gatewayManager) UpdateAll() {
 
 	nsList, err := dStore.Namespaces().GetAll(context.Background())
 	if err != nil {
-		slog.Error("Failed listing namespaces", "err", err)
+		slog.Error("listing namespaces", "err", err)
 
 		return
 	}
