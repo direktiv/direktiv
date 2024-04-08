@@ -29,6 +29,7 @@ describe('Test namespace update calls', () => {
 			input: {
 				mirror: {
 					url: 'my_url',
+					gitRef: 'main',
 				},
 			},
 			want: {
@@ -36,6 +37,7 @@ describe('Test namespace update calls', () => {
 				...timestamps,
 				mirror: {
 					url: 'my_url',
+					gitRef: 'main',
 					insecure: false,
 					...timestamps,
 				},
