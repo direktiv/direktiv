@@ -93,7 +93,7 @@ func NewMain(args *NewMainArgs) *sync.WaitGroup {
 	}
 	slog.Debug("Setting up pub/sub subscription for service manager events.")
 	args.PubSubBus.Subscribe(func(_ string) {
-		renderServiceManager(serverCtx, args.Database, serviceManager)
+		renderServiceManager(args.Database, serviceManager)
 		slog.Debug("Service Manager was triggered via pub/sub event.")
 	},
 		pubsub.WorkflowCreate,
@@ -108,7 +108,7 @@ func NewMain(args *NewMainArgs) *sync.WaitGroup {
 		pubsub.NamespaceDelete,
 	)
 	// Call at least once before booting
-	renderServiceManager(serverCtx, args.Database, serviceManager)
+	renderServiceManager(args.Database, serviceManager)
 	slog.Debug("Setting up pub/sub subscription for workflow configuration changes.")
 	args.PubSubBus.Subscribe(func(data string) {
 		err := args.ConfigureWorkflow(data)
@@ -215,7 +215,8 @@ func initSLog() {
 	slog.SetDefault(slogger)
 }
 
-func renderServiceManager(ctx context.Context, db *database.DB, serviceManager core.ServiceManager) {
+func renderServiceManager(db *database.DB, serviceManager core.ServiceManager) {
+	ctx := context.Background()
 	slog := slog.With("subscriber", "services file watcher")
 
 	fStore, dStore := db.FileStore(), db.DataStore()
