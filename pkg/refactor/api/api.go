@@ -25,7 +25,7 @@ const (
 	readHeaderTimeout = 5 * time.Second
 )
 
-func Start(ctx context.Context, app core.App, db *database.DB, bus *pubsub2.Bus, instanceManager *instancestore.InstanceManager, addr string, done <-chan struct{}, wg *sync.WaitGroup) {
+func Start(app core.App, db *database.DB, bus *pubsub2.Bus, instanceManager *instancestore.InstanceManager, addr string, done <-chan struct{}, wg *sync.WaitGroup) {
 	funcCtr := &serviceController{
 		manager: app.ServiceManager,
 	}
@@ -149,7 +149,7 @@ func Start(ctx context.Context, app core.App, db *database.DB, bus *pubsub2.Bus,
 
 	apiServer := &http.Server{Addr: addr, Handler: r, ReadHeaderTimeout: readHeaderTimeout}
 	// Server run context
-	serverCtx, serverStopCtx := context.WithCancel(ctx)
+	serverCtx, serverStopCtx := context.WithCancel(context.Background())
 
 	go func() {
 		// Run api server
