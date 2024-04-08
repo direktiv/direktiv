@@ -49,11 +49,9 @@ const (
 // process gets executing, a MirrorProcess instance should be created with datastore.MirrorStore.
 type MirrorProcess struct {
 	ID        uuid.UUID `json:"id"`
-	Namespace string    `json:"namespace"`
-
-	Status string `json:"status"`
-	Typ    string `json:"type"`
-
+	Namespace string    `json:"-"`
+	Status    string    `json:"status"`
+	Typ       string    `json:"-"`
 	EndedAt   time.Time `json:"endedAt"`
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
