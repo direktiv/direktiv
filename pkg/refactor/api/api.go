@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"log"
 	"log/slog"
 	"net/http"
 	"sync"
@@ -155,8 +154,8 @@ func Start(app core.App, db *database.DB, bus *pubsub2.Bus, instanceManager *ins
 		// Run api server
 		err := apiServer.ListenAndServe()
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
-			slog.Debug("API v2 Server Closed", "error", err)
-			log.Fatal(err)
+			slog.Error("listen on port", "err", err)
+			panic(err)
 		}
 		// Wait for server context to be stopped
 		<-serverCtx.Done()
@@ -170,10 +169,9 @@ func Start(app core.App, db *database.DB, bus *pubsub2.Bus, instanceManager *ins
 
 		err := apiServer.Shutdown(shutdownCtx)
 		if err != nil {
-			slog.Error("Failed to start API server", "addr", addr, "error", err)
+			slog.Error("shutdown server", "err", err)
 			panic(err)
 		}
-		slog.Debug("Shutting down API server", "addr", addr)
 		serverStopCtx()
 	}()
 }
