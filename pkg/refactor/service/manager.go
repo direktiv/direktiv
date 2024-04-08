@@ -35,7 +35,7 @@ type manager struct {
 
 func NewManager(c *core.Config, enableDocker bool) (core.ServiceManager, error) {
 	if enableDocker {
-		slog.Debug("Creating docker client")
+		slog.Debug("creating docker client")
 		cli, err := dClient.NewClientWithOpts(dClient.FromEnv, dClient.WithAPIVersionNegotiation())
 		if err != nil {
 			return nil, fmt.Errorf("failed creating docker client: %w", err)
@@ -57,7 +57,7 @@ func NewManager(c *core.Config, enableDocker bool) (core.ServiceManager, error) 
 			lock: &sync.Mutex{},
 		}, nil
 	}
-	slog.Debug("Creating knative manger")
+	slog.Debug("creating knative manger")
 
 	return newKnativeManager(c)
 }
