@@ -9,8 +9,8 @@ import { Datepicker } from "../Datepicker";
 import Input from "~/design/Input";
 import { InputWithButton } from "~/design/InputWithButton";
 import type { Meta } from "@storybook/react";
-import React from "react";
 import { format } from "date-fns";
+import { useState } from "react";
 
 const meta = {
   title: "Components/Timepicker",
@@ -20,7 +20,7 @@ const meta = {
 export default meta;
 
 export const Default = () => {
-  const [date, setDate] = React.useState<Date>(new Date());
+  const [date, setDate] = useState<Date>(new Date());
 
   return (
     <TimePicker
@@ -34,9 +34,9 @@ export const Default = () => {
 };
 
 export const TimepickerInButtonBar = () => {
-  const [date, setDate] = React.useState<Date>(new Date());
+  const [date, setDate] = useState<Date>(new Date());
   const time = getTimeString(date);
-  const [name, setName] = React.useState<string>(() => "filename.yaml");
+  const [name, setName] = useState<string>(() => "filename.yaml");
 
   return (
     <div className="m-2 flex flex-row flex-wrap gap-2">
@@ -112,7 +112,7 @@ export const TimepickerInButtonBar = () => {
 export const ButtonBarWithCombinationOfDatepickerAndTimepicker = () => {
   const defaultDate = new Date();
 
-  const [date, setDate] = React.useState<Date>(() => defaultDate);
+  const [date, setDate] = useState<Date>(() => defaultDate);
 
   const time = getTimeString(date);
   return (
