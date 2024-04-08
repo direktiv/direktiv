@@ -1,7 +1,7 @@
 import {
   VarCreatedUpdatedSchema,
   VarCreatedUpdatedSchemaType,
-  VarFormUpdateSchemaType,
+  VarFormCreateEditSchemaType,
 } from "../schema";
 
 import { apiFactory } from "~/api/apiFactory";
@@ -45,7 +45,7 @@ export const useUpdateVar = ({
   const mutationFn = ({
     id,
     ...payload
-  }: { id: string } & VarFormUpdateSchemaType) =>
+  }: { id: string } & VarFormCreateEditSchemaType) =>
     updateVar({
       apiKey: apiKey ?? undefined,
       payload,

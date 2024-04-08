@@ -4,7 +4,10 @@ import {
   DialogFooter,
   DialogTitle,
 } from "~/design/Dialog";
-import { VarFormUpdateSchemaType, VarSchemaType } from "~/api/variables/schema";
+import {
+  VarFormCreateEditSchemaType,
+  VarSchemaType,
+} from "~/api/variables/schema";
 
 import Button from "~/design/Button";
 import { PlusCircle } from "lucide-react";
@@ -25,7 +28,7 @@ const Edit = ({ item, onSuccess }: EditProps) => {
     onSuccess,
   });
 
-  const onMutate = (data: VarFormUpdateSchemaType) => {
+  const onMutate = (data: VarFormCreateEditSchemaType) => {
     updateVar({
       id: item.id,
       ...data,

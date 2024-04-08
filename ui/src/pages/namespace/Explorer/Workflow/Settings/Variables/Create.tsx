@@ -7,7 +7,7 @@ import {
 
 import Button from "~/design/Button";
 import { PlusCircle } from "lucide-react";
-import { VarFormCreateSchemaType } from "~/api/variables/schema";
+import { VarFormCreateEditSchemaType } from "~/api/variables/schema";
 import VariableForm from "~/pages/namespace/Settings/Variables/Form";
 import { useCreateVar } from "~/api/variables/mutate/create";
 import { useTranslation } from "react-i18next";
@@ -23,7 +23,7 @@ const Create = ({ onSuccess, path }: CreateProps) => {
     onSuccess,
   });
 
-  const onMutate = (data: VarFormCreateSchemaType) => {
+  const onMutate = (data: VarFormCreateEditSchemaType) => {
     createVar({
       ...data,
       workflowPath: path,

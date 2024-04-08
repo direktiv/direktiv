@@ -1,9 +1,8 @@
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import Editor, { EditorLanguagesType } from "~/design/Editor";
 import {
-  VarFormCreateSchema,
-  VarFormCreateSchemaType,
-  VarFormUpdateSchemaType,
+  VarFormCreateEditSchema,
+  VarFormCreateEditSchemaType,
 } from "~/api/variables/schema";
 import { decode, encode } from "js-base64";
 import {
@@ -26,11 +25,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 const defaultMimeType = "application/json";
 
 type VariableForm = {
-  defaultValues: VarFormCreateSchemaType & VarFormUpdateSchemaType;
+  defaultValues: VarFormCreateEditSchemaType;
 
   dialogTitle: JSX.Element;
   dialogFooter: JSX.Element;
-  onMutate: (data: VarFormCreateSchemaType & VarFormUpdateSchemaType) => void;
+  onMutate: (data: VarFormCreateEditSchemaType) => void;
 };
 
 export const VariableForm = ({
@@ -60,9 +59,8 @@ export const VariableForm = ({
     control,
     setValue,
     formState: { errors },
-  } = useForm<VarFormCreateSchemaType & VarFormUpdateSchemaType>({
-    // TODO: the resolver must be dynamic
-    resolver: zodResolver(VarFormCreateSchema),
+  } = useForm<VarFormCreateEditSchemaType>({
+    resolver: zodResolver(VarFormCreateEditSchema),
     defaultValues,
   });
 
@@ -74,11 +72,10 @@ export const VariableForm = ({
     }
   };
 
-  const onSubmit: SubmitHandler<VarFormCreateSchemaType> = (data) => {
+  const onSubmit: SubmitHandler<VarFormCreateEditSchemaType> = (data) => {
     onMutate(data);
   };
-
-  // TODO: clean up translation keys
+  // TODO: clean up translation keys and move component up?
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col space-y-5">
       <DialogHeader>

@@ -58,17 +58,20 @@ export type VarCreatedUpdatedSchemaType = z.infer<
   typeof VarCreatedUpdatedSchema
 >;
 
-export const VarFormCreateSchema = z.object({
+export const VarFormCreateEditSchema = z.object({
   name: z.string().nonempty(),
   mimeType: z.string().nonempty(),
   data: z.string().nonempty(),
+  /**
+   * workflowPath is technically not part of the edit payload.
+   * The path of a workflow variable can not be changed. But
+   * since this is an optional field, it is somewhat compatible
+   * with the edit payload and allows us to have one single form/
+   * schema for both create and edit.
+   */
   workflowPath: z.string().nonempty().optional(),
 });
 
-export type VarFormCreateSchemaType = z.infer<typeof VarFormCreateSchema>;
-
-export const VarFormUpdateSchema = VarFormCreateSchema.omit({
-  workflowPath: true,
-});
-
-export type VarFormUpdateSchemaType = z.infer<typeof VarFormUpdateSchema>;
+export type VarFormCreateEditSchemaType = z.infer<
+  typeof VarFormCreateEditSchema
+>;

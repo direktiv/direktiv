@@ -1,7 +1,7 @@
 import {
   VarCreatedUpdatedSchema,
   VarCreatedUpdatedSchemaType,
-  VarFormCreateSchemaType,
+  VarFormCreateEditSchemaType,
 } from "../schema";
 
 import { apiFactory } from "~/api/apiFactory";
@@ -36,7 +36,7 @@ export const useCreateVar = ({
     throw new Error("namespace is undefined");
   }
 
-  const mutationFn = (payload: VarFormCreateSchemaType) =>
+  const mutationFn = (payload: VarFormCreateEditSchemaType) =>
     createVar({
       apiKey: apiKey ?? undefined,
       payload: {
