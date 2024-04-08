@@ -89,7 +89,7 @@ func (ep *gatewayManager) UpdateNamespace(ns string) {
 		if file.Typ == filestore.FileTypeConsumer {
 			item, err := core.ParseConsumerFile(file.Data)
 			if err != nil {
-				slog.Error("Failed to parse endpoint file", "error", err, "track", recipient.Namespace.String()+"."+ns)
+				slog.Error("Failed to parse endpoint file", "err", err, "track", recipient.Namespace.String()+"."+ns)
 
 				continue
 			}

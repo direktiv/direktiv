@@ -169,7 +169,7 @@ func (m *manager) Start(done <-chan struct{}, wg *sync.WaitGroup) {
 			errs := m.runCycle()
 			m.lock.Unlock()
 			for _, err := range errs {
-				slog.Error("run cycle", "error", err)
+				slog.Error("run cycle", "err", err)
 			}
 
 			time.Sleep(cycleTime)

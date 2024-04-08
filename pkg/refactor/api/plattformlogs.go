@@ -31,7 +31,7 @@ func (m *logController) mountRouter(r chi.Router) {
 		// Call the Get method with the cursor instead of offset
 		data, starting, err := m.getOlder(r.Context(), params)
 		if err != nil {
-			slog.Error("Fetching logs for request failed.", "error", err)
+			slog.Error("Fetching logs for request failed.", "err", err)
 			writeInternalError(w, err)
 
 			return
@@ -196,7 +196,7 @@ func (m logController) stream(w http.ResponseWriter, r *http.Request) {
 		case message := <-messageChannel:
 			_, err := io.Copy(w, strings.NewReader(fmt.Sprintf("id: %v\nevent: %v\ndata: %v\n\n", message.ID, message.Type, message.Data)))
 			if err != nil {
-				slog.Error("Failed to serve to SSE", "error", err)
+				slog.Error("Failed to serve to SSE", "err", err)
 			}
 
 			f, ok := w.(http.Flusher)
@@ -258,20 +258,20 @@ func (lw *logStoreWorker) start(ctx context.Context) {
 			case <-ticker.C:
 				logs, err := lw.Get(ctx, lw.Cursor, lw.Params)
 				if err != nil {
-					slog.Error("TODO: should we quit with an error?", "error", err)
+					slog.Error("TODO: should we quit with an error?", "err", err)
 
 					continue
 				}
 				for _, fle := range logs {
 					b, err := json.Marshal(fle)
 					if err != nil {
-						slog.Error("TODO: should we quit with an error?", "error", err)
+						slog.Error("TODO: should we quit with an error?", "err", err)
 
 						continue
 					}
 					dst := &bytes.Buffer{}
 					if err := json.Compact(dst, b); err != nil {
-						slog.Error("TODO: should we quit with an error?", "error", err)
+						slog.Error("TODO: should we quit with an error?", "err", err)
 					}
 
 					e := Event{
