@@ -2,58 +2,44 @@ import { Command, CommandGroup, CommandList } from "~/design/Command";
 
 import { ArrowRight } from "lucide-react";
 import Button from "~/design/Button";
-import { FiltersObj } from "~/api/instances/query/get";
 import Input from "~/design/Input";
 import { InputWithButton } from "~/design/InputWithButton";
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
+
+type TextInputProps = {
+  value?: string;
+  onSubmit: (value: string) => void;
+  heading: string;
+  placeholder: string;
+};
 
 const TextInput = ({
-  field,
   value,
-  setFilter,
-  clearFilter,
-}: {
-  field: keyof FiltersObj;
-  value?: string;
-  setFilter: (filter: FiltersObj) => void;
-  clearFilter: (field: keyof FiltersObj) => void;
-}) => {
+  onSubmit,
+  heading,
+  placeholder,
+}: TextInputProps) => {
   const [inputValue, setInputValue] = useState<string>(value || "");
-  const { t } = useTranslation();
-
-  // Currently API only supports CONTAINS on filter fields with text inputs
-  const type = "CONTAINS";
-
-  const applyFilter = () => {
-    if (inputValue) {
-      setFilter({
-        [field]: { value: inputValue, type },
-      });
-    } else {
-      clearFilter(field);
-    }
-  };
 
   const handleKeyDown = (event: { key: string }) => {
     if (event.key === "Enter") {
-      applyFilter();
+      onSubmit(inputValue);
     }
   };
 
   return (
     <Command>
       <CommandList>
-        <CommandGroup heading={t("pages.instances.list.filter.menuHeading.AS")}>
+        <CommandGroup heading={heading}>
           <InputWithButton>
             <Input
               autoFocus
-              placeholder={t("pages.instances.list.filter.placeholder.AS")}
+              placeholder={placeholder}
               value={inputValue}
               onChange={(event) => setInputValue(event.target.value)}
               onKeyDown={handleKeyDown}
             />
-            <Button icon variant="ghost" onClick={() => applyFilter()}>
+            <Button icon variant="ghost" onClick={() => onSubmit(inputValue)}>
               <ArrowRight />
             </Button>
           </InputWithButton>

@@ -7,7 +7,7 @@ import DatePicker from "~/components/Filters/DatePicker";
 import { FiltersObj } from "~/api/events/query/get";
 import RefineTime from "~/components/Filters/RefineTime";
 import { SelectFieldMenu } from "./SelectFieldMenu";
-import TextInput from "./TextInput";
+import TextInput from "~/components/Filters/TextInput";
 import moment from "moment";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -108,10 +108,22 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
                 </PopoverTrigger>
                 <PopoverContent align="start">
                   <TextInput
-                    field={field}
-                    setFilter={setFilter}
-                    clearFilter={clearFilter}
                     value={filters[field]?.value}
+                    onSubmit={(value) => {
+                      if (value) {
+                        setFilter({
+                          [field]: { value, type: "CONTAINS" },
+                        });
+                      } else {
+                        clearFilter(field);
+                      }
+                    }}
+                    heading={t(
+                      `pages.events.history.filter.menuHeading.${field}`
+                    )}
+                    placeholder={t(
+                      `pages.events.history.filter.placeholder.${field}`
+                    )}
                   />
                 </PopoverContent>
               </Popover>
@@ -224,10 +236,22 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
             )) ||
               ((selectedField === "TYPE" || selectedField === "TEXT") && (
                 <TextInput
-                  field={selectedField}
-                  setFilter={setFilter}
-                  clearFilter={clearFilter}
                   value={filters[selectedField]?.value}
+                  onSubmit={(value) => {
+                    if (value) {
+                      setFilter({
+                        [selectedField]: { value, type: "CONTAINS" },
+                      });
+                    } else {
+                      clearFilter(selectedField);
+                    }
+                  }}
+                  heading={t(
+                    `pages.events.history.filter.menuHeading.${selectedField}`
+                  )}
+                  placeholder={t(
+                    `pages.events.history.filter.placeholder.${selectedField}`
+                  )}
                 />
               )) ||
               ((selectedField === "AFTER" || selectedField === "BEFORE") && (

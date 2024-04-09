@@ -8,7 +8,7 @@ import { FiltersObj } from "~/api/instances/query/get";
 import Options from "./Options";
 import RefineTime from "~/components/Filters/RefineTime";
 import { SelectFieldMenu } from "./SelectFieldMenu";
-import TextInput from "./TextInput";
+import TextInput from "~/components/Filters/TextInput";
 import moment from "moment";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -115,10 +115,20 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
                 <PopoverContent align="start">
                   {field === "AS" && (
                     <TextInput
-                      field={field}
-                      setFilter={setFilter}
-                      clearFilter={clearFilter}
                       value={filters[field]?.value}
+                      onSubmit={(value) => {
+                        if (value) {
+                          setFilter({
+                            [field]: { value, type: "CONTAINS" },
+                          });
+                        } else {
+                          clearFilter(field);
+                        }
+                      }}
+                      heading={t("pages.instances.list.filter.placeholder.AS")}
+                      placeholder={t(
+                        "pages.instances.list.filter.placeholder.AS"
+                      )}
                     />
                   )}
                 </PopoverContent>
@@ -274,10 +284,18 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
             )) ||
               (selectedField === "AS" && (
                 <TextInput
-                  field={selectedField}
-                  setFilter={setFilter}
-                  clearFilter={clearFilter}
                   value={filters[selectedField]?.value}
+                  onSubmit={(value) => {
+                    if (value) {
+                      setFilter({
+                        [selectedField]: { value, type: "CONTAINS" },
+                      });
+                    } else {
+                      clearFilter(selectedField);
+                    }
+                  }}
+                  heading={t("pages.instances.list.filter.placeholder.AS")}
+                  placeholder={t("pages.instances.list.filter.placeholder.AS")}
                 />
               )) ||
               (selectedField === "STATUS" && (
