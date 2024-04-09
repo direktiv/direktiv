@@ -71,10 +71,6 @@ type server struct {
 }
 
 func Run(circuit *core.Circuit) error {
-	srv := new(server)
-	srv.ID = uuid.New()
-	srv.initJQ()
-
 	config := &core.Config{}
 	if err := env.Parse(config); err != nil {
 		return fmt.Errorf("parsing env variables: %w", err)
@@ -83,12 +79,73 @@ func Run(circuit *core.Circuit) error {
 		return fmt.Errorf("parsing env variables: %w", config.Error())
 	}
 
-	srv.conf = config
-	if err := srv.start(circuit); err != nil {
+	srv, err := newServer(circuit, config)
+	if err != nil {
 		return err
 	}
-	if err := initNewMain(circuit, srv); err != nil {
-		return err
+
+	// TODO: yassir, use the new db to refactor old code.
+	dbManager := database2.NewDB(srv.gormDB, srv.conf.SecretKey)
+
+	configureWorkflow := func(data string) error {
+		event := pubsub2.FileChangeEvent{}
+		err := json.Unmarshal([]byte(data), &event)
+		if err != nil {
+			slog.Error("critical! unmarshal file change event error", "error", err)
+			panic("unmarshal file change event")
+		}
+		// If this is a delete workflow file
+		if event.DeleteFileID.String() != (uuid.UUID{}).String() {
+			return srv.flow.events.deleteWorkflowEventListeners(circuit.Context(), event.NamespaceID, event.DeleteFileID)
+		}
+		noTx := &sqlTx{
+			res:       srv.gormDB,
+			secretKey: srv.conf.SecretKey,
+		}
+		file, err := noTx.FileStore().ForNamespace(event.Namespace).GetFile(circuit.Context(), event.FilePath)
+		if err != nil {
+			return err
+		}
+		err = srv.flow.configureWorkflowStarts(circuit.Context(), noTx, event.NamespaceID, file)
+		if err != nil {
+			return err
+		}
+
+		return srv.flow.placeholdSecrets(circuit.Context(), noTx, event.Namespace, file)
+	}
+
+	instanceManager := &instancestore.InstanceManager{
+		Start:  srv.engine.StartWorkflow,
+		Cancel: srv.engine.CancelInstance,
+	}
+
+	err = cmd.NewMain(circuit, &cmd.NewMainArgs{
+		Config:            srv.conf,
+		Database:          dbManager,
+		PubSubBus:         srv.pBus,
+		ConfigureWorkflow: configureWorkflow,
+		InstanceManager:   instanceManager,
+		SyncNamespace: func(namespace any, mirrorConfig any) (any, error) {
+			ns := namespace.(*datastore.Namespace)
+			mConfig := mirrorConfig.(*datastore.MirrorConfig)
+			proc, err := srv.mirrorManager.NewProcess(context.Background(), ns, datastore.ProcessTypeSync)
+			if err != nil {
+				return nil, err
+			}
+
+			go func() {
+				srv.mirrorManager.Execute(context.Background(), proc, mConfig, &mirror.DirektivApplyer{NamespaceID: ns.ID})
+				err := srv.pBus.Publish(pubsub2.MirrorSync, ns.Name)
+				if err != nil {
+					slog.Error("pubsub publish", "error", err)
+				}
+			}()
+
+			return proc, nil
+		},
+	})
+	if err != nil {
+		return fmt.Errorf("lunching new main, err: %w", err)
 	}
 
 	return nil
@@ -144,13 +201,17 @@ func (c *mirrorCallbacks) VarStore() datastore.RuntimeVariablesStore {
 
 var _ mirror.Callbacks = &mirrorCallbacks{}
 
-func (srv *server) start(circuit *core.Circuit) error {
+func newServer(circuit *core.Circuit, config *core.Config) (*server, error) {
+	srv := new(server)
+	srv.ID = uuid.New()
+	srv.initJQ()
+
 	var err error
 	slog.Debug("Starting Flow server")
 	slog.Debug("Initializing telemetry.")
 	telend, err := util.InitTelemetry(srv.conf.OpenTelemetry, "direktiv/flow", "direktiv")
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer telend()
 	slog.Info("Telemetry initialized successfully.")
@@ -191,19 +252,19 @@ func (srv *server) start(circuit *core.Circuit) error {
 	}
 
 	if err != nil {
-		return fmt.Errorf("creating gorm db driver, err: %w", err)
+		return nil, fmt.Errorf("creating gorm db driver, err: %w", err)
 	}
 	slog.Info("Database connection established.")
 
 	res := srv.gormDB.Exec(database2.Schema)
 	if res.Error != nil {
-		return fmt.Errorf("provisioning schema, err: %w", res.Error)
+		return nil, fmt.Errorf("provisioning schema, err: %w", res.Error)
 	}
 	slog.Info("Schema provisioned successfully")
 
 	gdb, err := srv.gormDB.DB()
 	if err != nil {
-		return fmt.Errorf("modifying gorm driver, err: %w", err)
+		return nil, fmt.Errorf("modifying gorm driver, err: %w", err)
 	}
 	gdb.SetMaxIdleConns(32)
 	gdb.SetMaxOpenConns(16)
@@ -214,7 +275,7 @@ func (srv *server) start(circuit *core.Circuit) error {
 		err = srv.rawDB.Ping()
 	}
 	if err != nil {
-		return fmt.Errorf("creating raw db driver, err: %w", err)
+		return nil, fmt.Errorf("creating raw db driver, err: %w", err)
 	}
 	slog.Debug("Successfully connected to database with raw driver")
 
@@ -226,7 +287,7 @@ func (srv *server) start(circuit *core.Circuit) error {
 
 	srv.pubsub, err = pubsub.InitPubSub(srv, db)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer srv.cleanup(srv.pubsub.Close)
 	slog.Info("pub-sub was initialized successfully.")
@@ -235,7 +296,7 @@ func (srv *server) start(circuit *core.Circuit) error {
 
 	srv.timers, err = initTimers(srv.pubsub)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer srv.cleanup(srv.timers.Close)
 	slog.Info("timers where initialized successfully.")
@@ -248,7 +309,7 @@ func (srv *server) start(circuit *core.Circuit) error {
 	slog.Debug("Initializing pubsub routine.")
 	coreBus, err := pubsubSQL.NewPostgresCoreBus(srv.rawDB, srv.conf.DB)
 	if err != nil {
-		return fmt.Errorf("creating pubsub core bus, err: %w", err)
+		return nil, fmt.Errorf("creating pubsub core bus, err: %w", err)
 	}
 	slog.Info("pubsub routine was initialized.")
 
@@ -265,7 +326,7 @@ func (srv *server) start(circuit *core.Circuit) error {
 
 	srv.engine, err = initEngine(srv)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer srv.cleanup(srv.engine.Close)
 	slog.Info("engine was started.")
@@ -274,13 +335,13 @@ func (srv *server) start(circuit *core.Circuit) error {
 
 	srv.internal, err = initInternalServer(circuit.Context(), srv)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	slog.Info("Internal grpc server started.")
 
 	srv.flow, err = initFlowServer(circuit.Context(), srv)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	slog.Debug("Initializing mirror manager.")
@@ -293,7 +354,7 @@ func (srv *server) start(circuit *core.Circuit) error {
 	slog.Debug("Initializing events.")
 	srv.events, err = initEvents(srv, noTx.DataStore().StagingEvents().Append)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer srv.cleanup(srv.events.Close)
 
@@ -339,7 +400,7 @@ func (srv *server) start(circuit *core.Circuit) error {
 		slog.Debug("Initializing knative eventing receiver.")
 		rcv, err := newEventReceiver(srv.events, srv.flow)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		// starting the event receiver
@@ -368,75 +429,7 @@ func (srv *server) start(circuit *core.Circuit) error {
 		return nil
 	})
 
-	return nil
-}
-
-func initNewMain(circuit *core.Circuit, srv *server) error {
-	// TODO: yassir, use the new db to refactor old code.
-	dbManager := database2.NewDB(srv.gormDB, srv.conf.SecretKey)
-
-	configureWorkflow := func(data string) error {
-		event := pubsub2.FileChangeEvent{}
-		err := json.Unmarshal([]byte(data), &event)
-		if err != nil {
-			slog.Error("critical! unmarshal file change event error", "error", err)
-			panic("unmarshal file change event")
-		}
-		// If this is a delete workflow file
-		if event.DeleteFileID.String() != (uuid.UUID{}).String() {
-			return srv.flow.events.deleteWorkflowEventListeners(circuit.Context(), event.NamespaceID, event.DeleteFileID)
-		}
-		noTx := &sqlTx{
-			res:       srv.gormDB,
-			secretKey: srv.conf.SecretKey,
-		}
-		file, err := noTx.FileStore().ForNamespace(event.Namespace).GetFile(circuit.Context(), event.FilePath)
-		if err != nil {
-			return err
-		}
-		err = srv.flow.configureWorkflowStarts(circuit.Context(), noTx, event.NamespaceID, file)
-		if err != nil {
-			return err
-		}
-
-		return srv.flow.placeholdSecrets(circuit.Context(), noTx, event.Namespace, file)
-	}
-
-	instanceManager := &instancestore.InstanceManager{
-		Start:  srv.engine.StartWorkflow,
-		Cancel: srv.engine.CancelInstance,
-	}
-
-	err := cmd.NewMain(circuit, &cmd.NewMainArgs{
-		Config:            srv.conf,
-		Database:          dbManager,
-		PubSubBus:         srv.pBus,
-		ConfigureWorkflow: configureWorkflow,
-		InstanceManager:   instanceManager,
-		SyncNamespace: func(namespace any, mirrorConfig any) (any, error) {
-			ns := namespace.(*datastore.Namespace)
-			mConfig := mirrorConfig.(*datastore.MirrorConfig)
-			proc, err := srv.mirrorManager.NewProcess(context.Background(), ns, datastore.ProcessTypeSync)
-			if err != nil {
-				return nil, err
-			}
-
-			go func() {
-				srv.mirrorManager.Execute(context.Background(), proc, mConfig, &mirror.DirektivApplyer{NamespaceID: ns.ID})
-				err := srv.pBus.Publish(pubsub2.MirrorSync, ns.Name)
-				if err != nil {
-					slog.Error("pubsub publish", "error", err)
-				}
-			}()
-
-			return proc, nil
-		},
-	})
-	if err != nil {
-		return fmt.Errorf("lunching new main, err: %w", err)
-	}
-
-	return nil
+	return srv, nil
 }
 
 func (srv *server) cleanup(closer func() error) {
