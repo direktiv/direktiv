@@ -205,6 +205,7 @@ func newServer(circuit *core.Circuit, config *core.Config) (*server, error) {
 	srv := new(server)
 	srv.ID = uuid.New()
 	srv.initJQ()
+	srv.conf = config
 
 	var err error
 	slog.Debug("Starting Flow server")
