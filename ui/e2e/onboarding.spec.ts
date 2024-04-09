@@ -6,7 +6,7 @@ test("if no namespaces exist, it renders the onboarding page", async ({
 }) => {
   const namespace = createNamespaceName();
   // mock namespaces endpoint with empty results
-  await page.route(`/api/namespaces`, async (route) => {
+  await page.route(`/api/v2/namespaces`, async (route) => {
     if (route.request().method() === "GET") {
       const json = {
         pageInfo: {
@@ -16,7 +16,7 @@ test("if no namespaces exist, it renders the onboarding page", async ({
           offset: 0,
           total: 0,
         },
-        results: [],
+        data: [],
       };
       await route.fulfill({ json });
     }

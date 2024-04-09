@@ -112,7 +112,7 @@ test("it is possible to delete the last namespace and it will redirect to the la
     data: [],
   };
 
-  await page.route("**/api/namespaces", (route, reg) => {
+  await page.route("**/api/v2/namespaces", (route, reg) => {
     if (reg.method() !== "GET") {
       return route.continue();
     }

@@ -1,4 +1,3 @@
-import { MirrorPostSchemaType } from "~/api/tree/schema/mirror";
 import { NamespaceCreatedSchema } from "../schema";
 import type { NamespaceListSchemaType } from "../schema";
 import { apiFactory } from "~/api/apiFactory";
@@ -11,8 +10,8 @@ import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
 const createNamespace = apiFactory({
-  url: ({ name }: { name: string }) => `/api/namespaces/${name}`,
-  method: "PUT",
+  url: () => "/api/v2/namespaces/",
+  method: "POST",
   schema: NamespaceCreatedSchema,
 });
 
@@ -27,19 +26,13 @@ export const useCreateNamespace = ({
   const { t } = useTranslation();
 
   return useMutationWithPermissions({
-    mutationFn: ({
-      name,
-      mirror,
-    }: {
-      name: string;
-      mirror?: MirrorPostSchemaType;
-    }) =>
+    mutationFn: ({ name }: { name: string }) =>
       createNamespace({
         apiKey: apiKey ?? undefined,
-        urlParams: {
+        urlParams: {},
+        payload: {
           name,
         },
-        payload: mirror,
       }),
     onSuccess(data, variables) {
       queryClient.setQueryData<NamespaceListSchemaType>(
@@ -49,7 +42,7 @@ export const useCreateNamespace = ({
           const oldResults = oldData?.data;
           return {
             ...oldData,
-            results: [...oldResults, data.namespace].sort(sortByName),
+            results: [...oldResults, data.data].sort(sortByName),
           };
         }
       );

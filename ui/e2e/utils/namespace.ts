@@ -9,9 +9,10 @@ export const createNamespaceName = () => `playwright-${faker.git.shortSha()}`;
 export const createNamespace = () =>
   new Promise<string>((resolve, reject) => {
     const name = createNamespaceName();
-    fetch(`${apiUrl}/api/namespaces/${name}`, {
-      method: "PUT",
+    fetch(`${apiUrl}/api/v2/namespaces/`, {
+      method: "POST",
       headers,
+      body: JSON.stringify({ name }),
     }).then((response) => {
       response.ok
         ? resolve(name)
@@ -32,7 +33,7 @@ export const deleteNamespace = (namespace: string) =>
   });
 
 export const checkIfNamespaceExists = async (namespace: string) => {
-  const response = await fetch(`${apiUrl}/api/namespaces`, { headers });
+  const response = await fetch(`${apiUrl}/api/v2/namespaces`, { headers });
   if (!response.ok) {
     throw `fetching namespaces failed with code ${response.status}`;
   }

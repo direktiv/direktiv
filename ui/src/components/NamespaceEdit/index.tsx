@@ -110,10 +110,10 @@ const NamespaceEdit = ({
 
   const { mutate: createNamespace, isLoading } = useCreateNamespace({
     onSuccess: (data) => {
-      setNamespace(data.namespace.name);
+      setNamespace(data.data.name);
       navigate(
         pages.explorer.createHref({
-          namespace: data.namespace.name,
+          namespace: data.data.name,
         })
       );
       close();
@@ -139,9 +139,6 @@ const NamespaceEdit = ({
     if (isNew) {
       return createNamespace({
         name,
-        mirror: isMirror
-          ? { ref, url, passphrase, publicKey, privateKey, insecure }
-          : undefined,
       });
     }
 

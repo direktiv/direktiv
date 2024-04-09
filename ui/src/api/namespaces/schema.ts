@@ -22,7 +22,7 @@ export const NamespaceListSchema = z.object({
 });
 
 export const NamespaceCreatedSchema = z.object({
-  namespace: NamespaceSchema,
+  data: NamespaceSchema.omit({ mirror: true }),
 });
 
 export const NamespaceDeletedSchema = z.null();
