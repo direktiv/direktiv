@@ -79,8 +79,8 @@ func Run(circuit *core.Circuit) error {
 	if err := env.Parse(config); err != nil {
 		return fmt.Errorf("parsing env variables: %w", err)
 	}
-	if config.IsValid() != nil {
-		return fmt.Errorf("parsing env variables: %w", config.IsValid())
+	if config.Error() != nil {
+		return fmt.Errorf("parsing env variables: %w", config.Error())
 	}
 
 	srv.conf = config

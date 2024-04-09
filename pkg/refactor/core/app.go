@@ -65,7 +65,7 @@ func (conf *Config) GetFunctionsReconcileInterval() time.Duration {
 	return time.Second * time.Duration(conf.FunctionsReconcileInterval)
 }
 
-func (conf *Config) IsValid() error {
+func (conf *Config) Error() error {
 	err := conf.checkInvalidEmptyFields()
 	if err != nil {
 		return err
