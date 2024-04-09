@@ -8,6 +8,8 @@ import (
 	"net"
 	"time"
 
+	database2 "github.com/direktiv/direktiv/pkg/refactor/database"
+
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/util"
 	libgrpc "google.golang.org/grpc"
@@ -86,7 +88,7 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 			<-time.After(time.Hour)
 			t := time.Now().UTC().Add(time.Hour * -48) // TODO make this a config option.
 			slog.Debug("deleting all logs since", "since", t)
-			err = srv.flow.runSqlTx(ctx, func(tx *sqlTx) error {
+			err = srv.flow.runSqlTx(ctx, func(tx *database2.DB) error {
 				return tx.DataStore().NewLogs().DeleteOldLogs(ctx, t)
 			})
 			if err != nil {

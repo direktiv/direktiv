@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"database/sql"
 	_ "embed"
 	"log"
 	"os"
@@ -102,8 +103,8 @@ func (tx *DB) Rollback() error {
 	return tx.db.Rollback().Error
 }
 
-func (tx *DB) BeginTx(ctx context.Context) (*DB, error) {
-	res := tx.db.WithContext(ctx).Begin()
+func (tx *DB) BeginTx(ctx context.Context, opts ...*sql.TxOptions) (*DB, error) {
+	res := tx.db.WithContext(ctx).Begin(opts...)
 	if res.Error != nil {
 		return nil, res.Error
 	}
