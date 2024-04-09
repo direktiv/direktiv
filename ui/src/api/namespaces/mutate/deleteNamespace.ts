@@ -9,7 +9,7 @@ import { useTranslation } from "react-i18next";
 
 const deleteNamespace = apiFactory({
   url: ({ namespace }: { namespace: string }) =>
-    `/api/namespaces/${namespace}?recursive=true`,
+    `/api/v2/namespaces/${namespace}`,
   method: "DELETE",
   schema: NamespaceDeletedSchema,
 });

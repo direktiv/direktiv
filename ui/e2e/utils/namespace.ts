@@ -22,7 +22,7 @@ export const createNamespace = () =>
 
 export const deleteNamespace = (namespace: string) =>
   new Promise<void>((resolve, reject) => {
-    fetch(`${apiUrl}/api/namespaces/${namespace}?recursive=true`, {
+    fetch(`${apiUrl}/api/v2/namespaces/${namespace}`, {
       method: "DELETE",
       headers,
     }).then((response) => {
@@ -57,7 +57,7 @@ export const cleanupNamespaces = async () => {
       json.data.filter((ns) => ns.name.includes("playwright"))
     );
   const requests = namespaces.map((ns) =>
-    fetch(`${apiUrl}/api/namespaces/${ns.name}?recursive=true`, {
+    fetch(`${apiUrl}/api/v2/namespaces/${ns.name}`, {
       method: "DELETE",
     })
   );
