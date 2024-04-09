@@ -76,16 +76,22 @@ func Run(circuit *core.Circuit) error {
 		return fmt.Errorf("parsing env variables: %w", err)
 	}
 	if config.Error() != nil {
-		return fmt.Errorf("parsing env variables: %w", config.Error())
+		return fmt.Errorf("parsing env variables, err: %w", config.Error())
 	}
 
-	srv, err := initLegacyServer(circuit, config)
+	slog.Info("initialize db connection")
+	db, err := initDB(config)
 	if err != nil {
-		return err
+		return fmt.Errorf("initialize db, err: %w", err)
 	}
-
 	// TODO: yassir, use the new db to refactor old code.
-	dbManager := database2.NewDB(srv.gormDB, srv.config.SecretKey)
+	dbManager := database2.NewDB(db, config.SecretKey)
+
+	slog.Info("initialize legacy server")
+	srv, err := initLegacyServer(circuit, config, db)
+	if err != nil {
+		return fmt.Errorf("initialize legacy server, err: %w", err)
+	}
 
 	configureWorkflow := func(data string) error {
 		event := pubsub2.FileChangeEvent{}
@@ -201,7 +207,7 @@ func (c *mirrorCallbacks) VarStore() datastore.RuntimeVariablesStore {
 
 var _ mirror.Callbacks = &mirrorCallbacks{}
 
-func initLegacyServer(circuit *core.Circuit, config *core.Config) (*server, error) {
+func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB) (*server, error) {
 	srv := new(server)
 	srv.ID = uuid.New()
 	srv.initJQ()
@@ -224,33 +230,7 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config) (*server, erro
 		}
 	}()
 
-	db := srv.config.DB
-
-	slog.Debug("Initializing database.")
-	gormConf := &gorm.Config{
-		Logger: logger.New(
-			log.New(os.Stdout, "\r\n", log.LstdFlags),
-			logger.Config{
-				LogLevel:                  logger.Silent,
-				IgnoreRecordNotFoundError: true,
-			},
-		),
-	}
-
-	for i := 0; i < 10; i++ {
-		slog.Debug("Connecting to database...")
-
-		srv.gormDB, err = gorm.Open(postgres.New(postgres.Config{
-			DSN:                  db,
-			PreferSimpleProtocol: false, // disables implicit prepared statement usage
-			// Conn:                 edb.DB(),
-		}), gormConf)
-		if err == nil {
-			slog.Debug("Successfully connected to the database.")
-			break
-		}
-		time.Sleep(time.Second)
-	}
+	srv.gormDB = db
 
 	if err != nil {
 		return nil, fmt.Errorf("creating gorm db driver, err: %w", err)
@@ -271,7 +251,7 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config) (*server, erro
 	gdb.SetMaxOpenConns(16)
 	slog.Debug("Database connection pool limits set", "maxIdleConns", 32, "maxOpenConns", 16)
 
-	srv.rawDB, err = sql.Open("postgres", db)
+	srv.rawDB, err = sql.Open("postgres", config.DB)
 	if err == nil {
 		err = srv.rawDB.Ping()
 	}
@@ -286,7 +266,7 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config) (*server, erro
 
 	slog.Debug("Initializing pub-sub.")
 
-	srv.pubsub, err = pubsub.InitPubSub(srv, db)
+	srv.pubsub, err = pubsub.InitPubSub(srv, config.DB)
 	if err != nil {
 		return nil, err
 	}
@@ -431,6 +411,38 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config) (*server, erro
 	})
 
 	return srv, nil
+}
+
+func initDB(config *core.Config) (*gorm.DB, error) {
+	gormConf := &gorm.Config{
+		Logger: logger.New(
+			log.New(os.Stdout, "\r\n", log.LstdFlags),
+			logger.Config{
+				LogLevel:                  logger.Silent,
+				IgnoreRecordNotFoundError: true,
+			},
+		),
+	}
+
+	var err error
+	var db *gorm.DB
+	for i := 0; i < 10; i++ {
+		slog.Info("connecting to database...")
+
+		db, err = gorm.Open(postgres.New(postgres.Config{
+			DSN:                  config.DB,
+			PreferSimpleProtocol: false, // disables implicit prepared statement usage
+			// Conn:                 edb.DB(),
+		}), gormConf)
+		if err == nil {
+			slog.Info("successfully connected to the database.")
+
+			break
+		}
+		time.Sleep(time.Second)
+	}
+
+	return db, err
 }
 
 func (srv *server) cleanup(closer func() error) {
