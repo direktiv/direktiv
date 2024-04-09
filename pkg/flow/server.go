@@ -79,7 +79,7 @@ func Run(circuit *core.Circuit) error {
 		return fmt.Errorf("parsing env variables: %w", config.Error())
 	}
 
-	srv, err := newServer(circuit, config)
+	srv, err := initLegacyServer(circuit, config)
 	if err != nil {
 		return err
 	}
@@ -201,7 +201,7 @@ func (c *mirrorCallbacks) VarStore() datastore.RuntimeVariablesStore {
 
 var _ mirror.Callbacks = &mirrorCallbacks{}
 
-func newServer(circuit *core.Circuit, config *core.Config) (*server, error) {
+func initLegacyServer(circuit *core.Circuit, config *core.Config) (*server, error) {
 	srv := new(server)
 	srv.ID = uuid.New()
 	srv.initJQ()
