@@ -1169,7 +1169,8 @@
     "variableForm": {
       "name": {
         "label": "Name",
-        "placeholder": "variable-name"
+        "placeholder": "variable-name",
+        "nameAlreadyExists": "The name already exists"
       },
       "mimeType": {
         "label": "Mimetype",

@@ -28,6 +28,7 @@ type VariableForm = {
   defaultValues: VarFormCreateEditSchemaType;
   dialogTitle: JSX.Element;
   dialogFooter: JSX.Element;
+  unallowedNames?: string[];
   onMutate: (data: VarFormCreateEditSchemaType) => void;
 };
 
@@ -35,6 +36,7 @@ export const VariableForm = ({
   defaultValues,
   dialogTitle,
   dialogFooter,
+  unallowedNames,
   onMutate,
 }: VariableForm) => {
   const { t } = useTranslation();
@@ -59,7 +61,17 @@ export const VariableForm = ({
     setValue,
     formState: { errors },
   } = useForm<VarFormCreateEditSchemaType>({
-    resolver: zodResolver(VarFormCreateEditSchema),
+    resolver: zodResolver(
+      VarFormCreateEditSchema.refine(
+        (fields) =>
+          !(unallowedNames ?? []).some(
+            (unallowedName) => unallowedName === fields.name
+          ),
+        {
+          message: t("components.variableForm.name.nameAlreadyExists"),
+        }
+      )
+    ),
     defaultValues,
   });
 
