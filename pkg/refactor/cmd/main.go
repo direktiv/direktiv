@@ -36,14 +36,7 @@ type NewMainArgs struct {
 func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 	initSLog()
 
-	circuit.Start(func() error {
-		err := api2.RunApplication(args.Config)
-		if err != nil {
-			return fmt.Errorf("booting v1 api server, err: %w", err)
-		}
-
-		return nil
-	})
+	go api2.NewServer(args.Config)
 
 	// Create service manager
 	//nolint

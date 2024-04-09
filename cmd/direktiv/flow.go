@@ -50,7 +50,7 @@ var serverCmd = &cobra.Command{
 		slog.Info("terminating server")
 
 		go func() {
-			time.After(time.Second * 5)
+			time.Sleep(time.Second * 15)
 			slog.Error("ungraceful server termination")
 			os.Exit(1)
 		}()
