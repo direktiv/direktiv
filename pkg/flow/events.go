@@ -552,7 +552,7 @@ func (events *events) ReplayCloudevent(ctx context.Context, ns *database.Namespa
 
 	// if eventing is configured, event goes to knative event service
 	// if it is from knative sink not
-	if events.server.conf.EnableEventing && ctx.Value(EventingCtxKeySource) == nil {
+	if events.server.config.EnableEventing && ctx.Value(EventingCtxKeySource) == nil {
 		PublishKnativeEvent(event)
 	}
 
@@ -604,7 +604,7 @@ func (events *events) BroadcastCloudevent(ctx context.Context, ns *database.Name
 
 	// if eventing is configured, event goes to knative event service
 	// if it is from knative sink not
-	if events.server.conf.EnableEventing && ctx.Value(EventingCtxKeySource) == nil {
+	if events.server.config.EnableEventing && ctx.Value(EventingCtxKeySource) == nil {
 		PublishKnativeEvent(event)
 	}
 

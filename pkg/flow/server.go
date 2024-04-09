@@ -46,7 +46,7 @@ const (
 type server struct {
 	ID uuid.UUID
 
-	conf *core.Config
+	config *core.Config
 
 	// db       *ent.Client
 	pubsub *pubsub.Pubsub
@@ -85,7 +85,7 @@ func Run(circuit *core.Circuit) error {
 	}
 
 	// TODO: yassir, use the new db to refactor old code.
-	dbManager := database2.NewDB(srv.gormDB, srv.conf.SecretKey)
+	dbManager := database2.NewDB(srv.gormDB, srv.config.SecretKey)
 
 	configureWorkflow := func(data string) error {
 		event := pubsub2.FileChangeEvent{}
@@ -100,7 +100,7 @@ func Run(circuit *core.Circuit) error {
 		}
 		noTx := &sqlTx{
 			res:       srv.gormDB,
-			secretKey: srv.conf.SecretKey,
+			secretKey: srv.config.SecretKey,
 		}
 		file, err := noTx.FileStore().ForNamespace(event.Namespace).GetFile(circuit.Context(), event.FilePath)
 		if err != nil {
@@ -120,7 +120,7 @@ func Run(circuit *core.Circuit) error {
 	}
 
 	err = cmd.NewMain(circuit, &cmd.NewMainArgs{
-		Config:            srv.conf,
+		Config:            srv.config,
 		Database:          dbManager,
 		PubSubBus:         srv.pBus,
 		ConfigureWorkflow: configureWorkflow,
@@ -205,12 +205,12 @@ func newServer(circuit *core.Circuit, config *core.Config) (*server, error) {
 	srv := new(server)
 	srv.ID = uuid.New()
 	srv.initJQ()
-	srv.conf = config
+	srv.config = config
 
 	var err error
 	slog.Debug("Starting Flow server")
 	slog.Debug("Initializing telemetry.")
-	telend, err := util.InitTelemetry(srv.conf.OpenTelemetry, "direktiv/flow", "direktiv")
+	telend, err := util.InitTelemetry(srv.config.OpenTelemetry, "direktiv/flow", "direktiv")
 	if err != nil {
 		return nil, err
 	}
@@ -224,7 +224,7 @@ func newServer(circuit *core.Circuit, config *core.Config) (*server, error) {
 		}
 	}()
 
-	db := srv.conf.DB
+	db := srv.config.DB
 
 	slog.Debug("Initializing database.")
 	gormConf := &gorm.Config{
@@ -281,8 +281,8 @@ func newServer(circuit *core.Circuit, config *core.Config) (*server, error) {
 	slog.Debug("Successfully connected to database with raw driver")
 
 	// Repeat SecretKey length to 16 chars.
-	srv.conf.SecretKey = srv.conf.SecretKey + "1234567890123456"
-	srv.conf.SecretKey = srv.conf.SecretKey[0:16]
+	srv.config.SecretKey = srv.config.SecretKey + "1234567890123456"
+	srv.config.SecretKey = srv.config.SecretKey[0:16]
 
 	slog.Debug("Initializing pub-sub.")
 
@@ -308,7 +308,7 @@ func newServer(circuit *core.Circuit, config *core.Config) (*server, error) {
 	slog.Info("Metrics Client was created.")
 
 	slog.Debug("Initializing pubsub routine.")
-	coreBus, err := pubsubSQL.NewPostgresCoreBus(srv.rawDB, srv.conf.DB)
+	coreBus, err := pubsubSQL.NewPostgresCoreBus(srv.rawDB, srv.config.DB)
 	if err != nil {
 		return nil, fmt.Errorf("creating pubsub core bus, err: %w", err)
 	}
@@ -348,7 +348,7 @@ func newServer(circuit *core.Circuit, config *core.Config) (*server, error) {
 	slog.Debug("Initializing mirror manager.")
 	noTx := &sqlTx{
 		res:       srv.gormDB,
-		secretKey: srv.conf.SecretKey,
+		secretKey: srv.config.SecretKey,
 	}
 	slog.Debug("mirror manager was started.")
 
@@ -397,7 +397,7 @@ func newServer(circuit *core.Circuit, config *core.Config) (*server, error) {
 		},
 	)
 
-	if srv.conf.EnableEventing {
+	if srv.config.EnableEventing {
 		slog.Debug("Initializing knative eventing receiver.")
 		rcv, err := newEventReceiver(srv.events, srv.flow)
 		if err != nil {
@@ -647,7 +647,7 @@ func (srv *server) beginSqlTx(ctx context.Context, opts ...*sql.TxOptions) (*sql
 	}
 	return &sqlTx{
 		res:       res,
-		secretKey: srv.conf.SecretKey,
+		secretKey: srv.config.SecretKey,
 	}, nil
 }
 
