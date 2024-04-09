@@ -136,15 +136,15 @@ spec:
           - name: DIREKTIV_ENABLE_EVENTING
             value: {{ .Values.eventing.enabled | quote }}
           - name: DIREKTIV_KNATIVE_SERVICE_ACCOUNT
-            value: "direktiv-functions-pod"
+            value: "{{ include "direktiv.serviceAccountName" . }}-functions-pod"
           - name: DIREKTIV_KNATIVE_NAMESPACE
-            value: "direktiv-services-direktiv"
+            value: {{ .Values.functions.namespace | quote }}
           - name: DIREKTIV_KNATIVE_INGRESS_CLASS
-            value: "contour.ingress.networking.knative.dev"
+            value: {{ .Values.functions.ingressClass | quote }}
           - name: DIREKTIV_KNATIVE_SIDECAR
             value: "{{ .Values.registry }}/{{ .Values.image }}:{{ .Values.tag | default .Chart.AppVersion }}"
           - name: DIREKTIV_KNATIVE_MAX_SCALE
-            value: "5"
+            value: {{ .Values.flow.max_scale | quote }}
           {{- if .Values.netShape }}
           - name: DIREKTIV_KNATIVE_NET_SHAPE
             value: {{ .Values.netShape | quote }}
@@ -169,6 +169,26 @@ spec:
           - name: {{ .name | quote }}
             value: {{ .value | quote }}
           {{- end }}
+
+          - name: DIREKTIV_KNATIVE_SIZE_MEMORY_SMALL
+            value: "{{ .Values.functions.limits.memory.small }}"
+          - name: DIREKTIV_KNATIVE_SIZE_CPU_SMALL
+            value: "{{ .Values.functions.limits.cpu.small }}"
+          - name: DIREKTIV_KNATIVE_SIZE_DISK_SMALL
+            value: "{{ .Values.functions.limits.disk.small }}"
+          - name: DIREKTIV_KNATIVE_SIZE_MEMORY_MEDIUM
+            value: "{{ .Values.functions.limits.memory.medium }}"
+          - name: DIREKTIV_KNATIVE_SIZE_CPU_MEDIUM
+            value: "{{ .Values.functions.limits.cpu.medium }}"
+          - name: DIREKTIV_KNATIVE_SIZE_DISK_MEDIUM
+            value: "{{ .Values.functions.limits.disk.medium }}"
+          - name: DIREKTIV_KNATIVE_SIZE_MEMORY_LARGE
+            value: "{{ .Values.functions.limits.memory.large }}"
+          - name: DIREKTIV_KNATIVE_SIZE_CPU_LARGE
+            value: "{{ .Values.functions.limits.cpu.large }}"
+          - name: DIREKTIV_KNATIVE_SIZE_DISK_LARGE
+            value: "{{ .Values.functions.limits.disk.large }}"
+
       volumes:
 {{- if .Values.opentelemetry.enabled }}
 {{ include "direktiv.opentelemetry.volume" . | indent 8 }}

@@ -86,14 +86,7 @@ test("it is possible to create a basic route file", async ({ page }) => {
     "all entered data is represented in the editor preview"
   ).toContainText(expectedYaml, { useInnerText: true });
 
-  /* save file */
-  await expect(
-    page.getByText("unsaved changes"),
-    "it renders a hint that there are unsaved changes"
-  ).toBeVisible();
-
-  await page.getByRole("button", { name: "Save" }).click();
-
+  /* note: saving the plugin should have saved the whole file. */
   await expect(
     page.getByText("unsaved changes"),
     "it does not render a hint that there are unsaved changes"
@@ -106,6 +99,13 @@ test("it is possible to create a basic route file", async ({ page }) => {
     editor,
     "after reloading, the entered data is still in the editor preview"
   ).toContainText(expectedYaml, { useInnerText: true });
+
+  page.getByRole("link", { name: "Open Logs" }).click();
+
+  await expect(
+    page,
+    "when the open logs link is clicked, page should navigate to the route detail page"
+  ).toHaveURL(`/${namespace}/gateway/routes/${filename}`);
 });
 
 test("it is possible to add plugins to a route file", async ({ page }) => {
@@ -331,14 +331,7 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
     useInnerText: true,
   });
 
-  /* save file */
-  await expect(
-    page.getByText("unsaved changes"),
-    "it renders a hint that there are unsaved changes"
-  ).toBeVisible();
-
-  await page.getByRole("button", { name: "Save" }).click();
-
+  /* note: saving the plugin should have saved the whole file. */
   await expect(
     page.getByText("unsaved changes"),
     "it does not render a hint that there are unsaved changes"

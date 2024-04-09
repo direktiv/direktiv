@@ -102,3 +102,199 @@ test("it is possible to save the workflow", async ({ page }) => {
     "text should be Updated a few seconds ago"
   ).toHaveText("Updated a few seconds ago");
 });
+
+test("it renders response errors when saving an invalid workflow", async ({
+  page,
+}) => {
+  await page.goto(`${namespace}/explorer/workflow/edit/${workflow}`);
+
+  const editor = page.locator(".lines-content");
+
+  await editor.click();
+  await editor.type("notvalidyaml");
+
+  await expect(
+    page.getByText("unsaved changes"),
+    "it renders a hint that there are unsaved changes"
+  ).toBeVisible();
+
+  await page.getByTestId("workflow-editor-btn-save").click();
+
+  await expect(
+    page.getByText("There is an issue"),
+    "after saving, it renders an error hint in the editor"
+  ).toBeVisible();
+  await expect(
+    page.getByText("updated file data has invalid yaml string"),
+    "it renders an error popup with the error message"
+  ).toBeVisible();
+
+  await expect(
+    page.getByText("unsaved changes"),
+    "it still renders a hint that there are unsaved changes"
+  ).toBeVisible();
+});
+
+test("it is possible to navigate to another route from the editor", async ({
+  page,
+}) => {
+  let dialogTriggered = false;
+
+  page.on("dialog", async (dialog) => {
+    dialogTriggered = true;
+    return dialog.dismiss();
+  });
+
+  await page.goto(`${namespace}/explorer/workflow/edit/${workflow}`);
+  await page.getByText(defaultDescription);
+
+  await page.getByRole("link", { name: "Settings" }).click();
+  await expect(dialogTriggered).toBe(false);
+
+  await expect(page, "it navigates to the new route").toHaveURL(
+    `${namespace}/settings`
+  );
+});
+
+test("it prevents navigation to another route with unsaved changes", async ({
+  page,
+}) => {
+  const expectedMsg =
+    "You have unsaved changes that will be lost when leaving this route. Are you sure you want to leave?";
+  let dialogTriggered = false;
+
+  page.on("dialog", async (dialog) => {
+    await expect(dialog.message()).toBe(expectedMsg);
+    dialogTriggered = true;
+    return dialog.dismiss();
+  });
+
+  await page.goto(`${namespace}/explorer/workflow/edit/${workflow}`);
+  await page.getByText(defaultDescription).click();
+
+  const dirtyText = faker.random.alphaNumeric(9);
+  await page.type("textarea", dirtyText);
+
+  await page.getByRole("link", { name: "Settings" }).click();
+  await expect(dialogTriggered).toBe(true);
+
+  await expect(
+    page,
+    "after dismissing the dialog, it stays on the same route"
+  ).toHaveURL(`${namespace}/explorer/workflow/edit/${workflow}`);
+
+  await expect(
+    page.getByText(dirtyText),
+    "the edited text is still in the editor"
+  ).toBeVisible();
+});
+
+test("with confirmation, it navigates to another route despite unsaved changes", async ({
+  page,
+}) => {
+  const expectedMsg =
+    "You have unsaved changes that will be lost when leaving this route. Are you sure you want to leave?";
+  let dialogTriggered = false;
+
+  page.on("dialog", async (dialog) => {
+    await expect(dialog.message()).toBe(expectedMsg);
+    dialogTriggered = true;
+    return dialog.accept();
+  });
+
+  await page.goto(`${namespace}/explorer/workflow/edit/${workflow}`);
+  await page.getByText(defaultDescription).click();
+
+  const dirtyText = faker.random.alphaNumeric(9);
+  await page.type("textarea", dirtyText);
+
+  await page.getByRole("link", { name: "Settings" }).click();
+  await expect(dialogTriggered).toBe(true);
+
+  await expect(
+    page,
+    "after confirming the dialog, it navigates to the new route"
+  ).toHaveURL(`${namespace}/settings`);
+});
+
+test("it is possible to leave the app from the editor", async ({ page }) => {
+  let dialogTriggered = false;
+
+  page.on("dialog", async (dialog) => {
+    await expect(dialog.type()).toBe("beforeunload");
+    dialogTriggered = true;
+    await dialog.dismiss();
+  });
+
+  await page.goto(`${namespace}/explorer/workflow/edit/${workflow}`);
+  await page.getByText(defaultDescription);
+
+  await page.goto("/api/v2/version");
+
+  await expect(dialogTriggered).toBe(false);
+
+  await expect(page, "it navigates to the new document").toHaveURL(
+    "/api/v2/version"
+  );
+});
+
+test("it prevents navigation away from the app with unsaved changes", async ({
+  page,
+}) => {
+  let dialogTriggered = false;
+
+  page.on("dialog", async (dialog) => {
+    await expect(dialog.type()).toBe("beforeunload");
+    dialogTriggered = true;
+    await dialog.dismiss();
+  });
+
+  await page.goto(`${namespace}/explorer/workflow/edit/${workflow}`);
+  await page.getByText(defaultDescription).click();
+
+  const dirtyText = faker.random.alphaNumeric(9);
+  await page.type("textarea", dirtyText);
+
+  try {
+    await page.goto("/api/v2/version").catch();
+  } catch (error) {
+    return;
+  }
+
+  await expect(dialogTriggered).toBe(true);
+
+  await expect(
+    page,
+    "after dismissing the dialog, it stays on the same route"
+  ).toHaveURL(`${namespace}/explorer/workflow/edit/${workflow}`);
+
+  await expect(
+    page.getByText(dirtyText),
+    "the edited text is still in the editor"
+  ).toBeVisible();
+});
+
+test("with confirmation, it allows navigation away from the app with unsaved changes", async ({
+  page,
+}) => {
+  let dialogTriggered = false;
+
+  page.on("dialog", async (dialog) => {
+    await expect(dialog.type()).toBe("beforeunload");
+    dialogTriggered = true;
+    await dialog.accept();
+  });
+
+  await page.goto(`${namespace}/explorer/workflow/edit/${workflow}`);
+  await page.getByText(defaultDescription).click();
+
+  const dirtyText = faker.random.alphaNumeric(9);
+  await page.type("textarea", dirtyText);
+
+  await page.goto("/api/v2/version");
+
+  await expect(dialogTriggered).toBe(true);
+  await expect(page, "it has navigated to the new page").toHaveURL(
+    "/api/v2/version"
+  );
+});

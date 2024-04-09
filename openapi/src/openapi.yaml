@@ -73,6 +73,10 @@ info:
 tags:
   - name: server
     description: Miscellaneous server endpoints
+  - name: namespaces
+    description: Endpoints for managing namespaces
+  - name: syncs
+    description: Endpoints for managing namespace mirror syncs
   - name: services
     description: Endpoints for managing services
   - name: variables
@@ -90,6 +94,8 @@ tags:
 x-tagGroups:
   - name: Endpoints
     tags:
+      - namespaces
+      - syncs
       - files
       - services
       - variables

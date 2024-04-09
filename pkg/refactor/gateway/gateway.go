@@ -48,12 +48,12 @@ func NewGatewayManager(db *database.DB) core.GatewayManager {
 }
 
 func (ep *gatewayManager) DeleteNamespace(ns string) {
-	slog.Debug("Deleting namespace from gateway", "namespace", ns, "track", recipient.Namespace.String()+"."+ns)
+	slog.Debug("deleting namespace from gateway", "namespace", ns, "track", recipient.Namespace.String()+"."+ns)
 	delete(ep.nsGateways, ns)
 }
 
 func (ep *gatewayManager) UpdateNamespace(ns string) {
-	slog.Debug("Updating namespace gateway", slog.String("namespace", ns), "track", recipient.Namespace.String()+"."+ns)
+	slog.Debug("updating namespace gateway", slog.String("namespace", ns), "track", recipient.Namespace.String()+"."+ns)
 
 	ep.lock.Lock()
 	defer ep.lock.Unlock()
@@ -72,7 +72,7 @@ func (ep *gatewayManager) UpdateNamespace(ns string) {
 
 	files, err := fStore.ForNamespace(ns).ListDirektivFilesWithData(ctx)
 	if err != nil {
-		slog.Error("Failed to list files", slog.String("error", err.Error()), "track", recipient.Namespace.String()+"."+ns)
+		slog.Error("list files", "err", err, "track", recipient.Namespace.String()+"."+ns)
 
 		return
 	}
@@ -89,7 +89,7 @@ func (ep *gatewayManager) UpdateNamespace(ns string) {
 		if file.Typ == filestore.FileTypeConsumer {
 			item, err := core.ParseConsumerFile(file.Data)
 			if err != nil {
-				slog.Error("parse endpoint file", slog.String("error", err.Error()))
+				slog.Error("parse endpoint file", "err", err, "track", recipient.Namespace.String()+"."+ns)
 
 				continue
 			}
@@ -120,7 +120,7 @@ func (ep *gatewayManager) UpdateNamespace(ns string) {
 			// if parsing fails, the endpoint is still getting added to report
 			// an error in the API
 			if err != nil {
-				slog.Error("parse endpoint file", slog.String("error", err.Error()))
+				slog.Error("parse endpoint file", "err", err)
 				ep.Errors = append(ep.Errors, err.Error())
 				eps = append(eps, ep)
 
@@ -153,7 +153,7 @@ func (ep *gatewayManager) UpdateAll() {
 
 	nsList, err := dStore.Namespaces().GetAll(context.Background())
 	if err != nil {
-		slog.Error("listing namespaces", slog.String("error", err.Error()))
+		slog.Error("listing namespaces", "err", err)
 
 		return
 	}
@@ -197,7 +197,7 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	traceID := spanContext.TraceID().String()
 	spanID := spanContext.SpanID()
 	slog := slog.With("trace", traceID, "span", spanID, "component", "gateway")
-	slog.Info("Serving gateway request")
+	slog.Info("serving gateway request")
 	chiCtx := chi.RouteContext(r.Context())
 	namespace := core.MagicalGatewayNamespace
 	routePath := chi.URLParam(r, "*")
@@ -206,7 +206,6 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if chiCtx.RoutePattern() == "/ns/{namespace}/*" {
 		namespace = chi.URLParam(r, "namespace")
 	}
-	slogNamespace := slog.With("track", recipient.Namespace.String()+"."+namespace, "namespace", namespace, "route", routePath)
 
 	gw, ok := ep.nsGateways[namespace]
 	if !ok {
@@ -230,7 +229,11 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	slogRoute := slog.With("trace", traceID, "span", spanID, "track", recipient.Route.String()+"."+endpointEntry.Path, "namespace", namespace, "endpoint", endpointEntry.Path, "route", routePath)
+	slogRoute := slog.With("trace", traceID,
+		"span", spanID,
+		"track", recipient.Route.String()+"."+namespace+"."+endpointEntry.Path,
+		"namespace", namespace, "endpoint", endpointEntry.Path,
+		"route", routePath)
 
 	// add url params e.g. /{id}
 	ctx = context.WithValue(ctx, plugins.URLParamCtxKey, urlParams)
@@ -248,7 +251,6 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx, childSpan := tracer.Start(ctx, "plugins-processing")
 	defer childSpan.End()
 
-	slogNamespace.Info("Serving plugins")
 	slogRoute.Info("Serving plugins")
 
 	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(t))
@@ -276,7 +278,6 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if c.Username == "" && !endpointEntry.AllowAnonymous {
 		plugins.ReportError(ctx, w, http.StatusUnauthorized, "no permission",
 			fmt.Errorf("request not authorized"))
-		slogNamespace.Debug("user authenticated", "user", c.Username)
 		slogRoute.Debug("user authenticated", "user", c.Username)
 
 		return
@@ -346,8 +347,7 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(tw.Code)
 		_, err := w.Write(tw.Body.Bytes())
 		if err != nil {
-			slogRoute.Error("can not write api response", "error", err.Error())
-			slogNamespace.Error("can not write api response", "error", err.Error())
+			slogRoute.Error("Failed to write api response", "err", err)
 		}
 	}
 }

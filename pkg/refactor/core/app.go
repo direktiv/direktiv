@@ -105,6 +105,10 @@ type Version struct {
 	UnixTime int64 `json:"unix_time"`
 }
 
+// TODO: Fix this temp type.
+// SyncNamespace is a temporary type until we fix mirroring logic.
+type SyncNamespace func(namespace any, mirrorConfig any) (any, error)
+
 type App struct {
 	Version *Version
 	Config  *Config
@@ -112,4 +116,5 @@ type App struct {
 	ServiceManager  ServiceManager
 	RegistryManager RegistryManager
 	GatewayManager  GatewayManager
+	SyncNamespace   SyncNamespace
 }

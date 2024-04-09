@@ -1,7 +1,6 @@
 package api
 
 import (
-	"context"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -31,7 +30,7 @@ func (s *Server) GetRouter() *mux.Router {
 }
 
 // NewServer return new API server.
-func NewServer(ctx context.Context, config *core.Config) (*Server, error) {
+func NewServer(config *core.Config) (*Server, error) {
 	slog.Debug("Initializing API V1 Server.", "port", config.ApiV1Port)
 
 	baseRouter := mux.NewRouter()

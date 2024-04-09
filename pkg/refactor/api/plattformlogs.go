@@ -31,7 +31,7 @@ func (m *logController) mountRouter(r chi.Router) {
 		// Call the Get method with the cursor instead of offset
 		data, starting, err := m.getOlder(r.Context(), params)
 		if err != nil {
-			slog.Error("Fetching logs for request failed.", "error", err)
+			slog.Error("Fetching logs for request.", "err", err)
 			writeInternalError(w, err)
 
 			return
@@ -66,6 +66,7 @@ func (m logController) getNewer(ctx context.Context, t time.Time, params map[str
 	if err != nil {
 		return []logEntry{}, err
 	}
+	slog.Debug("determined logging-track", "track", stream)
 
 	// Call the appropriate LogStore method with cursorTime
 	lastID, hasLastID := params["lastID"]
@@ -122,12 +123,13 @@ func (m logController) getNewer(ctx context.Context, t time.Time, params map[str
 func (m logController) getOlder(ctx context.Context, params map[string]string) ([]logEntry, time.Time, error) {
 	var r []core.LogEntry
 	var err error
-
 	// Determine the track based on the provided parameters
 	stream, err := determineTrack(params)
 	if err != nil {
 		return []logEntry{}, time.Time{}, err
 	}
+	slog.Debug("determined logging-track", "track", stream)
+
 	starting := time.Now().UTC()
 	if t, ok := params["before"]; ok {
 		co, err := time.Parse(time.RFC3339Nano, t)
@@ -194,7 +196,7 @@ func (m logController) stream(w http.ResponseWriter, r *http.Request) {
 		case message := <-messageChannel:
 			_, err := io.Copy(w, strings.NewReader(fmt.Sprintf("id: %v\nevent: %v\ndata: %v\n\n", message.ID, message.Type, message.Data)))
 			if err != nil {
-				slog.Error("Failed to serve to SSE", "error", err)
+				slog.Error("serve to SSE", "err", err)
 			}
 
 			f, ok := w.(http.Flusher)
@@ -215,7 +217,7 @@ func determineTrack(params map[string]string) (string, error) {
 	if p, ok := params["instance"]; ok {
 		return "flow.instance." + "%" + p + "%", nil
 	} else if p, ok := params["route"]; ok {
-		return "flow.route." + p, nil
+		return "flow.route." + params["namespace"] + "." + p, nil
 	} else if p, ok := params["activity"]; ok {
 		return "flow.activity." + p, nil
 	} else if p, ok := params["namespace"]; ok {
@@ -256,20 +258,20 @@ func (lw *logStoreWorker) start(ctx context.Context) {
 			case <-ticker.C:
 				logs, err := lw.Get(ctx, lw.Cursor, lw.Params)
 				if err != nil {
-					slog.Error("TODO: should we quit with an error?", "error", err)
+					slog.Error("TODO: should we quit with an error?", "err", err)
 
 					continue
 				}
 				for _, fle := range logs {
 					b, err := json.Marshal(fle)
 					if err != nil {
-						slog.Error("TODO: should we quit with an error?", "error", err)
+						slog.Error("TODO: should we quit with an error?", "err", err)
 
 						continue
 					}
 					dst := &bytes.Buffer{}
 					if err := json.Compact(dst, b); err != nil {
-						slog.Error("TODO: should we quit with an error?", "error", err)
+						slog.Error("TODO: should we quit with an error?", "err", err)
 					}
 
 					e := Event{

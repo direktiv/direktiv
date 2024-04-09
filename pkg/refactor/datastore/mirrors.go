@@ -13,9 +13,9 @@ type MirrorConfig struct {
 	Namespace string `json:"-"`
 
 	URL                  string `json:"url"`
-	GitRef               string `json:"gitRef"`
-	GitCommitHash        string `json:"gitCommitHash"`
-	PublicKey            string `json:"publicKey"`
+	GitRef               string `json:"gitRef,omitempty"`
+	GitCommitHash        string `json:"gitCommitHash,omitempty"`
+	PublicKey            string `json:"publicKey,omitempty"`
 	PrivateKey           string `json:"-"`
 	PrivateKeyPassphrase string `json:"-"`
 
@@ -48,15 +48,13 @@ const (
 // MirrorProcess represents an instance of mirroring process that happened or is currently happened. For every mirroring
 // process gets executing, a MirrorProcess instance should be created with datastore.MirrorStore.
 type MirrorProcess struct {
-	ID        uuid.UUID
-	Namespace string
-
-	Status string
-	Typ    string
-
-	EndedAt   time.Time
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID        uuid.UUID `json:"id"`
+	Namespace string    `json:"-"`
+	Status    string    `json:"status"`
+	Typ       string    `json:"-"`
+	EndedAt   time.Time `json:"endedAt"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 // MirrorStore *doesn't* lunch any mirroring process. MirrorStore is only responsible for fetching and setting datastore.MirrorConfig and

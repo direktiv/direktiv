@@ -38,6 +38,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 type FormProps = {
   defaultConfig?: ServiceFormSchemaType;
+  onSave: (value: ServiceFormSchemaType) => void;
   children: (args: {
     formControls: UseFormReturn<ServiceFormSchemaType>;
     formMarkup: JSX.Element;
@@ -45,7 +46,7 @@ type FormProps = {
   }) => JSX.Element;
 };
 
-export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
+export const Form: FC<FormProps> = ({ defaultConfig, children, onSave }) => {
   const { t } = useTranslation();
   const formControls = useForm<ServiceFormSchemaType>({
     resolver: zodResolver(ServiceFormSchema),
@@ -164,7 +165,7 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
           <Input {...register("cmd")} id="cmd" />
         </Fieldset>
 
-        <PatchesForm form={formControls} />
+        <PatchesForm form={formControls} onSave={onSave} />
 
         <Fieldset
           label={t("pages.explorer.service.editor.form.envs.label")}

@@ -6,6 +6,8 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/google/uuid"
+
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 
 	"github.com/direktiv/direktiv/pkg/refactor/database"
@@ -105,13 +107,21 @@ func (e *nsController) update(w http.ResponseWriter, r *http.Request) {
 
 	// Parse request.
 	req := struct {
-		MirrorSettings *datastore.MirrorConfig `json:"mirror"`
+		Mirror *struct {
+			URL                  string `json:"url"`
+			GitRef               string `json:"gitRef"`
+			GitCommitHash        string `json:"gitCommitHash"`
+			PublicKey            string `json:"publicKey"`
+			PrivateKey           string `json:"privateKey"`
+			PrivateKeyPassphrase string `json:"privateKeyPassphrase"`
+			Insecure             bool   `json:"insecure"`
+		} `json:"mirror"`
 	}{}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeNotJSONError(w, err)
 		return
 	}
-	if req.MirrorSettings == nil {
+	if req.Mirror == nil {
 		writeError(w, &Error{
 			Code:    "request_data_invalid",
 			Message: "field mirror must be provided",
@@ -120,12 +130,38 @@ func (e *nsController) update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if req.Mirror.URL == "" {
+		writeError(w, &Error{
+			Code:    "request_data_invalid",
+			Message: "field 'url' must be provided",
+		})
+
+		return
+	}
+	if req.Mirror.GitRef == "" {
+		writeError(w, &Error{
+			Code:    "request_data_invalid",
+			Message: "field 'gitRef' must be provided",
+		})
+
+		return
+	}
+
+	mirrorConfig := &datastore.MirrorConfig{
+		Namespace:            name,
+		URL:                  req.Mirror.URL,
+		GitRef:               req.Mirror.GitRef,
+		GitCommitHash:        req.Mirror.GitCommitHash,
+		PublicKey:            req.Mirror.PublicKey,
+		PrivateKey:           req.Mirror.PrivateKey,
+		PrivateKeyPassphrase: req.Mirror.PrivateKeyPassphrase,
+		Insecure:             req.Mirror.Insecure,
+	}
 	// Update mirroring config.
-	req.MirrorSettings.Namespace = name
-	settings, err := dStore.Mirror().UpdateConfig(r.Context(), req.MirrorSettings)
+	settings, err := dStore.Mirror().UpdateConfig(r.Context(), mirrorConfig)
 	// If no mirroring config already set, create one.
 	if errors.Is(err, datastore.ErrNotFound) {
-		settings, err = dStore.Mirror().CreateConfig(r.Context(), req.MirrorSettings)
+		settings, err = dStore.Mirror().CreateConfig(r.Context(), mirrorConfig)
 	}
 	if err != nil {
 		writeDataStoreError(w, err)
@@ -144,9 +180,18 @@ func (e *nsController) update(w http.ResponseWriter, r *http.Request) {
 
 func (e *nsController) create(w http.ResponseWriter, r *http.Request) {
 	// Parse request.
+
 	req := struct {
-		Name           string                  `json:"name"`
-		MirrorSettings *datastore.MirrorConfig `json:"mirror"`
+		Name   string `json:"name"`
+		Mirror *struct {
+			URL                  string `json:"url"`
+			GitRef               string `json:"gitRef"`
+			GitCommitHash        string `json:"gitCommitHash"`
+			PublicKey            string `json:"publicKey"`
+			PrivateKey           string `json:"privateKey"`
+			PrivateKeyPassphrase string `json:"privateKeyPassphrase"`
+			Insecure             bool   `json:"insecure"`
+		} `json:"mirror"`
 	}{}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeNotJSONError(w, err)
@@ -159,9 +204,8 @@ func (e *nsController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer db.Rollback()
-	dStore := db.DataStore()
 
-	ns, err := dStore.Namespaces().Create(r.Context(), &datastore.Namespace{
+	ns, err := db.DataStore().Namespaces().Create(r.Context(), &datastore.Namespace{
 		Name: req.Name,
 	})
 	if err != nil {
@@ -170,13 +214,44 @@ func (e *nsController) create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var mConfig *datastore.MirrorConfig
-	if req.MirrorSettings != nil {
-		req.MirrorSettings.Namespace = req.Name
-		mConfig, err = dStore.Mirror().CreateConfig(r.Context(), req.MirrorSettings)
+	if req.Mirror != nil {
+		if req.Mirror.URL == "" {
+			writeError(w, &Error{
+				Code:    "request_data_invalid",
+				Message: "field 'url' must be provided",
+			})
+
+			return
+		}
+		if req.Mirror.GitRef == "" {
+			writeError(w, &Error{
+				Code:    "request_data_invalid",
+				Message: "field 'gitRef' must be provided",
+			})
+
+			return
+		}
+		mirrorConfig := &datastore.MirrorConfig{
+			Namespace:            req.Name,
+			URL:                  req.Mirror.URL,
+			GitRef:               req.Mirror.GitRef,
+			GitCommitHash:        req.Mirror.GitCommitHash,
+			PublicKey:            req.Mirror.PublicKey,
+			PrivateKey:           req.Mirror.PrivateKey,
+			PrivateKeyPassphrase: req.Mirror.PrivateKeyPassphrase,
+			Insecure:             req.Mirror.Insecure,
+		}
+		mConfig, err = db.DataStore().Mirror().CreateConfig(r.Context(), mirrorConfig)
 		if err != nil {
 			writeDataStoreError(w, err)
 			return
 		}
+	}
+
+	_, err = db.FileStore().CreateRoot(r.Context(), uuid.New(), ns.Name)
+	if err != nil {
+		writeFileStoreError(w, err)
+		return
 	}
 
 	err = db.Commit(r.Context())
@@ -232,11 +307,11 @@ func (e *nsController) list(w http.ResponseWriter, r *http.Request) {
 func namespaceApiObject(ns *datastore.Namespace, mConfig *datastore.MirrorConfig) any {
 	type apiObject struct {
 		*datastore.Namespace
-		MirrorSettings *datastore.MirrorConfig `json:"mirror,omitempty"`
+		Mirror *datastore.MirrorConfig `json:"mirror"`
 	}
 
 	return &apiObject{
-		Namespace:      ns,
-		MirrorSettings: mConfig,
+		Namespace: ns,
+		Mirror:    mConfig,
 	}
 }
