@@ -232,25 +232,6 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB) (
 
 	srv.gormDB = db
 
-	if err != nil {
-		return nil, fmt.Errorf("creating gorm db driver, err: %w", err)
-	}
-	slog.Info("Database connection established.")
-
-	res := srv.gormDB.Exec(database2.Schema)
-	if res.Error != nil {
-		return nil, fmt.Errorf("provisioning schema, err: %w", res.Error)
-	}
-	slog.Info("Schema provisioned successfully")
-
-	gdb, err := srv.gormDB.DB()
-	if err != nil {
-		return nil, fmt.Errorf("modifying gorm driver, err: %w", err)
-	}
-	gdb.SetMaxIdleConns(32)
-	gdb.SetMaxOpenConns(16)
-	slog.Debug("Database connection pool limits set", "maxIdleConns", 32, "maxOpenConns", 16)
-
 	srv.rawDB, err = sql.Open("postgres", config.DB)
 	if err == nil {
 		err = srv.rawDB.Ping()
@@ -442,7 +423,26 @@ func initDB(config *core.Config) (*gorm.DB, error) {
 		time.Sleep(time.Second)
 	}
 
-	return db, err
+	if err != nil {
+		return nil, err
+	}
+
+	res := db.Exec(database2.Schema)
+	if res.Error != nil {
+		return nil, fmt.Errorf("provisioning schema, err: %w", res.Error)
+	}
+	slog.Info("Schema provisioned successfully")
+
+	gdb, err := db.DB()
+	if err != nil {
+		return nil, fmt.Errorf("modifying gorm driver, err: %w", err)
+	}
+
+	slog.Debug("Database connection pool limits set", "maxIdleConns", 32, "maxOpenConns", 16)
+	gdb.SetMaxIdleConns(32)
+	gdb.SetMaxOpenConns(16)
+
+	return db, nil
 }
 
 func (srv *server) cleanup(closer func() error) {
