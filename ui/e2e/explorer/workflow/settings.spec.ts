@@ -1,10 +1,8 @@
-import {
-  noop as basicWorkflow,
-  workflowThatCreatesVariable,
-} from "~/pages/namespace/Explorer/Tree/components/modals/CreateNew/Workflow/templates";
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
 import { expect, test } from "@playwright/test";
+import { waitForSuccessToast, workflowThatCreatesVariable } from "./utils";
 
+import { noop as basicWorkflow } from "~/pages/namespace/Explorer/Tree/components/modals/CreateNew/Workflow/templates";
 import { createFile } from "e2e/utils/files";
 import { createVar } from "~/api/variables/mutate/create";
 import { createWorkflowVariables } from "e2e/utils/variables";
@@ -13,7 +11,6 @@ import { faker } from "@faker-js/faker";
 import { forceLeadingSlash } from "~/api/files/utils";
 import { headers } from "e2e/utils/testutils";
 import { runWorkflow } from "~/api/tree/mutate/runWorkflow";
-import { waitForSuccessToast } from "./utils";
 
 let namespace = "";
 let workflow = "";
@@ -260,7 +257,7 @@ test("it is possible to have a variable with an empty mimeType and rename it", a
     name: workflowName,
     namespace,
     type: "workflow",
-    yaml: workflowThatCreatesVariable.data,
+    yaml: workflowThatCreatesVariable,
   });
 
   await runWorkflow({

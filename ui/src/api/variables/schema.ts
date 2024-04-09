@@ -62,10 +62,10 @@ export const VarFormCreateEditSchema = z.object({
   name: z.string().nonempty(),
   /**
    * users should not create a variable with an empty mime type,
-   * but technically it is allowed via the API (and e.g. a workflow
-   * can create a variable with an empty mime type as well). The
-   * schema must reflect this, otherwise users could not e.g.
-   * rename a variable with an empty mime type.
+   * but technically it is allowed via the API (workflow can
+   * create a variable with an empty mime type as well). The
+   * schema must reflect this, otherwise users could not rename
+   * a variable with an empty mime type.
    */
   mimeType: z.string(),
   data: z.string().nonempty(),
