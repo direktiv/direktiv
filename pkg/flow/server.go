@@ -87,6 +87,9 @@ func Run(circuit *core.Circuit) error {
 	if err := srv.start(circuit); err != nil {
 		return err
 	}
+	if err := initNewMain(circuit, srv); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -365,6 +368,10 @@ func (srv *server) start(circuit *core.Circuit) error {
 		return nil
 	})
 
+	return nil
+}
+
+func initNewMain(circuit *core.Circuit, srv *server) error {
 	// TODO: yassir, use the new db to refactor old code.
 	dbManager := database2.NewDB(srv.gormDB, srv.conf.SecretKey)
 
@@ -378,6 +385,10 @@ func (srv *server) start(circuit *core.Circuit) error {
 		// If this is a delete workflow file
 		if event.DeleteFileID.String() != (uuid.UUID{}).String() {
 			return srv.flow.events.deleteWorkflowEventListeners(circuit.Context(), event.NamespaceID, event.DeleteFileID)
+		}
+		noTx := &sqlTx{
+			res:       srv.gormDB,
+			secretKey: srv.conf.SecretKey,
 		}
 		file, err := noTx.FileStore().ForNamespace(event.Namespace).GetFile(circuit.Context(), event.FilePath)
 		if err != nil {
@@ -396,7 +407,7 @@ func (srv *server) start(circuit *core.Circuit) error {
 		Cancel: srv.engine.CancelInstance,
 	}
 
-	err = cmd.NewMain(circuit, &cmd.NewMainArgs{
+	err := cmd.NewMain(circuit, &cmd.NewMainArgs{
 		Config:            srv.conf,
 		Database:          dbManager,
 		PubSubBus:         srv.pBus,
