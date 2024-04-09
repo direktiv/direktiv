@@ -117,4 +117,4 @@ const TimePickerInput = React.forwardRef<
 
 TimePickerInput.displayName = "TimePickerInput";
 
-export { TimePickerInput };
+export default TimePickerInput;

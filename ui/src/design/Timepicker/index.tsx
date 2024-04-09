@@ -2,7 +2,7 @@ import * as React from "react";
 
 import { FC, KeyboardEventHandler } from "react";
 
-import { TimePickerInput } from "./Input";
+import TimePickerInput from "./Input";
 
 const padTime = (date: number) => date.toString().padStart(2, "0");
 
