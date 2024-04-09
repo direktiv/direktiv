@@ -75,8 +75,8 @@ func Run(circuit *core.Circuit) error {
 	if err := env.Parse(config); err != nil {
 		return fmt.Errorf("parsing env variables: %w", err)
 	}
-	if config.Error() != nil {
-		return fmt.Errorf("parsing env variables, err: %w", config.Error())
+	if err := config.Init(); err != nil {
+		return fmt.Errorf("init config, err: %w", err)
 	}
 
 	slog.Info("initialize db connection")
@@ -239,11 +239,7 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB) (
 	if err != nil {
 		return nil, fmt.Errorf("creating raw db driver, err: %w", err)
 	}
-	slog.Debug("Successfully connected to database with raw driver")
-
-	// Repeat SecretKey length to 16 chars.
-	srv.config.SecretKey = srv.config.SecretKey + "1234567890123456"
-	srv.config.SecretKey = srv.config.SecretKey[0:16]
+	slog.Debug("successfully connected to database with raw driver")
 
 	slog.Debug("Initializing pub-sub.")
 
