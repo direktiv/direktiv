@@ -6,7 +6,7 @@ import { ButtonBar } from "~/design/ButtonBar";
 import DatePicker from "~/components/Filters/DatePicker";
 import { FiltersObj } from "~/api/events/query/get";
 import RefineTime from "~/components/Filters/RefineTime";
-import { SelectFieldMenu } from "./SelectFieldMenu";
+import { SelectFieldMenu } from "~/components/Filters/SelectFieldMenu";
 import TextInput from "~/components/Filters/TextInput";
 import moment from "moment";
 import { useState } from "react";
@@ -229,9 +229,16 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
           </PopoverTrigger>
           <PopoverContent align="start">
             {(selectedField === null && (
-              <SelectFieldMenu
-                options={undefinedFilters}
-                onSelect={setSelectedField}
+              <SelectFieldMenu<keyof FiltersObj>
+                options={undefinedFilters.map((option) => ({
+                  value: option,
+                  label: t(`pages.events.history.filter.field.${option}`),
+                }))}
+                onSelect={(value) => setSelectedField(value)}
+                heading={t("pages.events.history.filter.menuHeading.main")}
+                placeholder={t(
+                  "pages.events.history.filter.placeholder.mainMenu"
+                )}
               />
             )) ||
               ((selectedField === "TYPE" || selectedField === "TEXT") && (

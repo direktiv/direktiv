@@ -7,7 +7,7 @@ import DatePicker from "~/components/Filters/DatePicker";
 import { FiltersObj } from "~/api/instances/query/get";
 import Options from "./Options";
 import RefineTime from "~/components/Filters/RefineTime";
-import { SelectFieldMenu } from "./SelectFieldMenu";
+import { SelectFieldMenu } from "../../../../../components/Filters/SelectFieldMenu";
 import TextInput from "~/components/Filters/TextInput";
 import moment from "moment";
 import { useState } from "react";
@@ -277,9 +277,16 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
           </PopoverTrigger>
           <PopoverContent align="start">
             {(selectedField === null && (
-              <SelectFieldMenu
-                options={undefinedFilters}
+              <SelectFieldMenu<keyof FiltersObj>
+                options={undefinedFilters.map((option) => ({
+                  value: option,
+                  label: t(`pages.instances.list.filter.field.${option}`),
+                }))}
                 onSelect={setSelectedField}
+                heading={t("pages.instances.list.filter.menuHeading.main")}
+                placeholder={t(
+                  "pages.instances.list.filter.placeholder.mainMenu"
+                )}
               />
             )) ||
               (selectedField === "AS" && (
