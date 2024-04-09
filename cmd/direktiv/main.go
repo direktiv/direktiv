@@ -12,7 +12,7 @@ import (
 
 const (
 	//nolint:gosec
-	APITokenHeader = "direktiv-token"
+	apiTokenHeader = "direktiv-token"
 )
 
 type apikeyHandler struct {
@@ -27,7 +27,7 @@ func (h *apikeyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if r.Header.Get(APITokenHeader) != h.key {
+	if r.Header.Get(apiTokenHeader) != h.key {
 		w.WriteHeader(http.StatusUnauthorized)
 
 		return
