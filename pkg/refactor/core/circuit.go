@@ -1,0 +1,37 @@
+package core
+
+import (
+	"context"
+	"log/slog"
+	"sync"
+)
+
+// nolint: containedctx
+type Circuit struct {
+	Context context.Context
+	Cancel  context.CancelFunc
+	WG      sync.WaitGroup
+}
+
+// Start lunches a goroutine and tracking it via a sync.WaitGroup. It enables simplified api to lunch graceful go
+// routines.
+func (c *Circuit) Start(job func() error) {
+	c.WG.Add(1)
+	go func() {
+		defer c.WG.Done()
+		err := job()
+		if err != nil {
+			slog.Error("job crash", "err", err)
+			c.Cancel()
+		}
+	}()
+}
+
+func (c *Circuit) IsDone() bool {
+	select {
+	case <-c.Context.Done():
+		return true
+	default:
+		return false
+	}
+}

@@ -1,12 +1,10 @@
 package api
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
-	"log/slog"
+	"fmt"
 	"net/http"
-	"sync"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
@@ -24,7 +22,7 @@ const (
 	readHeaderTimeout = 5 * time.Second
 )
 
-func Start(app core.App, db *database.DB, bus *pubsub2.Bus, instanceManager *instancestore.InstanceManager, addr string, done <-chan struct{}, wg *sync.WaitGroup) {
+func Initialize(app core.App, db *database.DB, bus *pubsub2.Bus, instanceManager *instancestore.InstanceManager, addr string, circuit *core.Circuit) error {
 	funcCtr := &serviceController{
 		manager: app.ServiceManager,
 	}
@@ -147,33 +145,19 @@ func Start(app core.App, db *database.DB, bus *pubsub2.Bus, instanceManager *ins
 	})
 
 	apiServer := &http.Server{Addr: addr, Handler: r, ReadHeaderTimeout: readHeaderTimeout}
-	// Server run context
-	serverCtx, serverStopCtx := context.WithCancel(context.Background())
 
-	go func() {
-		// Run api server
+	circuit.Start(func() error {
 		err := apiServer.ListenAndServe()
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
-			slog.Error("listen on port", "err", err)
-			panic(err)
+			return fmt.Errorf("listen on port, err: %w", err)
 		}
-		// Wait for server context to be stopped
-		<-serverCtx.Done()
-		wg.Done()
-	}()
 
-	go func() {
-		<-done
-		shutdownCtx, cancel := context.WithTimeout(serverCtx, shutdownWaitTime)
-		defer cancel()
+		return nil
+	})
 
-		err := apiServer.Shutdown(shutdownCtx)
-		if err != nil {
-			slog.Error("shutdown server", "err", err)
-			panic(err)
-		}
-		serverStopCtx()
-	}()
+	// TODO: setup shutdown handler.
+
+	return nil
 }
 
 func writeJSON(w http.ResponseWriter, v any) {
