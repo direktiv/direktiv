@@ -42,7 +42,7 @@ describe('Test no namespace variable name duplicated', () => {
 	helpers.itShouldCreateFileV2(it, expect, namespace, '/', 'wf1.yaml', 'workflow', 'text',
 		btoa(helpers.dummyWorkflow('wf1.yaml')))
 
-	foo = {
+	let foo2 = {
 		name: 'foo',
 		data: btoa('bar'),
 		mimeType: 'mime',
@@ -52,14 +52,14 @@ describe('Test no namespace variable name duplicated', () => {
 	it(`should allow create workflow variable foo`, async () => {
 		const res = await request(config.getDirektivHost())
 			.post(`/api/v2/namespaces/${ namespace }/variables`)
-			.send(foo)
+			.send(foo2)
 		expect(res.statusCode).toEqual(200)
 	})
 
 	it(`should not duplicate workflow variable foo`, async () => {
 		const res = await request(config.getDirektivHost())
 			.post(`/api/v2/namespaces/${ namespace }/variables`)
-			.send(foo)
+			.send(foo2)
 		expect(res.statusCode).toEqual(400)
 		expect(res.body).toEqual(
 			{
