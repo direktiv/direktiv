@@ -357,7 +357,6 @@ func (srv *server) start(circuit *core.Circuit) error {
 	})
 
 	circuit.Start(func() error {
-		defer circuit.Cancel()
 		e := srv.flow.Run()
 		if e != nil {
 			return fmt.Errorf("srv.flow.Run(), err: %w", err)

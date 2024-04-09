@@ -3,6 +3,8 @@ package core
 import (
 	"context"
 	"log/slog"
+	"os"
+	"os/signal"
 	"sync"
 )
 
@@ -33,5 +35,15 @@ func (c *Circuit) IsDone() bool {
 		return true
 	default:
 		return false
+	}
+}
+
+func NewCircuit(parent context.Context, signals ...os.Signal) *Circuit {
+	appCtx, appCancel := signal.NotifyContext(parent, signals...)
+
+	return &Circuit{
+		Context: appCtx,
+		Cancel:  appCancel,
+		WG:      sync.WaitGroup{},
 	}
 }

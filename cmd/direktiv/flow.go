@@ -4,8 +4,6 @@ import (
 	"context"
 	"log/slog"
 	"os"
-	"os/signal"
-	"sync"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow"
@@ -37,13 +35,7 @@ var serverCmd = &cobra.Command{
 	Use:  "server",
 	Args: cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
-		appCtx, appCancel := signal.NotifyContext(context.Background(), os.Interrupt)
-
-		circuit := &core.Circuit{
-			Context: appCtx,
-			Cancel:  appCancel,
-			WG:      sync.WaitGroup{},
-		}
+		circuit := core.NewCircuit(context.Background(), os.Interrupt)
 
 		slog.Info("starting server")
 		err := flow.Run(circuit)
@@ -54,7 +46,7 @@ var serverCmd = &cobra.Command{
 		slog.Info("server booted successfully")
 
 		// wait until server is done.
-		<-appCtx.Done()
+		<-circuit.Context.Done()
 		slog.Info("terminating server")
 
 		go func() {
