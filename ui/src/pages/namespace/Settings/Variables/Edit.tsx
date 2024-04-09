@@ -10,7 +10,7 @@ import {
 } from "~/api/variables/schema";
 
 import Button from "~/design/Button";
-import { PlusCircle } from "lucide-react";
+import { FileJson } from "lucide-react";
 import { VariableForm } from "../../../../components/VariableForm";
 import { useTranslation } from "react-i18next";
 import { useUpdateVar } from "~/api/variables/mutate/update";
@@ -48,7 +48,7 @@ const Edit = ({ item, onSuccess, unallowedNames }: EditProps) => {
           }}
           dialogTitle={
             <DialogTitle>
-              <PlusCircle />
+              <FileJson />
               {t("pages.settings.variables.edit.title", {
                 name: data.data.name,
               })}
