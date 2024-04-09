@@ -15,7 +15,7 @@ func RunApplication() {
 	var err error
 	var addr string
 
-	var rootCmd = &cobra.Command{
+	rootCmd := &cobra.Command{
 		Use: "flow",
 	}
 
