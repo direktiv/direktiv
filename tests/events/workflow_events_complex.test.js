@@ -92,7 +92,8 @@ describe('Test complex workflow events orchistration', () => {
 		expect(stream3InstanceId).not.toBe(stream2InstanceId)
 		
 		await events.sendEventAndList(namespaceName, eventStream1Stage2)
-		
+		await helpers.sleep(300)
+
 		let statusStream1 = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/instances/${stream1InstanceId}`).send()
 		expect(statusStream1.body.instance.status).toBe('complete')
 		
@@ -110,6 +111,8 @@ describe('Test complex workflow events orchistration', () => {
 
 
 		await events.sendEventAndList(namespaceName, eventStream2Stage2)
+		await helpers.sleep(300)
+
 		let resultsStream2 = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/instances/${stream2InstanceId}/output`).send()
 		statusStream2 = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/instances/${stream2InstanceId}`).send()
 		expect(statusStream2.body.instance.status).toBe('complete')
@@ -122,6 +125,8 @@ describe('Test complex workflow events orchistration', () => {
 
 
 		await events.sendEventAndList(namespaceName, eventStream3Stage2)
+		await helpers.sleep(300)
+
 		let resultsStream3 = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/instances/${stream3InstanceId}/output`).send()
 
 		statusStream3 = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/instances/${stream3InstanceId}`).send()
