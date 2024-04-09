@@ -1,7 +1,7 @@
 import {
   TimePickerType,
-  getArrowByType,
   getDateByType,
+  getTimeByIncrementAndType,
   setDateByType,
 } from "./utils";
 
@@ -68,8 +68,12 @@ const TimePickerInput = React.forwardRef<
       if (e.key === "ArrowRight") onRightFocus?.();
       if (e.key === "ArrowLeft") onLeftFocus?.();
       if (["ArrowUp", "ArrowDown"].includes(e.key)) {
-        const step = e.key === "ArrowUp" ? 1 : -1;
-        const newValue = getArrowByType(calculatedValue, step, picker);
+        const increment = e.key === "ArrowUp" ? 1 : -1;
+        const newValue = getTimeByIncrementAndType(
+          calculatedValue,
+          increment,
+          picker
+        );
         if (flag) setFlag(false);
         const tempDate = new Date(date);
         setDate(setDateByType(tempDate, newValue, picker));

@@ -46,30 +46,33 @@ export function getValidMinuteOrSecond(value: string) {
   return getValidNumber(value, { max: 59 });
 }
 
-type GetValidArrowNumberConfig = {
+type GetValidIncrementNumberConfig = {
   min: number;
   max: number;
-  step: number;
+  increment: number;
 };
 
-export function getValidArrowNumber(
+export function getValidIncrement(
   value: string,
-  { min, max, step }: GetValidArrowNumberConfig
+  { min, max, increment }: GetValidIncrementNumberConfig
 ) {
   let numericValue = parseInt(value, 10);
   if (!isNaN(numericValue)) {
-    numericValue += step;
+    numericValue += increment;
     return getValidNumber(String(numericValue), { min, max, loop: true });
   }
   return "00";
 }
 
-export function getValidArrowHour(value: string, step: number) {
-  return getValidArrowNumber(value, { min: 0, max: 23, step });
+export function getValidHourByIncrement(value: string, increment: number) {
+  return getValidIncrement(value, { min: 0, max: 23, increment });
 }
 
-export function getValidArrowMinuteOrSecond(value: string, step: number) {
-  return getValidArrowNumber(value, { min: 0, max: 59, step });
+export function getValidMinuteOrSecondByIncrement(
+  value: string,
+  increment: number
+) {
+  return getValidIncrement(value, { min: 0, max: 59, increment });
 }
 
 export function setMinutes(date: Date, value: string) {
@@ -118,18 +121,18 @@ export function getDateByType(date: Date, type: TimePickerType) {
   }
 }
 
-export function getArrowByType(
+export function getTimeByIncrementAndType(
   value: string,
-  step: number,
+  increment: number,
   type: TimePickerType
 ) {
   switch (type) {
     case "minutes":
-      return getValidArrowMinuteOrSecond(value, step);
+      return getValidMinuteOrSecondByIncrement(value, increment);
     case "seconds":
-      return getValidArrowMinuteOrSecond(value, step);
+      return getValidMinuteOrSecondByIncrement(value, increment);
     case "hours":
-      return getValidArrowHour(value, step);
+      return getValidHourByIncrement(value, increment);
     default:
       return "00";
   }
