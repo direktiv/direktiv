@@ -1,4 +1,4 @@
-package flow
+package main
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func RunApplication() {
+func runApplication() {
 	var err error
 	var addr string
 

@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/direktiv/direktiv/cmd/dinit"
-	"github.com/direktiv/direktiv/cmd/flow"
 	"github.com/direktiv/direktiv/cmd/sidecar"
 	"github.com/direktiv/direktiv/pkg/refactor/middlewares"
 )
@@ -56,6 +55,6 @@ func main() {
 		dinit.RunApplication()
 	default:
 		// default to flow app.
-		flow.RunApplication()
+		runApplication()
 	}
 }
