@@ -36,7 +36,8 @@ type NewMainArgs struct {
 func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 	initSLog()
 
-	go api2.NewServer(args.Config)
+	// nolint:errcheck
+	go api2.RunApplication(args.Config)
 
 	// Create service manager
 	//nolint
