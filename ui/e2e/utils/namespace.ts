@@ -50,7 +50,7 @@ export const checkIfNamespaceExists = async (namespace: string) => {
 // If you have spammed namespaces while writing tests, call this temporarily:
 // await cleanupNamespace();
 export const cleanupNamespaces = async () => {
-  const response = await fetch(`${apiUrl}/api/namespaces`, { headers });
+  const response = await fetch(`${apiUrl}/api/v2/namespaces`, { headers });
   const namespaces = await response
     .json()
     .then((json: NamespaceListSchemaType) =>
