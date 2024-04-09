@@ -205,6 +205,10 @@ func (s *sqlRuntimeVariablesStore) Set(ctx context.Context, variable *datastore.
 
 	res := s.db.WithContext(ctx).Exec(queryString, args...)
 
+	// checks for duplicate key value violates unique constraint (SQLSTATE 23505)
+	if res.Error != nil && strings.Contains(res.Error.Error(), "23505") {
+		return nil, fmt.Errorf("%w + %w", res.Error, datastore.ErrDuplication)
+	}
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -231,6 +235,10 @@ func (s *sqlRuntimeVariablesStore) Set(ctx context.Context, variable *datastore.
 							VALUES(?, ?, ?, ?, ?%s);`, selectorField, extraVal),
 		args...)
 
+	// checks for duplicate key value violates unique constraint (SQLSTATE 23505)
+	if res.Error != nil && strings.Contains(res.Error.Error(), "23505") {
+		return nil, fmt.Errorf("%w + %w", res.Error, datastore.ErrDuplication)
+	}
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -330,6 +338,10 @@ func (s *sqlRuntimeVariablesStore) Create(ctx context.Context, variable *datasto
 
 	res := s.db.WithContext(ctx).Exec(query, args...)
 
+	// checks for duplicate key value violates unique constraint (SQLSTATE 23505)
+	if res.Error != nil && strings.Contains(res.Error.Error(), "23505") {
+		return nil, fmt.Errorf("%w + %w", res.Error, datastore.ErrDuplication)
+	}
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -375,6 +387,10 @@ func (s *sqlRuntimeVariablesStore) Patch(ctx context.Context, id uuid.UUID, patc
 
 	res := s.db.WithContext(ctx).Exec(query, args...)
 
+	// checks for duplicate key value violates unique constraint (SQLSTATE 23505)
+	if res.Error != nil && strings.Contains(res.Error.Error(), "23505") {
+		return nil, fmt.Errorf("%w + %w", res.Error, datastore.ErrDuplication)
+	}
 	if res.Error != nil {
 		return nil, res.Error
 	}
