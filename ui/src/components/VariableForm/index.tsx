@@ -103,7 +103,11 @@ export const VariableForm = ({
             <MimeTypeSelect
               id="mimetype"
               mimeType={field.value}
-              onChange={onMimeTypeChange}
+              onChange={(newMimeType) => {
+                if (newMimeType) {
+                  onMimeTypeChange(newMimeType);
+                }
+              }}
             />
           )}
         />
