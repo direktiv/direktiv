@@ -50,6 +50,11 @@ func (c *Circuit) Context() context.Context {
 	return c.context
 }
 
+func (c *Circuit) OnCancel(f func()) {
+	<-c.context.Done()
+	f()
+}
+
 func NewCircuit(parent context.Context, signals ...os.Signal) *Circuit {
 	appCtx, appCancel := signal.NotifyContext(parent, signals...)
 

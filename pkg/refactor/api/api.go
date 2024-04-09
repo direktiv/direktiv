@@ -1,9 +1,11 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -153,6 +155,16 @@ func Initialize(app core.App, db *database.DB, bus *pubsub2.Bus, instanceManager
 		}
 
 		return nil
+	})
+
+	circuit.OnCancel(func() {
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownWaitTime)
+		err := apiServer.Shutdown(shutdownCtx)
+		if err != nil {
+			slog.Error("api v2 shutdown server", "err", err)
+			panic(err)
+		}
+		cancel()
 	})
 
 	// TODO: setup shutdown handler.
