@@ -269,13 +269,13 @@ func (srv *server) start(circuit *core.Circuit) error {
 
 	slog.Debug("Initializing internal grpc server.")
 
-	srv.internal, err = initInternalServer(circuit.Context, srv)
+	srv.internal, err = initInternalServer(circuit.Context(), srv)
 	if err != nil {
 		return err
 	}
 	slog.Info("Internal grpc server started.")
 
-	srv.flow, err = initFlowServer(circuit.Context, srv)
+	srv.flow, err = initFlowServer(circuit.Context(), srv)
 	if err != nil {
 		return err
 	}
@@ -300,7 +300,7 @@ func (srv *server) start(circuit *core.Circuit) error {
 	eventWorker := eventsstore.NewEventWorker(noTx.DataStore().StagingEvents(), interval, srv.events.handleEvent)
 
 	circuit.Start(func() error {
-		eventWorker.Start(circuit.Context)
+		eventWorker.Start(circuit.Context())
 
 		return nil
 	})
@@ -377,18 +377,18 @@ func (srv *server) start(circuit *core.Circuit) error {
 		}
 		// If this is a delete workflow file
 		if event.DeleteFileID.String() != (uuid.UUID{}).String() {
-			return srv.flow.events.deleteWorkflowEventListeners(circuit.Context, event.NamespaceID, event.DeleteFileID)
+			return srv.flow.events.deleteWorkflowEventListeners(circuit.Context(), event.NamespaceID, event.DeleteFileID)
 		}
-		file, err := noTx.FileStore().ForNamespace(event.Namespace).GetFile(circuit.Context, event.FilePath)
+		file, err := noTx.FileStore().ForNamespace(event.Namespace).GetFile(circuit.Context(), event.FilePath)
 		if err != nil {
 			return err
 		}
-		err = srv.flow.configureWorkflowStarts(circuit.Context, noTx, event.NamespaceID, file)
+		err = srv.flow.configureWorkflowStarts(circuit.Context(), noTx, event.NamespaceID, file)
 		if err != nil {
 			return err
 		}
 
-		return srv.flow.placeholdSecrets(circuit.Context, noTx, event.Namespace, file)
+		return srv.flow.placeholdSecrets(circuit.Context(), noTx, event.Namespace, file)
 	}
 
 	instanceManager := &instancestore.InstanceManager{

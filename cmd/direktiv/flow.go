@@ -46,7 +46,7 @@ var serverCmd = &cobra.Command{
 		slog.Info("server booted successfully")
 
 		// wait until server is done.
-		<-circuit.Context.Done()
+		<-circuit.Done()
 		slog.Info("terminating server")
 
 		go func() {

@@ -10,7 +10,7 @@ import (
 
 // nolint: containedctx
 type Circuit struct {
-	Context context.Context
+	context context.Context
 	cancel  context.CancelFunc
 	wg      sync.WaitGroup
 }
@@ -31,7 +31,7 @@ func (c *Circuit) Start(job func() error) {
 
 func (c *Circuit) IsDone() bool {
 	select {
-	case <-c.Context.Done():
+	case <-c.context.Done():
 		return true
 	default:
 		return false
@@ -42,11 +42,19 @@ func (c *Circuit) Wait() {
 	c.wg.Wait()
 }
 
+func (c *Circuit) Done() <-chan struct{} {
+	return c.context.Done()
+}
+
+func (c *Circuit) Context() context.Context {
+	return c.context
+}
+
 func NewCircuit(parent context.Context, signals ...os.Signal) *Circuit {
 	appCtx, appCancel := signal.NotifyContext(parent, signals...)
 
 	return &Circuit{
-		Context: appCtx,
+		context: appCtx,
 		cancel:  appCancel,
 		wg:      sync.WaitGroup{},
 	}
