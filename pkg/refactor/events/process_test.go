@@ -20,6 +20,223 @@ type triggerMock struct {
 	step   int
 }
 
+func Test_Add_Get_Complex_Context(t *testing.T) {
+	ns := uuid.New()
+	wfID1 := uuid.New()
+	wfID2 := uuid.New()
+
+	listeners := make([]*events.EventListener, 0)
+	listeners = append(listeners,
+		&events.EventListener{
+			ID:                     uuid.New(),
+			CreatedAt:              time.Now().UTC(),
+			UpdatedAt:              time.Now().UTC(),
+			Deleted:                false,
+			NamespaceID:            ns,
+			ListeningForEventTypes: []string{"test-topic"},
+			TriggerType:            events.StartSimple,
+			TriggerWorkflow:        wfID1.String(),
+			GlobGatekeepers: map[string]string{
+				"id": "some id",
+			},
+		},
+		&events.EventListener{
+			ID:                     uuid.New(),
+			CreatedAt:              time.Now().UTC(),
+			UpdatedAt:              time.Now().UTC(),
+			Deleted:                false,
+			NamespaceID:            ns,
+			ListeningForEventTypes: []string{"test-topic"},
+			TriggerType:            events.StartSimple,
+			TriggerWorkflow:        wfID2.String(),
+			GlobGatekeepers: map[string]string{
+				"id": "some other id",
+			},
+		},
+	)
+	resultsForEngine := make(chan triggerMock, 1)
+	var engine events.EventProcessing = events.EventEngine{
+		WorkflowStart: func(workflowID uuid.UUID, events ...*cloudevents.Event) {
+			resultsForEngine <- triggerMock{events: events, wf: workflowID}
+		},
+		WakeInstance: func(instanceID uuid.UUID, step int, events []*cloudevents.Event) {
+			resultsForEngine <- triggerMock{events: events, inst: instanceID, step: step}
+		},
+		GetListenersByTopic: func(ctx context.Context, s string) ([]*events.EventListener, error) {
+			return listeners, nil
+		},
+		UpdateListeners: func(ctx context.Context, listener []*events.EventListener) []error {
+			for i, el := range listener {
+				if el.Deleted {
+					listener = append(listener[:i], listener[i+1:]...)
+				}
+			}
+
+			return []error{}
+		},
+	}
+	ev1 := newEventWithMeta("test-sub1", "test-topic", uuid.New(), map[string]any{"id": "some id"})
+	ev2 := newEventWithMeta("test-sub1", "test-topic", uuid.New(), map[string]any{"id": "some other id"})
+	engine.ProcessEvents(context.Background(), ns, []event.Event{*ev1}, func(template string, args ...interface{}) {})
+	tr, err := waitForTrigger(t, resultsForEngine)
+	if err != nil {
+		t.Error("got no results")
+		return
+	}
+	if tr.wf != wfID1 {
+		t.Error("workflow should be triggered")
+	}
+	engine.ProcessEvents(context.Background(), ns, []event.Event{*ev2}, func(template string, args ...interface{}) {})
+	tr, err = waitForTrigger(t, resultsForEngine)
+	if err != nil {
+		t.Error("got no results")
+		return
+	}
+	if tr.wf != wfID2 {
+		t.Error("workflow should be triggered")
+	}
+	ev3 := newEventWithMeta("test-sub1", "test-topic", uuid.New(), map[string]any{"id": "some id 2"})
+	engine.ProcessEvents(context.Background(), ns, []event.Event{*ev3}, func(template string, args ...interface{}) {})
+	tr, err = waitForTrigger(t, resultsForEngine)
+	if err == nil {
+		t.Error("Expected no workflow trigger due to mismatched event metadata")
+		return
+	}
+}
+
+func Test_Add_Get_And(t *testing.T) {
+	ns := uuid.New()
+	wfID := uuid.New()
+
+	listeners := make([]*events.EventListener, 0)
+	listeners = append(listeners,
+		&events.EventListener{
+			ID:                     uuid.New(),
+			CreatedAt:              time.Now().UTC(),
+			UpdatedAt:              time.Now().UTC(),
+			Deleted:                false,
+			NamespaceID:            ns,
+			ListeningForEventTypes: []string{"test-topic", "test-topic2"},
+			TriggerType:            events.StartAnd,
+			TriggerWorkflow:        wfID.String(),
+			GlobGatekeepers: map[string]string{
+				"id": "some id",
+			},
+		},
+	)
+	resultsForEngine := make(chan triggerMock, 1)
+	var engine events.EventProcessing = events.EventEngine{
+		WorkflowStart: func(workflowID uuid.UUID, events ...*cloudevents.Event) {
+			resultsForEngine <- triggerMock{events: events, wf: workflowID}
+		},
+		WakeInstance: func(instanceID uuid.UUID, step int, events []*cloudevents.Event) {
+			resultsForEngine <- triggerMock{events: events, inst: instanceID, step: step}
+		},
+		GetListenersByTopic: func(ctx context.Context, s string) ([]*events.EventListener, error) {
+			return listeners, nil
+		},
+		UpdateListeners: func(ctx context.Context, listener []*events.EventListener) []error {
+			for i, el := range listener {
+				if el.Deleted {
+					listener = append(listener[:i], listener[i+1:]...)
+				}
+			}
+
+			return []error{}
+		},
+	}
+	eID := uuid.New()
+	ev := newEvent("test-sub1", "test-topic", eID)
+	ev2 := newEvent("test-sub1", "test-topic2", uuid.New())
+	engine.ProcessEvents(context.Background(), ns, []event.Event{*ev}, func(template string, args ...interface{}) {})
+	engine.ProcessEvents(context.Background(), ns, []event.Event{*ev2}, func(template string, args ...interface{}) {})
+	tr, err := waitForTrigger(t, resultsForEngine)
+	if err == nil {
+		t.Error("Expected no workflow trigger due to mismatched event metadata")
+		return
+	}
+	eID = uuid.New()
+	ev = newEventWithMeta("test-sub1", "test-topic", eID, map[string]any{"id": "some id"})
+	engine.ProcessEvents(context.Background(), ns, []event.Event{*ev}, func(template string, args ...interface{}) {})
+	tr, err = waitForTrigger(t, resultsForEngine)
+	if err == nil {
+		t.Error("Expected no workflow trigger due to mismatched event metadata")
+		return
+	}
+	ev = newEventWithMeta("test-sub1", "test-topic2", eID, map[string]any{"id": "some id"})
+	engine.ProcessEvents(context.Background(), ns, []event.Event{*ev}, func(template string, args ...interface{}) {})
+	tr, err = waitForTrigger(t, resultsForEngine)
+	if err != nil {
+		t.Error("got no results")
+		return
+	}
+	if tr.wf != wfID {
+		t.Error("workflow should be triggered")
+	}
+}
+
+func Test_Add_Get_Simple(t *testing.T) {
+	ns := uuid.New()
+	wfID := uuid.New()
+
+	listeners := make([]*events.EventListener, 0)
+	listeners = append(listeners,
+		&events.EventListener{
+			ID:                     uuid.New(),
+			CreatedAt:              time.Now().UTC(),
+			UpdatedAt:              time.Now().UTC(),
+			Deleted:                false,
+			NamespaceID:            ns,
+			ListeningForEventTypes: []string{"test-topic"},
+			TriggerType:            events.StartSimple,
+			TriggerWorkflow:        wfID.String(),
+			GlobGatekeepers: map[string]string{
+				"id": "some id",
+			},
+		},
+	)
+	resultsForEngine := make(chan triggerMock, 1)
+	var engine events.EventProcessing = events.EventEngine{
+		WorkflowStart: func(workflowID uuid.UUID, events ...*cloudevents.Event) {
+			resultsForEngine <- triggerMock{events: events, wf: workflowID}
+		},
+		WakeInstance: func(instanceID uuid.UUID, step int, events []*cloudevents.Event) {
+			resultsForEngine <- triggerMock{events: events, inst: instanceID, step: step}
+		},
+		GetListenersByTopic: func(ctx context.Context, s string) ([]*events.EventListener, error) {
+			return listeners, nil
+		},
+		UpdateListeners: func(ctx context.Context, listener []*events.EventListener) []error {
+			for i, el := range listener {
+				if el.Deleted {
+					listener = append(listener[:i], listener[i+1:]...)
+				}
+			}
+
+			return []error{}
+		},
+	}
+	eID := uuid.New()
+	ev := newEvent("test-sub1", "test-topic", eID)
+	engine.ProcessEvents(context.Background(), ns, []event.Event{*ev}, func(template string, args ...interface{}) {})
+	tr, err := waitForTrigger(t, resultsForEngine)
+	if err == nil {
+		t.Error("Expected no workflow trigger due to mismatched event metadata")
+		return
+	}
+	eID = uuid.New()
+	ev = newEventWithMeta("test-sub1", "test-topic", eID, map[string]any{"id": "some id"})
+	engine.ProcessEvents(context.Background(), ns, []event.Event{*ev}, func(template string, args ...interface{}) {})
+	tr, err = waitForTrigger(t, resultsForEngine)
+	if err != nil {
+		t.Error("got no results")
+		return
+	}
+	if tr.wf != wfID {
+		t.Error("workflow should be triggered")
+	}
+}
+
 func Test_Add_Get(t *testing.T) {
 	ns := uuid.New()
 	wfID := uuid.New()
@@ -186,6 +403,23 @@ func waitForTrigger(t *testing.T, c chan triggerMock) (*triggerMock, error) {
 			count++
 		}
 	}
+}
+
+func newEventWithMeta(subj, t string, id uuid.UUID, context map[string]any) *cloudevents.Event {
+	ev := &cloudevents.Event{
+		Context: &event.EventContextV03{
+			Type: t,
+			ID:   id.String(),
+			Time: &types.Timestamp{
+				Time: time.Now().UTC(),
+			},
+			Subject:    &subj,
+			Source:     *types.ParseURIRef("test.com"),
+			Extensions: context,
+		},
+	}
+
+	return ev
 }
 
 func newEvent(subj, t string, id uuid.UUID) *cloudevents.Event {

@@ -131,7 +131,7 @@ func (ee EventEngine) usePostProcessingEvents(ctx context.Context,
 	return nil // TODO
 }
 
-func eventPassedGatekeeper(globPatterns map[string]string, event cloudevents.Event) bool {
+func EventPassedGatekeeper(globPatterns map[string]string, event cloudevents.Event) bool {
 	if len(globPatterns) == 0 {
 		return true
 	}
@@ -200,7 +200,7 @@ func (ee EventEngine) eventAndHandler(l *EventListener, waitType bool) eventHand
 			if eventTypeAlreadyPresent(l, event) {
 				continue
 			}
-			if !eventPassedGatekeeper(l.GlobGatekeepers, *event.Event) {
+			if !EventPassedGatekeeper(l.GlobGatekeepers, *event.Event) {
 				continue
 			}
 			l.ReceivedEventsForAndTrigger = append(l.ReceivedEventsForAndTrigger, event)
@@ -288,7 +288,7 @@ func (ee EventEngine) eventSimpleHandler(l *EventListener, waitType bool) eventH
 				InstanceID: l.TriggerInstance,
 				Step:       l.TriggerInstanceStep,
 			}
-			if !eventPassedGatekeeper(l.GlobGatekeepers, *event.Event) {
+			if !EventPassedGatekeeper(l.GlobGatekeepers, *event.Event) {
 				continue
 			}
 			ee.triggerAction(waitType, tr, []*cloudevents.Event{event.Event})

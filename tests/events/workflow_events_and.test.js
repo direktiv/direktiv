@@ -224,7 +224,6 @@ describe('Test workflow events and', () => {
 	it(`flow context`, async () => {
 		await helpers.sleep(1000)
 
-		// start workflow
 		const runWorkflowResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${ namespaceName }/tree/${ waitWorkflowContextName }?op=execute`)
 			.send()
 		expect(runWorkflowResponse.statusCode).toEqual(200)
@@ -238,8 +237,16 @@ describe('Test workflow events and', () => {
 		expect(instance).not.toBeFalsy()
 
 		await events.sendEventAndList(namespaceName, basevent('eventtype12', 'eventtype12a', 'world2'))
+		instance = await events.listInstancesAndFilter(namespaceName, waitWorkflowContextName, 'pending')
+		expect(instance).not.toBeFalsy()
 
+		await events.sendEventAndList(namespaceName, basevent('eventtype11', 'eventtype12abc', 'world2'))
+		instance = await events.listInstancesAndFilter(namespaceName, waitWorkflowContextName, 'pending')
+		expect(instance).not.toBeFalsy()
+
+		await events.sendEventAndList(namespaceName, basevent('eventtype12', 'eventtype12ab', 'world1'))
 		instance = await events.listInstancesAndFilter(namespaceName, startWorkflowContextName, 'complete')
 		expect(instance).not.toBeFalsy()
+
 	})
 })

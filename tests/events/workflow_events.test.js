@@ -189,6 +189,23 @@ states:
   log: jq(.)
 `
 
+const startThenWaitWorkflowNameContext = 'startandwaitdyn.yaml'
+const starthenWaitWorkflowContext = `
+start:
+  type: event
+  state: ce
+  event: 
+    type: hello
+states:
+- id: ce
+  type: consumeEvent
+  log: jq(."hello".hello)
+  event:
+    type: hellowait
+    context: 
+      hello: jq(."hello".hello)
+`
+
 describe('Test workflow events', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
 
@@ -335,6 +352,29 @@ describe('Test workflow events', () => {
 		await events.sendEventAndList(namespaceName, basevent('hellowait', 'wait-ctx-run', 'world'))
 
 		instancesResponse = await events.listInstancesAndFilter(namespaceName, waitWorkflowNameContext, 'complete')
+
+		// instance fired
+		expect(instancesResponse).not.toBeFalsy()
+	})
+	
+	helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
+		'', startThenWaitWorkflowNameContext, 'workflow',
+		starthenWaitWorkflowContext)
+
+	it(`should start by event and kick off running workflow with context filter`, async () => {
+		await helpers.sleep(1000)
+
+		await events.sendEventAndList(namespaceName, basevent('hello', 'wait-ctx2', 'condition1'))
+		let instancesResponse = await events.listInstancesAndFilter(namespaceName, startThenWaitWorkflowNameContext, 'pending')
+
+		// no instance fired, still pending
+		expect(instancesResponse).not.toBeFalsy()
+		await events.sendEventAndList(namespaceName, basevent('hellowait', 'wait-ctx-run3', 'condition2'))
+		instancesResponse = await events.listInstancesAndFilter(namespaceName, startThenWaitWorkflowNameContext, 'pending')
+		// no instance fired, still pending
+		expect(instancesResponse).not.toBeFalsy()
+		await events.sendEventAndList(namespaceName, basevent('hellowait', 'wait-ctx-run4', 'condition1'))
+		instancesResponse = await events.listInstancesAndFilter(namespaceName, startThenWaitWorkflowNameContext, 'complete')
 
 		// instance fired
 		expect(instancesResponse).not.toBeFalsy()
