@@ -110,6 +110,14 @@ func writeDataStoreError(w http.ResponseWriter, err error) {
 
 		return
 	}
+	if errors.Is(err, datastore.ErrDuplication) {
+		writeError(w, &Error{
+			Code:    "resource_already_exists",
+			Message: "resource already exists",
+		})
+
+		return
+	}
 
 	writeInternalError(w, err)
 }

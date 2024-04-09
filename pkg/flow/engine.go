@@ -922,9 +922,9 @@ func (engine *engine) reportInstanceCrashed(ctx context.Context, im *instanceMem
 
 	instanceTrackCtx := enginerefactor.WithTrack(im.WithTags(loggingCtx), enginerefactor.BuildInstanceTrack(im.instance))
 	namespaceTrackCtx := enginerefactor.WithTrack(im.WithTags(loggingCtx), enginerefactor.BuildNamespaceTrack(im.Namespace().Name))
-
-	slog.Debug("Workflow failed.", enginerefactor.GetSlogAttributesWithError(instanceTrackCtx, err)...)
-	slog.Debug("Workflow failed.", enginerefactor.GetSlogAttributesWithError(namespaceTrackCtx, err)...)
+	msg := fmt.Sprintf("Workflow failed with code = %v, error = %v", typ, code)
+	slog.Error(msg, enginerefactor.GetSlogAttributesWithError(instanceTrackCtx, err)...)
+	slog.Error(msg, enginerefactor.GetSlogAttributesWithError(namespaceTrackCtx, err)...)
 }
 
 func (engine *engine) UserLog(ctx context.Context, im *instanceMemory, msg string, a ...interface{}) {

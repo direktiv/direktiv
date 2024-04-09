@@ -10,7 +10,6 @@ var ErrNotFound = errors.New("ErrNotFound")
 
 // nolint:revive,stylecheck
 type Config struct {
-	App               string `env:"DIREKTIV_APP"`
 	DirektivNamespace string `env:"DIREKTIV_NAMESPACE"`
 
 	LogFormat string `env:"DIREKTIV_LOG_FORMAT"`
