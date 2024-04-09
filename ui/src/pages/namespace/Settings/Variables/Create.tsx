@@ -13,9 +13,9 @@ import { useTranslation } from "react-i18next";
 
 const defaultMimeType = "application/json";
 
-type CreateProps = { onSuccess: () => void };
+type CreateProps = { onSuccess: () => void; unallowedNames: string[] };
 
-const Create = ({ onSuccess }: CreateProps) => {
+const Create = ({ onSuccess, unallowedNames }: CreateProps) => {
   const { t } = useTranslation();
   const { mutate: createVar } = useCreateVar({
     onSuccess,
@@ -24,6 +24,7 @@ const Create = ({ onSuccess }: CreateProps) => {
   return (
     <DialogContent>
       <VariableForm
+        unallowedNames={unallowedNames}
         defaultValues={{
           name: "",
           data: "",

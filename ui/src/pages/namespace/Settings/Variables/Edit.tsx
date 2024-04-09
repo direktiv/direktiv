@@ -19,9 +19,10 @@ import { useVarDetails } from "~/api/variables/query/details";
 type EditProps = {
   item: VarSchemaType;
   onSuccess: () => void;
+  unallowedNames: string[];
 };
 
-const Edit = ({ item, onSuccess }: EditProps) => {
+const Edit = ({ item, onSuccess, unallowedNames }: EditProps) => {
   const { t } = useTranslation();
   const { data, isSuccess } = useVarDetails(item.id);
   const { mutate: updateVar } = useUpdateVar({
@@ -39,6 +40,7 @@ const Edit = ({ item, onSuccess }: EditProps) => {
     <DialogContent>
       {isSuccess && (
         <VariableForm
+          unallowedNames={unallowedNames}
           defaultValues={{
             name: data.data.name,
             data: data.data.data,

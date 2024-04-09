@@ -51,6 +51,8 @@ const VariablesList: FC = () => {
     },
   });
 
+  const allNames = variables?.data?.map((v) => v.name) ?? [];
+
   const { mutate: downloadVar } = useDownloadVar({
     onSuccess: (response) => {
       const { name: filename, data: base64String, mimeType } = response.data;
@@ -178,6 +180,7 @@ const VariablesList: FC = () => {
       )}
       {createItem && (
         <Create
+          unallowedNames={allNames}
           onSuccess={() => {
             setDialogOpen(false);
           }}
@@ -185,6 +188,7 @@ const VariablesList: FC = () => {
       )}
       {editItem && (
         <Edit
+          unallowedNames={allNames.filter((name) => name !== editItem.name)}
           item={editItem}
           onSuccess={() => {
             setDialogOpen(false);

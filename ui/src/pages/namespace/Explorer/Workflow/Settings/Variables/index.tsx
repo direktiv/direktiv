@@ -31,7 +31,7 @@ const VariablesList = ({ path }: { path: string }) => {
   const [search, setSearch] = useState("");
   const isSearch = search.length > 0;
 
-  const { data, isFetched } = useVars({ workflowPath: path });
+  const { data: variables, isFetched } = useVars({ workflowPath: path });
 
   const { mutate: deleteWorkflowVariable } = useDeleteVar({
     onSuccess: () => {
@@ -52,11 +52,13 @@ const VariablesList = ({ path }: { path: string }) => {
 
   const filteredItems = useMemo(
     () =>
-      (data?.data ?? [])?.filter(
+      (variables?.data ?? [])?.filter(
         (item) => !isSearch || item.name.includes(search)
       ),
-    [data?.data, isSearch, search]
+    [variables?.data, isSearch, search]
   );
+
+  const allNames = variables?.data?.map((v) => v.name) ?? [];
 
   useEffect(() => {
     if (dialogOpen === false) {
@@ -177,6 +179,7 @@ const VariablesList = ({ path }: { path: string }) => {
 
       {createItem && path && (
         <Create
+          unallowedNames={allNames}
           path={path}
           onSuccess={() => {
             setDialogOpen(false);
@@ -185,6 +188,7 @@ const VariablesList = ({ path }: { path: string }) => {
       )}
       {editItem && path && (
         <Edit
+          unallowedNames={allNames.filter((name) => name !== editItem.name)}
           item={editItem}
           onSuccess={() => {
             setDialogOpen(false);
