@@ -9,11 +9,8 @@ import (
 	"log"
 	"log/slog"
 	"os"
-	"os/signal"
 	"runtime"
 	"strings"
-	"sync"
-	"syscall"
 	"time"
 
 	"github.com/caarlos0/env/v10"
@@ -73,11 +70,10 @@ type server struct {
 	metrics *metrics.Client
 }
 
-func Run(serverCtx context.Context) error {
-	srv, err := newServer()
-	if err != nil {
-		return err
-	}
+func Run(circuit *core.Circuit) error {
+	srv := new(server)
+	srv.ID = uuid.New()
+	srv.initJQ()
 
 	config := &core.Config{}
 	if err := env.Parse(config); err != nil {
@@ -88,22 +84,11 @@ func Run(serverCtx context.Context) error {
 	}
 
 	srv.conf = config
-
-	err = srv.start(serverCtx)
-	if err != nil {
+	if err := srv.start(circuit); err != nil {
 		return err
 	}
 
 	return nil
-}
-
-func newServer() (*server, error) {
-	srv := new(server)
-	srv.ID = uuid.New()
-
-	srv.initJQ()
-
-	return srv, nil
 }
 
 type mirrorProcessLogger struct{}
@@ -156,7 +141,7 @@ func (c *mirrorCallbacks) VarStore() datastore.RuntimeVariablesStore {
 
 var _ mirror.Callbacks = &mirrorCallbacks{}
 
-func (srv *server) start(serverCtx context.Context) error {
+func (srv *server) start(circuit *core.Circuit) error {
 	var err error
 	slog.Debug("Starting Flow server")
 	slog.Debug("Initializing telemetry.")
@@ -257,14 +242,6 @@ func (srv *server) start(serverCtx context.Context) error {
 	srv.metrics = metrics.NewClient(srv.gormDB)
 	slog.Info("Metrics Client was created.")
 
-	var lock sync.Mutex
-	var wg sync.WaitGroup
-
-	wg.Add(5)
-
-	cctx, cancel := context.WithCancel(serverCtx)
-	defer cancel()
-
 	slog.Debug("Initializing pubsub routine.")
 	coreBus, err := pubsubSQL.NewPostgresCoreBus(srv.rawDB, srv.conf.DB)
 	if err != nil {
@@ -273,7 +250,13 @@ func (srv *server) start(serverCtx context.Context) error {
 	slog.Info("pubsub routine was initialized.")
 
 	srv.pBus = pubsub2.NewBus(coreBus)
-	go srv.pBus.Start(cctx.Done(), &wg)
+
+	circuit.Start(func() error {
+		// TODO: yassir, Implement bus crash handling.
+		srv.pBus.Start(circuit)
+
+		return nil
+	})
 
 	slog.Debug("Initializing engine.")
 
@@ -286,13 +269,13 @@ func (srv *server) start(serverCtx context.Context) error {
 
 	slog.Debug("Initializing internal grpc server.")
 
-	srv.internal, err = initInternalServer(cctx, srv)
+	srv.internal, err = initInternalServer(circuit.Context(), srv)
 	if err != nil {
 		return err
 	}
 	slog.Info("Internal grpc server started.")
 
-	srv.flow, err = initFlowServer(cctx, srv)
+	srv.flow, err = initFlowServer(circuit.Context(), srv)
 	if err != nil {
 		return err
 	}
@@ -316,7 +299,11 @@ func (srv *server) start(serverCtx context.Context) error {
 	interval := 1 * time.Second // TODO: Adjust the polling interval
 	eventWorker := eventsstore.NewEventWorker(noTx.DataStore().StagingEvents(), interval, srv.events.handleEvent)
 
-	go eventWorker.Start(serverCtx)
+	circuit.Start(func() error {
+		eventWorker.Start(circuit.Context())
+
+		return nil
+	})
 	slog.Info("Events-engine was started.")
 
 	cc := func(ctx context.Context, nsID uuid.UUID, nsName string, file *filestore.File) error {
@@ -360,33 +347,23 @@ func (srv *server) start(serverCtx context.Context) error {
 
 	go srv.cronPoller()
 
-	go func() {
-		defer wg.Done()
-		defer cancel()
+	circuit.Start(func() error {
 		e := srv.internal.Run()
 		if e != nil {
-			slog.Error("srv.internal.Run()", "error", err)
-			lock.Lock()
-			if err == nil {
-				err = e
-			}
-			lock.Unlock()
+			return fmt.Errorf("srv.internal.Run(), err: %w", err)
 		}
-	}()
 
-	go func() {
-		defer wg.Done()
-		defer cancel()
+		return nil
+	})
+
+	circuit.Start(func() error {
 		e := srv.flow.Run()
 		if e != nil {
-			slog.Error("srv.flow.Run()", "error", err)
-			lock.Lock()
-			if err == nil {
-				err = e
-			}
-			lock.Unlock()
+			return fmt.Errorf("srv.flow.Run(), err: %w", err)
 		}
-	}()
+
+		return nil
+	})
 
 	// TODO: yassir, use the new db to refactor old code.
 	dbManager := database2.NewDB(srv.gormDB, srv.conf.SecretKey)
@@ -400,18 +377,18 @@ func (srv *server) start(serverCtx context.Context) error {
 		}
 		// If this is a delete workflow file
 		if event.DeleteFileID.String() != (uuid.UUID{}).String() {
-			return srv.flow.events.deleteWorkflowEventListeners(serverCtx, event.NamespaceID, event.DeleteFileID)
+			return srv.flow.events.deleteWorkflowEventListeners(circuit.Context(), event.NamespaceID, event.DeleteFileID)
 		}
-		file, err := noTx.FileStore().ForNamespace(event.Namespace).GetFile(serverCtx, event.FilePath)
+		file, err := noTx.FileStore().ForNamespace(event.Namespace).GetFile(circuit.Context(), event.FilePath)
 		if err != nil {
 			return err
 		}
-		err = srv.flow.configureWorkflowStarts(serverCtx, noTx, event.NamespaceID, file)
+		err = srv.flow.configureWorkflowStarts(circuit.Context(), noTx, event.NamespaceID, file)
 		if err != nil {
 			return err
 		}
 
-		return srv.flow.placeholdSecrets(serverCtx, noTx, event.Namespace, file)
+		return srv.flow.placeholdSecrets(circuit.Context(), noTx, event.Namespace, file)
 	}
 
 	instanceManager := &instancestore.InstanceManager{
@@ -419,7 +396,7 @@ func (srv *server) start(serverCtx context.Context) error {
 		Cancel: srv.engine.CancelInstance,
 	}
 
-	newMainWG := cmd.NewMain(&cmd.NewMainArgs{
+	err = cmd.NewMain(circuit, &cmd.NewMainArgs{
 		Config:            srv.conf,
 		Database:          dbManager,
 		PubSubBus:         srv.pBus,
@@ -444,23 +421,8 @@ func (srv *server) start(serverCtx context.Context) error {
 			return proc, nil
 		},
 	})
-
-	slog.Info("Flow server started.")
-
-	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-
-	go func() {
-		<-sigs
-		panic("TODO: Alan, remove this panic and handle signal gracefully")
-	}()
-
-	wg.Wait()
-
-	newMainWG.Wait()
-
 	if err != nil {
-		return err
+		return fmt.Errorf("lunching new main, err: %w", err)
 	}
 
 	return nil

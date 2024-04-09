@@ -4,11 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log/slog"
 	"os"
-	"os/signal"
-	"sync"
-	"syscall"
 	"time"
 
 	api2 "github.com/direktiv/direktiv/pkg/api"
@@ -35,19 +33,11 @@ type NewMainArgs struct {
 	SyncNamespace     core.SyncNamespace
 }
 
-func NewMain(args *NewMainArgs) *sync.WaitGroup {
+func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 	initSLog()
-	wg := &sync.WaitGroup{}
 
-	go func() {
-		err := api2.RunApplication(args.Config)
-		if err != nil {
-			slog.Error("booting v1 api server", "err", err)
-			panic(err)
-		}
-	}()
-
-	done := make(chan struct{})
+	// nolint:errcheck
+	go api2.RunApplication(args.Config)
 
 	// Create service manager
 	//nolint
@@ -62,8 +52,12 @@ func NewMain(args *NewMainArgs) *sync.WaitGroup {
 	service.SetupGetServiceURLFunc(args.Config, args.Config.EnableDocker)
 
 	// Start service manager
-	wg.Add(1)
-	serviceManager.Start(done, wg)
+	circuit.Start(func() error {
+		// TODO: yassir, Implement service crash handling.
+		serviceManager.Start(circuit)
+
+		return nil
+	})
 
 	// Create registry manager
 	registryManager, err := registry.NewManager(args.Config.EnableDocker)
@@ -168,21 +162,13 @@ func NewMain(args *NewMainArgs) *sync.WaitGroup {
 	)
 
 	// Start api v2 server
-	wg.Add(1)
-	api.Start(app, args.Database, args.PubSubBus, args.InstanceManager, "0.0.0.0:6667", done, wg)
+	err = api.Initialize(app, args.Database, args.PubSubBus, args.InstanceManager, "0.0.0.0:6667", circuit)
+	if err != nil {
+		return fmt.Errorf("initializing api v2, err: %w", err)
+	}
 	slog.Info("api server v2 started.", "addr", "0.0.0.0:6667")
 
-	go func() {
-		// Listen for syscall signals for process to interrupt/quit
-		sig := make(chan os.Signal, 1)
-		signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
-		<-sig
-		slog.Info("shutdown signal received, initiating graceful shutdown")
-		close(done)
-	}()
-	slog.Info("application is ready")
-
-	return wg
+	return nil
 }
 
 func initSLog() {

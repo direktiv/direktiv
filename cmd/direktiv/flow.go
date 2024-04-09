@@ -4,9 +4,10 @@ import (
 	"context"
 	"log/slog"
 	"os"
-	"os/signal"
+	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow"
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc/status"
 )
@@ -34,16 +35,27 @@ var serverCmd = &cobra.Command{
 	Use:  "server",
 	Args: cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
-		serverCtx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
-		defer func() {
-			cancel()
-			slog.Info("graceful shutdown initiated.")
-		}()
+		circuit := core.NewCircuit(context.Background(), os.Interrupt)
+
 		slog.Info("starting server")
-		err := flow.Run(serverCtx)
+		err := flow.Run(circuit)
 		if err != nil {
-			slog.Error("server termination due to error", "error", err)
+			slog.Error("initializing", "err", err)
 			os.Exit(1)
 		}
+		slog.Info("server booted successfully")
+
+		// wait until server is done.
+		<-circuit.Done()
+		slog.Info("terminating server")
+
+		go func() {
+			time.Sleep(time.Second * 15)
+			slog.Error("ungraceful server termination")
+			os.Exit(1)
+		}()
+
+		circuit.Wait()
+		slog.Info("graceful server termination")
 	},
 }
