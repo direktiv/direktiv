@@ -202,6 +202,55 @@ test("it is possible to delete variables", async ({ page }) => {
   ).toHaveCount(variables.length - 1);
 });
 
+test("it is not possible to create a variable with a name that already exists", async ({
+  page,
+}) => {
+  /* set up test data */
+  const variables = await createWorkflowVariables(namespace, workflow, 4);
+  const reservedName = variables[0]?.data.name ?? "";
+
+  await page.goto(`/${namespace}/explorer/workflow/settings/${workflow}`);
+
+  await page.getByTestId("variable-create").click();
+
+  page.getByTestId("variable-name").fill(reservedName);
+
+  await page.getByRole("button", { name: "Create" }).click();
+
+  await expect(
+    page.getByText("The name already exists"),
+    "it renders an error message"
+  ).toBeVisible();
+});
+
+test("it is not possible to set a variables name to a name that already exists", async ({
+  page,
+}) => {
+  /* set up test data */
+  const variables = await createWorkflowVariables(namespace, workflow, 4);
+  const subject = variables[2];
+
+  if (!subject) {
+    throw new Error("error setting up test data");
+  }
+
+  const reservedName = variables[0]?.data.name ?? "";
+
+  await page.goto(`/${namespace}/explorer/workflow/settings/${workflow}`);
+
+  await page.getByTestId(`dropdown-trg-item-${subject.data.name}`).click();
+  await page.getByRole("button", { name: "edit" }).click();
+
+  page.getByTestId("variable-name").fill(reservedName);
+
+  await page.getByRole("button", { name: "Save" }).click();
+
+  await expect(
+    page.getByText("The name already exists"),
+    "it renders an error message"
+  ).toBeVisible();
+});
+
 test("it is possible to have a variable with an empty mimeType and rename it", async ({
   page,
 }) => {

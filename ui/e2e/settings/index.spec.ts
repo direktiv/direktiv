@@ -292,3 +292,48 @@ test("it is possible to edit variables", async ({ page }) => {
     "MimeTypeSelect is set to the updated mimeType"
   ).toHaveValue("application/yaml");
 });
+
+test("it is not possible to create a variable with a name that already exists", async ({
+  page,
+}) => {
+  /* set up test data */
+  const variables = await createVariables(namespace, 3);
+  const reservedName = variables[0]?.data.name ?? "";
+
+  await page.goto(`/${namespace}/settings`);
+  await page.getByTestId("variable-create").click();
+
+  page.getByTestId("variable-name").fill(reservedName);
+
+  await page.getByRole("button", { name: "Create" }).click();
+
+  await expect(
+    page.getByText("The name already exists"),
+    "it renders an error message"
+  ).toBeVisible();
+});
+
+test("it is not possible to set a variables name to a name that already exists", async ({
+  page,
+}) => {
+  /* set up test data */
+  const variables = await createVariables(namespace, 3);
+  const subject = variables[2];
+
+  if (!subject) throw "There was an error setting up test data";
+
+  const reservedName = variables[0]?.data.name ?? "";
+
+  await page.goto(`/${namespace}/settings`);
+  await page.getByTestId(`dropdown-trg-item-${subject.data.name}`).click();
+  await page.getByRole("button", { name: "edit" }).click();
+
+  page.getByTestId("variable-name").fill(reservedName);
+
+  await page.getByRole("button", { name: "Save" }).click();
+
+  await expect(
+    page.getByText("The name already exists"),
+    "it renders an error message"
+  ).toBeVisible();
+});
