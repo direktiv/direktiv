@@ -55,7 +55,7 @@ var serverCmd = &cobra.Command{
 			os.Exit(1)
 		}()
 
-		circuit.WG.Wait()
+		circuit.Wait()
 		slog.Info("graceful server termination")
 	},
 }

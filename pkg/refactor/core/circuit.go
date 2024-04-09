@@ -12,15 +12,15 @@ import (
 type Circuit struct {
 	Context context.Context
 	cancel  context.CancelFunc
-	WG      sync.WaitGroup
+	wg      sync.WaitGroup
 }
 
 // Start lunches a goroutine and tracking it via a sync.WaitGroup. It enables simplified api to lunch graceful go
 // routines.
 func (c *Circuit) Start(job func() error) {
-	c.WG.Add(1)
+	c.wg.Add(1)
 	go func() {
-		defer c.WG.Done()
+		defer c.wg.Done()
 		err := job()
 		if err != nil {
 			slog.Error("job crash", "err", err)
@@ -38,12 +38,16 @@ func (c *Circuit) IsDone() bool {
 	}
 }
 
+func (c *Circuit) Wait() {
+	c.wg.Wait()
+}
+
 func NewCircuit(parent context.Context, signals ...os.Signal) *Circuit {
 	appCtx, appCancel := signal.NotifyContext(parent, signals...)
 
 	return &Circuit{
 		Context: appCtx,
 		cancel:  appCancel,
-		WG:      sync.WaitGroup{},
+		wg:      sync.WaitGroup{},
 	}
 }
