@@ -11,7 +11,7 @@ import (
 // nolint: containedctx
 type Circuit struct {
 	Context context.Context
-	Cancel  context.CancelFunc
+	cancel  context.CancelFunc
 	WG      sync.WaitGroup
 }
 
@@ -24,7 +24,7 @@ func (c *Circuit) Start(job func() error) {
 		err := job()
 		if err != nil {
 			slog.Error("job crash", "err", err)
-			c.Cancel()
+			c.cancel()
 		}
 	}()
 }
@@ -43,7 +43,7 @@ func NewCircuit(parent context.Context, signals ...os.Signal) *Circuit {
 
 	return &Circuit{
 		Context: appCtx,
-		Cancel:  appCancel,
+		cancel:  appCancel,
 		WG:      sync.WaitGroup{},
 	}
 }
