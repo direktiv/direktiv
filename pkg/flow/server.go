@@ -419,7 +419,7 @@ func (srv *server) start(serverCtx context.Context) error {
 		Cancel: srv.engine.CancelInstance,
 	}
 
-	newMainWG := cmd.NewMain(serverCtx, &cmd.NewMainArgs{
+	newMainWG := cmd.NewMain(&cmd.NewMainArgs{
 		Config:            srv.conf,
 		Database:          dbManager,
 		PubSubBus:         srv.pBus,

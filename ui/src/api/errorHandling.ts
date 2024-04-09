@@ -8,25 +8,53 @@ import { z } from "zod";
  * to check if an error conforms to the ApiErrorSchema and have typesafe way to process
  * the error.
  */
+const ErrorJson = z
+  .object({
+    code: z.string().or(z.number()).optional(),
+    message: z.string().optional(),
+  })
+  .passthrough()
+  .optional();
+
 export const ApiErrorSchema = z.object({
   response: z.instanceof(Response),
-  json: z
-    .object({
-      code: z.string().or(z.number()).optional(),
-      message: z.string().optional(),
-    })
-    .passthrough()
-    .optional(),
+  json: ErrorJson,
 });
 
 type ApiErrorSchemaType = z.infer<typeof ApiErrorSchema>;
+
+type ErrorJsonType = z.infer<typeof ErrorJson>;
+
+/**
+ * Returns an object describing the error. Works with v1 api as well as v2.
+ *
+ * v1 response body format for errors: {
+ *   code: "code",
+ *   message: "message",
+ * }
+ *
+ * v2 response body format for errors: {
+ *   error: {
+ *     code: "code",
+ *     message: "message",
+ *   }
+ * }
+ *
+ * This can be simplified to always use receivedJson.error once v1 api
+ * is no longer consumed (DIR-1417).
+ */
+const getErrorJson = async (res: Response): Promise<ErrorJsonType> => {
+  let receivedJson = await res.json();
+  receivedJson = receivedJson.error || receivedJson;
+  return ErrorJson.parse(receivedJson);
+};
 
 export const createApiErrorFromResponse = async (
   res: Response
 ): Promise<ApiErrorSchemaType> => {
   let json: ApiErrorSchemaType["json"];
   try {
-    json = await res.json();
+    json = await getErrorJson(res);
   } catch (error) {
     process.env.NODE_ENV !== "test" && console.error(error);
   }

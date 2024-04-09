@@ -41,6 +41,8 @@ func sqlLiteSchema() string {
 	liteSchema = strings.ReplaceAll(liteSchema, "CREATE INDEX", "--")
 	liteSchema = strings.ReplaceAll(liteSchema, "ALTER TABLE", "--")
 	liteSchema = strings.ReplaceAll(liteSchema, "DROP TABLE", "--")
+	liteSchema = strings.ReplaceAll(liteSchema, "DROP INDEX", "--")
+	liteSchema = strings.ReplaceAll(liteSchema, "UNIQUE NULLS NOT DISTINCT", "UNIQUE")
 
 	return liteSchema
 }
