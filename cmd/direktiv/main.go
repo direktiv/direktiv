@@ -37,8 +37,6 @@ func (h *apikeyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	appName := os.Getenv("DIREKTIV_APP")
-
 	if key := os.Getenv("DIREKTIV_API_KEY"); key != "" {
 		middlewares.RegisterHTTPMiddleware(func(h http.Handler) http.Handler {
 			return &apikeyHandler{
@@ -48,7 +46,7 @@ func main() {
 		})
 	}
 
-	switch appName {
+	switch os.Getenv("DIREKTIV_APP") {
 	case "sidecar":
 		sidecar.RunApplication()
 	case "init":
