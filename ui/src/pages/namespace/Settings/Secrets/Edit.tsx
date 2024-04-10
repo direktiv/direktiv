@@ -25,7 +25,6 @@ const Edit = ({ onSuccess, secret }: EditProps) => {
   });
 
   const onMutate = (data: SecretFormCreateEditSchemaType) => {
-    // overwrite the name
     updateSecret({ ...data, name: secret.name });
   };
 
@@ -40,7 +39,7 @@ const Edit = ({ onSuccess, secret }: EditProps) => {
         dialogTitle={
           <DialogTitle>
             <SquareAsterisk />
-            {t("pages.settings.secrets.edit.description", {
+            {t("pages.settings.secrets.edit.title", {
               name: secret.name,
             })}
           </DialogTitle>

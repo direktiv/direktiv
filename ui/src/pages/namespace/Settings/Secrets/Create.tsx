@@ -30,7 +30,7 @@ const Create = ({ onSuccess, unallowedNames }: CreateProps) => {
         dialogTitle={
           <DialogTitle>
             <PlusCircle />
-            {t("pages.settings.secrets.create.description")}
+            {t("pages.settings.secrets.create.title")}
           </DialogTitle>
         }
         dialogFooter={

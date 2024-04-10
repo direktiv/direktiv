@@ -49,8 +49,7 @@ export const SecretForm = ({
             (unallowedName) => unallowedName === fields.name
           ),
         {
-          // TODO:
-          message: t("components.variableForm.name.nameAlreadyExists"),
+          message: t("pages.settings.secrets.form.name.nameAlreadyExists"),
         }
       )
     ),
@@ -69,16 +68,13 @@ export const SecretForm = ({
       <FormErrors errors={errors} className="mb-5" />
       <fieldset className="flex items-center gap-5">
         <label className="w-[150px] text-right" htmlFor="name">
-          {/* TODO: */}
-          {t("components.variableForm.name.label")}
+          {t("pages.settings.secrets.form.name.label")}
         </label>
-
-        {/* TODO: */}
         <Input
           disabled={disableNameInput}
           id="name"
           {...register("name")}
-          placeholder="secret-name" // TODO
+          placeholder={t("pages.settings.secrets.form.name.placeholder")}
         />
       </fieldset>
       <FileUpload
@@ -86,7 +82,7 @@ export const SecretForm = ({
           const isSupported = isMimeTypeEditable(mimeType);
           if (!isSupported) {
             setError("data", {
-              message: t("pages.settings.secrets.create.unsupported"),
+              message: t("pages.settings.secrets.form.unsupported"),
             });
             return;
           }

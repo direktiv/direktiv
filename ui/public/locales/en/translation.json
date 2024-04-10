@@ -877,15 +877,19 @@
         "delete": {
           "description": "Are you sure you want to delete <b>{{name}}</b>?<br/> This cannot be undone."
         },
+        "form": {
+          "unsupported": "This mime type is not supported",
+          "name": {
+            "label": "Name",
+            "placeholder": "secret-name",
+            "nameAlreadyExists": "The name already exists"
+          }
+        },
         "create": {
-          "description": "Add a secret",
-          "name": "Name",
-          "file": "Upload a file",
-          "fileError": "There was an error uploading the file",
-          "unsupported": "This mime type is not supported"
+          "title": "Add a secret"
         },
         "edit": {
-          "description": "Edit {{name}}",
+          "title": "Edit {{name}}",
           "editNote": "Existing secrets cannot be retrieved after creating. But you can overwrite the existing value with a new one"
         }
       },
