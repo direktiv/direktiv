@@ -18,10 +18,10 @@ import Delete from "./Delete";
 import Input from "~/design/Input";
 import ItemRow from "../components/ItemRow";
 import PaginationProvider from "~/components/PaginationProvider";
-import { SecretSchemaType } from "~/api/secrets/schema";
-import { useDeleteSecret } from "~/api/secrets/mutate/deleteSecret";
+import { SecretSchemaType } from "~/api/secrets_obsolete/schema";
+import { useDeleteSecret } from "~/api/secrets_obsolete/mutate/deleteSecret";
 import { useNamespaceLinting } from "~/api/namespaceLinting/query/useNamespaceLinting";
-import { useSecrets } from "~/api/secrets/query/get";
+import { useSecrets } from "~/api/secrets_obsolete/query/get";
 import { useTranslation } from "react-i18next";
 
 const pageSize = 10;

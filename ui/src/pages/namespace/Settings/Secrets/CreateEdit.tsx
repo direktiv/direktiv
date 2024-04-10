@@ -10,7 +10,7 @@ import {
   SecretFormSchema,
   SecretFormSchemaType,
   SecretSchemaType,
-} from "~/api/secrets/schema";
+} from "~/api/secrets_obsolete/schema";
 import { SubmitHandler, useForm } from "react-hook-form";
 
 import Alert from "~/design/Alert";
@@ -20,7 +20,7 @@ import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { Textarea } from "~/design/TextArea";
 import { useTranslation } from "react-i18next";
-import { useUpdateSecret } from "~/api/secrets/mutate/updateSecret";
+import { useUpdateSecret } from "~/api/secrets_obsolete/mutate/updateSecret";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 type CreateProps = { item?: SecretSchemaType; onSuccess: () => void };

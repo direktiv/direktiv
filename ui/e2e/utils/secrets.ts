@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { headers } from "./testutils";
-import { updateSecret } from "~/api/secrets/mutate/updateSecret";
+import { updateSecret } from "~/api/secrets_obsolete/mutate/updateSecret";
 
 export const createSecrets = async (namespace: string, amount = 5) => {
   const secrets = Array.from({ length: amount }, () => ({
