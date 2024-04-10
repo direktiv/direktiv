@@ -11,7 +11,7 @@ describe('Test no namespace variable name duplicated', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
-	let foo = {
+	const foo = {
 		name: 'foo',
 		data: btoa('bar'),
 		mimeType: 'mime',
@@ -42,11 +42,11 @@ describe('Test no namespace variable name duplicated', () => {
 	helpers.itShouldCreateFileV2(it, expect, namespace, '/', 'wf1.yaml', 'workflow', 'text',
 		btoa(helpers.dummyWorkflow('wf1.yaml')))
 
-	let foo2 = {
+	const foo2 = {
 		name: 'foo',
 		data: btoa('bar'),
 		mimeType: 'mime',
-		workflowPath: '/wf1.yaml'
+		workflowPath: '/wf1.yaml',
 	}
 
 	it(`should allow create workflow variable foo`, async () => {

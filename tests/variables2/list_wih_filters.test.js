@@ -29,7 +29,7 @@ describe('Test variable list calls', () => {
 		expect(res.statusCode).toEqual(200)
 
 		const reduced = res.body.data.map(item => item.name)
-		expect(reduced).toEqual(['foo1', 'foo2'])
+		expect(reduced).toEqual([ 'foo1', 'foo2' ])
 	})
 
 	it(`should list variable foo2`, async () => {
@@ -38,7 +38,7 @@ describe('Test variable list calls', () => {
 		expect(res.statusCode).toEqual(200)
 
 		const reduced = res.body.data.map(item => item.name)
-		expect(reduced).toEqual(['foo2'])
+		expect(reduced).toEqual([ 'foo2' ])
 	})
 
 	it(`should list empty`, async () => {
