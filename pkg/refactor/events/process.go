@@ -2,6 +2,7 @@ package events
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"time"
 
@@ -135,6 +136,7 @@ func EventPassedGatekeeper(globPatterns map[string]string, event cloudevents.Eve
 	if len(globPatterns) == 0 {
 		return true
 	}
+
 	// adding source for comparison
 	m := event.Context.GetExtensions()
 
@@ -144,21 +146,19 @@ func EventPassedGatekeeper(globPatterns map[string]string, event cloudevents.Eve
 	}
 
 	m["source"] = event.Context.GetSource()
-	match := false
 	for k, f := range globPatterns {
 		x := strings.TrimPrefix(k, event.Type()+"-")
 		if v, ok := m[x]; ok {
-			vs, ok2 := v.(string)
-			if !ok2 {
-				continue
+			vs := fmt.Sprintf("%v", v)
+			match := glob.Glob(f, vs)
+			if !match {
+				return false
 			}
-			match = match || glob.Glob(f, vs)
-			// if both are strings we can glob
-			// return !glob.Glob(f, event.Type()+"-"+vs)
+		} else {
+			return false
 		}
 	}
-
-	return match // todo
+	return true
 }
 
 func (EventEngine) handleEvents(ctx context.Context,
