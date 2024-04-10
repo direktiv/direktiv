@@ -24,7 +24,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 const defaultMimeType = "application/json";
 
-type VariableForm = {
+type VariableFormProps = {
   defaultValues: VarFormCreateEditSchemaType;
   dialogTitle: JSX.Element;
   dialogFooter: JSX.Element;
@@ -38,7 +38,7 @@ export const VariableForm = ({
   dialogFooter,
   unallowedNames,
   onMutate,
-}: VariableForm) => {
+}: VariableFormProps) => {
   const { t } = useTranslation();
   const theme = useTheme();
 
