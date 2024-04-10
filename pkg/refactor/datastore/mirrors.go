@@ -59,6 +59,7 @@ type MirrorProcess struct {
 
 // MirrorStore *doesn't* lunch any mirroring process. MirrorStore is only responsible for fetching and setting datastore.MirrorConfig and
 // datastore.MirrorProcess from datastore.
+// nolint: interfacebloat
 type MirrorStore interface {
 	// CreateConfig stores a new config in the store.
 	CreateConfig(ctx context.Context, config *MirrorConfig) (*MirrorConfig, error)
