@@ -23,7 +23,7 @@ type nsController struct {
 func (e *nsController) mountRouter(r chi.Router) {
 	r.Get("/{name}", e.get)
 	r.Delete("/{name}", e.delete)
-	r.Put("/{name}", e.update)
+	r.Patch("/{name}", e.update)
 
 	r.Get("/", e.list)
 	r.Post("/", e.create)
@@ -108,59 +108,97 @@ func (e *nsController) update(w http.ResponseWriter, r *http.Request) {
 	// Parse request.
 	req := struct {
 		Mirror *struct {
-			URL                  string `json:"url"`
-			GitRef               string `json:"gitRef"`
-			PublicKey            string `json:"publicKey"`
-			PrivateKey           string `json:"privateKey"`
-			PrivateKeyPassphrase string `json:"privateKeyPassphrase"`
-			Insecure             bool   `json:"insecure"`
+			URL                  *string `json:"url"`
+			GitRef               *string `json:"gitRef"`
+			AuthToken            *string `json:"authToken"`
+			PublicKey            *string `json:"publicKey"`
+			PrivateKey           *string `json:"privateKey"`
+			PrivateKeyPassphrase *string `json:"privateKeyPassphrase"`
+			Insecure             *bool   `json:"insecure"`
 		} `json:"mirror"`
 	}{}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeNotJSONError(w, err)
+
 		return
 	}
 	if req.Mirror == nil {
-		writeError(w, &Error{
-			Code:    "request_data_invalid",
-			Message: "field mirror must be provided",
-		})
+		err := dStore.Mirror().DeleteConfig(r.Context(), ns.Name)
+		// if no mirror stored, then nothing to do
+		if errors.Is(err, datastore.ErrNotFound) {
+			writeOk(w)
+			return
+		}
+		if err != nil {
+			writeDataStoreError(w, err)
+			return
+		}
+		err = db.Commit(r.Context())
+		if err != nil {
+			writeInternalError(w, err)
 
+			return
+		}
+		writeOk(w)
 		return
 	}
 
-	if req.Mirror.URL == "" {
-		writeError(w, &Error{
-			Code:    "request_data_invalid",
-			Message: "field 'url' must be provided",
-		})
-
+	settings, err := dStore.Mirror().GetConfig(r.Context(), ns.Name)
+	if err != nil && !errors.Is(err, datastore.ErrNotFound) {
+		writeDataStoreError(w, err)
 		return
 	}
-	if req.Mirror.GitRef == "" {
-		writeError(w, &Error{
-			Code:    "request_data_invalid",
-			Message: "field 'gitRef' must be provided",
-		})
-
-		return
-	}
-
-	mirrorConfig := &datastore.MirrorConfig{
-		Namespace:            name,
-		URL:                  req.Mirror.URL,
-		GitRef:               req.Mirror.GitRef,
-		PublicKey:            req.Mirror.PublicKey,
-		PrivateKey:           req.Mirror.PrivateKey,
-		PrivateKeyPassphrase: req.Mirror.PrivateKeyPassphrase,
-		Insecure:             req.Mirror.Insecure,
-	}
-	// Update mirroring config.
-	settings, err := dStore.Mirror().UpdateConfig(r.Context(), mirrorConfig)
-	// If no mirroring config already set, create one.
+	// old setting was not set
 	if errors.Is(err, datastore.ErrNotFound) {
-		settings, err = dStore.Mirror().CreateConfig(r.Context(), mirrorConfig)
+		if req.Mirror.URL == nil || *req.Mirror.URL == "" {
+			writeError(w, &Error{
+				Code:    "request_data_invalid",
+				Message: "mirror was not initialized, field 'url' must be provided and not empty",
+			})
+			return
+		}
+		if req.Mirror.GitRef == nil || *req.Mirror.GitRef == "" {
+			writeError(w, &Error{
+				Code:    "request_data_invalid",
+				Message: "mirror was not initialized, field 'gitRef' must be provided and not empty",
+			})
+			return
+		}
+		settings, err = dStore.Mirror().CreateConfig(r.Context(), &datastore.MirrorConfig{
+			Namespace: ns.Name,
+			URL:       *req.Mirror.URL,
+			GitRef:    *req.Mirror.GitRef,
+		})
+		if err != nil {
+			writeDataStoreError(w, err)
+			return
+		}
 	}
+
+	if req.Mirror.URL != nil && *req.Mirror.URL != "" {
+		settings.URL = *req.Mirror.URL
+	}
+	if req.Mirror.GitRef != nil && *req.Mirror.GitRef != "" {
+		settings.GitRef = *req.Mirror.GitRef
+	}
+	if req.Mirror.AuthToken != nil {
+		settings.AuthToken = *req.Mirror.AuthToken
+	}
+	if req.Mirror.PublicKey != nil {
+		settings.PublicKey = *req.Mirror.PublicKey
+	}
+	if req.Mirror.PrivateKey != nil {
+		settings.PrivateKey = *req.Mirror.PrivateKey
+	}
+	if req.Mirror.PrivateKeyPassphrase != nil {
+		settings.PrivateKeyPassphrase = *req.Mirror.PrivateKeyPassphrase
+	}
+	if req.Mirror.Insecure != nil {
+		settings.Insecure = *req.Mirror.Insecure
+	}
+
+	// Update mirroring config.
+	settings, err = dStore.Mirror().UpdateConfig(r.Context(), settings)
 	if err != nil {
 		writeDataStoreError(w, err)
 		return
@@ -184,6 +222,7 @@ func (e *nsController) create(w http.ResponseWriter, r *http.Request) {
 		Mirror *struct {
 			URL                  string `json:"url"`
 			GitRef               string `json:"gitRef"`
+			AuthToken            string `json:"authToken"`
 			PublicKey            string `json:"publicKey"`
 			PrivateKey           string `json:"privateKey"`
 			PrivateKeyPassphrase string `json:"privateKeyPassphrase"`
@@ -232,6 +271,7 @@ func (e *nsController) create(w http.ResponseWriter, r *http.Request) {
 			Namespace:            req.Name,
 			URL:                  req.Mirror.URL,
 			GitRef:               req.Mirror.GitRef,
+			AuthToken:            req.Mirror.AuthToken,
 			PublicKey:            req.Mirror.PublicKey,
 			PrivateKey:           req.Mirror.PrivateKey,
 			PrivateKeyPassphrase: req.Mirror.PrivateKeyPassphrase,

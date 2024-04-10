@@ -70,7 +70,7 @@ describe('Test namespace update calls', () => {
 		// eslint-disable-next-line no-loop-func
 		it(`should update namespace case ${ i }`, async () => {
 			const res = await request(config.getDirektivHost())
-				.put(`/api/v2/namespaces/${ createRes.body.data.name }`)
+				.patch(`/api/v2/namespaces/${ createRes.body.data.name }`)
 				.send(testCase.input)
 			expect(res.statusCode).toEqual(200)
 			expect(res.body.data).toEqual({
@@ -116,7 +116,7 @@ describe('Test invalid namespace update calls', () => {
 		// eslint-disable-next-line no-loop-func
 		it(`should fail updating a namespace case ${ i }`, async () => {
 			const res = await request(config.getDirektivHost())
-				.put(`/api/v2/namespaces/${ createRes.body.data.name }`)
+				.patch(`/api/v2/namespaces/${ createRes.body.data.name }`)
 				.send(testCase.input)
 			expect(res.statusCode).toEqual(testCase.wantError.statusCode)
 			expect(res.body.error).toEqual(
