@@ -1,6 +1,5 @@
 import {
   VarCreatedUpdatedSchema,
-  VarCreatedUpdatedSchemaType,
   VarFormCreateEditSchemaType,
 } from "../schema";
 
@@ -24,7 +23,7 @@ export const createVar = apiFactory({
 export const useCreateVar = ({
   onSuccess,
 }: {
-  onSuccess?: (data: VarCreatedUpdatedSchemaType) => void;
+  onSuccess?: () => void;
 } = {}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
@@ -70,7 +69,7 @@ export const useCreateVar = ({
         ),
         variant: "success",
       });
-      onSuccess?.(data);
+      onSuccess?.();
     },
     onError: () => {
       toast({
