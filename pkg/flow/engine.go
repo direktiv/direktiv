@@ -16,15 +16,14 @@ import (
 	"sync"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/refactor/database"
-	"github.com/direktiv/direktiv/pkg/refactor/datastore"
-
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/nohome"
 	"github.com/direktiv/direktiv/pkg/flow/states"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/database"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/google/uuid"

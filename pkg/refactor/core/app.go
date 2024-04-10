@@ -67,7 +67,7 @@ func (conf *Config) GetFunctionsReconcileInterval() time.Duration {
 
 func (conf *Config) Init() error {
 	// Repeat SecretKey length to 16 chars.
-	conf.SecretKey = conf.SecretKey + "1234567890123456"
+	conf.SecretKey += "1234567890123456"
 	conf.SecretKey = conf.SecretKey[0:16]
 
 	err := conf.checkInvalidEmptyFields()

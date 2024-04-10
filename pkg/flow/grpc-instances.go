@@ -7,12 +7,11 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/refactor/database"
-	"github.com/direktiv/direktiv/pkg/refactor/datastore"
-
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
+	"github.com/direktiv/direktiv/pkg/refactor/database"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/google/uuid"

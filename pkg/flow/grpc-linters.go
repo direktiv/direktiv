@@ -5,11 +5,10 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/direktiv/direktiv/pkg/refactor/database"
-	"github.com/direktiv/direktiv/pkg/refactor/datastore"
-
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/refactor/database"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 )
 
 func (flow *flow) NamespaceLint(ctx context.Context, req *grpc.NamespaceLintRequest) (*grpc.NamespaceLintResponse, error) {

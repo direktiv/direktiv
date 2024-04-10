@@ -6,11 +6,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/refactor/database"
-	"github.com/direktiv/direktiv/pkg/refactor/datastore"
-
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/refactor/database"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	pkgevents "github.com/direktiv/direktiv/pkg/refactor/events"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/google/uuid"

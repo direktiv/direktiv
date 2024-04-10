@@ -8,14 +8,13 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/direktiv/direktiv/pkg/refactor/database"
-	"github.com/direktiv/direktiv/pkg/refactor/datastore"
-
 	format "github.com/cloudevents/sdk-go/binding/format/protobuf/v2"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/binding"
 	protocol "github.com/cloudevents/sdk-go/v2/protocol/http"
 	igrpc "github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/refactor/database"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/gorilla/mux"
 	"google.golang.org/grpc"
