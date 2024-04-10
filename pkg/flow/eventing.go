@@ -14,8 +14,8 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/binding"
 	protocol "github.com/cloudevents/sdk-go/v2/protocol/http"
-	"github.com/direktiv/direktiv/pkg/flow/database"
 	igrpc "github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/flow/nohome"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/gorilla/mux"
 	"google.golang.org/grpc"
@@ -60,7 +60,7 @@ func (rcv *eventReceiver) sendToNamespace(name string, r *http.Request) error {
 		slog.Error("Failed to convert HTTP request to CloudEvent.", "namespace", name, "error", err)
 		return err
 	}
-	var ns *database.Namespace
+	var ns *nohome.Namespace
 	err = rcv.flow.runSqlTx(ctx, func(tx *database2.SQLStore) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, name)
 		return err
@@ -93,7 +93,7 @@ func (rcv *eventReceiver) NamespaceHandler(w http.ResponseWriter, r *http.Reques
 func (rcv *eventReceiver) MultiNamespaceHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := context.Background()
 
-	var nss []*database.Namespace
+	var nss []*nohome.Namespace
 	var err error
 	err = rcv.flow.runSqlTx(context.Background(), func(tx *database2.SQLStore) error {
 		nss, err = tx.DataStore().Namespaces().GetAll(ctx)

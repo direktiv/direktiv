@@ -19,8 +19,8 @@ import (
 	database2 "github.com/direktiv/direktiv/pkg/refactor/database"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/direktiv/direktiv/pkg/flow/database"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
+	"github.com/direktiv/direktiv/pkg/flow/nohome"
 	"github.com/direktiv/direktiv/pkg/flow/states"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
@@ -104,7 +104,7 @@ func (engine *engine) kickWaitingInstances() {
 type newInstanceArgs struct {
 	tx            *database2.SQLStore
 	ID            uuid.UUID
-	Namespace     *database.Namespace
+	Namespace     *nohome.Namespace
 	CalledAs      string
 	Input         []byte
 	Invoker       string
@@ -307,7 +307,7 @@ func (engine *engine) loadStateLogic(im *instanceMemory, stateID string) error {
 		var exists bool
 		state, exists = wfstates[stateID]
 		if !exists {
-			return fmt.Errorf("workflow %s cannot resolve state: %s", database.GetWorkflow(im.instance.Instance.WorkflowPath), stateID)
+			return fmt.Errorf("workflow %s cannot resolve state: %s", nohome.GetWorkflow(im.instance.Instance.WorkflowPath), stateID)
 		}
 	}
 
@@ -701,7 +701,7 @@ func (engine *engine) subflowInvoke(ctx context.Context, pi *enginerefactor.Pare
 
 	args := &newInstanceArgs{
 		ID: uuid.New(),
-		Namespace: &database.Namespace{
+		Namespace: &nohome.Namespace{
 			ID:   instance.Instance.NamespaceID,
 			Name: instance.TelemetryInfo.NamespaceName,
 		},

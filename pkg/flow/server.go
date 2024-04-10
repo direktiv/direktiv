@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/caarlos0/env/v10"
-	"github.com/direktiv/direktiv/pkg/flow/database"
+	"github.com/direktiv/direktiv/pkg/flow/nohome"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/metrics"
 	"github.com/direktiv/direktiv/pkg/refactor/cmd"
@@ -493,7 +493,7 @@ func (srv *server) NotifyHostname(hostname, msg string) error {
 
 func (srv *server) PublishToCluster(payload string) {
 	srv.pubsub.Publish(&pubsub.PubsubUpdate{
-		Handler: database.PubsubNotifyFunction,
+		Handler: nohome.PubsubNotifyFunction,
 		Key:     payload,
 	})
 }
@@ -508,7 +508,7 @@ func (srv *server) CacheNotify(req *pubsub.PubsubUpdate) {
 }
 
 func (srv *server) registerFunctions() {
-	srv.pubsub.RegisterFunction(database.PubsubNotifyFunction, srv.CacheNotify)
+	srv.pubsub.RegisterFunction(nohome.PubsubNotifyFunction, srv.CacheNotify)
 
 	srv.pubsub.RegisterFunction(pubsub.PubsubNotifyFunction, srv.pubsub.Notify)
 	srv.pubsub.RegisterFunction(pubsub.PubsubDisconnectFunction, srv.pubsub.Disconnect)
