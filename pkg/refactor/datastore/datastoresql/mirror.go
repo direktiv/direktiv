@@ -97,7 +97,6 @@ func (s sqlMirrorStore) UpdateConfig(ctx context.Context, config *datastore.Mirr
 		Updates(map[string]interface{}{
 			"url":                    config.URL,
 			"git_ref":                config.GitRef,
-			"git_commit_hash":        config.GitCommitHash,
 			"public_key":             config.PublicKey,
 			"private_key":            config.PrivateKey,
 			"private_key_passphrase": config.PrivateKeyPassphrase,
