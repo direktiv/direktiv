@@ -1177,9 +1177,6 @@
         "empty": "Mimetype is empty",
         "placeholder": "Select a mimetype"
       },
-      "file": {
-        "label": "Upload a file"
-      },
       "noPreview": "Only text based mime types are supported for preview and editing"
     },
     "namespaceVariablepicker": {
@@ -1211,6 +1208,9 @@
         "title": "The path \"{{path}}\" was not found.",
         "linkText": "Go back to root directory"
       }
+    },
+    "fileUpload": {
+      "label": "Upload a file"
     },
     "userMenu": {
       "loggedIn": "You are logged in",

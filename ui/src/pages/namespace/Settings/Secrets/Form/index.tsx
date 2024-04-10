@@ -6,7 +6,7 @@ import {
 import { decode, encode } from "js-base64";
 
 import { DialogHeader } from "~/design/Dialog";
-import FileUpload from "~/components/VariableForm/FileUpload";
+import FileUpload from "~/components/FileUpload";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { Textarea } from "~/design/TextArea";
