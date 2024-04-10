@@ -7,14 +7,18 @@ import (
 	"github.com/google/uuid"
 )
 
-func Test_eventPassedGatekeeper(t *testing.T) {
-	t.Run("simple", simpleTest)
-	t.Run("negative", negativeTest)
+func TestEventPassedGatekeeper(t *testing.T) {
+	t.Run("SimpleEventPasses", simpleEventPasses)
+	t.Run("EventFailsDueToMismatch", eventFailsDueToMismatch)
+
+	t.Run("EventFailsWithMultipleConditions", eventFailsWithMultipleConditions)
+	t.Run("EventPassesWithMultipleContexts", eventPassesWithMultipleContexts)
+	t.Run("EventPassesWithMultipleConditions", eventPassesWithMultipleContexts)
 
 }
 
-func simpleTest(t *testing.T) {
-	event := newEventWithMeta("mysub", "mytop", uuid.New(), map[string]any{
+func simpleEventPasses(t *testing.T) {
+	event := newEventWithMeta("mysub", "mytop", uuid.New(), map[string]interface{}{
 		"id": "some-id",
 	})
 	patterns := map[string]string{
@@ -25,8 +29,48 @@ func simpleTest(t *testing.T) {
 	}
 }
 
-func negativeTest(t *testing.T) {
-	event := newEventWithMeta("mysub", "mytop", uuid.New(), map[string]any{
+func eventPassesWithMultipleConditions(t *testing.T) {
+	event := newEventWithMeta("mysub", "mytop", uuid.New(), map[string]interface{}{
+		"id":  "some-id",
+		"id2": "some-other-id",
+	})
+	patterns := map[string]string{
+		"id":  "some-id",
+		"id2": "some-other-id",
+	}
+	if !events.EventPassedGatekeeper(patterns, *event) {
+		t.Error("Expected event to pass the gatekeeper")
+	}
+}
+
+func eventFailsWithMultipleConditions(t *testing.T) {
+	event := newEventWithMeta("mysub", "mytop", uuid.New(), map[string]interface{}{
+		"id": "some-id",
+	})
+	patterns := map[string]string{
+		"id":  "some-id",
+		"id2": "some-other-id",
+	}
+	if events.EventPassedGatekeeper(patterns, *event) {
+		t.Error("Expected event to fail the gatekeeper due to mismatch")
+	}
+}
+
+func eventPassesWithMultipleContexts(t *testing.T) {
+	event := newEventWithMeta("mysub", "mytop", uuid.New(), map[string]interface{}{
+		"id":  "some-id",
+		"id2": "some-other-id",
+	})
+	patterns := map[string]string{
+		"id": "some-id",
+	}
+	if !events.EventPassedGatekeeper(patterns, *event) {
+		t.Error("Expected event to pass the gatekeeper")
+	}
+}
+
+func eventFailsDueToMismatch(t *testing.T) {
+	event := newEventWithMeta("mysub", "mytop", uuid.New(), map[string]interface{}{
 		"id": "wrong-id",
 	})
 	patterns := map[string]string{
