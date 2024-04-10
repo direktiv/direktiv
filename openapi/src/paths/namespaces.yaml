@@ -76,6 +76,9 @@
                   gitRef:
                     type: string
                     description: git branch name
+                  authToken:
+                    type: string(optional)
+                    description: auth token used to clone git repo
                   publicKey:
                     type: string(optional)
                     description: associated publish key ssh credential
@@ -220,6 +223,9 @@
                   gitRef:
                     type: string
                     description: git branch name
+                  authToken:
+                    type: string(optional)
+                    description: auth token used to clone git repo
                   publicKey:
                     type: string(optional)
                     description: associated publish key ssh credential
