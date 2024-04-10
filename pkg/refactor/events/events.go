@@ -36,6 +36,8 @@ type EventHistoryStore interface {
 	// supported keys are created_before, created_after,
 	// received_before, received_after, event_contains, type_contains.
 	Get(ctx context.Context, limit, offset int, namespace uuid.UUID, keyValues ...string) ([]*Event, int, error)
+	GetNew(ctx context.Context, namespace string, t time.Time, keyAndValues ...string) ([]*Event, error)
+
 	GetAll(ctx context.Context) ([]*Event, error)
 	// deletes events that are older then the given timestamp.
 	DeleteOld(ctx context.Context, sinceWhen time.Time) error
@@ -44,7 +46,7 @@ type EventHistoryStore interface {
 // Helps query the proper event-listeners for a namespace and event-type.
 type EventTopicsStore interface {
 	// topic SHOULD be a compound of namespaceID and the eventType like this: "uuid-eventType"
-	Append(ctx context.Context, namespaceID, eventListenerID uuid.UUID, topic string, filter string) error
+	Append(ctx context.Context, namespaceID uuid.UUID, namespace string, eventListenerID uuid.UUID, topic string, filter string) error
 	GetListeners(ctx context.Context, topic string) ([]*EventListener, error)
 	Delete(ctx context.Context, eventListenerID uuid.UUID) error
 }
@@ -54,8 +56,9 @@ type EventListener struct {
 	ID                          uuid.UUID
 	CreatedAt                   time.Time
 	UpdatedAt                   time.Time
-	Deleted                     bool        // set true to remove the subscription.
-	NamespaceID                 uuid.UUID   // the namespace to which the listener belongs.
+	Deleted                     bool      // set true to remove the subscription.
+	NamespaceID                 uuid.UUID // the namespace to which the listener belongs.
+	Namespace                   string
 	ListeningForEventTypes      []string    // the types of the event the listener is waiting for to be triggered.
 	ReceivedEventsForAndTrigger []*Event    // events already received for the EventsAnd trigger.
 	LifespanOfReceivedEvents    int         // set 0 to omit the value.
@@ -87,6 +90,7 @@ type EventListenerStore interface {
 	GetAll(ctx context.Context) ([]*EventListener, error)
 	// return EventListeners for a given namespace with the total row count for pagination.
 	Get(ctx context.Context, namespace uuid.UUID, limit, offet int) ([]*EventListener, int, error)
+	GetNew(ctx context.Context, namespace string, t time.Time) ([]*EventListener, error)
 	// deletes EventListeners that have the deleted flag set.
 	Delete(ctx context.Context) error
 	DeleteByID(ctx context.Context, id uuid.UUID) error

@@ -20,7 +20,7 @@ type sqlEventHistoryStore struct {
 }
 
 func (hs *sqlEventHistoryStore) Append(ctx context.Context, events []*events.Event) ([]*events.Event, []error) {
-	q := "INSERT INTO events_history (id, type, source, cloudevent, namespace_id, received_at, created_at) VALUES ( $1 , $2 , $3 , $4 , $5 , $6, $7 )"
+	q := "INSERT INTO events_history (id, type, source, cloudevent, namespace_id, namespace, received_at, created_at) VALUES ( $1 , $2 , $3 , $4 , $5 , $6, $7, $8 )"
 	errs := make([]error, len(events))
 	for i := range events {
 		v := events[i]
@@ -39,6 +39,7 @@ func (hs *sqlEventHistoryStore) Append(ctx context.Context, events []*events.Eve
 		values = append(values, v.Event.Source())
 		values = append(values, string(eventByte))
 		values = append(values, v.Namespace)
+		values = append(values, v.NamespaceName)
 		values = append(values, v.ReceivedAt)
 		values = append(values, time.Now().UTC())
 		tx := hs.db.WithContext(ctx).Exec(q, values...)
@@ -65,8 +66,69 @@ func (hs *sqlEventHistoryStore) DeleteOld(ctx context.Context, sinceWhen time.Ti
 type gormEventHistoryEntry struct {
 	ID                       string
 	NamespaceID              uuid.UUID
+	Namespace                string
 	Type, Source, Cloudevent string
 	CreatedAt, ReceivedAt    time.Time
+}
+
+func (hs *sqlEventHistoryStore) GetNew(ctx context.Context, namespace string, t time.Time, keyAndValues ...string) ([]*events.Event, error) {
+	if len(keyAndValues)%2 != 0 {
+		return nil, fmt.Errorf("keyAndValues have to be a pair of keys and values")
+	}
+	qs := make([]string, 0)
+	qv := make([]interface{}, 0)
+	qs = append(qs, "where (namespace= ? and created_at < ? )")
+	qv = append(qv, namespace, t)
+
+	for i := 0; i < len(keyAndValues); i += 2 {
+		v := keyAndValues[i+1]
+		if keyAndValues[i] == "created_before" {
+			qs = append(qs, " and created_at < ?")
+			qv = append(qv, v)
+		}
+		if keyAndValues[i] == "created_after" {
+			qs = append(qs, " and created_at >= ?")
+			qv = append(qv, v)
+		}
+		if keyAndValues[i] == "received_before" {
+			qs = append(qs, " and received_at < ?")
+			qv = append(qv, v)
+		}
+		if keyAndValues[i] == "received_after" {
+			qs = append(qs, " and received_at >= ?")
+			qv = append(qv, v)
+		}
+		if keyAndValues[i] == "event_contains" {
+			qs = append(qs, " and cloudevent like ?")
+			qv = append(qv, fmt.Sprintf("%%%v%%", v))
+		}
+		if keyAndValues[i] == "type_contains" {
+			qs = append(qs, " and type like ?")
+			qv = append(qv, fmt.Sprintf("%%%v%%", v))
+		}
+	}
+	qv = append(qv, pageSize)
+	q := fmt.Sprintf(`SELECT id, type, source, cloudevent, namespace_id, namespace, received_at, created_at FROM events_history
+	%v ORDER BY created_at DESC LIMIT ?`, strings.Join(qs, ""))
+
+	res := make([]gormEventHistoryEntry, 0, pageSize)
+	tx := hs.db.WithContext(ctx).Raw(q, qv...).Scan(&res)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	conv := make([]*events.Event, 0, len(res))
+
+	for _, v := range res {
+		var finalCE event.Event
+		err := json.Unmarshal([]byte(v.Cloudevent), &finalCE)
+		if err != nil {
+			return nil, err
+		}
+		conv = append(conv, &events.Event{Namespace: v.NamespaceID, NamespaceName: v.Namespace, ReceivedAt: v.ReceivedAt, Event: &finalCE})
+	}
+
+	return conv, nil
 }
 
 func (hs *sqlEventHistoryStore) Get(ctx context.Context, limit int, offset int, namespace uuid.UUID, keyAndValues ...string) ([]*events.Event, int, error) {
@@ -109,7 +171,7 @@ func (hs *sqlEventHistoryStore) Get(ctx context.Context, limit int, offset int, 
 	tail := ""
 	i := 0
 	var x string
-	q := `SELECT id, type, source, cloudevent, namespace_id, received_at, created_at FROM events_history
+	q := `SELECT id, type, source, cloudevent, namespace_id, namespace, received_at, created_at FROM events_history
 	%v ORDER BY created_at DESC`
 
 	for i, x = range qs {
@@ -153,14 +215,14 @@ func (hs *sqlEventHistoryStore) Get(ctx context.Context, limit int, offset int, 
 		if err != nil {
 			return nil, 0, err
 		}
-		conv = append(conv, &events.Event{Namespace: v.NamespaceID, ReceivedAt: v.ReceivedAt, Event: &finalCE})
+		conv = append(conv, &events.Event{Namespace: v.NamespaceID, NamespaceName: v.Namespace, ReceivedAt: v.ReceivedAt, Event: &finalCE})
 	}
 
 	return conv, count, nil
 }
 
 func (hs *sqlEventHistoryStore) GetAll(ctx context.Context) ([]*events.Event, error) {
-	q := "SELECT id, type, source, cloudevent, namespace_id, received_at, created_at FROM events_history;"
+	q := "SELECT id, type, source, cloudevent, namespace_id, namespace, received_at, created_at FROM events_history;"
 	res := make([]*gormEventHistoryEntry, 0)
 
 	tx := hs.db.WithContext(ctx).Raw(q).Scan(&res)
@@ -182,7 +244,7 @@ func (hs *sqlEventHistoryStore) GetAll(ctx context.Context) ([]*events.Event, er
 }
 
 func (hs *sqlEventHistoryStore) GetByID(ctx context.Context, id string) (*events.Event, error) {
-	q := "SELECT id, type, source, cloudevent, namespace_id, received_at, created_at FROM events_history WHERE id = $1 ;"
+	q := "SELECT id, type, source, cloudevent, namespace_id, namespace, received_at, created_at FROM events_history WHERE id = $1 ;"
 
 	e := gormEventHistoryEntry{}
 	tx := hs.db.WithContext(ctx).Raw(q, id).Scan(&e)
@@ -196,7 +258,7 @@ func (hs *sqlEventHistoryStore) GetByID(ctx context.Context, id string) (*events
 		return nil, err
 	}
 
-	return &events.Event{Namespace: e.NamespaceID, ReceivedAt: e.ReceivedAt, Event: &finalCE}, nil
+	return &events.Event{Namespace: e.NamespaceID, NamespaceName: e.Namespace, ReceivedAt: e.ReceivedAt, Event: &finalCE}, nil
 }
 
 var _ events.EventTopicsStore = &sqlEventTopicsStore{}
@@ -205,9 +267,9 @@ type sqlEventTopicsStore struct {
 	db *gorm.DB
 }
 
-func (s *sqlEventTopicsStore) Append(ctx context.Context, namespaceID uuid.UUID, eventListenerID uuid.UUID, topic string, filter string) error {
-	q := "INSERT INTO event_topics (id, event_listener_id, namespace_id, topic, filter) VALUES ( $1 , $2 , $3 , $4 , $5 );"
-	tx := s.db.WithContext(ctx).Exec(q, uuid.NewString(), eventListenerID, namespaceID, topic, filter)
+func (s *sqlEventTopicsStore) Append(ctx context.Context, namespaceID uuid.UUID, namespace string, eventListenerID uuid.UUID, topic string, filter string) error {
+	q := "INSERT INTO event_topics (id, event_listener_id, namespace_id, namespace, topic, filter) VALUES ( $1 , $2 , $3 , $4 , $5, $6 );"
+	tx := s.db.WithContext(ctx).Exec(q, uuid.NewString(), eventListenerID, namespaceID, namespace, topic, filter)
 	if tx.Error != nil {
 		return tx.Error
 	}
@@ -223,7 +285,7 @@ type triggerInfo struct {
 
 func (s *sqlEventTopicsStore) GetListeners(ctx context.Context, topic string) ([]*events.EventListener, error) {
 	q := `SELECT 
-	id, namespace_id, created_at, updated_at, deleted, received_events, trigger_type, events_lifespan, event_types, trigger_info, metadata, glob_gates
+	id, namespace_id, namespace,  created_at, updated_at, deleted, received_events, trigger_type, events_lifespan, event_types, trigger_info, metadata, glob_gates
 	FROM event_listeners E WHERE E.deleted = false and E.id in 
 	(SELECT T.event_listener_id FROM event_topics T WHERE topic= $1 )` //,
 
@@ -267,6 +329,7 @@ func convertListeners(res []*gormEventListener, conv []*events.EventListener) ([
 			CreatedAt:                   l.CreatedAt,
 			Deleted:                     l.Deleted,
 			NamespaceID:                 l.NamespaceID,
+			Namespace:                   l.Namespace,
 			ListeningForEventTypes:      strings.Split(l.EventTypes, " "),
 			LifespanOfReceivedEvents:    l.EventsLifespan,
 			TriggerType:                 events.TriggerType(l.TriggerType),
@@ -300,8 +363,8 @@ type sqlEventListenerStore struct {
 
 func (s *sqlEventListenerStore) Append(ctx context.Context, listener *events.EventListener) error {
 	q := `INSERT INTO event_listeners
-	 (id, namespace_id, created_at, updated_at, deleted, received_events, trigger_type, events_lifespan, event_types, trigger_info, metadata, glob_gates) 
-	  VALUES ( $1 , $2 , $3 , $4 , $5 , $6 , $7 , $8 , $9 , $10 , $11, $12);`
+	 (id, namespace_id, namespace, created_at, updated_at, deleted, received_events, trigger_type, events_lifespan, event_types, trigger_info, metadata, glob_gates) 
+	  VALUES ( $1 , $2 , $3 , $4 , $5 , $6 , $7 , $8 , $9 , $10 , $11, $12, $13);`
 
 	trigger := triggerInfo{
 		WorkflowID: listener.TriggerWorkflow,
@@ -326,6 +389,7 @@ func (s *sqlEventListenerStore) Append(ctx context.Context, listener *events.Eve
 		q,
 		listener.ID,
 		listener.NamespaceID,
+		listener.Namespace,
 		listener.CreatedAt,
 		listener.UpdatedAt,
 		listener.Deleted,
@@ -403,9 +467,60 @@ func (s *sqlEventListenerStore) DeleteAllForWorkflow(ctx context.Context, workfl
 	return res, nil
 }
 
+func (s *sqlEventListenerStore) GetNew(ctx context.Context, namespace string, t time.Time) ([]*events.EventListener, error) {
+	q := `SELECT 
+	id, namespace_id, namespace, created_at, updated_at, deleted, received_events, trigger_type, events_lifespan, event_types, trigger_info, metadata, glob_gates
+	FROM event_listeners WHERE namespace_id = $1 AND created_at < $2`
+	q += " ORDER BY created_at DESC LIMIT $3"
+
+	res := make([]*gormEventListener, 0)
+	tx := s.db.WithContext(ctx).Raw(q, namespace, t, pageSize).Scan(&res)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+	conv := make([]*events.EventListener, 0)
+
+	for _, l := range res {
+		var trigger triggerInfo
+		var ev []*events.Event
+		err := json.Unmarshal([]byte(l.TriggerInfo), &trigger)
+		if err != nil {
+			return nil, err
+		}
+		err = json.Unmarshal(l.ReceivedEvents, &ev)
+		if err != nil {
+			return nil, err
+		}
+		var glob map[string]string
+		err = json.Unmarshal([]byte(l.GlobGates), &glob)
+		if err != nil {
+			return nil, err
+		}
+		conv = append(conv, &events.EventListener{
+			ID:                          l.ID,
+			UpdatedAt:                   l.UpdatedAt,
+			CreatedAt:                   l.CreatedAt,
+			Deleted:                     l.Deleted,
+			NamespaceID:                 l.NamespaceID,
+			Namespace:                   l.Namespace,
+			ListeningForEventTypes:      strings.Split(l.EventTypes, " "),
+			LifespanOfReceivedEvents:    l.EventsLifespan,
+			TriggerType:                 events.TriggerType(l.TriggerType),
+			TriggerWorkflow:             trigger.WorkflowID,
+			TriggerInstance:             trigger.InstanceID,
+			TriggerInstanceStep:         trigger.Step,
+			ReceivedEventsForAndTrigger: ev,
+			Metadata:                    l.Metadata,
+			GlobGatekeepers:             glob,
+		})
+	}
+
+	return conv, nil
+}
+
 func (s *sqlEventListenerStore) Get(ctx context.Context, namespace uuid.UUID, limit int, offset int) ([]*events.EventListener, int, error) {
 	q := `SELECT 
-	id, namespace_id, created_at, updated_at, deleted, received_events, trigger_type, events_lifespan, event_types, trigger_info, metadata, glob_gates
+	id, namespace_id, namespace, created_at, updated_at, deleted, received_events, trigger_type, events_lifespan, event_types, trigger_info, metadata, glob_gates
 	FROM event_listeners WHERE namespace_id = $1 `
 	q += " ORDER BY created_at DESC "
 	if limit > 0 {
@@ -452,6 +567,7 @@ func (s *sqlEventListenerStore) Get(ctx context.Context, namespace uuid.UUID, li
 			CreatedAt:                   l.CreatedAt,
 			Deleted:                     l.Deleted,
 			NamespaceID:                 l.NamespaceID,
+			Namespace:                   l.Namespace,
 			ListeningForEventTypes:      strings.Split(l.EventTypes, " "),
 			LifespanOfReceivedEvents:    l.EventsLifespan,
 			TriggerType:                 events.TriggerType(l.TriggerType),
@@ -492,6 +608,7 @@ type gormEventListener struct {
 	CreatedAt      time.Time
 	UpdatedAt      time.Time
 	NamespaceID    uuid.UUID
+	Namespace      string
 	Deleted        bool
 	TriggerType    int
 	EventTypes     string

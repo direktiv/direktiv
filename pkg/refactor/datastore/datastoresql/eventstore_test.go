@@ -24,8 +24,8 @@ func Test_EventStoreAddGet(t *testing.T) {
 	}
 	subj := "subject"
 	hist := datastoresql.NewSQLStore(db, "some key").EventHistory()
-	ev := newEvent(subj, "test-type", eID, ns)
-	ev2 := newEvent(subj, "test-type", e2ID, ns)
+	ev := newEvent(subj, "test-type", eID, ns, ns.String())
+	ev2 := newEvent(subj, "test-type", e2ID, ns, ns.String())
 
 	ls := make([]*events.Event, 0)
 	ls = append(ls, &ev, &ev2)
@@ -96,7 +96,71 @@ func Test_EventStoreAddGet(t *testing.T) {
 	}
 }
 
-func newEvent(subj, t string, id, ns uuid.UUID) events.Event {
+func Test_EventStoreAddGetNew(t *testing.T) {
+	ns := uuid.New()
+	eID := uuid.New()
+	e2ID := uuid.New()
+	db, err := database.NewMockGorm()
+	if err != nil {
+		t.Fatalf("unepxected NewMockGorm() error = %v", err)
+	}
+	subj := "subject"
+	hist := datastoresql.NewSQLStore(db, "some key").EventHistory()
+	ev := newEvent(subj, "test-type", eID, ns, ns.String())
+	ev2 := newEvent(subj, "test-type", e2ID, ns, ns.String())
+
+	ls := make([]*events.Event, 0)
+	ls = append(ls, &ev, &ev2)
+	_, errs := hist.Append(context.Background(), ls)
+	for _, err := range errs {
+		if err != nil {
+			t.Error(err)
+
+			return
+		}
+	}
+
+	gotEvents, err := hist.GetAll(context.Background())
+	if err != nil {
+		t.Error(err)
+
+		return
+	}
+	if len(gotEvents) == 0 {
+		t.Error("got no results")
+	}
+	if len(gotEvents) != 2 {
+		t.Error("missing results")
+
+		return
+	}
+	for _, e := range gotEvents {
+		if e.Event.Type() != "test-type" {
+			t.Error("Event had wrong type")
+		}
+	}
+	res, err := hist.GetNew(context.Background(), ns.String(), time.Now().UTC())
+	if err != nil {
+		t.Error(err)
+
+		return
+	}
+	if len(res) == 0 {
+		t.Error("got not results")
+	}
+	if len(res) != 2 {
+		t.Error("missing results")
+	}
+	e, err := hist.GetByID(context.Background(), eID.String())
+	if err != nil {
+		t.Error(err)
+	}
+	if e.Namespace != ns {
+		t.Error("returned event contains wrong ns")
+	}
+}
+
+func newEvent(subj, t string, id, ns uuid.UUID, nsName string) events.Event {
 	ev := events.Event{
 		Event: &cloudevents.Event{
 			Context: &event.EventContextV03{
@@ -109,8 +173,9 @@ func newEvent(subj, t string, id, ns uuid.UUID) events.Event {
 				Source:  *types.ParseURIRef("test.com"),
 			},
 		},
-		Namespace:  ns,
-		ReceivedAt: time.Now().UTC(),
+		Namespace:     ns,
+		NamespaceName: nsName,
+		ReceivedAt:    time.Now().UTC(),
 	}
 
 	return ev
@@ -124,8 +189,8 @@ func Test_sqlEventHistoryStore_Append(t *testing.T) {
 	}
 	eventHistoryStore := datastoresql.NewSQLStore(db, "some key").EventHistory()
 
-	ev := newEvent("subject", "test-type", uuid.New(), ns)
-	ev2 := newEvent("subject", "test-type", uuid.New(), ns)
+	ev := newEvent("subject", "test-type", uuid.New(), ns, ns.String())
+	ev2 := newEvent("subject", "test-type", uuid.New(), ns, ns.String())
 
 	appendEvents := []*events.Event{&ev, &ev2}
 	appendedEvents, appendErrs := eventHistoryStore.Append(context.Background(), appendEvents)
@@ -217,6 +282,7 @@ func Test_sqlEventListenerStore_UpdateOrDelete_Update(t *testing.T) {
 
 func Test_TopicAddGet(t *testing.T) {
 	ns := uuid.New()
+	nsName := ns.String()
 	eID := uuid.New()
 	db, err := database.NewMockGorm()
 	if err != nil {
@@ -240,7 +306,7 @@ func Test_TopicAddGet(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	err = topics.Append(context.Background(), ns, eID, ns.String()+"-a", "")
+	err = topics.Append(context.Background(), ns, nsName, eID, ns.String()+"-a", "")
 	if err != nil {
 		t.Error(err)
 	}
@@ -322,6 +388,75 @@ func Test_ListenerAddDeleteGet(t *testing.T) {
 	}
 	if count != 0 {
 		t.Error("got wrong count")
+	}
+	if len(got) != 0 {
+		t.Error("got wrong results")
+	}
+	_, err = listeners.GetByID(context.Background(), eID)
+	if err == nil {
+		t.Error("entry was excepted to be deleted")
+	}
+}
+
+func Test_ListenerAddDeleteGetNew(t *testing.T) {
+	ns := uuid.New()
+	eID := uuid.New()
+	wf := uuid.New()
+	db, err := database.NewMockGorm()
+	if err != nil {
+		t.Fatalf("unepxected NewMockGorm() error = %v", err)
+	}
+	store := datastoresql.NewSQLStore(db, "some key")
+	listeners := store.EventListener()
+	err = listeners.Append(context.Background(), &events.EventListener{
+		ID:                          eID,
+		CreatedAt:                   time.Now().UTC(),
+		UpdatedAt:                   time.Now().UTC(),
+		Deleted:                     false,
+		NamespaceID:                 ns,
+		Namespace:                   ns.String(),
+		ListeningForEventTypes:      []string{"a"},
+		ReceivedEventsForAndTrigger: make([]*events.Event, 0),
+		LifespanOfReceivedEvents:    10000,
+		TriggerType:                 1,
+		TriggerWorkflow:             wf.String(),
+	})
+	if err != nil {
+		t.Error(err)
+	}
+	res, err := listeners.GetByID(context.Background(), eID)
+	if err != nil {
+		t.Error(err)
+	}
+	if res.ID != eID {
+		t.Error("got wrong entry")
+	}
+	got, err := listeners.GetNew(context.Background(), ns.String(), time.Now())
+	if err != nil {
+		t.Error(err)
+	}
+	if len(got) != 1 {
+		t.Error("got wrong results")
+	}
+	if got[0].ID != eID {
+		t.Error("got wrong entry")
+	}
+	if got[0].TriggerWorkflow != wf.String() {
+		t.Error("trigger info was not correct")
+	}
+	got[0].UpdatedAt = time.Now().UTC()
+	got[0].Deleted = true
+	errs := listeners.UpdateOrDelete(context.Background(), []*events.EventListener{got[0]})
+	for _, err := range errs {
+		if err != nil {
+			t.Error(err)
+
+			return
+		}
+	}
+	got, err = listeners.GetNew(context.Background(), ns.String(), time.Now())
+	if err != nil {
+		t.Error(err)
 	}
 	if len(got) != 0 {
 		t.Error("got wrong results")

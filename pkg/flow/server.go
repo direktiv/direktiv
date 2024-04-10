@@ -106,7 +106,7 @@ func Run(circuit *core.Circuit) error {
 		if err != nil {
 			return err
 		}
-		err = srv.flow.configureWorkflowStarts(circuit.Context(), dbManager, event.NamespaceID, file)
+		err = srv.flow.configureWorkflowStarts(circuit.Context(), dbManager, event.NamespaceID, event.Namespace, file)
 		if err != nil {
 			return err
 		}
@@ -320,7 +320,7 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 	slog.Info("Events-engine was started.")
 
 	cc := func(ctx context.Context, nsID uuid.UUID, nsName string, file *filestore.File) error {
-		err = srv.flow.configureWorkflowStarts(ctx, dbManager, nsID, file)
+		err = srv.flow.configureWorkflowStarts(ctx, dbManager, nsID, nsName, file)
 		if err != nil {
 			return err
 		}

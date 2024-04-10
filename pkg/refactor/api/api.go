@@ -54,6 +54,9 @@ func Initialize(app core.App, db *database.SQLStore, bus *pubsub2.Bus, instanceM
 		db:      db,
 		manager: instanceManager,
 	}
+	eventsCtr := &eventsController{
+		store: db.DataStore(),
+	}
 
 	mw := &appMiddlewares{dStore: db.DataStore()}
 
@@ -142,6 +145,9 @@ func Initialize(app core.App, db *database.SQLStore, bus *pubsub2.Bus, instanceM
 					return
 				}
 				writeJSON(w, data)
+			})
+			r.Route("/namespaces/{namespace}/events", func(r chi.Router) {
+				eventsCtr.mountEventHistoryRouter(r) // Assuming you have an eventsCtr
 			})
 		})
 	})

@@ -177,11 +177,13 @@ CREATE TABLE IF NOT EXISTS "staging_events" (
     "type" text NOT NULL,
     "cloudevent" text NOT NULL,
     "namespace_id" uuid NOT NULL,
+    "namespace" text,
     "namespace_name" text,
     "received_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "created_at" timestamptz NOT NULL,
     "delayed_until" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("id") ON DELETE CASCADE ON UPDATE CASCADE,
+--    FOREIGN KEY ("namespace") REFERENCES "namespaces"("name") ON DELETE CASCADE ON UPDATE CASCADE
     CONSTRAINT "no_dup_stag_check" UNIQUE ("source","event_id", "namespace_id"),
     PRIMARY KEY ("id")
 );
@@ -192,9 +194,11 @@ CREATE TABLE IF NOT EXISTS "events_history" (
     "source" text NOT NULL,
     "cloudevent" text NOT NULL,
     "namespace_id" uuid NOT NULL,
+    "namespace" text,
     "received_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "created_at" timestamptz NOT NULL,
     FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("id") ON DELETE CASCADE ON UPDATE CASCADE,
+--    FOREIGN KEY ("namespace") REFERENCES "namespaces"("name") ON DELETE CASCADE ON UPDATE CASCADE
     CONSTRAINT "no_dup_check" UNIQUE ("source","id", "namespace_id")
 );
 
@@ -204,6 +208,7 @@ CREATE INDEX IF NOT EXISTS "events_history_sorted" ON "events_history" ("namespa
 CREATE TABLE IF NOT EXISTS "event_listeners" (
     "id" uuid UNIQUE,
     "namespace_id" uuid NOT NULL,
+    "namespace" text,
     "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "deleted" boolean NOT NULL,
@@ -215,12 +220,14 @@ CREATE TABLE IF NOT EXISTS "event_listeners" (
     "trigger_info" text NOT NULL,
     "metadata" text,
     PRIMARY KEY ("id"),
+--    FOREIGN KEY ("namespace") REFERENCES "namespaces"("name") ON DELETE CASCADE ON UPDATE CASCADE
     FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS "event_topics" (
     "id" uuid,
     "event_listener_id" uuid NOT NULL,
+    "namespace" text,
     "namespace_id" uuid NOT NULL,
     "topic" text NOT NULL,
     "filter" text,
@@ -261,5 +268,9 @@ DROP TABLE IF EXISTS "filesystem_revisions";
 ALTER TABLE "filesystem_files" ADD COLUMN IF NOT EXISTS "data" bytea;
 ALTER TABLE "filesystem_files" ADD COLUMN IF NOT EXISTS "checksum" text;
 ALTER TABLE "event_topics" ADD COLUMN IF NOT EXISTS "filter" text;
+ALTER TABLE "staging_events" ADD COLUMN IF NOT EXISTS "filter" text;
+ALTER TABLE "events_history" ADD COLUMN IF NOT EXISTS "namespace" text;
+ALTER TABLE "event_listeners" ADD COLUMN IF NOT EXISTS "namespace" text;
+ALTER TABLE "event_topics" ADD COLUMN IF NOT EXISTS "namespace" text;
 
 ALTER TABLE "namespaces" DROP COLUMN IF EXISTS "config";

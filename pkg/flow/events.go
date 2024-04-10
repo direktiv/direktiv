@@ -13,6 +13,7 @@ import (
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
@@ -638,7 +639,7 @@ func (events *events) listenForEvents(ctx context.Context, im *instanceMemory, c
 		transformedEvents = append(transformedEvents, ev)
 	}
 
-	err := events.addInstanceEventListener(ctx, im.Namespace().ID, im.GetInstanceID(), transformedEvents, im.Step(), all)
+	err := events.addInstanceEventListener(ctx, im.Namespace().ID, im.Namespace().Name, im.GetInstanceID(), transformedEvents, im.Step(), all)
 	if err != nil {
 		return err
 	}

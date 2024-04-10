@@ -92,7 +92,7 @@ func (events *events) deleteInstanceEventListeners(ctx context.Context, im *inst
 	return nil
 }
 
-func (events *events) processWorkflowEvents(ctx context.Context, nsID uuid.UUID, file *filestore.File, ms *muxStart) error {
+func (events *events) processWorkflowEvents(ctx context.Context, nsID uuid.UUID, nsName string, file *filestore.File, ms *muxStart) error {
 	err := events.deleteWorkflowEventListeners(ctx, nsID, file.ID)
 	if err != nil {
 		return err
@@ -152,7 +152,7 @@ func (events *events) processWorkflowEvents(ctx context.Context, nsID uuid.UUID,
 			}
 
 			for i, t := range fEv.ListeningForEventTypes {
-				err = tx.DataStore().EventListenerTopics().Append(ctx, nsID, fEv.ID, nsID.String()+"-"+t, contextFilters[i])
+				err = tx.DataStore().EventListenerTopics().Append(ctx, nsID, nsName, fEv.ID, nsID.String()+"-"+t, contextFilters[i])
 				if err != nil {
 					return err
 				}
@@ -171,7 +171,7 @@ func (events *events) processWorkflowEvents(ctx context.Context, nsID uuid.UUID,
 }
 
 // called from workflow instances to create event listeners.
-func (events *events) addInstanceEventListener(ctx context.Context, namespace, instance uuid.UUID, sevents []*model.ConsumeEventDefinition, step int, all bool) error {
+func (events *events) addInstanceEventListener(ctx context.Context, namespace uuid.UUID, nsName string, instance uuid.UUID, sevents []*model.ConsumeEventDefinition, step int, all bool) error {
 	// var ev []map[string]interface{}
 
 	fEv := &pkgevents.EventListener{
@@ -210,7 +210,7 @@ func (events *events) addInstanceEventListener(ctx context.Context, namespace, i
 			return err
 		}
 		for i, t := range fEv.ListeningForEventTypes {
-			err = tx.DataStore().EventListenerTopics().Append(ctx, namespace, fEv.ID, namespace.String()+"-"+t, contextFilters[i])
+			err = tx.DataStore().EventListenerTopics().Append(ctx, namespace, nsName, fEv.ID, namespace.String()+"-"+t, contextFilters[i])
 			if err != nil {
 				return err
 			}
