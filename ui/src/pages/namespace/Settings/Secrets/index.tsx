@@ -13,7 +13,7 @@ import {
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import Create from "./Create";
-import CreateEdit from "./CreateEdit";
+import CreateEdit from "./CreateEdit_obsolete";
 import CreateItemButton from "../components/CreateItemButton";
 import Delete from "./Delete";
 import Input from "~/design/Input";
