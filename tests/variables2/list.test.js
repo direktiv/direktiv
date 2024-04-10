@@ -16,8 +16,6 @@ describe('Test variable list calls', () => {
 	helpers.itShouldCreateFileV2(it, expect, namespace, '/', 'wf.yaml', 'workflow', 'text',
 		btoa(helpers.dummyWorkflow('wf.yaml')))
 
-	helpers.itShouldCreateFileV2()
-
 	helpers.itShouldCreateVariableV2(it, expect, namespace, {
 		name: 'foo1',
 		data: btoa('foo1'),
@@ -54,7 +52,6 @@ describe('Test variable list calls', () => {
 		const res = await request(config.getDirektivHost())
 			.get(`/api/v2/namespaces/${ namespace }/variables?workflowPath=/wf.yaml`)
 		expect(res.statusCode).toEqual(200)
-		console.log(res.body.data)
 		expect(res.body.data.length).toEqual(1)
 		expect(res.body.data[0]).toEqual({
 			id: expect.stringMatching(common.regex.uuidRegex),
