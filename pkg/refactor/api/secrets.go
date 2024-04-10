@@ -4,6 +4,7 @@ package api
 import (
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
@@ -42,7 +43,7 @@ func (e *secretsController) get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, secret)
+	writeJSON(w, convertSecret(secret))
 }
 
 func (e *secretsController) delete(w http.ResponseWriter, r *http.Request) {
@@ -117,7 +118,7 @@ func (e *secretsController) update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, secret)
+	writeJSON(w, convertSecret(secret))
 }
 
 func (e *secretsController) create(w http.ResponseWriter, r *http.Request) {
@@ -164,7 +165,7 @@ func (e *secretsController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, secret)
+	writeJSON(w, convertSecret(secret))
 }
 
 func (e *secretsController) list(w http.ResponseWriter, r *http.Request) {
@@ -185,5 +186,30 @@ func (e *secretsController) list(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, list)
+	res := make([]any, len(list))
+	for i := range list {
+		res[i] = convertSecret(list[i])
+	}
+
+	writeJSON(w, res)
+}
+
+func convertSecret(v *datastore.Secret) any {
+	type secretForAPI struct {
+		Name string `json:"name"`
+
+		Initialized bool `json:"initialized"`
+
+		CreatedAt time.Time `json:"createdAt"`
+		UpdatedAt time.Time `json:"updatedAt"`
+	}
+
+	res := &secretForAPI{
+		Name:        v.Name,
+		Initialized: v.Data != nil,
+		CreatedAt:   v.CreatedAt,
+		UpdatedAt:   v.UpdatedAt,
+	}
+
+	return res
 }
