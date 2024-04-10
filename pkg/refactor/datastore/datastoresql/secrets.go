@@ -23,7 +23,7 @@ func (s sqlSecretsStore) Update(ctx context.Context, secret *datastore.Secret) e
 			return err
 		}
 	}
-	res := s.db.WithContext(ctx).Exec(`UPDATE secrets SET data=? WHERE namespace=? and name=?`,
+	res := s.db.WithContext(ctx).Exec(`UPDATE secrets SET data=?, updated_at=CURRENT_TIMESTAMP WHERE namespace=? and name=?`,
 		secret.Data, secret.Namespace, secret.Name)
 	if res.Error != nil {
 		return res.Error
@@ -99,7 +99,7 @@ func (s sqlSecretsStore) Set(ctx context.Context, secret *datastore.Secret) erro
 	} else {
 		if secret.Data == nil {
 			res = s.db.WithContext(ctx).Exec(`
-				UPDATE secrets SET data=NULL WHERE namespace=? AND name=?
+				UPDATE secrets SET data=NULL WHERE namespace=? AND name=?, updated_at=CURRENT_TIMESTAMP 
 				`, x.Namespace, x.Name)
 		} else {
 			var err error
@@ -108,7 +108,7 @@ func (s sqlSecretsStore) Set(ctx context.Context, secret *datastore.Secret) erro
 				return err
 			}
 			res = s.db.WithContext(ctx).Exec(`
-				UPDATE secrets SET data=? WHERE namespace=? AND name=?
+				UPDATE secrets SET data=? WHERE namespace=? AND name=?, updated_at=CURRENT_TIMESTAMP 
 				`, secret.Data, x.Namespace, x.Name)
 		}
 	}
@@ -124,7 +124,7 @@ func (s sqlSecretsStore) GetAll(ctx context.Context, namespace string) ([]*datas
 	var secrets []*datastore.Secret
 
 	res := s.db.WithContext(ctx).Raw(`
-							SELECT * FROM secrets WHERE namespace=?`,
+							SELECT * FROM secrets WHERE namespace=? ORDER BY created_at`,
 		namespace).
 		Find(&secrets)
 	if res.Error != nil {
