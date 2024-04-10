@@ -137,12 +137,14 @@ CREATE TABLE IF NOT EXISTS "runtime_variables" (
     CONSTRAINT "fk_namespaces_runtime_variables"
     FOREIGN KEY ("namespace") REFERENCES "namespaces"("name") ON DELETE CASCADE ON UPDATE CASCADE,
 
+    CONSTRAINT "runtime_variables_unique_2"
+    UNIQUE NULLS NOT DISTINCT (namespace, name, workflow_path, instance_id),
+
     -- TODO: Find a way to clean up runtime vars for workflows when they get deleted.
     CONSTRAINT "fk_instances_v2_runtime_variables"
     FOREIGN KEY ("instance_id") REFERENCES "instances_v2"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
-CREATE UNIQUE INDEX IF NOT EXISTS "runtime_variables_unique" ON runtime_variables(namespace, COALESCE(workflow_path, instance_id::text), name);
-
+DROP INDEX IF EXISTS "runtime_variables_unique";
 
 CREATE TABLE IF NOT EXISTS "engine_messages" (
     "id" uuid,

@@ -35,7 +35,7 @@ type manager struct {
 
 func NewManager(c *core.Config, enableDocker bool) (core.ServiceManager, error) {
 	if enableDocker {
-		slog.Debug("Creating docker client")
+		slog.Debug("creating docker client")
 		cli, err := dClient.NewClientWithOpts(dClient.FromEnv, dClient.WithAPIVersionNegotiation())
 		if err != nil {
 			return nil, fmt.Errorf("failed creating docker client: %w", err)
@@ -57,7 +57,7 @@ func NewManager(c *core.Config, enableDocker bool) (core.ServiceManager, error) 
 			lock: &sync.Mutex{},
 		}, nil
 	}
-	slog.Debug("Creating knative manger")
+	slog.Debug("creating knative manger")
 
 	return newKnativeManager(c)
 }
@@ -154,29 +154,21 @@ func (m *manager) runCycle() []error {
 	return errs
 }
 
-func (m *manager) Start(done <-chan struct{}, wg *sync.WaitGroup) {
+func (m *manager) Start(circuit *core.Circuit) {
 	cycleTime := m.cfg.GetFunctionsReconcileInterval()
-
-	go func() {
-	loop:
-		for {
-			select {
-			case <-done:
-				break loop
-			default:
-			}
-			m.lock.Lock()
-			errs := m.runCycle()
-			m.lock.Unlock()
-			for _, err := range errs {
-				slog.Error("run cycle", "error", err)
-			}
-
-			time.Sleep(cycleTime)
+	for {
+		if circuit.IsDone() {
+			return
+		}
+		m.lock.Lock()
+		errs := m.runCycle()
+		m.lock.Unlock()
+		for _, err := range errs {
+			slog.Error("run cycle", "err", err)
 		}
 
-		wg.Done()
-	}()
+		time.Sleep(cycleTime)
+	}
 }
 
 func (m *manager) SetServices(list []*core.ServiceFileData) {

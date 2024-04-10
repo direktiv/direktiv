@@ -84,8 +84,8 @@ func (ba *BasicAuthPlugin) ExecutePlugin(c *core.ConsumerFile,
 	userHashExpected := sha256.Sum256([]byte(consumer.Username))
 	pwdHashExpected := sha256.Sum256([]byte(consumer.Password))
 
-	usernameMatch := (subtle.ConstantTimeCompare(userHash[:], userHashExpected[:]) == 1)
-	passwordMatch := (subtle.ConstantTimeCompare(pwdHash[:], pwdHashExpected[:]) == 1)
+	usernameMatch := subtle.ConstantTimeCompare(userHash[:], userHashExpected[:]) == 1
+	passwordMatch := subtle.ConstantTimeCompare(pwdHash[:], pwdHashExpected[:]) == 1
 
 	if usernameMatch && passwordMatch {
 		*c = *consumer

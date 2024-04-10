@@ -129,7 +129,7 @@ func (s *sqlRuntimeVariablesStore) listByFieldValue(ctx context.Context, fieldNa
 								id, namespace, workflow_path, instance_id, 
 								name, length(data) AS size, mime_type, 
 								created_at, updated_at
-							FROM runtime_variables WHERE %s`, aggregateConditions),
+							FROM runtime_variables WHERE %s ORDER BY created_at`, aggregateConditions),
 		vals...).Find(&variables)
 	if res.Error != nil {
 		return nil, res.Error
@@ -200,11 +200,16 @@ func (s *sqlRuntimeVariablesStore) Set(ctx context.Context, variable *datastore.
 	queryString := fmt.Sprintf(
 		`UPDATE runtime_variables SET
 						mime_type=?,
-						data=?
+						data=?,
+						updated_at=CURRENT_TIMESTAMP
 					WHERE namespace = ? AND name = ? %s;`, extra)
 
 	res := s.db.WithContext(ctx).Exec(queryString, args...)
 
+	// checks for duplicate key value violates unique constraint (SQLSTATE 23505)
+	if res.Error != nil && strings.Contains(res.Error.Error(), "23505") {
+		return nil, fmt.Errorf("%w + %w", res.Error, datastore.ErrDuplication)
+	}
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -231,6 +236,10 @@ func (s *sqlRuntimeVariablesStore) Set(ctx context.Context, variable *datastore.
 							VALUES(?, ?, ?, ?, ?%s);`, selectorField, extraVal),
 		args...)
 
+	// checks for duplicate key value violates unique constraint (SQLSTATE 23505)
+	if res.Error != nil && strings.Contains(res.Error.Error(), "23505") {
+		return nil, fmt.Errorf("%w + %w", res.Error, datastore.ErrDuplication)
+	}
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -290,7 +299,7 @@ func (s *sqlRuntimeVariablesStore) DeleteForWorkflow(ctx context.Context, namesp
 
 func (s *sqlRuntimeVariablesStore) SetWorkflowPath(ctx context.Context, namespace string, oldWorkflowPath string, newWorkflowPath string) error {
 	res := s.db.WithContext(ctx).Exec(
-		`UPDATE runtime_variables SET workflow_path=? WHERE namespace=? AND workflow_path=?`,
+		`UPDATE runtime_variables SET workflow_path=?, updated_at=CURRENT_TIMESTAMP WHERE namespace=? AND workflow_path=?`,
 		newWorkflowPath, namespace, oldWorkflowPath)
 	if res.Error != nil {
 		return res.Error
@@ -330,6 +339,10 @@ func (s *sqlRuntimeVariablesStore) Create(ctx context.Context, variable *datasto
 
 	res := s.db.WithContext(ctx).Exec(query, args...)
 
+	// checks for duplicate key value violates unique constraint (SQLSTATE 23505)
+	if res.Error != nil && strings.Contains(res.Error.Error(), "23505") {
+		return nil, fmt.Errorf("%w + %w", res.Error, datastore.ErrDuplication)
+	}
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -375,6 +388,10 @@ func (s *sqlRuntimeVariablesStore) Patch(ctx context.Context, id uuid.UUID, patc
 
 	res := s.db.WithContext(ctx).Exec(query, args...)
 
+	// checks for duplicate key value violates unique constraint (SQLSTATE 23505)
+	if res.Error != nil && strings.Contains(res.Error.Error(), "23505") {
+		return nil, fmt.Errorf("%w + %w", res.Error, datastore.ErrDuplication)
+	}
 	if res.Error != nil {
 		return nil, res.Error
 	}

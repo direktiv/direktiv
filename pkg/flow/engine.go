@@ -17,11 +17,13 @@ import (
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/direktiv/direktiv/pkg/flow/database"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
+	"github.com/direktiv/direktiv/pkg/flow/nohome"
 	"github.com/direktiv/direktiv/pkg/flow/states"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/database"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/google/uuid"
@@ -100,9 +102,9 @@ func (engine *engine) kickWaitingInstances() {
 }
 
 type newInstanceArgs struct {
-	tx            *sqlTx
+	tx            *database.SQLStore
 	ID            uuid.UUID
-	Namespace     *database.Namespace
+	Namespace     *datastore.Namespace
 	CalledAs      string
 	Input         []byte
 	Invoker       string
@@ -305,7 +307,7 @@ func (engine *engine) loadStateLogic(im *instanceMemory, stateID string) error {
 		var exists bool
 		state, exists = wfstates[stateID]
 		if !exists {
-			return fmt.Errorf("workflow %s cannot resolve state: %s", database.GetWorkflow(im.instance.Instance.WorkflowPath), stateID)
+			return fmt.Errorf("workflow %s cannot resolve state: %s", nohome.GetWorkflow(im.instance.Instance.WorkflowPath), stateID)
 		}
 	}
 
@@ -699,7 +701,7 @@ func (engine *engine) subflowInvoke(ctx context.Context, pi *enginerefactor.Pare
 
 	args := &newInstanceArgs{
 		ID: uuid.New(),
-		Namespace: &database.Namespace{
+		Namespace: &datastore.Namespace{
 			ID:   instance.Instance.NamespaceID,
 			Name: instance.TelemetryInfo.NamespaceName,
 		},
@@ -922,9 +924,9 @@ func (engine *engine) reportInstanceCrashed(ctx context.Context, im *instanceMem
 
 	instanceTrackCtx := enginerefactor.WithTrack(im.WithTags(loggingCtx), enginerefactor.BuildInstanceTrack(im.instance))
 	namespaceTrackCtx := enginerefactor.WithTrack(im.WithTags(loggingCtx), enginerefactor.BuildNamespaceTrack(im.Namespace().Name))
-
-	slog.Debug("Workflow failed.", enginerefactor.GetSlogAttributesWithError(instanceTrackCtx, err)...)
-	slog.Debug("Workflow failed.", enginerefactor.GetSlogAttributesWithError(namespaceTrackCtx, err)...)
+	msg := fmt.Sprintf("Workflow failed with code = %v, error = %v", typ, code)
+	slog.Error(msg, enginerefactor.GetSlogAttributesWithError(instanceTrackCtx, err)...)
+	slog.Error(msg, enginerefactor.GetSlogAttributesWithError(namespaceTrackCtx, err)...)
 }
 
 func (engine *engine) UserLog(ctx context.Context, im *instanceMemory, msg string, a ...interface{}) {

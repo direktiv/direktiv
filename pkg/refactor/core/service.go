@@ -8,7 +8,6 @@ import (
 	"io"
 	"regexp"
 	"strings"
-	"sync"
 
 	"gopkg.in/yaml.v3"
 )
@@ -103,7 +102,7 @@ func (c *ServiceFileData) GetValueHash() string {
 }
 
 type ServiceManager interface {
-	Start(done <-chan struct{}, wg *sync.WaitGroup)
+	Start(circuit *Circuit)
 	SetServices(list []*ServiceFileData)
 	GeAll(namespace string) ([]*ServiceFileData, error)
 	GetPods(namespace string, serviceID string) (any, error)

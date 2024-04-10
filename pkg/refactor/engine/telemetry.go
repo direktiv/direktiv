@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
+	"github.com/direktiv/direktiv/pkg/flow/nohome/recipient"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"go.opentelemetry.io/otel/trace"
 )

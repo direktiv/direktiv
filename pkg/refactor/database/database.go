@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"database/sql"
 	_ "embed"
 	"log"
 	"os"
@@ -41,6 +42,8 @@ func sqlLiteSchema() string {
 	liteSchema = strings.ReplaceAll(liteSchema, "CREATE INDEX", "--")
 	liteSchema = strings.ReplaceAll(liteSchema, "ALTER TABLE", "--")
 	liteSchema = strings.ReplaceAll(liteSchema, "DROP TABLE", "--")
+	liteSchema = strings.ReplaceAll(liteSchema, "DROP INDEX", "--")
+	liteSchema = strings.ReplaceAll(liteSchema, "UNIQUE NULLS NOT DISTINCT", "UNIQUE")
 
 	return liteSchema
 }
@@ -68,45 +71,45 @@ func NewMockGorm() (*gorm.DB, error) {
 	return db, nil
 }
 
-type DB struct {
+type SQLStore struct {
 	db        *gorm.DB
 	secretKey string
 }
 
-func NewDB(gormDB *gorm.DB, secretKey string) *DB {
-	return &DB{
+func NewSQLStore(gormDB *gorm.DB, secretKey string) *SQLStore {
+	return &SQLStore{
 		db:        gormDB,
 		secretKey: secretKey,
 	}
 }
 
-func (tx *DB) FileStore() filestore.FileStore {
+func (tx *SQLStore) FileStore() filestore.FileStore {
 	return filestoresql.NewSQLFileStore(tx.db)
 }
 
-func (tx *DB) DataStore() datastore.Store {
+func (tx *SQLStore) DataStore() datastore.Store {
 	return datastoresql.NewSQLStore(tx.db, tx.secretKey)
 }
 
-func (tx *DB) InstanceStore() instancestore.Store {
+func (tx *SQLStore) InstanceStore() instancestore.Store {
 	return instancestoresql.NewSQLInstanceStore(tx.db)
 }
 
-func (tx *DB) Commit(ctx context.Context) error {
+func (tx *SQLStore) Commit(ctx context.Context) error {
 	return tx.db.WithContext(ctx).Commit().Error
 }
 
-func (tx *DB) Rollback() error {
+func (tx *SQLStore) Rollback() error {
 	return tx.db.Rollback().Error
 }
 
-func (tx *DB) BeginTx(ctx context.Context) (*DB, error) {
-	res := tx.db.WithContext(ctx).Begin()
+func (tx *SQLStore) BeginTx(ctx context.Context, opts ...*sql.TxOptions) (*SQLStore, error) {
+	res := tx.db.WithContext(ctx).Begin(opts...)
 	if res.Error != nil {
 		return nil, res.Error
 	}
 
-	return &DB{
+	return &SQLStore{
 		db:        res,
 		secretKey: tx.secretKey,
 	}, nil
