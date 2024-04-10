@@ -76,6 +76,7 @@ function makeDummySecret (name) {
 function expectDummySecret (name) {
 	return {
 		name,
+		initialized: true,
 		createdAt: expect.stringMatching(regex.timestampRegex),
 		updatedAt: expect.stringMatching(regex.timestampRegex),
 	}
