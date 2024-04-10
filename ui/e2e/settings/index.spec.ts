@@ -79,7 +79,9 @@ test("it is possible to create and delete secrets", async ({ page }) => {
   const secretElements = page.getByTestId("item-name");
   await expect(secretElements, "number of secrets should be 4").toHaveCount(4);
 
-  await page.getByTestId(`dropdown-trg-item-${secretToDelete.key}`).click();
+  await page
+    .getByTestId(`dropdown-trg-item-${secretToDelete.data.name}`)
+    .click();
   await page.getByTestId("dropdown-actions-delete").click();
   await page.getByTestId("secret-delete-confirm").click();
 
@@ -91,7 +93,7 @@ test("it is possible to create and delete secrets", async ({ page }) => {
     "there should remain the newly created secret in the list"
   ).toBeVisible();
   await expect(
-    secretElements.filter({ hasText: `${secretToDelete.key}` }),
+    secretElements.filter({ hasText: `${secretToDelete.data.name}` }),
     "the deleted item shouldn't be in the list"
   ).toBeHidden();
 });
