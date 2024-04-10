@@ -10,9 +10,10 @@ import (
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
-	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/refactor/database"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
@@ -62,7 +63,7 @@ func (ms *muxStart) Hash() string {
 	return bytedata.Checksum(ms)
 }
 
-func (srv *server) validateRouter(ctx context.Context, tx *sqlTx, file *filestore.File) (*muxStart, error) {
+func (srv *server) validateRouter(ctx context.Context, tx *database.SQLStore, file *filestore.File) (*muxStart, error) {
 	data, err := tx.FileStore().ForFile(file).GetData(ctx)
 	if err != nil {
 		return nil, err
@@ -80,7 +81,7 @@ func (srv *server) validateRouter(ctx context.Context, tx *sqlTx, file *filestor
 	return ms, nil
 }
 
-func (engine *engine) mux(ctx context.Context, ns *database.Namespace, calledAs string) (*filestore.File, []byte, error) {
+func (engine *engine) mux(ctx context.Context, ns *datastore.Namespace, calledAs string) (*filestore.File, []byte, error) {
 	// TODO: Alan, fix for the new filestore.(*Revision).GetRevision() api.
 	uriElems := strings.SplitN(calledAs, ":", 2)
 	path := uriElems[0]
@@ -209,7 +210,7 @@ func (flow *flow) cronHandler(data []byte) {
 	go flow.engine.start(im)
 }
 
-func (flow *flow) configureWorkflowStarts(ctx context.Context, tx *sqlTx, nsID uuid.UUID, file *filestore.File) error {
+func (flow *flow) configureWorkflowStarts(ctx context.Context, tx *database.SQLStore, nsID uuid.UUID, file *filestore.File) error {
 	ms, err := flow.validateRouter(ctx, tx, file)
 	if err != nil {
 		return err

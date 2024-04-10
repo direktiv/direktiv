@@ -9,7 +9,7 @@ import (
 	"os"
 	"time"
 
-	api2 "github.com/direktiv/direktiv/pkg/api"
+	apiLegacy "github.com/direktiv/direktiv/pkg/api"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/refactor/api"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
@@ -26,7 +26,7 @@ import (
 
 type NewMainArgs struct {
 	Config            *core.Config
-	Database          *database.DB
+	Database          *database.SQLStore
 	PubSubBus         *pubsub.Bus
 	ConfigureWorkflow func(data string) error
 	InstanceManager   *instancestore.InstanceManager
@@ -37,7 +37,7 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 	initSLog()
 
 	// nolint:errcheck
-	go api2.RunApplication(args.Config)
+	go apiLegacy.RunApplication(args.Config)
 
 	// Create service manager
 	//nolint
@@ -193,7 +193,7 @@ func initSLog() {
 	slog.SetDefault(slogger)
 }
 
-func renderServiceManager(db *database.DB, serviceManager core.ServiceManager) {
+func renderServiceManager(db *database.SQLStore, serviceManager core.ServiceManager) {
 	ctx := context.Background()
 	slog := slog.With("subscriber", "services file watcher")
 

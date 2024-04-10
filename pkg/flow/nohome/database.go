@@ -1,10 +1,9 @@
-package database
+package nohome
 
 import (
 	"strings"
 
-	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
-	"github.com/direktiv/direktiv/pkg/refactor/datastore"
+	"github.com/direktiv/direktiv/pkg/flow/nohome/recipient"
 )
 
 type HasAttributes interface {
@@ -22,8 +21,6 @@ func GetAttributes(recipientType recipient.RecipientType, a ...HasAttributes) ma
 	}
 	return m
 }
-
-type Namespace = datastore.Namespace
 
 func GetWorkflow(path string) string {
 	return strings.Split(path, ":")[0]
