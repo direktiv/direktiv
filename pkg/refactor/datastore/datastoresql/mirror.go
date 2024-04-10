@@ -46,6 +46,7 @@ func cryptDecryptConfig(config *datastore.MirrorConfig, key string, encrypt bool
 	*resultConfig = *config
 
 	targets := []*string{
+		&resultConfig.AuthToken,
 		&resultConfig.PrivateKeyPassphrase,
 		&resultConfig.PrivateKey,
 	}
@@ -99,6 +100,7 @@ func (s sqlMirrorStore) UpdateConfig(ctx context.Context, config *datastore.Mirr
 			"git_ref":                config.GitRef,
 			"public_key":             config.PublicKey,
 			"private_key":            config.PrivateKey,
+			"auth_key":               config.AuthToken,
 			"private_key_passphrase": config.PrivateKeyPassphrase,
 			"insecure":               config.Insecure,
 		})
