@@ -83,7 +83,7 @@ func (tnf NamespaceFilePlugin) ExecutePlugin(
 	}
 	defer resp.Body.Close()
 
-	data, err := fetchObjectData(resp)
+	node, data, err := fetchObjectData(resp)
 	if err != nil {
 		plugins.ReportError(r.Context(), w, http.StatusInternalServerError,
 			"can not fetch file data", err)
@@ -91,17 +91,20 @@ func (tnf NamespaceFilePlugin) ExecutePlugin(
 		return false
 	}
 
-	r.Header.Set("Content-Type", "application/unknown")
-
+	mt := "application/unknown"
 	if tnf.config.ContentType != "" {
-		w.Header().Set("Content-Type", tnf.config.ContentType)
+		mt = tnf.config.ContentType
+	} else if node.Data.MimeType != "" {
+		mt = node.Data.MimeType
 	} else {
+		// guessing
 		// nolint
 		kind, _ := filetype.Match(data)
 		if kind != filetype.Unknown {
-			w.Header().Set("Content-Type", kind.MIME.Value)
+			mt = kind.MIME.Value
 		}
 	}
+	w.Header().Set("Content-Type", mt)
 
 	// w.Header().Set("Content-Type", mtype.String())
 	w.Header().Set("Content-Length", strconv.Itoa(len(data)))
@@ -112,45 +115,37 @@ func (tnf NamespaceFilePlugin) ExecutePlugin(
 	return true
 }
 
-// nolint
-type Node struct {
-	Namespace string `json:"namespace"`
-	Node      struct {
-		CreatedAt    time.Time `json:"createdAt"`
-		UpdatedAt    time.Time `json:"updatedAt"`
-		Name         string    `json:"name"`
-		Path         string    `json:"path"`
-		Parent       string    `json:"parent"`
-		Type         string    `json:"type"`
-		Attributes   []any     `json:"attributes"`
-		Oid          string    `json:"oid"`
-		ReadOnly     bool      `json:"readOnly"`
-		ExpandedType string    `json:"expandedType"`
-		MimeType     string    `json:"mimeType"`
-	} `json:"node"`
-	EventLogging string `json:"eventLogging"`
-	Oid          string `json:"oid"`
-	Source       string `json:"source"`
+type node struct {
+	Data struct {
+		Path      string    `json:"path"`
+		Type      string    `json:"type"`
+		Data      string    `json:"data"`
+		Size      int       `json:"size"`
+		MimeType  string    `json:"mimeType"`
+		CreatedAt time.Time `json:"createdAt"`
+		UpdatedAt time.Time `json:"updatedAt"`
+		Children  any       `json:"children"`
+	} `json:"data"`
 }
 
-func fetchObjectData(res *http.Response) ([]byte, error) {
+func fetchObjectData(res *http.Response) (*node, []byte, error) {
 	b, err := io.ReadAll(res.Body)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	var node Node
+	var node node
 	err = json.Unmarshal(b, &node)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	data, err := base64.StdEncoding.DecodeString(node.Source)
+	data, err := base64.StdEncoding.DecodeString(node.Data.Data)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return data, nil
+	return &node, data, nil
 }
 
 //nolint:gochecknoinits

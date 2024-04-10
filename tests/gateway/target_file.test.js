@@ -43,6 +43,32 @@ const endpointBroken = `
     - GET
   path: /endpoint3`
 
+
+const mimetypeSet = `
+  direktiv_api: endpoint/v1
+  allow_anonymous: true
+  plugins:
+    target:
+      type: target-namespace-file
+      configuration:
+          file: /mimetype.yaml
+          content_type: application/whatever
+  methods: 
+    - GET
+  path: /endpoint-mimetype`
+
+const mimetypeNotSet = `
+  direktiv_api: endpoint/v1
+  allow_anonymous: true
+  plugins:
+    target:
+      type: target-namespace-file
+      configuration:
+          file: /mimetype.yaml
+  methods: 
+    - GET
+  path: /endpoint-no-mimetype`
+
 describe('Test target file wrong config', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
 
@@ -80,6 +106,42 @@ describe('Test target file wrong config', () => {
 			),
 		)
 	})
+})
+
+describe('Test mimetype for file target', () => {
+	beforeAll(common.helpers.deleteAllNamespaces)
+	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
+
+	common.helpers.itShouldCreateYamlFileV2(
+		it,
+		expect,
+		testNamespace,
+		'/', 'mimetype.yaml', 'endpoint',
+		mimetypeSet,
+	)
+
+	retry10(`should return a configured mimetype`, async () => {
+		const req = await request(common.config.getDirektivHost()).get(
+			`/gw/endpoint-mimetype`,
+		)
+		expect(req["headers"]["content-type"]).toEqual("application/whatever")
+	})
+
+	common.helpers.itShouldCreateYamlFileV2(
+		it,
+		expect,
+		testNamespace,
+		'/', 'no-mimetype.yaml', 'endpoint',
+		mimetypeNotSet,
+	)
+
+	retry10(`should return a guess mimetype (yaml)`, async () => {
+		const req = await request(common.config.getDirektivHost()).get(
+			`/gw/endpoint-no-mimetype`,
+		)
+		expect(req["headers"]["content-type"]).toEqual("application/yaml")
+	})
+
 })
 
 describe('Test target namespace file plugin', () => {

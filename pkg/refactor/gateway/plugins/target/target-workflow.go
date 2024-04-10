@@ -152,7 +152,8 @@ func doDirektivRequest(requestType direktivRequestType, args map[string]string,
 
 	switch requestType {
 	case direktivFileRequest:
-		url = fmt.Sprintf("http://localhost:%s/api/v2/namespaces/%s/files/%s",
+		// path already starts with slash, therefore it is appended without
+		url = fmt.Sprintf("http://localhost:%s/api/v2/namespaces/%s/files%s",
 			os.Getenv("DIREKTIV_API_V2_PORT"), args[namespaceArg], args[pathArg])
 	case direktivWorkflowVarRequest:
 		url = fmt.Sprintf("http://localhost:%s/api/namespaces/%s/tree%s?op=var&var=%s",
