@@ -158,6 +158,7 @@ func EventPassedGatekeeper(globPatterns map[string]string, event cloudevents.Eve
 			return false
 		}
 	}
+
 	return true
 }
 
