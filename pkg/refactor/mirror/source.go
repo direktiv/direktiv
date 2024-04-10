@@ -75,26 +75,18 @@ func clone(conf GitSourceConfig, cloneOpts *git.CloneOptions) (Source, error) {
 		return nil, err
 	}
 
-	repo, err := git.PlainClone(path, false, cloneOpts)
+	_, err = git.PlainClone(path, false, cloneOpts)
 	if err != nil {
 		return nil, err
 	}
-
-	ref, err := repo.Head()
-	if err != nil {
-		return nil, err
-	}
-
-	hash := ref.Hash()
 
 	return &gitSource{
 		conf:            conf,
 		path:            path,
 		DirectorySource: NewDirectorySource(path),
 		notes: map[string]string{
-			"commit_hash": hash.String(),
-			"ref":         conf.GitRef,
-			"url":         conf.URL,
+			"ref": conf.GitRef,
+			"url": conf.URL,
 		},
 	}, nil
 }
