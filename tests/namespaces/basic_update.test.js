@@ -49,7 +49,6 @@ describe('Test namespace update calls', () => {
 					url: 'my_url2',
 					insecure: true,
 					gitRef: 'master',
-					gitCommitHash: '1234',
 				},
 			},
 			want: {
@@ -59,7 +58,6 @@ describe('Test namespace update calls', () => {
 					url: 'my_url2',
 					insecure: true,
 					gitRef: 'master',
-					gitCommitHash: '1234',
 					...timestamps,
 				},
 			},
