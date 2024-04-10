@@ -9,7 +9,6 @@ import {
   SecretSchemaType,
 } from "~/api/secrets/schema";
 
-import Alert from "~/design/Alert";
 import Button from "~/design/Button";
 import { SecretForm } from "./Form";
 import { SquareAsterisk } from "lucide-react";
@@ -44,11 +43,7 @@ const Edit = ({ onSuccess, secret }: EditProps) => {
             })}
           </DialogTitle>
         }
-        dialogHeader={
-          <Alert variant="info">
-            {t("pages.settings.secrets.edit.editNote")}
-          </Alert>
-        }
+        infoMessage={t("pages.settings.secrets.edit.editNote")}
         dialogFooter={
           <DialogFooter>
             <DialogClose asChild>

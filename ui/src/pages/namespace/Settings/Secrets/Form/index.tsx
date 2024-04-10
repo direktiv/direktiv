@@ -5,6 +5,7 @@ import {
 } from "~/api/secrets/schema";
 import { decode, encode } from "js-base64";
 
+import Alert from "~/design/Alert";
 import { DialogHeader } from "~/design/Dialog";
 import FileUpload from "~/components/FileUpload";
 import FormErrors from "~/components/FormErrors";
@@ -18,7 +19,7 @@ type SecretFormProps = {
   defaultValues: SecretFormCreateEditSchemaType;
   disableNameInput?: boolean;
   dialogTitle: JSX.Element;
-  dialogHeader?: JSX.Element;
+  infoMessage?: string;
   dialogFooter: JSX.Element;
   unallowedNames?: string[];
   onMutate: (data: SecretFormCreateEditSchemaType) => void;
@@ -26,7 +27,7 @@ type SecretFormProps = {
 
 export const SecretForm = ({
   defaultValues,
-  dialogHeader,
+  infoMessage,
   dialogTitle,
   dialogFooter,
   unallowedNames,
@@ -63,8 +64,7 @@ export const SecretForm = ({
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col space-y-5">
       <DialogHeader>{dialogTitle}</DialogHeader>
-      {/* TODO: rename prop */}
-      {dialogHeader}
+      {infoMessage && <Alert variant="info">{infoMessage}</Alert>}
       <FormErrors errors={errors} className="mb-5" />
       <fieldset className="flex items-center gap-5">
         <label className="w-[150px] text-right" htmlFor="name">
