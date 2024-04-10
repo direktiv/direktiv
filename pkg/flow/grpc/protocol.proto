@@ -9,7 +9,6 @@ import "google/protobuf/empty.proto";
 import "pkg/flow/grpc/namespaces.proto";
 import "pkg/flow/grpc/nodes.proto";
 import "pkg/flow/grpc/workflows.proto";
-import "pkg/flow/grpc/variables.proto";
 import "pkg/flow/grpc/secrets.proto";
 import "pkg/flow/grpc/instances.proto";
 import "pkg/flow/grpc/internal.proto";
@@ -66,32 +65,6 @@ service Flow {
 	rpc AwaitWorkflow (AwaitWorkflowRequest) returns (stream AwaitWorkflowResponse) {}
 	rpc CancelInstance (CancelInstanceRequest) returns (google.protobuf.Empty) {}
 	rpc BroadcastCloudevent (BroadcastCloudeventRequest) returns (google.protobuf.Empty) {}
-
-	// variables.
-	rpc NamespaceVariable (NamespaceVariableRequest) returns (NamespaceVariableResponse) {}
-	rpc NamespaceVariableParcels (NamespaceVariableRequest) returns (stream NamespaceVariableResponse) {}
-	rpc NamespaceVariables (NamespaceVariablesRequest) returns (NamespaceVariablesResponse) {}
-	rpc NamespaceVariablesStream (NamespaceVariablesRequest) returns (stream NamespaceVariablesResponse) {}
-	rpc SetNamespaceVariable (SetNamespaceVariableRequest) returns (SetNamespaceVariableResponse) {}
-	rpc SetNamespaceVariableParcels (stream SetNamespaceVariableRequest) returns (SetNamespaceVariableResponse) {}
-	rpc DeleteNamespaceVariable (DeleteNamespaceVariableRequest) returns (google.protobuf.Empty) {}
-	rpc RenameNamespaceVariable (RenameNamespaceVariableRequest) returns (RenameNamespaceVariableResponse) {}
-	rpc WorkflowVariable (WorkflowVariableRequest) returns (WorkflowVariableResponse) {}
-	rpc WorkflowVariableParcels (WorkflowVariableRequest) returns (stream WorkflowVariableResponse) {}
-	rpc WorkflowVariables (WorkflowVariablesRequest) returns (WorkflowVariablesResponse) {}
-	rpc WorkflowVariablesStream (WorkflowVariablesRequest) returns (stream WorkflowVariablesResponse) {}
-	rpc SetWorkflowVariable (SetWorkflowVariableRequest) returns (SetWorkflowVariableResponse) {}
-	rpc SetWorkflowVariableParcels (stream SetWorkflowVariableRequest) returns (SetWorkflowVariableResponse) {}
-	rpc DeleteWorkflowVariable (DeleteWorkflowVariableRequest) returns (google.protobuf.Empty) {}
-	rpc RenameWorkflowVariable (RenameWorkflowVariableRequest) returns (RenameWorkflowVariableResponse) {}
-	rpc InstanceVariable (InstanceVariableRequest) returns (InstanceVariableResponse) {}
-	rpc InstanceVariableParcels (InstanceVariableRequest) returns (stream InstanceVariableResponse) {}
-	rpc InstanceVariables (InstanceVariablesRequest) returns (InstanceVariablesResponse) {}
-	rpc InstanceVariablesStream (InstanceVariablesRequest) returns (stream InstanceVariablesResponse) {}
-	rpc SetInstanceVariable (SetInstanceVariableRequest) returns (SetInstanceVariableResponse) {}
-	rpc SetInstanceVariableParcels (stream SetInstanceVariableRequest) returns (SetInstanceVariableResponse) {}
-	rpc DeleteInstanceVariable (DeleteInstanceVariableRequest) returns (google.protobuf.Empty) {}
-	rpc RenameInstanceVariable (RenameInstanceVariableRequest) returns (RenameInstanceVariableResponse) {}
 
 	//
 	rpc JQ (JQRequest) returns (JQResponse) {}
