@@ -12,7 +12,7 @@ export const SecretSchema = z.object({
   name: z.string(),
   createdAt: z.string(),
   updatedAt: z.string(),
-  // TODO: remove the .optional().default(true) once this field is added to the backend
+  // TODO: remove the .optional()
   initialized: z.boolean().optional(),
 });
 
