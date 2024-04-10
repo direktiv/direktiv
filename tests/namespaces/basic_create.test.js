@@ -60,6 +60,26 @@ describe('Test namespace create calls', () => {
 				},
 			},
 		},
+		{
+			input: {
+				name: 'foo4',
+				mirror: {
+					url: 'my_url',
+					insecure: true,
+					gitRef: 'master',
+					authToken: '12345',
+				},
+			},
+			want: {
+				name: 'foo4',
+				mirror: {
+					url: 'my_url',
+					insecure: true,
+					gitRef: 'master',
+					...timestamps,
+				},
+			},
+		},
 	]
 
 	for (let i = 0; i < testCases.length; i++) {

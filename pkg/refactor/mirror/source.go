@@ -178,7 +178,7 @@ func GetSource(_ context.Context, cfg *datastore.MirrorConfig) (Source, error) {
 			InsecureSkipTLS: cfg.Insecure,
 			TempDir:         tempDir,
 		}, GitSourceTokenAuthConf{
-			Token: cfg.PrivateKeyPassphrase,
+			Token: cfg.AuthToken,
 		})
 	}
 	if cfg.PrivateKey != "" || cfg.PublicKey != "" {

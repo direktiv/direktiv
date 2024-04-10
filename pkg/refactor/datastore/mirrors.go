@@ -14,6 +14,7 @@ type MirrorConfig struct {
 
 	URL                  string `json:"url"`
 	GitRef               string `json:"gitRef,omitempty"`
+	AuthToken            string `json:"-"`
 	PublicKey            string `json:"publicKey,omitempty"`
 	PrivateKey           string `json:"-"`
 	PrivateKeyPassphrase string `json:"-"`
