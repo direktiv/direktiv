@@ -83,8 +83,9 @@ test("it is possible to create and delete secrets", async ({ page }) => {
   await page
     .getByTestId(`dropdown-trg-item-${secretToDelete.data.name}`)
     .click();
+
   await page.getByTestId("dropdown-actions-delete").click();
-  await page.getByTestId("secret-delete-confirm").click();
+  await page.getByRole("button", { name: "Delete" }).click();
 
   await waitForSuccessToast(page);
   await expect(secretElements, "number of secrets should be 3").toHaveCount(3);
