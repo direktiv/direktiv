@@ -1358,6 +1358,11 @@
         schema:
           type: string
         description: When set, the list will contain all variables under this instance id
+      - in: query
+        name: name
+        schema:
+          type: string
+        description:  When set, the list will contain only variables having this name. Empty list return when the filter matches to no variable
     responses:
       "200":
         description: list of direktiv variables
