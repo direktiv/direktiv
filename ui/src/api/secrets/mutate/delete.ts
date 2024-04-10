@@ -1,4 +1,4 @@
-import { SecretCreatedUpdatedSchema, SecretSchemaType } from "../schema";
+import { SecretSchemaType, SecretsDeletedSchema } from "../schema";
 
 import { apiFactory } from "../../apiFactory";
 import { secretKeys } from "..";
@@ -15,7 +15,7 @@ const deleteSecret = apiFactory({
   url: ({ namespace, name }: DeleteSecretParams) =>
     `/api/v2/namespaces/${namespace}/secrets/${name}`,
   method: "DELETE",
-  schema: SecretCreatedUpdatedSchema,
+  schema: SecretsDeletedSchema,
 });
 
 export const useDeleteSecret = ({
