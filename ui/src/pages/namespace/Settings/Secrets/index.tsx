@@ -12,6 +12,7 @@ import {
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
+import Create from "./Create";
 import CreateEdit from "./CreateEdit";
 import CreateItemButton from "../components/CreateItemButton";
 import Delete from "./Delete";
@@ -50,6 +51,8 @@ const SecretsList: FC = () => {
       ),
     [secrets?.data, isSearch, search]
   );
+
+  const allNames = secrets?.data?.map((v) => v.name) ?? [];
 
   const { mutate: deleteSecretMutation } = useDeleteSecret({
     onSuccess: () => {
@@ -203,7 +206,12 @@ const SecretsList: FC = () => {
           onConfirm={() => deleteSecretMutation({ secret: deleteSecret })}
         />
       )}
-      {createSecret && <CreateEdit onSuccess={() => setDialogOpen(false)} />}
+      {createSecret && (
+        <Create
+          unallowedNames={allNames}
+          onSuccess={() => setDialogOpen(false)}
+        />
+      )}
 
       {editItem && (
         <CreateEdit
