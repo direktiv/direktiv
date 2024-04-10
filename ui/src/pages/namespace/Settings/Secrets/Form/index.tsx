@@ -16,7 +16,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 type SecretFormProps = {
   defaultValues: SecretFormCreateEditSchemaType;
+  disableNameInput?: boolean;
   dialogTitle: JSX.Element;
+  dialogHeader?: JSX.Element;
   dialogFooter: JSX.Element;
   unallowedNames?: string[];
   onMutate: (data: SecretFormCreateEditSchemaType) => void;
@@ -24,9 +26,11 @@ type SecretFormProps = {
 
 export const SecretForm = ({
   defaultValues,
+  dialogHeader,
   dialogTitle,
   dialogFooter,
   unallowedNames,
+  disableNameInput,
   onMutate,
 }: SecretFormProps) => {
   const { t } = useTranslation();
@@ -59,9 +63,8 @@ export const SecretForm = ({
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col space-y-5">
-      <DialogHeader>
-        <DialogHeader>{dialogTitle}</DialogHeader>
-      </DialogHeader>
+      <DialogHeader>{dialogTitle}</DialogHeader>
+      {dialogHeader}
       <FormErrors errors={errors} className="mb-5" />
       <fieldset className="flex items-center gap-5">
         <label className="w-[150px] text-right" htmlFor="name">
@@ -71,6 +74,7 @@ export const SecretForm = ({
 
         {/* TODO: */}
         <Input
+          disabled={disableNameInput}
           id="name"
           {...register("name")}
           placeholder={t("components.variableForm.name.placeholder")}

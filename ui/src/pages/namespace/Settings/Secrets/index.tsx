@@ -13,9 +13,9 @@ import {
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import Create from "./Create";
-import CreateEdit from "./CreateEdit_obsolete";
 import CreateItemButton from "../components/CreateItemButton";
 import Delete from "./Delete";
+import Edit from "./Edit";
 import Input from "~/design/Input";
 import ItemRow from "../components/ItemRow";
 import PaginationProvider from "~/components/PaginationProvider";
@@ -214,8 +214,8 @@ const SecretsList: FC = () => {
       )}
 
       {editItem && (
-        <CreateEdit
-          item={editItem}
+        <Edit
+          secret={editItem}
           onSuccess={() => {
             /**
              * When the user has uninitialized secrets, this will be reflected in
