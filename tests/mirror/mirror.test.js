@@ -52,7 +52,6 @@ describe('Test behaviour specific to the root node', () => {
 					ref: branch,
 					cron: '',
 					publicKey: '',
-					commitId: '',
 					lastSync: null,
 					privateKey: '',
 					passphrase: '',
