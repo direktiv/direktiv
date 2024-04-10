@@ -14,7 +14,7 @@ export const SecretSchema = z.object({
   updatedAt: z.string(),
 });
 
-export type SecretsSchemaType = z.infer<typeof SecretSchema>;
+export type SecretSchemaType = z.infer<typeof SecretSchema>;
 
 /**
  * example:
@@ -28,19 +28,19 @@ export const SecretsListSchema = z.object({
 
 export const SecretsDeletedSchema = z.null();
 
-export const SecretsCreatedUpdatedSchema = z.object({
+export const SecretCreatedUpdatedSchema = z.object({
   data: SecretSchema,
 });
 
-export type SecretsCreatedUpdatedSchemaType = z.infer<
-  typeof SecretsCreatedUpdatedSchema
+export type SecretCreatedUpdatedSchemaType = z.infer<
+  typeof SecretCreatedUpdatedSchema
 >;
 
-export const SecretsFormCreateEditSchema = z.object({
+export const SecretFormCreateEditSchema = z.object({
   name: z.string().nonempty(),
   data: z.string().nonempty(),
 });
 
 export type SecretFormCreateEditSchemaType = z.infer<
-  typeof SecretsFormCreateEditSchema
+  typeof SecretFormCreateEditSchema
 >;
