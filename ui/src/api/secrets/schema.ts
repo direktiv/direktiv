@@ -13,7 +13,7 @@ export const SecretSchema = z.object({
   createdAt: z.string(),
   updatedAt: z.string(),
   // TODO: remove the .optional().default(true) once this field is added to the backend
-  initialized: z.boolean().optional().default(true),
+  initialized: z.boolean().optional(),
 });
 
 export type SecretSchemaType = z.infer<typeof SecretSchema>;
