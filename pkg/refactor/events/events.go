@@ -36,8 +36,8 @@ type EventHistoryStore interface {
 	// supported keys are created_before, created_after,
 	// received_before, received_after, event_contains, type_contains.
 	Get(ctx context.Context, limit, offset int, namespace uuid.UUID, keyValues ...string) ([]*Event, int, error)
+	GetOld(ctx context.Context, namespace string, t time.Time, keyAndValues ...string) ([]*Event, error)
 	GetNew(ctx context.Context, namespace string, t time.Time, keyAndValues ...string) ([]*Event, error)
-
 	GetAll(ctx context.Context) ([]*Event, error)
 	// deletes events that are older then the given timestamp.
 	DeleteOld(ctx context.Context, sinceWhen time.Time) error

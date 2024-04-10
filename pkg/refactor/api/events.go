@@ -31,7 +31,6 @@ func (c *eventsController) mountEventListenerRouter(r chi.Router) {
 func (c *eventsController) listEvents(w http.ResponseWriter, r *http.Request) {
 	ns := extractContextNamespace(r)
 	starting := ""
-
 	if v := r.URL.Query().Get("before"); v != "" {
 		starting = v
 	}
@@ -39,23 +38,23 @@ func (c *eventsController) listEvents(w http.ResponseWriter, r *http.Request) {
 	if starting != "" {
 		co, err := time.Parse(time.RFC3339Nano, starting)
 		if err != nil {
-			writeNotJSONError(w, err)
+			writeInternalError(w, err)
 
 			return
 		}
 		t = co
 	}
 
-	data, err := c.store.EventHistory().GetNew(r.Context(), ns.Name, t)
+	data, err := c.store.EventHistory().GetOld(r.Context(), ns.Name, t)
 	if err != nil {
-		writeNotJSONError(w, err)
+		writeInternalError(w, err)
 
 		return
 	}
 
 	metaInfo := map[string]any{
 		"previousPage": nil, // setting them to nil make ensure matching the specicied types for the clients
-		"startingFrom": nil,
+		"startingFrom": t,
 	}
 
 	if len(data) == 0 {
@@ -82,7 +81,7 @@ func (c *eventsController) getEvent(w http.ResponseWriter, r *http.Request) {
 	}
 	d, err := c.store.EventHistory().GetByID(r.Context(), eventID)
 	if err != nil {
-		writeNotJSONError(w, err)
+		writeInternalError(w, err)
 
 		return
 	}
@@ -94,13 +93,13 @@ func (c *eventsController) getEventListener(w http.ResponseWriter, r *http.Reque
 
 	id, err := uuid.Parse(eventID)
 	if err != nil {
-		writeNotJSONError(w, err)
+		writeInternalError(w, err)
 
 		return
 	}
 	d, err := c.store.EventListener().GetByID(r.Context(), id)
 	if err != nil {
-		writeNotJSONError(w, err)
+		writeInternalError(w, err)
 
 		return
 	}
@@ -115,7 +114,7 @@ func (c *eventsController) listEventListeners(w http.ResponseWriter, r *http.Req
 	if starting != "" {
 		co, err := time.Parse(time.RFC3339Nano, starting)
 		if err != nil {
-			writeNotJSONError(w, err)
+			writeInternalError(w, err)
 
 			return
 		}
@@ -123,7 +122,7 @@ func (c *eventsController) listEventListeners(w http.ResponseWriter, r *http.Req
 	}
 	data, err := c.store.EventListener().GetNew(r.Context(), ns.Name, t)
 	if err != nil {
-		writeNotJSONError(w, err)
+		writeInternalError(w, err)
 		return
 	}
 	metaInfo := map[string]any{

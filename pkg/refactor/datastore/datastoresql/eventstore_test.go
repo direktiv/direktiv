@@ -139,7 +139,7 @@ func Test_EventStoreAddGetNew(t *testing.T) {
 			t.Error("Event had wrong type")
 		}
 	}
-	res, err := hist.GetNew(context.Background(), ns.String(), time.Now().UTC())
+	res, err := hist.GetOld(context.Background(), ns.String(), time.Now().UTC())
 	if err != nil {
 		t.Error(err)
 

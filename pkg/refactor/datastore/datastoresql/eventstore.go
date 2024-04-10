@@ -71,13 +71,73 @@ type gormEventHistoryEntry struct {
 	CreatedAt, ReceivedAt    time.Time
 }
 
+func (hs *sqlEventHistoryStore) GetOld(ctx context.Context, namespace string, t time.Time, keyAndValues ...string) ([]*events.Event, error) {
+	if len(keyAndValues)%2 != 0 {
+		return nil, fmt.Errorf("keyAndValues have to be a pair of keys and values")
+	}
+	qs := make([]string, 0)
+	qv := make([]interface{}, 0)
+	qs = append(qs, "where (namespace= ? and received_at < ? )")
+	qv = append(qv, namespace, t)
+
+	for i := 0; i < len(keyAndValues); i += 2 {
+		v := keyAndValues[i+1]
+		if keyAndValues[i] == "created_before" {
+			qs = append(qs, " and created_at < ?")
+			qv = append(qv, v)
+		}
+		if keyAndValues[i] == "created_after" {
+			qs = append(qs, " and created_at >= ?")
+			qv = append(qv, v)
+		}
+		if keyAndValues[i] == "received_before" {
+			qs = append(qs, " and received_at < ?")
+			qv = append(qv, v)
+		}
+		if keyAndValues[i] == "received_after" {
+			qs = append(qs, " and received_at >= ?")
+			qv = append(qv, v)
+		}
+		if keyAndValues[i] == "event_contains" {
+			qs = append(qs, " and cloudevent like ?")
+			qv = append(qv, fmt.Sprintf("%%%v%%", v))
+		}
+		if keyAndValues[i] == "type_contains" {
+			qs = append(qs, " and type like ?")
+			qv = append(qv, fmt.Sprintf("%%%v%%", v))
+		}
+	}
+	qv = append(qv, pageSize)
+	q := fmt.Sprintf(`SELECT id, type, source, cloudevent, namespace_id, namespace, received_at, created_at FROM events_history
+	%v ORDER BY created_at DESC LIMIT ?`, strings.Join(qs, ""))
+
+	res := make([]gormEventHistoryEntry, 0, pageSize)
+	tx := hs.db.WithContext(ctx).Raw(q, qv...).Scan(&res)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	conv := make([]*events.Event, 0, len(res))
+
+	for _, v := range res {
+		var finalCE event.Event
+		err := json.Unmarshal([]byte(v.Cloudevent), &finalCE)
+		if err != nil {
+			return nil, err
+		}
+		conv = append(conv, &events.Event{Namespace: v.NamespaceID, NamespaceName: v.Namespace, ReceivedAt: v.ReceivedAt, Event: &finalCE})
+	}
+
+	return conv, nil
+}
+
 func (hs *sqlEventHistoryStore) GetNew(ctx context.Context, namespace string, t time.Time, keyAndValues ...string) ([]*events.Event, error) {
 	if len(keyAndValues)%2 != 0 {
 		return nil, fmt.Errorf("keyAndValues have to be a pair of keys and values")
 	}
 	qs := make([]string, 0)
 	qv := make([]interface{}, 0)
-	qs = append(qs, "where (namespace= ? and created_at < ? )")
+	qs = append(qs, "where (namespace= ? and received_at >= ? )")
 	qv = append(qv, namespace, t)
 
 	for i := 0; i < len(keyAndValues); i += 2 {

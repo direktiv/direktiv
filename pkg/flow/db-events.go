@@ -23,9 +23,10 @@ func (events *events) addEvent(ctx context.Context, eventin *cloudevents.Event, 
 		eventin.SetID(uuid.NewString())
 	}
 	li = append(li, &pkgevents.Event{
-		Event:      eventin,
-		Namespace:  ns.ID,
-		ReceivedAt: time.Now().UTC(),
+		Event:         eventin,
+		Namespace:     ns.ID,
+		NamespaceName: ns.Name,
+		ReceivedAt:    time.Now().UTC(),
 	})
 	err := events.runSqlTx(ctx, func(tx *database.SQLStore) error {
 		_, errs := tx.DataStore().EventHistory().Append(ctx, li)

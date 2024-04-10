@@ -147,7 +147,7 @@ func Initialize(app core.App, db *database.SQLStore, bus *pubsub2.Bus, instanceM
 				writeJSON(w, data)
 			})
 			r.Route("/namespaces/{namespace}/events", func(r chi.Router) {
-				eventsCtr.mountEventHistoryRouter(r) // Assuming you have an eventsCtr
+				eventsCtr.mountEventHistoryRouter(r)
 			})
 		})
 	})
