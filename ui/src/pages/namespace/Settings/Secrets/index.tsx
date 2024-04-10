@@ -35,15 +35,20 @@ const SecretsList: FC = () => {
   const [search, setSearch] = useState("");
   const isSearch = search.length > 0;
 
-  const { data, isFetched, isAllowed, noPermissionMessage } = useSecrets();
+  const {
+    data: secrets,
+    isFetched,
+    isAllowed,
+    noPermissionMessage,
+  } = useSecrets();
   const { refetch: updateNotificationBell } = useNamespaceLinting();
 
   const filteredItems = useMemo(
     () =>
-      (data?.data ?? [])?.filter(
+      (secrets?.data ?? [])?.filter(
         (item) => !isSearch || item.name.includes(search)
       ),
-    [data?.data, isSearch, search]
+    [secrets?.data, isSearch, search]
   );
 
   const { mutate: deleteSecretMutation } = useDeleteSecret({
