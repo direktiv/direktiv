@@ -492,9 +492,7 @@
           "menuHeading": {
             "main": "Select filter",
             "TYPE": "filter by type",
-            "TEXT": "search cloudevent content",
-            "AFTER": "filter by received after",
-            "BEFORE": "filter by received before"
+            "TEXT": "search cloudevent content"
           }
         }
       },
@@ -1239,6 +1237,12 @@
     },
     "blocker": {
       "unsavedChangesWarning": "You have unsaved changes that will be lost when leaving this route. Are you sure you want to leave?"
+    },
+    "filters": {
+      "menuHeading": {
+        "AFTER": "filter by received after",
+        "BEFORE": "filter by received before"
+      }
     },
     "timepicker": {
       "menuHeading": "refine time",

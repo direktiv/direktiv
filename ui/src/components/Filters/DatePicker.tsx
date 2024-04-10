@@ -23,9 +23,7 @@ const DatePicker = ({
   return (
     <Command>
       <CommandList className="max-h-[460px]">
-        <CommandGroup
-          heading={t(`pages.events.history.filter.menuHeading.${field}`)}
-        >
+        <CommandGroup heading={t(`components.filters.menuHeading.${field}`)}>
           <Datepicker
             mode="single"
             selected={date}
