@@ -60,10 +60,11 @@ test("it renders secrets, variables and registries", async ({ page }) => {
 
 test("it is possible to create and delete secrets", async ({ page }) => {
   const secrets = await createSecrets(namespace, 3);
+  const firstSecretName = secrets[0]?.data.name;
   const secretToDelete = secrets[1];
 
   // avoid typescript errors below
-  if (!secretToDelete) throw "error setting up test data";
+  if (!secretToDelete || !firstSecretName) throw "error setting up test data";
 
   await page.goto(`/${namespace}/settings`);
   await page.getByTestId("secret-create").click();
@@ -72,9 +73,18 @@ test("it is possible to create and delete secrets", async ({ page }) => {
     value: faker.random.alphaNumeric(20),
   };
 
-  await page.getByPlaceholder("secret-name").type(newSecret.name);
+  await page.getByPlaceholder("secret-name").type(firstSecretName);
   await page.locator("textarea").type(newSecret.value);
   await page.getByRole("button", { name: "Create" }).click();
+
+  await expect(
+    page.getByText("The name already exists"),
+    "it renders an error message when using a name that already exists"
+  ).toBeVisible();
+
+  await page.getByPlaceholder("secret-name").type(newSecret.name);
+  await page.getByRole("button", { name: "Create" }).click();
+
   await waitForSuccessToast(page);
 
   const secretElements = page.getByTestId("item-name");
