@@ -198,10 +198,10 @@
       "200":
         description:  object deleted successfully
 
-  put:
+  patch:
     tags:
       - namespaces
-    summary: Updates a direktiv namespace
+    summary: Patches a direktiv namespace
     parameters:
       - $ref: '../parameters.yaml#/namespace'
     requestBody:

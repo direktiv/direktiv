@@ -23,7 +23,7 @@ type nsController struct {
 func (e *nsController) mountRouter(r chi.Router) {
 	r.Get("/{name}", e.get)
 	r.Delete("/{name}", e.delete)
-	r.Put("/{name}", e.update)
+	r.Patch("/{name}", e.update)
 
 	r.Get("/", e.list)
 	r.Post("/", e.create)
