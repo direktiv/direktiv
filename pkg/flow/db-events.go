@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	database2 "github.com/direktiv/direktiv/pkg/refactor/database"
+	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -28,7 +28,7 @@ func (events *events) addEvent(ctx context.Context, eventin *cloudevents.Event, 
 		Namespace:  ns.ID,
 		ReceivedAt: time.Now().UTC(),
 	})
-	err := events.runSqlTx(ctx, func(tx *database2.SQLStore) error {
+	err := events.runSqlTx(ctx, func(tx *database.SQLStore) error {
 		_, errs := tx.DataStore().EventHistory().Append(ctx, li)
 		for _, err2 := range errs {
 			if err2 != nil {
@@ -44,7 +44,7 @@ func (events *events) addEvent(ctx context.Context, eventin *cloudevents.Event, 
 }
 
 func (events *events) deleteWorkflowEventListeners(ctx context.Context, nsID uuid.UUID, fileID uuid.UUID) error {
-	err := events.runSqlTx(ctx, func(tx *database2.SQLStore) error {
+	err := events.runSqlTx(ctx, func(tx *database.SQLStore) error {
 		ids, err := tx.DataStore().EventListener().DeleteAllForWorkflow(ctx, fileID)
 		if err != nil {
 			return err
@@ -69,7 +69,7 @@ func (events *events) deleteWorkflowEventListeners(ctx context.Context, nsID uui
 }
 
 func (events *events) deleteInstanceEventListeners(ctx context.Context, im *instanceMemory) error {
-	err := events.runSqlTx(ctx, func(tx *database2.SQLStore) error {
+	err := events.runSqlTx(ctx, func(tx *database.SQLStore) error {
 		ids, err := tx.DataStore().EventListener().DeleteAllForWorkflow(ctx, im.instance.Instance.ID)
 		if err != nil {
 			return err
@@ -146,7 +146,7 @@ func (events *events) processWorkflowEvents(ctx context.Context, nsID uuid.UUID,
 			contextFilters = append(contextFilters, gateKeeper)
 		}
 
-		err := events.runSqlTx(ctx, func(tx *database2.SQLStore) error {
+		err := events.runSqlTx(ctx, func(tx *database.SQLStore) error {
 			err := tx.DataStore().EventListener().Append(ctx, fEv)
 			if err != nil {
 				return err
@@ -205,7 +205,7 @@ func (events *events) addInstanceEventListener(ctx context.Context, namespace, i
 		fEv.TriggerType = pkgevents.WaitOR
 	}
 
-	err := events.runSqlTx(ctx, func(tx *database2.SQLStore) error {
+	err := events.runSqlTx(ctx, func(tx *database.SQLStore) error {
 		err := tx.DataStore().EventListener().Append(ctx, fEv)
 		if err != nil {
 			return err

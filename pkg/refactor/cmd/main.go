@@ -9,7 +9,7 @@ import (
 	"os"
 	"time"
 
-	api2 "github.com/direktiv/direktiv/pkg/api"
+	apiLegacy "github.com/direktiv/direktiv/pkg/api"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/refactor/api"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
@@ -37,7 +37,7 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 	initSLog()
 
 	// nolint:errcheck
-	go api2.RunApplication(args.Config)
+	go apiLegacy.RunApplication(args.Config)
 
 	// Create service manager
 	//nolint

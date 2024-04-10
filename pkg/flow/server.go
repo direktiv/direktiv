@@ -19,7 +19,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/metrics"
 	"github.com/direktiv/direktiv/pkg/refactor/cmd"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
-	database2 "github.com/direktiv/direktiv/pkg/refactor/database"
+	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	eventsstore "github.com/direktiv/direktiv/pkg/refactor/events"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
@@ -57,7 +57,7 @@ type server struct {
 	gormDB *gorm.DB
 	rawDB  *sql.DB
 
-	sqlStore *database2.SQLStore
+	sqlStore *database.SQLStore
 
 	mirrorManager *mirror.Manager
 
@@ -83,7 +83,7 @@ func Run(circuit *core.Circuit) error {
 		return fmt.Errorf("initialize db, err: %w", err)
 	}
 	// TODO: yassir, use the new db to refactor old code.
-	dbManager := database2.NewSQLStore(db, config.SecretKey)
+	dbManager := database.NewSQLStore(db, config.SecretKey)
 
 	slog.Info("initialize legacy server")
 	srv, err := initLegacyServer(circuit, config, db, dbManager)
@@ -201,7 +201,7 @@ func (c *mirrorCallbacks) VarStore() datastore.RuntimeVariablesStore {
 
 var _ mirror.Callbacks = &mirrorCallbacks{}
 
-func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, dbManager *database2.SQLStore) (*server, error) {
+func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, dbManager *database.SQLStore) (*server, error) {
 	srv := new(server)
 	srv.ID = uuid.New()
 	srv.initJQ()
@@ -414,7 +414,7 @@ func initDB(config *core.Config) (*gorm.DB, error) {
 		return nil, err
 	}
 
-	res := db.Exec(database2.Schema)
+	res := db.Exec(database.Schema)
 	if res.Error != nil {
 		return nil, fmt.Errorf("provisioning schema, err: %w", res.Error)
 	}
@@ -564,7 +564,7 @@ func (srv *server) cronPoll() {
 	}
 }
 
-func (srv *server) cronPollerWorkflow(ctx context.Context, tx *database2.SQLStore, file *filestore.File) {
+func (srv *server) cronPollerWorkflow(ctx context.Context, tx *database.SQLStore, file *filestore.File) {
 	ms, err := srv.validateRouter(ctx, tx, file)
 	if err != nil {
 		slog.Error("Failed to validate Routing for a cron schedule.", "error", err)
@@ -609,11 +609,11 @@ func this() string {
 	return elems[len(elems)-1]
 }
 
-func (srv *server) beginSqlTx(ctx context.Context, opts ...*sql.TxOptions) (*database2.SQLStore, error) {
+func (srv *server) beginSqlTx(ctx context.Context, opts ...*sql.TxOptions) (*database.SQLStore, error) {
 	return srv.sqlStore.BeginTx(ctx, opts...)
 }
 
-func (srv *server) runSqlTx(ctx context.Context, fun func(tx *database2.SQLStore) error) error {
+func (srv *server) runSqlTx(ctx context.Context, fun func(tx *database.SQLStore) error) error {
 	tx, err := srv.beginSqlTx(ctx)
 	if err != nil {
 		return err

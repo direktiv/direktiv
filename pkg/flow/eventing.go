@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"sync"
 
-	database2 "github.com/direktiv/direktiv/pkg/refactor/database"
+	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 
 	format "github.com/cloudevents/sdk-go/binding/format/protobuf/v2"
@@ -61,7 +61,7 @@ func (rcv *eventReceiver) sendToNamespace(name string, r *http.Request) error {
 		return err
 	}
 	var ns *datastore.Namespace
-	err = rcv.flow.runSqlTx(ctx, func(tx *database2.SQLStore) error {
+	err = rcv.flow.runSqlTx(ctx, func(tx *database.SQLStore) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, name)
 		return err
 	})
@@ -95,7 +95,7 @@ func (rcv *eventReceiver) MultiNamespaceHandler(w http.ResponseWriter, r *http.R
 
 	var nss []*datastore.Namespace
 	var err error
-	err = rcv.flow.runSqlTx(context.Background(), func(tx *database2.SQLStore) error {
+	err = rcv.flow.runSqlTx(context.Background(), func(tx *database.SQLStore) error {
 		nss, err = tx.DataStore().Namespaces().GetAll(ctx)
 		return err
 	})

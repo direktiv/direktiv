@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 
-	database2 "github.com/direktiv/direktiv/pkg/refactor/database"
+	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
@@ -40,7 +40,7 @@ func (flow *flow) NamespaceLint(ctx context.Context, req *grpc.NamespaceLintRequ
 	return &resp, nil
 }
 
-func (flow *flow) lintSecrets(ctx context.Context, tx *database2.SQLStore, ns *datastore.Namespace) ([]*grpc.LinterIssue, error) {
+func (flow *flow) lintSecrets(ctx context.Context, tx *database.SQLStore, ns *datastore.Namespace) ([]*grpc.LinterIssue, error) {
 	secrets, err := tx.DataStore().Secrets().GetAll(ctx, ns.Name)
 	if err != nil {
 		return nil, err

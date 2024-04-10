@@ -16,7 +16,7 @@ import (
 	"sync"
 	"time"
 
-	database2 "github.com/direktiv/direktiv/pkg/refactor/database"
+	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -103,7 +103,7 @@ func (engine *engine) kickWaitingInstances() {
 }
 
 type newInstanceArgs struct {
-	tx            *database2.SQLStore
+	tx            *database.SQLStore
 	ID            uuid.UUID
 	Namespace     *datastore.Namespace
 	CalledAs      string
