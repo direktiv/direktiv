@@ -36,7 +36,6 @@ message MirrorInfo {
     string ref = 2;
     string cron = 3;
     string publicKey = 4;
-    string commitId = 6;
     google.protobuf.Timestamp lastSync = 7;
     string privateKey = 8;
     string passphrase = 9;

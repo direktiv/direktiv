@@ -41,7 +41,6 @@ CREATE TABLE IF NOT EXISTS "mirror_configs" (
     "namespace" text,
     "url" text NOT NULL,
     "git_ref" text NOT NULL,
-    "git_commit_hash" text,
     "public_key" text,
     "private_key" text,
     "private_key_passphrase" text,
