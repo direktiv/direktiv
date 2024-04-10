@@ -11,7 +11,7 @@ export const getTimeString = (date: Date) => {
   const minutes = padTime(date.getMinutes());
   const seconds = padTime(date.getSeconds());
 
-  const time = hours + ":" + minutes + ":" + seconds;
+  const time = `${hours}:${minutes}:${seconds}`;
 
   return time;
 };
