@@ -110,6 +110,7 @@ func (e *nsController) update(w http.ResponseWriter, r *http.Request) {
 		Mirror *struct {
 			URL                  string `json:"url"`
 			GitRef               string `json:"gitRef"`
+			AuthToken            string `json:"authToken"`
 			PublicKey            string `json:"publicKey"`
 			PrivateKey           string `json:"privateKey"`
 			PrivateKeyPassphrase string `json:"privateKeyPassphrase"`
@@ -150,6 +151,7 @@ func (e *nsController) update(w http.ResponseWriter, r *http.Request) {
 		Namespace:            name,
 		URL:                  req.Mirror.URL,
 		GitRef:               req.Mirror.GitRef,
+		AuthToken:            req.Mirror.AuthToken,
 		PublicKey:            req.Mirror.PublicKey,
 		PrivateKey:           req.Mirror.PrivateKey,
 		PrivateKeyPassphrase: req.Mirror.PrivateKeyPassphrase,
@@ -184,6 +186,7 @@ func (e *nsController) create(w http.ResponseWriter, r *http.Request) {
 		Mirror *struct {
 			URL                  string `json:"url"`
 			GitRef               string `json:"gitRef"`
+			AuthToken            string `json:"authToken"`
 			PublicKey            string `json:"publicKey"`
 			PrivateKey           string `json:"privateKey"`
 			PrivateKeyPassphrase string `json:"privateKeyPassphrase"`
@@ -232,6 +235,7 @@ func (e *nsController) create(w http.ResponseWriter, r *http.Request) {
 			Namespace:            req.Name,
 			URL:                  req.Mirror.URL,
 			GitRef:               req.Mirror.GitRef,
+			AuthToken:            req.Mirror.AuthToken,
 			PublicKey:            req.Mirror.PublicKey,
 			PrivateKey:           req.Mirror.PrivateKey,
 			PrivateKeyPassphrase: req.Mirror.PrivateKeyPassphrase,
