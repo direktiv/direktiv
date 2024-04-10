@@ -201,7 +201,7 @@ func (s *sqlRuntimeVariablesStore) Set(ctx context.Context, variable *datastore.
 		`UPDATE runtime_variables SET
 						mime_type=?,
 						data=?,
-						updated_at=NOW()
+						updated_at=CURRENT_TIMESTAMP
 					WHERE namespace = ? AND name = ? %s;`, extra)
 
 	res := s.db.WithContext(ctx).Exec(queryString, args...)
@@ -299,7 +299,7 @@ func (s *sqlRuntimeVariablesStore) DeleteForWorkflow(ctx context.Context, namesp
 
 func (s *sqlRuntimeVariablesStore) SetWorkflowPath(ctx context.Context, namespace string, oldWorkflowPath string, newWorkflowPath string) error {
 	res := s.db.WithContext(ctx).Exec(
-		`UPDATE runtime_variables SET workflow_path=?, updated_at=NOW() WHERE namespace=? AND workflow_path=?`,
+		`UPDATE runtime_variables SET workflow_path=?, updated_at=CURRENT_TIMESTAMP WHERE namespace=? AND workflow_path=?`,
 		newWorkflowPath, namespace, oldWorkflowPath)
 	if res.Error != nil {
 		return res.Error
