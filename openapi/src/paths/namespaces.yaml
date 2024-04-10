@@ -31,9 +31,6 @@
                           gitRef:
                             type: string
                             description: git branch name
-                          gitCommitHash:
-                            type: string(optional)
-                            description: git commit hash
                           publicKey:
                             type: string(optional)
                             description: associated publish key ssh credential
@@ -79,9 +76,6 @@
                   gitRef:
                     type: string
                     description: git branch name
-                  gitCommitHash:
-                    type: string(optional)
-                    description: git commit hash
                   publicKey:
                     type: string(optional)
                     description: associated publish key ssh credential
@@ -120,9 +114,6 @@
                         gitRef:
                           type: string
                           description: git branch name
-                        gitCommitHash:
-                          type: string(optional)
-                          description: git commit hash
                         publicKey:
                           type: string(optional)
                           description: associated publish key ssh credential
@@ -175,9 +166,6 @@
                         gitRef:
                           type: string
                           description: git branch name
-                        gitCommitHash:
-                          type: string(optional)
-                          description: git commit hash
                         publicKey:
                           type: string(optional)
                           description: associated publish key ssh credential
@@ -232,9 +220,6 @@
                   gitRef:
                     type: string
                     description: git branch name
-                  gitCommitHash:
-                    type: string(optional)
-                    description: git commit hash
                   publicKey:
                     type: string(optional)
                     description: associated publish key ssh credential
@@ -273,9 +258,6 @@
                         gitRef:
                           type: string
                           description: git branch name
-                        gitCommitHash:
-                          type: string(optional)
-                          description: git commit hash
                         publicKey:
                           type: string(optional)
                           description: associated publish key ssh credential
