@@ -136,9 +136,9 @@ docker-start: ## Create a local docker deployment.
 	DIREKTIV_UI_IMAGE=direktiv-ui-dev DIREKTIV_IMAGE=direktiv-dev  docker compose up -d --scale e2e-api=0
 
 .PHONY: docker-headless
-docker-headless: docker-stop docker-stop
+docker-headless: docker-build-api docker-stop
 docker-headless: ## Create a local docker deployment without an included UI container.
-	DIREKTIV_UI_IMAGE=direktiv-ui-dev DIREKTIV_IMAGE=direktiv-dev  docker compose up -d --scale ui=0 --scale e2e-api=0
+	DIREKTIV_UI_IMAGE=direktiv-ui-dev DIREKTIV_IMAGE=direktiv-dev docker compose up -d --scale ui=0 --scale e2e-api=0
 
 .PHONY: docker-stop 
 docker-stop: ## Stop an existing docker deployment.

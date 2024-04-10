@@ -69,7 +69,7 @@ func (p *postgresBus) Loop(done <-chan struct{}, handler func(channel string, da
 		case msg := <-p.listener.Notify:
 			channel, data, err := splitNotificationText(msg.Extra)
 			if err != nil {
-				slog.Error("Failed parsing notify message", "msg", msg.Extra, "err", err)
+				slog.Error("parsing notify message", "msg", msg.Extra, "err", err)
 			} else {
 				handler(channel, data)
 			}

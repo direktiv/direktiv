@@ -87,8 +87,6 @@ spec:
               containerPort: 3333
             {{- end }}
           env:
-          - name: DIREKTIV_APP
-            value: "flow"
           - name: DIREKTIV_DEBUG
             value: {{ .Values.flow.debug | quote }}
           - name: DIREKTIV_LOG_FORMAT
@@ -169,6 +167,26 @@ spec:
           - name: {{ .name | quote }}
             value: {{ .value | quote }}
           {{- end }}
+
+          - name: DIREKTIV_KNATIVE_SIZE_MEMORY_SMALL
+            value: "{{ .Values.functions.limits.memory.small }}"
+          - name: DIREKTIV_KNATIVE_SIZE_CPU_SMALL
+            value: "{{ .Values.functions.limits.cpu.small }}"
+          - name: DIREKTIV_KNATIVE_SIZE_DISK_SMALL
+            value: "{{ .Values.functions.limits.disk.small }}"
+          - name: DIREKTIV_KNATIVE_SIZE_MEMORY_MEDIUM
+            value: "{{ .Values.functions.limits.memory.medium }}"
+          - name: DIREKTIV_KNATIVE_SIZE_CPU_MEDIUM
+            value: "{{ .Values.functions.limits.cpu.medium }}"
+          - name: DIREKTIV_KNATIVE_SIZE_DISK_MEDIUM
+            value: "{{ .Values.functions.limits.disk.medium }}"
+          - name: DIREKTIV_KNATIVE_SIZE_MEMORY_LARGE
+            value: "{{ .Values.functions.limits.memory.large }}"
+          - name: DIREKTIV_KNATIVE_SIZE_CPU_LARGE
+            value: "{{ .Values.functions.limits.cpu.large }}"
+          - name: DIREKTIV_KNATIVE_SIZE_DISK_LARGE
+            value: "{{ .Values.functions.limits.disk.large }}"
+
       volumes:
 {{- if .Values.opentelemetry.enabled }}
 {{ include "direktiv.opentelemetry.volume" . | indent 8 }}
