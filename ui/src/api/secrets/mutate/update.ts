@@ -12,11 +12,11 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
-type UpdateSecretParams = { baseUrl?: string; namespace: string };
+type UpdateSecretParams = { baseUrl?: string; namespace: string; name: string };
 
 export const updateSecret = apiFactory({
-  url: ({ baseUrl, namespace }: UpdateSecretParams) =>
-    `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/secrets`,
+  url: ({ baseUrl, namespace, name }: UpdateSecretParams) =>
+    `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/secrets/${name}`,
   method: "PATCH",
   schema: SecretCreatedUpdatedSchema,
 });
@@ -36,11 +36,12 @@ export const useUpdateSecret = ({
     throw new Error("namespace is undefined");
   }
 
-  const mutationFn = (payload: SecretFormCreateEditSchemaType) =>
+  const mutationFn = ({ name, ...payload }: SecretFormCreateEditSchemaType) =>
     updateSecret({
       apiKey: apiKey ?? undefined,
       payload,
       urlParams: {
+        name,
         namespace,
       },
     });
