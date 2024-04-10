@@ -7,16 +7,16 @@ import (
 	"time"
 
 	database2 "github.com/direktiv/direktiv/pkg/refactor/database"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/direktiv/direktiv/pkg/flow/nohome"
 	"github.com/direktiv/direktiv/pkg/model"
 	pkgevents "github.com/direktiv/direktiv/pkg/refactor/events"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/google/uuid"
 )
 
-func (events *events) addEvent(ctx context.Context, eventin *cloudevents.Event, ns *nohome.Namespace) error {
+func (events *events) addEvent(ctx context.Context, eventin *cloudevents.Event, ns *datastore.Namespace) error {
 	ctx, end := traceAddtoEventlog(ctx)
 	defer end()
 	li := make([]*pkgevents.Event, 0)

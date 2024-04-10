@@ -17,6 +17,7 @@ import (
 	"time"
 
 	database2 "github.com/direktiv/direktiv/pkg/refactor/database"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
@@ -104,7 +105,7 @@ func (engine *engine) kickWaitingInstances() {
 type newInstanceArgs struct {
 	tx            *database2.SQLStore
 	ID            uuid.UUID
-	Namespace     *nohome.Namespace
+	Namespace     *datastore.Namespace
 	CalledAs      string
 	Input         []byte
 	Invoker       string
@@ -701,7 +702,7 @@ func (engine *engine) subflowInvoke(ctx context.Context, pi *enginerefactor.Pare
 
 	args := &newInstanceArgs{
 		ID: uuid.New(),
-		Namespace: &nohome.Namespace{
+		Namespace: &datastore.Namespace{
 			ID:   instance.Instance.NamespaceID,
 			Name: instance.TelemetryInfo.NamespaceName,
 		},

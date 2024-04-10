@@ -9,10 +9,11 @@ import (
 	"log/slog"
 	"strings"
 
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
+
 	database2 "github.com/direktiv/direktiv/pkg/refactor/database"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
-	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/model"
 	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
@@ -82,7 +83,7 @@ func (srv *server) validateRouter(ctx context.Context, tx *database2.SQLStore, f
 	return ms, nil
 }
 
-func (engine *engine) mux(ctx context.Context, ns *database.Namespace, calledAs string) (*filestore.File, []byte, error) {
+func (engine *engine) mux(ctx context.Context, ns *datastore.Namespace, calledAs string) (*filestore.File, []byte, error) {
 	// TODO: Alan, fix for the new filestore.(*Revision).GetRevision() api.
 	uriElems := strings.SplitN(calledAs, ":", 2)
 	path := uriElems[0]

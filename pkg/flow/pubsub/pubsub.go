@@ -11,8 +11,8 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
-	"github.com/direktiv/direktiv/pkg/flow/nohome"
 	"github.com/direktiv/direktiv/pkg/flow/nohome/recipient"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 )
@@ -470,7 +470,7 @@ func (pubsub *Pubsub) NotifyNamespaces() {
 	pubsub.Publish(pubsubNotify("namespaces"))
 }
 
-func (pubsub *Pubsub) CloseNamespace(ns *nohome.Namespace) {
+func (pubsub *Pubsub) CloseNamespace(ns *datastore.Namespace) {
 	pubsub.Publish(pubsubDisconnect(ns.ID.String()))
 }
 
@@ -486,7 +486,7 @@ func (pubsub *Pubsub) namespaceEventListeners(id uuid.UUID) string {
 	return fmt.Sprintf("nsel:%s", id.String())
 }
 
-func (pubsub *Pubsub) SubscribeEventListeners(ns *nohome.Namespace) *Subscription {
+func (pubsub *Pubsub) SubscribeEventListeners(ns *datastore.Namespace) *Subscription {
 	return pubsub.Subscribe(ns.ID.String(), pubsub.namespaceEventListeners(ns.ID))
 }
 
@@ -494,15 +494,15 @@ func (pubsub *Pubsub) NotifyEventListeners(id uuid.UUID) {
 	pubsub.Publish(pubsubNotify(pubsub.namespaceEventListeners(id)))
 }
 
-func (pubsub *Pubsub) namespaceEvents(ns *nohome.Namespace) string {
+func (pubsub *Pubsub) namespaceEvents(ns *datastore.Namespace) string {
 	return fmt.Sprintf("nsev:%s", ns.ID.String())
 }
 
-func (pubsub *Pubsub) SubscribeEvents(ns *nohome.Namespace) *Subscription {
+func (pubsub *Pubsub) SubscribeEvents(ns *datastore.Namespace) *Subscription {
 	return pubsub.Subscribe(ns.ID.String(), pubsub.namespaceEvents(ns))
 }
 
-func (pubsub *Pubsub) NotifyEvents(ns *nohome.Namespace) {
+func (pubsub *Pubsub) NotifyEvents(ns *datastore.Namespace) {
 	pubsub.Publish(pubsubNotify(pubsub.namespaceEvents(ns)))
 }
 
@@ -532,7 +532,7 @@ func (pubsub *Pubsub) namespaceVars(nsID uuid.UUID) string {
 	return fmt.Sprintf("nsvar:%s", nsID.String())
 }
 
-func (pubsub *Pubsub) SubscribeNamespaceVariables(ns *nohome.Namespace) *Subscription {
+func (pubsub *Pubsub) SubscribeNamespaceVariables(ns *datastore.Namespace) *Subscription {
 	return pubsub.Subscribe(ns.ID.String(), pubsub.namespaceVars(ns.ID))
 }
 
@@ -576,15 +576,15 @@ func (pubsub *Pubsub) NotifyInstanceVariables(id uuid.UUID) {
 	pubsub.Publish(pubsubNotify(pubsub.instanceVars(id)))
 }
 
-func (pubsub *Pubsub) instances(ns *nohome.Namespace) string {
+func (pubsub *Pubsub) instances(ns *datastore.Namespace) string {
 	return fmt.Sprintf("instances:%s", ns.ID.String())
 }
 
-func (pubsub *Pubsub) NotifyInstances(ns *nohome.Namespace) {
+func (pubsub *Pubsub) NotifyInstances(ns *datastore.Namespace) {
 	// pubsub.publish(pubsubNotify(pubsub.instances(ns)))
 }
 
-func (pubsub *Pubsub) SubscribeInstances(ns *nohome.Namespace) *Subscription {
+func (pubsub *Pubsub) SubscribeInstances(ns *datastore.Namespace) *Subscription {
 	return pubsub.Subscribe(ns.ID.String(), pubsub.instances(ns))
 }
 

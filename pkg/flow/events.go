@@ -15,7 +15,6 @@ import (
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
-	"github.com/direktiv/direktiv/pkg/flow/nohome"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	pkgevents "github.com/direktiv/direktiv/pkg/refactor/events"
@@ -126,7 +125,7 @@ func (flow *flow) EventListeners(ctx context.Context, req *grpc.EventListenersRe
 	slog.Debug("Handling gRPC request", "this", this())
 
 	var resListeners []*pkgevents.EventListener
-	var ns *nohome.Namespace
+	var ns *datastore.Namespace
 	var err error
 
 	totalListeners := 0
@@ -165,7 +164,7 @@ func (flow *flow) EventListenersStream(req *grpc.EventListenersRequest, srv grpc
 	phash := ""
 	nhash := ""
 
-	var ns *nohome.Namespace
+	var ns *datastore.Namespace
 	var err error
 	err = flow.runSqlTx(ctx, func(tx *database2.SQLStore) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
@@ -262,7 +261,7 @@ func (flow *flow) BroadcastCloudevent(ctx context.Context, in *grpc.BroadcastClo
 		return nil, status.Errorf(codes.InvalidArgument, "invalid cloudevent: %v", err)
 	}
 
-	var ns *nohome.Namespace
+	var ns *datastore.Namespace
 	err = flow.runSqlTx(ctx, func(tx *database2.SQLStore) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, namespace)
 		endValidation()
@@ -355,7 +354,7 @@ func (flow *flow) EventHistory(ctx context.Context, req *grpc.EventHistoryReques
 	count := 0
 	var res []*pkgevents.Event
 	var err error
-	var ns *nohome.Namespace
+	var ns *datastore.Namespace
 	err = flow.runSqlTx(ctx, func(tx *database2.SQLStore) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
 		if err != nil {
@@ -420,7 +419,7 @@ func (flow *flow) EventHistoryStream(req *grpc.EventHistoryRequest, srv grpc.Flo
 	nhash := ""
 
 	var err error
-	var ns *nohome.Namespace
+	var ns *datastore.Namespace
 	err = flow.runSqlTx(ctx, func(tx *database2.SQLStore) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
 		return err
@@ -512,7 +511,7 @@ func (flow *flow) ReplayEvent(ctx context.Context, req *grpc.ReplayEventRequest)
 
 	var cevent *pkgevents.Event
 	var err error
-	var ns *nohome.Namespace
+	var ns *datastore.Namespace
 	err = flow.runSqlTx(ctx, func(tx *database2.SQLStore) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
 		if err != nil {
@@ -539,7 +538,7 @@ func (flow *flow) ReplayEvent(ctx context.Context, req *grpc.ReplayEventRequest)
 	return &resp, nil
 }
 
-func (events *events) ReplayCloudevent(ctx context.Context, ns *nohome.Namespace, cevent *pkgevents.Event) error {
+func (events *events) ReplayCloudevent(ctx context.Context, ns *datastore.Namespace, cevent *pkgevents.Event) error {
 	event := cevent.Event
 	span := trace.SpanFromContext(ctx)
 	traceID := span.SpanContext().TraceID()
@@ -561,7 +560,7 @@ func (events *events) ReplayCloudevent(ctx context.Context, ns *nohome.Namespace
 	return nil
 }
 
-func (events *events) BroadcastCloudevent(ctx context.Context, ns *nohome.Namespace, event *cloudevents.Event, timer int64) error {
+func (events *events) BroadcastCloudevent(ctx context.Context, ns *datastore.Namespace, event *cloudevents.Event, timer int64) error {
 	// events.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Event received: %s (%s / %s) target time: %v", event.ID(), event.Type(), event.Source(), time.Unix(timer, 0))
 	span := trace.SpanFromContext(ctx)
 	traceID := span.SpanContext().TraceID()

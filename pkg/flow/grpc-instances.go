@@ -8,10 +8,10 @@ import (
 	"time"
 
 	database2 "github.com/direktiv/direktiv/pkg/refactor/database"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
-	"github.com/direktiv/direktiv/pkg/flow/nohome"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
@@ -400,7 +400,7 @@ func (flow *flow) InstanceStream(req *grpc.InstanceRequest, srv grpc.Flow_Instan
 	nhash := ""
 
 	var err error
-	var ns *nohome.Namespace
+	var ns *datastore.Namespace
 	err = flow.runSqlTx(ctx, func(tx *database2.SQLStore) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
 		return err
@@ -477,7 +477,7 @@ resend:
 
 func (engine *engine) StartWorkflow(ctx context.Context, namespace, path string, input []byte) (*instancestore.InstanceData, error) {
 	var err error
-	var ns *nohome.Namespace
+	var ns *datastore.Namespace
 
 	err = engine.runSqlTx(ctx, func(tx *database2.SQLStore) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, namespace)
@@ -597,7 +597,7 @@ func (flow *flow) AwaitWorkflow(req *grpc.AwaitWorkflowRequest, srv grpc.Flow_Aw
 	nhash := ""
 
 	var err error
-	var ns *nohome.Namespace
+	var ns *datastore.Namespace
 	err = flow.runSqlTx(ctx, func(tx *database2.SQLStore) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
 		return err

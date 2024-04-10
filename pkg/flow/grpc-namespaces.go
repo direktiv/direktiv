@@ -5,10 +5,9 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/flow/nohome"
-
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	pubsub2 "github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -113,7 +112,7 @@ func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespace
 	}
 	defer tx.Rollback()
 
-	ns, err := tx.DataStore().Namespaces().Create(ctx, &nohome.Namespace{
+	ns, err := tx.DataStore().Namespaces().Create(ctx, &datastore.Namespace{
 		Name: req.GetName(),
 	})
 	if err != nil {

@@ -10,7 +10,6 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
-	"github.com/direktiv/direktiv/pkg/flow/nohome"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	libengine "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
@@ -122,7 +121,7 @@ func (internal *internal) SetWorkflowVariableParcels(srv grpc.Internal_SetWorkfl
 	return nil
 }
 
-func (flow *flow) getWorkflow(ctx context.Context, namespace, path string) (ns *nohome.Namespace, f *filestore.File, err error) {
+func (flow *flow) getWorkflow(ctx context.Context, namespace, path string) (ns *datastore.Namespace, f *filestore.File, err error) {
 	tx, err := flow.beginSqlTx(ctx)
 	if err != nil {
 		return

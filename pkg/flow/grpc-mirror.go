@@ -8,7 +8,6 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
-	"github.com/direktiv/direktiv/pkg/flow/nohome"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
@@ -39,7 +38,7 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 		return nil, err
 	}
 
-	ns, err = tx.DataStore().Namespaces().Create(ctx, &nohome.Namespace{
+	ns, err = tx.DataStore().Namespaces().Create(ctx, &datastore.Namespace{
 		Name: req.GetName(),
 	})
 	if err != nil {
