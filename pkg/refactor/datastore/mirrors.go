@@ -70,6 +70,10 @@ type MirrorStore interface {
 	GetConfig(ctx context.Context, namespace string) (*MirrorConfig, error)
 
 	GetAllConfigs(ctx context.Context) ([]*MirrorConfig, error)
+
+	// DeleteConfig deletes mirror config of a namespace
+	DeleteConfig(ctx context.Context, namespace string) error
+
 	// CreateProcess stores a new process in the store.
 	CreateProcess(ctx context.Context, process *MirrorProcess) (*MirrorProcess, error)
 

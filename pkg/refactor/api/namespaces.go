@@ -123,7 +123,7 @@ func (e *nsController) update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if req.Mirror == nil {
-		err := dStore.Mirror().DeletConfig(r.Context(), ns.Name)
+		err := dStore.Mirror().DeleteConfig(r.Context(), ns.Name)
 		// if no mirror stored, then nothing to do
 		if errors.Is(err, datastore.ErrNotFound) {
 			writeOk(w)

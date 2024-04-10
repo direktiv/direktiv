@@ -117,6 +117,21 @@ func (s sqlMirrorStore) UpdateConfig(ctx context.Context, config *datastore.Mirr
 	return s.GetConfig(ctx, config.Namespace)
 }
 
+func (s sqlMirrorStore) DeleteConfig(ctx context.Context, namespace string) error {
+	res := s.db.WithContext(ctx).Exec(`DELETE FROM mirror_configs WHERE namespace=?`, namespace)
+	if res.Error != nil {
+		return res.Error
+	}
+	if res.RowsAffected == 0 {
+		return datastore.ErrNotFound
+	}
+	if res.RowsAffected != 1 {
+		return fmt.Errorf("unexpected gorm delete count, got: %d, want: %d", res.RowsAffected, 1)
+	}
+
+	return nil
+}
+
 func (s sqlMirrorStore) GetConfig(ctx context.Context, namespace string) (*datastore.MirrorConfig, error) {
 	config := &datastore.MirrorConfig{}
 	res := s.db.WithContext(ctx).Raw(`
