@@ -12,8 +12,7 @@ export const SecretSchema = z.object({
   name: z.string(),
   createdAt: z.string(),
   updatedAt: z.string(),
-  // TODO: remove the .optional()
-  initialized: z.boolean().optional(),
+  initialized: z.boolean(),
 });
 
 export type SecretSchemaType = z.infer<typeof SecretSchema>;
