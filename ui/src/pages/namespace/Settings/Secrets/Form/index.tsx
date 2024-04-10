@@ -64,6 +64,7 @@ export const SecretForm = ({
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col space-y-5">
       <DialogHeader>{dialogTitle}</DialogHeader>
+      {/* TODO: rename prop */}
       {dialogHeader}
       <FormErrors errors={errors} className="mb-5" />
       <fieldset className="flex items-center gap-5">
@@ -77,7 +78,7 @@ export const SecretForm = ({
           disabled={disableNameInput}
           id="name"
           {...register("name")}
-          placeholder={t("components.variableForm.name.placeholder")}
+          placeholder="secret-name" // TODO
         />
       </fieldset>
       <FileUpload
