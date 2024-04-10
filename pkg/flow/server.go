@@ -54,10 +54,10 @@ type server struct {
 	timers *timers
 	engine *engine
 
-	gormDB    *gorm.DB
-	dbManager *database2.SQLStore
+	gormDB *gorm.DB
+	rawDB  *sql.DB
 
-	rawDB *sql.DB
+	sqlStore *database2.SQLStore
 
 	mirrorManager *mirror.Manager
 
@@ -225,7 +225,7 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 	}()
 
 	srv.gormDB = db
-	srv.dbManager = dbManager
+	srv.sqlStore = dbManager
 
 	srv.rawDB, err = sql.Open("postgres", config.DB)
 	if err == nil {
@@ -610,7 +610,7 @@ func this() string {
 }
 
 func (srv *server) beginSqlTx(ctx context.Context, opts ...*sql.TxOptions) (*database2.SQLStore, error) {
-	return srv.dbManager.BeginTx(ctx, opts...)
+	return srv.sqlStore.BeginTx(ctx, opts...)
 }
 
 func (srv *server) runSqlTx(ctx context.Context, fun func(tx *database2.SQLStore) error) error {
