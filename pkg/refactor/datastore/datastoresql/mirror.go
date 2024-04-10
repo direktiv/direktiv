@@ -100,7 +100,7 @@ func (s sqlMirrorStore) UpdateConfig(ctx context.Context, config *datastore.Mirr
 			"git_ref":                config.GitRef,
 			"public_key":             config.PublicKey,
 			"private_key":            config.PrivateKey,
-			"auth_key":               config.AuthToken,
+			"auth_token":             config.AuthToken,
 			"private_key_passphrase": config.PrivateKeyPassphrase,
 			"insecure":               config.Insecure,
 		})
