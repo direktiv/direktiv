@@ -64,7 +64,7 @@ func (ms *muxStart) Hash() string {
 	return bytedata.Checksum(ms)
 }
 
-func (srv *server) validateRouter(ctx context.Context, tx *database2.DB, file *filestore.File) (*muxStart, error) {
+func (srv *server) validateRouter(ctx context.Context, tx *database2.SQLStore, file *filestore.File) (*muxStart, error) {
 	data, err := tx.FileStore().ForFile(file).GetData(ctx)
 	if err != nil {
 		return nil, err
@@ -211,7 +211,7 @@ func (flow *flow) cronHandler(data []byte) {
 	go flow.engine.start(im)
 }
 
-func (flow *flow) configureWorkflowStarts(ctx context.Context, tx *database2.DB, nsID uuid.UUID, file *filestore.File) error {
+func (flow *flow) configureWorkflowStarts(ctx context.Context, tx *database2.SQLStore, nsID uuid.UUID, file *filestore.File) error {
 	ms, err := flow.validateRouter(ctx, tx, file)
 	if err != nil {
 		return err

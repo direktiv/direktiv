@@ -55,7 +55,7 @@ type server struct {
 	engine *engine
 
 	gormDB    *gorm.DB
-	dbManager *database2.DB
+	dbManager *database2.SQLStore
 
 	rawDB *sql.DB
 
@@ -83,7 +83,7 @@ func Run(circuit *core.Circuit) error {
 		return fmt.Errorf("initialize db, err: %w", err)
 	}
 	// TODO: yassir, use the new db to refactor old code.
-	dbManager := database2.NewDB(db, config.SecretKey)
+	dbManager := database2.NewSQLStore(db, config.SecretKey)
 
 	slog.Info("initialize legacy server")
 	srv, err := initLegacyServer(circuit, config, db, dbManager)
@@ -201,7 +201,7 @@ func (c *mirrorCallbacks) VarStore() datastore.RuntimeVariablesStore {
 
 var _ mirror.Callbacks = &mirrorCallbacks{}
 
-func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, dbManager *database2.DB) (*server, error) {
+func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, dbManager *database2.SQLStore) (*server, error) {
 	srv := new(server)
 	srv.ID = uuid.New()
 	srv.initJQ()
@@ -400,7 +400,7 @@ func initDB(config *core.Config) (*gorm.DB, error) {
 		db, err = gorm.Open(postgres.New(postgres.Config{
 			DSN:                  config.DB,
 			PreferSimpleProtocol: false, // disables implicit prepared statement usage
-			// Conn:                 edb.DB(),
+			// Conn:                 edb.SQLStore(),
 		}), gormConf)
 		if err == nil {
 			slog.Info("successfully connected to the database.")
@@ -564,7 +564,7 @@ func (srv *server) cronPoll() {
 	}
 }
 
-func (srv *server) cronPollerWorkflow(ctx context.Context, tx *database2.DB, file *filestore.File) {
+func (srv *server) cronPollerWorkflow(ctx context.Context, tx *database2.SQLStore, file *filestore.File) {
 	ms, err := srv.validateRouter(ctx, tx, file)
 	if err != nil {
 		slog.Error("Failed to validate Routing for a cron schedule.", "error", err)
@@ -609,11 +609,11 @@ func this() string {
 	return elems[len(elems)-1]
 }
 
-func (srv *server) beginSqlTx(ctx context.Context, opts ...*sql.TxOptions) (*database2.DB, error) {
+func (srv *server) beginSqlTx(ctx context.Context, opts ...*sql.TxOptions) (*database2.SQLStore, error) {
 	return srv.dbManager.BeginTx(ctx, opts...)
 }
 
-func (srv *server) runSqlTx(ctx context.Context, fun func(tx *database2.DB) error) error {
+func (srv *server) runSqlTx(ctx context.Context, fun func(tx *database2.SQLStore) error) error {
 	tx, err := srv.beginSqlTx(ctx)
 	if err != nil {
 		return err

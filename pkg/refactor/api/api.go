@@ -24,7 +24,7 @@ const (
 	readHeaderTimeout = 5 * time.Second
 )
 
-func Initialize(app core.App, db *database.DB, bus *pubsub2.Bus, instanceManager *instancestore.InstanceManager, addr string, circuit *core.Circuit) error {
+func Initialize(app core.App, db *database.SQLStore, bus *pubsub2.Bus, instanceManager *instancestore.InstanceManager, addr string, circuit *core.Circuit) error {
 	funcCtr := &serviceController{
 		manager: app.ServiceManager,
 	}

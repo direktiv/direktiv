@@ -102,7 +102,7 @@ func (engine *engine) kickWaitingInstances() {
 }
 
 type newInstanceArgs struct {
-	tx            *database2.DB
+	tx            *database2.SQLStore
 	ID            uuid.UUID
 	Namespace     *database.Namespace
 	CalledAs      string

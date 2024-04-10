@@ -401,7 +401,7 @@ func (flow *flow) InstanceStream(req *grpc.InstanceRequest, srv grpc.Flow_Instan
 
 	var err error
 	var ns *database.Namespace
-	err = flow.runSqlTx(ctx, func(tx *database2.DB) error {
+	err = flow.runSqlTx(ctx, func(tx *database2.SQLStore) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
 		return err
 	})
@@ -479,7 +479,7 @@ func (engine *engine) StartWorkflow(ctx context.Context, namespace, path string,
 	var err error
 	var ns *database.Namespace
 
-	err = engine.runSqlTx(ctx, func(tx *database2.DB) error {
+	err = engine.runSqlTx(ctx, func(tx *database2.SQLStore) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, namespace)
 		return err
 	})
@@ -598,7 +598,7 @@ func (flow *flow) AwaitWorkflow(req *grpc.AwaitWorkflowRequest, srv grpc.Flow_Aw
 
 	var err error
 	var ns *database.Namespace
-	err = flow.runSqlTx(ctx, func(tx *database2.DB) error {
+	err = flow.runSqlTx(ctx, func(tx *database2.SQLStore) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
 		return err
 	})

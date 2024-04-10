@@ -75,7 +75,7 @@ func (events *events) handleEvent(ctx context.Context, ns uuid.UUID, nsName stri
 			ctx, end := traceGetListenersByTopic(ctx, s)
 			defer end()
 			res := make([]*pkgevents.EventListener, 0)
-			err := events.runSqlTx(ctx, func(tx *database2.DB) error {
+			err := events.runSqlTx(ctx, func(tx *database2.SQLStore) error {
 				r, err := tx.DataStore().EventListenerTopics().GetListeners(ctx, s)
 				if err != nil {
 					slog.Error("Error fetching event-listener-topics.", "error", err)
@@ -91,7 +91,7 @@ func (events *events) handleEvent(ctx context.Context, ns uuid.UUID, nsName stri
 		},
 		UpdateListeners: func(ctx context.Context, listener []*pkgevents.EventListener) []error {
 			slog.Debug("Updating listeners starting.")
-			err := events.runSqlTx(ctx, func(tx *database2.DB) error {
+			err := events.runSqlTx(ctx, func(tx *database2.SQLStore) error {
 				errs := tx.DataStore().EventListener().UpdateOrDelete(ctx, listener)
 				for _, err2 := range errs {
 					if err2 != nil {
@@ -130,7 +130,7 @@ func (flow *flow) EventListeners(ctx context.Context, req *grpc.EventListenersRe
 	var err error
 
 	totalListeners := 0
-	err = flow.runSqlTx(ctx, func(tx *database2.DB) error {
+	err = flow.runSqlTx(ctx, func(tx *database2.SQLStore) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
 		if err != nil {
 			return err
@@ -167,7 +167,7 @@ func (flow *flow) EventListenersStream(req *grpc.EventListenersRequest, srv grpc
 
 	var ns *database.Namespace
 	var err error
-	err = flow.runSqlTx(ctx, func(tx *database2.DB) error {
+	err = flow.runSqlTx(ctx, func(tx *database2.SQLStore) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
 		return err
 	})
@@ -181,7 +181,7 @@ resend:
 	var resListeners []*pkgevents.EventListener
 	totalListeners := 0
 
-	err = flow.runSqlTx(ctx, func(tx *database2.DB) error {
+	err = flow.runSqlTx(ctx, func(tx *database2.SQLStore) error {
 		li, t, err := tx.DataStore().EventListener().Get(ctx, ns.ID, int(req.Pagination.Limit), int(req.Pagination.Offset))
 		if err != nil {
 			return err
@@ -263,7 +263,7 @@ func (flow *flow) BroadcastCloudevent(ctx context.Context, in *grpc.BroadcastClo
 	}
 
 	var ns *database.Namespace
-	err = flow.runSqlTx(ctx, func(tx *database2.DB) error {
+	err = flow.runSqlTx(ctx, func(tx *database2.SQLStore) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, namespace)
 		endValidation()
 		return err
@@ -297,7 +297,7 @@ func (flow *flow) HistoricalEvent(ctx context.Context, in *grpc.HistoricalEventR
 	var cevent *pkgevents.Event
 	var ns *datastore.Namespace
 	var err error
-	err = flow.runSqlTx(ctx, func(tx *database2.DB) error {
+	err = flow.runSqlTx(ctx, func(tx *database2.SQLStore) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, in.GetNamespace())
 		if err != nil {
 			return err
@@ -356,7 +356,7 @@ func (flow *flow) EventHistory(ctx context.Context, req *grpc.EventHistoryReques
 	var res []*pkgevents.Event
 	var err error
 	var ns *database.Namespace
-	err = flow.runSqlTx(ctx, func(tx *database2.DB) error {
+	err = flow.runSqlTx(ctx, func(tx *database2.SQLStore) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
 		if err != nil {
 			return err
@@ -421,7 +421,7 @@ func (flow *flow) EventHistoryStream(req *grpc.EventHistoryRequest, srv grpc.Flo
 
 	var err error
 	var ns *database.Namespace
-	err = flow.runSqlTx(ctx, func(tx *database2.DB) error {
+	err = flow.runSqlTx(ctx, func(tx *database2.SQLStore) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
 		return err
 	})
@@ -451,7 +451,7 @@ resend:
 			queryParams = append(queryParams, "event_contains", f.Val)
 		}
 	}
-	err = flow.runSqlTx(ctx, func(tx *database2.DB) error {
+	err = flow.runSqlTx(ctx, func(tx *database2.SQLStore) error {
 		re, t, err := tx.DataStore().EventHistory().Get(ctx, int(req.Pagination.Limit), int(req.Pagination.Offset), ns.ID, queryParams...)
 		if err != nil {
 			return err
@@ -513,7 +513,7 @@ func (flow *flow) ReplayEvent(ctx context.Context, req *grpc.ReplayEventRequest)
 	var cevent *pkgevents.Event
 	var err error
 	var ns *database.Namespace
-	err = flow.runSqlTx(ctx, func(tx *database2.DB) error {
+	err = flow.runSqlTx(ctx, func(tx *database2.SQLStore) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
 		if err != nil {
 			return err

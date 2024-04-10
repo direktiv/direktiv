@@ -40,7 +40,7 @@ func (flow *flow) NamespaceLint(ctx context.Context, req *grpc.NamespaceLintRequ
 	return &resp, nil
 }
 
-func (flow *flow) lintSecrets(ctx context.Context, tx *database2.DB, ns *database.Namespace) ([]*grpc.LinterIssue, error) {
+func (flow *flow) lintSecrets(ctx context.Context, tx *database2.SQLStore, ns *database.Namespace) ([]*grpc.LinterIssue, error) {
 	secrets, err := tx.DataStore().Secrets().GetAll(ctx, ns.Name)
 	if err != nil {
 		return nil, err

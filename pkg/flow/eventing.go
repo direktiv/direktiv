@@ -61,7 +61,7 @@ func (rcv *eventReceiver) sendToNamespace(name string, r *http.Request) error {
 		return err
 	}
 	var ns *database.Namespace
-	err = rcv.flow.runSqlTx(ctx, func(tx *database2.DB) error {
+	err = rcv.flow.runSqlTx(ctx, func(tx *database2.SQLStore) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, name)
 		return err
 	})
@@ -95,7 +95,7 @@ func (rcv *eventReceiver) MultiNamespaceHandler(w http.ResponseWriter, r *http.R
 
 	var nss []*database.Namespace
 	var err error
-	err = rcv.flow.runSqlTx(context.Background(), func(tx *database2.DB) error {
+	err = rcv.flow.runSqlTx(context.Background(), func(tx *database2.SQLStore) error {
 		nss, err = tx.DataStore().Namespaces().GetAll(ctx)
 		return err
 	})

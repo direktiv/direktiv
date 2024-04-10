@@ -26,7 +26,7 @@ import (
 
 type NewMainArgs struct {
 	Config            *core.Config
-	Database          *database.DB
+	Database          *database.SQLStore
 	PubSubBus         *pubsub.Bus
 	ConfigureWorkflow func(data string) error
 	InstanceManager   *instancestore.InstanceManager
@@ -193,7 +193,7 @@ func initSLog() {
 	slog.SetDefault(slogger)
 }
 
-func renderServiceManager(db *database.DB, serviceManager core.ServiceManager) {
+func renderServiceManager(db *database.SQLStore, serviceManager core.ServiceManager) {
 	ctx := context.Background()
 	slog := slog.With("subscriber", "services file watcher")
 
