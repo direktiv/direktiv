@@ -18,10 +18,10 @@ import Delete from "./Delete";
 import Input from "~/design/Input";
 import ItemRow from "../components/ItemRow";
 import PaginationProvider from "~/components/PaginationProvider";
-import { SecretSchemaType } from "~/api/secrets_obsolete/schema";
-import { useDeleteSecret } from "~/api/secrets_obsolete/mutate/deleteSecret";
+import { SecretSchemaType } from "~/api/secrets/schema";
+import { useDeleteSecret } from "~/api/secrets/mutate/delete";
 import { useNamespaceLinting } from "~/api/namespaceLinting/query/useNamespaceLinting";
-import { useSecrets } from "~/api/secrets_obsolete/query/get";
+import { useSecrets } from "~/api/secrets/query/get";
 import { useTranslation } from "react-i18next";
 
 const pageSize = 10;
@@ -40,10 +40,10 @@ const SecretsList: FC = () => {
 
   const filteredItems = useMemo(
     () =>
-      (data?.secrets.results ?? [])?.filter(
+      (data?.data ?? [])?.filter(
         (item) => !isSearch || item.name.includes(search)
       ),
-    [data?.secrets.results, isSearch, search]
+    [data?.data, isSearch, search]
   );
 
   const { mutate: deleteSecretMutation } = useDeleteSecret({

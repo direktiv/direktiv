@@ -4,7 +4,7 @@ import RegistriesList from "./Registries";
 import SecretsList from "./Secrets";
 import VariablesList from "./Variables";
 import { useRegistries } from "~/api/registries/query/get";
-import { useSecrets } from "~/api/secrets_obsolete/query/get";
+import { useSecrets } from "~/api/secrets/query/get";
 import { useVars } from "~/api/variables/query/get";
 
 // this hook uses all initial data fetching hooks from the components on
