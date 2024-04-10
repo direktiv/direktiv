@@ -56,7 +56,7 @@ describe('Test target file wrong config', () => {
 		endpointBroken,
 	)
 
-	retry10(`should list all services`, async () => {
+	retry10(`should fail with wrong config`, async () => {
 		const listRes = await request(common.config.getDirektivHost()).get(
 			`/api/v2/namespaces/${ testNamespace }/gateway/routes`,
 		)
@@ -144,7 +144,7 @@ describe('Test target namespace file plugin', () => {
 		expect(req.text).toEqual(endpointNSFile)
 	})
 
-	retry10(`should not return a file`, async () => {
+	retry10(`should not return a file across namespaces`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(
 			`/ns/` + limitedNamespace + `/endpoint1`,
 		)

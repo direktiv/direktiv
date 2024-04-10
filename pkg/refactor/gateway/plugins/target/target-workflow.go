@@ -152,8 +152,8 @@ func doDirektivRequest(requestType direktivRequestType, args map[string]string,
 
 	switch requestType {
 	case direktivFileRequest:
-		url = fmt.Sprintf("http://localhost:%s/api/namespaces/%s/tree%s",
-			os.Getenv("DIREKTIV_API_V1_PORT"), args[namespaceArg], args[pathArg])
+		url = fmt.Sprintf("http://localhost:%s/api/v2/namespaces/%s/files/%s",
+			os.Getenv("DIREKTIV_API_V2_PORT"), args[namespaceArg], args[pathArg])
 	case direktivWorkflowVarRequest:
 		url = fmt.Sprintf("http://localhost:%s/api/namespaces/%s/tree%s?op=var&var=%s",
 			os.Getenv("DIREKTIV_API_V1_PORT"), args[namespaceArg], args[flowArg], args[varArg])
