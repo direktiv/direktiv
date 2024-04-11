@@ -191,3 +191,30 @@ describe('Test valid namespace name', () => {
 		})
 	}
 })
+
+
+describe('Test valid error cases', () => {
+	beforeAll(helpers.deleteAllNamespaces)
+
+	it(`should create foo namespace`, async () => {
+		const res = await request(config.getDirektivHost())
+			.post(`/api/v2/namespaces`)
+			.send({
+				name: "foo",
+			})
+		expect(res.statusCode).toEqual(200)
+	})
+
+	it(`should fail create foo namespace`, async () => {
+		const res = await request(config.getDirektivHost())
+			.post(`/api/v2/namespaces`)
+			.send({
+				name: "foo",
+			})
+		expect(res.statusCode).toEqual(400)
+		expect(res.body.error).toEqual({
+			code: 'request_data_invalid',
+			message: 'namespace name already used',
+		})
+	})
+})
