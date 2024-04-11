@@ -145,12 +145,6 @@
                 "createBtn": "Add variable",
                 "emptySearch": "No variable matches your search",
                 "empty": "No variable found"
-              },
-              "create": {
-                "title": "Add a workflow variable"
-              },
-              "edit": {
-                "title": "Edit {{name}}"
               }
             }
           },
@@ -921,13 +915,6 @@
         },
         "delete": {
           "description": "Are you sure you want to delete <b>{{name}}</b>?<br/> This cannot be undone."
-        },
-        "create": {
-          "title": "Add a variable"
-        },
-        "edit": {
-          "title": "Edit {{name}}",
-          "fetchError": "There was an error fetching the variable's content"
         }
       },
       "deleteNamespace": {
@@ -1171,6 +1158,10 @@
       "optionDoesNotExist": "{{namespace}} (does not exist)"
     },
     "variableForm": {
+      "title": {
+        "create": "Create a variable",
+        "edit": "Edit {{name}}"
+      },
       "name": {
         "label": "Name",
         "placeholder": "variable-name",
