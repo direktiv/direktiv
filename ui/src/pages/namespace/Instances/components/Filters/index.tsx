@@ -3,12 +3,12 @@ import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 
 import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
-import DatePicker from "./DatePicker";
+import DatePicker from "~/components/Filters/DatePicker";
 import { FiltersObj } from "~/api/instances/query/get";
 import Options from "./Options";
-import RefineTime from "./RefineTime";
-import { SelectFieldMenu } from "./SelectFieldMenu";
-import TextInput from "./TextInput";
+import RefineTime from "~/components/Filters/RefineTime";
+import { SelectFieldMenu } from "../../../../../components/Filters/SelectFieldMenu";
+import TextInput from "~/components/Filters/TextInput";
 import moment from "moment";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -115,10 +115,20 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
                 <PopoverContent align="start">
                   {field === "AS" && (
                     <TextInput
-                      field={field}
-                      setFilter={setFilter}
-                      clearFilter={clearFilter}
                       value={filters[field]?.value}
+                      onSubmit={(value) => {
+                        if (value) {
+                          setFilter({
+                            [field]: { value, type: "CONTAINS" },
+                          });
+                        } else {
+                          clearFilter(field);
+                        }
+                      }}
+                      heading={t("pages.instances.list.filter.placeholder.AS")}
+                      placeholder={t(
+                        "pages.instances.list.filter.placeholder.AS"
+                      )}
                     />
                   )}
                 </PopoverContent>
@@ -267,17 +277,32 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
           </PopoverTrigger>
           <PopoverContent align="start">
             {(selectedField === null && (
-              <SelectFieldMenu
-                options={undefinedFilters}
+              <SelectFieldMenu<keyof FiltersObj>
+                options={undefinedFilters.map((option) => ({
+                  value: option,
+                  label: t(`pages.instances.list.filter.field.${option}`),
+                }))}
                 onSelect={setSelectedField}
+                heading={t("pages.instances.list.filter.menuHeading.main")}
+                placeholder={t(
+                  "pages.instances.list.filter.placeholder.mainMenu"
+                )}
               />
             )) ||
               (selectedField === "AS" && (
                 <TextInput
-                  field={selectedField}
-                  setFilter={setFilter}
-                  clearFilter={clearFilter}
                   value={filters[selectedField]?.value}
+                  onSubmit={(value) => {
+                    if (value) {
+                      setFilter({
+                        [selectedField]: { value, type: "CONTAINS" },
+                      });
+                    } else {
+                      clearFilter(selectedField);
+                    }
+                  }}
+                  heading={t("pages.instances.list.filter.placeholder.AS")}
+                  placeholder={t("pages.instances.list.filter.placeholder.AS")}
                 />
               )) ||
               (selectedField === "STATUS" && (
