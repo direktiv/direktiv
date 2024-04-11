@@ -20,6 +20,7 @@ describe('Test secret create calls', () => {
 			},
 			want: {
 				name: 'foo1',
+				initialized: true,
 			},
 		},
 		{
@@ -29,6 +30,7 @@ describe('Test secret create calls', () => {
 			},
 			want: {
 				name: 'foo2',
+				initialized: true,
 			},
 		},
 	]
