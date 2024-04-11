@@ -562,10 +562,8 @@ recheck:
 
 		x, exists := m[field]
 		if exists {
-			//nolint:errchkjson
 			raw, _ = json.Marshal(x)
 		} else {
-			//nolint:errchkjson
 			raw, _ = json.Marshal(nil)
 		}
 	}
@@ -629,7 +627,6 @@ func (e *instController) stream(w http.ResponseWriter, r *http.Request) {
 			return // TODO: how are we supposed to report errors in SSE?
 		}
 
-		//nolint:errchkjson
 		raw, _ := json.Marshal(marshalForAPI(data))
 
 		dst := &bytes.Buffer{}

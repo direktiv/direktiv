@@ -112,7 +112,9 @@ issues:
     - text: "Rollback` is not checked"
       linters:
         - errcheck
-
     - text: "encoding/json.Encoder"
+      linters:
+        - errchkjson
+    - text: "encoding/json.Marshal"
       linters:
         - errchkjson

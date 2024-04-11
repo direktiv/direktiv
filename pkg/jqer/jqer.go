@@ -33,7 +33,7 @@ func Evaluate(data, query interface{}) ([]interface{}, error) {
 		return out, nil
 	}
 
-	x, _ := json.Marshal(data) //nolint:errchkjson
+	x, _ := json.Marshal(data)
 	m := make(map[string]interface{})
 	_ = json.Unmarshal(x, &m)
 
