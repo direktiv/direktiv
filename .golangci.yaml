@@ -101,7 +101,6 @@ issues:
         - gocritic
         - rowserrcheck
         - nakedret
-        - unused
         - gocyclo
 
     - text: "do not define dynamic errors, use wrapped static errors instead:"
