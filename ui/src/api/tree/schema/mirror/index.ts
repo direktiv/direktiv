@@ -35,7 +35,7 @@ import { z } from "zod";
 // In the current API implementation, for secret values, "-" means a value exists.
 export const MirrorInfoInfoSchema = z.object({
   url: z.string(),
-  ref: z.string(),
+  gitRef: z.string(),
   lastSync: z.string().or(z.null()),
   publicKey: z.string(),
   privateKey: z.enum(["-", ""]),
@@ -80,17 +80,15 @@ export const UpdateMirrorResponseSchema = z.null();
 // by creating a namespace with the mirror object in the payload.
 export const MirrorPublicPostSchema = z.object({
   url: z.string().url().nonempty(),
-  ref: z.string().nonempty(),
+  gitRef: z.string().nonempty(),
   insecure: z.boolean(),
 });
 
 // When Token auth is used, token is submitted as "passphrase"
 export const MirrorTokenPostSchema = z.object({
   url: z.string().url().nonempty(),
-  ref: z.string().nonempty(),
-  passphrase: z
-    .string()
-    .nonempty({ message: "Required when using token auth" }),
+  gitRef: z.string().nonempty(),
+  authToken: z.string().nonempty({ message: "Required when using token auth" }),
   insecure: z.boolean(),
 });
 
@@ -98,10 +96,10 @@ export const MirrorSshPostSchema = z.object({
   url: gitUrlSchema.nonempty({
     message: "format must be git@host:path when using SSH",
   }),
-  ref: z.string().nonempty(),
-  passphrase: z.string().optional(),
-  privateKey: z.string().nonempty({ message: "Required when using SSH" }),
+  gitRef: z.string().nonempty(),
   publicKey: z.string().nonempty({ message: "Required when using SSH" }),
+  privateKey: z.string().nonempty({ message: "Required when using SSH" }),
+  privateKeyPassphrase: z.string().optional(),
   insecure: z.boolean(),
 });
 

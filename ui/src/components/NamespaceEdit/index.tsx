@@ -35,10 +35,11 @@ type FormInput = {
   name: string;
   formType: MirrorFormType;
   url: string;
-  ref: string;
-  passphrase: string;
+  gitRef: string;
+  authToken: string;
   publicKey: string;
   privateKey: string;
+  privateKeyPassphrase: string;
   insecure: boolean;
 };
 
@@ -91,7 +92,7 @@ const NamespaceEdit = ({
           formType: initialFormType,
           name: mirror.namespace,
           url: mirror.info.url,
-          ref: mirror.info.ref,
+          gitRef: mirror.info.gitRef,
           insecure: mirror.info.insecure,
         }
       : {
@@ -128,17 +129,29 @@ const NamespaceEdit = ({
 
   const onSubmit: SubmitHandler<FormInput> = ({
     name,
-    ref,
+    gitRef,
     url,
     formType,
-    passphrase,
+    authToken,
     publicKey,
     privateKey,
+    privateKeyPassphrase,
     insecure,
   }) => {
     if (isNew) {
       return createNamespace({
         name,
+        mirror: isMirror
+          ? {
+              gitRef,
+              authToken,
+              url,
+              publicKey,
+              privateKey,
+              privateKeyPassphrase,
+              insecure,
+            }
+          : undefined,
       });
     }
 
@@ -159,28 +172,28 @@ const NamespaceEdit = ({
 
     if (formType === "token") {
       updateAuthValues = {
-        passphrase,
+        publicKey,
       };
     }
     if (formType === "keep-ssh") {
       updateAuthValues = {
-        passphrase: "-",
         publicKey: "-",
         privateKey: "-",
+        privateKeyPassphrase: "-",
       };
     }
     if (formType === "ssh") {
       updateAuthValues = {
-        passphrase,
         publicKey,
         privateKey,
+        privateKeyPassphrase,
       };
     }
 
     return updateMirror({
       name,
       mirror: {
-        ref,
+        gitRef,
         url,
         ...updateAuthValues,
         insecure,
@@ -297,7 +310,7 @@ const NamespaceEdit = ({
                     id="ref"
                     data-testid="new-namespace-ref"
                     placeholder={t("components.namespaceEdit.placeholder.ref")}
-                    {...register("ref")}
+                    {...register("gitRef")}
                   />
                   <InfoTooltip>
                     {t("components.namespaceEdit.tooltip.ref")}
@@ -349,7 +362,7 @@ const NamespaceEdit = ({
                       placeholder={t(
                         "components.namespaceEdit.placeholder.token"
                       )}
-                      {...register("passphrase")}
+                      {...register("authToken")}
                     />
                     <InfoTooltip>
                       {t("components.namespaceEdit.tooltip.token")}
@@ -374,7 +387,7 @@ const NamespaceEdit = ({
                         placeholder={t(
                           "components.namespaceEdit.placeholder.passphrase"
                         )}
-                        {...register("passphrase")}
+                        {...register("privateKeyPassphrase")}
                       />
                       <InfoTooltip>
                         {t("components.namespaceEdit.tooltip.passphrase")}

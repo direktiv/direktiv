@@ -10,7 +10,7 @@ const Header = ({
   mirror: MirrorInfoSchemaType;
   loading: boolean;
 }) => {
-  const repoInfo = `${mirror.info.url} (${mirror.info.ref})`;
+  const repoInfo = `${mirror.info.url} (${mirror.info.gitRef})`;
   return (
     <div className="space-y-5 border-b border-gray-5 bg-gray-1 p-5 dark:border-gray-dark-5 dark:bg-gray-dark-1">
       <div className="flex flex-col gap-x-7 max-md:space-y-4 md:flex-row md:items-center md:justify-start">

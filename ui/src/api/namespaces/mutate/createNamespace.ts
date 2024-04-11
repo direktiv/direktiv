@@ -1,3 +1,4 @@
+import { MirrorPostSchemaType } from "~/api/tree/schema/mirror";
 import { NamespaceCreatedSchema } from "../schema";
 import type { NamespaceListSchemaType } from "../schema";
 import { apiFactory } from "~/api/apiFactory";
@@ -26,12 +27,19 @@ export const useCreateNamespace = ({
   const { t } = useTranslation();
 
   return useMutationWithPermissions({
-    mutationFn: ({ name }: { name: string }) =>
+    mutationFn: ({
+      name,
+      mirror,
+    }: {
+      name: string;
+      mirror?: MirrorPostSchemaType;
+    }) =>
       createNamespace({
         apiKey: apiKey ?? undefined,
         urlParams: {},
         payload: {
           name,
+          mirror,
         },
       }),
     onSuccess(data, variables) {

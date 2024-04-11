@@ -3,11 +3,11 @@ import { z } from "zod";
 const MirrorSchema = z.object({
   url: z.string(),
   gitRef: z.string(),
-  gitCommitHash: z.string().optional(), // null?
-  publicKey: z.string().optional(), // null?,
-  insecure: z.boolean(), // true
-  createdAt: z.string(),
-  updatedAt: z.string(),
+  authToken: z.string().optional(),
+  publicKey: z.string().optional(),
+  privateKey: z.string().optional(),
+  privateKeyPassphrase: z.string().optional(),
+  insecure: z.boolean(),
 });
 
 export const NamespaceSchema = z.object({
