@@ -3,7 +3,6 @@ run:
   go: 1.22.0
   issues-exit-code: 1
   tests: false
-  skip-files: [ ".pb.go" ]
 
 linters-settings:
   tagliatelle:
@@ -46,6 +45,7 @@ linters:
     - gochecknoglobals
     - cyclop
     - godox # must fix before release.
+    - deadcode # The linter 'deadcode' is deprecated (since v1.49.0).
 
     - exhaustivestruct
     - structcheck
@@ -67,8 +67,9 @@ linters:
     - copyloopvar # TODO: should be activated.
 
 issues:
+  exclude-files: [ ".pb.go" ]
   exclude-rules:
-    - path: '(pkg|cmd)\/(version|dlog|model|sidecar|secrets|exec|util|jqer|functions|flow|api|metrics)\/.*'
+    - path: '(pkg|cmd)\/(version|model|sidecar|secrets|exec|util|jqer|functions|flow|api|metrics)\/.*'
       linters:
         - paralleltest
         - forbidigo
