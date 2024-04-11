@@ -11,7 +11,7 @@ import {
 } from "../utils";
 
 import Badge from "~/design/Badge";
-import { MirrorActivitySchemaType } from "~/api/tree/schema/mirror";
+import { SyncObjectSchema } from "~/api/syncs/schema";
 import TooltipCopyBadge from "~/design/TooltipCopyBadge";
 import { pages } from "~/util/router/pages";
 import { useNavigate } from "react-router-dom";
@@ -22,7 +22,7 @@ const Row = ({
   item,
   namespace,
 }: {
-  item: MirrorActivitySchemaType;
+  item: SyncObjectSchema;
   namespace: string;
 }) => {
   const createdAt = useUpdatedAt(item.createdAt);
@@ -50,9 +50,7 @@ const Row = ({
           </TooltipCopyBadge>
         </TableCell>
         <TableCell>
-          <Badge variant={activityTypeToBadeVariant(item.type)}>
-            {item.type}
-          </Badge>
+          <Badge>TYPE NO LONGER EXISTS</Badge>
         </TableCell>
         <TableCell>
           <Badge

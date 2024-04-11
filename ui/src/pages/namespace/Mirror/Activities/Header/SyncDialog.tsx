@@ -11,12 +11,12 @@ import {
 import Button from "~/design/Button";
 import { RefreshCcw } from "lucide-react";
 import { useState } from "react";
-import { useSyncMirror } from "~/api/tree/mutate/syncMirror";
+import { useSync } from "~/api/syncs/mutate/sync";
 import { useTranslation } from "react-i18next";
 
 const SyncDialog = ({ loading }: { loading: boolean }) => {
   const [syncModal, setSyncModal] = useState(false);
-  const { mutate: performSync } = useSyncMirror({
+  const { mutate: performSync } = useSync({
     onSuccess: () => setSyncModal(false),
   });
   const { t } = useTranslation();

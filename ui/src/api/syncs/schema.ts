@@ -2,7 +2,7 @@ import { z } from "zod";
 
 const SyncStatusSchema = z.enum(["pending", "executing", "complete", "failed"]);
 
-export const syncSchema = z.object({
+export const SyncObjectSchema = z.object({
   id: z.string(),
   status: SyncStatusSchema,
   endedAt: z.string(),
@@ -10,6 +10,13 @@ export const syncSchema = z.object({
   updatedAt: z.string(),
 });
 
-export const syncListSchema = z.object({
-  data: z.array(syncSchema),
+export const SyncResponseSchema = z.object({
+  data: SyncObjectSchema,
 });
+
+export const syncListSchema = z.object({
+  data: z.array(SyncObjectSchema),
+});
+
+export type SyncResponseSchemaType = z.infer<typeof SyncResponseSchema>;
+export type SyncObjectSchema = z.infer<typeof SyncObjectSchema>;

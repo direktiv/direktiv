@@ -14,6 +14,7 @@ import { Card } from "~/design/Card";
 import { GitCompare } from "lucide-react";
 import Header from "./Header";
 import PaginationProvider from "~/components/PaginationProvider";
+import Row from "./Row";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespaceDetail } from "~/api/namespaces/query/get";
 import { useQueryClient } from "@tanstack/react-query";
@@ -105,13 +106,8 @@ const Activities = () => {
                       </TableCell>
                     </TableRow>
                   )}
-                  {currentItems.map((activity, index) => (
-                    <div key={index}> ROW TBD</div>
-                    // <Row
-                    //   namespace={data.namespace}
-                    //   key={activity.id}
-                    //   item={activity}
-                    // />
+                  {currentItems.map((sync, index) => (
+                    <Row namespace="TBD" key={sync.id} item={sync} />
                   ))}
                 </TableBody>
               </Table>
