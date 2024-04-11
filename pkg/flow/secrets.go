@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 
+	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 )
 
-func (flow *flow) placeholdSecrets(ctx context.Context, tx *sqlTx, ns string, file *filestore.File) error {
+func (flow *flow) placeholdSecrets(ctx context.Context, tx *database.SQLStore, ns string, file *filestore.File) error {
 	data, err := tx.FileStore().ForFile(file).GetData(ctx)
 	if err != nil {
 		return err

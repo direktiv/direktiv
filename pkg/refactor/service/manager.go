@@ -154,29 +154,21 @@ func (m *manager) runCycle() []error {
 	return errs
 }
 
-func (m *manager) Start(done <-chan struct{}, wg *sync.WaitGroup) {
+func (m *manager) Start(circuit *core.Circuit) {
 	cycleTime := m.cfg.GetFunctionsReconcileInterval()
-
-	go func() {
-	loop:
-		for {
-			select {
-			case <-done:
-				break loop
-			default:
-			}
-			m.lock.Lock()
-			errs := m.runCycle()
-			m.lock.Unlock()
-			for _, err := range errs {
-				slog.Error("run cycle", "err", err)
-			}
-
-			time.Sleep(cycleTime)
+	for {
+		if circuit.IsDone() {
+			return
+		}
+		m.lock.Lock()
+		errs := m.runCycle()
+		m.lock.Unlock()
+		for _, err := range errs {
+			slog.Error("run cycle", "err", err)
 		}
 
-		wg.Done()
-	}()
+		time.Sleep(cycleTime)
+	}
 }
 
 func (m *manager) SetServices(list []*core.ServiceFileData) {

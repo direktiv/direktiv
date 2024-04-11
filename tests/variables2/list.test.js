@@ -16,28 +16,17 @@ describe('Test variable list calls', () => {
 	helpers.itShouldCreateFileV2(it, expect, namespace, '/', 'wf.yaml', 'workflow', 'text',
 		btoa(helpers.dummyWorkflow('wf.yaml')))
 
-	let createRes
-	it(`should create a new variable foo1`, async () => {
-		createRes = await request(config.getDirektivHost())
-			.post(`/api/v2/namespaces/${ namespace }/variables`)
-			.send({
-				name: 'foo1',
-				data: btoa('foo1'),
-				mimeType: 'mime_foo1',
-			})
-		expect(createRes.statusCode).toEqual(200)
+	helpers.itShouldCreateVariableV2(it, expect, namespace, {
+		name: 'foo1',
+		data: btoa('foo1'),
+		mimeType: 'mime_foo1',
 	})
 
-	it(`should create a new variable foo2`, async () => {
-		createRes = await request(config.getDirektivHost())
-			.post(`/api/v2/namespaces/${ namespace }/variables`)
-			.send({
-				name: 'foo2',
-				data: btoa('foo2'),
-				mimeType: 'mime_foo2',
-				workflowPath: '/wf.yaml',
-			})
-		expect(createRes.statusCode).toEqual(200)
+	helpers.itShouldCreateVariableV2(it, expect, namespace, {
+		name: 'foo2',
+		data: btoa('foo2'),
+		mimeType: 'mime_foo2',
+		workflowPath: '/wf.yaml',
 	})
 
 	it(`should list variable foo1`, async () => {
@@ -63,7 +52,6 @@ describe('Test variable list calls', () => {
 		const res = await request(config.getDirektivHost())
 			.get(`/api/v2/namespaces/${ namespace }/variables?workflowPath=/wf.yaml`)
 		expect(res.statusCode).toEqual(200)
-		console.log(res.body.data)
 		expect(res.body.data.length).toEqual(1)
 		expect(res.body.data[0]).toEqual({
 			id: expect.stringMatching(common.regex.uuidRegex),

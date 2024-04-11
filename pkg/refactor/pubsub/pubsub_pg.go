@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/google/uuid"
 )
 
@@ -24,10 +25,8 @@ func NewBus(coreBus CoreBus) *Bus {
 	}
 }
 
-func (p *Bus) Start(done <-chan struct{}, wg *sync.WaitGroup) {
-	defer wg.Done()
-
-	p.coreBus.Loop(done, func(channel string, data string) {
+func (p *Bus) Start(circuit *core.Circuit) {
+	p.coreBus.Loop(circuit.Done(), func(channel string, data string) {
 		p.subscribers.Range(func(key, f any) bool {
 			k, _ := key.(string)
 			h, _ := f.(func(data string))

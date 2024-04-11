@@ -13,7 +13,7 @@ import (
 )
 
 type varController struct {
-	db *database.DB
+	db *database.SQLStore
 }
 
 func (e *varController) mountRouter(r chi.Router) {
@@ -239,6 +239,17 @@ func (e *varController) list(w http.ResponseWriter, r *http.Request) {
 		list, err = dStore.RuntimeVariables().ListForWorkflow(r.Context(), ns.Name, forWorkflowPath)
 	} else {
 		list, err = dStore.RuntimeVariables().ListForNamespace(r.Context(), ns.Name)
+	}
+
+	filterByName := r.URL.Query().Get("name")
+	if filterByName != "" {
+		var filteredList []*datastore.RuntimeVariable
+		for _, item := range list {
+			if item.Name == filterByName {
+				filteredList = append(filteredList, item)
+			}
+		}
+		list = filteredList
 	}
 
 	if err != nil {
