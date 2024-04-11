@@ -5,10 +5,10 @@ import {
   DialogTitle,
 } from "~/design/Dialog";
 import { GitCompare, Home, PlusCircle, Save } from "lucide-react";
-import { MirrorFormType, MirrorInfoSchemaType } from "~/api/tree/schema/mirror";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { Tabs, TabsList, TabsTrigger } from "~/design/Tabs";
 import { useEffect, useState } from "react";
+import { useNamespace, useNamespaceActions } from "~/util/store/namespace";
 
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
@@ -18,13 +18,14 @@ import FormTypeSelect from "./FormTypeSelect";
 import InfoTooltip from "./InfoTooltip";
 import Input from "~/design/Input";
 import { InputWithButton } from "~/design/InputWithButton";
+import { MirrorFormType } from "~/api/tree/schema/mirror";
+import { MirrorSchemaType } from "~/api/namespaces/schema";
 import { MirrorValidationSchema } from "~/api/tree/schema/mirror/validation";
 import { Textarea } from "~/design/TextArea";
 import { fileNameSchema } from "~/api/tree/schema/node";
 import { pages } from "~/util/router/pages";
 import { useCreateNamespace } from "~/api/namespaces/mutate/createNamespace";
 import { useListNamespaces } from "~/api/namespaces/query/get";
-import { useNamespaceActions } from "~/util/store/namespace";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useUpdateMirror } from "~/api/tree/mutate/updateMirror";
@@ -47,7 +48,7 @@ const NamespaceEdit = ({
   mirror,
   close,
 }: {
-  mirror?: MirrorInfoSchemaType;
+  mirror?: MirrorSchemaType;
   close: () => void;
 }) => {
   // note that isMirror is initially redundant with !isNew, but
@@ -58,6 +59,7 @@ const NamespaceEdit = ({
   const { setNamespace } = useNamespaceActions();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const namespace = useNamespace();
 
   const existingNamespaces = data?.data.map((n) => n.name) || [];
 
@@ -72,9 +74,9 @@ const NamespaceEdit = ({
 
   let initialFormType: MirrorFormType = "public";
 
-  if (mirror?.info.url.startsWith("git@")) {
+  if (mirror?.url.startsWith("git@")) {
     initialFormType = "keep-ssh";
-  } else if (mirror?.info.passphrase) {
+  } else if (mirror?.privateKeyPassphrase) {
     initialFormType = "keep-token";
   }
 
@@ -90,10 +92,9 @@ const NamespaceEdit = ({
     defaultValues: mirror
       ? {
           formType: initialFormType,
-          name: mirror.namespace,
-          url: mirror.info.url,
-          gitRef: mirror.info.gitRef,
-          insecure: mirror.info.insecure,
+          url: mirror.url,
+          gitRef: mirror.gitRef,
+          insecure: mirror.insecure,
         }
       : {
           formType: initialFormType,
@@ -222,7 +223,7 @@ const NamespaceEdit = ({
           {isNew
             ? t("components.namespaceEdit.title.new")
             : t("components.namespaceEdit.title.edit", {
-                namespace: mirror?.namespace,
+                namespace,
               })}
         </DialogTitle>
       </DialogHeader>

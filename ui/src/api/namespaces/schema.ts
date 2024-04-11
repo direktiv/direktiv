@@ -28,3 +28,4 @@ export const NamespaceCreatedSchema = z.object({
 export const NamespaceDeletedSchema = z.null();
 
 export type NamespaceListSchemaType = z.infer<typeof NamespaceListSchema>;
+export type MirrorSchemaType = z.infer<typeof MirrorSchema>;

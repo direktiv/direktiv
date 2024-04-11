@@ -1,9 +1,11 @@
-import { NamespaceListSchema } from "../schema";
+import { NamespaceListSchema, NamespaceListSchemaType } from "../schema";
+
 import type { QueryFunctionContext } from "@tanstack/react-query";
 import { apiFactory } from "~/api/apiFactory";
-import { namespaceKeys } from "../";
+import { namespaceKeys } from "..";
 import { sortByName } from "~/api/files/utils";
 import { useApiKey } from "~/util/store/apiKey";
+import { useNamespace } from "~/util/store/namespace";
 import { useQuery } from "@tanstack/react-query";
 
 export const getNamespaces = apiFactory({
@@ -21,19 +23,36 @@ const fetchNamespaces = async ({
     urlParams: {},
   });
 
-export const useListNamespaces = () => {
+const useNamespaces = <T>({
+  filter,
+}: {
+  filter: (apiResponse: NamespaceListSchemaType) => T;
+}) => {
   const apiKey = useApiKey();
+  const namespace = useNamespace();
+
+  if (!namespace) {
+    throw new Error("namespace is undefined");
+  }
 
   return useQuery({
     queryKey: namespaceKeys.all(apiKey ?? undefined),
     queryFn: fetchNamespaces,
-    select(data) {
-      if (data) {
-        return {
-          data: data.data.sort(sortByName),
-        };
-      }
-      return data;
-    },
+    enabled: !!namespace,
+    select: (data) => filter(data),
+  });
+};
+
+export const useListNamespaces = () =>
+  useNamespaces({
+    filter: (apiResponse) => ({ data: apiResponse.data.sort(sortByName) }),
+  });
+
+export const useNamespaceDetail = () => {
+  const namespace = useNamespace();
+
+  return useNamespaces({
+    filter: (apiResponse) =>
+      apiResponse.data.find((namespaceObj) => namespaceObj.name === namespace),
   });
 };

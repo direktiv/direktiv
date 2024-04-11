@@ -1091,7 +1091,7 @@
     "namespaceEdit": {
       "title": {
         "new": "Create a new namespace",
-        "edit": "Update mirror {{namespace}}"
+        "edit": "Update mirror for {{namespace}}"
       },
       "submitBtn": {
         "create": "Create",

@@ -14,23 +14,26 @@ import { Card } from "~/design/Card";
 import { GitCompare } from "lucide-react";
 import Header from "./Header";
 import PaginationProvider from "~/components/PaginationProvider";
-import Row from "./Row";
-import { treeKeys } from "~/api/tree";
 import { useApiKey } from "~/util/store/apiKey";
-import { useMirrorInfo } from "~/api/tree/query/mirrorInfo";
+import { useNamespaceDetail } from "~/api/namespaces/query/get";
 import { useQueryClient } from "@tanstack/react-query";
+import { useSyncs } from "~/api/syncs/query/get";
 import { useTranslation } from "react-i18next";
 
 const pageSize = 10;
 
 const Activities = () => {
-  const { data, isAllowed, noPermissionMessage, isFetched } = useMirrorInfo();
+  const { data, isAllowed, noPermissionMessage, isFetched } = useSyncs();
+  const namespaceDetail = useNamespaceDetail();
+
+  const mirror = namespaceDetail.data?.mirror;
+
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const apiKey = useApiKey();
 
-  const activities = data?.activities.results;
-  const noResults = isFetched && data?.activities.results.length === 0;
+  const syncs = data?.data;
+  const noResults = isFetched && data?.data.length === 0;
 
   if (!isAllowed)
     return (
@@ -39,28 +42,27 @@ const Activities = () => {
       </Card>
     );
 
-  if (!activities) return null;
+  if (!mirror) return null;
+  if (!syncs) return null;
 
-  const refreshActivities = () => {
-    queryClient.invalidateQueries(
-      treeKeys.mirrorInfo(data.namespace, {
-        apiKey: apiKey ?? undefined,
-      })
-    );
-  };
+  // const refreshActivities = () => {
+  //   queryClient.invalidateQueries(
+  //     treeKeys.mirrorInfo(data.namespace, {
+  //       apiKey: apiKey ?? undefined,
+  //     })
+  //   );
+  // };
 
-  const pendingActivities = activities.filter(
-    (activity) => activity.status === "executing"
-  );
+  const pendingActivities = syncs.filter((sync) => sync.status === "executing");
 
-  if (pendingActivities.length) {
-    setTimeout(() => refreshActivities(), 1000);
-  }
+  // if (pendingActivities.length) {
+  //   setTimeout(() => refreshActivities(), 1000);
+  // }
 
   return (
     <>
-      <Header mirror={data} loading={!!pendingActivities.length} />
-      <PaginationProvider items={activities} pageSize={pageSize}>
+      <Header mirror={mirror} loading={!!pendingActivities.length} />
+      <PaginationProvider items={syncs} pageSize={pageSize}>
         {({
           currentItems,
           goToPage,
@@ -103,12 +105,13 @@ const Activities = () => {
                       </TableCell>
                     </TableRow>
                   )}
-                  {currentItems.map((activity) => (
-                    <Row
-                      namespace={data.namespace}
-                      key={activity.id}
-                      item={activity}
-                    />
+                  {currentItems.map((activity, index) => (
+                    <div key={index}> ROW TBD</div>
+                    // <Row
+                    //   namespace={data.namespace}
+                    //   key={activity.id}
+                    //   item={activity}
+                    // />
                   ))}
                 </TableBody>
               </Table>
