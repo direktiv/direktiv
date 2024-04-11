@@ -59,6 +59,7 @@ linters:
     - gomnd
     - tagliatelle
     - musttag
+    - prealloc
     - perfsprint # not needed, this one linting nano optimizations.
     - spancheck # TODO: Alan, enable this one as it helps you fixing some telemetry bugs.
     - revive

@@ -332,7 +332,6 @@ func (e *nsController) list(w http.ResponseWriter, r *http.Request) {
 		indexedMirrors[m.Namespace] = m
 	}
 
-	//nolint:prealloc
 	var result []any
 	for _, ns := range namespaces {
 		settings := indexedMirrors[ns.Name]
