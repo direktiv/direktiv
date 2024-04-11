@@ -14,11 +14,13 @@ import { useTranslation } from "react-i18next";
 const defaultMimeType = "application/json";
 
 type CreateFormProps = {
+  title: string;
   unallowedNames: string[];
   onMutate: (data: VarFormCreateEditSchemaType) => void;
 };
 
 export const CreateVariableForm = ({
+  title,
   unallowedNames,
   onMutate,
 }: CreateFormProps) => {
@@ -35,7 +37,7 @@ export const CreateVariableForm = ({
         dialogTitle={
           <DialogTitle>
             <PlusCircle />
-            {t("pages.settings.variables.create.title")}
+            {title}
           </DialogTitle>
         }
         dialogFooter={

@@ -10,12 +10,14 @@ import VariableForm from ".";
 import { useTranslation } from "react-i18next";
 
 type EditVariableProps = {
+  title: string;
   variable: VarDetailsSchema;
   unallowedNames: string[];
   onMutate: (data: VarFormCreateEditSchemaType) => void;
 };
 
 export const EditVariableForm = ({
+  title,
   variable,
   unallowedNames,
   onMutate,
@@ -29,7 +31,7 @@ export const EditVariableForm = ({
       dialogTitle={
         <DialogTitle>
           <FileJson />
-          {t("pages.settings.variables.edit.title", { name })}
+          {title}
         </DialogTitle>
       }
       dialogFooter={
