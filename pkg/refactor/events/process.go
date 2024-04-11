@@ -133,33 +133,54 @@ func (ee EventEngine) usePostProcessingEvents(ctx context.Context,
 }
 
 func EventPassedGatekeeper(globPatterns map[string]string, event cloudevents.Event) bool {
+	// Early return if there are no gatekeeper patterns
 	if len(globPatterns) == 0 {
 		return true
 	}
 
-	// adding source for comparison
-	m := event.Context.GetExtensions()
-
-	// if there is none, we need to create one for source
-	if m == nil {
-		m = make(map[string]interface{})
+	// Filter patterns relevant to the current event type
+	relevantPatterns := filterRelevantPatterns(globPatterns, event.Type())
+	if len(relevantPatterns) == 0 {
+		return true // No relevant patterns for this event type
 	}
 
-	m["source"] = event.Context.GetSource()
-	for k, f := range globPatterns {
-		x := strings.TrimPrefix(k, event.Type()+"-")
-		if v, ok := m[x]; ok {
-			vs := fmt.Sprintf("%v", v)
-			match := glob.Glob(f, vs)
-			if !match {
-				return false
-			}
-		} else {
-			return false
+	// Prepare extensions, including the event source
+	extensions := event.Context.GetExtensions()
+	if extensions == nil {
+		extensions = make(map[string]interface{})
+	}
+	extensions["source"] = event.Context.GetSource()
+
+	// Check each relevant pattern against the event extensions
+	for patternKey, pattern := range relevantPatterns {
+		if !extensionMatchesPattern(extensions, patternKey, pattern, event.Type()) {
+			return false // Pattern mismatch, event failed gatekeeper
 		}
 	}
 
-	return true
+	return true // Event passed all relevant gatekeepers
+}
+
+// Helper functions to encapsulate logic
+func filterRelevantPatterns(patterns map[string]string, eventType string) map[string]string {
+	result := make(map[string]string)
+	prefix := eventType + "-"
+	for key, pattern := range patterns {
+		if strings.HasPrefix(key, prefix) {
+			result[key] = pattern
+		}
+	}
+	return result
+}
+
+func extensionMatchesPattern(extensions map[string]interface{}, patternKey, pattern, eventType string) bool {
+	extensionKey := strings.TrimPrefix(patternKey, eventType+"-")
+	extensionValue, found := extensions[extensionKey]
+	if !found {
+		return false
+	}
+	valueStr := fmt.Sprintf("%v", extensionValue)
+	return glob.Glob(pattern, valueStr)
 }
 
 func (EventEngine) handleEvents(ctx context.Context,
@@ -193,15 +214,17 @@ func (ee EventEngine) eventAndHandler(l *EventListener, waitType bool) eventHand
 			}
 			types := l.ListeningForEventTypes
 			// TODO metrics
+			removeExpired(l)
+
 			if !typeMatches(types, event) {
 				continue
 			}
-			removeExpired(l)
 
-			if eventTypeAlreadyPresent(l, event) {
+			if !EventPassedGatekeeper(l.GlobGatekeepers, *event.Event) {
 				continue
 			}
-			if !EventPassedGatekeeper(l.GlobGatekeepers, *event.Event) {
+
+			if eventTypeAlreadyPresent(l, event) {
 				continue
 			}
 			l.ReceivedEventsForAndTrigger = append(l.ReceivedEventsForAndTrigger, event)
@@ -284,13 +307,13 @@ func (ee EventEngine) eventSimpleHandler(l *EventListener, waitType bool) eventH
 			if !match {
 				continue
 			}
+			if !EventPassedGatekeeper(l.GlobGatekeepers, *event.Event) {
+				continue
+			}
 			tr := triggerActionArgs{
 				WorkflowID: l.TriggerWorkflow,
 				InstanceID: l.TriggerInstance,
 				Step:       l.TriggerInstanceStep,
-			}
-			if !EventPassedGatekeeper(l.GlobGatekeepers, *event.Event) {
-				continue
 			}
 			ee.triggerAction(waitType, tr, []*cloudevents.Event{event.Event})
 			if waitType {

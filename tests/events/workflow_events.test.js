@@ -206,6 +206,36 @@ states:
       hello: jq(."hello".hello)
 `
 
+const workflowContextMultipleName = 'waitmulticontext.yaml'
+const eventContextMultipleWorkflow = `
+states:
+- id: ce
+  type: consumeEvent
+  event:
+    type: waitformulti
+    context:
+      hello: world1
+      hello2: world2
+  transition: greet
+- id: greet
+  type: noop
+  log: jq(.)
+`
+
+const baseventMultipleContext = (type, id) => `{
+    "specversion" : "1.0",
+    "type" : "${ type }",
+    "id": "${ id }",
+    "source" : "https://direktiv.io/test",
+    "datacontenttype" : "application/json",
+	"hello": "world1",
+	"hello2": "world2",
+    "data" : {
+		"hello": "world",
+        "123": 456
+    }
+}`
+
 describe('Test workflow events', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
 
@@ -378,5 +408,28 @@ describe('Test workflow events', () => {
 
 		// instance fired
 		expect(instancesResponse).not.toBeFalsy()
+	})
+
+	// workflow with multiple context-filters
+	helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
+		'', workflowContextMultipleName, 'workflow',
+		eventContextMultipleWorkflow)
+
+	it(`should not start by event due to context filter`, async () => {
+		await helpers.sleep(2000)
+		const runWorkflowResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${ namespaceName }/tree/${ workflowContextMultipleName }?op=execute`)
+		.send()
+		expect(runWorkflowResponse.statusCode).toEqual(200)
+
+		await events.sendEventAndList(namespaceName, basevent('waitformulti', 'wait-ctx65', 'world1'))
+		let instancesResponse = await events.listInstancesAndFilter(namespaceName, workflowContextMultipleName, 'pending')
+		expect(instancesResponse).not.toBeFalsy()
+		let workflowEventResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${ namespaceName }/broadcast`)
+		.set('Content-Type', 'application/json')
+		.send(baseventMultipleContext('waitformulti', 'wait-c3432tx7'))
+		expect(workflowEventResponse.statusCode).toEqual(200)
+		instancesResponse = await events.listInstancesAndFilter(namespaceName, workflowContextMultipleName, 'complete')
+		expect(instancesResponse).not.toBeFalsy()
+
 	})
 })
