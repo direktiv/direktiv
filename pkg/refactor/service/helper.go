@@ -212,7 +212,6 @@ func buildContainers(c *core.Config, sv *core.ServiceFileData) ([]corev1.Contain
 	return []corev1.Container{uc, sc}, nil
 }
 
-// nolint
 func buildResourceLimits(cf *core.Config, sv *core.ServiceFileData) (*corev1.ResourceRequirements, error) {
 	var (
 		m int
@@ -276,7 +275,6 @@ func buildResourceLimits(cf *core.Config, sv *core.ServiceFileData) (*corev1.Res
 	}, nil
 }
 
-// nolint
 func buildEnvVars(withGrpc bool, c *core.Config, sv *core.ServiceFileData) []corev1.EnvVar {
 	proxyEnvs := []corev1.EnvVar{}
 
