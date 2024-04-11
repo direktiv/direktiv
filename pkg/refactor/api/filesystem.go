@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/base64"
 	"encoding/json"
+	"log/slog"
 	"net/http"
 	"path/filepath"
 	"strings"
@@ -127,7 +128,7 @@ func (e *fsController) delete(w http.ResponseWriter, r *http.Request) {
 		})
 		// nolint:staticcheck
 		if err != nil {
-			// TODO: need to log error here.
+			slog.Error("pubsub publish", "err", err)
 		}
 	}
 
@@ -316,9 +317,8 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 			FilePath:    updatedFile.Path,
 			OldPath:     oldFile.Path,
 		})
-		// nolint:staticcheck
 		if err != nil {
-			// TODO: need to log error here.
+			slog.Error("pubsub publish", "err", err)
 		}
 	}
 

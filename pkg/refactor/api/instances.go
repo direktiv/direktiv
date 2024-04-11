@@ -427,7 +427,7 @@ func (e *instController) list(w http.ResponseWriter, r *http.Request) {
 				filter.Kind = instancestore.FilterKindMatch
 			case "PREFIX":
 				filter.Kind = instancestore.FilterKindPrefix
-			case "MATCH": //nolint:goconst
+			case "MATCH":
 				filter.Kind = instancestore.FilterKindMatch
 			case "AFTER":
 				filter.Kind = instancestore.FilterKindAfter
