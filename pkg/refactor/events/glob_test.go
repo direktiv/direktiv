@@ -14,7 +14,6 @@ func TestEventPassedGatekeeper(t *testing.T) {
 	t.Run("EventFailsWithMultipleConditions", eventFailsWithMultipleConditions)
 	t.Run("EventPassesWithMultipleContexts", eventPassesWithMultipleContexts)
 	t.Run("EventPassesWithMultipleConditions", eventPassesWithMultipleContexts)
-
 }
 
 func simpleEventPasses(t *testing.T) {

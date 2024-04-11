@@ -59,6 +59,7 @@ linters:
     - gomnd
     - tagliatelle
     - musttag
+    - prealloc
     - perfsprint # not needed, this one linting nano optimizations.
     - spancheck # TODO: Alan, enable this one as it helps you fixing some telemetry bugs.
     - revive
@@ -101,7 +102,6 @@ issues:
         - gocritic
         - rowserrcheck
         - nakedret
-        - unused
         - gocyclo
 
     - text: "do not define dynamic errors, use wrapped static errors instead:"
@@ -113,7 +113,9 @@ issues:
     - text: "Rollback` is not checked"
       linters:
         - errcheck
-
     - text: "encoding/json.Encoder"
+      linters:
+        - errchkjson
+    - text: "encoding/json.Marshal"
       linters:
         - errchkjson
