@@ -71,24 +71,38 @@ func (tnv NamespaceVarPlugin) ExecutePlugin(_ *core.ConsumerFile,
 	if resp == nil {
 		return false
 	}
+	defer resp.Body.Close()
+
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		plugins.ReportError(r.Context(), w, http.StatusInternalServerError,
+			"can not fetch file data", err)
+
+		return false
+	}
+
+	var node Node
+	err = json.Unmarshal(b, &node)
+	if err != nil {
+		plugins.ReportError(r.Context(), w, http.StatusInternalServerError,
+			"can not fetch file data", err)
+
+		return false
+	}
+
+	data := node.Data.Data
 
 	// set headers from Direktiv
-	w.Header().Set("Content-Type", resp.Header.Get("Content-Type"))
-	w.Header().Set("Content-Length", resp.Header.Get("Content-Length"))
+	w.Header().Set("Content-Type", node.Data.MimeType)
+	w.Header().Set("Content-Length", fmt.Sprintf("%v", len(data)))
 
 	// overwrite content type
 	if tnv.config.ContentType != "" {
 		w.Header().Set("Content-Type", tnv.config.ContentType)
 	}
 
-	_, err := io.Copy(w, resp.Body)
-	if err != nil {
-		plugins.ReportError(r.Context(), w, http.StatusInternalServerError,
-			"can not serve variable", err)
-
-		return false
-	}
-	resp.Body.Close()
+	// nolint
+	w.Write(data)
 
 	return true
 }
@@ -129,17 +143,18 @@ func doVariableRequest(requestType direktivRequestType, args map[string]string,
 
 	varName := args[varArg]
 
-	uri := fmt.Sprintf("http://localhost:%s/api/v2/namespaces/%s/variables/",
-		os.Getenv("DIREKTIV_API_V1_PORT"), args[namespaceArg])
+	uri := fmt.Sprintf("http://localhost:%s/api/v2/namespaces/%s/variables/?name=%s",
+		os.Getenv("DIREKTIV_API_V2_PORT"), args[namespaceArg], varName)
 
 	if requestType == direktivWorkflowVarRequest {
-		uri = fmt.Sprintf("%s?workflowPath=%s", uri, url.QueryEscape(args[pathArg]))
+		uri = fmt.Sprintf("%s&workflowPath=%s", uri, url.QueryEscape(args[pathArg]))
 	}
 
 	resp := doRequest(w, r, http.MethodGet, uri, nil)
 	if resp == nil {
 		return nil
 	}
+	defer resp.Body.Close()
 
 	expectedResponse := new(varResolveResponse)
 
@@ -159,26 +174,22 @@ func doVariableRequest(requestType direktivRequestType, args map[string]string,
 		return nil
 	}
 
-	var varID string
-
-	for _, entry := range expectedResponse.Data {
-		if entry.Name == varName {
-			varID = entry.ID.String()
-			break
-		}
-	}
-
-	if varID == "" {
+	if len(expectedResponse.Data) == 0 {
 		plugins.ReportError(r.Context(), w, http.StatusNotFound,
 			"variable not found", errors.New("not found"))
 
 		return nil
 	}
 
+	varID := expectedResponse.Data[0].ID.String()
+
 	uri = fmt.Sprintf("http://localhost:%s/api/v2/namespaces/%s/variables/%s",
-		os.Getenv("DIREKTIV_API_V1_PORT"), args[namespaceArg], varID)
+		os.Getenv("DIREKTIV_API_V2_PORT"), args[namespaceArg], varID)
 
 	resp = doRequest(w, r, http.MethodGet, uri, nil)
+	if resp == nil {
+		return nil
+	}
 
 	return resp
 }

@@ -126,10 +126,8 @@ func init() {
 type direktivRequestType string
 
 const (
-	// direktivWorkflowRequest     direktivRequestType = "wf"
 	direktivWorkflowVarRequest  direktivRequestType = "wfvar"
 	direktivNamespaceVarRequest direktivRequestType = "nsvar"
-	// direktivFileRequest         direktivRequestType = "file"
 
 	namespaceArg = "ns"
 	flowArg      = "flow"
@@ -144,5 +142,31 @@ func doWorkflowRequest(args map[string]string, w http.ResponseWriter, r *http.Re
 	url := fmt.Sprintf("http://localhost:%s/api/namespaces/%s/tree%s?op=%s&ref=latest",
 		os.Getenv("DIREKTIV_API_V1_PORT"), args[namespaceArg], args[flowArg], args[execArg])
 
-	return doRequest(w, r, http.MethodPost, url, r.Body)
+	resp := doRequest(w, r, http.MethodPost, url, r.Body)
+	if resp == nil {
+		return nil
+	}
+
+	// error handling
+	errorCode := resp.Header.Get("Direktiv-Instance-Error-Code")
+	errorMessage := resp.Header.Get("Direktiv-Instance-Error-Message")
+	instance := resp.Header.Get("Direktiv-Instance-Id")
+
+	if errorCode != "" {
+		msg := fmt.Sprintf("%s: %s (%s)", errorCode, errorMessage, instance)
+		plugins.ReportError(r.Context(), w, resp.StatusCode,
+			"error executing workflow", fmt.Errorf(msg))
+
+		return nil
+	}
+
+	// direktiv requests always respond with 200, workflow errors are handled in the previous check
+	if resp.StatusCode >= http.StatusMultipleChoices {
+		plugins.ReportError(r.Context(), w, resp.StatusCode,
+			"can not execute flow", fmt.Errorf(resp.Status))
+
+		return nil
+	}
+
+	return resp
 }

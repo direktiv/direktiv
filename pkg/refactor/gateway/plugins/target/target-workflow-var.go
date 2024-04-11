@@ -1,6 +1,7 @@
 package target
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -67,30 +68,44 @@ func (tfv FlowVarPlugin) ExecutePlugin(_ *core.ConsumerFile,
 	// request failed if nil and response already written
 	resp := doVariableRequest(direktivWorkflowVarRequest, map[string]string{
 		namespaceArg: tfv.config.Namespace,
-		flowArg:      tfv.config.Flow,
+		pathArg:      tfv.config.Flow,
 		varArg:       tfv.config.Variable,
 	}, w, r)
 	if resp == nil {
 		return false
 	}
+	defer resp.Body.Close()
+
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		plugins.ReportError(r.Context(), w, http.StatusInternalServerError,
+			"can not fetch file data", err)
+
+		return false
+	}
+
+	var node Node
+	err = json.Unmarshal(b, &node)
+	if err != nil {
+		plugins.ReportError(r.Context(), w, http.StatusInternalServerError,
+			"can not fetch file data", err)
+
+		return false
+	}
+
+	data := node.Data.Data
 
 	// set headers from Direktiv
-	w.Header().Set("Content-Type", resp.Header.Get("Content-Type"))
-	w.Header().Set("Content-Length", resp.Header.Get("Content-Length"))
+	w.Header().Set("Content-Type", node.Data.MimeType)
+	w.Header().Set("Content-Length", fmt.Sprintf("%v", len(data)))
 
 	// overwrite content type
 	if tfv.config.ContentType != "" {
 		w.Header().Set("Content-Type", tfv.config.ContentType)
 	}
 
-	_, err := io.Copy(w, resp.Body)
-	if err != nil {
-		plugins.ReportError(r.Context(), w, http.StatusInternalServerError,
-			"can not serve variable", err)
-
-		return false
-	}
-	resp.Body.Close()
+	// nolint
+	w.Write(data)
 
 	return true
 }

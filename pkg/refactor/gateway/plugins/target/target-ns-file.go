@@ -1,7 +1,6 @@
 package target
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -115,8 +114,7 @@ func (tnf NamespaceFilePlugin) ExecutePlugin(
 
 // nolint
 type Node struct {
-	Namespace string `json:"namespace"`
-	Node      struct {
+	Data struct {
 		CreatedAt    time.Time `json:"createdAt"`
 		UpdatedAt    time.Time `json:"updatedAt"`
 		Name         string    `json:"name"`
@@ -128,10 +126,8 @@ type Node struct {
 		ReadOnly     bool      `json:"readOnly"`
 		ExpandedType string    `json:"expandedType"`
 		MimeType     string    `json:"mimeType"`
-	} `json:"node"`
-	EventLogging string `json:"eventLogging"`
-	Oid          string `json:"oid"`
-	Source       string `json:"source"`
+		Data         []byte    `json:"data"`
+	} `json:"data"`
 }
 
 func fetchObjectData(res *http.Response) ([]byte, error) {
@@ -146,10 +142,7 @@ func fetchObjectData(res *http.Response) ([]byte, error) {
 		return nil, err
 	}
 
-	data, err := base64.StdEncoding.DecodeString(node.Source)
-	if err != nil {
-		return nil, err
-	}
+	data := node.Data.Data
 
 	return data, nil
 }
@@ -168,7 +161,7 @@ func doFilesystemRequest(args map[string]string,
 	defer r.Body.Close()
 
 	url := fmt.Sprintf("http://localhost:%s/api/v2/namespaces/%s/files%s",
-		os.Getenv("DIREKTIV_API_V1_PORT"), args[namespaceArg], args[pathArg])
+		os.Getenv("DIREKTIV_API_V2_PORT"), args[namespaceArg], args[pathArg])
 
 	return doRequest(w, r, http.MethodGet, url, nil)
 }

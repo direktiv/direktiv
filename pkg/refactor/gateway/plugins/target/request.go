@@ -1,7 +1,6 @@
 package target
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -11,7 +10,6 @@ import (
 )
 
 func doRequest(w http.ResponseWriter, r *http.Request, method, url string, body io.ReadCloser) *http.Response {
-
 	client := http.Client{}
 	ctx := r.Context()
 	req, err := http.NewRequestWithContext(ctx, method, url, body)
@@ -34,27 +32,6 @@ func doRequest(w http.ResponseWriter, r *http.Request, method, url string, body 
 	if err != nil {
 		plugins.ReportError(r.Context(), w, http.StatusInternalServerError,
 			"can not execute flow", err)
-
-		return nil
-	}
-
-	// error handling
-	errorCode := resp.Header.Get("Direktiv-Instance-Error-Code")
-	errorMessage := resp.Header.Get("Direktiv-Instance-Error-Message")
-	instance := resp.Header.Get("Direktiv-Instance-Id")
-
-	if errorCode != "" {
-		msg := fmt.Sprintf("%s: %s (%s)", errorCode, errorMessage, instance)
-		plugins.ReportError(r.Context(), w, resp.StatusCode,
-			"error executing workflow", fmt.Errorf(msg))
-
-		return nil
-	}
-
-	// direktiv requests always respond with 200, workflow errors are handled in the previous check
-	if resp.StatusCode >= http.StatusMultipleChoices {
-		plugins.ReportError(r.Context(), w, resp.StatusCode,
-			"can not execute flow", fmt.Errorf(resp.Status))
 
 		return nil
 	}
