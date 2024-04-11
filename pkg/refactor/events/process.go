@@ -170,6 +170,7 @@ func filterRelevantPatterns(patterns map[string]string, eventType string) map[st
 			result[key] = pattern
 		}
 	}
+
 	return result
 }
 
@@ -180,6 +181,7 @@ func extensionMatchesPattern(extensions map[string]interface{}, patternKey, patt
 		return false
 	}
 	valueStr := fmt.Sprintf("%v", extensionValue)
+
 	return glob.Glob(pattern, valueStr)
 }
 
