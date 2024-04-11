@@ -66,7 +66,7 @@ func writeInternalError(w http.ResponseWriter, err error) {
 		Message: "internal server error",
 	})
 
-	slog.Error("Responding with internal server error", "err", err)
+	slog.Error("internal", "err", err)
 }
 
 func writeNotJSONError(w http.ResponseWriter, err error) {
@@ -106,6 +106,14 @@ func writeDataStoreError(w http.ResponseWriter, err error) {
 		writeError(w, &Error{
 			Code:    "request_data_invalid",
 			Message: "invalid namespace name",
+		})
+
+		return
+	}
+	if errors.Is(err, datastore.ErrDuplication) {
+		writeError(w, &Error{
+			Code:    "resource_already_exists",
+			Message: "resource already exists",
 		})
 
 		return

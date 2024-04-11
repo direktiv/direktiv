@@ -56,7 +56,7 @@ func (w *EventWorker) getDelayedEvents(ctx context.Context) {
 	offset := 0
 	receivedEvents, _, err := w.store.GetDelayedEvents(ctx, currentTime, limit, offset)
 	if err != nil {
-		slog.Error("Failed fetching delayed events", "error", err)
+		slog.Error("fetching delayed events", "err", err)
 
 		return
 	}
@@ -67,13 +67,13 @@ func (w *EventWorker) getDelayedEvents(ctx context.Context) {
 		return
 	}
 
-	slog.Debug("Starting processing delayed events")
+	slog.Debug("starting processing delayed events")
 
 	// TODO: possible process events in bulk
 	for _, se := range receivedEvents {
 		err := w.handleEvent(ctx, se.Namespace, se.NamespaceName, se.Event.Event)
 		if err != nil {
-			slog.Error("Failed to handle a event", "error", err)
+			slog.Error("handle a event", "err", err)
 		}
 	}
 
@@ -83,10 +83,10 @@ func (w *EventWorker) getDelayedEvents(ctx context.Context) {
 		databaseIDs = append(databaseIDs, event.DatabaseID)
 	}
 	if err := w.store.DeleteByDatabaseIDs(ctx, databaseIDs...); err != nil {
-		slog.Error("Failed deleting processed events", "error", err)
+		slog.Error("failed deleting processed events", "err", err)
 
 		return
 	}
 
-	slog.Debug("Processed and deleted delayed events")
+	slog.Debug("processed and deleted delayed events")
 }

@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
-	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
@@ -94,11 +93,6 @@ func (o *DirektivApplyer) apply(ctx context.Context, callbacks Callbacks, proc *
 	err = o.configureWorkflows(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to configure workflows: %w", err)
-	}
-
-	err = o.updateConfig(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to configure update config: %w", err)
 	}
 
 	return nil
@@ -295,28 +289,6 @@ func (o *DirektivApplyer) copyDeprecatedVariables(ctx context.Context) error {
 				return fmt.Errorf("failed to save workflow variable '%s' '%s': %w", path, k, err)
 			}
 		}
-	}
-
-	return nil
-}
-
-func (o *DirektivApplyer) updateConfig(ctx context.Context) error {
-	cfg, err := o.callbacks.Store().GetConfig(ctx, o.proc.Namespace)
-	if err != nil {
-		return err
-	}
-
-	cfg.UpdatedAt = time.Now().UTC()
-
-	if v, ok := o.notes["commit_hash"]; ok {
-		cfg.GitCommitHash = v
-
-		return nil
-	}
-
-	_, err = o.callbacks.Store().UpdateConfig(ctx, cfg)
-	if err != nil {
-		return err
 	}
 
 	return nil

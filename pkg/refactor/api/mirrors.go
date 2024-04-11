@@ -11,7 +11,7 @@ import (
 )
 
 type mirrorsController struct {
-	db            *database.DB
+	db            *database.SQLStore
 	syncNamespace core.SyncNamespace
 	bus           *pubsub.Bus
 }

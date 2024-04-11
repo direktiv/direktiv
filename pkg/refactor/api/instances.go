@@ -60,7 +60,7 @@ func marshalForAPI(data *instancestore.InstanceData) interface{} {
 }
 
 type instController struct {
-	db      *database.DB
+	db      *database.SQLStore
 	manager *instancestore.InstanceManager
 }
 

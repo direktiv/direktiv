@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
+	"github.com/direktiv/direktiv/pkg/flow/nohome/recipient"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/mitchellh/mapstructure"
 	"github.com/pkg/errors"
@@ -143,7 +143,7 @@ func ReportError(ctx context.Context, w http.ResponseWriter, status int, msg str
 		"endpoint", endP,
 		"route", routePath,
 		"track", recipient.Route.String()+"."+ns+"."+endP,
-		"error", err.Error(),
+		"err", err,
 	)
 
 	// TODO: Metrics
