@@ -76,7 +76,7 @@ test("it is possible to create a variable", async ({ page }) => {
   await page.getByTestId("variable-create").click();
 
   await expect(
-    page.getByRole("heading", { name: "Add a workflow variable" }),
+    page.getByRole("heading", { name: "Create a variable" }),
     "create variable form should be visible"
   ).toBeVisible();
 
