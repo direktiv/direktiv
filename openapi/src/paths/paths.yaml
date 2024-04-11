@@ -395,9 +395,6 @@
                           gitRef:
                             type: string
                             description: git branch name
-                          gitCommitHash:
-                            type: string(optional)
-                            description: git commit hash
                           publicKey:
                             type: string(optional)
                             description: associated publish key ssh credential
@@ -443,9 +440,9 @@
                   gitRef:
                     type: string
                     description: git branch name
-                  gitCommitHash:
+                  authToken:
                     type: string(optional)
-                    description: git commit hash
+                    description: auth token used to clone git repo
                   publicKey:
                     type: string(optional)
                     description: associated publish key ssh credential
@@ -484,9 +481,6 @@
                         gitRef:
                           type: string
                           description: git branch name
-                        gitCommitHash:
-                          type: string(optional)
-                          description: git commit hash
                         publicKey:
                           type: string(optional)
                           description: associated publish key ssh credential
@@ -539,9 +533,6 @@
                         gitRef:
                           type: string
                           description: git branch name
-                        gitCommitHash:
-                          type: string(optional)
-                          description: git commit hash
                         publicKey:
                           type: string(optional)
                           description: associated publish key ssh credential
@@ -571,10 +562,10 @@
       "200":
         description:  object deleted successfully
 
-  put:
+  patch:
     tags:
       - namespaces
-    summary: Updates a direktiv namespace
+    summary: Patches a direktiv namespace
     parameters:
       - $ref: '../parameters.yaml#/namespace'
     requestBody:
@@ -596,9 +587,9 @@
                   gitRef:
                     type: string
                     description: git branch name
-                  gitCommitHash:
+                  authToken:
                     type: string(optional)
-                    description: git commit hash
+                    description: auth token used to clone git repo
                   publicKey:
                     type: string(optional)
                     description: associated publish key ssh credential
@@ -637,9 +628,6 @@
                         gitRef:
                           type: string
                           description: git branch name
-                        gitCommitHash:
-                          type: string(optional)
-                          description: git commit hash
                         publicKey:
                           type: string(optional)
                           description: associated publish key ssh credential
@@ -1358,6 +1346,11 @@
         schema:
           type: string
         description: When set, the list will contain all variables under this instance id
+      - in: query
+        name: name
+        schema:
+          type: string
+        description:  When set, the list will contain only variables having this name. Empty list return when the filter matches to no variable
     responses:
       "200":
         description: list of direktiv variables

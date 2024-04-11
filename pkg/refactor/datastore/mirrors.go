@@ -14,7 +14,7 @@ type MirrorConfig struct {
 
 	URL                  string `json:"url"`
 	GitRef               string `json:"gitRef,omitempty"`
-	GitCommitHash        string `json:"gitCommitHash,omitempty"`
+	AuthToken            string `json:"-"`
 	PublicKey            string `json:"publicKey,omitempty"`
 	PrivateKey           string `json:"-"`
 	PrivateKeyPassphrase string `json:"-"`
@@ -59,6 +59,7 @@ type MirrorProcess struct {
 
 // MirrorStore *doesn't* lunch any mirroring process. MirrorStore is only responsible for fetching and setting datastore.MirrorConfig and
 // datastore.MirrorProcess from datastore.
+// nolint: interfacebloat
 type MirrorStore interface {
 	// CreateConfig stores a new config in the store.
 	CreateConfig(ctx context.Context, config *MirrorConfig) (*MirrorConfig, error)
@@ -70,6 +71,10 @@ type MirrorStore interface {
 	GetConfig(ctx context.Context, namespace string) (*MirrorConfig, error)
 
 	GetAllConfigs(ctx context.Context) ([]*MirrorConfig, error)
+
+	// DeleteConfig deletes mirror config of a namespace
+	DeleteConfig(ctx context.Context, namespace string) error
+
 	// CreateProcess stores a new process in the store.
 	CreateProcess(ctx context.Context, process *MirrorProcess) (*MirrorProcess, error)
 

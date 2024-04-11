@@ -48,7 +48,6 @@ describe('Test namespace create calls', () => {
 					url: 'my_url',
 					insecure: true,
 					gitRef: 'master',
-					gitCommitHash: '1234',
 				},
 			},
 			want: {
@@ -57,7 +56,26 @@ describe('Test namespace create calls', () => {
 					url: 'my_url',
 					insecure: true,
 					gitRef: 'master',
-					gitCommitHash: '1234',
+					...timestamps,
+				},
+			},
+		},
+		{
+			input: {
+				name: 'foo4',
+				mirror: {
+					url: 'my_url',
+					insecure: true,
+					gitRef: 'master',
+					authToken: '12345',
+				},
+			},
+			want: {
+				name: 'foo4',
+				mirror: {
+					url: 'my_url',
+					insecure: true,
+					gitRef: 'master',
 					...timestamps,
 				},
 			},

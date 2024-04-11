@@ -19,7 +19,6 @@ describe('Test secret update calls', () => {
 			.send({
 				name: 'foo',
 				data: btoa('bar'),
-
 			})
 
 		expect(createRes.statusCode).toEqual(200)
@@ -32,6 +31,7 @@ describe('Test secret update calls', () => {
 			},
 			want: {
 				name: 'foo',
+				initialized: true,
 			},
 		},
 	]
