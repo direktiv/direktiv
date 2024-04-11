@@ -1,12 +1,18 @@
 package target
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
+	"os"
+	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
+	"github.com/google/uuid"
 )
 
 const (
@@ -58,7 +64,7 @@ func (tnv NamespaceVarPlugin) ExecutePlugin(_ *core.ConsumerFile,
 	w http.ResponseWriter, r *http.Request,
 ) bool {
 	// request failed if nil and response already written
-	resp := doDirektivRequest(direktivNamespaceVarRequest, map[string]string{
+	resp := doVariableRequest(direktivNamespaceVarRequest, map[string]string{
 		namespaceArg: tnv.config.Namespace,
 		varArg:       tnv.config.Variable,
 	}, w, r)
@@ -97,4 +103,82 @@ func init() {
 		TargetNamespaceVarPluginName,
 		plugins.TargetPluginType,
 		ConfigureNamespaceVarPlugin))
+}
+
+type varResolveElem struct {
+	ID        uuid.UUID `json:"id"`
+	Typ       string    `json:"type"`
+	Reference string    `json:"reference"`
+	Name      string    `json:"name"`
+
+	Size      int       `json:"size"`
+	MimeType  string    `json:"mimeType"`
+	Data      []byte    `json:"data,omitempty"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+}
+
+type varResolveResponse struct {
+	Data []varResolveElem
+}
+
+func doVariableRequest(requestType direktivRequestType, args map[string]string,
+	w http.ResponseWriter, r *http.Request,
+) *http.Response {
+	defer r.Body.Close()
+
+	varName := args[varArg]
+
+	uri := fmt.Sprintf("http://localhost:%s/api/v2/namespaces/%s/variables/",
+		os.Getenv("DIREKTIV_API_V1_PORT"), args[namespaceArg])
+
+	if requestType == direktivWorkflowVarRequest {
+		uri = fmt.Sprintf("%s?workflowPath=%s", uri, url.QueryEscape(args[pathArg]))
+	}
+
+	resp := doRequest(w, r, http.MethodGet, uri, nil)
+	if resp == nil {
+		return nil
+	}
+
+	expectedResponse := new(varResolveResponse)
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		plugins.ReportError(r.Context(), w, http.StatusInternalServerError,
+			"resolve request returned error", err)
+
+		return nil
+	}
+
+	err = json.Unmarshal(data, &expectedResponse)
+	if err != nil {
+		plugins.ReportError(r.Context(), w, http.StatusInternalServerError,
+			"resolve request returned unexpected response", err)
+
+		return nil
+	}
+
+	var varID string
+
+	for _, entry := range expectedResponse.Data {
+		if entry.Name == varName {
+			varID = entry.ID.String()
+			break
+		}
+	}
+
+	if varID == "" {
+		plugins.ReportError(r.Context(), w, http.StatusNotFound,
+			"variable not found", errors.New("not found"))
+
+		return nil
+	}
+
+	uri = fmt.Sprintf("http://localhost:%s/api/v2/namespaces/%s/variables/%s",
+		os.Getenv("DIREKTIV_API_V1_PORT"), args[namespaceArg], varID)
+
+	resp = doRequest(w, r, http.MethodGet, uri, nil)
+
+	return resp
 }

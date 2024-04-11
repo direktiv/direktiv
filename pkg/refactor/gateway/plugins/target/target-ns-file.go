@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -74,7 +75,7 @@ func (tnf NamespaceFilePlugin) ExecutePlugin(
 	w http.ResponseWriter, r *http.Request,
 ) bool {
 	// request failed if nil and response already written
-	resp := doDirektivRequest(direktivFileRequest, map[string]string{
+	resp := doFilesystemRequest(map[string]string{
 		namespaceArg: tnf.config.Namespace,
 		pathArg:      tnf.config.File,
 	}, w, r)
@@ -159,4 +160,15 @@ func init() {
 		NamespaceFilePluginName,
 		plugins.TargetPluginType,
 		ConfigureNamespaceFilePlugin))
+}
+
+func doFilesystemRequest(args map[string]string,
+	w http.ResponseWriter, r *http.Request,
+) *http.Response {
+	defer r.Body.Close()
+
+	url := fmt.Sprintf("http://localhost:%s/api/v2/namespaces/%s/files%s",
+		os.Getenv("DIREKTIV_API_V1_PORT"), args[namespaceArg], args[pathArg])
+
+	return doRequest(w, r, http.MethodGet, url, nil)
 }

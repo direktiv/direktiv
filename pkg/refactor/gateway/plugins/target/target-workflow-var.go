@@ -65,7 +65,7 @@ func (tfv FlowVarPlugin) ExecutePlugin(_ *core.ConsumerFile,
 	w http.ResponseWriter, r *http.Request,
 ) bool {
 	// request failed if nil and response already written
-	resp := doDirektivRequest(direktivWorkflowVarRequest, map[string]string{
+	resp := doVariableRequest(direktivWorkflowVarRequest, map[string]string{
 		namespaceArg: tfv.config.Namespace,
 		flowArg:      tfv.config.Flow,
 		varArg:       tfv.config.Variable,
