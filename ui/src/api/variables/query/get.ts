@@ -9,7 +9,7 @@ import useQueryWithPermissions from "~/api/useQueryWithPermissions";
 import { varKeys } from "..";
 
 type GetVarsParams = {
-  namespace?: string;
+  namespace: string;
   workflowPath?: string;
 };
 

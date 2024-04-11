@@ -40,7 +40,7 @@ const MimeTypeSelect = ({
           placeholder={t("components.variableForm.mimeType.placeholder")}
         >
           {mimeTypeIsEmpty ? (
-            <i>{t("components.variableForm.mimeType.empty")}</i>
+            <i>{t("components.variableForm.mimeType.unspecified")}</i>
           ) : (
             mimeType
           )}

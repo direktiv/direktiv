@@ -248,7 +248,7 @@ test("it is not possible to set a variables name to a name that already exists",
   ).toBeVisible();
 });
 
-test("it is possible to have a variable with an empty mimeType and rename it", async ({
+test("it is possible to rename a variable that doesn't have a mimeType", async ({
   page,
 }) => {
   const workflowName = faker.system.commonFileName("yaml");
@@ -276,8 +276,8 @@ test("it is possible to have a variable with an empty mimeType and rename it", a
   await page.getByLabel("Name").fill("new-name");
 
   await expect(
-    page.getByText("Mimetype is empty", { exact: true }),
-    "it renders the empty mime type"
+    page.getByText("Mimetype is unspecified", { exact: true }),
+    "it renders the mime type as unspecified"
   ).toBeVisible();
 
   await expect(

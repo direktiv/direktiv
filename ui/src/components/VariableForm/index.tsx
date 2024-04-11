@@ -24,7 +24,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 const defaultMimeType = "application/json";
 
-type VariableForm = {
+type VariableFormProps = {
   defaultValues: VarFormCreateEditSchemaType;
   dialogTitle: JSX.Element;
   dialogFooter: JSX.Element;
@@ -38,7 +38,7 @@ export const VariableForm = ({
   dialogFooter,
   unallowedNames,
   onMutate,
-}: VariableForm) => {
+}: VariableFormProps) => {
   const { t } = useTranslation();
   const theme = useTheme();
 
@@ -89,9 +89,7 @@ export const VariableForm = ({
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col space-y-5">
-      <DialogHeader>
-        <DialogHeader>{dialogTitle}</DialogHeader>
-      </DialogHeader>
+      <DialogHeader>{dialogTitle}</DialogHeader>
       <FormErrors errors={errors} className="mb-5" />
       <fieldset className="flex items-center gap-5">
         <label className="w-[150px] text-right" htmlFor="name">

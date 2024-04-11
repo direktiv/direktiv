@@ -1178,7 +1178,7 @@
       },
       "mimeType": {
         "label": "Mimetype",
-        "empty": "Mimetype is empty",
+        "unspecified": "Mimetype is unspecified",
         "placeholder": "Select a mimetype"
       },
       "noPreview": "Only text based mime types are supported for preview and editing"
