@@ -21,23 +21,6 @@ func buildService(c *core.Config, sv *core.ServiceFileData, registrySecrets []co
 		return nil, err
 	}
 
-	// nolint
-	//n := functionsConfig.knativeAffinity.DeepCopy()
-	//reqAffinity := n.RequiredDuringSchedulingIgnoredDuringExecution
-	//if reqAffinity != nil {
-	//	terms := &reqAffinity.NodeSelectorTerms
-	//	if len(*terms) > 0 {
-	//		expressions := &(*terms)[0].MatchExpressions
-	//		if len(*expressions) > 0 {
-	//			expression := &(*expressions)[0]
-	//			if expression.Key == "direktiv.io/namespace" {
-	//				expression.Operator = corev1.NodeSelectorOpIn
-	//				expression.Values = []string{*info.NamespaceName}
-	//			}
-	//		}
-	//	}
-	//}
-
 	nonRoot := false
 
 	initContainers := []corev1.Container{}
@@ -134,8 +117,7 @@ func buildPodMeta(c *core.Config, sv *core.ServiceFileData) metav1.ObjectMeta {
 	return metaSpec
 }
 
-// nolint
-func buildVolumes(c *core.Config, sv *core.ServiceFileData) []corev1.Volume {
+func buildVolumes(_ *core.Config, sv *core.ServiceFileData) []corev1.Volume {
 	volumes := []corev1.Volume{
 		{
 			Name: "workdir",
