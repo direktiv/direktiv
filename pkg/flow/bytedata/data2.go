@@ -67,7 +67,6 @@ func ConvertMirrorConfigToGrpcMirrorInfo(config *datastore.MirrorConfig) *grpc.M
 		Ref: config.GitRef,
 		// Cron: ,
 		PublicKey: config.PublicKey,
-		CommitId:  config.GitCommitHash,
 		// LastSync: ,
 		PrivateKey: config.PrivateKey,
 		Passphrase: config.PrivateKeyPassphrase,
