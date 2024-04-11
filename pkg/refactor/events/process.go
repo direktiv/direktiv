@@ -133,35 +133,35 @@ func (ee EventEngine) usePostProcessingEvents(ctx context.Context,
 }
 
 func EventPassedGatekeeper(globPatterns map[string]string, event cloudevents.Event) bool {
-	// Early return if there are no gatekeeper patterns
+	// Early return if there are no gatekeeper patterns.
 	if len(globPatterns) == 0 {
 		return true
 	}
 
-	// Filter patterns relevant to the current event type
+	// Filter patterns relevant to the current event type.
 	relevantPatterns := filterRelevantPatterns(globPatterns, event.Type())
 	if len(relevantPatterns) == 0 {
-		return true // No relevant patterns for this event type
+		return true // No relevant patterns for this event type.
 	}
 
-	// Prepare extensions, including the event source
+	// Prepare extensions, including the event source.
 	extensions := event.Context.GetExtensions()
 	if extensions == nil {
 		extensions = make(map[string]interface{})
 	}
 	extensions["source"] = event.Context.GetSource()
 
-	// Check each relevant pattern against the event extensions
+	// Check each relevant pattern against the event extensions.
 	for patternKey, pattern := range relevantPatterns {
 		if !extensionMatchesPattern(extensions, patternKey, pattern, event.Type()) {
-			return false // Pattern mismatch, event failed gatekeeper
+			return false // Pattern mismatch, event failed gatekeeper.
 		}
 	}
 
-	return true // Event passed all relevant gatekeepers
+	return true // Event passed all relevant gatekeepers.
 }
 
-// Helper functions to encapsulate logic
+// Helper functions to encapsulate filter logic.
 func filterRelevantPatterns(patterns map[string]string, eventType string) map[string]string {
 	result := make(map[string]string)
 	prefix := eventType + "-"
