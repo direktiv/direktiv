@@ -10,7 +10,6 @@ var ErrNotFound = errors.New("ErrNotFound")
 
 // nolint:revive,stylecheck
 type Config struct {
-	App               string `env:"DIREKTIV_APP"`
 	DirektivNamespace string `env:"DIREKTIV_NAMESPACE"`
 
 	LogFormat string `env:"DIREKTIV_LOG_FORMAT"`
@@ -66,7 +65,11 @@ func (conf *Config) GetFunctionsReconcileInterval() time.Duration {
 	return time.Second * time.Duration(conf.FunctionsReconcileInterval)
 }
 
-func (conf *Config) IsValid() error {
+func (conf *Config) Init() error {
+	// Repeat SecretKey length to 16 chars.
+	conf.SecretKey += "1234567890123456"
+	conf.SecretKey = conf.SecretKey[0:16]
+
 	err := conf.checkInvalidEmptyFields()
 	if err != nil {
 		return err

@@ -87,8 +87,6 @@ spec:
               containerPort: 3333
             {{- end }}
           env:
-          - name: DIREKTIV_APP
-            value: "flow"
           - name: DIREKTIV_DEBUG
             value: {{ .Values.flow.debug | quote }}
           - name: DIREKTIV_LOG_FORMAT

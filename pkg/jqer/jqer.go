@@ -33,7 +33,11 @@ func Evaluate(data, query interface{}) ([]interface{}, error) {
 		return out, nil
 	}
 
-	return recursiveEvaluate(data, query)
+	x, _ := json.Marshal(data) //nolint:errchkjson
+	m := make(map[string]interface{})
+	_ = json.Unmarshal(x, &m)
+
+	return recursiveEvaluate(m, query)
 }
 
 func recursiveEvaluate(data, query interface{}) ([]interface{}, error) {

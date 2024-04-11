@@ -12,7 +12,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
+	"github.com/direktiv/direktiv/pkg/flow/nohome/recipient"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
@@ -33,14 +33,14 @@ type namespaceGateway struct {
 }
 
 type gatewayManager struct {
-	db         *database.DB
+	db         *database.SQLStore
 	nsGateways map[string]*namespaceGateway
 	lock       sync.RWMutex
 }
 
 const anonymousUsername = "Anonymous"
 
-func NewGatewayManager(db *database.DB) core.GatewayManager {
+func NewGatewayManager(db *database.SQLStore) core.GatewayManager {
 	return &gatewayManager{
 		db:         db,
 		nsGateways: make(map[string]*namespaceGateway),

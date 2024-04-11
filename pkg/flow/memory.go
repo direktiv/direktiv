@@ -10,11 +10,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/flow/database"
-	"github.com/direktiv/direktiv/pkg/flow/database/recipient"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
+	"github.com/direktiv/direktiv/pkg/flow/nohome/recipient"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/google/uuid"
@@ -36,8 +36,8 @@ type instanceMemory struct {
 	updateArgs *instancestore.UpdateInstanceDataArgs
 }
 
-func (im *instanceMemory) Namespace() *database.Namespace {
-	return &database.Namespace{
+func (im *instanceMemory) Namespace() *datastore.Namespace {
+	return &datastore.Namespace{
 		ID:   im.instance.Instance.NamespaceID,
 		Name: im.instance.TelemetryInfo.NamespaceName,
 	}
