@@ -2,6 +2,8 @@ package jqer
 
 import (
 	"encoding/json"
+	"fmt"
+	"strings"
 	"testing"
 )
 
@@ -230,4 +232,41 @@ func Test007(t *testing.T) {
 	}
 
 	t.Logf("%+v", results)
+}
+
+type leakInterface interface {
+	Y() int
+}
+
+type leakStruct struct {
+	X int `json:"x"`
+}
+
+func (a *leakStruct) Y() int {
+	return a.X
+}
+
+func TestNoLeak(t *testing.T) {
+	test := &leakStruct{X: 5}
+
+	results, err := Evaluate(map[string]interface{}{
+		"test": leakInterface(test),
+	}, `
+	js(
+		return Object.keys(data["test"]);         
+	)`)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	s := fmt.Sprintf("%v", results[0])
+	s = strings.TrimSpace(s)
+
+	if s != `["x"]` {
+		t.Logf(s, []byte(s))
+
+		t.Fail()
+	}
+
 }
