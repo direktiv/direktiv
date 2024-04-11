@@ -276,8 +276,8 @@ test("it is possible to rename a variable that doesn't have a mimeType", async (
   await page.getByLabel("Name").fill("new-name");
 
   await expect(
-    page.getByText("Mimetype is empty", { exact: true }),
-    "it renders the empty mime type"
+    page.getByText("Mimetype is unspecified", { exact: true }),
+    "it renders the mime type as unspecified"
   ).toBeVisible();
 
   await expect(

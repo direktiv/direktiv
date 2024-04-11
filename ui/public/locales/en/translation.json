@@ -1174,7 +1174,7 @@
       },
       "mimeType": {
         "label": "Mimetype",
-        "empty": "Mimetype is empty",
+        "unspecified": "Mimetype is unspecified",
         "placeholder": "Select a mimetype"
       },
       "file": {
