@@ -126,7 +126,6 @@ func (e *fsController) delete(w http.ResponseWriter, r *http.Request) {
 			FilePath:     file.Path,
 			DeleteFileID: file.ID,
 		})
-		// nolint:staticcheck
 		if err != nil {
 			slog.Error("pubsub publish", "err", err)
 		}
