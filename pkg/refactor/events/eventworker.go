@@ -63,7 +63,6 @@ func (w *EventWorker) getDelayedEvents(ctx context.Context) {
 	offset := 0
 	receivedEvents, _, err := w.store.GetDelayedEvents(ctx, currentTime, limit, offset)
 	//  TODO: myMetrics.events_delayed_processing_duration.Observe(processDuration.Seconds())
-
 	if err != nil {
 		slog.Error("fetching delayed events", "err", err)
 		// TODO: myMetrics.events_delayed_fetch_errors.Inc()
