@@ -5,7 +5,6 @@ import {
 
 import { DialogContent } from "~/design/Dialog";
 import { EditVariableForm } from "~/components/VariableForm/EditForm";
-import { useTranslation } from "react-i18next";
 import { useUpdateVar } from "~/api/variables/mutate/update";
 import { useVarDetails } from "~/api/variables/query/details";
 
@@ -16,7 +15,6 @@ type EditProps = {
 };
 
 const Edit = ({ item, onSuccess, unallowedNames }: EditProps) => {
-  const { t } = useTranslation();
   const { data, isSuccess } = useVarDetails(item.id);
   const { mutate: updateVar } = useUpdateVar({
     onSuccess,
@@ -33,9 +31,6 @@ const Edit = ({ item, onSuccess, unallowedNames }: EditProps) => {
     <DialogContent>
       {isSuccess && (
         <EditVariableForm
-          title={t("pages.settings.variables.edit.title", {
-            name: data.data.name,
-          })}
           onMutate={onMutate}
           unallowedNames={unallowedNames}
           variable={data.data}
