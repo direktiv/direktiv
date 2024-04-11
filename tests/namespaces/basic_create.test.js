@@ -240,7 +240,6 @@ describe('Test error cases', () => {
 	})
 })
 
-
 describe('Test missing fields create calls', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 
@@ -248,21 +247,21 @@ describe('Test missing fields create calls', () => {
 		{
 			mirror: {
 				url: 'my_url',
-				gitRef: "main"
-			}
+				gitRef: 'main',
+			},
 		},
 		{
 			name: 'foo4',
 			mirror: {
-				gitRef: "main"
-			}
+				gitRef: 'main',
+			},
 		},
 		{
 			name: 'foo4',
 			mirror: {
 				url: 'my_url',
-			}
-		}]
+			},
+		} ]
 
 	for (let i = 0; i < testCases.length; i++) {
 		const testCase = testCases[i]
@@ -271,8 +270,8 @@ describe('Test missing fields create calls', () => {
 			const res = await request(config.getDirektivHost())
 				.post(`/api/v2/namespaces`)
 				.send(testCase)
-			//expect(res.statusCode).toEqual(400)
-			expect(res.body.error.code).toEqual("request_data_invalid")
+			// expect(res.statusCode).toEqual(400)
+			expect(res.body.error.code).toEqual('request_data_invalid')
 		})
 	}
 })
