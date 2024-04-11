@@ -192,7 +192,6 @@ describe('Test valid namespace name', () => {
 	}
 })
 
-
 describe('Test valid error cases', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 
@@ -200,7 +199,7 @@ describe('Test valid error cases', () => {
 		const res = await request(config.getDirektivHost())
 			.post(`/api/v2/namespaces`)
 			.send({
-				name: "foo",
+				name: 'foo',
 			})
 		expect(res.statusCode).toEqual(200)
 	})
@@ -209,7 +208,7 @@ describe('Test valid error cases', () => {
 		const res = await request(config.getDirektivHost())
 			.post(`/api/v2/namespaces`)
 			.send({
-				name: "foo",
+				name: 'foo',
 			})
 		expect(res.statusCode).toEqual(400)
 		expect(res.body.error).toEqual({
