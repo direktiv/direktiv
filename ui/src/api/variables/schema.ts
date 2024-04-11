@@ -48,6 +48,8 @@ export const VarContentSchema = z.object({
   }),
 });
 
+export type VarDetailsSchema = z.infer<typeof VarContentSchema>["data"];
+
 export const VarDeletedSchema = z.null();
 
 export const VarCreatedUpdatedSchema = z.object({

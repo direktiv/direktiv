@@ -1,18 +1,10 @@
 import {
-  DialogClose,
-  DialogContent,
-  DialogFooter,
-  DialogTitle,
-} from "~/design/Dialog";
-import {
   VarFormCreateEditSchemaType,
   VarSchemaType,
 } from "~/api/variables/schema";
 
-import Button from "~/design/Button";
-import { FileJson } from "lucide-react";
-import { VariableForm } from "../../../../components/VariableForm";
-import { useTranslation } from "react-i18next";
+import { DialogContent } from "~/design/Dialog";
+import { EditVariableForm } from "~/components/VariableForm/EditForm";
 import { useUpdateVar } from "~/api/variables/mutate/update";
 import { useVarDetails } from "~/api/variables/query/details";
 
@@ -23,7 +15,6 @@ type EditProps = {
 };
 
 const Edit = ({ item, onSuccess, unallowedNames }: EditProps) => {
-  const { t } = useTranslation();
   const { data, isSuccess } = useVarDetails(item.id);
   const { mutate: updateVar } = useUpdateVar({
     onSuccess,
@@ -39,32 +30,10 @@ const Edit = ({ item, onSuccess, unallowedNames }: EditProps) => {
   return (
     <DialogContent>
       {isSuccess && (
-        <VariableForm
-          unallowedNames={unallowedNames}
-          defaultValues={{
-            name: data.data.name,
-            data: data.data.data,
-            mimeType: data.data.mimeType,
-          }}
-          dialogTitle={
-            <DialogTitle>
-              <FileJson />
-              {t("pages.settings.variables.edit.title", {
-                name: data.data.name,
-              })}
-            </DialogTitle>
-          }
-          dialogFooter={
-            <DialogFooter>
-              <DialogClose asChild>
-                <Button variant="ghost">
-                  {t("components.button.label.cancel")}
-                </Button>
-              </DialogClose>
-              <Button type="submit">{t("components.button.label.save")}</Button>
-            </DialogFooter>
-          }
+        <EditVariableForm
           onMutate={onMutate}
+          unallowedNames={unallowedNames}
+          variable={data.data}
         />
       )}
     </DialogContent>
