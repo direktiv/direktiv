@@ -144,16 +144,15 @@ test("the diagram panel on the instance page responds to user interaction", asyn
   const currentWidthAfterReload = (await diagramPanel.boundingBox())?.width;
   expect(
     currentWidthAfterReload,
-    "reload the page and check that the width is the exact same value than the maximizedWidth"
+    "after reloading the page, the panel is still maximized"
   ).toEqual(maximizedWidth);
 
   await resizeButton.click();
 
   const currentWidthAfterMinimize = (await diagramPanel.boundingBox())?.width;
-  expect(
-    currentWidthAfterMinimize,
-    "resize and check that the width is the exact same value than the minimizedWidth"
-  ).toEqual(minimizedWidth);
+  expect(currentWidthAfterMinimize, "the panel can be minimized again").toEqual(
+    minimizedWidth
+  );
 });
 
 test("the diagram on the instance page changes appearance dynamically", async ({
