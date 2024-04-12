@@ -7,7 +7,7 @@ states:
 `;
 
 export const workflowWithDelay = `direktiv_api: workflow/v1
-description: A simple 'delay' state that waits for 5 seconds
+description: A simple 'delay' state that waits for 4 seconds
 states:
 - id: delay
   type: delay

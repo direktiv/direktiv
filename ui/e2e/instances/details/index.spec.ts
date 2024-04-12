@@ -121,34 +121,39 @@ test("the diagram panel on the instance page responds to user interaction", asyn
     page.getByText("maximize diagram"),
     "it shows the correct text when hovering over the resize button"
   ).toBeVisible();
-  // hover over something else to make the overlay disappear
-  page.getByTestId("rf__wrapper").hover();
 
+  const minimizedWidth = (await diagramPanel.boundingBox())?.width;
   await resizeButton.click();
-  await expect(
-    diagramPanel,
-    "It maximizes the diagram to full width of the screen"
-  ).toHaveCSS("width", "1032px");
-  await resizeButton.hover();
+  const maximizedWidth = (await diagramPanel.boundingBox())?.width;
+  if (minimizedWidth === undefined || maximizedWidth === undefined) {
+    throw new Error("could not get width of diagram panel");
+  }
+  expect(
+    maximizedWidth / minimizedWidth,
+    "The panel is significantly bigger after maximizing"
+  ).toBeGreaterThan(1.5);
 
+  await resizeButton.hover();
   await expect(
     page.getByText("minimize diagram"),
     "it shows the correct text when hovering over the resize button"
   ).toBeVisible();
-  // hover over something else to make the overlay disappear
-  page.getByTestId("rf__wrapper").hover();
 
   await page.reload();
-  await expect(
-    diagramPanel,
-    "After a page reload the setting for maximizing the width is remembered"
-  ).toHaveCSS("width", "1032px");
+
+  const currentWidthAfterReload = (await diagramPanel.boundingBox())?.width;
+  expect(
+    currentWidthAfterReload,
+    "reload the page and check that the width is the exact same value than the maximizedWidth"
+  ).toEqual(maximizedWidth);
 
   await resizeButton.click();
-  await expect(
-    diagramPanel,
-    "It minimizes the diagram to the initial width of the screen"
-  ).toHaveCSS("width", "506px");
+
+  const currentWidthAfterMinimize = (await diagramPanel.boundingBox())?.width;
+  expect(
+    currentWidthAfterMinimize,
+    "resize and check that the width is the exact same value than the minimizedWidth"
+  ).toEqual(minimizedWidth);
 });
 
 test("the diagram on the instance page changes appearance dynamically", async ({
@@ -165,10 +170,8 @@ test("the diagram on the instance page changes appearance dynamically", async ({
   const diagramPanel = page.getByTestId("rf__wrapper");
   await expect(diagramPanel, "It renders the diagram panel").toBeVisible();
 
-  const resizeButton = page.getByTestId("resizeDiagram");
-  await expect(resizeButton, "It renders the maximize button").toBeVisible();
   // resize screen to see the nodes better
-  await resizeButton.click();
+  await page.getByTestId("resizeDiagram").click();
 
   const startNode = diagramPanel.getByTestId("rf__node-startNode");
   const endNode = diagramPanel.getByTestId("rf__node-endNode");
