@@ -3,11 +3,11 @@ import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 
 import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
-import DatePicker from "./DatePicker";
+import DatePicker from "~/components/Filters/DatePicker";
 import { FiltersObj } from "~/api/events/query/get";
-import RefineTime from "./RefineTime";
-import { SelectFieldMenu } from "./SelectFieldMenu";
-import TextInput from "./TextInput";
+import RefineTime from "~/components/Filters/RefineTime";
+import { SelectFieldMenu } from "~/components/Filters/SelectFieldMenu";
+import TextInput from "~/components/Filters/TextInput";
 import moment from "moment";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -108,10 +108,22 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
                 </PopoverTrigger>
                 <PopoverContent align="start">
                   <TextInput
-                    field={field}
-                    setFilter={setFilter}
-                    clearFilter={clearFilter}
                     value={filters[field]?.value}
+                    onSubmit={(value) => {
+                      if (value) {
+                        setFilter({
+                          [field]: { value, type: "CONTAINS" },
+                        });
+                      } else {
+                        clearFilter(field);
+                      }
+                    }}
+                    heading={t(
+                      `pages.events.history.filter.menuHeading.${field}`
+                    )}
+                    placeholder={t(
+                      `pages.events.history.filter.placeholder.${field}`
+                    )}
                   />
                 </PopoverContent>
               </Popover>
@@ -217,17 +229,36 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
           </PopoverTrigger>
           <PopoverContent align="start">
             {(selectedField === null && (
-              <SelectFieldMenu
-                options={undefinedFilters}
-                onSelect={setSelectedField}
+              <SelectFieldMenu<keyof FiltersObj>
+                options={undefinedFilters.map((option) => ({
+                  value: option,
+                  label: t(`pages.events.history.filter.field.${option}`),
+                }))}
+                onSelect={(value) => setSelectedField(value)}
+                heading={t("pages.events.history.filter.menuHeading.main")}
+                placeholder={t(
+                  "pages.events.history.filter.placeholder.mainMenu"
+                )}
               />
             )) ||
               ((selectedField === "TYPE" || selectedField === "TEXT") && (
                 <TextInput
-                  field={selectedField}
-                  setFilter={setFilter}
-                  clearFilter={clearFilter}
                   value={filters[selectedField]?.value}
+                  onSubmit={(value) => {
+                    if (value) {
+                      setFilter({
+                        [selectedField]: { value, type: "CONTAINS" },
+                      });
+                    } else {
+                      clearFilter(selectedField);
+                    }
+                  }}
+                  heading={t(
+                    `pages.events.history.filter.menuHeading.${selectedField}`
+                  )}
+                  placeholder={t(
+                    `pages.events.history.filter.placeholder.${selectedField}`
+                  )}
                 />
               )) ||
               ((selectedField === "AFTER" || selectedField === "BEFORE") && (
