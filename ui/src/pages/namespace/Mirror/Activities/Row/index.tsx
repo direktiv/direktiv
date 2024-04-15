@@ -5,14 +5,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "~/design/Tooltip";
-import {
-  activityStatusToBadgeProps,
-  activityTypeToBadeVariant,
-} from "../utils";
 
 import Badge from "~/design/Badge";
 import { SyncObjectSchema } from "~/api/syncs/schema";
 import TooltipCopyBadge from "~/design/TooltipCopyBadge";
+import { activityStatusToBadgeProps } from "../utils";
 import { pages } from "~/util/router/pages";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -48,9 +45,6 @@ const Row = ({
           <TooltipCopyBadge value={item.id} variant="outline">
             {item.id.slice(0, 8)}
           </TooltipCopyBadge>
-        </TableCell>
-        <TableCell>
-          <Badge>TYPE NO LONGER EXISTS</Badge>
         </TableCell>
         <TableCell>
           <Badge

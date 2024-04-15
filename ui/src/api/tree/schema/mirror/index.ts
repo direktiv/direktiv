@@ -43,9 +43,6 @@ export const MirrorInfoInfoSchema = z.object({
   insecure: z.boolean(),
 });
 
-// According to API spec, but currently dry_run isn't used in the API.
-const MirrorActivityTypeSchema = z.enum(["init", "sync", "dry_run"]);
-
 // According to the API spec, but currently cancelled isn't used in the API.
 const MirrorActivityStatusSchema = z.enum([
   "pending",
@@ -57,7 +54,6 @@ const MirrorActivityStatusSchema = z.enum([
 
 export const MirrorActivitySchema = z.object({
   id: z.string(),
-  type: MirrorActivityTypeSchema,
   status: MirrorActivityStatusSchema,
   createdAt: z.string(),
   updatedAt: z.string(),
@@ -117,9 +113,6 @@ const mirrorFormType = z.enum([
 
 export type MirrorActivitySchemaType = z.infer<typeof MirrorActivitySchema>;
 
-export type MirrorActivityTypeSchemaType = z.infer<
-  typeof MirrorActivityTypeSchema
->;
 export type MirrorActivityStatusSchemaType = z.infer<
   typeof MirrorActivityStatusSchema
 >;

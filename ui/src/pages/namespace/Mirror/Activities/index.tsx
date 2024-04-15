@@ -89,9 +89,6 @@ const Activities = () => {
                       {t("pages.mirror.syncs.tableHeader.id")}
                     </TableHeaderCell>
                     <TableHeaderCell>
-                      {t("pages.mirror.syncs.tableHeader.type")}
-                    </TableHeaderCell>
-                    <TableHeaderCell>
                       {t("pages.mirror.syncs.tableHeader.status")}
                     </TableHeaderCell>
                     <TableHeaderCell>

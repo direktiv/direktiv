@@ -32,7 +32,7 @@ const Logs = ({ activityId }: { activityId: string }) => {
         <div className="mb-5 flex flex-col gap-5 sm:flex-row">
           <h3 className="flex grow items-center gap-x-2 font-medium">
             <ScrollText className="h-5" />
-            {t("pages.mirror.activities.detail.logs.title")}
+            {t("pages.mirror.syncs.detail.logs.title")}
           </h3>
           <ButtonBar>
             <TooltipProvider>

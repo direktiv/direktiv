@@ -665,7 +665,7 @@
         },
         "tableHeader": {
           "createdAt": "Started",
-          "id": "Activity ID",
+          "id": "ID",
           "status": "Status",
           "type": "Type"
         },

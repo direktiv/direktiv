@@ -1,10 +1,6 @@
-import {
-  activityStatusToBadgeProps,
-  activityTypeToBadeVariant,
-} from "../../utils";
-
 import Badge from "~/design/Badge";
 import { GitCompare } from "lucide-react";
+import { activityStatusToBadgeProps } from "../../utils";
 import { useMirrorActivity } from "~/api/tree/query/mirrorInfo";
 import { useTranslation } from "react-i18next";
 import useUpdatedAt from "~/hooks/useUpdatedAt";
@@ -28,7 +24,7 @@ const Header = ({ activityId }: { activityId: string }) => {
         </div>
         <div className="text-sm">
           <div className="text-gray-10 dark:text-gray-dark-10">
-            {t("pages.mirror.activities.detail.header.status")}
+            {t("pages.mirror.syncs.detail.header.status")}
           </div>
           <Badge
             variant={statusBadgeProps.variant}
@@ -39,17 +35,9 @@ const Header = ({ activityId }: { activityId: string }) => {
         </div>
         <div className="text-sm">
           <div className="text-gray-10 dark:text-gray-dark-10">
-            {t("pages.mirror.activities.detail.header.type")}
+            {t("pages.mirror.syncs.detail.header.createdAt")}
           </div>
-          <Badge variant={activityTypeToBadeVariant(data.type)}>
-            {data.type}
-          </Badge>
-        </div>
-        <div className="text-sm">
-          <div className="text-gray-10 dark:text-gray-dark-10">
-            {t("pages.mirror.activities.detail.header.createdAt")}
-          </div>
-          {t("pages.mirror.activities.detail.header.relativeTime", {
+          {t("pages.mirror.syncs.detail.header.relativeTime", {
             relativeTime: createdAt,
           })}
         </div>
