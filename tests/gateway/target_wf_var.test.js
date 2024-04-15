@@ -154,7 +154,7 @@ describe('Test target workflow variable plugin', () => {
 		const workflowVarResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ testNamespace }/variables`)
 			.send({
 				name: 'test',
-				workflowPath: "/workflow.yaml",
+				workflowPath: '/workflow.yaml',
 				data: btoa('Hello World'),
 				mimeType: 'text/plain',
 			})
@@ -165,7 +165,7 @@ describe('Test target workflow variable plugin', () => {
 		const workflowVarResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ limitedNamespace }/variables`)
 			.send({
 				name: 'test',
-				workflowPath: "/workflow.yaml",
+				workflowPath: '/workflow.yaml',
 				data: btoa('Hello World 2'),
 				mimeType: 'text/plain',
 			})
