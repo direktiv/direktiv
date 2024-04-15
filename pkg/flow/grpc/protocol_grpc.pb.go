@@ -49,8 +49,6 @@ const (
 	Flow_ResolveNamespaceUID_FullMethodName   = "/direktiv_flow.Flow/ResolveNamespaceUID"
 	Flow_CreateNamespaceMirror_FullMethodName = "/direktiv_flow.Flow/CreateNamespaceMirror"
 	Flow_UpdateMirrorSettings_FullMethodName  = "/direktiv_flow.Flow/UpdateMirrorSettings"
-	Flow_LockMirror_FullMethodName            = "/direktiv_flow.Flow/LockMirror"
-	Flow_UnlockMirror_FullMethodName          = "/direktiv_flow.Flow/UnlockMirror"
 	Flow_SoftSyncMirror_FullMethodName        = "/direktiv_flow.Flow/SoftSyncMirror"
 	Flow_HardSyncMirror_FullMethodName        = "/direktiv_flow.Flow/HardSyncMirror"
 	Flow_MirrorInfo_FullMethodName            = "/direktiv_flow.Flow/MirrorInfo"
@@ -97,8 +95,6 @@ type FlowClient interface {
 	// mirrors.
 	CreateNamespaceMirror(ctx context.Context, in *CreateNamespaceMirrorRequest, opts ...grpc.CallOption) (*CreateNamespaceResponse, error)
 	UpdateMirrorSettings(ctx context.Context, in *UpdateMirrorSettingsRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	LockMirror(ctx context.Context, in *LockMirrorRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	UnlockMirror(ctx context.Context, in *UnlockMirrorRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	SoftSyncMirror(ctx context.Context, in *SoftSyncMirrorRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	HardSyncMirror(ctx context.Context, in *HardSyncMirrorRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	MirrorInfo(ctx context.Context, in *MirrorInfoRequest, opts ...grpc.CallOption) (*MirrorInfoResponse, error)
@@ -537,24 +533,6 @@ func (c *flowClient) UpdateMirrorSettings(ctx context.Context, in *UpdateMirrorS
 	return out, nil
 }
 
-func (c *flowClient) LockMirror(ctx context.Context, in *LockMirrorRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, Flow_LockMirror_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) UnlockMirror(ctx context.Context, in *UnlockMirrorRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, Flow_UnlockMirror_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *flowClient) SoftSyncMirror(ctx context.Context, in *SoftSyncMirrorRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, Flow_SoftSyncMirror_FullMethodName, in, out, opts...)
@@ -670,8 +648,6 @@ type FlowServer interface {
 	// mirrors.
 	CreateNamespaceMirror(context.Context, *CreateNamespaceMirrorRequest) (*CreateNamespaceResponse, error)
 	UpdateMirrorSettings(context.Context, *UpdateMirrorSettingsRequest) (*emptypb.Empty, error)
-	LockMirror(context.Context, *LockMirrorRequest) (*emptypb.Empty, error)
-	UnlockMirror(context.Context, *UnlockMirrorRequest) (*emptypb.Empty, error)
 	SoftSyncMirror(context.Context, *SoftSyncMirrorRequest) (*emptypb.Empty, error)
 	HardSyncMirror(context.Context, *HardSyncMirrorRequest) (*emptypb.Empty, error)
 	MirrorInfo(context.Context, *MirrorInfoRequest) (*MirrorInfoResponse, error)
@@ -771,12 +747,6 @@ func (UnimplementedFlowServer) CreateNamespaceMirror(context.Context, *CreateNam
 }
 func (UnimplementedFlowServer) UpdateMirrorSettings(context.Context, *UpdateMirrorSettingsRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateMirrorSettings not implemented")
-}
-func (UnimplementedFlowServer) LockMirror(context.Context, *LockMirrorRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method LockMirror not implemented")
-}
-func (UnimplementedFlowServer) UnlockMirror(context.Context, *UnlockMirrorRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UnlockMirror not implemented")
 }
 func (UnimplementedFlowServer) SoftSyncMirror(context.Context, *SoftSyncMirrorRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SoftSyncMirror not implemented")
@@ -1352,42 +1322,6 @@ func _Flow_UpdateMirrorSettings_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Flow_LockMirror_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(LockMirrorRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).LockMirror(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_LockMirror_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).LockMirror(ctx, req.(*LockMirrorRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_UnlockMirror_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UnlockMirrorRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).UnlockMirror(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_UnlockMirror_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).UnlockMirror(ctx, req.(*UnlockMirrorRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Flow_SoftSyncMirror_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(SoftSyncMirrorRequest)
 	if err := dec(in); err != nil {
@@ -1593,14 +1527,6 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateMirrorSettings",
 			Handler:    _Flow_UpdateMirrorSettings_Handler,
-		},
-		{
-			MethodName: "LockMirror",
-			Handler:    _Flow_LockMirror_Handler,
-		},
-		{
-			MethodName: "UnlockMirror",
-			Handler:    _Flow_UnlockMirror_Handler,
 		},
 		{
 			MethodName: "SoftSyncMirror",

@@ -59,8 +59,6 @@ service Flow {
 	// mirrors.
 	rpc CreateNamespaceMirror (CreateNamespaceMirrorRequest) returns (CreateNamespaceResponse) {}
 	rpc UpdateMirrorSettings (UpdateMirrorSettingsRequest) returns (google.protobuf.Empty) {}
-	rpc LockMirror(LockMirrorRequest) returns (google.protobuf.Empty) {}
-	rpc UnlockMirror(UnlockMirrorRequest) returns (google.protobuf.Empty) {}
 	rpc SoftSyncMirror(SoftSyncMirrorRequest) returns (google.protobuf.Empty) {}
 	rpc HardSyncMirror(HardSyncMirrorRequest) returns (google.protobuf.Empty) {}
 	rpc MirrorInfo(MirrorInfoRequest) returns (MirrorInfoResponse) {}
