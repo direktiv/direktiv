@@ -108,22 +108,6 @@ func ConvertMirrorProcessesToGrpcMirrorActivityInfoList(list []*datastore.Mirror
 	return result
 }
 
-func ConvertSecretToGrpcSecret(secret *datastore.Secret) *grpc.Secret {
-	return &grpc.Secret{
-		Name:        secret.Name,
-		Initialized: secret.Data != nil,
-	}
-}
-
-func ConvertSecretsToGrpcSecretList(list []*datastore.Secret) []*grpc.Secret {
-	var result []*grpc.Secret
-	for _, f := range list {
-		result = append(result, ConvertSecretToGrpcSecret(f))
-	}
-
-	return result
-}
-
 func ConvertInstanceToGrpcInstance(instance *enginerefactor.Instance) *grpc.Instance {
 	return &grpc.Instance{
 		CreatedAt:    timestamppb.New(instance.Instance.CreatedAt),
