@@ -9,7 +9,6 @@ import "google/protobuf/empty.proto";
 import "pkg/flow/grpc/namespaces.proto";
 import "pkg/flow/grpc/nodes.proto";
 import "pkg/flow/grpc/workflows.proto";
-import "pkg/flow/grpc/secrets.proto";
 import "pkg/flow/grpc/instances.proto";
 import "pkg/flow/grpc/internal.proto";
 import "pkg/flow/grpc/cloudevent.proto";
@@ -37,16 +36,6 @@ service Flow {
 	rpc WorkflowStream (WorkflowRequest) returns (stream WorkflowResponse) {}
 	rpc CreateWorkflow (CreateWorkflowRequest) returns (CreateWorkflowResponse) {}
 	rpc UpdateWorkflow (UpdateWorkflowRequest) returns (UpdateWorkflowResponse) {}
-
-	// secrets.
-	rpc Secrets (SecretsRequest) returns (SecretsResponse) {}
-	rpc SecretsStream (SecretsRequest) returns (stream SecretsResponse) {}
-	rpc SetSecret (SetSecretRequest) returns (SetSecretResponse) {}
-	rpc CreateSecretsFolder (CreateSecretsFolderRequest) returns (CreateSecretsFolderResponse) {}
-	rpc DeleteSecret (DeleteSecretRequest) returns (google.protobuf.Empty) {}
-	rpc DeleteSecretsFolder(DeleteSecretsFolderRequest) returns  (google.protobuf.Empty)  {}
-	rpc SearchSecret (SearchSecretRequest) returns (SearchSecretResponse) {}
-	rpc UpdateSecret (UpdateSecretRequest) returns (UpdateSecretResponse) {}
 
 	// instances.
 	rpc Instance (InstanceRequest) returns (InstanceResponse) {}

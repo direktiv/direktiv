@@ -71,7 +71,6 @@ jobs:
             "namespaces/",
             "registry/",
             "secrets/",
-            "secrets2/",
             "services/",
             "variables/",
             "logs/", 

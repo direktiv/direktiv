@@ -35,14 +35,6 @@ const (
 	Flow_WorkflowStream_FullMethodName        = "/direktiv_flow.Flow/WorkflowStream"
 	Flow_CreateWorkflow_FullMethodName        = "/direktiv_flow.Flow/CreateWorkflow"
 	Flow_UpdateWorkflow_FullMethodName        = "/direktiv_flow.Flow/UpdateWorkflow"
-	Flow_Secrets_FullMethodName               = "/direktiv_flow.Flow/Secrets"
-	Flow_SecretsStream_FullMethodName         = "/direktiv_flow.Flow/SecretsStream"
-	Flow_SetSecret_FullMethodName             = "/direktiv_flow.Flow/SetSecret"
-	Flow_CreateSecretsFolder_FullMethodName   = "/direktiv_flow.Flow/CreateSecretsFolder"
-	Flow_DeleteSecret_FullMethodName          = "/direktiv_flow.Flow/DeleteSecret"
-	Flow_DeleteSecretsFolder_FullMethodName   = "/direktiv_flow.Flow/DeleteSecretsFolder"
-	Flow_SearchSecret_FullMethodName          = "/direktiv_flow.Flow/SearchSecret"
-	Flow_UpdateSecret_FullMethodName          = "/direktiv_flow.Flow/UpdateSecret"
 	Flow_Instance_FullMethodName              = "/direktiv_flow.Flow/Instance"
 	Flow_InstanceStream_FullMethodName        = "/direktiv_flow.Flow/InstanceStream"
 	Flow_Instances_FullMethodName             = "/direktiv_flow.Flow/Instances"
@@ -102,15 +94,6 @@ type FlowClient interface {
 	WorkflowStream(ctx context.Context, in *WorkflowRequest, opts ...grpc.CallOption) (Flow_WorkflowStreamClient, error)
 	CreateWorkflow(ctx context.Context, in *CreateWorkflowRequest, opts ...grpc.CallOption) (*CreateWorkflowResponse, error)
 	UpdateWorkflow(ctx context.Context, in *UpdateWorkflowRequest, opts ...grpc.CallOption) (*UpdateWorkflowResponse, error)
-	// secrets.
-	Secrets(ctx context.Context, in *SecretsRequest, opts ...grpc.CallOption) (*SecretsResponse, error)
-	SecretsStream(ctx context.Context, in *SecretsRequest, opts ...grpc.CallOption) (Flow_SecretsStreamClient, error)
-	SetSecret(ctx context.Context, in *SetSecretRequest, opts ...grpc.CallOption) (*SetSecretResponse, error)
-	CreateSecretsFolder(ctx context.Context, in *CreateSecretsFolderRequest, opts ...grpc.CallOption) (*CreateSecretsFolderResponse, error)
-	DeleteSecret(ctx context.Context, in *DeleteSecretRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	DeleteSecretsFolder(ctx context.Context, in *DeleteSecretsFolderRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	SearchSecret(ctx context.Context, in *SearchSecretRequest, opts ...grpc.CallOption) (*SearchSecretResponse, error)
-	UpdateSecret(ctx context.Context, in *UpdateSecretRequest, opts ...grpc.CallOption) (*UpdateSecretResponse, error)
 	// instances.
 	Instance(ctx context.Context, in *InstanceRequest, opts ...grpc.CallOption) (*InstanceResponse, error)
 	InstanceStream(ctx context.Context, in *InstanceRequest, opts ...grpc.CallOption) (Flow_InstanceStreamClient, error)
@@ -365,101 +348,6 @@ func (c *flowClient) UpdateWorkflow(ctx context.Context, in *UpdateWorkflowReque
 	return out, nil
 }
 
-func (c *flowClient) Secrets(ctx context.Context, in *SecretsRequest, opts ...grpc.CallOption) (*SecretsResponse, error) {
-	out := new(SecretsResponse)
-	err := c.cc.Invoke(ctx, Flow_Secrets_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) SecretsStream(ctx context.Context, in *SecretsRequest, opts ...grpc.CallOption) (Flow_SecretsStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[3], Flow_SecretsStream_FullMethodName, opts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &flowSecretsStreamClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-type Flow_SecretsStreamClient interface {
-	Recv() (*SecretsResponse, error)
-	grpc.ClientStream
-}
-
-type flowSecretsStreamClient struct {
-	grpc.ClientStream
-}
-
-func (x *flowSecretsStreamClient) Recv() (*SecretsResponse, error) {
-	m := new(SecretsResponse)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func (c *flowClient) SetSecret(ctx context.Context, in *SetSecretRequest, opts ...grpc.CallOption) (*SetSecretResponse, error) {
-	out := new(SetSecretResponse)
-	err := c.cc.Invoke(ctx, Flow_SetSecret_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) CreateSecretsFolder(ctx context.Context, in *CreateSecretsFolderRequest, opts ...grpc.CallOption) (*CreateSecretsFolderResponse, error) {
-	out := new(CreateSecretsFolderResponse)
-	err := c.cc.Invoke(ctx, Flow_CreateSecretsFolder_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) DeleteSecret(ctx context.Context, in *DeleteSecretRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, Flow_DeleteSecret_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) DeleteSecretsFolder(ctx context.Context, in *DeleteSecretsFolderRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, Flow_DeleteSecretsFolder_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) SearchSecret(ctx context.Context, in *SearchSecretRequest, opts ...grpc.CallOption) (*SearchSecretResponse, error) {
-	out := new(SearchSecretResponse)
-	err := c.cc.Invoke(ctx, Flow_SearchSecret_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) UpdateSecret(ctx context.Context, in *UpdateSecretRequest, opts ...grpc.CallOption) (*UpdateSecretResponse, error) {
-	out := new(UpdateSecretResponse)
-	err := c.cc.Invoke(ctx, Flow_UpdateSecret_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *flowClient) Instance(ctx context.Context, in *InstanceRequest, opts ...grpc.CallOption) (*InstanceResponse, error) {
 	out := new(InstanceResponse)
 	err := c.cc.Invoke(ctx, Flow_Instance_FullMethodName, in, out, opts...)
@@ -470,7 +358,7 @@ func (c *flowClient) Instance(ctx context.Context, in *InstanceRequest, opts ...
 }
 
 func (c *flowClient) InstanceStream(ctx context.Context, in *InstanceRequest, opts ...grpc.CallOption) (Flow_InstanceStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[4], Flow_InstanceStream_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[3], Flow_InstanceStream_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -511,7 +399,7 @@ func (c *flowClient) Instances(ctx context.Context, in *InstancesRequest, opts .
 }
 
 func (c *flowClient) InstancesStream(ctx context.Context, in *InstancesRequest, opts ...grpc.CallOption) (Flow_InstancesStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[5], Flow_InstancesStream_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[4], Flow_InstancesStream_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -588,7 +476,7 @@ func (c *flowClient) StartWorkflow(ctx context.Context, in *StartWorkflowRequest
 }
 
 func (c *flowClient) RunWorkflow(ctx context.Context, in *RunWorkflowRequest, opts ...grpc.CallOption) (Flow_RunWorkflowClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[6], Flow_RunWorkflow_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[5], Flow_RunWorkflow_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -620,7 +508,7 @@ func (x *flowRunWorkflowClient) Recv() (*RunWorkflowResponse, error) {
 }
 
 func (c *flowClient) AwaitWorkflow(ctx context.Context, in *AwaitWorkflowRequest, opts ...grpc.CallOption) (Flow_AwaitWorkflowClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[7], Flow_AwaitWorkflow_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[6], Flow_AwaitWorkflow_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -697,7 +585,7 @@ func (c *flowClient) EventListeners(ctx context.Context, in *EventListenersReque
 }
 
 func (c *flowClient) EventListenersStream(ctx context.Context, in *EventListenersRequest, opts ...grpc.CallOption) (Flow_EventListenersStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[8], Flow_EventListenersStream_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[7], Flow_EventListenersStream_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -738,7 +626,7 @@ func (c *flowClient) EventHistory(ctx context.Context, in *EventHistoryRequest, 
 }
 
 func (c *flowClient) EventHistoryStream(ctx context.Context, in *EventHistoryRequest, opts ...grpc.CallOption) (Flow_EventHistoryStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[9], Flow_EventHistoryStream_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[8], Flow_EventHistoryStream_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -869,7 +757,7 @@ func (c *flowClient) MirrorInfo(ctx context.Context, in *MirrorInfoRequest, opts
 }
 
 func (c *flowClient) MirrorInfoStream(ctx context.Context, in *MirrorInfoRequest, opts ...grpc.CallOption) (Flow_MirrorInfoStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[10], Flow_MirrorInfoStream_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[9], Flow_MirrorInfoStream_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -966,15 +854,6 @@ type FlowServer interface {
 	WorkflowStream(*WorkflowRequest, Flow_WorkflowStreamServer) error
 	CreateWorkflow(context.Context, *CreateWorkflowRequest) (*CreateWorkflowResponse, error)
 	UpdateWorkflow(context.Context, *UpdateWorkflowRequest) (*UpdateWorkflowResponse, error)
-	// secrets.
-	Secrets(context.Context, *SecretsRequest) (*SecretsResponse, error)
-	SecretsStream(*SecretsRequest, Flow_SecretsStreamServer) error
-	SetSecret(context.Context, *SetSecretRequest) (*SetSecretResponse, error)
-	CreateSecretsFolder(context.Context, *CreateSecretsFolderRequest) (*CreateSecretsFolderResponse, error)
-	DeleteSecret(context.Context, *DeleteSecretRequest) (*emptypb.Empty, error)
-	DeleteSecretsFolder(context.Context, *DeleteSecretsFolderRequest) (*emptypb.Empty, error)
-	SearchSecret(context.Context, *SearchSecretRequest) (*SearchSecretResponse, error)
-	UpdateSecret(context.Context, *UpdateSecretRequest) (*UpdateSecretResponse, error)
 	// instances.
 	Instance(context.Context, *InstanceRequest) (*InstanceResponse, error)
 	InstanceStream(*InstanceRequest, Flow_InstanceStreamServer) error
@@ -1066,30 +945,6 @@ func (UnimplementedFlowServer) CreateWorkflow(context.Context, *CreateWorkflowRe
 }
 func (UnimplementedFlowServer) UpdateWorkflow(context.Context, *UpdateWorkflowRequest) (*UpdateWorkflowResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateWorkflow not implemented")
-}
-func (UnimplementedFlowServer) Secrets(context.Context, *SecretsRequest) (*SecretsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Secrets not implemented")
-}
-func (UnimplementedFlowServer) SecretsStream(*SecretsRequest, Flow_SecretsStreamServer) error {
-	return status.Errorf(codes.Unimplemented, "method SecretsStream not implemented")
-}
-func (UnimplementedFlowServer) SetSecret(context.Context, *SetSecretRequest) (*SetSecretResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SetSecret not implemented")
-}
-func (UnimplementedFlowServer) CreateSecretsFolder(context.Context, *CreateSecretsFolderRequest) (*CreateSecretsFolderResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateSecretsFolder not implemented")
-}
-func (UnimplementedFlowServer) DeleteSecret(context.Context, *DeleteSecretRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteSecret not implemented")
-}
-func (UnimplementedFlowServer) DeleteSecretsFolder(context.Context, *DeleteSecretsFolderRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteSecretsFolder not implemented")
-}
-func (UnimplementedFlowServer) SearchSecret(context.Context, *SearchSecretRequest) (*SearchSecretResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SearchSecret not implemented")
-}
-func (UnimplementedFlowServer) UpdateSecret(context.Context, *UpdateSecretRequest) (*UpdateSecretResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateSecret not implemented")
 }
 func (UnimplementedFlowServer) Instance(context.Context, *InstanceRequest) (*InstanceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Instance not implemented")
@@ -1487,153 +1342,6 @@ func _Flow_UpdateWorkflow_Handler(srv interface{}, ctx context.Context, dec func
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).UpdateWorkflow(ctx, req.(*UpdateWorkflowRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_Secrets_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SecretsRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).Secrets(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_Secrets_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).Secrets(ctx, req.(*SecretsRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_SecretsStream_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(SecretsRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
-	return srv.(FlowServer).SecretsStream(m, &flowSecretsStreamServer{stream})
-}
-
-type Flow_SecretsStreamServer interface {
-	Send(*SecretsResponse) error
-	grpc.ServerStream
-}
-
-type flowSecretsStreamServer struct {
-	grpc.ServerStream
-}
-
-func (x *flowSecretsStreamServer) Send(m *SecretsResponse) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func _Flow_SetSecret_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SetSecretRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).SetSecret(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_SetSecret_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).SetSecret(ctx, req.(*SetSecretRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_CreateSecretsFolder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateSecretsFolderRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).CreateSecretsFolder(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_CreateSecretsFolder_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).CreateSecretsFolder(ctx, req.(*CreateSecretsFolderRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_DeleteSecret_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteSecretRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).DeleteSecret(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_DeleteSecret_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).DeleteSecret(ctx, req.(*DeleteSecretRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_DeleteSecretsFolder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteSecretsFolderRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).DeleteSecretsFolder(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_DeleteSecretsFolder_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).DeleteSecretsFolder(ctx, req.(*DeleteSecretsFolderRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_SearchSecret_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SearchSecretRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).SearchSecret(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_SearchSecret_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).SearchSecret(ctx, req.(*SearchSecretRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_UpdateSecret_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateSecretRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).UpdateSecret(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_UpdateSecret_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).UpdateSecret(ctx, req.(*UpdateSecretRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -2363,34 +2071,6 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Flow_UpdateWorkflow_Handler,
 		},
 		{
-			MethodName: "Secrets",
-			Handler:    _Flow_Secrets_Handler,
-		},
-		{
-			MethodName: "SetSecret",
-			Handler:    _Flow_SetSecret_Handler,
-		},
-		{
-			MethodName: "CreateSecretsFolder",
-			Handler:    _Flow_CreateSecretsFolder_Handler,
-		},
-		{
-			MethodName: "DeleteSecret",
-			Handler:    _Flow_DeleteSecret_Handler,
-		},
-		{
-			MethodName: "DeleteSecretsFolder",
-			Handler:    _Flow_DeleteSecretsFolder_Handler,
-		},
-		{
-			MethodName: "SearchSecret",
-			Handler:    _Flow_SearchSecret_Handler,
-		},
-		{
-			MethodName: "UpdateSecret",
-			Handler:    _Flow_UpdateSecret_Handler,
-		},
-		{
 			MethodName: "Instance",
 			Handler:    _Flow_Instance_Handler,
 		},
@@ -2521,11 +2201,6 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "WorkflowStream",
 			Handler:       _Flow_WorkflowStream_Handler,
-			ServerStreams: true,
-		},
-		{
-			StreamName:    "SecretsStream",
-			Handler:       _Flow_SecretsStream_Handler,
 			ServerStreams: true,
 		},
 		{
