@@ -1,3 +1,4 @@
+import { FolderSync, GitCompare } from "lucide-react";
 import {
   NoPermissions,
   NoResult,
@@ -11,7 +12,6 @@ import {
 import { Pagination, PaginationLink } from "~/design/Pagination";
 
 import { Card } from "~/design/Card";
-import { GitCompare } from "lucide-react";
 import Header from "./Header";
 import PaginationProvider from "~/components/PaginationProvider";
 import Row from "./Row";
@@ -78,24 +78,24 @@ const Activities = () => {
         }) => (
           <div className="flex grow flex-col gap-y-4 p-5">
             <h3 className="flex items-center gap-x-2 font-bold">
-              <GitCompare className="h-5" />
-              {t("pages.mirror.activities.list.title")}
+              <FolderSync className="h-5" />
+              {t("pages.mirror.syncs.list.title")}
             </h3>
             <Card>
               <Table className="border-gray-5 dark:border-gray-dark-5">
                 <TableHead>
                   <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
                     <TableHeaderCell>
-                      {t("pages.mirror.activities.tableHeader.id")}
+                      {t("pages.mirror.syncs.tableHeader.id")}
                     </TableHeaderCell>
                     <TableHeaderCell>
-                      {t("pages.mirror.activities.tableHeader.type")}
+                      {t("pages.mirror.syncs.tableHeader.type")}
                     </TableHeaderCell>
                     <TableHeaderCell>
-                      {t("pages.mirror.activities.tableHeader.status")}
+                      {t("pages.mirror.syncs.tableHeader.status")}
                     </TableHeaderCell>
                     <TableHeaderCell>
-                      {t("pages.mirror.activities.tableHeader.createdAt")}
+                      {t("pages.mirror.syncs.tableHeader.createdAt")}
                     </TableHeaderCell>
                   </TableRow>
                 </TableHead>
@@ -104,7 +104,7 @@ const Activities = () => {
                     <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
                       <TableCell colSpan={4}>
                         <NoResult icon={GitCompare}>
-                          {t("pages.mirror.activities.list.noResults")}
+                          {t("pages.mirror.syncs.list.noResults")}
                         </NoResult>
                       </TableCell>
                     </TableRow>

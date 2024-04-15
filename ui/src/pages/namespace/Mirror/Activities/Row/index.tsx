@@ -63,7 +63,7 @@ const Row = ({
         <TableCell>
           <Tooltip>
             <TooltipTrigger data-testid="activity-row-createdAt-relative">
-              {t("pages.mirror.activities.tableRow.realtiveTime", {
+              {t("pages.mirror.syncs.tableRow.realtiveTime", {
                 relativeTime: createdAt,
               })}
             </TooltipTrigger>

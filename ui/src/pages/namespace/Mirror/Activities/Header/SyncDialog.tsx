@@ -8,6 +8,7 @@ import {
   DialogTrigger,
 } from "~/design/Dialog";
 
+import Alert from "~/design/Alert";
 import Button from "~/design/Button";
 import { RefreshCcw } from "lucide-react";
 import { useState } from "react";
@@ -37,6 +38,9 @@ const SyncDialog = ({ loading }: { loading: boolean }) => {
           </DialogTitle>
         </DialogHeader>
         <p>{t("pages.mirror.syncDialog.description")}</p>
+        <Alert variant="warning" className="mb-2">
+          {t("pages.mirror.syncDialog.warning")}
+        </Alert>
         <DialogFooter>
           <DialogClose asChild>
             <Button variant="ghost">

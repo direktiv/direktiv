@@ -644,12 +644,13 @@
       "syncDialog": {
         "title": "Sync {{namespace}}",
         "description": "Fetch and sync mirror with latest content from remote repository?",
+        "warning": "Warning: This will overwrite all files in this namespace",
         "confirm": "Sync"
       },
-      "activities": {
+      "syncs": {
         "list": {
-          "title": "Activities",
-          "noResults": "No activities found"
+          "title": "Syncs",
+          "noResults": "No syncs found"
         },
         "detail": {
           "header": {
