@@ -15,7 +15,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
-import { EditorMimeTypeSchema } from "../Variables/MimeTypeSelect";
+import { EditorMimeTypeSchema } from "../../../../components/VariableForm/utils";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { Textarea } from "~/design/TextArea";

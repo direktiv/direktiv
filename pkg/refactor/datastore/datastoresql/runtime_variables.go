@@ -129,7 +129,7 @@ func (s *sqlRuntimeVariablesStore) listByFieldValue(ctx context.Context, fieldNa
 								id, namespace, workflow_path, instance_id, 
 								name, length(data) AS size, mime_type, 
 								created_at, updated_at
-							FROM runtime_variables WHERE %s`, aggregateConditions),
+							FROM runtime_variables WHERE %s ORDER BY created_at`, aggregateConditions),
 		vals...).Find(&variables)
 	if res.Error != nil {
 		return nil, res.Error
@@ -200,7 +200,8 @@ func (s *sqlRuntimeVariablesStore) Set(ctx context.Context, variable *datastore.
 	queryString := fmt.Sprintf(
 		`UPDATE runtime_variables SET
 						mime_type=?,
-						data=?
+						data=?,
+						updated_at=CURRENT_TIMESTAMP
 					WHERE namespace = ? AND name = ? %s;`, extra)
 
 	res := s.db.WithContext(ctx).Exec(queryString, args...)
@@ -298,7 +299,7 @@ func (s *sqlRuntimeVariablesStore) DeleteForWorkflow(ctx context.Context, namesp
 
 func (s *sqlRuntimeVariablesStore) SetWorkflowPath(ctx context.Context, namespace string, oldWorkflowPath string, newWorkflowPath string) error {
 	res := s.db.WithContext(ctx).Exec(
-		`UPDATE runtime_variables SET workflow_path=? WHERE namespace=? AND workflow_path=?`,
+		`UPDATE runtime_variables SET workflow_path=?, updated_at=CURRENT_TIMESTAMP WHERE namespace=? AND workflow_path=?`,
 		newWorkflowPath, namespace, oldWorkflowPath)
 	if res.Error != nil {
 		return res.Error
@@ -307,7 +308,6 @@ func (s *sqlRuntimeVariablesStore) SetWorkflowPath(ctx context.Context, namespac
 	return nil
 }
 
-// nolint:goconst
 func (s *sqlRuntimeVariablesStore) Create(ctx context.Context, variable *datastore.RuntimeVariable) (*datastore.RuntimeVariable, error) {
 	if variable.Name == "" {
 		return nil, datastore.ErrInvalidRuntimeVariableName

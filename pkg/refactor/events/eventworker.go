@@ -17,6 +17,10 @@ type EventWorker struct {
 	handleEvent func(ctx context.Context, ns uuid.UUID, nsName string, ce *ce.Event) error
 }
 
+// NewEventWorker creates a new EventWorker instance.
+// * `store`: The StagingEventStore used for retrieving and deleting delayed events.
+// * `interval`:  The interval at which the worker checks for delayed events.
+// * `handleEvent`: The function invoked to process each delayed event.
 func NewEventWorker(store StagingEventStore, interval time.Duration, handleEvent func(ctx context.Context, ns uuid.UUID, nsName string, ce *ce.Event) error) *EventWorker {
 	return &EventWorker{
 		store:  store,
@@ -27,6 +31,7 @@ func NewEventWorker(store StagingEventStore, interval time.Duration, handleEvent
 	}
 }
 
+// Start initializes the EventWorker's processing loop. The worker will periodically fetch and handle delayed events until the provided context is canceled.
 func (w *EventWorker) Start(ctx context.Context) {
 	defer w.ticker.Stop()
 
@@ -42,6 +47,7 @@ func (w *EventWorker) Start(ctx context.Context) {
 	}
 }
 
+// Signal triggers an immediate check for delayed events. This can be used to process events outside the regular interval.
 func (w *EventWorker) Signal() {
 	select {
 	case w.signal <- struct{}{}:
@@ -50,13 +56,16 @@ func (w *EventWorker) Signal() {
 	}
 }
 
+// getDelayedEvents retrieves delayed events from the store, processes them using the configured handler, and removes them upon successful processing.
 func (w *EventWorker) getDelayedEvents(ctx context.Context) {
 	currentTime := time.Now().UTC()
 	limit := 100
 	offset := 0
 	receivedEvents, _, err := w.store.GetDelayedEvents(ctx, currentTime, limit, offset)
+	//  TODO: myMetrics.events_delayed_processing_duration.Observe(processDuration.Seconds())
 	if err != nil {
 		slog.Error("fetching delayed events", "err", err)
+		// TODO: myMetrics.events_delayed_fetch_errors.Inc()
 
 		return
 	}

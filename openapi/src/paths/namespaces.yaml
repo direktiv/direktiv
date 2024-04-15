@@ -31,9 +31,6 @@
                           gitRef:
                             type: string
                             description: git branch name
-                          gitCommitHash:
-                            type: string(optional)
-                            description: git commit hash
                           publicKey:
                             type: string(optional)
                             description: associated publish key ssh credential
@@ -79,9 +76,9 @@
                   gitRef:
                     type: string
                     description: git branch name
-                  gitCommitHash:
+                  authToken:
                     type: string(optional)
-                    description: git commit hash
+                    description: auth token used to clone git repo
                   publicKey:
                     type: string(optional)
                     description: associated publish key ssh credential
@@ -120,9 +117,6 @@
                         gitRef:
                           type: string
                           description: git branch name
-                        gitCommitHash:
-                          type: string(optional)
-                          description: git commit hash
                         publicKey:
                           type: string(optional)
                           description: associated publish key ssh credential
@@ -175,9 +169,6 @@
                         gitRef:
                           type: string
                           description: git branch name
-                        gitCommitHash:
-                          type: string(optional)
-                          description: git commit hash
                         publicKey:
                           type: string(optional)
                           description: associated publish key ssh credential
@@ -207,10 +198,10 @@
       "200":
         description:  object deleted successfully
 
-  put:
+  patch:
     tags:
       - namespaces
-    summary: Updates a direktiv namespace
+    summary: Patches a direktiv namespace
     parameters:
       - $ref: '../parameters.yaml#/namespace'
     requestBody:
@@ -232,9 +223,9 @@
                   gitRef:
                     type: string
                     description: git branch name
-                  gitCommitHash:
+                  authToken:
                     type: string(optional)
-                    description: git commit hash
+                    description: auth token used to clone git repo
                   publicKey:
                     type: string(optional)
                     description: associated publish key ssh credential
@@ -273,9 +264,6 @@
                         gitRef:
                           type: string
                           description: git branch name
-                        gitCommitHash:
-                          type: string(optional)
-                          description: git commit hash
                         publicKey:
                           type: string(optional)
                           description: associated publish key ssh credential

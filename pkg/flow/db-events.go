@@ -137,12 +137,12 @@ func (events *events) processWorkflowEvents(ctx context.Context, nsID uuid.UUID,
 		contextFilters := make([]string, 0, len(ms.Events))
 		for _, sed := range ms.Events {
 			fEv.ListeningForEventTypes = append(fEv.ListeningForEventTypes, sed.Type)
-			gateKeeper := ""
+			databaseNoDupCheck := ""
 			for k, v := range sed.Context {
+				databaseNoDupCheck += fmt.Sprintf("%v %v %v", sed.Type, k, v)
 				fEv.GlobGatekeepers[sed.Type+"-"+k] = fmt.Sprintf("%v", v)
-				gateKeeper += fmt.Sprintf(" %v %v", k, v)
 			}
-			contextFilters = append(contextFilters, gateKeeper)
+			contextFilters = append(contextFilters, databaseNoDupCheck)
 		}
 
 		err := events.runSqlTx(ctx, func(tx *database.SQLStore) error {
@@ -191,11 +191,12 @@ func (events *events) addInstanceEventListener(ctx context.Context, namespace, i
 
 	for _, ced := range sevents {
 		fEv.ListeningForEventTypes = append(fEv.ListeningForEventTypes, ced.Type)
-		gateKeeper := ""
+		databaseNoDupCheck := ""
 		for k, v := range ced.Context {
+			databaseNoDupCheck += fmt.Sprintf("%v %v %v", ced.Type, k, v)
 			fEv.GlobGatekeepers[ced.Type+"-"+k] = fmt.Sprintf("%v", v)
 		}
-		contextFilters = append(contextFilters, gateKeeper)
+		contextFilters = append(contextFilters, databaseNoDupCheck)
 	}
 	if all {
 		fEv.TriggerType = pkgevents.WaitAnd

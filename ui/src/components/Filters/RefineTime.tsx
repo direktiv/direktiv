@@ -1,17 +1,15 @@
 import { Command, CommandGroup, CommandList } from "~/design/Command";
+import TimePicker, { getTimeString } from "~/design/Timepicker";
 
 import { ArrowRight } from "lucide-react";
 import Button from "~/design/Button";
-import { FiltersObj } from "~/api/instances/query/get";
-import Input from "~/design/Input";
-import { InputWithButton } from "~/design/InputWithButton";
-import moment from "moment";
+import { FiltersObj } from "~/api/events/query/get";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 const RefineTime = ({
   field,
-  date,
+  date: givenDate,
   setFilter,
 }: {
   field: "AFTER" | "BEFORE";
@@ -19,8 +17,9 @@ const RefineTime = ({
   setFilter: (filter: FiltersObj) => void;
 }) => {
   const { t } = useTranslation();
-  const [time, setTime] = useState<string>(moment(date).format("HH:mm:ss"));
+  const [date, setDate] = useState<Date>(givenDate ?? new Date());
 
+  const time = getTimeString(date);
   const setTimeOnDate = () => {
     const [hr, min, sec] = time.split(":").map((item) => Number(item));
 
@@ -29,9 +28,9 @@ const RefineTime = ({
       return;
     }
 
-    date.setHours(hr, min, sec);
+    givenDate.setHours(hr, min, sec);
     setFilter({
-      [field]: { type: field, value: date },
+      [field]: { type: field, value: givenDate },
     });
   };
 
@@ -42,21 +41,28 @@ const RefineTime = ({
   return (
     <Command>
       <CommandList className="max-h-[460px]">
-        <CommandGroup
-          heading={t("pages.instances.list.filter.menuHeading.time")}
-        >
-          <InputWithButton>
-            <Input
-              type="time"
-              step={1}
-              value={time}
-              onChange={(event) => setTime(event.target.value)}
-              onKeyDown={handleKeyDown}
+        <CommandGroup heading={t("components.timepicker.menuHeading")}>
+          <div className="flex items-center">
+            <TimePicker
+              onKeyDown={(e) => {
+                handleKeyDown(e);
+              }}
+              date={date}
+              setDate={setDate}
+              hoursLabel={t("components.timepicker.menuLabels.hours")}
+              minutesLabel={t("components.timepicker.menuLabels.minutes")}
+              secondsLabel={t("components.timepicker.menuLabels.seconds")}
             />
-            <Button icon variant="ghost" onClick={() => setTimeOnDate()}>
+
+            <Button
+              className="mt-5"
+              icon
+              variant="ghost"
+              onClick={() => setTimeOnDate()}
+            >
               <ArrowRight />
             </Button>
-          </InputWithButton>
+          </div>
         </CommandGroup>
       </CommandList>
     </Command>
