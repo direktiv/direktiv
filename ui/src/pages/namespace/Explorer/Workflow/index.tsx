@@ -15,6 +15,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "~/design/Tooltip";
+import { useRunable, useSetRunable } from "./store/runableContext";
 
 import ApiCommands from "./ApiCommands";
 import Button from "~/design/Button";
@@ -47,6 +48,9 @@ const Header: FC = () => {
     noPermissionMessage,
     isFetched: isPermissionCheckFetched,
   } = useFile({ path });
+
+  const runable = useRunable();
+  const setRunable = useSetRunable();
 
   if (!namespace) return null;
   if (!path) return null;

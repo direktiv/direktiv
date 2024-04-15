@@ -1,4 +1,5 @@
 import { Outlet } from "react-router-dom";
+import { RunableStateProvider } from "./Workflow/store/runableContext";
 import { isApiErrorSchema } from "~/api/errorHandling";
 import { pages } from "~/util/router/pages";
 import { useFile } from "~/api/files/query/file";
@@ -13,7 +14,11 @@ const ExplorerPage = () => {
     throw error;
   }
 
-  return <Outlet />;
+  return (
+    <RunableStateProvider>
+      <Outlet />
+    </RunableStateProvider>
+  );
 };
 
 export default ExplorerPage;
