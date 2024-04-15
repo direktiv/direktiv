@@ -60,10 +60,11 @@ test("it renders secrets, variables and registries", async ({ page }) => {
 
 test("it is possible to create and delete secrets", async ({ page }) => {
   const secrets = await createSecrets(namespace, 3);
+  const firstSecretName = secrets[0]?.data.name;
   const secretToDelete = secrets[1];
 
   // avoid typescript errors below
-  if (!secretToDelete) throw "error setting up test data";
+  if (!secretToDelete || !firstSecretName) throw "error setting up test data";
 
   await page.goto(`/${namespace}/settings`);
   await page.getByTestId("secret-create").click();
@@ -71,17 +72,30 @@ test("it is possible to create and delete secrets", async ({ page }) => {
     name: faker.internet.domainWord(),
     value: faker.random.alphaNumeric(20),
   };
-  await page.getByTestId("new-secret-name").type(newSecret.name);
-  await page.getByTestId("new-secret-editor").type(newSecret.value);
-  await page.getByTestId("secret-create-submit").click();
+
+  await page.getByPlaceholder("secret-name").type(firstSecretName);
+  await page.locator("textarea").type(newSecret.value);
+  await page.getByRole("button", { name: "Create" }).click();
+
+  await expect(
+    page.getByText("The name already exists"),
+    "it renders an error message when using a name that already exists"
+  ).toBeVisible();
+
+  await page.getByPlaceholder("secret-name").type(newSecret.name);
+  await page.getByRole("button", { name: "Create" }).click();
+
   await waitForSuccessToast(page);
 
   const secretElements = page.getByTestId("item-name");
   await expect(secretElements, "number of secrets should be 4").toHaveCount(4);
 
-  await page.getByTestId(`dropdown-trg-item-${secretToDelete.key}`).click();
+  await page
+    .getByTestId(`dropdown-trg-item-${secretToDelete.data.name}`)
+    .click();
+
   await page.getByTestId("dropdown-actions-delete").click();
-  await page.getByTestId("secret-delete-confirm").click();
+  await page.getByRole("button", { name: "Delete" }).click();
 
   await waitForSuccessToast(page);
   await expect(secretElements, "number of secrets should be 3").toHaveCount(3);
@@ -91,7 +105,7 @@ test("it is possible to create and delete secrets", async ({ page }) => {
     "there should remain the newly created secret in the list"
   ).toBeVisible();
   await expect(
-    secretElements.filter({ hasText: `${secretToDelete.key}` }),
+    secretElements.filter({ hasText: `${secretToDelete.data.name}` }),
     "the deleted item shouldn't be in the list"
   ).toBeHidden();
 });

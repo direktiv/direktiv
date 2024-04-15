@@ -13,7 +13,7 @@ import {
 
 import { Card } from "~/design/Card";
 import { DialogHeader } from "~/design/Dialog";
-import FileUpload from "./FileUpload";
+import FileUpload from "../FileUpload";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import MimeTypeSelect from "./MimeTypeSelect";
