@@ -8,33 +8,33 @@ import {
 
 import { StateType } from "./type";
 
-const RunableStateContext = createContext<StateType | null>(null);
+const DisabledStateContext = createContext<StateType | null>(null);
 
 const Provider: FC<PropsWithChildren> = ({ children }) => {
-  const state = useState(true);
+  const state = useState(false);
   return (
-    <RunableStateContext.Provider value={state}>
+    <DisabledStateContext.Provider value={state}>
       {children}
-    </RunableStateContext.Provider>
+    </DisabledStateContext.Provider>
   );
 };
 
 const useReadContextFromProvider = () => {
-  const context = useContext(RunableStateContext);
+  const context = useContext(DisabledStateContext);
   if (!context) {
-    throw new Error("useRunable must be used within a RunableStateContext");
+    throw new Error("useDisabled must be used within a DisabledStateContext");
   }
   return context;
 };
 
-const useRunable = () => {
+const useDisabled = () => {
   const context = useReadContextFromProvider();
   return context[0];
 };
 
-const useSetRunable = () => {
+const useSetDisabled = () => {
   const context = useReadContextFromProvider();
   return context[1];
 };
 
-export { Provider as RunableStateProvider, useRunable, useSetRunable };
+export { Provider as DisabledStateProvider, useDisabled, useSetDisabled };

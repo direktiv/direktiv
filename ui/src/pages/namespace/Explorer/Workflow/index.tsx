@@ -15,7 +15,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "~/design/Tooltip";
-import { useRunable, useSetRunable } from "./store/runableContext";
 
 import ApiCommands from "./ApiCommands";
 import Button from "~/design/Button";
@@ -26,6 +25,7 @@ import { NoPermissions } from "~/design/Table";
 import RunWorkflow from "./components/RunWorkflow";
 import { analyzePath } from "~/util/router/utils";
 import { pages } from "~/util/router/pages";
+import { useDisabled } from "./store/disabledContext";
 import { useFile } from "~/api/files/query/file";
 import { useNamespace } from "~/util/store/namespace";
 import { useTranslation } from "react-i18next";
@@ -49,8 +49,7 @@ const Header: FC = () => {
     isFetched: isPermissionCheckFetched,
   } = useFile({ path });
 
-  const runable = useRunable();
-  const setRunable = useSetRunable();
+  const disabled = useDisabled();
 
   if (!namespace) return null;
   if (!path) return null;
@@ -150,6 +149,7 @@ const Header: FC = () => {
                   variant="primary"
                   data-testid="workflow-header-btn-run"
                   className="grow"
+                  disabled={disabled}
                 >
                   <Play />
                   {t("pages.explorer.workflow.runBtn")}

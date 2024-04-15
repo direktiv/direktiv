@@ -13,6 +13,7 @@ import { WorkspaceLayout } from "~/components/WorkspaceLayout";
 import { useEditorLayout } from "~/util/store/editor";
 import { useNamespace } from "~/util/store/namespace";
 import { useNamespaceLinting } from "~/api/namespaceLinting/query/useNamespaceLinting";
+import { useSetDisabled } from "../store/disabledContext";
 import { useTranslation } from "react-i18next";
 import { useUpdateFile } from "~/api/files/mutate/updateFile";
 
@@ -25,6 +26,7 @@ const WorkflowEditor: FC<{
   const [error, setError] = useState<string | undefined>();
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const { refetch: updateNotificationBell } = useNamespaceLinting();
+  const setDisabled = useSetDisabled();
 
   const workflowDataFromServer = decode(data?.data ?? "");
 
@@ -39,6 +41,7 @@ const WorkflowEditor: FC<{
        */
       updateNotificationBell();
       setHasUnsavedChanges(false);
+      setDisabled(false);
     },
   });
 
@@ -46,6 +49,7 @@ const WorkflowEditor: FC<{
 
   const onEditorContentUpdate = (newData: string) => {
     setHasUnsavedChanges(workflowDataFromServer !== newData);
+    setDisabled(true);
     setEditorContent(newData ?? "");
   };
 
