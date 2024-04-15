@@ -155,11 +155,11 @@ type EventsPageSetup = Record<
 type MirrorPageSetup = Record<
   "mirror",
   PageBase & {
-    createHref: (params: { namespace: string; activity?: string }) => string;
+    createHref: (params: { namespace: string; sync?: string }) => string;
     useParams: () => {
-      activity?: string;
+      sync?: string;
       isMirrorPage: boolean;
-      isActivityDetailPage: boolean;
+      isSyncDetailPage: boolean;
     };
   }
 >;
@@ -656,17 +656,17 @@ export const pages: PageType & EnterprisePageType = {
     icon: GitCompare,
     createHref: (params) =>
       `/${params.namespace}/mirror/${
-        params?.activity ? `logs/${params.activity}` : ""
+        params?.sync ? `logs/${params.sync}` : ""
       }`,
     useParams: () => {
-      const { activity } = useParams();
+      const { sync } = useParams();
       const [, secondLevel, thirdLevel] = useMatches(); // first level is namespace level
       const isMirrorPage = checkHandler(secondLevel, "isMirrorPage");
-      const isActivityDetailPage = checkHandler(thirdLevel, "isMirrorLogsPage");
+      const isSyncDetailPage = checkHandler(thirdLevel, "isMirrorLogsPage");
       return {
         isMirrorPage,
-        isActivityDetailPage,
-        activity: isActivityDetailPage ? activity : undefined,
+        isSyncDetailPage,
+        sync: isSyncDetailPage ? sync : undefined,
       };
     },
     route: {
@@ -680,7 +680,7 @@ export const pages: PageType & EnterprisePageType = {
           handle: { isMirrorActivitiesPage: true },
         },
         {
-          path: "logs/:activity",
+          path: "logs/:sync",
           element: <Logs />,
           handle: { isMirrorLogsPage: true },
         },

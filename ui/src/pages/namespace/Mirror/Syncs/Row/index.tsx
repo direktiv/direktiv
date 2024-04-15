@@ -35,7 +35,7 @@ const Row = ({
         navigate(
           pages.mirror.createHref({
             namespace,
-            activity: item.id,
+            sync: item.id,
           })
         );
       }}
