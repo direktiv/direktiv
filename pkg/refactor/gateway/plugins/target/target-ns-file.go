@@ -83,7 +83,7 @@ func (tnf NamespaceFilePlugin) ExecutePlugin(
 	}
 	defer resp.Body.Close()
 
-	data, err := fetchObjectData(resp)
+	data, mime, err := fetchObjectData(resp)
 	if err != nil {
 		plugins.ReportError(r.Context(), w, http.StatusInternalServerError,
 			"can not fetch file data", err)
@@ -91,19 +91,24 @@ func (tnf NamespaceFilePlugin) ExecutePlugin(
 		return false
 	}
 
-	r.Header.Set("Content-Type", "application/unknown")
+	mt := "application/unknown"
 
+	// overwrite object mimetype if configured
+	// otherwise use the one coming from the API
+	// last resort is guessing
 	if tnf.config.ContentType != "" {
-		w.Header().Set("Content-Type", tnf.config.ContentType)
+		mt = tnf.config.ContentType
+	} else if mime != "" {
+		mt = mime
 	} else {
+		// guessing
 		// nolint
 		kind, _ := filetype.Match(data)
 		if kind != filetype.Unknown {
-			w.Header().Set("Content-Type", kind.MIME.Value)
+			mt = kind.MIME.Value
 		}
 	}
-
-	// w.Header().Set("Content-Type", mtype.String())
+	w.Header().Set("Content-Type", mt)
 	w.Header().Set("Content-Length", strconv.Itoa(len(data)))
 
 	// nolint
@@ -130,21 +135,21 @@ type Node struct {
 	} `json:"data"`
 }
 
-func fetchObjectData(res *http.Response) ([]byte, error) {
+func fetchObjectData(res *http.Response) ([]byte, string, error) {
 	b, err := io.ReadAll(res.Body)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
 	var node Node
 	err = json.Unmarshal(b, &node)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
 	data := node.Data.Data
 
-	return data, nil
+	return data, node.Data.MimeType, nil
 }
 
 //nolint:gochecknoinits
