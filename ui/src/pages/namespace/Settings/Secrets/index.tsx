@@ -12,14 +12,15 @@ import {
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
-import CreateEdit from "./CreateEdit";
+import Create from "./Create";
 import CreateItemButton from "../components/CreateItemButton";
 import Delete from "./Delete";
+import Edit from "./Edit";
 import Input from "~/design/Input";
 import ItemRow from "../components/ItemRow";
 import PaginationProvider from "~/components/PaginationProvider";
 import { SecretSchemaType } from "~/api/secrets/schema";
-import { useDeleteSecret } from "~/api/secrets/mutate/deleteSecret";
+import { useDeleteSecret } from "~/api/secrets/mutate/delete";
 import { useNamespaceLinting } from "~/api/namespaceLinting/query/useNamespaceLinting";
 import { useSecrets } from "~/api/secrets/query/get";
 import { useTranslation } from "react-i18next";
@@ -35,16 +36,23 @@ const SecretsList: FC = () => {
   const [search, setSearch] = useState("");
   const isSearch = search.length > 0;
 
-  const { data, isFetched, isAllowed, noPermissionMessage } = useSecrets();
+  const {
+    data: secrets,
+    isFetched,
+    isAllowed,
+    noPermissionMessage,
+  } = useSecrets();
   const { refetch: updateNotificationBell } = useNamespaceLinting();
 
   const filteredItems = useMemo(
     () =>
-      (data?.secrets.results ?? [])?.filter(
+      (secrets?.data ?? [])?.filter(
         (item) => !isSearch || item.name.includes(search)
       ),
-    [data?.secrets.results, isSearch, search]
+    [secrets?.data, isSearch, search]
   );
+
+  const allNames = secrets?.data?.map((v) => v.name) ?? [];
 
   const { mutate: deleteSecretMutation } = useDeleteSecret({
     onSuccess: () => {
@@ -198,11 +206,16 @@ const SecretsList: FC = () => {
           onConfirm={() => deleteSecretMutation({ secret: deleteSecret })}
         />
       )}
-      {createSecret && <CreateEdit onSuccess={() => setDialogOpen(false)} />}
+      {createSecret && (
+        <Create
+          unallowedNames={allNames}
+          onSuccess={() => setDialogOpen(false)}
+        />
+      )}
 
       {editItem && (
-        <CreateEdit
-          item={editItem}
+        <Edit
+          secret={editItem}
           onSuccess={() => {
             /**
              * When the user has uninitialized secrets, this will be reflected in

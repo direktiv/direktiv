@@ -9,7 +9,7 @@ DOCKER_REPO := localhost:5000
 # gets the git hash of the actual commit
 GIT_HASH := $(shell git rev-parse --short HEAD)
 
-# adds '-dirty' 
+# adds '-dirty'
 GIT_DIRTY := $(shell git diff --quiet || echo '-dirty')
 
 # name of the release, e.g. v0.8.0

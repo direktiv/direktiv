@@ -1,4 +1,3 @@
-import { FileSchema } from "./schema";
 import { createApiErrorFromResponse } from "./errorHandling";
 import { getAuthHeader } from "./utils";
 import { z } from "zod";
@@ -90,15 +89,8 @@ export const apiFactory =
     TSchema
   > =>
   async ({ apiKey, payload, headers, urlParams }): Promise<TSchema> => {
-    const payloadFileCheck = FileSchema.safeParse(payload);
-    let body;
-    if (typeof payload === "string") {
-      body = payload;
-    } else if (payloadFileCheck.success) {
-      body = payloadFileCheck.data;
-    } else {
-      body = JSON.stringify(payload);
-    }
+    const body =
+      typeof payload === "string" ? payload : JSON.stringify(payload);
 
     const res = await fetch(url(urlParams), {
       method,

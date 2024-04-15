@@ -1,36 +1,22 @@
-import {
-  WorkflowVariableDeletedSchema,
-  WorkflowVariableSchemaType,
-} from "../schema/workflowVariable";
+import { VarDeletedSchema, VarSchemaType } from "../schema";
 
 import { apiFactory } from "~/api/apiFactory";
-import { forceLeadingSlash } from "~/api/files/utils";
-import { treeKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 import { useNamespace } from "~/util/store/namespace";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
+import { varKeys } from "..";
 
-const deleteWorkflowVariable = apiFactory({
-  url: ({
-    namespace,
-    name,
-    path,
-  }: {
-    namespace: string;
-    name: string;
-    path: string;
-  }) =>
-    `/api/namespaces/${namespace}/tree${forceLeadingSlash(
-      path
-    )}?op=delete-var&var=${name}`,
+const deleteVar = apiFactory({
+  url: ({ namespace, variableID }: { namespace: string; variableID: string }) =>
+    `/api/v2/namespaces/${namespace}/variables/${variableID}`,
   method: "DELETE",
-  schema: WorkflowVariableDeletedSchema,
+  schema: VarDeletedSchema,
 });
 
-export const useDeleteWorkflowVariable = ({
+export const useDeleteVar = ({
   onSuccess,
 }: {
   onSuccess?: () => void;
@@ -45,19 +31,12 @@ export const useDeleteWorkflowVariable = ({
     throw new Error("namespace is undefined");
   }
 
-  const mutationFn = ({
-    variable,
-    path,
-  }: {
-    variable: WorkflowVariableSchemaType;
-    path: string;
-  }) =>
-    deleteWorkflowVariable({
+  const mutationFn = ({ variable }: { variable: VarSchemaType }) =>
+    deleteVar({
       apiKey: apiKey ?? undefined,
       urlParams: {
-        path,
         namespace,
-        name: variable.name,
+        variableID: variable.id,
       },
     });
 
@@ -65,9 +44,12 @@ export const useDeleteWorkflowVariable = ({
     mutationFn,
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries(
-        treeKeys.workflowVariablesList(namespace, {
-          path: variables.path,
+        varKeys.varList(namespace, {
           apiKey: apiKey ?? undefined,
+          workflowPath:
+            variables.variable.type === "workflow-variable"
+              ? variables.variable.reference
+              : undefined,
         })
       );
       toast({

@@ -322,6 +322,11 @@ func (e *nsController) list(w http.ResponseWriter, r *http.Request) {
 		writeDataStoreError(w, err)
 		return
 	}
+	if len(namespaces) == 0 {
+		writeJSON(w, []any{})
+
+		return
+	}
 	mirrors, err := dStore.Mirror().GetAllConfigs(r.Context())
 	if err != nil {
 		writeDataStoreError(w, err)
