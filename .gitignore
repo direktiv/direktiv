@@ -94,10 +94,7 @@ scripts/api/swagger.json
 .idea
 
 
-direktivctl-darwin
-direktivctl-darwin-arm64
-direktivctl-windows
-direktivctl
+direktivctl*
 
 *node_modules
 
