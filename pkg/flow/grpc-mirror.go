@@ -88,12 +88,6 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 	return &resp, nil
 }
 
-func (flow *flow) CreateDirectoryMirror(ctx context.Context, req *grpc.CreateDirectoryMirrorRequest) (*grpc.CreateDirectoryResponse, error) {
-	slog.Debug("Handling gRPC request", "this", this())
-
-	return nil, status.Error(codes.Unimplemented, "mirroring in directory is not allowed.")
-}
-
 func (flow *flow) UpdateMirrorSettings(ctx context.Context, req *grpc.UpdateMirrorSettingsRequest) (*emptypb.Empty, error) {
 	slog.Debug("Handling gRPC request", "this", this())
 
