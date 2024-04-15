@@ -9,11 +9,9 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
-	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	libengine "github.com/direktiv/direktiv/pkg/refactor/engine"
-	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -120,31 +118,6 @@ func (internal *internal) SetWorkflowVariableParcels(srv grpc.Internal_SetWorkfl
 	}
 
 	return nil
-}
-
-func (flow *flow) getWorkflow(ctx context.Context, namespace, path string) (ns *database.Namespace, f *filestore.File, err error) {
-	tx, err := flow.beginSqlTx(ctx)
-	if err != nil {
-		return
-	}
-	defer tx.Rollback()
-
-	ns, err = tx.DataStore().Namespaces().GetByName(ctx, namespace)
-	if err != nil {
-		return
-	}
-
-	f, err = tx.FileStore().ForNamespace(ns.Name).GetFile(ctx, path)
-	if err != nil {
-		return
-	}
-
-	if f.Typ != filestore.FileTypeWorkflow {
-		err = ErrNotWorkflow
-		return
-	}
-
-	return
 }
 
 func (flow *flow) WorkflowVariable(ctx context.Context, req *grpc.WorkflowVariableRequest) (*grpc.WorkflowVariableResponse, error) {

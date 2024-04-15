@@ -1,4 +1,4 @@
-package database
+package nohome
 
 const (
 	PubsubNotifyFunction = "cache"

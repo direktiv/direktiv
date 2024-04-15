@@ -1,7 +1,7 @@
 import { Command, CommandGroup, CommandList } from "~/design/Command";
 
 import { Datepicker } from "~/design/Datepicker";
-import { FiltersObj } from "~/api/instances/query/get";
+import { FiltersObj } from "~/api/events/query/get";
 import { useTranslation } from "react-i18next";
 
 const DatePicker = ({
@@ -23,9 +23,7 @@ const DatePicker = ({
   return (
     <Command>
       <CommandList className="max-h-[460px]">
-        <CommandGroup
-          heading={t(`pages.instances.list.filter.menuHeading.${field}`)}
-        >
+        <CommandGroup heading={t(`components.filters.menuHeading.${field}`)}>
           <Datepicker
             mode="single"
             selected={date}

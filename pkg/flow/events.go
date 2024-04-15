@@ -12,9 +12,9 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
-	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	pkgevents "github.com/direktiv/direktiv/pkg/refactor/events"
 	"github.com/google/uuid"
@@ -73,7 +73,7 @@ func (events *events) handleEvent(ctx context.Context, ns uuid.UUID, nsName stri
 			ctx, end := traceGetListenersByTopic(ctx, s)
 			defer end()
 			res := make([]*pkgevents.EventListener, 0)
-			err := events.runSqlTx(ctx, func(tx *sqlTx) error {
+			err := events.runSqlTx(ctx, func(tx *database.SQLStore) error {
 				r, err := tx.DataStore().EventListenerTopics().GetListeners(ctx, s)
 				if err != nil {
 					slog.Error("Error fetching event-listener-topics.", "error", err)
@@ -89,7 +89,7 @@ func (events *events) handleEvent(ctx context.Context, ns uuid.UUID, nsName stri
 		},
 		UpdateListeners: func(ctx context.Context, listener []*pkgevents.EventListener) []error {
 			slog.Debug("Updating listeners starting.")
-			err := events.runSqlTx(ctx, func(tx *sqlTx) error {
+			err := events.runSqlTx(ctx, func(tx *database.SQLStore) error {
 				errs := tx.DataStore().EventListener().UpdateOrDelete(ctx, listener)
 				for _, err2 := range errs {
 					if err2 != nil {
@@ -124,11 +124,11 @@ func (flow *flow) EventListeners(ctx context.Context, req *grpc.EventListenersRe
 	slog.Debug("Handling gRPC request", "this", this())
 
 	var resListeners []*pkgevents.EventListener
-	var ns *database.Namespace
+	var ns *datastore.Namespace
 	var err error
 
 	totalListeners := 0
-	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+	err = flow.runSqlTx(ctx, func(tx *database.SQLStore) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
 		if err != nil {
 			return err
@@ -163,9 +163,9 @@ func (flow *flow) EventListenersStream(req *grpc.EventListenersRequest, srv grpc
 	phash := ""
 	nhash := ""
 
-	var ns *database.Namespace
+	var ns *datastore.Namespace
 	var err error
-	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+	err = flow.runSqlTx(ctx, func(tx *database.SQLStore) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
 		return err
 	})
@@ -179,7 +179,7 @@ resend:
 	var resListeners []*pkgevents.EventListener
 	totalListeners := 0
 
-	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+	err = flow.runSqlTx(ctx, func(tx *database.SQLStore) error {
 		li, t, err := tx.DataStore().EventListener().Get(ctx, ns.ID, int(req.Pagination.Limit), int(req.Pagination.Offset))
 		if err != nil {
 			return err
@@ -260,8 +260,8 @@ func (flow *flow) BroadcastCloudevent(ctx context.Context, in *grpc.BroadcastClo
 		return nil, status.Errorf(codes.InvalidArgument, "invalid cloudevent: %v", err)
 	}
 
-	var ns *database.Namespace
-	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+	var ns *datastore.Namespace
+	err = flow.runSqlTx(ctx, func(tx *database.SQLStore) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, namespace)
 		endValidation()
 		return err
@@ -295,7 +295,7 @@ func (flow *flow) HistoricalEvent(ctx context.Context, in *grpc.HistoricalEventR
 	var cevent *pkgevents.Event
 	var ns *datastore.Namespace
 	var err error
-	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+	err = flow.runSqlTx(ctx, func(tx *database.SQLStore) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, in.GetNamespace())
 		if err != nil {
 			return err
@@ -353,8 +353,8 @@ func (flow *flow) EventHistory(ctx context.Context, req *grpc.EventHistoryReques
 	count := 0
 	var res []*pkgevents.Event
 	var err error
-	var ns *database.Namespace
-	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+	var ns *datastore.Namespace
+	err = flow.runSqlTx(ctx, func(tx *database.SQLStore) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
 		if err != nil {
 			return err
@@ -418,8 +418,8 @@ func (flow *flow) EventHistoryStream(req *grpc.EventHistoryRequest, srv grpc.Flo
 	nhash := ""
 
 	var err error
-	var ns *database.Namespace
-	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+	var ns *datastore.Namespace
+	err = flow.runSqlTx(ctx, func(tx *database.SQLStore) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
 		return err
 	})
@@ -449,7 +449,7 @@ resend:
 			queryParams = append(queryParams, "event_contains", f.Val)
 		}
 	}
-	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+	err = flow.runSqlTx(ctx, func(tx *database.SQLStore) error {
 		re, t, err := tx.DataStore().EventHistory().Get(ctx, int(req.Pagination.Limit), int(req.Pagination.Offset), ns.ID, queryParams...)
 		if err != nil {
 			return err
@@ -510,8 +510,8 @@ func (flow *flow) ReplayEvent(ctx context.Context, req *grpc.ReplayEventRequest)
 
 	var cevent *pkgevents.Event
 	var err error
-	var ns *database.Namespace
-	err = flow.runSqlTx(ctx, func(tx *sqlTx) error {
+	var ns *datastore.Namespace
+	err = flow.runSqlTx(ctx, func(tx *database.SQLStore) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
 		if err != nil {
 			return err
@@ -537,7 +537,7 @@ func (flow *flow) ReplayEvent(ctx context.Context, req *grpc.ReplayEventRequest)
 	return &resp, nil
 }
 
-func (events *events) ReplayCloudevent(ctx context.Context, ns *database.Namespace, cevent *pkgevents.Event) error {
+func (events *events) ReplayCloudevent(ctx context.Context, ns *datastore.Namespace, cevent *pkgevents.Event) error {
 	event := cevent.Event
 	span := trace.SpanFromContext(ctx)
 	traceID := span.SpanContext().TraceID()
@@ -552,14 +552,14 @@ func (events *events) ReplayCloudevent(ctx context.Context, ns *database.Namespa
 
 	// if eventing is configured, event goes to knative event service
 	// if it is from knative sink not
-	if events.server.conf.EnableEventing && ctx.Value(EventingCtxKeySource) == nil {
+	if events.server.config.EnableEventing && ctx.Value(EventingCtxKeySource) == nil {
 		PublishKnativeEvent(event)
 	}
 
 	return nil
 }
 
-func (events *events) BroadcastCloudevent(ctx context.Context, ns *database.Namespace, event *cloudevents.Event, timer int64) error {
+func (events *events) BroadcastCloudevent(ctx context.Context, ns *datastore.Namespace, event *cloudevents.Event, timer int64) error {
 	// events.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Event received: %s (%s / %s) target time: %v", event.ID(), event.Type(), event.Source(), time.Unix(timer, 0))
 	span := trace.SpanFromContext(ctx)
 	traceID := span.SpanContext().TraceID()
@@ -604,7 +604,7 @@ func (events *events) BroadcastCloudevent(ctx context.Context, ns *database.Name
 
 	// if eventing is configured, event goes to knative event service
 	// if it is from knative sink not
-	if events.server.conf.EnableEventing && ctx.Value(EventingCtxKeySource) == nil {
+	if events.server.config.EnableEventing && ctx.Value(EventingCtxKeySource) == nil {
 		PublishKnativeEvent(event)
 	}
 
