@@ -1,0 +1,5 @@
+interface Window {
+  _direktiv?: {
+    isEnterprise?: boolean;
+  };
+}
