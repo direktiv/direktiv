@@ -1,3 +1,3 @@
 window._direktiv = {
-  isEnterprise: true,
+  isEnterprise: false,
 };
