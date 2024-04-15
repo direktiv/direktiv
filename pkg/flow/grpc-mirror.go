@@ -12,8 +12,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/mirror"
 	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"github.com/google/uuid"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -154,18 +152,6 @@ func (flow *flow) UpdateMirrorSettings(ctx context.Context, req *grpc.UpdateMirr
 	var resp emptypb.Empty
 
 	return &resp, nil
-}
-
-func (flow *flow) LockMirror(ctx context.Context, req *grpc.LockMirrorRequest) (*emptypb.Empty, error) {
-	slog.Debug("Handling gRPC request", "this", this())
-
-	return nil, status.Error(codes.Unimplemented, "locking/unlocking mirror is not allowed.")
-}
-
-func (flow *flow) UnlockMirror(ctx context.Context, req *grpc.UnlockMirrorRequest) (*emptypb.Empty, error) {
-	slog.Debug("Handling gRPC request", "this", this())
-
-	return nil, status.Error(codes.Unimplemented, "locking/unlocking mirror is not allowed.")
 }
 
 func (flow *flow) SoftSyncMirror(ctx context.Context, req *grpc.SoftSyncMirrorRequest) (*emptypb.Empty, error) {
