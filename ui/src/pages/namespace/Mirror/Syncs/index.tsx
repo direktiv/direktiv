@@ -16,16 +16,16 @@ import Header from "./Header";
 import PaginationProvider from "~/components/PaginationProvider";
 import Row from "./Row";
 import { useApiKey } from "~/util/store/apiKey";
+import { useListSyncs } from "~/api/syncs/query/get";
 import { useNamespace } from "~/util/store/namespace";
 import { useNamespaceDetail } from "~/api/namespaces/query/get";
 import { useQueryClient } from "@tanstack/react-query";
-import { useSyncs } from "~/api/syncs/query/get";
 import { useTranslation } from "react-i18next";
 
 const pageSize = 10;
 
 const Syncs = () => {
-  const { data, isAllowed, noPermissionMessage, isFetched } = useSyncs();
+  const { data, isAllowed, noPermissionMessage, isFetched } = useListSyncs();
   const namespace = useNamespace();
   const namespaceDetail = useNamespaceDetail();
 

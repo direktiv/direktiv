@@ -1,7 +1,8 @@
+import { SyncListSchema, SyncListSchemaType } from "../schema";
+
 import { QueryFunctionContext } from "@tanstack/react-query";
 import { apiFactory } from "~/api/apiFactory";
 import { syncKeys } from "..";
-import { syncListSchema } from "../schema";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 import useQueryWithPermissions from "~/api/useQueryWithPermissions";
@@ -10,7 +11,7 @@ const getSyncs = apiFactory({
   url: ({ namespace }: { namespace: string }) =>
     `/api/v2/namespaces/${namespace}/syncs`,
   method: "GET",
-  schema: syncListSchema,
+  schema: SyncListSchema,
 });
 
 const fetchSyncs = async ({
@@ -21,7 +22,28 @@ const fetchSyncs = async ({
     urlParams: { namespace },
   });
 
-export const useSyncs = () => {
+// export const useSyncs = () => {
+//   const apiKey = useApiKey();
+//   const namespace = useNamespace();
+
+//   if (!namespace) {
+//     throw new Error("namespace is undefined");
+//   }
+
+//   return useQueryWithPermissions({
+//     queryKey: syncKeys.syncsList(namespace, {
+//       apiKey: apiKey ?? undefined,
+//     }),
+//     queryFn: fetchSyncs,
+//     enabled: !!namespace,
+//   });
+// };
+
+export const useSyncs = <T>({
+  filter,
+}: {
+  filter: (apiResponse: SyncListSchemaType) => T;
+}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
 
@@ -35,5 +57,17 @@ export const useSyncs = () => {
     }),
     queryFn: fetchSyncs,
     enabled: !!namespace,
+    select: (data) => filter(data),
   });
 };
+
+export const useListSyncs = () =>
+  useSyncs({
+    filter: (apiResponse) => apiResponse,
+  });
+
+export const useSyncDetail = (id: string) =>
+  useSyncs({
+    filter: (apiResponse) =>
+      apiResponse.data.find((sybcObj) => sybcObj.id === id),
+  });

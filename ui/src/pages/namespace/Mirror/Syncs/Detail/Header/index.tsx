@@ -1,12 +1,12 @@
 import Badge from "~/design/Badge";
-import { GitCompare } from "lucide-react";
+import { FolderSync } from "lucide-react";
 import { activityStatusToBadgeProps } from "../../utils";
-import { useMirrorActivity } from "~/api/tree/query/mirrorInfo";
+import { useSyncDetail } from "~/api/syncs/query/get";
 import { useTranslation } from "react-i18next";
 import useUpdatedAt from "~/hooks/useUpdatedAt";
 
-const Header = ({ activityId }: { activityId: string }) => {
-  const { data } = useMirrorActivity({ id: activityId });
+const Header = ({ syncId }: { syncId: string }) => {
+  const { data } = useSyncDetail(syncId);
   const createdAt = useUpdatedAt(data?.createdAt);
   const { t } = useTranslation();
 
@@ -19,7 +19,7 @@ const Header = ({ activityId }: { activityId: string }) => {
       <div className="flex flex-col gap-x-7 max-md:space-y-4 md:flex-row md:items-center md:justify-start">
         <div className="flex flex-col items-start gap-2">
           <h3 className="flex items-center gap-x-2 font-bold text-primary-500">
-            <GitCompare className="h-5" /> {data.id.slice(0, 8)}
+            <FolderSync className="h-5" /> {data.id.slice(0, 8)}
           </h3>
         </div>
         <div className="text-sm">

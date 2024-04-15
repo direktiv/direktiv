@@ -14,9 +14,10 @@ export const SyncResponseSchema = z.object({
   data: SyncObjectSchema,
 });
 
-export const syncListSchema = z.object({
+export const SyncListSchema = z.object({
   data: z.array(SyncObjectSchema),
 });
 
+export type SyncListSchemaType = z.infer<typeof SyncListSchema>;
 export type SyncResponseSchemaType = z.infer<typeof SyncResponseSchema>;
 export type SyncObjectSchema = z.infer<typeof SyncObjectSchema>;
