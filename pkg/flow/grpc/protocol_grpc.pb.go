@@ -48,7 +48,6 @@ const (
 	Flow_ReplayEvent_FullMethodName           = "/direktiv_flow.Flow/ReplayEvent"
 	Flow_ResolveNamespaceUID_FullMethodName   = "/direktiv_flow.Flow/ResolveNamespaceUID"
 	Flow_CreateNamespaceMirror_FullMethodName = "/direktiv_flow.Flow/CreateNamespaceMirror"
-	Flow_CreateDirectoryMirror_FullMethodName = "/direktiv_flow.Flow/CreateDirectoryMirror"
 	Flow_UpdateMirrorSettings_FullMethodName  = "/direktiv_flow.Flow/UpdateMirrorSettings"
 	Flow_LockMirror_FullMethodName            = "/direktiv_flow.Flow/LockMirror"
 	Flow_UnlockMirror_FullMethodName          = "/direktiv_flow.Flow/UnlockMirror"
@@ -57,9 +56,6 @@ const (
 	Flow_MirrorInfo_FullMethodName            = "/direktiv_flow.Flow/MirrorInfo"
 	Flow_MirrorInfoStream_FullMethodName      = "/direktiv_flow.Flow/MirrorInfoStream"
 	Flow_CancelMirrorActivity_FullMethodName  = "/direktiv_flow.Flow/CancelMirrorActivity"
-	Flow_File_FullMethodName                  = "/direktiv_flow.Flow/File"
-	Flow_CreateFile_FullMethodName            = "/direktiv_flow.Flow/CreateFile"
-	Flow_UpdateFile_FullMethodName            = "/direktiv_flow.Flow/UpdateFile"
 	Flow_NamespaceLint_FullMethodName         = "/direktiv_flow.Flow/NamespaceLint"
 )
 
@@ -100,7 +96,6 @@ type FlowClient interface {
 	ResolveNamespaceUID(ctx context.Context, in *ResolveNamespaceUIDRequest, opts ...grpc.CallOption) (*NamespaceResponse, error)
 	// mirrors.
 	CreateNamespaceMirror(ctx context.Context, in *CreateNamespaceMirrorRequest, opts ...grpc.CallOption) (*CreateNamespaceResponse, error)
-	CreateDirectoryMirror(ctx context.Context, in *CreateDirectoryMirrorRequest, opts ...grpc.CallOption) (*CreateDirectoryResponse, error)
 	UpdateMirrorSettings(ctx context.Context, in *UpdateMirrorSettingsRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	LockMirror(ctx context.Context, in *LockMirrorRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	UnlockMirror(ctx context.Context, in *UnlockMirrorRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
@@ -109,9 +104,6 @@ type FlowClient interface {
 	MirrorInfo(ctx context.Context, in *MirrorInfoRequest, opts ...grpc.CallOption) (*MirrorInfoResponse, error)
 	MirrorInfoStream(ctx context.Context, in *MirrorInfoRequest, opts ...grpc.CallOption) (Flow_MirrorInfoStreamClient, error)
 	CancelMirrorActivity(ctx context.Context, in *CancelMirrorActivityRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	File(ctx context.Context, in *FileRequest, opts ...grpc.CallOption) (*FileResponse, error)
-	CreateFile(ctx context.Context, in *CreateFileRequest, opts ...grpc.CallOption) (*CreateFileResponse, error)
-	UpdateFile(ctx context.Context, in *UpdateFileRequest, opts ...grpc.CallOption) (*UpdateFileResponse, error)
 	NamespaceLint(ctx context.Context, in *NamespaceLintRequest, opts ...grpc.CallOption) (*NamespaceLintResponse, error)
 }
 
@@ -536,15 +528,6 @@ func (c *flowClient) CreateNamespaceMirror(ctx context.Context, in *CreateNamesp
 	return out, nil
 }
 
-func (c *flowClient) CreateDirectoryMirror(ctx context.Context, in *CreateDirectoryMirrorRequest, opts ...grpc.CallOption) (*CreateDirectoryResponse, error) {
-	out := new(CreateDirectoryResponse)
-	err := c.cc.Invoke(ctx, Flow_CreateDirectoryMirror_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *flowClient) UpdateMirrorSettings(ctx context.Context, in *UpdateMirrorSettingsRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, Flow_UpdateMirrorSettings_FullMethodName, in, out, opts...)
@@ -640,33 +623,6 @@ func (c *flowClient) CancelMirrorActivity(ctx context.Context, in *CancelMirrorA
 	return out, nil
 }
 
-func (c *flowClient) File(ctx context.Context, in *FileRequest, opts ...grpc.CallOption) (*FileResponse, error) {
-	out := new(FileResponse)
-	err := c.cc.Invoke(ctx, Flow_File_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) CreateFile(ctx context.Context, in *CreateFileRequest, opts ...grpc.CallOption) (*CreateFileResponse, error) {
-	out := new(CreateFileResponse)
-	err := c.cc.Invoke(ctx, Flow_CreateFile_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) UpdateFile(ctx context.Context, in *UpdateFileRequest, opts ...grpc.CallOption) (*UpdateFileResponse, error) {
-	out := new(UpdateFileResponse)
-	err := c.cc.Invoke(ctx, Flow_UpdateFile_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *flowClient) NamespaceLint(ctx context.Context, in *NamespaceLintRequest, opts ...grpc.CallOption) (*NamespaceLintResponse, error) {
 	out := new(NamespaceLintResponse)
 	err := c.cc.Invoke(ctx, Flow_NamespaceLint_FullMethodName, in, out, opts...)
@@ -713,7 +669,6 @@ type FlowServer interface {
 	ResolveNamespaceUID(context.Context, *ResolveNamespaceUIDRequest) (*NamespaceResponse, error)
 	// mirrors.
 	CreateNamespaceMirror(context.Context, *CreateNamespaceMirrorRequest) (*CreateNamespaceResponse, error)
-	CreateDirectoryMirror(context.Context, *CreateDirectoryMirrorRequest) (*CreateDirectoryResponse, error)
 	UpdateMirrorSettings(context.Context, *UpdateMirrorSettingsRequest) (*emptypb.Empty, error)
 	LockMirror(context.Context, *LockMirrorRequest) (*emptypb.Empty, error)
 	UnlockMirror(context.Context, *UnlockMirrorRequest) (*emptypb.Empty, error)
@@ -722,9 +677,6 @@ type FlowServer interface {
 	MirrorInfo(context.Context, *MirrorInfoRequest) (*MirrorInfoResponse, error)
 	MirrorInfoStream(*MirrorInfoRequest, Flow_MirrorInfoStreamServer) error
 	CancelMirrorActivity(context.Context, *CancelMirrorActivityRequest) (*emptypb.Empty, error)
-	File(context.Context, *FileRequest) (*FileResponse, error)
-	CreateFile(context.Context, *CreateFileRequest) (*CreateFileResponse, error)
-	UpdateFile(context.Context, *UpdateFileRequest) (*UpdateFileResponse, error)
 	NamespaceLint(context.Context, *NamespaceLintRequest) (*NamespaceLintResponse, error)
 	mustEmbedUnimplementedFlowServer()
 }
@@ -817,9 +769,6 @@ func (UnimplementedFlowServer) ResolveNamespaceUID(context.Context, *ResolveName
 func (UnimplementedFlowServer) CreateNamespaceMirror(context.Context, *CreateNamespaceMirrorRequest) (*CreateNamespaceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateNamespaceMirror not implemented")
 }
-func (UnimplementedFlowServer) CreateDirectoryMirror(context.Context, *CreateDirectoryMirrorRequest) (*CreateDirectoryResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateDirectoryMirror not implemented")
-}
 func (UnimplementedFlowServer) UpdateMirrorSettings(context.Context, *UpdateMirrorSettingsRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateMirrorSettings not implemented")
 }
@@ -843,15 +792,6 @@ func (UnimplementedFlowServer) MirrorInfoStream(*MirrorInfoRequest, Flow_MirrorI
 }
 func (UnimplementedFlowServer) CancelMirrorActivity(context.Context, *CancelMirrorActivityRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CancelMirrorActivity not implemented")
-}
-func (UnimplementedFlowServer) File(context.Context, *FileRequest) (*FileResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method File not implemented")
-}
-func (UnimplementedFlowServer) CreateFile(context.Context, *CreateFileRequest) (*CreateFileResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateFile not implemented")
-}
-func (UnimplementedFlowServer) UpdateFile(context.Context, *UpdateFileRequest) (*UpdateFileResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateFile not implemented")
 }
 func (UnimplementedFlowServer) NamespaceLint(context.Context, *NamespaceLintRequest) (*NamespaceLintResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method NamespaceLint not implemented")
@@ -1394,24 +1334,6 @@ func _Flow_CreateNamespaceMirror_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Flow_CreateDirectoryMirror_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateDirectoryMirrorRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).CreateDirectoryMirror(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_CreateDirectoryMirror_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).CreateDirectoryMirror(ctx, req.(*CreateDirectoryMirrorRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Flow_UpdateMirrorSettings_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UpdateMirrorSettingsRequest)
 	if err := dec(in); err != nil {
@@ -1559,60 +1481,6 @@ func _Flow_CancelMirrorActivity_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Flow_File_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(FileRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).File(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_File_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).File(ctx, req.(*FileRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_CreateFile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateFileRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).CreateFile(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_CreateFile_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).CreateFile(ctx, req.(*CreateFileRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_UpdateFile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateFileRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).UpdateFile(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_UpdateFile_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).UpdateFile(ctx, req.(*UpdateFileRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Flow_NamespaceLint_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(NamespaceLintRequest)
 	if err := dec(in); err != nil {
@@ -1723,10 +1591,6 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Flow_CreateNamespaceMirror_Handler,
 		},
 		{
-			MethodName: "CreateDirectoryMirror",
-			Handler:    _Flow_CreateDirectoryMirror_Handler,
-		},
-		{
 			MethodName: "UpdateMirrorSettings",
 			Handler:    _Flow_UpdateMirrorSettings_Handler,
 		},
@@ -1753,18 +1617,6 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CancelMirrorActivity",
 			Handler:    _Flow_CancelMirrorActivity_Handler,
-		},
-		{
-			MethodName: "File",
-			Handler:    _Flow_File_Handler,
-		},
-		{
-			MethodName: "CreateFile",
-			Handler:    _Flow_CreateFile_Handler,
-		},
-		{
-			MethodName: "UpdateFile",
-			Handler:    _Flow_UpdateFile_Handler,
 		},
 		{
 			MethodName: "NamespaceLint",

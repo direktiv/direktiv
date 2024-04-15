@@ -7,8 +7,6 @@ option go_package = "github.com/direktiv/direktiv/pkg/flow/grpc";
 import "google/protobuf/empty.proto";
 
 import "pkg/flow/grpc/namespaces.proto";
-import "pkg/flow/grpc/nodes.proto";
-import "pkg/flow/grpc/workflows.proto";
 import "pkg/flow/grpc/instances.proto";
 import "pkg/flow/grpc/internal.proto";
 import "pkg/flow/grpc/cloudevent.proto";
@@ -60,7 +58,6 @@ service Flow {
 
 	// mirrors.
 	rpc CreateNamespaceMirror (CreateNamespaceMirrorRequest) returns (CreateNamespaceResponse) {}
-	rpc CreateDirectoryMirror (CreateDirectoryMirrorRequest) returns (CreateDirectoryResponse) {}
 	rpc UpdateMirrorSettings (UpdateMirrorSettingsRequest) returns (google.protobuf.Empty) {}
 	rpc LockMirror(LockMirrorRequest) returns (google.protobuf.Empty) {}
 	rpc UnlockMirror(UnlockMirrorRequest) returns (google.protobuf.Empty) {}
@@ -71,9 +68,6 @@ service Flow {
 	rpc CancelMirrorActivity (CancelMirrorActivityRequest) returns (google.protobuf.Empty) {}
 
 	//
-	rpc File (FileRequest) returns (FileResponse) {}
-	rpc CreateFile (CreateFileRequest) returns (CreateFileResponse) {}
-	rpc UpdateFile (UpdateFileRequest) returns (UpdateFileResponse) {}
 	rpc NamespaceLint (NamespaceLintRequest) returns (NamespaceLintResponse) {}
 }
 
