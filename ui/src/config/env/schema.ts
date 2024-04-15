@@ -10,18 +10,4 @@ export const envVariablesSchema = z.object({
     .string()
     .optional()
     .transform((value) => `${value}`.toLocaleLowerCase() === "true"),
-  VITE_BASE: z
-    .string()
-    .optional()
-    .refine((value) => {
-      if (value === undefined) {
-        return true;
-      }
-
-      if (!value.startsWith("/") || !value.endsWith("/")) {
-        return false;
-      }
-
-      return true;
-    }),
 });
