@@ -868,7 +868,7 @@
           "description": "Are you sure you want to delete <b>{{name}}</b>?<br/> This cannot be undone."
         },
         "form": {
-          "unsupported": "This mime type is not supported",
+          "unsupported": "Unsupported MimeType: Only text-based files can be used for secrets",
           "name": {
             "label": "Name",
             "placeholder": "secret-name",
