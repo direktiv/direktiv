@@ -11,7 +11,7 @@ import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
 const createNamespace = apiFactory({
-  url: () => "/api/v2/namespaces/",
+  url: () => "/api/v2/namespaces",
   method: "POST",
   schema: NamespaceCreatedSchema,
 });

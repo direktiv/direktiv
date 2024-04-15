@@ -16,6 +16,7 @@ import Header from "./Header";
 import PaginationProvider from "~/components/PaginationProvider";
 import Row from "./Row";
 import { useApiKey } from "~/util/store/apiKey";
+import { useNamespace } from "~/util/store/namespace";
 import { useNamespaceDetail } from "~/api/namespaces/query/get";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSyncs } from "~/api/syncs/query/get";
@@ -25,6 +26,7 @@ const pageSize = 10;
 
 const Activities = () => {
   const { data, isAllowed, noPermissionMessage, isFetched } = useSyncs();
+  const namespace = useNamespace();
   const namespaceDetail = useNamespaceDetail();
 
   const mirror = namespaceDetail.data?.mirror;
@@ -43,6 +45,7 @@ const Activities = () => {
       </Card>
     );
 
+  if (!namespace) return null;
   if (!mirror) return null;
   if (!syncs) return null;
 
@@ -106,8 +109,8 @@ const Activities = () => {
                       </TableCell>
                     </TableRow>
                   )}
-                  {currentItems.map((sync, index) => (
-                    <Row namespace="TBD" key={sync.id} item={sync} />
+                  {currentItems.map((sync) => (
+                    <Row namespace={namespace} key={sync.id} item={sync} />
                   ))}
                 </TableBody>
               </Table>
