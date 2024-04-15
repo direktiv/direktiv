@@ -24,7 +24,7 @@ import { useTranslation } from "react-i18next";
 
 const pageSize = 10;
 
-const Activities = () => {
+const Syncs = () => {
   const { data, isAllowed, noPermissionMessage, isFetched } = useSyncs();
   const namespace = useNamespace();
   const namespaceDetail = useNamespaceDetail();
@@ -137,4 +137,4 @@ const Activities = () => {
   );
 };
 
-export default Activities;
+export default Syncs;
