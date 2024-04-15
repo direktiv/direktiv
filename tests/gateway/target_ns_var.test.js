@@ -91,7 +91,7 @@ describe('Test target namespace variable plugin', () => {
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
 	it(`should set plain text variable`, async () => {
-		const workflowVarResponse = await request(common.config.getDirektivHost()).put(`/api/v2/namespaces/${ testNamespace }/variables`)
+		const workflowVarResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ testNamespace }/variables`)
 			.send({
 				name: 'plain',
 				data: btoa('Hello World'),
@@ -101,7 +101,7 @@ describe('Test target namespace variable plugin', () => {
 	})
 
 	it(`should set plain text variable`, async () => {
-		const workflowVarResponse = await request(common.config.getDirektivHost()).put(`/api/v2/namespaces/${ limitedNamespace }/variables`)
+		const workflowVarResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ limitedNamespace }/variables`)
 			.send({
 				name: 'plain',
 				data: btoa('Hello World 2'),
