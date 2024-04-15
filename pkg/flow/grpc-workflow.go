@@ -4,7 +4,6 @@ import (
 	"context"
 	"log/slog"
 	"path/filepath"
-	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
@@ -50,29 +49,6 @@ func (flow *flow) Workflow(ctx context.Context, req *grpc.WorkflowRequest) (*grp
 	resp.Source = data
 
 	return resp, nil
-}
-
-func (flow *flow) WorkflowStream(req *grpc.WorkflowRequest, srv grpc.Flow_WorkflowStreamServer) error {
-	slog.Debug("Handling gRPC request", "this", this())
-	ctx := srv.Context()
-
-	resp, err := flow.Workflow(ctx, req)
-	if err != nil {
-		return err
-	}
-	// mock streaming response.
-	for {
-		select {
-		case <-ctx.Done():
-			return nil
-		default:
-			err = srv.Send(resp)
-			if err != nil {
-				return err
-			}
-			time.Sleep(time.Second * 5)
-		}
-	}
 }
 
 func (flow *flow) createFileSystemObject(ctx context.Context, fileType filestore.FileType, req *grpc.CreateWorkflowRequest,

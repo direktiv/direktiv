@@ -5,7 +5,6 @@ import (
 	"errors"
 	"log/slog"
 	"path/filepath"
-	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
@@ -94,29 +93,6 @@ func (flow *flow) Directory(ctx context.Context, req *grpc.DirectoryRequest) (*g
 	resp.Children.Results = bytedata.ConvertFilesToGrpcNodeList(files)
 
 	return resp, nil
-}
-
-func (flow *flow) DirectoryStream(req *grpc.DirectoryRequest, srv grpc.Flow_DirectoryStreamServer) error {
-	slog.Debug("Handling gRPC request", "this", this())
-	ctx := srv.Context()
-
-	resp, err := flow.Directory(ctx, req)
-	if err != nil {
-		return err
-	}
-	// mock streaming response.
-	for {
-		select {
-		case <-ctx.Done():
-			return nil
-		default:
-			err = srv.Send(resp)
-			if err != nil {
-				return err
-			}
-			time.Sleep(time.Second * 5)
-		}
-	}
 }
 
 func (flow *flow) CreateDirectory(ctx context.Context, req *grpc.CreateDirectoryRequest) (*grpc.CreateDirectoryResponse, error) {
