@@ -214,10 +214,12 @@ test("it is not possible to run the workflow when the editor has unsaved changes
 
   await page.goto(`${namespace}/explorer/workflow/edit/${workflowName}`);
 
+  await expect(page.getByTestId("workflow-header-btn-run")).not.toBeDisabled();
   await expect(page.getByTestId("workflow-editor-btn-run")).not.toBeDisabled();
 
   await page.type("textarea", faker.random.alphaNumeric(9));
 
+  await expect(page.getByTestId("workflow-header-btn-run")).toBeDisabled();
   await expect(page.getByTestId("workflow-editor-btn-run")).toBeDisabled();
 });
 
