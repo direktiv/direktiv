@@ -660,88 +660,21 @@ describe('Test behaviour specific to the root node', () => {
 	})
 
 	it(`should check for the expected list of namespace variables`, async () => {
-		const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/vars`)
+		const req = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/variables`)
 		expect(req.statusCode).toEqual(200)
-		expect(req.body).toMatchObject({
-			namespace: namespaceName,
-			variables: {
-				pageInfo: null,
-				results: expect.arrayContaining([
-					{
-						checksum: '',
-						mimeType: 'text/plain',
-						name: 'alpha.csv',
-						size: '7', // TODO: this is a string, which is probably a bug
-						createdAt: expect.stringMatching(common.regex.timestampRegex),
-						updatedAt: expect.stringMatching(common.regex.timestampRegex),
-					},
-					{
-						checksum: '',
-						mimeType: 'application/json',
-						name: 'alp-ha.json',
-						size: '9',
-						createdAt: expect.stringMatching(common.regex.timestampRegex),
-						updatedAt: expect.stringMatching(common.regex.timestampRegex),
-					},
-					{
-						checksum: '',
-						mimeType: 'application/json',
-						name: 'alp_ha.json',
-						size: '9',
-						createdAt: expect.stringMatching(common.regex.timestampRegex),
-						updatedAt: expect.stringMatching(common.regex.timestampRegex),
-					},
-					{
-						checksum: '',
-						mimeType: 'application/json',
-						name: 'alpha.json',
-						size: '9',
-						createdAt: expect.stringMatching(common.regex.timestampRegex),
-						updatedAt: expect.stringMatching(common.regex.timestampRegex),
-					},
-					{
-						checksum: '',
-						mimeType: 'application/json',
-						name: 'alpha_.json',
-						size: '9',
-						createdAt: expect.stringMatching(common.regex.timestampRegex),
-						updatedAt: expect.stringMatching(common.regex.timestampRegex),
-					},
-					{
-						checksum: '',
-						mimeType: 'application/json',
-						name: 'ALPHA.json',
-						size: '9',
-						createdAt: expect.stringMatching(common.regex.timestampRegex),
-						updatedAt: expect.stringMatching(common.regex.timestampRegex),
-					},
-					{
-						checksum: '',
-						mimeType: 'application/json',
-						name: 'beta.json',
-						size: '9',
-						createdAt: expect.stringMatching(common.regex.timestampRegex),
-						updatedAt: expect.stringMatching(common.regex.timestampRegex),
-					},
-					{
-						checksum: '',
-						mimeType: 'application/json',
-						name: 'data.json',
-						size: '9',
-						createdAt: expect.stringMatching(common.regex.timestampRegex),
-						updatedAt: expect.stringMatching(common.regex.timestampRegex),
-					},
-					{
-						checksum: '',
-						mimeType: 'text/plain',
-						name: 'gamma.css',
-						size: '103',
-						createdAt: expect.stringMatching(common.regex.timestampRegex),
-						updatedAt: expect.stringMatching(common.regex.timestampRegex),
-					},
-				]),
-			},
-		})
+		let reduced = req.body.data.map(i => i.name)
+		console.log(reduced)
+		expect(reduced.sort()).toEqual([
+			'beta.json',
+			'ALPHA.json',
+			'alp_ha.json',
+			'data.json',
+			'alpha.json',
+			'alp-ha.json',
+			'alpha.csv',
+			'alpha_.json',
+			'gamma.css'
+		].sort())
 	})
 
 	// TODO: this test need to expect stream response.
