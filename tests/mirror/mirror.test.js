@@ -548,25 +548,18 @@ describe('Test behaviour specific to the root node', () => {
 	})
 
 	it(`should read the workflow variables of '/banana/page-2.yaml'`, async () => {
-		const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/tree/banana/page-2.yaml?op=vars`)
+		const req = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/variables?workflowPath=/banana/page-2.yaml`)
 		expect(req.statusCode).toEqual(200)
-		expect(req.body).toMatchObject({
-			namespace: namespaceName,
-			path: `/banana/page-2.yaml`,
-			variables: {
-				pageInfo: null,
-				results: [
-					{
-						mimeType: 'text/html',
-						name: 'Page.HTML',
-						size: '233',
-						checksum: '',
-						createdAt: expect.stringMatching(common.regex.timestampRegex),
-						updatedAt: expect.stringMatching(common.regex.timestampRegex),
-					},
-				],
-			},
-		})
+		expect(req.body.data).toEqual([{
+			id: expect.stringMatching(common.regex.uuidRegex),
+			type: 'workflow-variable',
+			reference: '/banana/page-2.yaml',
+			name: 'page.html',
+			size: 221,
+			mimeType: 'text/html',
+			createdAt: expect.stringMatching(regex.timestampRegex),
+			updatedAt: expect.stringMatching(regex.timestampRegex),
+		}])
 	})
 
 	it(`should read the /banana/util node`, async () => {
