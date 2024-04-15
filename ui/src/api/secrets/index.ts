@@ -2,7 +2,7 @@ export const secretKeys = {
   secretsList: (namespace: string, { apiKey }: { apiKey?: string }) =>
     [
       {
-        scope: "secret-list",
+        scope: "secrets-list",
         apiKey,
         namespace,
       },

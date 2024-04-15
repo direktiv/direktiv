@@ -1,30 +1,47 @@
 import { z } from "zod";
 
+/**
+ * example:
+  {
+    "name": "secret-name",
+    "createdAt": "2024-04-02T06:22:21.766541Z",
+    "updatedAt": "2024-04-02T06:22:21.766541Z"
+  }
+ */
 export const SecretSchema = z.object({
   name: z.string(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
   initialized: z.boolean(),
 });
 
-export const SecretUpdatedSchema = z.object({
-  key: z.string(),
-  namespace: z.string(),
-});
-
-export const SecretListSchema = z.object({
-  namespace: z.string(),
-  secrets: z.object({
-    results: z.array(SecretSchema),
-  }),
-});
-
-export const SecretDeletedSchema = z.null();
-
-export const SecretFormSchema = z.object({
-  name: z.string().nonempty(),
-  value: z.string().nonempty(),
-});
-
 export type SecretSchemaType = z.infer<typeof SecretSchema>;
-export type SecretUpdatedSchemaType = z.infer<typeof SecretUpdatedSchema>;
-export type SecretListSchemaType = z.infer<typeof SecretListSchema>;
-export type SecretFormSchemaType = z.infer<typeof SecretFormSchema>;
+
+/**
+ * example:
+  {
+    "data": [...],
+  }
+ */
+export const SecretsListSchema = z.object({
+  data: z.array(SecretSchema),
+});
+
+export const SecretsDeletedSchema = z.null();
+
+export const SecretCreatedUpdatedSchema = z.object({
+  data: SecretSchema,
+});
+
+export type SecretCreatedUpdatedSchemaType = z.infer<
+  typeof SecretCreatedUpdatedSchema
+>;
+
+export const SecretFormCreateEditSchema = z.object({
+  name: z.string().nonempty(),
+  data: z.string().nonempty(),
+});
+
+export type SecretFormCreateEditSchemaType = z.infer<
+  typeof SecretFormCreateEditSchema
+>;

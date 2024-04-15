@@ -867,15 +867,19 @@
         "delete": {
           "description": "Are you sure you want to delete <b>{{name}}</b>?<br/> This cannot be undone."
         },
+        "form": {
+          "unsupported": "Unsupported MimeType: Only text-based files can be used for secrets",
+          "name": {
+            "label": "Name",
+            "placeholder": "secret-name",
+            "nameAlreadyExists": "The name already exists"
+          }
+        },
         "create": {
-          "description": "Add a secret",
-          "name": "Name",
-          "file": "Upload a file",
-          "fileError": "There was an error uploading the file",
-          "unsupported": "This mime type is not supported"
+          "title": "Add a secret"
         },
         "edit": {
-          "description": "Edit {{name}}",
+          "title": "Edit {{name}}",
           "editNote": "Existing secrets cannot be retrieved after creating. But you can overwrite the existing value with a new one"
         }
       },
@@ -1164,9 +1168,6 @@
         "unspecified": "Mimetype is unspecified",
         "placeholder": "Select a mimetype"
       },
-      "file": {
-        "label": "Upload a file"
-      },
       "noPreview": "Only text based mime types are supported for preview and editing"
     },
     "namespaceVariablepicker": {
@@ -1198,6 +1199,9 @@
         "title": "The path \"{{path}}\" was not found.",
         "linkText": "Go back to root directory"
       }
+    },
+    "fileUpload": {
+      "label": "Upload a file"
     },
     "userMenu": {
       "loggedIn": "You are logged in",
