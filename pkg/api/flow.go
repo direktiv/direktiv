@@ -559,12 +559,6 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully sent cloud event"
 	r.HandleFunc("/namespaces/{ns}/broadcast", h.BroadcastCloudevent).Name(RN_NamespaceEvent).Methods(http.MethodPost)
 
-	// TODO: SWAGGER-SPEC
-	pathHandler(r, http.MethodPut, RN_CreateWorkflow, "create-file", h.CreateFile)
-
-	// TODO: SWAGGER-SPEC
-	pathHandler(r, http.MethodPost, RN_UpdateWorkflow, "update-file", h.UpdateFile)
-
 	// TODO: SWAGGER_SPEC
 	pathHandler(r, http.MethodPost, RN_UpdateMirror, "update-mirror", h.UpdateMirror)
 	pathHandler(r, http.MethodPost, RN_LockMirror, "lock-mirror", h.LockMirror)
@@ -1079,54 +1073,6 @@ func (h *flowHandler) DeleteNamespace(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp, err := h.client.DeleteNamespace(ctx, in)
-	respond(w, resp, err)
-}
-
-func (h *flowHandler) CreateFile(w http.ResponseWriter, r *http.Request) {
-	slog.Debug("Handling request", "this", this())
-
-	ctx := r.Context()
-	namespace := mux.Vars(r)["ns"]
-	path, _ := pathAndRef(r)
-
-	data, err := loadRawBody(r)
-	if err != nil {
-		respond(w, nil, err)
-		return
-	}
-
-	in := &grpc.CreateFileRequest{
-		Namespace: namespace,
-		Path:      path,
-		Source:    data,
-		MimeType:  r.Header.Get("Content-Type"),
-	}
-
-	resp, err := h.client.CreateFile(ctx, in)
-	respond(w, resp, err)
-}
-
-func (h *flowHandler) UpdateFile(w http.ResponseWriter, r *http.Request) {
-	slog.Debug("Handling request", "this", this())
-
-	ctx := r.Context()
-	namespace := mux.Vars(r)["ns"]
-	path, _ := pathAndRef(r)
-
-	data, err := loadRawBody(r)
-	if err != nil {
-		respond(w, nil, err)
-		return
-	}
-
-	in := &grpc.UpdateFileRequest{
-		Namespace: namespace,
-		Path:      path,
-		Source:    data,
-		MimeType:  r.Header.Get("Content-Type"),
-	}
-
-	resp, err := h.client.UpdateFile(ctx, in)
 	respond(w, resp, err)
 }
 
