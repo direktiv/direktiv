@@ -151,9 +151,10 @@ describe('Test target workflow variable plugin', () => {
 	)
 
 	it(`should set plain text variable`, async () => {
-		const workflowVarResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ testNamespace }/variables?workflowPath=/workflow.yaml`)
+		const workflowVarResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ testNamespace }/variables`)
 			.send({
 				name: 'test',
+				workflowPath: "/workflow.yaml",
 				data: btoa('Hello World'),
 				mimeType: 'text/plain',
 			})
@@ -161,9 +162,10 @@ describe('Test target workflow variable plugin', () => {
 	})
 
 	it(`should set plain text variable for worklfow in limited namespace`, async () => {
-		const workflowVarResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ limitedNamespace }/variables?workflowPath=/workflow.yaml`)
+		const workflowVarResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ limitedNamespace }/variables`)
 			.send({
 				name: 'test',
+				workflowPath: "/workflow.yaml",
 				data: btoa('Hello World 2'),
 				mimeType: 'text/plain',
 			})
