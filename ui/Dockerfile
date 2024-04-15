@@ -1,9 +1,4 @@
 FROM --platform=$BUILDPLATFORM node:18.18.1 as build
-
-ARG FULL_VERSION
-ARG IS_ENTERPRISE=FALSE
-
-RUN echo "building $FULL_VERSION"
 WORKDIR /app
 
 ENV PATH /app/node_modules/.bin:$PATH
@@ -14,7 +9,7 @@ RUN yarn install
 
 COPY . .
 
-RUN VITE_APP_VERSION=$FULL_VERSION VITE_IS_ENTERPRISE=${IS_ENTERPRISE} yarn build
+RUN yarn build
 
 # production environment
 FROM --platform=$TARGETPLATFORM nginx:bookworm
