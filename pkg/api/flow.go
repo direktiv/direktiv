@@ -561,8 +561,6 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 
 	// TODO: SWAGGER_SPEC
 	pathHandler(r, http.MethodPost, RN_UpdateMirror, "update-mirror", h.UpdateMirror)
-	pathHandler(r, http.MethodPost, RN_LockMirror, "lock-mirror", h.LockMirror)
-	pathHandler(r, http.MethodPost, RN_LockMirror, "unlock-mirror", h.UnlockMirror)
 	pathHandler(r, http.MethodPost, RN_SyncMirror, "sync-mirror", h.SyncMirror)
 	pathHandlerPair(r, RN_GetMirrorInfo, "mirror-info", h.MirrorInfo, h.MirrorInfoSSE)
 	r.HandleFunc("/namespaces/{ns}/activities/{activity}/cancel", h.MirrorActivityCancel).Name(RN_CancelMirrorActivity).Methods(http.MethodPost)
@@ -1073,38 +1071,6 @@ func (h *flowHandler) DeleteNamespace(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp, err := h.client.DeleteNamespace(ctx, in)
-	respond(w, resp, err)
-}
-
-func (h *flowHandler) LockMirror(w http.ResponseWriter, r *http.Request) {
-	slog.Debug("Handling request", "this", this())
-
-	ctx := r.Context()
-	namespace := mux.Vars(r)["ns"]
-	path, _ := pathAndRef(r)
-
-	in := &grpc.LockMirrorRequest{}
-
-	in.Namespace = namespace
-	in.Path = path
-
-	resp, err := h.client.LockMirror(ctx, in)
-	respond(w, resp, err)
-}
-
-func (h *flowHandler) UnlockMirror(w http.ResponseWriter, r *http.Request) {
-	slog.Debug("Handling request", "this", this())
-
-	ctx := r.Context()
-	namespace := mux.Vars(r)["ns"]
-	path, _ := pathAndRef(r)
-
-	in := &grpc.UnlockMirrorRequest{}
-
-	in.Namespace = namespace
-	in.Path = path
-
-	resp, err := h.client.UnlockMirror(ctx, in)
 	respond(w, resp, err)
 }
 
