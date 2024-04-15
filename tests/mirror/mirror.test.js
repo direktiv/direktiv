@@ -663,7 +663,6 @@ describe('Test behaviour specific to the root node', () => {
 		const req = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/variables`)
 		expect(req.statusCode).toEqual(200)
 		let reduced = req.body.data.map(i => i.name)
-		console.log(reduced)
 		expect(reduced.sort()).toEqual([
 			'beta.json',
 			'ALPHA.json',
