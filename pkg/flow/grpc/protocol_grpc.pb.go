@@ -25,16 +25,6 @@ const (
 	Flow_NamespacesStream_FullMethodName      = "/direktiv_flow.Flow/NamespacesStream"
 	Flow_CreateNamespace_FullMethodName       = "/direktiv_flow.Flow/CreateNamespace"
 	Flow_DeleteNamespace_FullMethodName       = "/direktiv_flow.Flow/DeleteNamespace"
-	Flow_Directory_FullMethodName             = "/direktiv_flow.Flow/Directory"
-	Flow_DirectoryStream_FullMethodName       = "/direktiv_flow.Flow/DirectoryStream"
-	Flow_CreateDirectory_FullMethodName       = "/direktiv_flow.Flow/CreateDirectory"
-	Flow_DeleteNode_FullMethodName            = "/direktiv_flow.Flow/DeleteNode"
-	Flow_RenameNode_FullMethodName            = "/direktiv_flow.Flow/RenameNode"
-	Flow_Node_FullMethodName                  = "/direktiv_flow.Flow/Node"
-	Flow_Workflow_FullMethodName              = "/direktiv_flow.Flow/Workflow"
-	Flow_WorkflowStream_FullMethodName        = "/direktiv_flow.Flow/WorkflowStream"
-	Flow_CreateWorkflow_FullMethodName        = "/direktiv_flow.Flow/CreateWorkflow"
-	Flow_UpdateWorkflow_FullMethodName        = "/direktiv_flow.Flow/UpdateWorkflow"
 	Flow_Instance_FullMethodName              = "/direktiv_flow.Flow/Instance"
 	Flow_InstanceStream_FullMethodName        = "/direktiv_flow.Flow/InstanceStream"
 	Flow_Instances_FullMethodName             = "/direktiv_flow.Flow/Instances"
@@ -83,17 +73,6 @@ type FlowClient interface {
 	NamespacesStream(ctx context.Context, in *NamespacesRequest, opts ...grpc.CallOption) (Flow_NamespacesStreamClient, error)
 	CreateNamespace(ctx context.Context, in *CreateNamespaceRequest, opts ...grpc.CallOption) (*CreateNamespaceResponse, error)
 	DeleteNamespace(ctx context.Context, in *DeleteNamespaceRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	// filesystem.
-	Directory(ctx context.Context, in *DirectoryRequest, opts ...grpc.CallOption) (*DirectoryResponse, error)
-	DirectoryStream(ctx context.Context, in *DirectoryRequest, opts ...grpc.CallOption) (Flow_DirectoryStreamClient, error)
-	CreateDirectory(ctx context.Context, in *CreateDirectoryRequest, opts ...grpc.CallOption) (*CreateDirectoryResponse, error)
-	DeleteNode(ctx context.Context, in *DeleteNodeRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	RenameNode(ctx context.Context, in *RenameNodeRequest, opts ...grpc.CallOption) (*RenameNodeResponse, error)
-	Node(ctx context.Context, in *NodeRequest, opts ...grpc.CallOption) (*NodeResponse, error)
-	Workflow(ctx context.Context, in *WorkflowRequest, opts ...grpc.CallOption) (*WorkflowResponse, error)
-	WorkflowStream(ctx context.Context, in *WorkflowRequest, opts ...grpc.CallOption) (Flow_WorkflowStreamClient, error)
-	CreateWorkflow(ctx context.Context, in *CreateWorkflowRequest, opts ...grpc.CallOption) (*CreateWorkflowResponse, error)
-	UpdateWorkflow(ctx context.Context, in *UpdateWorkflowRequest, opts ...grpc.CallOption) (*UpdateWorkflowResponse, error)
 	// instances.
 	Instance(ctx context.Context, in *InstanceRequest, opts ...grpc.CallOption) (*InstanceResponse, error)
 	InstanceStream(ctx context.Context, in *InstanceRequest, opts ...grpc.CallOption) (Flow_InstanceStreamClient, error)
@@ -212,142 +191,6 @@ func (c *flowClient) DeleteNamespace(ctx context.Context, in *DeleteNamespaceReq
 	return out, nil
 }
 
-func (c *flowClient) Directory(ctx context.Context, in *DirectoryRequest, opts ...grpc.CallOption) (*DirectoryResponse, error) {
-	out := new(DirectoryResponse)
-	err := c.cc.Invoke(ctx, Flow_Directory_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) DirectoryStream(ctx context.Context, in *DirectoryRequest, opts ...grpc.CallOption) (Flow_DirectoryStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[1], Flow_DirectoryStream_FullMethodName, opts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &flowDirectoryStreamClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-type Flow_DirectoryStreamClient interface {
-	Recv() (*DirectoryResponse, error)
-	grpc.ClientStream
-}
-
-type flowDirectoryStreamClient struct {
-	grpc.ClientStream
-}
-
-func (x *flowDirectoryStreamClient) Recv() (*DirectoryResponse, error) {
-	m := new(DirectoryResponse)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func (c *flowClient) CreateDirectory(ctx context.Context, in *CreateDirectoryRequest, opts ...grpc.CallOption) (*CreateDirectoryResponse, error) {
-	out := new(CreateDirectoryResponse)
-	err := c.cc.Invoke(ctx, Flow_CreateDirectory_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) DeleteNode(ctx context.Context, in *DeleteNodeRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, Flow_DeleteNode_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) RenameNode(ctx context.Context, in *RenameNodeRequest, opts ...grpc.CallOption) (*RenameNodeResponse, error) {
-	out := new(RenameNodeResponse)
-	err := c.cc.Invoke(ctx, Flow_RenameNode_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) Node(ctx context.Context, in *NodeRequest, opts ...grpc.CallOption) (*NodeResponse, error) {
-	out := new(NodeResponse)
-	err := c.cc.Invoke(ctx, Flow_Node_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) Workflow(ctx context.Context, in *WorkflowRequest, opts ...grpc.CallOption) (*WorkflowResponse, error) {
-	out := new(WorkflowResponse)
-	err := c.cc.Invoke(ctx, Flow_Workflow_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) WorkflowStream(ctx context.Context, in *WorkflowRequest, opts ...grpc.CallOption) (Flow_WorkflowStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[2], Flow_WorkflowStream_FullMethodName, opts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &flowWorkflowStreamClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-type Flow_WorkflowStreamClient interface {
-	Recv() (*WorkflowResponse, error)
-	grpc.ClientStream
-}
-
-type flowWorkflowStreamClient struct {
-	grpc.ClientStream
-}
-
-func (x *flowWorkflowStreamClient) Recv() (*WorkflowResponse, error) {
-	m := new(WorkflowResponse)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func (c *flowClient) CreateWorkflow(ctx context.Context, in *CreateWorkflowRequest, opts ...grpc.CallOption) (*CreateWorkflowResponse, error) {
-	out := new(CreateWorkflowResponse)
-	err := c.cc.Invoke(ctx, Flow_CreateWorkflow_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) UpdateWorkflow(ctx context.Context, in *UpdateWorkflowRequest, opts ...grpc.CallOption) (*UpdateWorkflowResponse, error) {
-	out := new(UpdateWorkflowResponse)
-	err := c.cc.Invoke(ctx, Flow_UpdateWorkflow_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *flowClient) Instance(ctx context.Context, in *InstanceRequest, opts ...grpc.CallOption) (*InstanceResponse, error) {
 	out := new(InstanceResponse)
 	err := c.cc.Invoke(ctx, Flow_Instance_FullMethodName, in, out, opts...)
@@ -358,7 +201,7 @@ func (c *flowClient) Instance(ctx context.Context, in *InstanceRequest, opts ...
 }
 
 func (c *flowClient) InstanceStream(ctx context.Context, in *InstanceRequest, opts ...grpc.CallOption) (Flow_InstanceStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[3], Flow_InstanceStream_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[1], Flow_InstanceStream_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -399,7 +242,7 @@ func (c *flowClient) Instances(ctx context.Context, in *InstancesRequest, opts .
 }
 
 func (c *flowClient) InstancesStream(ctx context.Context, in *InstancesRequest, opts ...grpc.CallOption) (Flow_InstancesStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[4], Flow_InstancesStream_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[2], Flow_InstancesStream_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -476,7 +319,7 @@ func (c *flowClient) StartWorkflow(ctx context.Context, in *StartWorkflowRequest
 }
 
 func (c *flowClient) RunWorkflow(ctx context.Context, in *RunWorkflowRequest, opts ...grpc.CallOption) (Flow_RunWorkflowClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[5], Flow_RunWorkflow_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[3], Flow_RunWorkflow_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -508,7 +351,7 @@ func (x *flowRunWorkflowClient) Recv() (*RunWorkflowResponse, error) {
 }
 
 func (c *flowClient) AwaitWorkflow(ctx context.Context, in *AwaitWorkflowRequest, opts ...grpc.CallOption) (Flow_AwaitWorkflowClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[6], Flow_AwaitWorkflow_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[4], Flow_AwaitWorkflow_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -585,7 +428,7 @@ func (c *flowClient) EventListeners(ctx context.Context, in *EventListenersReque
 }
 
 func (c *flowClient) EventListenersStream(ctx context.Context, in *EventListenersRequest, opts ...grpc.CallOption) (Flow_EventListenersStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[7], Flow_EventListenersStream_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[5], Flow_EventListenersStream_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -626,7 +469,7 @@ func (c *flowClient) EventHistory(ctx context.Context, in *EventHistoryRequest, 
 }
 
 func (c *flowClient) EventHistoryStream(ctx context.Context, in *EventHistoryRequest, opts ...grpc.CallOption) (Flow_EventHistoryStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[8], Flow_EventHistoryStream_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[6], Flow_EventHistoryStream_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -757,7 +600,7 @@ func (c *flowClient) MirrorInfo(ctx context.Context, in *MirrorInfoRequest, opts
 }
 
 func (c *flowClient) MirrorInfoStream(ctx context.Context, in *MirrorInfoRequest, opts ...grpc.CallOption) (Flow_MirrorInfoStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[9], Flow_MirrorInfoStream_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[7], Flow_MirrorInfoStream_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -843,17 +686,6 @@ type FlowServer interface {
 	NamespacesStream(*NamespacesRequest, Flow_NamespacesStreamServer) error
 	CreateNamespace(context.Context, *CreateNamespaceRequest) (*CreateNamespaceResponse, error)
 	DeleteNamespace(context.Context, *DeleteNamespaceRequest) (*emptypb.Empty, error)
-	// filesystem.
-	Directory(context.Context, *DirectoryRequest) (*DirectoryResponse, error)
-	DirectoryStream(*DirectoryRequest, Flow_DirectoryStreamServer) error
-	CreateDirectory(context.Context, *CreateDirectoryRequest) (*CreateDirectoryResponse, error)
-	DeleteNode(context.Context, *DeleteNodeRequest) (*emptypb.Empty, error)
-	RenameNode(context.Context, *RenameNodeRequest) (*RenameNodeResponse, error)
-	Node(context.Context, *NodeRequest) (*NodeResponse, error)
-	Workflow(context.Context, *WorkflowRequest) (*WorkflowResponse, error)
-	WorkflowStream(*WorkflowRequest, Flow_WorkflowStreamServer) error
-	CreateWorkflow(context.Context, *CreateWorkflowRequest) (*CreateWorkflowResponse, error)
-	UpdateWorkflow(context.Context, *UpdateWorkflowRequest) (*UpdateWorkflowResponse, error)
 	// instances.
 	Instance(context.Context, *InstanceRequest) (*InstanceResponse, error)
 	InstanceStream(*InstanceRequest, Flow_InstanceStreamServer) error
@@ -915,36 +747,6 @@ func (UnimplementedFlowServer) CreateNamespace(context.Context, *CreateNamespace
 }
 func (UnimplementedFlowServer) DeleteNamespace(context.Context, *DeleteNamespaceRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteNamespace not implemented")
-}
-func (UnimplementedFlowServer) Directory(context.Context, *DirectoryRequest) (*DirectoryResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Directory not implemented")
-}
-func (UnimplementedFlowServer) DirectoryStream(*DirectoryRequest, Flow_DirectoryStreamServer) error {
-	return status.Errorf(codes.Unimplemented, "method DirectoryStream not implemented")
-}
-func (UnimplementedFlowServer) CreateDirectory(context.Context, *CreateDirectoryRequest) (*CreateDirectoryResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateDirectory not implemented")
-}
-func (UnimplementedFlowServer) DeleteNode(context.Context, *DeleteNodeRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteNode not implemented")
-}
-func (UnimplementedFlowServer) RenameNode(context.Context, *RenameNodeRequest) (*RenameNodeResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RenameNode not implemented")
-}
-func (UnimplementedFlowServer) Node(context.Context, *NodeRequest) (*NodeResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Node not implemented")
-}
-func (UnimplementedFlowServer) Workflow(context.Context, *WorkflowRequest) (*WorkflowResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Workflow not implemented")
-}
-func (UnimplementedFlowServer) WorkflowStream(*WorkflowRequest, Flow_WorkflowStreamServer) error {
-	return status.Errorf(codes.Unimplemented, "method WorkflowStream not implemented")
-}
-func (UnimplementedFlowServer) CreateWorkflow(context.Context, *CreateWorkflowRequest) (*CreateWorkflowResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateWorkflow not implemented")
-}
-func (UnimplementedFlowServer) UpdateWorkflow(context.Context, *UpdateWorkflowRequest) (*UpdateWorkflowResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateWorkflow not implemented")
 }
 func (UnimplementedFlowServer) Instance(context.Context, *InstanceRequest) (*InstanceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Instance not implemented")
@@ -1156,192 +958,6 @@ func _Flow_DeleteNamespace_Handler(srv interface{}, ctx context.Context, dec fun
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).DeleteNamespace(ctx, req.(*DeleteNamespaceRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_Directory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DirectoryRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).Directory(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_Directory_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).Directory(ctx, req.(*DirectoryRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_DirectoryStream_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(DirectoryRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
-	return srv.(FlowServer).DirectoryStream(m, &flowDirectoryStreamServer{stream})
-}
-
-type Flow_DirectoryStreamServer interface {
-	Send(*DirectoryResponse) error
-	grpc.ServerStream
-}
-
-type flowDirectoryStreamServer struct {
-	grpc.ServerStream
-}
-
-func (x *flowDirectoryStreamServer) Send(m *DirectoryResponse) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func _Flow_CreateDirectory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateDirectoryRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).CreateDirectory(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_CreateDirectory_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).CreateDirectory(ctx, req.(*CreateDirectoryRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_DeleteNode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteNodeRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).DeleteNode(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_DeleteNode_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).DeleteNode(ctx, req.(*DeleteNodeRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_RenameNode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RenameNodeRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).RenameNode(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_RenameNode_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).RenameNode(ctx, req.(*RenameNodeRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_Node_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(NodeRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).Node(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_Node_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).Node(ctx, req.(*NodeRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_Workflow_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(WorkflowRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).Workflow(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_Workflow_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).Workflow(ctx, req.(*WorkflowRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_WorkflowStream_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(WorkflowRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
-	return srv.(FlowServer).WorkflowStream(m, &flowWorkflowStreamServer{stream})
-}
-
-type Flow_WorkflowStreamServer interface {
-	Send(*WorkflowResponse) error
-	grpc.ServerStream
-}
-
-type flowWorkflowStreamServer struct {
-	grpc.ServerStream
-}
-
-func (x *flowWorkflowStreamServer) Send(m *WorkflowResponse) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func _Flow_CreateWorkflow_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateWorkflowRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).CreateWorkflow(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_CreateWorkflow_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).CreateWorkflow(ctx, req.(*CreateWorkflowRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_UpdateWorkflow_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateWorkflowRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).UpdateWorkflow(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_UpdateWorkflow_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).UpdateWorkflow(ctx, req.(*UpdateWorkflowRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -2039,38 +1655,6 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Flow_DeleteNamespace_Handler,
 		},
 		{
-			MethodName: "Directory",
-			Handler:    _Flow_Directory_Handler,
-		},
-		{
-			MethodName: "CreateDirectory",
-			Handler:    _Flow_CreateDirectory_Handler,
-		},
-		{
-			MethodName: "DeleteNode",
-			Handler:    _Flow_DeleteNode_Handler,
-		},
-		{
-			MethodName: "RenameNode",
-			Handler:    _Flow_RenameNode_Handler,
-		},
-		{
-			MethodName: "Node",
-			Handler:    _Flow_Node_Handler,
-		},
-		{
-			MethodName: "Workflow",
-			Handler:    _Flow_Workflow_Handler,
-		},
-		{
-			MethodName: "CreateWorkflow",
-			Handler:    _Flow_CreateWorkflow_Handler,
-		},
-		{
-			MethodName: "UpdateWorkflow",
-			Handler:    _Flow_UpdateWorkflow_Handler,
-		},
-		{
 			MethodName: "Instance",
 			Handler:    _Flow_Instance_Handler,
 		},
@@ -2191,16 +1775,6 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "NamespacesStream",
 			Handler:       _Flow_NamespacesStream_Handler,
-			ServerStreams: true,
-		},
-		{
-			StreamName:    "DirectoryStream",
-			Handler:       _Flow_DirectoryStream_Handler,
-			ServerStreams: true,
-		},
-		{
-			StreamName:    "WorkflowStream",
-			Handler:       _Flow_WorkflowStream_Handler,
 			ServerStreams: true,
 		},
 		{
