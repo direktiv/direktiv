@@ -1,28 +1,32 @@
 export const varKeys = {
-  varList: (namespace: string, { apiKey }: { apiKey?: string }) =>
+  varList: (
+    namespace: string,
+    { apiKey, workflowPath }: { apiKey?: string; workflowPath?: string }
+  ) =>
     [
       {
-        scope: "var-list",
+        scope: "variables-list",
         apiKey,
+        workflowPath,
         namespace,
       },
     ] as const,
-  varContent: (
+  varDetails: (
     namespace: string,
     {
       apiKey,
-      name,
+      id,
     }: {
       apiKey?: string;
-      name: string;
+      id: string;
     }
   ) =>
     [
       {
-        scope: "var-content",
+        scope: "variables-details",
         apiKey,
         namespace,
-        name,
+        id,
       },
     ] as const,
 };

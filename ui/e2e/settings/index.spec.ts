@@ -4,6 +4,7 @@ import { expect, test } from "@playwright/test";
 import { createRegistries } from "../utils/registries";
 import { createSecrets } from "../utils/secrets";
 import { createVariables } from "../utils/variables";
+import { decode } from "js-base64";
 import { faker } from "@faker-js/faker";
 import { radixClick } from "../utils/testutils";
 import { waitForSuccessToast } from "../explorer/workflow/utils";
@@ -158,7 +159,7 @@ test("it is possible to create and delete variables", async ({
   await page.goto(`/${namespace}/settings`);
   await page.getByTestId("variable-create").click();
 
-  await page.getByTestId("new-variable-name").type("awesome-variable");
+  await page.getByTestId("variable-name").type("awesome-variable");
 
   await page.locator(".view-lines").click();
   await page.locator(".view-lines").type("<div>Hello world</div>");
@@ -185,7 +186,7 @@ test("it is possible to create and delete variables", async ({
     "MimeTypeSelect is set to the subject's mimeType"
   ).toHaveValue("text/html");
 
-  const cancelButton = page.getByTestId("var-edit-cancel");
+  const cancelButton = page.getByRole("button", { name: "Cancel" });
   await radixClick(browserName, cancelButton);
 
   /* delete one variable */
@@ -194,7 +195,9 @@ test("it is possible to create and delete variables", async ({
     "there are 4 variables"
   ).toHaveCount(4);
 
-  await page.getByTestId(`dropdown-trg-item-${variableToDelete.key}`).click();
+  await page
+    .getByTestId(`dropdown-trg-item-${variableToDelete.data.name}`)
+    .click();
   await page.getByTestId("dropdown-actions-delete").click();
   await page.getByTestId("registry-delete-confirm").click();
 
@@ -205,7 +208,9 @@ test("it is possible to create and delete variables", async ({
   ).toHaveCount(3);
 
   await expect(
-    page.getByTestId("item-name").filter({ hasText: variableToDelete.key }),
+    page
+      .getByTestId("item-name")
+      .filter({ hasText: variableToDelete.data.name }),
     "the deleted variable is no longer in the list"
   ).toHaveCount(0);
 
@@ -220,11 +225,13 @@ test("it is possible to edit variables", async ({ page }) => {
   const variables = await createVariables(namespace, 3);
   const subject = variables[2];
 
+  const newName = "new-name";
+
   if (!subject) throw "There was an error setting up test data";
 
   /* visit page and edit variable */
   await page.goto(`/${namespace}/settings`);
-  await page.getByTestId(`dropdown-trg-item-${subject.key}`).click();
+  await page.getByTestId(`dropdown-trg-item-${subject.data.name}`).click();
   await page.getByRole("button", { name: "edit" }).click();
 
   const textArea = page
@@ -236,12 +243,14 @@ test("it is possible to edit variables", async ({ page }) => {
       async () => await textArea.inputValue(),
       "the variable's content is loaded into the editor"
     )
-    .toBe(subject.content);
+    .toBe(decode(subject.content));
+
+  await page.getByTestId("variable-name").fill(newName);
 
   await expect(
     page.locator("select"),
     "MimeTypeSelect is set to the subject's mimeType"
-  ).toHaveValue(subject.mimeType);
+  ).toHaveValue(subject.data.mimeType);
 
   await page.locator(".view-lines").click();
   await page.locator(".view-lines").click();
@@ -263,7 +272,7 @@ test("it is possible to edit variables", async ({ page }) => {
     waitUntil: "networkidle",
   });
 
-  await page.getByTestId(`dropdown-trg-item-${subject.key}`).click();
+  await page.getByTestId(`dropdown-trg-item-${newName}`).click();
   await page.getByRole("button", { name: "edit" }).click();
 
   await expect
@@ -274,7 +283,57 @@ test("it is possible to edit variables", async ({ page }) => {
     .toBe("data: this is supposed to be YAML");
 
   await expect(
+    await page.getByTestId("variable-name").inputValue(),
+    "the updated variable name is shown in the name input"
+  ).toBe(newName);
+
+  await expect(
     page.locator("select"),
     "MimeTypeSelect is set to the updated mimeType"
   ).toHaveValue("application/yaml");
+});
+
+test("it is not possible to create a variable with a name that already exists", async ({
+  page,
+}) => {
+  /* set up test data */
+  const variables = await createVariables(namespace, 3);
+  const reservedName = variables[0]?.data.name ?? "";
+
+  await page.goto(`/${namespace}/settings`);
+  await page.getByTestId("variable-create").click();
+
+  page.getByTestId("variable-name").fill(reservedName);
+
+  await page.getByRole("button", { name: "Create" }).click();
+
+  await expect(
+    page.getByText("The name already exists"),
+    "it renders an error message"
+  ).toBeVisible();
+});
+
+test("it is not possible to set a variables name to a name that already exists", async ({
+  page,
+}) => {
+  /* set up test data */
+  const variables = await createVariables(namespace, 3);
+  const subject = variables[2];
+
+  if (!subject) throw "There was an error setting up test data";
+
+  const reservedName = variables[0]?.data.name ?? "";
+
+  await page.goto(`/${namespace}/settings`);
+  await page.getByTestId(`dropdown-trg-item-${subject.data.name}`).click();
+  await page.getByRole("button", { name: "edit" }).click();
+
+  page.getByTestId("variable-name").fill(reservedName);
+
+  await page.getByRole("button", { name: "Save" }).click();
+
+  await expect(
+    page.getByText("The name already exists"),
+    "it renders an error message"
+  ).toBeVisible();
 });

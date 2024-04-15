@@ -308,7 +308,6 @@ func (s *sqlRuntimeVariablesStore) SetWorkflowPath(ctx context.Context, namespac
 	return nil
 }
 
-// nolint:goconst
 func (s *sqlRuntimeVariablesStore) Create(ctx context.Context, variable *datastore.RuntimeVariable) (*datastore.RuntimeVariable, error) {
 	if variable.Name == "" {
 		return nil, datastore.ErrInvalidRuntimeVariableName

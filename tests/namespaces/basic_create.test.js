@@ -80,6 +80,28 @@ describe('Test namespace create calls', () => {
 				},
 			},
 		},
+		{
+			input: {
+				name: 'foo5',
+				mirror: {
+					url: 'my_url',
+					insecure: true,
+					gitRef: 'master',
+					publicKey: 'my-public-key',
+					privateKey: 'my-private-key',
+				},
+			},
+			want: {
+				name: 'foo5',
+				mirror: {
+					url: 'my_url',
+					insecure: true,
+					gitRef: 'master',
+					publicKey: 'my-public-key',
+					...timestamps,
+				},
+			},
+		},
 	]
 
 	for (let i = 0; i < testCases.length; i++) {
@@ -188,6 +210,68 @@ describe('Test valid namespace name', () => {
 					name: testCase,
 				})
 			expect(res.statusCode).toEqual(200)
+		})
+	}
+})
+
+describe('Test error cases', () => {
+	beforeAll(helpers.deleteAllNamespaces)
+
+	it(`should create foo namespace`, async () => {
+		const res = await request(config.getDirektivHost())
+			.post(`/api/v2/namespaces`)
+			.send({
+				name: 'foo',
+			})
+		expect(res.statusCode).toEqual(200)
+	})
+
+	it(`should fail create foo namespace`, async () => {
+		const res = await request(config.getDirektivHost())
+			.post(`/api/v2/namespaces`)
+			.send({
+				name: 'foo',
+			})
+		expect(res.statusCode).toEqual(400)
+		expect(res.body.error).toEqual({
+			code: 'request_data_invalid',
+			message: 'namespace name already used',
+		})
+	})
+})
+
+describe('Test missing fields create calls', () => {
+	beforeAll(helpers.deleteAllNamespaces)
+
+	const testCases = [
+		{
+			mirror: {
+				url: 'my_url',
+				gitRef: 'main',
+			},
+		},
+		{
+			name: 'foo4',
+			mirror: {
+				gitRef: 'main',
+			},
+		},
+		{
+			name: 'foo4',
+			mirror: {
+				url: 'my_url',
+			},
+		} ]
+
+	for (let i = 0; i < testCases.length; i++) {
+		const testCase = testCases[i]
+
+		it(`should create a new namespace case ${ i }`, async () => {
+			const res = await request(config.getDirektivHost())
+				.post(`/api/v2/namespaces`)
+				.send(testCase)
+			// expect(res.statusCode).toEqual(400)
+			expect(res.body.error.code).toEqual('request_data_invalid')
 		})
 	}
 })

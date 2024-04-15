@@ -1,18 +1,16 @@
-// nolint
 package api
 
 import (
 	"encoding/json"
 	"errors"
+	"log/slog"
 	"net/http"
 
-	"github.com/google/uuid"
-
-	"github.com/direktiv/direktiv/pkg/refactor/datastore"
-
 	"github.com/direktiv/direktiv/pkg/refactor/database"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
 )
 
 type nsController struct {
@@ -51,7 +49,7 @@ func (e *nsController) get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, namespaceApiObject(ns, settings))
+	writeJSON(w, namespaceAPIObject(ns, settings))
 }
 
 func (e *nsController) delete(w http.ResponseWriter, r *http.Request) {
@@ -80,14 +78,14 @@ func (e *nsController) delete(w http.ResponseWriter, r *http.Request) {
 	// TODO: Alan, check if here we need to fire some pubsub events.
 
 	err = e.bus.DebouncedPublish(pubsub.NamespaceDelete, name)
-	// nolint
 	if err != nil {
-		// TODO: log error here.
+		slog.Error("pubsub publish", "err", err)
 	}
 
 	writeOk(w)
 }
 
+//nolint:gocognit
 func (e *nsController) update(w http.ResponseWriter, r *http.Request) {
 	name := chi.URLParam(r, "name")
 
@@ -140,12 +138,14 @@ func (e *nsController) update(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		writeOk(w)
+
 		return
 	}
 
 	settings, err := dStore.Mirror().GetConfig(r.Context(), ns.Name)
 	if err != nil && !errors.Is(err, datastore.ErrNotFound) {
 		writeDataStoreError(w, err)
+
 		return
 	}
 	// old setting was not set
@@ -155,6 +155,7 @@ func (e *nsController) update(w http.ResponseWriter, r *http.Request) {
 				Code:    "request_data_invalid",
 				Message: "mirror was not initialized, field 'url' must be provided and not empty",
 			})
+
 			return
 		}
 		if req.Mirror.GitRef == nil || *req.Mirror.GitRef == "" {
@@ -162,6 +163,7 @@ func (e *nsController) update(w http.ResponseWriter, r *http.Request) {
 				Code:    "request_data_invalid",
 				Message: "mirror was not initialized, field 'gitRef' must be provided and not empty",
 			})
+
 			return
 		}
 		settings, err = dStore.Mirror().CreateConfig(r.Context(), &datastore.MirrorConfig{
@@ -211,7 +213,7 @@ func (e *nsController) update(w http.ResponseWriter, r *http.Request) {
 
 	// TODO: Alan, check if here we need to fire some pubsub events.
 
-	writeJSON(w, namespaceApiObject(ns, settings))
+	writeJSON(w, namespaceAPIObject(ns, settings))
 }
 
 func (e *nsController) create(w http.ResponseWriter, r *http.Request) {
@@ -299,12 +301,11 @@ func (e *nsController) create(w http.ResponseWriter, r *http.Request) {
 	// TODO: Alan, check if here we need to fire some pubsub events.
 
 	err = e.bus.DebouncedPublish(pubsub.NamespaceCreate, req.Name)
-	// nolint
 	if err != nil {
-		// TODO: log error here.
+		slog.Error("pubsub publish", "err", err)
 	}
 
-	writeJSON(w, namespaceApiObject(ns, mConfig))
+	writeJSON(w, namespaceAPIObject(ns, mConfig))
 }
 
 func (e *nsController) list(w http.ResponseWriter, r *http.Request) {
@@ -333,14 +334,14 @@ func (e *nsController) list(w http.ResponseWriter, r *http.Request) {
 
 	var result []any
 	for _, ns := range namespaces {
-		settings, _ := indexedMirrors[ns.Name]
-		result = append(result, namespaceApiObject(ns, settings))
+		settings := indexedMirrors[ns.Name]
+		result = append(result, namespaceAPIObject(ns, settings))
 	}
 
 	writeJSON(w, result)
 }
 
-func namespaceApiObject(ns *datastore.Namespace, mConfig *datastore.MirrorConfig) any {
+func namespaceAPIObject(ns *datastore.Namespace, mConfig *datastore.MirrorConfig) any {
 	type apiObject struct {
 		*datastore.Namespace
 		Mirror *datastore.MirrorConfig `json:"mirror"`

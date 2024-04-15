@@ -145,12 +145,6 @@
                 "createBtn": "Add variable",
                 "emptySearch": "No variable matches your search",
                 "empty": "No variable found"
-              },
-              "create": {
-                "title": "Add a workflow variable"
-              },
-              "edit": {
-                "title": "Edit {{name}}"
               }
             }
           },
@@ -913,29 +907,6 @@
         },
         "delete": {
           "description": "Are you sure you want to delete <b>{{name}}</b>?<br/> This cannot be undone."
-        },
-        "create": {
-          "title": "Add a variable",
-          "name": {
-            "label": "Name",
-            "placeholder": "variable-name"
-          },
-          "file": {
-            "label": "Upload a file"
-          },
-          "noPreview": "Only text based mime types are supported for preview and editing"
-        },
-        "edit": {
-          "title": "Edit {{name}}",
-          "fetchError": "There was an error fetching the variable's content",
-          "mimeType": {
-            "label": "Mimetype",
-            "placeholder": "Select a mimetype"
-          },
-          "file": {
-            "label": "Upload a file"
-          },
-          "noPreview": "Only text based mime types are supported for preview and editing"
         }
       },
       "deleteNamespace": {
@@ -1177,6 +1148,26 @@
       "placeholder": "Select Namespace",
       "loading": "loading...",
       "optionDoesNotExist": "{{namespace}} (does not exist)"
+    },
+    "variableForm": {
+      "title": {
+        "create": "Create a variable",
+        "edit": "Edit {{name}}"
+      },
+      "name": {
+        "label": "Name",
+        "placeholder": "variable-name",
+        "nameAlreadyExists": "The name already exists"
+      },
+      "mimeType": {
+        "label": "Mimetype",
+        "unspecified": "Mimetype is unspecified",
+        "placeholder": "Select a mimetype"
+      },
+      "file": {
+        "label": "Upload a file"
+      },
+      "noPreview": "Only text based mime types are supported for preview and editing"
     },
     "namespaceVariablepicker": {
       "title": "Variables in \"{{path}}\"",

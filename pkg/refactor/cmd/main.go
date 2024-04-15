@@ -40,7 +40,6 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 	go apiLegacy.RunApplication(args.Config)
 
 	// Create service manager
-	//nolint
 	serviceManager, err := service.NewManager(args.Config, args.Config.EnableDocker)
 	if err != nil {
 		slog.Error("initializing service manager", "err", err)
