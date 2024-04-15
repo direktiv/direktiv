@@ -74,7 +74,6 @@ jobs:
             "secrets2/",
             "services/",
             "variables/",
-            "variables2/",
             "logs/", 
           ]
     steps:
