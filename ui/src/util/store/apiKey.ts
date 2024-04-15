@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { getOidcUser } from "~/components/OidcProvider/utils";
+import { isEnterprise } from "~/config/env/utils";
 import { persist } from "zustand/middleware";
-const isEnterprise = !!process.env.VITE?.VITE_IS_ENTERPRISE;
 
 interface ApiKeyState {
   apiKey: string | null;

@@ -1,4 +1,5 @@
-const isEnterprise = !!process.env.VITE?.VITE_IS_ENTERPRISE;
+import { isEnterprise } from "~/config/env/utils";
+
 type Plugin = { name: string; enterpriseOnly?: boolean };
 
 export const filterAvailablePlugins = (plugin: Plugin) =>
