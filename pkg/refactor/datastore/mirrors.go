@@ -33,6 +33,7 @@ func (v ValidationError) Error() string {
 
 var _ error = ValidationError{}
 
+//nolint:goconst
 func (m *MirrorConfig) Validate() ValidationError {
 	result := map[string]string{}
 
