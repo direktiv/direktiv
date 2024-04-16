@@ -20,7 +20,7 @@ RELEASE_VERSION := ${RELEASE}-${GIT_HASH}${GIT_DIRTY}
 
 .DEFAULT_GOAL := direktiv
 
-include make_protobuf.mk make_direktiv.mk make_direktiv_ui.mk make_k3s.mk make_tests.mk
+include make_protobuf.mk make_direktiv.mk make_direktiv_ui.mk make_k3s.mk make_tests.mk make_composer.mk
 
 .PHONY: help
 help: ## Prints usage information.
