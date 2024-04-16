@@ -2,6 +2,8 @@ package datastore
 
 import (
 	"context"
+	"fmt"
+	"slices"
 	"time"
 
 	"github.com/google/uuid"
@@ -23,6 +25,40 @@ type MirrorConfig struct {
 
 	CreatedAt time.Time
 	UpdatedAt time.Time
+}
+
+func (v ValidationError) Error() string {
+	return fmt.Sprintf("validation errors: %v", v)
+}
+
+var _ error = ValidationError{}
+
+func (m *MirrorConfig) Validate() ValidationError {
+	result := map[string]string{}
+
+	if m.Namespace == "" {
+		result["namespace"] = "field is required"
+	}
+	if m.URL == "" {
+		result["url"] = "field is required"
+	}
+	if m.Namespace == "" {
+		result["namespace"] = "field is required"
+	}
+	if slices.Contains([]string{"public", "ssh", "token", ""}, m.AuthType) {
+		result["authType"] = "has not allowed enum value"
+	}
+	if m.AuthType == "token" && m.AuthToken == "" {
+		result["authToken"] = "should not be empty with authType=token"
+	}
+	if m.AuthType == "ssh" && m.PublicKey == "" {
+		result["publicKey"] = "should not be empty with authType=ssh"
+	}
+	if m.AuthType == "ssh" && m.PrivateKey == "" {
+		result["privateKey"] = "should not be empty with authType=ssh"
+	}
+
+	return result
 }
 
 // MirrorProcess different statuses.
