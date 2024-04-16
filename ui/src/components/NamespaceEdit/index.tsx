@@ -44,6 +44,12 @@ type FormInput = {
   insecure: boolean;
 };
 
+/**
+ * Form for creating or editing a namespace. Since the namespace name cannot be changed,
+ * editing only makes sense to update the mirror definition.
+ * @param mirror if present, the form assumes an existing namespace's mirror is edited.
+ * If mirror is not present, the form will create a new namespace.
+ */
 const NamespaceEdit = ({
   mirror,
   close,
@@ -69,10 +75,12 @@ const NamespaceEdit = ({
     })
   );
 
-  // TODO: Should name be required (and hidden) or not?
-  const baseSchema = z.object({
-    name: isNew ? newNameSchema : z.string().optional(),
-  });
+  const baseSchema = isNew
+    ? z.object({
+        name: newNameSchema,
+      })
+    : z.object({});
+
   const mirrorSchema = baseSchema.and(MirrorValidationSchema);
 
   let initialFormType: MirrorFormType = "public";
@@ -165,6 +173,7 @@ const NamespaceEdit = ({
         privateKey: "",
       };
     }
+
     if (formType === "keep-token") {
       updateAuthValues = {
         passphrase: "-",
@@ -176,6 +185,7 @@ const NamespaceEdit = ({
         publicKey,
       };
     }
+
     if (formType === "keep-ssh") {
       updateAuthValues = {
         publicKey: "-",
@@ -183,6 +193,7 @@ const NamespaceEdit = ({
         privateKeyPassphrase: "-",
       };
     }
+
     if (formType === "ssh") {
       updateAuthValues = {
         publicKey,
