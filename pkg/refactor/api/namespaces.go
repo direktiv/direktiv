@@ -225,6 +225,7 @@ func (e *nsController) create(w http.ResponseWriter, r *http.Request) {
 		Mirror *struct {
 			URL                  string `json:"url"`
 			GitRef               string `json:"gitRef"`
+			AuthType             string `json:"authType"`
 			AuthToken            string `json:"authToken"`
 			PublicKey            string `json:"publicKey"`
 			PrivateKey           string `json:"privateKey"`
