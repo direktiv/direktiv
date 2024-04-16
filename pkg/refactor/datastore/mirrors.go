@@ -2,6 +2,8 @@ package datastore
 
 import (
 	"context"
+	"fmt"
+	"slices"
 	"time"
 
 	"github.com/google/uuid"
@@ -10,18 +12,54 @@ import (
 // MirrorConfig holds configuration data that are needed to create a mirror (pulling mirror credentials, urls, keys
 // and any other details).
 type MirrorConfig struct {
-	Namespace string `json:"-"`
+	Namespace string
 
-	URL                  string `json:"url"`
-	GitRef               string `json:"gitRef,omitempty"`
-	AuthToken            string `json:"-"`
-	PublicKey            string `json:"publicKey,omitempty"`
-	PrivateKey           string `json:"-"`
-	PrivateKeyPassphrase string `json:"-"`
-	Insecure             bool   `json:"insecure"`
+	URL                  string
+	GitRef               string
+	AuthType             string
+	AuthToken            string
+	PublicKey            string
+	PrivateKey           string
+	PrivateKeyPassphrase string
+	Insecure             bool
 
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
+func (v ValidationError) Error() string {
+	return fmt.Sprintf("validation errors: %d", len(v))
+}
+
+var _ error = ValidationError{}
+
+//nolint:goconst
+func (m *MirrorConfig) Validate() ValidationError {
+	result := map[string]string{}
+
+	if m.Namespace == "" {
+		result["namespace"] = "field is required"
+	}
+	if m.URL == "" {
+		result["url"] = "field is required"
+	}
+	if m.GitRef == "" {
+		result["gitRef"] = "field is required"
+	}
+	if !slices.Contains([]string{"public", "ssh", "token", ""}, m.AuthType) {
+		result["authType"] = "has not allowed enum value"
+	}
+	if m.AuthType == "token" && m.AuthToken == "" {
+		result["authToken"] = "should not be empty with authType=token"
+	}
+	if m.AuthType == "ssh" && m.PublicKey == "" {
+		result["publicKey"] = "should not be empty with authType=ssh"
+	}
+	if m.AuthType == "ssh" && m.PrivateKey == "" {
+		result["privateKey"] = "should not be empty with authType=ssh"
+	}
+
+	return result
 }
 
 // MirrorProcess different statuses.
