@@ -1,9 +1,15 @@
-import { FilePatchedSchema, RenameFileSchemaType } from "../schema";
+import {
+  FilePatchedSchema,
+  RenameFileSchemaType,
+  UpdateFileSchemaType,
+} from "../schema";
 
 import { apiFactory } from "~/api/apiFactory";
 import { forceLeadingSlash } from "~/api/files/utils";
 
-export const patchFile = apiFactory<RenameFileSchemaType>({
+export const patchFile = apiFactory<
+  RenameFileSchemaType | UpdateFileSchemaType
+>({
   url: ({
     baseUrl,
     namespace,

@@ -11,7 +11,11 @@ import { useNamespace } from "~/util/store/namespace";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
-export const sendEvent = apiFactory<NewEventSchemaType["body"]>({
+/**
+ * TODO: apiFactory<NewEventSchemaType["body"]> should be the correct type
+ *  but the but e2e/utils/events.ts is sending something different.
+ */
+export const sendEvent = apiFactory({
   url: ({ baseUrl, namespace }: { baseUrl?: string; namespace: string }) =>
     `${baseUrl ?? ""}/api/namespaces/${namespace}/broadcast`,
   method: "POST",
