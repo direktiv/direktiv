@@ -28,7 +28,7 @@ import { useCreateNamespace } from "~/api/namespaces/mutate/createNamespace";
 import { useListNamespaces } from "~/api/namespaces/query/get";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useUpdateMirror } from "~/api/tree/mutate/updateMirror";
+import { useUpdateNamespace } from "~/api/namespaces/mutate/updateNamespace";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -69,7 +69,10 @@ const NamespaceEdit = ({
     })
   );
 
-  const baseSchema = z.object({ name: isNew ? newNameSchema : z.string() });
+  // TODO: Should name be required (and hidden) or not?
+  const baseSchema = z.object({
+    name: isNew ? newNameSchema : z.string().optional(),
+  });
   const mirrorSchema = baseSchema.and(MirrorValidationSchema);
 
   let initialFormType: MirrorFormType = "public";
@@ -122,7 +125,7 @@ const NamespaceEdit = ({
     },
   });
 
-  const { mutate: updateMirror } = useUpdateMirror({
+  const { mutate: updateMirror } = useUpdateNamespace({
     onSuccess: () => {
       close();
     },
@@ -155,6 +158,8 @@ const NamespaceEdit = ({
           : undefined,
       });
     }
+
+    if (!namespace) throw Error("Namespace undefined while updating mirror");
 
     let updateAuthValues = {};
 
@@ -192,7 +197,7 @@ const NamespaceEdit = ({
     }
 
     return updateMirror({
-      name,
+      namespace,
       mirror: {
         gitRef,
         url,

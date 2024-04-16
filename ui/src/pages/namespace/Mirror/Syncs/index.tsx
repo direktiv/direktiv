@@ -49,7 +49,7 @@ const Syncs = () => {
   if (!mirror) return null;
   if (!syncs) return null;
 
-  // const refreshActivities = () => {
+  // const refreshSyncs = () => {
   //   queryClient.invalidateQueries(
   //     treeKeys.mirrorInfo(data.namespace, {
   //       apiKey: apiKey ?? undefined,

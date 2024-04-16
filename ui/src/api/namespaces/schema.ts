@@ -21,7 +21,7 @@ export const NamespaceListSchema = z.object({
   data: z.array(NamespaceSchema),
 });
 
-export const NamespaceCreatedSchema = z.object({
+export const NamespaceCreatedEditedSchema = z.object({
   data: NamespaceSchema.omit({ mirror: true }),
 });
 

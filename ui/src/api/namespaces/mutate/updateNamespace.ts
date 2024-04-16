@@ -10,17 +10,18 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
-const createNamespace = apiFactory({
-  url: () => "/api/v2/namespaces",
-  method: "POST",
+const updateNamespace = apiFactory({
+  url: ({ namespace }: { namespace: string }) =>
+    `/api/v2/namespaces/${namespace}`,
+  method: "PATCH",
   schema: NamespaceCreatedEditedSchema,
 });
 
-type ResolvedCreateNamespace = Awaited<ReturnType<typeof createNamespace>>;
+type ResolvedUpdateNamespace = Awaited<ReturnType<typeof updateNamespace>>;
 
-export const useCreateNamespace = ({
+export const useUpdateNamespace = ({
   onSuccess,
-}: { onSuccess?: (data: ResolvedCreateNamespace) => void } = {}) => {
+}: { onSuccess?: (data: ResolvedUpdateNamespace) => void } = {}) => {
   const apiKey = useApiKey();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -28,17 +29,16 @@ export const useCreateNamespace = ({
 
   return useMutationWithPermissions({
     mutationFn: ({
-      name,
+      namespace,
       mirror,
     }: {
-      name: string;
+      namespace: string;
       mirror?: MirrorPostSchemaType;
     }) =>
-      createNamespace({
+      updateNamespace({
         apiKey: apiKey ?? undefined,
-        urlParams: {},
+        urlParams: { namespace },
         payload: {
-          name,
           mirror,
         },
       }),
@@ -58,7 +58,7 @@ export const useCreateNamespace = ({
         title: t("api.namespaces.mutate.createNamespaces.success.title"),
         description: t(
           "api.namespaces.mutate.createNamespaces.success.description",
-          { name: variables.name }
+          { name: variables.namespace }
         ),
         variant: "success",
       });
