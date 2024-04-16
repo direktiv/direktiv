@@ -172,13 +172,13 @@ func (e *nsController) update(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if req.Mirror.URL != nil && *req.Mirror.URL != "" {
+	if req.Mirror.URL != nil {
 		settings.URL = *req.Mirror.URL
 	}
-	if req.Mirror.GitRef != nil && *req.Mirror.GitRef != "" {
+	if req.Mirror.GitRef != nil {
 		settings.GitRef = *req.Mirror.GitRef
 	}
-	if req.Mirror.AuthType != nil && *req.Mirror.AuthType != "" {
+	if req.Mirror.AuthType != nil {
 		settings.AuthType = *req.Mirror.AuthType
 	}
 	if req.Mirror.AuthToken != nil {
