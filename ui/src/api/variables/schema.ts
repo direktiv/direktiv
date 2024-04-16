@@ -1,57 +1,86 @@
-import { FileSchema } from "../schema";
-import { MimeTypeSchema } from "~/pages/namespace/Settings/Variables/MimeTypeSelect";
 import { z } from "zod";
 
+const VarTypeSchema = z.enum([
+  "namespace-variable",
+  "workflow-variable",
+  "instance-variable",
+]);
+
+/**
+ * example:
+  {
+    "id": "01c9accc-49ab-4acb-a764-551e8ee1eed7",
+    "type": "namespace-variable",
+    "reference": "vars",
+    "name": "variable",
+    "size": 1,
+    "mimeType": "application/json",
+    "createdAt": "2024-04-02T06:22:21.766541Z",
+    "updatedAt": "2024-04-02T06:22:21.766541Z"
+  }
+ */
 export const VarSchema = z.object({
+  id: z.string(),
+  type: VarTypeSchema,
+  reference: z.string(),
   name: z.string(),
-  checksum: z.string(),
+  size: z.number(),
+  mimeType: z.string(),
   createdAt: z.string(),
   updatedAt: z.string(),
-  size: z.string(),
-  mimeType: z.string(),
-});
-
-export const VarUpdatedSchema = z.object({
-  namespace: z.string(),
-  key: z.string(),
-  createdAt: z.string(),
-  updatedAt: z.string(),
-  checksum: z.string(),
-  totalSize: z.string(),
-  mimeType: z.string(),
-});
-
-export const VarDeletedSchema = z.null();
-
-export const VarContentSchema = z.object({
-  body: z.string(),
-  headers: z.object({
-    "content-type": z.string().optional(),
-  }),
-});
-
-export const VarDownloadSchema = z.object({
-  blob: z.instanceof(Blob),
-  headers: z.object({
-    "content-type": z.string().optional(),
-  }),
-});
-
-export const VarListSchema = z.object({
-  namespace: z.string(),
-  variables: z.object({
-    results: z.array(VarSchema),
-  }),
-});
-
-export const VarFormSchema = z.object({
-  name: z.string().nonempty(),
-  content: z.string().nonempty().or(FileSchema),
-  mimeType: MimeTypeSchema,
 });
 
 export type VarSchemaType = z.infer<typeof VarSchema>;
-export type VarUpdatedSchemaType = z.infer<typeof VarUpdatedSchema>;
-export type VarContentSchemaType = z.infer<typeof VarContentSchema>;
-export type VarFormSchemaType = z.infer<typeof VarFormSchema>;
-export type VarListSchemaType = z.infer<typeof VarListSchema>;
+
+/**
+ * example:
+  {
+    "data": [...],
+  }
+ */
+export const VarListSchema = z.object({
+  data: z.array(VarSchema),
+});
+
+export const VarContentSchema = z.object({
+  data: VarSchema.extend({
+    data: z.string(),
+  }),
+});
+
+export type VarDetailsSchema = z.infer<typeof VarContentSchema>["data"];
+
+export const VarDeletedSchema = z.null();
+
+export const VarCreatedUpdatedSchema = z.object({
+  data: VarSchema,
+});
+
+export type VarCreatedUpdatedSchemaType = z.infer<
+  typeof VarCreatedUpdatedSchema
+>;
+
+export const VarFormCreateEditSchema = z.object({
+  name: z.string().nonempty(),
+  /**
+   * users should not create a variable with an empty mime type,
+   * but technically it is allowed via the API (workflow can
+   * create a variable with an empty mime type as well). The
+   * schema must reflect this, otherwise users could not rename
+   * a variable with an empty mime type.
+   */
+  mimeType: z.string(),
+  data: z.string().nonempty(),
+  /**
+   * workflowPath is technically not part of the edit payload.
+   * The path of a workflow variable can not be changed. But
+   * since this is an optional field, it is somewhat compatible
+   * with the edit payload and allows us to have one single form/
+   * schema for both create and edit.
+   */
+  workflowPath: z.string().nonempty().optional(),
+});
+
+export type VarFormCreateEditSchemaType = z.infer<
+  typeof VarFormCreateEditSchema
+>;

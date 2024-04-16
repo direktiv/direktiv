@@ -20,89 +20,57 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Flow_Namespace_FullMethodName                   = "/direktiv_flow.Flow/Namespace"
-	Flow_Namespaces_FullMethodName                  = "/direktiv_flow.Flow/Namespaces"
-	Flow_NamespacesStream_FullMethodName            = "/direktiv_flow.Flow/NamespacesStream"
-	Flow_CreateNamespace_FullMethodName             = "/direktiv_flow.Flow/CreateNamespace"
-	Flow_DeleteNamespace_FullMethodName             = "/direktiv_flow.Flow/DeleteNamespace"
-	Flow_Directory_FullMethodName                   = "/direktiv_flow.Flow/Directory"
-	Flow_DirectoryStream_FullMethodName             = "/direktiv_flow.Flow/DirectoryStream"
-	Flow_CreateDirectory_FullMethodName             = "/direktiv_flow.Flow/CreateDirectory"
-	Flow_DeleteNode_FullMethodName                  = "/direktiv_flow.Flow/DeleteNode"
-	Flow_RenameNode_FullMethodName                  = "/direktiv_flow.Flow/RenameNode"
-	Flow_Node_FullMethodName                        = "/direktiv_flow.Flow/Node"
-	Flow_Workflow_FullMethodName                    = "/direktiv_flow.Flow/Workflow"
-	Flow_WorkflowStream_FullMethodName              = "/direktiv_flow.Flow/WorkflowStream"
-	Flow_CreateWorkflow_FullMethodName              = "/direktiv_flow.Flow/CreateWorkflow"
-	Flow_UpdateWorkflow_FullMethodName              = "/direktiv_flow.Flow/UpdateWorkflow"
-	Flow_Secrets_FullMethodName                     = "/direktiv_flow.Flow/Secrets"
-	Flow_SecretsStream_FullMethodName               = "/direktiv_flow.Flow/SecretsStream"
-	Flow_SetSecret_FullMethodName                   = "/direktiv_flow.Flow/SetSecret"
-	Flow_CreateSecretsFolder_FullMethodName         = "/direktiv_flow.Flow/CreateSecretsFolder"
-	Flow_DeleteSecret_FullMethodName                = "/direktiv_flow.Flow/DeleteSecret"
-	Flow_DeleteSecretsFolder_FullMethodName         = "/direktiv_flow.Flow/DeleteSecretsFolder"
-	Flow_SearchSecret_FullMethodName                = "/direktiv_flow.Flow/SearchSecret"
-	Flow_UpdateSecret_FullMethodName                = "/direktiv_flow.Flow/UpdateSecret"
-	Flow_Instance_FullMethodName                    = "/direktiv_flow.Flow/Instance"
-	Flow_InstanceStream_FullMethodName              = "/direktiv_flow.Flow/InstanceStream"
-	Flow_Instances_FullMethodName                   = "/direktiv_flow.Flow/Instances"
-	Flow_InstancesStream_FullMethodName             = "/direktiv_flow.Flow/InstancesStream"
-	Flow_InstanceInput_FullMethodName               = "/direktiv_flow.Flow/InstanceInput"
-	Flow_InstanceOutput_FullMethodName              = "/direktiv_flow.Flow/InstanceOutput"
-	Flow_InstanceMetadata_FullMethodName            = "/direktiv_flow.Flow/InstanceMetadata"
-	Flow_ReleaseInstance_FullMethodName             = "/direktiv_flow.Flow/ReleaseInstance"
-	Flow_StartWorkflow_FullMethodName               = "/direktiv_flow.Flow/StartWorkflow"
-	Flow_RunWorkflow_FullMethodName                 = "/direktiv_flow.Flow/RunWorkflow"
-	Flow_AwaitWorkflow_FullMethodName               = "/direktiv_flow.Flow/AwaitWorkflow"
-	Flow_CancelInstance_FullMethodName              = "/direktiv_flow.Flow/CancelInstance"
-	Flow_BroadcastCloudevent_FullMethodName         = "/direktiv_flow.Flow/BroadcastCloudevent"
-	Flow_NamespaceVariable_FullMethodName           = "/direktiv_flow.Flow/NamespaceVariable"
-	Flow_NamespaceVariableParcels_FullMethodName    = "/direktiv_flow.Flow/NamespaceVariableParcels"
-	Flow_NamespaceVariables_FullMethodName          = "/direktiv_flow.Flow/NamespaceVariables"
-	Flow_NamespaceVariablesStream_FullMethodName    = "/direktiv_flow.Flow/NamespaceVariablesStream"
-	Flow_SetNamespaceVariable_FullMethodName        = "/direktiv_flow.Flow/SetNamespaceVariable"
-	Flow_SetNamespaceVariableParcels_FullMethodName = "/direktiv_flow.Flow/SetNamespaceVariableParcels"
-	Flow_DeleteNamespaceVariable_FullMethodName     = "/direktiv_flow.Flow/DeleteNamespaceVariable"
-	Flow_RenameNamespaceVariable_FullMethodName     = "/direktiv_flow.Flow/RenameNamespaceVariable"
-	Flow_WorkflowVariable_FullMethodName            = "/direktiv_flow.Flow/WorkflowVariable"
-	Flow_WorkflowVariableParcels_FullMethodName     = "/direktiv_flow.Flow/WorkflowVariableParcels"
-	Flow_WorkflowVariables_FullMethodName           = "/direktiv_flow.Flow/WorkflowVariables"
-	Flow_WorkflowVariablesStream_FullMethodName     = "/direktiv_flow.Flow/WorkflowVariablesStream"
-	Flow_SetWorkflowVariable_FullMethodName         = "/direktiv_flow.Flow/SetWorkflowVariable"
-	Flow_SetWorkflowVariableParcels_FullMethodName  = "/direktiv_flow.Flow/SetWorkflowVariableParcels"
-	Flow_DeleteWorkflowVariable_FullMethodName      = "/direktiv_flow.Flow/DeleteWorkflowVariable"
-	Flow_RenameWorkflowVariable_FullMethodName      = "/direktiv_flow.Flow/RenameWorkflowVariable"
-	Flow_InstanceVariable_FullMethodName            = "/direktiv_flow.Flow/InstanceVariable"
-	Flow_InstanceVariableParcels_FullMethodName     = "/direktiv_flow.Flow/InstanceVariableParcels"
-	Flow_InstanceVariables_FullMethodName           = "/direktiv_flow.Flow/InstanceVariables"
-	Flow_InstanceVariablesStream_FullMethodName     = "/direktiv_flow.Flow/InstanceVariablesStream"
-	Flow_SetInstanceVariable_FullMethodName         = "/direktiv_flow.Flow/SetInstanceVariable"
-	Flow_SetInstanceVariableParcels_FullMethodName  = "/direktiv_flow.Flow/SetInstanceVariableParcels"
-	Flow_DeleteInstanceVariable_FullMethodName      = "/direktiv_flow.Flow/DeleteInstanceVariable"
-	Flow_RenameInstanceVariable_FullMethodName      = "/direktiv_flow.Flow/RenameInstanceVariable"
-	Flow_JQ_FullMethodName                          = "/direktiv_flow.Flow/JQ"
-	Flow_WorkflowMetrics_FullMethodName             = "/direktiv_flow.Flow/WorkflowMetrics"
-	Flow_EventListeners_FullMethodName              = "/direktiv_flow.Flow/EventListeners"
-	Flow_EventListenersStream_FullMethodName        = "/direktiv_flow.Flow/EventListenersStream"
-	Flow_EventHistory_FullMethodName                = "/direktiv_flow.Flow/EventHistory"
-	Flow_EventHistoryStream_FullMethodName          = "/direktiv_flow.Flow/EventHistoryStream"
-	Flow_HistoricalEvent_FullMethodName             = "/direktiv_flow.Flow/HistoricalEvent"
-	Flow_ReplayEvent_FullMethodName                 = "/direktiv_flow.Flow/ReplayEvent"
-	Flow_ResolveNamespaceUID_FullMethodName         = "/direktiv_flow.Flow/ResolveNamespaceUID"
-	Flow_CreateNamespaceMirror_FullMethodName       = "/direktiv_flow.Flow/CreateNamespaceMirror"
-	Flow_CreateDirectoryMirror_FullMethodName       = "/direktiv_flow.Flow/CreateDirectoryMirror"
-	Flow_UpdateMirrorSettings_FullMethodName        = "/direktiv_flow.Flow/UpdateMirrorSettings"
-	Flow_LockMirror_FullMethodName                  = "/direktiv_flow.Flow/LockMirror"
-	Flow_UnlockMirror_FullMethodName                = "/direktiv_flow.Flow/UnlockMirror"
-	Flow_SoftSyncMirror_FullMethodName              = "/direktiv_flow.Flow/SoftSyncMirror"
-	Flow_HardSyncMirror_FullMethodName              = "/direktiv_flow.Flow/HardSyncMirror"
-	Flow_MirrorInfo_FullMethodName                  = "/direktiv_flow.Flow/MirrorInfo"
-	Flow_MirrorInfoStream_FullMethodName            = "/direktiv_flow.Flow/MirrorInfoStream"
-	Flow_CancelMirrorActivity_FullMethodName        = "/direktiv_flow.Flow/CancelMirrorActivity"
-	Flow_File_FullMethodName                        = "/direktiv_flow.Flow/File"
-	Flow_CreateFile_FullMethodName                  = "/direktiv_flow.Flow/CreateFile"
-	Flow_UpdateFile_FullMethodName                  = "/direktiv_flow.Flow/UpdateFile"
-	Flow_NamespaceLint_FullMethodName               = "/direktiv_flow.Flow/NamespaceLint"
+	Flow_Namespace_FullMethodName             = "/direktiv_flow.Flow/Namespace"
+	Flow_Namespaces_FullMethodName            = "/direktiv_flow.Flow/Namespaces"
+	Flow_NamespacesStream_FullMethodName      = "/direktiv_flow.Flow/NamespacesStream"
+	Flow_CreateNamespace_FullMethodName       = "/direktiv_flow.Flow/CreateNamespace"
+	Flow_DeleteNamespace_FullMethodName       = "/direktiv_flow.Flow/DeleteNamespace"
+	Flow_Directory_FullMethodName             = "/direktiv_flow.Flow/Directory"
+	Flow_DirectoryStream_FullMethodName       = "/direktiv_flow.Flow/DirectoryStream"
+	Flow_CreateDirectory_FullMethodName       = "/direktiv_flow.Flow/CreateDirectory"
+	Flow_DeleteNode_FullMethodName            = "/direktiv_flow.Flow/DeleteNode"
+	Flow_RenameNode_FullMethodName            = "/direktiv_flow.Flow/RenameNode"
+	Flow_Node_FullMethodName                  = "/direktiv_flow.Flow/Node"
+	Flow_Workflow_FullMethodName              = "/direktiv_flow.Flow/Workflow"
+	Flow_WorkflowStream_FullMethodName        = "/direktiv_flow.Flow/WorkflowStream"
+	Flow_CreateWorkflow_FullMethodName        = "/direktiv_flow.Flow/CreateWorkflow"
+	Flow_UpdateWorkflow_FullMethodName        = "/direktiv_flow.Flow/UpdateWorkflow"
+	Flow_Instance_FullMethodName              = "/direktiv_flow.Flow/Instance"
+	Flow_InstanceStream_FullMethodName        = "/direktiv_flow.Flow/InstanceStream"
+	Flow_Instances_FullMethodName             = "/direktiv_flow.Flow/Instances"
+	Flow_InstancesStream_FullMethodName       = "/direktiv_flow.Flow/InstancesStream"
+	Flow_InstanceInput_FullMethodName         = "/direktiv_flow.Flow/InstanceInput"
+	Flow_InstanceOutput_FullMethodName        = "/direktiv_flow.Flow/InstanceOutput"
+	Flow_InstanceMetadata_FullMethodName      = "/direktiv_flow.Flow/InstanceMetadata"
+	Flow_ReleaseInstance_FullMethodName       = "/direktiv_flow.Flow/ReleaseInstance"
+	Flow_StartWorkflow_FullMethodName         = "/direktiv_flow.Flow/StartWorkflow"
+	Flow_RunWorkflow_FullMethodName           = "/direktiv_flow.Flow/RunWorkflow"
+	Flow_AwaitWorkflow_FullMethodName         = "/direktiv_flow.Flow/AwaitWorkflow"
+	Flow_CancelInstance_FullMethodName        = "/direktiv_flow.Flow/CancelInstance"
+	Flow_BroadcastCloudevent_FullMethodName   = "/direktiv_flow.Flow/BroadcastCloudevent"
+	Flow_JQ_FullMethodName                    = "/direktiv_flow.Flow/JQ"
+	Flow_WorkflowMetrics_FullMethodName       = "/direktiv_flow.Flow/WorkflowMetrics"
+	Flow_EventListeners_FullMethodName        = "/direktiv_flow.Flow/EventListeners"
+	Flow_EventListenersStream_FullMethodName  = "/direktiv_flow.Flow/EventListenersStream"
+	Flow_EventHistory_FullMethodName          = "/direktiv_flow.Flow/EventHistory"
+	Flow_EventHistoryStream_FullMethodName    = "/direktiv_flow.Flow/EventHistoryStream"
+	Flow_HistoricalEvent_FullMethodName       = "/direktiv_flow.Flow/HistoricalEvent"
+	Flow_ReplayEvent_FullMethodName           = "/direktiv_flow.Flow/ReplayEvent"
+	Flow_ResolveNamespaceUID_FullMethodName   = "/direktiv_flow.Flow/ResolveNamespaceUID"
+	Flow_CreateNamespaceMirror_FullMethodName = "/direktiv_flow.Flow/CreateNamespaceMirror"
+	Flow_CreateDirectoryMirror_FullMethodName = "/direktiv_flow.Flow/CreateDirectoryMirror"
+	Flow_UpdateMirrorSettings_FullMethodName  = "/direktiv_flow.Flow/UpdateMirrorSettings"
+	Flow_LockMirror_FullMethodName            = "/direktiv_flow.Flow/LockMirror"
+	Flow_UnlockMirror_FullMethodName          = "/direktiv_flow.Flow/UnlockMirror"
+	Flow_SoftSyncMirror_FullMethodName        = "/direktiv_flow.Flow/SoftSyncMirror"
+	Flow_HardSyncMirror_FullMethodName        = "/direktiv_flow.Flow/HardSyncMirror"
+	Flow_MirrorInfo_FullMethodName            = "/direktiv_flow.Flow/MirrorInfo"
+	Flow_MirrorInfoStream_FullMethodName      = "/direktiv_flow.Flow/MirrorInfoStream"
+	Flow_CancelMirrorActivity_FullMethodName  = "/direktiv_flow.Flow/CancelMirrorActivity"
+	Flow_File_FullMethodName                  = "/direktiv_flow.Flow/File"
+	Flow_CreateFile_FullMethodName            = "/direktiv_flow.Flow/CreateFile"
+	Flow_UpdateFile_FullMethodName            = "/direktiv_flow.Flow/UpdateFile"
+	Flow_NamespaceLint_FullMethodName         = "/direktiv_flow.Flow/NamespaceLint"
 )
 
 // FlowClient is the client API for Flow service.
@@ -126,15 +94,6 @@ type FlowClient interface {
 	WorkflowStream(ctx context.Context, in *WorkflowRequest, opts ...grpc.CallOption) (Flow_WorkflowStreamClient, error)
 	CreateWorkflow(ctx context.Context, in *CreateWorkflowRequest, opts ...grpc.CallOption) (*CreateWorkflowResponse, error)
 	UpdateWorkflow(ctx context.Context, in *UpdateWorkflowRequest, opts ...grpc.CallOption) (*UpdateWorkflowResponse, error)
-	// secrets.
-	Secrets(ctx context.Context, in *SecretsRequest, opts ...grpc.CallOption) (*SecretsResponse, error)
-	SecretsStream(ctx context.Context, in *SecretsRequest, opts ...grpc.CallOption) (Flow_SecretsStreamClient, error)
-	SetSecret(ctx context.Context, in *SetSecretRequest, opts ...grpc.CallOption) (*SetSecretResponse, error)
-	CreateSecretsFolder(ctx context.Context, in *CreateSecretsFolderRequest, opts ...grpc.CallOption) (*CreateSecretsFolderResponse, error)
-	DeleteSecret(ctx context.Context, in *DeleteSecretRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	DeleteSecretsFolder(ctx context.Context, in *DeleteSecretsFolderRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	SearchSecret(ctx context.Context, in *SearchSecretRequest, opts ...grpc.CallOption) (*SearchSecretResponse, error)
-	UpdateSecret(ctx context.Context, in *UpdateSecretRequest, opts ...grpc.CallOption) (*UpdateSecretResponse, error)
 	// instances.
 	Instance(ctx context.Context, in *InstanceRequest, opts ...grpc.CallOption) (*InstanceResponse, error)
 	InstanceStream(ctx context.Context, in *InstanceRequest, opts ...grpc.CallOption) (Flow_InstanceStreamClient, error)
@@ -150,31 +109,6 @@ type FlowClient interface {
 	AwaitWorkflow(ctx context.Context, in *AwaitWorkflowRequest, opts ...grpc.CallOption) (Flow_AwaitWorkflowClient, error)
 	CancelInstance(ctx context.Context, in *CancelInstanceRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	BroadcastCloudevent(ctx context.Context, in *BroadcastCloudeventRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	// variables.
-	NamespaceVariable(ctx context.Context, in *NamespaceVariableRequest, opts ...grpc.CallOption) (*NamespaceVariableResponse, error)
-	NamespaceVariableParcels(ctx context.Context, in *NamespaceVariableRequest, opts ...grpc.CallOption) (Flow_NamespaceVariableParcelsClient, error)
-	NamespaceVariables(ctx context.Context, in *NamespaceVariablesRequest, opts ...grpc.CallOption) (*NamespaceVariablesResponse, error)
-	NamespaceVariablesStream(ctx context.Context, in *NamespaceVariablesRequest, opts ...grpc.CallOption) (Flow_NamespaceVariablesStreamClient, error)
-	SetNamespaceVariable(ctx context.Context, in *SetNamespaceVariableRequest, opts ...grpc.CallOption) (*SetNamespaceVariableResponse, error)
-	SetNamespaceVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetNamespaceVariableParcelsClient, error)
-	DeleteNamespaceVariable(ctx context.Context, in *DeleteNamespaceVariableRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	RenameNamespaceVariable(ctx context.Context, in *RenameNamespaceVariableRequest, opts ...grpc.CallOption) (*RenameNamespaceVariableResponse, error)
-	WorkflowVariable(ctx context.Context, in *WorkflowVariableRequest, opts ...grpc.CallOption) (*WorkflowVariableResponse, error)
-	WorkflowVariableParcels(ctx context.Context, in *WorkflowVariableRequest, opts ...grpc.CallOption) (Flow_WorkflowVariableParcelsClient, error)
-	WorkflowVariables(ctx context.Context, in *WorkflowVariablesRequest, opts ...grpc.CallOption) (*WorkflowVariablesResponse, error)
-	WorkflowVariablesStream(ctx context.Context, in *WorkflowVariablesRequest, opts ...grpc.CallOption) (Flow_WorkflowVariablesStreamClient, error)
-	SetWorkflowVariable(ctx context.Context, in *SetWorkflowVariableRequest, opts ...grpc.CallOption) (*SetWorkflowVariableResponse, error)
-	SetWorkflowVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetWorkflowVariableParcelsClient, error)
-	DeleteWorkflowVariable(ctx context.Context, in *DeleteWorkflowVariableRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	RenameWorkflowVariable(ctx context.Context, in *RenameWorkflowVariableRequest, opts ...grpc.CallOption) (*RenameWorkflowVariableResponse, error)
-	InstanceVariable(ctx context.Context, in *InstanceVariableRequest, opts ...grpc.CallOption) (*InstanceVariableResponse, error)
-	InstanceVariableParcels(ctx context.Context, in *InstanceVariableRequest, opts ...grpc.CallOption) (Flow_InstanceVariableParcelsClient, error)
-	InstanceVariables(ctx context.Context, in *InstanceVariablesRequest, opts ...grpc.CallOption) (*InstanceVariablesResponse, error)
-	InstanceVariablesStream(ctx context.Context, in *InstanceVariablesRequest, opts ...grpc.CallOption) (Flow_InstanceVariablesStreamClient, error)
-	SetInstanceVariable(ctx context.Context, in *SetInstanceVariableRequest, opts ...grpc.CallOption) (*SetInstanceVariableResponse, error)
-	SetInstanceVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetInstanceVariableParcelsClient, error)
-	DeleteInstanceVariable(ctx context.Context, in *DeleteInstanceVariableRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	RenameInstanceVariable(ctx context.Context, in *RenameInstanceVariableRequest, opts ...grpc.CallOption) (*RenameInstanceVariableResponse, error)
 	JQ(ctx context.Context, in *JQRequest, opts ...grpc.CallOption) (*JQResponse, error)
 	WorkflowMetrics(ctx context.Context, in *WorkflowMetricsRequest, opts ...grpc.CallOption) (*WorkflowMetricsResponse, error)
 	// events.
@@ -414,101 +348,6 @@ func (c *flowClient) UpdateWorkflow(ctx context.Context, in *UpdateWorkflowReque
 	return out, nil
 }
 
-func (c *flowClient) Secrets(ctx context.Context, in *SecretsRequest, opts ...grpc.CallOption) (*SecretsResponse, error) {
-	out := new(SecretsResponse)
-	err := c.cc.Invoke(ctx, Flow_Secrets_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) SecretsStream(ctx context.Context, in *SecretsRequest, opts ...grpc.CallOption) (Flow_SecretsStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[3], Flow_SecretsStream_FullMethodName, opts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &flowSecretsStreamClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-type Flow_SecretsStreamClient interface {
-	Recv() (*SecretsResponse, error)
-	grpc.ClientStream
-}
-
-type flowSecretsStreamClient struct {
-	grpc.ClientStream
-}
-
-func (x *flowSecretsStreamClient) Recv() (*SecretsResponse, error) {
-	m := new(SecretsResponse)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func (c *flowClient) SetSecret(ctx context.Context, in *SetSecretRequest, opts ...grpc.CallOption) (*SetSecretResponse, error) {
-	out := new(SetSecretResponse)
-	err := c.cc.Invoke(ctx, Flow_SetSecret_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) CreateSecretsFolder(ctx context.Context, in *CreateSecretsFolderRequest, opts ...grpc.CallOption) (*CreateSecretsFolderResponse, error) {
-	out := new(CreateSecretsFolderResponse)
-	err := c.cc.Invoke(ctx, Flow_CreateSecretsFolder_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) DeleteSecret(ctx context.Context, in *DeleteSecretRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, Flow_DeleteSecret_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) DeleteSecretsFolder(ctx context.Context, in *DeleteSecretsFolderRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, Flow_DeleteSecretsFolder_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) SearchSecret(ctx context.Context, in *SearchSecretRequest, opts ...grpc.CallOption) (*SearchSecretResponse, error) {
-	out := new(SearchSecretResponse)
-	err := c.cc.Invoke(ctx, Flow_SearchSecret_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) UpdateSecret(ctx context.Context, in *UpdateSecretRequest, opts ...grpc.CallOption) (*UpdateSecretResponse, error) {
-	out := new(UpdateSecretResponse)
-	err := c.cc.Invoke(ctx, Flow_UpdateSecret_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *flowClient) Instance(ctx context.Context, in *InstanceRequest, opts ...grpc.CallOption) (*InstanceResponse, error) {
 	out := new(InstanceResponse)
 	err := c.cc.Invoke(ctx, Flow_Instance_FullMethodName, in, out, opts...)
@@ -519,7 +358,7 @@ func (c *flowClient) Instance(ctx context.Context, in *InstanceRequest, opts ...
 }
 
 func (c *flowClient) InstanceStream(ctx context.Context, in *InstanceRequest, opts ...grpc.CallOption) (Flow_InstanceStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[4], Flow_InstanceStream_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[3], Flow_InstanceStream_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -560,7 +399,7 @@ func (c *flowClient) Instances(ctx context.Context, in *InstancesRequest, opts .
 }
 
 func (c *flowClient) InstancesStream(ctx context.Context, in *InstancesRequest, opts ...grpc.CallOption) (Flow_InstancesStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[5], Flow_InstancesStream_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[4], Flow_InstancesStream_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -637,7 +476,7 @@ func (c *flowClient) StartWorkflow(ctx context.Context, in *StartWorkflowRequest
 }
 
 func (c *flowClient) RunWorkflow(ctx context.Context, in *RunWorkflowRequest, opts ...grpc.CallOption) (Flow_RunWorkflowClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[6], Flow_RunWorkflow_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[5], Flow_RunWorkflow_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -669,7 +508,7 @@ func (x *flowRunWorkflowClient) Recv() (*RunWorkflowResponse, error) {
 }
 
 func (c *flowClient) AwaitWorkflow(ctx context.Context, in *AwaitWorkflowRequest, opts ...grpc.CallOption) (Flow_AwaitWorkflowClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[7], Flow_AwaitWorkflow_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[6], Flow_AwaitWorkflow_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -718,435 +557,6 @@ func (c *flowClient) BroadcastCloudevent(ctx context.Context, in *BroadcastCloud
 	return out, nil
 }
 
-func (c *flowClient) NamespaceVariable(ctx context.Context, in *NamespaceVariableRequest, opts ...grpc.CallOption) (*NamespaceVariableResponse, error) {
-	out := new(NamespaceVariableResponse)
-	err := c.cc.Invoke(ctx, Flow_NamespaceVariable_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) NamespaceVariableParcels(ctx context.Context, in *NamespaceVariableRequest, opts ...grpc.CallOption) (Flow_NamespaceVariableParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[8], Flow_NamespaceVariableParcels_FullMethodName, opts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &flowNamespaceVariableParcelsClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-type Flow_NamespaceVariableParcelsClient interface {
-	Recv() (*NamespaceVariableResponse, error)
-	grpc.ClientStream
-}
-
-type flowNamespaceVariableParcelsClient struct {
-	grpc.ClientStream
-}
-
-func (x *flowNamespaceVariableParcelsClient) Recv() (*NamespaceVariableResponse, error) {
-	m := new(NamespaceVariableResponse)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func (c *flowClient) NamespaceVariables(ctx context.Context, in *NamespaceVariablesRequest, opts ...grpc.CallOption) (*NamespaceVariablesResponse, error) {
-	out := new(NamespaceVariablesResponse)
-	err := c.cc.Invoke(ctx, Flow_NamespaceVariables_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) NamespaceVariablesStream(ctx context.Context, in *NamespaceVariablesRequest, opts ...grpc.CallOption) (Flow_NamespaceVariablesStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[9], Flow_NamespaceVariablesStream_FullMethodName, opts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &flowNamespaceVariablesStreamClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-type Flow_NamespaceVariablesStreamClient interface {
-	Recv() (*NamespaceVariablesResponse, error)
-	grpc.ClientStream
-}
-
-type flowNamespaceVariablesStreamClient struct {
-	grpc.ClientStream
-}
-
-func (x *flowNamespaceVariablesStreamClient) Recv() (*NamespaceVariablesResponse, error) {
-	m := new(NamespaceVariablesResponse)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func (c *flowClient) SetNamespaceVariable(ctx context.Context, in *SetNamespaceVariableRequest, opts ...grpc.CallOption) (*SetNamespaceVariableResponse, error) {
-	out := new(SetNamespaceVariableResponse)
-	err := c.cc.Invoke(ctx, Flow_SetNamespaceVariable_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) SetNamespaceVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetNamespaceVariableParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[10], Flow_SetNamespaceVariableParcels_FullMethodName, opts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &flowSetNamespaceVariableParcelsClient{stream}
-	return x, nil
-}
-
-type Flow_SetNamespaceVariableParcelsClient interface {
-	Send(*SetNamespaceVariableRequest) error
-	CloseAndRecv() (*SetNamespaceVariableResponse, error)
-	grpc.ClientStream
-}
-
-type flowSetNamespaceVariableParcelsClient struct {
-	grpc.ClientStream
-}
-
-func (x *flowSetNamespaceVariableParcelsClient) Send(m *SetNamespaceVariableRequest) error {
-	return x.ClientStream.SendMsg(m)
-}
-
-func (x *flowSetNamespaceVariableParcelsClient) CloseAndRecv() (*SetNamespaceVariableResponse, error) {
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	m := new(SetNamespaceVariableResponse)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func (c *flowClient) DeleteNamespaceVariable(ctx context.Context, in *DeleteNamespaceVariableRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, Flow_DeleteNamespaceVariable_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) RenameNamespaceVariable(ctx context.Context, in *RenameNamespaceVariableRequest, opts ...grpc.CallOption) (*RenameNamespaceVariableResponse, error) {
-	out := new(RenameNamespaceVariableResponse)
-	err := c.cc.Invoke(ctx, Flow_RenameNamespaceVariable_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) WorkflowVariable(ctx context.Context, in *WorkflowVariableRequest, opts ...grpc.CallOption) (*WorkflowVariableResponse, error) {
-	out := new(WorkflowVariableResponse)
-	err := c.cc.Invoke(ctx, Flow_WorkflowVariable_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) WorkflowVariableParcels(ctx context.Context, in *WorkflowVariableRequest, opts ...grpc.CallOption) (Flow_WorkflowVariableParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[11], Flow_WorkflowVariableParcels_FullMethodName, opts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &flowWorkflowVariableParcelsClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-type Flow_WorkflowVariableParcelsClient interface {
-	Recv() (*WorkflowVariableResponse, error)
-	grpc.ClientStream
-}
-
-type flowWorkflowVariableParcelsClient struct {
-	grpc.ClientStream
-}
-
-func (x *flowWorkflowVariableParcelsClient) Recv() (*WorkflowVariableResponse, error) {
-	m := new(WorkflowVariableResponse)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func (c *flowClient) WorkflowVariables(ctx context.Context, in *WorkflowVariablesRequest, opts ...grpc.CallOption) (*WorkflowVariablesResponse, error) {
-	out := new(WorkflowVariablesResponse)
-	err := c.cc.Invoke(ctx, Flow_WorkflowVariables_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) WorkflowVariablesStream(ctx context.Context, in *WorkflowVariablesRequest, opts ...grpc.CallOption) (Flow_WorkflowVariablesStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[12], Flow_WorkflowVariablesStream_FullMethodName, opts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &flowWorkflowVariablesStreamClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-type Flow_WorkflowVariablesStreamClient interface {
-	Recv() (*WorkflowVariablesResponse, error)
-	grpc.ClientStream
-}
-
-type flowWorkflowVariablesStreamClient struct {
-	grpc.ClientStream
-}
-
-func (x *flowWorkflowVariablesStreamClient) Recv() (*WorkflowVariablesResponse, error) {
-	m := new(WorkflowVariablesResponse)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func (c *flowClient) SetWorkflowVariable(ctx context.Context, in *SetWorkflowVariableRequest, opts ...grpc.CallOption) (*SetWorkflowVariableResponse, error) {
-	out := new(SetWorkflowVariableResponse)
-	err := c.cc.Invoke(ctx, Flow_SetWorkflowVariable_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) SetWorkflowVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetWorkflowVariableParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[13], Flow_SetWorkflowVariableParcels_FullMethodName, opts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &flowSetWorkflowVariableParcelsClient{stream}
-	return x, nil
-}
-
-type Flow_SetWorkflowVariableParcelsClient interface {
-	Send(*SetWorkflowVariableRequest) error
-	CloseAndRecv() (*SetWorkflowVariableResponse, error)
-	grpc.ClientStream
-}
-
-type flowSetWorkflowVariableParcelsClient struct {
-	grpc.ClientStream
-}
-
-func (x *flowSetWorkflowVariableParcelsClient) Send(m *SetWorkflowVariableRequest) error {
-	return x.ClientStream.SendMsg(m)
-}
-
-func (x *flowSetWorkflowVariableParcelsClient) CloseAndRecv() (*SetWorkflowVariableResponse, error) {
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	m := new(SetWorkflowVariableResponse)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func (c *flowClient) DeleteWorkflowVariable(ctx context.Context, in *DeleteWorkflowVariableRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, Flow_DeleteWorkflowVariable_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) RenameWorkflowVariable(ctx context.Context, in *RenameWorkflowVariableRequest, opts ...grpc.CallOption) (*RenameWorkflowVariableResponse, error) {
-	out := new(RenameWorkflowVariableResponse)
-	err := c.cc.Invoke(ctx, Flow_RenameWorkflowVariable_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) InstanceVariable(ctx context.Context, in *InstanceVariableRequest, opts ...grpc.CallOption) (*InstanceVariableResponse, error) {
-	out := new(InstanceVariableResponse)
-	err := c.cc.Invoke(ctx, Flow_InstanceVariable_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) InstanceVariableParcels(ctx context.Context, in *InstanceVariableRequest, opts ...grpc.CallOption) (Flow_InstanceVariableParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[14], Flow_InstanceVariableParcels_FullMethodName, opts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &flowInstanceVariableParcelsClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-type Flow_InstanceVariableParcelsClient interface {
-	Recv() (*InstanceVariableResponse, error)
-	grpc.ClientStream
-}
-
-type flowInstanceVariableParcelsClient struct {
-	grpc.ClientStream
-}
-
-func (x *flowInstanceVariableParcelsClient) Recv() (*InstanceVariableResponse, error) {
-	m := new(InstanceVariableResponse)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func (c *flowClient) InstanceVariables(ctx context.Context, in *InstanceVariablesRequest, opts ...grpc.CallOption) (*InstanceVariablesResponse, error) {
-	out := new(InstanceVariablesResponse)
-	err := c.cc.Invoke(ctx, Flow_InstanceVariables_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) InstanceVariablesStream(ctx context.Context, in *InstanceVariablesRequest, opts ...grpc.CallOption) (Flow_InstanceVariablesStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[15], Flow_InstanceVariablesStream_FullMethodName, opts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &flowInstanceVariablesStreamClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-type Flow_InstanceVariablesStreamClient interface {
-	Recv() (*InstanceVariablesResponse, error)
-	grpc.ClientStream
-}
-
-type flowInstanceVariablesStreamClient struct {
-	grpc.ClientStream
-}
-
-func (x *flowInstanceVariablesStreamClient) Recv() (*InstanceVariablesResponse, error) {
-	m := new(InstanceVariablesResponse)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func (c *flowClient) SetInstanceVariable(ctx context.Context, in *SetInstanceVariableRequest, opts ...grpc.CallOption) (*SetInstanceVariableResponse, error) {
-	out := new(SetInstanceVariableResponse)
-	err := c.cc.Invoke(ctx, Flow_SetInstanceVariable_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) SetInstanceVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetInstanceVariableParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[16], Flow_SetInstanceVariableParcels_FullMethodName, opts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &flowSetInstanceVariableParcelsClient{stream}
-	return x, nil
-}
-
-type Flow_SetInstanceVariableParcelsClient interface {
-	Send(*SetInstanceVariableRequest) error
-	CloseAndRecv() (*SetInstanceVariableResponse, error)
-	grpc.ClientStream
-}
-
-type flowSetInstanceVariableParcelsClient struct {
-	grpc.ClientStream
-}
-
-func (x *flowSetInstanceVariableParcelsClient) Send(m *SetInstanceVariableRequest) error {
-	return x.ClientStream.SendMsg(m)
-}
-
-func (x *flowSetInstanceVariableParcelsClient) CloseAndRecv() (*SetInstanceVariableResponse, error) {
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	m := new(SetInstanceVariableResponse)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func (c *flowClient) DeleteInstanceVariable(ctx context.Context, in *DeleteInstanceVariableRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, Flow_DeleteInstanceVariable_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) RenameInstanceVariable(ctx context.Context, in *RenameInstanceVariableRequest, opts ...grpc.CallOption) (*RenameInstanceVariableResponse, error) {
-	out := new(RenameInstanceVariableResponse)
-	err := c.cc.Invoke(ctx, Flow_RenameInstanceVariable_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *flowClient) JQ(ctx context.Context, in *JQRequest, opts ...grpc.CallOption) (*JQResponse, error) {
 	out := new(JQResponse)
 	err := c.cc.Invoke(ctx, Flow_JQ_FullMethodName, in, out, opts...)
@@ -1175,7 +585,7 @@ func (c *flowClient) EventListeners(ctx context.Context, in *EventListenersReque
 }
 
 func (c *flowClient) EventListenersStream(ctx context.Context, in *EventListenersRequest, opts ...grpc.CallOption) (Flow_EventListenersStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[17], Flow_EventListenersStream_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[7], Flow_EventListenersStream_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1216,7 +626,7 @@ func (c *flowClient) EventHistory(ctx context.Context, in *EventHistoryRequest, 
 }
 
 func (c *flowClient) EventHistoryStream(ctx context.Context, in *EventHistoryRequest, opts ...grpc.CallOption) (Flow_EventHistoryStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[18], Flow_EventHistoryStream_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[8], Flow_EventHistoryStream_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1347,7 +757,7 @@ func (c *flowClient) MirrorInfo(ctx context.Context, in *MirrorInfoRequest, opts
 }
 
 func (c *flowClient) MirrorInfoStream(ctx context.Context, in *MirrorInfoRequest, opts ...grpc.CallOption) (Flow_MirrorInfoStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[19], Flow_MirrorInfoStream_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[9], Flow_MirrorInfoStream_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1444,15 +854,6 @@ type FlowServer interface {
 	WorkflowStream(*WorkflowRequest, Flow_WorkflowStreamServer) error
 	CreateWorkflow(context.Context, *CreateWorkflowRequest) (*CreateWorkflowResponse, error)
 	UpdateWorkflow(context.Context, *UpdateWorkflowRequest) (*UpdateWorkflowResponse, error)
-	// secrets.
-	Secrets(context.Context, *SecretsRequest) (*SecretsResponse, error)
-	SecretsStream(*SecretsRequest, Flow_SecretsStreamServer) error
-	SetSecret(context.Context, *SetSecretRequest) (*SetSecretResponse, error)
-	CreateSecretsFolder(context.Context, *CreateSecretsFolderRequest) (*CreateSecretsFolderResponse, error)
-	DeleteSecret(context.Context, *DeleteSecretRequest) (*emptypb.Empty, error)
-	DeleteSecretsFolder(context.Context, *DeleteSecretsFolderRequest) (*emptypb.Empty, error)
-	SearchSecret(context.Context, *SearchSecretRequest) (*SearchSecretResponse, error)
-	UpdateSecret(context.Context, *UpdateSecretRequest) (*UpdateSecretResponse, error)
 	// instances.
 	Instance(context.Context, *InstanceRequest) (*InstanceResponse, error)
 	InstanceStream(*InstanceRequest, Flow_InstanceStreamServer) error
@@ -1468,31 +869,6 @@ type FlowServer interface {
 	AwaitWorkflow(*AwaitWorkflowRequest, Flow_AwaitWorkflowServer) error
 	CancelInstance(context.Context, *CancelInstanceRequest) (*emptypb.Empty, error)
 	BroadcastCloudevent(context.Context, *BroadcastCloudeventRequest) (*emptypb.Empty, error)
-	// variables.
-	NamespaceVariable(context.Context, *NamespaceVariableRequest) (*NamespaceVariableResponse, error)
-	NamespaceVariableParcels(*NamespaceVariableRequest, Flow_NamespaceVariableParcelsServer) error
-	NamespaceVariables(context.Context, *NamespaceVariablesRequest) (*NamespaceVariablesResponse, error)
-	NamespaceVariablesStream(*NamespaceVariablesRequest, Flow_NamespaceVariablesStreamServer) error
-	SetNamespaceVariable(context.Context, *SetNamespaceVariableRequest) (*SetNamespaceVariableResponse, error)
-	SetNamespaceVariableParcels(Flow_SetNamespaceVariableParcelsServer) error
-	DeleteNamespaceVariable(context.Context, *DeleteNamespaceVariableRequest) (*emptypb.Empty, error)
-	RenameNamespaceVariable(context.Context, *RenameNamespaceVariableRequest) (*RenameNamespaceVariableResponse, error)
-	WorkflowVariable(context.Context, *WorkflowVariableRequest) (*WorkflowVariableResponse, error)
-	WorkflowVariableParcels(*WorkflowVariableRequest, Flow_WorkflowVariableParcelsServer) error
-	WorkflowVariables(context.Context, *WorkflowVariablesRequest) (*WorkflowVariablesResponse, error)
-	WorkflowVariablesStream(*WorkflowVariablesRequest, Flow_WorkflowVariablesStreamServer) error
-	SetWorkflowVariable(context.Context, *SetWorkflowVariableRequest) (*SetWorkflowVariableResponse, error)
-	SetWorkflowVariableParcels(Flow_SetWorkflowVariableParcelsServer) error
-	DeleteWorkflowVariable(context.Context, *DeleteWorkflowVariableRequest) (*emptypb.Empty, error)
-	RenameWorkflowVariable(context.Context, *RenameWorkflowVariableRequest) (*RenameWorkflowVariableResponse, error)
-	InstanceVariable(context.Context, *InstanceVariableRequest) (*InstanceVariableResponse, error)
-	InstanceVariableParcels(*InstanceVariableRequest, Flow_InstanceVariableParcelsServer) error
-	InstanceVariables(context.Context, *InstanceVariablesRequest) (*InstanceVariablesResponse, error)
-	InstanceVariablesStream(*InstanceVariablesRequest, Flow_InstanceVariablesStreamServer) error
-	SetInstanceVariable(context.Context, *SetInstanceVariableRequest) (*SetInstanceVariableResponse, error)
-	SetInstanceVariableParcels(Flow_SetInstanceVariableParcelsServer) error
-	DeleteInstanceVariable(context.Context, *DeleteInstanceVariableRequest) (*emptypb.Empty, error)
-	RenameInstanceVariable(context.Context, *RenameInstanceVariableRequest) (*RenameInstanceVariableResponse, error)
 	JQ(context.Context, *JQRequest) (*JQResponse, error)
 	WorkflowMetrics(context.Context, *WorkflowMetricsRequest) (*WorkflowMetricsResponse, error)
 	// events.
@@ -1570,30 +946,6 @@ func (UnimplementedFlowServer) CreateWorkflow(context.Context, *CreateWorkflowRe
 func (UnimplementedFlowServer) UpdateWorkflow(context.Context, *UpdateWorkflowRequest) (*UpdateWorkflowResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateWorkflow not implemented")
 }
-func (UnimplementedFlowServer) Secrets(context.Context, *SecretsRequest) (*SecretsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Secrets not implemented")
-}
-func (UnimplementedFlowServer) SecretsStream(*SecretsRequest, Flow_SecretsStreamServer) error {
-	return status.Errorf(codes.Unimplemented, "method SecretsStream not implemented")
-}
-func (UnimplementedFlowServer) SetSecret(context.Context, *SetSecretRequest) (*SetSecretResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SetSecret not implemented")
-}
-func (UnimplementedFlowServer) CreateSecretsFolder(context.Context, *CreateSecretsFolderRequest) (*CreateSecretsFolderResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateSecretsFolder not implemented")
-}
-func (UnimplementedFlowServer) DeleteSecret(context.Context, *DeleteSecretRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteSecret not implemented")
-}
-func (UnimplementedFlowServer) DeleteSecretsFolder(context.Context, *DeleteSecretsFolderRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteSecretsFolder not implemented")
-}
-func (UnimplementedFlowServer) SearchSecret(context.Context, *SearchSecretRequest) (*SearchSecretResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SearchSecret not implemented")
-}
-func (UnimplementedFlowServer) UpdateSecret(context.Context, *UpdateSecretRequest) (*UpdateSecretResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateSecret not implemented")
-}
 func (UnimplementedFlowServer) Instance(context.Context, *InstanceRequest) (*InstanceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Instance not implemented")
 }
@@ -1632,78 +984,6 @@ func (UnimplementedFlowServer) CancelInstance(context.Context, *CancelInstanceRe
 }
 func (UnimplementedFlowServer) BroadcastCloudevent(context.Context, *BroadcastCloudeventRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BroadcastCloudevent not implemented")
-}
-func (UnimplementedFlowServer) NamespaceVariable(context.Context, *NamespaceVariableRequest) (*NamespaceVariableResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method NamespaceVariable not implemented")
-}
-func (UnimplementedFlowServer) NamespaceVariableParcels(*NamespaceVariableRequest, Flow_NamespaceVariableParcelsServer) error {
-	return status.Errorf(codes.Unimplemented, "method NamespaceVariableParcels not implemented")
-}
-func (UnimplementedFlowServer) NamespaceVariables(context.Context, *NamespaceVariablesRequest) (*NamespaceVariablesResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method NamespaceVariables not implemented")
-}
-func (UnimplementedFlowServer) NamespaceVariablesStream(*NamespaceVariablesRequest, Flow_NamespaceVariablesStreamServer) error {
-	return status.Errorf(codes.Unimplemented, "method NamespaceVariablesStream not implemented")
-}
-func (UnimplementedFlowServer) SetNamespaceVariable(context.Context, *SetNamespaceVariableRequest) (*SetNamespaceVariableResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SetNamespaceVariable not implemented")
-}
-func (UnimplementedFlowServer) SetNamespaceVariableParcels(Flow_SetNamespaceVariableParcelsServer) error {
-	return status.Errorf(codes.Unimplemented, "method SetNamespaceVariableParcels not implemented")
-}
-func (UnimplementedFlowServer) DeleteNamespaceVariable(context.Context, *DeleteNamespaceVariableRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteNamespaceVariable not implemented")
-}
-func (UnimplementedFlowServer) RenameNamespaceVariable(context.Context, *RenameNamespaceVariableRequest) (*RenameNamespaceVariableResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RenameNamespaceVariable not implemented")
-}
-func (UnimplementedFlowServer) WorkflowVariable(context.Context, *WorkflowVariableRequest) (*WorkflowVariableResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method WorkflowVariable not implemented")
-}
-func (UnimplementedFlowServer) WorkflowVariableParcels(*WorkflowVariableRequest, Flow_WorkflowVariableParcelsServer) error {
-	return status.Errorf(codes.Unimplemented, "method WorkflowVariableParcels not implemented")
-}
-func (UnimplementedFlowServer) WorkflowVariables(context.Context, *WorkflowVariablesRequest) (*WorkflowVariablesResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method WorkflowVariables not implemented")
-}
-func (UnimplementedFlowServer) WorkflowVariablesStream(*WorkflowVariablesRequest, Flow_WorkflowVariablesStreamServer) error {
-	return status.Errorf(codes.Unimplemented, "method WorkflowVariablesStream not implemented")
-}
-func (UnimplementedFlowServer) SetWorkflowVariable(context.Context, *SetWorkflowVariableRequest) (*SetWorkflowVariableResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SetWorkflowVariable not implemented")
-}
-func (UnimplementedFlowServer) SetWorkflowVariableParcels(Flow_SetWorkflowVariableParcelsServer) error {
-	return status.Errorf(codes.Unimplemented, "method SetWorkflowVariableParcels not implemented")
-}
-func (UnimplementedFlowServer) DeleteWorkflowVariable(context.Context, *DeleteWorkflowVariableRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteWorkflowVariable not implemented")
-}
-func (UnimplementedFlowServer) RenameWorkflowVariable(context.Context, *RenameWorkflowVariableRequest) (*RenameWorkflowVariableResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RenameWorkflowVariable not implemented")
-}
-func (UnimplementedFlowServer) InstanceVariable(context.Context, *InstanceVariableRequest) (*InstanceVariableResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method InstanceVariable not implemented")
-}
-func (UnimplementedFlowServer) InstanceVariableParcels(*InstanceVariableRequest, Flow_InstanceVariableParcelsServer) error {
-	return status.Errorf(codes.Unimplemented, "method InstanceVariableParcels not implemented")
-}
-func (UnimplementedFlowServer) InstanceVariables(context.Context, *InstanceVariablesRequest) (*InstanceVariablesResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method InstanceVariables not implemented")
-}
-func (UnimplementedFlowServer) InstanceVariablesStream(*InstanceVariablesRequest, Flow_InstanceVariablesStreamServer) error {
-	return status.Errorf(codes.Unimplemented, "method InstanceVariablesStream not implemented")
-}
-func (UnimplementedFlowServer) SetInstanceVariable(context.Context, *SetInstanceVariableRequest) (*SetInstanceVariableResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SetInstanceVariable not implemented")
-}
-func (UnimplementedFlowServer) SetInstanceVariableParcels(Flow_SetInstanceVariableParcelsServer) error {
-	return status.Errorf(codes.Unimplemented, "method SetInstanceVariableParcels not implemented")
-}
-func (UnimplementedFlowServer) DeleteInstanceVariable(context.Context, *DeleteInstanceVariableRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteInstanceVariable not implemented")
-}
-func (UnimplementedFlowServer) RenameInstanceVariable(context.Context, *RenameInstanceVariableRequest) (*RenameInstanceVariableResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RenameInstanceVariable not implemented")
 }
 func (UnimplementedFlowServer) JQ(context.Context, *JQRequest) (*JQResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method JQ not implemented")
@@ -2066,153 +1346,6 @@ func _Flow_UpdateWorkflow_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Flow_Secrets_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SecretsRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).Secrets(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_Secrets_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).Secrets(ctx, req.(*SecretsRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_SecretsStream_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(SecretsRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
-	return srv.(FlowServer).SecretsStream(m, &flowSecretsStreamServer{stream})
-}
-
-type Flow_SecretsStreamServer interface {
-	Send(*SecretsResponse) error
-	grpc.ServerStream
-}
-
-type flowSecretsStreamServer struct {
-	grpc.ServerStream
-}
-
-func (x *flowSecretsStreamServer) Send(m *SecretsResponse) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func _Flow_SetSecret_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SetSecretRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).SetSecret(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_SetSecret_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).SetSecret(ctx, req.(*SetSecretRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_CreateSecretsFolder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateSecretsFolderRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).CreateSecretsFolder(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_CreateSecretsFolder_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).CreateSecretsFolder(ctx, req.(*CreateSecretsFolderRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_DeleteSecret_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteSecretRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).DeleteSecret(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_DeleteSecret_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).DeleteSecret(ctx, req.(*DeleteSecretRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_DeleteSecretsFolder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteSecretsFolderRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).DeleteSecretsFolder(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_DeleteSecretsFolder_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).DeleteSecretsFolder(ctx, req.(*DeleteSecretsFolderRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_SearchSecret_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SearchSecretRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).SearchSecret(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_SearchSecret_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).SearchSecret(ctx, req.(*SearchSecretRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_UpdateSecret_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateSecretRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).UpdateSecret(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_UpdateSecret_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).UpdateSecret(ctx, req.(*UpdateSecretRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Flow_Instance_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(InstanceRequest)
 	if err := dec(in); err != nil {
@@ -2455,480 +1588,6 @@ func _Flow_BroadcastCloudevent_Handler(srv interface{}, ctx context.Context, dec
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FlowServer).BroadcastCloudevent(ctx, req.(*BroadcastCloudeventRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_NamespaceVariable_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(NamespaceVariableRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).NamespaceVariable(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_NamespaceVariable_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).NamespaceVariable(ctx, req.(*NamespaceVariableRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_NamespaceVariableParcels_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(NamespaceVariableRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
-	return srv.(FlowServer).NamespaceVariableParcels(m, &flowNamespaceVariableParcelsServer{stream})
-}
-
-type Flow_NamespaceVariableParcelsServer interface {
-	Send(*NamespaceVariableResponse) error
-	grpc.ServerStream
-}
-
-type flowNamespaceVariableParcelsServer struct {
-	grpc.ServerStream
-}
-
-func (x *flowNamespaceVariableParcelsServer) Send(m *NamespaceVariableResponse) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func _Flow_NamespaceVariables_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(NamespaceVariablesRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).NamespaceVariables(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_NamespaceVariables_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).NamespaceVariables(ctx, req.(*NamespaceVariablesRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_NamespaceVariablesStream_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(NamespaceVariablesRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
-	return srv.(FlowServer).NamespaceVariablesStream(m, &flowNamespaceVariablesStreamServer{stream})
-}
-
-type Flow_NamespaceVariablesStreamServer interface {
-	Send(*NamespaceVariablesResponse) error
-	grpc.ServerStream
-}
-
-type flowNamespaceVariablesStreamServer struct {
-	grpc.ServerStream
-}
-
-func (x *flowNamespaceVariablesStreamServer) Send(m *NamespaceVariablesResponse) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func _Flow_SetNamespaceVariable_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SetNamespaceVariableRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).SetNamespaceVariable(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_SetNamespaceVariable_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).SetNamespaceVariable(ctx, req.(*SetNamespaceVariableRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_SetNamespaceVariableParcels_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(FlowServer).SetNamespaceVariableParcels(&flowSetNamespaceVariableParcelsServer{stream})
-}
-
-type Flow_SetNamespaceVariableParcelsServer interface {
-	SendAndClose(*SetNamespaceVariableResponse) error
-	Recv() (*SetNamespaceVariableRequest, error)
-	grpc.ServerStream
-}
-
-type flowSetNamespaceVariableParcelsServer struct {
-	grpc.ServerStream
-}
-
-func (x *flowSetNamespaceVariableParcelsServer) SendAndClose(m *SetNamespaceVariableResponse) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func (x *flowSetNamespaceVariableParcelsServer) Recv() (*SetNamespaceVariableRequest, error) {
-	m := new(SetNamespaceVariableRequest)
-	if err := x.ServerStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func _Flow_DeleteNamespaceVariable_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteNamespaceVariableRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).DeleteNamespaceVariable(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_DeleteNamespaceVariable_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).DeleteNamespaceVariable(ctx, req.(*DeleteNamespaceVariableRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_RenameNamespaceVariable_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RenameNamespaceVariableRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).RenameNamespaceVariable(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_RenameNamespaceVariable_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).RenameNamespaceVariable(ctx, req.(*RenameNamespaceVariableRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_WorkflowVariable_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(WorkflowVariableRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).WorkflowVariable(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_WorkflowVariable_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).WorkflowVariable(ctx, req.(*WorkflowVariableRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_WorkflowVariableParcels_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(WorkflowVariableRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
-	return srv.(FlowServer).WorkflowVariableParcels(m, &flowWorkflowVariableParcelsServer{stream})
-}
-
-type Flow_WorkflowVariableParcelsServer interface {
-	Send(*WorkflowVariableResponse) error
-	grpc.ServerStream
-}
-
-type flowWorkflowVariableParcelsServer struct {
-	grpc.ServerStream
-}
-
-func (x *flowWorkflowVariableParcelsServer) Send(m *WorkflowVariableResponse) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func _Flow_WorkflowVariables_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(WorkflowVariablesRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).WorkflowVariables(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_WorkflowVariables_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).WorkflowVariables(ctx, req.(*WorkflowVariablesRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_WorkflowVariablesStream_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(WorkflowVariablesRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
-	return srv.(FlowServer).WorkflowVariablesStream(m, &flowWorkflowVariablesStreamServer{stream})
-}
-
-type Flow_WorkflowVariablesStreamServer interface {
-	Send(*WorkflowVariablesResponse) error
-	grpc.ServerStream
-}
-
-type flowWorkflowVariablesStreamServer struct {
-	grpc.ServerStream
-}
-
-func (x *flowWorkflowVariablesStreamServer) Send(m *WorkflowVariablesResponse) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func _Flow_SetWorkflowVariable_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SetWorkflowVariableRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).SetWorkflowVariable(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_SetWorkflowVariable_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).SetWorkflowVariable(ctx, req.(*SetWorkflowVariableRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_SetWorkflowVariableParcels_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(FlowServer).SetWorkflowVariableParcels(&flowSetWorkflowVariableParcelsServer{stream})
-}
-
-type Flow_SetWorkflowVariableParcelsServer interface {
-	SendAndClose(*SetWorkflowVariableResponse) error
-	Recv() (*SetWorkflowVariableRequest, error)
-	grpc.ServerStream
-}
-
-type flowSetWorkflowVariableParcelsServer struct {
-	grpc.ServerStream
-}
-
-func (x *flowSetWorkflowVariableParcelsServer) SendAndClose(m *SetWorkflowVariableResponse) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func (x *flowSetWorkflowVariableParcelsServer) Recv() (*SetWorkflowVariableRequest, error) {
-	m := new(SetWorkflowVariableRequest)
-	if err := x.ServerStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func _Flow_DeleteWorkflowVariable_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteWorkflowVariableRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).DeleteWorkflowVariable(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_DeleteWorkflowVariable_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).DeleteWorkflowVariable(ctx, req.(*DeleteWorkflowVariableRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_RenameWorkflowVariable_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RenameWorkflowVariableRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).RenameWorkflowVariable(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_RenameWorkflowVariable_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).RenameWorkflowVariable(ctx, req.(*RenameWorkflowVariableRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_InstanceVariable_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(InstanceVariableRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).InstanceVariable(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_InstanceVariable_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).InstanceVariable(ctx, req.(*InstanceVariableRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_InstanceVariableParcels_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(InstanceVariableRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
-	return srv.(FlowServer).InstanceVariableParcels(m, &flowInstanceVariableParcelsServer{stream})
-}
-
-type Flow_InstanceVariableParcelsServer interface {
-	Send(*InstanceVariableResponse) error
-	grpc.ServerStream
-}
-
-type flowInstanceVariableParcelsServer struct {
-	grpc.ServerStream
-}
-
-func (x *flowInstanceVariableParcelsServer) Send(m *InstanceVariableResponse) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func _Flow_InstanceVariables_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(InstanceVariablesRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).InstanceVariables(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_InstanceVariables_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).InstanceVariables(ctx, req.(*InstanceVariablesRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_InstanceVariablesStream_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(InstanceVariablesRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
-	return srv.(FlowServer).InstanceVariablesStream(m, &flowInstanceVariablesStreamServer{stream})
-}
-
-type Flow_InstanceVariablesStreamServer interface {
-	Send(*InstanceVariablesResponse) error
-	grpc.ServerStream
-}
-
-type flowInstanceVariablesStreamServer struct {
-	grpc.ServerStream
-}
-
-func (x *flowInstanceVariablesStreamServer) Send(m *InstanceVariablesResponse) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func _Flow_SetInstanceVariable_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SetInstanceVariableRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).SetInstanceVariable(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_SetInstanceVariable_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).SetInstanceVariable(ctx, req.(*SetInstanceVariableRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_SetInstanceVariableParcels_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(FlowServer).SetInstanceVariableParcels(&flowSetInstanceVariableParcelsServer{stream})
-}
-
-type Flow_SetInstanceVariableParcelsServer interface {
-	SendAndClose(*SetInstanceVariableResponse) error
-	Recv() (*SetInstanceVariableRequest, error)
-	grpc.ServerStream
-}
-
-type flowSetInstanceVariableParcelsServer struct {
-	grpc.ServerStream
-}
-
-func (x *flowSetInstanceVariableParcelsServer) SendAndClose(m *SetInstanceVariableResponse) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func (x *flowSetInstanceVariableParcelsServer) Recv() (*SetInstanceVariableRequest, error) {
-	m := new(SetInstanceVariableRequest)
-	if err := x.ServerStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func _Flow_DeleteInstanceVariable_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteInstanceVariableRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).DeleteInstanceVariable(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_DeleteInstanceVariable_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).DeleteInstanceVariable(ctx, req.(*DeleteInstanceVariableRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_RenameInstanceVariable_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RenameInstanceVariableRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).RenameInstanceVariable(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_RenameInstanceVariable_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).RenameInstanceVariable(ctx, req.(*RenameInstanceVariableRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -3412,34 +2071,6 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Flow_UpdateWorkflow_Handler,
 		},
 		{
-			MethodName: "Secrets",
-			Handler:    _Flow_Secrets_Handler,
-		},
-		{
-			MethodName: "SetSecret",
-			Handler:    _Flow_SetSecret_Handler,
-		},
-		{
-			MethodName: "CreateSecretsFolder",
-			Handler:    _Flow_CreateSecretsFolder_Handler,
-		},
-		{
-			MethodName: "DeleteSecret",
-			Handler:    _Flow_DeleteSecret_Handler,
-		},
-		{
-			MethodName: "DeleteSecretsFolder",
-			Handler:    _Flow_DeleteSecretsFolder_Handler,
-		},
-		{
-			MethodName: "SearchSecret",
-			Handler:    _Flow_SearchSecret_Handler,
-		},
-		{
-			MethodName: "UpdateSecret",
-			Handler:    _Flow_UpdateSecret_Handler,
-		},
-		{
 			MethodName: "Instance",
 			Handler:    _Flow_Instance_Handler,
 		},
@@ -3474,66 +2105,6 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "BroadcastCloudevent",
 			Handler:    _Flow_BroadcastCloudevent_Handler,
-		},
-		{
-			MethodName: "NamespaceVariable",
-			Handler:    _Flow_NamespaceVariable_Handler,
-		},
-		{
-			MethodName: "NamespaceVariables",
-			Handler:    _Flow_NamespaceVariables_Handler,
-		},
-		{
-			MethodName: "SetNamespaceVariable",
-			Handler:    _Flow_SetNamespaceVariable_Handler,
-		},
-		{
-			MethodName: "DeleteNamespaceVariable",
-			Handler:    _Flow_DeleteNamespaceVariable_Handler,
-		},
-		{
-			MethodName: "RenameNamespaceVariable",
-			Handler:    _Flow_RenameNamespaceVariable_Handler,
-		},
-		{
-			MethodName: "WorkflowVariable",
-			Handler:    _Flow_WorkflowVariable_Handler,
-		},
-		{
-			MethodName: "WorkflowVariables",
-			Handler:    _Flow_WorkflowVariables_Handler,
-		},
-		{
-			MethodName: "SetWorkflowVariable",
-			Handler:    _Flow_SetWorkflowVariable_Handler,
-		},
-		{
-			MethodName: "DeleteWorkflowVariable",
-			Handler:    _Flow_DeleteWorkflowVariable_Handler,
-		},
-		{
-			MethodName: "RenameWorkflowVariable",
-			Handler:    _Flow_RenameWorkflowVariable_Handler,
-		},
-		{
-			MethodName: "InstanceVariable",
-			Handler:    _Flow_InstanceVariable_Handler,
-		},
-		{
-			MethodName: "InstanceVariables",
-			Handler:    _Flow_InstanceVariables_Handler,
-		},
-		{
-			MethodName: "SetInstanceVariable",
-			Handler:    _Flow_SetInstanceVariable_Handler,
-		},
-		{
-			MethodName: "DeleteInstanceVariable",
-			Handler:    _Flow_DeleteInstanceVariable_Handler,
-		},
-		{
-			MethodName: "RenameInstanceVariable",
-			Handler:    _Flow_RenameInstanceVariable_Handler,
 		},
 		{
 			MethodName: "JQ",
@@ -3633,11 +2204,6 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 			ServerStreams: true,
 		},
 		{
-			StreamName:    "SecretsStream",
-			Handler:       _Flow_SecretsStream_Handler,
-			ServerStreams: true,
-		},
-		{
 			StreamName:    "InstanceStream",
 			Handler:       _Flow_InstanceStream_Handler,
 			ServerStreams: true,
@@ -3656,51 +2222,6 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 			StreamName:    "AwaitWorkflow",
 			Handler:       _Flow_AwaitWorkflow_Handler,
 			ServerStreams: true,
-		},
-		{
-			StreamName:    "NamespaceVariableParcels",
-			Handler:       _Flow_NamespaceVariableParcels_Handler,
-			ServerStreams: true,
-		},
-		{
-			StreamName:    "NamespaceVariablesStream",
-			Handler:       _Flow_NamespaceVariablesStream_Handler,
-			ServerStreams: true,
-		},
-		{
-			StreamName:    "SetNamespaceVariableParcels",
-			Handler:       _Flow_SetNamespaceVariableParcels_Handler,
-			ClientStreams: true,
-		},
-		{
-			StreamName:    "WorkflowVariableParcels",
-			Handler:       _Flow_WorkflowVariableParcels_Handler,
-			ServerStreams: true,
-		},
-		{
-			StreamName:    "WorkflowVariablesStream",
-			Handler:       _Flow_WorkflowVariablesStream_Handler,
-			ServerStreams: true,
-		},
-		{
-			StreamName:    "SetWorkflowVariableParcels",
-			Handler:       _Flow_SetWorkflowVariableParcels_Handler,
-			ClientStreams: true,
-		},
-		{
-			StreamName:    "InstanceVariableParcels",
-			Handler:       _Flow_InstanceVariableParcels_Handler,
-			ServerStreams: true,
-		},
-		{
-			StreamName:    "InstanceVariablesStream",
-			Handler:       _Flow_InstanceVariablesStream_Handler,
-			ServerStreams: true,
-		},
-		{
-			StreamName:    "SetInstanceVariableParcels",
-			Handler:       _Flow_SetInstanceVariableParcels_Handler,
-			ClientStreams: true,
 		},
 		{
 			StreamName:    "EventListenersStream",

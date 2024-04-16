@@ -119,6 +119,15 @@ func writeDataStoreError(w http.ResponseWriter, err error) {
 		return
 	}
 
+	if errors.Is(err, datastore.ErrDuplicatedNamespaceName) {
+		writeError(w, &Error{
+			Code:    "request_data_invalid",
+			Message: "namespace name already used",
+		})
+
+		return
+	}
+
 	writeInternalError(w, err)
 }
 

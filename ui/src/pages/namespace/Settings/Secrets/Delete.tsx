@@ -35,11 +35,7 @@ const Delete = ({ name, onConfirm }: DeleteProps) => {
         <DialogClose asChild>
           <Button variant="ghost">{t("components.button.label.cancel")}</Button>
         </DialogClose>
-        <Button
-          data-testid="secret-delete-confirm"
-          onClick={onConfirm}
-          variant="destructive"
-        >
+        <Button onClick={onConfirm} variant="destructive">
           {t("components.button.label.delete")}
         </Button>
       </DialogFooter>

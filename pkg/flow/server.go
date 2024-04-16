@@ -36,10 +36,6 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-const (
-	parcelSize = 0x100000
-)
-
 type server struct {
 	ID uuid.UUID
 

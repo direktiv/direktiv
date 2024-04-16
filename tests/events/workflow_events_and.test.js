@@ -204,13 +204,23 @@ describe('Test workflow events and', () => {
 	it(`start context`, async () => {
 		await helpers.sleep(1000)
 
-		await events.sendEventAndList(namespaceName, basevent('eventtype9', 'eventtype9', 'world1'))
-		await events.sendEventAndList(namespaceName, basevent('eventtype10', 'eventtype10', 'world3'))
+		let workflowEventResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${ namespaceName }/broadcast`)
+			.set('Content-Type', 'application/json')
+			.send(basevent('eventtype9', 'eventtype9zz', 'world1'))
+		expect(workflowEventResponse.statusCode).toEqual(200)
+
+		workflowEventResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${ namespaceName }/broadcast`)
+			.set('Content-Type', 'application/json')
+			.send(basevent('eventtype10', 'eventtype1324320', 'world3'))
+		expect(workflowEventResponse.statusCode).toEqual(200)
 
 		let instance = await events.listInstancesAndFilter(namespaceName, startWorkflowContextName)
 		expect(instance).toBeFalsy()
 
-		await events.sendEventAndList(namespaceName, basevent('eventtype10', 'eventtype10a', 'world2'))
+		workflowEventResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${ namespaceName }/broadcast`)
+			.set('Content-Type', 'application/json')
+			.send(basevent('eventtype10', 'eventtype10afg', 'world2'))
+		expect(workflowEventResponse.statusCode).toEqual(200)
 
 		instance = await events.listInstancesAndFilter(namespaceName, startWorkflowContextName)
 		expect(instance).not.toBeFalsy()
@@ -224,21 +234,27 @@ describe('Test workflow events and', () => {
 	it(`flow context`, async () => {
 		await helpers.sleep(1000)
 
-		// start workflow
 		const runWorkflowResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${ namespaceName }/tree/${ waitWorkflowContextName }?op=execute`)
 			.send()
 		expect(runWorkflowResponse.statusCode).toEqual(200)
 
 		await helpers.sleep(1000)
 
-		await events.sendEventAndList(namespaceName, basevent('eventtype11', 'eventtype11', 'world1'))
-		await events.sendEventAndList(namespaceName, basevent('eventtype12', 'eventtype12', 'world3'))
+		await events.sendEventAndList(namespaceName, basevent('eventtype11', 'eventtype11dfds', 'world1'))
+		await events.sendEventAndList(namespaceName, basevent('eventtype12', 'eventtype12dsfds', 'world3'))
 
 		let instance = await events.listInstancesAndFilter(namespaceName, waitWorkflowContextName, 'pending')
 		expect(instance).not.toBeFalsy()
 
-		await events.sendEventAndList(namespaceName, basevent('eventtype12', 'eventtype12a', 'world2'))
+		await events.sendEventAndList(namespaceName, basevent('eventtype11', 'eventtype12a', 'world2'))
+		instance = await events.listInstancesAndFilter(namespaceName, waitWorkflowContextName, 'pending')
+		expect(instance).not.toBeFalsy()
 
+		await events.sendEventAndList(namespaceName, basevent('eventtype11', 'eventtype12abc', 'world4'))
+		instance = await events.listInstancesAndFilter(namespaceName, waitWorkflowContextName, 'pending')
+		expect(instance).not.toBeFalsy()
+
+		await events.sendEventAndList(namespaceName, basevent('eventtype11', 'eventtype12ab', 'world2'))
 		instance = await events.listInstancesAndFilter(namespaceName, startWorkflowContextName, 'complete')
 		expect(instance).not.toBeFalsy()
 	})

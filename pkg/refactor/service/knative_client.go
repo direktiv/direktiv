@@ -41,7 +41,6 @@ func (c *knativeClient) streamServiceLogs(_ string, podID string) (io.ReadCloser
 
 func (c *knativeClient) createService(sv *core.ServiceFileData) error {
 	// Step1: prepare registry secrets
-	//nolint:prealloc
 	var registrySecrets []v1.LocalObjectReference
 	secrets, err := c.k8sCli.CoreV1().Secrets(c.config.KnativeNamespace).
 		List(context.Background(),

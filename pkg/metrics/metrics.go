@@ -232,7 +232,7 @@ func handleFailRecord(r *Metrics, s *StateData) {
 		s.UnhandledErrors[r.ErrorCode] = 0
 		s.UnhandledErrorsRepresentation[r.ErrorCode] = 0
 	}
-	s.UnhandledErrors[r.ErrorCode] = s.UnhandledErrors[r.ErrorCode] + 1
+	s.UnhandledErrors[r.ErrorCode]++
 
 	if NextEnums[r.Next] == NextRetry {
 		s.TotalRetries++

@@ -67,7 +67,6 @@ func ConvertMirrorConfigToGrpcMirrorInfo(config *datastore.MirrorConfig) *grpc.M
 		Ref: config.GitRef,
 		// Cron: ,
 		PublicKey: config.PublicKey,
-		CommitId:  config.GitCommitHash,
 		// LastSync: ,
 		PrivateKey: config.PrivateKey,
 		Passphrase: config.PrivateKeyPassphrase,
@@ -104,41 +103,6 @@ func ConvertMirrorProcessesToGrpcMirrorActivityInfoList(list []*datastore.Mirror
 	var result []*grpc.MirrorActivityInfo
 	for _, f := range copiedList {
 		result = append(result, ConvertMirrorProcessToGrpcMirrorActivity(f))
-	}
-
-	return result
-}
-
-func ConvertSecretToGrpcSecret(secret *datastore.Secret) *grpc.Secret {
-	return &grpc.Secret{
-		Name:        secret.Name,
-		Initialized: secret.Data != nil,
-	}
-}
-
-func ConvertSecretsToGrpcSecretList(list []*datastore.Secret) []*grpc.Secret {
-	var result []*grpc.Secret
-	for _, f := range list {
-		result = append(result, ConvertSecretToGrpcSecret(f))
-	}
-
-	return result
-}
-
-func ConvertRuntimeVariableToGrpcVariable(variable *datastore.RuntimeVariable) *grpc.Variable {
-	return &grpc.Variable{
-		Name:      variable.Name,
-		Size:      int64(variable.Size),
-		MimeType:  variable.MimeType,
-		CreatedAt: timestamppb.New(variable.CreatedAt),
-		UpdatedAt: timestamppb.New(variable.UpdatedAt),
-	}
-}
-
-func ConvertRuntimeVariablesToGrpcVariableList(list []*datastore.RuntimeVariable) []*grpc.Variable {
-	var result []*grpc.Variable
-	for _, f := range list {
-		result = append(result, ConvertRuntimeVariableToGrpcVariable(f))
 	}
 
 	return result
