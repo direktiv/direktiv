@@ -1,6 +1,6 @@
 import EditDialog from "./EditDialog";
 import { GitCompare } from "lucide-react";
-import { MirrorSchemaType } from "~/api/namespaces/schema/namespace";
+import { MirrorSchemaType } from "~/api/namespaces/schema/mirror";
 import SyncDialog from "./SyncDialog";
 import { useNamespace } from "~/util/store/namespace";
 

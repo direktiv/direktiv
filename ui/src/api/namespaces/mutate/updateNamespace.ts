@@ -1,4 +1,4 @@
-import { MirrorPostSchemaType } from "~/api/namespaces/schema/mirror";
+import { MirrorPostPatchSchemaType } from "~/api/namespaces/schema/mirror";
 import { NamespaceCreatedEditedSchema } from "../schema/namespace";
 import type { NamespaceListSchemaType } from "../schema/namespace";
 import { apiFactory } from "~/api/apiFactory";
@@ -33,7 +33,7 @@ export const useUpdateNamespace = ({
       mirror,
     }: {
       namespace: string;
-      mirror?: MirrorPostSchemaType;
+      mirror?: MirrorPostPatchSchemaType;
     }) =>
       updateNamespace({
         apiKey: apiKey ?? undefined,

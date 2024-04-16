@@ -1,6 +1,26 @@
 import { gitUrlSchema } from "./validation";
 import { z } from "zod";
 
+const MirrorAuthTypeSchema = z.enum(["public", "ssh", "token"]);
+
+const MirrorFormType = z.union([
+  MirrorAuthTypeSchema,
+  z.enum(["keep-ssh", "keep-token"]),
+]);
+
+// this is part of a namespace record response
+export const MirrorSchema = z.object({
+  authType: MirrorAuthTypeSchema,
+  url: z.string(),
+  gitRef: z.string(),
+  authToken: z.string().optional(),
+  publicKey: z.string().optional(),
+  privateKey: z.string().optional(),
+  privateKeyPassphrase: z.string().optional(),
+  insecure: z.boolean(),
+});
+
+// the schemas below are used in POST/PATCH payloads
 export const MirrorPublicPostSchema = z.object({
   url: z.string().url().nonempty(),
   gitRef: z.string().nonempty(),
@@ -25,17 +45,10 @@ export const MirrorSshPostSchema = z.object({
   insecure: z.boolean(),
 });
 
-export const MirrorPostSchema = MirrorPublicPostSchema.or(
+export const MirrorPostPatchSchema = MirrorPublicPostSchema.or(
   MirrorTokenPostSchema
 ).or(MirrorSshPostSchema);
 
-const mirrorFormType = z.enum([
-  "public",
-  "ssh",
-  "token",
-  "keep-ssh",
-  "keep-token",
-]);
-
-export type MirrorPostSchemaType = z.infer<typeof MirrorPostSchema>;
-export type MirrorFormType = z.infer<typeof mirrorFormType>;
+export type MirrorSchemaType = z.infer<typeof MirrorSchema>;
+export type MirrorPostPatchSchemaType = z.infer<typeof MirrorPostPatchSchema>;
+export type MirrorFormType = z.infer<typeof MirrorFormType>;

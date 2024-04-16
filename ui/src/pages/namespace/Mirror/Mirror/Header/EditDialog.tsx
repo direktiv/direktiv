@@ -2,7 +2,7 @@ import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 
 import Button from "~/design/Button";
 import { FileCog } from "lucide-react";
-import { MirrorSchemaType } from "~/api/namespaces/schema/namespace";
+import { MirrorSchemaType } from "~/api/namespaces/schema/mirror";
 import NamespaceEdit from "~/components/NamespaceEdit";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";

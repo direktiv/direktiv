@@ -1,17 +1,5 @@
+import { MirrorSchema } from "./mirror";
 import { z } from "zod";
-
-const MirrorAuthTypeSchema = z.enum(["public", "ssh", "token"]);
-
-const MirrorSchema = z.object({
-  authType: MirrorAuthTypeSchema,
-  url: z.string(),
-  gitRef: z.string(),
-  authToken: z.string().optional(),
-  publicKey: z.string().optional(),
-  privateKey: z.string().optional(),
-  privateKeyPassphrase: z.string().optional(),
-  insecure: z.boolean(),
-});
 
 export const NamespaceSchema = z.object({
   createdAt: z.string(),
@@ -31,4 +19,3 @@ export const NamespaceCreatedEditedSchema = z.object({
 export const NamespaceDeletedSchema = z.null();
 
 export type NamespaceListSchemaType = z.infer<typeof NamespaceListSchema>;
-export type MirrorSchemaType = z.infer<typeof MirrorSchema>;

@@ -5,6 +5,10 @@ import {
   DialogTitle,
 } from "~/design/Dialog";
 import { GitCompare, Home, PlusCircle, Save } from "lucide-react";
+import {
+  MirrorFormType,
+  MirrorSchemaType,
+} from "~/api/namespaces/schema/mirror";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { Tabs, TabsList, TabsTrigger } from "~/design/Tabs";
 import { useEffect, useState } from "react";
@@ -18,8 +22,6 @@ import FormTypeSelect from "./FormTypeSelect";
 import InfoTooltip from "./InfoTooltip";
 import Input from "~/design/Input";
 import { InputWithButton } from "~/design/InputWithButton";
-import { MirrorFormType } from "~/api/namespaces/schema/mirror";
-import { MirrorSchemaType } from "~/api/namespaces/schema/namespace";
 import { MirrorValidationSchema } from "~/api/namespaces/schema/mirror/validation";
 import { Textarea } from "~/design/TextArea";
 import { fileNameSchema } from "~/api/tree/schema/node";
