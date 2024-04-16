@@ -20,4 +20,5 @@ export const SyncListSchema = z.object({
 
 export type SyncListSchemaType = z.infer<typeof SyncListSchema>;
 export type SyncResponseSchemaType = z.infer<typeof SyncResponseSchema>;
-export type SyncObjectSchema = z.infer<typeof SyncObjectSchema>;
+export type SyncStatusSchemaType = z.infer<typeof SyncStatusSchema>;
+export type SyncObjectSchemaType = z.infer<typeof SyncObjectSchema>;

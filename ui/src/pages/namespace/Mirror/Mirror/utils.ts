@@ -1,5 +1,5 @@
 import { BadgeProps } from "~/design/Badge";
-import { MirrorActivityStatusSchemaType } from "~/api/namespaces/schema/mirror";
+import { SyncStatusSchemaType } from "~/api/syncs/schema";
 
 type StatusBadgeProps = {
   variant: BadgeProps["variant"];
@@ -7,10 +7,9 @@ type StatusBadgeProps = {
 };
 
 export const activityStatusToBadgeProps = (
-  status: MirrorActivityStatusSchemaType
+  status: SyncStatusSchemaType
 ): StatusBadgeProps => {
   switch (status) {
-    case "cancelled":
     case "failed":
       return { variant: "destructive", icon: "failed" };
     case "complete":

@@ -7,7 +7,7 @@ import {
 } from "~/design/Tooltip";
 
 import Badge from "~/design/Badge";
-import { SyncObjectSchema } from "~/api/syncs/schema";
+import { SyncObjectSchemaType } from "~/api/syncs/schema";
 import TooltipCopyBadge from "~/design/TooltipCopyBadge";
 import { activityStatusToBadgeProps } from "../utils";
 import { pages } from "~/util/router/pages";
@@ -19,7 +19,7 @@ const Row = ({
   item,
   namespace,
 }: {
-  item: SyncObjectSchema;
+  item: SyncObjectSchemaType;
   namespace: string;
 }) => {
   const createdAt = useUpdatedAt(item.createdAt);
