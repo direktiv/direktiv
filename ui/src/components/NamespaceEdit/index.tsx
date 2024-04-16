@@ -18,9 +18,9 @@ import FormTypeSelect from "./FormTypeSelect";
 import InfoTooltip from "./InfoTooltip";
 import Input from "~/design/Input";
 import { InputWithButton } from "~/design/InputWithButton";
-import { MirrorFormType } from "~/api/tree/schema/mirror";
+import { MirrorFormType } from "~/api/namespaces/schema/mirror";
 import { MirrorSchemaType } from "~/api/namespaces/schema/namespace";
-import { MirrorValidationSchema } from "~/api/tree/schema/mirror/validation";
+import { MirrorValidationSchema } from "~/api/namespaces/schema/mirror/validation";
 import { Textarea } from "~/design/TextArea";
 import { fileNameSchema } from "~/api/tree/schema/node";
 import { pages } from "~/util/router/pages";
@@ -85,10 +85,10 @@ const NamespaceEdit = ({
 
   let initialFormType: MirrorFormType = "public";
 
-  if (mirror?.url.startsWith("git@")) {
-    initialFormType = "keep-ssh";
-  } else if (mirror?.privateKeyPassphrase) {
+  if (mirror?.authType === "token") {
     initialFormType = "keep-token";
+  } else if (mirror?.authType === "ssh") {
+    initialFormType = "keep-ssh";
   }
 
   const {
@@ -166,19 +166,19 @@ const NamespaceEdit = ({
 
     let updateAuthValues = {};
 
-    if (formType === "public") {
-      updateAuthValues = {
-        passphrase: "",
-        publicKey: "",
-        privateKey: "",
-      };
-    }
+    // if (formType === "public") {
+    //   updateAuthValues = {
+    //     passphrase: "",
+    //     publicKey: "",
+    //     privateKey: "",
+    //   };
+    // }
 
-    if (formType === "keep-token") {
-      updateAuthValues = {
-        passphrase: "-",
-      };
-    }
+    // if (formType === "keep-token") {
+    //   updateAuthValues = {
+    //     passphrase: "-",
+    //   };
+    // }
 
     if (formType === "token") {
       updateAuthValues = {
@@ -186,13 +186,13 @@ const NamespaceEdit = ({
       };
     }
 
-    if (formType === "keep-ssh") {
-      updateAuthValues = {
-        publicKey: "-",
-        privateKey: "-",
-        privateKeyPassphrase: "-",
-      };
-    }
+    // if (formType === "keep-ssh") {
+    //   updateAuthValues = {
+    //     publicKey: "-",
+    //     privateKey: "-",
+    //     privateKeyPassphrase: "-",
+    //   };
+    // }
 
     if (formType === "ssh") {
       updateAuthValues = {

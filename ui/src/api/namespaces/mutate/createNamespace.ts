@@ -1,4 +1,4 @@
-import { MirrorPostSchemaType } from "~/api/tree/schema/mirror";
+import { MirrorPostSchemaType } from "~/api/namespaces/schema/mirror";
 import { NamespaceCreatedEditedSchema } from "../schema/namespace";
 import type { NamespaceListSchemaType } from "../schema/namespace";
 import { apiFactory } from "~/api/apiFactory";

@@ -6,7 +6,7 @@ import {
   SelectValue,
 } from "~/design/Select";
 
-import { MirrorFormType } from "~/api/tree/schema/mirror";
+import { MirrorFormType } from "~/api/namespaces/schema/mirror";
 import { useTranslation } from "react-i18next";
 
 const FormTypeSelect = ({

@@ -1,5 +1,5 @@
 import { BadgeProps } from "~/design/Badge";
-import { MirrorActivityStatusSchemaType } from "~/api/tree/schema/mirror";
+import { MirrorActivityStatusSchemaType } from "~/api/namespaces/schema/mirror";
 
 type StatusBadgeProps = {
   variant: BadgeProps["variant"];

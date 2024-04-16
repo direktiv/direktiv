@@ -1,4 +1,4 @@
-import { MirrorInfoSchema } from "../schema/mirror";
+import { MirrorInfoSchema } from "../../namespaces/schema/mirror";
 import { QueryFunctionContext } from "@tanstack/react-query";
 import { apiFactory } from "~/api/apiFactory";
 import { treeKeys } from "..";
