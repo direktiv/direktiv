@@ -48,11 +48,11 @@ export const useCreateSecret = ({
   return useMutationWithPermissions({
     mutationFn,
     onSuccess: (secret) => {
-      queryClient.invalidateQueries(
-        secretKeys.secretsList(namespace, {
+      queryClient.invalidateQueries({
+        queryKey: secretKeys.secretsList(namespace, {
           apiKey: apiKey ?? undefined,
-        })
-      );
+        }),
+      });
       toast({
         title: t("api.secrets.mutate.updateSecret.success.title"),
         description: t("api.secrets.mutate.updateSecret.success.description", {

@@ -41,11 +41,11 @@ export const useCreateGroup = ({
         payload: tokenFormProps,
       }),
     onSuccess(data, { description }) {
-      queryClient.invalidateQueries(
-        groupKeys.groupList(namespace, {
+      queryClient.invalidateQueries({
+        queryKey: groupKeys.groupList(namespace, {
           apiKey: apiKey ?? undefined,
-        })
-      );
+        }),
+      });
       toast({
         title: t("api.groups.mutate.createGroup.success.title"),
         description: t("api.groups.mutate.createGroup.success.description", {

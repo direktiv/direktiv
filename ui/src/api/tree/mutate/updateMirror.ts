@@ -47,11 +47,11 @@ export const useUpdateMirror = ({
   return useMutationWithPermissions({
     mutationFn,
     onSuccess: (data, variables) => {
-      queryClient.invalidateQueries(
-        treeKeys.mirrorInfo(variables.name, {
+      queryClient.invalidateQueries({
+        queryKey: treeKeys.mirrorInfo(variables.name, {
           apiKey: apiKey ?? undefined,
-        })
-      );
+        }),
+      });
       onSuccess?.(data);
       toast({
         title: t("api.namespaces.mutate.updateMirror.success.title"),

@@ -41,11 +41,11 @@ export const useDeleteSecret = ({
         },
       }),
     onSuccess(_, variables) {
-      queryClient.invalidateQueries(
-        secretKeys.secretsList(namespace, {
+      queryClient.invalidateQueries({
+        queryKey: secretKeys.secretsList(namespace, {
           apiKey: apiKey ?? undefined,
-        })
-      );
+        }),
+      });
       toast({
         title: t("api.secrets.mutate.deleteSecret.success.title"),
         description: t("api.secrets.mutate.deleteSecret.success.description", {

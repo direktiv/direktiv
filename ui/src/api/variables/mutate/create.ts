@@ -52,15 +52,15 @@ export const useCreateVar = ({
   return useMutationWithPermissions({
     mutationFn,
     onSuccess: (data) => {
-      queryClient.invalidateQueries(
-        varKeys.varList(namespace, {
+      queryClient.invalidateQueries({
+        queryKey: varKeys.varList(namespace, {
           apiKey: apiKey ?? undefined,
           workflowPath:
             data.data.type === "workflow-variable"
               ? data.data.reference
               : undefined,
-        })
-      );
+        }),
+      });
       toast({
         title: t("api.variables.mutate.updateVariable.success.title"),
         description: t(

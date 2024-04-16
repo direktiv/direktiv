@@ -43,11 +43,11 @@ export const useCreateRegistry = ({
   return useMutationWithPermissions({
     mutationFn,
     onSuccess: (registry, variables) => {
-      queryClient.invalidateQueries(
-        registriesKeys.registriesList(namespace, {
+      queryClient.invalidateQueries({
+        queryKey: registriesKeys.registriesList(namespace, {
           apiKey: apiKey ?? undefined,
-        })
-      );
+        }),
+      });
       toast({
         title: t("api.registries.mutate.createRegistry.success.title"),
         description: t(

@@ -41,7 +41,9 @@ export const useDeleteNamespace = ({
        * to make sure that we don't accidentally redirect to the namespace we just
        * deleted.
        */
-      queryClient.invalidateQueries(namespaceKeys.all(apiKey ?? undefined));
+      queryClient.invalidateQueries({
+        queryKey: namespaceKeys.all(apiKey ?? undefined),
+      });
       toast({
         title: t("api.namespaces.mutate.deleteNamespaces.success.title"),
         description: t(

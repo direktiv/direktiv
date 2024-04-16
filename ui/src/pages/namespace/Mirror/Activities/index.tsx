@@ -42,11 +42,11 @@ const Activities = () => {
   if (!activities) return null;
 
   const refreshActivities = () => {
-    queryClient.invalidateQueries(
-      treeKeys.mirrorInfo(data.namespace, {
+    queryClient.invalidateQueries({
+      queryKey: treeKeys.mirrorInfo(data.namespace, {
         apiKey: apiKey ?? undefined,
-      })
-    );
+      }),
+    });
   };
 
   const pendingActivities = activities.filter(

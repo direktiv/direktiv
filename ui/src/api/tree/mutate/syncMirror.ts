@@ -45,11 +45,11 @@ export const useSyncMirror = ({
   return useMutationWithPermissions({
     mutationFn,
     onSuccess: (data) => {
-      queryClient.invalidateQueries(
-        treeKeys.mirrorInfo(namespace, {
+      queryClient.invalidateQueries({
+        queryKey: treeKeys.mirrorInfo(namespace, {
           apiKey: apiKey ?? undefined,
-        })
-      );
+        }),
+      });
       onSuccess?.(data);
       toast({
         title: t("api.namespaces.mutate.syncMirror.success.title"),
