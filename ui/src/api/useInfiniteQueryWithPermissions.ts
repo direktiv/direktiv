@@ -1,4 +1,5 @@
 import {
+  DefaultError,
   QueryKey,
   UseInfiniteQueryOptions,
   UseInfiniteQueryResult,
@@ -34,7 +35,7 @@ type ExtendedUseInfiniteQueryReturn =
  */
 const useInfiniteQueryWithPermissions = <
   TQueryFnData = unknown,
-  TError = unknown,
+  TError = DefaultError,
   TData = TQueryFnData,
   TQueryData = TQueryFnData,
   TQueryKey extends QueryKey = QueryKey
