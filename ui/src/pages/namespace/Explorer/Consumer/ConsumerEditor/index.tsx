@@ -29,7 +29,7 @@ const ConsumerEditor: FC<ConsumerEditorProps> = ({ data }) => {
   const [consumerConfig, consumerConfigError] = serializeConsumerFile(
     fileContentFromServer
   );
-  const { mutate: updateFile, isLoading } = useUpdateFile();
+  const { mutate: updateFile, isPending } = useUpdateFile();
 
   const save = (value: ConsumerFormSchemaType) => {
     const toSave = jsonToYaml(value);
@@ -52,7 +52,7 @@ const ConsumerEditor: FC<ConsumerEditorProps> = ({ data }) => {
         const preview = jsonToYaml(values);
         const filehasChanged = preview === fileContentFromServer;
         const isDirty = !consumerConfigError && !filehasChanged;
-        const disableButton = isLoading || !!consumerConfigError;
+        const disableButton = isPending || !!consumerConfigError;
 
         return (
           <form

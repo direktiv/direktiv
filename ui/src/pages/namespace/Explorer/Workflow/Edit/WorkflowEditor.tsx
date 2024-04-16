@@ -28,7 +28,7 @@ const WorkflowEditor: FC<{
 
   const workflowDataFromServer = decode(data?.data ?? "");
 
-  const { mutate: updateFile, isLoading } = useUpdateFile({
+  const { mutate: updateFile, isPending } = useUpdateFile({
     onError: (error) => {
       error && setError(error);
     },
@@ -99,7 +99,7 @@ const WorkflowEditor: FC<{
         </Dialog>
         <Button
           variant="outline"
-          disabled={isLoading}
+          disabled={isPending}
           onClick={() => {
             onSave(editorContent);
           }}
