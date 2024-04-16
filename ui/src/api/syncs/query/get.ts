@@ -22,23 +22,6 @@ const fetchSyncs = async ({
     urlParams: { namespace },
   });
 
-// export const useSyncs = () => {
-//   const apiKey = useApiKey();
-//   const namespace = useNamespace();
-
-//   if (!namespace) {
-//     throw new Error("namespace is undefined");
-//   }
-
-//   return useQueryWithPermissions({
-//     queryKey: syncKeys.syncsList(namespace, {
-//       apiKey: apiKey ?? undefined,
-//     }),
-//     queryFn: fetchSyncs,
-//     enabled: !!namespace,
-//   });
-// };
-
 export const useSyncs = <T>({
   filter,
 }: {
