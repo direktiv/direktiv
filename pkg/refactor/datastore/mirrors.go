@@ -18,11 +18,10 @@ type MirrorConfig struct {
 	PublicKey            string `json:"publicKey,omitempty"`
 	PrivateKey           string `json:"-"`
 	PrivateKeyPassphrase string `json:"-"`
+	Insecure             bool   `json:"insecure"`
 
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
-
-	Insecure bool `json:"insecure"`
 }
 
 // MirrorProcess different statuses.

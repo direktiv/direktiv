@@ -1,8 +1,4 @@
-import {
-  SecretDeletedSchema,
-  SecretListSchemaType,
-  SecretSchemaType,
-} from "../schema";
+import { SecretSchemaType, SecretsDeletedSchema } from "../schema";
 
 import { apiFactory } from "../../apiFactory";
 import { secretKeys } from "..";
@@ -13,32 +9,13 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "../../../design/Toast";
 import { useTranslation } from "react-i18next";
 
-const updateCache = (
-  oldData: SecretListSchemaType | undefined,
-  deletedItem: SecretSchemaType
-) => {
-  if (!oldData) return undefined;
-  const oldSecrets = oldData.secrets.results;
-
-  return {
-    ...oldData,
-    ...(oldSecrets
-      ? {
-          secrets: {
-            results: oldSecrets.filter(
-              (item: SecretSchemaType) => item.name !== deletedItem.name
-            ),
-          },
-        }
-      : {}),
-  };
-};
+type DeleteSecretParams = { namespace: string; name: string };
 
 const deleteSecret = apiFactory({
-  url: ({ namespace, name }: { namespace: string; name: string }) =>
-    `/api/namespaces/${namespace}/secrets/${name}`,
+  url: ({ namespace, name }: DeleteSecretParams) =>
+    `/api/v2/namespaces/${namespace}/secrets/${name}`,
   method: "DELETE",
-  schema: SecretDeletedSchema,
+  schema: SecretsDeletedSchema,
 });
 
 export const useDeleteSecret = ({
@@ -64,12 +41,10 @@ export const useDeleteSecret = ({
         },
       }),
     onSuccess(_, variables) {
-      const deletedItem = variables.secret;
-      queryClient.setQueryData<SecretListSchemaType>(
+      queryClient.invalidateQueries(
         secretKeys.secretsList(namespace, {
           apiKey: apiKey ?? undefined,
-        }),
-        (oldData) => updateCache(oldData, deletedItem)
+        })
       );
       toast({
         title: t("api.secrets.mutate.deleteSecret.success.title"),

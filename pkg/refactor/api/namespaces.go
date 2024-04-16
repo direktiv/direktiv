@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
+	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
@@ -224,6 +225,7 @@ func (e *nsController) create(w http.ResponseWriter, r *http.Request) {
 		Mirror *struct {
 			URL                  string `json:"url"`
 			GitRef               string `json:"gitRef"`
+			AuthType             string `json:"authType"`
 			AuthToken            string `json:"authToken"`
 			PublicKey            string `json:"publicKey"`
 			PrivateKey           string `json:"privateKey"`
@@ -322,6 +324,11 @@ func (e *nsController) list(w http.ResponseWriter, r *http.Request) {
 		writeDataStoreError(w, err)
 		return
 	}
+	if len(namespaces) == 0 {
+		writeJSON(w, []any{})
+
+		return
+	}
 	mirrors, err := dStore.Mirror().GetAllConfigs(r.Context())
 	if err != nil {
 		writeDataStoreError(w, err)
@@ -344,11 +351,41 @@ func (e *nsController) list(w http.ResponseWriter, r *http.Request) {
 func namespaceAPIObject(ns *datastore.Namespace, mConfig *datastore.MirrorConfig) any {
 	type apiObject struct {
 		*datastore.Namespace
-		Mirror *datastore.MirrorConfig `json:"mirror"`
+		Mirror any `json:"mirror"`
+	}
+
+	if mConfig == nil {
+		return &apiObject{
+			Namespace: ns,
+		}
+	}
+
+	authType := "public"
+	if mConfig.AuthToken != "" {
+		authType = "token"
+	}
+	if mConfig.PublicKey != "" {
+		authType = "ssh"
 	}
 
 	return &apiObject{
 		Namespace: ns,
-		Mirror:    mConfig,
+		Mirror: &struct {
+			URL       string    `json:"url"`
+			GitRef    string    `json:"gitRef"`
+			AuthType  string    `json:"authType"`
+			PublicKey string    `json:"publicKey,omitempty"`
+			Insecure  bool      `json:"insecure"`
+			CreatedAt time.Time `json:"createdAt"`
+			UpdatedAt time.Time `json:"updatedAt"`
+		}{
+			URL:       mConfig.URL,
+			GitRef:    mConfig.GitRef,
+			PublicKey: mConfig.PublicKey,
+			Insecure:  mConfig.Insecure,
+			AuthType:  authType,
+			CreatedAt: mConfig.CreatedAt,
+			UpdatedAt: mConfig.UpdatedAt,
+		},
 	}
 }
