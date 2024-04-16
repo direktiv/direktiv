@@ -28,7 +28,7 @@ type MirrorConfig struct {
 }
 
 func (v ValidationError) Error() string {
-	return fmt.Sprintf("validation errors: %v", v)
+	return fmt.Sprintf("validation errors: %d", len(v))
 }
 
 var _ error = ValidationError{}
