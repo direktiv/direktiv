@@ -12,8 +12,9 @@ import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
 /**
- * TODO: apiFactory<NewEventSchemaType["body"]> should be the correct type
- *  but the but e2e/utils/events.ts is sending something different.
+ * TODO: apiFactory<NewEventSchemaType["body"]> should be the correct type, which
+ * resolves to a string type. But createEvents in e2e/utils/events.ts is sending
+ * something different. Leaving the type as is for now.
  */
 export const sendEvent = apiFactory({
   url: ({ baseUrl, namespace }: { baseUrl?: string; namespace: string }) =>
