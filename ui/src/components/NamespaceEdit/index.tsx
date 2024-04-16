@@ -166,36 +166,26 @@ const NamespaceEdit = ({
 
     let updateAuthValues = {};
 
-    // if (formType === "public") {
-    //   updateAuthValues = {
-    //     passphrase: "",
-    //     publicKey: "",
-    //     privateKey: "",
-    //   };
-    // }
+    // if formType is keep-token or keep-ssh, don't set any authentication props.
+    // if a different authentication type is selected, set the the relevant fields so they
+    // will be overwritten with the PATCH request.
 
-    // if (formType === "keep-token") {
-    //   updateAuthValues = {
-    //     passphrase: "-",
-    //   };
-    // }
-
-    if (formType === "token") {
+    if (formType === "public") {
       updateAuthValues = {
-        publicKey,
+        authType: "public",
       };
     }
 
-    // if (formType === "keep-ssh") {
-    //   updateAuthValues = {
-    //     publicKey: "-",
-    //     privateKey: "-",
-    //     privateKeyPassphrase: "-",
-    //   };
-    // }
+    if (formType === "token") {
+      updateAuthValues = {
+        authType: "token",
+        authToken,
+      };
+    }
 
     if (formType === "ssh") {
       updateAuthValues = {
+        authType: "ssh",
         publicKey,
         privateKey,
         privateKeyPassphrase,
