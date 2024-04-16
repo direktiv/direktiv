@@ -61,9 +61,12 @@ export const useSyncs = <T>({
   });
 };
 
+// reverse list to show newest first
 export const useListSyncs = () =>
   useSyncs({
-    filter: (apiResponse) => apiResponse,
+    filter: (apiResponse) => ({
+      data: apiResponse.data.reverse(),
+    }),
   });
 
 export const useSyncDetail = (id: string) =>
