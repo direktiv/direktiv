@@ -2,7 +2,7 @@ export const syncKeys = {
   syncsList: (namespace: string, { apiKey }: { apiKey?: string }) =>
     [
       {
-        scope: "sync-list",
+        scope: "syncs-list",
         apiKey,
         namespace,
       },

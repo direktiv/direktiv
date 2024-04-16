@@ -15,6 +15,7 @@ import { Card } from "~/design/Card";
 import Header from "./Header";
 import PaginationProvider from "~/components/PaginationProvider";
 import Row from "./Row";
+import { syncKeys } from "~/api/syncs";
 import { useApiKey } from "~/util/store/apiKey";
 import { useListSyncs } from "~/api/syncs/query/get";
 import { useNamespace } from "~/util/store/namespace";
@@ -49,23 +50,23 @@ const Syncs = () => {
   if (!mirror) return null;
   if (!syncs) return null;
 
-  // const refreshSyncs = () => {
-  //   queryClient.invalidateQueries(
-  //     treeKeys.mirrorInfo(data.namespace, {
-  //       apiKey: apiKey ?? undefined,
-  //     })
-  //   );
-  // };
+  const refreshSyncs = () => {
+    queryClient.invalidateQueries(
+      syncKeys.syncsList(namespace, {
+        apiKey: apiKey ?? undefined,
+      })
+    );
+  };
 
-  const pendingActivities = syncs.filter((sync) => sync.status === "executing");
+  const pendingSyncs = syncs.filter((sync) => sync.status === "executing");
 
-  // if (pendingActivities.length) {
-  //   setTimeout(() => refreshActivities(), 1000);
-  // }
+  if (pendingSyncs.length) {
+    setTimeout(() => refreshSyncs(), 1000);
+  }
 
   return (
     <>
-      <Header mirror={mirror} loading={!!pendingActivities.length} />
+      <Header mirror={mirror} loading={!!pendingSyncs.length} />
       <PaginationProvider items={syncs} pageSize={pageSize}>
         {({
           currentItems,
