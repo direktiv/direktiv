@@ -22,4 +22,9 @@ RELEASE_VERSION := ${RELEASE}-${GIT_HASH}${GIT_DIRTY}
 
 include make_protobuf.mk make_direktiv.mk make_direktiv_ui.mk make_k3s.mk make_tests.mk
 
-
+.PHONY: help
+help: ## Prints usage information.
+	@echo "\033[36mMakefile Help\033[0m"
+	@echo ""
+	@echo "\033[36mTargets\033[0m"
+	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":"}; {printf "  %-24s %s\n", $$2, $$3}'
