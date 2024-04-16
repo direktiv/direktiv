@@ -55,11 +55,10 @@ export const useCreateNamespace = ({
         }
       );
       toast({
-        title: t("api.namespaces.mutate.createNamespaces.success.title"),
-        description: t(
-          "api.namespaces.mutate.createNamespaces.success.description",
-          { name: variables.name }
-        ),
+        title: t("api.namespaces.mutate.create.success.title"),
+        description: t("api.namespaces.mutate.create.success.description", {
+          name: variables.name,
+        }),
         variant: "success",
       });
       onSuccess?.(data);
@@ -67,9 +66,7 @@ export const useCreateNamespace = ({
     onError: () => {
       toast({
         title: t("api.generic.error"),
-        description: t(
-          "api.namespaces.mutate.createNamespaces.error.description"
-        ),
+        description: t("api.namespaces.mutate.create.error.description"),
         variant: "error",
       });
     },

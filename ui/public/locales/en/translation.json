@@ -1323,7 +1323,7 @@
     },
     "namespaces": {
       "mutate": {
-        "createNamespaces": {
+        "create": {
           "success": {
             "title": "Create a new namespace",
             "description": "Namespace {{name}} was created successfully."
@@ -1332,9 +1332,18 @@
             "description": "could not create namespace 😢"
           }
         },
-        "deleteNamespaces": {
+        "update": {
           "success": {
-            "title": "Delete namespace",
+            "title": "Edit namespace",
+            "description": "Namespace {{name}} was updated successfully."
+          },
+          "error": {
+            "description": "could not update namespace 😢"
+          }
+        },
+        "delete": {
+          "success": {
+            "title": "Delete namespace {{name}}",
             "description": "Namespace {{name}} was deleted successfully."
           },
           "error": {
