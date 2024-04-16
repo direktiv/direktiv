@@ -1,5 +1,5 @@
-import { DisabledStateProvider } from "./Workflow/store/disabledContext";
 import { Outlet } from "react-router-dom";
+import { UnsavedChangesStateProvider } from "./Workflow/store/unsavedChangesContext";
 import { isApiErrorSchema } from "~/api/errorHandling";
 import { pages } from "~/util/router/pages";
 import { useFile } from "~/api/files/query/file";
@@ -15,9 +15,9 @@ const ExplorerPage = () => {
   }
 
   return (
-    <DisabledStateProvider>
+    <UnsavedChangesStateProvider>
       <Outlet />
-    </DisabledStateProvider>
+    </UnsavedChangesStateProvider>
   );
 };
 

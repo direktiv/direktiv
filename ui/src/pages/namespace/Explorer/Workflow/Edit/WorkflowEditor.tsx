@@ -2,6 +2,10 @@ import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import { FC, useState } from "react";
 import { Play, Save } from "lucide-react";
 import { decode, encode } from "js-base64";
+import {
+  useSetUnsavedChanges,
+  useUnsavedChanges,
+} from "../store/unsavedChangesContext";
 
 import Button from "~/design/Button";
 import { CodeEditor } from "./CodeEditor";
@@ -13,7 +17,6 @@ import { WorkspaceLayout } from "~/components/WorkspaceLayout";
 import { useEditorLayout } from "~/util/store/editor";
 import { useNamespace } from "~/util/store/namespace";
 import { useNamespaceLinting } from "~/api/namespaceLinting/query/useNamespaceLinting";
-import { useSetDisabled } from "../store/disabledContext";
 import { useTranslation } from "react-i18next";
 import { useUpdateFile } from "~/api/files/mutate/updateFile";
 
@@ -24,9 +27,10 @@ const WorkflowEditor: FC<{
   const { t } = useTranslation();
   const namespace = useNamespace();
   const [error, setError] = useState<string | undefined>();
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const { refetch: updateNotificationBell } = useNamespaceLinting();
-  const setDisabled = useSetDisabled();
+
+  const hasUnsavedChanges = useUnsavedChanges();
+  const setHasUnsavedChanges = useSetUnsavedChanges();
 
   const workflowDataFromServer = decode(data?.data ?? "");
 
@@ -41,7 +45,6 @@ const WorkflowEditor: FC<{
        */
       updateNotificationBell();
       setHasUnsavedChanges(false);
-      setDisabled(false);
     },
   });
 
@@ -49,7 +52,6 @@ const WorkflowEditor: FC<{
 
   const onEditorContentUpdate = (newData: string) => {
     setHasUnsavedChanges(workflowDataFromServer !== newData);
-    setDisabled(true);
     setEditorContent(newData ?? "");
   };
 

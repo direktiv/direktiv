@@ -25,10 +25,10 @@ import { NoPermissions } from "~/design/Table";
 import RunWorkflow from "./components/RunWorkflow";
 import { analyzePath } from "~/util/router/utils";
 import { pages } from "~/util/router/pages";
-import { useDisabled } from "./store/disabledContext";
 import { useFile } from "~/api/files/query/file";
 import { useNamespace } from "~/util/store/namespace";
 import { useTranslation } from "react-i18next";
+import { useUnsavedChanges } from "./store/unsavedChangesContext";
 
 const Header: FC = () => {
   const { t } = useTranslation();
@@ -49,7 +49,7 @@ const Header: FC = () => {
     isFetched: isPermissionCheckFetched,
   } = useFile({ path });
 
-  const disabled = useDisabled();
+  const hasUnsavedChanges = useUnsavedChanges();
 
   if (!namespace) return null;
   if (!path) return null;
@@ -149,7 +149,7 @@ const Header: FC = () => {
                   variant="primary"
                   data-testid="workflow-header-btn-run"
                   className="grow"
-                  disabled={disabled}
+                  disabled={hasUnsavedChanges}
                 >
                   <Play />
                   {t("pages.explorer.workflow.runBtn")}
