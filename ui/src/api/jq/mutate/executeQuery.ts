@@ -6,7 +6,7 @@ import { getMessageFromApiError } from "~/api/errorHandling";
 import { useApiKey } from "~/util/store/apiKey";
 import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 
-export const executeJquery = apiFactory({
+export const executeJquery = apiFactory<{ query: string; data: string }>({
   url: ({ baseUrl }: { baseUrl?: string }) => `${baseUrl ?? ""}/api/jq`,
   method: "POST",
   schema: JqQueryResult,
