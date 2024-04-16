@@ -23,7 +23,7 @@ import { useNamespace, useNamespaceActions } from "~/util/store/namespace";
 
 import { Breadcrumb as BreadcrumbLink } from "~/design/Breadcrumbs";
 import Button from "~/design/Button";
-import NamespaceCreate from "../NamespaceEdit";
+import NamespaceEdit from "../NamespaceEdit";
 import { pages } from "~/util/router/pages";
 import { twMergeClsx } from "~/util/helpers";
 import { useListNamespaces } from "~/api/namespaces/query/get";
@@ -124,7 +124,7 @@ const NamespaceSelector = () => {
           </PopoverContent>
         </Popover>
         <DialogContent>
-          <NamespaceCreate close={() => setDialogOpen(false)} />
+          <NamespaceEdit close={() => setDialogOpen(false)} />
         </DialogContent>
       </Dialog>
     </BreadcrumbLink>

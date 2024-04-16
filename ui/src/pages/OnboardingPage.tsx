@@ -6,7 +6,7 @@ import { useNamespace, useNamespaceActions } from "~/util/store/namespace";
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
 import Logo from "~/components/Logo";
-import NamespaceCreate from "~/components/NamespaceEdit";
+import NamespaceEdit from "~/components/NamespaceEdit";
 import { pages } from "~/util/router/pages";
 import { useListNamespaces } from "~/api/namespaces/query/get";
 import { useNavigate } from "react-router-dom";
@@ -115,7 +115,7 @@ const Layout = () => {
               </Button>
             </DialogTrigger>
             <DialogContent>
-              <NamespaceCreate close={() => setDialogOpen(false)} />
+              <NamespaceEdit close={() => setDialogOpen(false)} />
             </DialogContent>
           </Dialog>
         </div>

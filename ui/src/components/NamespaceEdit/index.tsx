@@ -55,13 +55,13 @@ const NamespaceEdit = ({
   // isMirror may change through user interaction.
   const [isMirror, setIsMirror] = useState(!!mirror);
   const isNew = !mirror;
-  const { data } = useListNamespaces();
+  const { data: namespaces } = useListNamespaces();
   const { setNamespace } = useNamespaceActions();
   const navigate = useNavigate();
   const { t } = useTranslation();
   const namespace = useNamespace();
 
-  const existingNamespaces = data?.data.map((n) => n.name) || [];
+  const existingNamespaces = namespaces?.data.map((n) => n.name) || [];
 
   const newNameSchema = fileNameSchema.and(
     z.string().refine((name) => !existingNamespaces.some((n) => n === name), {

@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import Button from "~/design/Button";
 import { FileCog } from "lucide-react";
 import { MirrorSchemaType } from "~/api/namespaces/schema";
-import NamespaceCreate from "~/components/NamespaceEdit";
+import NamespaceEdit from "~/components/NamespaceEdit";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -20,7 +20,7 @@ const EditDialog = ({ mirror }: { mirror: MirrorSchemaType }) => {
         </Button>
       </DialogTrigger>
       <DialogContent>
-        <NamespaceCreate mirror={mirror} close={() => setDialogOpen(false)} />
+        <NamespaceEdit mirror={mirror} close={() => setDialogOpen(false)} />
       </DialogContent>
     </Dialog>
   );
