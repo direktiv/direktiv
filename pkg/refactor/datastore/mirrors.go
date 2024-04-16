@@ -42,10 +42,10 @@ func (m *MirrorConfig) Validate() ValidationError {
 	if m.URL == "" {
 		result["url"] = "field is required"
 	}
-	if m.Namespace == "" {
-		result["namespace"] = "field is required"
+	if m.GitRef == "" {
+		result["gitRef"] = "field is required"
 	}
-	if slices.Contains([]string{"public", "ssh", "token", ""}, m.AuthType) {
+	if !slices.Contains([]string{"public", "ssh", "token", ""}, m.AuthType) {
 		result["authType"] = "has not allowed enum value"
 	}
 	if m.AuthType == "token" && m.AuthToken == "" {

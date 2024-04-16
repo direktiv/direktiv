@@ -29,6 +29,7 @@ describe('Test namespace create calls', () => {
 				mirror: {
 					url: 'my_url',
 					gitRef: 'main',
+					authType: 'public'
 				},
 			},
 			want: {
@@ -49,6 +50,7 @@ describe('Test namespace create calls', () => {
 					url: 'my_url',
 					insecure: true,
 					gitRef: 'master',
+					authType: 'public'
 				},
 			},
 			want: {
@@ -69,6 +71,7 @@ describe('Test namespace create calls', () => {
 					url: 'my_url',
 					insecure: true,
 					gitRef: 'master',
+					authType: 'token',
 					authToken: '12345',
 				},
 			},
@@ -90,6 +93,7 @@ describe('Test namespace create calls', () => {
 					url: 'my_url',
 					insecure: true,
 					gitRef: 'master',
+					authType: 'ssh',
 					publicKey: 'my-public-key',
 					privateKey: 'my-private-key',
 				},
@@ -270,7 +274,7 @@ describe('Test missing fields create calls', () => {
 	for (let i = 0; i < testCases.length; i++) {
 		const testCase = testCases[i]
 
-		it(`should create a new namespace case ${ i }`, async () => {
+		it(`should fail create a new namespace case ${ i }`, async () => {
 			const res = await request(config.getDirektivHost())
 				.post(`/api/v2/namespaces`)
 				.send(testCase)

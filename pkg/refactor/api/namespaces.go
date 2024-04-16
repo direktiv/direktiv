@@ -109,6 +109,7 @@ func (e *nsController) update(w http.ResponseWriter, r *http.Request) {
 		Mirror *struct {
 			URL                  *string `json:"url"`
 			GitRef               *string `json:"gitRef"`
+			AuthType             *string `json:"authType"`
 			AuthToken            *string `json:"authToken"`
 			PublicKey            *string `json:"publicKey"`
 			PrivateKey           *string `json:"privateKey"`
@@ -149,28 +150,21 @@ func (e *nsController) update(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
+
 	// old setting was not set
 	if errors.Is(err, datastore.ErrNotFound) {
-		if req.Mirror.URL == nil || *req.Mirror.URL == "" {
-			writeError(w, &Error{
-				Code:    "request_data_invalid",
-				Message: "mirror was not initialized, field 'url' must be provided and not empty",
-			})
+		defaultEmpty := func(str *string) string {
+			if str == nil {
+				return ""
+			}
 
-			return
-		}
-		if req.Mirror.GitRef == nil || *req.Mirror.GitRef == "" {
-			writeError(w, &Error{
-				Code:    "request_data_invalid",
-				Message: "mirror was not initialized, field 'gitRef' must be provided and not empty",
-			})
-
-			return
+			return *str
 		}
 		settings, err = dStore.Mirror().CreateConfig(r.Context(), &datastore.MirrorConfig{
 			Namespace: ns.Name,
-			URL:       *req.Mirror.URL,
-			GitRef:    *req.Mirror.GitRef,
+			URL:       defaultEmpty(req.Mirror.URL),
+			GitRef:    defaultEmpty(req.Mirror.GitRef),
+			AuthType:  "public",
 		})
 		if err != nil {
 			writeDataStoreError(w, err)
@@ -183,6 +177,9 @@ func (e *nsController) update(w http.ResponseWriter, r *http.Request) {
 	}
 	if req.Mirror.GitRef != nil && *req.Mirror.GitRef != "" {
 		settings.GitRef = *req.Mirror.GitRef
+	}
+	if req.Mirror.AuthType != nil && *req.Mirror.AuthType != "" {
+		settings.AuthType = *req.Mirror.AuthType
 	}
 	if req.Mirror.AuthToken != nil {
 		settings.AuthToken = *req.Mirror.AuthToken
@@ -255,26 +252,11 @@ func (e *nsController) create(w http.ResponseWriter, r *http.Request) {
 
 	var mConfig *datastore.MirrorConfig
 	if req.Mirror != nil {
-		if req.Mirror.URL == "" {
-			writeError(w, &Error{
-				Code:    "request_data_invalid",
-				Message: "field 'url' must be provided",
-			})
-
-			return
-		}
-		if req.Mirror.GitRef == "" {
-			writeError(w, &Error{
-				Code:    "request_data_invalid",
-				Message: "field 'gitRef' must be provided",
-			})
-
-			return
-		}
 		mirrorConfig := &datastore.MirrorConfig{
 			Namespace:            req.Name,
 			URL:                  req.Mirror.URL,
 			GitRef:               req.Mirror.GitRef,
+			AuthType:             req.Mirror.AuthType,
 			AuthToken:            req.Mirror.AuthToken,
 			PublicKey:            req.Mirror.PublicKey,
 			PrivateKey:           req.Mirror.PrivateKey,
