@@ -30,6 +30,8 @@ type Store interface {
 	StagingEvents() events.StagingEventStore
 }
 
+type ValidationError map[string]string
+
 var (
 	// ErrNotFound is a common error type that should be returned by any store implementation
 	// for the error cases when getting a single entry failed due to none existence.

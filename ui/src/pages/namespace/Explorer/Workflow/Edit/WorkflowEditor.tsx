@@ -2,6 +2,10 @@ import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import { FC, useState } from "react";
 import { Play, Save } from "lucide-react";
 import { decode, encode } from "js-base64";
+import {
+  useSetUnsavedChanges,
+  useUnsavedChanges,
+} from "../store/unsavedChangesContext";
 
 import Button from "~/design/Button";
 import { CodeEditor } from "./CodeEditor";
@@ -23,8 +27,10 @@ const WorkflowEditor: FC<{
   const { t } = useTranslation();
   const namespace = useNamespace();
   const [error, setError] = useState<string | undefined>();
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const { refetch: updateNotificationBell } = useNamespaceLinting();
+
+  const hasUnsavedChanges = useUnsavedChanges();
+  const setHasUnsavedChanges = useSetUnsavedChanges();
 
   const workflowDataFromServer = decode(data?.data ?? "");
 

@@ -30,6 +30,7 @@ describe('Test namespace update calls', () => {
 				mirror: {
 					url: 'my_url',
 					gitRef: 'main',
+					authType: 'public',
 				},
 			},
 			want: {
@@ -39,6 +40,7 @@ describe('Test namespace update calls', () => {
 					url: 'my_url',
 					gitRef: 'main',
 					insecure: false,
+					authType: 'public',
 					...timestamps,
 				},
 			},
@@ -49,6 +51,7 @@ describe('Test namespace update calls', () => {
 					url: 'my_url2',
 					insecure: true,
 					gitRef: 'master',
+					authType: 'public',
 				},
 			},
 			want: {
@@ -58,6 +61,7 @@ describe('Test namespace update calls', () => {
 					url: 'my_url2',
 					insecure: true,
 					gitRef: 'master',
+					authType: 'public',
 					...timestamps,
 				},
 			},

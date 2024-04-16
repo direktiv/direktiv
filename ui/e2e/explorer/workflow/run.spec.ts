@@ -214,11 +214,24 @@ test("it is not possible to run the workflow when the editor has unsaved changes
 
   await page.goto(`${namespace}/explorer/workflow/edit/${workflowName}`);
 
+  await expect(page.getByTestId("workflow-header-btn-run")).not.toBeDisabled();
   await expect(page.getByTestId("workflow-editor-btn-run")).not.toBeDisabled();
 
-  await page.type("textarea", faker.random.alphaNumeric(9));
+  await page.type("textarea", faker.random.alphaNumeric(1));
 
+  await expect(page.getByTestId("workflow-header-btn-run")).toBeDisabled();
   await expect(page.getByTestId("workflow-editor-btn-run")).toBeDisabled();
+
+  await page.locator("textarea").press("Backspace");
+
+  await expect(
+    page.getByTestId("workflow-header-btn-run"),
+    "when the text input is equal to the saved data the run button is active"
+  ).not.toBeDisabled();
+  await expect(
+    page.getByTestId("workflow-editor-btn-run"),
+    "when the text input is equal to the saved data the run button is active"
+  ).not.toBeDisabled();
 });
 
 test("it is possible to provide the input via generated form", async ({
