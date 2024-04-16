@@ -1,4 +1,4 @@
-import { NamespaceDeletedSchema } from "../schema";
+import { NamespaceDeletedSchema } from "../schema/namespace";
 import { apiFactory } from "~/api/apiFactory";
 import { namespaceKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";

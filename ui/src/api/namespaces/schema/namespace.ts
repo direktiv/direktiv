@@ -1,6 +1,9 @@
 import { z } from "zod";
 
+const MirrorAuthTypeSchema = z.enum(["public", "ssh", "token"]);
+
 const MirrorSchema = z.object({
+  authType: MirrorAuthTypeSchema,
   url: z.string(),
   gitRef: z.string(),
   authToken: z.string().optional(),

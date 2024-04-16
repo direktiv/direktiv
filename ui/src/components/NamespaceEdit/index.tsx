@@ -19,7 +19,7 @@ import InfoTooltip from "./InfoTooltip";
 import Input from "~/design/Input";
 import { InputWithButton } from "~/design/InputWithButton";
 import { MirrorFormType } from "~/api/tree/schema/mirror";
-import { MirrorSchemaType } from "~/api/namespaces/schema";
+import { MirrorSchemaType } from "~/api/namespaces/schema/namespace";
 import { MirrorValidationSchema } from "~/api/tree/schema/mirror/validation";
 import { Textarea } from "~/design/TextArea";
 import { fileNameSchema } from "~/api/tree/schema/node";

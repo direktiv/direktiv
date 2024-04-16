@@ -1,4 +1,4 @@
-import { NamespaceListSchemaType } from "~/api/namespaces/schema";
+import { NamespaceListSchemaType } from "~/api/namespaces/schema/namespace";
 import { faker } from "@faker-js/faker";
 import { headers } from "./testutils";
 

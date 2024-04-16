@@ -1,6 +1,6 @@
 import { MirrorPostSchemaType } from "~/api/tree/schema/mirror";
-import { NamespaceCreatedEditedSchema } from "../schema";
-import type { NamespaceListSchemaType } from "../schema";
+import { NamespaceCreatedEditedSchema } from "../schema/namespace";
+import type { NamespaceListSchemaType } from "../schema/namespace";
 import { apiFactory } from "~/api/apiFactory";
 import { namespaceKeys } from "..";
 import { sortByName } from "~/api/files/utils";

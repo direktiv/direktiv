@@ -1,4 +1,7 @@
-import { NamespaceListSchema, NamespaceListSchemaType } from "../schema";
+import {
+  NamespaceListSchema,
+  NamespaceListSchemaType,
+} from "../schema/namespace";
 
 import type { QueryFunctionContext } from "@tanstack/react-query";
 import { apiFactory } from "~/api/apiFactory";
