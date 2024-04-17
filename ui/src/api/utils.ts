@@ -9,7 +9,7 @@ type AuthHeader =
     };
 
 export const getAuthHeader = (apiKey: string): AuthHeader => {
-  if (isEnterprise) {
+  if (isEnterprise()) {
     return {
       authorization: `Bearer ${apiKey}`,
     };

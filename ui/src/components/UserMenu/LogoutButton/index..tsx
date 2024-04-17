@@ -3,6 +3,6 @@ import OpenSourceLogoutButton from "./OpenSourceLogout";
 import { isEnterprise } from "~/config/env/utils";
 
 const LogoutButton = () =>
-  isEnterprise ? <EnterpriseLogoutButton /> : <OpenSourceLogoutButton />;
+  isEnterprise() ? <EnterpriseLogoutButton /> : <OpenSourceLogoutButton />;
 
 export default LogoutButton;

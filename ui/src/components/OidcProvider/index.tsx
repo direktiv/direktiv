@@ -6,7 +6,7 @@ import { isEnterprise } from "~/config/env/utils";
 import { oidcConfig } from "./utils";
 
 export const OidcProvider: FC<PropsWithChildren> = ({ children }) => {
-  if (!isEnterprise) {
+  if (!isEnterprise()) {
     return <>{children}</>;
   }
   return (

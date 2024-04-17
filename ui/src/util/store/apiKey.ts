@@ -29,7 +29,7 @@ const useApiKeyState = create<ApiKeyState>()(
 
 export const useApiKey = () =>
   useApiKeyState((state) => {
-    if (isEnterprise) {
+    if (isEnterprise()) {
       /**
        * in enterprise mode we need to read from a different source
        */

@@ -9,9 +9,10 @@ import { useAuthTest } from "~/api/authenticate/query/getAuthInfos";
  */
 const useIsApiKeyRequired = () => {
   const { data: testSucceeded, isFetched: isFinished } = useAuthTest({
-    enabled: !isEnterprise,
+    enabled: !isEnterprise(),
   });
-  return isEnterprise
+
+  return isEnterprise()
     ? { isApiKeyRequired: true, isFinished: true }
     : {
         isApiKeyRequired:
@@ -67,8 +68,8 @@ const useApiKeyHandling = () => {
     isApiKeyRequired,
     isCurrentKeyValid,
     isFetched,
-    showLoginModal: !isEnterprise,
-    showUsermenu: isEnterprise ? true : isApiKeyRequired,
+    showLoginModal: !isEnterprise(),
+    showUsermenu: isEnterprise() ? true : isApiKeyRequired,
   };
 };
 

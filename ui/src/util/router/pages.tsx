@@ -245,7 +245,7 @@ type PermissionsPageSetup = Partial<
 
 type EnterprisePageType = PermissionsPageSetup;
 
-export const enterprisePages: EnterprisePageType = isEnterprise
+export const enterprisePages: EnterprisePageType = isEnterprise()
   ? {
       permissions: {
         name: "components.mainMenu.permissions",
