@@ -25,7 +25,7 @@ import { useTranslation } from "react-i18next";
 
 const pageSize = 10;
 
-const Syncs = () => {
+const MirrorDetail = () => {
   const { data, isAllowed, noPermissionMessage, isFetched } = useListSyncs();
   const namespace = useNamespace();
   const namespaceDetail = useNamespaceDetail();
@@ -138,4 +138,4 @@ const Syncs = () => {
   );
 };
 
-export default Syncs;
+export default MirrorDetail;

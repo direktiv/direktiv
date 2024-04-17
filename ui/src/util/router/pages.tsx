@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import { useMatches, useParams, useSearchParams } from "react-router-dom";
 
-import Activities from "~/pages/namespace/Mirror/Mirror";
 import ConsumerEditorPage from "~/pages/namespace/Explorer/Consumer";
 import EndpointEditorPage from "~/pages/namespace/Explorer/Endpoint";
 import ErrorPage from "./ErrorPage";
@@ -29,7 +28,8 @@ import InstancesPageDetail from "~/pages/namespace/Instances/Detail";
 import InstancesPageList from "~/pages/namespace/Instances/List";
 import JqPlaygroundPage from "~/pages/namespace/JqPlayground";
 import Listeners from "~/pages/namespace/Events/Listeners";
-import Logs from "~/pages/namespace/Mirror/Mirror/Detail";
+import Logs from "~/pages/namespace/Mirror/Detail/Sync";
+import MirrorDetail from "~/pages/namespace/Mirror/Detail";
 import MirrorPage from "~/pages/namespace/Mirror";
 import MonitoringPage from "~/pages/namespace/Monitoring";
 import PermissionsPage from "~/pages/namespace/Permissions";
@@ -676,8 +676,8 @@ export const pages: PageType & EnterprisePageType = {
       children: [
         {
           path: "",
-          element: <Activities />,
-          handle: { isMirrorActivitiesPage: true },
+          element: <MirrorDetail />,
+          handle: { isMirrorDetailPage: true },
         },
         {
           path: "logs/:sync",

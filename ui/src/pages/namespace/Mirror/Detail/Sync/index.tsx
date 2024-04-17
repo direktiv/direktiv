@@ -1,7 +1,7 @@
-import ActivityDetail from "./ActivityDetail";
 import { Card } from "~/design/Card";
 import { LogStreamingSubscriber } from "~/api/logs/query/LogStreamingSubscriber";
 import { NoPermissions } from "~/design/Table";
+import SyncDetail from "./SyncDetail";
 import { pages } from "~/util/router/pages";
 import { useSyncDetail } from "~/api/syncs/query/get";
 
@@ -23,7 +23,7 @@ const Logs = () => {
   return (
     <>
       <LogStreamingSubscriber activity={sync} />
-      <ActivityDetail syncId={sync} />
+      <SyncDetail syncId={sync} />
     </>
   );
 };
