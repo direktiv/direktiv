@@ -1,4 +1,4 @@
-import { FileTypeType } from "~/api/files/schema";
+import { CreateFileSchemaType } from "~/api/files/schema";
 import { createFile as apiCreateFile } from "~/api/files/mutate/createFile";
 import { encode } from "js-base64";
 import { headers } from "./testutils";
@@ -13,7 +13,7 @@ export const createFile = async ({
   name: string;
   yaml: string;
   namespace: string;
-  type: FileTypeType;
+  type: CreateFileSchemaType["type"];
   path?: string;
 }) =>
   await apiCreateFile({
