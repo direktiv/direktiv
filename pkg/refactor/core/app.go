@@ -55,6 +55,8 @@ type Config struct {
 	KnativeProxyHTTPS string `env:"DIREKTIV_KNATIVE_PROXY_HTTPS"`
 
 	FunctionsReconcileInterval int `env:"DIREKTIV_FUNCTIONS_RECONCILE_INTERVAL" envDefault:"1"`
+
+	IsEnterprise bool `env:"DIREKTIV_IS_ENTERPRISE" envDefault:"false"`
 }
 
 func (conf *Config) GetFunctionsTimeout() time.Duration {

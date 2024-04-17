@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
@@ -86,9 +87,21 @@ func Initialize(app core.App, db *database.SQLStore, bus *pubsub2.Bus, instanceM
 	r.Handle("/gw/*", app.GatewayManager)
 	r.Handle("/ns/{namespace}/*", app.GatewayManager)
 
+	// version endpoint
 	r.Get("/api/v2/version", func(w http.ResponseWriter, r *http.Request) {
-		writeJSON(w, version.Version)
+		data := struct {
+			Version      string
+			IsEnterprise any
+			RequiresAuth bool
+		}{
+			Version:      version.Version,
+			IsEnterprise: app.Config.IsEnterprise,
+			RequiresAuth: os.Getenv("DIREKTIV_API_KEY") != "",
+		}
+
+		writeJSON(w, data)
 	})
+
 	logCtr := &logController{
 		store: db.DataStore().NewLogs(),
 	}
