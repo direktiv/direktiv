@@ -5,7 +5,15 @@ export const envVariablesSchema = z.object({
   VITE_IS_ENTERPRISE: z
     .string()
     .optional()
-    .transform((value) => `${value}`.toLocaleLowerCase() === "true"),
+    .transform((value) => {
+      const lowerCaseStringValue = `${value}`.toLocaleLowerCase();
+      const isBoolean =
+        lowerCaseStringValue === "true" || lowerCaseStringValue === "false";
+      if (!isBoolean) {
+        return undefined;
+      }
+      return lowerCaseStringValue === "true";
+    }),
   VITE_RQ_DEV_TOOLS: z
     .string()
     .optional()
