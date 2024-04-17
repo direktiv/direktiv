@@ -1,6 +1,10 @@
+import type {
+  NamespaceCreatedEditedSchemaType,
+  NamespaceListSchemaType,
+} from "../schema/namespace";
+
 import { MirrorPostPatchSchemaType } from "~/api/namespaces/schema/mirror";
 import { NamespaceCreatedEditedSchema } from "../schema/namespace";
-import type { NamespaceListSchemaType } from "../schema/namespace";
 import { apiFactory } from "~/api/apiFactory";
 import { namespaceKeys } from "..";
 import { sortByName } from "~/api/files/utils";
@@ -18,6 +22,22 @@ const updateNamespace = apiFactory({
 });
 
 type ResolvedUpdateNamespace = Awaited<ReturnType<typeof updateNamespace>>;
+
+const updateCache = (
+  oldData: NamespaceListSchemaType | undefined,
+  newData: NamespaceCreatedEditedSchemaType
+) => {
+  if (!oldData) return undefined;
+  const newRecord = newData.data;
+  const oldRecords = oldData?.data;
+  const index = oldRecords.findIndex(
+    (record) => record.name === newRecord.name
+  );
+  oldRecords[index] = newRecord;
+  return {
+    data: oldRecords.sort(sortByName),
+  };
+};
 
 export const useUpdateNamespace = ({
   onSuccess,
@@ -45,14 +65,7 @@ export const useUpdateNamespace = ({
     onSuccess(data, variables) {
       queryClient.setQueryData<NamespaceListSchemaType>(
         namespaceKeys.all(apiKey ?? undefined),
-        (oldData) => {
-          if (!oldData) return undefined;
-          const oldResults = oldData?.data;
-          return {
-            ...oldData,
-            results: [...oldResults, data.data].sort(sortByName),
-          };
-        }
+        (oldData) => updateCache(oldData, data)
       );
       toast({
         title: t("api.namespaces.mutate.update.success.title"),

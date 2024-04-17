@@ -49,8 +49,7 @@ export const useCreateNamespace = ({
           if (!oldData) return undefined;
           const oldResults = oldData?.data;
           return {
-            ...oldData,
-            results: [...oldResults, data.data].sort(sortByName),
+            data: [...oldResults, data.data].sort(sortByName),
           };
         }
       );

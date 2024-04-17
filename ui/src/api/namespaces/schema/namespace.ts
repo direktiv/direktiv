@@ -13,9 +13,12 @@ export const NamespaceListSchema = z.object({
 });
 
 export const NamespaceCreatedEditedSchema = z.object({
-  data: NamespaceSchema.omit({ mirror: true }),
+  data: NamespaceSchema,
 });
 
 export const NamespaceDeletedSchema = z.null();
 
 export type NamespaceListSchemaType = z.infer<typeof NamespaceListSchema>;
+export type NamespaceCreatedEditedSchemaType = z.infer<
+  typeof NamespaceCreatedEditedSchema
+>;
