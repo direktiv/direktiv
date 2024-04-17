@@ -31,6 +31,10 @@
                           gitRef:
                             type: string
                             description: git branch name
+                          authType:
+                            type: string
+                            enum: [ public, ssh, token]
+                            description: this field indicated what kind of authentication is used
                           publicKey:
                             type: string(optional)
                             description: associated publish key ssh credential
@@ -76,6 +80,10 @@
                   gitRef:
                     type: string
                     description: git branch name
+                  authType:
+                    type: string
+                    enum: [ public, ssh, token ]
+                    description: this field indicated what kind of authentication is used
                   authToken:
                     type: string(optional)
                     description: auth token used to clone git repo
@@ -117,6 +125,10 @@
                         gitRef:
                           type: string
                           description: git branch name
+                        authType:
+                          type: string
+                          enum: [ public, ssh, token]
+                          description: this field indicated what kind of authentication is used
                         publicKey:
                           type: string(optional)
                           description: associated publish key ssh credential
@@ -169,6 +181,10 @@
                         gitRef:
                           type: string
                           description: git branch name
+                        authType:
+                          type: string
+                          enum: [ public, ssh, token]
+                          description: this field indicated what kind of authentication is used
                         publicKey:
                           type: string(optional)
                           description: associated publish key ssh credential
@@ -223,6 +239,10 @@
                   gitRef:
                     type: string
                     description: git branch name
+                  authType:
+                    type: string
+                    enum: [ public, ssh, token ]
+                    description: this field indicated what kind of authentication is used
                   authToken:
                     type: string(optional)
                     description: auth token used to clone git repo
@@ -264,6 +284,10 @@
                         gitRef:
                           type: string
                           description: git branch name
+                        authType:
+                          type: string
+                          enum: [ public, ssh, token]
+                          description: this field indicated what kind of authentication is used
                         publicKey:
                           type: string(optional)
                           description: associated publish key ssh credential
