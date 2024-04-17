@@ -62,6 +62,23 @@ func (m *MirrorConfig) Validate() ValidationError {
 	return result
 }
 
+func (m *MirrorConfig) Normalize() {
+	if m.AuthType == "public" {
+		m.AuthToken = ""
+		m.PublicKey = ""
+		m.PrivateKey = ""
+		m.PrivateKeyPassphrase = ""
+	}
+	if m.AuthType == "ssh" {
+		m.AuthToken = ""
+	}
+	if m.AuthType == "token" {
+		m.PublicKey = ""
+		m.PrivateKey = ""
+		m.PrivateKeyPassphrase = ""
+	}
+}
+
 // MirrorProcess different statuses.
 const (
 	ProcessStatusComplete  = "complete"

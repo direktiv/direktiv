@@ -45,9 +45,20 @@ info:
           "message": "server is currently under maintenance",
         }
     }
+    
+    // Example with validation error
+    {
+      "error": {
+          "code": "request_data_invalid",
+          "message": "request data has invalid fields",
+          validation: { 
+            gitRef: 'field is required', 
+            url: 'field is required' 
+          }
+    }
     ```
-
-    Field error.code is one of the following values:
+    
+    Field error.validation is only set when validation errors occur. Field error.code is one of the following values:
 
     | value | description |
     |-----------|-------|
