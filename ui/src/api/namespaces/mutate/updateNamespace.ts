@@ -7,7 +7,6 @@ import { MirrorPostPatchSchemaType } from "~/api/namespaces/schema/mirror";
 import { NamespaceCreatedEditedSchema } from "../schema/namespace";
 import { apiFactory } from "~/api/apiFactory";
 import { namespaceKeys } from "..";
-import { sortByName } from "~/api/files/utils";
 import { useApiKey } from "~/util/store/apiKey";
 import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 import { useQueryClient } from "@tanstack/react-query";
@@ -30,12 +29,11 @@ const updateCache = (
   if (!oldData) return undefined;
   const newRecord = newData.data;
   const oldRecords = oldData?.data;
-  const index = oldRecords.findIndex(
-    (record) => record.name === newRecord.name
+  const newRecords = oldRecords.map((record) =>
+    record.name === newRecord.name ? newRecord : record
   );
-  oldRecords[index] = newRecord;
   return {
-    data: oldRecords.sort(sortByName),
+    data: newRecords,
   };
 };
 
