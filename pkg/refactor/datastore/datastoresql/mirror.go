@@ -79,6 +79,7 @@ func (s sqlMirrorStore) CreateConfig(ctx context.Context, config *datastore.Mirr
 		return nil, err
 	}
 
+	config.Normalize()
 	if errs := newConfig.Validate(); len(errs) > 0 {
 		return nil, errs
 	}
@@ -97,6 +98,7 @@ func (s sqlMirrorStore) UpdateConfig(ctx context.Context, config *datastore.Mirr
 		return nil, err
 	}
 
+	config.Normalize()
 	if errs := config.Validate(); len(errs) > 0 {
 		return nil, errs
 	}

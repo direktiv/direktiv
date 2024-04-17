@@ -29,7 +29,7 @@ describe('Test namespace create calls', () => {
 				mirror: {
 					url: 'my_url',
 					gitRef: 'main',
-					authType: 'public'
+					authType: 'public',
 				},
 			},
 			want: {
@@ -50,7 +50,7 @@ describe('Test namespace create calls', () => {
 					url: 'my_url',
 					insecure: true,
 					gitRef: 'master',
-					authType: 'public'
+					authType: 'public',
 				},
 			},
 			want: {
