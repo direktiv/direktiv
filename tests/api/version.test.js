@@ -8,8 +8,10 @@ describe('Test the version information API', () => {
 		const r = await request(config.getDirektivHost()).get(`/api/v2/version`)
 		expect(r.statusCode).toEqual(200)
 
-		expect(r.body).toMatchObject({
-			data: expect.anything(),
+		expect(r.body.data).toEqual({
+			version: expect.anything(),
+			isEnterprise: false,
+			requiresAuth: false
 		})
 	})
 })
