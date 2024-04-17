@@ -90,9 +90,9 @@ func Initialize(app core.App, db *database.SQLStore, bus *pubsub2.Bus, instanceM
 	// version endpoint
 	r.Get("/api/v2/version", func(w http.ResponseWriter, r *http.Request) {
 		data := struct {
-			Version      string
-			IsEnterprise any
-			RequiresAuth bool
+			Version      string `json:"version"`
+			IsEnterprise any    `json:"isEnterprise"`
+			RequiresAuth bool   `json:"requiresAuth"`
 		}{
 			Version:      version.Version,
 			IsEnterprise: app.Config.IsEnterprise,

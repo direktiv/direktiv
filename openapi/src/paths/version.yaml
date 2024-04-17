@@ -14,5 +14,15 @@
             schema:
               type: object
               properties:
-                data: 
-                  type: string
+                data:
+                  type: object
+                  properties:
+                    version:
+                      type: string
+                      description: a unique string that represent id of the variable
+                    isEnterprise:
+                      type: boolean
+                      description: indicates if the backend is an enterprise installation
+                    requiresAuth:
+                      type: boolean
+                      description: indicates if the backend requires auth token to authenticate requests
