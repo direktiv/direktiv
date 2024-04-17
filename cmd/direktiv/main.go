@@ -26,6 +26,11 @@ func (h *apikeyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
+	if strings.HasSuffix(r.URL.Path, "/version") {
+		h.next.ServeHTTP(w, r)
+
+		return
+	}
 
 	if r.Header.Get(apiTokenHeader) != h.key {
 		w.WriteHeader(http.StatusUnauthorized)
