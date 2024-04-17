@@ -52,9 +52,10 @@ export const createEvents = async (namespace: string) => {
   }));
 
   return await Promise.all(
-    events.map((event) =>
-      sendEvent({
-        payload: event,
+    events.map((event) => {
+      const payload = JSON.stringify(event);
+      return sendEvent({
+        payload,
         urlParams: {
           baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
           namespace,
@@ -64,7 +65,7 @@ export const createEvents = async (namespace: string) => {
           "content-type": "application/cloudevents+json",
         },
         // request returns null, thus return the generated data instead for use in the test
-      }).then(() => event)
-    )
+      }).then(() => event);
+    })
   );
 };
