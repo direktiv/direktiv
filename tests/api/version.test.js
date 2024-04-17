@@ -11,7 +11,7 @@ describe('Test the version information API', () => {
 		expect(r.body.data).toEqual({
 			version: expect.anything(),
 			isEnterprise: false,
-			requiresAuth: false
+			requiresAuth: false,
 		})
 	})
 })
