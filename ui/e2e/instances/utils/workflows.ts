@@ -12,6 +12,8 @@ states:
 - id: delay
   type: delay
   duration: PT4S
+  transform:
+    result: finished
 `;
 
 export const workflowThatFails = `description: A simple workflow that throws an error'
@@ -21,6 +23,20 @@ states:
   error: i-am-an-error
   message: this is my error message
 `;
+
+export const workflowThatWaitsAndFails = `direktiv_api: workflow/v1
+states:
+- id: delay
+  type: delay
+  duration: PT5S
+  transition: handle-error
+- id: handle-error
+  type: error
+  error: i-am-an-error
+  message: error-message
+  transform:
+    result: an error occurred
+  `;
 
 export const parentWorkflow = ({
   childPath,

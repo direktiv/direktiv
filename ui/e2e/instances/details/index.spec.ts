@@ -1,9 +1,10 @@
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
-import { expect, test } from "@playwright/test";
 import {
+  workflowWithDelay as delayedWorkflowContent,
+  workflowThatWaitsAndFails as failingWorkflowContent,
   simpleWorkflow as simpleWorkflowContent,
-  workflowWithDelay as workflowWithDelayContent,
 } from "../utils/workflows";
+import { expect, test } from "@playwright/test";
 
 import { createFile } from "e2e/utils/files";
 import { createInstance } from "../utils/index";
@@ -11,7 +12,8 @@ import { faker } from "@faker-js/faker";
 
 let namespace = "";
 const simpleWorkflowName = faker.system.commonFileName("yaml");
-const workflowWithDelayName = faker.system.commonFileName("yaml");
+const delayedWorkflowName = faker.system.commonFileName("yaml");
+const failingWorkflowName = faker.system.commonFileName("yaml");
 
 test.beforeEach(async () => {
   namespace = await createNamespace();
@@ -24,10 +26,17 @@ test.beforeEach(async () => {
   });
 
   await createFile({
-    name: workflowWithDelayName,
+    name: delayedWorkflowName,
     namespace,
     type: "workflow",
-    yaml: workflowWithDelayContent,
+    yaml: delayedWorkflowContent,
+  });
+
+  await createFile({
+    name: failingWorkflowName,
+    namespace,
+    type: "workflow",
+    yaml: failingWorkflowContent,
   });
 });
 
@@ -160,7 +169,7 @@ test("the diagram on the instance page changes appearance dynamically", async ({
 }) => {
   const newInstance = createInstance({
     namespace,
-    path: workflowWithDelayName,
+    path: delayedWorkflowName,
   });
   await expect(newInstance, "wait until process was completed").toBeDefined();
   const instanceId = (await newInstance).instance;
@@ -273,13 +282,6 @@ test("the input/output panel responds to user interaction", async ({
   const copyButton = inputOutputPanel.locator("button").nth(0);
   const resizeButton = inputOutputPanel.locator("button").nth(1);
 
-  const textarea = inputOutputPanel.locator(".view-lines");
-
-  await resizeButton.click();
-
-  const expectedInput = `{}`;
-  const expectedOutput = `{    "result": "Hello world!"}`;
-
   const inputButton = inputOutputPanel
     .getByRole("tablist")
     .locator("button")
@@ -289,6 +291,45 @@ test("the input/output panel responds to user interaction", async ({
     .locator("button")
     .nth(1);
 
+  const textarea = inputOutputPanel.locator(".view-lines");
+  const expectedInput = `{}`;
+  const expectedOutput = `{    "result": "Hello world!"}`;
+  const expectedOutputCopy = '{"result":"Hello world!"}';
+
+  await resizeButton.hover();
+  await expect(
+    page.getByText("maximize output"),
+    "it shows the correct text when hovering over the resize button"
+  ).toBeVisible();
+
+  const minimizedWidth = (await inputOutputPanel.boundingBox())?.width;
+
+  await resizeButton.click();
+
+  const maximizedWidth = (await inputOutputPanel.boundingBox())?.width;
+  if (minimizedWidth === undefined || maximizedWidth === undefined) {
+    throw new Error("could not get width of diagram panel");
+  }
+  expect(
+    maximizedWidth / minimizedWidth,
+    "The panel is significantly bigger after maximizing"
+  ).toBeGreaterThan(1.5);
+
+  await resizeButton.hover();
+  await expect(
+    page.getByText("minimize output"),
+    "it shows the correct text when hovering over the resize button"
+  ).toBeVisible();
+
+  await page.reload();
+
+  const currentWidthAfterReload = (await inputOutputPanel.boundingBox())?.width;
+  expect(
+    currentWidthAfterReload,
+    "after reloading the page, the panel is still maximized"
+  ).toEqual(maximizedWidth);
+
+  await resizeButton.click();
   await inputButton.click();
 
   await expect(textarea, "the text shows the expected input").toHaveText(
@@ -301,9 +342,111 @@ test("the input/output panel responds to user interaction", async ({
     expectedOutput
   );
 
+  // for writing to the clipboard and for reading from the clipboard we need to grant permissions here - if we are not allowing it universally in the playwright.config.ts
+  page.context().grantPermissions(["clipboard-write", "clipboard-read"]);
+
   await copyButton.click();
 
-  const clipboardText = await page.evaluate("navigator.clipboard.readText()");
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toEqual(
+    expectedOutputCopy
+  );
 
-  await expect(clipboardText).toEqual(expectedInput);
+  await inputButton.click();
+  await copyButton.click();
+
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toEqual(
+    expectedInput
+  );
+});
+
+test("the output shows event notifications", async ({ page }) => {
+  const newInstance = createInstance({
+    namespace,
+    path: failingWorkflowName,
+  });
+
+  await expect(newInstance, "wait until process was completed").toBeDefined();
+  const instanceId = (await newInstance).instance;
+  await page.goto(`/${namespace}/instances/${instanceId}`);
+
+  const inputOutputPanel = page.getByTestId("inputOutputPanel");
+
+  await expect(inputOutputPanel).toBeVisible();
+
+  const outputButton = inputOutputPanel
+    .getByRole("tablist")
+    .locator("button")
+    .nth(1);
+
+  const header = page.getByTestId("instance-header-container");
+  const textarea = inputOutputPanel.locator(".view-lines");
+
+  const runningInstanceOutput = "The workflow is still running";
+  const failedInstanceOutput = '{    "result": "an error occurred"}';
+
+  await outputButton.click();
+
+  await expect(
+    inputOutputPanel,
+    "the output shows the text for the status running instance"
+  ).toContainText(runningInstanceOutput);
+
+  await expect(
+    header.locator("div").first(),
+    "the badge failed is visible"
+  ).toContainText("failed");
+
+  await expect(
+    textarea,
+    "the output shows the text for the status failed instance"
+  ).toHaveText(failedInstanceOutput);
+});
+
+test("after a running instance finishes, the output tab is automatically selected ", async ({
+  page,
+}) => {
+  const newInstance = createInstance({
+    namespace,
+    path: delayedWorkflowName,
+  });
+
+  await expect(newInstance, "wait until process was completed").toBeDefined();
+  const instanceId = (await newInstance).instance;
+  await page.goto(`/${namespace}/instances/${instanceId}`);
+
+  const inputOutputPanel = page.getByTestId("inputOutputPanel");
+
+  await expect(inputOutputPanel).toBeVisible();
+
+  const inputButton = inputOutputPanel
+    .getByRole("tablist")
+    .locator("button")
+    .nth(0);
+  const outputButton = inputOutputPanel
+    .getByRole("tablist")
+    .locator("button")
+    .nth(1);
+
+  const textarea = inputOutputPanel.locator(".view-lines");
+  const expectedOutput = `{    "result": "finished"}`;
+  const header = page.getByTestId("instance-header-container");
+
+  await expect(
+    inputButton,
+    "the input tab was selected initially"
+  ).toHaveAttribute("data-state", "active");
+
+  await expect(
+    header.locator("div").first(),
+    "the badge complete is visible"
+  ).toContainText("complete");
+
+  await expect(
+    outputButton,
+    "the output tab was selected automatically"
+  ).toHaveAttribute("data-state", "active");
+
+  await expect(textarea, "the text shows the expected output").toHaveText(
+    expectedOutput
+  );
 });
