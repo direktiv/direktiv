@@ -1,0 +1,30 @@
+
+/api/v2/namespaces/{namespace}/notifications:
+  get:
+    tags:
+      - notifications
+    summary: Gets all notifications in a namespace
+    parameters:
+      - $ref: '../parameters.yaml#/namespace'
+    responses:
+      "200":
+        description: list of notifications
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      issue:
+                        type: string
+                        description: dynamic string for humans to read
+                      level:
+                        type: string
+                        description: enum of the notification severity level (currently only 'warning' exists)
+                      type:
+                        type: string
+                        description: one of many fixed values that can be used as by tools to categorize the notification
