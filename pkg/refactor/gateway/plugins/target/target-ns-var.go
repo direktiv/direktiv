@@ -47,7 +47,7 @@ func ConfigureNamespaceVarPlugin(config interface{}, ns string) (core.PluginInst
 	}
 
 	// throw error if non magic namespace targets different namespace
-	if targetNamespaceVarConfig.Namespace != ns && ns != core.MagicalGatewayNamespace {
+	if targetNamespaceVarConfig.Namespace != ns && ns != core.SystemNamespace {
 		return nil, fmt.Errorf("plugin can not target different namespace")
 	}
 
