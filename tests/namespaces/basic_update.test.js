@@ -10,19 +10,10 @@ const timestamps = {
 	updatedAt: expect.stringMatching(regex.timestampRegex),
 }
 
-describe('Test namespace update calls', () => {
+describe('Test namespace simple update calls', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 
-	let createRes
-	it(`should create a namespace case`, async () => {
-		createRes = await request(config.getDirektivHost())
-			.post(`/api/v2/namespaces`)
-			.send({
-				name: 'foo',
-			})
-
-		expect(createRes.statusCode).toEqual(200)
-	})
+	helpers.itShouldCreateNamespace(it, expect, 'foo')
 
 	const testCases = [
 		{
@@ -30,6 +21,7 @@ describe('Test namespace update calls', () => {
 				mirror: {
 					url: 'my_url',
 					gitRef: 'main',
+					authType: 'public',
 				},
 			},
 			want: {
@@ -39,6 +31,7 @@ describe('Test namespace update calls', () => {
 					url: 'my_url',
 					gitRef: 'main',
 					insecure: false,
+					authType: 'public',
 					...timestamps,
 				},
 			},
@@ -49,6 +42,7 @@ describe('Test namespace update calls', () => {
 					url: 'my_url2',
 					insecure: true,
 					gitRef: 'master',
+					authType: 'public',
 				},
 			},
 			want: {
@@ -58,6 +52,7 @@ describe('Test namespace update calls', () => {
 					url: 'my_url2',
 					insecure: true,
 					gitRef: 'master',
+					authType: 'public',
 					...timestamps,
 				},
 			},
@@ -70,11 +65,127 @@ describe('Test namespace update calls', () => {
 		// eslint-disable-next-line no-loop-func
 		it(`should update namespace case ${ i }`, async () => {
 			const res = await request(config.getDirektivHost())
-				.patch(`/api/v2/namespaces/${ createRes.body.data.name }`)
+				.patch(`/api/v2/namespaces/foo`)
 				.send(testCase.input)
 			expect(res.statusCode).toEqual(200)
 			expect(res.body.data).toEqual({
 				...testCase.want,
+			})
+		})
+	}
+})
+
+describe('Test namespace mirror update calls', () => {
+	beforeAll(helpers.deleteAllNamespaces)
+
+	helpers.itShouldCreateNamespace(it, expect, 'foo')
+
+	const testCases = [
+		{
+			input: {
+				url: 'my_url',
+				gitRef: 'main',
+				authType: 'public',
+			},
+			want: {
+				url: 'my_url',
+				gitRef: 'main',
+				authType: 'public',
+				insecure: false,
+			},
+		},
+		{
+			input: {
+				url: 'my_url2',
+			},
+			want: {
+				url: 'my_url2',
+				gitRef: 'main',
+				authType: 'public',
+				insecure: false,
+			},
+		},
+		{
+			input: {
+				gitRef: 'main2',
+			},
+			want: {
+				url: 'my_url2',
+				gitRef: 'main2',
+				authType: 'public',
+				insecure: false,
+			},
+		},
+		{
+			input: {
+				gitRef: 'main2',
+				authType: 'token',
+				authToken: '1234',
+			},
+			want: {
+				url: 'my_url2',
+				gitRef: 'main2',
+				authType: 'token',
+				insecure: false,
+			},
+		},
+		{
+			input: {
+				gitRef: 'main2',
+				authType: 'public',
+			},
+			want: {
+				url: 'my_url2',
+				gitRef: 'main2',
+				authType: 'public',
+				insecure: false,
+			},
+		},
+		{
+			input: {
+				gitRef: 'main2',
+				authType: 'ssh',
+				publicKey: 'my-ppk',
+				privateKey: 'my-pvk',
+			},
+			want: {
+				url: 'my_url2',
+				gitRef: 'main2',
+				authType: 'ssh',
+				publicKey: 'my-ppk',
+				insecure: false,
+			},
+		},
+		{
+			input: {
+				gitRef: 'main2',
+				authType: 'public',
+			},
+			want: {
+				url: 'my_url2',
+				gitRef: 'main2',
+				authType: 'public',
+				insecure: false,
+			},
+		},
+	]
+
+	for (let i = 0; i < testCases.length; i++) {
+		const testCase = testCases[i]
+
+		// eslint-disable-next-line no-loop-func
+		it(`should update namespace case ${ i }`, async () => {
+			const res = await request(config.getDirektivHost())
+				.patch(`/api/v2/namespaces/foo`)
+				.send({ mirror: testCase.input })
+			expect(res.statusCode).toEqual(200)
+			expect(res.body.data).toEqual({
+				name: 'foo',
+				...timestamps,
+				mirror: {
+					...testCase.want,
+					...timestamps,
+				},
 			})
 		})
 	}

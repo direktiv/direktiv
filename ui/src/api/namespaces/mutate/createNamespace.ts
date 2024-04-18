@@ -10,7 +10,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
-const createNamespace = apiFactory({
+const createNamespace = apiFactory<MirrorPostSchemaType>({
   url: ({ name }: { name: string }) => `/api/namespaces/${name}`,
   method: "PUT",
   schema: NamespaceCreatedSchema,

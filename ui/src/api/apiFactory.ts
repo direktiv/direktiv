@@ -1,4 +1,3 @@
-import { FileSchema } from "./schema";
 import { createApiErrorFromResponse } from "./errorHandling";
 import { getAuthHeader } from "./utils";
 import { z } from "zod";
@@ -22,7 +21,7 @@ type FactoryParams<TUrlParams, TSchema> = {
 
 type ApiParams<TPayload, THeaders, TUrlParams> = {
   apiKey?: string;
-  payload?: TPayload extends undefined ? undefined : TPayload;
+  payload?: TPayload;
   headers?: THeaders extends undefined ? undefined : THeaders;
   urlParams: TUrlParams;
 };
@@ -77,8 +76,17 @@ const defaultResponseParser: ResponseParser = async ({ res, schema }) => {
  * resonse.
  * @returns a Promise that resolves to the zod parsed response.
  */
+
 export const apiFactory =
-  <TSchema, TPayload, THeaders, TUrlParams>({
+  <
+    TPayload = unknown,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    TSchema = any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    THeaders = any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    TUrlParams = any
+  >({
     url,
     method,
     schema,
@@ -90,15 +98,8 @@ export const apiFactory =
     TSchema
   > =>
   async ({ apiKey, payload, headers, urlParams }): Promise<TSchema> => {
-    const payloadFileCheck = FileSchema.safeParse(payload);
-    let body;
-    if (typeof payload === "string") {
-      body = payload;
-    } else if (payloadFileCheck.success) {
-      body = payloadFileCheck.data;
-    } else {
-      body = JSON.stringify(payload);
-    }
+    const body =
+      typeof payload === "string" ? payload : JSON.stringify(payload);
 
     const res = await fetch(url(urlParams), {
       method,

@@ -386,7 +386,7 @@ describe('Test workflow events', () => {
 		// instance fired
 		expect(instancesResponse).not.toBeFalsy()
 	})
-	
+
 	helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
 		'', startThenWaitWorkflowNameContext, 'workflow',
 		starthenWaitWorkflowContext)
@@ -418,18 +418,17 @@ describe('Test workflow events', () => {
 	it(`should not start by event due to context filter`, async () => {
 		await helpers.sleep(2000)
 		const runWorkflowResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${ namespaceName }/tree/${ workflowContextMultipleName }?op=execute`)
-		.send()
+			.send()
 		expect(runWorkflowResponse.statusCode).toEqual(200)
 
 		await events.sendEventAndList(namespaceName, basevent('waitformulti', 'wait-ctx65', 'world1'))
 		let instancesResponse = await events.listInstancesAndFilter(namespaceName, workflowContextMultipleName, 'pending')
 		expect(instancesResponse).not.toBeFalsy()
-		let workflowEventResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${ namespaceName }/broadcast`)
-		.set('Content-Type', 'application/json')
-		.send(baseventMultipleContext('waitformulti', 'wait-c3432tx7'))
+		const workflowEventResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${ namespaceName }/broadcast`)
+			.set('Content-Type', 'application/json')
+			.send(baseventMultipleContext('waitformulti', 'wait-c3432tx7'))
 		expect(workflowEventResponse.statusCode).toEqual(200)
 		instancesResponse = await events.listInstancesAndFilter(namespaceName, workflowContextMultipleName, 'complete')
 		expect(instancesResponse).not.toBeFalsy()
-
 	})
 })

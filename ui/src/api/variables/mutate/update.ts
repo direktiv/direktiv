@@ -1,7 +1,6 @@
 import {
-  VarFormSchemaType,
-  VarUpdatedSchema,
-  VarUpdatedSchemaType,
+  VarCreatedUpdatedSchema,
+  VarFormCreateEditSchemaType,
 } from "../schema";
 
 import { apiFactory } from "~/api/apiFactory";
@@ -13,26 +12,24 @@ import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 import { varKeys } from "..";
 
-export const updateVar = apiFactory({
+const updateVar = apiFactory<VarFormCreateEditSchemaType>({
   url: ({
     baseUrl,
     namespace,
-    name,
+    id,
   }: {
     baseUrl?: string;
     namespace: string;
-    name: string;
-  }) => `${baseUrl ?? ""}/api/namespaces/${namespace}/vars/${name}`,
-  method: "PUT",
-  schema: VarUpdatedSchema,
+    id: string;
+  }) => `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/variables/${id}`,
+  method: "PATCH",
+  schema: VarCreatedUpdatedSchema,
 });
 
-// This mutation has two use cases: creating a variable and updating
-// a variable. Both use the same endpoint and verb in the backend API.
 export const useUpdateVar = ({
   onSuccess,
 }: {
-  onSuccess?: (data: VarUpdatedSchemaType) => void;
+  onSuccess?: () => void;
 } = {}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
@@ -44,47 +41,47 @@ export const useUpdateVar = ({
     throw new Error("namespace is undefined");
   }
 
-  const mutationFn = ({ name, content, mimeType }: VarFormSchemaType) =>
+  const mutationFn = ({
+    id,
+    ...payload
+  }: { id: string } & VarFormCreateEditSchemaType) =>
     updateVar({
       apiKey: apiKey ?? undefined,
-      payload: content,
+      payload,
       urlParams: {
+        id,
         namespace,
-        name,
-      },
-      headers: {
-        "Content-Type": mimeType,
       },
     });
 
   return useMutationWithPermissions({
     mutationFn,
     onSuccess: (data, variables) => {
-      // Two cache invalidations are needed due to the current API,
-      // which uses the same endpoint for creating and editing.
-      // varContent needs a refresh after editing, varList needs a
-      // refresh after creating (the variable's content is not
-      // included in the list)
       queryClient.invalidateQueries(
-        varKeys.varContent(namespace, {
+        varKeys.varDetails(namespace, {
           apiKey: apiKey ?? undefined,
-          name: variables.name,
+          id: variables.id,
         })
       );
+      // the list also needs to be invalidated because the variable's name could have changed
       queryClient.invalidateQueries(
         varKeys.varList(namespace, {
           apiKey: apiKey ?? undefined,
+          workflowPath:
+            data.data.type === "workflow-variable"
+              ? data.data.reference
+              : undefined,
         })
       );
       toast({
         title: t("api.variables.mutate.updateVariable.success.title"),
         description: t(
           "api.variables.mutate.updateVariable.success.description",
-          { name: data.key }
+          { name: data.data.name }
         ),
         variant: "success",
       });
-      onSuccess?.(data);
+      onSuccess?.();
     },
     onError: () => {
       toast({

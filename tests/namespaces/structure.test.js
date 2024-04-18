@@ -10,8 +10,15 @@ const timestamps = {
 	updatedAt: expect.stringMatching(regex.timestampRegex),
 }
 
-describe('Test namespace get delete list calls', () => {
+describe('Test namespace get list calls', () => {
 	beforeAll(helpers.deleteAllNamespaces)
+
+	it(`should list empty`, async () => {
+		const res = await request(config.getDirektivHost())
+			.get(`/api/v2/namespaces`)
+		expect(res.statusCode).toEqual(200)
+		expect(res.body.data).toEqual([])
+	})
 
 	it(`should create a new namespace foo`, async () => {
 		const res = await request(config.getDirektivHost())
