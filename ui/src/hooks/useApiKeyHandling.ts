@@ -3,25 +3,6 @@ import { useApiKey } from "~/util/store/apiKey";
 import { useAuthTest } from "~/api/authenticate/query/getAuthInfos";
 
 /**
- * Send test request to check if api needs an api key. In enterprise
- * mode, this test will be skipped and will always return true since
- * enterprise will always require us to send a token
- */
-const useIsApiKeyRequired = () => {
-  const { data: testSucceeded, isFetched: isFinished } = useAuthTest({
-    enabled: !isEnterprise(),
-  });
-
-  return isEnterprise()
-    ? { isApiKeyRequired: true, isFinished: true }
-    : {
-        isApiKeyRequired:
-          testSucceeded === undefined ? undefined : !testSucceeded,
-        isFinished,
-      };
-};
-
-/**
  * This hook will provide information about api key handling with the
  * following properties:
  *
@@ -53,16 +34,13 @@ const useApiKeyHandling = () => {
       enabled: keyIsPresent,
     });
 
-  const { isApiKeyRequired, isFinished: authCheckFinished } =
-    useIsApiKeyRequired();
+  const isApiKeyRequired = window?._direktiv?.requiresAuth ?? false;
 
   const isCurrentKeyValid = keyIsPresent
     ? storedKeyTestResult
     : !isApiKeyRequired;
 
-  const isFetched = keyIsPresent
-    ? authCheckFinished && testWithStoredKeyFinished
-    : authCheckFinished;
+  const isFetched = keyIsPresent ? testWithStoredKeyFinished : true;
 
   return {
     isApiKeyRequired,
