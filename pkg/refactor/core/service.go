@@ -13,6 +13,7 @@ import (
 )
 
 const (
+	ServiceTypeSystem    = "system-service"
 	ServiceTypeNamespace = "namespace-service"
 	ServiceTypeWorkflow  = "workflow-service"
 )

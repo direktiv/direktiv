@@ -332,6 +332,7 @@ func (im *instanceMemory) CreateChild(ctx context.Context, args states.CreateChi
 	}
 
 	switch args.Definition.GetType() {
+	case model.SystemKnativeFunctionType:
 	case model.NamespacedKnativeFunctionType:
 	case model.ReusableContainerFunctionType:
 	default:
@@ -408,7 +409,11 @@ func (engine *engine) newIsolateRequest(im *instanceMemory, stateId string, time
 		ar.Container.Files = files
 		ar.Container.ID = con.ID
 		ar.Container.Service = service.GetServiceURL(ar.Workflow.NamespaceName, core.ServiceTypeNamespace, con.Path, "")
-
+	case model.SystemKnativeFunctionType:
+		con := fn.(*model.SystemFunctionDefinition)
+		ar.Container.Files = files
+		ar.Container.ID = con.ID
+		ar.Container.Service = service.GetServiceURL("", core.ServiceTypeSystem, con.Path, "")
 	default:
 		return nil, fmt.Errorf("unexpected function type: %v", fn)
 	}
@@ -469,6 +474,8 @@ func (engine *engine) doActionRequest(ctx context.Context, ar *functionRequest) 
 	case model.DefaultFunctionType:
 		fallthrough
 	case model.NamespacedKnativeFunctionType:
+		fallthrough
+	case model.SystemKnativeFunctionType:
 		fallthrough
 	case model.ReusableContainerFunctionType:
 		go engine.doKnativeHTTPRequest(ctx, ar)
