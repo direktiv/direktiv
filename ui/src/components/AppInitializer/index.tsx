@@ -9,6 +9,7 @@ export const AppInitializer: FC<PropsWithChildren> = ({ children }) => {
   window._direktiv = {
     ...window._direktiv,
     isEnterprise: data?.data.isEnterprise,
+    requiresAuth: data?.data.requiresAuth,
   };
 
   return <>{children}</>;
