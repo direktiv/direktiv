@@ -122,11 +122,19 @@ const NamespaceEdit = ({
   const { mutate: createNamespace, isLoading } = useCreateNamespace({
     onSuccess: (data) => {
       setNamespace(data.data.name);
+      if (isMirror) {
+        navigate(
+          pages.mirror.createHref({
+            namespace: data.data.name,
+          })
+        );
+      } else {
       navigate(
         pages.explorer.createHref({
           namespace: data.data.name,
         })
       );
+      }
       close();
     },
   });

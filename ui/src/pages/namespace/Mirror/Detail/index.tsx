@@ -58,7 +58,9 @@ const MirrorDetail = () => {
     );
   };
 
-  const pendingSyncs = syncs.filter((sync) => sync.status === "executing");
+  const pendingSyncs = syncs.filter(
+    (sync) => sync.status === "executing" || sync.status === "pending"
+  );
 
   if (pendingSyncs.length) {
     setTimeout(() => refreshSyncs(), 1000);

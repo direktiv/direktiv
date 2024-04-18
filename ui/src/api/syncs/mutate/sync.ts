@@ -1,4 +1,8 @@
-import { SyncResponseSchema, SyncResponseSchemaType } from "../schema";
+import {
+  SyncListSchemaType,
+  SyncResponseSchema,
+  SyncResponseSchemaType,
+} from "../schema";
 
 import { apiFactory } from "~/api/apiFactory";
 import { syncKeys } from "..";
@@ -15,6 +19,19 @@ const createSync = apiFactory({
   method: "POST",
   schema: SyncResponseSchema,
 });
+
+const updateCache = (
+  oldData: SyncListSchemaType | undefined,
+  newData: SyncResponseSchemaType
+) => {
+  const newRecord = newData.data;
+  if (!oldData) return { data: [newRecord] };
+
+  const oldRecords = oldData.data;
+  return {
+    data: [...oldRecords, newRecord],
+  };
+};
 
 export const useSync = ({
   onSuccess,
@@ -42,10 +59,11 @@ export const useSync = ({
   return useMutationWithPermissions({
     mutationFn,
     onSuccess: (data) => {
-      queryClient.invalidateQueries(
+      queryClient.setQueryData<SyncListSchemaType>(
         syncKeys.syncsList(namespace, {
           apiKey: apiKey ?? undefined,
-        })
+        }),
+        (oldData) => updateCache(oldData, data)
       );
       onSuccess?.(data);
       toast({
