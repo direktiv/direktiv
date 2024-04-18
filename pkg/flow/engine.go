@@ -929,14 +929,14 @@ func (engine *engine) reportInstanceCrashed(ctx context.Context, im *instanceMem
 	slog.Error(msg, enginerefactor.GetSlogAttributesWithError(namespaceTrackCtx, err)...)
 }
 
-func (engine *engine) UserLog(ctx context.Context, im *instanceMemory, msg string, a ...interface{}) {
+func (engine *engine) UserLog(ctx context.Context, im *instanceMemory, msg string) {
 	loggingCtx := im.Namespace().WithTags(ctx)
 	instanceTrackCtx := enginerefactor.WithTrack(im.WithTags(loggingCtx), enginerefactor.BuildInstanceTrack(im.instance))
 
-	slog.Info(fmt.Sprintf(msg, a...), enginerefactor.GetSlogAttributesWithStatus(instanceTrackCtx, core.LogUnknownStatus)...)
+	slog.Info(msg, enginerefactor.GetSlogAttributesWithStatus(instanceTrackCtx, core.LogUnknownStatus)...)
 
 	if attr := im.instance.Settings.LogToEvents; attr != "" {
-		s := fmt.Sprintf(msg, a...)
+		s := msg
 		event := cloudevents.NewEvent()
 		event.SetID(uuid.New().String())
 		event.SetSource(im.instance.Instance.WorkflowPath)

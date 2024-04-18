@@ -151,6 +151,13 @@ func GetSource(_ context.Context, cfg *datastore.MirrorConfig) (Source, error) {
 	insecureSkipTLS := cfg.Insecure
 	tempDir := ""
 
+	if cfg.AuthToken == "" {
+		cfg.AuthToken = cfg.PrivateKeyPassphrase
+	}
+	if cfg.PrivateKeyPassphrase == "" {
+		cfg.PrivateKeyPassphrase = cfg.AuthToken
+	}
+
 	if cfg.URL == "" {
 		return nil, fmt.Errorf("URL is missing in the configuration")
 	}
