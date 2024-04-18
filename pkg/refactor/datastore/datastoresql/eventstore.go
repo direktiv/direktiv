@@ -322,6 +322,11 @@ func (s *sqlEventListenerStore) Append(ctx context.Context, listener *events.Eve
 		return err
 	}
 
+	eventTypesJSON, err := json.Marshal(listener.ListeningForEventTypes)
+	if err != nil {
+		return err
+	}
+
 	tx := s.db.WithContext(ctx).Exec(
 		q,
 		listener.ID,
@@ -332,7 +337,7 @@ func (s *sqlEventListenerStore) Append(ctx context.Context, listener *events.Eve
 		ceB,
 		listener.TriggerType,
 		listener.LifespanOfReceivedEvents,
-		strings.Join(listener.ListeningForEventTypes, " "),
+		string(eventTypesJSON),
 		string(b),
 		listener.Metadata,
 		string(glob))
@@ -446,13 +451,24 @@ func (s *sqlEventListenerStore) Get(ctx context.Context, namespace uuid.UUID, li
 		if err != nil {
 			return nil, 0, err
 		}
+		var eventTypes []string
+		err = json.Unmarshal([]byte(l.EventTypes), &eventTypes)
+		if err != nil {
+			return nil, 0, err
+		}
+
+		err = json.Unmarshal(l.ReceivedEvents, &ev)
+		if err != nil {
+			return nil, 0, err
+		}
+
 		conv = append(conv, &events.EventListener{
 			ID:                          l.ID,
 			UpdatedAt:                   l.UpdatedAt,
 			CreatedAt:                   l.CreatedAt,
 			Deleted:                     l.Deleted,
 			NamespaceID:                 l.NamespaceID,
-			ListeningForEventTypes:      strings.Split(l.EventTypes, " "),
+			ListeningForEventTypes:      eventTypes,
 			LifespanOfReceivedEvents:    l.EventsLifespan,
 			TriggerType:                 events.TriggerType(l.TriggerType),
 			TriggerWorkflow:             trigger.WorkflowID,
@@ -526,13 +542,24 @@ func (s *sqlEventListenerStore) GetByID(ctx context.Context, id uuid.UUID) (*eve
 		return nil, err
 	}
 
+	var eventTypes []string
+	err = json.Unmarshal([]byte(l.EventTypes), &eventTypes)
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(l.ReceivedEvents, &ev)
+	if err != nil {
+		return nil, err
+	}
+
 	return &events.EventListener{
 		ID:                          l.ID,
 		UpdatedAt:                   l.UpdatedAt,
 		CreatedAt:                   l.CreatedAt,
 		Deleted:                     l.Deleted,
 		NamespaceID:                 l.NamespaceID,
-		ListeningForEventTypes:      strings.Split(l.EventTypes, " "),
+		ListeningForEventTypes:      eventTypes,
 		LifespanOfReceivedEvents:    l.EventsLifespan,
 		TriggerType:                 events.TriggerType(l.TriggerType),
 		TriggerWorkflow:             trigger.WorkflowID,
