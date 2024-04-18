@@ -23,7 +23,7 @@ func TestConfigBasicAuthPlugin(t *testing.T) {
 	}
 
 	p, _ := plugins.GetPluginFromRegistry(auth.BasicAuthPluginName)
-	p2, _ := p.Configure(config, core.MagicalGatewayNamespace)
+	p2, _ := p.Configure(config, core.SystemNamespace)
 
 	configOut := p2.Config().(*auth.BasicAuthConfig)
 	assert.Equal(t, config.AddGroupsHeader, configOut.AddGroupsHeader)
@@ -35,15 +35,15 @@ func TestExecuteBasicAuthPluginConfigure(t *testing.T) {
 	p, _ := plugins.GetPluginFromRegistry(auth.BasicAuthPluginName)
 
 	// configure with nil
-	_, err := p.Configure(nil, core.MagicalGatewayNamespace)
+	_, err := p.Configure(nil, core.SystemNamespace)
 	assert.NoError(t, err)
 
 	// configure with nonsense
-	_, err = p.Configure("random", core.MagicalGatewayNamespace)
+	_, err = p.Configure("random", core.SystemNamespace)
 	assert.Error(t, err)
 
 	config := &auth.BasicAuthConfig{}
-	_, err = p.Configure(config, core.MagicalGatewayNamespace)
+	_, err = p.Configure(config, core.SystemNamespace)
 	assert.NoError(t, err)
 }
 
@@ -55,7 +55,7 @@ func TestExecuteBasicAuthPluginNoConsumer(t *testing.T) {
 		AddUsernameHeader: true,
 	}
 
-	pi, _ := p.Configure(config, core.MagicalGatewayNamespace)
+	pi, _ := p.Configure(config, core.SystemNamespace)
 
 	r, _ := http.NewRequest(http.MethodPost, "/dummy", nil)
 
@@ -112,7 +112,7 @@ func runBasicAuthRequest(user, pwd string, c1, c2, c3 bool) (*httptest.ResponseR
 		AddTagsHeader:     c2,
 		AddGroupsHeader:   c3,
 	}
-	p2, _ := p.Configure(config, core.MagicalGatewayNamespace)
+	p2, _ := p.Configure(config, core.SystemNamespace)
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest(http.MethodPost, "/dummy", nil)
