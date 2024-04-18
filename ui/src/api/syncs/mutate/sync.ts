@@ -39,28 +39,28 @@ export const useSync = ({
   onSuccess?: (data: SyncResponseSchemaType) => void;
 } = {}) => {
   const apiKey = useApiKey();
-  const namespace = useNamespace();
+  const defaultNamespace = useNamespace();
   const { toast } = useToast();
   const { t } = useTranslation();
   const queryClient = useQueryClient();
 
-  if (!namespace) {
-    throw new Error("namespace is undefined");
+  if (!defaultNamespace) {
+    throw new Error("defaultNamespace is undefined");
   }
 
-  const mutationFn = () =>
+  const mutationFn = ({ namespace: givenNamespace }: { namespace?: string }) =>
     createSync({
       apiKey: apiKey ?? undefined,
       urlParams: {
-        namespace,
+        namespace: givenNamespace || defaultNamespace,
       },
     });
 
   return useMutationWithPermissions({
     mutationFn,
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
       queryClient.setQueryData<SyncListSchemaType>(
-        syncKeys.syncsList(namespace, {
+        syncKeys.syncsList(variables.namespace || defaultNamespace, {
           apiKey: apiKey ?? undefined,
         }),
         (oldData) => updateCache(oldData, data)
@@ -69,7 +69,7 @@ export const useSync = ({
       toast({
         title: t("api.namespaces.mutate.syncMirror.success.title"),
         description: t("api.namespaces.mutate.syncMirror.success.description", {
-          namespace,
+          namespace: variables.namespace,
         }),
         variant: "success",
       });

@@ -30,6 +30,7 @@ import { pages } from "~/util/router/pages";
 import { useCreateNamespace } from "~/api/namespaces/mutate/createNamespace";
 import { useListNamespaces } from "~/api/namespaces/query/get";
 import { useNavigate } from "react-router-dom";
+import { useSync } from "~/api/syncs/mutate/sync";
 import { useTranslation } from "react-i18next";
 import { useUpdateNamespace } from "~/api/namespaces/mutate/updateNamespace";
 import { z } from "zod";
@@ -65,6 +66,7 @@ const NamespaceEdit = ({
   const [isMirror, setIsMirror] = useState(!!mirror);
   const isNew = !mirror;
   const { data: namespaces } = useListNamespaces();
+  const { mutate: sync } = useSync();
   const { setNamespace } = useNamespaceActions();
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -123,17 +125,18 @@ const NamespaceEdit = ({
     onSuccess: (data) => {
       setNamespace(data.data.name);
       if (isMirror) {
+        sync({ namespace: data.data.name });
         navigate(
           pages.mirror.createHref({
             namespace: data.data.name,
           })
         );
       } else {
-      navigate(
-        pages.explorer.createHref({
-          namespace: data.data.name,
-        })
-      );
+        navigate(
+          pages.explorer.createHref({
+            namespace: data.data.name,
+          })
+        );
       }
       close();
     },

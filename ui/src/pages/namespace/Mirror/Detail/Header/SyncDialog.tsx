@@ -47,7 +47,7 @@ const SyncDialog = ({ loading }: { loading: boolean }) => {
               {t("components.button.label.cancel")}
             </Button>
           </DialogClose>
-          <Button onClick={() => performSync()}>
+          <Button onClick={() => performSync({})}>
             {t("pages.mirror.syncDialog.confirm")}
           </Button>
         </DialogFooter>
