@@ -41,6 +41,7 @@ CREATE TABLE IF NOT EXISTS "mirror_configs" (
     "namespace" text,
     "url" text NOT NULL,
     "git_ref" text NOT NULL,
+    "auth_type" text NOT NULL,
     "auth_token" text,
     "public_key" text,
     "private_key" text,
@@ -249,7 +250,6 @@ CREATE TABLE IF NOT EXISTS "metrics" (
     PRIMARY KEY ("id")
 );
 
-
 -- Remove file_annotations.
 DROP TABLE IF EXISTS "file_annotations";
 
@@ -263,3 +263,5 @@ ALTER TABLE "filesystem_files" ADD COLUMN IF NOT EXISTS "checksum" text;
 ALTER TABLE "event_topics" ADD COLUMN IF NOT EXISTS "filter" text;
 
 ALTER TABLE "namespaces" DROP COLUMN IF EXISTS "config";
+
+ALTER TABLE "mirror_configs" ADD COLUMN IF NOT EXISTS "auth_type" text NOT NULL DEFAULT 'public';
