@@ -79,6 +79,11 @@ func (s sqlMirrorStore) CreateConfig(ctx context.Context, config *datastore.Mirr
 		return nil, err
 	}
 
+	config.Normalize()
+	if errs := newConfig.Validate(); len(errs) > 0 {
+		return nil, errs
+	}
+
 	res := s.db.WithContext(ctx).Table("mirror_configs").Create(&newConfig)
 	if res.Error != nil {
 		return nil, res.Error
@@ -91,6 +96,11 @@ func (s sqlMirrorStore) UpdateConfig(ctx context.Context, config *datastore.Mirr
 	config, err := cryptDecryptConfig(config, s.configEncryptionKey, true)
 	if err != nil {
 		return nil, err
+	}
+
+	config.Normalize()
+	if errs := config.Validate(); len(errs) > 0 {
+		return nil, errs
 	}
 
 	res := s.db.WithContext(ctx).Table("mirror_configs").

@@ -1,4 +1,7 @@
-import { SecretUpdatedSchema, SecretUpdatedSchemaType } from "../schema";
+import {
+  SecretCreatedUpdatedSchema,
+  SecretFormCreateEditSchemaType,
+} from "../schema";
 
 import { apiFactory } from "~/api/apiFactory";
 import { secretKeys } from "..";
@@ -9,24 +12,21 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
-export const updateSecret = apiFactory({
-  url: ({
-    baseUrl,
-    namespace,
-    name,
-  }: {
-    namespace: string;
-    name: string;
-    baseUrl?: string;
-  }) => `${baseUrl ?? ""}/api/namespaces/${namespace}/secrets/${name}`,
-  method: "PUT",
-  schema: SecretUpdatedSchema,
+type UpdateSecretParams = { baseUrl?: string; namespace: string; name: string };
+
+export const updateSecret = apiFactory<
+  Omit<SecretFormCreateEditSchemaType, "name">
+>({
+  url: ({ baseUrl, namespace, name }: UpdateSecretParams) =>
+    `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/secrets/${name}`,
+  method: "PATCH",
+  schema: SecretCreatedUpdatedSchema,
 });
 
 export const useUpdateSecret = ({
   onSuccess,
 }: {
-  onSuccess?: (secret: SecretUpdatedSchemaType) => void;
+  onSuccess?: () => void;
 } = {}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
@@ -38,16 +38,18 @@ export const useUpdateSecret = ({
     throw new Error("namespace is undefined");
   }
 
+  const mutationFn = ({ name, ...payload }: SecretFormCreateEditSchemaType) =>
+    updateSecret({
+      apiKey: apiKey ?? undefined,
+      payload,
+      urlParams: {
+        name,
+        namespace,
+      },
+    });
+
   return useMutationWithPermissions({
-    mutationFn: ({ name, value }: { name: string; value: string }) =>
-      updateSecret({
-        apiKey: apiKey ?? undefined,
-        payload: value,
-        urlParams: {
-          namespace,
-          name,
-        },
-      }),
+    mutationFn,
     onSuccess: (secret) => {
       queryClient.invalidateQueries(
         secretKeys.secretsList(namespace, {
@@ -57,11 +59,11 @@ export const useUpdateSecret = ({
       toast({
         title: t("api.secrets.mutate.updateSecret.success.title"),
         description: t("api.secrets.mutate.updateSecret.success.description", {
-          name: secret.key,
+          name: secret.data.name,
         }),
         variant: "success",
       });
-      onSuccess?.(secret);
+      onSuccess?.();
     },
     onError: () => {
       toast({

@@ -150,17 +150,25 @@ describe('Test target workflow variable plugin', () => {
 		endpointWorkflowVarAllowed,
 	)
 
-	it(`should set plain text variable for worklfow`, async () => {
-		const workflowVarResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${ testNamespace }/tree/workflow.yaml?op=set-var&var=test`)
-			.set('Content-Type', 'text/plain')
-			.send('Hello World')
+	it(`should set plain text variable`, async () => {
+		const workflowVarResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ testNamespace }/variables`)
+			.send({
+				name: 'test',
+				workflowPath: '/workflow.yaml',
+				data: btoa('Hello World'),
+				mimeType: 'text/plain',
+			})
 		expect(workflowVarResponse.statusCode).toEqual(200)
 	})
 
 	it(`should set plain text variable for worklfow in limited namespace`, async () => {
-		const workflowVarResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${ limitedNamespace }/tree/workflow.yaml?op=set-var&var=test`)
-			.set('Content-Type', 'text/plain')
-			.send('Hello World 2')
+		const workflowVarResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ limitedNamespace }/variables`)
+			.send({
+				name: 'test',
+				workflowPath: '/workflow.yaml',
+				data: btoa('Hello World 2'),
+				mimeType: 'text/plain',
+			})
 		expect(workflowVarResponse.statusCode).toEqual(200)
 	})
 

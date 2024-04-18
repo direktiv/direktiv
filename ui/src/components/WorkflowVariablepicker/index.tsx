@@ -11,7 +11,7 @@ import Input from "~/design/Input";
 import { VariablePickerError } from "./VariablePickerError";
 import { useNamespace } from "~/util/store/namespace";
 import { useTranslation } from "react-i18next";
-import { useWorkflowVariables } from "~/api/tree/query/variables";
+import { useVars } from "~/api/variables/query/get";
 
 type WorkflowVariablePickerProps = {
   namespace?: string;
@@ -33,12 +33,12 @@ const WorkflowVariablePicker = ({
   const defaultNamespace = useNamespace();
   const namespace = givenNamespace ?? defaultNamespace;
 
-  const { data, isError: pathNotFound } = useWorkflowVariables({
-    path: workflowPath,
-    namespace,
+  const { data, isError: pathNotFound } = useVars({
+    workflowPath,
+    namespace: namespace ?? undefined,
   });
 
-  const variables = data?.variables.results ?? [];
+  const variables = data?.data ?? [];
   const noVarsInWorkflow = variables.length === 0;
 
   const setNewVariable = (name: string) => {
@@ -47,7 +47,7 @@ const WorkflowVariablePicker = ({
   };
 
   const setExistingVariable = (name: string) => {
-    const foundVariable = variables.find((element) => element.name === name);
+    const foundVariable = variables.find((variable) => variable.name === name);
     if (foundVariable) {
       onChange(foundVariable?.name, foundVariable?.mimeType);
       setInput(name);

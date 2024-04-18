@@ -2,6 +2,7 @@ import { beforeAll, describe, expect, it } from '@jest/globals'
 
 import common from '../common'
 import helpers from '../common/helpers'
+import regex from '../common/regex'
 import request from '../common/request'
 
 const namespaceName = 'mirtest'
@@ -511,25 +512,18 @@ describe('Test behaviour specific to the root node', () => {
 	})
 
 	it(`should read the workflow variables of '/banana/page-1.yaml'`, async () => {
-		const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/tree/banana/page-1.yaml?op=vars`)
+		const req = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/variables?workflowPath=/banana/page-1.yaml`)
 		expect(req.statusCode).toEqual(200)
-		expect(req.body).toMatchObject({
-			namespace: namespaceName,
-			path: `/banana/page-1.yaml`,
-			variables: {
-				pageInfo: null,
-				results: [
-					{
-						mimeType: 'text/html',
-						name: 'page.html',
-						size: '221',
-						checksum: '',
-						createdAt: expect.stringMatching(common.regex.timestampRegex),
-						updatedAt: expect.stringMatching(common.regex.timestampRegex),
-					},
-				],
-			},
-		})
+		expect(req.body.data).toEqual([ {
+			id: expect.stringMatching(common.regex.uuidRegex),
+			type: 'workflow-variable',
+			reference: '/banana/page-1.yaml',
+			name: 'page.html',
+			size: 221,
+			mimeType: 'text/html',
+			createdAt: expect.stringMatching(regex.timestampRegex),
+			updatedAt: expect.stringMatching(regex.timestampRegex),
+		} ])
 	})
 
 	it(`should read the '/banana/page-2.yaml' workflow node`, async () => {
@@ -554,25 +548,18 @@ describe('Test behaviour specific to the root node', () => {
 	})
 
 	it(`should read the workflow variables of '/banana/page-2.yaml'`, async () => {
-		const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/tree/banana/page-2.yaml?op=vars`)
+		const req = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/variables?workflowPath=/banana/page-2.yaml`)
 		expect(req.statusCode).toEqual(200)
-		expect(req.body).toMatchObject({
-			namespace: namespaceName,
-			path: `/banana/page-2.yaml`,
-			variables: {
-				pageInfo: null,
-				results: [
-					{
-						mimeType: 'text/html',
-						name: 'Page.HTML',
-						size: '233',
-						checksum: '',
-						createdAt: expect.stringMatching(common.regex.timestampRegex),
-						updatedAt: expect.stringMatching(common.regex.timestampRegex),
-					},
-				],
-			},
-		})
+		expect(req.body.data).toEqual([ {
+			id: expect.stringMatching(common.regex.uuidRegex),
+			type: 'workflow-variable',
+			reference: '/banana/page-2.yaml',
+			name: 'Page.HTML',
+			size: 233,
+			mimeType: 'text/html',
+			createdAt: expect.stringMatching(regex.timestampRegex),
+			updatedAt: expect.stringMatching(regex.timestampRegex),
+		} ])
 	})
 
 	it(`should read the /banana/util node`, async () => {
@@ -673,88 +660,20 @@ describe('Test behaviour specific to the root node', () => {
 	})
 
 	it(`should check for the expected list of namespace variables`, async () => {
-		const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/vars`)
+		const req = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/variables`)
 		expect(req.statusCode).toEqual(200)
-		expect(req.body).toMatchObject({
-			namespace: namespaceName,
-			variables: {
-				pageInfo: null,
-				results: expect.arrayContaining([
-					{
-						checksum: '',
-						mimeType: 'text/plain',
-						name: 'alpha.csv',
-						size: '7', // TODO: this is a string, which is probably a bug
-						createdAt: expect.stringMatching(common.regex.timestampRegex),
-						updatedAt: expect.stringMatching(common.regex.timestampRegex),
-					},
-					{
-						checksum: '',
-						mimeType: 'application/json',
-						name: 'alp-ha.json',
-						size: '9',
-						createdAt: expect.stringMatching(common.regex.timestampRegex),
-						updatedAt: expect.stringMatching(common.regex.timestampRegex),
-					},
-					{
-						checksum: '',
-						mimeType: 'application/json',
-						name: 'alp_ha.json',
-						size: '9',
-						createdAt: expect.stringMatching(common.regex.timestampRegex),
-						updatedAt: expect.stringMatching(common.regex.timestampRegex),
-					},
-					{
-						checksum: '',
-						mimeType: 'application/json',
-						name: 'alpha.json',
-						size: '9',
-						createdAt: expect.stringMatching(common.regex.timestampRegex),
-						updatedAt: expect.stringMatching(common.regex.timestampRegex),
-					},
-					{
-						checksum: '',
-						mimeType: 'application/json',
-						name: 'alpha_.json',
-						size: '9',
-						createdAt: expect.stringMatching(common.regex.timestampRegex),
-						updatedAt: expect.stringMatching(common.regex.timestampRegex),
-					},
-					{
-						checksum: '',
-						mimeType: 'application/json',
-						name: 'ALPHA.json',
-						size: '9',
-						createdAt: expect.stringMatching(common.regex.timestampRegex),
-						updatedAt: expect.stringMatching(common.regex.timestampRegex),
-					},
-					{
-						checksum: '',
-						mimeType: 'application/json',
-						name: 'beta.json',
-						size: '9',
-						createdAt: expect.stringMatching(common.regex.timestampRegex),
-						updatedAt: expect.stringMatching(common.regex.timestampRegex),
-					},
-					{
-						checksum: '',
-						mimeType: 'application/json',
-						name: 'data.json',
-						size: '9',
-						createdAt: expect.stringMatching(common.regex.timestampRegex),
-						updatedAt: expect.stringMatching(common.regex.timestampRegex),
-					},
-					{
-						checksum: '',
-						mimeType: 'text/plain',
-						name: 'gamma.css',
-						size: '103',
-						createdAt: expect.stringMatching(common.regex.timestampRegex),
-						updatedAt: expect.stringMatching(common.regex.timestampRegex),
-					},
-				]),
-			},
-		})
+		const reduced = req.body.data.map(i => i.name)
+		expect(reduced.sort()).toEqual([
+			'beta.json',
+			'ALPHA.json',
+			'alp_ha.json',
+			'data.json',
+			'alpha.json',
+			'alp-ha.json',
+			'alpha.csv',
+			'alpha_.json',
+			'gamma.css',
+		].sort())
 	})
 
 	// TODO: this test need to expect stream response.

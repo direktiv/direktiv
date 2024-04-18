@@ -18,21 +18,3 @@ export const PageinfoSchema = z.object({
   offset: z.number(),
   total: z.number(),
 });
-
-/**
- * FileSchema is an alternative to z.instanceof(File), since
- * Playwright throws a "File is not defined" error.
- */
-export const FileSchema = z.custom<File>((value) => {
-  if (
-    typeof value === "object" &&
-    value !== null &&
-    "name" in value &&
-    "size" in value &&
-    "stream" in value
-  ) {
-    return true;
-  } else {
-    return false;
-  }
-});

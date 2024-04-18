@@ -81,8 +81,8 @@ test("Notification Bell updates depending on the count of Notification Messages"
 
   await initialize_secret1.click();
 
-  await page.getByTestId("new-secret-editor").fill("abc");
-  await page.getByTestId("secret-create-submit").click();
+  await page.locator("textarea").fill("abc");
+  await page.getByRole("button", { name: "Save" }).click();
   await notificationBell.click();
 
   expect(
@@ -97,8 +97,8 @@ test("Notification Bell updates depending on the count of Notification Messages"
 
   await initialize_secret2.click();
 
-  await page.getByTestId("new-secret-editor").fill("123");
-  await page.getByTestId("secret-create-submit").click();
+  await page.locator("textarea").fill("123");
+  await page.getByRole("button", { name: "Save" }).click();
 
   await expect(
     page.getByTestId("notification-indicator"),
