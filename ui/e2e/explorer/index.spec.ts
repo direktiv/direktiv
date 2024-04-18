@@ -1,6 +1,5 @@
 import {
   checkIfNamespaceExists,
-  cleanupNamespaces,
   createNamespace,
   createNamespaceName,
   deleteNamespace,
@@ -19,7 +18,7 @@ test.beforeEach(async () => {
 });
 
 test.afterEach(async () => {
-  await cleanupNamespaces();
+  await deleteNamespace(namespace);
   namespace = "";
 });
 
