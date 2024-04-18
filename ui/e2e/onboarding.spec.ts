@@ -9,17 +9,10 @@ test("if no namespaces exist, it renders the onboarding page", async ({
   await page.route(`/api/v2/namespaces`, async (route) => {
     if (route.request().method() === "GET") {
       const json = {
-        pageInfo: {
-          order: [],
-          filter: [],
-          limit: 0,
-          offset: 0,
-          total: 0,
-        },
         data: [],
       };
       await route.fulfill({ json });
-    }
+    } else route.continue();
   });
 
   // visit page
@@ -45,6 +38,7 @@ test("if no namespaces exist, it renders the onboarding page", async ({
 
   // create a namespace - this will not trigger the mocked endpoint above
   await page.getByRole("button", { name: "Create namespace" }).click();
+
   await page.getByPlaceholder("new-namespace-name").fill(namespace);
   await page.getByRole("button", { name: "Create" }).click();
 
