@@ -32,16 +32,10 @@ const useNamespaces = <T>({
   filter: (apiResponse: NamespaceListSchemaType) => T;
 }) => {
   const apiKey = useApiKey();
-  const namespace = useNamespace();
-
-  if (!namespace) {
-    throw new Error("namespace is undefined");
-  }
 
   return useQuery({
     queryKey: namespaceKeys.all(apiKey ?? undefined),
     queryFn: fetchNamespaces,
-    enabled: !!namespace,
     select: (data) => filter(data),
   });
 };

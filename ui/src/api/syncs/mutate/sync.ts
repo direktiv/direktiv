@@ -8,7 +8,6 @@ import { apiFactory } from "~/api/apiFactory";
 import { syncKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import useMutationWithPermissions from "~/api/useMutationWithPermissions";
-import { useNamespace } from "~/util/store/namespace";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
@@ -39,28 +38,36 @@ export const useSync = ({
   onSuccess?: (data: SyncResponseSchemaType) => void;
 } = {}) => {
   const apiKey = useApiKey();
-  const defaultNamespace = useNamespace();
   const { toast } = useToast();
   const { t } = useTranslation();
   const queryClient = useQueryClient();
 
-  if (!defaultNamespace) {
-    throw new Error("defaultNamespace is undefined");
-  }
+  const mutationFn = ({
+    namespace: givenNamespace,
+  }: {
+    namespace: string | null;
+  }) => {
+    const namespace = givenNamespace;
 
-  const mutationFn = ({ namespace: givenNamespace }: { namespace?: string }) =>
-    createSync({
+    if (!namespace) {
+      throw new Error("namespace is undefined");
+    }
+    return createSync({
       apiKey: apiKey ?? undefined,
       urlParams: {
-        namespace: givenNamespace || defaultNamespace,
+        namespace,
       },
     });
+  };
 
   return useMutationWithPermissions({
     mutationFn,
     onSuccess: (data, variables) => {
+      if (!variables.namespace) {
+        throw new Error("variables.namespace is undefined");
+      }
       queryClient.setQueryData<SyncListSchemaType>(
-        syncKeys.syncsList(variables.namespace || defaultNamespace, {
+        syncKeys.syncsList(variables.namespace, {
           apiKey: apiKey ?? undefined,
         }),
         (oldData) => updateCache(oldData, data)

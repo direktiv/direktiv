@@ -11,6 +11,7 @@ import {
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
 import { RefreshCcw } from "lucide-react";
+import { useNamespace } from "~/util/store/namespace";
 import { useState } from "react";
 import { useSync } from "~/api/syncs/mutate/sync";
 import { useTranslation } from "react-i18next";
@@ -20,6 +21,7 @@ const SyncDialog = ({ loading }: { loading: boolean }) => {
   const { mutate: performSync } = useSync({
     onSuccess: () => setSyncModal(false),
   });
+  const namespace = useNamespace();
   const { t } = useTranslation();
 
   return (
@@ -47,7 +49,7 @@ const SyncDialog = ({ loading }: { loading: boolean }) => {
               {t("components.button.label.cancel")}
             </Button>
           </DialogClose>
-          <Button onClick={() => performSync({})}>
+          <Button onClick={() => performSync({ namespace })}>
             {t("pages.mirror.syncDialog.confirm")}
           </Button>
         </DialogFooter>
