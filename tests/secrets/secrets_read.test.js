@@ -25,17 +25,12 @@ describe('Test secret read operations', () => {
 
 	it(`should create a new secret`, async () => {
 		const res = await request(common.config.getDirektivHost())
-			.put(`/api/namespaces/${ testNamespace }/secrets/key1`)
-			.set({
-				'Content-Type': 'text/plain',
+			.post(`/api/v2/namespaces/${ testNamespace }/secrets`)
+			.send({
+				name: 'key1',
+				data: btoa('value1'),
 			})
-
-			.send(`value1`)
 		expect(res.statusCode).toEqual(200)
-		expect(res.body).toMatchObject({
-			namespace: testNamespace,
-			key: 'key1',
-		})
 	})
 
 	helpers.itShouldCreateFileV2(it, expect, testNamespace,

@@ -4,7 +4,7 @@ import common from '../common'
 import request from '../common/request'
 import { retry10 } from '../common/retry'
 
-const testNamespace = 'gateway'
+const testNamespace = 'system'
 
 const limitedNamespace = 'limited_namespace'
 
@@ -123,7 +123,7 @@ describe('Test mimetype for file target', () => {
 		const req = await request(common.config.getDirektivHost()).get(
 			`/gw/endpoint-mimetype`,
 		)
-		expect(req["headers"]["content-type"]).toEqual("application/whatever")
+		expect(req.headers['content-type']).toEqual('application/whatever')
 	})
 
 	common.helpers.itShouldCreateYamlFileV2(
@@ -138,9 +138,8 @@ describe('Test mimetype for file target', () => {
 		const req = await request(common.config.getDirektivHost()).get(
 			`/gw/endpoint-no-mimetype`,
 		)
-		expect(req["headers"]["content-type"]).toEqual("application/yaml")
+		expect(req.headers['content-type']).toEqual('application/yaml')
 	})
-
 })
 
 describe('Test target namespace file plugin', () => {

@@ -45,7 +45,7 @@ func ConfigureWorkflowVar(config interface{}, ns string) (core.PluginInstance, e
 	}
 
 	// throw error if non magic namespace targets different namespace
-	if targetflowVarConfig.Namespace != ns && ns != core.MagicalGatewayNamespace {
+	if targetflowVarConfig.Namespace != ns && ns != core.SystemNamespace {
 		return nil, fmt.Errorf("plugin can not target different namespace")
 	}
 

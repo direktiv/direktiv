@@ -8,8 +8,6 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const MagicalGatewayNamespace = "gateway"
-
 type GatewayManager interface {
 	http.Handler
 

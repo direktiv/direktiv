@@ -12,7 +12,7 @@ import { useNamespace } from "~/util/store/namespace";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
-export const createFile = apiFactory({
+export const createFile = apiFactory<CreateFileSchemaType>({
   url: ({
     baseUrl,
     namespace,

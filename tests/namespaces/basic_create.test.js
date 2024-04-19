@@ -20,6 +20,7 @@ describe('Test namespace create calls', () => {
 			},
 			want: {
 				name: 'foo1',
+				isSystemNamespace: false,
 				mirror: null,
 			},
 		},
@@ -29,13 +30,16 @@ describe('Test namespace create calls', () => {
 				mirror: {
 					url: 'my_url',
 					gitRef: 'main',
+					authType: 'public',
 				},
 			},
 			want: {
 				name: 'foo2',
+				isSystemNamespace: false,
 				mirror: {
 					url: 'my_url',
 					gitRef: 'main',
+					authType: 'public',
 					insecure: false,
 					...timestamps,
 				},
@@ -48,14 +52,17 @@ describe('Test namespace create calls', () => {
 					url: 'my_url',
 					insecure: true,
 					gitRef: 'master',
+					authType: 'public',
 				},
 			},
 			want: {
 				name: 'foo3',
+				isSystemNamespace: false,
 				mirror: {
 					url: 'my_url',
 					insecure: true,
 					gitRef: 'master',
+					authType: 'public',
 					...timestamps,
 				},
 			},
@@ -67,15 +74,18 @@ describe('Test namespace create calls', () => {
 					url: 'my_url',
 					insecure: true,
 					gitRef: 'master',
+					authType: 'token',
 					authToken: '12345',
 				},
 			},
 			want: {
 				name: 'foo4',
+				isSystemNamespace: false,
 				mirror: {
 					url: 'my_url',
 					insecure: true,
 					gitRef: 'master',
+					authType: 'token',
 					...timestamps,
 				},
 			},
@@ -87,17 +97,20 @@ describe('Test namespace create calls', () => {
 					url: 'my_url',
 					insecure: true,
 					gitRef: 'master',
+					authType: 'ssh',
 					publicKey: 'my-public-key',
 					privateKey: 'my-private-key',
 				},
 			},
 			want: {
 				name: 'foo5',
+				isSystemNamespace: false,
 				mirror: {
 					url: 'my_url',
 					insecure: true,
 					gitRef: 'master',
 					publicKey: 'my-public-key',
+					authType: 'ssh',
 					...timestamps,
 				},
 			},
@@ -266,7 +279,7 @@ describe('Test missing fields create calls', () => {
 	for (let i = 0; i < testCases.length; i++) {
 		const testCase = testCases[i]
 
-		it(`should create a new namespace case ${ i }`, async () => {
+		it(`should fail create a new namespace case ${ i }`, async () => {
 			const res = await request(config.getDirektivHost())
 				.post(`/api/v2/namespaces`)
 				.send(testCase)

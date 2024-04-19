@@ -145,12 +145,6 @@
                 "createBtn": "Add variable",
                 "emptySearch": "No variable matches your search",
                 "empty": "No variable found"
-              },
-              "create": {
-                "title": "Add a workflow variable"
-              },
-              "edit": {
-                "title": "Edit {{name}}"
               }
             }
           },
@@ -873,15 +867,19 @@
         "delete": {
           "description": "Are you sure you want to delete <b>{{name}}</b>?<br/> This cannot be undone."
         },
+        "form": {
+          "unsupported": "Unsupported MimeType: Only text-based files can be used for secrets",
+          "name": {
+            "label": "Name",
+            "placeholder": "secret-name",
+            "nameAlreadyExists": "The name already exists"
+          }
+        },
         "create": {
-          "description": "Add a secret",
-          "name": "Name",
-          "file": "Upload a file",
-          "fileError": "There was an error uploading the file",
-          "unsupported": "This mime type is not supported"
+          "title": "Add a secret"
         },
         "edit": {
-          "description": "Edit {{name}}",
+          "title": "Edit {{name}}",
           "editNote": "Existing secrets cannot be retrieved after creating. But you can overwrite the existing value with a new one"
         }
       },
@@ -913,29 +911,6 @@
         },
         "delete": {
           "description": "Are you sure you want to delete <b>{{name}}</b>?<br/> This cannot be undone."
-        },
-        "create": {
-          "title": "Add a variable",
-          "name": {
-            "label": "Name",
-            "placeholder": "variable-name"
-          },
-          "file": {
-            "label": "Upload a file"
-          },
-          "noPreview": "Only text based mime types are supported for preview and editing"
-        },
-        "edit": {
-          "title": "Edit {{name}}",
-          "fetchError": "There was an error fetching the variable's content",
-          "mimeType": {
-            "label": "Mimetype",
-            "placeholder": "Select a mimetype"
-          },
-          "file": {
-            "label": "Upload a file"
-          },
-          "noPreview": "Only text based mime types are supported for preview and editing"
         }
       },
       "deleteNamespace": {
@@ -1178,6 +1153,23 @@
       "loading": "loading...",
       "optionDoesNotExist": "{{namespace}} (does not exist)"
     },
+    "variableForm": {
+      "title": {
+        "create": "Create a variable",
+        "edit": "Edit {{name}}"
+      },
+      "name": {
+        "label": "Name",
+        "placeholder": "variable-name",
+        "nameAlreadyExists": "The name already exists"
+      },
+      "mimeType": {
+        "label": "Mimetype",
+        "unspecified": "Mimetype is unspecified",
+        "placeholder": "Select a mimetype"
+      },
+      "noPreview": "Only text based mime types are supported for preview and editing"
+    },
     "namespaceVariablepicker": {
       "title": "Variables in \"{{path}}\"",
       "buttonText": "Browse Variables",
@@ -1207,6 +1199,9 @@
         "title": "The path \"{{path}}\" was not found.",
         "linkText": "Go back to root directory"
       }
+    },
+    "fileUpload": {
+      "label": "Upload a file"
     },
     "userMenu": {
       "loggedIn": "You are logged in",

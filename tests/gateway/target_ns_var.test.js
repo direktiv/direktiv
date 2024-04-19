@@ -4,7 +4,7 @@ import common from '../common'
 import request from '../common/request'
 import { retry10 } from '../common/retry'
 
-const testNamespace = 'gateway'
+const testNamespace = 'system'
 
 const limitedNamespace = 'limited_namespace'
 
@@ -91,16 +91,22 @@ describe('Test target namespace variable plugin', () => {
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
 	it(`should set plain text variable`, async () => {
-		const workflowVarResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${ testNamespace }/vars/plain`)
-			.set('Content-Type', 'text/plain')
-			.send('Hello World')
+		const workflowVarResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ testNamespace }/variables`)
+			.send({
+				name: 'plain',
+				data: btoa('Hello World'),
+				mimeType: 'text/plain',
+			})
 		expect(workflowVarResponse.statusCode).toEqual(200)
 	})
 
 	it(`should set plain text variable`, async () => {
-		const workflowVarResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${ limitedNamespace }/vars/plain`)
-			.set('Content-Type', 'text/plain')
-			.send('Hello World 2')
+		const workflowVarResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ limitedNamespace }/variables`)
+			.send({
+				name: 'plain',
+				data: btoa('Hello World 2'),
+				mimeType: 'text/plain',
+			})
 		expect(workflowVarResponse.statusCode).toEqual(200)
 	})
 

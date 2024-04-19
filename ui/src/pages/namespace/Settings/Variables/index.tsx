@@ -13,11 +13,11 @@ import Input from "~/design/Input";
 import ItemRow from "../components/ItemRow";
 import PaginationProvider from "~/components/PaginationProvider";
 import { VarSchemaType } from "~/api/variables/schema";
-import { triggerDownloadFromBlob } from "~/util/helpers";
-import { useDeleteVar } from "~/api/variables/mutate/deleteVariable";
-import { useDownloadVar } from "~/api/variables/mutate/downloadVariable";
+import { triggerDownloadFromBase64String } from "~/util/helpers";
+import { useDeleteVar } from "~/api/variables/mutate/delete";
+import { useDownloadVar } from "~/api/variables/mutate/download";
 import { useTranslation } from "react-i18next";
-import { useVars } from "~/api/variables/query/useVariables";
+import { useVars } from "~/api/variables/query/get";
 
 const pageSize = 10;
 
@@ -30,27 +30,36 @@ const VariablesList: FC = () => {
   const [search, setSearch] = useState("");
   const isSearch = search.length > 0;
 
-  const { data, isFetched, isAllowed, noPermissionMessage } = useVars();
+  const {
+    data: variables,
+    isFetched,
+    isAllowed,
+    noPermissionMessage,
+  } = useVars();
 
   const filteredItems = useMemo(
     () =>
-      (data?.variables?.results ?? [])?.filter(
+      (variables?.data ?? [])?.filter(
         (item) => !isSearch || item.name.includes(search)
       ),
-    [data?.variables?.results, isSearch, search]
+    [isSearch, search, variables?.data]
   );
 
-  const { mutate: deleteVarMutation } = useDeleteVar({
+  const { mutate: deleteVar } = useDeleteVar({
     onSuccess: () => {
       setDialogOpen(false);
     },
   });
 
+  const allNames = variables?.data?.map((v) => v.name) ?? [];
+
   const { mutate: downloadVar } = useDownloadVar({
-    onSuccess: (response, name) => {
-      triggerDownloadFromBlob({
-        blob: response.blob,
-        filename: name,
+    onSuccess: (response) => {
+      const { name: filename, data: base64String, mimeType } = response.data;
+      triggerDownloadFromBase64String({
+        filename,
+        base64String,
+        mimeType,
       });
     },
   });
@@ -65,8 +74,8 @@ const VariablesList: FC = () => {
 
   if (!isFetched) return null;
 
-  const download = (name: string) => {
-    downloadVar(name);
+  const download = (variableId: string) => {
+    downloadVar(variableId);
   };
 
   return (
@@ -118,7 +127,7 @@ const VariablesList: FC = () => {
                             key={i}
                             onDelete={setDeleteItem}
                             onEdit={() => setEditItem(item)}
-                            onDownload={() => download(item.name)}
+                            onDownload={() => download(item.id)}
                           >
                             {item.name}
                           </ItemRow>
@@ -165,12 +174,13 @@ const VariablesList: FC = () => {
         <Delete
           name={deleteItem.name}
           onConfirm={() => {
-            deleteVarMutation({ variable: deleteItem });
+            deleteVar({ variable: deleteItem });
           }}
         />
       )}
       {createItem && (
         <Create
+          unallowedNames={allNames}
           onSuccess={() => {
             setDialogOpen(false);
           }}
@@ -178,6 +188,7 @@ const VariablesList: FC = () => {
       )}
       {editItem && (
         <Edit
+          unallowedNames={allNames.filter((name) => name !== editItem.name)}
           item={editItem}
           onSuccess={() => {
             setDialogOpen(false);
