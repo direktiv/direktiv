@@ -14,7 +14,9 @@ import { useTranslation } from "react-i18next";
 
 type UpdateSecretParams = { baseUrl?: string; namespace: string; name: string };
 
-export const updateSecret = apiFactory({
+export const updateSecret = apiFactory<
+  Omit<SecretFormCreateEditSchemaType, "name">
+>({
   url: ({ baseUrl, namespace, name }: UpdateSecretParams) =>
     `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/secrets/${name}`,
   method: "PATCH",

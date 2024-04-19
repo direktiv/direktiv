@@ -9,7 +9,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
-export const createRegistry = apiFactory({
+export const createRegistry = apiFactory<RegistryFormSchemaType>({
   url: ({ baseUrl, namespace }: { baseUrl?: string; namespace: string }) =>
     `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/registries`,
   method: "POST",

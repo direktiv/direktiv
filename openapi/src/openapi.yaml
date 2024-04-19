@@ -102,6 +102,8 @@ tags:
     description: Endpoints reading and changing filesystem tree nodes
   - name: plattformlogs
     description: Endpoints to access logs that are exposed by the components
+  - name: notifications
+    description: Endpoints for managing notifications
 x-tagGroups:
   - name: Endpoints
     tags:

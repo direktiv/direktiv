@@ -26,6 +26,7 @@ describe('Test namespace simple update calls', () => {
 			},
 			want: {
 				name: 'foo',
+				isSystemNamespace: false,
 				...timestamps,
 				mirror: {
 					url: 'my_url',
@@ -47,6 +48,7 @@ describe('Test namespace simple update calls', () => {
 			},
 			want: {
 				name: 'foo',
+				isSystemNamespace: false,
 				...timestamps,
 				mirror: {
 					url: 'my_url2',
@@ -181,6 +183,7 @@ describe('Test namespace mirror update calls', () => {
 			expect(res.statusCode).toEqual(200)
 			expect(res.body.data).toEqual({
 				name: 'foo',
+				isSystemNamespace: false,
 				...timestamps,
 				mirror: {
 					...testCase.want,

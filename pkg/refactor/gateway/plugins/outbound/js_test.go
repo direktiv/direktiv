@@ -25,7 +25,7 @@ func TestJSOutboundPlugin(t *testing.T) {
 		input["Code"] = 204
 		`,
 	}
-	p2, _ := p.Configure(config, core.MagicalGatewayNamespace)
+	p2, _ := p.Configure(config, core.SystemNamespace)
 
 	r, _ := http.NewRequest(http.MethodGet, "/dummy", nil)
 	r.Header.Add("Header1", "value1")
@@ -53,7 +53,7 @@ func TestJsonModJSOutboundPlugin(t *testing.T) {
         input["Body"] = JSON.parse(input["Body"]).csv
 		`,
 	}
-	p2, _ := p.Configure(config, core.MagicalGatewayNamespace)
+	p2, _ := p.Configure(config, core.SystemNamespace)
 
 	r, _ := http.NewRequest(http.MethodGet, "/dummy", nil)
 	r.Body = io.NopCloser(bytes.NewBufferString("{ \"csv\": \"text\" }"))
@@ -72,7 +72,7 @@ func TestJSOutboundPluginBroken(t *testing.T) {
 		random stuff / 2
 		`,
 	}
-	p2, _ := p.Configure(config, core.MagicalGatewayNamespace)
+	p2, _ := p.Configure(config, core.SystemNamespace)
 
 	r, _ := http.NewRequest(http.MethodGet, "/dummy", nil)
 

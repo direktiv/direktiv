@@ -33,7 +33,7 @@ func TestExecuteHeaderManipulationPlugin(t *testing.T) {
 			},
 		},
 	}
-	p2, _ := p.Configure(config, core.MagicalGatewayNamespace)
+	p2, _ := p.Configure(config, core.SystemNamespace)
 
 	r, _ := http.NewRequest(http.MethodGet, "/dummy", nil)
 	r.Header.Add("Header1", "value1")

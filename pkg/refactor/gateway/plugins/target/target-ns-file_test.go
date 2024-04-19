@@ -17,7 +17,7 @@ func TestConfigNSFilePlugin(t *testing.T) {
 		Namespace: "somerandom",
 	}
 
-	_, err := p.Configure(config, core.MagicalGatewayNamespace)
+	_, err := p.Configure(config, core.SystemNamespace)
 	assert.NoError(t, err)
 
 	_, err = p.Configure(config, "someother")
