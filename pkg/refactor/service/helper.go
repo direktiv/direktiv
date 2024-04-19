@@ -3,6 +3,7 @@ package service
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/util"
@@ -283,6 +284,10 @@ func buildEnvVars(withGrpc bool, c *core.Config, sv *core.ServiceFileData) []cor
 			Name:  util.DirektivProxyHTTP,
 			Value: c.KnativeProxyHTTP,
 		})
+		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
+			Name:  strings.ToLower(util.DirektivProxyHTTP),
+			Value: c.KnativeProxyHTTP,
+		})
 	}
 
 	if len(c.KnativeProxyHTTPS) > 0 {
@@ -290,11 +295,19 @@ func buildEnvVars(withGrpc bool, c *core.Config, sv *core.ServiceFileData) []cor
 			Name:  util.DirektivProxyHTTPS,
 			Value: c.KnativeProxyHTTPS,
 		})
+		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
+			Name:  strings.ToLower(util.DirektivProxyHTTPS),
+			Value: c.KnativeProxyHTTPS,
+		})
 	}
 
 	if len(c.KnativeProxyNo) > 0 {
 		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
 			Name:  util.DirektivProxyNO,
+			Value: c.KnativeProxyNo,
+		})
+		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
+			Name:  strings.ToLower(util.DirektivProxyNO),
 			Value: c.KnativeProxyNo,
 		})
 	}
