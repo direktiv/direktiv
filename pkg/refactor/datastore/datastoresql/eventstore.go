@@ -601,6 +601,7 @@ func encodeStrings(s []string) string {
 	for i, str := range s {
 		encodedStrings[i] = strings.ReplaceAll(str, " ", "\u00A0")
 	}
+
 	return strings.Join(encodedStrings, " ")
 }
 
@@ -610,5 +611,6 @@ func decodeString(s string) []string {
 	for i, part := range parts {
 		parts[i] = strings.ReplaceAll(part, "\u00A0", " ")
 	}
+
 	return parts
 }
