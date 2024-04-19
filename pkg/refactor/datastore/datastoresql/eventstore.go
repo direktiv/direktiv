@@ -267,7 +267,7 @@ func convertListeners(res []*gormEventListener, conv []*events.EventListener) ([
 			CreatedAt:                   l.CreatedAt,
 			Deleted:                     l.Deleted,
 			NamespaceID:                 l.NamespaceID,
-			ListeningForEventTypes:      strings.Split(l.EventTypes, " "),
+			ListeningForEventTypes:      decodeString(l.EventTypes),
 			LifespanOfReceivedEvents:    l.EventsLifespan,
 			TriggerType:                 events.TriggerType(l.TriggerType),
 			TriggerWorkflow:             trigger.WorkflowID,
@@ -322,11 +322,6 @@ func (s *sqlEventListenerStore) Append(ctx context.Context, listener *events.Eve
 		return err
 	}
 
-	eventTypesJSON, err := json.Marshal(listener.ListeningForEventTypes)
-	if err != nil {
-		return err
-	}
-
 	tx := s.db.WithContext(ctx).Exec(
 		q,
 		listener.ID,
@@ -337,7 +332,7 @@ func (s *sqlEventListenerStore) Append(ctx context.Context, listener *events.Eve
 		ceB,
 		listener.TriggerType,
 		listener.LifespanOfReceivedEvents,
-		string(eventTypesJSON),
+		encodeStrings(listener.ListeningForEventTypes),
 		string(b),
 		listener.Metadata,
 		string(glob))
@@ -451,11 +446,6 @@ func (s *sqlEventListenerStore) Get(ctx context.Context, namespace uuid.UUID, li
 		if err != nil {
 			return nil, 0, err
 		}
-		var eventTypes []string
-		err = json.Unmarshal([]byte(l.EventTypes), &eventTypes)
-		if err != nil {
-			return nil, 0, err
-		}
 
 		err = json.Unmarshal(l.ReceivedEvents, &ev)
 		if err != nil {
@@ -468,7 +458,7 @@ func (s *sqlEventListenerStore) Get(ctx context.Context, namespace uuid.UUID, li
 			CreatedAt:                   l.CreatedAt,
 			Deleted:                     l.Deleted,
 			NamespaceID:                 l.NamespaceID,
-			ListeningForEventTypes:      eventTypes,
+			ListeningForEventTypes:      decodeString(l.EventTypes),
 			LifespanOfReceivedEvents:    l.EventsLifespan,
 			TriggerType:                 events.TriggerType(l.TriggerType),
 			TriggerWorkflow:             trigger.WorkflowID,
@@ -542,12 +532,6 @@ func (s *sqlEventListenerStore) GetByID(ctx context.Context, id uuid.UUID) (*eve
 		return nil, err
 	}
 
-	var eventTypes []string
-	err = json.Unmarshal([]byte(l.EventTypes), &eventTypes)
-	if err != nil {
-		return nil, err
-	}
-
 	err = json.Unmarshal(l.ReceivedEvents, &ev)
 	if err != nil {
 		return nil, err
@@ -559,7 +543,7 @@ func (s *sqlEventListenerStore) GetByID(ctx context.Context, id uuid.UUID) (*eve
 		CreatedAt:                   l.CreatedAt,
 		Deleted:                     l.Deleted,
 		NamespaceID:                 l.NamespaceID,
-		ListeningForEventTypes:      eventTypes,
+		ListeningForEventTypes:      decodeString(l.EventTypes),
 		LifespanOfReceivedEvents:    l.EventsLifespan,
 		TriggerType:                 events.TriggerType(l.TriggerType),
 		TriggerWorkflow:             trigger.WorkflowID,
@@ -606,4 +590,24 @@ func (s *sqlEventListenerStore) UpdateOrDelete(ctx context.Context, listeners []
 	}
 
 	return errs
+}
+
+// encodeStrings uses a custom, non-standard encoding to maintain compatibility
+// with existing database entries that used spaces as literal data. This was
+// due to a historical specification oversight. Ideally, a structured format
+// like JSON should be used for storing arrays or lists.
+func encodeStrings(s []string) string {
+	for i, str := range s {
+		s[i] = strings.ReplaceAll(str, " ", "\u00A0")
+	}
+	return strings.Join(s, " ")
+}
+
+// decodeString reverses the custom encoding applied by encodeStrings.
+func decodeString(s string) []string {
+	parts := strings.Split(s, " ")
+	for i, part := range parts {
+		parts[i] = strings.ReplaceAll(part, "\u00A0", " ")
+	}
+	return parts
 }
