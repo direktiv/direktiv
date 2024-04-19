@@ -31,6 +31,7 @@ const Row = ({
 
   return (
     <TableRow
+      data-testid="sync-row"
       onClick={() => {
         navigate(
           pages.mirror.createHref({
@@ -56,12 +57,12 @@ const Row = ({
         </TableCell>
         <TableCell>
           <Tooltip>
-            <TooltipTrigger data-testid="activity-row-createdAt-relative">
+            <TooltipTrigger data-testid="createdAt-relative">
               {t("pages.mirror.syncs.tableRow.realtiveTime", {
                 relativeTime: createdAt,
               })}
             </TooltipTrigger>
-            <TooltipContent data-testid="activity-row-createdAt-full">
+            <TooltipContent data-testid="createdAt-full">
               {item.createdAt}
             </TooltipContent>
           </Tooltip>
