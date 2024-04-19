@@ -597,10 +597,11 @@ func (s *sqlEventListenerStore) UpdateOrDelete(ctx context.Context, listeners []
 // due to a historical specification oversight. Ideally, a structured format
 // like JSON should be used for storing arrays or lists.
 func encodeStrings(s []string) string {
+	encodedStrings := make([]string, len(s))
 	for i, str := range s {
-		s[i] = strings.ReplaceAll(str, " ", "\u00A0")
+		encodedStrings[i] = strings.ReplaceAll(str, " ", "\u00A0")
 	}
-	return strings.Join(s, " ")
+	return strings.Join(encodedStrings, " ")
 }
 
 // decodeString reverses the custom encoding applied by encodeStrings.
