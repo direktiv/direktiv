@@ -156,6 +156,12 @@ spec:
             value: "{{ .Values.https_proxy }}"
           - name: "NO_PROXY"
             value: "{{ .Values.no_proxy }}"
+          - name: "DIREKTIV_KNATIVE_PROXY_HTTP"
+            value: "{{ .Values.http_proxy }}"
+          - name: "DIREKTIV_KNATIVE_PROXY_HTTPS"
+            value: "{{ .Values.https_proxy }}"
+          - name: "DIREKTIV_KNATIVE_PROXY_NO"
+            value: "{{ .Values.no_proxy }}"
           {{- end }}
           - name: DIREKTIV_DEPLOYMENT_NAME
             value: "{{ include "direktiv.fullname" . }}"
