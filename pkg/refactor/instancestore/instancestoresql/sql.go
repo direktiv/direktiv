@@ -251,3 +251,37 @@ func (s *sqlInstanceStore) AssertNoParallelCron(ctx context.Context, nsID uuid.U
 
 	return nil
 }
+
+func (s *sqlInstanceStore) GetNamespaceInstanceCounts(ctx context.Context, nsID uuid.UUID, wfPath string) (*instancestore.InstanceCounts, error) {
+	query := fmt.Sprintf(`SELECT COUNT(%s), %s FROM %s WHERE %s = ? AND %s = ? GROUP BY %s`, fieldID, fieldStatus, table, fieldNamespaceID, fieldWorkflowPath, fieldStatus)
+
+	x := make([]map[string]interface{}, 0)
+	res := s.db.WithContext(ctx).Raw(
+		query,
+		nsID, wfPath,
+	).Find(&x)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+
+	m := make(map[instancestore.InstanceStatus]int)
+
+	var total int
+
+	for _, y := range x {
+		status, _ := y["status"].(int64)
+		count, _ := y["COUNT(id)"].(int64)
+
+		m[instancestore.InstanceStatus(status)] = int(count)
+		total += int(count)
+	}
+
+	return &instancestore.InstanceCounts{
+		Success:   m[instancestore.InstanceStatusComplete],
+		Fail:      m[instancestore.InstanceStatusFailed],
+		Crashed:   m[instancestore.InstanceStatusCrashed],
+		Cancelled: m[instancestore.InstanceStatusCancelled],
+		Pending:   m[instancestore.InstanceStatusPending],
+		Total:     total,
+	}, nil
+}
