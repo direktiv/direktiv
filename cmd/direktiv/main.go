@@ -26,7 +26,7 @@ func (h *apikeyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-	if strings.HasSuffix(r.URL.Path, "/v2/version") {
+	if strings.HasSuffix(r.URL.Path, "/v2/status") {
 		h.next.ServeHTTP(w, r)
 
 		return
