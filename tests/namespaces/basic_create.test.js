@@ -20,6 +20,7 @@ describe('Test namespace create calls', () => {
 			},
 			want: {
 				name: 'foo1',
+				isSystemNamespace: false,
 				mirror: null,
 			},
 		},
@@ -34,6 +35,7 @@ describe('Test namespace create calls', () => {
 			},
 			want: {
 				name: 'foo2',
+				isSystemNamespace: false,
 				mirror: {
 					url: 'my_url',
 					gitRef: 'main',
@@ -55,6 +57,7 @@ describe('Test namespace create calls', () => {
 			},
 			want: {
 				name: 'foo3',
+				isSystemNamespace: false,
 				mirror: {
 					url: 'my_url',
 					insecure: true,
@@ -77,6 +80,7 @@ describe('Test namespace create calls', () => {
 			},
 			want: {
 				name: 'foo4',
+				isSystemNamespace: false,
 				mirror: {
 					url: 'my_url',
 					insecure: true,
@@ -100,6 +104,7 @@ describe('Test namespace create calls', () => {
 			},
 			want: {
 				name: 'foo5',
+				isSystemNamespace: false,
 				mirror: {
 					url: 'my_url',
 					insecure: true,

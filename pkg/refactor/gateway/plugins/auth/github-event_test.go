@@ -56,7 +56,7 @@ func TestGithubPluginPreservesBody(t *testing.T) {
 		Secret: "It's a Secret to Everybody",
 		// ListenForType: []string{"sometype", "issues"},
 	}
-	p2, _ := p.Configure(config, core.MagicalGatewayNamespace)
+	p2, _ := p.Configure(config, core.SystemNamespace)
 
 	r, _ := http.NewRequest(http.MethodGet, "/dummy", strings.NewReader("Hello, World!"))
 	r.Header.Add("X-GitHub-Delivery", "72d3162e-cc78-11e3-81ab-4c9367dc0958")
@@ -82,7 +82,7 @@ func TestGithubPluginPreservesBody(t *testing.T) {
 func execute(config auth.GithubWebhookPluginConfig, c *core.ConsumerFile, body string) bool {
 	p, _ := plugins.GetPluginFromRegistry(auth.GithubWebhookPluginName)
 
-	p2, _ := p.Configure(config, core.MagicalGatewayNamespace)
+	p2, _ := p.Configure(config, core.SystemNamespace)
 
 	r, _ := http.NewRequest(http.MethodGet, "/dummy", strings.NewReader(body))
 	r.Header.Add("X-GitHub-Delivery", "72d3162e-cc78-11e3-81ab-4c9367dc0958")

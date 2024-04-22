@@ -169,7 +169,7 @@ func (flow *flow) cronHandler(data []byte) {
 		return
 	}
 
-	err = tx.InstanceStore().AssertNoParallelCron(ctx, file.Path)
+	err = tx.InstanceStore().AssertNoParallelCron(ctx, ns.ID, file.Path)
 	if errors.Is(err, instancestore.ErrParallelCron) {
 		// already triggered
 		return

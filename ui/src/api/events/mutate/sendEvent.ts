@@ -11,7 +11,7 @@ import { useNamespace } from "~/util/store/namespace";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
-export const sendEvent = apiFactory({
+export const sendEvent = apiFactory<NewEventSchemaType["body"]>({
   url: ({ baseUrl, namespace }: { baseUrl?: string; namespace: string }) =>
     `${baseUrl ?? ""}/api/namespaces/${namespace}/broadcast`,
   method: "POST",

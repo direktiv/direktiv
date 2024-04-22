@@ -35,6 +35,7 @@ describe('Test namespace get list calls', () => {
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.data).toEqual({
 			name: 'foo',
+			isSystemNamespace: false,
 			mirror: null,
 			...timestamps,
 		})
@@ -47,6 +48,7 @@ describe('Test namespace get list calls', () => {
 		expect(res.body.data.length).toEqual(1)
 		expect(res.body.data[0]).toEqual({
 			name: 'foo',
+			isSystemNamespace: false,
 			mirror: null,
 			...timestamps,
 		})

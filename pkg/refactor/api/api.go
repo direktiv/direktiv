@@ -55,6 +55,12 @@ func Initialize(app core.App, db *database.SQLStore, bus *pubsub2.Bus, instanceM
 		db:      db,
 		manager: instanceManager,
 	}
+	notificationsCtr := &notificationsController{
+		db: db,
+	}
+	metricsCtr := &metricsController{
+		db: db,
+	}
 
 	mw := &appMiddlewares{dStore: db.DataStore()}
 
@@ -137,6 +143,12 @@ func Initialize(app core.App, db *database.SQLStore, bus *pubsub2.Bus, instanceM
 			})
 			r.Route("/namespaces/{namespace}/logs", func(r chi.Router) {
 				logCtr.mountRouter(r)
+			})
+			r.Route("/namespaces/{namespace}/notifications", func(r chi.Router) {
+				notificationsCtr.mountRouter(r)
+			})
+			r.Route("/namespaces/{namespace}/metrics", func(r chi.Router) {
+				metricsCtr.mountRouter(r)
 			})
 			r.Get("/namespaces/{namespace}/gateway/consumers", func(w http.ResponseWriter, r *http.Request) {
 				data, err := app.GatewayManager.GetConsumers(chi.URLParam(r, "namespace"))
