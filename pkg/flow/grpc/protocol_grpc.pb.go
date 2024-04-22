@@ -56,7 +56,6 @@ const (
 	Flow_EventHistoryStream_FullMethodName    = "/direktiv_flow.Flow/EventHistoryStream"
 	Flow_HistoricalEvent_FullMethodName       = "/direktiv_flow.Flow/HistoricalEvent"
 	Flow_ReplayEvent_FullMethodName           = "/direktiv_flow.Flow/ReplayEvent"
-	Flow_ResolveNamespaceUID_FullMethodName   = "/direktiv_flow.Flow/ResolveNamespaceUID"
 	Flow_CreateNamespaceMirror_FullMethodName = "/direktiv_flow.Flow/CreateNamespaceMirror"
 	Flow_CreateDirectoryMirror_FullMethodName = "/direktiv_flow.Flow/CreateDirectoryMirror"
 	Flow_UpdateMirrorSettings_FullMethodName  = "/direktiv_flow.Flow/UpdateMirrorSettings"
@@ -118,7 +117,6 @@ type FlowClient interface {
 	EventHistoryStream(ctx context.Context, in *EventHistoryRequest, opts ...grpc.CallOption) (Flow_EventHistoryStreamClient, error)
 	HistoricalEvent(ctx context.Context, in *HistoricalEventRequest, opts ...grpc.CallOption) (*HistoricalEventResponse, error)
 	ReplayEvent(ctx context.Context, in *ReplayEventRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	ResolveNamespaceUID(ctx context.Context, in *ResolveNamespaceUIDRequest, opts ...grpc.CallOption) (*NamespaceResponse, error)
 	// mirrors.
 	CreateNamespaceMirror(ctx context.Context, in *CreateNamespaceMirrorRequest, opts ...grpc.CallOption) (*CreateNamespaceResponse, error)
 	CreateDirectoryMirror(ctx context.Context, in *CreateDirectoryMirrorRequest, opts ...grpc.CallOption) (*CreateDirectoryResponse, error)
@@ -675,15 +673,6 @@ func (c *flowClient) ReplayEvent(ctx context.Context, in *ReplayEventRequest, op
 	return out, nil
 }
 
-func (c *flowClient) ResolveNamespaceUID(ctx context.Context, in *ResolveNamespaceUIDRequest, opts ...grpc.CallOption) (*NamespaceResponse, error) {
-	out := new(NamespaceResponse)
-	err := c.cc.Invoke(ctx, Flow_ResolveNamespaceUID_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *flowClient) CreateNamespaceMirror(ctx context.Context, in *CreateNamespaceMirrorRequest, opts ...grpc.CallOption) (*CreateNamespaceResponse, error) {
 	out := new(CreateNamespaceResponse)
 	err := c.cc.Invoke(ctx, Flow_CreateNamespaceMirror_FullMethodName, in, out, opts...)
@@ -878,7 +867,6 @@ type FlowServer interface {
 	EventHistoryStream(*EventHistoryRequest, Flow_EventHistoryStreamServer) error
 	HistoricalEvent(context.Context, *HistoricalEventRequest) (*HistoricalEventResponse, error)
 	ReplayEvent(context.Context, *ReplayEventRequest) (*emptypb.Empty, error)
-	ResolveNamespaceUID(context.Context, *ResolveNamespaceUIDRequest) (*NamespaceResponse, error)
 	// mirrors.
 	CreateNamespaceMirror(context.Context, *CreateNamespaceMirrorRequest) (*CreateNamespaceResponse, error)
 	CreateDirectoryMirror(context.Context, *CreateDirectoryMirrorRequest) (*CreateDirectoryResponse, error)
@@ -1008,9 +996,6 @@ func (UnimplementedFlowServer) HistoricalEvent(context.Context, *HistoricalEvent
 }
 func (UnimplementedFlowServer) ReplayEvent(context.Context, *ReplayEventRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReplayEvent not implemented")
-}
-func (UnimplementedFlowServer) ResolveNamespaceUID(context.Context, *ResolveNamespaceUIDRequest) (*NamespaceResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ResolveNamespaceUID not implemented")
 }
 func (UnimplementedFlowServer) CreateNamespaceMirror(context.Context, *CreateNamespaceMirrorRequest) (*CreateNamespaceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateNamespaceMirror not implemented")
@@ -1742,24 +1727,6 @@ func _Flow_ReplayEvent_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Flow_ResolveNamespaceUID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ResolveNamespaceUIDRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).ResolveNamespaceUID(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_ResolveNamespaceUID_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).ResolveNamespaceUID(ctx, req.(*ResolveNamespaceUIDRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Flow_CreateNamespaceMirror_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CreateNamespaceMirrorRequest)
 	if err := dec(in); err != nil {
@@ -2129,10 +2096,6 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ReplayEvent",
 			Handler:    _Flow_ReplayEvent_Handler,
-		},
-		{
-			MethodName: "ResolveNamespaceUID",
-			Handler:    _Flow_ResolveNamespaceUID_Handler,
 		},
 		{
 			MethodName: "CreateNamespaceMirror",
