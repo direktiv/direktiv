@@ -57,7 +57,7 @@ func Initialize(app core.App, db *database.SQLStore, bus *pubsub2.Bus, instanceM
 	notificationsCtr := &notificationsController{
 		db: db,
 	}
-	metricsCtr := &notificationsController{
+	metricsCtr := &metricsController{
 		db: db,
 	}
 

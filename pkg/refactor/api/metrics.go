@@ -43,8 +43,8 @@ func (e *metricsController) instances(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, map[string]interface{}{
-		"success":   counts.Success,
-		"fail":      counts.Fail,
+		"complete":  counts.Complete,
+		"failed":    counts.Failed,
 		"crashed":   counts.Crashed,
 		"cancelled": counts.Cancelled,
 		"pending":   counts.Pending,

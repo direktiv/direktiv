@@ -2,6 +2,7 @@ package instancestoresql
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -269,16 +270,32 @@ func (s *sqlInstanceStore) GetNamespaceInstanceCounts(ctx context.Context, nsID 
 	var total int
 
 	for _, y := range x {
-		status, _ := y["status"].(int64)
-		count, _ := y["COUNT(id)"].(int64)
+		// NOTE: it seems that the sqlite driver and the pq drivers name these values differently and store them as different type,
+		// so we have to try two different options. There has got to be a better way to do this...
+		var status int
+		v := y["status"]
+		if k1, ok := v.(int32); ok {
+			status = int(k1)
+		} else if k2, ok := v.(int64); ok {
+			status = int(k2)
+		}
 
-		m[instancestore.InstanceStatus(status)] = int(count)
-		total += int(count)
+		var count int
+		if v, exists := y["count"]; exists {
+			count = int(v.(int64)) //nolint
+		} else if v, exists = y["COUNT(id)"]; exists {
+			count = int(v.(int64)) //nolint
+		} else {
+			return nil, errors.New("unexpected database response")
+		}
+
+		m[instancestore.InstanceStatus(status)] = count
+		total += count
 	}
 
 	return &instancestore.InstanceCounts{
-		Success:   m[instancestore.InstanceStatusComplete],
-		Fail:      m[instancestore.InstanceStatusFailed],
+		Complete:  m[instancestore.InstanceStatusComplete],
+		Failed:    m[instancestore.InstanceStatusFailed],
 		Crashed:   m[instancestore.InstanceStatusCrashed],
 		Cancelled: m[instancestore.InstanceStatusCancelled],
 		Pending:   m[instancestore.InstanceStatusPending],

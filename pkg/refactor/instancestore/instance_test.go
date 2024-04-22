@@ -880,7 +880,7 @@ type: noop
 		return
 	}
 
-	if res.Success != 1 || res.Pending != 2 || res.Cancelled != 0 || res.Crashed != 0 || res.Fail != 0 || res.Total != 3 {
+	if res.Complete != 1 || res.Pending != 2 || res.Cancelled != 0 || res.Crashed != 0 || res.Failed != 0 || res.Total != 3 {
 		t.Errorf("unexpected GetNamespaceInstanceCounts() error: got '%v' ", res)
 
 		return

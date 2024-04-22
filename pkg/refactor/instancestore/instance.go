@@ -196,8 +196,8 @@ type EnqueueInstanceMessageArgs struct {
 
 // InstanceCounts defined the return object for the metrics function.
 type InstanceCounts struct {
-	Success   int
-	Fail      int
+	Complete  int
+	Failed    int
 	Crashed   int
 	Cancelled int
 	Pending   int
