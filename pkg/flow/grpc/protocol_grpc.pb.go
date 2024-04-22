@@ -42,9 +42,7 @@ const (
 	Flow_InstanceInput_FullMethodName               = "/direktiv_flow.Flow/InstanceInput"
 	Flow_InstanceOutput_FullMethodName              = "/direktiv_flow.Flow/InstanceOutput"
 	Flow_InstanceMetadata_FullMethodName            = "/direktiv_flow.Flow/InstanceMetadata"
-	Flow_ReleaseInstance_FullMethodName             = "/direktiv_flow.Flow/ReleaseInstance"
 	Flow_StartWorkflow_FullMethodName               = "/direktiv_flow.Flow/StartWorkflow"
-	Flow_RunWorkflow_FullMethodName                 = "/direktiv_flow.Flow/RunWorkflow"
 	Flow_AwaitWorkflow_FullMethodName               = "/direktiv_flow.Flow/AwaitWorkflow"
 	Flow_CancelInstance_FullMethodName              = "/direktiv_flow.Flow/CancelInstance"
 	Flow_BroadcastCloudevent_FullMethodName         = "/direktiv_flow.Flow/BroadcastCloudevent"
@@ -107,10 +105,8 @@ type FlowClient interface {
 	InstanceInput(ctx context.Context, in *InstanceInputRequest, opts ...grpc.CallOption) (*InstanceInputResponse, error)
 	InstanceOutput(ctx context.Context, in *InstanceOutputRequest, opts ...grpc.CallOption) (*InstanceOutputResponse, error)
 	InstanceMetadata(ctx context.Context, in *InstanceMetadataRequest, opts ...grpc.CallOption) (*InstanceMetadataResponse, error)
-	ReleaseInstance(ctx context.Context, in *ReleaseInstanceRequest, opts ...grpc.CallOption) (*ReleaseInstanceResponse, error)
 	// workflows.
 	StartWorkflow(ctx context.Context, in *StartWorkflowRequest, opts ...grpc.CallOption) (*StartWorkflowResponse, error)
-	RunWorkflow(ctx context.Context, in *RunWorkflowRequest, opts ...grpc.CallOption) (Flow_RunWorkflowClient, error)
 	AwaitWorkflow(ctx context.Context, in *AwaitWorkflowRequest, opts ...grpc.CallOption) (Flow_AwaitWorkflowClient, error)
 	CancelInstance(ctx context.Context, in *CancelInstanceRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	BroadcastCloudevent(ctx context.Context, in *BroadcastCloudeventRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
@@ -468,15 +464,6 @@ func (c *flowClient) InstanceMetadata(ctx context.Context, in *InstanceMetadataR
 	return out, nil
 }
 
-func (c *flowClient) ReleaseInstance(ctx context.Context, in *ReleaseInstanceRequest, opts ...grpc.CallOption) (*ReleaseInstanceResponse, error) {
-	out := new(ReleaseInstanceResponse)
-	err := c.cc.Invoke(ctx, Flow_ReleaseInstance_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *flowClient) StartWorkflow(ctx context.Context, in *StartWorkflowRequest, opts ...grpc.CallOption) (*StartWorkflowResponse, error) {
 	out := new(StartWorkflowResponse)
 	err := c.cc.Invoke(ctx, Flow_StartWorkflow_FullMethodName, in, out, opts...)
@@ -486,40 +473,8 @@ func (c *flowClient) StartWorkflow(ctx context.Context, in *StartWorkflowRequest
 	return out, nil
 }
 
-func (c *flowClient) RunWorkflow(ctx context.Context, in *RunWorkflowRequest, opts ...grpc.CallOption) (Flow_RunWorkflowClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[5], Flow_RunWorkflow_FullMethodName, opts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &flowRunWorkflowClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-type Flow_RunWorkflowClient interface {
-	Recv() (*RunWorkflowResponse, error)
-	grpc.ClientStream
-}
-
-type flowRunWorkflowClient struct {
-	grpc.ClientStream
-}
-
-func (x *flowRunWorkflowClient) Recv() (*RunWorkflowResponse, error) {
-	m := new(RunWorkflowResponse)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
 func (c *flowClient) AwaitWorkflow(ctx context.Context, in *AwaitWorkflowRequest, opts ...grpc.CallOption) (Flow_AwaitWorkflowClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[6], Flow_AwaitWorkflow_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[5], Flow_AwaitWorkflow_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -578,7 +533,7 @@ func (c *flowClient) NamespaceVariable(ctx context.Context, in *NamespaceVariabl
 }
 
 func (c *flowClient) SetNamespaceVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetNamespaceVariableParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[7], Flow_SetNamespaceVariableParcels_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[6], Flow_SetNamespaceVariableParcels_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -621,7 +576,7 @@ func (c *flowClient) WorkflowVariable(ctx context.Context, in *WorkflowVariableR
 }
 
 func (c *flowClient) SetWorkflowVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetWorkflowVariableParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[8], Flow_SetWorkflowVariableParcels_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[7], Flow_SetWorkflowVariableParcels_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -664,7 +619,7 @@ func (c *flowClient) InstanceVariable(ctx context.Context, in *InstanceVariableR
 }
 
 func (c *flowClient) SetInstanceVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetInstanceVariableParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[9], Flow_SetInstanceVariableParcels_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[8], Flow_SetInstanceVariableParcels_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -725,7 +680,7 @@ func (c *flowClient) EventListeners(ctx context.Context, in *EventListenersReque
 }
 
 func (c *flowClient) EventListenersStream(ctx context.Context, in *EventListenersRequest, opts ...grpc.CallOption) (Flow_EventListenersStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[10], Flow_EventListenersStream_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[9], Flow_EventListenersStream_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -766,7 +721,7 @@ func (c *flowClient) EventHistory(ctx context.Context, in *EventHistoryRequest, 
 }
 
 func (c *flowClient) EventHistoryStream(ctx context.Context, in *EventHistoryRequest, opts ...grpc.CallOption) (Flow_EventHistoryStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[11], Flow_EventHistoryStream_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[10], Flow_EventHistoryStream_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -888,7 +843,7 @@ func (c *flowClient) MirrorInfo(ctx context.Context, in *MirrorInfoRequest, opts
 }
 
 func (c *flowClient) MirrorInfoStream(ctx context.Context, in *MirrorInfoRequest, opts ...grpc.CallOption) (Flow_MirrorInfoStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[12], Flow_MirrorInfoStream_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[11], Flow_MirrorInfoStream_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -993,10 +948,8 @@ type FlowServer interface {
 	InstanceInput(context.Context, *InstanceInputRequest) (*InstanceInputResponse, error)
 	InstanceOutput(context.Context, *InstanceOutputRequest) (*InstanceOutputResponse, error)
 	InstanceMetadata(context.Context, *InstanceMetadataRequest) (*InstanceMetadataResponse, error)
-	ReleaseInstance(context.Context, *ReleaseInstanceRequest) (*ReleaseInstanceResponse, error)
 	// workflows.
 	StartWorkflow(context.Context, *StartWorkflowRequest) (*StartWorkflowResponse, error)
-	RunWorkflow(*RunWorkflowRequest, Flow_RunWorkflowServer) error
 	AwaitWorkflow(*AwaitWorkflowRequest, Flow_AwaitWorkflowServer) error
 	CancelInstance(context.Context, *CancelInstanceRequest) (*emptypb.Empty, error)
 	BroadcastCloudevent(context.Context, *BroadcastCloudeventRequest) (*emptypb.Empty, error)
@@ -1104,14 +1057,8 @@ func (UnimplementedFlowServer) InstanceOutput(context.Context, *InstanceOutputRe
 func (UnimplementedFlowServer) InstanceMetadata(context.Context, *InstanceMetadataRequest) (*InstanceMetadataResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method InstanceMetadata not implemented")
 }
-func (UnimplementedFlowServer) ReleaseInstance(context.Context, *ReleaseInstanceRequest) (*ReleaseInstanceResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ReleaseInstance not implemented")
-}
 func (UnimplementedFlowServer) StartWorkflow(context.Context, *StartWorkflowRequest) (*StartWorkflowResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StartWorkflow not implemented")
-}
-func (UnimplementedFlowServer) RunWorkflow(*RunWorkflowRequest, Flow_RunWorkflowServer) error {
-	return status.Errorf(codes.Unimplemented, "method RunWorkflow not implemented")
 }
 func (UnimplementedFlowServer) AwaitWorkflow(*AwaitWorkflowRequest, Flow_AwaitWorkflowServer) error {
 	return status.Errorf(codes.Unimplemented, "method AwaitWorkflow not implemented")
@@ -1630,24 +1577,6 @@ func _Flow_InstanceMetadata_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Flow_ReleaseInstance_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ReleaseInstanceRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).ReleaseInstance(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_ReleaseInstance_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).ReleaseInstance(ctx, req.(*ReleaseInstanceRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Flow_StartWorkflow_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(StartWorkflowRequest)
 	if err := dec(in); err != nil {
@@ -1664,27 +1593,6 @@ func _Flow_StartWorkflow_Handler(srv interface{}, ctx context.Context, dec func(
 		return srv.(FlowServer).StartWorkflow(ctx, req.(*StartWorkflowRequest))
 	}
 	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_RunWorkflow_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(RunWorkflowRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
-	return srv.(FlowServer).RunWorkflow(m, &flowRunWorkflowServer{stream})
-}
-
-type Flow_RunWorkflowServer interface {
-	Send(*RunWorkflowResponse) error
-	grpc.ServerStream
-}
-
-type flowRunWorkflowServer struct {
-	grpc.ServerStream
-}
-
-func (x *flowRunWorkflowServer) Send(m *RunWorkflowResponse) error {
-	return x.ServerStream.SendMsg(m)
 }
 
 func _Flow_AwaitWorkflow_Handler(srv interface{}, stream grpc.ServerStream) error {
@@ -2357,10 +2265,6 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Flow_InstanceMetadata_Handler,
 		},
 		{
-			MethodName: "ReleaseInstance",
-			Handler:    _Flow_ReleaseInstance_Handler,
-		},
-		{
 			MethodName: "StartWorkflow",
 			Handler:    _Flow_StartWorkflow_Handler,
 		},
@@ -2485,11 +2389,6 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "InstancesStream",
 			Handler:       _Flow_InstancesStream_Handler,
-			ServerStreams: true,
-		},
-		{
-			StreamName:    "RunWorkflow",
-			Handler:       _Flow_RunWorkflow_Handler,
 			ServerStreams: true,
 		},
 		{
