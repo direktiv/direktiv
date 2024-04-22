@@ -13,7 +13,7 @@ import "pkg/flow/grpc/instances.proto";
 import "pkg/flow/grpc/internal.proto";
 import "pkg/flow/grpc/cloudevent.proto";
 import "pkg/flow/grpc/util.proto";
-import "pkg/flow/grpc/eventing.proto";
+// import "pkg/flow/grpc/eventing.proto";
 
 import "pkg/flow/grpc/mirror.proto";
 
@@ -67,9 +67,6 @@ service Flow {
 	rpc HistoricalEvent (HistoricalEventRequest) returns (HistoricalEventResponse) {}
 	rpc ReplayEvent (ReplayEventRequest) returns (google.protobuf.Empty) {}
 
-	//
-	rpc ResolveNamespaceUID (ResolveNamespaceUIDRequest) returns (NamespaceResponse) {}
-
 	// mirrors.
 	rpc CreateNamespaceMirror (CreateNamespaceMirrorRequest) returns (CreateNamespaceResponse) {}
 	rpc CreateDirectoryMirror (CreateDirectoryMirrorRequest) returns (CreateDirectoryResponse) {}
@@ -102,6 +99,7 @@ service Internal {
 	rpc FileVariableParcels (VariableInternalRequest) returns (stream VariableInternalResponse) {}
 }
 
-service Eventing {
-	rpc RequestEvents (EventingRequest) returns (stream CloudEvent) {}
-}
+// Todo: Yassir, delete this entirely in cycle6.
+//service Eventing {
+//	rpc RequestEvents (EventingRequest) returns (stream CloudEvent) {}
+//}
