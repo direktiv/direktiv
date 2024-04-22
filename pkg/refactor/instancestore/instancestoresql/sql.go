@@ -61,6 +61,7 @@ var (
 		fieldCreatedAt, fieldUpdatedAt, fieldEndedAt, fieldDeadline, fieldStatus, fieldWorkflowPath,
 		fieldErrorCode, fieldInvoker, fieldDefinition, fieldSettings, fieldDescentInfo, fieldTelemetryInfo,
 		fieldRuntimeInfo, fieldChildrenInfo, fieldErrorMessage,
+		`length(` + fieldInput + `) as input_length`, `length(` + fieldOutput + `) as output_length`, `length(` + fieldMetadata + `) as metadata_length`,
 	}
 )
 

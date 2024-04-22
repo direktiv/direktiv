@@ -98,6 +98,10 @@ func assertInstanceStoreCorrectGetSummary(t *testing.T, is instancestore.Store, 
 		return
 	}
 
+	if idata.InputLength != len(args.Input) {
+		t.Errorf("incorrect input length field")
+	}
+
 	// validation
 	assertInstanceDataIsSummary(t, idata)
 }

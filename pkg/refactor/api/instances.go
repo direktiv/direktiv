@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/database"
+	"github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/go-chi/chi/v5"
@@ -21,29 +22,29 @@ import (
 )
 
 type InstanceData struct {
-	ID           uuid.UUID  `json:"id"`
-	CreatedAt    time.Time  `json:"created_at"`
-	EndedAt      *time.Time `json:"ended_at"`
-	Status       string     `json:"status"`
-	WorkflowPath string     `json:"path"`
-	ErrorCode    string     `json:"error_code"`
-	Invoker      string     `json:"invoker"`
+	ID           uuid.UUID           `json:"id"`
+	CreatedAt    time.Time           `json:"createdAt"`
+	EndedAt      *time.Time          `json:"endedAt"`
+	Status       string              `json:"status"`
+	WorkflowPath string              `json:"path"`
+	ErrorCode    string              `json:"errorCode"`
+	Invoker      string              `json:"invoker"`
+	Definition   []byte              `json:"definition,omitempty"`
+	ErrorMessage []byte              `json:"errorMessage,omitempty"`
+	Flow         []string            `json:"flow"`
+	TraceID      string              `json:"traceId"`
+	Lineage      []engine.ParentInfo `json:"lineage"`
 
-	Definition   []byte `json:"definition,omitempty"`
-	Input        []byte `json:"input,omitempty"`
-	Output       []byte `json:"output,omitempty"`
-	ErrorMessage []byte `json:"error_message,omitempty"`
-	Metadata     []byte `json:"metadata,omitempty"`
-
-	// Settings       []byte
-	// DescentInfo    []byte
-	// TelemetryInfo  []byte
-	// RuntimeInfo    []byte
-	// ChildrenInfo   []byte
+	InputLength    *int   `json:"inputLength,omitempty"`
+	Input          []byte `json:"input,omitempty"`
+	OutputLength   *int   `json:"outputLength,omitempty"`
+	Output         []byte `json:"output,omitempty"`
+	MetadataLength *int   `json:"metadataLength,omitempty"`
+	Metadata       []byte `json:"metadata,omitempty"`
 }
 
-func marshalForAPI(data *instancestore.InstanceData) interface{} {
-	return &InstanceData{
+func marshalForAPI(data *instancestore.InstanceData) *InstanceData {
+	resp := &InstanceData{
 		ID:           data.ID,
 		CreatedAt:    data.CreatedAt,
 		EndedAt:      data.EndedAt,
@@ -52,11 +53,17 @@ func marshalForAPI(data *instancestore.InstanceData) interface{} {
 		ErrorCode:    data.ErrorCode,
 		Invoker:      data.Invoker,
 		Definition:   data.Definition,
-		Input:        data.Input,
-		Output:       data.Output,
 		ErrorMessage: data.ErrorMessage,
-		Metadata:     data.Metadata,
 	}
+
+	x, err := engine.ParseInstanceData(data)
+	if err == nil {
+		resp.Flow = x.RuntimeInfo.Flow
+		resp.TraceID = x.TelemetryInfo.TraceID
+		resp.Lineage = x.DescentInfo.Descent
+	}
+
+	return resp
 }
 
 type instController struct {
@@ -78,7 +85,7 @@ func (e *instController) mountRouter(r chi.Router) {
 	r.Post("/", e.create)
 }
 
-func (e *instController) input(w http.ResponseWriter, r *http.Request) {
+func (e *instController) blob(w http.ResponseWriter, r *http.Request) (*InstanceData, *instancestore.InstanceData) {
 	ctx := r.Context()
 	ns := extractContextNamespace(r)
 	instanceID := chi.URLParam(r, "instanceID")
@@ -90,91 +97,63 @@ func (e *instController) input(w http.ResponseWriter, r *http.Request) {
 			Message: fmt.Errorf("unparsable instance UUID: %w", err).Error(),
 		})
 
-		return
+		return nil, nil
 	}
 
 	data, err := e.db.InstanceStore().ForInstanceID(id).GetSummaryWithInput(ctx)
 	if err != nil {
 		writeInstanceStoreError(w, err)
 
-		return
+		return nil, nil
 	}
 
 	if data.Namespace != ns.Name {
 		writeInstanceStoreError(w, instancestore.ErrNotFound)
 
-		return
+		return nil, nil
 	}
 
 	// TODO: option to return the data raw
 
-	writeJSON(w, marshalForAPI(data))
+	resp := marshalForAPI(data)
+
+	return resp, data
+}
+
+func (e *instController) input(w http.ResponseWriter, r *http.Request) {
+	resp, data := e.blob(w, r)
+	if resp != nil {
+		resp.Input = data.Input
+
+		l := len(data.Input)
+		resp.InputLength = &l
+
+		writeJSON(w, resp)
+	}
 }
 
 func (e *instController) output(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	ns := extractContextNamespace(r)
-	instanceID := chi.URLParam(r, "instanceID")
+	resp, data := e.blob(w, r)
+	if resp != nil {
+		resp.Output = data.Output
 
-	id, err := uuid.Parse(instanceID)
-	if err != nil {
-		writeError(w, &Error{
-			Code:    "request_data_invalid",
-			Message: fmt.Errorf("unparsable instance UUID: %w", err).Error(),
-		})
+		l := len(data.Output)
+		resp.OutputLength = &l
 
-		return
+		writeJSON(w, resp)
 	}
-
-	data, err := e.db.InstanceStore().ForInstanceID(id).GetSummaryWithOutput(ctx)
-	if err != nil {
-		writeInstanceStoreError(w, err)
-
-		return
-	}
-
-	if data.Namespace != ns.Name {
-		writeInstanceStoreError(w, instancestore.ErrNotFound)
-
-		return
-	}
-
-	// TODO: option to return the data raw
-
-	writeJSON(w, marshalForAPI(data))
 }
 
 func (e *instController) metadata(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	ns := extractContextNamespace(r)
-	instanceID := chi.URLParam(r, "instanceID")
+	resp, data := e.blob(w, r)
+	if resp != nil {
+		resp.Metadata = data.Metadata
 
-	id, err := uuid.Parse(instanceID)
-	if err != nil {
-		writeError(w, &Error{
-			Code:    "request_data_invalid",
-			Message: fmt.Errorf("unparsable instance UUID: %w", err).Error(),
-		})
+		l := len(data.Metadata)
+		resp.MetadataLength = &l
 
-		return
+		writeJSON(w, resp)
 	}
-
-	data, err := e.db.InstanceStore().ForInstanceID(id).GetSummaryWithMetadata(ctx)
-	if err != nil {
-		writeInstanceStoreError(w, err)
-
-		return
-	}
-
-	if data.Namespace != ns.Name {
-		writeInstanceStoreError(w, instancestore.ErrNotFound)
-
-		return
-	}
-
-	// TODO: option to return the data raw
-
-	writeJSON(w, marshalForAPI(data))
 }
 
 func (e *instController) getOnce(r *http.Request, instanceID uuid.UUID) (*instancestore.InstanceData, error) {
@@ -213,7 +192,12 @@ func (e *instController) get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, marshalForAPI(data))
+	resp := marshalForAPI(data)
+	resp.InputLength = &data.InputLength
+	resp.OutputLength = &data.OutputLength
+	resp.MetadataLength = &data.MetadataLength
+
+	writeJSON(w, resp)
 }
 
 type cancelPayload struct {
@@ -627,7 +611,12 @@ func (e *instController) stream(w http.ResponseWriter, r *http.Request) {
 			return // TODO: how are we supposed to report errors in SSE?
 		}
 
-		raw, _ := json.Marshal(marshalForAPI(data))
+		resp := marshalForAPI(data)
+		resp.InputLength = &data.InputLength
+		resp.OutputLength = &data.OutputLength
+		resp.MetadataLength = &data.MetadataLength
+
+		raw, _ := json.Marshal(resp)
 
 		dst := &bytes.Buffer{}
 		_ = json.Compact(dst, raw)

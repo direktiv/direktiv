@@ -39,13 +39,15 @@ states:
 
 	it(`should invoke the 'delay.yaml' workflow`, async () => {
 		const req = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=delay.yaml`)
+		.send({
+			name: 'foo',
+			data: btoa('bar'),
+		})
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({
 			data: {
-				created_at: expect.stringMatching(common.regex.timestampRegex),
+				createdAt: expect.stringMatching(common.regex.timestampRegex),
 				definition: expect.stringMatching(common.regex.base64Regex),
-				ended_at: null,
-				error_code: '',
 				id: expect.stringMatching(common.regex.uuidRegex),
 				invoker: 'api',
 				path: '/delay.yaml',
@@ -83,14 +85,17 @@ states:
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({
 			data: {
-				created_at: expect.stringMatching(common.regex.timestampRegex),
+				createdAt: expect.stringMatching(common.regex.timestampRegex),
 				definition: expect.stringMatching(common.regex.base64Regex),
-				ended_at: expect.stringMatching(common.regex.timestampRegex),
-				error_code: 'direktiv.cancels.api',
+				endedAt: expect.stringMatching(common.regex.timestampRegex),
+				errorCode: 'direktiv.cancels.api',
 				id: expect.stringMatching(common.regex.uuidRegex),
 				invoker: 'api',
 				path: '/delay.yaml',
 				status: 'cancelled',
+				inputLength: 28,
+				outputLength: 0,
+				metadataLength: 0,
 			},
 		})
 	})
