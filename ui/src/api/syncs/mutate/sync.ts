@@ -42,13 +42,7 @@ export const useSync = ({
   const { t } = useTranslation();
   const queryClient = useQueryClient();
 
-  const mutationFn = ({
-    namespace: givenNamespace,
-  }: {
-    namespace: string | null;
-  }) => {
-    const namespace = givenNamespace;
-
+  const mutationFn = ({ namespace }: { namespace: string | null }) => {
     if (!namespace) {
       throw new Error("namespace is undefined");
     }
