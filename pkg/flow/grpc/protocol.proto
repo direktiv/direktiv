@@ -67,9 +67,6 @@ service Flow {
 	rpc HistoricalEvent (HistoricalEventRequest) returns (HistoricalEventResponse) {}
 	rpc ReplayEvent (ReplayEventRequest) returns (google.protobuf.Empty) {}
 
-	//
-	rpc ResolveNamespaceUID (ResolveNamespaceUIDRequest) returns (NamespaceResponse) {}
-
 	// mirrors.
 	rpc CreateNamespaceMirror (CreateNamespaceMirrorRequest) returns (CreateNamespaceResponse) {}
 	rpc CreateDirectoryMirror (CreateDirectoryMirrorRequest) returns (CreateDirectoryResponse) {}
