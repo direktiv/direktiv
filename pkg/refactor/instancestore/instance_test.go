@@ -790,3 +790,99 @@ type: noop
 		return
 	}
 }
+
+// nolint
+func Test_sqlInstanceStore_GetNamespaceInstanceCounts(t *testing.T) {
+	server := uuid.New()
+
+	db, err := database.NewMockGorm()
+	if err != nil {
+		t.Fatalf("unepxected NewMockGorm() error = %v", err)
+	}
+	instances := instancestoresql.NewSQLInstanceStore(db)
+
+	var tests []assertInstanceStoreCorrectGetNamespaceInstancesTest
+
+	wfPath := "/test.yaml"
+
+	args := &instancestore.CreateInstanceDataArgs{
+		ID:           uuid.New(),
+		Server:       server,
+		Invoker:      "api",
+		WorkflowPath: wfPath,
+		Definition: []byte(`
+states:
+- id: test
+type: noop
+`),
+		Input:         []byte(`{}`),
+		TelemetryInfo: []byte(`{}`),
+		Settings:      []byte(`{}`),
+		DescentInfo:   []byte(`{}`),
+		RuntimeInfo:   []byte(`{}`),
+		ChildrenInfo:  []byte(`{}`),
+		LiveData:      []byte(`{}`),
+	}
+
+	tests = append(tests, assertInstanceStoreCorrectGetNamespaceInstancesTest{
+		name: "validCase",
+		args: args,
+		nsID: uuid.New(),
+		ids:  []uuid.UUID{},
+	})
+
+	tests = append(tests, assertInstanceStoreCorrectGetNamespaceInstancesTest{
+		name: "validCase",
+		args: args,
+		nsID: uuid.New(),
+		ids:  []uuid.UUID{uuid.New()},
+	})
+
+	nsID := uuid.New()
+	tests = append(tests, assertInstanceStoreCorrectGetNamespaceInstancesTest{
+		name: "validCase",
+		args: args,
+		nsID: nsID,
+		ids:  []uuid.UUID{uuid.New(), uuid.New(), uuid.New()},
+	})
+
+	tests = append(tests, assertInstanceStoreCorrectGetNamespaceInstancesTest{
+		name: "validCase",
+		args: args,
+		nsID: uuid.New(),
+		ids:  []uuid.UUID{},
+	})
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assertInstanceStoreCorrectGetNamespaceInstances(t, instances, tt.args, tt.nsID, tt.ids)
+		})
+	}
+
+	tf := time.Now().Add(-30 * time.Second)
+	status := instancestore.InstanceStatusComplete
+
+	err = instances.ForInstanceID(tests[0].args.ID).UpdateInstanceData(context.Background(), &instancestore.UpdateInstanceDataArgs{
+		Server:   server,
+		Deadline: &tf,
+		Status:   &status,
+	})
+	if err != nil {
+		t.Errorf("unexpected UpdateInstanceData() error: %v", err)
+
+		return
+	}
+
+	res, err := instances.GetNamespaceInstanceCounts(context.Background(), nsID, wfPath)
+	if err != nil {
+		t.Errorf("unexpected GetNamespaceInstances() error: %v", err)
+
+		return
+	}
+
+	if res.Complete != 1 || res.Pending != 2 || res.Cancelled != 0 || res.Crashed != 0 || res.Failed != 0 || res.Total != 3 {
+		t.Errorf("unexpected GetNamespaceInstanceCounts() error: got '%v' ", res)
+
+		return
+	}
+}

@@ -194,6 +194,16 @@ type EnqueueInstanceMessageArgs struct {
 	Payload    []byte
 }
 
+// InstanceCounts defined the return object for the metrics function.
+type InstanceCounts struct {
+	Complete  int
+	Failed    int
+	Crashed   int
+	Cancelled int
+	Pending   int
+	Total     int
+}
+
 type InstanceDataQuery interface {
 	// UpdateInstanceData updates the instance record. It only applies non-nil arguments. It returns the updated record.
 	UpdateInstanceData(ctx context.Context, args *UpdateInstanceDataArgs) error
@@ -245,6 +255,9 @@ type Store interface {
 	// AssertNoParallelCron attempts to detect if another machine in a HA environment may have already triggered an instance that we're just about to create ourselves.
 	// It does this by checking if a record of an instance was created within the last 30s for the given workflow ID.
 	AssertNoParallelCron(ctx context.Context, nsID uuid.UUID, wfPath string) error
+
+	// GetNamespaceInstanceCounts returns some instance metrics.
+	GetNamespaceInstanceCounts(ctx context.Context, nsID uuid.UUID, wfPath string) (*InstanceCounts, error)
 }
 
 type (
