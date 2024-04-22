@@ -120,7 +120,6 @@ $ helm install direktiv direktiv/direktiv
 | database.port | int | `5432` | database port |
 | database.sslmode | string | `"require"` | sslmode for database |
 | database.user | string | `"direktiv"` | database user |
-| eventing | object | `{"enabled":true}` | knative eventing enabled, requires knative setup and configuration |
 | flow.affinity | object | `{}` | affinity for flow pods |
 | flow.containers.secrets.resources.limits.memory | string | `"512Mi"` |  |
 | flow.containers.secrets.resources.requests.memory | string | `"128Mi"` |  |
@@ -168,12 +167,12 @@ $ helm install direktiv direktiv/direktiv
 | https_proxy | string | `""` | https proxy settings |
 | image | string | `"direktiv/direktiv"` | image for main direktiv binary |
 | imagePullSecrets | list | `[]` | Container registry secrets. |
+| ingress | object | `{"additionalAnnotations":{},"additionalLabels":{},"certificate":null,"class":"nginx","enabled":true,"host":null}` | knative eventing enabled, requires knative setup and configuration eventing:   enabled: true |
 | ingress-nginx | object | `{"controller":{"admissionWebhooks":{"patch":{"podAnnotations":{"linkerd.io/inject":"disabled"}}},"config":{"proxy-buffer-size":"16k"},"podAnnotations":{"linkerd.io/inject":"disabled"},"replicaCount":1},"install":true}` | nginx ingress controller configuration |
 | ingress.additionalAnnotations | object | `{}` | Additional Annotations |
 | ingress.additionalLabels | object | `{}` | Additional Labels |
 | ingress.certificate | string | `nil` | TLS secret |
 | ingress.class | string | `"nginx"` | Ingress class |
-| ingress.enabled | bool | `true` |  |
 | ingress.host | string | `nil` | Host for external services, only required for TLS |
 | no_proxy | string | `""` | no proxy proxy settings |
 | nodeSelector | object | `{}` |  |
