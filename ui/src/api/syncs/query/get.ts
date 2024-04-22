@@ -45,8 +45,9 @@ export const useSyncs = <T>({
 };
 
 export const useListSyncs = () =>
+  // copy array with spread notation to avoid mutating cached array
   useSyncs({
-    filter: (apiResponse) => apiResponse,
+    filter: (apiResponse) => ({ data: [...apiResponse.data].reverse() }),
   });
 
 export const useSyncDetail = (id: string) =>

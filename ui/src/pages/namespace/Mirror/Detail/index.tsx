@@ -109,7 +109,7 @@ const MirrorDetail = () => {
                       </TableCell>
                     </TableRow>
                   )}
-                  {currentItems.reverse().map((sync) => (
+                  {currentItems.map((sync) => (
                     <Row namespace={namespace} key={sync.id} item={sync} />
                   ))}
                 </TableBody>
