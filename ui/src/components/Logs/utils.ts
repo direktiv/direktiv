@@ -21,20 +21,6 @@ export const getMirrorLogEntryForClipboard = (logEntry: LogEntryType) =>
 
 export const getMonitoringLogEntryForClipboard = (logEntry: LogEntryType) => {
   const isWorkflowLog = !!logEntry.workflow;
-
-  const worfklowLogInfo = isWorkflowLog
-    ? ` - ${logEntry.workflow?.workflow} - ${logEntry.workflow?.instance}`
-    : "";
-
-  return `${logEntry.id} - ${formatLogTime(logEntry.time)} - ${
-    logEntry?.level
-  } - ${logEntry.msg}${worfklowLogInfo}`;
-};
-
-export const getMonitoringLogEntryForClipboardNew = (
-  logEntry: LogEntryType
-) => {
-  const isWorkflowLog = !!logEntry.workflow;
   const workflowInfos = isWorkflowLog
     ? [logEntry.workflow?.workflow, logEntry.workflow?.instance]
     : [];
