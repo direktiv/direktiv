@@ -4,12 +4,10 @@ import {
   createNamespaceName,
   deleteNamespace,
 } from "../utils/namespace";
-import {
-  checkIfNodeExists,
-  createDirectory,
-  createWorkflow,
-} from "../utils/node";
+import { checkIfNodeExists, createWorkflow } from "../utils/node";
 import { expect, test } from "@playwright/test";
+
+import { createDirectory } from "e2e/utils/files";
 
 let namespace = "";
 
@@ -268,7 +266,7 @@ test("when creating a workflow, the name (before extension) may be the same as a
   page,
 }) => {
   const directoryName = "directory";
-  await createDirectory(namespace, directoryName);
+  await createDirectory({ namespace, name: directoryName });
 
   // go to tree root
   await page.goto(`/${namespace}/explorer/tree`);
@@ -425,7 +423,7 @@ test(`when renaming a workflow, the name (before extension) may be the same as a
   const oldName = "old-name.yaml";
   const directoryName = "directory";
   const newName = `${directoryName}.yaml`;
-  await createDirectory(namespace, directoryName);
+  await createDirectory({ namespace, name: directoryName });
   await createWorkflow(namespace, oldName);
 
   await page.goto(`/${namespace}/explorer/tree/`);
@@ -562,7 +560,7 @@ test(`it is not possible to rename a workflow when the name already exists and e
 
 test(`it is possible to delete a directory`, async ({ page }) => {
   const name = "directory";
-  await createDirectory(namespace, name);
+  await createDirectory({ namespace, name });
 
   await page.goto(`/${namespace}/explorer/tree/`);
   await expect(
@@ -604,7 +602,7 @@ test(`it is possible to delete a directory`, async ({ page }) => {
 test(`it is possible to rename a directory`, async ({ page }) => {
   const oldname = "old-name";
   const newname = "new-name";
-  await createDirectory(namespace, oldname);
+  await createDirectory({ namespace, name: oldname });
 
   await page.goto(`/${namespace}/explorer/tree/`);
   await expect(

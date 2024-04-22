@@ -27,20 +27,6 @@ export const createWorkflow = async (namespace: string, name: string) => {
   return name;
 };
 
-export const createDirectory = (namespace: string, name: string) =>
-  fetch(
-    `${apiUrl}/api/namespaces/${namespace}/tree/${name}?op=create-directory`,
-    {
-      method: "PUT",
-      headers,
-    }
-  ).then((response) => {
-    if (!response.ok) {
-      throw `creating node failed with code ${response.status}`;
-    }
-    return name;
-  });
-
 export const deleteNode = (namespace: string, name: string) =>
   fetch(`${apiUrl}/api/namespaces/${namespace}/tree/${name}?op=delete-node`, {
     method: "DELETE",

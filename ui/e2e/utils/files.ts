@@ -30,3 +30,25 @@ export const createFile = async ({
     },
     headers,
   });
+
+export const createDirectory = async ({
+  name,
+  namespace,
+  path = "/",
+}: {
+  name: string;
+  namespace: string;
+  path?: string;
+}) =>
+  await apiCreateFile({
+    payload: {
+      name,
+      type: "directory",
+    },
+    urlParams: {
+      baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
+      namespace,
+      path,
+    },
+    headers,
+  });
