@@ -195,7 +195,6 @@ test("it is possible to create a workflow", async ({ page }) => {
   const nodeCreated = await checkIfFileExists({
     namespace,
     path: `/${filename}`,
-    // filename,
   });
 
   await expect(nodeCreated).toBeTruthy();
