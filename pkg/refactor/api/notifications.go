@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"sort"
 
 	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
@@ -72,6 +73,8 @@ func (c *notificationsController) lintSecrets(ctx context.Context, tx *database.
 	if len(keys) == 0 {
 		return nil, err
 	}
+
+	sort.Strings(keys)
 
 	issues = append(issues, &apiNotification{
 		Level: "warning",
