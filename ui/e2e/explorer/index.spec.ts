@@ -1,4 +1,4 @@
-import { checkIfFileExists, createWorkflow } from "../utils/node";
+import { checkIfFileExists, createDirectory } from "e2e/utils/files";
 import {
   checkIfNamespaceExists,
   createNamespace,
@@ -7,7 +7,7 @@ import {
 } from "../utils/namespace";
 import { expect, test } from "@playwright/test";
 
-import { createDirectory } from "e2e/utils/files";
+import { createWorkflow } from "../utils/workflow";
 
 let namespace = "";
 
