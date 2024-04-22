@@ -1,17 +1,17 @@
-import ActivityDetail from "./ActivityDetail";
 import { Card } from "~/design/Card";
 import { LogStreamingSubscriber } from "~/api/logs/query/LogStreamingSubscriber";
 import { NoPermissions } from "~/design/Table";
+import SyncDetail from "./SyncDetail";
 import { pages } from "~/util/router/pages";
-import { useMirrorActivity } from "~/api/tree/query/mirrorInfo";
+import { useSyncDetail } from "~/api/syncs/query/get";
 
 const Logs = () => {
-  const { activity } = pages.mirror.useParams();
-  const { isAllowed, noPermissionMessage, isFetched } = useMirrorActivity({
-    id: activity ?? "",
-  });
+  const { sync } = pages.mirror.useParams();
+  const { isAllowed, noPermissionMessage, isFetched } = useSyncDetail(
+    sync || ""
+  );
 
-  if (!activity) return null;
+  if (!sync) return null;
   if (!isFetched) return null;
   if (!isAllowed)
     return (
@@ -22,8 +22,8 @@ const Logs = () => {
 
   return (
     <>
-      <LogStreamingSubscriber activity={activity} />
-      <ActivityDetail activityId={activity} />
+      <LogStreamingSubscriber activity={sync} />
+      <SyncDetail syncId={sync} />
     </>
   );
 };

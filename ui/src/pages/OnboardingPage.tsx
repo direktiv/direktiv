@@ -6,7 +6,7 @@ import { useNamespace, useNamespaceActions } from "~/util/store/namespace";
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
 import Logo from "~/components/Logo";
-import NamespaceCreate from "~/components/NamespaceEdit";
+import NamespaceEdit from "~/components/NamespaceEdit";
 import { pages } from "~/util/router/pages";
 import { useListNamespaces } from "~/api/namespaces/query/get";
 import { useNavigate } from "react-router-dom";
@@ -50,7 +50,7 @@ const Layout = () => {
   useEffect(() => {
     if (
       availableNamespaces &&
-      availableNamespaces.results[0] &&
+      availableNamespaces.data[0] &&
       /**
        * the namespace list might still be refetching after a cache invalidation. This could be caused by a
        * namespace delete action that was just triggered. We have to wait until the refetch is done to avoid
@@ -61,16 +61,16 @@ const Layout = () => {
       // if there is a prefered namespace in localStorage, redirect to it
       if (
         activeNamespace &&
-        availableNamespaces.results.some((ns) => ns.name === activeNamespace)
+        availableNamespaces.data.some((ns) => ns.name === activeNamespace)
       ) {
         navigate(pages.explorer.createHref({ namespace: activeNamespace }));
         return;
       }
       // otherwise, redirect to the first namespace and store it in localStorage
-      setNamespace(availableNamespaces.results[0].name);
+      setNamespace(availableNamespaces.data[0].name);
       navigate(
         pages.explorer.createHref({
-          namespace: availableNamespaces.results[0].name,
+          namespace: availableNamespaces.data[0].name,
         })
       );
       return;
@@ -115,7 +115,7 @@ const Layout = () => {
               </Button>
             </DialogTrigger>
             <DialogContent>
-              <NamespaceCreate close={() => setDialogOpen(false)} />
+              <NamespaceEdit close={() => setDialogOpen(false)} />
             </DialogContent>
           </Dialog>
         </div>

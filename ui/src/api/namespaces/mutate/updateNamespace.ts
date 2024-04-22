@@ -1,26 +1,45 @@
+import type {
+  NamespaceCreatedEditedSchemaType,
+  NamespaceListSchemaType,
+} from "../schema/namespace";
+
 import { MirrorPostPatchSchemaType } from "~/api/namespaces/schema/mirror";
 import { NamespaceCreatedEditedSchema } from "../schema/namespace";
-import type { NamespaceListSchemaType } from "../schema/namespace";
 import { apiFactory } from "~/api/apiFactory";
 import { namespaceKeys } from "..";
-import { sortByName } from "~/api/files/utils";
 import { useApiKey } from "~/util/store/apiKey";
 import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
-const createNamespace = apiFactory({
-  url: () => "/api/v2/namespaces",
-  method: "POST",
+const updateNamespace = apiFactory({
+  url: ({ namespace }: { namespace: string }) =>
+    `/api/v2/namespaces/${namespace}`,
+  method: "PATCH",
   schema: NamespaceCreatedEditedSchema,
 });
 
-type ResolvedCreateNamespace = Awaited<ReturnType<typeof createNamespace>>;
+type ResolvedUpdateNamespace = Awaited<ReturnType<typeof updateNamespace>>;
 
-export const useCreateNamespace = ({
+const updateCache = (
+  oldData: NamespaceListSchemaType | undefined,
+  newData: NamespaceCreatedEditedSchemaType
+) => {
+  if (!oldData) return undefined;
+  const newRecord = newData.data;
+  const oldRecords = oldData?.data;
+  const newRecords = oldRecords.map((record) =>
+    record.name === newRecord.name ? newRecord : record
+  );
+  return {
+    data: newRecords,
+  };
+};
+
+export const useUpdateNamespace = ({
   onSuccess,
-}: { onSuccess?: (data: ResolvedCreateNamespace) => void } = {}) => {
+}: { onSuccess?: (data: ResolvedUpdateNamespace) => void } = {}) => {
   const apiKey = useApiKey();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -28,35 +47,28 @@ export const useCreateNamespace = ({
 
   return useMutationWithPermissions({
     mutationFn: ({
-      name,
+      namespace,
       mirror,
     }: {
-      name: string;
+      namespace: string;
       mirror?: MirrorPostPatchSchemaType;
     }) =>
-      createNamespace({
+      updateNamespace({
         apiKey: apiKey ?? undefined,
-        urlParams: {},
+        urlParams: { namespace },
         payload: {
-          name,
           mirror,
         },
       }),
     onSuccess(data, variables) {
       queryClient.setQueryData<NamespaceListSchemaType>(
         namespaceKeys.all(apiKey ?? undefined),
-        (oldData) => {
-          if (!oldData) return undefined;
-          const oldResults = oldData?.data;
-          return {
-            data: [...oldResults, data.data].sort(sortByName),
-          };
-        }
+        (oldData) => updateCache(oldData, data)
       );
       toast({
-        title: t("api.namespaces.mutate.create.success.title"),
-        description: t("api.namespaces.mutate.create.success.description", {
-          name: variables.name,
+        title: t("api.namespaces.mutate.update.success.title"),
+        description: t("api.namespaces.mutate.update.success.description", {
+          name: variables.namespace,
         }),
         variant: "success",
       });
@@ -65,7 +77,7 @@ export const useCreateNamespace = ({
     onError: () => {
       toast({
         title: t("api.generic.error"),
-        description: t("api.namespaces.mutate.create.error.description"),
+        description: t("api.namespaces.mutate.update.error.description"),
         variant: "error",
       });
     },

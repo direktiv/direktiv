@@ -5,14 +5,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "~/design/Tooltip";
-import {
-  activityStatusToBadgeProps,
-  activityTypeToBadeVariant,
-} from "../utils";
 
 import Badge from "~/design/Badge";
-import { MirrorActivitySchemaType } from "~/api/tree/schema/mirror";
+import { SyncObjectSchemaType } from "~/api/syncs/schema";
 import TooltipCopyBadge from "~/design/TooltipCopyBadge";
+import { activityStatusToBadgeProps } from "../utils";
 import { pages } from "~/util/router/pages";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -22,7 +19,7 @@ const Row = ({
   item,
   namespace,
 }: {
-  item: MirrorActivitySchemaType;
+  item: SyncObjectSchemaType;
   namespace: string;
 }) => {
   const createdAt = useUpdatedAt(item.createdAt);
@@ -34,11 +31,12 @@ const Row = ({
 
   return (
     <TableRow
+      data-testid="sync-row"
       onClick={() => {
         navigate(
           pages.mirror.createHref({
             namespace,
-            activity: item.id,
+            sync: item.id,
           })
         );
       }}
@@ -50,11 +48,6 @@ const Row = ({
           </TooltipCopyBadge>
         </TableCell>
         <TableCell>
-          <Badge variant={activityTypeToBadeVariant(item.type)}>
-            {item.type}
-          </Badge>
-        </TableCell>
-        <TableCell>
           <Badge
             variant={statusBadgeProps.variant}
             icon={statusBadgeProps.icon}
@@ -64,12 +57,12 @@ const Row = ({
         </TableCell>
         <TableCell>
           <Tooltip>
-            <TooltipTrigger data-testid="activity-row-createdAt-relative">
-              {t("pages.mirror.activities.tableRow.realtiveTime", {
+            <TooltipTrigger data-testid="createdAt-relative">
+              {t("pages.mirror.syncs.tableRow.realtiveTime", {
                 relativeTime: createdAt,
               })}
             </TooltipTrigger>
-            <TooltipContent data-testid="activity-row-createdAt-full">
+            <TooltipContent data-testid="createdAt-full">
               {item.createdAt}
             </TooltipContent>
           </Tooltip>
