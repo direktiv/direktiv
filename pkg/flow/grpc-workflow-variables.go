@@ -8,7 +8,6 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	libengine "github.com/direktiv/direktiv/pkg/refactor/engine"
@@ -206,85 +205,6 @@ func (flow *flow) WorkflowVariable(ctx context.Context, req *grpc.WorkflowVariab
 	resp.Data = data
 
 	return &resp, nil
-}
-
-func (flow *flow) WorkflowVariableParcels(req *grpc.WorkflowVariableRequest, srv grpc.Flow_WorkflowVariableParcelsServer) error {
-	slog.Debug("Handling gRPC request", "this", this())
-
-	ctx := srv.Context()
-
-	resp, err := flow.WorkflowVariable(ctx, &grpc.WorkflowVariableRequest{
-		Namespace: req.GetNamespace(),
-		Path:      req.GetPath(),
-		Key:       req.GetKey(),
-	})
-	if err != nil {
-		return err
-	}
-	err = srv.Send(resp)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (flow *flow) WorkflowVariables(ctx context.Context, req *grpc.WorkflowVariablesRequest) (*grpc.WorkflowVariablesResponse, error) {
-	slog.Debug("Handling gRPC request", "this", this())
-
-	tx, err := flow.beginSqlTx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer tx.Rollback()
-
-	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
-
-	file, err := tx.FileStore().ForNamespace(ns.Name).GetFile(ctx, req.GetPath())
-	if err != nil {
-		return nil, err
-	}
-
-	list, err := tx.DataStore().RuntimeVariables().ListForWorkflow(ctx, ns.Name, file.Path)
-	if err != nil {
-		return nil, err
-	}
-
-	resp := new(grpc.WorkflowVariablesResponse)
-	resp.Namespace = ns.Name
-	resp.Path = file.Path
-	resp.Variables = new(grpc.Variables)
-	resp.Variables.PageInfo = nil
-
-	resp.Variables.Results = bytedata.ConvertRuntimeVariablesToGrpcVariableList(list)
-
-	return resp, nil
-}
-
-func (flow *flow) WorkflowVariablesStream(req *grpc.WorkflowVariablesRequest, srv grpc.Flow_WorkflowVariablesStreamServer) error {
-	slog.Debug("Handling gRPC request", "this", this())
-	ctx := srv.Context()
-
-	resp, err := flow.WorkflowVariables(ctx, req)
-	if err != nil {
-		return err
-	}
-	// mock streaming response.
-	for {
-		select {
-		case <-ctx.Done():
-			return nil
-		default:
-			err = srv.Send(resp)
-			if err != nil {
-				return err
-			}
-			time.Sleep(time.Second * 5)
-		}
-	}
 }
 
 func (flow *flow) SetWorkflowVariable(ctx context.Context, req *grpc.SetWorkflowVariableRequest) (*grpc.SetWorkflowVariableResponse, error) {
