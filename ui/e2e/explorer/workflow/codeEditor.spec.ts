@@ -229,12 +229,12 @@ test("it is possible to leave the app from the editor", async ({ page }) => {
   await page.goto(`${namespace}/explorer/workflow/edit/${workflow}`);
   await page.getByText(defaultDescription);
 
-  await page.goto("/api/v2/version");
+  await page.goto("/api/v2/status");
 
   await expect(dialogTriggered).toBe(false);
 
   await expect(page, "it navigates to the new document").toHaveURL(
-    "/api/v2/version"
+    "/api/v2/status"
   );
 });
 
@@ -256,7 +256,7 @@ test("it prevents navigation away from the app with unsaved changes", async ({
   await page.type("textarea", dirtyText);
 
   try {
-    await page.goto("/api/v2/version").catch();
+    await page.goto("/api/v2/status").catch();
   } catch (error) {
     return;
   }
@@ -291,10 +291,10 @@ test("with confirmation, it allows navigation away from the app with unsaved cha
   const dirtyText = faker.random.alphaNumeric(9);
   await page.type("textarea", dirtyText);
 
-  await page.goto("/api/v2/version");
+  await page.goto("/api/v2/status");
 
   await expect(dialogTriggered).toBe(true);
   await expect(page, "it has navigated to the new page").toHaveURL(
-    "/api/v2/version"
+    "/api/v2/status"
   );
 });
