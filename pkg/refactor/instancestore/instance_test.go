@@ -739,8 +739,10 @@ func Test_sqlInstanceStore_AssertNoParallelCron(t *testing.T) {
 	}
 	instances := instancestoresql.NewSQLInstanceStore(db)
 
+	nsID := uuid.New()
+
 	wfPath := "/test.yaml"
-	err = instances.AssertNoParallelCron(context.Background(), wfPath)
+	err = instances.AssertNoParallelCron(context.Background(), nsID, wfPath)
 	if err != nil {
 		t.Errorf("unexpected AssertNoParallelCron() error: %v", err)
 
@@ -749,6 +751,7 @@ func Test_sqlInstanceStore_AssertNoParallelCron(t *testing.T) {
 
 	args := &instancestore.CreateInstanceDataArgs{
 		ID:           uuid.New(),
+		NamespaceID:  nsID,
 		Server:       server,
 		Invoker:      instancestore.InvokerCron,
 		WorkflowPath: "/test2.yaml",
@@ -768,7 +771,7 @@ type: noop
 
 	assertInstanceStoreCorrectInstanceDataCreation(t, instances, args)
 
-	err = instances.AssertNoParallelCron(context.Background(), wfPath)
+	err = instances.AssertNoParallelCron(context.Background(), nsID, wfPath)
 	if err != nil {
 		t.Errorf("unexpected AssertNoParallelCron() error: %v", err)
 
