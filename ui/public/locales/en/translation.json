@@ -1232,7 +1232,8 @@
         "pathLabel": "path:",
         "messageLabel": "msg:",
         "stateLabel": "state:",
-        "instanceLabel": "instance:"
+        "instanceLabel": "instance:",
+        "errorLabel": "error:"
       }
     },
     "blocker": {
