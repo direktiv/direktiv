@@ -1,33 +1,31 @@
 import { NodeListSchemaType } from "~/api/tree/schema/node";
+import { createFile } from "./files";
 import { headers } from "./testutils";
 
 const apiUrl = process.env.PLAYWRIGHT_UI_BASE_URL;
 
-export const workflowExamples = {
-  noop: `\
+export const noopYaml = `\
 description: A simple 'no-op' state that returns 'Hello world!'
 states:
 - id: helloworld
   type: noop
   transform:
     result: Hello world!
-`,
-};
+`;
 
-export const createWorkflow = (namespace: string, name: string) =>
-  fetch(
-    `${apiUrl}/api/namespaces/${namespace}/tree/${name}?op=create-workflow`,
-    {
-      method: "PUT",
-      body: workflowExamples.noop,
-      headers,
-    }
-  ).then((response) => {
-    if (!response.ok) {
-      throw `creating node failed with code ${response.status}`;
-    }
-    return name;
+export const createWorkflow = async (namespace: string, name: string) => {
+  const response = await createFile({
+    namespace,
+    name,
+    type: "workflow",
+    yaml: noopYaml,
   });
+
+  if (response.data.type !== "workflow") {
+    throw "unexpected response when creating test file";
+  }
+  return name;
+};
 
 export const createDirectory = (namespace: string, name: string) =>
   fetch(
