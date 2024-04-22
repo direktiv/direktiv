@@ -81,11 +81,12 @@ spec:
             - name: internal
               containerPort: 7777
               protocol: TCP
-            {{- if .Values.eventing.enabled }}
-            - name: grpcevents
-              protocol: TCP
-              containerPort: 3333
-            {{- end }}
+# Todo: Yassir, delete this entirely in cycle6.
+#            {{- if .Values.eventing.enabled }}
+#            - name: grpcevents
+#              protocol: TCP
+#              containerPort: 3333
+#            {{- end }}
           env:
           - name: DIREKTIV_DEBUG
             value: {{ .Values.flow.debug | quote }}
