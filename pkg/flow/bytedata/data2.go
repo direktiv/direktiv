@@ -107,6 +107,7 @@ func ConvertMirrorProcessesToGrpcMirrorActivityInfoList(list []*datastore.Mirror
 
 	return result
 }
+
 func ConvertInstanceToGrpcInstance(instance *enginerefactor.Instance) *grpc.Instance {
 	return &grpc.Instance{
 		CreatedAt:    timestamppb.New(instance.Instance.CreatedAt),
