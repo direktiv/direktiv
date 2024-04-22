@@ -1,13 +1,13 @@
 # Todo: Yassir, delete this entirely in cycle6.
-# {{- if .Values.eventing.enabled }}
+# {{/*- if .Values.eventing.enabled */}}
 # apiVersion: v1
 # kind: Service
 # metadata:
-#   name: {{ include "direktiv.fullname" . }}-eventing
+#   name: {{/* include "direktiv.fullname" . */}}-eventing
 #   annotations:
-#     kubernetes.io/ingress.class: {{ .Values.ingress.class }}
+#     kubernetes.io/ingress.class: {{/* .Values.ingress.class */}}
 #   labels:
-#     {{- include "direktiv.labels" . | nindent 4 }}
+#     {{/*- include "direktiv.labels" . | nindent 4 */}}
 # spec:
 #   type: ClusterIP
 #   ports:
@@ -16,5 +16,5 @@
 #       name: eventing
 #       protocol: TCP
 #   selector:
-#     {{- include "direktiv.selectorLabels" . | nindent 4 }}
-# {{- end }}
+#     {{/*- include "direktiv.selectorLabels" . | nindent 4 */}}
+# {{/*- end */}}
