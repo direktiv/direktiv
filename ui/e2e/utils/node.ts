@@ -1,8 +1,5 @@
-import { NodeListSchemaType } from "~/api/tree/schema/node";
+import { getFile as apiGetFile } from "~/api/files/query/file";
 import { createFile } from "./files";
-import { headers } from "./testutils";
-
-const apiUrl = process.env.PLAYWRIGHT_UI_BASE_URL;
 
 export const noopYaml = `\
 description: A simple 'no-op' state that returns 'Hello world!'
@@ -27,28 +24,38 @@ export const createWorkflow = async (namespace: string, name: string) => {
   return name;
 };
 
-export const deleteNode = (namespace: string, name: string) =>
-  fetch(`${apiUrl}/api/namespaces/${namespace}/tree/${name}?op=delete-node`, {
-    method: "DELETE",
-    headers,
-  }).then((response) => {
-    if (!response.ok) {
-      throw `deleting node failed with code ${response.status}`;
-    }
-    return;
-  });
+type ErrorType = { json?: { code?: string } };
 
-export const checkIfNodeExists = (namespace: string, nodeName: string) =>
-  fetch(`${apiUrl}/api/namespaces/${namespace}/tree`, { headers }).then(
-    (response) => {
-      if (!response.ok) {
-        throw `fetching nodes failed with code ${response.status}`;
-      }
-      return response.json().then((json: NodeListSchemaType) => {
-        const nodeInResponse = json?.children?.results
-          .map((node) => node.name)
-          .find((name) => name === nodeName);
-        return !!nodeInResponse;
-      });
+export const checkIfFileExists = async ({
+  namespace,
+  path,
+}: {
+  namespace: string;
+  path: string;
+}) => {
+  try {
+    const response = await apiGetFile({
+      urlParams: {
+        baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
+        path,
+        namespace,
+      },
+    });
+
+    if (!response.data) {
+      throw `Fetching file at ${path} in namespace ${namespace} failed`;
     }
-  );
+
+    return response.data.path === path;
+  } catch (error) {
+    const typedError = error as ErrorType;
+
+    if (typedError?.json?.code === "resource_not_found") {
+      return false;
+    }
+
+    throw new Error(
+      `Unexpected error fetching ${path} in namespace ${namespace}`
+    );
+  }
+};
