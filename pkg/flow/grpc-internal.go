@@ -22,7 +22,7 @@ type internal struct {
 	*server
 	listener net.Listener
 	srv      *libgrpc.Server
-	grpc.UnimplementedInternalServer
+	grpc.UnsafeInternalServer
 }
 
 func initInternalServer(ctx context.Context, srv *server) (*internal, error) {
