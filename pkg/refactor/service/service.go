@@ -18,10 +18,6 @@ const (
 
 // GetServiceURL is a global function that know how to construct a service url based on service parameters.
 // You need to call SetupGetServiceURLFunc function to construct GetServiceURL.
-//
-// TODO: yassir, update this function so that it can handle the following arguments:
-//
-//	GetServiceURL("", core.ServiceTypeSystem, con.Path, "")
 var GetServiceURL func(namespace string, typ string, file string, name string) string
 
 func getKnativeServiceURL(knativeNamespace string, namespace string, typ string, file string, name string) string {
@@ -48,6 +44,10 @@ func getDockerServiceURL(namespace string, typ string, file string, name string)
 
 func SetupGetServiceURLFunc(config *core.Config, withDocker bool) {
 	GetServiceURL = func(namespace string, typ string, file string, name string) string {
+		if namespace == "" && typ == core.ServiceTypeSystem {
+			namespace = core.SystemNamespace
+			typ = core.ServiceTypeNamespace
+		}
 		if withDocker {
 			return getDockerServiceURL(namespace, typ, file, name)
 		}
