@@ -9,7 +9,7 @@ import {
 } from "~/design/Dialog";
 
 import Button from "~/design/Button";
-import { RefreshCcw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { useSyncMirror } from "~/api/tree/mutate/syncMirror";
 import { useTranslation } from "react-i18next";
@@ -25,14 +25,14 @@ const SyncDialog = ({ loading }: { loading: boolean }) => {
     <Dialog open={syncModal} onOpenChange={setSyncModal}>
       <DialogTrigger asChild>
         <Button variant="primary" loading={loading} className="max-md:w-full">
-          {!loading && <RefreshCcw />}
+          {!loading && <RefreshCw />}
           {t("pages.mirror.header.sync")}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            <RefreshCcw />
+            <RefreshCw />
             {t("pages.mirror.syncDialog.title", { namespace: name })}
           </DialogTitle>
         </DialogHeader>
