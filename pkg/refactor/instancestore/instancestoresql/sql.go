@@ -233,13 +233,13 @@ func (s *sqlInstanceStore) DeleteOldInstances(ctx context.Context, before time.T
 	return nil
 }
 
-func (s *sqlInstanceStore) AssertNoParallelCron(ctx context.Context, wfPath string) error {
-	query := fmt.Sprintf(`SELECT COUNT(*) FROM %s WHERE %s = ? AND %s = ? AND %s > ?`, table, fieldInvoker, fieldWorkflowPath, fieldCreatedAt)
+func (s *sqlInstanceStore) AssertNoParallelCron(ctx context.Context, nsID uuid.UUID, wfPath string) error {
+	query := fmt.Sprintf(`SELECT COUNT(*) FROM %s WHERE %s = ? AND %s = ? AND %s = ? AND %s > ?`, table, fieldNamespaceID, fieldInvoker, fieldWorkflowPath, fieldCreatedAt)
 
 	var k int64
 	res := s.db.WithContext(ctx).Raw(
 		query,
-		instancestore.InvokerCron, wfPath, time.Now().UTC().Add(-30*time.Second),
+		nsID, instancestore.InvokerCron, wfPath, time.Now().UTC().Add(-30*time.Second),
 	).First(&k)
 	if res.Error != nil {
 		return res.Error
