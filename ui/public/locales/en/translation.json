@@ -976,6 +976,8 @@
           }
         },
         "empty": "No routes exist yet",
+        "searchPlaceholder": "Filter routes...",
+        "emptySearch": "No route matches your search",
         "detail": {
           "editRoute": "Edit Route"
         }
