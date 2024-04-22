@@ -1606,14 +1606,14 @@
                       type: string
                       description: timestamp of last updating date
 
-/api/v2/version:
+/api/v2/status:
   get:
-    summary: Get server version information.
+    summary: Get server status information.
     tags:
     - server
     responses:
       '200': 
-        description: Server version information.
+        description: Server status information.
         content:
           application/json:
             example:

@@ -88,7 +88,7 @@ func Initialize(app core.App, db *database.SQLStore, bus *pubsub2.Bus, instanceM
 	r.Handle("/ns/{namespace}/*", app.GatewayManager)
 
 	// version endpoint
-	r.Get("/api/v2/version", func(w http.ResponseWriter, r *http.Request) {
+	r.Get("/api/v2/status", func(w http.ResponseWriter, r *http.Request) {
 		data := struct {
 			Version      string `json:"version"`
 			IsEnterprise bool   `json:"isEnterprise"`
