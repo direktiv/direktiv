@@ -783,7 +783,7 @@ type: noop
 
 	assertInstanceStoreCorrectInstanceDataCreation(t, instances, args)
 
-	err = instances.AssertNoParallelCron(context.Background(), wfPath)
+	err = instances.AssertNoParallelCron(context.Background(), nsID, wfPath)
 	if !errors.Is(err, instancestore.ErrParallelCron) {
 		t.Errorf("unexpected AssertNoParallelCron() error: expected is '%v' but got '%v' ", instancestore.ErrParallelCron, err)
 
