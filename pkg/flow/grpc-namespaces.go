@@ -13,31 +13,6 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-func (flow *flow) ResolveNamespaceUID(ctx context.Context, req *grpc.ResolveNamespaceUIDRequest) (*grpc.NamespaceResponse, error) {
-	slog.Debug("Handling gRPC request", "this", this())
-
-	id, err := uuid.Parse(req.GetId())
-	if err != nil {
-		return nil, err
-	}
-
-	tx, err := flow.beginSqlTx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer tx.Rollback()
-
-	ns, err := tx.DataStore().Namespaces().GetByID(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-
-	var resp grpc.NamespaceResponse
-	resp.Namespace = bytedata.ConvertNamespaceToGrpc(ns)
-
-	return &resp, nil
-}
-
 func (flow *flow) Namespace(ctx context.Context, req *grpc.NamespaceRequest) (*grpc.NamespaceResponse, error) {
 	slog.Debug("Handling gRPC request", "this", this())
 

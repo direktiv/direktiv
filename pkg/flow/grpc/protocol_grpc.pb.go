@@ -56,7 +56,6 @@ const (
 	Flow_EventHistoryStream_FullMethodName    = "/direktiv_flow.Flow/EventHistoryStream"
 	Flow_HistoricalEvent_FullMethodName       = "/direktiv_flow.Flow/HistoricalEvent"
 	Flow_ReplayEvent_FullMethodName           = "/direktiv_flow.Flow/ReplayEvent"
-	Flow_ResolveNamespaceUID_FullMethodName   = "/direktiv_flow.Flow/ResolveNamespaceUID"
 	Flow_CreateNamespaceMirror_FullMethodName = "/direktiv_flow.Flow/CreateNamespaceMirror"
 	Flow_CreateDirectoryMirror_FullMethodName = "/direktiv_flow.Flow/CreateDirectoryMirror"
 	Flow_UpdateMirrorSettings_FullMethodName  = "/direktiv_flow.Flow/UpdateMirrorSettings"
@@ -118,7 +117,6 @@ type FlowClient interface {
 	EventHistoryStream(ctx context.Context, in *EventHistoryRequest, opts ...grpc.CallOption) (Flow_EventHistoryStreamClient, error)
 	HistoricalEvent(ctx context.Context, in *HistoricalEventRequest, opts ...grpc.CallOption) (*HistoricalEventResponse, error)
 	ReplayEvent(ctx context.Context, in *ReplayEventRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	ResolveNamespaceUID(ctx context.Context, in *ResolveNamespaceUIDRequest, opts ...grpc.CallOption) (*NamespaceResponse, error)
 	// mirrors.
 	CreateNamespaceMirror(ctx context.Context, in *CreateNamespaceMirrorRequest, opts ...grpc.CallOption) (*CreateNamespaceResponse, error)
 	CreateDirectoryMirror(ctx context.Context, in *CreateDirectoryMirrorRequest, opts ...grpc.CallOption) (*CreateDirectoryResponse, error)
@@ -675,15 +673,6 @@ func (c *flowClient) ReplayEvent(ctx context.Context, in *ReplayEventRequest, op
 	return out, nil
 }
 
-func (c *flowClient) ResolveNamespaceUID(ctx context.Context, in *ResolveNamespaceUIDRequest, opts ...grpc.CallOption) (*NamespaceResponse, error) {
-	out := new(NamespaceResponse)
-	err := c.cc.Invoke(ctx, Flow_ResolveNamespaceUID_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *flowClient) CreateNamespaceMirror(ctx context.Context, in *CreateNamespaceMirrorRequest, opts ...grpc.CallOption) (*CreateNamespaceResponse, error) {
 	out := new(CreateNamespaceResponse)
 	err := c.cc.Invoke(ctx, Flow_CreateNamespaceMirror_FullMethodName, in, out, opts...)
@@ -878,7 +867,6 @@ type FlowServer interface {
 	EventHistoryStream(*EventHistoryRequest, Flow_EventHistoryStreamServer) error
 	HistoricalEvent(context.Context, *HistoricalEventRequest) (*HistoricalEventResponse, error)
 	ReplayEvent(context.Context, *ReplayEventRequest) (*emptypb.Empty, error)
-	ResolveNamespaceUID(context.Context, *ResolveNamespaceUIDRequest) (*NamespaceResponse, error)
 	// mirrors.
 	CreateNamespaceMirror(context.Context, *CreateNamespaceMirrorRequest) (*CreateNamespaceResponse, error)
 	CreateDirectoryMirror(context.Context, *CreateDirectoryMirrorRequest) (*CreateDirectoryResponse, error)
@@ -1008,9 +996,6 @@ func (UnimplementedFlowServer) HistoricalEvent(context.Context, *HistoricalEvent
 }
 func (UnimplementedFlowServer) ReplayEvent(context.Context, *ReplayEventRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReplayEvent not implemented")
-}
-func (UnimplementedFlowServer) ResolveNamespaceUID(context.Context, *ResolveNamespaceUIDRequest) (*NamespaceResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ResolveNamespaceUID not implemented")
 }
 func (UnimplementedFlowServer) CreateNamespaceMirror(context.Context, *CreateNamespaceMirrorRequest) (*CreateNamespaceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateNamespaceMirror not implemented")
@@ -1742,24 +1727,6 @@ func _Flow_ReplayEvent_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Flow_ResolveNamespaceUID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ResolveNamespaceUIDRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).ResolveNamespaceUID(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_ResolveNamespaceUID_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).ResolveNamespaceUID(ctx, req.(*ResolveNamespaceUIDRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Flow_CreateNamespaceMirror_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CreateNamespaceMirrorRequest)
 	if err := dec(in); err != nil {
@@ -2129,10 +2096,6 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ReplayEvent",
 			Handler:    _Flow_ReplayEvent_Handler,
-		},
-		{
-			MethodName: "ResolveNamespaceUID",
-			Handler:    _Flow_ResolveNamespaceUID_Handler,
 		},
 		{
 			MethodName: "CreateNamespaceMirror",
@@ -2833,123 +2796,6 @@ var Internal_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "FileVariableParcels",
 			Handler:       _Internal_FileVariableParcels_Handler,
-			ServerStreams: true,
-		},
-	},
-	Metadata: "pkg/flow/grpc/protocol.proto",
-}
-
-const (
-	Eventing_RequestEvents_FullMethodName = "/direktiv_flow.Eventing/RequestEvents"
-)
-
-// EventingClient is the client API for Eventing service.
-//
-// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type EventingClient interface {
-	RequestEvents(ctx context.Context, in *EventingRequest, opts ...grpc.CallOption) (Eventing_RequestEventsClient, error)
-}
-
-type eventingClient struct {
-	cc grpc.ClientConnInterface
-}
-
-func NewEventingClient(cc grpc.ClientConnInterface) EventingClient {
-	return &eventingClient{cc}
-}
-
-func (c *eventingClient) RequestEvents(ctx context.Context, in *EventingRequest, opts ...grpc.CallOption) (Eventing_RequestEventsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Eventing_ServiceDesc.Streams[0], Eventing_RequestEvents_FullMethodName, opts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &eventingRequestEventsClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-type Eventing_RequestEventsClient interface {
-	Recv() (*CloudEvent, error)
-	grpc.ClientStream
-}
-
-type eventingRequestEventsClient struct {
-	grpc.ClientStream
-}
-
-func (x *eventingRequestEventsClient) Recv() (*CloudEvent, error) {
-	m := new(CloudEvent)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-// EventingServer is the server API for Eventing service.
-// All implementations must embed UnimplementedEventingServer
-// for forward compatibility
-type EventingServer interface {
-	RequestEvents(*EventingRequest, Eventing_RequestEventsServer) error
-	mustEmbedUnimplementedEventingServer()
-}
-
-// UnimplementedEventingServer must be embedded to have forward compatible implementations.
-type UnimplementedEventingServer struct {
-}
-
-func (UnimplementedEventingServer) RequestEvents(*EventingRequest, Eventing_RequestEventsServer) error {
-	return status.Errorf(codes.Unimplemented, "method RequestEvents not implemented")
-}
-func (UnimplementedEventingServer) mustEmbedUnimplementedEventingServer() {}
-
-// UnsafeEventingServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to EventingServer will
-// result in compilation errors.
-type UnsafeEventingServer interface {
-	mustEmbedUnimplementedEventingServer()
-}
-
-func RegisterEventingServer(s grpc.ServiceRegistrar, srv EventingServer) {
-	s.RegisterService(&Eventing_ServiceDesc, srv)
-}
-
-func _Eventing_RequestEvents_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(EventingRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
-	return srv.(EventingServer).RequestEvents(m, &eventingRequestEventsServer{stream})
-}
-
-type Eventing_RequestEventsServer interface {
-	Send(*CloudEvent) error
-	grpc.ServerStream
-}
-
-type eventingRequestEventsServer struct {
-	grpc.ServerStream
-}
-
-func (x *eventingRequestEventsServer) Send(m *CloudEvent) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-// Eventing_ServiceDesc is the grpc.ServiceDesc for Eventing service.
-// It's only intended for direct use with grpc.RegisterService,
-// and not to be introspected or modified (even as a copy)
-var Eventing_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "direktiv_flow.Eventing",
-	HandlerType: (*EventingServer)(nil),
-	Methods:     []grpc.MethodDesc{},
-	Streams: []grpc.StreamDesc{
-		{
-			StreamName:    "RequestEvents",
-			Handler:       _Eventing_RequestEvents_Handler,
 			ServerStreams: true,
 		},
 	},
