@@ -44,11 +44,6 @@ func getDockerServiceURL(namespace string, typ string, file string, name string)
 
 func SetupGetServiceURLFunc(config *core.Config, withDocker bool) {
 	GetServiceURL = func(namespace string, typ string, file string, name string) string {
-		// translate args for system-wide services.
-		if namespace == "" && typ == core.ServiceTypeSystem {
-			namespace = core.SystemNamespace
-			typ = core.ServiceTypeNamespace
-		}
 		if withDocker {
 			return getDockerServiceURL(namespace, typ, file, name)
 		}

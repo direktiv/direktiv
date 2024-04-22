@@ -413,7 +413,7 @@ func (engine *engine) newIsolateRequest(im *instanceMemory, stateId string, time
 		con := fn.(*model.SystemFunctionDefinition)
 		ar.Container.Files = files
 		ar.Container.ID = con.ID
-		ar.Container.Service = service.GetServiceURL("", core.ServiceTypeSystem, con.Path, "")
+		ar.Container.Service = service.GetServiceURL(core.SystemNamespace, core.ServiceTypeSystem, con.Path, "")
 	default:
 		return nil, fmt.Errorf("unexpected function type: %v", fn)
 	}
