@@ -4,9 +4,11 @@ import { runWorkflow } from "~/api/tree/mutate/runWorkflow";
 export const createInstance = async ({
   namespace,
   path,
+  payload,
 }: {
   namespace: string;
   path: string;
+  payload?: string;
 }) =>
   await runWorkflow({
     urlParams: {
@@ -15,4 +17,5 @@ export const createInstance = async ({
       path,
     },
     headers,
+    payload,
   });
