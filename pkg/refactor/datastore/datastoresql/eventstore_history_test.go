@@ -91,7 +91,7 @@ func Test_DeleteOldEvents(t *testing.T) {
 	}
 
 	// Delete old events
-	sinceWhen := time.Now().UTC().Add(-time.Hour) // Delete events older than an hour
+	sinceWhen := time.Now().UTC().Add(time.Hour) // Delete events older than an hour
 	err := hist.DeleteOld(context.Background(), sinceWhen)
 	if err != nil {
 		t.Error(err)
