@@ -10,17 +10,7 @@ const namespaceName = 'functionsfiles'
 describe('Test function files behaviour', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 
-	it(`should create a namespace`, async () => {
-		const req = await request(config.getDirektivHost()).put(`/api/namespaces/${ namespaceName }`)
-		expect(req.statusCode).toEqual(200)
-		expect(req.body).toMatchObject({
-			namespace: {
-				createdAt: expect.stringMatching(regex.timestampRegex),
-				updatedAt: expect.stringMatching(regex.timestampRegex),
-				name: namespaceName,
-			},
-		})
-	})
+	helpers.itShouldCreateNamespace(it, expect, namespaceName)
 
 	helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
 		'/', 'bash.yaml', 'service', `

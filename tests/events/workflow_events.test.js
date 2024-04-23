@@ -36,10 +36,7 @@ const basevent = (type, id, value) => `{
 describe('Test basic workflow events', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
 
-	it(`should create namespace`, async () => {
-		const createNamespaceResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${ namespaceName }`)
-		expect(createNamespaceResponse.statusCode).toEqual(200)
-	})
+	helpers.itShouldCreateNamespace(it, expect, namespaceName)
 
 	common.helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
 		'/', 'listener.yml', 'workflow', `
@@ -79,10 +76,7 @@ states:
 describe('Test workflow events with filter/context', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
 
-	it(`should create namespace`, async () => {
-		const createNamespaceResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${ namespaceName }`)
-		expect(createNamespaceResponse.statusCode).toEqual(200)
-	})
+	helpers.itShouldCreateNamespace(it, expect, namespaceName)
 
 	common.helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
 		'/', 'startlistener.yml', 'workflow', `
@@ -239,10 +233,7 @@ const baseventMultipleContext = (type, id) => `{
 describe('Test workflow events', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
 
-	it(`should create namespace`, async () => {
-		const createNamespaceResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${ namespaceName }`)
-		expect(createNamespaceResponse.statusCode).toEqual(200)
-	})
+	helpers.itShouldCreateNamespace(it, expect, namespaceName)
 
 	// workflow with start
 	helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
