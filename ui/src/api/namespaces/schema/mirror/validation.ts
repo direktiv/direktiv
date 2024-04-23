@@ -14,7 +14,7 @@ const PublicValidationSchema = z.object({
     .string()
     .url()
     .nonempty({ message: "invalid url, must be http(s):// format" }),
-  ref: z.string().nonempty(),
+  gitRef: z.string().nonempty(),
   insecure: z.boolean(),
 });
 
@@ -24,8 +24,8 @@ const TokenValidationSchema = z.object({
     .string()
     .url()
     .nonempty({ message: "invalid url, must be http(s):// format" }),
-  ref: z.string().nonempty(),
-  passphrase: z.string().nonempty("token must not be empty"),
+  gitRef: z.string().nonempty(),
+  authToken: z.string().nonempty("token must not be empty"),
   insecure: z.boolean(),
 });
 
@@ -34,10 +34,10 @@ const SshValidationSchema = z.object({
   url: gitUrlSchema.nonempty({
     message: "format must be git@host:path when using SSH",
   }),
-  ref: z.string().nonempty(),
-  passphrase: z.string().optional(),
+  gitRef: z.string().nonempty(),
   publicKey: z.string().nonempty(),
   privateKey: z.string().nonempty(),
+  privateKeyPassphrase: z.string().optional(),
   insecure: z.boolean(),
 });
 
@@ -47,7 +47,7 @@ const KeepTokenValidationSchema = z.object({
     .string()
     .url()
     .nonempty({ message: "invalid url, must be http(s):// format" }),
-  ref: z.string().nonempty(),
+  gitRef: z.string().nonempty(),
   insecure: z.boolean(),
 });
 
@@ -56,7 +56,7 @@ const KeepSshValidationSchema = z.object({
   url: gitUrlSchema.nonempty({
     message: "format must be git@host:path when using SSH",
   }),
-  ref: z.string().nonempty(),
+  gitRef: z.string().nonempty(),
   insecure: z.boolean(),
 });
 

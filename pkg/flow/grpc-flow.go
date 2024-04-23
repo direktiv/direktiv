@@ -21,7 +21,7 @@ type flow struct {
 	*server
 	listener net.Listener
 	srv      *libgrpc.Server
-	grpc.UnimplementedFlowServer
+	grpc.UnsafeFlowServer
 }
 
 const srv = "server"
