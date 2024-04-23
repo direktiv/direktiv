@@ -158,8 +158,11 @@ func Initialize(app core.App, db *database.SQLStore, bus *pubsub2.Bus, instanceM
 				}
 				writeJSON(w, data)
 			})
-			r.Route("/namespaces/{namespace}/events", func(r chi.Router) {
+			r.Route("/namespaces/{namespace}/events/history", func(r chi.Router) {
 				eventsCtr.mountEventHistoryRouter(r)
+			})
+			r.Route("/namespaces/{namespace}/events/listener", func(r chi.Router) {
+				eventsCtr.mountEventListenerRouter(r)
 			})
 		})
 	})
