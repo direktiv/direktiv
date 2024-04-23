@@ -46,7 +46,22 @@ describe('Test namespace git mirroring', () => {
         })
     })
 
-    retry50(`should get the new git namespace`, async () => {
+    retry50(`should succeed to sync`, async () => {
+        const res = await request(common.config.getDirektivHost())
+            .get(`/api/v2/namespaces/${namespace}/syncs`)
+        expect(res.statusCode).toEqual(200)
+        expect(res.body.data).toEqual([
+            {
+                id:  expect.stringMatching(common.regex.uuidRegex),
+                status: "complete",
+                createdAt: expect.stringMatching(regex.timestampRegex),
+                updatedAt: expect.stringMatching(regex.timestampRegex),
+                endedAt: expect.stringMatching(regex.timestampRegex),
+            },
+        ])
+    })
+
+    it(`should get the new git namespace`, async () => {
         const res = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${namespace}/files/listener.yml`)
         expect(res.statusCode).toEqual(200)
     })
