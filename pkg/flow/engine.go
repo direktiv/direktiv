@@ -471,12 +471,6 @@ func (engine *engine) TerminateInstance(ctx context.Context, im *instanceMemory)
 		slog.Debug("Failed to free memory during a crash", "error", err)
 	}
 
-	if im.logic != nil {
-		engine.metricsCompleteState(im, "", im.ErrorCode(), false)
-	}
-
-	engine.metricsCompleteInstance(im)
-
 	engine.WakeInstanceCaller(ctx, im)
 }
 
@@ -656,7 +650,6 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 	instanceTrackCtx := enginerefactor.WithTrack(im.WithTags(loggingCtx), enginerefactor.BuildInstanceTrack(im.instance))
 
 	if transition.NextState != "" {
-		engine.metricsCompleteState(im, transition.NextState, errCode, false)
 		slog.Debug("Transitioning to next state.",
 			enginerefactor.GetSlogAttributesWithStatus(instanceTrackCtx, core.LogRunningStatus)...)
 

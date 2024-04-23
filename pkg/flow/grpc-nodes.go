@@ -191,11 +191,6 @@ func (flow *flow) DeleteNode(ctx context.Context, req *grpc.DeleteNodeRequest) (
 		return nil, err
 	}
 
-	if file.Typ == filestore.FileTypeWorkflow {
-		metricsWf.WithLabelValues(ns.Name, ns.Name).Dec()
-		metricsWfUpdated.WithLabelValues(ns.Name, file.Path, ns.Name).Inc()
-	}
-
 	if file.Typ.IsDirektivSpecFile() {
 		err = helpers.PublishEventDirektivFileChange(flow.pBus, file.Typ, "delete", &pubsub.FileChangeEvent{
 			Namespace:    ns.Name,

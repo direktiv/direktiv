@@ -182,9 +182,6 @@ func (flow *flow) CreateWorkflow(ctx context.Context, req *grpc.CreateWorkflowRe
 		return nil, err
 	}
 
-	metricsWf.WithLabelValues(ns.Name, ns.Name).Inc()
-	metricsWfUpdated.WithLabelValues(ns.Name, file.Path, ns.Name).Inc()
-
 	slog.Debug("Created workflow.", "path", file.Path, "namespace", req.Namespace)
 
 	if file.Typ.IsDirektivSpecFile() {
