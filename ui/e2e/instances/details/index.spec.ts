@@ -1,7 +1,6 @@
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
 import {
   workflowWithDelay as delayedWorkflowContent,
-  workflowThatWaitsAndFails as failingWorkflowContent,
   simpleWorkflow as simpleWorkflowContent,
 } from "../utils/workflows";
 import { expect, test } from "@playwright/test";
@@ -43,9 +42,12 @@ test.afterEach(async () => {
 test("the header of the instance page shows the relevant data for the workflow", async ({
   page,
 }) => {
-  const newInstance = createInstance({ namespace, path: simpleWorkflowName });
-  await expect(newInstance, "wait until process was completed").toBeDefined();
-  const instanceId = (await newInstance).instance;
+  const instanceId = (
+    await createInstance({
+      namespace,
+      path: simpleWorkflowName,
+    })
+  ).instance;
   await page.goto(`/${namespace}/instances/${instanceId}`);
 
   const header = page.getByTestId("instance-header-container");
@@ -103,9 +105,12 @@ test("the header of the instance page shows the relevant data for the workflow",
 test("the diagram panel on the instance page responds to user interaction", async ({
   page,
 }) => {
-  const newInstance = createInstance({ namespace, path: simpleWorkflowName });
-  await expect(newInstance, "wait until process was completed").toBeDefined();
-  const instanceId = (await newInstance).instance;
+  const instanceId = (
+    await createInstance({
+      namespace,
+      path: simpleWorkflowName,
+    })
+  ).instance;
   await page.goto(`/${namespace}/instances/${instanceId}`);
 
   const diagramPanel = page.getByTestId("rf__wrapper");
@@ -162,12 +167,12 @@ test("the diagram panel on the instance page responds to user interaction", asyn
 test("the diagram on the instance page changes appearance dynamically", async ({
   page,
 }) => {
-  const newInstance = createInstance({
-    namespace,
-    path: delayedWorkflowName,
-  });
-  await expect(newInstance, "wait until process was completed").toBeDefined();
-  const instanceId = (await newInstance).instance;
+  const instanceId = (
+    await createInstance({
+      namespace,
+      path: delayedWorkflowName,
+    })
+  ).instance;
   await page.goto(`/${namespace}/instances/${instanceId}`);
 
   const diagramPanel = page.getByTestId("rf__wrapper");
@@ -258,13 +263,12 @@ test("the diagram on the instance page changes appearance dynamically", async ({
 test("the input/output panel responds to user interaction", async ({
   page,
 }) => {
-  const newInstance = createInstance({
-    namespace,
-    path: simpleWorkflowName,
-  });
-
-  await expect(newInstance, "wait until process was completed").toBeDefined();
-  const instanceId = (await newInstance).instance;
+  const instanceId = (
+    await createInstance({
+      namespace,
+      path: simpleWorkflowName,
+    })
+  ).instance;
   await page.goto(`/${namespace}/instances/${instanceId}`);
 
   const inputOutputPanel = page.getByTestId("inputOutputPanel");
@@ -354,13 +358,12 @@ test("the input/output panel responds to user interaction", async ({
 test("The output is shown when the workflow finished running", async ({
   page,
 }) => {
-  const newInstance = createInstance({
-    namespace,
-    path: delayedWorkflowName,
-  });
-
-  await expect(newInstance, "wait until process was completed").toBeDefined();
-  const instanceId = (await newInstance).instance;
+  const instanceId = (
+    await createInstance({
+      namespace,
+      path: delayedWorkflowName,
+    })
+  ).instance;
   await page.goto(`/${namespace}/instances/${instanceId}`);
 
   const inputOutputPanel = page.getByTestId("inputOutputPanel");
@@ -399,13 +402,12 @@ test("The output is shown when the workflow finished running", async ({
 test("after a running instance finishes, the output tab is automatically selected ", async ({
   page,
 }) => {
-  const newInstance = createInstance({
-    namespace,
-    path: delayedWorkflowName,
-  });
-
-  await expect(newInstance, "wait until process was completed").toBeDefined();
-  const instanceId = (await newInstance).instance;
+  const instanceId = (
+    await createInstance({
+      namespace,
+      path: delayedWorkflowName,
+    })
+  ).instance;
   await page.goto(`/${namespace}/instances/${instanceId}`);
 
   const inputOutputPanel = page.getByTestId("inputOutputPanel");
