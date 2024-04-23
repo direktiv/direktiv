@@ -47,24 +47,6 @@ func pathHandler(r *mux.Router, method, name, op string, handler func(http.Respo
 	}
 }
 
-func pathHandlerSSE(r *mux.Router, name, op string, handler func(http.ResponseWriter, *http.Request)) {
-	root := "/namespaces/{ns}/tree"
-	path := root + "/{path:.*}"
-
-	r1 := r.HandleFunc(root, handler).Name(name).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
-	r2 := r.HandleFunc(path, handler).Name(name).Methods(http.MethodGet).Headers("Accept", "text/event-stream")
-
-	if op != "" {
-		r1.Queries("op", op)
-		r2.Queries("op", op)
-	}
-}
-
-func pathHandlerPair(r *mux.Router, name, op string, handler, sseHandler func(http.ResponseWriter, *http.Request)) {
-	pathHandlerSSE(r, name, op, sseHandler)
-	pathHandler(r, http.MethodGet, name, op, handler)
-}
-
 func loadRawBody(r *http.Request) ([]byte, error) {
 	limit := int64(1024 * 1024 * 32)
 
