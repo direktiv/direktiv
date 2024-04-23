@@ -1,9 +1,9 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
+import { basename } from 'path'
 
 import common from '../common'
 import request from '../common/request'
-import {basename} from "path";
-import {retry50} from "../common/retry";
+import { retry50 } from '../common/retry'
 
 const namespace = basename(__filename)
 
@@ -18,14 +18,14 @@ describe('Test namespace git mirroring', () => {
 				mirror: {
 					url: 'https://github.com/direktiv/direktiv-examples.git',
 					gitRef: 'main',
-					authType: "public",
-				}
+					authType: 'public',
+				},
 			})
 		expect(res.statusCode).toEqual(200)
 	})
 	it(`should trigger a new sync`, async () => {
 		const res = await request(common.config.getDirektivHost())
-			.post(`/api/v2/namespaces/${namespace}/syncs`)
+			.post(`/api/v2/namespaces/${ namespace }/syncs`)
 			.send({})
 		expect(res.statusCode).toEqual(200)
 	})
