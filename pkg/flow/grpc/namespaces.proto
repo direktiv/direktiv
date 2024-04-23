@@ -15,9 +15,6 @@ message Namespace {
 	map<string, string> notes = 5;
 }
 
-message ResolveNamespaceUIDRequest {
-	string id = 1;
-}
 
 message NamespaceRequest {
 	string name = 1;

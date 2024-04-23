@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import { gitUrlSchema } from "~/api/tree/schema/mirror/validation";
+import { gitUrlSchema } from "~/api/namespaces/schema/mirror/validation";
 
 describe("Git url validation", () => {
   test("it validates a valid url", async () => {
