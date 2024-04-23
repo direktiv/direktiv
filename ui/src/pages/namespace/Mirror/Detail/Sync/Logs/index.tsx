@@ -14,11 +14,11 @@ import { getMirrorLogEntryForClipboard } from "~/components/Logs/utils";
 import { useLogs } from "~/api/logs/query/logs";
 import { useTranslation } from "react-i18next";
 
-const Logs = ({ activityId }: { activityId: string }) => {
+const Logs = ({ syncId }: { syncId: string }) => {
   const { t } = useTranslation();
 
   const { data: logLines = [] } = useLogs({
-    activity: activityId,
+    activity: syncId,
   });
 
   const numberOfLogLines = logLines.length;
@@ -32,7 +32,7 @@ const Logs = ({ activityId }: { activityId: string }) => {
         <div className="mb-5 flex flex-col gap-5 sm:flex-row">
           <h3 className="flex grow items-center gap-x-2 font-medium">
             <ScrollText className="h-5" />
-            {t("pages.mirror.activities.detail.logs.title")}
+            {t("pages.mirror.syncs.detail.logs.title")}
           </h3>
           <ButtonBar>
             <TooltipProvider>
@@ -54,7 +54,7 @@ const Logs = ({ activityId }: { activityId: string }) => {
             </TooltipProvider>
           </ButtonBar>
         </div>
-        <ScrollContainer activityId={activityId} />
+        <ScrollContainer activityId={syncId} />
         <div className="flex items-center justify-center pt-2 text-sm text-gray-11 dark:text-gray-dark-11">
           <span className="relative mr-2 flex h-3 w-3">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-gray-11 opacity-75 dark:bg-gray-dark-11"></span>

@@ -1,7 +1,7 @@
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
 import { expect, test } from "@playwright/test";
 
-import { createWorkflow } from "../../utils/node";
+import { createWorkflow } from "../../utils/workflow";
 import { faker } from "@faker-js/faker";
 
 let namespace = "";
