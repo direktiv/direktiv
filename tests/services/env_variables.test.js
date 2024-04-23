@@ -50,10 +50,14 @@ scale: 2
 					size: 'medium',
 					type: 'namespace-service',
 					envs: [
-						{ name: 'foo1',
-							value: 'bar1' },
-						{ name: 'foo2',
-							value: 'bar2' },
+						{
+							name: 'foo1',
+							value: 'bar1',
+						},
+						{
+							name: 'foo2',
+							value: 'bar2',
+						},
 					],
 				},
 				{

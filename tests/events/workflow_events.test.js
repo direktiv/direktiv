@@ -252,8 +252,10 @@ describe('Test workflow events', () => {
 			instance: '',
 			createdAt: expect.stringMatching(common.regex.timestampRegex),
 			updatedAt: expect.stringMatching(common.regex.timestampRegex),
-			events: [ { type: 'hello',
-				filters: {} } ],
+			events: [ {
+				type: 'hello',
+				filters: {},
+			} ],
 		})
 
 		expect(getEventListenerResponse.body.pageInfo.total).toEqual(1)
@@ -287,8 +289,10 @@ describe('Test workflow events', () => {
 			instance: expect.stringMatching(common.regex.uuidRegex),
 			createdAt: expect.stringMatching(common.regex.timestampRegex),
 			updatedAt: expect.stringMatching(common.regex.timestampRegex),
-			events: [ { type: 'hellowait',
-				filters: {} } ],
+			events: [ {
+				type: 'hellowait',
+				filters: {},
+			} ],
 		})
 	})
 

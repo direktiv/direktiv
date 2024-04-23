@@ -28,8 +28,10 @@ describe('Test services crud operations', () => {
 			.get(`/api/v2/namespaces/${ testNamespace }/services`)
 		expect(listRes.statusCode).toEqual(200)
 
-		const reduced = listRes.body.data.map(item => ({ id: item.id,
-			error: item.error }))
+		const reduced = listRes.body.data.map(item => ({
+			id: item.id,
+			error: item.error,
+		}))
 
 		expect(reduced).toEqual(expect.arrayContaining([
 			{
