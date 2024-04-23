@@ -2,7 +2,7 @@
 
 direktiv helm chart
 
-![Version: 0.1.22](https://img.shields.io/badge/Version-0.1.22-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v0.8.1](https://img.shields.io/badge/AppVersion-v0.8.1-informational?style=flat-square)
+![Version: 0.1.25](https://img.shields.io/badge/Version-0.1.25-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v0.8.4](https://img.shields.io/badge/AppVersion-v0.8.4-informational?style=flat-square)
 
 ## Additional Information
 
@@ -103,6 +103,7 @@ $ helm install direktiv direktiv/direktiv
 
 | Repository | Name | Version |
 |------------|------|---------|
+| https://fluent.github.io/helm-charts | fluent-bit | 0.43.0 |
 | https://kubernetes.github.io/ingress-nginx | ingress-nginx | 4.9.0 |
 | https://prometheus-community.github.io/helm-charts | prometheus | 25.8.2 |
 
@@ -119,7 +120,6 @@ $ helm install direktiv direktiv/direktiv
 | database.port | int | `5432` | database port |
 | database.sslmode | string | `"require"` | sslmode for database |
 | database.user | string | `"direktiv"` | database user |
-| eventing | object | `{"enabled":true}` | knative eventing enabled, requires knative setup and configuration |
 | flow.affinity | object | `{}` | affinity for flow pods |
 | flow.containers.secrets.resources.limits.memory | string | `"512Mi"` |  |
 | flow.containers.secrets.resources.requests.memory | string | `"128Mi"` |  |
@@ -130,9 +130,11 @@ $ helm install direktiv direktiv/direktiv
 | flow.extraVolumeMounts | string | `nil` | extra volume mounts in flow pod |
 | flow.extraVolumes | string | `nil` | extra volumes in flow pod |
 | flow.logging | string | `"json"` | Set to 'json' or 'console' to change log output format. |
+| flow.max_scale | int | `5` | Knative max scale |
 | flow.replicas | int | `1` | number of flow replicas |
+| fluent-bit | object | `{"config":{"customParsers":"[PARSER]\n    Name                    cri_direktiv\n    Format                  regex\n    Regex                   ^(?<time>[^ ]+) (?<stream>stdout|stderr) (?<logtag>[^ ]*) (?<log>.*)$\n    Time_Key                time\n    Time_Format             %Y-%m-%dT%H:%M:%S.%L%z\n","filters":"[FILTER]\n    Name                    rewrite_tag\n    Match                   input\n    Rule                    $log ^.*\"track\":\"([^\"]+)\"[^}]*}$ flow.$1 true\n","inputs":"[INPUT]\n    Name                    tail\n    Path                    /var/log/containers/*flow*.log,/var/log/containers/*direktiv-sidecar*.log\n    Mem_Buf_Limit           5MB\n    Skip_Long_Lines         Off\n    Tag                     input\n    Parser                  cri_direktiv\n    Refresh_Interval        1\n    Buffer_Max_Size         64k\n","outputs":"[OUTPUT]\n    name                    pgsql\n    match                   flow.*\n    port                    5432\n    table                   fluentbit\n    user                    ${PG_USER}\n    database                direktiv\n    host                    ${PG_HOST}\n    password                ${PG_PASSWORD}\n"},"envFrom":[{"secretRef":{"name":"direktiv-fluentbit"}}],"install":true}` | fluentbit configuration |
 | fluentbit.extraConfig | string | `""` | postgres for direktiv services Append extra output to fluentbit configuration. There are two log types: application (system), functions (workflows) these can be matched to new outputs. |
-| frontend | object | `{"additionalAnnotations":{},"additionalLabels":{},"additionalSecEnvs":{},"backend":{"skip-verify":false,"url":null},"certificate":null,"command":"","extraConfig":null,"extraVariables":[],"image":"direktiv/frontend","logging":{"debug":true,"json":true},"nginx":{"config":"","resolver":"kube-dns.kube-system.svc.cluster.local valid=10s;"},"replicas":1,"resources":{"limits":{"memory":"512Mi"},"requests":{"memory":"128Mi"}}}` | Frontend configuration |
+| frontend | object | `{"additionalAnnotations":{},"additionalLabels":{},"additionalSecEnvs":{},"backend":{"skip-verify":false,"url":null},"certificate":null,"command":"","extraConfig":null,"extraVariables":[],"image":"direktiv/frontend","logging":{"debug":true,"json":true},"logos":{"favicon":null,"icon-dark":null,"icon-light":null,"logo-dark":null,"logo-light":null},"replicas":1,"resources":{"limits":{"memory":"512Mi"},"requests":{"memory":"128Mi"}}}` | Frontend configuration |
 | frontend.additionalAnnotations | object | `{}` | Additional Annotations for frontend |
 | frontend.additionalLabels | object | `{}` | Additional Labels for frontend |
 | frontend.additionalSecEnvs | object | `{}` | Additional secret environment variables |
@@ -143,6 +145,11 @@ $ helm install direktiv direktiv/direktiv
 | frontend.logging | object | `{"debug":true,"json":true}` | Logging setting for the UI |
 | frontend.logging.debug | bool | `true` | Enable/Disable debug mode |
 | frontend.logging.json | bool | `true` | Logging in JSON or console format |
+| frontend.logos.favicon | string | `nil` | Path to favicon |
+| frontend.logos.icon-dark | string | `nil` | Path to small, dark icon |
+| frontend.logos.icon-light | string | `nil` | Path to small, light icon |
+| frontend.logos.logo-dark | string | `nil` | Path to dark logo |
+| frontend.logos.logo-light | string | `nil` | Path to light logo |
 | functions.affinity | object | `{}` |  |
 | functions.containers.functionscontroller.resources.limits.memory | string | `"1024Mi"` |  |
 | functions.containers.functionscontroller.resources.requests.memory | string | `"128Mi"` |  |
@@ -160,12 +167,12 @@ $ helm install direktiv direktiv/direktiv
 | https_proxy | string | `""` | https proxy settings |
 | image | string | `"direktiv/direktiv"` | image for main direktiv binary |
 | imagePullSecrets | list | `[]` | Container registry secrets. |
+| ingress | object | `{"additionalAnnotations":{},"additionalLabels":{},"certificate":null,"class":"nginx","enabled":true,"host":null}` | knative eventing enabled, requires knative setup and configuration eventing:   enabled: true |
 | ingress-nginx | object | `{"controller":{"admissionWebhooks":{"patch":{"podAnnotations":{"linkerd.io/inject":"disabled"}}},"config":{"proxy-buffer-size":"16k"},"podAnnotations":{"linkerd.io/inject":"disabled"},"replicaCount":1},"install":true}` | nginx ingress controller configuration |
 | ingress.additionalAnnotations | object | `{}` | Additional Annotations |
 | ingress.additionalLabels | object | `{}` | Additional Labels |
 | ingress.certificate | string | `nil` | TLS secret |
 | ingress.class | string | `"nginx"` | Ingress class |
-| ingress.enabled | bool | `true` |  |
 | ingress.host | string | `nil` | Host for external services, only required for TLS |
 | no_proxy | string | `""` | no proxy proxy settings |
 | nodeSelector | object | `{}` |  |

@@ -151,6 +151,15 @@ async function itShouldDeleteFileV2 (it, expect, ns, path) {
 	})
 }
 
+async function itShouldCreateVariableV2 (it, expect, ns, variable) {
+	it(`should create a variable ${ variable.name }`, async () => {
+		const createRes = await request(config.getDirektivHost())
+			.post(`/api/v2/namespaces/${ ns }/variables`)
+			.send(variable)
+		expect(createRes.statusCode).toEqual(200)
+	})
+}
+
 function sleep (ms) {
 	return new Promise(resolve => setTimeout(resolve, ms))
 }
@@ -168,5 +177,6 @@ export default {
 	itShouldCheckPathExistsV2,
 	itShouldUpdateFilePathV2,
 	itShouldUpdateFileV2,
+	itShouldCreateVariableV2,
 	sleep,
 }

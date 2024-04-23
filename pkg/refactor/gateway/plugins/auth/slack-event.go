@@ -45,24 +45,24 @@ func (p *SlackWebhookPlugin) Config() interface{} {
 func (p *SlackWebhookPlugin) ExecutePlugin(c *core.ConsumerFile, _ http.ResponseWriter, r *http.Request) bool {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		slog.Error("can not read slack body", slog.String("error", err.Error()))
+		slog.Error("can not read slack body", "err", err)
 		return false
 	}
 
 	sv, err := slack.NewSecretsVerifier(r.Header, p.config.Secret)
 	if err != nil {
-		slog.Error("can not create slack verifier", slog.String("error", err.Error()))
+		slog.Error("can not create slack verifier", "err", err)
 		return false
 	}
 
 	if _, err := sv.Write(body); err != nil {
-		slog.Error("can not write slack hmac", slog.String("error", err.Error()))
+		slog.Error("can not write slack hmac", "err", err)
 		return false
 	}
 
 	// hmac is not valid
 	if err := sv.Ensure(); err != nil {
-		slog.Error("slack hmac failed", slog.String("error", err.Error()))
+		slog.Error("slack hmac failed", "err", err)
 		return false
 	}
 
@@ -74,13 +74,13 @@ func (p *SlackWebhookPlugin) ExecutePlugin(c *core.ConsumerFile, _ http.Response
 	if r.Header.Get("Content-type") == "application/x-www-form-urlencoded" {
 		v, err := url.ParseQuery(string(body))
 		if err != nil {
-			slog.Error("can parse url form encoded data", slog.String("error", err.Error()))
+			slog.Error("can parse url form encoded data", "err", err)
 			return false
 		}
 
 		b, err := json.Marshal(v)
 		if err != nil {
-			slog.Error("can not marshal slack data", slog.String("error", err.Error()))
+			slog.Error("can not marshal slack data", "err", err)
 			return false
 		}
 

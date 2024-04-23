@@ -121,7 +121,6 @@ func (q *FileQuery) SetPath(ctx context.Context, path string) error {
 
 var _ filestore.FileQuery = &FileQuery{}
 
-//nolint:revive
 func (q *FileQuery) Delete(ctx context.Context, force bool) error {
 	res := q.db.WithContext(ctx).Exec(`DELETE FROM filesystem_files WHERE id = ?`, q.file.ID)
 	if res.Error != nil {

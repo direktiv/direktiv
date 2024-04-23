@@ -1,14 +1,13 @@
 package api
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 )
 
-func RunApplication(ctx context.Context, config *core.Config) error {
-	s, err := NewServer(ctx, config)
+func RunApplication(config *core.Config) error {
+	s, err := NewServer(config)
 	if err != nil {
 		return fmt.Errorf("cannot create API server: %w", err)
 	}

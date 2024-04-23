@@ -31,7 +31,7 @@ func TestExecuteJSInboundPlugin(t *testing.T) {
 		input["Body"] = JSON.stringify(b) 
 		`,
 	}
-	p2, _ := p.Configure(config, core.MagicalGatewayNamespace)
+	p2, _ := p.Configure(config, core.SystemNamespace)
 
 	r, _ := http.NewRequest(http.MethodGet, "/dummy?Query1=value1&Query2=value2", nil)
 	r.Header.Add("Header1", "value1")
@@ -67,7 +67,7 @@ func TestExecuteJSInboundPluginConsumer(t *testing.T) {
 		input["Body"] = JSON.stringify(b) 
 		`,
 	}
-	p2, _ := p.Configure(config, core.MagicalGatewayNamespace)
+	p2, _ := p.Configure(config, core.SystemNamespace)
 
 	r, _ := http.NewRequest(http.MethodGet, "/dummy", nil)
 	r.Body = io.NopCloser(bytes.NewBufferString("{ }"))
@@ -92,7 +92,7 @@ func TestExecuteJSInboundPluginURLParam(t *testing.T) {
 		input["Body"] = JSON.stringify(b) 
 		`,
 	}
-	p2, _ := p.Configure(config, core.MagicalGatewayNamespace)
+	p2, _ := p.Configure(config, core.SystemNamespace)
 
 	urlParams := map[string]string{
 		"id": "123",
@@ -123,7 +123,7 @@ func TestExecuteJSInboundPluginStatus(t *testing.T) {
 		input.Status = 403
 		`,
 	}
-	p2, _ := p.Configure(config, core.MagicalGatewayNamespace)
+	p2, _ := p.Configure(config, core.SystemNamespace)
 
 	r, _ := http.NewRequest(http.MethodGet, "/dummy", nil)
 	r.Body = io.NopCloser(bytes.NewBufferString("{ }"))

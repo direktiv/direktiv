@@ -1,0 +1,320 @@
+
+/api/v2/namespaces:
+  get:
+    tags:
+      - namespaces
+    summary: List all direktiv namespaces
+    responses:
+      "200":
+        description: list of direktiv namespaces
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        description: a unique string that represent name of the namespace
+                      isSystemNamespace:
+                        type: boolean
+                        description: returns true only if this is a privileged namespace with special system-wide impacts.
+                      mirror:
+                        type: object
+                        nullable: true
+                        description: git mirror settings associated with the namespace (only with git mirrored namespace). Null value means this is a none mirrored (ordinary) namespace
+                        properties:
+                          url:
+                            type: string
+                            description: url of the git repo
+                          gitRef:
+                            type: string
+                            description: git branch name
+                          authType:
+                            type: string
+                            enum: [ public, ssh, token]
+                            description: this field indicated what kind of authentication is used
+                          publicKey:
+                            type: string(optional)
+                            description: associated publish key ssh credential
+                          insecure:
+                            type: boolean
+                            description: to ignore insecure ssl certificates
+                          createdAt:
+                            type: string
+                            description: timestamp of creation date
+                          updatedAt:
+                            type: string
+                            description: timestamp of last updating date
+                      createdAt:
+                        type: string
+                        description: timestamp of creation date
+                      updatedAt:
+                        type: string
+                        description: timestamp of last updating date
+
+  post:
+    tags:
+      - namespaces
+    summary: Creates a new direktiv namespace
+    requestBody:
+      description: Namespace's creating data
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                description: a unique name string of the namespace
+              mirror:
+                type: object
+                nullable: true
+                description: git mirror settings associated with the namespace (only with git mirrored namespace). Null value means this is a none mirrored (ordinary) namespace
+                properties:
+                  url:
+                    type: string
+                    description: url of the git repo
+                  gitRef:
+                    type: string
+                    description: git branch name
+                  authType:
+                    type: string
+                    enum: [ public, ssh, token ]
+                    description: this field indicated what kind of authentication is used
+                  authToken:
+                    type: string(optional)
+                    description: auth token used to clone git repo
+                  publicKey:
+                    type: string(optional)
+                    description: associated publish key ssh credential
+                  privateKey:
+                    type: string(optional)
+                    description: associated private key ssh credential
+                  privateKeyPassphrase:
+                    type: string(optional)
+                    description: associated private key passphrase ssh credential
+                  insecure:
+                    type: boolean
+                    description: to ignore insecure ssl certificates
+
+    responses:
+      "200":
+        description: data of the created direktiv namespace
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      description: a unique string that represent name of the namespace
+                    isSystemNamespace:
+                        type: boolean
+                        description: returns true only if this is a privileged namespace with special system-wide impacts.
+                    mirror:
+                      type: object
+                      nullable: true
+                      description: git mirror settings associated with the namespace (only with git mirrored namespace). Null value means this is a none mirrored (ordinary) namespace
+                      properties:
+                        url:
+                          type: string
+                          description: url of the git repo
+                        gitRef:
+                          type: string
+                          description: git branch name
+                        authType:
+                          type: string
+                          enum: [ public, ssh, token]
+                          description: this field indicated what kind of authentication is used
+                        publicKey:
+                          type: string(optional)
+                          description: associated publish key ssh credential
+                        insecure:
+                          type: boolean
+                          description: to ignore insecure ssl certificates
+                        createdAt:
+                          type: string
+                          description: timestamp of creation date
+                        updatedAt:
+                          type: string
+                          description: timestamp of last updating date
+                    createdAt:
+                      type: string
+                      description: timestamp of creation date
+                    updatedAt:
+                      type: string
+                      description: timestamp of last updating date
+
+
+/api/v2/namespaces/{namespace}:
+  get:
+    tags:
+      - namespaces
+    summary: Fetches a direktiv namespace
+    parameters:
+      - $ref: '../parameters.yaml#/namespace'
+    responses:
+      "200":
+        description: data of the direktiv  namespace
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      description: a unique name string of the namespace
+                    isSystemNamespace:
+                        type: boolean
+                        description: returns true only if this is a privileged namespace with special system-wide impacts.
+                    mirror:
+                      type: object
+                      nullable: true
+                      description: git mirror settings associated with the namespace (only with git mirrored namespace). Null value means this is a none mirrored (ordinary) namespace
+                      properties:
+                        url:
+                          type: string
+                          description: url of the git repo
+                        gitRef:
+                          type: string
+                          description: git branch name
+                        authType:
+                          type: string
+                          enum: [ public, ssh, token]
+                          description: this field indicated what kind of authentication is used
+                        publicKey:
+                          type: string(optional)
+                          description: associated publish key ssh credential
+                        insecure:
+                          type: boolean
+                          description: to ignore insecure ssl certificates
+                        createdAt:
+                          type: string
+                          description: timestamp of creation date
+                        updatedAt:
+                          type: string
+                          description: timestamp of last updating date
+                    createdAt:
+                      type: string
+                      description: timestamp of creation date
+                    updatedAt:
+                      type: string
+                      description: timestamp of last updating date
+
+  delete:
+    tags:
+      - namespaces
+    summary: Removes a direktiv namespace and all related resources
+    parameters:
+      - $ref: '../parameters.yaml#/namespace'
+    responses:
+      "200":
+        description:  object deleted successfully
+
+  patch:
+    tags:
+      - namespaces
+    summary: Patches a direktiv namespace
+    parameters:
+      - $ref: '../parameters.yaml#/namespace'
+    requestBody:
+      description: Namespace's updated data
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              mirror:
+                type: object
+                nullable: true
+                description: git mirror settings associated with the namespace (only with git mirrored namespace). Null value means this is a none mirrored (ordinary) namespace
+                properties:
+                  url:
+                    type: string
+                    description: url of the git repo
+                  gitRef:
+                    type: string
+                    description: git branch name
+                  authType:
+                    type: string
+                    enum: [ public, ssh, token ]
+                    description: this field indicated what kind of authentication is used
+                  authToken:
+                    type: string(optional)
+                    description: auth token used to clone git repo
+                  publicKey:
+                    type: string(optional)
+                    description: associated publish key ssh credential
+                  privateKey:
+                    type: string(optional)
+                    description: associated private key ssh credential
+                  privateKeyPassphrase:
+                    type: string(optional)
+                    description: associated private key passphrase ssh credential
+                  insecure:
+                    type: boolean
+                    description: to ignore insecure ssl certificates
+
+    responses:
+      "200":
+        description: data of the updated direktiv namespace
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      description: a unique string that represent name of the namespace
+                    isSystemNamespace:
+                        type: boolean
+                        description: returns true only if this is a privileged namespace with special system-wide impacts.
+                    mirror:
+                      type: object
+                      nullable: true
+                      description: git mirror settings associated with the namespace (only with git mirrored namespace). Null value means this is a none mirrored (ordinary) namespace
+                      properties:
+                        url:
+                          type: string
+                          description: url of the git repo
+                        gitRef:
+                          type: string
+                          description: git branch name
+                        authType:
+                          type: string
+                          enum: [ public, ssh, token]
+                          description: this field indicated what kind of authentication is used
+                        publicKey:
+                          type: string(optional)
+                          description: associated publish key ssh credential
+                        insecure:
+                          type: boolean
+                          description: to ignore insecure ssl certificates
+                        createdAt:
+                          type: string
+                          description: timestamp of creation date
+                        updatedAt:
+                          type: string
+                          description: timestamp of last updating date
+                    createdAt:
+                      type: string
+                      description: timestamp of creation date
+                    updatedAt:
+                      type: string
+                      description: timestamp of last updating date

@@ -29,11 +29,15 @@ import { useTranslation } from "react-i18next";
 
 type OutboundPluginFormProps = {
   form: UseFormReturn<EndpointFormSchemaType>;
+  onSave: (value: EndpointFormSchemaType) => void;
 };
 
-export const OutboundPluginForm: FC<OutboundPluginFormProps> = ({ form }) => {
+export const OutboundPluginForm: FC<OutboundPluginFormProps> = ({
+  form,
+  onSave,
+}) => {
   const { t } = useTranslation();
-  const { control } = form;
+  const { control, handleSubmit: handleParentSubmit } = form;
   const {
     append: addPlugin,
     remove: deletePlugin,
@@ -183,6 +187,7 @@ export const OutboundPluginForm: FC<OutboundPluginFormProps> = ({ form }) => {
               } else {
                 editPlugin(editIndex, configuration);
               }
+              handleParentSubmit(onSave)();
               setEditIndex(undefined);
             }}
           />

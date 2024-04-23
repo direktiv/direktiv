@@ -69,12 +69,12 @@ jobs:
             "logparser/",
             "mirror/",
             "namespaces/",
+            "metrics/",
+            "notifications/",
             "registry/",
             "secrets/",
-            "secrets2/",
             "services/",
             "variables/",
-            "variables2/",
             "logs/", 
           ]
     steps:

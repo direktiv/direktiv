@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"path"
 	"regexp"
 	"strings"
 
@@ -64,12 +65,14 @@ func (s *sqlRuntimeVariablesStore) GetForInstance(ctx context.Context, instanceI
 	return variable, nil
 }
 
-func (s *sqlRuntimeVariablesStore) GetForWorkflow(ctx context.Context, namespace string, path string, name string) (*datastore.RuntimeVariable, error) {
+func (s *sqlRuntimeVariablesStore) GetForWorkflow(ctx context.Context, namespace string, workflowPath string, name string) (*datastore.RuntimeVariable, error) {
 	variable := &datastore.RuntimeVariable{}
 
-	if name == "" || path == "" || namespace == "" {
+	if name == "" || workflowPath == "" || namespace == "" {
 		return nil, datastore.ErrNotFound
 	}
+
+	workflowPath = path.Clean("/" + workflowPath)
 
 	res := s.db.WithContext(ctx).Raw(`
 							SELECT 
@@ -77,7 +80,7 @@ func (s *sqlRuntimeVariablesStore) GetForWorkflow(ctx context.Context, namespace
 								name, length(data) AS size, mime_type,
 								created_at, updated_at
 							FROM runtime_variables WHERE namespace = ? AND name = ? AND (workflow_path=?)`,
-		namespace, name, path).First(variable)
+		namespace, name, workflowPath).First(variable)
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		return nil, datastore.ErrNotFound
 	}
@@ -129,7 +132,7 @@ func (s *sqlRuntimeVariablesStore) listByFieldValue(ctx context.Context, fieldNa
 								id, namespace, workflow_path, instance_id, 
 								name, length(data) AS size, mime_type, 
 								created_at, updated_at
-							FROM runtime_variables WHERE %s`, aggregateConditions),
+							FROM runtime_variables WHERE %s ORDER BY created_at`, aggregateConditions),
 		vals...).Find(&variables)
 	if res.Error != nil {
 		return nil, res.Error
@@ -143,6 +146,8 @@ func (s *sqlRuntimeVariablesStore) ListForInstance(ctx context.Context, instance
 }
 
 func (s *sqlRuntimeVariablesStore) ListForWorkflow(ctx context.Context, namespace string, workflowPath string) ([]*datastore.RuntimeVariable, error) {
+	workflowPath = path.Clean("/" + workflowPath)
+
 	return s.listByFieldValue(ctx, []string{"namespace", "workflow_path"}, []interface{}{namespace, workflowPath})
 }
 
@@ -177,6 +182,10 @@ func (s *sqlRuntimeVariablesStore) Set(ctx context.Context, variable *datastore.
 		return nil, datastore.ErrInvalidRuntimeVariableName
 	}
 
+	if variable.WorkflowPath != "" {
+		variable.WorkflowPath = path.Clean("/" + variable.WorkflowPath)
+	}
+
 	selectorField := ""
 
 	var extra string
@@ -200,11 +209,16 @@ func (s *sqlRuntimeVariablesStore) Set(ctx context.Context, variable *datastore.
 	queryString := fmt.Sprintf(
 		`UPDATE runtime_variables SET
 						mime_type=?,
-						data=?
+						data=?,
+						updated_at=CURRENT_TIMESTAMP
 					WHERE namespace = ? AND name = ? %s;`, extra)
 
 	res := s.db.WithContext(ctx).Exec(queryString, args...)
 
+	// checks for duplicate key value violates unique constraint (SQLSTATE 23505)
+	if res.Error != nil && strings.Contains(res.Error.Error(), "23505") {
+		return nil, fmt.Errorf("%w + %w", res.Error, datastore.ErrDuplication)
+	}
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -231,6 +245,10 @@ func (s *sqlRuntimeVariablesStore) Set(ctx context.Context, variable *datastore.
 							VALUES(?, ?, ?, ?, ?%s);`, selectorField, extraVal),
 		args...)
 
+	// checks for duplicate key value violates unique constraint (SQLSTATE 23505)
+	if res.Error != nil && strings.Contains(res.Error.Error(), "23505") {
+		return nil, fmt.Errorf("%w + %w", res.Error, datastore.ErrDuplication)
+	}
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -278,6 +296,7 @@ func (s *sqlRuntimeVariablesStore) LoadData(ctx context.Context, id uuid.UUID) (
 }
 
 func (s *sqlRuntimeVariablesStore) DeleteForWorkflow(ctx context.Context, namespace string, workflowPath string) error {
+	workflowPath = path.Clean("/" + workflowPath)
 	res := s.db.WithContext(ctx).Exec(
 		`DELETE FROM runtime_variables WHERE namespace=? AND workflow_path=?`,
 		namespace, workflowPath)
@@ -289,8 +308,11 @@ func (s *sqlRuntimeVariablesStore) DeleteForWorkflow(ctx context.Context, namesp
 }
 
 func (s *sqlRuntimeVariablesStore) SetWorkflowPath(ctx context.Context, namespace string, oldWorkflowPath string, newWorkflowPath string) error {
+	oldWorkflowPath = path.Clean("/" + oldWorkflowPath)
+	newWorkflowPath = path.Clean("/" + newWorkflowPath)
+
 	res := s.db.WithContext(ctx).Exec(
-		`UPDATE runtime_variables SET workflow_path=? WHERE namespace=? AND workflow_path=?`,
+		`UPDATE runtime_variables SET workflow_path=?, updated_at=CURRENT_TIMESTAMP WHERE namespace=? AND workflow_path=?`,
 		newWorkflowPath, namespace, oldWorkflowPath)
 	if res.Error != nil {
 		return res.Error
@@ -299,7 +321,6 @@ func (s *sqlRuntimeVariablesStore) SetWorkflowPath(ctx context.Context, namespac
 	return nil
 }
 
-// nolint:goconst
 func (s *sqlRuntimeVariablesStore) Create(ctx context.Context, variable *datastore.RuntimeVariable) (*datastore.RuntimeVariable, error) {
 	if variable.Name == "" {
 		return nil, datastore.ErrInvalidRuntimeVariableName
@@ -313,6 +334,9 @@ func (s *sqlRuntimeVariablesStore) Create(ctx context.Context, variable *datasto
 	newUUID := uuid.New()
 	args := []any{newUUID, variable.Namespace, variable.Name, variable.MimeType, variable.Data}
 
+	if variable.WorkflowPath != "" {
+		variable.WorkflowPath = path.Clean("/" + variable.WorkflowPath)
+	}
 	if variable.WorkflowPath != "" {
 		fields += ", workflow_path"
 		holders += ", ?"
@@ -330,6 +354,10 @@ func (s *sqlRuntimeVariablesStore) Create(ctx context.Context, variable *datasto
 
 	res := s.db.WithContext(ctx).Exec(query, args...)
 
+	// checks for duplicate key value violates unique constraint (SQLSTATE 23505)
+	if res.Error != nil && strings.Contains(res.Error.Error(), "23505") {
+		return nil, fmt.Errorf("%w + %w", res.Error, datastore.ErrDuplication)
+	}
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -375,6 +403,10 @@ func (s *sqlRuntimeVariablesStore) Patch(ctx context.Context, id uuid.UUID, patc
 
 	res := s.db.WithContext(ctx).Exec(query, args...)
 
+	// checks for duplicate key value violates unique constraint (SQLSTATE 23505)
+	if res.Error != nil && strings.Contains(res.Error.Error(), "23505") {
+		return nil, fmt.Errorf("%w + %w", res.Error, datastore.ErrDuplication)
+	}
 	if res.Error != nil {
 		return nil, res.Error
 	}

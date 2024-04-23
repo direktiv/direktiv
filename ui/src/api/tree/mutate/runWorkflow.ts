@@ -6,7 +6,7 @@ import { useApiKey } from "~/util/store/apiKey";
 import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 import { useNamespace } from "~/util/store/namespace";
 
-export const runWorkflow = apiFactory({
+export const runWorkflow = apiFactory<string>({
   url: ({
     baseUrl,
     namespace,

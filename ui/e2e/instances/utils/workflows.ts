@@ -6,6 +6,14 @@ states:
     result: Hello world!
 `;
 
+export const workflowWithDelay = `direktiv_api: workflow/v1
+description: A simple 'delay' state that waits for 4 seconds
+states:
+- id: delay
+  type: delay
+  duration: PT4S
+`;
+
 export const workflowThatFails = `description: A simple workflow that throws an error'
 states:
 - id: error

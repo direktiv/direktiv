@@ -9,6 +9,7 @@ import { FC } from "react";
 import { FileSchemaType } from "~/api/files/schema";
 import { Form } from "./Form";
 import FormErrors from "~/components/FormErrors";
+import NavigationBlocker from "~/components/NavigationBlocker";
 import { Save } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
 import { jsonToYaml } from "../../utils";
@@ -39,7 +40,7 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data }) => {
   };
 
   return (
-    <Form defaultConfig={endpointConfig}>
+    <Form defaultConfig={endpointConfig} onSave={save}>
       {({
         formControls: {
           formState: { errors },
@@ -58,6 +59,7 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data }) => {
             onSubmit={handleSubmit(save)}
             className="relative flex-col gap-4 p-5"
           >
+            {isDirty && <NavigationBlocker />}
             <div className="flex flex-col gap-4">
               <div className="grid grow grid-cols-1 gap-5 lg:grid-cols-2">
                 <Card className="p-5 lg:h-[calc(100vh-15.5rem)] lg:overflow-y-scroll">

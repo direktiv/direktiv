@@ -66,6 +66,9 @@ flow:
           memory: "128Mi"
         limits:
           memory: "512Mi"
+  
+  # -- Knative max scale
+  max_scale: 5
 
 database:
   # -- database host
@@ -148,9 +151,10 @@ opentelemetry:
           processors: [memory_limiter, batch]
           exporters: [logging, otlp]
 
+# Todo: Yassir, delete this entirely in cycle6.
 # -- knative eventing enabled, requires knative setup and configuration
-eventing:
-  enabled: true
+# eventing:
+#   enabled: true
 
 ingress:
   # -- 

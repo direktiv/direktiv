@@ -14,3 +14,5 @@ export const TargetPluginFormSchema = z.discriminatedUnion("type", [
   TargetNamespaceVarFormSchema,
   TargetEventFormSchema,
 ]);
+
+export type TargetPluginFormSchemaType = z.infer<typeof TargetPluginFormSchema>;

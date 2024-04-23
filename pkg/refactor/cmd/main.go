@@ -4,14 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log/slog"
 	"os"
-	"os/signal"
-	"sync"
-	"syscall"
 	"time"
 
-	api2 "github.com/direktiv/direktiv/pkg/api"
+	apiLegacy "github.com/direktiv/direktiv/pkg/api"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/refactor/api"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
@@ -28,58 +26,49 @@ import (
 
 type NewMainArgs struct {
 	Config            *core.Config
-	Database          *database.DB
+	Database          *database.SQLStore
 	PubSubBus         *pubsub.Bus
 	ConfigureWorkflow func(data string) error
 	InstanceManager   *instancestore.InstanceManager
 	SyncNamespace     core.SyncNamespace
 }
 
-func NewMain(serverCtx context.Context, args *NewMainArgs) *sync.WaitGroup {
+func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 	initSLog()
-	serverCtx, quit := context.WithCancel(serverCtx)
-	wg := &sync.WaitGroup{}
 
-	go func() {
-		err := api2.RunApplication(serverCtx, args.Config)
-		if err != nil {
-			slog.Error("Failed to run API V2 Server.", "error", err)
-			quit()
-		}
-	}()
+	// nolint:errcheck
+	go apiLegacy.RunApplication(args.Config)
 
-	done := make(chan struct{})
-
-	slog.Debug("Initializing service manager.")
 	// Create service manager
-	//nolint
 	serviceManager, err := service.NewManager(args.Config, args.Config.EnableDocker)
 	if err != nil {
-		slog.Error("Failed to unmarshal file change event for pub/sub notification", "error", err)
-		quit()
+		slog.Error("initializing service manager", "err", err)
+		panic(err)
 	}
-	slog.Debug("Service manager initialized successfully.")
+	slog.Info("service manager initialized successfully")
 
 	// Setup GetServiceURL function
 	service.SetupGetServiceURLFunc(args.Config, args.Config.EnableDocker)
 
 	// Start service manager
-	wg.Add(1)
-	serviceManager.Start(done, wg)
+	circuit.Start(func() error {
+		// TODO: yassir, Implement service crash handling.
+		serviceManager.Start(circuit)
 
-	slog.Debug("Initializing registry manager.")
+		return nil
+	})
+
 	// Create registry manager
 	registryManager, err := registry.NewManager(args.Config.EnableDocker)
 	if err != nil {
-		slog.Error("Failed creating service manager", "error", err)
-		quit()
+		slog.Error("registry manager", "err", err)
+		panic(err)
 	}
-	slog.Debug("Registry manager initialized successfully.")
+	slog.Info("registry manager initialized successfully")
 
-	slog.Debug("Initializing Gateway manager.")
 	// Create endpoint manager
 	gatewayManager := gateway.NewGatewayManager(args.Database)
-	slog.Debug("Gateway manager initialized.")
+	slog.Info("gateway manager initialized successfully")
 
 	// Create App
 	app := core.App{
@@ -92,10 +81,9 @@ func NewMain(serverCtx context.Context, args *NewMainArgs) *sync.WaitGroup {
 		GatewayManager:  gatewayManager,
 		SyncNamespace:   args.SyncNamespace,
 	}
-	slog.Debug("Setting up pub/sub subscription for service manager events.")
+
 	args.PubSubBus.Subscribe(func(_ string) {
-		renderServiceManager(serverCtx, args.Database, serviceManager)
-		slog.Debug("Service Manager was triggered via pub/sub event.")
+		renderServiceManager(args.Database, serviceManager)
 	},
 		pubsub.WorkflowCreate,
 		pubsub.WorkflowUpdate,
@@ -108,34 +96,33 @@ func NewMain(serverCtx context.Context, args *NewMainArgs) *sync.WaitGroup {
 		pubsub.MirrorSync,
 		pubsub.NamespaceDelete,
 	)
+
 	// Call at least once before booting
-	renderServiceManager(serverCtx, args.Database, serviceManager)
-	slog.Debug("Setting up pub/sub subscription for workflow configuration changes.")
+	renderServiceManager(args.Database, serviceManager)
+
 	args.PubSubBus.Subscribe(func(data string) {
 		err := args.ConfigureWorkflow(data)
 		if err != nil {
-			slog.Error("configure workflow", "error", err)
+			slog.Error("configure workflow", "err", err)
 		}
-		slog.Debug("Configuring a workflow triggered via pub/sub event.")
 	},
 		pubsub.WorkflowCreate,
 		pubsub.WorkflowUpdate,
 		pubsub.WorkflowDelete,
 		pubsub.WorkflowRename,
 	)
-	slog.Debug("Setting up pub/sub subscription for gateway manager namespace updates.")
+
 	// endpoint manager
 	args.PubSubBus.Subscribe(func(ns string) {
 		gatewayManager.UpdateNamespace(ns)
-		slog.Debug("Updating namespace configurations based on pub/sub event.", "namespace", ns)
 	},
 		pubsub.NamespaceCreate,
 		pubsub.MirrorSync,
 	)
+
 	// endpoint manager deletes routes/consumers on namespace delete
 	args.PubSubBus.Subscribe(func(ns string) {
 		gatewayManager.DeleteNamespace(ns)
-		slog.Debug("Deleting namespace based on pub/sub event.", "namespace", ns)
 	},
 		pubsub.NamespaceDelete,
 	)
@@ -145,10 +132,9 @@ func NewMain(serverCtx context.Context, args *NewMainArgs) *sync.WaitGroup {
 		event := pubsub.FileChangeEvent{}
 		err := json.Unmarshal([]byte(data), &event)
 		if err != nil {
-			slog.Error("unmarshal file change event", "error", err)
-			quit()
+			slog.Error("unmarshal file change event", "err", err)
+			panic(err)
 		}
-		slog.Debug("Updating namespace configurations based on pub/sub event.", "namespace", event.Namespace)
 		gatewayManager.UpdateNamespace(event.Namespace)
 	},
 		pubsub.EndpointCreate,
@@ -165,33 +151,23 @@ func NewMain(serverCtx context.Context, args *NewMainArgs) *sync.WaitGroup {
 	gatewayManager.UpdateAll()
 
 	// TODO: yassir, this subscribe need to be removed when /api/v2/namespace delete endpoint is migrated.
-	slog.Debug("Setting up pub/sub subscription for service manager events.")
 	args.PubSubBus.Subscribe(func(ns string) {
 		err := registryManager.DeleteNamespace(ns)
 		if err != nil {
-			slog.Error("deleting registry namespace", "error", err)
+			slog.Error("deleting registry namespace", "err", err)
 		}
 	},
 		pubsub.NamespaceDelete,
 	)
-	slog.Debug("Starting API V2 server.", "addr", "0.0.0.0:6667")
 
 	// Start api v2 server
-	wg.Add(1)
-	api.Start(serverCtx, app, args.Database, args.PubSubBus, args.InstanceManager, "0.0.0.0:6667", done, wg)
-	slog.Debug("API V2 server started.", "addr", "0.0.0.0:6667")
+	err = api.Initialize(app, args.Database, args.PubSubBus, args.InstanceManager, "0.0.0.0:6667", circuit)
+	if err != nil {
+		return fmt.Errorf("initializing api v2, err: %w", err)
+	}
+	slog.Info("api server v2 started.", "addr", "0.0.0.0:6667")
 
-	go func() {
-		// Listen for syscall signals for process to interrupt/quit
-		sig := make(chan os.Signal, 1)
-		signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
-		<-sig
-		slog.Info("Shutdown signal received, initiating graceful shutdown.")
-		close(done)
-	}()
-	slog.Debug("New Main application setup complete. Listening for shutdown signals.")
-
-	return wg
+	return nil
 }
 
 func initSLog() {
@@ -216,14 +192,15 @@ func initSLog() {
 	slog.SetDefault(slogger)
 }
 
-func renderServiceManager(ctx context.Context, db *database.DB, serviceManager core.ServiceManager) {
+func renderServiceManager(db *database.SQLStore, serviceManager core.ServiceManager) {
+	ctx := context.Background()
 	slog := slog.With("subscriber", "services file watcher")
 
 	fStore, dStore := db.FileStore(), db.DataStore()
 
 	nsList, err := dStore.Namespaces().GetAll(ctx)
 	if err != nil {
-		slog.Error("listing namespaces", "error", err)
+		slog.Error("listing namespaces", "err", err)
 
 		return
 	}
@@ -234,7 +211,7 @@ func renderServiceManager(ctx context.Context, db *database.DB, serviceManager c
 		slog = slog.With("namespace", ns.Name)
 		files, err := fStore.ForNamespace(ns.Name).ListDirektivFilesWithData(ctx)
 		if err != nil {
-			slog.Error("listing direktiv files", "error", err)
+			slog.Error("listing direktiv files", "err", err)
 
 			continue
 		}
@@ -242,7 +219,7 @@ func renderServiceManager(ctx context.Context, db *database.DB, serviceManager c
 			if file.Typ == filestore.FileTypeService {
 				serviceDef, err := core.ParseServiceFile(file.Data)
 				if err != nil {
-					slog.Error("parse service file", "error", err)
+					slog.Error("parse service file", "err", err)
 
 					continue
 				}
@@ -257,7 +234,7 @@ func renderServiceManager(ctx context.Context, db *database.DB, serviceManager c
 			} else if file.Typ == filestore.FileTypeWorkflow {
 				sub, err := getWorkflowFunctionDefinitionsFromWorkflow(ns, file)
 				if err != nil {
-					slog.Error("parse workflow def", "error", err)
+					slog.Error("parse workflow def", "err", err)
 
 					continue
 				}

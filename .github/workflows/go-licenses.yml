@@ -22,4 +22,4 @@ jobs:
           go-version-file: go.mod
 
       - name: Run check
-        run: make license-check
+        run: make tests-license-check

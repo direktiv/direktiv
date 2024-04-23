@@ -1,13 +1,13 @@
 import NoMirror from "./NoMirror";
 import { Outlet } from "react-router-dom";
-import { useNodeContent } from "~/api/tree/query/node";
+import { useNamespaceDetail } from "~/api/namespaces/query/get";
 
 const MirrorPage = () => {
-  const { data, isSuccess } = useNodeContent({ path: "/" });
+  const { data, isSuccess } = useNamespaceDetail();
 
   if (!isSuccess) return null;
 
-  const isMirror = data.node.expandedType === "git";
+  const isMirror = data?.mirror;
 
   return (
     <div className="flex grow flex-col">

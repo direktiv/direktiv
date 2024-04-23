@@ -3,7 +3,6 @@ run:
   go: 1.22.0
   issues-exit-code: 1
   tests: false
-  skip-files: [ ".pb.go" ]
 
 linters-settings:
   tagliatelle:
@@ -22,6 +21,14 @@ linters-settings:
     # Default: 1
     block-size: 2
 
+  sloglint:
+    # Enforce not using global loggers.
+    # Values:
+    # - "": disabled
+    # - "all": report all global loggers
+    # - "default": report only the default slog logger
+    # Default: ""
+    # no-global: "all"
 
 linters:
   enable-all: true
@@ -38,6 +45,7 @@ linters:
     - gochecknoglobals
     - cyclop
     - godox # must fix before release.
+    - deadcode # The linter 'deadcode' is deprecated (since v1.49.0).
 
     - exhaustivestruct
     - structcheck
@@ -51,6 +59,7 @@ linters:
     - gomnd
     - tagliatelle
     - musttag
+    - prealloc
     - perfsprint # not needed, this one linting nano optimizations.
     - spancheck # TODO: Alan, enable this one as it helps you fixing some telemetry bugs.
     - revive
@@ -58,8 +67,9 @@ linters:
     - copyloopvar # TODO: should be activated.
 
 issues:
+  exclude-files: [ ".pb.go" ]
   exclude-rules:
-    - path: '(pkg|cmd)\/(version|dlog|model|sidecar|secrets|exec|util|jqer|functions|flow|api|metrics)\/.*'
+    - path: '(pkg|cmd)\/(model|sidecar|exec|util|jqer|flow|api)\/.*'
       linters:
         - paralleltest
         - forbidigo
@@ -93,7 +103,6 @@ issues:
         - gocritic
         - rowserrcheck
         - nakedret
-        - unused
         - gocyclo
 
     - text: "do not define dynamic errors, use wrapped static errors instead:"
@@ -105,7 +114,9 @@ issues:
     - text: "Rollback` is not checked"
       linters:
         - errcheck
-
     - text: "encoding/json.Encoder"
+      linters:
+        - errchkjson
+    - text: "encoding/json.Marshal"
       linters:
         - errchkjson

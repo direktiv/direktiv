@@ -20,6 +20,8 @@ describe('Test namespace create calls', () => {
 			},
 			want: {
 				name: 'foo1',
+				isSystemNamespace: false,
+				mirror: null,
 			},
 		},
 		{
@@ -27,12 +29,17 @@ describe('Test namespace create calls', () => {
 				name: 'foo2',
 				mirror: {
 					url: 'my_url',
+					gitRef: 'main',
+					authType: 'public',
 				},
 			},
 			want: {
 				name: 'foo2',
+				isSystemNamespace: false,
 				mirror: {
 					url: 'my_url',
+					gitRef: 'main',
+					authType: 'public',
 					insecure: false,
 					...timestamps,
 				},
@@ -45,16 +52,65 @@ describe('Test namespace create calls', () => {
 					url: 'my_url',
 					insecure: true,
 					gitRef: 'master',
-					gitCommitHash: '1234',
+					authType: 'public',
 				},
 			},
 			want: {
 				name: 'foo3',
+				isSystemNamespace: false,
 				mirror: {
 					url: 'my_url',
 					insecure: true,
 					gitRef: 'master',
-					gitCommitHash: '1234',
+					authType: 'public',
+					...timestamps,
+				},
+			},
+		},
+		{
+			input: {
+				name: 'foo4',
+				mirror: {
+					url: 'my_url',
+					insecure: true,
+					gitRef: 'master',
+					authType: 'token',
+					authToken: '12345',
+				},
+			},
+			want: {
+				name: 'foo4',
+				isSystemNamespace: false,
+				mirror: {
+					url: 'my_url',
+					insecure: true,
+					gitRef: 'master',
+					authType: 'token',
+					...timestamps,
+				},
+			},
+		},
+		{
+			input: {
+				name: 'foo5',
+				mirror: {
+					url: 'my_url',
+					insecure: true,
+					gitRef: 'master',
+					authType: 'ssh',
+					publicKey: 'my-public-key',
+					privateKey: 'my-private-key',
+				},
+			},
+			want: {
+				name: 'foo5',
+				isSystemNamespace: false,
+				mirror: {
+					url: 'my_url',
+					insecure: true,
+					gitRef: 'master',
+					publicKey: 'my-public-key',
+					authType: 'ssh',
 					...timestamps,
 				},
 			},
@@ -167,6 +223,68 @@ describe('Test valid namespace name', () => {
 					name: testCase,
 				})
 			expect(res.statusCode).toEqual(200)
+		})
+	}
+})
+
+describe('Test error cases', () => {
+	beforeAll(helpers.deleteAllNamespaces)
+
+	it(`should create foo namespace`, async () => {
+		const res = await request(config.getDirektivHost())
+			.post(`/api/v2/namespaces`)
+			.send({
+				name: 'foo',
+			})
+		expect(res.statusCode).toEqual(200)
+	})
+
+	it(`should fail create foo namespace`, async () => {
+		const res = await request(config.getDirektivHost())
+			.post(`/api/v2/namespaces`)
+			.send({
+				name: 'foo',
+			})
+		expect(res.statusCode).toEqual(400)
+		expect(res.body.error).toEqual({
+			code: 'request_data_invalid',
+			message: 'namespace name already used',
+		})
+	})
+})
+
+describe('Test missing fields create calls', () => {
+	beforeAll(helpers.deleteAllNamespaces)
+
+	const testCases = [
+		{
+			mirror: {
+				url: 'my_url',
+				gitRef: 'main',
+			},
+		},
+		{
+			name: 'foo4',
+			mirror: {
+				gitRef: 'main',
+			},
+		},
+		{
+			name: 'foo4',
+			mirror: {
+				url: 'my_url',
+			},
+		} ]
+
+	for (let i = 0; i < testCases.length; i++) {
+		const testCase = testCases[i]
+
+		it(`should fail create a new namespace case ${ i }`, async () => {
+			const res = await request(config.getDirektivHost())
+				.post(`/api/v2/namespaces`)
+				.send(testCase)
+			// expect(res.statusCode).toEqual(400)
+			expect(res.body.error.code).toEqual('request_data_invalid')
 		})
 	}
 })

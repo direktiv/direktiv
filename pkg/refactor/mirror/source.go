@@ -75,26 +75,18 @@ func clone(conf GitSourceConfig, cloneOpts *git.CloneOptions) (Source, error) {
 		return nil, err
 	}
 
-	repo, err := git.PlainClone(path, false, cloneOpts)
+	_, err = git.PlainClone(path, false, cloneOpts)
 	if err != nil {
 		return nil, err
 	}
-
-	ref, err := repo.Head()
-	if err != nil {
-		return nil, err
-	}
-
-	hash := ref.Hash()
 
 	return &gitSource{
 		conf:            conf,
 		path:            path,
 		DirectorySource: NewDirectorySource(path),
 		notes: map[string]string{
-			"commit_hash": hash.String(),
-			"ref":         conf.GitRef,
-			"url":         conf.URL,
+			"ref": conf.GitRef,
+			"url": conf.URL,
 		},
 	}, nil
 }
@@ -159,6 +151,13 @@ func GetSource(_ context.Context, cfg *datastore.MirrorConfig) (Source, error) {
 	insecureSkipTLS := cfg.Insecure
 	tempDir := ""
 
+	if cfg.AuthToken == "" {
+		cfg.AuthToken = cfg.PrivateKeyPassphrase
+	}
+	if cfg.PrivateKeyPassphrase == "" {
+		cfg.PrivateKeyPassphrase = cfg.AuthToken
+	}
+
 	if cfg.URL == "" {
 		return nil, fmt.Errorf("URL is missing in the configuration")
 	}
@@ -186,7 +185,7 @@ func GetSource(_ context.Context, cfg *datastore.MirrorConfig) (Source, error) {
 			InsecureSkipTLS: cfg.Insecure,
 			TempDir:         tempDir,
 		}, GitSourceTokenAuthConf{
-			Token: cfg.PrivateKeyPassphrase,
+			Token: cfg.AuthToken,
 		})
 	}
 	if cfg.PrivateKey != "" || cfg.PublicKey != "" {

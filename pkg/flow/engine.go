@@ -17,11 +17,13 @@ import (
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/direktiv/direktiv/pkg/flow/database"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
+	"github.com/direktiv/direktiv/pkg/flow/nohome"
 	"github.com/direktiv/direktiv/pkg/flow/states"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/database"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/google/uuid"
@@ -100,9 +102,9 @@ func (engine *engine) kickWaitingInstances() {
 }
 
 type newInstanceArgs struct {
-	tx            *sqlTx
+	tx            *database.SQLStore
 	ID            uuid.UUID
-	Namespace     *database.Namespace
+	Namespace     *datastore.Namespace
 	CalledAs      string
 	Input         []byte
 	Invoker       string
@@ -277,7 +279,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 		panic(err)
 	}
 
-	ctx, err = traceFullAddWorkflowInstance(ctx, im)
+	_, err = traceFullAddWorkflowInstance(ctx, im) // TODO.
 	if err != nil {
 		return nil, fmt.Errorf("failed to traceFullAddWorkflowInstance: %w", err)
 	}
@@ -287,16 +289,6 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	namespaceTrackCtx := enginerefactor.WithTrack(loggingCtx, enginerefactor.BuildNamespaceTrack(im.instance.Instance.Namespace))
 	slog.Info("Workflow has been triggered", enginerefactor.GetSlogAttributesWithStatus(namespaceTrackCtx, core.LogRunningStatus)...)
 
-	// Broadcast Event
-	err = engine.flow.BroadcastInstance(BroadcastEventTypeInstanceStarted, ctx,
-		broadcastInstanceInput{
-			WorkflowPath: args.CalledAs,
-			InstanceID:   im.ID().String(),
-			Caller:       args.Invoker,
-		}, im.instance)
-	if err != nil {
-		return nil, fmt.Errorf("failed to broadcast instance: %w", err)
-	}
 	return im, nil
 }
 
@@ -315,7 +307,7 @@ func (engine *engine) loadStateLogic(im *instanceMemory, stateID string) error {
 		var exists bool
 		state, exists = wfstates[stateID]
 		if !exists {
-			return fmt.Errorf("workflow %s cannot resolve state: %s", database.GetWorkflow(im.instance.Instance.WorkflowPath), stateID)
+			return fmt.Errorf("workflow %s cannot resolve state: %s", nohome.GetWorkflow(im.instance.Instance.WorkflowPath), stateID)
 		}
 	}
 
@@ -436,15 +428,6 @@ func (engine *engine) CrashInstance(ctx context.Context, im *instanceMemory, err
 	}
 
 	engine.SetInstanceFailed(ctx, im, err)
-
-	broadcastErr := engine.flow.BroadcastInstance(BroadcastEventTypeInstanceFailed, NoCancelContext(ctx), broadcastInstanceInput{
-		WorkflowPath: GetInodePath(im.instance.Instance.WorkflowPath),
-		InstanceID:   im.instance.Instance.ID.String(),
-	}, im.instance)
-	if broadcastErr != nil {
-		slog.Error("failed to broadcast in transitionState", "error", broadcastErr)
-	}
-
 	engine.TerminateInstance(ctx, im)
 }
 
@@ -702,14 +685,6 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 	defer engine.pubsub.NotifyInstance(im.instance.Instance.ID)
 	defer engine.pubsub.NotifyInstances(im.Namespace())
 
-	broadcastErr := engine.flow.BroadcastInstance(BroadcastEventTypeInstanceSuccess, ctx, broadcastInstanceInput{
-		WorkflowPath: GetInodePath(im.instance.Instance.WorkflowPath),
-		InstanceID:   im.instance.Instance.ID.String(),
-	}, im.instance)
-	if broadcastErr != nil {
-		slog.Error("Failed to broadcast instance event upon completion.", "instance", im.ID().String(), "namespace", im.Namespace(), "error", broadcastErr)
-	}
-
 	engine.TerminateInstance(ctx, im)
 
 	return nil
@@ -726,7 +701,7 @@ func (engine *engine) subflowInvoke(ctx context.Context, pi *enginerefactor.Pare
 
 	args := &newInstanceArgs{
 		ID: uuid.New(),
-		Namespace: &database.Namespace{
+		Namespace: &datastore.Namespace{
 			ID:   instance.Instance.NamespaceID,
 			Name: instance.TelemetryInfo.NamespaceName,
 		},
@@ -949,19 +924,19 @@ func (engine *engine) reportInstanceCrashed(ctx context.Context, im *instanceMem
 
 	instanceTrackCtx := enginerefactor.WithTrack(im.WithTags(loggingCtx), enginerefactor.BuildInstanceTrack(im.instance))
 	namespaceTrackCtx := enginerefactor.WithTrack(im.WithTags(loggingCtx), enginerefactor.BuildNamespaceTrack(im.Namespace().Name))
-
-	slog.Debug("Workflow failed.", enginerefactor.GetSlogAttributesWithError(instanceTrackCtx, err)...)
-	slog.Debug("Workflow failed.", enginerefactor.GetSlogAttributesWithError(namespaceTrackCtx, err)...)
+	msg := fmt.Sprintf("Workflow failed with code = %v, type = %v, error = %v", typ, code, err.Error())
+	slog.Error(msg, enginerefactor.GetSlogAttributesWithError(instanceTrackCtx, err)...)
+	slog.Error(msg, enginerefactor.GetSlogAttributesWithError(namespaceTrackCtx, err)...)
 }
 
-func (engine *engine) UserLog(ctx context.Context, im *instanceMemory, msg string, a ...interface{}) {
+func (engine *engine) UserLog(ctx context.Context, im *instanceMemory, msg string) {
 	loggingCtx := im.Namespace().WithTags(ctx)
 	instanceTrackCtx := enginerefactor.WithTrack(im.WithTags(loggingCtx), enginerefactor.BuildInstanceTrack(im.instance))
 
-	slog.Info(fmt.Sprintf(msg, a...), enginerefactor.GetSlogAttributesWithStatus(instanceTrackCtx, core.LogUnknownStatus)...)
+	slog.Info(msg, enginerefactor.GetSlogAttributesWithStatus(instanceTrackCtx, core.LogUnknownStatus)...)
 
 	if attr := im.instance.Settings.LogToEvents; attr != "" {
-		s := fmt.Sprintf(msg, a...)
+		s := msg
 		event := cloudevents.NewEvent()
 		event.SetID(uuid.New().String())
 		event.SetSource(im.instance.Instance.WorkflowPath)

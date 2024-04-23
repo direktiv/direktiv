@@ -319,7 +319,6 @@ func runHelm() {
 		if err != nil {
 			panic(err)
 		}
-
 	}
 
 	log.Printf("running direktiv helm\n")

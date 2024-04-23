@@ -30,7 +30,7 @@ const NamespaceSelector: FC<ButtonProps> = ({
 
   const defaultDoesNotExist =
     defaultValue &&
-    !availableNamespaces?.results.some((ns) => ns.name === defaultValue);
+    !availableNamespaces?.data.some((ns) => ns.name === defaultValue);
 
   return (
     <Select onValueChange={onValueChange} defaultValue={defaultValue}>
@@ -55,7 +55,7 @@ const NamespaceSelector: FC<ButtonProps> = ({
             </span>
           </SelectItem>
         )}
-        {availableNamespaces?.results.map((ns) => (
+        {availableNamespaces?.data.map((ns) => (
           <SelectItem key={ns.name} value={ns.name}>
             <span>{ns.name}</span>
           </SelectItem>

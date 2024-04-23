@@ -19,7 +19,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func createNS(db *database.DB, ns string) {
+func createNS(db *database.SQLStore, ns string) {
 	ctx := context.Background()
 
 	db.DataStore().Namespaces().Create(ctx, &datastore.Namespace{
@@ -115,16 +115,16 @@ func TestBasicGateway(t *testing.T) {
 
 	dbMock, _ := database.NewMockGorm()
 
-	db := database.NewDB(dbMock, "dummy")
+	db := database.NewSQLStore(dbMock, "dummy")
 
 	createNS(db, ns1)
-	createNS(db, core.MagicalGatewayNamespace)
+	createNS(db, core.SystemNamespace)
 
 	// create endpoint in magical and custom namespace
 	db.FileStore().ForNamespace(ns1).CreateFile(context.Background(), "/test.yaml",
 		filestore.FileTypeEndpoint, "application/yaml", []byte(wf1))
 
-	db.FileStore().ForNamespace(core.MagicalGatewayNamespace).CreateFile(context.Background(),
+	db.FileStore().ForNamespace(core.SystemNamespace).CreateFile(context.Background(),
 		"/test.yaml", filestore.FileTypeEndpoint, "application/yaml", []byte(wf1))
 
 	gm := gateway.NewGatewayManager(db)
@@ -147,12 +147,12 @@ func TestBasicGateway(t *testing.T) {
 func TestAuthGateway(t *testing.T) {
 	dbMock, _ := database.NewMockGorm()
 
-	db := database.NewDB(dbMock, "dummy")
-	createNS(db, core.MagicalGatewayNamespace)
-	db.FileStore().ForNamespace(core.MagicalGatewayNamespace).CreateFile(context.Background(),
+	db := database.NewSQLStore(dbMock, "dummy")
+	createNS(db, core.SystemNamespace)
+	db.FileStore().ForNamespace(core.SystemNamespace).CreateFile(context.Background(),
 		"/test.yaml", filestore.FileTypeEndpoint, "application/yaml", []byte(wfAuth))
 
-	db.FileStore().ForNamespace(core.MagicalGatewayNamespace).CreateFile(context.Background(),
+	db.FileStore().ForNamespace(core.SystemNamespace).CreateFile(context.Background(),
 		"/consumer.yaml", filestore.FileTypeConsumer, "application/yaml", []byte(consumerAuth))
 
 	gm := gateway.NewGatewayManager(db)
@@ -171,9 +171,9 @@ func TestAuthGateway(t *testing.T) {
 func TestOutputPlugins(t *testing.T) {
 	dbMock, _ := database.NewMockGorm()
 
-	db := database.NewDB(dbMock, "dummy")
-	createNS(db, core.MagicalGatewayNamespace)
-	db.FileStore().ForNamespace(core.MagicalGatewayNamespace).CreateFile(context.Background(),
+	db := database.NewSQLStore(dbMock, "dummy")
+	createNS(db, core.SystemNamespace)
+	db.FileStore().ForNamespace(core.SystemNamespace).CreateFile(context.Background(),
 		"/test.yaml", filestore.FileTypeEndpoint, "application/yaml", []byte(wfOutbound))
 
 	gm := gateway.NewGatewayManager(db)
@@ -207,9 +207,9 @@ func doRequest(t *testing.T, url string, headers http.Header, gm core.GatewayMan
 func TestTimeoutRequest(t *testing.T) {
 	dbMock, _ := database.NewMockGorm()
 
-	db := database.NewDB(dbMock, "dummy")
-	createNS(db, core.MagicalGatewayNamespace)
-	db.FileStore().ForNamespace(core.MagicalGatewayNamespace).CreateFile(context.Background(),
+	db := database.NewSQLStore(dbMock, "dummy")
+	createNS(db, core.SystemNamespace)
+	db.FileStore().ForNamespace(core.SystemNamespace).CreateFile(context.Background(),
 		"/test.yaml", filestore.FileTypeEndpoint, "application/yaml", []byte(timeout))
 
 	gm := gateway.NewGatewayManager(db)
@@ -222,14 +222,14 @@ func TestTimeoutRequest(t *testing.T) {
 func TestGetAllEndpoints(t *testing.T) {
 	dbMock, _ := database.NewMockGorm()
 
-	db := database.NewDB(dbMock, "dummy")
-	createNS(db, core.MagicalGatewayNamespace)
-	db.FileStore().ForNamespace(core.MagicalGatewayNamespace).CreateFile(context.Background(),
+	db := database.NewSQLStore(dbMock, "dummy")
+	createNS(db, core.SystemNamespace)
+	db.FileStore().ForNamespace(core.SystemNamespace).CreateFile(context.Background(),
 		"/test.yaml", filestore.FileTypeEndpoint, "application/yaml", []byte(timeout))
 
 	gm := gateway.NewGatewayManager(db)
 	gm.UpdateAll()
 
-	items, _ := gm.GetRoutes(core.MagicalGatewayNamespace, "")
+	items, _ := gm.GetRoutes(core.SystemNamespace, "")
 	assert.Equal(t, "/test", items[0].Path)
 }

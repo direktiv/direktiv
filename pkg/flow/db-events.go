@@ -7,14 +7,15 @@ import (
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/direktiv/direktiv/pkg/flow/database"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/refactor/database"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	pkgevents "github.com/direktiv/direktiv/pkg/refactor/events"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/google/uuid"
 )
 
-func (events *events) addEvent(ctx context.Context, eventin *cloudevents.Event, ns *database.Namespace) error {
+func (events *events) addEvent(ctx context.Context, eventin *cloudevents.Event, ns *datastore.Namespace) error {
 	ctx, end := traceAddtoEventlog(ctx)
 	defer end()
 	li := make([]*pkgevents.Event, 0)
@@ -26,7 +27,7 @@ func (events *events) addEvent(ctx context.Context, eventin *cloudevents.Event, 
 		Namespace:  ns.ID,
 		ReceivedAt: time.Now().UTC(),
 	})
-	err := events.runSqlTx(ctx, func(tx *sqlTx) error {
+	err := events.runSqlTx(ctx, func(tx *database.SQLStore) error {
 		_, errs := tx.DataStore().EventHistory().Append(ctx, li)
 		for _, err2 := range errs {
 			if err2 != nil {
@@ -42,7 +43,7 @@ func (events *events) addEvent(ctx context.Context, eventin *cloudevents.Event, 
 }
 
 func (events *events) deleteWorkflowEventListeners(ctx context.Context, nsID uuid.UUID, fileID uuid.UUID) error {
-	err := events.runSqlTx(ctx, func(tx *sqlTx) error {
+	err := events.runSqlTx(ctx, func(tx *database.SQLStore) error {
 		ids, err := tx.DataStore().EventListener().DeleteAllForWorkflow(ctx, fileID)
 		if err != nil {
 			return err
@@ -67,7 +68,7 @@ func (events *events) deleteWorkflowEventListeners(ctx context.Context, nsID uui
 }
 
 func (events *events) deleteInstanceEventListeners(ctx context.Context, im *instanceMemory) error {
-	err := events.runSqlTx(ctx, func(tx *sqlTx) error {
+	err := events.runSqlTx(ctx, func(tx *database.SQLStore) error {
 		ids, err := tx.DataStore().EventListener().DeleteAllForWorkflow(ctx, im.instance.Instance.ID)
 		if err != nil {
 			return err
@@ -136,15 +137,15 @@ func (events *events) processWorkflowEvents(ctx context.Context, nsID uuid.UUID,
 		contextFilters := make([]string, 0, len(ms.Events))
 		for _, sed := range ms.Events {
 			fEv.ListeningForEventTypes = append(fEv.ListeningForEventTypes, sed.Type)
-			gateKeeper := ""
+			databaseNoDupCheck := ""
 			for k, v := range sed.Context {
+				databaseNoDupCheck += fmt.Sprintf("%v %v %v", sed.Type, k, v)
 				fEv.GlobGatekeepers[sed.Type+"-"+k] = fmt.Sprintf("%v", v)
-				gateKeeper += fmt.Sprintf(" %v %v", k, v)
 			}
-			contextFilters = append(contextFilters, gateKeeper)
+			contextFilters = append(contextFilters, databaseNoDupCheck)
 		}
 
-		err := events.runSqlTx(ctx, func(tx *sqlTx) error {
+		err := events.runSqlTx(ctx, func(tx *database.SQLStore) error {
 			err := tx.DataStore().EventListener().Append(ctx, fEv)
 			if err != nil {
 				return err
@@ -190,11 +191,12 @@ func (events *events) addInstanceEventListener(ctx context.Context, namespace, i
 
 	for _, ced := range sevents {
 		fEv.ListeningForEventTypes = append(fEv.ListeningForEventTypes, ced.Type)
-		gateKeeper := ""
+		databaseNoDupCheck := ""
 		for k, v := range ced.Context {
+			databaseNoDupCheck += fmt.Sprintf("%v %v %v", ced.Type, k, v)
 			fEv.GlobGatekeepers[ced.Type+"-"+k] = fmt.Sprintf("%v", v)
 		}
-		contextFilters = append(contextFilters, gateKeeper)
+		contextFilters = append(contextFilters, databaseNoDupCheck)
 	}
 	if all {
 		fEv.TriggerType = pkgevents.WaitAnd
@@ -203,7 +205,7 @@ func (events *events) addInstanceEventListener(ctx context.Context, namespace, i
 		fEv.TriggerType = pkgevents.WaitOR
 	}
 
-	err := events.runSqlTx(ctx, func(tx *sqlTx) error {
+	err := events.runSqlTx(ctx, func(tx *database.SQLStore) error {
 		err := tx.DataStore().EventListener().Append(ctx, fEv)
 		if err != nil {
 			return err

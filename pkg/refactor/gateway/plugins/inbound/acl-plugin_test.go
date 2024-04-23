@@ -20,7 +20,7 @@ func TestConfigACLPlugin(t *testing.T) {
 	}
 
 	p, _ := plugins.GetPluginFromRegistry(inbound.ACLPluginName)
-	p2, _ := p.Configure(config, core.MagicalGatewayNamespace)
+	p2, _ := p.Configure(config, core.SystemNamespace)
 
 	configOut := p2.Config().(*inbound.ACLConfig)
 
@@ -41,7 +41,7 @@ func TestExecuteRequestACLGroupsPlugin(t *testing.T) {
 	p, _ := plugins.GetPluginFromRegistry(inbound.ACLPluginName)
 
 	config := &inbound.ACLConfig{}
-	p2, _ := p.Configure(config, core.MagicalGatewayNamespace)
+	p2, _ := p.Configure(config, core.SystemNamespace)
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest(http.MethodGet, "/dummy", nil)
@@ -56,7 +56,7 @@ func TestExecuteRequestACLGroupsPlugin(t *testing.T) {
 	}
 
 	w = httptest.NewRecorder()
-	p2, _ = p.Configure(config, core.MagicalGatewayNamespace)
+	p2, _ = p.Configure(config, core.SystemNamespace)
 	p2.ExecutePlugin(c, w, r)
 	assert.Equal(t, http.StatusOK, w.Result().StatusCode)
 
@@ -66,7 +66,7 @@ func TestExecuteRequestACLGroupsPlugin(t *testing.T) {
 	}
 
 	w = httptest.NewRecorder()
-	p2, _ = p.Configure(config, core.MagicalGatewayNamespace)
+	p2, _ = p.Configure(config, core.SystemNamespace)
 	p2.ExecutePlugin(c, w, r)
 
 	assert.Equal(t, http.StatusForbidden, w.Result().StatusCode)
@@ -78,7 +78,7 @@ func TestExecuteRequestACLGroupsPlugin(t *testing.T) {
 	}
 
 	w = httptest.NewRecorder()
-	p2, _ = p.Configure(config, core.MagicalGatewayNamespace)
+	p2, _ = p.Configure(config, core.SystemNamespace)
 	p2.ExecutePlugin(c, w, r)
 	assert.Equal(t, http.StatusOK, w.Result().StatusCode)
 
@@ -88,7 +88,7 @@ func TestExecuteRequestACLGroupsPlugin(t *testing.T) {
 	}
 
 	w = httptest.NewRecorder()
-	p2, _ = p.Configure(config, core.MagicalGatewayNamespace)
+	p2, _ = p.Configure(config, core.SystemNamespace)
 	p2.ExecutePlugin(c, w, r)
 
 	assert.Equal(t, http.StatusForbidden, w.Result().StatusCode)
@@ -96,7 +96,7 @@ func TestExecuteRequestACLGroupsPlugin(t *testing.T) {
 
 	// missing consumer
 	w = httptest.NewRecorder()
-	p2, _ = p.Configure(&inbound.ACLConfig{}, core.MagicalGatewayNamespace)
+	p2, _ = p.Configure(&inbound.ACLConfig{}, core.SystemNamespace)
 	p2.ExecutePlugin(nil, w, r)
 
 	assert.Equal(t, http.StatusForbidden, w.Result().StatusCode)

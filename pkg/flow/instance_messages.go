@@ -142,7 +142,6 @@ func (engine *engine) handleInstanceMessage(ctx context.Context, im *instanceMem
 		return nil
 	}
 
-	//nolint:errchkjson
 	data, _ := json.Marshal(x)
 
 	switch msgType {

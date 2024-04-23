@@ -60,7 +60,7 @@ func marshalForAPI(data *instancestore.InstanceData) interface{} {
 }
 
 type instController struct {
-	db      *database.DB
+	db      *database.SQLStore
 	manager *instancestore.InstanceManager
 }
 
@@ -427,7 +427,7 @@ func (e *instController) list(w http.ResponseWriter, r *http.Request) {
 				filter.Kind = instancestore.FilterKindMatch
 			case "PREFIX":
 				filter.Kind = instancestore.FilterKindPrefix
-			case "MATCH": //nolint:goconst
+			case "MATCH":
 				filter.Kind = instancestore.FilterKindMatch
 			case "AFTER":
 				filter.Kind = instancestore.FilterKindAfter
@@ -562,10 +562,8 @@ recheck:
 
 		x, exists := m[field]
 		if exists {
-			//nolint:errchkjson
 			raw, _ = json.Marshal(x)
 		} else {
-			//nolint:errchkjson
 			raw, _ = json.Marshal(nil)
 		}
 	}
@@ -629,7 +627,6 @@ func (e *instController) stream(w http.ResponseWriter, r *http.Request) {
 			return // TODO: how are we supposed to report errors in SSE?
 		}
 
-		//nolint:errchkjson
 		raw, _ := json.Marshal(marshalForAPI(data))
 
 		dst := &bytes.Buffer{}
