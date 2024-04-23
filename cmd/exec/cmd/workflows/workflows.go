@@ -146,15 +146,19 @@ When a folder is passed as an argument all the resources in the specified folder
 }
 
 func updateRemoteWorkflow(path string, localPath string) error {
-	err := recurseMkdirParent(path)
+	localPath = strings.Trim(localPath, "/")
+	path = strings.Trim(path, "/")
+
+	remoteDir := filepath.Dir(path)
+	remoteName := filepath.Base(path)
+
+	workflowCreateUrl := fmt.Sprintf("%s/files/%s", root.UrlPrefixV2, remoteDir)
+	workflowUpdateUrl := fmt.Sprintf("%s/files/%s", root.UrlPrefixV2, path)
+
+	err := recurseMkdirParent(remoteDir)
 	if err != nil {
 		return fmt.Errorf("failed to create parent directory: %w", err)
 	}
-
-	urlWorkflow := fmt.Sprintf("%s/tree/%s", root.UrlPrefix, strings.TrimPrefix(path, "/"))
-
-	urlUpdate := fmt.Sprintf("%s?op=update-workflow", urlWorkflow)
-	urlCreate := fmt.Sprintf("%s?op=create-workflow", urlWorkflow)
 
 	buf, err := root.SafeLoadFile(localPath)
 	if err != nil {
@@ -165,13 +169,25 @@ func updateRemoteWorkflow(path string, localPath string) error {
 	if err != nil {
 		log.Fatalf("Failed to load workflow file: %v", err)
 	}
+	jsonData, err := json.Marshal(struct {
+		Path     string `json:"path"`
+		Name     string `json:"name"`
+		Typ      string `json:"type"`
+		MimeType string `json:"mimeType"`
+		Data     []byte `json:"data"`
+	}{
+		Name:     remoteName,
+		Typ:      "workflow",
+		MimeType: "application/yaml",
+		Data:     data,
+	})
 
 	doRequest := func(updateURL, methodIn string, dataIn []byte) (int, string, error) {
 		req, err := http.NewRequestWithContext(
 			context.Background(),
 			methodIn,
 			updateURL,
-			bytes.NewReader(dataIn),
+			bytes.NewReader(jsonData),
 		)
 		if err != nil {
 			return 0, "", fmt.Errorf("failed to create request file: %w", err)
@@ -196,9 +212,9 @@ func updateRemoteWorkflow(path string, localPath string) error {
 
 	// code, err := doRequest(urlUpdate, http.MethodPut)
 	// if code == http.StatusNotFound {
-	code, body, err := doRequest(urlCreate, http.MethodPut, data)
-	if code == http.StatusConflict {
-		code, body, err = doRequest(urlUpdate, http.MethodPost, data)
+	code, body, err := doRequest(workflowCreateUrl, http.MethodPost, data)
+	if code != http.StatusOK {
+		code, body, err = doRequest(workflowUpdateUrl, http.MethodPatch, data)
 	}
 
 	if err != nil {
@@ -217,7 +233,9 @@ func updateRemoteWorkflow(path string, localPath string) error {
 }
 
 func recurseMkdirParent(path string) error {
-	dirs := strings.Split(filepath.Dir(path), "/")
+	path = strings.Trim(path, "/")
+
+	dirs := strings.Split(path, "/")
 
 	for i := range dirs {
 		createPath := strings.Join(dirs[:i+1], "/")
