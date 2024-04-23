@@ -1,3 +1,4 @@
+import { FolderSync, GitCompare } from "lucide-react";
 import {
   NoPermissions,
   NoResult,
@@ -11,26 +12,32 @@ import {
 import { Pagination, PaginationLink } from "~/design/Pagination";
 
 import { Card } from "~/design/Card";
-import { GitCompare } from "lucide-react";
 import Header from "./Header";
 import PaginationProvider from "~/components/PaginationProvider";
 import Row from "./Row";
-import { treeKeys } from "~/api/tree";
+import { syncKeys } from "~/api/syncs";
 import { useApiKey } from "~/util/store/apiKey";
-import { useMirrorInfo } from "~/api/tree/query/mirrorInfo";
+import { useListSyncs } from "~/api/syncs/query/get";
+import { useNamespace } from "~/util/store/namespace";
+import { useNamespaceDetail } from "~/api/namespaces/query/get";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
 const pageSize = 10;
 
-const Activities = () => {
-  const { data, isAllowed, noPermissionMessage, isFetched } = useMirrorInfo();
+const MirrorDetail = () => {
+  const { data, isAllowed, noPermissionMessage, isFetched } = useListSyncs();
+  const namespace = useNamespace();
+  const namespaceDetail = useNamespaceDetail();
+
+  const mirror = namespaceDetail.data?.mirror;
+
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const apiKey = useApiKey();
 
-  const activities = data?.activities.results;
-  const noResults = isFetched && data?.activities.results.length === 0;
+  const syncs = data?.data;
+  const noResults = isFetched && data?.data.length === 0;
 
   if (!isAllowed)
     return (
@@ -39,28 +46,30 @@ const Activities = () => {
       </Card>
     );
 
-  if (!activities) return null;
+  if (!namespace) return null;
+  if (!mirror) return null;
+  if (!syncs) return null;
 
-  const refreshActivities = () => {
+  const refreshSyncs = () => {
     queryClient.invalidateQueries(
-      treeKeys.mirrorInfo(data.namespace, {
+      syncKeys.syncsList(namespace, {
         apiKey: apiKey ?? undefined,
       })
     );
   };
 
-  const pendingActivities = activities.filter(
-    (activity) => activity.status === "executing"
+  const pendingSyncs = syncs.filter(
+    (sync) => sync.status === "executing" || sync.status === "pending"
   );
 
-  if (pendingActivities.length) {
-    setTimeout(() => refreshActivities(), 1000);
+  if (pendingSyncs.length) {
+    setTimeout(() => refreshSyncs(), 1000);
   }
 
   return (
     <>
-      <Header mirror={data} loading={!!pendingActivities.length} />
-      <PaginationProvider items={activities} pageSize={pageSize}>
+      <Header mirror={mirror} loading={!!pendingSyncs.length} />
+      <PaginationProvider items={syncs} pageSize={pageSize}>
         {({
           currentItems,
           goToPage,
@@ -72,24 +81,21 @@ const Activities = () => {
         }) => (
           <div className="flex grow flex-col gap-y-4 p-5">
             <h3 className="flex items-center gap-x-2 font-bold">
-              <GitCompare className="h-5" />
-              {t("pages.mirror.activities.list.title")}
+              <FolderSync className="h-5" />
+              {t("pages.mirror.syncs.list.title")}
             </h3>
             <Card>
               <Table className="border-gray-5 dark:border-gray-dark-5">
                 <TableHead>
                   <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
                     <TableHeaderCell>
-                      {t("pages.mirror.activities.tableHeader.id")}
+                      {t("pages.mirror.syncs.tableHeader.id")}
                     </TableHeaderCell>
                     <TableHeaderCell>
-                      {t("pages.mirror.activities.tableHeader.type")}
+                      {t("pages.mirror.syncs.tableHeader.status")}
                     </TableHeaderCell>
                     <TableHeaderCell>
-                      {t("pages.mirror.activities.tableHeader.status")}
-                    </TableHeaderCell>
-                    <TableHeaderCell>
-                      {t("pages.mirror.activities.tableHeader.createdAt")}
+                      {t("pages.mirror.syncs.tableHeader.createdAt")}
                     </TableHeaderCell>
                   </TableRow>
                 </TableHead>
@@ -98,17 +104,13 @@ const Activities = () => {
                     <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
                       <TableCell colSpan={4}>
                         <NoResult icon={GitCompare}>
-                          {t("pages.mirror.activities.list.noResults")}
+                          {t("pages.mirror.syncs.list.noResults")}
                         </NoResult>
                       </TableCell>
                     </TableRow>
                   )}
-                  {currentItems.map((activity) => (
-                    <Row
-                      namespace={data.namespace}
-                      key={activity.id}
-                      item={activity}
-                    />
+                  {currentItems.map((sync) => (
+                    <Row namespace={namespace} key={sync.id} item={sync} />
                   ))}
                 </TableBody>
               </Table>
@@ -138,4 +140,4 @@ const Activities = () => {
   );
 };
 
-export default Activities;
+export default MirrorDetail;

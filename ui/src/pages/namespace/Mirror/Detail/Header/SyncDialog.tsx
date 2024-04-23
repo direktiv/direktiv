@@ -8,17 +8,20 @@ import {
   DialogTrigger,
 } from "~/design/Dialog";
 
+import Alert from "~/design/Alert";
 import Button from "~/design/Button";
 import { RefreshCcw } from "lucide-react";
+import { useNamespace } from "~/util/store/namespace";
 import { useState } from "react";
-import { useSyncMirror } from "~/api/tree/mutate/syncMirror";
+import { useSync } from "~/api/syncs/mutate/sync";
 import { useTranslation } from "react-i18next";
 
 const SyncDialog = ({ loading }: { loading: boolean }) => {
   const [syncModal, setSyncModal] = useState(false);
-  const { mutate: performSync } = useSyncMirror({
+  const { mutate: performSync } = useSync({
     onSuccess: () => setSyncModal(false),
   });
+  const namespace = useNamespace();
   const { t } = useTranslation();
 
   return (
@@ -37,13 +40,16 @@ const SyncDialog = ({ loading }: { loading: boolean }) => {
           </DialogTitle>
         </DialogHeader>
         <p>{t("pages.mirror.syncDialog.description")}</p>
+        <Alert variant="warning" className="mb-2">
+          {t("pages.mirror.syncDialog.warning")}
+        </Alert>
         <DialogFooter>
           <DialogClose asChild>
             <Button variant="ghost">
               {t("components.button.label.cancel")}
             </Button>
           </DialogClose>
-          <Button onClick={() => performSync()}>
+          <Button onClick={() => performSync({ namespace })}>
             {t("pages.mirror.syncDialog.confirm")}
           </Button>
         </DialogFooter>
