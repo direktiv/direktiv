@@ -109,7 +109,8 @@ describe('Test complex workflow events orchistration', () => {
 			.send()
 		expect(statusStream3.body.instance.status).toBe('pending')
 
-		const outputData2 = JSON.parse(atob(resultsStream2.body.data)); +expect(outputData2.hello.hello).toBe('condition2')
+		const outputData2 = JSON.parse(atob(resultsStream2.body.data))
+		expect(outputData2.hello.hello).toBe('condition2')
 
 		await events.sendEventAndList(namespaceName, eventStream3Stage2)
 		await helpers.sleep(300)

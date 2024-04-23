@@ -8,11 +8,6 @@ import { retry50 } from '../common/retry'
 
 const namespace = basename(__filename)
 
-const timestamps = {
-	createdAt: expect.stringMatching(regex.timestampRegex),
-	updatedAt: expect.stringMatching(regex.timestampRegex),
-}
-
 describe('Test namespace git mirroring', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
 
