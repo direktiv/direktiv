@@ -9,13 +9,13 @@ import { expect, test } from "@playwright/test";
 import { createFile } from "e2e/utils/files";
 import { createInstance } from "../utils/index";
 import { faker } from "@faker-js/faker";
+import { mockClipboardAPI } from "e2e/utils/testutils";
 
 let namespace = "";
 const simpleWorkflowName = faker.system.commonFileName("yaml");
 const delayedWorkflowName = faker.system.commonFileName("yaml");
-const failingWorkflowName = faker.system.commonFileName("yaml");
 
-test.beforeEach(async () => {
+test.beforeEach(async ({ page }) => {
   namespace = await createNamespace();
   /* create workflows we can use to create instances later */
   await createFile({
@@ -32,12 +32,7 @@ test.beforeEach(async () => {
     yaml: delayedWorkflowContent,
   });
 
-  await createFile({
-    name: failingWorkflowName,
-    namespace,
-    type: "workflow",
-    yaml: failingWorkflowContent,
-  });
+  await mockClipboardAPI(page);
 });
 
 test.afterEach(async () => {
@@ -308,7 +303,7 @@ test("the input/output panel responds to user interaction", async ({
 
   const maximizedWidth = (await inputOutputPanel.boundingBox())?.width;
   if (minimizedWidth === undefined || maximizedWidth === undefined) {
-    throw new Error("could not get width of diagram panel");
+    throw new Error("could not get width of input/output panel");
   }
   expect(
     maximizedWidth / minimizedWidth,
@@ -342,9 +337,6 @@ test("the input/output panel responds to user interaction", async ({
     expectedOutput
   );
 
-  // for writing to the clipboard and for reading from the clipboard we need to grant permissions here - if we are not allowing it universally in the playwright.config.ts
-  page.context().grantPermissions(["clipboard-write", "clipboard-read"]);
-
   await copyButton.click();
 
   expect(await page.evaluate(() => navigator.clipboard.readText())).toEqual(
@@ -359,10 +351,12 @@ test("the input/output panel responds to user interaction", async ({
   );
 });
 
-test("the output shows event notifications", async ({ page }) => {
+test("The output is shown when the workflow finished running", async ({
+  page,
+}) => {
   const newInstance = createInstance({
     namespace,
-    path: failingWorkflowName,
+    path: delayedWorkflowName,
   });
 
   await expect(newInstance, "wait until process was completed").toBeDefined();
@@ -382,24 +376,24 @@ test("the output shows event notifications", async ({ page }) => {
   const textarea = inputOutputPanel.locator(".view-lines");
 
   const runningInstanceOutput = "The workflow is still running";
-  const failedInstanceOutput = '{    "result": "an error occurred"}';
+  const expectedOutput = `{    "result": "finished"}`;
 
   await outputButton.click();
 
   await expect(
     inputOutputPanel,
-    "the output shows the text for the status running instance"
+    "The output shows a note that the workflow is still running"
   ).toContainText(runningInstanceOutput);
 
   await expect(
     header.locator("div").first(),
-    "the badge failed is visible"
-  ).toContainText("failed");
+    "the badge complete is visible"
+  ).toContainText("complete");
 
   await expect(
     textarea,
-    "the output shows the text for the status failed instance"
-  ).toHaveText(failedInstanceOutput);
+    "When the workflow finished the generated output is shown in the panel"
+  ).toHaveText(expectedOutput);
 });
 
 test("after a running instance finishes, the output tab is automatically selected ", async ({
