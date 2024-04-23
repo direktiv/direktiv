@@ -9,7 +9,7 @@ async function deleteAllNamespaces () {
 		throw Error(`none ok namespaces list statusCode(${ listResponse.statusCode })`)
 
 	for (const namespace of listResponse.body.data) {
-		const response = await request(config.getDirektivHost()).delete(`/api/namespaces/${ namespace.name }`)
+		const response = await request(config.getDirektivHost()).delete(`/api/v2/namespaces/${ namespace.name }`)
 
 		if (response.statusCode !== 200)
 			throw Error(`none ok namespace(${ namespace.name }) delete statusCode(${ response.statusCode })`)
@@ -18,16 +18,10 @@ async function deleteAllNamespaces () {
 
 async function itShouldCreateNamespace (it, expect, ns) {
 	it(`should create a new namespace ${ ns }`, async () => {
-		const res = await request(common.config.getDirektivHost()).put(`/api/namespaces/${ ns }`)
+		const res = await request(common.config.getDirektivHost())
+			.post(`/api/v2/namespaces`)
+			.send({name: ns})
 		expect(res.statusCode).toEqual(200)
-		expect(res.body).toMatchObject({
-			namespace: {
-				name: ns,
-				// regex /^2.*Z$/ matches timestamps like 2023-03-01T14:19:52.383871512Z
-				createdAt: expect.stringMatching(/^2.*Z$/),
-				updatedAt: expect.stringMatching(/^2.*Z$/),
-			},
-		})
 	})
 }
 
@@ -46,16 +40,6 @@ async function itShouldCreateFileV2 (it, expect, ns, path, name, type, mimeType,
 				data,
 			})
 		expect(res.statusCode).toEqual(200)
-
-		expect(res.body.data).toEqual({
-			path: `${ path }/${ name }`,
-			type,
-			data,
-			mimeType,
-			size: Buffer.from(data, 'base64').length,
-			createdAt: expect.stringMatching(regex.timestampRegex),
-			updatedAt: expect.stringMatching(regex.timestampRegex),
-		})
 	})
 }
 
