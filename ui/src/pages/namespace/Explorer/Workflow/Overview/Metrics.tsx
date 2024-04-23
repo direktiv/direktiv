@@ -25,7 +25,20 @@ const Metrics = ({ workflow }: { workflow: string }) => {
     />
   );
 
-  const metrics = isFetched && data?.data;
+  let Output = <></>;
+
+  if (isFetched && data?.data?.total && data.data.total > 0) {
+    const metrics = data?.data;
+    Output = <Donut data={metrics} />;
+  } else {
+    Output = (
+      <NoResult icon={PieChart}>
+        {isFetched
+          ? t("pages.explorer.tree.workflow.overview.metrics.noResult")
+          : t("pages.explorer.tree.workflow.overview.metrics.loading")}
+      </NoResult>
+    );
+  }
 
   return (
     <Card className="flex flex-col">
@@ -36,15 +49,7 @@ const Metrics = ({ workflow }: { workflow: string }) => {
         </h3>
         <MetricsRefetchButton />
       </div>
-      {metrics ? (
-        <Donut data={metrics} />
-      ) : (
-        <NoResult icon={PieChart}>
-          {isFetched
-            ? t("pages.explorer.tree.workflow.overview.metrics.noResult")
-            : t("pages.explorer.tree.workflow.overview.metrics.loading")}
-        </NoResult>
-      )}
+      {Output}
     </Card>
   );
 };
