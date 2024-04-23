@@ -181,6 +181,9 @@ func updateRemoteWorkflow(path string, localPath string) error {
 		MimeType: "application/yaml",
 		Data:     data,
 	})
+	if err != nil {
+		log.Fatalf("Failed to load workflow file: %v", err)
+	}
 
 	doRequest := func(updateURL, methodIn string, dataIn []byte) (int, string, error) {
 		req, err := http.NewRequestWithContext(
