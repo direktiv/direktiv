@@ -14,8 +14,6 @@ import "pkg/flow/grpc/cloudevent.proto";
 import "pkg/flow/grpc/util.proto";
 // import "pkg/flow/grpc/eventing.proto";
 
-import "pkg/flow/grpc/mirror.proto";
-
 service Flow {
 	// instances.
 	rpc Instance (InstanceRequest) returns (InstanceResponse) {}
