@@ -36,10 +36,6 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-const (
-	parcelSize = 0x100000
-)
-
 type server struct {
 	ID uuid.UUID
 
@@ -345,16 +341,17 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 		},
 	)
 
-	if srv.config.EnableEventing {
-		slog.Debug("Initializing knative eventing receiver.")
-		rcv, err := newEventReceiver(srv.events, srv.flow)
-		if err != nil {
-			return nil, err
-		}
-
-		// starting the event receiver
-		go rcv.Start()
-	}
+	// Todo: Yassir, delete this entirely in cycle6.
+	// if srv.config.EnableEventing {
+	// 	slog.Debug("Initializing knative eventing receiver.")
+	// 	rcv, err := newEventReceiver(srv.events, srv.flow)
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+	//
+	// 	// starting the event receiver
+	// 	go rcv.Start()
+	// }
 
 	srv.registerFunctions()
 

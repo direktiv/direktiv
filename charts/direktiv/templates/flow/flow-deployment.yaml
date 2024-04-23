@@ -81,11 +81,12 @@ spec:
             - name: internal
               containerPort: 7777
               protocol: TCP
-            {{- if .Values.eventing.enabled }}
-            - name: grpcevents
-              protocol: TCP
-              containerPort: 3333
-            {{- end }}
+# Todo: Yassir, delete this entirely in cycle6.
+#            {{/*- if .Values.eventing.enabled */}}
+#            - name: grpcevents
+#              protocol: TCP
+#              containerPort: 3333
+#            {{/*- end */}}
           env:
           - name: DIREKTIV_DEBUG
             value: {{ .Values.flow.debug | quote }}
@@ -131,8 +132,9 @@ spec:
           {{- end }}
           - name: DIREKTIV_OPEN_TELEMETRY_BACKEND
             value: {{ include "direktiv.opentelemetry-backend" . }}
-          - name: DIREKTIV_ENABLE_EVENTING
-            value: {{ .Values.eventing.enabled | quote }}
+# Todo: Yassir, delete this entirely in cycle6.
+#          - name: DIREKTIV_ENABLE_EVENTING
+#            value: {{/* .Values.eventing.enabled | quote */}}
           - name: DIREKTIV_KNATIVE_SERVICE_ACCOUNT
             value: "{{ include "direktiv.serviceAccountName" . }}-functions-pod"
           - name: DIREKTIV_KNATIVE_NAMESPACE
@@ -155,6 +157,12 @@ spec:
           - name: "HTTPS_PROXY"
             value: "{{ .Values.https_proxy }}"
           - name: "NO_PROXY"
+            value: "{{ .Values.no_proxy }}"
+          - name: "DIREKTIV_KNATIVE_PROXY_HTTP"
+            value: "{{ .Values.http_proxy }}"
+          - name: "DIREKTIV_KNATIVE_PROXY_HTTPS"
+            value: "{{ .Values.https_proxy }}"
+          - name: "DIREKTIV_KNATIVE_PROXY_NO"
             value: "{{ .Values.no_proxy }}"
           {{- end }}
           - name: DIREKTIV_DEPLOYMENT_NAME

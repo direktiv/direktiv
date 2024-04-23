@@ -9,7 +9,6 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
-	"github.com/direktiv/direktiv/pkg/util"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -58,7 +57,7 @@ func ConfigureTargetFlowPlugin(config interface{}, ns string) (core.PluginInstan
 	}
 
 	// throw error if non magic namespace targets different namespace
-	if targetflowConfig.Namespace != ns && ns != core.MagicalGatewayNamespace {
+	if targetflowConfig.Namespace != ns && ns != core.SystemNamespace {
 		return nil, fmt.Errorf("plugin can not target different namespace")
 	}
 
@@ -91,7 +90,7 @@ func (tf FlowPlugin) ExecutePlugin(_ *core.ConsumerFile,
 	ctx, childSpan := tracer.Start(r.Context(), "target-workflow-plugin")
 	defer childSpan.End()
 	// request failed if nil and response already written
-	resp := doDirektivRequest(direktivWorkflowRequest, map[string]string{
+	resp := doWorkflowRequest(map[string]string{
 		namespaceArg: tf.config.Namespace,
 		flowArg:      tf.config.Flow,
 		execArg:      tf.config.internalAsync,
@@ -127,10 +126,8 @@ func init() {
 type direktivRequestType string
 
 const (
-	direktivWorkflowRequest     direktivRequestType = "wf"
 	direktivWorkflowVarRequest  direktivRequestType = "wfvar"
 	direktivNamespaceVarRequest direktivRequestType = "nsvar"
-	direktivFileRequest         direktivRequestType = "file"
 
 	namespaceArg = "ns"
 	flowArg      = "flow"
@@ -139,60 +136,14 @@ const (
 	pathArg      = "path"
 )
 
-func doDirektivRequest(requestType direktivRequestType, args map[string]string,
-	w http.ResponseWriter, r *http.Request,
-) *http.Response {
+func doWorkflowRequest(args map[string]string, w http.ResponseWriter, r *http.Request) *http.Response {
 	defer r.Body.Close()
 
-	var (
-		url    string
-		method = http.MethodGet
-		body   io.ReadCloser
-	)
+	url := fmt.Sprintf("http://localhost:%s/api/namespaces/%s/tree%s?op=%s&ref=latest",
+		os.Getenv("DIREKTIV_API_V1_PORT"), args[namespaceArg], args[flowArg], args[execArg])
 
-	switch requestType {
-	case direktivFileRequest:
-		url = fmt.Sprintf("http://localhost:%s/api/namespaces/%s/tree%s",
-			os.Getenv("DIREKTIV_API_V1_PORT"), args[namespaceArg], args[pathArg])
-	case direktivWorkflowVarRequest:
-		url = fmt.Sprintf("http://localhost:%s/api/namespaces/%s/tree%s?op=var&var=%s",
-			os.Getenv("DIREKTIV_API_V1_PORT"), args[namespaceArg], args[flowArg], args[varArg])
-	case direktivNamespaceVarRequest:
-		url = fmt.Sprintf("http://localhost:%s/api/namespaces/%s/vars/%s",
-			os.Getenv("DIREKTIV_API_V1_PORT"), args[namespaceArg], args[varArg])
-	case direktivWorkflowRequest:
-		fallthrough
-	default:
-		// workflow request is default
-		method = http.MethodPost
-		body = r.Body
-		url = fmt.Sprintf("http://localhost:%s/api/namespaces/%s/tree%s?op=%s&ref=latest",
-			os.Getenv("DIREKTIV_API_V1_PORT"), args[namespaceArg], args[flowArg], args[execArg])
-	}
-
-	client := http.Client{}
-	ctx := r.Context()
-	req, err := http.NewRequestWithContext(ctx, method, url, body)
-
-	endTrace := util.TraceGWHTTPRequest(ctx, req, "direktiv/flow")
-	defer endTrace()
-	if err != nil {
-		plugins.ReportError(r.Context(), w, http.StatusInternalServerError,
-			"can not create request", err)
-
-		return nil
-	}
-
-	// add api key if required
-	if os.Getenv("DIREKTIV_API_KEY") != "" {
-		req.Header.Set("Direktiv-Token", os.Getenv("DIREKTIV_API_KEY"))
-	}
-
-	resp, err := client.Do(req.WithContext(ctx))
-	if err != nil {
-		plugins.ReportError(r.Context(), w, http.StatusInternalServerError,
-			"can not execute flow", err)
-
+	resp := doRequest(w, r, http.MethodPost, url, r.Body)
+	if resp == nil {
 		return nil
 	}
 

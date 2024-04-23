@@ -43,6 +43,7 @@ const Diagram: FC<DiagramProps> = ({ workflowPath, flow, status }) => {
           <TooltipTrigger asChild>
             <div className="absolute right-5 top-5 z-50">
               <Button
+                data-testid="resizeDiagram"
                 icon
                 size="sm"
                 variant="outline"

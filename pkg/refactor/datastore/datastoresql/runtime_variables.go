@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"path"
 	"regexp"
 	"strings"
 
@@ -64,12 +65,14 @@ func (s *sqlRuntimeVariablesStore) GetForInstance(ctx context.Context, instanceI
 	return variable, nil
 }
 
-func (s *sqlRuntimeVariablesStore) GetForWorkflow(ctx context.Context, namespace string, path string, name string) (*datastore.RuntimeVariable, error) {
+func (s *sqlRuntimeVariablesStore) GetForWorkflow(ctx context.Context, namespace string, workflowPath string, name string) (*datastore.RuntimeVariable, error) {
 	variable := &datastore.RuntimeVariable{}
 
-	if name == "" || path == "" || namespace == "" {
+	if name == "" || workflowPath == "" || namespace == "" {
 		return nil, datastore.ErrNotFound
 	}
+
+	workflowPath = path.Clean("/" + workflowPath)
 
 	res := s.db.WithContext(ctx).Raw(`
 							SELECT 
@@ -77,7 +80,7 @@ func (s *sqlRuntimeVariablesStore) GetForWorkflow(ctx context.Context, namespace
 								name, length(data) AS size, mime_type,
 								created_at, updated_at
 							FROM runtime_variables WHERE namespace = ? AND name = ? AND (workflow_path=?)`,
-		namespace, name, path).First(variable)
+		namespace, name, workflowPath).First(variable)
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		return nil, datastore.ErrNotFound
 	}
@@ -143,6 +146,8 @@ func (s *sqlRuntimeVariablesStore) ListForInstance(ctx context.Context, instance
 }
 
 func (s *sqlRuntimeVariablesStore) ListForWorkflow(ctx context.Context, namespace string, workflowPath string) ([]*datastore.RuntimeVariable, error) {
+	workflowPath = path.Clean("/" + workflowPath)
+
 	return s.listByFieldValue(ctx, []string{"namespace", "workflow_path"}, []interface{}{namespace, workflowPath})
 }
 
@@ -175,6 +180,10 @@ func (s *sqlRuntimeVariablesStore) Set(ctx context.Context, variable *datastore.
 	zeroUUID := (uuid.UUID{}).String()
 	if variable.InstanceID.String() == zeroUUID && variable.Namespace == "" && variable.WorkflowPath == "" {
 		return nil, datastore.ErrInvalidRuntimeVariableName
+	}
+
+	if variable.WorkflowPath != "" {
+		variable.WorkflowPath = path.Clean("/" + variable.WorkflowPath)
 	}
 
 	selectorField := ""
@@ -287,6 +296,7 @@ func (s *sqlRuntimeVariablesStore) LoadData(ctx context.Context, id uuid.UUID) (
 }
 
 func (s *sqlRuntimeVariablesStore) DeleteForWorkflow(ctx context.Context, namespace string, workflowPath string) error {
+	workflowPath = path.Clean("/" + workflowPath)
 	res := s.db.WithContext(ctx).Exec(
 		`DELETE FROM runtime_variables WHERE namespace=? AND workflow_path=?`,
 		namespace, workflowPath)
@@ -298,6 +308,9 @@ func (s *sqlRuntimeVariablesStore) DeleteForWorkflow(ctx context.Context, namesp
 }
 
 func (s *sqlRuntimeVariablesStore) SetWorkflowPath(ctx context.Context, namespace string, oldWorkflowPath string, newWorkflowPath string) error {
+	oldWorkflowPath = path.Clean("/" + oldWorkflowPath)
+	newWorkflowPath = path.Clean("/" + newWorkflowPath)
+
 	res := s.db.WithContext(ctx).Exec(
 		`UPDATE runtime_variables SET workflow_path=?, updated_at=CURRENT_TIMESTAMP WHERE namespace=? AND workflow_path=?`,
 		newWorkflowPath, namespace, oldWorkflowPath)
@@ -308,7 +321,6 @@ func (s *sqlRuntimeVariablesStore) SetWorkflowPath(ctx context.Context, namespac
 	return nil
 }
 
-// nolint:goconst
 func (s *sqlRuntimeVariablesStore) Create(ctx context.Context, variable *datastore.RuntimeVariable) (*datastore.RuntimeVariable, error) {
 	if variable.Name == "" {
 		return nil, datastore.ErrInvalidRuntimeVariableName
@@ -322,6 +334,9 @@ func (s *sqlRuntimeVariablesStore) Create(ctx context.Context, variable *datasto
 	newUUID := uuid.New()
 	args := []any{newUUID, variable.Namespace, variable.Name, variable.MimeType, variable.Data}
 
+	if variable.WorkflowPath != "" {
+		variable.WorkflowPath = path.Clean("/" + variable.WorkflowPath)
+	}
 	if variable.WorkflowPath != "" {
 		fields += ", workflow_path"
 		holders += ", ?"

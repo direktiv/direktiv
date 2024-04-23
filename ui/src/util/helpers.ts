@@ -55,20 +55,21 @@ export const logLevelToLogEntryVariant = (
   }
 };
 
-export const triggerDownloadFromBlob = ({
+export const triggerDownloadFromBase64String = ({
   filename,
-  blob,
+  base64String,
+  mimeType,
 }: {
   filename: string;
-  blob: Blob;
+  base64String: string;
+  mimeType: string;
 }) => {
-  const url = window.URL.createObjectURL(blob);
   const aTag = document.createElement("a");
-  aTag.href = url;
+  aTag.href = `data:${mimeType};base64,${base64String}`;
   aTag.download = filename;
   document.body.appendChild(aTag);
   aTag.click();
-  window.URL.revokeObjectURL(url);
+  document.body.removeChild(aTag);
 };
 
 // takes a json input string and format it with 4 spaces indentation

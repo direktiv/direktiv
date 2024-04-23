@@ -23,7 +23,7 @@ import { useNamespace, useNamespaceActions } from "~/util/store/namespace";
 
 import { Breadcrumb as BreadcrumbLink } from "~/design/Breadcrumbs";
 import Button from "~/design/Button";
-import NamespaceCreate from "../NamespaceEdit";
+import NamespaceEdit from "../NamespaceEdit";
 import { pages } from "~/util/router/pages";
 import { twMergeClsx } from "~/util/helpers";
 import { useListNamespaces } from "~/api/namespaces/query/get";
@@ -45,7 +45,7 @@ const NamespaceSelector = () => {
 
   if (!namespace) return null;
 
-  const hasResults = isSuccess && availableNamespaces?.results.length > 0;
+  const hasResults = isSuccess && availableNamespaces?.data.length > 0;
 
   const onNameSpaceChange = (namespace: string) => {
     setNamespace(namespace);
@@ -84,7 +84,7 @@ const NamespaceSelector = () => {
                     {t("components.breadcrumb.notFound")}
                   </CommandEmpty>
                   <CommandGroup>
-                    {availableNamespaces?.results.map((ns) => (
+                    {availableNamespaces?.data.map((ns) => (
                       <CommandItem
                         key={ns.name}
                         value={ns.name}
@@ -124,7 +124,7 @@ const NamespaceSelector = () => {
           </PopoverContent>
         </Popover>
         <DialogContent>
-          <NamespaceCreate close={() => setDialogOpen(false)} />
+          <NamespaceEdit close={() => setDialogOpen(false)} />
         </DialogContent>
       </Dialog>
     </BreadcrumbLink>

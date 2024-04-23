@@ -1,0 +1,37 @@
+
+/api/v2/namespaces/{namespace}/metrics/instance:
+  get:
+    tags:
+      - metrics
+    summary: Gets all notifications in a namespace
+    parameters:
+      - $ref: '../parameters.yaml#/namespace'
+      - in: query
+        name: workflowPath
+        required: true
+        schema:
+          type: string
+        description: Defined which workflow the instances will be related to.
+    responses:
+      "200":
+        description: Workflow instance metrics.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    complete:
+                      type: int
+                    failed:
+                      type: int
+                    cancelled:
+                      type: int
+                    crashed:
+                      type: int
+                    pending:
+                      type: int
+                    total:
+                      type: int

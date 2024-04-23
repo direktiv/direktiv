@@ -395,9 +395,10 @@
                           gitRef:
                             type: string
                             description: git branch name
-                          gitCommitHash:
-                            type: string(optional)
-                            description: git commit hash
+                          authType:
+                            type: string
+                            enum: [ public, ssh, token]
+                            description: this field indicated what kind of authentication is used
                           publicKey:
                             type: string(optional)
                             description: associated publish key ssh credential
@@ -443,9 +444,13 @@
                   gitRef:
                     type: string
                     description: git branch name
-                  gitCommitHash:
+                  authType:
+                    type: string
+                    enum: [ public, ssh, token ]
+                    description: this field indicated what kind of authentication is used
+                  authToken:
                     type: string(optional)
-                    description: git commit hash
+                    description: auth token used to clone git repo
                   publicKey:
                     type: string(optional)
                     description: associated publish key ssh credential
@@ -484,9 +489,10 @@
                         gitRef:
                           type: string
                           description: git branch name
-                        gitCommitHash:
-                          type: string(optional)
-                          description: git commit hash
+                        authType:
+                          type: string
+                          enum: [ public, ssh, token]
+                          description: this field indicated what kind of authentication is used
                         publicKey:
                           type: string(optional)
                           description: associated publish key ssh credential
@@ -539,9 +545,10 @@
                         gitRef:
                           type: string
                           description: git branch name
-                        gitCommitHash:
-                          type: string(optional)
-                          description: git commit hash
+                        authType:
+                          type: string
+                          enum: [ public, ssh, token]
+                          description: this field indicated what kind of authentication is used
                         publicKey:
                           type: string(optional)
                           description: associated publish key ssh credential
@@ -571,10 +578,10 @@
       "200":
         description:  object deleted successfully
 
-  put:
+  patch:
     tags:
       - namespaces
-    summary: Updates a direktiv namespace
+    summary: Patches a direktiv namespace
     parameters:
       - $ref: '../parameters.yaml#/namespace'
     requestBody:
@@ -596,9 +603,13 @@
                   gitRef:
                     type: string
                     description: git branch name
-                  gitCommitHash:
+                  authType:
+                    type: string
+                    enum: [ public, ssh, token ]
+                    description: this field indicated what kind of authentication is used
+                  authToken:
                     type: string(optional)
-                    description: git commit hash
+                    description: auth token used to clone git repo
                   publicKey:
                     type: string(optional)
                     description: associated publish key ssh credential
@@ -637,9 +648,10 @@
                         gitRef:
                           type: string
                           description: git branch name
-                        gitCommitHash:
-                          type: string(optional)
-                          description: git commit hash
+                        authType:
+                          type: string
+                          enum: [ public, ssh, token]
+                          description: this field indicated what kind of authentication is used
                         publicKey:
                           type: string(optional)
                           description: associated publish key ssh credential
@@ -1286,10 +1298,6 @@
                         type: string
                         enum: ["complete", "pending", "executing", "failed"]
                         description: string that indicate the status of the sync process
-                      type:
-                        type: string
-                        enum: ["complete", "pending", "executing", "failed"]
-                        description: string that indicate the status of the sync process
                       endedAt:
                         type: string
                         description: timestamp of process completion
@@ -1325,10 +1333,6 @@
                       type: string
                       enum: ["complete", "pending", "executing", "failed"]
                       description: string that indicate the status of the sync process
-                    type:
-                      type: string
-                      enum: ["complete", "pending", "executing", "failed"]
-                      description: string that indicate the status of the sync process
                     endedAt:
                       type: string
                       description: timestamp of process completion
@@ -1358,6 +1362,11 @@
         schema:
           type: string
         description: When set, the list will contain all variables under this instance id
+      - in: query
+        name: name
+        schema:
+          type: string
+        description:  When set, the list will contain only variables having this name. Empty list return when the filter matches to no variable
     responses:
       "200":
         description: list of direktiv variables

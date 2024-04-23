@@ -17,7 +17,7 @@ func TestConfigTargetFlowPlugin(t *testing.T) {
 		Namespace: "somerandom",
 	}
 
-	_, err := p.Configure(config, core.MagicalGatewayNamespace)
+	_, err := p.Configure(config, core.SystemNamespace)
 	assert.NoError(t, err)
 
 	_, err = p.Configure(config, "someother")
@@ -28,6 +28,6 @@ func TestConfigTargetFlowPlugin(t *testing.T) {
 
 	// no flow set, should fail
 	config = &target.WorkflowConfig{}
-	_, err = p.Configure(config, core.MagicalGatewayNamespace)
+	_, err = p.Configure(config, core.SystemNamespace)
 	assert.Error(t, err)
 }

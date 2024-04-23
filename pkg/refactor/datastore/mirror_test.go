@@ -102,6 +102,8 @@ func Test_sqlMirrorStore_Config_SetAndGet(t *testing.T) {
 	newConfig := &datastore.MirrorConfig{
 		Namespace: uuid.New().String(),
 		URL:       "some_url",
+		GitRef:    "123",
+		AuthType:  "public",
 	}
 	config, err := ds.Mirror().CreateConfig(context.Background(), newConfig)
 	if err != nil {
@@ -116,6 +118,8 @@ func Test_sqlMirrorStore_Config_SetAndGet(t *testing.T) {
 	secondConfig := &datastore.MirrorConfig{
 		Namespace: uuid.New().String(),
 		URL:       "some_url",
+		GitRef:    "123",
+		AuthType:  "public",
 	}
 	_, err = ds.Mirror().CreateConfig(context.Background(), secondConfig)
 	if err != nil {

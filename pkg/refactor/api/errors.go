@@ -12,8 +12,9 @@ import (
 )
 
 type Error struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
+	Code       string            `json:"code"`
+	Message    string            `json:"message"`
+	Validation map[string]string `json:"validation,omitempty"`
 }
 
 func writeError(w http.ResponseWriter, err *Error) {
@@ -114,6 +115,26 @@ func writeDataStoreError(w http.ResponseWriter, err error) {
 		writeError(w, &Error{
 			Code:    "resource_already_exists",
 			Message: "resource already exists",
+		})
+
+		return
+	}
+
+	if errors.Is(err, datastore.ErrDuplicatedNamespaceName) {
+		writeError(w, &Error{
+			Code:    "request_data_invalid",
+			Message: "namespace name already used",
+		})
+
+		return
+	}
+
+	var vErrs datastore.ValidationError
+	if errors.As(err, &vErrs) {
+		writeError(w, &Error{
+			Code:       "request_data_invalid",
+			Message:    "request data has invalid fields",
+			Validation: vErrs,
 		})
 
 		return

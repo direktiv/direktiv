@@ -25,7 +25,7 @@ func TestConfigRequestConvertPlugin(t *testing.T) {
 	}
 
 	p, _ := plugins.GetPluginFromRegistry(inbound.RequestConvertPluginName)
-	p2, _ := p.Configure(config, core.MagicalGatewayNamespace)
+	p2, _ := p.Configure(config, core.SystemNamespace)
 
 	configOut := p2.Config().(*inbound.RequestConvertConfig)
 	assert.Equal(t, config.OmitBody, configOut.OmitBody)
@@ -45,7 +45,7 @@ func TestExecuteRequestConvertPlugin(t *testing.T) {
 	r = r.WithContext(context.WithValue(r.Context(), plugins.URLParamCtxKey, urlParams))
 
 	p, _ := plugins.GetPluginFromRegistry(inbound.RequestConvertPluginName)
-	p2, _ := p.Configure(&inbound.RequestConvertConfig{}, core.MagicalGatewayNamespace)
+	p2, _ := p.Configure(&inbound.RequestConvertConfig{}, core.SystemNamespace)
 
 	w := httptest.NewRecorder()
 	p2.ExecutePlugin(nil, w, r)
@@ -66,7 +66,7 @@ func TestExecuteRequestConvertPluginNoContent(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	p, _ := plugins.GetPluginFromRegistry(inbound.RequestConvertPluginName)
-	p2, _ := p.Configure(&inbound.RequestConvertConfig{}, core.MagicalGatewayNamespace)
+	p2, _ := p.Configure(&inbound.RequestConvertConfig{}, core.SystemNamespace)
 
 	p2.ExecutePlugin(nil, w, r)
 
@@ -86,7 +86,7 @@ func TestExecuteRequestConvertPluginBinaryContent(t *testing.T) {
 		strings.NewReader("NONJSON"))
 
 	p, _ := plugins.GetPluginFromRegistry(inbound.RequestConvertPluginName)
-	p2, _ := p.Configure(&inbound.RequestConvertConfig{}, core.MagicalGatewayNamespace)
+	p2, _ := p.Configure(&inbound.RequestConvertConfig{}, core.SystemNamespace)
 
 	w := httptest.NewRecorder()
 	p2.ExecutePlugin(nil, w, r)
@@ -112,7 +112,7 @@ func TestExecuteRequestConvertPluginSkip(t *testing.T) {
 		OmitQueries: true,
 		OmitBody:    true,
 	}
-	p2, _ := p.Configure(config, core.MagicalGatewayNamespace)
+	p2, _ := p.Configure(config, core.SystemNamespace)
 
 	w := httptest.NewRecorder()
 	p2.ExecutePlugin(nil, w, r)
@@ -141,7 +141,7 @@ func TestExecuteRequestConvertPluginConsumer(t *testing.T) {
 		OmitQueries: true,
 		OmitBody:    true,
 	}
-	p2, _ := p.Configure(config, core.MagicalGatewayNamespace)
+	p2, _ := p.Configure(config, core.SystemNamespace)
 
 	w := httptest.NewRecorder()
 	p2.ExecutePlugin(&core.ConsumerFile{Username: "hello", Tags: []string{"tag1"}}, w, r)

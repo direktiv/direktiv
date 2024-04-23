@@ -46,6 +46,7 @@ func cryptDecryptConfig(config *datastore.MirrorConfig, key string, encrypt bool
 	*resultConfig = *config
 
 	targets := []*string{
+		&resultConfig.AuthToken,
 		&resultConfig.PrivateKeyPassphrase,
 		&resultConfig.PrivateKey,
 	}
@@ -78,6 +79,11 @@ func (s sqlMirrorStore) CreateConfig(ctx context.Context, config *datastore.Mirr
 		return nil, err
 	}
 
+	config.Normalize()
+	if errs := newConfig.Validate(); len(errs) > 0 {
+		return nil, errs
+	}
+
 	res := s.db.WithContext(ctx).Table("mirror_configs").Create(&newConfig)
 	if res.Error != nil {
 		return nil, res.Error
@@ -92,14 +98,19 @@ func (s sqlMirrorStore) UpdateConfig(ctx context.Context, config *datastore.Mirr
 		return nil, err
 	}
 
+	config.Normalize()
+	if errs := config.Validate(); len(errs) > 0 {
+		return nil, errs
+	}
+
 	res := s.db.WithContext(ctx).Table("mirror_configs").
 		Where("namespace", config.Namespace).
 		Updates(map[string]interface{}{
 			"url":                    config.URL,
 			"git_ref":                config.GitRef,
-			"git_commit_hash":        config.GitCommitHash,
 			"public_key":             config.PublicKey,
 			"private_key":            config.PrivateKey,
+			"auth_token":             config.AuthToken,
 			"private_key_passphrase": config.PrivateKeyPassphrase,
 			"insecure":               config.Insecure,
 		})
@@ -114,6 +125,21 @@ func (s sqlMirrorStore) UpdateConfig(ctx context.Context, config *datastore.Mirr
 	}
 
 	return s.GetConfig(ctx, config.Namespace)
+}
+
+func (s sqlMirrorStore) DeleteConfig(ctx context.Context, namespace string) error {
+	res := s.db.WithContext(ctx).Exec(`DELETE FROM mirror_configs WHERE namespace=?`, namespace)
+	if res.Error != nil {
+		return res.Error
+	}
+	if res.RowsAffected == 0 {
+		return datastore.ErrNotFound
+	}
+	if res.RowsAffected != 1 {
+		return fmt.Errorf("unexpected gorm delete count, got: %d, want: %d", res.RowsAffected, 1)
+	}
+
+	return nil
 }
 
 func (s sqlMirrorStore) GetConfig(ctx context.Context, namespace string) (*datastore.MirrorConfig, error) {

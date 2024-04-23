@@ -76,6 +76,7 @@ function makeDummyNamespace (name) {
 function expectDummyNamespace (name) {
 	return {
 		name,
+		isSystemNamespace: false,
 		mirror: null,
 		...timestamps,
 	}
