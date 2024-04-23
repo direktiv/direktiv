@@ -1,59 +1,31 @@
 import { Card } from "~/design/Card";
+import Donut from "./Donut";
 import { NoResult } from "~/design/Table";
 import { PieChart } from "lucide-react";
 import RefreshButton from "~/design/RefreshButton";
-import SuccessFailure from "./SuccessFailure";
-import { useMetrics } from "~/api/tree/query/metrics";
+import { useMetrics } from "~/api/metrics/query/metrics";
 import { useTranslation } from "react-i18next";
 
 const Metrics = ({ workflow }: { workflow: string }) => {
   const { t } = useTranslation();
 
-  const {
-    data: successData,
-    isFetching: isFetchingSuccessful,
-    refetch: refetchSuccessful,
-  } = useMetrics({
+  const { data, isFetching, refetch } = useMetrics({
     path: workflow,
-    type: "successful",
   });
-  const {
-    data: failedData,
-    isFetching: isFetchingFailed,
-    refetch: refetchFailed,
-  } = useMetrics({
-    path: workflow,
-    type: "failed",
-  });
-
-  const successful = Number(successData?.results[0]?.value[1]);
-  const failed = Number(failedData?.results[0]?.value[1]);
-  const metrics =
-    successful || failed
-      ? {
-          successful: successful || 0,
-          failed: failed || 0,
-        }
-      : undefined;
-
-  const isFetchingMetrics = isFetchingFailed || isFetchingSuccessful;
-
-  const refetchMetrics = () => {
-    refetchSuccessful();
-    refetchFailed();
-  };
 
   const MetricsRefetchButton = () => (
     <RefreshButton
       icon
       size="sm"
       variant="ghost"
-      disabled={isFetchingMetrics}
+      disabled={isFetching}
       onClick={() => {
-        refetchMetrics();
+        refetch();
       }}
     />
   );
+
+  const metrics = data?.data;
 
   return (
     <Card className="flex flex-col">
@@ -65,7 +37,7 @@ const Metrics = ({ workflow }: { workflow: string }) => {
         <MetricsRefetchButton />
       </div>
       {metrics ? (
-        <SuccessFailure data={metrics} />
+        <Donut data={metrics} />
       ) : (
         <NoResult icon={PieChart}>
           {t("pages.explorer.tree.workflow.overview.metrics.noResult")}
