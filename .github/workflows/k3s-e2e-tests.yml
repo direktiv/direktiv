@@ -67,7 +67,6 @@ jobs:
             "gateway/",
             "kubernetes/",
             "logparser/",
-            "mirror/",
             "namespaces/",
             "metrics/",
             "notifications/",
