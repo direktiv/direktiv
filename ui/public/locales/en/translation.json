@@ -157,7 +157,8 @@
               "header": "Success / failure rate",
               "successful": "complete: {{percentage}}%",
               "failed": "failed: {{percentage}}%",
-              "noResult": "no data available"
+              "noResult": "no data available",
+              "loading": "loading..."
             },
             "services": {
               "header": "Workflow services"

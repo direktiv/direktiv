@@ -9,7 +9,7 @@ import { useTranslation } from "react-i18next";
 const Metrics = ({ workflow }: { workflow: string }) => {
   const { t } = useTranslation();
 
-  const { data, isFetching, refetch } = useMetrics({
+  const { data, isFetching, isFetched, refetch } = useMetrics({
     path: workflow,
   });
 
@@ -25,7 +25,7 @@ const Metrics = ({ workflow }: { workflow: string }) => {
     />
   );
 
-  const metrics = data?.data;
+  const metrics = isFetched && data?.data;
 
   return (
     <Card className="flex flex-col">
@@ -40,7 +40,9 @@ const Metrics = ({ workflow }: { workflow: string }) => {
         <Donut data={metrics} />
       ) : (
         <NoResult icon={PieChart}>
-          {t("pages.explorer.tree.workflow.overview.metrics.noResult")}
+          {isFetched
+            ? t("pages.explorer.tree.workflow.overview.metrics.noResult")
+            : t("pages.explorer.tree.workflow.overview.metrics.loading")}
         </NoResult>
       )}
     </Card>
