@@ -8,7 +8,7 @@ import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 
 const getMetrics = apiFactory({
-  url: ({ namespace, path }: { namespace: string; path?: string }) =>
+  url: ({ namespace, path }: { namespace: string; path: string }) =>
     `/api/v2/namespaces/${namespace}/metrics/instances?workflowPath=${forceLeadingSlash(
       path
     )}`,
@@ -27,7 +27,7 @@ const fetchMetrics = async ({
     },
   });
 
-export const useMetrics = ({ path }: { path?: string }) => {
+export const useMetrics = ({ path }: { path: string }) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
 
