@@ -5,7 +5,6 @@ go 1.22
 require (
 	github.com/bbuck/go-lexer v1.0.0
 	github.com/caarlos0/env/v10 v10.0.0
-	github.com/cloudevents/sdk-go/binding/format/protobuf/v2 v2.14.0
 	github.com/cloudevents/sdk-go/v2 v2.14.0
 	github.com/docker/docker v24.0.7+incompatible
 	github.com/dop251/goja v0.0.0-20231027120936-b396bb4c349d
