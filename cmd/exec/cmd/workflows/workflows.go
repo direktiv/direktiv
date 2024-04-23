@@ -221,12 +221,26 @@ func recurseMkdirParent(path string) error {
 
 	for i := range dirs {
 		createPath := strings.Join(dirs[:i+1], "/")
-		urlDir := fmt.Sprintf("%s/tree/%s?op=create-directory", root.UrlPrefix, strings.Trim(createPath, "/"))
+		urlDir := fmt.Sprintf("%s/files/%s", root.UrlPrefixV2, strings.Trim(createPath, "/"))
+
+		jsonData, err := json.Marshal(struct {
+			Name string `json:"name"`
+			Typ  string `json:"type"`
+		}{
+			Name: strings.Trim(createPath, "/"),
+			Typ:  "directory",
+		})
+		if err != nil {
+			fmt.Println("Error marshaling JSON:", err)
+
+			return fmt.Errorf("failed to create request file: %w", err)
+		}
+
 		req, err := http.NewRequestWithContext(
 			context.Background(),
-			http.MethodPut,
+			http.MethodPost,
 			urlDir,
-			nil,
+			bytes.NewBuffer(jsonData),
 		)
 		if err != nil {
 			return fmt.Errorf("failed to create request file: %w", err)
