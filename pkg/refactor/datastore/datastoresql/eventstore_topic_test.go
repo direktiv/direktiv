@@ -12,17 +12,46 @@ import (
 )
 
 func Test_TopicAddGet(t *testing.T) {
+	// Create a mock database
+	db, err := database.NewMockGorm()
+	if err != nil {
+		t.Fatalf("unexpected NewMockGorm() error: %v", err)
+	}
+
+	// Create a new SQL data store
+	store := datastoresql.NewSQLStore(db, "some key")
+
+	// Generate test data
 	ns := uuid.New()
 	nsName := ns.String()
 	eID := uuid.New()
-	db, err := database.NewMockGorm()
+	listeningForEventType := "a"
+	topicName := ns.String() + "-" + listeningForEventType
+
+	// Add event listener
+	err = addEventListener(t, store.EventListener(), eID, ns)
 	if err != nil {
-		t.Fatalf("unepxected NewMockGorm() error = %v", err)
+		t.Fatal(err)
 	}
-	store := datastoresql.NewSQLStore(db, "some key")
-	topics := store.EventListenerTopics()
-	listeners := store.EventListener()
-	err = listeners.Append(context.Background(), &events.EventListener{
+
+	// Add topic
+	err = addTopic(t, store.EventListenerTopics(), ns, nsName, eID, topicName, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Retrieve listeners for the topic
+	res, err := store.EventListenerTopics().GetListeners(context.Background(), topicName)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Assert results
+	assertListeners(t, res, ns)
+}
+
+func addEventListener(t *testing.T, listenerStore events.EventListenerStore, eID uuid.UUID, ns uuid.UUID) error {
+	err := listenerStore.Append(context.Background(), &events.EventListener{
 		ID:                          eID,
 		CreatedAt:                   time.Now().UTC(),
 		UpdatedAt:                   time.Now().UTC(),
@@ -35,21 +64,28 @@ func Test_TopicAddGet(t *testing.T) {
 		TriggerWorkflow:             uuid.New().String(),
 	})
 	if err != nil {
-		t.Error(err)
+		t.Errorf("failed to add event listener: %v", err)
+		return err
 	}
-	err = topics.Append(context.Background(), ns, nsName, eID, ns.String()+"-a", "")
+	return nil
+}
+
+func addTopic(t *testing.T, topicStore events.EventTopicsStore, ns uuid.UUID, nsName string, eID uuid.UUID, topicName string, extraInfo string) error {
+	err := topicStore.Append(context.Background(), ns, nsName, eID, topicName, extraInfo)
 	if err != nil {
-		t.Error(err)
+		t.Errorf("failed to add topic: %v", err)
+		return err
 	}
-	res, err := topics.GetListeners(context.Background(), ns.String()+"-a")
-	if err != nil {
-		t.Error(err)
-	}
-	if len(res) == 0 {
+	return nil
+}
+
+func assertListeners(t *testing.T, listeners []*events.EventListener, expectedNamespace uuid.UUID) {
+	if len(listeners) == 0 {
 		t.Error("got no results")
 	}
-	for _, el := range res {
-		if el.NamespaceID != ns {
+
+	for _, el := range listeners {
+		if el.NamespaceID != expectedNamespace {
 			t.Error("got wrong namespace")
 		}
 	}

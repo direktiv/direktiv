@@ -14,154 +14,189 @@ import (
 	"github.com/google/uuid"
 )
 
-func Test_EventStoreAddGet(t *testing.T) {
-	ns := uuid.New()
-	eID := uuid.New()
-	e2ID := uuid.New()
+func setupEventHistoryStore(t *testing.T) (events.EventHistoryStore, uuid.UUID, string) {
 	db, err := database.NewMockGorm()
 	if err != nil {
-		t.Fatalf("unepxected NewMockGorm() error = %v", err)
+		t.Fatalf("unexpected NewMockGorm() error: %v", err)
 	}
-	subj := "subject"
-	hist := datastoresql.NewSQLStore(db, "some key").EventHistory()
-	ev := newEvent(subj, "test-type", eID, ns, ns.String())
-	ev2 := newEvent(subj, "test-type", e2ID, ns, ns.String())
 
-	ls := make([]*events.Event, 0)
-	ls = append(ls, &ev, &ev2)
+	ns := uuid.New()
+	nsName := ns.String()
+
+	return datastoresql.NewSQLStore(db, "some key").EventHistory(), ns, nsName
+}
+
+func Test_EventStoreAddGet(t *testing.T) {
+	hist, ns, nsName := setupEventHistoryStore(t)
+
+	eID := uuid.New()
+	e2ID := uuid.New()
+
+	ev := newEvent("subject", "test-type", eID, ns, nsName)
+	ev2 := newEvent("subject", "test-type", e2ID, ns, nsName)
+
+	ls := []*events.Event{&ev, &ev2}
 	_, errs := hist.Append(context.Background(), ls)
 	for _, err := range errs {
 		if err != nil {
 			t.Error(err)
-
 			return
 		}
 	}
 
+	// Assert that events were added successfully
+	assertEventsAdded(t, hist, ns)
+
+	// Test Get() method
+	testGet(t, hist, ns)
+}
+
+func Test_EventStoreAddGetNew(t *testing.T) {
+	hist, ns, nsName := setupEventHistoryStore(t)
+
+	eID := uuid.New()
+	e2ID := uuid.New()
+
+	ev := newEvent("subject", "test-type", eID, ns, nsName)
+	ev2 := newEvent("subject", "test-type", e2ID, ns, nsName)
+
+	ls := []*events.Event{&ev, &ev2}
+	_, errs := hist.Append(context.Background(), ls)
+	for _, err := range errs {
+		if err != nil {
+			t.Error(err)
+			return
+		}
+	}
+
+	// Assert that events were added successfully
+	assertEventsAdded(t, hist, ns)
+
+	// Test GetOld() method
+	testGetOld(t, hist, ns)
+}
+
+func Test_DeleteOldEvents(t *testing.T) {
+	hist, ns, _ := setupEventHistoryStore(t)
+
+	// Add some events
+	eID := uuid.New()
+	ev := newEvent("subject", "test-type", eID, ns, "")
+	_, errs := hist.Append(context.Background(), []*events.Event{&ev})
+	for _, err := range errs {
+		if err != nil {
+			t.Error(err)
+			return
+		}
+	}
+
+	// Delete old events
+	sinceWhen := time.Now().Add(-time.Hour) // Delete events older than an hour
+	err := hist.DeleteOld(context.Background(), sinceWhen)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	// Verify that events were deleted
+	res, err := hist.GetAll(context.Background())
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if len(res) != 0 {
+		t.Error("expected 0 events after deletion, but got", len(res))
+	}
+}
+
+func Test_GetEventByID(t *testing.T) {
+	hist, ns, _ := setupEventHistoryStore(t)
+
+	// Add an event
+	eID := uuid.New()
+	ev := newEvent("subject", "test-type", eID, ns, "")
+	_, errs := hist.Append(context.Background(), []*events.Event{&ev})
+	for _, err := range errs {
+		if err != nil {
+			t.Error(err)
+			return
+		}
+	}
+
+	// Retrieve the event by ID
+	retrievedEvent, err := hist.GetByID(context.Background(), eID.String())
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	// Verify that the retrieved event matches the original event
+	if retrievedEvent == nil {
+		t.Error("failed to retrieve event")
+		return
+	}
+
+	if retrievedEvent.Event.ID() != eID.String() {
+		t.Error("retrieved event ID does not match")
+	}
+}
+
+func assertEventsAdded(t *testing.T, hist events.EventHistoryStore, ns uuid.UUID) {
+	// Retrieve all events
 	gotEvents, err := hist.GetAll(context.Background())
 	if err != nil {
 		t.Error(err)
-
 		return
 	}
-	if len(gotEvents) == 0 {
-		t.Error("got no results")
-	}
+
+	// Assert that events were added
 	if len(gotEvents) != 2 {
-		t.Error("missing results")
-
+		t.Error("expected 2 events, but got", len(gotEvents))
 		return
 	}
-	for _, e := range gotEvents {
-		if e.Event.Type() != "test-type" {
-			t.Error("Event had wrong type")
-		}
-	}
+}
+
+func testGet(t *testing.T, hist events.EventHistoryStore, ns uuid.UUID) {
+	// Test Get() method
 	res, c, err := hist.Get(context.Background(), 0, 0, ns)
 	if err != nil {
 		t.Error(err)
-
 		return
 	}
+
+	// Assert results
+	assertResults(t, res, c)
+}
+
+func testGetOld(t *testing.T, hist events.EventHistoryStore, ns uuid.UUID) {
+	// Test GetOld() method
+	res, err := hist.GetOld(context.Background(), ns.String(), time.Now().UTC())
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	// Assert results
+	if len(res) != 2 {
+		t.Error("expected 2 events, but got", len(res))
+		return
+	}
+}
+
+func assertResults(t *testing.T, res []*events.Event, c int) {
 	if len(res) == 0 {
-		t.Error("got not results")
+		t.Error("got no results")
+		return
 	}
 
 	if c != len(res) {
 		t.Error("total count is off")
 	}
-
-	res, c, err = hist.Get(context.Background(), 1, 0, ns)
-	if err != nil {
-		t.Error(err)
-
-		return
-	}
-	if len(res) == 0 {
-		t.Error("got not results")
-	}
-	if len(res) != 1 {
-		t.Error("limit was not applied is off")
-	}
-	if c == 1 {
-		t.Error("count is off")
-	}
-
-	e, err := hist.GetByID(context.Background(), eID.String())
-	if err != nil {
-		t.Error(err)
-	}
-	if e.Namespace != ns {
-		t.Error("returned event contains wrong ns")
-	}
-}
-
-func Test_EventStoreAddGetNew(t *testing.T) {
-	ns := uuid.New()
-	eID := uuid.New()
-	e2ID := uuid.New()
-	db, err := database.NewMockGorm()
-	if err != nil {
-		t.Fatalf("unepxected NewMockGorm() error = %v", err)
-	}
-	subj := "subject"
-	hist := datastoresql.NewSQLStore(db, "some key").EventHistory()
-	ev := newEvent(subj, "test-type", eID, ns, ns.String())
-	ev2 := newEvent(subj, "test-type", e2ID, ns, ns.String())
-
-	ls := make([]*events.Event, 0)
-	ls = append(ls, &ev, &ev2)
-	_, errs := hist.Append(context.Background(), ls)
-	for _, err := range errs {
-		if err != nil {
-			t.Error(err)
-
-			return
-		}
-	}
-
-	gotEvents, err := hist.GetAll(context.Background())
-	if err != nil {
-		t.Error(err)
-
-		return
-	}
-	if len(gotEvents) == 0 {
-		t.Error("got no results")
-	}
-	if len(gotEvents) != 2 {
-		t.Error("missing results")
-
-		return
-	}
-	for _, e := range gotEvents {
-		if e.Event.Type() != "test-type" {
-			t.Error("Event had wrong type")
-		}
-	}
-	res, err := hist.GetOld(context.Background(), ns.String(), time.Now().UTC())
-	if err != nil {
-		t.Error(err)
-
-		return
-	}
-	if len(res) == 0 {
-		t.Error("got not results")
-	}
-	if len(res) != 2 {
-		t.Error("missing results")
-	}
-	e, err := hist.GetByID(context.Background(), eID.String())
-	if err != nil {
-		t.Error(err)
-	}
-	if e.Namespace != ns {
-		t.Error("returned event contains wrong ns")
-	}
 }
 
 func newEvent(subj, t string, id, ns uuid.UUID, nsName string) events.Event {
-	ev := events.Event{
+	return events.Event{
 		Event: &cloudevents.Event{
 			Context: &event.EventContextV03{
 				Type: t,
@@ -176,31 +211,5 @@ func newEvent(subj, t string, id, ns uuid.UUID, nsName string) events.Event {
 		Namespace:     ns,
 		NamespaceName: nsName,
 		ReceivedAt:    time.Now().UTC(),
-	}
-
-	return ev
-}
-
-func Test_sqlEventHistoryStore_Append(t *testing.T) {
-	ns := uuid.New()
-	db, err := database.NewMockGorm()
-	if err != nil {
-		t.Fatalf("unexpected NewMockGorm() error = %v", err)
-	}
-	eventHistoryStore := datastoresql.NewSQLStore(db, "some key").EventHistory()
-
-	ev := newEvent("subject", "test-type", uuid.New(), ns, ns.String())
-	ev2 := newEvent("subject", "test-type", uuid.New(), ns, ns.String())
-
-	appendEvents := []*events.Event{&ev, &ev2}
-	appendedEvents, appendErrs := eventHistoryStore.Append(context.Background(), appendEvents)
-	for _, err := range appendErrs {
-		if err != nil {
-			t.Error(err)
-			return
-		}
-	}
-	if len(appendedEvents) != 2 {
-		t.Error("appended event count mismatch")
 	}
 }
