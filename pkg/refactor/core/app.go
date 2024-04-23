@@ -8,6 +8,8 @@ import (
 
 var ErrNotFound = errors.New("ErrNotFound")
 
+const SystemNamespace = "system"
+
 // nolint:revive,stylecheck
 type Config struct {
 	DirektivNamespace string `env:"DIREKTIV_NAMESPACE"`
@@ -25,9 +27,11 @@ type Config struct {
 
 	FunctionsTimeout int `env:"DIREKTIV_FUNCTIONS_TIMEOUT" envDefault:"7200"`
 
-	Prometheus     string `env:"DIREKTIV_PROMETHEUS_BACKEND"`
-	OpenTelemetry  string `env:"DIREKTIV_OPEN_TELEMETRY_BACKEND"`
-	EnableEventing bool   `env:"DIREKTIV_ENABLE_EVENTING"`
+	Prometheus    string `env:"DIREKTIV_PROMETHEUS_BACKEND"`
+	OpenTelemetry string `env:"DIREKTIV_OPEN_TELEMETRY_BACKEND"`
+
+	// Todo: Yassir, delete this entirely in cycle6.
+	// EnableEventing bool   `env:"DIREKTIV_ENABLE_EVENTING"`
 
 	EnableDocker bool `env:"DIREKITV_ENABLE_DOCKER"`
 

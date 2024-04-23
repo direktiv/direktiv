@@ -4,7 +4,7 @@ import common from '../common'
 import request from '../common/request'
 import { retry10 } from '../common/retry'
 
-const testNamespace = 'gateway'
+const testNamespace = 'system'
 const limitedNamespace = 'limited_namespace'
 
 const workflow = `

@@ -21,7 +21,7 @@ type FactoryParams<TUrlParams, TSchema> = {
 
 type ApiParams<TPayload, THeaders, TUrlParams> = {
   apiKey?: string;
-  payload?: TPayload extends undefined ? undefined : TPayload;
+  payload?: TPayload;
   headers?: THeaders extends undefined ? undefined : THeaders;
   urlParams: TUrlParams;
 };
@@ -76,8 +76,17 @@ const defaultResponseParser: ResponseParser = async ({ res, schema }) => {
  * resonse.
  * @returns a Promise that resolves to the zod parsed response.
  */
+
 export const apiFactory =
-  <TSchema, TPayload, THeaders, TUrlParams>({
+  <
+    TPayload = unknown,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    TSchema = any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    THeaders = any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    TUrlParams = any
+  >({
     url,
     method,
     schema,

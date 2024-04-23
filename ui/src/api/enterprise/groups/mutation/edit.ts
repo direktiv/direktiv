@@ -9,7 +9,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
-const editGroup = apiFactory({
+const editGroup = apiFactory<GroupFormSchemaType>({
   url: ({
     namespace,
     baseUrl,

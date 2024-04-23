@@ -69,6 +69,8 @@ jobs:
             "logparser/",
             "mirror/",
             "namespaces/",
+            "metrics/",
+            "notifications/",
             "registry/",
             "secrets/",
             "services/",

@@ -12,7 +12,7 @@ import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 import { varKeys } from "..";
 
-const updateVar = apiFactory({
+const updateVar = apiFactory<VarFormCreateEditSchemaType>({
   url: ({
     baseUrl,
     namespace,

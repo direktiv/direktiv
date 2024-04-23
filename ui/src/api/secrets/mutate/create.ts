@@ -14,7 +14,7 @@ import { useTranslation } from "react-i18next";
 
 type CreateSecretParams = { baseUrl?: string; namespace: string };
 
-export const createSecret = apiFactory({
+export const createSecret = apiFactory<SecretFormCreateEditSchemaType>({
   url: ({ baseUrl, namespace }: CreateSecretParams) =>
     `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/secrets`,
   method: "POST",
