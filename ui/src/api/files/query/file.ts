@@ -8,9 +8,19 @@ import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 import useQueryWithPermissions from "~/api/useQueryWithPermissions";
 
-const getFile = apiFactory({
-  url: ({ namespace, path }: { namespace: string; path?: string }) =>
-    `/api/v2/namespaces/${namespace}/files${forceLeadingSlash(path)}`,
+export const getFile = apiFactory({
+  url: ({
+    namespace,
+    path,
+    baseUrl,
+  }: {
+    namespace: string;
+    path?: string;
+    baseUrl?: string;
+  }) =>
+    `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/files${forceLeadingSlash(
+      path
+    )}`,
   method: "GET",
   schema: FileListSchema,
 });
