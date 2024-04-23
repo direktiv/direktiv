@@ -8,8 +8,7 @@ import { useTranslation } from "react-i18next";
 
 const MirrorBreadcrumb = () => {
   const namespace = useNamespace();
-  const { isMirrorPage, isActivityDetailPage, activity } =
-    pages.mirror.useParams();
+  const { isMirrorPage, isSyncDetailPage, sync } = pages.mirror.useParams();
   const { icon: Icon } = pages.mirror;
   const { t } = useTranslation();
 
@@ -28,19 +27,19 @@ const MirrorBreadcrumb = () => {
           {t("components.breadcrumb.mirror")}
         </Link>
       </BreadcrumbLink>
-      {isActivityDetailPage && activity ? (
+      {isSyncDetailPage && sync ? (
         <BreadcrumbLink>
           <GitCompare aria-hidden="true" />
           <Link
             to={pages.mirror.createHref({
               namespace,
-              activity,
+              sync,
             })}
           >
-            {activity.slice(0, 8)}
+            {sync.slice(0, 8)}
           </Link>
           <CopyButton
-            value={activity}
+            value={sync}
             buttonProps={{
               variant: "outline",
               className: "hidden group-hover:inline-flex",
