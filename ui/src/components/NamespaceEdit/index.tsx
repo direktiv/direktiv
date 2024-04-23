@@ -5,10 +5,14 @@ import {
   DialogTitle,
 } from "~/design/Dialog";
 import { GitCompare, Home, PlusCircle, Save } from "lucide-react";
-import { MirrorFormType, MirrorInfoSchemaType } from "~/api/tree/schema/mirror";
+import {
+  MirrorFormType,
+  getAuthTypeFromFormType,
+} from "~/api/namespaces/schema/mirror/formType";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { Tabs, TabsList, TabsTrigger } from "~/design/Tabs";
 import { useEffect, useState } from "react";
+import { useNamespace, useNamespaceActions } from "~/util/store/namespace";
 
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
@@ -18,16 +22,17 @@ import FormTypeSelect from "./FormTypeSelect";
 import InfoTooltip from "./InfoTooltip";
 import Input from "~/design/Input";
 import { InputWithButton } from "~/design/InputWithButton";
-import { MirrorValidationSchema } from "~/api/tree/schema/mirror/validation";
+import { MirrorSchemaType } from "~/api/namespaces/schema/mirror";
+import { MirrorValidationSchema } from "~/api/namespaces/schema/mirror/validation";
 import { Textarea } from "~/design/TextArea";
 import { fileNameSchema } from "~/api/tree/schema/node";
 import { pages } from "~/util/router/pages";
 import { useCreateNamespace } from "~/api/namespaces/mutate/createNamespace";
 import { useListNamespaces } from "~/api/namespaces/query/get";
-import { useNamespaceActions } from "~/util/store/namespace";
 import { useNavigate } from "react-router-dom";
+import { useSync } from "~/api/syncs/mutate/sync";
 import { useTranslation } from "react-i18next";
-import { useUpdateMirror } from "~/api/tree/mutate/updateMirror";
+import { useUpdateNamespace } from "~/api/namespaces/mutate/updateNamespace";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -35,30 +40,39 @@ type FormInput = {
   name: string;
   formType: MirrorFormType;
   url: string;
-  ref: string;
-  passphrase: string;
+  gitRef: string;
+  authToken: string;
   publicKey: string;
   privateKey: string;
+  privateKeyPassphrase: string;
   insecure: boolean;
 };
 
+/**
+ * Form for creating or editing a namespace. Since the namespace name cannot be changed,
+ * editing only makes sense to update the mirror definition.
+ * @param mirror if present, the form assumes an existing namespace's mirror is edited.
+ * If mirror is not present, the form will create a new namespace.
+ */
 const NamespaceEdit = ({
   mirror,
   close,
 }: {
-  mirror?: MirrorInfoSchemaType;
+  mirror?: MirrorSchemaType;
   close: () => void;
 }) => {
   // note that isMirror is initially redundant with !isNew, but
   // isMirror may change through user interaction.
   const [isMirror, setIsMirror] = useState(!!mirror);
   const isNew = !mirror;
-  const { data } = useListNamespaces();
+  const { data: namespaces } = useListNamespaces();
+  const { mutate: sync } = useSync();
   const { setNamespace } = useNamespaceActions();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const namespace = useNamespace();
 
-  const existingNamespaces = data?.results.map((n) => n.name) || [];
+  const existingNamespaces = namespaces?.data.map((n) => n.name) || [];
 
   const newNameSchema = fileNameSchema.and(
     z.string().refine((name) => !existingNamespaces.some((n) => n === name), {
@@ -66,15 +80,20 @@ const NamespaceEdit = ({
     })
   );
 
-  const baseSchema = z.object({ name: isNew ? newNameSchema : z.string() });
+  const baseSchema = isNew
+    ? z.object({
+        name: newNameSchema,
+      })
+    : z.object({});
+
   const mirrorSchema = baseSchema.and(MirrorValidationSchema);
 
   let initialFormType: MirrorFormType = "public";
 
-  if (mirror?.info.url.startsWith("git@")) {
-    initialFormType = "keep-ssh";
-  } else if (mirror?.info.passphrase) {
+  if (mirror?.authType === "token") {
     initialFormType = "keep-token";
+  } else if (mirror?.authType === "ssh") {
+    initialFormType = "keep-ssh";
   }
 
   const {
@@ -83,16 +102,15 @@ const NamespaceEdit = ({
     setValue,
     trigger,
     watch,
-    formState: { dirtyFields, errors, isValid, isSubmitted },
+    formState: { isDirty, errors, isValid, isSubmitted },
   } = useForm<FormInput>({
     resolver: zodResolver(isMirror ? mirrorSchema : baseSchema),
     defaultValues: mirror
       ? {
           formType: initialFormType,
-          name: mirror.namespace,
-          url: mirror.info.url,
-          ref: mirror.info.ref,
-          insecure: mirror.info.insecure,
+          url: mirror.url,
+          gitRef: mirror.gitRef,
+          insecure: mirror.insecure,
         }
       : {
           formType: initialFormType,
@@ -100,27 +118,31 @@ const NamespaceEdit = ({
         },
   });
 
-  // For some strange reason, useForm's formState.isDirty doesn't react when
-  // the field "ref" becomes dirty, even though it is registered in dirtyFields.
-  // So as a workaround, we infer isDirty from dirtyFields.
-  const isDirty = Object.values(dirtyFields).some((value) => value === true);
-
   const formType: MirrorFormType = watch("formType");
   const insecure: boolean = watch("insecure");
 
   const { mutate: createNamespace, isLoading } = useCreateNamespace({
     onSuccess: (data) => {
-      setNamespace(data.namespace.name);
-      navigate(
-        pages.explorer.createHref({
-          namespace: data.namespace.name,
-        })
-      );
+      setNamespace(data.data.name);
+      if (isMirror) {
+        sync({ namespace: data.data.name });
+        navigate(
+          pages.mirror.createHref({
+            namespace: data.data.name,
+          })
+        );
+      } else {
+        navigate(
+          pages.explorer.createHref({
+            namespace: data.data.name,
+          })
+        );
+      }
       close();
     },
   });
 
-  const { mutate: updateMirror } = useUpdateMirror({
+  const { mutate: updateMirror } = useUpdateNamespace({
     onSuccess: () => {
       close();
     },
@@ -128,62 +150,67 @@ const NamespaceEdit = ({
 
   const onSubmit: SubmitHandler<FormInput> = ({
     name,
-    ref,
+    gitRef,
     url,
     formType,
-    passphrase,
+    authToken,
     publicKey,
     privateKey,
+    privateKeyPassphrase,
     insecure,
   }) => {
     if (isNew) {
       return createNamespace({
         name,
         mirror: isMirror
-          ? { ref, url, passphrase, publicKey, privateKey, insecure }
+          ? {
+              authType: getAuthTypeFromFormType(formType),
+              gitRef,
+              authToken,
+              url,
+              publicKey,
+              privateKey,
+              privateKeyPassphrase,
+              insecure,
+            }
           : undefined,
       });
     }
 
+    if (!namespace) throw Error("Namespace undefined while updating mirror");
+
     let updateAuthValues = {};
+
+    // if formType is keep-token or keep-ssh, don't set any authentication props.
+    // if a different authentication type is selected, set the the relevant fields so they
+    // will be overwritten with the PATCH request.
 
     if (formType === "public") {
       updateAuthValues = {
-        passphrase: "",
-        publicKey: "",
-        privateKey: "",
-      };
-    }
-    if (formType === "keep-token") {
-      updateAuthValues = {
-        passphrase: "-",
+        authType: "public",
       };
     }
 
     if (formType === "token") {
       updateAuthValues = {
-        passphrase,
+        authType: "token",
+        authToken,
       };
     }
-    if (formType === "keep-ssh") {
-      updateAuthValues = {
-        passphrase: "-",
-        publicKey: "-",
-        privateKey: "-",
-      };
-    }
+
     if (formType === "ssh") {
       updateAuthValues = {
-        passphrase,
+        authType: "ssh",
         publicKey,
         privateKey,
+        privateKeyPassphrase,
       };
     }
 
     return updateMirror({
-      name,
+      namespace,
       mirror: {
-        ref,
+        gitRef,
         url,
         ...updateAuthValues,
         insecure,
@@ -212,7 +239,7 @@ const NamespaceEdit = ({
           {isNew
             ? t("components.namespaceEdit.title.new")
             : t("components.namespaceEdit.title.edit", {
-                namespace: mirror?.namespace,
+                namespace,
               })}
         </DialogTitle>
       </DialogHeader>
@@ -300,7 +327,7 @@ const NamespaceEdit = ({
                     id="ref"
                     data-testid="new-namespace-ref"
                     placeholder={t("components.namespaceEdit.placeholder.ref")}
-                    {...register("ref")}
+                    {...register("gitRef")}
                   />
                   <InfoTooltip>
                     {t("components.namespaceEdit.tooltip.ref")}
@@ -352,7 +379,7 @@ const NamespaceEdit = ({
                       placeholder={t(
                         "components.namespaceEdit.placeholder.token"
                       )}
-                      {...register("passphrase")}
+                      {...register("authToken")}
                     />
                     <InfoTooltip>
                       {t("components.namespaceEdit.tooltip.token")}
@@ -377,7 +404,7 @@ const NamespaceEdit = ({
                         placeholder={t(
                           "components.namespaceEdit.placeholder.passphrase"
                         )}
-                        {...register("passphrase")}
+                        {...register("privateKeyPassphrase")}
                       />
                       <InfoTooltip>
                         {t("components.namespaceEdit.tooltip.passphrase")}

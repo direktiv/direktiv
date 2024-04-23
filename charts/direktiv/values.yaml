@@ -151,9 +151,10 @@ opentelemetry:
           processors: [memory_limiter, batch]
           exporters: [logging, otlp]
 
+# Todo: Yassir, delete this entirely in cycle6.
 # -- knative eventing enabled, requires knative setup and configuration
-eventing:
-  enabled: true
+# eventing:
+#   enabled: true
 
 ingress:
   # -- 

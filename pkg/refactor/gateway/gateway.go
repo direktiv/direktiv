@@ -128,7 +128,7 @@ func (ep *gatewayManager) UpdateNamespace(ns string) {
 			}
 
 			ep.ServerPath = filepath.Join("/ns", ns, item.Path)
-			if ns == core.MagicalGatewayNamespace {
+			if ns == core.SystemNamespace {
 				ep.ServerPath = filepath.Join("/gw", item.Path)
 			}
 
@@ -199,7 +199,7 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	slog := slog.With("trace", traceID, "span", spanID, "component", "gateway")
 	slog.Info("serving gateway request")
 	chiCtx := chi.RouteContext(r.Context())
-	namespace := core.MagicalGatewayNamespace
+	namespace := core.SystemNamespace
 	routePath := chi.URLParam(r, "*")
 
 	// get namespace from URL or use magical one
