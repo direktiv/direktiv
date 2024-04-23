@@ -4,12 +4,12 @@ import regex from './regex'
 import request from './request'
 
 async function deleteAllNamespaces () {
-	const listResponse = await request(config.getDirektivHost()).get(`/api/namespaces`)
+	const listResponse = await request(config.getDirektivHost()).get(`/api/v2/namespaces`)
 	if (listResponse.statusCode !== 200)
 		throw Error(`none ok namespaces list statusCode(${ listResponse.statusCode })`)
 
-	for (const namespace of listResponse.body.results) {
-		const response = await request(config.getDirektivHost()).delete(`/api/namespaces/${ namespace.name }?recursive=true`)
+	for (const namespace of listResponse.body.data) {
+		const response = await request(config.getDirektivHost()).delete(`/api/namespaces/${ namespace.name }`)
 
 		if (response.statusCode !== 200)
 			throw Error(`none ok namespace(${ namespace.name }) delete statusCode(${ response.statusCode })`)
