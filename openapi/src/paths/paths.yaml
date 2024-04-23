@@ -363,6 +363,43 @@
 #          text/event-stream:
 #
 
+/api/v2/namespaces/{namespace}/metrics/instance:
+  get:
+    tags:
+      - metrics
+    summary: Gets all notifications in a namespace
+    parameters:
+      - $ref: '../parameters.yaml#/namespace'
+      - in: query
+        name: workflowPath
+        required: true
+        schema:
+          type: string
+        description: Defined which workflow the instances will be related to.
+    responses:
+      "200":
+        description: Workflow instance metrics.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    complete:
+                      type: int
+                    failed:
+                      type: int
+                    cancelled:
+                      type: int
+                    crashed:
+                      type: int
+                    pending:
+                      type: int
+                    total:
+                      type: int
+
 /api/v2/namespaces:
   get:
     tags:
@@ -384,6 +421,9 @@
                       name:
                         type: string
                         description: a unique string that represent name of the namespace
+                      isSystemNamespace:
+                        type: boolean
+                        description: returns true only if this is a privileged namespace with special system-wide impacts.
                       mirror:
                         type: object
                         nullable: true
@@ -478,6 +518,9 @@
                     name:
                       type: string
                       description: a unique string that represent name of the namespace
+                    isSystemNamespace:
+                        type: boolean
+                        description: returns true only if this is a privileged namespace with special system-wide impacts.
                     mirror:
                       type: object
                       nullable: true
@@ -534,6 +577,9 @@
                     name:
                       type: string
                       description: a unique name string of the namespace
+                    isSystemNamespace:
+                        type: boolean
+                        description: returns true only if this is a privileged namespace with special system-wide impacts.
                     mirror:
                       type: object
                       nullable: true
@@ -637,6 +683,9 @@
                     name:
                       type: string
                       description: a unique string that represent name of the namespace
+                    isSystemNamespace:
+                        type: boolean
+                        description: returns true only if this is a privileged namespace with special system-wide impacts.
                     mirror:
                       type: object
                       nullable: true
@@ -670,6 +719,36 @@
                     updatedAt:
                       type: string
                       description: timestamp of last updating date
+
+/api/v2/namespaces/{namespace}/notifications:
+  get:
+    tags:
+      - notifications
+    summary: Gets all notifications in a namespace
+    parameters:
+      - $ref: '../parameters.yaml#/namespace'
+    responses:
+      "200":
+        description: list of notifications
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      issue:
+                        type: string
+                        description: dynamic string for humans to read
+                      level:
+                        type: string
+                        description: enum of the notification severity level (currently only 'warning' exists)
+                      type:
+                        type: string
+                        description: one of many fixed values that can be used as by tools to categorize the notification
 
 /api/v2/namespaces/{namespace}/logs:
   get:
@@ -1606,14 +1685,14 @@
                       type: string
                       description: timestamp of last updating date
 
-/api/v2/version:
+/api/v2/status:
   get:
-    summary: Get server version information.
+    summary: Get server status information.
     tags:
     - server
     responses:
       '200': 
-        description: Server version information.
+        description: Server status information.
         content:
           application/json:
             example:
@@ -1621,5 +1700,15 @@
             schema:
               type: object
               properties:
-                data: 
-                  type: string
+                data:
+                  type: object
+                  properties:
+                    version:
+                      type: string
+                      description: a unique string that represent id of the variable
+                    isEnterprise:
+                      type: boolean
+                      description: indicates if the backend is an enterprise installation
+                    requiresAuth:
+                      type: boolean
+                      description: indicates if the backend requires auth token to authenticate requests
