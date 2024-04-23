@@ -14,12 +14,12 @@ const isEnterpriseEnvValue = process.env.VITE?.VITE_IS_ENTERPRISE;
 export const isEnterprise = () => {
   if (isEnterpriseEnvValue !== undefined) return isEnterpriseEnvValue;
 
-  let isEnterPriseWindowValue = defaultIsEnterpriseValue;
+  let isEnterpriseWindowValue = defaultIsEnterpriseValue;
   if (
     typeof window !== "undefined" &&
     typeof window._direktiv?.isEnterprise === "boolean"
   ) {
-    isEnterPriseWindowValue = window._direktiv.isEnterprise;
+    isEnterpriseWindowValue = window._direktiv.isEnterprise;
   }
-  return isEnterPriseWindowValue;
+  return isEnterpriseWindowValue;
 };
