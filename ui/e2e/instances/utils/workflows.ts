@@ -11,7 +11,7 @@ description: A simple 'delay' state that waits for 4 seconds
 states:
 - id: delay
   type: delay
-  duration: PT4S
+  duration: PT8S
   transform:
     result: finished
 `;
