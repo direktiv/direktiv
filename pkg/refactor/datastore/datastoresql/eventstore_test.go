@@ -361,7 +361,7 @@ func Test_ListenerAddDeleteGet(t *testing.T) {
 		t.Error(err)
 	}
 	if count != 1 {
-		t.Error("got wrong count")
+		t.Fatal("got wrong count")
 	}
 	if len(got) != 1 {
 		t.Error("got wrong results")

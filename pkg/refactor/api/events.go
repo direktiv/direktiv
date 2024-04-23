@@ -19,10 +19,6 @@ func (c *eventsController) mountEventHistoryRouter(r chi.Router) {
 	r.Get("/{eventID}", c.getEvent) // Get details of a single event
 }
 
-func (c *eventsController) mountEventBroadcastRouter(r chi.Router) {
-	// r.Post("broadcast", )
-}
-
 func (c *eventsController) mountEventListenerRouter(r chi.Router) {
 	r.Get("/", c.listEventListeners)                // Retrieve a list of event-listeners
 	r.Get("/{eventListenerID}", c.getEventListener) // Get details of a single event-listener
