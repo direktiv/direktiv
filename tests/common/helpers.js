@@ -20,7 +20,7 @@ async function itShouldCreateNamespace (it, expect, ns) {
 	it(`should create a new namespace ${ ns }`, async () => {
 		const res = await request(common.config.getDirektivHost())
 			.post(`/api/v2/namespaces`)
-			.send({name: ns})
+			.send({ name: ns })
 		expect(res.statusCode).toEqual(200)
 	})
 }
