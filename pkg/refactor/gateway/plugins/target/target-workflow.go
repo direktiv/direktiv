@@ -57,7 +57,7 @@ func ConfigureTargetFlowPlugin(config interface{}, ns string) (core.PluginInstan
 	}
 
 	// throw error if non magic namespace targets different namespace
-	if targetflowConfig.Namespace != ns && ns != core.MagicalGatewayNamespace {
+	if targetflowConfig.Namespace != ns && ns != core.SystemNamespace {
 		return nil, fmt.Errorf("plugin can not target different namespace")
 	}
 

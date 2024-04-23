@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
@@ -333,7 +334,8 @@ func (e *nsController) list(w http.ResponseWriter, r *http.Request) {
 func namespaceAPIObject(ns *datastore.Namespace, mConfig *datastore.MirrorConfig) any {
 	type apiObject struct {
 		*datastore.Namespace
-		Mirror any `json:"mirror"`
+		Mirror            any  `json:"mirror"`
+		IsSystemNamespace bool `json:"isSystemNamespace"`
 	}
 
 	if mConfig == nil {
@@ -369,5 +371,6 @@ func namespaceAPIObject(ns *datastore.Namespace, mConfig *datastore.MirrorConfig
 			CreatedAt: mConfig.CreatedAt,
 			UpdatedAt: mConfig.UpdatedAt,
 		},
+		IsSystemNamespace: ns.Name == core.SystemNamespace,
 	}
 }
