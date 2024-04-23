@@ -3,6 +3,7 @@ import { beforeAll, describe, expect, it } from '@jest/globals'
 import common from '../common'
 import request from '../common/request'
 import { retry50 } from '../common/retry'
+import regex from "../common/regex";
 
 const testNamespace = 'git-test-services'
 
@@ -11,15 +12,22 @@ describe('Test services crud operations', () => {
 
 	it(`should create a new git mirrored namespace`, async () => {
 		const res = await request(common.config.getDirektivHost())
-			.put(`/api/namespaces/${ testNamespace }`)
+			.post(`/api/v2/namespaces`)
 			.send({
-				url: 'https://github.com/direktiv/direktiv-examples.git',
-				ref: 'main',
-				cron: '',
-				passphrase: '',
-				publicKey: '',
-				privateKey: '',
+				name: testNamespace,
+				mirror: {
+					url: 'https://github.com/direktiv/direktiv-examples.git',
+					gitRef: 'main',
+					authType: 'public',
+				},
 			})
+		expect(res.statusCode).toEqual(200)
+	})
+
+	it(`should trigger a new sync`, async () => {
+		const res = await request(common.config.getDirektivHost())
+			.post(`/api/v2/namespaces/${ testNamespace }/syncs`)
+			.send({})
 		expect(res.statusCode).toEqual(200)
 	})
 
