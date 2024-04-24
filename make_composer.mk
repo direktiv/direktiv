@@ -38,7 +38,8 @@ docker-e2e-playwright: ## Create a local docker deployment.
 	-e NODE_TLS_REJECT_UNAUTHORIZED=0 \
     -e PLAYWRIGHT_USE_VITE=FALSE \
     -e PLAYWRIGHT_UI_BASE_URL=http://127.0.0.1:8080 \
+    -e PLAYWRITE_SHARD=1/1 \
 	-w /app/ui \
 	--net=host \
 	node:18 \
-	bash -c "yarn && npx playwright install --with-deps chromium && yarn run e2e:headless-chromium-only"
+	bash -c "yarn && npx playwright install --with-deps chromium && npx playwright test --shard=${PLAYWRITE_SHARD} --project \"chromium\"  --reporter=line"
