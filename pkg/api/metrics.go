@@ -9,10 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/gorilla/mux"
 	v1 "github.com/prometheus/client_golang/api/prometheus/v1"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // GetInodePath returns the path without the first slash.
@@ -41,40 +39,6 @@ func (h *flowHandler) queryPrometheus(ctx context.Context, str string, t time.Ti
 	}
 
 	return out, nil
-}
-
-func (h *flowHandler) MetricsSankey(w http.ResponseWriter, r *http.Request) {
-	slog.Debug("Handling request", "this", this())
-
-	ctx := r.Context()
-	namespace := mux.Vars(r)["ns"]
-	path, _ := pathAndRef(r)
-
-	// QueryParams
-	values := r.URL.Query()
-	since := values.Get("since")
-
-	var x time.Time
-	if since != "" {
-		dura, err := time.ParseDuration(since)
-		if err != nil {
-			code := http.StatusBadRequest
-			http.Error(w, "invalid 'since' parameter", code)
-			return
-		}
-		x = time.Now().UTC().Add(-1 * dura)
-	}
-
-	ts := timestamppb.New(x)
-
-	in := &grpc.WorkflowMetricsRequest{
-		Namespace:      namespace,
-		Path:           path,
-		SinceTimestamp: ts,
-	}
-
-	resp, err := h.client.WorkflowMetrics(ctx, in)
-	respond(w, resp, err)
 }
 
 func (h *flowHandler) NamespaceMetricsInvoked(w http.ResponseWriter, r *http.Request) {

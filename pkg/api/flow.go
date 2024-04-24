@@ -300,34 +300,6 @@ func (h *flowHandler) initRoutes(r *mux.Router) {
 	//     "description": "successfully got namespace metrics"
 	r.HandleFunc("/namespaces/{ns}/metrics/milliseconds", h.NamespaceMetricsMilliseconds).Name(RN_GetNamespaceMetrics).Methods(http.MethodGet)
 
-	// swagger:operation GET /api/namespaces/{namespace}/tree/{workflow}?op=metrics-sankey Metrics workflowMetricsSankey
-	// ---
-	// description: |
-	//   Get Sankey metrics of a workflow revision.
-	//   If ref query is not provided, metrics for the latest revision
-	//   will be retrieved.
-	// summary: Get Sankey metrics of a workflow revision.
-	// parameters:
-	// - in: path
-	//   name: namespace
-	//   type: string
-	//   required: true
-	//   description: 'target namespace'
-	// - in: path
-	//   name: workflow
-	//   type: string
-	//   required: true
-	//   description: 'path to target workflow'
-	// - in: query
-	//   name: ref
-	//   type: string
-	//   required: false
-	//   description: 'target workflow revision reference'
-	// responses:
-	//   '200':
-	//     "description": "successfully got workflow metrics"
-	pathHandler(r, http.MethodGet, RN_GetWorkflowMetrics, "metrics-sankey", h.MetricsSankey)
-
 	// swagger:operation GET /api/namespaces/{namespace}/instances/{instance} Instances getInstance
 	// ---
 	// description: |

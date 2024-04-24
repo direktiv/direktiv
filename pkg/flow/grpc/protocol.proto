@@ -41,7 +41,6 @@ service Flow {
 
 	//
 	rpc JQ (JQRequest) returns (JQResponse) {}
-	rpc WorkflowMetrics (WorkflowMetricsRequest) returns (WorkflowMetricsResponse) {}
 
 	// events.
 	rpc EventListeners (EventListenersRequest) returns (EventListenersResponse) {} 
