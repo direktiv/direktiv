@@ -43,15 +43,28 @@ type FindServiceWithApiRequestParams = {
   match: (service: ServiceSchemaType) => boolean;
 };
 
+type ErrorType = { response: { status?: number } };
+
 export const findServiceWithApiRequest = async ({
   namespace,
   match,
 }: FindServiceWithApiRequestParams) => {
-  const { data: services } = await getServices({
-    urlParams: {
-      baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
-      namespace,
-    },
-  });
-  return services.find(match);
+  try {
+    const { data: services } = await getServices({
+      urlParams: {
+        baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
+        namespace,
+      },
+    });
+    return services.find(match);
+  } catch (error) {
+    const typedError = error as ErrorType;
+    if (typedError.response.status === 404) {
+      // fail silently to allow for using poll() in tests
+      return false;
+    }
+    throw new Error(
+      `Unexpected error ${typedError?.response?.status} during lookup of service ${match} in namespace ${namespace}`
+    );
+  }
 };

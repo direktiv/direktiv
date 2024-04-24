@@ -25,15 +25,28 @@ type FindConsumerWithApiRequestParams = {
   match: (consumer: ConsumerSchemaType) => boolean;
 };
 
+type ErrorType = { response: { status?: number } };
+
 export const findConsumerWithApiRequest = async ({
   namespace,
   match,
 }: FindConsumerWithApiRequestParams) => {
-  const { data: consumers } = await getConsumers({
-    urlParams: {
-      baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
-      namespace,
-    },
-  });
-  return consumers.find(match);
+  try {
+    const { data: consumers } = await getConsumers({
+      urlParams: {
+        baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
+        namespace,
+      },
+    });
+    return consumers.find(match);
+  } catch (error) {
+    const typedError = error as ErrorType;
+    if (typedError.response.status === 404) {
+      // fail silently to allow for using poll() in tests
+      return false;
+    }
+    throw new Error(
+      `Unexpected error ${typedError?.response?.status} during lookup of consumer ${match} in namespace ${namespace}`
+    );
+  }
 };

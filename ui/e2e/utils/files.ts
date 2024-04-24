@@ -54,7 +54,7 @@ export const createDirectory = async ({
     headers,
   });
 
-type ErrorType = { json?: { code?: string } };
+type ErrorType = { response: { status?: number } };
 
 export const checkIfFileExists = async ({
   namespace,
@@ -79,13 +79,13 @@ export const checkIfFileExists = async ({
     return response.data.path === path;
   } catch (error) {
     const typedError = error as ErrorType;
-
-    if (typedError?.json?.code === "resource_not_found") {
+    if (typedError?.response?.status === 404) {
+      // fail silently to allow for using poll() in tests
       return false;
     }
 
     throw new Error(
-      `Unexpected error fetching ${path} in namespace ${namespace}`
+      `Unexpected error ${typedError?.response?.status} fetching ${path} in namespace ${namespace}`
     );
   }
 };

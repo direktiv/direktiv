@@ -66,15 +66,28 @@ type FindRouteWithApiRequestParams = {
   match: (route: RouteSchemaType) => boolean;
 };
 
+type ErrorType = { response: { status?: number } };
+
 export const findRouteWithApiRequest = async ({
   namespace,
   match,
 }: FindRouteWithApiRequestParams) => {
-  const { data: routes } = await getRoutes({
-    urlParams: {
-      baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
-      namespace,
-    },
-  });
-  return routes.find(match);
+  try {
+    const { data: routes } = await getRoutes({
+      urlParams: {
+        baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
+        namespace,
+      },
+    });
+    return routes.find(match);
+  } catch (error) {
+    const typedError = error as ErrorType;
+    if (typedError.response.status === 404) {
+      // fail silently to allow for using poll() in tests
+      return false;
+    }
+    throw new Error(
+      `Unexpected error ${typedError?.response?.status} during lookup of service ${match} in namespace ${namespace}`
+    );
+  }
 };
