@@ -4,37 +4,29 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"os"
 )
 
 type Logger struct {
-	// httpLogEnabled, binaryLogEnabled bool
 	LogData          bytes.Buffer
 	actionID         string
 	backendLogServer string
-
-	w io.Writer
+	io.Writer
 }
 
-type httpLogger struct {
-	backendLogServer, actionID string
-}
+var _ io.Writer = (*Logger)(nil)
 
 const (
 	devMode     = "DIREKTIV_DEV_MODE"
 	httpBackend = "DIREKTIV_HTTP_BACKEND"
 )
 
-func NewLogger(actionID string) *Logger {
-	backend := "http://localhost:8889"
-	if os.Getenv(httpBackend) != "" {
-		backend = os.Getenv(httpBackend)
-	}
-
+func NewLogger(httpBackend, actionID string) *Logger {
 	l := &Logger{
 		actionID:         actionID,
-		backendLogServer: backend,
+		backendLogServer: httpBackend,
 	}
 
 	l.SetWriterState(true)
@@ -43,35 +35,70 @@ func NewLogger(actionID string) *Logger {
 }
 
 func (l *Logger) SetWriterState(enable bool) {
-	wrs := []io.Writer{}
+	writers := []io.Writer{}
 
 	if enable {
-		wrs = append(wrs, os.Stdout, &l.LogData)
+		writers = append(writers, os.Stdout, &l.LogData)
 	}
 
 	if enable && os.Getenv(devMode) == "" {
-		wrs = append(wrs, &httpLogger{
-			actionID:         l.actionID,
-			backendLogServer: l.backendLogServer,
-		})
+		writers = append(writers, NewHTTPLogger(
+			l.backendLogServer,
+			l.actionID,
+			http.DefaultClient.Post,
+		))
 	}
 
-	l.w = io.MultiWriter(wrs...)
+	l.Writer = io.MultiWriter(writers...)
 }
 
-// nolint
-func (l *Logger) Log(format string, args ...any) {
-	l.Write([]byte(fmt.Sprintf(format+"\n", args...)))
+func (l *Logger) Logf(format string, args ...interface{}) {
+	message := fmt.Sprintf(format+"\n", args...)
+	if message == "\n" {
+		message = ""
+	}
+	_, err := l.Write([]byte(message))
+	if err != nil {
+		slog.Error("failed to log in cmd-exec", "error", err)
+	}
 }
 
 func (l *Logger) Write(p []byte) (int, error) {
-	return l.w.Write(p)
+	if l.Writer == nil {
+		return 0, fmt.Errorf("no writer set")
+	}
+
+	return l.Writer.Write(p)
 }
 
-// nolint
-func (l *httpLogger) Write(p []byte) (int, error) {
-	_, err := http.Post(fmt.Sprintf("%s/log?aid=%s",
-		l.backendLogServer, l.actionID), "plain/text", bytes.NewBuffer(p))
+var _ io.Writer = (*httpLogger)(nil)
 
-	return len(p), err
+func NewHTTPLogger(
+	backendLogServer string,
+	actionID string,
+	post func(url, contentType string, body io.Reader) (*http.Response, error),
+) io.Writer {
+	return httpLogger{
+		backendLogServer: backendLogServer,
+		actionID:         actionID,
+		post:             post,
+	}
+}
+
+type httpLogger struct {
+	backendLogServer string
+	actionID         string
+	post             func(url, contentType string, body io.Reader) (*http.Response, error)
+}
+
+func (l httpLogger) Write(p []byte) (int, error) {
+	//nolint:noctx
+	resp, err := l.post(fmt.Sprintf("%s/log?aid=%s",
+		l.backendLogServer, l.actionID), "plain/text", bytes.NewBuffer(p))
+	if err != nil {
+		return 0, err
+	}
+	defer resp.Body.Close()
+
+	return len(p), nil
 }
