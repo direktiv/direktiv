@@ -124,7 +124,6 @@ type InstanceData struct {
 	ErrorCode      string
 	Invoker        string
 	Definition     []byte
-	Settings       []byte
 	DescentInfo    []byte
 	TelemetryInfo  []byte
 	RuntimeInfo    []byte
@@ -135,6 +134,9 @@ type InstanceData struct {
 	Output         []byte
 	ErrorMessage   []byte
 	Metadata       []byte
+	InputLength    int
+	OutputLength   int
+	MetadataLength int
 }
 
 // GetNamespaceInstancesResults returns the results as well as the total number that would be returned if LIMIT & OFFSET were both zero.
@@ -156,7 +158,6 @@ type CreateInstanceDataArgs struct {
 	Input          []byte
 	LiveData       []byte
 	TelemetryInfo  []byte
-	Settings       []byte
 	DescentInfo    []byte
 	RuntimeInfo    []byte
 	ChildrenInfo   []byte

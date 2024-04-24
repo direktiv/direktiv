@@ -200,12 +200,6 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 		panic(err)
 	}
 
-	settings := &enginerefactor.InstanceSettings{}
-	settingsData, err := settings.MarshalJSON()
-	if err != nil {
-		panic(err)
-	}
-
 	liveData := marshalInstanceInputData(args.Input)
 
 	ri := &enginerefactor.InstanceRuntimeInfo{}
@@ -243,7 +237,6 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 		Input:          args.Input,
 		LiveData:       []byte(liveData),
 		TelemetryInfo:  telemetryInfo,
-		Settings:       settingsData,
 		DescentInfo:    descentInfo,
 		RuntimeInfo:    riData,
 		ChildrenInfo:   ciData,
@@ -471,12 +464,6 @@ func (engine *engine) TerminateInstance(ctx context.Context, im *instanceMemory)
 		slog.Debug("Failed to free memory during a crash", "error", err)
 	}
 
-	if im.logic != nil {
-		engine.metricsCompleteState(im, "", im.ErrorCode(), false)
-	}
-
-	engine.metricsCompleteInstance(im)
-
 	engine.WakeInstanceCaller(ctx, im)
 }
 
@@ -656,7 +643,6 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 	instanceTrackCtx := enginerefactor.WithTrack(im.WithTags(loggingCtx), enginerefactor.BuildInstanceTrack(im.instance))
 
 	if transition.NextState != "" {
-		engine.metricsCompleteState(im, transition.NextState, errCode, false)
 		slog.Debug("Transitioning to next state.",
 			enginerefactor.GetSlogAttributesWithStatus(instanceTrackCtx, core.LogRunningStatus)...)
 
@@ -932,28 +918,7 @@ func (engine *engine) reportInstanceCrashed(ctx context.Context, im *instanceMem
 func (engine *engine) UserLog(ctx context.Context, im *instanceMemory, msg string) {
 	loggingCtx := im.Namespace().WithTags(ctx)
 	instanceTrackCtx := enginerefactor.WithTrack(im.WithTags(loggingCtx), enginerefactor.BuildInstanceTrack(im.instance))
-
 	slog.Info(msg, enginerefactor.GetSlogAttributesWithStatus(instanceTrackCtx, core.LogUnknownStatus)...)
-
-	if attr := im.instance.Settings.LogToEvents; attr != "" {
-		s := msg
-		event := cloudevents.NewEvent()
-		event.SetID(uuid.New().String())
-		event.SetSource(im.instance.Instance.WorkflowPath)
-		event.SetType("direktiv.instanceLog")
-		event.SetExtension("logger", attr)
-		event.SetDataContentType("application/json")
-		err := event.SetData("application/json", s)
-		if err != nil {
-			slog.Error("failed to create cloudevent", "error", err.Error())
-		}
-
-		err = engine.events.BroadcastCloudevent(ctx, im.Namespace(), &event, 0)
-		if err != nil {
-			slog.Error("failed to broadcast cloudevent", "error", err)
-			return
-		}
-	}
 }
 
 func (engine *engine) logRunState(ctx context.Context, im *instanceMemory, wakedata []byte, err error) {

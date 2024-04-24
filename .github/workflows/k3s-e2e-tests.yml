@@ -67,7 +67,6 @@ jobs:
             "gateway/",
             "kubernetes/",
             "logparser/",
-            "mirror/",
             "namespaces/",
             "metrics/",
             "notifications/",
@@ -182,7 +181,7 @@ jobs:
 
       - name: Wait until API is healthy
         run: |
-          endpoint="http://${{ env.DIREKTIV_HOST }}/api/v2/version"
+          endpoint="http://${{ env.DIREKTIV_HOST }}/api/v2/status"
 
           for attempt in {1..20}; do
             status_code=$(curl -s -o /dev/null -w "%{http_code}" $endpoint)

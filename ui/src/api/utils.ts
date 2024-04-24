@@ -1,4 +1,4 @@
-const isEnterprise = !!process.env.VITE?.VITE_IS_ENTERPRISE;
+import { isEnterprise } from "~/config/env/utils";
 
 type AuthHeader =
   | {
@@ -9,7 +9,7 @@ type AuthHeader =
     };
 
 export const getAuthHeader = (apiKey: string): AuthHeader => {
-  if (isEnterprise) {
+  if (isEnterprise()) {
     return {
       authorization: `Bearer ${apiKey}`,
     };

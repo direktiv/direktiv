@@ -4,8 +4,6 @@ package direktiv_flow;
 
 option go_package = "github.com/direktiv/direktiv/pkg/flow/grpc";
 
-import "google/protobuf/timestamp.proto";
-
 message JQRequest {
 	string query = 1;
 	bytes data = 2;
@@ -15,26 +13,6 @@ message JQResponse {
 	string query = 1;
 	bytes data = 2;
 	repeated string results = 3;
-}
-
-message WorkflowMetricsRequest {
-	string namespace = 1;
-	string path = 2;
-	google.protobuf.Timestamp sinceTimestamp = 3;
-}
-
-message WorkflowMetricsResponse {
-	int32 totalInstancesRun = 1;
-	int32 totalInstanceMilliseconds = 2;
-	int32 successfulExecutions = 3;
-	int32 failedExecutions = 4;
-	map<string, int32> errorCodes = 5;
-	map<string, float> errorCodesRepresentation = 6;
-	int32 sampleSize = 7;
-	int32 meanInstanceMilliseconds = 8;
-	float successRate = 9;
-	float failureRate = 10;
-	repeated State states = 11;
 }
 
 message State {

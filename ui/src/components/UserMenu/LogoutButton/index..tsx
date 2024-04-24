@@ -1,9 +1,8 @@
 import EnterpriseLogoutButton from "./EnterpriseLogout";
 import OpenSourceLogoutButton from "./OpenSourceLogout";
+import { isEnterprise } from "~/config/env/utils";
 
-const LogoutButton = () => {
-  const isEnterprise = !!process.env.VITE?.VITE_IS_ENTERPRISE;
-  return isEnterprise ? <EnterpriseLogoutButton /> : <OpenSourceLogoutButton />;
-};
+const LogoutButton = () =>
+  isEnterprise() ? <EnterpriseLogoutButton /> : <OpenSourceLogoutButton />;
 
 export default LogoutButton;
