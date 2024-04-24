@@ -124,7 +124,7 @@ func generateActionInput(ctx context.Context, args *generateActionInputArgs) ([]
 	var err error
 	var input interface{}
 
-	input, err = jqObject(args.Source, "jq(.)")
+	input, err = jqObject(args.Source, "jq(.)") //nolint:contextcheck
 	if err != nil {
 		return nil, nil, err
 	}
@@ -141,12 +141,12 @@ func generateActionInput(ctx context.Context, args *generateActionInputArgs) ([]
 	}
 
 	if args.Action.Input == nil {
-		input, err = jqOne(m, "jq(.)")
+		input, err = jqOne(m, "jq(.)") //nolint:contextcheck
 		if err != nil {
 			return nil, nil, err
 		}
 	} else {
-		input, err = jqOne(m, args.Action.Input)
+		input, err = jqOne(m, args.Action.Input) //nolint:contextcheck
 		if err != nil {
 			return nil, nil, err
 		}
@@ -165,13 +165,13 @@ func generateActionInput(ctx context.Context, args *generateActionInputArgs) ([]
 	for idx := range args.Files {
 		file := args.Files[idx]
 
-		s, err := jqString(m, file.As)
+		s, err := jqString(m, file.As) //nolint:contextcheck
 		if err != nil {
 			return nil, nil, wrap(err, fmt.Sprintf("error evaluating jq in 'as' for function file %d: %%w", idx))
 		}
 		file.As = s
 
-		s, err = jqString(m, file.Key)
+		s, err = jqString(m, file.Key) //nolint:contextcheck
 		if err != nil {
 			return nil, nil, wrap(err, fmt.Sprintf("error evaluating jq in 'key' for function file %d: %%w", idx))
 		}
@@ -185,7 +185,7 @@ func generateActionInput(ctx context.Context, args *generateActionInputArgs) ([]
 			return nil, nil, derrors.NewCatchableError(ErrCodeInvalidVariableKey, "invalid 'key' for function file %d: must start with a letter and only contain letters, numbers and '_'", idx)
 		}
 
-		s, err = jqString(m, file.Scope)
+		s, err = jqString(m, file.Scope) //nolint:contextcheck
 		if err != nil {
 			return nil, nil, wrap(err, fmt.Sprintf("error evaluating jq in 'scope' for function file %d: %%w", idx))
 		}
@@ -202,7 +202,7 @@ func generateActionInput(ctx context.Context, args *generateActionInputArgs) ([]
 			return nil, nil, derrors.NewCatchableError(ErrCodeInvalidVariableScope, "invalid 'scope' for function file %d: %s", idx, file.Scope)
 		}
 
-		s, err = jqString(m, file.Type)
+		s, err = jqString(m, file.Type) //nolint:contextcheck
 		if err != nil {
 			return nil, nil, wrap(err, fmt.Sprintf("error evaluating jq in 'type' for function file %d: %%w", idx))
 		}

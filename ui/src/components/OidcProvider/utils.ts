@@ -5,20 +5,19 @@ import { AuthProviderProps } from "react-oidc-context";
 const isBrowser = typeof window !== "undefined";
 
 const rootUrl = isBrowser
-  ? `${window.location.protocol}//${window.location.host}`
-  : "";
+  ? `${window.location.protocol}//${window.location.host}/`
+  : "/";
 
 const realm = "direktiv";
 const client_id = "direktiv";
 
-const appFolder = process.env.VITE?.VITE_BASE ?? "/";
 const authority = `${rootUrl}/auth/realms/${realm}`;
 
 export const oidcConfig: AuthProviderProps = {
   authority,
   client_id,
   post_logout_redirect_uri: rootUrl,
-  redirect_uri: `${rootUrl}${appFolder}`,
+  redirect_uri: rootUrl,
   /**
    * removes code and state from url after signin
    * see https://github.com/authts/react-oidc-context/blob/f175dcba6ab09871b027d6a2f2224a17712b67c5/src/AuthProvider.tsx#L20-L30

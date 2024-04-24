@@ -38,7 +38,7 @@ func (engine *engine) enqueueInstanceMessage(ctx context.Context, id uuid.UUID, 
 	}
 
 	// NOTE: we don't do serializable here. We don't need to. This is a best effort logic.
-	tx, err := engine.flow.beginSqlTx(ctx) /*&sql.TxOptions{
+	tx, err := engine.flow.beginSQLTx(ctx) /*&sql.TxOptions{
 		Isolation: sql.LevelSerializable,
 	}*/if err != nil {
 		return err
@@ -77,7 +77,7 @@ func (engine *engine) enqueueInstanceMessage(ctx context.Context, id uuid.UUID, 
 	}
 
 	if idata.Server == engine.ID && time.Now().Add(-engineOwnershipTimeout).Before(idata.UpdatedAt) {
-		go engine.instanceMessagesChannelHandler(string(msg))
+		go engine.instanceMessagesChannelHandler(string(msg)) //nolint:contextcheck
 	} else {
 		err = engine.pBus.Publish(engineInstanceMessagesChannel, string(msg))
 		if err != nil {

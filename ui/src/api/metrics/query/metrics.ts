@@ -1,50 +1,33 @@
 import { QueryFunctionContext, useQuery } from "@tanstack/react-query";
 
-import { MetricsListSchema } from "../schema/metrics";
+import { MetricsResponseSchema } from "../schema";
 import { apiFactory } from "~/api/apiFactory";
 import { forceLeadingSlash } from "~/api/files/utils";
-import { treeKeys } from "..";
+import { metricsKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 
-type MetricsType = "successful" | "failed";
-
 const getMetrics = apiFactory({
-  url: ({
-    namespace,
-    path,
-    type,
-  }: {
-    namespace: string;
-    path?: string;
-    type: MetricsType;
-  }) =>
-    `/api/namespaces/${namespace}/tree${forceLeadingSlash(
+  url: ({ namespace, path }: { namespace: string; path: string }) =>
+    `/api/v2/namespaces/${namespace}/metrics/instances?workflowPath=${forceLeadingSlash(
       path
-    )}?op=metrics-${type}`,
+    )}`,
   method: "GET",
-  schema: MetricsListSchema,
+  schema: MetricsResponseSchema,
 });
 
 const fetchMetrics = async ({
-  queryKey: [{ apiKey, namespace, path, type }],
-}: QueryFunctionContext<ReturnType<(typeof treeKeys)["metrics"]>>) =>
+  queryKey: [{ apiKey, namespace, path }],
+}: QueryFunctionContext<ReturnType<(typeof metricsKeys)["metrics"]>>) =>
   getMetrics({
     apiKey,
     urlParams: {
       namespace,
       path,
-      type,
     },
   });
 
-export const useMetrics = ({
-  path,
-  type,
-}: {
-  path?: string;
-  type: MetricsType;
-}) => {
+export const useMetrics = ({ path }: { path: string }) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
 
@@ -53,10 +36,9 @@ export const useMetrics = ({
   }
 
   return useQuery({
-    queryKey: treeKeys.metrics(namespace, {
+    queryKey: metricsKeys.metrics(namespace, {
       apiKey: apiKey ?? undefined,
       path,
-      type,
     }),
     queryFn: fetchMetrics,
     enabled: !!namespace,

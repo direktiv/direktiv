@@ -130,7 +130,7 @@ func (flow *flow) InstanceVariable(ctx context.Context, req *grpc.InstanceVariab
 		return nil, err
 	}
 
-	tx, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSQLTx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -166,7 +166,7 @@ func (flow *flow) InstanceVariable(ctx context.Context, req *grpc.InstanceVariab
 	resp.TotalSize = int64(item.Size)
 	resp.MimeType = item.MimeType
 
-	if resp.TotalSize > parcelSize {
+	if resp.GetTotalSize() > parcelSize {
 		return nil, status.Error(codes.ResourceExhausted, "variable too large to return without using the parcelling API")
 	}
 	data, err := tx.DataStore().RuntimeVariables().LoadData(ctx, item.ID)
@@ -187,7 +187,7 @@ func (flow *flow) SetInstanceVariable(ctx context.Context, req *grpc.SetInstance
 		return nil, err
 	}
 
-	tx, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSQLTx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -226,6 +226,7 @@ func (flow *flow) SetInstanceVariable(ctx context.Context, req *grpc.SetInstance
 	return &resp, nil
 }
 
+//nolint:dupl
 func (flow *flow) SetInstanceVariableParcels(srv grpc.Flow_SetInstanceVariableParcelsServer) error {
 	slog.Debug("Handling gRPC request", "this", this())
 	ctx := srv.Context()
@@ -242,12 +243,12 @@ func (flow *flow) SetInstanceVariableParcels(srv grpc.Flow_SetInstanceVariablePa
 	buf := new(bytes.Buffer)
 
 	for {
-		_, err = io.Copy(buf, bytes.NewReader(req.Data))
+		_, err = io.Copy(buf, bytes.NewReader(req.GetData()))
 		if err != nil {
 			return err
 		}
 
-		if req.TotalSize <= 0 {
+		if req.GetTotalSize() <= 0 {
 			if buf.Len() >= totalSize {
 				break
 			}
@@ -258,10 +259,11 @@ func (flow *flow) SetInstanceVariableParcels(srv grpc.Flow_SetInstanceVariablePa
 			if errors.Is(err, io.EOF) {
 				break
 			}
+
 			return err
 		}
 
-		if req.TotalSize <= 0 {
+		if req.GetTotalSize() <= 0 {
 			if buf.Len() >= totalSize {
 				break
 			}

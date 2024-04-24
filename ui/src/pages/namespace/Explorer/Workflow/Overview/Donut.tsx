@@ -1,18 +1,14 @@
 import { DonutChart } from "@tremor/react";
+import { MetricsObjectSchemaType } from "~/api/metrics/schema";
 import { useTranslation } from "react-i18next";
 
-const SuccessFailure = ({
-  data,
-}: {
-  data: { successful: number; failed: number };
-}) => {
+const Donut = ({ data }: { data: MetricsObjectSchemaType }) => {
   const { t } = useTranslation();
 
-  const { successful, failed } = data;
-  const total = data.successful + data.failed;
+  const { complete, failed, total } = data;
 
   const percentages = {
-    successful: (successful / total) * 100,
+    complete: (complete / total) * 100,
     failed: (failed / total) * 100,
   };
 
@@ -22,8 +18,8 @@ const SuccessFailure = ({
       count: failed,
     },
     {
-      name: "successful",
-      count: successful,
+      name: "complete",
+      count: complete,
     },
   ];
 
@@ -41,10 +37,10 @@ const SuccessFailure = ({
         valueFormatter={valueFormatter}
         colors={["red", "emerald"]}
       />
-      <div className="flex justify-evenly">
+      <div className="flex justify-evenly gap-2 lg:gap-3">
         <div>
           {t("pages.explorer.tree.workflow.overview.metrics.successful", {
-            percentage: percentages.successful.toFixed(0),
+            percentage: percentages.complete.toFixed(0),
           })}
         </div>
         <div>
@@ -57,4 +53,4 @@ const SuccessFailure = ({
   );
 };
 
-export default SuccessFailure;
+export default Donut;

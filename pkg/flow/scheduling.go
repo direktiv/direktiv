@@ -94,7 +94,7 @@ func (engine *engine) transitionLoop(ctx context.Context, im *instanceMemory, ms
 func (engine *engine) executorLoop(ctx context.Context, im *instanceMemory) {
 	for {
 		// pop message
-		tx, err := engine.flow.beginSqlTx(ctx)
+		tx, err := engine.flow.beginSQLTx(ctx)
 		if err != nil {
 			engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", err.Error()))
 			return
@@ -109,12 +109,14 @@ func (engine *engine) executorLoop(ctx context.Context, im *instanceMemory) {
 			}
 
 			engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", err.Error()))
+
 			return
 		}
 
 		err = tx.Commit(ctx)
 		if err != nil {
 			engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", err.Error()))
+
 			return
 		}
 
@@ -129,6 +131,7 @@ func (engine *engine) InstanceYield(ctx context.Context, im *instanceMemory) {
 	if err != nil {
 		slog.Error("Failed to free memory for instance. Initiating crash sequence.", "instance", im.ID().String(), "namespace", im.Namespace(), "error", err)
 		engine.CrashInstance(ctx, im, err)
+
 		return
 	}
 }
@@ -163,6 +166,7 @@ func (engine *engine) WakeInstanceCaller(ctx context.Context, im *instanceMemory
 		})
 		if err != nil {
 			slog.Error("Failed to report action results to caller workflow.", "namespace", im.Namespace(), "instance", im.ID(), "error", err)
+
 			return
 		}
 	}
@@ -172,9 +176,6 @@ func (engine *engine) start(im *instanceMemory) {
 	namespace := im.instance.TelemetryInfo.NamespaceName
 	workflowPath := GetInodePath(im.instance.Instance.WorkflowPath)
 
-	metricsWfInvoked.WithLabelValues(namespace, workflowPath, namespace).Inc()
-	metricsWfPending.WithLabelValues(namespace, workflowPath, namespace).Inc()
-
 	ctx := context.Background()
 
 	slog.Debug("Workflow execution initiated.", "namespace", namespace, "workflow", workflowPath, "instance", im.ID())
@@ -183,16 +184,16 @@ func (engine *engine) start(im *instanceMemory) {
 	if err != nil {
 		engine.CrashInstance(ctx, im, derrors.NewUncatchableError(ErrCodeWorkflowUnparsable, "failed to parse workflow YAML: %v", err))
 		slog.Error("Failed to parse workflow YAML. Workflow execution halted.", "namespace", namespace, "workflow", workflowPath, "instance", im.ID(), "error", err)
+
 		return
 	}
-
-	//
 
 	id := im.instance.Instance.ID
 
 	ctx, err = engine.registerScheduled(ctx, id)
 	if err != nil {
 		slog.Debug("Failed to register workflow as scheduled. Workflow execution may be delayed or halted.", "namespace", namespace, "workflow", workflowPath, "instance", id, "error", err)
+
 		return
 	}
 

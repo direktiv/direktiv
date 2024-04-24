@@ -26,6 +26,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
+//nolint:gochecknoinits
 func init() {
 	gob.Register(new(event.EventContextV1))
 	gob.Register(new(event.EventContextV03))
@@ -36,12 +37,12 @@ type events struct {
 	appendStagingEvent func(ctx context.Context, events ...*pkgevents.StagingEvent) ([]*pkgevents.StagingEvent, []error)
 }
 
-func initEvents(srv *server, appendStagingEvent func(ctx context.Context, events ...*pkgevents.StagingEvent) ([]*pkgevents.StagingEvent, []error)) (*events, error) {
+func initEvents(srv *server, appendStagingEvent func(ctx context.Context, events ...*pkgevents.StagingEvent) ([]*pkgevents.StagingEvent, []error)) *events {
 	events := new(events)
-
 	events.server = srv
 	events.appendStagingEvent = appendStagingEvent
-	return events, nil
+
+	return events
 }
 
 func (events *events) Close() error {
@@ -55,68 +56,66 @@ func (events *events) handleEvent(ctx context.Context, ns uuid.UUID, nsName stri
 	slog := *slog.With("trace", traceID, "span", spanID, "namespace", nsName)
 	e := pkgevents.EventEngine{
 		WorkflowStart: func(workflowID uuid.UUID, ev ...*cloudevents.Event) {
-			// events.metrics.InsertRecord
-
 			slog.Debug("Starting workflow via CloudEvent.")
 			_, end := traceMessageTrigger(ctx, "wf: "+workflowID.String())
 			defer end()
-			events.engine.EventsInvoke(workflowID, ev...)
+			events.engine.EventsInvoke(workflowID, ev...) //nolint:contextcheck
 		},
 		WakeInstance: func(instanceID uuid.UUID, step int, ev []*cloudevents.Event) {
-			// events.metrics.InsertRecord
 			slog.Debug("invoking instance via cloudevent", "instance", instanceID)
 			_, end := traceMessageTrigger(ctx, "ins: "+instanceID.String()+" step: "+fmt.Sprint(step))
 			defer end()
-			events.engine.wakeEventsWaiter(instanceID, ev)
+			events.engine.wakeEventsWaiter(instanceID, ev) //nolint:contextcheck
 		},
 		GetListenersByTopic: func(ctx context.Context, s string) ([]*pkgevents.EventListener, error) {
 			ctx, end := traceGetListenersByTopic(ctx, s)
 			defer end()
 			res := make([]*pkgevents.EventListener, 0)
-			err := events.runSqlTx(ctx, func(tx *database.SQLStore) error {
+			err := events.runSQLTx(ctx, func(tx *database.SQLStore) error {
 				r, err := tx.DataStore().EventListenerTopics().GetListeners(ctx, s)
 				if err != nil {
 					slog.Error("Error fetching event-listener-topics.", "error", err)
 					return err
 				}
 				res = r
+
 				return nil
 			})
 			if err != nil {
 				return nil, err
 			}
+
 			return res, nil
 		},
 		UpdateListeners: func(ctx context.Context, listener []*pkgevents.EventListener) []error {
 			slog.Debug("Updating listeners starting.")
-			err := events.runSqlTx(ctx, func(tx *database.SQLStore) error {
+			err := events.runSQLTx(ctx, func(tx *database.SQLStore) error {
 				errs := tx.DataStore().EventListener().UpdateOrDelete(ctx, listener)
 				for _, err2 := range errs {
 					if err2 != nil {
 						slog.Debug("Error updating listeners.", "error", err2)
+
 						return err2
 					}
 				}
+
 				return nil
 			})
 			if err != nil {
 				return []error{fmt.Errorf("%w", err)}
 			}
 			slog.Debug("Updating listeners complete.")
+
 			return nil
 		},
 	}
 	ctx, end := traceProcessingMessage(ctx)
 	defer end()
-	// tx, err := events.beginSqlTx(ctx)
-	// if err != nil {
-	// 	return err
-	// }
+
 	e.ProcessEvents(ctx, ns, []event.Event{*ce}, func(template string, args ...interface{}) {
 		slog.Error(fmt.Sprintf(template, args...))
 	})
-	// tx.Commit(ctx)
-	metricsCloudEventsCaptured.WithLabelValues(nsName, ce.Type(), ce.Source(), nsName).Inc()
+
 	return nil
 }
 
@@ -128,7 +127,7 @@ func (flow *flow) EventListeners(ctx context.Context, req *grpc.EventListenersRe
 	var err error
 
 	totalListeners := 0
-	err = flow.runSqlTx(ctx, func(tx *database.SQLStore) error {
+	err = flow.runSQLTx(ctx, func(tx *database.SQLStore) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
 		if err != nil {
 			return err
@@ -136,12 +135,13 @@ func (flow *flow) EventListeners(ctx context.Context, req *grpc.EventListenersRe
 
 		var t int
 		var li []*pkgevents.EventListener
-		li, t, err = tx.DataStore().EventListener().Get(ctx, ns.ID, int(req.Pagination.Limit), int(req.Pagination.Offset))
+		li, t, err = tx.DataStore().EventListener().Get(ctx, ns.ID, int(req.GetPagination().GetLimit()), int(req.GetPagination().GetOffset()))
 		if err != nil {
 			return err
 		}
 		resListeners = li
 		totalListeners = t
+
 		return nil
 	})
 	if err != nil {
@@ -160,13 +160,13 @@ func (flow *flow) EventListenersStream(req *grpc.EventListenersRequest, srv grpc
 	slog.Debug("Handling gRPC request", "this", this())
 
 	ctx := srv.Context()
-	phash := ""
-	nhash := ""
+	var phash, nhash string
 
 	var ns *datastore.Namespace
 	var err error
-	err = flow.runSqlTx(ctx, func(tx *database.SQLStore) error {
+	err = flow.runSQLTx(ctx, func(tx *database.SQLStore) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+
 		return err
 	})
 	if err != nil {
@@ -179,13 +179,14 @@ resend:
 	var resListeners []*pkgevents.EventListener
 	totalListeners := 0
 
-	err = flow.runSqlTx(ctx, func(tx *database.SQLStore) error {
-		li, t, err := tx.DataStore().EventListener().Get(ctx, ns.ID, int(req.Pagination.Limit), int(req.Pagination.Offset))
+	err = flow.runSQLTx(ctx, func(tx *database.SQLStore) error {
+		li, t, err := tx.DataStore().EventListener().Get(ctx, ns.ID, int(req.GetPagination().GetLimit()), int(req.GetPagination().GetOffset()))
 		if err != nil {
 			return err
 		}
 		resListeners = li
 		totalListeners = t
+
 		return nil
 	})
 	if err != nil {
@@ -261,13 +262,15 @@ func (flow *flow) BroadcastCloudevent(ctx context.Context, in *grpc.BroadcastClo
 	}
 
 	var ns *datastore.Namespace
-	err = flow.runSqlTx(ctx, func(tx *database.SQLStore) error {
+	err = flow.runSQLTx(ctx, func(tx *database.SQLStore) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, namespace)
 		endValidation()
+
 		return err
 	})
 	if err != nil {
 		endValidation()
+
 		return nil, err
 	}
 
@@ -276,6 +279,7 @@ func (flow *flow) BroadcastCloudevent(ctx context.Context, in *grpc.BroadcastClo
 	err = flow.events.BroadcastCloudevent(ctx, ns, event, timer)
 	if err != nil {
 		endValidation()
+
 		return nil, status.Errorf(codes.Aborted, "cloudevent was not accepted: %v", err)
 	}
 
@@ -295,7 +299,7 @@ func (flow *flow) HistoricalEvent(ctx context.Context, in *grpc.HistoricalEventR
 	var cevent *pkgevents.Event
 	var ns *datastore.Namespace
 	var err error
-	err = flow.runSqlTx(ctx, func(tx *database.SQLStore) error {
+	err = flow.runSQLTx(ctx, func(tx *database.SQLStore) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, in.GetNamespace())
 		if err != nil {
 			return err
@@ -305,6 +309,7 @@ func (flow *flow) HistoricalEvent(ctx context.Context, in *grpc.HistoricalEventR
 			return err
 		}
 		cevent = evs
+
 		return nil
 	})
 	if err != nil {
@@ -327,19 +332,6 @@ func (flow *flow) HistoricalEvent(ctx context.Context, in *grpc.HistoricalEventR
 	return &resp, nil
 }
 
-// var cloudeventsOrderings = []*orderingInfo{
-// 	{
-// 		db:           "ReceivedAt",
-// 		req:          "RECEIVED",
-// 		defaultOrder: ent.Desc,
-// 	},
-// 	{
-// 		db:           "id",
-// 		req:          "ID",
-// 		defaultOrder: ent.Asc,
-// 	},
-// }
-
 const (
 	contains = "CONTAINS"
 	cr       = "CREATED"
@@ -354,32 +346,33 @@ func (flow *flow) EventHistory(ctx context.Context, req *grpc.EventHistoryReques
 	var res []*pkgevents.Event
 	var err error
 	var ns *datastore.Namespace
-	err = flow.runSqlTx(ctx, func(tx *database.SQLStore) error {
+	err = flow.runSQLTx(ctx, func(tx *database.SQLStore) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
 		if err != nil {
 			return err
 		}
 		queryParams := []string{}
-		for _, f := range req.Pagination.Filter {
-			if f.Field == cr && f.Type == after {
-				queryParams = append(queryParams, "received_after", f.Val)
+		for _, f := range req.GetPagination().GetFilter() {
+			if f.GetField() == cr && f.GetType() == after {
+				queryParams = append(queryParams, "received_after", f.GetVal())
 			}
-			if f.Field == cr && f.Type == before {
-				queryParams = append(queryParams, "received_before", f.Val)
+			if f.GetField() == cr && f.GetType() == before {
+				queryParams = append(queryParams, "received_before", f.GetVal())
 			}
-			if f.Field == "TYPE" && f.Type == contains {
-				queryParams = append(queryParams, "type_contains", f.Val)
+			if f.GetField() == "TYPE" && f.GetType() == contains {
+				queryParams = append(queryParams, "type_contains", f.GetVal())
 			}
-			if f.Field == "TEXT" && f.Type == contains {
-				queryParams = append(queryParams, "event_contains", f.Val)
+			if f.GetField() == "TEXT" && f.GetType() == contains {
+				queryParams = append(queryParams, "event_contains", f.GetVal())
 			}
 		}
-		re, t, err := tx.DataStore().EventHistory().Get(ctx, int(req.Pagination.Limit), int(req.Pagination.Offset), ns.ID, queryParams...)
+		re, t, err := tx.DataStore().EventHistory().Get(ctx, int(req.GetPagination().GetLimit()), int(req.GetPagination().GetOffset()), ns.ID, queryParams...)
 		if err != nil {
 			return err
 		}
 		count = t
 		res = re
+
 		return nil
 	})
 	if err != nil {
@@ -405,7 +398,7 @@ func (flow *flow) EventHistory(ctx context.Context, req *grpc.EventHistoryReques
 		finalResults = append(finalResults, x)
 	}
 	resp.Events.Results = finalResults
-	resp.Events.PageInfo = &grpc.PageInfo{Total: int32(count), Limit: req.Pagination.Limit, Offset: req.Pagination.Offset}
+	resp.Events.PageInfo = &grpc.PageInfo{Total: int32(count), Limit: req.GetPagination().GetLimit(), Offset: req.GetPagination().GetOffset()}
 
 	return resp, nil
 }
@@ -414,13 +407,13 @@ func (flow *flow) EventHistoryStream(req *grpc.EventHistoryRequest, srv grpc.Flo
 	slog.Debug("Handling gRPC request", "this", this())
 
 	ctx := srv.Context()
-	phash := ""
-	nhash := ""
+	var phash, nhash string
 
 	var err error
 	var ns *datastore.Namespace
-	err = flow.runSqlTx(ctx, func(tx *database.SQLStore) error {
+	err = flow.runSQLTx(ctx, func(tx *database.SQLStore) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+
 		return err
 	})
 	if err != nil {
@@ -435,27 +428,28 @@ resend:
 	count := 0
 	var res []*pkgevents.Event
 	queryParams := []string{}
-	for _, f := range req.Pagination.Filter {
-		if f.Field == cr && f.Type == after {
-			queryParams = append(queryParams, "received_after", f.Val)
+	for _, f := range req.GetPagination().GetFilter() {
+		if f.GetField() == cr && f.GetType() == after {
+			queryParams = append(queryParams, "received_after", f.GetVal())
 		}
-		if f.Field == cr && f.Type == before {
-			queryParams = append(queryParams, "received_before", f.Val)
+		if f.GetField() == cr && f.GetType() == before {
+			queryParams = append(queryParams, "received_before", f.GetVal())
 		}
-		if f.Field == "TYPE" && f.Type == contains {
-			queryParams = append(queryParams, "type_contains", f.Val)
+		if f.GetField() == "TYPE" && f.GetType() == contains {
+			queryParams = append(queryParams, "type_contains", f.GetVal())
 		}
-		if f.Field == "TEXT" && f.Type == contains {
-			queryParams = append(queryParams, "event_contains", f.Val)
+		if f.GetField() == "TEXT" && f.GetType() == contains {
+			queryParams = append(queryParams, "event_contains", f.GetVal())
 		}
 	}
-	err = flow.runSqlTx(ctx, func(tx *database.SQLStore) error {
-		re, t, err := tx.DataStore().EventHistory().Get(ctx, int(req.Pagination.Limit), int(req.Pagination.Offset), ns.ID, queryParams...)
+	err = flow.runSQLTx(ctx, func(tx *database.SQLStore) error {
+		re, t, err := tx.DataStore().EventHistory().Get(ctx, int(req.GetPagination().GetLimit()), int(req.GetPagination().GetOffset()), ns.ID, queryParams...)
 		if err != nil {
 			return err
 		}
 		count = t
 		res = re
+
 		return nil
 	})
 	if err != nil {
@@ -481,7 +475,7 @@ resend:
 		finalResults = append(finalResults, x)
 	}
 	resp.Events.Results = finalResults
-	resp.Events.PageInfo = &grpc.PageInfo{Total: int32(count), Limit: req.Pagination.Limit, Offset: req.Pagination.Offset}
+	resp.Events.PageInfo = &grpc.PageInfo{Total: int32(count), Limit: req.GetPagination().GetLimit(), Offset: req.GetPagination().GetOffset()}
 
 	nhash = bytedata.Checksum(resp)
 	if nhash != phash {
@@ -511,7 +505,7 @@ func (flow *flow) ReplayEvent(ctx context.Context, req *grpc.ReplayEventRequest)
 	var cevent *pkgevents.Event
 	var err error
 	var ns *datastore.Namespace
-	err = flow.runSqlTx(ctx, func(tx *database.SQLStore) error {
+	err = flow.runSQLTx(ctx, func(tx *database.SQLStore) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
 		if err != nil {
 			return err
@@ -522,6 +516,7 @@ func (flow *flow) ReplayEvent(ctx context.Context, req *grpc.ReplayEventRequest)
 			return err
 		}
 		cevent = evs
+
 		return nil
 	})
 	if err != nil {
@@ -561,14 +556,12 @@ func (events *events) ReplayCloudevent(ctx context.Context, ns *datastore.Namesp
 }
 
 func (events *events) BroadcastCloudevent(ctx context.Context, ns *datastore.Namespace, event *cloudevents.Event, timer int64) error {
-	// events.logger.Infof(ctx, ns.ID, database.GetAttributes(recipient.Namespace, ns), "Event received: %s (%s / %s) target time: %v", event.ID(), event.Type(), event.Source(), time.Unix(timer, 0))
 	span := trace.SpanFromContext(ctx)
 	traceID := span.SpanContext().TraceID()
 	spanID := span.SpanContext().SpanID()
 
 	slog.With("trace", traceID, "span", spanID, "namespace", "event", event.ID(), "event_type", event.Type(), "event_source", event.Source())
 
-	metricsCloudEventsReceived.WithLabelValues(ns.Name, event.Type(), event.Source(), ns.Name).Inc()
 	ctx, end := traceBrokerMessage(ctx, *event)
 	defer end()
 
@@ -631,7 +624,7 @@ func (events *events) listenForEvents(ctx context.Context, im *instanceMemory, c
 		}
 
 		for k, v := range ceds[i].Context {
-			ev.Context[k], err = jqOne(im.data, v)
+			ev.Context[k], err = jqOne(im.data, v) //nolint:contextcheck
 			if err != nil {
 				return fmt.Errorf("failed to execute jq query for key '%s' on event definition %d: %w", k, i, err)
 			}
