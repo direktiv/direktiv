@@ -86,6 +86,8 @@ tags:
     description: Miscellaneous server endpoints
   - name: namespaces
     description: Endpoints for managing namespaces
+  - name: instances
+    description: Endpoints for managing workflow instances
   - name: syncs
     description: Endpoints for managing namespace mirror syncs
   - name: services
@@ -109,7 +111,9 @@ tags:
 x-tagGroups:
   - name: Endpoints
     tags:
+      - server
       - namespaces
+      - instances
       - syncs
       - files
       - services
@@ -117,8 +121,9 @@ x-tagGroups:
       - secrets
       - registries
       - gateway
-      - server
       - plattformlogs
+      - metrics
+      - notifications
 components:
   parameters:
     $ref: "./parameters.yaml"
