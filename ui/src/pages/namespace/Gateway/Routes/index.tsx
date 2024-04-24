@@ -17,7 +17,10 @@ const RoutesPage = () => {
   const filteredRoutes = useMemo(
     () =>
       (routes?.data ?? [])?.filter(
-        (route) => !isSearch || route.file_path.includes(search)
+        (route) =>
+          !isSearch ||
+          route.file_path.includes(search) ||
+          route.server_path?.includes(search)
       ),
     [isSearch, search, routes?.data]
   );
