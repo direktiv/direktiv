@@ -4,7 +4,6 @@ import { basename } from 'path'
 import common from '../common'
 import config from '../common/config'
 import helpers from '../common/helpers'
-import regex from '../common/regex'
 import request from '../common/request'
 
 const namespace = basename(__filename)

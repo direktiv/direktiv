@@ -10,18 +10,7 @@ const testWorkflow = 'test-secret'
 describe('Test secret read operations', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
 
-	it(`should create a new namespace`, async () => {
-		const res = await request(common.config.getDirektivHost()).put(`/api/namespaces/${ testNamespace }`)
-		expect(res.statusCode).toEqual(200)
-		expect(res.body).toMatchObject({
-			namespace: {
-				name: testNamespace,
-				// regex /^2.*Z$/ matches timestamps like 2023-03-01T14:19:52.383871512Z
-				createdAt: expect.stringMatching(/^2.*Z$/),
-				updatedAt: expect.stringMatching(/^2.*Z$/),
-			},
-		})
-	})
+	helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
 	it(`should create a new secret`, async () => {
 		const res = await request(common.config.getDirektivHost())
