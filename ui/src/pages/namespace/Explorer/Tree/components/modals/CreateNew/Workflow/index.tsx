@@ -27,7 +27,7 @@ import { pages } from "~/util/router/pages";
 import { useCreateFile } from "~/api/files/mutate/createFile";
 import { useNamespace } from "~/util/store/namespace";
 import { useNavigate } from "react-router-dom";
-import { useNotifications } from "~/api/namespaceLinting/query/useNamespaceLinting";
+import { useNotifications } from "~/api/notifications/query/get";
 import { useState } from "react";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";

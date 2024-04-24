@@ -1,5 +1,5 @@
 import { NotificationItemType } from "./NotificationItem";
-import { NotificationListSchemaType } from "~/api/namespaceLinting/schema";
+import { NotificationListSchemaType } from "~/api/notifications/schema";
 import { SquareAsterisk } from "lucide-react";
 import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";

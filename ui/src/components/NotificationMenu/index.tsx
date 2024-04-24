@@ -11,7 +11,7 @@ import { Fragment } from "react";
 import { NotificationItem } from "./NotificationItem";
 import { twMergeClsx } from "~/util/helpers";
 import { useGroupNotifications } from "./config";
-import { useNotifications } from "~/api/namespaceLinting/query/useNamespaceLinting";
+import { useNotifications } from "~/api/notifications/query/get";
 import { useTranslation } from "react-i18next";
 
 const NotificationMenu = ({ className }: { className?: string }) => {

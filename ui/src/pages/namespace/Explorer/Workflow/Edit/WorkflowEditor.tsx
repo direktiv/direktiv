@@ -16,7 +16,7 @@ import RunWorkflow from "../components/RunWorkflow";
 import { WorkspaceLayout } from "~/components/WorkspaceLayout";
 import { useEditorLayout } from "~/util/store/editor";
 import { useNamespace } from "~/util/store/namespace";
-import { useNotifications } from "~/api/namespaceLinting/query/useNamespaceLinting";
+import { useNotifications } from "~/api/notifications/query/get";
 import { useTranslation } from "react-i18next";
 import { useUpdateFile } from "~/api/files/mutate/updateFile";
 
