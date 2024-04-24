@@ -58,14 +58,14 @@ jobs:
       max-parallel: 20
       matrix:
         jest_prefix: [
-            "engine/",
-            "events/",
-            "gateway/",
-            "instances/",
-            "kubernetes/",
-            "part1/",
-            "part2/",
-            "services/",
+            "engine",
+            "events",
+            "gateway",
+            "instances",
+            "kubernetes",
+            "part1",
+            "part2",
+            "services",
           ]
     steps:
       - name: Checkout code
@@ -188,9 +188,8 @@ jobs:
           exit 1
       - name: Run E2E tests
         run: |
-          npm -prefix tests run all -- ${{ env.JEST_PREFIX }}
+          npm -prefix tests run all -- ${{ matrix.jest_prefix }}/
         env:
-          JEST_PREFIX: ${{ matrix.jest_prefix }}
           DIREKTIV_HOST: ${{ env.DIREKTIV_HOST }}
           GITHUB_ACTIONS: true
 
