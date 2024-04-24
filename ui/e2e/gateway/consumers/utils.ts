@@ -1,5 +1,6 @@
 import { ConsumerSchemaType } from "~/api/gateway/schema";
 import { getConsumers } from "~/api/gateway/query/getConsumers";
+import { headers } from "e2e/utils/testutils";
 
 type CreateRedisConsumerFileParams = {
   username?: string;
@@ -37,6 +38,7 @@ export const findConsumerWithApiRequest = async ({
         baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
         namespace,
       },
+      headers,
     });
     return consumers.find(match);
   } catch (error) {

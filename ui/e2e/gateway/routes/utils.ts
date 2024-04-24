@@ -1,5 +1,6 @@
 import { RouteSchemaType } from "~/api/gateway/schema";
 import { getRoutes } from "~/api/gateway/query/getRoutes";
+import { headers } from "e2e/utils/testutils";
 
 type CreateRouteFileParams = {
   path?: string;
@@ -78,6 +79,7 @@ export const findRouteWithApiRequest = async ({
         baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
         namespace,
       },
+      headers,
     });
     return routes.find(match);
   } catch (error) {

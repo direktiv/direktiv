@@ -1,5 +1,6 @@
 import { ServiceSchemaType } from "~/api/services/schema/services";
 import { getServices } from "~/api/services/query/services";
+import { headers } from "e2e/utils/testutils";
 
 type CreateServiceFileParams = {
   scale?: number;
@@ -55,6 +56,7 @@ export const findServiceWithApiRequest = async ({
         baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
         namespace,
       },
+      headers,
     });
     return services.find(match);
   } catch (error) {

@@ -70,6 +70,7 @@ export const checkIfFileExists = async ({
         path,
         namespace,
       },
+      headers,
     });
 
     if (!response.data) {
