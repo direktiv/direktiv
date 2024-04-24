@@ -212,11 +212,9 @@ jobs:
           GITHUB_ACTIONS: true
 
       - name: Run Playwrite E2E tests
-        if: matrix.sections.type == 'playwrite'
+        if: matrix.sections.type == 'playwright'
         run: |
           PLAYWRITE_SHARD=${{ matrix.sections.suit }} make docker-e2e-playwright
-
-
 
       - name: Show logs
         run: |
