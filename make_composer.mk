@@ -40,6 +40,5 @@ docker-e2e-playwright: ## Create a local docker deployment.
     -e PLAYWRIGHT_UI_BASE_URL=http://127.0.0.1:8080 \
 	-w /app/ui \
 	--net=host \
-	-it \
 	node:18 \
 	bash -c "yarn && npx playwright install --with-deps chromium && yarn run e2e:headless-chromium-only"
