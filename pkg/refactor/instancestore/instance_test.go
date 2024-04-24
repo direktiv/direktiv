@@ -82,12 +82,6 @@ func assertInstanceStoreCorrectInstanceDataCreation(t *testing.T, is instancesto
 		return
 	}
 
-	if !isIdenticalBytes(args.Settings, idata.Settings) {
-		t.Errorf("unexpected idata.Settings, got: >%v<, want: >%v<", idata.Settings, args.Settings)
-
-		return
-	}
-
 	if !isIdenticalBytes(args.DescentInfo, idata.DescentInfo) {
 		t.Errorf("unexpected idata.DescentInfo, got: >%v<, want: >%v<", idata.DescentInfo, args.DescentInfo)
 
@@ -221,7 +215,6 @@ states:
 `),
 			Input:         []byte(`{}`),
 			TelemetryInfo: []byte(`{}`),
-			Settings:      []byte(`{}`),
 			DescentInfo:   []byte(`{}`),
 			RuntimeInfo:   []byte(`{}`),
 			ChildrenInfo:  []byte(`{}`),
@@ -240,12 +233,6 @@ func assertInstanceDataIsMost(t *testing.T, idata *instancestore.InstanceData) {
 	t.Helper()
 	if idata.Definition == nil {
 		t.Errorf("missing idata.Definition")
-
-		return
-	}
-
-	if idata.Settings == nil {
-		t.Errorf("missing idata.Settings")
 
 		return
 	}
@@ -412,7 +399,6 @@ type: noop
 `),
 		Input:         []byte(`{}`),
 		TelemetryInfo: []byte(`{}`),
-		Settings:      []byte(`{}`),
 		DescentInfo:   []byte(`{}`),
 		RuntimeInfo:   []byte(`{}`),
 		ChildrenInfo:  []byte(`{}`),
@@ -534,7 +520,6 @@ type: noop
 `),
 		Input:         []byte(`{}`),
 		TelemetryInfo: []byte(`{}`),
-		Settings:      []byte(`{}`),
 		DescentInfo:   []byte(`{}`),
 		RuntimeInfo:   []byte(`{}`),
 		ChildrenInfo:  []byte(`{}`),
@@ -664,7 +649,6 @@ type: noop
 `),
 		Input:         []byte(`{}`),
 		TelemetryInfo: []byte(`{}`),
-		Settings:      []byte(`{}`),
 		DescentInfo:   []byte(`{}`),
 		RuntimeInfo:   []byte(`{}`),
 		ChildrenInfo:  []byte(`{}`),
@@ -762,7 +746,6 @@ type: noop
 `),
 		Input:         []byte(`{}`),
 		TelemetryInfo: []byte(`{}`),
-		Settings:      []byte(`{}`),
 		DescentInfo:   []byte(`{}`),
 		RuntimeInfo:   []byte(`{}`),
 		ChildrenInfo:  []byte(`{}`),
@@ -817,7 +800,6 @@ type: noop
 `),
 		Input:         []byte(`{}`),
 		TelemetryInfo: []byte(`{}`),
-		Settings:      []byte(`{}`),
 		DescentInfo:   []byte(`{}`),
 		RuntimeInfo:   []byte(`{}`),
 		ChildrenInfo:  []byte(`{}`),
