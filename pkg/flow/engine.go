@@ -37,7 +37,7 @@ type engine struct {
 	scheduled sync.Map
 }
 
-func initEngine(srv *server) (*engine, error) {
+func initEngine(srv *server) *engine {
 	engine := new(engine)
 
 	engine.server = srv
@@ -46,7 +46,7 @@ func initEngine(srv *server) (*engine, error) {
 
 	go engine.instanceKicker()
 
-	return engine, nil
+	return engine
 }
 
 func (engine *engine) Close() error {
@@ -66,7 +66,7 @@ func (engine *engine) kickWaitingInstances() {
 	ctx := context.Background()
 
 	slog.Debug("Starting to kick waiting (homeless) instances.")
-	tx, err := engine.beginSqlTx(ctx)
+	tx, err := engine.beginSQLTx(ctx)
 	if err != nil {
 		slog.Error("Failed to begin SQL transaction in kickWaitingInstances.", "error", err)
 		return
@@ -163,6 +163,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 		if derrors.IsNotFound(err) {
 			return nil, derrors.NewUncatchableError("direktiv.workflow.notfound", "workflow not found: %v", err.Error())
 		}
+
 		return nil, err
 	}
 
@@ -217,7 +218,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	tx := args.tx
 
 	if tx == nil {
-		tx, err = engine.flow.beginSqlTx(ctx)
+		tx, err = engine.flow.beginSQLTx(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -321,7 +322,7 @@ func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextSt
 
 	oldController := im.Controller()
 
-	if im.Step() == 0 {
+	if im.Step() == 0 { //nolint:nestif
 		t := time.Now().UTC()
 		tSoft := time.Now().UTC().Add(time.Minute * 15)
 		tHard := time.Now().UTC().Add(time.Minute * 20)
@@ -452,7 +453,7 @@ func (engine *engine) TerminateInstance(ctx context.Context, im *instanceMemory)
 
 	engine.setEndAt(im)
 
-	engine.freeArtefacts(im)
+	engine.freeArtefacts(im) //nolint:contextcheck
 	err := engine.freeMemory(ctx, im)
 	if err != nil {
 		if !engine.GetIsInstanceCrashed(im) {
@@ -467,6 +468,7 @@ func (engine *engine) TerminateInstance(ctx context.Context, im *instanceMemory)
 	engine.WakeInstanceCaller(ctx, im)
 }
 
+//nolint:gocognit
 func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata []byte, err error) *states.Transition {
 	loggingCtx := im.Namespace().WithTags(ctx)
 	instanceTrackCtx := enginerefactor.WithTrack(loggingCtx, enginerefactor.BuildInstanceTrack(im.instance))
@@ -476,7 +478,6 @@ func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata
 	slog.Debug("State logic executed. Processing post-execution actions.", enginerefactor.GetSlogAttributesWithStatus(instanceTrackCtx, core.LogRunningStatus)...)
 	slog.Debug("Processing post-execution actions.", enginerefactor.GetSlogAttributesWithStatus(instanceTrackCtx, core.LogRunningStatus)...)
 
-	var code string
 	var transition *states.Transition
 
 	ctx, cleanup, e2 := traceStateGenericLogicThread(ctx, im)
@@ -492,7 +493,7 @@ func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata
 
 	if lq := im.logic.GetLog(); im.GetMemory() == nil && len(wakedata) == 0 && lq != nil {
 		var object interface{}
-		object, err = jqOne(im.data, lq)
+		object, err = jqOne(im.data, lq) //nolint:contextcheck
 		if err != nil {
 			slog.Error("Failed to process jq query on state data.", enginerefactor.GetSlogAttributesWithError(instanceTrackCtx, fmt.Errorf("query failed %v, err: %w", lq, err))...)
 
@@ -513,7 +514,7 @@ func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata
 
 	if md := im.logic.GetMetadata(); im.GetMemory() == nil && len(wakedata) == 0 && md != nil {
 		var object interface{}
-		object, err = jqOne(im.data, md)
+		object, err = jqOne(im.data, md) //nolint:contextcheck
 		if err != nil {
 			goto failure
 		}
@@ -542,7 +543,8 @@ func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata
 
 next:
 	slog.Debug("Initiating state logic run.", enginerefactor.GetSlogAttributesWithStatus(instanceTrackCtx, core.LogRunningStatus)...)
-	return engine.transitionState(ctx, im, transition, code)
+
+	return engine.transitionState(ctx, im, transition)
 
 failure:
 
@@ -576,16 +578,12 @@ failure:
 
 			if matched {
 				slog.Info("Catchable error matched; executing defined transition.", enginerefactor.GetSlogAttributesWithStatus(instanceTrackCtx, core.LogErrStatus)...)
-				slog.Error("State failed with an error", enginerefactor.GetSlogAttributesWithError(instanceTrackCtx, fmt.Errorf("State failed with an error '%s': %s", cerr.Code, cerr.Message))...)
+				slog.Error("State failed with an error", enginerefactor.GetSlogAttributesWithError(instanceTrackCtx, fmt.Errorf("state failed with an error '%s': %s", cerr.Code, cerr.Message))...)
 
 				transition = &states.Transition{
 					Transform: "",
 					NextState: catch.Transition,
 				}
-
-				// breaker++
-
-				code = cerr.Code
 
 				goto next
 			}
@@ -593,6 +591,7 @@ failure:
 	}
 	slog.Error("Unrecoverable error encountered; initiating instance crash.", enginerefactor.GetSlogAttributesWithError(instanceTrackCtx, err)...)
 	engine.CrashInstance(ctx, im, err)
+
 	return nil
 }
 
@@ -611,7 +610,7 @@ func (engine *engine) transformState(ctx context.Context, im *instanceMemory, tr
 				enginerefactor.BuildInstanceTrack(im.instance)), core.LogRunningStatus,
 		)...)
 
-	x, err := jqObject(im.data, transition.Transform)
+	x, err := jqObject(im.data, transition.Transform) //nolint:contextcheck
 	if err != nil {
 		return derrors.WrapCatchableError("unable to apply transform: %v", err)
 		// return derrors.WrapCatchableError("Failed to apply jq transformation on state data. Transformation: '%v', Error: %v", transition.Transform, err)
@@ -627,16 +626,18 @@ func (engine *engine) transformState(ctx context.Context, im *instanceMemory, tr
 	return nil
 }
 
-func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, transition *states.Transition, errCode string) *states.Transition {
+func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, transition *states.Transition) *states.Transition {
 	e := im.flushUpdates(ctx)
 	if e != nil {
 		slog.Error("Failed to flush updates for instance.", "instance", im.ID(), "namespace", im.Namespace(), "error", e)
 		engine.CrashInstance(ctx, im, e)
+
 		return nil
 	}
 
 	if transition == nil {
 		engine.InstanceYield(ctx, im)
+
 		return nil
 	}
 	loggingCtx := im.Namespace().WithTags(ctx)
@@ -743,6 +744,7 @@ func (engine *engine) scheduleRetry(id string, t time.Time, data []byte) error {
 			/* #nosec */
 			engine.retryWakeup(data)
 		}()
+
 		return nil
 	}
 
@@ -823,7 +825,7 @@ func (engine *engine) wakeEventsWaiter(instance uuid.UUID, events []*cloudevents
 func (engine *engine) EventsInvoke(workflowID uuid.UUID, events ...*cloudevents.Event) {
 	ctx := context.Background()
 
-	tx, err := engine.flow.beginSqlTx(ctx)
+	tx, err := engine.flow.beginSQLTx(ctx)
 	if err != nil {
 		slog.Error("Failed to begin SQL transaction in EventsInvoke.", "error", err)
 		return
@@ -938,5 +940,6 @@ func GetInodePath(path string) string {
 		return "/" + path
 	}
 	path = filepath.Clean(path)
+
 	return path
 }

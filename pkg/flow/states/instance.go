@@ -11,7 +11,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type Instance interface {
+type Instance interface { //nolint:interfacebloat
 	GetInstanceID() uuid.UUID
 	GetInstanceData() interface{}
 	GetMemory() interface{}
