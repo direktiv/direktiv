@@ -14,24 +14,24 @@ describe('Test workflow metrics', () => {
 
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
-    it(`should read no results`, async () => {
-        const res = await request(config.getDirektivHost())
+	it(`should read no results`, async () => {
+		const res = await request(config.getDirektivHost())
 			.get(`/api/v2/namespaces/${ namespace }/metrics/instances?workflowPath=%2Ffoo1.yaml`)
 
 		expect(res.statusCode).toEqual(200)
-        expect(res.body).toEqual({
-            data: {
-                cancelled: 0,
-                crashed: 0,
-                failed: 0,
-                pending: 0,
-                complete: 0,
-                total: 0,
-            },
-        })
-    })
+		expect(res.body).toEqual({
+			data: {
+				cancelled: 0,
+				crashed: 0,
+				failed: 0,
+				pending: 0,
+				complete: 0,
+				total: 0,
+			},
+		})
+	})
 
-    helpers.itShouldCreateFileV2(it, expect, namespace,
+	helpers.itShouldCreateFileV2(it, expect, namespace,
 		'/',
 		'foo1.yaml',
 		'workflow',
@@ -43,25 +43,25 @@ states:
   type: noop
 `))
 
-    it(`should invoke the 'foo1.yaml' workflow`, async () => {
-        const req = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/instances?path=foo1.yaml&wait=true`)
+	it(`should invoke the 'foo1.yaml' workflow`, async () => {
+		const req = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/instances?path=foo1.yaml&wait=true`)
 
-        expect(req.statusCode).toEqual(200)
-    })
+		expect(req.statusCode).toEqual(200)
+	})
 
-    it(`should read one result`, async () => {
-        const res = await request(config.getDirektivHost())
-        .get(`/api/v2/namespaces/${ namespace }/metrics/instances?workflowPath=%2Ffoo1.yaml`)
-    expect(res.statusCode).toEqual(200)
-    expect(res.body).toEqual({
-        data: {
-            cancelled: 0,
-            crashed: 0,
-            failed: 0,
-            pending: 0,
-            complete: 1,
-            total: 1,
-        },
-    })
-    })   
+	it(`should read one result`, async () => {
+		const res = await request(config.getDirektivHost())
+			.get(`/api/v2/namespaces/${ namespace }/metrics/instances?workflowPath=%2Ffoo1.yaml`)
+		expect(res.statusCode).toEqual(200)
+		expect(res.body).toEqual({
+			data: {
+				cancelled: 0,
+				crashed: 0,
+				failed: 0,
+				pending: 0,
+				complete: 1,
+				total: 1,
+			},
+		})
+	})
 })

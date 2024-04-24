@@ -61,16 +61,6 @@ message UpdateMirrorSettingsRequest {
     MirrorSettings settings = 3;
 }
 
-message LockMirrorRequest {
-    string namespace = 1;
-	string path = 2;
-}
-
-message UnlockMirrorRequest {
-    string namespace = 1;
-	string path = 2;
-}
-
 message SoftSyncMirrorRequest {
     string namespace = 1;
 	string path = 2;

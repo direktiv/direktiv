@@ -550,116 +550,6 @@ func (x *UpdateMirrorSettingsRequest) GetSettings() *MirrorSettings {
 	return nil
 }
 
-type LockMirrorRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Namespace string `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
-	Path      string `protobuf:"bytes,2,opt,name=path,proto3" json:"path,omitempty"`
-}
-
-func (x *LockMirrorRequest) Reset() {
-	*x = LockMirrorRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_flow_grpc_mirror_proto_msgTypes[7]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *LockMirrorRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*LockMirrorRequest) ProtoMessage() {}
-
-func (x *LockMirrorRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_flow_grpc_mirror_proto_msgTypes[7]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use LockMirrorRequest.ProtoReflect.Descriptor instead.
-func (*LockMirrorRequest) Descriptor() ([]byte, []int) {
-	return file_pkg_flow_grpc_mirror_proto_rawDescGZIP(), []int{7}
-}
-
-func (x *LockMirrorRequest) GetNamespace() string {
-	if x != nil {
-		return x.Namespace
-	}
-	return ""
-}
-
-func (x *LockMirrorRequest) GetPath() string {
-	if x != nil {
-		return x.Path
-	}
-	return ""
-}
-
-type UnlockMirrorRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Namespace string `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
-	Path      string `protobuf:"bytes,2,opt,name=path,proto3" json:"path,omitempty"`
-}
-
-func (x *UnlockMirrorRequest) Reset() {
-	*x = UnlockMirrorRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_flow_grpc_mirror_proto_msgTypes[8]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *UnlockMirrorRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*UnlockMirrorRequest) ProtoMessage() {}
-
-func (x *UnlockMirrorRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_flow_grpc_mirror_proto_msgTypes[8]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use UnlockMirrorRequest.ProtoReflect.Descriptor instead.
-func (*UnlockMirrorRequest) Descriptor() ([]byte, []int) {
-	return file_pkg_flow_grpc_mirror_proto_rawDescGZIP(), []int{8}
-}
-
-func (x *UnlockMirrorRequest) GetNamespace() string {
-	if x != nil {
-		return x.Namespace
-	}
-	return ""
-}
-
-func (x *UnlockMirrorRequest) GetPath() string {
-	if x != nil {
-		return x.Path
-	}
-	return ""
-}
-
 type SoftSyncMirrorRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -672,7 +562,7 @@ type SoftSyncMirrorRequest struct {
 func (x *SoftSyncMirrorRequest) Reset() {
 	*x = SoftSyncMirrorRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_flow_grpc_mirror_proto_msgTypes[9]
+		mi := &file_pkg_flow_grpc_mirror_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -685,7 +575,7 @@ func (x *SoftSyncMirrorRequest) String() string {
 func (*SoftSyncMirrorRequest) ProtoMessage() {}
 
 func (x *SoftSyncMirrorRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_flow_grpc_mirror_proto_msgTypes[9]
+	mi := &file_pkg_flow_grpc_mirror_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -698,7 +588,7 @@ func (x *SoftSyncMirrorRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SoftSyncMirrorRequest.ProtoReflect.Descriptor instead.
 func (*SoftSyncMirrorRequest) Descriptor() ([]byte, []int) {
-	return file_pkg_flow_grpc_mirror_proto_rawDescGZIP(), []int{9}
+	return file_pkg_flow_grpc_mirror_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *SoftSyncMirrorRequest) GetNamespace() string {
@@ -727,7 +617,7 @@ type HardSyncMirrorRequest struct {
 func (x *HardSyncMirrorRequest) Reset() {
 	*x = HardSyncMirrorRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_flow_grpc_mirror_proto_msgTypes[10]
+		mi := &file_pkg_flow_grpc_mirror_proto_msgTypes[8]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -740,7 +630,7 @@ func (x *HardSyncMirrorRequest) String() string {
 func (*HardSyncMirrorRequest) ProtoMessage() {}
 
 func (x *HardSyncMirrorRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_flow_grpc_mirror_proto_msgTypes[10]
+	mi := &file_pkg_flow_grpc_mirror_proto_msgTypes[8]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -753,7 +643,7 @@ func (x *HardSyncMirrorRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HardSyncMirrorRequest.ProtoReflect.Descriptor instead.
 func (*HardSyncMirrorRequest) Descriptor() ([]byte, []int) {
-	return file_pkg_flow_grpc_mirror_proto_rawDescGZIP(), []int{10}
+	return file_pkg_flow_grpc_mirror_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *HardSyncMirrorRequest) GetNamespace() string {
@@ -783,7 +673,7 @@ type MirrorInfoRequest struct {
 func (x *MirrorInfoRequest) Reset() {
 	*x = MirrorInfoRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_flow_grpc_mirror_proto_msgTypes[11]
+		mi := &file_pkg_flow_grpc_mirror_proto_msgTypes[9]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -796,7 +686,7 @@ func (x *MirrorInfoRequest) String() string {
 func (*MirrorInfoRequest) ProtoMessage() {}
 
 func (x *MirrorInfoRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_flow_grpc_mirror_proto_msgTypes[11]
+	mi := &file_pkg_flow_grpc_mirror_proto_msgTypes[9]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -809,7 +699,7 @@ func (x *MirrorInfoRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MirrorInfoRequest.ProtoReflect.Descriptor instead.
 func (*MirrorInfoRequest) Descriptor() ([]byte, []int) {
-	return file_pkg_flow_grpc_mirror_proto_rawDescGZIP(), []int{11}
+	return file_pkg_flow_grpc_mirror_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *MirrorInfoRequest) GetNamespace() string {
@@ -846,7 +736,7 @@ type MirrorInfoResponse struct {
 func (x *MirrorInfoResponse) Reset() {
 	*x = MirrorInfoResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_flow_grpc_mirror_proto_msgTypes[12]
+		mi := &file_pkg_flow_grpc_mirror_proto_msgTypes[10]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -859,7 +749,7 @@ func (x *MirrorInfoResponse) String() string {
 func (*MirrorInfoResponse) ProtoMessage() {}
 
 func (x *MirrorInfoResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_flow_grpc_mirror_proto_msgTypes[12]
+	mi := &file_pkg_flow_grpc_mirror_proto_msgTypes[10]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -872,7 +762,7 @@ func (x *MirrorInfoResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MirrorInfoResponse.ProtoReflect.Descriptor instead.
 func (*MirrorInfoResponse) Descriptor() ([]byte, []int) {
-	return file_pkg_flow_grpc_mirror_proto_rawDescGZIP(), []int{12}
+	return file_pkg_flow_grpc_mirror_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *MirrorInfoResponse) GetNamespace() string {
@@ -908,7 +798,7 @@ type CancelMirrorActivityRequest struct {
 func (x *CancelMirrorActivityRequest) Reset() {
 	*x = CancelMirrorActivityRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_flow_grpc_mirror_proto_msgTypes[13]
+		mi := &file_pkg_flow_grpc_mirror_proto_msgTypes[11]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -921,7 +811,7 @@ func (x *CancelMirrorActivityRequest) String() string {
 func (*CancelMirrorActivityRequest) ProtoMessage() {}
 
 func (x *CancelMirrorActivityRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_flow_grpc_mirror_proto_msgTypes[13]
+	mi := &file_pkg_flow_grpc_mirror_proto_msgTypes[11]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -934,7 +824,7 @@ func (x *CancelMirrorActivityRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CancelMirrorActivityRequest.ProtoReflect.Descriptor instead.
 func (*CancelMirrorActivityRequest) Descriptor() ([]byte, []int) {
-	return file_pkg_flow_grpc_mirror_proto_rawDescGZIP(), []int{13}
+	return file_pkg_flow_grpc_mirror_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *CancelMirrorActivityRequest) GetNamespace() string {
@@ -1039,16 +929,7 @@ var file_pkg_flow_grpc_mirror_proto_rawDesc = []byte{
 	0x67, 0x73, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1d, 0x2e, 0x64, 0x69, 0x72, 0x65, 0x6b,
 	0x74, 0x69, 0x76, 0x5f, 0x66, 0x6c, 0x6f, 0x77, 0x2e, 0x4d, 0x69, 0x72, 0x72, 0x6f, 0x72, 0x53,
 	0x65, 0x74, 0x74, 0x69, 0x6e, 0x67, 0x73, 0x52, 0x08, 0x73, 0x65, 0x74, 0x74, 0x69, 0x6e, 0x67,
-	0x73, 0x22, 0x45, 0x0a, 0x11, 0x4c, 0x6f, 0x63, 0x6b, 0x4d, 0x69, 0x72, 0x72, 0x6f, 0x72, 0x52,
-	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1c, 0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70,
-	0x61, 0x63, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73,
-	0x70, 0x61, 0x63, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x70, 0x61, 0x74, 0x68, 0x18, 0x02, 0x20, 0x01,
-	0x28, 0x09, 0x52, 0x04, 0x70, 0x61, 0x74, 0x68, 0x22, 0x47, 0x0a, 0x13, 0x55, 0x6e, 0x6c, 0x6f,
-	0x63, 0x6b, 0x4d, 0x69, 0x72, 0x72, 0x6f, 0x72, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12,
-	0x1c, 0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x18, 0x01, 0x20, 0x01,
-	0x28, 0x09, 0x52, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x12, 0x0a,
-	0x04, 0x70, 0x61, 0x74, 0x68, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x70, 0x61, 0x74,
-	0x68, 0x22, 0x49, 0x0a, 0x15, 0x53, 0x6f, 0x66, 0x74, 0x53, 0x79, 0x6e, 0x63, 0x4d, 0x69, 0x72,
+	0x73, 0x22, 0x49, 0x0a, 0x15, 0x53, 0x6f, 0x66, 0x74, 0x53, 0x79, 0x6e, 0x63, 0x4d, 0x69, 0x72,
 	0x72, 0x6f, 0x72, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1c, 0x0a, 0x09, 0x6e, 0x61,
 	0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6e,
 	0x61, 0x6d, 0x65, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x70, 0x61, 0x74, 0x68,
@@ -1099,7 +980,7 @@ func file_pkg_flow_grpc_mirror_proto_rawDescGZIP() []byte {
 	return file_pkg_flow_grpc_mirror_proto_rawDescData
 }
 
-var file_pkg_flow_grpc_mirror_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
+var file_pkg_flow_grpc_mirror_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_pkg_flow_grpc_mirror_proto_goTypes = []interface{}{
 	(*MirrorSettings)(nil),               // 0: direktiv_flow.MirrorSettings
 	(*MirrorActivityInfo)(nil),           // 1: direktiv_flow.MirrorActivityInfo
@@ -1108,27 +989,25 @@ var file_pkg_flow_grpc_mirror_proto_goTypes = []interface{}{
 	(*CreateNamespaceMirrorRequest)(nil), // 4: direktiv_flow.CreateNamespaceMirrorRequest
 	(*CreateDirectoryMirrorRequest)(nil), // 5: direktiv_flow.CreateDirectoryMirrorRequest
 	(*UpdateMirrorSettingsRequest)(nil),  // 6: direktiv_flow.UpdateMirrorSettingsRequest
-	(*LockMirrorRequest)(nil),            // 7: direktiv_flow.LockMirrorRequest
-	(*UnlockMirrorRequest)(nil),          // 8: direktiv_flow.UnlockMirrorRequest
-	(*SoftSyncMirrorRequest)(nil),        // 9: direktiv_flow.SoftSyncMirrorRequest
-	(*HardSyncMirrorRequest)(nil),        // 10: direktiv_flow.HardSyncMirrorRequest
-	(*MirrorInfoRequest)(nil),            // 11: direktiv_flow.MirrorInfoRequest
-	(*MirrorInfoResponse)(nil),           // 12: direktiv_flow.MirrorInfoResponse
-	(*CancelMirrorActivityRequest)(nil),  // 13: direktiv_flow.CancelMirrorActivityRequest
-	(*timestamppb.Timestamp)(nil),        // 14: google.protobuf.Timestamp
-	(*PageInfo)(nil),                     // 15: direktiv_flow.PageInfo
-	(*Pagination)(nil),                   // 16: direktiv_flow.Pagination
+	(*SoftSyncMirrorRequest)(nil),        // 7: direktiv_flow.SoftSyncMirrorRequest
+	(*HardSyncMirrorRequest)(nil),        // 8: direktiv_flow.HardSyncMirrorRequest
+	(*MirrorInfoRequest)(nil),            // 9: direktiv_flow.MirrorInfoRequest
+	(*MirrorInfoResponse)(nil),           // 10: direktiv_flow.MirrorInfoResponse
+	(*CancelMirrorActivityRequest)(nil),  // 11: direktiv_flow.CancelMirrorActivityRequest
+	(*timestamppb.Timestamp)(nil),        // 12: google.protobuf.Timestamp
+	(*PageInfo)(nil),                     // 13: direktiv_flow.PageInfo
+	(*Pagination)(nil),                   // 14: direktiv_flow.Pagination
 }
 var file_pkg_flow_grpc_mirror_proto_depIdxs = []int32{
-	14, // 0: direktiv_flow.MirrorActivityInfo.created_at:type_name -> google.protobuf.Timestamp
-	14, // 1: direktiv_flow.MirrorActivityInfo.updated_at:type_name -> google.protobuf.Timestamp
-	15, // 2: direktiv_flow.MirrorActivities.pageInfo:type_name -> direktiv_flow.PageInfo
+	12, // 0: direktiv_flow.MirrorActivityInfo.created_at:type_name -> google.protobuf.Timestamp
+	12, // 1: direktiv_flow.MirrorActivityInfo.updated_at:type_name -> google.protobuf.Timestamp
+	13, // 2: direktiv_flow.MirrorActivities.pageInfo:type_name -> direktiv_flow.PageInfo
 	1,  // 3: direktiv_flow.MirrorActivities.results:type_name -> direktiv_flow.MirrorActivityInfo
-	14, // 4: direktiv_flow.MirrorInfo.lastSync:type_name -> google.protobuf.Timestamp
+	12, // 4: direktiv_flow.MirrorInfo.lastSync:type_name -> google.protobuf.Timestamp
 	0,  // 5: direktiv_flow.CreateNamespaceMirrorRequest.settings:type_name -> direktiv_flow.MirrorSettings
 	0,  // 6: direktiv_flow.CreateDirectoryMirrorRequest.settings:type_name -> direktiv_flow.MirrorSettings
 	0,  // 7: direktiv_flow.UpdateMirrorSettingsRequest.settings:type_name -> direktiv_flow.MirrorSettings
-	16, // 8: direktiv_flow.MirrorInfoRequest.pagination:type_name -> direktiv_flow.Pagination
+	14, // 8: direktiv_flow.MirrorInfoRequest.pagination:type_name -> direktiv_flow.Pagination
 	3,  // 9: direktiv_flow.MirrorInfoResponse.info:type_name -> direktiv_flow.MirrorInfo
 	2,  // 10: direktiv_flow.MirrorInfoResponse.activities:type_name -> direktiv_flow.MirrorActivities
 	11, // [11:11] is the sub-list for method output_type
@@ -1230,30 +1109,6 @@ func file_pkg_flow_grpc_mirror_proto_init() {
 			}
 		}
 		file_pkg_flow_grpc_mirror_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*LockMirrorRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_pkg_flow_grpc_mirror_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*UnlockMirrorRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_pkg_flow_grpc_mirror_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*SoftSyncMirrorRequest); i {
 			case 0:
 				return &v.state
@@ -1265,7 +1120,7 @@ func file_pkg_flow_grpc_mirror_proto_init() {
 				return nil
 			}
 		}
-		file_pkg_flow_grpc_mirror_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
+		file_pkg_flow_grpc_mirror_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*HardSyncMirrorRequest); i {
 			case 0:
 				return &v.state
@@ -1277,7 +1132,7 @@ func file_pkg_flow_grpc_mirror_proto_init() {
 				return nil
 			}
 		}
-		file_pkg_flow_grpc_mirror_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
+		file_pkg_flow_grpc_mirror_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MirrorInfoRequest); i {
 			case 0:
 				return &v.state
@@ -1289,7 +1144,7 @@ func file_pkg_flow_grpc_mirror_proto_init() {
 				return nil
 			}
 		}
-		file_pkg_flow_grpc_mirror_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
+		file_pkg_flow_grpc_mirror_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MirrorInfoResponse); i {
 			case 0:
 				return &v.state
@@ -1301,7 +1156,7 @@ func file_pkg_flow_grpc_mirror_proto_init() {
 				return nil
 			}
 		}
-		file_pkg_flow_grpc_mirror_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
+		file_pkg_flow_grpc_mirror_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*CancelMirrorActivityRequest); i {
 			case 0:
 				return &v.state
@@ -1321,7 +1176,7 @@ func file_pkg_flow_grpc_mirror_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_pkg_flow_grpc_mirror_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   14,
+			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
