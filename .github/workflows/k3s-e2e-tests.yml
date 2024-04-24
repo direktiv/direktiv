@@ -58,23 +58,14 @@ jobs:
       max-parallel: 20
       matrix:
         jest_prefix: [
-            "api/",
             "engine/",
-            "errors/",
             "events/",
-            "filesystem/",
-            "functions/",
             "gateway/",
+            "instances/",
             "kubernetes/",
-            "logparser/",
-            "namespaces/",
-            "metrics/",
-            "notifications/",
-            "registry/",
-            "secrets/",
+            "part1/",
+            "part2/",
             "services/",
-            "variables/",
-            "logs/", 
           ]
     steps:
       - name: Checkout code
