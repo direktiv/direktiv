@@ -7,8 +7,6 @@ option go_package = "github.com/direktiv/direktiv/pkg/flow/grpc";
 import "google/protobuf/empty.proto";
 
 import "pkg/flow/grpc/namespaces.proto";
-import "pkg/flow/grpc/nodes.proto";
-import "pkg/flow/grpc/workflows.proto";
 import "pkg/flow/grpc/variables.proto";
 import "pkg/flow/grpc/instances.proto";
 import "pkg/flow/grpc/internal.proto";
@@ -25,18 +23,6 @@ service Flow {
 	rpc NamespacesStream (NamespacesRequest) returns (stream NamespacesResponse) {}
 	rpc CreateNamespace (CreateNamespaceRequest) returns (CreateNamespaceResponse) {}
 	rpc DeleteNamespace (DeleteNamespaceRequest) returns (google.protobuf.Empty) {}
-
-	// filesystem.
-	rpc Directory (DirectoryRequest) returns (DirectoryResponse) {}
-	rpc DirectoryStream (DirectoryRequest) returns (stream DirectoryResponse) {}
-	rpc CreateDirectory (CreateDirectoryRequest) returns (CreateDirectoryResponse) {}
-	rpc DeleteNode (DeleteNodeRequest) returns (google.protobuf.Empty) {}
-	rpc RenameNode (RenameNodeRequest) returns (RenameNodeResponse) {}
-	rpc Node (NodeRequest) returns (NodeResponse) {}
-	rpc Workflow (WorkflowRequest) returns (WorkflowResponse) {}
-	rpc WorkflowStream (WorkflowRequest) returns (stream WorkflowResponse) {}
-	rpc CreateWorkflow (CreateWorkflowRequest) returns (CreateWorkflowResponse) {}
-	rpc UpdateWorkflow (UpdateWorkflowRequest) returns (UpdateWorkflowResponse) {}
 
 	// instances.
 	rpc Instance (InstanceRequest) returns (InstanceResponse) {}
@@ -64,7 +50,6 @@ service Flow {
 
 	//
 	rpc JQ (JQRequest) returns (JQResponse) {}
-	rpc WorkflowMetrics (WorkflowMetricsRequest) returns (WorkflowMetricsResponse) {}
 
 	// events.
 	rpc EventListeners (EventListenersRequest) returns (EventListenersResponse) {} 
@@ -76,10 +61,7 @@ service Flow {
 
 	// mirrors.
 	rpc CreateNamespaceMirror (CreateNamespaceMirrorRequest) returns (CreateNamespaceResponse) {}
-	rpc CreateDirectoryMirror (CreateDirectoryMirrorRequest) returns (CreateDirectoryResponse) {}
 	rpc UpdateMirrorSettings (UpdateMirrorSettingsRequest) returns (google.protobuf.Empty) {}
-	rpc LockMirror(LockMirrorRequest) returns (google.protobuf.Empty) {}
-	rpc UnlockMirror(UnlockMirrorRequest) returns (google.protobuf.Empty) {}
 	rpc SoftSyncMirror(SoftSyncMirrorRequest) returns (google.protobuf.Empty) {}
 	rpc HardSyncMirror(HardSyncMirrorRequest) returns (google.protobuf.Empty) {}
 	rpc MirrorInfo(MirrorInfoRequest) returns (MirrorInfoResponse) {}
@@ -87,9 +69,6 @@ service Flow {
 	rpc CancelMirrorActivity (CancelMirrorActivityRequest) returns (google.protobuf.Empty) {}
 
 	//
-	rpc File (FileRequest) returns (FileResponse) {}
-	rpc CreateFile (CreateFileRequest) returns (CreateFileResponse) {}
-	rpc UpdateFile (UpdateFileRequest) returns (UpdateFileResponse) {}
 	rpc NamespaceLint (NamespaceLintRequest) returns (NamespaceLintResponse) {}
 }
 

@@ -28,7 +28,7 @@ const (
 	fieldErrorCode      = "error_code"
 	fieldInvoker        = "invoker"
 	fieldDefinition     = "definition"
-	fieldSettings       = "settings"
+	fieldSettings       = "settings" // TODO: alan, remove this when we're ready to make a bundle of breaking database changes
 	fieldDescentInfo    = "descent_info"
 	fieldTelemetryInfo  = "telemetry_info"
 	fieldRuntimeInfo    = "runtime_info"
@@ -53,14 +53,14 @@ var (
 	mostFields = []string{
 		fieldID, fieldNamespaceID, fieldNamespace, fieldRootInstanceID, fieldServer,
 		fieldCreatedAt, fieldUpdatedAt, fieldEndedAt, fieldDeadline, fieldStatus, fieldWorkflowPath,
-		fieldErrorCode, fieldInvoker, fieldDefinition, fieldSettings, fieldDescentInfo, fieldTelemetryInfo,
+		fieldErrorCode, fieldInvoker, fieldDefinition, fieldDescentInfo, fieldTelemetryInfo,
 		fieldRuntimeInfo, fieldChildrenInfo, fieldLiveData, fieldStateMemory, fieldErrorMessage,
 	}
 
 	summaryFields = []string{
 		fieldID, fieldNamespaceID, fieldNamespace, fieldRootInstanceID, fieldServer,
 		fieldCreatedAt, fieldUpdatedAt, fieldEndedAt, fieldDeadline, fieldStatus, fieldWorkflowPath,
-		fieldErrorCode, fieldInvoker, fieldDefinition, fieldSettings, fieldDescentInfo, fieldTelemetryInfo,
+		fieldErrorCode, fieldInvoker, fieldDefinition, fieldDescentInfo, fieldTelemetryInfo,
 		fieldRuntimeInfo, fieldChildrenInfo, fieldErrorMessage,
 		`length(` + fieldInput + `) as input_length`, `length(` + fieldOutput + `) as output_length`, `length(` + fieldMetadata + `) as metadata_length`,
 	}
@@ -97,7 +97,6 @@ func (s *sqlInstanceStore) CreateInstanceData(ctx context.Context, args *instanc
 		ErrorCode:      "",
 		Invoker:        args.Invoker,
 		Definition:     args.Definition,
-		Settings:       args.Settings,
 		DescentInfo:    args.DescentInfo,
 		TelemetryInfo:  args.TelemetryInfo,
 		RuntimeInfo:    args.RuntimeInfo,
@@ -121,7 +120,7 @@ func (s *sqlInstanceStore) CreateInstanceData(ctx context.Context, args *instanc
 	res := s.db.WithContext(ctx).Exec(query,
 		idata.ID, idata.NamespaceID, idata.Namespace, idata.RootInstanceID, idata.Server,
 		idata.Status, idata.WorkflowPath, idata.ErrorCode, idata.Invoker, idata.Definition,
-		idata.Settings, idata.DescentInfo, idata.TelemetryInfo, idata.RuntimeInfo,
+		make([]byte, 0), idata.DescentInfo, idata.TelemetryInfo, idata.RuntimeInfo,
 		idata.ChildrenInfo, idata.Input, idata.LiveData, idata.StateMemory)
 	if res.Error != nil {
 		return nil, res.Error

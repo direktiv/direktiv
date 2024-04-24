@@ -55,15 +55,12 @@ func (events *events) handleEvent(ctx context.Context, ns uuid.UUID, nsName stri
 	slog := *slog.With("trace", traceID, "span", spanID, "namespace", nsName)
 	e := pkgevents.EventEngine{
 		WorkflowStart: func(workflowID uuid.UUID, ev ...*cloudevents.Event) {
-			// events.metrics.InsertRecord
-
 			slog.Debug("Starting workflow via CloudEvent.")
 			_, end := traceMessageTrigger(ctx, "wf: "+workflowID.String())
 			defer end()
 			events.engine.EventsInvoke(workflowID, ev...)
 		},
 		WakeInstance: func(instanceID uuid.UUID, step int, ev []*cloudevents.Event) {
-			// events.metrics.InsertRecord
 			slog.Debug("invoking instance via cloudevent", "instance", instanceID)
 			_, end := traceMessageTrigger(ctx, "ins: "+instanceID.String()+" step: "+fmt.Sprint(step))
 			defer end()
@@ -116,7 +113,6 @@ func (events *events) handleEvent(ctx context.Context, ns uuid.UUID, nsName stri
 		slog.Error(fmt.Sprintf(template, args...))
 	})
 	// tx.Commit(ctx)
-	metricsCloudEventsCaptured.WithLabelValues(nsName, ce.Type(), ce.Source(), nsName).Inc()
 	return nil
 }
 
@@ -568,7 +564,6 @@ func (events *events) BroadcastCloudevent(ctx context.Context, ns *datastore.Nam
 
 	slog.With("trace", traceID, "span", spanID, "namespace", "event", event.ID(), "event_type", event.Type(), "event_source", event.Source())
 
-	metricsCloudEventsReceived.WithLabelValues(ns.Name, event.Type(), event.Source(), ns.Name).Inc()
 	ctx, end := traceBrokerMessage(ctx, *event)
 	defer end()
 
