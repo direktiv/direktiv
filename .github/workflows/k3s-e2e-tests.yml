@@ -338,7 +338,7 @@ jobs:
           exit 1
       - name: Run playwrite tests
         run: |
-          make make docker-e2e-playwright
+          make docker-e2e-playwright
 
       - name: Cleanup test cache
         run: npm cache clean --force
