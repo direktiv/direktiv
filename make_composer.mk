@@ -7,10 +7,13 @@ docker-stop: ## Stop an existing docker deployment.
 docker-build-api:
 	docker build -t direktiv-dev .
 
-.PHONY: docker-start
-docker-start: docker-build-api docker-stop
-docker-start: ## Create a local docker deployment.
+.PHONY: docker-build-ui
+docker-build-ui:
 	cd ui && docker build -t direktiv-ui-dev .
+
+.PHONY: docker-start
+docker-start: docker-build-api docker-build-ui docker-stop
+docker-start: ## Create a local docker deployment.
 	DIREKTIV_UI_IMAGE=direktiv-ui-dev DIREKTIV_IMAGE=direktiv-dev  docker compose up -d --scale e2e-api=0
 
 .PHONY: docker-headless
