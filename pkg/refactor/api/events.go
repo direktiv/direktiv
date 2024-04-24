@@ -1,18 +1,30 @@
 package api
 
 import (
+	"encoding/json"
+	"fmt"
+	"io"
+	"log/slog"
 	"net/http"
 	"slices"
+	"strings"
 	"time"
 
+	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
+	"github.com/direktiv/direktiv/pkg/refactor/events"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 )
 
 type eventsController struct {
-	store datastore.Store
+	store         datastore.Store
+	wakeInstance  events.WakeEventsWaiter
+	startWorkflow events.WorkflowStart
 }
+
+// func (engine *engine) StartWorkflow(ctx context.Context, namespace, path string, input []byte) (*instancestore.InstanceData, error) {
 
 func (c *eventsController) mountEventHistoryRouter(r chi.Router) {
 	r.Get("/", c.listEvents)        // Retrieve a list of events
@@ -22,6 +34,10 @@ func (c *eventsController) mountEventHistoryRouter(r chi.Router) {
 func (c *eventsController) mountEventListenerRouter(r chi.Router) {
 	r.Get("/", c.listEventListeners)                // Retrieve a list of event-listeners
 	r.Get("/{eventListenerID}", c.getEventListener) // Get details of a single event-listener
+}
+
+func (c *eventsController) mountBroadcast(r chi.Router) {
+	r.Get("/", c.registerCoudEvent)
 }
 
 func (c *eventsController) listEvents(w http.ResponseWriter, r *http.Request) {
@@ -140,4 +156,122 @@ func (c *eventsController) listEventListeners(w http.ResponseWriter, r *http.Req
 	}
 
 	writeJSONWithMeta(w, data, metaInfo)
+}
+
+func (c *eventsController) registerCoudEvent(w http.ResponseWriter, r *http.Request) {
+	ns := extractContextNamespace(r)
+	cType := r.Header.Get("Content-type")
+	limit := int64(1024 * 1024 * 32)
+
+	if r.ContentLength > 0 {
+		if r.ContentLength > limit {
+			http.Error(w, "request payload too large", http.StatusBadRequest)
+
+			return
+		}
+	}
+
+	var processor func(data []byte) ([]event.Event, error)
+	b, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Error parsing CloudEvents batch", http.StatusBadRequest)
+
+		return
+	}
+	// Check if the content type indicates a batch of CloudEvents
+	if strings.HasPrefix(cType, "application/cloudevents-batch+json") {
+		processor = extractBatchevent
+	}
+
+	// Check if the content type indicates a single CloudEvent
+	if strings.HasPrefix(cType, "application/json") {
+		s := r.Header.Get("Ce-Type")
+		if s == "" {
+			// some weird magic for historical reasons...
+			r.Header.Set("Content-Type", "application/cloudevents+json; charset=UTF-8")
+		}
+		processor = extractEvent
+	} else {
+		// If content type is not recognized, return an error
+		http.Error(w, "Unsupported Content-Type", http.StatusUnsupportedMediaType)
+	}
+	evs, err := processor(b)
+	if err != nil {
+		http.Error(w, "Error parsing CloudEvent", http.StatusBadRequest)
+
+		return
+	}
+	engine := events.EventEngine{
+		WorkflowStart:       c.startWorkflow,
+		WakeInstance:        c.wakeInstance,
+		GetListenersByTopic: c.store.EventListenerTopics().GetListeners,
+		UpdateListeners:     c.store.EventListener().UpdateOrDelete,
+	}
+	engine.ProcessEvents(r.Context(), ns.ID, evs, func(template string, args ...interface{}) {
+		slog.Error(fmt.Sprintf(template, args...))
+	})
+	// status ok here.
+}
+
+func extractBatchevent(data []byte) ([]cloudevents.Event, error) {
+	var events []cloudevents.Event
+
+	if err := json.Unmarshal(data, &events); err != nil {
+		return nil, fmt.Errorf("failed parsing CloudEvents batch")
+	}
+
+	var err error
+	for i, ev := range events {
+		events[i], err = validateEvent(ev)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return events, nil
+}
+
+func extractEvent(data []byte) ([]cloudevents.Event, error) {
+	ev := cloudevents.NewEvent()
+	if err := json.Unmarshal(data, &ev); err != nil {
+		return nil, fmt.Errorf("failed parsing CloudEvent")
+	}
+	ev, err := validateEvent(ev)
+	if err != nil {
+		return nil, err
+	}
+
+	return append([]event.Event{}, ev), nil
+}
+
+func validateEvent(event cloudevents.Event) (cloudevents.Event, error) {
+	if event.SpecVersion() == "" {
+		event.SetSpecVersion("1.0")
+	}
+
+	if event.ID() == "" {
+		event.SetID(uuid.NewString())
+	}
+	// NOTE: this validate check added to sanitize Azure's dodgy cloudevents.
+	err := event.Validate()
+
+	if err != nil && strings.Contains(err.Error(), "dataschema") {
+		event.SetDataSchema("")
+		err = event.Validate()
+		if err != nil {
+			return cloudevents.Event{}, fmt.Errorf("invalid cloudevent: %w", err)
+		}
+	}
+	// NOTE: remarshal / unmarshal necessary to overcome issues with cloudevents library.
+	data, err := json.Marshal(event)
+	if err != nil {
+		return cloudevents.Event{}, fmt.Errorf("invalid cloudevent: %w", err)
+	}
+
+	err = event.UnmarshalJSON(data)
+	if err != nil {
+		return cloudevents.Event{}, fmt.Errorf("invalid cloudevent: %w", err)
+	}
+
+	return event, nil
 }

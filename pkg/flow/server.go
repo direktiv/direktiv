@@ -113,11 +113,13 @@ func Run(circuit *core.Circuit) error {
 	}
 
 	err = cmd.NewMain(circuit, &cmd.NewMainArgs{
-		Config:            srv.config,
-		Database:          dbManager,
-		PubSubBus:         srv.pBus,
-		ConfigureWorkflow: configureWorkflow,
-		InstanceManager:   instanceManager,
+		Config:              srv.config,
+		Database:            dbManager,
+		PubSubBus:           srv.pBus,
+		ConfigureWorkflow:   configureWorkflow,
+		InstanceManager:     instanceManager,
+		WakeInstanceByEvent: srv.engine.WakeEventsWaiter,
+		WorkflowStart:       srv.engine.EventsInvoke,
 		SyncNamespace: func(namespace any, mirrorConfig any) (any, error) {
 			ns := namespace.(*datastore.Namespace)            //nolint:forcetypeassert
 			mConfig := mirrorConfig.(*datastore.MirrorConfig) //nolint:forcetypeassert

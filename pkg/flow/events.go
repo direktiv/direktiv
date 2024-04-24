@@ -61,11 +61,11 @@ func (events *events) handleEvent(ctx context.Context, ns uuid.UUID, nsName stri
 			defer end()
 			events.engine.EventsInvoke(workflowID, ev...) //nolint:contextcheck
 		},
-		WakeInstance: func(instanceID uuid.UUID, step int, ev []*cloudevents.Event) {
+		WakeInstance: func(instanceID uuid.UUID, ev []*cloudevents.Event) {
 			slog.Debug("invoking instance via cloudevent", "instance", instanceID)
-			_, end := traceMessageTrigger(ctx, "ins: "+instanceID.String()+" step: "+fmt.Sprint(step))
+			_, end := traceMessageTrigger(ctx, "ins: "+instanceID.String())
 			defer end()
-			events.engine.wakeEventsWaiter(instanceID, ev) //nolint:contextcheck
+			events.engine.WakeEventsWaiter(instanceID, ev) //nolint:contextcheck
 		},
 		GetListenersByTopic: func(ctx context.Context, s string) ([]*pkgevents.EventListener, error) {
 			ctx, end := traceGetListenersByTopic(ctx, s)

@@ -31,9 +31,12 @@ type (
 	// WorkflowStart is a function type that signals the initiation of a new workflow,
 	// providing the workflow's unique ID and related CloudEvents.
 	WorkflowStart func(workflowID uuid.UUID, events ...*cloudevents.Event)
+	// WorkflowStart is a function type that signals the initiation of a new workflow,
+	// providing the workflow's unique path and related CloudEvents.
+	WorkflowStartByPath func(workflow string, events ...*cloudevents.Event)
 	// WakeEventsWaiter is a function type responsible for handling events that trigger
 	// the continuation of a workflow instance at a specific step.
-	WakeEventsWaiter func(instanceID uuid.UUID, step int, events []*cloudevents.Event)
+	WakeEventsWaiter func(instanceID uuid.UUID, events []*cloudevents.Event)
 )
 
 // EventEngine is the central coordinator for processing CloudEvents, dispatching them
@@ -321,7 +324,6 @@ func (ee EventEngine) multiConditionEventAndHandler(l *EventListener, waitType b
 				tr := triggerActionArgs{
 					WorkflowID: l.TriggerWorkflow,
 					InstanceID: l.TriggerInstance,
-					Step:       l.TriggerInstanceStep,
 				}
 				ee.triggerAction(waitType, tr, ces)
 
@@ -404,7 +406,6 @@ func (ee EventEngine) singleConditionEventHandler(l *EventListener, waitType boo
 			tr := triggerActionArgs{
 				WorkflowID: l.TriggerWorkflow,
 				InstanceID: l.TriggerInstance,
-				Step:       l.TriggerInstanceStep,
 			}
 			// Trigger the action (note: single event passed).
 			ee.triggerAction(waitType, tr, []*cloudevents.Event{event.Event})
@@ -417,9 +418,9 @@ func (ee EventEngine) singleConditionEventHandler(l *EventListener, waitType boo
 
 // triggerActionArgs encapsulates arguments for triggering workflow actions.
 type triggerActionArgs struct {
-	WorkflowID string // the id of the workflow.
-	InstanceID string // optional fill for instance-waiting trigger.
-	Step       int    // optional fill for instance-waiting trigger.
+	WorkflowPath string // the path of the workflow.
+	WorkflowID   string // the id of the workflow. to be removed.
+	InstanceID   string // optional fill for instance-waiting trigger.
 }
 
 // triggerAction triggers a workflow (start or resume) based on the waitType flag.
@@ -430,7 +431,7 @@ func (ee EventEngine) triggerAction(waitType bool, t triggerActionArgs, ces []*e
 			slog.Error("failed to parse a instance id in the event-engine while processing an event")
 			return
 		}
-		go ee.WakeInstance(id, t.Step, ces)
+		go ee.WakeInstance(id, ces)
 
 		return
 	}

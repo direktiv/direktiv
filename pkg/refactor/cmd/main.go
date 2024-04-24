@@ -15,6 +15,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
+	"github.com/direktiv/direktiv/pkg/refactor/events"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
@@ -25,12 +26,14 @@ import (
 )
 
 type NewMainArgs struct {
-	Config            *core.Config
-	Database          *database.SQLStore
-	PubSubBus         *pubsub.Bus
-	ConfigureWorkflow func(data string) error
-	InstanceManager   *instancestore.InstanceManager
-	SyncNamespace     core.SyncNamespace
+	Config              *core.Config
+	Database            *database.SQLStore
+	PubSubBus           *pubsub.Bus
+	ConfigureWorkflow   func(data string) error
+	InstanceManager     *instancestore.InstanceManager
+	WakeInstanceByEvent events.WakeEventsWaiter
+	WorkflowStart       events.WorkflowStart
+	SyncNamespace       core.SyncNamespace
 }
 
 func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
@@ -161,7 +164,7 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 	)
 
 	// Start api v2 server
-	err = api.Initialize(app, args.Database, args.PubSubBus, args.InstanceManager, "0.0.0.0:6667", circuit)
+	err = api.Initialize(app, args.Database, args.PubSubBus, args.InstanceManager, args.WakeInstanceByEvent, args.WorkflowStart, "0.0.0.0:6667", circuit)
 	if err != nil {
 		return fmt.Errorf("initializing api v2, err: %w", err)
 	}

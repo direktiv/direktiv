@@ -59,8 +59,8 @@ func Test_Add_Get_Complex_Context(t *testing.T) {
 		WorkflowStart: func(workflowID uuid.UUID, events ...*cloudevents.Event) {
 			resultsForEngine <- triggerMock{events: events, wf: workflowID}
 		},
-		WakeInstance: func(instanceID uuid.UUID, step int, events []*cloudevents.Event) {
-			resultsForEngine <- triggerMock{events: events, inst: instanceID, step: step}
+		WakeInstance: func(instanceID uuid.UUID, events []*cloudevents.Event) {
+			resultsForEngine <- triggerMock{events: events, inst: instanceID}
 		},
 		GetListenersByTopic: func(ctx context.Context, s string) ([]*events.EventListener, error) {
 			return listeners, nil
@@ -129,8 +129,8 @@ func Test_Add_Get_And(t *testing.T) {
 		WorkflowStart: func(workflowID uuid.UUID, events ...*cloudevents.Event) {
 			resultsForEngine <- triggerMock{events: events, wf: workflowID}
 		},
-		WakeInstance: func(instanceID uuid.UUID, step int, events []*cloudevents.Event) {
-			resultsForEngine <- triggerMock{events: events, inst: instanceID, step: step}
+		WakeInstance: func(instanceID uuid.UUID, events []*cloudevents.Event) {
+			resultsForEngine <- triggerMock{events: events, inst: instanceID}
 		},
 		GetListenersByTopic: func(ctx context.Context, s string) ([]*events.EventListener, error) {
 			return listeners, nil
@@ -200,8 +200,8 @@ func Test_Add_Get_GatekeeperSimple(t *testing.T) {
 		WorkflowStart: func(workflowID uuid.UUID, events ...*cloudevents.Event) {
 			resultsForEngine <- triggerMock{events: events, wf: workflowID}
 		},
-		WakeInstance: func(instanceID uuid.UUID, step int, events []*cloudevents.Event) {
-			resultsForEngine <- triggerMock{events: events, inst: instanceID, step: step}
+		WakeInstance: func(instanceID uuid.UUID, events []*cloudevents.Event) {
+			resultsForEngine <- triggerMock{events: events, inst: instanceID}
 		},
 		GetListenersByTopic: func(ctx context.Context, s string) ([]*events.EventListener, error) {
 			return listeners, nil
@@ -281,8 +281,8 @@ func Test_Add_Get(t *testing.T) {
 		WorkflowStart: func(workflowID uuid.UUID, events ...*cloudevents.Event) {
 			resultsForEngine <- triggerMock{events: events, wf: workflowID}
 		},
-		WakeInstance: func(instanceID uuid.UUID, step int, events []*cloudevents.Event) {
-			resultsForEngine <- triggerMock{events: events, inst: instanceID, step: step}
+		WakeInstance: func(instanceID uuid.UUID, events []*cloudevents.Event) {
+			resultsForEngine <- triggerMock{events: events, inst: instanceID}
 		},
 		GetListenersByTopic: func(ctx context.Context, s string) ([]*events.EventListener, error) {
 			return listeners, nil
@@ -414,8 +414,8 @@ func Test_Add_GatekkeeperComplex(t *testing.T) {
 		WorkflowStart: func(workflowID uuid.UUID, events ...*cloudevents.Event) {
 			resultsForEngine <- triggerMock{events: events, wf: workflowID}
 		},
-		WakeInstance: func(instanceID uuid.UUID, step int, events []*cloudevents.Event) {
-			resultsForEngine <- triggerMock{events: events, inst: instanceID, step: step}
+		WakeInstance: func(instanceID uuid.UUID, events []*cloudevents.Event) {
+			resultsForEngine <- triggerMock{events: events, inst: instanceID}
 		},
 		GetListenersByTopic: func(ctx context.Context, s string) ([]*events.EventListener, error) {
 			return listeners, nil
