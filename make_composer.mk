@@ -31,7 +31,15 @@ docker-e2e-api: ## Perform backend end-to-end tests against the docker deploymen
 	DIREKTIV_UI_IMAGE=direktiv-ui-dev DIREKTIV_IMAGE=direktiv-dev  docker compose run e2e-api
 
 .PHONY: docker-e2e-playwright
-docker-e2e-playwright: docker-build-api docker-stop
+docker-e2e-playwright:
 docker-e2e-playwright: ## Create a local docker deployment.
-	cd ui && docker build -t direktiv-ui-dev .
-	DIREKTIV_UI_IMAGE=direktiv-ui-dev DIREKTIV_IMAGE=direktiv-dev  docker compose run e2e-playwright
+	docker run \
+	-v $$PWD/ui:/app/ui \
+	-e NODE_TLS_REJECT_UNAUTHORIZED=0 \
+    -e PLAYWRIGHT_USE_VITE=FALSE \
+    -e PLAYWRIGHT_UI_BASE_URL=http://127.0.0.1:8080 \
+	-w /app/ui \
+	--net=host \
+	-it \
+	node:18 \
+	bash -c "yarn && npx playwright install --with-deps chromium && yarn run e2e:headless-chromium-only"
