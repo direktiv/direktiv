@@ -33,6 +33,7 @@ const InputOutput = () => {
   return (
     <div className="flex grow">
       <Tabs
+        data-testid="inputOutputPanel"
         value={activeTab}
         className="flex w-full grid-rows-[auto_1fr] flex-col"
         onValueChange={(value) => {

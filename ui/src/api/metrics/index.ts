@@ -1,16 +1,16 @@
 import { forceLeadingSlash } from "../files/utils";
 
-export const treeKeys = {
-  nodeContent: (
+export const metricsKeys = {
+  metrics: (
     namespace: string,
     { apiKey, path }: { apiKey?: string; path?: string }
   ) =>
     [
       {
-        scope: "tree-node-content",
+        scope: "metrics",
         apiKey,
         namespace,
-        path: forceLeadingSlash(path ?? "/"),
+        path: forceLeadingSlash(path),
       },
     ] as const,
 };
