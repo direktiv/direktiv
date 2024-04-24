@@ -27,23 +27,25 @@ func (events *events) addEvent(ctx context.Context, eventin *cloudevents.Event, 
 		Namespace:  ns.ID,
 		ReceivedAt: time.Now().UTC(),
 	})
-	err := events.runSqlTx(ctx, func(tx *database.SQLStore) error {
+	err := events.runSQLTx(ctx, func(tx *database.SQLStore) error {
 		_, errs := tx.DataStore().EventHistory().Append(ctx, li)
 		for _, err2 := range errs {
 			if err2 != nil {
 				return err2
 			}
 		}
+
 		return nil
 	})
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
 func (events *events) deleteWorkflowEventListeners(ctx context.Context, nsID uuid.UUID, fileID uuid.UUID) error {
-	err := events.runSqlTx(ctx, func(tx *database.SQLStore) error {
+	err := events.runSQLTx(ctx, func(tx *database.SQLStore) error {
 		ids, err := tx.DataStore().EventListener().DeleteAllForWorkflow(ctx, fileID)
 		if err != nil {
 			return err
@@ -68,7 +70,7 @@ func (events *events) deleteWorkflowEventListeners(ctx context.Context, nsID uui
 }
 
 func (events *events) deleteInstanceEventListeners(ctx context.Context, im *instanceMemory) error {
-	err := events.runSqlTx(ctx, func(tx *database.SQLStore) error {
+	err := events.runSQLTx(ctx, func(tx *database.SQLStore) error {
 		ids, err := tx.DataStore().EventListener().DeleteAllForWorkflow(ctx, im.instance.Instance.ID)
 		if err != nil {
 			return err
@@ -145,7 +147,7 @@ func (events *events) processWorkflowEvents(ctx context.Context, nsID uuid.UUID,
 			contextFilters = append(contextFilters, databaseNoDupCheck)
 		}
 
-		err := events.runSqlTx(ctx, func(tx *database.SQLStore) error {
+		err := events.runSQLTx(ctx, func(tx *database.SQLStore) error {
 			err := tx.DataStore().EventListener().Append(ctx, fEv)
 			if err != nil {
 				return err
@@ -205,7 +207,7 @@ func (events *events) addInstanceEventListener(ctx context.Context, namespace, i
 		fEv.TriggerType = pkgevents.WaitOR
 	}
 
-	err := events.runSqlTx(ctx, func(tx *database.SQLStore) error {
+	err := events.runSQLTx(ctx, func(tx *database.SQLStore) error {
 		err := tx.DataStore().EventListener().Append(ctx, fEv)
 		if err != nil {
 			return err

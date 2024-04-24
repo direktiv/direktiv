@@ -18,7 +18,7 @@ func (engine *engine) scheduleTimeout(_ context.Context, im *instanceMemory, old
 		prefix = prefixes[0]
 	}
 
-	oldId := fmt.Sprintf("timeout:%s:%s:%d", im.ID().String(), prefix, im.Step()-1)
+	oldID := fmt.Sprintf("timeout:%s:%s:%d", im.ID().String(), prefix, im.Step()-1)
 	id := fmt.Sprintf("timeout:%s:%s:%d", im.ID().String(), prefix, im.Step())
 	if im.Step() == 0 {
 		id = fmt.Sprintf("timeout:%s:%s", im.ID().String(), prefix)
@@ -27,13 +27,13 @@ func (engine *engine) scheduleTimeout(_ context.Context, im *instanceMemory, old
 	// cancel existing timeouts
 	slog.Debug("Cancelling existing timeouts.", "namespace", im.Namespace(), "instance", im.ID(), "timeout_type", prefix, "step", im.Step(), "error", err)
 
-	engine.timers.deleteTimerByName(oldController, engine.pubsub.Hostname, oldId)
+	engine.timers.deleteTimerByName(oldController, engine.pubsub.Hostname, oldID)
 	engine.timers.deleteTimerByName(oldController, engine.pubsub.Hostname, id)
 
 	// schedule timeout
 
 	args := &timeoutArgs{
-		InstanceId: im.ID().String(),
+		InstanceID: im.ID().String(),
 		Step:       im.Step(),
 		Soft:       soft,
 	}
@@ -60,19 +60,19 @@ func (engine *engine) ScheduleSoftTimeout(ctx context.Context, im *instanceMemor
 }
 
 type timeoutArgs struct {
-	InstanceId string
+	InstanceID string
 	Step       int
 	Soft       bool
 }
 
 const timeoutFunction = "timeoutFunction"
 
-func (engine *engine) hardCancelInstance(instanceId, code, message string) {
-	engine.cancelInstance(instanceId, code, message, false)
+func (engine *engine) hardCancelInstance(instanceID, code, message string) {
+	engine.cancelInstance(instanceID, code, message, false)
 }
 
-func (engine *engine) softCancelInstance(instanceId string, code, message string) {
-	engine.cancelInstance(instanceId, code, message, true)
+func (engine *engine) softCancelInstance(instanceID string, code, message string) {
+	engine.cancelInstance(instanceID, code, message, true)
 }
 
 func (engine *engine) timeoutHandler(input []byte) {
@@ -84,12 +84,12 @@ func (engine *engine) timeoutHandler(input []byte) {
 	}
 
 	if args.Soft {
-		slog.Error("Initiating soft cancellation due to timeout.", "instance", args.InstanceId)
-		engine.softCancelInstance(args.InstanceId, ErrCodeSoftTimeout, "operation timed out")
-		slog.Error("Soft cancellation complete.", "instance", args.InstanceId)
+		slog.Error("Initiating soft cancellation due to timeout.", "instance", args.InstanceID)
+		engine.softCancelInstance(args.InstanceID, ErrCodeSoftTimeout, "operation timed out")
+		slog.Error("Soft cancellation complete.", "instance", args.InstanceID)
 	} else {
-		slog.Error("Initiating hard cancellation due to timeout.", "instance", args.InstanceId)
-		engine.hardCancelInstance(args.InstanceId, ErrCodeHardTimeout, "workflow timed out")
-		slog.Error("Hard cancellation complete.", "instance", args.InstanceId)
+		slog.Error("Initiating hard cancellation due to timeout.", "instance", args.InstanceID)
+		engine.hardCancelInstance(args.InstanceID, ErrCodeHardTimeout, "workflow timed out")
+		slog.Error("Hard cancellation complete.", "instance", args.InstanceID)
 	}
 }

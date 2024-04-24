@@ -26,5 +26,6 @@ func IsNotFound(err error) bool {
 	}
 
 	nferr := new(NotFoundError)
+
 	return errors.As(err, &nferr)
 }

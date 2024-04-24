@@ -119,8 +119,8 @@ func Run(circuit *core.Circuit) error {
 		ConfigureWorkflow: configureWorkflow,
 		InstanceManager:   instanceManager,
 		SyncNamespace: func(namespace any, mirrorConfig any) (any, error) {
-			ns := namespace.(*datastore.Namespace)
-			mConfig := mirrorConfig.(*datastore.MirrorConfig)
+			ns := namespace.(*datastore.Namespace)            //nolint:forcetypeassert
+			mConfig := mirrorConfig.(*datastore.MirrorConfig) //nolint:forcetypeassert
 			proc, err := srv.mirrorManager.NewProcess(context.Background(), ns, datastore.ProcessTypeSync)
 			if err != nil {
 				return nil, err
@@ -258,10 +258,7 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 
 	slog.Debug("Initializing engine.")
 
-	srv.engine, err = initEngine(srv)
-	if err != nil {
-		return nil, err
-	}
+	srv.engine = initEngine(srv)
 	defer srv.cleanup(srv.engine.Close)
 	slog.Info("engine was started.")
 
@@ -282,10 +279,7 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 	slog.Debug("mirror manager was started.")
 
 	slog.Debug("Initializing events.")
-	srv.events, err = initEvents(srv, dbManager.DataStore().StagingEvents().Append)
-	if err != nil {
-		return nil, err
-	}
+	srv.events = initEvents(srv, dbManager.DataStore().StagingEvents().Append)
 	defer srv.cleanup(srv.events.Close)
 
 	slog.Debug("Initializing EventWorkers.")
@@ -516,7 +510,7 @@ func (srv *server) cronPoller() {
 
 func (srv *server) cronPoll() {
 	ctx := context.Background()
-	tx, err := srv.flow.beginSqlTx(ctx)
+	tx, err := srv.flow.beginSQLTx(ctx)
 	if err != nil {
 		slog.Error("cronPoll executing transaction", "error", err)
 		return
@@ -568,11 +562,12 @@ func (srv *server) cronPollerWorkflow(ctx context.Context, tx *database.SQLStore
 	}
 }
 
-func unaryInterceptor(ctx context.Context, req interface{}, info *libgrpc.UnaryServerInfo, handler libgrpc.UnaryHandler) (resp interface{}, err error) {
-	resp, err = handler(ctx, req)
+func unaryInterceptor(ctx context.Context, req interface{}, info *libgrpc.UnaryServerInfo, handler libgrpc.UnaryHandler) (interface{}, error) {
+	resp, err := handler(ctx, req)
 	if err != nil {
 		return nil, translateError(err)
 	}
+
 	return resp, nil
 }
 
@@ -581,22 +576,24 @@ func streamInterceptor(srv interface{}, ss libgrpc.ServerStream, info *libgrpc.S
 	if err != nil {
 		return translateError(err)
 	}
+
 	return nil
 }
 
 func this() string {
-	pc, _, _, _ := runtime.Caller(1)
+	pc, _, _, _ := runtime.Caller(1) //nolint:dogsled
 	fn := runtime.FuncForPC(pc)
 	elems := strings.Split(fn.Name(), ".")
+
 	return elems[len(elems)-1]
 }
 
-func (srv *server) beginSqlTx(ctx context.Context, opts ...*sql.TxOptions) (*database.SQLStore, error) {
+func (srv *server) beginSQLTx(ctx context.Context, opts ...*sql.TxOptions) (*database.SQLStore, error) {
 	return srv.sqlStore.BeginTx(ctx, opts...)
 }
 
-func (srv *server) runSqlTx(ctx context.Context, fun func(tx *database.SQLStore) error) error {
-	tx, err := srv.beginSqlTx(ctx)
+func (srv *server) runSQLTx(ctx context.Context, fun func(tx *database.SQLStore) error) error {
+	tx, err := srv.beginSQLTx(ctx)
 	if err != nil {
 		return err
 	}

@@ -18,7 +18,7 @@ import (
 func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNamespaceMirrorRequest) (*grpc.CreateNamespaceResponse, error) {
 	slog.Debug("Handling gRPC request", "this", this())
 
-	tx, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSQLTx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -30,6 +30,7 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 	if err == nil && req.GetIdempotent() {
 		var resp grpc.CreateNamespaceResponse
 		resp.Namespace = bytedata.ConvertNamespaceToGrpc(ns)
+
 		return &resp, nil
 	}
 	if !errors.Is(err, datastore.ErrNotFound) {
@@ -50,11 +51,11 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 
 	mirConfig, err := tx.DataStore().Mirror().CreateConfig(ctx, &datastore.MirrorConfig{
 		Namespace:            ns.Name,
-		GitRef:               settings.Ref,
-		URL:                  settings.Url,
-		PublicKey:            settings.PublicKey,
-		PrivateKey:           settings.PrivateKey,
-		PrivateKeyPassphrase: settings.Passphrase,
+		GitRef:               settings.GetRef(),
+		URL:                  settings.GetUrl(),
+		PublicKey:            settings.GetPublicKey(),
+		PrivateKey:           settings.GetPrivateKey(),
+		PrivateKeyPassphrase: settings.GetPassphrase(),
 		Insecure:             settings.GetInsecure(),
 	})
 	if err != nil {
@@ -70,7 +71,7 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 		return nil, err
 	}
 
-	go func() {
+	go func() { //nolint:contextcheck
 		flow.mirrorManager.Execute(context.Background(), proc, mirConfig, &mirror.DirektivApplyer{NamespaceID: ns.ID})
 		err := flow.pBus.Publish(pubsub.MirrorSync, ns.Name)
 		if err != nil {
@@ -89,7 +90,7 @@ func (flow *flow) CreateNamespaceMirror(ctx context.Context, req *grpc.CreateNam
 func (flow *flow) UpdateMirrorSettings(ctx context.Context, req *grpc.UpdateMirrorSettingsRequest) (*emptypb.Empty, error) {
 	slog.Debug("Handling gRPC request", "this", this())
 
-	tx, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSQLTx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -141,7 +142,7 @@ func (flow *flow) UpdateMirrorSettings(ctx context.Context, req *grpc.UpdateMirr
 		return nil, err
 	}
 
-	go func() {
+	go func() { //nolint:contextcheck
 		flow.mirrorManager.Execute(context.Background(), proc, mirConfig, &mirror.DirektivApplyer{NamespaceID: ns.ID})
 		err := flow.pBus.Publish(pubsub.MirrorSync, ns.Name)
 		if err != nil {
@@ -166,7 +167,7 @@ func (flow *flow) SoftSyncMirror(ctx context.Context, req *grpc.SoftSyncMirrorRe
 func (flow *flow) HardSyncMirror(ctx context.Context, req *grpc.HardSyncMirrorRequest) (*emptypb.Empty, error) {
 	slog.Debug("Handling gRPC request", "this", this())
 
-	tx, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSQLTx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -187,7 +188,7 @@ func (flow *flow) HardSyncMirror(ctx context.Context, req *grpc.HardSyncMirrorRe
 		return nil, err
 	}
 
-	go func() {
+	go func() { //nolint:contextcheck
 		flow.mirrorManager.Execute(context.Background(), proc, mirConfig, &mirror.DirektivApplyer{NamespaceID: ns.ID})
 		err := flow.pBus.Publish(pubsub.MirrorSync, ns.Name)
 		if err != nil {
@@ -205,7 +206,7 @@ func (flow *flow) HardSyncMirror(ctx context.Context, req *grpc.HardSyncMirrorRe
 func (flow *flow) MirrorInfo(ctx context.Context, req *grpc.MirrorInfoRequest) (*grpc.MirrorInfoResponse, error) {
 	slog.Debug("Handling gRPC request", "this", this())
 
-	tx, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSQLTx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -273,13 +274,9 @@ func (flow *flow) CancelMirrorActivity(ctx context.Context, req *grpc.CancelMirr
 		return nil, err
 	}
 
-	slog.Debug("cancelled by api request", "namespace", req.Namespace)
+	slog.Debug("cancelled by api request", "namespace", req.GetNamespace())
 	flow.pubsub.CancelMirrorProcess(mirProcessID)
 
-	// err = flow.mirrorManager.Cancel(ctx, mirProcessID)
-	// if err != nil {
-	// 	return nil, err
-	// }
 	var resp emptypb.Empty
 
 	return &resp, nil

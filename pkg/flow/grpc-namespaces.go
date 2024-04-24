@@ -16,7 +16,7 @@ import (
 func (flow *flow) Namespace(ctx context.Context, req *grpc.NamespaceRequest) (*grpc.NamespaceResponse, error) {
 	slog.Debug("Handling gRPC request", "this", this())
 
-	tx, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSQLTx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -36,7 +36,7 @@ func (flow *flow) Namespace(ctx context.Context, req *grpc.NamespaceRequest) (*g
 func (flow *flow) Namespaces(ctx context.Context, req *grpc.NamespacesRequest) (*grpc.NamespacesResponse, error) {
 	slog.Debug("Handling gRPC request", "this", this())
 
-	tx, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSQLTx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +80,7 @@ func (flow *flow) NamespacesStream(req *grpc.NamespacesRequest, srv grpc.Flow_Na
 func (flow *flow) CreateNamespace(ctx context.Context, req *grpc.CreateNamespaceRequest) (*grpc.CreateNamespaceResponse, error) {
 	slog.Debug("Handling gRPC request", "this", this())
 
-	tx, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSQLTx(ctx)
 	if err != nil {
 		slog.Warn("Creating a Namespace failed to begin database transaction", "error", err)
 		return nil, err
@@ -124,7 +124,7 @@ func (flow *flow) DeleteNamespace(ctx context.Context, req *grpc.DeleteNamespace
 	slog.Debug("Handling gRPC request", "this", this())
 	var resp emptypb.Empty
 
-	tx, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSQLTx(ctx)
 	if err != nil {
 		return nil, err
 	}
