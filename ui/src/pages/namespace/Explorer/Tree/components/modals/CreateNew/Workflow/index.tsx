@@ -26,8 +26,8 @@ import { fileNameSchema } from "~/api/tree/schema/node";
 import { pages } from "~/util/router/pages";
 import { useCreateFile } from "~/api/files/mutate/createFile";
 import { useNamespace } from "~/util/store/namespace";
-import { useNamespaceLinting } from "~/api/namespaceLinting/query/useNamespaceLinting";
 import { useNavigate } from "react-router-dom";
+import { useNotifications } from "~/api/namespaceLinting/query/useNamespaceLinting";
 import { useState } from "react";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
@@ -54,7 +54,7 @@ const NewWorkflow = ({
   const { t } = useTranslation();
   const namespace = useNamespace();
   const navigate = useNavigate();
-  const { refetch: updateNotificationBell } = useNamespaceLinting();
+  const { refetch: updateNotificationBell } = useNotifications();
 
   const theme = useTheme();
   const [workflowData, setWorkflowData] = useState<string>(

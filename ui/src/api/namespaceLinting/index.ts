@@ -1,8 +1,8 @@
-export const lintingKeys = {
-  getLinting: (namespace: string, { apiKey }: { apiKey?: string }) =>
+export const notificationKeys = {
+  notifications: (namespace: string, { apiKey }: { apiKey?: string }) =>
     [
       {
-        scope: "linting",
+        scope: "notifications",
         apiKey,
         namespace,
       },

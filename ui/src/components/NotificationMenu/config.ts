@@ -1,5 +1,5 @@
-import { LintSchemaType } from "~/api/namespaceLinting/schema";
 import { NotificationItemType } from "./NotificationItem";
+import { NotificationListSchemaType } from "~/api/namespaceLinting/schema";
 import { SquareAsterisk } from "lucide-react";
 import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
@@ -23,12 +23,14 @@ export const useNotificationConfig = () => {
   } as const;
 };
 
-export const useGroupNotifications = (data: LintSchemaType | undefined) => {
+export const useGroupNotifications = (
+  data: NotificationListSchemaType | undefined
+) => {
   const notificationConfig = useNotificationConfig();
   const notificationTypes = Object.entries(notificationConfig ?? {});
   return notificationTypes
     .map(([notificationType, notificationConfig]) => {
-      const matchingNotifications = data?.issues.filter(
+      const matchingNotifications = data?.data.filter(
         (issue) => notificationType === issue.type
       );
 

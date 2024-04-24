@@ -11,13 +11,14 @@ import { Fragment } from "react";
 import { NotificationItem } from "./NotificationItem";
 import { twMergeClsx } from "~/util/helpers";
 import { useGroupNotifications } from "./config";
-import { useNamespaceLinting } from "~/api/namespaceLinting/query/useNamespaceLinting";
+import { useNotifications } from "~/api/namespaceLinting/query/useNamespaceLinting";
 import { useTranslation } from "react-i18next";
 
 const NotificationMenu = ({ className }: { className?: string }) => {
   const { t } = useTranslation();
-  const { data, isLoading } = useNamespaceLinting();
-  const showIndicator = !!data?.issues.length;
+  const { data, isLoading } = useNotifications();
+
+  const showIndicator = !!data?.data.length;
   const notificationItems = useGroupNotifications(data);
 
   return (
