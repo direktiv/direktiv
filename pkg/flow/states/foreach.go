@@ -19,6 +19,7 @@ const (
 	foreachMaxThreads = 3
 )
 
+//nolint:gochecknoinits
 func init() {
 	RegisterState(model.StateTypeForEach, ForEach)
 }
@@ -50,6 +51,7 @@ func (logic *forEachLogic) Deadline(ctx context.Context) time.Time {
 		if logic.Timeout != "" {
 			logic.Log(ctx, log.Error, "failed to parse timeout: %v", err)
 		}
+
 		return time.Now().UTC().Add(DefaultLongDeadline)
 	}
 
@@ -110,7 +112,7 @@ func (logic *forEachLogic) Run(ctx context.Context, wakedata []byte) (*Transitio
 }
 
 func (logic *forEachLogic) scheduleFirstActions(ctx context.Context) (*Transition, error) {
-	x, err := jqOne(logic.GetInstanceData(), logic.Array)
+	x, err := jqOne(logic.GetInstanceData(), logic.Array) //nolint:contextcheck
 	if err != nil {
 		return nil, err
 	}
@@ -201,7 +203,7 @@ func (logic *forEachLogic) scheduleAction(ctx context.Context, inputSource inter
 func (logic *forEachLogic) scheduleRetryAction(ctx context.Context, retry *actionRetryInfo) error {
 	logic.Log(ctx, log.Info, "Retrying...")
 
-	x, err := jqOne(logic.GetInstanceData(), logic.Array)
+	x, err := jqOne(logic.GetInstanceData(), logic.Array) //nolint:contextcheck
 	if err != nil {
 		return err
 	}
@@ -233,6 +235,7 @@ func (logic *forEachLogic) scheduleRetryAction(ctx context.Context, retry *actio
 	return nil
 }
 
+//nolint:gocognit
 func (logic *forEachLogic) processActionResults(ctx context.Context, children []*ChildInfo, results *actionResultPayload) (*Transition, error) {
 	var err error
 
@@ -332,7 +335,7 @@ func (logic *forEachLogic) processActionResults(ctx context.Context, children []
 		if child == nil {
 			idx = i
 
-			x, err := jqOne(logic.GetInstanceData(), logic.Array)
+			x, err := jqOne(logic.GetInstanceData(), logic.Array) //nolint:contextcheck
 			if err != nil {
 				return nil, err
 			}

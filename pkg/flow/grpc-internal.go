@@ -30,7 +30,7 @@ func initInternalServer(ctx context.Context, srv *server) (*internal, error) {
 
 	internal := &internal{server: srv}
 
-	internal.listener, err = net.Listen("tcp", ":7777")
+	internal.listener, err = net.Listen("tcp", ":7777") //nolint:gosec
 	if err != nil {
 		return nil, err
 	}
@@ -97,11 +97,11 @@ func (internal *internal) ActionLog(ctx context.Context, req *grpc.ActionLogRequ
 	stateID := flow[len(flow)-1]
 
 	tags := instance.GetAttributes(recipient.Instance)
-	tags["loop-index"] = fmt.Sprintf("%d", req.Iterator)
+	tags["loop-index"] = fmt.Sprintf("%d", req.GetIterator())
 	tags["state-id"] = stateID
 	tags["state-type"] = "action"
 	loggingCtx := enginerefactor.AddTag(ctx, "state", stateID)
-	loggingCtx = enginerefactor.AddTag(loggingCtx, "branch", req.Iterator)
+	loggingCtx = enginerefactor.AddTag(loggingCtx, "branch", req.GetIterator())
 	loggingCtx = enginerefactor.WithTrack(loggingCtx, enginerefactor.BuildInstanceTrack(instance))
 	loggingCtx = enginerefactor.AddTag(loggingCtx, "namespace", instance.Instance.Namespace)
 	loggingCtx = instance.WithTags(loggingCtx)
@@ -133,5 +133,6 @@ func truncateLogsMsg(msg string,
 			res += truncated + "\n"
 		}
 	}
+
 	return res
 }

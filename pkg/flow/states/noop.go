@@ -8,6 +8,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/model"
 )
 
+//nolint:gochecknoinits
 func init() {
 	RegisterState(model.StateTypeNoop, Noop)
 }
