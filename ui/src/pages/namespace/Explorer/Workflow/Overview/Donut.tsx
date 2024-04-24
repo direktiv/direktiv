@@ -1,29 +1,27 @@
 import { DonutChart } from "@tremor/react";
-import { MetricsObjectSchemaType } from "~/api/metrics/schema";
+import { MetricsReport } from "./utils";
+import { NoResult } from "~/design/Table";
+import { PieChart } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-const Donut = ({ data }: { data: MetricsObjectSchemaType }) => {
+const Donut = ({ metrics }: { metrics: MetricsReport }) => {
   const { t } = useTranslation();
 
-  const { complete, failed, total } = data;
-
-  const percentages = {
-    complete: (complete / total) * 100,
-    failed: (failed / total) * 100,
-  };
-
-  const chartData = [
-    {
-      name: "failed",
-      count: failed,
-    },
-    {
-      name: "complete",
-      count: complete,
-    },
-  ];
-
   const valueFormatter = (number: number) => number.toString();
+
+  if (!metrics.items)
+    return (
+      <NoResult icon={PieChart}>
+        {t("pages.explorer.tree.workflow.overview.metrics.noResult")}
+      </NoResult>
+    );
+
+  const { items } = metrics;
+
+  const chartData = items.map((item) => ({
+    name: item.name,
+    count: item.count,
+  }));
 
   return (
     <div className="flex flex-col items-center py-4">
@@ -38,16 +36,13 @@ const Donut = ({ data }: { data: MetricsObjectSchemaType }) => {
         colors={["red", "emerald"]}
       />
       <div className="flex justify-evenly gap-2 lg:gap-3">
-        <div>
-          {t("pages.explorer.tree.workflow.overview.metrics.successful", {
-            percentage: percentages.complete.toFixed(0),
-          })}
-        </div>
-        <div>
-          {t("pages.explorer.tree.workflow.overview.metrics.failed", {
-            percentage: percentages.failed.toFixed(0),
-          })}
-        </div>
+        {items.map((item) => (
+          <div key={item.name}>
+            {t(`pages.explorer.tree.workflow.overview.metrics.${item.name}`, {
+              percentage: item.percentage.toFixed(0),
+            })}
+          </div>
+        ))}
       </div>
     </div>
   );

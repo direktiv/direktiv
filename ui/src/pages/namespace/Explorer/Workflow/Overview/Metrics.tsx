@@ -3,6 +3,7 @@ import Donut from "./Donut";
 import { NoResult } from "~/design/Table";
 import { PieChart } from "lucide-react";
 import RefreshButton from "~/design/RefreshButton";
+import { extractMetrics } from "./utils";
 import { useMetrics } from "~/api/metrics/query/metrics";
 import { useTranslation } from "react-i18next";
 
@@ -28,8 +29,9 @@ const Metrics = ({ workflow }: { workflow: string }) => {
   let Output = <></>;
 
   if (isFetched && data?.data?.total && data.data.total > 0) {
-    const metrics = data?.data;
-    Output = <Donut data={metrics} />;
+    const metrics = extractMetrics(data.data);
+
+    Output = <Donut metrics={metrics} />;
   } else {
     Output = (
       <NoResult icon={PieChart}>

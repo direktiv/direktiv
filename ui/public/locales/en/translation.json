@@ -155,7 +155,7 @@
             },
             "metrics": {
               "header": "Success / failure rate",
-              "successful": "complete: {{percentage}}%",
+              "complete": "complete: {{percentage}}%",
               "failed": "failed: {{percentage}}%",
               "noResult": "no data available",
               "loading": "loading..."

@@ -25,7 +25,7 @@ export const MetricsObjectSchema = z.object({
 });
 
 export const MetricsResponseSchema = z.object({
-  data: MetricsObjectSchema,
+  data: MetricsObjectSchema.optional(),
 });
 
 export type MetricsObjectSchemaType = z.infer<typeof MetricsObjectSchema>;
