@@ -20,11 +20,6 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Flow_Namespace_FullMethodName                   = "/direktiv_flow.Flow/Namespace"
-	Flow_Namespaces_FullMethodName                  = "/direktiv_flow.Flow/Namespaces"
-	Flow_NamespacesStream_FullMethodName            = "/direktiv_flow.Flow/NamespacesStream"
-	Flow_CreateNamespace_FullMethodName             = "/direktiv_flow.Flow/CreateNamespace"
-	Flow_DeleteNamespace_FullMethodName             = "/direktiv_flow.Flow/DeleteNamespace"
 	Flow_Instance_FullMethodName                    = "/direktiv_flow.Flow/Instance"
 	Flow_InstanceStream_FullMethodName              = "/direktiv_flow.Flow/InstanceStream"
 	Flow_Instances_FullMethodName                   = "/direktiv_flow.Flow/Instances"
@@ -49,13 +44,6 @@ const (
 	Flow_EventHistoryStream_FullMethodName          = "/direktiv_flow.Flow/EventHistoryStream"
 	Flow_HistoricalEvent_FullMethodName             = "/direktiv_flow.Flow/HistoricalEvent"
 	Flow_ReplayEvent_FullMethodName                 = "/direktiv_flow.Flow/ReplayEvent"
-	Flow_CreateNamespaceMirror_FullMethodName       = "/direktiv_flow.Flow/CreateNamespaceMirror"
-	Flow_UpdateMirrorSettings_FullMethodName        = "/direktiv_flow.Flow/UpdateMirrorSettings"
-	Flow_SoftSyncMirror_FullMethodName              = "/direktiv_flow.Flow/SoftSyncMirror"
-	Flow_HardSyncMirror_FullMethodName              = "/direktiv_flow.Flow/HardSyncMirror"
-	Flow_MirrorInfo_FullMethodName                  = "/direktiv_flow.Flow/MirrorInfo"
-	Flow_MirrorInfoStream_FullMethodName            = "/direktiv_flow.Flow/MirrorInfoStream"
-	Flow_CancelMirrorActivity_FullMethodName        = "/direktiv_flow.Flow/CancelMirrorActivity"
 	Flow_NamespaceLint_FullMethodName               = "/direktiv_flow.Flow/NamespaceLint"
 )
 
@@ -63,12 +51,6 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type FlowClient interface {
-	// namespaces.
-	Namespace(ctx context.Context, in *NamespaceRequest, opts ...grpc.CallOption) (*NamespaceResponse, error)
-	Namespaces(ctx context.Context, in *NamespacesRequest, opts ...grpc.CallOption) (*NamespacesResponse, error)
-	NamespacesStream(ctx context.Context, in *NamespacesRequest, opts ...grpc.CallOption) (Flow_NamespacesStreamClient, error)
-	CreateNamespace(ctx context.Context, in *CreateNamespaceRequest, opts ...grpc.CallOption) (*CreateNamespaceResponse, error)
-	DeleteNamespace(ctx context.Context, in *DeleteNamespaceRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// instances.
 	Instance(ctx context.Context, in *InstanceRequest, opts ...grpc.CallOption) (*InstanceResponse, error)
 	InstanceStream(ctx context.Context, in *InstanceRequest, opts ...grpc.CallOption) (Flow_InstanceStreamClient, error)
@@ -97,14 +79,6 @@ type FlowClient interface {
 	EventHistoryStream(ctx context.Context, in *EventHistoryRequest, opts ...grpc.CallOption) (Flow_EventHistoryStreamClient, error)
 	HistoricalEvent(ctx context.Context, in *HistoricalEventRequest, opts ...grpc.CallOption) (*HistoricalEventResponse, error)
 	ReplayEvent(ctx context.Context, in *ReplayEventRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	// mirrors.
-	CreateNamespaceMirror(ctx context.Context, in *CreateNamespaceMirrorRequest, opts ...grpc.CallOption) (*CreateNamespaceResponse, error)
-	UpdateMirrorSettings(ctx context.Context, in *UpdateMirrorSettingsRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	SoftSyncMirror(ctx context.Context, in *SoftSyncMirrorRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	HardSyncMirror(ctx context.Context, in *HardSyncMirrorRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	MirrorInfo(ctx context.Context, in *MirrorInfoRequest, opts ...grpc.CallOption) (*MirrorInfoResponse, error)
-	MirrorInfoStream(ctx context.Context, in *MirrorInfoRequest, opts ...grpc.CallOption) (Flow_MirrorInfoStreamClient, error)
-	CancelMirrorActivity(ctx context.Context, in *CancelMirrorActivityRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	NamespaceLint(ctx context.Context, in *NamespaceLintRequest, opts ...grpc.CallOption) (*NamespaceLintResponse, error)
 }
 
@@ -114,74 +88,6 @@ type flowClient struct {
 
 func NewFlowClient(cc grpc.ClientConnInterface) FlowClient {
 	return &flowClient{cc}
-}
-
-func (c *flowClient) Namespace(ctx context.Context, in *NamespaceRequest, opts ...grpc.CallOption) (*NamespaceResponse, error) {
-	out := new(NamespaceResponse)
-	err := c.cc.Invoke(ctx, Flow_Namespace_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) Namespaces(ctx context.Context, in *NamespacesRequest, opts ...grpc.CallOption) (*NamespacesResponse, error) {
-	out := new(NamespacesResponse)
-	err := c.cc.Invoke(ctx, Flow_Namespaces_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) NamespacesStream(ctx context.Context, in *NamespacesRequest, opts ...grpc.CallOption) (Flow_NamespacesStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[0], Flow_NamespacesStream_FullMethodName, opts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &flowNamespacesStreamClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-type Flow_NamespacesStreamClient interface {
-	Recv() (*NamespacesResponse, error)
-	grpc.ClientStream
-}
-
-type flowNamespacesStreamClient struct {
-	grpc.ClientStream
-}
-
-func (x *flowNamespacesStreamClient) Recv() (*NamespacesResponse, error) {
-	m := new(NamespacesResponse)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func (c *flowClient) CreateNamespace(ctx context.Context, in *CreateNamespaceRequest, opts ...grpc.CallOption) (*CreateNamespaceResponse, error) {
-	out := new(CreateNamespaceResponse)
-	err := c.cc.Invoke(ctx, Flow_CreateNamespace_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) DeleteNamespace(ctx context.Context, in *DeleteNamespaceRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, Flow_DeleteNamespace_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 func (c *flowClient) Instance(ctx context.Context, in *InstanceRequest, opts ...grpc.CallOption) (*InstanceResponse, error) {
@@ -194,7 +100,7 @@ func (c *flowClient) Instance(ctx context.Context, in *InstanceRequest, opts ...
 }
 
 func (c *flowClient) InstanceStream(ctx context.Context, in *InstanceRequest, opts ...grpc.CallOption) (Flow_InstanceStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[1], Flow_InstanceStream_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[0], Flow_InstanceStream_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -235,7 +141,7 @@ func (c *flowClient) Instances(ctx context.Context, in *InstancesRequest, opts .
 }
 
 func (c *flowClient) InstancesStream(ctx context.Context, in *InstancesRequest, opts ...grpc.CallOption) (Flow_InstancesStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[2], Flow_InstancesStream_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[1], Flow_InstancesStream_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -303,7 +209,7 @@ func (c *flowClient) StartWorkflow(ctx context.Context, in *StartWorkflowRequest
 }
 
 func (c *flowClient) AwaitWorkflow(ctx context.Context, in *AwaitWorkflowRequest, opts ...grpc.CallOption) (Flow_AwaitWorkflowClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[3], Flow_AwaitWorkflow_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[2], Flow_AwaitWorkflow_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -362,7 +268,7 @@ func (c *flowClient) NamespaceVariable(ctx context.Context, in *NamespaceVariabl
 }
 
 func (c *flowClient) SetNamespaceVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetNamespaceVariableParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[4], Flow_SetNamespaceVariableParcels_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[3], Flow_SetNamespaceVariableParcels_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -405,7 +311,7 @@ func (c *flowClient) WorkflowVariable(ctx context.Context, in *WorkflowVariableR
 }
 
 func (c *flowClient) SetWorkflowVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetWorkflowVariableParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[5], Flow_SetWorkflowVariableParcels_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[4], Flow_SetWorkflowVariableParcels_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -448,7 +354,7 @@ func (c *flowClient) InstanceVariable(ctx context.Context, in *InstanceVariableR
 }
 
 func (c *flowClient) SetInstanceVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetInstanceVariableParcelsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[6], Flow_SetInstanceVariableParcels_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[5], Flow_SetInstanceVariableParcels_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -500,7 +406,7 @@ func (c *flowClient) EventListeners(ctx context.Context, in *EventListenersReque
 }
 
 func (c *flowClient) EventListenersStream(ctx context.Context, in *EventListenersRequest, opts ...grpc.CallOption) (Flow_EventListenersStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[7], Flow_EventListenersStream_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[6], Flow_EventListenersStream_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -541,7 +447,7 @@ func (c *flowClient) EventHistory(ctx context.Context, in *EventHistoryRequest, 
 }
 
 func (c *flowClient) EventHistoryStream(ctx context.Context, in *EventHistoryRequest, opts ...grpc.CallOption) (Flow_EventHistoryStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[8], Flow_EventHistoryStream_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[7], Flow_EventHistoryStream_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -590,92 +496,6 @@ func (c *flowClient) ReplayEvent(ctx context.Context, in *ReplayEventRequest, op
 	return out, nil
 }
 
-func (c *flowClient) CreateNamespaceMirror(ctx context.Context, in *CreateNamespaceMirrorRequest, opts ...grpc.CallOption) (*CreateNamespaceResponse, error) {
-	out := new(CreateNamespaceResponse)
-	err := c.cc.Invoke(ctx, Flow_CreateNamespaceMirror_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) UpdateMirrorSettings(ctx context.Context, in *UpdateMirrorSettingsRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, Flow_UpdateMirrorSettings_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) SoftSyncMirror(ctx context.Context, in *SoftSyncMirrorRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, Flow_SoftSyncMirror_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) HardSyncMirror(ctx context.Context, in *HardSyncMirrorRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, Flow_HardSyncMirror_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) MirrorInfo(ctx context.Context, in *MirrorInfoRequest, opts ...grpc.CallOption) (*MirrorInfoResponse, error) {
-	out := new(MirrorInfoResponse)
-	err := c.cc.Invoke(ctx, Flow_MirrorInfo_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) MirrorInfoStream(ctx context.Context, in *MirrorInfoRequest, opts ...grpc.CallOption) (Flow_MirrorInfoStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[9], Flow_MirrorInfoStream_FullMethodName, opts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &flowMirrorInfoStreamClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-type Flow_MirrorInfoStreamClient interface {
-	Recv() (*MirrorInfoResponse, error)
-	grpc.ClientStream
-}
-
-type flowMirrorInfoStreamClient struct {
-	grpc.ClientStream
-}
-
-func (x *flowMirrorInfoStreamClient) Recv() (*MirrorInfoResponse, error) {
-	m := new(MirrorInfoResponse)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func (c *flowClient) CancelMirrorActivity(ctx context.Context, in *CancelMirrorActivityRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, Flow_CancelMirrorActivity_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *flowClient) NamespaceLint(ctx context.Context, in *NamespaceLintRequest, opts ...grpc.CallOption) (*NamespaceLintResponse, error) {
 	out := new(NamespaceLintResponse)
 	err := c.cc.Invoke(ctx, Flow_NamespaceLint_FullMethodName, in, out, opts...)
@@ -689,12 +509,6 @@ func (c *flowClient) NamespaceLint(ctx context.Context, in *NamespaceLintRequest
 // All implementations must embed UnimplementedFlowServer
 // for forward compatibility
 type FlowServer interface {
-	// namespaces.
-	Namespace(context.Context, *NamespaceRequest) (*NamespaceResponse, error)
-	Namespaces(context.Context, *NamespacesRequest) (*NamespacesResponse, error)
-	NamespacesStream(*NamespacesRequest, Flow_NamespacesStreamServer) error
-	CreateNamespace(context.Context, *CreateNamespaceRequest) (*CreateNamespaceResponse, error)
-	DeleteNamespace(context.Context, *DeleteNamespaceRequest) (*emptypb.Empty, error)
 	// instances.
 	Instance(context.Context, *InstanceRequest) (*InstanceResponse, error)
 	InstanceStream(*InstanceRequest, Flow_InstanceStreamServer) error
@@ -723,14 +537,6 @@ type FlowServer interface {
 	EventHistoryStream(*EventHistoryRequest, Flow_EventHistoryStreamServer) error
 	HistoricalEvent(context.Context, *HistoricalEventRequest) (*HistoricalEventResponse, error)
 	ReplayEvent(context.Context, *ReplayEventRequest) (*emptypb.Empty, error)
-	// mirrors.
-	CreateNamespaceMirror(context.Context, *CreateNamespaceMirrorRequest) (*CreateNamespaceResponse, error)
-	UpdateMirrorSettings(context.Context, *UpdateMirrorSettingsRequest) (*emptypb.Empty, error)
-	SoftSyncMirror(context.Context, *SoftSyncMirrorRequest) (*emptypb.Empty, error)
-	HardSyncMirror(context.Context, *HardSyncMirrorRequest) (*emptypb.Empty, error)
-	MirrorInfo(context.Context, *MirrorInfoRequest) (*MirrorInfoResponse, error)
-	MirrorInfoStream(*MirrorInfoRequest, Flow_MirrorInfoStreamServer) error
-	CancelMirrorActivity(context.Context, *CancelMirrorActivityRequest) (*emptypb.Empty, error)
 	NamespaceLint(context.Context, *NamespaceLintRequest) (*NamespaceLintResponse, error)
 	mustEmbedUnimplementedFlowServer()
 }
@@ -739,21 +545,6 @@ type FlowServer interface {
 type UnimplementedFlowServer struct {
 }
 
-func (UnimplementedFlowServer) Namespace(context.Context, *NamespaceRequest) (*NamespaceResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Namespace not implemented")
-}
-func (UnimplementedFlowServer) Namespaces(context.Context, *NamespacesRequest) (*NamespacesResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Namespaces not implemented")
-}
-func (UnimplementedFlowServer) NamespacesStream(*NamespacesRequest, Flow_NamespacesStreamServer) error {
-	return status.Errorf(codes.Unimplemented, "method NamespacesStream not implemented")
-}
-func (UnimplementedFlowServer) CreateNamespace(context.Context, *CreateNamespaceRequest) (*CreateNamespaceResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateNamespace not implemented")
-}
-func (UnimplementedFlowServer) DeleteNamespace(context.Context, *DeleteNamespaceRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteNamespace not implemented")
-}
 func (UnimplementedFlowServer) Instance(context.Context, *InstanceRequest) (*InstanceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Instance not implemented")
 }
@@ -826,27 +617,6 @@ func (UnimplementedFlowServer) HistoricalEvent(context.Context, *HistoricalEvent
 func (UnimplementedFlowServer) ReplayEvent(context.Context, *ReplayEventRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReplayEvent not implemented")
 }
-func (UnimplementedFlowServer) CreateNamespaceMirror(context.Context, *CreateNamespaceMirrorRequest) (*CreateNamespaceResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateNamespaceMirror not implemented")
-}
-func (UnimplementedFlowServer) UpdateMirrorSettings(context.Context, *UpdateMirrorSettingsRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateMirrorSettings not implemented")
-}
-func (UnimplementedFlowServer) SoftSyncMirror(context.Context, *SoftSyncMirrorRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SoftSyncMirror not implemented")
-}
-func (UnimplementedFlowServer) HardSyncMirror(context.Context, *HardSyncMirrorRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method HardSyncMirror not implemented")
-}
-func (UnimplementedFlowServer) MirrorInfo(context.Context, *MirrorInfoRequest) (*MirrorInfoResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method MirrorInfo not implemented")
-}
-func (UnimplementedFlowServer) MirrorInfoStream(*MirrorInfoRequest, Flow_MirrorInfoStreamServer) error {
-	return status.Errorf(codes.Unimplemented, "method MirrorInfoStream not implemented")
-}
-func (UnimplementedFlowServer) CancelMirrorActivity(context.Context, *CancelMirrorActivityRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CancelMirrorActivity not implemented")
-}
 func (UnimplementedFlowServer) NamespaceLint(context.Context, *NamespaceLintRequest) (*NamespaceLintResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method NamespaceLint not implemented")
 }
@@ -861,99 +631,6 @@ type UnsafeFlowServer interface {
 
 func RegisterFlowServer(s grpc.ServiceRegistrar, srv FlowServer) {
 	s.RegisterService(&Flow_ServiceDesc, srv)
-}
-
-func _Flow_Namespace_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(NamespaceRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).Namespace(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_Namespace_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).Namespace(ctx, req.(*NamespaceRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_Namespaces_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(NamespacesRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).Namespaces(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_Namespaces_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).Namespaces(ctx, req.(*NamespacesRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_NamespacesStream_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(NamespacesRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
-	return srv.(FlowServer).NamespacesStream(m, &flowNamespacesStreamServer{stream})
-}
-
-type Flow_NamespacesStreamServer interface {
-	Send(*NamespacesResponse) error
-	grpc.ServerStream
-}
-
-type flowNamespacesStreamServer struct {
-	grpc.ServerStream
-}
-
-func (x *flowNamespacesStreamServer) Send(m *NamespacesResponse) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func _Flow_CreateNamespace_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateNamespaceRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).CreateNamespace(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_CreateNamespace_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).CreateNamespace(ctx, req.(*CreateNamespaceRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_DeleteNamespace_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteNamespaceRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).DeleteNamespace(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_DeleteNamespace_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).DeleteNamespace(ctx, req.(*DeleteNamespaceRequest))
-	}
-	return interceptor(ctx, in, info, handler)
 }
 
 func _Flow_Instance_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -1427,135 +1104,6 @@ func _Flow_ReplayEvent_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Flow_CreateNamespaceMirror_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateNamespaceMirrorRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).CreateNamespaceMirror(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_CreateNamespaceMirror_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).CreateNamespaceMirror(ctx, req.(*CreateNamespaceMirrorRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_UpdateMirrorSettings_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateMirrorSettingsRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).UpdateMirrorSettings(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_UpdateMirrorSettings_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).UpdateMirrorSettings(ctx, req.(*UpdateMirrorSettingsRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_SoftSyncMirror_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SoftSyncMirrorRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).SoftSyncMirror(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_SoftSyncMirror_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).SoftSyncMirror(ctx, req.(*SoftSyncMirrorRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_HardSyncMirror_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(HardSyncMirrorRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).HardSyncMirror(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_HardSyncMirror_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).HardSyncMirror(ctx, req.(*HardSyncMirrorRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_MirrorInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MirrorInfoRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).MirrorInfo(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_MirrorInfo_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).MirrorInfo(ctx, req.(*MirrorInfoRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_MirrorInfoStream_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(MirrorInfoRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
-	return srv.(FlowServer).MirrorInfoStream(m, &flowMirrorInfoStreamServer{stream})
-}
-
-type Flow_MirrorInfoStreamServer interface {
-	Send(*MirrorInfoResponse) error
-	grpc.ServerStream
-}
-
-type flowMirrorInfoStreamServer struct {
-	grpc.ServerStream
-}
-
-func (x *flowMirrorInfoStreamServer) Send(m *MirrorInfoResponse) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func _Flow_CancelMirrorActivity_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CancelMirrorActivityRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).CancelMirrorActivity(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_CancelMirrorActivity_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).CancelMirrorActivity(ctx, req.(*CancelMirrorActivityRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Flow_NamespaceLint_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(NamespaceLintRequest)
 	if err := dec(in); err != nil {
@@ -1581,22 +1129,6 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "direktiv_flow.Flow",
 	HandlerType: (*FlowServer)(nil),
 	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "Namespace",
-			Handler:    _Flow_Namespace_Handler,
-		},
-		{
-			MethodName: "Namespaces",
-			Handler:    _Flow_Namespaces_Handler,
-		},
-		{
-			MethodName: "CreateNamespace",
-			Handler:    _Flow_CreateNamespace_Handler,
-		},
-		{
-			MethodName: "DeleteNamespace",
-			Handler:    _Flow_DeleteNamespace_Handler,
-		},
 		{
 			MethodName: "Instance",
 			Handler:    _Flow_Instance_Handler,
@@ -1662,40 +1194,11 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Flow_ReplayEvent_Handler,
 		},
 		{
-			MethodName: "CreateNamespaceMirror",
-			Handler:    _Flow_CreateNamespaceMirror_Handler,
-		},
-		{
-			MethodName: "UpdateMirrorSettings",
-			Handler:    _Flow_UpdateMirrorSettings_Handler,
-		},
-		{
-			MethodName: "SoftSyncMirror",
-			Handler:    _Flow_SoftSyncMirror_Handler,
-		},
-		{
-			MethodName: "HardSyncMirror",
-			Handler:    _Flow_HardSyncMirror_Handler,
-		},
-		{
-			MethodName: "MirrorInfo",
-			Handler:    _Flow_MirrorInfo_Handler,
-		},
-		{
-			MethodName: "CancelMirrorActivity",
-			Handler:    _Flow_CancelMirrorActivity_Handler,
-		},
-		{
 			MethodName: "NamespaceLint",
 			Handler:    _Flow_NamespaceLint_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
-		{
-			StreamName:    "NamespacesStream",
-			Handler:       _Flow_NamespacesStream_Handler,
-			ServerStreams: true,
-		},
 		{
 			StreamName:    "InstanceStream",
 			Handler:       _Flow_InstanceStream_Handler,
@@ -1734,11 +1237,6 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "EventHistoryStream",
 			Handler:       _Flow_EventHistoryStream_Handler,
-			ServerStreams: true,
-		},
-		{
-			StreamName:    "MirrorInfoStream",
-			Handler:       _Flow_MirrorInfoStream_Handler,
 			ServerStreams: true,
 		},
 	},

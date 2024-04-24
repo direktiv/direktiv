@@ -20,7 +20,9 @@ describe('Test filesystem tree update operations', () => {
 
 	helpers.itShouldUpdateFileV2(it, expect, namespace,
 		'/dir1/foo1',
-		{ path: '/dir1/foo2',
-			data: btoa(helpers.dummyWorkflow('foo2')) },
+		{
+			path: '/dir1/foo2',
+			data: btoa(helpers.dummyWorkflow('foo2')),
+		},
 	)
 })

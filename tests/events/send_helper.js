@@ -26,7 +26,8 @@ async function listInstancesAndFilter (ns, wf, status) {
 
 			await helpers.sleep(100)
 			// eslint-disable-next-line
-			instancesResponse = (function () {})()
+			instancesResponse = (function () {
+			})()
 		}
 
 	if (instancesResponse)

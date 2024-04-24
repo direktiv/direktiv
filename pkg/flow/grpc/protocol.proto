@@ -14,16 +14,7 @@ import "pkg/flow/grpc/cloudevent.proto";
 import "pkg/flow/grpc/util.proto";
 // import "pkg/flow/grpc/eventing.proto";
 
-import "pkg/flow/grpc/mirror.proto";
-
 service Flow {
-	// namespaces.
-	rpc Namespace (NamespaceRequest) returns (NamespaceResponse) {}
-	rpc Namespaces (NamespacesRequest) returns (NamespacesResponse) {}
-	rpc NamespacesStream (NamespacesRequest) returns (stream NamespacesResponse) {}
-	rpc CreateNamespace (CreateNamespaceRequest) returns (CreateNamespaceResponse) {}
-	rpc DeleteNamespace (DeleteNamespaceRequest) returns (google.protobuf.Empty) {}
-
 	// instances.
 	rpc Instance (InstanceRequest) returns (InstanceResponse) {}
 	rpc InstanceStream (InstanceRequest) returns (stream InstanceResponse) {}
@@ -58,15 +49,6 @@ service Flow {
 	rpc EventHistoryStream (EventHistoryRequest) returns (stream EventHistoryResponse) {}
 	rpc HistoricalEvent (HistoricalEventRequest) returns (HistoricalEventResponse) {}
 	rpc ReplayEvent (ReplayEventRequest) returns (google.protobuf.Empty) {}
-
-	// mirrors.
-	rpc CreateNamespaceMirror (CreateNamespaceMirrorRequest) returns (CreateNamespaceResponse) {}
-	rpc UpdateMirrorSettings (UpdateMirrorSettingsRequest) returns (google.protobuf.Empty) {}
-	rpc SoftSyncMirror(SoftSyncMirrorRequest) returns (google.protobuf.Empty) {}
-	rpc HardSyncMirror(HardSyncMirrorRequest) returns (google.protobuf.Empty) {}
-	rpc MirrorInfo(MirrorInfoRequest) returns (MirrorInfoResponse) {}
-	rpc MirrorInfoStream(MirrorInfoRequest) returns (stream MirrorInfoResponse) {}
-	rpc CancelMirrorActivity (CancelMirrorActivityRequest) returns (google.protobuf.Empty) {}
 
 	//
 	rpc NamespaceLint (NamespaceLintRequest) returns (NamespaceLintResponse) {}
