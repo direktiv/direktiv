@@ -42,16 +42,16 @@ type CommandsResponse struct {
 func RunCommands(ctx context.Context, in Commands, info *server.ExecutionInfo) (interface{}, error) {
 	commandOutput := make([]CommandsResponse, 0)
 
-	info.Log.Log("running %d commands", len(in.Commands))
+	info.Log.Logf("running %d commands", len(in.Commands))
 
 	for a := range in.Commands {
 		command := in.Commands[a]
 
 		// print command
 		if !command.SuppressCommand {
-			info.Log.Log("running command '%s'", command.Command)
+			info.Log.Logf("running command '%s'", command.Command)
 		} else {
-			info.Log.Log("running command %d", a)
+			info.Log.Logf("running command %d", a)
 		}
 
 		// reset binary writer
@@ -72,7 +72,7 @@ func RunCommands(ctx context.Context, in Commands, info *server.ExecutionInfo) (
 		info.Log.SetWriterState(true)
 
 		if err != nil {
-			info.Log.Log("%s", err.Error())
+			info.Log.Logf("%s", err.Error())
 			cr.Error = err.Error()
 
 			// check if it has to stop here

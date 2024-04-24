@@ -112,10 +112,13 @@ func Handler[IN any](fn func(context.Context, IN, *ExecutionInfo) (interface{}, 
 
 			return
 		}
-
+		backend := "http://localhost:8889"
+		if os.Getenv(httpBackend) != "" {
+			backend = os.Getenv(httpBackend)
+		}
 		ei := &ExecutionInfo{
 			TmpDir: tmpDir,
-			Log:    NewLogger(actionID),
+			Log:    NewLogger(backend, actionID),
 		}
 
 		for a := range in.Files {
