@@ -1,4 +1,4 @@
-import { ArrowLeft, Home, RefreshCcw } from "lucide-react";
+import { ArrowLeft, Home, RefreshCw } from "lucide-react";
 import { Link, isRouteErrorResponse, useRouteError } from "react-router-dom";
 
 import Button from "~/design/Button";
@@ -56,7 +56,7 @@ const ErrorPage = ({ className }: ErrorPageProps) => {
             onClick={() => location.reload()}
             data-testid="error-reload-btn"
           >
-            <RefreshCcw />
+            <RefreshCw />
             {t("pages.error.reload")}
           </Button>
           <Button variant="primary" asChild isAnchor className="col-span-2">

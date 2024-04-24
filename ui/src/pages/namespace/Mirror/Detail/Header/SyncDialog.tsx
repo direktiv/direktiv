@@ -10,7 +10,7 @@ import {
 
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
-import { RefreshCcw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import { useNamespace } from "~/util/store/namespace";
 import { useState } from "react";
 import { useSync } from "~/api/syncs/mutate/sync";
@@ -28,14 +28,14 @@ const SyncDialog = ({ loading }: { loading: boolean }) => {
     <Dialog open={syncModal} onOpenChange={setSyncModal}>
       <DialogTrigger asChild>
         <Button variant="primary" loading={loading} className="max-md:w-full">
-          {!loading && <RefreshCcw />}
+          {!loading && <RefreshCw />}
           {t("pages.mirror.header.sync")}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            <RefreshCcw />
+            <RefreshCw />
             {t("pages.mirror.syncDialog.title", { namespace: name })}
           </DialogTitle>
         </DialogHeader>
