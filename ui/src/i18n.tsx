@@ -18,9 +18,7 @@ i18n
   .use(initReactI18next) // passes i18n down to react-i18next
   .init({
     backend: {
-      loadPath: `${
-        process.env.VITE?.VITE_BASE ?? "/"
-      }locales/{{lng}}/{{ns}}.json`,
+      loadPath: `/locales/{{lng}}/{{ns}}.json`,
     },
     lng: "en",
     fallbackLng: "en",

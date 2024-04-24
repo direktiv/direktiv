@@ -517,11 +517,7 @@ test("it is possible to provide the input via Form Input and see the same data i
   await page.getByRole("tab", { name: "Input" }).click();
 
   // turn the input/output panel to full screen
-  await page
-    .locator(".grid > div:nth-child(2) > div:nth-child(3)")
-    .getByRole("button")
-    .nth(1)
-    .click();
+  await page.getByTestId("inputOutputPanel").locator("button").nth(1).click();
 
   await expect(
     page.locator(".lines-content"),
@@ -611,11 +607,7 @@ test("it is possible to provide the input via JSON Input and see the same data i
   await page.getByRole("tab", { name: "Input" }).click();
 
   // turn the input/output panel to full screen
-  await page
-    .locator(".grid > div:nth-child(2) > div:nth-child(3)")
-    .getByRole("button")
-    .nth(1)
-    .click();
+  await page.getByTestId("inputOutputPanel").locator("button").nth(1).click();
 
   await expect(
     page.locator(".lines-content"),
@@ -707,11 +699,7 @@ test("the input is synchronized between tabs, but the data that is currently in 
   await page.getByRole("tab", { name: "Input" }).click();
 
   // turn the input/output panel to full screen
-  await page
-    .locator(".grid > div:nth-child(2) > div:nth-child(3)")
-    .getByRole("button")
-    .nth(1)
-    .click();
+  await page.getByTestId("inputOutputPanel").locator("button").nth(1).click();
 
   const expectedEditorInput = prettifyJsonString(
     JSON.stringify({
@@ -790,11 +778,7 @@ test("switching the window focus will preserve the state of the form", async ({
   await page.getByRole("tab", { name: "Input" }).click();
 
   // turn the input/output panel to full screen
-  await page
-    .locator(".grid > div:nth-child(2) > div:nth-child(3)")
-    .getByRole("button")
-    .nth(1)
-    .click();
+  await page.getByTestId("inputOutputPanel").locator("button").nth(1).click();
 
   const expectedEditorInput = prettifyJsonString(
     JSON.stringify({

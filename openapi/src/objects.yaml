@@ -123,43 +123,59 @@ InstanceData:
   type: object
   description: filesystem node data
   properties:
-    id:
+    createdAt: 
+      type: string
+    endedAt:
       type: string 
-      description: instance uuid
-    created_at:
-      type: string
-      description: timestamp
-    ended_at:
-      type: string
-      description: will be null if the instance is still running
-    status:
-      type: string
-      description: enum describing the current state of the instance
-      enum: [ pending, complete, failed, crashed, cancelled ]
-    path:
-      type: string
-      description: filepath of the workflow 
-    error_code:
-      type: string
-      description: error code of a failed workflow
-    invoker:
-      type: string
-      description: information about how the instance was instantiated
     definition:
       type: string
-      description: binary data containing a copy of the workflow at the time the instance was created
-    input:
+      description: Base64 encoded copy of the instance's workflow yaml at the time the instance was created.
+    errorCode:
       type: string
-      description: binary data containing the input to the instance. Will be null unless specifically requested.
+    flow:
+      type: array
+      description: list of states that the instance has executed
+      items:
+        type: string
+    id:
+      type: string
+    invoker:
+      type: string
+    lineage:
+      type: array
+      description: This will be an empty list if the instance is not a subflow. Otherwise, it will be an array containing information about how this instance relates to its parent, recursively.
+      items:
+        type: object   
+        properties:
+          branch:
+            type: integer
+          id:
+            type: string
+            description: instance ID
+          state:
+            type: string
+          step:          
+            type: integer             
+    path:
+      type: string
+    status:
+      type: string
+      enum: ["complete", "cancelled", "pending", "crashed", "failed"]
+    traceId:
+      type: string
+      description: This is currently a placeholder and shouldn't yet be used.
+    inputLength:
+      type: integer
+    input: 
+      type: string 
+    outputLength:
+      type: integer
     output:
       type: string
-      description: binary data containing the output of a finished workflow. Will be null unless specifically requested.
+    metadataLength:
+      type: integer
     metadata:
       type: string
-      description: binary metadata. Will be null unless requested.
-    error_message:
-      type: string
-      description: binary information about the error, if any.
 
 
 

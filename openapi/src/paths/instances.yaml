@@ -1,152 +1,185 @@
-#
-#/api/v2/namespaces/{namespace}/instances:
-#  get:
-#    tags:
-#      - instances
-#    summary: Get all instances
-#    parameters:
-#      - $ref: '../parameters.yaml#/namespace'
-#      # TODO: pagination params
-#    responses:
-#      "200":
-#        description: Instances list returned
-#        content:
-#          application/json:
-#            schema:
-#              type: object
-#  post:
-#    tags:
-#      - instances
-#    summary: Create an instance
-#    parameters:
-#      - $ref: '../parameters.yaml#/namespace'
-#      - name: path
-#        in: query
-#        schema:
-#          type: string
-#          description: filepath of the workflow to base the instance on
-#        required: true
-#    responses:
-#      "200":
-#        description: Instance created.
-#        content:
-#          application/json:
-#            schema:
-#              type: object
-#              properties:
-#                data:
-#                  $ref: '../objects.yaml#/'
-#
-#
-#/api/v2/namespaces/{namespace}/instances/{instanceID}:
-#  get:
-#    tags:
-#      - instances
-#    summary: Get detailed instance information
-#    parameters:
-#      - $ref: '../parameters.yaml#/namespace'
-#      - $ref: '../parameters.yaml#/instanceID'
-#    responses:
-#      "200":
-#        description: Instance summary information only returned.
-#        content:
-#          application/json:
-#            schema:
-#              type: object
-#              properties:
-#                data:
-#                  $ref: '../objects.yaml#/'
-#
-#  patch:
-#    tags:
-#      - instances
-#    summary: Change information about an instance. Right now this can only be used to cancel an instance.
-#    parameters:
-#      - $ref: '../parameters.yaml#/namespace'
-#      - $ref: '../parameters.yaml#/instanceID'
-#    requestBody:
-#      required: true
-#      content:
-#        application/json:
-#          schema:
-#            type: object
-#            properties:
-#              status:
-#                type: string
-#                description: Must be 'cancelled'.
-#    responses:
-#      "200":
-#        description: This request returns nothing.
-#
-#
-#/api/v2/namespaces/{namespace}/instances/{instancesID}/input:
-#  get:
-#    tags:
-#      - instances
-#    summary: Get instance information with input data
-#    parameters:
-#      - $ref: '../parameters.yaml#/namespace'
-#      - $ref: '../parameters.yaml#/instanceID'
-#    responses:
-#      "200":
-#        description: Instance summary information with input as well.
-#        content:
-#          application/json:
-#            schema:
-#              type: object
-#              properties:
-#                data:
-#                  $ref: '../objects.yaml#/'
-#
-#/api/v2/namespaces/{namespace}/instances/{instancesID}/output:
-#  get:
-#    tags:
-#      - instances
-#    summary: Get instance information with output data
-#    parameters:
-#      - $ref: '../parameters.yaml#/namespace'
-#      - $ref: '../parameters.yaml#/instanceID'
-#    responses:
-#      "200":
-#        description: Instance summary information with output as well.
-#        content:
-#          application/json:
-#            schema:
-#              type: object
-#              properties:
-#                data:
-#                  $ref: '../objects.yaml#/'
-#
-#/api/v2/namespaces/{namespace}/instances/{instancesID}/metadata:
-#  get:
-#    tags:
-#      - instances
-#    summary: Get instance information with metadata
-#    parameters:
-#      - $ref: '../parameters.yaml#/namespace'
-#      - $ref: '../parameters.yaml#/instanceID'
-#    responses:
-#      "200":
-#        description: Instance summary information with metadata as well.
-#        content:
-#          application/json:
-#            schema:
-#              type: object
-#              properties:
-#                data:
-#                  $ref: '../objects.yaml#/'
-#
-#/api/v2/namespaces/{namespace}/instances/{instancesID}/subscribe:
-#  get:
-#    tags:
-#      - instances
-#    summary: API for SSE streaming of instance data
-#    parameters:
-#      - $ref: '../parameters.yaml#/namespace'
-#      - $ref: '../parameters.yaml#/instanceID'
-#    responses:
-#      "200":
-#        description: Instance summary information only returned.
-#        content:
-#          text/event-stream:
+/api/v2/namespaces/{namespace}/instances:
+  get:
+    tags:
+      - instances
+    summary: Get all instances
+    parameters:
+      - $ref: '../parameters.yaml#/namespace'
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+      - name: filter.field
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: filter.type
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: filter.val
+        in: query
+        required: false
+        schema:
+          type: string
+    responses:
+      "200":
+        description: Instances list returned
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: '../objects.yaml#/InstanceData'
+  
+  post:
+    tags:
+      - instances
+    summary: Create an instance
+    parameters:
+      - $ref: '../parameters.yaml#/namespace'
+      - name: path
+        in: query
+        schema:
+          type: string
+          description: filepath of the workflow to base the instance on
+        required: true
+      - name: wait
+        in: query
+        schema:
+          type: string
+    responses:
+      "200":
+        description: Instance created.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: '../objects.yaml#/InstanceData'
+
+/api/v2/namespaces/{namespace}/instances/{instanceID}:
+  patch:
+    tags:
+      - instances
+    summary: Change information about an instance. Right now this can only be used to cancel an instance.
+    parameters:
+      - $ref: '../parameters.yaml#/namespace'
+      - $ref: '../parameters.yaml#/instanceID'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                description: Must be 'cancelled'.
+    responses:
+      "200":
+        description: This request returns nothing.
+
+  get:
+    tags:
+      - instances
+    summary: Get detailed instance information including blob lengths.
+    parameters:
+      - $ref: '../parameters.yaml#/namespace'
+      - $ref: '../parameters.yaml#/instanceID'
+    responses:
+      "200":
+        description: Instance summary information only returned.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: '../objects.yaml#/InstanceData'
+
+/api/v2/namespaces/{namespace}/instances/{instanceID}/input:
+  get:
+    tags:
+      - instances
+    summary: Get detailed instance information including the input blob.
+    parameters:
+      - $ref: '../parameters.yaml#/namespace'
+      - $ref: '../parameters.yaml#/instanceID'
+    responses:
+      "200":
+        description: Instance summary information plus input blob returned.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: '../objects.yaml#/InstanceData'
+
+/api/v2/namespaces/{namespace}/instances/{instanceID}/output:
+  get:
+    tags:
+      - instances
+    summary: Get detailed instance information including the output blob.
+    parameters:
+      - $ref: '../parameters.yaml#/namespace'
+      - $ref: '../parameters.yaml#/instanceID'
+    responses:
+      "200":
+        description: Instance summary information plus output blob returned.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: '../objects.yaml#/InstanceData'
+
+/api/v2/namespaces/{namespace}/instances/{instanceID}/metadata:
+  get:
+    tags:
+      - instances
+    summary: Get detailed instance information including the metadata blob.
+    parameters:
+      - $ref: '../parameters.yaml#/namespace'
+      - $ref: '../parameters.yaml#/instanceID'
+    responses:
+      "200":
+        description: Instance summary information plus metadata blob returned.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: '../objects.yaml#/InstanceData'
+
+/api/v2/namespaces/{namespace}/instances/{instancesID}/subscribe:
+ get:
+   tags:
+     - instances
+   summary: API for SSE streaming of instance data. The form of the data should match the generic instance request.
+   parameters:
+     - $ref: '../parameters.yaml#/namespace'
+     - $ref: '../parameters.yaml#/instanceID'
+   responses:
+     "200":
+       description: Instance summary information only returned.
+       content:
+         text/event-stream:
+           schema:
+             type: object
 #

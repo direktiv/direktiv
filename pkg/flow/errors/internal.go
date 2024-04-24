@@ -28,6 +28,7 @@ func NewInternalError(err error) error {
 		return err
 	}
 	fn, file, line, _ := runtime.Caller(1)
+
 	return &InternalError{
 		Err:      err,
 		Function: runtime.FuncForPC(fn).Name(),

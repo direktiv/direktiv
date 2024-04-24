@@ -14,6 +14,7 @@ import (
 	"github.com/senseyeio/duration"
 )
 
+//nolint:gochecknoinits
 func init() {
 	RegisterState(model.StateTypeGenerateEvent, GenerateEvent)
 }
@@ -50,7 +51,7 @@ func (logic *generateEventLogic) Run(ctx context.Context, wakedata []byte) (*Tra
 	event.SetSource(logic.Event.Source)
 
 	var x interface{}
-	x, err = jqOne(logic.GetInstanceData(), logic.Event.Data)
+	x, err = jqOne(logic.GetInstanceData(), logic.Event.Data) //nolint:contextcheck
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +81,7 @@ func (logic *generateEventLogic) Run(ctx context.Context, wakedata []byte) (*Tra
 	}
 
 	for k, v := range logic.Event.Context {
-		x, err := jqOne(logic.GetInstanceData(), v)
+		x, err := jqOne(logic.GetInstanceData(), v) //nolint:contextcheck
 		if err != nil {
 			return nil, derrors.NewUncatchableError("direktiv.event.jq", "failed to process event context key '%s': %v", k, err)
 		}

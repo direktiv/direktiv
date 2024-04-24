@@ -12,6 +12,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/util"
 )
 
+//nolint:gochecknoinits
 func init() {
 	RegisterState(model.StateTypeSetter, Setter)
 }
@@ -34,6 +35,7 @@ func Setter(instance Instance, state model.State) (Logic, error) {
 	return sl, nil
 }
 
+//nolint:gocognit
 func (logic *setterLogic) Run(ctx context.Context, wakedata []byte) (*Transition, error) {
 	err := scheduleOnce(logic, wakedata)
 	if err != nil {
@@ -47,7 +49,7 @@ func (logic *setterLogic) Run(ctx context.Context, wakedata []byte) (*Transition
 		key := ""
 		mimeType := ""
 
-		x, err = jqOne(logic.GetInstanceData(), v.Key)
+		x, err = jqOne(logic.GetInstanceData(), v.Key) //nolint:contextcheck
 		if err != nil {
 			return nil, err
 		}
@@ -67,7 +69,7 @@ func (logic *setterLogic) Run(ctx context.Context, wakedata []byte) (*Transition
 		}
 
 		if v.MimeType != nil {
-			x, err = jqOne(logic.GetInstanceData(), v.MimeType)
+			x, err = jqOne(logic.GetInstanceData(), v.MimeType) //nolint:contextcheck
 			if err != nil {
 				return nil, err
 			}
@@ -79,7 +81,7 @@ func (logic *setterLogic) Run(ctx context.Context, wakedata []byte) (*Transition
 			}
 		}
 
-		x, err = jqOne(logic.GetInstanceData(), v.Value)
+		x, err = jqOne(logic.GetInstanceData(), v.Value) //nolint:contextcheck
 		if err != nil {
 			return nil, err
 		}

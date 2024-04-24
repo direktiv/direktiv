@@ -131,7 +131,7 @@ describe('Test wrong endpoint config', () => {
 						timeout: 0,
 						errors: [
 							'yaml: unmarshal errors:\n'
-                            + '  line 5: cannot unmarshal !!map into []core.PluginConfig',
+							+ '  line 5: cannot unmarshal !!map into []core.PluginConfig',
 						],
 						warnings: [],
 						plugins: {},
@@ -214,11 +214,15 @@ describe('Test gateway get single endpoint', () => {
 					path: '/endpoint1',
 					server_path: '/gw/endpoint1',
 					plugins: {
-						auth: [ { configuration: { key_name: 'secret' },
-							type: 'key-auth' } ],
+						auth: [ {
+							configuration: { key_name: 'secret' },
+							type: 'key-auth',
+						} ],
 						target: {
-							configuration: { status_code: 201,
-								status_message: 'TEST1' },
+							configuration: {
+								status_code: 201,
+								status_message: 'TEST1',
+							},
 							type: 'instant-response',
 						},
 					},
@@ -244,11 +248,15 @@ describe('Test gateway get single endpoint', () => {
 					path: '/endpoint3/longer/path',
 					server_path: '/gw/endpoint3/longer/path',
 					plugins: {
-						auth: [ { configuration: { key_name: 'secret' },
-							type: 'key-auth' } ],
+						auth: [ {
+							configuration: { key_name: 'secret' },
+							type: 'key-auth',
+						} ],
 						target: {
-							configuration: { status_code: 201,
-								status_message: 'TEST1' },
+							configuration: {
+								status_code: 201,
+								status_message: 'TEST1',
+							},
 							type: 'instant-response',
 						},
 					},
@@ -274,11 +282,15 @@ describe('Test gateway get single endpoint', () => {
 					path: '/endpoint4/longer/path/{id}',
 					server_path: '/gw/endpoint4/longer/path/{id}',
 					plugins: {
-						auth: [ { configuration: { key_name: 'secret' },
-							type: 'key-auth' } ],
+						auth: [ {
+							configuration: { key_name: 'secret' },
+							type: 'key-auth',
+						} ],
 						target: {
-							configuration: { status_code: 201,
-								status_message: 'TEST1' },
+							configuration: {
+								status_code: 201,
+								status_message: 'TEST1',
+							},
 							type: 'instant-response',
 						},
 					},
@@ -344,11 +356,15 @@ describe('Test gateway endpoints crud operations', () => {
 						path: '/endpoint1',
 						server_path: '/gw/endpoint1',
 						plugins: {
-							auth: [ { configuration: { key_name: 'secret' },
-								type: 'key-auth' } ],
+							auth: [ {
+								configuration: { key_name: 'secret' },
+								type: 'key-auth',
+							} ],
 							target: {
-								configuration: { status_code: 201,
-									status_message: 'TEST1' },
+								configuration: {
+									status_code: 201,
+									status_message: 'TEST1',
+								},
 								type: 'instant-response',
 							},
 						},
@@ -364,12 +380,16 @@ describe('Test gateway endpoints crud operations', () => {
 						plugins: {
 							auth: [
 								{ type: 'basic-auth' },
-								{ configuration: { key_name: 'secret' },
-									type: 'key-auth' },
+								{
+									configuration: { key_name: 'secret' },
+									type: 'key-auth',
+								},
 							],
 							target: {
-								configuration: { status_code: 202,
-									status_message: 'TEST2' },
+								configuration: {
+									status_code: 202,
+									status_message: 'TEST2',
+								},
 								type: 'instant-response',
 							},
 						},

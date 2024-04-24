@@ -42,6 +42,7 @@ func ComputeHash(data []byte) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
 	return hex.EncodeToString(hasher.Sum(nil)), nil
 }
 
@@ -55,7 +56,7 @@ func Marshal(x interface{}) string {
 	return string(data)
 }
 
-func convertDataForOutputMapBuilder(t reflect.Type, v reflect.Value) interface{} {
+func convertDataForOutputMapBuilder(v reflect.Value) interface{} {
 	m := make(map[string]interface{})
 
 	iter := v.MapRange()
@@ -122,7 +123,7 @@ func convertDataForOutputStructBuilder(t reflect.Type, v reflect.Value) interfac
 	return x
 }
 
-func convertDataForOutputSliceBuilder(t reflect.Type, v reflect.Value) interface{} {
+func convertDataForOutputSliceBuilder(v reflect.Value) interface{} {
 	s := make([]interface{}, v.Len())
 
 	for i := 0; i < v.Len(); i++ {
@@ -148,15 +149,17 @@ deref:
 
 	t := v.Type()
 
+	//nolint:exhaustive
 	switch t.Kind() {
 	case reflect.Ptr:
 		if v.IsNil() {
 			return nil
 		}
 		v = v.Elem()
+
 		goto deref
 	case reflect.Slice:
-		return convertDataForOutputSliceBuilder(t, v)
+		return convertDataForOutputSliceBuilder(v)
 	case reflect.Struct:
 		fallthrough
 	case reflect.Map:
@@ -165,18 +168,14 @@ deref:
 		case time.Time:
 			return timestamppb.New(y)
 		case map[string]string:
-			return convertDataForOutputMapBuilder(t, v)
+			return convertDataForOutputMapBuilder(v)
 		case map[string]interface{}:
-			return convertDataForOutputMapBuilder(t, v)
+			return convertDataForOutputMapBuilder(v)
 		default:
 			return convertDataForOutputStructBuilder(t, v)
 		}
 	default:
-		x := v.Interface()
-		switch x.(type) {
-		default:
-			return x
-		}
+		return v.Interface()
 	}
 }
 
@@ -232,5 +231,6 @@ func ConvertEventListeners(in []*events.EventListener) []*grpc.EventListener {
 			CreatedAt: timestamppb.New(el.CreatedAt),
 		})
 	}
+
 	return res
 }

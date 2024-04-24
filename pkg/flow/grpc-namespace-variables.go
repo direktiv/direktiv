@@ -29,7 +29,7 @@ func (internal *internal) FileVariableParcels(req *grpc.VariableInternalRequest,
 		return err
 	}
 
-	tx, err := internal.beginSqlTx(ctx)
+	tx, err := internal.beginSQLTx(ctx)
 	if err != nil {
 		return err
 	}
@@ -191,7 +191,7 @@ func (internal *internal) SetNamespaceVariableParcels(srv grpc.Internal_SetNames
 func (flow *flow) NamespaceVariable(ctx context.Context, req *grpc.NamespaceVariableRequest) (*grpc.NamespaceVariableResponse, error) {
 	slog.Debug("Handling gRPC request", "this", this())
 
-	tx, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSQLTx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -230,7 +230,7 @@ func (flow *flow) NamespaceVariable(ctx context.Context, req *grpc.NamespaceVari
 	resp.TotalSize = int64(item.Size)
 	resp.MimeType = item.MimeType
 
-	if resp.TotalSize > parcelSize {
+	if resp.GetTotalSize() > parcelSize {
 		return nil, status.Error(codes.ResourceExhausted, "variable too large to return without using the parcelling API")
 	}
 
@@ -247,7 +247,7 @@ func (flow *flow) NamespaceVariable(ctx context.Context, req *grpc.NamespaceVari
 func (flow *flow) SetNamespaceVariable(ctx context.Context, req *grpc.SetNamespaceVariableRequest) (*grpc.SetNamespaceVariableResponse, error) {
 	slog.Debug("Handling gRPC request", "this", this())
 
-	tx, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSQLTx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -289,6 +289,7 @@ func (flow *flow) SetNamespaceVariable(ctx context.Context, req *grpc.SetNamespa
 	return &resp, nil
 }
 
+//nolint:dupl
 func (flow *flow) SetNamespaceVariableParcels(srv grpc.Flow_SetNamespaceVariableParcelsServer) error {
 	slog.Debug("Handling gRPC request", "this", this())
 	ctx := srv.Context()
@@ -305,12 +306,12 @@ func (flow *flow) SetNamespaceVariableParcels(srv grpc.Flow_SetNamespaceVariable
 	buf := new(bytes.Buffer)
 
 	for {
-		_, err = io.Copy(buf, bytes.NewReader(req.Data))
+		_, err = io.Copy(buf, bytes.NewReader(req.GetData()))
 		if err != nil {
 			return err
 		}
 
-		if req.TotalSize <= 0 {
+		if req.GetTotalSize() <= 0 {
 			if buf.Len() >= totalSize {
 				break
 			}
@@ -321,10 +322,11 @@ func (flow *flow) SetNamespaceVariableParcels(srv grpc.Flow_SetNamespaceVariable
 			if errors.Is(err, io.EOF) {
 				break
 			}
+
 			return err
 		}
 
-		if req.TotalSize <= 0 {
+		if req.GetTotalSize() <= 0 {
 			if buf.Len() >= totalSize {
 				break
 			}
@@ -359,7 +361,7 @@ func (flow *flow) SetNamespaceVariableParcels(srv grpc.Flow_SetNamespaceVariable
 func (flow *flow) DeleteNamespaceVariable(ctx context.Context, req *grpc.DeleteNamespaceVariableRequest) (*emptypb.Empty, error) {
 	slog.Debug("Handling gRPC request", "this", this())
 
-	tx, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSQLTx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -382,22 +384,6 @@ func (flow *flow) DeleteNamespaceVariable(ctx context.Context, req *grpc.DeleteN
 		return nil, err
 	}
 
-	// TODO: nned fix here.
-	// flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Deleted namespace variable '%s'.", vref.Name)
-	// flow.pubsub.NotifyNamespaceVariables(cached.Namespace)
-
-	// Broadcast Event
-	//broadcastInput := broadcastVariableInput{
-	//	WorkflowPath: "",
-	//	Key:          req.GetKey(),
-	//	TotalSize:    int64(vdata.Size),
-	//	Scope:        BroadcastEventScopeNamespace,
-	//}
-	//err = flow.BroadcastVariable(ctx, BroadcastEventTypeDelete, BroadcastEventScopeNamespace, broadcastInput, cached.Namespace)
-	//if err != nil {
-	//	return nil, err
-	//}
-
 	var resp emptypb.Empty
 
 	return &resp, nil
@@ -406,7 +392,7 @@ func (flow *flow) DeleteNamespaceVariable(ctx context.Context, req *grpc.DeleteN
 func (flow *flow) RenameNamespaceVariable(ctx context.Context, req *grpc.RenameNamespaceVariableRequest) (*grpc.RenameNamespaceVariableResponse, error) {
 	slog.Debug("Handling gRPC request", "this", this())
 
-	tx, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSQLTx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -432,10 +418,6 @@ func (flow *flow) RenameNamespaceVariable(ctx context.Context, req *grpc.RenameN
 	if err = tx.Commit(ctx); err != nil {
 		return nil, err
 	}
-
-	// TODO: need fix.
-	// flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Renamed namespace variable from '%s' to '%s'.", req.GetOld(), req.GetNew())
-	// flow.pubsub.NotifyNamespaceVariables(cached.Namespace)
 
 	var resp grpc.RenameNamespaceVariableResponse
 
