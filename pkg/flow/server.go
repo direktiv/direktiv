@@ -16,7 +16,6 @@ import (
 	"github.com/caarlos0/env/v10"
 	"github.com/direktiv/direktiv/pkg/flow/nohome"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
-	"github.com/direktiv/direktiv/pkg/metrics"
 	"github.com/direktiv/direktiv/pkg/refactor/cmd"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
@@ -60,8 +59,6 @@ type server struct {
 	flow     *flow
 	internal *internal
 	events   *events
-
-	metrics *metrics.Client
 }
 
 func Run(circuit *core.Circuit) error {
@@ -213,13 +210,6 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 	defer telend()
 	slog.Info("Telemetry initialized successfully.")
 
-	go func() {
-		err := setupPrometheusEndpoint()
-		if err != nil {
-			slog.Error("Failed to set up Prometheus endpoint", "error", err)
-		}
-	}()
-
 	srv.gormDB = db
 	srv.sqlStore = dbManager
 
@@ -249,11 +239,6 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 	}
 	defer srv.cleanup(srv.timers.Close)
 	slog.Info("timers where initialized successfully.")
-
-	slog.Debug("Initializing metrics.")
-
-	srv.metrics = metrics.NewClient(srv.gormDB)
-	slog.Info("Metrics Client was created.")
 
 	slog.Debug("Initializing pubsub routine.")
 	coreBus, err := pubsubSQL.NewPostgresCoreBus(srv.rawDB, srv.config.DB)

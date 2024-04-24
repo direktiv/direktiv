@@ -43,7 +43,6 @@ const (
 	Flow_InstanceVariable_FullMethodName            = "/direktiv_flow.Flow/InstanceVariable"
 	Flow_SetInstanceVariableParcels_FullMethodName  = "/direktiv_flow.Flow/SetInstanceVariableParcels"
 	Flow_JQ_FullMethodName                          = "/direktiv_flow.Flow/JQ"
-	Flow_WorkflowMetrics_FullMethodName             = "/direktiv_flow.Flow/WorkflowMetrics"
 	Flow_EventListeners_FullMethodName              = "/direktiv_flow.Flow/EventListeners"
 	Flow_EventListenersStream_FullMethodName        = "/direktiv_flow.Flow/EventListenersStream"
 	Flow_EventHistory_FullMethodName                = "/direktiv_flow.Flow/EventHistory"
@@ -91,7 +90,6 @@ type FlowClient interface {
 	InstanceVariable(ctx context.Context, in *InstanceVariableRequest, opts ...grpc.CallOption) (*InstanceVariableResponse, error)
 	SetInstanceVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetInstanceVariableParcelsClient, error)
 	JQ(ctx context.Context, in *JQRequest, opts ...grpc.CallOption) (*JQResponse, error)
-	WorkflowMetrics(ctx context.Context, in *WorkflowMetricsRequest, opts ...grpc.CallOption) (*WorkflowMetricsResponse, error)
 	// events.
 	EventListeners(ctx context.Context, in *EventListenersRequest, opts ...grpc.CallOption) (*EventListenersResponse, error)
 	EventListenersStream(ctx context.Context, in *EventListenersRequest, opts ...grpc.CallOption) (Flow_EventListenersStreamClient, error)
@@ -492,15 +490,6 @@ func (c *flowClient) JQ(ctx context.Context, in *JQRequest, opts ...grpc.CallOpt
 	return out, nil
 }
 
-func (c *flowClient) WorkflowMetrics(ctx context.Context, in *WorkflowMetricsRequest, opts ...grpc.CallOption) (*WorkflowMetricsResponse, error) {
-	out := new(WorkflowMetricsResponse)
-	err := c.cc.Invoke(ctx, Flow_WorkflowMetrics_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *flowClient) EventListeners(ctx context.Context, in *EventListenersRequest, opts ...grpc.CallOption) (*EventListenersResponse, error) {
 	out := new(EventListenersResponse)
 	err := c.cc.Invoke(ctx, Flow_EventListeners_FullMethodName, in, out, opts...)
@@ -727,7 +716,6 @@ type FlowServer interface {
 	InstanceVariable(context.Context, *InstanceVariableRequest) (*InstanceVariableResponse, error)
 	SetInstanceVariableParcels(Flow_SetInstanceVariableParcelsServer) error
 	JQ(context.Context, *JQRequest) (*JQResponse, error)
-	WorkflowMetrics(context.Context, *WorkflowMetricsRequest) (*WorkflowMetricsResponse, error)
 	// events.
 	EventListeners(context.Context, *EventListenersRequest) (*EventListenersResponse, error)
 	EventListenersStream(*EventListenersRequest, Flow_EventListenersStreamServer) error
@@ -819,9 +807,6 @@ func (UnimplementedFlowServer) SetInstanceVariableParcels(Flow_SetInstanceVariab
 }
 func (UnimplementedFlowServer) JQ(context.Context, *JQRequest) (*JQResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method JQ not implemented")
-}
-func (UnimplementedFlowServer) WorkflowMetrics(context.Context, *WorkflowMetricsRequest) (*WorkflowMetricsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method WorkflowMetrics not implemented")
 }
 func (UnimplementedFlowServer) EventListeners(context.Context, *EventListenersRequest) (*EventListenersResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method EventListeners not implemented")
@@ -1328,24 +1313,6 @@ func _Flow_JQ_Handler(srv interface{}, ctx context.Context, dec func(interface{}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Flow_WorkflowMetrics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(WorkflowMetricsRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).WorkflowMetrics(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_WorkflowMetrics_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).WorkflowMetrics(ctx, req.(*WorkflowMetricsRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Flow_EventListeners_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(EventListenersRequest)
 	if err := dec(in); err != nil {
@@ -1677,10 +1644,6 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "JQ",
 			Handler:    _Flow_JQ_Handler,
-		},
-		{
-			MethodName: "WorkflowMetrics",
-			Handler:    _Flow_WorkflowMetrics_Handler,
 		},
 		{
 			MethodName: "EventListeners",

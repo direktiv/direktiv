@@ -172,9 +172,6 @@ func (engine *engine) start(im *instanceMemory) {
 	namespace := im.instance.TelemetryInfo.NamespaceName
 	workflowPath := GetInodePath(im.instance.Instance.WorkflowPath)
 
-	metricsWfInvoked.WithLabelValues(namespace, workflowPath, namespace).Inc()
-	metricsWfPending.WithLabelValues(namespace, workflowPath, namespace).Inc()
-
 	ctx := context.Background()
 
 	slog.Debug("Workflow execution initiated.", "namespace", namespace, "workflow", workflowPath, "instance", im.ID())
