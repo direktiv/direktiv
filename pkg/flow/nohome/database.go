@@ -19,6 +19,7 @@ func GetAttributes(recipientType recipient.RecipientType, a ...HasAttributes) ma
 			m[k] = v
 		}
 	}
+
 	return m
 }
 

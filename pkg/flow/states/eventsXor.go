@@ -13,6 +13,7 @@ import (
 	"github.com/senseyeio/duration"
 )
 
+//nolint:gochecknoinits
 func init() {
 	RegisterState(model.StateTypeEventsXor, EventsXor)
 }
@@ -62,7 +63,7 @@ func (logic *eventsXorLogic) Run(ctx context.Context, wakedata []byte) (*Transit
 			event.Context = make(map[string]interface{})
 
 			for k, v := range logic.Events[i].Event.Context {
-				x, err := jqOne(logic.GetInstanceData(), v)
+				x, err := jqOne(logic.GetInstanceData(), v) //nolint:contextcheck
 				if err != nil {
 					return nil, derrors.NewUncatchableError("direktiv.event.jq", "failed to process event context key '%s': %v", k, err)
 				}

@@ -12,6 +12,7 @@ import (
 	"github.com/xeipuuv/gojsonschema"
 )
 
+//nolint:gochecknoinits
 func init() {
 	RegisterState(model.StateTypeValidate, Validate)
 }
@@ -52,7 +53,7 @@ func (logic *validateLogic) Run(ctx context.Context, wakedata []byte) (*Transiti
 	}
 
 	var subject interface{}
-	subject, err = jqOne(logic.GetInstanceData(), subjectQuery)
+	subject, err = jqOne(logic.GetInstanceData(), subjectQuery) //nolint:contextcheck
 	if err != nil {
 		return nil, err
 	}
@@ -73,6 +74,7 @@ func (logic *validateLogic) Run(ctx context.Context, wakedata []byte) (*Transiti
 		for _, reason := range result.Errors() {
 			logic.Log(ctx, log.Error, "Schema validation error: %s", reason.String())
 		}
+
 		return nil, derrors.NewCatchableError(ErrCodeFailedSchemaValidation, fmt.Sprintf("subject failed its JSONSchema validation: %v", err))
 	}
 

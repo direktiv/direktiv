@@ -4,21 +4,16 @@ import OnboardingPage from "~/pages/OnboardingPage";
 import { createBrowserRouter } from "react-router-dom";
 import { pages } from "./pages";
 
-export const router = createBrowserRouter(
-  [
-    {
-      path: "/",
-      element: <OnboardingPage />,
-      errorElement: <ErrorPage />,
-    },
-    {
-      path: "/:namespace",
-      element: <NamespaceLayout />,
-      children: Object.values(pages).map((page) => page.route),
-      errorElement: <ErrorPage />,
-    },
-  ],
+export const router = createBrowserRouter([
   {
-    basename: process.env.VITE?.VITE_BASE ?? undefined,
-  }
-);
+    path: "/",
+    element: <OnboardingPage />,
+    errorElement: <ErrorPage />,
+  },
+  {
+    path: "/:namespace",
+    element: <NamespaceLayout />,
+    children: Object.values(pages).map((page) => page.route),
+    errorElement: <ErrorPage />,
+  },
+]);

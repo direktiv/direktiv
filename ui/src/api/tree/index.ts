@@ -13,21 +13,4 @@ export const treeKeys = {
         path: forceLeadingSlash(path ?? "/"),
       },
     ] as const,
-  metrics: (
-    namespace: string,
-    {
-      apiKey,
-      path,
-      type,
-    }: { apiKey?: string; path?: string; type: "successful" | "failed" }
-  ) =>
-    [
-      {
-        scope: "metrics",
-        type,
-        apiKey,
-        namespace,
-        path: forceLeadingSlash(path),
-      },
-    ] as const,
 };

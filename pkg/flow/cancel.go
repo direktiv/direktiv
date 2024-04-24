@@ -39,7 +39,7 @@ func (engine *engine) LivingChildren(ctx context.Context, im *instanceMemory) ([
 			continue
 		}
 		living = append(living, stateChild{
-			Id:          logic.ID,
+			ID:          logic.ID,
 			Type:        logic.Type,
 			ServiceName: logic.ServiceName,
 		})
@@ -59,14 +59,15 @@ func (engine *engine) CancelInstanceChildren(ctx context.Context, im *instanceMe
 			if child.ServiceName != "" {
 				// TODO: yassir handle workflow children services.
 			} else {
-				slog.Warn("Isolate child missing service name.", "child_id", child.Id)
+				slog.Warn("Isolate child missing service name.", "child_id", child.ID)
 			}
 		case "subflow":
-			engine.pubsub.CancelWorkflow(child.Id, ErrCodeCancelledByParent, "cancelled by parent workflow", false)
+			engine.pubsub.CancelWorkflow(child.ID, ErrCodeCancelledByParent, "cancelled by parent workflow", false)
 		default:
 			slog.Error("Encountered unrecognized child type.", "error", child.Type)
 		}
 	}
+
 	return nil
 }
 

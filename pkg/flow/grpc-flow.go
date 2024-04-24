@@ -31,7 +31,7 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 
 	flow := &flow{server: srv}
 
-	flow.listener, err = net.Listen("tcp", ":6666")
+	flow.listener, err = net.Listen("tcp", ":6666") //nolint:gosec
 	if err != nil {
 		return nil, err
 	}
@@ -48,7 +48,7 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 		flow.srv.Stop()
 	}()
 
-	go func() {
+	go func() { //nolint:contextcheck
 		// instance garbage collector
 		ctx := context.Background()
 		<-time.After(2 * time.Minute)
@@ -57,7 +57,7 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 			<-time.After(time.Hour)
 			t := time.Now().UTC().Add(time.Hour * -24)
 
-			tx, err := srv.flow.beginSqlTx(ctx)
+			tx, err := srv.flow.beginSQLTx(ctx)
 			if err != nil {
 				slog.Error("garbage collector", "error", fmt.Errorf("failed to get transaction to cleanup old instances: %w", err))
 				continue
@@ -67,12 +67,14 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 			if err != nil {
 				tx.Rollback()
 				slog.Error("garbage collector", "error", fmt.Errorf("failed to cleanup old instances: %w", err))
+
 				continue
 			}
 
 			err = tx.Commit(ctx)
 			if err != nil {
 				slog.Error("garbage collector", "error", fmt.Errorf("failed to commit tx to cleanup old instances: %w", err))
+
 				continue
 			}
 
@@ -87,7 +89,7 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 			<-time.After(time.Hour)
 			t := time.Now().UTC().Add(time.Hour * -48) // TODO make this a config option.
 			slog.Debug("deleting all logs since", "since", t)
-			err = srv.flow.runSqlTx(ctx, func(tx *database.SQLStore) error {
+			err = srv.flow.runSQLTx(ctx, func(tx *database.SQLStore) error {
 				return tx.DataStore().NewLogs().DeleteOldLogs(ctx, t)
 			})
 			if err != nil {
@@ -97,7 +99,7 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 		}
 	}()
 
-	go func() {
+	go func() { //nolint:contextcheck
 		// timed-out instance retrier
 		<-time.After(1 * time.Minute)
 		ticker := time.NewTicker(5 * time.Minute)
@@ -113,7 +115,7 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 func (flow *flow) kickExpiredInstances() {
 	ctx := context.Background()
 
-	tx, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSQLTx(ctx)
 	if err != nil {
 		slog.Error("Failed to begin SQL transaction in kickExpiredInstances.", "error", err)
 		return
@@ -163,7 +165,7 @@ func (flow *flow) JQ(ctx context.Context, req *grpc.JQRequest) (*grpc.JQResponse
 
 	command := "jq(" + req.GetQuery() + ")"
 
-	results, err := jq(input, command)
+	results, err := jq(input, command) //nolint:contextcheck
 	if err != nil {
 		err = status.Error(codes.InvalidArgument, fmt.Sprintf("error executing JQ command: %v", err))
 		return nil, err
@@ -192,5 +194,6 @@ func (flow *flow) JQ(ctx context.Context, req *grpc.JQRequest) (*grpc.JQResponse
 func (flow *flow) GetAttributes() map[string]string {
 	tags := make(map[string]string)
 	tags["recipientType"] = srv
+
 	return tags
 }

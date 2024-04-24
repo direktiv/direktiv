@@ -15,6 +15,7 @@ import (
 	"github.com/senseyeio/duration"
 )
 
+//nolint:gochecknoinits
 func init() {
 	RegisterState(model.StateTypeParallel, Parallel)
 }
@@ -46,6 +47,7 @@ func (logic *parallelLogic) Deadline(ctx context.Context) time.Time {
 		if logic.Timeout != "" {
 			logic.Log(ctx, log.Error, "failed to parse timeout: %v", err)
 		}
+
 		return time.Now().UTC().Add(DefaultLongDeadline)
 	}
 
@@ -198,6 +200,7 @@ func (logic *parallelLogic) scheduleRetryAction(ctx context.Context, retry *acti
 	return nil
 }
 
+//nolint:gocognit
 func (logic *parallelLogic) processActionResults(ctx context.Context, children []*ChildInfo, results *actionResultPayload) (*Transition, error) {
 	var err error
 
@@ -304,6 +307,7 @@ func (logic *parallelLogic) processActionResults(ctx context.Context, children [
 
 	case model.BranchModeOr:
 
+		//nolint:nestif
 		if results.ErrorCode != "" {
 			logic.Log(ctx, "Action raised catchable error '%s': %s.", results.ErrorCode, results.ErrorMessage)
 

@@ -69,12 +69,13 @@ type Notifier interface {
 	NotifyHostname(hostname string, msg string) error
 }
 
+//nolint:gocognit
 func InitPubSub(notifier Notifier, database string) (*Pubsub, error) {
 	reportProblem := func(ev pq.ListenerEventType, err error) {
 		if err != nil {
 			slog.Error("PubSub listener encountered an error.", "error", err, "event_type", ev)
+
 			os.Exit(1)
-			return
 		}
 	}
 
@@ -251,7 +252,7 @@ func (s *Subscription) Close() error {
 		defer func() {
 			r := recover()
 			if r != nil {
-				fmt.Println("PANIC", r)
+				slog.Error(fmt.Sprintf("PANIC: %+v", r))
 			}
 		}()
 
@@ -441,7 +442,7 @@ func pubsubDisconnect(key string) *PubsubUpdate {
 }
 
 func (pubsub *Pubsub) NotifyLogs(recipientID uuid.UUID, recipientType recipient.RecipientType) {
-	switch recipientType {
+	switch recipientType { //nolint:exhaustive
 	case recipient.Server:
 		pubsub.Publish(pubsubNotify(""))
 	case recipient.Instance:

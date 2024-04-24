@@ -5,23 +5,17 @@ export const envVariablesSchema = z.object({
   VITE_IS_ENTERPRISE: z
     .string()
     .optional()
-    .transform((value) => `${value}`.toLocaleLowerCase() === "true"),
+    .transform((value) => {
+      const lowerCaseStringValue = `${value}`.toLocaleLowerCase();
+      const isBoolean =
+        lowerCaseStringValue === "true" || lowerCaseStringValue === "false";
+      if (!isBoolean) {
+        return undefined;
+      }
+      return lowerCaseStringValue === "true";
+    }),
   VITE_RQ_DEV_TOOLS: z
     .string()
     .optional()
     .transform((value) => `${value}`.toLocaleLowerCase() === "true"),
-  VITE_BASE: z
-    .string()
-    .optional()
-    .refine((value) => {
-      if (value === undefined) {
-        return true;
-      }
-
-      if (!value.startsWith("/") || !value.endsWith("/")) {
-        return false;
-      }
-
-      return true;
-    }),
 });

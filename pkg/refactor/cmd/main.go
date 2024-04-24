@@ -223,9 +223,12 @@ func renderServiceManager(db *database.SQLStore, serviceManager core.ServiceMana
 
 					continue
 				}
-
+				typ := core.ServiceTypeNamespace
+				if ns.Name == core.SystemNamespace {
+					typ = core.ServiceTypeSystem
+				}
 				funConfigList = append(funConfigList, &core.ServiceFileData{
-					Typ:         core.ServiceTypeNamespace,
+					Typ:         typ,
 					Name:        "",
 					Namespace:   ns.Name,
 					FilePath:    file.Path,
