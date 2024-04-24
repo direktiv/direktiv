@@ -124,7 +124,6 @@ type InstanceData struct {
 	ErrorCode      string
 	Invoker        string
 	Definition     []byte
-	Settings       []byte
 	DescentInfo    []byte
 	TelemetryInfo  []byte
 	RuntimeInfo    []byte
@@ -156,7 +155,6 @@ type CreateInstanceDataArgs struct {
 	Input          []byte
 	LiveData       []byte
 	TelemetryInfo  []byte
-	Settings       []byte
 	DescentInfo    []byte
 	RuntimeInfo    []byte
 	ChildrenInfo   []byte
