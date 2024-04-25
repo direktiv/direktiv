@@ -28,10 +28,10 @@ states:
 
 	it(`should invoke the 'delay.yaml' workflow`, async () => {
 		const req = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=delay.yaml`)
-		.send({
-			name: 'foo',
-			data: btoa('bar'),
-		})
+			.send({
+				name: 'foo',
+				data: btoa('bar'),
+			})
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({
 			data: {
