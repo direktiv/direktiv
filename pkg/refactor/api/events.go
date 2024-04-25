@@ -40,7 +40,7 @@ func (c *eventsController) mountEventListenerRouter(r chi.Router) {
 }
 
 func (c *eventsController) mountBroadcast(r chi.Router) {
-	r.Get("/", c.registerCoudEvent)
+	r.Post("/", c.registerCoudEvent)
 }
 
 func (c *eventsController) listEvents(w http.ResponseWriter, r *http.Request) {
