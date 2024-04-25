@@ -180,7 +180,7 @@ func (m logController) stream(w http.ResponseWriter, r *http.Request) {
 	// Create a channel to send SSE messages
 	messageChannel := make(chan Event)
 
-	var getCursoredStyle sseHandle = func(ctx context.Context, cursorTime time.Time, params map[string]string) ([]CoursoredEvent, error) {
+	var getCursoredStyle sseHandle = func(ctx context.Context, cursorTime time.Time) ([]CoursoredEvent, error) {
 		logs, err := m.getNewer(ctx, cursorTime, params)
 		if err != nil {
 			return nil, err
@@ -214,7 +214,6 @@ func (m logController) stream(w http.ResponseWriter, r *http.Request) {
 		Get:      getCursoredStyle,
 		Interval: time.Second,
 		Ch:       messageChannel,
-		Params:   params,
 		Cursor:   cursor,
 	}
 	go worker.start(ctx)
@@ -270,7 +269,7 @@ type Event struct {
 	Type string
 }
 
-type sseHandle func(ctx context.Context, cursorTime time.Time, params map[string]string) ([]CoursoredEvent, error)
+type sseHandle func(ctx context.Context, cursorTime time.Time) ([]CoursoredEvent, error)
 
 // LogStoreWorker manages the log polling and channel communication.
 type seeWorker struct {
@@ -278,7 +277,6 @@ type seeWorker struct {
 	Get      sseHandle
 	Interval time.Duration
 	Ch       chan Event
-	Params   map[string]string
 	Cursor   time.Time // Cursor instead of Offset.
 }
 
@@ -293,7 +291,7 @@ func (lw *seeWorker) start(ctx context.Context) {
 			case <-ctx.Done():
 				return
 			case <-ticker.C:
-				sseEvents, err := lw.Get(ctx, lw.Cursor, lw.Params)
+				sseEvents, err := lw.Get(ctx, lw.Cursor)
 				if err != nil {
 					slog.Error("TODO: should we quit with an error?", "err", err)
 

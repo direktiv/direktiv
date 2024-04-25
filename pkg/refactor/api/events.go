@@ -59,8 +59,8 @@ func (c *eventsController) listEvents(w http.ResponseWriter, r *http.Request) {
 		}
 		t = co
 	}
-
-	data, err := c.store.EventHistory().GetOld(r.Context(), ns.Name, t)
+	params := extractEventFilterParams(r)
+	data, err := c.store.EventHistory().GetOld(r.Context(), ns.Name, t, params...)
 	if err != nil {
 		writeInternalError(w, err)
 
@@ -108,9 +108,6 @@ func (c *eventsController) subscribe(w http.ResponseWriter, r *http.Request) {
 	// that may occur due to delays between submitting and processing the request, or when a sequence of client requests is necessary.
 	cursor := time.Now().UTC().Add(-time.Second * 3)
 
-	// TODO: we may need to replace with a SSE-Server library instead of using our custom implementation.
-	params := extractLogRequestParams(r)
-
 	// Set the appropriate headers for SSE
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
@@ -122,11 +119,14 @@ func (c *eventsController) subscribe(w http.ResponseWriter, r *http.Request) {
 
 	// Create a channel to send SSE messages
 	messageChannel := make(chan Event)
+	params := extractEventFilterParams(r)
+	var getCursoredStyle sseHandle = func(ctx context.Context, cursorTime time.Time) ([]CoursoredEvent, error) {
+		ns := chi.URLParam(r, "namespace")
+		if ns == "" {
+			return nil, fmt.Errorf("namespace can not be empty")
+		}
 
-	var getCursoredStyle sseHandle = func(ctx context.Context, cursorTime time.Time, params map[string]string) ([]CoursoredEvent, error) {
-		ns := ""
-
-		events, err := c.store.EventHistory().GetNew(ctx, ns, cursorTime)
+		events, err := c.store.EventHistory().GetNew(ctx, ns, cursorTime, params...)
 		if err != nil {
 			return nil, err
 		}
@@ -157,7 +157,6 @@ func (c *eventsController) subscribe(w http.ResponseWriter, r *http.Request) {
 		Get:      getCursoredStyle,
 		Interval: time.Second,
 		Ch:       messageChannel,
-		Params:   params,
 		Cursor:   cursor,
 	}
 
@@ -358,4 +357,38 @@ func validateEvent(event cloudevents.Event) (cloudevents.Event, error) {
 	}
 
 	return event, nil
+}
+
+func extractEventFilterParams(r *http.Request) []string {
+	params := make([]string, 0)
+	if v := chi.URLParam(r, "namespace"); v != "" {
+		params = append(params, "namespace")
+		params = append(params, v)
+	}
+	if v := chi.URLParam(r, "createdBefore"); v != "" {
+		params = append(params, "created_before")
+		params = append(params, v)
+	}
+	if v := chi.URLParam(r, "createdAfter"); v != "" {
+		params = append(params, "created_after")
+		params = append(params, v)
+	}
+	if v := chi.URLParam(r, "receivedBefore"); v != "" {
+		params = append(params, "received_before")
+		params = append(params, v)
+	}
+	if v := chi.URLParam(r, "receivedAfter"); v != "" {
+		params = append(params, "received_after")
+		params = append(params, v)
+	}
+	if v := chi.URLParam(r, "eventContains"); v != "" {
+		params = append(params, "event_contains")
+		params = append(params, v)
+	}
+	if v := chi.URLParam(r, "typeContains"); v != "" {
+		params = append(params, "type_contains")
+		params = append(params, v)
+	}
+
+	return params
 }
