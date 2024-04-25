@@ -47,7 +47,7 @@ test("the header of the instance page shows the relevant data for the workflow",
       namespace,
       path: simpleWorkflowName,
     })
-  ).instance;
+  ).data.id;
   await page.goto(`/${namespace}/instances/${instanceId}`);
 
   const header = page.getByTestId("instance-header-container");
@@ -110,7 +110,7 @@ test("the diagram panel on the instance page responds to user interaction", asyn
       namespace,
       path: simpleWorkflowName,
     })
-  ).instance;
+  ).data.id;
   await page.goto(`/${namespace}/instances/${instanceId}`);
 
   const diagramPanel = page.getByTestId("rf__wrapper");
@@ -172,7 +172,7 @@ test("the diagram on the instance page changes appearance dynamically", async ({
       namespace,
       path: delayedWorkflowName,
     })
-  ).instance;
+  ).data.id;
   await page.goto(`/${namespace}/instances/${instanceId}`);
 
   const diagramPanel = page.getByTestId("rf__wrapper");
@@ -268,7 +268,7 @@ test("the input/output panel responds to user interaction", async ({
       namespace,
       path: simpleWorkflowName,
     })
-  ).instance;
+  ).data.id;
   await page.goto(`/${namespace}/instances/${instanceId}`);
 
   const inputOutputPanel = page.getByTestId("inputOutputPanel");
@@ -363,7 +363,7 @@ test("The output is shown when the workflow finished running", async ({
       namespace,
       path: delayedWorkflowName,
     })
-  ).instance;
+  ).data.id;
   await page.goto(`/${namespace}/instances/${instanceId}`);
 
   const inputOutputPanel = page.getByTestId("inputOutputPanel");
@@ -407,7 +407,7 @@ test("after a running instance finishes, the output tab is automatically selecte
       namespace,
       path: delayedWorkflowName,
     })
-  ).instance;
+  ).data.id;
   await page.goto(`/${namespace}/instances/${instanceId}`);
 
   const inputOutputPanel = page.getByTestId("inputOutputPanel");
