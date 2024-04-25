@@ -14,16 +14,6 @@ export type MetricsReport = {
   items?: MetricsItem[];
 };
 
-// const config: DonutConfigType = {
-//   items: [
-//     { label: "complete", count: 5 },
-//     { label: "failed", count: 2 },
-//     { label: "crashed", count: 3 },
-//     { label: "cancelled", count: 2 },
-//   ],
-//   colors: ["emerald", "red", "orange", "stone"],
-// };
-
 export const getDonutConfig = (
   data: MetricsObjectSchemaType
 ): DonutConfigType => {

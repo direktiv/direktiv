@@ -1,6 +1,5 @@
-import Donut, { DonutConfigType } from "./Donut";
-
 import { Card } from "~/design/Card";
+import Donut from "./Donut";
 import { NoResult } from "~/design/Table";
 import { PieChart } from "lucide-react";
 import RefreshButton from "~/design/RefreshButton";
@@ -31,16 +30,6 @@ const Metrics = ({ workflow }: { workflow: string }) => {
 
   if (isFetched && data?.data?.total && data.data.total > 0) {
     const config = getDonutConfig(data.data);
-
-    // const config: DonutConfigType = {
-    //   items: [
-    //     { label: "complete", count: 5 },
-    //     { label: "failed", count: 2 },
-    //     { label: "crashed", count: 3 },
-    //     { label: "cancelled", count: 2 },
-    //   ],
-    //   colors: ["emerald", "red", "orange", "stone"],
-    // };
 
     Output = <Donut config={config} />;
   } else {
