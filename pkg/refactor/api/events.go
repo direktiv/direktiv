@@ -290,6 +290,10 @@ func (c *eventsController) registerCoudEvent(w http.ResponseWriter, r *http.Requ
 		GetListenersByTopic: c.store.EventListenerTopics().GetListeners,
 		UpdateListeners:     c.store.EventListener().UpdateOrDelete,
 	}
+
+	dEvs := convertEvents(*ns, evs...)
+	c.store.EventHistory().Append(r.Context(), dEvs)
+
 	engine.ProcessEvents(r.Context(), ns.ID, evs, func(template string, args ...interface{}) {
 		slog.Error(fmt.Sprintf(template, args...))
 	})
@@ -391,4 +395,18 @@ func extractEventFilterParams(r *http.Request) []string {
 	}
 
 	return params
+}
+
+func convertEvents(ns datastore.Namespace, evs ...cloudevents.Event) []*events.Event {
+	res := make([]*events.Event, len(evs))
+	for i, e := range evs {
+		res[i] = &events.Event{
+			Event:         &e,
+			NamespaceName: ns.Name,
+			Namespace:     ns.ID,
+			ReceivedAt:    time.Now().UTC(),
+		}
+	}
+
+	return res
 }

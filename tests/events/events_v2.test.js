@@ -22,5 +22,12 @@ describe('Test send events v2 api', () => {
 			.send(basicEvent)
 		expect(sendEventResponse.statusCode).toEqual(200)
 	})
-
+    it(`should be regitered`, async () => {
+		const eventHistoryResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/history`)
+			.send()
+		expect(eventHistoryResponse.statusCode).toEqual(200)
+        expect(eventHistoryResponse.body.data.length).toBeGreaterThan(0);
+        expect(eventHistoryResponse.body.data[0].NamespaceName).toBe(namespaceName);
+        expect(eventHistoryResponse.body.data[0].Event.id).toBe("123");
+    })
 })
