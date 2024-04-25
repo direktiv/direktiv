@@ -5,7 +5,7 @@ import { InstanceCard } from "./InstanceCard";
 import { InstanceRow } from "./Row";
 import RefreshButton from "~/design/RefreshButton";
 import { ScrollArea } from "~/design/ScrollArea";
-import { useInstances } from "~/api/instances/query/get";
+import { useInstances } from "~/api/instances_obsolete/query/get";
 import { useTranslation } from "react-i18next";
 
 export const Instances = () => {

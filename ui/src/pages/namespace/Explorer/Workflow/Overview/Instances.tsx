@@ -6,7 +6,7 @@ import { InstanceRow } from "~/pages/namespace/Monitoring/Instances/Row";
 import RefreshButton from "~/design/RefreshButton";
 import { ScrollArea } from "~/design/ScrollArea";
 import { forceLeadingSlash } from "~/api/files/utils";
-import { useInstances } from "~/api/instances/query/get";
+import { useInstances } from "~/api/instances_obsolete/query/get";
 import { useTranslation } from "react-i18next";
 
 const Instances = ({ workflow }: { workflow: string }) => {

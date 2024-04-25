@@ -9,7 +9,7 @@ import {
 import { createFile } from "e2e/utils/files";
 import { createInstance } from "../utils";
 import { faker } from "@faker-js/faker";
-import { getInstances } from "~/api/instances/query/get";
+import { getInstances } from "~/api/instances_obsolete/query/get";
 import { headers } from "e2e/utils/testutils";
 import moment from "moment";
 import { runWorkflow } from "~/api/tree/mutate/runWorkflow";

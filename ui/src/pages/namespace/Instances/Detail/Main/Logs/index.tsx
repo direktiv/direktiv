@@ -17,7 +17,7 @@ import CopyButton from "~/design/CopyButton";
 import ScrollContainer from "./ScrollContainer";
 import { Toggle } from "~/design/Toggle";
 import { getInstanceLogEntryForClipboard } from "~/components/Logs/utils";
-import { useInstanceDetails } from "~/api/instances/query/details";
+import { useInstanceDetails } from "~/api/instances_obsolete/query/details";
 import { useInstanceId } from "../../store/instanceContext";
 import { useLogs } from "~/api/logs/query/logs";
 import { useTranslation } from "react-i18next";

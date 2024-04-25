@@ -3,7 +3,7 @@ import Toolbar from "./Toolbar";
 import { decode } from "js-base64";
 import { forwardRef } from "react";
 import { prettifyJsonString } from "~/util/helpers";
-import { useInput } from "~/api/instances/query/input";
+import { useInput } from "~/api/instances_obsolete/query/input";
 import { useInstanceId } from "../../store/instanceContext";
 import { useTheme } from "~/util/store/theme";
 

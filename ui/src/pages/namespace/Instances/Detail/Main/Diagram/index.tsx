@@ -12,7 +12,7 @@ import {
 
 import Button from "~/design/Button";
 import { FC } from "react";
-import { InstanceSchemaType } from "~/api/instances/schema";
+import { InstanceSchemaType } from "~/api/instances_obsolete/schema";
 import WorkflowDiagram from "~/design/WorkflowDiagram";
 import { decode } from "js-base64";
 import { instanceStatusToDiagramStatus } from "./utils";

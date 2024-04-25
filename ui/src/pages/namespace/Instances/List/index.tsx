@@ -1,4 +1,4 @@
-import { FiltersObj, useInstances } from "~/api/instances/query/get";
+import { FiltersObj, useInstances } from "~/api/instances_obsolete/query/get";
 import {
   NoPermissions,
   NoResult,

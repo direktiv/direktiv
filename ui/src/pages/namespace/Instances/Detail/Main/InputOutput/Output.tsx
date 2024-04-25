@@ -5,7 +5,7 @@ import { decode } from "js-base64";
 import { forwardRef } from "react";
 import { prettifyJsonString } from "~/util/helpers";
 import { useInstanceId } from "../../store/instanceContext";
-import { useOutput } from "~/api/instances/query/output";
+import { useOutput } from "~/api/instances_obsolete/query/output";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 

@@ -10,7 +10,7 @@ import { noop as basicWorkflow } from "~/pages/namespace/Explorer/Tree/component
 import { createFile } from "e2e/utils/files";
 import { decode } from "js-base64";
 import { faker } from "@faker-js/faker";
-import { getInput } from "~/api/instances/query/input";
+import { getInput } from "~/api/instances_obsolete/query/input";
 import { headers } from "e2e/utils/testutils";
 import { prettifyJsonString } from "~/util/helpers";
 

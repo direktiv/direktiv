@@ -15,7 +15,7 @@ import { pages } from "~/util/router/pages";
 import { statusToBadgeVariant } from "../../utils";
 import { t } from "i18next";
 import { useInstanceId } from "../store/instanceContext";
-import { useInstances } from "~/api/instances/query/get";
+import { useInstances } from "~/api/instances_obsolete/query/get";
 import { useNamespace } from "~/util/store/namespace";
 import { useState } from "react";
 

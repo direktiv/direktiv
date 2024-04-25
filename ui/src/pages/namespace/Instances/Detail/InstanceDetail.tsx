@@ -5,7 +5,7 @@ import InputOutput from "./Main/InputOutput";
 import Logs from "./Main/Logs";
 import { NoPermissions } from "~/design/Table";
 import WorkspaceLayout from "./Main";
-import { useInstanceDetails } from "~/api/instances/query/details";
+import { useInstanceDetails } from "~/api/instances_obsolete/query/details";
 import { useInstanceId } from "./store/instanceContext";
 import { useLogsPreferencesMaximizedPanel } from "~/util/store/logs";
 

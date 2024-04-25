@@ -11,7 +11,7 @@ import {
   TriggerValue,
   statusValues,
   triggerValues,
-} from "~/api/instances/query/get";
+} from "~/api/instances_obsolete/query/get";
 
 import { useTranslation } from "react-i18next";
 

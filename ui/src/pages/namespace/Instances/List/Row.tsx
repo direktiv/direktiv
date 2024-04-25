@@ -16,7 +16,7 @@ import Alert from "~/design/Alert";
 import Badge from "~/design/Badge";
 import { ConditionalWrapper } from "~/util/helpers";
 import { FC } from "react";
-import { InstanceSchemaType } from "~/api/instances/schema";
+import { InstanceSchemaType } from "~/api/instances_obsolete/schema";
 import TooltipCopyBadge from "~/design/TooltipCopyBadge";
 import { pages } from "~/util/router/pages";
 import { statusToBadgeVariant } from "../utils";

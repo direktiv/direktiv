@@ -1,5 +1,5 @@
 import { ComponentProps } from "react";
-import { InstanceSchemaType } from "~/api/instances/schema";
+import { InstanceSchemaType } from "~/api/instances_obsolete/schema";
 import WorkflowDiagram from "~/design/WorkflowDiagram";
 
 type DiagramStatus = ComponentProps<typeof WorkflowDiagram>["instanceStatus"];
