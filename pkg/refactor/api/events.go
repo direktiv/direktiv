@@ -1,6 +1,8 @@
 package api
 
 import (
+	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -27,8 +29,9 @@ type eventsController struct {
 // func (engine *engine) StartWorkflow(ctx context.Context, namespace, path string, input []byte) (*instancestore.InstanceData, error) {
 
 func (c *eventsController) mountEventHistoryRouter(r chi.Router) {
-	r.Get("/", c.listEvents)        // Retrieve a list of events
-	r.Get("/{eventID}", c.getEvent) // Get details of a single event
+	r.Get("/", c.listEvents)         // Retrieve a list of events
+	r.Get("/subscribe", c.subscribe) // Retrieve a event updates via sse
+	r.Get("/{eventID}", c.getEvent)  // Get details of a single event
 }
 
 func (c *eventsController) mountEventListenerRouter(r chi.Router) {
@@ -98,6 +101,87 @@ func (c *eventsController) getEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, d)
+}
+
+func (c *eventsController) subscribe(w http.ResponseWriter, r *http.Request) {
+	// cursor is set to multiple seconds before the current time to mitigate data loss
+	// that may occur due to delays between submitting and processing the request, or when a sequence of client requests is necessary.
+	cursor := time.Now().UTC().Add(-time.Second * 3)
+
+	// TODO: we may need to replace with a SSE-Server library instead of using our custom implementation.
+	params := extractLogRequestParams(r)
+
+	// Set the appropriate headers for SSE
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
+
+	// Create a context with cancellation
+	ctx, cancel := context.WithCancel(r.Context())
+	defer cancel()
+
+	// Create a channel to send SSE messages
+	messageChannel := make(chan Event)
+
+	var getCursoredStyle sseHandle = func(ctx context.Context, cursorTime time.Time, params map[string]string) ([]CoursoredEvent, error) {
+		ns := ""
+
+		events, err := c.store.EventHistory().GetNew(ctx, ns, cursorTime)
+		if err != nil {
+			return nil, err
+		}
+		res := make([]CoursoredEvent, len(events))
+		for i, e := range events {
+			b, err := json.Marshal(e)
+			if err != nil {
+				return nil, err
+			}
+			dst := &bytes.Buffer{}
+			if err := json.Compact(dst, b); err != nil {
+				return nil, err
+			}
+			res[i] = CoursoredEvent{
+				Event: Event{
+					ID:   e.Event.ID(),
+					Type: "message",
+					Data: dst.String(),
+				},
+				Time: e.ReceivedAt,
+			}
+		}
+
+		return res, nil
+	}
+
+	worker := seeWorker{
+		Get:      getCursoredStyle,
+		Interval: time.Second,
+		Ch:       messageChannel,
+		Params:   params,
+		Cursor:   cursor,
+	}
+
+	go worker.start(ctx)
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case message := <-messageChannel:
+			_, err := io.Copy(w, strings.NewReader(fmt.Sprintf("id: %v\nevent: %v\ndata: %v\n\n", message.ID, message.Type, message.Data)))
+			if err != nil {
+				slog.Error("serve to SSE", "err", err)
+			}
+
+			f, ok := w.(http.Flusher)
+			if !ok {
+				return
+			}
+			if f != nil {
+				f.Flush()
+			}
+		}
+	}
 }
 
 func (c *eventsController) getEventListener(w http.ResponseWriter, r *http.Request) {

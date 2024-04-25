@@ -180,8 +180,38 @@ func (m logController) stream(w http.ResponseWriter, r *http.Request) {
 	// Create a channel to send SSE messages
 	messageChannel := make(chan Event)
 
-	worker := logStoreWorker{
-		Get:      m.getNewer,
+	var getCursoredStyle sseHandle = func(ctx context.Context, cursorTime time.Time, params map[string]string) ([]CoursoredEvent, error) {
+		logs, err := m.getNewer(ctx, cursorTime, params)
+		if err != nil {
+			return nil, err
+		}
+		res := make([]CoursoredEvent, 0, len(logs))
+		for _, fle := range logs {
+			b, err := json.Marshal(fle)
+			if err != nil {
+				return nil, err
+			}
+			dst := &bytes.Buffer{}
+			if err := json.Compact(dst, b); err != nil {
+				return nil, err
+			}
+
+			e := Event{
+				ID:   fmt.Sprint(fle.ID),
+				Data: dst.String(),
+				Type: "message",
+			}
+			res = append(res, CoursoredEvent{
+				Event: e,
+				Time:  fle.Time,
+			})
+		}
+
+		return res, nil
+	}
+
+	worker := seeWorker{
+		Get:      getCursoredStyle,
 		Interval: time.Second,
 		Ch:       messageChannel,
 		Params:   params,
@@ -229,16 +259,23 @@ func determineTrack(params map[string]string) (string, error) {
 	return "", fmt.Errorf("requested logs for an unknown type")
 }
 
+type CoursoredEvent struct {
+	Event
+	time.Time
+}
+
 type Event struct {
 	ID   string
 	Data string
 	Type string
 }
 
+type sseHandle func(ctx context.Context, cursorTime time.Time, params map[string]string) ([]CoursoredEvent, error)
+
 // LogStoreWorker manages the log polling and channel communication.
-type logStoreWorker struct {
+type seeWorker struct {
 	// TODO: maybe we should move this to become a more general solution.
-	Get      func(ctx context.Context, cursorTime time.Time, params map[string]string) ([]logEntry, error)
+	Get      sseHandle
 	Interval time.Duration
 	Ch       chan Event
 	Params   map[string]string
@@ -246,7 +283,7 @@ type logStoreWorker struct {
 }
 
 // Start starts the log polling worker.
-func (lw *logStoreWorker) start(ctx context.Context) {
+func (lw *seeWorker) start(ctx context.Context) {
 	go func() {
 		ticker := time.NewTicker(lw.Interval)
 		defer ticker.Stop()
@@ -256,35 +293,19 @@ func (lw *logStoreWorker) start(ctx context.Context) {
 			case <-ctx.Done():
 				return
 			case <-ticker.C:
-				logs, err := lw.Get(ctx, lw.Cursor, lw.Params)
+				sseEvents, err := lw.Get(ctx, lw.Cursor, lw.Params)
 				if err != nil {
 					slog.Error("TODO: should we quit with an error?", "err", err)
 
 					continue
 				}
-				for _, fle := range logs {
-					b, err := json.Marshal(fle)
-					if err != nil {
-						slog.Error("TODO: should we quit with an error?", "err", err)
-
-						continue
-					}
-					dst := &bytes.Buffer{}
-					if err := json.Compact(dst, b); err != nil {
-						slog.Error("TODO: should we quit with an error?", "err", err)
-					}
-
-					e := Event{
-						ID:   fmt.Sprint(fle.ID),
-						Data: dst.String(),
-						Type: "message",
-					}
-					lw.Ch <- e
+				for _, e := range sseEvents {
+					lw.Ch <- e.Event
 				}
 
 				// Update cursorTime for the next iteration.
-				if len(logs) > 0 {
-					lw.Cursor = logs[len(logs)-1].Time
+				if len(sseEvents) > 0 {
+					lw.Cursor = sseEvents[len(sseEvents)-1].Time
 				}
 			}
 		}
