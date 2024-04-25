@@ -1,4 +1,6 @@
+import { DonutConfigType } from "./Donut";
 import { MetricsObjectSchemaType } from "~/api/metrics/schema";
+import { Trans } from "react-i18next";
 
 // only the names processed in the component are allowed
 type MetricsItem = {
@@ -12,34 +14,43 @@ export type MetricsReport = {
   items?: MetricsItem[];
 };
 
-export const extractMetrics = (
+// const config: DonutConfigType = {
+//   items: [
+//     { label: "complete", count: 5 },
+//     { label: "failed", count: 2 },
+//     { label: "crashed", count: 3 },
+//     { label: "cancelled", count: 2 },
+//   ],
+//   colors: ["emerald", "red", "orange", "stone"],
+// };
+
+export const getDonutConfig = (
   data: MetricsObjectSchemaType
-): MetricsReport => {
-  const { complete, failed, crashed } = data;
-
-  const count = complete + failed + crashed;
-
-  const aggregateFailed = failed + crashed;
-
-  if (count === 0) {
-    return { count };
-  }
-
-  const items: MetricsItem[] = [
-    {
-      name: "failed",
-      count: aggregateFailed,
-      percentage: (aggregateFailed / count) * 100,
-    },
-    {
-      name: "complete",
-      count: complete,
-      percentage: (complete / count) * 100,
-    },
+): DonutConfigType => {
+  // items are hard coded to have easier control over their order,
+  // which should correspond to the order of colors
+  const items: DonutConfigType["items"] = [
+    { label: "complete", count: data.complete },
+    { label: "failed", count: data.failed },
+    { label: "crashed", count: data.crashed },
   ];
 
+  const colors: DonutConfigType["colors"] = ["emerald", "red", "orange"];
+
+  const total = items.reduce((sum, item) => sum + item.count, 0);
+
+  const successRate = ((data.complete / total) * 100).toFixed(0);
+
+  const legend = (
+    <Trans
+      i18nKey="pages.explorer.tree.workflow.overview.metrics.legend"
+      values={{ successRate }}
+    />
+  );
+
   return {
-    count,
     items,
+    legend,
+    colors,
   };
 };
