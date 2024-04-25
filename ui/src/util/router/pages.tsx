@@ -258,7 +258,7 @@ export const enterprisePages: EnterprisePageType = isEnterprise()
           if (params.subpage === "tokens") {
             subpage = "/tokens";
           }
-          return `/${params.namespace}/permissions${subpage}`;
+          return `/n/${params.namespace}/permissions${subpage}`;
         },
         useParams: () => {
           const [, secondLevel, thirdLevel] = useMatches(); // first level is namespace level
@@ -350,7 +350,7 @@ export const pages: PageType & EnterprisePageType = {
       const searchParamsString = searchParams.toString();
       const urlParams = searchParamsString ? `?${searchParamsString}` : "";
 
-      return `/${params.namespace}/explorer/${subpage}${path}${urlParams}`;
+      return `/n/${params.namespace}/explorer/${subpage}${path}${urlParams}`;
     },
     useParams: () => {
       const { "*": path, namespace } = useParams();
@@ -452,7 +452,7 @@ export const pages: PageType & EnterprisePageType = {
   monitoring: {
     name: "components.mainMenu.monitoring",
     icon: ActivitySquare,
-    createHref: (params) => `/${params.namespace}/monitoring`,
+    createHref: (params) => `/n/${params.namespace}/monitoring`,
     useParams: () => {
       const [, secondLevel] = useMatches(); // first level is namespace level
       const isMonitoringPage = checkHandler(secondLevel, "isMonitoringPage");
@@ -468,7 +468,7 @@ export const pages: PageType & EnterprisePageType = {
     name: "components.mainMenu.instances",
     icon: Boxes,
     createHref: (params) =>
-      `/${params.namespace}/instances${
+      `/n/${params.namespace}/instances${
         params.instance ? `/${params.instance}` : ""
       }`,
     useParams: () => {
@@ -514,7 +514,7 @@ export const pages: PageType & EnterprisePageType = {
     name: "components.mainMenu.events",
     icon: Radio,
     createHref: (params) =>
-      `/${params.namespace}/events/${
+      `/n/${params.namespace}/events/${
         params?.subpage === "eventlisteners" ? `listeners` : "history"
       }`,
     useParams: () => {
@@ -558,7 +558,7 @@ export const pages: PageType & EnterprisePageType = {
       if (params.subpage === "consumers") {
         subpage = "consumers";
       }
-      return `/${params.namespace}/gateway/${subpage}`;
+      return `/n/${params.namespace}/gateway/${subpage}`;
     },
     useParams: () => {
       const { "*": path } = useParams();
@@ -612,7 +612,7 @@ export const pages: PageType & EnterprisePageType = {
     name: "components.mainMenu.services",
     icon: Layers,
     createHref: (params) =>
-      `/${params.namespace}/services${
+      `/n/${params.namespace}/services${
         params.service ? `/${params.service}` : ""
       }`,
     useParams: () => {
@@ -655,7 +655,7 @@ export const pages: PageType & EnterprisePageType = {
     name: "components.mainMenu.mirror",
     icon: GitCompare,
     createHref: (params) =>
-      `/${params.namespace}/mirror/${
+      `/n/${params.namespace}/mirror/${
         params?.sync ? `logs/${params.sync}` : ""
       }`,
     useParams: () => {
@@ -691,7 +691,7 @@ export const pages: PageType & EnterprisePageType = {
   settings: {
     name: "components.mainMenu.settings",
     icon: Settings,
-    createHref: (params) => `/${params.namespace}/settings`,
+    createHref: (params) => `/n/${params.namespace}/settings`,
     useParams: () => {
       const [, secondLevel] = useMatches(); // first level is namespace level
       const isSettingsPage = checkHandler(secondLevel, "isSettingsPage");
@@ -706,7 +706,7 @@ export const pages: PageType & EnterprisePageType = {
   jqPlayground: {
     name: "components.mainMenu.jqPlayground",
     icon: PlaySquare,
-    createHref: (params) => `/${params.namespace}/jq`,
+    createHref: (params) => `/n/${params.namespace}/jq`,
     useParams: () => {
       const [, secondLevel] = useMatches(); // first level is namespace level
       const isJqPlaygroundPage = checkHandler(
