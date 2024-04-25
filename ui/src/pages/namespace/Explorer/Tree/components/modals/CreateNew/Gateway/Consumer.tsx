@@ -42,7 +42,7 @@ const NewConsumer = ({
 
   const resolver = zodResolver(
     z.object({
-      _name: FileNameSchema.transform((enteredName) =>
+      name: FileNameSchema.transform((enteredName) =>
         addYamlFileExtension(enteredName)
       ).refine(
         (nameWithExtension) =>
@@ -53,12 +53,6 @@ const NewConsumer = ({
           message: t("pages.explorer.tree.newConsumer.nameAlreadyExists"),
         }
       ),
-      get name() {
-        return this._name;
-      },
-      set name(value) {
-        this._name = value;
-      },
       fileContent: z.string(),
     })
   );
