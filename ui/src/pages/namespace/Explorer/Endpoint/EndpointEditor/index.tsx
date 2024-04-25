@@ -29,7 +29,7 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data }) => {
   const [endpointConfig, endpointConfigError] = serializeEndpointFile(
     fileContentFromServer
   );
-  const { mutate: updateRoute, isLoading } = useUpdateFile();
+  const { mutate: updateRoute, isPending } = useUpdateFile();
 
   const save = (value: EndpointFormSchemaType) => {
     const toSave = jsonToYaml(value);
@@ -52,7 +52,7 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data }) => {
         const preview = jsonToYaml(values);
         const filehasChanged = preview === fileContentFromServer;
         const isDirty = !endpointConfigError && !filehasChanged;
-        const disableButton = isLoading || !!endpointConfigError;
+        const disableButton = isPending || !!endpointConfigError;
 
         return (
           <form

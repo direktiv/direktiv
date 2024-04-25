@@ -68,7 +68,7 @@ const NewConsumer = ({
     },
   });
 
-  const { mutate: createFile, isLoading } = useCreateFile({
+  const { mutate: createFile, isPending } = useCreateFile({
     onSuccess: (data) => {
       namespace &&
         navigate(
@@ -131,10 +131,10 @@ const NewConsumer = ({
         <Button
           type="submit"
           disabled={disableSubmit}
-          loading={isLoading}
+          loading={isPending}
           form={formId}
         >
-          {!isLoading && <PlusCircle />}
+          {!isPending && <PlusCircle />}
           {t("pages.explorer.tree.newConsumer.createBtn")}
         </Button>
       </DialogFooter>
