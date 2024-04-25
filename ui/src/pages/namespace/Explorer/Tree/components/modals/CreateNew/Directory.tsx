@@ -10,7 +10,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import Button from "~/design/Button";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
-import { fileNameSchema } from "~/api/tree/schema/node";
+import { fileNameSchema } from "~/api/tree_obsolete/schema/node";
 import { pages } from "~/util/router/pages";
 import { useCreateFile } from "~/api/files/mutate/createFile";
 import { useNamespace } from "~/util/store/namespace";

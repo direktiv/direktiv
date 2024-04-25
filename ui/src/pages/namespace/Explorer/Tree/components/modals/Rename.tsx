@@ -13,7 +13,7 @@ import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { TextCursorInput } from "lucide-react";
 import { addYamlFileExtension } from "../../utils";
-import { fileNameSchema } from "~/api/tree/schema/node";
+import { fileNameSchema } from "~/api/tree_obsolete/schema/node";
 import { useRenameFile } from "~/api/files/mutate/renameFile";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";

@@ -13,7 +13,7 @@ import Input from "~/design/Input";
 import { addYamlFileExtension } from "../../../../utils";
 import { defaultServiceYaml } from "~/pages/namespace/Explorer/Service/ServiceEditor/utils";
 import { encode } from "js-base64";
-import { fileNameSchema } from "~/api/tree/schema/node";
+import { fileNameSchema } from "~/api/tree_obsolete/schema/node";
 import { pages } from "~/util/router/pages";
 import { useCreateFile } from "~/api/files/mutate/createFile";
 import { useNamespace } from "~/util/store/namespace";

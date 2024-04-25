@@ -12,7 +12,7 @@ import { faker } from "@faker-js/faker";
 import { getInstances } from "~/api/instances_obsolete/query/get";
 import { headers } from "e2e/utils/testutils";
 import moment from "moment";
-import { runWorkflow } from "~/api/tree/mutate/runWorkflow";
+import { runWorkflow } from "~/api/tree_obsolete/mutate/runWorkflow";
 
 type Instance = Awaited<ReturnType<typeof runWorkflow>>;
 

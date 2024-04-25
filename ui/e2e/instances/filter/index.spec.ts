@@ -10,7 +10,7 @@ import { createFile } from "e2e/utils/files";
 import { createInstance } from "../utils";
 import { faker } from "@faker-js/faker";
 import { headers } from "e2e/utils/testutils";
-import { runWorkflow } from "~/api/tree/mutate/runWorkflow";
+import { runWorkflow } from "~/api/tree_obsolete/mutate/runWorkflow";
 
 let namespace = "";
 const simpleWorkflowName = faker.system.commonFileName("yaml");

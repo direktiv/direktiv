@@ -21,7 +21,7 @@ import { pages } from "~/util/router/pages";
 import { useFile } from "~/api/files/query/file";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { useRunWorkflow } from "~/api/tree/mutate/runWorkflow";
+import { useRunWorkflow } from "~/api/tree_obsolete/mutate/runWorkflow";
 import { useTheme } from "~/util/store/theme";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";

@@ -1,5 +1,5 @@
 import { headers } from "e2e/utils/testutils";
-import { runWorkflow } from "~/api/tree/mutate/runWorkflow";
+import { runWorkflow } from "~/api/tree_obsolete/mutate/runWorkflow";
 
 export const createInstance = async ({
   namespace,

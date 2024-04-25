@@ -25,7 +25,7 @@ import { InputWithButton } from "~/design/InputWithButton";
 import { MirrorSchemaType } from "~/api/namespaces/schema/mirror";
 import { MirrorValidationSchema } from "~/api/namespaces/schema/mirror/validation";
 import { Textarea } from "~/design/TextArea";
-import { fileNameSchema } from "~/api/tree/schema/node";
+import { fileNameSchema } from "~/api/tree_obsolete/schema/node";
 import { pages } from "~/util/router/pages";
 import { useCreateNamespace } from "~/api/namespaces/mutate/createNamespace";
 import { useListNamespaces } from "~/api/namespaces/query/get";
