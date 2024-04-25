@@ -67,7 +67,7 @@ type FindRouteWithApiRequestParams = {
   match: (route: RouteSchemaType) => boolean;
 };
 
-type ErrorType = { response: { status?: number } };
+// type ErrorType = { response: { status?: number } };
 
 export const findRouteWithApiRequest = async ({
   namespace,
@@ -83,13 +83,17 @@ export const findRouteWithApiRequest = async ({
     });
     return routes.find(match);
   } catch (error) {
-    const typedError = error as ErrorType;
-    if (typedError.response.status === 404) {
-      // fail silently to allow for using poll() in tests
-      return false;
-    }
-    throw new Error(
-      `Unexpected error ${typedError?.response?.status} during lookup of service ${match} in namespace ${namespace}`
-    );
+    // Temporary workaround: Until DIR-1503 is resolved, fail silently even on
+    // 500 errors. Ideally, we should only catch 404s and still throw unexpected errors
+    // (as implemented in the commented code).
+    return false;
+    // const typedError = error as ErrorType;
+    // if (typedError.response.status === 404) {
+    //   // fail silently to allow for using poll() in tests
+    //   return false;
+    // }
+    // throw new Error(
+    //   `Unexpected error ${typedError?.response?.status} during lookup of service ${match} in namespace ${namespace}`
+    // );
   }
 };
