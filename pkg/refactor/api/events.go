@@ -46,7 +46,7 @@ func (c *eventsController) mountBroadcast(r chi.Router) {
 
 func (c *eventsController) listEvents(w http.ResponseWriter, r *http.Request) {
 	ns := extractContextNamespace(r)
-	starting := ""
+	starting := time.Now().Format(time.RFC3339Nano)
 	if v := r.URL.Query().Get("before"); v != "" {
 		starting = v
 	}
@@ -74,7 +74,7 @@ func (c *eventsController) listEvents(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(data) == 0 {
-		writeJSONWithMeta(w, []logEntry{}, metaInfo)
+		writeJSONWithMeta(w, []*events.Event{}, metaInfo)
 
 		return
 	}
@@ -213,7 +213,9 @@ func (c *eventsController) getEventListener(w http.ResponseWriter, r *http.Reque
 
 		return
 	}
-	writeJSON(w, d)
+	res := convertListenersForAPI(d)
+
+	writeJSON(w, res)
 }
 
 func (c *eventsController) listEventListeners(w http.ResponseWriter, r *http.Request) {
@@ -240,20 +242,49 @@ func (c *eventsController) listEventListeners(w http.ResponseWriter, r *http.Req
 		"startingFrom": nil,
 	}
 	if len(data) == 0 {
-		writeJSONWithMeta(w, []logEntry{}, metaInfo)
+		writeJSONWithMeta(w, []*events.Event{}, metaInfo)
 
 		return
 	}
-
-	slices.Reverse(data)
-	var previousPage interface{} = data[0].CreatedAt.UTC().Format(time.RFC3339Nano)
+	res := make([]eventListenerEntry, len(data))
+	for i := range data {
+		l := convertListenersForAPI(data[i])
+		res[i] = l
+	}
+	slices.Reverse(res)
+	var previousPage interface{} = res[0].CreatedAt.UTC().Format(time.RFC3339Nano)
 
 	metaInfo = map[string]any{
 		"previousPage": previousPage,
 		"startingFrom": starting,
 	}
 
-	writeJSONWithMeta(w, data, metaInfo)
+	writeJSONWithMeta(w, res, metaInfo)
+}
+
+func convertListenersForAPI(listener *events.EventListener) eventListenerEntry {
+	e := eventListenerEntry{
+		ID:                     listener.ID.String(),
+		CreatedAt:              listener.CreatedAt,
+		UpdatedAt:              listener.UpdatedAt,
+		Namespace:              listener.Namespace,
+		ListeningForEventTypes: listener.ListeningForEventTypes,
+	}
+	if len(listener.GlobGatekeepers) != 0 {
+		e.GlobGatekeepers = listener.GlobGatekeepers
+	}
+	if len(listener.ReceivedEventsForAndTrigger) != 0 {
+		e.ReceivedEventsForAndTrigger = listener.ReceivedEventsForAndTrigger
+	}
+	if len(listener.TriggerInstance) != 0 {
+		e.TriggerInstance = listener.TriggerInstance
+	}
+	if len(listener.TriggerWorkflow) != 0 {
+		e.TriggerWorkflow = listener.Metadata
+	}
+	e.TriggerType = fmt.Sprint(listener.TriggerType)
+
+	return e
 }
 
 func (c *eventsController) registerCoudEvent(w http.ResponseWriter, r *http.Request) {
@@ -424,4 +455,18 @@ func convertEvents(ns datastore.Namespace, evs ...cloudevents.Event) []*events.E
 	}
 
 	return res
+}
+
+type eventListenerEntry struct {
+	ID                          string    `json:"id,omitempty"`
+	CreatedAt                   time.Time `json:"createdAt"`
+	UpdatedAt                   time.Time `json:"updatedAt"`
+	Namespace                   string    `json:"namespace"`
+	ListeningForEventTypes      []string  `json:"listeningForEventTypes,omitempty"`
+	ReceivedEventsForAndTrigger any       `json:"receivedEventsForAndTrigger,omitempty"`
+	LifespanOfReceivedEvents    any       `json:"lifespanOfReceivedEvents,omitempty"`
+	TriggerType                 string    `json:"triggerType"`
+	TriggerWorkflow             any       `json:"triggerWorkflow,omitempty"`
+	TriggerInstance             any       `json:"triggerInstance,omitempty"`
+	GlobGatekeepers             any       `json:"globGatekeepers,omitempty"`
 }

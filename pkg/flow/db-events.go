@@ -175,7 +175,7 @@ func (events *events) processWorkflowEvents(ctx context.Context, nsID uuid.UUID,
 }
 
 // called from workflow instances to create event listeners.
-func (events *events) addInstanceEventListener(ctx context.Context, namespace uuid.UUID, nsName string, instance uuid.UUID, sevents []*model.ConsumeEventDefinition, step int, all bool) error {
+func (events *events) addInstanceEventListener(ctx context.Context, namespace uuid.UUID, nsName string, instance uuid.UUID, sevents []*model.ConsumeEventDefinition, all bool) error {
 	// var ev []map[string]interface{}
 
 	fEv := &pkgevents.EventListener{
@@ -188,7 +188,6 @@ func (events *events) addInstanceEventListener(ctx context.Context, namespace uu
 		TriggerType:            pkgevents.WaitSimple,
 		ListeningForEventTypes: []string{},
 		TriggerInstance:        instance.String(),
-		TriggerInstanceStep:    step,
 		// LifespanOfReceivedEvents: , TODO?
 		GlobGatekeepers: make(map[string]string),
 	}

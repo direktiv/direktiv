@@ -28,7 +28,6 @@ func (s *sqlEventListenerStore) Append(ctx context.Context, listener *events.Eve
 	trigger := triggerInfo{
 		WorkflowID: listener.TriggerWorkflow,
 		InstanceID: listener.TriggerInstance,
-		Step:       listener.TriggerInstanceStep,
 	}
 	b, err := json.Marshal(trigger)
 	if err != nil {
@@ -214,7 +213,7 @@ type gormEventListener struct {
 }
 
 func (s *sqlEventListenerStore) GetByID(ctx context.Context, id uuid.UUID) (*events.EventListener, error) {
-	q := "SELECT count(id), id, namespace_id, created_at, updated_at, received_events, trigger_type, events_lifespan, event_types, trigger_info, metadata, glob_gates FROM event_listeners WHERE id = $1 ;"
+	q := "SELECT id, namespace_id, namespace, created_at, updated_at, received_events, trigger_type, events_lifespan, event_types, trigger_info, metadata, glob_gates FROM event_listeners WHERE id = $1 ;"
 	var l gormEventListener
 	tx := s.db.WithContext(ctx).Raw(q, id).First(&l)
 	if tx.Error != nil {
@@ -248,12 +247,12 @@ func (s *sqlEventListenerStore) GetByID(ctx context.Context, id uuid.UUID) (*eve
 		CreatedAt:                   l.CreatedAt,
 		Deleted:                     l.Deleted,
 		NamespaceID:                 l.NamespaceID,
+		Namespace:                   l.Namespace,
 		ListeningForEventTypes:      decodeString(l.EventTypes),
 		LifespanOfReceivedEvents:    l.EventsLifespan,
 		TriggerType:                 events.TriggerType(l.TriggerType),
 		TriggerWorkflow:             trigger.WorkflowID,
 		TriggerInstance:             trigger.InstanceID,
-		TriggerInstanceStep:         trigger.Step,
 		ReceivedEventsForAndTrigger: ev,
 		Metadata:                    l.Metadata,
 		GlobGatekeepers:             glob,
@@ -346,12 +345,12 @@ func convertListerners(from []*gormEventListener) ([]*events.EventListener, erro
 			CreatedAt:                   l.CreatedAt,
 			Deleted:                     l.Deleted,
 			NamespaceID:                 l.NamespaceID,
+			Namespace:                   l.Namespace,
 			ListeningForEventTypes:      decodeString(l.EventTypes),
 			LifespanOfReceivedEvents:    l.EventsLifespan,
 			TriggerType:                 events.TriggerType(l.TriggerType),
 			TriggerWorkflow:             trigger.WorkflowID,
 			TriggerInstance:             trigger.InstanceID,
-			TriggerInstanceStep:         trigger.Step,
 			ReceivedEventsForAndTrigger: ev,
 			Metadata:                    l.Metadata,
 			GlobGatekeepers:             glob,

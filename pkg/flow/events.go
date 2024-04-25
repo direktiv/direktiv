@@ -633,7 +633,7 @@ func (events *events) listenForEvents(ctx context.Context, im *instanceMemory, c
 		transformedEvents = append(transformedEvents, ev)
 	}
 
-	err := events.addInstanceEventListener(ctx, im.Namespace().ID, im.Namespace().Name, im.GetInstanceID(), transformedEvents, im.Step(), all)
+	err := events.addInstanceEventListener(ctx, im.Namespace().ID, im.Namespace().Name, im.GetInstanceID(), transformedEvents, all)
 	if err != nil {
 		return err
 	}

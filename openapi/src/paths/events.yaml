@@ -39,8 +39,9 @@
         content:
           'application/json':
             example:
-              previousPage: '2024-04-25T13:39:00.01915Z'
-              startingFrom: '2024-01-16T01:44:08.128136Z'
+              meta:
+                previousPage: '2024-04-25T13:39:00.01915Z'
+                startingFrom: '2024-01-16T01:44:08.128136Z'
               data:
               - event:
                   specversion: '1.0'
@@ -50,6 +51,7 @@
                 namespace: 'b1e7f55b-3e16-4b9c-b5b5-3f94c5e149c0'
                 namespaceName: 'wfeventsv2'
                 receivedAt: '2024-04-25T13:39:00.01915Z'
+                serialID: 1
             schema:
               type: object
               properties:
@@ -76,6 +78,8 @@
                       receivedAt: 
                         type: string
                         format: RFC3339Nano
+                      serialID:
+                        type: int
                       event:       
                         type: object
                         required:
@@ -118,10 +122,77 @@
         content:
           text/event-stream:
             example: |
-              id: 1234
+              id: 1
               event: message
-              data: {"Event":{"specversion":"1.0","id":"1234","source":"https://direktiv.io/test","type":"testerDuplicate"},"Namespace":"e09f0392-fe09-4378-bc0a-de3ab634f4e6","NamespaceName":"wfeventsv2","ReceivedAt":"2024-04-25T14:28:56.374147Z"}
+              data: {"Event":{"specversion":"1.0","id":"1234","source":"https://direktiv.io/test","type":"testerDuplicate"},"namespace":"e09f0392-fe09-4378-bc0a-de3ab634f4e6","namespaceName":"wfeventsv2","receivedAt":"2024-04-25T14:28:56.374147Z", "serialID":1}
 
-              id: 1234-234234
+              id: 2
               event: message
-              data: {"Event":{"specversion":"1.0","id":"1234-234234","source":"https://direktiv.io/test","type":"testerDuplicate"},"Namespace":"e09f0392-fe09-4378-bc0a-de3ab634f4e6","NamespaceName":"wfeventsv2","ReceivedAt":"2024-04-25T14:28:56.374148Z"}
+              data: {"Event":{"specversion":"1.0","id":"1234-234234","source":"https://direktiv.io/test","type":"testerDuplicate"},"namespace":"e09f0392-fe09-4378-bc0a-de3ab634f4e6","namespaceName":"wfeventsv2","receivedAt":"2024-04-25T14:28:56.374148Z", "serialID":2}
+/api/v2/namespaces/{namespace}/events/listener:
+  get:
+    tags:
+    - events
+    summary: Api for listing event-listeners.
+    parameters:
+      - name: namespace
+        in: path
+    responses:
+      '200':
+        description: OK
+        content:
+          'application/json':
+            example:
+              meta:
+                previousPage: '2024-04-25T13:39:00.01915Z'
+                startingFrom: '2024-01-16T01:44:08.128136Z'
+              data:
+                - id: '977a5b18-27bf-4914-b666-456cc0073ea9'
+                  createdAt: '2024-04-25T20:55:00.956697Z'
+                  updatedAt: '2024-04-25T20:55:00.956697Z'
+                  namespace: 'wfeventsv2'
+                  listeningForEventTypes: [Array]
+                  triggerType: 'StartSimple'
+                  triggerWorkflow: '/listener.yml'
+            schema:
+              type: object
+              properties:
+                meta:
+                  type: object
+                  nullable: true
+                  properties:
+                    previousPage:
+                      type: string
+                      format: RFC3339Nano
+                      nullable: true
+                    startingFrom:
+                      type: string
+                      format: RFC3339Nano
+                data:
+                  type: object
+                  required:
+                    - id
+                    - createdAt
+                    - updatedAt 
+                    - namespace
+                    - listeningForEventTypes
+                    - triggerType
+                  properties:
+                    id:
+                      type: string
+                    createdAt:
+                      type: string
+                    updatedAt:
+                      type: string
+                    namespace:
+                      type: string
+                    listeningForEventTypes:
+                      type: string
+                    triggerType:
+                      type: string
+                    triggerWorkflow:
+                      type: string 
+                    triggerInstance:
+                      type: string
+                    globGatekeepers:
+                      type: object

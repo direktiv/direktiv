@@ -30,6 +30,7 @@ package events
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -44,11 +45,11 @@ type StagingEvent struct {
 
 // wraps the cloud-event and adds contextual information.
 type Event struct {
-	Event         *cloudevents.Event
-	Namespace     uuid.UUID
-	NamespaceName string
-	ReceivedAt    time.Time // marks when the events received by the web-API or created via internal logic.
-	SerialID      int
+	Event         *cloudevents.Event `json:"event"`
+	Namespace     uuid.UUID          `json:"namespace,omitempty"`
+	NamespaceName string             `json:"namespaceName,omitempty"`
+	ReceivedAt    time.Time          `json:"receivedAt"` // marks when the events received by the web-API or created via internal logic.
+	SerialID      int                `json:"serialID"`
 }
 
 // Persists and gets events.
@@ -85,21 +86,20 @@ type EventTopicsStore interface {
 // EventListener represents a subscription to events within a specific namespace.
 // It defines trigger conditions, workflow actions, and filtering criteria.
 type EventListener struct {
-	ID                          uuid.UUID         // Unique identifier of the listener.
-	CreatedAt                   time.Time         // Timestamp when the listener was created.
-	UpdatedAt                   time.Time         // Timestamp when the listener was last updated.
-	Deleted                     bool              // Flag to mark a listener for deletion.
-	Namespace                   string            // The Namespace the listener belongs to.
-	NamespaceID                 uuid.UUID         // The namespace to which this listener belongs.
-	ListeningForEventTypes      []string          // List of event types this listener subscribes to.
-	ReceivedEventsForAndTrigger []*Event          // Stores events received for "And" type triggers (where all event types must be received).
-	LifespanOfReceivedEvents    int               // The duration (in milliseconds) for which received events should be retained for "And" triggers.  Use 0 to disable the lifespan.
-	TriggerType                 TriggerType       // Specifies the type of trigger (StartAnd, WaitAnd, etc.).
-	TriggerWorkflow             string            // The ID of the workflow to initiate or continue.
-	TriggerInstance             string            // Optional; The ID of a specific workflow instance to resume (for instance-waiting triggers).
-	TriggerInstanceStep         int               // Optional; The step within a workflow instance to resume execution (for instance-waiting triggers).
-	GlobGatekeepers             map[string]string // Map of glob-patterns for filtering events based on extensions. Key have to be prefixed with the event-type they apply to.
-	Metadata                    string            // Field for storing arbitrary metadata associated with the listener.
+	ID                          uuid.UUID         `json:"id"`                          // Unique identifier of the listener.
+	CreatedAt                   time.Time         `json:"createdAt"`                   // Timestamp when the listener was created.
+	UpdatedAt                   time.Time         `json:"updatedAt"`                   // Timestamp when the listener was last updated.
+	Deleted                     bool              `json:"deleted"`                     // Flag to mark a listener for deletion.
+	Namespace                   string            `json:"namespace"`                   // The Namespace the listener belongs to.
+	NamespaceID                 uuid.UUID         `json:"namespaceID"`                 // The namespace to which this listener belongs.
+	ListeningForEventTypes      []string          `json:"listeningForEventTypes"`      // List of event types this listener subscribes to.
+	ReceivedEventsForAndTrigger []*Event          `json:"receivedEventsForAndTrigger"` // Stores events received for "And" type triggers (where all event types must be received).
+	LifespanOfReceivedEvents    int               `json:"lifespanOfReceivedEvents"`    // The duration (in milliseconds) for which received events should be retained for "And" triggers.  Use 0 to disable the lifespan.
+	TriggerType                 TriggerType       `json:"triggerType"`                 // Specifies the type of trigger (StartAnd, WaitAnd, etc.).
+	TriggerWorkflow             string            `json:"triggerWorkflow,omitempty"`   // The ID of the workflow to initiate or continue.
+	TriggerInstance             string            `json:"triggerInstance,omitempty"`   // Optional; The ID of a specific workflow instance to resume (for instance-waiting triggers).
+	GlobGatekeepers             map[string]string `json:"globGatekeepers,omitempty"`   // Map of glob-patterns for filtering events based on extensions. Key have to be prefixed with the event-type they apply to.
+	Metadata                    string            `json:"metadata"`                    // Field for storing arbitrary metadata associated with the listener.
 }
 
 type TriggerType int
@@ -112,6 +112,25 @@ const (
 	StartOR     TriggerType = iota
 	WaitOR      TriggerType = iota
 )
+
+func (t TriggerType) String() string {
+	switch t {
+	case StartAnd:
+		return "StartAnd"
+	case WaitAnd:
+		return "WaitAnd"
+	case StartSimple:
+		return "StartSimple"
+	case WaitSimple:
+		return "WaitSimple"
+	case StartOR:
+		return "StartOR"
+	case WaitOR:
+		return "WaitOR"
+	default:
+		return fmt.Sprintf("Unknown TriggerType: %d", t)
+	}
+}
 
 type EventListenerStore interface {
 	// adds a EventListener to the storage.
