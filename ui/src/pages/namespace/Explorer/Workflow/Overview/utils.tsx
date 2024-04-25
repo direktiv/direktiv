@@ -25,7 +25,7 @@ export const getDonutConfig = (
     { label: "crashed", count: data.crashed },
   ];
 
-  const colors: DonutConfigType["colors"] = ["emerald", "red", "orange"];
+  const colors: DonutConfigType["colors"] = ["emerald", "red", "pink"];
 
   const total = items.reduce((sum, item) => sum + item.count, 0);
 
