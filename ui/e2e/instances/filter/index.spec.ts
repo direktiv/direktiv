@@ -81,7 +81,7 @@ test("it is possible to navigate to the instances list, it renders and paginates
     })
   );
 
-  await page.goto(`${namespace}/`);
+  await page.goto(`/n/${namespace}`);
 
   await page
     .getByRole("navigation")
@@ -125,7 +125,7 @@ test("it is possible to filter by date using created before", async ({
   await createInstance({ namespace, path: failingWorkflowName });
   await createInstance({ namespace, path: failingWorkflowName });
 
-  await page.goto(`${namespace}/instances/`);
+  await page.goto(`/n/${namespace}/instances/`);
 
   /* there should be 2 items initially */
   await expect(
@@ -173,7 +173,7 @@ test("it is possible to filter by date using created before", async ({
 
 test("it is possible to filter by trigger", async ({ page }) => {
   await createTriggerFilterInstances();
-  await page.goto(`${namespace}/instances/`);
+  await page.goto(`/n/${namespace}/instances/`);
 
   /* there should be 3 items initially */
   await expect(
@@ -212,7 +212,7 @@ test("it is possible to filter by trigger", async ({ page }) => {
 
 test("it is possible to filter by status", async ({ page }) => {
   await createStatusFilterInstances();
-  await page.goto(`${namespace}/instances/`);
+  await page.goto(`/n/${namespace}/instances/`);
 
   /* there should be 5 items initially */
   await expect(
@@ -278,7 +278,7 @@ test("it is possible to filter by AS (name)", async ({ page }) => {
     )
   );
 
-  await page.goto(`${namespace}/instances/`);
+  await page.goto(`/n/${namespace}/instances/`);
 
   /* there should be 4 items initially */
   await expect(
@@ -352,7 +352,7 @@ test("it is possible to apply multiple filters", async ({ page }) => {
   await Promise.all(failingInstances);
 
   /* visit page and test initial state */
-  await page.goto(`${namespace}/instances/`);
+  await page.goto(`/n/${namespace}/instances/`);
 
   await expect(
     page.getByTestId(/instance-row/),

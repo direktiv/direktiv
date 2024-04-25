@@ -21,7 +21,7 @@ test.afterEach(async () => {
 });
 
 test("Route list is empty by default", async ({ page }) => {
-  await page.goto(`/${namespace}/gateway/routes`, {
+  await page.goto(`/n/${namespace}/gateway/routes`, {
     waitUntil: "networkidle",
   });
 
@@ -60,7 +60,7 @@ test("Route list shows all available routes", async ({ page }) => {
     )
     .toBeTruthy();
 
-  await page.goto(`/${namespace}/gateway/routes`, {
+  await page.goto(`/n/${namespace}/gateway/routes`, {
     waitUntil: "networkidle",
   });
 
@@ -140,7 +140,7 @@ test("Route list shows a warning", async ({ page }) => {
     )
     .toBeTruthy();
 
-  await page.goto(`/${namespace}/gateway/routes`, {
+  await page.goto(`/n/${namespace}/gateway/routes`, {
     waitUntil: "networkidle",
   });
 
@@ -181,7 +181,7 @@ test("Route list shows an error", async ({ page }) => {
     )
     .toBeTruthy();
 
-  await page.goto(`/${namespace}/gateway/routes`, {
+  await page.goto(`/n/${namespace}/gateway/routes`, {
     waitUntil: "networkidle",
   });
 
@@ -217,7 +217,7 @@ test("Route list links the file name to the route file", async ({ page }) => {
     yaml: createRouteFile(),
   });
 
-  await page.goto(`/${namespace}/gateway/routes`, {
+  await page.goto(`/n/${namespace}/gateway/routes`, {
     waitUntil: "networkidle",
   });
 
@@ -229,5 +229,5 @@ test("Route list links the file name to the route file", async ({ page }) => {
   await expect(
     page,
     "after clicking on the file name, the user gets redirected to the file explorer page of the service file"
-  ).toHaveURL(`/${namespace}/explorer/endpoint/my-route.yaml`);
+  ).toHaveURL(`/n/${namespace}/explorer/endpoint/my-route.yaml`);
 });

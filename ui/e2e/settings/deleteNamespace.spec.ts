@@ -37,7 +37,7 @@ test("it is possible to delete a namespace and it will immediately redirect to a
   page,
 }) => {
   const namespaceToBeDeleted = await createNamespace();
-  await page.goto(`/${namespaceToBeDeleted}/settings`);
+  await page.goto(`/n/${namespaceToBeDeleted}/settings`);
   await page.getByTestId("btn-delete-namespace").click();
   const confirmButton = page.getByTestId("delete-namespace-confirm-btn");
 
@@ -97,7 +97,7 @@ test("it is possible to delete the last namespace and it will redirect to the la
   page,
 }) => {
   const namespace = await createNamespace();
-  await page.goto(`/${namespace}/settings`);
+  await page.goto(`/n/${namespace}/settings`);
   await page.getByTestId("btn-delete-namespace").click();
 
   const confirmButton = page.getByTestId("delete-namespace-confirm-btn");

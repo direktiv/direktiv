@@ -30,7 +30,9 @@ test("it is possible to create a consumer", async ({ page }) => {
   });
 
   /* visit page */
-  await page.goto(`/${namespace}/explorer/tree`, { waitUntil: "networkidle" });
+  await page.goto(`/n/${namespace}/explorer/tree`, {
+    waitUntil: "networkidle",
+  });
   await expect(
     page.getByTestId("breadcrumb-namespace"),
     "it navigates to the test namespace in the explorer"
@@ -48,7 +50,7 @@ test("it is possible to create a consumer", async ({ page }) => {
   await expect(
     page,
     "it creates the service and opens the file in the explorer"
-  ).toHaveURL(`/${namespace}/explorer/consumer/${filename}`);
+  ).toHaveURL(`/n/${namespace}/explorer/consumer/${filename}`);
 
   /* fill in form */
   await page.getByLabel("Username").fill("my-username");
