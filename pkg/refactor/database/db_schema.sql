@@ -268,7 +268,7 @@ DROP TABLE IF EXISTS "filesystem_revisions";
 ALTER TABLE "filesystem_files" ADD COLUMN IF NOT EXISTS "data" bytea;
 ALTER TABLE "filesystem_files" ADD COLUMN IF NOT EXISTS "checksum" text;
 ALTER TABLE "event_topics" ADD COLUMN IF NOT EXISTS "filter" text;
-ALTER TABLE "staging_events" ADD COLUMN IF NOT EXISTS "filter" text;
+ALTER TABLE "staging_events" ADD COLUMN IF NOT EXISTS "namespace" text;
 ALTER TABLE "events_history" ADD COLUMN IF NOT EXISTS "namespace" text;
 ALTER TABLE "event_listeners" ADD COLUMN IF NOT EXISTS "namespace" text;
 ALTER TABLE "event_topics" ADD COLUMN IF NOT EXISTS "namespace" text;
