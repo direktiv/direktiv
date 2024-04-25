@@ -399,9 +399,9 @@ func extractEventFilterParams(r *http.Request) []string {
 
 func convertEvents(ns datastore.Namespace, evs ...cloudevents.Event) []*events.Event {
 	res := make([]*events.Event, len(evs))
-	for i, e := range evs {
+	for i := range evs {
 		res[i] = &events.Event{
-			Event:         &e,
+			Event:         &evs[i],
 			NamespaceName: ns.Name,
 			Namespace:     ns.ID,
 			ReceivedAt:    time.Now().UTC(),
