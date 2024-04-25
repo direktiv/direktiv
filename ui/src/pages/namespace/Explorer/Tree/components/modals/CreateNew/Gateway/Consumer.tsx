@@ -8,12 +8,12 @@ import { Network, PlusCircle } from "lucide-react";
 import { SubmitHandler, useForm } from "react-hook-form";
 
 import Button from "~/design/Button";
+import { FileNameSchema } from "~/api/files/schema";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { addYamlFileExtension } from "../../../../utils";
 import { defaultConsumerFileYaml } from "~/pages/namespace/Explorer/Consumer/ConsumerEditor/utils";
 import { encode } from "js-base64";
-import { fileNameSchema } from "~/api/tree_obsolete/schema/node";
 import { pages } from "~/util/router/pages";
 import { useCreateFile } from "~/api/files/mutate/createFile";
 import { useNamespace } from "~/util/store/namespace";
@@ -42,17 +42,23 @@ const NewConsumer = ({
 
   const resolver = zodResolver(
     z.object({
-      name: fileNameSchema
-        .transform((enteredName) => addYamlFileExtension(enteredName))
-        .refine(
-          (nameWithExtension) =>
-            !(unallowedNames ?? []).some(
-              (unallowedName) => unallowedName === nameWithExtension
-            ),
-          {
-            message: t("pages.explorer.tree.newConsumer.nameAlreadyExists"),
-          }
-        ),
+      _name: FileNameSchema.transform((enteredName) =>
+        addYamlFileExtension(enteredName)
+      ).refine(
+        (nameWithExtension) =>
+          !(unallowedNames ?? []).some(
+            (unallowedName) => unallowedName === nameWithExtension
+          ),
+        {
+          message: t("pages.explorer.tree.newConsumer.nameAlreadyExists"),
+        }
+      ),
+      get name() {
+        return this._name;
+      },
+      set name(value) {
+        this._name = value;
+      },
       fileContent: z.string(),
     })
   );

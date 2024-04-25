@@ -8,9 +8,9 @@ import { Folder, PlusCircle } from "lucide-react";
 import { SubmitHandler, useForm } from "react-hook-form";
 
 import Button from "~/design/Button";
+import { FileNameSchema } from "~/api/files/schema";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
-import { fileNameSchema } from "~/api/tree_obsolete/schema/node";
 import { pages } from "~/util/router/pages";
 import { useCreateFile } from "~/api/files/mutate/createFile";
 import { useNamespace } from "~/util/store/namespace";
@@ -38,7 +38,7 @@ const NewDirectory = ({
 
   const resolver = zodResolver(
     z.object({
-      name: fileNameSchema.and(
+      name: FileNameSchema.and(
         z
           .string()
           .refine((name) => !(unallowedNames ?? []).some((n) => n === name), {
