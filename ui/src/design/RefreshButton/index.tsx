@@ -1,7 +1,7 @@
 import { ComponentProps, FC, useEffect, useState } from "react";
 
 import Button from "../Button";
-import { RefreshCcw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 
 type ButtonPropsType = ComponentProps<typeof Button>;
 
@@ -30,7 +30,7 @@ const RefreshButton: FC<ButtonPropsType> = ({
       }}
       {...props}
     >
-      <RefreshCcw className={spinning ? "animate-spin" : ""} />
+      <RefreshCw className={spinning ? "animate-spin" : ""} />
       {children}
     </Button>
   );

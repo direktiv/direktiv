@@ -40,10 +40,7 @@ const basevent = (type, id, value) => `{
 describe('Test complex workflow events orchistration', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
 
-	it(`should create namespace`, async () => {
-		const createNamespaceResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${ namespaceName }`)
-		expect(createNamespaceResponse.statusCode).toEqual(200)
-	})
+	helpers.itShouldCreateNamespace(it, expect, namespaceName)
 
 	helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
 		'', startThenWaitWorkflowNameContext, 'workflow',
@@ -112,7 +109,8 @@ describe('Test complex workflow events orchistration', () => {
 			.send()
 		expect(statusStream3.body.instance.status).toBe('pending')
 
-		const outputData2 = JSON.parse(atob(resultsStream2.body.data)); +expect(outputData2.hello.hello).toBe('condition2')
+		const outputData2 = JSON.parse(atob(resultsStream2.body.data))
+		expect(outputData2.hello.hello).toBe('condition2')
 
 		await events.sendEventAndList(namespaceName, eventStream3Stage2)
 		await helpers.sleep(300)

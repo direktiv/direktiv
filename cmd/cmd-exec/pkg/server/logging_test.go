@@ -2,13 +2,10 @@ package server_test
 
 import (
 	"bytes"
-	"context"
-	"fmt"
 	"io"
-	"net"
 	"net/http"
-	"os"
-	"sync"
+	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/direktiv/direktiv/cmd/cmd-exec/pkg/server"
@@ -16,53 +13,77 @@ import (
 )
 
 func TestLogging(t *testing.T) {
-	wgExit := &sync.WaitGroup{}
-	wgExit.Add(1)
-
 	var b bytes.Buffer
-	s, port := startHttpServer(wgExit, &b)
+
+	ts := startMockServer(&b)
 
 	loggingText := "Hello World"
 
-	os.Setenv("DIREKTIV_HTTP_BACKEND", fmt.Sprintf("http://localhost:%d", port))
-	l := server.NewLogger("123")
-	l.Log(loggingText)
+	l := server.NewLogger(ts.URL, "123")
+	l.Logf(loggingText)
 
 	// Log adds \n to log text
 	assert.Equal(t, loggingText+"\n", b.String())
 
-	// reste buffer
+	// reset buffer
 	b.Reset()
 
 	l.Write([]byte(loggingText))
 	assert.Equal(t, loggingText, b.String())
 
-	s.Shutdown(context.Background())
-	wgExit.Wait()
+	ts.Close()
 }
 
-func startHttpServer(wg *sync.WaitGroup, b *bytes.Buffer) (*http.Server, int) {
-	// get a free port, release it and use it
-	listener, _ := net.Listen("tcp", ":0")
-	port := listener.Addr().(*net.TCPAddr).Port
-	listener.Close()
+func TestMultipleLogEntries(t *testing.T) {
+	var b bytes.Buffer
+	ts := startMockServer(&b)
 
-	fmt.Println("using port:", port)
+	loggingText1 := "First Log Entry"
+	loggingText2 := "Second Log Entry"
 
-	srv := &http.Server{Addr: fmt.Sprintf(":%d", port)}
+	l := server.NewLogger(ts.URL, "123")
+	l.Logf(loggingText1)
+	l.Logf(loggingText2)
 
-	// write the post to the buffer
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	expectedOutput := loggingText1 + "\n" + loggingText2 + "\n"
+	assert.Equal(t, expectedOutput, b.String())
+
+	ts.Close()
+}
+
+func TestLargeLogData(t *testing.T) {
+	var b bytes.Buffer
+	ts := startMockServer(&b)
+
+	largeLoggingText := "A" + strings.Repeat("B", 1024*1024) // 1MB log data
+
+	l := server.NewLogger(ts.URL, "123")
+	l.Write([]byte(largeLoggingText))
+
+	assert.Equal(t, largeLoggingText, b.String())
+
+	ts.Close()
+}
+
+func TestEmptyLogMessage(t *testing.T) {
+	var b bytes.Buffer
+	ts := startMockServer(&b)
+
+	l := server.NewLogger(ts.URL, "123")
+	l.Logf("")
+
+	assert.Equal(t, "", b.String())
+
+	ts.Close()
+}
+
+func startMockServer(b *bytes.Buffer) *httptest.Server {
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		io.WriteString(w, "got data\n")
 		br, _ := io.ReadAll(r.Body)
 		b.Write(br)
 		defer r.Body.Close()
 	})
 
-	go func() {
-		defer wg.Done()
-		srv.ListenAndServe()
-	}()
-
-	return srv, port
+	return httptest.NewServer(handler)
 }
