@@ -29,6 +29,9 @@ describe('Test send events v2 api', () => {
         expect(eventHistoryResponse.body.data.length).toBeGreaterThan(0);
         expect(eventHistoryResponse.body.data[0].NamespaceName).toBe(namespaceName);
         expect(eventHistoryResponse.body.data[0].Event.id).toBe("123");
+        console.log(eventHistoryResponse.body)
+        console.log(eventHistoryResponse.body.data[0])
+
     })
 })
 
@@ -58,7 +61,6 @@ states:
     it(`listener should be regitered`, async () => {
 		const eventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/listener/`)
 			.send()
-        console.log(eventListenerResponse.body)
 		expect(eventListenerResponse.statusCode).toEqual(200)
         expect(eventListenerResponse.body.data.length).toBeGreaterThan(0);
         expect(eventListenerResponse.body.data[0].Metadata).toBe('/listener.yml')

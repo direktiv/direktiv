@@ -1,0 +1,127 @@
+
+/api/v2/namespaces/{namespace}/events/history:
+  get:
+    tags:
+    - events
+    summary: Api for listing the last 200 registered events.
+    parameters:
+      - name: namespace
+        in: path
+        required: true
+        schema:
+            type: string
+            pattern: '^(([a-z][a-z0-9_\-\.]*[a-z0-9])|([a-z]))$'
+        style: simple
+      - name: before
+        in: query
+        required: false
+      - name: createdBefore
+        in: query
+        required: false
+      - name: createdAfter
+        in: query
+        required: false
+      - name: receivedBefore
+        in: query
+        required: false
+      - name: receivedAfter
+        in: query
+        required: false
+      - name: eventContains
+        in: query
+        required: false
+      - name: typeContains
+        in: query
+        required: false
+    responses:
+      '200':
+        description: OK
+        content:
+          'application/json':
+            example:
+              previousPage: '2024-04-25T13:39:00.01915Z'
+              startingFrom: '2024-01-16T01:44:08.128136Z'
+              data:
+              - event:
+                  specversion: '1.0'
+                  id: '4'
+                  source: 'https://direktiv.io/test'
+                  type: 'testerDuplicate'
+                namespace: 'b1e7f55b-3e16-4b9c-b5b5-3f94c5e149c0'
+                namespaceName: 'wfeventsv2'
+                receivedAt: '2024-04-25T13:39:00.01915Z'
+            schema:
+              type: object
+              properties:
+                meta:
+                  type: object
+                  nullable: true
+                  properties:
+                    previousPage:
+                      type: string
+                      format: RFC3339Nano
+                      nullable: true
+                    startingFrom:
+                      type: string
+                      format: RFC3339Nano
+                data:
+                  type: array
+                  items: 
+                    type: object
+                    properties:
+                      namespaceName: 
+                        type: string
+                      namespace: 
+                        type: string
+                      receivedAt: 
+                        type: string
+                        format: RFC3339Nano
+                      event:       
+                        type: object
+                        required:
+                          - specversion
+                          - id
+                          - source 
+                          - type
+                        properties:
+                          specversion:
+                            type: string
+                          id:
+                            type: string
+                          source:
+                            type: string
+                            format: uri
+                          type:
+                            type: string
+
+/api/v2/namespaces/{namespace}/events/subscribe:
+  get:
+    tags:
+    - events
+    summary: Api for SSE streaming of incoming events stating the systems current time.
+    parameters:
+      - name: namespace
+        in: path
+        required: true
+        schema:
+            type: string
+            pattern: '^(([a-z][a-z0-9_\-\.]*[a-z0-9])|([a-z]))$'
+        style: simple
+      - name: Last-Event-ID
+        in: header
+        required: false
+        schema:
+          type: integer
+    responses:
+      '200':
+        description: OK
+        content:
+          text/event-stream:
+            example: |
+              id: 1234
+              event: message
+              data: {"Event":{"specversion":"1.0","id":"1234","source":"https://direktiv.io/test","type":"testerDuplicate"},"Namespace":"e09f0392-fe09-4378-bc0a-de3ab634f4e6","NamespaceName":"wfeventsv2","ReceivedAt":"2024-04-25T14:28:56.374147Z"}
+
+              id: 1234-234234
+              event: message
+              data: {"Event":{"specversion":"1.0","id":"1234-234234","source":"https://direktiv.io/test","type":"testerDuplicate"},"Namespace":"e09f0392-fe09-4378-bc0a-de3ab634f4e6","NamespaceName":"wfeventsv2","ReceivedAt":"2024-04-25T14:28:56.374148Z"}

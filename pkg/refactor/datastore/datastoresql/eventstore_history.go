@@ -66,6 +66,7 @@ func (hs *sqlEventHistoryStore) DeleteOld(ctx context.Context, sinceWhen time.Ti
 }
 
 type gormEventHistoryEntry struct {
+	SerialID                 int
 	ID                       string
 	NamespaceID              uuid.UUID
 	Namespace                string
@@ -74,11 +75,20 @@ type gormEventHistoryEntry struct {
 }
 
 func (hs *sqlEventHistoryStore) GetOld(ctx context.Context, namespace string, t time.Time, keyAndValues ...string) ([]*events.Event, error) {
-	return hs.getEvents(ctx, namespace, t, "where (namespace= ? and received_at < ? )", keyAndValues...)
+	return hs.getEventsWithWhereClause(ctx, namespace, t, "where (namespace= ? and received_at < ? )", keyAndValues...)
 }
 
 func (hs *sqlEventHistoryStore) GetNew(ctx context.Context, namespace string, t time.Time, keyAndValues ...string) ([]*events.Event, error) {
-	return hs.getEvents(ctx, namespace, t, "where (namespace= ? and received_at >= ? )", keyAndValues...)
+	return hs.getEventsWithWhereClause(ctx, namespace, t, "where (namespace= ? and received_at > ? )", keyAndValues...)
+}
+
+func (hs *sqlEventHistoryStore) GetStartingIDUntilTime(ctx context.Context, namespace string, lastID int, t time.Time, keyAndValues ...string) ([]*events.Event, error) {
+	qs := []string{"where (namespace= ? and received_at <= ? and serial_id > ?)"}
+	qv := []interface{}{namespace, t, lastID}
+	qs, qv = unzipAndAppendToQueryParams(qs, qv, keyAndValues)
+	qv = append(qv, pageSize)
+
+	return hs.getEventsQvQs(ctx, qv, qs, keyAndValues...)
 }
 
 func (hs *sqlEventHistoryStore) Get(ctx context.Context, limit int, offset int, namespace uuid.UUID, keyAndValues ...string) ([]*events.Event, int, error) {
@@ -172,7 +182,7 @@ func (hs *sqlEventHistoryStore) Get(ctx context.Context, limit int, offset int, 
 }
 
 func (hs *sqlEventHistoryStore) GetAll(ctx context.Context) ([]*events.Event, error) {
-	q := "SELECT id, type, source, cloudevent, namespace_id, namespace, received_at, created_at FROM events_history;"
+	q := "SELECT serial_id, id, type, source, cloudevent, namespace_id, namespace, received_at, created_at FROM events_history;"
 	res := make([]*gormEventHistoryEntry, 0)
 
 	tx := hs.db.WithContext(ctx).Raw(q).Scan(&res)
@@ -243,17 +253,15 @@ func unzipAndAppendToQueryParams(qs []string, qv []interface{}, keyAndValues []s
 	return qs, qv
 }
 
-func (hs *sqlEventHistoryStore) getEvents(ctx context.Context, namespace string, t time.Time, whereClause string, keyAndValues ...string) ([]*events.Event, error) {
+func (hs *sqlEventHistoryStore) getEventsQvQs(ctx context.Context, qv []interface{}, qs []string, keyAndValues ...string) ([]*events.Event, error) {
 	if len(keyAndValues)%2 != 0 {
 		return nil, fmt.Errorf("keyAndValues have to be a pair of keys and values")
 	}
 
-	qs := []string{whereClause}
-	qv := []interface{}{namespace, t}
 	qs, qv = unzipAndAppendToQueryParams(qs, qv, keyAndValues)
 	qv = append(qv, pageSize)
 
-	q := fmt.Sprintf(`SELECT id, type, source, cloudevent, namespace_id, namespace, received_at, created_at FROM events_history
+	q := fmt.Sprintf(`SELECT serial_id, id, type, source, cloudevent, namespace_id, namespace, received_at, created_at FROM events_history
 	%v ORDER BY created_at DESC LIMIT ?`, strings.Join(qs, ""))
 
 	res := make([]gormEventHistoryEntry, 0, pageSize)
@@ -270,8 +278,18 @@ func (hs *sqlEventHistoryStore) getEvents(ctx context.Context, namespace string,
 		if err != nil {
 			return nil, err
 		}
-		conv = append(conv, &events.Event{Namespace: v.NamespaceID, NamespaceName: v.Namespace, ReceivedAt: v.ReceivedAt, Event: &finalCE})
+		conv = append(conv, &events.Event{Namespace: v.NamespaceID, NamespaceName: v.Namespace, ReceivedAt: v.ReceivedAt, Event: &finalCE, SerialID: v.SerialID})
 	}
 
 	return conv, nil
+}
+
+func (hs *sqlEventHistoryStore) getEventsWithWhereClause(ctx context.Context, namespace string, t time.Time, whereClause string, keyAndValues ...string) ([]*events.Event, error) {
+	if len(keyAndValues)%2 != 0 {
+		return nil, fmt.Errorf("keyAndValues have to be a pair of keys and values")
+	}
+	qs := []string{whereClause}
+	qv := []interface{}{namespace, t}
+
+	return hs.getEventsQvQs(ctx, qv, qs)
 }

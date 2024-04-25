@@ -9,6 +9,7 @@ import (
 	"log/slog"
 	"net/http"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 
@@ -113,20 +114,34 @@ func (c *eventsController) subscribe(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
 
+	params := extractEventFilterParams(r)
+
 	// Create a context with cancellation
 	ctx, cancel := context.WithCancel(r.Context())
 	defer cancel()
 
 	// Create a channel to send SSE messages
 	messageChannel := make(chan Event)
-	params := extractEventFilterParams(r)
 	var getCursoredStyle sseHandle = func(ctx context.Context, cursorTime time.Time) ([]CoursoredEvent, error) {
 		ns := chi.URLParam(r, "namespace")
 		if ns == "" {
 			return nil, fmt.Errorf("namespace can not be empty")
 		}
-
-		events, err := c.store.EventHistory().GetNew(ctx, ns, cursorTime, params...)
+		events := make([]*events.Event, 0)
+		var err error
+		if lastID := r.Header.Get("Last-Event-ID"); lastID != "" {
+			id, err := strconv.Atoi(lastID)
+			if err != nil {
+				return nil, err
+			}
+			lostEvents, err := c.store.EventHistory().GetStartingIDUntilTime(ctx, ns, id, cursorTime, params...)
+			if err != nil {
+				return nil, err
+			}
+			events = append(events, lostEvents...)
+		}
+		newEvents, err := c.store.EventHistory().GetNew(ctx, ns, cursorTime, params...)
+		events = append(events, newEvents...)
 		if err != nil {
 			return nil, err
 		}

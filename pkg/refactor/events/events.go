@@ -48,6 +48,7 @@ type Event struct {
 	Namespace     uuid.UUID
 	NamespaceName string
 	ReceivedAt    time.Time // marks when the events received by the web-API or created via internal logic.
+	SerialID      int
 }
 
 // Persists and gets events.
@@ -65,6 +66,7 @@ type EventHistoryStore interface {
 	// received_before, received_after, event_contains, type_contains.
 	Get(ctx context.Context, limit, offset int, namespace uuid.UUID, keyValues ...string) ([]*Event, int, error)
 	GetOld(ctx context.Context, namespace string, t time.Time, keyAndValues ...string) ([]*Event, error)
+	GetStartingIDUntilTime(ctx context.Context, namespace string, lastID int, t time.Time, keyAndValues ...string) ([]*Event, error)
 	GetNew(ctx context.Context, namespace string, t time.Time, keyAndValues ...string) ([]*Event, error)
 	GetAll(ctx context.Context) ([]*Event, error)
 	// deletes events that are older then the given timestamp.

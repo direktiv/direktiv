@@ -190,6 +190,7 @@ CREATE TABLE IF NOT EXISTS "staging_events" (
 );
 
 CREATE TABLE IF NOT EXISTS "events_history" (
+    "serial_id" SERIAL PRIMARY KEY,
     "id" text,
     "type" text NOT NULL,
     "source" text NOT NULL,
@@ -203,6 +204,8 @@ CREATE TABLE IF NOT EXISTS "events_history" (
     CONSTRAINT "no_dup_check" UNIQUE ("source","id", "namespace_id")
 );
 
+-- for SSE retry with last known id
+ALTER TABLE "events_history" ADD COLUMN IF NOT EXISTS serial_id SERIAL PRIMARY KEY;
 -- for cursor style pagination
 CREATE INDEX IF NOT EXISTS "events_history_sorted" ON "events_history" ("namespace_id", "created_at" DESC);
 
