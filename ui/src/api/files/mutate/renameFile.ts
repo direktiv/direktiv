@@ -42,12 +42,12 @@ export const useRenameFile = ({
         },
       }),
     onSuccess(data, variables) {
-      queryClient.invalidateQueries(
-        fileKeys.file(namespace, {
+      queryClient.invalidateQueries({
+        queryKey: fileKeys.file(namespace, {
           apiKey: apiKey ?? undefined,
           path: getParentFromPath(data.data.path),
-        })
-      );
+        }),
+      });
       toast({
         title: t("api.tree.mutate.file.rename.success.title", {
           type: variables.file.type === "workflow" ? "workflow" : "directory",

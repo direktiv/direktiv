@@ -46,7 +46,7 @@ export const Authdialog = () => {
     },
   });
 
-  const { mutate: authenticate, isLoading } = useAuthenticate({
+  const { mutate: authenticate, isPending } = useAuthenticate({
     onSuccess: (isKeyCorrect, apiKey) => {
       isKeyCorrect
         ? storeApiKey(apiKey)
@@ -129,10 +129,10 @@ export const Authdialog = () => {
           <Button
             type="submit"
             disabled={disableSubmit}
-            loading={isLoading}
+            loading={isPending}
             form={formId}
           >
-            {!isLoading && <LogIn />}
+            {!isPending && <LogIn />}
             {t("pages.authenticate.loginBtn")}
           </Button>
         </DialogFooter>

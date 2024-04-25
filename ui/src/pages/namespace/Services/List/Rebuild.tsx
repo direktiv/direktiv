@@ -19,7 +19,7 @@ const Rebuild = ({
   close: () => void;
 }) => {
   const { t } = useTranslation();
-  const { mutate: rebuildService, isLoading } = useRebuildService({
+  const { mutate: rebuildService, isPending } = useRebuildService({
     onSuccess: () => {
       close();
     },
@@ -49,9 +49,9 @@ const Rebuild = ({
             rebuildService(service.id);
           }}
           variant="destructive"
-          loading={isLoading}
+          loading={isPending}
         >
-          {!isLoading && <RotateCw />}
+          {!isPending && <RotateCw />}
           {t("pages.services.list.rebuild.deleteBtn")}
         </Button>
       </DialogFooter>

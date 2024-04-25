@@ -22,7 +22,7 @@ const PolicyEditor: FC<PolicyEditorProps> = ({ policyFromServer }) => {
   const [hasUnsavedChanged, setHasUnsavedChanged] = useState(false);
   const [editorValue, setEditorValue] = useState(policyFromServer);
 
-  const { mutate: updatePolicy, isLoading } = useUpdatePolicy({
+  const { mutate: updatePolicy, isPending } = useUpdatePolicy({
     onSuccess: () => {
       setHasUnsavedChanged(false);
     },
@@ -88,7 +88,7 @@ const PolicyEditor: FC<PolicyEditorProps> = ({ policyFromServer }) => {
         <PermissionsHint />
         <Button
           variant="outline"
-          disabled={isLoading}
+          disabled={isPending}
           onClick={() => {
             onSave(editorValue);
           }}

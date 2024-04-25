@@ -43,15 +43,15 @@ export const useDeleteVar = ({
   return useMutationWithPermissions({
     mutationFn,
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries(
-        varKeys.varList(namespace, {
+      queryClient.invalidateQueries({
+        queryKey: varKeys.varList(namespace, {
           apiKey: apiKey ?? undefined,
           workflowPath:
             variables.variable.type === "workflow-variable"
               ? variables.variable.reference
               : undefined,
-        })
-      );
+        }),
+      });
       toast({
         title: t("api.variables.mutate.deleteVariable.success.title"),
         description: t(
