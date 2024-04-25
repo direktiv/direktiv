@@ -67,7 +67,7 @@ const NewService = ({
     },
   });
 
-  const { mutate: createFile, isLoading } = useCreateFile({
+  const { mutate: createFile, isPending } = useCreateFile({
     onSuccess: (data) => {
       namespace &&
         navigate(
@@ -132,10 +132,10 @@ const NewService = ({
           data-testid="new-workflow-submit"
           type="submit"
           disabled={disableSubmit}
-          loading={isLoading}
+          loading={isPending}
           form={formId}
         >
-          {!isLoading && <PlusCircle />}
+          {!isPending && <PlusCircle />}
           {t("pages.explorer.tree.newService.createBtn")}
         </Button>
       </DialogFooter>

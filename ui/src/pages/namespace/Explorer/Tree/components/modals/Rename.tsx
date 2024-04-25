@@ -63,7 +63,7 @@ const Rename = ({
     },
   });
 
-  const { mutate: rename, isLoading } = useRenameFile({
+  const { mutate: rename, isPending } = useRenameFile({
     onSuccess: () => {
       close();
     },
@@ -108,10 +108,10 @@ const Rename = ({
           data-testid="node-rename-submit"
           type="submit"
           disabled={disableSubmit}
-          loading={isLoading}
+          loading={isPending}
           form={formId}
         >
-          {!isLoading && <TextCursorInput />}
+          {!isPending && <TextCursorInput />}
           {t("pages.explorer.tree.rename.renameBtn")}
         </Button>
       </DialogFooter>

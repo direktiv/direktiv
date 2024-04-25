@@ -1,8 +1,8 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 
 import common from '../common'
-import regex from '../common/regex'
 import helpers from '../common/helpers'
+import regex from '../common/regex'
 import request from '../common/request'
 
 const namespaceName = 'waitsuccesstest'
@@ -10,18 +10,7 @@ const namespaceName = 'waitsuccesstest'
 describe('Test wait success API behaviour', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
 
-	it(`should create a namespace`, async () => {
-		const req = await request(common.config.getDirektivHost()).put(`/api/namespaces/${ namespaceName }`)
-
-		expect(req.statusCode).toEqual(200)
-		expect(req.body).toMatchObject({
-			namespace: {
-				createdAt: expect.stringMatching(common.regex.timestampRegex),
-				updatedAt: expect.stringMatching(common.regex.timestampRegex),
-				name: namespaceName,
-			},
-		})
-	})
+	helpers.itShouldCreateNamespace(it, expect, namespaceName)
 
 	helpers.itShouldCreateFileV2(it, expect, namespaceName,
 		'',
@@ -60,28 +49,28 @@ states:
 					createdAt: expect.stringMatching(regex.timestampRegex),
 					endedAt: expect.stringMatching(regex.timestampRegex),
 					definition: expect.stringMatching(regex.base64Regex),
-					errorCode: "", 
-					flow: [ "a" ],
-					id: expect.stringMatching(regex.uuidRegex), 
-					invoker: "api",
+					errorCode: '',
+					flow: [ 'a' ],
+					id: expect.stringMatching(regex.uuidRegex),
+					invoker: 'api',
 					lineage: [],
-					path: "/noop.yaml",
-					status: "complete", 
+					path: '/noop.yaml',
+					status: 'complete',
 					traceId: expect.anything(),
 				},
 				{
 					createdAt: expect.stringMatching(regex.timestampRegex),
 					endedAt: expect.stringMatching(regex.timestampRegex),
 					definition: expect.stringMatching(regex.base64Regex),
-					errorCode: "", 
-					flow: [ "a" ],
-					id: expect.stringMatching(regex.uuidRegex), 
-					invoker: "api",
+					errorCode: '',
+					flow: [ 'a' ],
+					id: expect.stringMatching(regex.uuidRegex),
+					invoker: 'api',
 					lineage: [],
-					path: "/noop.yaml",
-					status: "complete", 
+					path: '/noop.yaml',
+					status: 'complete',
 					traceId: expect.anything(),
-				}
+				},
 			],
 		})
 	})

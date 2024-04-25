@@ -1,61 +1,12 @@
 package bytedata
 
 import (
-	"sort"
-
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
-
-func ConvertMirrorConfigToGrpcMirrorInfo(config *datastore.MirrorConfig) *grpc.MirrorInfo {
-	return &grpc.MirrorInfo{
-		Url: config.URL,
-		Ref: config.GitRef,
-		// Cron: ,
-		PublicKey: config.PublicKey,
-		// LastSync: ,
-		PrivateKey: config.PrivateKey,
-		Passphrase: config.PrivateKeyPassphrase,
-		Insecure:   config.Insecure,
-	}
-}
-
-func ConvertMirrorProcessToGrpcMirrorActivity(mirror *datastore.MirrorProcess) *grpc.MirrorActivityInfo {
-	return &grpc.MirrorActivityInfo{
-		Id:        mirror.ID.String(),
-		Status:    mirror.Status,
-		Type:      mirror.Typ,
-		CreatedAt: timestamppb.New(mirror.CreatedAt),
-		UpdatedAt: timestamppb.New(mirror.UpdatedAt),
-	}
-}
-
-// ConvertMirrorProcessesToGrpcMirrorActivityInfoList converts a slice of MirrorProcess pointers
-// into a slice of grpc.MirrorActivityInfo pointers. The resulting slice is sorted
-// by the UpdatedAt field in ascending order.
-// Parameters:
-// list: A slice of pointers to MirrorProcess objects that need to be converted.
-// Returns:
-// A slice of pointers to grpc.MirrorActivityInfo objects sorted by UpdatedAt.
-func ConvertMirrorProcessesToGrpcMirrorActivityInfoList(list []*datastore.MirrorProcess) []*grpc.MirrorActivityInfo {
-	copiedList := make([]*datastore.MirrorProcess, len(list))
-	copy(copiedList, list)
-
-	// Sort the copied list by UpdatedAt
-	sort.Slice(copiedList, func(i, j int) bool {
-		return copiedList[i].UpdatedAt.Before(copiedList[j].UpdatedAt)
-	})
-
-	var result []*grpc.MirrorActivityInfo
-	for _, f := range copiedList {
-		result = append(result, ConvertMirrorProcessToGrpcMirrorActivity(f))
-	}
-
-	return result
-}
 
 func ConvertInstanceToGrpcInstance(instance *enginerefactor.Instance) *grpc.Instance {
 	return &grpc.Instance{
@@ -98,14 +49,4 @@ func ConvertNamespaceToGrpc(item *datastore.Namespace) *grpc.Namespace {
 	}
 
 	return ns
-}
-
-func ConvertNamespacesListToGrpc(list []*datastore.Namespace) []*grpc.Namespace {
-	var result []*grpc.Namespace
-	for idx := range list {
-		ns := list[idx]
-		result = append(result, ConvertNamespaceToGrpc(ns))
-	}
-
-	return result
 }

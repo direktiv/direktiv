@@ -73,11 +73,7 @@ const basevent = (type, id, value) => `{
 describe('Test workflow events and', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
 
-	it(`should create namespace`, async () => {
-		const createNamespaceResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${ namespaceName }`)
-		expect(createNamespaceResponse.statusCode).toEqual(200)
-	})
-
+	helpers.itShouldCreateNamespace(it, expect, namespaceName)
 	// workflow with start
 	helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
 		'', startWorkflowName, 'workflow',
@@ -95,9 +91,13 @@ describe('Test workflow events and', () => {
 			instance: '',
 			createdAt: expect.stringMatching(common.regex.timestampRegex),
 			updatedAt: expect.stringMatching(common.regex.timestampRegex),
-			events: [ { type: 'eventtype3',
-				filters: {} }, { type: 'eventtype4',
-				filters: {} } ],
+			events: [ {
+				type: 'eventtype3',
+				filters: {},
+			}, {
+				type: 'eventtype4',
+				filters: {},
+			} ],
 		})
 
 		expect(getEventListenerResponse.body.pageInfo.total).toEqual(1)
@@ -131,9 +131,13 @@ describe('Test workflow events and', () => {
 			instance: expect.stringMatching(common.regex.uuidRegex),
 			createdAt: expect.stringMatching(common.regex.timestampRegex),
 			updatedAt: expect.stringMatching(common.regex.timestampRegex),
-			events: [ { type: 'eventtype1',
-				filters: {} }, { type: 'eventtype2',
-				filters: {} } ],
+			events: [ {
+				type: 'eventtype1',
+				filters: {},
+			}, {
+				type: 'eventtype2',
+				filters: {},
+			} ],
 		})
 	})
 

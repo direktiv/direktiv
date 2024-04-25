@@ -11,15 +11,22 @@ describe('Test services crud operations', () => {
 
 	it(`should create a new git mirrored namespace`, async () => {
 		const res = await request(common.config.getDirektivHost())
-			.put(`/api/namespaces/${ testNamespace }`)
+			.post(`/api/v2/namespaces`)
 			.send({
-				url: 'https://github.com/direktiv/direktiv-examples.git',
-				ref: 'main',
-				cron: '',
-				passphrase: '',
-				publicKey: '',
-				privateKey: '',
+				name: testNamespace,
+				mirror: {
+					url: 'https://github.com/direktiv/direktiv-examples.git',
+					gitRef: 'main',
+					authType: 'public',
+				},
 			})
+		expect(res.statusCode).toEqual(200)
+	})
+
+	it(`should trigger a new sync`, async () => {
+		const res = await request(common.config.getDirektivHost())
+			.post(`/api/v2/namespaces/${ testNamespace }/syncs`)
+			.send({})
 		expect(res.statusCode).toEqual(200)
 	})
 
@@ -28,8 +35,10 @@ describe('Test services crud operations', () => {
 			.get(`/api/v2/namespaces/${ testNamespace }/services`)
 		expect(listRes.statusCode).toEqual(200)
 
-		const reduced = listRes.body.data.map(item => ({ id: item.id,
-			error: item.error }))
+		const reduced = listRes.body.data.map(item => ({
+			id: item.id,
+			error: item.error,
+		}))
 
 		expect(reduced).toEqual(expect.arrayContaining([
 			{

@@ -57,22 +57,22 @@ export const useUpdateVar = ({
   return useMutationWithPermissions({
     mutationFn,
     onSuccess: (data, variables) => {
-      queryClient.invalidateQueries(
-        varKeys.varDetails(namespace, {
+      queryClient.invalidateQueries({
+        queryKey: varKeys.varDetails(namespace, {
           apiKey: apiKey ?? undefined,
           id: variables.id,
-        })
-      );
+        }),
+      });
       // the list also needs to be invalidated because the variable's name could have changed
-      queryClient.invalidateQueries(
-        varKeys.varList(namespace, {
+      queryClient.invalidateQueries({
+        queryKey: varKeys.varList(namespace, {
           apiKey: apiKey ?? undefined,
           workflowPath:
             data.data.type === "workflow-variable"
               ? data.data.reference
               : undefined,
-        })
-      );
+        }),
+      });
       toast({
         title: t("api.variables.mutate.updateVariable.success.title"),
         description: t(

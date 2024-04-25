@@ -121,7 +121,7 @@ const NamespaceEdit = ({
   const formType: MirrorFormType = watch("formType");
   const insecure: boolean = watch("insecure");
 
-  const { mutate: createNamespace, isLoading } = useCreateNamespace({
+  const { mutate: createNamespace, isPending } = useCreateNamespace({
     onSuccess: (data) => {
       setNamespace(data.data.name);
       if (isMirror) {
@@ -489,10 +489,10 @@ const NamespaceEdit = ({
           data-testid="new-namespace-submit"
           type="submit"
           disabled={disableSubmit}
-          loading={isLoading}
+          loading={isPending}
           form={formId}
         >
-          {!isLoading && (isNew ? <PlusCircle /> : <Save />)}
+          {!isPending && (isNew ? <PlusCircle /> : <Save />)}
           {isNew
             ? t("components.namespaceEdit.submitBtn.create")
             : t("components.namespaceEdit.submitBtn.save")}

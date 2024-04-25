@@ -10,11 +10,18 @@ import {
 } from "~/design/Table";
 
 import { Network } from "lucide-react";
+import { RouteSchemaType } from "~/api/gateway/schema";
 import { Row } from "./Row";
 import { useRoutes } from "~/api/gateway/query/getRoutes";
 import { useTranslation } from "react-i18next";
 
-const RoutesTable = () => {
+const RoutesTable = ({
+  search,
+  filteredRoutes,
+}: {
+  search: string;
+  filteredRoutes: RouteSchemaType[];
+}) => {
   const { t } = useTranslation();
   const {
     data: routes,
@@ -23,7 +30,11 @@ const RoutesTable = () => {
     noPermissionMessage,
   } = useRoutes();
 
-  const noResults = isSuccess && routes.data.length === 0;
+  const isSearch = search.length > 0;
+
+  const noResults =
+    (isSuccess && routes.data.length === 0) ||
+    (isSuccess && filteredRoutes.length === 0);
 
   return (
     <Table className="border-t border-gray-5 dark:border-gray-dark-5">
@@ -53,12 +64,16 @@ const RoutesTable = () => {
               <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
                 <TableCell colSpan={5}>
                   <NoResult icon={Network}>
-                    {t("pages.gateway.routes.empty")}
+                    {t(
+                      isSearch
+                        ? "pages.gateway.routes.emptySearch"
+                        : "pages.gateway.routes.empty"
+                    )}
                   </NoResult>
                 </TableCell>
               </TableRow>
             ) : (
-              routes?.data?.map((route) => (
+              filteredRoutes?.map((route) => (
                 <Row key={route.file_path} route={route} />
               ))
             )}

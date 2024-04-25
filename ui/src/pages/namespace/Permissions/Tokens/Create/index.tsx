@@ -27,7 +27,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 const CreateToken = ({ close }: { close: () => void }) => {
   const { t } = useTranslation();
   const { data: availablePermissions } = usePermissionKeys();
-  const { mutate: createToken, isLoading } = useCreateToken({
+  const { mutate: createToken, isPending } = useCreateToken({
     onSuccess: (data) => {
       setCreatedToken(data.token);
     },
@@ -143,10 +143,10 @@ const CreateToken = ({ close }: { close: () => void }) => {
             <Button
               type="submit"
               disabled={disableSubmit}
-              loading={isLoading}
+              loading={isPending}
               form={formId}
             >
-              {!isLoading && <PlusCircle />}
+              {!isPending && <PlusCircle />}
               {t("pages.permissions.tokens.create.createBtn")}
             </Button>
           </DialogFooter>
