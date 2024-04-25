@@ -31,3 +31,36 @@ describe('Test send events v2 api', () => {
         expect(eventHistoryResponse.body.data[0].Event.id).toBe("123");
     })
 })
+
+describe('Test basic workflow events v2', () => {
+	beforeAll(common.helpers.deleteAllNamespaces)
+
+	helpers.itShouldCreateNamespace(it, expect, namespaceName)
+
+	common.helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
+		'/', 'listener.yml', 'workflow', `
+start:
+  type: event
+  event:
+    type: greeting
+  state: helloworld
+states:
+- id: helloworld
+  type: noop
+  transform:
+    result: Hello world!
+`)
+
+	it(`should wait a second for the events logic to sync`, async () => {
+		await helpers.sleep(1000)
+	})
+
+    it(`listener should be regitered`, async () => {
+		const eventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/listener/`)
+			.send()
+        console.log(eventListenerResponse.body)
+		expect(eventListenerResponse.statusCode).toEqual(200)
+        expect(eventListenerResponse.body.data.length).toBeGreaterThan(0);
+        expect(eventListenerResponse.body.data[0].Metadata).toBe('/listener.yml')
+    })
+})

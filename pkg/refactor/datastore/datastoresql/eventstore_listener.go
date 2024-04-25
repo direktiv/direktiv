@@ -126,10 +126,10 @@ func (s *sqlEventListenerStore) DeleteAllForWorkflow(ctx context.Context, workfl
 	return res, nil
 }
 
-func (s *sqlEventListenerStore) GetNew(ctx context.Context, namespace string, t time.Time) ([]*events.EventListener, error) {
+func (s *sqlEventListenerStore) GetOld(ctx context.Context, namespace string, t time.Time) ([]*events.EventListener, error) {
 	q := `SELECT 
 	id, namespace_id, namespace, created_at, updated_at, deleted, received_events, trigger_type, events_lifespan, event_types, trigger_info, metadata, glob_gates
-	FROM event_listeners WHERE namespace_id = $1 AND created_at < $2`
+	FROM event_listeners WHERE namespace = $1 AND created_at < $2`
 	q += " ORDER BY created_at DESC LIMIT $3"
 
 	res := make([]*gormEventListener, 0)

@@ -215,7 +215,7 @@ func (c *eventsController) listEventListeners(w http.ResponseWriter, r *http.Req
 		}
 		t = co
 	}
-	data, err := c.store.EventListener().GetNew(r.Context(), ns.Name, t)
+	data, err := c.store.EventListener().GetOld(r.Context(), ns.Name, t)
 	if err != nil {
 		writeInternalError(w, err)
 		return
