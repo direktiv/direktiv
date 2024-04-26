@@ -539,7 +539,7 @@
           "invoker": "trigger",
           "state": "state",
           "startedAt": "started at",
-          "updatedAt": "last updated",
+          "finishedAt": "finished at",
           "childInstances": {
             "label": "spawned",
             "instanceCount": "{{count}} instances",
