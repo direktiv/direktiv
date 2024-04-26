@@ -12,7 +12,7 @@ export const instanceKeys = {
   ) =>
     [
       {
-        scope: "instance-list",
+        scope: "instance-list-obsolete",
         apiKey,
         namespace,
         limit,
@@ -26,7 +26,7 @@ export const instanceKeys = {
   ) =>
     [
       {
-        scope: "instance-detail",
+        scope: "instance-detail-obsolete",
         apiKey,
         namespace,
         instanceId,
@@ -38,7 +38,7 @@ export const instanceKeys = {
   ) =>
     [
       {
-        scope: "instance-input",
+        scope: "instance-input-obsolete",
         apiKey,
         namespace,
         instanceId,
@@ -50,7 +50,7 @@ export const instanceKeys = {
   ) =>
     [
       {
-        scope: "instance-output",
+        scope: "instance-output-obsolete",
         apiKey,
         namespace,
         instanceId,
