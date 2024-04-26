@@ -57,3 +57,7 @@ export const InstanceCancelPayload = z.object({
 export type InstanceCancelPayloadType = z.infer<typeof InstanceCancelPayload>;
 
 export const InstanceCancelSchema = z.null();
+
+export const InstancesListSchema = z.object({
+  data: z.object({}),
+});
