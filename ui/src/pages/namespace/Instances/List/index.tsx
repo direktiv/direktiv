@@ -16,6 +16,7 @@ import Filters from "../components/Filters";
 import { Pagination } from "~/components/Pagination";
 import Row from "./Row";
 import { useInstanceList } from "~/api/instances/query/get";
+import { useNamespace } from "~/util/store/namespace";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -24,8 +25,14 @@ const instancesPerPage = 15;
 const InstancesListPage = () => {
   const [offset, setOffset] = useState(0);
   const [filters, setFilters] = useState<FiltersObj>({});
+  const namespace = useNamespace();
   const { t } = useTranslation();
-  const { data, isFetched, isAllowed, noPermissionMessage } = useInstanceList({
+  const {
+    data: instances,
+    isSuccess,
+    isAllowed,
+    noPermissionMessage,
+  } = useInstanceList({
     limit: instancesPerPage,
     offset,
   });
@@ -35,10 +42,12 @@ const InstancesListPage = () => {
     setOffset(0);
   };
 
-  const numberOfInstances = data?.instances?.pageInfo?.total ?? 0;
-  const noResults = isFetched && data?.instances.results.length === 0;
-  const showPagination = numberOfInstances > instancesPerPage;
-  const hasFilters = !!Object.keys(filters).length;
+  const numberOfInstances = 0;
+  const noResults = isSuccess && instances.length === 0;
+  const showPagination = false; // TODO: numberOfInstances > instancesPerPage;
+  const hasFilters = false; // TODO: !!Object.keys(filters).length;
+
+  if (!namespace) return null;
 
   return (
     <div className="flex grow flex-col gap-y-4 p-5">
@@ -47,7 +56,8 @@ const InstancesListPage = () => {
         {t("pages.instances.list.title")}
       </h3>
       <Card>
-        <Filters filters={filters} onUpdate={handleFilterChange} />
+        {/* TODO: */}
+        {/* <Filters filters={filters} onUpdate={handleFilterChange} /> */}
         <Table className="border-t border-gray-5 dark:border-gray-dark-5">
           <TableHead>
             <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
@@ -67,7 +77,7 @@ const InstancesListPage = () => {
                 {t("pages.instances.list.tableHeader.startedAt")}
               </TableHeaderCell>
               <TableHeaderCell className="w-40">
-                {t("pages.instances.list.tableHeader.updatedAt")}
+                {t("pages.instances.list.tableHeader.finishedAt")}
               </TableHeaderCell>
             </TableRow>
           </TableHead>
@@ -85,11 +95,11 @@ const InstancesListPage = () => {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  data?.instances.results.map((instance) => (
+                  instances?.map((instance) => (
                     <Row
                       instance={instance}
                       key={instance.id}
-                      namespace={data.namespace}
+                      namespace={namespace}
                       data-testid={`instance-row-${instance.id}`}
                     />
                   ))
