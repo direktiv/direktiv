@@ -13,6 +13,7 @@ import {
 import { Boxes } from "lucide-react";
 import { Card } from "~/design/Card";
 import Filters from "../components/Filters";
+import { MinimalPagination } from "~/components/Pagination/MinimalPagination";
 import { Pagination } from "~/components/Pagination";
 import Row from "./Row";
 import { useInstanceList } from "~/api/instances/query/get";
@@ -42,9 +43,9 @@ const InstancesListPage = () => {
     setOffset(0);
   };
 
-  const numberOfInstances = 0;
+  const numberOfInstances = 0; // TODO: numberOfInstances;
   const noResults = isSuccess && instances.length === 0;
-  const showPagination = false; // TODO: numberOfInstances > instancesPerPage;
+  const showPagination = true; // TODO: numberOfInstances > instancesPerPage;
   const hasFilters = false; // TODO: !!Object.keys(filters).length;
 
   if (!namespace) return null;
@@ -116,11 +117,11 @@ const InstancesListPage = () => {
         </Table>
       </Card>
       {showPagination && (
-        <Pagination
-          itemsPerPage={instancesPerPage}
+        <MinimalPagination
+          isLastPage={false} // TODO: make isLastPage dynamic
           offset={offset}
           setOffset={setOffset}
-          totalItems={numberOfInstances}
+          itemsPerPage={instancesPerPage}
         />
       )}
     </div>
