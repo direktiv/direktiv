@@ -35,5 +35,6 @@ export const useInstanceList = () => {
     }),
     queryFn: fetchInstanceList,
     enabled: !!namespace,
+    select: (data) => data.data,
   });
 };
