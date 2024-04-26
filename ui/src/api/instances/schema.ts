@@ -37,6 +37,7 @@ const parentInstance = z.object({
     "errorCode": "",
     "invoker": "api",
     "definition": "ZGlyZWt0aXZfYXBpOiB3b3JrZmxvdy92MQpkZXNjcmlwdGlvbjogQSBzaW1wbGUgJ25vLW9wJyBzdGF0ZSB0aGF0IHJldHVybnMgJ0hlbGxvIHdvcmxkIScKc3RhdGVzOgotIGlkOiBoZWxsb3dvcmxkCiAgdHlwZTogbm9vcAogIHRyYW5zZm9ybToKICAgIHJlc3VsdDogSGVsbG8gd29ybGQhCg==",
+    "errorMessage":"c3ViamVjdCBmYWlsZWQgaXRzIEpTT05TY2hlbWEgdmFsaWRhdGlvbjogPG5pbD4=",
     "flow": [],
     "traceId": "00000000000000000000000000000000",
     "lineage": [...]
@@ -50,6 +51,7 @@ const InstanceSchema = z.object({
   status: InstanceStatusSchema,
   path: z.string(),
   errorCode: z.string().nullable(),
+  errorMessage: z.string().optional(), // TODO: nullable?
   /**
    * either "api", "cron", "cloudevent" or "complete"
    * if it's created as a subflow from another instance
@@ -62,6 +64,8 @@ const InstanceSchema = z.object({
   traceId: z.string().nullable(),
   lineage: z.array(parentInstance),
 });
+
+export type InstanceSchemaType = z.infer<typeof InstanceSchema>;
 
 /**
  * example
