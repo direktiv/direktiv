@@ -38,7 +38,7 @@ const fetchInstanceList = async ({
     urlParams: { namespace, limit, offset },
   });
 
-export const useInstanceList = (params: InstacenListParams) => {
+export const useInstanceList = (params: InstacenListParams = {}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
 

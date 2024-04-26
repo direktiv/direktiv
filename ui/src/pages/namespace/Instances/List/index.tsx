@@ -15,6 +15,7 @@ import { Card } from "~/design/Card";
 import Filters from "../components/Filters";
 import { Pagination } from "~/components/Pagination";
 import Row from "./Row";
+import { useInstanceList } from "~/api/instances/query/get";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -24,10 +25,9 @@ const InstancesListPage = () => {
   const [offset, setOffset] = useState(0);
   const [filters, setFilters] = useState<FiltersObj>({});
   const { t } = useTranslation();
-  const { data, isFetched, isAllowed, noPermissionMessage } = useInstances({
+  const { data, isFetched, isAllowed, noPermissionMessage } = useInstanceList({
     limit: instancesPerPage,
     offset,
-    filters,
   });
 
   const handleFilterChange = (filters: FiltersObj) => {
