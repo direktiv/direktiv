@@ -123,49 +123,7 @@ func (c *eventsController) subscribe(w http.ResponseWriter, r *http.Request) {
 	// Create a channel to send SSE messages
 	messageChannel := make(chan Event)
 	var getCursoredStyle sseHandle = func(ctx context.Context, cursorTime time.Time) ([]CoursoredEvent, error) {
-		ns := chi.URLParam(r, "namespace")
-		if ns == "" {
-			return nil, fmt.Errorf("namespace can not be empty")
-		}
-		events := make([]*events.Event, 0)
-		var err error
-		if lastID := r.Header.Get("Last-Event-ID"); lastID != "" {
-			id, err := strconv.Atoi(lastID)
-			if err != nil {
-				return nil, err
-			}
-			lostEvents, err := c.store.EventHistory().GetStartingIDUntilTime(ctx, ns, id, cursorTime, params...)
-			if err != nil {
-				return nil, err
-			}
-			events = append(events, lostEvents...)
-		}
-		newEvents, err := c.store.EventHistory().GetNew(ctx, ns, cursorTime, params...)
-		events = append(events, newEvents...)
-		if err != nil {
-			return nil, err
-		}
-		res := make([]CoursoredEvent, len(events))
-		for i, e := range events {
-			b, err := json.Marshal(e)
-			if err != nil {
-				return nil, err
-			}
-			dst := &bytes.Buffer{}
-			if err := json.Compact(dst, b); err != nil {
-				return nil, err
-			}
-			res[i] = CoursoredEvent{
-				Event: Event{
-					ID:   e.Event.ID(),
-					Type: "message",
-					Data: dst.String(),
-				},
-				Time: e.ReceivedAt,
-			}
-		}
-
-		return res, nil
+		return sseHandlefunc(ctx, r, c, cursorTime, params)
 	}
 
 	worker := seeWorker{
@@ -469,4 +427,50 @@ type eventListenerEntry struct {
 	TriggerWorkflow             any       `json:"triggerWorkflow,omitempty"`
 	TriggerInstance             any       `json:"triggerInstance,omitempty"`
 	GlobGatekeepers             any       `json:"globGatekeepers,omitempty"`
+}
+
+func sseHandlefunc(ctx context.Context, r *http.Request, c *eventsController, cursorTime time.Time, params []string) ([]CoursoredEvent, error) {
+	ns := chi.URLParam(r, "namespace")
+	if ns == "" {
+		return nil, fmt.Errorf("namespace can not be empty")
+	}
+	events := make([]*events.Event, 0)
+	var err error
+	if lastID := r.Header.Get("Last-Event-ID"); lastID != "" {
+		id, err := strconv.Atoi(lastID)
+		if err != nil {
+			return nil, err
+		}
+		lostEvents, err := c.store.EventHistory().GetStartingIDUntilTime(ctx, ns, id, cursorTime, params...)
+		if err != nil {
+			return nil, err
+		}
+		events = append(events, lostEvents...)
+	}
+	newEvents, err := c.store.EventHistory().GetNew(ctx, ns, cursorTime, params...)
+	events = append(events, newEvents...)
+	if err != nil {
+		return nil, err
+	}
+	res := make([]CoursoredEvent, len(events))
+	for i, e := range events {
+		b, err := json.Marshal(e)
+		if err != nil {
+			return nil, err
+		}
+		dst := &bytes.Buffer{}
+		if err := json.Compact(dst, b); err != nil {
+			return nil, err
+		}
+		res[i] = CoursoredEvent{
+			Event: Event{
+				ID:   e.Event.ID(),
+				Type: "message",
+				Data: dst.String(),
+			},
+			Time: e.ReceivedAt,
+		}
+	}
+
+	return res, nil
 }
