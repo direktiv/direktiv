@@ -15,6 +15,7 @@ import { Card } from "~/design/Card";
 import Filters from "../components/Filters";
 import { MinimalPagination } from "~/components/Pagination/MinimalPagination";
 import { Pagination } from "~/components/Pagination";
+import RefreshButton from "~/design/RefreshButton";
 import Row from "./Row";
 import { useInstanceList } from "~/api/instances/query/get";
 import { useNamespace } from "~/util/store/namespace";
@@ -31,6 +32,8 @@ const InstancesListPage = () => {
   const {
     data: instances,
     isSuccess,
+    isFetching,
+    refetch,
     isAllowed,
     noPermissionMessage,
   } = useInstanceList({
@@ -52,10 +55,21 @@ const InstancesListPage = () => {
 
   return (
     <div className="flex grow flex-col gap-y-4 p-5">
-      <h3 className="flex items-center gap-x-2 font-bold">
-        <Boxes className="h-5" />
-        {t("pages.instances.list.title")}
-      </h3>
+      <div className="flex flex-col gap-4 sm:flex-row">
+        <h3 className="flex grow items-center gap-x-2 pb-1 font-bold">
+          <Boxes className="h-5" />
+          {t("pages.instances.list.title")}
+        </h3>
+        <RefreshButton
+          icon
+          variant="outline"
+          aria-label={t("pages.instances.list.refetchLabel")}
+          disabled={isFetching}
+          onClick={() => {
+            refetch();
+          }}
+        />
+      </div>
       <Card>
         {/* TODO: */}
         {/* <Filters filters={filters} onUpdate={handleFilterChange} /> */}

@@ -529,6 +529,7 @@
     "instances": {
       "list": {
         "title": "Recently executed instances",
+        "refetchLabel": "Refetch instances",
         "empty": {
           "noInstances": "There are no recently executed instances",
           "noFilterResults": "No recently executed instances found with these filter criteria"
