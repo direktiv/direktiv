@@ -49,3 +49,11 @@ const InstanceSchema = z.object({
 export const InstanceCreateSchema = z.object({
   data: InstanceSchema,
 });
+
+export const InstanceCancelPayload = z.object({
+  status: z.literal("cancelled"),
+});
+
+export type InstanceCancelPayloadType = z.infer<typeof InstanceCancelPayload>;
+
+export const InstanceCancelSchema = z.null();

@@ -12,7 +12,7 @@ import ChildInstances from "./ChildInstances";
 import { Link } from "react-router-dom";
 import { pages } from "~/util/router/pages";
 import { statusToBadgeVariant } from "../../utils";
-import { useCancelInstance } from "~/api/instances_obsolete/mutate/cancel";
+import { useCancelInstance } from "~/api/instances/mutate/cancel";
 import { useInstanceDetails } from "~/api/instances_obsolete/query/details";
 import { useInstanceId } from "../store/instanceContext";
 import { useTranslation } from "react-i18next";
@@ -21,7 +21,7 @@ import useUpdatedAt from "~/hooks/useUpdatedAt";
 const Header = () => {
   const instanceId = useInstanceId();
   const { data } = useInstanceDetails({ instanceId });
-  const { mutate: cancelInstance } = useCancelInstance();
+  const { mutate: cancelInstance, isPending } = useCancelInstance();
 
   const { t } = useTranslation();
 
@@ -88,7 +88,7 @@ const Header = () => {
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                  disabled={!canBeCanceled}
+                  disabled={!canBeCanceled || isPending}
                   variant="destructive"
                   onClick={onCancelInstanceClick}
                   type="button"
