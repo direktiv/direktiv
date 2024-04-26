@@ -75,9 +75,6 @@ states:
   it(`listener by id`, async () => {
     const eventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/listener/${ tmpid }`)
     .send()
-    console.log(eventListenerResponse.body)
-    console.log(eventListenerResponse.body.data)
-    console.log(tmpid)
     expect(eventListenerResponse.statusCode).toEqual(200)
     expect(eventListenerResponse.body.data.id).toBe(tmpid)
   })
