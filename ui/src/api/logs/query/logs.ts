@@ -126,7 +126,10 @@ const getLogs = apiFactory({
 const fetchLogs = async ({
   pageParam,
   queryKey: [{ apiKey, namespace, instance, route, activity, trace }],
-}: QueryFunctionContext<ReturnType<(typeof logKeys)["detail"]>>) =>
+}: QueryFunctionContext<
+  ReturnType<(typeof logKeys)["detail"]>,
+  LogsQueryParams["before"]
+>) =>
   getLogs({
     apiKey,
     urlParams: {
@@ -208,9 +211,11 @@ export const useLogs = ({
       trace,
     }),
     queryFn: fetchLogs,
+    getNextPageParam: () => undefined,
     getPreviousPageParam: (firstPage) =>
       firstPage.meta?.previousPage ?? undefined,
     enabled: !!namespace && enabled,
+    initialPageParam: undefined,
     refetchOnWindowFocus: false,
   });
 

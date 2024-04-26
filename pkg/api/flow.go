@@ -95,6 +95,8 @@ func setupReverseProxyHandlers(base *mux.Router, router *mux.Router, apiV2Addres
 }
 
 func (h *flowHandler) initRoutes(r *mux.Router) {
+	r.HandleFunc("/namespaces/{ns}/lint", h.NamespaceLint).Name("getNamespaceLogs").Methods(http.MethodGet)
+
 	// swagger:operation POST /api/jq Other jqPlayground
 	// ---
 	// description: |

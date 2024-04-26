@@ -40,12 +40,12 @@ export const useUpdateFile = ({
         },
       }),
     onSuccess(data) {
-      queryClient.invalidateQueries(
-        fileKeys.file(namespace, {
+      queryClient.invalidateQueries({
+        queryKey: fileKeys.file(namespace, {
           apiKey: apiKey ?? undefined,
           path: forceLeadingSlash(data.data.path),
-        })
-      );
+        }),
+      });
       onSuccess?.();
     },
     onError: (e) => {

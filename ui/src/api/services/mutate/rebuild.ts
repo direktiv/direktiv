@@ -48,9 +48,11 @@ export const useRebuildService = ({
         },
       }),
     onSuccess() {
-      queryClient.invalidateQueries(
-        serviceKeys.servicesList(namespace, { apiKey: apiKey ?? undefined })
-      );
+      queryClient.invalidateQueries({
+        queryKey: serviceKeys.servicesList(namespace, {
+          apiKey: apiKey ?? undefined,
+        }),
+      });
       toast({
         title: t("api.services.mutate.rebuildService.success.title"),
         description: t(

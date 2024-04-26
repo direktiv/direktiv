@@ -620,6 +620,7 @@
                   type: array
                   items:
                     $ref: '../objects.yaml#/route'
+
 /api/v2/namespaces/{namespace}/instances:
   get:
     tags:

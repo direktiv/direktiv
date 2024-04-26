@@ -66,6 +66,7 @@ export const useSync = ({
         }),
         (oldData) => updateCache(oldData, data)
       );
+
       onSuccess?.(data);
       toast({
         title: t("api.namespaces.mutate.syncMirror.success.title"),

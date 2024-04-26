@@ -56,7 +56,7 @@ const NewDirectory = ({
     resolver,
   });
 
-  const { mutate: createDirectory, isLoading } = useCreateFile({
+  const { mutate: createDirectory, isPending } = useCreateFile({
     onSuccess: (data) => {
       namespace &&
         navigate(
@@ -109,10 +109,10 @@ const NewDirectory = ({
         <Button
           type="submit"
           disabled={disableSubmit}
-          loading={isLoading}
+          loading={isPending}
           form={formId}
         >
-          {!isLoading && <PlusCircle />}
+          {!isPending && <PlusCircle />}
           {t("pages.explorer.tree.newDirectory.createBtn")}
         </Button>
       </DialogFooter>

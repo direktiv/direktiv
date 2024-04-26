@@ -1,4 +1,8 @@
-import { UseMutationOptions, useMutation } from "@tanstack/react-query";
+import {
+  DefaultError,
+  UseMutationOptions,
+  useMutation,
+} from "@tanstack/react-query";
 
 import { getPermissionStatus } from "./errorHandling";
 import { t } from "i18next";
@@ -18,7 +22,7 @@ type UseMutationParam<TData, TError, TVariables> = UseMutationOptions<
  */
 const useMutationWithPermissions = <
   TData = unknown,
-  TError = unknown,
+  TError = DefaultError,
   TVariables = void
 >(
   useMutationParams: UseMutationParam<TData, TError, TVariables>
