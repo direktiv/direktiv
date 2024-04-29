@@ -1,3 +1,4 @@
+// eslint-disable-next-line
 module.exports = {
 	testTimeout: 300000,
 	watchPlugins: [
