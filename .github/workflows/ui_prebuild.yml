@@ -1,4 +1,4 @@
-name: (UI) Run prebuild tests and checks
+name: (UI) Prebuild
 
 on:
   workflow_dispatch:
@@ -8,7 +8,7 @@ on:
   pull_request:
 
 jobs:
-  run-prebuild:
+  test:
     runs-on: ubuntu-latest
     defaults:
       run:
