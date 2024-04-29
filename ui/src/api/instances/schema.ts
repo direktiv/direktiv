@@ -115,3 +115,14 @@ const InstanceDetailsSchema = InstanceSchema.extend({
 export const InstancesDetailSchema = z.object({
   data: InstanceDetailsSchema,
 });
+
+/**
+ * example
+ * 
+  {
+    "data": {...}
+  }
+ */
+export const InstancesInputSchema = z.object({
+  data: z.object({}),
+});
