@@ -25,7 +25,7 @@ test("it renders secrets, variables and registries", async ({ page }) => {
   const registries = await createRegistries(namespace, 4);
   const variables = await createVariables(namespace);
 
-  await page.goto(`/${namespace}/settings`);
+  await page.goto(`/n/${namespace}/settings`);
 
   await expect(
     page
@@ -66,7 +66,7 @@ test("it is possible to create and delete secrets", async ({ page }) => {
   // avoid typescript errors below
   if (!secretToDelete || !firstSecretName) throw "error setting up test data";
 
-  await page.goto(`/${namespace}/settings`);
+  await page.goto(`/n/${namespace}/settings`);
   await page.getByTestId("secret-create").click();
   const newSecret = {
     name: faker.internet.domainWord(),
@@ -117,7 +117,7 @@ test("it is possible to create and delete registries", async ({ page }) => {
   // avoid typescript errors below
   if (!registryToDelete) throw "error setting up test data";
 
-  await page.goto(`/${namespace}/settings`);
+  await page.goto(`/n/${namespace}/settings`);
   await page.getByTestId("registry-create").click();
 
   const newRegistry = {
@@ -170,7 +170,7 @@ test("it is possible to create and delete variables", async ({
   if (!variableToDelete) throw "error setting up test data";
 
   /* visit page and edit variable*/
-  await page.goto(`/${namespace}/settings`);
+  await page.goto(`/n/${namespace}/settings`);
   await page.getByTestId("variable-create").click();
 
   await page.getByTestId("variable-name").type("awesome-variable");
@@ -244,7 +244,7 @@ test("it is possible to edit variables", async ({ page }) => {
   if (!subject) throw "There was an error setting up test data";
 
   /* visit page and edit variable */
-  await page.goto(`/${namespace}/settings`);
+  await page.goto(`/n/${namespace}/settings`);
   await page.getByTestId(`dropdown-trg-item-${subject.data.name}`).click();
   await page.getByRole("button", { name: "edit" }).click();
 
@@ -314,7 +314,7 @@ test("it is not possible to create a variable with a name that already exists", 
   const variables = await createVariables(namespace, 3);
   const reservedName = variables[0]?.data.name ?? "";
 
-  await page.goto(`/${namespace}/settings`);
+  await page.goto(`/n/${namespace}/settings`);
   await page.getByTestId("variable-create").click();
 
   page.getByTestId("variable-name").fill(reservedName);
@@ -338,7 +338,7 @@ test("it is not possible to set a variables name to a name that already exists",
 
   const reservedName = variables[0]?.data.name ?? "";
 
-  await page.goto(`/${namespace}/settings`);
+  await page.goto(`/n/${namespace}/settings`);
   await page.getByTestId(`dropdown-trg-item-${subject.data.name}`).click();
   await page.getByRole("button", { name: "edit" }).click();
 

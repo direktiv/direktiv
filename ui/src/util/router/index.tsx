@@ -11,7 +11,7 @@ export const router = createBrowserRouter([
     errorElement: <ErrorPage />,
   },
   {
-    path: "/:namespace",
+    path: "/n/:namespace",
     element: <NamespaceLayout />,
     children: Object.values(pages).map((page) => page.route),
     errorElement: <ErrorPage />,
