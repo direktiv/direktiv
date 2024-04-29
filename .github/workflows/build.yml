@@ -15,7 +15,56 @@ env:
   IS_GITHUB_ACTIONS: true
 
 jobs:
-  api-build:
+  backend-license:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Run check
+        run: make tests-license-check
+
+  backend-lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: false
+
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v5
+        with:
+          version: v1.57
+
+  backend-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Run unit tests
+        run: |
+          go test $(go list ./... | egrep -v '(direktiv/pkg/flow/grpc)') -coverprofile coverage.out -covermode count
+        env:
+          DIREKTIV_APP: flow
+
+  backend-build:
+    needs: [backend-license, backend-lint, backend-test]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -53,7 +102,24 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
+  ui-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ui
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 8.14.1
+      - name: install dependencies
+        run: yarn install
+      - name: run prebuild
+        run: yarn run prebuild
+
+
   ui-build:
+    needs: [ui-test]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -91,8 +157,8 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-  api-e2e:
-    needs: [api-build]
+  backend-e2e:
+    needs: [backend-build]
     runs-on: ubuntu-latest
 
     timeout-minutes: 18
@@ -254,7 +320,7 @@ jobs:
         run: npm cache clean --force
 
   ui-e2e:
-    needs: [api-build, ui-build]
+    needs: [ui-build, backend-build]
     runs-on: ubuntu-latest
 
     timeout-minutes: 18
