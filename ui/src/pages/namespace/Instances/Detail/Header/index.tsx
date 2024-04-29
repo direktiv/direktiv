@@ -13,8 +13,9 @@ import { Link } from "react-router-dom";
 import { pages } from "~/util/router/pages";
 import { statusToBadgeVariant } from "../../utils";
 import { useCancelInstance } from "~/api/instances/mutate/cancel";
-import { useInstanceDetails } from "~/api/instances_obsolete/query/details";
+import { useInstanceDetails } from "~/api/instances/query/details";
 import { useInstanceId } from "../store/instanceContext";
+import { useNamespace } from "~/util/store/namespace";
 import { useTranslation } from "react-i18next";
 import useUpdatedAt from "~/hooks/useUpdatedAt";
 
@@ -22,18 +23,19 @@ const Header = () => {
   const instanceId = useInstanceId();
   const { data } = useInstanceDetails({ instanceId });
   const { mutate: cancelInstance, isPending } = useCancelInstance();
+  const namespace = useNamespace();
 
   const { t } = useTranslation();
 
-  const [invoker] = (data?.instance?.invoker ?? "").split(":");
-  const updatedAt = useUpdatedAt(data?.instance.updatedAt);
-  const createdAt = useUpdatedAt(data?.instance.createdAt);
+  const [invoker] = (data?.invoker ?? "").split(":");
+  const endetAt = useUpdatedAt(data?.endedAt);
+  const createdAt = useUpdatedAt(data?.createdAt);
 
   if (!data) return null;
 
   const link = pages.explorer.createHref({
-    path: data.instance.as,
-    namespace: data.namespace,
+    path: data.path,
+    namespace: namespace ?? "", // TODO: swap this when api returns namespace
     subpage: "workflow",
   });
 
@@ -41,7 +43,7 @@ const Header = () => {
     cancelInstance(instanceId);
   };
 
-  const canBeCanceled = data.instance.status === "pending";
+  const canBeCanceled = data.status === "pending";
 
   return (
     <div
@@ -51,13 +53,10 @@ const Header = () => {
       <div className="flex flex-col gap-x-7 max-md:space-y-4 md:flex-row md:items-center md:justify-start">
         <div className="flex flex-col items-start gap-2">
           <h3 className="flex items-center gap-x-2 font-bold text-primary-500">
-            <Box className="h-5" /> {data.instance.id.slice(0, 8)}
+            <Box className="h-5" /> {data.id.slice(0, 8)}
           </h3>
-          <Badge
-            variant={statusToBadgeVariant(data.instance.status)}
-            icon={data.instance.status}
-          >
-            {data.instance.status}
+          <Badge variant={statusToBadgeVariant(data.status)} icon={data.status}>
+            {data.status}
           </Badge>
         </div>
         <div className="text-sm">
@@ -79,7 +78,7 @@ const Header = () => {
             {t("pages.instances.detail.header.updatedAt")}
           </div>
           {t("pages.instances.detail.header.realtiveTime", {
-            relativeTime: updatedAt,
+            relativeTime: endetAt,
           })}
         </div>
         <ChildInstances />
