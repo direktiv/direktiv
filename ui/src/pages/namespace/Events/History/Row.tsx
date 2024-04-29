@@ -6,22 +6,24 @@ import {
   TooltipTrigger,
 } from "~/design/Tooltip";
 
-import { EventSchemaType } from "~/api/events/schema";
+import { EventDetailType } from "~/api/eventsv2/schema";
 import TooltipCopyBadge from "../../../../design/TooltipCopyBadge";
 import { useTranslation } from "react-i18next";
 import useUpdatedAt from "~/hooks/useUpdatedAt";
 
 const Row = ({
+  receivedAt: propReceivedAt,
   event,
   onClick,
 }: {
-  event: EventSchemaType;
+  receivedAt: string;
+  event: EventDetailType;
   namespace: string;
-  onClick: (value: EventSchemaType) => void;
+  onClick: (value: EventDetailType) => void;
 }) => {
   const { t } = useTranslation();
 
-  const receivedAt = useUpdatedAt(event.receivedAt);
+  const receivedAt = useUpdatedAt(propReceivedAt);
 
   return (
     <TooltipProvider>
@@ -41,7 +43,7 @@ const Row = ({
               })}
             </TooltipTrigger>
             <TooltipContent data-testid="receivedAt-tooltip-content">
-              {event.receivedAt}
+              {receivedAt}
             </TooltipContent>
           </Tooltip>
         </TableCell>
