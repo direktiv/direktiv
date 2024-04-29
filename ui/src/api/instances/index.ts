@@ -16,4 +16,16 @@ export const instanceKeys = {
         offset,
       },
     ] as const,
+  instancesDetails: (
+    namespace: string,
+    { apiKey, instanceId }: { apiKey?: string; instanceId: string }
+  ) =>
+    [
+      {
+        scope: "instance-details",
+        apiKey,
+        namespace,
+        instanceId,
+      },
+    ] as const,
 };
