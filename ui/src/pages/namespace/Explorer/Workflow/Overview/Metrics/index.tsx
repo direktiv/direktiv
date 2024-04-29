@@ -1,6 +1,5 @@
 import { Card } from "~/design/Card";
-import Donut from "./Donut";
-import { NoResult } from "~/design/Table";
+import Content from "./Content";
 import { PieChart } from "lucide-react";
 import RefreshButton from "~/design/RefreshButton";
 import { useMetrics } from "~/api/metrics/query/metrics";
@@ -13,32 +12,7 @@ const Metrics = ({ workflow }: { workflow: string }) => {
     path: workflow,
   });
 
-  const MetricsRefetchButton = () => (
-    <RefreshButton
-      icon
-      size="sm"
-      variant="ghost"
-      disabled={isFetching}
-      onClick={() => {
-        refetch();
-      }}
-    />
-  );
-
-  let Output = <></>;
-
-  if (isFetched && data?.data?.total && data.data.total > 0) {
-    const metrics = data?.data;
-    Output = <Donut data={metrics} />;
-  } else {
-    Output = (
-      <NoResult icon={PieChart}>
-        {isFetched
-          ? t("pages.explorer.tree.workflow.overview.metrics.noResult")
-          : t("pages.explorer.tree.workflow.overview.metrics.loading")}
-      </NoResult>
-    );
-  }
+  if (!data) return null;
 
   return (
     <Card className="flex flex-col">
@@ -47,9 +21,17 @@ const Metrics = ({ workflow }: { workflow: string }) => {
         <h3 className="grow">
           {t("pages.explorer.tree.workflow.overview.metrics.header")}
         </h3>
-        <MetricsRefetchButton />
+        <RefreshButton
+          icon
+          size="sm"
+          variant="ghost"
+          disabled={isFetching}
+          onClick={() => {
+            refetch();
+          }}
+        />
       </div>
-      {Output}
+      <Content isFetched={isFetched} data={data} />
     </Card>
   );
 };
