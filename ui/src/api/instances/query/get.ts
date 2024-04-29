@@ -7,7 +7,7 @@ import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 import useQueryWithPermissions from "~/api/useQueryWithPermissions";
 
-type InstacenListParams = {
+type InstanceListParams = {
   limit?: number;
   offset?: number;
 };
@@ -17,7 +17,7 @@ export const getInstanceList = apiFactory({
     namespace,
     baseUrl,
     ...queryParams
-  }: { baseUrl?: string; namespace: string } & InstacenListParams) => {
+  }: { baseUrl?: string; namespace: string } & InstanceListParams) => {
     const queryParamsString = buildSearchParamsString({
       ...queryParams,
     });
@@ -38,7 +38,7 @@ const fetchInstanceList = async ({
     urlParams: { namespace, limit, offset },
   });
 
-export const useInstanceList = (params: InstacenListParams = {}) => {
+export const useInstanceList = (params: InstanceListParams = {}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
 
