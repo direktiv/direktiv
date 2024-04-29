@@ -40,4 +40,16 @@ export const instanceKeys = {
         instanceId,
       },
     ] as const,
+  instancesOutput: (
+    namespace: string,
+    { apiKey, instanceId }: { apiKey?: string; instanceId: string }
+  ) =>
+    [
+      {
+        scope: "instance-output",
+        apiKey,
+        namespace,
+        instanceId,
+      },
+    ] as const,
 };

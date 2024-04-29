@@ -124,3 +124,19 @@ export const InstancesInputSchema = z.object({
     input: z.string(),
   }),
 });
+
+/**
+ * example
+ * 
+  {
+    ... 
+    "outputLength": 7,
+    "output": "eyJ4IjowfQ=="
+  }
+ */
+export const InstancesOutputSchema = z.object({
+  data: InstanceSchema.extend({
+    outputLength: z.number(),
+    output: z.string().optional(),
+  }),
+});
