@@ -10,7 +10,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
-	pkgevents "github.com/direktiv/direktiv/pkg/refactor/events"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/google/uuid"
 )
@@ -18,32 +17,35 @@ import (
 func (events *events) addEvent(ctx context.Context, eventin *cloudevents.Event, ns *datastore.Namespace) error {
 	ctx, end := traceAddtoEventlog(ctx)
 	defer end()
-	li := make([]*pkgevents.Event, 0)
+	li := make([]*datastore.Event, 0)
 	if eventin.ID() == "" {
 		eventin.SetID(uuid.NewString())
 	}
-	li = append(li, &pkgevents.Event{
-		Event:      eventin,
-		Namespace:  ns.ID,
-		ReceivedAt: time.Now().UTC(),
+	li = append(li, &datastore.Event{
+		Event:         eventin,
+		Namespace:     ns.ID,
+		NamespaceName: ns.Name,
+		ReceivedAt:    time.Now().UTC(),
 	})
-	err := events.runSqlTx(ctx, func(tx *database.SQLStore) error {
+	err := events.runSQLTx(ctx, func(tx *database.SQLStore) error {
 		_, errs := tx.DataStore().EventHistory().Append(ctx, li)
 		for _, err2 := range errs {
 			if err2 != nil {
 				return err2
 			}
 		}
+
 		return nil
 	})
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
 func (events *events) deleteWorkflowEventListeners(ctx context.Context, nsID uuid.UUID, fileID uuid.UUID) error {
-	err := events.runSqlTx(ctx, func(tx *database.SQLStore) error {
+	err := events.runSQLTx(ctx, func(tx *database.SQLStore) error {
 		ids, err := tx.DataStore().EventListener().DeleteAllForWorkflow(ctx, fileID)
 		if err != nil {
 			return err
@@ -68,7 +70,7 @@ func (events *events) deleteWorkflowEventListeners(ctx context.Context, nsID uui
 }
 
 func (events *events) deleteInstanceEventListeners(ctx context.Context, im *instanceMemory) error {
-	err := events.runSqlTx(ctx, func(tx *database.SQLStore) error {
+	err := events.runSQLTx(ctx, func(tx *database.SQLStore) error {
 		ids, err := tx.DataStore().EventListener().DeleteAllForWorkflow(ctx, im.instance.Instance.ID)
 		if err != nil {
 			return err
@@ -92,7 +94,7 @@ func (events *events) deleteInstanceEventListeners(ctx context.Context, im *inst
 	return nil
 }
 
-func (events *events) processWorkflowEvents(ctx context.Context, nsID uuid.UUID, file *filestore.File, ms *muxStart) error {
+func (events *events) processWorkflowEvents(ctx context.Context, nsID uuid.UUID, nsName string, file *filestore.File, ms *muxStart) error {
 	err := events.deleteWorkflowEventListeners(ctx, nsID, file.ID)
 	if err != nil {
 		return err
@@ -111,13 +113,14 @@ func (events *events) processWorkflowEvents(ctx context.Context, nsID uuid.UUID,
 	}
 
 	if len(ms.Events) > 0 {
-		fEv := &pkgevents.EventListener{
+		fEv := &datastore.EventListener{
 			ID:                       uuid.New(),
 			CreatedAt:                time.Now().UTC(),
 			UpdatedAt:                time.Now().UTC(),
 			Deleted:                  false,
 			NamespaceID:              nsID,
-			TriggerType:              pkgevents.StartSimple,
+			Namespace:                nsName,
+			TriggerType:              datastore.StartSimple,
 			ListeningForEventTypes:   []string{},
 			TriggerWorkflow:          file.ID.String(),
 			Metadata:                 file.Path,
@@ -126,13 +129,13 @@ func (events *events) processWorkflowEvents(ctx context.Context, nsID uuid.UUID,
 		}
 		switch ms.Type {
 		case "default":
-			fEv.TriggerType = pkgevents.StartSimple
+			fEv.TriggerType = datastore.StartSimple
 		case "event":
-			fEv.TriggerType = pkgevents.StartSimple // TODO: is this correct?
+			fEv.TriggerType = datastore.StartSimple // TODO: is this correct?
 		case "eventsXor":
-			fEv.TriggerType = pkgevents.StartOR // TODO: is this correct?
+			fEv.TriggerType = datastore.StartOR // TODO: is this correct?
 		case "eventsAnd":
-			fEv.TriggerType = pkgevents.StartAnd // TODO: is this correct?
+			fEv.TriggerType = datastore.StartAnd // TODO: is this correct?
 		}
 		contextFilters := make([]string, 0, len(ms.Events))
 		for _, sed := range ms.Events {
@@ -145,14 +148,14 @@ func (events *events) processWorkflowEvents(ctx context.Context, nsID uuid.UUID,
 			contextFilters = append(contextFilters, databaseNoDupCheck)
 		}
 
-		err := events.runSqlTx(ctx, func(tx *database.SQLStore) error {
+		err := events.runSQLTx(ctx, func(tx *database.SQLStore) error {
 			err := tx.DataStore().EventListener().Append(ctx, fEv)
 			if err != nil {
 				return err
 			}
 
 			for i, t := range fEv.ListeningForEventTypes {
-				err = tx.DataStore().EventListenerTopics().Append(ctx, nsID, fEv.ID, nsID.String()+"-"+t, contextFilters[i])
+				err = tx.DataStore().EventListenerTopics().Append(ctx, nsID, nsName, fEv.ID, nsID.String()+"-"+t, contextFilters[i])
 				if err != nil {
 					return err
 				}
@@ -171,19 +174,19 @@ func (events *events) processWorkflowEvents(ctx context.Context, nsID uuid.UUID,
 }
 
 // called from workflow instances to create event listeners.
-func (events *events) addInstanceEventListener(ctx context.Context, namespace, instance uuid.UUID, sevents []*model.ConsumeEventDefinition, step int, all bool) error {
+func (events *events) addInstanceEventListener(ctx context.Context, namespace uuid.UUID, nsName string, instance uuid.UUID, sevents []*model.ConsumeEventDefinition, all bool) error {
 	// var ev []map[string]interface{}
 
-	fEv := &pkgevents.EventListener{
+	fEv := &datastore.EventListener{
 		ID:                     uuid.New(),
 		CreatedAt:              time.Now().UTC(),
 		UpdatedAt:              time.Now().UTC(),
 		Deleted:                false,
 		NamespaceID:            namespace,
-		TriggerType:            pkgevents.WaitSimple,
+		Namespace:              nsName,
+		TriggerType:            datastore.WaitSimple,
 		ListeningForEventTypes: []string{},
 		TriggerInstance:        instance.String(),
-		TriggerInstanceStep:    step,
 		// LifespanOfReceivedEvents: , TODO?
 		GlobGatekeepers: make(map[string]string),
 	}
@@ -199,19 +202,19 @@ func (events *events) addInstanceEventListener(ctx context.Context, namespace, i
 		contextFilters = append(contextFilters, databaseNoDupCheck)
 	}
 	if all {
-		fEv.TriggerType = pkgevents.WaitAnd
+		fEv.TriggerType = datastore.WaitAnd
 	}
 	if !all && len(fEv.ListeningForEventTypes) > 1 {
-		fEv.TriggerType = pkgevents.WaitOR
+		fEv.TriggerType = datastore.WaitOR
 	}
 
-	err := events.runSqlTx(ctx, func(tx *database.SQLStore) error {
+	err := events.runSQLTx(ctx, func(tx *database.SQLStore) error {
 		err := tx.DataStore().EventListener().Append(ctx, fEv)
 		if err != nil {
 			return err
 		}
 		for i, t := range fEv.ListeningForEventTypes {
-			err = tx.DataStore().EventListenerTopics().Append(ctx, namespace, fEv.ID, namespace.String()+"-"+t, contextFilters[i])
+			err = tx.DataStore().EventListenerTopics().Append(ctx, namespace, nsName, fEv.ID, namespace.String()+"-"+t, contextFilters[i])
 			if err != nil {
 				return err
 			}

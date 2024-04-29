@@ -37,7 +37,7 @@ const JqPlaygroundPage: FC = () => {
   const [output, setOutput] = useState("");
   const [error, setError] = useState("");
 
-  const { mutate: executeQuery, isLoading } = useExecuteJQuery({
+  const { mutate: executeQuery, isPending } = useExecuteJQuery({
     onSuccess: (data) => {
       setOutput(prettifyJsonString(data.results?.[0] ?? "{}"));
     },
@@ -124,10 +124,10 @@ const JqPlaygroundPage: FC = () => {
               className="grow sm:w-44"
               type="submit"
               variant="primary"
-              disabled={isLoading}
-              loading={isLoading}
+              disabled={isPending}
+              loading={isPending}
             >
-              {!isLoading && <Play />}
+              {!isPending && <Play />}
               {t("pages.jqPlayground.submitBtn")}
             </Button>
           </div>

@@ -20,6 +20,7 @@ func jq(input interface{}, command interface{}) ([]interface{}, error) {
 	if err != nil {
 		return nil, derrors.NewCatchableError(ErrCodeJQBadQuery, "failed to evaluate jq/js: %v", err)
 	}
+
 	return out, nil
 }
 

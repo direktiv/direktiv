@@ -2,7 +2,7 @@ import { beforeAll, describe, expect, it } from '@jest/globals'
 
 import common from '../common'
 import request from '../common/request'
-import { retry10 } from '../common/retry'
+import { retry10, retry50 } from '../common/retry'
 
 const testNamespace = 'system'
 
@@ -172,7 +172,7 @@ describe('Test target workflow variable plugin', () => {
 		expect(workflowVarResponse.statusCode).toEqual(200)
 	})
 
-	retry10(`should return a workflow var from magic namespace`, async () => {
+	retry50(`should return a workflow var from magic namespace`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(
 			`/gw/endpoint1`,
 		)

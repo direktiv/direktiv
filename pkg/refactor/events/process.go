@@ -9,6 +9,7 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/event"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/google/uuid"
 	"github.com/ryanuber/go-glob"
 )
@@ -27,13 +28,16 @@ type EventProcessing interface {
 
 type (
 	// eventHandler represents a generic function type for handling Events.
-	eventHandler func(ctx context.Context, events ...*Event)
+	eventHandler func(ctx context.Context, events ...*datastore.Event)
 	// WorkflowStart is a function type that signals the initiation of a new workflow,
 	// providing the workflow's unique ID and related CloudEvents.
 	WorkflowStart func(workflowID uuid.UUID, events ...*cloudevents.Event)
+	// WorkflowStart is a function type that signals the initiation of a new workflow,
+	// providing the namespace names and the workflow's unique path and related CloudEvents.
+	WorkflowStartByPath func(namespace, workflow string, events ...*cloudevents.Event)
 	// WakeEventsWaiter is a function type responsible for handling events that trigger
 	// the continuation of a workflow instance at a specific step.
-	WakeEventsWaiter func(instanceID uuid.UUID, step int, events []*cloudevents.Event)
+	WakeEventsWaiter func(instanceID uuid.UUID, events []*cloudevents.Event)
 )
 
 // EventEngine is the central coordinator for processing CloudEvents, dispatching them
@@ -44,9 +48,9 @@ type EventEngine struct {
 	// WakeInstance is a callback triggered to resume a waiting workflow instance.
 	WakeInstance WakeEventsWaiter
 	// GetListenersByTopic retrieves EventListeners associated with a specified topic.
-	GetListenersByTopic func(context.Context, string) ([]*EventListener, error)
+	GetListenersByTopic func(context.Context, string) ([]*datastore.EventListener, error)
 	// UpdateListeners updates a set of EventListeners, returning any errors encountered.
-	UpdateListeners func(ctx context.Context, listener []*EventListener) []error
+	UpdateListeners func(ctx context.Context, listener []*datastore.EventListener) []error
 }
 
 // ProcessEvents dispatches CloudEvents to handlers in sequence. Event handlers are
@@ -80,8 +84,8 @@ func (ee EventEngine) ProcessEvents(
 }
 
 // getListeners retrieves EventListeners that are subscribed to the specified topics.
-func (ee EventEngine) getListeners(ctx context.Context, topics ...string) ([]*EventListener, error) {
-	res := make([]*EventListener, 0)
+func (ee EventEngine) getListeners(ctx context.Context, topics ...string) ([]*datastore.EventListener, error) {
+	res := make([]*datastore.EventListener, 0)
 
 	for _, topic := range topics {
 		listeners, err := ee.GetListenersByTopic(ctx, topic)
@@ -112,7 +116,7 @@ func (EventEngine) getTopics(ctx context.Context, namespace uuid.UUID, cloudeven
 
 // getEventHandlers generates event handlers based on the provided EventListeners.
 func (ee EventEngine) getEventHandlers(ctx context.Context,
-	listeners []*EventListener,
+	listeners []*datastore.EventListener,
 ) []eventHandler {
 	_ = ctx // todo otel
 
@@ -125,26 +129,26 @@ func (ee EventEngine) getEventHandlers(ctx context.Context,
 }
 
 // createEventHandler creates an event handler function tailored to a specific EventListener.
-func (ee EventEngine) createEventHandler(l *EventListener) eventHandler {
+func (ee EventEngine) createEventHandler(l *datastore.EventListener) eventHandler {
 	if l.Deleted {
-		return func(ctx context.Context, events ...*Event) {}
+		return func(ctx context.Context, events ...*datastore.Event) {}
 	}
 	switch l.TriggerType {
-	case StartAnd:
+	case datastore.StartAnd:
 		return ee.multiConditionEventAndHandler(l, false)
-	case WaitAnd:
+	case datastore.WaitAnd:
 		return ee.multiConditionEventAndHandler(l, true)
-	case StartSimple:
+	case datastore.StartSimple:
 		return ee.singleConditionEventHandler(l, false)
-	case WaitSimple:
+	case datastore.WaitSimple:
 		return ee.singleConditionEventHandler(l, true)
-	case StartOR:
+	case datastore.StartOR:
 		return ee.singleConditionEventHandler(l, false)
-	case WaitOR:
+	case datastore.WaitOR:
 		return ee.singleConditionEventHandler(l, true)
 	}
 
-	return func(ctx context.Context, events ...*Event) {
+	return func(ctx context.Context, events ...*datastore.Event) {
 		// TODO: Add metrics for event filtering/handling logic (events processed, events dropped, etc.)
 	}
 }
@@ -152,7 +156,7 @@ func (ee EventEngine) createEventHandler(l *EventListener) eventHandler {
 // usePostProcessingEvents executes post-processing logic for EventListeners
 // (such as storing state changes) and returns any errors encountered.
 func (ee EventEngine) usePostProcessingEvents(ctx context.Context,
-	listeners []*EventListener,
+	listeners []*datastore.EventListener,
 ) error {
 	errs := ee.UpdateListeners(ctx, listeners)
 	for _, err := range errs {
@@ -266,11 +270,11 @@ func (EventEngine) handleEvents(ctx context.Context,
 	namespace uuid.UUID,
 	cloudevents []cloudevents.Event, h []eventHandler,
 ) {
-	events := make([]*Event, 0, len(cloudevents))
+	events := make([]*datastore.Event, 0, len(cloudevents))
 
 	for _, e := range cloudevents {
 		eCopy := e.Clone()
-		events = append(events, &Event{
+		events = append(events, &datastore.Event{
 			Namespace:  namespace,
 			ReceivedAt: time.Now().UTC(),
 			Event:      &eCopy,
@@ -283,8 +287,8 @@ func (EventEngine) handleEvents(ctx context.Context,
 }
 
 // multiConditionEventAndHandler creates an event handler for "And" type triggers...
-func (ee EventEngine) multiConditionEventAndHandler(l *EventListener, waitType bool) eventHandler {
-	return func(ctx context.Context, events ...*Event) {
+func (ee EventEngine) multiConditionEventAndHandler(l *datastore.EventListener, waitType bool) eventHandler {
+	return func(ctx context.Context, events ...*datastore.Event) {
 		for _, event := range events {
 			if l.Deleted {
 				return // Skip processing for deleted listeners.
@@ -321,12 +325,11 @@ func (ee EventEngine) multiConditionEventAndHandler(l *EventListener, waitType b
 				tr := triggerActionArgs{
 					WorkflowID: l.TriggerWorkflow,
 					InstanceID: l.TriggerInstance,
-					Step:       l.TriggerInstanceStep,
 				}
 				ee.triggerAction(waitType, tr, ces)
 
 				// Reset event collection and mark for deletion if needed
-				l.ReceivedEventsForAndTrigger = []*Event{}
+				l.ReceivedEventsForAndTrigger = []*datastore.Event{}
 				if waitType {
 					l.Deleted = true
 				}
@@ -336,8 +339,8 @@ func (ee EventEngine) multiConditionEventAndHandler(l *EventListener, waitType b
 }
 
 // removeExpired removes expired events from an EventListener's collection.
-func removeExpired(l *EventListener) {
-	var validEvents []*Event
+func removeExpired(l *datastore.EventListener) {
+	var validEvents []*datastore.Event
 	for _, e := range l.ReceivedEventsForAndTrigger {
 		if l.LifespanOfReceivedEvents == 0 || e.ReceivedAt.Add(time.Duration(l.LifespanOfReceivedEvents)*time.Millisecond).After(time.Now().UTC()) {
 			validEvents = append(validEvents, e)
@@ -371,7 +374,7 @@ func canTriggerAction(l []*cloudevents.Event, types []string) bool {
 }
 
 // eventTypeAlreadyPresent checks if an event type has already been received for an "And" trigger.
-func eventTypeAlreadyPresent(l *EventListener, event *Event) bool {
+func eventTypeAlreadyPresent(l *datastore.EventListener, event *datastore.Event) bool {
 	for _, r := range l.ReceivedEventsForAndTrigger {
 		if r.Event.Type() == event.Event.Type() {
 			return true
@@ -382,8 +385,8 @@ func eventTypeAlreadyPresent(l *EventListener, event *Event) bool {
 }
 
 // singleConditionEventHandler creates an event handler for "Simple" type triggers.
-func (ee EventEngine) singleConditionEventHandler(l *EventListener, waitType bool) eventHandler {
-	return func(ctx context.Context, events ...*Event) {
+func (ee EventEngine) singleConditionEventHandler(l *datastore.EventListener, waitType bool) eventHandler {
+	return func(ctx context.Context, events ...*datastore.Event) {
 		for _, event := range events {
 			if l.Deleted {
 				return // Skip processing for deleted listeners.
@@ -404,7 +407,6 @@ func (ee EventEngine) singleConditionEventHandler(l *EventListener, waitType boo
 			tr := triggerActionArgs{
 				WorkflowID: l.TriggerWorkflow,
 				InstanceID: l.TriggerInstance,
-				Step:       l.TriggerInstanceStep,
 			}
 			// Trigger the action (note: single event passed).
 			ee.triggerAction(waitType, tr, []*cloudevents.Event{event.Event})
@@ -417,9 +419,9 @@ func (ee EventEngine) singleConditionEventHandler(l *EventListener, waitType boo
 
 // triggerActionArgs encapsulates arguments for triggering workflow actions.
 type triggerActionArgs struct {
-	WorkflowID string // the id of the workflow.
-	InstanceID string // optional fill for instance-waiting trigger.
-	Step       int    // optional fill for instance-waiting trigger.
+	WorkflowPath string // the path of the workflow.
+	WorkflowID   string // the id of the workflow. to be removed.
+	InstanceID   string // optional fill for instance-waiting trigger.
 }
 
 // triggerAction triggers a workflow (start or resume) based on the waitType flag.
@@ -430,7 +432,7 @@ func (ee EventEngine) triggerAction(waitType bool, t triggerActionArgs, ces []*e
 			slog.Error("failed to parse a instance id in the event-engine while processing an event")
 			return
 		}
-		go ee.WakeInstance(id, t.Step, ces)
+		go ee.WakeInstance(id, ces)
 
 		return
 	}
@@ -443,7 +445,7 @@ func (ee EventEngine) triggerAction(waitType bool, t triggerActionArgs, ces []*e
 }
 
 // typeMatches checks if an event's type matches any of the provided types.
-func typeMatches(types []string, event *Event) bool {
+func typeMatches(types []string, event *datastore.Event) bool {
 	match := false
 	for _, t := range types {
 		if event.Event.Type() == t {

@@ -10,7 +10,6 @@ type Instance struct {
 	Instance      *instancestore.InstanceData
 	TelemetryInfo *InstanceTelemetryInfo
 	RuntimeInfo   *InstanceRuntimeInfo
-	Settings      *InstanceSettings
 	DescentInfo   *InstanceDescentInfo
 }
 
@@ -28,11 +27,6 @@ func ParseInstanceData(idata *instancestore.InstanceData) (*Instance, error) {
 		}
 	}
 
-	settings, err := LoadInstanceSettings(idata.Settings)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse settings info: %w", err)
-	}
-
 	di, err := LoadInstanceDescentInfo(idata.DescentInfo)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse descent info: %w", err)
@@ -43,6 +37,5 @@ func ParseInstanceData(idata *instancestore.InstanceData) (*Instance, error) {
 		TelemetryInfo: ti,
 		RuntimeInfo:   ri,
 		DescentInfo:   di,
-		Settings:      settings,
 	}, nil
 }

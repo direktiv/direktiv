@@ -66,7 +66,7 @@ test("the header of the instance page shows the relevant data for the workflow",
       path: simpleWorkflowName,
     })
   ).instance;
-  await page.goto(`/${namespace}/instances/${instanceId}`);
+  await page.goto(`/n/${namespace}/instances/${instanceId}`);
 
   const header = page.getByTestId("instance-header-container");
   await expect(header, "It renders the header").toBeVisible();
@@ -113,7 +113,7 @@ test("the header of the instance page shows the relevant data for the workflow",
   ).toBeDisabled();
 
   await header.getByRole("link", { name: "Open workflow" }).click();
-  const editURL = `${namespace}/explorer/workflow/edit/${simpleWorkflowName}`;
+  const editURL = `/n/${namespace}/explorer/workflow/edit/${simpleWorkflowName}`;
   await expect(
     page,
     "the button 'Open Workflow' is clickable and links to the correct URL"
@@ -129,7 +129,7 @@ test("the diagram panel on the instance page responds to user interaction", asyn
       path: simpleWorkflowName,
     })
   ).instance;
-  await page.goto(`/${namespace}/instances/${instanceId}`);
+  await page.goto(`/n/${namespace}/instances/${instanceId}`);
 
   const diagramPanel = page.getByTestId("rf__wrapper");
   await expect(diagramPanel, "It renders the diagram panel").toBeVisible();
@@ -191,7 +191,7 @@ test("the diagram on the instance page changes appearance dynamically", async ({
       path: delayedWorkflowName,
     })
   ).instance;
-  await page.goto(`/${namespace}/instances/${instanceId}`);
+  await page.goto(`/n/${namespace}/instances/${instanceId}`);
 
   const diagramPanel = page.getByTestId("rf__wrapper");
   await expect(diagramPanel, "It renders the diagram panel").toBeVisible();
@@ -287,7 +287,7 @@ test("the input/output panel responds to user interaction", async ({
       path: simpleWorkflowName,
     })
   ).instance;
-  await page.goto(`/${namespace}/instances/${instanceId}`);
+  await page.goto(`/n/${namespace}/instances/${instanceId}`);
 
   const inputOutputPanel = page.getByTestId("inputOutputPanel");
 
@@ -382,7 +382,7 @@ test("the output is shown when the workflow finished running", async ({
       path: delayedWorkflowName,
     })
   ).instance;
-  await page.goto(`/${namespace}/instances/${instanceId}`);
+  await page.goto(`/n/${namespace}/instances/${instanceId}`);
 
   const inputOutputPanel = page.getByTestId("inputOutputPanel");
 
@@ -426,7 +426,7 @@ test("after a running instance finishes, the output tab is automatically selecte
       path: delayedWorkflowName,
     })
   ).instance;
-  await page.goto(`/${namespace}/instances/${instanceId}`);
+  await page.goto(`/n/${namespace}/instances/${instanceId}`);
 
   const inputOutputPanel = page.getByTestId("inputOutputPanel");
 

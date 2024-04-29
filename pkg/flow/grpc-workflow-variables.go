@@ -13,7 +13,6 @@ import (
 	libengine "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -122,7 +121,7 @@ func (internal *internal) SetWorkflowVariableParcels(srv grpc.Internal_SetWorkfl
 func (flow *flow) WorkflowVariable(ctx context.Context, req *grpc.WorkflowVariableRequest) (*grpc.WorkflowVariableResponse, error) {
 	slog.Debug("Handling gRPC request", "this", this())
 
-	tx, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSQLTx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -168,7 +167,7 @@ func (flow *flow) WorkflowVariable(ctx context.Context, req *grpc.WorkflowVariab
 	resp.TotalSize = int64(item.Size)
 	resp.MimeType = item.MimeType
 
-	if resp.TotalSize > parcelSize {
+	if resp.GetTotalSize() > parcelSize {
 		return nil, status.Error(codes.ResourceExhausted, "variable too large to return without using the parcelling API")
 	}
 	data, err := tx.DataStore().RuntimeVariables().LoadData(ctx, item.ID)
@@ -184,7 +183,7 @@ func (flow *flow) WorkflowVariable(ctx context.Context, req *grpc.WorkflowVariab
 func (flow *flow) SetWorkflowVariable(ctx context.Context, req *grpc.SetWorkflowVariableRequest) (*grpc.SetWorkflowVariableResponse, error) {
 	slog.Debug("Handling gRPC request", "this", this())
 
-	tx, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSQLTx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -231,6 +230,7 @@ func (flow *flow) SetWorkflowVariable(ctx context.Context, req *grpc.SetWorkflow
 	return &resp, nil
 }
 
+//nolint:dupl
 func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariableParcelsServer) error {
 	slog.Debug("Handling gRPC request", "this", this())
 	ctx := srv.Context()
@@ -247,12 +247,12 @@ func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariablePa
 	buf := new(bytes.Buffer)
 
 	for {
-		_, err = io.Copy(buf, bytes.NewReader(req.Data))
+		_, err = io.Copy(buf, bytes.NewReader(req.GetData()))
 		if err != nil {
 			return err
 		}
 
-		if req.TotalSize <= 0 {
+		if req.GetTotalSize() <= 0 {
 			if buf.Len() >= totalSize {
 				break
 			}
@@ -263,10 +263,11 @@ func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariablePa
 			if errors.Is(err, io.EOF) {
 				break
 			}
+
 			return err
 		}
 
-		if req.TotalSize <= 0 {
+		if req.GetTotalSize() <= 0 {
 			if buf.Len() >= totalSize {
 				break
 			}
@@ -296,107 +297,4 @@ func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariablePa
 	}
 
 	return nil
-}
-
-func (flow *flow) DeleteWorkflowVariable(ctx context.Context, req *grpc.DeleteWorkflowVariableRequest) (*emptypb.Empty, error) {
-	slog.Debug("Handling gRPC request", "this", this())
-
-	tx, err := flow.beginSqlTx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer tx.Rollback()
-
-	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
-
-	file, err := tx.FileStore().ForNamespace(ns.Name).GetFile(ctx, req.GetPath())
-	if err != nil {
-		return nil, err
-	}
-
-	item, err := tx.DataStore().RuntimeVariables().GetForWorkflow(ctx, ns.Name, file.Path, req.GetKey())
-	if err != nil {
-		return nil, err
-	}
-
-	err = tx.DataStore().RuntimeVariables().Delete(ctx, item.ID)
-	if err != nil {
-		return nil, err
-	}
-	if err = tx.Commit(ctx); err != nil {
-		return nil, err
-	}
-
-	// TODO: need fix here.
-	//flow.logger.Infof(ctx, file.ID, database.GetAttributes(recipient.Workflow, ns, fileAttributes(*file)), "Deleted workflow variable '%s'.", vref.Name)
-	//flow.pubsub.NotifyWorkflowVariables(file.ID)
-	//
-	//// Broadcast Event
-	//broadcastInput := broadcastVariableInput{
-	//	WorkflowPath: req.GetPath(),
-	//	Key:          req.GetKey(),
-	//	TotalSize:    int64(item.Size),
-	//	Scope:        BroadcastEventScopeWorkflow,
-	//}
-	//err = flow.BroadcastVariable(ctx, BroadcastEventTypeDelete, BroadcastEventScopeNamespace, broadcastInput, ns)
-	//if err != nil {
-	//	return nil, err
-	//}
-
-	var resp emptypb.Empty
-
-	return &resp, nil
-}
-
-func (flow *flow) RenameWorkflowVariable(ctx context.Context, req *grpc.RenameWorkflowVariableRequest) (*grpc.RenameWorkflowVariableResponse, error) {
-	slog.Debug("Handling gRPC request", "this", this())
-
-	tx, err := flow.beginSqlTx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer tx.Rollback()
-
-	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
-
-	file, err := tx.FileStore().ForNamespace(ns.Name).GetFile(ctx, req.GetPath())
-	if err != nil {
-		return nil, err
-	}
-	item, err := tx.DataStore().RuntimeVariables().GetForWorkflow(ctx, ns.Name, file.Path, req.GetOld())
-	if err != nil {
-		return nil, err
-	}
-
-	newName := req.GetNew()
-	updated, err := tx.DataStore().RuntimeVariables().Patch(ctx, item.ID, &datastore.RuntimeVariablePatch{
-		Name: &newName,
-	})
-	if err != nil {
-		return nil, err
-	}
-	if err = tx.Commit(ctx); err != nil {
-		return nil, err
-	}
-
-	// TODO: fix here.
-	// flow.logger.Infof(ctx, file.ID, database.GetAttributes(recipient.Workflow, ns, fileAttributes(*file)), "Renamed workflow variable from '%s' to '%s'.", req.GetOld(), req.GetNew())
-	// flow.pubsub.NotifyWorkflowVariables(file.ID)
-
-	var resp grpc.RenameWorkflowVariableResponse
-
-	resp.CreatedAt = timestamppb.New(updated.CreatedAt)
-	resp.Key = updated.Name
-	resp.Namespace = ns.Name
-	resp.TotalSize = int64(updated.Size)
-	resp.UpdatedAt = timestamppb.New(updated.UpdatedAt)
-	resp.MimeType = updated.MimeType
-
-	return &resp, nil
 }

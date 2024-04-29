@@ -75,7 +75,7 @@ const RunWorkflow = ({ path }: { path: string }) => {
     resolver: zodResolver(z.object({ payload: workflowInputSchema })),
   });
 
-  const { mutate: runWorkflow, isLoading } = useRunWorkflow({
+  const { mutate: runWorkflow, isPending } = useRunWorkflow({
     onSuccess: ({ namespace, instance }) => {
       navigate(pages.instances.createHref({ namespace, instance }));
     },
@@ -241,11 +241,11 @@ const RunWorkflow = ({ path }: { path: string }) => {
         <Button
           type="submit"
           disabled={disableSubmit}
-          loading={isLoading}
+          loading={isPending}
           onClick={runButtonOnClick}
           data-testid="run-workflow-submit-btn"
         >
-          {!isLoading && <Play />}
+          {!isPending && <Play />}
           {t("pages.explorer.tree.workflow.runWorkflow.runBtn")}
         </Button>
       </DialogFooter>

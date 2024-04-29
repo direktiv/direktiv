@@ -33,16 +33,18 @@ func (im *instanceMemory) BroadcastCloudevent(ctx context.Context, event *cloude
 	return im.engine.events.BroadcastCloudevent(ctx, im.Namespace(), event, dd)
 }
 
+//nolint:gocognit
 func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.VariableSelector) ([]states.Variable, error) {
 	x := make([]states.Variable, 0)
 
-	tx, err := im.engine.flow.beginSqlTx(ctx)
+	tx, err := im.engine.flow.beginSQLTx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
 
 	for _, selector := range vars {
+		//nolint:nestif
 		if selector.Scope == "" || selector.Scope == util.VarScopeInstance || selector.Scope == util.VarScopeWorkflow || selector.Scope == util.VarScopeNamespace {
 			if selector.Scope == "" {
 				selector.Scope = util.VarScopeNamespace
@@ -83,7 +85,7 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 			continue
 		}
 
-		if selector.Scope == util.VarScopeFileSystem {
+		if selector.Scope == util.VarScopeFileSystem { //nolint:nestif
 			file, err := tx.FileStore().ForNamespace(im.instance.Instance.Namespace).GetFile(ctx, selector.Key)
 			if errors.Is(err, filestore.ErrNotFound) {
 				x = append(x, states.Variable{
@@ -161,6 +163,7 @@ func (im *instanceMemory) Iterator() (int, bool) {
 	if err != nil {
 		return 0, false
 	}
+
 	return iterator, ok
 }
 
@@ -169,7 +172,7 @@ func (im *instanceMemory) Raise(ctx context.Context, err *derrors.CatchableError
 }
 
 func (im *instanceMemory) RetrieveSecret(ctx context.Context, secret string) (string, error) {
-	tx, err := im.engine.flow.beginSqlTx(ctx)
+	tx, err := im.engine.flow.beginSQLTx(ctx)
 	if err != nil {
 		return "", err
 	}
@@ -183,8 +186,9 @@ func (im *instanceMemory) RetrieveSecret(ctx context.Context, secret string) (st
 	return string(secretData.Data), nil
 }
 
+//nolint:gocognit
 func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.VariableSetter) error {
-	tx, err := im.engine.flow.beginSqlTx(ctx)
+	tx, err := im.engine.flow.beginSQLTx(ctx)
 	if err != nil {
 		return err
 	}
@@ -217,9 +221,11 @@ func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.Variab
 			if err != nil && !errors.Is(err, datastore.ErrNotFound) {
 				return err
 			}
+
 			continue
 		}
 
+		//nolint:nestif
 		if !(v.MIMEType == "text/plain; charset=utf-8" || v.MIMEType == "text/plain" || v.MIMEType == "application/octet-stream") && (d == "{}" || d == "[]" || d == "0" || d == `""` || d == "null") {
 			if item != nil {
 				err = tx.DataStore().RuntimeVariables().Delete(ctx, item.ID)
@@ -297,7 +303,7 @@ func (im *instanceMemory) ScheduleRetry(ctx context.Context, d time.Duration, st
 
 	t := time.Now().UTC().Add(d)
 
-	err = im.engine.scheduleRetry(im.ID().String(), t, data)
+	err = im.engine.scheduleRetry(im.ID().String(), t, data) //nolint:contextcheck
 	if err != nil {
 		return err
 	}
@@ -331,7 +337,8 @@ func (im *instanceMemory) CreateChild(ctx context.Context, args states.CreateChi
 		}, nil
 	}
 
-	switch args.Definition.GetType() {
+	switch args.Definition.GetType() { //nolint:exhaustive
+	case model.SystemKnativeFunctionType:
 	case model.NamespacedKnativeFunctionType:
 	case model.ReusableContainerFunctionType:
 	default:
@@ -364,14 +371,14 @@ type subflowHandle struct {
 }
 
 func (child *subflowHandle) Run(ctx context.Context) {
-	go child.engine.start(child.im)
+	go child.engine.start(child.im) //nolint:contextcheck
 }
 
 func (child *subflowHandle) Info() states.ChildInfo {
 	return child.info
 }
 
-func (engine *engine) newIsolateRequest(im *instanceMemory, stateId string, timeout int,
+func (engine *engine) newIsolateRequest(im *instanceMemory, stateID string, timeout int,
 	fn model.FunctionDefinition, inputData []byte,
 	uid uuid.UUID, async bool, files []model.FunctionFileDefinition, iterator int,
 ) (*functionRequest, error) {
@@ -384,7 +391,7 @@ func (engine *engine) newIsolateRequest(im *instanceMemory, stateId string, time
 	if !async {
 		ar.Workflow.InstanceID = im.ID().String()
 		ar.Workflow.NamespaceID = im.instance.Instance.NamespaceID.String()
-		ar.Workflow.State = stateId
+		ar.Workflow.State = stateID
 		ar.Workflow.Step = im.Step()
 	}
 
@@ -392,9 +399,9 @@ func (engine *engine) newIsolateRequest(im *instanceMemory, stateId string, time
 	ar.Container.Type = fnt
 	ar.Container.Data = inputData
 
-	switch fnt {
+	switch fnt { //nolint:exhaustive
 	case model.ReusableContainerFunctionType:
-		con := fn.(*model.ReusableFunctionDefinition)
+		con := fn.(*model.ReusableFunctionDefinition) //nolint:forcetypeassert
 		scale := int32(0)
 		ar.Container.Image = con.Image
 		ar.Container.Cmd = con.Cmd
@@ -404,11 +411,15 @@ func (engine *engine) newIsolateRequest(im *instanceMemory, stateId string, time
 		ar.Container.ID = con.ID
 		ar.Container.Service = service.GetServiceURL(ar.Workflow.NamespaceName, core.ServiceTypeWorkflow, ar.Workflow.Path, con.ID)
 	case model.NamespacedKnativeFunctionType:
-		con := fn.(*model.NamespacedFunctionDefinition)
+		con := fn.(*model.NamespacedFunctionDefinition) //nolint:forcetypeassert
 		ar.Container.Files = files
 		ar.Container.ID = con.ID
 		ar.Container.Service = service.GetServiceURL(ar.Workflow.NamespaceName, core.ServiceTypeNamespace, con.Path, "")
-
+	case model.SystemKnativeFunctionType:
+		con := fn.(*model.SystemFunctionDefinition) //nolint:forcetypeassert
+		ar.Container.Files = files
+		ar.Container.ID = con.ID
+		ar.Container.Service = service.GetServiceURL(core.SystemNamespace, core.ServiceTypeSystem, con.Path, "")
 	default:
 		return nil, fmt.Errorf("unexpected function type: %v", fn)
 	}
@@ -438,26 +449,21 @@ type knativeHandle struct {
 }
 
 func (child *knativeHandle) Run(ctx context.Context) {
-	go func(ctx context.Context, im *instanceMemory, ar *functionRequest) {
-		err := child.engine.doActionRequest(ctx, ar)
-		if err != nil {
-			return
-		}
-	}(ctx, child.im, child.ar)
+	go child.engine.doActionRequest(ctx, child.ar)
 }
 
 func (child *knativeHandle) Info() states.ChildInfo {
 	return child.info
 }
 
-func (engine *engine) doActionRequest(ctx context.Context, ar *functionRequest) error {
+func (engine *engine) doActionRequest(ctx context.Context, ar *functionRequest) {
 	if ar.Workflow.Timeout == 0 {
 		ar.Workflow.Timeout = 5 * 60 // 5 mins default, knative's default
 	}
 
 	// Log warning if timeout exceeds max allowed timeout
 	if actionTimeout := time.Duration(ar.Workflow.Timeout) * time.Second; actionTimeout > engine.server.config.GetFunctionsTimeout() {
-		_, err := engine.internal.ActionLog(context.Background(), &grpc.ActionLogRequest{
+		_, err := engine.internal.ActionLog(context.Background(), &grpc.ActionLogRequest{ //nolint:contextcheck
 			InstanceId: ar.Workflow.InstanceID, Msg: []string{fmt.Sprintf("Warning: Action timeout '%v' is longer than max allowed duariton '%v'", actionTimeout, engine.server.config.GetFunctionsTimeout())},
 		})
 		if err != nil {
@@ -465,16 +471,18 @@ func (engine *engine) doActionRequest(ctx context.Context, ar *functionRequest) 
 		}
 	}
 
-	switch ar.Container.Type {
+	switch ar.Container.Type { //nolint:exhaustive
 	case model.DefaultFunctionType:
 		fallthrough
 	case model.NamespacedKnativeFunctionType:
 		fallthrough
+	case model.SystemKnativeFunctionType:
+		fallthrough
 	case model.ReusableContainerFunctionType:
 		go engine.doKnativeHTTPRequest(ctx, ar)
+	default:
+		panic(fmt.Errorf("unexpected type: %+v", ar.Container.Type))
 	}
-
-	return nil
 }
 
 func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
@@ -494,10 +502,10 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 
 	slog.Debug("deadline for request", "deadline", time.Until(deadline))
 
-	req, err := http.NewRequestWithContext(rctx, http.MethodPost, addr,
-		bytes.NewReader(ar.Container.Data))
+	req, err := http.NewRequestWithContext(rctx, http.MethodPost, addr, bytes.NewReader(ar.Container.Data)) //nolint:contextcheck
 	if err != nil {
-		engine.reportError(ar, err)
+		engine.reportError(ar, err) //nolint:contextcheck
+
 		return
 	}
 
@@ -546,19 +554,20 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 		} else {
 			defer resp.Body.Close()
 			slog.Debug("successfully created function", "image", ar.Container.Image, "image_id", ar.Container.ID)
+
 			break
 		}
 	}
 
 	if err != nil {
 		err := fmt.Errorf("failed creating function with image %s name %s with error: %w", ar.Container.Image, ar.Container.ID, err)
-		engine.reportError(ar, err)
+		engine.reportError(ar, err) //nolint:contextcheck
+
 		return
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		engine.reportError(ar, fmt.Errorf("action error status: %d",
-			resp.StatusCode))
+		engine.reportError(ar, fmt.Errorf("action error status: %d", resp.StatusCode)) //nolint:contextcheck
 	}
 
 	slog.Debug("function request done")

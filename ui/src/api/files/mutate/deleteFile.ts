@@ -44,12 +44,12 @@ export const useDeleteFile = ({
         },
       }),
     onSuccess(_, variables) {
-      queryClient.invalidateQueries(
-        fileKeys.file(namespace, {
+      queryClient.invalidateQueries({
+        queryKey: fileKeys.file(namespace, {
           apiKey: apiKey ?? undefined,
           path: getParentFromPath(variables.file.path),
-        })
-      );
+        }),
+      });
       toast({
         title: t("api.tree.mutate.file.delete.success.title"),
         description: t("api.tree.mutate.file.delete.success.description", {

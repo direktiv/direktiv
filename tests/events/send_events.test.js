@@ -3,6 +3,7 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 
 import common from '../common'
+import helpers from '../common/helpers'
 import request from '../common/request'
 
 const namespaceName = 'sendevents'
@@ -36,10 +37,7 @@ const eventDuplicate = `{
 describe('Test send events', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
 
-	it(`should create namespace`, async () => {
-		const createNamespaceResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${ namespaceName }`)
-		expect(createNamespaceResponse.statusCode).toEqual(200)
-	})
+	helpers.itShouldCreateNamespace(it, expect, namespaceName)
 
 	it(`should send event to namespace`, async () => {
 		const workflowEventResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${ namespaceName }/broadcast`)

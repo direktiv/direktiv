@@ -57,26 +57,33 @@ jobs:
       fail-fast: false
       max-parallel: 20
       matrix:
-        jest_prefix: [
-            "api/",
-            "engine/",
-            "errors/",
-            "events/",
-            "filesystem/",
-            "functions/",
-            "gateway/",
-            "kubernetes/",
-            "logparser/",
-            "mirror/",
-            "namespaces/",
-            "metrics/",
-            "notifications/",
-            "registry/",
-            "secrets/",
-            "services/",
-            "variables/",
-            "logs/", 
-          ]
+        sections:
+          - type: api
+            suit: engine
+          - type: api
+            suit: events
+          - type: api
+            suit: gateway
+          - type: api
+            suit: instances
+          - type: api
+            suit: kubernetes
+          - type: api
+            suit: part1
+          - type: api
+            suit: part2
+          - type: api
+            suit: services
+
+          #- type: playwright
+          #  suit: "1/4"
+          #- type: playwright
+          #  suit: "2/4"
+          #- type: playwright
+          #  suit: "3/4"
+          #- type: playwright
+          #  suit: "4/4"
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -196,13 +203,18 @@ jobs:
           kubectl get pods 
           kubectl logs deployments/direktiv-flow
           exit 1
-      - name: Run E2E tests
+      - name: Run API E2E tests
+        if: matrix.sections.type == 'api'
         run: |
-          npm -prefix tests run all -- ${{ env.JEST_PREFIX }}
+          npm -prefix tests run all -- ${{ matrix.sections.suit }}/
         env:
-          JEST_PREFIX: ${{ matrix.jest_prefix }}
           DIREKTIV_HOST: ${{ env.DIREKTIV_HOST }}
           GITHUB_ACTIONS: true
+
+      #- name: Run Playwrite E2E tests
+      #  if: matrix.sections.type == 'playwright'
+      #  run: |
+      #    PLAYWRITE_SHARD=${{ matrix.sections.suit }} make docker-e2e-playwright
 
       - name: Show logs
         run: |
