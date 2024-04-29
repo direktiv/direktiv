@@ -1,9 +1,7 @@
 import { Card } from "~/design/Card";
-import Donut from "./Donut";
-import { NoResult } from "~/design/Table";
+import Content from "./Content";
 import { PieChart } from "lucide-react";
 import RefreshButton from "~/design/RefreshButton";
-import { getDonutConfig } from "./utils";
 import { useMetrics } from "~/api/metrics/query/metrics";
 import { useTranslation } from "react-i18next";
 
@@ -26,21 +24,7 @@ const Metrics = ({ workflow }: { workflow: string }) => {
     />
   );
 
-  let Output = <></>;
-
-  if (isFetched && data?.data?.total && data.data.total > 0) {
-    const config = getDonutConfig(data.data);
-
-    Output = <Donut config={config} />;
-  } else {
-    Output = (
-      <NoResult icon={PieChart}>
-        {isFetched
-          ? t("pages.explorer.tree.workflow.overview.metrics.noResult")
-          : t("pages.explorer.tree.workflow.overview.metrics.loading")}
-      </NoResult>
-    );
-  }
+  if (!data) return null;
 
   return (
     <Card className="flex flex-col">
@@ -51,7 +35,7 @@ const Metrics = ({ workflow }: { workflow: string }) => {
         </h3>
         <MetricsRefetchButton />
       </div>
-      {Output}
+      <Content isFetched={isFetched} data={data} />
     </Card>
   );
 };

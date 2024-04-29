@@ -4,6 +4,7 @@ export type DonutConfigType = {
   items: { label: string; count: number }[];
   colors: DonutChartProps["colors"];
   legend: JSX.Element;
+  total: number;
 };
 
 const Donut = ({ config }: { config: DonutConfigType }) => {

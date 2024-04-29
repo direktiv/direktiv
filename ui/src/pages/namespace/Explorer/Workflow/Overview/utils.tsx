@@ -30,5 +30,6 @@ export const getDonutConfig = (
     items,
     legend,
     colors,
+    total,
   };
 };
