@@ -5,7 +5,7 @@ import InputOutput from "./Main/InputOutput";
 import Logs from "./Main/Logs";
 import { NoPermissions } from "~/design/Table";
 import WorkspaceLayout from "./Main";
-import { useInstanceDetails } from "~/api/instances_obsolete/query/details";
+import { useInstanceDetails } from "~/api/instances/query/details";
 import { useInstanceId } from "./store/instanceContext";
 import { useLogsPreferencesMaximizedPanel } from "~/util/store/logs";
 
@@ -31,13 +31,7 @@ const InstancesDetail = () => {
       <WorkspaceLayout
         layout={preferedLayout}
         logComponent={<Logs />}
-        diagramComponent={
-          <Diagram
-            workflowPath={data.instance.as}
-            flow={data.flow}
-            status={data.instance.status}
-          />
-        }
+        diagramComponent={<Diagram flow={data.flow} status={data.status} />}
         inputOutputComponent={<InputOutput />}
       />
     </div>
