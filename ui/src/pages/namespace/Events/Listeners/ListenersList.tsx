@@ -15,7 +15,7 @@ import { Card } from "~/design/Card";
 import { Pagination } from "~/components/Pagination";
 import Row from "./Row";
 import { itemsPerPage } from ".";
-import { useEventListeners } from "~/api/eventListeners/query/get";
+import { useEventListeners } from "~/api/eventListenersv2/query/get";
 import { useTranslation } from "react-i18next";
 
 const ListenersList = ({
@@ -25,18 +25,14 @@ const ListenersList = ({
   offset: number;
   setOffset: Dispatch<SetStateAction<number>>;
 }) => {
-  const { data, isFetched, isAllowed, noPermissionMessage } = useEventListeners(
-    {
-      limit: itemsPerPage,
-      offset,
-    }
-  );
+  const { data, isFetched, isAllowed, noPermissionMessage } =
+    useEventListeners();
 
   const { t } = useTranslation();
 
-  const numberOfResults = data?.pageInfo?.total ?? 0;
-  const noResults = isFetched && data?.results.length === 0;
-  const showPagination = numberOfResults > itemsPerPage;
+  const numberOfResults = data?.data.length ?? 0;
+  const noResults = isFetched && data?.data.length === 0;
+  const showPagination = false; // numberOfResults > itemsPerPage;
 
   return (
     <div className="flex grow flex-col gap-y-3 p-5">
@@ -73,11 +69,11 @@ const ListenersList = ({
                     </TableCell>
                   </TableRow>
                 ) : (
-                  data?.results.map((listener, i) => (
+                  data?.data.map((listener, i) => (
                     <Row
                       listener={listener}
                       key={i}
-                      namespace={data.namespace}
+                      namespace={listener.namespace}
                       data-testid={`listener-row-${i}`}
                     />
                   ))
