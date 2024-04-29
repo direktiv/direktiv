@@ -1,6 +1,5 @@
 import { Dialog, DialogContent } from "~/design/Dialog";
 import { Dispatch, SetStateAction, useState } from "react";
-import { FiltersObj, useEvents } from "~/api/events/query/get";
 import {
   NoPermissions,
   NoResult,
@@ -15,12 +14,14 @@ import {
 import { Card } from "~/design/Card";
 import { EventSchemaType } from "~/api/events/schema";
 import Filters from "./components/Filters";
+import { FiltersObj } from "~/api/events/query/get";
 import { Pagination } from "~/components/Pagination";
 import { Radio } from "lucide-react";
 import Row from "./Row";
 import SendEvent from "./SendEvent";
 import ViewEvent from "./ViewEvent";
 import { itemsPerPage } from ".";
+import { useEvents } from "~/api/eventsv2/query/get";
 import { useTranslation } from "react-i18next";
 
 const EventsList = ({
@@ -40,7 +41,6 @@ const EventsList = ({
   const { data, isFetched, isAllowed, noPermissionMessage } = useEvents({
     limit: itemsPerPage,
     offset,
-    filters,
   });
 
   const handleOpenChange = (state: boolean) => {
@@ -54,9 +54,9 @@ const EventsList = ({
     setOffset(0);
   };
 
-  const numberOfResults = data?.events?.pageInfo?.total ?? 0;
-  const noResults = isFetched && data?.events.results.length === 0;
-  const showPagination = numberOfResults > itemsPerPage;
+  const numberOfResults = data?.data?.length ?? 0;
+  const noResults = isFetched && data?.data.length === 0;
+  const showPagination = false; // numberOfResults > itemsPerPage;
   const hasFilters = !!Object.keys(filters).length;
 
   return (
@@ -101,7 +101,7 @@ const EventsList = ({
                       </TableCell>
                     </TableRow>
                   ) : (
-                    data?.events.results.map((event) => (
+                    data?.data.map((event) => (
                       <Row
                         onClick={setEventDialog}
                         event={event}
