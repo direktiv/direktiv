@@ -1,10 +1,10 @@
 name: Backend Build
 
 on:
-  workflow_run:
-    workflows: [Backend Prebuild]
-    types:
-      - completed
+  push:
+    branches:
+      - main
+  pull_request:
 
 env:
   REGISTRY: ghcr.io
