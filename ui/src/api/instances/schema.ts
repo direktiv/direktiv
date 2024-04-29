@@ -93,36 +93,34 @@ export const InstancesListSchema = z.object({
  * example
  * 
   {
-    ...
-    "inputLength" : 8,
-    "metadataLength" : 0,
-    "outputLength" : 7,
-  }
- */
-const InstanceDetailsSchema = InstanceSchema.extend({
-  inputLength: z.number(),
-  outputLength: z.number(),
-  metadataLength: z.number(),
-});
-
-/**
- * example
- * 
-  {
-    "data": {...}
+    "data": {
+      ...
+      "inputLength" : 8,
+      "metadataLength" : 0,
+      "outputLength" : 7,
+    } 
   }
  */
 export const InstancesDetailSchema = z.object({
-  data: InstanceDetailsSchema,
+  data: InstanceSchema.extend({
+    inputLength: z.number(),
+    outputLength: z.number(),
+    metadataLength: z.number(),
+  }),
 });
 
 /**
  * example
  * 
   {
-    "data": {...}
+    ... 
+    "inputLength": 8,
+    "input": "ewogICAgCn0="
   }
  */
 export const InstancesInputSchema = z.object({
-  data: z.object({}),
+  data: InstanceSchema.extend({
+    inputLength: z.number(),
+    input: z.string(),
+  }),
 });

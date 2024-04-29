@@ -3,16 +3,16 @@ import Toolbar from "./Toolbar";
 import { decode } from "js-base64";
 import { forwardRef } from "react";
 import { prettifyJsonString } from "~/util/helpers";
-import { useInput } from "~/api/instances_obsolete/query/input";
 import { useInstanceId } from "../../store/instanceContext";
+import { useInstanceInput } from "~/api/instances/query/input";
 import { useTheme } from "~/util/store/theme";
 
 const Input = forwardRef<HTMLDivElement>((_, ref) => {
   const instanceId = useInstanceId();
-  const { data } = useInput({ instanceId });
+  const { data } = useInstanceInput({ instanceId });
   const theme = useTheme();
 
-  const workflowInput = decode(data?.data ?? "");
+  const workflowInput = decode(data?.input ?? "");
   const workflowInputPretty = prettifyJsonString(workflowInput);
 
   return (
