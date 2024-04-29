@@ -114,6 +114,7 @@ const InstancesListPage = () => {
                     <Row
                       instance={instance}
                       key={instance.id}
+                      // TODO: remove this when api returns namespace
                       namespace={namespace}
                       data-testid={`instance-row-${instance.id}`}
                     />
