@@ -22,14 +22,19 @@ import { z } from "zod";
   }
  */
 
-const EventObject = z.object({
-  namespaceName: z.string(),
+const EventDetail = z.object({
+  id: z.string(),
+  source: z.string(),
+  type: z.string(),
+  subject: z.string(),
+  time: z.string(),
+  data: z.string(),
+});
+
+const EventListItem = z.object({
+  namespace: z.string(), // currently namespaceName
   receivedAt: z.string(),
-  event: z.object({
-    id: z.string(),
-    type: z.string(),
-    time: z.string(),
-  }),
+  event: EventDetail,
 });
 
 /**
@@ -51,9 +56,11 @@ export const MetaData = z.object({
 
 export const EventsListResponseSchema = z.object({
   meta: MetaData,
-  data: z.array(EventObject),
+  data: z.array(EventListItem),
 });
 
+export type EventDetailType = z.infer<typeof EventDetail>;
+export type EventListItemType = z.infer<typeof EventListItem>;
 export type EventsListResponseSchemaType = z.infer<
   typeof EventsListResponseSchema
 >;

@@ -12,7 +12,7 @@ import {
 } from "~/design/Table";
 
 import { Card } from "~/design/Card";
-import { EventSchemaType } from "~/api/events/schema";
+import { EventDetailType } from "~/api/eventsv2/schema";
 import Filters from "./components/Filters";
 import { FiltersObj } from "~/api/events/query/get";
 import { Pagination } from "~/components/Pagination";
@@ -36,7 +36,7 @@ const EventsList = ({
   setOffset: Dispatch<SetStateAction<number>>;
 }) => {
   const { t } = useTranslation();
-  const [eventDialog, setEventDialog] = useState<EventSchemaType | null>();
+  const [eventDialog, setEventDialog] = useState<EventDetailType | null>();
 
   const { data, isFetched, isAllowed, noPermissionMessage } = useEvents({
     limit: itemsPerPage,
@@ -103,10 +103,11 @@ const EventsList = ({
                   ) : (
                     data?.data.map((event) => (
                       <Row
+                        key={event.event.id}
+                        event={event.event}
+                        receivedAt={event.receivedAt}
+                        namespace={event.namespace}
                         onClick={setEventDialog}
-                        event={event}
-                        key={event.id}
-                        namespace={data.namespace}
                       />
                     ))
                   )}
