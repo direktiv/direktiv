@@ -12,18 +12,6 @@ const Metrics = ({ workflow }: { workflow: string }) => {
     path: workflow,
   });
 
-  const MetricsRefetchButton = () => (
-    <RefreshButton
-      icon
-      size="sm"
-      variant="ghost"
-      disabled={isFetching}
-      onClick={() => {
-        refetch();
-      }}
-    />
-  );
-
   if (!data) return null;
 
   return (
@@ -33,7 +21,15 @@ const Metrics = ({ workflow }: { workflow: string }) => {
         <h3 className="grow">
           {t("pages.explorer.tree.workflow.overview.metrics.header")}
         </h3>
-        <MetricsRefetchButton />
+        <RefreshButton
+          icon
+          size="sm"
+          variant="ghost"
+          disabled={isFetching}
+          onClick={() => {
+            refetch();
+          }}
+        />
       </div>
       <Content isFetched={isFetched} data={data} />
     </Card>
