@@ -75,7 +75,7 @@ const Header = () => {
         </div>
         <div className="text-sm">
           <div className="text-gray-10 dark:text-gray-dark-10">
-            {t("pages.instances.detail.header.updatedAt")}
+            {t("pages.instances.detail.header.finishedAt")}
           </div>
           {t("pages.instances.detail.header.realtiveTime", {
             relativeTime: endetAt,

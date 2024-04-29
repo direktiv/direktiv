@@ -586,7 +586,7 @@
           "invoker": "trigger",
           "state": "state",
           "startedAt": "started at",
-          "updatedAt": "last updated",
+          "finishedAt": "finished at",
           "realtiveTime": "{{relativeTime}} ago"
         },
         "logs": {
