@@ -10,6 +10,10 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
   UI_IMAGE_NAME: ${{ github.repository }}-ui
+  KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  SRVTAG: dev
+  IS_GITHUB_ACTIONS: true
+
 
 jobs:
   build-backend:
@@ -170,10 +174,6 @@ jobs:
           key: docker-${{ runner.os }}-${{ hashFiles('Dockerfile') }}
           restore-keys: |
             docker-${{ runner.os }}-
-
-      - name: Apply images
-        run: |
-          sudo k3s ctr images import direktiv.tar
 
       - name: Wait for Direktiv pods to be ready
         run: |
