@@ -15,14 +15,15 @@ import { z } from "zod";
         "comexampleextension1": "value",
         "comexampleothervalue": 5
     },
-    "namespace": "3c33a775-b90f-4fbf-901f-3c9bd0cc68e5",
-    "namespaceName": "sebxian",
+    "namespace": "foo",
+    "namespaceId": "3c33a775-b90f-4fbf-901f-3c9bd0cc68e5",
     "receivedAt": "2024-04-29T09:26:32.212915Z",
     "serialID": 1
   }
  */
 
 const EventDetail = z.object({
+  specversion: z.string(),
   id: z.string(),
   source: z.string(),
   type: z.string(),

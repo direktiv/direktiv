@@ -4,15 +4,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/design/Dialog";
-import { EventSchemaType, NewEventSchemaType } from "~/api/events/schema";
 import { SubmitHandler, useForm } from "react-hook-form";
 
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
+import { EventDetailType } from "~/api/eventsv2/schema";
+import { NewEventSchemaType } from "~/api/events/schema";
 import { Radio } from "lucide-react";
-import { decode } from "js-base64";
 import { prettifyJsonString } from "~/util/helpers";
 import { useReplayEvent } from "~/api/events/mutate/replayEvent";
 import { useTheme } from "~/util/store/theme";
@@ -22,7 +22,7 @@ const ViewEvent = ({
   event,
   handleOpenChange,
 }: {
-  event: EventSchemaType;
+  event: EventDetailType;
   handleOpenChange: (value: boolean) => void;
 }) => {
   const { t } = useTranslation();
@@ -38,8 +38,7 @@ const ViewEvent = ({
 
   const { handleSubmit } = useForm<NewEventSchemaType>({});
 
-  const eventData = decode(event.cloudevent);
-  const eventDataPretty = prettifyJsonString(eventData);
+  const eventDataPretty = prettifyJsonString(JSON.stringify(event));
 
   return (
     <form
