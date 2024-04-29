@@ -20,7 +20,7 @@ const Delete = ({
   close: () => void;
 }) => {
   const { t } = useTranslation();
-  const { mutate: deleteNode, isLoading } = useDeleteFile({
+  const { mutate: deleteNode, isPending } = useDeleteFile({
     onSuccess: () => {
       close();
     },
@@ -59,9 +59,9 @@ const Delete = ({
             deleteNode({ file });
           }}
           variant="destructive"
-          loading={isLoading}
+          loading={isPending}
         >
-          {!isLoading && <Trash />}
+          {!isPending && <Trash />}
           {t("pages.explorer.tree.delete.deleteBtn")}
         </Button>
       </DialogFooter>

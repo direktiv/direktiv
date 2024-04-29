@@ -15,39 +15,6 @@ message Namespace {
 	map<string, string> notes = 5;
 }
 
-
-message NamespaceRequest {
-	string name = 1;
-}
-
-message NamespaceResponse {
-	Namespace namespace = 1;
-}
-
-message NamespacesRequest {
-	Pagination pagination = 1;
-}
-
-message NamespacesResponse {
-	PageInfo pageInfo = 2;
-	repeated Namespace results = 4;
-}
-
-message CreateNamespaceRequest {
-	string name = 1;
-	bool idempotent = 2;
-}
-
-message CreateNamespaceResponse {
-	Namespace namespace = 1;
-}
-
-message DeleteNamespaceRequest {
-	string name = 1;
-	bool idempotent = 2;
-	bool recursive = 3;
-}
-
 message LinterIssue {
 	string type = 1;
 	string id = 2;

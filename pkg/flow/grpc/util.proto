@@ -4,8 +4,6 @@ package direktiv_flow;
 
 option go_package = "github.com/direktiv/direktiv/pkg/flow/grpc";
 
-import "google/protobuf/timestamp.proto";
-
 message JQRequest {
 	string query = 1;
 	bytes data = 2;
@@ -15,56 +13,4 @@ message JQResponse {
 	string query = 1;
 	bytes data = 2;
 	repeated string results = 3;
-}
-
-message WorkflowMetricsRequest {
-	string namespace = 1;
-	string path = 2;
-	google.protobuf.Timestamp sinceTimestamp = 3;
-}
-
-message WorkflowMetricsResponse {
-	int32 totalInstancesRun = 1;
-	int32 totalInstanceMilliseconds = 2;
-	int32 successfulExecutions = 3;
-	int32 failedExecutions = 4;
-	map<string, int32> errorCodes = 5;
-	map<string, float> errorCodesRepresentation = 6;
-	int32 sampleSize = 7;
-	int32 meanInstanceMilliseconds = 8;
-	float successRate = 9;
-	float failureRate = 10;
-	repeated State states = 11;
-}
-
-message State {
-	string name = 1;
-	map<string, int32> invokers = 2;
-	map<string, float> invokersRepresentation = 3;
-	int32 totalExecutions = 4;
-	int32 totalMilliseconds = 5;
-	int32 totalSuccesses = 6;
-	int32 totalFailures = 7;
-	map<string, int32> unhandledErrors = 8;
-	map<string, float> unhandledErrorsRepresentation = 9;
-	int32 totalRetries = 10;
-	Outcomes outcomes = 11;
-	int32 meanExecutionsPerInstance = 12;
-	int32 meanMillisecondsPerInstance = 13;
-	float successRate = 14;
-	float failureRate = 15;
-	float meanRetries = 16;
-	MeanOutcomes meanOutcomes = 17;
-}
-
-message Outcomes {
-    int32 success = 1;
-    int32 failure = 2;
-    map<string, int32> transitions = 3;
-}
-
-message MeanOutcomes {
-	float success = 1;
-	float failure = 2;
-	map<string, float> transitions = 3;
 }

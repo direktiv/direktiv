@@ -16,7 +16,6 @@ import (
 	"github.com/caarlos0/env/v10"
 	"github.com/direktiv/direktiv/pkg/flow/nohome"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
-	"github.com/direktiv/direktiv/pkg/metrics"
 	"github.com/direktiv/direktiv/pkg/refactor/cmd"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
@@ -60,8 +59,6 @@ type server struct {
 	flow     *flow
 	internal *internal
 	events   *events
-
-	metrics *metrics.Client
 }
 
 func Run(circuit *core.Circuit) error {
@@ -102,7 +99,7 @@ func Run(circuit *core.Circuit) error {
 		if err != nil {
 			return err
 		}
-		err = srv.flow.configureWorkflowStarts(circuit.Context(), dbManager, event.NamespaceID, file)
+		err = srv.flow.configureWorkflowStarts(circuit.Context(), dbManager, event.NamespaceID, event.Namespace, file)
 		if err != nil {
 			return err
 		}
@@ -116,14 +113,16 @@ func Run(circuit *core.Circuit) error {
 	}
 
 	err = cmd.NewMain(circuit, &cmd.NewMainArgs{
-		Config:            srv.config,
-		Database:          dbManager,
-		PubSubBus:         srv.pBus,
-		ConfigureWorkflow: configureWorkflow,
-		InstanceManager:   instanceManager,
+		Config:              srv.config,
+		Database:            dbManager,
+		PubSubBus:           srv.pBus,
+		ConfigureWorkflow:   configureWorkflow,
+		InstanceManager:     instanceManager,
+		WakeInstanceByEvent: srv.engine.WakeEventsWaiter,
+		WorkflowStart:       srv.engine.EventsInvoke,
 		SyncNamespace: func(namespace any, mirrorConfig any) (any, error) {
-			ns := namespace.(*datastore.Namespace)
-			mConfig := mirrorConfig.(*datastore.MirrorConfig)
+			ns := namespace.(*datastore.Namespace)            //nolint:forcetypeassert
+			mConfig := mirrorConfig.(*datastore.MirrorConfig) //nolint:forcetypeassert
 			proc, err := srv.mirrorManager.NewProcess(context.Background(), ns, datastore.ProcessTypeSync)
 			if err != nil {
 				return nil, err
@@ -213,13 +212,6 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 	defer telend()
 	slog.Info("Telemetry initialized successfully.")
 
-	go func() {
-		err := setupPrometheusEndpoint()
-		if err != nil {
-			slog.Error("Failed to set up Prometheus endpoint", "error", err)
-		}
-	}()
-
 	srv.gormDB = db
 	srv.sqlStore = dbManager
 
@@ -250,11 +242,6 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 	defer srv.cleanup(srv.timers.Close)
 	slog.Info("timers where initialized successfully.")
 
-	slog.Debug("Initializing metrics.")
-
-	srv.metrics = metrics.NewClient(srv.gormDB)
-	slog.Info("Metrics Client was created.")
-
 	slog.Debug("Initializing pubsub routine.")
 	coreBus, err := pubsubSQL.NewPostgresCoreBus(srv.rawDB, srv.config.DB)
 	if err != nil {
@@ -273,10 +260,7 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 
 	slog.Debug("Initializing engine.")
 
-	srv.engine, err = initEngine(srv)
-	if err != nil {
-		return nil, err
-	}
+	srv.engine = initEngine(srv)
 	defer srv.cleanup(srv.engine.Close)
 	slog.Info("engine was started.")
 
@@ -297,10 +281,7 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 	slog.Debug("mirror manager was started.")
 
 	slog.Debug("Initializing events.")
-	srv.events, err = initEvents(srv, dbManager.DataStore().StagingEvents().Append)
-	if err != nil {
-		return nil, err
-	}
+	srv.events = initEvents(srv, dbManager.DataStore().StagingEvents().Append)
 	defer srv.cleanup(srv.events.Close)
 
 	slog.Debug("Initializing EventWorkers.")
@@ -316,7 +297,7 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 	slog.Info("Events-engine was started.")
 
 	cc := func(ctx context.Context, nsID uuid.UUID, nsName string, file *filestore.File) error {
-		err = srv.flow.configureWorkflowStarts(ctx, dbManager, nsID, file)
+		err = srv.flow.configureWorkflowStarts(ctx, dbManager, nsID, nsName, file)
 		if err != nil {
 			return err
 		}
@@ -531,7 +512,7 @@ func (srv *server) cronPoller() {
 
 func (srv *server) cronPoll() {
 	ctx := context.Background()
-	tx, err := srv.flow.beginSqlTx(ctx)
+	tx, err := srv.flow.beginSQLTx(ctx)
 	if err != nil {
 		slog.Error("cronPoll executing transaction", "error", err)
 		return
@@ -583,11 +564,12 @@ func (srv *server) cronPollerWorkflow(ctx context.Context, tx *database.SQLStore
 	}
 }
 
-func unaryInterceptor(ctx context.Context, req interface{}, info *libgrpc.UnaryServerInfo, handler libgrpc.UnaryHandler) (resp interface{}, err error) {
-	resp, err = handler(ctx, req)
+func unaryInterceptor(ctx context.Context, req interface{}, info *libgrpc.UnaryServerInfo, handler libgrpc.UnaryHandler) (interface{}, error) {
+	resp, err := handler(ctx, req)
 	if err != nil {
 		return nil, translateError(err)
 	}
+
 	return resp, nil
 }
 
@@ -596,22 +578,24 @@ func streamInterceptor(srv interface{}, ss libgrpc.ServerStream, info *libgrpc.S
 	if err != nil {
 		return translateError(err)
 	}
+
 	return nil
 }
 
 func this() string {
-	pc, _, _, _ := runtime.Caller(1)
+	pc, _, _, _ := runtime.Caller(1) //nolint:dogsled
 	fn := runtime.FuncForPC(pc)
 	elems := strings.Split(fn.Name(), ".")
+
 	return elems[len(elems)-1]
 }
 
-func (srv *server) beginSqlTx(ctx context.Context, opts ...*sql.TxOptions) (*database.SQLStore, error) {
+func (srv *server) beginSQLTx(ctx context.Context, opts ...*sql.TxOptions) (*database.SQLStore, error) {
 	return srv.sqlStore.BeginTx(ctx, opts...)
 }
 
-func (srv *server) runSqlTx(ctx context.Context, fun func(tx *database.SQLStore) error) error {
-	tx, err := srv.beginSqlTx(ctx)
+func (srv *server) runSQLTx(ctx context.Context, fun func(tx *database.SQLStore) error) error {
+	tx, err := srv.beginSQLTx(ctx)
 	if err != nil {
 		return err
 	}

@@ -13,6 +13,7 @@ import (
 	"github.com/google/uuid"
 )
 
+//nolint:gochecknoinits
 func init() {
 	RegisterState(model.StateTypeGetter, Getter)
 }
@@ -50,7 +51,7 @@ func (logic *getterLogic) Run(ctx context.Context, wakedata []byte) (*Transition
 		key := ""
 		var selector VariableSelector
 
-		x, err := jqOne(logic.GetInstanceData(), v.Key)
+		x, err := jqOne(logic.GetInstanceData(), v.Key) //nolint:contextcheck
 		if err != nil {
 			return nil, err
 		}

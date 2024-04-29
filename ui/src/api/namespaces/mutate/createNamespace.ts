@@ -10,7 +10,12 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
-const createNamespace = apiFactory({
+type CreateNamespacePayload = {
+  name: string;
+  mirror?: MirrorPostPatchSchemaType;
+};
+
+const createNamespace = apiFactory<CreateNamespacePayload>({
   url: () => "/api/v2/namespaces",
   method: "POST",
   schema: NamespaceCreatedEditedSchema,
@@ -27,13 +32,7 @@ export const useCreateNamespace = ({
   const { t } = useTranslation();
 
   return useMutationWithPermissions({
-    mutationFn: ({
-      name,
-      mirror,
-    }: {
-      name: string;
-      mirror?: MirrorPostPatchSchemaType;
-    }) =>
+    mutationFn: ({ name, mirror }: CreateNamespacePayload) =>
       createNamespace({
         apiKey: apiKey ?? undefined,
         urlParams: {},

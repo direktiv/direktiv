@@ -82,7 +82,7 @@ func jqString(input interface{}, command interface{}) (string, error) {
 func truth(x interface{}) bool {
 	var success bool
 
-	if x != nil {
+	if x != nil { //nolint:nestif
 		switch v := x.(type) {
 		case bool:
 			if v {

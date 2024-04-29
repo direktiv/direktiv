@@ -2,20 +2,38 @@
   "env": {
     "node": true
   },
-  "extends": ["esnext", "esnext/style-guide", "node", "node/style-guide", "react-native", "react-native/style-guide"],
+  "extends": [
+    "esnext",
+    "esnext/style-guide",
+    "node",
+    "node/style-guide",
+    "react-native",
+    "react-native/style-guide"
+  ],
   "parserOptions": {
     "sourceType": "module",
     "ecmaVersion": 2020
   },
-  "plugins": ["simple-import-sort"],
+  "plugins": [
+    "simple-import-sort"
+  ],
   "rules": {
     // increase the severity of rules so they are auto-fixable
     "simple-import-sort/imports": "error",
     "simple-import-sort/exports": "error",
     "sort-imports": "off",
     "import/no-nodejs-modules": "off",
-    "no-multiple-empty-lines": ["error", { "max": 1, "maxEOF": 0 }],
-    "padded-blocks": ["error", "never"],
+    "no-multiple-empty-lines": [
+      "error",
+      {
+        "max": 1,
+        "maxEOF": 0
+      }
+    ],
+    "padded-blocks": [
+      "error",
+      "never"
+    ],
     "eol-last": "error"
   }
 }

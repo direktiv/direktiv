@@ -51,11 +51,11 @@ const MirrorDetail = () => {
   if (!syncs) return null;
 
   const refreshSyncs = () => {
-    queryClient.invalidateQueries(
-      syncKeys.syncsList(namespace, {
+    queryClient.invalidateQueries({
+      queryKey: syncKeys.syncsList(namespace, {
         apiKey: apiKey ?? undefined,
-      })
-    );
+      }),
+    });
   };
 
   const pendingSyncs = syncs.filter(

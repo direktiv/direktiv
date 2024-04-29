@@ -39,11 +39,11 @@ export const useUpdatePolicy = ({
         },
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries(
-        policyKeys.get(namespace, {
+      queryClient.invalidateQueries({
+        queryKey: policyKeys.get(namespace, {
           apiKey: apiKey ?? undefined,
-        })
-      );
+        }),
+      });
       onSuccess?.();
     },
     onError: (e) => {

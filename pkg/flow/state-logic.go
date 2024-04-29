@@ -26,7 +26,7 @@ import (
 // 	expires.
 
 type stateChild struct {
-	Id          string
+	ID          string
 	Type        string
 	ServiceName string
 }

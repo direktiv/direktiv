@@ -196,26 +196,25 @@ describe("processApiResponse", () => {
   });
 
   test("unauthenticated response", async () => {
-    const useCallWithOutApiKey = (onError: (err: unknown) => void) =>
-      useQuery({
-        queryKey: ["getmyapikey", "wrong-api-key"],
-        queryFn: () =>
-          getMyApi({
-            apiKey: "wrong-api-key",
-            urlParams: undefined,
-          }),
-        onError,
-      });
-
-    const errorMock = vi.fn();
-    const { result } = renderHook(() => useCallWithOutApiKey(errorMock), {
-      wrapper: UseQueryWrapper,
-    });
+    const { result } = renderHook(
+      () =>
+        useQuery({
+          queryKey: ["getmyapikey", "wrong-api-key"],
+          queryFn: () =>
+            getMyApi({
+              apiKey: "wrong-api-key",
+              urlParams: undefined,
+            }),
+        }),
+      {
+        wrapper: UseQueryWrapper,
+      }
+    );
     await waitFor(() => {
       expect(result.current.isSuccess).toBe(false);
       expect(result.current.status).toBe("error");
 
-      const res = errorMock.mock.calls?.[0]?.[0];
+      const res = result.current.error;
       const parsedRes = ApiErrorSchema.safeParse(res);
       if (parsedRes.success) {
         expect(parsedRes.data.response.status).toBe(401);
@@ -267,55 +266,48 @@ describe("processApiResponse", () => {
   });
 
   test("response fails schema validation", async () => {
-    const useCallWithApiKey = (onError: (err: unknown) => void) =>
-      useQuery({
-        queryKey: ["getmyapikey", API_KEY],
-        queryFn: () =>
-          getMyApiWrongSchema({
-            apiKey: API_KEY,
-            urlParams: undefined,
-          }),
-        onError,
-      });
-
-    const errorMock = vi.fn();
-    const { result } = renderHook(() => useCallWithApiKey(errorMock), {
-      wrapper: UseQueryWrapper,
-    });
+    const { result } = renderHook(
+      () =>
+        useQuery({
+          queryKey: ["getmyapikey", API_KEY],
+          queryFn: () =>
+            getMyApiWrongSchema({
+              apiKey: API_KEY,
+              urlParams: undefined,
+            }),
+        }),
+      {
+        wrapper: UseQueryWrapper,
+      }
+    );
     await waitFor(() => {
       expect(result.current.isSuccess).toBe(false);
       expect(result.current.status).toBe("error");
-      expect(errorMock.mock.calls?.[0]?.[0]).toMatchInlineSnapshot(
-        '"could not format response for GET http://localhost/my-api"'
+      expect(result.current.error).toBe(
+        "could not format response for GET http://localhost/my-api"
       );
     });
   });
 
   test("api path does not exist", async () => {
-    const useCallWithApiKey = (onError: (err: unknown) => void) =>
-      useQuery({
-        queryKey: ["getmyapikey", API_KEY],
-        queryFn: () =>
-          api404({
-            apiKey: API_KEY,
-            urlParams: undefined,
-          }),
-        onError,
-      });
-
-    const errorMock = vi.fn();
-    const { result } = renderHook(() => useCallWithApiKey(errorMock), {
-      wrapper: UseQueryWrapper,
-    });
+    const { result } = renderHook(
+      () =>
+        useQuery({
+          queryKey: ["getmyapikey", API_KEY],
+          queryFn: () =>
+            api404({
+              apiKey: API_KEY,
+              urlParams: undefined,
+            }),
+        }),
+      {
+        wrapper: UseQueryWrapper,
+      }
+    );
     await waitFor(() => {
       expect(result.current.isSuccess).toBe(false);
       expect(result.current.status).toBe("error");
-
-      // calls?.[0]?.[0] does not work properly at this test,
-      // ignore it for now, since typesafety is not important here
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      const res = errorMock.mock.calls[0][0];
+      const res = result.current.error;
       const parsedRes = ApiErrorSchema.safeParse(res);
       if (parsedRes.success) {
         expect(parsedRes.data.response.status).toBe(404);
@@ -327,30 +319,24 @@ describe("processApiResponse", () => {
   });
 
   test("api that returns a JSON error", async () => {
-    const useCallWithApiKey = (onError: (err: unknown) => void) =>
-      useQuery({
-        queryKey: ["getmyapikey", API_KEY],
-        queryFn: () =>
-          apiJSONError({
-            apiKey: API_KEY,
-            urlParams: undefined,
-          }),
-        onError,
-      });
-
-    const errorMock = vi.fn();
-    const { result } = renderHook(() => useCallWithApiKey(errorMock), {
-      wrapper: UseQueryWrapper,
-    });
+    const { result } = renderHook(
+      () =>
+        useQuery({
+          queryKey: ["getmyapikey", API_KEY],
+          queryFn: () =>
+            apiJSONError({
+              apiKey: API_KEY,
+              urlParams: undefined,
+            }),
+        }),
+      {
+        wrapper: UseQueryWrapper,
+      }
+    );
     await waitFor(() => {
       expect(result.current.isSuccess).toBe(false);
       expect(result.current.status).toBe("error");
-
-      // calls?.[0]?.[0] does not work properly at this test,
-      // ignore it for now, since typesafety is not important here
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      const res = errorMock.mock.calls[0][0];
+      const res = result.current.error;
       const parsedRes = ApiErrorSchema.safeParse(res);
       if (parsedRes.success) {
         expect(parsedRes.data.response.status).toBe(422);

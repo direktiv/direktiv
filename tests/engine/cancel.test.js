@@ -9,18 +9,7 @@ const namespaceName = 'canceltest'
 describe('Test cancel state behaviour', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
 
-	it(`should create a namespace`, async () => {
-		const req = await request(common.config.getDirektivHost()).put(`/api/namespaces/${ namespaceName }`)
-
-		expect(req.statusCode).toEqual(200)
-		expect(req.body).toMatchObject({
-			namespace: {
-				createdAt: expect.stringMatching(common.regex.timestampRegex),
-				updatedAt: expect.stringMatching(common.regex.timestampRegex),
-				name: namespaceName,
-			},
-		})
-	})
+	helpers.itShouldCreateNamespace(it, expect, namespaceName)
 
 	helpers.itShouldCreateFileV2(it, expect, namespaceName,
 		'',

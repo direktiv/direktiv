@@ -63,7 +63,6 @@ states:
 `),
 			Input:         []byte(`{}`),
 			TelemetryInfo: []byte(`{}`),
-			Settings:      []byte(`{}`),
 			DescentInfo:   []byte(`{}`),
 			RuntimeInfo:   []byte(`{}`),
 			ChildrenInfo:  []byte(`{}`),
@@ -96,6 +95,10 @@ func assertInstanceStoreCorrectGetSummary(t *testing.T, is instancestore.Store, 
 		t.Errorf("unexpected nil idata GetSummary()")
 
 		return
+	}
+
+	if idata.InputLength != len(args.Input) {
+		t.Errorf("incorrect input length field")
 	}
 
 	// validation
@@ -131,7 +134,6 @@ states:
 `),
 			Input:         []byte(`{}`),
 			TelemetryInfo: []byte(`{}`),
-			Settings:      []byte(`{}`),
 			DescentInfo:   []byte(`{}`),
 			RuntimeInfo:   []byte(`{}`),
 			ChildrenInfo:  []byte(`{}`),

@@ -32,7 +32,7 @@ const ServiceEditor: FC<ServiceEditorProps> = ({ data }) => {
     fileContentFromServer
   );
 
-  const { mutate: updateService, isLoading } = useUpdateFile({});
+  const { mutate: updateService, isPending } = useUpdateFile({});
 
   const save = (value: ServiceFormSchemaType) => {
     const toSave = jsonToYaml(value);
@@ -56,7 +56,7 @@ const ServiceEditor: FC<ServiceEditorProps> = ({ data }) => {
 
         const filehasChanged = preview === fileContentFromServer;
         const isDirty = !serviceConfigError && !filehasChanged;
-        const disableButton = isLoading || !!serviceConfigError;
+        const disableButton = isPending || !!serviceConfigError;
 
         return (
           <form

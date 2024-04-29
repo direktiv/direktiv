@@ -40,8 +40,10 @@ const nodeObject = {
 	mimeType: expect.anything(),
 }
 
-export default { errorResponse,
+export default {
+	errorResponse,
 	pageInfoObject,
 	namespaceObject,
 	nodeObject,
-	unauthorizedResponse }
+	unauthorizedResponse,
+}

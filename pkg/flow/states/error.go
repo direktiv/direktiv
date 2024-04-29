@@ -9,6 +9,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/model"
 )
 
+//nolint:gochecknoinits
 func init() {
 	RegisterState(model.StateTypeError, Error)
 }
@@ -49,7 +50,7 @@ func (logic *errorLogic) Run(ctx context.Context, wakedata []byte) (*Transition,
 	for i := 0; i < len(a); i++ {
 		var x interface{}
 
-		x, err = jqOne(logic.GetInstanceData(), logic.Args[i])
+		x, err = jqOne(logic.GetInstanceData(), logic.Args[i]) //nolint:contextcheck
 		if err != nil {
 			return nil, err
 		}
@@ -57,7 +58,7 @@ func (logic *errorLogic) Run(ctx context.Context, wakedata []byte) (*Transition,
 		a[i] = x
 	}
 
-	x, err := jqOne(logic.GetInstanceData(), logic.Message)
+	x, err := jqOne(logic.GetInstanceData(), logic.Message) //nolint:contextcheck
 	if err != nil {
 		return nil, err
 	}

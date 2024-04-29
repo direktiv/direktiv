@@ -51,7 +51,7 @@ test("Service details page provides information about the service", async ({
 
   if (!createdService) throw new Error("could not find service");
 
-  await page.goto(`/${namespace}/services/${createdService.id}`);
+  await page.goto(`/n/${namespace}/services/${createdService.id}`);
 
   await expect(
     page.getByRole("heading", { name: createdService.id, exact: true }),
@@ -188,7 +188,7 @@ test("Service details page renders no logs when the service did not mount", asyn
 
   if (!createdService) throw new Error("could not find service");
 
-  await page.goto(`/${namespace}/services/${createdService.id}`);
+  await page.goto(`/n/${namespace}/services/${createdService.id}`);
 
   await expect(
     page.getByRole("heading", { name: createdService.id, exact: true }),

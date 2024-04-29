@@ -13,7 +13,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
-const updateNamespace = apiFactory({
+const updateNamespace = apiFactory<{ mirror?: MirrorPostPatchSchemaType }>({
   url: ({ namespace }: { namespace: string }) =>
     `/api/v2/namespaces/${namespace}`,
   method: "PATCH",

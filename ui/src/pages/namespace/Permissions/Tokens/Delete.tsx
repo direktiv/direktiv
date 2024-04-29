@@ -19,7 +19,7 @@ const Delete = ({
   close: () => void;
 }) => {
   const { t } = useTranslation();
-  const { mutate: deleteToken, isLoading } = useDeleteToken({
+  const { mutate: deleteToken, isPending } = useDeleteToken({
     onSuccess: () => {
       close();
     },
@@ -44,9 +44,9 @@ const Delete = ({
             deleteToken(token);
           }}
           variant="destructive"
-          loading={isLoading}
+          loading={isPending}
         >
-          {!isLoading && <Trash />}
+          {!isPending && <Trash />}
           {t("pages.permissions.tokens.delete.deleteBtn")}
         </Button>
       </DialogFooter>
