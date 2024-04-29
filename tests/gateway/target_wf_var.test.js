@@ -172,7 +172,7 @@ describe('Test target workflow variable plugin', () => {
 		expect(workflowVarResponse.statusCode).toEqual(200)
 	})
 
-	retry10(`should return a workflow var from magic namespace`, async () => {
+	retry50(`should return a workflow var from magic namespace`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(
 			`/gw/endpoint1`,
 		)

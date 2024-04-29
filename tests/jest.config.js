@@ -1,4 +1,4 @@
-export default {
+module.exports = {
 	testTimeout: 300000,
 	watchPlugins: [
 		'jest-watch-typeahead/filename',
