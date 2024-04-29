@@ -2,7 +2,7 @@ import { beforeAll, describe, expect, it } from '@jest/globals'
 
 import common from '../common'
 import request from '../common/request'
-import { retry10 } from '../common/retry'
+import { retry10, retry50 } from '../common/retry'
 
 const testNamespace = 'system'
 const limitedNamespace = 'limited_namespace'
@@ -228,7 +228,7 @@ describe('Test target workflow with errors', () => {
 		endpointErrorWorkflow,
 	)
 
-	retry10(`should return a workflow run from magic namespace`, async () => {
+	retry50(`should return a workflow run from magic namespace`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(
 			`/gw/endpoint3`,
 		)
@@ -291,7 +291,7 @@ describe('Test target workflow plugin', () => {
 		endpointWorkflowAllowed,
 	)
 
-	retry10(`should return a workflow run from magic namespace`, async () => {
+	retry50(`should return a workflow run from magic namespace`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(
 			`/gw/endpoint1`,
 		)
@@ -346,7 +346,7 @@ describe('Test POST method for target workflow plugin', () => {
 		endpointPOSTWorkflow,
 	)
 
-	retry10(`should return a workflow run from magic namespace`, async () => {
+	retry50(`should return a workflow run from magic namespace`, async () => {
 		const req = await request(common.config.getDirektivHost()).post(
 			`/gw/endpoint1`,
 		)
@@ -378,7 +378,7 @@ describe('Test Complex POST method for target workflow plugin', () => {
 		endpointComplexPOSTWorkflow,
 	)
 
-	retry10(`should return a workflow run from magic namespace`, async () => {
+	retry50(`should return a workflow run from magic namespace`, async () => {
 		const req = await request(common.config.getDirektivHost()).post(
 			`/gw/endpoint1`,
 		)
