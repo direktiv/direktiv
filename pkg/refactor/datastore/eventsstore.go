@@ -17,11 +17,11 @@ type StagingEvent struct {
 
 // wraps the cloud-event and adds contextual information.
 type Event struct {
-	Event         *cloudevents.Event `json:"event"`
-	Namespace     uuid.UUID          `json:"namespace,omitempty"`
-	NamespaceName string             `json:"namespaceName,omitempty"`
-	ReceivedAt    time.Time          `json:"receivedAt"` // marks when the events received by the web-API or created via internal logic.
-	SerialID      int                `json:"serialID"`
+	Event       *cloudevents.Event `json:"event"`
+	NamespaceID uuid.UUID          `json:"namespaceID,omitempty"`
+	Namespace   string             `json:"namespace,omitempty"`
+	ReceivedAt  time.Time          `json:"receivedAt"` // marks when the events received by the web-API or created via internal logic.
+	SerialID    int                `json:"serialID"`
 }
 
 // Persists and gets events.

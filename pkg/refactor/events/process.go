@@ -275,9 +275,9 @@ func (EventEngine) handleEvents(ctx context.Context,
 	for _, e := range cloudevents {
 		eCopy := e.Clone()
 		events = append(events, &datastore.Event{
-			Namespace:  namespace,
-			ReceivedAt: time.Now().UTC(),
-			Event:      &eCopy,
+			NamespaceID: namespace,
+			ReceivedAt:  time.Now().UTC(),
+			Event:       &eCopy,
 		})
 	}
 	// panic(len(h))
@@ -293,7 +293,7 @@ func (ee EventEngine) multiConditionEventAndHandler(l *datastore.EventListener, 
 			if l.Deleted {
 				return // Skip processing for deleted listeners.
 			}
-			if event.Namespace != l.NamespaceID {
+			if event.NamespaceID != l.NamespaceID {
 				continue
 			}
 			types := l.ListeningForEventTypes
@@ -391,7 +391,7 @@ func (ee EventEngine) singleConditionEventHandler(l *datastore.EventListener, wa
 			if l.Deleted {
 				return // Skip processing for deleted listeners.
 			}
-			if event.Namespace != l.NamespaceID {
+			if event.NamespaceID != l.NamespaceID {
 				continue // Filter for relevant namespace.
 			}
 
