@@ -9,7 +9,7 @@ import {
 import { createFile } from "e2e/utils/files";
 import { createInstance } from "../utils";
 import { faker } from "@faker-js/faker";
-import { getInstances } from "~/api/instances_obsolete/query/get";
+import { getInstanceList } from "~/api/instances/query/get";
 import { headers } from "e2e/utils/testutils";
 import moment from "moment";
 
@@ -65,7 +65,7 @@ test("it renders the instance item correctly for failed and success status", asy
   ];
 
   const checkInstanceRender = async (instance: Instance) => {
-    const instancesList = await getInstances({
+    const instancesList = await getInstanceList({
       urlParams: {
         baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
         namespace,
@@ -75,15 +75,15 @@ test("it renders the instance item correctly for failed and success status", asy
       headers,
     });
 
-    const instanceDetail = instancesList.instances.results.find(
+    const instanceDetail = instancesList.data.find(
       (x) => x.id === instance.data.id
     );
 
-    if (!instanceDetail?.status) {
-      throw new Error("instanceDetail?.status is not defined");
+    if (!instanceDetail) {
+      throw new Error("instance not found");
     }
 
-    const workflowName = instanceDetail?.as.split(":")[0];
+    const workflowName = instanceDetail?.path.split(":")[0];
 
     if (!workflowName) throw new Error("workflowName is not defined");
 
@@ -165,21 +165,21 @@ test("it renders the instance item correctly for failed and success status", asy
       .click(); // click on header to close all tooltips opened
 
     await expect(
-      instanceItemRow.getByTestId("instance-column-updated-time"),
-      `the "last updated" column should display a relative time of the updatedAt api response`
-    ).toContainText(moment(instanceDetail.updatedAt).fromNow(true));
+      instanceItemRow.getByTestId("instance-column-ended-time"),
+      `the "endedAt" column should display a relative time of the endedAt api response`
+    ).toContainText(moment(instanceDetail.endedAt).fromNow(true));
 
     await instanceItemRow
-      .getByTestId("instance-column-updated-time")
+      .getByTestId("instance-column-ended-time")
       .getByTestId("tooltip-trigger")
       .hover();
 
     await expect(
       instanceItemRow
-        .getByTestId("instance-column-updated-time")
+        .getByTestId("instance-column-ended-time")
         .getByTestId("tooltip-content"),
       "on hover, the absolute time should appear"
-    ).toContainText(instanceDetail.updatedAt);
+    ).toContainText(instanceDetail.endedAt ?? "no endedAt");
 
     await instanceItemRow
       .getByTestId("instance-column-name")
@@ -285,7 +285,7 @@ test("it provides a proper pagination", async ({ page }) => {
   await btnNumber3.click();
 
   // check with api response
-  const instancesListPage3 = await getInstances({
+  const instancesListPage3 = await getInstanceList({
     urlParams: {
       baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
       namespace,
@@ -295,7 +295,7 @@ test("it provides a proper pagination", async ({ page }) => {
     headers,
   });
 
-  const firstInstance = instancesListPage3.instances.results[0];
+  const firstInstance = instancesListPage3.data[0];
   if (!firstInstance) throw new Error("there should be at least one instance");
 
   const instanceItemRow = page.getByTestId(`instance-row-${firstInstance.id}`);
@@ -326,7 +326,7 @@ test("It will display child instances as well", async ({ page }) => {
 
   await page.goto(`${namespace}/instances/`, { waitUntil: "networkidle" });
 
-  const instancesList = await getInstances({
+  const instancesList = await getInstanceList({
     urlParams: {
       baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
       namespace,
@@ -336,7 +336,7 @@ test("It will display child instances as well", async ({ page }) => {
     headers,
   });
 
-  const childInstanceDetail = instancesList.instances.results.find(
+  const childInstanceDetail = instancesList.data.find(
     (x) => x.id !== parentInstance.data.id
   );
 

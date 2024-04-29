@@ -10,7 +10,7 @@ import { noop as basicWorkflow } from "~/pages/namespace/Explorer/Tree/component
 import { createFile } from "e2e/utils/files";
 import { decode } from "js-base64";
 import { faker } from "@faker-js/faker";
-import { getInput } from "~/api/instances_obsolete/query/input";
+import { getInstanceInput } from "~/api/instances/query/input";
 import { headers } from "e2e/utils/testutils";
 import { prettifyJsonString } from "~/util/helpers";
 
@@ -150,7 +150,7 @@ test("it is possible to run the workflow by setting an input JSON via the editor
   }
 
   // check the server state of the input
-  const res = await getInput({
+  const res = await getInstanceInput({
     urlParams: {
       baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
       instanceId,
@@ -159,7 +159,7 @@ test("it is possible to run the workflow by setting an input JSON via the editor
     headers,
   });
 
-  const inputResponseString = decode(res.data);
+  const inputResponseString = decode(res.data.input);
 
   expect(
     inputResponseString,
@@ -331,7 +331,7 @@ test("it is possible to provide the input via generated form", async ({
   }
 
   // check the server state of the input
-  const res = await getInput({
+  const res = await getInstanceInput({
     urlParams: {
       baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
       instanceId,
@@ -348,7 +348,7 @@ test("it is possible to provide the input via generated form", async ({
     select: "guest",
     file: `data:text/plain;base64,SSBhbSBqdXN0IGEgdGVzdGZpbGUgdGhhdCBjYW4gYmUgdXNlZCB0byB0ZXN0IGFuIHVwbG9hZCBmb3JtIHdpdGhpbiBhIHBsYXl3cmlnaHQgdGVzdA==`,
   };
-  const inputResponseAsJson = JSON.parse(decode(res.data));
+  const inputResponseAsJson = JSON.parse(decode(res.data.input));
   expect(inputResponseAsJson).toEqual(expectedJson);
 });
 
@@ -424,7 +424,7 @@ test("it is possible to provide the input via generated form and resolve form er
   }
 
   // check the server state of the input
-  const res = await getInput({
+  const res = await getInstanceInput({
     urlParams: {
       baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
       instanceId,
@@ -438,7 +438,7 @@ test("it is possible to provide the input via generated form and resolve form er
     lastName: "McFly",
     select: "guest",
   };
-  const inputResponseAsJson = JSON.parse(decode(res.data));
+  const inputResponseAsJson = JSON.parse(decode(res.data.input));
   expect(inputResponseAsJson).toEqual(expectedJson);
 });
 

@@ -132,7 +132,7 @@ const InstanceTableRow: FC<{
             </TooltipContent>
           </Tooltip>
         </TableCell>
-        <TableCell data-testid="instance-column-updated-time">
+        <TableCell data-testid="instance-column-ended-time">
           <Tooltip>
             <TooltipTrigger data-testid="tooltip-trigger">
               {t("pages.instances.list.tableRow.realtiveTime", {
