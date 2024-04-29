@@ -130,8 +130,8 @@
                   id: '4'
                   source: 'https://direktiv.io/test'
                   type: 'testerDuplicate'
-                namespace: 'b1e7f55b-3e16-4b9c-b5b5-3f94c5e149c0'
-                namespaceName: 'wfeventsv2'
+                namespaceID: 'b1e7f55b-3e16-4b9c-b5b5-3f94c5e149c0'
+                namespace: 'wfeventsv2'
                 receivedAt: '2024-04-25T13:39:00.01915Z'
                 serialID: 1
             schema:
@@ -153,9 +153,9 @@
                   items: 
                     type: object
                     properties:
-                      namespaceName: 
-                        type: string
                       namespace: 
+                        type: string
+                      namespaceID: 
                         type: string
                       receivedAt: 
                         type: string
@@ -313,7 +313,11 @@
                       namespace:
                         type: string
                         required: true
-                        description: The namespace to which the event listener belongs.
+                        description: The name of the namespace to which the event listener belongs.
+                      namespaceID:
+                        type: string
+                        required: true
+                        description: The id of the namespace to which the event listener belongs.
                       listeningForEventTypes:
                         type: array
                         items:
@@ -363,7 +367,7 @@
                   id: '977a5b18-27bf-4914-b666-456cc0073ea9'
                   createdAt: '2024-04-25T20:55:00.956697Z'
                   updatedAt: '2024-04-25T20:55:00.956697Z'
-                  namespace: 'wfeventsv2'
+                  namespaceID: 'wfeventsv2'
                   listeningForEventTypes: 
                     - 'greeting'
                   triggerType: 'StartSimple'
@@ -386,10 +390,14 @@
                         type: string
                         required: true
                         description: The timestamp indicating when the event listener was last updated.
+                      namespaceID:
+                        type: string
+                        required: true
+                        description: The id of the namespace to which the event listener belongs.
                       namespace:
                         type: string
                         required: true
-                        description: The namespace to which the event listener belongs.
+                        description: The name of the namespace to which the event listener belongs.
                       listeningForEventTypes:
                         type: array
                         items:

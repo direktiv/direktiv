@@ -406,10 +406,10 @@ func convertEvents(ns datastore.Namespace, evs ...cloudevents.Event) []*datastor
 	res := make([]*datastore.Event, len(evs))
 	for i := range evs {
 		res[i] = &datastore.Event{
-			Event:         &evs[i],
-			NamespaceName: ns.Name,
-			Namespace:     ns.ID,
-			ReceivedAt:    time.Now().UTC(),
+			Event:       &evs[i],
+			Namespace:   ns.Name,
+			NamespaceID: ns.ID,
+			ReceivedAt:  time.Now().UTC(),
 		}
 	}
 
