@@ -2,18 +2,6 @@ import { DonutConfigType } from "./Donut";
 import { MetricsObjectSchemaType } from "~/api/metrics/schema";
 import { Trans } from "react-i18next";
 
-// only the names processed in the component are allowed
-type MetricsItem = {
-  name: "failed" | "complete";
-  count: number;
-  percentage: number;
-};
-
-export type MetricsReport = {
-  count: number;
-  items?: MetricsItem[];
-};
-
 export const getDonutConfig = (
   data: MetricsObjectSchemaType
 ): DonutConfigType => {
