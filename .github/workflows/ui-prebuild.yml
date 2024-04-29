@@ -1,4 +1,4 @@
-name: (UI) Prebuild
+name: UI Prebuild
 
 on:
   workflow_dispatch:

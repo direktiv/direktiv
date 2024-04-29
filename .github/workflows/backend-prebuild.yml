@@ -1,4 +1,4 @@
-name: (Backend) Prebuild
+name: Backend Prebuild
 
 on:
   push:
