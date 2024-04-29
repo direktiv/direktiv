@@ -45,7 +45,7 @@ test.afterEach(async () => {
 test("it displays a note, when there are no instances yet.", async ({
   page,
 }) => {
-  await page.goto(`${namespace}/instances/`);
+  await page.goto(`/n/${namespace}/instances/`);
   await expect(
     page.getByTestId("no-result"),
     "no result message should be visible"
@@ -189,7 +189,7 @@ test("it renders the instance item correctly for failed and success status", asy
     await expect(
       page,
       "when the workflow name is clicked, page should navigate to the workflow page"
-    ).toHaveURL(`/${namespace}/explorer/workflow/edit${workflowName}`);
+    ).toHaveURL(`/n/${namespace}/explorer/workflow/edit${workflowName}`);
 
     await page.goBack();
 
@@ -197,11 +197,11 @@ test("it renders the instance item correctly for failed and success status", asy
     await expect(
       page,
       "on click row, page should navigate to the instance detail page"
-    ).toHaveURL(`/${namespace}/instances/${instance.data.id}`);
+    ).toHaveURL(`/n/${namespace}/instances/${instance.data.id}`);
     await page.goBack();
   };
 
-  await page.goto(`${namespace}/instances/`);
+  await page.goto(`/n/${namespace}/instances/`);
 
   for (let i = 0; i < instances.length; i++) {
     const instance = instances[i];
@@ -241,7 +241,7 @@ test("it provides a proper pagination", async ({ page }) => {
      */
     await page.waitForTimeout(500);
 
-  await page.goto(`${namespace}/instances/`, { waitUntil: "networkidle" });
+  await page.goto(`/n/${namespace}/instances/`, { waitUntil: "networkidle" });
 
   await expect(
     page.getByTestId("pagination-wrapper"),
@@ -324,7 +324,7 @@ test("It will display child instances as well", async ({ page }) => {
     path: parentWorkflow,
   });
 
-  await page.goto(`${namespace}/instances/`, { waitUntil: "networkidle" });
+  await page.goto(`/n/${namespace}/instances/`, { waitUntil: "networkidle" });
 
   const instancesList = await getInstanceList({
     urlParams: {

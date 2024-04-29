@@ -32,7 +32,9 @@ test("it is possible to create a basic route file", async ({ page }) => {
   });
 
   /* visit page */
-  await page.goto(`/${namespace}/explorer/tree`, { waitUntil: "networkidle" });
+  await page.goto(`/n/${namespace}/explorer/tree`, {
+    waitUntil: "networkidle",
+  });
   await expect(
     page.getByTestId("breadcrumb-namespace"),
     "it navigates to the test namespace in the explorer"
@@ -56,7 +58,7 @@ test("it is possible to create a basic route file", async ({ page }) => {
   await expect(
     page,
     "it creates the route file and opens it in the explorer"
-  ).toHaveURL(`/${namespace}/explorer/endpoint/${filename}`);
+  ).toHaveURL(`/n/${namespace}/explorer/endpoint/${filename}`);
 
   /* fill out form */
   await page.getByLabel("path").fill("path");
@@ -105,7 +107,7 @@ test("it is possible to create a basic route file", async ({ page }) => {
   await expect(
     page,
     "when the open logs link is clicked, page should navigate to the route detail page"
-  ).toHaveURL(`/${namespace}/gateway/routes/${filename}`);
+  ).toHaveURL(`/n/${namespace}/gateway/routes/${filename}`);
 });
 
 test("it is possible to add plugins to a route file", async ({ page }) => {
@@ -139,7 +141,7 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
     yaml: initialRouteYaml,
   });
 
-  await page.goto(`/${namespace}/explorer/endpoint/${filename}`, {
+  await page.goto(`/n/${namespace}/explorer/endpoint/${filename}`, {
     waitUntil: "networkidle",
   });
 

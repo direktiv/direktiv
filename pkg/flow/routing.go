@@ -216,13 +216,13 @@ func (flow *flow) cronHandler(data []byte) {
 	go flow.engine.start(im)
 }
 
-func (flow *flow) configureWorkflowStarts(ctx context.Context, tx *database.SQLStore, nsID uuid.UUID, file *filestore.File) error {
+func (flow *flow) configureWorkflowStarts(ctx context.Context, tx *database.SQLStore, nsID uuid.UUID, nsName string, file *filestore.File) error {
 	ms, err := flow.validateRouter(ctx, tx, file)
 	if err != nil {
 		return err
 	}
 
-	err = flow.events.processWorkflowEvents(ctx, nsID, file, ms)
+	err = flow.events.processWorkflowEvents(ctx, nsID, nsName, file, ms)
 	if err != nil {
 		return err
 	}

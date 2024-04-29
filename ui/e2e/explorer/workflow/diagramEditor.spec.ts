@@ -45,7 +45,7 @@ test.afterEach(async () => {
 test("it is possible to switch between Code View, Diagram View, Split Vertically and Split Horizontally", async ({
   page,
 }) => {
-  await page.goto(`/${namespace}/explorer/workflow/edit/${workflow}`);
+  await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflow}`);
 
   const { editor, diagram, codeBtn, diagramBtn, splitVertBtn, splitHorBtn } =
     await getCommonPageElements(page);
@@ -98,7 +98,7 @@ test("it is possible to switch between Code View, Diagram View, Split Vertically
 test("it will change the direction of the diagram, when the layout is set to Split Vertically", async ({
   page,
 }) => {
-  await page.goto(`/${namespace}/explorer/workflow/edit/${workflow}`);
+  await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflow}`);
   const startNode = page.getByTestId("rf__node-startNode");
   const endNode = page.getByTestId("rf__node-endNode");
 
@@ -153,7 +153,7 @@ test("it will change the direction of the diagram, when the layout is set to Spl
 test("it will persist the preferred layout selection in local storage", async ({
   page,
 }) => {
-  await page.goto(`/${namespace}/explorer/workflow/edit/${workflow}`);
+  await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflow}`);
   const { editor, diagram, codeBtn, diagramBtn, splitVertBtn, splitHorBtn } =
     await getCommonPageElements(page);
 
@@ -192,7 +192,7 @@ test("it will update the diagram when the workflow is saved", async ({
    * networkidle is required to avoid flaky tests. The monaco
    * editor needs to be full loaded before we interact with it.
    */
-  await page.goto(`/${namespace}/explorer/workflow/edit/${workflow}`, {
+  await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflow}`, {
     waitUntil: "networkidle",
   });
   const { editor, diagram, splitVertBtn } = await getCommonPageElements(page);
@@ -255,7 +255,7 @@ test("it will update the diagram when the workflow is saved", async ({
 test("it is possible to switch from Code View to Diagram View without loosing the recent changes", async ({
   page,
 }) => {
-  await page.goto(`/${namespace}/explorer/workflow/edit/${workflow}`);
+  await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflow}`);
 
   const { codeBtn, diagramBtn } = await getCommonPageElements(page);
 

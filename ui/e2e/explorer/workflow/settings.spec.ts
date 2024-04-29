@@ -37,7 +37,7 @@ test("it is possible to navigate to the workflow settings page and use paginatio
 }) => {
   await createWorkflowVariables(namespace, workflow, 15);
 
-  await page.goto(`/${namespace}/explorer/workflow/settings/${workflow}`);
+  await page.goto(`/n/${namespace}/explorer/workflow/settings/${workflow}`);
   await expect(
     page.getByTestId("variable-row"),
     "there should be 10 variables on the first page"
@@ -65,7 +65,7 @@ test("it is possible to navigate to the workflow settings page and use paginatio
 });
 
 test("it is possible to create a variable", async ({ page }) => {
-  await page.goto(`/${namespace}/explorer/workflow/settings/${workflow}`);
+  await page.goto(`/n/${namespace}/explorer/workflow/settings/${workflow}`);
 
   const subject = {
     name: "workflow-variable",
@@ -123,7 +123,7 @@ test("it is possible to update variables", async ({ page }) => {
   }
 
   /* visit page and edit variable */
-  await page.goto(`/${namespace}/explorer/workflow/settings/${workflow}`);
+  await page.goto(`/n/${namespace}/explorer/workflow/settings/${workflow}`);
 
   await page.getByTestId(`dropdown-trg-item-${subject.data.name}`).click();
   await page.getByRole("button", { name: "edit" }).click();
@@ -181,7 +181,7 @@ test("it is possible to delete variables", async ({ page }) => {
   }
 
   /* visit page and delete variable */
-  await page.goto(`/${namespace}/explorer/workflow/settings/${workflow}`);
+  await page.goto(`/n/${namespace}/explorer/workflow/settings/${workflow}`);
 
   await page.getByTestId(`dropdown-trg-item-${subject.data.name}`).click();
   await page.getByRole("button", { name: "delete" }).click();
@@ -206,7 +206,7 @@ test("it is not possible to create a variable with a name that already exists", 
   const variables = await createWorkflowVariables(namespace, workflow, 4);
   const reservedName = variables[0]?.data.name ?? "";
 
-  await page.goto(`/${namespace}/explorer/workflow/settings/${workflow}`);
+  await page.goto(`/n/${namespace}/explorer/workflow/settings/${workflow}`);
 
   await page.getByTestId("variable-create").click();
 
@@ -233,7 +233,7 @@ test("it is not possible to set a variables name to a name that already exists",
 
   const reservedName = variables[0]?.data.name ?? "";
 
-  await page.goto(`/${namespace}/explorer/workflow/settings/${workflow}`);
+  await page.goto(`/n/${namespace}/explorer/workflow/settings/${workflow}`);
 
   await page.getByTestId(`dropdown-trg-item-${subject.data.name}`).click();
   await page.getByRole("button", { name: "edit" }).click();
@@ -269,7 +269,7 @@ test("it is possible to rename a variable that doesn't have a mimeType", async (
     headers,
   });
 
-  await page.goto(`/${namespace}/explorer/workflow/settings/${workflowName}`);
+  await page.goto(`/n/${namespace}/explorer/workflow/settings/${workflowName}`);
   await page.getByTestId(`dropdown-trg-item-workflow`).click();
   await page.getByRole("button", { name: "edit" }).click();
 

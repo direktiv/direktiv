@@ -37,7 +37,7 @@ test("it is possible to create and sync a mirror", async ({ page }) => {
 
   /* assert mirror page is rendered and sync is listed */
   await expect(page, "it redirects to the mirror route").toHaveURL(
-    `/${mirrorName}/mirror/`
+    `/n/${mirrorName}/mirror/`
   );
 
   await expect(

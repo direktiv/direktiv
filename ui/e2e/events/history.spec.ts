@@ -17,7 +17,7 @@ test.afterEach(async () => {
 test("it is possible to navigate to the events page and between the sub pages", async ({
   page,
 }) => {
-  await page.goto(`/${namespace}`);
+  await page.goto(`/n/${namespace}`);
 
   await expect(
     page.getByTestId("breadcrumb-namespace"),
@@ -29,7 +29,7 @@ test("it is possible to navigate to the events page and between the sub pages", 
   await expect(
     page,
     "it is possible to navigate to events/history via the main navigation menu"
-  ).toHaveURL(`/${namespace}/events/history`);
+  ).toHaveURL(`/n/${namespace}/events/history`);
 
   await expect(
     page.getByTestId("breadcrumb-event-history"),
@@ -41,7 +41,7 @@ test("it is possible to navigate to the events page and between the sub pages", 
   await expect(
     page,
     "it is possible to navigate to events/listeners via the tab menu"
-  ).toHaveURL(`/${namespace}/events/listeners`);
+  ).toHaveURL(`/n/${namespace}/events/listeners`);
 
   await expect(
     page.getByTestId("breadcrumb-event-listeners"),
@@ -53,7 +53,7 @@ test("it is possible to navigate to the events page and between the sub pages", 
   await expect(
     page,
     "it is possible to navigate to events/history via the tab menu"
-  ).toHaveURL(`/${namespace}/events/history`);
+  ).toHaveURL(`/n/${namespace}/events/history`);
 
   await expect(
     page.getByTestId("breadcrumb-event-history"),
@@ -62,10 +62,10 @@ test("it is possible to navigate to the events page and between the sub pages", 
 });
 
 test("it is possible to send a new event", async ({ page }) => {
-  await page.goto(`/${namespace}/events/history`);
+  await page.goto(`/n/${namespace}/events/history`);
 
   await expect(page, "it is possible to visit events/history ").toHaveURL(
-    `/${namespace}/events/history`
+    `/n/${namespace}/events/history`
   );
 
   await expect(
@@ -91,10 +91,10 @@ test("it renders, filters, and paginates events", async ({ page }) => {
    * Visit the page, test pagination.
    */
 
-  await page.goto(`/${namespace}/events/history`);
+  await page.goto(`/n/${namespace}/events/history`);
 
   await expect(page, "it is possible to visit events/history").toHaveURL(
-    `/${namespace}/events/history`
+    `/n/${namespace}/events/history`
   );
 
   await expect(page.getByTestId("pagination-btn-page-1")).toBeVisible();
