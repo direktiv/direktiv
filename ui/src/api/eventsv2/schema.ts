@@ -20,7 +20,7 @@ import { z } from "zod";
  * the declared properties are mandatory (cloudevent spec);
  * additional properties may exist.
  */
-const EventDetail = z
+export const EventSchema = z
   .object({
     id: z.string(),
     specversion: z.string(),
@@ -29,10 +29,10 @@ const EventDetail = z
   })
   .passthrough();
 
-const EventListItem = z.object({
+export const EventListItem = z.object({
   namespace: z.string(), // currently namespaceName
   receivedAt: z.string(),
-  event: EventDetail,
+  event: EventSchema,
 });
 
 /**
@@ -57,7 +57,7 @@ export const EventsListResponseSchema = z.object({
   data: z.array(EventListItem),
 });
 
-export type EventDetailType = z.infer<typeof EventDetail>;
+export type EventSchemaType = z.infer<typeof EventSchema>;
 export type EventListItemType = z.infer<typeof EventListItem>;
 export type EventsListResponseSchemaType = z.infer<
   typeof EventsListResponseSchema
