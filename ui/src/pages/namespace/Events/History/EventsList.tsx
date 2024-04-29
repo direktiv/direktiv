@@ -38,7 +38,9 @@ const EventsList = ({
   const { t } = useTranslation();
   const [eventDialog, setEventDialog] = useState<EventSchemaType | null>();
 
-  const { data, isFetched, isAllowed, noPermissionMessage } = useEvents();
+  const { data, isFetched, isAllowed, noPermissionMessage } = useEvents({
+    enabled: true,
+  });
 
   const handleOpenChange = (state: boolean) => {
     if (!state) {
@@ -51,8 +53,10 @@ const EventsList = ({
     setOffset(0);
   };
 
-  const numberOfResults = data?.data?.length ?? 0;
-  const noResults = isFetched && data?.data.length === 0;
+  if (!data) return null;
+
+  const numberOfResults = data.length ?? 0;
+  const noResults = isFetched && data.length === 0;
   const showPagination = false; // numberOfResults > itemsPerPage;
   const hasFilters = !!Object.keys(filters).length;
 
@@ -98,7 +102,7 @@ const EventsList = ({
                       </TableCell>
                     </TableRow>
                   ) : (
-                    data?.data.map((event) => (
+                    data?.map((event) => (
                       <Row
                         key={event.event.id}
                         event={event.event}
