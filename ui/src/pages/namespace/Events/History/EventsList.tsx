@@ -38,10 +38,7 @@ const EventsList = ({
   const { t } = useTranslation();
   const [eventDialog, setEventDialog] = useState<EventDetailType | null>();
 
-  const { data, isFetched, isAllowed, noPermissionMessage } = useEvents({
-    limit: itemsPerPage,
-    offset,
-  });
+  const { data, isFetched, isAllowed, noPermissionMessage } = useEvents();
 
   const handleOpenChange = (state: boolean) => {
     if (!state) {

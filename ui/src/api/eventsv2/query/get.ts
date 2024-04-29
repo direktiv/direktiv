@@ -31,13 +31,7 @@ const fetchEvents = async ({
     urlParams: { namespace },
   });
 
-export const useEvents = ({
-  limit,
-  offset,
-}: {
-  limit: number;
-  offset: number;
-}) => {
+export const useEvents = () => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
 
