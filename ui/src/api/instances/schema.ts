@@ -38,12 +38,11 @@ const parentInstance = z.object({
     "invoker": "api",
     "definition": "ZGlyZWt0aXZfYXBpOiB3b3JrZmxvdy92MQpkZXNjcmlwdGlvbjogQSBzaW1wbGUgJ25vLW9wJyBzdGF0ZSB0aGF0IHJldHVybnMgJ0hlbGxvIHdvcmxkIScKc3RhdGVzOgotIGlkOiBoZWxsb3dvcmxkCiAgdHlwZTogbm9vcAogIHRyYW5zZm9ybToKICAgIHJlc3VsdDogSGVsbG8gd29ybGQhCg==",
     "errorMessage":"c3ViamVjdCBmYWlsZWQgaXRzIEpTT05TY2hlbWEgdmFsaWRhdGlvbjogPG5pbD4=",
-    "flow": [],
+    "flow": [ "prep", "loop", "getter" ],
     "traceId": "00000000000000000000000000000000",
     "lineage": [...]
   }
  */
-
 const InstanceSchema = z.object({
   id: z.string(),
   createdAt: z.string(),
@@ -90,4 +89,29 @@ export const InstancesListSchema = z.object({
   data: z.array(InstanceSchema),
 });
 
-export const InstancesDetailSchema = z.object({});
+/**
+ * example
+ * 
+  {
+    ...
+    "inputLength" : 8,
+    "metadataLength" : 0,
+    "outputLength" : 7,
+  }
+ */
+const InstanceDetailsSchema = InstanceSchema.extend({
+  inputLength: z.number(),
+  outputLength: z.number(),
+  metadataLength: z.number(),
+});
+
+/**
+ * example
+ * 
+  {
+    "data": {...}
+  }
+ */
+export const InstancesDetailSchema = z.object({
+  data: InstanceDetailsSchema,
+});
