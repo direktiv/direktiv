@@ -10,7 +10,7 @@ import Alert from "~/design/Alert";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
-import { EventDetailType } from "~/api/eventsv2/schema";
+import { EventSchemaType } from "~/api/eventsv2/schema";
 import { NewEventSchemaType } from "~/api/events/schema";
 import { Radio } from "lucide-react";
 import { prettifyJsonString } from "~/util/helpers";
@@ -22,7 +22,7 @@ const ViewEvent = ({
   event,
   handleOpenChange,
 }: {
-  event: EventDetailType;
+  event: EventSchemaType;
   handleOpenChange: (value: boolean) => void;
 }) => {
   const { t } = useTranslation();

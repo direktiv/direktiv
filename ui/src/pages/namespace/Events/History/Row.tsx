@@ -6,7 +6,7 @@ import {
   TooltipTrigger,
 } from "~/design/Tooltip";
 
-import { EventDetailType } from "~/api/eventsv2/schema";
+import { EventSchemaType } from "~/api/eventsv2/schema";
 import TooltipCopyBadge from "../../../../design/TooltipCopyBadge";
 import { useTranslation } from "react-i18next";
 import useUpdatedAt from "~/hooks/useUpdatedAt";
@@ -17,9 +17,9 @@ const Row = ({
   onClick,
 }: {
   receivedAt: string;
-  event: EventDetailType;
+  event: EventSchemaType;
   namespace: string;
-  onClick: (value: EventDetailType) => void;
+  onClick: (value: EventSchemaType) => void;
 }) => {
   const { t } = useTranslation();
 

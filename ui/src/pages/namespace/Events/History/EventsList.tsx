@@ -12,7 +12,7 @@ import {
 } from "~/design/Table";
 
 import { Card } from "~/design/Card";
-import { EventDetailType } from "~/api/eventsv2/schema";
+import { EventSchemaType } from "~/api/eventsv2/schema";
 import Filters from "./components/Filters";
 import { FiltersObj } from "~/api/events/query/get";
 import { Pagination } from "~/components/Pagination";
@@ -36,7 +36,7 @@ const EventsList = ({
   setOffset: Dispatch<SetStateAction<number>>;
 }) => {
   const { t } = useTranslation();
-  const [eventDialog, setEventDialog] = useState<EventDetailType | null>();
+  const [eventDialog, setEventDialog] = useState<EventSchemaType | null>();
 
   const { data, isFetched, isAllowed, noPermissionMessage } = useEvents();
 
