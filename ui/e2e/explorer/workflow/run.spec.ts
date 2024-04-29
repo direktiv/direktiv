@@ -36,7 +36,7 @@ test("it is possible to open and use the run workflow modal from the editor and 
     yaml: basicWorkflow.data,
   });
 
-  await page.goto(`${namespace}/explorer/workflow/edit/${workflowName}`);
+  await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflowName}`);
 
   // open modal via editor button
   await page.getByTestId("workflow-editor-btn-run").click();
@@ -104,7 +104,7 @@ test("it is possible to run the workflow by setting an input JSON via the editor
     yaml: basicWorkflow.data,
   });
 
-  await page.goto(`${namespace}/explorer/workflow/edit/${workflowName}`);
+  await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflowName}`);
 
   await page.getByTestId("workflow-editor-btn-run").click();
   expect(
@@ -138,7 +138,7 @@ test("it is possible to run the workflow by setting an input JSON via the editor
   // submit to run the workflow
   await page.getByTestId("run-workflow-submit-btn").click();
 
-  const reg = new RegExp(`${namespace}/instances/(.*)`);
+  const reg = new RegExp(`/n/${namespace}/instances/(.*)`);
   await expect(
     page,
     "workflow was triggered with our input and user was redirected to the instances page"
@@ -179,7 +179,7 @@ test("it is possible to run a workflow with input data containing special charac
     yaml: testDiacriticsWorkflow,
   });
 
-  await page.goto(`${namespace}/explorer/workflow/edit/${name}`);
+  await page.goto(`/n/${namespace}/explorer/workflow/edit/${name}`);
 
   await expect(
     page.locator(".view-lines"),
@@ -212,7 +212,7 @@ test("it is not possible to run the workflow when the editor has unsaved changes
     yaml: basicWorkflow.data,
   });
 
-  await page.goto(`${namespace}/explorer/workflow/edit/${workflowName}`);
+  await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflowName}`);
 
   await expect(page.getByTestId("workflow-header-btn-run")).not.toBeDisabled();
   await expect(page.getByTestId("workflow-editor-btn-run")).not.toBeDisabled();
@@ -245,7 +245,7 @@ test("it is possible to provide the input via generated form", async ({
     yaml: jsonSchemaFormWorkflow,
   });
 
-  await page.goto(`${namespace}/explorer/workflow/edit/${workflowName}`);
+  await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflowName}`);
 
   await page.getByTestId("workflow-editor-btn-run").click();
   expect(
@@ -319,7 +319,7 @@ test("it is possible to provide the input via generated form", async ({
   await page.getByLabel("Last Name").fill("McFly");
   await page.getByTestId("run-workflow-submit-btn").click();
 
-  const reg = new RegExp(`${namespace}/instances/(.*)`);
+  const reg = new RegExp(`/n/${namespace}/instances/(.*)`);
   await expect(
     page,
     "workflow was triggered with our input and user was redirected to the instances page"
@@ -363,7 +363,7 @@ test("it is possible to provide the input via generated form and resolve form er
     yaml: jsonSchemaWithRequiredEnum,
   });
 
-  await page.goto(`${namespace}/explorer/workflow/edit/${workflowName}`);
+  await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflowName}`);
 
   await page.getByTestId("workflow-editor-btn-run").click();
   expect(
@@ -412,7 +412,7 @@ test("it is possible to provide the input via generated form and resolve form er
   await page.getByRole("option", { name: "guest" }).click();
   await page.getByTestId("run-workflow-submit-btn").click();
 
-  const reg = new RegExp(`${namespace}/instances/(.*)`);
+  const reg = new RegExp(`/n/${namespace}/instances/(.*)`);
   await expect(
     page,
     "workflow was triggered with our input and user was redirected to the instances page"
@@ -453,7 +453,7 @@ test("it is possible to provide the input via Form Input and see the same data i
     yaml: jsonSchemaWithRequiredEnum,
   });
 
-  await page.goto(`${namespace}/explorer/workflow/edit/${workflowName}`);
+  await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflowName}`);
 
   await page.getByTestId("workflow-editor-btn-run").click();
   expect(
@@ -508,7 +508,7 @@ test("it is possible to provide the input via Form Input and see the same data i
   // run the workflow from the json tab
   await page.getByTestId("run-workflow-submit-btn").click();
 
-  const reg = new RegExp(`${namespace}/instances/(.*)`);
+  const reg = new RegExp(`/n/${namespace}/instances/(.*)`);
   await expect(
     page,
     "workflow was triggered and the user was redirected to the instances page"
@@ -539,7 +539,7 @@ test("it is possible to provide the input via JSON Input and see the same data i
     yaml: jsonSchemaWithRequiredEnum,
   });
 
-  await page.goto(`${namespace}/explorer/workflow/edit/${workflowName}`);
+  await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflowName}`);
 
   await page.getByTestId("workflow-editor-btn-run").click();
   expect(
@@ -590,7 +590,7 @@ test("it is possible to provide the input via JSON Input and see the same data i
 
   await page.getByTestId("run-workflow-submit-btn").click();
 
-  const reg = new RegExp(`${namespace}/instances/(.*)`);
+  const reg = new RegExp(`/n/${namespace}/instances/(.*)`);
   await expect(
     page,
     "workflow was triggered and user was redirected to the instances page"
@@ -629,7 +629,7 @@ test("the input is synchronized between tabs, but the data that is currently in 
     yaml: jsonSchemaWithRequiredEnum,
   });
 
-  await page.goto(`${namespace}/explorer/workflow/edit/${workflowName}`);
+  await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflowName}`);
 
   await page.getByTestId("workflow-editor-btn-run").click();
   expect(
@@ -685,7 +685,7 @@ test("the input is synchronized between tabs, but the data that is currently in 
 
   await page.getByTestId("run-workflow-submit-btn").click();
 
-  const reg = new RegExp(`${namespace}/instances/(.*)`);
+  const reg = new RegExp(`/n/${namespace}/instances/(.*)`);
   await expect(
     page,
     "workflow was triggered with our input and user was redirected to the instances page"
@@ -737,7 +737,7 @@ test("switching the window focus will preserve the state of the form", async ({
     yaml: jsonSchemaWithRequiredEnum,
   });
 
-  await page.goto(`${namespace}/explorer/workflow/edit/${workflowName}`);
+  await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflowName}`);
 
   await page.getByTestId("workflow-editor-btn-run").click();
   expect(
@@ -764,7 +764,7 @@ test("switching the window focus will preserve the state of the form", async ({
   // run the workflow
   await page.getByTestId("run-workflow-submit-btn").click();
 
-  const reg = new RegExp(`${namespace}/instances/(.*)`);
+  const reg = new RegExp(`/n/${namespace}/instances/(.*)`);
   await expect(
     page,
     "workflow was triggered with our input and user was redirected to the instances page"

@@ -16,7 +16,7 @@ test.afterEach(async () => {
 });
 
 test("Notification Bell has an inactive state by default", async ({ page }) => {
-  await page.goto(`/${namespace}/explorer/tree`, {
+  await page.goto(`/n/${namespace}/explorer/tree`, {
     waitUntil: "networkidle",
   });
 
@@ -46,7 +46,7 @@ test("Notification Bell updates depending on the count of Notification Messages"
     yaml: workflowWithSecrets,
   });
 
-  await page.goto(`/${namespace}/explorer/tree`, {
+  await page.goto(`/n/${namespace}/explorer/tree`, {
     waitUntil: "networkidle",
   });
 
@@ -70,7 +70,7 @@ test("Notification Bell updates depending on the count of Notification Messages"
     "the modal should now display 'You have 2 uninitialized secrets.'"
   ).toMatch(/You have 2 uninitialized secrets./);
 
-  await page.goto(`/${namespace}/settings`);
+  await page.goto(`/n/${namespace}/settings`);
 
   const initialize_secret1 = page
     .getByRole("cell", { name: "ACCESS_KEY Initialize secret" })

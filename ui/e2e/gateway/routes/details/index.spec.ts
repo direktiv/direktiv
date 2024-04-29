@@ -47,7 +47,7 @@ test("Route details page shows all important information about the route", async
     )
     .toBeTruthy();
 
-  await page.goto(`/${namespace}/gateway/routes/${fileName}`);
+  await page.goto(`/n/${namespace}/gateway/routes/${fileName}`);
 
   await expect(
     page
@@ -127,7 +127,7 @@ test("Route details page shows all important information about the route", async
   await expect(
     page,
     "when the edit route link is clicked, page should navigate to the route editor page"
-  ).toHaveURL(`/${namespace}/explorer/endpoint/${fileName}`);
+  ).toHaveURL(`/n/${namespace}/explorer/endpoint/${fileName}`);
 });
 
 test("Route details page shows warning if the route was not configured correctly", async ({
@@ -153,7 +153,7 @@ test("Route details page shows warning if the route was not configured correctly
     )
     .toBeTruthy();
 
-  await page.goto(`/${namespace}/gateway/routes/${fileName}`);
+  await page.goto(`/n/${namespace}/gateway/routes/${fileName}`);
 
   await page
     .getByTestId("route-details-header")
