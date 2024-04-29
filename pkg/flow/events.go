@@ -34,10 +34,10 @@ func init() {
 
 type events struct {
 	*server
-	appendStagingEvent func(ctx context.Context, events ...*pkgevents.StagingEvent) ([]*pkgevents.StagingEvent, []error)
+	appendStagingEvent func(ctx context.Context, events ...*datastore.StagingEvent) ([]*datastore.StagingEvent, []error)
 }
 
-func initEvents(srv *server, appendStagingEvent func(ctx context.Context, events ...*pkgevents.StagingEvent) ([]*pkgevents.StagingEvent, []error)) *events {
+func initEvents(srv *server, appendStagingEvent func(ctx context.Context, events ...*datastore.StagingEvent) ([]*datastore.StagingEvent, []error)) *events {
 	events := new(events)
 	events.server = srv
 	events.appendStagingEvent = appendStagingEvent
@@ -61,16 +61,16 @@ func (events *events) handleEvent(ctx context.Context, ns uuid.UUID, nsName stri
 			defer end()
 			events.engine.EventsInvoke(workflowID, ev...) //nolint:contextcheck
 		},
-		WakeInstance: func(instanceID uuid.UUID, step int, ev []*cloudevents.Event) {
+		WakeInstance: func(instanceID uuid.UUID, ev []*cloudevents.Event) {
 			slog.Debug("invoking instance via cloudevent", "instance", instanceID)
-			_, end := traceMessageTrigger(ctx, "ins: "+instanceID.String()+" step: "+fmt.Sprint(step))
+			_, end := traceMessageTrigger(ctx, "ins: "+instanceID.String())
 			defer end()
-			events.engine.wakeEventsWaiter(instanceID, ev) //nolint:contextcheck
+			events.engine.WakeEventsWaiter(instanceID, ev) //nolint:contextcheck
 		},
-		GetListenersByTopic: func(ctx context.Context, s string) ([]*pkgevents.EventListener, error) {
+		GetListenersByTopic: func(ctx context.Context, s string) ([]*datastore.EventListener, error) {
 			ctx, end := traceGetListenersByTopic(ctx, s)
 			defer end()
-			res := make([]*pkgevents.EventListener, 0)
+			res := make([]*datastore.EventListener, 0)
 			err := events.runSQLTx(ctx, func(tx *database.SQLStore) error {
 				r, err := tx.DataStore().EventListenerTopics().GetListeners(ctx, s)
 				if err != nil {
@@ -87,7 +87,7 @@ func (events *events) handleEvent(ctx context.Context, ns uuid.UUID, nsName stri
 
 			return res, nil
 		},
-		UpdateListeners: func(ctx context.Context, listener []*pkgevents.EventListener) []error {
+		UpdateListeners: func(ctx context.Context, listener []*datastore.EventListener) []error {
 			slog.Debug("Updating listeners starting.")
 			err := events.runSQLTx(ctx, func(tx *database.SQLStore) error {
 				errs := tx.DataStore().EventListener().UpdateOrDelete(ctx, listener)
@@ -122,7 +122,7 @@ func (events *events) handleEvent(ctx context.Context, ns uuid.UUID, nsName stri
 func (flow *flow) EventListeners(ctx context.Context, req *grpc.EventListenersRequest) (*grpc.EventListenersResponse, error) {
 	slog.Debug("Handling gRPC request", "this", this())
 
-	var resListeners []*pkgevents.EventListener
+	var resListeners []*datastore.EventListener
 	var ns *datastore.Namespace
 	var err error
 
@@ -134,7 +134,7 @@ func (flow *flow) EventListeners(ctx context.Context, req *grpc.EventListenersRe
 		}
 
 		var t int
-		var li []*pkgevents.EventListener
+		var li []*datastore.EventListener
 		li, t, err = tx.DataStore().EventListener().Get(ctx, ns.ID, int(req.GetPagination().GetLimit()), int(req.GetPagination().GetOffset()))
 		if err != nil {
 			return err
@@ -176,7 +176,7 @@ func (flow *flow) EventListenersStream(req *grpc.EventListenersRequest, srv grpc
 	sub := flow.pubsub.SubscribeEventListeners(ns)
 	defer flow.cleanup(sub.Close)
 resend:
-	var resListeners []*pkgevents.EventListener
+	var resListeners []*datastore.EventListener
 	totalListeners := 0
 
 	err = flow.runSQLTx(ctx, func(tx *database.SQLStore) error {
@@ -296,7 +296,7 @@ func (flow *flow) HistoricalEvent(ctx context.Context, in *grpc.HistoricalEventR
 		eid = uuid.NewString()
 	}
 
-	var cevent *pkgevents.Event
+	var cevent *datastore.Event
 	var ns *datastore.Namespace
 	var err error
 	err = flow.runSQLTx(ctx, func(tx *database.SQLStore) error {
@@ -343,7 +343,7 @@ func (flow *flow) EventHistory(ctx context.Context, req *grpc.EventHistoryReques
 	slog.Debug("Handling gRPC request", "this", this())
 
 	count := 0
-	var res []*pkgevents.Event
+	var res []*datastore.Event
 	var err error
 	var ns *datastore.Namespace
 	err = flow.runSQLTx(ctx, func(tx *database.SQLStore) error {
@@ -426,7 +426,7 @@ func (flow *flow) EventHistoryStream(req *grpc.EventHistoryRequest, srv grpc.Flo
 resend:
 
 	count := 0
-	var res []*pkgevents.Event
+	var res []*datastore.Event
 	queryParams := []string{}
 	for _, f := range req.GetPagination().GetFilter() {
 		if f.GetField() == cr && f.GetType() == after {
@@ -502,7 +502,7 @@ func (flow *flow) ReplayEvent(ctx context.Context, req *grpc.ReplayEventRequest)
 		eid = uuid.NewString()
 	}
 
-	var cevent *pkgevents.Event
+	var cevent *datastore.Event
 	var err error
 	var ns *datastore.Namespace
 	err = flow.runSQLTx(ctx, func(tx *database.SQLStore) error {
@@ -532,7 +532,7 @@ func (flow *flow) ReplayEvent(ctx context.Context, req *grpc.ReplayEventRequest)
 	return &resp, nil
 }
 
-func (events *events) ReplayCloudevent(ctx context.Context, ns *datastore.Namespace, cevent *pkgevents.Event) error {
+func (events *events) ReplayCloudevent(ctx context.Context, ns *datastore.Namespace, cevent *datastore.Event) error {
 	event := cevent.Event
 	span := trace.SpanFromContext(ctx)
 	traceID := span.SpanContext().TraceID()
@@ -579,8 +579,8 @@ func (events *events) BroadcastCloudevent(ctx context.Context, ns *datastore.Nam
 			return err
 		}
 	} else {
-		_, errs := events.appendStagingEvent(ctx, &pkgevents.StagingEvent{
-			Event: &pkgevents.Event{
+		_, errs := events.appendStagingEvent(ctx, &datastore.StagingEvent{
+			Event: &datastore.Event{
 				Namespace:     ns.ID,
 				Event:         event,
 				ReceivedAt:    time.Now().UTC(),
@@ -633,7 +633,7 @@ func (events *events) listenForEvents(ctx context.Context, im *instanceMemory, c
 		transformedEvents = append(transformedEvents, ev)
 	}
 
-	err := events.addInstanceEventListener(ctx, im.Namespace().ID, im.GetInstanceID(), transformedEvents, im.Step(), all)
+	err := events.addInstanceEventListener(ctx, im.Namespace().ID, im.Namespace().Name, im.GetInstanceID(), transformedEvents, all)
 	if err != nil {
 		return err
 	}

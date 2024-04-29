@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
-	"github.com/direktiv/direktiv/pkg/refactor/events"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -196,7 +196,7 @@ func ConvertDataForOutput(a, b interface{}) error {
 	return nil
 }
 
-func ConvertEventListeners(in []*events.EventListener) []*grpc.EventListener {
+func ConvertEventListeners(in []*datastore.EventListener) []*grpc.EventListener {
 	res := make([]*grpc.EventListener, 0, len(in))
 	for _, el := range in {
 		types := []*grpc.EventDef{}
@@ -215,11 +215,11 @@ func ConvertEventListeners(in []*events.EventListener) []*grpc.EventListener {
 		}
 		mode := ""
 		switch el.TriggerType {
-		case events.StartAnd, events.WaitAnd:
+		case datastore.StartAnd, datastore.WaitAnd:
 			mode = "and"
-		case events.StartOR, events.WaitOR:
+		case datastore.StartOR, datastore.WaitOR:
 			mode = "or"
-		case events.StartSimple, events.WaitSimple:
+		case datastore.StartSimple, datastore.WaitSimple:
 			mode = "simple"
 		}
 		res = append(res, &grpc.EventListener{
