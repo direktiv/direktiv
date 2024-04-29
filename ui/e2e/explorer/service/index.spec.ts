@@ -53,7 +53,9 @@ test("it is possible to create a service", async ({ page }) => {
   const expectedYaml = createServiceYaml(service);
 
   /* visit page */
-  await page.goto(`/${namespace}/explorer/tree`, { waitUntil: "networkidle" });
+  await page.goto(`/n/${namespace}/explorer/tree`, {
+    waitUntil: "networkidle",
+  });
   await expect(
     page.getByTestId("breadcrumb-namespace"),
     "it navigates to the test namespace in the explorer"
@@ -70,7 +72,7 @@ test("it is possible to create a service", async ({ page }) => {
   await expect(
     page,
     "it creates the service and opens the file in the explorer"
-  ).toHaveURL(`/${namespace}/explorer/service/${service.name}`);
+  ).toHaveURL(`/n/${namespace}/explorer/service/${service.name}`);
 
   /* fill in form */
   await page.getByLabel("Image").fill("bash");
@@ -193,7 +195,7 @@ test("it is possible to edit patches", async ({ page }) => {
   await createService(namespace, service);
 
   /* visit page, assert content rendered */
-  await page.goto(`/${namespace}/explorer/service/${service.name}`);
+  await page.goto(`/n/${namespace}/explorer/service/${service.name}`);
 
   await Promise.all(
     patches.map(async (item, index) => {
@@ -340,7 +342,7 @@ test("it is possible to edit environment variables", async ({ page }) => {
   await createService(namespace, service);
 
   /* visit page, assert content rendered */
-  await page.goto(`/${namespace}/explorer/service/${service.name}`);
+  await page.goto(`/n/${namespace}/explorer/service/${service.name}`);
 
   await Promise.all(
     envs.map(async (item, index) => {

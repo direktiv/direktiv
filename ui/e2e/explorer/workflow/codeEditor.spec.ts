@@ -38,7 +38,7 @@ test("it is possible to navigate to the code editor ", async ({ page }) => {
     .click();
 
   await expect(page, "the namespace is reflected in the url").toHaveURL(
-    `/${namespace}/explorer/tree`
+    `/n/${namespace}/explorer/tree`
   );
 
   await expect(
@@ -54,12 +54,12 @@ test("it is possible to navigate to the code editor ", async ({ page }) => {
   ).toBeVisible();
 
   await expect(page, "the workflow is reflected in the url").toHaveURL(
-    `${namespace}/explorer/workflow/edit/${workflow}`
+    `/n/${namespace}/explorer/workflow/edit/${workflow}`
   );
 });
 
 test("it is possible to save the workflow", async ({ page }) => {
-  await page.goto(`${namespace}/explorer/workflow/edit/${workflow}`);
+  await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflow}`);
 
   const editorElement = page.getByText(defaultDescription);
   await editorElement.click();
@@ -106,7 +106,7 @@ test("it is possible to save the workflow", async ({ page }) => {
 test("it renders response errors when saving an invalid workflow", async ({
   page,
 }) => {
-  await page.goto(`${namespace}/explorer/workflow/edit/${workflow}`);
+  await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflow}`);
 
   const editor = page.locator(".lines-content");
 
@@ -145,14 +145,14 @@ test("it is possible to navigate to another route from the editor", async ({
     return dialog.dismiss();
   });
 
-  await page.goto(`${namespace}/explorer/workflow/edit/${workflow}`);
+  await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflow}`);
   await page.getByText(defaultDescription);
 
   await page.getByRole("link", { name: "Settings" }).click();
   await expect(dialogTriggered).toBe(false);
 
   await expect(page, "it navigates to the new route").toHaveURL(
-    `${namespace}/settings`
+    `/n/${namespace}/settings`
   );
 });
 
@@ -169,7 +169,7 @@ test("it prevents navigation to another route with unsaved changes", async ({
     return dialog.dismiss();
   });
 
-  await page.goto(`${namespace}/explorer/workflow/edit/${workflow}`);
+  await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflow}`);
   await page.getByText(defaultDescription).click();
 
   const dirtyText = faker.random.alphaNumeric(9);
@@ -181,7 +181,7 @@ test("it prevents navigation to another route with unsaved changes", async ({
   await expect(
     page,
     "after dismissing the dialog, it stays on the same route"
-  ).toHaveURL(`${namespace}/explorer/workflow/edit/${workflow}`);
+  ).toHaveURL(`/n/${namespace}/explorer/workflow/edit/${workflow}`);
 
   await expect(
     page.getByText(dirtyText),
@@ -202,7 +202,7 @@ test("with confirmation, it navigates to another route despite unsaved changes",
     return dialog.accept();
   });
 
-  await page.goto(`${namespace}/explorer/workflow/edit/${workflow}`);
+  await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflow}`);
   await page.getByText(defaultDescription).click();
 
   const dirtyText = faker.random.alphaNumeric(9);
@@ -214,7 +214,7 @@ test("with confirmation, it navigates to another route despite unsaved changes",
   await expect(
     page,
     "after confirming the dialog, it navigates to the new route"
-  ).toHaveURL(`${namespace}/settings`);
+  ).toHaveURL(`/n/${namespace}/settings`);
 });
 
 test("it is possible to leave the app from the editor", async ({ page }) => {
@@ -226,7 +226,7 @@ test("it is possible to leave the app from the editor", async ({ page }) => {
     await dialog.dismiss();
   });
 
-  await page.goto(`${namespace}/explorer/workflow/edit/${workflow}`);
+  await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflow}`);
   await page.getByText(defaultDescription);
 
   await page.goto("/api/v2/status");
@@ -249,7 +249,7 @@ test("it prevents navigation away from the app with unsaved changes", async ({
     await dialog.dismiss();
   });
 
-  await page.goto(`${namespace}/explorer/workflow/edit/${workflow}`);
+  await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflow}`);
   await page.getByText(defaultDescription).click();
 
   const dirtyText = faker.random.alphaNumeric(9);
@@ -266,7 +266,7 @@ test("it prevents navigation away from the app with unsaved changes", async ({
   await expect(
     page,
     "after dismissing the dialog, it stays on the same route"
-  ).toHaveURL(`${namespace}/explorer/workflow/edit/${workflow}`);
+  ).toHaveURL(`/n/${namespace}/explorer/workflow/edit/${workflow}`);
 
   await expect(
     page.getByText(dirtyText),
@@ -285,7 +285,7 @@ test("with confirmation, it allows navigation away from the app with unsaved cha
     await dialog.accept();
   });
 
-  await page.goto(`${namespace}/explorer/workflow/edit/${workflow}`);
+  await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflow}`);
   await page.getByText(defaultDescription).click();
 
   const dirtyText = faker.random.alphaNumeric(9);
