@@ -24,6 +24,7 @@ const ScrollContainer = () => {
 
   return (
     <LogList
+      data-testid="instance-logs-scroll-container"
       ref={parentRef}
       height={rowVirtualizer.getTotalSize()}
       virtualOffset={virtualItems[0]?.start ?? 0}

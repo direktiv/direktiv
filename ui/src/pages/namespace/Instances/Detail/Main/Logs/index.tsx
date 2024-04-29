@@ -49,7 +49,10 @@ const LogsPanel = () => {
 
   return (
     <>
-      <div className="mb-5 flex flex-col gap-5 sm:flex-row">
+      <div
+        data-testid="instance-logs-container"
+        className="mb-5 flex flex-col gap-5 sm:flex-row"
+      >
         <h3 className="flex grow items-center gap-x-2 font-medium">
           <ScrollText className="h-5" />
           {t("pages.instances.detail.logs.title", {
@@ -118,7 +121,10 @@ const LogsPanel = () => {
         </ButtonBar>
       </div>
       <ScrollContainer />
-      <div className="flex items-center justify-center pt-2 text-sm text-gray-11 dark:text-gray-dark-11">
+      <div
+        data-testid="instance-logs-entries-counter"
+        className="flex items-center justify-center pt-2 text-sm text-gray-11 dark:text-gray-dark-11"
+      >
         {isPending && (
           <span className="relative mr-2 flex h-3 w-3">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-gray-11 opacity-75 dark:bg-gray-dark-11"></span>
