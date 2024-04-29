@@ -1,8 +1,8 @@
-name: (Backend) Build
+name: Backend Build
 
 on:
   workflow_run:
-    workflows: [(Backend) Prebuild]
+    workflows: [Backend Prebuild]
     types:
       - completed
 
