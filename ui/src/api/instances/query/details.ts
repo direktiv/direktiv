@@ -46,5 +46,6 @@ export const useInstanceDetails = ({ instanceId }: { instanceId: string }) => {
     }),
     queryFn: fetchInstanceDetails,
     enabled: !!namespace,
+    select: (data) => data.data,
   });
 };
