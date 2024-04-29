@@ -1,3 +1,4 @@
+import { EventStreamingSubscriber } from "~/api/eventsv2/query/EventStreamingSubscriber";
 import EventsList from "./EventsList";
 import { FiltersObj } from "~/api/events/query/get";
 import { useState } from "react";
@@ -11,12 +12,15 @@ const History = () => {
   // useEventsStream({ limit: itemsPerPage, offset, filters });
 
   return (
-    <EventsList
-      filters={filters}
-      setFilters={setFilters}
-      offset={offset}
-      setOffset={setOffset}
-    />
+    <>
+      <EventsList
+        filters={filters}
+        setFilters={setFilters}
+        offset={offset}
+        setOffset={setOffset}
+      />
+      <EventStreamingSubscriber />
+    </>
   );
 };
 
