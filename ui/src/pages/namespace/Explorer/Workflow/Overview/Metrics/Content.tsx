@@ -13,7 +13,7 @@ const Content = ({
   data: MetricsResponseSchemaType;
 }) => {
   const { t } = useTranslation();
-  if (!isFetched || !data?.data)
+  if (!isFetched)
     return (
       <NoResult icon={PieChart}>
         {t("pages.explorer.tree.workflow.overview.metrics.loading")}
