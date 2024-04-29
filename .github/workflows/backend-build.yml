@@ -9,7 +9,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  UI_IMAGE_NAME: ${{ github.repository }}2
+  UI_IMAGE_NAME: ${{ github.repository }}-ui
 
 jobs:
   backend:
