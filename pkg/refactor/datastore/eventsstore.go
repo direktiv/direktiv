@@ -1,32 +1,4 @@
-// Package events provides the core components for an event-driven system, including:
-//
-// Key Concepts:
-// * **Event Sourcing:** The `EventHistoryStore` facilitates event persistence and retrieval for historical analysis and auditing.
-// * **Event Listeners:** Represents a subscriber for one or multiple events with specific types and filtering conditions.
-// * **Triggers:** Event listeners can be configured for different trigger types (StartAnd, WaitAnd, StartSimple, etc.) determining how events initiate workflows or continue existing instances.
-// * **Delayed Events:** The `StagingEventStore` allows scheduling events for future delivery. Use the EventWorker` for fetching and processing delayed events. Delaying events can be used to reduce peak-load spikes
-// * **Initializing the EventEngine:** To start processing events, follow these steps:
-// * **Extensibility:** The `EventEngine` relies on interfaces (`WorkflowStart`, `WakeInstance`, etc.), allowing for integration with your specific data stores and workflow implementations.
-// * **EventWorker Management** The `EventWorker` is responsible for fetching and processing delayed events from the `StagingEventStore`.
-//
-//  1. **Create an EventEngine instance:**
-//     ```go
-//     engine := events.EventEngine{
-//     WorkflowStart:    yourWorkflowStartFunction,
-//     WakeInstance:     yourWakeInstanceFunction,
-//     GetListenersByTopic:   yourGetListenersByTopicFunction,
-//     UpdateListeners:      yourUpdateListenersFunction,
-//     }
-//     ```
-//  2. **Call the `ProcessEvents` method:**
-//     ```go
-//     engine.ProcessEvents(ctx, namespace, cloudevents, logErrors)
-//     ```
-//
-// **Important Considerations:**
-// * **Callback Functions:**  The `WorkflowStart`, `WakeInstance`, `GetListenersByTopic`, and `UpdateListeners`  fields of the `EventEngine`  struct must be assigned  implementations that integrate with your specific workflow logic and data stores.
-// * **Error Handling:** The `logErrors` function is a placeholder. Ensure you have robust error logging and handling mechanisms in place.
-package events
+package datastore
 
 import (
 	"context"

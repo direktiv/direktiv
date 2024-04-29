@@ -7,20 +7,20 @@ import (
 	"strings"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/refactor/events"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
-var _ events.EventHistoryStore = &sqlEventHistoryStore{}
+var _ datastore.EventHistoryStore = &sqlEventHistoryStore{}
 
-var _ events.EventListenerStore = &sqlEventListenerStore{}
+var _ datastore.EventListenerStore = &sqlEventListenerStore{}
 
 type sqlEventListenerStore struct {
 	db *gorm.DB
 }
 
-func (s *sqlEventListenerStore) Append(ctx context.Context, listener *events.EventListener) error {
+func (s *sqlEventListenerStore) Append(ctx context.Context, listener *datastore.EventListener) error {
 	q := `INSERT INTO event_listeners
 	 (id, namespace_id, namespace, created_at, updated_at, deleted, received_events, trigger_type, events_lifespan, event_types, trigger_info, metadata, glob_gates) 
 	  VALUES ( $1 , $2 , $3 , $4 , $5 , $6 , $7 , $8 , $9 , $10 , $11, $12, $13);`
@@ -125,7 +125,7 @@ func (s *sqlEventListenerStore) DeleteAllForWorkflow(ctx context.Context, workfl
 	return res, nil
 }
 
-func (s *sqlEventListenerStore) GetOld(ctx context.Context, namespace string, t time.Time) ([]*events.EventListener, error) {
+func (s *sqlEventListenerStore) GetOld(ctx context.Context, namespace string, t time.Time) ([]*datastore.EventListener, error) {
 	q := `SELECT 
 	id, namespace_id, namespace, created_at, updated_at, deleted, received_events, trigger_type, events_lifespan, event_types, trigger_info, metadata, glob_gates
 	FROM event_listeners WHERE namespace = $1 AND created_at < $2`
@@ -144,7 +144,7 @@ func (s *sqlEventListenerStore) GetOld(ctx context.Context, namespace string, t 
 	return conv, nil
 }
 
-func (s *sqlEventListenerStore) Get(ctx context.Context, namespace uuid.UUID, limit int, offset int) ([]*events.EventListener, int, error) {
+func (s *sqlEventListenerStore) Get(ctx context.Context, namespace uuid.UUID, limit int, offset int) ([]*datastore.EventListener, int, error) {
 	q := `SELECT 
 	id, namespace_id, namespace, created_at, updated_at, deleted, received_events, trigger_type, events_lifespan, event_types, trigger_info, metadata, glob_gates
 	FROM event_listeners WHERE namespace_id = $1 `
@@ -162,7 +162,7 @@ func (s *sqlEventListenerStore) Get(ctx context.Context, namespace uuid.UUID, li
 		return nil, 0, tx.Error
 	}
 	if count == 0 {
-		return make([]*events.EventListener, 0), 0, nil
+		return make([]*datastore.EventListener, 0), 0, nil
 	}
 	res := make([]*gormEventListener, 0)
 	tx = s.db.WithContext(ctx).Raw(q, namespace).Scan(&res)
@@ -177,7 +177,7 @@ func (s *sqlEventListenerStore) Get(ctx context.Context, namespace uuid.UUID, li
 	return conv, count, nil
 }
 
-func (s *sqlEventListenerStore) GetAll(ctx context.Context) ([]*events.EventListener, error) {
+func (s *sqlEventListenerStore) GetAll(ctx context.Context) ([]*datastore.EventListener, error) {
 	q := `SELECT 
 	id, namespace_id, created_at, updated_at, deleted, received_events, trigger_type, events_lifespan, event_types, trigger_info, metadata
 	FROM event_listeners Where deleted = false`
@@ -212,7 +212,7 @@ type gormEventListener struct {
 	GlobGates      string
 }
 
-func (s *sqlEventListenerStore) GetByID(ctx context.Context, id uuid.UUID) (*events.EventListener, error) {
+func (s *sqlEventListenerStore) GetByID(ctx context.Context, id uuid.UUID) (*datastore.EventListener, error) {
 	q := "SELECT id, namespace_id, namespace, created_at, updated_at, received_events, trigger_type, events_lifespan, event_types, trigger_info, metadata, glob_gates FROM event_listeners WHERE id = $1 ;"
 	var l gormEventListener
 	tx := s.db.WithContext(ctx).Raw(q, id).First(&l)
@@ -220,7 +220,7 @@ func (s *sqlEventListenerStore) GetByID(ctx context.Context, id uuid.UUID) (*eve
 		return nil, tx.Error
 	}
 	var trigger triggerInfo
-	var ev []*events.Event
+	var ev []*datastore.Event
 	var glob map[string]string
 
 	err := json.Unmarshal([]byte(l.TriggerInfo), &trigger)
@@ -241,7 +241,7 @@ func (s *sqlEventListenerStore) GetByID(ctx context.Context, id uuid.UUID) (*eve
 		return nil, err
 	}
 
-	return &events.EventListener{
+	return &datastore.EventListener{
 		ID:                          l.ID,
 		UpdatedAt:                   l.UpdatedAt,
 		CreatedAt:                   l.CreatedAt,
@@ -250,7 +250,7 @@ func (s *sqlEventListenerStore) GetByID(ctx context.Context, id uuid.UUID) (*eve
 		Namespace:                   l.Namespace,
 		ListeningForEventTypes:      decodeString(l.EventTypes),
 		LifespanOfReceivedEvents:    l.EventsLifespan,
-		TriggerType:                 events.TriggerType(l.TriggerType),
+		TriggerType:                 datastore.TriggerType(l.TriggerType),
 		TriggerWorkflow:             trigger.WorkflowID,
 		TriggerInstance:             trigger.InstanceID,
 		ReceivedEventsForAndTrigger: ev,
@@ -259,7 +259,7 @@ func (s *sqlEventListenerStore) GetByID(ctx context.Context, id uuid.UUID) (*eve
 	}, nil
 }
 
-func (s *sqlEventListenerStore) UpdateOrDelete(ctx context.Context, listeners []*events.EventListener) []error {
+func (s *sqlEventListenerStore) UpdateOrDelete(ctx context.Context, listeners []*datastore.EventListener) []error {
 	q := `UPDATE event_listeners SET
 	 updated_at = $1 , deleted = $2, received_events = $3 WHERE id = $4;`
 
@@ -319,11 +319,11 @@ func decodeString(s string) []string {
 	return parts
 }
 
-func convertListerners(from []*gormEventListener) ([]*events.EventListener, error) {
-	into := make([]*events.EventListener, 0, len(from))
+func convertListerners(from []*gormEventListener) ([]*datastore.EventListener, error) {
+	into := make([]*datastore.EventListener, 0, len(from))
 	for _, l := range from {
 		var trigger triggerInfo
-		var ev []*events.Event
+		var ev []*datastore.Event
 		var glob map[string]string
 
 		err := json.Unmarshal([]byte(l.TriggerInfo), &trigger)
@@ -339,7 +339,7 @@ func convertListerners(from []*gormEventListener) ([]*events.EventListener, erro
 			return nil, err
 		}
 
-		into = append(into, &events.EventListener{
+		into = append(into, &datastore.EventListener{
 			ID:                          l.ID,
 			UpdatedAt:                   l.UpdatedAt,
 			CreatedAt:                   l.CreatedAt,
@@ -348,7 +348,7 @@ func convertListerners(from []*gormEventListener) ([]*events.EventListener, erro
 			Namespace:                   l.Namespace,
 			ListeningForEventTypes:      decodeString(l.EventTypes),
 			LifespanOfReceivedEvents:    l.EventsLifespan,
-			TriggerType:                 events.TriggerType(l.TriggerType),
+			TriggerType:                 datastore.TriggerType(l.TriggerType),
 			TriggerWorkflow:             trigger.WorkflowID,
 			TriggerInstance:             trigger.InstanceID,
 			ReceivedEventsForAndTrigger: ev,

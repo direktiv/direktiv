@@ -10,7 +10,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
-	pkgevents "github.com/direktiv/direktiv/pkg/refactor/events"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/google/uuid"
 )
@@ -18,11 +17,11 @@ import (
 func (events *events) addEvent(ctx context.Context, eventin *cloudevents.Event, ns *datastore.Namespace) error {
 	ctx, end := traceAddtoEventlog(ctx)
 	defer end()
-	li := make([]*pkgevents.Event, 0)
+	li := make([]*datastore.Event, 0)
 	if eventin.ID() == "" {
 		eventin.SetID(uuid.NewString())
 	}
-	li = append(li, &pkgevents.Event{
+	li = append(li, &datastore.Event{
 		Event:         eventin,
 		Namespace:     ns.ID,
 		NamespaceName: ns.Name,
@@ -114,14 +113,14 @@ func (events *events) processWorkflowEvents(ctx context.Context, nsID uuid.UUID,
 	}
 
 	if len(ms.Events) > 0 {
-		fEv := &pkgevents.EventListener{
+		fEv := &datastore.EventListener{
 			ID:                       uuid.New(),
 			CreatedAt:                time.Now().UTC(),
 			UpdatedAt:                time.Now().UTC(),
 			Deleted:                  false,
 			NamespaceID:              nsID,
 			Namespace:                nsName,
-			TriggerType:              pkgevents.StartSimple,
+			TriggerType:              datastore.StartSimple,
 			ListeningForEventTypes:   []string{},
 			TriggerWorkflow:          file.ID.String(),
 			Metadata:                 file.Path,
@@ -130,13 +129,13 @@ func (events *events) processWorkflowEvents(ctx context.Context, nsID uuid.UUID,
 		}
 		switch ms.Type {
 		case "default":
-			fEv.TriggerType = pkgevents.StartSimple
+			fEv.TriggerType = datastore.StartSimple
 		case "event":
-			fEv.TriggerType = pkgevents.StartSimple // TODO: is this correct?
+			fEv.TriggerType = datastore.StartSimple // TODO: is this correct?
 		case "eventsXor":
-			fEv.TriggerType = pkgevents.StartOR // TODO: is this correct?
+			fEv.TriggerType = datastore.StartOR // TODO: is this correct?
 		case "eventsAnd":
-			fEv.TriggerType = pkgevents.StartAnd // TODO: is this correct?
+			fEv.TriggerType = datastore.StartAnd // TODO: is this correct?
 		}
 		contextFilters := make([]string, 0, len(ms.Events))
 		for _, sed := range ms.Events {
@@ -178,14 +177,14 @@ func (events *events) processWorkflowEvents(ctx context.Context, nsID uuid.UUID,
 func (events *events) addInstanceEventListener(ctx context.Context, namespace uuid.UUID, nsName string, instance uuid.UUID, sevents []*model.ConsumeEventDefinition, all bool) error {
 	// var ev []map[string]interface{}
 
-	fEv := &pkgevents.EventListener{
+	fEv := &datastore.EventListener{
 		ID:                     uuid.New(),
 		CreatedAt:              time.Now().UTC(),
 		UpdatedAt:              time.Now().UTC(),
 		Deleted:                false,
 		NamespaceID:            namespace,
 		Namespace:              nsName,
-		TriggerType:            pkgevents.WaitSimple,
+		TriggerType:            datastore.WaitSimple,
 		ListeningForEventTypes: []string{},
 		TriggerInstance:        instance.String(),
 		// LifespanOfReceivedEvents: , TODO?
@@ -203,10 +202,10 @@ func (events *events) addInstanceEventListener(ctx context.Context, namespace uu
 		contextFilters = append(contextFilters, databaseNoDupCheck)
 	}
 	if all {
-		fEv.TriggerType = pkgevents.WaitAnd
+		fEv.TriggerType = datastore.WaitAnd
 	}
 	if !all && len(fEv.ListeningForEventTypes) > 1 {
-		fEv.TriggerType = pkgevents.WaitOR
+		fEv.TriggerType = datastore.WaitOR
 	}
 
 	err := events.runSQLTx(ctx, func(tx *database.SQLStore) error {

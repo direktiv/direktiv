@@ -258,58 +258,6 @@ func determineTrack(params map[string]string) (string, error) {
 	return "", fmt.Errorf("requested logs for an unknown type")
 }
 
-type CoursoredEvent struct {
-	Event
-	time.Time
-}
-
-type Event struct {
-	ID   string
-	Data string
-	Type string
-}
-
-type sseHandle func(ctx context.Context, cursorTime time.Time) ([]CoursoredEvent, error)
-
-// LogStoreWorker manages the log polling and channel communication.
-type seeWorker struct {
-	// TODO: maybe we should move this to become a more general solution.
-	Get      sseHandle
-	Interval time.Duration
-	Ch       chan Event
-	Cursor   time.Time // Cursor instead of Offset.
-}
-
-// Start starts the log polling worker.
-func (lw *seeWorker) start(ctx context.Context) {
-	go func() {
-		ticker := time.NewTicker(lw.Interval)
-		defer ticker.Stop()
-		defer close(lw.Ch)
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-ticker.C:
-				sseEvents, err := lw.Get(ctx, lw.Cursor)
-				if err != nil {
-					slog.Error("TODO: should we quit with an error?", "err", err)
-
-					continue
-				}
-				for _, e := range sseEvents {
-					lw.Ch <- e.Event
-				}
-
-				// Update cursorTime for the next iteration.
-				if len(sseEvents) > 0 {
-					lw.Cursor = sseEvents[len(sseEvents)-1].Time
-				}
-			}
-		}
-	}()
-}
-
 func extractLogRequestParams(r *http.Request) map[string]string {
 	params := map[string]string{}
 	if v := r.Header.Get("Last-Event-ID"); v != "" {

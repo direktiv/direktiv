@@ -190,7 +190,7 @@ CREATE TABLE IF NOT EXISTS "staging_events" (
 );
 
 CREATE TABLE IF NOT EXISTS "events_history" (
-    "serial_id" SERIAL PRIMARY KEY,
+    "serial_id" SERIAL PRIMARY KEY, --serial_id is only nessary as a id for the SSE (especially the retry mechanism). A serial primary id is a natural fit here. Its orderable, sorted by design(eventually) and directly queryable.
     "id" text,
     "type" text NOT NULL,
     "source" text NOT NULL,

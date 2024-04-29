@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/database"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore/datastoresql"
-	"github.com/direktiv/direktiv/pkg/refactor/events"
 	"github.com/google/uuid"
 )
 
@@ -50,15 +50,15 @@ func Test_TopicAddGet(t *testing.T) {
 	assertListeners(t, res, ns)
 }
 
-func addEventListener(t *testing.T, listenerStore events.EventListenerStore, eID uuid.UUID, ns uuid.UUID) error {
-	err := listenerStore.Append(context.Background(), &events.EventListener{
+func addEventListener(t *testing.T, listenerStore datastore.EventListenerStore, eID uuid.UUID, ns uuid.UUID) error {
+	err := listenerStore.Append(context.Background(), &datastore.EventListener{
 		ID:                          eID,
 		CreatedAt:                   time.Now().UTC(),
 		UpdatedAt:                   time.Now().UTC(),
 		Deleted:                     false,
 		NamespaceID:                 ns,
 		ListeningForEventTypes:      []string{"a"},
-		ReceivedEventsForAndTrigger: make([]*events.Event, 0),
+		ReceivedEventsForAndTrigger: make([]*datastore.Event, 0),
 		LifespanOfReceivedEvents:    10000,
 		TriggerType:                 1,
 		TriggerWorkflow:             uuid.New().String(),
@@ -70,7 +70,7 @@ func addEventListener(t *testing.T, listenerStore events.EventListenerStore, eID
 	return nil
 }
 
-func addTopic(t *testing.T, topicStore events.EventTopicsStore, ns uuid.UUID, nsName string, eID uuid.UUID, topicName string, extraInfo string) error {
+func addTopic(t *testing.T, topicStore datastore.EventTopicsStore, ns uuid.UUID, nsName string, eID uuid.UUID, topicName string, extraInfo string) error {
 	err := topicStore.Append(context.Background(), ns, nsName, eID, topicName, extraInfo)
 	if err != nil {
 		t.Errorf("failed to add topic: %v", err)
@@ -79,7 +79,7 @@ func addTopic(t *testing.T, topicStore events.EventTopicsStore, ns uuid.UUID, ns
 	return nil
 }
 
-func assertListeners(t *testing.T, listeners []*events.EventListener, expectedNamespace uuid.UUID) {
+func assertListeners(t *testing.T, listeners []*datastore.EventListener, expectedNamespace uuid.UUID) {
 	if len(listeners) == 0 {
 		t.Error("got no results")
 	}

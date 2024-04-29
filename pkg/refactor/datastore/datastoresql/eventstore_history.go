@@ -8,18 +8,18 @@ import (
 	"time"
 
 	"github.com/cloudevents/sdk-go/v2/event"
-	"github.com/direktiv/direktiv/pkg/refactor/events"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
-var _ events.EventHistoryStore = &sqlEventHistoryStore{}
+var _ datastore.EventHistoryStore = &sqlEventHistoryStore{}
 
 type sqlEventHistoryStore struct {
 	db *gorm.DB
 }
 
-func (hs *sqlEventHistoryStore) Append(ctx context.Context, events []*events.Event) ([]*events.Event, []error) {
+func (hs *sqlEventHistoryStore) Append(ctx context.Context, events []*datastore.Event) ([]*datastore.Event, []error) {
 	q := "INSERT INTO events_history (id, type, source, cloudevent, namespace_id, namespace, received_at, created_at) VALUES ( $1 , $2 , $3 , $4 , $5 , $6, $7, $8 )"
 	errs := make([]error, len(events))
 	for i := range events {
@@ -74,15 +74,15 @@ type gormEventHistoryEntry struct {
 	CreatedAt, ReceivedAt    time.Time
 }
 
-func (hs *sqlEventHistoryStore) GetOld(ctx context.Context, namespace string, t time.Time, keyAndValues ...string) ([]*events.Event, error) {
+func (hs *sqlEventHistoryStore) GetOld(ctx context.Context, namespace string, t time.Time, keyAndValues ...string) ([]*datastore.Event, error) {
 	return hs.getEventsWithWhereClause(ctx, namespace, t, "where (namespace= ? and received_at < ? )", keyAndValues...)
 }
 
-func (hs *sqlEventHistoryStore) GetNew(ctx context.Context, namespace string, t time.Time, keyAndValues ...string) ([]*events.Event, error) {
+func (hs *sqlEventHistoryStore) GetNew(ctx context.Context, namespace string, t time.Time, keyAndValues ...string) ([]*datastore.Event, error) {
 	return hs.getEventsWithWhereClause(ctx, namespace, t, "where (namespace= ? and received_at > ? )", keyAndValues...)
 }
 
-func (hs *sqlEventHistoryStore) GetStartingIDUntilTime(ctx context.Context, namespace string, lastID int, t time.Time, keyAndValues ...string) ([]*events.Event, error) {
+func (hs *sqlEventHistoryStore) GetStartingIDUntilTime(ctx context.Context, namespace string, lastID int, t time.Time, keyAndValues ...string) ([]*datastore.Event, error) {
 	qs := []string{"where (namespace= ? and received_at <= ? and serial_id > ?)"}
 	qv := []interface{}{namespace, t, lastID}
 	qs, qv = unzipAndAppendToQueryParams(qs, qv, keyAndValues)
@@ -91,7 +91,7 @@ func (hs *sqlEventHistoryStore) GetStartingIDUntilTime(ctx context.Context, name
 	return hs.getEventsQvQs(ctx, qv, qs, keyAndValues...)
 }
 
-func (hs *sqlEventHistoryStore) Get(ctx context.Context, limit int, offset int, namespace uuid.UUID, keyAndValues ...string) ([]*events.Event, int, error) {
+func (hs *sqlEventHistoryStore) Get(ctx context.Context, limit int, offset int, namespace uuid.UUID, keyAndValues ...string) ([]*datastore.Event, int, error) {
 	if len(keyAndValues)%2 != 0 {
 		return nil, 0, fmt.Errorf("keyAnValues have to be a pair of keys and values")
 	}
@@ -167,7 +167,7 @@ func (hs *sqlEventHistoryStore) Get(ctx context.Context, limit int, offset int, 
 		return nil, 0, tx.Error
 	}
 
-	conv := make([]*events.Event, 0, len(res))
+	conv := make([]*datastore.Event, 0, len(res))
 
 	for _, v := range res {
 		var finalCE event.Event
@@ -175,13 +175,13 @@ func (hs *sqlEventHistoryStore) Get(ctx context.Context, limit int, offset int, 
 		if err != nil {
 			return nil, 0, err
 		}
-		conv = append(conv, &events.Event{Namespace: v.NamespaceID, NamespaceName: v.Namespace, ReceivedAt: v.ReceivedAt, Event: &finalCE})
+		conv = append(conv, &datastore.Event{Namespace: v.NamespaceID, NamespaceName: v.Namespace, ReceivedAt: v.ReceivedAt, Event: &finalCE})
 	}
 
 	return conv, count, nil
 }
 
-func (hs *sqlEventHistoryStore) GetAll(ctx context.Context) ([]*events.Event, error) {
+func (hs *sqlEventHistoryStore) GetAll(ctx context.Context) ([]*datastore.Event, error) {
 	q := "SELECT serial_id, id, type, source, cloudevent, namespace_id, namespace, received_at, created_at FROM events_history;"
 	res := make([]*gormEventHistoryEntry, 0)
 
@@ -189,7 +189,7 @@ func (hs *sqlEventHistoryStore) GetAll(ctx context.Context) ([]*events.Event, er
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
-	conv := make([]*events.Event, 0, len(res))
+	conv := make([]*datastore.Event, 0, len(res))
 
 	for _, v := range res {
 		var finalCE event.Event
@@ -197,13 +197,13 @@ func (hs *sqlEventHistoryStore) GetAll(ctx context.Context) ([]*events.Event, er
 		if err != nil {
 			return nil, err
 		}
-		conv = append(conv, &events.Event{Namespace: v.NamespaceID, ReceivedAt: v.ReceivedAt, Event: &finalCE})
+		conv = append(conv, &datastore.Event{Namespace: v.NamespaceID, ReceivedAt: v.ReceivedAt, Event: &finalCE})
 	}
 
 	return conv, nil
 }
 
-func (hs *sqlEventHistoryStore) GetByID(ctx context.Context, id string) (*events.Event, error) {
+func (hs *sqlEventHistoryStore) GetByID(ctx context.Context, id string) (*datastore.Event, error) {
 	q := "SELECT id, type, source, cloudevent, namespace_id, namespace, received_at, created_at FROM events_history WHERE id = $1 ;"
 
 	e := gormEventHistoryEntry{}
@@ -218,7 +218,7 @@ func (hs *sqlEventHistoryStore) GetByID(ctx context.Context, id string) (*events
 		return nil, err
 	}
 
-	return &events.Event{Namespace: e.NamespaceID, NamespaceName: e.Namespace, ReceivedAt: e.ReceivedAt, Event: &finalCE}, nil
+	return &datastore.Event{Namespace: e.NamespaceID, NamespaceName: e.Namespace, ReceivedAt: e.ReceivedAt, Event: &finalCE}, nil
 }
 
 func unzipAndAppendToQueryParams(qs []string, qv []interface{}, keyAndValues []string) ([]string, []interface{}) {
@@ -253,7 +253,7 @@ func unzipAndAppendToQueryParams(qs []string, qv []interface{}, keyAndValues []s
 	return qs, qv
 }
 
-func (hs *sqlEventHistoryStore) getEventsQvQs(ctx context.Context, qv []interface{}, qs []string, keyAndValues ...string) ([]*events.Event, error) {
+func (hs *sqlEventHistoryStore) getEventsQvQs(ctx context.Context, qv []interface{}, qs []string, keyAndValues ...string) ([]*datastore.Event, error) {
 	if len(keyAndValues)%2 != 0 {
 		return nil, fmt.Errorf("keyAndValues have to be a pair of keys and values")
 	}
@@ -270,7 +270,7 @@ func (hs *sqlEventHistoryStore) getEventsQvQs(ctx context.Context, qv []interfac
 		return nil, tx.Error
 	}
 
-	conv := make([]*events.Event, 0, len(res))
+	conv := make([]*datastore.Event, 0, len(res))
 
 	for _, v := range res {
 		var finalCE event.Event
@@ -278,13 +278,13 @@ func (hs *sqlEventHistoryStore) getEventsQvQs(ctx context.Context, qv []interfac
 		if err != nil {
 			return nil, err
 		}
-		conv = append(conv, &events.Event{Namespace: v.NamespaceID, NamespaceName: v.Namespace, ReceivedAt: v.ReceivedAt, Event: &finalCE, SerialID: v.SerialID})
+		conv = append(conv, &datastore.Event{Namespace: v.NamespaceID, NamespaceName: v.Namespace, ReceivedAt: v.ReceivedAt, Event: &finalCE, SerialID: v.SerialID})
 	}
 
 	return conv, nil
 }
 
-func (hs *sqlEventHistoryStore) getEventsWithWhereClause(ctx context.Context, namespace string, t time.Time, whereClause string, keyAndValues ...string) ([]*events.Event, error) {
+func (hs *sqlEventHistoryStore) getEventsWithWhereClause(ctx context.Context, namespace string, t time.Time, whereClause string, keyAndValues ...string) ([]*datastore.Event, error) {
 	if len(keyAndValues)%2 != 0 {
 		return nil, fmt.Errorf("keyAndValues have to be a pair of keys and values")
 	}

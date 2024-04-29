@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/database"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore/datastoresql"
-	"github.com/direktiv/direktiv/pkg/refactor/events"
 	"github.com/google/uuid"
 )
 
@@ -37,7 +37,7 @@ func testUpdate(t *testing.T) {
 	addTestEventListener(t, listenerStore, listener)
 
 	listener.UpdatedAt = time.Now().UTC()
-	updateErrs := listenerStore.UpdateOrDelete(context.Background(), []*events.EventListener{listener})
+	updateErrs := listenerStore.UpdateOrDelete(context.Background(), []*datastore.EventListener{listener})
 	for _, err := range updateErrs {
 		if err != nil {
 			t.Errorf("error updating listener: %v", err)
@@ -63,14 +63,14 @@ func testPaginationAndBoundaryCheck(t *testing.T) {
 	for i := 0; i < 11; i++ {
 		eID := uuid.New()
 		wf := uuid.New()
-		err = listeners.Append(context.Background(), &events.EventListener{
+		err = listeners.Append(context.Background(), &datastore.EventListener{
 			ID:                          eID,
 			CreatedAt:                   time.Now().UTC(),
 			UpdatedAt:                   time.Now().UTC(),
 			Deleted:                     false,
 			NamespaceID:                 ns,
 			ListeningForEventTypes:      []string{"a"},
-			ReceivedEventsForAndTrigger: make([]*events.Event, 0),
+			ReceivedEventsForAndTrigger: make([]*datastore.Event, 0),
 			LifespanOfReceivedEvents:    10000,
 			TriggerType:                 1,
 			TriggerWorkflow:             wf.String(),
@@ -109,7 +109,7 @@ func testPaginationAndBoundaryCheck(t *testing.T) {
 	for _, listener := range got {
 		listener.UpdatedAt = time.Now().UTC()
 		listener.Deleted = true
-		errs := listeners.UpdateOrDelete(context.Background(), []*events.EventListener{listener})
+		errs := listeners.UpdateOrDelete(context.Background(), []*datastore.EventListener{listener})
 		for _, err := range errs {
 			if err != nil {
 				t.Error(err)
@@ -129,14 +129,14 @@ func testDeleteByWorkflow(t *testing.T) {
 	}
 	store := datastoresql.NewSQLStore(db, "some key")
 	listeners := store.EventListener()
-	err = listeners.Append(context.Background(), &events.EventListener{
+	err = listeners.Append(context.Background(), &datastore.EventListener{
 		ID:                          eID,
 		CreatedAt:                   time.Now().UTC(),
 		UpdatedAt:                   time.Now().UTC(),
 		Deleted:                     false,
 		NamespaceID:                 ns,
 		ListeningForEventTypes:      []string{"a"},
-		ReceivedEventsForAndTrigger: make([]*events.Event, 0),
+		ReceivedEventsForAndTrigger: make([]*datastore.Event, 0),
 		LifespanOfReceivedEvents:    10000,
 		TriggerType:                 1,
 		TriggerWorkflow:             wf.String(),
@@ -158,7 +158,7 @@ func testDeleteByWorkflow(t *testing.T) {
 	}
 }
 
-func setupTest(t *testing.T) (events.EventListenerStore, *events.EventListener, uuid.UUID, string) {
+func setupTest(t *testing.T) (datastore.EventListenerStore, *datastore.EventListener, uuid.UUID, string) {
 	ns := uuid.New()
 	nsName := ns.String()
 	db, err := database.NewMockGorm()
@@ -172,36 +172,36 @@ func setupTest(t *testing.T) (events.EventListenerStore, *events.EventListener, 
 	return listenerStore, listener, ns, nsName
 }
 
-func createTestEventListener(ns uuid.UUID) *events.EventListener {
-	return &events.EventListener{
+func createTestEventListener(ns uuid.UUID) *datastore.EventListener {
+	return &datastore.EventListener{
 		ID:                          uuid.New(),
 		CreatedAt:                   time.Now().UTC(),
 		UpdatedAt:                   time.Now().UTC(),
 		Deleted:                     false,
 		NamespaceID:                 ns,
 		ListeningForEventTypes:      []string{"test-type"},
-		ReceivedEventsForAndTrigger: []*events.Event{},
+		ReceivedEventsForAndTrigger: []*datastore.Event{},
 		LifespanOfReceivedEvents:    10000,
-		TriggerType:                 events.StartSimple,
+		TriggerType:                 datastore.StartSimple,
 		TriggerWorkflow:             uuid.New().String(),
 	}
 }
 
-func addTestEventListener(t *testing.T, listenerStore events.EventListenerStore, listener *events.EventListener) {
+func addTestEventListener(t *testing.T, listenerStore datastore.EventListenerStore, listener *datastore.EventListener) {
 	err := listenerStore.Append(context.Background(), listener)
 	if err != nil {
 		t.Fatalf("error appending test listener: %v", err)
 	}
 }
 
-func verifyListenerAdded(t *testing.T, store events.EventListenerStore, listener *events.EventListener) {
+func verifyListenerAdded(t *testing.T, store datastore.EventListenerStore, listener *datastore.EventListener) {
 	_, err := store.GetByID(context.Background(), listener.ID)
 	if err != nil {
 		t.Errorf("error verifying listener added: %v", err)
 	}
 }
 
-func getListenerByID(t *testing.T, store events.EventListenerStore, listenerID, nsID uuid.UUID) *events.EventListener {
+func getListenerByID(t *testing.T, store datastore.EventListenerStore, listenerID, nsID uuid.UUID) *datastore.EventListener {
 	retrievedListener, err := store.GetByID(context.Background(), listenerID)
 	if err != nil {
 		t.Errorf("error retrieving listener by ID: %v", err)
@@ -209,14 +209,14 @@ func getListenerByID(t *testing.T, store events.EventListenerStore, listenerID, 
 	return retrievedListener
 }
 
-func verifyListenerRetrieved(t *testing.T, retrievedListener, expectedListener *events.EventListener) {
+func verifyListenerRetrieved(t *testing.T, retrievedListener, expectedListener *datastore.EventListener) {
 	if retrievedListener.ID != expectedListener.ID {
 		t.Error("retrieved listener ID does not match expected")
 	}
 	// Add more checks for other fields if necessary
 }
 
-func verifyAllListenersForNamespace(t *testing.T, store events.EventListenerStore, nsID uuid.UUID, listener *events.EventListener) {
+func verifyAllListenersForNamespace(t *testing.T, store datastore.EventListenerStore, nsID uuid.UUID, listener *datastore.EventListener) {
 	listeners, count, err := store.Get(context.Background(), nsID, 0, 0)
 	if err != nil {
 		t.Errorf("error retrieving listeners for namespace: %v", err)
@@ -230,10 +230,10 @@ func verifyAllListenersForNamespace(t *testing.T, store events.EventListenerStor
 	// TODO: Add more checks for content if necessary
 }
 
-func deleteAndUpdateListener(t *testing.T, store events.EventListenerStore, listener *events.EventListener) {
+func deleteAndUpdateListener(t *testing.T, store datastore.EventListenerStore, listener *datastore.EventListener) {
 	listener.UpdatedAt = time.Now().UTC()
 	listener.Deleted = true
-	errs := store.UpdateOrDelete(context.Background(), []*events.EventListener{listener})
+	errs := store.UpdateOrDelete(context.Background(), []*datastore.EventListener{listener})
 	for _, err := range errs {
 		if err != nil {
 			t.Errorf("error updating or deleting listener: %v", err)
@@ -241,7 +241,7 @@ func deleteAndUpdateListener(t *testing.T, store events.EventListenerStore, list
 	}
 }
 
-func verifyListenerDeleted(t *testing.T, store events.EventListenerStore, listenerID uuid.UUID) {
+func verifyListenerDeleted(t *testing.T, store datastore.EventListenerStore, listenerID uuid.UUID) {
 	_, err := store.GetByID(context.Background(), listenerID)
 	if err == nil {
 		t.Error("expected listener to be deleted")

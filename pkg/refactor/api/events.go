@@ -74,7 +74,7 @@ func (c *eventsController) listEvents(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(data) == 0 {
-		writeJSONWithMeta(w, []*events.Event{}, metaInfo)
+		writeJSONWithMeta(w, []*datastore.Event{}, metaInfo)
 
 		return
 	}
@@ -200,7 +200,7 @@ func (c *eventsController) listEventListeners(w http.ResponseWriter, r *http.Req
 		"startingFrom": nil,
 	}
 	if len(data) == 0 {
-		writeJSONWithMeta(w, []*events.Event{}, metaInfo)
+		writeJSONWithMeta(w, []*datastore.Event{}, metaInfo)
 
 		return
 	}
@@ -220,7 +220,7 @@ func (c *eventsController) listEventListeners(w http.ResponseWriter, r *http.Req
 	writeJSONWithMeta(w, res, metaInfo)
 }
 
-func convertListenersForAPI(listener *events.EventListener) eventListenerEntry {
+func convertListenersForAPI(listener *datastore.EventListener) eventListenerEntry {
 	e := eventListenerEntry{
 		ID:                     listener.ID.String(),
 		CreatedAt:              listener.CreatedAt,
@@ -401,10 +401,10 @@ func extractEventFilterParams(r *http.Request) []string {
 	return params
 }
 
-func convertEvents(ns datastore.Namespace, evs ...cloudevents.Event) []*events.Event {
-	res := make([]*events.Event, len(evs))
+func convertEvents(ns datastore.Namespace, evs ...cloudevents.Event) []*datastore.Event {
+	res := make([]*datastore.Event, len(evs))
 	for i := range evs {
-		res[i] = &events.Event{
+		res[i] = &datastore.Event{
 			Event:         &evs[i],
 			NamespaceName: ns.Name,
 			Namespace:     ns.ID,
@@ -434,7 +434,7 @@ func sseHandlefunc(ctx context.Context, r *http.Request, c *eventsController, cu
 	if ns == "" {
 		return nil, fmt.Errorf("namespace can not be empty")
 	}
-	events := make([]*events.Event, 0)
+	events := make([]*datastore.Event, 0)
 	var err error
 	if lastID := r.Header.Get("Last-Event-ID"); lastID != "" {
 		id, err := strconv.Atoi(lastID)

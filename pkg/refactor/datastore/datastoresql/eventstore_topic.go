@@ -3,12 +3,12 @@ package datastoresql
 import (
 	"context"
 
-	"github.com/direktiv/direktiv/pkg/refactor/events"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
-var _ events.EventTopicsStore = &sqlEventTopicsStore{}
+var _ datastore.EventTopicsStore = &sqlEventTopicsStore{}
 
 type sqlEventTopicsStore struct {
 	db *gorm.DB
@@ -30,7 +30,7 @@ type triggerInfo struct {
 	Step       int
 }
 
-func (s *sqlEventTopicsStore) GetListeners(ctx context.Context, topic string) ([]*events.EventListener, error) {
+func (s *sqlEventTopicsStore) GetListeners(ctx context.Context, topic string) ([]*datastore.EventListener, error) {
 	q := `SELECT 
 	id, namespace_id, namespace,  created_at, updated_at, deleted, received_events, trigger_type, events_lifespan, event_types, trigger_info, metadata, glob_gates
 	FROM event_listeners E WHERE E.deleted = false and E.id in 

@@ -9,12 +9,12 @@ import (
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/cloudevents/sdk-go/v2/types"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore/datastoresql"
-	"github.com/direktiv/direktiv/pkg/refactor/events"
 	"github.com/google/uuid"
 )
 
-func setupEventHistoryStore(t *testing.T) (events.EventHistoryStore, uuid.UUID, string) {
+func setupEventHistoryStore(t *testing.T) (datastore.EventHistoryStore, uuid.UUID, string) {
 	db, err := database.NewMockGorm()
 	if err != nil {
 		t.Fatalf("unexpected NewMockGorm() error: %v", err)
@@ -35,7 +35,7 @@ func Test_EventStoreAddGet(t *testing.T) {
 	ev := newEvent("subject", "test-type", eID, ns, nsName)
 	ev2 := newEvent("subject", "test-type", e2ID, ns, nsName)
 
-	ls := []*events.Event{&ev, &ev2}
+	ls := []*datastore.Event{&ev, &ev2}
 	_, errs := hist.Append(context.Background(), ls)
 	for _, err := range errs {
 		if err != nil {
@@ -60,7 +60,7 @@ func Test_EventStoreAddGetNew(t *testing.T) {
 	ev := newEvent("subject", "test-type", eID, ns, nsName)
 	ev2 := newEvent("subject", "test-type", e2ID, ns, nsName)
 
-	ls := []*events.Event{&ev, &ev2}
+	ls := []*datastore.Event{&ev, &ev2}
 	_, errs := hist.Append(context.Background(), ls)
 	for _, err := range errs {
 		if err != nil {
@@ -82,7 +82,7 @@ func Test_DeleteOldEvents(t *testing.T) {
 	// Add some events
 	eID := uuid.New()
 	ev := newEvent("subject", "test-type", eID, ns, "")
-	_, errs := hist.Append(context.Background(), []*events.Event{&ev})
+	_, errs := hist.Append(context.Background(), []*datastore.Event{&ev})
 	for _, err := range errs {
 		if err != nil {
 			t.Error(err)
@@ -116,7 +116,7 @@ func Test_GetEventByID(t *testing.T) {
 	// Add an event
 	eID := uuid.New()
 	ev := newEvent("subject", "test-type", eID, ns, "")
-	_, errs := hist.Append(context.Background(), []*events.Event{&ev})
+	_, errs := hist.Append(context.Background(), []*datastore.Event{&ev})
 	for _, err := range errs {
 		if err != nil {
 			t.Error(err)
@@ -142,7 +142,7 @@ func Test_GetEventByID(t *testing.T) {
 	}
 }
 
-func assertEventsAdded(t *testing.T, hist events.EventHistoryStore, ns uuid.UUID) {
+func assertEventsAdded(t *testing.T, hist datastore.EventHistoryStore, ns uuid.UUID) {
 	// Retrieve all events
 	gotEvents, err := hist.GetAll(context.Background())
 	if err != nil {
@@ -157,7 +157,7 @@ func assertEventsAdded(t *testing.T, hist events.EventHistoryStore, ns uuid.UUID
 	}
 }
 
-func testGet(t *testing.T, hist events.EventHistoryStore, ns uuid.UUID) {
+func testGet(t *testing.T, hist datastore.EventHistoryStore, ns uuid.UUID) {
 	// Test Get() method
 	res, c, err := hist.Get(context.Background(), 0, 0, ns)
 	if err != nil {
@@ -169,7 +169,7 @@ func testGet(t *testing.T, hist events.EventHistoryStore, ns uuid.UUID) {
 	assertResults(t, res, c)
 }
 
-func testGetOld(t *testing.T, hist events.EventHistoryStore, ns uuid.UUID) {
+func testGetOld(t *testing.T, hist datastore.EventHistoryStore, ns uuid.UUID) {
 	// Test GetOld() method
 	res, err := hist.GetOld(context.Background(), ns.String(), time.Now().UTC())
 	if err != nil {
@@ -184,7 +184,7 @@ func testGetOld(t *testing.T, hist events.EventHistoryStore, ns uuid.UUID) {
 	}
 }
 
-func assertResults(t *testing.T, res []*events.Event, c int) {
+func assertResults(t *testing.T, res []*datastore.Event, c int) {
 	if len(res) == 0 {
 		t.Error("got no results")
 		return
@@ -195,8 +195,8 @@ func assertResults(t *testing.T, res []*events.Event, c int) {
 	}
 }
 
-func newEvent(subj, t string, id, ns uuid.UUID, nsName string) events.Event {
-	return events.Event{
+func newEvent(subj, t string, id, ns uuid.UUID, nsName string) datastore.Event {
+	return datastore.Event{
 		Event: &cloudevents.Event{
 			Context: &event.EventContextV03{
 				Type: t,
