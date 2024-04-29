@@ -89,3 +89,5 @@ export const InstanceCancelSchema = z.null();
 export const InstancesListSchema = z.object({
   data: z.array(InstanceSchema),
 });
+
+export const InstancesDetailSchema = z.object({});
