@@ -46,7 +46,7 @@ const InstancesListPage = () => {
     setOffset(0);
   };
 
-  const numberOfInstances = 0; // TODO: numberOfInstances;
+  // const numberOfInstances = 0; // TODO: numberOfInstances;
   const noResults = isSuccess && instances.length === 0;
   const showPagination = true; // TODO: numberOfInstances > instancesPerPage;
   const hasFilters = !!Object.keys(filters).length;
