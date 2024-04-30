@@ -15,7 +15,7 @@ import { pages } from "~/util/router/pages";
 import { statusToBadgeVariant } from "../../utils";
 import { t } from "i18next";
 import { useInstanceId } from "../store/instanceContext";
-import { useInstances } from "~/api/instances_obsolete/query/get";
+import { useInstanceList } from "~/api/instances/query/get";
 import { useNamespace } from "~/util/store/namespace";
 import { useState } from "react";
 
@@ -25,7 +25,7 @@ const ChildInstances = () => {
   const instanceId = useInstanceId();
   const namespace = useNamespace();
   const [popoverOpen, setPopoverOpen] = useState(false);
-  const { data, refetch, isFetching } = useInstances({
+  const { data, refetch, isFetching } = useInstanceList({
     limit: maxChildInstancesToShow + 1,
     offset: 0,
     filters: {
@@ -44,7 +44,7 @@ const ChildInstances = () => {
     location.href = pages.instances.createHref({ namespace, instance });
   };
 
-  const childCount = data?.instances.results.length ?? 0;
+  const childCount = data?.length ?? 0;
 
   const needsPopover = childCount > 0;
   const moreInstances = childCount > maxChildInstancesToShow;
@@ -86,7 +86,7 @@ const ChildInstances = () => {
                       )}
                     </CommandEmpty>
                     <CommandGroup>
-                      {data.instances.results.map((instance) => (
+                      {data.map((instance) => (
                         <CommandItem
                           key={instance.id}
                           value={instance.id}
@@ -105,7 +105,7 @@ const ChildInstances = () => {
                               {instance.id.slice(0, 8)}
                             </Badge>
 
-                            {instance.as}
+                            {instance.path}
                           </div>
                         </CommandItem>
                       ))}

@@ -5,7 +5,7 @@ import { InstanceCard } from "./InstanceCard";
 import { InstanceRow } from "./Row";
 import RefreshButton from "~/design/RefreshButton";
 import { ScrollArea } from "~/design/ScrollArea";
-import { useInstances } from "~/api/instances_obsolete/query/get";
+import { useInstanceList } from "~/api/instances/query/get";
 import { useTranslation } from "react-i18next";
 
 export const Instances = () => {
@@ -16,7 +16,7 @@ export const Instances = () => {
     refetch: refetchSucessfullInstances,
     isAllowed: isAllowedSucessfullInstances,
     noPermissionMessage: noPermissionMessageSucessfullInstances,
-  } = useInstances({
+  } = useInstanceList({
     limit: 10,
     offset: 0,
     filters: {
@@ -34,7 +34,7 @@ export const Instances = () => {
     refetch: refetchFailedInstances,
     isAllowed: isAllowedFailedInstances,
     noPermissionMessage: noPermissionMessageFailedInstances,
-  } = useInstances({
+  } = useInstanceList({
     limit: 10,
     offset: 0,
     filters: {
@@ -68,7 +68,7 @@ export const Instances = () => {
       >
         {isAllowedSucessfullInstances ? (
           <>
-            {sucessfullInstances?.instances?.results.length === 0 ? (
+            {sucessfullInstances?.length === 0 ? (
               <NoResult icon={Boxes}>
                 {t("pages.monitoring.instances.successfulExecutions.empty")}
               </NoResult>
@@ -76,7 +76,7 @@ export const Instances = () => {
               <ScrollArea className="h-full">
                 <Table>
                   <TableBody>
-                    {sucessfullInstances?.instances?.results.map((instance) => (
+                    {sucessfullInstances?.map((instance) => (
                       <InstanceRow key={instance.id} instance={instance} />
                     ))}
                   </TableBody>
@@ -107,7 +107,7 @@ export const Instances = () => {
       >
         {isAllowedFailedInstances ? (
           <>
-            {failedInstances?.instances?.results.length === 0 ? (
+            {failedInstances?.length === 0 ? (
               <NoResult icon={Boxes}>
                 {t("pages.monitoring.instances.failedExecutions.empty")}
               </NoResult>
@@ -115,7 +115,7 @@ export const Instances = () => {
               <ScrollArea className="h-full">
                 <Table>
                   <TableBody>
-                    {failedInstances?.instances?.results.map((instance) => (
+                    {failedInstances?.map((instance) => (
                       <InstanceRow key={instance.id} instance={instance} />
                     ))}
                   </TableBody>
