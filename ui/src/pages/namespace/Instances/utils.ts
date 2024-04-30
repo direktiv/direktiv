@@ -1,6 +1,6 @@
 import Badge from "~/design/Badge";
 import { ComponentProps } from "react";
-import { InstanceSchemaType } from "~/api/instances_obsolete/schema";
+import { InstanceSchemaType } from "~/api/instances/schema";
 
 type BadgeVariant = ComponentProps<typeof Badge>["variant"];
 type InstanceStatus = InstanceSchemaType["status"];

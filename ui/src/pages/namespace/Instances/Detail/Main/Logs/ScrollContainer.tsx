@@ -1,13 +1,13 @@
 import Entry from "./Entry";
 import LogList from "~/components/Logs";
-import { useInstanceDetails } from "~/api/instances_obsolete/query/details";
+import { useInstanceDetails } from "~/api/instances/query/details";
 import { useInstanceId } from "../../store/instanceContext";
 import { useLogVirtualizer } from "~/components/Logs/useLogVirtualizer";
 
 const ScrollContainer = () => {
   const instanceId = useInstanceId();
   const { data: instanceDetailsData } = useInstanceDetails({ instanceId });
-  const isStreaming = instanceDetailsData?.instance?.status === "pending";
+  const isStreaming = instanceDetailsData?.status === "pending";
   const {
     rowVirtualizer,
     parentRef,

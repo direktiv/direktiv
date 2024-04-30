@@ -17,7 +17,7 @@ import CopyButton from "~/design/CopyButton";
 import ScrollContainer from "./ScrollContainer";
 import { Toggle } from "~/design/Toggle";
 import { getInstanceLogEntryForClipboard } from "~/components/Logs/utils";
-import { useInstanceDetails } from "~/api/instances_obsolete/query/details";
+import { useInstanceDetails } from "~/api/instances/query/details";
 import { useInstanceId } from "../../store/instanceContext";
 import { useLogs } from "~/api/logs/query/logs";
 import { useTranslation } from "react-i18next";
@@ -40,7 +40,7 @@ const LogsPanel = () => {
 
   const isMaximized = maximizedPanel === "logs";
 
-  const isPending = instanceDetailsData?.instance.status === "pending";
+  const isPending = instanceDetailsData?.status === "pending";
 
   const numberOfLogLines = logLines.length;
 
@@ -53,7 +53,7 @@ const LogsPanel = () => {
         <h3 className="flex grow items-center gap-x-2 font-medium">
           <ScrollText className="h-5" />
           {t("pages.instances.detail.logs.title", {
-            path: instanceDetailsData?.instance.as,
+            path: instanceDetailsData?.path,
           })}
         </h3>
         <ButtonBar>
