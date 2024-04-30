@@ -37,7 +37,7 @@ docker-e2e-playwright: ## Create a local docker deployment.
 	-v $$PWD/ui:/app/ui \
 	-e NODE_TLS_REJECT_UNAUTHORIZED=0 \
     -e PLAYWRIGHT_USE_VITE=FALSE \
-    -e PLAYWRIGHT_UI_BASE_URL=http://127.0.0.1:8080 \
+    -e PLAYWRIGHT_UI_BASE_URL=http://127.0.0.1:80 \
     -e PLAYWRITE_SHARD=1/1 \
 	-w /app/ui \
 	--net=host \
