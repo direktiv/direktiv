@@ -80,8 +80,8 @@ test("the header of the instance page shows the relevant data for the workflow",
     "It renders the category 'started at'"
   ).toBeVisible();
   await expect(
-    header.getByText("last updated"),
-    "It renders the category 'last updated'"
+    header.getByText("finished at"),
+    "It renders the category 'finished at'"
   ).toBeVisible();
 
   await expect(
