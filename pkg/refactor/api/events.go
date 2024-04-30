@@ -393,27 +393,27 @@ func extractEventFilterParams(r *http.Request) []string {
 		params = append(params, "namespace")
 		params = append(params, v)
 	}
-	if v := chi.URLParam(r, "createdBefore"); v != "" {
+	if v := r.URL.Query().Get("createdBefore"); v != "" {
 		params = append(params, "created_before")
 		params = append(params, v)
 	}
-	if v := chi.URLParam(r, "createdAfter"); v != "" {
+	if v := r.URL.Query().Get("createdAfter"); v != "" {
 		params = append(params, "created_after")
 		params = append(params, v)
 	}
-	if v := chi.URLParam(r, "receivedBefore"); v != "" {
+	if v := r.URL.Query().Get("receivedBefore"); v != "" {
 		params = append(params, "received_before")
 		params = append(params, v)
 	}
-	if v := chi.URLParam(r, "receivedAfter"); v != "" {
+	if v := r.URL.Query().Get("receivedAfter"); v != "" {
 		params = append(params, "received_after")
 		params = append(params, v)
 	}
-	if v := chi.URLParam(r, "eventContains"); v != "" {
+	if v := r.URL.Query().Get("eventContains"); v != "" {
 		params = append(params, "event_contains")
 		params = append(params, v)
 	}
-	if v := chi.URLParam(r, "typeContains"); v != "" {
+	if v := r.URL.Query().Get("typeContains"); v != "" {
 		params = append(params, "type_contains")
 		params = append(params, v)
 	}
