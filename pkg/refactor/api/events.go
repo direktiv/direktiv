@@ -33,7 +33,7 @@ func (c *eventsController) mountEventHistoryRouter(r chi.Router) {
 	r.Get("/", c.listEvents)         // Retrieve a list of events
 	r.Get("/subscribe", c.subscribe) // Retrieve a event updates via sse
 	r.Get("/{eventID}", c.getEvent)  // Get details of a single event
-	r.Post("/resend/{eventID}", c.resend)
+	r.Post("/replay/{eventID}", c.replay)
 }
 
 func (c *eventsController) mountEventListenerRouter(r chi.Router) {
@@ -105,7 +105,7 @@ func (c *eventsController) getEvent(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, d)
 }
 
-func (c *eventsController) resend(w http.ResponseWriter, r *http.Request) {
+func (c *eventsController) replay(w http.ResponseWriter, r *http.Request) {
 	eventID := ""
 	ns := extractContextNamespace(r)
 
