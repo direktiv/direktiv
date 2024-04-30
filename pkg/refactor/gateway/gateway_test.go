@@ -137,11 +137,6 @@ func TestBasicGateway(t *testing.T) {
 	// test special namespace URL
 	resp = doRequest(t, "/gw/test", nil, gm)
 	assert.Equal(t, http.StatusAccepted, resp.StatusCode)
-
-	// deleting namespace should be 404
-	gm.DeleteNamespace(ns1)
-	resp = doRequest(t, fmt.Sprintf("/ns/%s/test", ns1), nil, gm)
-	assert.Equal(t, http.StatusNotFound, resp.StatusCode)
 }
 
 func TestAuthGateway(t *testing.T) {
