@@ -1,3 +1,5 @@
+import { FiltersObj, getFilterQuery } from "./utils";
+
 import { InstancesListResponseSchema } from "../schema";
 import { QueryFunctionContext } from "@tanstack/react-query";
 import { apiFactory } from "~/api/apiFactory";
@@ -10,17 +12,23 @@ import useQueryWithPermissions from "~/api/useQueryWithPermissions";
 type InstanceListParams = {
   limit?: number;
   offset?: number;
+  filters?: FiltersObj;
 };
 
 export const getInstanceList = apiFactory({
   url: ({
     namespace,
     baseUrl,
+    filters,
     ...queryParams
   }: { baseUrl?: string; namespace: string } & InstanceListParams) => {
-    const queryParamsString = buildSearchParamsString({
+    let queryParamsString = buildSearchParamsString({
       ...queryParams,
     });
+
+    if (filters) {
+      queryParamsString = queryParamsString.concat(getFilterQuery(filters));
+    }
 
     return `${
       baseUrl ?? ""
@@ -31,11 +39,11 @@ export const getInstanceList = apiFactory({
 });
 
 const fetchInstanceList = async ({
-  queryKey: [{ apiKey, namespace, limit, offset }],
+  queryKey: [{ apiKey, namespace, limit, offset, filters }],
 }: QueryFunctionContext<ReturnType<(typeof instanceKeys)["instancesList"]>>) =>
   getInstanceList({
     apiKey,
-    urlParams: { namespace, limit, offset },
+    urlParams: { namespace, limit, offset, filters },
   });
 
 export const useInstanceList = (params: InstanceListParams = {}) => {
