@@ -1,4 +1,7 @@
-import { InstanceCancelPayloadType, InstanceCancelSchema } from "../schema";
+import {
+  InstanceCancelPayloadType,
+  InstanceCanceledResponseSchema,
+} from "../schema";
 
 import { apiFactory } from "~/api/apiFactory";
 import { useApiKey } from "~/util/store/apiKey";
@@ -17,7 +20,7 @@ export const cancelInstance = apiFactory<InstanceCancelPayloadType>({
   }) =>
     `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/instances/${instanceId}`,
   method: "PATCH",
-  schema: InstanceCancelSchema,
+  schema: InstanceCanceledResponseSchema,
 });
 
 export const useCancelInstance = () => {

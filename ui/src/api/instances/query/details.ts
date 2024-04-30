@@ -1,5 +1,5 @@
-import { InstancesDetailSchema } from "../schema";
 import { QueryFunctionContext } from "@tanstack/react-query";
+import { InstanceDetailsResponseSchema } from "../schema";
 import { apiFactory } from "~/api/apiFactory";
 import { instanceKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
@@ -18,7 +18,7 @@ export const getInstanceDetails = apiFactory({
   }) =>
     `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/instances/${instanceId}`,
   method: "GET",
-  schema: InstancesDetailSchema,
+  schema: InstanceDetailsResponseSchema,
 });
 
 const fetchInstanceDetails = async ({

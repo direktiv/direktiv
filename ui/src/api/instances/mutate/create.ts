@@ -1,4 +1,4 @@
-import { InstanceCreateSchema } from "../schema";
+import { InstanceCreatedResponseSchema } from "../schema";
 import { apiFactory } from "~/api/apiFactory";
 import { getMessageFromApiError } from "~/api/errorHandling";
 import { useApiKey } from "~/util/store/apiKey";
@@ -17,7 +17,7 @@ export const createInstance = apiFactory({
   }) =>
     `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/instances/?path=${path}`,
   method: "POST",
-  schema: InstanceCreateSchema,
+  schema: InstanceCreatedResponseSchema,
 });
 
 type ResolvedRunWorkflow = Awaited<ReturnType<typeof createInstance>>;

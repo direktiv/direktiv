@@ -18,7 +18,7 @@ const InstanceStatusSchema = z.enum([
     "step": 9
   }
  */
-const parentInstance = z.object({
+const ParentInstanceSchema = z.object({
   branch: z.number(),
   id: z.string(),
   state: z.string(),
@@ -61,7 +61,7 @@ const InstanceSchema = z.object({
   definition: z.string(),
   flow: z.array(z.string()),
   traceId: z.string().nullable(),
-  lineage: z.array(parentInstance),
+  lineage: z.array(ParentInstanceSchema),
 });
 
 export type InstanceSchemaType = z.infer<typeof InstanceSchema>;
@@ -73,7 +73,7 @@ export type InstanceSchemaType = z.infer<typeof InstanceSchema>;
     "data": {...}
   }
  */
-export const InstanceCreateSchema = z.object({
+export const InstanceCreatedResponseSchema = z.object({
   data: InstanceSchema,
 });
 
@@ -83,30 +83,29 @@ export const InstanceCancelPayload = z.object({
 
 export type InstanceCancelPayloadType = z.infer<typeof InstanceCancelPayload>;
 
-export const InstanceCancelSchema = z.null();
+export const InstanceCanceledResponseSchema = z.null();
 
-export const InstancesListSchema = z.object({
+export const InstancesListResponseSchema = z.object({
   data: z.array(InstanceSchema),
 });
 
 /**
  * example
- * 
   {
-    "data": {
-      ...
-      "inputLength" : 8,
-      "metadataLength" : 0,
-      "outputLength" : 7,
-    } 
-  }
+    ...
+    "inputLength" : 8,
+    "metadataLength" : 0,
+    "outputLength" : 7,
+  } 
  */
-export const InstancesDetailSchema = z.object({
-  data: InstanceSchema.extend({
-    inputLength: z.number(),
-    outputLength: z.number(),
-    metadataLength: z.number(),
-  }),
+const InstanceDetailsSchema = InstanceSchema.extend({
+  inputLength: z.number(),
+  outputLength: z.number(),
+  metadataLength: z.number(),
+});
+
+export const InstanceDetailsResponseSchema = z.object({
+  data: InstanceDetailsSchema,
 });
 
 /**
@@ -118,7 +117,7 @@ export const InstancesDetailSchema = z.object({
     "input": "ewogICAgCn0="
   }
  */
-export const InstancesInputSchema = z.object({
+export const InstancesInputResponseSchema = z.object({
   data: InstanceSchema.extend({
     inputLength: z.number(),
     input: z.string(),
@@ -134,7 +133,7 @@ export const InstancesInputSchema = z.object({
     "output": "eyJ4IjowfQ=="
   }
  */
-export const InstancesOutputSchema = z.object({
+export const InstancesOutputResponseSchema = z.object({
   data: InstanceSchema.extend({
     outputLength: z.number(),
     output: z.string().optional(),

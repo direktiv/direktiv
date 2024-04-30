@@ -1,4 +1,4 @@
-import { InstancesListSchema } from "../schema";
+import { InstancesListResponseSchema } from "../schema";
 import { QueryFunctionContext } from "@tanstack/react-query";
 import { apiFactory } from "~/api/apiFactory";
 import { buildSearchParamsString } from "~/api/utils";
@@ -27,7 +27,7 @@ export const getInstanceList = apiFactory({
     }/api/v2/namespaces/${namespace}/instances/${queryParamsString}`;
   },
   method: "GET",
-  schema: InstancesListSchema,
+  schema: InstancesListResponseSchema,
 });
 
 const fetchInstanceList = async ({
