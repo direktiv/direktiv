@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -116,13 +115,7 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 	)
 
 	// endpoint manager
-	args.PubSubBus.Subscribe(func(data string) {
-		event := pubsub.FileChangeEvent{}
-		err := json.Unmarshal([]byte(data), &event)
-		if err != nil {
-			slog.Error("unmarshal file change event", "err", err)
-			panic(err)
-		}
+	args.PubSubBus.Subscribe(func(_ string) {
 		gatewayManager.UpdateAll()
 	},
 		pubsub.EndpointCreate,
