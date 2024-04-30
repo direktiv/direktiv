@@ -1,6 +1,6 @@
 import { InstanceStateProvider, useInstanceId } from "./store/instanceContext";
 
-import { InstanceStreamingSubscriber } from "~/api/instances_obsolete/query/details";
+import { InstanceStreamingSubscriber } from "~/api/instances/query/details";
 import InstancesDetail from "./InstanceDetail";
 import { LogStreamingSubscriber } from "~/api/logs/query/LogStreamingSubscriber";
 import { pages } from "~/util/router/pages";

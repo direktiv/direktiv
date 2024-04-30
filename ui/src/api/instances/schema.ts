@@ -98,7 +98,7 @@ export const InstancesListResponseSchema = z.object({
     "outputLength" : 7,
   } 
  */
-const InstanceDetailsSchema = InstanceSchema.extend({
+export const InstanceDetailsSchema = InstanceSchema.extend({
   inputLength: z.number(),
   outputLength: z.number(),
   metadataLength: z.number(),
@@ -107,6 +107,10 @@ const InstanceDetailsSchema = InstanceSchema.extend({
 export const InstanceDetailsResponseSchema = z.object({
   data: InstanceDetailsSchema,
 });
+
+export type InstanceDetailsResponseSchemaType = z.infer<
+  typeof InstanceDetailsResponseSchema
+>;
 
 /**
  * example
