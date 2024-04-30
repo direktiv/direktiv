@@ -465,7 +465,7 @@ test("after a running instance finishes, the output tab is automatically selecte
   );
 });
 
-test("The Logs panel displays the list of logs as expected", async ({
+test("the logs panel displays the list of logs as expected", async ({
   page,
 }) => {
   const instanceId = (
@@ -474,12 +474,14 @@ test("The Logs panel displays the list of logs as expected", async ({
       path: loggingWorkflowName,
     })
   ).instance;
-  await page.goto(`/${namespace}/instances/${instanceId}`);
+  await page.goto(`/n/${namespace}/instances/${instanceId}`);
 
   const logsPanel = page.getByTestId("instance-logs-container");
 
-  // I did not find any other way to select this div, it does not take a testId because it is rendered later...
+  // I did not find any other way to select the parent of logsPanel, it does not render a testId
   const logsPanelParent = page.locator("div").filter({ has: logsPanel }).nth(6);
+
+  const scrollbar = page.getByTestId("instance-logs-scroll-container");
 
   await expect(logsPanel).toBeVisible();
 
@@ -492,17 +494,17 @@ test("The Logs panel displays the list of logs as expected", async ({
     page.getByTestId("instance-header-container").locator("div").first()
   ).toContainText("pending");
 
-  const entriesCounter = logsPanel.getByTestId("instance-logs-entries-counter");
-
-  await expect(
-    entriesCounter,
-    "While running the workflow there are 0 log entries"
-  ).toContainText("received 0 log entries");
+  const entriesCounter = page.getByTestId("instance-logs-entries-counter");
 
   await expect(
     entriesCounter.locator("span").nth(1),
     "There is a loading spinner"
   ).toHaveClass(/animate-ping/);
+
+  await expect(
+    entriesCounter,
+    "While starting the workflow there are 6 log entries"
+  ).toContainText("received 6 log entries");
 
   const resizeButton = page
     .getByTestId("instance-logs-container")
@@ -545,17 +547,17 @@ test("The Logs panel displays the list of logs as expected", async ({
   ).toBeVisible();
 
   await expect(
-    logsPanel.locator("pre").locator("span").nth(0),
+    scrollbar.locator("pre").locator("span").nth(0),
     "It displays an initial log entry"
   ).toContainText("Running state logic");
 
   await expect(
-    logsPanel.locator("pre").locator("span").nth(15),
+    scrollbar.locator("pre").locator("span").nth(15),
     "It displays the log message from the log field in the workflow yaml"
   ).toContainText("log-message");
 
   await expect(
-    logsPanel.locator("pre").locator("span").last(),
+    scrollbar.locator("pre").locator("span").last(),
     "It displays a final log entry"
   ).toContainText("Workflow completed");
 
@@ -565,7 +567,7 @@ test("The Logs panel displays the list of logs as expected", async ({
   ).toContainText("received 22 log entries");
 });
 
-test("The Logs panel can be toggled between verbose and non verbose logs", async ({
+test("the logs panel can be toggled between verbose and non verbose logs", async ({
   page,
 }) => {
   const instanceId = (
@@ -574,23 +576,25 @@ test("The Logs panel can be toggled between verbose and non verbose logs", async
       path: simpleWorkflowName,
     })
   ).instance;
-  await page.goto(`/${namespace}/instances/${instanceId}`);
+  await page.goto(`/n/${namespace}/instances/${instanceId}`);
 
   const logsPanel = page.getByTestId("instance-logs-container");
 
   await expect(logsPanel).toBeVisible();
+
+  const scrollbar = page.getByTestId("instance-logs-scroll-container");
 
   await expect(
     page.getByTestId("instance-header-container").locator("div").first()
   ).toContainText("complete");
 
   await expect(
-    logsPanel.locator("pre").last().locator("span").first(),
+    scrollbar.locator("pre").last().locator("span").first(),
     "It does NOT display the state for the final log entry"
   ).not.toContainText("state: helloworld");
 
   await expect(
-    logsPanel.locator("pre").last().locator("span").last(),
+    scrollbar.locator("pre").last().locator("span").last(),
     "It displays the final log entry"
   ).toContainText("msg: Workflow completed");
 
@@ -607,12 +611,12 @@ test("The Logs panel can be toggled between verbose and non verbose logs", async
   );
 
   await expect(
-    logsPanel.locator("pre").last().locator("span").first(),
+    scrollbar.locator("pre").last().locator("span").first(),
     "It displays the state for the final log entry"
   ).toContainText("state: helloworld");
 
   await expect(
-    logsPanel.locator("pre").last().locator("span").last(),
+    scrollbar.locator("pre").last().locator("span").last(),
     "It displays the final log entry"
   ).toContainText("msg: Workflow completed.");
 
@@ -624,19 +628,19 @@ test("The Logs panel can be toggled between verbose and non verbose logs", async
   ).toHaveAttribute("data-state", "on");
 
   await expect(
-    logsPanel.locator("pre").last().locator("span").first(),
+    scrollbar.locator("pre").last().locator("span").first(),
     "After reloading the page the verbose setting is remembered"
   ).toContainText("state: helloworld");
 });
 
-test("The Logs can be copied", async ({ page }) => {
+test("the logs can be copied", async ({ page }) => {
   const instanceId = (
     await createInstance({
       namespace,
       path: simpleWorkflowName,
     })
   ).instance;
-  await page.goto(`/${namespace}/instances/${instanceId}`);
+  await page.goto(`/n/${namespace}/instances/${instanceId}`);
 
   const logsPanel = page.getByTestId("instance-logs-container");
 
@@ -646,7 +650,7 @@ test("The Logs can be copied", async ({ page }) => {
     page.getByTestId("instance-header-container").locator("div").first()
   ).toContainText("complete");
 
-  const entriesCounter = logsPanel.getByTestId("instance-logs-entries-counter");
+  const entriesCounter = page.getByTestId("instance-logs-entries-counter");
 
   await expect(entriesCounter, "Waiting for log entries").not.toContainText(
     "received 0 log entries"
@@ -666,7 +670,7 @@ test("The Logs can be copied", async ({ page }) => {
   );
 });
 
-test("When having many incoming logs, the scrollbar is following the newest logs", async ({
+test("log entries will be automatically scrolled to the end", async ({
   page,
 }) => {
   const instanceId = (
@@ -675,22 +679,12 @@ test("When having many incoming logs, the scrollbar is following the newest logs
       path: scrollableWorkflowName,
     })
   ).instance;
-  await page.goto(`/${namespace}/instances/${instanceId}`);
+
+  await page.goto(`/n/${namespace}/instances/${instanceId}`);
 
   const logsPanel = page.getByTestId("instance-logs-container");
 
   await expect(logsPanel).toBeVisible();
-
-  await expect(
-    page.getByTestId("instance-header-container").locator("div").first()
-  ).toContainText("pending");
-
-  const header = page.getByTestId("instance-header-container");
-
-  await expect(
-    header.getByText("spawned0 instances"),
-    "category spawned shows 0 instances"
-  ).toBeVisible();
 
   const entriesCounter = page.getByTestId("instance-logs-entries-counter");
 
@@ -698,44 +692,74 @@ test("When having many incoming logs, the scrollbar is following the newest logs
     "received 0 log entries"
   );
 
-  // Wait until 20 or more logs are visible
-  await page.locator(':nth-match(:text("msg"), 20)').waitFor();
+  const scrollContainer = page.getByTestId("instance-logs-scroll-container");
+
+  await expect(scrollContainer, "Container is scrollable").toBeDefined();
 
   await expect(
-    entriesCounter,
-    "Waiting for more than 20 log entries"
-  ).toContainText("received /([2-9][0-9] log entries");
+    scrollContainer.locator("pre").last().locator("span").last(),
+    "The last log entry is in the view, so the page is scrolled down"
+  ).toBeInViewport();
 
-  // scrollbar = overflow container
-
-  const scrollbar = page.getByTestId("instance-logs-scroll-container");
-
-  // const scrollbar = page.getByRole("scrollbar");
-
-  await expect(scrollbar, "is there").toBeDefined();
-
-  // await expect(scrollbar, "is down").toHaveCSS("top", "100%");
+  const countLogsAfterScrolling = await scrollContainer.locator("pre").count();
 
   await expect(
-    logsPanel.locator("pre").last().locator("span").last(),
-    "The final log entry is in the view, so the page is scrolled down"
-  ).toBeInViewport;
+    countLogsAfterScrolling,
+    "With more than 20 logs the button appears"
+  ).toBeGreaterThan(20);
 
-  page.mouse.wheel(0, -100000000);
+  // click on first entry to scroll to the top of the list
+  const currentFirstEntry = scrollContainer.locator("pre").first();
+  currentFirstEntry.click();
 
-  page.mouse.wheel(0, 100000000);
+  await expect(
+    currentFirstEntry,
+    "The first log entry is in the view, so the page is scrolled up"
+  ).toBeInViewport();
 
-  // expect(await page.evaluate(() => navigator.clipboard.readText())).toContain(
-  //   copiedLogs
-  // );
+  const followButton = page.getByRole("button", { name: "Follow logs" });
 
-  // scroll panel is at 0% height in the scrollbar
+  await expect(
+    followButton,
+    "After scrolling up, a button appeared"
+  ).toBeVisible();
 
-  // scroll up
+  followButton.click();
 
-  // see button "follow logs"
+  await expect(
+    followButton,
+    "After clicking it, the button disappeared"
+  ).not.toBeVisible();
 
-  // click
+  await expect(
+    scrollContainer.locator("pre").last(),
+    "The last log entry is in the view, so the page was scrolled down"
+  ).toBeInViewport();
 
-  // scroll panel is at 0% height in the scrollbar
+  // scrolling up again
+  scrollContainer.locator("pre").first().click();
+
+  await expect(
+    followButton,
+    "The 'Follow Logs' button is visible"
+  ).toBeVisible();
+
+  const header = page.getByTestId("instance-header-container");
+
+  await expect(async () => {
+    expect(
+      header.locator("div").first(),
+      "The badge complete is visible"
+    ).toContainText("complete");
+  }).toPass();
+
+  await expect(
+    currentFirstEntry,
+    "The page is still scrolled up"
+  ).toBeInViewport();
+
+  await expect(
+    followButton,
+    "The 'Follow Logs' button is not visible when the workflow has completed running"
+  ).not.toBeVisible();
 });
