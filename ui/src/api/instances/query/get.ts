@@ -22,17 +22,15 @@ export const getInstanceList = apiFactory({
     filters,
     ...queryParams
   }: { baseUrl?: string; namespace: string } & InstanceListParams) => {
-    let queryParamsString = buildSearchParamsString({
-      ...queryParams,
-    });
-
+    let queryParamsString = buildSearchParamsString({ ...queryParams }, true);
     if (filters) {
       queryParamsString = queryParamsString.concat(getFilterQuery(filters));
     }
+    queryParamsString = queryParamsString ? `?${queryParamsString}` : "";
 
     return `${
       baseUrl ?? ""
-    }/api/v2/namespaces/${namespace}/instances/${queryParamsString}`;
+    }/api/v2/namespaces/${namespace}/instances${queryParamsString}`;
   },
   method: "GET",
   schema: InstancesListResponseSchema,
