@@ -291,5 +291,5 @@ func (hs *sqlEventHistoryStore) getEventsWithWhereClause(ctx context.Context, na
 	qs := []string{whereClause}
 	qv := []interface{}{namespace, t}
 
-	return hs.getEventsQvQs(ctx, qv, qs)
+	return hs.getEventsQvQs(ctx, qv, qs, keyAndValues...)
 }
