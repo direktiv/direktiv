@@ -116,21 +116,6 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 	)
 
 	// endpoint manager
-	args.PubSubBus.Subscribe(func(ns string) {
-		gatewayManager.UpdateNamespace(ns)
-	},
-		pubsub.NamespaceCreate,
-		pubsub.MirrorSync,
-	)
-
-	// endpoint manager deletes routes/consumers on namespace delete
-	args.PubSubBus.Subscribe(func(ns string) {
-		gatewayManager.DeleteNamespace(ns)
-	},
-		pubsub.NamespaceDelete,
-	)
-
-	// on sync redo all consumers and routes on sync or single file updates
 	args.PubSubBus.Subscribe(func(data string) {
 		event := pubsub.FileChangeEvent{}
 		err := json.Unmarshal([]byte(data), &event)
@@ -138,7 +123,7 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 			slog.Error("unmarshal file change event", "err", err)
 			panic(err)
 		}
-		gatewayManager.UpdateNamespace(event.Namespace)
+		gatewayManager.UpdateAll()
 	},
 		pubsub.EndpointCreate,
 		pubsub.EndpointUpdate,
@@ -148,6 +133,9 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 		pubsub.ConsumerDelete,
 		pubsub.ConsumerUpdate,
 		pubsub.ConsumerRename,
+		pubsub.NamespaceDelete,
+		pubsub.NamespaceCreate,
+		pubsub.MirrorSync,
 	)
 
 	// initial loading of routes and consumers
