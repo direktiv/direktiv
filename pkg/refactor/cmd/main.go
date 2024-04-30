@@ -186,12 +186,6 @@ func initSLog() {
 		Level: lvl,
 	}))
 
-	if os.Getenv(util.DirektivLogFormat) == "console" {
-		slogger = slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{
-			Level: lvl,
-		}))
-	}
-
 	slog.SetDefault(slogger)
 }
 
