@@ -250,9 +250,6 @@ jobs:
           tag: sha-${{ github.sha }}
           flow:
             logging: json
-          frontend:
-            image: direktiv/direktiv-ui
-            tag: sha-${{ github.sha }}
           database:
             host: "$DB_HOST"
             port: $DB_PORT
