@@ -1,14 +1,11 @@
-export const triggerValues = ["api", "cloudevent", "instance", "cron"] as const;
+import { possibleInstanceStatuses, possibleTriggerValues } from "../schema";
 
-export const statusValues = [
-  "pending",
-  "complete",
-  "cancelled",
-  "failed",
-] as const;
+export const statusValues = possibleInstanceStatuses;
+export const triggerValues = possibleTriggerValues;
 
 export type TriggerValue = (typeof triggerValues)[number];
 export type StatusValue = (typeof statusValues)[number];
+
 export type FiltersObj = {
   AS?: { type: "CONTAINS" | "WORKFLOW"; value: string };
   STATUS?: {

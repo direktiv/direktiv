@@ -1,12 +1,21 @@
 import { z } from "zod";
 
-const InstanceStatusSchema = z.enum([
+export const possibleInstanceStatuses = [
   "pending",
   "failed",
   "cancelled",
   "crashed",
   "complete",
-]);
+] as const;
+
+const InstanceStatusSchema = z.enum(possibleInstanceStatuses);
+
+export const possibleTriggerValues = [
+  "api",
+  "cloudevent",
+  "instance",
+  "cron",
+] as const;
 
 /**
  * example
