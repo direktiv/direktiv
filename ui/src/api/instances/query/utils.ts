@@ -1,9 +1,14 @@
 import { possibleInstanceStatuses, possibleTriggerValues } from "../schema";
 
 export const statusValues = possibleInstanceStatuses;
+
 export const triggerValues = possibleTriggerValues;
 
-export type TriggerValue = (typeof triggerValues)[number];
+export type triggerValuesType =
+  | typeof possibleTriggerValues
+  | `instance:${string}`;
+
+export type TriggerValue = triggerValuesType[number];
 export type StatusValue = (typeof statusValues)[number];
 
 export type FiltersObj = {

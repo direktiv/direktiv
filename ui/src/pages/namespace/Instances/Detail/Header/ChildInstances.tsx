@@ -31,7 +31,6 @@ const ChildInstances = () => {
     filters: {
       TRIGGER: {
         type: "MATCH",
-        // @ts-expect-error TODO: [DIR-724] currently the type at FiltersObj is not correct at this poinr, we need to update the type and make the filter component of the instance list deal with it
         value: `instance:${instanceId}`,
       },
     },
