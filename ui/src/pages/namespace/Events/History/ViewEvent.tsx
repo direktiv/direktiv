@@ -14,7 +14,7 @@ import { EventSchemaType } from "~/api/eventsv2/schema";
 import { NewEventSchemaType } from "~/api/events/schema";
 import { Radio } from "lucide-react";
 import { prettifyJsonString } from "~/util/helpers";
-import { useReplayEvent } from "~/api/events/mutate/replayEvent";
+import { useReplayEvent } from "~/api/eventsv2/mutate/replayEvent";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 
