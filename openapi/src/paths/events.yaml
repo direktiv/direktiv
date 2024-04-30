@@ -187,6 +187,9 @@
   post:
     tags:
     - events
+    summary: Replay a event from the event-history.
+    description: |
+      This endpoint allows to replay a event from the event-history.
     parameters:
       - name: namespace
         in: path
