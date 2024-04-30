@@ -23,7 +23,7 @@ const Row = ({
   const { t } = useTranslation();
   const createdAt = useUpdatedAt(listener.createdAt);
 
-  // TODO: rename triggerWorkflow, triggerInstance ?
+  // TODO: rename triggerWorkflow, triggerInstance in API?
   const { triggerWorkflow: workflow, triggerInstance: instance } = listener;
   const listenerType = instance ? "instance" : "workflow";
   const target = workflow || instance;

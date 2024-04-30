@@ -8,10 +8,10 @@ const MemoizedEventStream = memo((params: UseEventsStreamParams) => {
   return null;
 });
 
-MemoizedEventStream.displayName = "MemoizedLogsStream";
+MemoizedEventStream.displayName = "MemoizedEventStream";
 
 export const EventStreamingSubscriber = (params: UseEventsStreamParams) => {
-  const { isFetching } = useEvents({ enabled: true }); // Todo: should this be enabled here? probably not.
+  const { isFetching } = useEvents(params);
 
   /**
    * when events are fetched (via non-streaming api), the subscription
