@@ -13,11 +13,11 @@ import {
 
 import { Card } from "~/design/Card";
 import { EventSchemaType } from "~/api/eventsv2/schema";
+import EventsScroller from "./components/EventsScroller";
 import Filters from "./components/Filters";
 import { FiltersObj } from "~/api/events/query/get";
 import { Pagination } from "~/components/Pagination";
 import { Radio } from "lucide-react";
-import Row from "./Row";
 import SendEvent from "./SendEvent";
 import ViewEvent from "./ViewEvent";
 import { itemsPerPage } from ".";
@@ -102,15 +102,7 @@ const EventsList = ({
                       </TableCell>
                     </TableRow>
                   ) : (
-                    data?.map((event) => (
-                      <Row
-                        key={event.event.id}
-                        event={event.event}
-                        receivedAt={event.receivedAt}
-                        namespace={event.namespace}
-                        onClick={setEventDialog}
-                      />
-                    ))
+                    <EventsScroller />
                   )}
                 </>
               ) : (
