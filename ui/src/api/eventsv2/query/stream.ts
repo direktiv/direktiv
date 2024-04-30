@@ -52,13 +52,9 @@ const updateCache = (
 };
 
 const getUrl = (params: EventsParams) => {
-  const { baseUrl, namespace, useStreaming } = params;
+  const { baseUrl, namespace } = params;
 
-  let urlPath = `/api/v2/namespaces/${namespace}/events/history`;
-
-  if (useStreaming) {
-    urlPath = `${urlPath}/subscribe`;
-  }
+  const urlPath = `/api/v2/namespaces/${namespace}/events/history/subscribe`;
 
   return `${baseUrl ?? ""}${urlPath}`;
 };

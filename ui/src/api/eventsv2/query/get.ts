@@ -76,12 +76,4 @@ export const useEvents = ({ enabled = true }) => {
     ...queryReturn,
     data: logData,
   };
-
-  // return useQueryWithPermissions({
-  //   queryKey: eventKeys.eventsList(namespace, {
-  //     apiKey: apiKey ?? undefined,
-  //   }),
-  //   queryFn: fetchEvents,
-  //   enabled: !!namespace,
-  // });
 };
