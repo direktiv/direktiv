@@ -1,4 +1,3 @@
-import { FiltersObj, useInstances } from "~/api/instances_obsolete/query/get";
 import {
   NoPermissions,
   NoResult,
@@ -13,8 +12,8 @@ import {
 import { Boxes } from "lucide-react";
 import { Card } from "~/design/Card";
 import Filters from "../components/Filters";
+import { FiltersObj } from "~/api/instances/query/utils";
 import { MinimalPagination } from "~/components/Pagination/MinimalPagination";
-import { Pagination } from "~/components/Pagination";
 import RefreshButton from "~/design/RefreshButton";
 import Row from "./Row";
 import { useInstanceList } from "~/api/instances/query/get";
@@ -39,6 +38,7 @@ const InstancesListPage = () => {
   } = useInstanceList({
     limit: instancesPerPage,
     offset,
+    filters,
   });
 
   const handleFilterChange = (filters: FiltersObj) => {
@@ -49,7 +49,7 @@ const InstancesListPage = () => {
   const numberOfInstances = 0; // TODO: numberOfInstances;
   const noResults = isSuccess && instances.length === 0;
   const showPagination = true; // TODO: numberOfInstances > instancesPerPage;
-  const hasFilters = false; // TODO: !!Object.keys(filters).length;
+  const hasFilters = !!Object.keys(filters).length;
 
   if (!namespace) return null;
 
@@ -71,8 +71,7 @@ const InstancesListPage = () => {
         />
       </div>
       <Card>
-        {/* TODO: */}
-        {/* <Filters filters={filters} onUpdate={handleFilterChange} /> */}
+        <Filters filters={filters} onUpdate={handleFilterChange} />
         <Table className="border-t border-gray-5 dark:border-gray-dark-5">
           <TableHead>
             <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
