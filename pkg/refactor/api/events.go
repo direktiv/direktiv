@@ -33,6 +33,7 @@ func (c *eventsController) mountEventHistoryRouter(r chi.Router) {
 	r.Get("/", c.listEvents)         // Retrieve a list of events
 	r.Get("/subscribe", c.subscribe) // Retrieve a event updates via sse
 	r.Get("/{eventID}", c.getEvent)  // Get details of a single event
+	r.Post("/replay/{eventID}", c.replay)
 }
 
 func (c *eventsController) mountEventListenerRouter(r chi.Router) {
@@ -102,6 +103,22 @@ func (c *eventsController) getEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, d)
+}
+
+func (c *eventsController) replay(w http.ResponseWriter, r *http.Request) {
+	eventID := ""
+	ns := extractContextNamespace(r)
+
+	if v := chi.URLParam(r, "eventID"); v != "" {
+		eventID = v
+	}
+	d, err := c.store.EventHistory().GetByID(r.Context(), eventID)
+	if err != nil {
+		writeInternalError(w, err)
+
+		return
+	}
+	processEvents(c, r, ns, []event.Event{*d.Event})
 }
 
 func (c *eventsController) subscribe(w http.ResponseWriter, r *http.Request) {
@@ -288,20 +305,23 @@ func (c *eventsController) registerCoudEvent(w http.ResponseWriter, r *http.Requ
 
 		return
 	}
+	dEvs := convertEvents(*ns, evs...)
+	c.store.EventHistory().Append(r.Context(), dEvs)
+
+	processEvents(c, r, ns, evs)
+	// status ok here.
+}
+
+func processEvents(c *eventsController, r *http.Request, ns *datastore.Namespace, evs []event.Event) {
 	engine := events.EventEngine{
 		WorkflowStart:       c.startWorkflow,
 		WakeInstance:        c.wakeInstance,
 		GetListenersByTopic: c.store.EventListenerTopics().GetListeners,
 		UpdateListeners:     c.store.EventListener().UpdateOrDelete,
 	}
-
-	dEvs := convertEvents(*ns, evs...)
-	c.store.EventHistory().Append(r.Context(), dEvs)
-
 	engine.ProcessEvents(r.Context(), ns.ID, evs, func(template string, args ...interface{}) {
 		slog.Error(fmt.Sprintf(template, args...))
 	})
-	// status ok here.
 }
 
 func extractBatchevent(data []byte) ([]cloudevents.Event, error) {
@@ -373,27 +393,27 @@ func extractEventFilterParams(r *http.Request) []string {
 		params = append(params, "namespace")
 		params = append(params, v)
 	}
-	if v := chi.URLParam(r, "createdBefore"); v != "" {
+	if v := r.URL.Query().Get("createdBefore"); v != "" {
 		params = append(params, "created_before")
 		params = append(params, v)
 	}
-	if v := chi.URLParam(r, "createdAfter"); v != "" {
+	if v := r.URL.Query().Get("createdAfter"); v != "" {
 		params = append(params, "created_after")
 		params = append(params, v)
 	}
-	if v := chi.URLParam(r, "receivedBefore"); v != "" {
+	if v := r.URL.Query().Get("receivedBefore"); v != "" {
 		params = append(params, "received_before")
 		params = append(params, v)
 	}
-	if v := chi.URLParam(r, "receivedAfter"); v != "" {
+	if v := r.URL.Query().Get("receivedAfter"); v != "" {
 		params = append(params, "received_after")
 		params = append(params, v)
 	}
-	if v := chi.URLParam(r, "eventContains"); v != "" {
+	if v := r.URL.Query().Get("eventContains"); v != "" {
 		params = append(params, "event_contains")
 		params = append(params, v)
 	}
-	if v := chi.URLParam(r, "typeContains"); v != "" {
+	if v := r.URL.Query().Get("typeContains"); v != "" {
 		params = append(params, "type_contains")
 		params = append(params, v)
 	}

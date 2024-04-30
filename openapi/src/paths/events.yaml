@@ -59,6 +59,7 @@
                   description: The type of the event.
                 additionalProperties:
                   type: object
+
 /api/v2/namespaces/{namespace}/events/history:
   get:
     tags:
@@ -181,6 +182,30 @@
                             type: string
                           additionalProperties:
                             type: object
+
+/api/v2/namespaces/{namespace}/events/history/replay/{eventID}:
+  post:
+    tags:
+    - events
+    summary: Replay a event from the event-history.
+    description: |
+      This endpoint allows to replay a event from the event-history.
+    parameters:
+      - name: namespace
+        in: path
+        description: The namespace to from which the cloud event has to be replayed.
+        required: true
+        schema:
+            type: string
+            pattern: '^(([a-z][a-z0-9_\-\.]*[a-z0-9])|([a-z]))$'
+        style: simple
+      - name: eventID
+        in: path
+        description: The event-id of the cloud event.
+        required: true
+        schema:
+            type: string
+
 /api/v2/namespaces/{namespace}/events/subscribe:
   get:
     tags:
@@ -246,6 +271,7 @@
               id: 2
               event: message
               data: {"Event":{"specversion":"1.0","id":"1234-234234","source":"https://direktiv.io/test","type":"testerDuplicate"},"namespace":"e09f0392-fe09-4378-bc0a-de3ab634f4e6","namespaceName":"wfeventsv2","receivedAt":"2024-04-25T14:28:56.374148Z", "serialID":2}
+
 /api/v2/namespaces/{namespace}/events/listener:
   get:
     tags:
