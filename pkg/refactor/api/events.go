@@ -33,6 +33,7 @@ func (c *eventsController) mountEventHistoryRouter(r chi.Router) {
 	r.Get("/", c.listEvents)         // Retrieve a list of events
 	r.Get("/subscribe", c.subscribe) // Retrieve a event updates via sse
 	r.Get("/{eventID}", c.getEvent)  // Get details of a single event
+	r.Post("/resend/{eventID}", c.resend)
 }
 
 func (c *eventsController) mountEventListenerRouter(r chi.Router) {
@@ -102,6 +103,22 @@ func (c *eventsController) getEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, d)
+}
+
+func (c *eventsController) resend(w http.ResponseWriter, r *http.Request) {
+	eventID := ""
+	ns := extractContextNamespace(r)
+
+	if v := chi.URLParam(r, "eventID"); v != "" {
+		eventID = v
+	}
+	d, err := c.store.EventHistory().GetByID(r.Context(), eventID)
+	if err != nil {
+		writeInternalError(w, err)
+
+		return
+	}
+	processEvents(c, r, ns, []event.Event{*d.Event})
 }
 
 func (c *eventsController) subscribe(w http.ResponseWriter, r *http.Request) {
@@ -289,20 +306,23 @@ func (c *eventsController) registerCoudEvent(w http.ResponseWriter, r *http.Requ
 
 		return
 	}
+	dEvs := convertEvents(*ns, evs...)
+	c.store.EventHistory().Append(r.Context(), dEvs)
+
+	processEvents(c, r, ns, evs)
+	// status ok here.
+}
+
+func processEvents(c *eventsController, r *http.Request, ns *datastore.Namespace, evs []event.Event) {
 	engine := events.EventEngine{
 		WorkflowStart:       c.startWorkflow,
 		WakeInstance:        c.wakeInstance,
 		GetListenersByTopic: c.store.EventListenerTopics().GetListeners,
 		UpdateListeners:     c.store.EventListener().UpdateOrDelete,
 	}
-
-	dEvs := convertEvents(*ns, evs...)
-	c.store.EventHistory().Append(r.Context(), dEvs)
-
 	engine.ProcessEvents(r.Context(), ns.ID, evs, func(template string, args ...interface{}) {
 		slog.Error(fmt.Sprintf(template, args...))
 	})
-	// status ok here.
 }
 
 func extractBatchevent(data []byte) ([]cloudevents.Event, error) {
