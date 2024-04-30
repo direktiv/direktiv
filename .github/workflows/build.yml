@@ -262,27 +262,9 @@ jobs:
       - name: Install Direktiv chart
         run: helm install direktiv -f dev.yaml ./charts/direktiv/
 
-      - name: Wait for Direktiv pods to be ready
-        run: |
-          sleep 1
-          kubectl wait --for=condition=Ready pod -l app.kubernetes.io/instance=direktiv --timeout=120s
-          kubectl wait --for=condition=Ready pod -l app.kubernetes.io/name=direktiv-frontend --timeout=120s
-
-      - name: Get Internal IP
-        id: getInternalIP
-        run: |
-          internal_ip=$(kubectl get service direktiv-ingress-nginx-controller -o jsonpath='{.spec.clusterIP}')
-          echo "internal_ip=$internal_ip" >> $GITHUB_ENV
-
-      - name: Set Environment Variables
-        run: echo "DIREKTIV_HOST=${{ env.internal_ip }}" >> $GITHUB_ENV
-
-      - name: Print DIREKTIV_HOST
-        run: echo "DIREKTIV_HOST is set to ${{ env.DIREKTIV_HOST }}"
-
       - name: Wait until API is healthy
         run: |
-          endpoint="http://${{ env.DIREKTIV_HOST }}/api/v2/status"
+          endpoint="http://127.0.0.1:80/api/v2/status"
 
           for attempt in {1..20}; do
             status_code=$(curl -s -o /dev/null -w "%{http_code}" $endpoint)
