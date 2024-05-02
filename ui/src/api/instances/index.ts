@@ -10,9 +10,9 @@ export const instanceKeys = {
       filters,
     }: {
       apiKey?: string;
-      filters?: FiltersObj;
       limit?: number;
       offset?: number;
+      filters?: FiltersObj;
     }
   ) =>
     [
@@ -20,9 +20,9 @@ export const instanceKeys = {
         scope: "instance-list",
         apiKey,
         namespace,
-        filters,
         limit,
         offset,
+        filters,
       },
     ] as const,
   instancesDetails: (
