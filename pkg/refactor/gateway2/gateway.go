@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"slices"
+	"strings"
 	"sync"
 
 	"github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins"
@@ -16,8 +17,6 @@ import (
 	_ "github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/outbound"
 	_ "github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/target"
 )
-
-const ctxKeyConsumers = "ctx_consumers"
 
 type manager struct {
 	mux       *sync.Mutex
@@ -35,10 +34,19 @@ func NewManager() core.GatewayManagerV2 {
 }
 
 func (m *manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	var router *http.ServeMux
 	m.mux.Lock()
-	defer m.mux.Unlock()
+	router = m.router
+	m.mux.Unlock()
 
-	m.router.ServeHTTP(w, r)
+	if router == nil {
+		writeJsonError(w, http.StatusServiceUnavailable, "",
+			fmt.Sprintf("no active gateway endpoints"))
+
+		return
+	}
+
+	router.ServeHTTP(w, r)
 }
 
 func (m *manager) SetEndpoints(list []core.EndpointV2) {
@@ -78,9 +86,13 @@ func (m *manager) build() {
 		for _, pConfig := range pConfigs {
 			p, err := plugins.NewPlugin(pConfig)
 			if err != nil {
-				item.Errors = append(item.Errors, err)
+				item.Errors = append(item.Errors, fmt.Errorf("plugin '%s' config: %w", pConfig.Typ, err))
 			}
 			pChain = append(pChain, p)
+		}
+
+		if len(item.PluginsConfig.Auth) == 0 && !item.AllowAnonymous {
+			item.Errors = append(item.Errors, fmt.Errorf("AllowAnonymous is false but zero auth plugin configured"))
 		}
 
 		// only mount http handler when plugins has zero errors.
@@ -90,14 +102,25 @@ func (m *manager) build() {
 				if !slices.Contains(item.Methods, r.Method) {
 					writeJsonError(w, http.StatusMethodNotAllowed, item.FilePath,
 						fmt.Sprintf("method:%s is not allowed with this endpoint", r.Method))
-				}
 
+					return
+				}
 				// inject consumer files.
-				r = r.WithContext(context.WithValue(r.Context(), ctxKeyConsumers,
+				r = r.WithContext(context.WithValue(r.Context(), core.GATEWAY_CTX_KEY_CONSUMERS,
 					m.listNamespacedConsumers(item.Namespace)))
 
 				for _, p := range pChain {
-					if ok := p.Execute(w, r); !ok {
+					// checkpoint if auth plugins had a match.
+					if !isAuthPlugin(p) {
+						// case where auth is required but request is not authenticated (consumers doesn't match).
+						if !item.AllowAnonymous && !hasActiveConsumer(r) {
+							writeJsonError(w, http.StatusForbidden, item.FilePath,
+								fmt.Sprintf("authentication failed"))
+
+							return
+						}
+					}
+					if r = p.Execute(w, r); r != nil {
 						break
 					}
 				}
@@ -159,4 +182,12 @@ func writeJsonError(w http.ResponseWriter, status int, endpointFile string, err 
 		Error:        err,
 	}
 	_ = json.NewEncoder(w).Encode(payload)
+}
+
+func isAuthPlugin(p core.PluginV2) bool {
+	return strings.Contains(p.Type(), "-auth") || strings.Contains(p.Type(), "auth-")
+}
+
+func hasActiveConsumer(r *http.Request) bool {
+	return r.Context().Value(core.GATEWAY_CTX_KEY_ACTIVE_CONSUMER) != nil
 }

@@ -8,6 +8,9 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+const GATEWAY_CTX_KEY_CONSUMERS = "ctx_consumers"
+const GATEWAY_CTX_KEY_ACTIVE_CONSUMER = "ctx_active_consumer"
+
 type GatewayManagerV2 interface {
 	http.Handler
 
@@ -49,7 +52,7 @@ type PluginConfigV2 struct {
 }
 
 type PluginV2 interface {
-	Execute(w http.ResponseWriter, r *http.Request) bool
+	Execute(w http.ResponseWriter, r *http.Request) *http.Request
 	Config() any
 	Type() string
 }
@@ -67,6 +70,16 @@ type ConsumerV2 struct {
 
 	Namespace string
 	FilePath  string
+}
+
+func FindConsumerByUser(user string, list []ConsumerV2) *ConsumerV2 {
+	for _, item := range list {
+		if item.Username == user {
+			return &item
+		}
+	}
+
+	return nil
 }
 
 func ParseConsumerFileV2(data []byte) (*ConsumerFileV2, error) {
