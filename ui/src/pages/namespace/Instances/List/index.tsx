@@ -106,7 +106,7 @@ const InstancesListPage = () => {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  instances?.map((instance) => (
+                  instances.map((instance) => (
                     <Row
                       instance={instance}
                       key={instance.id}

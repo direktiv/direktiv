@@ -46,7 +46,7 @@ const Instances = ({ workflow }: { workflow: string }) => {
         <ScrollArea className="h-full">
           <Table>
             <TableBody>
-              {instances?.map((instance) => (
+              {instances.map((instance) => (
                 <InstanceRow key={instance.id} instance={instance} />
               ))}
             </TableBody>
