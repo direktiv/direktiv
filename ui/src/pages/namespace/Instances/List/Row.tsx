@@ -98,7 +98,7 @@ const InstanceTableRow: FC<{
                   {children}
                 </HoverCardTrigger>
                 <HoverCardContent
-                  // asChild
+                  asChild
                   noBackground
                   data-testid="tooltip-copy-content"
                 >
