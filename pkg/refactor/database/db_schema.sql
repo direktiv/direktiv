@@ -244,29 +244,12 @@ CREATE TABLE IF NOT EXISTS "event_topics" (
 -- is a compound like this: "namespace-id:event-type"
 CREATE INDEX IF NOT EXISTS "event_topic_bucket" ON "event_topics" USING hash("topic");
 
-CREATE TABLE IF NOT EXISTS "metrics" (
-    "id" serial,
-    "namespace" text,
-    "workflow" text,
-    "instance" text,
-    "state" text,
-    "timestamp" timestamptz DEFAULT CURRENT_TIMESTAMP,
-    "workflow_ms" integer,
-    "isolate_ms" integer,
-    "error_code" text,
-    "invoker" text,
-    "next" integer,
-    "transition" text,
-    PRIMARY KEY ("id")
-);
-
 -- Remove file_annotations.
 DROP TABLE IF EXISTS "file_annotations";
 
 -- Remove filesystem_revisions table and move its columns to filesystem_file table.
 ALTER TABLE "instances_v2" DROP COLUMN IF EXISTS "revision_id";
 ALTER TABLE "instances_v2" ADD COLUMN IF NOT EXISTS "server" uuid;
-ALTER TABLE "metrics" DROP COLUMN IF EXISTS "revision";
 DROP TABLE IF EXISTS "filesystem_revisions";
 ALTER TABLE "filesystem_files" ADD COLUMN IF NOT EXISTS "data" bytea;
 ALTER TABLE "filesystem_files" ADD COLUMN IF NOT EXISTS "checksum" text;
@@ -279,3 +262,5 @@ ALTER TABLE "event_topics" ADD COLUMN IF NOT EXISTS "namespace" text;
 ALTER TABLE "namespaces" DROP COLUMN IF EXISTS "config";
 
 ALTER TABLE "mirror_configs" ADD COLUMN IF NOT EXISTS "auth_type" text NOT NULL DEFAULT 'public';
+
+DROP TABLE IF EXISTS "metrics";
