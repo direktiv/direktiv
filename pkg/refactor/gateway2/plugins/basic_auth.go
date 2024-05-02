@@ -50,7 +50,7 @@ func (ba *BasicAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) *http
 
 	slog.Debug("running basic-auth plugin", "user", user)
 
-	gwObj := r.Context().Value(core.GATEWAY_CTX_KEY_CONSUMERS)
+	gwObj := r.Context().Value(core.GatewayCtxKeyConsumers)
 	if gwObj == nil {
 		slog.Debug("no consumer list in context", slog.String("user", user))
 
@@ -84,7 +84,7 @@ func (ba *BasicAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) *http
 
 	if usernameMatch && passwordMatch {
 		// set active comsumer.
-		r = r.WithContext(context.WithValue(r.Context(), core.GATEWAY_CTX_KEY_ACTIVE_CONSUMER, consumer))
+		r = r.WithContext(context.WithValue(r.Context(), core.GatewayCtxKeyActiveConsumer, consumer))
 		// set headers if configured.
 		if ba.config.AddUsernameHeader {
 			r.Header.Set(plugins.ConsumerUserHeader, consumer.Username)

@@ -105,7 +105,7 @@ func (m *manager) build() {
 					return
 				}
 				// inject consumer files.
-				r = r.WithContext(context.WithValue(r.Context(), core.GATEWAY_CTX_KEY_CONSUMERS,
+				r = r.WithContext(context.WithValue(r.Context(), core.GatewayCtxKeyConsumers,
 					m.listNamespacedConsumers(item.Namespace)))
 
 				for _, p := range pChain {
@@ -188,5 +188,5 @@ func isAuthPlugin(p core.PluginV2) bool {
 }
 
 func hasActiveConsumer(r *http.Request) bool {
-	return r.Context().Value(core.GATEWAY_CTX_KEY_ACTIVE_CONSUMER) != nil
+	return r.Context().Value(core.GatewayCtxKeyActiveConsumer) != nil
 }

@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	GATEWAY_CTX_KEY_CONSUMERS       = "ctx_consumers"
-	GATEWAY_CTX_KEY_ACTIVE_CONSUMER = "ctx_active_consumer"
+	GatewayCtxKeyConsumers      = "ctx_consumers"
+	GatewayCtxKeyActiveConsumer = "ctx_active_consumer"
 )
 
 type GatewayManagerV2 interface {
