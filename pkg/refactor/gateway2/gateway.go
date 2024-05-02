@@ -9,13 +9,12 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins"
-
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	_ "github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/auth"
 	_ "github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/inbound"
 	_ "github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/outbound"
 	_ "github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/target"
+	"github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins"
 )
 
 type manager struct {
@@ -40,7 +39,7 @@ func (m *manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	m.mux.Unlock()
 
 	if router == nil {
-		writeJsonError(w, http.StatusServiceUnavailable, "",
+		writeJSONError(w, http.StatusServiceUnavailable, "",
 			fmt.Sprintf("no active gateway endpoints"))
 
 		return
@@ -100,7 +99,7 @@ func (m *manager) build() {
 			newRouter.HandleFunc(item.Path, func(w http.ResponseWriter, r *http.Request) {
 				// check if correct method.
 				if !slices.Contains(item.Methods, r.Method) {
-					writeJsonError(w, http.StatusMethodNotAllowed, item.FilePath,
+					writeJSONError(w, http.StatusMethodNotAllowed, item.FilePath,
 						fmt.Sprintf("method:%s is not allowed with this endpoint", r.Method))
 
 					return
@@ -114,7 +113,7 @@ func (m *manager) build() {
 					if !isAuthPlugin(p) {
 						// case where auth is required but request is not authenticated (consumers doesn't match).
 						if !item.AllowAnonymous && !hasActiveConsumer(r) {
-							writeJsonError(w, http.StatusForbidden, item.FilePath,
+							writeJSONError(w, http.StatusForbidden, item.FilePath,
 								fmt.Sprintf("authentication failed"))
 
 							return
@@ -170,7 +169,7 @@ func (m *manager) ListConsumers(namespace string) []core.ConsumerV2 {
 	return m.listNamespacedConsumers(namespace)
 }
 
-func writeJsonError(w http.ResponseWriter, status int, endpointFile string, err string) {
+func writeJSONError(w http.ResponseWriter, status int, endpointFile string, err string) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 
