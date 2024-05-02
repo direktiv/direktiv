@@ -19,7 +19,7 @@ test.afterEach(async () => {
 });
 
 test("Consumer list is empty by default", async ({ page }) => {
-  await page.goto(`/${namespace}/gateway/consumers`, {
+  await page.goto(`/n/${namespace}/gateway/consumers`, {
     waitUntil: "networkidle",
   });
 
@@ -56,7 +56,7 @@ test("Consumer list shows all available consumers", async ({ page }) => {
     )
     .toBeTruthy();
 
-  await page.goto(`/${namespace}/gateway/consumers`, {
+  await page.goto(`/n/${namespace}/gateway/consumers`, {
     waitUntil: "networkidle",
   });
 
@@ -122,7 +122,7 @@ test("Consumer list will update the consumers when refetch button is clicked", a
     }),
   });
 
-  await page.goto(`/${namespace}/gateway/consumers`, {
+  await page.goto(`/n/${namespace}/gateway/consumers`, {
     waitUntil: "networkidle",
   });
 

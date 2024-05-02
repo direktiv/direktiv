@@ -1,5 +1,6 @@
 import { ConsumerSchemaType } from "~/api/gateway/schema";
 import { getConsumers } from "~/api/gateway/query/getConsumers";
+import { headers } from "e2e/utils/testutils";
 
 type CreateRedisConsumerFileParams = {
   username?: string;
@@ -25,15 +26,33 @@ type FindConsumerWithApiRequestParams = {
   match: (consumer: ConsumerSchemaType) => boolean;
 };
 
+// type ErrorType = { response: { status?: number } };
+
 export const findConsumerWithApiRequest = async ({
   namespace,
   match,
 }: FindConsumerWithApiRequestParams) => {
-  const { data: consumers } = await getConsumers({
-    urlParams: {
-      baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
-      namespace,
-    },
-  });
-  return consumers.find(match);
+  try {
+    const { data: consumers } = await getConsumers({
+      urlParams: {
+        baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
+        namespace,
+      },
+      headers,
+    });
+    return consumers.find(match);
+  } catch (error) {
+    // Temporary workaround: Until DIR-1503 is resolved, fail silently even on
+    // 500 errors. Ideally, we should only catch 404s and still throw unexpected errors
+    // (as implemented in the commented code).
+    return false;
+    // const typedError = error as ErrorType;
+    // if (typedError.response.status === 404) {
+    //   // fail silently to allow for using poll() in tests
+    //   return false;
+    // }
+    // throw new Error(
+    //   `Unexpected error ${typedError?.response?.status} during lookup of consumer ${match} in namespace ${namespace}`
+    // );
+  }
 };

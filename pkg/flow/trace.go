@@ -31,6 +31,7 @@ func (c *Carrier) Keys() []string {
 	for k := range c.Trace {
 		keys = append(keys, k)
 	}
+
 	return keys
 }
 
@@ -45,6 +46,7 @@ func dbTrace(ctx context.Context) *Carrier {
 	}
 	prop := otel.GetTextMapPropagator()
 	prop.Inject(ctx, carrier)
+
 	return carrier
 }
 
@@ -253,7 +255,7 @@ func traceProcessingMessage(ctx context.Context) (context.Context, func()) {
 	return ctx, finish
 }
 
-func traceMessageTrigger(ctx context.Context, triggerDescription string) (context.Context, func()) {
+func traceMessageTrigger(ctx context.Context, triggerDescription string) (context.Context, func()) { //nolint:unparam
 	tp := otel.GetTracerProvider()
 	tr := tp.Tracer("direktiv/flow")
 	ctx, span := tr.Start(ctx, "triggered-by-event", trace.WithSpanKind(trace.SpanKindInternal))
@@ -266,5 +268,6 @@ func traceMessageTrigger(ctx context.Context, triggerDescription string) (contex
 	finish := func() {
 		span.End()
 	}
+
 	return ctx, finish
 }

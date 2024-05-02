@@ -4,9 +4,17 @@ import { z } from "zod";
  * example:
  * 
   {
-    "data": "c898514fa"
+    "data": {
+      "version": "latest-04b8cb1a0",
+      "isEnterprise": false,
+      "requiresAuth": false
+    }
   }
  */
 export const VersionSchema = z.object({
-  data: z.string(),
+  data: z.object({
+    version: z.string(),
+    isEnterprise: z.boolean(),
+    requiresAuth: z.boolean(),
+  }),
 });

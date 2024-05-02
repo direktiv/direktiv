@@ -7,7 +7,7 @@ import {
 import { Trans, useTranslation } from "react-i18next";
 
 import Button from "~/design/Button";
-import { RotateCcw } from "lucide-react";
+import { RotateCw } from "lucide-react";
 import { ServiceSchemaType } from "~/api/services/schema/services";
 import { useRebuildService } from "~/api/services/mutate/rebuild";
 
@@ -19,7 +19,7 @@ const Rebuild = ({
   close: () => void;
 }) => {
   const { t } = useTranslation();
-  const { mutate: rebuildService, isLoading } = useRebuildService({
+  const { mutate: rebuildService, isPending } = useRebuildService({
     onSuccess: () => {
       close();
     },
@@ -29,7 +29,7 @@ const Rebuild = ({
     <>
       <DialogHeader>
         <DialogTitle>
-          <RotateCcw /> {t("pages.services.list.rebuild.title")}
+          <RotateCw /> {t("pages.services.list.rebuild.title")}
         </DialogTitle>
       </DialogHeader>
       <div className="my-3">
@@ -49,9 +49,9 @@ const Rebuild = ({
             rebuildService(service.id);
           }}
           variant="destructive"
-          loading={isLoading}
+          loading={isPending}
         >
-          {!isLoading && <RotateCcw />}
+          {!isPending && <RotateCw />}
           {t("pages.services.list.rebuild.deleteBtn")}
         </Button>
       </DialogFooter>

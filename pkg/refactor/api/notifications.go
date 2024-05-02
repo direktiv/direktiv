@@ -23,9 +23,10 @@ func (c *notificationsController) mountRouter(r chi.Router) {
 }
 
 type apiNotification struct {
-	Type  string `json:"type"`
-	Issue string `json:"issue"`
-	Level string `json:"level"`
+	Type        string `json:"type"`
+	Description string `json:"description"`
+	Count       *int   `json:"count,omitempty"`
+	Level       string `json:"level"`
 }
 
 func (c *notificationsController) list(w http.ResponseWriter, r *http.Request) {
@@ -76,10 +77,13 @@ func (c *notificationsController) lintSecrets(ctx context.Context, tx *database.
 
 	sort.Strings(keys)
 
+	count := len(keys)
+
 	issues = append(issues, &apiNotification{
-		Level: "warning",
-		Type:  "uninitialized_secrets",
-		Issue: fmt.Sprintf(`secrets have not been initialized: %v`, keys),
+		Level:       "warning",
+		Type:        "uninitialized_secrets",
+		Description: fmt.Sprintf(`secrets have not been initialized: %v`, keys),
+		Count:       &count,
 	})
 
 	return issues, nil

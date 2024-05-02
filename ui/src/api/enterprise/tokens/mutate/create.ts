@@ -41,11 +41,11 @@ export const useCreateToken = ({
         payload: tokenFormProps,
       }),
     onSuccess(data) {
-      queryClient.invalidateQueries(
-        tokenKeys.tokenList(namespace, {
+      queryClient.invalidateQueries({
+        queryKey: tokenKeys.tokenList(namespace, {
           apiKey: apiKey ?? undefined,
-        })
-      );
+        }),
+      });
       onSuccess?.(data);
     },
     onError: () => {

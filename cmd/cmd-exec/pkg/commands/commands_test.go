@@ -18,11 +18,11 @@ import (
 )
 
 var b bytes.Buffer
+var port int
 
 func TestMain(m *testing.M) {
-	s, port, wgExit := startHttpServer(&b)
-	os.Setenv("DIREKTIV_HTTP_BACKEND", fmt.Sprintf("http://localhost:%d", port))
-
+	s, port1, wgExit := startHttpServer(&b)
+	port = port1
 	m.Run()
 
 	s.Shutdown(context.Background())
@@ -37,7 +37,7 @@ func TestCommandSuppress(t *testing.T) {
 
 	se := &server.ExecutionInfo{
 		TmpDir: dir,
-		Log:    server.NewLogger("123"),
+		Log:    server.NewLogger(fmt.Sprintf("http://localhost:%d", port), "123"),
 	}
 
 	cmds := commands.Commands{
@@ -78,7 +78,7 @@ func TestOutputSuppress(t *testing.T) {
 
 	se := &server.ExecutionInfo{
 		TmpDir: dir,
-		Log:    server.NewLogger("123"),
+		Log:    server.NewLogger(fmt.Sprintf("http://localhost:%d", port), "123"),
 	}
 
 	cmds := commands.Commands{
@@ -109,7 +109,7 @@ func TestErrors(t *testing.T) {
 
 	se := &server.ExecutionInfo{
 		TmpDir: dir,
-		Log:    server.NewLogger("123"),
+		Log:    server.NewLogger(fmt.Sprintf("http://localhost:%d", port), "123"),
 	}
 
 	cmds := commands.Commands{
@@ -139,7 +139,7 @@ func TestStopOnTestErrors(t *testing.T) {
 	dir, _ := os.MkdirTemp(os.TempDir(), "prefix")
 	se := &server.ExecutionInfo{
 		TmpDir: dir,
-		Log:    server.NewLogger("123"),
+		Log:    server.NewLogger(fmt.Sprintf("http://localhost:%d", port), "123"),
 	}
 	defer os.RemoveAll(dir)
 
@@ -207,7 +207,7 @@ func TestCommandEnvs(t *testing.T) {
 
 	se := &server.ExecutionInfo{
 		TmpDir: dir,
-		Log:    server.NewLogger("123"),
+		Log:    server.NewLogger(fmt.Sprintf("http://localhost:%d", port), "123"),
 	}
 
 	cmds := commands.Commands{

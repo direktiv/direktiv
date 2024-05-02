@@ -7,11 +7,13 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
+	"github.com/direktiv/direktiv/pkg/refactor/events"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/direktiv/direktiv/pkg/refactor/middlewares"
 	pubsub2 "github.com/direktiv/direktiv/pkg/refactor/pubsub"
@@ -24,7 +26,7 @@ const (
 	readHeaderTimeout = 5 * time.Second
 )
 
-func Initialize(app core.App, db *database.SQLStore, bus *pubsub2.Bus, instanceManager *instancestore.InstanceManager, addr string, circuit *core.Circuit) error {
+func Initialize(app core.App, db *database.SQLStore, bus *pubsub2.Bus, instanceManager *instancestore.InstanceManager, wakeByEvents events.WakeEventsWaiter, startByEvents events.WorkflowStart, addr string, circuit *core.Circuit) error {
 	funcCtr := &serviceController{
 		manager: app.ServiceManager,
 	}
@@ -60,6 +62,11 @@ func Initialize(app core.App, db *database.SQLStore, bus *pubsub2.Bus, instanceM
 	metricsCtr := &metricsController{
 		db: db,
 	}
+	eventsCtr := eventsController{
+		store:         db.DataStore(),
+		wakeInstance:  wakeByEvents,
+		startWorkflow: startByEvents,
+	}
 
 	mw := &appMiddlewares{dStore: db.DataStore()}
 
@@ -92,9 +99,21 @@ func Initialize(app core.App, db *database.SQLStore, bus *pubsub2.Bus, instanceM
 	r.Handle("/gw/*", app.GatewayManager)
 	r.Handle("/ns/{namespace}/*", app.GatewayManager)
 
-	r.Get("/api/v2/version", func(w http.ResponseWriter, r *http.Request) {
-		writeJSON(w, version.Version)
+	// version endpoint
+	r.Get("/api/v2/status", func(w http.ResponseWriter, r *http.Request) {
+		data := struct {
+			Version      string `json:"version"`
+			IsEnterprise bool   `json:"isEnterprise"`
+			RequiresAuth bool   `json:"requiresAuth"`
+		}{
+			Version:      version.Version,
+			IsEnterprise: app.Config.IsEnterprise,
+			RequiresAuth: os.Getenv("DIREKTIV_API_KEY") != "",
+		}
+
+		writeJSON(w, data)
 	})
+
 	logCtr := &logController{
 		store: db.DataStore().NewLogs(),
 	}
@@ -154,6 +173,15 @@ func Initialize(app core.App, db *database.SQLStore, bus *pubsub2.Bus, instanceM
 					return
 				}
 				writeJSON(w, data)
+			})
+			r.Route("/namespaces/{namespace}/events/history", func(r chi.Router) {
+				eventsCtr.mountEventHistoryRouter(r)
+			})
+			r.Route("/namespaces/{namespace}/events/listener", func(r chi.Router) {
+				eventsCtr.mountEventListenerRouter(r)
+			})
+			r.Route("/namespaces/{namespace}/events/broadcast", func(r chi.Router) {
+				eventsCtr.mountBroadcast(r)
 			})
 		})
 	})

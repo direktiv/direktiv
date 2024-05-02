@@ -34,12 +34,10 @@ func Fail(cmd *cobra.Command, s string, x ...interface{}) {
 }
 
 func pingNamespace() error {
-	urlGetNode := fmt.Sprintf("%s/tree/", UrlPrefix)
-
 	req, err := http.NewRequestWithContext(
 		context.Background(),
 		http.MethodGet,
-		urlGetNode,
+		UrlPrefixV2,
 		nil,
 	)
 	if err != nil {
@@ -50,7 +48,7 @@ func pingNamespace() error {
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return fmt.Errorf("failed to ping namespace %s: %w", urlGetNode, err)
+		return fmt.Errorf("failed to ping namespace %s: %w", UrlPrefixV2, err)
 	}
 	defer resp.Body.Close()
 
@@ -64,10 +62,10 @@ func pingNamespace() error {
 		// }
 		errBody, err := io.ReadAll(resp.Body)
 		if err == nil {
-			return fmt.Errorf("failed to ping namespace %s, server responded with %s\n------DUMPING ERROR BODY ------\n%s", urlGetNode, resp.Status, string(errBody))
+			return fmt.Errorf("failed to ping namespace %s, server responded with %s\n------DUMPING ERROR BODY ------\n%s", UrlPrefixV2, resp.Status, string(errBody))
 		}
 
-		return fmt.Errorf("failed to ping namespace %s, server responded with %s\n------DUMPING ERROR BODY ------\nCould read response body", urlGetNode, resp.Status)
+		return fmt.Errorf("failed to ping namespace %s, server responded with %s\n------DUMPING ERROR BODY ------\nCould read response body", UrlPrefixV2, resp.Status)
 	}
 
 	return nil

@@ -45,10 +45,10 @@ test("it renders event listeners", async ({ page }) => {
   await Promise.all(workflowNames.map((name) => createListener(name)));
 
   /* visit page and assert a list of listeners is rendered */
-  await page.goto(`/${namespace}/events/listeners`);
+  await page.goto(`/n/${namespace}/events/listeners`);
 
   await expect(page, "it is possible to visit events/listeners ").toHaveURL(
-    `/${namespace}/events/listeners`
+    `/n/${namespace}/events/listeners`
   );
 
   await expect(
@@ -90,7 +90,7 @@ test("it renders event listeners", async ({ page }) => {
   await expect(
     page,
     "when clicking on the workflow name, it navigates to the workflow page"
-  ).toHaveURL(`${namespace}/explorer/workflow/edit/${workflowNames[2]}`);
+  ).toHaveURL(`/n/${namespace}/explorer/workflow/edit/${workflowNames[2]}`);
 });
 
 test("it paginates event listeners", async ({ page }) => {
@@ -103,10 +103,10 @@ test("it paginates event listeners", async ({ page }) => {
   await Promise.all(workflowNames.map((name) => createListener(name)));
 
   /* visit page and assert a list of listeners is rendered */
-  await page.goto(`/${namespace}/events/listeners`);
+  await page.goto(`/n/${namespace}/events/listeners`);
 
   await expect(page, "it is possible to visit events/listeners ").toHaveURL(
-    `/${namespace}/events/listeners`
+    `/n/${namespace}/events/listeners`
   );
 
   await expect(

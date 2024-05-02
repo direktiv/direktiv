@@ -29,7 +29,7 @@ const CreateGroup = ({
 }) => {
   const { t } = useTranslation();
   const { data: availablePermissions } = usePermissionKeys();
-  const { mutate: createGroup, isLoading } = useCreateGroup({
+  const { mutate: createGroup, isPending } = useCreateGroup({
     onSuccess: () => {
       close();
     },
@@ -135,10 +135,10 @@ const CreateGroup = ({
         <Button
           type="submit"
           disabled={disableSubmit}
-          loading={isLoading}
+          loading={isPending}
           form={formId}
         >
-          {!isLoading && <PlusCircle />}
+          {!isPending && <PlusCircle />}
           {t("pages.permissions.groups.create.createBtn")}
         </Button>
       </DialogFooter>

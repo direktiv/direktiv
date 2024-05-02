@@ -23,7 +23,7 @@ test.afterEach(async () => {
 });
 
 test("Service list is empty by default", async ({ page }) => {
-  await page.goto(`/${namespace}/services`, {
+  await page.goto(`/n/${namespace}/services`, {
     waitUntil: "networkidle",
   });
 
@@ -61,7 +61,7 @@ test("Service list shows all available services", async ({ page }) => {
     )
     .toBeTruthy();
 
-  await page.goto(`/${namespace}/services`, {
+  await page.goto(`/n/${namespace}/services`, {
     waitUntil: "networkidle",
   });
 
@@ -132,7 +132,7 @@ test("Service list links the file name to the service file", async ({
     yaml: createHttpServiceFile(),
   });
 
-  await page.goto(`/${namespace}/services`, {
+  await page.goto(`/n/${namespace}/services`, {
     waitUntil: "networkidle",
   });
 
@@ -144,7 +144,7 @@ test("Service list links the file name to the service file", async ({
   await expect(
     page,
     "after clicking on the file name, the user gets redirected to the file explorer page of the service file"
-  ).toHaveURL(`/${namespace}/explorer/service/http-service.yaml`);
+  ).toHaveURL(`/n/${namespace}/explorer/service/http-service.yaml`);
 
   await expect(
     page.getByTestId("breadcrumb-segment"),
@@ -180,7 +180,7 @@ test("Service list links the row to the service details page", async ({
 
   if (!createdService) throw new Error("could not find service");
 
-  await page.goto(`/${namespace}/services`, {
+  await page.goto(`/n/${namespace}/services`, {
     waitUntil: "networkidle",
   });
 
@@ -189,7 +189,7 @@ test("Service list links the row to the service details page", async ({
   await expect(
     page,
     "after clicking on the service row, the user gets redirected to the service details page"
-  ).toHaveURL(`/${namespace}/services/${createdService.id}`);
+  ).toHaveURL(`/n/${namespace}/services/${createdService.id}`);
 
   await expect(
     page
@@ -229,7 +229,7 @@ test("Service list lets the user rebuild a service", async ({ page }) => {
     )
     .toBeTruthy();
 
-  await page.goto(`/${namespace}/services`, {
+  await page.goto(`/n/${namespace}/services`, {
     waitUntil: "networkidle",
   });
 
@@ -280,7 +280,7 @@ test("Service list highlights services that have errors", async ({ page }) => {
     )
     .toBeTruthy();
 
-  await page.goto(`/${namespace}/services`, {
+  await page.goto(`/n/${namespace}/services`, {
     waitUntil: "networkidle",
   });
 
@@ -311,7 +311,7 @@ test("Service list will update the services when refetch button is clicked", asy
     }),
   });
 
-  await page.goto(`/${namespace}/services`, {
+  await page.goto(`/n/${namespace}/services`, {
     waitUntil: "networkidle",
   });
 
