@@ -52,6 +52,7 @@ const ApiCommands = ({
   const curlCommand = useCurlCommand({
     url: selectedTemplate?.url ?? "",
     body,
+    method: selectedTemplate?.method ?? "",
   });
 
   useEffect(() => {

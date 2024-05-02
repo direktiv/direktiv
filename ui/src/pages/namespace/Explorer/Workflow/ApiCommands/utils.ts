@@ -54,10 +54,12 @@ const headerObjToCurlString = (header: Record<string, string>) =>
 
 export const useCurlCommand = ({
   url,
+  method,
   body,
 }: {
   url: string;
   body: string;
+  method: string;
 }) => {
   const { isApiKeyRequired } = useApiKeyHandling();
   const apiKeyFromLocalstorage = useApiKey();
@@ -70,5 +72,6 @@ export const useCurlCommand = ({
   const bodyEscaped = body.replace(/'/g, "\\'");
 
   return `curl '${url}' \\${apiKeyHeader}
+  -X '${method}' \\
   --data-raw $'${bodyEscaped}'`;
 };
