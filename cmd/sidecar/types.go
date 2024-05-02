@@ -56,7 +56,6 @@ type ResponseCarrier struct {
 type ActionBuilder struct{}
 
 func (ActionBuilder) Extract(r *http.Request) (string, RequestCarrier, error) {
-
 	// 1. Retrieve necessary data from the context
 	var c RequestCarrier
 	dec := json.NewDecoder(r.Body)

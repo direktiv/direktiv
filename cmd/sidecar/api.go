@@ -20,7 +20,7 @@ const (
 	SharedDir = "/mnt/shared"
 )
 
-func StartApis(config Config, dataMap *sync.Map) {
+func StartApis(config Config, actionCtl *sync.Map) {
 	cap, err := strconv.Atoi(config.MaxResponseSize)
 	if err != nil {
 		slog.Error("parsing config.MaxResponseSize", "error", err, "MaxResponseSize", config.MaxResponseSize)
@@ -30,11 +30,11 @@ func StartApis(config Config, dataMap *sync.Map) {
 	slog.Debug("Initializing sidecar", "MaxResponseSize", cap, "FlowServerURL", config.FlowServerURL)
 
 	slog.Debug("Initializing flow exposed routes")
-	externalRouter := setupAPIForFlow(config, dataMap)
+	externalRouter := setupAPIForFlow(config.UserServiceURL, cap, actionCtl)
 
 	slog.Debug("Initializing user container exposed routes")
 	// Internal router, accessible only to the user service.
-	internalRouter := setupAPIforUserContainer(dataMap)
+	internalRouter := setupAPIforUserContainer(actionCtl)
 
 	// Start routers in separate goroutines to listen on different ports.
 	go func() {
