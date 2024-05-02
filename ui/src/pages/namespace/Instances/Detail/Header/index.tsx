@@ -20,20 +20,20 @@ import useUpdatedAt from "~/hooks/useUpdatedAt";
 
 const Header = () => {
   const instanceId = useInstanceId();
-  const { data } = useInstanceDetails({ instanceId });
+  const { data: instance } = useInstanceDetails({ instanceId });
   const { mutate: cancelInstance, isPending } = useCancelInstance();
 
   const { t } = useTranslation();
 
-  const [invoker] = (data?.invoker ?? "").split(":");
-  const endetAt = useUpdatedAt(data?.endedAt);
-  const createdAt = useUpdatedAt(data?.createdAt);
+  const [invoker] = (instance?.invoker ?? "").split(":");
+  const endetAt = useUpdatedAt(instance?.endedAt);
+  const createdAt = useUpdatedAt(instance?.createdAt);
 
-  if (!data) return null;
+  if (!instance) return null;
 
   const link = pages.explorer.createHref({
-    path: data.path,
-    namespace: data.namespace,
+    path: instance.path,
+    namespace: instance.namespace,
     subpage: "workflow",
   });
 
@@ -41,7 +41,7 @@ const Header = () => {
     cancelInstance(instanceId);
   };
 
-  const canBeCanceled = data.status === "pending";
+  const canBeCanceled = instance.status === "pending";
 
   return (
     <div
@@ -51,10 +51,13 @@ const Header = () => {
       <div className="flex flex-col gap-x-7 max-md:space-y-4 md:flex-row md:items-center md:justify-start">
         <div className="flex flex-col items-start gap-2">
           <h3 className="flex items-center gap-x-2 font-bold text-primary-500">
-            <Box className="h-5" /> {data.id.slice(0, 8)}
+            <Box className="h-5" /> {instance.id.slice(0, 8)}
           </h3>
-          <Badge variant={statusToBadgeVariant(data.status)} icon={data.status}>
-            {data.status}
+          <Badge
+            variant={statusToBadgeVariant(instance.status)}
+            icon={instance.status}
+          >
+            {instance.status}
           </Badge>
         </div>
         <div className="text-sm">
