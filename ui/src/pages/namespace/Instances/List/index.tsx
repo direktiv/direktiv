@@ -127,10 +127,10 @@ const InstancesListPage = () => {
       </Card>
       {showPagination && (
         <Pagination
-          totalItems={numberOfInstances}
+          itemsPerPage={instancesPerPage}
           offset={offset}
           setOffset={setOffset}
-          itemsPerPage={instancesPerPage}
+          totalItems={numberOfInstances}
         />
       )}
     </div>
