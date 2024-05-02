@@ -8,6 +8,9 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/direktiv/direktiv/cmd/sidecar/action"
+	"github.com/direktiv/direktiv/cmd/sidecar/files"
 )
 
 func TestWriteFiles_Success(t *testing.T) {
@@ -22,33 +25,33 @@ func TestWriteFiles_Success(t *testing.T) {
 	// Test cases for different file types
 	testCases := []struct {
 		desc      string
-		fileDefs  []FunctionFileDefinition
+		fileDefs  []action.FunctionFileDefinition
 		expectErr bool
 	}{
 		{
 			desc: "Single plain text file",
-			fileDefs: []FunctionFileDefinition{
+			fileDefs: []action.FunctionFileDefinition{
 				{Key: "test_file.txt", Content: encodedData, Type: "plain"},
 			},
 			expectErr: false,
 		},
 		{
 			desc: "Valid TAR.GZ archive",
-			fileDefs: []FunctionFileDefinition{
+			fileDefs: []action.FunctionFileDefinition{
 				{Key: "archive.tar.gz", Content: encodeTestTarGz(data), Type: "tar.gz"},
 			},
 			expectErr: false,
 		},
 		{
 			desc: "Valid TAR archive",
-			fileDefs: []FunctionFileDefinition{
+			fileDefs: []action.FunctionFileDefinition{
 				{Key: "archive.tar", Content: encodeTestTar(data), Type: "tar"},
 			},
 			expectErr: false,
 		},
 		{
 			desc: "Multiple files of different types",
-			fileDefs: []FunctionFileDefinition{
+			fileDefs: []action.FunctionFileDefinition{
 				{Key: "text_file.txt", Content: encodedData, Type: "plain"},
 				{Key: "encoded_file.bin", Content: encodedData, Type: "base64"},
 				// Add more cases for "tar" and "tar.gz" as needed
@@ -57,7 +60,7 @@ func TestWriteFiles_Success(t *testing.T) {
 		},
 		{
 			desc: "Invalid file type",
-			fileDefs: []FunctionFileDefinition{
+			fileDefs: []action.FunctionFileDefinition{
 				{Key: "invalid.file", Content: encodedData, Type: "unknown"},
 			},
 			expectErr: true,
@@ -66,7 +69,7 @@ func TestWriteFiles_Success(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.desc, func(t *testing.T) {
-			err := writeFiles(filepath.Join(dir, "action-123"), tc.fileDefs)
+			err := files.WriteFiles(filepath.Join(dir, "action-123"), tc.fileDefs)
 			if tc.expectErr && err == nil {
 				t.Errorf("Expected error for test case: %s", tc.desc)
 			} else if !tc.expectErr && err != nil {

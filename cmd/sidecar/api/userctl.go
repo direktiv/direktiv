@@ -1,4 +1,4 @@
-package sidecar
+package api
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"sync"
 
+	"github.com/direktiv/direktiv/cmd/sidecar/action"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 )
@@ -34,7 +35,7 @@ func setupAPIforUserContainer(dataMap *sync.Map) *chi.Mux {
 }
 
 func handleGetLog(r *http.Request, dataMap *sync.Map) (int, error) {
-	actionID := r.URL.Query().Get(actionIDHeader)
+	actionID := r.URL.Query().Get(ActionIDHeader)
 	if actionID == "" {
 		return http.StatusBadRequest, fmt.Errorf("Missing actionID header")
 	}
@@ -44,7 +45,7 @@ func handleGetLog(r *http.Request, dataMap *sync.Map) (int, error) {
 	if !loaded {
 		return http.StatusBadRequest, fmt.Errorf("Error action with this ID is not known")
 	}
-	action, ok := value.(actionController)
+	action, ok := value.(action.ActionController)
 	if !ok {
 		return http.StatusInternalServerError, fmt.Errorf("Error Sidecar in invalid state")
 	}
@@ -61,7 +62,7 @@ func handleGetLog(r *http.Request, dataMap *sync.Map) (int, error) {
 }
 
 func handlePostLog(r *http.Request, dataMap *sync.Map) (int, error) {
-	actionID := r.URL.Query().Get(actionIDHeader)
+	actionID := r.URL.Query().Get(ActionIDHeader)
 	if actionID == "" {
 		return http.StatusBadRequest, fmt.Errorf("Missing actionID header")
 	}
@@ -71,7 +72,7 @@ func handlePostLog(r *http.Request, dataMap *sync.Map) (int, error) {
 	if !loaded {
 		return http.StatusInternalServerError, fmt.Errorf("Error action with this ID is not known")
 	}
-	action, ok := value.(actionController)
+	action, ok := value.(action.ActionController)
 	if !ok {
 		return http.StatusInternalServerError, fmt.Errorf("Error Sidecar in invalid state")
 	}
@@ -87,7 +88,7 @@ func handlePostLog(r *http.Request, dataMap *sync.Map) (int, error) {
 	return http.StatusOK, nil
 }
 
-func logMsg(logLevel string, msg string, action actionController) {
+func logMsg(logLevel string, msg string, action action.ActionController) {
 	actionLog := slog.Debug
 	switch logLevel {
 	case "ERROR", "error":

@@ -1,4 +1,6 @@
-package sidecar
+package action
+
+// TODO maybe move to flow.
 
 import (
 	"encoding/json"
@@ -11,9 +13,9 @@ type ActionDeserialize interface {
 	Extract(r *http.Request) (string, RequestCarrier, error)
 }
 
-type actionController struct {
+type ActionController struct {
 	RequestCarrier
-	cancel func()
+	Cancel func()
 }
 
 type RequestCarrier struct {

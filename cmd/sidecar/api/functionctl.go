@@ -1,4 +1,4 @@
-package sidecar
+package api
 
 import (
 	"bytes"
@@ -10,22 +10,11 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
+	"github.com/direktiv/direktiv/cmd/sidecar/action"
+	"github.com/direktiv/direktiv/cmd/sidecar/files"
 )
 
-func setupAPIForFlow(userServiceURL string, maxResponseSize int, actionCtl *sync.Map) *chi.Mux {
-	router := chi.NewRouter()
-	router.Use(middleware.Logger)
-	router.Use(middleware.Recoverer)
-	// Router for handling external requests.
-	router.Post("/", func(w http.ResponseWriter, r *http.Request) {
-		executeFunction(r, w, userServiceURL, maxResponseSize, actionCtl, ActionBuilder{})
-	})
-	return router
-}
-
-func executeFunction(r *http.Request, w http.ResponseWriter, userServiceURL string, maxResponseSize int, actionCtl *sync.Map, actionDeserialize ActionDeserialize) {
+func executeFunction(r *http.Request, w http.ResponseWriter, userServiceURL string, maxResponseSize int, actionCtl *sync.Map, actionDeserialize action.ActionDeserialize) {
 	// 1. Validate/Extract Inputs.
 	actionID, carrier, err := actionDeserialize.Extract(r)
 	if err != nil {
@@ -34,15 +23,15 @@ func executeFunction(r *http.Request, w http.ResponseWriter, userServiceURL stri
 	}
 	// 2. Build actionCtl.
 	ctx, cancel := context.WithTimeout(r.Context(), carrier.Deadline)
-	ctl := actionController{
-		cancel:         cancel,
+	ctl := action.ActionController{
+		Cancel:         cancel,
 		RequestCarrier: carrier,
 	}
 	actionCtl.Store(actionID, ctl)
 
 	// 3. Provision.
 	filesLocation := filepath.Join(SharedDir, actionID)
-	err = writeFiles(filesLocation, ctl.Files)
+	err = files.WriteFiles(filesLocation, ctl.Files)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -113,7 +102,7 @@ func responseForwardingToClient(resp *http.Response) http.Handler {
 
 		// Handle non-success status codes (might be done earlier).
 		if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
-			rC := ResponseCarrier{
+			rC := action.ResponseCarrier{
 				ErrCode: "container_failure",
 				Err:     fmt.Errorf("container failed with status %v", resp.StatusCode),
 			}

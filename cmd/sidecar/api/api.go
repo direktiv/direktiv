@@ -1,4 +1,4 @@
-package sidecar
+package api
 
 import (
 	"encoding/json"
@@ -7,6 +7,12 @@ import (
 	"net/http"
 	"strconv"
 	"sync"
+
+	"github.com/direktiv/direktiv/cmd/sidecar/action"
+	"github.com/direktiv/direktiv/cmd/sidecar/config"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 const (
@@ -20,7 +26,7 @@ const (
 	SharedDir = "/mnt/shared"
 )
 
-func StartApis(config Config, actionCtl *sync.Map) {
+func StartApis(config config.Config, actionCtl *sync.Map) {
 	cap, err := strconv.Atoi(config.MaxResponseSize)
 	if err != nil {
 		slog.Error("parsing config.MaxResponseSize", "error", err, "MaxResponseSize", config.MaxResponseSize)
@@ -44,6 +50,17 @@ func StartApis(config Config, actionCtl *sync.Map) {
 
 	log.Fatal(http.ListenAndServe("0.0.0.0:"+config.InternalPort, internalRouter))
 	slog.Debug("Started internal routes", "addr", "0.0.0.0", "port", config.InternalPort)
+}
+
+func setupAPIForFlow(userServiceURL string, maxResponseSize int, actionCtl *sync.Map) *chi.Mux {
+	router := chi.NewRouter()
+	router.Use(middleware.Logger)
+	router.Use(middleware.Recoverer)
+	// Router for handling external requests.
+	router.Post("/", func(w http.ResponseWriter, r *http.Request) {
+		executeFunction(r, w, userServiceURL, maxResponseSize, actionCtl, action.ActionBuilder{})
+	})
+	return router
 }
 
 func writeJSON(w http.ResponseWriter, v any) {
