@@ -85,7 +85,7 @@ describe('Test target workflow var wrong config', () => {
 						methods: [ 'GET' ],
 						allow_anonymous: true,
 						timeout: 0,
-						server_path: '/gw/ep3',
+						server_path: '/ns/system/ep3',
 						errors: [ 'flow and variable required' ],
 						warnings: [],
 						plugins: { target: { type: 'target-flow-var' } },
@@ -174,7 +174,7 @@ describe('Test target workflow variable plugin', () => {
 
 	retry50(`should return a workflow var from magic namespace`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(
-			`/gw/endpoint1`,
+			`/ns/system/endpoint1`,
 		)
 		expect(req.statusCode).toEqual(200)
 		expect(req.text).toEqual('Hello World')
@@ -183,7 +183,7 @@ describe('Test target workflow variable plugin', () => {
 
 	retry10(`should return a var from magic namespace with namespace set`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(
-			`/gw/endpoint2`,
+			`/ns/system/endpoint2`,
 		)
 		expect(req.statusCode).toEqual(200)
 		expect(req.text).toEqual('Hello World 2')

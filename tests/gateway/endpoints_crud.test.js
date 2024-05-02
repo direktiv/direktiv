@@ -212,7 +212,7 @@ describe('Test gateway get single endpoint', () => {
 					file_path: '/endpoint1.yaml',
 					methods: [ 'GET' ],
 					path: '/endpoint1',
-					server_path: '/gw/endpoint1',
+					server_path: '/ns/system/endpoint1',
 					plugins: {
 						auth: [ {
 							configuration: { key_name: 'secret' },
@@ -246,7 +246,7 @@ describe('Test gateway get single endpoint', () => {
 					file_path: '/endpoint3.yaml',
 					methods: [ 'GET' ],
 					path: '/endpoint3/longer/path',
-					server_path: '/gw/endpoint3/longer/path',
+					server_path: '/ns/system/endpoint3/longer/path',
 					plugins: {
 						auth: [ {
 							configuration: { key_name: 'secret' },
@@ -280,7 +280,7 @@ describe('Test gateway get single endpoint', () => {
 					file_path: '/endpoint4.yaml',
 					methods: [ 'GET' ],
 					path: '/endpoint4/longer/path/{id}',
-					server_path: '/gw/endpoint4/longer/path/{id}',
+					server_path: '/ns/system/endpoint4/longer/path/{id}',
 					plugins: {
 						auth: [ {
 							configuration: { key_name: 'secret' },
@@ -354,7 +354,7 @@ describe('Test gateway endpoints crud operations', () => {
 						file_path: '/endpoint1.yaml',
 						methods: [ 'GET' ],
 						path: '/endpoint1',
-						server_path: '/gw/endpoint1',
+						server_path: '/ns/system/endpoint1',
 						plugins: {
 							auth: [ {
 								configuration: { key_name: 'secret' },
@@ -376,7 +376,7 @@ describe('Test gateway endpoints crud operations', () => {
 						file_path: '/endpoint2.yaml',
 						methods: [ 'GET' ],
 						path: '/endpoint2',
-						server_path: '/gw/endpoint2',
+						server_path: '/ns/system/endpoint2',
 						plugins: {
 							auth: [
 								{ type: 'basic-auth' },
@@ -488,21 +488,21 @@ describe('Test availability of gateway endpoints', () => {
 
 	retry10(`should not run endpoint without authentication`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(
-			`/gw/endpoint1`,
+			`/ns/system/endpoint1`,
 		)
 		expect(req.statusCode).toEqual(401)
 	})
 
 	retry10(`should run endpoint without authentication but allow anonymous`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(
-			`/gw/endpoint2`,
+			`/ns/system/endpoint2`,
 		)
 		expect(req.statusCode).toEqual(202)
 	})
 
 	retry10(`should run endpoint with key authentication`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(
-			`/gw/endpoint1`,
+			`/ns/system/endpoint1`,
 		)
 			.set('secret', 'key2')
 		expect(req.statusCode).toEqual(201)
@@ -510,7 +510,7 @@ describe('Test availability of gateway endpoints', () => {
 
 	retry10(`should run endpoint with basic authentication`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(
-			`/gw/endpoint2`,
+			`/ns/system/endpoint2`,
 		)
 			.auth('consumer1', 'pwd')
 		expect(req.statusCode).toEqual(202)
