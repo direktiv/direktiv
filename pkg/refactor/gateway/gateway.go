@@ -123,9 +123,6 @@ func (ep *gatewayManager) updateNamespace(ns string) {
 			}
 
 			ep.ServerPath = filepath.Join("/ns", ns, item.Path)
-			if ns == core.SystemNamespace {
-				ep.ServerPath = filepath.Join("/gw", item.Path)
-			}
 
 			ep.AllowAnonymous = item.AllowAnonymous
 			ep.Timeout = item.Timeout
