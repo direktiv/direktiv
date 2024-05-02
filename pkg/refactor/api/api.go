@@ -96,7 +96,6 @@ func Initialize(app core.App, db *database.SQLStore, bus *pubsub2.Bus, instanceM
 	}
 
 	// handle namespace and gateway
-	r.Handle("/gw/*", app.GatewayManager)
 	r.Handle("/ns/{namespace}/*", app.GatewayManager)
 
 	// version endpoint
