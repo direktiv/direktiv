@@ -13,11 +13,10 @@ import { Boxes } from "lucide-react";
 import { Card } from "~/design/Card";
 import Filters from "../components/Filters";
 import { FiltersObj } from "~/api/instances/query/utils";
-import { MinimalPagination } from "~/components/Pagination/MinimalPagination";
+import { Pagination } from "~/components/Pagination";
 import RefreshButton from "~/design/RefreshButton";
 import Row from "./Row";
 import { useInstanceList } from "~/api/instances/query/get";
-import { useNamespace } from "~/util/store/namespace";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -26,7 +25,6 @@ const instancesPerPage = 15;
 const InstancesListPage = () => {
   const [offset, setOffset] = useState(0);
   const [filters, setFilters] = useState<FiltersObj>({});
-  const namespace = useNamespace();
   const { t } = useTranslation();
   const {
     data,
@@ -46,13 +44,11 @@ const InstancesListPage = () => {
     setOffset(0);
   };
 
-  // const numberOfInstances = 0; // TODO: numberOfInstances;
   const instances = data?.data ?? [];
+  const numberOfInstances = data?.meta?.total ?? 0;
   const noResults = isSuccess && instances.length === 0;
-  const showPagination = true; // TODO: numberOfInstances > instancesPerPage;
+  const showPagination = numberOfInstances > instancesPerPage;
   const hasFilters = !!Object.keys(filters).length;
-
-  if (!namespace) return null;
 
   return (
     <div className="flex grow flex-col gap-y-4 p-5">
@@ -130,8 +126,8 @@ const InstancesListPage = () => {
         </Table>
       </Card>
       {showPagination && (
-        <MinimalPagination
-          isLastPage={false} // TODO: make isLastPage dynamic
+        <Pagination
+          totalItems={numberOfInstances}
           offset={offset}
           setOffset={setOffset}
           itemsPerPage={instancesPerPage}
