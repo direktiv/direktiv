@@ -68,6 +68,8 @@ func Initialize(app core.App, db *database.SQLStore, bus *pubsub2.Bus, instanceM
 		startWorkflow: startByEvents,
 	}
 
+	jxCtr := jxController{}
+
 	mw := &appMiddlewares{dStore: db.DataStore()}
 
 	r := chi.NewRouter()
@@ -183,6 +185,10 @@ func Initialize(app core.App, db *database.SQLStore, bus *pubsub2.Bus, instanceM
 			r.Route("/namespaces/{namespace}/events/broadcast", func(r chi.Router) {
 				eventsCtr.mountBroadcast(r)
 			})
+		})
+
+		r.Route("/jx", func(r chi.Router) {
+			jxCtr.mountRouter(r)
 		})
 	})
 
