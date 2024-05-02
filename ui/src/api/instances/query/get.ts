@@ -59,6 +59,5 @@ export const useInstanceList = (params: InstanceListParams = {}) => {
     }),
     queryFn: fetchInstanceList,
     enabled: !!namespace,
-    select: (data) => data.data,
   });
 };
