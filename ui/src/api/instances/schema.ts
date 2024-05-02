@@ -96,7 +96,20 @@ export type InstanceCancelPayloadType = z.infer<typeof InstanceCancelPayload>;
 
 export const InstanceCanceledResponseSchema = z.null();
 
+/**
+ * example
+ * 
+  { 
+    "meta": {
+      "total": 278,
+    },
+    "data": {...}
+  }
+ */
 export const InstancesListResponseSchema = z.object({
+  meta: z.object({
+    total: z.number(),
+  }),
   data: z.array(InstanceSchema),
 });
 
