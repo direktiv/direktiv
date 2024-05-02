@@ -51,7 +51,7 @@ const ApiCommands = ({
 
   const curlCommand = useCurlCommand({
     url: selectedTemplate?.url ?? "",
-    body,
+    body: selectedTemplate?.bodyProcessing?.(body) ?? body,
     method: selectedTemplate?.method ?? "",
   });
 

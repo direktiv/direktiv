@@ -1,44 +1,57 @@
+import { EditorLanguagesType } from "~/design/Editor";
+import { encode } from "js-base64";
 import { getAuthHeader } from "~/api/utils";
 import { useApiKey } from "~/util/store/apiKey";
 import useApiKeyHandling from "~/hooks/useApiKeyHandling";
 import { useMemo } from "react";
 
+type TemplateType = {
+  key: "execute" | "awaitExecute" | "update";
+  method: "POST" | "PATCH";
+  url: string;
+  payloadSyntax: EditorLanguagesType;
+  bodyProcessing?: (body: string) => string;
+  body: string;
+};
+
 export const useApiCommandTemplate = (namespace: string, workflow: string) => {
   const baseUrl = window.location.origin;
-  const memoizedTemplates = useMemo(
-    () =>
-      [
-        {
-          key: "execute",
-          method: "POST",
-          url: `${baseUrl}/api/v2/namespaces/${namespace}/instances?path=${workflow}`,
-          payloadSyntax: "json",
-          body: `{
-  "some": "input"
-}`,
-        },
-        {
-          key: "awaitExecute",
-          method: "POST",
-          url: `${baseUrl}/api/v2/namespaces/${namespace}/instances?path=${workflow}&wait=true`,
-          payloadSyntax: "json",
-          body: `{
-  "some": "input"
-}`,
-        },
-        {
-          key: "update",
-          method: "PATCH",
-          url: `${baseUrl}/api/v2/namespaces/${namespace}/files/${workflow}`,
-          payloadSyntax: "yaml",
-          body: `description: A simple 'no-op' state that returns 'Hello world!'
+  const memoizedTemplates: TemplateType[] = useMemo(
+    () => [
+      {
+        key: "execute",
+        method: "POST",
+        url: `${baseUrl}/api/v2/namespaces/${namespace}/instances?path=${workflow}`,
+        payloadSyntax: "json",
+        body: `{
+    "some": "input"
+  }`,
+      },
+      {
+        key: "awaitExecute",
+        method: "POST",
+        url: `${baseUrl}/api/v2/namespaces/${namespace}/instances?path=${workflow}&wait=true`,
+        payloadSyntax: "json",
+        body: `{
+    "some": "input"
+  }`,
+      },
+      {
+        key: "update",
+        method: "PATCH",
+        url: `${baseUrl}/api/v2/namespaces/${namespace}/files/${workflow}`,
+        payloadSyntax: "yaml",
+        bodyProcessing: (body) => `{
+    "data": "${encode(body)}"
+  }`,
+        body: `description: A simple 'no-op' state that returns 'Hello world!'
 states:
 - id: helloworld
   type: noop
   transform:
     result: Hello world!`,
-        },
-      ] as const,
+      },
+    ],
     [baseUrl, namespace, workflow]
   );
 
