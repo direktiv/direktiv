@@ -39,8 +39,7 @@ func (m *manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	m.mux.Unlock()
 
 	if router == nil {
-		writeJSONError(w, http.StatusServiceUnavailable, "",
-			fmt.Sprintf("no active gateway endpoints"))
+		writeJSONError(w, http.StatusServiceUnavailable, "", "no active gateway endpoints")
 
 		return
 	}
@@ -118,8 +117,7 @@ func (m *manager) build() {
 				if !isAuthPlugin(p) {
 					// case where auth is required but request is not authenticated (consumers doesn't match).
 					if !item.AllowAnonymous && !hasActiveConsumer(r) {
-						writeJSONError(w, http.StatusForbidden, item.FilePath,
-							fmt.Sprintf("authentication failed"))
+						writeJSONError(w, http.StatusForbidden, item.FilePath, "authentication failed")
 
 						return
 					}
