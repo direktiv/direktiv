@@ -8,7 +8,7 @@ import { useApiKey } from "~/util/store/apiKey";
 import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 import { useNamespace } from "~/util/store/namespace";
 
-export const cancelInstance = apiFactory<InstanceCancelPayloadType>({
+const updateInstance = apiFactory<InstanceCancelPayloadType>({
   url: ({
     baseUrl,
     namespace,
@@ -32,7 +32,7 @@ export const useCancelInstance = () => {
   }
 
   const mutationFn = (instanceId: string) =>
-    cancelInstance({
+    updateInstance({
       apiKey: apiKey ?? undefined,
       urlParams: {
         namespace,
