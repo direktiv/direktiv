@@ -28,8 +28,8 @@ export const useApiCommandTemplate = (namespace: string, workflow: string) => {
         },
         {
           key: "update",
-          method: "POST",
-          url: `${baseUrl}/api/namespaces/${namespace}/tree/${workflow}?op=update-workflow`,
+          method: "PATCH",
+          url: `${baseUrl}/api/v2/namespaces/${namespace}/files/${workflow}`,
           payloadSyntax: "yaml",
           body: `description: A simple 'no-op' state that returns 'Hello world!'
 states:
