@@ -176,7 +176,7 @@ const ApiCommands = ({
         </DialogClose>
         <Button variant="outline" asChild isAnchor>
           <a
-            href="https://docs.direktiv.io/api/#all-endpoints"
+            href="https://docs.direktiv.io/api/"
             target="_blank"
             rel="noopener noreferrer"
           >
