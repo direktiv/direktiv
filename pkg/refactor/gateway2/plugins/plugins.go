@@ -9,6 +9,7 @@ import (
 )
 
 func NewPlugin(config core.PluginConfigV2) (core.PluginV2, error) {
+	//nolint:gocritic
 	switch config.Typ {
 	case "basic-auth":
 		return NewBasicAuthPlugin(config)

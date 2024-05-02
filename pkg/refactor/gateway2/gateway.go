@@ -64,6 +64,7 @@ func (m *manager) SetConsumers(list []core.ConsumerV2) {
 	m.build()
 }
 
+//nolint:gocognit
 func (m *manager) build() {
 	newRouter := http.NewServeMux()
 
@@ -89,44 +90,45 @@ func (m *manager) build() {
 			}
 			pChain = append(pChain, p)
 		}
+		m.endpoints[i] = item
 
 		if len(item.PluginsConfig.Auth) == 0 && !item.AllowAnonymous {
 			item.Errors = append(item.Errors, fmt.Errorf("AllowAnonymous is false but zero auth plugin configured"))
 		}
 
-		// only mount http handler when plugins has zero errors.
-		if len(item.Errors) == 0 {
-			newRouter.HandleFunc(item.Path, func(w http.ResponseWriter, r *http.Request) {
-				// check if correct method.
-				if !slices.Contains(item.Methods, r.Method) {
-					writeJSONError(w, http.StatusMethodNotAllowed, item.FilePath,
-						fmt.Sprintf("method:%s is not allowed with this endpoint", r.Method))
-
-					return
-				}
-				// inject consumer files.
-				r = r.WithContext(context.WithValue(r.Context(), core.GatewayCtxKeyConsumers,
-					m.listNamespacedConsumers(item.Namespace)))
-
-				for _, p := range pChain {
-					// checkpoint if auth plugins had a match.
-					if !isAuthPlugin(p) {
-						// case where auth is required but request is not authenticated (consumers doesn't match).
-						if !item.AllowAnonymous && !hasActiveConsumer(r) {
-							writeJSONError(w, http.StatusForbidden, item.FilePath,
-								fmt.Sprintf("authentication failed"))
-
-							return
-						}
-					}
-					if r = p.Execute(w, r); r != nil {
-						break
-					}
-				}
-			})
+		// skip mount http handler when plugins has zero errors.
+		if len(item.Errors) > 0 {
+			continue
 		}
 
-		m.endpoints[i] = item
+		newRouter.HandleFunc(item.Path, func(w http.ResponseWriter, r *http.Request) {
+			// check if correct method.
+			if !slices.Contains(item.Methods, r.Method) {
+				writeJSONError(w, http.StatusMethodNotAllowed, item.FilePath,
+					fmt.Sprintf("method:%s is not allowed with this endpoint", r.Method))
+
+				return
+			}
+			// inject consumer files.
+			r = r.WithContext(context.WithValue(r.Context(), core.GatewayCtxKeyConsumers,
+				m.listNamespacedConsumers(item.Namespace)))
+
+			for _, p := range pChain {
+				// checkpoint if auth plugins had a match.
+				if !isAuthPlugin(p) {
+					// case where auth is required but request is not authenticated (consumers doesn't match).
+					if !item.AllowAnonymous && !hasActiveConsumer(r) {
+						writeJSONError(w, http.StatusForbidden, item.FilePath,
+							fmt.Sprintf("authentication failed"))
+
+						return
+					}
+				}
+				if r = p.Execute(w, r); r != nil {
+					break
+				}
+			}
+		})
 	}
 
 	// set the new router.
