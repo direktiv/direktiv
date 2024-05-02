@@ -1,8 +1,8 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 
 import common from '../common'
-import regex from '../common/regex'
 import helpers from '../common/helpers'
+import regex from '../common/regex'
 import request from '../common/request'
 
 const namespaceName = 'waitsuccesstest'
@@ -49,28 +49,28 @@ states:
 					createdAt: expect.stringMatching(regex.timestampRegex),
 					endedAt: expect.stringMatching(regex.timestampRegex),
 					definition: expect.stringMatching(regex.base64Regex),
-					errorCode: "", 
-					flow: [ "a" ],
-					id: expect.stringMatching(regex.uuidRegex), 
-					invoker: "api",
+					errorCode: null,
+					flow: [ 'a' ],
+					id: expect.stringMatching(regex.uuidRegex),
+					invoker: 'api',
 					lineage: [],
-					path: "/noop.yaml",
-					status: "complete", 
+					path: '/noop.yaml',
+					status: 'complete',
 					traceId: expect.anything(),
 				},
 				{
 					createdAt: expect.stringMatching(regex.timestampRegex),
 					endedAt: expect.stringMatching(regex.timestampRegex),
 					definition: expect.stringMatching(regex.base64Regex),
-					errorCode: "", 
-					flow: [ "a" ],
-					id: expect.stringMatching(regex.uuidRegex), 
-					invoker: "api",
+					errorCode: null,
+					flow: [ 'a' ],
+					id: expect.stringMatching(regex.uuidRegex),
+					invoker: 'api',
 					lineage: [],
-					path: "/noop.yaml",
-					status: "complete", 
+					path: '/noop.yaml',
+					status: 'complete',
 					traceId: expect.anything(),
-				}
+				},
 			],
 		})
 	})

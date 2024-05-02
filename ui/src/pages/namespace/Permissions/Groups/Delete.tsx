@@ -19,7 +19,7 @@ const Delete = ({
   close: () => void;
 }) => {
   const { t } = useTranslation();
-  const { mutate: deleteGroup, isLoading } = useDeleteGroup({
+  const { mutate: deleteGroup, isPending } = useDeleteGroup({
     onSuccess: () => {
       close();
     },
@@ -49,9 +49,9 @@ const Delete = ({
             deleteGroup(group);
           }}
           variant="destructive"
-          loading={isLoading}
+          loading={isPending}
         >
-          {!isLoading && <Trash />}
+          {!isPending && <Trash />}
           {t("pages.permissions.groups.delete.deleteBtn")}
         </Button>
       </DialogFooter>

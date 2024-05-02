@@ -90,11 +90,12 @@ func setupReverseProxyHandlers(base *mux.Router, router *mux.Router, apiV2Addres
 	})
 
 	router.PathPrefix("/v2").Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { proxy.ServeHTTP(w, r) }))
-	base.PathPrefix("/gw").Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { proxy.ServeHTTP(w, r) }))
 	base.PathPrefix("/ns").Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { proxy.ServeHTTP(w, r) }))
 }
 
 func (h *flowHandler) initRoutes(r *mux.Router) {
+	r.HandleFunc("/namespaces/{ns}/lint", h.NamespaceLint).Name("getNamespaceLogs").Methods(http.MethodGet)
+
 	// swagger:operation POST /api/jq Other jqPlayground
 	// ---
 	// description: |

@@ -812,7 +812,7 @@ func (engine *engine) createTransport() *http.Transport {
 	return tr
 }
 
-func (engine *engine) wakeEventsWaiter(instance uuid.UUID, events []*cloudevents.Event) {
+func (engine *engine) WakeEventsWaiter(instance uuid.UUID, events []*cloudevents.Event) {
 	ctx := context.Background()
 
 	err := engine.enqueueInstanceMessage(ctx, instance, "event", events)

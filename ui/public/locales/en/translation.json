@@ -155,10 +155,9 @@
             },
             "metrics": {
               "header": "Success / failure rate",
-              "successful": "complete: {{percentage}}%",
-              "failed": "failed: {{percentage}}%",
               "noResult": "no data available",
-              "loading": "loading..."
+              "loading": "loading...",
+              "legend": "{{successRate}}% successful"
             },
             "services": {
               "header": "Workflow services"
@@ -978,6 +977,8 @@
           }
         },
         "empty": "No routes exist yet",
+        "searchPlaceholder": "Filter routes...",
+        "emptySearch": "No route matches your search",
         "detail": {
           "editRoute": "Edit Route"
         }

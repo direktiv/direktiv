@@ -6,11 +6,12 @@ import (
 	"time"
 
 	ce "github.com/cloudevents/sdk-go/v2"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/google/uuid"
 )
 
 type EventWorker struct {
-	store  StagingEventStore
+	store  datastore.StagingEventStore
 	ticker *time.Ticker
 	signal chan struct{}
 	// eventQueue  chan []*events.StagingEvent
@@ -21,7 +22,7 @@ type EventWorker struct {
 // * `store`: The StagingEventStore used for retrieving and deleting delayed events.
 // * `interval`:  The interval at which the worker checks for delayed events.
 // * `handleEvent`: The function invoked to process each delayed event.
-func NewEventWorker(store StagingEventStore, interval time.Duration, handleEvent func(ctx context.Context, ns uuid.UUID, nsName string, ce *ce.Event) error) *EventWorker {
+func NewEventWorker(store datastore.StagingEventStore, interval time.Duration, handleEvent func(ctx context.Context, ns uuid.UUID, nsName string, ce *ce.Event) error) *EventWorker {
 	return &EventWorker{
 		store:  store,
 		ticker: time.NewTicker(interval),

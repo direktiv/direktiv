@@ -1,8 +1,8 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 
 import common from '../common'
-import regex from '../common/regex'
 import helpers from '../common/helpers'
+import regex from '../common/regex'
 import request from '../common/request'
 
 const namespaceName = 'blobstest'
@@ -28,7 +28,7 @@ states:
 
 	it(`should invoke the 'noop.yaml' workflow`, async () => {
 		const req = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=noop.yaml`)
-		.send({"a": 2})
+			.send({ a: 2 })
 		expect(req.statusCode).toEqual(200)
 
 		id = req.body.data.id
@@ -42,17 +42,17 @@ states:
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({
 			data: {
-				input: "eyJhIjoyfQ==",
+				input: 'eyJhIjoyfQ==',
 				createdAt: expect.stringMatching(regex.timestampRegex),
 				endedAt: expect.stringMatching(regex.timestampRegex),
 				definition: expect.stringMatching(regex.base64Regex),
-				errorCode: "", 
-				flow: [ "a" ],
-				id: expect.stringMatching(regex.uuidRegex), 
-				invoker: "api",
+				errorCode: null,
+				flow: [ 'a' ],
+				id: expect.stringMatching(regex.uuidRegex),
+				invoker: 'api',
 				lineage: [],
-				path: "/noop.yaml",
-				status: "complete", 
+				path: '/noop.yaml',
+				status: 'complete',
 				traceId: expect.anything(),
 			},
 		})
@@ -68,13 +68,13 @@ states:
 				createdAt: expect.stringMatching(regex.timestampRegex),
 				endedAt: expect.stringMatching(regex.timestampRegex),
 				definition: expect.stringMatching(regex.base64Regex),
-				errorCode: "", 
-				flow: [ "a" ],
-				id: expect.stringMatching(regex.uuidRegex), 
-				invoker: "api",
+				errorCode: null,
+				flow: [ 'a' ],
+				id: expect.stringMatching(regex.uuidRegex),
+				invoker: 'api',
 				lineage: [],
-				path: "/noop.yaml",
-				status: "complete", 
+				path: '/noop.yaml',
+				status: 'complete',
 				traceId: expect.anything(),
 			},
 		})

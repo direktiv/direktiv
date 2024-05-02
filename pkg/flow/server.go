@@ -99,7 +99,7 @@ func Run(circuit *core.Circuit) error {
 		if err != nil {
 			return err
 		}
-		err = srv.flow.configureWorkflowStarts(circuit.Context(), dbManager, event.NamespaceID, file)
+		err = srv.flow.configureWorkflowStarts(circuit.Context(), dbManager, event.NamespaceID, event.Namespace, file)
 		if err != nil {
 			return err
 		}
@@ -113,11 +113,13 @@ func Run(circuit *core.Circuit) error {
 	}
 
 	err = cmd.NewMain(circuit, &cmd.NewMainArgs{
-		Config:            srv.config,
-		Database:          dbManager,
-		PubSubBus:         srv.pBus,
-		ConfigureWorkflow: configureWorkflow,
-		InstanceManager:   instanceManager,
+		Config:              srv.config,
+		Database:            dbManager,
+		PubSubBus:           srv.pBus,
+		ConfigureWorkflow:   configureWorkflow,
+		InstanceManager:     instanceManager,
+		WakeInstanceByEvent: srv.engine.WakeEventsWaiter,
+		WorkflowStart:       srv.engine.EventsInvoke,
 		SyncNamespace: func(namespace any, mirrorConfig any) (any, error) {
 			ns := namespace.(*datastore.Namespace)            //nolint:forcetypeassert
 			mConfig := mirrorConfig.(*datastore.MirrorConfig) //nolint:forcetypeassert
@@ -295,7 +297,7 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 	slog.Info("Events-engine was started.")
 
 	cc := func(ctx context.Context, nsID uuid.UUID, nsName string, file *filestore.File) error {
-		err = srv.flow.configureWorkflowStarts(ctx, dbManager, nsID, file)
+		err = srv.flow.configureWorkflowStarts(ctx, dbManager, nsID, nsName, file)
 		if err != nil {
 			return err
 		}

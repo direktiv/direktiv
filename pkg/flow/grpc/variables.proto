@@ -17,11 +17,6 @@ message Variable {
 	string mimeType = 6;
 }
 
-message Variables {
-	PageInfo pageInfo = 2;
-	repeated Variable results = 4;
-}
-
 message NamespaceVariableRequest {
 	string namespace = 1;
 	string key = 2;
@@ -38,16 +33,6 @@ message NamespaceVariableResponse {
 	string mimeType = 8;
 }
 
-message NamespaceVariablesRequest {
-	Pagination pagination = 1;
-	string namespace = 2;
-}
-
-message NamespaceVariablesResponse {
-	string namespace = 1;
-	Variables variables = 2;
-}
-
 message SetNamespaceVariableRequest {
 	string namespace = 1;
 	string key = 2;
@@ -57,27 +42,6 @@ message SetNamespaceVariableRequest {
 }
 
 message SetNamespaceVariableResponse {
-	string namespace = 1;
-	string key = 2;
-	google.protobuf.Timestamp created_at = 3;
-	google.protobuf.Timestamp updated_at = 4;
-	string checksum = 5;
-	int64 totalSize = 6;
-	string mimeType = 7;
-}
-
-message DeleteNamespaceVariableRequest {
-	string namespace = 1;
-	string key = 2;
-}
-
-message RenameNamespaceVariableRequest {
-	string namespace = 1;
-	string old = 2;
-	string new = 3;
-}
-
-message RenameNamespaceVariableResponse {
 	string namespace = 1;
 	string key = 2;
 	google.protobuf.Timestamp created_at = 3;
@@ -105,18 +69,6 @@ message WorkflowVariableResponse {
 	string mimeType = 9;
 }
 
-message WorkflowVariablesRequest {
-	Pagination pagination = 1;
-	string namespace = 2;
-	string path = 3;
-}
-
-message WorkflowVariablesResponse {
-	string namespace = 1;
-	string path = 2;
-	Variables variables = 3;
-}
-
 message SetWorkflowVariableRequest {
 	string namespace = 1;
 	string path = 2;
@@ -127,30 +79,6 @@ message SetWorkflowVariableRequest {
 }
 
 message SetWorkflowVariableResponse {
-	string namespace = 1;
-	string path = 2;
-	string key = 3;
-	google.protobuf.Timestamp created_at = 4;
-	google.protobuf.Timestamp updated_at = 5;
-	string checksum = 6;
-	int64 totalSize = 7;
-	string mimeType = 8;
-}
-
-message DeleteWorkflowVariableRequest {
-	string namespace = 1;
-	string path = 2;
-	string key = 3;
-}
-
-message RenameWorkflowVariableRequest {
-	string namespace = 1;
-	string path = 2;
-	string old = 3;
-	string new = 4;
-}
-
-message RenameWorkflowVariableResponse {
 	string namespace = 1;
 	string path = 2;
 	string key = 3;
@@ -179,18 +107,6 @@ message InstanceVariableResponse {
 	string mimeType = 9;
 }
 
-message InstanceVariablesRequest {
-	Pagination pagination = 1;
-	string namespace = 2;
-	string instance = 3;
-}
-
-message InstanceVariablesResponse {
-	string namespace = 1;
-	string instance = 2;
-	Variables variables = 3;
-}
-
 message SetInstanceVariableRequest {
 	string namespace = 1;
 	string instance = 2;
@@ -201,30 +117,6 @@ message SetInstanceVariableRequest {
 }
 
 message SetInstanceVariableResponse {
-	string namespace = 1;
-	string instance = 2;
-	string key = 3;
-	google.protobuf.Timestamp created_at = 4;
-	google.protobuf.Timestamp updated_at = 5;
-	string checksum = 6;
-	int64 totalSize = 7;
-	string mimeType = 8;
-}
-
-message DeleteInstanceVariableRequest {
-	string namespace = 1;
-	string instance = 2;
-	string key = 3;
-}
-
-message RenameInstanceVariableRequest {
-	string namespace = 1;
-	string instance = 2;
-	string old = 3;
-	string new = 4;
-}
-
-message RenameInstanceVariableResponse {
 	string namespace = 1;
 	string instance = 2;
 	string key = 3;

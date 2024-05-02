@@ -90,7 +90,7 @@ const NewWorkflow = ({
     },
   });
 
-  const { mutate: createFile, isLoading } = useCreateFile({
+  const { mutate: createFile, isPending } = useCreateFile({
     onSuccess: (data) => {
       /**
        * creating a new workflow might introduce an uninitialized secret.
@@ -212,10 +212,10 @@ const NewWorkflow = ({
           data-testid="new-workflow-submit"
           type="submit"
           disabled={disableSubmit}
-          loading={isLoading}
+          loading={isPending}
           form={formId}
         >
-          {!isLoading && <PlusCircle />}
+          {!isPending && <PlusCircle />}
           {t("pages.explorer.tree.newWorkflow.createBtn")}
         </Button>
       </DialogFooter>

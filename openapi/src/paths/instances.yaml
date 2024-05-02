@@ -1,3 +1,4 @@
+
 /api/v2/namespaces/{namespace}/instances:
   get:
     tags:
@@ -38,6 +39,11 @@
             schema:
               type: object
               properties:
+                meta:
+                  type: object
+                  properties:
+                    total: 
+                      type: integer
                 data:
                   type: array
                   items:

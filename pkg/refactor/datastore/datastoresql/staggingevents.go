@@ -7,18 +7,18 @@ import (
 	"time"
 
 	ce "github.com/cloudevents/sdk-go/v2"
-	"github.com/direktiv/direktiv/pkg/refactor/events"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
-var _ events.StagingEventStore = &sqlStagingEventStore{}
+var _ datastore.StagingEventStore = &sqlStagingEventStore{}
 
 type sqlStagingEventStore struct {
 	db *gorm.DB
 }
 
-func (ss *sqlStagingEventStore) Append(ctx context.Context, events ...*events.StagingEvent) ([]*events.StagingEvent, []error) {
+func (ss *sqlStagingEventStore) Append(ctx context.Context, events ...*datastore.StagingEvent) ([]*datastore.StagingEvent, []error) {
 	q := "INSERT INTO staging_events (id, event_id, type, source, cloudevent, namespace_id, namespace_name, received_at, created_at, delayed_until) VALUES (  $1, $2, $3, $4, $5, $6, $7, $8, $9, $10 )"
 	errs := make([]error, len(events))
 	for i := range events {
@@ -70,7 +70,7 @@ type gormStagingEvent struct {
 	DelayedUntil  time.Time
 }
 
-func (ss *sqlStagingEventStore) GetDelayedEvents(ctx context.Context, currentTime time.Time, limit int, offset int) ([]*events.StagingEvent, int, error) {
+func (ss *sqlStagingEventStore) GetDelayedEvents(ctx context.Context, currentTime time.Time, limit int, offset int) ([]*datastore.StagingEvent, int, error) {
 	q := `SELECT id, source, type, cloudevent, namespace_id, namespace_name, created_at, delayed_until FROM staging_events WHERE delayed_until < $1`
 
 	var count int
@@ -85,7 +85,7 @@ func (ss *sqlStagingEventStore) GetDelayedEvents(ctx context.Context, currentTim
 		return nil, 0, tx.Error
 	}
 
-	ev := make([]*events.StagingEvent, 0, len(res))
+	ev := make([]*datastore.StagingEvent, 0, len(res))
 
 	for _, gse := range res {
 		var finalCE ce.Event
@@ -93,7 +93,7 @@ func (ss *sqlStagingEventStore) GetDelayedEvents(ctx context.Context, currentTim
 		if err != nil {
 			return nil, 0, fmt.Errorf("res len(): %v, event: %v, err: %w ", len(res), gse.Cloudevent, err)
 		}
-		ev = append(ev, &events.StagingEvent{Event: &events.Event{Namespace: gse.NamespaceID, ReceivedAt: gse.ReceivedAt, Event: &finalCE, NamespaceName: gse.NamespaceName}, DatabaseID: gse.ID, DelayedUntil: gse.DelayedUntil})
+		ev = append(ev, &datastore.StagingEvent{Event: &datastore.Event{Namespace: gse.NamespaceID, ReceivedAt: gse.ReceivedAt, Event: &finalCE, NamespaceName: gse.NamespaceName}, DatabaseID: gse.ID, DelayedUntil: gse.DelayedUntil})
 	}
 
 	return ev, count, nil

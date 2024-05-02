@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -15,6 +14,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
+	"github.com/direktiv/direktiv/pkg/refactor/events"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
@@ -25,12 +25,14 @@ import (
 )
 
 type NewMainArgs struct {
-	Config            *core.Config
-	Database          *database.SQLStore
-	PubSubBus         *pubsub.Bus
-	ConfigureWorkflow func(data string) error
-	InstanceManager   *instancestore.InstanceManager
-	SyncNamespace     core.SyncNamespace
+	Config              *core.Config
+	Database            *database.SQLStore
+	PubSubBus           *pubsub.Bus
+	ConfigureWorkflow   func(data string) error
+	InstanceManager     *instancestore.InstanceManager
+	WakeInstanceByEvent events.WakeEventsWaiter
+	WorkflowStart       events.WorkflowStart
+	SyncNamespace       core.SyncNamespace
 }
 
 func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
@@ -113,29 +115,8 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 	)
 
 	// endpoint manager
-	args.PubSubBus.Subscribe(func(ns string) {
-		gatewayManager.UpdateNamespace(ns)
-	},
-		pubsub.NamespaceCreate,
-		pubsub.MirrorSync,
-	)
-
-	// endpoint manager deletes routes/consumers on namespace delete
-	args.PubSubBus.Subscribe(func(ns string) {
-		gatewayManager.DeleteNamespace(ns)
-	},
-		pubsub.NamespaceDelete,
-	)
-
-	// on sync redo all consumers and routes on sync or single file updates
-	args.PubSubBus.Subscribe(func(data string) {
-		event := pubsub.FileChangeEvent{}
-		err := json.Unmarshal([]byte(data), &event)
-		if err != nil {
-			slog.Error("unmarshal file change event", "err", err)
-			panic(err)
-		}
-		gatewayManager.UpdateNamespace(event.Namespace)
+	args.PubSubBus.Subscribe(func(_ string) {
+		gatewayManager.UpdateAll()
 	},
 		pubsub.EndpointCreate,
 		pubsub.EndpointUpdate,
@@ -145,6 +126,9 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 		pubsub.ConsumerDelete,
 		pubsub.ConsumerUpdate,
 		pubsub.ConsumerRename,
+		pubsub.NamespaceDelete,
+		pubsub.NamespaceCreate,
+		pubsub.MirrorSync,
 	)
 
 	// initial loading of routes and consumers
@@ -161,7 +145,7 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 	)
 
 	// Start api v2 server
-	err = api.Initialize(app, args.Database, args.PubSubBus, args.InstanceManager, "0.0.0.0:6667", circuit)
+	err = api.Initialize(app, args.Database, args.PubSubBus, args.InstanceManager, args.WakeInstanceByEvent, args.WorkflowStart, "0.0.0.0:6667", circuit)
 	if err != nil {
 		return fmt.Errorf("initializing api v2, err: %w", err)
 	}

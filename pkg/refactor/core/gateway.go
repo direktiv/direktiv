@@ -11,8 +11,6 @@ import (
 type GatewayManager interface {
 	http.Handler
 
-	DeleteNamespace(namespace string)
-	UpdateNamespace(namespace string)
 	UpdateAll()
 
 	GetConsumers(namespace string) ([]*ConsumerFile, error)

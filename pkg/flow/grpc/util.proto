@@ -14,35 +14,3 @@ message JQResponse {
 	bytes data = 2;
 	repeated string results = 3;
 }
-
-message State {
-	string name = 1;
-	map<string, int32> invokers = 2;
-	map<string, float> invokersRepresentation = 3;
-	int32 totalExecutions = 4;
-	int32 totalMilliseconds = 5;
-	int32 totalSuccesses = 6;
-	int32 totalFailures = 7;
-	map<string, int32> unhandledErrors = 8;
-	map<string, float> unhandledErrorsRepresentation = 9;
-	int32 totalRetries = 10;
-	Outcomes outcomes = 11;
-	int32 meanExecutionsPerInstance = 12;
-	int32 meanMillisecondsPerInstance = 13;
-	float successRate = 14;
-	float failureRate = 15;
-	float meanRetries = 16;
-	MeanOutcomes meanOutcomes = 17;
-}
-
-message Outcomes {
-    int32 success = 1;
-    int32 failure = 2;
-    map<string, int32> transitions = 3;
-}
-
-message MeanOutcomes {
-	float success = 1;
-	float failure = 2;
-	map<string, float> transitions = 3;
-}
