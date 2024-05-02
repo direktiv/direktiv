@@ -19,9 +19,11 @@
                   items:
                     type: object
                     properties:
-                      issue:
+                      description:
                         type: string
                         description: dynamic string for humans to read
+                      count: 
+                        type: integer
                       level:
                         type: string
                         description: enum of the notification severity level (currently only 'warning' exists)
