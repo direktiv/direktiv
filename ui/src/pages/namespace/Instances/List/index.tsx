@@ -29,7 +29,7 @@ const InstancesListPage = () => {
   const namespace = useNamespace();
   const { t } = useTranslation();
   const {
-    data: instances,
+    data,
     isSuccess,
     isFetching,
     refetch,
@@ -47,6 +47,7 @@ const InstancesListPage = () => {
   };
 
   // const numberOfInstances = 0; // TODO: numberOfInstances;
+  const instances = data?.data ?? [];
   const noResults = isSuccess && instances.length === 0;
   const showPagination = true; // TODO: numberOfInstances > instancesPerPage;
   const hasFilters = !!Object.keys(filters).length;

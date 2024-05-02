@@ -38,12 +38,14 @@ const ChildInstances = () => {
 
   if (!namespace) return null;
 
+  const instances = data?.data ?? [];
+
   const onInstanceSelect = (instance: string) => {
     // useNavigate(); is not working for some reason
     location.href = pages.instances.createHref({ namespace, instance });
   };
 
-  const childCount = data?.length ?? 0;
+  const childCount = instances.length ?? 0;
 
   const needsPopover = childCount > 0;
   const moreInstances = childCount > maxChildInstancesToShow;
@@ -85,7 +87,7 @@ const ChildInstances = () => {
                       )}
                     </CommandEmpty>
                     <CommandGroup>
-                      {data.map((instance) => (
+                      {instances.map((instance) => (
                         <CommandItem
                           key={instance.id}
                           value={instance.id}

@@ -68,7 +68,7 @@ export const Instances = () => {
       >
         {isAllowedSucessfullInstances ? (
           <>
-            {sucessfullInstances?.length === 0 ? (
+            {sucessfullInstances?.data?.length === 0 ? (
               <NoResult icon={Boxes}>
                 {t("pages.monitoring.instances.successfulExecutions.empty")}
               </NoResult>
@@ -76,7 +76,7 @@ export const Instances = () => {
               <ScrollArea className="h-full">
                 <Table>
                   <TableBody>
-                    {sucessfullInstances?.map((instance) => (
+                    {sucessfullInstances?.data.map((instance) => (
                       <InstanceRow key={instance.id} instance={instance} />
                     ))}
                   </TableBody>
@@ -107,7 +107,7 @@ export const Instances = () => {
       >
         {isAllowedFailedInstances ? (
           <>
-            {failedInstances?.length === 0 ? (
+            {failedInstances?.data.length === 0 ? (
               <NoResult icon={Boxes}>
                 {t("pages.monitoring.instances.failedExecutions.empty")}
               </NoResult>
@@ -115,7 +115,7 @@ export const Instances = () => {
               <ScrollArea className="h-full">
                 <Table>
                   <TableBody>
-                    {failedInstances?.map((instance) => (
+                    {failedInstances?.data.map((instance) => (
                       <InstanceRow key={instance.id} instance={instance} />
                     ))}
                   </TableBody>
