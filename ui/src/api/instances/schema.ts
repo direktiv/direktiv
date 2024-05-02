@@ -39,6 +39,7 @@ const ParentInstanceSchema = z.object({
  * 
   {
     "id": "79310904-929f-4f83-bed6-0bf8c1e49dc1",
+    "namespace": "test",
     "createdAt": "0001-01-01T00:00:00Z",
     "endedAt": null,
     "status": "pending",
@@ -54,12 +55,13 @@ const ParentInstanceSchema = z.object({
  */
 const InstanceSchema = z.object({
   id: z.string(),
+  namespace: z.string(),
   createdAt: z.string(),
   endedAt: z.string().nullable(),
   status: InstanceStatusSchema,
   path: z.string(),
   errorCode: z.string().nullable(),
-  errorMessage: z.string().optional(), // TODO: nullable?
+  errorMessage: z.string().nullable(),
   /**
    * either "api", "cron", "cloudevent" or "complete"
    * if it's created as a subflow from another instance
