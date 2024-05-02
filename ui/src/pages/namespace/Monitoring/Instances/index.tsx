@@ -10,7 +10,7 @@ import { useTranslation } from "react-i18next";
 
 export const Instances = () => {
   const {
-    data: sucessfullInstances,
+    data: dataSucessfullInstances,
     isFetched: isFetchedSucessfullInstances,
     isFetching: isFetchingSucessfullinstances,
     refetch: refetchSucessfullInstances,
@@ -28,7 +28,7 @@ export const Instances = () => {
   });
 
   const {
-    data: failedInstances,
+    data: dataFailedInstances,
     isFetched: isFetchedFailedInstances,
     isFetching: isFetchingFailedInstances,
     refetch: refetchFailedInstances,
@@ -46,6 +46,9 @@ export const Instances = () => {
   });
 
   const { t } = useTranslation();
+
+  const sucessfullInstances = dataSucessfullInstances?.data ?? [];
+  const failedInstances = dataFailedInstances?.data ?? [];
 
   if (!isFetchedSucessfullInstances || !isFetchedFailedInstances) return null;
 
@@ -68,7 +71,7 @@ export const Instances = () => {
       >
         {isAllowedSucessfullInstances ? (
           <>
-            {sucessfullInstances?.data?.length === 0 ? (
+            {sucessfullInstances.length === 0 ? (
               <NoResult icon={Boxes}>
                 {t("pages.monitoring.instances.successfulExecutions.empty")}
               </NoResult>
@@ -76,7 +79,7 @@ export const Instances = () => {
               <ScrollArea className="h-full">
                 <Table>
                   <TableBody>
-                    {sucessfullInstances?.data.map((instance) => (
+                    {sucessfullInstances.map((instance) => (
                       <InstanceRow key={instance.id} instance={instance} />
                     ))}
                   </TableBody>
@@ -107,7 +110,7 @@ export const Instances = () => {
       >
         {isAllowedFailedInstances ? (
           <>
-            {failedInstances?.data.length === 0 ? (
+            {failedInstances.length === 0 ? (
               <NoResult icon={Boxes}>
                 {t("pages.monitoring.instances.failedExecutions.empty")}
               </NoResult>
@@ -115,7 +118,7 @@ export const Instances = () => {
               <ScrollArea className="h-full">
                 <Table>
                   <TableBody>
-                    {failedInstances?.data.map((instance) => (
+                    {failedInstances.map((instance) => (
                       <InstanceRow key={instance.id} instance={instance} />
                     ))}
                   </TableBody>
