@@ -15,7 +15,6 @@ import { statusToBadgeVariant } from "../../utils";
 import { useCancelInstance } from "~/api/instances/mutate/cancel";
 import { useInstanceDetails } from "~/api/instances/query/details";
 import { useInstanceId } from "../store/instanceContext";
-import { useNamespace } from "~/util/store/namespace";
 import { useTranslation } from "react-i18next";
 import useUpdatedAt from "~/hooks/useUpdatedAt";
 
@@ -23,7 +22,6 @@ const Header = () => {
   const instanceId = useInstanceId();
   const { data } = useInstanceDetails({ instanceId });
   const { mutate: cancelInstance, isPending } = useCancelInstance();
-  const namespace = useNamespace();
 
   const { t } = useTranslation();
 
@@ -35,7 +33,7 @@ const Header = () => {
 
   const link = pages.explorer.createHref({
     path: data.path,
-    namespace: namespace ?? "", // TODO: swap this when api returns namespace
+    namespace: data.namespace,
     subpage: "workflow",
   });
 

@@ -26,8 +26,7 @@ import useUpdatedAt from "~/hooks/useUpdatedAt";
 
 const InstanceTableRow: FC<{
   instance: InstanceSchemaType;
-  namespace: string;
-}> = ({ instance, namespace }) => {
+}> = ({ instance }) => {
   const [invoker, childInstance] = instance.invoker.split(":");
   const endedAt = useUpdatedAt(instance.endedAt);
   const createdAt = useUpdatedAt(instance.createdAt);
@@ -43,7 +42,7 @@ const InstanceTableRow: FC<{
         onClick={() => {
           navigate(
             pages.instances.createHref({
-              namespace,
+              namespace: instance.namespace,
               instance: instance.id,
             })
           );
@@ -58,7 +57,7 @@ const InstanceTableRow: FC<{
                   e.stopPropagation(); // prevent the onClick on the row from firing when clicking the workflow link
                 }}
                 to={pages.explorer.createHref({
-                  namespace,
+                  namespace: instance.namespace,
                   path: instance.path,
                   subpage: "workflow",
                 })}
