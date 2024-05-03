@@ -2,10 +2,10 @@ package datastore
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 )
 
 // RuntimeVariable are direktiv runtime variables that hold data, workflows performs getting and setting on these
