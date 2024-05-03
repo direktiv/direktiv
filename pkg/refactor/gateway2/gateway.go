@@ -10,10 +10,6 @@ import (
 	"sync"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
-	_ "github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/auth"
-	_ "github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/inbound"
-	_ "github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/outbound"
-	_ "github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/target"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins"
 )
 

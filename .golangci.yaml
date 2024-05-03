@@ -62,7 +62,6 @@ linters:
     - prealloc
     - perfsprint # not needed, this one linting nano optimizations.
     - spancheck # TODO: Alan, enable this one as it helps you fixing some telemetry bugs.
-    - revive
     - intrange # TODO: should be activated.
     - copyloopvar # TODO: should be activated.
 
@@ -90,7 +89,6 @@ issues:
         - exhaustive
         - contextcheck
         - unparam
-        - revive
         - promlinter
         - prealloc
         - nestif
@@ -123,3 +121,24 @@ issues:
     - text: "SA1029: should not use built-in type string as key for value"
       linters:
         - staticcheck
+    - text: "unused-parameter:"
+      linters:
+        - revive
+    - text: "empty-block:"
+      linters:
+        - revive
+    - text: "var-naming:"
+      linters:
+        - revive
+    - text: "indent-error-flow:"
+      linters:
+        - revive
+    - text: "exported:"
+      linters:
+        - revive
+    - text: "context-as-argument:"
+      linters:
+        - revive
+    - text: "redefines-builtin-id:"
+      linters:
+        - revive
