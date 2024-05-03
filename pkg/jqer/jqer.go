@@ -80,6 +80,7 @@ func JqState(l *lexer.L) lexer.StateFunc {
 	var jdxJ int
 
 	mover := func(rewind int, forward bool) {
+		//nolint:intrange
 		for a := 0; a < rewind; a++ {
 			if forward {
 				l.Next()
@@ -89,6 +90,7 @@ func JqState(l *lexer.L) lexer.StateFunc {
 		}
 	}
 
+	//nolint:intrange
 	for i := 0; i < 3; i++ {
 		r := l.Next()
 		if r == lexer.EOFRune {

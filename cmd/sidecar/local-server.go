@@ -77,6 +77,7 @@ func (srv *LocalServer) Start() {
 
 	slog.Debug("Localhost server thread registered.")
 
+	//nolint:intrange
 	for i := 0; i < workerThreads; i++ {
 		worker := new(inboundWorker)
 		worker.id = i

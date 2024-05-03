@@ -750,6 +750,7 @@ func (worker *inboundWorker) validateFunctionRequest(req *inboundRequest) *funct
 	headers := []string{actionIDHeader, "Direktiv-InstanceID", "Direktiv-Namespace", "Direktiv-Step", "Direktiv-Iterator", "Direktiv-Deadline"}
 	ptrs := []*string{&ir.actionId, &ir.instanceId, &ir.namespace, &step, &it, &deadline}
 
+	//nolint:intrange
 	for i := 0; i < len(headers); i++ {
 		if !worker.getRequiredStringHeader(req, ptrs[i], headers[i]) {
 			return nil

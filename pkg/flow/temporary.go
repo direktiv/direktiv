@@ -540,6 +540,7 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	cleanup := util.TraceHTTPRequest(ctx, req)
 	defer cleanup()
 
+	//nolint:intrange
 	for i := 0; i < 300; i++ { // 5 minutes retries.
 		slog.Debug("functions request", "i", i, "addr", addr)
 		resp, err = client.Do(req)
