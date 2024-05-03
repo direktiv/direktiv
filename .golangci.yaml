@@ -120,3 +120,6 @@ issues:
     - text: "encoding/json.Marshal"
       linters:
         - errchkjson
+    - text: "SA1029: should not use built-in type string as key for value"
+      linters:
+        - staticcheck
