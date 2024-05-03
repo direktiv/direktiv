@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
-	"github.com/direktiv/direktiv/pkg/flow/nohome/recipient"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
@@ -434,53 +433,8 @@ func pubsubNotify(key string) *PubsubUpdate {
 	}
 }
 
-func pubsubDisconnect(key string) *PubsubUpdate {
-	return &PubsubUpdate{
-		Handler: PubsubDisconnectFunction,
-		Key:     key,
-	}
-}
-
-func (pubsub *Pubsub) NotifyLogs(recipientID uuid.UUID, recipientType recipient.RecipientType) {
-	switch recipientType { //nolint:exhaustive
-	case recipient.Server:
-		pubsub.Publish(pubsubNotify(""))
-	case recipient.Instance:
-		pubsub.Publish(pubsubNotify(pubsub.instanceLogs(recipientID)))
-	case recipient.Workflow:
-		pubsub.Publish(pubsubNotify(pubsub.workflowLogs(recipientID)))
-	case recipient.Namespace:
-		pubsub.Publish(pubsubNotify(pubsub.namespaceLogs(recipientID)))
-	case recipient.Mirror:
-		pubsub.Publish(pubsubNotify(pubsub.activityLogs(recipientID)))
-	default:
-		pubsub.Publish(pubsubNotify(""))
-		// panic("how?")
-	}
-}
-
-func (pubsub *Pubsub) SubscribeServerLogs() *Subscription {
-	return pubsub.Subscribe()
-}
-
-func (pubsub *Pubsub) SubscribeNamespaces() *Subscription {
-	return pubsub.Subscribe("namespaces")
-}
-
-func (pubsub *Pubsub) NotifyNamespaces() {
-	pubsub.Publish(pubsubNotify("namespaces"))
-}
-
-func (pubsub *Pubsub) CloseNamespace(ns *datastore.Namespace) {
-	pubsub.Publish(pubsubDisconnect(ns.ID.String()))
-}
-
 func (pubsub *Pubsub) namespaceLogs(ns uuid.UUID) string {
 	return fmt.Sprintf("nslog:%s", ns.String())
-}
-
-func (pubsub *Pubsub) SubscribeNamespaceLogs(ns uuid.UUID) *Subscription {
-	return pubsub.Subscribe(ns.String(), pubsub.namespaceLogs(ns))
 }
 
 func (pubsub *Pubsub) namespaceEventListeners(id uuid.UUID) string {
