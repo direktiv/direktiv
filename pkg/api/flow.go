@@ -1082,6 +1082,7 @@ func (h *flowHandler) WaitWorkflow(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Direktiv-Instance-Id", instanceID)
 		}
 
+		//nolint:revive
 		if s := status.Instance.GetStatus(); s == util.InstanceStatusComplete {
 			data := status.Data
 

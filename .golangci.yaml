@@ -130,9 +130,6 @@ issues:
     - text: "var-naming:"
       linters:
         - revive
-    - text: "indent-error-flow:"
-      linters:
-        - revive
     - text: "context-as-argument:"
       linters:
         - revive
