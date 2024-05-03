@@ -94,8 +94,6 @@ func setupReverseProxyHandlers(base *mux.Router, router *mux.Router, apiV2Addres
 }
 
 func (h *flowHandler) initRoutes(r *mux.Router) {
-	r.HandleFunc("/namespaces/{ns}/lint", h.NamespaceLint).Name("getNamespaceLogs").Methods(http.MethodGet)
-
 	// swagger:operation POST /api/jq Other jqPlayground
 	// ---
 	// description: |
@@ -789,25 +787,6 @@ func (h *flowHandler) EventHistorySSE(w http.ResponseWriter, r *http.Request) {
 	}()
 
 	sse(w, ch)
-}
-
-func (h *flowHandler) NamespaceLint(w http.ResponseWriter, r *http.Request) {
-	slog.Debug("Handling request", "this", this())
-
-	ctx := r.Context()
-	namespace := mux.Vars(r)["ns"]
-
-	in := &grpc.NamespaceLintRequest{
-		Name: namespace,
-	}
-
-	resp, err := h.client.NamespaceLint(ctx, in)
-	if err != nil {
-		respond(w, resp, err)
-		return
-	}
-
-	respond(w, resp, nil)
 }
 
 func (h *flowHandler) Instance(w http.ResponseWriter, r *http.Request) {

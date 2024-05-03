@@ -6,7 +6,6 @@ option go_package = "github.com/direktiv/direktiv/pkg/flow/grpc";
 
 import "google/protobuf/empty.proto";
 
-import "pkg/flow/grpc/namespaces.proto";
 import "pkg/flow/grpc/variables.proto";
 import "pkg/flow/grpc/instances.proto";
 import "pkg/flow/grpc/internal.proto";
@@ -43,20 +42,17 @@ service Flow {
 	rpc JQ (JQRequest) returns (JQResponse) {}
 
 	// events.
-	rpc EventListeners (EventListenersRequest) returns (EventListenersResponse) {} 
+	rpc EventListeners (EventListenersRequest) returns (EventListenersResponse) {}
 	rpc EventListenersStream (EventListenersRequest) returns (stream EventListenersResponse) {}
 	rpc EventHistory (EventHistoryRequest) returns (EventHistoryResponse) {}
 	rpc EventHistoryStream (EventHistoryRequest) returns (stream EventHistoryResponse) {}
 	rpc HistoricalEvent (HistoricalEventRequest) returns (HistoricalEventResponse) {}
 	rpc ReplayEvent (ReplayEventRequest) returns (google.protobuf.Empty) {}
-
-	//
-	rpc NamespaceLint (NamespaceLintRequest) returns (NamespaceLintResponse) {}
 }
 
 service Internal {
- 	rpc ReportActionResults (ReportActionResultsRequest) returns (google.protobuf.Empty) {}
- 	rpc ActionLog(ActionLogRequest) returns (google.protobuf.Empty) {}
+	rpc ReportActionResults (ReportActionResultsRequest) returns (google.protobuf.Empty) {}
+	rpc ActionLog(ActionLogRequest) returns (google.protobuf.Empty) {}
 
 	rpc NamespaceVariableParcels (VariableInternalRequest) returns (stream VariableInternalResponse) {}
 	rpc SetNamespaceVariableParcels (stream SetVariableInternalRequest) returns (SetVariableInternalResponse) {}
