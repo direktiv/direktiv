@@ -133,9 +133,6 @@ issues:
     - text: "indent-error-flow:"
       linters:
         - revive
-    - text: "exported:"
-      linters:
-        - revive
     - text: "context-as-argument:"
       linters:
         - revive

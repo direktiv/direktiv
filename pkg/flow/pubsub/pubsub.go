@@ -56,6 +56,7 @@ func (pubsub *Pubsub) Close() error {
 	return nil
 }
 
+//nolint:revive
 type PubsubUpdate struct {
 	Handler  string
 	Sender   string
