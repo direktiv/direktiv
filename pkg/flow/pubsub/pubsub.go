@@ -433,10 +433,6 @@ func pubsubNotify(key string) *PubsubUpdate {
 	}
 }
 
-func (pubsub *Pubsub) namespaceLogs(ns uuid.UUID) string {
-	return fmt.Sprintf("nslog:%s", ns.String())
-}
-
 func (pubsub *Pubsub) namespaceEventListeners(id uuid.UUID) string {
 	return fmt.Sprintf("nsel:%s", id.String())
 }
@@ -459,34 +455,6 @@ func (pubsub *Pubsub) SubscribeEvents(ns *datastore.Namespace) *Subscription {
 
 func (pubsub *Pubsub) NotifyEvents(ns *datastore.Namespace) {
 	pubsub.Publish(pubsubNotify(pubsub.namespaceEvents(ns)))
-}
-
-func (pubsub *Pubsub) workflowVars(id uuid.UUID) string {
-	return fmt.Sprintf("wfvars:%s", id.String())
-}
-
-func (pubsub *Pubsub) workflowLogs(wf uuid.UUID) string {
-	return fmt.Sprintf("wflogs:%s", wf.String())
-}
-
-func (pubsub *Pubsub) namespaceVars(nsID uuid.UUID) string {
-	return fmt.Sprintf("nsvar:%s", nsID.String())
-}
-
-func (pubsub *Pubsub) instanceLogs(instID uuid.UUID) string {
-	return fmt.Sprintf("instlogs:%s", instID.String())
-}
-
-func (pubsub *Pubsub) activityLogs(act uuid.UUID) string {
-	return fmt.Sprintf("mactlogs:%s", act.String())
-}
-
-func (pubsub *Pubsub) instanceVars(id uuid.UUID) string {
-	return fmt.Sprintf("instvar:%s", id.String())
-}
-
-func (pubsub *Pubsub) instances(ns *datastore.Namespace) string {
-	return fmt.Sprintf("instances:%s", ns.ID.String())
 }
 
 func (pubsub *Pubsub) NotifyInstances(ns *datastore.Namespace) {
