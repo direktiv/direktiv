@@ -10,22 +10,22 @@ import (
 )
 
 type ActionDeserialize interface {
-	Extract(r *http.Request) (string, RequestCarrier, error)
+	Extract(r *http.Request) (string, ActionRequest, error)
 }
 
 type ActionController struct {
-	RequestCarrier
+	ActionRequest
 	Cancel func()
 }
 
-type RequestCarrier struct {
-	Deadline  time.Duration `json:"deadline"`
-	UserInput []byte        `json:"userInput"`
-	Meta
-	Data
+type ActionRequest struct {
+	Deadline  time.Duration            `json:"deadline"`
+	UserInput []byte                   `json:"userInput"`
+	Files     []FunctionFileDefinition `json:"files"`
+	ActionContext
 }
 
-type Meta struct {
+type ActionContext struct {
 	Trace     string `json:"trace"`
 	Span      string `json:"span"`
 	State     string `json:"state"`
@@ -34,10 +34,6 @@ type Meta struct {
 	Workflow  string `json:"workflow"`
 	Namespace string `json:"namespace"`
 	Callpath  string `json:"callpath"`
-}
-
-type Data struct {
-	Files []FunctionFileDefinition `json:"files"`
 }
 
 type FunctionFileDefinition struct {
@@ -49,25 +45,25 @@ type FunctionFileDefinition struct {
 	Content     string `json:"content,omitempty"`
 }
 
-type ResponseCarrier struct {
+type ActionResponse struct {
 	UserOutput []byte `json:"userOutput"`
 	Err        any    `json:"err"`
 	ErrCode    string `json:"errCode"`
 }
 
-type ActionBuilder struct{}
+type ActionRequestBuilder struct{}
 
-func (ActionBuilder) Extract(r *http.Request) (string, RequestCarrier, error) {
+func (ActionRequestBuilder) Extract(r *http.Request) (string, ActionRequest, error) {
 	// 1. Retrieve necessary data from the context
-	var c RequestCarrier
+	var c ActionRequest
 	dec := json.NewDecoder(r.Body)
 	if err := dec.Decode(&c); err != nil {
-		return "", RequestCarrier{}, fmt.Errorf("error reading request body: %w", err)
+		return "", ActionRequest{}, fmt.Errorf("error reading request body: %w", err)
 	}
 
 	actionID := r.URL.Query().Get("action_id")
 	if actionID == "" {
-		return "", RequestCarrier{}, fmt.Errorf("missing action_id in query parameters")
+		return "", ActionRequest{}, fmt.Errorf("missing action_id in query parameters")
 	}
 
 	return actionID, c, nil

@@ -58,7 +58,7 @@ func setupAPIForFlow(userServiceURL string, maxResponseSize int, actionCtl *sync
 	router.Use(middleware.Recoverer)
 	// Router for handling external requests.
 	router.Post("/", func(w http.ResponseWriter, r *http.Request) {
-		executeFunction(r, w, userServiceURL, maxResponseSize, actionCtl, action.ActionBuilder{})
+		executeFunction(r, w, userServiceURL, maxResponseSize, actionCtl, action.ActionRequestBuilder{})
 	})
 	return router
 }

@@ -24,8 +24,8 @@ func executeFunction(r *http.Request, w http.ResponseWriter, userServiceURL stri
 	// 2. Build actionCtl.
 	ctx, cancel := context.WithTimeout(r.Context(), carrier.Deadline)
 	ctl := action.ActionController{
-		Cancel:         cancel,
-		RequestCarrier: carrier,
+		Cancel:        cancel,
+		ActionRequest: carrier,
 	}
 	actionCtl.Store(actionID, ctl)
 
@@ -102,7 +102,7 @@ func responseForwardingToClient(resp *http.Response) http.Handler {
 
 		// Handle non-success status codes (might be done earlier).
 		if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
-			rC := action.ResponseCarrier{
+			rC := action.ActionResponse{
 				ErrCode: "container_failure",
 				Err:     fmt.Errorf("container failed with status %v", resp.StatusCode),
 			}
