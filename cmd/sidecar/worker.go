@@ -6,7 +6,6 @@ import (
 	"compress/gzip"
 	"context"
 	"encoding/base64"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -18,9 +17,9 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/util"
 )
 
@@ -431,10 +430,44 @@ func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
 	defer func() {
 		close(req.end)
 	}()
-
-	ir := worker.validateFunctionRequest(req)
-	if ir == nil {
+	aid := req.r.Header.Get(actionIDHeader)
+	cap := int64(134217728) // 4 MiB (cahnged to API value)
+	if req.r.ContentLength == 0 {
+		code := http.StatusLengthRequired
+		worker.reportValidationError(aid, req.w, code, errors.New(http.StatusText(code)))
 		return
+	}
+	if req.r.ContentLength > cap {
+		worker.reportValidationError(aid, req.w, http.StatusRequestEntityTooLarge, fmt.Errorf("size limit: %d bytes", cap))
+		return
+	}
+
+	action, err := enginerefactor.DecodeActionRequest(req.r)
+	if err != nil {
+		slog.Error("failed to construct action-data from request", "error", err)
+		return
+	}
+
+	files := make([]*functionFiles, len(action.Files))
+	for i := range action.Files {
+		f := action.Files[i]
+		files[i] = &functionFiles{
+			Key:         f.Key,
+			As:          f.As,
+			Scope:       f.Scope,
+			Type:        f.Type,
+			Permissions: f.Permissions,
+		}
+	}
+	ir := &functionRequest{
+		actionId:   aid,
+		instanceId: action.Instance,
+		namespace:  action.Namespace,
+		step:       action.Step,
+		deadline:   action.Deadline,
+		input:      action.UserInput,
+		iterator:   action.Branch,
+		files:      files,
 	}
 
 	ctx := req.r.Context()
@@ -443,7 +476,7 @@ func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
 
 	defer worker.cleanupFunctionRequest(ir)
 
-	err := worker.prepFunctionRequest(ctx, ir)
+	err = worker.prepFunctionRequest(ctx, ir)
 	if err != nil {
 		worker.reportSidecarError(ir, err)
 		return
@@ -639,142 +672,8 @@ func (worker *inboundWorker) reportSidecarError(ir *functionRequest, err error) 
 	})
 }
 
-func (worker *inboundWorker) reportValidationError(req *inboundRequest, code int, err error) {
-	id := req.r.Header.Get(actionIDHeader)
-
+func (worker *inboundWorker) reportValidationError(id string, w http.ResponseWriter, code int, err error) {
 	msg := err.Error()
-
-	http.Error(req.w, msg, code)
-
+	http.Error(w, msg, code)
 	slog.Warn("Request returned due to failed validation.", "action_id", id, "action_err_code", code, "error", err)
-}
-
-func (worker *inboundWorker) getRequiredStringHeader(req *inboundRequest, x *string, hdr string) bool {
-	s := req.r.Header.Get(hdr)
-	*x = s
-	if s == "" {
-		worker.reportValidationError(req, http.StatusBadRequest, fmt.Errorf("missing %s", hdr))
-		return false
-	}
-
-	return true
-}
-
-func (worker *inboundWorker) validateUintHeader(req *inboundRequest, x *int, hdr, s string) bool {
-	var err error
-
-	*x, err = strconv.Atoi(s)
-	if err != nil {
-		worker.reportValidationError(req, http.StatusBadRequest, fmt.Errorf("invalid %s: %w", hdr, err))
-		return false
-	}
-	if *x < 0 {
-		worker.reportValidationError(req, http.StatusBadRequest, fmt.Errorf("invalid %s value: %v", hdr, s))
-		return false
-	}
-
-	return true
-}
-
-func (worker *inboundWorker) validateTimeHeader(req *inboundRequest, x *time.Time, hdr, s string) bool {
-	var err error
-
-	*x, err = time.Parse(time.RFC3339, s)
-	if err != nil {
-		worker.reportValidationError(req, http.StatusBadRequest, fmt.Errorf("invalid %s: %w", hdr, err))
-		return false
-	}
-
-	return true
-}
-
-func (worker *inboundWorker) loadBody(req *inboundRequest, data *[]byte) bool {
-	cap := int64(134217728) // 4 MiB (cahnged to API value)
-	if req.r.ContentLength == 0 {
-		code := http.StatusLengthRequired
-		worker.reportValidationError(req, code, errors.New(http.StatusText(code)))
-		return false
-	}
-	if req.r.ContentLength > cap {
-		worker.reportValidationError(req, http.StatusRequestEntityTooLarge, fmt.Errorf("size limit: %d bytes", cap))
-		return false
-	}
-	r := io.LimitReader(req.r.Body, cap)
-
-	var err error
-	*data, err = io.ReadAll(r)
-	if err != nil {
-		worker.reportValidationError(req, http.StatusBadRequest, fmt.Errorf("failed to read request body: %w", err))
-		return false
-	}
-	if int64(len(*data)) != req.r.ContentLength {
-		worker.reportValidationError(req, http.StatusBadRequest, fmt.Errorf("request body doesn't match Content-Length"))
-		return false
-	}
-
-	return true
-}
-
-func (worker *inboundWorker) validateFilesHeaders(req *inboundRequest, ifiles *[]*functionFiles) bool {
-	hdr := "Direktiv-Files"
-	strs := req.r.Header.Values(hdr)
-	for i, s := range strs {
-		data, err := base64.StdEncoding.DecodeString(s)
-		if err != nil {
-			worker.reportValidationError(req, http.StatusBadRequest, fmt.Errorf("invalid %s [%d]: %w", hdr, i, err))
-			return false
-		}
-
-		files := new(functionFiles)
-		dec := json.NewDecoder(bytes.NewReader(data))
-		dec.DisallowUnknownFields()
-		err = dec.Decode(files)
-		if err != nil {
-			worker.reportValidationError(req, http.StatusBadRequest, fmt.Errorf("invalid %s [%d]: %w", hdr, i, err))
-			return false
-		}
-
-		*ifiles = append(*ifiles, files)
-	}
-
-	return true
-}
-
-func (worker *inboundWorker) validateFunctionRequest(req *inboundRequest) *functionRequest {
-	ir := new(functionRequest)
-
-	var step string
-	var deadline string
-	var it string
-
-	headers := []string{actionIDHeader, "Direktiv-InstanceID", "Direktiv-Namespace", "Direktiv-Step", "Direktiv-Iterator", "Direktiv-Deadline"}
-	ptrs := []*string{&ir.actionId, &ir.instanceId, &ir.namespace, &step, &it, &deadline}
-
-	for i := 0; i < len(headers); i++ {
-		if !worker.getRequiredStringHeader(req, ptrs[i], headers[i]) {
-			return nil
-		}
-	}
-
-	if !worker.validateUintHeader(req, &ir.step, "Direktiv-Step", step) {
-		return nil
-	}
-
-	if !worker.validateUintHeader(req, &ir.iterator, "Direktiv-Iterator", it) {
-		return nil
-	}
-
-	if !worker.validateTimeHeader(req, &ir.deadline, "Direktiv-Deadline", deadline) {
-		return nil
-	}
-
-	if !worker.loadBody(req, &ir.input) {
-		return nil
-	}
-
-	if !worker.validateFilesHeaders(req, &ir.files) {
-		return nil
-	}
-
-	return ir
 }

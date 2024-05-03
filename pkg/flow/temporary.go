@@ -1,9 +1,7 @@
 package flow
 
 import (
-	"bytes"
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -347,7 +345,7 @@ func (im *instanceMemory) CreateChild(ctx context.Context, args states.CreateChi
 
 	uid := uuid.New()
 
-	ar, err := im.engine.newIsolateRequest(im, im.logic.GetID(), args.Timeout, args.Definition, args.Input, uid, args.Async, args.Files, args.Iterator)
+	ar, arReq, err := im.engine.newIsolateRequest(im, im.logic.GetID(), args.Timeout, args.Definition, args.Input, uid, args.Async, args.Files, args.Iterator)
 	if err != nil {
 		return nil, err
 	}
@@ -361,6 +359,7 @@ func (im *instanceMemory) CreateChild(ctx context.Context, args states.CreateChi
 		info:   ci,
 		engine: im.engine,
 		ar:     ar,
+		arReq:  arReq,
 	}, nil
 }
 
@@ -381,25 +380,35 @@ func (child *subflowHandle) Info() states.ChildInfo {
 func (engine *engine) newIsolateRequest(im *instanceMemory, stateID string, timeout int,
 	fn model.FunctionDefinition, inputData []byte,
 	uid uuid.UUID, async bool, files []model.FunctionFileDefinition, iterator int,
-) (*functionRequest, error) {
+) (*functionRequest, *enginerefactor.ActionRequest, error) {
 	ar := new(functionRequest)
+	ar.Timeout = timeout
 	ar.ActionID = uid.String()
-	ar.Workflow.Timeout = timeout
-	ar.Workflow.NamespaceName = im.instance.TelemetryInfo.NamespaceName
-	ar.Workflow.Path = im.instance.Instance.WorkflowPath
-	ar.Iterator = iterator
-	if !async {
-		ar.Workflow.InstanceID = im.ID().String()
-		ar.Workflow.NamespaceID = im.instance.Instance.NamespaceID.String()
-		ar.Workflow.State = stateID
-		ar.Workflow.Step = im.Step()
+	if ar.Timeout == 0 {
+		ar.Timeout = 5 * 60 // 5 mins default, knative's default
+	}
+	arReq := enginerefactor.ActionRequest{
+		Async:     async,
+		UserInput: inputData,
+		Deadline:  time.Now().UTC().Add(time.Duration(timeout) * time.Second), // TODO?
 	}
 
-	fnt := fn.GetType()
-	ar.Container.Type = fnt
-	ar.Container.Data = inputData
+	arCtx := enginerefactor.ActionContext{
+		Trace:     im.instance.TelemetryInfo.TraceID,
+		Span:      im.instance.TelemetryInfo.SpanID,
+		State:     stateID,
+		Branch:    iterator,
+		Namespace: im.Namespace().Name,
+		Workflow:  im.instance.Instance.WorkflowPath,
+		Instance:  im.ID().String(),
+		Callpath:  im.instance.TelemetryInfo.CallPath,
+		Action:    uid.String(),
+	}
+	arReq.ActionContext = arCtx
 
-	switch fnt { //nolint:exhaustive
+	ar.Container.Type = fn.GetType()
+
+	switch ar.Container.Type { //nolint:exhaustive
 	case model.ReusableContainerFunctionType:
 		con := fn.(*model.ReusableFunctionDefinition) //nolint:forcetypeassert
 		scale := int32(0)
@@ -407,38 +416,46 @@ func (engine *engine) newIsolateRequest(im *instanceMemory, stateID string, time
 		ar.Container.Cmd = con.Cmd
 		ar.Container.Size = con.Size
 		ar.Container.Scale = int(scale)
-		ar.Container.Files = files
 		ar.Container.ID = con.ID
-		ar.Container.Service = service.GetServiceURL(ar.Workflow.NamespaceName, core.ServiceTypeWorkflow, ar.Workflow.Path, con.ID)
+		ar.Container.Service = service.GetServiceURL(arCtx.Namespace, core.ServiceTypeWorkflow, arCtx.Workflow, con.ID)
 	case model.NamespacedKnativeFunctionType:
 		con := fn.(*model.NamespacedFunctionDefinition) //nolint:forcetypeassert
-		ar.Container.Files = files
 		ar.Container.ID = con.ID
-		ar.Container.Service = service.GetServiceURL(ar.Workflow.NamespaceName, core.ServiceTypeNamespace, con.Path, "")
+		ar.Container.Service = service.GetServiceURL(arCtx.Namespace, core.ServiceTypeNamespace, con.Path, "")
 	case model.SystemKnativeFunctionType:
 		con := fn.(*model.SystemFunctionDefinition) //nolint:forcetypeassert
-		ar.Container.Files = files
 		ar.Container.ID = con.ID
 		ar.Container.Service = service.GetServiceURL(core.SystemNamespace, core.ServiceTypeSystem, con.Path, "")
 	default:
-		return nil, fmt.Errorf("unexpected function type: %v", fn)
+		return nil, nil, fmt.Errorf("unexpected function type: %v", fn)
 	}
 
 	// check for duplicate file names
 	m := make(map[string]*model.FunctionFileDefinition)
-	for i := range ar.Container.Files {
-		f := &ar.Container.Files[i]
+	for i := range files {
+		f := &files[i]
 		k := f.As
 		if k == "" {
 			k = f.Key
 		}
 		if _, exists := m[k]; exists {
-			return nil, fmt.Errorf("multiple files with same name: %s", k)
+			return nil, nil, fmt.Errorf("multiple files with same name: %s", k)
 		}
 		m[k] = f
 	}
-
-	return ar, nil
+	files2 := make([]enginerefactor.FunctionFileDefinition, len(files))
+	for i := range files {
+		files2[i] = enginerefactor.FunctionFileDefinition{
+			Key:         files[i].Key,
+			As:          files[i].As,
+			Scope:       files[i].Scope,
+			Type:        files[i].Type,
+			Permissions: files[i].Permissions,
+			// Content:    TODO: evaluate if we should inject the content here?
+		}
+	}
+	arReq.Files = files2
+	return ar, &arReq, nil
 }
 
 type knativeHandle struct {
@@ -446,25 +463,22 @@ type knativeHandle struct {
 	info   states.ChildInfo
 	engine *engine
 	ar     *functionRequest
+	arReq  *enginerefactor.ActionRequest
 }
 
 func (child *knativeHandle) Run(ctx context.Context) {
-	go child.engine.doActionRequest(ctx, child.ar)
+	go child.engine.doActionRequest(ctx, child.ar, child.arReq)
 }
 
 func (child *knativeHandle) Info() states.ChildInfo {
 	return child.info
 }
 
-func (engine *engine) doActionRequest(ctx context.Context, ar *functionRequest) {
-	if ar.Workflow.Timeout == 0 {
-		ar.Workflow.Timeout = 5 * 60 // 5 mins default, knative's default
-	}
-
-	// Log warning if timeout exceeds max allowed timeout
-	if actionTimeout := time.Duration(ar.Workflow.Timeout) * time.Second; actionTimeout > engine.server.config.GetFunctionsTimeout() {
+func (engine *engine) doActionRequest(ctx context.Context, ar *functionRequest, arReq *enginerefactor.ActionRequest) {
+	// Log warning if timeout exceeds max allowed timeout.
+	if actionTimeout := time.Duration(ar.Timeout) * time.Second; actionTimeout > engine.server.config.GetFunctionsTimeout() {
 		_, err := engine.internal.ActionLog(context.Background(), &grpc.ActionLogRequest{ //nolint:contextcheck
-			InstanceId: ar.Workflow.InstanceID, Msg: []string{fmt.Sprintf("Warning: Action timeout '%v' is longer than max allowed duariton '%v'", actionTimeout, engine.server.config.GetFunctionsTimeout())},
+			InstanceId: arReq.ActionContext.Instance, Msg: []string{fmt.Sprintf("Warning: Action timeout '%v' is longer than max allowed duariton '%v'", actionTimeout, engine.server.config.GetFunctionsTimeout())},
 		})
 		if err != nil {
 			slog.Error("failed to write action log", "error", err)
@@ -479,14 +493,14 @@ func (engine *engine) doActionRequest(ctx context.Context, ar *functionRequest) 
 	case model.SystemKnativeFunctionType:
 		fallthrough
 	case model.ReusableContainerFunctionType:
-		go engine.doKnativeHTTPRequest(ctx, ar)
+		go engine.doKnativeHTTPRequest(ctx, ar, arReq)
 	default:
 		panic(fmt.Errorf("unexpected type: %+v", ar.Container.Type))
 	}
 }
 
 func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
-	ar *functionRequest,
+	ar *functionRequest, arReq *enginerefactor.ActionRequest,
 ) {
 	var err error
 
@@ -496,37 +510,23 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 
 	slog.Debug("function request for image", "name", ar.Container.Image, "addr", addr, "image_id", ar.Container.ID)
 
-	deadline := time.Now().UTC().Add(time.Duration(ar.Workflow.Timeout) * time.Second)
-	rctx, cancel := context.WithDeadline(context.Background(), deadline)
+	rctx, cancel := context.WithDeadline(context.Background(), arReq.Deadline)
 	defer cancel()
 
-	slog.Debug("deadline for request", "deadline", time.Until(deadline))
-
-	req, err := http.NewRequestWithContext(rctx, http.MethodPost, addr, bytes.NewReader(ar.Container.Data)) //nolint:contextcheck
+	slog.Debug("deadline for request", "deadline", time.Until(arReq.Deadline))
+	reader, err := enginerefactor.EncodeActionRequest(*arReq)
 	if err != nil {
-		engine.reportError(ar, err) //nolint:contextcheck
+		engine.reportError(&arReq.ActionContext, err) //nolint:contextcheck
 
 		return
 	}
+	req, err := http.NewRequestWithContext(rctx, http.MethodPost, addr, reader)
+	if err != nil {
+		engine.reportError(&arReq.ActionContext, err) //nolint:contextcheck
 
-	// add headers
-	req.Header.Add(DirektivDeadlineHeader, deadline.Format(time.RFC3339))
-	req.Header.Add(DirektivNamespaceHeader, ar.Workflow.NamespaceName)
-	req.Header.Add(DirektivActionIDHeader, ar.ActionID)
-	req.Header.Add(DirektivInstanceIDHeader, ar.Workflow.InstanceID)
-	req.Header.Add(DirektivStepHeader, fmt.Sprintf("%d",
-		int64(ar.Workflow.Step)))
-	req.Header.Add(DirektivIteratorHeader, fmt.Sprintf("%d",
-		int64(ar.Iterator)))
-	for i := range ar.Container.Files {
-		f := &ar.Container.Files[i]
-		data, err := json.Marshal(f)
-		if err != nil {
-			panic(err)
-		}
-		str := base64.StdEncoding.EncodeToString(data)
-		req.Header.Add(DirektivFileHeader, str)
+		return
 	}
+	req.Header.Add(DirektivActionIDHeader, ar.ActionID)
 
 	client := &http.Client{
 		Transport: tr,
@@ -561,29 +561,29 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 
 	if err != nil {
 		err := fmt.Errorf("failed creating function with image %s name %s with error: %w", ar.Container.Image, ar.Container.ID, err)
-		engine.reportError(ar, err) //nolint:contextcheck
+		engine.reportError(&arReq.ActionContext, err) //nolint:contextcheck
 
 		return
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		engine.reportError(ar, fmt.Errorf("action error status: %d", resp.StatusCode)) //nolint:contextcheck
+		engine.reportError(&arReq.ActionContext, fmt.Errorf("action error status: %d", resp.StatusCode)) //nolint:contextcheck
 	}
 
 	slog.Debug("function request done")
 }
 
-func (engine *engine) reportError(ar *functionRequest, err error) {
+func (engine *engine) reportError(ar *enginerefactor.ActionContext, err error) {
 	ec := ""
 	em := err.Error()
-	step := int32(ar.Workflow.Step)
+	step := int32(ar.Step)
 	r := &grpc.ReportActionResultsRequest{
-		InstanceId:   ar.Workflow.InstanceID,
+		InstanceId:   ar.Instance,
 		Step:         step,
-		ActionId:     ar.ActionID,
+		ActionId:     ar.Action,
 		ErrorCode:    ec,
 		ErrorMessage: em,
-		Iterator:     int32(ar.Iterator),
+		Iterator:     int32(ar.Branch),
 	}
 
 	_, err = engine.internal.ReportActionResults(context.Background(), r)
