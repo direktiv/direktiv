@@ -2,7 +2,6 @@ package bytedata
 
 import (
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
-	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -38,15 +37,4 @@ func ConvertInstancesToGrpcInstances(instances []instancestore.InstanceData) []*
 	}
 
 	return list
-}
-
-func ConvertNamespaceToGrpc(item *datastore.Namespace) *grpc.Namespace {
-	ns := &grpc.Namespace{
-		Name: item.Name,
-
-		CreatedAt: timestamppb.New(item.CreatedAt),
-		UpdatedAt: timestamppb.New(item.UpdatedAt),
-	}
-
-	return ns
 }

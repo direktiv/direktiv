@@ -6,7 +6,6 @@ option go_package = "github.com/direktiv/direktiv/pkg/flow/grpc";
 
 import "google/protobuf/empty.proto";
 
-import "pkg/flow/grpc/namespaces.proto";
 import "pkg/flow/grpc/variables.proto";
 import "pkg/flow/grpc/instances.proto";
 import "pkg/flow/grpc/internal.proto";
@@ -49,9 +48,6 @@ service Flow {
 	rpc EventHistoryStream (EventHistoryRequest) returns (stream EventHistoryResponse) {}
 	rpc HistoricalEvent (HistoricalEventRequest) returns (HistoricalEventResponse) {}
 	rpc ReplayEvent (ReplayEventRequest) returns (google.protobuf.Empty) {}
-
-	//
-	rpc NamespaceLint (NamespaceLintRequest) returns (NamespaceLintResponse) {}
 }
 
 service Internal {
