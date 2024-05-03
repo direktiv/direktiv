@@ -1,49 +1,41 @@
-import { NotificationItemType } from "./NotificationItem";
-import { NotificationListSchemaType } from "~/api/notifications/schema";
-import { SquareAsterisk } from "lucide-react";
+import { LucideIcon, SquareAsterisk } from "lucide-react";
+
 import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
 import { useTranslation } from "react-i18next";
 
-export const useNotificationConfig = () => {
+export type NotificationConfig = {
+  href: string;
+  description: string;
+  icon: LucideIcon;
+};
+
+export const useNotificationConfig = ({
+  type,
+  count,
+}: {
+  type: string;
+  count: number;
+}): NotificationConfig | null => {
   const { t } = useTranslation();
   const namespace = useNamespace();
   if (!namespace) return null;
-  return {
-    secret: {
-      icon: SquareAsterisk,
-      description: (count: number) =>
-        t("components.notificationMenu.hasIssues.secrets.description", {
-          count,
-        }),
-      href: pages.settings.createHref({
-        namespace,
-      }),
-    },
-  } as const;
-};
 
-export const useGroupNotifications = (
-  data: NotificationListSchemaType | undefined
-) => {
-  const notificationConfig = useNotificationConfig();
-  const notificationTypes = Object.entries(notificationConfig ?? {});
-  return notificationTypes
-    .map(([notificationType, notificationConfig]) => {
-      const matchingNotifications = data?.data.filter(
-        (issue) => notificationType === issue.type
-      );
-
-      if (!matchingNotifications || matchingNotifications.length === 0) {
-        return null;
-      }
-
-      const { href, description, icon } = notificationConfig;
+  switch (type) {
+    case "uninitialized_secrets":
       return {
-        href,
-        description: description(matchingNotifications.length),
-        icon,
+        icon: SquareAsterisk,
+        description: t(
+          "components.notificationMenu.hasIssues.secrets.description",
+          {
+            count,
+          }
+        ),
+        href: pages.settings.createHref({
+          namespace,
+        }),
       };
-    })
-    .filter((item) => item !== null) as NotificationItemType[];
+    default:
+      return null;
+  }
 };

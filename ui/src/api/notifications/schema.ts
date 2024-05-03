@@ -8,6 +8,7 @@ import { z } from "zod";
         {
             "type": "uninitialized_secrets",
             "issue": "secrets have not been initialized: [list of secrets]",
+            "count": 9,
             "level": "warning"
         }
     ]
@@ -17,6 +18,7 @@ import { z } from "zod";
 // "issue" prop is intended for human API users and not processed in the ui
 const NotificationSchema = z.object({
   type: z.string(),
+  count: z.number(),
   level: z.enum(["warning"]),
 });
 
