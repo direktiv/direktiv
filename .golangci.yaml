@@ -139,6 +139,3 @@ issues:
     - text: "context-as-argument:"
       linters:
         - revive
-    - text: "redefines-builtin-id:"
-      linters:
-        - revive

@@ -150,14 +150,14 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 	var msg string
 
 	if r.Method == http.MethodPost {
-		cap := int64(0x400000) // 4 MiB
-		if r.ContentLength > cap {
+		capa := int64(0x400000) // 4 MiB
+		if r.ContentLength > capa {
 			code := http.StatusRequestEntityTooLarge
 			reportError(code, errors.New(http.StatusText(code)))
 
 			return
 		}
-		r := io.LimitReader(r.Body, cap)
+		r := io.LimitReader(r.Body, capa)
 
 		data, err := io.ReadAll(r)
 		if err != nil {
