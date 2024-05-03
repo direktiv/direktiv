@@ -412,6 +412,7 @@ func (pubsub *Pubsub) Subscribe(id ...string) *Subscription {
 	channel[s] = len(id) == 0
 
 	for idx, x := range id {
+		//nolint:copyloopvar
 		key := x
 		s.keys = append(s.keys, key)
 		channel, exists := pubsub.channels[key]
