@@ -49,9 +49,6 @@ service Flow {
 	rpc EventHistoryStream (EventHistoryRequest) returns (stream EventHistoryResponse) {}
 	rpc HistoricalEvent (HistoricalEventRequest) returns (HistoricalEventResponse) {}
 	rpc ReplayEvent (ReplayEventRequest) returns (google.protobuf.Empty) {}
-
-	//
-	rpc NamespaceLint (NamespaceLintRequest) returns (NamespaceLintResponse) {}
 }
 
 service Internal {
