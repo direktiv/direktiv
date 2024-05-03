@@ -9,7 +9,6 @@ import (
 	"log/slog"
 	"strings"
 
-	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
@@ -54,15 +53,6 @@ func newMuxStart(workflow *model.Workflow) *muxStart {
 	return ms
 }
 
-func (ms *muxStart) Hash() string {
-	if ms == nil {
-		ms = new(muxStart)
-		ms.Type = model.StartTypeDefault.String()
-	}
-
-	return bytedata.Checksum(ms)
-}
-
 func (srv *server) validateRouter(ctx context.Context, tx *database.SQLStore, file *filestore.File) (*muxStart, error) {
 	data, err := tx.FileStore().ForFile(file).GetData(ctx)
 	if err != nil {
@@ -82,7 +72,6 @@ func (srv *server) validateRouter(ctx context.Context, tx *database.SQLStore, fi
 }
 
 func (engine *engine) mux(ctx context.Context, ns *datastore.Namespace, calledAs string) (*filestore.File, []byte, error) {
-	// TODO: Alan, fix for the new filestore.(*Revision).GetRevision() api.
 	uriElems := strings.SplitN(calledAs, ":", 2)
 	path := uriElems[0]
 
