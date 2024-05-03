@@ -90,7 +90,6 @@ func setupReverseProxyHandlers(base *mux.Router, router *mux.Router, apiV2Addres
 	})
 
 	router.PathPrefix("/v2").Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { proxy.ServeHTTP(w, r) }))
-	base.PathPrefix("/gw").Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { proxy.ServeHTTP(w, r) }))
 	base.PathPrefix("/ns").Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { proxy.ServeHTTP(w, r) }))
 }
 
