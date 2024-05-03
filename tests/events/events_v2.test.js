@@ -13,7 +13,7 @@ const basicEvent = `{
     "id": "123"
 }`
 
-var tmpid
+let tmpid
 
 describe('Test send events v2 api', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
@@ -23,21 +23,21 @@ describe('Test send events v2 api', () => {
 			.set('Content-Type', 'application/json')
 			.send(basicEvent)
 		expect(sendEventResponse.statusCode).toEqual(200)
-	}),
-  it(`should be regitered`, async () => {
-  const eventHistoryResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/history`)
-    .send()
-  expect(eventHistoryResponse.statusCode).toEqual(200)
-      expect(eventHistoryResponse.body.data.length).toBeGreaterThan(0);
-      expect(eventHistoryResponse.body.data[0].namespaceName).toBe(namespaceName);
-      expect(eventHistoryResponse.body.data[0].event.id).toBe("123");
-  }),
-  it(`event by id`, async () => {
-    const eventHistoryResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/history/123`)
-      .send()
-    expect(eventHistoryResponse.statusCode).toEqual(200)
-    console.log(eventHistoryResponse.body)
-  })
+	})
+	it(`should be regitered`, async () => {
+		const eventHistoryResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/history`)
+			.send()
+		expect(eventHistoryResponse.statusCode).toEqual(200)
+		expect(eventHistoryResponse.body.data.length).toBeGreaterThan(0)
+		expect(eventHistoryResponse.body.data[0].namespaceName).toBe(namespaceName)
+		expect(eventHistoryResponse.body.data[0].event.id).toBe('123')
+	})
+	it(`event by id`, async () => {
+		const eventHistoryResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/history/123`)
+			.send()
+		expect(eventHistoryResponse.statusCode).toEqual(200)
+		console.log(eventHistoryResponse.body)
+	})
 })
 
 describe('Test basic workflow events v2', () => {
@@ -61,21 +61,21 @@ states:
 
 	it(`should wait a second for the events logic to sync`, async () => {
 		await helpers.sleep(1000)
-	}),
+	})
 
-  it(`listener should be regitered`, async () => {
-  const eventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/listener/`)
-    .send()
-  expect(eventListenerResponse.statusCode).toEqual(200)
-      expect(eventListenerResponse.body.data.length).toBeGreaterThan(0);
-      expect(eventListenerResponse.body.data[0].triggerWorkflow).toBe('/listener.yml')
-      expect(eventListenerResponse.body.data[0].namespace).toBe(namespaceName)
-      tmpid = eventListenerResponse.body.data[0].id
-  }),
-  it(`listener by id`, async () => {
-    const eventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/listener/${ tmpid }`)
-    .send()
-    expect(eventListenerResponse.statusCode).toEqual(200)
-    expect(eventListenerResponse.body.data.id).toBe(tmpid)
-  })
+	it(`listener should be regitered`, async () => {
+		const eventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/listener/`)
+			.send()
+		expect(eventListenerResponse.statusCode).toEqual(200)
+		expect(eventListenerResponse.body.data.length).toBeGreaterThan(0)
+		expect(eventListenerResponse.body.data[0].triggerWorkflow).toBe('/listener.yml')
+		expect(eventListenerResponse.body.data[0].namespace).toBe(namespaceName)
+		tmpid = eventListenerResponse.body.data[0].id
+	})
+	it(`listener by id`, async () => {
+		const eventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/listener/${ tmpid }`)
+			.send()
+		expect(eventListenerResponse.statusCode).toEqual(200)
+		expect(eventListenerResponse.body.data.id).toBe(tmpid)
+	})
 })
