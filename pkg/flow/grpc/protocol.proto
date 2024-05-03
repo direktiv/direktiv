@@ -42,7 +42,7 @@ service Flow {
 	rpc JQ (JQRequest) returns (JQResponse) {}
 
 	// events.
-	rpc EventListeners (EventListenersRequest) returns (EventListenersResponse) {} 
+	rpc EventListeners (EventListenersRequest) returns (EventListenersResponse) {}
 	rpc EventListenersStream (EventListenersRequest) returns (stream EventListenersResponse) {}
 	rpc EventHistory (EventHistoryRequest) returns (EventHistoryResponse) {}
 	rpc EventHistoryStream (EventHistoryRequest) returns (stream EventHistoryResponse) {}
@@ -51,8 +51,8 @@ service Flow {
 }
 
 service Internal {
- 	rpc ReportActionResults (ReportActionResultsRequest) returns (google.protobuf.Empty) {}
- 	rpc ActionLog(ActionLogRequest) returns (google.protobuf.Empty) {}
+	rpc ReportActionResults (ReportActionResultsRequest) returns (google.protobuf.Empty) {}
+	rpc ActionLog(ActionLogRequest) returns (google.protobuf.Empty) {}
 
 	rpc NamespaceVariableParcels (VariableInternalRequest) returns (stream VariableInternalResponse) {}
 	rpc SetNamespaceVariableParcels (stream SetVariableInternalRequest) returns (SetVariableInternalResponse) {}
