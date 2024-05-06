@@ -5,7 +5,9 @@ export const DisableNamespaceSelectNote = () => {
   const { t } = useTranslation();
   return (
     <Alert variant="info">
-      {t("pages.explorer.endpoint.editor.form.plugins.target.namespaceNote")}
+      {t(
+        "pages.explorer.endpoint.editor.form.plugins.target.disableNamespaceSelectNote"
+      )}
     </Alert>
   );
 };
