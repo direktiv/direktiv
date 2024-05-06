@@ -3,6 +3,7 @@ package plugins
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -11,7 +12,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/nohome/recipient"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/mitchellh/mapstructure"
-	"github.com/pkg/errors"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -74,7 +74,7 @@ func ConvertConfig(config interface{}, target interface{}) error {
 	if config != nil {
 		err := mapstructure.Decode(config, target)
 		if err != nil {
-			return errors.Wrap(err, "configuration invalid")
+			return errors.Join(err, errors.New("configuration invalid"))
 		}
 	}
 

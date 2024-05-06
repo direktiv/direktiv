@@ -122,8 +122,9 @@ type App struct {
 	Version *Version
 	Config  *Config
 
-	ServiceManager  ServiceManager
-	RegistryManager RegistryManager
-	GatewayManager  GatewayManager
-	SyncNamespace   SyncNamespace
+	ServiceManager   ServiceManager
+	RegistryManager  RegistryManager
+	GatewayManager   GatewayManager
+	GatewayManagerV2 GatewayManagerV2
+	SyncNamespace    SyncNamespace
 }

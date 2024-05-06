@@ -13,7 +13,6 @@ import (
 	libengine "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -298,87 +297,4 @@ func (flow *flow) SetWorkflowVariableParcels(srv grpc.Flow_SetWorkflowVariablePa
 	}
 
 	return nil
-}
-
-func (flow *flow) DeleteWorkflowVariable(ctx context.Context, req *grpc.DeleteWorkflowVariableRequest) (*emptypb.Empty, error) {
-	slog.Debug("Handling gRPC request", "this", this())
-
-	tx, err := flow.beginSQLTx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer tx.Rollback()
-
-	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
-
-	file, err := tx.FileStore().ForNamespace(ns.Name).GetFile(ctx, req.GetPath())
-	if err != nil {
-		return nil, err
-	}
-
-	item, err := tx.DataStore().RuntimeVariables().GetForWorkflow(ctx, ns.Name, file.Path, req.GetKey())
-	if err != nil {
-		return nil, err
-	}
-
-	err = tx.DataStore().RuntimeVariables().Delete(ctx, item.ID)
-	if err != nil {
-		return nil, err
-	}
-	if err = tx.Commit(ctx); err != nil {
-		return nil, err
-	}
-
-	var resp emptypb.Empty
-
-	return &resp, nil
-}
-
-func (flow *flow) RenameWorkflowVariable(ctx context.Context, req *grpc.RenameWorkflowVariableRequest) (*grpc.RenameWorkflowVariableResponse, error) {
-	slog.Debug("Handling gRPC request", "this", this())
-
-	tx, err := flow.beginSQLTx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer tx.Rollback()
-
-	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
-
-	file, err := tx.FileStore().ForNamespace(ns.Name).GetFile(ctx, req.GetPath())
-	if err != nil {
-		return nil, err
-	}
-	item, err := tx.DataStore().RuntimeVariables().GetForWorkflow(ctx, ns.Name, file.Path, req.GetOld())
-	if err != nil {
-		return nil, err
-	}
-
-	newName := req.GetNew()
-	updated, err := tx.DataStore().RuntimeVariables().Patch(ctx, item.ID, &datastore.RuntimeVariablePatch{
-		Name: &newName,
-	})
-	if err != nil {
-		return nil, err
-	}
-	if err = tx.Commit(ctx); err != nil {
-		return nil, err
-	}
-
-	var resp grpc.RenameWorkflowVariableResponse
-
-	resp.CreatedAt = timestamppb.New(updated.CreatedAt)
-	resp.Key = updated.Name
-	resp.Namespace = ns.Name
-	resp.TotalSize = int64(updated.Size)
-	resp.UpdatedAt = timestamppb.New(updated.UpdatedAt)
-	resp.MimeType = updated.MimeType
-
-	return &resp, nil
 }

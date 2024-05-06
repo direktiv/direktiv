@@ -123,6 +123,7 @@ func truncateLogsMsg(msg string,
 	}
 	m := strings.Split(msg, "\n")
 	for i, v := range m {
+		//nolint:copyloopvar
 		truncated := v
 		if len(v) > length {
 			truncated = v[:length]

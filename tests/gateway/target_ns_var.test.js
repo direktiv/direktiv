@@ -73,7 +73,7 @@ describe('Test target workflow var wrong config', () => {
 						methods: [ 'GET' ],
 						allow_anonymous: true,
 						timeout: 0,
-						server_path: '/gw/ep3',
+						server_path: '/ns/system/ep3',
 						errors: [ 'variable required' ],
 						warnings: [],
 						plugins: { target: { type: 'target-namespace-var' } },
@@ -144,7 +144,7 @@ describe('Test target namespace variable plugin', () => {
 
 	retry10(`should return a ns var from magic namespace`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(
-			`/gw/endpoint1`,
+			`/ns/system/endpoint1`,
 		)
 		expect(req.statusCode).toEqual(200)
 		expect(req.text).toEqual('Hello World')
@@ -153,7 +153,7 @@ describe('Test target namespace variable plugin', () => {
 
 	retry10(`should return a var from magic namespace with namespace set`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(
-			`/gw/endpoint2`,
+			`/ns/system/endpoint2`,
 		)
 		expect(req.statusCode).toEqual(200)
 		expect(req.text).toEqual('Hello World 2')

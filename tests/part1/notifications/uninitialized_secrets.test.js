@@ -49,7 +49,8 @@ states:
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toEqual({
 			data: [ {
-				issue: 'secrets have not been initialized: [a b]',
+				description: 'secrets have not been initialized: [a b]',
+				count: 2,
 				level: 'warning',
 				type: 'uninitialized_secrets',
 			} ],

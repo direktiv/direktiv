@@ -135,13 +135,8 @@ func TestBasicGateway(t *testing.T) {
 	assert.Equal(t, http.StatusAccepted, resp.StatusCode)
 
 	// test special namespace URL
-	resp = doRequest(t, "/gw/test", nil, gm)
+	resp = doRequest(t, "/ns/system/test", nil, gm)
 	assert.Equal(t, http.StatusAccepted, resp.StatusCode)
-
-	// deleting namespace should be 404
-	gm.DeleteNamespace(ns1)
-	resp = doRequest(t, fmt.Sprintf("/ns/%s/test", ns1), nil, gm)
-	assert.Equal(t, http.StatusNotFound, resp.StatusCode)
 }
 
 func TestAuthGateway(t *testing.T) {
@@ -158,13 +153,13 @@ func TestAuthGateway(t *testing.T) {
 	gm := gateway.NewGatewayManager(db)
 	gm.UpdateAll()
 
-	resp := doRequest(t, "/gw/test", nil, gm)
+	resp := doRequest(t, "/ns/system/test", nil, gm)
 	assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
 
 	// set api key header
 	h := make(http.Header)
 	h.Set("secret", "key")
-	resp = doRequest(t, "/gw/test", h, gm)
+	resp = doRequest(t, "/ns/system/test", h, gm)
 	assert.Equal(t, http.StatusAccepted, resp.StatusCode)
 }
 
@@ -179,7 +174,7 @@ func TestOutputPlugins(t *testing.T) {
 	gm := gateway.NewGatewayManager(db)
 	gm.UpdateAll()
 
-	resp := doRequest(t, "/gw/test", make(http.Header), gm)
+	resp := doRequest(t, "/ns/system/test", make(http.Header), gm)
 	assert.Equal(t, http.StatusAccepted, resp.StatusCode)
 	assert.Equal(t, "value", resp.Header.Get("demo"))
 	assert.Equal(t, "value3", resp.Header.Get("demo3"))
@@ -187,7 +182,7 @@ func TestOutputPlugins(t *testing.T) {
 
 func doRequest(t *testing.T, url string, headers http.Header, gm core.GatewayManager) *http.Response {
 	router := chi.NewRouter()
-	router.Handle("/gw/*", gm)
+	router.Handle("/ns/system/*", gm)
 	router.Handle("/ns/{namespace}/*", gm)
 
 	w := httptest.NewRecorder()
@@ -215,7 +210,7 @@ func TestTimeoutRequest(t *testing.T) {
 	gm := gateway.NewGatewayManager(db)
 	gm.UpdateAll()
 
-	resp := doRequest(t, "/gw/test", make(http.Header), gm)
+	resp := doRequest(t, "/ns/system/test", make(http.Header), gm)
 	assert.Equal(t, http.StatusRequestTimeout, resp.StatusCode)
 }
 

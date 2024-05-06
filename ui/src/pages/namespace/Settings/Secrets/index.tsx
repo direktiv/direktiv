@@ -21,7 +21,7 @@ import ItemRow from "../components/ItemRow";
 import PaginationProvider from "~/components/PaginationProvider";
 import { SecretSchemaType } from "~/api/secrets/schema";
 import { useDeleteSecret } from "~/api/secrets/mutate/delete";
-import { useNamespaceLinting } from "~/api/namespaceLinting/query/useNamespaceLinting";
+import { useNotifications } from "~/api/notifications/query/get";
 import { useSecrets } from "~/api/secrets/query/get";
 import { useTranslation } from "react-i18next";
 
@@ -42,7 +42,7 @@ const SecretsList: FC = () => {
     isAllowed,
     noPermissionMessage,
   } = useSecrets();
-  const { refetch: updateNotificationBell } = useNamespaceLinting();
+  const { refetch: updateNotificationBell } = useNotifications();
 
   const filteredItems = useMemo(
     () =>
