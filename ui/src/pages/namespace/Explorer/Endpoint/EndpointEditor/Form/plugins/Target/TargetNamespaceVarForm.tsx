@@ -73,6 +73,7 @@ export const TargetNamespaceVarForm: FC<FormProps> = ({
             name="configuration.namespace"
             render={({ field }) => (
               <NamespaceSelector
+                id="namespace"
                 defaultValue={field.value}
                 onValueChange={field.onChange}
               />
