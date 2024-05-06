@@ -7,12 +7,14 @@ import {
 } from "../../../schema/plugins/target/targetFlow";
 
 import { Checkbox } from "~/design/Checkbox";
+import { DisableNamespaceSelectNote } from "./utils/DisableNamespaceSelectNote";
 import { Fieldset } from "~/components/Form/Fieldset";
 import FilePicker from "~/components/FilePicker";
 import Input from "~/design/Input";
 import NamespaceSelector from "~/components/NamespaceSelector";
 import { PluginWrapper } from "../components/PluginSelector";
 import { treatEmptyStringAsUndefined } from "~/pages/namespace/Explorer/utils";
+import { useDisableNamespaceSelect } from "./utils/useDisableNamespaceSelect";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -53,6 +55,8 @@ export const TargetFlowForm: FC<FormProps> = ({
     },
   });
 
+  const disableNamespaceSelector = useDisableNamespaceSelect();
+
   const submitForm = (e: FormEvent<HTMLFormElement>) => {
     e.stopPropagation(); // prevent the parent form from submitting
     handleSubmit(onSubmit)(e);
@@ -73,6 +77,7 @@ export const TargetFlowForm: FC<FormProps> = ({
           )}
           htmlFor="namespace"
         >
+          {disableNamespaceSelector && <DisableNamespaceSelectNote />}
           <Controller
             control={control}
             name="configuration.namespace"
@@ -81,6 +86,7 @@ export const TargetFlowForm: FC<FormProps> = ({
                 id="namespace"
                 defaultValue={field.value}
                 onValueChange={field.onChange}
+                disabled={disableNamespaceSelector}
               />
             )}
           />
