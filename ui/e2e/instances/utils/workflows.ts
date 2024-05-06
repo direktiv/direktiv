@@ -16,7 +16,7 @@ states:
     result: finished
 `;
 
-export const workflowWithDelayBeforeLogging = `direktiv_api: workflow/v1
+export const workflowWithFewLogs = `direktiv_api: workflow/v1
 description: A simple 'delay' state that waits for 8 seconds
 states:
 - id: delay

@@ -1,8 +1,8 @@
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
 import {
   workflowWithDelay as delayedWorkflowContent,
-  workflowWithDelayBeforeLogging as loggingWorkflowContent,
-  workflowWithManyLogs as scrollableWorkflowContent,
+  workflowWithFewLogs as fewLogsWorkflowContent,
+  workflowWithManyLogs as manyLogsWorkflowContent,
   simpleWorkflow as simpleWorkflowContent,
 } from "../utils/workflows";
 import { expect, test } from "@playwright/test";
@@ -15,8 +15,8 @@ import { mockClipboardAPI } from "e2e/utils/testutils";
 let namespace = "";
 const simpleWorkflowName = faker.system.commonFileName("yaml");
 const delayedWorkflowName = faker.system.commonFileName("yaml");
-const loggingWorkflowName = faker.system.commonFileName("yaml");
-const scrollableWorkflowName = faker.system.commonFileName("yaml");
+const fewLogsWorkflowName = faker.system.commonFileName("yaml");
+const manyLogsWorkflowName = faker.system.commonFileName("yaml");
 
 test.beforeEach(async ({ page }) => {
   namespace = await createNamespace();
@@ -36,17 +36,17 @@ test.beforeEach(async ({ page }) => {
   });
 
   await createFile({
-    name: loggingWorkflowName,
+    name: fewLogsWorkflowName,
     namespace,
     type: "workflow",
-    yaml: loggingWorkflowContent,
+    yaml: fewLogsWorkflowContent,
   });
 
   await createFile({
-    name: scrollableWorkflowName,
+    name: manyLogsWorkflowName,
     namespace,
     type: "workflow",
-    yaml: scrollableWorkflowContent,
+    yaml: manyLogsWorkflowContent,
   });
 
   await mockClipboardAPI(page);
@@ -471,7 +471,7 @@ test("the logs panel displays the list of logs as expected", async ({
   const instanceId = (
     await createInstance({
       namespace,
-      path: loggingWorkflowName,
+      path: fewLogsWorkflowName,
     })
   ).instance;
   await page.goto(`/n/${namespace}/instances/${instanceId}`);
@@ -488,7 +488,7 @@ test("the logs panel displays the list of logs as expected", async ({
   await expect(
     logsPanel.locator("h3"),
     "The headline of the logs is correct"
-  ).toContainText(`Logs for /${loggingWorkflowName}`);
+  ).toContainText(`Logs for /${fewLogsWorkflowName}`);
 
   await expect(
     page.getByTestId("instance-header-container").locator("div").first()
@@ -663,10 +663,8 @@ test("the logs can be copied", async ({ page }) => {
 
   await copyButton.click();
 
-  const copiedLogs = "yaml - helloworld - Running state logic";
-
   expect(await page.evaluate(() => navigator.clipboard.readText())).toContain(
-    copiedLogs
+    "yaml - helloworld - Running state logic"
   );
 });
 
@@ -676,7 +674,7 @@ test("log entries will be automatically scrolled to the end", async ({
   const instanceId = (
     await createInstance({
       namespace,
-      path: scrollableWorkflowName,
+      path: manyLogsWorkflowName,
     })
   ).instance;
 
