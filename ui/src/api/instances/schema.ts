@@ -145,7 +145,7 @@ export type InstanceDetailsResponseSchemaType = z.infer<
     "input": "ewogICAgCn0="
   }
  */
-export const InstancesInputResponseSchema = z.object({
+export const InstanceInputResponseSchema = z.object({
   data: InstanceSchema.extend({
     inputLength: z.number(),
     input: z.string(),
@@ -161,7 +161,7 @@ export const InstancesInputResponseSchema = z.object({
     "output": "eyJ4IjowfQ=="
   }
  */
-export const InstancesOutputResponseSchema = z.object({
+export const InstanceOutputResponseSchema = z.object({
   data: InstanceSchema.extend({
     outputLength: z.number(),
     output: z.string().optional(),

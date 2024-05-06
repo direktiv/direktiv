@@ -1,4 +1,4 @@
-import { InstancesInputResponseSchema } from "../schema";
+import { InstanceInputResponseSchema } from "../schema";
 import { QueryFunctionContext } from "@tanstack/react-query";
 import { apiFactory } from "~/api/apiFactory";
 import { instanceKeys } from "..";
@@ -20,7 +20,7 @@ export const getInstanceInput = apiFactory({
       baseUrl ?? ""
     }/api/v2/namespaces/${namespace}/instances/${instanceId}/input`,
   method: "GET",
-  schema: InstancesInputResponseSchema,
+  schema: InstanceInputResponseSchema,
 });
 
 const fetchInstanceInput = async ({
