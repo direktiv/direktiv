@@ -17,11 +17,11 @@ states:
 `;
 
 export const workflowWithDelayBeforeLogging = `direktiv_api: workflow/v1
-description: A simple 'delay' state that waits for 2 seconds
+description: A simple 'delay' state that waits for 8 seconds
 states:
 - id: delay
   type: delay
-  duration: PT2S
+  duration: PT8S
   transition: logs
 - id: logs
   type: noop
