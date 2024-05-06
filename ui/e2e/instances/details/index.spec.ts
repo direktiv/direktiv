@@ -116,7 +116,7 @@ test("the header of the instance page shows the relevant data for the workflow",
   const editURL = `/n/${namespace}/explorer/workflow/edit/${simpleWorkflowName}`;
   await expect(
     page,
-    "the button 'Open Workflow' is clickable and links to the correct URL"
+    "the button 'Open Workflow' is clickable and links to the URL to edit this workflow"
   ).toHaveURL(editURL);
 });
 
@@ -146,7 +146,7 @@ test("the diagram panel on the instance page responds to user interaction", asyn
   await resizeButton.hover();
   await expect(
     page.getByText("maximize diagram"),
-    "it shows the correct text when hovering over the resize button"
+    "it shows the text 'maximize diagram' when hovering over the resize button"
   ).toBeVisible();
 
   const minimizedWidth = (await diagramPanel.boundingBox())?.width;
@@ -163,7 +163,7 @@ test("the diagram panel on the instance page responds to user interaction", asyn
   await resizeButton.hover();
   await expect(
     page.getByText("minimize diagram"),
-    "it shows the correct text when hovering over the resize button"
+    "it shows the text 'minimize diagram' when hovering over the resize button"
   ).toBeVisible();
 
   await page.reload();
@@ -316,7 +316,7 @@ test("the input/output panel responds to user interaction", async ({
   await resizeButton.hover();
   await expect(
     page.getByText("maximize output"),
-    "it shows the correct text when hovering over the resize button"
+    "it shows the text 'maximize output' when hovering over the resize button"
   ).toBeVisible();
 
   const minimizedWidth = (await inputOutputPanel.boundingBox())?.width;
@@ -335,7 +335,7 @@ test("the input/output panel responds to user interaction", async ({
   await resizeButton.hover();
   await expect(
     page.getByText("minimize output"),
-    "it shows the correct text when hovering over the resize button"
+    "it shows the text 'minimize output' when hovering over the resize button"
   ).toBeVisible();
 
   await page.reload();
@@ -465,7 +465,7 @@ test("after a running instance finishes, the output tab is automatically selecte
   );
 });
 
-test("the logs panel displays the list of logs as expected", async ({
+test("the logs panel can be resized, it displays a log message from the workflow yaml, one initial and one final log entry", async ({
   page,
 }) => {
   const instanceId = (
@@ -487,7 +487,7 @@ test("the logs panel displays the list of logs as expected", async ({
 
   await expect(
     logsPanel.locator("h3"),
-    "The headline of the logs is correct"
+    "The headline of the logs shows the name of the currently running workflow"
   ).toContainText(`Logs for /${fewLogsWorkflowName}`);
 
   await expect(
@@ -514,7 +514,7 @@ test("the logs panel displays the list of logs as expected", async ({
   resizeButton.hover();
   await expect(
     page.getByText("maximize logs"),
-    "It shows the correct text when hovering over the resize button"
+    "It shows the text 'maximize logs' when hovering over the resize button"
   ).toBeVisible();
 
   const minimizedHeight = (await logsPanelParent.boundingBox())?.height;
@@ -543,7 +543,7 @@ test("the logs panel displays the list of logs as expected", async ({
   await resizeButton.hover();
   await expect(
     page.getByText("minimize logs"),
-    "It shows the correct text when hovering over the resize button"
+    "It shows the text 'minimize logs' when hovering over the resize button"
   ).toBeVisible();
 
   await expect(
