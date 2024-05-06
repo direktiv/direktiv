@@ -34,7 +34,7 @@ export const useInstanceDetailsStream = ({
     schema: InstanceDetailsSchema,
     onMessage: (msg) => {
       queryClient.setQueryData<InstanceDetailsResponseSchemaType>(
-        instanceKeys.instancesDetails(namespace, {
+        instanceKeys.instanceDetails(namespace, {
           apiKey: apiKey ?? undefined,
           instanceId,
         }),

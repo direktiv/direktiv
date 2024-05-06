@@ -22,7 +22,7 @@ export const getInstanceDetails = apiFactory({
 const fetchInstanceDetails = async ({
   queryKey: [{ apiKey, namespace, instanceId }],
 }: QueryFunctionContext<
-  ReturnType<(typeof instanceKeys)["instancesDetails"]>
+  ReturnType<(typeof instanceKeys)["instanceDetails"]>
 >) =>
   getInstanceDetails({
     apiKey,
@@ -38,7 +38,7 @@ export const useInstanceDetails = ({ instanceId }: { instanceId: string }) => {
   }
 
   return useQueryWithPermissions({
-    queryKey: instanceKeys.instancesDetails(namespace, {
+    queryKey: instanceKeys.instanceDetails(namespace, {
       apiKey: apiKey ?? undefined,
       instanceId,
     }),

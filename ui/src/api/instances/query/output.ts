@@ -25,9 +25,7 @@ export const getInstanceOutput = apiFactory({
 
 const fetchInstanceOutput = async ({
   queryKey: [{ apiKey, namespace, instanceId }],
-}: QueryFunctionContext<
-  ReturnType<(typeof instanceKeys)["instancesOutput"]>
->) =>
+}: QueryFunctionContext<ReturnType<(typeof instanceKeys)["instanceOutput"]>>) =>
   getInstanceOutput({
     apiKey,
     urlParams: { namespace, instanceId },
@@ -48,7 +46,7 @@ export const useInstanceOutput = ({
   }
 
   return useQueryWithPermissions({
-    queryKey: instanceKeys.instancesOutput(namespace, {
+    queryKey: instanceKeys.instanceOutput(namespace, {
       apiKey: apiKey ?? undefined,
       instanceId,
     }),

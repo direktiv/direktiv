@@ -17,7 +17,7 @@ export const instanceKeys = {
   ) =>
     [
       {
-        scope: "instance-list",
+        scope: "instances-list",
         apiKey,
         namespace,
         limit,
@@ -25,7 +25,7 @@ export const instanceKeys = {
         filters,
       },
     ] as const,
-  instancesDetails: (
+  instanceDetails: (
     namespace: string,
     { apiKey, instanceId }: { apiKey?: string; instanceId: string }
   ) =>
@@ -37,7 +37,7 @@ export const instanceKeys = {
         instanceId,
       },
     ] as const,
-  instancesInput: (
+  instanceInput: (
     namespace: string,
     { apiKey, instanceId }: { apiKey?: string; instanceId: string }
   ) =>
@@ -49,7 +49,7 @@ export const instanceKeys = {
         instanceId,
       },
     ] as const,
-  instancesOutput: (
+  instanceOutput: (
     namespace: string,
     { apiKey, instanceId }: { apiKey?: string; instanceId: string }
   ) =>
