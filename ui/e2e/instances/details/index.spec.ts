@@ -589,15 +589,11 @@ test("the logs panel can be toggled between verbose and non verbose logs", async
     page.getByTestId("instance-header-container").locator("div").first()
   ).toContainText("complete");
 
+  const twoNumbersAndTheLogMessage = /[0-9]{2}msg: Workflow completed\./;
   await expect(
-    scrollContainer.locator("pre").last().locator("span").first(),
-    "It does NOT display the state for the final log entry"
-  ).not.toContainText("state: helloworld");
-
-  await expect(
-    scrollContainer.locator("pre").last().locator("span").last(),
-    "It displays the final log entry"
-  ).toContainText("msg: Workflow completed");
+    scrollContainer.getByText(twoNumbersAndTheLogMessage),
+    "It does not display the state in the last log entry"
+  ).toBeVisible();
 
   const verboseButton = page
     .getByTestId("instance-logs-container")
@@ -612,26 +608,21 @@ test("the logs panel can be toggled between verbose and non verbose logs", async
   );
 
   await expect(
-    scrollContainer.locator("pre").last().locator("span").first(),
-    "It displays the state for the final log entry"
-  ).toContainText("state: helloworld");
-
-  await expect(
-    scrollContainer.locator("pre").last().locator("span").last(),
-    "It displays the final log entry"
-  ).toContainText("msg: Workflow completed.");
+    scrollContainer.locator("pre").last(),
+    "It displays the state in the last log entry"
+  ).toContainText("state: helloworldmsg: Workflow completed.");
 
   page.reload();
 
   await expect(
     verboseButton,
-    "After reloading the page the verbose setting is remembered"
+    "After reloading the page the verbose button is still active"
   ).toHaveAttribute("data-state", "on");
 
   await expect(
-    scrollContainer.locator("pre").last().locator("span").first(),
-    "After reloading the page the verbose setting is remembered"
-  ).toContainText("state: helloworld");
+    scrollContainer.locator("pre").last(),
+    "After reloading the page it still displays the state in the last log entry"
+  ).toContainText("state: helloworldmsg: Workflow completed.");
 });
 
 test("the logs can be copied", async ({ page }) => {
