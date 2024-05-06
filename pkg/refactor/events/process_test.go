@@ -37,8 +37,13 @@ func Test_Add_Get_Complex_Context(t *testing.T) {
 			ListeningForEventTypes: []string{"test-topic"},
 			TriggerType:            datastore.StartSimple,
 			TriggerWorkflow:        wfID1.String(),
-			GlobGatekeepers: map[string]string{
-				"test-topic-id": "some id",
+			EventFilters: []datastore.EventContextFilter{
+				{
+					Typ: "test-topic",
+					Context: map[string]string{
+						"id": "some id",
+					},
+				},
 			},
 		},
 		&datastore.EventListener{
@@ -50,8 +55,13 @@ func Test_Add_Get_Complex_Context(t *testing.T) {
 			ListeningForEventTypes: []string{"test-topic"},
 			TriggerType:            datastore.StartSimple,
 			TriggerWorkflow:        wfID2.String(),
-			GlobGatekeepers: map[string]string{
-				"test-topic-id": "some other id",
+			EventFilters: []datastore.EventContextFilter{
+				{
+					Typ: "test-topic",
+					Context: map[string]string{
+						"id": "some other id",
+					},
+				},
 			},
 		},
 	)
@@ -120,8 +130,13 @@ func Test_Add_Get_And(t *testing.T) {
 			ListeningForEventTypes: []string{"test-topic", "test-topic2"},
 			TriggerType:            datastore.StartAnd,
 			TriggerWorkflow:        wfID.String(),
-			GlobGatekeepers: map[string]string{
-				"test-topic2-id": "some id",
+			EventFilters: []datastore.EventContextFilter{
+				{
+					Typ: "test-topic2",
+					Context: map[string]string{
+						"id": "some id",
+					},
+				},
 			},
 		},
 	)
@@ -191,8 +206,13 @@ func Test_Add_Get_GatekeeperSimple(t *testing.T) {
 			ListeningForEventTypes: []string{"test-topic"},
 			TriggerType:            datastore.StartSimple,
 			TriggerWorkflow:        wfID.String(),
-			GlobGatekeepers: map[string]string{
-				"test-topic-id": "some id",
+			EventFilters: []datastore.EventContextFilter{
+				{
+					Typ: "test-topic",
+					Context: map[string]string{
+						"id": "some id",
+					},
+				},
 			},
 		},
 	)
@@ -404,9 +424,19 @@ func Test_Add_GatekkeeperComplex(t *testing.T) {
 			ListeningForEventTypes: []string{"test-topic", "other-topic"},
 			TriggerType:            datastore.StartAnd,
 			TriggerWorkflow:        wfID.String(),
-			GlobGatekeepers: map[string]string{
-				"test-topic-id":  "some id",
-				"other-topic-id": "some other id",
+			EventFilters: []datastore.EventContextFilter{
+				{
+					Typ: "test-topic",
+					Context: map[string]string{
+						"id": "some id",
+					},
+				},
+				{
+					Typ: "other-topic",
+					Context: map[string]string{
+						"id": "some other id",
+					},
+				},
 			},
 		},
 	)

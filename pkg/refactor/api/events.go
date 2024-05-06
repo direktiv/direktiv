@@ -254,8 +254,8 @@ func convertListenersForAPI(listener *datastore.EventListener) eventListenerEntr
 		Namespace:              listener.Namespace,
 		ListeningForEventTypes: listener.ListeningForEventTypes,
 	}
-	if len(listener.GlobGatekeepers) != 0 {
-		e.GlobGatekeepers = listener.GlobGatekeepers
+	if len(listener.EventFilters) != 0 {
+		e.GlobGatekeepers = listener.EventFilters
 	}
 	if len(listener.ReceivedEventsForAndTrigger) != 0 {
 		e.ReceivedEventsForAndTrigger = listener.ReceivedEventsForAndTrigger

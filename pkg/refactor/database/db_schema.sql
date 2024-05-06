@@ -219,7 +219,8 @@ CREATE TABLE IF NOT EXISTS "event_listeners" (
     "received_events" text,
     "trigger_type" integer NOT NULL,
     "events_lifespan" integer NOT NULL DEFAULT 0,
-    "glob_gates" text, 
+    "glob_gates" text,
+    "event_context_filters"  text,
     "event_types" text NOT NULL, -- lets keep it for the ui just in case
     "trigger_info" text NOT NULL,
     "metadata" text,
