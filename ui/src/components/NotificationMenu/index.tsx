@@ -10,15 +10,15 @@ import { Check } from "lucide-react";
 import { Fragment } from "react";
 import { NotificationItem } from "./NotificationItem";
 import { twMergeClsx } from "~/util/helpers";
-import { useGroupNotifications } from "./config";
-import { useNamespaceLinting } from "~/api/namespaceLinting/query/useNamespaceLinting";
+import { useNotifications } from "~/api/notifications/query/get";
 import { useTranslation } from "react-i18next";
 
 const NotificationMenu = ({ className }: { className?: string }) => {
   const { t } = useTranslation();
-  const { data, isLoading } = useNamespaceLinting();
-  const showIndicator = !!data?.issues.length;
-  const notificationItems = useGroupNotifications(data);
+  const { data, isLoading } = useNotifications();
+
+  const notifications = data?.data;
+  const showIndicator = !!notifications?.length;
 
   return (
     <div className={twMergeClsx("self-end text-right", className)}>
@@ -33,11 +33,11 @@ const NotificationMenu = ({ className }: { className?: string }) => {
           </NotificationLoading>
         )}
         {showIndicator ? (
-          notificationItems.map((item, index) => {
-            const isLastListItem = index === notificationItems.length - 1;
+          notifications.map((notification, index) => {
+            const isLastListItem = index === notifications.length - 1;
             return (
-              <Fragment key={index}>
-                <NotificationItem {...item} />
+              <Fragment key={notification.type}>
+                <NotificationItem {...notification} />
                 {!isLastListItem && <NotificationMenuSeparator />}
               </Fragment>
             );

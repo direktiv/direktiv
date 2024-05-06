@@ -60,11 +60,7 @@ linters:
     - tagliatelle
     - musttag
     - prealloc
-    - perfsprint # not needed, this one linting nano optimizations.
     - spancheck # TODO: Alan, enable this one as it helps you fixing some telemetry bugs.
-    - revive
-    - intrange # TODO: should be activated.
-    - copyloopvar # TODO: should be activated.
 
 issues:
   exclude-files: [ ".pb.go" ]
@@ -90,7 +86,6 @@ issues:
         - exhaustive
         - contextcheck
         - unparam
-        - revive
         - promlinter
         - prealloc
         - nestif
@@ -120,3 +115,24 @@ issues:
     - text: "encoding/json.Marshal"
       linters:
         - errchkjson
+    - text: "SA1029: should not use built-in type string as key for value"
+      linters:
+        - staticcheck
+    - text: "unused-parameter:"
+      linters:
+        - revive
+    - text: "empty-block:"
+      linters:
+        - revive
+    - text: "var-naming:"
+      linters:
+        - revive
+    - text: "context-as-argument:"
+      linters:
+        - revive
+    - text: "fmt.Errorf can be replaced"
+      linters:
+        - perfsprint
+    - text: "fmt.Sprintf can be replaced"
+      linters:
+        - perfsprint

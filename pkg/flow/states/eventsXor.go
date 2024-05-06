@@ -99,6 +99,7 @@ func (logic *eventsXorLogic) Run(ctx context.Context, wakedata []byte) (*Transit
 			return nil, err
 		}
 
+		//nolint:intrange
 		for i := 0; i < len(logic.Events); i++ {
 			if logic.Events[i].Event.Type == event.Type() {
 				return &Transition{
