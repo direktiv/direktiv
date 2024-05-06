@@ -155,10 +155,9 @@
             },
             "metrics": {
               "header": "Success / failure rate",
-              "successful": "complete: {{percentage}}%",
-              "failed": "failed: {{percentage}}%",
               "noResult": "no data available",
-              "loading": "loading..."
+              "loading": "loading...",
+              "legend": "{{successRate}}% successful"
             },
             "services": {
               "header": "Workflow services"
@@ -529,6 +528,7 @@
     "instances": {
       "list": {
         "title": "Recently executed instances",
+        "refetchLabel": "Refetch instances",
         "empty": {
           "noInstances": "There are no recently executed instances",
           "noFilterResults": "No recently executed instances found with these filter criteria"
@@ -539,7 +539,7 @@
           "invoker": "trigger",
           "state": "state",
           "startedAt": "started at",
-          "updatedAt": "last updated",
+          "finishedAt": "finished at",
           "childInstances": {
             "label": "spawned",
             "instanceCount": "{{count}} instances",
@@ -585,7 +585,7 @@
           "invoker": "trigger",
           "state": "state",
           "startedAt": "started at",
-          "updatedAt": "last updated",
+          "finishedAt": "finished at",
           "realtiveTime": "{{relativeTime}} ago"
         },
         "logs": {

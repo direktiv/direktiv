@@ -44,7 +44,6 @@ const (
 	Flow_EventHistoryStream_FullMethodName          = "/direktiv_flow.Flow/EventHistoryStream"
 	Flow_HistoricalEvent_FullMethodName             = "/direktiv_flow.Flow/HistoricalEvent"
 	Flow_ReplayEvent_FullMethodName                 = "/direktiv_flow.Flow/ReplayEvent"
-	Flow_NamespaceLint_FullMethodName               = "/direktiv_flow.Flow/NamespaceLint"
 )
 
 // FlowClient is the client API for Flow service.
@@ -79,7 +78,6 @@ type FlowClient interface {
 	EventHistoryStream(ctx context.Context, in *EventHistoryRequest, opts ...grpc.CallOption) (Flow_EventHistoryStreamClient, error)
 	HistoricalEvent(ctx context.Context, in *HistoricalEventRequest, opts ...grpc.CallOption) (*HistoricalEventResponse, error)
 	ReplayEvent(ctx context.Context, in *ReplayEventRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	NamespaceLint(ctx context.Context, in *NamespaceLintRequest, opts ...grpc.CallOption) (*NamespaceLintResponse, error)
 }
 
 type flowClient struct {
@@ -496,15 +494,6 @@ func (c *flowClient) ReplayEvent(ctx context.Context, in *ReplayEventRequest, op
 	return out, nil
 }
 
-func (c *flowClient) NamespaceLint(ctx context.Context, in *NamespaceLintRequest, opts ...grpc.CallOption) (*NamespaceLintResponse, error) {
-	out := new(NamespaceLintResponse)
-	err := c.cc.Invoke(ctx, Flow_NamespaceLint_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // FlowServer is the server API for Flow service.
 // All implementations must embed UnimplementedFlowServer
 // for forward compatibility
@@ -537,7 +526,6 @@ type FlowServer interface {
 	EventHistoryStream(*EventHistoryRequest, Flow_EventHistoryStreamServer) error
 	HistoricalEvent(context.Context, *HistoricalEventRequest) (*HistoricalEventResponse, error)
 	ReplayEvent(context.Context, *ReplayEventRequest) (*emptypb.Empty, error)
-	NamespaceLint(context.Context, *NamespaceLintRequest) (*NamespaceLintResponse, error)
 	mustEmbedUnimplementedFlowServer()
 }
 
@@ -616,9 +604,6 @@ func (UnimplementedFlowServer) HistoricalEvent(context.Context, *HistoricalEvent
 }
 func (UnimplementedFlowServer) ReplayEvent(context.Context, *ReplayEventRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReplayEvent not implemented")
-}
-func (UnimplementedFlowServer) NamespaceLint(context.Context, *NamespaceLintRequest) (*NamespaceLintResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method NamespaceLint not implemented")
 }
 func (UnimplementedFlowServer) mustEmbedUnimplementedFlowServer() {}
 
@@ -1104,24 +1089,6 @@ func _Flow_ReplayEvent_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Flow_NamespaceLint_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(NamespaceLintRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).NamespaceLint(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_NamespaceLint_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).NamespaceLint(ctx, req.(*NamespaceLintRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // Flow_ServiceDesc is the grpc.ServiceDesc for Flow service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1192,10 +1159,6 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ReplayEvent",
 			Handler:    _Flow_ReplayEvent_Handler,
-		},
-		{
-			MethodName: "NamespaceLint",
-			Handler:    _Flow_NamespaceLint_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

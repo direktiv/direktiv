@@ -148,6 +148,13 @@ export const FilePatchedSchema = z.object({
   data: BaseFileSchema.extend({ data: z.string().optional() }),
 });
 
+export const FileNameSchema = z
+  .string()
+  .regex(/^(([a-z][a-z0-9_\-.]*[a-z0-9])|([a-z]))$/, {
+    message:
+      "Please use a name that only contains lowercase letters, use - or _ instead of whitespaces.",
+  });
+
 export type BaseFileSchemaType = z.infer<typeof BaseFileSchema>;
 export type DirectorySchemaType = z.infer<typeof DirectorySchema>;
 export type FileSchemaType = z.infer<typeof FileSchema>;

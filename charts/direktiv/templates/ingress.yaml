@@ -48,13 +48,6 @@ spec:
               name: {{ include "direktiv.fullname" . }}-flow
               port:
                 number: 6665
-        - path: /gw/
-          pathType: Prefix
-          backend:
-            service:
-              name: {{ include "direktiv.fullname" . }}-flow
-              port:
-                number: 6665
         - path: /ns/
           pathType: Prefix
           backend:

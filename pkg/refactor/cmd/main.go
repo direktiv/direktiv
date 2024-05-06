@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -18,6 +17,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/events"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway"
+	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"github.com/direktiv/direktiv/pkg/refactor/registry"
@@ -73,16 +73,21 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 	gatewayManager := gateway.NewGatewayManager(args.Database)
 	slog.Info("gateway manager initialized successfully")
 
+	// Create endpoint manager
+	gatewayManager2 := gateway2.NewManager()
+	slog.Info("gateway manager2 initialized successfully")
+
 	// Create App
 	app := core.App{
 		Version: &core.Version{
 			UnixTime: time.Now().Unix(),
 		},
-		Config:          args.Config,
-		ServiceManager:  serviceManager,
-		RegistryManager: registryManager,
-		GatewayManager:  gatewayManager,
-		SyncNamespace:   args.SyncNamespace,
+		Config:           args.Config,
+		ServiceManager:   serviceManager,
+		RegistryManager:  registryManager,
+		GatewayManager:   gatewayManager,
+		GatewayManagerV2: gatewayManager2,
+		SyncNamespace:    args.SyncNamespace,
 	}
 
 	args.PubSubBus.Subscribe(func(_ string) {
@@ -116,29 +121,8 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 	)
 
 	// endpoint manager
-	args.PubSubBus.Subscribe(func(ns string) {
-		gatewayManager.UpdateNamespace(ns)
-	},
-		pubsub.NamespaceCreate,
-		pubsub.MirrorSync,
-	)
-
-	// endpoint manager deletes routes/consumers on namespace delete
-	args.PubSubBus.Subscribe(func(ns string) {
-		gatewayManager.DeleteNamespace(ns)
-	},
-		pubsub.NamespaceDelete,
-	)
-
-	// on sync redo all consumers and routes on sync or single file updates
-	args.PubSubBus.Subscribe(func(data string) {
-		event := pubsub.FileChangeEvent{}
-		err := json.Unmarshal([]byte(data), &event)
-		if err != nil {
-			slog.Error("unmarshal file change event", "err", err)
-			panic(err)
-		}
-		gatewayManager.UpdateNamespace(event.Namespace)
+	args.PubSubBus.Subscribe(func(_ string) {
+		gatewayManager.UpdateAll()
 	},
 		pubsub.EndpointCreate,
 		pubsub.EndpointUpdate,
@@ -148,8 +132,10 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 		pubsub.ConsumerDelete,
 		pubsub.ConsumerUpdate,
 		pubsub.ConsumerRename,
+		pubsub.NamespaceDelete,
+		pubsub.NamespaceCreate,
+		pubsub.MirrorSync,
 	)
-
 	// initial loading of routes and consumers
 	gatewayManager.UpdateAll()
 

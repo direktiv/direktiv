@@ -34,13 +34,14 @@ type InstanceData struct {
 	EndedAt      *time.Time     `json:"endedAt"`
 	Status       string         `json:"status"`
 	WorkflowPath string         `json:"path"`
-	ErrorCode    string         `json:"errorCode"`
+	ErrorCode    *string        `json:"errorCode"`
 	Invoker      string         `json:"invoker"`
 	Definition   []byte         `json:"definition,omitempty"`
-	ErrorMessage []byte         `json:"errorMessage,omitempty"`
+	ErrorMessage []byte         `json:"errorMessage"`
 	Flow         []string       `json:"flow"`
 	TraceID      string         `json:"traceId"`
 	Lineage      []*LineageData `json:"lineage"`
+	Namespace    string         `json:"namespace"`
 
 	InputLength    *int   `json:"inputLength,omitempty"`
 	Input          []byte `json:"input,omitempty"`
@@ -66,10 +67,14 @@ func marshalForAPI(data *instancestore.InstanceData) *InstanceData {
 		EndedAt:      data.EndedAt,
 		Status:       data.Status.String(),
 		WorkflowPath: data.WorkflowPath,
-		ErrorCode:    data.ErrorCode,
 		Invoker:      data.Invoker,
 		Definition:   data.Definition,
-		ErrorMessage: data.ErrorMessage,
+		Namespace:    data.Namespace,
+	}
+
+	if data.ErrorCode != "" {
+		resp.ErrorCode = &data.ErrorCode
+		resp.ErrorMessage = data.ErrorMessage
 	}
 
 	x, err := engine.ParseInstanceData(data)
@@ -550,7 +555,11 @@ func (e *instController) list(w http.ResponseWriter, r *http.Request) {
 		respData = append(respData, marshalForAPI(&data.Results[i]))
 	}
 
-	writeJSON(w, respData)
+	metaInfo := map[string]any{
+		"total": data.Total,
+	}
+
+	writeJSONWithMeta(w, respData, metaInfo)
 }
 
 func (e *instController) create(w http.ResponseWriter, r *http.Request) {

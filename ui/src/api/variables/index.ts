@@ -23,7 +23,7 @@ export const varKeys = {
   ) =>
     [
       {
-        scope: "variables-details",
+        scope: "variable-details",
         apiKey,
         namespace,
         id,
