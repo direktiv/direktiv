@@ -10,12 +10,12 @@ import { useTranslation } from "react-i18next";
 
 export const Instances = () => {
   const {
-    data: datasuccessfulInstances,
-    isFetched: isFetchedsuccessfulInstances,
-    isFetching: isFetchingsuccessfulInstances,
-    refetch: refetchsuccessfulInstances,
-    isAllowed: isAllowedsuccessfulInstances,
-    noPermissionMessage: noPermissionMessagesuccessfulInstances,
+    data: dataSuccessfulInstances,
+    isFetched: isFetchedSuccessfulInstances,
+    isFetching: isFetchingSuccessfulInstances,
+    refetch: refetchSuccessfulInstances,
+    isAllowed: isAllowedSuccessfulInstances,
+    noPermissionMessage: noPermissionMessageSuccessfulInstances,
   } = useInstances({
     limit: 10,
     offset: 0,
@@ -47,11 +47,11 @@ export const Instances = () => {
 
   const { t } = useTranslation();
 
-  const successfulInstances = datasuccessfulInstances?.data ?? [];
+  const successfulInstances = dataSuccessfulInstances?.data ?? [];
 
   const failedInstances = dataFailedInstances?.data ?? [];
 
-  if (!isFetchedsuccessfulInstances || !isFetchedFailedInstances) return null;
+  if (!isFetchedSuccessfulInstances || !isFetchedFailedInstances) return null;
 
   return (
     <>
@@ -63,14 +63,14 @@ export const Instances = () => {
             icon
             size="sm"
             variant="ghost"
-            disabled={isFetchingsuccessfulInstances}
+            disabled={isFetchingSuccessfulInstances}
             onClick={() => {
-              refetchsuccessfulInstances();
+              refetchSuccessfulInstances();
             }}
           />
         }
       >
-        {isAllowedsuccessfulInstances ? (
+        {isAllowedSuccessfulInstances ? (
           <>
             {successfulInstances.length === 0 ? (
               <NoResult icon={Boxes}>
@@ -90,7 +90,7 @@ export const Instances = () => {
           </>
         ) : (
           <NoPermissions>
-            {noPermissionMessagesuccessfulInstances}
+            {noPermissionMessageSuccessfulInstances}
           </NoPermissions>
         )}
       </InstanceCard>
