@@ -6,12 +6,14 @@ import {
   TargetNamespaceVarFormSchemaType,
 } from "../../../schema/plugins/target/targetNamespaceVar";
 
+import { DisableNamespaceSelectNote } from "./utils/DisableNamespaceSelectNote";
 import { Fieldset } from "~/components/Form/Fieldset";
 import Input from "~/design/Input";
 import NamespaceSelector from "~/components/NamespaceSelector";
 import NamespaceVariablePicker from "~/components/NamespaceVariablepicker";
 import { PluginWrapper } from "../components/PluginSelector";
 import { treatEmptyStringAsUndefined } from "~/pages/namespace/Explorer/utils";
+import { useDisableNamespaceSelect } from "./utils/useDisableNamespaceSelect";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -48,6 +50,8 @@ export const TargetNamespaceVarForm: FC<FormProps> = ({
     },
   });
 
+  const disableNamespaceSelector = useDisableNamespaceSelect();
+
   const submitForm = (e: FormEvent<HTMLFormElement>) => {
     e.stopPropagation(); // prevent the parent form from submitting
     handleSubmit(onSubmit)(e);
@@ -68,6 +72,7 @@ export const TargetNamespaceVarForm: FC<FormProps> = ({
           )}
           htmlFor="namespace"
         >
+          {disableNamespaceSelector && <DisableNamespaceSelectNote />}
           <Controller
             control={control}
             name="configuration.namespace"
@@ -76,6 +81,7 @@ export const TargetNamespaceVarForm: FC<FormProps> = ({
                 id="namespace"
                 defaultValue={field.value}
                 onValueChange={field.onChange}
+                disabled={disableNamespaceSelector}
               />
             )}
           />
