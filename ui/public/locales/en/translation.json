@@ -313,7 +313,7 @@
                 "targetEvent": {
                   "namespace": "Namespace (optional)"
                 },
-                "namespaceNote": "You can only access other namespace when you are in the system namespace."
+                "namespaceNote": "You can only access other namespaces when you are in the system namespace."
               },
               "inbound": {
                 "modal": {
