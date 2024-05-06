@@ -10,12 +10,12 @@ import { useTranslation } from "react-i18next";
 
 export const Instances = () => {
   const {
-    data: dataSucessfulInstances,
-    isFetched: isFetchedSucessfulInstances,
-    isFetching: isFetchingSucessfulInstances,
-    refetch: refetchSucessfulInstances,
-    isAllowed: isAllowedSucessfulInstances,
-    noPermissionMessage: noPermissionMessageSucessfulInstances,
+    data: datasuccessfulInstances,
+    isFetched: isFetchedsuccessfulInstances,
+    isFetching: isFetchingsuccessfulInstances,
+    refetch: refetchsuccessfulInstances,
+    isAllowed: isAllowedsuccessfulInstances,
+    noPermissionMessage: noPermissionMessagesuccessfulInstances,
   } = useInstanceList({
     limit: 10,
     offset: 0,
@@ -47,11 +47,11 @@ export const Instances = () => {
 
   const { t } = useTranslation();
 
-  const sucessfulInstances = dataSucessfulInstances?.data ?? [];
+  const successfulInstances = datasuccessfulInstances?.data ?? [];
 
   const failedInstances = dataFailedInstances?.data ?? [];
 
-  if (!isFetchedSucessfulInstances || !isFetchedFailedInstances) return null;
+  if (!isFetchedsuccessfulInstances || !isFetchedFailedInstances) return null;
 
   return (
     <>
@@ -63,16 +63,16 @@ export const Instances = () => {
             icon
             size="sm"
             variant="ghost"
-            disabled={isFetchingSucessfulInstances}
+            disabled={isFetchingsuccessfulInstances}
             onClick={() => {
-              refetchSucessfulInstances();
+              refetchsuccessfulInstances();
             }}
           />
         }
       >
-        {isAllowedSucessfulInstances ? (
+        {isAllowedsuccessfulInstances ? (
           <>
-            {sucessfulInstances.length === 0 ? (
+            {successfulInstances.length === 0 ? (
               <NoResult icon={Boxes}>
                 {t("pages.monitoring.instances.successfulExecutions.empty")}
               </NoResult>
@@ -80,7 +80,7 @@ export const Instances = () => {
               <ScrollArea className="h-full">
                 <Table>
                   <TableBody>
-                    {sucessfulInstances.map((instance) => (
+                    {successfulInstances.map((instance) => (
                       <InstanceRow key={instance.id} instance={instance} />
                     ))}
                   </TableBody>
@@ -89,7 +89,9 @@ export const Instances = () => {
             )}
           </>
         ) : (
-          <NoPermissions>{noPermissionMessageSucessfulInstances}</NoPermissions>
+          <NoPermissions>
+            {noPermissionMessagesuccessfulInstances}
+          </NoPermissions>
         )}
       </InstanceCard>
       <InstanceCard
