@@ -1,4 +1,4 @@
-import { FiltersObj, getFilterQuery } from "../get";
+import { FiltersObj, getFilterQuery } from "../utils";
 import { describe, expect, test } from "vitest";
 
 const filterByAs: FiltersObj = {

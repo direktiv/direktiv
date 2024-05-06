@@ -17,12 +17,12 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
+import { FileNameSchema } from "~/api/files/schema";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { Textarea } from "~/design/TextArea";
 import { addYamlFileExtension } from "../../../../utils";
 import { encode } from "js-base64";
-import { fileNameSchema } from "~/api/tree/schema/node";
 import { pages } from "~/util/router/pages";
 import { useCreateFile } from "~/api/files/mutate/createFile";
 import { useNamespace } from "~/util/store/namespace";
@@ -63,17 +63,17 @@ const NewWorkflow = ({
 
   const resolver = zodResolver(
     z.object({
-      name: fileNameSchema
-        .transform((enteredName) => addYamlFileExtension(enteredName))
-        .refine(
-          (nameWithExtension) =>
-            !(unallowedNames ?? []).some(
-              (unallowedName) => unallowedName === nameWithExtension
-            ),
-          {
-            message: t("pages.explorer.tree.newWorkflow.nameAlreadyExists"),
-          }
-        ),
+      name: FileNameSchema.transform((enteredName) =>
+        addYamlFileExtension(enteredName)
+      ).refine(
+        (nameWithExtension) =>
+          !(unallowedNames ?? []).some(
+            (unallowedName) => unallowedName === nameWithExtension
+          ),
+        {
+          message: t("pages.explorer.tree.newWorkflow.nameAlreadyExists"),
+        }
+      ),
       fileContent: z.string(),
     })
   );
