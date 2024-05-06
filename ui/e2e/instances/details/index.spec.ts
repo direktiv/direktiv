@@ -478,15 +478,17 @@ test("the logs panel can be resized, it displays a log message from the workflow
 
   const logsPanel = page.getByTestId("instance-logs-container");
 
-  // I did not find any other way to select the parent of logsPanel, it does not render a testId
-  const logsPanelParent = page.locator("div").filter({ has: logsPanel }).nth(6);
+  const logsPanelToolbar = page
+    .getByTestId("instance-logs-container")
+    .locator("div")
+    .first();
 
   const scrollbar = page.getByTestId("instance-logs-scroll-container");
 
-  await expect(logsPanel).toBeVisible();
+  await expect(logsPanelToolbar).toBeVisible();
 
   await expect(
-    logsPanel.locator("h3"),
+    logsPanelToolbar.locator("h3"),
     "The headline of the logs shows the name of the currently running workflow"
   ).toContainText(`Logs for /${fewLogsWorkflowName}`);
 
@@ -517,11 +519,11 @@ test("the logs panel can be resized, it displays a log message from the workflow
     "It shows the text 'maximize logs' when hovering over the resize button"
   ).toBeVisible();
 
-  const minimizedHeight = (await logsPanelParent.boundingBox())?.height;
+  const minimizedHeight = (await logsPanel.boundingBox())?.height;
 
   await resizeButton.click();
 
-  const maximizedHeight = (await logsPanelParent.boundingBox())?.height;
+  const maximizedHeight = (await logsPanel.boundingBox())?.height;
   if (minimizedHeight === undefined || maximizedHeight === undefined) {
     throw new Error("could not get height of logs panel");
   }
@@ -533,8 +535,7 @@ test("the logs panel can be resized, it displays a log message from the workflow
 
   page.reload();
 
-  const currentHeightAfterReload = (await logsPanelParent.boundingBox())
-    ?.height;
+  const currentHeightAfterReload = (await logsPanel.boundingBox())?.height;
   expect(
     currentHeightAfterReload,
     "After reloading the page, the panel is still maximized"
