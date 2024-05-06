@@ -483,7 +483,7 @@ test("the logs panel can be resized, it displays a log message from the workflow
     .locator("div")
     .first();
 
-  const scrollbar = page.getByTestId("instance-logs-scroll-container");
+  const scrollContainer = page.getByTestId("instance-logs-scroll-container");
 
   await expect(logsPanelToolbar).toBeVisible();
 
@@ -548,17 +548,17 @@ test("the logs panel can be resized, it displays a log message from the workflow
   ).toBeVisible();
 
   await expect(
-    scrollbar.locator("pre").locator("span").nth(0),
+    scrollContainer.locator("pre").locator("span").nth(0),
     "It displays an initial log entry"
   ).toContainText("Running state logic");
 
   await expect(
-    scrollbar.locator("pre").locator("span").nth(15),
+    scrollContainer.locator("pre").locator("span").nth(15),
     "It displays the log message from the log field in the workflow yaml"
   ).toContainText("log-message");
 
   await expect(
-    scrollbar.locator("pre").locator("span").last(),
+    scrollContainer.locator("pre").locator("span").last(),
     "It displays a final log entry"
   ).toContainText("Workflow completed");
 
@@ -583,19 +583,19 @@ test("the logs panel can be toggled between verbose and non verbose logs", async
 
   await expect(logsPanel).toBeVisible();
 
-  const scrollbar = page.getByTestId("instance-logs-scroll-container");
+  const scrollContainer = page.getByTestId("instance-logs-scroll-container");
 
   await expect(
     page.getByTestId("instance-header-container").locator("div").first()
   ).toContainText("complete");
 
   await expect(
-    scrollbar.locator("pre").last().locator("span").first(),
+    scrollContainer.locator("pre").last().locator("span").first(),
     "It does NOT display the state for the final log entry"
   ).not.toContainText("state: helloworld");
 
   await expect(
-    scrollbar.locator("pre").last().locator("span").last(),
+    scrollContainer.locator("pre").last().locator("span").last(),
     "It displays the final log entry"
   ).toContainText("msg: Workflow completed");
 
@@ -612,12 +612,12 @@ test("the logs panel can be toggled between verbose and non verbose logs", async
   );
 
   await expect(
-    scrollbar.locator("pre").last().locator("span").first(),
+    scrollContainer.locator("pre").last().locator("span").first(),
     "It displays the state for the final log entry"
   ).toContainText("state: helloworld");
 
   await expect(
-    scrollbar.locator("pre").last().locator("span").last(),
+    scrollContainer.locator("pre").last().locator("span").last(),
     "It displays the final log entry"
   ).toContainText("msg: Workflow completed.");
 
@@ -629,7 +629,7 @@ test("the logs panel can be toggled between verbose and non verbose logs", async
   ).toHaveAttribute("data-state", "on");
 
   await expect(
-    scrollbar.locator("pre").last().locator("span").first(),
+    scrollContainer.locator("pre").last().locator("span").first(),
     "After reloading the page the verbose setting is remembered"
   ).toContainText("state: helloworld");
 });
