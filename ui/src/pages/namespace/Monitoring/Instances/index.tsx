@@ -5,7 +5,7 @@ import { InstanceCard } from "./InstanceCard";
 import { InstanceRow } from "./Row";
 import RefreshButton from "~/design/RefreshButton";
 import { ScrollArea } from "~/design/ScrollArea";
-import { useInstanceList } from "~/api/instances/query/get";
+import { useInstances } from "~/api/instances/query/get";
 import { useTranslation } from "react-i18next";
 
 export const Instances = () => {
@@ -16,7 +16,7 @@ export const Instances = () => {
     refetch: refetchsuccessfulInstances,
     isAllowed: isAllowedsuccessfulInstances,
     noPermissionMessage: noPermissionMessagesuccessfulInstances,
-  } = useInstanceList({
+  } = useInstances({
     limit: 10,
     offset: 0,
     filters: {
@@ -34,7 +34,7 @@ export const Instances = () => {
     refetch: refetchFailedInstances,
     isAllowed: isAllowedFailedInstances,
     noPermissionMessage: noPermissionMessageFailedInstances,
-  } = useInstanceList({
+  } = useInstances({
     limit: 10,
     offset: 0,
     filters: {

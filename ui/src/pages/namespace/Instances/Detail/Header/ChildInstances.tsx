@@ -15,7 +15,7 @@ import { pages } from "~/util/router/pages";
 import { statusToBadgeVariant } from "../../utils";
 import { t } from "i18next";
 import { useInstanceId } from "../store/instanceContext";
-import { useInstanceList } from "~/api/instances/query/get";
+import { useInstances } from "~/api/instances/query/get";
 import { useNamespace } from "~/util/store/namespace";
 import { useState } from "react";
 
@@ -25,7 +25,7 @@ const ChildInstances = () => {
   const instanceId = useInstanceId();
   const namespace = useNamespace();
   const [popoverOpen, setPopoverOpen] = useState(false);
-  const { data, refetch, isFetching } = useInstanceList({
+  const { data, refetch, isFetching } = useInstances({
     limit: maxChildInstancesToShow + 1,
     offset: 0,
     filters: {

@@ -15,7 +15,7 @@ type InstanceListParams = {
   filters?: FiltersObj;
 };
 
-export const getInstanceList = apiFactory({
+export const getInstances = apiFactory({
   url: ({
     namespace,
     baseUrl,
@@ -36,15 +36,15 @@ export const getInstanceList = apiFactory({
   schema: InstancesListResponseSchema,
 });
 
-const fetchInstanceList = async ({
+const fetchInstances = async ({
   queryKey: [{ apiKey, namespace, limit, offset, filters }],
 }: QueryFunctionContext<ReturnType<(typeof instanceKeys)["instancesList"]>>) =>
-  getInstanceList({
+  getInstances({
     apiKey,
     urlParams: { namespace, limit, offset, filters },
   });
 
-export const useInstanceList = (params: InstanceListParams = {}) => {
+export const useInstances = (params: InstanceListParams = {}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
 
@@ -57,7 +57,7 @@ export const useInstanceList = (params: InstanceListParams = {}) => {
       apiKey: apiKey ?? undefined,
       ...params,
     }),
-    queryFn: fetchInstanceList,
+    queryFn: fetchInstances,
     enabled: !!namespace,
   });
 };

@@ -16,7 +16,7 @@ import { FiltersObj } from "~/api/instances/query/utils";
 import { Pagination } from "~/components/Pagination";
 import RefreshButton from "~/design/RefreshButton";
 import Row from "./Row";
-import { useInstanceList } from "~/api/instances/query/get";
+import { useInstances } from "~/api/instances/query/get";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -33,7 +33,7 @@ const InstancesListPage = () => {
     refetch,
     isAllowed,
     noPermissionMessage,
-  } = useInstanceList({
+  } = useInstances({
     limit: instancesPerPage,
     offset,
     filters,

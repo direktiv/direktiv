@@ -9,7 +9,7 @@ import {
 import { createFile } from "e2e/utils/files";
 import { createInstance } from "../utils";
 import { faker } from "@faker-js/faker";
-import { getInstanceList } from "~/api/instances/query/get";
+import { getInstances } from "~/api/instances/query/get";
 import { headers } from "e2e/utils/testutils";
 import moment from "moment";
 
@@ -65,7 +65,7 @@ test("it renders the instance item correctly for failed and success status", asy
   ];
 
   const checkInstanceRender = async (instance: Instance) => {
-    const instancesList = await getInstanceList({
+    const instancesList = await getInstances({
       urlParams: {
         baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
         namespace,
@@ -285,7 +285,7 @@ test("it provides a proper pagination", async ({ page }) => {
   await btnNumber3.click();
 
   // check with api response
-  const instancesListPage3 = await getInstanceList({
+  const instancesListPage3 = await getInstances({
     urlParams: {
       baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
       namespace,
@@ -326,7 +326,7 @@ test("It will display child instances as well", async ({ page }) => {
 
   await page.goto(`/n/${namespace}/instances/`, { waitUntil: "networkidle" });
 
-  const instancesList = await getInstanceList({
+  const instancesList = await getInstances({
     urlParams: {
       baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
       namespace,

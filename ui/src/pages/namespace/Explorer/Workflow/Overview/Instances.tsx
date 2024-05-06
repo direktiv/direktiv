@@ -6,13 +6,13 @@ import { InstanceRow } from "~/pages/namespace/Monitoring/Instances/Row";
 import RefreshButton from "~/design/RefreshButton";
 import { ScrollArea } from "~/design/ScrollArea";
 import { forceLeadingSlash } from "~/api/files/utils";
-import { useInstanceList } from "~/api/instances/query/get";
+import { useInstances } from "~/api/instances/query/get";
 import { useTranslation } from "react-i18next";
 
 const Instances = ({ workflow }: { workflow: string }) => {
   const { t } = useTranslation();
 
-  const { data, isFetching, refetch } = useInstanceList({
+  const { data, isFetching, refetch } = useInstances({
     limit: 10,
     offset: 0,
     filters: { AS: { type: "WORKFLOW", value: forceLeadingSlash(workflow) } },
