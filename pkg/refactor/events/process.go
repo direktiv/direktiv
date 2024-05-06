@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"strings"
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -170,15 +169,13 @@ func (ee EventEngine) usePostProcessingEvents(ctx context.Context,
 
 // EventPassedGatekeeper determines if an event satisfies a set of glob-based filtering patterns.
 // These patterns can target extensions within the CloudEvent, such as its source.
-// EventPassedGatekeeper make the assumtion that Keys in the globPatterns map must follow the format 'eventtype-extensionkey' to ensure correct filtering.
-// For the passed event, all globPatterns with keys prefixed by the event's type must match.
 //
 // Parameters:
 //   - globPatterns: A map where keys are attribute names and values are glob patterns.
 //   - event: The CloudEvent being evaluated.
 //
 // Returns:
-//   - true if the event matches all relevant patterns or if there are no patterns to check.
+//   - true if the event matches all patterns or if there are no patterns to check.
 //   - false if the event fails to match any relevant pattern.
 //
 // Example:
@@ -186,41 +183,14 @@ func (ee EventEngine) usePostProcessingEvents(ctx context.Context,
 // // Sample globPatterns with event type prefixes and context keys:
 //
 //	patterns := map[string]string{
-//	    "AlarmStatusChangedEvent.v0-alarm":   "*", // Match any alarm type
-//	    "AlarmStatusChangedEvent.v0-vmid":    "vm-12345",  // Specific vmid
-//	    "AlarmStatusChangedEvent.v0-clusterid": "cluster-abcd", // Specific clusterid
+//	    "alarm":   "*", // Match any alarm type
+//	    "vmid":    "vm-12345",  // Specific vmid
+//	    "clusterid": "cluster-abcd", // Specific clusterid
 //	}
-//
-// // Matching Event (with required context):
-//
-//	event := cloudevents.Event{
-//	    // ...other event properties...
-//	    Context: cloudevents.EventContextV03{
-//	        Type: "AlarmStatusChangedEvent.v0",
-//	        Extensions: map[string]interface{}{
-//	            "alarm":     "cpu",
-//	            "vmid":      "vm-12345",
-//	            "clusterid": "cluster-abcd",
-//	        },
-//	    },
-//	}
-//
-//	if EventPassedGatekeeper(patterns, event) {
-//	    // Event passes the gatekeeper checks
-//	}
-//
-// ```
-// All Patterns prefixed with "AlarmStatusChangedEvent.v0-" must apply to events with the type of AlarmStatusChangedEvent to pass the EventPassedGatekeeper.
-func EventPassedGatekeeper(globPatterns map[string]string, event cloudevents.Event) bool {
+func EventPassedGatekeeper(context map[string]string, event cloudevents.Event) bool {
 	// Early return if there are no gatekeeper patterns.
-	if len(globPatterns) == 0 {
+	if len(context) == 0 {
 		return true
-	}
-
-	// Filter patterns relevant to the current event type.
-	relevantPatterns := filterRelevantPatterns(globPatterns, event.Type())
-	if len(relevantPatterns) == 0 {
-		return true // No relevant patterns for this event type.
 	}
 
 	// Prepare extensions, including the event source.
@@ -231,8 +201,8 @@ func EventPassedGatekeeper(globPatterns map[string]string, event cloudevents.Eve
 	extensions["source"] = event.Context.GetSource()
 
 	// Check each relevant pattern against the event extensions.
-	for patternKey, pattern := range relevantPatterns {
-		if !extensionMatchesPattern(extensions, patternKey, pattern, event.Type()) {
+	for patternKey, pattern := range context {
+		if !extensionMatchesPattern(extensions, patternKey, pattern) {
 			return false // Pattern mismatch, event failed gatekeeper.
 		}
 	}
@@ -240,22 +210,8 @@ func EventPassedGatekeeper(globPatterns map[string]string, event cloudevents.Eve
 	return true // Event passed all relevant gatekeepers.
 }
 
-// filterRelevantPatterns extracts patterns relevant to the specified event type.
-func filterRelevantPatterns(patterns map[string]string, eventType string) map[string]string {
-	result := make(map[string]string)
-	prefix := eventType + "-"
-	for key, pattern := range patterns {
-		if strings.HasPrefix(key, prefix) {
-			result[key] = pattern
-		}
-	}
-
-	return result
-}
-
 // extensionMatchesPattern checks if an event extension matches a given glob pattern.
-func extensionMatchesPattern(extensions map[string]interface{}, patternKey, pattern, eventType string) bool {
-	extensionKey := strings.TrimPrefix(patternKey, eventType+"-")
+func extensionMatchesPattern(extensions map[string]interface{}, extensionKey, pattern string) bool {
 	extensionValue, found := extensions[extensionKey]
 	if !found {
 		return false
@@ -304,9 +260,9 @@ func (ee EventEngine) multiConditionEventAndHandler(l *datastore.EventListener, 
 			if !typeMatches(types, event) {
 				continue // Check if event type matches listener's interest.
 			}
-
-			if !EventPassedGatekeeper(l.GlobGatekeepers, *event.Event) {
-				continue // Apply additional glob-based filtering.
+			// Apply additional glob-based filtering.
+			if !PassEventContextFilters(l, event) {
+				continue
 			}
 
 			if eventTypeAlreadyPresent(l, event) {
@@ -336,6 +292,16 @@ func (ee EventEngine) multiConditionEventAndHandler(l *datastore.EventListener, 
 			}
 		}
 	}
+}
+
+func PassEventContextFilters(l *datastore.EventListener, event *datastore.Event) bool {
+	for _, filter := range l.EventFilters {
+		if filter.Typ == event.Event.Type() {
+			return EventPassedGatekeeper(filter.Context, *event.Event)
+		}
+	}
+
+	return true
 }
 
 // removeExpired removes expired events from an EventListener's collection.
@@ -400,9 +366,10 @@ func (ee EventEngine) singleConditionEventHandler(l *datastore.EventListener, wa
 				continue
 			}
 			// Apply additional glob-based filtering.
-			if !EventPassedGatekeeper(l.GlobGatekeepers, *event.Event) {
+			if !PassEventContextFilters(l, event) {
 				continue
 			}
+
 			// Construct trigger arguments.
 			tr := triggerActionArgs{
 				WorkflowID: l.TriggerWorkflow,
