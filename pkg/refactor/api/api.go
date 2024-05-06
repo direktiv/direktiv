@@ -98,7 +98,6 @@ func Initialize(app core.App, db *database.SQLStore, bus *pubsub2.Bus, instanceM
 	}
 
 	// handle namespace and gateway
-	r.Handle("/gw/*", app.GatewayManager)
 	r.Handle("/ns/{namespace}/*", app.GatewayManager)
 
 	// version endpoint
@@ -185,6 +184,8 @@ func Initialize(app core.App, db *database.SQLStore, bus *pubsub2.Bus, instanceM
 			r.Route("/namespaces/{namespace}/events/broadcast", func(r chi.Router) {
 				eventsCtr.mountBroadcast(r)
 			})
+			r.Handle("/namespaces/{namespace}/gateway2", app.GatewayManagerV2)
+			r.Handle("/namespaces/{namespace}/gateway2/*", app.GatewayManagerV2)
 		})
 
 		r.Route("/jx", func(r chi.Router) {

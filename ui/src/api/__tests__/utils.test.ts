@@ -7,10 +7,10 @@ describe("buildSearchParamsString", () => {
     expect(
       buildSearchParamsString({
         param1: "value1",
-        param2: "value2",
+        param2: 2,
         thisWillBeSkipped: undefined,
       })
-    ).toEqual("?param1=value1&param2=value2");
+    ).toEqual("?param1=value1&param2=2");
   });
 
   test("should return query string without question mark when withoutQuestionmark is set to true", () => {
@@ -18,12 +18,13 @@ describe("buildSearchParamsString", () => {
       buildSearchParamsString(
         {
           param1: "value1",
-          param2: "value2",
-          thisWillBeSkipped: undefined,
+          param2: 2,
+          emptyStringWillBeSkipped: "",
+          undefinedWillBeSkipped: undefined,
         },
         true
       )
-    ).toEqual("param1=value1&param2=value2");
+    ).toEqual("param1=value1&param2=2");
   });
 
   test("should always return an empty string when searchParmsObj is empty", () => {

@@ -30,7 +30,7 @@ func NewPostgresCoreBus(db *sql.DB, listenConnectionString string) (pubsub.CoreB
 
 	var err error
 	// try ping up to 10 times.
-	for i := 0; i < 10; i++ {
+	for range 10 {
 		err = p.listener.Ping()
 		if err != nil {
 			time.Sleep(time.Second)

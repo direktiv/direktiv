@@ -54,6 +54,7 @@ func retryDelay(attempt int, delay string, multiplier float64) time.Duration {
 	}
 
 	if multiplier != 0 {
+		//nolint:intrange
 		for i := 0; i < attempt; i++ {
 			d = time.Duration(float64(d) * multiplier)
 		}

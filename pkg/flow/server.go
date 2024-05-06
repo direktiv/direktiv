@@ -372,6 +372,7 @@ func initDB(config *core.Config) (*gorm.DB, error) {
 
 	var err error
 	var db *gorm.DB
+	//nolint:intrange
 	for i := 0; i < 10; i++ {
 		slog.Info("connecting to database...")
 

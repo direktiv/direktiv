@@ -1,27 +1,29 @@
-import { LintSchema } from "../schema";
+import { NotificationListSchema } from "../schema";
 import type { QueryFunctionContext } from "@tanstack/react-query";
 import { apiFactory } from "../../apiFactory";
-import { lintingKeys } from "..";
+import { notificationKeys } from "..";
 import { useApiKey } from "../../../util/store/apiKey";
 import { useNamespace } from "../../../util/store/namespace";
 import useQueryWithPermissions from "~/api/useQueryWithPermissions";
 
-const getNamespaceLinting = apiFactory({
+const getNotifications = apiFactory({
   url: ({ namespace }: { namespace: string }) =>
-    `/api/namespaces/${namespace}/lint`,
+    `/api/v2/namespaces/${namespace}/notifications`,
   method: "GET",
-  schema: LintSchema,
+  schema: NotificationListSchema,
 });
 
-const fetchLinting = async ({
+const fetchNotifications = async ({
   queryKey: [{ apiKey, namespace }],
-}: QueryFunctionContext<ReturnType<(typeof lintingKeys)["getLinting"]>>) =>
-  getNamespaceLinting({
+}: QueryFunctionContext<
+  ReturnType<(typeof notificationKeys)["notifications"]>
+>) =>
+  getNotifications({
     apiKey,
     urlParams: { namespace },
   });
 
-export const useNamespaceLinting = () => {
+export const useNotifications = () => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
 
@@ -30,10 +32,10 @@ export const useNamespaceLinting = () => {
   }
 
   return useQueryWithPermissions({
-    queryKey: lintingKeys.getLinting(namespace, {
+    queryKey: notificationKeys.notifications(namespace, {
       apiKey: apiKey ?? undefined,
     }),
-    queryFn: fetchLinting,
+    queryFn: fetchNotifications,
     enabled: !!namespace,
   });
 };

@@ -1,12 +1,12 @@
-import { QueryFunctionContext, useQuery } from "@tanstack/react-query";
-
-import { InstancesInputSchema } from "../schema";
+import { InstanceInputResponseSchema } from "../schema";
+import { QueryFunctionContext } from "@tanstack/react-query";
 import { apiFactory } from "~/api/apiFactory";
 import { instanceKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
+import useQueryWithPermissions from "~/api/useQueryWithPermissions";
 
-export const getInput = apiFactory({
+export const getInstanceInput = apiFactory({
   url: ({
     namespace,
     baseUrl,
@@ -18,20 +18,20 @@ export const getInput = apiFactory({
   }) =>
     `${
       baseUrl ?? ""
-    }/api/namespaces/${namespace}/instances/${instanceId}/input`,
+    }/api/v2/namespaces/${namespace}/instances/${instanceId}/input`,
   method: "GET",
-  schema: InstancesInputSchema,
+  schema: InstanceInputResponseSchema,
 });
 
-const fetchInput = async ({
+const fetchInstanceInput = async ({
   queryKey: [{ apiKey, namespace, instanceId }],
-}: QueryFunctionContext<ReturnType<(typeof instanceKeys)["instancesInput"]>>) =>
-  getInput({
+}: QueryFunctionContext<ReturnType<(typeof instanceKeys)["instanceInput"]>>) =>
+  getInstanceInput({
     apiKey,
     urlParams: { namespace, instanceId },
   });
 
-export const useInput = ({ instanceId }: { instanceId: string }) => {
+export const useInstanceInput = ({ instanceId }: { instanceId: string }) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
 
@@ -39,12 +39,13 @@ export const useInput = ({ instanceId }: { instanceId: string }) => {
     throw new Error("namespace is undefined");
   }
 
-  return useQuery({
-    queryKey: instanceKeys.instancesInput(namespace, {
+  return useQueryWithPermissions({
+    queryKey: instanceKeys.instanceInput(namespace, {
       apiKey: apiKey ?? undefined,
       instanceId,
     }),
-    queryFn: fetchInput,
+    queryFn: fetchInstanceInput,
     enabled: !!namespace,
+    select: (data) => data.data,
   });
 };

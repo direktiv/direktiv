@@ -16,7 +16,7 @@ import RunWorkflow from "../components/RunWorkflow";
 import { WorkspaceLayout } from "~/components/WorkspaceLayout";
 import { useEditorLayout } from "~/util/store/editor";
 import { useNamespace } from "~/util/store/namespace";
-import { useNamespaceLinting } from "~/api/namespaceLinting/query/useNamespaceLinting";
+import { useNotifications } from "~/api/notifications/query/get";
 import { useTranslation } from "react-i18next";
 import { useUpdateFile } from "~/api/files/mutate/updateFile";
 
@@ -27,7 +27,7 @@ const WorkflowEditor: FC<{
   const { t } = useTranslation();
   const namespace = useNamespace();
   const [error, setError] = useState<string | undefined>();
-  const { refetch: updateNotificationBell } = useNamespaceLinting();
+  const { refetch: updateNotificationBell } = useNotifications();
 
   const hasUnsavedChanges = useUnsavedChanges();
   const setHasUnsavedChanges = useSetUnsavedChanges();
