@@ -26,7 +26,7 @@ const Header = () => {
   const { t } = useTranslation();
 
   const [invoker] = (instance?.invoker ?? "").split(":");
-  const endetAt = useUpdatedAt(instance?.endedAt);
+  const endedAt = useUpdatedAt(instance?.endedAt);
   const createdAt = useUpdatedAt(instance?.createdAt);
 
   if (!instance) return null;
@@ -79,7 +79,7 @@ const Header = () => {
             {t("pages.instances.detail.header.finishedAt")}
           </div>
           {t("pages.instances.detail.header.realtiveTime", {
-            relativeTime: endetAt,
+            relativeTime: endedAt,
           })}
         </div>
         <ChildInstances />
