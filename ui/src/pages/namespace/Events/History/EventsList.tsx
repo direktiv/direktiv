@@ -1,18 +1,10 @@
 import { Dialog, DialogContent } from "~/design/Dialog";
-import {
-  NoPermissions,
-  NoResult,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeaderCell,
-  TableRow,
-} from "~/design/Table";
+import { NoPermissions, NoResult, TableCell, TableRow } from "~/design/Table";
 import { Pagination, PaginationLink } from "~/design/Pagination";
 
 import { Card } from "~/design/Card";
 import { EventSchemaType } from "~/api/eventsv2/schema";
+import EventsTable from "./components/Table";
 import Filters from "./components/Filters";
 import { FiltersObj } from "~/api/events/query/get";
 import PaginationProvider from "~/components/PaginationProvider";
@@ -80,59 +72,41 @@ const EventsList = ({
                   </div>
                 </div>
 
-                <Table className="border-t border-gray-5 dark:border-gray-dark-5">
-                  <TableHead>
+                <EventsTable>
+                  {isAllowed ? (
+                    <>
+                      {noResults ? (
+                        <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
+                          <TableCell colSpan={6}>
+                            <NoResult icon={Radio}>
+                              {hasFilters
+                                ? t(
+                                    "pages.events.history.empty.noFilterResults"
+                                  )
+                                : t("pages.events.history.empty.noResults")}
+                            </NoResult>
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        currentItems?.map((event) => (
+                          <Row
+                            key={event.event.id}
+                            event={event.event}
+                            receivedAt={event.receivedAt}
+                            namespace={event.namespace}
+                            onClick={setEventDialog}
+                          />
+                        ))
+                      )}
+                    </>
+                  ) : (
                     <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
-                      <TableHeaderCell id="event-type">
-                        {t("pages.events.history.tableHeader.type")}
-                      </TableHeaderCell>
-                      <TableHeaderCell id="event-id">
-                        {t("pages.events.history.tableHeader.id")}
-                      </TableHeaderCell>
-                      <TableHeaderCell id="event-source">
-                        {t("pages.events.history.tableHeader.source")}
-                      </TableHeaderCell>
-                      <TableHeaderCell id="event-received-at">
-                        {t("pages.events.history.tableHeader.receivedAt")}
-                      </TableHeaderCell>
+                      <TableCell colSpan={6}>
+                        <NoPermissions>{noPermissionMessage}</NoPermissions>
+                      </TableCell>
                     </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {isAllowed ? (
-                      <>
-                        {noResults ? (
-                          <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
-                            <TableCell colSpan={6}>
-                              <NoResult icon={Radio}>
-                                {hasFilters
-                                  ? t(
-                                      "pages.events.history.empty.noFilterResults"
-                                    )
-                                  : t("pages.events.history.empty.noResults")}
-                              </NoResult>
-                            </TableCell>
-                          </TableRow>
-                        ) : (
-                          currentItems?.map((event) => (
-                            <Row
-                              key={event.event.id}
-                              event={event.event}
-                              receivedAt={event.receivedAt}
-                              namespace={event.namespace}
-                              onClick={setEventDialog}
-                            />
-                          ))
-                        )}
-                      </>
-                    ) : (
-                      <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
-                        <TableCell colSpan={6}>
-                          <NoPermissions>{noPermissionMessage}</NoPermissions>
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
+                  )}
+                </EventsTable>
               </Card>
               {totalPages > 1 && (
                 <Pagination>
