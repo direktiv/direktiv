@@ -6,6 +6,7 @@ export const NamespaceSchema = z.object({
   updatedAt: z.string(),
   name: z.string(),
   mirror: MirrorSchema.nullable(),
+  isSystemNamespace: z.boolean(),
 });
 
 export const NamespaceListSchema = z.object({
