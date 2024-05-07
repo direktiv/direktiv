@@ -26,7 +26,7 @@ import useUpdatedAt from "~/hooks/useUpdatedAt";
 export const InstanceRow = ({ instance }: { instance: InstanceSchemaType }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const updatedAt = useUpdatedAt(instance.updatedAt);
+  const endedAt = useUpdatedAt(instance.endedAt);
   const namespace = useNamespace();
 
   if (!namespace) return null;
@@ -53,17 +53,17 @@ export const InstanceRow = ({ instance }: { instance: InstanceSchemaType }) => {
                 }}
                 to={pages.explorer.createHref({
                   namespace,
-                  path: instance.as,
+                  path: instance.path,
                   subpage: "workflow",
                 })}
                 className="overflow-hidden text-ellipsis hover:underline md:w-auto"
               >
-                {instance.as}
+                {instance.path}
               </Link>
             </TooltipTrigger>
             <TooltipContent>
               {t("pages.monitoring.instances.openWorkflowTooltip", {
-                name: instance.as,
+                name: instance.path,
               })}
             </TooltipContent>
           </Tooltip>
@@ -101,10 +101,10 @@ export const InstanceRow = ({ instance }: { instance: InstanceSchemaType }) => {
           <Tooltip>
             <TooltipTrigger>
               {t("pages.instances.list.tableRow.realtiveTime", {
-                relativeTime: updatedAt,
+                relativeTime: endedAt,
               })}
             </TooltipTrigger>
-            <TooltipContent>{instance.updatedAt}</TooltipContent>
+            <TooltipContent>{instance.endedAt}</TooltipContent>
           </Tooltip>
         </TableCell>
       </TableRow>

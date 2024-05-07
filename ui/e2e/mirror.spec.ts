@@ -126,4 +126,7 @@ test("it is possible to create and sync a mirror", async ({ page }) => {
     page.getByTestId("sync-row").first().getByTestId("createdAt-relative"),
     "It renders the relative time"
   ).toContainText("seconds ago");
+
+  /* cleanup */
+  await deleteNamespace(mirrorName);
 });

@@ -340,7 +340,8 @@ func namespaceAPIObject(ns *datastore.Namespace, mConfig *datastore.MirrorConfig
 
 	if mConfig == nil {
 		return &apiObject{
-			Namespace: ns,
+			Namespace:         ns,
+			IsSystemNamespace: ns.Name == core.SystemNamespace,
 		}
 	}
 

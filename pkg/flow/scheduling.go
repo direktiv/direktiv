@@ -2,10 +2,12 @@ package flow
 
 import (
 	"context"
+	"crypto/rand"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log/slog"
+	"math/big"
+	"strings"
 	"time"
 
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
@@ -20,7 +22,7 @@ func (engine *engine) registerScheduled(ctx context.Context, instance uuid.UUID)
 	_, loaded := engine.scheduled.LoadOrStore(instance, cancel)
 	if loaded {
 		cancel()
-		return nil, fmt.Errorf("cannot register for scheduling because instance is already scheduled")
+		return nil, errEngineSync
 	}
 
 	return ctx, nil
@@ -46,19 +48,57 @@ func (engine *engine) sendCancelToScheduled(instance uuid.UUID) {
 }
 
 func (engine *engine) executor(ctx context.Context, id uuid.UUID) {
-	ctx, err := engine.registerScheduled(ctx, id)
-	if err != nil {
-		slog.Error("Failed to register instance for scheduled execution.", "instance", id, "error", err)
-		return
-	}
-	slog.Debug("Successfully registered instance for scheduled execution.", "instance", id)
-	im, err := engine.getInstanceMemory(ctx, id)
-	if err != nil {
-		slog.Error("Failed to retrieve instance memory in executor.", "instance", id, "error", err)
-		engine.deregisterScheduled(id)
+	var im *instanceMemory
 
+	for attempts := range 3 {
+		if attempts > 0 {
+			a, _ := rand.Int(rand.Reader, big.NewInt(25)) //nolint
+			jitter := time.Millisecond * time.Duration(a.Int64())
+			time.Sleep(time.Millisecond*50 + jitter)
+		}
+
+		im = nil
+
+		ctx2, err := engine.registerScheduled(ctx, id)
+		if err != nil {
+			if errors.Is(err, errEngineSync) {
+				slog.Debug("Failed to register instance for scheduled execution.", "instance", id, "error", err)
+				continue
+			}
+
+			slog.Error("Failed to register instance for scheduled execution.", "instance", id, "error", err)
+
+			return
+		}
+		slog.Debug("Successfully registered instance for scheduled execution.", "instance", id)
+
+		im, err = engine.getInstanceMemory(ctx2, id)
+		if err != nil {
+			if strings.Contains(err.Error(), "could not serialize") ||
+				strings.Contains(err.Error(), "database records instance terminated") ||
+				errors.Is(err, errEngineSync) {
+				slog.Debug("Failed to retrieve instance memory in executor.", "instance", id, "error", err)
+				engine.deregisterScheduled(id)
+
+				continue
+			}
+
+			slog.Error("Failed to retrieve instance memory in executor.", "instance", id, "error", err)
+
+			engine.deregisterScheduled(id)
+
+			return
+		}
+
+		ctx = ctx2
+
+		break
+	}
+
+	if im == nil {
 		return
 	}
+
 	slog.Debug("Beginning instance execution loop.", "instance", id)
 
 	engine.executorLoop(ctx, im)

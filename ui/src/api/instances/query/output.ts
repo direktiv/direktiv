@@ -1,12 +1,12 @@
-import { QueryFunctionContext, useQuery } from "@tanstack/react-query";
-
-import { InstancesOutputSchema } from "../schema";
+import { InstanceOutputResponseSchema } from "../schema";
+import { QueryFunctionContext } from "@tanstack/react-query";
 import { apiFactory } from "~/api/apiFactory";
 import { instanceKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
+import useQueryWithPermissions from "~/api/useQueryWithPermissions";
 
-export const getOutput = apiFactory({
+export const getInstanceOutput = apiFactory({
   url: ({
     namespace,
     baseUrl,
@@ -18,24 +18,22 @@ export const getOutput = apiFactory({
   }) =>
     `${
       baseUrl ?? ""
-    }/api/namespaces/${namespace}/instances/${instanceId}/output`,
+    }/api/v2/namespaces/${namespace}/instances/${instanceId}/output`,
   method: "GET",
-  schema: InstancesOutputSchema,
+  schema: InstanceOutputResponseSchema,
 });
 
-const fetchOutput = async ({
+const fetchInstanceOutput = async ({
   queryKey: [{ apiKey, namespace, instanceId }],
-}: QueryFunctionContext<
-  ReturnType<(typeof instanceKeys)["instancesOutput"]>
->) =>
-  getOutput({
+}: QueryFunctionContext<ReturnType<(typeof instanceKeys)["instanceOutput"]>>) =>
+  getInstanceOutput({
     apiKey,
     urlParams: { namespace, instanceId },
   });
 
-export const useOutput = ({
+export const useInstanceOutput = ({
   instanceId,
-  enabled = true,
+  enabled,
 }: {
   instanceId: string;
   enabled?: boolean;
@@ -47,12 +45,13 @@ export const useOutput = ({
     throw new Error("namespace is undefined");
   }
 
-  return useQuery({
-    queryKey: instanceKeys.instancesOutput(namespace, {
+  return useQueryWithPermissions({
+    queryKey: instanceKeys.instanceOutput(namespace, {
       apiKey: apiKey ?? undefined,
       instanceId,
     }),
-    queryFn: fetchOutput,
+    queryFn: fetchInstanceOutput,
     enabled,
+    select: (data) => data.data,
   });
 };
