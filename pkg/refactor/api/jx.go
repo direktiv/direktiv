@@ -9,6 +9,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/jqer"
 	"github.com/go-chi/chi/v5"
+	"gopkg.in/yaml.v3"
 )
 
 type jxController struct{}
@@ -58,7 +59,7 @@ func (c *jxController) handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = json.Unmarshal(req.JX, &query)
+	err = yaml.Unmarshal(req.JX, &query)
 	if err != nil {
 		err = fmt.Errorf("invalid 'jx': %w", err)
 		writeError(w, &Error{

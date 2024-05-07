@@ -7,7 +7,7 @@ import request from '../../common/request'
 describe('Test the jx API.', () => {
 	it(`should perform a simple jx query with a valid body`, async () => {
         var pl = {
-            jx: encode('{}'),
+            jx: encode(''),
             data: encode('{}'),
         }
 
@@ -92,7 +92,7 @@ describe('Test the jx API.', () => {
 
     it(`should perform a structured jx query`, async () => {
         var pl = {
-            jx: encode('{"x": "jq(5)"}'),
+            jx: encode(`x: 'jq(5)'`),
             data: encode('{}'),
         }
 
@@ -111,7 +111,7 @@ describe('Test the jx API.', () => {
 
     it(`should perform a simple jx query with passing assertions`, async () => {
         var pl = {
-            jx: encode('{"x": "jq(5)"}'),
+            jx: encode(`x: 'jq(5)'`),
             data: encode('{}'),
         }
 
