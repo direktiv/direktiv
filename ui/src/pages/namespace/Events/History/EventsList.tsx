@@ -6,7 +6,6 @@ import { Card } from "~/design/Card";
 import { EventSchemaType } from "~/api/eventsv2/schema";
 import EventsTable from "./components/Table";
 import Filters from "./components/Filters";
-import { FiltersObj } from "~/api/events/query/get";
 import { FiltersSchemaType } from "~/api/eventsv2/schema/filters";
 import PaginationProvider from "~/components/PaginationProvider";
 import { Radio } from "lucide-react";
@@ -24,7 +23,7 @@ const EventsList = ({
   setFilters,
 }: {
   filters: FiltersSchemaType;
-  setFilters: (filters: FiltersObj) => void;
+  setFilters: (filters: FiltersSchemaType) => void;
 }) => {
   const { t } = useTranslation();
   const [eventDialog, setEventDialog] = useState<EventSchemaType | null>();
