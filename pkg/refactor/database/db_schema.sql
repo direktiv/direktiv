@@ -219,7 +219,7 @@ CREATE TABLE IF NOT EXISTS "event_listeners" (
     "received_events" text,
     "trigger_type" integer NOT NULL,
     "events_lifespan" integer NOT NULL DEFAULT 0,
-    "glob_gates" text, 
+    "event_context_filters"  text,
     "event_types" text NOT NULL, -- lets keep it for the ui just in case
     "trigger_info" text NOT NULL,
     "metadata" text,
@@ -257,10 +257,12 @@ ALTER TABLE "event_topics" ADD COLUMN IF NOT EXISTS "filter" text;
 ALTER TABLE "staging_events" ADD COLUMN IF NOT EXISTS "namespace" text;
 ALTER TABLE "events_history" ADD COLUMN IF NOT EXISTS "namespace" text;
 ALTER TABLE "event_listeners" ADD COLUMN IF NOT EXISTS "namespace" text;
+ALTER TABLE "event_listeners" ADD COLUMN IF NOT EXISTS "event_context_filters" text;
+
 ALTER TABLE "event_topics" ADD COLUMN IF NOT EXISTS "namespace" text;
 
 ALTER TABLE "namespaces" DROP COLUMN IF EXISTS "config";
-
 ALTER TABLE "mirror_configs" ADD COLUMN IF NOT EXISTS "auth_type" text NOT NULL DEFAULT 'public';
+ALTER TABLE "mirror_configs" ADD COLUMN IF NOT EXISTS "auth_token" text NOT NULL DEFAULT 'public';
 
 DROP TABLE IF EXISTS "metrics";

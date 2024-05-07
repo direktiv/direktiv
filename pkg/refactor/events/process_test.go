@@ -37,8 +37,13 @@ func Test_Add_Get_Complex_Context(t *testing.T) {
 			ListeningForEventTypes: []string{"test-topic"},
 			TriggerType:            datastore.StartSimple,
 			TriggerWorkflow:        wfID1.String(),
-			GlobGatekeepers: map[string]string{
-				"test-topic-id": "some id",
+			EventContextFilter: []datastore.EventContextFilter{
+				{
+					Typ: "test-topic",
+					Context: map[string]string{
+						"id": "some id",
+					},
+				},
 			},
 		},
 		&datastore.EventListener{
@@ -50,8 +55,13 @@ func Test_Add_Get_Complex_Context(t *testing.T) {
 			ListeningForEventTypes: []string{"test-topic"},
 			TriggerType:            datastore.StartSimple,
 			TriggerWorkflow:        wfID2.String(),
-			GlobGatekeepers: map[string]string{
-				"test-topic-id": "some other id",
+			EventContextFilter: []datastore.EventContextFilter{
+				{
+					Typ: "test-topic",
+					Context: map[string]string{
+						"id": "some other id",
+					},
+				},
 			},
 		},
 	)
@@ -120,8 +130,13 @@ func Test_Add_Get_And(t *testing.T) {
 			ListeningForEventTypes: []string{"test-topic", "test-topic2"},
 			TriggerType:            datastore.StartAnd,
 			TriggerWorkflow:        wfID.String(),
-			GlobGatekeepers: map[string]string{
-				"test-topic2-id": "some id",
+			EventContextFilter: []datastore.EventContextFilter{
+				{
+					Typ: "test-topic2",
+					Context: map[string]string{
+						"id": "some id",
+					},
+				},
 			},
 		},
 	)
@@ -191,8 +206,13 @@ func Test_Add_Get_GatekeeperSimple(t *testing.T) {
 			ListeningForEventTypes: []string{"test-topic"},
 			TriggerType:            datastore.StartSimple,
 			TriggerWorkflow:        wfID.String(),
-			GlobGatekeepers: map[string]string{
-				"test-topic-id": "some id",
+			EventContextFilter: []datastore.EventContextFilter{
+				{
+					Typ: "test-topic",
+					Context: map[string]string{
+						"id": "some id",
+					},
+				},
 			},
 		},
 	)
@@ -404,9 +424,19 @@ func Test_Add_GatekkeeperComplex(t *testing.T) {
 			ListeningForEventTypes: []string{"test-topic", "other-topic"},
 			TriggerType:            datastore.StartAnd,
 			TriggerWorkflow:        wfID.String(),
-			GlobGatekeepers: map[string]string{
-				"test-topic-id":  "some id",
-				"other-topic-id": "some other id",
+			EventContextFilter: []datastore.EventContextFilter{
+				{
+					Typ: "test-topic",
+					Context: map[string]string{
+						"id": "some id",
+					},
+				},
+				{
+					Typ: "other-topic",
+					Context: map[string]string{
+						"id": "some other id",
+					},
+				},
 			},
 		},
 	)
@@ -455,6 +485,110 @@ func Test_Add_GatekkeeperComplex(t *testing.T) {
 	if tr.wf != wfID {
 		t.Error("workflow should be triggered")
 	}
+}
+
+func Test_Trigger_GatekeeperSimple(t *testing.T) {
+	ns := uuid.New()
+	wfIDStopped := uuid.New()
+	wfIDStarted := uuid.New()
+
+	listeners := make([]*datastore.EventListener, 0)
+	listeners = append(listeners,
+		&datastore.EventListener{
+			ID:                     uuid.New(),
+			CreatedAt:              time.Now().UTC(),
+			UpdatedAt:              time.Now().UTC(),
+			Deleted:                false,
+			NamespaceID:            ns,
+			ListeningForEventTypes: []string{"test-topic"},
+			TriggerType:            datastore.StartSimple,
+			TriggerWorkflow:        wfIDStopped.String(),
+			EventContextFilter: []datastore.EventContextFilter{
+				{
+					Typ: "test-topic",
+					Context: map[string]string{
+						"id": "stopped",
+					},
+				},
+			},
+		},
+		&datastore.EventListener{
+			ID:                     uuid.New(),
+			CreatedAt:              time.Now().UTC(),
+			UpdatedAt:              time.Now().UTC(),
+			Deleted:                false,
+			NamespaceID:            ns,
+			ListeningForEventTypes: []string{"test-topic"},
+			TriggerType:            datastore.StartSimple,
+			TriggerWorkflow:        wfIDStarted.String(),
+			EventContextFilter: []datastore.EventContextFilter{
+				{
+					Typ: "test-topic",
+					Context: map[string]string{
+						"id": "started",
+					},
+				},
+			},
+		},
+	)
+	resultsForEngine := make(chan triggerMock, 3)
+	var engine events.EventProcessing = events.EventEngine{
+		WorkflowStart: func(workflowID uuid.UUID, events ...*cloudevents.Event) {
+			resultsForEngine <- triggerMock{events: events, wf: workflowID}
+		},
+		WakeInstance: func(instanceID uuid.UUID, events []*cloudevents.Event) {
+			resultsForEngine <- triggerMock{events: events, inst: instanceID}
+		},
+		GetListenersByTopic: func(ctx context.Context, s string) ([]*datastore.EventListener, error) {
+			return listeners, nil
+		},
+		UpdateListeners: func(ctx context.Context, listener []*datastore.EventListener) []error {
+			for i, el := range listener {
+				if el.Deleted {
+					listener = append(listener[:i], listener[i+1:]...)
+				}
+			}
+
+			return []error{}
+		},
+	}
+	eID := uuid.New()
+	ev := newEventWithMeta("test-sub1", "test-topic", eID, map[string]any{
+		"id": "stopped",
+	})
+	engine.ProcessEvents(context.Background(), ns, []event.Event{*ev}, func(template string, args ...interface{}) {})
+	tr1, err := waitForTrigger(t, resultsForEngine)
+	if err != nil {
+		t.Error("Expected workflow stopped to be trigger")
+		return
+	}
+	_, err = waitForTrigger(t, resultsForEngine)
+	if err == nil {
+		t.Error("Expected only one workflow to be triggered")
+		return
+	}
+	if tr1.wf != wfIDStopped {
+		t.Error("workflow stopped should be triggered")
+	}
+	eID = uuid.New()
+	ev = newEventWithMeta("test-sub1", "test-topic", eID, map[string]any{
+		"id": "started",
+	})
+	engine.ProcessEvents(context.Background(), ns, []event.Event{*ev}, func(template string, args ...interface{}) {})
+	tr2, err := waitForTrigger(t, resultsForEngine)
+	if err != nil {
+		t.Error("Expected workflow stopped to be trigger")
+		return
+	}
+	_, err = waitForTrigger(t, resultsForEngine)
+	if err == nil {
+		t.Error("Expected only one workflow to be triggered")
+		return
+	}
+	if tr2.wf != wfIDStarted {
+		t.Error("workflow stopped should be triggered")
+	}
+
 }
 
 func waitForTrigger(t *testing.T, c chan triggerMock) (*triggerMock, error) {
