@@ -21,7 +21,7 @@ export const getAuthHeader = (apiKey: string): AuthHeader => {
 };
 
 export const buildSearchParamsString = (
-  searchParmsObj: Record<string, string | number | undefined>,
+  searchParmsObj: Record<string, string | Date | number | undefined>,
   withoutQuestionmark?: true
 ) => {
   const queryParams = new URLSearchParams();

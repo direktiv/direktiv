@@ -3,7 +3,7 @@ import TimePicker, { getTimeString } from "~/design/Timepicker";
 
 import { ArrowRight } from "lucide-react";
 import Button from "~/design/Button";
-import { FiltersObj } from "~/api/events/query/get";
+import { FiltersSchemaType } from "~/api/eventsv2/schema/filters";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -12,9 +12,9 @@ const RefineTime = ({
   date: givenDate,
   setFilter,
 }: {
-  field: "AFTER" | "BEFORE";
+  field: "receivedAfter" | "receivedBefore";
   date: Date;
-  setFilter: (filter: FiltersObj) => void;
+  setFilter: (filter: FiltersSchemaType) => void;
 }) => {
   const { t } = useTranslation();
   const [date, setDate] = useState<Date>(givenDate ?? new Date());
