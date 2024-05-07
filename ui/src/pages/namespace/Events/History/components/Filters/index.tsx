@@ -114,7 +114,7 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
                     onSubmit={(value) => {
                       if (value) {
                         setFilter({
-                          [field]: { value, type: "CONTAINS" },
+                          [field]: value,
                         });
                       } else {
                         clearFilter(field);
@@ -258,7 +258,7 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
                   onSubmit={(value) => {
                     if (value) {
                       setFilter({
-                        [selectedField]: { value, type: "CONTAINS" },
+                        [selectedField]: value,
                       });
                     } else {
                       clearFilter(selectedField);
