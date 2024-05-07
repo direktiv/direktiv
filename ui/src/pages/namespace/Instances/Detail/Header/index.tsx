@@ -20,20 +20,20 @@ import useUpdatedAt from "~/hooks/useUpdatedAt";
 
 const Header = () => {
   const instanceId = useInstanceId();
-  const { data } = useInstanceDetails({ instanceId });
-  const { mutate: cancelInstance } = useCancelInstance();
+  const { data: instance } = useInstanceDetails({ instanceId });
+  const { mutate: cancelInstance, isPending } = useCancelInstance();
 
   const { t } = useTranslation();
 
-  const [invoker] = (data?.instance?.invoker ?? "").split(":");
-  const updatedAt = useUpdatedAt(data?.instance.updatedAt);
-  const createdAt = useUpdatedAt(data?.instance.createdAt);
+  const [invoker] = (instance?.invoker ?? "").split(":");
+  const endedAt = useUpdatedAt(instance?.endedAt);
+  const createdAt = useUpdatedAt(instance?.createdAt);
 
-  if (!data) return null;
+  if (!instance) return null;
 
   const link = pages.explorer.createHref({
-    path: data.instance.as,
-    namespace: data.namespace,
+    path: instance.path,
+    namespace: instance.namespace,
     subpage: "workflow",
   });
 
@@ -41,7 +41,7 @@ const Header = () => {
     cancelInstance(instanceId);
   };
 
-  const canBeCanceled = data.instance.status === "pending";
+  const canBeCanceled = instance.status === "pending";
 
   return (
     <div
@@ -51,13 +51,13 @@ const Header = () => {
       <div className="flex flex-col gap-x-7 max-md:space-y-4 md:flex-row md:items-center md:justify-start">
         <div className="flex flex-col items-start gap-2">
           <h3 className="flex items-center gap-x-2 font-bold text-primary-500">
-            <Box className="h-5" /> {data.instance.id.slice(0, 8)}
+            <Box className="h-5" /> {instance.id.slice(0, 8)}
           </h3>
           <Badge
-            variant={statusToBadgeVariant(data.instance.status)}
-            icon={data.instance.status}
+            variant={statusToBadgeVariant(instance.status)}
+            icon={instance.status}
           >
-            {data.instance.status}
+            {instance.status}
           </Badge>
         </div>
         <div className="text-sm">
@@ -76,10 +76,10 @@ const Header = () => {
         </div>
         <div className="text-sm">
           <div className="text-gray-10 dark:text-gray-dark-10">
-            {t("pages.instances.detail.header.updatedAt")}
+            {t("pages.instances.detail.header.finishedAt")}
           </div>
           {t("pages.instances.detail.header.realtiveTime", {
-            relativeTime: updatedAt,
+            relativeTime: endedAt,
           })}
         </div>
         <ChildInstances />
@@ -88,7 +88,7 @@ const Header = () => {
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                  disabled={!canBeCanceled}
+                  disabled={!canBeCanceled || isPending}
                   variant="destructive"
                   onClick={onCancelInstanceClick}
                   type="button"

@@ -1,5 +1,5 @@
+import { createInstance as createInstanceRequest } from "~/api/instances/mutate/create";
 import { headers } from "e2e/utils/testutils";
-import { runWorkflow } from "~/api/tree/mutate/runWorkflow";
 
 export const createInstance = async ({
   namespace,
@@ -10,7 +10,7 @@ export const createInstance = async ({
   path: string;
   payload?: string;
 }) =>
-  await runWorkflow({
+  await createInstanceRequest({
     urlParams: {
       baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
       namespace,

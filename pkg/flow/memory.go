@@ -257,6 +257,8 @@ func (im *instanceMemory) GetState() string {
 	return tags["workflow"]
 }
 
+var errEngineSync = errors.New("instance appears to be under control of another node")
+
 func (engine *engine) getInstanceMemory(ctx context.Context, id uuid.UUID) (*instanceMemory, error) {
 	tx, err := engine.flow.beginSQLTx(ctx, &sql.TxOptions{
 		Isolation: sql.LevelSerializable,
@@ -273,7 +275,7 @@ func (engine *engine) getInstanceMemory(ctx context.Context, id uuid.UUID) (*ins
 
 	if idata.Server != engine.ID {
 		if time.Now().Add(-1 * engineOwnershipTimeout).Before(idata.UpdatedAt) {
-			return nil, errors.New("instance appears to be under control of another node")
+			return nil, errEngineSync
 		}
 
 		// TODO: alan DIR-1313
@@ -370,8 +372,6 @@ func (engine *engine) freeMemory(ctx context.Context, im *instanceMemory) error 
 		return err
 	}
 
-	engine.deregisterScheduled(im.ID())
-
 	return nil
 }
 
@@ -380,6 +380,4 @@ func (engine *engine) forceFreeCriticalMemory(ctx context.Context, im *instanceM
 	if err != nil {
 		slog.Error("Failed to force flush updates for instance memory during critical memory release.", "instance", im.ID().String(), "namespace", im.Namespace(), "error", err)
 	}
-
-	engine.deregisterScheduled(im.ID())
 }

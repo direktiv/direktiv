@@ -18,6 +18,7 @@ import { ConditionalWrapper } from "~/util/helpers";
 import { FC } from "react";
 import { InstanceSchemaType } from "~/api/instances/schema";
 import TooltipCopyBadge from "~/design/TooltipCopyBadge";
+import { decode } from "js-base64";
 import { pages } from "~/util/router/pages";
 import { statusToBadgeVariant } from "../utils";
 import { useTranslation } from "react-i18next";
@@ -25,10 +26,9 @@ import useUpdatedAt from "~/hooks/useUpdatedAt";
 
 const InstanceTableRow: FC<{
   instance: InstanceSchemaType;
-  namespace: string;
-}> = ({ instance, namespace }) => {
+}> = ({ instance }) => {
   const [invoker, childInstance] = instance.invoker.split(":");
-  const updatedAt = useUpdatedAt(instance.updatedAt);
+  const endedAt = useUpdatedAt(instance.endedAt);
   const createdAt = useUpdatedAt(instance.createdAt);
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -42,7 +42,7 @@ const InstanceTableRow: FC<{
         onClick={() => {
           navigate(
             pages.instances.createHref({
-              namespace,
+              namespace: instance.namespace,
               instance: instance.id,
             })
           );
@@ -57,18 +57,18 @@ const InstanceTableRow: FC<{
                   e.stopPropagation(); // prevent the onClick on the row from firing when clicking the workflow link
                 }}
                 to={pages.explorer.createHref({
-                  namespace,
-                  path: instance.as,
+                  namespace: instance.namespace,
+                  path: instance.path,
                   subpage: "workflow",
                 })}
                 className="hover:underline"
               >
-                {instance.as}
+                {instance.path}
               </Link>
             </TooltipTrigger>
             <TooltipContent>
               {t("pages.instances.list.tableRow.openWorkflowTooltip", {
-                name: instance.as,
+                name: instance.path,
               })}
             </TooltipContent>
           </Tooltip>
@@ -105,7 +105,7 @@ const InstanceTableRow: FC<{
                   <Alert variant="error">
                     <span className="font-bold">{instance.errorCode}</span>
                     <br />
-                    {instance.errorMessage}
+                    {instance.errorMessage && decode(instance.errorMessage)}
                   </Alert>
                 </HoverCardContent>
               </HoverCard>
@@ -131,15 +131,15 @@ const InstanceTableRow: FC<{
             </TooltipContent>
           </Tooltip>
         </TableCell>
-        <TableCell data-testid="instance-column-updated-time">
+        <TableCell data-testid="instance-column-ended-time">
           <Tooltip>
             <TooltipTrigger data-testid="tooltip-trigger">
               {t("pages.instances.list.tableRow.realtiveTime", {
-                relativeTime: updatedAt,
+                relativeTime: endedAt,
               })}
             </TooltipTrigger>
             <TooltipContent data-testid="tooltip-content">
-              {instance.updatedAt}
+              {instance.endedAt}
             </TooltipContent>
           </Tooltip>
         </TableCell>

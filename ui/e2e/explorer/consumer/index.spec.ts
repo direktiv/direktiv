@@ -49,7 +49,7 @@ test("it is possible to create a consumer", async ({ page }) => {
 
   await expect(
     page,
-    "it creates the service and opens the file in the explorer"
+    "it creates the consumer and opens the file in the explorer"
   ).toHaveURL(`/n/${namespace}/explorer/consumer/${filename}`);
 
   /* fill in form */

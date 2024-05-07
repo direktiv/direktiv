@@ -16,25 +16,23 @@ import { InstanceSchemaType } from "~/api/instances/schema";
 import WorkflowDiagram from "~/design/WorkflowDiagram";
 import { decode } from "js-base64";
 import { instanceStatusToDiagramStatus } from "./utils";
-import { useFile } from "~/api/files/query/file";
+import { useInstanceDetails } from "~/api/instances/query/details";
+import { useInstanceId } from "../../store/instanceContext";
 import { useTranslation } from "react-i18next";
 
 type DiagramProps = {
-  workflowPath: string;
   flow: string[];
   status: InstanceSchemaType["status"];
 };
 
-const Diagram: FC<DiagramProps> = ({ workflowPath, flow, status }) => {
-  const { data } = useFile({ path: workflowPath });
+const Diagram: FC<DiagramProps> = ({ flow, status }) => {
+  const instanceId = useInstanceId();
+  const { data } = useInstanceDetails({ instanceId });
   const { setMaximizedPanel } = useLogsPreferencesActions();
   const { t } = useTranslation();
   const maximizedPanel = useLogsPreferencesMaximizedPanel();
   const isMaximized = maximizedPanel === "diagram";
-
-  if (data?.type !== "workflow") return null;
-
-  const workflowData = decode(data.data ?? "");
+  const workflowData = decode(data?.definition ?? "");
 
   return (
     <div className="relative flex grow">
