@@ -148,7 +148,7 @@ describe('Test gateway endpoints on create', () => {
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
 	retry10(`should list all endpoints`, async () => {
-		const listRes = await request(common.config.getDirektivHost()).get(
+		const listRes = await request(common.config.getDirekvHost()).get(
 			`/api/v2/namespaces/${ testNamespace }/gateway/routes`,
 		)
 		expect(listRes.statusCode).toEqual(200)

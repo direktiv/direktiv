@@ -174,17 +174,23 @@ func (m *manager) ListConsumers(namespace string) []core.ConsumerV2 {
 	return m.listNamespacedConsumers(namespace)
 }
 
-func writeJSONError(w http.ResponseWriter, status int, endpointFile string, err string) {
+func writeJSONError(w http.ResponseWriter, status int, endpointFile string, msg string) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 
-	payload := struct {
+	inner := struct {
 		EndpointFile string `json:"endpointFile,omitempty"`
-		Error        any    `json:"error"`
+		Message      any    `json:"message"`
 	}{
 		EndpointFile: endpointFile,
-		Error:        err,
+		Message:      msg,
 	}
+	payload := struct {
+		Error any `json:"error"`
+	}{
+		Error: inner,
+	}
+
 	_ = json.NewEncoder(w).Encode(payload)
 }
 
