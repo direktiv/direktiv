@@ -1,9 +1,10 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
-import {basename} from "path";
-import helpers from "../common/helpers";
-import {retry10} from "../common/retry";
-import config from "../common/config";
+import { basename } from 'path'
+
+import config from '../common/config'
+import helpers from '../common/helpers'
 import request from '../common/request'
+import { retry10 } from '../common/retry'
 
 const namespace = basename(__filename)
 
@@ -34,7 +35,6 @@ groups:
 - group1
 `)
 
-
 	helpers.itShouldCreateYamlFileV2(it, expect, namespace,
 		'/', 'ep1.yaml', 'endpoint', `
 direktiv_api: endpoint/v2
@@ -50,23 +50,23 @@ plugins:
 `)
 
 	retry10(`should get access denied ep1.yaml endpoint`, async () => {
-		const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${namespace}/gateway2/foo`)
+		const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway2/foo`)
 			.send({})
 			.auth('user1', 'falsePassword')
 		expect(res.statusCode).toEqual(403)
 		expect(res.body).toEqual({
 			error: {
-				endpointFile: "/ep1.yaml",
-				message: "authentication failed"
-			}
+				endpointFile: '/ep1.yaml',
+				message: 'authentication failed',
+			},
 		})
 	})
 
 	retry10(`should execute protected ep1.yaml endpoint`, async () => {
-		const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${namespace}/gateway2/foo`)
+		const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway2/foo`)
 			.send({})
 			.auth('user1', 'pwd1')
 		expect(res.statusCode).toEqual(200)
-		expect(res.body.data.text).toEqual("from debug plugin")
+		expect(res.body.data.text).toEqual('from debug plugin')
 	})
 })
