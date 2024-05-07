@@ -95,11 +95,6 @@ func (events *events) deleteInstanceEventListeners(ctx context.Context, im *inst
 }
 
 func RenderAllStartEventListeners(ctx context.Context, tx *database.SQLStore) error {
-	tx, err := tx.BeginTx(ctx)
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
 
 	nsList, err := tx.DataStore().Namespaces().GetAll(ctx)
 	if err != nil {
@@ -123,16 +118,11 @@ func RenderAllStartEventListeners(ctx context.Context, tx *database.SQLStore) er
 		}
 	}
 
-	return tx.Commit(ctx)
+	return nil
 }
 
 func RenderStartEventListener(ctx context.Context, nsID uuid.UUID, nsName string, file *filestore.File, ms *muxStart, tx *database.SQLStore) error {
-	tx, err := tx.BeginTx(ctx)
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-	_, err = tx.DataStore().EventListener().DeleteAllForWorkflow(ctx, file.ID)
+	_, err := tx.DataStore().EventListener().DeleteAllForWorkflow(ctx, file.ID)
 	if err != nil {
 		return err
 	}
@@ -156,7 +146,7 @@ func RenderStartEventListener(ctx context.Context, nsID uuid.UUID, nsName string
 		}
 	}
 
-	return tx.Commit(ctx)
+	return nil
 }
 
 func AppendEventListenersToDB(ctx context.Context, nsID uuid.UUID, nsName string, file *filestore.File, lifespan time.Duration, ms *muxStart, tx *database.SQLStore) error {
@@ -172,7 +162,7 @@ func AppendEventListenersToDB(ctx context.Context, nsID uuid.UUID, nsName string
 		TriggerWorkflow:          file.ID.String(),
 		Metadata:                 file.Path,
 		LifespanOfReceivedEvents: int(lifespan.Milliseconds()),
-		EventFilters:             []datastore.EventContextFilter{},
+		EventContextFilter:       []datastore.EventContextFilter{},
 	}
 	switch ms.Type {
 	case "default":
@@ -193,7 +183,7 @@ func AppendEventListenersToDB(ctx context.Context, nsID uuid.UUID, nsName string
 		for k, v := range sed.Context {
 			filterContext[k] = fmt.Sprintf("%v", v)
 		}
-		fEv.EventFilters = append(fEv.EventFilters, datastore.EventContextFilter{
+		fEv.EventContextFilter = append(fEv.EventContextFilter, datastore.EventContextFilter{
 			Typ:     sed.Type,
 			Context: filterContext,
 		})
@@ -211,7 +201,6 @@ func AppendEventListenersToDB(ctx context.Context, nsID uuid.UUID, nsName string
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback()
 	err = tx.DataStore().EventListener().Append(ctx, fEv)
 	if err != nil {
 		return err
@@ -241,7 +230,7 @@ func (events *events) addInstanceEventListener(ctx context.Context, namespace uu
 		ListeningForEventTypes: []string{},
 		TriggerInstance:        instance.String(),
 		// LifespanOfReceivedEvents: , TODO?
-		EventFilters: []datastore.EventContextFilter{},
+		EventContextFilter: []datastore.EventContextFilter{},
 	}
 	contextFilters := make([]string, 0, len(sevents))
 	eventTypesRemovedDuplicates := map[string]any{}
@@ -251,7 +240,7 @@ func (events *events) addInstanceEventListener(ctx context.Context, namespace uu
 		for k, v := range ced.Context {
 			filterContext[k] = fmt.Sprintf("%v", v)
 		}
-		fEv.EventFilters = append(fEv.EventFilters, datastore.EventContextFilter{
+		fEv.EventContextFilter = append(fEv.EventContextFilter, datastore.EventContextFilter{
 			Typ:     ced.Type,
 			Context: filterContext,
 		})
