@@ -258,6 +258,7 @@ func determineTrack(params map[string]string) (string, error) {
 	return "", fmt.Errorf("requested logs for an unknown type")
 }
 
+// nolint:canonicalheader
 func extractLogRequestParams(r *http.Request) map[string]string {
 	params := map[string]string{}
 	if v := r.Header.Get("Last-Event-ID"); v != "" {

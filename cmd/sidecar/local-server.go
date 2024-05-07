@@ -190,6 +190,7 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 	slog.Debug("Log handler successfully processed message.", "action_id", actionId)
 }
 
+// nolint:canonicalheader
 func (srv *LocalServer) varHandler(w http.ResponseWriter, r *http.Request) {
 	actionId := r.URL.Query().Get("aid")
 

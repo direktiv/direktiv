@@ -71,6 +71,7 @@ func (p *SlackWebhookPlugin) ExecutePlugin(c *core.ConsumerFile, _ http.Response
 	}
 
 	// convert to json if url encoded
+	// nolint:canonicalheader
 	if r.Header.Get("Content-type") == "application/x-www-form-urlencoded" {
 		v, err := url.ParseQuery(string(body))
 		if err != nil {
