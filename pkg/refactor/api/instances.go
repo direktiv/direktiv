@@ -14,49 +14,87 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/database"
+	"github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 )
 
-type InstanceData struct {
-	ID           uuid.UUID  `json:"id"`
-	CreatedAt    time.Time  `json:"created_at"`
-	EndedAt      *time.Time `json:"ended_at"`
-	Status       string     `json:"status"`
-	WorkflowPath string     `json:"path"`
-	ErrorCode    string     `json:"error_code"`
-	Invoker      string     `json:"invoker"`
-
-	Definition   []byte `json:"definition,omitempty"`
-	Input        []byte `json:"input,omitempty"`
-	Output       []byte `json:"output,omitempty"`
-	ErrorMessage []byte `json:"error_message,omitempty"`
-	Metadata     []byte `json:"metadata,omitempty"`
-
-	// Settings       []byte
-	// DescentInfo    []byte
-	// TelemetryInfo  []byte
-	// RuntimeInfo    []byte
-	// ChildrenInfo   []byte
+type LineageData struct {
+	Branch int    `json:"branch"`
+	ID     string `json:"id"`
+	State  string `json:"state"`
+	Step   int    `json:"step"`
 }
 
-func marshalForAPI(data *instancestore.InstanceData) interface{} {
-	return &InstanceData{
+type InstanceData struct {
+	ID           uuid.UUID      `json:"id"`
+	CreatedAt    time.Time      `json:"createdAt"`
+	EndedAt      *time.Time     `json:"endedAt"`
+	Status       string         `json:"status"`
+	WorkflowPath string         `json:"path"`
+	ErrorCode    *string        `json:"errorCode"`
+	Invoker      string         `json:"invoker"`
+	Definition   []byte         `json:"definition,omitempty"`
+	ErrorMessage []byte         `json:"errorMessage"`
+	Flow         []string       `json:"flow"`
+	TraceID      string         `json:"traceId"`
+	Lineage      []*LineageData `json:"lineage"`
+	Namespace    string         `json:"namespace"`
+
+	InputLength    *int   `json:"inputLength,omitempty"`
+	Input          []byte `json:"input,omitempty"`
+	OutputLength   *int   `json:"outputLength,omitempty"`
+	Output         []byte `json:"output,omitempty"`
+	MetadataLength *int   `json:"metadataLength,omitempty"`
+	Metadata       []byte `json:"metadata,omitempty"`
+}
+
+func marshalLineage(data *engine.ParentInfo) *LineageData {
+	return &LineageData{
+		Branch: data.Branch,
+		ID:     data.ID.String(),
+		State:  data.State,
+		Step:   data.Step,
+	}
+}
+
+func marshalForAPI(data *instancestore.InstanceData) *InstanceData {
+	resp := &InstanceData{
 		ID:           data.ID,
 		CreatedAt:    data.CreatedAt,
 		EndedAt:      data.EndedAt,
 		Status:       data.Status.String(),
 		WorkflowPath: data.WorkflowPath,
-		ErrorCode:    data.ErrorCode,
 		Invoker:      data.Invoker,
 		Definition:   data.Definition,
-		Input:        data.Input,
-		Output:       data.Output,
-		ErrorMessage: data.ErrorMessage,
-		Metadata:     data.Metadata,
+		Namespace:    data.Namespace,
 	}
+
+	if data.ErrorCode != "" {
+		resp.ErrorCode = &data.ErrorCode
+		resp.ErrorMessage = data.ErrorMessage
+	}
+
+	x, err := engine.ParseInstanceData(data)
+	if err == nil {
+		resp.Flow = x.RuntimeInfo.Flow
+		resp.TraceID = x.TelemetryInfo.TraceID
+		for i := range x.DescentInfo.Descent {
+			resp.Lineage = append(resp.Lineage, marshalLineage(&x.DescentInfo.Descent[i]))
+		}
+	}
+
+	if resp.Flow == nil {
+		resp.Flow = make([]string, 0)
+	}
+
+	if resp.Lineage == nil {
+		resp.Lineage = make([]*LineageData, 0)
+	}
+
+	return resp
 }
 
 type instController struct {
@@ -78,6 +116,7 @@ func (e *instController) mountRouter(r chi.Router) {
 	r.Post("/", e.create)
 }
 
+//nolint:dupl
 func (e *instController) input(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	ns := extractContextNamespace(r)
@@ -108,9 +147,17 @@ func (e *instController) input(w http.ResponseWriter, r *http.Request) {
 
 	// TODO: option to return the data raw
 
-	writeJSON(w, marshalForAPI(data))
+	resp := marshalForAPI(data)
+
+	resp.Input = data.Input
+
+	l := len(data.Input)
+	resp.InputLength = &l
+
+	writeJSON(w, resp)
 }
 
+//nolint:dupl
 func (e *instController) output(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	ns := extractContextNamespace(r)
@@ -141,9 +188,17 @@ func (e *instController) output(w http.ResponseWriter, r *http.Request) {
 
 	// TODO: option to return the data raw
 
-	writeJSON(w, marshalForAPI(data))
+	resp := marshalForAPI(data)
+
+	resp.Output = data.Output
+
+	l := len(data.Output)
+	resp.OutputLength = &l
+
+	writeJSON(w, resp)
 }
 
+//nolint:dupl
 func (e *instController) metadata(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	ns := extractContextNamespace(r)
@@ -174,7 +229,14 @@ func (e *instController) metadata(w http.ResponseWriter, r *http.Request) {
 
 	// TODO: option to return the data raw
 
-	writeJSON(w, marshalForAPI(data))
+	resp := marshalForAPI(data)
+
+	resp.Metadata = data.Metadata
+
+	l := len(data.Metadata)
+	resp.MetadataLength = &l
+
+	writeJSON(w, resp)
 }
 
 func (e *instController) getOnce(r *http.Request, instanceID uuid.UUID) (*instancestore.InstanceData, error) {
@@ -213,7 +275,12 @@ func (e *instController) get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, marshalForAPI(data))
+	resp := marshalForAPI(data)
+	resp.InputLength = &data.InputLength
+	resp.OutputLength = &data.OutputLength
+	resp.MetadataLength = &data.MetadataLength
+
+	writeJSON(w, resp)
 }
 
 type cancelPayload struct {
@@ -483,7 +550,16 @@ func (e *instController) list(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, data)
+	respData := make([]*InstanceData, 0)
+	for i := range data.Results {
+		respData = append(respData, marshalForAPI(&data.Results[i]))
+	}
+
+	metaInfo := map[string]any{
+		"total": data.Total,
+	}
+
+	writeJSONWithMeta(w, respData, metaInfo)
 }
 
 func (e *instController) create(w http.ResponseWriter, r *http.Request) {
@@ -627,7 +703,12 @@ func (e *instController) stream(w http.ResponseWriter, r *http.Request) {
 			return // TODO: how are we supposed to report errors in SSE?
 		}
 
-		raw, _ := json.Marshal(marshalForAPI(data))
+		resp := marshalForAPI(data)
+		resp.InputLength = &data.InputLength
+		resp.OutputLength = &data.OutputLength
+		resp.MetadataLength = &data.MetadataLength
+
+		raw, _ := json.Marshal(resp)
 
 		dst := &bytes.Buffer{}
 		_ = json.Compact(dst, raw)

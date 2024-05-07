@@ -20,6 +20,9 @@
                       name:
                         type: string
                         description: a unique string that represent name of the namespace
+                      isSystemNamespace:
+                        type: boolean
+                        description: returns true only if this is a privileged namespace with special system-wide impacts.
                       mirror:
                         type: object
                         nullable: true
@@ -31,6 +34,10 @@
                           gitRef:
                             type: string
                             description: git branch name
+                          authType:
+                            type: string
+                            enum: [ public, ssh, token]
+                            description: this field indicated what kind of authentication is used
                           publicKey:
                             type: string(optional)
                             description: associated publish key ssh credential
@@ -76,6 +83,10 @@
                   gitRef:
                     type: string
                     description: git branch name
+                  authType:
+                    type: string
+                    enum: [ public, ssh, token ]
+                    description: this field indicated what kind of authentication is used
                   authToken:
                     type: string(optional)
                     description: auth token used to clone git repo
@@ -106,6 +117,9 @@
                     name:
                       type: string
                       description: a unique string that represent name of the namespace
+                    isSystemNamespace:
+                        type: boolean
+                        description: returns true only if this is a privileged namespace with special system-wide impacts.
                     mirror:
                       type: object
                       nullable: true
@@ -117,6 +131,10 @@
                         gitRef:
                           type: string
                           description: git branch name
+                        authType:
+                          type: string
+                          enum: [ public, ssh, token]
+                          description: this field indicated what kind of authentication is used
                         publicKey:
                           type: string(optional)
                           description: associated publish key ssh credential
@@ -158,6 +176,9 @@
                     name:
                       type: string
                       description: a unique name string of the namespace
+                    isSystemNamespace:
+                        type: boolean
+                        description: returns true only if this is a privileged namespace with special system-wide impacts.
                     mirror:
                       type: object
                       nullable: true
@@ -169,6 +190,10 @@
                         gitRef:
                           type: string
                           description: git branch name
+                        authType:
+                          type: string
+                          enum: [ public, ssh, token]
+                          description: this field indicated what kind of authentication is used
                         publicKey:
                           type: string(optional)
                           description: associated publish key ssh credential
@@ -223,6 +248,10 @@
                   gitRef:
                     type: string
                     description: git branch name
+                  authType:
+                    type: string
+                    enum: [ public, ssh, token ]
+                    description: this field indicated what kind of authentication is used
                   authToken:
                     type: string(optional)
                     description: auth token used to clone git repo
@@ -253,6 +282,9 @@
                     name:
                       type: string
                       description: a unique string that represent name of the namespace
+                    isSystemNamespace:
+                        type: boolean
+                        description: returns true only if this is a privileged namespace with special system-wide impacts.
                     mirror:
                       type: object
                       nullable: true
@@ -264,6 +296,10 @@
                         gitRef:
                           type: string
                           description: git branch name
+                        authType:
+                          type: string
+                          enum: [ public, ssh, token]
+                          description: this field indicated what kind of authentication is used
                         publicKey:
                           type: string(optional)
                           description: associated publish key ssh credential

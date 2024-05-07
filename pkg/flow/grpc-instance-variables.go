@@ -8,13 +8,16 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	libengine "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
+)
+
+const (
+	parcelSize = 0x100000
 )
 
 func (internal *internal) InstanceVariableParcels(req *grpc.VariableInternalRequest, srv grpc.Internal_InstanceVariableParcelsServer) error {
@@ -127,7 +130,7 @@ func (flow *flow) InstanceVariable(ctx context.Context, req *grpc.InstanceVariab
 		return nil, err
 	}
 
-	tx, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSQLTx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -163,7 +166,7 @@ func (flow *flow) InstanceVariable(ctx context.Context, req *grpc.InstanceVariab
 	resp.TotalSize = int64(item.Size)
 	resp.MimeType = item.MimeType
 
-	if resp.TotalSize > parcelSize {
+	if resp.GetTotalSize() > parcelSize {
 		return nil, status.Error(codes.ResourceExhausted, "variable too large to return without using the parcelling API")
 	}
 	data, err := tx.DataStore().RuntimeVariables().LoadData(ctx, item.ID)
@@ -176,80 +179,6 @@ func (flow *flow) InstanceVariable(ctx context.Context, req *grpc.InstanceVariab
 	return &resp, nil
 }
 
-func (flow *flow) InstanceVariableParcels(req *grpc.InstanceVariableRequest, srv grpc.Flow_InstanceVariableParcelsServer) error {
-	slog.Debug("Handling gRPC request", "this", this())
-
-	ctx := srv.Context()
-
-	resp, err := flow.InstanceVariable(ctx, &grpc.InstanceVariableRequest{
-		Namespace: req.GetNamespace(),
-		Instance:  req.GetInstance(),
-		Key:       req.GetKey(),
-	})
-	if err != nil {
-		return err
-	}
-	err = srv.Send(resp)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (flow *flow) InstanceVariables(ctx context.Context, req *grpc.InstanceVariablesRequest) (*grpc.InstanceVariablesResponse, error) {
-	slog.Debug("Handling gRPC request", "this", this())
-
-	instance, err := flow.getInstance(ctx, req.GetNamespace(), req.GetInstance())
-	if err != nil {
-		return nil, err
-	}
-
-	tx, err := flow.beginSqlTx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer tx.Rollback()
-
-	list, err := tx.DataStore().RuntimeVariables().ListForInstance(ctx, instance.Instance.ID)
-	if err != nil {
-		return nil, err
-	}
-
-	resp := new(grpc.InstanceVariablesResponse)
-	resp.Namespace = instance.TelemetryInfo.NamespaceName
-	resp.Instance = instance.Instance.ID.String()
-	resp.Variables = new(grpc.Variables)
-	resp.Variables.PageInfo = nil
-
-	resp.Variables.Results = bytedata.ConvertRuntimeVariablesToGrpcVariableList(list)
-
-	return resp, nil
-}
-
-func (flow *flow) InstanceVariablesStream(req *grpc.InstanceVariablesRequest, srv grpc.Flow_InstanceVariablesStreamServer) error {
-	slog.Debug("Handling gRPC request", "this", this())
-	ctx := srv.Context()
-
-	resp, err := flow.InstanceVariables(ctx, req)
-	if err != nil {
-		return err
-	}
-	// mock streaming response.
-	for {
-		select {
-		case <-ctx.Done():
-			return nil
-		default:
-			err = srv.Send(resp)
-			if err != nil {
-				return err
-			}
-			time.Sleep(time.Second * 5)
-		}
-	}
-}
-
 func (flow *flow) SetInstanceVariable(ctx context.Context, req *grpc.SetInstanceVariableRequest) (*grpc.SetInstanceVariableResponse, error) {
 	slog.Debug("Handling gRPC request", "this", this())
 
@@ -258,7 +187,7 @@ func (flow *flow) SetInstanceVariable(ctx context.Context, req *grpc.SetInstance
 		return nil, err
 	}
 
-	tx, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSQLTx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -297,6 +226,7 @@ func (flow *flow) SetInstanceVariable(ctx context.Context, req *grpc.SetInstance
 	return &resp, nil
 }
 
+//nolint:dupl
 func (flow *flow) SetInstanceVariableParcels(srv grpc.Flow_SetInstanceVariableParcelsServer) error {
 	slog.Debug("Handling gRPC request", "this", this())
 	ctx := srv.Context()
@@ -313,12 +243,12 @@ func (flow *flow) SetInstanceVariableParcels(srv grpc.Flow_SetInstanceVariablePa
 	buf := new(bytes.Buffer)
 
 	for {
-		_, err = io.Copy(buf, bytes.NewReader(req.Data))
+		_, err = io.Copy(buf, bytes.NewReader(req.GetData()))
 		if err != nil {
 			return err
 		}
 
-		if req.TotalSize <= 0 {
+		if req.GetTotalSize() <= 0 {
 			if buf.Len() >= totalSize {
 				break
 			}
@@ -329,10 +259,11 @@ func (flow *flow) SetInstanceVariableParcels(srv grpc.Flow_SetInstanceVariablePa
 			if errors.Is(err, io.EOF) {
 				break
 			}
+
 			return err
 		}
 
-		if req.TotalSize <= 0 {
+		if req.GetTotalSize() <= 0 {
 			if buf.Len() >= totalSize {
 				break
 			}

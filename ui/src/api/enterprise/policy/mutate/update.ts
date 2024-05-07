@@ -7,7 +7,7 @@ import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 import { useNamespace } from "~/util/store/namespace";
 import { useQueryClient } from "@tanstack/react-query";
 
-const updatePolicy = apiFactory({
+const updatePolicy = apiFactory<string>({
   url: ({ baseUrl, namespace }: { baseUrl?: string; namespace: string }) =>
     `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/policy`,
   method: "PUT",
@@ -39,11 +39,11 @@ export const useUpdatePolicy = ({
         },
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries(
-        policyKeys.get(namespace, {
+      queryClient.invalidateQueries({
+        queryKey: policyKeys.get(namespace, {
           apiKey: apiKey ?? undefined,
-        })
-      );
+        }),
+      });
       onSuccess?.();
     },
     onError: (e) => {

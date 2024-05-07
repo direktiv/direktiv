@@ -2,6 +2,7 @@ package instancestoresql
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -27,7 +28,7 @@ const (
 	fieldErrorCode      = "error_code"
 	fieldInvoker        = "invoker"
 	fieldDefinition     = "definition"
-	fieldSettings       = "settings"
+	fieldSettings       = "settings" // TODO: alan, remove this when we're ready to make a bundle of breaking database changes
 	fieldDescentInfo    = "descent_info"
 	fieldTelemetryInfo  = "telemetry_info"
 	fieldRuntimeInfo    = "runtime_info"
@@ -52,15 +53,16 @@ var (
 	mostFields = []string{
 		fieldID, fieldNamespaceID, fieldNamespace, fieldRootInstanceID, fieldServer,
 		fieldCreatedAt, fieldUpdatedAt, fieldEndedAt, fieldDeadline, fieldStatus, fieldWorkflowPath,
-		fieldErrorCode, fieldInvoker, fieldDefinition, fieldSettings, fieldDescentInfo, fieldTelemetryInfo,
+		fieldErrorCode, fieldInvoker, fieldDefinition, fieldDescentInfo, fieldTelemetryInfo,
 		fieldRuntimeInfo, fieldChildrenInfo, fieldLiveData, fieldStateMemory, fieldErrorMessage,
 	}
 
 	summaryFields = []string{
 		fieldID, fieldNamespaceID, fieldNamespace, fieldRootInstanceID, fieldServer,
 		fieldCreatedAt, fieldUpdatedAt, fieldEndedAt, fieldDeadline, fieldStatus, fieldWorkflowPath,
-		fieldErrorCode, fieldInvoker, fieldDefinition, fieldSettings, fieldDescentInfo, fieldTelemetryInfo,
+		fieldErrorCode, fieldInvoker, fieldDefinition, fieldDescentInfo, fieldTelemetryInfo,
 		fieldRuntimeInfo, fieldChildrenInfo, fieldErrorMessage,
+		`length(` + fieldInput + `) as input_length`, `length(` + fieldOutput + `) as output_length`, `length(` + fieldMetadata + `) as metadata_length`,
 	}
 )
 
@@ -95,7 +97,6 @@ func (s *sqlInstanceStore) CreateInstanceData(ctx context.Context, args *instanc
 		ErrorCode:      "",
 		Invoker:        args.Invoker,
 		Definition:     args.Definition,
-		Settings:       args.Settings,
 		DescentInfo:    args.DescentInfo,
 		TelemetryInfo:  args.TelemetryInfo,
 		RuntimeInfo:    args.RuntimeInfo,
@@ -119,7 +120,7 @@ func (s *sqlInstanceStore) CreateInstanceData(ctx context.Context, args *instanc
 	res := s.db.WithContext(ctx).Exec(query,
 		idata.ID, idata.NamespaceID, idata.Namespace, idata.RootInstanceID, idata.Server,
 		idata.Status, idata.WorkflowPath, idata.ErrorCode, idata.Invoker, idata.Definition,
-		idata.Settings, idata.DescentInfo, idata.TelemetryInfo, idata.RuntimeInfo,
+		make([]byte, 0), idata.DescentInfo, idata.TelemetryInfo, idata.RuntimeInfo,
 		idata.ChildrenInfo, idata.Input, idata.LiveData, idata.StateMemory)
 	if res.Error != nil {
 		return nil, res.Error
@@ -233,13 +234,13 @@ func (s *sqlInstanceStore) DeleteOldInstances(ctx context.Context, before time.T
 	return nil
 }
 
-func (s *sqlInstanceStore) AssertNoParallelCron(ctx context.Context, wfPath string) error {
-	query := fmt.Sprintf(`SELECT COUNT(*) FROM %s WHERE %s = ? AND %s = ? AND %s > ?`, table, fieldInvoker, fieldWorkflowPath, fieldCreatedAt)
+func (s *sqlInstanceStore) AssertNoParallelCron(ctx context.Context, nsID uuid.UUID, wfPath string) error {
+	query := fmt.Sprintf(`SELECT COUNT(*) FROM %s WHERE %s = ? AND %s = ? AND %s = ? AND %s > ?`, table, fieldNamespaceID, fieldInvoker, fieldWorkflowPath, fieldCreatedAt)
 
 	var k int64
 	res := s.db.WithContext(ctx).Raw(
 		query,
-		instancestore.InvokerCron, wfPath, time.Now().UTC().Add(-30*time.Second),
+		nsID, instancestore.InvokerCron, wfPath, time.Now().UTC().Add(-30*time.Second),
 	).First(&k)
 	if res.Error != nil {
 		return res.Error
@@ -250,4 +251,54 @@ func (s *sqlInstanceStore) AssertNoParallelCron(ctx context.Context, wfPath stri
 	}
 
 	return nil
+}
+
+func (s *sqlInstanceStore) GetNamespaceInstanceCounts(ctx context.Context, nsID uuid.UUID, wfPath string) (*instancestore.InstanceCounts, error) {
+	query := fmt.Sprintf(`SELECT COUNT(%s), %s FROM %s WHERE %s = ? AND %s = ? GROUP BY %s`, fieldID, fieldStatus, table, fieldNamespaceID, fieldWorkflowPath, fieldStatus)
+
+	x := make([]map[string]interface{}, 0)
+	res := s.db.WithContext(ctx).Raw(
+		query,
+		nsID, wfPath,
+	).Find(&x)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+
+	m := make(map[instancestore.InstanceStatus]int)
+
+	var total int
+
+	for _, y := range x {
+		// NOTE: it seems that the sqlite driver and the pq drivers name these values differently and store them as different type,
+		// so we have to try two different options. There has got to be a better way to do this...
+		var status int
+		v := y["status"]
+		if k1, ok := v.(int32); ok {
+			status = int(k1)
+		} else if k2, ok := v.(int64); ok {
+			status = int(k2)
+		}
+
+		var count int
+		if v, exists := y["count"]; exists {
+			count = int(v.(int64)) //nolint
+		} else if v, exists = y["COUNT(id)"]; exists {
+			count = int(v.(int64)) //nolint
+		} else {
+			return nil, errors.New("unexpected database response")
+		}
+
+		m[instancestore.InstanceStatus(status)] = count
+		total += count
+	}
+
+	return &instancestore.InstanceCounts{
+		Complete:  m[instancestore.InstanceStatusComplete],
+		Failed:    m[instancestore.InstanceStatusFailed],
+		Crashed:   m[instancestore.InstanceStatusCrashed],
+		Cancelled: m[instancestore.InstanceStatusCancelled],
+		Pending:   m[instancestore.InstanceStatusPending],
+		Total:     total,
+	}, nil
 }

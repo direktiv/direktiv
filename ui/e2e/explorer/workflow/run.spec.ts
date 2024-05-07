@@ -10,7 +10,7 @@ import { noop as basicWorkflow } from "~/pages/namespace/Explorer/Tree/component
 import { createFile } from "e2e/utils/files";
 import { decode } from "js-base64";
 import { faker } from "@faker-js/faker";
-import { getInput } from "~/api/instances/query/input";
+import { getInstanceInput } from "~/api/instances/query/input";
 import { headers } from "e2e/utils/testutils";
 import { prettifyJsonString } from "~/util/helpers";
 
@@ -36,7 +36,7 @@ test("it is possible to open and use the run workflow modal from the editor and 
     yaml: basicWorkflow.data,
   });
 
-  await page.goto(`${namespace}/explorer/workflow/edit/${workflowName}`);
+  await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflowName}`);
 
   // open modal via editor button
   await page.getByTestId("workflow-editor-btn-run").click();
@@ -104,7 +104,7 @@ test("it is possible to run the workflow by setting an input JSON via the editor
     yaml: basicWorkflow.data,
   });
 
-  await page.goto(`${namespace}/explorer/workflow/edit/${workflowName}`);
+  await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflowName}`);
 
   await page.getByTestId("workflow-editor-btn-run").click();
   expect(
@@ -138,7 +138,7 @@ test("it is possible to run the workflow by setting an input JSON via the editor
   // submit to run the workflow
   await page.getByTestId("run-workflow-submit-btn").click();
 
-  const reg = new RegExp(`${namespace}/instances/(.*)`);
+  const reg = new RegExp(`/n/${namespace}/instances/(.*)`);
   await expect(
     page,
     "workflow was triggered with our input and user was redirected to the instances page"
@@ -150,7 +150,7 @@ test("it is possible to run the workflow by setting an input JSON via the editor
   }
 
   // check the server state of the input
-  const res = await getInput({
+  const res = await getInstanceInput({
     urlParams: {
       baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
       instanceId,
@@ -159,7 +159,7 @@ test("it is possible to run the workflow by setting an input JSON via the editor
     headers,
   });
 
-  const inputResponseString = decode(res.data);
+  const inputResponseString = decode(res.data.input);
 
   expect(
     inputResponseString,
@@ -179,7 +179,7 @@ test("it is possible to run a workflow with input data containing special charac
     yaml: testDiacriticsWorkflow,
   });
 
-  await page.goto(`${namespace}/explorer/workflow/edit/${name}`);
+  await page.goto(`/n/${namespace}/explorer/workflow/edit/${name}`);
 
   await expect(
     page.locator(".view-lines"),
@@ -212,13 +212,26 @@ test("it is not possible to run the workflow when the editor has unsaved changes
     yaml: basicWorkflow.data,
   });
 
-  await page.goto(`${namespace}/explorer/workflow/edit/${workflowName}`);
+  await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflowName}`);
 
+  await expect(page.getByTestId("workflow-header-btn-run")).not.toBeDisabled();
   await expect(page.getByTestId("workflow-editor-btn-run")).not.toBeDisabled();
 
-  await page.type("textarea", faker.random.alphaNumeric(9));
+  await page.type("textarea", faker.random.alphaNumeric(1));
 
+  await expect(page.getByTestId("workflow-header-btn-run")).toBeDisabled();
   await expect(page.getByTestId("workflow-editor-btn-run")).toBeDisabled();
+
+  await page.locator("textarea").press("Backspace");
+
+  await expect(
+    page.getByTestId("workflow-header-btn-run"),
+    "when the text input is equal to the saved data the run button is active"
+  ).not.toBeDisabled();
+  await expect(
+    page.getByTestId("workflow-editor-btn-run"),
+    "when the text input is equal to the saved data the run button is active"
+  ).not.toBeDisabled();
 });
 
 test("it is possible to provide the input via generated form", async ({
@@ -232,7 +245,7 @@ test("it is possible to provide the input via generated form", async ({
     yaml: jsonSchemaFormWorkflow,
   });
 
-  await page.goto(`${namespace}/explorer/workflow/edit/${workflowName}`);
+  await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflowName}`);
 
   await page.getByTestId("workflow-editor-btn-run").click();
   expect(
@@ -306,7 +319,7 @@ test("it is possible to provide the input via generated form", async ({
   await page.getByLabel("Last Name").fill("McFly");
   await page.getByTestId("run-workflow-submit-btn").click();
 
-  const reg = new RegExp(`${namespace}/instances/(.*)`);
+  const reg = new RegExp(`/n/${namespace}/instances/(.*)`);
   await expect(
     page,
     "workflow was triggered with our input and user was redirected to the instances page"
@@ -318,7 +331,7 @@ test("it is possible to provide the input via generated form", async ({
   }
 
   // check the server state of the input
-  const res = await getInput({
+  const res = await getInstanceInput({
     urlParams: {
       baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
       instanceId,
@@ -335,7 +348,7 @@ test("it is possible to provide the input via generated form", async ({
     select: "guest",
     file: `data:text/plain;base64,SSBhbSBqdXN0IGEgdGVzdGZpbGUgdGhhdCBjYW4gYmUgdXNlZCB0byB0ZXN0IGFuIHVwbG9hZCBmb3JtIHdpdGhpbiBhIHBsYXl3cmlnaHQgdGVzdA==`,
   };
-  const inputResponseAsJson = JSON.parse(decode(res.data));
+  const inputResponseAsJson = JSON.parse(decode(res.data.input));
   expect(inputResponseAsJson).toEqual(expectedJson);
 });
 
@@ -350,7 +363,7 @@ test("it is possible to provide the input via generated form and resolve form er
     yaml: jsonSchemaWithRequiredEnum,
   });
 
-  await page.goto(`${namespace}/explorer/workflow/edit/${workflowName}`);
+  await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflowName}`);
 
   await page.getByTestId("workflow-editor-btn-run").click();
   expect(
@@ -399,7 +412,7 @@ test("it is possible to provide the input via generated form and resolve form er
   await page.getByRole("option", { name: "guest" }).click();
   await page.getByTestId("run-workflow-submit-btn").click();
 
-  const reg = new RegExp(`${namespace}/instances/(.*)`);
+  const reg = new RegExp(`/n/${namespace}/instances/(.*)`);
   await expect(
     page,
     "workflow was triggered with our input and user was redirected to the instances page"
@@ -411,7 +424,7 @@ test("it is possible to provide the input via generated form and resolve form er
   }
 
   // check the server state of the input
-  const res = await getInput({
+  const res = await getInstanceInput({
     urlParams: {
       baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
       instanceId,
@@ -425,7 +438,7 @@ test("it is possible to provide the input via generated form and resolve form er
     lastName: "McFly",
     select: "guest",
   };
-  const inputResponseAsJson = JSON.parse(decode(res.data));
+  const inputResponseAsJson = JSON.parse(decode(res.data.input));
   expect(inputResponseAsJson).toEqual(expectedJson);
 });
 
@@ -440,7 +453,7 @@ test("it is possible to provide the input via Form Input and see the same data i
     yaml: jsonSchemaWithRequiredEnum,
   });
 
-  await page.goto(`${namespace}/explorer/workflow/edit/${workflowName}`);
+  await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflowName}`);
 
   await page.getByTestId("workflow-editor-btn-run").click();
   expect(
@@ -495,7 +508,7 @@ test("it is possible to provide the input via Form Input and see the same data i
   // run the workflow from the json tab
   await page.getByTestId("run-workflow-submit-btn").click();
 
-  const reg = new RegExp(`${namespace}/instances/(.*)`);
+  const reg = new RegExp(`/n/${namespace}/instances/(.*)`);
   await expect(
     page,
     "workflow was triggered and the user was redirected to the instances page"
@@ -504,11 +517,7 @@ test("it is possible to provide the input via Form Input and see the same data i
   await page.getByRole("tab", { name: "Input" }).click();
 
   // turn the input/output panel to full screen
-  await page
-    .locator(".grid > div:nth-child(2) > div:nth-child(3)")
-    .getByRole("button")
-    .nth(1)
-    .click();
+  await page.getByTestId("inputOutputPanel").locator("button").nth(1).click();
 
   await expect(
     page.locator(".lines-content"),
@@ -530,7 +539,7 @@ test("it is possible to provide the input via JSON Input and see the same data i
     yaml: jsonSchemaWithRequiredEnum,
   });
 
-  await page.goto(`${namespace}/explorer/workflow/edit/${workflowName}`);
+  await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflowName}`);
 
   await page.getByTestId("workflow-editor-btn-run").click();
   expect(
@@ -581,7 +590,7 @@ test("it is possible to provide the input via JSON Input and see the same data i
 
   await page.getByTestId("run-workflow-submit-btn").click();
 
-  const reg = new RegExp(`${namespace}/instances/(.*)`);
+  const reg = new RegExp(`/n/${namespace}/instances/(.*)`);
   await expect(
     page,
     "workflow was triggered and user was redirected to the instances page"
@@ -598,11 +607,7 @@ test("it is possible to provide the input via JSON Input and see the same data i
   await page.getByRole("tab", { name: "Input" }).click();
 
   // turn the input/output panel to full screen
-  await page
-    .locator(".grid > div:nth-child(2) > div:nth-child(3)")
-    .getByRole("button")
-    .nth(1)
-    .click();
+  await page.getByTestId("inputOutputPanel").locator("button").nth(1).click();
 
   await expect(
     page.locator(".lines-content"),
@@ -624,7 +629,7 @@ test("the input is synchronized between tabs, but the data that is currently in 
     yaml: jsonSchemaWithRequiredEnum,
   });
 
-  await page.goto(`${namespace}/explorer/workflow/edit/${workflowName}`);
+  await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflowName}`);
 
   await page.getByTestId("workflow-editor-btn-run").click();
   expect(
@@ -680,7 +685,7 @@ test("the input is synchronized between tabs, but the data that is currently in 
 
   await page.getByTestId("run-workflow-submit-btn").click();
 
-  const reg = new RegExp(`${namespace}/instances/(.*)`);
+  const reg = new RegExp(`/n/${namespace}/instances/(.*)`);
   await expect(
     page,
     "workflow was triggered with our input and user was redirected to the instances page"
@@ -694,11 +699,7 @@ test("the input is synchronized between tabs, but the data that is currently in 
   await page.getByRole("tab", { name: "Input" }).click();
 
   // turn the input/output panel to full screen
-  await page
-    .locator(".grid > div:nth-child(2) > div:nth-child(3)")
-    .getByRole("button")
-    .nth(1)
-    .click();
+  await page.getByTestId("inputOutputPanel").locator("button").nth(1).click();
 
   const expectedEditorInput = prettifyJsonString(
     JSON.stringify({
@@ -736,7 +737,7 @@ test("switching the window focus will preserve the state of the form", async ({
     yaml: jsonSchemaWithRequiredEnum,
   });
 
-  await page.goto(`${namespace}/explorer/workflow/edit/${workflowName}`);
+  await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflowName}`);
 
   await page.getByTestId("workflow-editor-btn-run").click();
   expect(
@@ -763,7 +764,7 @@ test("switching the window focus will preserve the state of the form", async ({
   // run the workflow
   await page.getByTestId("run-workflow-submit-btn").click();
 
-  const reg = new RegExp(`${namespace}/instances/(.*)`);
+  const reg = new RegExp(`/n/${namespace}/instances/(.*)`);
   await expect(
     page,
     "workflow was triggered with our input and user was redirected to the instances page"
@@ -777,11 +778,7 @@ test("switching the window focus will preserve the state of the form", async ({
   await page.getByRole("tab", { name: "Input" }).click();
 
   // turn the input/output panel to full screen
-  await page
-    .locator(".grid > div:nth-child(2) > div:nth-child(3)")
-    .getByRole("button")
-    .nth(1)
-    .click();
+  await page.getByTestId("inputOutputPanel").locator("button").nth(1).click();
 
   const expectedEditorInput = prettifyJsonString(
     JSON.stringify({

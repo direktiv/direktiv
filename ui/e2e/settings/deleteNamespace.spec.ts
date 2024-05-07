@@ -1,7 +1,7 @@
 import { createNamespace, deleteNamespace } from "../utils/namespace";
 import { expect, test } from "@playwright/test";
 
-import { NamespaceListSchemaType } from "~/api/namespaces/schema";
+import { NamespaceListSchemaType } from "~/api/namespaces/schema/namespace";
 import { getNamespaces } from "~/api/namespaces/query/get";
 import { headers } from "e2e/utils/testutils";
 
@@ -37,7 +37,7 @@ test("it is possible to delete a namespace and it will immediately redirect to a
   page,
 }) => {
   const namespaceToBeDeleted = await createNamespace();
-  await page.goto(`/${namespaceToBeDeleted}/settings`);
+  await page.goto(`/n/${namespaceToBeDeleted}/settings`);
   await page.getByTestId("btn-delete-namespace").click();
   const confirmButton = page.getByTestId("delete-namespace-confirm-btn");
 
@@ -50,7 +50,7 @@ test("it is possible to delete a namespace and it will immediately redirect to a
   const namespacesBeforeDelete = await getNamespacesFromAPI();
 
   expect(
-    namespacesBeforeDelete.results.some(
+    namespacesBeforeDelete.data.some(
       (nsFromServer) => nsFromServer.name === namespaceToBeDeleted
     ),
     "the api includes the current namespace in the namespace list"
@@ -68,7 +68,7 @@ test("it is possible to delete a namespace and it will immediately redirect to a
 
   const namespacesAfterDelete = await getNamespacesFromAPI();
   expect(
-    namespacesAfterDelete.results.some(
+    namespacesAfterDelete.data.some(
       (item) => item.name === namespaceToBeDeleted
     ),
     "the api does not include the current namespace in the namespace list after deletion"
@@ -97,7 +97,7 @@ test("it is possible to delete the last namespace and it will redirect to the la
   page,
 }) => {
   const namespace = await createNamespace();
-  await page.goto(`/${namespace}/settings`);
+  await page.goto(`/n/${namespace}/settings`);
   await page.getByTestId("btn-delete-namespace").click();
 
   const confirmButton = page.getByTestId("delete-namespace-confirm-btn");
@@ -109,10 +109,10 @@ test("it is possible to delete the last namespace and it will redirect to the la
    */
 
   const mockedNamespaces: NamespaceListSchemaType = {
-    results: [],
+    data: [],
   };
 
-  await page.route("**/api/namespaces", (route, reg) => {
+  await page.route("**/api/v2/namespaces", (route, reg) => {
     if (reg.method() !== "GET") {
       return route.continue();
     }

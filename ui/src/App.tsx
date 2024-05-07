@@ -4,6 +4,7 @@ import "./design/WorkflowDiagram/style.css";
 
 import { useTheme, useThemeActions } from "~/util/store/theme";
 
+import { AppInitializer } from "./components/AppInitializer";
 import { AuthenticationProvider } from "./components/AuthenticationProvider";
 import { OidcProvider } from "./components/OidcProvider";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -16,6 +17,7 @@ import { useEffect } from "react";
 
 const App = () => {
   const theme = useTheme();
+
   const { setSystemTheme } = useThemeActions();
 
   useEffect(() => {
@@ -34,11 +36,13 @@ const App = () => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <OidcProvider>
-        <AuthenticationProvider>
-          <RouterProvider router={router} />
-        </AuthenticationProvider>
-      </OidcProvider>
+      <AppInitializer>
+        <OidcProvider>
+          <AuthenticationProvider>
+            <RouterProvider router={router} />
+          </AuthenticationProvider>
+        </OidcProvider>
+      </AppInitializer>
       {/* By default, React Query Devtools are only included in bundles when process.env.NODE_ENV === 'development', so you don't need to worry about excluding them during a production build. */}
       {!!process.env.VITE?.VITE_RQ_DEV_TOOLS && (
         <ReactQueryDevtools initialIsOpen={false} />

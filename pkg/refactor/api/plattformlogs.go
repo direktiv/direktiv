@@ -180,11 +180,40 @@ func (m logController) stream(w http.ResponseWriter, r *http.Request) {
 	// Create a channel to send SSE messages
 	messageChannel := make(chan Event)
 
-	worker := logStoreWorker{
-		Get:      m.getNewer,
+	var getCursoredStyle sseHandle = func(ctx context.Context, cursorTime time.Time) ([]CoursoredEvent, error) {
+		logs, err := m.getNewer(ctx, cursorTime, params)
+		if err != nil {
+			return nil, err
+		}
+		res := make([]CoursoredEvent, 0, len(logs))
+		for _, fle := range logs {
+			b, err := json.Marshal(fle)
+			if err != nil {
+				return nil, err
+			}
+			dst := &bytes.Buffer{}
+			if err := json.Compact(dst, b); err != nil {
+				return nil, err
+			}
+
+			e := Event{
+				ID:   strconv.Itoa(fle.ID),
+				Data: dst.String(),
+				Type: "message",
+			}
+			res = append(res, CoursoredEvent{
+				Event: e,
+				Time:  fle.Time,
+			})
+		}
+
+		return res, nil
+	}
+
+	worker := seeWorker{
+		Get:      getCursoredStyle,
 		Interval: time.Second,
 		Ch:       messageChannel,
-		Params:   params,
 		Cursor:   cursor,
 	}
 	go worker.start(ctx)
@@ -227,68 +256,6 @@ func determineTrack(params map[string]string) (string, error) {
 	}
 
 	return "", fmt.Errorf("requested logs for an unknown type")
-}
-
-type Event struct {
-	ID   string
-	Data string
-	Type string
-}
-
-// LogStoreWorker manages the log polling and channel communication.
-type logStoreWorker struct {
-	// TODO: maybe we should move this to become a more general solution.
-	Get      func(ctx context.Context, cursorTime time.Time, params map[string]string) ([]logEntry, error)
-	Interval time.Duration
-	Ch       chan Event
-	Params   map[string]string
-	Cursor   time.Time // Cursor instead of Offset.
-}
-
-// Start starts the log polling worker.
-func (lw *logStoreWorker) start(ctx context.Context) {
-	go func() {
-		ticker := time.NewTicker(lw.Interval)
-		defer ticker.Stop()
-		defer close(lw.Ch)
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-ticker.C:
-				logs, err := lw.Get(ctx, lw.Cursor, lw.Params)
-				if err != nil {
-					slog.Error("TODO: should we quit with an error?", "err", err)
-
-					continue
-				}
-				for _, fle := range logs {
-					b, err := json.Marshal(fle)
-					if err != nil {
-						slog.Error("TODO: should we quit with an error?", "err", err)
-
-						continue
-					}
-					dst := &bytes.Buffer{}
-					if err := json.Compact(dst, b); err != nil {
-						slog.Error("TODO: should we quit with an error?", "err", err)
-					}
-
-					e := Event{
-						ID:   fmt.Sprint(fle.ID),
-						Data: dst.String(),
-						Type: "message",
-					}
-					lw.Ch <- e
-				}
-
-				// Update cursorTime for the next iteration.
-				if len(logs) > 0 {
-					lw.Cursor = logs[len(logs)-1].Time
-				}
-			}
-		}
-	}()
 }
 
 func extractLogRequestParams(r *http.Request) map[string]string {

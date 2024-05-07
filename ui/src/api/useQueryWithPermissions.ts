@@ -1,4 +1,5 @@
 import {
+  DefaultError,
   QueryKey,
   UseQueryOptions,
   UseQueryResult,
@@ -45,7 +46,7 @@ type ExtendedUseQueryReturn =
  */
 const useQueryWithPermissions = <
   TQueryFnData = unknown,
-  TError = unknown,
+  TError = DefaultError,
   TData = TQueryFnData,
   TQueryKey extends QueryKey = QueryKey
 >(

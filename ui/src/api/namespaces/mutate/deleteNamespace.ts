@@ -1,4 +1,4 @@
-import { NamespaceDeletedSchema } from "../schema";
+import { NamespaceDeletedSchema } from "../schema/namespace";
 import { apiFactory } from "~/api/apiFactory";
 import { namespaceKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
@@ -9,7 +9,7 @@ import { useTranslation } from "react-i18next";
 
 const deleteNamespace = apiFactory({
   url: ({ namespace }: { namespace: string }) =>
-    `/api/namespaces/${namespace}?recursive=true`,
+    `/api/v2/namespaces/${namespace}`,
   method: "DELETE",
   schema: NamespaceDeletedSchema,
 });
@@ -41,13 +41,14 @@ export const useDeleteNamespace = ({
        * to make sure that we don't accidentally redirect to the namespace we just
        * deleted.
        */
-      queryClient.invalidateQueries(namespaceKeys.all(apiKey ?? undefined));
+      queryClient.invalidateQueries({
+        queryKey: namespaceKeys.all(apiKey ?? undefined),
+      });
       toast({
-        title: t("api.namespaces.mutate.deleteNamespaces.success.title"),
-        description: t(
-          "api.namespaces.mutate.deleteNamespaces.success.description",
-          { name: variables.namespace }
-        ),
+        title: t("api.namespaces.mutate.delete.success.title"),
+        description: t("api.namespaces.mutate.delete.success.description", {
+          name: variables.namespace,
+        }),
         variant: "success",
       });
       onSuccess?.(data);
@@ -55,9 +56,7 @@ export const useDeleteNamespace = ({
     onError: () => {
       toast({
         title: t("api.generic.error"),
-        description: t(
-          "api.namespaces.mutate.deleteNamespaces.error.description"
-        ),
+        description: t("api.namespaces.mutate.delete.error.description"),
         variant: "error",
       });
     },

@@ -8,6 +8,8 @@ import (
 
 var ErrNotFound = errors.New("ErrNotFound")
 
+const SystemNamespace = "system"
+
 // nolint:revive,stylecheck
 type Config struct {
 	DirektivNamespace string `env:"DIREKTIV_NAMESPACE"`
@@ -25,9 +27,11 @@ type Config struct {
 
 	FunctionsTimeout int `env:"DIREKTIV_FUNCTIONS_TIMEOUT" envDefault:"7200"`
 
-	Prometheus     string `env:"DIREKTIV_PROMETHEUS_BACKEND"`
-	OpenTelemetry  string `env:"DIREKTIV_OPEN_TELEMETRY_BACKEND"`
-	EnableEventing bool   `env:"DIREKTIV_ENABLE_EVENTING"`
+	Prometheus    string `env:"DIREKTIV_PROMETHEUS_BACKEND"`
+	OpenTelemetry string `env:"DIREKTIV_OPEN_TELEMETRY_BACKEND"`
+
+	// Todo: Yassir, delete this entirely in cycle6.
+	// EnableEventing bool   `env:"DIREKTIV_ENABLE_EVENTING"`
 
 	EnableDocker bool `env:"DIREKITV_ENABLE_DOCKER"`
 
@@ -55,6 +59,8 @@ type Config struct {
 	KnativeProxyHTTPS string `env:"DIREKTIV_KNATIVE_PROXY_HTTPS"`
 
 	FunctionsReconcileInterval int `env:"DIREKTIV_FUNCTIONS_RECONCILE_INTERVAL" envDefault:"1"`
+
+	IsEnterprise bool `env:"DIREKTIV_IS_ENTERPRISE" envDefault:"false"`
 }
 
 func (conf *Config) GetFunctionsTimeout() time.Duration {
@@ -116,8 +122,9 @@ type App struct {
 	Version *Version
 	Config  *Config
 
-	ServiceManager  ServiceManager
-	RegistryManager RegistryManager
-	GatewayManager  GatewayManager
-	SyncNamespace   SyncNamespace
+	ServiceManager   ServiceManager
+	RegistryManager  RegistryManager
+	GatewayManager   GatewayManager
+	GatewayManagerV2 GatewayManagerV2
+	SyncNamespace    SyncNamespace
 }

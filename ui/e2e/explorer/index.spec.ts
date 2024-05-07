@@ -1,15 +1,13 @@
+import { checkIfFileExists, createDirectory } from "e2e/utils/files";
 import {
   checkIfNamespaceExists,
   createNamespace,
   createNamespaceName,
   deleteNamespace,
 } from "../utils/namespace";
-import {
-  checkIfNodeExists,
-  createDirectory,
-  createWorkflow,
-} from "../utils/node";
 import { expect, test } from "@playwright/test";
+
+import { createWorkflow } from "../utils/workflow";
 
 let namespace = "";
 
@@ -44,7 +42,7 @@ test("it is possible to navigate to a namespace via breadcrumbs", async ({
     .click();
 
   await expect(page, "the namespace is reflected in the url").toHaveURL(
-    `/${namespace}/explorer/tree`
+    `/n/${namespace}/explorer/tree`
   );
   await expect(
     page.getByTestId("breadcrumb-namespace"),
@@ -54,7 +52,7 @@ test("it is possible to navigate to a namespace via breadcrumbs", async ({
 
 test("it is possible to navigate to a namespace via URL", async ({ page }) => {
   // visit url
-  await page.goto(`/${namespace}/explorer/tree`);
+  await page.goto(`/n/${namespace}/explorer/tree`);
 
   // make sure breadcrumb and url are correct after loading
   await expect(
@@ -62,7 +60,7 @@ test("it is possible to navigate to a namespace via URL", async ({ page }) => {
     "the namespace is reflected in the breadcrumbs"
   ).toHaveText(namespace);
   await expect(page, "the namespace is reflected in the url").toHaveURL(
-    `/${namespace}/explorer/tree`
+    `/n/${namespace}/explorer/tree`
   );
 });
 
@@ -70,7 +68,7 @@ test("it is possible to create a namespace via breadcrumbs", async ({
   page,
 }) => {
   // visit page and make sure explorer is loaded
-  await page.goto(`/${namespace}/explorer/tree`);
+  await page.goto(`/n/${namespace}/explorer/tree`);
   await expect(
     page.getByTestId("breadcrumb-namespace"),
     "a testing namespace is loaded in the explorer"
@@ -85,7 +83,7 @@ test("it is possible to create a namespace via breadcrumbs", async ({
 
   // make sure it has navigated to new namespace
   await expect(page, "it redirects to the new namespace's url").toHaveURL(
-    `/${newNamespace}/explorer/tree`
+    `/n/${newNamespace}/explorer/tree`
   );
 
   await expect(
@@ -103,7 +101,7 @@ test("it is possible to create a namespace via breadcrumbs", async ({
 
 test("it is possible to create a folder", async ({ page }) => {
   // visit page and make sure explorer is loaded
-  await page.goto(`/${namespace}/explorer/tree`);
+  await page.goto(`/n/${namespace}/explorer/tree`);
   await expect(
     page.getByTestId("breadcrumb-namespace"),
     "a testing namespace is loaded in the explorer"
@@ -124,14 +122,14 @@ test("it is possible to create a folder", async ({ page }) => {
   await expect(
     page,
     "it creates a new folder and navigates to it automatically"
-  ).toHaveURL(`/${namespace}/explorer/tree/${folderName}`);
+  ).toHaveURL(`/n/${namespace}/explorer/tree/${folderName}`);
 
   // navigate back to tree root
   await page.getByTestId("tree-root").click();
   await expect(
     page,
     "when clicking the tree icon, it navigates back to the tree root"
-  ).toHaveURL(`/${namespace}/explorer/tree`);
+  ).toHaveURL(`/n/${namespace}/explorer/tree`);
 
   await expect(
     page.getByTestId(`explorer-item-${folderName}`),
@@ -143,14 +141,14 @@ test("it is possible to create a folder", async ({ page }) => {
   await expect(
     page,
     "when clicking on the folder, it navigates to it"
-  ).toHaveURL(`/${namespace}/explorer/tree/${folderName}`);
+  ).toHaveURL(`/n/${namespace}/explorer/tree/${folderName}`);
 
   // navigate back by clicking on .. "folder"
   await page.getByRole("link", { name: ".." }).click();
   await expect(
     page,
     "when clicking .. it navigates back to the tree root"
-  ).toHaveURL(`/${namespace}/explorer/tree`);
+  ).toHaveURL(`/n/${namespace}/explorer/tree`);
 
   await expect(
     page.getByTestId(`explorer-item-${folderName}`),
@@ -159,7 +157,7 @@ test("it is possible to create a folder", async ({ page }) => {
 });
 
 test("it is possible to create a workflow", async ({ page }) => {
-  await page.goto(`/${namespace}/explorer/tree`);
+  await page.goto(`/n/${namespace}/explorer/tree`);
   await expect(
     page.getByTestId("breadcrumb-namespace"),
     "a testing namespace is loaded in the explorer"
@@ -177,7 +175,7 @@ test("it is possible to create a workflow", async ({ page }) => {
   await expect(
     page,
     "it creates the workflow and loads the edit page"
-  ).toHaveURL(`${namespace}/explorer/workflow/edit/${filename}`);
+  ).toHaveURL(`/n/${namespace}/explorer/workflow/edit/${filename}`);
 
   await expect(
     page.getByTestId("breadcrumb-namespace"),
@@ -194,7 +192,11 @@ test("it is possible to create a workflow", async ({ page }) => {
     "the page heading contains the file name"
   ).toHaveText(filename);
 
-  const nodeCreated = await checkIfNodeExists(namespace, filename);
+  const nodeCreated = await checkIfFileExists({
+    namespace,
+    path: `/${filename}`,
+  });
+
   await expect(nodeCreated).toBeTruthy();
 
   // TODO: test editor functions in separate test once editor is implemented
@@ -209,7 +211,7 @@ test("it is possible to create a workflow", async ({ page }) => {
     await expect(
       page,
       "when clicking the namespace breadcrumb it navigates to tree root"
-    ).toHaveURL(`/${namespace}/explorer/tree`);
+    ).toHaveURL(`/n/${namespace}/explorer/tree`);
 
   await expect(
     page.getByTestId(`explorer-item-${filename}`),
@@ -220,7 +222,7 @@ test("it is possible to create a workflow", async ({ page }) => {
 test("it is possible to create a workflow without providing the .yaml file extension", async ({
   page,
 }) => {
-  await page.goto(`/${namespace}/explorer/tree`);
+  await page.goto(`/n/${namespace}/explorer/tree`);
   await expect(
     page.getByTestId("breadcrumb-namespace"),
     "a testing namespace is loaded in the explorer"
@@ -239,7 +241,7 @@ test("it is possible to create a workflow without providing the .yaml file exten
     page,
     "it creates the workflow and loads the edit page"
   ).toHaveURL(
-    `${namespace}/explorer/workflow/edit/${filenameWithoutExtension}.yaml`
+    `/n/${namespace}/explorer/workflow/edit/${filenameWithoutExtension}.yaml`
   );
 
   await expect(
@@ -257,10 +259,10 @@ test("it is possible to create a workflow without providing the .yaml file exten
     "the page heading contains the file name"
   ).toHaveText(`${filenameWithoutExtension}.yaml`);
 
-  const nodeCreated = await checkIfNodeExists(
+  const nodeCreated = checkIfFileExists({
     namespace,
-    `${filenameWithoutExtension}.yaml`
-  );
+    path: `/${filenameWithoutExtension}.yaml`,
+  });
   await expect(nodeCreated).toBeTruthy();
 });
 
@@ -268,10 +270,10 @@ test("when creating a workflow, the name (before extension) may be the same as a
   page,
 }) => {
   const directoryName = "directory";
-  await createDirectory(namespace, directoryName);
+  await createDirectory({ namespace, name: directoryName });
 
   // go to tree root
-  await page.goto(`/${namespace}/explorer/tree`);
+  await page.goto(`/n/${namespace}/explorer/tree`);
 
   // create workflow
   await page.getByTestId("dropdown-trg-new").click();
@@ -283,17 +285,17 @@ test("when creating a workflow, the name (before extension) may be the same as a
   await expect(
     page,
     "it creates the workflow and loads the edit page"
-  ).toHaveURL(`${namespace}/explorer/workflow/edit/${directoryName}.yaml`);
+  ).toHaveURL(`/n/${namespace}/explorer/workflow/edit/${directoryName}.yaml`);
 
   await expect(
     page.getByTestId("workflow-header"),
     "the page heading contains the file name"
   ).toHaveText(`${directoryName}.yaml`);
 
-  const nodeCreated = await checkIfNodeExists(
+  const nodeCreated = await checkIfFileExists({
     namespace,
-    `${directoryName}.yaml`
-  );
+    path: `/${directoryName}.yaml`,
+  });
   await expect(nodeCreated).toBeTruthy();
 });
 
@@ -304,7 +306,7 @@ test("it is not possible to create a workflow when the name already exixts", asy
   await createWorkflow(namespace, alreadyExists);
 
   // go to tree root
-  await page.goto(`/${namespace}/explorer/tree`);
+  await page.goto(`/n/${namespace}/explorer/tree`);
 
   // create workflow
   await page.getByTestId("dropdown-trg-new").click();
@@ -325,7 +327,7 @@ test("it is not possible to create a workflow when the name already exists and t
   await createWorkflow(namespace, alreadyExists);
 
   // go to tree root
-  await page.goto(`/${namespace}/explorer/tree`);
+  await page.goto(`/n/${namespace}/explorer/tree`);
 
   // create workflow
   await page.getByTestId("dropdown-trg-new").click();
@@ -342,7 +344,7 @@ test(`it is possible to delete a worfklow`, async ({ page }) => {
   const name = "workflow.yaml";
   await createWorkflow(namespace, name);
 
-  await page.goto(`/${namespace}/explorer/tree/`);
+  await page.goto(`/n/${namespace}/explorer/tree/`);
   await expect(
     page.getByTestId("breadcrumb-namespace"),
     "it renders the breadcrumb for a namespace"
@@ -374,48 +376,52 @@ test(`it is possible to delete a worfklow`, async ({ page }) => {
     "it does not render the old workflow name"
   ).toHaveCount(0);
 
-  const nodeExists = await checkIfNodeExists(namespace, name);
+  const nodeExists = await checkIfFileExists({ namespace, path: `/${name}` });
+
   await expect(nodeExists).toBeFalsy();
 });
 
 test(`it is possible to rename a workflow`, async ({ page }) => {
-  const oldname = "old-name.yaml";
-  const newname = "new-name.yaml";
-  await createWorkflow(namespace, oldname);
+  const oldName = "old-name.yaml";
+  const newName = "new-name.yaml";
+  await createWorkflow(namespace, oldName);
 
-  await page.goto(`/${namespace}/explorer/tree/`);
+  await page.goto(`/n/${namespace}/explorer/tree/`);
   await expect(
     page.getByTestId("breadcrumb-namespace"),
     "it renders the breadcrumb for a namespace"
   ).toBeVisible();
 
   await expect(
-    page.getByTestId(`explorer-item-${oldname}`),
+    page.getByTestId(`explorer-item-${oldName}`),
     "it renders the workflow"
   ).toBeVisible();
 
   await page
-    .getByTestId(`explorer-item-${oldname}`)
+    .getByTestId(`explorer-item-${oldName}`)
     .getByTestId("dropdown-trg-node-actions")
     .click();
   await page.getByTestId("node-actions-rename").click();
-  await page.getByTestId("node-rename-input").fill(newname);
+  await page.getByTestId("node-rename-input").fill(newName);
   await page.getByTestId("node-rename-submit").click();
 
   await expect(
-    page.getByTestId(`explorer-item-${newname}`),
+    page.getByTestId(`explorer-item-${newName}`),
     "it renders the new workflow name"
   ).toBeVisible();
 
   await expect(
-    page.getByTestId(`explorer-item-${oldname}`),
+    page.getByTestId(`explorer-item-${oldName}`),
     "it does not render the old workflow name"
   ).toHaveCount(0);
 
-  const originalExists = await checkIfNodeExists(namespace, oldname);
+  const originalExists = await checkIfFileExists({
+    namespace,
+    path: `/${oldName}`,
+  });
   await expect(originalExists).toBeFalsy();
 
-  const isRenamed = await checkIfNodeExists(namespace, newname);
+  const isRenamed = await checkIfFileExists({ namespace, path: `/${newName}` });
   await expect(isRenamed).toBeTruthy();
 });
 
@@ -425,10 +431,10 @@ test(`when renaming a workflow, the name (before extension) may be the same as a
   const oldName = "old-name.yaml";
   const directoryName = "directory";
   const newName = `${directoryName}.yaml`;
-  await createDirectory(namespace, directoryName);
+  await createDirectory({ namespace, name: directoryName });
   await createWorkflow(namespace, oldName);
 
-  await page.goto(`/${namespace}/explorer/tree/`);
+  await page.goto(`/n/${namespace}/explorer/tree/`);
   await expect(
     page.getByTestId("breadcrumb-namespace"),
     "it renders the breadcrumb for a namespace"
@@ -457,57 +463,63 @@ test(`when renaming a workflow, the name (before extension) may be the same as a
     "it does not render the old workflow name"
   ).toHaveCount(0);
 
-  const originalExists = await checkIfNodeExists(namespace, oldName);
+  const originalExists = await checkIfFileExists({
+    namespace,
+    path: `/${oldName}`,
+  });
   await expect(originalExists).toBeFalsy();
 
-  const isRenamed = await checkIfNodeExists(namespace, newName);
+  const isRenamed = await checkIfFileExists({ namespace, path: `/${newName}` });
   await expect(isRenamed).toBeTruthy();
 });
 
 test(`it will automatically add a yaml extension when renaming a workflow`, async ({
   page,
 }) => {
-  const oldname = "old-name.yaml";
-  const newnameWithoutYamlExtension = "new-name";
-  const newnameWithYamlExtention = `${newnameWithoutYamlExtension}.yaml`;
-  await createWorkflow(namespace, oldname);
+  const oldName = "old-name.yaml";
+  const newNameWithoutYamlExtension = "new-name";
+  const newNameWithYamlExtension = `${newNameWithoutYamlExtension}.yaml`;
+  await createWorkflow(namespace, oldName);
 
-  await page.goto(`/${namespace}/explorer/tree/`);
+  await page.goto(`/n/${namespace}/explorer/tree/`);
   await expect(
     page.getByTestId("breadcrumb-namespace"),
     "it renders the breadcrumb for a namespace"
   ).toBeVisible();
 
   await expect(
-    page.getByTestId(`explorer-item-${oldname}`),
+    page.getByTestId(`explorer-item-${oldName}`),
     "it renders the workflow"
   ).toBeVisible();
 
   await page
-    .getByTestId(`explorer-item-${oldname}`)
+    .getByTestId(`explorer-item-${oldName}`)
     .getByTestId("dropdown-trg-node-actions")
     .click();
   await page.getByTestId("node-actions-rename").click();
-  await page.getByTestId("node-rename-input").fill(newnameWithoutYamlExtension);
+  await page.getByTestId("node-rename-input").fill(newNameWithoutYamlExtension);
   await page.getByTestId("node-rename-submit").click();
 
   await expect(
-    page.getByTestId(`explorer-item-${newnameWithYamlExtention}`),
+    page.getByTestId(`explorer-item-${newNameWithYamlExtension}`),
     "it renders the new workflow name"
   ).toBeVisible();
 
   await expect(
-    page.getByTestId(`explorer-item-${oldname}`),
+    page.getByTestId(`explorer-item-${oldName}`),
     "it does not render the old workflow name"
   ).toHaveCount(0);
 
-  const originalExists = await checkIfNodeExists(namespace, oldname);
+  const originalExists = await checkIfFileExists({
+    namespace,
+    path: `/${oldName}`,
+  });
   await expect(originalExists).toBeFalsy();
 
-  const isRenamed = await checkIfNodeExists(
+  const isRenamed = await checkIfFileExists({
     namespace,
-    newnameWithYamlExtention
-  );
+    path: `/${newNameWithYamlExtension}`,
+  });
   await expect(isRenamed).toBeTruthy();
 });
 
@@ -519,7 +531,7 @@ test(`it is not possible to rename a workflow when the name already exists`, asy
   await createWorkflow(namespace, tobeRenamed);
   await createWorkflow(namespace, alreadyExists);
 
-  await page.goto(`/${namespace}/explorer/tree/`);
+  await page.goto(`/n/${namespace}/explorer/tree/`);
 
   await page
     .getByTestId(`explorer-item-${tobeRenamed}`)
@@ -543,7 +555,7 @@ test(`it is not possible to rename a workflow when the name already exists and e
   await createWorkflow(namespace, tobeRenamed);
   await createWorkflow(namespace, alreadyExists);
 
-  await page.goto(`/${namespace}/explorer/tree/`);
+  await page.goto(`/n/${namespace}/explorer/tree/`);
 
   await page
     .getByTestId(`explorer-item-${tobeRenamed}`)
@@ -562,9 +574,9 @@ test(`it is not possible to rename a workflow when the name already exists and e
 
 test(`it is possible to delete a directory`, async ({ page }) => {
   const name = "directory";
-  await createDirectory(namespace, name);
+  await createDirectory({ namespace, name });
 
-  await page.goto(`/${namespace}/explorer/tree/`);
+  await page.goto(`/n/${namespace}/explorer/tree/`);
   await expect(
     page.getByTestId("breadcrumb-namespace"),
     "it renders the breadcrumb for a namespace"
@@ -597,48 +609,51 @@ test(`it is possible to delete a directory`, async ({ page }) => {
     "it does not render the old folder name"
   ).toHaveCount(0);
 
-  const nodeExists = await checkIfNodeExists(namespace, name);
+  const nodeExists = await checkIfFileExists({ namespace, path: `/${name}` });
   await expect(nodeExists).toBeFalsy();
 });
 
 test(`it is possible to rename a directory`, async ({ page }) => {
-  const oldname = "old-name";
-  const newname = "new-name";
-  await createDirectory(namespace, oldname);
+  const oldName = "old-name";
+  const newName = "new-name";
+  await createDirectory({ namespace, name: oldName });
 
-  await page.goto(`/${namespace}/explorer/tree/`);
+  await page.goto(`/n/${namespace}/explorer/tree/`);
   await expect(
     page.getByTestId("breadcrumb-namespace"),
     "it renders the breadcrumb for a namespace"
   ).toBeVisible();
 
   await expect(
-    page.getByTestId(`explorer-item-${oldname}`),
+    page.getByTestId(`explorer-item-${oldName}`),
     "it renders the folder"
   ).toBeVisible();
 
   await page
-    .getByTestId(`explorer-item-${oldname}`)
+    .getByTestId(`explorer-item-${oldName}`)
     .getByTestId("dropdown-trg-node-actions")
     .click();
   await page.getByTestId("node-actions-rename").click();
-  await page.getByTestId("node-rename-input").fill(newname);
+  await page.getByTestId("node-rename-input").fill(newName);
   await page.getByTestId("node-rename-submit").click();
 
   await expect(
-    page.getByTestId(`explorer-item-${newname}`),
+    page.getByTestId(`explorer-item-${newName}`),
     "it renders the new folder name"
   ).toBeVisible();
 
   await expect(
-    page.getByTestId(`explorer-item-${oldname}`),
+    page.getByTestId(`explorer-item-${oldName}`),
     "it does not render the old folder name"
   ).toHaveCount(0);
 
-  const originalExists = await checkIfNodeExists(namespace, oldname);
+  const originalExists = await checkIfFileExists({
+    namespace,
+    path: `/${oldName}`,
+  });
   await expect(originalExists).toBeFalsy();
 
-  const isRenamed = await checkIfNodeExists(namespace, newname);
+  const isRenamed = await checkIfFileExists({ namespace, path: `/${newName}` });
   await expect(isRenamed).toBeTruthy();
 });
 
@@ -646,7 +661,7 @@ test("it is not possible to navigate to a workflow that does not exist", async (
   page,
 }) => {
   await page.goto(
-    `${namespace}/explorer/workflow/edit/this-file-does-not-exists.yaml`
+    `/n/${namespace}/explorer/workflow/edit/this-file-does-not-exists.yaml`
   );
 
   await expect(page.getByTestId("error-title")).toContainText("404");
@@ -663,7 +678,7 @@ test("it is not possible to navigate to a workflow that does not exist", async (
 test("it is not possible to navigate to a folder that does not exist", async ({
   page,
 }) => {
-  await page.goto(`${namespace}/explorer/tree/this-folder-does-not-exist`);
+  await page.goto(`/n/${namespace}/explorer/tree/this-folder-does-not-exist`);
 
   await expect(page.getByTestId("error-title")).toContainText("404");
   await expect(page.getByTestId("error-message")).toContainText(
@@ -679,7 +694,7 @@ test("it is not possible to navigate to a folder that does not exist", async ({
 test("it is not possible to navigate to a namespace that does not exist", async ({
   page,
 }) => {
-  await page.goto(`this-namespace-does-not-exist/explorer/tree`);
+  await page.goto(`/n/this-namespace-does-not-exist/explorer/tree`);
 
   await expect(page.getByTestId("error-title")).toContainText("404");
   await expect(page.getByTestId("error-message")).toContainText(

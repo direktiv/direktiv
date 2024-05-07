@@ -59,7 +59,7 @@ func (im *instanceMemory) flushUpdates(ctx context.Context) error {
 	// 		expand the number of queries here in the future we should make it serializable. Be
 	// 		warned however that making this serializable opens us up to serialization failures, and
 	//		therefore we will need to test heavily and potentially implement retries.
-	tx, err := im.engine.flow.beginSqlTx(ctx) /*&sql.TxOptions{
+	tx, err := im.engine.flow.beginSQLTx(ctx) /*&sql.TxOptions{
 		Isolation: sql.LevelSerializable,
 	}*/if err != nil {
 		return err
@@ -71,6 +71,7 @@ func (im *instanceMemory) flushUpdates(ctx context.Context) error {
 		if strings.Contains(err.Error(), "got 0") {
 			return errors.New("node no longer believes it should modify this instance")
 		}
+
 		return err
 	}
 
@@ -243,6 +244,7 @@ func (im *instanceMemory) WithTags(ctx context.Context) context.Context {
 	if im.logic != nil {
 		tags = append(tags, "state", im.logic.GetID())
 	}
+
 	return context.WithValue(ctx, core.LogTagsKey, tags)
 }
 
@@ -251,11 +253,14 @@ func (im *instanceMemory) GetState() string {
 	if im.logic != nil {
 		return fmt.Sprintf("%s:%s", tags["workflow"], im.logic.GetID())
 	}
+
 	return tags["workflow"]
 }
 
+var errEngineSync = errors.New("instance appears to be under control of another node")
+
 func (engine *engine) getInstanceMemory(ctx context.Context, id uuid.UUID) (*instanceMemory, error) {
-	tx, err := engine.flow.beginSqlTx(ctx, &sql.TxOptions{
+	tx, err := engine.flow.beginSQLTx(ctx, &sql.TxOptions{
 		Isolation: sql.LevelSerializable,
 	})
 	if err != nil {
@@ -270,7 +275,7 @@ func (engine *engine) getInstanceMemory(ctx context.Context, id uuid.UUID) (*ins
 
 	if idata.Server != engine.ID {
 		if time.Now().Add(-1 * engineOwnershipTimeout).Before(idata.UpdatedAt) {
-			return nil, errors.New("instance appears to be under control of another node")
+			return nil, errEngineSync
 		}
 
 		// TODO: alan DIR-1313
@@ -308,12 +313,14 @@ func (engine *engine) getInstanceMemory(ctx context.Context, id uuid.UUID) (*ins
 	err = json.Unmarshal(im.instance.Instance.LiveData, &im.data)
 	if err != nil {
 		engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", err.Error()))
+
 		return nil, err
 	}
 
 	err = json.Unmarshal(im.instance.Instance.StateMemory, &im.memory)
 	if err != nil {
 		engine.CrashInstance(ctx, im, derrors.NewUncatchableError("", err.Error()))
+
 		return nil, err
 	}
 
@@ -327,6 +334,7 @@ func (engine *engine) getInstanceMemory(ctx context.Context, id uuid.UUID) (*ins
 	err = engine.loadStateLogic(im, stateID)
 	if err != nil {
 		engine.CrashInstance(ctx, im, err)
+
 		return nil, err
 	}
 
@@ -364,8 +372,6 @@ func (engine *engine) freeMemory(ctx context.Context, im *instanceMemory) error 
 		return err
 	}
 
-	engine.deregisterScheduled(im.ID())
-
 	return nil
 }
 
@@ -374,6 +380,4 @@ func (engine *engine) forceFreeCriticalMemory(ctx context.Context, im *instanceM
 	if err != nil {
 		slog.Error("Failed to force flush updates for instance memory during critical memory release.", "instance", im.ID().String(), "namespace", im.Namespace(), "error", err)
 	}
-
-	engine.deregisterScheduled(im.ID())
 }

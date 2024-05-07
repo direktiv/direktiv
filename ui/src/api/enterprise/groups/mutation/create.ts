@@ -9,7 +9,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
-const createGroup = apiFactory({
+const createGroup = apiFactory<GroupFormSchemaType>({
   url: ({ namespace, baseUrl }: { baseUrl?: string; namespace: string }) =>
     `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/groups`,
   method: "POST",
@@ -41,11 +41,11 @@ export const useCreateGroup = ({
         payload: tokenFormProps,
       }),
     onSuccess(data, { description }) {
-      queryClient.invalidateQueries(
-        groupKeys.groupList(namespace, {
+      queryClient.invalidateQueries({
+        queryKey: groupKeys.groupList(namespace, {
           apiKey: apiKey ?? undefined,
-        })
-      );
+        }),
+      });
       toast({
         title: t("api.groups.mutate.createGroup.success.title"),
         description: t("api.groups.mutate.createGroup.success.description", {

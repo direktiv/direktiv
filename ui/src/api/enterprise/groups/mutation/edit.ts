@@ -9,7 +9,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
-const editGroup = apiFactory({
+const editGroup = apiFactory<GroupFormSchemaType>({
   url: ({
     namespace,
     baseUrl,
@@ -55,11 +55,11 @@ export const useEditGroup = ({
         payload: tokenFormProps,
       }),
     onSuccess(data, { tokenFormProps: { description } }) {
-      queryClient.invalidateQueries(
-        groupKeys.groupList(namespace, {
+      queryClient.invalidateQueries({
+        queryKey: groupKeys.groupList(namespace, {
           apiKey: apiKey ?? undefined,
-        })
-      );
+        }),
+      });
       toast({
         title: t("api.groups.mutate.editGroup.success.title"),
         description: t("api.groups.mutate.editGroup.success.description", {

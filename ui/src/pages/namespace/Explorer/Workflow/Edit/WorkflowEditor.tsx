@@ -2,6 +2,10 @@ import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import { FC, useState } from "react";
 import { Play, Save } from "lucide-react";
 import { decode, encode } from "js-base64";
+import {
+  useSetUnsavedChanges,
+  useUnsavedChanges,
+} from "../store/unsavedChangesContext";
 
 import Button from "~/design/Button";
 import { CodeEditor } from "./CodeEditor";
@@ -12,7 +16,7 @@ import RunWorkflow from "../components/RunWorkflow";
 import { WorkspaceLayout } from "~/components/WorkspaceLayout";
 import { useEditorLayout } from "~/util/store/editor";
 import { useNamespace } from "~/util/store/namespace";
-import { useNamespaceLinting } from "~/api/namespaceLinting/query/useNamespaceLinting";
+import { useNotifications } from "~/api/notifications/query/get";
 import { useTranslation } from "react-i18next";
 import { useUpdateFile } from "~/api/files/mutate/updateFile";
 
@@ -23,12 +27,14 @@ const WorkflowEditor: FC<{
   const { t } = useTranslation();
   const namespace = useNamespace();
   const [error, setError] = useState<string | undefined>();
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const { refetch: updateNotificationBell } = useNamespaceLinting();
+  const { refetch: updateNotificationBell } = useNotifications();
+
+  const hasUnsavedChanges = useUnsavedChanges();
+  const setHasUnsavedChanges = useSetUnsavedChanges();
 
   const workflowDataFromServer = decode(data?.data ?? "");
 
-  const { mutate: updateFile, isLoading } = useUpdateFile({
+  const { mutate: updateFile, isPending } = useUpdateFile({
     onError: (error) => {
       error && setError(error);
     },
@@ -99,7 +105,7 @@ const WorkflowEditor: FC<{
         </Dialog>
         <Button
           variant="outline"
-          disabled={isLoading}
+          disabled={isPending}
           onClick={() => {
             onSave(editorContent);
           }}

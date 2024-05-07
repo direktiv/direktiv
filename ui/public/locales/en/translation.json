@@ -145,12 +145,6 @@
                 "createBtn": "Add variable",
                 "emptySearch": "No variable matches your search",
                 "empty": "No variable found"
-              },
-              "create": {
-                "title": "Add a workflow variable"
-              },
-              "edit": {
-                "title": "Edit {{name}}"
               }
             }
           },
@@ -161,9 +155,9 @@
             },
             "metrics": {
               "header": "Success / failure rate",
-              "successful": "Successful: {{percentage}}%",
-              "failed": "Failed: {{percentage}}%",
-              "noResult": "No data available"
+              "noResult": "no data available",
+              "loading": "loading...",
+              "legend": "{{successRate}}% successful"
             },
             "services": {
               "header": "Workflow services"
@@ -534,6 +528,7 @@
     "instances": {
       "list": {
         "title": "Recently executed instances",
+        "refetchLabel": "Refetch instances",
         "empty": {
           "noInstances": "There are no recently executed instances",
           "noFilterResults": "No recently executed instances found with these filter criteria"
@@ -544,7 +539,7 @@
           "invoker": "trigger",
           "state": "state",
           "startedAt": "started at",
-          "updatedAt": "last updated",
+          "finishedAt": "finished at",
           "childInstances": {
             "label": "spawned",
             "instanceCount": "{{count}} instances",
@@ -590,7 +585,7 @@
           "invoker": "trigger",
           "state": "state",
           "startedAt": "started at",
-          "updatedAt": "last updated",
+          "finishedAt": "finished at",
           "realtiveTime": "{{relativeTime}} ago"
         },
         "logs": {
@@ -650,12 +645,13 @@
       "syncDialog": {
         "title": "Sync {{namespace}}",
         "description": "Fetch and sync mirror with latest content from remote repository?",
+        "warning": "Warning: This will overwrite all files in this namespace",
         "confirm": "Sync"
       },
-      "activities": {
+      "syncs": {
         "list": {
-          "title": "Activities",
-          "noResults": "No activities found"
+          "title": "Syncs",
+          "noResults": "No syncs found"
         },
         "detail": {
           "header": {
@@ -670,7 +666,7 @@
         },
         "tableHeader": {
           "createdAt": "Started",
-          "id": "Activity ID",
+          "id": "ID",
           "status": "Status",
           "type": "Type"
         },
@@ -873,15 +869,19 @@
         "delete": {
           "description": "Are you sure you want to delete <b>{{name}}</b>?<br/> This cannot be undone."
         },
+        "form": {
+          "unsupported": "Unsupported MimeType: Only text-based files can be used for secrets",
+          "name": {
+            "label": "Name",
+            "placeholder": "secret-name",
+            "nameAlreadyExists": "The name already exists"
+          }
+        },
         "create": {
-          "description": "Add a secret",
-          "name": "Name",
-          "file": "Upload a file",
-          "fileError": "There was an error uploading the file",
-          "unsupported": "This mime type is not supported"
+          "title": "Add a secret"
         },
         "edit": {
-          "description": "Edit {{name}}",
+          "title": "Edit {{name}}",
           "editNote": "Existing secrets cannot be retrieved after creating. But you can overwrite the existing value with a new one"
         }
       },
@@ -913,29 +913,6 @@
         },
         "delete": {
           "description": "Are you sure you want to delete <b>{{name}}</b>?<br/> This cannot be undone."
-        },
-        "create": {
-          "title": "Add a variable",
-          "name": {
-            "label": "Name",
-            "placeholder": "variable-name"
-          },
-          "file": {
-            "label": "Upload a file"
-          },
-          "noPreview": "Only text based mime types are supported for preview and editing"
-        },
-        "edit": {
-          "title": "Edit {{name}}",
-          "fetchError": "There was an error fetching the variable's content",
-          "mimeType": {
-            "label": "Mimetype",
-            "placeholder": "Select a mimetype"
-          },
-          "file": {
-            "label": "Upload a file"
-          },
-          "noPreview": "Only text based mime types are supported for preview and editing"
         }
       },
       "deleteNamespace": {
@@ -1001,6 +978,8 @@
           }
         },
         "empty": "No routes exist yet",
+        "searchPlaceholder": "Filter routes...",
+        "emptySearch": "No route matches your search",
         "detail": {
           "editRoute": "Edit Route"
         }
@@ -1087,7 +1066,7 @@
     "namespaceEdit": {
       "title": {
         "new": "Create a new namespace",
-        "edit": "Update mirror {{namespace}}"
+        "edit": "Update mirror for {{namespace}}"
       },
       "submitBtn": {
         "create": "Create",
@@ -1178,6 +1157,23 @@
       "loading": "loading...",
       "optionDoesNotExist": "{{namespace}} (does not exist)"
     },
+    "variableForm": {
+      "title": {
+        "create": "Create a variable",
+        "edit": "Edit {{name}}"
+      },
+      "name": {
+        "label": "Name",
+        "placeholder": "variable-name",
+        "nameAlreadyExists": "The name already exists"
+      },
+      "mimeType": {
+        "label": "Mimetype",
+        "unspecified": "Mimetype is unspecified",
+        "placeholder": "Select a mimetype"
+      },
+      "noPreview": "Only text based mime types are supported for preview and editing"
+    },
     "namespaceVariablepicker": {
       "title": "Variables in \"{{path}}\"",
       "buttonText": "Browse Variables",
@@ -1207,6 +1203,9 @@
         "title": "The path \"{{path}}\" was not found.",
         "linkText": "Go back to root directory"
       }
+    },
+    "fileUpload": {
+      "label": "Upload a file"
     },
     "userMenu": {
       "loggedIn": "You are logged in",
@@ -1332,7 +1331,7 @@
     },
     "namespaces": {
       "mutate": {
-        "createNamespaces": {
+        "create": {
           "success": {
             "title": "Create a new namespace",
             "description": "Namespace {{name}} was created successfully."
@@ -1341,9 +1340,18 @@
             "description": "could not create namespace 😢"
           }
         },
-        "deleteNamespaces": {
+        "update": {
           "success": {
-            "title": "Delete namespace",
+            "title": "Edit namespace",
+            "description": "Namespace {{name}} was updated successfully."
+          },
+          "error": {
+            "description": "could not update namespace 😢"
+          }
+        },
+        "delete": {
+          "success": {
+            "title": "Delete namespace {{name}}",
             "description": "Namespace {{name}} was deleted successfully."
           },
           "error": {

@@ -124,7 +124,6 @@ type InstanceData struct {
 	ErrorCode      string
 	Invoker        string
 	Definition     []byte
-	Settings       []byte
 	DescentInfo    []byte
 	TelemetryInfo  []byte
 	RuntimeInfo    []byte
@@ -135,6 +134,9 @@ type InstanceData struct {
 	Output         []byte
 	ErrorMessage   []byte
 	Metadata       []byte
+	InputLength    int
+	OutputLength   int
+	MetadataLength int
 }
 
 // GetNamespaceInstancesResults returns the results as well as the total number that would be returned if LIMIT & OFFSET were both zero.
@@ -156,7 +158,6 @@ type CreateInstanceDataArgs struct {
 	Input          []byte
 	LiveData       []byte
 	TelemetryInfo  []byte
-	Settings       []byte
 	DescentInfo    []byte
 	RuntimeInfo    []byte
 	ChildrenInfo   []byte
@@ -192,6 +193,16 @@ type InstanceMessageData struct {
 type EnqueueInstanceMessageArgs struct {
 	InstanceID uuid.UUID
 	Payload    []byte
+}
+
+// InstanceCounts defined the return object for the metrics function.
+type InstanceCounts struct {
+	Complete  int
+	Failed    int
+	Crashed   int
+	Cancelled int
+	Pending   int
+	Total     int
 }
 
 type InstanceDataQuery interface {
@@ -244,7 +255,10 @@ type Store interface {
 
 	// AssertNoParallelCron attempts to detect if another machine in a HA environment may have already triggered an instance that we're just about to create ourselves.
 	// It does this by checking if a record of an instance was created within the last 30s for the given workflow ID.
-	AssertNoParallelCron(ctx context.Context, wfPath string) error
+	AssertNoParallelCron(ctx context.Context, nsID uuid.UUID, wfPath string) error
+
+	// GetNamespaceInstanceCounts returns some instance metrics.
+	GetNamespaceInstanceCounts(ctx context.Context, nsID uuid.UUID, wfPath string) (*InstanceCounts, error)
 }
 
 type (

@@ -88,10 +88,7 @@ const basevent = (type, id, value) => `{
 describe('Test workflow events and', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
 
-	it(`should create namespace`, async () => {
-		const createNamespaceResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${ namespaceName }`)
-		expect(createNamespaceResponse.statusCode).toEqual(200)
-	})
+	helpers.itShouldCreateNamespace(it, expect, namespaceName)
 
 	// workflow with start
 	helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
@@ -110,9 +107,13 @@ describe('Test workflow events and', () => {
 			instance: '',
 			createdAt: expect.stringMatching(common.regex.timestampRegex),
 			updatedAt: expect.stringMatching(common.regex.timestampRegex),
-			events: [ { type: 'eventtype3',
-				filters: {} }, { type: 'eventtype4',
-				filters: {} } ],
+			events: [ {
+				type: 'eventtype3',
+				filters: {},
+			}, {
+				type: 'eventtype4',
+				filters: {},
+			} ],
 		})
 
 		expect(getEventListenerResponse.body.pageInfo.total).toEqual(1)
@@ -146,9 +147,13 @@ describe('Test workflow events and', () => {
 			instance: expect.stringMatching(common.regex.uuidRegex),
 			createdAt: expect.stringMatching(common.regex.timestampRegex),
 			updatedAt: expect.stringMatching(common.regex.timestampRegex),
-			events: [ { type: 'eventtype1',
-				filters: {} }, { type: 'eventtype2',
-				filters: {} } ],
+			events: [ {
+				type: 'eventtype1',
+				filters: {},
+			}, {
+				type: 'eventtype2',
+				filters: {},
+			} ],
 		})
 	})
 
@@ -204,23 +209,22 @@ describe('Test workflow events and', () => {
 	it(`start context`, async () => {
 		await helpers.sleep(1000)
 
-
 		let workflowEventResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${ namespaceName }/broadcast`)
-		.set('Content-Type', 'application/json')
-		.send(basevent('eventtype9', 'eventtype9zz', 'world1'))
+			.set('Content-Type', 'application/json')
+			.send(basevent('eventtype9', 'eventtype9zz', 'world1'))
 		expect(workflowEventResponse.statusCode).toEqual(200)
 
 		workflowEventResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${ namespaceName }/broadcast`)
-		.set('Content-Type', 'application/json')
-		.send(basevent('eventtype10', 'eventtype1324320', 'world3'))
+			.set('Content-Type', 'application/json')
+			.send(basevent('eventtype10', 'eventtype1324320', 'world3'))
 		expect(workflowEventResponse.statusCode).toEqual(200)
 
 		let instance = await events.listInstancesAndFilter(namespaceName, startWorkflowContextName)
 		expect(instance).toBeFalsy()
 
 		workflowEventResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${ namespaceName }/broadcast`)
-		.set('Content-Type', 'application/json')
-		.send(basevent('eventtype10', 'eventtype10afg', 'world2'))
+			.set('Content-Type', 'application/json')
+			.send(basevent('eventtype10', 'eventtype10afg', 'world2'))
 		expect(workflowEventResponse.statusCode).toEqual(200)
 
 		instance = await events.listInstancesAndFilter(namespaceName, startWorkflowContextName)
@@ -258,6 +262,5 @@ describe('Test workflow events and', () => {
 		await events.sendEventAndList(namespaceName, basevent('eventtype11', 'eventtype12ab', 'world2'))
 		instance = await events.listInstancesAndFilter(namespaceName, startWorkflowContextName, 'complete')
 		expect(instance).not.toBeFalsy()
-
 	})
 })

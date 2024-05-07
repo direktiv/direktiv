@@ -1,4 +1,4 @@
-import { NamespaceListSchemaType } from "~/api/namespaces/schema";
+import { NamespaceListSchemaType } from "~/api/namespaces/schema/namespace";
 import { faker } from "@faker-js/faker";
 import { headers } from "./testutils";
 
@@ -9,9 +9,10 @@ export const createNamespaceName = () => `playwright-${faker.git.shortSha()}`;
 export const createNamespace = () =>
   new Promise<string>((resolve, reject) => {
     const name = createNamespaceName();
-    fetch(`${apiUrl}/api/namespaces/${name}`, {
-      method: "PUT",
+    fetch(`${apiUrl}/api/v2/namespaces/`, {
+      method: "POST",
       headers,
+      body: JSON.stringify({ name }),
     }).then((response) => {
       response.ok
         ? resolve(name)
@@ -21,7 +22,7 @@ export const createNamespace = () =>
 
 export const deleteNamespace = (namespace: string) =>
   new Promise<void>((resolve, reject) => {
-    fetch(`${apiUrl}/api/namespaces/${namespace}?recursive=true`, {
+    fetch(`${apiUrl}/api/v2/namespaces/${namespace}`, {
       method: "DELETE",
       headers,
     }).then((response) => {
@@ -32,14 +33,14 @@ export const deleteNamespace = (namespace: string) =>
   });
 
 export const checkIfNamespaceExists = async (namespace: string) => {
-  const response = await fetch(`${apiUrl}/api/namespaces`, { headers });
+  const response = await fetch(`${apiUrl}/api/v2/namespaces`, { headers });
   if (!response.ok) {
     throw `fetching namespaces failed with code ${response.status}`;
   }
   const namespaceInResponse = await response
     .json()
     .then((json: NamespaceListSchemaType) =>
-      json.results.find((ns) => ns.name === namespace)
+      json.data.find((ns) => ns.name === namespace)
     );
   return !!namespaceInResponse;
 };
@@ -49,14 +50,14 @@ export const checkIfNamespaceExists = async (namespace: string) => {
 // If you have spammed namespaces while writing tests, call this temporarily:
 // await cleanupNamespace();
 export const cleanupNamespaces = async () => {
-  const response = await fetch(`${apiUrl}/api/namespaces`, { headers });
+  const response = await fetch(`${apiUrl}/api/v2/namespaces`, { headers });
   const namespaces = await response
     .json()
     .then((json: NamespaceListSchemaType) =>
-      json.results.filter((ns) => ns.name.includes("playwright"))
+      json.data.filter((ns) => ns.name.includes("playwright"))
     );
   const requests = namespaces.map((ns) =>
-    fetch(`${apiUrl}/api/namespaces/${ns.name}?recursive=true`, {
+    fetch(`${apiUrl}/api/v2/namespaces/${ns.name}`, {
       method: "DELETE",
     })
   );

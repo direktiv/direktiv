@@ -15,7 +15,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -29,7 +28,7 @@ func (internal *internal) FileVariableParcels(req *grpc.VariableInternalRequest,
 		return err
 	}
 
-	tx, err := internal.beginSqlTx(ctx)
+	tx, err := internal.beginSQLTx(ctx)
 	if err != nil {
 		return err
 	}
@@ -191,7 +190,7 @@ func (internal *internal) SetNamespaceVariableParcels(srv grpc.Internal_SetNames
 func (flow *flow) NamespaceVariable(ctx context.Context, req *grpc.NamespaceVariableRequest) (*grpc.NamespaceVariableResponse, error) {
 	slog.Debug("Handling gRPC request", "this", this())
 
-	tx, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSQLTx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -230,7 +229,7 @@ func (flow *flow) NamespaceVariable(ctx context.Context, req *grpc.NamespaceVari
 	resp.TotalSize = int64(item.Size)
 	resp.MimeType = item.MimeType
 
-	if resp.TotalSize > parcelSize {
+	if resp.GetTotalSize() > parcelSize {
 		return nil, status.Error(codes.ResourceExhausted, "variable too large to return without using the parcelling API")
 	}
 
@@ -244,82 +243,10 @@ func (flow *flow) NamespaceVariable(ctx context.Context, req *grpc.NamespaceVari
 	return &resp, nil
 }
 
-func (flow *flow) NamespaceVariableParcels(req *grpc.NamespaceVariableRequest, srv grpc.Flow_NamespaceVariableParcelsServer) error {
-	slog.Debug("Handling gRPC request", "this", this())
-
-	ctx := srv.Context()
-
-	resp, err := flow.NamespaceVariable(ctx, &grpc.NamespaceVariableRequest{
-		Namespace: req.GetNamespace(),
-		Key:       req.GetKey(),
-	})
-	if err != nil {
-		return err
-	}
-	err = srv.Send(resp)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (flow *flow) NamespaceVariables(ctx context.Context, req *grpc.NamespaceVariablesRequest) (*grpc.NamespaceVariablesResponse, error) {
-	slog.Debug("Handling gRPC request", "this", this())
-
-	tx, err := flow.beginSqlTx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer tx.Rollback()
-
-	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
-
-	list, err := tx.DataStore().RuntimeVariables().ListForNamespace(ctx, ns.Name)
-	if err != nil {
-		return nil, err
-	}
-
-	resp := new(grpc.NamespaceVariablesResponse)
-	resp.Namespace = ns.Name
-	resp.Variables = new(grpc.Variables)
-	resp.Variables.PageInfo = nil
-
-	resp.Variables.Results = bytedata.ConvertRuntimeVariablesToGrpcVariableList(list)
-
-	return resp, nil
-}
-
-func (flow *flow) NamespaceVariablesStream(req *grpc.NamespaceVariablesRequest, srv grpc.Flow_NamespaceVariablesStreamServer) error {
-	slog.Debug("Handling gRPC request", "this", this())
-	ctx := srv.Context()
-
-	resp, err := flow.NamespaceVariables(ctx, req)
-	if err != nil {
-		return err
-	}
-	// mock streaming response.
-	for {
-		select {
-		case <-ctx.Done():
-			return nil
-		default:
-			err = srv.Send(resp)
-			if err != nil {
-				return err
-			}
-			time.Sleep(time.Second * 5)
-		}
-	}
-}
-
 func (flow *flow) SetNamespaceVariable(ctx context.Context, req *grpc.SetNamespaceVariableRequest) (*grpc.SetNamespaceVariableResponse, error) {
 	slog.Debug("Handling gRPC request", "this", this())
 
-	tx, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSQLTx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -361,6 +288,7 @@ func (flow *flow) SetNamespaceVariable(ctx context.Context, req *grpc.SetNamespa
 	return &resp, nil
 }
 
+//nolint:dupl
 func (flow *flow) SetNamespaceVariableParcels(srv grpc.Flow_SetNamespaceVariableParcelsServer) error {
 	slog.Debug("Handling gRPC request", "this", this())
 	ctx := srv.Context()
@@ -377,12 +305,12 @@ func (flow *flow) SetNamespaceVariableParcels(srv grpc.Flow_SetNamespaceVariable
 	buf := new(bytes.Buffer)
 
 	for {
-		_, err = io.Copy(buf, bytes.NewReader(req.Data))
+		_, err = io.Copy(buf, bytes.NewReader(req.GetData()))
 		if err != nil {
 			return err
 		}
 
-		if req.TotalSize <= 0 {
+		if req.GetTotalSize() <= 0 {
 			if buf.Len() >= totalSize {
 				break
 			}
@@ -393,10 +321,11 @@ func (flow *flow) SetNamespaceVariableParcels(srv grpc.Flow_SetNamespaceVariable
 			if errors.Is(err, io.EOF) {
 				break
 			}
+
 			return err
 		}
 
-		if req.TotalSize <= 0 {
+		if req.GetTotalSize() <= 0 {
 			if buf.Len() >= totalSize {
 				break
 			}
@@ -426,97 +355,4 @@ func (flow *flow) SetNamespaceVariableParcels(srv grpc.Flow_SetNamespaceVariable
 	}
 
 	return nil
-}
-
-func (flow *flow) DeleteNamespaceVariable(ctx context.Context, req *grpc.DeleteNamespaceVariableRequest) (*emptypb.Empty, error) {
-	slog.Debug("Handling gRPC request", "this", this())
-
-	tx, err := flow.beginSqlTx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer tx.Rollback()
-
-	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
-
-	item, err := tx.DataStore().RuntimeVariables().GetForNamespace(ctx, ns.Name, req.GetKey())
-	if err != nil {
-		return nil, err
-	}
-	err = tx.DataStore().RuntimeVariables().Delete(ctx, item.ID)
-	if err != nil {
-		return nil, err
-	}
-	if err = tx.Commit(ctx); err != nil {
-		return nil, err
-	}
-
-	// TODO: nned fix here.
-	// flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Deleted namespace variable '%s'.", vref.Name)
-	// flow.pubsub.NotifyNamespaceVariables(cached.Namespace)
-
-	// Broadcast Event
-	//broadcastInput := broadcastVariableInput{
-	//	WorkflowPath: "",
-	//	Key:          req.GetKey(),
-	//	TotalSize:    int64(vdata.Size),
-	//	Scope:        BroadcastEventScopeNamespace,
-	//}
-	//err = flow.BroadcastVariable(ctx, BroadcastEventTypeDelete, BroadcastEventScopeNamespace, broadcastInput, cached.Namespace)
-	//if err != nil {
-	//	return nil, err
-	//}
-
-	var resp emptypb.Empty
-
-	return &resp, nil
-}
-
-func (flow *flow) RenameNamespaceVariable(ctx context.Context, req *grpc.RenameNamespaceVariableRequest) (*grpc.RenameNamespaceVariableResponse, error) {
-	slog.Debug("Handling gRPC request", "this", this())
-
-	tx, err := flow.beginSqlTx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer tx.Rollback()
-
-	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
-
-	item, err := tx.DataStore().RuntimeVariables().GetForNamespace(ctx, ns.Name, req.GetOld())
-	if err != nil {
-		return nil, err
-	}
-
-	newName := req.GetNew()
-	updated, err := tx.DataStore().RuntimeVariables().Patch(ctx, item.ID, &datastore.RuntimeVariablePatch{
-		Name: &newName,
-	})
-	if err != nil {
-		return nil, err
-	}
-	if err = tx.Commit(ctx); err != nil {
-		return nil, err
-	}
-
-	// TODO: need fix.
-	// flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Renamed namespace variable from '%s' to '%s'.", req.GetOld(), req.GetNew())
-	// flow.pubsub.NotifyNamespaceVariables(cached.Namespace)
-
-	var resp grpc.RenameNamespaceVariableResponse
-
-	resp.CreatedAt = timestamppb.New(updated.CreatedAt)
-	resp.Key = updated.Name
-	resp.Namespace = ns.Name
-	resp.TotalSize = int64(updated.Size)
-	resp.UpdatedAt = timestamppb.New(updated.UpdatedAt)
-	resp.MimeType = updated.MimeType
-
-	return &resp, nil
 }

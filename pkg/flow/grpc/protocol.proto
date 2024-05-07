@@ -6,49 +6,14 @@ option go_package = "github.com/direktiv/direktiv/pkg/flow/grpc";
 
 import "google/protobuf/empty.proto";
 
-import "pkg/flow/grpc/namespaces.proto";
-import "pkg/flow/grpc/nodes.proto";
-import "pkg/flow/grpc/workflows.proto";
 import "pkg/flow/grpc/variables.proto";
-import "pkg/flow/grpc/secrets.proto";
 import "pkg/flow/grpc/instances.proto";
 import "pkg/flow/grpc/internal.proto";
 import "pkg/flow/grpc/cloudevent.proto";
 import "pkg/flow/grpc/util.proto";
-import "pkg/flow/grpc/eventing.proto";
-
-import "pkg/flow/grpc/mirror.proto";
+// import "pkg/flow/grpc/eventing.proto";
 
 service Flow {
-	// namespaces.
-	rpc Namespace (NamespaceRequest) returns (NamespaceResponse) {}
-	rpc Namespaces (NamespacesRequest) returns (NamespacesResponse) {}
-	rpc NamespacesStream (NamespacesRequest) returns (stream NamespacesResponse) {}
-	rpc CreateNamespace (CreateNamespaceRequest) returns (CreateNamespaceResponse) {}
-	rpc DeleteNamespace (DeleteNamespaceRequest) returns (google.protobuf.Empty) {}
-
-	// filesystem.
-	rpc Directory (DirectoryRequest) returns (DirectoryResponse) {}
-	rpc DirectoryStream (DirectoryRequest) returns (stream DirectoryResponse) {}
-	rpc CreateDirectory (CreateDirectoryRequest) returns (CreateDirectoryResponse) {}
-	rpc DeleteNode (DeleteNodeRequest) returns (google.protobuf.Empty) {}
-	rpc RenameNode (RenameNodeRequest) returns (RenameNodeResponse) {}
-	rpc Node (NodeRequest) returns (NodeResponse) {}
-	rpc Workflow (WorkflowRequest) returns (WorkflowResponse) {}
-	rpc WorkflowStream (WorkflowRequest) returns (stream WorkflowResponse) {}
-	rpc CreateWorkflow (CreateWorkflowRequest) returns (CreateWorkflowResponse) {}
-	rpc UpdateWorkflow (UpdateWorkflowRequest) returns (UpdateWorkflowResponse) {}
-
-	// secrets.
-	rpc Secrets (SecretsRequest) returns (SecretsResponse) {}
-	rpc SecretsStream (SecretsRequest) returns (stream SecretsResponse) {}
-	rpc SetSecret (SetSecretRequest) returns (SetSecretResponse) {}
-	rpc CreateSecretsFolder (CreateSecretsFolderRequest) returns (CreateSecretsFolderResponse) {}
-	rpc DeleteSecret (DeleteSecretRequest) returns (google.protobuf.Empty) {}
-	rpc DeleteSecretsFolder(DeleteSecretsFolderRequest) returns  (google.protobuf.Empty)  {}
-	rpc SearchSecret (SearchSecretRequest) returns (SearchSecretResponse) {}
-	rpc UpdateSecret (UpdateSecretRequest) returns (UpdateSecretResponse) {}
-
 	// instances.
 	rpc Instance (InstanceRequest) returns (InstanceResponse) {}
 	rpc InstanceStream (InstanceRequest) returns (stream InstanceResponse) {}
@@ -57,79 +22,37 @@ service Flow {
 	rpc InstanceInput (InstanceInputRequest) returns (InstanceInputResponse) {}
 	rpc InstanceOutput (InstanceOutputRequest) returns (InstanceOutputResponse) {}
 	rpc InstanceMetadata (InstanceMetadataRequest) returns (InstanceMetadataResponse) {}
-	rpc ReleaseInstance (ReleaseInstanceRequest) returns (ReleaseInstanceResponse) {}
 
 
 	// workflows.
 	rpc StartWorkflow (StartWorkflowRequest) returns (StartWorkflowResponse) {}
-	rpc RunWorkflow (RunWorkflowRequest) returns (stream RunWorkflowResponse) {}
 	rpc AwaitWorkflow (AwaitWorkflowRequest) returns (stream AwaitWorkflowResponse) {}
 	rpc CancelInstance (CancelInstanceRequest) returns (google.protobuf.Empty) {}
 	rpc BroadcastCloudevent (BroadcastCloudeventRequest) returns (google.protobuf.Empty) {}
 
 	// variables.
 	rpc NamespaceVariable (NamespaceVariableRequest) returns (NamespaceVariableResponse) {}
-	rpc NamespaceVariableParcels (NamespaceVariableRequest) returns (stream NamespaceVariableResponse) {}
-	rpc NamespaceVariables (NamespaceVariablesRequest) returns (NamespaceVariablesResponse) {}
-	rpc NamespaceVariablesStream (NamespaceVariablesRequest) returns (stream NamespaceVariablesResponse) {}
-	rpc SetNamespaceVariable (SetNamespaceVariableRequest) returns (SetNamespaceVariableResponse) {}
 	rpc SetNamespaceVariableParcels (stream SetNamespaceVariableRequest) returns (SetNamespaceVariableResponse) {}
-	rpc DeleteNamespaceVariable (DeleteNamespaceVariableRequest) returns (google.protobuf.Empty) {}
-	rpc RenameNamespaceVariable (RenameNamespaceVariableRequest) returns (RenameNamespaceVariableResponse) {}
 	rpc WorkflowVariable (WorkflowVariableRequest) returns (WorkflowVariableResponse) {}
-	rpc WorkflowVariableParcels (WorkflowVariableRequest) returns (stream WorkflowVariableResponse) {}
-	rpc WorkflowVariables (WorkflowVariablesRequest) returns (WorkflowVariablesResponse) {}
-	rpc WorkflowVariablesStream (WorkflowVariablesRequest) returns (stream WorkflowVariablesResponse) {}
-	rpc SetWorkflowVariable (SetWorkflowVariableRequest) returns (SetWorkflowVariableResponse) {}
 	rpc SetWorkflowVariableParcels (stream SetWorkflowVariableRequest) returns (SetWorkflowVariableResponse) {}
-	rpc DeleteWorkflowVariable (DeleteWorkflowVariableRequest) returns (google.protobuf.Empty) {}
-	rpc RenameWorkflowVariable (RenameWorkflowVariableRequest) returns (RenameWorkflowVariableResponse) {}
 	rpc InstanceVariable (InstanceVariableRequest) returns (InstanceVariableResponse) {}
-	rpc InstanceVariableParcels (InstanceVariableRequest) returns (stream InstanceVariableResponse) {}
-	rpc InstanceVariables (InstanceVariablesRequest) returns (InstanceVariablesResponse) {}
-	rpc InstanceVariablesStream (InstanceVariablesRequest) returns (stream InstanceVariablesResponse) {}
-	rpc SetInstanceVariable (SetInstanceVariableRequest) returns (SetInstanceVariableResponse) {}
 	rpc SetInstanceVariableParcels (stream SetInstanceVariableRequest) returns (SetInstanceVariableResponse) {}
-	rpc DeleteInstanceVariable (DeleteInstanceVariableRequest) returns (google.protobuf.Empty) {}
-	rpc RenameInstanceVariable (RenameInstanceVariableRequest) returns (RenameInstanceVariableResponse) {}
 
 	//
 	rpc JQ (JQRequest) returns (JQResponse) {}
-	rpc WorkflowMetrics (WorkflowMetricsRequest) returns (WorkflowMetricsResponse) {}
 
 	// events.
-	rpc EventListeners (EventListenersRequest) returns (EventListenersResponse) {} 
+	rpc EventListeners (EventListenersRequest) returns (EventListenersResponse) {}
 	rpc EventListenersStream (EventListenersRequest) returns (stream EventListenersResponse) {}
 	rpc EventHistory (EventHistoryRequest) returns (EventHistoryResponse) {}
 	rpc EventHistoryStream (EventHistoryRequest) returns (stream EventHistoryResponse) {}
 	rpc HistoricalEvent (HistoricalEventRequest) returns (HistoricalEventResponse) {}
 	rpc ReplayEvent (ReplayEventRequest) returns (google.protobuf.Empty) {}
-
-	//
-	rpc ResolveNamespaceUID (ResolveNamespaceUIDRequest) returns (NamespaceResponse) {}
-
-	// mirrors.
-	rpc CreateNamespaceMirror (CreateNamespaceMirrorRequest) returns (CreateNamespaceResponse) {}
-	rpc CreateDirectoryMirror (CreateDirectoryMirrorRequest) returns (CreateDirectoryResponse) {}
-	rpc UpdateMirrorSettings (UpdateMirrorSettingsRequest) returns (google.protobuf.Empty) {}
-	rpc LockMirror(LockMirrorRequest) returns (google.protobuf.Empty) {}
-	rpc UnlockMirror(UnlockMirrorRequest) returns (google.protobuf.Empty) {}
-	rpc SoftSyncMirror(SoftSyncMirrorRequest) returns (google.protobuf.Empty) {}
-	rpc HardSyncMirror(HardSyncMirrorRequest) returns (google.protobuf.Empty) {}
-	rpc MirrorInfo(MirrorInfoRequest) returns (MirrorInfoResponse) {}
-	rpc MirrorInfoStream(MirrorInfoRequest) returns (stream MirrorInfoResponse) {}
-	rpc CancelMirrorActivity (CancelMirrorActivityRequest) returns (google.protobuf.Empty) {}
-
-	//
-	rpc File (FileRequest) returns (FileResponse) {}
-	rpc CreateFile (CreateFileRequest) returns (CreateFileResponse) {}
-	rpc UpdateFile (UpdateFileRequest) returns (UpdateFileResponse) {}
-	rpc NamespaceLint (NamespaceLintRequest) returns (NamespaceLintResponse) {}
 }
 
 service Internal {
- 	rpc ReportActionResults (ReportActionResultsRequest) returns (google.protobuf.Empty) {}
- 	rpc ActionLog(ActionLogRequest) returns (google.protobuf.Empty) {}
+	rpc ReportActionResults (ReportActionResultsRequest) returns (google.protobuf.Empty) {}
+	rpc ActionLog(ActionLogRequest) returns (google.protobuf.Empty) {}
 
 	rpc NamespaceVariableParcels (VariableInternalRequest) returns (stream VariableInternalResponse) {}
 	rpc SetNamespaceVariableParcels (stream SetVariableInternalRequest) returns (SetVariableInternalResponse) {}
@@ -140,6 +63,7 @@ service Internal {
 	rpc FileVariableParcels (VariableInternalRequest) returns (stream VariableInternalResponse) {}
 }
 
-service Eventing {
-	rpc RequestEvents (EventingRequest) returns (stream CloudEvent) {}
-}
+// Todo: Yassir, delete this entirely in cycle6.
+//service Eventing {
+//	rpc RequestEvents (EventingRequest) returns (stream CloudEvent) {}
+//}

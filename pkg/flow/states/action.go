@@ -15,6 +15,7 @@ import (
 	"github.com/senseyeio/duration"
 )
 
+//nolint:gochecknoinits
 func init() {
 	RegisterState(model.StateTypeAction, Action)
 }
@@ -246,5 +247,6 @@ func (logic *actionLogic) label() string {
 	if logic.Action != nil {
 		return fmt.Sprintf("%s/action:%s", logic.ID, logic.Action.Function)
 	}
+
 	return fmt.Sprintf("from state %s", logic.ID)
 }

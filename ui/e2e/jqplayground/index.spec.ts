@@ -19,7 +19,7 @@ test.beforeEach(async ({ page }) => {
    * networkidle is required to avoid flaky tests. The monaco
    * editor needs to be full loaded before we interact with it.
    */
-  await page.goto(`/${namespace}/jq`, { waitUntil: "networkidle" });
+  await page.goto(`/n/${namespace}/jq`, { waitUntil: "networkidle" });
 });
 
 test.afterEach(async () => {

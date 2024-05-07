@@ -2,9 +2,9 @@ import { beforeAll, describe, expect, it } from '@jest/globals'
 
 import common from '../common'
 import request from '../common/request'
-import { retry10 } from '../common/retry'
+import { retry10, retry50 } from '../common/retry'
 
-const testNamespace = 'gateway'
+const testNamespace = 'system'
 const limitedNamespace = 'limited_namespace'
 
 const workflow = `
@@ -195,7 +195,7 @@ describe('Test target workflow wrong config', () => {
 						path: '/endpoint3',
 						methods: [ 'GET' ],
 						allow_anonymous: true,
-						server_path: '/gw/endpoint3',
+						server_path: '/ns/system/endpoint3',
 						timeout: 0,
 						errors: [ 'flow required' ],
 						warnings: [],
@@ -228,9 +228,9 @@ describe('Test target workflow with errors', () => {
 		endpointErrorWorkflow,
 	)
 
-	retry10(`should return a workflow run from magic namespace`, async () => {
+	retry50(`should return a workflow run from magic namespace`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(
-			`/gw/endpoint3`,
+			`/ns/system/endpoint3`,
 		)
 		expect(req.statusCode).toEqual(500)
 		expect(req.text).toContain('error executing workflow: badinput: Missing or invalid value for required input.')
@@ -291,9 +291,9 @@ describe('Test target workflow plugin', () => {
 		endpointWorkflowAllowed,
 	)
 
-	retry10(`should return a workflow run from magic namespace`, async () => {
+	retry50(`should return a workflow run from magic namespace`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(
-			`/gw/endpoint1`,
+			`/ns/system/endpoint1`,
 		)
 		expect(req.statusCode).toEqual(200)
 		expect(req.text).toEqual('{"result":"Hello world!"}')
@@ -301,7 +301,7 @@ describe('Test target workflow plugin', () => {
 
 	retry10(`should return a flow run from magic namespace with namespace set`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(
-			`/gw/endpoint2`,
+			`/ns/system/endpoint2`,
 		)
 		expect(req.statusCode).toEqual(200)
 		expect(req.text).toEqual('{"result":"Hello world!"}')
@@ -346,9 +346,9 @@ describe('Test POST method for target workflow plugin', () => {
 		endpointPOSTWorkflow,
 	)
 
-	retry10(`should return a workflow run from magic namespace`, async () => {
+	retry50(`should return a workflow run from magic namespace`, async () => {
 		const req = await request(common.config.getDirektivHost()).post(
-			`/gw/endpoint1`,
+			`/ns/system/endpoint1`,
 		)
 			.send({ message: 'Hi' })
 		expect(req.statusCode).toEqual(200)
@@ -378,9 +378,9 @@ describe('Test Complex POST method for target workflow plugin', () => {
 		endpointComplexPOSTWorkflow,
 	)
 
-	retry10(`should return a workflow run from magic namespace`, async () => {
+	retry50(`should return a workflow run from magic namespace`, async () => {
 		const req = await request(common.config.getDirektivHost()).post(
-			`/gw/endpoint1`,
+			`/ns/system/endpoint1`,
 		)
 			.send({ message: 'Hi' })
 		expect(req.statusCode).toEqual(200)
@@ -420,7 +420,7 @@ describe('Test scope for target workflow plugin', () => {
 
 	retry10(`should return a workflow run from limited namespace`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(
-			`/gw/endpoint1`,
+			`/ns/system/endpoint1`,
 		)
 		expect(req.statusCode).toEqual(200)
 		expect(req.text).toEqual('{"result":"Hello world!"}')
@@ -458,7 +458,7 @@ describe('Test target workflow default contenttype', () => {
 
 	retry10(`should return a json content type`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(
-			`/gw/endpointct`,
+			`/ns/system/endpointct`,
 		)
 
 		expect(req.headers['content-type']).toEqual('application/json')
@@ -467,7 +467,7 @@ describe('Test target workflow default contenttype', () => {
 
 	retry10(`should return a configured content type`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(
-			`/gw/endpointcttest`,
+			`/ns/system/endpointcttest`,
 		)
 
 		expect(req.headers['content-type']).toEqual('test/me')

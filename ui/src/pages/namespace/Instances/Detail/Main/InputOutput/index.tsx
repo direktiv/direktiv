@@ -13,8 +13,8 @@ const InputOutput = () => {
   const { data } = useInstanceDetails({ instanceId });
   const tabs = ["input", "output"] as const;
 
-  const instanceWasSuccessfull = data?.instance.status === "complete";
-  const instanceIsFinished = data?.instance.status !== "pending";
+  const instanceWasSuccessfull = data?.status === "complete";
+  const instanceIsFinished = data?.status !== "pending";
 
   const [activeTab, setActiveTab] = useState<(typeof tabs)[number]>(
     instanceWasSuccessfull ? "output" : "input"
@@ -33,6 +33,7 @@ const InputOutput = () => {
   return (
     <div className="flex grow">
       <Tabs
+        data-testid="inputOutputPanel"
         value={activeTab}
         className="flex w-full grid-rows-[auto_1fr] flex-col"
         onValueChange={(value) => {

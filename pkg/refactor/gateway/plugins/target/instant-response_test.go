@@ -20,7 +20,7 @@ func TestConfigInstaneResponsePlugin(t *testing.T) {
 	}
 
 	p, _ := plugins.GetPluginFromRegistry(target.InstantResponsePluginName)
-	p2, _ := p.Configure(config, core.MagicalGatewayNamespace)
+	p2, _ := p.Configure(config, core.SystemNamespace)
 
 	configOut := p2.Config().(*target.InstantResponseConfig)
 	assert.Equal(t, config.StatusCode, configOut.StatusCode)
@@ -30,7 +30,7 @@ func TestConfigInstaneResponsePlugin(t *testing.T) {
 func TestExecuteInstantResponsePlugin(t *testing.T) {
 	p, _ := plugins.GetPluginFromRegistry(target.InstantResponsePluginName)
 
-	p2, _ := p.Configure(nil, core.MagicalGatewayNamespace)
+	p2, _ := p.Configure(nil, core.SystemNamespace)
 
 	w := httptest.NewRecorder()
 
@@ -45,7 +45,7 @@ func TestExecuteInstantResponsePlugin(t *testing.T) {
 		StatusMessage: "HELLO WORLD",
 		ContentType:   "application/demo",
 	}
-	p2, _ = p.Configure(config, core.MagicalGatewayNamespace)
+	p2, _ = p.Configure(config, core.SystemNamespace)
 
 	w = httptest.NewRecorder()
 	p2.ExecutePlugin(nil, w, r)
@@ -61,7 +61,7 @@ func TestExecuteInstantResponsePlugin(t *testing.T) {
 		StatusCode:    http.StatusOK,
 		StatusMessage: "{ \"hello\": \"world\" }",
 	}
-	p2, _ = p.Configure(config, core.MagicalGatewayNamespace)
+	p2, _ = p.Configure(config, core.SystemNamespace)
 
 	w = httptest.NewRecorder()
 	p2.ExecutePlugin(nil, w, r)

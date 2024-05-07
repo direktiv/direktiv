@@ -27,7 +27,7 @@ func (srv *server) getInstance(ctx context.Context, namespace, instanceID string
 		return nil, err
 	}
 
-	tx, err := srv.flow.beginSqlTx(ctx)
+	tx, err := srv.flow.beginSQLTx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +61,7 @@ func (internal *internal) getInstance(ctx context.Context, instanceID string) (*
 		return nil, err
 	}
 
-	tx, err := internal.flow.beginSqlTx(ctx)
+	tx, err := internal.flow.beginSQLTx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -80,6 +80,7 @@ func (internal *internal) getInstance(ctx context.Context, instanceID string) (*
 	return instance, nil
 }
 
+//nolint:dupl
 func (flow *flow) InstanceInput(ctx context.Context, req *grpc.InstanceInputRequest) (*grpc.InstanceInputResponse, error) {
 	slog.Debug("Handling gRPC request", "this", this())
 
@@ -88,7 +89,7 @@ func (flow *flow) InstanceInput(ctx context.Context, req *grpc.InstanceInputRequ
 		return nil, err
 	}
 
-	tx, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSQLTx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -119,6 +120,7 @@ func (flow *flow) InstanceInput(ctx context.Context, req *grpc.InstanceInputRequ
 	return &resp, nil
 }
 
+//nolint:dupl
 func (flow *flow) InstanceOutput(ctx context.Context, req *grpc.InstanceOutputRequest) (*grpc.InstanceOutputResponse, error) {
 	slog.Debug("Handling gRPC request", "this", this())
 
@@ -127,7 +129,7 @@ func (flow *flow) InstanceOutput(ctx context.Context, req *grpc.InstanceOutputRe
 		return nil, err
 	}
 
-	tx, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSQLTx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -158,6 +160,7 @@ func (flow *flow) InstanceOutput(ctx context.Context, req *grpc.InstanceOutputRe
 	return &resp, nil
 }
 
+//nolint:dupl
 func (flow *flow) InstanceMetadata(ctx context.Context, req *grpc.InstanceMetadataRequest) (*grpc.InstanceMetadataResponse, error) {
 	slog.Debug("Handling gRPC request", "this", this())
 
@@ -166,7 +169,7 @@ func (flow *flow) InstanceMetadata(ctx context.Context, req *grpc.InstanceMetada
 		return nil, err
 	}
 
-	tx, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSQLTx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -201,14 +204,14 @@ func (flow *flow) Instances(ctx context.Context, req *grpc.InstancesRequest) (*g
 	slog.Debug("Handling gRPC request", "this", this())
 
 	opts := new(instancestore.ListOpts)
-	if req.Pagination != nil {
-		opts.Limit = int(req.Pagination.Limit)
-		opts.Offset = int(req.Pagination.Offset)
+	if req.GetPagination() != nil {
+		opts.Limit = int(req.GetPagination().GetLimit())
+		opts.Offset = int(req.GetPagination().GetOffset())
 
-		for idx := range req.Pagination.Order {
-			x := req.Pagination.Order[idx]
+		for idx := range req.GetPagination().GetOrder() {
+			x := req.GetPagination().GetOrder()[idx]
 			var order instancestore.Order
-			switch x.Direction {
+			switch x.GetDirection() {
 			case "":
 				fallthrough
 			case "DESC":
@@ -218,11 +221,11 @@ func (flow *flow) Instances(ctx context.Context, req *grpc.InstancesRequest) (*g
 				return nil, instancestore.ErrBadListOpts
 			}
 
-			switch x.Field {
+			switch x.GetField() {
 			case "CREATED":
 				order.Field = instancestore.FieldCreatedAt
 			default:
-				order.Field = x.Field
+				order.Field = x.GetField()
 			}
 
 			opts.Orders = append(opts.Orders, order)
@@ -230,11 +233,11 @@ func (flow *flow) Instances(ctx context.Context, req *grpc.InstancesRequest) (*g
 
 		var err error
 
-		for idx := range req.Pagination.Filter {
-			x := req.Pagination.Filter[idx]
+		for idx := range req.GetPagination().GetFilter() {
+			x := req.GetPagination().GetFilter()[idx]
 			var filter instancestore.Filter
 
-			switch x.Type {
+			switch x.GetType() {
 			case "CONTAINS":
 				filter.Kind = instancestore.FilterKindContains
 			case "WORKFLOW":
@@ -248,39 +251,39 @@ func (flow *flow) Instances(ctx context.Context, req *grpc.InstancesRequest) (*g
 			case "BEFORE":
 				filter.Kind = instancestore.FilterKindBefore
 			default:
-				filter.Kind = x.Type
+				filter.Kind = x.GetType()
 			}
 
-			switch x.Field {
+			switch x.GetField() {
 			case "AS":
 				filter.Field = instancestore.FieldWorkflowPath
-				filter.Value = x.Val
+				filter.Value = x.GetVal()
 			case "CREATED":
 				filter.Field = instancestore.FieldCreatedAt
-				t, err := time.Parse(time.RFC3339, x.Val)
+				t, err := time.Parse(time.RFC3339, x.GetVal())
 				if err != nil {
 					return nil, instancestore.ErrBadListOpts
 				}
 				filter.Value = t.UTC()
 			case "STATUS":
 				filter.Field = instancestore.FieldStatus
-				filter.Value, err = instancestore.InstanceStatusFromString(x.Val)
+				filter.Value, err = instancestore.InstanceStatusFromString(x.GetVal())
 				if err != nil {
 					return nil, instancestore.ErrBadListOpts
 				}
 			case "TRIGGER":
 				filter.Field = instancestore.FieldInvoker
-				filter.Value = x.Val
+				filter.Value = x.GetVal()
 			default:
-				filter.Field = x.Field
-				filter.Value = x.Val
+				filter.Field = x.GetField()
+				filter.Value = x.GetVal()
 			}
 
 			opts.Filters = append(opts.Filters, filter)
 		}
 	}
 
-	tx, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSQLTx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -345,7 +348,7 @@ func (flow *flow) Instance(ctx context.Context, req *grpc.InstanceRequest) (*grp
 		return nil, err
 	}
 
-	tx, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSQLTx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -395,12 +398,11 @@ func (flow *flow) InstanceStream(req *grpc.InstanceRequest, srv grpc.Flow_Instan
 	slog.Debug("Handling gRPC request", "this", this())
 
 	ctx := srv.Context()
-	phash := ""
-	nhash := ""
+	var phash, nhash string
 
 	var err error
 	var ns *datastore.Namespace
-	err = flow.runSqlTx(ctx, func(tx *database.SQLStore) error {
+	err = flow.runSQLTx(ctx, func(tx *database.SQLStore) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
 		return err
 	})
@@ -417,7 +419,7 @@ func (flow *flow) InstanceStream(req *grpc.InstanceRequest, srv grpc.Flow_Instan
 
 resend:
 
-	tx, err := flow.beginSqlTx(ctx)
+	tx, err := flow.beginSQLTx(ctx)
 	if err != nil {
 		return err
 	}
@@ -433,6 +435,7 @@ resend:
 	if sub == nil {
 		sub = flow.pubsub.SubscribeInstance(idata.ID)
 		defer flow.cleanup(sub.Close)
+
 		goto resend
 	}
 
@@ -478,7 +481,7 @@ func (engine *engine) StartWorkflow(ctx context.Context, namespace, path string,
 	var err error
 	var ns *datastore.Namespace
 
-	err = engine.runSqlTx(ctx, func(tx *database.SQLStore) error {
+	err = engine.runSQLTx(ctx, func(tx *database.SQLStore) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, namespace)
 		return err
 	})
@@ -512,7 +515,7 @@ func (engine *engine) StartWorkflow(ctx context.Context, namespace, path string,
 		return nil, err
 	}
 
-	go engine.start(im)
+	go engine.start(im) //nolint:contextcheck
 
 	return im.instance.Instance, nil
 }
@@ -537,7 +540,7 @@ func (engine *engine) CancelInstance(ctx context.Context, namespace, instanceID 
 		return err
 	}
 
-	engine.cancelInstance(instance.Instance.ID.String(), "direktiv.cancels.api", "cancelled by api request", false)
+	engine.cancelInstance(instance.Instance.ID.String(), "direktiv.cancels.api", "cancelled by api request", false) //nolint:contextcheck
 
 	return nil
 }
@@ -563,6 +566,7 @@ func (tmc *grpcMetadataTMC) Get(k string) string {
 	if len(array) == 0 {
 		return ""
 	}
+
 	return array[0]
 }
 
@@ -571,6 +575,7 @@ func (tmc *grpcMetadataTMC) Keys() []string {
 	if keys == nil {
 		keys = make([]string, 0)
 	}
+
 	return keys
 }
 
@@ -592,13 +597,13 @@ func (flow *flow) AwaitWorkflow(req *grpc.AwaitWorkflowRequest, srv grpc.Flow_Aw
 	carrier := &grpcMetadataTMC{&metadataCopy}
 	ctx = prop.Extract(ctx, carrier)
 
-	phash := ""
-	nhash := ""
+	var phash, nhash string
 
 	var err error
 	var ns *datastore.Namespace
-	err = flow.runSqlTx(ctx, func(tx *database.SQLStore) error {
+	err = flow.runSQLTx(ctx, func(tx *database.SQLStore) error {
 		ns, err = tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
+
 		return err
 	})
 	if err != nil {
@@ -633,6 +638,7 @@ func (flow *flow) AwaitWorkflow(req *grpc.AwaitWorkflowRequest, srv grpc.Flow_Aw
 	im, err := flow.engine.NewInstance(ctx, args)
 	if err != nil {
 		slog.Debug("Error returned to gRPC request", "this", this(), "error", err)
+
 		return err
 	}
 
@@ -648,6 +654,7 @@ resend:
 	instance, err = flow.getInstance(ctx, req.GetNamespace(), im.instance.Instance.ID.String())
 	if err != nil {
 		slog.Debug("Error returned to gRPC request", "this", this(), "error", err)
+
 		return err
 	}
 
@@ -658,15 +665,14 @@ resend:
 	resp.Flow = instance.RuntimeInfo.Flow
 	resp.Data = instance.Instance.Output
 	rwf := new(grpc.InstanceWorkflow)
-	// rwf.Name = cached.File.Name()
-	// rwf.Parent = cached.Dir()
 	rwf.Path = instance.Instance.WorkflowPath
 	resp.Workflow = rwf
 
 	if instance.Instance.Status == instancestore.InstanceStatusComplete {
-		tx, err := flow.beginSqlTx(ctx)
+		tx, err := flow.beginSQLTx(ctx)
 		if err != nil {
 			slog.Debug("Error returned to gRPC request", "this", this(), "error", err)
+
 			return err
 		}
 		defer tx.Rollback()
@@ -674,6 +680,7 @@ resend:
 		idata, err := tx.InstanceStore().ForInstanceID(instance.Instance.ID).GetSummaryWithOutput(ctx)
 		if err != nil {
 			slog.Debug("Error returned to gRPC request", "this", this(), "error", err)
+
 			return err
 		}
 
@@ -687,6 +694,7 @@ resend:
 		err = srv.Send(resp)
 		if err != nil {
 			slog.Debug("Error returned to gRPC request", "this", this(), "error", err)
+
 			return err
 		}
 	}

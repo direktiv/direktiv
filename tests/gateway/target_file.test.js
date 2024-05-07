@@ -4,7 +4,7 @@ import common from '../common'
 import request from '../common/request'
 import { retry10 } from '../common/retry'
 
-const testNamespace = 'gateway'
+const testNamespace = 'system'
 
 const limitedNamespace = 'limited_namespace'
 
@@ -94,7 +94,7 @@ describe('Test target file wrong config', () => {
 						file_path: '/ep3.yaml',
 						path: '/endpoint3',
 						methods: [ 'GET' ],
-						server_path: '/gw/endpoint3',
+						server_path: '/ns/system/endpoint3',
 						allow_anonymous: true,
 						timeout: 0,
 						errors: [ 'file is required' ],
@@ -121,9 +121,9 @@ describe('Test mimetype for file target', () => {
 
 	retry10(`should return a configured mimetype`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(
-			`/gw/endpoint-mimetype`,
+			`/ns/system/endpoint-mimetype`,
 		)
-		expect(req["headers"]["content-type"]).toEqual("application/whatever")
+		expect(req.headers['content-type']).toEqual('application/whatever')
 	})
 
 	common.helpers.itShouldCreateYamlFileV2(
@@ -136,11 +136,10 @@ describe('Test mimetype for file target', () => {
 
 	retry10(`should return a guess mimetype (yaml)`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(
-			`/gw/endpoint-no-mimetype`,
+			`/ns/system/endpoint-no-mimetype`,
 		)
-		expect(req["headers"]["content-type"]).toEqual("application/yaml")
+		expect(req.headers['content-type']).toEqual('application/yaml')
 	})
-
 })
 
 describe('Test target namespace file plugin', () => {
@@ -183,7 +182,7 @@ describe('Test target namespace file plugin', () => {
 
 	retry10(`should return a file from magic namespace`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(
-			`/gw/endpoint1`,
+			`/ns/system/endpoint1`,
 		)
 		expect(req.statusCode).toEqual(200)
 		expect(req.text).toEqual(endpointNSFile)
@@ -191,7 +190,7 @@ describe('Test target namespace file plugin', () => {
 
 	retry10(`should return a file from magic namespace without namespace set`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(
-			`/gw/endpoint2`,
+			`/ns/system/endpoint2`,
 		)
 		expect(req.statusCode).toEqual(200)
 		expect(req.text).toEqual(endpointNSFile)

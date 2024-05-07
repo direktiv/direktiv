@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import { useMatches, useParams, useSearchParams } from "react-router-dom";
 
-import Activities from "~/pages/namespace/Mirror/Activities";
 import ConsumerEditorPage from "~/pages/namespace/Explorer/Consumer";
 import EndpointEditorPage from "~/pages/namespace/Explorer/Endpoint";
 import ErrorPage from "./ErrorPage";
@@ -29,7 +28,8 @@ import InstancesPageDetail from "~/pages/namespace/Instances/Detail";
 import InstancesPageList from "~/pages/namespace/Instances/List";
 import JqPlaygroundPage from "~/pages/namespace/JqPlayground";
 import Listeners from "~/pages/namespace/Events/Listeners";
-import Logs from "~/pages/namespace/Mirror/Activities/Detail";
+import Logs from "~/pages/namespace/Mirror/Detail/Sync";
+import MirrorDetail from "~/pages/namespace/Mirror/Detail";
 import MirrorPage from "~/pages/namespace/Mirror";
 import MonitoringPage from "~/pages/namespace/Monitoring";
 import PermissionsPage from "~/pages/namespace/Permissions";
@@ -49,6 +49,7 @@ import WorkflowPageOverview from "~/pages/namespace/Explorer/Workflow/Overview";
 import WorkflowPageServices from "~/pages/namespace/Explorer/Workflow/Services";
 import WorkflowPageSettings from "~/pages/namespace/Explorer/Workflow/Settings";
 import { checkHandlerInMatcher as checkHandler } from "./utils";
+import { isEnterprise } from "~/config/env/utils";
 import { removeLeadingSlash } from "~/api/files/utils";
 
 type PageBase = {
@@ -155,11 +156,11 @@ type EventsPageSetup = Record<
 type MirrorPageSetup = Record<
   "mirror",
   PageBase & {
-    createHref: (params: { namespace: string; activity?: string }) => string;
+    createHref: (params: { namespace: string; sync?: string }) => string;
     useParams: () => {
-      activity?: string;
+      sync?: string;
       isMirrorPage: boolean;
-      isActivityDetailPage: boolean;
+      isSyncDetailPage: boolean;
     };
   }
 >;
@@ -244,8 +245,7 @@ type PermissionsPageSetup = Partial<
 
 type EnterprisePageType = PermissionsPageSetup;
 
-export const enterprisePages: EnterprisePageType = process.env.VITE
-  ?.VITE_IS_ENTERPRISE
+export const enterprisePages: EnterprisePageType = isEnterprise()
   ? {
       permissions: {
         name: "components.mainMenu.permissions",
@@ -258,7 +258,7 @@ export const enterprisePages: EnterprisePageType = process.env.VITE
           if (params.subpage === "tokens") {
             subpage = "/tokens";
           }
-          return `/${params.namespace}/permissions${subpage}`;
+          return `/n/${params.namespace}/permissions${subpage}`;
         },
         useParams: () => {
           const [, secondLevel, thirdLevel] = useMatches(); // first level is namespace level
@@ -350,7 +350,7 @@ export const pages: PageType & EnterprisePageType = {
       const searchParamsString = searchParams.toString();
       const urlParams = searchParamsString ? `?${searchParamsString}` : "";
 
-      return `/${params.namespace}/explorer/${subpage}${path}${urlParams}`;
+      return `/n/${params.namespace}/explorer/${subpage}${path}${urlParams}`;
     },
     useParams: () => {
       const { "*": path, namespace } = useParams();
@@ -452,7 +452,7 @@ export const pages: PageType & EnterprisePageType = {
   monitoring: {
     name: "components.mainMenu.monitoring",
     icon: ActivitySquare,
-    createHref: (params) => `/${params.namespace}/monitoring`,
+    createHref: (params) => `/n/${params.namespace}/monitoring`,
     useParams: () => {
       const [, secondLevel] = useMatches(); // first level is namespace level
       const isMonitoringPage = checkHandler(secondLevel, "isMonitoringPage");
@@ -468,7 +468,7 @@ export const pages: PageType & EnterprisePageType = {
     name: "components.mainMenu.instances",
     icon: Boxes,
     createHref: (params) =>
-      `/${params.namespace}/instances${
+      `/n/${params.namespace}/instances${
         params.instance ? `/${params.instance}` : ""
       }`,
     useParams: () => {
@@ -514,7 +514,7 @@ export const pages: PageType & EnterprisePageType = {
     name: "components.mainMenu.events",
     icon: Radio,
     createHref: (params) =>
-      `/${params.namespace}/events/${
+      `/n/${params.namespace}/events/${
         params?.subpage === "eventlisteners" ? `listeners` : "history"
       }`,
     useParams: () => {
@@ -558,7 +558,7 @@ export const pages: PageType & EnterprisePageType = {
       if (params.subpage === "consumers") {
         subpage = "consumers";
       }
-      return `/${params.namespace}/gateway/${subpage}`;
+      return `/n/${params.namespace}/gateway/${subpage}`;
     },
     useParams: () => {
       const { "*": path } = useParams();
@@ -612,7 +612,7 @@ export const pages: PageType & EnterprisePageType = {
     name: "components.mainMenu.services",
     icon: Layers,
     createHref: (params) =>
-      `/${params.namespace}/services${
+      `/n/${params.namespace}/services${
         params.service ? `/${params.service}` : ""
       }`,
     useParams: () => {
@@ -655,18 +655,18 @@ export const pages: PageType & EnterprisePageType = {
     name: "components.mainMenu.mirror",
     icon: GitCompare,
     createHref: (params) =>
-      `/${params.namespace}/mirror/${
-        params?.activity ? `logs/${params.activity}` : ""
+      `/n/${params.namespace}/mirror/${
+        params?.sync ? `logs/${params.sync}` : ""
       }`,
     useParams: () => {
-      const { activity } = useParams();
+      const { sync } = useParams();
       const [, secondLevel, thirdLevel] = useMatches(); // first level is namespace level
       const isMirrorPage = checkHandler(secondLevel, "isMirrorPage");
-      const isActivityDetailPage = checkHandler(thirdLevel, "isMirrorLogsPage");
+      const isSyncDetailPage = checkHandler(thirdLevel, "isMirrorLogsPage");
       return {
         isMirrorPage,
-        isActivityDetailPage,
-        activity: isActivityDetailPage ? activity : undefined,
+        isSyncDetailPage,
+        sync: isSyncDetailPage ? sync : undefined,
       };
     },
     route: {
@@ -676,11 +676,11 @@ export const pages: PageType & EnterprisePageType = {
       children: [
         {
           path: "",
-          element: <Activities />,
-          handle: { isMirrorActivitiesPage: true },
+          element: <MirrorDetail />,
+          handle: { isMirrorDetailPage: true },
         },
         {
-          path: "logs/:activity",
+          path: "logs/:sync",
           element: <Logs />,
           handle: { isMirrorLogsPage: true },
         },
@@ -691,7 +691,7 @@ export const pages: PageType & EnterprisePageType = {
   settings: {
     name: "components.mainMenu.settings",
     icon: Settings,
-    createHref: (params) => `/${params.namespace}/settings`,
+    createHref: (params) => `/n/${params.namespace}/settings`,
     useParams: () => {
       const [, secondLevel] = useMatches(); // first level is namespace level
       const isSettingsPage = checkHandler(secondLevel, "isSettingsPage");
@@ -706,7 +706,7 @@ export const pages: PageType & EnterprisePageType = {
   jqPlayground: {
     name: "components.mainMenu.jqPlayground",
     icon: PlaySquare,
-    createHref: (params) => `/${params.namespace}/jq`,
+    createHref: (params) => `/n/${params.namespace}/jq`,
     useParams: () => {
       const [, secondLevel] = useMatches(); // first level is namespace level
       const isJqPlaygroundPage = checkHandler(

@@ -2,9 +2,9 @@ import { beforeAll, describe, expect, it } from '@jest/globals'
 
 import common from '../common'
 import request from '../common/request'
-import { retry10 } from '../common/retry'
+import { retry10, retry50 } from '../common/retry'
 
-const testNamespace = 'gateway'
+const testNamespace = 'system'
 
 const limitedNamespace = 'limited_namespace'
 
@@ -85,7 +85,7 @@ describe('Test target workflow var wrong config', () => {
 						methods: [ 'GET' ],
 						allow_anonymous: true,
 						timeout: 0,
-						server_path: '/gw/ep3',
+						server_path: '/ns/system/ep3',
 						errors: [ 'flow and variable required' ],
 						warnings: [],
 						plugins: { target: { type: 'target-flow-var' } },
@@ -150,23 +150,31 @@ describe('Test target workflow variable plugin', () => {
 		endpointWorkflowVarAllowed,
 	)
 
-	it(`should set plain text variable for worklfow`, async () => {
-		const workflowVarResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${ testNamespace }/tree/workflow.yaml?op=set-var&var=test`)
-			.set('Content-Type', 'text/plain')
-			.send('Hello World')
+	it(`should set plain text variable`, async () => {
+		const workflowVarResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ testNamespace }/variables`)
+			.send({
+				name: 'test',
+				workflowPath: '/workflow.yaml',
+				data: btoa('Hello World'),
+				mimeType: 'text/plain',
+			})
 		expect(workflowVarResponse.statusCode).toEqual(200)
 	})
 
 	it(`should set plain text variable for worklfow in limited namespace`, async () => {
-		const workflowVarResponse = await request(common.config.getDirektivHost()).put(`/api/namespaces/${ limitedNamespace }/tree/workflow.yaml?op=set-var&var=test`)
-			.set('Content-Type', 'text/plain')
-			.send('Hello World 2')
+		const workflowVarResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ limitedNamespace }/variables`)
+			.send({
+				name: 'test',
+				workflowPath: '/workflow.yaml',
+				data: btoa('Hello World 2'),
+				mimeType: 'text/plain',
+			})
 		expect(workflowVarResponse.statusCode).toEqual(200)
 	})
 
-	retry10(`should return a workflow var from magic namespace`, async () => {
+	retry50(`should return a workflow var from magic namespace`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(
-			`/gw/endpoint1`,
+			`/ns/system/endpoint1`,
 		)
 		expect(req.statusCode).toEqual(200)
 		expect(req.text).toEqual('Hello World')
@@ -175,7 +183,7 @@ describe('Test target workflow variable plugin', () => {
 
 	retry10(`should return a var from magic namespace with namespace set`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(
-			`/gw/endpoint2`,
+			`/ns/system/endpoint2`,
 		)
 		expect(req.statusCode).toEqual(200)
 		expect(req.text).toEqual('Hello World 2')

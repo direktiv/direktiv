@@ -18,10 +18,10 @@ import { Play } from "lucide-react";
 import { ScrollArea } from "~/design/ScrollArea";
 import { decode } from "js-base64";
 import { pages } from "~/util/router/pages";
+import { useCreateInstance } from "~/api/instances/mutate/create";
 import { useFile } from "~/api/files/query/file";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { useRunWorkflow } from "~/api/tree/mutate/runWorkflow";
 import { useTheme } from "~/util/store/theme";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
@@ -75,9 +75,11 @@ const RunWorkflow = ({ path }: { path: string }) => {
     resolver: zodResolver(z.object({ payload: workflowInputSchema })),
   });
 
-  const { mutate: runWorkflow, isLoading } = useRunWorkflow({
-    onSuccess: ({ namespace, instance }) => {
-      navigate(pages.instances.createHref({ namespace, instance }));
+  const { mutate: runWorkflow, isPending } = useCreateInstance({
+    onSuccess: (namespace, data) => {
+      navigate(
+        pages.instances.createHref({ namespace, instance: data.data.id })
+      );
     },
     onError: (error) => {
       toast({
@@ -241,11 +243,11 @@ const RunWorkflow = ({ path }: { path: string }) => {
         <Button
           type="submit"
           disabled={disableSubmit}
-          loading={isLoading}
+          loading={isPending}
           onClick={runButtonOnClick}
           data-testid="run-workflow-submit-btn"
         >
-          {!isLoading && <Play />}
+          {!isPending && <Play />}
           {t("pages.explorer.tree.workflow.runWorkflow.runBtn")}
         </Button>
       </DialogFooter>

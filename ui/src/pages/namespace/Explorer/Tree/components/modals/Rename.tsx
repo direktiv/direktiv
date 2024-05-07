@@ -1,3 +1,4 @@
+import { BaseFileSchemaType, FileNameSchema } from "~/api/files/schema";
 import {
   DialogClose,
   DialogFooter,
@@ -7,13 +8,11 @@ import {
 import { SubmitHandler, useForm } from "react-hook-form";
 import { getFilenameFromPath, getParentFromPath } from "~/api/files/utils";
 
-import { BaseFileSchemaType } from "~/api/files/schema";
 import Button from "~/design/Button";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { TextCursorInput } from "lucide-react";
 import { addYamlFileExtension } from "../../utils";
-import { fileNameSchema } from "~/api/tree/schema/node";
 import { useRenameFile } from "~/api/files/mutate/renameFile";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
@@ -40,22 +39,20 @@ const Rename = ({
   } = useForm<FormInput>({
     resolver: zodResolver(
       z.object({
-        name: fileNameSchema
-          .transform((enteredName) => {
-            if (file.type !== "directory" && file.type !== "file") {
-              return addYamlFileExtension(enteredName);
-            }
-            return enteredName;
-          })
-          .refine(
-            (nameWithExtension) =>
-              !unallowedNames.some(
-                (unallowedName) => unallowedName === nameWithExtension
-              ),
-            {
-              message: t("pages.explorer.tree.rename.nameAlreadyExists"),
-            }
-          ),
+        name: FileNameSchema.transform((enteredName) => {
+          if (file.type !== "directory" && file.type !== "file") {
+            return addYamlFileExtension(enteredName);
+          }
+          return enteredName;
+        }).refine(
+          (nameWithExtension) =>
+            !unallowedNames.some(
+              (unallowedName) => unallowedName === nameWithExtension
+            ),
+          {
+            message: t("pages.explorer.tree.rename.nameAlreadyExists"),
+          }
+        ),
       })
     ),
     defaultValues: {
@@ -63,7 +60,7 @@ const Rename = ({
     },
   });
 
-  const { mutate: rename, isLoading } = useRenameFile({
+  const { mutate: rename, isPending } = useRenameFile({
     onSuccess: () => {
       close();
     },
@@ -108,10 +105,10 @@ const Rename = ({
           data-testid="node-rename-submit"
           type="submit"
           disabled={disableSubmit}
-          loading={isLoading}
+          loading={isPending}
           form={formId}
         >
-          {!isLoading && <TextCursorInput />}
+          {!isPending && <TextCursorInput />}
           {t("pages.explorer.tree.rename.renameBtn")}
         </Button>
       </DialogFooter>

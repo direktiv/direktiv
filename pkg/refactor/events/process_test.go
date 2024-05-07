@@ -9,6 +9,7 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/cloudevents/sdk-go/v2/types"
+	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/events"
 	"github.com/google/uuid"
 )
@@ -25,29 +26,29 @@ func Test_Add_Get_Complex_Context(t *testing.T) {
 	wfID1 := uuid.New()
 	wfID2 := uuid.New()
 
-	listeners := make([]*events.EventListener, 0)
+	listeners := make([]*datastore.EventListener, 0)
 	listeners = append(listeners,
-		&events.EventListener{
+		&datastore.EventListener{
 			ID:                     uuid.New(),
 			CreatedAt:              time.Now().UTC(),
 			UpdatedAt:              time.Now().UTC(),
 			Deleted:                false,
 			NamespaceID:            ns,
 			ListeningForEventTypes: []string{"test-topic"},
-			TriggerType:            events.StartSimple,
+			TriggerType:            datastore.StartSimple,
 			TriggerWorkflow:        wfID1.String(),
 			GlobGatekeepers: map[string]string{
 				"test-topic-id": "some id",
 			},
 		},
-		&events.EventListener{
+		&datastore.EventListener{
 			ID:                     uuid.New(),
 			CreatedAt:              time.Now().UTC(),
 			UpdatedAt:              time.Now().UTC(),
 			Deleted:                false,
 			NamespaceID:            ns,
 			ListeningForEventTypes: []string{"test-topic"},
-			TriggerType:            events.StartSimple,
+			TriggerType:            datastore.StartSimple,
 			TriggerWorkflow:        wfID2.String(),
 			GlobGatekeepers: map[string]string{
 				"test-topic-id": "some other id",
@@ -59,13 +60,13 @@ func Test_Add_Get_Complex_Context(t *testing.T) {
 		WorkflowStart: func(workflowID uuid.UUID, events ...*cloudevents.Event) {
 			resultsForEngine <- triggerMock{events: events, wf: workflowID}
 		},
-		WakeInstance: func(instanceID uuid.UUID, step int, events []*cloudevents.Event) {
-			resultsForEngine <- triggerMock{events: events, inst: instanceID, step: step}
+		WakeInstance: func(instanceID uuid.UUID, events []*cloudevents.Event) {
+			resultsForEngine <- triggerMock{events: events, inst: instanceID}
 		},
-		GetListenersByTopic: func(ctx context.Context, s string) ([]*events.EventListener, error) {
+		GetListenersByTopic: func(ctx context.Context, s string) ([]*datastore.EventListener, error) {
 			return listeners, nil
 		},
-		UpdateListeners: func(ctx context.Context, listener []*events.EventListener) []error {
+		UpdateListeners: func(ctx context.Context, listener []*datastore.EventListener) []error {
 			for i, el := range listener {
 				if el.Deleted {
 					listener = append(listener[:i], listener[i+1:]...)
@@ -108,16 +109,16 @@ func Test_Add_Get_And(t *testing.T) {
 	ns := uuid.New()
 	wfID := uuid.New()
 
-	listeners := make([]*events.EventListener, 0)
+	listeners := make([]*datastore.EventListener, 0)
 	listeners = append(listeners,
-		&events.EventListener{
+		&datastore.EventListener{
 			ID:                     uuid.New(),
 			CreatedAt:              time.Now().UTC(),
 			UpdatedAt:              time.Now().UTC(),
 			Deleted:                false,
 			NamespaceID:            ns,
 			ListeningForEventTypes: []string{"test-topic", "test-topic2"},
-			TriggerType:            events.StartAnd,
+			TriggerType:            datastore.StartAnd,
 			TriggerWorkflow:        wfID.String(),
 			GlobGatekeepers: map[string]string{
 				"test-topic2-id": "some id",
@@ -129,13 +130,13 @@ func Test_Add_Get_And(t *testing.T) {
 		WorkflowStart: func(workflowID uuid.UUID, events ...*cloudevents.Event) {
 			resultsForEngine <- triggerMock{events: events, wf: workflowID}
 		},
-		WakeInstance: func(instanceID uuid.UUID, step int, events []*cloudevents.Event) {
-			resultsForEngine <- triggerMock{events: events, inst: instanceID, step: step}
+		WakeInstance: func(instanceID uuid.UUID, events []*cloudevents.Event) {
+			resultsForEngine <- triggerMock{events: events, inst: instanceID}
 		},
-		GetListenersByTopic: func(ctx context.Context, s string) ([]*events.EventListener, error) {
+		GetListenersByTopic: func(ctx context.Context, s string) ([]*datastore.EventListener, error) {
 			return listeners, nil
 		},
-		UpdateListeners: func(ctx context.Context, listener []*events.EventListener) []error {
+		UpdateListeners: func(ctx context.Context, listener []*datastore.EventListener) []error {
 			for i, el := range listener {
 				if el.Deleted {
 					listener = append(listener[:i], listener[i+1:]...)
@@ -179,16 +180,16 @@ func Test_Add_Get_GatekeeperSimple(t *testing.T) {
 	ns := uuid.New()
 	wfID := uuid.New()
 
-	listeners := make([]*events.EventListener, 0)
+	listeners := make([]*datastore.EventListener, 0)
 	listeners = append(listeners,
-		&events.EventListener{
+		&datastore.EventListener{
 			ID:                     uuid.New(),
 			CreatedAt:              time.Now().UTC(),
 			UpdatedAt:              time.Now().UTC(),
 			Deleted:                false,
 			NamespaceID:            ns,
 			ListeningForEventTypes: []string{"test-topic"},
-			TriggerType:            events.StartSimple,
+			TriggerType:            datastore.StartSimple,
 			TriggerWorkflow:        wfID.String(),
 			GlobGatekeepers: map[string]string{
 				"test-topic-id": "some id",
@@ -200,13 +201,13 @@ func Test_Add_Get_GatekeeperSimple(t *testing.T) {
 		WorkflowStart: func(workflowID uuid.UUID, events ...*cloudevents.Event) {
 			resultsForEngine <- triggerMock{events: events, wf: workflowID}
 		},
-		WakeInstance: func(instanceID uuid.UUID, step int, events []*cloudevents.Event) {
-			resultsForEngine <- triggerMock{events: events, inst: instanceID, step: step}
+		WakeInstance: func(instanceID uuid.UUID, events []*cloudevents.Event) {
+			resultsForEngine <- triggerMock{events: events, inst: instanceID}
 		},
-		GetListenersByTopic: func(ctx context.Context, s string) ([]*events.EventListener, error) {
+		GetListenersByTopic: func(ctx context.Context, s string) ([]*datastore.EventListener, error) {
 			return listeners, nil
 		},
-		UpdateListeners: func(ctx context.Context, listener []*events.EventListener) []error {
+		UpdateListeners: func(ctx context.Context, listener []*datastore.EventListener) []error {
 			for i, el := range listener {
 				if el.Deleted {
 					listener = append(listener[:i], listener[i+1:]...)
@@ -242,37 +243,37 @@ func Test_Add_Get(t *testing.T) {
 	wfID := uuid.New()
 	instID := uuid.New()
 
-	waitListener := &events.EventListener{
+	waitListener := &datastore.EventListener{
 		ID:                     uuid.New(),
 		CreatedAt:              time.Now().UTC(),
 		UpdatedAt:              time.Now().UTC(),
 		Deleted:                false,
 		NamespaceID:            ns,
 		ListeningForEventTypes: []string{"test-wait-topic"},
-		TriggerType:            events.WaitSimple,
+		TriggerType:            datastore.WaitSimple,
 		TriggerInstance:        instID.String(),
 	}
-	listeners := make([]*events.EventListener, 0)
+	listeners := make([]*datastore.EventListener, 0)
 	listeners = append(listeners,
-		&events.EventListener{
+		&datastore.EventListener{
 			ID:                     uuid.New(),
 			CreatedAt:              time.Now().UTC(),
 			UpdatedAt:              time.Now().UTC(),
 			Deleted:                false,
 			NamespaceID:            ns,
 			ListeningForEventTypes: []string{"test-topic"},
-			TriggerType:            events.StartSimple,
+			TriggerType:            datastore.StartSimple,
 			TriggerWorkflow:        wfID.String(),
 		},
 		waitListener,
-		&events.EventListener{
+		&datastore.EventListener{
 			ID:                     uuid.New(),
 			CreatedAt:              time.Now().UTC(),
 			UpdatedAt:              time.Now().UTC(),
 			Deleted:                false,
 			NamespaceID:            ns,
 			ListeningForEventTypes: []string{"event-and-topic-a", "event-and-topic-b"},
-			TriggerType:            events.StartAnd,
+			TriggerType:            datastore.StartAnd,
 			TriggerWorkflow:        wfID.String(),
 		},
 	)
@@ -281,13 +282,13 @@ func Test_Add_Get(t *testing.T) {
 		WorkflowStart: func(workflowID uuid.UUID, events ...*cloudevents.Event) {
 			resultsForEngine <- triggerMock{events: events, wf: workflowID}
 		},
-		WakeInstance: func(instanceID uuid.UUID, step int, events []*cloudevents.Event) {
-			resultsForEngine <- triggerMock{events: events, inst: instanceID, step: step}
+		WakeInstance: func(instanceID uuid.UUID, events []*cloudevents.Event) {
+			resultsForEngine <- triggerMock{events: events, inst: instanceID}
 		},
-		GetListenersByTopic: func(ctx context.Context, s string) ([]*events.EventListener, error) {
+		GetListenersByTopic: func(ctx context.Context, s string) ([]*datastore.EventListener, error) {
 			return listeners, nil
 		},
-		UpdateListeners: func(ctx context.Context, listener []*events.EventListener) []error {
+		UpdateListeners: func(ctx context.Context, listener []*datastore.EventListener) []error {
 			for i, el := range listener {
 				if el.Deleted {
 					listener = append(listener[:i], listener[i+1:]...)
@@ -392,16 +393,16 @@ func Test_Add_GatekkeeperComplex(t *testing.T) {
 	ns := uuid.New()
 	wfID := uuid.New()
 
-	listeners := make([]*events.EventListener, 0)
+	listeners := make([]*datastore.EventListener, 0)
 	listeners = append(listeners,
-		&events.EventListener{
+		&datastore.EventListener{
 			ID:                     uuid.New(),
 			CreatedAt:              time.Now().UTC(),
 			UpdatedAt:              time.Now().UTC(),
 			Deleted:                false,
 			NamespaceID:            ns,
 			ListeningForEventTypes: []string{"test-topic", "other-topic"},
-			TriggerType:            events.StartAnd,
+			TriggerType:            datastore.StartAnd,
 			TriggerWorkflow:        wfID.String(),
 			GlobGatekeepers: map[string]string{
 				"test-topic-id":  "some id",
@@ -414,13 +415,13 @@ func Test_Add_GatekkeeperComplex(t *testing.T) {
 		WorkflowStart: func(workflowID uuid.UUID, events ...*cloudevents.Event) {
 			resultsForEngine <- triggerMock{events: events, wf: workflowID}
 		},
-		WakeInstance: func(instanceID uuid.UUID, step int, events []*cloudevents.Event) {
-			resultsForEngine <- triggerMock{events: events, inst: instanceID, step: step}
+		WakeInstance: func(instanceID uuid.UUID, events []*cloudevents.Event) {
+			resultsForEngine <- triggerMock{events: events, inst: instanceID}
 		},
-		GetListenersByTopic: func(ctx context.Context, s string) ([]*events.EventListener, error) {
+		GetListenersByTopic: func(ctx context.Context, s string) ([]*datastore.EventListener, error) {
 			return listeners, nil
 		},
-		UpdateListeners: func(ctx context.Context, listener []*events.EventListener) []error {
+		UpdateListeners: func(ctx context.Context, listener []*datastore.EventListener) []error {
 			for i, el := range listener {
 				if el.Deleted {
 					listener = append(listener[:i], listener[i+1:]...)

@@ -32,7 +32,7 @@ const EditGroup = ({
 }) => {
   const { t } = useTranslation();
   const { data: availablePermissions } = usePermissionKeys();
-  const { mutate: editGroup, isLoading } = useEditGroup({
+  const { mutate: editGroup, isPending } = useEditGroup({
     onSuccess: () => {
       close();
     },
@@ -139,10 +139,10 @@ const EditGroup = ({
         <Button
           type="submit"
           disabled={disableSubmit}
-          loading={isLoading}
+          loading={isPending}
           form={formId}
         >
-          {!isLoading && <Save />}
+          {!isPending && <Save />}
           {t("pages.permissions.groups.edit.editBtn")}
         </Button>
       </DialogFooter>

@@ -1,4 +1,4 @@
-const isEnterprise = !!process.env.VITE?.VITE_IS_ENTERPRISE;
+import { isEnterprise } from "~/config/env/utils";
 
 type AuthHeader =
   | {
@@ -9,7 +9,7 @@ type AuthHeader =
     };
 
 export const getAuthHeader = (apiKey: string): AuthHeader => {
-  if (isEnterprise) {
+  if (isEnterprise()) {
     return {
       authorization: `Bearer ${apiKey}`,
     };
@@ -21,13 +21,13 @@ export const getAuthHeader = (apiKey: string): AuthHeader => {
 };
 
 export const buildSearchParamsString = (
-  searchParmsObj: Record<string, string | undefined>,
+  searchParmsObj: Record<string, string | number | undefined>,
   withoutQuestionmark?: true
 ) => {
   const queryParams = new URLSearchParams();
   Object.entries(searchParmsObj).forEach(([name, value]) => {
     if (value) {
-      queryParams.append(name, value);
+      queryParams.append(name, `${value}`);
     }
   });
 

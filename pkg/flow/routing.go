@@ -9,7 +9,6 @@ import (
 	"log/slog"
 	"strings"
 
-	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
@@ -41,26 +40,17 @@ func newMuxStart(workflow *model.Workflow) *muxStart {
 	case model.StartTypeDefault:
 	case model.StartTypeEvent:
 	case model.StartTypeEventsAnd:
-		x := def.(*model.EventsAndStart)
+		x := def.(*model.EventsAndStart) //nolint:forcetypeassert
 		ms.Lifespan = x.LifeSpan
 	case model.StartTypeEventsXor:
 	case model.StartTypeScheduled:
-		x := def.(*model.ScheduledStart)
+		x := def.(*model.ScheduledStart) //nolint:forcetypeassert
 		ms.Cron = x.Cron
 	default:
 		panic(fmt.Errorf("unexpected start type: %v", def.GetType()))
 	}
 
 	return ms
-}
-
-func (ms *muxStart) Hash() string {
-	if ms == nil {
-		ms = new(muxStart)
-		ms.Type = model.StartTypeDefault.String()
-	}
-
-	return bytedata.Checksum(ms)
 }
 
 func (srv *server) validateRouter(ctx context.Context, tx *database.SQLStore, file *filestore.File) (*muxStart, error) {
@@ -82,11 +72,10 @@ func (srv *server) validateRouter(ctx context.Context, tx *database.SQLStore, fi
 }
 
 func (engine *engine) mux(ctx context.Context, ns *datastore.Namespace, calledAs string) (*filestore.File, []byte, error) {
-	// TODO: Alan, fix for the new filestore.(*Revision).GetRevision() api.
 	uriElems := strings.SplitN(calledAs, ":", 2)
 	path := uriElems[0]
 
-	tx, err := engine.flow.beginSqlTx(ctx)
+	tx, err := engine.flow.beginSQLTx(ctx)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -137,7 +126,7 @@ func (flow *flow) cronHandler(data []byte) {
 	}
 
 	// tx is to be committed in the NewInstance call.
-	tx, err := flow.beginSqlTx(ctx, &sql.TxOptions{
+	tx, err := flow.beginSQLTx(ctx, &sql.TxOptions{
 		Isolation: sql.LevelSerializable,
 	})
 	if err != nil {
@@ -151,30 +140,35 @@ func (flow *flow) cronHandler(data []byte) {
 		if errors.Is(err, filestore.ErrNotFound) {
 			slog.Info("Workflow for cron not found, deleting associated cron entry.")
 			flow.timers.deleteCronForWorkflow(id.String())
+
 			return
 		}
 		slog.Error("Failed to retrieve file by ID in cron handler.", "error", err)
+
 		return
 	}
 
 	root, err := tx.FileStore().GetRoot(ctx, file.RootID)
 	if err != nil {
 		slog.Error("cron getting files", "error", err)
+
 		return
 	}
 
 	ns, err := tx.DataStore().Namespaces().GetByName(ctx, root.Namespace)
 	if err != nil {
 		slog.Error("Failed to retrieve namespace in cron handler.", "error", err, "namespace", root.Namespace)
+
 		return
 	}
 
-	err = tx.InstanceStore().AssertNoParallelCron(ctx, file.Path)
+	err = tx.InstanceStore().AssertNoParallelCron(ctx, ns.ID, file.Path)
 	if errors.Is(err, instancestore.ErrParallelCron) {
 		// already triggered
 		return
 	} else if err != nil {
 		slog.Error("Failed to assert no parallel cron executions.", "error", err, "workflow", file.Path)
+
 		return
 	}
 
@@ -199,6 +193,7 @@ func (flow *flow) cronHandler(data []byte) {
 		if strings.Contains(err.Error(), "could not serialize access") {
 			slog.Debug("Instance creation clash detected, likely due to parallel execution. Retrying may be required.", "workflow_path", file.Path)
 			// this happens on a attempt to create an instance clashed with another server
+
 			return
 		}
 
@@ -210,13 +205,13 @@ func (flow *flow) cronHandler(data []byte) {
 	go flow.engine.start(im)
 }
 
-func (flow *flow) configureWorkflowStarts(ctx context.Context, tx *database.SQLStore, nsID uuid.UUID, file *filestore.File) error {
+func (flow *flow) configureWorkflowStarts(ctx context.Context, tx *database.SQLStore, nsID uuid.UUID, nsName string, file *filestore.File) error {
 	ms, err := flow.validateRouter(ctx, tx, file)
 	if err != nil {
 		return err
 	}
 
-	err = flow.events.processWorkflowEvents(ctx, nsID, file, ms)
+	err = flow.events.processWorkflowEvents(ctx, nsID, nsName, file, ms)
 	if err != nil {
 		return err
 	}

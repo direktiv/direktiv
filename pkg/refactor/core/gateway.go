@@ -8,13 +8,9 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const MagicalGatewayNamespace = "gateway"
-
 type GatewayManager interface {
 	http.Handler
 
-	DeleteNamespace(namespace string)
-	UpdateNamespace(namespace string)
 	UpdateAll()
 
 	GetConsumers(namespace string) ([]*ConsumerFile, error)

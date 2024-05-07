@@ -47,12 +47,7 @@ func NewGatewayManager(db *database.SQLStore) core.GatewayManager {
 	}
 }
 
-func (ep *gatewayManager) DeleteNamespace(ns string) {
-	slog.Debug("deleting namespace from gateway", "namespace", ns, "track", recipient.Namespace.String()+"."+ns)
-	delete(ep.nsGateways, ns)
-}
-
-func (ep *gatewayManager) UpdateNamespace(ns string) {
+func (ep *gatewayManager) updateNamespace(ns string) {
 	slog.Debug("updating namespace gateway", slog.String("namespace", ns), "track", recipient.Namespace.String()+"."+ns)
 
 	ep.lock.Lock()
@@ -128,9 +123,6 @@ func (ep *gatewayManager) UpdateNamespace(ns string) {
 			}
 
 			ep.ServerPath = filepath.Join("/ns", ns, item.Path)
-			if ns == core.MagicalGatewayNamespace {
-				ep.ServerPath = filepath.Join("/gw", item.Path)
-			}
 
 			ep.AllowAnonymous = item.AllowAnonymous
 			ep.Timeout = item.Timeout
@@ -151,6 +143,8 @@ func (ep *gatewayManager) UpdateNamespace(ns string) {
 func (ep *gatewayManager) UpdateAll() {
 	_, dStore := ep.db.FileStore(), ep.db.DataStore()
 
+	ep.nsGateways = map[string]*namespaceGateway{}
+
 	nsList, err := dStore.Namespaces().GetAll(context.Background())
 	if err != nil {
 		slog.Error("listing namespaces", "err", err)
@@ -159,7 +153,7 @@ func (ep *gatewayManager) UpdateAll() {
 	}
 
 	for _, ns := range nsList {
-		ep.UpdateNamespace(ns.Name)
+		ep.updateNamespace(ns.Name)
 	}
 }
 
@@ -199,7 +193,7 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	slog := slog.With("trace", traceID, "span", spanID, "component", "gateway")
 	slog.Info("serving gateway request")
 	chiCtx := chi.RouteContext(r.Context())
-	namespace := core.MagicalGatewayNamespace
+	namespace := core.SystemNamespace
 	routePath := chi.URLParam(r, "*")
 
 	// get namespace from URL or use magical one

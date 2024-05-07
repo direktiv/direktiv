@@ -2,8 +2,6 @@ package datastore
 
 import (
 	"errors"
-
-	"github.com/direktiv/direktiv/pkg/refactor/events"
 )
 
 // Direktiv application data (namespaces, mirrors, etc..) are stored in a sql database. For each different
@@ -24,11 +22,13 @@ type Store interface {
 
 	RuntimeVariables() RuntimeVariablesStore
 
-	EventHistory() events.EventHistoryStore
-	EventListener() events.EventListenerStore
-	EventListenerTopics() events.EventTopicsStore
-	StagingEvents() events.StagingEventStore
+	EventHistory() EventHistoryStore
+	EventListener() EventListenerStore
+	EventListenerTopics() EventTopicsStore
+	StagingEvents() StagingEventStore
 }
+
+type ValidationError map[string]string
 
 var (
 	// ErrNotFound is a common error type that should be returned by any store implementation

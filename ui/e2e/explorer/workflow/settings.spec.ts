@@ -1,13 +1,16 @@
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
 import { expect, test } from "@playwright/test";
+import { waitForSuccessToast, workflowThatCreatesVariable } from "./utils";
 
 import { noop as basicWorkflow } from "~/pages/namespace/Explorer/Tree/components/modals/CreateNew/Workflow/templates";
 import { createFile } from "e2e/utils/files";
+import { createInstance } from "~/api/instances/mutate/create";
+import { createVar } from "~/api/variables/mutate/create";
 import { createWorkflowVariables } from "e2e/utils/variables";
+import { encode } from "js-base64";
 import { faker } from "@faker-js/faker";
+import { forceLeadingSlash } from "~/api/files/utils";
 import { headers } from "e2e/utils/testutils";
-import { setVariable } from "~/api/tree/mutate/setVariable";
-import { waitForSuccessToast } from "./utils";
 
 let namespace = "";
 let workflow = "";
@@ -34,7 +37,7 @@ test("it is possible to navigate to the workflow settings page and use paginatio
 }) => {
   await createWorkflowVariables(namespace, workflow, 15);
 
-  await page.goto(`/${namespace}/explorer/workflow/settings/${workflow}`);
+  await page.goto(`/n/${namespace}/explorer/workflow/settings/${workflow}`);
   await expect(
     page.getByTestId("variable-row"),
     "there should be 10 variables on the first page"
@@ -62,7 +65,7 @@ test("it is possible to navigate to the workflow settings page and use paginatio
 });
 
 test("it is possible to create a variable", async ({ page }) => {
-  await page.goto(`/${namespace}/explorer/workflow/settings/${workflow}`);
+  await page.goto(`/n/${namespace}/explorer/workflow/settings/${workflow}`);
 
   const subject = {
     name: "workflow-variable",
@@ -73,7 +76,7 @@ test("it is possible to create a variable", async ({ page }) => {
   await page.getByTestId("variable-create").click();
 
   await expect(
-    page.getByRole("heading", { name: "Add a workflow variable" }),
+    page.getByRole("heading", { name: "Create a variable" }),
     "create variable form should be visible"
   ).toBeVisible();
 
@@ -101,18 +104,18 @@ test("it is possible to create a variable", async ({ page }) => {
 
 test("it is possible to update variables", async ({ page }) => {
   /* set up test data */
-  const subject = await setVariable({
-    payload: "edit me",
+  const subject = await createVar({
+    payload: {
+      name: "editable-var",
+      mimeType: "text/plain",
+      data: encode("edit me"),
+      workflowPath: forceLeadingSlash(workflow),
+    },
     urlParams: {
       baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
       namespace,
-      path: workflow,
-      name: "editable-var",
     },
-    headers: {
-      ...headers,
-      "content-type": "text/plain",
-    },
+    headers,
   });
 
   if (!subject) {
@@ -120,17 +123,19 @@ test("it is possible to update variables", async ({ page }) => {
   }
 
   /* visit page and edit variable */
-  await page.goto(`/${namespace}/explorer/workflow/settings/${workflow}`);
+  await page.goto(`/n/${namespace}/explorer/workflow/settings/${workflow}`);
 
-  await page.getByTestId(`dropdown-trg-item-${subject.key}`).click();
+  await page.getByTestId(`dropdown-trg-item-${subject.data.name}`).click();
   await page.getByRole("button", { name: "edit" }).click();
 
   await expect(
-    page.getByRole("heading", { name: `Edit ${subject.key}` }),
+    page.getByRole("heading", { name: `Edit ${subject.data.name}` }),
     "it opens the edit form"
   ).toBeVisible();
 
-  await expect(page.getByLabel("Mimetype")).toContainText(subject.mimeType);
+  await expect(page.getByLabel("Mimetype")).toContainText(
+    subject.data.mimeType
+  );
   await page.getByLabel("Mimetype").click();
   await page.getByLabel("JSON").click();
 
@@ -156,7 +161,7 @@ test("it is possible to update variables", async ({ page }) => {
     "there should be 1 variable in the list"
   ).toHaveCount(1);
 
-  await page.getByTestId(`dropdown-trg-item-${subject.key}`).click();
+  await page.getByTestId(`dropdown-trg-item-${subject.data.name}`).click();
   await page.getByRole("button", { name: "edit" }).click();
 
   await expect(page.getByLabel("Mimetype")).toContainText("application/json");
@@ -176,13 +181,13 @@ test("it is possible to delete variables", async ({ page }) => {
   }
 
   /* visit page and delete variable */
-  await page.goto(`/${namespace}/explorer/workflow/settings/${workflow}`);
+  await page.goto(`/n/${namespace}/explorer/workflow/settings/${workflow}`);
 
-  await page.getByTestId(`dropdown-trg-item-${subject.key}`).click();
+  await page.getByTestId(`dropdown-trg-item-${subject.data.name}`).click();
   await page.getByRole("button", { name: "delete" }).click();
 
   await expect(
-    page.getByLabel("Confirmation required").getByText(subject.key),
+    page.getByLabel("Confirmation required").getByText(subject.data.name),
     "it renders the confirmation dialog"
   ).toBeVisible();
   await page.getByRole("button", { name: "Delete" }).click();
@@ -192,4 +197,100 @@ test("it is possible to delete variables", async ({ page }) => {
     page.getByTestId("variable-row"),
     "the variable is no longer rendered in the list"
   ).toHaveCount(variables.length - 1);
+});
+
+test("it is not possible to create a variable with a name that already exists", async ({
+  page,
+}) => {
+  /* set up test data */
+  const variables = await createWorkflowVariables(namespace, workflow, 4);
+  const reservedName = variables[0]?.data.name ?? "";
+
+  await page.goto(`/n/${namespace}/explorer/workflow/settings/${workflow}`);
+
+  await page.getByTestId("variable-create").click();
+
+  page.getByTestId("variable-name").fill(reservedName);
+
+  await page.getByRole("button", { name: "Create" }).click();
+
+  await expect(
+    page.getByText("The name already exists"),
+    "it renders an error message"
+  ).toBeVisible();
+});
+
+test("it is not possible to set a variables name to a name that already exists", async ({
+  page,
+}) => {
+  /* set up test data */
+  const variables = await createWorkflowVariables(namespace, workflow, 4);
+  const subject = variables[2];
+
+  if (!subject) {
+    throw new Error("error setting up test data");
+  }
+
+  const reservedName = variables[0]?.data.name ?? "";
+
+  await page.goto(`/n/${namespace}/explorer/workflow/settings/${workflow}`);
+
+  await page.getByTestId(`dropdown-trg-item-${subject.data.name}`).click();
+  await page.getByRole("button", { name: "edit" }).click();
+
+  page.getByTestId("variable-name").fill(reservedName);
+
+  await page.getByRole("button", { name: "Save" }).click();
+
+  await expect(
+    page.getByText("The name already exists"),
+    "it renders an error message"
+  ).toBeVisible();
+});
+
+test("it is possible to rename a variable that doesn't have a mimeType", async ({
+  page,
+}) => {
+  const workflowName = faker.system.commonFileName("yaml");
+
+  await createFile({
+    name: workflowName,
+    namespace,
+    type: "workflow",
+    yaml: workflowThatCreatesVariable,
+  });
+
+  await createInstance({
+    urlParams: {
+      baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
+      namespace,
+      path: workflowName,
+    },
+    headers,
+  });
+
+  await page.goto(`/n/${namespace}/explorer/workflow/settings/${workflowName}`);
+  await page.getByTestId(`dropdown-trg-item-workflow`).click();
+  await page.getByRole("button", { name: "edit" }).click();
+
+  await page.getByLabel("Name").fill("new-name");
+
+  await expect(
+    page.getByText("Mimetype is unspecified", { exact: true }),
+    "it renders the mime type as unspecified"
+  ).toBeVisible();
+
+  await expect(
+    page.getByText(
+      "Only text based mime types are supported for preview and editing"
+    ),
+    "it renders the message that indicated that only text based mime types are supported for preview and editing"
+  ).toBeVisible();
+
+  await page.getByRole("button", { name: "Save" }).click();
+
+  await expect(
+    page.getByTestId("item-name").getByText("new-name"),
+    "It renders the new variable name"
+  ).toBeVisible();
 });

@@ -2,7 +2,6 @@ package datastoresql
 
 import (
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
-	"github.com/direktiv/direktiv/pkg/refactor/events"
 	"gorm.io/gorm"
 )
 
@@ -57,19 +56,19 @@ func (s *sqlStore) RuntimeVariables() datastore.RuntimeVariablesStore {
 	}
 }
 
-func (s *sqlStore) StagingEvents() events.StagingEventStore {
+func (s *sqlStore) StagingEvents() datastore.StagingEventStore {
 	return &sqlStagingEventStore{db: s.db}
 }
 
-func (s *sqlStore) EventHistory() events.EventHistoryStore {
+func (s *sqlStore) EventHistory() datastore.EventHistoryStore {
 	return &sqlEventHistoryStore{db: s.db}
 }
 
-func (s *sqlStore) EventListener() events.EventListenerStore {
+func (s *sqlStore) EventListener() datastore.EventListenerStore {
 	return &sqlEventListenerStore{db: s.db}
 }
 
-func (s *sqlStore) EventListenerTopics() events.EventTopicsStore {
+func (s *sqlStore) EventListenerTopics() datastore.EventTopicsStore {
 	return &sqlEventTopicsStore{db: s.db}
 }
 

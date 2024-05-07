@@ -10,6 +10,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/model"
 )
 
+//nolint:gochecknoinits
 func init() {
 	RegisterState(model.StateTypeSwitch, Switch)
 }
@@ -46,7 +47,7 @@ func (logic *switchLogic) Run(ctx context.Context, wakedata []byte) (*Transition
 
 	for i, condition := range logic.Conditions {
 		var x interface{}
-		x, err = jqOne(logic.GetInstanceData(), condition.Condition)
+		x, err = jqOne(logic.GetInstanceData(), condition.Condition) //nolint:contextcheck
 		if err != nil {
 			return nil, derrors.NewInternalError(fmt.Errorf("switch condition %d condition failed to run: %w", i, err))
 		}

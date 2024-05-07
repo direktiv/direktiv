@@ -17,17 +17,17 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
+import { FileNameSchema } from "~/api/files/schema";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { Textarea } from "~/design/TextArea";
 import { addYamlFileExtension } from "../../../../utils";
 import { encode } from "js-base64";
-import { fileNameSchema } from "~/api/tree/schema/node";
 import { pages } from "~/util/router/pages";
 import { useCreateFile } from "~/api/files/mutate/createFile";
 import { useNamespace } from "~/util/store/namespace";
-import { useNamespaceLinting } from "~/api/namespaceLinting/query/useNamespaceLinting";
 import { useNavigate } from "react-router-dom";
+import { useNotifications } from "~/api/notifications/query/get";
 import { useState } from "react";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
@@ -54,7 +54,7 @@ const NewWorkflow = ({
   const { t } = useTranslation();
   const namespace = useNamespace();
   const navigate = useNavigate();
-  const { refetch: updateNotificationBell } = useNamespaceLinting();
+  const { refetch: updateNotificationBell } = useNotifications();
 
   const theme = useTheme();
   const [workflowData, setWorkflowData] = useState<string>(
@@ -63,17 +63,17 @@ const NewWorkflow = ({
 
   const resolver = zodResolver(
     z.object({
-      name: fileNameSchema
-        .transform((enteredName) => addYamlFileExtension(enteredName))
-        .refine(
-          (nameWithExtension) =>
-            !(unallowedNames ?? []).some(
-              (unallowedName) => unallowedName === nameWithExtension
-            ),
-          {
-            message: t("pages.explorer.tree.newWorkflow.nameAlreadyExists"),
-          }
-        ),
+      name: FileNameSchema.transform((enteredName) =>
+        addYamlFileExtension(enteredName)
+      ).refine(
+        (nameWithExtension) =>
+          !(unallowedNames ?? []).some(
+            (unallowedName) => unallowedName === nameWithExtension
+          ),
+        {
+          message: t("pages.explorer.tree.newWorkflow.nameAlreadyExists"),
+        }
+      ),
       fileContent: z.string(),
     })
   );
@@ -90,7 +90,7 @@ const NewWorkflow = ({
     },
   });
 
-  const { mutate: createFile, isLoading } = useCreateFile({
+  const { mutate: createFile, isPending } = useCreateFile({
     onSuccess: (data) => {
       /**
        * creating a new workflow might introduce an uninitialized secret.
@@ -212,10 +212,10 @@ const NewWorkflow = ({
           data-testid="new-workflow-submit"
           type="submit"
           disabled={disableSubmit}
-          loading={isLoading}
+          loading={isPending}
           form={formId}
         >
-          {!isLoading && <PlusCircle />}
+          {!isPending && <PlusCircle />}
           {t("pages.explorer.tree.newWorkflow.createBtn")}
         </Button>
       </DialogFooter>
