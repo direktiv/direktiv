@@ -60,10 +60,9 @@ linters:
     - musttag
     - prealloc
     - spancheck # TODO: Alan, enable this one as it helps you fixing some telemetry bugs.
-    - govet
+    - err113 # TODO: This ensures no dynamic errors.
     - canonicalheader
     - mnd
-    - err113
 
 issues:
   exclude-files: [ ".pb.go" ]
