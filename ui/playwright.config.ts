@@ -21,7 +21,7 @@ export default defineConfig({
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.PLAYWRIGHT_CI,
   /* Retry on CI only */
-  retries: process.env.PLAYWRIGHT_CI ? 2 : 0,
+  retries: process.env.PLAYWRIGHT_CI ? 3 : 0,
   /* Opt out of parallel tests per default. Enable parallel tests by setting
      PLAYWRIGHT_PARALLEL to TRUE. */
   workers: process.env.PLAYWRIGHT_PARALLEL === "TRUE" ? undefined : 1,
