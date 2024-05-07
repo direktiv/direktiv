@@ -26,14 +26,15 @@ import (
 )
 
 type NewMainArgs struct {
-	Config              *core.Config
-	Database            *database.SQLStore
-	PubSubBus           *pubsub.Bus
-	ConfigureWorkflow   func(data string) error
-	InstanceManager     *instancestore.InstanceManager
-	WakeInstanceByEvent events.WakeEventsWaiter
-	WorkflowStart       events.WorkflowStart
-	SyncNamespace       core.SyncNamespace
+	Config                       *core.Config
+	Database                     *database.SQLStore
+	PubSubBus                    *pubsub.Bus
+	ConfigureWorkflow            func(data string) error
+	InstanceManager              *instancestore.InstanceManager
+	WakeInstanceByEvent          events.WakeEventsWaiter
+	WorkflowStart                events.WorkflowStart
+	SyncNamespace                core.SyncNamespace
+	RenderAllStartEventListeners func(ctx context.Context, tx *database.SQLStore) error
 }
 
 func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
@@ -119,6 +120,13 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 		pubsub.WorkflowDelete,
 		pubsub.WorkflowRename,
 	)
+
+	slog.Debug("Rendering event-listeners on server start")
+	err = args.RenderAllStartEventListeners(circuit.Context(), args.Database)
+	if err != nil {
+		slog.Error("rendering event listener on server start", "error", err)
+	}
+	slog.Debug("Completed rendering event-listeners on server start")
 
 	// endpoint manager
 	args.PubSubBus.Subscribe(func(_ string) {

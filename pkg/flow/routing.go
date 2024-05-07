@@ -53,7 +53,7 @@ func newMuxStart(workflow *model.Workflow) *muxStart {
 	return ms
 }
 
-func (srv *server) validateRouter(ctx context.Context, tx *database.SQLStore, file *filestore.File) (*muxStart, error) {
+func validateRouter(ctx context.Context, tx *database.SQLStore, file *filestore.File) (*muxStart, error) {
 	data, err := tx.FileStore().ForFile(file).GetData(ctx)
 	if err != nil {
 		return nil, err
@@ -206,12 +206,12 @@ func (flow *flow) cronHandler(data []byte) {
 }
 
 func (flow *flow) configureWorkflowStarts(ctx context.Context, tx *database.SQLStore, nsID uuid.UUID, nsName string, file *filestore.File) error {
-	ms, err := flow.validateRouter(ctx, tx, file)
+	ms, err := validateRouter(ctx, tx, file)
 	if err != nil {
 		return err
 	}
 
-	err = flow.events.processWorkflowEvents(ctx, nsID, nsName, file, ms)
+	err = RenderStartEventListener(ctx, nsID, nsName, file, ms, tx)
 	if err != nil {
 		return err
 	}
