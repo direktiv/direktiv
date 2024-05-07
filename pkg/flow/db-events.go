@@ -195,7 +195,9 @@ func appendEventListenersToDB(ctx context.Context, nsID uuid.UUID, nsName string
 	for k := range eventTypesRemovedDuplicates {
 		fEv.ListeningForEventTypes = append(fEv.ListeningForEventTypes, k)
 	}
-
+	for i, j := 0, len(fEv.EventContextFilter)-1; i < j; i, j = i+1, j-1 {
+		fEv.EventContextFilter[i], fEv.EventContextFilter[j] = fEv.EventContextFilter[j], fEv.EventContextFilter[i]
+	}
 	tx, err := tx.BeginTx(ctx)
 	if err != nil {
 		return err
@@ -243,6 +245,9 @@ func (events *events) addInstanceEventListener(ctx context.Context, namespace uu
 			Typ:     ced.Type,
 			Context: filterContext,
 		})
+		for i, j := 0, len(fEv.EventContextFilter)-1; i < j; i, j = i+1, j-1 {
+			fEv.EventContextFilter[i], fEv.EventContextFilter[j] = fEv.EventContextFilter[j], fEv.EventContextFilter[i]
+		}
 		databaseNoDupCheck := ""
 		for k, v := range ced.Context {
 			databaseNoDupCheck += fmt.Sprintf("%v %v %v", ced.Type, k, v)
