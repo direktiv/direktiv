@@ -138,7 +138,7 @@ func Run(circuit *core.Circuit) error {
 
 			return proc, nil
 		},
-		RenderAllStartEventListeners: RenderAllStartEventListeners,
+		RenderAllStartEventListeners: renderAllStartEventListeners,
 	})
 	if err != nil {
 		return fmt.Errorf("lunching new main, err: %w", err)

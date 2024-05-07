@@ -211,7 +211,7 @@ func (flow *flow) configureWorkflowStarts(ctx context.Context, tx *database.SQLS
 		return err
 	}
 
-	err = RenderStartEventListener(ctx, nsID, nsName, file, ms, tx)
+	err = renderStartEventListener(ctx, nsID, nsName, file, ms, tx)
 	if err != nil {
 		return err
 	}
