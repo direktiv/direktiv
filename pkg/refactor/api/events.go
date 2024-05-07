@@ -271,6 +271,7 @@ func convertListenersForAPI(listener *datastore.EventListener) eventListenerEntr
 	return e
 }
 
+// nolint:canonicalheader
 func (c *eventsController) registerCoudEvent(w http.ResponseWriter, r *http.Request) {
 	ns := extractContextNamespace(r)
 	cType := r.Header.Get("Content-type")
@@ -483,6 +484,7 @@ type eventListenerEntry struct {
 	GlobGatekeepers             any       `json:"globGatekeepers,omitempty"`
 }
 
+// nolint:canonicalheader
 func sseHandlefunc(ctx context.Context, r *http.Request, c *eventsController, cursorTime time.Time, params []string) ([]CoursoredEvent, error) {
 	ns := chi.URLParam(r, "namespace")
 	if ns == "" {
