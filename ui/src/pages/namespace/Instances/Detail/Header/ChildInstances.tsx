@@ -31,7 +31,6 @@ const ChildInstances = () => {
     filters: {
       TRIGGER: {
         type: "MATCH",
-        // @ts-expect-error TODO: [DIR-724] currently the type at FiltersObj is not correct at this poinr, we need to update the type and make the filter component of the instance list deal with it
         value: `instance:${instanceId}`,
       },
     },
@@ -39,12 +38,14 @@ const ChildInstances = () => {
 
   if (!namespace) return null;
 
+  const instances = data?.data ?? [];
+
   const onInstanceSelect = (instance: string) => {
     // useNavigate(); is not working for some reason
     location.href = pages.instances.createHref({ namespace, instance });
   };
 
-  const childCount = data?.instances.results.length ?? 0;
+  const childCount = instances.length ?? 0;
 
   const needsPopover = childCount > 0;
   const moreInstances = childCount > maxChildInstancesToShow;
@@ -86,7 +87,7 @@ const ChildInstances = () => {
                       )}
                     </CommandEmpty>
                     <CommandGroup>
-                      {data.instances.results.map((instance) => (
+                      {instances.map((instance) => (
                         <CommandItem
                           key={instance.id}
                           value={instance.id}
@@ -105,7 +106,7 @@ const ChildInstances = () => {
                               {instance.id.slice(0, 8)}
                             </Badge>
 
-                            {instance.as}
+                            {instance.path}
                           </div>
                         </CommandItem>
                       ))}

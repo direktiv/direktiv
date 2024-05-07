@@ -17,6 +17,7 @@ import { useNamespace, useNamespaceActions } from "~/util/store/namespace";
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
 import { Checkbox } from "~/design/Checkbox";
+import { FileNameSchema } from "~/api/files/schema";
 import FormErrors from "~/components/FormErrors";
 import FormTypeSelect from "./FormTypeSelect";
 import InfoTooltip from "./InfoTooltip";
@@ -25,7 +26,6 @@ import { InputWithButton } from "~/design/InputWithButton";
 import { MirrorSchemaType } from "~/api/namespaces/schema/mirror";
 import { MirrorValidationSchema } from "~/api/namespaces/schema/mirror/validation";
 import { Textarea } from "~/design/TextArea";
-import { fileNameSchema } from "~/api/tree/schema/node";
 import { pages } from "~/util/router/pages";
 import { useCreateNamespace } from "~/api/namespaces/mutate/createNamespace";
 import { useListNamespaces } from "~/api/namespaces/query/get";
@@ -74,7 +74,7 @@ const NamespaceEdit = ({
 
   const existingNamespaces = namespaces?.data.map((n) => n.name) || [];
 
-  const newNameSchema = fileNameSchema.and(
+  const newNameSchema = FileNameSchema.and(
     z.string().refine((name) => !existingNamespaces.some((n) => n === name), {
       message: t("components.namespaceEdit.nameAlreadyExists"),
     })

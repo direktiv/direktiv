@@ -40,7 +40,7 @@ const LogsPanel = () => {
 
   const isMaximized = maximizedPanel === "logs";
 
-  const isPending = instanceDetailsData?.instance.status === "pending";
+  const isPending = instanceDetailsData?.status === "pending";
 
   const numberOfLogLines = logLines.length;
 
@@ -53,7 +53,7 @@ const LogsPanel = () => {
         <h3 className="flex grow items-center gap-x-2 font-medium">
           <ScrollText className="h-5" />
           {t("pages.instances.detail.logs.title", {
-            path: instanceDetailsData?.instance.as,
+            path: instanceDetailsData?.path,
           })}
         </h3>
         <ButtonBar>

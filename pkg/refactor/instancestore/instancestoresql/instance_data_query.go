@@ -7,7 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -201,7 +200,7 @@ func (q *instanceDataQuery) PopMessage(ctx context.Context) (*instancestore.Inst
 		return nil, res.Error
 	}
 	if res.RowsAffected == 0 {
-		return nil, datastore.ErrNotFound
+		return nil, instancestore.ErrNoMessages
 	}
 	if res.RowsAffected > 1 {
 		return nil, fmt.Errorf("unexpected instance_messages delete count, got: %d, want: %d", res.RowsAffected, 1)

@@ -4,10 +4,22 @@ import (
 	"context"
 	"errors"
 
+	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 )
+
+func loadSource(rev []byte) (*model.Workflow, error) {
+	workflow := new(model.Workflow)
+
+	err := workflow.Load(rev)
+	if err != nil {
+		return nil, err
+	}
+
+	return workflow, nil
+}
 
 func (flow *flow) placeholdSecrets(ctx context.Context, tx *database.SQLStore, ns string, file *filestore.File) error {
 	data, err := tx.FileStore().ForFile(file).GetData(ctx)

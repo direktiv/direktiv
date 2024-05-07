@@ -1,5 +1,6 @@
 package recipient
 
+//nolint:revive
 type RecipientType string
 
 const (

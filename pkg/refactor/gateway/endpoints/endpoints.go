@@ -47,6 +47,7 @@ func (e *EndpointList) FindRoute(route, method string) (*core.Endpoint, map[stri
 
 	// add path extension variables in context, e.g. /{id}
 	urlParams := make(map[string]string)
+	//nolint:intrange
 	for i := 0; i < len(routeCtx.URLParams.Keys); i++ {
 		key := routeCtx.URLParams.Keys[i]
 		urlParams[key] = routeCtx.URLParams.Values[i]
