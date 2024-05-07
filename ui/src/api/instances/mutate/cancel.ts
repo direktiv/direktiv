@@ -1,10 +1,14 @@
-import { InstanceCancelSchema } from "../schema";
+import {
+  InstanceCancelPayloadType,
+  InstanceCanceledResponseSchema,
+} from "../schema";
+
 import { apiFactory } from "~/api/apiFactory";
 import { useApiKey } from "~/util/store/apiKey";
 import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 import { useNamespace } from "~/util/store/namespace";
 
-export const cancelInstance = apiFactory({
+const updateInstance = apiFactory<InstanceCancelPayloadType>({
   url: ({
     baseUrl,
     namespace,
@@ -14,11 +18,9 @@ export const cancelInstance = apiFactory({
     namespace: string;
     instanceId: string;
   }) =>
-    `${
-      baseUrl ?? ""
-    }/api/namespaces/${namespace}/instances/${instanceId}/cancel`,
-  method: "POST",
-  schema: InstanceCancelSchema,
+    `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/instances/${instanceId}`,
+  method: "PATCH",
+  schema: InstanceCanceledResponseSchema,
 });
 
 export const useCancelInstance = () => {
@@ -30,11 +32,14 @@ export const useCancelInstance = () => {
   }
 
   const mutationFn = (instanceId: string) =>
-    cancelInstance({
+    updateInstance({
       apiKey: apiKey ?? undefined,
       urlParams: {
         namespace,
         instanceId,
+      },
+      payload: {
+        status: "cancelled",
       },
     });
 

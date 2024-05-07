@@ -10,12 +10,12 @@ import { useTranslation } from "react-i18next";
 
 export const Instances = () => {
   const {
-    data: sucessfullInstances,
-    isFetched: isFetchedSucessfullInstances,
-    isFetching: isFetchingSucessfullinstances,
-    refetch: refetchSucessfullInstances,
-    isAllowed: isAllowedSucessfullInstances,
-    noPermissionMessage: noPermissionMessageSucessfullInstances,
+    data: dataSuccessfulInstances,
+    isFetched: isFetchedSuccessfulInstances,
+    isFetching: isFetchingSuccessfulInstances,
+    refetch: refetchSuccessfulInstances,
+    isAllowed: isAllowedSuccessfulInstances,
+    noPermissionMessage: noPermissionMessageSuccessfulInstances,
   } = useInstances({
     limit: 10,
     offset: 0,
@@ -28,7 +28,7 @@ export const Instances = () => {
   });
 
   const {
-    data: failedInstances,
+    data: dataFailedInstances,
     isFetched: isFetchedFailedInstances,
     isFetching: isFetchingFailedInstances,
     refetch: refetchFailedInstances,
@@ -47,7 +47,11 @@ export const Instances = () => {
 
   const { t } = useTranslation();
 
-  if (!isFetchedSucessfullInstances || !isFetchedFailedInstances) return null;
+  const successfulInstances = dataSuccessfulInstances?.data ?? [];
+
+  const failedInstances = dataFailedInstances?.data ?? [];
+
+  if (!isFetchedSuccessfulInstances || !isFetchedFailedInstances) return null;
 
   return (
     <>
@@ -59,16 +63,16 @@ export const Instances = () => {
             icon
             size="sm"
             variant="ghost"
-            disabled={isFetchingSucessfullinstances}
+            disabled={isFetchingSuccessfulInstances}
             onClick={() => {
-              refetchSucessfullInstances();
+              refetchSuccessfulInstances();
             }}
           />
         }
       >
-        {isAllowedSucessfullInstances ? (
+        {isAllowedSuccessfulInstances ? (
           <>
-            {sucessfullInstances?.instances?.results.length === 0 ? (
+            {successfulInstances.length === 0 ? (
               <NoResult icon={Boxes}>
                 {t("pages.monitoring.instances.successfulExecutions.empty")}
               </NoResult>
@@ -76,7 +80,7 @@ export const Instances = () => {
               <ScrollArea className="h-full">
                 <Table>
                   <TableBody>
-                    {sucessfullInstances?.instances?.results.map((instance) => (
+                    {successfulInstances.map((instance) => (
                       <InstanceRow key={instance.id} instance={instance} />
                     ))}
                   </TableBody>
@@ -86,7 +90,7 @@ export const Instances = () => {
           </>
         ) : (
           <NoPermissions>
-            {noPermissionMessageSucessfullInstances}
+            {noPermissionMessageSuccessfulInstances}
           </NoPermissions>
         )}
       </InstanceCard>
@@ -107,7 +111,7 @@ export const Instances = () => {
       >
         {isAllowedFailedInstances ? (
           <>
-            {failedInstances?.instances?.results.length === 0 ? (
+            {failedInstances.length === 0 ? (
               <NoResult icon={Boxes}>
                 {t("pages.monitoring.instances.failedExecutions.empty")}
               </NoResult>
@@ -115,7 +119,7 @@ export const Instances = () => {
               <ScrollArea className="h-full">
                 <Table>
                   <TableBody>
-                    {failedInstances?.instances?.results.map((instance) => (
+                    {failedInstances.map((instance) => (
                       <InstanceRow key={instance.id} instance={instance} />
                     ))}
                   </TableBody>

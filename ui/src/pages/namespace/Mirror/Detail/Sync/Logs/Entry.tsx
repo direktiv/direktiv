@@ -12,7 +12,7 @@ type Props = { logEntry: LogEntryType } & LogEntryProps;
 export const Entry = forwardRef<HTMLDivElement, Props>(
   ({ logEntry, ...props }, ref) => {
     const { t } = useTranslation();
-    const { msg, level, time } = logEntry;
+    const { msg, error, level, time } = logEntry;
     const formattedTime = formatLogTime(time);
 
     return (
@@ -24,6 +24,9 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
       >
         <LogSegment display={true}>
           {t("components.logs.logEntry.messageLabel")} {msg}
+        </LogSegment>
+        <LogSegment display={error ? true : false}>
+          {t("components.logs.logEntry.errorLabel")} {error}
         </LogSegment>
       </LogEntry>
     );

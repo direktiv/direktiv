@@ -1,12 +1,11 @@
-import { WorkflowStartedSchema } from "../schema/node";
+import { InstanceCreatedResponseSchema } from "../schema";
 import { apiFactory } from "~/api/apiFactory";
-import { forceLeadingSlash } from "~/api/files/utils";
 import { getMessageFromApiError } from "~/api/errorHandling";
 import { useApiKey } from "~/util/store/apiKey";
 import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 import { useNamespace } from "~/util/store/namespace";
 
-export const runWorkflow = apiFactory<string>({
+export const createInstance = apiFactory<string>({
   url: ({
     baseUrl,
     namespace,
@@ -14,22 +13,20 @@ export const runWorkflow = apiFactory<string>({
   }: {
     baseUrl?: string;
     namespace: string;
-    path?: string;
+    path: string;
   }) =>
-    `${baseUrl ?? ""}/api/namespaces/${namespace}/tree${forceLeadingSlash(
-      path
-    )}?op=execute`,
+    `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/instances/?path=${path}`,
   method: "POST",
-  schema: WorkflowStartedSchema,
+  schema: InstanceCreatedResponseSchema,
 });
 
-type ResolvedRunWorkflow = Awaited<ReturnType<typeof runWorkflow>>;
+type ResolvedRunWorkflow = Awaited<ReturnType<typeof createInstance>>;
 
-export const useRunWorkflow = ({
+export const useCreateInstance = ({
   onSuccess,
   onError,
 }: {
-  onSuccess?: (data: ResolvedRunWorkflow) => void;
+  onSuccess?: (namespace: string, data: ResolvedRunWorkflow) => void;
   onError?: (error?: string) => void;
 } = {}) => {
   const apiKey = useApiKey();
@@ -41,7 +38,7 @@ export const useRunWorkflow = ({
 
   return useMutationWithPermissions({
     mutationFn: ({ path, payload }: { path: string; payload: string }) =>
-      runWorkflow({
+      createInstance({
         apiKey: apiKey ?? undefined,
         payload,
         urlParams: {
@@ -50,7 +47,7 @@ export const useRunWorkflow = ({
         },
       }),
     onSuccess: (data) => {
-      onSuccess?.(data);
+      onSuccess?.(namespace, data);
     },
     onError: (e) => {
       onError?.(getMessageFromApiError(e));

@@ -21,13 +21,13 @@ export const getAuthHeader = (apiKey: string): AuthHeader => {
 };
 
 export const buildSearchParamsString = (
-  searchParmsObj: Record<string, string | undefined>,
+  searchParmsObj: Record<string, string | number | undefined>,
   withoutQuestionmark?: true
 ) => {
   const queryParams = new URLSearchParams();
   Object.entries(searchParmsObj).forEach(([name, value]) => {
     if (value) {
-      queryParams.append(name, value);
+      queryParams.append(name, `${value}`);
     }
   });
 

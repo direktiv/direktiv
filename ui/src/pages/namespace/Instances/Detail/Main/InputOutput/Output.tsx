@@ -5,7 +5,7 @@ import { decode } from "js-base64";
 import { forwardRef } from "react";
 import { prettifyJsonString } from "~/util/helpers";
 import { useInstanceId } from "../../store/instanceContext";
-import { useOutput } from "~/api/instances/query/output";
+import { useInstanceOutput } from "~/api/instances/query/output";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 
@@ -17,7 +17,7 @@ const Output = forwardRef<
 >(({ instanceIsFinished }, ref) => {
   const instanceId = useInstanceId();
   const { t } = useTranslation();
-  const { data, isError } = useOutput({
+  const { data, isError } = useInstanceOutput({
     instanceId,
     enabled: instanceIsFinished,
   });
@@ -39,7 +39,7 @@ const Output = forwardRef<
     );
   }
 
-  const workflowOutput = decode(data?.data ?? "");
+  const workflowOutput = decode(data?.output ?? "");
   const workflowOutputPretty = prettifyJsonString(workflowOutput);
 
   return (

@@ -7,7 +7,7 @@ import { useLogVirtualizer } from "~/components/Logs/useLogVirtualizer";
 const ScrollContainer = () => {
   const instanceId = useInstanceId();
   const { data: instanceDetailsData } = useInstanceDetails({ instanceId });
-  const isStreaming = instanceDetailsData?.instance?.status === "pending";
+  const isStreaming = instanceDetailsData?.status === "pending";
   const {
     rowVirtualizer,
     parentRef,

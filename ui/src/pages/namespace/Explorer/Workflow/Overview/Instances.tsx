@@ -18,6 +18,8 @@ const Instances = ({ workflow }: { workflow: string }) => {
     filters: { AS: { type: "WORKFLOW", value: forceLeadingSlash(workflow) } },
   });
 
+  const instances = data?.data ?? [];
+
   const instancesRefetchButton = (
     <RefreshButton
       icon
@@ -36,7 +38,7 @@ const Instances = ({ workflow }: { workflow: string }) => {
       icon={Boxes}
       refetchButton={instancesRefetchButton}
     >
-      {data?.instances?.results.length === 0 ? (
+      {instances?.length === 0 ? (
         <NoResult icon={Boxes}>
           {t("pages.explorer.tree.workflow.overview.instances.noResult")}
         </NoResult>
@@ -44,7 +46,7 @@ const Instances = ({ workflow }: { workflow: string }) => {
         <ScrollArea className="h-full">
           <Table>
             <TableBody>
-              {data?.instances?.results.map((instance) => (
+              {instances.map((instance) => (
                 <InstanceRow key={instance.id} instance={instance} />
               ))}
             </TableBody>
