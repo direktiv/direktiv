@@ -190,9 +190,12 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
                 </PopoverTrigger>
                 <PopoverContent align="start" className="w-min">
                   <RefineTime
-                    field={field}
                     date={dateValue}
-                    setFilter={setFilter}
+                    onChange={(newDate) => {
+                      setFilter({
+                        [field]: newDate,
+                      });
+                    }}
                   />
                 </PopoverContent>
               </Popover>
