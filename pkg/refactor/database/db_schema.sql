@@ -257,10 +257,12 @@ ALTER TABLE "event_topics" ADD COLUMN IF NOT EXISTS "filter" text;
 ALTER TABLE "staging_events" ADD COLUMN IF NOT EXISTS "namespace" text;
 ALTER TABLE "events_history" ADD COLUMN IF NOT EXISTS "namespace" text;
 ALTER TABLE "event_listeners" ADD COLUMN IF NOT EXISTS "namespace" text;
-ALTER TABLE "event_listeners" DROP COLUMN IF EXISTS "glob_gates";
+ALTER TABLE "event_listeners" ADD COLUMN IF NOT EXISTS "event_context_filters" text;
+
 ALTER TABLE "event_topics" ADD COLUMN IF NOT EXISTS "namespace" text;
 
 ALTER TABLE "namespaces" DROP COLUMN IF EXISTS "config";
 ALTER TABLE "mirror_configs" ADD COLUMN IF NOT EXISTS "auth_type" text NOT NULL DEFAULT 'public';
+ALTER TABLE "mirror_configs" ADD COLUMN IF NOT EXISTS "auth_token" text NOT NULL DEFAULT 'public';
 
 DROP TABLE IF EXISTS "metrics";

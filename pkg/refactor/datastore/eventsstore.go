@@ -70,7 +70,7 @@ type EventListener struct {
 	TriggerType                 TriggerType          `json:"triggerType"`                 // Specifies the type of trigger (StartAnd, WaitAnd, etc.).
 	TriggerWorkflow             string               `json:"triggerWorkflow,omitempty"`   // The ID of the workflow to initiate or continue.
 	TriggerInstance             string               `json:"triggerInstance,omitempty"`   // Optional; The ID of a specific workflow instance to resume (for instance-waiting triggers).
-	EventFilters                []EventContextFilter `json:"eventFilters,omitempty"`
+	EventContextFilter          []EventContextFilter `json:"eventContextFilters,omitempty"`
 	Metadata                    string               `json:"metadata"` // Field for storing arbitrary metadata associated with the listener.
 }
 

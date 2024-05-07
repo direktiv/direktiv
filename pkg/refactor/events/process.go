@@ -207,7 +207,7 @@ func EventPassedGatekeeper(context map[string]string, event cloudevents.Event) b
 		}
 	}
 
-	return true // Event passed all relevant gatekeepers.
+	return true // Event passed all gatekeepers.
 }
 
 // extensionMatchesPattern checks if an event extension matches a given glob pattern.
@@ -295,7 +295,7 @@ func (ee EventEngine) multiConditionEventAndHandler(l *datastore.EventListener, 
 }
 
 func PassEventContextFilters(l *datastore.EventListener, event *datastore.Event) bool {
-	for _, filter := range l.EventFilters {
+	for _, filter := range l.EventContextFilter {
 		if filter.Typ == event.Event.Type() {
 			return EventPassedGatekeeper(filter.Context, *event.Event)
 		}
