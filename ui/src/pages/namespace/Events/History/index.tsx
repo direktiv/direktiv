@@ -7,18 +7,10 @@ export const itemsPerPage = 10;
 
 const History = () => {
   const [filters, setFilters] = useState<FiltersObj>({});
-  const [offset, setOffset] = useState(0);
-
-  // useEventsStream({ limit: itemsPerPage, offset, filters });
 
   return (
     <>
-      <EventsList
-        filters={filters}
-        setFilters={setFilters}
-        offset={offset}
-        setOffset={setOffset}
-      />
+      <EventsList filters={filters} setFilters={setFilters} />
       <EventStreamingSubscriber />
     </>
   );
