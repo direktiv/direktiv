@@ -65,7 +65,7 @@ test("the logs panel can be resized, it displays a log message from the workflow
       namespace,
       path: fewLogsWorkflowName,
     })
-  ).instance;
+  ).data.id;
   await page.goto(`/n/${namespace}/instances/${instanceId}`);
 
   const logsPanel = page.getByTestId("instance-logs-container");
@@ -163,7 +163,7 @@ test("the logs panel can be toggled between verbose and non verbose logs", async
       namespace,
       path: simpleWorkflowName,
     })
-  ).instance;
+  ).data.id;
   await page.goto(`/n/${namespace}/instances/${instanceId}`);
 
   const logsPanel = page.getByTestId("instance-logs-container");
@@ -218,7 +218,7 @@ test("the logs can be copied", async ({ page }) => {
       namespace,
       path: simpleWorkflowName,
     })
-  ).instance;
+  ).data.id;
   await page.goto(`/n/${namespace}/instances/${instanceId}`);
 
   const logsPanel = page.getByTestId("instance-logs-container");
@@ -255,7 +255,7 @@ test("log entries will be automatically scrolled to the end", async ({
       namespace,
       path: manyLogsWorkflowName,
     })
-  ).instance;
+  ).data.id;
 
   await page.goto(`/n/${namespace}/instances/${instanceId}`);
 

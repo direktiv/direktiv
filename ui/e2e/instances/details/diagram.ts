@@ -65,7 +65,7 @@ test("the diagram panel on the instance page responds to user interaction", asyn
       namespace,
       path: simpleWorkflowName,
     })
-  ).instance;
+  ).data.id;
   await page.goto(`/n/${namespace}/instances/${instanceId}`);
 
   const diagramPanel = page.getByTestId("rf__wrapper");
@@ -127,7 +127,7 @@ test("the diagram on the instance page changes appearance dynamically", async ({
       namespace,
       path: delayedWorkflowName,
     })
-  ).instance;
+  ).data.id;
   await page.goto(`/n/${namespace}/instances/${instanceId}`);
 
   const diagramPanel = page.getByTestId("rf__wrapper");

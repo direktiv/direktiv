@@ -65,7 +65,7 @@ test("the input/output panel responds to user interaction", async ({
       namespace,
       path: simpleWorkflowName,
     })
-  ).instance;
+  ).data.id;
   await page.goto(`/n/${namespace}/instances/${instanceId}`);
 
   const inputOutputPanel = page.getByTestId("inputOutputPanel");
@@ -160,7 +160,7 @@ test("the output is shown when the workflow finished running", async ({
       namespace,
       path: delayedWorkflowName,
     })
-  ).instance;
+  ).data.id;
   await page.goto(`/n/${namespace}/instances/${instanceId}`);
 
   const inputOutputPanel = page.getByTestId("inputOutputPanel");
@@ -204,7 +204,7 @@ test("after a running instance finishes, the output tab is automatically selecte
       namespace,
       path: delayedWorkflowName,
     })
-  ).instance;
+  ).data.id;
   await page.goto(`/n/${namespace}/instances/${instanceId}`);
 
   const inputOutputPanel = page.getByTestId("inputOutputPanel");
