@@ -109,6 +109,34 @@ describe('Test the jx API.', () => {
         })
     })
 
+    it(`should perform another structured jx query`, async () => {
+        var pl = {
+            jx: encode(`x: 'jq(5)'
+y: 6
+z: 
+  a: "a"
+  b: 'js(return "b")'`),
+            data: encode('{}'),
+        }
+
+        const r = await request(config.getDirektivHost()).post(`/api/v2/jx`).send(pl)
+
+        expect(r.statusCode).toEqual(200)
+        expect(r.body.data).toEqual({
+            jx: pl.jx,
+            data: pl.data,
+            logs: '',
+            output: [encode(`{
+  "x": 5,
+  "y": 6,
+  "z": {
+    "a": "a",
+    "b": "b"
+  }
+}`)],
+        })
+    })
+
     it(`should perform a simple jx query with passing assertions`, async () => {
         var pl = {
             jx: encode(`x: 'jq(5)'`),
