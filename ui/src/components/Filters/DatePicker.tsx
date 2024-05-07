@@ -11,12 +11,6 @@ const DatePicker = ({
   onChange: (value: Date) => void;
   heading: string;
 }) => (
-  // const setDate = (type: string, value: Date) => {
-  // setFilter({
-  //   [type]: { type, value },
-  // });
-  // };
-
   <Command>
     <CommandList className="max-h-[460px]">
       <CommandGroup heading={heading}>
