@@ -312,7 +312,8 @@
                 },
                 "targetEvent": {
                   "namespace": "Namespace (optional)"
-                }
+                },
+                "disableNamespaceSelectNote": "You can only access other namespaces when you are in the system namespace."
               },
               "inbound": {
                 "modal": {
