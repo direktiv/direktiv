@@ -1,14 +1,13 @@
 import { EventStreamingSubscriber } from "~/api/eventsv2/query/EventStreamingSubscriber";
 import EventsList from "./EventsList";
-import { FiltersObj } from "~/api/events/query/get";
+import { FiltersSchemaType } from "~/api/eventsv2/schema/filters";
 import { useState } from "react";
 
 export const itemsPerPage = 10;
 
 const History = () => {
   // temporarily hard coded the filters - pending re-implementation
-  const [_, setFilters] = useState<FiltersObj>({});
-  const filters = { typeContains: "foo" };
+  const [filters, setFilters] = useState<FiltersSchemaType>({});
 
   return (
     <>
