@@ -85,7 +85,7 @@ start:
   event:
     type: greeting
     context:
-        a: "started"
+        state: "started"
   state: helloworld
 states:
 - id: helloworld
@@ -101,7 +101,7 @@ states:
       event:
         type: greeting
         context:
-            a: "stopped"
+            state: "stopped"
       state: helloworld
     states:
     - id: helloworld
@@ -115,7 +115,7 @@ states:
 	})
 
 	it(`should invoke the '/stoplistener.yml' workflow with an event`, async () => {
-		await events.sendEventAndList(namespaceName, baseEventWithContext('greeting', 'greeting', 'a', 'stopped'))
+		await events.sendEventAndList(namespaceName, baseEventWithContext('greeting', 'greeting', 'state', 'stopped'))
 
 		let instance = await events.listInstancesAndFilter(namespaceName, 'startlistener.yml')
 		expect(instance).toBeFalsy()
