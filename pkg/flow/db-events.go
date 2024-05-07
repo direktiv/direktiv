@@ -94,7 +94,7 @@ func (events *events) deleteInstanceEventListeners(ctx context.Context, im *inst
 	return nil
 }
 
-func RenderAllStartEventListeners(ctx context.Context, tx *database.SQLStore) error {
+func renderAllStartEventListeners(ctx context.Context, tx *database.SQLStore) error {
 	nsList, err := tx.DataStore().Namespaces().GetAll(ctx)
 	if err != nil {
 		return err
@@ -110,7 +110,7 @@ func RenderAllStartEventListeners(ctx context.Context, tx *database.SQLStore) er
 				return err
 			}
 
-			err = RenderStartEventListener(ctx, ns.ID, ns.Name, file, ms, tx)
+			err = renderStartEventListener(ctx, ns.ID, ns.Name, file, ms, tx)
 			if err != nil {
 				return err
 			}
@@ -120,7 +120,7 @@ func RenderAllStartEventListeners(ctx context.Context, tx *database.SQLStore) er
 	return nil
 }
 
-func RenderStartEventListener(ctx context.Context, nsID uuid.UUID, nsName string, file *filestore.File, ms *muxStart, tx *database.SQLStore) error {
+func renderStartEventListener(ctx context.Context, nsID uuid.UUID, nsName string, file *filestore.File, ms *muxStart, tx *database.SQLStore) error {
 	_, err := tx.DataStore().EventListener().DeleteAllForWorkflow(ctx, file.ID)
 	if err != nil {
 		return err
@@ -139,7 +139,7 @@ func RenderStartEventListener(ctx context.Context, nsID uuid.UUID, nsName string
 	}
 
 	if len(ms.Events) > 0 {
-		err := AppendEventListenersToDB(ctx, nsID, nsName, file, lifespan, ms, tx)
+		err := appendEventListenersToDB(ctx, nsID, nsName, file, lifespan, ms, tx)
 		if err != nil {
 			return err
 		}
@@ -148,7 +148,7 @@ func RenderStartEventListener(ctx context.Context, nsID uuid.UUID, nsName string
 	return nil
 }
 
-func AppendEventListenersToDB(ctx context.Context, nsID uuid.UUID, nsName string, file *filestore.File, lifespan time.Duration, ms *muxStart, tx *database.SQLStore) error {
+func appendEventListenersToDB(ctx context.Context, nsID uuid.UUID, nsName string, file *filestore.File, lifespan time.Duration, ms *muxStart, tx *database.SQLStore) error {
 	fEv := &datastore.EventListener{
 		ID:                       uuid.New(),
 		CreatedAt:                time.Now().UTC(),
