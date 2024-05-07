@@ -6,12 +6,14 @@ import { useState } from "react";
 export const itemsPerPage = 10;
 
 const History = () => {
-  const [filters, setFilters] = useState<FiltersObj>({});
+  // temporarily hard coded the filters - pending re-implementation
+  const [_, setFilters] = useState<FiltersObj>({});
+  const filters = { typeContains: "foo" };
 
   return (
     <>
       <EventsList filters={filters} setFilters={setFilters} />
-      <EventStreamingSubscriber />
+      <EventStreamingSubscriber filters={filters} />
     </>
   );
 };
