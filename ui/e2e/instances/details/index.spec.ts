@@ -478,17 +478,12 @@ test("the logs panel can be resized, it displays a log message from the workflow
 
   const logsPanel = page.getByTestId("instance-logs-container");
 
-  const logsPanelToolbar = page
-    .getByTestId("instance-logs-container")
-    .locator("div")
-    .first();
-
   const scrollContainer = page.getByTestId("instance-logs-scroll-container");
 
-  await expect(logsPanelToolbar).toBeVisible();
+  await expect(logsPanel).toBeVisible();
 
   await expect(
-    logsPanelToolbar.locator("h3"),
+    logsPanel.locator("h3"),
     "The headline of the logs shows the name of the currently running workflow"
   ).toContainText(`Logs for /${fewLogsWorkflowName}`);
 
