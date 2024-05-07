@@ -1,4 +1,3 @@
-import { FiltersObj, useInstances } from "~/api/instances/query/get";
 import {
   NoPermissions,
   NoResult,
@@ -13,8 +12,11 @@ import {
 import { Boxes } from "lucide-react";
 import { Card } from "~/design/Card";
 import Filters from "../components/Filters";
+import { FiltersObj } from "~/api/instances/query/utils";
 import { Pagination } from "~/components/Pagination";
+import RefreshButton from "~/design/RefreshButton";
 import Row from "./Row";
+import { useInstances } from "~/api/instances/query/get";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -24,7 +26,14 @@ const InstancesListPage = () => {
   const [offset, setOffset] = useState(0);
   const [filters, setFilters] = useState<FiltersObj>({});
   const { t } = useTranslation();
-  const { data, isFetched, isAllowed, noPermissionMessage } = useInstances({
+  const {
+    data,
+    isSuccess,
+    isFetching,
+    refetch,
+    isAllowed,
+    noPermissionMessage,
+  } = useInstances({
     limit: instancesPerPage,
     offset,
     filters,
@@ -35,17 +44,29 @@ const InstancesListPage = () => {
     setOffset(0);
   };
 
-  const numberOfInstances = data?.instances?.pageInfo?.total ?? 0;
-  const noResults = isFetched && data?.instances.results.length === 0;
+  const instances = data?.data ?? [];
+  const numberOfInstances = data?.meta?.total ?? 0;
+  const noResults = isSuccess && instances.length === 0;
   const showPagination = numberOfInstances > instancesPerPage;
   const hasFilters = !!Object.keys(filters).length;
 
   return (
     <div className="flex grow flex-col gap-y-4 p-5">
-      <h3 className="flex items-center gap-x-2 font-bold">
-        <Boxes className="h-5" />
-        {t("pages.instances.list.title")}
-      </h3>
+      <div className="flex flex-col gap-4 sm:flex-row">
+        <h3 className="flex grow items-center gap-x-2 pb-1 font-bold">
+          <Boxes className="h-5" />
+          {t("pages.instances.list.title")}
+        </h3>
+        <RefreshButton
+          icon
+          variant="outline"
+          aria-label={t("pages.instances.list.refetchLabel")}
+          disabled={isFetching}
+          onClick={() => {
+            refetch();
+          }}
+        />
+      </div>
       <Card>
         <Filters filters={filters} onUpdate={handleFilterChange} />
         <Table className="border-t border-gray-5 dark:border-gray-dark-5">
@@ -67,7 +88,7 @@ const InstancesListPage = () => {
                 {t("pages.instances.list.tableHeader.startedAt")}
               </TableHeaderCell>
               <TableHeaderCell className="w-40">
-                {t("pages.instances.list.tableHeader.updatedAt")}
+                {t("pages.instances.list.tableHeader.finishedAt")}
               </TableHeaderCell>
             </TableRow>
           </TableHead>
@@ -85,11 +106,10 @@ const InstancesListPage = () => {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  data?.instances.results.map((instance) => (
+                  instances.map((instance) => (
                     <Row
                       instance={instance}
                       key={instance.id}
-                      namespace={data.namespace}
                       data-testid={`instance-row-${instance.id}`}
                     />
                   ))

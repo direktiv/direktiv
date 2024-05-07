@@ -1,0 +1,27 @@
+
+/api/v2/jx:
+  post:
+    summary: Perform a jx query.
+    tags:
+    - server
+    responses:
+      '200': 
+        description: JX helper API.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    jx:
+                      type: string
+                    data:
+                      type: string
+                    logs:
+                      type: string
+                    output:
+                      type: array
+                      items:
+                        type: string
