@@ -14,7 +14,7 @@ import NamespaceSelector from "~/components/NamespaceSelector";
 import { PluginWrapper } from "../components/PluginSelector";
 import WorkflowVariablePicker from "~/components/WorkflowVariablepicker";
 import { treatEmptyStringAsUndefined } from "~/pages/namespace/Explorer/utils";
-import { useDisableNamespaceSelect } from "./utils/useDisableNamespaceSelect";
+import { useIsSystemNamespace } from "./utils/useIsSystemNamespace";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -49,7 +49,7 @@ export const TargetFlowVarForm: FC<FormProps> = ({
     },
   });
 
-  const disableNamespaceSelect = useDisableNamespaceSelect();
+  const disableNamespaceSelect = useIsSystemNamespace();
 
   const submitForm = (e: FormEvent<HTMLFormElement>) => {
     e.stopPropagation(); // prevent the parent form from submitting
