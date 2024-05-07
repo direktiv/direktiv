@@ -10,8 +10,8 @@ import useInfiniteQueryWithPermissions from "~/api/useInfiniteQueryWithPermissio
 import { useNamespace } from "~/util/store/namespace";
 
 type EventsListParams = {
-  enabled: boolean;
-  filters: FiltersSchemaType;
+  enabled?: boolean;
+  filters?: FiltersSchemaType;
 };
 
 const getUrl = ({
