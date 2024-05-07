@@ -166,9 +166,13 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
                   {(field === "receivedAfter" ||
                     field === "receivedBefore") && (
                     <DatePicker
-                      field={field}
                       date={filters[field]}
-                      setFilter={setFilter}
+                      heading={t(`components.filters.menuHeading.${field}`)}
+                      onChange={(value) =>
+                        setFilter({
+                          [field]: value,
+                        })
+                      }
                     />
                   )}
                 </PopoverContent>
@@ -268,9 +272,13 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
               ((selectedField === "receivedAfter" ||
                 selectedField === "receivedBefore") && (
                 <DatePicker
-                  field={selectedField}
+                  heading={t(`components.filters.menuHeading.${selectedField}`)}
                   date={filters[selectedField]}
-                  setFilter={setFilter}
+                  onChange={(value) =>
+                    setFilter({
+                      [selectedField]: value,
+                    })
+                  }
                 />
               ))}
           </PopoverContent>
