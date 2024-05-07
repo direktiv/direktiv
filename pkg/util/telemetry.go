@@ -306,10 +306,12 @@ func (c *httpCarrier) Get(key string) string {
 	return c.r.Header.Get(key)
 }
 
+// nolint:canonicalheader
 func (c *httpCarrier) Keys() []string {
 	return c.r.Header.Values("oteltmckeys")
 }
 
+// nolint:canonicalheader
 func (c *httpCarrier) Set(key, val string) {
 	prev := c.Get(key)
 	if prev == "" {

@@ -85,6 +85,7 @@ type outcome struct {
 	errMsg  string
 }
 
+// nolint:canonicalheader
 func (worker *inboundWorker) doFunctionRequest(ctx context.Context, ir *functionRequest) (*outcome, error) {
 	slog.Debug("Forwarding request to service.", "action_id", ir.actionId)
 

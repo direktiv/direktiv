@@ -61,7 +61,6 @@ linters:
     - prealloc
     - spancheck # TODO: Alan, enable this one as it helps you fixing some telemetry bugs.
     - err113 # TODO: This ensures no dynamic errors.
-    - canonicalheader
     - mnd
 
 issues:
