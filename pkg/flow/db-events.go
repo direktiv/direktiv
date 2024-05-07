@@ -95,7 +95,6 @@ func (events *events) deleteInstanceEventListeners(ctx context.Context, im *inst
 }
 
 func RenderAllStartEventListeners(ctx context.Context, tx *database.SQLStore) error {
-
 	nsList, err := tx.DataStore().Namespaces().GetAll(ctx)
 	if err != nil {
 		return err
