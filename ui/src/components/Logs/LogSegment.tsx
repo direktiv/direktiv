@@ -13,5 +13,5 @@ export const LogSegment: FC<LogSegmentProps> = ({
   children,
 }) => {
   if (!display) return <></>;
-  return <span className={twMergeClsx("pr-3", className)}>{children}</span>;
+  return <span className={twMergeClsx("mr-3", className)}>{children}</span>;
 };
