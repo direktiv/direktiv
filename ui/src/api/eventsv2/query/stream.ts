@@ -5,6 +5,8 @@ import {
 } from "../schema";
 import { InfiniteData, useQueryClient } from "@tanstack/react-query";
 
+import { FiltersSchemaType } from "../schema/filters";
+import { buildSearchParamsString } from "~/api/utils";
 import { eventKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
@@ -13,6 +15,7 @@ import { useStreaming } from "~/api/streaming";
 type EventsQueryParams = {
   namespace?: string;
   before?: string;
+  filters?: FiltersSchemaType;
 };
 
 type EventsParams = {
@@ -52,11 +55,17 @@ const updateCache = (
 };
 
 const getUrl = (params: EventsParams) => {
-  const { baseUrl, namespace } = params;
+  const { baseUrl, namespace, filters } = params;
 
   const urlPath = `/api/v2/namespaces/${namespace}/events/history/subscribe`;
 
-  return `${baseUrl ?? ""}${urlPath}`;
+  let url = `${baseUrl ?? ""}${urlPath}`;
+
+  if (filters) {
+    url = url.concat(buildSearchParamsString(filters));
+  }
+
+  return url;
 };
 
 export type UseEventsStreamParams = EventsQueryParams & { enabled?: boolean };

@@ -1,10 +1,14 @@
+import { FiltersSchemaType } from "./schema/filters";
+
 export const eventKeys = {
   eventsList: (
     namespace: string,
     {
       apiKey,
+      filters,
     }: {
       apiKey?: string;
+      filters?: FiltersSchemaType;
     }
   ) =>
     [
@@ -12,6 +16,7 @@ export const eventKeys = {
         scope: "events-list",
         apiKey,
         namespace,
+        filters,
       },
     ] as const,
 };

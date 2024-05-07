@@ -7,6 +7,7 @@ import { EventSchemaType } from "~/api/eventsv2/schema";
 import EventsTable from "./components/Table";
 import Filters from "./components/Filters";
 import { FiltersObj } from "~/api/events/query/get";
+import { FiltersSchemaType } from "~/api/eventsv2/schema/filters";
 import PaginationProvider from "~/components/PaginationProvider";
 import { Radio } from "lucide-react";
 import Row from "./Row";
@@ -22,7 +23,7 @@ const EventsList = ({
   filters,
   setFilters,
 }: {
-  filters: FiltersObj;
+  filters: FiltersSchemaType;
   setFilters: (filters: FiltersObj) => void;
 }) => {
   const { t } = useTranslation();
@@ -30,6 +31,7 @@ const EventsList = ({
 
   const { data, isFetched, isAllowed, noPermissionMessage } = useEvents({
     enabled: true,
+    filters,
   });
 
   const handleOpenChange = (state: boolean) => {

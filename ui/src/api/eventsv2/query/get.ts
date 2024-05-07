@@ -1,20 +1,34 @@
 import { EventListItemType, EventsListResponseSchema } from "../schema";
 
+import { FiltersSchemaType } from "../schema/filters";
 import { QueryFunctionContext } from "@tanstack/react-query";
 import { apiFactory } from "~/api/apiFactory";
+import { buildSearchParamsString } from "~/api/utils";
 import { eventKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import useInfiniteQueryWithPermissions from "~/api/useInfiniteQueryWithPermissions";
 import { useNamespace } from "~/util/store/namespace";
 
+type EventsListParams = {
+  enabled: boolean;
+  filters: FiltersSchemaType;
+};
+
 const getUrl = ({
   namespace,
   baseUrl,
+  filters,
 }: {
-  baseUrl?: string;
   namespace: string;
+  baseUrl?: string;
+  filters?: FiltersSchemaType;
 }) => {
-  const url = `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/events/history`;
+  let url = `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/events/history`;
+
+  if (filters) {
+    url = url.concat(buildSearchParamsString(filters));
+  }
+
   return url;
 };
 
@@ -25,14 +39,14 @@ export const getEvents = apiFactory({
 });
 
 const fetchEvents = async ({
-  queryKey: [{ apiKey, namespace }],
+  queryKey: [{ apiKey, namespace, filters }],
 }: QueryFunctionContext<ReturnType<(typeof eventKeys)["eventsList"]>>) =>
   getEvents({
     apiKey,
-    urlParams: { namespace },
+    urlParams: { namespace, filters },
   });
 
-export const useEvents = ({ enabled = true }) => {
+export const useEvents = ({ enabled = true, filters }: EventsListParams) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
 
@@ -52,6 +66,7 @@ export const useEvents = ({ enabled = true }) => {
   const queryReturn = useInfiniteQueryWithPermissions({
     queryKey: eventKeys.eventsList(namespace, {
       apiKey: apiKey ?? undefined,
+      filters,
     }),
     queryFn: fetchEvents,
     getNextPageParam: () => undefined,
