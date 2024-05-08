@@ -64,6 +64,8 @@ func (c *eventsController) listEvents(w http.ResponseWriter, r *http.Request) {
 	params, err := extractEventFilterParams(r)
 	if err != nil {
 		writeBadrequestError(w, err)
+
+		return
 	}
 
 	data, err := c.store.EventHistory().GetOld(r.Context(), ns.Name, t, params...)

@@ -272,7 +272,7 @@
               event: message
               data: {"Event":{"specversion":"1.0","id":"1234-234234","source":"https://direktiv.io/test","type":"testerDuplicate"},"namespace":"e09f0392-fe09-4378-bc0a-de3ab634f4e6","namespaceName":"wfeventsv2","receivedAt":"2024-04-25T14:28:56.374148Z", "serialID":2}
 
-/api/v2/namespaces/{namespace}/events/listener:
+/api/v2/namespaces/{namespace}/events/listeners:
   get:
     tags:
     - events
@@ -363,7 +363,7 @@
                         type: object
                         description: Global gatekeepers associated with the event listener.
 
-/api/v2/namespaces/{namespace}/events/listener/{listenerID}:
+/api/v2/namespaces/{namespace}/events/listeners/{listenerID}:
     get:
       tags:
       - events
@@ -695,6 +695,11 @@
             schema:
               type: object
               properties:
+                meta:
+                  type: object
+                  properties:
+                    total: 
+                      type: integer
                 data:
                   type: array
                   items:
@@ -840,6 +845,33 @@
            schema:
              type: object
 #
+
+/api/v2/jx:
+  post:
+    summary: Perform a jx query.
+    tags:
+    - server
+    responses:
+      '200': 
+        description: JX helper API.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    jx:
+                      type: string
+                    data:
+                      type: string
+                    logs:
+                      type: string
+                    output:
+                      type: array
+                      items:
+                        type: string
 
 /api/v2/namespaces/{namespace}/metrics/instance:
   get:
@@ -1218,9 +1250,11 @@
                   items:
                     type: object
                     properties:
-                      issue:
+                      description:
                         type: string
                         description: dynamic string for humans to read
+                      count: 
+                        type: integer
                       level:
                         type: string
                         description: enum of the notification severity level (currently only 'warning' exists)

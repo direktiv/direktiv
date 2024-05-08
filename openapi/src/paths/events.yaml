@@ -272,7 +272,7 @@
               event: message
               data: {"Event":{"specversion":"1.0","id":"1234-234234","source":"https://direktiv.io/test","type":"testerDuplicate"},"namespace":"e09f0392-fe09-4378-bc0a-de3ab634f4e6","namespaceName":"wfeventsv2","receivedAt":"2024-04-25T14:28:56.374148Z", "serialID":2}
 
-/api/v2/namespaces/{namespace}/events/listener:
+/api/v2/namespaces/{namespace}/events/listeners:
   get:
     tags:
     - events
@@ -363,7 +363,7 @@
                         type: object
                         description: Global gatekeepers associated with the event listener.
 
-/api/v2/namespaces/{namespace}/events/listener/{listenerID}:
+/api/v2/namespaces/{namespace}/events/listeners/{listenerID}:
     get:
       tags:
       - events
