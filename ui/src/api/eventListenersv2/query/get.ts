@@ -12,7 +12,7 @@ const getUrl = ({
 }: {
   baseUrl?: string;
   namespace: string;
-}) => `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/events/listener`;
+}) => `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/events/listeners`;
 
 export const getEventListeners = apiFactory({
   url: getUrl,
