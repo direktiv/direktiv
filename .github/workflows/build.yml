@@ -249,7 +249,7 @@ jobs:
 
       - name: Wait until API is healthy
         run: |
-          endpoint="http://${{ env.DIREKTIV_HOST }}/api/v2/status"
+          endpoint="http://127.0.0.1:80/api/v2/status"
 
           for attempt in {1..20}; do
             status_code=$(curl -s -o /dev/null -w "%{http_code}" $endpoint)
