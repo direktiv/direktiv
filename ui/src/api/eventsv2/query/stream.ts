@@ -97,6 +97,7 @@ export const useEventsStream = ({
       queryClient.setQueryData<EventsCache>(
         eventKeys.eventsList(namespace, {
           apiKey: apiKey ?? undefined,
+          filters: params.filters,
         }),
         (oldData) => updateCache(oldData, msg)
       );
