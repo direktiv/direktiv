@@ -309,9 +309,6 @@ jobs:
         run: |
           helm repo add percona https://percona.github.io/percona-helm-charts/
           helm install --create-namespace -n postgres pg-operator percona/pg-operator --wait
-
-      - name: Add a postgres instance
-        run: |
           kubectl apply -f https://raw.githubusercontent.com/direktiv/direktiv/main/scripts/kubernetes/install/db/basic.yaml
 
       - name: Install Knative
@@ -326,6 +323,7 @@ jobs:
         run: |
           sleep 1
           kubectl wait -n postgres --for=condition=Ready pod -l app.kubernetes.io/instance=direktiv-cluster --timeout=120s
+
       - name: Generate dev.yaml file with database credentials
         run: |
           DB_HOST=$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "host"}}' | base64 --decode)
