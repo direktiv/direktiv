@@ -20,6 +20,11 @@ export const getAuthHeader = (apiKey: string): AuthHeader => {
   };
 };
 
+const convertDateToISOString = (value: string | number | Date) => {
+  const isDate = value instanceof Date;
+  return isDate ? value.toISOString() : value;
+};
+
 export const buildSearchParamsString = (
   searchParmsObj: Record<string, string | Date | number | undefined>,
   withoutQuestionmark?: true
@@ -27,7 +32,8 @@ export const buildSearchParamsString = (
   const queryParams = new URLSearchParams();
   Object.entries(searchParmsObj).forEach(([name, value]) => {
     if (value) {
-      queryParams.append(name, `${value}`);
+      const stringValue = convertDateToISOString(value);
+      queryParams.append(name, `${stringValue}`);
     }
   });
 
