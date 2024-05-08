@@ -180,6 +180,15 @@ jobs:
       - name: Install Helm
         run: curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
+      - name: Create namespace for the DB
+        run: kubectl create ns postgres
+
+      - name: Install Postgres using Percona Operator
+        run: |
+          helm repo add percona https://percona.github.io/percona-helm-charts/
+          helm install --create-namespace -n postgres pg-operator percona/pg-operator --wait
+          kubectl apply -f https://raw.githubusercontent.com/direktiv/direktiv/main/scripts/kubernetes/install/db/basic.yaml
+
       - name: Install Knative
         run: |
           kubectl apply -f https://github.com/knative/operator/releases/download/knative-v1.12.2/operator.yaml
@@ -188,17 +197,10 @@ jobs:
           kubectl apply --filename https://github.com/knative/net-contour/releases/download/knative-v1.11.1/contour.yaml
           kubectl delete namespace contour-external
 
-      - name: Install Postgres
-        run: |
-          helm repo add percona https://percona.github.io/percona-helm-charts/
-          helm install --create-namespace -n postgres pg-operator percona/pg-operator
-          kubectl apply -f https://raw.githubusercontent.com/direktiv/direktiv/main/scripts/kubernetes/install/db/basic.yaml
-
       - name: Wait for Direktiv pods to be ready
         run: |
           sleep 1
           kubectl wait -n postgres --for=condition=Ready pod -l app.kubernetes.io/instance=direktiv-cluster --timeout=120s
-
       - name: Generate dev.yaml file with database credentials
         run: |
           DB_HOST=$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "host"}}' | base64 --decode)
