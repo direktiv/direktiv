@@ -74,10 +74,6 @@ spec:
           - name: "NO_PROXY"
             value: "{{ .Values.no_proxy }}"
           {{- end }}
-          - name: UI_PORT
-            value: "2304"
-          - name: UI_BACKEND
-            value: "http://localhost/api"
           ports:
             - name: frontend
               containerPort: 2304

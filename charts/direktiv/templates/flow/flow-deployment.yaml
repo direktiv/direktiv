@@ -112,6 +112,10 @@ spec:
                  name: {{ .secret | quote }}
                  key: {{ .key | quote }}
           {{- end }}
+          {{- range .Values.flow.additionalEnvs }}
+          - name: {{ .name | quote }}
+            value: {{ .value | quote }}
+          {{- end }}
           - name: DIREKTIV_SECRET_KEY
             valueFrom:
               secretKeyRef:
