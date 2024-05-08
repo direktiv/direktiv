@@ -39,7 +39,7 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
-          cache: false
+          cache: true
 
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v6
@@ -56,6 +56,7 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
+          cache: true
 
       - name: Run unit tests
         run: |
@@ -173,14 +174,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Cache Ubuntu packages
-        uses: actions/cache@v4
-        with:
-          path: /var/cache/apt/archives
-          key: ${{ runner.os }}-apt-packages-${{ hashFiles('**/apt.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-apt-packages-
-
       - name: Setup k3s
         run: curl -sfL https://get.k3s.io | sh -s - --disable traefik --write-kubeconfig-mode=644
 
@@ -206,15 +199,6 @@ jobs:
           kubectl apply -f https://raw.githubusercontent.com/direktiv/direktiv/main/scripts/kubernetes/install/knative/basic.yaml
           kubectl apply --filename https://github.com/knative/net-contour/releases/download/knative-v1.11.1/contour.yaml
           kubectl delete namespace contour-external
-
-      - name: Cache Docker layers
-        id: docker-cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.docker
-          key: docker-${{ runner.os }}-${{ hashFiles('Dockerfile') }}
-          restore-keys: |
-            docker-${{ runner.os }}-
 
       - name: Wait for Direktiv pods to be ready
         run: |
@@ -252,17 +236,8 @@ jobs:
           sleep 1
           kubectl wait --for=condition=Ready pod -l app.kubernetes.io/instance=direktiv --timeout=120s
 
-      - name: Get Internal IP
-        id: getInternalIP
-        run: |
-          internal_ip=$(kubectl get service direktiv-ingress-nginx-controller -o jsonpath='{.spec.clusterIP}')
-          echo "internal_ip=$internal_ip" >> $GITHUB_ENV
-
       - name: Set Environment Variables
-        run: echo "DIREKTIV_HOST=${{ env.internal_ip }}" >> $GITHUB_ENV
-
-      - name: Print DIREKTIV_HOST
-        run: echo "DIREKTIV_HOST is set to ${{ env.DIREKTIV_HOST }}"
+        run: echo "DIREKTIV_HOST=127.0.0.1:80" >> $GITHUB_ENV
 
       - name: Wait until API is healthy
         run: |
@@ -291,7 +266,7 @@ jobs:
       - name: Run Playwrite E2E tests
         if: matrix.sections.type == 'playwright'
         run: |
-          PLAYWRITE_SHARD=${{ matrix.sections.suit }} make docker-e2e-playwright
+          PLAYWRIGHT_SHARD=${{ matrix.sections.suit }} make docker-e2e-playwright
 
       - name: Show logs
         run: |
@@ -323,14 +298,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Cache Ubuntu packages
-        uses: actions/cache@v4
-        with:
-          path: /var/cache/apt/archives
-          key: ${{ runner.os }}-apt-packages-${{ hashFiles('**/apt.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-apt-packages-
-
       - name: Setup k3s
         run: curl -sfL https://get.k3s.io | sh -s - --disable traefik --write-kubeconfig-mode=644
 
@@ -356,15 +323,6 @@ jobs:
           kubectl apply -f https://raw.githubusercontent.com/direktiv/direktiv/main/scripts/kubernetes/install/knative/basic.yaml
           kubectl apply --filename https://github.com/knative/net-contour/releases/download/knative-v1.11.1/contour.yaml
           kubectl delete namespace contour-external
-
-      - name: Cache Docker layers
-        id: docker-cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.docker
-          key: docker-${{ runner.os }}-${{ hashFiles('Dockerfile') }}
-          restore-keys: |
-            docker-${{ runner.os }}-
 
       - name: Wait for Direktiv pods to be ready
         run: |
@@ -406,17 +364,8 @@ jobs:
           kubectl wait --for=condition=Ready pod -l app.kubernetes.io/instance=direktiv --timeout=120s
           kubectl wait --for=condition=Ready pod -l app.kubernetes.io/name=direktiv-frontend --timeout=120s
 
-      - name: Get Internal IP
-        id: getInternalIP
-        run: |
-          internal_ip=$(kubectl get service direktiv-ingress-nginx-controller -o jsonpath='{.spec.clusterIP}')
-          echo "internal_ip=$internal_ip" >> $GITHUB_ENV
-
       - name: Set Environment Variables
-        run: echo "DIREKTIV_HOST=${{ env.internal_ip }}" >> $GITHUB_ENV
-
-      - name: Print DIREKTIV_HOST
-        run: echo "DIREKTIV_HOST is set to ${{ env.DIREKTIV_HOST }}"
+        run: echo "DIREKTIV_HOST=127.0.0.1:80" >> $GITHUB_ENV
 
       - name: Wait until API is healthy
         run: |
@@ -445,7 +394,7 @@ jobs:
       - name: Run Playwrite E2E tests
         if: matrix.sections.type == 'playwright'
         run: |
-          PLAYWRITE_SHARD=${{ matrix.sections.suit }} make docker-e2e-playwright
+          PLAYWRIGHT_SHARD=${{ matrix.sections.suit }} make docker-e2e-playwright
 
       - name: Show logs
         run: |
