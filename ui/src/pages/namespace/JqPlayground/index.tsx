@@ -23,6 +23,7 @@ import Editor from "~/design/Editor";
 import Examples from "./Examples";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
+import { decode } from "js-base64";
 import { prettifyJsonString } from "~/util/helpers";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
@@ -35,14 +36,16 @@ const JqPlaygroundPage: FC = () => {
     setQuery: storeQueryInLocalstorage,
   } = useJqPlaygroundActions();
 
-  const [jq, setJq] = useState(useJqPlaygroundQuery() ?? ".");
+  const [jx, setJx] = useState(useJqPlaygroundQuery() ?? ".");
   const [data, setData] = useState(useJqPlaygroundInput() ?? "{}");
   const [output, setOutput] = useState("");
   const [error, setError] = useState("");
 
   const { mutate: executeQuery, isPending } = useExecuteJQuery({
     onSuccess: (data) => {
-      setOutput(prettifyJsonString(data.data.output?.[0] ?? "{}"));
+      if (data.data.output[0]) {
+        setOutput(decode(data.data.output[0]));
+      }
     },
     onError: (error) => {
       setOutput("");
@@ -64,11 +67,11 @@ const JqPlaygroundPage: FC = () => {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    submitQuery({ jq, data });
+    submitQuery({ jx, data });
   };
 
   const changeQuery = (newQuery: string) => {
-    setJq(newQuery);
+    setJx(newQuery);
     storeQueryInLocalstorage(newQuery);
     setError("");
   };
@@ -84,7 +87,7 @@ const JqPlaygroundPage: FC = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
     updateInput(prettifyJsonString(input));
     changeQuery(query);
-    submitQuery({ jq, data });
+    submitQuery({ jx, data });
   };
 
   const formId = "jq-playground-form";
@@ -119,7 +122,7 @@ const JqPlaygroundPage: FC = () => {
             <Input
               data-testid="jq-query-input"
               placeholder={t("pages.jqPlayground.queryPlaceholder")}
-              value={jq}
+              value={jx}
               onChange={(e) => changeQuery(e.target.value)}
             />
             <Button

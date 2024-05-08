@@ -7,7 +7,7 @@ import { useApiKey } from "~/util/store/apiKey";
 import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 
 export type ExecuteJqueryPayload = {
-  jq: string;
+  jx: string;
   data: string;
 };
 
@@ -26,12 +26,12 @@ export const useExecuteJQuery = ({
 } = {}) => {
   const apiKey = useApiKey();
   return useMutationWithPermissions({
-    mutationFn: ({ jq, data }: ExecuteJqueryPayload) =>
+    mutationFn: ({ data, jx }: ExecuteJqueryPayload) =>
       executeJquery({
         apiKey: apiKey ?? undefined,
         urlParams: {},
         payload: {
-          jq: encode(jq),
+          jx: encode(`"jq(${jx})"`),
           data: encode(data),
         },
       }),
