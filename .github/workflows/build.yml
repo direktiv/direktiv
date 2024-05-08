@@ -183,14 +183,10 @@ jobs:
       - name: Create namespace for the DB
         run: kubectl create ns postgres
 
-      - name: Install Postgres using Percona Operator
+      - name: Install Postgres
         run: |
-          helm repo add percona https://percona.github.io/percona-helm-charts/
-          helm install --create-namespace -n postgres pg-operator percona/pg-operator --wait
-
-      - name: Add a postgres instance
-        run: |
-          kubectl apply -f https://raw.githubusercontent.com/direktiv/direktiv/main/scripts/kubernetes/install/db/basic.yaml
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm install --create-namespace -n postgres psql-single bitnami/postgresql --wait
 
       - name: Install Knative
         run: |
@@ -206,12 +202,12 @@ jobs:
           kubectl wait -n postgres --for=condition=Ready pod -l app.kubernetes.io/instance=direktiv-cluster --timeout=120s
       - name: Generate dev.yaml file with database credentials
         run: |
-          DB_HOST=$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "host"}}' | base64 --decode)
-          DB_PORT=$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "port"}}' | base64 --decode)
-          DB_USER=$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "user"}}' | base64 --decode)
-          DB_PASSWORD=$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "password"}}' | base64 --decode)
-          DB_NAME=$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "dbname"}}' | base64 --decode)
-          
+          DB_HOST="psql-single-postgresql.postgres"
+          DB_PORT=5432
+          DB_USER="postgres"
+          DB_NAME="postgres"
+          DB_PASSWORD=$(kubectl get secret --namespace postgres psql-single-postgresql -o jsonpath="{.data.postgres-password}" | base64 -d)
+
           cat <<EOF > dev.yaml
           pullPolicy: IfNotPresent
           registry: ghcr.io
@@ -225,7 +221,7 @@ jobs:
             user: "$DB_USER"
             password: "$DB_PASSWORD"
             name: "$DB_NAME"
-            sslmode: require
+            sslmode: disable
           EOF
           cat dev.yaml
       - name: Install Direktiv chart
