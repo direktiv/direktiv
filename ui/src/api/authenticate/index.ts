@@ -1,5 +1,5 @@
 import { ApiErrorSchema } from "../errorHandling";
-import { getVersion } from "../version/query/get";
+import { getNamespaces } from "../namespaces/query/get";
 
 export const authenticationKeys = {
   authentication: (apiKey: string | undefined) =>
@@ -12,9 +12,9 @@ export const authenticationKeys = {
  * correct auth keys and fail otherwise.
  */
 export const checkApiKeyAgainstServer = (apiKey?: string) =>
-  getVersion({
+  getNamespaces({
     apiKey,
-    urlParams: undefined,
+    urlParams: {},
   })
     .then(() => true)
     /**
