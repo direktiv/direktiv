@@ -3,6 +3,7 @@ package flow
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"strings"
 	"time"
 
@@ -107,12 +108,14 @@ func renderAllStartEventListeners(ctx context.Context, tx *database.SQLStore) er
 		for _, file := range files {
 			ms, err := validateRouter(ctx, tx, file)
 			if err != nil {
-				return err
+				slog.Debug("render event-listners", "error", err)
+				continue
 			}
 
 			err = renderStartEventListener(ctx, ns.ID, ns.Name, file, ms, tx)
 			if err != nil {
-				return err
+				slog.Debug("render event-listners", "error", err)
+				continue
 			}
 		}
 	}
