@@ -65,7 +65,7 @@ jobs:
           DIREKTIV_APP: flow
 
   backend-build:
-    needs: [backend-license, backend-lint, backend-test]
+    needs: [ backend-license, backend-lint, backend-test ]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -142,7 +142,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
   backend-e2e:
-    needs: [backend-build]
+    needs: [ backend-build ]
     runs-on: ubuntu-latest
 
     timeout-minutes: 18
@@ -274,7 +274,7 @@ jobs:
         run: npm cache clean --force
 
   ui-e2e:
-    needs: [ui-build, backend-build]
+    needs: [ ui-build, backend-build ]
     runs-on: ubuntu-latest
 
     timeout-minutes: 18
