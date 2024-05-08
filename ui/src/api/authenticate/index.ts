@@ -8,7 +8,7 @@ export const authenticationKeys = {
 
 /**
  * There is no dedicated authentication endpoint. Instead, we query the
- * "version" endpoint. Like with any other endpoint, it will succeed with the
+ * "namespaces" endpoint. Like with any other endpoint, it will succeed with the
  * correct auth keys and fail otherwise.
  */
 export const checkApiKeyAgainstServer = (apiKey?: string) =>
