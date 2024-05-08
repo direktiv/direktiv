@@ -85,18 +85,19 @@ func (m *manager) build() {
 			}
 			pChain = append(pChain, p)
 		}
-		m.endpoints[i] = item
-
 		if len(item.PluginsConfig.Auth) == 0 && !item.AllowAnonymous {
 			item.Errors = append(item.Errors, fmt.Errorf("AllowAnonymous is false but zero auth plugin configured"))
 		}
+		m.endpoints[i] = item
 
 		// skip mount http handler when plugins has zero errors.
 		if len(item.Errors) > 0 {
 			continue
 		}
 
-		newRouter.HandleFunc(item.Path, func(w http.ResponseWriter, r *http.Request) {
+		cleanPath := strings.Trim(item.Path, " /")
+		pattern := fmt.Sprintf("/api/v2/namespaces/%s/gateway2/%s", item.Namespace, cleanPath)
+		newRouter.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
 			// check if correct method.
 			if !slices.Contains(item.Methods, r.Method) {
 				writeJSONError(w, http.StatusMethodNotAllowed, item.FilePath,
@@ -108,6 +109,7 @@ func (m *manager) build() {
 			r = r.WithContext(context.WithValue(r.Context(), core.GatewayCtxKeyConsumers,
 				m.listNamespacedConsumers(item.Namespace)))
 
+			var err error
 			for _, p := range pChain {
 				// checkpoint if auth plugins had a match.
 				if !isAuthPlugin(p) {
@@ -118,12 +120,19 @@ func (m *manager) build() {
 						return
 					}
 				}
-				if r = p.Execute(w, r); r != nil {
+				if r, err = p.Execute(w, r); err != nil {
+					writeJSONError(w, http.StatusInternalServerError, item.FilePath, fmt.Sprintf("gateway plugin(%s) execution failed", p.Type()))
+					// TODO: verbose log here.
 					break
 				}
 			}
 		})
 	}
+
+	// mount not found route.
+	newRouter.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		writeJSONError(w, http.StatusNotFound, "", "gateway couldn't find a matching endpoint")
+	})
 
 	// set the new router.
 	m.router = newRouter
@@ -165,17 +174,23 @@ func (m *manager) ListConsumers(namespace string) []core.ConsumerV2 {
 	return m.listNamespacedConsumers(namespace)
 }
 
-func writeJSONError(w http.ResponseWriter, status int, endpointFile string, err string) {
+func writeJSONError(w http.ResponseWriter, status int, endpointFile string, msg string) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 
-	payload := struct {
-		EndpointFile string `json:"endpointFile"`
-		Error        any    `json:"error"`
+	inner := struct {
+		EndpointFile string `json:"endpointFile,omitempty"`
+		Message      any    `json:"message"`
 	}{
 		EndpointFile: endpointFile,
-		Error:        err,
+		Message:      msg,
 	}
+	payload := struct {
+		Error any `json:"error"`
+	}{
+		Error: inner,
+	}
+
 	_ = json.NewEncoder(w).Encode(payload)
 }
 

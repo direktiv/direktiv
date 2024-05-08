@@ -80,6 +80,7 @@ func (s *Server) Start() error {
 	return s.srv.ListenAndServe()
 }
 
+// nolint:canonicalheader
 func (s *Server) prepareHelperRoutes() {
 	// Options ..
 	s.router.HandleFunc("/{path:.*}", func(w http.ResponseWriter, r *http.Request) {

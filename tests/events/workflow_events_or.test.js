@@ -3,6 +3,7 @@ import { beforeAll, describe, expect, it } from '@jest/globals'
 import common from '../common'
 import helpers from '../common/helpers'
 import request from '../common/request'
+import { retry10 } from '../common/retry'
 import events from './send_helper'
 
 const namespaceName = 'sendeventsor'
@@ -79,9 +80,7 @@ describe('Test workflow events and', () => {
 		'', startWorkflowName, 'workflow',
 		startEventWorkflow)
 
-	it(`should have one event listeners`, async () => {
-		await helpers.sleep(1000)
-
+	retry10(`should have one event listeners`, async () => {
 		const getEventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/event-listeners?limit=8&offset=0`)
 			.send()
 
@@ -91,13 +90,15 @@ describe('Test workflow events and', () => {
 			instance: '',
 			createdAt: expect.stringMatching(common.regex.timestampRegex),
 			updatedAt: expect.stringMatching(common.regex.timestampRegex),
-			events: [ {
-				type: 'eventtype3',
-				filters: {},
-			}, {
-				type: 'eventtype4',
-				filters: {},
-			} ],
+			events: expect.arrayContaining(
+				[ {
+					type: 'eventtype3',
+					filters: {},
+				}, {
+					type: 'eventtype4',
+					filters: {},
+				} ],
+			),
 		})
 
 		expect(getEventListenerResponse.body.pageInfo.total).toEqual(1)

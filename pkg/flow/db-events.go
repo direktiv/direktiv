@@ -3,6 +3,7 @@ package flow
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"strings"
 	"time"
 
@@ -94,8 +95,36 @@ func (events *events) deleteInstanceEventListeners(ctx context.Context, im *inst
 	return nil
 }
 
-func (events *events) processWorkflowEvents(ctx context.Context, nsID uuid.UUID, nsName string, file *filestore.File, ms *muxStart) error {
-	err := events.deleteWorkflowEventListeners(ctx, nsID, file.ID)
+func renderAllStartEventListeners(ctx context.Context, tx *database.SQLStore) error {
+	nsList, err := tx.DataStore().Namespaces().GetAll(ctx)
+	if err != nil {
+		return err
+	}
+	for _, ns := range nsList {
+		files, err := tx.FileStore().ForNamespace(ns.Name).ListDirektivFilesWithData(ctx)
+		if err != nil {
+			return err
+		}
+		for _, file := range files {
+			ms, err := validateRouter(ctx, tx, file)
+			if err != nil {
+				slog.Debug("render event-listners", "error", err)
+				continue
+			}
+
+			err = renderStartEventListener(ctx, ns.ID, ns.Name, file, ms, tx)
+			if err != nil {
+				slog.Debug("render event-listners", "error", err)
+				continue
+			}
+		}
+	}
+
+	return nil
+}
+
+func renderStartEventListener(ctx context.Context, nsID uuid.UUID, nsName string, file *filestore.File, ms *muxStart, tx *database.SQLStore) error {
+	_, err := tx.DataStore().EventListener().DeleteAllForWorkflow(ctx, file.ID)
 	if err != nil {
 		return err
 	}
@@ -113,64 +142,81 @@ func (events *events) processWorkflowEvents(ctx context.Context, nsID uuid.UUID,
 	}
 
 	if len(ms.Events) > 0 {
-		fEv := &datastore.EventListener{
-			ID:                       uuid.New(),
-			CreatedAt:                time.Now().UTC(),
-			UpdatedAt:                time.Now().UTC(),
-			Deleted:                  false,
-			NamespaceID:              nsID,
-			Namespace:                nsName,
-			TriggerType:              datastore.StartSimple,
-			ListeningForEventTypes:   []string{},
-			TriggerWorkflow:          file.ID.String(),
-			Metadata:                 file.Path,
-			LifespanOfReceivedEvents: int(lifespan.Milliseconds()),
-			GlobGatekeepers:          make(map[string]string),
-		}
-		switch ms.Type {
-		case "default":
-			fEv.TriggerType = datastore.StartSimple
-		case "event":
-			fEv.TriggerType = datastore.StartSimple // TODO: is this correct?
-		case "eventsXor":
-			fEv.TriggerType = datastore.StartOR // TODO: is this correct?
-		case "eventsAnd":
-			fEv.TriggerType = datastore.StartAnd // TODO: is this correct?
-		}
-		contextFilters := make([]string, 0, len(ms.Events))
-		for _, sed := range ms.Events {
-			fEv.ListeningForEventTypes = append(fEv.ListeningForEventTypes, sed.Type)
-			databaseNoDupCheck := ""
-			for k, v := range sed.Context {
-				databaseNoDupCheck += fmt.Sprintf("%v %v %v", sed.Type, k, v)
-				fEv.GlobGatekeepers[sed.Type+"-"+k] = fmt.Sprintf("%v", v)
-			}
-			contextFilters = append(contextFilters, databaseNoDupCheck)
-		}
-
-		err := events.runSQLTx(ctx, func(tx *database.SQLStore) error {
-			err := tx.DataStore().EventListener().Append(ctx, fEv)
-			if err != nil {
-				return err
-			}
-
-			for i, t := range fEv.ListeningForEventTypes {
-				err = tx.DataStore().EventListenerTopics().Append(ctx, nsID, nsName, fEv.ID, nsID.String()+"-"+t, contextFilters[i])
-				if err != nil {
-					return err
-				}
-			}
-
-			return nil
-		})
+		err := appendEventListenersToDB(ctx, nsID, nsName, file, lifespan, ms, tx)
 		if err != nil {
 			return err
 		}
 	}
 
-	events.pubsub.NotifyEventListeners(nsID)
-
 	return nil
+}
+
+func appendEventListenersToDB(ctx context.Context, nsID uuid.UUID, nsName string, file *filestore.File, lifespan time.Duration, ms *muxStart, tx *database.SQLStore) error {
+	fEv := &datastore.EventListener{
+		ID:                       uuid.New(),
+		CreatedAt:                time.Now().UTC(),
+		UpdatedAt:                time.Now().UTC(),
+		Deleted:                  false,
+		NamespaceID:              nsID,
+		Namespace:                nsName,
+		TriggerType:              datastore.StartSimple,
+		ListeningForEventTypes:   []string{},
+		TriggerWorkflow:          file.ID.String(),
+		Metadata:                 file.Path,
+		LifespanOfReceivedEvents: int(lifespan.Milliseconds()),
+		EventContextFilter:       []datastore.EventContextFilter{},
+	}
+	switch ms.Type {
+	case "default":
+		fEv.TriggerType = datastore.StartSimple
+	case "event":
+		fEv.TriggerType = datastore.StartSimple
+	case "eventsXor":
+		fEv.TriggerType = datastore.StartOR
+	case "eventsAnd":
+		fEv.TriggerType = datastore.StartAnd
+	}
+	contextFilters := make([]string, 0, len(ms.Events))
+	eventTypesRemovedDuplicates := map[string]any{}
+	for _, sed := range ms.Events {
+		eventTypesRemovedDuplicates[sed.Type] = nil
+		databaseNoDupCheck := ""
+		filterContext := make(map[string]string)
+		for k, v := range sed.Context {
+			filterContext[k] = fmt.Sprintf("%v", v)
+		}
+		fEv.EventContextFilter = append(fEv.EventContextFilter, datastore.EventContextFilter{
+			Typ:     sed.Type,
+			Context: filterContext,
+		})
+		for k, v := range sed.Context {
+			databaseNoDupCheck += fmt.Sprintf("%v %v %v", sed.Type, k, v)
+		}
+		contextFilters = append(contextFilters, databaseNoDupCheck)
+	}
+	fEv.ListeningForEventTypes = make([]string, 0, len(eventTypesRemovedDuplicates))
+	for k := range eventTypesRemovedDuplicates {
+		fEv.ListeningForEventTypes = append(fEv.ListeningForEventTypes, k)
+	}
+	for i, j := 0, len(fEv.EventContextFilter)-1; i < j; i, j = i+1, j-1 {
+		fEv.EventContextFilter[i], fEv.EventContextFilter[j] = fEv.EventContextFilter[j], fEv.EventContextFilter[i]
+	}
+	tx, err := tx.BeginTx(ctx)
+	if err != nil {
+		return err
+	}
+	err = tx.DataStore().EventListener().Append(ctx, fEv)
+	if err != nil {
+		return err
+	}
+	for i, t := range fEv.ListeningForEventTypes {
+		err = tx.DataStore().EventListenerTopics().Append(ctx, nsID, nsName, fEv.ID, nsID.String()+"-"+t, contextFilters[i])
+		if err != nil {
+			return err
+		}
+	}
+
+	return tx.Commit(ctx)
 }
 
 // called from workflow instances to create event listeners.
@@ -188,18 +234,32 @@ func (events *events) addInstanceEventListener(ctx context.Context, namespace uu
 		ListeningForEventTypes: []string{},
 		TriggerInstance:        instance.String(),
 		// LifespanOfReceivedEvents: , TODO?
-		GlobGatekeepers: make(map[string]string),
+		EventContextFilter: []datastore.EventContextFilter{},
 	}
 	contextFilters := make([]string, 0, len(sevents))
-
+	eventTypesRemovedDuplicates := map[string]any{}
 	for _, ced := range sevents {
-		fEv.ListeningForEventTypes = append(fEv.ListeningForEventTypes, ced.Type)
+		eventTypesRemovedDuplicates[ced.Type] = nil
+		filterContext := make(map[string]string)
+		for k, v := range ced.Context {
+			filterContext[k] = fmt.Sprintf("%v", v)
+		}
+		fEv.EventContextFilter = append(fEv.EventContextFilter, datastore.EventContextFilter{
+			Typ:     ced.Type,
+			Context: filterContext,
+		})
+		for i, j := 0, len(fEv.EventContextFilter)-1; i < j; i, j = i+1, j-1 {
+			fEv.EventContextFilter[i], fEv.EventContextFilter[j] = fEv.EventContextFilter[j], fEv.EventContextFilter[i]
+		}
 		databaseNoDupCheck := ""
 		for k, v := range ced.Context {
 			databaseNoDupCheck += fmt.Sprintf("%v %v %v", ced.Type, k, v)
-			fEv.GlobGatekeepers[ced.Type+"-"+k] = fmt.Sprintf("%v", v)
 		}
 		contextFilters = append(contextFilters, databaseNoDupCheck)
+	}
+	fEv.ListeningForEventTypes = make([]string, 0, len(eventTypesRemovedDuplicates))
+	for k := range eventTypesRemovedDuplicates {
+		fEv.ListeningForEventTypes = append(fEv.ListeningForEventTypes, k)
 	}
 	if all {
 		fEv.TriggerType = datastore.WaitAnd

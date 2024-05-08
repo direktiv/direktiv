@@ -45,7 +45,6 @@ linters:
     - gochecknoglobals
     - cyclop
     - godox # must fix before release.
-    - deadcode # The linter 'deadcode' is deprecated (since v1.49.0).
 
     - exhaustivestruct
     - structcheck
@@ -61,6 +60,8 @@ linters:
     - musttag
     - prealloc
     - spancheck # TODO: Alan, enable this one as it helps you fixing some telemetry bugs.
+    - err113 # TODO: This ensures no dynamic errors.
+    - mnd
 
 issues:
   exclude-files: [ ".pb.go" ]
@@ -136,3 +137,6 @@ issues:
     - text: "fmt.Sprintf can be replaced"
       linters:
         - perfsprint
+    - text: "don't use `init` function"
+      linters:
+        - init

@@ -42,19 +42,19 @@ type ConsumerFileV2 struct {
 }
 
 type PluginsConfigV2 struct {
-	Auth     []PluginConfigV2
-	Inbound  []PluginConfigV2
-	Target   PluginConfigV2
-	Outbound []PluginConfigV2
+	Auth     []PluginConfigV2 `yaml:"auth"`
+	Inbound  []PluginConfigV2 `yaml:"inbound"`
+	Target   PluginConfigV2   `yaml:"target"`
+	Outbound []PluginConfigV2 `yaml:"outbound"`
 }
 
 type PluginConfigV2 struct {
-	Typ    string
-	Config map[string]any
+	Typ    string         `yaml:"type"`
+	Config map[string]any `yaml:"configuration"`
 }
 
 type PluginV2 interface {
-	Execute(w http.ResponseWriter, r *http.Request) *http.Request
+	Execute(w http.ResponseWriter, r *http.Request) (*http.Request, error)
 	Config() any
 	Type() string
 }
@@ -91,7 +91,7 @@ func ParseConsumerFileV2(data []byte) (*ConsumerFileV2, error) {
 		return nil, err
 	}
 	if !strings.HasPrefix(res.DirektivAPI, "consumer/v2") {
-		return nil, fmt.Errorf("invalid axiliary api version")
+		return nil, fmt.Errorf("invalid consumer api version")
 	}
 
 	return res, nil
@@ -104,7 +104,7 @@ func ParseEndpointFileV2(data []byte) (*EndpointFileV2, error) {
 		return nil, err
 	}
 	if !strings.HasPrefix(res.DirektivAPI, "endpoint/v2") {
-		return nil, fmt.Errorf("invalid route api version")
+		return nil, fmt.Errorf("invalid endpoint api version")
 	}
 
 	return res, nil

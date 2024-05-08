@@ -172,7 +172,7 @@ func (engine *engine) handleCancelMessage(ctx context.Context, im *instanceMemor
 
 	err := json.Unmarshal(data, &args)
 	if err != nil {
-		slog.Error("handleCancelMessage failed to unmarshal cancel message args: %v", err)
+		slog.Error("handleCancelMessage failed to unmarshal cancel message args", "error", err)
 		return nil
 	}
 
@@ -190,7 +190,7 @@ func (engine *engine) handleWakeMessage(ctx context.Context, im *instanceMemory,
 
 	err := json.Unmarshal(data, &pl)
 	if err != nil {
-		slog.Error("handleWakeMessage failed to unmarshal wakeup message args: %v", err)
+		slog.Error("handleWakeMessage failed to unmarshal wakeup message args", "error", err)
 		return nil
 	}
 
@@ -202,7 +202,7 @@ func (engine *engine) handleActionMessage(ctx context.Context, im *instanceMemor
 
 	err := json.Unmarshal(data, &pl)
 	if err != nil {
-		slog.Error("handleActionMessage failed to unmarshal action results message args: %v", err)
+		slog.Error("handleActionMessage failed to unmarshal action results message", "error", err)
 		return nil
 	}
 
@@ -214,7 +214,7 @@ func (engine *engine) handleActionMessage(ctx context.Context, im *instanceMemor
 func (engine *engine) handleEventMessage(ctx context.Context, im *instanceMemory, data []byte) *states.Transition {
 	ctx, cleanup, err := traceStateGenericBegin(ctx, im)
 	if err != nil {
-		slog.Error("handleEventMessage failed to begin trace: %v", err)
+		slog.Error("handleEventMessage failed to begin trace", "error", err)
 		return nil
 	}
 	defer cleanup()
@@ -227,7 +227,7 @@ func (engine *engine) handleTransitionMessage(ctx context.Context, im *instanceM
 
 	err := json.Unmarshal(data, &state)
 	if err != nil {
-		slog.Error("handleTransitionMessage failed to unmarshal transition message args: %v", err)
+		slog.Error("handleTransitionMessage failed to unmarshal transition message args", "error", err)
 		return nil
 	}
 
