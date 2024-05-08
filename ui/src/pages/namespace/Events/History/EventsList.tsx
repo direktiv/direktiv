@@ -4,7 +4,7 @@ import { Pagination, PaginationLink } from "~/design/Pagination";
 
 import { Card } from "~/design/Card";
 import { EventSchemaType } from "~/api/eventsv2/schema";
-import EventsTable from "./components/Table";
+import EventsTable from "./Table";
 import Filters from "./components/Filters";
 import { FiltersSchemaType } from "~/api/eventsv2/schema/filters";
 import PaginationProvider from "~/components/PaginationProvider";
