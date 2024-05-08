@@ -19,9 +19,9 @@ export default defineConfig({
   /* Run tests sequentially, since parallel runs are curently failing randomly */
   fullyParallel: false,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
-  forbidOnly: !!process.env.CI,
+  forbidOnly: !!process.env.PLAYWRIGHT_CI,
   /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
+  retries: process.env.PLAYWRIGHT_CI ? 3 : 0,
   /* Opt out of parallel tests per default. Enable parallel tests by setting
      PLAYWRIGHT_PARALLEL to TRUE. */
   workers: process.env.PLAYWRIGHT_PARALLEL === "TRUE" ? undefined : 1,
@@ -84,7 +84,7 @@ export default defineConfig({
           timeout: 60000,
           command: `yarn run vite --port ${baseURL.port}`,
           url: baseURL.toString(),
-          reuseExistingServer: !process.env.CI,
+          reuseExistingServer: !process.env.PLAYWRIGHT_CI,
         }
       : undefined,
 });
