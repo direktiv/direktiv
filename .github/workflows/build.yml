@@ -183,12 +183,6 @@ jobs:
       - name: Create namespace for the DB
         run: kubectl create ns postgres
 
-      - name: Install Postgres using Percona Operator
-        run: |
-          helm repo add percona https://percona.github.io/percona-helm-charts/
-          helm install --create-namespace -n postgres pg-operator percona/pg-operator --wait
-          kubectl apply -f https://raw.githubusercontent.com/direktiv/direktiv/main/scripts/kubernetes/install/db/basic.yaml
-
       - name: Install Knative
         run: |
           kubectl apply -f https://github.com/knative/operator/releases/download/knative-v1.12.2/operator.yaml
@@ -196,6 +190,15 @@ jobs:
           kubectl apply -f https://raw.githubusercontent.com/direktiv/direktiv/main/scripts/kubernetes/install/knative/basic.yaml
           kubectl apply --filename https://github.com/knative/net-contour/releases/download/knative-v1.11.1/contour.yaml
           kubectl delete namespace contour-external
+
+      - name: Install Postgres using Percona Operator
+        run: |
+          helm repo add percona https://percona.github.io/percona-helm-charts/
+          helm install --create-namespace -n postgres pg-operator percona/pg-operator --wait
+
+      - name: Add a postgres instance
+        run: |
+          kubectl apply -f https://raw.githubusercontent.com/direktiv/direktiv/main/scripts/kubernetes/install/db/basic.yaml
 
       - name: Wait for Direktiv pods to be ready
         run: |
