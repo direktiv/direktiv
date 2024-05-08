@@ -173,14 +173,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Cache Ubuntu packages
-        uses: actions/cache@v4
-        with:
-          path: /var/cache/apt/archives
-          key: ${{ runner.os }}-apt-packages-${{ hashFiles('**/apt.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-apt-packages-
-
       - name: Setup k3s
         run: curl -sfL https://get.k3s.io | sh -s - --disable traefik --write-kubeconfig-mode=644
 
@@ -206,15 +198,6 @@ jobs:
           kubectl apply -f https://raw.githubusercontent.com/direktiv/direktiv/main/scripts/kubernetes/install/knative/basic.yaml
           kubectl apply --filename https://github.com/knative/net-contour/releases/download/knative-v1.11.1/contour.yaml
           kubectl delete namespace contour-external
-
-      - name: Cache Docker layers
-        id: docker-cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.docker
-          key: docker-${{ runner.os }}-${{ hashFiles('Dockerfile') }}
-          restore-keys: |
-            docker-${{ runner.os }}-
 
       - name: Wait for Direktiv pods to be ready
         run: |
@@ -323,14 +306,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Cache Ubuntu packages
-        uses: actions/cache@v4
-        with:
-          path: /var/cache/apt/archives
-          key: ${{ runner.os }}-apt-packages-${{ hashFiles('**/apt.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-apt-packages-
-
       - name: Setup k3s
         run: curl -sfL https://get.k3s.io | sh -s - --disable traefik --write-kubeconfig-mode=644
 
@@ -356,15 +331,6 @@ jobs:
           kubectl apply -f https://raw.githubusercontent.com/direktiv/direktiv/main/scripts/kubernetes/install/knative/basic.yaml
           kubectl apply --filename https://github.com/knative/net-contour/releases/download/knative-v1.11.1/contour.yaml
           kubectl delete namespace contour-external
-
-      - name: Cache Docker layers
-        id: docker-cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.docker
-          key: docker-${{ runner.os }}-${{ hashFiles('Dockerfile') }}
-          restore-keys: |
-            docker-${{ runner.os }}-
 
       - name: Wait for Direktiv pods to be ready
         run: |
