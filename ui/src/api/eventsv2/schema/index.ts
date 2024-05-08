@@ -49,7 +49,7 @@ export const EventListItem = z.object({
 
 export const MetaData = z.object({
   previousPage: z.string().nullable(),
-  startingFrom: z.string(),
+  startingFrom: z.string().nullable(),
 });
 
 export const EventsListResponseSchema = z.object({
