@@ -231,6 +231,11 @@ jobs:
       - name: Install Direktiv chart
         run: helm install direktiv -f dev.yaml ./charts/direktiv/
 
+      - name: Wait for Direktiv pods to be ready
+        run: |
+          sleep 1
+          kubectl wait --for=condition=Ready pod -l app.kubernetes.io/instance=direktiv --timeout=120s
+
       - name: Set Environment Variables
         run: echo "DIREKTIV_HOST=127.0.0.1:80" >> $GITHUB_ENV
 
