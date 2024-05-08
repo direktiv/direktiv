@@ -486,8 +486,8 @@
           },
           "menuHeading": {
             "main": "Select filter",
-            "typeContains": "filter by type",
-            "eventContains": "search cloudevent content"
+            "typeContains": "type contains",
+            "eventContains": "content contains"
           }
         }
       },
