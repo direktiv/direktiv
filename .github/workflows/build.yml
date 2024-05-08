@@ -291,7 +291,7 @@ jobs:
       - name: Run Playwrite E2E tests
         if: matrix.sections.type == 'playwright'
         run: |
-          PLAYWRITE_SHARD=${{ matrix.sections.suit }} make docker-e2e-playwright
+          PLAYWRIGHT_SHARD=${{ matrix.sections.suit }} make docker-e2e-playwright
 
       - name: Show logs
         run: |
@@ -445,7 +445,7 @@ jobs:
       - name: Run Playwrite E2E tests
         if: matrix.sections.type == 'playwright'
         run: |
-          PLAYWRITE_SHARD=${{ matrix.sections.suit }} make docker-e2e-playwright
+          PLAYWRIGHT_SHARD=${{ matrix.sections.suit }} make docker-e2e-playwright
 
       - name: Show logs
         run: |
