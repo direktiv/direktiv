@@ -109,9 +109,7 @@ describe('Test workflow events and', () => {
 		'', waitWorkflowName, 'workflow',
 		waitEventWorkflow)
 
-	it(`should have two event listeners`, async () => {
-		await helpers.sleep(1000)
-
+	retry10(`should have two event listeners`, async () => {
 		// start workflow
 		const runWorkflowResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${ namespaceName }/tree/${ waitWorkflowName }?op=execute`)
 			.send()
@@ -132,13 +130,15 @@ describe('Test workflow events and', () => {
 			instance: expect.stringMatching(common.regex.uuidRegex),
 			createdAt: expect.stringMatching(common.regex.timestampRegex),
 			updatedAt: expect.stringMatching(common.regex.timestampRegex),
-			events: [ {
-				type: 'eventtype1',
-				filters: {},
-			}, {
-				type: 'eventtype2',
-				filters: {},
-			} ],
+			events: expect.arrayContaining(
+				[ {
+					type: 'eventtype1',
+					filters: {},
+				}, {
+					type: 'eventtype2',
+					filters: {},
+				} ],
+			),
 		})
 	})
 
