@@ -11,6 +11,8 @@ if (!process.env.PLAYWRIGHT_UI_BASE_URL)
 
 const baseURL = new URL(`${process.env.PLAYWRIGHT_UI_BASE_URL}`);
 
+console.warn("process.env.PLAYWRIGHT_CI is ", process.env.PLAYWRIGHT_CI);
+
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
