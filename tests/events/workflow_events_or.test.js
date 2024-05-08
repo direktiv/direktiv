@@ -3,8 +3,8 @@ import { beforeAll, describe, expect, it } from '@jest/globals'
 import common from '../common'
 import helpers from '../common/helpers'
 import request from '../common/request'
+import { retry10 } from '../common/retry'
 import events from './send_helper'
-import {retry10} from "../common/retry";
 
 const namespaceName = 'sendeventsor'
 
@@ -97,7 +97,7 @@ describe('Test workflow events and', () => {
 				}, {
 					type: 'eventtype4',
 					filters: {},
-				} ]
+				} ],
 			),
 		})
 
