@@ -109,17 +109,22 @@ test("it paginates event listeners", async ({ page }) => {
     `/n/${namespace}/events/listeners`
   );
 
-  debugger;
-
   await expect(
     page.getByRole("cell", { name: "start workflow" }),
     "it renders the expected number of items on page 1"
   ).toHaveCount(10);
 
-  await expect(page.getByLabel("Pagination")).toBeVisible();
-  await expect(page.getByTestId("pagination-btn-page-1")).toBeVisible();
-  await expect(page.getByTestId("pagination-btn-page-2")).toBeVisible();
-  await expect(page.getByTestId("pagination-btn-page-3")).not.toBeVisible();
+  const paginationWrapper = page.getByTestId("pagination-wrapper");
+
+  await expect(
+    paginationWrapper.getByRole("button", { name: "1" })
+  ).toBeVisible();
+  await expect(
+    paginationWrapper.getByRole("button", { name: "2" })
+  ).toBeVisible();
+  await expect(
+    paginationWrapper.getByRole("button", { name: "3" })
+  ).not.toBeVisible();
 
   await page.getByTestId("pagination-btn-right").click();
 
