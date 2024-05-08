@@ -5,6 +5,10 @@ import {
   Play,
   PlaySquare,
 } from "lucide-react";
+import {
+  ExecuteJqueryPayload,
+  useExecuteJQuery,
+} from "~/api/jq/mutate/executeQuery";
 import { FC, useState } from "react";
 import {
   useJqPlaygroundActions,
@@ -20,7 +24,6 @@ import Examples from "./Examples";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { prettifyJsonString } from "~/util/helpers";
-import { useExecuteJQuery } from "~/api/jq/mutate/executeQuery";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 
@@ -32,14 +35,14 @@ const JqPlaygroundPage: FC = () => {
     setQuery: storeQueryInLocalstorage,
   } = useJqPlaygroundActions();
 
-  const [query, setQuery] = useState(useJqPlaygroundQuery() ?? ".");
-  const [input, setInput] = useState(useJqPlaygroundInput() ?? "{}");
+  const [jq, setJq] = useState(useJqPlaygroundQuery() ?? ".");
+  const [data, setData] = useState(useJqPlaygroundInput() ?? "{}");
   const [output, setOutput] = useState("");
   const [error, setError] = useState("");
 
   const { mutate: executeQuery, isPending } = useExecuteJQuery({
     onSuccess: (data) => {
-      setOutput(prettifyJsonString(data.results?.[0] ?? "{}"));
+      setOutput(prettifyJsonString(data.data.output?.[0] ?? "{}"));
     },
     onError: (error) => {
       setOutput("");
@@ -49,30 +52,30 @@ const JqPlaygroundPage: FC = () => {
     },
   });
 
-  const submitQuery = ({ query, input }: { query: string; input: string }) => {
+  const submitQuery = (payload: ExecuteJqueryPayload) => {
     /**
      * Always clear the output before submiting a new query to the backend.
      * Otherwise when the request takes longer or produces an error the input
      * and output displayed to the user would not match.
      */
     setOutput("");
-    executeQuery({ query, inputJsonString: input });
+    executeQuery(payload);
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    submitQuery({ query, input });
+    submitQuery({ jq, data });
   };
 
   const changeQuery = (newQuery: string) => {
-    setQuery(newQuery);
+    setJq(newQuery);
     storeQueryInLocalstorage(newQuery);
     setError("");
   };
 
   const updateInput = (newData: string | undefined) => {
     if (newData === undefined) return;
-    setInput(newData);
+    setData(newData);
     storeInputInLocalstorage(newData);
     setError("");
   };
@@ -81,7 +84,7 @@ const JqPlaygroundPage: FC = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
     updateInput(prettifyJsonString(input));
     changeQuery(query);
-    submitQuery({ query, input });
+    submitQuery({ jq, data });
   };
 
   const formId = "jq-playground-form";
@@ -116,7 +119,7 @@ const JqPlaygroundPage: FC = () => {
             <Input
               data-testid="jq-query-input"
               placeholder={t("pages.jqPlayground.queryPlaceholder")}
-              value={query}
+              value={jq}
               onChange={(e) => changeQuery(e.target.value)}
             />
             <Button
@@ -140,19 +143,19 @@ const JqPlaygroundPage: FC = () => {
                   {t("pages.jqPlayground.input")}
                 </h3>
                 <CopyButton
-                  value={input}
+                  value={data}
                   buttonProps={{
                     variant: "outline",
                     size: "sm",
                     type: "button",
-                    disabled: !input,
+                    disabled: !data,
                     "data-testid": "copy-input-btn",
                   }}
                 />
               </div>
               <div data-testid="jq-input-editor" className="flex grow">
                 <Editor
-                  value={input}
+                  value={data}
                   language="json"
                   onChange={updateInput}
                   theme={theme ?? undefined}
