@@ -2,18 +2,24 @@ import { z } from "zod";
 /**
  * example
   {
-    "query":  ".foo[1]",
-    "data":  "eyJmb28iOiBbeyJuYW1lIjoiSlNPTiIsICJnb29kIjp0cnVlfSwgeyJuYW1lIjoiWE1MIiwgImdvb2QiOmZhbHNlfV19",
-    "results":  [
-      "{\n  \"good\": false,\n  \"name\": \"XML\"\n}"
-    ]
+    "data": {
+      "jx": null,
+      "data": "e30=",
+      "output": [
+        "e30="
+      ],
+      "logs": ""
+    }
   }
  */
 
 export const JqQueryResult = z.object({
-  query: z.string(),
-  data: z.string(),
-  results: z.array(z.string()),
+  data: z.object({
+    jx: z.string().nullable(),
+    data: z.string(),
+    output: z.array(z.string()),
+    logs: z.string(),
+  }),
 });
 
 export type JqQueryResultType = z.infer<typeof JqQueryResult>;
