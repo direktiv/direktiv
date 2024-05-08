@@ -108,13 +108,13 @@ func renderAllStartEventListeners(ctx context.Context, tx *database.SQLStore) er
 		for _, file := range files {
 			ms, err := validateRouter(ctx, tx, file)
 			if err != nil {
-				slog.Debug("render event-listners", "error", err)
+				slog.Debug("render event-listeners", "error", err)
 				continue
 			}
 
 			err = renderStartEventListener(ctx, ns.ID, ns.Name, file, ms, tx)
 			if err != nil {
-				slog.Debug("render event-listners", "error", err)
+				slog.Debug("render event-listeners", "error", err)
 				continue
 			}
 		}
