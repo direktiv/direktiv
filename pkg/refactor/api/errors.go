@@ -70,6 +70,15 @@ func writeInternalError(w http.ResponseWriter, err error) {
 	slog.Error("internal", "err", err)
 }
 
+func writeBadrequestError(w http.ResponseWriter, err error) {
+	writeError(w, &Error{
+		Code:    "request",
+		Message: "bad request",
+	})
+
+	slog.Error("internal", "err", err)
+}
+
 func writeNotJSONError(w http.ResponseWriter, err error) {
 	if strings.Contains(err.Error(), "cannot unmarshal") {
 		writeError(w, &Error{

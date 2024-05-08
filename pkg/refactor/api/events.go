@@ -47,7 +47,7 @@ func (c *eventsController) mountBroadcast(r chi.Router) {
 
 func (c *eventsController) listEvents(w http.ResponseWriter, r *http.Request) {
 	ns := extractContextNamespace(r)
-	starting := time.Now().Format(time.RFC3339Nano)
+	starting := time.Now().UTC().Format(time.RFC3339Nano)
 	if v := r.URL.Query().Get("before"); v != "" {
 		starting = v
 	}
@@ -61,7 +61,11 @@ func (c *eventsController) listEvents(w http.ResponseWriter, r *http.Request) {
 		}
 		t = co
 	}
-	params := extractEventFilterParams(r)
+	params, err := extractEventFilterParams(r)
+	if err != nil {
+		writeBadrequestError(w, err)
+	}
+
 	data, err := c.store.EventHistory().GetOld(r.Context(), ns.Name, t, params...)
 	if err != nil {
 		writeInternalError(w, err)
@@ -131,7 +135,10 @@ func (c *eventsController) subscribe(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
 
-	params := extractEventFilterParams(r)
+	params, err := extractEventFilterParams(r)
+	if err != nil {
+		writeInternalError(w, err)
+	}
 
 	// Create a context with cancellation
 	ctx, cancel := context.WithCancel(r.Context())
@@ -388,7 +395,7 @@ func validateEvent(event cloudevents.Event) (cloudevents.Event, error) {
 	return event, nil
 }
 
-func extractEventFilterParams(r *http.Request) []string {
+func extractEventFilterParams(r *http.Request) ([]string, error) {
 	params := make([]string, 0)
 	if v := chi.URLParam(r, "namespace"); v != "" {
 		params = append(params, "namespace")
@@ -396,19 +403,35 @@ func extractEventFilterParams(r *http.Request) []string {
 	}
 	if v := r.URL.Query().Get("createdBefore"); v != "" {
 		params = append(params, "created_before")
-		params = append(params, v)
+		t, err := parseTime(v)
+		if err != nil {
+			return nil, err
+		}
+		params = append(params, t)
 	}
 	if v := r.URL.Query().Get("createdAfter"); v != "" {
 		params = append(params, "created_after")
-		params = append(params, v)
+		t, err := parseTime(v)
+		if err != nil {
+			return nil, err
+		}
+		params = append(params, t)
 	}
 	if v := r.URL.Query().Get("receivedBefore"); v != "" {
 		params = append(params, "received_before")
-		params = append(params, v)
+		t, err := parseTime(v)
+		if err != nil {
+			return nil, err
+		}
+		params = append(params, t)
 	}
 	if v := r.URL.Query().Get("receivedAfter"); v != "" {
 		params = append(params, "received_after")
-		params = append(params, v)
+		t, err := parseTime(v)
+		if err != nil {
+			return nil, err
+		}
+		params = append(params, t)
 	}
 	if v := r.URL.Query().Get("eventContains"); v != "" {
 		params = append(params, "event_contains")
@@ -419,7 +442,16 @@ func extractEventFilterParams(r *http.Request) []string {
 		params = append(params, v)
 	}
 
-	return params
+	return params, nil
+}
+
+func parseTime(t string) (string, error) {
+	e, err := time.Parse(time.RFC3339Nano, t)
+	if err != nil {
+		return "", err
+	}
+
+	return e.UTC().Format(time.RFC3339Nano), nil
 }
 
 func convertEvents(ns datastore.Namespace, evs ...cloudevents.Event) []*datastore.Event {

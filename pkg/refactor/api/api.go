@@ -178,7 +178,7 @@ func Initialize(app core.App, db *database.SQLStore, bus *pubsub2.Bus, instanceM
 			r.Route("/namespaces/{namespace}/events/history", func(r chi.Router) {
 				eventsCtr.mountEventHistoryRouter(r)
 			})
-			r.Route("/namespaces/{namespace}/events/listener", func(r chi.Router) {
+			r.Route("/namespaces/{namespace}/events/listeners", func(r chi.Router) {
 				eventsCtr.mountEventListenerRouter(r)
 			})
 			r.Route("/namespaces/{namespace}/events/broadcast", func(r chi.Router) {
