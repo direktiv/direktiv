@@ -10,4 +10,4 @@ direktiv-ui:
 .PHONY: direktiv-ui-build-cross
 direktiv-ui-build-cross:
 	@docker buildx create --use --name=direktiv --node=direktiv
-	docker buildx build --build-arg --platform linux/amd64,linux/arm64 -t ${DOCKER_REPO}/frontend:${RELEASE} ui/ --push
+	docker buildx build --build-arg RELEASE_VERSION=${RELEASE_VERSION} --platform linux/amd64,linux/arm64 -t ${DOCKER_REPO}/frontend:${RELEASE} ui/ --push
