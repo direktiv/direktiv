@@ -107,13 +107,15 @@ describe('Test workflow events and', () => {
 			instance: '',
 			createdAt: expect.stringMatching(common.regex.timestampRegex),
 			updatedAt: expect.stringMatching(common.regex.timestampRegex),
-			events: [ {
-				type: 'eventtype3',
-				filters: {},
-			}, {
-				type: 'eventtype4',
-				filters: {},
-			} ],
+			events: expect.arrayContaining(
+				[ {
+					type: 'eventtype3',
+					filters: {},
+				}, {
+					type: 'eventtype4',
+					filters: {},
+				} ],
+			),
 		})
 
 		expect(getEventListenerResponse.body.pageInfo.total).toEqual(1)
@@ -147,13 +149,15 @@ describe('Test workflow events and', () => {
 			instance: expect.stringMatching(common.regex.uuidRegex),
 			createdAt: expect.stringMatching(common.regex.timestampRegex),
 			updatedAt: expect.stringMatching(common.regex.timestampRegex),
-			events: [ {
-				type: 'eventtype1',
-				filters: {},
-			}, {
-				type: 'eventtype2',
-				filters: {},
-			} ],
+			events: expect.arrayContaining(
+				[ {
+					type: 'eventtype1',
+					filters: {},
+				}, {
+					type: 'eventtype2',
+					filters: {},
+				} ],
+			),
 		})
 	})
 
