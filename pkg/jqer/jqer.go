@@ -29,7 +29,7 @@ var (
 func Evaluate(data, query interface{}) ([]interface{}, error) {
 	if query == nil {
 		var out []interface{}
-		out = append(out, data)
+		out = append(out, nil)
 
 		return out, nil
 	}
