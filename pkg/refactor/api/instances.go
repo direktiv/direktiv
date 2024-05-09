@@ -566,9 +566,16 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	ns := extractContextNamespace(r)
 	path := r.URL.Query().Get("path")
+
+	wait := r.URL.Query().Get("wait") == "true"
+
 	input, err := io.ReadAll(r.Body)
 	if err != nil {
 		return
+	}
+
+	if wait && len(input) == 0 {
+		input = []byte(`{}`)
 	}
 
 	data, err := e.manager.Start(ctx, ns.Name, path, input)
@@ -581,7 +588,7 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if r.URL.Query().Get("wait") == "true" {
+	if wait {
 		e.handleWait(ctx, w, r, data)
 
 		return
