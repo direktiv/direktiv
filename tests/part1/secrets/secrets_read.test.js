@@ -56,7 +56,7 @@ states:
 `))
 
 	it(`should invoke the '/${ testWorkflow }-parent.yaml' workflow`, async () => {
-		const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ testNamespace }/tree/${ testWorkflow }-parent.yaml?op=wait`)
+		const req = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ testNamespace }/instances?path=${ testWorkflow }-parent.yaml&wait=true`)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({
 			result: 'value1',

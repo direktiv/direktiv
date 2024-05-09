@@ -57,7 +57,7 @@ states:
 	})
 
 	it(`should fail to invoke the '/listener.yml' workflow`, async () => {
-		const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/tree/listener.yml?op=wait`)
+		const req = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/instances?path=listener.yml&wait=true`)
 		expect(req.statusCode).toEqual(500)
 		expect(req.body).toMatchObject({
 			code: 500,
@@ -270,7 +270,7 @@ describe('Test workflow events', () => {
 		await helpers.sleep(1000)
 
 		// start workflow
-		const runWorkflowResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${ namespaceName }/tree/${ waitWorkflowName }?op=execute`)
+		const runWorkflowResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=${ waitWorkflowName }`)
 			.send()
 		expect(runWorkflowResponse.statusCode).toEqual(200)
 
@@ -309,10 +309,8 @@ describe('Test workflow events', () => {
 		instancesResponse = await events.listInstancesAndFilter(namespaceName, waitWorkflowName, 'complete')
 		expect(instancesResponse).not.toBeFalsy()
 
-		const instanceOutput = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/instances/${ instancesResponse.id }/output`)
-			.send()
-
-		const output = Buffer.from(instanceOutput.body.data, 'base64')
+		const instanceOutput = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/instances/${ instancesResponse.id }/output`)
+		const output = Buffer.from(instanceOutput.body.data.output, 'base64')
 		const outputJSON = JSON.parse(output.toString())
 
 		// custom value set
@@ -324,10 +322,8 @@ describe('Test workflow events', () => {
 		const instance = await events.listInstancesAndFilter(namespaceName, startWorkflowName, 'complete')
 		expect(instance).not.toBeFalsy()
 
-		const instanceOutput = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/instances/${ instance.id }/output`)
-			.send()
-
-		const output = Buffer.from(instanceOutput.body.data, 'base64')
+		const instanceOutput = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/instances/${ instance.id }/output`)
+		const output = Buffer.from(instanceOutput.body.data.output, 'base64')
 		const outputJSON = JSON.parse(output.toString())
 
 		// custom data set
@@ -363,7 +359,7 @@ describe('Test workflow events', () => {
 		await helpers.sleep(1000)
 
 		// start workflow
-		const runWorkflowResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${ namespaceName }/tree/${ waitWorkflowNameContext }?op=execute`)
+		const runWorkflowResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=${ waitWorkflowNameContext }`)
 			.send()
 		expect(runWorkflowResponse.statusCode).toEqual(200)
 
@@ -412,7 +408,7 @@ describe('Test workflow events', () => {
 
 	it(`should not start by event due to context filter`, async () => {
 		await helpers.sleep(2000)
-		const runWorkflowResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${ namespaceName }/tree/${ workflowContextMultipleName }?op=execute`)
+		const runWorkflowResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=${ workflowContextMultipleName }`)
 			.send()
 		expect(runWorkflowResponse.statusCode).toEqual(200)
 
