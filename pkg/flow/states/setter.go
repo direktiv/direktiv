@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"reflect"
 
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/model"
@@ -81,10 +82,15 @@ func (logic *setterLogic) Run(ctx context.Context, wakedata []byte) (*Transition
 			}
 		}
 
+		fmt.Println("A", v.Value, reflect.TypeOf(v.Value), v.Value == nil)
+
 		x, err = jqOne(logic.GetInstanceData(), v.Value) //nolint:contextcheck
 		if err != nil {
+			fmt.Println("B", err)
 			return nil, err
 		}
+
+		fmt.Println("C")
 
 		var data []byte
 

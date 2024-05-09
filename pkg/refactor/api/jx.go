@@ -71,8 +71,9 @@ func (c *jxController) handler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp := &jxResponse{
-		JX:   req.JX,
-		Data: req.Data,
+		JX:     req.JX,
+		Data:   req.Data,
+		Output: make([][]byte, 0),
 	}
 
 	buf := new(bytes.Buffer)
@@ -86,16 +87,8 @@ func (c *jxController) handler(w http.ResponseWriter, r *http.Request) {
 		failed = true
 	}
 
-	if len(results) == 0 {
-		buf.WriteString("query produced zero results\n")
-		failed = true
-	} else {
+	if len(results) > 0 {
 		firstResult = results[0]
-	}
-
-	if len(results) > 1 {
-		buf.WriteString("query produced multiple results\n")
-		failed = true
 	}
 
 	for i := range results {
