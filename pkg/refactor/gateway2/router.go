@@ -53,7 +53,7 @@ func buildRouter(endpoints []core.EndpointV2, consumers []core.ConsumerV2) *rout
 		serveMux.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
 			// check if correct method.
 			if !slices.Contains(item.Methods, r.Method) {
-				writeJSONError(w, http.StatusMethodNotAllowed, item.FilePath,
+				WriteJSONError(w, http.StatusMethodNotAllowed, item.FilePath,
 					fmt.Sprintf("method:%s is not allowed with this endpoint", r.Method))
 
 				return
@@ -68,13 +68,13 @@ func buildRouter(endpoints []core.EndpointV2, consumers []core.ConsumerV2) *rout
 				if !isAuthPlugin(p) {
 					// case where auth is required but request is not authenticated (consumers doesn't match).
 					if !item.AllowAnonymous && !hasActiveConsumer(r) {
-						writeJSONError(w, http.StatusForbidden, item.FilePath, "authentication failed")
+						WriteJSONError(w, http.StatusForbidden, item.FilePath, "authentication failed")
 
 						return
 					}
 				}
 				if r, err = p.Execute(w, r); err != nil {
-					writeJSONError(w, http.StatusInternalServerError, item.FilePath, fmt.Sprintf("gateway plugin(%s) execution failed", p.Type()))
+					WriteJSONError(w, http.StatusInternalServerError, item.FilePath, fmt.Sprintf("gateway plugin(%s) execution failed", p.Type()))
 					// TODO: verbose log here.
 					break
 				}
@@ -84,7 +84,7 @@ func buildRouter(endpoints []core.EndpointV2, consumers []core.ConsumerV2) *rout
 
 	// mount not found route.
 	serveMux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		writeJSONError(w, http.StatusNotFound, "", "gateway couldn't find a matching endpoint")
+		WriteJSONError(w, http.StatusNotFound, "", "gateway couldn't find a matching endpoint")
 	})
 
 	return &router{

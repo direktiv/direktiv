@@ -18,14 +18,13 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
+	_ "github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins/auth"
+	_ "github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins/target"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"github.com/direktiv/direktiv/pkg/refactor/registry"
 	"github.com/direktiv/direktiv/pkg/refactor/service"
 	"github.com/direktiv/direktiv/pkg/util"
-
-	_ "github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins/auth"
-	_ "github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins/target"
 )
 
 type NewMainArgs struct {

@@ -33,7 +33,7 @@ func isAuthPlugin(p core.PluginV2) bool {
 	return strings.Contains(p.Type(), "-auth") || strings.Contains(p.Type(), "auth-")
 }
 
-func writeJSONError(w http.ResponseWriter, status int, endpointFile string, msg string) {
+func WriteJSONError(w http.ResponseWriter, status int, endpointFile string, msg string) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 
@@ -51,6 +51,18 @@ func writeJSONError(w http.ResponseWriter, status int, endpointFile string, msg 
 	}
 
 	_ = json.NewEncoder(w).Encode(payload)
+}
+
+func WriteJSON(w http.ResponseWriter, v any) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	payLoad := struct {
+		Data any `json:"data"`
+	}{
+		Data: v,
+	}
+	_ = json.NewEncoder(w).Encode(payLoad)
 }
 
 func filterNamespacedConsumers(consumers []core.ConsumerV2, namespace string) []core.ConsumerV2 {
