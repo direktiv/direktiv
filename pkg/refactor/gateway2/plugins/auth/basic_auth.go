@@ -14,6 +14,8 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins"
 )
 
+const basicAuthPluginName = "basic-auth"
+
 // BasicAuthConfig configures a basic-auth plugin instance.
 // The plugin can be configured to set consumer information (name, groups, tags).
 type BasicAuthConfig struct {
@@ -101,7 +103,7 @@ func (ba *BasicAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) (*htt
 }
 
 func (ba *BasicAuthPlugin) Type() string {
-	return "basic-auth"
+	return basicAuthPluginName
 }
 
 func (ba *BasicAuthPlugin) Config() interface{} {
@@ -110,5 +112,5 @@ func (ba *BasicAuthPlugin) Config() interface{} {
 
 //nolint:gochecknoinits
 func init() {
-	plugins.RegisterPlugin("basic-auth", NewBasicAuthPlugin)
+	plugins.RegisterPlugin(basicAuthPluginName, NewBasicAuthPlugin)
 }

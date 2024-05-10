@@ -10,6 +10,8 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins"
 )
 
+const debugPluginName = "debug-target"
+
 type DebugPlugin struct{}
 
 var _ core.PluginV2 = &DebugPlugin{}
@@ -40,7 +42,7 @@ func (ba *DebugPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Re
 }
 
 func (ba *DebugPlugin) Type() string {
-	return "debug"
+	return debugPluginName
 }
 
 func (ba *DebugPlugin) Config() interface{} {
@@ -49,5 +51,5 @@ func (ba *DebugPlugin) Config() interface{} {
 
 //nolint:gochecknoinits
 func init() {
-	plugins.RegisterPlugin("debug-target", NewDebugPlugin)
+	plugins.RegisterPlugin(debugPluginName, NewDebugPlugin)
 }
