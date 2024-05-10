@@ -38,7 +38,7 @@ func (m *manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-	inner.router.ServeHTTP(w, r)
+	inner.serveMux.ServeHTTP(w, r)
 }
 
 func (m *manager) SetEndpoints(list []core.EndpointV2, cList []core.ConsumerV2) {
