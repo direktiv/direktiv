@@ -3,11 +3,12 @@ package gateway2
 import (
 	"context"
 	"fmt"
-	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins"
 	"net/http"
 	"slices"
 	"strings"
+
+	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins"
 )
 
 type router struct {
@@ -16,6 +17,7 @@ type router struct {
 	consumers []core.ConsumerV2
 }
 
+//nolint:gocognit
 func buildRouter(endpoints []core.EndpointV2, consumers []core.ConsumerV2) *router {
 	serveMux := http.NewServeMux()
 
