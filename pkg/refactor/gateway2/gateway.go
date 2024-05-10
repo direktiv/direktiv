@@ -7,61 +7,21 @@ import (
 	"net/http"
 	"slices"
 	"strings"
-	"sync"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins"
 )
 
-type manager struct {
-	mux       *sync.Mutex
+type immutableManager struct {
 	router    *http.ServeMux
 	endpoints []core.EndpointV2
 	consumers []core.ConsumerV2
 }
 
-func NewManager() core.GatewayManagerV2 {
-	return &manager{
-		mux:       &sync.Mutex{},
-		endpoints: make([]core.EndpointV2, 0),
-		consumers: make([]core.ConsumerV2, 0),
-	}
-}
-
-func (m *manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	var router *http.ServeMux
-	m.mux.Lock()
-	router = m.router
-	m.mux.Unlock()
-
-	if router == nil {
-		writeJSONError(w, http.StatusServiceUnavailable, "", "no active gateway endpoints")
-
-		return
-	}
-
-	router.ServeHTTP(w, r)
-}
-
-func (m *manager) SetEndpoints(list []core.EndpointV2, cList []core.ConsumerV2) {
-	m.mux.Lock()
-	defer m.mux.Unlock()
-
-	m.endpoints = list
-	m.consumers = cList
-	m.build()
-}
-
-//nolint:gocognit
-func (m *manager) build() {
+func newManager(endpoints []core.EndpointV2, consumers []core.ConsumerV2) *immutableManager {
 	newRouter := http.NewServeMux()
 
-	// reset all errors.
-	for i := range m.endpoints {
-		m.endpoints[i].Errors = []error{}
-	}
-
-	for i, item := range m.endpoints {
+	for i, item := range endpoints {
 		// concat plugins configs into one list.
 		pConfigs := []core.PluginConfigV2{}
 		pConfigs = append(pConfigs, item.PluginsConfig.Auth...)
@@ -81,7 +41,7 @@ func (m *manager) build() {
 		if len(item.PluginsConfig.Auth) == 0 && !item.AllowAnonymous {
 			item.Errors = append(item.Errors, fmt.Errorf("AllowAnonymous is false but zero auth plugin configured"))
 		}
-		m.endpoints[i] = item
+		endpoints[i] = item
 
 		// skip mount http handler when plugins has zero errors.
 		if len(item.Errors) > 0 {
@@ -100,7 +60,7 @@ func (m *manager) build() {
 			}
 			// inject consumer files.
 			r = r.WithContext(context.WithValue(r.Context(), core.GatewayCtxKeyConsumers,
-				m.listNamespacedConsumers(item.Namespace)))
+				filterNamespacedConsumers(consumers, item.Namespace)))
 
 			var err error
 			for _, p := range pChain {
@@ -127,13 +87,16 @@ func (m *manager) build() {
 		writeJSONError(w, http.StatusNotFound, "", "gateway couldn't find a matching endpoint")
 	})
 
-	// set the new router.
-	m.router = newRouter
+	return &immutableManager{
+		router:    newRouter,
+		endpoints: make([]core.EndpointV2, 0),
+		consumers: make([]core.ConsumerV2, 0),
+	}
 }
 
-func (m *manager) listNamespacedConsumers(namespace string) []core.ConsumerV2 {
+func filterNamespacedConsumers(consumers []core.ConsumerV2, namespace string) []core.ConsumerV2 {
 	list := []core.ConsumerV2{}
-	for _, item := range m.consumers {
+	for _, item := range consumers {
 		if item.Namespace == namespace {
 			list = append(list, item)
 		}
@@ -142,29 +105,43 @@ func (m *manager) listNamespacedConsumers(namespace string) []core.ConsumerV2 {
 	return list
 }
 
-func (m *manager) listNamespacedEndpoints(namespace string) []core.EndpointV2 {
+func filterNamespacedEndpoints(endpoints []core.EndpointV2, namespace string) []core.EndpointV2 {
 	list := []core.EndpointV2{}
-	for _, item := range m.endpoints {
+	for _, item := range endpoints {
 		if item.Namespace == namespace {
 			list = append(list, item)
 		}
 	}
 
 	return list
+}
+
+type manager struct {
+	inner *immutableManager
+}
+
+var _ core.GatewayManagerV2 = &manager{}
+
+func (m *manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if m.inner == nil {
+		writeJSONError(w, http.StatusServiceUnavailable, "", "no active gateway endpoints")
+
+		return
+	}
+	m.inner.router.ServeHTTP(w, r)
+}
+
+func (m *manager) SetEndpoints(list []core.EndpointV2, cList []core.ConsumerV2) {
+	newOne := newManager(list, cList)
+	m.inner = newOne
 }
 
 func (m *manager) ListEndpoints(namespace string) []core.EndpointV2 {
-	m.mux.Lock()
-	defer m.mux.Unlock()
-
-	return m.listNamespacedEndpoints(namespace)
+	return filterNamespacedEndpoints(m.inner.endpoints, namespace)
 }
 
 func (m *manager) ListConsumers(namespace string) []core.ConsumerV2 {
-	m.mux.Lock()
-	defer m.mux.Unlock()
-
-	return m.listNamespacedConsumers(namespace)
+	return filterNamespacedConsumers(m.inner.consumers, namespace)
 }
 
 func writeJSONError(w http.ResponseWriter, status int, endpointFile string, msg string) {
