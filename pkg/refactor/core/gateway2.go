@@ -71,6 +71,7 @@ type ConsumerV2 struct {
 
 	Namespace string
 	FilePath  string
+	Errors    []error
 }
 
 func FindConsumerByUser(user string, list []ConsumerV2) *ConsumerV2 {
