@@ -6,7 +6,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"net/http"
 	"slices"
-	"strings"
 	"sync/atomic"
 	"unsafe"
 
@@ -52,7 +51,7 @@ func (m *manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (m *manager) SetEndpoints(list []core.EndpointV2, cList []core.ConsumerV2) {
 	cList = slices.Clone(cList)
 
-	err := m.fetchSecrets(cList)
+	err := m.interpolateConsumersList(cList)
 	if err != nil {
 		panic("TODO: unhandled error: " + err.Error())
 	}
@@ -70,7 +69,7 @@ func (m *manager) ListConsumers(namespace string) []core.ConsumerV2 {
 	return filterNamespacedConsumers(inner.consumers, namespace)
 }
 
-func (m *manager) fetchSecrets(list []core.ConsumerV2) error {
+func (m *manager) interpolateConsumersList(list []core.ConsumerV2) error {
 	db, err := m.db.BeginTx(context.Background())
 	if err != nil {
 		return fmt.Errorf("could not begin transaction: %v", err)
@@ -78,13 +77,13 @@ func (m *manager) fetchSecrets(list []core.ConsumerV2) error {
 	defer db.Rollback()
 
 	for i, c := range list {
-		c.Password, err = translateSecret(db, c.Password)
+		c.Password, err = fetchSecret(db, c.Namespace, c.Password)
 		if err != nil {
 			c.Errors = append(c.Errors, fmt.Errorf("couldn't fetch secret %s", c.Password))
 			continue
 		}
 
-		c.APIKey, err = translateSecret(db, c.APIKey)
+		c.APIKey, err = fetchSecret(db, c.Namespace, c.APIKey)
 		if err != nil {
 			c.Errors = append(c.Errors, fmt.Errorf("couldn't fetch secret %s", c.APIKey))
 			continue
@@ -93,14 +92,4 @@ func (m *manager) fetchSecrets(list []core.ConsumerV2) error {
 	}
 
 	return nil
-}
-
-func translateSecret(db *database.SQLStore, pointer string) (string, error) {
-	pointer = strings.TrimSpace(pointer)
-	if !strings.HasPrefix(pointer, "fetchSecret") {
-		return pointer, nil
-	}
-
-	fmt.Printf(">>>>>>>>>>>>>>>>>>> %s\n", pointer)
-	return "bar", nil
 }
