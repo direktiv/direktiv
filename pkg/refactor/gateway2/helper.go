@@ -2,9 +2,10 @@ package gateway2
 
 import (
 	"encoding/json"
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"net/http"
 	"strings"
+
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 )
 
 func hasActiveConsumer(r *http.Request) bool {
