@@ -41,7 +41,7 @@ func NewManager(db *database.SQLStore) core.GatewayManagerV2 {
 func (m *manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	inner := m.atomicLoadRouter()
 	if inner == nil {
-		writeJSONError(w, http.StatusServiceUnavailable, "", "no active gateway endpoints")
+		WriteJSONError(w, http.StatusServiceUnavailable, "", "no active gateway endpoints")
 
 		return
 	}

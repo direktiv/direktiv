@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins"
 )
 
@@ -33,7 +34,7 @@ func (ba *DebugPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Re
 		Text:    "from debug plugin",
 	}
 
-	plugins.WriteJSON(w, response)
+	gateway2.WriteJSON(w, response)
 
 	return r, nil
 }

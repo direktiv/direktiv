@@ -1,10 +1,8 @@
 package plugins
 
 import (
-	"encoding/json"
 	"fmt"
 	"log/slog"
-	"net/http"
 	"os"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
@@ -29,16 +27,4 @@ func NewPlugin(config core.PluginConfigV2) (core.PluginV2, error) {
 	}
 
 	return f(config)
-}
-
-func WriteJSON(w http.ResponseWriter, v any) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-
-	payLoad := struct {
-		Data any `json:"data"`
-	}{
-		Data: v,
-	}
-	_ = json.NewEncoder(w).Encode(payLoad)
 }
