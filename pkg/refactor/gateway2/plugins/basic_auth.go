@@ -105,3 +105,8 @@ func (ba *BasicAuthPlugin) Type() string {
 func (ba *BasicAuthPlugin) Config() interface{} {
 	return ba.config
 }
+
+//nolint:gochecknoinits
+func init() {
+	RegisterPlugin("basic-auth", NewBasicAuthPlugin)
+}
