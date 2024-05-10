@@ -44,3 +44,8 @@ func (ba *DebugPlugin) Type() string {
 func (ba *DebugPlugin) Config() interface{} {
 	return nil
 }
+
+//nolint:gochecknoinits
+func init() {
+	RegisterPlugin("debug-target", NewDebugPlugin)
+}
