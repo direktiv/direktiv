@@ -10,13 +10,13 @@ import (
 	"strings"
 )
 
-type immutableManager struct {
+type router struct {
 	serveMux  *http.ServeMux
 	endpoints []core.EndpointV2
 	consumers []core.ConsumerV2
 }
 
-func newManager(endpoints []core.EndpointV2, consumers []core.ConsumerV2) *immutableManager {
+func buildRouter(endpoints []core.EndpointV2, consumers []core.ConsumerV2) *router {
 	serveMux := http.NewServeMux()
 
 	for i, item := range endpoints {
@@ -85,7 +85,7 @@ func newManager(endpoints []core.EndpointV2, consumers []core.ConsumerV2) *immut
 		writeJSONError(w, http.StatusNotFound, "", "gateway couldn't find a matching endpoint")
 	})
 
-	return &immutableManager{
+	return &router{
 		serveMux:  serveMux,
 		endpoints: make([]core.EndpointV2, 0),
 		consumers: make([]core.ConsumerV2, 0),

@@ -12,16 +12,16 @@ type manager struct {
 	inner unsafe.Pointer
 }
 
-func (m *manager) loadInner() *immutableManager {
+func (m *manager) loadInner() *router {
 	ptr := atomic.LoadPointer(&m.inner)
 	if ptr == nil {
 		return nil
 	}
 
-	return (*immutableManager)(ptr)
+	return (*router)(ptr)
 }
 
-func (m *manager) setInner(inner *immutableManager) {
+func (m *manager) setInner(inner *router) {
 	atomic.StorePointer(&m.inner, unsafe.Pointer(inner))
 }
 
@@ -42,7 +42,7 @@ func (m *manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (m *manager) SetEndpoints(list []core.EndpointV2, cList []core.ConsumerV2) {
-	newOne := newManager(list, cList)
+	newOne := buildRouter(list, cList)
 	m.setInner(newOne)
 }
 
