@@ -1,4 +1,4 @@
-package plugins
+package auth
 
 import (
 	"context"
@@ -10,6 +10,8 @@ import (
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
+	"github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins"
 )
 
 // BasicAuthConfig configures a basic-auth plugin instance.
@@ -29,7 +31,7 @@ var _ core.PluginV2 = &BasicAuthPlugin{}
 func NewBasicAuthPlugin(config core.PluginConfigV2) (core.PluginV2, error) {
 	authConfig := &BasicAuthConfig{}
 
-	err := ConvertConfig(config, authConfig)
+	err := gateway2.ConvertConfig(config, authConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -83,15 +85,15 @@ func (ba *BasicAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) (*htt
 		r = r.WithContext(context.WithValue(r.Context(), core.GatewayCtxKeyActiveConsumer, consumer))
 		// set headers if configured.
 		if ba.config.AddUsernameHeader {
-			r.Header.Set(consumerUserHeader, consumer.Username)
+			r.Header.Set(gateway2.ConsumerUserHeader, consumer.Username)
 		}
 
 		if ba.config.AddTagsHeader && len(consumer.Tags) > 0 {
-			r.Header.Set(consumerTagsHeader, strings.Join(consumer.Tags, ","))
+			r.Header.Set(gateway2.ConsumerTagsHeader, strings.Join(consumer.Tags, ","))
 		}
 
 		if ba.config.AddGroupsHeader && len(consumer.Groups) > 0 {
-			r.Header.Set(consumerGroupsHeader, strings.Join(consumer.Groups, ","))
+			r.Header.Set(gateway2.ConsumerGroupsHeader, strings.Join(consumer.Groups, ","))
 		}
 	}
 
@@ -104,4 +106,9 @@ func (ba *BasicAuthPlugin) Type() string {
 
 func (ba *BasicAuthPlugin) Config() interface{} {
 	return ba.config
+}
+
+//nolint:gochecknoinits
+func init() {
+	plugins.RegisterPlugin("basic-auth", NewBasicAuthPlugin)
 }
