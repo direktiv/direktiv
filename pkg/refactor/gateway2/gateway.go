@@ -122,6 +122,10 @@ type manager struct {
 
 var _ core.GatewayManagerV2 = &manager{}
 
+func NewManager() core.GatewayManagerV2 {
+	return &manager{}
+}
+
 func (m *manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if m.inner == nil {
 		writeJSONError(w, http.StatusServiceUnavailable, "", "no active gateway endpoints")
