@@ -3,11 +3,12 @@ package gateway2
 import (
 	"context"
 	"fmt"
-	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"regexp"
 	"strings"
 	"unicode/utf8"
+
+	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/database"
 )
 
 type fetchSecretArgs struct {
@@ -37,7 +38,7 @@ func fetchSecret(db *database.SQLStore, namespace string, callExpression string)
 
 	s, err := db.DataStore().Secrets().Get(context.Background(), fArgs.namespace, fArgs.secretName)
 	if err != nil {
-		return "", fmt.Errorf("can not fetch secret: %v", err)
+		return "", fmt.Errorf("can not fetch secret: %w", err)
 	}
 	if !utf8.Valid(s.Data) {
 		return "", fmt.Errorf("secret '%s' has none utf8 content", fArgs.secretName)

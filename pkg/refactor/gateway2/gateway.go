@@ -3,13 +3,13 @@ package gateway2
 import (
 	"context"
 	"fmt"
-	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"net/http"
 	"slices"
 	"sync/atomic"
 	"unsafe"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/database"
 )
 
 type manager struct {
@@ -72,7 +72,7 @@ func (m *manager) ListConsumers(namespace string) []core.ConsumerV2 {
 func (m *manager) interpolateConsumersList(list []core.ConsumerV2) error {
 	db, err := m.db.BeginTx(context.Background())
 	if err != nil {
-		return fmt.Errorf("could not begin transaction: %v", err)
+		return fmt.Errorf("could not begin transaction: %w", err)
 	}
 	defer db.Rollback()
 
