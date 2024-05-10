@@ -9,11 +9,11 @@ import (
 )
 
 type manager struct {
-	inner unsafe.Pointer
+	routerPointer unsafe.Pointer
 }
 
-func (m *manager) loadInner() *router {
-	ptr := atomic.LoadPointer(&m.inner)
+func (m *manager) atomicLoadRouter() *router {
+	ptr := atomic.LoadPointer(&m.routerPointer)
 	if ptr == nil {
 		return nil
 	}
@@ -21,8 +21,8 @@ func (m *manager) loadInner() *router {
 	return (*router)(ptr)
 }
 
-func (m *manager) setInner(inner *router) {
-	atomic.StorePointer(&m.inner, unsafe.Pointer(inner))
+func (m *manager) atomicSetRouter(inner *router) {
+	atomic.StorePointer(&m.routerPointer, unsafe.Pointer(inner))
 }
 
 var _ core.GatewayManagerV2 = &manager{}
@@ -32,7 +32,7 @@ func NewManager() core.GatewayManagerV2 {
 }
 
 func (m *manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	inner := m.loadInner()
+	inner := m.atomicLoadRouter()
 	if inner == nil {
 		writeJSONError(w, http.StatusServiceUnavailable, "", "no active gateway endpoints")
 
@@ -43,15 +43,15 @@ func (m *manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (m *manager) SetEndpoints(list []core.EndpointV2, cList []core.ConsumerV2) {
 	newOne := buildRouter(list, cList)
-	m.setInner(newOne)
+	m.atomicSetRouter(newOne)
 }
 
 func (m *manager) ListEndpoints(namespace string) []core.EndpointV2 {
-	inner := m.loadInner()
+	inner := m.atomicLoadRouter()
 	return filterNamespacedEndpoints(inner.endpoints, namespace)
 }
 
 func (m *manager) ListConsumers(namespace string) []core.ConsumerV2 {
-	inner := m.loadInner()
+	inner := m.atomicLoadRouter()
 	return filterNamespacedConsumers(inner.consumers, namespace)
 }
