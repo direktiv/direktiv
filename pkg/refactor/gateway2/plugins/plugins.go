@@ -2,20 +2,12 @@ package plugins
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/mitchellh/mapstructure"
-)
-
-const (
-	consumerUserHeader   = "Direktiv-Consumer-User"
-	consumerTagsHeader   = "Direktiv-Consumer-Tags"
-	consumerGroupsHeader = "Direktiv-Consumer-Groups"
 )
 
 type Factory func(config core.PluginConfigV2) (core.PluginV2, error)
@@ -39,16 +31,7 @@ func NewPlugin(config core.PluginConfigV2) (core.PluginV2, error) {
 	return f(config)
 }
 
-func ConvertConfig(config any, target any) error {
-	err := mapstructure.Decode(config, target)
-	if err != nil {
-		return errors.Join(err, errors.New("configuration invalid"))
-	}
-
-	return nil
-}
-
-func writeJSON(w http.ResponseWriter, v any) {
+func WriteJSON(w http.ResponseWriter, v any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 

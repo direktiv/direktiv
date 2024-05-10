@@ -1,4 +1,4 @@
-package plugins
+package target
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins"
 )
 
 type DebugPlugin struct{}
@@ -32,7 +33,7 @@ func (ba *DebugPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Re
 		Text:    "from debug plugin",
 	}
 
-	writeJSON(w, response)
+	plugins.WriteJSON(w, response)
 
 	return r, nil
 }
@@ -47,5 +48,5 @@ func (ba *DebugPlugin) Config() interface{} {
 
 //nolint:gochecknoinits
 func init() {
-	RegisterPlugin("debug-target", NewDebugPlugin)
+	plugins.RegisterPlugin("debug-target", NewDebugPlugin)
 }
