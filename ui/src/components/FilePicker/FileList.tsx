@@ -11,6 +11,7 @@ import {
 } from "~/api/files/utils";
 
 import { BaseFileSchemaType } from "~/api/files/schema";
+import Button from "~/design/Button";
 import { twMergeClsx } from "~/util/helpers";
 
 export type FileListProps = {
