@@ -23,6 +23,9 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/registry"
 	"github.com/direktiv/direktiv/pkg/refactor/service"
 	"github.com/direktiv/direktiv/pkg/util"
+
+	_ "github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins/auth"
+	_ "github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins/target"
 )
 
 type NewMainArgs struct {
