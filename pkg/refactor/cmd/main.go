@@ -319,8 +319,7 @@ func renderGateway2(db *database.SQLStore, manager core.GatewayManagerV2) {
 			}
 		}
 	}
-	manager.SetConsumers(consumers)
-	manager.SetEndpoints(endpoints)
+	manager.SetEndpoints(endpoints, consumers)
 }
 
 func getWorkflowFunctionDefinitionsFromWorkflow(ns *datastore.Namespace, f *filestore.File) ([]*core.ServiceFileData, error) {
