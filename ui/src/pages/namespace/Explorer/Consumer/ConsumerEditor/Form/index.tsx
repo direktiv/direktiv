@@ -74,7 +74,7 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
           </Fieldset>
         </div>
         <Fieldset
-          label={t("pages.explorer.consumer.editor.form.api_key")}
+          label={t("pages.explorer.consumer.editor.form.apiKey")}
           htmlFor="api-key"
         >
           <Input
