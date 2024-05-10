@@ -43,19 +43,12 @@ func (m *manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	router.ServeHTTP(w, r)
 }
 
-func (m *manager) SetEndpoints(list []core.EndpointV2) {
+func (m *manager) SetEndpoints(list []core.EndpointV2, cList []core.ConsumerV2) {
 	m.mux.Lock()
 	defer m.mux.Unlock()
 
 	m.endpoints = list
-	m.build()
-}
-
-func (m *manager) SetConsumers(list []core.ConsumerV2) {
-	m.mux.Lock()
-	defer m.mux.Unlock()
-
-	m.consumers = list
+	m.consumers = cList
 	m.build()
 }
 
