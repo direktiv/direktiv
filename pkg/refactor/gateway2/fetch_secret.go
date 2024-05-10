@@ -1,10 +1,13 @@
 package gateway2
 
 import (
+	"context"
 	"fmt"
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"regexp"
 	"strings"
+	"unicode/utf8"
 )
 
 type fetchSecretArgs struct {
@@ -18,10 +21,32 @@ func fetchSecret(db *database.SQLStore, namespace string, callExpression string)
 		return callExpression, nil
 	}
 
-	return "", nil
+	fArgs, err := parseFetchSecretExpressionSingleArg(callExpression)
+	if err != nil {
+		fArgs, err = parseFetchSecretExpressionTwoArgs(callExpression)
+	}
+	if err != nil {
+		return "", err
+	}
+	if fArgs.namespace == "" {
+		fArgs.namespace = namespace
+	}
+	if fArgs.namespace != namespace && namespace != core.SystemNamespace {
+		return "", fmt.Errorf("trying to fetch secret from different namespace")
+	}
+
+	s, err := db.DataStore().Secrets().Get(context.Background(), fArgs.namespace, fArgs.secretName)
+	if err != nil {
+		return "", fmt.Errorf("can not fetch secret: %v", err)
+	}
+	if !utf8.Valid(s.Data) {
+		return "", fmt.Errorf("secret '%s' has none utf8 content", fArgs.secretName)
+	}
+
+	return string(s.Data), nil
 }
 
-func parseFetchSecretExpression(callExpression string) (*fetchSecretArgs, error) {
+func parseFetchSecretExpressionTwoArgs(callExpression string) (*fetchSecretArgs, error) {
 	// parse fetchSecret( g1 ) pattern
 	pattern := `^[ ]{0,}fetchSecret[ ]{0,}\((.*)\)[ ]{0,}$`
 	regex := regexp.MustCompile(pattern)
@@ -47,6 +72,33 @@ func parseFetchSecretExpression(callExpression string) (*fetchSecretArgs, error)
 	}
 
 	return &fetchSecretArgs{
-		strings.TrimSpace(matches[1]), matches[2],
+		matches[1], matches[2],
+	}, nil
+}
+
+func parseFetchSecretExpressionSingleArg(callExpression string) (*fetchSecretArgs, error) {
+	// parse fetchSecret( g1 ) pattern
+	pattern := `^[ ]{0,}fetchSecret[ ]{0,}\((.*)\)[ ]{0,}$`
+	regex := regexp.MustCompile(pattern)
+	matches := regex.FindStringSubmatch(callExpression)
+	if len(matches) != 2 {
+		return nil, fmt.Errorf("syntax: invalid expression")
+	}
+	argsExpr := matches[1]
+
+	// parse "g1" pattern
+	pattern = `^[ ]{0,}[\"](.*)[\"][ ]{0,}$`
+	regex = regexp.MustCompile(pattern)
+	matches = regex.FindStringSubmatch(argsExpr)
+	if len(matches) != 2 {
+		return nil, fmt.Errorf("syntax: invalid arguments")
+	}
+
+	if strings.TrimSpace(matches[1]) != matches[1] {
+		return nil, fmt.Errorf("syntax: extra spaces in arguments")
+	}
+
+	return &fetchSecretArgs{
+		"", matches[1],
 	}, nil
 }
