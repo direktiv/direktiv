@@ -53,6 +53,7 @@ func (p *SlackWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) (*h
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
+		slog.Error("can not read request body", "err", err)
 		return r, fmt.Errorf("can not read request body")
 	}
 
@@ -93,7 +94,6 @@ func (p *SlackWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) (*h
 			slog.Error("can not marshal slack data", "err", err)
 			return nil, fmt.Errorf("can not marshal slack data")
 		}
-
 		r.Body = io.NopCloser(bytes.NewBuffer(b))
 	} else {
 		r.Body = io.NopCloser(bytes.NewBuffer(body))

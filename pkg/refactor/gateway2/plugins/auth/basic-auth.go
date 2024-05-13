@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/sha256"
 	"crypto/subtle"
-	"log/slog"
 	"net/http"
 	"strings"
 
@@ -48,28 +47,18 @@ func (ba *BasicAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) (*htt
 		return r, nil
 	}
 	user, pwd, ok := r.BasicAuth()
-
 	// no basic auth provided
 	if !ok {
 		return r, nil
 	}
 
-	slog.Debug("running basic-auth plugin", "user", user)
-
 	consumerList := gateway2.ReadConsumersListFromContext(r)
-	if len(consumerList) == 0 {
-		slog.Debug("no consumers list in context", slog.String("user", user))
-
+	if consumerList == nil {
 		return r, nil
 	}
-
 	consumer := core.FindConsumerByUser(user, consumerList)
-
-	// no consumer with that name
+	// no consumer matching auth name
 	if consumer == nil {
-		slog.Debug("no consumer configured",
-			slog.String("user", user))
-
 		return r, nil
 	}
 
