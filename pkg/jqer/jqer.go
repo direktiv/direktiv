@@ -28,9 +28,7 @@ var (
 // Evaluate evaluates the data against the query provided and returns the result.
 func Evaluate(data, query interface{}) ([]interface{}, error) {
 	if query == nil {
-		var out []interface{}
-		out = append(out, data)
-		return out, nil
+		return make([]interface{}, 0), nil
 	}
 
 	x, _ := json.Marshal(data)
@@ -80,6 +78,7 @@ func JqState(l *lexer.L) lexer.StateFunc {
 	var jdxJ int
 
 	mover := func(rewind int, forward bool) {
+		//nolint:intrange
 		for a := 0; a < rewind; a++ {
 			if forward {
 				l.Next()
@@ -89,6 +88,7 @@ func JqState(l *lexer.L) lexer.StateFunc {
 		}
 	}
 
+	//nolint:intrange
 	for i := 0; i < 3; i++ {
 		r := l.Next()
 		if r == lexer.EOFRune {
@@ -96,6 +96,7 @@ func JqState(l *lexer.L) lexer.StateFunc {
 			if len(l.Current()) > 0 {
 				l.Emit(StringToken)
 			}
+
 			return nil
 		}
 		src[i] = string(r)
@@ -239,6 +240,7 @@ func recurseIntoString(data interface{}, s string) ([]interface{}, error) {
 				if err != nil {
 					return err.Error()
 				}
+
 				return string(r)
 			})
 
@@ -286,6 +288,7 @@ func recurseIntoString(data interface{}, s string) ([]interface{}, error) {
 	s = strings.Join(x, "")
 	out = make([]interface{}, 1)
 	out[0] = s
+
 	return out, nil
 }
 
@@ -312,6 +315,7 @@ func recurseIntoMap(data interface{}, m map[string]interface{}) ([]interface{}, 
 		results[k] = x[0]
 	}
 	out = append(out, results)
+
 	return out, nil
 }
 
@@ -332,6 +336,7 @@ func recurseIntoArray(data interface{}, q []interface{}) ([]interface{}, error) 
 		array = append(array, x[0])
 	}
 	out = append(out, array)
+
 	return out, nil
 }
 

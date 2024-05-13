@@ -84,6 +84,7 @@ type outcome struct {
 	errMsg  string
 }
 
+// nolint:canonicalheader
 func (worker *inboundWorker) doFunctionRequest(ctx context.Context, ir *functionRequest) (*outcome, error) {
 	slog.Debug("Forwarding request to service.", "action_id", ir.actionId)
 
@@ -122,11 +123,11 @@ func (worker *inboundWorker) doFunctionRequest(ctx context.Context, ir *function
 		out.errMsg = string(out.data)
 	}
 
-	cap := int64(134217728) // 128 MiB (changed to same value as API)
-	if resp.ContentLength > cap {
+	capa := int64(134217728) // 128 MiB (changed to same value as API)
+	if resp.ContentLength > capa {
 		return nil, errors.New("service response is too large")
 	}
-	r := io.LimitReader(resp.Body, cap)
+	r := io.LimitReader(resp.Body, capa)
 
 	out.data, err = io.ReadAll(r)
 	if err != nil {
@@ -431,14 +432,14 @@ func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
 		close(req.end)
 	}()
 	aid := req.r.Header.Get(actionIDHeader)
-	cap := int64(134217728) // 4 MiB (cahnged to API value)
+	maxCap := int64(134217728) // 4 MiB (cahnged to API value)
 	if req.r.ContentLength == 0 {
 		code := http.StatusLengthRequired
 		worker.reportValidationError(aid, req.w, code, errors.New(http.StatusText(code)))
 		return
 	}
-	if req.r.ContentLength > cap {
-		worker.reportValidationError(aid, req.w, http.StatusRequestEntityTooLarge, fmt.Errorf("size limit: %d bytes", cap))
+	if req.r.ContentLength > maxCap {
+		worker.reportValidationError(aid, req.w, http.StatusRequestEntityTooLarge, fmt.Errorf("size limit: %d bytes", maxCap))
 		return
 	}
 

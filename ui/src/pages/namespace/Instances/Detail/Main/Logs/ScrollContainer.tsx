@@ -7,7 +7,7 @@ import { useLogVirtualizer } from "~/components/Logs/useLogVirtualizer";
 const ScrollContainer = () => {
   const instanceId = useInstanceId();
   const { data: instanceDetailsData } = useInstanceDetails({ instanceId });
-  const isStreaming = instanceDetailsData?.instance?.status === "pending";
+  const isStreaming = instanceDetailsData?.status === "pending";
   const {
     rowVirtualizer,
     parentRef,
@@ -24,6 +24,7 @@ const ScrollContainer = () => {
 
   return (
     <LogList
+      data-testid="instance-logs-scroll-container"
       ref={parentRef}
       height={rowVirtualizer.getTotalSize()}
       virtualOffset={virtualItems[0]?.start ?? 0}

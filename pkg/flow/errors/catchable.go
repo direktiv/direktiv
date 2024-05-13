@@ -24,6 +24,7 @@ func (err *CatchableError) Error() string {
 func WrapCatchableError(msg string, err error) error {
 	cerr := new(CatchableError)
 
+	//nolint:revive
 	if errors.As(err, &cerr) {
 		return &CatchableError{
 			Code:    cerr.Code,

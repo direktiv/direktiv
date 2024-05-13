@@ -36,7 +36,6 @@ describe('Test send events v2 api', () => {
 		const eventHistoryResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/history/123`)
 			.send()
 		expect(eventHistoryResponse.statusCode).toEqual(200)
-		console.log(eventHistoryResponse.body)
 	})
 })
 

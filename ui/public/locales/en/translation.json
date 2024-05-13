@@ -312,7 +312,8 @@
                 },
                 "targetEvent": {
                   "namespace": "Namespace (optional)"
-                }
+                },
+                "disableNamespaceSelectNote": "You can only access other namespaces when you are in the system namespace."
               },
               "inbound": {
                 "modal": {
@@ -429,7 +430,7 @@
             "serialisationError": "There was an error serializing the form data",
             "username": "Username",
             "password": "Password",
-            "api_key": "Api key",
+            "apiKey": "Api key",
             "tags": "Tags (optional)",
             "groups": "Groups (optional)",
             "tagsPlaceholder": "Enter a tag",
@@ -528,6 +529,7 @@
     "instances": {
       "list": {
         "title": "Recently executed instances",
+        "refetchLabel": "Refetch instances",
         "empty": {
           "noInstances": "There are no recently executed instances",
           "noFilterResults": "No recently executed instances found with these filter criteria"
@@ -538,7 +540,7 @@
           "invoker": "trigger",
           "state": "state",
           "startedAt": "started at",
-          "updatedAt": "last updated",
+          "finishedAt": "finished at",
           "childInstances": {
             "label": "spawned",
             "instanceCount": "{{count}} instances",
@@ -584,7 +586,7 @@
           "invoker": "trigger",
           "state": "state",
           "startedAt": "started at",
-          "updatedAt": "last updated",
+          "finishedAt": "finished at",
           "realtiveTime": "{{relativeTime}} ago"
         },
         "logs": {
@@ -1230,7 +1232,8 @@
         "pathLabel": "path:",
         "messageLabel": "msg:",
         "stateLabel": "state:",
-        "instanceLabel": "instance:"
+        "instanceLabel": "instance:",
+        "errorLabel": "error:"
       }
     },
     "blocker": {

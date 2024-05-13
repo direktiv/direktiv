@@ -9,7 +9,6 @@ import (
 	"log/slog"
 	"strings"
 
-	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
@@ -54,16 +53,7 @@ func newMuxStart(workflow *model.Workflow) *muxStart {
 	return ms
 }
 
-func (ms *muxStart) Hash() string {
-	if ms == nil {
-		ms = new(muxStart)
-		ms.Type = model.StartTypeDefault.String()
-	}
-
-	return bytedata.Checksum(ms)
-}
-
-func (srv *server) validateRouter(ctx context.Context, tx *database.SQLStore, file *filestore.File) (*muxStart, error) {
+func validateRouter(ctx context.Context, tx *database.SQLStore, file *filestore.File) (*muxStart, error) {
 	data, err := tx.FileStore().ForFile(file).GetData(ctx)
 	if err != nil {
 		return nil, err
@@ -82,7 +72,6 @@ func (srv *server) validateRouter(ctx context.Context, tx *database.SQLStore, fi
 }
 
 func (engine *engine) mux(ctx context.Context, ns *datastore.Namespace, calledAs string) (*filestore.File, []byte, error) {
-	// TODO: Alan, fix for the new filestore.(*Revision).GetRevision() api.
 	uriElems := strings.SplitN(calledAs, ":", 2)
 	path := uriElems[0]
 
@@ -217,12 +206,12 @@ func (flow *flow) cronHandler(data []byte) {
 }
 
 func (flow *flow) configureWorkflowStarts(ctx context.Context, tx *database.SQLStore, nsID uuid.UUID, nsName string, file *filestore.File) error {
-	ms, err := flow.validateRouter(ctx, tx, file)
+	ms, err := validateRouter(ctx, tx, file)
 	if err != nil {
 		return err
 	}
 
-	err = flow.events.processWorkflowEvents(ctx, nsID, nsName, file, ms)
+	err = renderStartEventListener(ctx, nsID, nsName, file, ms, tx)
 	if err != nil {
 		return err
 	}

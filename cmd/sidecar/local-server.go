@@ -77,6 +77,7 @@ func (srv *LocalServer) Start() {
 
 	slog.Debug("Localhost server thread registered.")
 
+	//nolint:intrange
 	for i := 0; i < workerThreads; i++ {
 		worker := new(inboundWorker)
 		worker.id = i
@@ -150,14 +151,14 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 	var msg string
 
 	if r.Method == http.MethodPost {
-		cap := int64(0x400000) // 4 MiB
-		if r.ContentLength > cap {
+		capa := int64(0x400000) // 4 MiB
+		if r.ContentLength > capa {
 			code := http.StatusRequestEntityTooLarge
 			reportError(code, errors.New(http.StatusText(code)))
 
 			return
 		}
-		r := io.LimitReader(r.Body, cap)
+		r := io.LimitReader(r.Body, capa)
 
 		data, err := io.ReadAll(r)
 		if err != nil {
@@ -189,6 +190,7 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 	slog.Debug("Log handler successfully processed message.", "action_id", actionId)
 }
 
+// nolint:canonicalheader
 func (srv *LocalServer) varHandler(w http.ResponseWriter, r *http.Request) {
 	actionId := r.URL.Query().Get("aid")
 

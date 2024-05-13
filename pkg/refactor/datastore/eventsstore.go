@@ -58,20 +58,25 @@ type EventTopicsStore interface {
 // EventListener represents a subscription to events within a specific namespace.
 // It defines trigger conditions, workflow actions, and filtering criteria.
 type EventListener struct {
-	ID                          uuid.UUID         `json:"id"`                          // Unique identifier of the listener.
-	CreatedAt                   time.Time         `json:"createdAt"`                   // Timestamp when the listener was created.
-	UpdatedAt                   time.Time         `json:"updatedAt"`                   // Timestamp when the listener was last updated.
-	Deleted                     bool              `json:"deleted"`                     // Flag to mark a listener for deletion.
-	Namespace                   string            `json:"namespace"`                   // The Namespace the listener belongs to.
-	NamespaceID                 uuid.UUID         `json:"namespaceID"`                 // The namespace to which this listener belongs.
-	ListeningForEventTypes      []string          `json:"listeningForEventTypes"`      // List of event types this listener subscribes to.
-	ReceivedEventsForAndTrigger []*Event          `json:"receivedEventsForAndTrigger"` // Stores events received for "And" type triggers (where all event types must be received).
-	LifespanOfReceivedEvents    int               `json:"lifespanOfReceivedEvents"`    // The duration (in milliseconds) for which received events should be retained for "And" triggers.  Use 0 to disable the lifespan.
-	TriggerType                 TriggerType       `json:"triggerType"`                 // Specifies the type of trigger (StartAnd, WaitAnd, etc.).
-	TriggerWorkflow             string            `json:"triggerWorkflow,omitempty"`   // The ID of the workflow to initiate or continue.
-	TriggerInstance             string            `json:"triggerInstance,omitempty"`   // Optional; The ID of a specific workflow instance to resume (for instance-waiting triggers).
-	GlobGatekeepers             map[string]string `json:"globGatekeepers,omitempty"`   // Map of glob-patterns for filtering events based on extensions. Key have to be prefixed with the event-type they apply to.
-	Metadata                    string            `json:"metadata"`                    // Field for storing arbitrary metadata associated with the listener.
+	ID                          uuid.UUID            `json:"id"`                            // Unique identifier of the listener.
+	CreatedAt                   time.Time            `json:"createdAt"`                     // Timestamp when the listener was created.
+	UpdatedAt                   time.Time            `json:"updatedAt"`                     // Timestamp when the listener was last updated.
+	Deleted                     bool                 `json:"deleted"`                       // Flag to mark a listener for deletion.
+	Namespace                   string               `json:"namespace"`                     // The Namespace the listener belongs to.
+	NamespaceID                 uuid.UUID            `json:"namespaceID"`                   // The namespace to which this listener belongs.
+	ListeningForEventTypes      []string             `json:"listeningForEventTypes"`        // List of event types this listener subscribes to.
+	ReceivedEventsForAndTrigger []*Event             `json:"receivedEventsForAndTrigger"`   // Stores events received for "And" type triggers (where all event types must be received).
+	LifespanOfReceivedEvents    int                  `json:"lifespanOfReceivedEvents"`      // The duration (in milliseconds) for which received events should be retained for "And" triggers.  Use 0 to disable the lifespan.
+	TriggerType                 TriggerType          `json:"triggerType"`                   // Specifies the type of trigger (StartAnd, WaitAnd, etc.).
+	TriggerWorkflow             string               `json:"triggerWorkflow,omitempty"`     // The ID of the workflow to initiate or continue.
+	TriggerInstance             string               `json:"triggerInstance,omitempty"`     // Optional; The ID of a specific workflow instance to resume (for instance-waiting triggers).
+	EventContextFilter          []EventContextFilter `json:"eventContextFilters,omitempty"` // Optional: The context field and values required to be present in a event to be considered for trigger.
+	Metadata                    string               `json:"metadata"`                      // Field for storing arbitrary metadata associated with the listener.
+}
+
+type EventContextFilter struct {
+	Typ     string            `json:"typ"`
+	Context map[string]string `json:"context"`
 }
 
 type TriggerType int

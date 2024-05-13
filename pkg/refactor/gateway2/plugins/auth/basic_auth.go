@@ -1,17 +1,20 @@
-package plugins
+package auth
 
 import (
 	"context"
 	"crypto/sha256"
 	"crypto/subtle"
-	"fmt"
+	"errors"
 	"log/slog"
 	"net/http"
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
+	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
+	"github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins"
 )
+
+const basicAuthPluginName = "basic-auth"
 
 // BasicAuthConfig configures a basic-auth plugin instance.
 // The plugin can be configured to set consumer information (name, groups, tags).
@@ -30,7 +33,7 @@ var _ core.PluginV2 = &BasicAuthPlugin{}
 func NewBasicAuthPlugin(config core.PluginConfigV2) (core.PluginV2, error) {
 	authConfig := &BasicAuthConfig{}
 
-	err := ConvertConfig(config, authConfig)
+	err := gateway2.ConvertConfig(config, authConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -40,12 +43,12 @@ func NewBasicAuthPlugin(config core.PluginConfigV2) (core.PluginV2, error) {
 	}, nil
 }
 
-func (ba *BasicAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
+func (ba *BasicAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, error) {
 	user, pwd, ok := r.BasicAuth()
 
 	// no basic auth provided
 	if !ok {
-		return r
+		return r, nil
 	}
 
 	slog.Debug("running basic-auth plugin", "user", user)
@@ -54,14 +57,11 @@ func (ba *BasicAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) *http
 	if gwObj == nil {
 		slog.Debug("no consumer list in context", slog.String("user", user))
 
-		return r
+		return r, nil
 	}
 	consumerList, ok := gwObj.([]core.ConsumerV2)
 	if !ok {
-		plugins.ReportError(r.Context(), w, http.StatusInternalServerError,
-			"consumerlist", fmt.Errorf("wrong object in context"))
-
-		return nil
+		return nil, errors.New("missing consumer list in context")
 	}
 	consumer := core.FindConsumerByUser(user, consumerList)
 
@@ -70,7 +70,7 @@ func (ba *BasicAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) *http
 		slog.Debug("no consumer configured",
 			slog.String("user", user))
 
-		return r
+		return r, nil
 	}
 
 	// comparing passwords
@@ -87,25 +87,30 @@ func (ba *BasicAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) *http
 		r = r.WithContext(context.WithValue(r.Context(), core.GatewayCtxKeyActiveConsumer, consumer))
 		// set headers if configured.
 		if ba.config.AddUsernameHeader {
-			r.Header.Set(plugins.ConsumerUserHeader, consumer.Username)
+			r.Header.Set(gateway2.ConsumerUserHeader, consumer.Username)
 		}
 
 		if ba.config.AddTagsHeader && len(consumer.Tags) > 0 {
-			r.Header.Set(plugins.ConsumerTagsHeader, strings.Join(consumer.Tags, ","))
+			r.Header.Set(gateway2.ConsumerTagsHeader, strings.Join(consumer.Tags, ","))
 		}
 
 		if ba.config.AddGroupsHeader && len(consumer.Groups) > 0 {
-			r.Header.Set(plugins.ConsumerGroupsHeader, strings.Join(consumer.Groups, ","))
+			r.Header.Set(gateway2.ConsumerGroupsHeader, strings.Join(consumer.Groups, ","))
 		}
 	}
 
-	return r
+	return r, nil
 }
 
 func (ba *BasicAuthPlugin) Type() string {
-	return "basic-auth"
+	return basicAuthPluginName
 }
 
 func (ba *BasicAuthPlugin) Config() interface{} {
 	return ba.config
+}
+
+//nolint:gochecknoinits
+func init() {
+	plugins.RegisterPlugin(basicAuthPluginName, NewBasicAuthPlugin)
 }

@@ -40,7 +40,7 @@ const LogsPanel = () => {
 
   const isMaximized = maximizedPanel === "logs";
 
-  const isPending = instanceDetailsData?.instance.status === "pending";
+  const isPending = instanceDetailsData?.status === "pending";
 
   const numberOfLogLines = logLines.length;
 
@@ -53,7 +53,7 @@ const LogsPanel = () => {
         <h3 className="flex grow items-center gap-x-2 font-medium">
           <ScrollText className="h-5" />
           {t("pages.instances.detail.logs.title", {
-            path: instanceDetailsData?.instance.as,
+            path: instanceDetailsData?.path,
           })}
         </h3>
         <ButtonBar>
@@ -118,7 +118,10 @@ const LogsPanel = () => {
         </ButtonBar>
       </div>
       <ScrollContainer />
-      <div className="flex items-center justify-center pt-2 text-sm text-gray-11 dark:text-gray-dark-11">
+      <div
+        data-testid="instance-logs-entries-counter"
+        className="flex items-center justify-center pt-2 text-sm text-gray-11 dark:text-gray-dark-11"
+      >
         {isPending && (
           <span className="relative mr-2 flex h-3 w-3">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-gray-11 opacity-75 dark:bg-gray-dark-11"></span>

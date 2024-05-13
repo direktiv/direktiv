@@ -12,9 +12,8 @@ import { faker } from "@faker-js/faker";
 import { getInstances } from "~/api/instances/query/get";
 import { headers } from "e2e/utils/testutils";
 import moment from "moment";
-import { runWorkflow } from "~/api/tree/mutate/runWorkflow";
 
-type Instance = Awaited<ReturnType<typeof runWorkflow>>;
+type Instance = Awaited<ReturnType<typeof createInstance>>;
 
 let namespace = "";
 const simpleWorkflowName = faker.system.commonFileName("yaml");
@@ -76,20 +75,20 @@ test("it renders the instance item correctly for failed and success status", asy
       headers,
     });
 
-    const instanceDetail = instancesList.instances.results.find(
-      (x) => x.id === instance.instance
+    const instanceDetail = instancesList.data.find(
+      (x) => x.id === instance.data.id
     );
 
-    if (!instanceDetail?.status) {
-      throw new Error("instanceDetail?.status is not defined");
+    if (!instanceDetail) {
+      throw new Error("instance not found");
     }
 
-    const workflowName = instanceDetail?.as.split(":")[0];
+    const workflowName = instanceDetail?.path.split(":")[0];
 
     if (!workflowName) throw new Error("workflowName is not defined");
 
     const instanceItemRow = page.getByTestId(
-      `instance-row-${instance.instance}`
+      `instance-row-${instance.data.id}`
     );
 
     await expect(
@@ -103,14 +102,14 @@ test("it renders the instance item correctly for failed and success status", asy
     await expect(
       instanceItemIdColumn.getByTestId(`tooltip-copy-trigger`),
       "id badge shows the first 8 digits of the id"
-    ).toContainText(instance.instance.slice(0, 8));
+    ).toContainText(instance.data.id.slice(0, 8));
 
     await instanceItemIdColumn.getByTestId(`tooltip-copy-trigger`).hover();
 
     await expect(
       instanceItemIdColumn.getByTestId("tooltip-copy-content"),
       "on hover, a tooltip reveals full id"
-    ).toContainText(instance.instance);
+    ).toContainText(instance.data.id);
 
     await page
       .getByRole("heading", { name: "Recently executed instances" })
@@ -166,21 +165,21 @@ test("it renders the instance item correctly for failed and success status", asy
       .click(); // click on header to close all tooltips opened
 
     await expect(
-      instanceItemRow.getByTestId("instance-column-updated-time"),
-      `the "last updated" column should display a relative time of the updatedAt api response`
-    ).toContainText(moment(instanceDetail.updatedAt).fromNow(true));
+      instanceItemRow.getByTestId("instance-column-ended-time"),
+      `the "endedAt" column should display a relative time of the endedAt api response`
+    ).toContainText(moment(instanceDetail.endedAt).fromNow(true));
 
     await instanceItemRow
-      .getByTestId("instance-column-updated-time")
+      .getByTestId("instance-column-ended-time")
       .getByTestId("tooltip-trigger")
       .hover();
 
     await expect(
       instanceItemRow
-        .getByTestId("instance-column-updated-time")
+        .getByTestId("instance-column-ended-time")
         .getByTestId("tooltip-content"),
       "on hover, the absolute time should appear"
-    ).toContainText(instanceDetail.updatedAt);
+    ).toContainText(instanceDetail.endedAt ?? "no endedAt");
 
     await instanceItemRow
       .getByTestId("instance-column-name")
@@ -198,7 +197,7 @@ test("it renders the instance item correctly for failed and success status", asy
     await expect(
       page,
       "on click row, page should navigate to the instance detail page"
-    ).toHaveURL(`/n/${namespace}/instances/${instance.instance}`);
+    ).toHaveURL(`/n/${namespace}/instances/${instance.data.id}`);
     await page.goBack();
   };
 
@@ -234,21 +233,13 @@ test("it provides a proper pagination", async ({ page }) => {
     yaml,
   });
 
-  await runWorkflow({
-    urlParams: {
-      baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
-      namespace,
-      path: parentWorkflow,
-    },
-    headers,
-  });
-
-  /**
-   * child workflows are spawned asynchronously in the backend and the page
-   * does not refresh, so we need to wait until they are initialized before
-   * visiting the page.
-   */
-  await page.waitForTimeout(500);
+  await createInstance({ namespace, path: parentWorkflow }),
+    /**
+     * child workflows are spawned asynchronously in the backend and the page
+     * does not refresh, so we need to wait until they are initialized before
+     * visiting the page.
+     */
+    await page.waitForTimeout(500);
 
   await page.goto(`/n/${namespace}/instances/`, { waitUntil: "networkidle" });
 
@@ -304,7 +295,7 @@ test("it provides a proper pagination", async ({ page }) => {
     headers,
   });
 
-  const firstInstance = instancesListPage3.instances.results[0];
+  const firstInstance = instancesListPage3.data[0];
   if (!firstInstance) throw new Error("there should be at least one instance");
 
   const instanceItemRow = page.getByTestId(`instance-row-${firstInstance.id}`);
@@ -328,13 +319,9 @@ test("It will display child instances as well", async ({ page }) => {
     }),
   });
 
-  const parentInstance = await runWorkflow({
-    urlParams: {
-      baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
-      namespace,
-      path: parentWorkflow,
-    },
-    headers,
+  const parentInstance = await createInstance({
+    namespace,
+    path: parentWorkflow,
   });
 
   await page.goto(`/n/${namespace}/instances/`, { waitUntil: "networkidle" });
@@ -349,8 +336,8 @@ test("It will display child instances as well", async ({ page }) => {
     headers,
   });
 
-  const childInstanceDetail = instancesList.instances.results.find(
-    (x) => x.id !== parentInstance.instance
+  const childInstanceDetail = instancesList.data.find(
+    (x) => x.id !== parentInstance.data.id
   );
 
   if (!childInstanceDetail)
