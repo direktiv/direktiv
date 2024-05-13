@@ -27,7 +27,7 @@ type JSInboundPlugin struct {
 	config *JSInboundConfig
 }
 
-func ConfigureJSInbound(config core.PluginConfigV2) (core.PluginV2, error) {
+func NewJSInboundConfig(config core.PluginConfigV2) (core.PluginV2, error) {
 	jsConfig := &JSInboundConfig{}
 
 	err := plugins.ConvertConfig(config.Config, jsConfig)
@@ -88,7 +88,7 @@ type request struct {
 	Status int
 }
 
-func (js *JSInboundPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, bool) {
+func (js *JSInboundPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, error) {
 	var (
 		err error
 		b   []byte
@@ -189,13 +189,6 @@ func (js *JSInboundPlugin) Execute(w http.ResponseWriter, r *http.Request) (*htt
 	return true
 }
 
-func init() {
-	plugins.AddPluginToRegistry(plugins.NewPluginBase(
-		JSInboundPluginName,
-		plugins.InboundPluginType,
-		ConfigureJSInbound))
-}
-
 // serveResponse is writing the response directly to the client if the a status
 // code is set within the Javascript.
 func serveResponse(w http.ResponseWriter, req request) bool {
@@ -221,4 +214,8 @@ func addHeader(getHeader, setHeader http.Header) {
 			setHeader.Add(k, v[a])
 		}
 	}
+}
+
+func init() {
+	plugins.RegisterPlugin(JSInboundPluginName, NewJSInboundConfig)
 }

@@ -26,7 +26,7 @@ type HeaderManipulationPlugin struct {
 	configuration *HeaderManipulationConfig
 }
 
-func ConfigureHeaderManipulation(config core.PluginConfigV2) (core.PluginV2, error) {
+func NewHeaderManipulationPlugin(config core.PluginConfigV2) (core.PluginV2, error) {
 	headerManipulationConfig := &HeaderManipulationConfig{}
 
 	err := plugins.ConvertConfig(config.Config, headerManipulationConfig)
@@ -43,7 +43,7 @@ func (hp *HeaderManipulationPlugin) Config() interface{} {
 	return hp.configuration
 }
 
-func (hp *HeaderManipulationPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, bool) {
+func (hp *HeaderManipulationPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, error) {
 	for a := range hp.configuration.HeadersToAdd {
 		h := hp.configuration.HeadersToAdd[a]
 		r.Header.Add(h.Name, h.Value)
@@ -67,8 +67,5 @@ func (hp *HeaderManipulationPlugin) Type() string {
 }
 
 func init() {
-	plugins.AddPluginToRegistry(plugins.NewPluginBase(
-		HeaderManipulation,
-		plugins.InboundPluginType,
-		ConfigureHeaderManipulation))
+	plugins.RegisterPlugin(HeaderManipulationPlugin, NewHeaderManipulationPlugin)
 }

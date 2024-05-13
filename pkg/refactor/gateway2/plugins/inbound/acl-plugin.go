@@ -27,7 +27,7 @@ type ACLPlugin struct {
 	config *ACLConfig
 }
 
-func ConfigureACL(config core.PluginConfigV2) (core.PluginV2, error) {
+func NewACLConfig(config core.PluginConfigV2) (core.PluginV2, error) {
 	aclConfig := &ACLConfig{}
 
 	err := plugins.ConvertConfig(config.Config, aclConfig)
@@ -48,7 +48,7 @@ func (acl *ACLPlugin) Type() string {
 	return ACLPluginName
 }
 
-func (acl *ACLPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, bool) {
+func (acl *ACLPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, error) {
 	if c == nil {
 		deny(r.Context(), "missing consumer", w)
 
@@ -99,8 +99,5 @@ func deny(ctx context.Context, t string, w http.ResponseWriter) {
 }
 
 func init() {
-	plugins.AddPluginToRegistry(plugins.NewPluginBase(
-		ACLPluginName,
-		plugins.InboundPluginType,
-		ConfigureACL))
+	plugins.RegisterPlugin(ACLPluginName, NewACLConfig)
 }

@@ -31,7 +31,7 @@ type RequestConvertPlugin struct {
 	config *RequestConvertConfig
 }
 
-func ConfigureRequestConvert(config core.PluginConfigV2) (core.PluginV2, error) {
+func NewRequestConvertPlugin(config core.PluginConfigV2) (core.PluginV2, error) {
 	requestConvertConfig := &RequestConvertConfig{}
 
 	err := plugins.ConvertConfig(config.Config, requestConvertConfig)
@@ -62,7 +62,7 @@ type RequestConvertResponse struct {
 	Consumer    RequestConsumer     `json:"consumer"`
 }
 
-func (rcp *RequestConvertPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, bool) {
+func (rcp *RequestConvertPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, error) {
 	response := &RequestConvertResponse{
 		URLParams:   make(map[string]string),
 		QueryParams: make(map[string][]string),
@@ -150,8 +150,5 @@ func (rcp *RequestConvertPlugin) Type() string {
 }
 
 func init() {
-	plugins.AddPluginToRegistry(plugins.NewPluginBase(
-		RequestConvertPluginName,
-		plugins.InboundPluginType,
-		ConfigureRequestConvert))
+	plugins.RegisterPlugin(RequestConvertPluginName, NewRequestConvertPlugin)
 }
