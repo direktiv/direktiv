@@ -59,7 +59,7 @@ func (ka *KeyAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.
 		return r, nil
 	}
 
-	consumerList := gateway2.ReadConsumersListFromContext(r)
+	consumerList := gateway2.ParseRequestConsumersList(r)
 	if consumerList == nil {
 		slog.Debug("no consumer configured for api key")
 

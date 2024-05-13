@@ -94,7 +94,7 @@ func (m *manager) interpolateConsumersList(list []core.ConsumerV2) error {
 	return nil
 }
 
-func ReadConsumersListFromContext(r *http.Request) []core.ConsumerV2 {
+func ParseRequestConsumersList(r *http.Request) []core.ConsumerV2 {
 	res := r.Context().Value(core.GatewayCtxKeyConsumers)
 	if res == nil {
 		return nil

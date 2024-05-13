@@ -52,7 +52,7 @@ func (ba *BasicAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) (*htt
 		return r, nil
 	}
 
-	consumerList := gateway2.ReadConsumersListFromContext(r)
+	consumerList := gateway2.ParseRequestConsumersList(r)
 	if consumerList == nil {
 		return r, nil
 	}
