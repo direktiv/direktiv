@@ -26,10 +26,10 @@ type HeaderManipulationPlugin struct {
 	configuration *HeaderManipulationConfig
 }
 
-func ConfigureHeaderManipulation(config interface{}, _ string) (core.PluginInstance, error) {
+func ConfigureHeaderManipulation(config core.PluginConfigV2) (core.PluginV2, error) {
 	headerManipulationConfig := &HeaderManipulationConfig{}
 
-	err := plugins.ConvertConfig(config, headerManipulationConfig)
+	err := plugins.ConvertConfig(config.Config, headerManipulationConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +66,6 @@ func (hp *HeaderManipulationPlugin) Type() string {
 	return HeaderManipulation
 }
 
-//nolint:gochecknoinits
 func init() {
 	plugins.AddPluginToRegistry(plugins.NewPluginBase(
 		HeaderManipulation,

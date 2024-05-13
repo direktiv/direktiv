@@ -27,10 +27,10 @@ type ACLPlugin struct {
 	config *ACLConfig
 }
 
-func ConfigureACL(config interface{}, _ string) (core.PluginInstance, error) {
+func ConfigureACL(config core.PluginConfigV2) (core.PluginV2, error) {
 	aclConfig := &ACLConfig{}
 
-	err := plugins.ConvertConfig(config, aclConfig)
+	err := plugins.ConvertConfig(config.Config, aclConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +98,6 @@ func deny(ctx context.Context, t string, w http.ResponseWriter) {
 	plugins.ReportError(ctx, w, http.StatusForbidden, msg, fmt.Errorf("forbidden"))
 }
 
-//nolint:gochecknoinits
 func init() {
 	plugins.AddPluginToRegistry(plugins.NewPluginBase(
 		ACLPluginName,

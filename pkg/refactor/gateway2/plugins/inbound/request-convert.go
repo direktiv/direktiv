@@ -31,10 +31,10 @@ type RequestConvertPlugin struct {
 	config *RequestConvertConfig
 }
 
-func ConfigureRequestConvert(config interface{}, _ string) (core.PluginInstance, error) {
+func ConfigureRequestConvert(config core.PluginConfigV2) (core.PluginV2, error) {
 	requestConvertConfig := &RequestConvertConfig{}
 
-	err := plugins.ConvertConfig(config, requestConvertConfig)
+	err := plugins.ConvertConfig(config.Config, requestConvertConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -149,7 +149,6 @@ func (rcp *RequestConvertPlugin) Type() string {
 	return RequestConvertPluginName
 }
 
-//nolint:gochecknoinits
 func init() {
 	plugins.AddPluginToRegistry(plugins.NewPluginBase(
 		RequestConvertPluginName,

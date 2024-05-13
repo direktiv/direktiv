@@ -27,10 +27,10 @@ type JSInboundPlugin struct {
 	config *JSInboundConfig
 }
 
-func ConfigureJSInbound(config interface{}, _ string) (core.PluginInstance, error) {
+func ConfigureJSInbound(config core.PluginConfigV2) (core.PluginV2, error) {
 	jsConfig := &JSInboundConfig{}
 
-	err := plugins.ConvertConfig(config, jsConfig)
+	err := plugins.ConvertConfig(config.Config, jsConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -189,7 +189,6 @@ func (js *JSInboundPlugin) Execute(w http.ResponseWriter, r *http.Request) (*htt
 	return true
 }
 
-//nolint:gochecknoinits
 func init() {
 	plugins.AddPluginToRegistry(plugins.NewPluginBase(
 		JSInboundPluginName,
