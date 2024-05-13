@@ -48,9 +48,7 @@ func (acl *ACLPlugin) Type() string {
 	return ACLPluginName
 }
 
-func (acl *ACLPlugin) ExecutePlugin(c *core.ConsumerFile,
-	w http.ResponseWriter, r *http.Request,
-) bool {
+func (acl *ACLPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, bool) {
 	if c == nil {
 		deny(r.Context(), "missing consumer", w)
 

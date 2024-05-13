@@ -43,9 +43,7 @@ func (hp *HeaderManipulationPlugin) Config() interface{} {
 	return hp.configuration
 }
 
-func (hp *HeaderManipulationPlugin) ExecutePlugin(_ *core.ConsumerFile,
-	_ http.ResponseWriter, r *http.Request,
-) bool {
+func (hp *HeaderManipulationPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, bool) {
 	for a := range hp.configuration.HeadersToAdd {
 		h := hp.configuration.HeadersToAdd[a]
 		r.Header.Add(h.Name, h.Value)

@@ -88,9 +88,7 @@ type request struct {
 	Status int
 }
 
-func (js *JSInboundPlugin) ExecutePlugin(c *core.ConsumerFile,
-	w http.ResponseWriter, r *http.Request,
-) bool {
+func (js *JSInboundPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, bool) {
 	var (
 		err error
 		b   []byte

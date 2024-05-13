@@ -62,9 +62,7 @@ type RequestConvertResponse struct {
 	Consumer    RequestConsumer     `json:"consumer"`
 }
 
-func (rcp *RequestConvertPlugin) ExecutePlugin(c *core.ConsumerFile,
-	w http.ResponseWriter, r *http.Request,
-) bool {
+func (rcp *RequestConvertPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, bool) {
 	response := &RequestConvertResponse{
 		URLParams:   make(map[string]string),
 		QueryParams: make(map[string][]string),
