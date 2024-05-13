@@ -12,33 +12,23 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins"
 )
 
-const basicAuthPluginName = "basic-auth"
-
-// BasicAuthConfig configures a basic-auth plugin instance.
-// The plugin can be configured to set consumer information (name, groups, tags).
-type BasicAuthConfig struct {
-	AddUsernameHeader bool `mapstructure:"add_username_header" yaml:"add_username_header"`
-	AddTagsHeader     bool `mapstructure:"add_tags_header"     yaml:"add_tags_header"`
-	AddGroupsHeader   bool `mapstructure:"add_groups_header"   yaml:"add_groups_header"`
-}
-
 type BasicAuthPlugin struct {
-	config *BasicAuthConfig
+	AddUsernameHeader bool `mapstructure:"add_username_header"`
+	AddTagsHeader     bool `mapstructure:"add_tags_header"`
+	AddGroupsHeader   bool `mapstructure:"add_groups_header"`
 }
 
 var _ core.PluginV2 = &BasicAuthPlugin{}
 
 func (ba *BasicAuthPlugin) Construct(config core.PluginConfigV2) (core.PluginV2, error) {
-	authConfig := &BasicAuthConfig{}
+	pl := &BasicAuthPlugin{}
 
-	err := plugins.ConvertConfig(config.Config, authConfig)
+	err := plugins.ConvertConfig(config.Config, pl)
 	if err != nil {
 		return nil, err
 	}
 
-	return &BasicAuthPlugin{
-		config: authConfig,
-	}, nil
+	return pl, nil
 }
 
 func (ba *BasicAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, error) {
@@ -75,15 +65,15 @@ func (ba *BasicAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) (*htt
 		// set active comsumer.
 		r = r.WithContext(context.WithValue(r.Context(), core.GatewayCtxKeyActiveConsumer, consumer))
 		// set headers if configured.
-		if ba.config.AddUsernameHeader {
+		if ba.AddUsernameHeader {
 			r.Header.Set(gateway2.ConsumerUserHeader, consumer.Username)
 		}
 
-		if ba.config.AddTagsHeader && len(consumer.Tags) > 0 {
+		if ba.AddTagsHeader && len(consumer.Tags) > 0 {
 			r.Header.Set(gateway2.ConsumerTagsHeader, strings.Join(consumer.Tags, ","))
 		}
 
-		if ba.config.AddGroupsHeader && len(consumer.Groups) > 0 {
+		if ba.AddGroupsHeader && len(consumer.Groups) > 0 {
 			r.Header.Set(gateway2.ConsumerGroupsHeader, strings.Join(consumer.Groups, ","))
 		}
 	}
@@ -92,11 +82,11 @@ func (ba *BasicAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) (*htt
 }
 
 func (ba *BasicAuthPlugin) Type() string {
-	return basicAuthPluginName
+	return "basic-auth"
 }
 
 func (ba *BasicAuthPlugin) Config() interface{} {
-	return ba.config
+	return ba
 }
 
 func init() {

@@ -10,33 +10,26 @@ import (
 )
 
 const (
-	gitlabWebhookPluginName = "gitlab-webhook-auth"
-	gitlabHeaderName        = "X-Gitlab-Token"
+	gitlabHeaderName = "X-Gitlab-Token"
 )
 
-type GitlabWebhookPluginConfig struct {
-	Secret string `mapstructure:"secret" yaml:"secret"`
-}
-
 type GitlabWebhookPlugin struct {
-	config *GitlabWebhookPluginConfig
+	Secret string `mapstructure:"secret"`
 }
 
 func (p *GitlabWebhookPlugin) Construct(config core.PluginConfigV2) (core.PluginV2, error) {
-	gitlabConfig := &GitlabWebhookPluginConfig{}
+	pl := &GitlabWebhookPlugin{}
 
-	err := plugins.ConvertConfig(config.Config, gitlabConfig)
+	err := plugins.ConvertConfig(config.Config, pl)
 	if err != nil {
 		return nil, err
 	}
 
-	return &GitlabWebhookPlugin{
-		config: gitlabConfig,
-	}, nil
+	return pl, nil
 }
 
 func (p *GitlabWebhookPlugin) Config() interface{} {
-	return p.config
+	return p
 }
 
 func (p *GitlabWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, error) {
@@ -46,7 +39,7 @@ func (p *GitlabWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) (*
 	}
 
 	secret := r.Header.Get(gitlabHeaderName)
-	if secret != p.config.Secret {
+	if secret != p.Secret {
 		return r, nil
 	}
 
@@ -59,7 +52,7 @@ func (p *GitlabWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) (*
 }
 
 func (*GitlabWebhookPlugin) Type() string {
-	return githubWebhookPluginName
+	return "gitlab-webhook-auth"
 }
 
 func init() {

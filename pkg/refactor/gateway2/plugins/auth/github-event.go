@@ -13,33 +13,23 @@ import (
 	"github.com/google/go-github/v57/github"
 )
 
-const (
-	githubWebhookPluginName = "github-webhook-auth"
-)
-
-type GithubWebhookPluginConfig struct {
-	Secret string `mapstructure:"secret" yaml:"secret"`
-}
-
 type GithubWebhookPlugin struct {
-	config *GithubWebhookPluginConfig
+	Secret string `mapstructure:"secret"`
 }
 
 func (p *GithubWebhookPlugin) Construct(config core.PluginConfigV2) (core.PluginV2, error) {
-	requestConvertConfig := &GithubWebhookPluginConfig{}
+	pl := &GithubWebhookPlugin{}
 
-	err := plugins.ConvertConfig(config.Config, requestConvertConfig)
+	err := plugins.ConvertConfig(config.Config, pl)
 	if err != nil {
 		return nil, err
 	}
 
-	return &GithubWebhookPlugin{
-		config: requestConvertConfig,
-	}, nil
+	return pl, nil
 }
 
 func (p *GithubWebhookPlugin) Config() interface{} {
-	return p.config
+	return p
 }
 
 func (p *GithubWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, error) {
@@ -48,7 +38,7 @@ func (p *GithubWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) (*
 		return r, nil
 	}
 
-	payload, err := github.ValidatePayload(r, []byte(p.config.Secret))
+	payload, err := github.ValidatePayload(r, []byte(p.Secret))
 	if err != nil {
 		slog.Error("cannot verify payload", "err", err)
 
@@ -66,7 +56,7 @@ func (p *GithubWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) (*
 }
 
 func (*GithubWebhookPlugin) Type() string {
-	return githubWebhookPluginName
+	return "github-webhook-auth"
 }
 
 func init() {

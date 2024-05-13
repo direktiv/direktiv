@@ -16,33 +16,23 @@ import (
 	"github.com/slack-go/slack"
 )
 
-const (
-	SlackWebhookPluginName = "slack-webhook-auth"
-)
-
-type SlackWebhookPluginConfig struct {
-	Secret string `mapstructure:"secret" yaml:"secret"`
-}
-
 type SlackWebhookPlugin struct {
-	config *SlackWebhookPluginConfig
+	Secret string `mapstructure:"secret"`
 }
 
 func (p *SlackWebhookPlugin) Construct(config core.PluginConfigV2) (core.PluginV2, error) {
-	slackWebhookConfig := &SlackWebhookPluginConfig{}
+	pl := &SlackWebhookPlugin{}
 
-	err := plugins.ConvertConfig(config.Config, slackWebhookConfig)
+	err := plugins.ConvertConfig(config.Config, pl)
 	if err != nil {
 		return nil, err
 	}
 
-	return &SlackWebhookPlugin{
-		config: slackWebhookConfig,
-	}, nil
+	return pl, nil
 }
 
 func (p *SlackWebhookPlugin) Config() interface{} {
-	return p.config
+	return p
 }
 
 func (p *SlackWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, error) {
@@ -57,7 +47,7 @@ func (p *SlackWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) (*h
 		return nil, fmt.Errorf("can not read request body")
 	}
 
-	sv, err := slack.NewSecretsVerifier(r.Header, p.config.Secret)
+	sv, err := slack.NewSecretsVerifier(r.Header, p.Secret)
 	if err != nil {
 		slog.Error("can not create slack verifier", "err", err)
 		return nil, fmt.Errorf("can not create slack verifier")
@@ -103,7 +93,7 @@ func (p *SlackWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) (*h
 }
 
 func (*SlackWebhookPlugin) Type() string {
-	return githubWebhookPluginName
+	return "slack-webhook-auth"
 }
 
 func init() {
