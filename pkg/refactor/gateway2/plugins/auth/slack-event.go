@@ -54,7 +54,7 @@ func (p *SlackWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) (*h
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		slog.Error("can not read request body", "err", err)
-		return r, fmt.Errorf("can not read request body")
+		return nil, fmt.Errorf("can not read request body")
 	}
 
 	sv, err := slack.NewSecretsVerifier(r.Header, p.config.Secret)
