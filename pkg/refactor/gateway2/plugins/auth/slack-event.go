@@ -5,13 +5,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
 	"io"
 	"log/slog"
 	"net/http"
 	"net/url"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins"
 	"github.com/slack-go/slack"
 )
