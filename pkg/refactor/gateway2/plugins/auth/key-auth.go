@@ -12,8 +12,8 @@ import (
 )
 
 const (
-	KeyAuthPluginName = "key-auth"
-	KeyName           = "API-Token"
+	keyAuthPluginName = "key-auth"
+	keyName           = "API-Token"
 )
 
 // KeyAuthConfig configures a key-auth plugin instance.
@@ -34,7 +34,7 @@ type KeyAuthPlugin struct {
 
 func NewKeyAuthPlugin(config core.PluginConfigV2) (core.PluginV2, error) {
 	keyAuthConfig := &KeyAuthConfig{
-		KeyName: KeyName,
+		KeyName: keyName,
 	}
 
 	err := gateway2.ConvertConfig(config, keyAuthConfig)
@@ -100,10 +100,10 @@ func (ka *KeyAuthPlugin) Config() interface{} {
 }
 
 func (ka *KeyAuthPlugin) Type() string {
-	return KeyAuthPluginName
+	return keyAuthPluginName
 }
 
 //nolint:gochecknoinits
 func init() {
-	plugins.RegisterPlugin(KeyAuthPluginName, NewKeyAuthPlugin)
+	plugins.RegisterPlugin(keyAuthPluginName, NewKeyAuthPlugin)
 }

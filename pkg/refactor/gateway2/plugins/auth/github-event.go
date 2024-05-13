@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	GithubWebhookPluginName = "github-webhook-auth"
+	githubWebhookPluginName = "github-webhook-auth"
 )
 
 type GithubWebhookPluginConfig struct {
@@ -66,10 +66,10 @@ func (p *GithubWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) (*
 }
 
 func (*GithubWebhookPlugin) Type() string {
-	return GithubWebhookPluginName
+	return githubWebhookPluginName
 }
 
 //nolint:gochecknoinits
 func init() {
-	plugins.RegisterPlugin(GithubWebhookPluginName, NewGithubWebhookPlugin)
+	plugins.RegisterPlugin(githubWebhookPluginName, NewGithubWebhookPlugin)
 }
