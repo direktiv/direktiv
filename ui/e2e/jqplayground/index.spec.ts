@@ -62,7 +62,7 @@ test("It will display an error when the query is not a JQ command", async ({
   page,
 }) => {
   const { btnRun, queryInput } = await getCommonElements(page);
-  await queryInput.fill("some invalid jq command");
+  await queryInput.fill("\\(.foo)");
   await btnRun.click();
 
   const { errorContainer } = getErrorContainer(page);
@@ -75,9 +75,7 @@ test("It will display an error when the query is not a JQ command", async ({
   expect(
     await errorContainer.textContent(),
     "the error message should inform about an invalid json"
-  ).toContain(
-    'error : error executing JQ command: failed to evaluate jq/js: error executing jq query some invalid jq command: unexpected token "invalid"'
-  );
+  ).toContain("root : invalid 'jx': yaml: found unknown escape character");
 
   await queryInput.fill("changed the query");
   await expect(
@@ -108,7 +106,7 @@ test("It will display an error when the input is not a valid JSON", async ({
     await errorContainer.textContent(),
     "the error message should inform about an invalid json"
   ).toContain(
-    "error : invalid json data: invalid character 's' looking for beginning of value"
+    "root : invalid 'data': invalid character 's' looking for beginning of value"
   );
 
   await inputTextContainer.click();
