@@ -5,7 +5,6 @@ import config from '../common/config'
 import helpers from '../common/helpers'
 import request from '../common/request'
 import { retry10 } from '../common/retry'
-import regex from "../common/regex";
 
 const namespace = basename(__filename)
 
