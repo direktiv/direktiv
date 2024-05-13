@@ -45,7 +45,7 @@ func (hp *HeaderManipulationPlugin) Execute(w http.ResponseWriter, r *http.Reque
 		r.Header.Del(h.Name)
 	}
 
-	return true
+	return r, nil
 }
 
 func (hp *HeaderManipulationPlugin) Type() string {

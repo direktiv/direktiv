@@ -1,11 +1,11 @@
 package inbound
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins"
 )
 
@@ -34,35 +34,24 @@ func (acl *ACLPlugin) Type() string {
 }
 
 func (acl *ACLPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, error) {
+	c := gateway2.ParseRequestActiveConsumer(r)
 	if c == nil {
-		deny(r.Context(), "missing consumer", w)
-
-		return false
+		return nil, fmt.Errorf("missing consumer")
 	}
-
 	if result(acl.AllowGroups, c.Groups) {
-		return true
+		return r, nil
 	}
-
 	if result(acl.DenyGroups, c.Groups) {
-		deny(r.Context(), "group", w)
-
-		return false
+		return nil, fmt.Errorf("denied user groups")
 	}
-
 	if result(acl.AllowTags, c.Tags) {
-		return true
+		return r, nil
 	}
-
 	if result(acl.DenyTags, c.Tags) {
-		deny(r.Context(), "tag", w)
-
-		return false
+		return nil, fmt.Errorf("denied user tags")
 	}
 
-	deny(r.Context(), "fallback", w)
-
-	return false
+	return nil, fmt.Errorf("denied user")
 }
 
 func result(userValues []string, configValues []string) bool {
@@ -76,11 +65,6 @@ func result(userValues []string, configValues []string) bool {
 	}
 
 	return false
-}
-
-func deny(ctx context.Context, t string, w http.ResponseWriter) {
-	msg := fmt.Sprintf("access denied by %s", t)
-	plugins.ReportError(ctx, w, http.StatusForbidden, msg, fmt.Errorf("forbidden"))
 }
 
 func init() {
