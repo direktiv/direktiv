@@ -1,11 +1,13 @@
 package plugins
 
 import (
+	"errors"
 	"fmt"
 	"log/slog"
 	"os"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/mitchellh/mapstructure"
 )
 
 type Factory func(config core.PluginConfigV2) (core.PluginV2, error)
@@ -27,4 +29,13 @@ func NewPlugin(config core.PluginConfigV2) (core.PluginV2, error) {
 	}
 
 	return f(config)
+}
+
+func ConvertConfig(config map[string]any, target any) error {
+	err := mapstructure.Decode(config, target)
+	if err != nil {
+		return errors.Join(err, errors.New("configuration invalid"))
+	}
+
+	return nil
 }

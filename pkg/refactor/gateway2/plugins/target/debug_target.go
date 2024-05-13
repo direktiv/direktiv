@@ -49,7 +49,6 @@ func (ba *DebugPlugin) Config() interface{} {
 	return nil
 }
 
-//nolint:gochecknoinits
 func init() {
 	plugins.RegisterPlugin(debugPluginName, NewDebugPlugin)
 }
