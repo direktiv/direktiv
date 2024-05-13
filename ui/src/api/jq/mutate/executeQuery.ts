@@ -1,4 +1,8 @@
-import { JqQueryResult, JqQueryResultType } from "../schema";
+import {
+  ExecuteJqueryPayloadType,
+  JqQueryResult,
+  JqQueryResultType,
+} from "../schema";
 
 import { apiFactory } from "~/api/apiFactory";
 import { encode } from "js-base64";
@@ -6,12 +10,7 @@ import { getMessageFromApiError } from "~/api/errorHandling";
 import { useApiKey } from "~/util/store/apiKey";
 import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 
-export type ExecuteJqueryPayload = {
-  jx: string;
-  data: string;
-};
-
-export const executeJquery = apiFactory<ExecuteJqueryPayload>({
+export const executeJquery = apiFactory<ExecuteJqueryPayloadType>({
   url: ({ baseUrl }: { baseUrl?: string }) => `${baseUrl ?? ""}/api/v2/jx`,
   method: "POST",
   schema: JqQueryResult,
@@ -26,7 +25,7 @@ export const useExecuteJQuery = ({
 } = {}) => {
   const apiKey = useApiKey();
   return useMutationWithPermissions({
-    mutationFn: ({ data, jx }: ExecuteJqueryPayload) =>
+    mutationFn: ({ data, jx }: ExecuteJqueryPayloadType) =>
       executeJquery({
         apiKey: apiKey ?? undefined,
         urlParams: {},

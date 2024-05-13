@@ -23,3 +23,12 @@ export const JqQueryResult = z.object({
 });
 
 export type JqQueryResultType = z.infer<typeof JqQueryResult>;
+
+export const ExecuteJqueryPayloadSchema = z.object({
+  jx: z.string(),
+  data: z.string(),
+});
+
+export type ExecuteJqueryPayloadType = z.infer<
+  typeof ExecuteJqueryPayloadSchema
+>;
