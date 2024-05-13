@@ -100,5 +100,5 @@ func (ba *BasicAuthPlugin) Config() interface{} {
 }
 
 func init() {
-	plugins.RegisterPlugin(basicAuthPluginName, NewBasicAuthPlugin)
+	plugins.RegisterPlugin(&BasicAuthPlugin{})
 }

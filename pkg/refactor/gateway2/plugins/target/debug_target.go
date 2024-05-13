@@ -50,5 +50,5 @@ func (ba *DebugPlugin) Config() interface{} {
 }
 
 func init() {
-	plugins.RegisterPlugin(debugPluginName, NewDebugPlugin)
+	plugins.RegisterPlugin(&DebugPlugin{})
 }
