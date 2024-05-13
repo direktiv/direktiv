@@ -1,14 +1,13 @@
 package auth
 
 import (
-	"fmt"
+	"context"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
 	"log/slog"
 	"net/http"
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway2/consumer"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins"
 )
 
@@ -49,54 +48,51 @@ func NewKeyAuthPlugin(config core.PluginConfigV2) (core.PluginV2, error) {
 }
 
 func (ka *KeyAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, error) {
-	key := r.Header.Get(ka.config.KeyName)
+	// check request is already authenticated
+	if gateway2.ReadActiveConsumerFromContext(r) != nil {
+		return r, nil
+	}
 
+	key := r.Header.Get(ka.config.KeyName)
 	// no basic auth provided
 	if key == "" {
-		return true
+		return r, nil
 	}
 
-	gwObj := r.Context().Value(plugins.ConsumersParamCtxKey)
-	if gwObj == nil {
-		slog.Debug("no consumer list in context")
-
-		return true
-	}
-
-	consumerList, ok := gwObj.(*consumer.List)
-	if !ok {
-		plugins.ReportError(r.Context(), w, http.StatusInternalServerError,
-			"consumerlist", fmt.Errorf("wrong object in context"))
-
-		return false
-	}
-	consumer := consumerList.FindByAPIKey(key)
-
-	// no consumer with that name
-	if consumer == nil {
+	consumerList := gateway2.ReadConsumersListFromContext(r)
+	if len(consumerList) == 0 {
 		slog.Debug("no consumer configured for api key")
 
-		return true
+		return r, nil
+	}
+	c := core.FindConsumerByApiKey(key, consumerList)
+
+	// no consumer with that name
+	if c == nil {
+		slog.Debug("no consumer configured for api key")
+
+		return r, nil
 	}
 
-	if consumer.APIKey == key {
-		*c = *consumer
+	if c.APIKey == key {
+		// set active comsumer.
+		r = r.WithContext(context.WithValue(r.Context(), core.GatewayCtxKeyActiveConsumer, c))
 
 		// set headers if configured.
 		if ka.config.AddUsernameHeader {
-			r.Header.Set(plugins.ConsumerUserHeader, c.Username)
+			r.Header.Set(gateway2.ConsumerUserHeader, c.Username)
 		}
 
 		if ka.config.AddTagsHeader && len(c.Tags) > 0 {
-			r.Header.Set(plugins.ConsumerTagsHeader, strings.Join(c.Tags, ","))
+			r.Header.Set(gateway2.ConsumerTagsHeader, strings.Join(c.Tags, ","))
 		}
 
 		if ka.config.AddGroupsHeader && len(c.Groups) > 0 {
-			r.Header.Set(plugins.ConsumerGroupsHeader, strings.Join(c.Groups, ","))
+			r.Header.Set(gateway2.ConsumerGroupsHeader, strings.Join(c.Groups, ","))
 		}
 	}
 
-	return true
+	return r, nil
 }
 
 func (ka *KeyAuthPlugin) Config() interface{} {

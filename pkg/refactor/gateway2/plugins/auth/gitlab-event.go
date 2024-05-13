@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
 	"net/http"
 
@@ -39,17 +40,23 @@ func (p *GitlabWebhookPlugin) Config() interface{} {
 }
 
 func (p *GitlabWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, error) {
+	// check request is already authenticated
+	if gateway2.ReadActiveConsumerFromContext(r) != nil {
+		return r, nil
+	}
+
 	secret := r.Header.Get(GitlabHeaderName)
 
 	if secret != p.config.Secret {
-		return false
+		return r, nil
 	}
 
-	*c = core.ConsumerFile{
+	c := &core.ConsumerFile{
 		Username: "gitlab",
 	}
+	r = r.WithContext(context.WithValue(r.Context(), core.GatewayCtxKeyActiveConsumer, c))
 
-	return true
+	return r, nil
 }
 
 func (*GitlabWebhookPlugin) Type() string {

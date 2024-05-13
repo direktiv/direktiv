@@ -2,6 +2,7 @@ package auth
 
 import (
 	"bytes"
+	"context"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
 	"io"
 	"log/slog"
@@ -42,20 +43,24 @@ func (p *GithubWebhookPlugin) Config() interface{} {
 }
 
 func (p *GithubWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, error) {
+	// check request is already authenticated
+	if gateway2.ReadActiveConsumerFromContext(r) != nil {
+		return r, nil
+	}
+
 	payload, err := github.ValidatePayload(r, []byte(p.config.Secret))
 	if err != nil {
-		slog.Error("can verify payload", "err", err)
+		slog.Error("cannot verify payload", "err", err)
 
 		return r, nil
 	}
 
 	// reset body with payload
 	r.Body = io.NopCloser(bytes.NewBuffer(payload))
-	if c != nil {
-		*c = core.ConsumerFile{
-			Username: "github",
-		}
+	c := &core.ConsumerFile{
+		Username: "github",
 	}
+	r = r.WithContext(context.WithValue(r.Context(), core.GatewayCtxKeyActiveConsumer, c))
 
 	return r, nil
 }

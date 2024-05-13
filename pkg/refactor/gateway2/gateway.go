@@ -93,3 +93,29 @@ func (m *manager) interpolateConsumersList(list []core.ConsumerV2) error {
 
 	return nil
 }
+
+func ReadConsumersListFromContext(r *http.Request) []core.ConsumerV2 {
+	res := r.Context().Value(core.GatewayCtxKeyConsumers)
+	if res == nil {
+		return nil
+	}
+	consumerList, ok := res.([]core.ConsumerV2)
+	if !ok {
+		return nil
+	}
+
+	return consumerList
+}
+
+func ReadActiveConsumerFromContext(r *http.Request) *core.ConsumerV2 {
+	res := r.Context().Value(core.GatewayCtxKeyActiveConsumer)
+	if res == nil {
+		return nil
+	}
+	consumer, ok := res.(*core.ConsumerV2)
+	if !ok {
+		return nil
+	}
+
+	return consumer
+}
