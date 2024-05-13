@@ -26,14 +26,15 @@ import (
 )
 
 type NewMainArgs struct {
-	Config              *core.Config
-	Database            *database.SQLStore
-	PubSubBus           *pubsub.Bus
-	ConfigureWorkflow   func(data string) error
-	InstanceManager     *instancestore.InstanceManager
-	WakeInstanceByEvent events.WakeEventsWaiter
-	WorkflowStart       events.WorkflowStart
-	SyncNamespace       core.SyncNamespace
+	Config                       *core.Config
+	Database                     *database.SQLStore
+	PubSubBus                    *pubsub.Bus
+	ConfigureWorkflow            func(data string) error
+	InstanceManager              *instancestore.InstanceManager
+	WakeInstanceByEvent          events.WakeEventsWaiter
+	WorkflowStart                events.WorkflowStart
+	SyncNamespace                core.SyncNamespace
+	RenderAllStartEventListeners func(ctx context.Context, tx *database.SQLStore) error
 }
 
 func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
@@ -74,7 +75,7 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 	slog.Info("gateway manager initialized successfully")
 
 	// Create endpoint manager
-	gatewayManager2 := gateway2.NewManager()
+	gatewayManager2 := gateway2.NewManager(args.Database)
 	slog.Info("gateway manager2 initialized successfully")
 
 	// Create App
@@ -120,6 +121,13 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 		pubsub.WorkflowRename,
 	)
 
+	slog.Debug("Rendering event-listeners on server start")
+	err = args.RenderAllStartEventListeners(circuit.Context(), args.Database)
+	if err != nil {
+		slog.Error("rendering event listener on server start", "error", err)
+	}
+	slog.Debug("Completed rendering event-listeners on server start")
+
 	// endpoint manager
 	args.PubSubBus.Subscribe(func(_ string) {
 		gatewayManager.UpdateAll()
@@ -138,6 +146,25 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 	)
 	// initial loading of routes and consumers
 	gatewayManager.UpdateAll()
+
+	// endpoint manager
+	args.PubSubBus.Subscribe(func(_ string) {
+		renderGateway2(args.Database, gatewayManager2)
+	},
+		pubsub.EndpointCreate,
+		pubsub.EndpointUpdate,
+		pubsub.EndpointDelete,
+		pubsub.EndpointRename,
+		pubsub.ConsumerCreate,
+		pubsub.ConsumerDelete,
+		pubsub.ConsumerUpdate,
+		pubsub.ConsumerRename,
+		pubsub.NamespaceDelete,
+		pubsub.NamespaceCreate,
+		pubsub.MirrorSync,
+	)
+	// initial loading of routes and consumers
+	renderGateway2(args.Database, gatewayManager2)
 
 	// TODO: yassir, this subscribe need to be removed when /api/v2/namespace delete endpoint is migrated.
 	args.PubSubBus.Subscribe(func(ns string) {
@@ -230,6 +257,63 @@ func renderServiceManager(db *database.SQLStore, serviceManager core.ServiceMana
 		}
 	}
 	serviceManager.SetServices(funConfigList)
+}
+
+func renderGateway2(db *database.SQLStore, manager core.GatewayManagerV2) {
+	ctx := context.Background()
+	slog := slog.With("subscriber", "gateway2 file watcher")
+
+	fStore, dStore := db.FileStore(), db.DataStore()
+
+	nsList, err := dStore.Namespaces().GetAll(ctx)
+	if err != nil {
+		slog.Error("listing namespaces", "err", err)
+
+		return
+	}
+
+	consumers := []core.ConsumerV2{}
+	endpoints := []core.EndpointV2{}
+
+	for _, ns := range nsList {
+		slog = slog.With("namespace", ns.Name)
+		files, err := fStore.ForNamespace(ns.Name).ListDirektivFilesWithData(ctx)
+		if err != nil {
+			slog.Error("listing direktiv files", "err", err)
+
+			continue
+		}
+		for _, file := range files {
+			if file.Typ == filestore.FileTypeConsumer {
+				consumerFile, err := core.ParseConsumerFileV2(file.Data)
+				if err != nil {
+					// TODO: yassir log error here.
+					// slog.Error("parse consumer file", "err", err)
+
+					continue
+				}
+				consumers = append(consumers, core.ConsumerV2{
+					ConsumerFileV2: *consumerFile,
+					Namespace:      ns.Name,
+					FilePath:       file.Path,
+				})
+			} else if file.Typ == filestore.FileTypeEndpoint {
+				endpointFile, err := core.ParseEndpointFileV2(file.Data)
+				if err != nil {
+					// TODO: yassir log error here.
+					// slog.Error("parse endpoint file", "err", err)
+
+					continue
+				}
+				endpoints = append(endpoints, core.EndpointV2{
+					EndpointFileV2: *endpointFile,
+					Namespace:      ns.Name,
+					FilePath:       file.Path,
+				})
+			}
+		}
+	}
+	manager.SetEndpoints(endpoints, consumers)
 }
 
 func getWorkflowFunctionDefinitionsFromWorkflow(ns *datastore.Namespace, f *filestore.File) ([]*core.ServiceFileData, error) {

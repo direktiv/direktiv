@@ -39,12 +39,12 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
-          cache: false
+          cache: true
 
       - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v5
+        uses: golangci/golangci-lint-action@v6
         with:
-          version: v1.57
+          version: v1.58
 
   backend-test:
     runs-on: ubuntu-latest
@@ -56,6 +56,7 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
+          cache: true
 
       - name: Run unit tests
         run: |
@@ -64,7 +65,7 @@ jobs:
           DIREKTIV_APP: flow
 
   backend-build:
-    needs: [backend-license, backend-lint, backend-test]
+    needs: [ backend-license, backend-lint, backend-test ]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -141,7 +142,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
   backend-e2e:
-    needs: [backend-build]
+    needs: [ backend-build ]
     runs-on: ubuntu-latest
 
     timeout-minutes: 18
@@ -157,6 +158,8 @@ jobs:
           - type: api
             suit: gateway
           - type: api
+            suit: gateway2
+          - type: api
             suit: instances
           - type: api
             suit: kubernetes
@@ -171,14 +174,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Cache Ubuntu packages
-        uses: actions/cache@v4
-        with:
-          path: /var/cache/apt/archives
-          key: ${{ runner.os }}-apt-packages-${{ hashFiles('**/apt.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-apt-packages-
-
       - name: Setup k3s
         run: curl -sfL https://get.k3s.io | sh -s - --disable traefik --write-kubeconfig-mode=644
 
@@ -192,9 +187,6 @@ jobs:
         run: |
           helm repo add percona https://percona.github.io/percona-helm-charts/
           helm install --create-namespace -n postgres pg-operator percona/pg-operator --wait
-
-      - name: Add a postgres instance
-        run: |
           kubectl apply -f https://raw.githubusercontent.com/direktiv/direktiv/main/scripts/kubernetes/install/db/basic.yaml
 
       - name: Install Knative
@@ -205,19 +197,11 @@ jobs:
           kubectl apply --filename https://github.com/knative/net-contour/releases/download/knative-v1.11.1/contour.yaml
           kubectl delete namespace contour-external
 
-      - name: Cache Docker layers
-        id: docker-cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.docker
-          key: docker-${{ runner.os }}-${{ hashFiles('Dockerfile') }}
-          restore-keys: |
-            docker-${{ runner.os }}-
-
       - name: Wait for Direktiv pods to be ready
         run: |
           sleep 1
           kubectl wait -n postgres --for=condition=Ready pod -l app.kubernetes.io/instance=direktiv-cluster --timeout=120s
+
       - name: Generate dev.yaml file with database credentials
         run: |
           DB_HOST=$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "host"}}' | base64 --decode)
@@ -250,17 +234,8 @@ jobs:
           sleep 1
           kubectl wait --for=condition=Ready pod -l app.kubernetes.io/instance=direktiv --timeout=120s
 
-      - name: Get Internal IP
-        id: getInternalIP
-        run: |
-          internal_ip=$(kubectl get service direktiv-ingress-nginx-controller -o jsonpath='{.spec.clusterIP}')
-          echo "internal_ip=$internal_ip" >> $GITHUB_ENV
-
       - name: Set Environment Variables
-        run: echo "DIREKTIV_HOST=${{ env.internal_ip }}" >> $GITHUB_ENV
-
-      - name: Print DIREKTIV_HOST
-        run: echo "DIREKTIV_HOST is set to ${{ env.DIREKTIV_HOST }}"
+        run: echo "DIREKTIV_HOST=127.0.0.1:80" >> $GITHUB_ENV
 
       - name: Wait until API is healthy
         run: |
@@ -289,7 +264,7 @@ jobs:
       - name: Run Playwrite E2E tests
         if: matrix.sections.type == 'playwright'
         run: |
-          PLAYWRITE_SHARD=${{ matrix.sections.suit }} make docker-e2e-playwright
+          PLAYWRIGHT_SHARD=${{ matrix.sections.suit }} make docker-e2e-playwright
 
       - name: Show logs
         run: |
@@ -299,7 +274,7 @@ jobs:
         run: npm cache clean --force
 
   ui-e2e:
-    needs: [ui-build, backend-build]
+    needs: [ ui-build, backend-build ]
     runs-on: ubuntu-latest
 
     timeout-minutes: 18
@@ -321,14 +296,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Cache Ubuntu packages
-        uses: actions/cache@v4
-        with:
-          path: /var/cache/apt/archives
-          key: ${{ runner.os }}-apt-packages-${{ hashFiles('**/apt.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-apt-packages-
-
       - name: Setup k3s
         run: curl -sfL https://get.k3s.io | sh -s - --disable traefik --write-kubeconfig-mode=644
 
@@ -342,9 +309,6 @@ jobs:
         run: |
           helm repo add percona https://percona.github.io/percona-helm-charts/
           helm install --create-namespace -n postgres pg-operator percona/pg-operator --wait
-
-      - name: Add a postgres instance
-        run: |
           kubectl apply -f https://raw.githubusercontent.com/direktiv/direktiv/main/scripts/kubernetes/install/db/basic.yaml
 
       - name: Install Knative
@@ -355,19 +319,11 @@ jobs:
           kubectl apply --filename https://github.com/knative/net-contour/releases/download/knative-v1.11.1/contour.yaml
           kubectl delete namespace contour-external
 
-      - name: Cache Docker layers
-        id: docker-cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.docker
-          key: docker-${{ runner.os }}-${{ hashFiles('Dockerfile') }}
-          restore-keys: |
-            docker-${{ runner.os }}-
-
       - name: Wait for Direktiv pods to be ready
         run: |
           sleep 1
           kubectl wait -n postgres --for=condition=Ready pod -l app.kubernetes.io/instance=direktiv-cluster --timeout=120s
+
       - name: Generate dev.yaml file with database credentials
         run: |
           DB_HOST=$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "host"}}' | base64 --decode)
@@ -404,17 +360,8 @@ jobs:
           kubectl wait --for=condition=Ready pod -l app.kubernetes.io/instance=direktiv --timeout=120s
           kubectl wait --for=condition=Ready pod -l app.kubernetes.io/name=direktiv-frontend --timeout=120s
 
-      - name: Get Internal IP
-        id: getInternalIP
-        run: |
-          internal_ip=$(kubectl get service direktiv-ingress-nginx-controller -o jsonpath='{.spec.clusterIP}')
-          echo "internal_ip=$internal_ip" >> $GITHUB_ENV
-
       - name: Set Environment Variables
-        run: echo "DIREKTIV_HOST=${{ env.internal_ip }}" >> $GITHUB_ENV
-
-      - name: Print DIREKTIV_HOST
-        run: echo "DIREKTIV_HOST is set to ${{ env.DIREKTIV_HOST }}"
+        run: echo "DIREKTIV_HOST=127.0.0.1:80" >> $GITHUB_ENV
 
       - name: Wait until API is healthy
         run: |
@@ -443,7 +390,7 @@ jobs:
       - name: Run Playwrite E2E tests
         if: matrix.sections.type == 'playwright'
         run: |
-          PLAYWRITE_SHARD=${{ matrix.sections.suit }} make docker-e2e-playwright
+          PLAYWRIGHT_SHARD=${{ matrix.sections.suit }} make docker-e2e-playwright
 
       - name: Show logs
         run: |

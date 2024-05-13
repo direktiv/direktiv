@@ -27,7 +27,10 @@ const WorkspaceLayout: FC<WorkspaceLayoutProps> = ({
             "lg:grid-rows-[calc(100vh-13rem)]"
           )}
         >
-          <Card className="relative grid grid-rows-[auto,1fr,auto] p-5">
+          <Card
+            data-testid="instance-logs-container"
+            className="relative grid grid-rows-[auto,1fr,auto] p-5"
+          >
             {logComponent}
           </Card>
         </div>
@@ -54,7 +57,10 @@ const WorkspaceLayout: FC<WorkspaceLayoutProps> = ({
             "md:grid-cols-[minmax(430px,1fr)_1fr]"
           )}
         >
-          <Card className="relative grid grid-rows-[auto,1fr,auto] p-5 md:col-span-2">
+          <Card
+            data-testid="instance-logs-container"
+            className="relative grid grid-rows-[auto,1fr,auto] p-5 md:col-span-2"
+          >
             {logComponent}
           </Card>
           <Card className="flex">{diagramComponent}</Card>

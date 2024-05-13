@@ -1169,6 +1169,7 @@ func (h *flowHandler) WaitWorkflow(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// nolint:canonicalheader
 func ToGRPCCloudEvents(r *http.Request) ([]cloudevents.Event, error) {
 	var events []cloudevents.Event
 	ct := r.Header.Get("Content-type")

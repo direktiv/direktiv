@@ -70,11 +70,12 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
               })}
               id="password"
               type="password"
+              autoComplete="new-password"
             />
           </Fieldset>
         </div>
         <Fieldset
-          label={t("pages.explorer.consumer.editor.form.api_key")}
+          label={t("pages.explorer.consumer.editor.form.apiKey")}
           htmlFor="api-key"
         >
           <Input
@@ -83,6 +84,7 @@ export const Form: FC<FormProps> = ({ defaultConfig, children }) => {
             })}
             id="api-key"
             type="password"
+            autoComplete="new-password"
           />
         </Fieldset>
         <Fieldset label={t("pages.explorer.consumer.editor.form.groups")}>

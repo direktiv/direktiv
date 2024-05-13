@@ -28,10 +28,7 @@ var (
 // Evaluate evaluates the data against the query provided and returns the result.
 func Evaluate(data, query interface{}) ([]interface{}, error) {
 	if query == nil {
-		var out []interface{}
-		out = append(out, data)
-
-		return out, nil
+		return make([]interface{}, 0), nil
 	}
 
 	x, _ := json.Marshal(data)

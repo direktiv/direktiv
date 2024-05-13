@@ -138,6 +138,7 @@ func Run(circuit *core.Circuit) error {
 
 			return proc, nil
 		},
+		RenderAllStartEventListeners: renderAllStartEventListeners,
 	})
 	if err != nil {
 		return fmt.Errorf("lunching new main, err: %w", err)
@@ -544,7 +545,7 @@ func (srv *server) cronPoll() {
 }
 
 func (srv *server) cronPollerWorkflow(ctx context.Context, tx *database.SQLStore, file *filestore.File) {
-	ms, err := srv.validateRouter(ctx, tx, file)
+	ms, err := validateRouter(ctx, tx, file)
 	if err != nil {
 		slog.Error("Failed to validate Routing for a cron schedule.", "error", err)
 		return
