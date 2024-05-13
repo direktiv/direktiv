@@ -1,4 +1,4 @@
-import { EventListenerResponseSchema } from "../schema";
+import { EventListenersResponseSchema } from "../schema";
 import { QueryFunctionContext } from "@tanstack/react-query";
 import { apiFactory } from "~/api/apiFactory";
 import { eventListenerKeys } from "..";
@@ -24,7 +24,7 @@ const getUrl = ({
 export const getEventListeners = apiFactory({
   url: getUrl,
   method: "GET",
-  schema: EventListenerResponseSchema,
+  schema: EventListenersResponseSchema,
 });
 
 const fetchEventListeners = async ({

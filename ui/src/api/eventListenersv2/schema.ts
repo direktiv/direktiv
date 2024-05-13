@@ -44,7 +44,7 @@ const EventListenerSchema = z.object({
   triggerWorkflow: z.string().optional(), // workflow path
 });
 
-export const EventListenerResponseSchema = z.object({
+export const EventListenersResponseSchema = z.object({
   meta: z.object({
     total: z.number(),
   }),
@@ -52,6 +52,6 @@ export const EventListenerResponseSchema = z.object({
 });
 
 export type EventListenerSchemaType = z.infer<typeof EventListenerSchema>;
-export type EventListenerResponseSchemaType = z.infer<
-  typeof EventListenerResponseSchema
+export type EventListenersResponseSchemaType = z.infer<
+  typeof EventListenersResponseSchema
 >;
