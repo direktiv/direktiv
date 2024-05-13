@@ -28,7 +28,7 @@ type GithubWebhookPlugin struct {
 func NewGithubWebhookPlugin(config core.PluginConfigV2) (core.PluginV2, error) {
 	requestConvertConfig := &GithubWebhookPluginConfig{}
 
-	err := gateway2.ConvertConfig(config, requestConvertConfig)
+	err := plugins.ConvertConfig(config, requestConvertConfig)
 	if err != nil {
 		return nil, err
 	}

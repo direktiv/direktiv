@@ -37,7 +37,7 @@ func NewKeyAuthPlugin(config core.PluginConfigV2) (core.PluginV2, error) {
 		KeyName: keyName,
 	}
 
-	err := gateway2.ConvertConfig(config, keyAuthConfig)
+	err := plugins.ConvertConfig(config, keyAuthConfig)
 	if err != nil {
 		return nil, err
 	}

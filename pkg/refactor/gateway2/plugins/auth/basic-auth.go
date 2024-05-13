@@ -31,7 +31,7 @@ var _ core.PluginV2 = &BasicAuthPlugin{}
 func NewBasicAuthPlugin(config core.PluginConfigV2) (core.PluginV2, error) {
 	authConfig := &BasicAuthConfig{}
 
-	err := gateway2.ConvertConfig(config, authConfig)
+	err := plugins.ConvertConfig(config, authConfig)
 	if err != nil {
 		return nil, err
 	}

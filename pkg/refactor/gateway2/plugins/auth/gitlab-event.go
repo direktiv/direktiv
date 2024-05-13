@@ -25,7 +25,7 @@ type GitlabWebhookPlugin struct {
 func NewGitlabWebhookPlugin(config core.PluginConfigV2) (core.PluginV2, error) {
 	gitlabConfig := &GitlabWebhookPluginConfig{}
 
-	err := gateway2.ConvertConfig(config, gitlabConfig)
+	err := plugins.ConvertConfig(config, gitlabConfig)
 	if err != nil {
 		return nil, err
 	}

@@ -31,7 +31,7 @@ type SlackWebhookPlugin struct {
 func NewSlackWebhookPlugin(config core.PluginConfigV2) (core.PluginV2, error) {
 	slackWebhookConfig := &SlackWebhookPluginConfig{}
 
-	err := gateway2.ConvertConfig(config, slackWebhookConfig)
+	err := plugins.ConvertConfig(config, slackWebhookConfig)
 	if err != nil {
 		return nil, err
 	}
