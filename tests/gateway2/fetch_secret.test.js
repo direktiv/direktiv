@@ -37,7 +37,7 @@ states:
 		'/', 'c1.yaml', 'consumer', `
 direktiv_api: "consumer/v2"
 username: user1
-password: fetchSecret("foo")
+password: fetchSecret(foo)
 api_key: key1
 tags:
 - tag1
