@@ -66,7 +66,7 @@ func (rcp *RequestConvertPlugin) Execute(w http.ResponseWriter, r *http.Request)
 	}
 
 	// convert query params
-	if !rcp.config.OmitQueries {
+	if !rcp.OmitQueries {
 		values := r.URL.Query()
 		for k, v := range values {
 			response.QueryParams[k] = v
@@ -74,11 +74,11 @@ func (rcp *RequestConvertPlugin) Execute(w http.ResponseWriter, r *http.Request)
 	}
 
 	// convert headers
-	if !rcp.config.OmitHeaders {
+	if !rcp.OmitHeaders {
 		response.Headers = r.Header
 	}
 
-	if !rcp.config.OmitConsumer && c != nil {
+	if !rcp.OmitConsumer && c != nil {
 		response.Consumer.Username = c.Username
 		response.Consumer.Tags = c.Tags
 		response.Consumer.Groups = c.Groups
@@ -89,7 +89,7 @@ func (rcp *RequestConvertPlugin) Execute(w http.ResponseWriter, r *http.Request)
 		content = []byte("{}")
 		err     error
 	)
-	if r.Body != nil && !rcp.config.OmitBody {
+	if r.Body != nil && !rcp.OmitBody {
 		content, err = io.ReadAll(r.Body)
 		if err != nil {
 			slog.Error("can not process content",

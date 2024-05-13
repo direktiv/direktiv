@@ -30,18 +30,18 @@ func (hp *HeaderManipulationPlugin) NewInstance(config core.PluginConfigV2) (cor
 }
 
 func (hp *HeaderManipulationPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, error) {
-	for a := range hp.configuration.HeadersToAdd {
-		h := hp.configuration.HeadersToAdd[a]
+	for a := range hp.HeadersToAdd {
+		h := hp.HeadersToAdd[a]
 		r.Header.Add(h.Name, h.Value)
 	}
 
-	for a := range hp.configuration.HeadersToModify {
-		h := hp.configuration.HeadersToModify[a]
+	for a := range hp.HeadersToModify {
+		h := hp.HeadersToModify[a]
 		r.Header.Set(h.Name, h.Value)
 	}
 
-	for a := range hp.configuration.HeadersToRemove {
-		h := hp.configuration.HeadersToRemove[a]
+	for a := range hp.HeadersToRemove {
+		h := hp.HeadersToRemove[a]
 		r.Header.Del(h.Name)
 	}
 
