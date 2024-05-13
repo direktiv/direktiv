@@ -53,6 +53,7 @@ const JqPlaygroundPage: FC = () => {
     control,
     watch,
     setError,
+    clearErrors,
     setValue,
     formState: { errors },
   } = useForm<ExecuteJqueryPayloadType>({
@@ -125,6 +126,7 @@ const JqPlaygroundPage: FC = () => {
               placeholder={t("pages.jqPlayground.queryPlaceholder")}
               {...register("jx")}
               onChange={(e) => {
+                clearErrors();
                 register("jx").onChange(e);
                 storeQueryInLocalstorage(e.target.value);
               }}
@@ -170,6 +172,7 @@ const JqPlaygroundPage: FC = () => {
                       language="json"
                       onChange={(newData) => {
                         if (newData === undefined) return;
+                        clearErrors();
                         field.onChange(newData);
                         storeInputInLocalstorage(newData);
                       }}
