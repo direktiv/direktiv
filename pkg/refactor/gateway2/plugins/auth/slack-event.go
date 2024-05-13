@@ -26,7 +26,7 @@ type SlackWebhookPlugin struct {
 	config *SlackWebhookPluginConfig
 }
 
-func ConfigureSlackWebhook(config interface{}, _ string) (core.PluginInstance, error) {
+func NewSlackWebhookPlugin(config core.PluginConfigV2) (core.PluginV2, error) {
 	slackWebhookConfig := &SlackWebhookPluginConfig{}
 
 	err := gateway2.ConvertConfig(config, slackWebhookConfig)
@@ -100,5 +100,5 @@ func (*SlackWebhookPlugin) Type() string {
 
 //nolint:gochecknoinits
 func init() {
-	plugins.RegisterPlugin(SlackWebhookPluginName)
+	plugins.RegisterPlugin(SlackWebhookPluginName, NewSlackWebhookPlugin)
 }

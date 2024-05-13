@@ -33,7 +33,7 @@ type KeyAuthPlugin struct {
 	config *KeyAuthConfig
 }
 
-func ConfigureKeyAuthPlugin(config interface{}, _ string) (core.PluginInstance, error) {
+func NewKeyAuthPlugin(config core.PluginConfigV2) (core.PluginV2, error) {
 	keyAuthConfig := &KeyAuthConfig{
 		KeyName: KeyName,
 	}
@@ -111,5 +111,5 @@ func (ka *KeyAuthPlugin) Type() string {
 
 //nolint:gochecknoinits
 func init() {
-	plugins.RegisterPlugin(KeyAuthPluginName)
+	plugins.RegisterPlugin(KeyAuthPluginName, NewKeyAuthPlugin)
 }

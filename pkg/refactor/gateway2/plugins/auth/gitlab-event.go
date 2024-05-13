@@ -21,7 +21,7 @@ type GitlabWebhookPlugin struct {
 	config *GitlabWebhookPluginConfig
 }
 
-func ConfigureGitlabWebhook(config interface{}, _ string) (core.PluginInstance, error) {
+func NewGitlabWebhookPlugin(config core.PluginConfigV2) (core.PluginV2, error) {
 	gitlabConfig := &GitlabWebhookPluginConfig{}
 
 	err := gateway2.ConvertConfig(config, gitlabConfig)
@@ -58,5 +58,5 @@ func (*GitlabWebhookPlugin) Type() string {
 
 //nolint:gochecknoinits
 func init() {
-	plugins.RegisterPlugin(GitlabWebhookPluginName)
+	plugins.RegisterPlugin(GitlabWebhookPluginName, NewGitlabWebhookPlugin)
 }
