@@ -107,7 +107,7 @@ func ReadConsumersListFromContext(r *http.Request) []core.ConsumerV2 {
 	return consumerList
 }
 
-func ReadActiveConsumerFromContext(r *http.Request) *core.ConsumerV2 {
+func ParseRequestActiveConsumer(r *http.Request) *core.ConsumerV2 {
 	res := r.Context().Value(core.GatewayCtxKeyActiveConsumer)
 	if res == nil {
 		return nil

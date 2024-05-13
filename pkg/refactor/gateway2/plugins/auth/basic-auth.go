@@ -43,7 +43,7 @@ func NewBasicAuthPlugin(config core.PluginConfigV2) (core.PluginV2, error) {
 
 func (ba *BasicAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, error) {
 	// check request is already authenticated
-	if gateway2.ReadActiveConsumerFromContext(r) != nil {
+	if gateway2.ParseRequestActiveConsumer(r) != nil {
 		return r, nil
 	}
 	user, pwd, ok := r.BasicAuth()
