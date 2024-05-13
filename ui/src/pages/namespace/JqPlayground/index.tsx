@@ -5,11 +5,12 @@ import {
   Play,
   PlaySquare,
 } from "lucide-react";
+import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import {
-  ExecuteJqueryPayload,
-  useExecuteJQuery,
-} from "~/api/jq/mutate/executeQuery";
-import { FC, useState } from "react";
+  ExecuteJqueryPayloadSchema,
+  ExecuteJqueryPayloadType,
+} from "~/api/jq/schema";
+import { FC, useRef, useState } from "react";
 import {
   useJqPlaygroundActions,
   useJqPlaygroundInput,
@@ -25,8 +26,13 @@ import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { decode } from "js-base64";
 import { prettifyJsonString } from "~/util/helpers";
+import { useExecuteJQuery } from "~/api/jq/mutate/executeQuery";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+const defaultJx = ".";
+const defaultData = "{}";
 
 const JqPlaygroundPage: FC = () => {
   const { t } = useTranslation();
@@ -35,62 +41,57 @@ const JqPlaygroundPage: FC = () => {
     setInput: storeInputInLocalstorage,
     setQuery: storeQueryInLocalstorage,
   } = useJqPlaygroundActions();
+  const jxFromStore = useJqPlaygroundQuery() ?? defaultJx;
+  const dataFromStore = useJqPlaygroundInput() ?? defaultData;
+  const formRef = useRef<HTMLFormElement>(null);
 
-  const [jx, setJx] = useState(useJqPlaygroundQuery() ?? ".");
-  const [data, setData] = useState(useJqPlaygroundInput() ?? "{}");
   const [output, setOutput] = useState("");
-  const [error, setError] = useState("");
+
+  const {
+    register,
+    handleSubmit,
+    control,
+    watch,
+    setError,
+    setValue,
+    formState: { errors },
+  } = useForm<ExecuteJqueryPayloadType>({
+    resolver: zodResolver(ExecuteJqueryPayloadSchema),
+    defaultValues: {
+      data: dataFromStore,
+      jx: jxFromStore,
+    },
+  });
 
   const { mutate: executeQuery, isPending } = useExecuteJQuery({
     onSuccess: (data) => {
+      setOutput("");
       if (data.data.output[0]) {
         setOutput(decode(data.data.output[0]));
       }
     },
     onError: (error) => {
       setOutput("");
-      if (error) {
-        setError(error);
-      }
+      setError("root", {
+        message: error,
+      });
     },
   });
 
-  const submitQuery = (payload: ExecuteJqueryPayload) => {
-    /**
-     * Always clear the output before submiting a new query to the backend.
-     * Otherwise when the request takes longer or produces an error the input
-     * and output displayed to the user would not match.
-     */
+  const onSubmit: SubmitHandler<ExecuteJqueryPayloadType> = (params) => {
     setOutput("");
-    executeQuery(payload);
+    executeQuery(params);
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    submitQuery({ jx, data });
-  };
-
-  const changeQuery = (newQuery: string) => {
-    setJx(newQuery);
-    storeQueryInLocalstorage(newQuery);
-    setError("");
-  };
-
-  const updateInput = (newData: string | undefined) => {
-    if (newData === undefined) return;
-    setData(newData);
-    storeInputInLocalstorage(newData);
-    setError("");
-  };
-
-  const onRunSnippet = ({ query, input }: { query: string; input: string }) => {
+  const onRunSnippet = (params: ExecuteJqueryPayloadType) => {
     window.scrollTo({ top: 0, behavior: "smooth" });
-    updateInput(prettifyJsonString(input));
-    changeQuery(query);
-    submitQuery({ jx, data });
+    setValue("data", prettifyJsonString(params.data));
+    setValue("jx", params.jx);
+    formRef.current?.requestSubmit();
   };
 
-  const formId = "jq-playground-form";
+  const currentData = watch("data");
+
   return (
     <div className="flex grow flex-col gap-y-4 p-5">
       <div className="flex">
@@ -114,16 +115,19 @@ const JqPlaygroundPage: FC = () => {
       </Card>
       <Card className="p-5">
         <form
-          id={formId}
-          onSubmit={handleSubmit}
+          ref={formRef}
+          onSubmit={handleSubmit(onSubmit)}
           className="flex flex-col gap-5"
         >
           <div className="flex flex-col gap-5 sm:flex-row">
             <Input
               data-testid="jq-query-input"
               placeholder={t("pages.jqPlayground.queryPlaceholder")}
-              value={jx}
-              onChange={(e) => changeQuery(e.target.value)}
+              {...register("jx")}
+              onChange={(e) => {
+                register("jx").onChange(e);
+                storeQueryInLocalstorage(e.target.value);
+              }}
             />
             <Button
               data-testid="jq-run-btn"
@@ -137,7 +141,7 @@ const JqPlaygroundPage: FC = () => {
               {t("pages.jqPlayground.submitBtn")}
             </Button>
           </div>
-          {error && <FormErrors errors={{ error: { message: error } }} />}
+          <FormErrors errors={errors} className="mb-5" />
           <div className="flex flex-col gap-5 md:flex-row">
             <Card className="flex h-96 w-full flex-col p-4" noShadow>
               <div className="mb-5 flex">
@@ -146,22 +150,32 @@ const JqPlaygroundPage: FC = () => {
                   {t("pages.jqPlayground.input")}
                 </h3>
                 <CopyButton
-                  value={data}
+                  value={currentData}
                   buttonProps={{
                     variant: "outline",
                     size: "sm",
                     type: "button",
-                    disabled: !data,
+                    disabled: !currentData,
                     "data-testid": "copy-input-btn",
                   }}
                 />
               </div>
               <div data-testid="jq-input-editor" className="flex grow">
-                <Editor
-                  value={data}
-                  language="json"
-                  onChange={updateInput}
-                  theme={theme ?? undefined}
+                <Controller
+                  control={control}
+                  name="data"
+                  render={({ field }) => (
+                    <Editor
+                      value={field.value}
+                      language="json"
+                      onChange={(newData) => {
+                        if (newData === undefined) return;
+                        field.onChange(newData);
+                        storeInputInLocalstorage(newData);
+                      }}
+                      theme={theme ?? undefined}
+                    />
+                  )}
                 />
               </div>
             </Card>

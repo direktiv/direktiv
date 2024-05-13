@@ -2,13 +2,14 @@ import { Bookmark, Play } from "lucide-react";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
+import { ExecuteJqueryPayloadType } from "~/api/jq/schema";
 import exampleSnippets from "./exampleSnippets";
 import { useTranslation } from "react-i18next";
 
 const Examples = ({
   onRunSnippet,
 }: {
-  onRunSnippet: (params: { query: string; input: string }) => void;
+  onRunSnippet: (params: ExecuteJqueryPayloadType) => void;
 }) => {
   const { t } = useTranslation();
   return (
@@ -18,7 +19,7 @@ const Examples = ({
         {t("pages.jqPlayground.examples.title")}
       </h3>
       <div className="grid grid-cols-1 gap-5 text-sm sm:grid-cols-2 lg:grid-cols-3">
-        {exampleSnippets.map(({ query, key, input, example }) => (
+        {exampleSnippets.map(({ key, example, ...params }) => (
           <Card
             key={key}
             className="flex items-center gap-2 p-5"
@@ -31,12 +32,7 @@ const Examples = ({
             </div>
             <Button
               data-testid={`jq-run-snippet-${key}-btn`}
-              onClick={() =>
-                onRunSnippet({
-                  query,
-                  input,
-                })
-              }
+              onClick={() => onRunSnippet(params)}
             >
               <Play />
               {t("pages.jqPlayground.examples.buttonLabel")}
