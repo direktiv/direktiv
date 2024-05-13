@@ -46,8 +46,7 @@ const EventListenerSchema = z.object({
 
 export const EventListenerResponseSchema = z.object({
   meta: z.object({
-    previousPage: z.string().nullable(),
-    startingFrom: z.string().nullable(),
+    total: z.number(),
   }),
   data: z.array(EventListenerSchema),
 });

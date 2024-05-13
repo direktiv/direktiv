@@ -9,10 +9,17 @@ import useQueryWithPermissions from "~/api/useQueryWithPermissions";
 const getUrl = ({
   namespace,
   baseUrl,
+  limit,
+  offset,
 }: {
   baseUrl?: string;
   namespace: string;
-}) => `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/events/listeners`;
+  limit: number;
+  offset: number;
+}) =>
+  `${
+    baseUrl ?? ""
+  }/api/v2/namespaces/${namespace}/events/listeners?limit=${limit}&offset=${offset}`;
 
 export const getEventListeners = apiFactory({
   url: getUrl,
@@ -21,16 +28,22 @@ export const getEventListeners = apiFactory({
 });
 
 const fetchEventListeners = async ({
-  queryKey: [{ apiKey, namespace }],
+  queryKey: [{ apiKey, namespace, limit, offset }],
 }: QueryFunctionContext<
   ReturnType<(typeof eventListenerKeys)["eventListenersList"]>
 >) =>
   getEventListeners({
     apiKey,
-    urlParams: { namespace },
+    urlParams: { namespace, limit, offset },
   });
 
-export const useEventListeners = () => {
+export const useEventListeners = ({
+  limit,
+  offset,
+}: {
+  limit: number;
+  offset: number;
+}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();
 
@@ -41,6 +54,8 @@ export const useEventListeners = () => {
   return useQueryWithPermissions({
     queryKey: eventListenerKeys.eventListenersList(namespace, {
       apiKey: apiKey ?? undefined,
+      limit,
+      offset,
     }),
     queryFn: fetchEventListeners,
     enabled: !!namespace,

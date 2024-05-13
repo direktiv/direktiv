@@ -12,8 +12,9 @@ import { useTranslation } from "react-i18next";
 const pageSize = 10;
 
 const ListenersList = () => {
-  const { data, isFetched, isAllowed, noPermissionMessage } =
-    useEventListeners();
+  const { data, isFetched, isAllowed, noPermissionMessage } = useEventListeners(
+    { limit: 10, offset: 0 }
+  );
 
   const { t } = useTranslation();
 
