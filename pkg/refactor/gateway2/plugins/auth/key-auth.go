@@ -74,10 +74,10 @@ func (ka *KeyAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.
 	}
 
 	if c.APIKey == key {
-		// set active comsumer.
+		// set active consumer
 		r = r.WithContext(context.WithValue(r.Context(), core.GatewayCtxKeyActiveConsumer, c))
 
-		// set headers if configured.
+		// set headers if configured
 		if ka.config.AddUsernameHeader {
 			r.Header.Set(gateway2.ConsumerUserHeader, c.Username)
 		}
