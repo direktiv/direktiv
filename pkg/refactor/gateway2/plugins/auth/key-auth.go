@@ -48,9 +48,7 @@ func NewKeyAuthPlugin(config core.PluginConfigV2) (core.PluginV2, error) {
 	}, nil
 }
 
-func (ka *KeyAuthPlugin) ExecutePlugin(c *core.ConsumerFile,
-	w http.ResponseWriter, r *http.Request,
-) bool {
+func (ka *KeyAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, error) {
 	key := r.Header.Get(ka.config.KeyName)
 
 	// no basic auth provided

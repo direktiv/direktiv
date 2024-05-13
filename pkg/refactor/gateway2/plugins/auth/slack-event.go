@@ -43,7 +43,7 @@ func (p *SlackWebhookPlugin) Config() interface{} {
 	return p.config
 }
 
-func (p *SlackWebhookPlugin) ExecutePlugin(c *core.ConsumerFile, _ http.ResponseWriter, r *http.Request) bool {
+func (p *SlackWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, error) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		slog.Error("can not read slack body", "err", err)

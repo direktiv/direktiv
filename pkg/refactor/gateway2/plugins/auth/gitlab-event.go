@@ -38,7 +38,7 @@ func (p *GitlabWebhookPlugin) Config() interface{} {
 	return p.config
 }
 
-func (p *GitlabWebhookPlugin) ExecutePlugin(c *core.ConsumerFile, _ http.ResponseWriter, r *http.Request) bool {
+func (p *GitlabWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, error) {
 	secret := r.Header.Get(GitlabHeaderName)
 
 	if secret != p.config.Secret {
