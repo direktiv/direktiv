@@ -150,5 +150,5 @@ func (rcp *RequestConvertPlugin) Type() string {
 }
 
 func init() {
-	plugins.RegisterPlugin(RequestConvertPluginName, NewRequestConvertPlugin)
+	plugins.RegisterPlugin(&RequestConvertPlugin{})
 }

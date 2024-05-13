@@ -99,5 +99,5 @@ func deny(ctx context.Context, t string, w http.ResponseWriter) {
 }
 
 func init() {
-	plugins.RegisterPlugin(ACLPluginName, NewACLConfig)
+	plugins.RegisterPlugin(&ACLPlugin{})
 }

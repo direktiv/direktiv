@@ -67,5 +67,5 @@ func (hp *HeaderManipulationPlugin) Type() string {
 }
 
 func init() {
-	plugins.RegisterPlugin(HeaderManipulationPlugin, NewHeaderManipulationPlugin)
+	plugins.RegisterPlugin(&HeaderManipulationPlugin{})
 }

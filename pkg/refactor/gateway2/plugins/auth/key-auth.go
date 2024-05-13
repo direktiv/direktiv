@@ -103,5 +103,5 @@ func (ka *KeyAuthPlugin) Type() string {
 }
 
 func init() {
-	plugins.RegisterPlugin(keyAuthPluginName, NewKeyAuthPlugin)
+	plugins.RegisterPlugin(&KeyAuthPlugin{})
 }

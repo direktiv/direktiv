@@ -70,5 +70,5 @@ func (*GithubWebhookPlugin) Type() string {
 }
 
 func init() {
-	plugins.RegisterPlugin(githubWebhookPluginName, NewGithubWebhookPlugin)
+	plugins.RegisterPlugin(&GithubWebhookPlugin{})
 }

@@ -217,5 +217,5 @@ func addHeader(getHeader, setHeader http.Header) {
 }
 
 func init() {
-	plugins.RegisterPlugin(JSInboundPluginName, NewJSInboundConfig)
+	plugins.RegisterPlugin(&JSInboundPlugin{})
 }

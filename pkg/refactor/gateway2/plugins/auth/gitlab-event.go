@@ -63,5 +63,5 @@ func (*GitlabWebhookPlugin) Type() string {
 }
 
 func init() {
-	plugins.RegisterPlugin(gitlabWebhookPluginName, NewGitlabWebhookPlugin)
+	plugins.RegisterPlugin(&GitlabWebhookPlugin{})
 }

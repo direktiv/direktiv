@@ -107,5 +107,5 @@ func (*SlackWebhookPlugin) Type() string {
 }
 
 func init() {
-	plugins.RegisterPlugin(SlackWebhookPluginName, NewSlackWebhookPlugin)
+	plugins.RegisterPlugin(&SlackWebhookPlugin{})
 }
