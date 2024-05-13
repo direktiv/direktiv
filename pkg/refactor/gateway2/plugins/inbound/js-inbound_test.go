@@ -9,8 +9,8 @@ import (
 	"testing"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/inbound"
+	"github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins"
+	"github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins/inbound"
 	"github.com/stretchr/testify/assert"
 )
 
