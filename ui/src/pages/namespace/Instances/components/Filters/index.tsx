@@ -218,7 +218,7 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
                       )}
                       onChange={(value) =>
                         setFilter({
-                          [field]: { field, value },
+                          [field]: { field, type: field, value },
                         })
                       }
                     />
@@ -240,7 +240,7 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
                   <RefineTime
                     date={dateValue}
                     onChange={(newDate) => {
-                      setFilter({ [field]: newDate });
+                      setFilter({ [field]: { value: newDate, type: field } });
                     }}
                   />
                 </PopoverContent>
@@ -334,7 +334,7 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
                   )}
                   onChange={(value) =>
                     setFilter({
-                      [selectedField]: { selectedField, value },
+                      [selectedField]: { type: selectedField, value },
                     })
                   }
                 />
