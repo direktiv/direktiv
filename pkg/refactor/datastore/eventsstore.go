@@ -118,7 +118,6 @@ type EventListenerStore interface {
 	GetAll(ctx context.Context) ([]*EventListener, error)
 	// return EventListeners for a given namespace with the total row count for pagination.
 	Get(ctx context.Context, namespace uuid.UUID, limit, offet int) ([]*EventListener, int, error)
-	GetOld(ctx context.Context, namespace string, t time.Time) ([]*EventListener, error)
 	// deletes EventListeners that have the deleted flag set.
 	Delete(ctx context.Context) error
 	DeleteByID(ctx context.Context, id uuid.UUID) error

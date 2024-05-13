@@ -276,7 +276,7 @@
   get:
     tags:
     - events
-    summary: Retrieve a list of the last 200 event listeners within a specific namespace.
+    summary: Retrieve a list of event listeners within a specific namespace.
     description: |
       This endpoint retrieves a list of the last 200 event listeners configured within the specified namespace. Event listeners are entities that listen for specific events within a workflow environment, allowing for event-driven architecture.
     parameters:
@@ -287,6 +287,16 @@
         schema:
             type: string
             pattern: '^(([a-z][a-z0-9_\-\.]*[a-z0-9])|([a-z]))$'
+      - name: limit
+        in: query
+        schema:
+          type: integer
+        required: true
+      - name: offset
+        in: query
+        schema:
+          type: integer
+        required: true
     responses:
       '200':
         description: OK
@@ -294,8 +304,7 @@
           'application/json':
             example:
               meta:
-                previousPage: '2024-04-25T13:39:00.01915Z'
-                startingFrom: '2024-01-16T01:44:08.128136Z'
+                total: 100
               data:
                 - id: '977a5b18-27bf-4914-b666-456cc0073ea9'
                   createdAt: '2024-04-25T20:55:00.956697Z'
@@ -312,13 +321,8 @@
                   type: object
                   nullable: true
                   properties:
-                    previousPage:
-                      type: string
-                      format: RFC3339Nano
-                      nullable: true
-                    startingFrom:
-                      type: string
-                      format: RFC3339Nano
+                    total:
+                      type: integer
                 data:
                   type: array
                   items: 

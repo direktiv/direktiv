@@ -63,7 +63,7 @@ states:
 	})
 
 	it(`listener should be regitered`, async () => {
-		const eventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/listener/`)
+		const eventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/listeners/`)
 			.send()
 		expect(eventListenerResponse.statusCode).toEqual(200)
 		expect(eventListenerResponse.body.data.length).toBeGreaterThan(0)
@@ -72,7 +72,7 @@ states:
 		tmpid = eventListenerResponse.body.data[0].id
 	})
 	it(`listener by id`, async () => {
-		const eventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/listener/${ tmpid }`)
+		const eventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/listeners/${ tmpid }`)
 			.send()
 		expect(eventListenerResponse.statusCode).toEqual(200)
 		expect(eventListenerResponse.body.data.id).toBe(tmpid)

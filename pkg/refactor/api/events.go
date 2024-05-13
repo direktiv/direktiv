@@ -27,8 +27,6 @@ type eventsController struct {
 	startWorkflow events.WorkflowStart
 }
 
-// func (engine *engine) StartWorkflow(ctx context.Context, namespace, path string, input []byte) (*instancestore.InstanceData, error) {
-
 func (c *eventsController) mountEventHistoryRouter(r chi.Router) {
 	r.Get("/", c.listEvents)         // Retrieve a list of events
 	r.Get("/subscribe", c.subscribe) // Retrieve a event updates via sse
@@ -204,26 +202,25 @@ func (c *eventsController) getEventListener(w http.ResponseWriter, r *http.Reque
 
 func (c *eventsController) listEventListeners(w http.ResponseWriter, r *http.Request) {
 	ns := extractContextNamespace(r)
-	starting := r.URL.Query().Get("before")
+	limit, err := strconv.Atoi(r.URL.Query().Get("limit"))
+	if err != nil {
+		writeBadrequestError(w, err)
 
-	t := time.Now().UTC()
-	if starting != "" {
-		co, err := time.Parse(time.RFC3339Nano, starting)
-		if err != nil {
-			writeInternalError(w, err)
-
-			return
-		}
-		t = co
+		return
 	}
-	data, err := c.store.EventListener().GetOld(r.Context(), ns.Name, t)
+	offset, err := strconv.Atoi(r.URL.Query().Get("offset"))
+	if err != nil {
+		writeBadrequestError(w, err)
+
+		return
+	}
+	data, count, err := c.store.EventListener().Get(r.Context(), ns.ID, limit, offset)
 	if err != nil {
 		writeInternalError(w, err)
 		return
 	}
 	metaInfo := map[string]any{
-		"previousPage": nil, // setting them to nil make ensure matching the specicied types for the clients
-		"startingFrom": nil,
+		"total": count,
 	}
 	if len(data) == 0 {
 		writeJSONWithMeta(w, []*datastore.Event{}, metaInfo)
@@ -236,12 +233,6 @@ func (c *eventsController) listEventListeners(w http.ResponseWriter, r *http.Req
 		res[i] = l
 	}
 	slices.Reverse(res)
-	var previousPage interface{} = res[0].CreatedAt.UTC().Format(time.RFC3339Nano)
-
-	metaInfo = map[string]any{
-		"previousPage": previousPage,
-		"startingFrom": starting,
-	}
 
 	writeJSONWithMeta(w, res, metaInfo)
 }
