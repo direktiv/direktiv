@@ -4,8 +4,6 @@ import (
 	"context"
 	"crypto/sha256"
 	"crypto/subtle"
-	"errors"
-	"log/slog"
 	"net/http"
 	"strings"
 
@@ -33,7 +31,7 @@ var _ core.PluginV2 = &BasicAuthPlugin{}
 func NewBasicAuthPlugin(config core.PluginConfigV2) (core.PluginV2, error) {
 	authConfig := &BasicAuthConfig{}
 
-	err := gateway2.ConvertConfig(config, authConfig)
+	err := plugins.ConvertConfig(config.Config, authConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -44,32 +42,23 @@ func NewBasicAuthPlugin(config core.PluginConfigV2) (core.PluginV2, error) {
 }
 
 func (ba *BasicAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, error) {
+	// check request is already authenticated
+	if gateway2.ParseRequestActiveConsumer(r) != nil {
+		return r, nil
+	}
 	user, pwd, ok := r.BasicAuth()
-
 	// no basic auth provided
 	if !ok {
 		return r, nil
 	}
 
-	slog.Debug("running basic-auth plugin", "user", user)
-
-	gwObj := r.Context().Value(core.GatewayCtxKeyConsumers)
-	if gwObj == nil {
-		slog.Debug("no consumer list in context", slog.String("user", user))
-
+	consumerList := gateway2.ParseRequestConsumersList(r)
+	if consumerList == nil {
 		return r, nil
 	}
-	consumerList, ok := gwObj.([]core.ConsumerV2)
-	if !ok {
-		return nil, errors.New("missing consumer list in context")
-	}
-	consumer := core.FindConsumerByUser(user, consumerList)
-
-	// no consumer with that name
+	consumer := gateway2.FindConsumerByUser(consumerList, user)
+	// no consumer matching auth name
 	if consumer == nil {
-		slog.Debug("no consumer configured",
-			slog.String("user", user))
-
 		return r, nil
 	}
 
@@ -110,7 +99,6 @@ func (ba *BasicAuthPlugin) Config() interface{} {
 	return ba.config
 }
 
-//nolint:gochecknoinits
 func init() {
 	plugins.RegisterPlugin(basicAuthPluginName, NewBasicAuthPlugin)
 }

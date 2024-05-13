@@ -2,12 +2,10 @@ package gateway2
 
 import (
 	"encoding/json"
-	"errors"
 	"net/http"
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/mitchellh/mapstructure"
 )
 
 const (
@@ -15,15 +13,6 @@ const (
 	ConsumerTagsHeader   = "Direktiv-Consumer-Tags"
 	ConsumerGroupsHeader = "Direktiv-Consumer-Groups"
 )
-
-func ConvertConfig(config any, target any) error {
-	err := mapstructure.Decode(config, target)
-	if err != nil {
-		return errors.Join(err, errors.New("configuration invalid"))
-	}
-
-	return nil
-}
 
 func hasActiveConsumer(r *http.Request) bool {
 	return r.Context().Value(core.GatewayCtxKeyActiveConsumer) != nil
@@ -85,4 +74,24 @@ func filterNamespacedEndpoints(endpoints []core.EndpointV2, namespace string) []
 	}
 
 	return list
+}
+
+func FindConsumerByUser(list []core.ConsumerV2, user string) *core.ConsumerV2 {
+	for _, item := range list {
+		if item.Username == user {
+			return &item
+		}
+	}
+
+	return nil
+}
+
+func FindConsumerByAPIKey(list []core.ConsumerV2, key string) *core.ConsumerV2 {
+	for _, item := range list {
+		if item.APIKey == key {
+			return &item
+		}
+	}
+
+	return nil
 }
