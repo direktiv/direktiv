@@ -45,10 +45,6 @@ func (ba *DebugPlugin) Type() string {
 	return debugPluginName
 }
 
-func (ba *DebugPlugin) Config() interface{} {
-	return nil
-}
-
 func init() {
 	plugins.RegisterPlugin(&DebugPlugin{})
 }

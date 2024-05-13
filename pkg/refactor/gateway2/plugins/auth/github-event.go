@@ -28,10 +28,6 @@ func (p *GithubWebhookPlugin) Construct(config core.PluginConfigV2) (core.Plugin
 	return pl, nil
 }
 
-func (p *GithubWebhookPlugin) Config() interface{} {
-	return p
-}
-
 func (p *GithubWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, error) {
 	// check request is already authenticated
 	if gateway2.ParseRequestActiveConsumer(r) != nil {

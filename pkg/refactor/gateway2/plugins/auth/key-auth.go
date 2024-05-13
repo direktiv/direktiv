@@ -84,10 +84,6 @@ func (ka *KeyAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.
 	return r, nil
 }
 
-func (ka *KeyAuthPlugin) Config() interface{} {
-	return ka
-}
-
 func (ka *KeyAuthPlugin) Type() string {
 	return "key-auth"
 }

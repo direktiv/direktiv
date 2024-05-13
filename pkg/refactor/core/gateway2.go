@@ -57,7 +57,6 @@ type PluginV2 interface {
 	Construct(config PluginConfigV2) (PluginV2, error)
 
 	Execute(w http.ResponseWriter, r *http.Request) (*http.Request, error)
-	Config() any
 	Type() string
 }
 

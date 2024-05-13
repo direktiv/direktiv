@@ -85,10 +85,6 @@ func (ba *BasicAuthPlugin) Type() string {
 	return "basic-auth"
 }
 
-func (ba *BasicAuthPlugin) Config() interface{} {
-	return ba
-}
-
 func init() {
 	plugins.RegisterPlugin(&BasicAuthPlugin{})
 }
