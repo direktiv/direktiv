@@ -66,6 +66,7 @@ test("the header of the instance page shows the relevant data for the workflow",
       path: simpleWorkflowName,
     })
   ).data.id;
+
   await page.goto(`/n/${namespace}/instances/${instanceId}`);
 
   const header = page.getByTestId("instance-header-container");
