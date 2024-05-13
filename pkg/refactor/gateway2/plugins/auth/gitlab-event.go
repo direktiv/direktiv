@@ -63,7 +63,6 @@ func (*GitlabWebhookPlugin) Type() string {
 	return githubWebhookPluginName
 }
 
-//nolint:gochecknoinits
 func init() {
 	plugins.RegisterPlugin(gitlabWebhookPluginName, NewGitlabWebhookPlugin)
 }

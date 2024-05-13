@@ -140,3 +140,8 @@ issues:
     - text: "don't use `init` function"
       linters:
         - init
+
+    # gateway plugins need to user init() function
+    - path: 'pkg/refactor/gateway2/plugins/.*'
+      linters:
+        - gochecknoinits

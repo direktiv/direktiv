@@ -106,7 +106,6 @@ func (*SlackWebhookPlugin) Type() string {
 	return githubWebhookPluginName
 }
 
-//nolint:gochecknoinits
 func init() {
 	plugins.RegisterPlugin(SlackWebhookPluginName, NewSlackWebhookPlugin)
 }

@@ -102,7 +102,6 @@ func (ka *KeyAuthPlugin) Type() string {
 	return keyAuthPluginName
 }
 
-//nolint:gochecknoinits
 func init() {
 	plugins.RegisterPlugin(keyAuthPluginName, NewKeyAuthPlugin)
 }

@@ -99,7 +99,6 @@ func (ba *BasicAuthPlugin) Config() interface{} {
 	return ba.config
 }
 
-//nolint:gochecknoinits
 func init() {
 	plugins.RegisterPlugin(basicAuthPluginName, NewBasicAuthPlugin)
 }
