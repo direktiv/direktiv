@@ -17,7 +17,7 @@ type GithubWebhookPlugin struct {
 	Secret string `mapstructure:"secret"`
 }
 
-func (p *GithubWebhookPlugin) Construct(config core.PluginConfigV2) (core.PluginV2, error) {
+func (p *GithubWebhookPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
 	pl := &GithubWebhookPlugin{}
 
 	err := plugins.ConvertConfig(config.Config, pl)

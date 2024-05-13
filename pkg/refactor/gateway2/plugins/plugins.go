@@ -26,7 +26,7 @@ func NewPlugin(config core.PluginConfigV2) (core.PluginV2, error) {
 		return nil, fmt.Errorf("unknow plugin '%s'", config.Typ)
 	}
 
-	return f.Construct(config)
+	return f.NewInstance(config)
 }
 
 func ConvertConfig(config map[string]any, target any) error {
