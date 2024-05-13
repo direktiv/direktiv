@@ -16,7 +16,7 @@ type DebugPlugin struct{}
 
 var _ core.PluginV2 = &DebugPlugin{}
 
-func NewDebugPlugin(config core.PluginConfigV2) (core.PluginV2, error) {
+func (ba *DebugPlugin) Construct(config core.PluginConfigV2) (core.PluginV2, error) {
 	return &DebugPlugin{}, nil
 }
 

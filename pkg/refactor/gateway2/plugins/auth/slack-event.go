@@ -28,7 +28,7 @@ type SlackWebhookPlugin struct {
 	config *SlackWebhookPluginConfig
 }
 
-func NewSlackWebhookPlugin(config core.PluginConfigV2) (core.PluginV2, error) {
+func (p *SlackWebhookPlugin) Construct(config core.PluginConfigV2) (core.PluginV2, error) {
 	slackWebhookConfig := &SlackWebhookPluginConfig{}
 
 	err := plugins.ConvertConfig(config.Config, slackWebhookConfig)

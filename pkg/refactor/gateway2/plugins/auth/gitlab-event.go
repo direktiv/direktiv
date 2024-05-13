@@ -22,7 +22,7 @@ type GitlabWebhookPlugin struct {
 	config *GitlabWebhookPluginConfig
 }
 
-func NewGitlabWebhookPlugin(config core.PluginConfigV2) (core.PluginV2, error) {
+func (p *GitlabWebhookPlugin) Construct(config core.PluginConfigV2) (core.PluginV2, error) {
 	gitlabConfig := &GitlabWebhookPluginConfig{}
 
 	err := plugins.ConvertConfig(config.Config, gitlabConfig)

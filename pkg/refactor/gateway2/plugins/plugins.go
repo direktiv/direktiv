@@ -10,15 +10,13 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-type Factory func(config core.PluginConfigV2) (core.PluginV2, error)
+var registry = make(map[string]core.PluginV2)
 
-var registry = make(map[string]Factory)
-
-func RegisterPlugin(name string, factory Factory) {
+func RegisterPlugin(p core.PluginV2) {
 	if os.Getenv("DIREKTIV_APP") != "sidecar" &&
 		os.Getenv("DIREKTIV_APP") != "init" {
-		slog.Info("adding plugin", slog.String("name", name))
-		registry[name] = factory
+		slog.Info("adding plugin", slog.String("name", p.Type()))
+		registry[p.Type()] = p
 	}
 }
 
@@ -28,7 +26,7 @@ func NewPlugin(config core.PluginConfigV2) (core.PluginV2, error) {
 		return nil, fmt.Errorf("unknow plugin '%s'", config.Typ)
 	}
 
-	return f(config)
+	return f.Construct(config)
 }
 
 func ConvertConfig(config map[string]any, target any) error {

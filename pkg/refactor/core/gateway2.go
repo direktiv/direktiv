@@ -53,6 +53,9 @@ type PluginConfigV2 struct {
 }
 
 type PluginV2 interface {
+	// Construct method creates new plugin instance
+	Construct(config PluginConfigV2) (PluginV2, error)
+
 	Execute(w http.ResponseWriter, r *http.Request) (*http.Request, error)
 	Config() any
 	Type() string

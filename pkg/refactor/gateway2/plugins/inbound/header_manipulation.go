@@ -26,7 +26,7 @@ type HeaderManipulationPlugin struct {
 	configuration *HeaderManipulationConfig
 }
 
-func NewHeaderManipulationPlugin(config core.PluginConfigV2) (core.PluginV2, error) {
+func (hp *HeaderManipulationPlugin) Construct(config core.PluginConfigV2) (core.PluginV2, error) {
 	headerManipulationConfig := &HeaderManipulationConfig{}
 
 	err := plugins.ConvertConfig(config.Config, headerManipulationConfig)

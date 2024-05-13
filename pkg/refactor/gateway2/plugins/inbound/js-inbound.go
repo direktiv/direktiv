@@ -27,7 +27,7 @@ type JSInboundPlugin struct {
 	config *JSInboundConfig
 }
 
-func NewJSInboundConfig(config core.PluginConfigV2) (core.PluginV2, error) {
+func (js *JSInboundPlugin) Construct(config core.PluginConfigV2) (core.PluginV2, error) {
 	jsConfig := &JSInboundConfig{}
 
 	err := plugins.ConvertConfig(config.Config, jsConfig)

@@ -25,7 +25,7 @@ type GithubWebhookPlugin struct {
 	config *GithubWebhookPluginConfig
 }
 
-func NewGithubWebhookPlugin(config core.PluginConfigV2) (core.PluginV2, error) {
+func (p *GithubWebhookPlugin) Construct(config core.PluginConfigV2) (core.PluginV2, error) {
 	requestConvertConfig := &GithubWebhookPluginConfig{}
 
 	err := plugins.ConvertConfig(config.Config, requestConvertConfig)

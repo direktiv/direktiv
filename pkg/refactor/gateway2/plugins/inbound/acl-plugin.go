@@ -27,7 +27,7 @@ type ACLPlugin struct {
 	config *ACLConfig
 }
 
-func NewACLConfig(config core.PluginConfigV2) (core.PluginV2, error) {
+func (acl *ACLPlugin) Construct(config core.PluginConfigV2) (core.PluginV2, error) {
 	aclConfig := &ACLConfig{}
 
 	err := plugins.ConvertConfig(config.Config, aclConfig)

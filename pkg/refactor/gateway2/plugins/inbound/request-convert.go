@@ -31,7 +31,7 @@ type RequestConvertPlugin struct {
 	config *RequestConvertConfig
 }
 
-func NewRequestConvertPlugin(config core.PluginConfigV2) (core.PluginV2, error) {
+func (rcp *RequestConvertPlugin) Construct(config core.PluginConfigV2) (core.PluginV2, error) {
 	requestConvertConfig := &RequestConvertConfig{}
 
 	err := plugins.ConvertConfig(config.Config, requestConvertConfig)

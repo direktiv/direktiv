@@ -32,7 +32,7 @@ type KeyAuthPlugin struct {
 	config *KeyAuthConfig
 }
 
-func NewKeyAuthPlugin(config core.PluginConfigV2) (core.PluginV2, error) {
+func (ka *KeyAuthPlugin) Construct(config core.PluginConfigV2) (core.PluginV2, error) {
 	keyAuthConfig := &KeyAuthConfig{
 		KeyName: keyName,
 	}
