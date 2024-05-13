@@ -83,7 +83,7 @@ func FindConsumerByUser(user string, list []ConsumerV2) *ConsumerV2 {
 
 	return nil
 }
-func FindConsumerByApiKey(key string, list []ConsumerV2) *ConsumerV2 {
+func FindActiveConsumerByAPIKey(key string, list []ConsumerV2) *ConsumerV2 {
 	for _, item := range list {
 		if item.APIKey == key {
 			return &item

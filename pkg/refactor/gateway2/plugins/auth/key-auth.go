@@ -65,7 +65,7 @@ func (ka *KeyAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.
 
 		return r, nil
 	}
-	c := core.FindConsumerByApiKey(key, consumerList)
+	c := core.FindActiveConsumerByAPIKey(key, consumerList)
 
 	// no consumer with that name
 	if c == nil {
