@@ -103,7 +103,7 @@ func (p *SlackWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) (*h
 }
 
 func (*SlackWebhookPlugin) Type() string {
-	return GithubWebhookPluginName
+	return githubWebhookPluginName
 }
 
 //nolint:gochecknoinits
