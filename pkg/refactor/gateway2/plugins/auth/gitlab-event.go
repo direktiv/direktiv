@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
@@ -25,7 +26,7 @@ type GitlabWebhookPlugin struct {
 func NewGitlabWebhookPlugin(config core.PluginConfigV2) (core.PluginV2, error) {
 	gitlabConfig := &GitlabWebhookPluginConfig{}
 
-	err := plugins.ConvertConfig(config, gitlabConfig)
+	err := plugins.ConvertConfig(config.Config, gitlabConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -47,9 +48,14 @@ func (p *GitlabWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) (*
 
 	secret := r.Header.Get(gitlabHeaderName)
 
+	fmt.Println(">>>>>>>>>>>1")
+
+	fmt.Printf(">>>  >%s<  >%s<  >>>\n", secret, p.config.Secret)
+
 	if secret != p.config.Secret {
 		return r, nil
 	}
+	fmt.Println(">>>>>>>>>>>2")
 
 	c := &core.ConsumerFile{
 		Username: "gitlab",

@@ -33,6 +33,7 @@ func buildRouter(endpoints []core.EndpointV2, consumers []core.ConsumerV2) *rout
 		pChain := []core.PluginV2{}
 		for _, pConfig := range pConfigs {
 			p, err := plugins.NewPlugin(pConfig)
+			fmt.Printf(">>>>>>>>11111111>>>>  %s  >>> %v   >>>\n", pConfig.Typ, pConfig.Config)
 			if err != nil {
 				item.Errors = append(item.Errors, fmt.Errorf("plugin '%s' config: %w", pConfig.Typ, err))
 			}

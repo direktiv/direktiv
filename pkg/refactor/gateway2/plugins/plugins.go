@@ -31,7 +31,7 @@ func NewPlugin(config core.PluginConfigV2) (core.PluginV2, error) {
 	return f(config)
 }
 
-func ConvertConfig(config any, target any) error {
+func ConvertConfig(config map[string]any, target any) error {
 	err := mapstructure.Decode(config, target)
 	if err != nil {
 		return errors.Join(err, errors.New("configuration invalid"))
