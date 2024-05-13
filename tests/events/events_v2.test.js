@@ -29,7 +29,7 @@ describe('Test send events v2 api', () => {
 			.send()
 		expect(eventHistoryResponse.statusCode).toEqual(200)
 		expect(eventHistoryResponse.body.data.length).toBeGreaterThan(0)
-		expect(eventHistoryResponse.body.data[0].namespaceName).toBe(namespaceName)
+		expect(eventHistoryResponse.body.data[0].namespace).toBe(namespace)
 		expect(eventHistoryResponse.body.data[0].event.id).toBe('123')
 	})
 	it(`event by id`, async () => {
