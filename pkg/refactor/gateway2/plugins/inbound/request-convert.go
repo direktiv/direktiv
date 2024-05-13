@@ -13,39 +13,24 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins"
 )
 
-const (
-	RequestConvertPluginName = "request-convert"
-)
-
-// RequestConvertConfig converts the whole request into JSON.
-type RequestConvertConfig struct {
+// RequestConvertPlugin converts headers, query parameters, url paramneters
+// and the body into a JSON object. The original body is discarded.
+type RequestConvertPlugin struct {
 	OmitHeaders  bool `mapstructure:"omit_headers"  yaml:"omit_headers"`
 	OmitQueries  bool `mapstructure:"omit_queries"  yaml:"omit_queries"`
 	OmitBody     bool `mapstructure:"omit_body"     yaml:"omit_body"`
 	OmitConsumer bool `mapstructure:"omit_consumer" yaml:"omit_consumer"`
 }
 
-// RequestConvertPlugin converts headers, query parameters, url paramneters
-// and the body into a JSON object. The original body is discarded.
-type RequestConvertPlugin struct {
-	config *RequestConvertConfig
-}
-
 func (rcp *RequestConvertPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
-	requestConvertConfig := &RequestConvertConfig{}
+	pl := &RequestConvertPlugin{}
 
-	err := plugins.ConvertConfig(config.Config, requestConvertConfig)
+	err := plugins.ConvertConfig(config.Config, pl)
 	if err != nil {
 		return nil, err
 	}
 
-	return &RequestConvertPlugin{
-		config: requestConvertConfig,
-	}, nil
-}
-
-func (rcp *RequestConvertPlugin) Config() interface{} {
-	return rcp.config
+	return pl, nil
 }
 
 type RequestConsumer struct {
@@ -146,7 +131,7 @@ func (rcp *RequestConvertPlugin) Execute(w http.ResponseWriter, r *http.Request)
 }
 
 func (rcp *RequestConvertPlugin) Type() string {
-	return RequestConvertPluginName
+	return "request-convert"
 }
 
 func init() {

@@ -9,43 +9,28 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins"
 )
 
-const (
-	ACLPluginName = "acl"
-)
-
-// ACLConfig configures the ACL Plugin to allow, deny groups and tags.
-type ACLConfig struct {
+// ACLPlugin is a simple access control method. It checks the incoming consumer
+// for tags and groups and allows or denies access.
+type ACLPlugin struct {
 	AllowGroups []string `mapstructure:"allow_groups" yaml:"allow_groups"`
 	DenyGroups  []string `mapstructure:"deny_groups"  yaml:"deny_groups"`
 	AllowTags   []string `mapstructure:"allow_tags"   yaml:"allow_tags"`
 	DenyTags    []string `mapstructure:"deny_tags"    yaml:"deny_tags"`
 }
 
-// ACLPlugin is a simple access control method. It checks the incoming consumer
-// for tags and groups and allows or denies access.
-type ACLPlugin struct {
-	config *ACLConfig
-}
-
 func (acl *ACLPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
-	aclConfig := &ACLConfig{}
+	pl := &ACLPlugin{}
 
-	err := plugins.ConvertConfig(config.Config, aclConfig)
+	err := plugins.ConvertConfig(config.Config, pl)
 	if err != nil {
 		return nil, err
 	}
 
-	return &ACLPlugin{
-		config: aclConfig,
-	}, nil
-}
-
-func (acl *ACLPlugin) Config() interface{} {
-	return acl.config
+	return pl, nil
 }
 
 func (acl *ACLPlugin) Type() string {
-	return ACLPluginName
+	return "acl"
 }
 
 func (acl *ACLPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, error) {

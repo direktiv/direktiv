@@ -14,38 +14,24 @@ import (
 	"github.com/dop251/goja"
 )
 
-const (
-	JSInboundPluginName = "js-inbound"
-)
-
-type JSInboundConfig struct {
+// JSInboundPlugin allows to modify headers, contents and query params of the request.
+type JSInboundPlugin struct {
 	Script string `mapstructure:"script" yaml:"script"`
 }
 
-// JSInboundPlugin allows to modify headers, contents and query params of the request.
-type JSInboundPlugin struct {
-	config *JSInboundConfig
-}
-
 func (js *JSInboundPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
-	jsConfig := &JSInboundConfig{}
+	pl := &JSInboundPlugin{}
 
-	err := plugins.ConvertConfig(config.Config, jsConfig)
+	err := plugins.ConvertConfig(config.Config, pl)
 	if err != nil {
 		return nil, err
 	}
 
-	return &JSInboundPlugin{
-		config: jsConfig,
-	}, nil
-}
-
-func (js *JSInboundPlugin) Config() interface{} {
-	return js.config
+	return pl, nil
 }
 
 func (js *JSInboundPlugin) Type() string {
-	return JSInboundPluginName
+	return "js-inbound"
 }
 
 type Query struct {

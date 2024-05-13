@@ -7,40 +7,26 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins"
 )
 
-const (
-	HeaderManipulation = "header-manipulation"
-)
-
 type NameKeys struct {
 	Name  string `json:"name"  yaml:"name"`
 	Value string `json:"value" yaml:"value"`
 }
 
-type HeaderManipulationConfig struct {
+type HeaderManipulationPlugin struct {
 	HeadersToAdd    []NameKeys `json:"headers_to_add"    mapstructure:"headers_to_add"    yaml:"headers_to_add"`
 	HeadersToModify []NameKeys `json:"headers_to_modify" mapstructure:"headers_to_modify" yaml:"headers_to_modify"`
 	HeadersToRemove []NameKeys `json:"headers_to_remove" mapstructure:"headers_to_remove" yaml:"headers_to_remove"`
 }
 
-type HeaderManipulationPlugin struct {
-	configuration *HeaderManipulationConfig
-}
-
 func (hp *HeaderManipulationPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
-	headerManipulationConfig := &HeaderManipulationConfig{}
+	pl := &HeaderManipulationPlugin{}
 
-	err := plugins.ConvertConfig(config.Config, headerManipulationConfig)
+	err := plugins.ConvertConfig(config.Config, pl)
 	if err != nil {
 		return nil, err
 	}
 
-	return &HeaderManipulationPlugin{
-		configuration: headerManipulationConfig,
-	}, nil
-}
-
-func (hp *HeaderManipulationPlugin) Config() interface{} {
-	return hp.configuration
+	return pl, nil
 }
 
 func (hp *HeaderManipulationPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, error) {
@@ -63,7 +49,7 @@ func (hp *HeaderManipulationPlugin) Execute(w http.ResponseWriter, r *http.Reque
 }
 
 func (hp *HeaderManipulationPlugin) Type() string {
-	return HeaderManipulation
+	return "header-manipulation"
 }
 
 func init() {
