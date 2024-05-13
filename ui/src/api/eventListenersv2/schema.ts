@@ -24,15 +24,24 @@
 
 import { z } from "zod";
 
+const triggerTypes = z.enum([
+  "StartAnd",
+  "WaitAnd",
+  "StartSimple",
+  "WaitSimple",
+  "StartOR",
+  "WaitOR",
+]);
+
 const EventListenerSchema = z.object({
   id: z.string(),
   createdAt: z.string(),
   updatedAt: z.string(),
   namespace: z.string(),
   listeningForEventTypes: z.array(z.string()),
-  triggerType: z.string(), // enum?
-  triggerInstance: z.string().optional(), // TBD: clarify
-  triggerWorkflow: z.string().optional(), // TBD: clarify
+  triggerType: triggerTypes,
+  triggerInstance: z.string().optional(), // instance id
+  triggerWorkflow: z.string().optional(), // workflow path
 });
 
 export const EventListenerResponseSchema = z.object({
