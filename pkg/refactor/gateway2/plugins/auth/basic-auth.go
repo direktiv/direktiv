@@ -56,7 +56,7 @@ func (ba *BasicAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) (*htt
 	if consumerList == nil {
 		return r, nil
 	}
-	consumer := core.FindConsumerByUser(user, consumerList)
+	consumer := gateway2.FindConsumerByUser(consumerList, user)
 	// no consumer matching auth name
 	if consumer == nil {
 		return r, nil

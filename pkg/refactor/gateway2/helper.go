@@ -86,3 +86,23 @@ func filterNamespacedEndpoints(endpoints []core.EndpointV2, namespace string) []
 
 	return list
 }
+
+func FindConsumerByUser(list []core.ConsumerV2, user string) *core.ConsumerV2 {
+	for _, item := range list {
+		if item.Username == user {
+			return &item
+		}
+	}
+
+	return nil
+}
+
+func FindConsumerByAPIKey(list []core.ConsumerV2, key string) *core.ConsumerV2 {
+	for _, item := range list {
+		if item.APIKey == key {
+			return &item
+		}
+	}
+
+	return nil
+}
