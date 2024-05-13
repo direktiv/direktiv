@@ -63,7 +63,7 @@ states:
 	})
 
 	it(`listener should be regitered`, async () => {
-		const eventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/listeners/`)
+		const eventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/listeners?limit=100&offset=0`)
 			.send()
 		expect(eventListenerResponse.statusCode).toEqual(200)
 		expect(eventListenerResponse.body.data.length).toBeGreaterThan(0)

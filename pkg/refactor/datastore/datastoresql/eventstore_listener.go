@@ -179,7 +179,7 @@ func (s *sqlEventListenerStore) Get(ctx context.Context, namespace uuid.UUID, li
 
 func (s *sqlEventListenerStore) GetAll(ctx context.Context) ([]*datastore.EventListener, error) {
 	q := `SELECT 
-	id, namespace_id, created_at, updated_at, deleted, received_events, trigger_type, events_lifespan, event_types, trigger_info, metadata
+	id, namespace_id, namespace, created_at, updated_at, deleted, received_events, trigger_type, events_lifespan, event_types, trigger_info, metadata
 	FROM event_listeners Where deleted = false`
 	q += " ORDER BY created_at DESC;"
 	res := make([]*gormEventListener, 0)
