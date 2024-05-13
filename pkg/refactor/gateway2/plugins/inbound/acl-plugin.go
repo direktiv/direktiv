@@ -12,10 +12,10 @@ import (
 // ACLPlugin is a simple access control method. It checks the incoming consumer
 // for tags and groups and allows or denies access.
 type ACLPlugin struct {
-	AllowGroups []string `mapstructure:"allow_groups" yaml:"allow_groups"`
-	DenyGroups  []string `mapstructure:"deny_groups"  yaml:"deny_groups"`
-	AllowTags   []string `mapstructure:"allow_tags"   yaml:"allow_tags"`
-	DenyTags    []string `mapstructure:"deny_tags"    yaml:"deny_tags"`
+	AllowGroups []string `mapstructure:"allow_groups"`
+	DenyGroups  []string `mapstructure:"deny_groups"`
+	AllowTags   []string `mapstructure:"allow_tags"`
+	DenyTags    []string `mapstructure:"deny_tags"`
 }
 
 func (acl *ACLPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
@@ -40,21 +40,21 @@ func (acl *ACLPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Req
 		return false
 	}
 
-	if result(acl.config.AllowGroups, c.Groups) {
+	if result(acl.AllowGroups, c.Groups) {
 		return true
 	}
 
-	if result(acl.config.DenyGroups, c.Groups) {
+	if result(acl.DenyGroups, c.Groups) {
 		deny(r.Context(), "group", w)
 
 		return false
 	}
 
-	if result(acl.config.AllowTags, c.Tags) {
+	if result(acl.AllowTags, c.Tags) {
 		return true
 	}
 
-	if result(acl.config.DenyTags, c.Tags) {
+	if result(acl.DenyTags, c.Tags) {
 		deny(r.Context(), "tag", w)
 
 		return false

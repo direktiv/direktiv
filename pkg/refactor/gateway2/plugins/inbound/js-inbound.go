@@ -16,7 +16,7 @@ import (
 
 // JSInboundPlugin allows to modify headers, contents and query params of the request.
 type JSInboundPlugin struct {
-	Script string `mapstructure:"script" yaml:"script"`
+	Script string `mapstructure:"script"`
 }
 
 func (js *JSInboundPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {

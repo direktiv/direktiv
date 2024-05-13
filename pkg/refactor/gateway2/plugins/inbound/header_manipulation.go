@@ -8,14 +8,14 @@ import (
 )
 
 type NameKeys struct {
-	Name  string `json:"name"  yaml:"name"`
-	Value string `json:"value" yaml:"value"`
+	Name  string `json:"name"`
+	Value string `json:"value"`
 }
 
 type HeaderManipulationPlugin struct {
-	HeadersToAdd    []NameKeys `json:"headers_to_add"    mapstructure:"headers_to_add"    yaml:"headers_to_add"`
-	HeadersToModify []NameKeys `json:"headers_to_modify" mapstructure:"headers_to_modify" yaml:"headers_to_modify"`
-	HeadersToRemove []NameKeys `json:"headers_to_remove" mapstructure:"headers_to_remove" yaml:"headers_to_remove"`
+	HeadersToAdd    []NameKeys `mapstructure:"headers_to_add"`
+	HeadersToModify []NameKeys `mapstructure:"headers_to_modify"`
+	HeadersToRemove []NameKeys `mapstructure:"headers_to_remove"`
 }
 
 func (hp *HeaderManipulationPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {

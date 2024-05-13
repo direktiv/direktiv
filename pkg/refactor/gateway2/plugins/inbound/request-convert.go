@@ -16,10 +16,10 @@ import (
 // RequestConvertPlugin converts headers, query parameters, url paramneters
 // and the body into a JSON object. The original body is discarded.
 type RequestConvertPlugin struct {
-	OmitHeaders  bool `mapstructure:"omit_headers"  yaml:"omit_headers"`
-	OmitQueries  bool `mapstructure:"omit_queries"  yaml:"omit_queries"`
-	OmitBody     bool `mapstructure:"omit_body"     yaml:"omit_body"`
-	OmitConsumer bool `mapstructure:"omit_consumer" yaml:"omit_consumer"`
+	OmitHeaders  bool `mapstructure:"omit_headers"`
+	OmitQueries  bool `mapstructure:"omit_queries"`
+	OmitBody     bool `mapstructure:"omit_body"`
+	OmitConsumer bool `mapstructure:"omit_consumer"`
 }
 
 func (rcp *RequestConvertPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
