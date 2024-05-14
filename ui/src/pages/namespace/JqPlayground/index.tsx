@@ -14,8 +14,8 @@ import {
 import { FC, useRef, useState } from "react";
 import {
   useJqPlaygroundActions,
-  useJqPlaygroundInput,
-  useJqPlaygroundQuery,
+  useJqPlaygroundData,
+  useJqPlaygroundJx,
 } from "~/util/store/jqPlaygrpund";
 
 import Button from "~/design/Button";
@@ -40,11 +40,11 @@ const JqPlaygroundPage: FC = () => {
   const { t } = useTranslation();
   const theme = useTheme();
   const {
-    setInput: storeInputInLocalstorage,
-    setQuery: storeQueryInLocalstorage,
+    setData: storePlaygroundDataInLocalstorage,
+    setJx: storeJxInLocalstorage,
   } = useJqPlaygroundActions();
-  const jxFromStore = useJqPlaygroundQuery() ?? defaultJx;
-  const dataFromStore = useJqPlaygroundInput() ?? defaultData;
+  const jxFromStore = useJqPlaygroundJx() ?? defaultJx;
+  const dataFromStore = useJqPlaygroundData() ?? defaultData;
   const formRef = useRef<HTMLFormElement>(null);
 
   const [output, setOutput] = useState("");
@@ -135,7 +135,7 @@ const JqPlaygroundPage: FC = () => {
               onChange={(e) => {
                 clearErrors();
                 register("jx").onChange(e);
-                storeQueryInLocalstorage(e.target.value);
+                storeJxInLocalstorage(e.target.value);
               }}
             />
             <Button
@@ -181,7 +181,7 @@ const JqPlaygroundPage: FC = () => {
                         if (newData === undefined) return;
                         clearErrors();
                         field.onChange(newData);
-                        storeInputInLocalstorage(newData);
+                        storePlaygroundDataInLocalstorage(newData);
                       }}
                       theme={theme ?? undefined}
                     />

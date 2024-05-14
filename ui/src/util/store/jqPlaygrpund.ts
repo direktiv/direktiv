@@ -2,39 +2,40 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 interface JqPlaygroundState {
-  input: string | null;
-  query: string | null;
+  data: string | null;
+  jx: string | null;
   actions: {
-    setInput: (apiKey: JqPlaygroundState["input"]) => void;
-    setQuery: (apiKey: JqPlaygroundState["query"]) => void;
+    setData: (apiKey: JqPlaygroundState["data"]) => void;
+    setJx: (apiKey: JqPlaygroundState["jx"]) => void;
   };
 }
 
 const useJqPlaygroundState = create<JqPlaygroundState>()(
   persist(
     (set) => ({
-      input: null,
-      query: null,
+      data: null,
+      jx: null,
       actions: {
-        setInput: (newInput) => set(() => ({ input: newInput })),
-        setQuery: (newQuery) => set(() => ({ query: newQuery })),
+        setData: (newData) => set(() => ({ data: newData })),
+        setJx: (newJx) => set(() => ({ jx: newJx })),
       },
     }),
     {
       name: "direktiv-store-jq-playground",
-      partialize: (state) => ({
-        input: state.input, // pick all fields to be persistent and don't persist actions
-        query: state.query,
+      partialize: ({ data, jx }) => ({
+        // pick all fields to be persistent and don't persist actions
+        data,
+        jx,
       }),
     }
   )
 );
 
-export const useJqPlaygroundInput = () =>
-  useJqPlaygroundState((state) => state.input);
+export const useJqPlaygroundData = () =>
+  useJqPlaygroundState((state) => state.data);
 
-export const useJqPlaygroundQuery = () =>
-  useJqPlaygroundState((state) => state.query);
+export const useJqPlaygroundJx = () =>
+  useJqPlaygroundState((state) => state.jx);
 
 export const useJqPlaygroundActions = () =>
   useJqPlaygroundState((state) => state.actions);
