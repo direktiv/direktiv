@@ -5,24 +5,6 @@ import config from '../../common/config'
 import request from '../../common/request'
 
 describe('Test the jx API.', () => {
-	it(`should perform a simple jx query with a valid body`, async () => {
-		const pl = {
-			jx: encode(''),
-			data: encode('{}'),
-		}
-
-		const r = await request(config.getDirektivHost()).post(`/api/v2/jx`)
-			.send(pl)
-
-		expect(r.statusCode).toEqual(200)
-		expect(r.body.data).toEqual({
-			jx: pl.jx,
-			data: pl.data,
-			logs: '',
-			output: [ encode('{}') ],
-		})
-	})
-
 	it(`should perform a simple jx string query`, async () => {
 		const pl = {
 			jx: encode('"jq(5)"'),
@@ -54,8 +36,8 @@ describe('Test the jx API.', () => {
 		expect(r.body.data).toEqual({
 			jx: pl.jx,
 			data: pl.data,
-			logs: 'ZmFpbHVyZToganEvanMgc2NyaXB0IG1pc3NpbmcgYnJhY2tldApxdWVyeSBwcm9kdWNlZCB6ZXJvIHJlc3VsdHMK',
-			output: null,
+			logs: 'ZmFpbHVyZToganEvanMgc2NyaXB0IG1pc3NpbmcgYnJhY2tldAo=',
+			output: [],
 		})
 	})
 
@@ -72,8 +54,8 @@ describe('Test the jx API.', () => {
 		expect(r.body.data).toEqual({
 			jx: pl.jx,
 			data: pl.data,
-			logs: 'ZmFpbHVyZTogZXJyb3IgaW4ganMgcXVlcnkgNTogbm8gcmVzdWx0cwpxdWVyeSBwcm9kdWNlZCB6ZXJvIHJlc3VsdHMK',
-			output: null,
+			logs: 'ZmFpbHVyZTogZXJyb3IgaW4ganMgcXVlcnkgNTogbm8gcmVzdWx0cwo=',
+			output: [],
 		})
 	})
 

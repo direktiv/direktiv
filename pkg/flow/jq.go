@@ -25,13 +25,24 @@ func jq(input interface{}, command interface{}) ([]interface{}, error) {
 }
 
 func jqOne(input interface{}, command interface{}) (interface{}, error) {
-	output, err := jq(input, command)
-	if err != nil {
-		return nil, err
+	var output []interface{}
+
+	if command == nil {
+		output = append(output, nil)
+	} else {
+		var err error
+		output, err = jq(input, command)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if len(output) == 0 {
+		return nil, derrors.NewCatchableError(ErrCodeJQNoResults, "the `jq` or `js` command produced no outputs")
 	}
 
 	if len(output) != 1 {
-		return nil, derrors.NewCatchableError(ErrCodeJQNotObject, "the `jq` or `js` command produced multiple outputs")
+		return nil, derrors.NewCatchableError(ErrCodeJQManyResults, "the `jq` or `js` command produced multiple outputs")
 	}
 
 	return output[0], nil

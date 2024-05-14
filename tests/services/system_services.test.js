@@ -3,18 +3,18 @@ import { beforeAll, describe, expect, it } from '@jest/globals'
 import config from '../common/config'
 import helpers from '../common/helpers'
 import request from '../common/request'
-import { retry10, retry50 } from '../common/retry'
+import { retry10 } from '../common/retry'
 
-const systemNamespaceName = 'system'
-const namespaceName = 'functionsfiles'
+const systemNamespace = 'system'
+const normalNamespace = 'functionsfiles'
 
 describe('Test system services behaviour', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 
-    helpers.itShouldCreateNamespace(it, expect, systemNamespaceName)
-	helpers.itShouldCreateNamespace(it, expect, namespaceName)
+	helpers.itShouldCreateNamespace(it, expect, systemNamespace)
+	helpers.itShouldCreateNamespace(it, expect, normalNamespace)
 
-    helpers.itShouldCreateYamlFileV2(it, expect, systemNamespaceName,
+	helpers.itShouldCreateYamlFileV2(it, expect, systemNamespace,
 		'/', 'bash.yaml', 'service', `
 direktiv_api: service/v1
 name: bash
@@ -23,34 +23,12 @@ cmd: ""
 scale: 1
 `)
 
-    it(`should list services on the system namespace`, async () => {
-        await helpers.sleep(500) // NOTE: allow time for services to sync
-
-        const req = await request(config.getDirektivHost()).get(`/api/v2/namespaces/${ systemNamespaceName }/services`)
-
-        expect(req.statusCode).toEqual(200)
-        expect(req.body).toMatchObject({
-            data: [
-                {
-                    error: null,
-                    filePath: '/bash.yaml',
-                    id: 'system-bash-yaml-c57284f6aa',
-                    image: 'direktiv/bash:dev',
-                    namespace: 'system',
-                    scale: 1,
-                    size: 'medium',
-                    type: 'system-service',
-                },
-            ],
-        })
-    })
-
-    helpers.itShouldCreateFileV2(it, expect, systemNamespaceName,
-        '',
-        `a.yaml`,
-        'workflow',
-        'text/plain',
-        btoa(`
+	helpers.itShouldCreateFileV2(it, expect, systemNamespace,
+		'',
+		`a.yaml`,
+		'workflow',
+		'text/plain',
+		btoa(`
 functions:
 - id: bash
   type: knative-system
@@ -66,7 +44,27 @@ states:
       - command: bash -c 'echo a'
 `))
 
-it(`should invoke the '/a.yaml' workflow on the system namespace`, async () => {
+	retry10(`should list services on the system namespace`, async () => {
+		const req = await request(config.getDirektivHost()).get(`/api/v2/namespaces/${ systemNamespace }/services`)
+
+		expect(req.statusCode).toEqual(200)
+		expect(req.body).toMatchObject({
+			data: [
+				{
+					error: null,
+					filePath: '/bash.yaml',
+					id: 'system-bash-yaml-c57284f6aa',
+					image: 'direktiv/bash:dev',
+					namespace: 'system',
+					scale: 1,
+					size: 'medium',
+					type: 'system-service',
+				},
+			],
+		})
+	})
+
+	it(`should invoke the '/a.yaml' workflow on the system namespace`, async () => {
     const req = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ systemNamespaceName }/instances?path=a.yaml&wait=true`)
     expect(req.statusCode).toEqual(200)
     expect(req.body).toMatchObject({
@@ -81,12 +79,12 @@ it(`should invoke the '/a.yaml' workflow on the system namespace`, async () => {
     })
 })
 
-helpers.itShouldCreateFileV2(it, expect, namespaceName,
-    '',
-    `a.yaml`,
-    'workflow',
-    'text/plain',
-    btoa(`
+	helpers.itShouldCreateFileV2(it, expect, normalNamespace,
+		'',
+		`a.yaml`,
+		'workflow',
+		'text/plain',
+		btoa(`
 functions:
 - id: bash
   type: knative-system
@@ -117,12 +115,12 @@ it(`should invoke the '/a.yaml' workflow on the non-system namespace`, async () 
     })
 })
 
-helpers.itShouldCreateFileV2(it, expect, namespaceName,
-    '',
-    `b.yaml`,
-    'workflow',
-    'text/plain',
-    btoa(`
+	helpers.itShouldCreateFileV2(it, expect, normalNamespace,
+		'',
+		`b.yaml`,
+		'workflow',
+		'text/plain',
+		btoa(`
 functions:
 - id: bash
   type: knative-system

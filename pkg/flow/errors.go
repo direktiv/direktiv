@@ -20,6 +20,8 @@ var (
 	ErrCodeHardTimeout            = "direktiv.cancels.timeout.hard"
 	ErrCodeJQBadQuery             = "direktiv.jq.badCommand"
 	ErrCodeJQNotObject            = "direktiv.jq.notObject"
+	ErrCodeJQNoResults            = "direktiv.jq.badCommand"
+	ErrCodeJQManyResults          = "direktiv.jq.badCommand"
 	ErrCodeAllBranchesFailed      = "direktiv.parallel.allFailed"
 	ErrCodeNotArray               = "direktiv.foreach.badArray"
 	ErrCodeFailedSchemaValidation = "direktiv.schema.failed"

@@ -574,7 +574,7 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if wait && (input == nil || len(input) == 0) {
+	if wait && len(input) == 0 {
 		input = []byte(`{}`)
 	}
 
