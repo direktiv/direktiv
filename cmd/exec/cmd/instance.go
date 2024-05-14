@@ -61,13 +61,13 @@ func (fq FilterQueryInstance) Query() string {
 			value += "::"
 		}
 	}
-	return fmt.Sprintf("?filter.field=%s&filter.type=%s&filter.val=%s", fq.Filter, fq.Typ, value)
+	return fmt.Sprintf("filter.field=%s&filter.type=%s&filter.val=%s", fq.Filter, fq.Typ, value)
 }
 
 func GetLogs(cmd *cobra.Command, instance string, query string) (urlOutput string) {
 	instanceStatus := "pending"
 
-	urlLogs := fmt.Sprintf("%s/instances/%s/logs%s", UrlPrefix, instance, query)
+	urlLogs := fmt.Sprintf("%s/logs?instance=%s&%s", UrlPrefixV2, instance, query)
 	clientLogs := sse.NewClient(urlLogs)
 	clientLogs.Connection.Transport = &http.Transport{
 		TLSClientConfig: GetTLSConfig(),
@@ -116,7 +116,7 @@ func GetLogs(cmd *cobra.Command, instance string, query string) (urlOutput strin
 		}
 	}()
 
-	urlInstance := fmt.Sprintf("%s/instances/%s", UrlPrefix, instance)
+	urlInstance := fmt.Sprintf("%s/instances/%s", UrlPrefixV2, instance)
 	clientInstance := sse.NewClient(urlInstance)
 	clientInstance.Connection.Transport = &http.Transport{
 		TLSClientConfig: GetTLSConfig(),
@@ -157,7 +157,7 @@ func GetLogs(cmd *cobra.Command, instance string, query string) (urlOutput strin
 	}
 
 	cmd.Printf("instance completed with status: %s\n", instanceStatus)
-	return fmt.Sprintf("%s/instances/%s/output", UrlPrefix, instance)
+	return fmt.Sprintf("%s/instances/%s/output", UrlPrefixV2, instance)
 }
 
 func buildPrefix(tags map[string]string) string {
