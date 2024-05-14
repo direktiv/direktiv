@@ -36,6 +36,8 @@
               type:
                 type: string
                 description: The type of the event.
+              additionalProperties:
+                  type: object
         application/cloudevents-batch+json:
           schema:
             type: array
@@ -55,7 +57,8 @@
                 type:
                   type: string
                   description: The type of the event.
-
+                additionalProperties:
+                  type: object
 /api/v2/namespaces/{namespace}/events/history:
   get:
     tags:
@@ -178,7 +181,6 @@
                             type: string
                           additionalProperties:
                             type: object
-
 /api/v2/namespaces/{namespace}/events/subscribe:
   get:
     tags:
@@ -244,7 +246,6 @@
               id: 2
               event: message
               data: {"Event":{"specversion":"1.0","id":"1234-234234","source":"https://direktiv.io/test","type":"testerDuplicate"},"namespace":"e09f0392-fe09-4378-bc0a-de3ab634f4e6","namespaceName":"wfeventsv2","receivedAt":"2024-04-25T14:28:56.374148Z", "serialID":2}
-
 /api/v2/namespaces/{namespace}/events/listener:
   get:
     tags:
@@ -660,11 +661,6 @@
             schema:
               type: object
               properties:
-                meta:
-                  type: object
-                  properties:
-                    total: 
-                      type: integer
                 data:
                   type: array
                   items:
@@ -810,33 +806,6 @@
            schema:
              type: object
 #
-
-/api/v2/jx:
-  post:
-    summary: Perform a jx query.
-    tags:
-    - server
-    responses:
-      '200': 
-        description: JX helper API.
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                data:
-                  type: object
-                  properties:
-                    jx:
-                      type: string
-                    data:
-                      type: string
-                    logs:
-                      type: string
-                    output:
-                      type: array
-                      items:
-                        type: string
 
 /api/v2/namespaces/{namespace}/metrics/instance:
   get:
@@ -1215,11 +1184,9 @@
                   items:
                     type: object
                     properties:
-                      description:
+                      issue:
                         type: string
                         description: dynamic string for humans to read
-                      count: 
-                        type: integer
                       level:
                         type: string
                         description: enum of the notification severity level (currently only 'warning' exists)
