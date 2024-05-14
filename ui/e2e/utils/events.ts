@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { headers } from "./testutils";
-import { sendEvent } from "~/api/eventsv2/mutate/sendEvent";
+import { sendEvent } from "~/api/events/mutate/sendEvent";
 
 /**
  * The mock data is composed so we can predict how many elements should be rendered

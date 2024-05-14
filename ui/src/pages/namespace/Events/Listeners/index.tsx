@@ -5,7 +5,7 @@ import { Card } from "~/design/Card";
 import ListenersTable from "./Table";
 import { Pagination } from "~/components/Pagination";
 import Row from "./Row";
-import { useEventListeners } from "~/api/eventListenersv2/query/get";
+import { useEventListeners } from "~/api/eventListeners/query/get";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 

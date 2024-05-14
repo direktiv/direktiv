@@ -7,7 +7,7 @@ import {
 } from "~/design/Tooltip";
 
 import CopyButton from "~/design/CopyButton";
-import { EventListenerSchemaType } from "~/api/eventListenersv2/schema";
+import { EventListenerSchemaType } from "~/api/eventListeners/schema";
 import { Link } from "react-router-dom";
 import { pages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";

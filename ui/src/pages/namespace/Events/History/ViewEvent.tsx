@@ -4,7 +4,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/design/Dialog";
-import { EventSchemaType, NewEventSchemaType } from "~/api/eventsv2/schema";
+import { EventSchemaType, NewEventSchemaType } from "~/api/events/schema";
 import { SubmitHandler, useForm } from "react-hook-form";
 
 import Alert from "~/design/Alert";
@@ -13,7 +13,7 @@ import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
 import { Radio } from "lucide-react";
 import { prettifyJsonString } from "~/util/helpers";
-import { useReplayEvent } from "~/api/eventsv2/mutate/replayEvent";
+import { useReplayEvent } from "~/api/events/mutate/replayEvent";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 

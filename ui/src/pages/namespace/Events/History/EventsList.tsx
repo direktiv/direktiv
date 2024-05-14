@@ -3,16 +3,16 @@ import { NoPermissions, NoResult, TableCell, TableRow } from "~/design/Table";
 import { Pagination, PaginationLink } from "~/design/Pagination";
 
 import { Card } from "~/design/Card";
-import { EventSchemaType } from "~/api/eventsv2/schema";
+import { EventSchemaType } from "~/api/events/schema";
 import EventsTable from "./Table";
 import Filters from "./components/Filters";
-import { FiltersSchemaType } from "~/api/eventsv2/schema/filters";
+import { FiltersSchemaType } from "~/api/events/schema/filters";
 import PaginationProvider from "~/components/PaginationProvider";
 import { Radio } from "lucide-react";
 import Row from "./Row";
 import SendEvent from "./SendEvent";
 import ViewEvent from "./ViewEvent";
-import { useEvents } from "~/api/eventsv2/query/get";
+import { useEvents } from "~/api/events/query/get";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 

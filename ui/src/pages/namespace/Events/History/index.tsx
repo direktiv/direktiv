@@ -1,6 +1,6 @@
-import { EventStreamingSubscriber } from "~/api/eventsv2/query/EventStreamingSubscriber";
+import { EventStreamingSubscriber } from "~/api/events/query/EventStreamingSubscriber";
 import EventsList from "./EventsList";
-import { FiltersSchemaType } from "~/api/eventsv2/schema/filters";
+import { FiltersSchemaType } from "~/api/events/schema/filters";
 import { useState } from "react";
 
 export const itemsPerPage = 10;

@@ -4,7 +4,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
 import DatePicker from "~/components/Filters/DatePicker";
-import { FiltersSchemaType } from "~/api/eventsv2/schema/filters";
+import { FiltersSchemaType } from "~/api/events/schema/filters";
 import RefineTime from "~/components/Filters/RefineTime";
 import { SelectFieldMenu } from "~/components/Filters/SelectFieldMenu";
 import TextInput from "~/components/Filters/TextInput";

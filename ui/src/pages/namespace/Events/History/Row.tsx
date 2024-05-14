@@ -6,7 +6,7 @@ import {
   TooltipTrigger,
 } from "~/design/Tooltip";
 
-import { EventSchemaType } from "~/api/eventsv2/schema";
+import { EventSchemaType } from "~/api/events/schema";
 import TooltipCopyBadge from "../../../../design/TooltipCopyBadge";
 import { useTranslation } from "react-i18next";
 import useUpdatedAt from "~/hooks/useUpdatedAt";
