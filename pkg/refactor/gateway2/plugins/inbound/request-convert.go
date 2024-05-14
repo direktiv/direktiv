@@ -5,11 +5,11 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
 	"io"
 	"net/http"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins"
 )
 
@@ -60,7 +60,7 @@ func (rcp *RequestConvertPlugin) Execute(w http.ResponseWriter, r *http.Request)
 
 	// TODO: discuss with Jens.
 	// convert uri extension
-	//up := r.Context().Value(plugins.URLParamCtxKey)
+	// up := r.Context().Value(plugins.URLParamCtxKey)
 	//if up != nil {
 	//	// nolint cvoming from gateway
 	//	response.URLParams = up.(map[string]string)

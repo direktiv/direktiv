@@ -2,7 +2,6 @@ package inbound
 
 import (
 	"fmt"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
 	"io"
 	"log/slog"
 	"net/http"
@@ -11,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins"
 	"github.com/dop251/goja"
 )
@@ -96,14 +96,13 @@ func (js *JSInboundPlugin) Execute(w http.ResponseWriter, r *http.Request) (*htt
 		c = &gateway2.ParseRequestActiveConsumer(r).ConsumerFileV2
 	} else {
 		c = &core.ConsumerFileV2{}
-
 	}
 
 	// add url param
 	urlParams := make(map[string]string)
 
 	// TODO: fix here.
-	//up := r.Context().Value(plugins.URLParamCtxKey)
+	// up := r.Context().Value(plugins.URLParamCtxKey)
 	//if up != nil {
 	//	// nolint we know it is from us
 	//	urlParams = up.(map[string]string)
@@ -160,7 +159,7 @@ func (js *JSInboundPlugin) Execute(w http.ResponseWriter, r *http.Request) (*htt
 
 			// TODO: discuss with jens
 			// script set status code and stop executing other plugins
-			//if responseDone.Status > 0 {
+			// if responseDone.Status > 0 {
 			//	return serveResponse(w, responseDone)
 			//}
 		}
@@ -171,25 +170,6 @@ func (js *JSInboundPlugin) Execute(w http.ResponseWriter, r *http.Request) (*htt
 
 func init() {
 	plugins.RegisterPlugin(&JSInboundPlugin{})
-}
-
-// serveResponse is writing the response directly to the client if the a status
-// code is set within the Javascript.
-func serveResponse(w http.ResponseWriter, req request) bool {
-	// writing headers to response
-	addHeader(req.Headers, w.Header())
-
-	// set was the incoming content-length
-	w.Header().Del("Content-Length")
-
-	// set status from script
-	w.WriteHeader(req.Status)
-
-	// write response body
-	// nolint
-	w.Write([]byte(req.Body))
-
-	return false
 }
 
 func addHeader(getHeader, setHeader http.Header) {
