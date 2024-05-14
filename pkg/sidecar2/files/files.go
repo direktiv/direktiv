@@ -63,14 +63,14 @@ func WriteFiles(location string, files []engine.FunctionFileDefinition) error {
 	panic("")
 }
 
-func decompressAndUntar(location string, perms string, encodedData []byte) error {
-	// gr, err := gzip.NewReader(bytes.NewBuffer(encodedData))
-	// if err != nil {
-	// 	return err
-	// }
-	// defer gr.Close()
+// func decompressAndUntar(location string, perms string, encodedData []byte) error {
+// gr, err := gzip.NewReader(bytes.NewBuffer(encodedData))
+// if err != nil {
+// 	return err
+// }
+// defer gr.Close()
 
-	// // Untar directly from the gzip reader
-	// return untar(location, perms, gr)
-	panic("")
-}
+// // Untar directly from the gzip reader
+// return untar(location, perms, gr)
+// panic("")
+// }

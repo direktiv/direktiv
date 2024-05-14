@@ -1,4 +1,4 @@
-package sidecar2
+package types
 
 import "github.com/direktiv/direktiv/pkg/refactor/engine"
 

@@ -11,17 +11,11 @@ import (
 	"sync"
 
 	"github.com/direktiv/direktiv/pkg/refactor/engine"
-	"github.com/direktiv/direktiv/pkg/sidecar2"
 	"github.com/direktiv/direktiv/pkg/sidecar2/files"
+	"github.com/direktiv/direktiv/pkg/sidecar2/types"
 )
 
-func executeFunction(
-	r *http.Request,
-	w http.ResponseWriter,
-	userServiceURL string,
-	maxResponseSize int,
-	actionCtl *sync.Map,
-	extractAction func(r *http.Request) (string, engine.ActionRequest, error)) {
+func executeFunction(r *http.Request, w http.ResponseWriter, userServiceURL string, maxResponseSize int, actionCtl *sync.Map, extractAction func(r *http.Request) (string, engine.ActionRequest, error)) {
 	// 1. Validate/Extract Inputs.
 	actionID, ar, err := extractAction(r)
 	if err != nil {
@@ -30,12 +24,11 @@ func executeFunction(
 	}
 	// 2. Build actionCtl.
 	ctx, cancel := context.WithCancel(r.Context())
-	ctl := sidecar2.ActionController{
+	ctl := types.ActionController{
 		Cancel:        cancel,
 		ActionRequest: ar,
 	}
 	actionCtl.Store(actionID, ctl)
-
 	// 3. Provision.
 	filesLocation := filepath.Join(SharedDir, actionID)
 	err = files.WriteFiles(filesLocation, ctl.Files)
@@ -43,7 +36,6 @@ func executeFunction(
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-
 	// 4. Prepare Request.
 	req, err := prepareRequestToUserContainer(ctx, actionID, userServiceURL, filesLocation, ctl.UserInput)
 	if err != nil {
@@ -55,6 +47,7 @@ func executeFunction(
 	resp, err := executeRequestToUserContainer(maxResponseSize, req)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+
 		return
 	}
 	defer resp.Body.Close()

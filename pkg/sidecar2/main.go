@@ -5,11 +5,11 @@ import (
 	"sync"
 
 	"github.com/direktiv/direktiv/pkg/sidecar2/api"
-	"github.com/direktiv/direktiv/pkg/sidecar2/config"
+	"github.com/direktiv/direktiv/pkg/sidecar2/types"
 )
 
 func RunApplication() {
-	var config config.Config
+	var config types.Config
 	var dataMap sync.Map // actionID -> Action
 	slog.Debug("starting sidecar APIs")
 	api.StartApis(config, &dataMap)

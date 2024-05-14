@@ -1,4 +1,4 @@
-package config
+package types
 
 // Config defines the configuration structure for environment variables.
 type Config struct {

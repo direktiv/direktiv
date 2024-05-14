@@ -11,7 +11,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/flow"
 	"github.com/direktiv/direktiv/pkg/refactor/engine"
-	"github.com/direktiv/direktiv/pkg/sidecar2"
+	"github.com/direktiv/direktiv/pkg/sidecar2/types"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 )
@@ -27,17 +27,17 @@ const (
 	SharedDir = "/mnt/shared"
 )
 
-func StartApis(config sidecar2.Config, actionCtl *sync.Map) {
-	cap, err := strconv.Atoi(config.MaxResponseSize)
+func StartApis(config types.Config, actionCtl *sync.Map) {
+	limit, err := strconv.Atoi(config.MaxResponseSize)
 	if err != nil {
 		slog.Error("parsing config.MaxResponseSize", "error", err, "MaxResponseSize", config.MaxResponseSize)
 		panic(err)
 	}
 
-	slog.Debug("Initializing sidecar", "MaxResponseSize", cap, "FlowServerURL", config.FlowServerURL)
+	slog.Debug("Initializing sidecar", "MaxResponseSize", limit, "FlowServerURL", config.FlowServerURL)
 
 	slog.Debug("Initializing flow exposed routes")
-	externalRouter := setupAPIForFlow(config.UserServiceURL, cap, actionCtl)
+	externalRouter := setupAPIForFlow(config.UserServiceURL, limit, actionCtl)
 
 	slog.Debug("Initializing user container exposed routes")
 	// Internal router, accessible only to the user service.
@@ -59,10 +59,9 @@ func setupAPIForFlow(userServiceURL string, maxResponseSize int, actionCtl *sync
 	router.Use(middleware.Recoverer)
 	// Router for handling external requests.
 	router.Post("/", func(w http.ResponseWriter, r *http.Request) {
-		executeFunction(r, w, userServiceURL, maxResponseSize, actionCtl, func(r *http.Request) (string, engine.ActionRequest, error) {
-			return extractActionData(r)
-		})
+		executeFunction(r, w, userServiceURL, maxResponseSize, actionCtl, extractActionData)
 	})
+
 	return router
 }
 

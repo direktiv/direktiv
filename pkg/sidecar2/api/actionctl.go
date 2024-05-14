@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/direktiv/direktiv/pkg/sidecar2"
+	"github.com/direktiv/direktiv/pkg/sidecar2/types"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 )
@@ -45,7 +45,7 @@ func handlePostLog(r *http.Request, dataMap *sync.Map) (int, error) {
 	if !loaded {
 		return http.StatusInternalServerError, fmt.Errorf("failed to handle request action with this ID is not known")
 	}
-	action, ok := value.(sidecar2.ActionController)
+	action, ok := value.(types.ActionController)
 	if !ok {
 		return http.StatusInternalServerError, fmt.Errorf("failed to handle request sidecar in invalid state")
 	}
@@ -61,7 +61,7 @@ func handlePostLog(r *http.Request, dataMap *sync.Map) (int, error) {
 	return http.StatusOK, nil
 }
 
-func logMsg(logLevel string, msg string, action sidecar2.ActionController) {
+func logMsg(logLevel string, msg string, action types.ActionController) {
 	actionLog := slog.Debug
 	switch logLevel {
 	case "ERROR", "error":
