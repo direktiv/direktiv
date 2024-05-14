@@ -245,7 +245,7 @@ test("the user can copy the output to the clipboard when there is one", async ({
     "an empty output will disable the copy button"
   ).toBeDisabled();
 
-  const snippetToRun = "feedInput" as const;
+  const snippetToRun = "feedInput";
   const expectedOutput = expectedSnippetOutput[snippetToRun];
 
   const snippetButton = page.getByTestId(`jq-run-snippet-${snippetToRun}-btn`);
@@ -289,7 +289,7 @@ test("It will run every snippet succefully", async ({ page }) => {
 test("running a snippet will automatically scroll the page to the top", async ({
   page,
 }) => {
-  const snippetToRun = "stringInterpolation" as const;
+  const snippetToRun = "stringInterpolation";
   const snippetButton = page.getByTestId(`jq-run-snippet-${snippetToRun}-btn`);
 
   await snippetButton.click();
