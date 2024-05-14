@@ -6,7 +6,6 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins"
 )
 
 const debugPluginName = "debug-target"
@@ -22,7 +21,7 @@ func (ba *DebugPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, e
 func (ba *DebugPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		plugins.WriteInternalError(r, w, err, "reading request body")
+		gateway2.WriteInternalError(r, w, err, "reading request body")
 		return nil
 	}
 
@@ -46,5 +45,5 @@ func (ba *DebugPlugin) Type() string {
 }
 
 func init() {
-	plugins.RegisterPlugin(&DebugPlugin{})
+	gateway2.RegisterPlugin(&DebugPlugin{})
 }

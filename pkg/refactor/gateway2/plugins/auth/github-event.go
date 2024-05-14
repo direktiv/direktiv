@@ -2,12 +2,12 @@ package auth
 
 import (
 	"bytes"
+	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
 	"io"
 	"log/slog"
 	"net/http"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins"
 	"github.com/google/go-github/v57/github"
 )
 
@@ -18,7 +18,7 @@ type GithubWebhookPlugin struct {
 func (p *GithubWebhookPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
 	pl := &GithubWebhookPlugin{}
 
-	err := plugins.ConvertConfig(config.Config, pl)
+	err := gateway2.ConvertConfig(config.Config, pl)
 	if err != nil {
 		return nil, err
 	}
@@ -28,7 +28,7 @@ func (p *GithubWebhookPlugin) NewInstance(config core.PluginConfigV2) (core.Plug
 
 func (p *GithubWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
 	// check request is already authenticated
-	if plugins.ExtractContextActiveConsumer(r) != nil {
+	if gateway2.ExtractContextActiveConsumer(r) != nil {
 		return r
 	}
 
@@ -46,7 +46,7 @@ func (p *GithubWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) *h
 			Username: "github",
 		},
 	}
-	r = plugins.InjectContextActiveConsumer(r, c)
+	r = gateway2.InjectContextActiveConsumer(r, c)
 
 	return r
 }
@@ -56,5 +56,5 @@ func (*GithubWebhookPlugin) Type() string {
 }
 
 func init() {
-	plugins.RegisterPlugin(&GithubWebhookPlugin{})
+	gateway2.RegisterPlugin(&GithubWebhookPlugin{})
 }

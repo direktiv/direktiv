@@ -10,7 +10,6 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins"
 )
 
 type manager struct {
@@ -42,7 +41,7 @@ func NewManager(db *database.SQLStore) core.GatewayManagerV2 {
 func (m *manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	inner := m.atomicLoadRouter()
 	if inner == nil {
-		plugins.WriteJSONError(w, http.StatusServiceUnavailable, "", "no active gateway endpoints")
+		WriteJSONError(w, http.StatusServiceUnavailable, "", "no active gateway endpoints")
 
 		return
 	}

@@ -1,10 +1,10 @@
 package inbound
 
 import (
+	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
 	"net/http"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins"
 )
 
 // ACLPlugin is a simple access control method. It checks the incoming consumer
@@ -19,7 +19,7 @@ type ACLPlugin struct {
 func (acl *ACLPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
 	pl := &ACLPlugin{}
 
-	err := plugins.ConvertConfig(config.Config, pl)
+	err := gateway2.ConvertConfig(config.Config, pl)
 	if err != nil {
 		return nil, err
 	}
@@ -32,27 +32,27 @@ func (acl *ACLPlugin) Type() string {
 }
 
 func (acl *ACLPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
-	c := plugins.ExtractContextActiveConsumer(r)
+	c := gateway2.ExtractContextActiveConsumer(r)
 	if c == nil {
-		plugins.WriteInternalError(r, w, nil, "missing consumer")
+		gateway2.WriteInternalError(r, w, nil, "missing consumer")
 		return nil
 	}
 	if result(acl.AllowGroups, c.Groups) {
 		return r
 	}
 	if result(acl.DenyGroups, c.Groups) {
-		plugins.WriteInternalError(r, w, nil, "denied user groups")
+		gateway2.WriteInternalError(r, w, nil, "denied user groups")
 		return nil
 	}
 	if result(acl.AllowTags, c.Tags) {
 		return r
 	}
 	if result(acl.DenyTags, c.Tags) {
-		plugins.WriteInternalError(r, w, nil, "denied user tags")
+		gateway2.WriteInternalError(r, w, nil, "denied user tags")
 		return nil
 	}
 
-	plugins.WriteInternalError(r, w, nil, "denied user")
+	gateway2.WriteInternalError(r, w, nil, "denied user")
 
 	return nil
 }
@@ -71,5 +71,5 @@ func result(userValues []string, configValues []string) bool {
 }
 
 func init() {
-	plugins.RegisterPlugin(&ACLPlugin{})
+	gateway2.RegisterPlugin(&ACLPlugin{})
 }

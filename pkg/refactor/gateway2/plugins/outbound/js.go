@@ -2,6 +2,7 @@ package outbound
 
 import (
 	"fmt"
+	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
 	"io"
 	"log/slog"
 	"net/http"
@@ -9,7 +10,6 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins"
 	"github.com/dop251/goja"
 )
 
@@ -20,7 +20,7 @@ type JSOutboundPlugin struct {
 func (js *JSOutboundPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
 	pl := &JSOutboundPlugin{}
 
-	err := plugins.ConvertConfig(config.Config, pl)
+	err := gateway2.ConvertConfig(config.Config, pl)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +43,7 @@ func (js *JSOutboundPlugin) Execute(w http.ResponseWriter, r *http.Request) *htt
 	if r.Body != nil {
 		b, err = io.ReadAll(r.Body)
 		if err != nil {
-			plugins.WriteInternalError(r, w, err, "can not set read body for js plugin")
+			gateway2.WriteInternalError(r, w, err, "can not set read body for js plugin")
 			return nil
 		}
 		defer r.Body.Close()
@@ -65,7 +65,7 @@ func (js *JSOutboundPlugin) Execute(w http.ResponseWriter, r *http.Request) *htt
 	vm := goja.New()
 	err = vm.Set("input", resp)
 	if err != nil {
-		plugins.WriteInternalError(r, w, err, "can not set input object")
+		gateway2.WriteInternalError(r, w, err, "can not set input object")
 		return nil
 	}
 
@@ -73,7 +73,7 @@ func (js *JSOutboundPlugin) Execute(w http.ResponseWriter, r *http.Request) *htt
 		slog.Info("js log", slog.Any("log", txt))
 	})
 	if err != nil {
-		plugins.WriteInternalError(r, w, err, "can not set log function")
+		gateway2.WriteInternalError(r, w, err, "can not set log function")
 		return nil
 	}
 
@@ -85,7 +85,7 @@ func (js *JSOutboundPlugin) Execute(w http.ResponseWriter, r *http.Request) *htt
 		time.Sleep(time.Duration(tt) * time.Second)
 	})
 	if err != nil {
-		plugins.WriteInternalError(r, w, err, "can not set sleep function")
+		gateway2.WriteInternalError(r, w, err, "can not set sleep function")
 		return nil
 	}
 
@@ -94,7 +94,7 @@ func (js *JSOutboundPlugin) Execute(w http.ResponseWriter, r *http.Request) *htt
 
 	val, err := vm.RunScript("plugin", script)
 	if err != nil {
-		plugins.WriteInternalError(r, w, err, "can not execute script")
+		gateway2.WriteInternalError(r, w, err, "can not execute script")
 		return nil
 	}
 
@@ -124,5 +124,5 @@ func (js *JSOutboundPlugin) Type() string {
 }
 
 func init() {
-	plugins.RegisterPlugin(&JSOutboundPlugin{})
+	gateway2.RegisterPlugin(&JSOutboundPlugin{})
 }

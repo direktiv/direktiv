@@ -1,10 +1,10 @@
 package inbound
 
 import (
+	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
 	"net/http"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins"
 )
 
 type NameKeys struct {
@@ -21,7 +21,7 @@ type HeaderManipulationPlugin struct {
 func (hp *HeaderManipulationPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
 	pl := &HeaderManipulationPlugin{}
 
-	err := plugins.ConvertConfig(config.Config, pl)
+	err := gateway2.ConvertConfig(config.Config, pl)
 	if err != nil {
 		return nil, err
 	}
@@ -53,5 +53,5 @@ func (hp *HeaderManipulationPlugin) Type() string {
 }
 
 func init() {
-	plugins.RegisterPlugin(&HeaderManipulationPlugin{})
+	gateway2.RegisterPlugin(&HeaderManipulationPlugin{})
 }

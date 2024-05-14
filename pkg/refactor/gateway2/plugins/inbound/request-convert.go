@@ -5,11 +5,11 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
 	"io"
 	"net/http"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins"
 )
 
 // RequestConvertPlugin converts headers, query parameters, url paramneters
@@ -24,7 +24,7 @@ type RequestConvertPlugin struct {
 func (rcp *RequestConvertPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
 	pl := &RequestConvertPlugin{}
 
-	err := plugins.ConvertConfig(config.Config, pl)
+	err := gateway2.ConvertConfig(config.Config, pl)
 	if err != nil {
 		return nil, err
 	}
@@ -78,7 +78,7 @@ func (rcp *RequestConvertPlugin) Execute(w http.ResponseWriter, r *http.Request)
 		response.Headers = r.Header
 	}
 
-	c := plugins.ExtractContextActiveConsumer(r)
+	c := gateway2.ExtractContextActiveConsumer(r)
 
 	if !rcp.OmitConsumer && c != nil {
 		response.Consumer.Username = c.Username
@@ -94,13 +94,13 @@ func (rcp *RequestConvertPlugin) Execute(w http.ResponseWriter, r *http.Request)
 	if r.Body != nil && !rcp.OmitBody {
 		content, err = io.ReadAll(r.Body)
 		if err != nil {
-			plugins.WriteInternalError(r, w, err, "can not process content")
+			gateway2.WriteInternalError(r, w, err, "can not process content")
 			return nil
 		}
 	}
 
 	// add json content or base64 if binary
-	if plugins.IsJSON(string(content)) {
+	if gateway2.IsJSON(string(content)) {
 		response.Body = content
 	} else {
 		response.Body = []byte(fmt.Sprintf("{ \"data\": \"%s\" }",
@@ -109,7 +109,7 @@ func (rcp *RequestConvertPlugin) Execute(w http.ResponseWriter, r *http.Request)
 
 	newBody, err := json.Marshal(response)
 	if err != nil {
-		plugins.WriteInternalError(r, w, err, "can not process content")
+		gateway2.WriteInternalError(r, w, err, "can not process content")
 		return nil
 	}
 	r.Body = io.NopCloser(bytes.NewBuffer(newBody))
@@ -122,5 +122,5 @@ func (rcp *RequestConvertPlugin) Type() string {
 }
 
 func init() {
-	plugins.RegisterPlugin(&RequestConvertPlugin{})
+	gateway2.RegisterPlugin(&RequestConvertPlugin{})
 }

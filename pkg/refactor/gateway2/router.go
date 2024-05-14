@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins"
 )
 
 type router struct {
@@ -31,7 +30,7 @@ func buildRouter(endpoints []core.EndpointV2, consumers []core.ConsumerV2) *rout
 		// build plugins chain.
 		pChain := []core.PluginV2{}
 		for _, pConfig := range pConfigs {
-			p, err := plugins.NewPlugin(pConfig)
+			p, err := NewPlugin(pConfig)
 			if err != nil {
 				item.Errors = append(item.Errors, fmt.Errorf("plugin '%s' config: %w", pConfig.Typ, err))
 			}
@@ -52,26 +51,26 @@ func buildRouter(endpoints []core.EndpointV2, consumers []core.ConsumerV2) *rout
 		serveMux.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
 			// check if correct method.
 			if !slices.Contains(item.Methods, r.Method) {
-				plugins.WriteJSONError(w, http.StatusMethodNotAllowed, item.FilePath,
+				WriteJSONError(w, http.StatusMethodNotAllowed, item.FilePath,
 					fmt.Sprintf("method:%s is not allowed with this endpoint", r.Method))
 
 				return
 			}
 
 			// inject consumer files.
-			r = plugins.InjectContextConsumersList(r, filterNamespacedConsumers(consumers, item.Namespace))
+			r = InjectContextConsumersList(r, filterNamespacedConsumers(consumers, item.Namespace))
 			// inject namespace.
-			r = plugins.InjectContextNamespace(r, item.Namespace)
+			r = InjectContextNamespace(r, item.Namespace)
 			// inject endpoint.
-			r = plugins.InjectContextEndpoint(r, &endpoints[i])
+			r = InjectContextEndpoint(r, &endpoints[i])
 
 			for _, p := range pChain {
 				// checkpoint if auth plugins had a match.
 				if !isAuthPlugin(p) {
 					// case where auth is required but request is not authenticated (consumers doesn't match).
-					hasActiveConsumer := plugins.ExtractContextActiveConsumer(r) != nil
+					hasActiveConsumer := ExtractContextActiveConsumer(r) != nil
 					if !item.AllowAnonymous && !hasActiveConsumer {
-						plugins.WriteJSONError(w, http.StatusForbidden, item.FilePath, "authentication failed")
+						WriteJSONError(w, http.StatusForbidden, item.FilePath, "authentication failed")
 
 						return
 					}
@@ -85,7 +84,7 @@ func buildRouter(endpoints []core.EndpointV2, consumers []core.ConsumerV2) *rout
 
 	// mount not found route.
 	serveMux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		plugins.WriteJSONError(w, http.StatusNotFound, "", "gateway couldn't find a matching endpoint")
+		WriteJSONError(w, http.StatusNotFound, "", "gateway couldn't find a matching endpoint")
 	})
 
 	return &router{

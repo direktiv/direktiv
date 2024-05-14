@@ -1,10 +1,10 @@
 package target
 
 import (
+	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
 	"net/http"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins"
 )
 
 type InstantResponsePlugin struct {
@@ -18,7 +18,7 @@ func (ir *InstantResponsePlugin) NewInstance(config core.PluginConfigV2) (core.P
 		StatusCode:    http.StatusOK,
 		StatusMessage: "This is the end!",
 	}
-	err := plugins.ConvertConfig(config.Config, pl)
+	err := gateway2.ConvertConfig(config.Config, pl)
 	if err != nil {
 		return nil, err
 	}
@@ -27,7 +27,7 @@ func (ir *InstantResponsePlugin) NewInstance(config core.PluginConfigV2) (core.P
 }
 
 func (ir *InstantResponsePlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
-	if plugins.IsJSON(ir.StatusMessage) {
+	if gateway2.IsJSON(ir.StatusMessage) {
 		w.Header().Add("Content-Type", "application/json")
 	}
 
@@ -47,5 +47,5 @@ func (ir *InstantResponsePlugin) Type() string {
 }
 
 func init() {
-	plugins.RegisterPlugin(&InstantResponsePlugin{})
+	gateway2.RegisterPlugin(&InstantResponsePlugin{})
 }

@@ -7,7 +7,6 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins"
 )
 
 const (
@@ -28,7 +27,7 @@ func (ka *KeyAuthPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2,
 		KeyName: DefaultKeyName,
 	}
 
-	err := plugins.ConvertConfig(config.Config, pl)
+	err := gateway2.ConvertConfig(config.Config, pl)
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +37,7 @@ func (ka *KeyAuthPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2,
 
 func (ka *KeyAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
 	// check request is already authenticated
-	if plugins.ExtractContextActiveConsumer(r) != nil {
+	if gateway2.ExtractContextActiveConsumer(r) != nil {
 		return r
 	}
 
@@ -48,7 +47,7 @@ func (ka *KeyAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.R
 		return r
 	}
 
-	consumerList := plugins.ExtractContextConsumersList(r)
+	consumerList := gateway2.ExtractContextConsumersList(r)
 	if consumerList == nil {
 		slog.Debug("no consumer configured for api key")
 
@@ -64,7 +63,7 @@ func (ka *KeyAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.R
 
 	if c.APIKey == key {
 		// set active consumer
-		r = plugins.InjectContextActiveConsumer(r, c)
+		r = gateway2.InjectContextActiveConsumer(r, c)
 
 		// set headers if configured
 		if ka.AddUsernameHeader {
@@ -88,5 +87,5 @@ func (ka *KeyAuthPlugin) Type() string {
 }
 
 func init() {
-	plugins.RegisterPlugin(&KeyAuthPlugin{})
+	gateway2.RegisterPlugin(&KeyAuthPlugin{})
 }
