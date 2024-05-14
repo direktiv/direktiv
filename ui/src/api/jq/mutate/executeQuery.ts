@@ -30,7 +30,7 @@ export const useExecuteJQuery = ({
         apiKey: apiKey ?? undefined,
         urlParams: {},
         payload: {
-          jx: encode(`"jq(${jx})"`),
+          jx: encode(jx),
           data: encode(data),
         },
       }),

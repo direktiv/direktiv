@@ -36,7 +36,7 @@ test("It will display the input as output, when the user clicks the run button w
   const expectedDefaultInput = "{}";
 
   expect(await queryInput.inputValue(), "query input is . by default").toBe(
-    "."
+    "jq(.)"
   );
 
   expect(await outputTextArea.inputValue(), "output is empty by default").toBe(

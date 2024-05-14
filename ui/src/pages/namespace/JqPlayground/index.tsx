@@ -31,7 +31,7 @@ import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-const defaultJx = ".";
+const defaultJx = "jq(.)";
 const defaultData = "{}";
 
 const JqPlaygroundPage: FC = () => {
