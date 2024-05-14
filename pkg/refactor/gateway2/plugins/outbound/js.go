@@ -17,7 +17,7 @@ type JSOutboundPlugin struct {
 	Script string `mapstructure:"script" yaml:"script"`
 }
 
-func (js *JSOutboundPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
+func (js *JSOutboundPlugin) NewInstance(_ core.EndpointV2, config core.PluginConfigV2) (core.PluginV2, error) {
 	pl := &JSOutboundPlugin{}
 
 	err := plugins.ConvertConfig(config.Config, pl)

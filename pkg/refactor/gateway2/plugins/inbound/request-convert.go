@@ -22,7 +22,7 @@ type RequestConvertPlugin struct {
 	OmitConsumer bool `mapstructure:"omit_consumer" yaml:"omit_consumer"`
 }
 
-func (rcp *RequestConvertPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
+func (rcp *RequestConvertPlugin) NewInstance(_ core.EndpointV2, config core.PluginConfigV2) (core.PluginV2, error) {
 	pl := &RequestConvertPlugin{}
 
 	err := plugins.ConvertConfig(config.Config, pl)

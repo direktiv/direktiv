@@ -20,7 +20,7 @@ type SlackWebhookPlugin struct {
 	Secret string `mapstructure:"secret"`
 }
 
-func (p *SlackWebhookPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
+func (p *SlackWebhookPlugin) NewInstance(_ core.EndpointV2, config core.PluginConfigV2) (core.PluginV2, error) {
 	pl := &SlackWebhookPlugin{}
 
 	err := plugins.ConvertConfig(config.Config, pl)
