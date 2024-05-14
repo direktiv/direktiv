@@ -25,11 +25,6 @@ export const getCommonElements = (page: Page) => {
   };
 };
 
-export const getErrorContainer = (page: Page) => {
-  const errorContainer = page.getByTestId("form-errors");
-  return { errorContainer };
-};
-
 export const userScrolledADecentAmount = async (page: Page) =>
   await page.evaluate(
     /**

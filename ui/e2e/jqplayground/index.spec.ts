@@ -3,7 +3,6 @@ import { expect, test } from "@playwright/test";
 import {
   expectedSnippetOutput,
   getCommonElements,
-  getErrorContainer,
   scrolledToTheTop,
   userScrolledADecentAmount,
 } from "./utils";
