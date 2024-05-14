@@ -186,7 +186,7 @@ func appendEventListenersToDB(ctx context.Context, nsID uuid.UUID, nsName string
 			filterContext[k] = fmt.Sprintf("%v", v)
 		}
 		fEv.EventContextFilter = append(fEv.EventContextFilter, datastore.EventContextFilter{
-			Typ:     sed.Type,
+			Type:    sed.Type,
 			Context: filterContext,
 		})
 		for k, v := range sed.Context {
@@ -245,7 +245,7 @@ func (events *events) addInstanceEventListener(ctx context.Context, namespace uu
 			filterContext[k] = fmt.Sprintf("%v", v)
 		}
 		fEv.EventContextFilter = append(fEv.EventContextFilter, datastore.EventContextFilter{
-			Typ:     ced.Type,
+			Type:    ced.Type,
 			Context: filterContext,
 		})
 		for i, j := 0, len(fEv.EventContextFilter)-1; i < j; i, j = i+1, j-1 {

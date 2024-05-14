@@ -246,7 +246,7 @@ func convertListenersForAPI(listener *datastore.EventListener) eventListenerEntr
 		ListeningForEventTypes: listener.ListeningForEventTypes,
 	}
 	if len(listener.EventContextFilter) != 0 {
-		e.GlobGatekeepers = listener.EventContextFilter
+		e.EventContextFilter = listener.EventContextFilter
 	}
 	if len(listener.ReceivedEventsForAndTrigger) != 0 {
 		e.ReceivedEventsForAndTrigger = listener.ReceivedEventsForAndTrigger
@@ -472,7 +472,7 @@ type eventListenerEntry struct {
 	TriggerType                 string    `json:"triggerType"`
 	TriggerWorkflow             any       `json:"triggerWorkflow,omitempty"`
 	TriggerInstance             any       `json:"triggerInstance,omitempty"`
-	GlobGatekeepers             any       `json:"globGatekeepers,omitempty"`
+	EventContextFilter          any       `json:"eventContextFilter,omitempty"`
 }
 
 // nolint:canonicalheader

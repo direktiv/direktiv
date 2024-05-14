@@ -363,9 +363,9 @@
                       triggerInstance:
                         type: string
                         description: The instance triggered by the event listener.
-                      globGatekeepers:
+                      eventContextFilter:
                         type: object
-                        description: Global gatekeepers associated with the event listener.
+                        description: Glob patterns associated with the event listener.
 
 /api/v2/namespaces/{namespace}/events/listeners/{listenerID}:
     get:
@@ -443,6 +443,6 @@
                       triggerInstance:
                         type: string
                         description: The instance triggered by the event listener.
-                      globGatekeepers:
+                      eventContextFilter:
                         type: object
-                        description: Global gatekeepers associated with the event listener.
+                        description: Glob patterns associated with the event listener.

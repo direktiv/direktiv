@@ -75,7 +75,7 @@ type EventListener struct {
 }
 
 type EventContextFilter struct {
-	Typ     string            `json:"typ"`
+	Type    string            `json:"type"`
 	Context map[string]string `json:"context"`
 }
 

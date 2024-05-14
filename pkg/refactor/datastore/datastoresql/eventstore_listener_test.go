@@ -186,7 +186,7 @@ func createTestEventListener(ns uuid.UUID) *datastore.EventListener {
 		TriggerWorkflow:             uuid.New().String(),
 		EventContextFilter: []datastore.EventContextFilter{
 			{
-				Typ: "test-type",
+				Type: "test-type",
 				Context: map[string]string{
 					"id": "filter of this",
 				},
