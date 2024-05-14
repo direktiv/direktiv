@@ -21,13 +21,13 @@ func RegisterPlugin(p core.PluginV2) {
 	}
 }
 
-func NewPlugin(endpoint core.EndpointV2, config core.PluginConfigV2) (core.PluginV2, error) {
+func NewPlugin(config core.PluginConfigV2) (core.PluginV2, error) {
 	f, ok := registry[config.Typ]
 	if !ok {
 		return nil, fmt.Errorf("unknow plugin '%s'", config.Typ)
 	}
 
-	return f.NewInstance(endpoint, config)
+	return f.NewInstance(config)
 }
 
 func ConvertConfig(config map[string]any, target any) error {

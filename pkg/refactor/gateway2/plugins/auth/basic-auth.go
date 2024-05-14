@@ -20,7 +20,7 @@ type BasicAuthPlugin struct {
 
 var _ core.PluginV2 = &BasicAuthPlugin{}
 
-func (ba *BasicAuthPlugin) NewInstance(_ core.EndpointV2, config core.PluginConfigV2) (core.PluginV2, error) {
+func (ba *BasicAuthPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
 	pl := &BasicAuthPlugin{}
 
 	err := plugins.ConvertConfig(config.Config, pl)

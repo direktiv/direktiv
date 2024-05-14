@@ -18,7 +18,7 @@ type ACLPlugin struct {
 	DenyTags    []string `mapstructure:"deny_tags"`
 }
 
-func (acl *ACLPlugin) NewInstance(_ core.EndpointV2, config core.PluginConfigV2) (core.PluginV2, error) {
+func (acl *ACLPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
 	pl := &ACLPlugin{}
 
 	err := plugins.ConvertConfig(config.Config, pl)

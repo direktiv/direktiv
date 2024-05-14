@@ -18,7 +18,7 @@ type HeaderManipulationPlugin struct {
 	HeadersToRemove []NameKeys `mapstructure:"headers_to_remove"`
 }
 
-func (hp *HeaderManipulationPlugin) NewInstance(_ core.EndpointV2, config core.PluginConfigV2) (core.PluginV2, error) {
+func (hp *HeaderManipulationPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
 	pl := &HeaderManipulationPlugin{}
 
 	err := plugins.ConvertConfig(config.Config, pl)

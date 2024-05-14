@@ -13,7 +13,7 @@ type InstantResponsePlugin struct {
 	ContentType   string `mapstructure:"content_type"   yaml:"content_type"`
 }
 
-func (ir *InstantResponsePlugin) NewInstance(_ core.EndpointV2, config core.PluginConfigV2) (core.PluginV2, error) {
+func (ir *InstantResponsePlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
 	pl := &InstantResponsePlugin{
 		StatusCode:    http.StatusOK,
 		StatusMessage: "This is the end!",
