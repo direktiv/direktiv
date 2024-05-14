@@ -1,6 +1,7 @@
 package plugins
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -10,25 +11,23 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-type Factory func(config core.PluginConfigV2) (core.PluginV2, error)
+var registry = make(map[string]core.PluginV2)
 
-var registry = make(map[string]Factory)
-
-func RegisterPlugin(name string, factory Factory) {
+func RegisterPlugin(p core.PluginV2) {
 	if os.Getenv("DIREKTIV_APP") != "sidecar" &&
 		os.Getenv("DIREKTIV_APP") != "init" {
-		slog.Info("adding plugin", slog.String("name", name))
-		registry[name] = factory
+		slog.Info("adding plugin", slog.String("name", p.Type()))
+		registry[p.Type()] = p
 	}
 }
 
-func NewPlugin(config core.PluginConfigV2) (core.PluginV2, error) {
+func NewPlugin(endpoint core.EndpointV2, config core.PluginConfigV2) (core.PluginV2, error) {
 	f, ok := registry[config.Typ]
 	if !ok {
 		return nil, fmt.Errorf("unknow plugin '%s'", config.Typ)
 	}
 
-	return f(config)
+	return f.NewInstance(endpoint, config)
 }
 
 func ConvertConfig(config map[string]any, target any) error {
@@ -38,4 +37,10 @@ func ConvertConfig(config map[string]any, target any) error {
 	}
 
 	return nil
+}
+
+func IsJSON(str string) bool {
+	var js json.RawMessage
+
+	return json.Unmarshal([]byte(str), &js) == nil
 }

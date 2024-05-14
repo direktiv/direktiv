@@ -16,7 +16,7 @@ type DebugPlugin struct{}
 
 var _ core.PluginV2 = &DebugPlugin{}
 
-func NewDebugPlugin(config core.PluginConfigV2) (core.PluginV2, error) {
+func (ba *DebugPlugin) NewInstance(_ core.EndpointV2, config core.PluginConfigV2) (core.PluginV2, error) {
 	return &DebugPlugin{}, nil
 }
 
@@ -45,10 +45,6 @@ func (ba *DebugPlugin) Type() string {
 	return debugPluginName
 }
 
-func (ba *DebugPlugin) Config() interface{} {
-	return nil
-}
-
 func init() {
-	plugins.RegisterPlugin(debugPluginName, NewDebugPlugin)
+	plugins.RegisterPlugin(&DebugPlugin{})
 }

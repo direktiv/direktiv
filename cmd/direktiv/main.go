@@ -8,6 +8,7 @@ import (
 	"github.com/direktiv/direktiv/cmd/dinit"
 	"github.com/direktiv/direktiv/cmd/sidecar"
 	_ "github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins/auth"
+	_ "github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins/inbound"
 	_ "github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins/target"
 	"github.com/direktiv/direktiv/pkg/refactor/middlewares"
 )
