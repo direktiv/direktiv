@@ -23,10 +23,13 @@ const Row = ({
   const { t } = useTranslation();
   const createdAt = useUpdatedAt(listener.createdAt);
 
-  // TODO: rename triggerWorkflow, triggerInstance in API?
   const { triggerWorkflow: workflow, triggerInstance: instance } = listener;
   const listenerType = instance ? "instance" : "workflow";
   const target = workflow || instance;
+  const contextFilters = listener.eventContextFilters.filter(
+    (item) => !!Object.keys(item.context).length
+  );
+  const contextFiltersCount = contextFilters.length;
 
   let linkTarget;
 
@@ -89,6 +92,11 @@ const Row = ({
               />
             </TooltipContent>
           </Tooltip>
+        </TableCell>
+        <TableCell>
+          {t("pages.events.listeners.tableRow.contextFilters", {
+            count: contextFiltersCount,
+          })}
         </TableCell>
       </TableRow>
     </TooltipProvider>
