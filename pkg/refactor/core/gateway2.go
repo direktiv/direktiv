@@ -53,8 +53,10 @@ type PluginConfigV2 struct {
 }
 
 type PluginV2 interface {
+	// NewInstance method creates new plugin instance
+	NewInstance(endpoint EndpointV2, config PluginConfigV2) (PluginV2, error)
+
 	Execute(w http.ResponseWriter, r *http.Request) (*http.Request, error)
-	Config() any
 	Type() string
 }
 

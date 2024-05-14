@@ -12,39 +12,29 @@ import (
 )
 
 const (
-	keyAuthPluginName = "key-auth"
-	keyName           = "API-Token"
+	DefaultKeyName = "API-Token"
 )
 
-// KeyAuthConfig configures a key-auth plugin instance.
-// The plugin can be configured to set consumer information (name, groups, tags)
-// and the name of the header for the api key.
-type KeyAuthConfig struct {
-	AddUsernameHeader bool `mapstructure:"add_username_header" yaml:"add_username_header"`
-	AddTagsHeader     bool `mapstructure:"add_tags_header"     yaml:"add_tags_header"`
-	AddGroupsHeader   bool `mapstructure:"add_groups_header"   yaml:"add_groups_header"`
+type KeyAuthPlugin struct {
+	AddUsernameHeader bool `mapstructure:"add_username_header"`
+	AddTagsHeader     bool `mapstructure:"add_tags_header"`
+	AddGroupsHeader   bool `mapstructure:"add_groups_header"`
 
 	// KeyName defines the header for the key
-	KeyName string `mapstructure:"key_name" yaml:"key_name"`
+	KeyName string `mapstructure:"key_name"`
 }
 
-type KeyAuthPlugin struct {
-	config *KeyAuthConfig
-}
-
-func NewKeyAuthPlugin(config core.PluginConfigV2) (core.PluginV2, error) {
-	keyAuthConfig := &KeyAuthConfig{
-		KeyName: keyName,
+func (ka *KeyAuthPlugin) NewInstance(_ core.EndpointV2, config core.PluginConfigV2) (core.PluginV2, error) {
+	pl := &KeyAuthPlugin{
+		KeyName: DefaultKeyName,
 	}
 
-	err := plugins.ConvertConfig(config.Config, keyAuthConfig)
+	err := plugins.ConvertConfig(config.Config, pl)
 	if err != nil {
 		return nil, err
 	}
 
-	return &KeyAuthPlugin{
-		config: keyAuthConfig,
-	}, nil
+	return pl, nil
 }
 
 func (ka *KeyAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, error) {
@@ -53,7 +43,7 @@ func (ka *KeyAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.
 		return r, nil
 	}
 
-	key := r.Header.Get(ka.config.KeyName)
+	key := r.Header.Get(ka.KeyName)
 	// no basic auth provided
 	if key == "" {
 		return r, nil
@@ -78,15 +68,15 @@ func (ka *KeyAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.
 		r = r.WithContext(context.WithValue(r.Context(), core.GatewayCtxKeyActiveConsumer, c))
 
 		// set headers if configured
-		if ka.config.AddUsernameHeader {
+		if ka.AddUsernameHeader {
 			r.Header.Set(gateway2.ConsumerUserHeader, c.Username)
 		}
 
-		if ka.config.AddTagsHeader && len(c.Tags) > 0 {
+		if ka.AddTagsHeader && len(c.Tags) > 0 {
 			r.Header.Set(gateway2.ConsumerTagsHeader, strings.Join(c.Tags, ","))
 		}
 
-		if ka.config.AddGroupsHeader && len(c.Groups) > 0 {
+		if ka.AddGroupsHeader && len(c.Groups) > 0 {
 			r.Header.Set(gateway2.ConsumerGroupsHeader, strings.Join(c.Groups, ","))
 		}
 	}
@@ -94,14 +84,10 @@ func (ka *KeyAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.
 	return r, nil
 }
 
-func (ka *KeyAuthPlugin) Config() interface{} {
-	return ka.config
-}
-
 func (ka *KeyAuthPlugin) Type() string {
-	return keyAuthPluginName
+	return "key-auth"
 }
 
 func init() {
-	plugins.RegisterPlugin(keyAuthPluginName, NewKeyAuthPlugin)
+	plugins.RegisterPlugin(&KeyAuthPlugin{})
 }
