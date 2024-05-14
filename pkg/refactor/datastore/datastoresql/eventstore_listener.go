@@ -38,7 +38,7 @@ func (s *sqlEventListenerStore) Append(ctx context.Context, listener *datastore.
 		return err
 	}
 
-	filters, err := json.Marshal(listener.EventContextFilter)
+	filters, err := json.Marshal(listener.EventContextFilters)
 	if err != nil {
 		return err
 	}
@@ -256,7 +256,7 @@ func (s *sqlEventListenerStore) GetByID(ctx context.Context, id uuid.UUID) (*dat
 		TriggerInstance:             trigger.InstanceID,
 		ReceivedEventsForAndTrigger: ev,
 		Metadata:                    l.Metadata,
-		EventContextFilter:          filters,
+		EventContextFilters:         filters,
 	}, nil
 }
 
@@ -355,7 +355,7 @@ func convertListerners(from []*gormEventListener) ([]*datastore.EventListener, e
 			TriggerInstance:             trigger.InstanceID,
 			ReceivedEventsForAndTrigger: ev,
 			Metadata:                    l.Metadata,
-			EventContextFilter:          filters,
+			EventContextFilters:         filters,
 		})
 	}
 

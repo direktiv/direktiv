@@ -295,7 +295,7 @@ func (ee EventEngine) multiConditionEventAndHandler(l *datastore.EventListener, 
 }
 
 func PassEventContextFilters(l *datastore.EventListener, event *datastore.Event) bool {
-	for _, filter := range l.EventContextFilter {
+	for _, filter := range l.EventContextFilters {
 		if filter.Type == event.Event.Type() {
 			return EventPassedGatekeeper(filter.Context, *event.Event)
 		}

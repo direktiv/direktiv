@@ -363,7 +363,7 @@
                       triggerInstance:
                         type: string
                         description: The instance triggered by the event listener.
-                      eventContextFilter:
+                      eventContextFilters:
                         type: object
                         description: Glob patterns associated with the event listener.
 
@@ -443,6 +443,6 @@
                       triggerInstance:
                         type: string
                         description: The instance triggered by the event listener.
-                      eventContextFilter:
+                      eventContextFilters:
                         type: object
                         description: Glob patterns associated with the event listener.
