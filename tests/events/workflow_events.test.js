@@ -57,11 +57,13 @@ states:
 	})
 
 	it(`should fail to invoke the '/listener.yml' workflow`, async () => {
-		const req = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/instances?path=listener.yml&wait=true`)
+		const req = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=listener.yml&wait=true`)
 		expect(req.statusCode).toEqual(500)
 		expect(req.body).toMatchObject({
-			code: 500,
-			message: 'cannot manually invoke event-based workflow',
+			error: {
+				code: 'cannot manually invoke event-based workflow',
+				message: 'cannot manually invoke event-based workflow',
+			},
 		})
 	})
 
