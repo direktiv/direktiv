@@ -667,7 +667,6 @@ func (worker *inboundWorker) respondToFlow(w http.ResponseWriter, actionId strin
 }
 
 func (worker *inboundWorker) reportSidecarError(w http.ResponseWriter, ir *functionRequest, err error) {
-
 	worker.respondToFlow(w, ir.actionId, &outcome{
 		errMsg: err.Error(),
 	})
