@@ -4,14 +4,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/design/Dialog";
+import { EventSchemaType, NewEventSchemaType } from "~/api/eventsv2/schema";
 import { SubmitHandler, useForm } from "react-hook-form";
 
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
-import { EventSchemaType } from "~/api/eventsv2/schema";
-import { NewEventSchemaType } from "~/api/events/schema";
 import { Radio } from "lucide-react";
 import { prettifyJsonString } from "~/util/helpers";
 import { useReplayEvent } from "~/api/eventsv2/mutate/replayEvent";

@@ -7,7 +7,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "~/design/Dialog";
-import { NewEventSchema, NewEventSchemaType } from "~/api/events/schema";
+import { NewEventSchema, NewEventSchemaType } from "~/api/eventsv2/schema";
 import { PlusCircle, Radio } from "lucide-react";
 import { SubmitHandler, useForm } from "react-hook-form";
 
