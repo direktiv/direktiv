@@ -53,6 +53,7 @@ func (acl *ACLPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Requ
 	}
 
 	plugins.WriteInternalError(r, w, nil, "denied user")
+
 	return nil
 }
 

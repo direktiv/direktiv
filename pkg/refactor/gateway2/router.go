@@ -63,7 +63,7 @@ func buildRouter(endpoints []core.EndpointV2, consumers []core.ConsumerV2) *rout
 			// inject namespace.
 			r = plugins.InjectContextNamespace(r, item.Namespace)
 			// inject endpoint.
-			r = plugins.InjectContextEndpoint(r, &item)
+			r = plugins.InjectContextEndpoint(r, &endpoints[i])
 
 			for _, p := range pChain {
 				// checkpoint if auth plugins had a match.

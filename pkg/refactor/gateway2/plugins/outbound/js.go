@@ -43,7 +43,8 @@ func (js *JSOutboundPlugin) Execute(w http.ResponseWriter, r *http.Request) *htt
 	if r.Body != nil {
 		b, err = io.ReadAll(r.Body)
 		if err != nil {
-			return nil, fmt.Errorf("can not set read body for js plugin")
+			plugins.WriteInternalError(r, w, err, "can not set read body for js plugin")
+			return nil
 		}
 		defer r.Body.Close()
 	}
@@ -64,14 +65,16 @@ func (js *JSOutboundPlugin) Execute(w http.ResponseWriter, r *http.Request) *htt
 	vm := goja.New()
 	err = vm.Set("input", resp)
 	if err != nil {
-		return nil, fmt.Errorf("can not set input object")
+		plugins.WriteInternalError(r, w, err, "can not set input object")
+		return nil
 	}
 
 	err = vm.Set("log", func(txt interface{}) {
 		slog.Info("js log", slog.Any("log", txt))
 	})
 	if err != nil {
-		return nil, fmt.Errorf("can not set log function")
+		plugins.WriteInternalError(r, w, err, "can not set log function")
+		return nil
 	}
 
 	err = vm.Set("sleep", func(t interface{}) {
@@ -82,7 +85,8 @@ func (js *JSOutboundPlugin) Execute(w http.ResponseWriter, r *http.Request) *htt
 		time.Sleep(time.Duration(tt) * time.Second)
 	})
 	if err != nil {
-		return nil, fmt.Errorf("can not set sleep function")
+		plugins.WriteInternalError(r, w, err, "can not set sleep function")
+		return nil
 	}
 
 	script := fmt.Sprintf("function run() { %s; return input } run()",
@@ -90,7 +94,8 @@ func (js *JSOutboundPlugin) Execute(w http.ResponseWriter, r *http.Request) *htt
 
 	val, err := vm.RunScript("plugin", script)
 	if err != nil {
-		return nil, fmt.Errorf("can not execute script")
+		plugins.WriteInternalError(r, w, err, "can not execute script")
+		return nil
 	}
 
 	if val != nil && !val.Equals(goja.Undefined()) {

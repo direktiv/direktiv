@@ -3,7 +3,6 @@ package gateway2
 import (
 	"context"
 	"fmt"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins"
 	"net/http"
 	"slices"
 	"sync/atomic"
@@ -11,6 +10,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
+	"github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins"
 )
 
 type manager struct {

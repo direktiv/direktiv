@@ -2,8 +2,9 @@ package plugins
 
 import (
 	"context"
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"net/http"
+
+	"github.com/direktiv/direktiv/pkg/refactor/core"
 )
 
 const (
@@ -25,6 +26,7 @@ func ExtractContextConsumersList(r *http.Request) []core.ConsumerV2 {
 
 	return cast
 }
+
 func InjectContextConsumersList(r *http.Request, contextValue []core.ConsumerV2) *http.Request {
 	return r.WithContext(context.WithValue(r.Context(), gatewayCtxKeyConsumersList, contextValue))
 }
@@ -41,6 +43,7 @@ func ExtractContextActiveConsumer(r *http.Request) *core.ConsumerV2 {
 
 	return cast
 }
+
 func InjectContextActiveConsumer(r *http.Request, contextValue *core.ConsumerV2) *http.Request {
 	return r.WithContext(context.WithValue(r.Context(), gatewayCtxKeyActiveConsumer, contextValue))
 }
@@ -57,6 +60,7 @@ func ExtractContextNamespace(r *http.Request) string {
 
 	return cast
 }
+
 func InjectContextNamespace(r *http.Request, contextValue string) *http.Request {
 	return r.WithContext(context.WithValue(r.Context(), gatewayCtxKeyNamespace, contextValue))
 }
@@ -73,6 +77,7 @@ func ExtractContextEndpoint(r *http.Request) *core.EndpointV2 {
 
 	return cast
 }
+
 func InjectContextEndpoint(r *http.Request, contextValue *core.EndpointV2) *http.Request {
 	return r.WithContext(context.WithValue(r.Context(), gatewayCtxKeyEndpoint, contextValue))
 }
