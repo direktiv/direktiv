@@ -90,8 +90,6 @@ spec:
           env:
           - name: DIREKTIV_DEBUG
             value: {{ .Values.flow.debug | quote }}
-          - name: DIREKTIV_LOG_FORMAT
-            value: {{ .Values.flow.logging | quote }}
           - name: DIREKTIV_API_V1_PORT
             value: "6665"
           - name: DIREKTIV_API_V2_PORT

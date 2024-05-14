@@ -12,6 +12,16 @@ describe('Test gateway2 reconciling', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
+	it(`should create a new foo secret`, async () => {
+		const res = await request(config.getDirektivHost())
+			.post(`/api/v2/namespaces/${ namespace }/secrets`)
+			.send({
+				name: 'foo',
+				data: btoa('bar'),
+			})
+		expect(res.statusCode).toEqual(200)
+	})
+
 	helpers.itShouldCreateYamlFileV2(it, expect, namespace,
 		'/', 'wf1.yml', 'workflow', `
 direktiv_api: workflow/v1
@@ -27,7 +37,7 @@ states:
 		'/', 'c1.yaml', 'consumer', `
 direktiv_api: "consumer/v2"
 username: user1
-password: pwd1
+password: fetchSecret(foo)
 api_key: key1
 tags:
 - tag1
@@ -65,7 +75,7 @@ plugins:
 	retry10(`should execute protected ep1.yaml endpoint`, async () => {
 		const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway2/foo`)
 			.send({})
-			.auth('user1', 'pwd1')
+			.auth('user1', 'bar')
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.data.text).toEqual('from debug plugin')
 	})

@@ -430,7 +430,7 @@
             "serialisationError": "There was an error serializing the form data",
             "username": "Username",
             "password": "Password",
-            "api_key": "Api key",
+            "apiKey": "Api key",
             "tags": "Tags (optional)",
             "groups": "Groups (optional)",
             "tagsPlaceholder": "Enter a tag",

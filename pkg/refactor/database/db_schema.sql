@@ -263,6 +263,6 @@ ALTER TABLE "event_topics" ADD COLUMN IF NOT EXISTS "namespace" text;
 
 ALTER TABLE "namespaces" DROP COLUMN IF EXISTS "config";
 ALTER TABLE "mirror_configs" ADD COLUMN IF NOT EXISTS "auth_type" text NOT NULL DEFAULT 'public';
-ALTER TABLE "mirror_configs" ADD COLUMN IF NOT EXISTS "auth_token" text NOT NULL DEFAULT 'public';
+ALTER TABLE "mirror_configs" ADD COLUMN IF NOT EXISTS "auth_token" text;
 
 DROP TABLE IF EXISTS "metrics";
