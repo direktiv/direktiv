@@ -6,6 +6,7 @@ import (
 	"compress/gzip"
 	"context"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -18,7 +19,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/flow"
 	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/util"
 )
@@ -479,7 +480,7 @@ func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
 
 	err = worker.prepFunctionRequest(ctx, ir)
 	if err != nil {
-		worker.reportSidecarError(ir, err)
+		worker.reportSidecarError(req.w, ir, err)
 		return
 	}
 
@@ -501,18 +502,18 @@ func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
 
 	out, err := worker.doFunctionRequest(rctx, ir)
 	if err != nil {
-		worker.reportSidecarError(ir, err)
+		worker.reportSidecarError(req.w, ir, err)
 		return
 	}
 
 	// fetch output variables
 	err = worker.setOutVariables(rctx, ir)
 	if err != nil {
-		worker.reportSidecarError(ir, err)
+		worker.reportSidecarError(req.w, ir, err)
 		return
 	}
 
-	worker.respondToFlow(rctx, ir, out)
+	worker.respondToFlow(req.w, ir.actionId, out)
 }
 
 func (worker *inboundWorker) setOutVariables(ctx context.Context, ir *functionRequest) error {
@@ -639,36 +640,35 @@ func tarGzDir(src string, buf io.Writer) error {
 	return nil
 }
 
-func (worker *inboundWorker) respondToFlow(ctx context.Context, ir *functionRequest, out *outcome) {
-	step := int32(ir.step)
-
-	_, err := worker.srv.flow.ReportActionResults(ctx, &grpc.ReportActionResultsRequest{
-		InstanceId:   ir.instanceId,
-		Step:         step,
-		ActionId:     ir.actionId,
-		Iterator:     int32(ir.iterator),
-		Output:       out.data,
-		ErrorCode:    out.errCode,
-		ErrorMessage: out.errMsg,
-	})
+func (worker *inboundWorker) respondToFlow(w http.ResponseWriter, actionId string, out *outcome) {
+	ar := enginerefactor.ActionResponse{
+		Output:  out.data,
+		ErrMsg:  out.errMsg,
+		ErrCode: out.errCode,
+	}
+	w.Header().Add(flow.DirektivActionIDHeader, actionId)
+	b, err := json.Marshal(ar)
 	if err != nil {
-		slog.Error("Failed to report results for request.", "action_id", ir.actionId, "error", err)
+		slog.Error("Failed to report results for request.", "action_id", actionId, "error", err)
 		return
 	}
-
+	_, err = w.Write(b)
+	if err != nil {
+		slog.Error("Failed to write results for request.", "action_id", actionId, "error", err)
+		return
+	}
 	if out.errCode != "" {
-		slog.Error("Request failed with catchable", "action_id", ir.actionId, "action_err_code", out.errCode, "error", out.errMsg)
+		slog.Error("Request failed with catchable", "action_id", actionId, "action_err_code", out.errCode, "error", out.errMsg)
 	} else if out.errMsg != "" {
-		slog.Error("Request failed with uncatchable service error.", "action_id", ir.actionId, "error", out.errMsg)
+		slog.Error("Request failed with uncatchable service error.", "action_id", actionId, "error", out.errMsg)
 	} else {
-		slog.Info("Request completed successfully.", "action_id", ir.actionId)
+		slog.Info("Request completed successfully.", "action_id", actionId)
 	}
 }
 
-func (worker *inboundWorker) reportSidecarError(ir *functionRequest, err error) {
-	ctx := context.Background()
+func (worker *inboundWorker) reportSidecarError(w http.ResponseWriter, ir *functionRequest, err error) {
 
-	worker.respondToFlow(ctx, ir, &outcome{
+	worker.respondToFlow(w, ir.actionId, &outcome{
 		errMsg: err.Error(),
 	})
 }

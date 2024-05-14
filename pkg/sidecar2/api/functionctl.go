@@ -104,7 +104,7 @@ func responseForwardingToClient(resp *http.Response) http.Handler {
 		if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
 			rC := engine.ActionResponse{
 				ErrCode: "container_failure",
-				Err:     fmt.Errorf("container failed with status %v", resp.StatusCode),
+				ErrMsg:  fmt.Sprintf("container failed with status %v", resp.StatusCode),
 			}
 			writeJSON(w, rC)
 

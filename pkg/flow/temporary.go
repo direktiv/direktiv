@@ -561,24 +561,17 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 
 				return
 			}
-			b := make([]byte, 0)
-			_, err := resp.Body.Read(b)
-			if err != nil {
-				slog.Debug("failed to read the resp body", "this", this(), "error", err)
-
-				return
-			}
 			var respBody enginerefactor.ActionResponse
-			err = json.Unmarshal(b, &respBody)
-			if err != nil {
-				slog.Debug("failed to read the resp body", "this", this(), "error", err)
+			decoder := json.NewDecoder(resp.Body)
+			if err := decoder.Decode(&respBody); err != nil {
+				slog.Debug("failed to decode the response body", "error", err)
 
 				return
 			}
 			payload := &actionResultPayload{
 				ActionID:     aid,
 				ErrorCode:    respBody.ErrCode,
-				ErrorMessage: fmt.Sprint(respBody.Err),
+				ErrorMessage: respBody.ErrMsg,
 				Output:       respBody.Output,
 			}
 

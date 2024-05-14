@@ -61,6 +61,6 @@ func EncodeActionRequest(ar ActionRequest) (io.Reader, error) {
 
 type ActionResponse struct {
 	Output  []byte `json:"output"`
-	Err     error  `json:"err"`
+	ErrMsg  string `json:"errMsg"`
 	ErrCode string `json:"errCode"`
 }
