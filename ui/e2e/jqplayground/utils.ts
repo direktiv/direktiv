@@ -14,6 +14,8 @@ export const getCommonElements = (page: Page) => {
   const inputTextContainer = page.getByTestId("jq-input-editor");
   const inputTextArea = inputTextContainer.getByRole("textbox");
 
+  const logsTextArea = page.getByTestId("jq-logs-editor").getByRole("textbox");
+
   return {
     copyInputBtn,
     copyOutputBtn,
@@ -22,6 +24,7 @@ export const getCommonElements = (page: Page) => {
     outputTextArea,
     inputTextContainer,
     inputTextArea,
+    logsTextArea,
   };
 };
 

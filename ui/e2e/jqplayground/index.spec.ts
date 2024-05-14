@@ -57,6 +57,27 @@ test("It will display the input as output, when the user clicks the run button w
     .toBe(expectedDefaultInput);
 });
 
+test("It will show an error in the logs, when the query is not a valid JQ command", async ({
+  page,
+}) => {
+  const { btnRun, queryInput, logsTextArea } = await getCommonElements(page);
+  await queryInput.fill("jq(\\.foo)");
+
+  await expect(
+    await logsTextArea.inputValue(),
+    "the logs are empty by default"
+  ).toBe("");
+
+  await btnRun.click();
+
+  await expect(
+    await logsTextArea.inputValue(),
+    "an error message should be displayed in the logs"
+  ).toContain(
+    'failure: error executing jq query \\.foo: unexpected token "\\\\"'
+  );
+});
+
 test("It will display an error when the input is not a valid JSON", async ({
   page,
   browserName,
