@@ -36,8 +36,6 @@
               type:
                 type: string
                 description: The type of the event.
-              additionalProperties:
-                  type: object
         application/cloudevents-batch+json:
           schema:
             type: array
@@ -57,8 +55,7 @@
                 type:
                   type: string
                   description: The type of the event.
-                additionalProperties:
-                  type: object
+
 /api/v2/namespaces/{namespace}/events/history:
   get:
     tags:
@@ -181,6 +178,7 @@
                             type: string
                           additionalProperties:
                             type: object
+
 /api/v2/namespaces/{namespace}/events/subscribe:
   get:
     tags:
@@ -246,6 +244,7 @@
               id: 2
               event: message
               data: {"Event":{"specversion":"1.0","id":"1234-234234","source":"https://direktiv.io/test","type":"testerDuplicate"},"namespace":"e09f0392-fe09-4378-bc0a-de3ab634f4e6","namespaceName":"wfeventsv2","receivedAt":"2024-04-25T14:28:56.374148Z", "serialID":2}
+
 /api/v2/namespaces/{namespace}/events/listener:
   get:
     tags:
