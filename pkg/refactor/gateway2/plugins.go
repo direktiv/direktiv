@@ -1,10 +1,11 @@
-package plugins
+package gateway2
 
 import (
 	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
+	"net/http"
 	"os"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
@@ -21,13 +22,13 @@ func RegisterPlugin(p core.PluginV2) {
 	}
 }
 
-func NewPlugin(endpoint core.EndpointV2, config core.PluginConfigV2) (core.PluginV2, error) {
+func NewPlugin(config core.PluginConfigV2) (core.PluginV2, error) {
 	f, ok := registry[config.Typ]
 	if !ok {
 		return nil, fmt.Errorf("unknow plugin '%s'", config.Typ)
 	}
 
-	return f.NewInstance(endpoint, config)
+	return f.NewInstance(config)
 }
 
 func ConvertConfig(config map[string]any, target any) error {
@@ -43,4 +44,28 @@ func IsJSON(str string) bool {
 	var js json.RawMessage
 
 	return json.Unmarshal([]byte(str), &js) == nil
+}
+
+func WriteJSONError(w http.ResponseWriter, status int, endpointFile string, msg string) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+
+	inner := struct {
+		EndpointFile string `json:"endpointFile,omitempty"`
+		Message      any    `json:"message"`
+	}{
+		EndpointFile: endpointFile,
+		Message:      msg,
+	}
+	payload := struct {
+		Error any `json:"error"`
+	}{
+		Error: inner,
+	}
+
+	_ = json.NewEncoder(w).Encode(payload)
+}
+
+func WriteInternalError(r *http.Request, w http.ResponseWriter, err error, msg string) {
+	WriteJSONError(w, http.StatusInternalServerError, ExtractContextEndpoint(r).FilePath, msg)
 }

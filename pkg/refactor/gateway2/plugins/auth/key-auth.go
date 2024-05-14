@@ -1,14 +1,12 @@
 package auth
 
 import (
-	"context"
 	"log/slog"
 	"net/http"
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins"
 )
 
 const (
@@ -24,12 +22,12 @@ type KeyAuthPlugin struct {
 	KeyName string `mapstructure:"key_name"`
 }
 
-func (ka *KeyAuthPlugin) NewInstance(_ core.EndpointV2, config core.PluginConfigV2) (core.PluginV2, error) {
+func (ka *KeyAuthPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
 	pl := &KeyAuthPlugin{
 		KeyName: DefaultKeyName,
 	}
 
-	err := plugins.ConvertConfig(config.Config, pl)
+	err := gateway2.ConvertConfig(config.Config, pl)
 	if err != nil {
 		return nil, err
 	}
@@ -37,35 +35,35 @@ func (ka *KeyAuthPlugin) NewInstance(_ core.EndpointV2, config core.PluginConfig
 	return pl, nil
 }
 
-func (ka *KeyAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, error) {
+func (ka *KeyAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
 	// check request is already authenticated
-	if gateway2.ParseRequestActiveConsumer(r) != nil {
-		return r, nil
+	if gateway2.ExtractContextActiveConsumer(r) != nil {
+		return r
 	}
 
 	key := r.Header.Get(ka.KeyName)
 	// no basic auth provided
 	if key == "" {
-		return r, nil
+		return r
 	}
 
-	consumerList := gateway2.ParseRequestConsumersList(r)
+	consumerList := gateway2.ExtractContextConsumersList(r)
 	if consumerList == nil {
 		slog.Debug("no consumer configured for api key")
 
-		return r, nil
+		return r
 	}
 	c := gateway2.FindConsumerByAPIKey(consumerList, key)
 	// no consumer matching auth name
 	if c == nil {
 		slog.Debug("no consumer configured for api key")
 
-		return r, nil
+		return r
 	}
 
 	if c.APIKey == key {
 		// set active consumer
-		r = r.WithContext(context.WithValue(r.Context(), core.GatewayCtxKeyActiveConsumer, c))
+		r = gateway2.InjectContextActiveConsumer(r, c)
 
 		// set headers if configured
 		if ka.AddUsernameHeader {
@@ -81,7 +79,7 @@ func (ka *KeyAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.
 		}
 	}
 
-	return r, nil
+	return r
 }
 
 func (ka *KeyAuthPlugin) Type() string {
@@ -89,5 +87,5 @@ func (ka *KeyAuthPlugin) Type() string {
 }
 
 func init() {
-	plugins.RegisterPlugin(&KeyAuthPlugin{})
+	gateway2.RegisterPlugin(&KeyAuthPlugin{})
 }

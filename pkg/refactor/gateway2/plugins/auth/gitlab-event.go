@@ -1,12 +1,10 @@
 package auth
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins"
 )
 
 const (
@@ -17,10 +15,10 @@ type GitlabWebhookPlugin struct {
 	Secret string `mapstructure:"secret"`
 }
 
-func (p *GitlabWebhookPlugin) NewInstance(_ core.EndpointV2, config core.PluginConfigV2) (core.PluginV2, error) {
+func (p *GitlabWebhookPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
 	pl := &GitlabWebhookPlugin{}
 
-	err := plugins.ConvertConfig(config.Config, pl)
+	err := gateway2.ConvertConfig(config.Config, pl)
 	if err != nil {
 		return nil, err
 	}
@@ -28,23 +26,25 @@ func (p *GitlabWebhookPlugin) NewInstance(_ core.EndpointV2, config core.PluginC
 	return pl, nil
 }
 
-func (p *GitlabWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, error) {
+func (p *GitlabWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
 	// check request is already authenticated
-	if gateway2.ParseRequestActiveConsumer(r) != nil {
-		return r, nil
+	if gateway2.ExtractContextActiveConsumer(r) != nil {
+		return r
 	}
 
 	secret := r.Header.Get(gitlabHeaderName)
 	if secret != p.Secret {
-		return r, nil
+		return r
 	}
 
-	c := &core.ConsumerFile{
-		Username: "gitlab",
+	c := &core.ConsumerV2{
+		ConsumerFileV2: core.ConsumerFileV2{
+			Username: "gitlab",
+		},
 	}
-	r = r.WithContext(context.WithValue(r.Context(), core.GatewayCtxKeyActiveConsumer, c))
+	r = gateway2.InjectContextActiveConsumer(r, c)
 
-	return r, nil
+	return r
 }
 
 func (*GitlabWebhookPlugin) Type() string {
@@ -52,5 +52,5 @@ func (*GitlabWebhookPlugin) Type() string {
 }
 
 func init() {
-	plugins.RegisterPlugin(&GitlabWebhookPlugin{})
+	gateway2.RegisterPlugin(&GitlabWebhookPlugin{})
 }

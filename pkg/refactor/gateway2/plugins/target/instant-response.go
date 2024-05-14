@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins"
+	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
 )
 
 type InstantResponsePlugin struct {
@@ -13,12 +13,12 @@ type InstantResponsePlugin struct {
 	ContentType   string `mapstructure:"content_type"   yaml:"content_type"`
 }
 
-func (ir *InstantResponsePlugin) NewInstance(_ core.EndpointV2, config core.PluginConfigV2) (core.PluginV2, error) {
+func (ir *InstantResponsePlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
 	pl := &InstantResponsePlugin{
 		StatusCode:    http.StatusOK,
 		StatusMessage: "This is the end!",
 	}
-	err := plugins.ConvertConfig(config.Config, pl)
+	err := gateway2.ConvertConfig(config.Config, pl)
 	if err != nil {
 		return nil, err
 	}
@@ -26,8 +26,8 @@ func (ir *InstantResponsePlugin) NewInstance(_ core.EndpointV2, config core.Plug
 	return pl, nil
 }
 
-func (ir *InstantResponsePlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, error) {
-	if plugins.IsJSON(ir.StatusMessage) {
+func (ir *InstantResponsePlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
+	if gateway2.IsJSON(ir.StatusMessage) {
 		w.Header().Add("Content-Type", "application/json")
 	}
 
@@ -39,7 +39,7 @@ func (ir *InstantResponsePlugin) Execute(w http.ResponseWriter, r *http.Request)
 	// nolint
 	w.Write([]byte(ir.StatusMessage))
 
-	return r, nil
+	return r
 }
 
 func (ir *InstantResponsePlugin) Type() string {
@@ -47,5 +47,5 @@ func (ir *InstantResponsePlugin) Type() string {
 }
 
 func init() {
-	plugins.RegisterPlugin(&InstantResponsePlugin{})
+	gateway2.RegisterPlugin(&InstantResponsePlugin{})
 }

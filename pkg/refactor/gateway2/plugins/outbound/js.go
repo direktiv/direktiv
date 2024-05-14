@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins"
+	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
 	"github.com/dop251/goja"
 )
 
@@ -17,10 +17,10 @@ type JSOutboundPlugin struct {
 	Script string `mapstructure:"script" yaml:"script"`
 }
 
-func (js *JSOutboundPlugin) NewInstance(_ core.EndpointV2, config core.PluginConfigV2) (core.PluginV2, error) {
+func (js *JSOutboundPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
 	pl := &JSOutboundPlugin{}
 
-	err := plugins.ConvertConfig(config.Config, pl)
+	err := gateway2.ConvertConfig(config.Config, pl)
 	if err != nil {
 		return nil, err
 	}
@@ -34,7 +34,7 @@ type response struct {
 	Code    int
 }
 
-func (js *JSOutboundPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, error) {
+func (js *JSOutboundPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
 	var (
 		err error
 		b   []byte
@@ -43,7 +43,8 @@ func (js *JSOutboundPlugin) Execute(w http.ResponseWriter, r *http.Request) (*ht
 	if r.Body != nil {
 		b, err = io.ReadAll(r.Body)
 		if err != nil {
-			return nil, fmt.Errorf("can not set read body for js plugin")
+			gateway2.WriteInternalError(r, w, err, "can not set read body for js plugin")
+			return nil
 		}
 		defer r.Body.Close()
 	}
@@ -64,14 +65,16 @@ func (js *JSOutboundPlugin) Execute(w http.ResponseWriter, r *http.Request) (*ht
 	vm := goja.New()
 	err = vm.Set("input", resp)
 	if err != nil {
-		return nil, fmt.Errorf("can not set input object")
+		gateway2.WriteInternalError(r, w, err, "can not set input object")
+		return nil
 	}
 
 	err = vm.Set("log", func(txt interface{}) {
 		slog.Info("js log", slog.Any("log", txt))
 	})
 	if err != nil {
-		return nil, fmt.Errorf("can not set log function")
+		gateway2.WriteInternalError(r, w, err, "can not set log function")
+		return nil
 	}
 
 	err = vm.Set("sleep", func(t interface{}) {
@@ -82,7 +85,8 @@ func (js *JSOutboundPlugin) Execute(w http.ResponseWriter, r *http.Request) (*ht
 		time.Sleep(time.Duration(tt) * time.Second)
 	})
 	if err != nil {
-		return nil, fmt.Errorf("can not set sleep function")
+		gateway2.WriteInternalError(r, w, err, "can not set sleep function")
+		return nil
 	}
 
 	script := fmt.Sprintf("function run() { %s; return input } run()",
@@ -90,7 +94,8 @@ func (js *JSOutboundPlugin) Execute(w http.ResponseWriter, r *http.Request) (*ht
 
 	val, err := vm.RunScript("plugin", script)
 	if err != nil {
-		return nil, fmt.Errorf("can not execute script")
+		gateway2.WriteInternalError(r, w, err, "can not execute script")
+		return nil
 	}
 
 	if val != nil && !val.Equals(goja.Undefined()) {
@@ -111,7 +116,7 @@ func (js *JSOutboundPlugin) Execute(w http.ResponseWriter, r *http.Request) (*ht
 		}
 	}
 
-	return r, nil
+	return r
 }
 
 func (js *JSOutboundPlugin) Type() string {
@@ -119,5 +124,5 @@ func (js *JSOutboundPlugin) Type() string {
 }
 
 func init() {
-	plugins.RegisterPlugin(&JSOutboundPlugin{})
+	gateway2.RegisterPlugin(&JSOutboundPlugin{})
 }

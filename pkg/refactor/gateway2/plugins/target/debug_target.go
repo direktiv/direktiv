@@ -1,13 +1,11 @@
 package target
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins"
 )
 
 const debugPluginName = "debug-target"
@@ -16,14 +14,15 @@ type DebugPlugin struct{}
 
 var _ core.PluginV2 = &DebugPlugin{}
 
-func (ba *DebugPlugin) NewInstance(_ core.EndpointV2, config core.PluginConfigV2) (core.PluginV2, error) {
+func (ba *DebugPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
 	return &DebugPlugin{}, nil
 }
 
-func (ba *DebugPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, error) {
+func (ba *DebugPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		return nil, fmt.Errorf("reading request body: %w", err)
+		gateway2.WriteInternalError(r, w, err, "reading request body")
+		return nil
 	}
 
 	response := struct {
@@ -38,7 +37,7 @@ func (ba *DebugPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Re
 
 	gateway2.WriteJSON(w, response)
 
-	return r, nil
+	return r
 }
 
 func (ba *DebugPlugin) Type() string {
@@ -46,5 +45,5 @@ func (ba *DebugPlugin) Type() string {
 }
 
 func init() {
-	plugins.RegisterPlugin(&DebugPlugin{})
+	gateway2.RegisterPlugin(&DebugPlugin{})
 }

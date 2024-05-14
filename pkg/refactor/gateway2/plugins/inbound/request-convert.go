@@ -10,7 +10,6 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins"
 )
 
 // RequestConvertPlugin converts headers, query parameters, url paramneters
@@ -22,10 +21,10 @@ type RequestConvertPlugin struct {
 	OmitConsumer bool `mapstructure:"omit_consumer" yaml:"omit_consumer"`
 }
 
-func (rcp *RequestConvertPlugin) NewInstance(_ core.EndpointV2, config core.PluginConfigV2) (core.PluginV2, error) {
+func (rcp *RequestConvertPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
 	pl := &RequestConvertPlugin{}
 
-	err := plugins.ConvertConfig(config.Config, pl)
+	err := gateway2.ConvertConfig(config.Config, pl)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +46,7 @@ type RequestConvertResponse struct {
 	Consumer    RequestConsumer     `json:"consumer"`
 }
 
-func (rcp *RequestConvertPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, error) {
+func (rcp *RequestConvertPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
 	response := &RequestConvertResponse{
 		URLParams:   make(map[string]string),
 		QueryParams: make(map[string][]string),
@@ -79,7 +78,7 @@ func (rcp *RequestConvertPlugin) Execute(w http.ResponseWriter, r *http.Request)
 		response.Headers = r.Header
 	}
 
-	c := gateway2.ParseRequestActiveConsumer(r)
+	c := gateway2.ExtractContextActiveConsumer(r)
 
 	if !rcp.OmitConsumer && c != nil {
 		response.Consumer.Username = c.Username
@@ -95,12 +94,13 @@ func (rcp *RequestConvertPlugin) Execute(w http.ResponseWriter, r *http.Request)
 	if r.Body != nil && !rcp.OmitBody {
 		content, err = io.ReadAll(r.Body)
 		if err != nil {
-			return nil, fmt.Errorf("can not process content")
+			gateway2.WriteInternalError(r, w, err, "can not process content")
+			return nil
 		}
 	}
 
 	// add json content or base64 if binary
-	if plugins.IsJSON(string(content)) {
+	if gateway2.IsJSON(string(content)) {
 		response.Body = content
 	} else {
 		response.Body = []byte(fmt.Sprintf("{ \"data\": \"%s\" }",
@@ -109,11 +109,12 @@ func (rcp *RequestConvertPlugin) Execute(w http.ResponseWriter, r *http.Request)
 
 	newBody, err := json.Marshal(response)
 	if err != nil {
-		return nil, fmt.Errorf("can not process content")
+		gateway2.WriteInternalError(r, w, err, "can not process content")
+		return nil
 	}
 	r.Body = io.NopCloser(bytes.NewBuffer(newBody))
 
-	return r, nil
+	return r
 }
 
 func (rcp *RequestConvertPlugin) Type() string {
@@ -121,5 +122,5 @@ func (rcp *RequestConvertPlugin) Type() string {
 }
 
 func init() {
-	plugins.RegisterPlugin(&RequestConvertPlugin{})
+	gateway2.RegisterPlugin(&RequestConvertPlugin{})
 }
