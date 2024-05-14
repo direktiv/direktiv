@@ -5,7 +5,6 @@ import config from '../common/config'
 import helpers from '../common/helpers'
 import request from '../common/request'
 import { retry10 } from '../common/retry'
-import regex from "../common/regex";
 
 const namespace = basename(__filename)
 
@@ -28,7 +27,7 @@ describe('Test gateway2 reconciling', () => {
 direktiv_api: workflow/v1
 description: A simple 'no-op' state that returns 'Hello world!'
 states:
-- id: helloworld
+- id: step1
   type: noop
   transform:
     result: Hello world!
@@ -38,7 +37,7 @@ states:
 		'/', 'c1.yaml', 'consumer', `
 direktiv_api: "consumer/v2"
 username: user1
-password: fetchSecret("foo")
+password: fetchSecret(foo)
 api_key: key1
 tags:
 - tag1

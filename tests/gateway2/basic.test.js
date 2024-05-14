@@ -17,7 +17,7 @@ describe('Test gateway2 reconciling', () => {
 direktiv_api: workflow/v1
 description: A simple 'no-op' state that returns 'Hello world!'
 states:
-- id: helloworld
+- id: step1
   type: noop
   transform:
     result: Hello world!

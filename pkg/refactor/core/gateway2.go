@@ -74,16 +74,6 @@ type ConsumerV2 struct {
 	Errors    []error
 }
 
-func FindConsumerByUser(user string, list []ConsumerV2) *ConsumerV2 {
-	for _, item := range list {
-		if item.Username == user {
-			return &item
-		}
-	}
-
-	return nil
-}
-
 func ParseConsumerFileV2(data []byte) (*ConsumerFileV2, error) {
 	res := &ConsumerFileV2{}
 	err := yaml.Unmarshal(data, res)

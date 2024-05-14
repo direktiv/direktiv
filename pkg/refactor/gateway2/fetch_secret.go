@@ -58,7 +58,7 @@ func parseFetchSecretExpressionTwoArgs(callExpression string) (*fetchSecretArgs,
 	argsExpr := matches[1]
 
 	// parse "g1", "g2" pattern
-	pattern = `^[ ]{0,}[\"](.*)[\"][ ]{0,}[,][ ]{0,}[\"](.*)[\"][ ]{0,}$`
+	pattern = `^[\s]*([a-zA-Z0-9-_]+)[\s]*[,][\s]*([a-zA-Z0-9-_]+)[\s]*$`
 	regex = regexp.MustCompile(pattern)
 	matches = regex.FindStringSubmatch(argsExpr)
 	if len(matches) != 3 {
@@ -88,7 +88,7 @@ func parseFetchSecretExpressionSingleArg(callExpression string) (*fetchSecretArg
 	argsExpr := matches[1]
 
 	// parse "g1" pattern
-	pattern = `^[ ]{0,}[\"](.*)[\"][ ]{0,}$`
+	pattern = `^[\s]*([a-zA-Z0-9-_]+)[\s]*$`
 	regex = regexp.MustCompile(pattern)
 	matches = regex.FindStringSubmatch(argsExpr)
 	if len(matches) != 2 {

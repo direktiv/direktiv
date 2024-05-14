@@ -27,8 +27,6 @@ affinity: {}
 flow:
   # -- Output debug-level logs.
   debug: false
-  # -- Set to 'json' or 'console' to change log output format.
-  logging: json
   # -- Set to define an encryption key to be used for secrets. If set to empty, one will be generated on install.
   encryptionKey:
   # -- number of flow replicas
