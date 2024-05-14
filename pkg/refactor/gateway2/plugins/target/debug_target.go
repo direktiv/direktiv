@@ -1,7 +1,6 @@
 package target
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 
@@ -23,7 +22,8 @@ func (ba *DebugPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, e
 func (ba *DebugPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		return nil, fmt.Errorf("reading request body: %w", err)
+		plugins.WriteInternalError(r, w, err, "reading request body")
+		return nil
 	}
 
 	response := struct {

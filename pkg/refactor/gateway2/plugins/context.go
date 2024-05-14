@@ -1,4 +1,4 @@
-package gateway2
+package plugins
 
 import (
 	"context"
@@ -10,6 +10,7 @@ const (
 	gatewayCtxKeyConsumersList  = "ctx_consumers_list"
 	gatewayCtxKeyActiveConsumer = "ctx_active_consumer"
 	gatewayCtxKeyNamespace      = "ctx_namespace"
+	gatewayCtxKeyEndpoint       = "ctx_endpoint"
 )
 
 func ExtractContextConsumersList(r *http.Request) []core.ConsumerV2 {
@@ -58,4 +59,20 @@ func ExtractContextNamespace(r *http.Request) string {
 }
 func InjectContextNamespace(r *http.Request, contextValue string) *http.Request {
 	return r.WithContext(context.WithValue(r.Context(), gatewayCtxKeyNamespace, contextValue))
+}
+
+func ExtractContextEndpoint(r *http.Request) *core.EndpointV2 {
+	res := r.Context().Value(gatewayCtxKeyEndpoint)
+	if res == nil {
+		return nil
+	}
+	cast, ok := res.(*core.EndpointV2)
+	if !ok {
+		return nil
+	}
+
+	return cast
+}
+func InjectContextEndpoint(r *http.Request, contextValue *core.EndpointV2) *http.Request {
+	return r.WithContext(context.WithValue(r.Context(), gatewayCtxKeyEndpoint, contextValue))
 }

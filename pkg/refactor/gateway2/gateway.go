@@ -3,6 +3,7 @@ package gateway2
 import (
 	"context"
 	"fmt"
+	"github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins"
 	"net/http"
 	"slices"
 	"sync/atomic"
@@ -41,7 +42,7 @@ func NewManager(db *database.SQLStore) core.GatewayManagerV2 {
 func (m *manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	inner := m.atomicLoadRouter()
 	if inner == nil {
-		WriteJSONError(w, http.StatusServiceUnavailable, "", "no active gateway endpoints")
+		plugins.WriteJSONError(w, http.StatusServiceUnavailable, "", "no active gateway endpoints")
 
 		return
 	}

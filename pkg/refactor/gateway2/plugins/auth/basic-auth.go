@@ -32,7 +32,7 @@ func (ba *BasicAuthPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV
 
 func (ba *BasicAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
 	// check request is already authenticated
-	if gateway2.ExtractContextActiveConsumer(r) != nil {
+	if plugins.ExtractContextActiveConsumer(r) != nil {
 		return r
 	}
 	user, pwd, ok := r.BasicAuth()
@@ -41,7 +41,7 @@ func (ba *BasicAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) *http
 		return r
 	}
 
-	consumerList := gateway2.ExtractContextConsumersList(r)
+	consumerList := plugins.ExtractContextConsumersList(r)
 	if consumerList == nil {
 		return r
 	}
@@ -62,7 +62,7 @@ func (ba *BasicAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) *http
 
 	if usernameMatch && passwordMatch {
 		// set active comsumer.
-		r = gateway2.InjectContextActiveConsumer(r, consumer)
+		r = plugins.InjectContextActiveConsumer(r, consumer)
 		// set headers if configured.
 		if ba.AddUsernameHeader {
 			r.Header.Set(gateway2.ConsumerUserHeader, consumer.Username)

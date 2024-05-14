@@ -52,24 +52,26 @@ func buildRouter(endpoints []core.EndpointV2, consumers []core.ConsumerV2) *rout
 		serveMux.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
 			// check if correct method.
 			if !slices.Contains(item.Methods, r.Method) {
-				WriteJSONError(w, http.StatusMethodNotAllowed, item.FilePath,
+				plugins.WriteJSONError(w, http.StatusMethodNotAllowed, item.FilePath,
 					fmt.Sprintf("method:%s is not allowed with this endpoint", r.Method))
 
 				return
 			}
 
 			// inject consumer files.
-			r = InjectContextConsumersList(r, filterNamespacedConsumers(consumers, item.Namespace))
+			r = plugins.InjectContextConsumersList(r, filterNamespacedConsumers(consumers, item.Namespace))
 			// inject namespace.
-			r = InjectContextNamespace(r, item.Namespace)
+			r = plugins.InjectContextNamespace(r, item.Namespace)
+			// inject endpoint.
+			r = plugins.InjectContextEndpoint(r, &item)
 
 			for _, p := range pChain {
 				// checkpoint if auth plugins had a match.
 				if !isAuthPlugin(p) {
 					// case where auth is required but request is not authenticated (consumers doesn't match).
-					hasActiveConsumer := ExtractContextActiveConsumer(r) != nil
+					hasActiveConsumer := plugins.ExtractContextActiveConsumer(r) != nil
 					if !item.AllowAnonymous && !hasActiveConsumer {
-						WriteJSONError(w, http.StatusForbidden, item.FilePath, "authentication failed")
+						plugins.WriteJSONError(w, http.StatusForbidden, item.FilePath, "authentication failed")
 
 						return
 					}
@@ -83,7 +85,7 @@ func buildRouter(endpoints []core.EndpointV2, consumers []core.ConsumerV2) *rout
 
 	// mount not found route.
 	serveMux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		WriteJSONError(w, http.StatusNotFound, "", "gateway couldn't find a matching endpoint")
+		plugins.WriteJSONError(w, http.StatusNotFound, "", "gateway couldn't find a matching endpoint")
 	})
 
 	return &router{

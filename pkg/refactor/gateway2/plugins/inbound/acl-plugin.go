@@ -1,11 +1,9 @@
 package inbound
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins"
 )
 
@@ -34,24 +32,28 @@ func (acl *ACLPlugin) Type() string {
 }
 
 func (acl *ACLPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
-	c := gateway2.ExtractContextActiveConsumer(r)
+	c := plugins.ExtractContextActiveConsumer(r)
 	if c == nil {
-		return nil, fmt.Errorf("missing consumer")
+		plugins.WriteInternalError(r, w, nil, "missing consumer")
+		return nil
 	}
 	if result(acl.AllowGroups, c.Groups) {
 		return r
 	}
 	if result(acl.DenyGroups, c.Groups) {
-		return nil, fmt.Errorf("denied user groups")
+		plugins.WriteInternalError(r, w, nil, "denied user groups")
+		return nil
 	}
 	if result(acl.AllowTags, c.Tags) {
 		return r
 	}
 	if result(acl.DenyTags, c.Tags) {
-		return nil, fmt.Errorf("denied user tags")
+		plugins.WriteInternalError(r, w, nil, "denied user tags")
+		return nil
 	}
 
-	return nil, fmt.Errorf("denied user")
+	plugins.WriteInternalError(r, w, nil, "denied user")
+	return nil
 }
 
 func result(userValues []string, configValues []string) bool {

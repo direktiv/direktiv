@@ -18,26 +18,6 @@ func isAuthPlugin(p core.PluginV2) bool {
 	return strings.Contains(p.Type(), "-auth") || strings.Contains(p.Type(), "auth-")
 }
 
-func WriteJSONError(w http.ResponseWriter, status int, endpointFile string, msg string) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-
-	inner := struct {
-		EndpointFile string `json:"endpointFile,omitempty"`
-		Message      any    `json:"message"`
-	}{
-		EndpointFile: endpointFile,
-		Message:      msg,
-	}
-	payload := struct {
-		Error any `json:"error"`
-	}{
-		Error: inner,
-	}
-
-	_ = json.NewEncoder(w).Encode(payload)
-}
-
 func WriteJSON(w http.ResponseWriter, v any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)

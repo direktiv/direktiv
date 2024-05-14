@@ -3,14 +3,11 @@ package auth
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io"
-	"log/slog"
 	"net/http"
 	"net/url"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins"
 	"github.com/slack-go/slack"
 )
@@ -32,31 +29,31 @@ func (p *SlackWebhookPlugin) NewInstance(config core.PluginConfigV2) (core.Plugi
 
 func (p *SlackWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
 	// check request is already authenticated
-	if gateway2.ExtractContextActiveConsumer(r) != nil {
+	if plugins.ExtractContextActiveConsumer(r) != nil {
 		return r
 	}
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		slog.Error("can not read request body", "err", err)
-		return nil, fmt.Errorf("can not read request body")
+		plugins.WriteInternalError(r, w, err, "can not read request body")
+		return nil
 	}
 
 	sv, err := slack.NewSecretsVerifier(r.Header, p.Secret)
 	if err != nil {
-		slog.Error("can not create slack verifier", "err", err)
-		return nil, fmt.Errorf("can not create slack verifier")
+		plugins.WriteInternalError(r, w, err, "can not create slack verifier")
+		return nil
 	}
 
 	if _, err := sv.Write(body); err != nil {
-		slog.Error("can not write slack hmac", "err", err)
-		return nil, fmt.Errorf("can not write slack hmac")
+		plugins.WriteInternalError(r, w, err, "can not write slack hmac")
+		return nil
 	}
 
 	// hmac is not valid
 	if err := sv.Ensure(); err != nil {
-		slog.Error("slack hmac failed", "err", err)
-		return nil, fmt.Errorf("slack hmac failed")
+		plugins.WriteInternalError(r, w, err, "slack hmac failed")
+		return nil
 	}
 
 	c := &core.ConsumerV2{
@@ -65,21 +62,21 @@ func (p *SlackWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) *ht
 		},
 	}
 	// set active comsumer.
-	r = gateway2.InjectContextActiveConsumer(r, c)
+	r = plugins.InjectContextActiveConsumer(r, c)
 
 	// convert to json if url encoded
 	// nolint:canonicalheader
 	if r.Header.Get("Content-type") == "application/x-www-form-urlencoded" {
 		v, err := url.ParseQuery(string(body))
 		if err != nil {
-			slog.Error("can parse url form encoded data", "err", err)
-			return nil, fmt.Errorf("can parse url form encoded data")
+			plugins.WriteInternalError(r, w, err, "can parse url form encoded data")
+			return nil
 		}
 
 		b, err := json.Marshal(v)
 		if err != nil {
-			slog.Error("can not marshal slack data", "err", err)
-			return nil, fmt.Errorf("can not marshal slack data")
+			plugins.WriteInternalError(r, w, err, "can not marshal slack data")
+			return nil
 		}
 		r.Body = io.NopCloser(bytes.NewBuffer(b))
 	} else {

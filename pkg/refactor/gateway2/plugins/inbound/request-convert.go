@@ -9,7 +9,6 @@ import (
 	"net/http"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins"
 )
 
@@ -79,7 +78,7 @@ func (rcp *RequestConvertPlugin) Execute(w http.ResponseWriter, r *http.Request)
 		response.Headers = r.Header
 	}
 
-	c := gateway2.ExtractContextActiveConsumer(r)
+	c := plugins.ExtractContextActiveConsumer(r)
 
 	if !rcp.OmitConsumer && c != nil {
 		response.Consumer.Username = c.Username
@@ -95,7 +94,8 @@ func (rcp *RequestConvertPlugin) Execute(w http.ResponseWriter, r *http.Request)
 	if r.Body != nil && !rcp.OmitBody {
 		content, err = io.ReadAll(r.Body)
 		if err != nil {
-			return nil, fmt.Errorf("can not process content")
+			plugins.WriteInternalError(r, w, err, "can not process content")
+			return nil
 		}
 	}
 
@@ -109,7 +109,8 @@ func (rcp *RequestConvertPlugin) Execute(w http.ResponseWriter, r *http.Request)
 
 	newBody, err := json.Marshal(response)
 	if err != nil {
-		return nil, fmt.Errorf("can not process content")
+		plugins.WriteInternalError(r, w, err, "can not process content")
+		return nil
 	}
 	r.Body = io.NopCloser(bytes.NewBuffer(newBody))
 

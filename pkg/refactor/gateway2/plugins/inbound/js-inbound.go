@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins"
 	"github.com/dop251/goja"
 )
@@ -84,14 +83,15 @@ func (js *JSInboundPlugin) Execute(w http.ResponseWriter, r *http.Request) *http
 	if r.Body != nil {
 		b, err = io.ReadAll(r.Body)
 		if err != nil {
-			return nil, fmt.Errorf("can not set read body for js inbound plugin")
+			plugins.WriteInternalError(r, w, err, "can not set read body for js inbound plugin")
+			return nil
 		}
 		defer r.Body.Close()
 	}
 
 	vm := goja.New()
 
-	c := gateway2.ExtractContextActiveConsumer(r)
+	c := plugins.ExtractContextActiveConsumer(r)
 
 	// add url param
 	urlParams := make(map[string]string)
@@ -115,14 +115,16 @@ func (js *JSInboundPlugin) Execute(w http.ResponseWriter, r *http.Request) *http
 	// extract all response headers and body
 	err = vm.Set("input", req)
 	if err != nil {
-		return nil, fmt.Errorf("can not set input object")
+		plugins.WriteInternalError(r, w, err, "can not set input object")
+		return nil
 	}
 
 	err = vm.Set("log", func(txt interface{}) {
 		slog.Info("js log", slog.Any("log", txt))
 	})
 	if err != nil {
-		return nil, fmt.Errorf("can not set log function")
+		plugins.WriteInternalError(r, w, err, "can not set log function")
+		return nil
 	}
 
 	script := fmt.Sprintf("function run() { %s; return input } run()",
@@ -130,7 +132,8 @@ func (js *JSInboundPlugin) Execute(w http.ResponseWriter, r *http.Request) *http
 
 	val, err := vm.RunScript("plugin", script)
 	if err != nil {
-		return nil, fmt.Errorf("can not execute script")
+		plugins.WriteInternalError(r, w, err, "can not execute script")
+		return nil
 	}
 
 	if val != nil && !val.Equals(goja.Undefined()) {

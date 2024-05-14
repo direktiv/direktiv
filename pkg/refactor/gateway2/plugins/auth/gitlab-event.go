@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins"
 )
 
@@ -29,7 +28,7 @@ func (p *GitlabWebhookPlugin) NewInstance(config core.PluginConfigV2) (core.Plug
 
 func (p *GitlabWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
 	// check request is already authenticated
-	if gateway2.ExtractContextActiveConsumer(r) != nil {
+	if plugins.ExtractContextActiveConsumer(r) != nil {
 		return r
 	}
 
@@ -43,7 +42,7 @@ func (p *GitlabWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) *h
 			Username: "gitlab",
 		},
 	}
-	r = gateway2.InjectContextActiveConsumer(r, c)
+	r = plugins.InjectContextActiveConsumer(r, c)
 
 	return r
 }

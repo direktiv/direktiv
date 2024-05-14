@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"net/http"
 	"os"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
@@ -43,4 +44,28 @@ func IsJSON(str string) bool {
 	var js json.RawMessage
 
 	return json.Unmarshal([]byte(str), &js) == nil
+}
+
+func WriteJSONError(w http.ResponseWriter, status int, endpointFile string, msg string) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+
+	inner := struct {
+		EndpointFile string `json:"endpointFile,omitempty"`
+		Message      any    `json:"message"`
+	}{
+		EndpointFile: endpointFile,
+		Message:      msg,
+	}
+	payload := struct {
+		Error any `json:"error"`
+	}{
+		Error: inner,
+	}
+
+	_ = json.NewEncoder(w).Encode(payload)
+}
+
+func WriteInternalError(r *http.Request, w http.ResponseWriter, err error, msg string) {
+	WriteJSONError(w, http.StatusInternalServerError, ExtractContextEndpoint(r).FilePath, msg)
 }
