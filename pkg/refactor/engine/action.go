@@ -58,3 +58,8 @@ func EncodeActionRequest(ar ActionRequest) (io.Reader, error) {
 
 	return bytes.NewReader(encodedRequest), nil
 }
+
+type ActionResponse struct {
+	Err     error
+	ErrCode string
+}
