@@ -69,11 +69,14 @@ test("It will show an error in the logs, when the query is not a valid JQ comman
   ).toBe("");
 
   await btnRun.click();
-
-  await expect(
-    await logsTextArea.inputValue(),
-    "an error message should be displayed in the logs"
-  ).toBe('failure: error executing jq query \\.foo: unexpected token "\\\\"\n');
+  await expect
+    .poll(
+      async () => await logsTextArea.inputValue(),
+      "an error message should be displayed in the logs"
+    )
+    .toBe(
+      'failure: error executing jq query \\.foo: unexpected token "\\\\"\n'
+    );
 });
 
 test("It will display an error when the input is not a valid JSON", async ({
