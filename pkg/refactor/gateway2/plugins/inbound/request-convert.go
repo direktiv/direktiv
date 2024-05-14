@@ -61,7 +61,7 @@ func (rcp *RequestConvertPlugin) Execute(w http.ResponseWriter, r *http.Request)
 	// TODO: discuss with Jens.
 	// convert uri extension
 	// up := r.Context().Value(plugins.URLParamCtxKey)
-	//if up != nil {
+	// if up != nil {
 	//	// nolint cvoming from gateway
 	//	response.URLParams = up.(map[string]string)
 	//}

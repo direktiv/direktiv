@@ -103,7 +103,7 @@ func (js *JSInboundPlugin) Execute(w http.ResponseWriter, r *http.Request) (*htt
 
 	// TODO: fix here.
 	// up := r.Context().Value(plugins.URLParamCtxKey)
-	//if up != nil {
+	// if up != nil {
 	//	// nolint we know it is from us
 	//	urlParams = up.(map[string]string)
 	//}
