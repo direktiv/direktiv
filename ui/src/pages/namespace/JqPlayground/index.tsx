@@ -4,6 +4,7 @@ import {
   FileOutput,
   Play,
   PlaySquare,
+  ScrollText,
 } from "lucide-react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import {
@@ -36,6 +37,7 @@ const defaultData = "{}";
 
 const JqPlaygroundPage: FC = () => {
   const { t } = useTranslation();
+  const defaultLogs = t("pages.jqPlayground.logsPlaceholder");
   const theme = useTheme();
   const {
     setInput: storeInputInLocalstorage,
@@ -46,6 +48,7 @@ const JqPlaygroundPage: FC = () => {
   const formRef = useRef<HTMLFormElement>(null);
 
   const [output, setOutput] = useState("");
+  const [logs, setLogs] = useState(defaultLogs);
 
   const {
     register,
@@ -64,15 +67,19 @@ const JqPlaygroundPage: FC = () => {
     },
   });
 
+  const clearLogsAndOutput = () => {
+    setOutput("");
+    setLogs(defaultLogs);
+  };
+
   const { mutate: executeQuery, isPending } = useExecuteJQuery({
-    onSuccess: (data) => {
-      setOutput("");
-      if (data.data.output[0]) {
-        setOutput(decode(data.data.output[0]));
-      }
+    onSuccess: ({ data }) => {
+      clearLogsAndOutput();
+      if (data.output[0]) setOutput(decode(data.output[0]));
+      if (data.logs) setLogs(decode(data.logs));
     },
     onError: (error) => {
-      setOutput("");
+      clearLogsAndOutput();
       setError("root", {
         message: error,
       });
@@ -80,7 +87,7 @@ const JqPlaygroundPage: FC = () => {
   });
 
   const onSubmit: SubmitHandler<ExecuteJqueryPayloadType> = (params) => {
-    setOutput("");
+    clearLogsAndOutput();
     executeQuery(params);
   };
 
@@ -211,6 +218,35 @@ const JqPlaygroundPage: FC = () => {
               </div>
             </Card>
           </div>
+
+          <Card className="flex h-32 w-full flex-col p-4" noShadow>
+            <div className="mb-5 flex">
+              <h3 className="flex grow items-center gap-x-2 font-medium">
+                <ScrollText className="h-5" />
+                {t("pages.jqPlayground.logs")}
+              </h3>
+              <CopyButton
+                value={logs}
+                buttonProps={{
+                  variant: "outline",
+                  size: "sm",
+                  type: "button",
+                  disabled: !logs,
+                  "data-testid": "copy-output-btn",
+                }}
+              />
+            </div>
+            <div data-testid="jq-logs-editor" className="flex grow">
+              <Editor
+                language="shell"
+                value={logs}
+                options={{
+                  readOnly: true,
+                }}
+                theme={theme ?? undefined}
+              />
+            </div>
+          </Card>
         </form>
       </Card>
       <Examples onRunSnippet={onRunSnippet} />
