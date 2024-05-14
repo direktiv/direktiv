@@ -299,6 +299,8 @@ func (c *eventsController) registerCoudEvent(w http.ResponseWriter, r *http.Requ
 	} else {
 		// If content type is not recognized, return an error
 		http.Error(w, "Unsupported Content-Type", http.StatusUnsupportedMediaType)
+
+		return
 	}
 	evs, err := processor(b)
 	if err != nil {
