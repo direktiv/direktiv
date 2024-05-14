@@ -5,11 +5,11 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
 	"io"
 	"net/http"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
 )
 
 // RequestConvertPlugin converts headers, query parameters, url paramneters

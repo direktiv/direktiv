@@ -2,12 +2,12 @@ package auth
 
 import (
 	"bytes"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
 	"io"
 	"log/slog"
 	"net/http"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
 	"github.com/google/go-github/v57/github"
 )
 

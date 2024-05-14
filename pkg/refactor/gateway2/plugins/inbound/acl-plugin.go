@@ -1,10 +1,10 @@
 package inbound
 
 import (
-	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
 	"net/http"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
 )
 
 // ACLPlugin is a simple access control method. It checks the incoming consumer

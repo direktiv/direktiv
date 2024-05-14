@@ -3,12 +3,12 @@ package auth
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
 	"io"
 	"net/http"
 	"net/url"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
 	"github.com/slack-go/slack"
 )
 
