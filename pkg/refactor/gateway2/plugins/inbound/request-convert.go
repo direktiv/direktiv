@@ -100,7 +100,7 @@ func (rcp *RequestConvertPlugin) Execute(w http.ResponseWriter, r *http.Request)
 	}
 
 	// add json content or base64 if binary
-	if isJSON(string(content)) {
+	if plugins.IsJSON(string(content)) {
 		response.Body = content
 	} else {
 		response.Body = []byte(fmt.Sprintf("{ \"data\": \"%s\" }",
@@ -118,12 +118,6 @@ func (rcp *RequestConvertPlugin) Execute(w http.ResponseWriter, r *http.Request)
 
 func (rcp *RequestConvertPlugin) Type() string {
 	return "request-convert"
-}
-
-func isJSON(str string) bool {
-	var js json.RawMessage
-
-	return json.Unmarshal([]byte(str), &js) == nil
 }
 
 func init() {

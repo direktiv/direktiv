@@ -1,6 +1,7 @@
 package plugins
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -36,4 +37,10 @@ func ConvertConfig(config map[string]any, target any) error {
 	}
 
 	return nil
+}
+
+func IsJSON(str string) bool {
+	var js json.RawMessage
+
+	return json.Unmarshal([]byte(str), &js) == nil
 }
