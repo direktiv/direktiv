@@ -34,10 +34,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 const defaultJx = "jq(.)";
 const defaultData = "{}";
+const defaultLogs = "";
 
 const JqPlaygroundPage: FC = () => {
   const { t } = useTranslation();
-  const defaultLogs = t("pages.jqPlayground.logsPlaceholder");
   const theme = useTheme();
   const {
     setInput: storeInputInLocalstorage,

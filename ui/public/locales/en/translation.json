@@ -1005,7 +1005,6 @@
       "input": "Input",
       "output": "Output",
       "logs": "Logs",
-      "logsPlaceholder": "# your query did not generate any logs",
       "submitBtn": "Run query",
       "examples": {
         "title": "Examples",
