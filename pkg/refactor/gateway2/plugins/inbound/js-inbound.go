@@ -2,6 +2,7 @@ package inbound
 
 import (
 	"fmt"
+	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
 	"io"
 	"log/slog"
 	"net/http"
@@ -65,7 +66,7 @@ type request struct {
 	// Queries shared.Query
 	Body string
 
-	Consumer *core.ConsumerFile
+	Consumer *core.ConsumerFileV2
 
 	// url params of type /{id}
 	URLParams map[string]string
@@ -83,29 +84,30 @@ func (js *JSInboundPlugin) Execute(w http.ResponseWriter, r *http.Request) (*htt
 	if r.Body != nil {
 		b, err = io.ReadAll(r.Body)
 		if err != nil {
-			plugins.ReportError(r.Context(), w, http.StatusInternalServerError,
-				"can not set read body for js inbound plugin", err)
-
-			return false
+			return nil, fmt.Errorf("can not set read body for js inbound plugin")
 		}
 		defer r.Body.Close()
 	}
 
 	vm := goja.New()
 
-	// add consumer
-	if c == nil {
-		c = &core.ConsumerFile{}
+	var c *core.ConsumerFileV2
+	if gateway2.ParseRequestActiveConsumer(r) != nil {
+		c = &gateway2.ParseRequestActiveConsumer(r).ConsumerFileV2
+	} else {
+		c = &core.ConsumerFileV2{}
+
 	}
 
 	// add url param
 	urlParams := make(map[string]string)
 
-	up := r.Context().Value(plugins.URLParamCtxKey)
-	if up != nil {
-		// nolint we know it is from us
-		urlParams = up.(map[string]string)
-	}
+	// TODO: fix here.
+	//up := r.Context().Value(plugins.URLParamCtxKey)
+	//if up != nil {
+	//	// nolint we know it is from us
+	//	urlParams = up.(map[string]string)
+	//}
 
 	req := request{
 		Headers:   r.Header,
@@ -119,31 +121,22 @@ func (js *JSInboundPlugin) Execute(w http.ResponseWriter, r *http.Request) (*htt
 	// extract all response headers and body
 	err = vm.Set("input", req)
 	if err != nil {
-		plugins.ReportError(r.Context(), w, http.StatusInternalServerError,
-			"can not set input object", err)
-
-		return false
+		return nil, fmt.Errorf("can not set input object")
 	}
 
 	err = vm.Set("log", func(txt interface{}) {
 		slog.Info("js log", slog.Any("log", txt))
 	})
 	if err != nil {
-		plugins.ReportError(r.Context(), w, http.StatusInternalServerError,
-			"can not set log function", err)
-
-		return false
+		return nil, fmt.Errorf("can not set log function")
 	}
 
 	script := fmt.Sprintf("function run() { %s; return input } run()",
-		js.config.Script)
+		js.Script)
 
 	val, err := vm.RunScript("plugin", script)
 	if err != nil {
-		plugins.ReportError(r.Context(), w, http.StatusInternalServerError,
-			"can not execute script", err)
-
-		return false
+		return nil, fmt.Errorf("can not execute script")
 	}
 
 	if val != nil && !val.Equals(goja.Undefined()) {
@@ -165,14 +158,15 @@ func (js *JSInboundPlugin) Execute(w http.ResponseWriter, r *http.Request) (*htt
 			r.URL.RawQuery = newQuery.Encode()
 			r.Body = io.NopCloser(strings.NewReader(responseDone.Body))
 
+			// TODO: discuss with jens
 			// script set status code and stop executing other plugins
-			if responseDone.Status > 0 {
-				return serveResponse(w, responseDone)
-			}
+			//if responseDone.Status > 0 {
+			//	return serveResponse(w, responseDone)
+			//}
 		}
 	}
 
-	return true
+	return r, nil
 }
 
 func init() {
