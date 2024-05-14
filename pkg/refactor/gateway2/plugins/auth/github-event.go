@@ -27,17 +27,17 @@ func (p *GithubWebhookPlugin) NewInstance(config core.PluginConfigV2) (core.Plug
 	return pl, nil
 }
 
-func (p *GithubWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, error) {
+func (p *GithubWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
 	// check request is already authenticated
 	if gateway2.ExtractContextActiveConsumer(r) != nil {
-		return r, nil
+		return r
 	}
 
 	payload, err := github.ValidatePayload(r, []byte(p.Secret))
 	if err != nil {
 		slog.Error("cannot verify payload", "err", err)
 
-		return r, nil
+		return r
 	}
 
 	// reset body with payload
@@ -49,7 +49,7 @@ func (p *GithubWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) (*
 	}
 	r = gateway2.InjectContextActiveConsumer(r, c)
 
-	return r, nil
+	return r
 }
 
 func (*GithubWebhookPlugin) Type() string {

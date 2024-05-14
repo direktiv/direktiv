@@ -63,7 +63,6 @@ func buildRouter(endpoints []core.EndpointV2, consumers []core.ConsumerV2) *rout
 			// inject namespace.
 			r = InjectContextNamespace(r, item.Namespace)
 
-			var err error
 			for _, p := range pChain {
 				// checkpoint if auth plugins had a match.
 				if !isAuthPlugin(p) {
@@ -75,9 +74,7 @@ func buildRouter(endpoints []core.EndpointV2, consumers []core.ConsumerV2) *rout
 						return
 					}
 				}
-				if r, err = p.Execute(w, r); err != nil {
-					WriteJSONError(w, http.StatusInternalServerError, item.FilePath, fmt.Sprintf("gateway plugin(%s) execution failed", p.Type()))
-					// TODO: verbose log here.
+				if r = p.Execute(w, r); r == nil {
 					break
 				}
 			}

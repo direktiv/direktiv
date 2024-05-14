@@ -33,19 +33,19 @@ func (acl *ACLPlugin) Type() string {
 	return "acl"
 }
 
-func (acl *ACLPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, error) {
+func (acl *ACLPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
 	c := gateway2.ExtractContextActiveConsumer(r)
 	if c == nil {
 		return nil, fmt.Errorf("missing consumer")
 	}
 	if result(acl.AllowGroups, c.Groups) {
-		return r, nil
+		return r
 	}
 	if result(acl.DenyGroups, c.Groups) {
 		return nil, fmt.Errorf("denied user groups")
 	}
 	if result(acl.AllowTags, c.Tags) {
-		return r, nil
+		return r
 	}
 	if result(acl.DenyTags, c.Tags) {
 		return nil, fmt.Errorf("denied user tags")

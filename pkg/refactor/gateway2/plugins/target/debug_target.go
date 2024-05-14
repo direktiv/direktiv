@@ -20,7 +20,7 @@ func (ba *DebugPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, e
 	return &DebugPlugin{}, nil
 }
 
-func (ba *DebugPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, error) {
+func (ba *DebugPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		return nil, fmt.Errorf("reading request body: %w", err)
@@ -38,7 +38,7 @@ func (ba *DebugPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Re
 
 	gateway2.WriteJSON(w, response)
 
-	return r, nil
+	return r
 }
 
 func (ba *DebugPlugin) Type() string {

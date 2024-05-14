@@ -47,7 +47,7 @@ type RequestConvertResponse struct {
 	Consumer    RequestConsumer     `json:"consumer"`
 }
 
-func (rcp *RequestConvertPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, error) {
+func (rcp *RequestConvertPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
 	response := &RequestConvertResponse{
 		URLParams:   make(map[string]string),
 		QueryParams: make(map[string][]string),
@@ -113,7 +113,7 @@ func (rcp *RequestConvertPlugin) Execute(w http.ResponseWriter, r *http.Request)
 	}
 	r.Body = io.NopCloser(bytes.NewBuffer(newBody))
 
-	return r, nil
+	return r
 }
 
 func (rcp *RequestConvertPlugin) Type() string {

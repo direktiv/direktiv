@@ -34,7 +34,7 @@ type response struct {
 	Code    int
 }
 
-func (js *JSOutboundPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, error) {
+func (js *JSOutboundPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
 	var (
 		err error
 		b   []byte
@@ -111,7 +111,7 @@ func (js *JSOutboundPlugin) Execute(w http.ResponseWriter, r *http.Request) (*ht
 		}
 	}
 
-	return r, nil
+	return r
 }
 
 func (js *JSOutboundPlugin) Type() string {

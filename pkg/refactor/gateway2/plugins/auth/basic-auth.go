@@ -30,25 +30,25 @@ func (ba *BasicAuthPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV
 	return pl, nil
 }
 
-func (ba *BasicAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, error) {
+func (ba *BasicAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
 	// check request is already authenticated
 	if gateway2.ExtractContextActiveConsumer(r) != nil {
-		return r, nil
+		return r
 	}
 	user, pwd, ok := r.BasicAuth()
 	// no basic auth provided
 	if !ok {
-		return r, nil
+		return r
 	}
 
 	consumerList := gateway2.ExtractContextConsumersList(r)
 	if consumerList == nil {
-		return r, nil
+		return r
 	}
 	consumer := gateway2.FindConsumerByUser(consumerList, user)
 	// no consumer matching auth name
 	if consumer == nil {
-		return r, nil
+		return r
 	}
 
 	// comparing passwords
@@ -77,7 +77,7 @@ func (ba *BasicAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) (*htt
 		}
 	}
 
-	return r, nil
+	return r
 }
 
 func (ba *BasicAuthPlugin) Type() string {

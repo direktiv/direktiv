@@ -26,7 +26,7 @@ func (ir *InstantResponsePlugin) NewInstance(config core.PluginConfigV2) (core.P
 	return pl, nil
 }
 
-func (ir *InstantResponsePlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, error) {
+func (ir *InstantResponsePlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
 	if plugins.IsJSON(ir.StatusMessage) {
 		w.Header().Add("Content-Type", "application/json")
 	}
@@ -39,7 +39,7 @@ func (ir *InstantResponsePlugin) Execute(w http.ResponseWriter, r *http.Request)
 	// nolint
 	w.Write([]byte(ir.StatusMessage))
 
-	return r, nil
+	return r
 }
 
 func (ir *InstantResponsePlugin) Type() string {

@@ -51,7 +51,7 @@ type PluginV2 interface {
 	// NewInstance method creates new plugin instance
 	NewInstance(config PluginConfigV2) (PluginV2, error)
 
-	Execute(w http.ResponseWriter, r *http.Request) (*http.Request, error)
+	Execute(w http.ResponseWriter, r *http.Request) *http.Request
 	Type() string
 }
 

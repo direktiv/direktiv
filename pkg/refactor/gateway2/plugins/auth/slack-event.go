@@ -30,10 +30,10 @@ func (p *SlackWebhookPlugin) NewInstance(config core.PluginConfigV2) (core.Plugi
 	return pl, nil
 }
 
-func (p *SlackWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, error) {
+func (p *SlackWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
 	// check request is already authenticated
 	if gateway2.ExtractContextActiveConsumer(r) != nil {
-		return r, nil
+		return r
 	}
 
 	body, err := io.ReadAll(r.Body)
@@ -86,7 +86,7 @@ func (p *SlackWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) (*h
 		r.Body = io.NopCloser(bytes.NewBuffer(body))
 	}
 
-	return r, nil
+	return r
 }
 
 func (*SlackWebhookPlugin) Type() string {
