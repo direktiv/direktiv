@@ -10,6 +10,7 @@ import (
 	_ "github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins/auth"
 	_ "github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins/target"
 	"github.com/direktiv/direktiv/pkg/refactor/middlewares"
+	"github.com/direktiv/direktiv/pkg/sidecar2"
 )
 
 const (
@@ -56,6 +57,8 @@ func main() {
 	switch os.Getenv("DIREKTIV_APP") {
 	case "sidecar":
 		sidecar.RunApplication()
+	case "sidecar2":
+		sidecar2.RunApplication()
 	case "init":
 		dinit.RunApplication()
 	default:
