@@ -57,7 +57,12 @@ export const EventsListResponseSchema = z.object({
   data: z.array(EventListItem),
 });
 
+export const NewEventSchema = z.object({
+  body: z.string(),
+});
+
 export const EventReplayedSchema = z.null();
+export const EventCreatedSchema = z.null();
 
 export type EventSchemaType = z.infer<typeof EventSchema>;
 export type EventListItemType = z.infer<typeof EventListItem>;
@@ -65,3 +70,5 @@ export type EventsListResponseSchemaType = z.infer<
   typeof EventsListResponseSchema
 >;
 export type EventReplayedSchemaType = z.infer<typeof EventReplayedSchema>;
+export type EventCreatedSchemaType = z.infer<typeof EventCreatedSchema>;
+export type NewEventSchemaType = z.infer<typeof NewEventSchema>;

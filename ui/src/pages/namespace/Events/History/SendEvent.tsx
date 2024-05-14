@@ -15,7 +15,7 @@ import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
 import { exampleEvent } from "./exampleEvent";
-import { useSendEvent } from "~/api/events/mutate/sendEvent";
+import { useSendEvent } from "~/api/eventsv2/mutate/sendEvent";
 import { useState } from "react";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";

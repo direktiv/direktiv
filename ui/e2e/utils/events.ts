@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { headers } from "./testutils";
-import { sendEvent } from "~/api/events/mutate/sendEvent";
+import { sendEvent } from "~/api/eventsv2/mutate/sendEvent";
 
 /**
  * The mock data is composed so we can predict how many elements should be rendered
@@ -62,7 +62,7 @@ export const createEvents = async (namespace: string) => {
         },
         headers: {
           ...headers,
-          "content-type": "application/cloudevents+json",
+          "content-type": "application/json",
         },
         // request returns null, thus return the generated data instead for use in the test
       }).then(() => event);
