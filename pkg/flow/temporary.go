@@ -555,6 +555,46 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 		} else {
 			defer resp.Body.Close()
 			slog.Debug("successfully created function", "image", ar.Container.Image, "image_id", ar.Container.ID)
+			aid := resp.Header.Get(DirektivActionIDHeader)
+			if len(aid) == 0 {
+				slog.Debug("action id was empty", "this", this())
+
+				return
+			}
+			b := make([]byte, 0)
+			_, err := resp.Body.Read(b)
+			if err != nil {
+				slog.Debug("failed to read the resp body", "this", this(), "error", err)
+
+				return
+			}
+			var respBody enginerefactor.ActionResponse
+			err = json.Unmarshal(b, &respBody)
+			if err != nil {
+				slog.Debug("failed to read the resp body", "this", this(), "error", err)
+
+				return
+			}
+			payload := &actionResultPayload{
+				ActionID:     aid,
+				ErrorCode:    respBody.ErrCode,
+				ErrorMessage: fmt.Sprint(respBody.Err),
+				Output:       respBody.Output,
+			}
+
+			uid, err := uuid.Parse(arReq.Instance)
+			if err != nil {
+				slog.Debug("Error returned to gRPC request", "this", this(), "error", err)
+
+				return
+			}
+
+			err = engine.enqueueInstanceMessage(ctx, uid, "action", payload)
+			if err != nil {
+				slog.Debug("Error returned to gRPC request", "this", this(), "error", err)
+
+				return
+			}
 
 			break
 		}
