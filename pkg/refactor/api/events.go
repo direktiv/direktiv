@@ -286,15 +286,9 @@ func (c *eventsController) registerCoudEvent(w http.ResponseWriter, r *http.Requ
 	// Check if the content type indicates a batch of CloudEvents
 	if strings.HasPrefix(cType, "application/cloudevents-batch+json") {
 		processor = extractBatchevent
-	}
-
-	// Check if the content type indicates a single CloudEvent
-	if strings.HasPrefix(cType, "application/json") {
-		s := r.Header.Get("Ce-Type")
-		if s == "" {
-			// some weird magic for historical reasons...
-			r.Header.Set("Content-Type", "application/cloudevents+json; charset=UTF-8")
-		}
+	} else if strings.HasPrefix(cType, "application/json") {
+		processor = extractEvent
+	} else if strings.HasPrefix(cType, "application/cloudevents+json") {
 		processor = extractEvent
 	} else {
 		// If content type is not recognized, return an error
