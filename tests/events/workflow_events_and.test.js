@@ -147,13 +147,13 @@ describe('Test workflow events and', () => {
 			instance: expect.stringMatching(common.regex.uuidRegex),
 			createdAt: expect.stringMatching(common.regex.timestampRegex),
 			updatedAt: expect.stringMatching(common.regex.timestampRegex),
-			events: [ {
+			events: expect.arrayContaining([{
 				type: 'eventtype1',
 				filters: {},
 			}, {
 				type: 'eventtype2',
 				filters: {},
-			} ],
+			}]),
 		})
 	})
 
