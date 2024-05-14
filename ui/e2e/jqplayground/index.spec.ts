@@ -3,6 +3,7 @@ import { expect, test } from "@playwright/test";
 import {
   expectedSnippetOutput,
   getCommonElements,
+  getErrorContainer,
   scrolledToTheTop,
   userScrolledADecentAmount,
 } from "./utils";
@@ -55,6 +56,33 @@ test("It will display the input as output, when the user clicks the run button w
       `output changes to ${expectedDefaultInput} after clicking run`
     )
     .toBe(expectedDefaultInput);
+});
+
+test("It will display an error when the query is not a JQ command", async ({
+  page,
+}) => {
+  const { btnRun, queryInput } = await getCommonElements(page);
+
+  await queryInput.fill(`"jq(\\)"`);
+  await btnRun.click();
+
+  const { errorContainer } = getErrorContainer(page);
+
+  await expect(
+    errorContainer,
+    "an error message should be displayed"
+  ).toBeVisible();
+
+  expect(
+    await errorContainer.textContent(),
+    "the error message should inform about an invalid json"
+  ).toContain("root : invalid 'jx': yaml: found unknown escape character");
+
+  await queryInput.fill("changed the query");
+  await expect(
+    errorContainer,
+    "the error message will disappear when the user changes the query"
+  ).not.toBeVisible();
 });
 
 test("It will show an error in the logs, when the query is not a valid JQ command", async ({
