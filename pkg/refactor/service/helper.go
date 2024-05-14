@@ -325,11 +325,6 @@ func buildEnvVars(withGrpc bool, c *core.Config, sv *core.ServiceFileData) []cor
 		Value: c.OpenTelemetry,
 	})
 
-	proxyEnvs = append(proxyEnvs, corev1.EnvVar{
-		Name:  util.DirektivLogFormat,
-		Value: c.LogFormat,
-	})
-
 	if withGrpc {
 		namespace := c.DirektivNamespace
 

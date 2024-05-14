@@ -14,8 +14,7 @@ const SystemNamespace = "system"
 type Config struct {
 	DirektivNamespace string `env:"DIREKTIV_NAMESPACE"`
 
-	LogFormat string `env:"DIREKTIV_LOG_FORMAT"`
-	LogDebug  bool   `env:"DIREKTIV_DEBUG"`
+	LogDebug bool `env:"DIREKTIV_DEBUG"`
 
 	ApiV1Port int `env:"DIREKTIV_API_V1_PORT" envDefault:"6665"`
 	ApiV2Port int `env:"DIREKTIV_API_V2_PORT" envDefault:"6667"`

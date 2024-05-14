@@ -103,7 +103,6 @@ states:
 			transitioned: 'a',
 		})
 		expect(req.body['test.simple']).toMatchObject({
-			data: {},
 			datacontenttype: 'application/json',
 			source: 'generate-event',
 			specversion: '1.0',

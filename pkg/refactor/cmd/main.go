@@ -75,7 +75,7 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 	slog.Info("gateway manager initialized successfully")
 
 	// Create endpoint manager
-	gatewayManager2 := gateway2.NewManager()
+	gatewayManager2 := gateway2.NewManager(args.Database)
 	slog.Info("gateway manager2 initialized successfully")
 
 	// Create App
@@ -199,12 +199,6 @@ func initSLog() {
 		Level: lvl,
 	}))
 
-	if os.Getenv(util.DirektivLogFormat) == "console" {
-		slogger = slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{
-			Level: lvl,
-		}))
-	}
-
 	slog.SetDefault(slogger)
 }
 
@@ -319,8 +313,7 @@ func renderGateway2(db *database.SQLStore, manager core.GatewayManagerV2) {
 			}
 		}
 	}
-	manager.SetConsumers(consumers)
-	manager.SetEndpoints(endpoints)
+	manager.SetEndpoints(endpoints, consumers)
 }
 
 func getWorkflowFunctionDefinitionsFromWorkflow(ns *datastore.Namespace, f *filestore.File) ([]*core.ServiceFileData, error) {

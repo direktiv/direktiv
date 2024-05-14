@@ -16,8 +16,7 @@ const (
 type GatewayManagerV2 interface {
 	http.Handler
 
-	SetEndpoints(list []EndpointV2)
-	SetConsumers(list []ConsumerV2)
+	SetEndpoints(list []EndpointV2, cList []ConsumerV2)
 
 	ListEndpoints(namespace string) []EndpointV2
 	ListConsumers(namespace string) []ConsumerV2
@@ -72,16 +71,7 @@ type ConsumerV2 struct {
 
 	Namespace string
 	FilePath  string
-}
-
-func FindConsumerByUser(user string, list []ConsumerV2) *ConsumerV2 {
-	for _, item := range list {
-		if item.Username == user {
-			return &item
-		}
-	}
-
-	return nil
+	Errors    []error
 }
 
 func ParseConsumerFileV2(data []byte) (*ConsumerFileV2, error) {
