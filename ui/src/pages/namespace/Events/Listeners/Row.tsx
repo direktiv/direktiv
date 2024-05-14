@@ -6,6 +6,7 @@ import {
   TooltipTrigger,
 } from "~/design/Tooltip";
 
+import ContextFilters from "./ContextFilters";
 import CopyButton from "~/design/CopyButton";
 import { EventListenerSchemaType } from "~/api/eventListeners/schema";
 import { Link } from "react-router-dom";
@@ -29,7 +30,6 @@ const Row = ({
   const contextFilters = listener.eventContextFilters.filter(
     (item) => !!Object.keys(item.context).length
   );
-  const contextFiltersCount = contextFilters.length;
 
   let linkTarget;
 
@@ -94,9 +94,7 @@ const Row = ({
           </Tooltip>
         </TableCell>
         <TableCell>
-          {t("pages.events.listeners.tableRow.contextFilters", {
-            count: contextFiltersCount,
-          })}
+          <ContextFilters filters={contextFilters} />
         </TableCell>
       </TableRow>
     </TooltipProvider>
