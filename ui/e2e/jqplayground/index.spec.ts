@@ -130,7 +130,7 @@ test("It will persist the query to be available after a page reload", async ({
   const { queryInput } = await getCommonElements(page);
 
   expect(await queryInput.inputValue(), 'the query is "." by default').toBe(
-    "."
+    "jq(.)"
   );
 
   const userQueryText = ".some .query .text";

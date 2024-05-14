@@ -20,7 +20,7 @@ const snippets = [
   {
     key: "arrayObjectConstruction",
     example: "[], {}",
-    jx: "jq([{user, title: .titles[]}])",
+    jx: '"jq([{user, title: .titles[]}])"',
     data: '{"user":"stedolan","titles":["JQ Primer", "More JQ"]}',
   },
   {
