@@ -16,7 +16,7 @@ import {
   useJqPlaygroundActions,
   useJqPlaygroundData,
   useJqPlaygroundJx,
-} from "~/util/store/jqPlaygrpund";
+} from "~/util/store/jqPlayground";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
