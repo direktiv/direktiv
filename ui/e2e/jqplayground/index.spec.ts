@@ -268,6 +268,45 @@ test("the user can copy the output to the clipboard when there is one", async ({
   );
 });
 
+test("the user can copy the logs to the clipboard when there are some", async ({
+  page,
+}) => {
+  const { logsTextArea, queryInput, btnRun, copyLogsBtn } =
+    getCommonElements(page);
+
+  expect(
+    await logsTextArea.inputValue(),
+    `the initial logs are an empty string`
+  ).toBe("");
+
+  await expect(
+    copyLogsBtn,
+    "empty logs will disable the copy button"
+  ).toBeDisabled();
+
+  await queryInput.fill("jq(\\.)");
+  await btnRun.click();
+
+  const expectedLogs =
+    'failure: error executing jq query \\.: unexpected token "\\\\"\n';
+
+  await expect
+    .poll(
+      async () => await logsTextArea.inputValue(),
+      "an error message should be displayed in the logs"
+    )
+    .toBe(expectedLogs);
+
+  await copyLogsBtn.click();
+  const clipboardText = await page.evaluate(() =>
+    navigator.clipboard.readText()
+  );
+
+  expect(clipboardText, "the logs were copied into the clipboard").toBe(
+    expectedLogs
+  );
+});
+
 test("It will run every snippet succefully", async ({ page }) => {
   const { outputTextArea } = getCommonElements(page);
 
