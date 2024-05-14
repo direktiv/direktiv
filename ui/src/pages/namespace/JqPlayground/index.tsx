@@ -232,7 +232,7 @@ const JqPlaygroundPage: FC = () => {
                   size: "sm",
                   type: "button",
                   disabled: !logs,
-                  "data-testid": "copy-output-btn",
+                  "data-testid": "copy-logs-btn",
                 }}
               />
             </div>
