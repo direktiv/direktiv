@@ -34,7 +34,7 @@ func (acl *ACLPlugin) Type() string {
 }
 
 func (acl *ACLPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, error) {
-	c := gateway2.ParseRequestActiveConsumer(r)
+	c := gateway2.ExtractContextActiveConsumer(r)
 	if c == nil {
 		return nil, fmt.Errorf("missing consumer")
 	}

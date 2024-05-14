@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
@@ -30,7 +29,7 @@ func (p *GitlabWebhookPlugin) NewInstance(config core.PluginConfigV2) (core.Plug
 
 func (p *GitlabWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, error) {
 	// check request is already authenticated
-	if gateway2.ParseRequestActiveConsumer(r) != nil {
+	if gateway2.ExtractContextActiveConsumer(r) != nil {
 		return r, nil
 	}
 
@@ -39,10 +38,12 @@ func (p *GitlabWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) (*
 		return r, nil
 	}
 
-	c := &core.ConsumerFile{
-		Username: "gitlab",
+	c := &core.ConsumerV2{
+		ConsumerFileV2: core.ConsumerFileV2{
+			Username: "gitlab",
+		},
 	}
-	r = r.WithContext(context.WithValue(r.Context(), core.GatewayCtxKeyActiveConsumer, c))
+	r = gateway2.InjectContextActiveConsumer(r, c)
 
 	return r, nil
 }

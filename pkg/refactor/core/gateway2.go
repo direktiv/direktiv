@@ -8,11 +8,6 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const (
-	GatewayCtxKeyConsumers      = "ctx_consumers"
-	GatewayCtxKeyActiveConsumer = "ctx_active_consumer"
-)
-
 type GatewayManagerV2 interface {
 	http.Handler
 

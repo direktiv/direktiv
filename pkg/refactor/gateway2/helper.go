@@ -14,10 +14,6 @@ const (
 	ConsumerGroupsHeader = "Direktiv-Consumer-Groups"
 )
 
-func hasActiveConsumer(r *http.Request) bool {
-	return r.Context().Value(core.GatewayCtxKeyActiveConsumer) != nil
-}
-
 func isAuthPlugin(p core.PluginV2) bool {
 	return strings.Contains(p.Type(), "-auth") || strings.Contains(p.Type(), "auth-")
 }

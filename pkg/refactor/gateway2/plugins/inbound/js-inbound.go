@@ -66,7 +66,7 @@ type request struct {
 	// Queries shared.Query
 	Body string
 
-	Consumer *core.ConsumerFileV2
+	Consumer *core.ConsumerV2
 
 	// url params of type /{id}
 	URLParams map[string]string
@@ -91,12 +91,7 @@ func (js *JSInboundPlugin) Execute(w http.ResponseWriter, r *http.Request) (*htt
 
 	vm := goja.New()
 
-	var c *core.ConsumerFileV2
-	if gateway2.ParseRequestActiveConsumer(r) != nil {
-		c = &gateway2.ParseRequestActiveConsumer(r).ConsumerFileV2
-	} else {
-		c = &core.ConsumerFileV2{}
-	}
+	c := gateway2.ExtractContextActiveConsumer(r)
 
 	// add url param
 	urlParams := make(map[string]string)

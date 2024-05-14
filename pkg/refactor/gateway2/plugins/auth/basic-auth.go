@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"context"
 	"crypto/sha256"
 	"crypto/subtle"
 	"net/http"
@@ -33,7 +32,7 @@ func (ba *BasicAuthPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV
 
 func (ba *BasicAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, error) {
 	// check request is already authenticated
-	if gateway2.ParseRequestActiveConsumer(r) != nil {
+	if gateway2.ExtractContextActiveConsumer(r) != nil {
 		return r, nil
 	}
 	user, pwd, ok := r.BasicAuth()
@@ -42,7 +41,7 @@ func (ba *BasicAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) (*htt
 		return r, nil
 	}
 
-	consumerList := gateway2.ParseRequestConsumersList(r)
+	consumerList := gateway2.ExtractContextConsumersList(r)
 	if consumerList == nil {
 		return r, nil
 	}
@@ -63,7 +62,7 @@ func (ba *BasicAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) (*htt
 
 	if usernameMatch && passwordMatch {
 		// set active comsumer.
-		r = r.WithContext(context.WithValue(r.Context(), core.GatewayCtxKeyActiveConsumer, consumer))
+		r = gateway2.InjectContextActiveConsumer(r, consumer)
 		// set headers if configured.
 		if ba.AddUsernameHeader {
 			r.Header.Set(gateway2.ConsumerUserHeader, consumer.Username)

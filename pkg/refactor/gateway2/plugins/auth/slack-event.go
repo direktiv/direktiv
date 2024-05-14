@@ -2,7 +2,6 @@ package auth
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -33,7 +32,7 @@ func (p *SlackWebhookPlugin) NewInstance(config core.PluginConfigV2) (core.Plugi
 
 func (p *SlackWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, error) {
 	// check request is already authenticated
-	if gateway2.ParseRequestActiveConsumer(r) != nil {
+	if gateway2.ExtractContextActiveConsumer(r) != nil {
 		return r, nil
 	}
 
@@ -60,11 +59,13 @@ func (p *SlackWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) (*h
 		return nil, fmt.Errorf("slack hmac failed")
 	}
 
-	c := &core.ConsumerFile{
-		Username: "slack",
+	c := &core.ConsumerV2{
+		ConsumerFileV2: core.ConsumerFileV2{
+			Username: "slack",
+		},
 	}
 	// set active comsumer.
-	r = r.WithContext(context.WithValue(r.Context(), core.GatewayCtxKeyActiveConsumer, c))
+	r = gateway2.InjectContextActiveConsumer(r, c)
 
 	// convert to json if url encoded
 	// nolint:canonicalheader

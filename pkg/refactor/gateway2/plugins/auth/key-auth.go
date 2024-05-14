@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"context"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -39,7 +38,7 @@ func (ka *KeyAuthPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2,
 
 func (ka *KeyAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, error) {
 	// check request is already authenticated
-	if gateway2.ParseRequestActiveConsumer(r) != nil {
+	if gateway2.ExtractContextActiveConsumer(r) != nil {
 		return r, nil
 	}
 
@@ -49,7 +48,7 @@ func (ka *KeyAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.
 		return r, nil
 	}
 
-	consumerList := gateway2.ParseRequestConsumersList(r)
+	consumerList := gateway2.ExtractContextConsumersList(r)
 	if consumerList == nil {
 		slog.Debug("no consumer configured for api key")
 
@@ -65,7 +64,7 @@ func (ka *KeyAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.
 
 	if c.APIKey == key {
 		// set active consumer
-		r = r.WithContext(context.WithValue(r.Context(), core.GatewayCtxKeyActiveConsumer, c))
+		r = gateway2.InjectContextActiveConsumer(r, c)
 
 		// set headers if configured
 		if ka.AddUsernameHeader {

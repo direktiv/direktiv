@@ -2,7 +2,6 @@ package auth
 
 import (
 	"bytes"
-	"context"
 	"io"
 	"log/slog"
 	"net/http"
@@ -30,7 +29,7 @@ func (p *GithubWebhookPlugin) NewInstance(config core.PluginConfigV2) (core.Plug
 
 func (p *GithubWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, error) {
 	// check request is already authenticated
-	if gateway2.ParseRequestActiveConsumer(r) != nil {
+	if gateway2.ExtractContextActiveConsumer(r) != nil {
 		return r, nil
 	}
 
@@ -43,10 +42,12 @@ func (p *GithubWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) (*
 
 	// reset body with payload
 	r.Body = io.NopCloser(bytes.NewBuffer(payload))
-	c := &core.ConsumerFile{
-		Username: "github",
+	c := &core.ConsumerV2{
+		ConsumerFileV2: core.ConsumerFileV2{
+			Username: "github",
+		},
 	}
-	r = r.WithContext(context.WithValue(r.Context(), core.GatewayCtxKeyActiveConsumer, c))
+	r = gateway2.InjectContextActiveConsumer(r, c)
 
 	return r, nil
 }

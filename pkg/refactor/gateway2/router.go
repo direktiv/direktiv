@@ -1,7 +1,6 @@
 package gateway2
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"slices"
@@ -58,16 +57,19 @@ func buildRouter(endpoints []core.EndpointV2, consumers []core.ConsumerV2) *rout
 
 				return
 			}
+
 			// inject consumer files.
-			r = r.WithContext(context.WithValue(r.Context(), core.GatewayCtxKeyConsumers,
-				filterNamespacedConsumers(consumers, item.Namespace)))
+			r = InjectContextConsumersList(r, filterNamespacedConsumers(consumers, item.Namespace))
+			// inject namespace.
+			r = InjectContextNamespace(r, item.Namespace)
 
 			var err error
 			for _, p := range pChain {
 				// checkpoint if auth plugins had a match.
 				if !isAuthPlugin(p) {
 					// case where auth is required but request is not authenticated (consumers doesn't match).
-					if !item.AllowAnonymous && !hasActiveConsumer(r) {
+					hasActiveConsumer := ExtractContextActiveConsumer(r) != nil
+					if !item.AllowAnonymous && !hasActiveConsumer {
 						WriteJSONError(w, http.StatusForbidden, item.FilePath, "authentication failed")
 
 						return

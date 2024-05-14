@@ -79,7 +79,7 @@ func (rcp *RequestConvertPlugin) Execute(w http.ResponseWriter, r *http.Request)
 		response.Headers = r.Header
 	}
 
-	c := gateway2.ParseRequestActiveConsumer(r)
+	c := gateway2.ExtractContextActiveConsumer(r)
 
 	if !rcp.OmitConsumer && c != nil {
 		response.Consumer.Username = c.Username
