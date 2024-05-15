@@ -21,13 +21,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set current date
-        run: echo "CURRENT_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
-
-      - name: Read current date
-        run: echo "Current date is ${{ env.CURRENT_DATE }}
-
-      - name: Setup Goo
+      - name: Setup Go
         uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
@@ -106,7 +100,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: /tmp/.buildx-cache
-          key: api-${{ runner.os }}-buildx-${{ github.sha }}
+          key: api-$(date +'%Y-%m-%d')-${{ runner.os }}-buildx-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-
 
@@ -155,7 +149,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: /tmp/.buildx-cache
-          key: ui-${{ runner.os }}--buildx-${{ github.sha }}
+          key: ui-$(date +'%Y-%m-%d')-${{ runner.os }}--buildx-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-
 
