@@ -356,7 +356,7 @@ jobs:
         run: |
           endpoint="http://${{ env.DIREKTIV_HOST }}/api/v2/status"
 
-          for attempt in {1..20}; do
+          for attempt in {1..50}; do
             status_code=$(curl -s -o /dev/null -w "%{http_code}" $endpoint)
             echo "API status code: $status_code"
 
