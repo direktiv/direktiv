@@ -15,19 +15,6 @@ env:
   IS_GITHUB_ACTIONS: true
 
 jobs:
-  cache-check:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Check caching hits
-        run: |
-          if docker manifest inspect ghcr.io/direktiv/direktiv:checksum-${{ hashFiles('cmd', 'pkg', 'go.mod', 'go.sum') }} then
-            echo "BACKEND_CACHE_HIT="true" >> $GITHUB_ENV
-          fi
-          if docker manifest inspect ghcr.io/direktiv/direktiv-ui:checksum-${{ hashFiles('ui') }} then
-            echo "UI_CACHE_HIT="true" >> $GITHUB_ENV
-          fi
-
 
   backend-license:
     runs-on: ubuntu-latest
