@@ -78,8 +78,7 @@ type ServiceResponse struct {
 
 type functionRequest struct {
 	ActionID  string
-	Iterator  int
-	Workflow  functionWorkflow
+	Timeout   int
 	Container functionContainer
 }
 
@@ -91,15 +90,4 @@ type functionContainer struct {
 	Size                model.Size
 	Scale               int
 	Files               []model.FunctionFileDefinition
-}
-
-type functionWorkflow struct {
-	Name          string
-	Path          string
-	InstanceID    string
-	NamespaceID   string
-	NamespaceName string
-	State         string
-	Step          int
-	Timeout       int
 }

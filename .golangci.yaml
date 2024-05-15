@@ -131,6 +131,9 @@ issues:
     - text: "context-as-argument:"
       linters:
         - revive
+    - text: "context-keys-type: should not use basic type string"
+      linters:
+        - revive
     - text: "fmt.Errorf can be replaced"
       linters:
         - perfsprint
