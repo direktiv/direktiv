@@ -149,7 +149,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: /tmp/.buildx-cache
-          key: ui-$(date +'%Y-%m-%d')-${{ runner.os }}--buildx-${{ github.sha }}
+          key: ui-$(date +'%Y-%m-%d')-${{ runner.os }}-buildx-${{ github.sha }}
           restore-keys: |
             ui-$(date +'%Y-%m-%d')-${{ runner.os }}-buildx-
 
