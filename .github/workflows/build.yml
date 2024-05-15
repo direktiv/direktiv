@@ -90,6 +90,8 @@ jobs:
             type=ref,event=branch
             type=ref,event=pr
             type=sha,format=long
+            type=raw,value=checksum-${{ hashFiles('cmd', 'pkg', 'go.mod', 'go.sum') }}
+
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -142,6 +144,7 @@ jobs:
             type=ref,event=branch
             type=ref,event=pr
             type=sha,format=long
+            type=raw,value=checksum-${{ hashFiles('ui') }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -250,12 +253,12 @@ jobs:
           pullPolicy: IfNotPresent
           registry: ghcr.io
           image: direktiv/direktiv
-          tag: sha-${{ github.sha }}
+          tag: checksum-${{ hashFiles('cmd', 'pkg', 'go.mod', 'go.sum') }}
           flow:
             logging: json
           frontend:
             image: direktiv/direktiv-ui
-            tag: sha-${{ github.sha }}
+            tag: checksum-${{ hashFiles('ui') }}
           database:
             host: "$DB_HOST"
             port: $DB_PORT
