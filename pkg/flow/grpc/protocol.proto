@@ -7,11 +7,9 @@ option go_package = "github.com/direktiv/direktiv/pkg/flow/grpc";
 import "google/protobuf/empty.proto";
 
 import "pkg/flow/grpc/variables.proto";
-import "pkg/flow/grpc/instances.proto";
 import "pkg/flow/grpc/internal.proto";
 import "pkg/flow/grpc/cloudevent.proto";
 import "pkg/flow/grpc/util.proto";
-// import "pkg/flow/grpc/eventing.proto";
 
 service Flow {
 	rpc BroadcastCloudevent (BroadcastCloudeventRequest) returns (google.protobuf.Empty) {}
