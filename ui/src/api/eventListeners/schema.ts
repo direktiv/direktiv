@@ -71,3 +71,6 @@ export type EventListenerSchemaType = z.infer<typeof EventListenerSchema>;
 export type EventListenersResponseSchemaType = z.infer<
   typeof EventListenersResponseSchema
 >;
+export type EventContextFiltersSchemaType = z.infer<
+  typeof EventContextFiltersSchema
+>;
