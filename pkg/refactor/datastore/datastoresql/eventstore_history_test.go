@@ -208,8 +208,8 @@ func newEvent(subj, t string, id, ns uuid.UUID, nsName string) datastore.Event {
 				Source:  *types.ParseURIRef("test.com"),
 			},
 		},
-		Namespace:     ns,
-		NamespaceName: nsName,
-		ReceivedAt:    time.Now().UTC(),
+		NamespaceID: ns,
+		Namespace:   nsName,
+		ReceivedAt:  time.Now().UTC(),
 	}
 }

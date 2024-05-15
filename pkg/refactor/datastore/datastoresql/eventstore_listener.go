@@ -38,7 +38,7 @@ func (s *sqlEventListenerStore) Append(ctx context.Context, listener *datastore.
 		return err
 	}
 
-	filters, err := json.Marshal(listener.EventContextFilter)
+	filters, err := json.Marshal(listener.EventContextFilters)
 	if err != nil {
 		return err
 	}
@@ -179,7 +179,7 @@ func (s *sqlEventListenerStore) Get(ctx context.Context, namespace uuid.UUID, li
 
 func (s *sqlEventListenerStore) GetAll(ctx context.Context) ([]*datastore.EventListener, error) {
 	q := `SELECT 
-	id, namespace_id, created_at, updated_at, deleted, received_events, trigger_type, events_lifespan, event_types, trigger_info, metadata
+	id, namespace_id, namespace, created_at, updated_at, deleted, received_events, trigger_type, events_lifespan, event_types, trigger_info, metadata
 	FROM event_listeners Where deleted = false`
 	q += " ORDER BY created_at DESC;"
 	res := make([]*gormEventListener, 0)
@@ -256,7 +256,7 @@ func (s *sqlEventListenerStore) GetByID(ctx context.Context, id uuid.UUID) (*dat
 		TriggerInstance:             trigger.InstanceID,
 		ReceivedEventsForAndTrigger: ev,
 		Metadata:                    l.Metadata,
-		EventContextFilter:          filters,
+		EventContextFilters:         filters,
 	}, nil
 }
 
@@ -355,7 +355,7 @@ func convertListerners(from []*gormEventListener) ([]*datastore.EventListener, e
 			TriggerInstance:             trigger.InstanceID,
 			ReceivedEventsForAndTrigger: ev,
 			Metadata:                    l.Metadata,
-			EventContextFilter:          filters,
+			EventContextFilters:         filters,
 		})
 	}
 

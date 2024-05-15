@@ -13,7 +13,7 @@ import { useTranslation } from "react-i18next";
 
 export const sendEvent = apiFactory<NewEventSchemaType["body"]>({
   url: ({ baseUrl, namespace }: { baseUrl?: string; namespace: string }) =>
-    `${baseUrl ?? ""}/api/namespaces/${namespace}/broadcast`,
+    `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/events/broadcast`,
   method: "POST",
   schema: EventCreatedSchema,
 });
@@ -37,7 +37,7 @@ export const useSendEvent = ({
       apiKey: apiKey ?? undefined,
       payload: data.body,
       headers: {
-        "content-type": "application/cloudevents+json",
+        "content-type": "application/json",
       },
       urlParams: {
         namespace,

@@ -1,4 +1,4 @@
-import { EventCreatedSchema, EventCreatedSchemaType } from "../schema";
+import { EventReplayedSchema, EventReplayedSchemaType } from "../schema";
 
 import { apiFactory } from "~/api/apiFactory";
 import { useApiKey } from "~/util/store/apiKey";
@@ -16,16 +16,19 @@ export const replayEvent = apiFactory({
     baseUrl?: string;
     namespace: string;
     id: string;
-  }) => `${baseUrl ?? ""}/api/namespaces/${namespace}/events/${id}/replay`,
+  }) =>
+    `${
+      baseUrl ?? ""
+    }/api/v2/namespaces/${namespace}/events/history/replay/${id}`,
 
   method: "POST",
-  schema: EventCreatedSchema,
+  schema: EventReplayedSchema,
 });
 
 export const useReplayEvent = ({
   onSuccess,
 }: {
-  onSuccess?: (data: EventCreatedSchemaType) => void;
+  onSuccess?: (data: EventReplayedSchemaType) => void;
 } = {}) => {
   const apiKey = useApiKey();
   const namespace = useNamespace();

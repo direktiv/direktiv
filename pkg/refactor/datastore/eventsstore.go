@@ -17,11 +17,11 @@ type StagingEvent struct {
 
 // wraps the cloud-event and adds contextual information.
 type Event struct {
-	Event         *cloudevents.Event `json:"event"`
-	Namespace     uuid.UUID          `json:"namespace,omitempty"`
-	NamespaceName string             `json:"namespaceName,omitempty"`
-	ReceivedAt    time.Time          `json:"receivedAt"` // marks when the events received by the web-API or created via internal logic.
-	SerialID      int                `json:"serialID"`
+	Event       *cloudevents.Event `json:"event"`
+	NamespaceID uuid.UUID          `json:"namespaceID,omitempty"`
+	Namespace   string             `json:"namespace,omitempty"`
+	ReceivedAt  time.Time          `json:"receivedAt"` // marks when the events received by the web-API or created via internal logic.
+	SerialID    int                `json:"serialID"`
 }
 
 // Persists and gets events.
@@ -70,12 +70,12 @@ type EventListener struct {
 	TriggerType                 TriggerType          `json:"triggerType"`                   // Specifies the type of trigger (StartAnd, WaitAnd, etc.).
 	TriggerWorkflow             string               `json:"triggerWorkflow,omitempty"`     // The ID of the workflow to initiate or continue.
 	TriggerInstance             string               `json:"triggerInstance,omitempty"`     // Optional; The ID of a specific workflow instance to resume (for instance-waiting triggers).
-	EventContextFilter          []EventContextFilter `json:"eventContextFilters,omitempty"` // Optional: The context field and values required to be present in a event to be considered for trigger.
+	EventContextFilters         []EventContextFilter `json:"eventContextFilters,omitempty"` // Optional: The context field and values required to be present in a event to be considered for trigger.
 	Metadata                    string               `json:"metadata"`                      // Field for storing arbitrary metadata associated with the listener.
 }
 
 type EventContextFilter struct {
-	Typ     string            `json:"typ"`
+	Type    string            `json:"type"`
 	Context map[string]string `json:"context"`
 }
 
@@ -118,7 +118,6 @@ type EventListenerStore interface {
 	GetAll(ctx context.Context) ([]*EventListener, error)
 	// return EventListeners for a given namespace with the total row count for pagination.
 	Get(ctx context.Context, namespace uuid.UUID, limit, offet int) ([]*EventListener, int, error)
-	GetOld(ctx context.Context, namespace string, t time.Time) ([]*EventListener, error)
 	// deletes EventListeners that have the deleted flag set.
 	Delete(ctx context.Context) error
 	DeleteByID(ctx context.Context, id uuid.UUID) error

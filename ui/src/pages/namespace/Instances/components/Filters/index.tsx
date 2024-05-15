@@ -212,9 +212,15 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
                 <PopoverContent align="start">
                   {(field === "AFTER" || field === "BEFORE") && (
                     <DatePicker
-                      field={field}
                       date={filters[field]?.value}
-                      setFilter={setFilter}
+                      heading={t(
+                        `pages.instances.list.filter.menuHeading.${field}`
+                      )}
+                      onChange={(value) =>
+                        setFilter({
+                          [field]: { field, type: field, value },
+                        })
+                      }
                     />
                   )}
                 </PopoverContent>
@@ -232,9 +238,10 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
                 </PopoverTrigger>
                 <PopoverContent align="start" className="w-min">
                   <RefineTime
-                    field={field}
                     date={dateValue}
-                    setFilter={setFilter}
+                    onChange={(newDate) => {
+                      setFilter({ [field]: { value: newDate, type: field } });
+                    }}
                   />
                 </PopoverContent>
               </Popover>
@@ -321,9 +328,15 @@ const Filters = ({ filters, onUpdate }: FiltersProps) => {
               )) ||
               ((selectedField === "AFTER" || selectedField === "BEFORE") && (
                 <DatePicker
-                  field={selectedField}
                   date={filters[selectedField]?.value}
-                  setFilter={setFilter}
+                  heading={t(
+                    `pages.instances.list.filter.menuHeading.${selectedField}`
+                  )}
+                  onChange={(value) =>
+                    setFilter({
+                      [selectedField]: { type: selectedField, value },
+                    })
+                  }
                 />
               ))}
           </PopoverContent>
