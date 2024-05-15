@@ -102,7 +102,7 @@ jobs:
           path: /tmp/.buildx-cache
           key: api-$(date +'%Y-%m-%d')-${{ runner.os }}-buildx-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-buildx-
+            api-$(date +'%Y-%m-%d')-${{ runner.os }}-buildx-
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
@@ -151,7 +151,7 @@ jobs:
           path: /tmp/.buildx-cache
           key: ui-$(date +'%Y-%m-%d')-${{ runner.os }}--buildx-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-buildx-
+            ui-$(date +'%Y-%m-%d')-${{ runner.os }}-buildx-
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
