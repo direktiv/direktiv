@@ -20,14 +20,23 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
 
+      - name: Fetch global cache flags
+        uses: actions/cache@v3
+        with:
+          path: /global-flags
+          key: go-${{ hashFiles('cmd')}}-${{ hashFiles('pkg')}}-${{ hashFiles('go.mod')}}-${{ hashFiles('go.sum')}}
+
       - name: Run check
+        if: ${{ hashFiles('/global-flags/backend-license-success') == '' }}
         run: make tests-license-check
+
+      - name: Set global cache flag
+        run: echo "true" > /global-flags/backend-license-success
 
   backend-lint:
     runs-on: ubuntu-latest
