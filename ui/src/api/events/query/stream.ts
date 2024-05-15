@@ -3,13 +3,13 @@ import {
   EventListItemType,
   EventsListResponseSchemaType,
 } from "../schema";
-import { InfiniteData, useQueryClient } from "@tanstack/react-query";
 
 import { FiltersSchemaType } from "../schema/filters";
 import { buildSearchParamsString } from "~/api/utils";
 import { eventKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
+import { useQueryClient } from "@tanstack/react-query";
 import { useStreaming } from "~/api/streaming";
 
 type EventsQueryParams = {
@@ -30,27 +30,14 @@ const updateCache = (
 ): EventsCache | undefined => {
   if (oldData === undefined) return undefined;
 
-  const pages = oldData.pages;
-  const olderPages = pages.slice(0, -1);
-  const newestPage = pages.at(-1);
-  if (newestPage === undefined) return undefined;
-
-  const newestPageData = newestPage.data ?? [];
-
-  // skip cache if the log entry is already in the cache
-  if (newestPageData.some((item) => item.event.id === newItem.event.id)) {
+  // skip update if the log entry is already in the cache
+  if (oldData.data.some((item) => item.event.id === newItem.event.id)) {
     return oldData;
   }
 
   return {
     ...oldData,
-    pages: [
-      ...olderPages,
-      {
-        ...newestPage,
-        data: [...newestPageData, newItem],
-      },
-    ],
+    data: [...oldData.data, newItem],
   };
 };
 
@@ -70,7 +57,7 @@ const getUrl = (params: EventsParams) => {
 
 export type UseEventsStreamParams = EventsQueryParams & { enabled?: boolean };
 
-type EventsCache = InfiniteData<EventsListResponseSchemaType>;
+type EventsCache = EventsListResponseSchemaType;
 
 export const useEventsStream = ({
   enabled,
