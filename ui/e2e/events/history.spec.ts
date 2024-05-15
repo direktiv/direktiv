@@ -97,17 +97,27 @@ test("it renders, filters, and paginates events", async ({ page }) => {
     `/n/${namespace}/events/history`
   );
 
-  await expect(page.getByTestId("pagination-btn-page-1")).toBeVisible();
-  await expect(page.getByTestId("pagination-btn-page-2")).toBeVisible();
-  await expect(page.getByTestId("pagination-btn-page-3")).toBeVisible();
-  await expect(page.getByTestId("pagination-btn-page-4")).not.toBeVisible();
+  const paginationWrapper = page.getByTestId("pagination-wrapper");
+
+  await expect(
+    paginationWrapper.getByRole("button", { name: "1" })
+  ).toBeVisible();
+  await expect(
+    paginationWrapper.getByRole("button", { name: "2" })
+  ).toBeVisible();
+  await expect(
+    paginationWrapper.getByRole("button", { name: "3" })
+  ).toBeVisible();
+  await expect(
+    paginationWrapper.getByRole("button", { name: "4" })
+  ).not.toBeVisible();
 
   await expect(page.getByTestId("event-row")).toHaveCount(10);
 
-  await page.getByTestId("pagination-btn-page-2").click();
+  await paginationWrapper.getByRole("button", { name: "2" }).click();
   await expect(page.getByTestId("event-row")).toHaveCount(10);
 
-  await page.getByTestId("pagination-btn-page-3").click();
+  await paginationWrapper.getByRole("button", { name: "3" }).click();
   await expect(page.getByTestId("event-row")).toHaveCount(2);
 
   /**
@@ -144,7 +154,7 @@ test("it renders, filters, and paginates events", async ({ page }) => {
    */
 
   await page.getByTestId("add-filter").click();
-  await page.getByRole("option", { name: "search content" }).click();
+  await page.getByRole("option", { name: "content contains" }).click();
 
   await page
     .getByPlaceholder("search cloudevent content")
@@ -157,7 +167,7 @@ test("it renders, filters, and paginates events", async ({ page }) => {
     "when filtering by event type + content, it shows the correct number of events"
   ).toHaveCount(4);
 
-  await page.getByTestId("clear-filter-TYPE").click();
+  await page.getByTestId("clear-filter-typeContains").click();
 
   await expect(
     page.getByTestId("event-row"),
@@ -182,7 +192,7 @@ test("it renders, filters, and paginates events", async ({ page }) => {
     "No events found with these filter criteria"
   );
 
-  await page.getByTestId("clear-filter-AFTER").click();
+  await page.getByTestId("clear-filter-receivedAfter").click();
   await expect(
     page.getByTestId("event-row"),
     "after removing the date filter, it shows the correct number of events"

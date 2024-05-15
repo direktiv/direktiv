@@ -184,9 +184,9 @@ func createTestEventListener(ns uuid.UUID) *datastore.EventListener {
 		LifespanOfReceivedEvents:    10000,
 		TriggerType:                 datastore.StartSimple,
 		TriggerWorkflow:             uuid.New().String(),
-		EventContextFilter: []datastore.EventContextFilter{
+		EventContextFilters: []datastore.EventContextFilter{
 			{
-				Typ: "test-type",
+				Type: "test-type",
 				Context: map[string]string{
 					"id": "filter of this",
 				},
@@ -210,7 +210,7 @@ func verifyListenerAdded(t *testing.T, store datastore.EventListenerStore, liste
 	if res.ID != listener.ID {
 		t.Error("id did not match")
 	}
-	if len(res.EventContextFilter) != len(listener.EventContextFilter) {
+	if len(res.EventContextFilters) != len(listener.EventContextFilters) {
 		t.Error("EventContextFilter is messed up")
 	}
 

@@ -29,7 +29,7 @@ describe('Test send events v2 api', () => {
 			.send()
 		expect(eventHistoryResponse.statusCode).toEqual(200)
 		expect(eventHistoryResponse.body.data.length).toBeGreaterThan(0)
-		expect(eventHistoryResponse.body.data[0].namespaceName).toBe(namespaceName)
+		expect(eventHistoryResponse.body.data[0].namespace).toBe(namespaceName)
 		expect(eventHistoryResponse.body.data[0].event.id).toBe('123')
 	})
 	it(`event by id`, async () => {
@@ -63,7 +63,7 @@ states:
 	})
 
 	it(`listener should be regitered`, async () => {
-		const eventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/listener/`)
+		const eventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/listeners?limit=100&offset=0`)
 			.send()
 		expect(eventListenerResponse.statusCode).toEqual(200)
 		expect(eventListenerResponse.body.data.length).toBeGreaterThan(0)
@@ -72,7 +72,7 @@ states:
 		tmpid = eventListenerResponse.body.data[0].id
 	})
 	it(`listener by id`, async () => {
-		const eventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/listener/${ tmpid }`)
+		const eventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/listeners/${ tmpid }`)
 			.send()
 		expect(eventListenerResponse.statusCode).toEqual(200)
 		expect(eventListenerResponse.body.data.id).toBe(tmpid)

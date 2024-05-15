@@ -12,16 +12,18 @@ import { useTranslation } from "react-i18next";
 import useUpdatedAt from "~/hooks/useUpdatedAt";
 
 const Row = ({
+  receivedAt: propReceivedAt,
   event,
   onClick,
 }: {
+  receivedAt: string;
   event: EventSchemaType;
   namespace: string;
   onClick: (value: EventSchemaType) => void;
 }) => {
   const { t } = useTranslation();
 
-  const receivedAt = useUpdatedAt(event.receivedAt);
+  const receivedAt = useUpdatedAt(propReceivedAt);
 
   return (
     <TooltipProvider>
@@ -41,7 +43,7 @@ const Row = ({
               })}
             </TooltipTrigger>
             <TooltipContent data-testid="receivedAt-tooltip-content">
-              {event.receivedAt}
+              {receivedAt}
             </TooltipContent>
           </Tooltip>
         </TableCell>

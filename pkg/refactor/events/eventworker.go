@@ -81,7 +81,7 @@ func (w *EventWorker) getDelayedEvents(ctx context.Context) {
 
 	// TODO: possible process events in bulk
 	for _, se := range receivedEvents {
-		err := w.handleEvent(ctx, se.Namespace, se.NamespaceName, se.Event.Event)
+		err := w.handleEvent(ctx, se.NamespaceID, se.Namespace, se.Event.Event)
 		if err != nil {
 			slog.Error("handle a event", "err", err)
 		}

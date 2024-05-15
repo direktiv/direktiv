@@ -41,8 +41,8 @@ func (ss *sqlStagingEventStore) Append(ctx context.Context, events ...*datastore
 		values = append(values, v.Event.Event.Type())
 		values = append(values, v.Event.Event.Source())
 		values = append(values, string(eventByte))
+		values = append(values, v.NamespaceID)
 		values = append(values, v.Namespace)
-		values = append(values, v.NamespaceName)
 		values = append(values, v.ReceivedAt)
 		values = append(values, time.Now().UTC())
 		values = append(values, v.DelayedUntil)
@@ -93,7 +93,7 @@ func (ss *sqlStagingEventStore) GetDelayedEvents(ctx context.Context, currentTim
 		if err != nil {
 			return nil, 0, fmt.Errorf("res len(): %v, event: %v, err: %w ", len(res), gse.Cloudevent, err)
 		}
-		ev = append(ev, &datastore.StagingEvent{Event: &datastore.Event{Namespace: gse.NamespaceID, ReceivedAt: gse.ReceivedAt, Event: &finalCE, NamespaceName: gse.NamespaceName}, DatabaseID: gse.ID, DelayedUntil: gse.DelayedUntil})
+		ev = append(ev, &datastore.StagingEvent{Event: &datastore.Event{NamespaceID: gse.NamespaceID, ReceivedAt: gse.ReceivedAt, Event: &finalCE, Namespace: gse.NamespaceName}, DatabaseID: gse.ID, DelayedUntil: gse.DelayedUntil})
 	}
 
 	return ev, count, nil

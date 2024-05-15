@@ -40,8 +40,8 @@ func (hs *sqlEventHistoryStore) Append(ctx context.Context, events []*datastore.
 		values = append(values, v.Event.Type())
 		values = append(values, v.Event.Source())
 		values = append(values, string(eventByte))
+		values = append(values, v.NamespaceID)
 		values = append(values, v.Namespace)
-		values = append(values, v.NamespaceName)
 		values = append(values, v.ReceivedAt)
 		values = append(values, time.Now().UTC())
 		tx := hs.db.WithContext(ctx).Exec(q, values...)
@@ -175,7 +175,7 @@ func (hs *sqlEventHistoryStore) Get(ctx context.Context, limit int, offset int, 
 		if err != nil {
 			return nil, 0, err
 		}
-		conv = append(conv, &datastore.Event{Namespace: v.NamespaceID, NamespaceName: v.Namespace, ReceivedAt: v.ReceivedAt, Event: &finalCE})
+		conv = append(conv, &datastore.Event{NamespaceID: v.NamespaceID, Namespace: v.Namespace, ReceivedAt: v.ReceivedAt, Event: &finalCE})
 	}
 
 	return conv, count, nil
@@ -197,7 +197,7 @@ func (hs *sqlEventHistoryStore) GetAll(ctx context.Context) ([]*datastore.Event,
 		if err != nil {
 			return nil, err
 		}
-		conv = append(conv, &datastore.Event{Namespace: v.NamespaceID, ReceivedAt: v.ReceivedAt, Event: &finalCE})
+		conv = append(conv, &datastore.Event{NamespaceID: v.NamespaceID, ReceivedAt: v.ReceivedAt, Event: &finalCE})
 	}
 
 	return conv, nil
@@ -218,7 +218,7 @@ func (hs *sqlEventHistoryStore) GetByID(ctx context.Context, id string) (*datast
 		return nil, err
 	}
 
-	return &datastore.Event{Namespace: e.NamespaceID, NamespaceName: e.Namespace, ReceivedAt: e.ReceivedAt, Event: &finalCE}, nil
+	return &datastore.Event{NamespaceID: e.NamespaceID, Namespace: e.Namespace, ReceivedAt: e.ReceivedAt, Event: &finalCE}, nil
 }
 
 func unzipAndAppendToQueryParams(qs []string, qv []interface{}, keyAndValues []string) ([]string, []interface{}) {
@@ -278,7 +278,7 @@ func (hs *sqlEventHistoryStore) getEventsQvQs(ctx context.Context, qv []interfac
 		if err != nil {
 			return nil, err
 		}
-		conv = append(conv, &datastore.Event{Namespace: v.NamespaceID, NamespaceName: v.Namespace, ReceivedAt: v.ReceivedAt, Event: &finalCE, SerialID: v.SerialID})
+		conv = append(conv, &datastore.Event{NamespaceID: v.NamespaceID, Namespace: v.Namespace, ReceivedAt: v.ReceivedAt, Event: &finalCE, SerialID: v.SerialID})
 	}
 
 	return conv, nil
@@ -291,5 +291,5 @@ func (hs *sqlEventHistoryStore) getEventsWithWhereClause(ctx context.Context, na
 	qs := []string{whereClause}
 	qv := []interface{}{namespace, t}
 
-	return hs.getEventsQvQs(ctx, qv, qs)
+	return hs.getEventsQvQs(ctx, qv, qs, keyAndValues...)
 }

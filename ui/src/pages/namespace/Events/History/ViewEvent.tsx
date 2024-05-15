@@ -12,7 +12,6 @@ import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
 import { Radio } from "lucide-react";
-import { decode } from "js-base64";
 import { prettifyJsonString } from "~/util/helpers";
 import { useReplayEvent } from "~/api/events/mutate/replayEvent";
 import { useTheme } from "~/util/store/theme";
@@ -38,8 +37,7 @@ const ViewEvent = ({
 
   const { handleSubmit } = useForm<NewEventSchemaType>({});
 
-  const eventData = decode(event.cloudevent);
-  const eventDataPretty = prettifyJsonString(eventData);
+  const eventDataPretty = prettifyJsonString(JSON.stringify(event));
 
   return (
     <form
