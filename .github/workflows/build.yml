@@ -229,30 +229,28 @@ jobs:
       - name: Install Direktiv chart
         run: helm install direktiv -f dev.yaml ./charts/direktiv/
 
-      - name: Wait for Direktiv pods to be ready
-        run: |
-          sleep 1
-          kubectl wait --for=condition=Ready pod -l app.kubernetes.io/instance=direktiv --timeout=120s
-
       - name: Set Environment Variables
         run: echo "DIREKTIV_HOST=127.0.0.1:80" >> $GITHUB_ENV
 
       - name: Wait until API is healthy
         run: |
-          endpoint="http://${{ env.DIREKTIV_HOST }}/api/v2/status"
-
-          for attempt in {1..20}; do
-            status_code=$(curl -s -o /dev/null -w "%{http_code}" $endpoint)
-            echo "API status code: $status_code"
-
-            [ $status_code -eq 200 ] && { echo "API ready"; exit 0; }
-            sleep 1
+          endpoint="http://${{ env.DIREKTIV_HOST }}/api/v2/status";
+          for attempt in {1..20}
+          do
+            status_code=$(curl -s -o /dev/null -w "%{http_code}" $endpoint || true);
+            echo "API status code: $status_code";
+            if [ $status_code -eq 200 ]
+            then
+              echo "API ready" && exit 0;  
+            fi
+            sleep 1;
           done
+          
+          echo "API failed to be healthy";
+          kubectl get pods;
+          kubectl logs deployments/direktiv-flow;
+          exit 1;
 
-          echo "API failed to be healthy"
-          kubectl get pods 
-          kubectl logs deployments/direktiv-flow
-          exit 1
       - name: Run API E2E tests
         if: matrix.sections.type == 'api'
         run: |
@@ -354,31 +352,28 @@ jobs:
       - name: Install Direktiv chart
         run: helm install direktiv -f dev.yaml ./charts/direktiv/
 
-      - name: Wait for Direktiv pods to be ready
-        run: |
-          sleep 1
-          kubectl wait --for=condition=Ready pod -l app.kubernetes.io/instance=direktiv --timeout=120s
-          kubectl wait --for=condition=Ready pod -l app.kubernetes.io/name=direktiv-frontend --timeout=120s
-
       - name: Set Environment Variables
         run: echo "DIREKTIV_HOST=127.0.0.1:80" >> $GITHUB_ENV
 
       - name: Wait until API is healthy
         run: |
-          endpoint="http://${{ env.DIREKTIV_HOST }}/api/v2/status"
-
-          for attempt in {1..20}; do
-            status_code=$(curl -s -o /dev/null -w "%{http_code}" $endpoint)
-            echo "API status code: $status_code"
-
-            [ $status_code -eq 200 ] && { echo "API ready"; exit 0; }
-            sleep 1
+          endpoint="http://${{ env.DIREKTIV_HOST }}/api/v2/status";
+          for attempt in {1..20}
+          do
+            status_code=$(curl -s -o /dev/null -w "%{http_code}" $endpoint || true);
+            echo "API status code: $status_code";
+            if [ $status_code -eq 200 ]
+            then
+              echo "API ready" && exit 0;  
+            fi
+            sleep 1;
           done
+          
+          echo "API failed to be healthy";
+          kubectl get pods;
+          kubectl logs deployments/direktiv-flow;
+          exit 1;
 
-          echo "API failed to be healthy"
-          kubectl get pods 
-          kubectl logs deployments/direktiv-flow
-          exit 1
       - name: Run API E2E tests
         if: matrix.sections.type == 'api'
         run: |
