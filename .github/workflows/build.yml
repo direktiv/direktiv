@@ -99,6 +99,7 @@ jobs:
       - name: Set current date
         run: echo "CURRENT_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
 
+
       - name: Cache Docker layers
         uses: actions/cache@v3
         with:
