@@ -8,11 +8,6 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const (
-	GatewayCtxKeyConsumers      = "ctx_consumers"
-	GatewayCtxKeyActiveConsumer = "ctx_active_consumer"
-)
-
 type GatewayManagerV2 interface {
 	http.Handler
 
@@ -53,8 +48,10 @@ type PluginConfigV2 struct {
 }
 
 type PluginV2 interface {
-	Execute(w http.ResponseWriter, r *http.Request) (*http.Request, error)
-	Config() any
+	// NewInstance method creates new plugin instance
+	NewInstance(config PluginConfigV2) (PluginV2, error)
+
+	Execute(w http.ResponseWriter, r *http.Request) *http.Request
 	Type() string
 }
 

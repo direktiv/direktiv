@@ -32,8 +32,8 @@ export const buildSearchParamsString = (
   const queryParams = new URLSearchParams();
   Object.entries(searchParmsObj).forEach(([name, value]) => {
     if (value) {
-      const stringValue = convertDateToISOString(value);
-      queryParams.append(name, `${stringValue}`);
+      const queryValue = convertDateToISOString(value);
+      queryParams.append(name, `${queryValue}`);
     }
   });
 

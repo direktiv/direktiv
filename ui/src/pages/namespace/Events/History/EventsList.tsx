@@ -41,13 +41,13 @@ const EventsList = ({
 
   if (!data) return null;
 
-  const noResults = isFetched && data.length === 0;
+  const noResults = isFetched && data.data.length === 0;
   const hasFilters = !!Object.keys(filters).length;
 
   return (
     <div className="flex grow flex-col gap-y-3 p-5">
       <Dialog open={!!eventDialog} onOpenChange={handleOpenChange}>
-        <PaginationProvider items={data} pageSize={pageSize}>
+        <PaginationProvider items={data.data} pageSize={pageSize}>
           {({
             currentItems,
             goToFirstPage,

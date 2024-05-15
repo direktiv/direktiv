@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"context"
 	"crypto/sha256"
 	"crypto/subtle"
 	"net/http"
@@ -9,57 +8,46 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins"
 )
 
-const basicAuthPluginName = "basic-auth"
-
-// BasicAuthConfig configures a basic-auth plugin instance.
-// The plugin can be configured to set consumer information (name, groups, tags).
-type BasicAuthConfig struct {
-	AddUsernameHeader bool `mapstructure:"add_username_header" yaml:"add_username_header"`
-	AddTagsHeader     bool `mapstructure:"add_tags_header"     yaml:"add_tags_header"`
-	AddGroupsHeader   bool `mapstructure:"add_groups_header"   yaml:"add_groups_header"`
-}
-
 type BasicAuthPlugin struct {
-	config *BasicAuthConfig
+	AddUsernameHeader bool `mapstructure:"add_username_header"`
+	AddTagsHeader     bool `mapstructure:"add_tags_header"`
+	AddGroupsHeader   bool `mapstructure:"add_groups_header"`
 }
 
 var _ core.PluginV2 = &BasicAuthPlugin{}
 
-func NewBasicAuthPlugin(config core.PluginConfigV2) (core.PluginV2, error) {
-	authConfig := &BasicAuthConfig{}
+func (ba *BasicAuthPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
+	pl := &BasicAuthPlugin{}
 
-	err := plugins.ConvertConfig(config.Config, authConfig)
+	err := gateway2.ConvertConfig(config.Config, pl)
 	if err != nil {
 		return nil, err
 	}
 
-	return &BasicAuthPlugin{
-		config: authConfig,
-	}, nil
+	return pl, nil
 }
 
-func (ba *BasicAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, error) {
+func (ba *BasicAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
 	// check request is already authenticated
-	if gateway2.ParseRequestActiveConsumer(r) != nil {
-		return r, nil
+	if gateway2.ExtractContextActiveConsumer(r) != nil {
+		return r
 	}
 	user, pwd, ok := r.BasicAuth()
 	// no basic auth provided
 	if !ok {
-		return r, nil
+		return r
 	}
 
-	consumerList := gateway2.ParseRequestConsumersList(r)
+	consumerList := gateway2.ExtractContextConsumersList(r)
 	if consumerList == nil {
-		return r, nil
+		return r
 	}
 	consumer := gateway2.FindConsumerByUser(consumerList, user)
 	// no consumer matching auth name
 	if consumer == nil {
-		return r, nil
+		return r
 	}
 
 	// comparing passwords
@@ -73,32 +61,28 @@ func (ba *BasicAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) (*htt
 
 	if usernameMatch && passwordMatch {
 		// set active comsumer.
-		r = r.WithContext(context.WithValue(r.Context(), core.GatewayCtxKeyActiveConsumer, consumer))
+		r = gateway2.InjectContextActiveConsumer(r, consumer)
 		// set headers if configured.
-		if ba.config.AddUsernameHeader {
+		if ba.AddUsernameHeader {
 			r.Header.Set(gateway2.ConsumerUserHeader, consumer.Username)
 		}
 
-		if ba.config.AddTagsHeader && len(consumer.Tags) > 0 {
+		if ba.AddTagsHeader && len(consumer.Tags) > 0 {
 			r.Header.Set(gateway2.ConsumerTagsHeader, strings.Join(consumer.Tags, ","))
 		}
 
-		if ba.config.AddGroupsHeader && len(consumer.Groups) > 0 {
+		if ba.AddGroupsHeader && len(consumer.Groups) > 0 {
 			r.Header.Set(gateway2.ConsumerGroupsHeader, strings.Join(consumer.Groups, ","))
 		}
 	}
 
-	return r, nil
+	return r
 }
 
 func (ba *BasicAuthPlugin) Type() string {
-	return basicAuthPluginName
-}
-
-func (ba *BasicAuthPlugin) Config() interface{} {
-	return ba.config
+	return "basic-auth"
 }
 
 func init() {
-	plugins.RegisterPlugin(basicAuthPluginName, NewBasicAuthPlugin)
+	gateway2.RegisterPlugin(&BasicAuthPlugin{})
 }
