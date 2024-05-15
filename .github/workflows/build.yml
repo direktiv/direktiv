@@ -229,11 +229,6 @@ jobs:
       - name: Install Direktiv chart
         run: helm install direktiv -f dev.yaml ./charts/direktiv/
 
-      - name: Wait for Direktiv pods to be ready
-        run: |
-          sleep 1
-          kubectl wait --for=condition=Ready pod -l app.kubernetes.io/instance=direktiv --timeout=120s
-
       - name: Set Environment Variables
         run: echo "DIREKTIV_HOST=127.0.0.1:80" >> $GITHUB_ENV
 
@@ -241,7 +236,7 @@ jobs:
         run: |
           endpoint="http://${{ env.DIREKTIV_HOST }}/api/v2/status"
 
-          for attempt in {1..20}; do
+          for attempt in {1..50}; do
             status_code=$(curl -s -o /dev/null -w "%{http_code}" $endpoint)
             echo "API status code: $status_code"
 
@@ -353,12 +348,6 @@ jobs:
           cat dev.yaml
       - name: Install Direktiv chart
         run: helm install direktiv -f dev.yaml ./charts/direktiv/
-
-      - name: Wait for Direktiv pods to be ready
-        run: |
-          sleep 1
-          kubectl wait --for=condition=Ready pod -l app.kubernetes.io/instance=direktiv --timeout=120s
-          kubectl wait --for=condition=Ready pod -l app.kubernetes.io/name=direktiv-frontend --timeout=120s
 
       - name: Set Environment Variables
         run: echo "DIREKTIV_HOST=127.0.0.1:80" >> $GITHUB_ENV
