@@ -6,7 +6,6 @@ import { useState } from "react";
 export const itemsPerPage = 10;
 
 const History = () => {
-  // temporarily hard coded the filters - pending re-implementation
   const [filters, setFilters] = useState<FiltersSchemaType>({});
 
   return (
