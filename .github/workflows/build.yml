@@ -103,9 +103,8 @@ jobs:
         uses: actions/cache@v3
         with:
           path: /tmp/.buildx-cache
-          key: api-${{ env.CURRENT_DATE }}-${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: |
-            api-${{ env.CURRENT_DATE }}-${{ runner.os }}-buildx-
+          key: api-${{ env.CURRENT_DATE }}-${{ runner.os }}-buildx-
+
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
@@ -155,9 +154,8 @@ jobs:
         uses: actions/cache@v3
         with:
           path: /tmp/.buildx-cache
-          key: ui-${{ env.CURRENT_DATE }}-${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: |
-            ui-${{ env.CURRENT_DATE }}-${{ runner.os }}-buildx-
+          key: ui-${{ env.CURRENT_DATE }}-${{ runner.os }}-buildx-
+
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
