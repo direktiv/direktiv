@@ -41,12 +41,10 @@ const triggerTypes = z.enum([
   "WaitOR",
 ]);
 
-const EventContextFiltersSchema = z.array(
-  z.object({
-    type: z.string(),
-    context: z.record(z.string(), z.string()),
-  })
-);
+const EventContextFilterSchema = z.object({
+  type: z.string(),
+  context: z.record(z.string(), z.string()),
+});
 
 const EventListenerSchema = z.object({
   id: z.string(),
@@ -57,7 +55,7 @@ const EventListenerSchema = z.object({
   triggerType: triggerTypes,
   triggerInstance: z.string().optional(), // instance id
   triggerWorkflow: z.string().optional(), // workflow path
-  eventContextFilters: EventContextFiltersSchema,
+  eventContextFilters: z.array(EventContextFilterSchema),
 });
 
 export const EventListenersResponseSchema = z.object({
@@ -71,6 +69,6 @@ export type EventListenerSchemaType = z.infer<typeof EventListenerSchema>;
 export type EventListenersResponseSchemaType = z.infer<
   typeof EventListenersResponseSchema
 >;
-export type EventContextFiltersSchemaType = z.infer<
-  typeof EventContextFiltersSchema
+export type EventContextFilterSchemaType = z.infer<
+  typeof EventContextFilterSchema
 >;

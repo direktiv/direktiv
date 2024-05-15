@@ -3,33 +3,19 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "~/design/HoverCard";
-import { Table, TableBody, TableCell, TableRow } from "~/design/Table";
+import { Table, TableBody } from "~/design/Table";
 
 import { ConditionalWrapper } from "~/util/helpers";
-import { EventContextFiltersSchemaType } from "~/api/eventListeners/schema";
+import { EventContextFilterSchemaType } from "~/api/eventListeners/schema";
+import FilterEntry from "./FilterEntry";
 import { useTranslation } from "react-i18next";
 
 const ContextFilters = ({
   filters,
 }: {
-  filters: EventContextFiltersSchemaType;
+  filters: EventContextFilterSchemaType[];
 }) => {
   const { t } = useTranslation();
-
-  const MappedFilters = filters.map((filter) => (
-    <>
-      <TableRow>
-        <TableCell>{filter.type}</TableCell>
-      </TableRow>
-      {Object.entries(filter.context).map(([key, value]) => (
-        <TableRow key={key}>
-          <TableCell className="pl-10 text-gray-10">
-            {key}: {value}
-          </TableCell>
-        </TableRow>
-      ))}
-    </>
-  ));
 
   return (
     <ConditionalWrapper
@@ -43,7 +29,11 @@ const ContextFilters = ({
             className="whitespace-pre p-1"
           >
             <Table>
-              <TableBody>{MappedFilters}</TableBody>
+              <TableBody>
+                {filters.map((filter, index) => (
+                  <FilterEntry key={index} filter={filter} />
+                ))}
+              </TableBody>
             </Table>
           </HoverCardContent>
         </HoverCard>
