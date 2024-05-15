@@ -215,10 +215,10 @@ fluent-bit:
       [OUTPUT]
           name                    pgsql
           match                   flow.*
-          port                    5432
+          port                    ${PG_PORT}
           table                   fluentbit
           user                    ${PG_USER}
-          database                direktiv
+          database                ${PG_DB_NAME}
           host                    ${PG_HOST}
           password                ${PG_PASSWORD}
     filters: |
