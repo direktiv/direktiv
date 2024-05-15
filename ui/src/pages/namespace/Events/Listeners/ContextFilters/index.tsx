@@ -24,6 +24,7 @@ const ContextFilters = ({
         <HoverCard>
           <HoverCardTrigger>{children}</HoverCardTrigger>
           <HoverCardContent
+            data-testid="context-filter-popup"
             align="center"
             side="left"
             className="whitespace-pre p-1"
