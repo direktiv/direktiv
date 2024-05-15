@@ -17,13 +17,14 @@ import Badge from "~/design/Badge";
 import { ConditionalWrapper } from "~/util/helpers";
 import { InstanceSchemaType } from "~/api/instances/schema";
 import TooltipCopyBadge from "~/design/TooltipCopyBadge";
-import { pages } from "~/util/router/pages";
 import { statusToBadgeVariant } from "../../Instances/utils";
 import { useNamespace } from "~/util/store/namespace";
+import { usePages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
 import useUpdatedAt from "~/hooks/useUpdatedAt";
 
 export const InstanceRow = ({ instance }: { instance: InstanceSchemaType }) => {
+  const pages = usePages();
   const { t } = useTranslation();
   const navigate = useNavigate();
   const endedAt = useUpdatedAt(instance.endedAt);

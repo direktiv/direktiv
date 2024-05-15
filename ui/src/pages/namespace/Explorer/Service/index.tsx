@@ -7,13 +7,14 @@ import { Link } from "react-router-dom";
 import { NoPermissions } from "~/design/Table";
 import ServiceEditor from "./ServiceEditor";
 import { analyzePath } from "~/util/router/utils";
-import { pages } from "~/util/router/pages";
 import { useFile } from "~/api/files/query/file";
 import { useNamespace } from "~/util/store/namespace";
 import { useNamespaceServices } from "~/api/services/query/services";
+import { usePages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
 
 const ServicePage: FC = () => {
+  const pages = usePages();
   const { path } = pages.explorer.useParams();
   const namespace = useNamespace();
   const { segments } = analyzePath(path);

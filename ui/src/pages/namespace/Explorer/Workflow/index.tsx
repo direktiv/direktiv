@@ -24,13 +24,14 @@ import { FC } from "react";
 import { NoPermissions } from "~/design/Table";
 import RunWorkflow from "./components/RunWorkflow";
 import { analyzePath } from "~/util/router/utils";
-import { pages } from "~/util/router/pages";
 import { useFile } from "~/api/files/query/file";
 import { useNamespace } from "~/util/store/namespace";
+import { usePages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
 import { useUnsavedChanges } from "./store/unsavedChangesContext";
 
 const Header: FC = () => {
+  const pages = usePages();
   const { t } = useTranslation();
   const {
     path,

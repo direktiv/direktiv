@@ -20,13 +20,14 @@ import NoResult from "./NoResult";
 import Rename from "./components/modals/Rename";
 import { analyzePath } from "~/util/router/utils";
 import { getFilenameFromPath } from "~/api/files/utils";
-import { pages } from "~/util/router/pages";
 import { twMergeClsx } from "~/util/helpers";
 import { useFile } from "~/api/files/query/file";
 import { useNamespace } from "~/util/store/namespace";
+import { usePages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
 
 const ExplorerPage: FC = () => {
+  const pages = usePages();
   const namespace = useNamespace();
   const { path } = pages.explorer.useParams();
   const { data, isSuccess, isFetched, isAllowed, noPermissionMessage } =

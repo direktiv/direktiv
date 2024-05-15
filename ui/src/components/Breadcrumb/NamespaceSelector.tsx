@@ -24,12 +24,13 @@ import { useNamespace, useNamespaceActions } from "~/util/store/namespace";
 import { Breadcrumb as BreadcrumbLink } from "~/design/Breadcrumbs";
 import Button from "~/design/Button";
 import NamespaceEdit from "../NamespaceEdit";
-import { pages } from "~/util/router/pages";
 import { twMergeClsx } from "~/util/helpers";
 import { useListNamespaces } from "~/api/namespaces/query/get";
+import { usePages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
 
 const NamespaceSelector = () => {
+  const pages = usePages();
   const { t } = useTranslation();
   const namespace = useNamespace();
   const {

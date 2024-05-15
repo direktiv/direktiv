@@ -4,24 +4,28 @@ import { FolderTree } from "lucide-react";
 import { Link } from "react-router-dom";
 import { NewFileDialog } from "./NewFile";
 import { analyzePath } from "~/util/router/utils";
-import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
+import { usePages } from "~/util/router/pages";
 
 const BreadcrumbSegment: FC<{
   absolute: string;
   relative: string;
   namespace: string;
-}> = ({ absolute, relative, namespace, ...props }) => (
-  <Link
-    to={pages.explorer.createHref({ namespace, path: absolute })}
-    className="hover:underline"
-    {...props}
-  >
-    {relative}
-  </Link>
-);
+}> = ({ absolute, relative, namespace, ...props }) => {
+  const pages = usePages();
+  return (
+    <Link
+      to={pages.explorer.createHref({ namespace, path: absolute })}
+      className="hover:underline"
+      {...props}
+    >
+      {relative}
+    </Link>
+  );
+};
 
 const ExplorerHeader: FC = () => {
+  const pages = usePages();
   const namespace = useNamespace();
   const { path } = pages.explorer.useParams();
 
