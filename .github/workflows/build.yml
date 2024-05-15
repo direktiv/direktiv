@@ -31,6 +31,7 @@ jobs:
           path: ~/global-flags
           key: global-flags
 
+
       - name: Set backend code hash
         run: echo "BACKEND_HASH=${{ hashFiles('cmd', 'pkg', 'go.mod', 'go.sum')}}" >> $GITHUB_ENV
 
