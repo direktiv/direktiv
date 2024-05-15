@@ -253,12 +253,12 @@ jobs:
           pullPolicy: IfNotPresent
           registry: ghcr.io
           image: direktiv/direktiv
-          tag: sha-${{ github.sha }}
+          tag: checksum-${{ hashFiles('cmd', 'pkg', 'go.mod', 'go.sum') }}
           flow:
             logging: json
           frontend:
             image: direktiv/direktiv-ui
-            tag: sha-${{ github.sha }}
+            tag: checksum-${{ hashFiles('ui') }}
           database:
             host: "$DB_HOST"
             port: $DB_PORT
