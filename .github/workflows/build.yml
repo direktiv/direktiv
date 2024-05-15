@@ -22,7 +22,7 @@ jobs:
       - name: Check caching hits
         run: |
           set +e
-          docker manifest inspect ghcr.io/direktiv/direktiv:main }}
+          docker manifest inspect ghcr.io/direktiv/direktiv:main
           echo "BACKEND_CACHE_HIT=$?" >> $GITHUB_ENV;
           echo "${{ env.BACKEND_CACHE_HIT}}";
 
