@@ -33,7 +33,7 @@ states:
 `))
 
 	it(`should invoke the '/simple-loop.yaml' workflow`, async () => {
-		const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/tree/simple-loop.yaml?op=wait`)
+		const req = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=simple-loop.yaml&wait=true`)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({
 			i: 0,

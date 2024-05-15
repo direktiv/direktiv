@@ -65,20 +65,19 @@ states:
 	})
 
 	it(`should invoke the '/a.yaml' workflow on the system namespace`, async () => {
-		const req = await request(config.getDirektivHost()).get(`/api/namespaces/${ systemNamespace }/tree/a.yaml?op=wait`)
-
-		expect(req.statusCode).toEqual(200)
-		expect(req.body).toMatchObject({
-			return: {
-				bash: [
-					{
-						result: 'a',
-						success: true,
-					},
-				],
-			},
-		})
-	})
+    const req = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ systemNamespace }/instances?path=a.yaml&wait=true`)
+    expect(req.statusCode).toEqual(200)
+    expect(req.body).toMatchObject({
+        return: {
+            bash: [
+                {
+                    result:"a",
+                    success: true,
+                },
+            ],
+        },
+    })
+})
 
 	helpers.itShouldCreateFileV2(it, expect, normalNamespace,
 		'',
@@ -101,20 +100,20 @@ states:
       - command: bash -c 'echo a'
 `))
 
-	it(`should invoke the '/a.yaml' workflow on the non-system namespace`, async () => {
-		const req = await request(config.getDirektivHost()).get(`/api/namespaces/${ normalNamespace }/tree/a.yaml?op=wait`)
-		expect(req.statusCode).toEqual(200)
-		expect(req.body).toMatchObject({
-			return: {
-				bash: [
-					{
-						result: 'a',
-						success: true,
-					},
-				],
-			},
-		})
-	})
+it(`should invoke the '/a.yaml' workflow on the non-system namespace`, async () => {
+    const req = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ normalNamespace }/instances?path=a.yaml&wait=true`)
+    expect(req.statusCode).toEqual(200)
+    expect(req.body).toMatchObject({
+        return: {
+            bash: [
+                {
+                    result:"a",
+                    success: true,
+                },
+            ],
+        },
+    })
+})
 
 	helpers.itShouldCreateFileV2(it, expect, normalNamespace,
 		'',
@@ -181,34 +180,35 @@ states:
     scope: file
 `))
 
-	it(`should invoke the '/b.yaml' workflow on the non-system namespace, testing function files`, async () => {
-		const req = await request(config.getDirektivHost()).get(`/api/namespaces/${ normalNamespace }/tree/b.yaml?op=wait`)
-		expect(req.statusCode).toEqual(200)
-		expect(req.body).toMatchObject({
-			var: {
-				a: 5,
-				b: 7,
-				c: 11,
-				d: 13,
-				e: null,
-			},
-		})
-		expect(req.body.return.bash[0]).toMatchObject({
-			result: '',
-			success: true,
-		})
-		expect(req.body.return.bash[2]).toMatchObject({
-			result: '',
-			success: true,
-		})
-		expect(req.body.return.bash[4]).toMatchObject({
-			result: 11,
-			success: true,
-		})
-		expect(req.body.return.bash[6]).toMatchObject({
-			result: '',
-			success: true,
-		})
-		expect(req.body.return.bash[8].result).toBe('')
-	})
+it(`should invoke the '/b.yaml' workflow on the non-system namespace, testing function files`, async () => {
+    const req = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ normalNamespace }/instances?path=b.yaml&wait=true`)
+    expect(req.statusCode).toEqual(200)
+    expect(req.body).toMatchObject({
+        var: {
+            a: 5,
+            b: 7,
+            c: 11,
+            d: 13,
+            e: null,
+        },
+    })
+    expect(req.body.return.bash[0]).toMatchObject({
+        result: '',
+        success: true,
+    })
+    expect(req.body.return.bash[2]).toMatchObject({
+        result: '',
+        success: true,
+    })
+    expect(req.body.return.bash[4]).toMatchObject({
+        result: 11,
+        success: true,
+    })
+    expect(req.body.return.bash[6]).toMatchObject({
+        result: '',
+        success: true,
+    })
+    expect(req.body.return.bash[8].result).toBe('')
+})
+
 })

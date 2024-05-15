@@ -25,7 +25,7 @@ states:
   transform:
     result: x`))
 	it(`generate some logs`, async () => {
-		const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespace }/tree/noop.yaml?op=wait`)
+		const res = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/instances?path=noop.yaml&wait=true`)
 		expect(res.statusCode).toEqual(200)
 	})
 	// retry70(`should contain instance log entries`, async () => {
