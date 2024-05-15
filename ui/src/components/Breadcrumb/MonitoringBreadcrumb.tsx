@@ -1,10 +1,11 @@
 import { Breadcrumb as BreadcrumbLink } from "~/design/Breadcrumbs";
 import { Link } from "react-router-dom";
-import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
+import { usePages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
 
 const MonitoringBreadcrumb = () => {
+  const pages = usePages();
   const namespace = useNamespace();
   const { isMonitoringPage } = pages.monitoring.useParams();
   const { icon: Icon } = pages.monitoring;

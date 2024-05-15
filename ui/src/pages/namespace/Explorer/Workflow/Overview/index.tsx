@@ -2,9 +2,10 @@ import { FC } from "react";
 import Instances from "./Instances";
 import Metrics from "./Metrics";
 import Services from "./Services";
-import { pages } from "~/util/router/pages";
+import { usePages } from "~/util/router/pages";
 
 const ActiveWorkflowPage: FC = () => {
+  const pages = usePages();
   const { path } = pages.explorer.useParams();
 
   if (!path) return null;

@@ -2,10 +2,11 @@ import { FC } from "react";
 import { FolderOpen } from "lucide-react";
 import { NewFileDialog } from "./NewFile";
 import { NoResult as NoResultContainer } from "~/design/Table";
-import { pages } from "~/util/router/pages";
+import { usePages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
 
 const EmptyDirectoryButton = () => {
+  const pages = usePages();
   const { path } = pages.explorer.useParams();
 
   return (

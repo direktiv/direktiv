@@ -1,8 +1,9 @@
 import { FC } from "react";
 import VariablesList from "./Variables";
-import { pages } from "~/util/router/pages";
+import { usePages } from "~/util/router/pages";
 
 const WorkflowSettingsPage: FC = () => {
+  const pages = usePages();
   const { path } = pages.explorer.useParams();
 
   return (

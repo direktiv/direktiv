@@ -3,11 +3,12 @@ import GroupsBreadcrumb from "./GroupsBreadcrumb";
 import { Link } from "react-router-dom";
 import PolicyBreadcrumb from "./PolicyBreadcumb";
 import TokensBreadcrumb from "./TokenBreadCrumb";
-import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
+import { usePages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
 
 const PermissionsBreadcrumb = () => {
+  const pages = usePages();
   const namespace = useNamespace();
   const { t } = useTranslation();
 
