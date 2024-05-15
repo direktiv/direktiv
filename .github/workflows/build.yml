@@ -95,6 +95,11 @@ jobs:
             type=ref,event=pr
             type=sha,format=long
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          buildkitd-flags: --debug
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
         with:
@@ -134,6 +139,11 @@ jobs:
             type=ref,event=branch
             type=ref,event=pr
             type=sha,format=long
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          buildkitd-flags: --debug
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
