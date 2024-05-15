@@ -22,7 +22,7 @@ jobs:
       - name: Check caching hits
         run: |
           set +e
-          docker manifest inspect ghcr.io/direktiv/direktiv:checksumm-${{ hashFiles('cmd', 'pkg', 'go.mod', 'go.sum') }}
+          docker manifest inspect ghcr.io/direktiv/direktiv:main }}
           echo "BACKEND_CACHE_HIT=$?" >> $GITHUB_ENV;
 
   backend-license:
