@@ -96,13 +96,16 @@ jobs:
         with:
           buildkitd-flags: --debug
 
+      - name: Set current date
+        run: echo "CURRENT_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+
       - name: Cache Docker layers
         uses: actions/cache@v3
         with:
           path: /tmp/.buildx-cache
-          key: api-$(date +'%Y-%m-%d')-${{ runner.os }}-buildx-${{ github.sha }}
+          key: api-${{ env.CURRENT_DATE }}-${{ runner.os }}-buildx-${{ github.sha }}
           restore-keys: |
-            api-$(date +'%Y-%m-%d')-${{ runner.os }}-buildx-
+            api-${{ env.CURRENT_DATE }}-${{ runner.os }}-buildx-
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
@@ -145,13 +148,16 @@ jobs:
         with:
           buildkitd-flags: --debug
 
+      - name: Set current date
+        run: echo "CURRENT_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+
       - name: Cache Docker layers
         uses: actions/cache@v3
         with:
           path: /tmp/.buildx-cache
-          key: ui-${{ $(date +'%Y-%m-%d') }}-${{ runner.os }}-buildx-${{ github.sha }}
+          key: ui-${{ env.CURRENT_DATE }}-${{ runner.os }}-buildx-${{ github.sha }}
           restore-keys: |
-            ui-$(date +'%Y-%m-%d')-${{ runner.os }}-buildx-
+            ui-${{ env.CURRENT_DATE }}-${{ runner.os }}-buildx-
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
