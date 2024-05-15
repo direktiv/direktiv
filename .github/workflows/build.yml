@@ -15,7 +15,6 @@ env:
   IS_GITHUB_ACTIONS: true
 
 jobs:
-
   backend-license:
     runs-on: ubuntu-latest
 
@@ -32,6 +31,7 @@ jobs:
 
   backend-lint:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
@@ -90,7 +90,6 @@ jobs:
             type=ref,event=branch
             type=ref,event=pr
             type=sha,format=long
-            type=raw,value=checksum-${{ hashFiles('cmd', 'pkg', 'go.mod', 'go.sum') }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -143,7 +142,6 @@ jobs:
             type=ref,event=branch
             type=ref,event=pr
             type=sha,format=long
-            type=raw,value=checksum-${{ hashFiles('ui') }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -252,12 +250,12 @@ jobs:
           pullPolicy: IfNotPresent
           registry: ghcr.io
           image: direktiv/direktiv
-          tag: checksum-${{ hashFiles('cmd', 'pkg', 'go.mod', 'go.sum') }}
+          tag: sha-${{ github.sha }}
           flow:
             logging: json
           frontend:
             image: direktiv/direktiv-ui
-            tag: checksum-${{ hashFiles('ui')
+            tag: sha-${{ github.sha }}
           database:
             host: "$DB_HOST"
             port: $DB_PORT
