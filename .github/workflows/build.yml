@@ -39,7 +39,7 @@ jobs:
         run: make tests-license-check
 
       - name: Set global cache flag
-        run: echo "true" > /global-flags/${{env.BACKEND_HASH}}-license-success
+        run: mkdir -p /global-flags && touch /global-flags/${{env.BACKEND_HASH}}-license-success
 
   backend-lint:
     runs-on: ubuntu-latest
