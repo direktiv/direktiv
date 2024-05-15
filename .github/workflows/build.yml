@@ -28,18 +28,18 @@ jobs:
       - name: Fetch global cache flags
         uses: actions/cache@v3
         with:
-          path: /global-flags
+          path: ~/global-flags
           key: global-flags
 
       - name: Set backend code hash
         run: echo "BACKEND_HASH=${{ hashFiles('cmd')}}-${{ hashFiles('pkg')}}-${{ hashFiles('go.mod')}}-${{ hashFiles('go.sum')}}" >> $GITHUB_ENV
 
       - name: Run check
-        if: ${{ hashFiles('/global-flags/${{env.BACKEND_HASH}}-license-success') == '' }}
+        if: ${{ hashFiles('~/global-flags/${{env.BACKEND_HASH}}-license-success') == '' }}
         run: make tests-license-check
 
       - name: Set global cache flag
-        run: mkdir -p /global-flags && touch /global-flags/${{env.BACKEND_HASH}}-license-success
+        run: mkdir -p ~/global-flags && touch ~/global-flags/${{env.BACKEND_HASH}}-license-success
 
   backend-lint:
     runs-on: ubuntu-latest
