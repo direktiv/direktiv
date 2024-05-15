@@ -21,11 +21,10 @@ jobs:
       - uses: actions/checkout@v4
       - name: Check caching hits
         run: |
-          if docker manifest inspect ghcr.io/direktiv/direktiv:checksum-${{ hashFiles('cmd', 'pkg', 'go.mod', 'go.sum') }} then
-            echo "BACKEND_CACHE_HIT="true" >> $GITHUB_ENV;
-          fi
-          if docker manifest inspect ghcr.io/direktiv/direktiv-ui:checksum-${{ hashFiles('ui') }} then
-            echo "UI_CACHE_HIT="true" >> $GITHUB_ENV;
+          status_code=$(docker manifest inspect ghcr.io/direktiv/direktiv:checksum-${{ hashFiles('cmd', 'pkg', 'go.mod', 'go.sum') }} || true);
+          if [ $status_code -eq 200 ]
+          then
+              echo "BACKEND_CACHE_HIT="true" >> $GITHUB_ENV;
           fi
 
 
