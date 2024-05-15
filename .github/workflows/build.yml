@@ -32,7 +32,7 @@ jobs:
           key: global-flags
 
       - name: Set backend code hash
-        run: echo "BACKEND_HASH=${{ hashFiles('cmd')}}-${{ hashFiles('pkg')}}-${{ hashFiles('go.mod')}}-${{ hashFiles('go.sum')}}" >> $GITHUB_ENV
+        run: echo "BACKEND_HASH=${{ hashFiles('cmd', 'pkg', 'go.mod', 'go.sum')}}" >> $GITHUB_ENV
 
       - name: Run check
         if: ${{ hashFiles('~/global-flags/${{env.BACKEND_HASH}}-license-success') == '' }}
