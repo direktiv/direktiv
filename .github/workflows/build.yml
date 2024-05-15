@@ -31,7 +31,6 @@ jobs:
 
   backend-license:
     runs-on: ubuntu-latest
-    needs: [cache-check]
 
     steps:
       - uses: actions/checkout@v4
@@ -46,7 +45,6 @@ jobs:
 
   backend-lint:
     runs-on: ubuntu-latest
-    needs: [cache-check]
     steps:
       - uses: actions/checkout@v4
 
@@ -63,7 +61,6 @@ jobs:
 
   backend-test:
     runs-on: ubuntu-latest
-    needs: [cache-check]
 
     steps:
       - uses: actions/checkout@v4
@@ -136,7 +133,6 @@ jobs:
 
   ui-build:
     runs-on: ubuntu-latest
-    needs: [cache-check]
     permissions:
       contents: read
       packages: write
