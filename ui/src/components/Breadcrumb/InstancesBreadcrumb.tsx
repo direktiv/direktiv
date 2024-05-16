@@ -2,11 +2,12 @@ import { Box } from "lucide-react";
 import { Breadcrumb as BreadcrumbLink } from "~/design/Breadcrumbs";
 import CopyButton from "~/design/CopyButton";
 import { Link } from "react-router-dom";
-import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
+import { usePages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
 
 const InstancesBreadcrumb = () => {
+  const pages = usePages();
   const namespace = useNamespace();
   const { isInstancePage, isInstanceDetailPage, instance } =
     pages.instances.useParams();

@@ -11,11 +11,12 @@ import { Link } from "react-router-dom";
 import RefreshButton from "~/design/RefreshButton";
 import Scale from "./Scale";
 import { StatusBadge } from "../components/StatusBadge";
-import { linkToServiceSource } from "../components/utils";
+import { usePages } from "~/util/router/pages";
 import { useService } from "~/api/services/query/services";
 import { useTranslation } from "react-i18next";
 
 const Header = ({ serviceId }: { serviceId: string }) => {
+  const pages = usePages();
   const { data: service, refetch, isFetching } = useService(serviceId);
 
   const { t } = useTranslation();
@@ -35,7 +36,15 @@ const Header = ({ serviceId }: { serviceId: string }) => {
         </h3>
 
         <div>
-          <Link className="hover:underline" to={linkToServiceSource(service)}>
+          <Link
+            className="hover:underline"
+            to={pages.explorer.createHref({
+              namespace: service.namespace,
+              path: service.filePath,
+              subpage:
+                service.type === "namespace-service" ? "service" : "workflow",
+            })}
+          >
             {service.filePath}
           </Link>
         </div>

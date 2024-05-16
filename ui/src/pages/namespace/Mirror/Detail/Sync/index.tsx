@@ -2,10 +2,11 @@ import { Card } from "~/design/Card";
 import { LogStreamingSubscriber } from "~/api/logs/query/LogStreamingSubscriber";
 import { NoPermissions } from "~/design/Table";
 import SyncDetail from "./SyncDetail";
-import { pages } from "~/util/router/pages";
+import { usePages } from "~/util/router/pages";
 import { useSyncDetail } from "~/api/syncs/query/get";
 
 const Logs = () => {
+  const pages = usePages();
   const { sync } = pages.mirror.useParams();
   const { isAllowed, noPermissionMessage, isFetched } = useSyncDetail(
     sync || ""

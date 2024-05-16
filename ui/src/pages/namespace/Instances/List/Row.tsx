@@ -19,14 +19,15 @@ import { FC } from "react";
 import { InstanceSchemaType } from "~/api/instances/schema";
 import TooltipCopyBadge from "~/design/TooltipCopyBadge";
 import { decode } from "js-base64";
-import { pages } from "~/util/router/pages";
 import { statusToBadgeVariant } from "../utils";
+import { usePages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
 import useUpdatedAt from "~/hooks/useUpdatedAt";
 
 const InstanceTableRow: FC<{
   instance: InstanceSchemaType;
 }> = ({ instance }) => {
+  const pages = usePages();
   const [invoker, childInstance] = instance.invoker.split(":");
   const endedAt = useUpdatedAt(instance.endedAt);
   const createdAt = useUpdatedAt(instance.createdAt);

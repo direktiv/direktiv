@@ -2,10 +2,11 @@ import { Card } from "~/design/Card";
 import Header from "./Header";
 import { NoPermissions } from "~/design/Table";
 import { Pods } from "./Pods";
-import { pages } from "~/util/router/pages";
+import { usePages } from "~/util/router/pages";
 import { usePods } from "~/api/services/query/pods";
 
 const ServiceDetailPage = () => {
+  const pages = usePages();
   const { service: serviceId } = pages.services.useParams();
   const { isFetched, isAllowed, noPermissionMessage } = usePods(
     serviceId ?? ""

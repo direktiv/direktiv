@@ -3,11 +3,12 @@ import { NavLink, useMatches } from "react-router-dom";
 import { FC } from "react";
 import { checkHandlerInMatcher } from "~/util/router/utils";
 import { createClassNames } from "~/design/NavigationLink";
-import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
+import { usePages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
 
 const Navigation: FC = () => {
+  const pages = usePages();
   const namespace = useNamespace();
   const { t } = useTranslation();
   const [, secondPathLevel] = useMatches();

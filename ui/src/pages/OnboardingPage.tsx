@@ -7,12 +7,13 @@ import Alert from "~/design/Alert";
 import Button from "~/design/Button";
 import Logo from "~/components/Logo";
 import NamespaceEdit from "~/components/NamespaceEdit";
-import { pages } from "~/util/router/pages";
 import { useListNamespaces } from "~/api/namespaces/query/get";
 import { useNavigate } from "react-router-dom";
+import { usePages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
 
 const Layout = () => {
+  const pages = usePages();
   const { t } = useTranslation();
   const {
     data: availableNamespaces,
@@ -80,6 +81,7 @@ const Layout = () => {
     availableNamespaces,
     isRefetching,
     navigate,
+    pages.explorer,
     setNamespace,
   ]);
 

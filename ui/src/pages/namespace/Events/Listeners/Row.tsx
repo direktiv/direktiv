@@ -6,10 +6,11 @@ import {
   TooltipTrigger,
 } from "~/design/Tooltip";
 
+import ContextFilters from "./ContextFilters";
 import CopyButton from "~/design/CopyButton";
 import { EventListenerSchemaType } from "~/api/eventListeners/schema";
 import { Link } from "react-router-dom";
-import { pages } from "~/util/router/pages";
+import { usePages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
 import useUpdatedAt from "~/hooks/useUpdatedAt";
 
@@ -20,12 +21,16 @@ const Row = ({
   listener: EventListenerSchemaType;
   namespace: string;
 }) => {
+  const pages = usePages();
   const { t } = useTranslation();
   const createdAt = useUpdatedAt(listener.createdAt);
 
   const { triggerWorkflow: workflow, triggerInstance: instance } = listener;
   const listenerType = instance ? "instance" : "workflow";
   const target = workflow || instance;
+  const contextFilters = listener.eventContextFilters.filter(
+    (item) => !!Object.keys(item.context).length
+  );
 
   let linkTarget;
 
@@ -88,6 +93,9 @@ const Row = ({
               />
             </TooltipContent>
           </Tooltip>
+        </TableCell>
+        <TableCell>
+          <ContextFilters filters={contextFilters} />
         </TableCell>
       </TableRow>
     </TooltipProvider>
