@@ -31,7 +31,7 @@ jobs:
           echo "hash=$hash" >> $GITHUB_OUTPUT;
           docker manifest inspect ghcr.io/direktiv/direktiv:$hash;
           echo "cache_hit=$?" >> $GITHUB_OUTPUT;
-          echo $GITHUB_OUTPUT;
+          cat $GITHUB_OUTPUT;
 
   ui-cache:
     runs-on: ubuntu-latest
@@ -49,7 +49,7 @@ jobs:
           echo "hash=$hash" >> $GITHUB_OUTPUT;
           docker manifest inspect ghcr.io/direktiv/direktiv-ui:$hash;
           echo "cache_hit=$?" >> $GITHUB_OUTPUT;
-          echo $GITHUB_OUTPUT;
+          cat $GITHUB_OUTPUT;
 
   backend-license:
     runs-on: ubuntu-latest
