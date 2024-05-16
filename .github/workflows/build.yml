@@ -15,45 +15,9 @@ env:
   IS_GITHUB_ACTIONS: true
 
 jobs:
-  backend-cache:
-    runs-on: ubuntu-latest
-    outputs:
-      hash: ${{ steps.step1.outputs.hash }}
-      cache_hit: ${{ steps.step1.outputs.cache_hit }}
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - id: step1
-        run: |
-          set +e
-          export hash=checksum-${{ hashFiles('cmd', 'pkg', 'go.mod', 'go.sum') }};
-          docker manifest inspect ghcr.io/direktiv/direktiv:$hash;
-          echo "hash=$hash" >> $GITHUB_OUTPUT;
-          echo "cache_hit=$?" >> $GITHUB_OUTPUT;
-
-
-  ui-cache:
-    runs-on: ubuntu-latest
-    outputs:
-      hash: ${{ steps.step1.outputs.hash }}
-      cache_hit: ${{ steps.step1.outputs.cache_hit }}
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - id: step1
-        run: |
-          set +e
-          export hash=checksum-${{ hashFiles('ui') }};
-          docker manifest inspect ghcr.io/direktiv/direktiv-ui:$hash;
-          echo "hash=$hash" >> $GITHUB_OUTPUT;
-          echo "cache_hit=$?" >> $GITHUB_OUTPUT;
-
   backend-license:
     runs-on: ubuntu-latest
-    needs: [backend-cache]
-    if: needs.backend-cache.outputs.cache_hit == '1'
+
     steps:
       - uses: actions/checkout@v4
 
@@ -67,8 +31,6 @@ jobs:
 
   backend-lint:
     runs-on: ubuntu-latest
-    needs: [backend-cache]
-    if: needs.backend-cache.outputs.cache_hit == '1'
 
     steps:
       - uses: actions/checkout@v4
@@ -86,8 +48,6 @@ jobs:
 
   backend-test:
     runs-on: ubuntu-latest
-    needs: [backend-cache]
-    if: needs.backend-cache.outputs.cache_hit == '1'
 
     steps:
       - uses: actions/checkout@v4
@@ -105,9 +65,8 @@ jobs:
           DIREKTIV_APP: flow
 
   backend-build:
-    needs: [ backend-cache, backend-license, backend-lint, backend-test ]
+    needs: [ backend-license, backend-lint, backend-test ]
     runs-on: ubuntu-latest
-    if: needs.backend-cache.outputs.cache_hit == '1'
     permissions:
       contents: read
       packages: write
@@ -131,8 +90,6 @@ jobs:
             type=ref,event=branch
             type=ref,event=pr
             type=sha,format=long
-            type=raw,value=${{ needs.backend-cache.outputs.hash }}
-
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -162,8 +119,6 @@ jobs:
 
   ui-build:
     runs-on: ubuntu-latest
-    needs: [ui-cache]
-    if: needs.ui-cache.outputs.cache_hit == '1'
     permissions:
       contents: read
       packages: write
@@ -187,7 +142,6 @@ jobs:
             type=ref,event=branch
             type=ref,event=pr
             type=sha,format=long
-            type=raw,value=${{ needs.ui-cache.outputs.hash }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -215,8 +169,7 @@ jobs:
           cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
 
   e2e:
-    needs: [ ui-cache, ui-build, backend-cache, backend-build ]
-    if: ${{ always() }}
+    needs: [ ui-build, backend-build ]
     runs-on: ubuntu-latest
 
     timeout-minutes: 18
@@ -297,12 +250,12 @@ jobs:
           pullPolicy: IfNotPresent
           registry: ghcr.io
           image: direktiv/direktiv
-          tag: ${{ needs.backend-cache.outputs.hash }}
+          tag: sha-${{ github.sha }}
           flow:
             logging: json
           frontend:
             image: direktiv/direktiv-ui
-            tag: ${{ needs.ui-cache.outputs.hash }}
+            tag: sha-${{ github.sha }}
           database:
             host: "$DB_HOST"
             port: $DB_PORT
