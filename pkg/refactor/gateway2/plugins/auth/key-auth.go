@@ -1,107 +1,91 @@
 package auth
 
 import (
-	"context"
 	"log/slog"
 	"net/http"
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins"
 )
 
 const (
-	keyAuthPluginName = "key-auth"
-	keyName           = "API-Token"
+	DefaultKeyName = "API-Token"
 )
 
-// KeyAuthConfig configures a key-auth plugin instance.
-// The plugin can be configured to set consumer information (name, groups, tags)
-// and the name of the header for the api key.
-type KeyAuthConfig struct {
-	AddUsernameHeader bool `mapstructure:"add_username_header" yaml:"add_username_header"`
-	AddTagsHeader     bool `mapstructure:"add_tags_header"     yaml:"add_tags_header"`
-	AddGroupsHeader   bool `mapstructure:"add_groups_header"   yaml:"add_groups_header"`
+type KeyAuthPlugin struct {
+	AddUsernameHeader bool `mapstructure:"add_username_header"`
+	AddTagsHeader     bool `mapstructure:"add_tags_header"`
+	AddGroupsHeader   bool `mapstructure:"add_groups_header"`
 
 	// KeyName defines the header for the key
-	KeyName string `mapstructure:"key_name" yaml:"key_name"`
+	KeyName string `mapstructure:"key_name"`
 }
 
-type KeyAuthPlugin struct {
-	config *KeyAuthConfig
-}
-
-func NewKeyAuthPlugin(config core.PluginConfigV2) (core.PluginV2, error) {
-	keyAuthConfig := &KeyAuthConfig{
-		KeyName: keyName,
+func (ka *KeyAuthPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
+	pl := &KeyAuthPlugin{
+		KeyName: DefaultKeyName,
 	}
 
-	err := plugins.ConvertConfig(config.Config, keyAuthConfig)
+	err := gateway2.ConvertConfig(config.Config, pl)
 	if err != nil {
 		return nil, err
 	}
 
-	return &KeyAuthPlugin{
-		config: keyAuthConfig,
-	}, nil
+	return pl, nil
 }
 
-func (ka *KeyAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) (*http.Request, error) {
+func (ka *KeyAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
 	// check request is already authenticated
-	if gateway2.ParseRequestActiveConsumer(r) != nil {
-		return r, nil
+	if gateway2.ExtractContextActiveConsumer(r) != nil {
+		return r
 	}
 
-	key := r.Header.Get(ka.config.KeyName)
+	key := r.Header.Get(ka.KeyName)
 	// no basic auth provided
 	if key == "" {
-		return r, nil
+		return r
 	}
 
-	consumerList := gateway2.ParseRequestConsumersList(r)
+	consumerList := gateway2.ExtractContextConsumersList(r)
 	if consumerList == nil {
 		slog.Debug("no consumer configured for api key")
 
-		return r, nil
+		return r
 	}
 	c := gateway2.FindConsumerByAPIKey(consumerList, key)
 	// no consumer matching auth name
 	if c == nil {
 		slog.Debug("no consumer configured for api key")
 
-		return r, nil
+		return r
 	}
 
 	if c.APIKey == key {
 		// set active consumer
-		r = r.WithContext(context.WithValue(r.Context(), core.GatewayCtxKeyActiveConsumer, c))
+		r = gateway2.InjectContextActiveConsumer(r, c)
 
 		// set headers if configured
-		if ka.config.AddUsernameHeader {
+		if ka.AddUsernameHeader {
 			r.Header.Set(gateway2.ConsumerUserHeader, c.Username)
 		}
 
-		if ka.config.AddTagsHeader && len(c.Tags) > 0 {
+		if ka.AddTagsHeader && len(c.Tags) > 0 {
 			r.Header.Set(gateway2.ConsumerTagsHeader, strings.Join(c.Tags, ","))
 		}
 
-		if ka.config.AddGroupsHeader && len(c.Groups) > 0 {
+		if ka.AddGroupsHeader && len(c.Groups) > 0 {
 			r.Header.Set(gateway2.ConsumerGroupsHeader, strings.Join(c.Groups, ","))
 		}
 	}
 
-	return r, nil
-}
-
-func (ka *KeyAuthPlugin) Config() interface{} {
-	return ka.config
+	return r
 }
 
 func (ka *KeyAuthPlugin) Type() string {
-	return keyAuthPluginName
+	return "key-auth"
 }
 
 func init() {
-	plugins.RegisterPlugin(keyAuthPluginName, NewKeyAuthPlugin)
+	gateway2.RegisterPlugin(&KeyAuthPlugin{})
 }

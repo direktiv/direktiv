@@ -1,14 +1,12 @@
 package gateway2
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"slices"
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins"
 )
 
 type router struct {
@@ -32,7 +30,7 @@ func buildRouter(endpoints []core.EndpointV2, consumers []core.ConsumerV2) *rout
 		// build plugins chain.
 		pChain := []core.PluginV2{}
 		for _, pConfig := range pConfigs {
-			p, err := plugins.NewPlugin(pConfig)
+			p, err := NewPlugin(pConfig)
 			if err != nil {
 				item.Errors = append(item.Errors, fmt.Errorf("plugin '%s' config: %w", pConfig.Typ, err))
 			}
@@ -58,24 +56,26 @@ func buildRouter(endpoints []core.EndpointV2, consumers []core.ConsumerV2) *rout
 
 				return
 			}
-			// inject consumer files.
-			r = r.WithContext(context.WithValue(r.Context(), core.GatewayCtxKeyConsumers,
-				filterNamespacedConsumers(consumers, item.Namespace)))
 
-			var err error
+			// inject consumer files.
+			r = InjectContextConsumersList(r, filterNamespacedConsumers(consumers, item.Namespace))
+			// inject namespace.
+			r = InjectContextNamespace(r, item.Namespace)
+			// inject endpoint.
+			r = InjectContextEndpoint(r, &endpoints[i])
+
 			for _, p := range pChain {
 				// checkpoint if auth plugins had a match.
 				if !isAuthPlugin(p) {
 					// case where auth is required but request is not authenticated (consumers doesn't match).
-					if !item.AllowAnonymous && !hasActiveConsumer(r) {
+					hasActiveConsumer := ExtractContextActiveConsumer(r) != nil
+					if !item.AllowAnonymous && !hasActiveConsumer {
 						WriteJSONError(w, http.StatusForbidden, item.FilePath, "authentication failed")
 
 						return
 					}
 				}
-				if r, err = p.Execute(w, r); err != nil {
-					WriteJSONError(w, http.StatusInternalServerError, item.FilePath, fmt.Sprintf("gateway plugin(%s) execution failed", p.Type()))
-					// TODO: verbose log here.
+				if r = p.Execute(w, r); r == nil {
 					break
 				}
 			}

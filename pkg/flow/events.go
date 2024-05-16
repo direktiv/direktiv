@@ -581,10 +581,10 @@ func (events *events) BroadcastCloudevent(ctx context.Context, ns *datastore.Nam
 	} else {
 		_, errs := events.appendStagingEvent(ctx, &datastore.StagingEvent{
 			Event: &datastore.Event{
-				Namespace:     ns.ID,
-				Event:         event,
-				ReceivedAt:    time.Now().UTC(),
-				NamespaceName: ns.Name,
+				NamespaceID: ns.ID,
+				Event:       event,
+				ReceivedAt:  time.Now().UTC(),
+				Namespace:   ns.Name,
 			},
 			DatabaseID:   uuid.New(),
 			DelayedUntil: time.Unix(timer, 0),

@@ -23,10 +23,10 @@ func (events *events) addEvent(ctx context.Context, eventin *cloudevents.Event, 
 		eventin.SetID(uuid.NewString())
 	}
 	li = append(li, &datastore.Event{
-		Event:         eventin,
-		Namespace:     ns.ID,
-		NamespaceName: ns.Name,
-		ReceivedAt:    time.Now().UTC(),
+		Event:       eventin,
+		NamespaceID: ns.ID,
+		Namespace:   ns.Name,
+		ReceivedAt:  time.Now().UTC(),
 	})
 	err := events.runSQLTx(ctx, func(tx *database.SQLStore) error {
 		_, errs := tx.DataStore().EventHistory().Append(ctx, li)
@@ -164,7 +164,7 @@ func appendEventListenersToDB(ctx context.Context, nsID uuid.UUID, nsName string
 		TriggerWorkflow:          file.ID.String(),
 		Metadata:                 file.Path,
 		LifespanOfReceivedEvents: int(lifespan.Milliseconds()),
-		EventContextFilter:       []datastore.EventContextFilter{},
+		EventContextFilters:      []datastore.EventContextFilter{},
 	}
 	switch ms.Type {
 	case "default":
@@ -185,8 +185,8 @@ func appendEventListenersToDB(ctx context.Context, nsID uuid.UUID, nsName string
 		for k, v := range sed.Context {
 			filterContext[k] = fmt.Sprintf("%v", v)
 		}
-		fEv.EventContextFilter = append(fEv.EventContextFilter, datastore.EventContextFilter{
-			Typ:     sed.Type,
+		fEv.EventContextFilters = append(fEv.EventContextFilters, datastore.EventContextFilter{
+			Type:    sed.Type,
 			Context: filterContext,
 		})
 		for k, v := range sed.Context {
@@ -198,8 +198,8 @@ func appendEventListenersToDB(ctx context.Context, nsID uuid.UUID, nsName string
 	for k := range eventTypesRemovedDuplicates {
 		fEv.ListeningForEventTypes = append(fEv.ListeningForEventTypes, k)
 	}
-	for i, j := 0, len(fEv.EventContextFilter)-1; i < j; i, j = i+1, j-1 {
-		fEv.EventContextFilter[i], fEv.EventContextFilter[j] = fEv.EventContextFilter[j], fEv.EventContextFilter[i]
+	for i, j := 0, len(fEv.EventContextFilters)-1; i < j; i, j = i+1, j-1 {
+		fEv.EventContextFilters[i], fEv.EventContextFilters[j] = fEv.EventContextFilters[j], fEv.EventContextFilters[i]
 	}
 	tx, err := tx.BeginTx(ctx)
 	if err != nil {
@@ -234,7 +234,7 @@ func (events *events) addInstanceEventListener(ctx context.Context, namespace uu
 		ListeningForEventTypes: []string{},
 		TriggerInstance:        instance.String(),
 		// LifespanOfReceivedEvents: , TODO?
-		EventContextFilter: []datastore.EventContextFilter{},
+		EventContextFilters: []datastore.EventContextFilter{},
 	}
 	contextFilters := make([]string, 0, len(sevents))
 	eventTypesRemovedDuplicates := map[string]any{}
@@ -244,12 +244,12 @@ func (events *events) addInstanceEventListener(ctx context.Context, namespace uu
 		for k, v := range ced.Context {
 			filterContext[k] = fmt.Sprintf("%v", v)
 		}
-		fEv.EventContextFilter = append(fEv.EventContextFilter, datastore.EventContextFilter{
-			Typ:     ced.Type,
+		fEv.EventContextFilters = append(fEv.EventContextFilters, datastore.EventContextFilter{
+			Type:    ced.Type,
 			Context: filterContext,
 		})
-		for i, j := 0, len(fEv.EventContextFilter)-1; i < j; i, j = i+1, j-1 {
-			fEv.EventContextFilter[i], fEv.EventContextFilter[j] = fEv.EventContextFilter[j], fEv.EventContextFilter[i]
+		for i, j := 0, len(fEv.EventContextFilters)-1; i < j; i, j = i+1, j-1 {
+			fEv.EventContextFilters[i], fEv.EventContextFilters[j] = fEv.EventContextFilters[j], fEv.EventContextFilters[i]
 		}
 		databaseNoDupCheck := ""
 		for k, v := range ced.Context {

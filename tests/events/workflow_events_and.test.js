@@ -130,7 +130,7 @@ describe('Test workflow events and', () => {
 		await helpers.sleep(1000)
 
 		// start workflow
-		const runWorkflowResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${ namespaceName }/tree/${ waitWorkflowName }?op=execute`)
+		const runWorkflowResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=${ waitWorkflowName }`)
 			.send()
 		expect(runWorkflowResponse.statusCode).toEqual(200)
 
@@ -174,10 +174,8 @@ describe('Test workflow events and', () => {
 		instancesResponse = await events.listInstancesAndFilter(namespaceName, waitWorkflowName, 'complete')
 		expect(instancesResponse).not.toBeFalsy()
 
-		const instanceOutput = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/instances/${ instancesResponse.id }/output`)
-			.send()
-
-		const output = Buffer.from(instanceOutput.body.data, 'base64')
+		const instanceOutput = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/instances/${ instancesResponse.id }/output`)
+		const output = Buffer.from(instanceOutput.body.data.output, 'base64')
 		const outputJSON = JSON.parse(output.toString())
 
 		//  custom value set
@@ -194,10 +192,8 @@ describe('Test workflow events and', () => {
 		await events.sendEventAndList(namespaceName, basevent('eventtype4', 'eventtype4', 'world2'))
 		instance = await events.listInstancesAndFilter(namespaceName, startWorkflowName, 'complete')
 
-		const instanceOutput = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/instances/${ instance.id }/output`)
-			.send()
-
-		const output = Buffer.from(instanceOutput.body.data, 'base64')
+		const instanceOutput = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/instances/${ instance.id }/output`)
+		const output = Buffer.from(instanceOutput.body.data.output, 'base64')
 		const outputJSON = JSON.parse(output.toString())
 
 		// custom data set
@@ -243,7 +239,7 @@ describe('Test workflow events and', () => {
 	it(`flow context`, async () => {
 		await helpers.sleep(1000)
 
-		const runWorkflowResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${ namespaceName }/tree/${ waitWorkflowContextName }?op=execute`)
+		const runWorkflowResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=${ waitWorkflowContextName }`)
 			.send()
 		expect(runWorkflowResponse.statusCode).toEqual(200)
 

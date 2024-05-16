@@ -37,9 +37,9 @@ func Test_Add_Get_Complex_Context(t *testing.T) {
 			ListeningForEventTypes: []string{"test-topic"},
 			TriggerType:            datastore.StartSimple,
 			TriggerWorkflow:        wfID1.String(),
-			EventContextFilter: []datastore.EventContextFilter{
+			EventContextFilters: []datastore.EventContextFilter{
 				{
-					Typ: "test-topic",
+					Type: "test-topic",
 					Context: map[string]string{
 						"id": "some id",
 					},
@@ -55,9 +55,9 @@ func Test_Add_Get_Complex_Context(t *testing.T) {
 			ListeningForEventTypes: []string{"test-topic"},
 			TriggerType:            datastore.StartSimple,
 			TriggerWorkflow:        wfID2.String(),
-			EventContextFilter: []datastore.EventContextFilter{
+			EventContextFilters: []datastore.EventContextFilter{
 				{
-					Typ: "test-topic",
+					Type: "test-topic",
 					Context: map[string]string{
 						"id": "some other id",
 					},
@@ -130,9 +130,9 @@ func Test_Add_Get_And(t *testing.T) {
 			ListeningForEventTypes: []string{"test-topic", "test-topic2"},
 			TriggerType:            datastore.StartAnd,
 			TriggerWorkflow:        wfID.String(),
-			EventContextFilter: []datastore.EventContextFilter{
+			EventContextFilters: []datastore.EventContextFilter{
 				{
-					Typ: "test-topic2",
+					Type: "test-topic2",
 					Context: map[string]string{
 						"id": "some id",
 					},
@@ -206,9 +206,9 @@ func Test_Add_Get_GatekeeperSimple(t *testing.T) {
 			ListeningForEventTypes: []string{"test-topic"},
 			TriggerType:            datastore.StartSimple,
 			TriggerWorkflow:        wfID.String(),
-			EventContextFilter: []datastore.EventContextFilter{
+			EventContextFilters: []datastore.EventContextFilter{
 				{
-					Typ: "test-topic",
+					Type: "test-topic",
 					Context: map[string]string{
 						"id": "some id",
 					},
@@ -424,15 +424,15 @@ func Test_Add_GatekkeeperComplex(t *testing.T) {
 			ListeningForEventTypes: []string{"test-topic", "other-topic"},
 			TriggerType:            datastore.StartAnd,
 			TriggerWorkflow:        wfID.String(),
-			EventContextFilter: []datastore.EventContextFilter{
+			EventContextFilters: []datastore.EventContextFilter{
 				{
-					Typ: "test-topic",
+					Type: "test-topic",
 					Context: map[string]string{
 						"id": "some id",
 					},
 				},
 				{
-					Typ: "other-topic",
+					Type: "other-topic",
 					Context: map[string]string{
 						"id": "some other id",
 					},
@@ -503,9 +503,9 @@ func Test_Trigger_GatekeeperSimple(t *testing.T) {
 			ListeningForEventTypes: []string{"test-topic"},
 			TriggerType:            datastore.StartSimple,
 			TriggerWorkflow:        wfIDStopped.String(),
-			EventContextFilter: []datastore.EventContextFilter{
+			EventContextFilters: []datastore.EventContextFilter{
 				{
-					Typ: "test-topic",
+					Type: "test-topic",
 					Context: map[string]string{
 						"id": "stopped",
 					},
@@ -521,9 +521,9 @@ func Test_Trigger_GatekeeperSimple(t *testing.T) {
 			ListeningForEventTypes: []string{"test-topic"},
 			TriggerType:            datastore.StartSimple,
 			TriggerWorkflow:        wfIDStarted.String(),
-			EventContextFilter: []datastore.EventContextFilter{
+			EventContextFilters: []datastore.EventContextFilter{
 				{
-					Typ: "test-topic",
+					Type: "test-topic",
 					Context: map[string]string{
 						"id": "started",
 					},

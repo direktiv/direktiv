@@ -59,6 +59,7 @@
                   description: The type of the event.
                 additionalProperties:
                   type: object
+
 /api/v2/namespaces/{namespace}/events/history:
   get:
     tags:
@@ -130,8 +131,8 @@
                   id: '4'
                   source: 'https://direktiv.io/test'
                   type: 'testerDuplicate'
-                namespace: 'b1e7f55b-3e16-4b9c-b5b5-3f94c5e149c0'
-                namespaceName: 'wfeventsv2'
+                namespaceID: 'b1e7f55b-3e16-4b9c-b5b5-3f94c5e149c0'
+                namespace: 'wfeventsv2'
                 receivedAt: '2024-04-25T13:39:00.01915Z'
                 serialID: 1
             schema:
@@ -153,9 +154,9 @@
                   items: 
                     type: object
                     properties:
-                      namespaceName: 
-                        type: string
                       namespace: 
+                        type: string
+                      namespaceID: 
                         type: string
                       receivedAt: 
                         type: string
@@ -181,6 +182,30 @@
                             type: string
                           additionalProperties:
                             type: object
+
+/api/v2/namespaces/{namespace}/events/history/replay/{eventID}:
+  post:
+    tags:
+    - events
+    summary: Replay a event from the event-history.
+    description: |
+      This endpoint allows to replay a event from the event-history.
+    parameters:
+      - name: namespace
+        in: path
+        description: The namespace to from which the cloud event has to be replayed.
+        required: true
+        schema:
+            type: string
+            pattern: '^(([a-z][a-z0-9_\-\.]*[a-z0-9])|([a-z]))$'
+        style: simple
+      - name: eventID
+        in: path
+        description: The event-id of the cloud event.
+        required: true
+        schema:
+            type: string
+
 /api/v2/namespaces/{namespace}/events/subscribe:
   get:
     tags:
@@ -246,11 +271,12 @@
               id: 2
               event: message
               data: {"Event":{"specversion":"1.0","id":"1234-234234","source":"https://direktiv.io/test","type":"testerDuplicate"},"namespace":"e09f0392-fe09-4378-bc0a-de3ab634f4e6","namespaceName":"wfeventsv2","receivedAt":"2024-04-25T14:28:56.374148Z", "serialID":2}
-/api/v2/namespaces/{namespace}/events/listener:
+
+/api/v2/namespaces/{namespace}/events/listeners:
   get:
     tags:
     - events
-    summary: Retrieve a list of the last 200 event listeners within a specific namespace.
+    summary: Retrieve a list of event listeners within a specific namespace.
     description: |
       This endpoint retrieves a list of the last 200 event listeners configured within the specified namespace. Event listeners are entities that listen for specific events within a workflow environment, allowing for event-driven architecture.
     parameters:
@@ -261,6 +287,16 @@
         schema:
             type: string
             pattern: '^(([a-z][a-z0-9_\-\.]*[a-z0-9])|([a-z]))$'
+      - name: limit
+        in: query
+        schema:
+          type: integer
+        required: true
+      - name: offset
+        in: query
+        schema:
+          type: integer
+        required: true
     responses:
       '200':
         description: OK
@@ -268,8 +304,7 @@
           'application/json':
             example:
               meta:
-                previousPage: '2024-04-25T13:39:00.01915Z'
-                startingFrom: '2024-01-16T01:44:08.128136Z'
+                total: 100
               data:
                 - id: '977a5b18-27bf-4914-b666-456cc0073ea9'
                   createdAt: '2024-04-25T20:55:00.956697Z'
@@ -286,13 +321,8 @@
                   type: object
                   nullable: true
                   properties:
-                    previousPage:
-                      type: string
-                      format: RFC3339Nano
-                      nullable: true
-                    startingFrom:
-                      type: string
-                      format: RFC3339Nano
+                    total:
+                      type: integer
                 data:
                   type: array
                   items: 
@@ -313,7 +343,11 @@
                       namespace:
                         type: string
                         required: true
-                        description: The namespace to which the event listener belongs.
+                        description: The name of the namespace to which the event listener belongs.
+                      namespaceID:
+                        type: string
+                        required: true
+                        description: The id of the namespace to which the event listener belongs.
                       listeningForEventTypes:
                         type: array
                         items:
@@ -329,11 +363,11 @@
                       triggerInstance:
                         type: string
                         description: The instance triggered by the event listener.
-                      globGatekeepers:
+                      eventContextFilters:
                         type: object
-                        description: Global gatekeepers associated with the event listener.
+                        description: Glob patterns associated with the event listener.
 
-/api/v2/namespaces/{namespace}/events/listener/{listenerID}:
+/api/v2/namespaces/{namespace}/events/listeners/{listenerID}:
     get:
       tags:
       - events
@@ -363,7 +397,7 @@
                   id: '977a5b18-27bf-4914-b666-456cc0073ea9'
                   createdAt: '2024-04-25T20:55:00.956697Z'
                   updatedAt: '2024-04-25T20:55:00.956697Z'
-                  namespace: 'wfeventsv2'
+                  namespaceID: 'wfeventsv2'
                   listeningForEventTypes: 
                     - 'greeting'
                   triggerType: 'StartSimple'
@@ -386,10 +420,14 @@
                         type: string
                         required: true
                         description: The timestamp indicating when the event listener was last updated.
+                      namespaceID:
+                        type: string
+                        required: true
+                        description: The id of the namespace to which the event listener belongs.
                       namespace:
                         type: string
                         required: true
-                        description: The namespace to which the event listener belongs.
+                        description: The name of the namespace to which the event listener belongs.
                       listeningForEventTypes:
                         type: array
                         items:
@@ -405,6 +443,6 @@
                       triggerInstance:
                         type: string
                         description: The instance triggered by the event listener.
-                      globGatekeepers:
+                      eventContextFilters:
                         type: object
-                        description: Global gatekeepers associated with the event listener.
+                        description: Glob patterns associated with the event listener.

@@ -10,19 +10,19 @@ async function listInstancesAndFilter (ns, wf, status) {
 	if (wf)
 		append = '&filter.field=AS&filter.type=CONTAINS&filter.val=' + wf
 
-	let instancesResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ ns }/instances?limit=100&offset=0` + append)
+	let instancesResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ ns }/instances?limit=100&offset=0` + append)
 		.send()
 
 	// if filter, then try to wait
 	if (wf || status)
 		for (let i = 0; i < 20; i++) {
-			instancesResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ ns }/instances?limit=100&offset=0` + append)
+			instancesResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ ns }/instances?limit=100&offset=0` + append)
 			if (status) {
-				const idFind = instancesResponse.body.instances.results.find(item => item.status === status)
+				const idFind = instancesResponse.body.data.find(item => item.status === status)
 				if (idFind)
 					return idFind
-			} else if (instancesResponse.body.instances.pageInfo.total === 1)
-				return instancesResponse.body.instances.results[0]
+			} else if (instancesResponse.body.meta.total === 1)
+				return instancesResponse.body.data[0]
 
 			await helpers.sleep(100)
 			// eslint-disable-next-line

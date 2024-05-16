@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 
@@ -92,8 +93,8 @@ func (tf FlowPlugin) ExecutePlugin(_ *core.ConsumerFile,
 	// request failed if nil and response already written
 	resp := doWorkflowRequest(map[string]string{
 		namespaceArg: tf.config.Namespace,
-		flowArg:      tf.config.Flow,
-		execArg:      tf.config.internalAsync,
+		flowArg:      url.QueryEscape(tf.config.Flow),
+		execArg:      fmt.Sprintf("%v", tf.config.internalAsync == "wait"),
 	}, w, r.WithContext(ctx))
 	if resp == nil {
 		return false
@@ -139,7 +140,7 @@ const (
 func doWorkflowRequest(args map[string]string, w http.ResponseWriter, r *http.Request) *http.Response {
 	defer r.Body.Close()
 
-	url := fmt.Sprintf("http://localhost:%s/api/namespaces/%s/tree%s?op=%s&ref=latest",
+	url := fmt.Sprintf("http://localhost:%s/api/v2/namespaces/%s/instances?path=%s&wait=%s",
 		os.Getenv("DIREKTIV_API_V1_PORT"), args[namespaceArg], args[flowArg], args[execArg])
 
 	resp := doRequest(w, r, http.MethodPost, url, r.Body)

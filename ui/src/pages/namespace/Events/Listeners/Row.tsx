@@ -23,16 +23,16 @@ const Row = ({
   const { t } = useTranslation();
   const createdAt = useUpdatedAt(listener.createdAt);
 
-  const { workflow, instance } = listener;
+  const { triggerWorkflow: workflow, triggerInstance: instance } = listener;
   const listenerType = instance ? "instance" : "workflow";
-  const target = listener.workflow || listener.instance;
+  const target = workflow || instance;
 
   let linkTarget;
 
   if (workflow) {
     linkTarget = pages.explorer.createHref({
       namespace,
-      path: listener.workflow,
+      path: workflow,
       subpage: "workflow",
     });
   }
@@ -44,7 +44,9 @@ const Row = ({
     });
   }
 
-  const eventTypes = listener.events.map((event) => event.type).join(", ");
+  const eventTypes = listener.listeningForEventTypes
+    .map((eventType) => eventType)
+    .join(", ");
 
   return (
     <TooltipProvider>
@@ -55,7 +57,7 @@ const Row = ({
         <TableCell>
           {linkTarget ? <Link to={linkTarget}>{target}</Link> : <>{target}</>}
         </TableCell>
-        <TableCell>{listener.mode}</TableCell>
+        <TableCell>{listener.triggerType}</TableCell>
         <TableCell>
           <Tooltip>
             <TooltipTrigger data-testid="receivedAt-tooltip-trigger">
