@@ -28,8 +28,8 @@ jobs:
         run: |
           set +e
           export hash=checksum-${{ hashFiles('cmd', 'pkg', 'go.mod', 'go.sum') }};
-          docker manifest inspect ghcr.io/direktiv/direktiv:$hash;
           echo "hash=$hash" >> $GITHUB_OUTPUT;
+          docker manifest inspect ghcr.io/direktiv/direktiv:$hash;
           echo "cache_hit=$?" >> $GITHUB_OUTPUT;
 
 
@@ -46,8 +46,8 @@ jobs:
         run: |
           set +e
           export hash=checksum-${{ hashFiles('ui') }};
-          docker manifest inspect ghcr.io/direktiv/direktiv-ui:$hash;
           echo "hash=$hash" >> $GITHUB_OUTPUT;
+          docker manifest inspect ghcr.io/direktiv/direktiv-ui:$hash;
           echo "cache_hit=$?" >> $GITHUB_OUTPUT;
 
   print-flags:
