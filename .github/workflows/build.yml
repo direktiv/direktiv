@@ -33,7 +33,6 @@ jobs:
           echo "cache_hit=$?" >> $GITHUB_OUTPUT;
           echo $GITHUB_OUTPUT;
 
-
   ui-cache:
     runs-on: ubuntu-latest
     outputs:
