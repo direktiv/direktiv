@@ -498,7 +498,8 @@
           "type": "type",
           "mode": "mode",
           "createdAt": "updated",
-          "eventTypes": "cloud event type"
+          "eventTypes": "cloud event type",
+          "contextFilters": "context filters"
         },
         "empty": {
           "noResults": "No event listeners found"
@@ -508,7 +509,9 @@
           "type": {
             "workflow": "start workflow",
             "instance": "resume instance"
-          }
+          },
+          "contextFilters": "{{count}} filters",
+          "contextFilters_zero": "-"
         }
       }
     },

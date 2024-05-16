@@ -7,17 +7,25 @@
         "startingFrom": ""
     },
     "data": [
-        {
-            "id": "46cac590-c9c3-4d50-af49-352fb0257acf",
-            "createdAt": "2024-04-29T12:19:30.814328Z",
-            "updatedAt": "2024-04-29T12:19:30.814328Z",
-            "namespace": "foo",
-            "listeningForEventTypes": [
-                "greetingcloudevent"
-            ],
-            "triggerType": "WaitSimple",
-            "triggerInstance": "886bf89a-9ea0-4bea-b7fc-f29ac88c7e9f"
-        }
+      {
+        "id": "46cac590-c9c3-4d50-af49-352fb0257acf",
+        "createdAt": "2024-04-29T12:19:30.814328Z",
+        "updatedAt": "2024-04-29T12:19:30.814328Z",
+        "namespace": "foo",
+        "listeningForEventTypes": [
+            "greetingcloudevent"
+        ],
+        "triggerType": "WaitSimple",
+        "triggerInstance": "886bf89a-9ea0-4bea-b7fc-f29ac88c7e9f"
+        "eventContextFilters": [
+          {
+              "type": "take.event.two",
+              "context": {
+                  "foo": "bar"
+              }
+          },
+        ]
+      }
     ]
   }
  */
@@ -33,6 +41,11 @@ const triggerTypes = z.enum([
   "WaitOR",
 ]);
 
+const EventContextFilterSchema = z.object({
+  type: z.string(),
+  context: z.record(z.string(), z.string()),
+});
+
 const EventListenerSchema = z.object({
   id: z.string(),
   createdAt: z.string(),
@@ -42,6 +55,7 @@ const EventListenerSchema = z.object({
   triggerType: triggerTypes,
   triggerInstance: z.string().optional(), // instance id
   triggerWorkflow: z.string().optional(), // workflow path
+  eventContextFilters: z.array(EventContextFilterSchema),
 });
 
 export const EventListenersResponseSchema = z.object({
@@ -54,4 +68,7 @@ export const EventListenersResponseSchema = z.object({
 export type EventListenerSchemaType = z.infer<typeof EventListenerSchema>;
 export type EventListenersResponseSchemaType = z.infer<
   typeof EventListenersResponseSchema
+>;
+export type EventContextFilterSchemaType = z.infer<
+  typeof EventContextFilterSchema
 >;

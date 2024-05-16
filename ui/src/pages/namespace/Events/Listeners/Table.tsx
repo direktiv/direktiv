@@ -31,6 +31,9 @@ const ListenersTable: FC<PropsWithChildren> = ({ children }) => {
           <TableHeaderCell>
             {t("pages.events.listeners.tableHeader.eventTypes")}
           </TableHeaderCell>
+          <TableHeaderCell>
+            {t("pages.events.listeners.tableHeader.contextFilters")}
+          </TableHeaderCell>
         </TableRow>
       </TableHead>
       <TableBody>{children}</TableBody>
