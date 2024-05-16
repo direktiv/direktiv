@@ -57,7 +57,7 @@ spec:
               memory: {{ .Values.frontend.resources.requests.memory }}
             limits:
               memory: {{ .Values.frontend.resources.limits.memory }}
-          image: "{{ .Values.registry }}/{{ .Values.frontend.image }}:{{ .Values.tag | default .Chart.AppVersion }}"
+          image: "{{ .Values.registry }}/{{ .Values.frontend.image }}:{{ .Values.frontend.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.pullPolicy }}
           env: 
           {{- if len .Values.frontend.extraVariables }}

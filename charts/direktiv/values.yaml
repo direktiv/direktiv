@@ -248,6 +248,7 @@ serviceAccount:
 # -- Frontend configuration
 frontend:
   image: "direktiv/frontend"
+  tag: ""
   command: ""
   replicas: 1
   extraVariables: []
