@@ -26,10 +26,10 @@ import { InputWithButton } from "~/design/InputWithButton";
 import { MirrorSchemaType } from "~/api/namespaces/schema/mirror";
 import { MirrorValidationSchema } from "~/api/namespaces/schema/mirror/validation";
 import { Textarea } from "~/design/TextArea";
-import { pages } from "~/util/router/pages";
 import { useCreateNamespace } from "~/api/namespaces/mutate/createNamespace";
 import { useListNamespaces } from "~/api/namespaces/query/get";
 import { useNavigate } from "react-router-dom";
+import { usePages } from "~/util/router/pages";
 import { useSync } from "~/api/syncs/mutate/sync";
 import { useTranslation } from "react-i18next";
 import { useUpdateNamespace } from "~/api/namespaces/mutate/updateNamespace";
@@ -61,6 +61,7 @@ const NamespaceEdit = ({
   mirror?: MirrorSchemaType;
   close: () => void;
 }) => {
+  const pages = usePages();
   // note that isMirror is initially redundant with !isNew, but
   // isMirror may change through user interaction.
   const [isMirror, setIsMirror] = useState(!!mirror);

@@ -5,9 +5,9 @@ import { Link } from "react-router-dom";
 import { LogEntry } from "~/design/Logs";
 import { LogEntryType } from "~/api/logs/schema";
 import { LogSegment } from "~/components/Logs/LogSegment";
-import { pages } from "~/util/router/pages";
 import { useInstanceId } from "../../store/instanceContext";
 import { useLogsPreferencesVerboseLogs } from "~/util/store/logs";
+import { usePages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
 
 type LogEntryProps = ComponentPropsWithoutRef<typeof LogEntry>;
@@ -15,6 +15,7 @@ type Props = { logEntry: LogEntryType } & LogEntryProps;
 
 export const Entry = forwardRef<HTMLDivElement, Props>(
   ({ logEntry, ...props }, ref) => {
+    const pages = usePages();
     const instanceId = useInstanceId();
     const { t } = useTranslation();
     const { msg, error, level, time, workflow, namespace } = logEntry;

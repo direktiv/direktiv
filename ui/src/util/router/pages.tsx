@@ -245,480 +245,494 @@ type PermissionsPageSetup = Partial<
 
 type EnterprisePageType = PermissionsPageSetup;
 
-export const enterprisePages: EnterprisePageType = isEnterprise()
-  ? {
-      permissions: {
-        name: "components.mainMenu.permissions",
-        icon: BadgeCheck,
-        createHref: (params) => {
-          let subpage = "";
-          if (params.subpage === "groups") {
-            subpage = "/groups";
-          }
-          if (params.subpage === "tokens") {
-            subpage = "/tokens";
-          }
-          return `/n/${params.namespace}/permissions${subpage}`;
-        },
-        useParams: () => {
-          const [, secondLevel, thirdLevel] = useMatches(); // first level is namespace level
-          const isPermissionsPage = checkHandler(
-            secondLevel,
-            "isPermissionsPage"
-          );
-          const isPermissionsPolicyPage = checkHandler(
-            thirdLevel,
-            "isPermissionsPolicyPage"
-          );
-          const isPermissionsTokenPage = checkHandler(
-            thirdLevel,
-            "isPermissionsTokenPage"
-          );
-          const isPermissionsGroupPage = checkHandler(
-            thirdLevel,
-            "isPermissionsGroupPage"
-          );
-
-          return {
-            isPermissionsPage,
-            isPermissionsPolicyPage,
-            isPermissionsTokenPage,
-            isPermissionsGroupPage,
-          };
-        },
-        route: {
-          path: "permissions",
-          element: <PermissionsPage />,
-          handle: { permissions: true, isPermissionsPage: true },
-          children: [
-            {
-              path: "",
-              element: <PolicyPage />,
-              handle: { isPermissionsPolicyPage: true },
-            },
-            {
-              path: "tokens",
-              element: <TokensPage />,
-              handle: { isPermissionsTokenPage: true },
-            },
-            {
-              path: "groups",
-              element: <GroupsPage />,
-              handle: { isPermissionsGroupPage: true },
-            },
-          ],
-        },
-      },
-    }
-  : {};
-
 // these are the direct child pages that live in the /:namespace folder
 // the main goal of this abstraction is to make the router as typesafe as
 // possible and to globally manage and change the url structure
 // entries with no name and icon will not be rendered in the navigation
-export const pages: PageType & EnterprisePageType = {
-  explorer: {
-    name: "components.mainMenu.explorer",
-    icon: FolderTree,
-    createHref: (params) => {
-      let path = "";
-      if (params.path) {
-        path = params.path.startsWith("/") ? params.path : `/${params.path}`;
+export const usePages = (): PageType & EnterprisePageType => {
+  const enterprisePages: EnterprisePageType = isEnterprise()
+    ? {
+        permissions: {
+          name: "components.mainMenu.permissions",
+          icon: BadgeCheck,
+          createHref: (params) => {
+            let subpage = "";
+            if (params.subpage === "groups") {
+              subpage = "/groups";
+            }
+            if (params.subpage === "tokens") {
+              subpage = "/tokens";
+            }
+            return `/n/${params.namespace}/permissions${subpage}`;
+          },
+          useParams: () => {
+            const [, secondLevel, thirdLevel] = useMatches(); // first level is namespace level
+            const isPermissionsPage = checkHandler(
+              secondLevel,
+              "isPermissionsPage"
+            );
+            const isPermissionsPolicyPage = checkHandler(
+              thirdLevel,
+              "isPermissionsPolicyPage"
+            );
+            const isPermissionsTokenPage = checkHandler(
+              thirdLevel,
+              "isPermissionsTokenPage"
+            );
+            const isPermissionsGroupPage = checkHandler(
+              thirdLevel,
+              "isPermissionsGroupPage"
+            );
+
+            return {
+              isPermissionsPage,
+              isPermissionsPolicyPage,
+              isPermissionsTokenPage,
+              isPermissionsGroupPage,
+            };
+          },
+          route: {
+            path: "permissions",
+            element: <PermissionsPage />,
+            handle: { permissions: true, isPermissionsPage: true },
+            children: [
+              {
+                path: "",
+                element: <PolicyPage />,
+                handle: { isPermissionsPolicyPage: true },
+              },
+              {
+                path: "tokens",
+                element: <TokensPage />,
+                handle: { isPermissionsTokenPage: true },
+              },
+              {
+                path: "groups",
+                element: <GroupsPage />,
+                handle: { isPermissionsGroupPage: true },
+              },
+            ],
+          },
+        },
       }
-      const subfolder: Record<ExplorerSubpages, string> = {
-        workflow: "workflow/edit",
-        "workflow-overview": "workflow/overview",
-        "workflow-settings": "workflow/settings",
-        "workflow-services": "workflow/services",
-        endpoint: "endpoint",
-        consumer: "consumer",
-        service: "service",
-      };
+    : {};
 
-      let searchParamsObj;
-
-      if (params.subpage === "workflow-services" && params.serviceId) {
-        searchParamsObj = {
-          serviceId: params.serviceId,
+  return {
+    explorer: {
+      name: "components.mainMenu.explorer",
+      icon: FolderTree,
+      createHref: (params) => {
+        let path = "";
+        if (params.path) {
+          path = params.path.startsWith("/") ? params.path : `/${params.path}`;
+        }
+        const subfolder: Record<ExplorerSubpages, string> = {
+          workflow: "workflow/edit",
+          "workflow-overview": "workflow/overview",
+          "workflow-settings": "workflow/settings",
+          "workflow-services": "workflow/services",
+          endpoint: "endpoint",
+          consumer: "consumer",
+          service: "service",
         };
-      }
 
-      const searchParams = new URLSearchParams(searchParamsObj);
+        let searchParamsObj;
 
-      const subpage = params.subpage ? subfolder[params.subpage] : "tree";
+        if (params.subpage === "workflow-services" && params.serviceId) {
+          searchParamsObj = {
+            serviceId: params.serviceId,
+          };
+        }
 
-      const searchParamsString = searchParams.toString();
-      const urlParams = searchParamsString ? `?${searchParamsString}` : "";
+        const searchParams = new URLSearchParams(searchParamsObj);
 
-      return `/n/${params.namespace}/explorer/${subpage}${path}${urlParams}`;
-    },
-    useParams: () => {
-      const { "*": path, namespace } = useParams();
-      const [, , thirdLvl, fourthLvl] = useMatches(); // first level is namespace level
-      const [searchParams] = useSearchParams();
+        const subpage = params.subpage ? subfolder[params.subpage] : "tree";
 
-      // explorer.useParams() can also be called on pages that are not
-      // the explorer page and some params might accidentally match as
-      // well (like wildcards). To prevent that we use custom handles that
-      // we injected in the route objects
-      const isTreePage = checkHandler(thirdLvl, "isTreePage");
-      const isWorkflowPage = checkHandler(thirdLvl, "isWorkflowPage");
-      const isServicePage = checkHandler(thirdLvl, "isServicePage");
-      const isEndpointPage = checkHandler(thirdLvl, "isEndpointPage");
-      const isConsumerPage = checkHandler(thirdLvl, "isConsumerPage");
-      const isExplorerPage =
-        isTreePage ||
-        isWorkflowPage ||
-        isServicePage ||
-        isEndpointPage ||
-        isConsumerPage;
-      const isWorkflowEditorPage = checkHandler(fourthLvl, "isEditorPage");
-      const isWorkflowOverviewPage = checkHandler(fourthLvl, "isOverviewPage");
-      const isWorkflowSettingsPage = checkHandler(fourthLvl, "isSettingsPage");
-      const isWorkflowServicesPage = checkHandler(fourthLvl, "isServicesPage");
+        const searchParamsString = searchParams.toString();
+        const urlParams = searchParamsString ? `?${searchParamsString}` : "";
 
-      return {
-        path: isExplorerPage ? path : undefined,
-        namespace: isExplorerPage ? namespace : undefined,
-        isExplorerPage,
-        isTreePage,
-        isWorkflowPage,
-        isWorkflowEditorPage,
-        isWorkflowOverviewPage,
-        isWorkflowSettingsPage,
-        isWorkflowServicesPage,
-        isServicePage,
-        isEndpointPage,
-        isConsumerPage,
-        serviceId: searchParams.get("serviceId") ?? undefined,
-      };
-    },
-    route: {
-      path: "explorer/",
-      errorElement: <ErrorPage className="h-full" />,
-      element: <ExplorerPage />,
-      handle: { explorer: true },
-      children: [
-        {
-          path: "tree/*",
-          element: <TreePage />,
-          handle: { isTreePage: true },
-        },
-        {
-          path: "workflow/",
-          element: <WorkflowPage />,
-          handle: { isWorkflowPage: true },
-          children: [
-            {
-              path: "edit/*",
-              element: <WorkflowPageActive />,
-              handle: { isEditorPage: true },
-            },
-            {
-              path: "overview/*",
-              element: <WorkflowPageOverview />,
-              handle: { isOverviewPage: true },
-            },
-            {
-              path: "settings/*",
-              element: <WorkflowPageSettings />,
-              handle: { isSettingsPage: true },
-            },
-            {
-              path: "services/*",
-              element: <WorkflowPageServices />,
-              handle: { isServicesPage: true },
-            },
-          ],
-        },
-        {
-          path: "service/*",
-          element: <ServiceEditorPage />,
-          handle: { isServicePage: true },
-        },
-        {
-          path: "endpoint/*",
-          element: <EndpointEditorPage />,
-          handle: { isEndpointPage: true },
-        },
-        {
-          path: "consumer/*",
-          element: <ConsumerEditorPage />,
-          handle: { isConsumerPage: true },
-        },
-      ],
-    },
-  },
-  monitoring: {
-    name: "components.mainMenu.monitoring",
-    icon: ActivitySquare,
-    createHref: (params) => `/n/${params.namespace}/monitoring`,
-    useParams: () => {
-      const [, secondLevel] = useMatches(); // first level is namespace level
-      const isMonitoringPage = checkHandler(secondLevel, "isMonitoringPage");
-      return { isMonitoringPage };
-    },
-    route: {
-      path: "monitoring",
-      element: <MonitoringPage />,
-      handle: { monitoring: true, isMonitoringPage: true },
-    },
-  },
-  instances: {
-    name: "components.mainMenu.instances",
-    icon: Boxes,
-    createHref: (params) =>
-      `/n/${params.namespace}/instances${
-        params.instance ? `/${params.instance}` : ""
-      }`,
-    useParams: () => {
-      const { namespace, instance } = useParams();
+        return `/n/${params.namespace}/explorer/${subpage}${path}${urlParams}`;
+      },
+      useParams: () => {
+        const { "*": path, namespace } = useParams();
+        const [, , thirdLvl, fourthLvl] = useMatches(); // first level is namespace level
+        const [searchParams] = useSearchParams();
 
-      const [, , thirdLvl] = useMatches(); // first level is namespace level
+        // explorer.useParams() can also be called on pages that are not
+        // the explorer page and some params might accidentally match as
+        // well (like wildcards). To prevent that we use custom handles that
+        // we injected in the route objects
+        const isTreePage = checkHandler(thirdLvl, "isTreePage");
+        const isWorkflowPage = checkHandler(thirdLvl, "isWorkflowPage");
+        const isServicePage = checkHandler(thirdLvl, "isServicePage");
+        const isEndpointPage = checkHandler(thirdLvl, "isEndpointPage");
+        const isConsumerPage = checkHandler(thirdLvl, "isConsumerPage");
+        const isExplorerPage =
+          isTreePage ||
+          isWorkflowPage ||
+          isServicePage ||
+          isEndpointPage ||
+          isConsumerPage;
+        const isWorkflowEditorPage = checkHandler(fourthLvl, "isEditorPage");
+        const isWorkflowOverviewPage = checkHandler(
+          fourthLvl,
+          "isOverviewPage"
+        );
+        const isWorkflowSettingsPage = checkHandler(
+          fourthLvl,
+          "isSettingsPage"
+        );
+        const isWorkflowServicesPage = checkHandler(
+          fourthLvl,
+          "isServicesPage"
+        );
 
-      const isInstanceListPage = checkHandler(thirdLvl, "isInstanceListPage");
-      const isInstanceDetailPage = checkHandler(
-        thirdLvl,
-        "isInstanceDetailPage"
-      );
+        return {
+          path: isExplorerPage ? path : undefined,
+          namespace: isExplorerPage ? namespace : undefined,
+          isExplorerPage,
+          isTreePage,
+          isWorkflowPage,
+          isWorkflowEditorPage,
+          isWorkflowOverviewPage,
+          isWorkflowSettingsPage,
+          isWorkflowServicesPage,
+          isServicePage,
+          isEndpointPage,
+          isConsumerPage,
+          serviceId: searchParams.get("serviceId") ?? undefined,
+        };
+      },
+      route: {
+        path: "explorer/",
+        errorElement: <ErrorPage className="h-full" />,
+        element: <ExplorerPage />,
+        handle: { explorer: true },
+        children: [
+          {
+            path: "tree/*",
+            element: <TreePage />,
+            handle: { isTreePage: true },
+          },
+          {
+            path: "workflow/",
+            element: <WorkflowPage />,
+            handle: { isWorkflowPage: true },
+            children: [
+              {
+                path: "edit/*",
+                element: <WorkflowPageActive />,
+                handle: { isEditorPage: true },
+              },
+              {
+                path: "overview/*",
+                element: <WorkflowPageOverview />,
+                handle: { isOverviewPage: true },
+              },
+              {
+                path: "settings/*",
+                element: <WorkflowPageSettings />,
+                handle: { isSettingsPage: true },
+              },
+              {
+                path: "services/*",
+                element: <WorkflowPageServices />,
+                handle: { isServicesPage: true },
+              },
+            ],
+          },
+          {
+            path: "service/*",
+            element: <ServiceEditorPage />,
+            handle: { isServicePage: true },
+          },
+          {
+            path: "endpoint/*",
+            element: <EndpointEditorPage />,
+            handle: { isEndpointPage: true },
+          },
+          {
+            path: "consumer/*",
+            element: <ConsumerEditorPage />,
+            handle: { isConsumerPage: true },
+          },
+        ],
+      },
+    },
+    monitoring: {
+      name: "components.mainMenu.monitoring",
+      icon: ActivitySquare,
+      createHref: (params) => `/n/${params.namespace}/monitoring`,
+      useParams: () => {
+        const [, secondLevel] = useMatches(); // first level is namespace level
+        const isMonitoringPage = checkHandler(secondLevel, "isMonitoringPage");
+        return { isMonitoringPage };
+      },
+      route: {
+        path: "monitoring",
+        element: <MonitoringPage />,
+        handle: { monitoring: true, isMonitoringPage: true },
+      },
+    },
+    instances: {
+      name: "components.mainMenu.instances",
+      icon: Boxes,
+      createHref: (params) =>
+        `/n/${params.namespace}/instances${
+          params.instance ? `/${params.instance}` : ""
+        }`,
+      useParams: () => {
+        const { namespace, instance } = useParams();
 
-      const isInstancePage = isInstanceListPage || isInstanceDetailPage;
+        const [, , thirdLvl] = useMatches(); // first level is namespace level
 
-      return {
-        namespace: isInstancePage ? namespace : undefined,
-        instance: isInstancePage ? instance : undefined,
-        isInstancePage,
-        isInstanceListPage,
-        isInstanceDetailPage,
-      };
-    },
-    route: {
-      path: "instances",
-      element: <InstancesPage />,
-      handle: { instances: true },
-      children: [
-        {
-          path: "",
-          element: <InstancesPageList />,
-          handle: { isInstanceListPage: true },
-        },
-        {
-          path: ":instance",
-          element: <InstancesPageDetail />,
-          handle: { isInstanceDetailPage: true },
-        },
-      ],
-    },
-  },
-  events: {
-    name: "components.mainMenu.events",
-    icon: Radio,
-    createHref: (params) =>
-      `/n/${params.namespace}/events/${
-        params?.subpage === "eventlisteners" ? `listeners` : "history"
-      }`,
-    useParams: () => {
-      const [, , thirdLevel] = useMatches(); // first level is namespace level
-      const isEventsHistoryPage = checkHandler(
-        thirdLevel,
-        "isEventHistoryPage"
-      );
-      const isEventsListenersPage = checkHandler(
-        thirdLevel,
-        "isEventListenersPage"
-      );
-      return { isEventsHistoryPage, isEventsListenersPage };
-    },
-    route: {
-      path: "events",
-      element: <EventsPage />,
-      handle: { events: true },
-      children: [
-        {
-          path: "history",
-          element: <History />,
-          handle: { isEventHistoryPage: true },
-        },
-        {
-          path: "listeners",
-          element: <Listeners />,
-          handle: { isEventListenersPage: true },
-        },
-      ],
-    },
-  },
-  gateway: {
-    name: "components.mainMenu.gateway",
-    icon: Network,
-    createHref: (params) => {
-      let subpage = "routes";
-      if (params.subpage === "routeDetail") {
-        subpage = `routes/${removeLeadingSlash(params.routePath)}`;
-      }
-      if (params.subpage === "consumers") {
-        subpage = "consumers";
-      }
-      return `/n/${params.namespace}/gateway/${subpage}`;
-    },
-    useParams: () => {
-      const { "*": path } = useParams();
-      const [, secondLevel, thirdLevel] = useMatches(); // first level is namespace level
-      const isGatewayPage = checkHandler(secondLevel, "isGatewayPage");
-      const isGatewayRoutesPage = checkHandler(
-        thirdLevel,
-        "isGatewayRoutesPage"
-      );
-      const isGatewayConsumerPage = checkHandler(
-        thirdLevel,
-        "isGatewayConsumerPage"
-      );
+        const isInstanceListPage = checkHandler(thirdLvl, "isInstanceListPage");
+        const isInstanceDetailPage = checkHandler(
+          thirdLvl,
+          "isInstanceDetailPage"
+        );
 
-      const isGatewayRoutesDetailPage = checkHandler(
-        thirdLevel,
-        "isGatewayRoutesDetailPage"
-      );
-      return {
-        isGatewayPage,
-        isGatewayRoutesPage,
-        isGatewayConsumerPage,
-        isGatewayRoutesDetailPage,
-        routePath: isGatewayRoutesDetailPage ? path : undefined,
-      };
-    },
-    route: {
-      path: "gateway",
-      element: <GatewayPage />,
-      handle: { gateway: true, isGatewayPage: true },
-      children: [
-        {
-          path: "routes",
-          element: <GatewayRoutesPage />,
-          handle: { isGatewayRoutesPage: true },
-        },
-        {
-          path: "routes/*",
-          element: <RoutesPageDetail />,
-          handle: { isGatewayRoutesDetailPage: true },
-        },
-        {
-          path: "consumers",
-          element: <GatewayConsumersPage />,
-          handle: { isGatewayConsumerPage: true },
-        },
-      ],
-    },
-  },
-  services: {
-    name: "components.mainMenu.services",
-    icon: Layers,
-    createHref: (params) =>
-      `/n/${params.namespace}/services${
-        params.service ? `/${params.service}` : ""
-      }`,
-    useParams: () => {
-      const { namespace, service } = useParams();
+        const isInstancePage = isInstanceListPage || isInstanceDetailPage;
 
-      const [, , thirdLvl] = useMatches(); // first level is namespace level
+        return {
+          namespace: isInstancePage ? namespace : undefined,
+          instance: isInstancePage ? instance : undefined,
+          isInstancePage,
+          isInstanceListPage,
+          isInstanceDetailPage,
+        };
+      },
+      route: {
+        path: "instances",
+        element: <InstancesPage />,
+        handle: { instances: true },
+        children: [
+          {
+            path: "",
+            element: <InstancesPageList />,
+            handle: { isInstanceListPage: true },
+          },
+          {
+            path: ":instance",
+            element: <InstancesPageDetail />,
+            handle: { isInstanceDetailPage: true },
+          },
+        ],
+      },
+    },
+    events: {
+      name: "components.mainMenu.events",
+      icon: Radio,
+      createHref: (params) =>
+        `/n/${params.namespace}/events/${
+          params?.subpage === "eventlisteners" ? `listeners` : "history"
+        }`,
+      useParams: () => {
+        const [, , thirdLevel] = useMatches(); // first level is namespace level
+        const isEventsHistoryPage = checkHandler(
+          thirdLevel,
+          "isEventHistoryPage"
+        );
+        const isEventsListenersPage = checkHandler(
+          thirdLevel,
+          "isEventListenersPage"
+        );
+        return { isEventsHistoryPage, isEventsListenersPage };
+      },
+      route: {
+        path: "events",
+        element: <EventsPage />,
+        handle: { events: true },
+        children: [
+          {
+            path: "history",
+            element: <History />,
+            handle: { isEventHistoryPage: true },
+          },
+          {
+            path: "listeners",
+            element: <Listeners />,
+            handle: { isEventListenersPage: true },
+          },
+        ],
+      },
+    },
+    gateway: {
+      name: "components.mainMenu.gateway",
+      icon: Network,
+      createHref: (params) => {
+        let subpage = "routes";
+        if (params.subpage === "routeDetail") {
+          subpage = `routes/${removeLeadingSlash(params.routePath)}`;
+        }
+        if (params.subpage === "consumers") {
+          subpage = "consumers";
+        }
+        return `/n/${params.namespace}/gateway/${subpage}`;
+      },
+      useParams: () => {
+        const { "*": path } = useParams();
+        const [, secondLevel, thirdLevel] = useMatches(); // first level is namespace level
+        const isGatewayPage = checkHandler(secondLevel, "isGatewayPage");
+        const isGatewayRoutesPage = checkHandler(
+          thirdLevel,
+          "isGatewayRoutesPage"
+        );
+        const isGatewayConsumerPage = checkHandler(
+          thirdLevel,
+          "isGatewayConsumerPage"
+        );
 
-      const isServiceListPage = checkHandler(thirdLvl, "isServiceListPage");
-      const isServiceDetailPage = checkHandler(thirdLvl, "isServiceDetailPage");
-      const isServicePage = isServiceListPage || isServiceDetailPage;
+        const isGatewayRoutesDetailPage = checkHandler(
+          thirdLevel,
+          "isGatewayRoutesDetailPage"
+        );
+        return {
+          isGatewayPage,
+          isGatewayRoutesPage,
+          isGatewayConsumerPage,
+          isGatewayRoutesDetailPage,
+          routePath: isGatewayRoutesDetailPage ? path : undefined,
+        };
+      },
+      route: {
+        path: "gateway",
+        element: <GatewayPage />,
+        handle: { gateway: true, isGatewayPage: true },
+        children: [
+          {
+            path: "routes",
+            element: <GatewayRoutesPage />,
+            handle: { isGatewayRoutesPage: true },
+          },
+          {
+            path: "routes/*",
+            element: <RoutesPageDetail />,
+            handle: { isGatewayRoutesDetailPage: true },
+          },
+          {
+            path: "consumers",
+            element: <GatewayConsumersPage />,
+            handle: { isGatewayConsumerPage: true },
+          },
+        ],
+      },
+    },
+    services: {
+      name: "components.mainMenu.services",
+      icon: Layers,
+      createHref: (params) =>
+        `/n/${params.namespace}/services${
+          params.service ? `/${params.service}` : ""
+        }`,
+      useParams: () => {
+        const { namespace, service } = useParams();
 
-      return {
-        namespace: isServicePage ? namespace : undefined,
-        service: isServiceDetailPage ? service : undefined,
-        isServicePage,
-        isServiceListPage,
-        isServiceDetailPage,
-      };
-    },
+        const [, , thirdLvl] = useMatches(); // first level is namespace level
 
-    route: {
-      path: "services",
-      element: <ServicesPage />,
-      handle: { services: true },
-      children: [
-        {
-          path: "",
-          element: <ServicesListPage />,
-          handle: { isServiceListPage: true },
-        },
-        {
-          path: ":service",
-          element: <ServiceDetailPage />,
-          handle: { isServiceDetailPage: true },
-        },
-      ],
+        const isServiceListPage = checkHandler(thirdLvl, "isServiceListPage");
+        const isServiceDetailPage = checkHandler(
+          thirdLvl,
+          "isServiceDetailPage"
+        );
+        const isServicePage = isServiceListPage || isServiceDetailPage;
+
+        return {
+          namespace: isServicePage ? namespace : undefined,
+          service: isServiceDetailPage ? service : undefined,
+          isServicePage,
+          isServiceListPage,
+          isServiceDetailPage,
+        };
+      },
+
+      route: {
+        path: "services",
+        element: <ServicesPage />,
+        handle: { services: true },
+        children: [
+          {
+            path: "",
+            element: <ServicesListPage />,
+            handle: { isServiceListPage: true },
+          },
+          {
+            path: ":service",
+            element: <ServiceDetailPage />,
+            handle: { isServiceDetailPage: true },
+          },
+        ],
+      },
     },
-  },
-  mirror: {
-    name: "components.mainMenu.mirror",
-    icon: GitCompare,
-    createHref: (params) =>
-      `/n/${params.namespace}/mirror/${
-        params?.sync ? `logs/${params.sync}` : ""
-      }`,
-    useParams: () => {
-      const { sync } = useParams();
-      const [, secondLevel, thirdLevel] = useMatches(); // first level is namespace level
-      const isMirrorPage = checkHandler(secondLevel, "isMirrorPage");
-      const isSyncDetailPage = checkHandler(thirdLevel, "isMirrorLogsPage");
-      return {
-        isMirrorPage,
-        isSyncDetailPage,
-        sync: isSyncDetailPage ? sync : undefined,
-      };
+    mirror: {
+      name: "components.mainMenu.mirror",
+      icon: GitCompare,
+      createHref: (params) =>
+        `/n/${params.namespace}/mirror/${
+          params?.sync ? `logs/${params.sync}` : ""
+        }`,
+      useParams: () => {
+        const { sync } = useParams();
+        const [, secondLevel, thirdLevel] = useMatches(); // first level is namespace level
+        const isMirrorPage = checkHandler(secondLevel, "isMirrorPage");
+        const isSyncDetailPage = checkHandler(thirdLevel, "isMirrorLogsPage");
+        return {
+          isMirrorPage,
+          isSyncDetailPage,
+          sync: isSyncDetailPage ? sync : undefined,
+        };
+      },
+      route: {
+        path: "mirror",
+        element: <MirrorPage />,
+        handle: { mirror: true, isMirrorPage: true },
+        children: [
+          {
+            path: "",
+            element: <MirrorDetail />,
+            handle: { isMirrorDetailPage: true },
+          },
+          {
+            path: "logs/:sync",
+            element: <Logs />,
+            handle: { isMirrorLogsPage: true },
+          },
+        ],
+      },
     },
-    route: {
-      path: "mirror",
-      element: <MirrorPage />,
-      handle: { mirror: true, isMirrorPage: true },
-      children: [
-        {
-          path: "",
-          element: <MirrorDetail />,
-          handle: { isMirrorDetailPage: true },
-        },
-        {
-          path: "logs/:sync",
-          element: <Logs />,
-          handle: { isMirrorLogsPage: true },
-        },
-      ],
+    ...enterprisePages,
+    settings: {
+      name: "components.mainMenu.settings",
+      icon: Settings,
+      createHref: (params) => `/n/${params.namespace}/settings`,
+      useParams: () => {
+        const [, secondLevel] = useMatches(); // first level is namespace level
+        const isSettingsPage = checkHandler(secondLevel, "isSettingsPage");
+        return { isSettingsPage };
+      },
+      route: {
+        path: "settings",
+        element: <SettingsPage />,
+        handle: { settings: true, isSettingsPage: true },
+      },
     },
-  },
-  ...enterprisePages,
-  settings: {
-    name: "components.mainMenu.settings",
-    icon: Settings,
-    createHref: (params) => `/n/${params.namespace}/settings`,
-    useParams: () => {
-      const [, secondLevel] = useMatches(); // first level is namespace level
-      const isSettingsPage = checkHandler(secondLevel, "isSettingsPage");
-      return { isSettingsPage };
+    jqPlayground: {
+      name: "components.mainMenu.jqPlayground",
+      icon: PlaySquare,
+      createHref: (params) => `/n/${params.namespace}/jq`,
+      useParams: () => {
+        const [, secondLevel] = useMatches(); // first level is namespace level
+        const isJqPlaygroundPage = checkHandler(
+          secondLevel,
+          "isJqPlaygroundPage"
+        );
+        return { isJqPlaygroundPage };
+      },
+      route: {
+        path: "jq",
+        element: <JqPlaygroundPage />,
+        handle: { jqPlayground: true, isJqPlaygroundPage: true },
+      },
     },
-    route: {
-      path: "settings",
-      element: <SettingsPage />,
-      handle: { settings: true, isSettingsPage: true },
-    },
-  },
-  jqPlayground: {
-    name: "components.mainMenu.jqPlayground",
-    icon: PlaySquare,
-    createHref: (params) => `/n/${params.namespace}/jq`,
-    useParams: () => {
-      const [, secondLevel] = useMatches(); // first level is namespace level
-      const isJqPlaygroundPage = checkHandler(
-        secondLevel,
-        "isJqPlaygroundPage"
-      );
-      return { isJqPlaygroundPage };
-    },
-    route: {
-      path: "jq",
-      element: <JqPlaygroundPage />,
-      handle: { jqPlayground: true, isJqPlaygroundPage: true },
-    },
-  },
+  };
 };

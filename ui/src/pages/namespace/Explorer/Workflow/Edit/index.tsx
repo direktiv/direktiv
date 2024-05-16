@@ -1,9 +1,10 @@
 import { FC } from "react";
 import WorkflowEditor from "./WorkflowEditor";
-import { pages } from "~/util/router/pages";
 import { useFile } from "~/api/files/query/file";
+import { usePages } from "~/util/router/pages";
 
 const WorkflowOverviewPage: FC = () => {
+  const pages = usePages();
   const { path } = pages.explorer.useParams();
   const { data } = useFile({ path });
 

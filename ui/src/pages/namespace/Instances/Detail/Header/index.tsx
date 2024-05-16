@@ -10,15 +10,16 @@ import Badge from "~/design/Badge";
 import Button from "~/design/Button";
 import ChildInstances from "./ChildInstances";
 import { Link } from "react-router-dom";
-import { pages } from "~/util/router/pages";
 import { statusToBadgeVariant } from "../../utils";
 import { useCancelInstance } from "~/api/instances/mutate/cancel";
 import { useInstanceDetails } from "~/api/instances/query/details";
 import { useInstanceId } from "../store/instanceContext";
+import { usePages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
 import useUpdatedAt from "~/hooks/useUpdatedAt";
 
 const Header = () => {
+  const pages = usePages();
   const instanceId = useInstanceId();
   const { data: instance } = useInstanceDetails({ instanceId });
   const { mutate: cancelInstance, isPending } = useCancelInstance();

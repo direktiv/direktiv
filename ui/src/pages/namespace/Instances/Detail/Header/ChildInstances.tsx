@@ -11,17 +11,18 @@ import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 
 import Badge from "~/design/Badge";
 import RefreshButton from "~/design/RefreshButton";
-import { pages } from "~/util/router/pages";
 import { statusToBadgeVariant } from "../../utils";
 import { t } from "i18next";
 import { useInstanceId } from "../store/instanceContext";
 import { useInstances } from "~/api/instances/query/get";
 import { useNamespace } from "~/util/store/namespace";
+import { usePages } from "~/util/router/pages";
 import { useState } from "react";
 
 const maxChildInstancesToShow = 50;
 
 const ChildInstances = () => {
+  const pages = usePages();
   const instanceId = useInstanceId();
   const namespace = useNamespace();
   const [popoverOpen, setPopoverOpen] = useState(false);

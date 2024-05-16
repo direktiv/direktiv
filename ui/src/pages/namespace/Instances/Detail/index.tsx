@@ -3,8 +3,8 @@ import { InstanceStateProvider, useInstanceId } from "./store/instanceContext";
 import { InstanceStreamingSubscriber } from "~/api/instances/query/details/streaming";
 import InstancesDetail from "./InstanceDetail";
 import { LogStreamingSubscriber } from "~/api/logs/query/LogStreamingSubscriber";
-import { pages } from "~/util/router/pages";
 import { useInstanceDetails } from "~/api/instances/query/details";
+import { usePages } from "~/util/router/pages";
 
 const InstanceStreaming = () => {
   const instanceId = useInstanceId();
@@ -24,6 +24,7 @@ const InstanceStreaming = () => {
 };
 
 const InstanceWithContextProvider = () => {
+  const pages = usePages();
   const { instance: instanceId } = pages.instances.useParams();
   if (!instanceId) return null;
 
