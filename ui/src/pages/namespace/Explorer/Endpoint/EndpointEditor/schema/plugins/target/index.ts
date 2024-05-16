@@ -1,4 +1,5 @@
-import { filterAvailablePlugins } from "../utils";
+import { isEnterprise } from "~/config/env/utils";
+import { isPluginAvailable } from "../utils";
 
 export const targetPluginTypes = {
   instantResponse: {
@@ -27,6 +28,7 @@ export const targetPluginTypes = {
   },
 } as const;
 
-export const availablePlugins = Object.values(targetPluginTypes).filter(
-  filterAvailablePlugins
-);
+export const useAvailablePlugins = () =>
+  Object.values(targetPluginTypes).filter((plugin) =>
+    isPluginAvailable(plugin, isEnterprise())
+  );
