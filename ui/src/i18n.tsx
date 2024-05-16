@@ -1,6 +1,7 @@
 import Backend from "i18next-http-backend";
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
+import translationFilePath from "~/assets/locales/en/translation.json?url";
 
 // Example: we could define translations here (or import them as a module)
 // and pass them to the init object below. Our current setup uses the
@@ -18,7 +19,7 @@ i18n
   .use(initReactI18next) // passes i18n down to react-i18next
   .init({
     backend: {
-      loadPath: `/locales/{{lng}}/{{ns}}.json`,
+      loadPath: translationFilePath,
     },
     lng: "en",
     fallbackLng: "en",
