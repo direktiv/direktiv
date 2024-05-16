@@ -31,6 +31,7 @@ jobs:
           echo "hash=$hash" >> $GITHUB_OUTPUT;
           docker manifest inspect ghcr.io/direktiv/direktiv:$hash;
           echo "cache_hit=$?" >> $GITHUB_OUTPUT;
+          echo $GITHUB_OUTPUT;
 
 
   ui-cache:
@@ -49,15 +50,7 @@ jobs:
           echo "hash=$hash" >> $GITHUB_OUTPUT;
           docker manifest inspect ghcr.io/direktiv/direktiv-ui:$hash;
           echo "cache_hit=$?" >> $GITHUB_OUTPUT;
-
-  print-flags:
-    runs-on: ubuntu-latest
-    needs: [ui-cache, backend-cache]
-    steps:
-      - name: Print cache flags
-        run: |
-          echo "backend_hit=${{ needs.backend-cache.outputs.cache_hit }}";
-          echo "ui_hit=${{ needs.ui-cache.outputs.cache_hit }}";
+          echo $GITHUB_OUTPUT;
 
   backend-license:
     runs-on: ubuntu-latest
