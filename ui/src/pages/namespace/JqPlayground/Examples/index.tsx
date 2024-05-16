@@ -2,14 +2,14 @@ import { Bookmark, Play } from "lucide-react";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
-import { ExecuteJqueryPayloadType } from "~/api/jq/schema";
+import { ExecuteJxQueryPayloadType } from "~/api/jq/schema";
 import exampleSnippets from "./exampleSnippets";
 import { useTranslation } from "react-i18next";
 
 const Examples = ({
   onRunSnippet,
 }: {
-  onRunSnippet: (params: ExecuteJqueryPayloadType) => void;
+  onRunSnippet: (params: ExecuteJxQueryPayloadType) => void;
 }) => {
   const { t } = useTranslation();
   return (

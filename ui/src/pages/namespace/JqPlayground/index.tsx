@@ -8,8 +8,8 @@ import {
 } from "lucide-react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import {
-  ExecuteJqueryPayloadSchema,
-  ExecuteJqueryPayloadType,
+  ExecuteJxQueryPayloadSchema,
+  ExecuteJxQueryPayloadType,
 } from "~/api/jq/schema";
 import { FC, useRef, useState } from "react";
 import {
@@ -27,7 +27,7 @@ import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { decode } from "js-base64";
 import { prettifyJsonString } from "~/util/helpers";
-import { useExecuteJQuery } from "~/api/jq/mutate/executeQuery";
+import { useExecuteJxQuery } from "~/api/jq/mutate/executeQuery";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -59,8 +59,8 @@ const JqPlaygroundPage: FC = () => {
     clearErrors,
     setValue,
     formState: { errors },
-  } = useForm<ExecuteJqueryPayloadType>({
-    resolver: zodResolver(ExecuteJqueryPayloadSchema),
+  } = useForm<ExecuteJxQueryPayloadType>({
+    resolver: zodResolver(ExecuteJxQueryPayloadSchema),
     defaultValues: {
       data: dataFromStore,
       jx: jxFromStore,
@@ -72,7 +72,7 @@ const JqPlaygroundPage: FC = () => {
     setLogs(defaultLogs);
   };
 
-  const { mutate: executeQuery, isPending } = useExecuteJQuery({
+  const { mutate: executeQuery, isPending } = useExecuteJxQuery({
     onSuccess: ({ data }) => {
       clearLogsAndOutput();
       if (data.output[0]) setOutput(decode(data.output[0]));
@@ -86,12 +86,12 @@ const JqPlaygroundPage: FC = () => {
     },
   });
 
-  const onSubmit: SubmitHandler<ExecuteJqueryPayloadType> = (params) => {
+  const onSubmit: SubmitHandler<ExecuteJxQueryPayloadType> = (params) => {
     clearLogsAndOutput();
     executeQuery(params);
   };
 
-  const onRunSnippet = (params: ExecuteJqueryPayloadType) => {
+  const onRunSnippet = (params: ExecuteJxQueryPayloadType) => {
     window.scrollTo({ top: 0, behavior: "smooth" });
     setValue("data", prettifyJsonString(params.data));
     setValue("jx", params.jx);

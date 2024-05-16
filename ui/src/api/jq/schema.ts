@@ -13,7 +13,7 @@ import { z } from "zod";
   }
  */
 
-export const JqQueryResult = z.object({
+export const JxQueryResult = z.object({
   data: z.object({
     jx: z.string().nullable(),
     data: z.string(),
@@ -22,13 +22,13 @@ export const JqQueryResult = z.object({
   }),
 });
 
-export type JqQueryResultType = z.infer<typeof JqQueryResult>;
+export type JxQueryResultType = z.infer<typeof JxQueryResult>;
 
-export const ExecuteJqueryPayloadSchema = z.object({
+export const ExecuteJxQueryPayloadSchema = z.object({
   jx: z.string(),
   data: z.string(),
 });
 
-export type ExecuteJqueryPayloadType = z.infer<
-  typeof ExecuteJqueryPayloadSchema
+export type ExecuteJxQueryPayloadType = z.infer<
+  typeof ExecuteJxQueryPayloadSchema
 >;
