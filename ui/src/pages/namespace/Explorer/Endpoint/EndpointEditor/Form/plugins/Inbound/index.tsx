@@ -10,16 +10,16 @@ import {
 import { Table, TableBody, TableCell, TableRow } from "~/design/Table";
 import { UseFormReturn, useFieldArray } from "react-hook-form";
 import {
-  availablePlugins,
-  inboundPluginTypes,
-} from "../../../schema/plugins/inbound";
-import {
   getAclConfigAtIndex,
   getEventFilterConfigAtIndex,
   getHeaderManipulationConfigAtIndex,
   getJsInboundConfigAtIndex,
   getRequestConvertConfigAtIndex,
 } from "../utils";
+import {
+  inboundPluginTypes,
+  useAvailablePlugins,
+} from "../../../schema/plugins/inbound";
 
 import { AclForm } from "./AclForm";
 import Button from "~/design/Button";
@@ -47,6 +47,7 @@ export const InboundPluginForm: FC<InboundPluginFormProps> = ({
   onSave,
 }) => {
   const { t } = useTranslation();
+  const availablePlugins = useAvailablePlugins();
   const { control, handleSubmit: handleParentSubmit } = form;
   const {
     append: addPlugin,

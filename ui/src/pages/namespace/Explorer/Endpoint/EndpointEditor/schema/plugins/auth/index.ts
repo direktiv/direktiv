@@ -1,4 +1,5 @@
-import { filterAvailablePlugins } from "../utils";
+import { isEnterprise } from "~/config/env/utils";
+import { isPluginAvailable } from "../utils";
 
 export const authPluginTypes = {
   basicAuth: { name: "basic-auth", enterpriseOnly: false },
@@ -8,6 +9,7 @@ export const authPluginTypes = {
   slackWebhookAuth: { name: "slack-webhook-auth", enterpriseOnly: false },
 } as const;
 
-export const availablePlugins = Object.values(authPluginTypes).filter(
-  filterAvailablePlugins
-);
+export const useAvailablePlugins = () =>
+  Object.values(authPluginTypes).filter((plugin) =>
+    isPluginAvailable(plugin, isEnterprise())
+  );

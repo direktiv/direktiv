@@ -15,7 +15,7 @@ import {
 } from "../../../schema/plugins/auth/webhookAuth";
 import {
   authPluginTypes,
-  availablePlugins,
+  useAvailablePlugins,
 } from "../../../schema/plugins/auth";
 import {
   getBasicAuthConfigAtIndex,
@@ -49,6 +49,7 @@ export const AuthPluginForm: FC<AuthPluginFormProps> = ({
   onSave,
 }) => {
   const { t } = useTranslation();
+  const availablePlugins = useAvailablePlugins();
   const { control, handleSubmit: handleParentSubmit } = formControls;
   const {
     append: addPlugin,
