@@ -26,6 +26,7 @@ import Examples from "./Examples";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { decode } from "js-base64";
+import { editor } from "monaco-editor";
 import { prettifyJsonString } from "~/util/helpers";
 import { useExecuteJxQuery } from "~/api/jq/mutate/executeQuery";
 import { useTheme } from "~/util/store/theme";
@@ -35,6 +36,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 const defaultJx = "jq(.)";
 const defaultData = "{}";
 const defaultLogs = "";
+
+// When any editor on this page has no scrollbar, the mouse wheel events should not be
+// unnecessarily consumed by the editor but instead allow the user to scroll the page.
+const avoidEditorToBlockScrolling: editor.IStandaloneEditorConstructionOptions =
+  { scrollbar: { alwaysConsumeMouseWheel: false } };
 
 const JqPlaygroundPage: FC = () => {
   const { t } = useTranslation();
@@ -177,6 +183,9 @@ const JqPlaygroundPage: FC = () => {
                     <Editor
                       value={field.value}
                       language="json"
+                      options={{
+                        ...avoidEditorToBlockScrolling,
+                      }}
                       onChange={(newData) => {
                         if (newData === undefined) return;
                         clearErrors();
@@ -212,6 +221,7 @@ const JqPlaygroundPage: FC = () => {
                   value={output}
                   options={{
                     readOnly: true,
+                    ...avoidEditorToBlockScrolling,
                   }}
                   theme={theme ?? undefined}
                 />
@@ -242,6 +252,7 @@ const JqPlaygroundPage: FC = () => {
                 value={logs}
                 options={{
                   readOnly: true,
+                  ...avoidEditorToBlockScrolling,
                 }}
                 theme={theme ?? undefined}
               />
