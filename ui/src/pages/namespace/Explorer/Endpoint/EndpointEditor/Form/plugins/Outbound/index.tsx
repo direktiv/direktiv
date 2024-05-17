@@ -10,8 +10,8 @@ import {
 import { Table, TableBody, TableCell, TableRow } from "~/design/Table";
 import { UseFormReturn, useFieldArray } from "react-hook-form";
 import {
-  availablePlugins,
   outboundPluginTypes,
+  useAvailablePlugins,
 } from "../../../schema/plugins/outbound";
 
 import Button from "~/design/Button";
@@ -36,6 +36,7 @@ export const OutboundPluginForm: FC<OutboundPluginFormProps> = ({
   form,
   onSave,
 }) => {
+  const availablePlugins = useAvailablePlugins();
   const { t } = useTranslation();
   const { control, handleSubmit: handleParentSubmit } = form;
   const {
