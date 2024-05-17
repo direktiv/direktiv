@@ -9,10 +9,9 @@ import (
 	"time"
 
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
+	"github.com/direktiv/direktiv/pkg/flow/states"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
-
-	"github.com/direktiv/direktiv/pkg/flow/states"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/google/uuid"
 )
