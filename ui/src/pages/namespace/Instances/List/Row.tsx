@@ -19,6 +19,7 @@ import { FC } from "react";
 import { InstanceSchemaType } from "~/api/instances/schema";
 import TooltipCopyBadge from "~/design/TooltipCopyBadge";
 import { decode } from "js-base64";
+import moment from "moment";
 import { statusToBadgeVariant } from "../utils";
 import { usePages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
@@ -29,6 +30,7 @@ const InstanceTableRow: FC<{
 }> = ({ instance }) => {
   const pages = usePages();
   const [invoker, childInstance] = instance.invoker.split(":");
+  const isValidDate = moment(instance.endedAt).isValid();
   const endedAt = useUpdatedAt(instance.endedAt);
   const createdAt = useUpdatedAt(instance.createdAt);
   const navigate = useNavigate();
@@ -133,16 +135,31 @@ const InstanceTableRow: FC<{
           </Tooltip>
         </TableCell>
         <TableCell data-testid="instance-column-ended-time">
-          <Tooltip>
-            <TooltipTrigger data-testid="tooltip-trigger">
-              {t("pages.instances.list.tableRow.realtiveTime", {
-                relativeTime: endedAt,
-              })}
-            </TooltipTrigger>
-            <TooltipContent data-testid="tooltip-content">
-              {instance.endedAt}
-            </TooltipContent>
-          </Tooltip>
+          <ConditionalWrapper
+            condition={isValidDate}
+            wrapper={(children) => (
+              <Tooltip>
+                <TooltipTrigger data-testid="tooltip-trigger">
+                  {children}
+                </TooltipTrigger>
+                <TooltipContent data-testid="tooltip-content">
+                  {instance.endedAt}
+                </TooltipContent>
+              </Tooltip>
+            )}
+          >
+            <>
+              {isValidDate ? (
+                t("pages.instances.list.tableRow.realtiveTime", {
+                  relativeTime: endedAt,
+                })
+              ) : (
+                <span className="italic">
+                  {t("pages.instances.list.tableRow.stillRunning")}
+                </span>
+              )}
+            </>
+          </ConditionalWrapper>
         </TableCell>
       </TableRow>
     </TooltipProvider>
