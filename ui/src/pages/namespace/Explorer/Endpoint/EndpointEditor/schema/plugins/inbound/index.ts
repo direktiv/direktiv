@@ -1,4 +1,5 @@
-import { filterAvailablePlugins } from "../utils";
+import { isEnterprise } from "~/config/env/utils";
+import { isPluginAvailable } from "../utils";
 
 export const inboundPluginTypes = {
   acl: {
@@ -23,6 +24,7 @@ export const inboundPluginTypes = {
   },
 } as const;
 
-export const availablePlugins = Object.values(inboundPluginTypes).filter(
-  filterAvailablePlugins
-);
+export const useAvailablePlugins = () =>
+  Object.values(inboundPluginTypes).filter((plugin) =>
+    isPluginAvailable(plugin, isEnterprise())
+  );
