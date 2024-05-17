@@ -225,7 +225,7 @@ fluent-bit:
       [FILTER]
           Name                    rewrite_tag
           Match                   input
-          Rule                    $log ^.*"track":"([^"]+)"[^}]*}$ flow.$1 true
+          Rule                    $log ^.*"track":"([^"]+)"[^}].*}$ flow.$1 true
     customParsers: |
       [PARSER]
           Name                    cri_direktiv
@@ -248,6 +248,7 @@ serviceAccount:
 # -- Frontend configuration
 frontend:
   image: "direktiv/frontend"
+  tag: ""
   command: ""
   replicas: 1
   extraVariables: []

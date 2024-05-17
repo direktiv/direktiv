@@ -2,11 +2,12 @@ import { Link, Outlet } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger } from "~/design/Tabs";
 import { Users, Workflow } from "lucide-react";
 
-import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
+import { usePages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
 
 const GatewayPage = () => {
+  const pages = usePages();
   const namespace = useNamespace();
   const { t } = useTranslation();
   const {

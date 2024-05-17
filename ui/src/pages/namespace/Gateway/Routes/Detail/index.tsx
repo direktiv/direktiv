@@ -3,11 +3,12 @@ import Header from "./Header";
 import { LogStreamingSubscriber } from "~/api/logs/query/LogStreamingSubscriber";
 import Logs from "./Logs";
 import { NoPermissions } from "~/design/Table";
-import { pages } from "~/util/router/pages";
 import { twMergeClsx } from "~/util/helpers";
+import { usePages } from "~/util/router/pages";
 import { useRoute } from "~/api/gateway/query/getRoutes";
 
 const RoutesDetailPage = () => {
+  const pages = usePages();
   const { routePath } = pages.gateway.useParams();
   const { data, isAllowed, isFetched, noPermissionMessage } = useRoute({
     routePath: routePath ?? "",

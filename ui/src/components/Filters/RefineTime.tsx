@@ -3,18 +3,15 @@ import TimePicker, { getTimeString } from "~/design/Timepicker";
 
 import { ArrowRight } from "lucide-react";
 import Button from "~/design/Button";
-import { FiltersObj } from "~/api/events/query/get";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 const RefineTime = ({
-  field,
   date: givenDate,
-  setFilter,
+  onChange,
 }: {
-  field: "AFTER" | "BEFORE";
   date: Date;
-  setFilter: (filter: FiltersObj) => void;
+  onChange: (newDate: Date) => void;
 }) => {
   const { t } = useTranslation();
   const [date, setDate] = useState<Date>(givenDate ?? new Date());
@@ -29,9 +26,8 @@ const RefineTime = ({
     }
 
     givenDate.setHours(hr, min, sec);
-    setFilter({
-      [field]: { type: field, value: givenDate },
-    });
+
+    onChange(givenDate);
   };
 
   const handleKeyDown = (event: { key: string }) => {

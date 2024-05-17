@@ -7,12 +7,13 @@ import { FC } from "react";
 import { Link } from "react-router-dom";
 import { NoPermissions } from "~/design/Table";
 import { analyzePath } from "~/util/router/utils";
-import { pages } from "~/util/router/pages";
 import { useFile } from "~/api/files/query/file";
 import { useNamespace } from "~/util/store/namespace";
+import { usePages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
 
 const ConsumerPage: FC = () => {
+  const pages = usePages();
   const { path } = pages.explorer.useParams();
   const namespace = useNamespace();
   const { segments } = analyzePath(path);

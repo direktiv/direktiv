@@ -9,8 +9,8 @@ import { Methods } from "../components/Methods";
 import Plugins from "../components/Plugins";
 import PublicPathInput from "../components/PublicPath";
 import { RouteSchemaType } from "~/api/gateway/schema";
-import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
+import { usePages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
 
 type RowProps = {
@@ -18,6 +18,7 @@ type RowProps = {
 };
 
 export const Row: FC<RowProps> = ({ route }) => {
+  const pages = usePages();
   const namespace = useNamespace();
   const { t } = useTranslation();
   const navigate = useNavigate();

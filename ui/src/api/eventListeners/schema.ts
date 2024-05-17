@@ -1,45 +1,74 @@
-import { PageinfoSchema } from "../schema";
-import { z } from "zod";
-
 /**
- * One item in example API response
-  {
-    "workflow":  "/listener.yaml",
-    "instance":  "",
-    "updatedAt":  "2023-08-09T13:56:10.364435Z",
-    "mode":  "simple",
-    "events":  [
+ * example response
+ * 
+ * {
+    "meta": {
+        "previousPage": "2024-04-29T12:19:30.814328Z",
+        "startingFrom": ""
+    },
+    "data": [
       {
-        "type":  "greetingcloudevent",
-        "filters":  {}
+        "id": "46cac590-c9c3-4d50-af49-352fb0257acf",
+        "createdAt": "2024-04-29T12:19:30.814328Z",
+        "updatedAt": "2024-04-29T12:19:30.814328Z",
+        "namespace": "foo",
+        "listeningForEventTypes": [
+            "greetingcloudevent"
+        ],
+        "triggerType": "WaitSimple",
+        "triggerInstance": "886bf89a-9ea0-4bea-b7fc-f29ac88c7e9f"
+        "eventContextFilters": [
+          {
+              "type": "take.event.two",
+              "context": {
+                  "foo": "bar"
+              }
+          },
+        ]
       }
-    ],
-    "createdAt":  "2023-08-09T13:56:10.364435Z"
+    ]
   }
  */
 
-const EventDefinition = z.object({
+import { z } from "zod";
+
+const triggerTypes = z.enum([
+  "StartAnd",
+  "WaitAnd",
+  "StartSimple",
+  "WaitSimple",
+  "StartOR",
+  "WaitOR",
+]);
+
+const EventContextFilterSchema = z.object({
   type: z.string(),
-  filters: z.object({}),
+  context: z.record(z.string(), z.string()),
 });
 
-// either listener or instance is defined (an event listener either
-// starts the workflow or resumes the specified instance)
 const EventListenerSchema = z.object({
+  id: z.string(),
   createdAt: z.string(),
-  workflow: z.string(),
-  instance: z.string(),
-  mode: z.string(),
-  events: z.array(EventDefinition),
+  updatedAt: z.string(),
+  namespace: z.string(),
+  listeningForEventTypes: z.array(z.string()),
+  triggerType: triggerTypes,
+  triggerInstance: z.string().optional(), // instance id
+  triggerWorkflow: z.string().optional(), // workflow path
+  eventContextFilters: z.array(EventContextFilterSchema),
 });
 
-export const EventListenersListSchema = z.object({
-  namespace: z.string(),
-  pageInfo: PageinfoSchema,
-  results: z.array(EventListenerSchema),
+export const EventListenersResponseSchema = z.object({
+  meta: z.object({
+    total: z.number(),
+  }),
+  data: z.array(EventListenerSchema),
 });
 
 export type EventListenerSchemaType = z.infer<typeof EventListenerSchema>;
-export type EventListenersListSchemaType = z.infer<
-  typeof EventListenersListSchema
+export type EventListenersResponseSchemaType = z.infer<
+  typeof EventListenersResponseSchema
+>;
+export type EventContextFilterSchemaType = z.infer<
+  typeof EventContextFilterSchema
 >;

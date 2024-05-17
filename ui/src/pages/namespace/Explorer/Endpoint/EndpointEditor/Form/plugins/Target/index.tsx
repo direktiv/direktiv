@@ -10,8 +10,8 @@ import {
 import { Table, TableBody, TableCell, TableRow } from "~/design/Table";
 import { UseFormReturn, useWatch } from "react-hook-form";
 import {
-  availablePlugins,
   targetPluginTypes,
+  useAvailablePlugins,
 } from "../../../schema/plugins/target";
 
 import Button from "~/design/Button";
@@ -39,6 +39,7 @@ export const TargetPluginForm: FC<TargetPluginFormProps> = ({
   form,
   onSave,
 }) => {
+  const availablePlugins = useAvailablePlugins();
   const { control, handleSubmit: handleParentSubmit } = form;
   const values = useWatch({ control });
   const { t } = useTranslation();

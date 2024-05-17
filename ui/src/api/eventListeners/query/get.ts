@@ -1,15 +1,10 @@
-import {
-  EventListenersListSchema,
-  EventListenersListSchemaType,
-} from "../schema";
-import { QueryFunctionContext, useQueryClient } from "@tanstack/react-query";
-
+import { EventListenersResponseSchema } from "../schema";
+import { QueryFunctionContext } from "@tanstack/react-query";
 import { apiFactory } from "~/api/apiFactory";
 import { eventListenerKeys } from "..";
 import { useApiKey } from "~/util/store/apiKey";
 import { useNamespace } from "~/util/store/namespace";
 import useQueryWithPermissions from "~/api/useQueryWithPermissions";
-import { useStreaming } from "~/api/streaming";
 
 const getUrl = ({
   namespace,
@@ -24,12 +19,12 @@ const getUrl = ({
 }) =>
   `${
     baseUrl ?? ""
-  }/api/namespaces/${namespace}/event-listeners?limit=${limit}&offset=${offset}`;
+  }/api/v2/namespaces/${namespace}/events/listeners?limit=${limit}&offset=${offset}`;
 
 export const getEventListeners = apiFactory({
   url: getUrl,
   method: "GET",
-  schema: EventListenersListSchema,
+  schema: EventListenersResponseSchema,
 });
 
 const fetchEventListeners = async ({
@@ -64,44 +59,5 @@ export const useEventListeners = ({
     }),
     queryFn: fetchEventListeners,
     enabled: !!namespace,
-  });
-};
-
-export const useEventListenersStream = (
-  {
-    limit,
-    offset,
-  }: {
-    limit: number;
-    offset: number;
-  },
-  { enabled = true }: { enabled?: boolean } = {}
-) => {
-  const apiKey = useApiKey();
-  const namespace = useNamespace();
-  const queryClient = useQueryClient();
-
-  if (!namespace) {
-    throw new Error("namespace is undefined");
-  }
-
-  return useStreaming({
-    url: getUrl({ namespace, offset, limit }),
-    apiKey: apiKey ?? undefined,
-    enabled,
-    schema: EventListenersListSchema,
-    onMessage: (message) => {
-      queryClient.setQueryData<EventListenersListSchemaType>(
-        eventListenerKeys.eventListenersList(namespace, {
-          apiKey: apiKey ?? undefined,
-          limit,
-          offset,
-        }),
-        // when useStreaming is invoked with offset and limit, it will always
-        // return a full page of results on every update, so it is not
-        // necessary to merge old and new data like we do in some other cases.
-        message
-      );
-    },
   });
 };

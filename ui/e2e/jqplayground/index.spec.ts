@@ -36,7 +36,7 @@ test("It will display the input as output, when the user clicks the run button w
   const expectedDefaultInput = "{}";
 
   expect(await queryInput.inputValue(), "query input is . by default").toBe(
-    "."
+    "jq(.)"
   );
 
   expect(await outputTextArea.inputValue(), "output is empty by default").toBe(
@@ -62,7 +62,8 @@ test("It will display an error when the query is not a JQ command", async ({
   page,
 }) => {
   const { btnRun, queryInput } = await getCommonElements(page);
-  await queryInput.fill("some invalid jq command");
+
+  await queryInput.fill(`"jq(\\)"`);
   await btnRun.click();
 
   const { errorContainer } = getErrorContainer(page);
@@ -75,15 +76,35 @@ test("It will display an error when the query is not a JQ command", async ({
   expect(
     await errorContainer.textContent(),
     "the error message should inform about an invalid json"
-  ).toContain(
-    'error : error executing JQ command: failed to evaluate jq/js: error executing jq query some invalid jq command: unexpected token "invalid"'
-  );
+  ).toContain("root : invalid 'jx': yaml: found unknown escape character");
 
   await queryInput.fill("changed the query");
   await expect(
     errorContainer,
     "the error message will disappear when the user changes the query"
   ).not.toBeVisible();
+});
+
+test("It will show an error in the logs, when the query is not a valid JQ command", async ({
+  page,
+}) => {
+  const { btnRun, queryInput, logsTextArea } = await getCommonElements(page);
+  await queryInput.fill("jq(\\.foo)");
+
+  await expect(
+    await logsTextArea.inputValue(),
+    "the logs are empty by default"
+  ).toBe("");
+
+  await btnRun.click();
+  await expect
+    .poll(
+      async () => await logsTextArea.inputValue(),
+      "an error message should be displayed in the logs"
+    )
+    .toBe(
+      'failure: error executing jq query \\.foo: unexpected token "\\\\"\n'
+    );
 });
 
 test("It will display an error when the input is not a valid JSON", async ({
@@ -108,7 +129,7 @@ test("It will display an error when the input is not a valid JSON", async ({
     await errorContainer.textContent(),
     "the error message should inform about an invalid json"
   ).toContain(
-    "error : invalid json data: invalid character 's' looking for beginning of value"
+    "root : invalid 'data': invalid character 's' looking for beginning of value"
   );
 
   await inputTextContainer.click();
@@ -158,7 +179,7 @@ test("It will persist the query to be available after a page reload", async ({
   const { queryInput } = await getCommonElements(page);
 
   expect(await queryInput.inputValue(), 'the query is "." by default').toBe(
-    "."
+    "jq(.)"
   );
 
   const userQueryText = ".some .query .text";
@@ -255,7 +276,7 @@ test("the user can copy the output to the clipboard when there is one", async ({
     "an empty output will disable the copy button"
   ).toBeDisabled();
 
-  const snippetToRun = "feedInput" as const;
+  const snippetToRun = "feedInput";
   const expectedOutput = expectedSnippetOutput[snippetToRun];
 
   const snippetButton = page.getByTestId(`jq-run-snippet-${snippetToRun}-btn`);
@@ -275,6 +296,45 @@ test("the user can copy the output to the clipboard when there is one", async ({
 
   expect(clipboardText, "the output was copied into the clipboard").toBe(
     expectedOutput
+  );
+});
+
+test("the user can copy the logs to the clipboard when there are some", async ({
+  page,
+}) => {
+  const { logsTextArea, queryInput, btnRun, copyLogsBtn } =
+    getCommonElements(page);
+
+  expect(
+    await logsTextArea.inputValue(),
+    `the initial logs are an empty string`
+  ).toBe("");
+
+  await expect(
+    copyLogsBtn,
+    "empty logs will disable the copy button"
+  ).toBeDisabled();
+
+  await queryInput.fill("jq(\\.)");
+  await btnRun.click();
+
+  const expectedLogs =
+    'failure: error executing jq query \\.: unexpected token "\\\\"\n';
+
+  await expect
+    .poll(
+      async () => await logsTextArea.inputValue(),
+      "an error message should be displayed in the logs"
+    )
+    .toBe(expectedLogs);
+
+  await copyLogsBtn.click();
+  const clipboardText = await page.evaluate(() =>
+    navigator.clipboard.readText()
+  );
+
+  expect(clipboardText, "the logs were copied into the clipboard").toBe(
+    expectedLogs
   );
 });
 
@@ -299,7 +359,7 @@ test("It will run every snippet succefully", async ({ page }) => {
 test("running a snippet will automatically scroll the page to the top", async ({
   page,
 }) => {
-  const snippetToRun = "stringInterpolation" as const;
+  const snippetToRun = "stringInterpolation";
   const snippetButton = page.getByTestId(`jq-run-snippet-${snippetToRun}-btn`);
 
   await snippetButton.click();
