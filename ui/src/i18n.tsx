@@ -1,24 +1,14 @@
 import Backend from "i18next-http-backend";
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
-
-// Example: we could define translations here (or import them as a module)
-// and pass them to the init object below. Our current setup uses the
-// HTTP backend instead, with translation files in /public.
-// const resources = {
-//   en: {
-//     translation: {
-//       welcomeTo: "Welcome to",
-//     }
-//   }
-// };
+import translationFilePath from "~/assets/locales/en/translation.json?url";
 
 i18n
   .use(Backend)
-  .use(initReactI18next) // passes i18n down to react-i18next
+  .use(initReactI18next)
   .init({
     backend: {
-      loadPath: `/locales/{{lng}}/{{ns}}.json`,
+      loadPath: translationFilePath,
     },
     lng: "en",
     fallbackLng: "en",
