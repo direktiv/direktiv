@@ -323,18 +323,6 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 		},
 	)
 
-	// Todo: Yassir, delete this entirely in cycle6.
-	// if srv.config.EnableEventing {
-	// 	slog.Debug("Initializing knative eventing receiver.")
-	// 	rcv, err := newEventReceiver(srv.events, srv.flow)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	//
-	// 	// starting the event receiver
-	// 	go rcv.Start()
-	// }
-
 	srv.registerFunctions()
 
 	go srv.cronPoller()

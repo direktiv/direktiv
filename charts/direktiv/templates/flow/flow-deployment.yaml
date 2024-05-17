@@ -81,12 +81,6 @@ spec:
             - name: internal
               containerPort: 7777
               protocol: TCP
-# Todo: Yassir, delete this entirely in cycle6.
-#            {{/*- if .Values.eventing.enabled */}}
-#            - name: grpcevents
-#              protocol: TCP
-#              containerPort: 3333
-#            {{/*- end */}}
           env:
           - name: DIREKTIV_DEBUG
             value: {{ .Values.flow.debug | quote }}
@@ -134,9 +128,6 @@ spec:
           {{- end }}
           - name: DIREKTIV_OPEN_TELEMETRY_BACKEND
             value: {{ include "direktiv.opentelemetry-backend" . }}
-# Todo: Yassir, delete this entirely in cycle6.
-#          - name: DIREKTIV_ENABLE_EVENTING
-#            value: {{/* .Values.eventing.enabled | quote */}}
           - name: DIREKTIV_KNATIVE_SERVICE_ACCOUNT
             value: "{{ include "direktiv.serviceAccountName" . }}-functions-pod"
           - name: DIREKTIV_KNATIVE_NAMESPACE

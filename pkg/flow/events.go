@@ -545,13 +545,6 @@ func (events *events) ReplayCloudevent(ctx context.Context, ns *datastore.Namesp
 		return err
 	}
 
-	// Todo: Yassir, delete this entirely in cycle6.
-	// if eventing is configured, event goes to knative event service
-	// if it is from knative sink not
-	// if events.server.config.EnableEventing && ctx.Value(EventingCtxKeySource) == nil {
-	// 	PublishKnativeEvent(event)
-	// }
-
 	return nil
 }
 
@@ -595,13 +588,6 @@ func (events *events) BroadcastCloudevent(ctx context.Context, ns *datastore.Nam
 			}
 		}
 	}
-
-	// Todo: Yassir, delete this entirely in cycle6.
-	// if eventing is configured, event goes to knative event service
-	// if it is from knative sink not
-	// if events.server.config.EnableEventing && ctx.Value(EventingCtxKeySource) == nil {
-	// 	PublishKnativeEvent(event)
-	// }
 
 	return nil
 }

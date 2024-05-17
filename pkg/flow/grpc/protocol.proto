@@ -42,8 +42,3 @@ service Internal {
 	rpc SetInstanceVariableParcels (stream SetVariableInternalRequest) returns (SetVariableInternalResponse) {}
 	rpc FileVariableParcels (VariableInternalRequest) returns (stream VariableInternalResponse) {}
 }
-
-// Todo: Yassir, delete this entirely in cycle6.
-//service Eventing {
-//	rpc RequestEvents (EventingRequest) returns (stream CloudEvent) {}
-//}

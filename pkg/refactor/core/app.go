@@ -29,9 +29,6 @@ type Config struct {
 	Prometheus    string `env:"DIREKTIV_PROMETHEUS_BACKEND"`
 	OpenTelemetry string `env:"DIREKTIV_OPEN_TELEMETRY_BACKEND"`
 
-	// Todo: Yassir, delete this entirely in cycle6.
-	// EnableEventing bool   `env:"DIREKTIV_ENABLE_EVENTING"`
-
 	EnableDocker bool `env:"DIREKITV_ENABLE_DOCKER"`
 
 	KnativeServiceAccount string `env:"DIREKTIV_KNATIVE_SERVICE_ACCOUNT"`
