@@ -1,4 +1,8 @@
-import { JqQueryResult, JqQueryResultType } from "../schema";
+import {
+  ExecuteJxQueryPayloadType,
+  JxQueryResult,
+  JxQueryResultType,
+} from "../schema";
 
 import { apiFactory } from "~/api/apiFactory";
 import { encode } from "js-base64";
@@ -6,34 +10,28 @@ import { getMessageFromApiError } from "~/api/errorHandling";
 import { useApiKey } from "~/util/store/apiKey";
 import useMutationWithPermissions from "~/api/useMutationWithPermissions";
 
-export const executeJquery = apiFactory<{ query: string; data: string }>({
-  url: ({ baseUrl }: { baseUrl?: string }) => `${baseUrl ?? ""}/api/jq`,
+export const executeJxQuery = apiFactory<ExecuteJxQueryPayloadType>({
+  url: ({ baseUrl }: { baseUrl?: string }) => `${baseUrl ?? ""}/api/v2/jx`,
   method: "POST",
-  schema: JqQueryResult,
+  schema: JxQueryResult,
 });
 
-export const useExecuteJQuery = ({
+export const useExecuteJxQuery = ({
   onSuccess,
   onError,
 }: {
-  onSuccess?: (data: JqQueryResultType) => void;
+  onSuccess?: (data: JxQueryResultType) => void;
   onError?: (error?: string) => void;
 } = {}) => {
   const apiKey = useApiKey();
   return useMutationWithPermissions({
-    mutationFn: ({
-      query,
-      inputJsonString,
-    }: {
-      query: string;
-      inputJsonString: string;
-    }) =>
-      executeJquery({
+    mutationFn: ({ data, jx }: ExecuteJxQueryPayloadType) =>
+      executeJxQuery({
         apiKey: apiKey ?? undefined,
         urlParams: {},
         payload: {
-          query,
-          data: encode(inputJsonString),
+          jx: encode(jx),
+          data: encode(data),
         },
       }),
     onSuccess: (res) => {
