@@ -1007,6 +1007,7 @@
       "queryPlaceholder": "Enter your jq query here...",
       "input": "Input",
       "output": "Output",
+      "logs": "Logs",
       "submitBtn": "Run query",
       "examples": {
         "title": "Examples",
