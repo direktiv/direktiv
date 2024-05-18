@@ -136,7 +136,7 @@ jobs:
 
 
       - name: Cache Docker layers
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: /tmp/.buildx-cache
           key: api-${{ env.CURRENT_DATE }}-${{ runner.os }}-buildx-x
@@ -190,7 +190,7 @@ jobs:
         run: echo "CURRENT_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
 
       - name: Cache Docker layers
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: /tmp/.buildx-cache
           key: ui-${{ env.CURRENT_DATE }}-${{ runner.os }}-buildx-x
