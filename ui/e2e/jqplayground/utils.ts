@@ -1,6 +1,5 @@
 import { Page } from "@playwright/test";
 import exampleSnippets from "~/pages/namespace/JqPlayground/Examples/exampleSnippets";
-import { prettifyJsonString } from "~/util/helpers";
 
 export const getCommonElements = (page: Page) => {
   const queryInput = page.getByTestId("jq-query-input");
@@ -11,18 +10,23 @@ export const getCommonElements = (page: Page) => {
 
   const copyInputBtn = page.getByTestId("copy-input-btn");
   const copyOutputBtn = page.getByTestId("copy-output-btn");
+  const copyLogsBtn = page.getByTestId("copy-logs-btn");
 
   const inputTextContainer = page.getByTestId("jq-input-editor");
   const inputTextArea = inputTextContainer.getByRole("textbox");
 
+  const logsTextArea = page.getByTestId("jq-logs-editor").getByRole("textbox");
+
   return {
     copyInputBtn,
     copyOutputBtn,
+    copyLogsBtn,
     queryInput,
     btnRun,
     outputTextArea,
     inputTextContainer,
     inputTextArea,
+    logsTextArea,
   };
 };
 
@@ -47,7 +51,7 @@ export const scrolledToTheTop = async (page: Page) =>
 type SnippetKeys = (typeof exampleSnippets)[number]["key"];
 
 const objectToPrettifiedString = (object: unknown) =>
-  prettifyJsonString(JSON.stringify(object));
+  JSON.stringify(object, null, 2);
 
 export const expectedSnippetOutput: Record<SnippetKeys, string> = {
   unchangedInput: objectToPrettifiedString({

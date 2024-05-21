@@ -15,9 +15,37 @@ env:
   IS_GITHUB_ACTIONS: true
 
 jobs:
+  check-cache:
+    runs-on: ubuntu-latest
+    outputs:
+      backend_hash: ${{ steps.step1.outputs.backend_hash }}
+      backend_cache_hit: ${{ steps.step1.outputs.backend_cache_hit }}
+
+      ui_hash: ${{ steps.step1.outputs.ui_hash }}
+      ui_cache_hit: ${{ steps.step1.outputs.ui_cache_hit }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: step1
+        run: |
+          set +e
+          export backend_hash=checksum-${{ hashFiles('cmd', 'pkg', 'go.mod', 'go.sum') }};
+          echo "backend_hash=$backend_hash" >> $GITHUB_OUTPUT;
+          docker manifest inspect ghcr.io/direktiv/direktiv:$backend_hash;
+          echo "backend_cache_hit=$?" >> $GITHUB_OUTPUT;
+
+          export ui_hash=checksum-${{ hashFiles('ui') }};
+          echo "ui_hash=$ui_hash" >> $GITHUB_OUTPUT;
+          docker manifest inspect ghcr.io/direktiv/direktiv-ui:$ui_hash;
+          echo "ui_cache_hit=$?" >> $GITHUB_OUTPUT;
+
+          cat $GITHUB_OUTPUT;
+
   backend-license:
     runs-on: ubuntu-latest
-
+    needs: [check-cache]
+    if: needs.check-cache.outputs.backend_cache_hit == '1'
     steps:
       - uses: actions/checkout@v4
 
@@ -31,6 +59,8 @@ jobs:
 
   backend-lint:
     runs-on: ubuntu-latest
+    needs: [check-cache]
+    if: needs.check-cache.outputs.backend_cache_hit == '1'
 
     steps:
       - uses: actions/checkout@v4
@@ -48,6 +78,8 @@ jobs:
 
   backend-test:
     runs-on: ubuntu-latest
+    needs: [check-cache]
+    if: needs.check-cache.outputs.backend_cache_hit == '1'
 
     steps:
       - uses: actions/checkout@v4
@@ -65,15 +97,12 @@ jobs:
           DIREKTIV_APP: flow
 
   backend-build:
-    needs: [ backend-license, backend-lint, backend-test ]
+    needs: [ check-cache, backend-license, backend-lint, backend-test ]
     runs-on: ubuntu-latest
+    if: needs.check-cache.outputs.backend_cache_hit == '1'
     permissions:
       contents: read
       packages: write
-
-    defaults:
-      run:
-        working-directory: ui
 
     steps:
       - uses: actions/checkout@v4
@@ -94,6 +123,24 @@ jobs:
             type=ref,event=branch
             type=ref,event=pr
             type=sha,format=long
+            type=raw,value=${{ needs.check-cache.outputs.backend_hash }}
+
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          buildkitd-flags: --debug
+
+      - name: Set current date
+        run: echo "CURRENT_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+
+
+      - name: Cache Docker layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: api-${{ env.CURRENT_DATE }}-${{ runner.os }}-buildx-x
+
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
@@ -102,16 +149,16 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
 
   ui-build:
     runs-on: ubuntu-latest
+    needs: [check-cache]
+    if: needs.check-cache.outputs.ui_cache_hit == '1'
     permissions:
       contents: read
       packages: write
-
-    defaults:
-      run:
-        working-directory: ui
 
     steps:
       - uses: actions/checkout@v4
@@ -132,6 +179,22 @@ jobs:
             type=ref,event=branch
             type=ref,event=pr
             type=sha,format=long
+            type=raw,value=${{ needs.check-cache.outputs.ui_hash }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          buildkitd-flags: --debug
+
+      - name: Set current date
+        run: echo "CURRENT_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+
+      - name: Cache Docker layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ui-${{ env.CURRENT_DATE }}-${{ runner.os }}-buildx-x
+
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
@@ -140,9 +203,12 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
 
-  backend-e2e:
-    needs: [ backend-build ]
+  e2e:
+    needs: [ check-cache, ui-build, backend-build ]
+    if: ${{ always() }}
     runs-on: ubuntu-latest
 
     timeout-minutes: 18
@@ -170,119 +236,6 @@ jobs:
           - type: api
             suit: services
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup k3s
-        run: curl -sfL https://get.k3s.io | sh -s - --disable traefik --write-kubeconfig-mode=644
-
-      - name: Install Helm
-        run: curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-
-      - name: Create namespace for the DB
-        run: kubectl create ns postgres
-
-      - name: Install Postgres using Percona Operator
-        run: |
-          helm repo add percona https://percona.github.io/percona-helm-charts/
-          helm install --create-namespace -n postgres pg-operator percona/pg-operator --wait
-          kubectl apply -f https://raw.githubusercontent.com/direktiv/direktiv/main/scripts/kubernetes/install/db/basic.yaml
-
-      - name: Install Knative
-        run: |
-          kubectl apply -f https://github.com/knative/operator/releases/download/knative-v1.12.2/operator.yaml
-          kubectl create ns knative-serving
-          kubectl apply -f https://raw.githubusercontent.com/direktiv/direktiv/main/scripts/kubernetes/install/knative/basic.yaml
-          kubectl apply --filename https://github.com/knative/net-contour/releases/download/knative-v1.11.1/contour.yaml
-          kubectl delete namespace contour-external
-
-      - name: Wait for Direktiv pods to be ready
-        run: |
-          sleep 1
-          kubectl wait -n postgres --for=condition=Ready pod -l app.kubernetes.io/instance=direktiv-cluster --timeout=120s
-
-      - name: Generate dev.yaml file with database credentials
-        run: |
-          DB_HOST=$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "host"}}' | base64 --decode)
-          DB_PORT=$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "port"}}' | base64 --decode)
-          DB_USER=$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "user"}}' | base64 --decode)
-          DB_PASSWORD=$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "password"}}' | base64 --decode)
-          DB_NAME=$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "dbname"}}' | base64 --decode)
-          
-          cat <<EOF > dev.yaml
-          pullPolicy: IfNotPresent
-          registry: ghcr.io
-          image: direktiv/direktiv
-          tag: sha-${{ github.sha }}
-          flow:
-            logging: json
-          database:
-            host: "$DB_HOST"
-            port: $DB_PORT
-            user: "$DB_USER"
-            password: "$DB_PASSWORD"
-            name: "$DB_NAME"
-            sslmode: require
-          EOF
-          cat dev.yaml
-      - name: Install Direktiv chart
-        run: helm install direktiv -f dev.yaml ./charts/direktiv/
-
-      - name: Wait for Direktiv pods to be ready
-        run: |
-          sleep 1
-          kubectl wait --for=condition=Ready pod -l app.kubernetes.io/instance=direktiv --timeout=120s
-
-      - name: Set Environment Variables
-        run: echo "DIREKTIV_HOST=127.0.0.1:80" >> $GITHUB_ENV
-
-      - name: Wait until API is healthy
-        run: |
-          endpoint="http://${{ env.DIREKTIV_HOST }}/api/v2/status"
-
-          for attempt in {1..20}; do
-            status_code=$(curl -s -o /dev/null -w "%{http_code}" $endpoint)
-            echo "API status code: $status_code"
-
-            [ $status_code -eq 200 ] && { echo "API ready"; exit 0; }
-            sleep 1
-          done
-
-          echo "API failed to be healthy"
-          kubectl get pods 
-          kubectl logs deployments/direktiv-flow
-          exit 1
-      - name: Run API E2E tests
-        if: matrix.sections.type == 'api'
-        run: |
-          npm -prefix tests run all -- ${{ matrix.sections.suit }}/
-        env:
-          DIREKTIV_HOST: ${{ env.DIREKTIV_HOST }}
-          GITHUB_ACTIONS: true
-
-      - name: Run Playwrite E2E tests
-        if: matrix.sections.type == 'playwright'
-        run: |
-          PLAYWRIGHT_SHARD=${{ matrix.sections.suit }} make docker-e2e-playwright
-
-      - name: Show logs
-        run: |
-          kubectl logs deployments/direktiv-flow | tail -n 100
-
-      - name: Cleanup test cache
-        run: npm cache clean --force
-
-  ui-e2e:
-    needs: [ ui-build, backend-build ]
-    runs-on: ubuntu-latest
-
-    timeout-minutes: 18
-    strategy:
-      fail-fast: false
-      max-parallel: 20
-      matrix:
-        sections:
           - type: playwright
             suit: "1/4"
           - type: playwright
@@ -336,12 +289,12 @@ jobs:
           pullPolicy: IfNotPresent
           registry: ghcr.io
           image: direktiv/direktiv
-          tag: sha-${{ github.sha }}
+          tag: ${{ needs.check-cache.outputs.backend_hash }}
           flow:
             logging: json
           frontend:
             image: direktiv/direktiv-ui
-            tag: sha-${{ github.sha }}
+            tag: ${{ needs.check-cache.outputs.ui_hash }}
           database:
             host: "$DB_HOST"
             port: $DB_PORT
@@ -354,31 +307,47 @@ jobs:
       - name: Install Direktiv chart
         run: helm install direktiv -f dev.yaml ./charts/direktiv/
 
-      - name: Wait for Direktiv pods to be ready
-        run: |
-          sleep 1
-          kubectl wait --for=condition=Ready pod -l app.kubernetes.io/instance=direktiv --timeout=120s
-          kubectl wait --for=condition=Ready pod -l app.kubernetes.io/name=direktiv-frontend --timeout=120s
-
       - name: Set Environment Variables
         run: echo "DIREKTIV_HOST=127.0.0.1:80" >> $GITHUB_ENV
 
       - name: Wait until API is healthy
         run: |
-          endpoint="http://${{ env.DIREKTIV_HOST }}/api/v2/status"
-
-          for attempt in {1..20}; do
-            status_code=$(curl -s -o /dev/null -w "%{http_code}" $endpoint)
-            echo "API status code: $status_code"
-
-            [ $status_code -eq 200 ] && { echo "API ready"; exit 0; }
-            sleep 1
+          endpoint="http://${{ env.DIREKTIV_HOST }}/api/v2/status";
+          for attempt in {1..20}
+          do
+            status_code=$(curl -s -o /dev/null -w "%{http_code}" $endpoint || true);
+            echo "API status code: $status_code";
+            if [ $status_code -eq 200 ]
+            then
+              echo "API ready" && exit 0;  
+            fi
+            sleep 1;
           done
+          
+          echo "API failed to be healthy";
+          kubectl get pods;
+          kubectl logs deployments/direktiv-flow;
+          exit 1;
 
-          echo "API failed to be healthy"
-          kubectl get pods 
-          kubectl logs deployments/direktiv-flow
-          exit 1
+      - name: Wait until UI is healthy
+        run: |
+          endpoint="http://${{ env.DIREKTIV_HOST }}";
+          for attempt in {1..20}
+          do
+            status_code=$(curl -s -o /dev/null -w "%{http_code}" $endpoint || true);
+            echo "API status code: $status_code";
+            if [ $status_code -eq 200 ]
+            then
+              echo "UI ready" && exit 0;  
+            fi
+            sleep 1;
+          done
+          
+          echo "UI failed to be healthy";
+          kubectl get pods;
+          kubectl describe po direktiv-frontend;
+          exit 1;
+
       - name: Run API E2E tests
         if: matrix.sections.type == 'api'
         run: |

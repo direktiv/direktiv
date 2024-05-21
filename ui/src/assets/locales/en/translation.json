@@ -475,19 +475,19 @@
           "filterButton": "Filter",
           "placeholder": {
             "mainMenu": "Type or select a field...",
-            "TYPE": "cloud.event.type",
-            "TEXT": "search cloudevent content"
+            "typeContains": "cloud.event.type",
+            "eventContains": "search cloudevent content"
           },
           "field": {
-            "TYPE": "type",
-            "TEXT": "search content",
-            "AFTER": "received after",
-            "BEFORE": "received before"
+            "typeContains": "type contains",
+            "eventContains": "content contains",
+            "receivedAfter": "received after",
+            "receivedBefore": "received before"
           },
           "menuHeading": {
             "main": "Select filter",
-            "TYPE": "filter by type",
-            "TEXT": "search cloudevent content"
+            "typeContains": "type contains",
+            "eventContains": "content contains"
           }
         }
       },
@@ -498,7 +498,8 @@
           "type": "type",
           "mode": "mode",
           "createdAt": "updated",
-          "eventTypes": "cloud event type"
+          "eventTypes": "cloud event type",
+          "contextFilters": "context filters"
         },
         "empty": {
           "noResults": "No event listeners found"
@@ -508,7 +509,9 @@
           "type": {
             "workflow": "start workflow",
             "instance": "resume instance"
-          }
+          },
+          "contextFilters": "{{count}} filters",
+          "contextFilters_zero": "-"
         }
       }
     },
@@ -552,6 +555,7 @@
         },
         "tableRow": {
           "realtiveTime": "{{relativeTime}} ago",
+          "stillRunning": "still running",
           "openWorkflowTooltip": "click to open workflow {{name}}"
         },
         "filter": {
@@ -1004,6 +1008,7 @@
       "queryPlaceholder": "Enter your jq query here...",
       "input": "Input",
       "output": "Output",
+      "logs": "Logs",
       "submitBtn": "Run query",
       "examples": {
         "title": "Examples",
@@ -1241,8 +1246,8 @@
     },
     "filters": {
       "menuHeading": {
-        "AFTER": "filter by received after",
-        "BEFORE": "filter by received before"
+        "receivedAfter": "filter by received after",
+        "receivedBefore": "filter by received before"
       }
     },
     "timepicker": {

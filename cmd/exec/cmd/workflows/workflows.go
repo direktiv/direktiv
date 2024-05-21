@@ -9,10 +9,10 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 
 	root "github.com/direktiv/direktiv/cmd/exec/cmd"
 	"github.com/spf13/cobra"
@@ -152,7 +152,13 @@ func updateRemoteWorkflow(path string, localPath string) error {
 	remoteDir := filepath.Dir(path)
 	remoteName := filepath.Base(path)
 
-	workflowCreateUrl := fmt.Sprintf("%s/files/%s", root.UrlPrefixV2, remoteDir)
+	remoteDir = filepath.Join("/", remoteDir)
+
+	if remoteDir == "/" {
+		remoteDir = ""
+	}
+
+	workflowCreateUrl := fmt.Sprintf("%s/files%s", root.UrlPrefixV2, remoteDir)
 	workflowUpdateUrl := fmt.Sprintf("%s/files/%s", root.UrlPrefixV2, path)
 
 	err := recurseMkdirParent(remoteDir)
@@ -185,7 +191,7 @@ func updateRemoteWorkflow(path string, localPath string) error {
 		log.Fatalf("Failed to load workflow file: %v", err)
 	}
 
-	doRequest := func(updateURL, methodIn string, dataIn []byte) (int, string, error) {
+	doRequest := func(updateURL, methodIn string) (int, string, error) {
 		req, err := http.NewRequestWithContext(
 			context.Background(),
 			methodIn,
@@ -213,11 +219,9 @@ func updateRemoteWorkflow(path string, localPath string) error {
 		return resp.StatusCode, string(respBody), nil
 	}
 
-	// code, err := doRequest(urlUpdate, http.MethodPut)
-	// if code == http.StatusNotFound {
-	code, body, err := doRequest(workflowCreateUrl, http.MethodPost, data)
+	code, body, err := doRequest(workflowCreateUrl, http.MethodPost)
 	if code != http.StatusOK {
-		code, body, err = doRequest(workflowUpdateUrl, http.MethodPatch, data)
+		code, body, err = doRequest(workflowUpdateUrl, http.MethodPatch)
 	}
 
 	if err != nil {
@@ -237,6 +241,10 @@ func updateRemoteWorkflow(path string, localPath string) error {
 
 func recurseMkdirParent(path string) error {
 	path = strings.Trim(path, "/")
+
+	if path == "" {
+		return nil
+	}
 
 	dirs := strings.Split(path, "/")
 
@@ -323,14 +331,15 @@ The Workflow can be executed with input data by passing it via stdin or the inpu
 			cmd.Printf("skipping updating namespace: '%s' workflow: '%s'\n", root.GetNamespace(), path)
 		}
 
-		urlExecute := fmt.Sprintf("%s/tree/%s?op=execute&ref=latest", root.UrlPrefix, strings.TrimPrefix(path, "/"))
+		urlExecute := fmt.Sprintf("%s/instances?path=%s", root.UrlPrefixV2, url.QueryEscape(strings.TrimPrefix(path, "/")))
+
 		instanceDetails, err := executeWorkflow(urlExecute)
 		if err != nil {
 			root.Fail(cmd, "Failed to execute workflow: %v\n", err)
 		}
-		cmd.Printf("Successfully Executed Instance: %s\n", instanceDetails.Instance)
-		urlOutput := fmt.Sprintf("%s/instances/%s/output", root.UrlPrefix, instanceDetails.Instance)
-		urlsse := fmt.Sprintf("%s/logs/subscribe?instance=%s", root.UrlPrefixV2, instanceDetails.Instance) // Construct SSE log subscription URL
+		cmd.Printf("Successfully Executed Instance: %s\n", instanceDetails.Data.ID)
+		urlOutput := fmt.Sprintf("%s/instances/%s/output", root.UrlPrefixV2, instanceDetails.Data.ID)
+		urlsse := fmt.Sprintf("%s/logs/subscribe?instance=%s", root.UrlPrefixV2, instanceDetails.Data.ID) // Construct SSE log subscription URL
 		out := func(msg string) {
 			cmd.Println(msg)
 		}
@@ -356,7 +365,9 @@ The Workflow can be executed with input data by passing it via stdin or the inpu
 }
 
 type executeResponse struct {
-	Instance string `json:"instance,omitempty"`
+	Data struct {
+		ID string `json:"id,omitempty"`
+	} `json:"data,omitempty"`
 }
 
 func executeWorkflow(url string) (executeResponse, error) {
@@ -422,17 +433,19 @@ func executeWorkflow(url string) (executeResponse, error) {
 }
 
 type instanceOutput struct {
-	Namespace string `json:"namespace"`
-	Instance  struct {
-		CreatedAt    time.Time `json:"createdAt"`
-		UpdatedAt    time.Time `json:"updatedAt"`
-		ID           string    `json:"id"`
-		As           string    `json:"as"`
-		Status       string    `json:"status"`
-		ErrorCode    string    `json:"errorCode"`
-		ErrorMessage string    `json:"errorMessage"`
-	} `json:"instance"`
-	Data string `json:"data"`
+	// Namespace string `json:"namespace"`
+	// Instance  struct {
+	// 	CreatedAt    time.Time `json:"createdAt"`
+	// 	UpdatedAt    time.Time `json:"updatedAt"`
+	// 	ID           string    `json:"id"`
+	// 	As           string    `json:"as"`
+	// 	Status       string    `json:"status"`
+	// 	ErrorCode    string    `json:"errorCode"`
+	// 	ErrorMessage string    `json:"errorMessage"`
+	// } `json:"instance"`
+	Data struct {
+		Output string `json:"output"`
+	} `json:"data"`
 }
 
 func getOutput(url string) ([]byte, error) {
@@ -479,7 +492,8 @@ func getOutput(url string) ([]byte, error) {
 		return nil, err
 	}
 
-	outputStr, err := base64.StdEncoding.DecodeString(output.Data)
+	outputStr, err := base64.StdEncoding.DecodeString(output.Data.Output)
+
 	return outputStr, err
 }
 

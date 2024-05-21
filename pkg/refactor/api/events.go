@@ -27,12 +27,11 @@ type eventsController struct {
 	startWorkflow events.WorkflowStart
 }
 
-// func (engine *engine) StartWorkflow(ctx context.Context, namespace, path string, input []byte) (*instancestore.InstanceData, error) {
-
 func (c *eventsController) mountEventHistoryRouter(r chi.Router) {
 	r.Get("/", c.listEvents)         // Retrieve a list of events
 	r.Get("/subscribe", c.subscribe) // Retrieve a event updates via sse
 	r.Get("/{eventID}", c.getEvent)  // Get details of a single event
+	r.Post("/replay/{eventID}", c.replay)
 }
 
 func (c *eventsController) mountEventListenerRouter(r chi.Router) {
@@ -46,7 +45,7 @@ func (c *eventsController) mountBroadcast(r chi.Router) {
 
 func (c *eventsController) listEvents(w http.ResponseWriter, r *http.Request) {
 	ns := extractContextNamespace(r)
-	starting := time.Now().Format(time.RFC3339Nano)
+	starting := time.Now().UTC().Format(time.RFC3339Nano)
 	if v := r.URL.Query().Get("before"); v != "" {
 		starting = v
 	}
@@ -60,7 +59,13 @@ func (c *eventsController) listEvents(w http.ResponseWriter, r *http.Request) {
 		}
 		t = co
 	}
-	params := extractEventFilterParams(r)
+	params, err := extractEventFilterParams(r)
+	if err != nil {
+		writeBadrequestError(w, err)
+
+		return
+	}
+
 	data, err := c.store.EventHistory().GetOld(r.Context(), ns.Name, t, params...)
 	if err != nil {
 		writeInternalError(w, err)
@@ -104,6 +109,22 @@ func (c *eventsController) getEvent(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, d)
 }
 
+func (c *eventsController) replay(w http.ResponseWriter, r *http.Request) {
+	eventID := ""
+	ns := extractContextNamespace(r)
+
+	if v := chi.URLParam(r, "eventID"); v != "" {
+		eventID = v
+	}
+	d, err := c.store.EventHistory().GetByID(r.Context(), eventID)
+	if err != nil {
+		writeInternalError(w, err)
+
+		return
+	}
+	processEvents(c, r, ns, []event.Event{*d.Event})
+}
+
 func (c *eventsController) subscribe(w http.ResponseWriter, r *http.Request) {
 	// cursor is set to multiple seconds before the current time to mitigate data loss
 	// that may occur due to delays between submitting and processing the request, or when a sequence of client requests is necessary.
@@ -114,7 +135,10 @@ func (c *eventsController) subscribe(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
 
-	params := extractEventFilterParams(r)
+	params, err := extractEventFilterParams(r)
+	if err != nil {
+		writeInternalError(w, err)
+	}
 
 	// Create a context with cancellation
 	ctx, cancel := context.WithCancel(r.Context())
@@ -178,26 +202,25 @@ func (c *eventsController) getEventListener(w http.ResponseWriter, r *http.Reque
 
 func (c *eventsController) listEventListeners(w http.ResponseWriter, r *http.Request) {
 	ns := extractContextNamespace(r)
-	starting := r.URL.Query().Get("before")
+	limit, err := strconv.Atoi(r.URL.Query().Get("limit"))
+	if err != nil {
+		writeBadrequestError(w, err)
 
-	t := time.Now().UTC()
-	if starting != "" {
-		co, err := time.Parse(time.RFC3339Nano, starting)
-		if err != nil {
-			writeInternalError(w, err)
-
-			return
-		}
-		t = co
+		return
 	}
-	data, err := c.store.EventListener().GetOld(r.Context(), ns.Name, t)
+	offset, err := strconv.Atoi(r.URL.Query().Get("offset"))
+	if err != nil {
+		writeBadrequestError(w, err)
+
+		return
+	}
+	data, count, err := c.store.EventListener().Get(r.Context(), ns.ID, limit, offset)
 	if err != nil {
 		writeInternalError(w, err)
 		return
 	}
 	metaInfo := map[string]any{
-		"previousPage": nil, // setting them to nil make ensure matching the specicied types for the clients
-		"startingFrom": nil,
+		"total": count,
 	}
 	if len(data) == 0 {
 		writeJSONWithMeta(w, []*datastore.Event{}, metaInfo)
@@ -210,12 +233,6 @@ func (c *eventsController) listEventListeners(w http.ResponseWriter, r *http.Req
 		res[i] = l
 	}
 	slices.Reverse(res)
-	var previousPage interface{} = res[0].CreatedAt.UTC().Format(time.RFC3339Nano)
-
-	metaInfo = map[string]any{
-		"previousPage": previousPage,
-		"startingFrom": starting,
-	}
 
 	writeJSONWithMeta(w, res, metaInfo)
 }
@@ -228,8 +245,8 @@ func convertListenersForAPI(listener *datastore.EventListener) eventListenerEntr
 		Namespace:              listener.Namespace,
 		ListeningForEventTypes: listener.ListeningForEventTypes,
 	}
-	if len(listener.EventContextFilter) != 0 {
-		e.GlobGatekeepers = listener.EventContextFilter
+	if len(listener.EventContextFilters) != 0 {
+		e.EventContextFilters = listener.EventContextFilters
 	}
 	if len(listener.ReceivedEventsForAndTrigger) != 0 {
 		e.ReceivedEventsForAndTrigger = listener.ReceivedEventsForAndTrigger
@@ -269,19 +286,15 @@ func (c *eventsController) registerCoudEvent(w http.ResponseWriter, r *http.Requ
 	// Check if the content type indicates a batch of CloudEvents
 	if strings.HasPrefix(cType, "application/cloudevents-batch+json") {
 		processor = extractBatchevent
-	}
-
-	// Check if the content type indicates a single CloudEvent
-	if strings.HasPrefix(cType, "application/json") {
-		s := r.Header.Get("Ce-Type")
-		if s == "" {
-			// some weird magic for historical reasons...
-			r.Header.Set("Content-Type", "application/cloudevents+json; charset=UTF-8")
-		}
+	} else if strings.HasPrefix(cType, "application/json") {
+		processor = extractEvent
+	} else if strings.HasPrefix(cType, "application/cloudevents+json") {
 		processor = extractEvent
 	} else {
 		// If content type is not recognized, return an error
 		http.Error(w, "Unsupported Content-Type", http.StatusUnsupportedMediaType)
+
+		return
 	}
 	evs, err := processor(b)
 	if err != nil {
@@ -289,20 +302,23 @@ func (c *eventsController) registerCoudEvent(w http.ResponseWriter, r *http.Requ
 
 		return
 	}
+	dEvs := convertEvents(*ns, evs...)
+	c.store.EventHistory().Append(r.Context(), dEvs)
+
+	processEvents(c, r, ns, evs)
+	// status ok here.
+}
+
+func processEvents(c *eventsController, r *http.Request, ns *datastore.Namespace, evs []event.Event) {
 	engine := events.EventEngine{
 		WorkflowStart:       c.startWorkflow,
 		WakeInstance:        c.wakeInstance,
 		GetListenersByTopic: c.store.EventListenerTopics().GetListeners,
 		UpdateListeners:     c.store.EventListener().UpdateOrDelete,
 	}
-
-	dEvs := convertEvents(*ns, evs...)
-	c.store.EventHistory().Append(r.Context(), dEvs)
-
 	engine.ProcessEvents(r.Context(), ns.ID, evs, func(template string, args ...interface{}) {
 		slog.Error(fmt.Sprintf(template, args...))
 	})
-	// status ok here.
 }
 
 func extractBatchevent(data []byte) ([]cloudevents.Event, error) {
@@ -368,48 +384,73 @@ func validateEvent(event cloudevents.Event) (cloudevents.Event, error) {
 	return event, nil
 }
 
-func extractEventFilterParams(r *http.Request) []string {
+func extractEventFilterParams(r *http.Request) ([]string, error) {
 	params := make([]string, 0)
 	if v := chi.URLParam(r, "namespace"); v != "" {
 		params = append(params, "namespace")
 		params = append(params, v)
 	}
-	if v := chi.URLParam(r, "createdBefore"); v != "" {
+	if v := r.URL.Query().Get("createdBefore"); v != "" {
 		params = append(params, "created_before")
-		params = append(params, v)
+		t, err := parseTime(v)
+		if err != nil {
+			return nil, err
+		}
+		params = append(params, t)
 	}
-	if v := chi.URLParam(r, "createdAfter"); v != "" {
+	if v := r.URL.Query().Get("createdAfter"); v != "" {
 		params = append(params, "created_after")
-		params = append(params, v)
+		t, err := parseTime(v)
+		if err != nil {
+			return nil, err
+		}
+		params = append(params, t)
 	}
-	if v := chi.URLParam(r, "receivedBefore"); v != "" {
+	if v := r.URL.Query().Get("receivedBefore"); v != "" {
 		params = append(params, "received_before")
-		params = append(params, v)
+		t, err := parseTime(v)
+		if err != nil {
+			return nil, err
+		}
+		params = append(params, t)
 	}
-	if v := chi.URLParam(r, "receivedAfter"); v != "" {
+	if v := r.URL.Query().Get("receivedAfter"); v != "" {
 		params = append(params, "received_after")
-		params = append(params, v)
+		t, err := parseTime(v)
+		if err != nil {
+			return nil, err
+		}
+		params = append(params, t)
 	}
-	if v := chi.URLParam(r, "eventContains"); v != "" {
+	if v := r.URL.Query().Get("eventContains"); v != "" {
 		params = append(params, "event_contains")
 		params = append(params, v)
 	}
-	if v := chi.URLParam(r, "typeContains"); v != "" {
+	if v := r.URL.Query().Get("typeContains"); v != "" {
 		params = append(params, "type_contains")
 		params = append(params, v)
 	}
 
-	return params
+	return params, nil
+}
+
+func parseTime(t string) (string, error) {
+	e, err := time.Parse(time.RFC3339Nano, t)
+	if err != nil {
+		return "", err
+	}
+
+	return e.UTC().Format(time.RFC3339Nano), nil
 }
 
 func convertEvents(ns datastore.Namespace, evs ...cloudevents.Event) []*datastore.Event {
 	res := make([]*datastore.Event, len(evs))
 	for i := range evs {
 		res[i] = &datastore.Event{
-			Event:         &evs[i],
-			NamespaceName: ns.Name,
-			Namespace:     ns.ID,
-			ReceivedAt:    time.Now().UTC(),
+			Event:       &evs[i],
+			Namespace:   ns.Name,
+			NamespaceID: ns.ID,
+			ReceivedAt:  time.Now().UTC(),
 		}
 	}
 
@@ -427,7 +468,7 @@ type eventListenerEntry struct {
 	TriggerType                 string    `json:"triggerType"`
 	TriggerWorkflow             any       `json:"triggerWorkflow,omitempty"`
 	TriggerInstance             any       `json:"triggerInstance,omitempty"`
-	GlobGatekeepers             any       `json:"globGatekeepers,omitempty"`
+	EventContextFilters         any       `json:"eventContextFilters,omitempty"`
 }
 
 // nolint:canonicalheader

@@ -1,22 +1,21 @@
-import { FiltersObj } from "./query/get";
+import { FiltersSchemaType } from "./schema/filters";
 
 export const eventKeys = {
   eventsList: (
     namespace: string,
     {
       apiKey,
-      limit,
-      offset,
       filters,
-    }: { apiKey?: string; limit: number; offset: number; filters: FiltersObj }
+    }: {
+      apiKey?: string;
+      filters?: FiltersSchemaType;
+    }
   ) =>
     [
       {
-        scope: "event-list",
+        scope: "events-list",
         apiKey,
         namespace,
-        limit,
-        offset,
         filters,
       },
     ] as const,

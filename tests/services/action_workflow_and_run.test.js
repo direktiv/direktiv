@@ -35,7 +35,7 @@ states:
 
 	it(`should invoke the ${ testWorkflow } workflow`, async () => {
 		await helpers.sleep(500)
-		const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ testNamespace }/tree/${ testWorkflow }?op=wait`)
+		const res = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ testNamespace }/instances?path=${ testWorkflow }&wait=true`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.return.status).toBe('200 OK')
 	})

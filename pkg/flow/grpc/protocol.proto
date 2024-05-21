@@ -7,27 +7,10 @@ option go_package = "github.com/direktiv/direktiv/pkg/flow/grpc";
 import "google/protobuf/empty.proto";
 
 import "pkg/flow/grpc/variables.proto";
-import "pkg/flow/grpc/instances.proto";
 import "pkg/flow/grpc/internal.proto";
 import "pkg/flow/grpc/cloudevent.proto";
-import "pkg/flow/grpc/util.proto";
-// import "pkg/flow/grpc/eventing.proto";
 
 service Flow {
-	// instances.
-	rpc Instance (InstanceRequest) returns (InstanceResponse) {}
-	rpc InstanceStream (InstanceRequest) returns (stream InstanceResponse) {}
-	rpc Instances (InstancesRequest) returns (InstancesResponse) {}
-	rpc InstancesStream (InstancesRequest) returns (stream InstancesResponse) {}
-	rpc InstanceInput (InstanceInputRequest) returns (InstanceInputResponse) {}
-	rpc InstanceOutput (InstanceOutputRequest) returns (InstanceOutputResponse) {}
-	rpc InstanceMetadata (InstanceMetadataRequest) returns (InstanceMetadataResponse) {}
-
-
-	// workflows.
-	rpc StartWorkflow (StartWorkflowRequest) returns (StartWorkflowResponse) {}
-	rpc AwaitWorkflow (AwaitWorkflowRequest) returns (stream AwaitWorkflowResponse) {}
-	rpc CancelInstance (CancelInstanceRequest) returns (google.protobuf.Empty) {}
 	rpc BroadcastCloudevent (BroadcastCloudeventRequest) returns (google.protobuf.Empty) {}
 
 	// variables.
@@ -37,9 +20,6 @@ service Flow {
 	rpc SetWorkflowVariableParcels (stream SetWorkflowVariableRequest) returns (SetWorkflowVariableResponse) {}
 	rpc InstanceVariable (InstanceVariableRequest) returns (InstanceVariableResponse) {}
 	rpc SetInstanceVariableParcels (stream SetInstanceVariableRequest) returns (SetInstanceVariableResponse) {}
-
-	//
-	rpc JQ (JQRequest) returns (JQResponse) {}
 
 	// events.
 	rpc EventListeners (EventListenersRequest) returns (EventListenersResponse) {}
@@ -62,8 +42,3 @@ service Internal {
 	rpc SetInstanceVariableParcels (stream SetVariableInternalRequest) returns (SetVariableInternalResponse) {}
 	rpc FileVariableParcels (VariableInternalRequest) returns (stream VariableInternalResponse) {}
 }
-
-// Todo: Yassir, delete this entirely in cycle6.
-//service Eventing {
-//	rpc RequestEvents (EventingRequest) returns (stream CloudEvent) {}
-//}

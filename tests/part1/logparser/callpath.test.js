@@ -47,18 +47,18 @@ states:
 `))
 
 	it(`should invoke the '/a/parent1.yaml' workflow`, async () => {
-		const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/tree/a/parent1.yaml?op=wait`)
+		const req = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=a%2Fparent1.yaml&wait=true`)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({
 			result: 2,
 		})
 	})
 
-	it(`check if child logs are present in parent's log view`, async () => {
-		const instances = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/instances`)
-		expect(instances.statusCode).toEqual(200)
-		expect(instances.body.instances.results.length).not.toBeLessThan(1)
-	})
+	// it(`check if child logs are present in parent's log view`, async () => {
+	// 	const instances = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/instances`)
+	// 	expect(instances.statusCode).toEqual(200)
+	// 	expect(instances.body.instances.results.length).not.toBeLessThan(1)
+	// })
 
 	// it(`check if parentslogs contain child logs`, async () => {
 	//     var instancesSource = await request(common.config.getDirektivHost()).get(`/api/namespaces/${namespaceName}/instances?filter.field=AS&filter.type=WORKFLOW&filter.val=a/parent1.yaml`)
