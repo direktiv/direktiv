@@ -555,6 +555,7 @@
         },
         "tableRow": {
           "realtiveTime": "{{relativeTime}} ago",
+          "stillRunning": "still running",
           "openWorkflowTooltip": "click to open workflow {{name}}"
         },
         "filter": {
