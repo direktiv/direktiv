@@ -29,9 +29,9 @@ func (instance *Instance) GetAttributes(recipientType recipient.RecipientType) m
 }
 
 func (instance *Instance) WithTags(ctx context.Context) context.Context {
-	tags, ok := ctx.Value(core.LogTagsKey).([]interface{})
+	tags, ok := ctx.Value(core.LogTagsKey).(map[string]interface{})
 	if !ok {
-		tags = make([]interface{}, 0)
+		tags = make(map[string]interface{}, 0)
 	}
 
 	callpath := ""
@@ -40,41 +40,49 @@ func (instance *Instance) WithTags(ctx context.Context) context.Context {
 		callpath += "/" + v.ID.String()
 	}
 
-	tags = append(tags, "instance", instance.Instance.ID)
-	tags = append(tags, "invoker", instance.Instance.Invoker) // TODO: value is empty.
-	tags = append(tags, "callpath", callpath)
-	tags = append(tags, "workflow", instance.Instance.WorkflowPath) // TODO: value is empty.
+	tags["instance"] = instance.Instance.ID
+	tags["invoker"] = instance.Instance.Invoker
+	tags["callpath"] = callpath
+	tags["workflow"] = instance.Instance.WorkflowPath
 
 	return context.WithValue(ctx, core.LogTagsKey, tags)
 }
 
 func AddTag(ctx context.Context, key, value interface{}) context.Context {
-	tags, ok := ctx.Value(core.LogTagsKey).([]interface{})
+	tags, ok := ctx.Value(core.LogTagsKey).(map[string]interface{})
 	if !ok {
-		tags = make([]interface{}, 0)
+		tags = make(map[string]interface{}, 0)
 	}
-	tags = append(tags, key, value)
+	tags[fmt.Sprint(key)] = value
 
 	return context.WithValue(ctx, core.LogTagsKey, tags)
 }
 
 func getSlogAttributes(ctx context.Context) []interface{} {
-	tags, ok := ctx.Value(core.LogTagsKey).([]interface{})
+	var tags map[string]interface{}
+
+	tags, ok := ctx.Value(core.LogTagsKey).(map[string]interface{})
 	if !ok {
-		tags = make([]interface{}, 0)
-	}
-	if trackValue, ok := ctx.Value(core.LogTrackKey).(string); ok {
-		tags = append(tags, "track", trackValue)
+		tags = make(map[string]interface{})
 	}
 
+	if trackValue, ok := ctx.Value(core.LogTrackKey).(string); ok {
+		tags["track"] = trackValue // Add track as a tag to the map
+	}
 	span := trace.SpanFromContext(ctx)
 	traceID := span.SpanContext().TraceID().String()
 	spanID := span.SpanContext().SpanID().String()
 
-	tags = append(tags, "trace", traceID)
-	tags = append(tags, "span", spanID)
+	tags["trace"] = traceID
+	tags["span"] = spanID
 
-	return tags
+	// Convert map back to a slice of key-value pairs
+	var result []interface{}
+	for k, v := range tags {
+		result = append(result, k, v)
+	}
+
+	return result
 }
 
 func GetSlogAttributesWithStatus(ctx context.Context, status core.LogStatus) []interface{} {

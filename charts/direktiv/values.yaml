@@ -225,7 +225,7 @@ fluent-bit:
       [FILTER]
           Name                    rewrite_tag
           Match                   input
-          Rule                    $log ^.*"track":"([^"]+)"[^}]*}$ flow.$1 true
+          Rule                    $log ^.*"track":"([^"]+)"[^}].*}$ flow.$1 true
     customParsers: |
       [PARSER]
           Name                    cri_direktiv

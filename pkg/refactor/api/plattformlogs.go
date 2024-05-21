@@ -66,7 +66,6 @@ func (m logController) getNewer(ctx context.Context, t time.Time, params map[str
 	if err != nil {
 		return []logEntry{}, err
 	}
-	slog.Debug("determined logging-track", "track", stream)
 
 	// Call the appropriate LogStore method with cursorTime
 	lastID, hasLastID := params["lastID"]
@@ -128,7 +127,6 @@ func (m logController) getOlder(ctx context.Context, params map[string]string) (
 	if err != nil {
 		return []logEntry{}, time.Time{}, err
 	}
-	slog.Debug("determined logging-track", "track", stream)
 
 	starting := time.Now().UTC()
 	if t, ok := params["before"]; ok {

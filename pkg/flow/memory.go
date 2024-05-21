@@ -236,13 +236,17 @@ func (im *instanceMemory) GetAttributes() map[string]string {
 }
 
 func (im *instanceMemory) WithTags(ctx context.Context) context.Context {
-	ctx = im.instance.WithTags(ctx)
-	tags, ok := ctx.Value(core.LogTagsKey).([]interface{})
-	if !ok {
-		tags = make([]interface{}, 0)
+	if im.instance != nil {
+		ctx = im.instance.WithTags(ctx)
 	}
+
+	tags, ok := ctx.Value(core.LogTagsKey).(map[string]interface{})
+	if !ok {
+		tags = make(map[string]interface{})
+	}
+
 	if im.logic != nil {
-		tags = append(tags, "state", im.logic.GetID())
+		tags["state"] = im.logic.GetID()
 	}
 
 	return context.WithValue(ctx, core.LogTagsKey, tags)
