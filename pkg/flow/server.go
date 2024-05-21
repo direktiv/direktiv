@@ -240,7 +240,7 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 	if err != nil {
 		return nil, err
 	}
-	defer srv.cleanup(srv.timers.Close)
+	// defer srv.cleanup(srv.timers.Close)
 	slog.Info("timers where initialized successfully.")
 
 	slog.Debug("Initializing pubsub routine.")
