@@ -211,9 +211,7 @@ export const useLogs = ({
       trace,
     }),
     queryFn: fetchLogs,
-    getNextPageParam: () => undefined,
-    getPreviousPageParam: (firstPage) =>
-      firstPage.meta?.previousPage ?? undefined,
+    getNextPageParam: (firstPage) => firstPage.meta?.previousPage,
     enabled: !!namespace && enabled,
     initialPageParam: undefined,
     refetchOnWindowFocus: false,
