@@ -45,10 +45,6 @@ func initEvents(srv *server, appendStagingEvent func(ctx context.Context, events
 	return events
 }
 
-func (events *events) Close() error {
-	return nil
-}
-
 func (events *events) handleEvent(ctx context.Context, ns uuid.UUID, nsName string, ce *cloudevents.Event) error {
 	span := trace.SpanFromContext(ctx)
 	traceID := span.SpanContext().TraceID()
