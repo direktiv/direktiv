@@ -27,7 +27,6 @@ const (
 	Flow_SetWorkflowVariableParcels_FullMethodName  = "/direktiv_flow.Flow/SetWorkflowVariableParcels"
 	Flow_InstanceVariable_FullMethodName            = "/direktiv_flow.Flow/InstanceVariable"
 	Flow_SetInstanceVariableParcels_FullMethodName  = "/direktiv_flow.Flow/SetInstanceVariableParcels"
-	Flow_JQ_FullMethodName                          = "/direktiv_flow.Flow/JQ"
 	Flow_EventListeners_FullMethodName              = "/direktiv_flow.Flow/EventListeners"
 	Flow_EventListenersStream_FullMethodName        = "/direktiv_flow.Flow/EventListenersStream"
 	Flow_EventHistory_FullMethodName                = "/direktiv_flow.Flow/EventHistory"
@@ -48,7 +47,6 @@ type FlowClient interface {
 	SetWorkflowVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetWorkflowVariableParcelsClient, error)
 	InstanceVariable(ctx context.Context, in *InstanceVariableRequest, opts ...grpc.CallOption) (*InstanceVariableResponse, error)
 	SetInstanceVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetInstanceVariableParcelsClient, error)
-	JQ(ctx context.Context, in *JQRequest, opts ...grpc.CallOption) (*JQResponse, error)
 	// events.
 	EventListeners(ctx context.Context, in *EventListenersRequest, opts ...grpc.CallOption) (*EventListenersResponse, error)
 	EventListenersStream(ctx context.Context, in *EventListenersRequest, opts ...grpc.CallOption) (Flow_EventListenersStreamClient, error)
@@ -204,15 +202,6 @@ func (x *flowSetInstanceVariableParcelsClient) CloseAndRecv() (*SetInstanceVaria
 	return m, nil
 }
 
-func (c *flowClient) JQ(ctx context.Context, in *JQRequest, opts ...grpc.CallOption) (*JQResponse, error) {
-	out := new(JQResponse)
-	err := c.cc.Invoke(ctx, Flow_JQ_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *flowClient) EventListeners(ctx context.Context, in *EventListenersRequest, opts ...grpc.CallOption) (*EventListenersResponse, error) {
 	out := new(EventListenersResponse)
 	err := c.cc.Invoke(ctx, Flow_EventListeners_FullMethodName, in, out, opts...)
@@ -325,7 +314,6 @@ type FlowServer interface {
 	SetWorkflowVariableParcels(Flow_SetWorkflowVariableParcelsServer) error
 	InstanceVariable(context.Context, *InstanceVariableRequest) (*InstanceVariableResponse, error)
 	SetInstanceVariableParcels(Flow_SetInstanceVariableParcelsServer) error
-	JQ(context.Context, *JQRequest) (*JQResponse, error)
 	// events.
 	EventListeners(context.Context, *EventListenersRequest) (*EventListenersResponse, error)
 	EventListenersStream(*EventListenersRequest, Flow_EventListenersStreamServer) error
@@ -360,9 +348,6 @@ func (UnimplementedFlowServer) InstanceVariable(context.Context, *InstanceVariab
 }
 func (UnimplementedFlowServer) SetInstanceVariableParcels(Flow_SetInstanceVariableParcelsServer) error {
 	return status.Errorf(codes.Unimplemented, "method SetInstanceVariableParcels not implemented")
-}
-func (UnimplementedFlowServer) JQ(context.Context, *JQRequest) (*JQResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method JQ not implemented")
 }
 func (UnimplementedFlowServer) EventListeners(context.Context, *EventListenersRequest) (*EventListenersResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method EventListeners not implemented")
@@ -545,24 +530,6 @@ func (x *flowSetInstanceVariableParcelsServer) Recv() (*SetInstanceVariableReque
 	return m, nil
 }
 
-func _Flow_JQ_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(JQRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).JQ(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_JQ_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).JQ(ctx, req.(*JQRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Flow_EventListeners_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(EventListenersRequest)
 	if err := dec(in); err != nil {
@@ -699,10 +666,6 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "InstanceVariable",
 			Handler:    _Flow_InstanceVariable_Handler,
-		},
-		{
-			MethodName: "JQ",
-			Handler:    _Flow_JQ_Handler,
 		},
 		{
 			MethodName: "EventListeners",

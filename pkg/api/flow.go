@@ -91,40 +91,6 @@ func setupReverseProxyHandlers(base *mux.Router, router *mux.Router, apiV2Addres
 }
 
 func (h *flowHandler) initRoutes(r *mux.Router) {
-	// swagger:operation POST /api/jq Other jqPlayground
-	// ---
-	// description: |
-	//   JQ Playground is a sandbox where you can test jq queries with custom data.
-	// summary: JQ Playground api to test jq queries
-	// parameters:
-	// - in: body
-	//   name: JQ payload
-	//   required: true
-	//   description: Payload that contains both the JSON data to manipulate and jq query.
-	//   schema:
-	//     example:
-	//       data: "eyJhIjogMSwgImIiOiAyLCAiYyI6IDQsICJkIjogN30="
-	//       query: "map(select(. >= 2))"
-	//     type: object
-	//     required:
-	//       - data
-	//       - query
-	//     properties:
-	//       data:
-	//         type: string
-	//         description: JSON data encoded in base64
-	//       query:
-	//         type: string
-	//         description: jq query to manipulate JSON data
-	// responses:
-	//   '500':
-	//     "description": "an unexpected internal error occurred"
-	//   '400':
-	//     "description": "the request was invalid"
-	//   '200':
-	//     "description": "jq query was successful"
-	r.HandleFunc("/jq", h.JQ).Name(RN_JQPlayground).Methods(http.MethodPost)
-
 	// swagger:operation GET /api/namespaces/{namespace}/tree/{workflow}?op=metrics-invoked Metrics workflowMetricsInvoked
 	// ---
 	// description: |
@@ -689,22 +655,5 @@ func (h *flowHandler) ReplayEvent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp, err := h.client.ReplayEvent(ctx, in)
-	respond(w, resp, err)
-}
-
-func (h *flowHandler) JQ(w http.ResponseWriter, r *http.Request) {
-	slog.Debug("Handling request", "this", this())
-
-	ctx := r.Context()
-
-	in := new(grpc.JQRequest)
-
-	err := unmarshalBody(r, in)
-	if err != nil {
-		respond(w, nil, err)
-		return
-	}
-
-	resp, err := h.client.JQ(ctx, in)
 	respond(w, resp, err)
 }
