@@ -13,6 +13,7 @@ test.afterEach(async () => {
 });
 
 test("It will show the logs on the monitoring page", async ({ page }) => {
+  test.setTimeout(10000);
   await page.goto(`/n/${namespace}/monitoring`);
 
   await expect(
@@ -33,7 +34,7 @@ test("It will show the logs on the monitoring page", async ({ page }) => {
   await page.getByRole("link", { name: "Monitoring" }).click();
 
   // give the cache some time to update
-  await new Promise((resolve) => setTimeout(resolve, 3000));
+  await page.waitForTimeout(3000);
 
   await expect(
     page.getByText("msg: updating namespace gateway"),
