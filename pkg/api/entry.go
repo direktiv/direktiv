@@ -12,7 +12,7 @@ func RunApplication(config *core.Config) error {
 		return fmt.Errorf("cannot create API server: %w", err)
 	}
 
-	err = s.Start()
+	err = s.Start
 	if err != nil {
 		return fmt.Errorf("cannot start API server: %w", err)
 	}
