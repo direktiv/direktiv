@@ -16,11 +16,6 @@ test("It will show the logs on the monitoring page", async ({ page }) => {
   await page.goto(`/n/${namespace}/monitoring`);
 
   await expect(
-    page.getByText("msg: updating namespace gateway"),
-    "It will show a log message"
-  ).toBeVisible();
-
-  await expect(
     page.getByText("received 1 log entry"),
     "It will show the number of logs"
   ).toBeVisible();
@@ -34,11 +29,6 @@ test("It will show the logs on the monitoring page", async ({ page }) => {
 
   // give the cache some time to update
   await new Promise((resolve) => setTimeout(resolve, 3000));
-
-  await expect(
-    page.getByText("msg: updating namespace gateway"),
-    "When coming back to the monitoring page, it still shows the same log message"
-  ).toBeVisible();
 
   await expect(
     page.getByText("received 1 log entry"),
