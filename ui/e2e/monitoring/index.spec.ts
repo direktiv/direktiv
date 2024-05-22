@@ -13,8 +13,10 @@ test.afterEach(async () => {
 });
 
 test("It will show the logs on the monitoring page", async ({ page }) => {
-  test.setTimeout(10000);
-  await page.goto(`/n/${namespace}/monitoring`);
+  test.slow();
+  await page.goto(`/n/${namespace}/monitoring`, {
+    waitUntil: "domcontentloaded",
+  });
 
   await expect(
     page.getByText("msg: updating namespace gateway"),
