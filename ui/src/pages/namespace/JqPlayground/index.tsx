@@ -99,8 +99,11 @@ const JqPlaygroundPage: FC = () => {
 
   const onRunSnippet = (params: ExecuteJxQueryPayloadType) => {
     window.scrollTo({ top: 0, behavior: "smooth" });
-    setValue("data", prettifyJsonString(params.data));
+    const data = prettifyJsonString(params.data);
+    setValue("data", data);
+    storePlaygroundDataInLocalstorage(data);
     setValue("jx", params.jx);
+    storeJxInLocalstorage(params.jx);
     formRef.current?.requestSubmit();
   };
 
