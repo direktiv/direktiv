@@ -195,7 +195,7 @@ export const useLogs = ({
 
   /**
    * The API returns data as an infinite list, which means it returns a cursor in form of a timestamp
-   * to the previous page of data. The end of the list is not known until the last page is reached and
+   * to the next page of data. The end of the list is not known until the last page is reached and
    * the cursor is null.
    *
    * The API only returns navigation into one direction, which means we always have to start with querying
