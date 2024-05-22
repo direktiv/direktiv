@@ -203,16 +203,13 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 	srv.initJQ()
 	srv.config = config
 
-	// TODO: yassir, all commented out defers here should be migrated elsewhere to ensure proper cleanup on server shutdown.
-
 	var err error
 	slog.Debug("Starting Flow server")
 	slog.Debug("Initializing telemetry.")
-	_, err = util.InitTelemetry(srv.config.OpenTelemetry, "direktiv/flow", "direktiv")
+	telEnd, err := util.InitTelemetry(srv.config.OpenTelemetry, "direktiv/flow", "direktiv")
 	if err != nil {
 		return nil, err
 	}
-	// defer telend()
 	slog.Info("Telemetry initialized successfully.")
 
 	srv.gormDB = db
@@ -233,7 +230,7 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 	if err != nil {
 		return nil, err
 	}
-	// defer srv.cleanup(srv.pubsub.Close)
+
 	slog.Info("pub-sub was initialized successfully.")
 
 	slog.Debug("Initializing timers.")
@@ -242,7 +239,6 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 	if err != nil {
 		return nil, err
 	}
-	// defer srv.cleanup(srv.timers.Close)
 	slog.Info("timers where initialized successfully.")
 
 	slog.Debug("Initializing pubsub routine.")
@@ -341,6 +337,15 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 		if e != nil {
 			return fmt.Errorf("srv.flow.Run(), err: %w", err)
 		}
+
+		return nil
+	})
+
+	circuit.Start(func() error {
+		<-circuit.Done()
+		telEnd()
+		srv.cleanup(srv.pubsub.Close)
+		srv.cleanup(srv.timers.Close)
 
 		return nil
 	})
