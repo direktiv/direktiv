@@ -14,6 +14,10 @@ env:
   SRVTAG: dev
   IS_GITHUB_ACTIONS: true
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   check-cache:
     runs-on: ubuntu-latest
