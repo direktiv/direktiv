@@ -208,7 +208,7 @@ jobs:
 
   e2e:
     needs: [ check-cache, ui-build, backend-build ]
-    if: ${{ always() }}
+    if: ${{ !failure() && !cancelled() }}
     runs-on: ubuntu-latest
 
     timeout-minutes: 18
