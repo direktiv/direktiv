@@ -3,7 +3,6 @@ package target
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
 	"io"
 	"net/http"
 	"os"
@@ -13,6 +12,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
+	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
 	"github.com/h2non/filetype"
 )
 

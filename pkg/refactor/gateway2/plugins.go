@@ -69,6 +69,7 @@ func WriteJSONError(w http.ResponseWriter, status int, endpointFile string, msg 
 func WriteInternalError(r *http.Request, w http.ResponseWriter, err error, msg string) {
 	WriteJSONError(w, http.StatusInternalServerError, ExtractContextEndpoint(r).FilePath, msg)
 }
+
 func WriteForbiddenError(r *http.Request, w http.ResponseWriter, err error, msg string) {
 	WriteJSONError(w, http.StatusForbidden, ExtractContextEndpoint(r).FilePath, msg)
 }
