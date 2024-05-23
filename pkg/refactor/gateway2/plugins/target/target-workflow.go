@@ -19,10 +19,11 @@ const (
 
 // FlowPlugin executes a flow in a configured namespace.
 type FlowPlugin struct {
-	Namespace   string `mapstructure:"namespace"`
-	Flow        string `mapstructure:"flow"`
-	Async       bool   `mapstructure:"async"`
-	ContentType string `mapstructure:"content_type"`
+	Namespace string `mapstructure:"namespace"`
+	Flow      string `mapstructure:"flow"`
+	Async     bool   `mapstructure:"async"`
+	// TODO: yassir, need fix here.
+	//ContentType string `mapstructure:"content_type"`
 
 	internalAsync string
 }
@@ -41,10 +42,11 @@ func (tf *FlowPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, er
 		return nil, fmt.Errorf("flow required")
 	}
 
+	// TODO: yassir, need fix here.
 	// if content type is not set use application/json
-	if pl.ContentType == "" {
-		pl.ContentType = defaultContentType
-	}
+	//if pl.ContentType == "" {
+	//	pl.ContentType = defaultContentType
+	//}
 
 	if !strings.HasPrefix(pl.Flow, "/") {
 		pl.Flow = "/" + pl.Flow
