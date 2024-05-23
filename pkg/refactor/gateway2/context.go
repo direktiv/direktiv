@@ -48,23 +48,6 @@ func InjectContextActiveConsumer(r *http.Request, contextValue *core.ConsumerV2)
 	return r.WithContext(context.WithValue(r.Context(), gatewayCtxKeyActiveConsumer, contextValue))
 }
 
-func ExtractContextNamespace(r *http.Request) string {
-	res := r.Context().Value(gatewayCtxKeyNamespace)
-	if res == nil {
-		return ""
-	}
-	cast, ok := res.(string)
-	if !ok {
-		return ""
-	}
-
-	return cast
-}
-
-func InjectContextNamespace(r *http.Request, contextValue string) *http.Request {
-	return r.WithContext(context.WithValue(r.Context(), gatewayCtxKeyNamespace, contextValue))
-}
-
 func ExtractContextEndpoint(r *http.Request) *core.EndpointV2 {
 	res := r.Context().Value(gatewayCtxKeyEndpoint)
 	if res == nil {

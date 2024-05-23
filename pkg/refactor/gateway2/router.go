@@ -59,8 +59,6 @@ func buildRouter(endpoints []core.EndpointV2, consumers []core.ConsumerV2) *rout
 
 			// inject consumer files.
 			r = InjectContextConsumersList(r, filterNamespacedConsumers(consumers, item.Namespace))
-			// inject namespace.
-			r = InjectContextNamespace(r, item.Namespace)
 			// inject endpoint.
 			r = InjectContextEndpoint(r, &endpoints[i])
 
