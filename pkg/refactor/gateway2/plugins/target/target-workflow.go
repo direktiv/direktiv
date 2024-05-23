@@ -19,10 +19,10 @@ const (
 
 // FlowPlugin executes a flow in a configured namespace.
 type FlowPlugin struct {
-	Namespace   string `mapstructure:"namespace"    yaml:"namespace"`
-	Flow        string `mapstructure:"flow"         yaml:"flow"`
-	Async       bool   `mapstructure:"async"        yaml:"async"`
-	ContentType string `mapstructure:"content_type" yaml:"content_type"`
+	Namespace   string `mapstructure:"namespace"`
+	Flow        string `mapstructure:"flow"`
+	Async       bool   `mapstructure:"async"`
+	ContentType string `mapstructure:"content_type"`
 
 	internalAsync string
 }
@@ -37,7 +37,7 @@ func (tf *FlowPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, er
 		return nil, err
 	}
 
-	if tf.Flow == "" {
+	if pl.Flow == "" {
 		return nil, fmt.Errorf("flow required")
 	}
 
@@ -112,9 +112,18 @@ func (tf *FlowPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Requ
 	//	return nil
 	//}
 
-	_, err = io.Copy(w, resp.Body)
-	if err != nil {
-		gateway2.WriteForbiddenError(r, w, nil, "couldn't write downstream response")
+	// copy headers
+	for key, values := range resp.Header {
+		for _, value := range values {
+			w.Header().Add(key, value)
+		}
+	}
+	// copy the status code
+	w.WriteHeader(resp.StatusCode)
+
+	// copy the response body
+	if _, err := io.Copy(w, resp.Body); err != nil {
+		gateway2.WriteInternalError(r, w, nil, "couldn't write downstream response")
 		return nil
 	}
 
