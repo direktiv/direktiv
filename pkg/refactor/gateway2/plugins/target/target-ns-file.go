@@ -11,22 +11,21 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
 	"github.com/h2non/filetype"
 )
 
 // NamespaceFilePlugin returns a files in the explorer tree.
 type NamespaceFilePlugin struct {
-	Namespace   string `mapstructure:"namespace"    yaml:"namespace"`
-	File        string `mapstructure:"file"         yaml:"file"`
-	ContentType string `mapstructure:"content_type" yaml:"content_type"`
+	Namespace   string `mapstructure:"namespace"`
+	File        string `mapstructure:"file"`
+	ContentType string `mapstructure:"content_type"`
 }
 
 func (tnf *NamespaceFilePlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
 	pl := &NamespaceFilePlugin{}
 
-	err := plugins.ConvertConfig(config, pl)
+	err := gateway2.ConvertConfig(config.Config, pl)
 	if err != nil {
 		return nil, err
 	}
