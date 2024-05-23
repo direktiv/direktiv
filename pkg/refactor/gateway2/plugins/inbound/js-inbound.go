@@ -96,12 +96,12 @@ func (js *JSInboundPlugin) Execute(w http.ResponseWriter, r *http.Request) *http
 	// add url param
 	urlParams := make(map[string]string)
 
-	// TODO: fix here.
+	// TODO: yassir, need fix here.
 	// up := r.Context().Value(plugins.URLParamCtxKey)
 	// if up != nil {
-	//	// nolint we know it is from us
-	//	urlParams = up.(map[string]string)
-	//}
+	// 	// nolint we know it is from us
+	// 	urlParams = up.(map[string]string)
+	// }
 
 	req := request{
 		Headers:   r.Header,
@@ -155,11 +155,23 @@ func (js *JSInboundPlugin) Execute(w http.ResponseWriter, r *http.Request) *http
 			r.URL.RawQuery = newQuery.Encode()
 			r.Body = io.NopCloser(strings.NewReader(responseDone.Body))
 
-			// TODO: discuss with jens
 			// script set status code and stop executing other plugins
-			// if responseDone.Status > 0 {
-			//	return serveResponse(w, responseDone)
-			//}
+			if responseDone.Status > 0 {
+				// writing headers to response
+				addHeader(req.Headers, w.Header())
+
+				// set was the incoming content-length
+				w.Header().Del("Content-Length")
+
+				// set status from script
+				w.WriteHeader(req.Status)
+
+				// write response body
+				// nolint
+				w.Write([]byte(req.Body))
+
+				return nil
+			}
 		}
 	}
 
