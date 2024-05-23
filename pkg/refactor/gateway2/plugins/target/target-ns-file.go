@@ -1,25 +1,22 @@
 package target
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
-	"strconv"
 	"strings"
-	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
-	"github.com/h2non/filetype"
 )
 
 // NamespaceFilePlugin returns a files in the explorer tree.
 type NamespaceFilePlugin struct {
-	Namespace   string `mapstructure:"namespace"`
-	File        string `mapstructure:"file"`
-	ContentType string `mapstructure:"content_type"`
+	Namespace string `mapstructure:"namespace"`
+	File      string `mapstructure:"file"`
+	// TODO: yassir need fix.
+	// ContentType string `mapstructure:"content_type"`
 }
 
 func (tnf *NamespaceFilePlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
@@ -66,72 +63,88 @@ func (tnf *NamespaceFilePlugin) Execute(w http.ResponseWriter, r *http.Request) 
 	}
 	defer resp.Body.Close()
 
-	data, mime, err := fetchObjectData(resp)
-	if err != nil {
-		gateway2.WriteInternalError(r, w, nil, "can not fetch file data")
+	// copy headers
+	for key, values := range resp.Header {
+		for _, value := range values {
+			w.Header().Add(key, value)
+		}
+	}
+	// copy the status code
+	w.WriteHeader(resp.StatusCode)
+
+	// copy the response body
+	if _, err := io.Copy(w, resp.Body); err != nil {
+		gateway2.WriteInternalError(r, w, nil, "couldn't write downstream response")
 		return nil
 	}
 
-	mt := "application/unknown"
-
-	// overwrite object mimetype if configured
-	// otherwise use the one coming from the API
-	// last resort is guessing
-	if tnf.ContentType != "" {
-		mt = tnf.ContentType
-	} else if mime != "" {
-		mt = mime
-	} else {
-		// guessing
-		// nolint
-		kind, _ := filetype.Match(data)
-		if kind != filetype.Unknown {
-			mt = kind.MIME.Value
-		}
-	}
-	w.Header().Set("Content-Type", mt)
-	w.Header().Set("Content-Length", strconv.Itoa(len(data)))
-
-	// nolint
-	w.Write(data)
+	// TODO: yassir, check if this is needed.
+	//data, mime, err := fetchObjectData(resp)
+	//if err != nil {
+	//	gateway2.WriteInternalError(r, w, nil, "can not fetch file data")
+	//	return nil
+	//}
+	//
+	//mt := "application/unknown"
+	//
+	//// overwrite object mimetype if configured
+	//// otherwise use the one coming from the API
+	//// last resort is guessing
+	//if tnf.ContentType != "" {
+	//	mt = tnf.ContentType
+	//} else if mime != "" {
+	//	mt = mime
+	//} else {
+	//	// guessing
+	//	// nolint
+	//	kind, _ := filetype.Match(data)
+	//	if kind != filetype.Unknown {
+	//		mt = kind.MIME.Value
+	//	}
+	//}
+	//w.Header().Set("Content-Type", mt)
+	//w.Header().Set("Content-Length", strconv.Itoa(len(data)))
+	//
+	//// nolint
+	//w.Write(data)
 
 	return r
 }
 
 // nolint
-type Node struct {
-	Data struct {
-		CreatedAt    time.Time `json:"createdAt"`
-		UpdatedAt    time.Time `json:"updatedAt"`
-		Name         string    `json:"name"`
-		Path         string    `json:"path"`
-		Parent       string    `json:"parent"`
-		Type         string    `json:"type"`
-		Attributes   []any     `json:"attributes"`
-		Oid          string    `json:"oid"`
-		ReadOnly     bool      `json:"readOnly"`
-		ExpandedType string    `json:"expandedType"`
-		MimeType     string    `json:"mimeType"`
-		Data         []byte    `json:"data"`
-	} `json:"data"`
-}
+//type Node struct {
+//	Data struct {
+//		CreatedAt    time.Time `json:"createdAt"`
+//		UpdatedAt    time.Time `json:"updatedAt"`
+//		Name         string    `json:"name"`
+//		Path         string    `json:"path"`
+//		Parent       string    `json:"parent"`
+//		Type         string    `json:"type"`
+//		Attributes   []any     `json:"attributes"`
+//		Oid          string    `json:"oid"`
+//		ReadOnly     bool      `json:"readOnly"`
+//		ExpandedType string    `json:"expandedType"`
+//		MimeType     string    `json:"mimeType"`
+//		Data         []byte    `json:"data"`
+//	} `json:"data"`
+//}
 
-func fetchObjectData(res *http.Response) ([]byte, string, error) {
-	b, err := io.ReadAll(res.Body)
-	if err != nil {
-		return nil, "", err
-	}
-
-	var node Node
-	err = json.Unmarshal(b, &node)
-	if err != nil {
-		return nil, "", err
-	}
-
-	data := node.Data.Data
-
-	return data, node.Data.MimeType, nil
-}
+// func fetchObjectData(res *http.Response) ([]byte, string, error) {
+//	b, err := io.ReadAll(res.Body)
+//	if err != nil {
+//		return nil, "", err
+//	}
+//
+//	var node Node
+//	err = json.Unmarshal(b, &node)
+//	if err != nil {
+//		return nil, "", err
+//	}
+//
+//	data := node.Data.Data
+//
+//	return data, node.Data.MimeType, nil
+//}
 
 func init() {
 	gateway2.RegisterPlugin(&NamespaceFilePlugin{})

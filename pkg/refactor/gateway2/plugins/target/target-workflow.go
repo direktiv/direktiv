@@ -2,7 +2,6 @@ package target
 
 import (
 	"fmt"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
 	"io"
 	"net/http"
 	"net/url"
@@ -10,11 +9,8 @@ import (
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
 	"go.opentelemetry.io/otel/trace"
-)
-
-const (
-	defaultContentType = "application/json"
 )
 
 // FlowPlugin executes a flow in a configured namespace.
@@ -23,7 +19,7 @@ type FlowPlugin struct {
 	Flow      string `mapstructure:"flow"`
 	Async     bool   `mapstructure:"async"`
 	// TODO: yassir, need fix here.
-	//ContentType string `mapstructure:"content_type"`
+	// ContentType string `mapstructure:"content_type"`
 
 	internalAsync string
 }
@@ -44,7 +40,7 @@ func (tf *FlowPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, er
 
 	// TODO: yassir, need fix here.
 	// if content type is not set use application/json
-	//if pl.ContentType == "" {
+	// if pl.ContentType == "" {
 	//	pl.ContentType = defaultContentType
 	//}
 
@@ -91,12 +87,12 @@ func (tf *FlowPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Requ
 	defer resp.Body.Close()
 
 	// TODO: yassir, need fix here.
-	//if tf.ContentType != "" {
+	// if tf.ContentType != "" {
 	//	w.Header().Set("Content-Type", tf.ContentType)
 	//}
-	//errorCode := resp.Header.Get("Direktiv-Instance-Error-Code")
-	//errorMessage := resp.Header.Get("Direktiv-Instance-Error-Message")
-	//instance := resp.Header.Get("Direktiv-Instance-Id")
+	// errorCode := resp.Header.Get("Direktiv-Instance-Error-Code")
+	// errorMessage := resp.Header.Get("Direktiv-Instance-Error-Message")
+	// instance := resp.Header.Get("Direktiv-Instance-Id")
 	//
 	//if errorCode != "" {
 	//	msg := fmt.Sprintf("%s: %s (%s)", errorCode, errorMessage, instance)

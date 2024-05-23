@@ -5,6 +5,7 @@ import config from '../common/config'
 import helpers from '../common/helpers'
 import request from '../common/request'
 import { retry10 } from '../common/retry'
+import regex from "../common/regex";
 
 const namespace = basename(__filename)
 
@@ -31,7 +32,14 @@ plugins:
 	retry10(`should fetch some.text file`, async () => {
 		const res = await request(config.getDirektivHost()).get(`/api/v2/namespaces/${ namespace }/gateway2/ep1`)
 		expect(res.statusCode).toEqual(200)
-		expect(res.text).toEqual('some content')
+		expect(res.body).toMatchObject({
+			data: {
+				path: "/some.text",
+				createdAt: expect.stringMatching(regex.timestampRegex),
+				updatedAt: expect.stringMatching(regex.timestampRegex),
+				data:"c29tZSBjb250ZW50",
+			},
+		})
 	})
 
 	// test system namespace access.
@@ -54,7 +62,14 @@ plugins:
 	retry10(`should fetch some.text file from system namespace`, async () => {
 		const res = await request(config.getDirektivHost()).get(`/api/v2/namespaces/system/gateway2/ep2`)
 		expect(res.statusCode).toEqual(200)
-		expect(res.text).toEqual('some content')
+		expect(res.body).toMatchObject({
+			data: {
+				path: "/some.text",
+				createdAt: expect.stringMatching(regex.timestampRegex),
+				updatedAt: expect.stringMatching(regex.timestampRegex),
+				data:"c29tZSBjb250ZW50",
+			},
+		})
 	})
 
 
