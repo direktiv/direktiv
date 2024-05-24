@@ -94,7 +94,7 @@ func (tf *FlowPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Requ
 	// errorMessage := resp.Header.Get("Direktiv-Instance-Error-Message")
 	// instance := resp.Header.Get("Direktiv-Instance-Id")
 	//
-	//if errorCode != "" {
+	// if errorCode != "" {
 	//	msg := fmt.Sprintf("%s: %s (%s)", errorCode, errorMessage, instance)
 	//	plugins.ReportError(r.Context(), w, resp.StatusCode,
 	//		"error executing workflow", fmt.Errorf(msg))
