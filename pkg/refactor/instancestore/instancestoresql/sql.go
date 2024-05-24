@@ -234,25 +234,6 @@ func (s *sqlInstanceStore) DeleteOldInstances(ctx context.Context, before time.T
 	return nil
 }
 
-func (s *sqlInstanceStore) AssertNoParallelCron(ctx context.Context, nsID uuid.UUID, wfPath string) error {
-	query := fmt.Sprintf(`SELECT COUNT(*) FROM %s WHERE %s = ? AND %s = ? AND %s = ? AND %s > ?`, table, fieldNamespaceID, fieldInvoker, fieldWorkflowPath, fieldCreatedAt)
-
-	var k int64
-	res := s.db.WithContext(ctx).Raw(
-		query,
-		nsID, instancestore.InvokerCron, wfPath, time.Now().UTC().Add(-30*time.Second),
-	).First(&k)
-	if res.Error != nil {
-		return res.Error
-	}
-
-	if k != 0 {
-		return instancestore.ErrParallelCron
-	}
-
-	return nil
-}
-
 func (s *sqlInstanceStore) GetNamespaceInstanceCounts(ctx context.Context, nsID uuid.UUID, wfPath string) (*instancestore.InstanceCounts, error) {
 	query := fmt.Sprintf(`SELECT COUNT(%s), %s FROM %s WHERE %s = ? AND %s = ? GROUP BY %s`, fieldID, fieldStatus, table, fieldNamespaceID, fieldWorkflowPath, fieldStatus)
 

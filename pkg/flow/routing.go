@@ -162,16 +162,6 @@ func (flow *flow) cronHandler(data []byte) {
 		return
 	}
 
-	err = tx.InstanceStore().AssertNoParallelCron(ctx, ns.ID, file.Path)
-	if errors.Is(err, instancestore.ErrParallelCron) {
-		// already triggered
-		return
-	} else if err != nil {
-		slog.Error("Failed to assert no parallel cron executions.", "error", err, "workflow", file.Path)
-
-		return
-	}
-
 	span := trace.SpanFromContext(ctx)
 
 	args := &newInstanceArgs{

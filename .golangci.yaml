@@ -45,7 +45,7 @@ linters:
     - gochecknoglobals
     - cyclop
     - godox # must fix before release.
-
+    - gomoddirectives # needed for forks for timers
     - exhaustivestruct
     - structcheck
     - ifshort

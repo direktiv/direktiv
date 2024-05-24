@@ -253,10 +253,6 @@ type Store interface {
 	// DeleteOldInstances deletes all instances that have terminated and end_at a long time ago
 	DeleteOldInstances(ctx context.Context, before time.Time) error
 
-	// AssertNoParallelCron attempts to detect if another machine in a HA environment may have already triggered an instance that we're just about to create ourselves.
-	// It does this by checking if a record of an instance was created within the last 30s for the given workflow ID.
-	AssertNoParallelCron(ctx context.Context, nsID uuid.UUID, wfPath string) error
-
 	// GetNamespaceInstanceCounts returns some instance metrics.
 	GetNamespaceInstanceCounts(ctx context.Context, nsID uuid.UUID, wfPath string) (*InstanceCounts, error)
 }
