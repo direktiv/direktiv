@@ -11,13 +11,14 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
 )
 
-type NamespaceVarPlugin struct {
+type FlowVarPlugin struct {
 	Namespace string `mapstructure:"namespace"`
+	Flow      string `mapstructure:"flow"`
 	Variable  string `mapstructure:"variable"`
 }
 
-func (tnv *NamespaceVarPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
-	pl := &NamespaceVarPlugin{}
+func (tnv *FlowVarPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
+	pl := &FlowVarPlugin{}
 
 	err := gateway2.ConvertConfig(config.Config, pl)
 	if err != nil {
@@ -31,7 +32,7 @@ func (tnv *NamespaceVarPlugin) NewInstance(config core.PluginConfigV2) (core.Plu
 	return pl, nil
 }
 
-func (tnv *NamespaceVarPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
+func (tnv *FlowVarPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
 	currentNS := gateway2.ExtractContextEndpoint(r).Namespace
 	if tnv.Namespace == "" {
 		tnv.Namespace = currentNS
@@ -41,8 +42,8 @@ func (tnv *NamespaceVarPlugin) Execute(w http.ResponseWriter, r *http.Request) *
 		return nil
 	}
 
-	uri := fmt.Sprintf("http://localhost:%s/api/v2/namespaces/%s/variables/?name=%s",
-		os.Getenv("DIREKTIV_API_V2_PORT"), tnv.Namespace, tnv.Variable)
+	uri := fmt.Sprintf("http://localhost:%s/api/v2/namespaces/%s/variables/?name=%s&workflowPath=%s",
+		os.Getenv("DIREKTIV_API_V2_PORT"), tnv.Namespace, tnv.Variable, tnv.Flow)
 
 	resp, err := doRequest(r, http.MethodGet, uri, nil)
 	if err != nil {
@@ -99,10 +100,10 @@ func (tnv *NamespaceVarPlugin) Execute(w http.ResponseWriter, r *http.Request) *
 	return r
 }
 
-func (tnv *NamespaceVarPlugin) Type() string {
-	return "target-namespace-var"
+func (tnv *FlowVarPlugin) Type() string {
+	return "target-flow-var"
 }
 
 func init() {
-	gateway2.RegisterPlugin(&NamespaceVarPlugin{})
+	gateway2.RegisterPlugin(&FlowVarPlugin{})
 }
