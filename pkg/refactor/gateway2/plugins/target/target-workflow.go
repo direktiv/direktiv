@@ -103,7 +103,7 @@ func (tf *FlowPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Requ
 	//}
 	//
 	//// direktiv requests always respond with 200, workflow errors are handled in the previous check
-	//if resp.StatusCode >= http.StatusMultipleChoices {
+	// if resp.StatusCode >= http.StatusMultipleChoices {
 	//	plugins.ReportError(r.Context(), w, resp.StatusCode,
 	//		"can not execute flow", fmt.Errorf(resp.Status))
 	//
