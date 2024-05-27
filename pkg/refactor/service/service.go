@@ -42,12 +42,8 @@ func getDockerServiceURL(namespace string, typ string, file string, name string)
 	return fmt.Sprintf("http://%s", id)
 }
 
-func SetupGetServiceURLFunc(config *core.Config, withDocker bool) {
+func SetupGetServiceURLFunc(config *core.Config) {
 	GetServiceURL = func(namespace string, typ string, file string, name string) string {
-		if withDocker {
-			return getDockerServiceURL(namespace, typ, file, name)
-		}
-
 		return getKnativeServiceURL(config.KnativeNamespace, namespace, typ, file, name)
 	}
 }

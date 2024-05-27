@@ -6,7 +6,6 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/util"
@@ -69,9 +68,6 @@ func (srv *NetworkServer) Start() {
 	srv.router.HandleFunc("/cancel", srv.cancel)
 
 	port := "8890"
-	if os.Getenv("DIREKITV_ENABLE_DOCKER") == "true" {
-		port = "80"
-	}
 	srv.server.Addr = "0.0.0.0:" + port
 	srv.server.Handler = srv.router
 
