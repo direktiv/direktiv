@@ -84,8 +84,6 @@ describe('Test workflow events and', () => {
 		const getEventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/event-listeners?limit=8&offset=0`)
 			.send()
 
-		
-
 		expect(getEventListenerResponse.body.results[0]).toMatchObject({
 			workflow: '/startor.yaml',
 			mode: 'or',

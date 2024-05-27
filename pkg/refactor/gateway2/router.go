@@ -9,12 +9,16 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 )
 
+// Struct router implements the gateway logic of serving requests. We can see that it wraps a simple
+// http.ServeMux with endpoints and consumers. Lists  endpoints and consumers are used to build the router itself.
 type router struct {
 	serveMux  *http.ServeMux
 	endpoints []core.EndpointV2
 	consumers []core.ConsumerV2
 }
 
+// buildRouter compiles a new gateway router from endpoints and consumers lists.
+//
 //nolint:gocognit
 func buildRouter(endpoints []core.EndpointV2, consumers []core.ConsumerV2) *router {
 	serveMux := http.NewServeMux()
@@ -59,8 +63,6 @@ func buildRouter(endpoints []core.EndpointV2, consumers []core.ConsumerV2) *rout
 
 			// inject consumer files.
 			r = InjectContextConsumersList(r, filterNamespacedConsumers(consumers, item.Namespace))
-			// inject namespace.
-			r = InjectContextNamespace(r, item.Namespace)
 			// inject endpoint.
 			r = InjectContextEndpoint(r, &endpoints[i])
 

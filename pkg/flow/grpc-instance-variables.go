@@ -211,7 +211,7 @@ func (flow *flow) SetInstanceVariable(ctx context.Context, req *grpc.SetInstance
 	// TODO: Alex, please fix here.
 
 	// flow.logger.Infof(ctx, cached.Namespace.ID, cached.GetAttributes(recipient.Namespace), "Set namespace variable '%s'.", req.GetKey())
-	// flow.pubsub.NotifyNamespaceVariables(cached.Namespace)
+	//  flow.pubsub.NotifyNamespaceVariables(cached.Namespace)
 
 	var resp grpc.SetInstanceVariableResponse
 

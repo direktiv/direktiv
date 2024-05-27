@@ -67,9 +67,6 @@ func InstanceStatusFromString(s string) (InstanceStatus, error) {
 	return InstanceStatus(0), fmt.Errorf("invalid instance status '%s' (expect one of %v)", s, instanceStatusStrings)
 }
 
-// InvokerCron defined here so drivers can use it in their AssertNoParallelCron implementation.
-const InvokerCron = util.CallerCron
-
 // Fields defined here so drivers can handle generic order/filter arguments.
 const (
 	FieldCreatedAt    = "created_at"
@@ -161,6 +158,7 @@ type CreateInstanceDataArgs struct {
 	DescentInfo    []byte
 	RuntimeInfo    []byte
 	ChildrenInfo   []byte
+	SyncHash       *string
 }
 
 // UpdateInstanceDataArgs defines the possible arguments for updating an existing instance data record.
@@ -252,10 +250,6 @@ type Store interface {
 
 	// DeleteOldInstances deletes all instances that have terminated and end_at a long time ago
 	DeleteOldInstances(ctx context.Context, before time.Time) error
-
-	// AssertNoParallelCron attempts to detect if another machine in a HA environment may have already triggered an instance that we're just about to create ourselves.
-	// It does this by checking if a record of an instance was created within the last 30s for the given workflow ID.
-	AssertNoParallelCron(ctx context.Context, nsID uuid.UUID, wfPath string) error
 
 	// GetNamespaceInstanceCounts returns some instance metrics.
 	GetNamespaceInstanceCounts(ctx context.Context, nsID uuid.UUID, wfPath string) (*InstanceCounts, error)

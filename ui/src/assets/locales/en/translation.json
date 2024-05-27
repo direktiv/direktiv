@@ -555,6 +555,7 @@
         },
         "tableRow": {
           "realtiveTime": "{{relativeTime}} ago",
+          "stillRunning": "still running",
           "openWorkflowTooltip": "click to open workflow {{name}}"
         },
         "filter": {
@@ -1007,6 +1008,7 @@
       "queryPlaceholder": "Enter your jq query here...",
       "input": "Input",
       "output": "Output",
+      "logs": "Logs",
       "submitBtn": "Run query",
       "examples": {
         "title": "Examples",

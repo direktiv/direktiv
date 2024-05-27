@@ -246,6 +246,7 @@ func writeJSONWithMeta(w http.ResponseWriter, data any, meta any) {
 
 func writeOk(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")
+
 	w.WriteHeader(http.StatusOK)
 }
 

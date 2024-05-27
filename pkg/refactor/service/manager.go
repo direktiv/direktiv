@@ -11,7 +11,6 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/direktiv/direktiv/pkg/refactor/reconcile"
-	dClient "github.com/docker/docker/client"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"knative.dev/serving/pkg/client/clientset/versioned"
@@ -33,32 +32,7 @@ type manager struct {
 	servicesListHasBeenSet bool // NOTE: set to true the first time SetServices is called, and used to prevent any reconciles before that has happened.
 }
 
-func NewManager(c *core.Config, enableDocker bool) (core.ServiceManager, error) {
-	if enableDocker {
-		slog.Debug("creating docker client")
-		cli, err := dClient.NewClientWithOpts(dClient.FromEnv, dClient.WithAPIVersionNegotiation())
-		if err != nil {
-			return nil, fmt.Errorf("failed creating docker client: %w", err)
-		}
-
-		client := &dockerClient{
-			cli: cli,
-		}
-		err = client.cleanAll()
-		if err != nil {
-			return nil, fmt.Errorf("failed cleaning docker client: %w", err)
-		}
-
-		return &manager{
-			cfg:           c,
-			list:          make([]*core.ServiceFileData, 0),
-			runtimeClient: client,
-
-			lock: &sync.Mutex{},
-		}, nil
-	}
-	slog.Debug("creating knative manger")
-
+func NewManager(c *core.Config) (core.ServiceManager, error) {
 	return newKnativeManager(c)
 }
 

@@ -45,10 +45,6 @@ func initEvents(srv *server, appendStagingEvent func(ctx context.Context, events
 	return events
 }
 
-func (events *events) Close() error {
-	return nil
-}
-
 func (events *events) handleEvent(ctx context.Context, ns uuid.UUID, nsName string, ce *cloudevents.Event) error {
 	span := trace.SpanFromContext(ctx)
 	traceID := span.SpanContext().TraceID()
@@ -545,13 +541,6 @@ func (events *events) ReplayCloudevent(ctx context.Context, ns *datastore.Namesp
 		return err
 	}
 
-	// Todo: Yassir, delete this entirely in cycle6.
-	// if eventing is configured, event goes to knative event service
-	// if it is from knative sink not
-	// if events.server.config.EnableEventing && ctx.Value(EventingCtxKeySource) == nil {
-	// 	PublishKnativeEvent(event)
-	// }
-
 	return nil
 }
 
@@ -595,13 +584,6 @@ func (events *events) BroadcastCloudevent(ctx context.Context, ns *datastore.Nam
 			}
 		}
 	}
-
-	// Todo: Yassir, delete this entirely in cycle6.
-	// if eventing is configured, event goes to knative event service
-	// if it is from knative sink not
-	// if events.server.config.EnableEventing && ctx.Value(EventingCtxKeySource) == nil {
-	// 	PublishKnativeEvent(event)
-	// }
 
 	return nil
 }

@@ -67,7 +67,7 @@ func GenerateErrObject(err error) *ErrObject {
 }
 
 // func (e *ErrObject) isRegexError() (ok bool) {
-// 	if e.Code != codes.InvalidArgument {
+// 	if  e.Code !=  codes.InvalidArgument {
 // 		ok = false
 // 	} else if strings.HasSuffix(e.Message, `^[a-z][a-z0-9._-]{1,34}[a-z0-9]$`) {
 // 		ok = true

@@ -16,6 +16,8 @@ type fetchSecretArgs struct {
 	secretName string
 }
 
+// fetchSecret gets a secret from the database by parsing an expression, this expression like:
+// "fetchSecret(namespaceName,secretName)".
 func fetchSecret(db *database.SQLStore, namespace string, callExpression string) (string, error) {
 	callExpression = strings.TrimSpace(callExpression)
 	if !strings.HasPrefix(callExpression, "fetchSecret") {

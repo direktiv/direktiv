@@ -10,6 +10,8 @@ import (
 
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/states"
+	"github.com/direktiv/direktiv/pkg/refactor/core"
+	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/google/uuid"
 )
@@ -41,6 +43,8 @@ func (engine *engine) enqueueInstanceMessage(ctx context.Context, id uuid.UUID, 
 	tx, err := engine.flow.beginSQLTx(ctx) /*&sql.TxOptions{
 		Isolation: sql.LevelSerializable,
 	}*/if err != nil {
+		slog.Error("Failed to begin SQL transaction.", "error", err)
+
 		return err
 	}
 	defer tx.Rollback()
@@ -81,6 +85,8 @@ func (engine *engine) enqueueInstanceMessage(ctx context.Context, id uuid.UUID, 
 	} else {
 		err = engine.pBus.Publish(engineInstanceMessagesChannel, string(msg))
 		if err != nil {
+			slog.Error("Failed to publish message to bus.", "error", err)
+
 			return err
 		}
 	}
@@ -108,8 +114,14 @@ func (engine *engine) instanceMessagesChannelHandler(data string) {
 }
 
 func (engine *engine) handleInstanceMessage(ctx context.Context, im *instanceMemory, msg *instancestore.InstanceMessageData) *states.Transition {
+	nsCtx := im.Namespace().WithTags(ctx)
+	instanceCtx := im.WithTags(nsCtx)
+	nsCtx = enginerefactor.WithTrack(instanceCtx, enginerefactor.BuildNamespaceTrack(im.Namespace().Name))
+	ctx = enginerefactor.WithTrack(instanceCtx, enginerefactor.BuildInstanceTrack(im.instance))
+
 	if im.instance.Instance.EndedAt != nil && !im.instance.Instance.EndedAt.IsZero() {
-		slog.Warn("Skipping message because instance has ended.", "instance", im.ID(), "namespace", im.Namespace())
+		slog.Warn("Skipping message because instance has ended.", enginerefactor.GetSlogAttributesWithStatus(nsCtx, core.LogCompletedStatus)...)
+
 		return nil
 	}
 
@@ -117,7 +129,8 @@ func (engine *engine) handleInstanceMessage(ctx context.Context, im *instanceMem
 
 	err := json.Unmarshal(msg.Payload, &m)
 	if err != nil {
-		slog.Error("Failed to unmarshal message payload", "error", err, "instance", im.ID(), "namespace", im.Namespace())
+		slog.Error("Failed to unmarshal message payload", enginerefactor.GetSlogAttributesWithError(ctx, err)...)
+
 		return nil
 	}
 
@@ -126,19 +139,22 @@ func (engine *engine) handleInstanceMessage(ctx context.Context, im *instanceMem
 
 	x, ok := m["type"]
 	if !ok {
-		slog.Error("Invalid message payload: missing 'type' field", "instance", im.ID(), "namespace", im.Namespace())
+		slog.Error("Invalid message payload: missing 'type' field", enginerefactor.GetSlogAttributesWithError(ctx, err)...)
+
 		return nil
 	}
 
 	msgType, ok = x.(string)
 	if !ok {
-		slog.Error("failed to unmarshal message payload: 'type' field not a string", "instance", im.ID(), "namespace", im.Namespace())
+		slog.Error("failed to unmarshal message payload: 'type' field not a string", enginerefactor.GetSlogAttributesWithError(ctx, err)...)
+
 		return nil
 	}
 
 	x, ok = m["data"]
 	if !ok {
-		slog.Error("Invalid message payload: missing 'data' field", "instance", im.ID(), "namespace", im.Namespace())
+		slog.Error("Invalid message payload: missing 'data' field", enginerefactor.GetSlogAttributesWithError(ctx, err)...)
+
 		return nil
 	}
 
@@ -156,7 +172,8 @@ func (engine *engine) handleInstanceMessage(ctx context.Context, im *instanceMem
 	case "transition":
 		return engine.handleTransitionMessage(ctx, im, data)
 	default:
-		slog.Error("Encountered unrecognized instance message type.", "msgType", msgType, "instance", im.ID().String(), "namespace", im.Namespace())
+		slog.Error("Encountered unrecognized instance message type.", "msgType", msgType, "instance", im.ID(), "namespace", im.Namespace())
+
 		panic(fmt.Sprintf("unrecognized instance message type: %s", msgType))
 	}
 }
@@ -172,7 +189,7 @@ func (engine *engine) handleCancelMessage(ctx context.Context, im *instanceMemor
 
 	err := json.Unmarshal(data, &args)
 	if err != nil {
-		slog.Error("handleCancelMessage failed to unmarshal cancel message args", "error", err)
+		slog.Error("handleCancelMessage failed to unmarshal cancel message args", enginerefactor.GetSlogAttributesWithError(ctx, err)...)
 		return nil
 	}
 
@@ -190,7 +207,8 @@ func (engine *engine) handleWakeMessage(ctx context.Context, im *instanceMemory,
 
 	err := json.Unmarshal(data, &pl)
 	if err != nil {
-		slog.Error("handleWakeMessage failed to unmarshal wakeup message args", "error", err)
+		slog.Error("handleWakeMessage failed to unmarshal wakeup message args", enginerefactor.GetSlogAttributesWithError(ctx, err)...)
+
 		return nil
 	}
 
@@ -202,7 +220,8 @@ func (engine *engine) handleActionMessage(ctx context.Context, im *instanceMemor
 
 	err := json.Unmarshal(data, &pl)
 	if err != nil {
-		slog.Error("handleActionMessage failed to unmarshal action results message", "error", err)
+		slog.Error("handleActionMessage failed to unmarshal action results message", enginerefactor.GetSlogAttributesWithError(ctx, err)...)
+
 		return nil
 	}
 
@@ -214,7 +233,8 @@ func (engine *engine) handleActionMessage(ctx context.Context, im *instanceMemor
 func (engine *engine) handleEventMessage(ctx context.Context, im *instanceMemory, data []byte) *states.Transition {
 	ctx, cleanup, err := traceStateGenericBegin(ctx, im)
 	if err != nil {
-		slog.Error("handleEventMessage failed to begin trace", "error", err)
+		slog.Error("Failed to begin trace for event message.", enginerefactor.GetSlogAttributesWithError(ctx, err)...)
+
 		return nil
 	}
 	defer cleanup()
@@ -227,7 +247,8 @@ func (engine *engine) handleTransitionMessage(ctx context.Context, im *instanceM
 
 	err := json.Unmarshal(data, &state)
 	if err != nil {
-		slog.Error("handleTransitionMessage failed to unmarshal transition message args", "error", err)
+		slog.Error("handleTransitionMessage failed to unmarshal transition message args", enginerefactor.GetSlogAttributesWithError(ctx, err)...)
+
 		return nil
 	}
 
