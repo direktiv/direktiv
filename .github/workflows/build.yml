@@ -362,9 +362,22 @@ jobs:
           GITHUB_ACTIONS: true
 
       - name: Run Playwrite E2E tests
+        id: playwrightRun
         if: matrix.sections.type == 'playwright'
         run: |
           PLAYWRIGHT_SHARD=${{ matrix.sections.suit }} make docker-e2e-playwright
+
+      - name: Upload Playwrite Artifacts
+        if: failure() && steps.playwrightRun.outcome == 'failure'
+        run: |
+          PLAYWRIGHT_SHARD=${{ matrix.sections.suit }} make docker-e2e-playwright
+
+      - name: Upload Playwright Artifacts
+        if: failure() && steps.playwrightRun.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: /test-results
 
       - name: Show logs
         run: |
