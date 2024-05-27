@@ -2,7 +2,6 @@ package gateway2
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -14,6 +13,7 @@ import (
 
 var registry = make(map[string]core.PluginV2)
 
+// RegisterPlugin used to register a new plugin, typically by init() functions.
 func RegisterPlugin(p core.PluginV2) {
 	if os.Getenv("DIREKTIV_APP") != "sidecar" &&
 		os.Getenv("DIREKTIV_APP") != "init" {
@@ -22,6 +22,7 @@ func RegisterPlugin(p core.PluginV2) {
 	}
 }
 
+// NewPlugin creates a new plugin instance from a plugin configuration.
 func NewPlugin(config core.PluginConfigV2) (core.PluginV2, error) {
 	f, ok := registry[config.Typ]
 	if !ok {
@@ -31,21 +32,22 @@ func NewPlugin(config core.PluginConfigV2) (core.PluginV2, error) {
 	return f.NewInstance(config)
 }
 
-func ConvertConfig(config map[string]any, target any) error {
+// ConvertConfig only decorates mapstructure.Decode.
+func ConvertConfig(config map[string]any, target core.PluginV2) error {
 	err := mapstructure.Decode(config, target)
 	if err != nil {
-		return errors.Join(err, errors.New("configuration invalid"))
+		return fmt.Errorf("plugin: %s, could not decode plugin config: %w", target.Type(), err)
 	}
 
 	return nil
 }
 
+// IsJSON helper function checks if a string is a json string.
 func IsJSON(str string) bool {
-	var js json.RawMessage
-
-	return json.Unmarshal([]byte(str), &js) == nil
+	return json.Unmarshal([]byte(str), &json.RawMessage{}) == nil
 }
 
+// WriteJSONError writes error gateway response.
 func WriteJSONError(w http.ResponseWriter, status int, endpointFile string, msg string) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
@@ -66,6 +68,16 @@ func WriteJSONError(w http.ResponseWriter, status int, endpointFile string, msg 
 	_ = json.NewEncoder(w).Encode(payload)
 }
 
+// WriteInternalError writes error gateway response.
 func WriteInternalError(r *http.Request, w http.ResponseWriter, err error, msg string) {
+	slog.With("component", "gateway2").
+		Error(msg, "err", err)
 	WriteJSONError(w, http.StatusInternalServerError, ExtractContextEndpoint(r).FilePath, msg)
+}
+
+// WriteForbiddenError writes error gateway response.
+func WriteForbiddenError(r *http.Request, w http.ResponseWriter, err error, msg string) {
+	slog.With("component", "gateway2").
+		Error(msg, "err", err)
+	WriteJSONError(w, http.StatusForbidden, ExtractContextEndpoint(r).FilePath, msg)
 }

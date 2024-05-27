@@ -106,6 +106,7 @@ type newInstanceArgs struct {
 	Invoker       string
 	DescentInfo   *enginerefactor.InstanceDescentInfo
 	TelemetryInfo *enginerefactor.InstanceTelemetryInfo
+	SyncHash      *string
 }
 
 const (
@@ -237,6 +238,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 		DescentInfo:    descentInfo,
 		RuntimeInfo:    riData,
 		ChildrenInfo:   ciData,
+		SyncHash:       args.SyncHash,
 	})
 	if err != nil {
 		return nil, err

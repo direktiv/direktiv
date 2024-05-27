@@ -11,6 +11,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/direktiv/direktiv/pkg/refactor/instancestore/instancestoresql"
+	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 )
 
@@ -511,7 +512,7 @@ func Test_sqlInstanceStore_GetHangingInstances(t *testing.T) {
 	args := &instancestore.CreateInstanceDataArgs{
 		ID:           id,
 		Server:       server,
-		Invoker:      instancestore.InvokerCron,
+		Invoker:      util.CallerCron,
 		WorkflowPath: "/test.yaml",
 		Definition: []byte(`
 states:
@@ -640,7 +641,7 @@ func Test_sqlInstanceStore_DeleteOldInstances(t *testing.T) {
 	args := &instancestore.CreateInstanceDataArgs{
 		ID:           id,
 		Server:       server,
-		Invoker:      instancestore.InvokerCron,
+		Invoker:      util.CallerCron,
 		WorkflowPath: "/test.yaml",
 		Definition: []byte(`
 states:
@@ -708,67 +709,6 @@ type: noop
 	_, err = instances.ForInstanceID(id).GetSummary(context.Background())
 	if !errors.Is(err, instancestore.ErrNotFound) {
 		t.Errorf("unexpected GetSummary() error: expect is '%v' but got '%v'", instancestore.ErrNotFound, err)
-
-		return
-	}
-}
-
-// nolint
-func Test_sqlInstanceStore_AssertNoParallelCron(t *testing.T) {
-	server := uuid.New()
-
-	db, err := database.NewMockGorm()
-	if err != nil {
-		t.Fatalf("unepxected NewMockGorm() error = %v", err)
-	}
-	instances := instancestoresql.NewSQLInstanceStore(db)
-
-	nsID := uuid.New()
-
-	wfPath := "/test.yaml"
-	err = instances.AssertNoParallelCron(context.Background(), nsID, wfPath)
-	if err != nil {
-		t.Errorf("unexpected AssertNoParallelCron() error: %v", err)
-
-		return
-	}
-
-	args := &instancestore.CreateInstanceDataArgs{
-		ID:           uuid.New(),
-		NamespaceID:  nsID,
-		Server:       server,
-		Invoker:      instancestore.InvokerCron,
-		WorkflowPath: "/test2.yaml",
-		Definition: []byte(`
-states:
-- id: test
-type: noop
-`),
-		Input:         []byte(`{}`),
-		TelemetryInfo: []byte(`{}`),
-		DescentInfo:   []byte(`{}`),
-		RuntimeInfo:   []byte(`{}`),
-		ChildrenInfo:  []byte(`{}`),
-		LiveData:      []byte(`{}`),
-	}
-
-	assertInstanceStoreCorrectInstanceDataCreation(t, instances, args)
-
-	err = instances.AssertNoParallelCron(context.Background(), nsID, wfPath)
-	if err != nil {
-		t.Errorf("unexpected AssertNoParallelCron() error: %v", err)
-
-		return
-	}
-
-	args.ID = uuid.New()
-	args.WorkflowPath = wfPath
-
-	assertInstanceStoreCorrectInstanceDataCreation(t, instances, args)
-
-	err = instances.AssertNoParallelCron(context.Background(), nsID, wfPath)
-	if !errors.Is(err, instancestore.ErrParallelCron) {
-		t.Errorf("unexpected AssertNoParallelCron() error: expected is '%v' but got '%v' ", instancestore.ErrParallelCron, err)
 
 		return
 	}
