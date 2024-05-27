@@ -370,4 +370,4 @@ jobs:
       - name: Upload Playwright Artifacts
         if: failure() && steps.playwrightRun.outcome == 'failure'
         run: |
-          find / -name trace.zip
+          find /app -name trace.zip
