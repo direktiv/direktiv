@@ -12,8 +12,7 @@ test.afterEach(async () => {
   namespace = "";
 });
 
-// disable for now since it fails in CI
-test.skip("It will show the logs on the monitoring page", async ({ page }) => {
+test("It will show the logs on the monitoring page", async ({ page }) => {
   test.slow();
   await page.goto(`/n/${namespace}/monitoring`, {
     waitUntil: "domcontentloaded",
