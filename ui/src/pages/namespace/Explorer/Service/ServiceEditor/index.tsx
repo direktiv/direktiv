@@ -54,8 +54,8 @@ const ServiceEditor: FC<ServiceEditorProps> = ({ data }) => {
       }) => {
         const preview = jsonToYaml(values);
 
-        const filehasChanged = preview === fileContentFromServer;
-        const isDirty = !serviceConfigError && !filehasChanged;
+        const filehasChanged = preview !== fileContentFromServer;
+        const isDirty = !serviceConfigError && filehasChanged;
         const disableButton = isPending || !!serviceConfigError;
 
         return (

@@ -50,8 +50,8 @@ const EndpointEditor: FC<EndpointEditorProps> = ({ data }) => {
         values,
       }) => {
         const preview = jsonToYaml(values);
-        const filehasChanged = preview === fileContentFromServer;
-        const isDirty = !endpointConfigError && !filehasChanged;
+        const filehasChanged = preview !== fileContentFromServer;
+        const isDirty = !endpointConfigError && filehasChanged;
         const disableButton = isPending || !!endpointConfigError;
 
         return (
