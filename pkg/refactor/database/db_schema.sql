@@ -269,3 +269,35 @@ ALTER TABLE "mirror_configs" ADD COLUMN IF NOT EXISTS "auth_token" text;
 DROP TABLE IF EXISTS "metrics";
 
 ALTER TABLE "instances_v2" ADD COLUMN IF NOT EXISTS "sync_hash" text UNIQUE;
+
+ALTER TABLE "instances_v2" ADD COLUMN IF NOT EXISTS "server" uuid;
+ALTER TABLE "mirror_configs" DROP COLUMN IF EXISTS "git_commit_hash";
+ALTER TABLE "event_listeners" DROP COLUMN IF EXISTS "glob_gates";
+DELETE FROM "runtime_variables" WHERE "namespace" IS NULL;
+ALTER TABLE "runtime_variables" ALTER COLUMN "namespace" SET NOT NULL;
+ALTER TABLE "filesystem_roots" ADD COLUMN IF NOT EXISTS "created_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE "filesystem_roots" ADD COLUMN IF NOT EXISTS "updated_at" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE "filesystem_files" ADD COLUMN IF NOT EXISTS "data" bytea;
+ALTER TABLE "filesystem_files" ADD COLUMN IF NOT EXISTS "checksum" text;
+ALTER TABLE "instances_v2" DROP COLUMN IF EXISTS "revision_id";
+DROP TABLE IF EXISTS "filesystem_revisions";
+
+create or replace function create_constraint_if_not_exists (
+    t_name text, c_name text, constraint_sql text
+) 
+returns void AS
+$$
+begin
+    -- Look for our constraint
+    if not exists (select constraint_name 
+                   from information_schema.constraint_column_usage 
+                   where table_name = t_name  and constraint_name = c_name) then
+        execute constraint_sql;
+    end if;
+end;
+$$ language 'plpgsql';
+
+SELECT create_constraint_if_not_exists(
+        'runtime_variables',
+        'runtime_variables_unique_2',
+        'ALTER TABLE "runtime_variables" ADD CONSTRAINT "runtime_variables_unique_2" UNIQUE NULLS NOT DISTINCT (namespace, name, workflow_path, instance_id);');
