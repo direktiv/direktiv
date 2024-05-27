@@ -49,10 +49,6 @@ func initEngine(srv *server) *engine {
 	return engine
 }
 
-func (engine *engine) Close() error {
-	return nil
-}
-
 func (engine *engine) instanceKicker() {
 	<-time.After(1 * time.Minute)
 	ticker := time.NewTicker(5 * time.Second)
@@ -110,6 +106,7 @@ type newInstanceArgs struct {
 	Invoker       string
 	DescentInfo   *enginerefactor.InstanceDescentInfo
 	TelemetryInfo *enginerefactor.InstanceTelemetryInfo
+	SyncHash      *string
 }
 
 const (
@@ -241,6 +238,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 		DescentInfo:    descentInfo,
 		RuntimeInfo:    riData,
 		ChildrenInfo:   ciData,
+		SyncHash:       args.SyncHash,
 	})
 	if err != nil {
 		return nil, err

@@ -9,7 +9,6 @@ import "google/protobuf/empty.proto";
 import "pkg/flow/grpc/variables.proto";
 import "pkg/flow/grpc/internal.proto";
 import "pkg/flow/grpc/cloudevent.proto";
-import "pkg/flow/grpc/util.proto";
 
 service Flow {
 	rpc BroadcastCloudevent (BroadcastCloudeventRequest) returns (google.protobuf.Empty) {}
@@ -21,9 +20,6 @@ service Flow {
 	rpc SetWorkflowVariableParcels (stream SetWorkflowVariableRequest) returns (SetWorkflowVariableResponse) {}
 	rpc InstanceVariable (InstanceVariableRequest) returns (InstanceVariableResponse) {}
 	rpc SetInstanceVariableParcels (stream SetInstanceVariableRequest) returns (SetInstanceVariableResponse) {}
-
-	//
-	rpc JQ (JQRequest) returns (JQResponse) {}
 
 	// events.
 	rpc EventListeners (EventListenersRequest) returns (EventListenersResponse) {}
@@ -46,8 +42,3 @@ service Internal {
 	rpc SetInstanceVariableParcels (stream SetVariableInternalRequest) returns (SetVariableInternalResponse) {}
 	rpc FileVariableParcels (VariableInternalRequest) returns (stream VariableInternalResponse) {}
 }
-
-// Todo: Yassir, delete this entirely in cycle6.
-//service Eventing {
-//	rpc RequestEvents (EventingRequest) returns (stream CloudEvent) {}
-//}
