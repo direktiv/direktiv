@@ -12,6 +12,9 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/database"
 )
 
+// manager struct implements core.GatewayManagerV2 by wrapping a pointer to router struct. Whenever endpoint and
+// consumer files changes, method SetEndpoints should be called and this will build a new router and
+// atomically swaps the old one.
 type manager struct {
 	routerPointer unsafe.Pointer
 	db            *database.SQLStore
@@ -38,6 +41,7 @@ func NewManager(db *database.SQLStore) core.GatewayManagerV2 {
 	}
 }
 
+// ServeHTTP makes this manager serves http requests.
 func (m *manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	inner := m.atomicLoadRouter()
 	if inner == nil {
@@ -48,6 +52,7 @@ func (m *manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	inner.serveMux.ServeHTTP(w, r)
 }
 
+// SetEndpoints compiles a new router and atomically swaps the old one. No ongoing requests should be effected.
 func (m *manager) SetEndpoints(list []core.EndpointV2, cList []core.ConsumerV2) {
 	cList = slices.Clone(cList)
 
@@ -69,6 +74,7 @@ func (m *manager) ListConsumers(namespace string) []core.ConsumerV2 {
 	return filterNamespacedConsumers(inner.consumers, namespace)
 }
 
+// interpolateConsumersList translates matic consumer function "fetchSecret" in consumer files.
 func (m *manager) interpolateConsumersList(list []core.ConsumerV2) error {
 	db, err := m.db.BeginTx(context.Background())
 	if err != nil {

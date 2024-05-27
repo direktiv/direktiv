@@ -14,6 +14,11 @@ env:
   SRVTAG: dev
   IS_GITHUB_ACTIONS: true
 
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   check-cache:
     runs-on: ubuntu-latest
@@ -136,7 +141,7 @@ jobs:
 
 
       - name: Cache Docker layers
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: /tmp/.buildx-cache
           key: api-${{ env.CURRENT_DATE }}-${{ runner.os }}-buildx-x
@@ -190,7 +195,7 @@ jobs:
         run: echo "CURRENT_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
 
       - name: Cache Docker layers
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: /tmp/.buildx-cache
           key: ui-${{ env.CURRENT_DATE }}-${{ runner.os }}-buildx-x
@@ -208,7 +213,7 @@ jobs:
 
   e2e:
     needs: [ check-cache, ui-build, backend-build ]
-    if: ${{ always() }}
+    if: ${{ !failure() && !cancelled() }}
     runs-on: ubuntu-latest
 
     timeout-minutes: 18

@@ -375,3 +375,43 @@ test("running a snippet will automatically scroll the page to the top", async ({
     )
     .toBe(true);
 });
+
+test("running a snippet will store the jqx and input in local storage", async ({
+  page,
+}) => {
+  const { inputTextArea, queryInput } = getCommonElements(page);
+  const snippetButton = page.getByTestId(`jq-run-snippet-valueAtKey-btn`);
+
+  await snippetButton.click();
+
+  const expectedInput = `{
+    "foo": 42,
+    "bar": "less interesting data"
+}`;
+
+  const expectedJqx = "jq(.foo)";
+
+  expect(
+    await queryInput.inputValue(),
+    "the jqx from the example snippet is used"
+  ).toBe(expectedJqx);
+  await expect
+    .poll(
+      async () => await inputTextArea.inputValue(),
+      "the input from the example snippet is used"
+    )
+    .toBe(expectedInput);
+
+  await page.reload();
+
+  expect(
+    await queryInput.inputValue(),
+    "the jqx will be restored from local storage"
+  ).toBe(expectedJqx);
+  await expect
+    .poll(
+      async () => await inputTextArea.inputValue(),
+      "the input will be restored from local storage"
+    )
+    .toBe(expectedInput);
+});

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
@@ -57,13 +58,13 @@ func (rcp *RequestConvertPlugin) Execute(w http.ResponseWriter, r *http.Request)
 		},
 	}
 
-	// TODO: discuss with Jens.
+	// TODO: yassir need fix here.
 	// convert uri extension
 	// up := r.Context().Value(plugins.URLParamCtxKey)
 	// if up != nil {
-	//	// nolint cvoming from gateway
-	//	response.URLParams = up.(map[string]string)
-	//}
+	// 	// nolint cvoming from gateway
+	// 	response.URLParams = up.(map[string]string)
+	// }
 
 	// convert query params
 	if !rcp.OmitQueries {
@@ -97,6 +98,7 @@ func (rcp *RequestConvertPlugin) Execute(w http.ResponseWriter, r *http.Request)
 			gateway2.WriteInternalError(r, w, err, "can not process content")
 			return nil
 		}
+		defer r.Body.Close()
 	}
 
 	// add json content or base64 if binary
@@ -113,6 +115,10 @@ func (rcp *RequestConvertPlugin) Execute(w http.ResponseWriter, r *http.Request)
 		return nil
 	}
 	r.Body = io.NopCloser(bytes.NewBuffer(newBody))
+
+	slog.Debug("converted content set",
+		"plugin", (&RequestConvertPlugin{}).Type(),
+		"body", string(newBody))
 
 	return r
 }

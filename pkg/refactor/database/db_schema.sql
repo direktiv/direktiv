@@ -104,6 +104,7 @@ CREATE TABLE IF NOT EXISTS "instances_v2" (
     "output" bytea,
     "error_message" bytea,
     "metadata" bytea,
+    "sync_hash" text UNIQUE,
     PRIMARY KEY ("id"),
     CONSTRAINT "fk_namespaces_instances"
     FOREIGN KEY ("namespace_id") REFERENCES "namespaces"("id") ON DELETE CASCADE ON UPDATE CASCADE
@@ -266,3 +267,5 @@ ALTER TABLE "mirror_configs" ADD COLUMN IF NOT EXISTS "auth_type" text NOT NULL 
 ALTER TABLE "mirror_configs" ADD COLUMN IF NOT EXISTS "auth_token" text;
 
 DROP TABLE IF EXISTS "metrics";
+
+ALTER TABLE "instances_v2" ADD COLUMN IF NOT EXISTS "sync_hash" text UNIQUE;

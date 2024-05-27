@@ -283,27 +283,6 @@ func marshalJSON(w io.Writer, x interface{}, multiline bool) {
 	fmt.Fprintf(w, "%s", s)
 }
 
-func unmarshalBody(r *http.Request, x interface{}) error {
-	limit := int64(1024 * 1024 * 32)
-
-	if r.ContentLength > 0 {
-		if r.ContentLength > limit {
-			return errors.New("request payload too large")
-		}
-		limit = r.ContentLength
-	}
-
-	dec := json.NewDecoder(io.LimitReader(r.Body, limit))
-	dec.DisallowUnknownFields()
-
-	err := dec.Decode(x)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func pathAndRef(r *http.Request) (string, string) {
 	path := mux.Vars(r)["path"]
 	ref := r.URL.Query().Get("ref")
