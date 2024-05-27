@@ -361,14 +361,9 @@ jobs:
           DIREKTIV_HOST: ${{ env.DIREKTIV_HOST }}
           GITHUB_ACTIONS: true
 
-      - name: Run Playwrite E2E tests
+      - name: Run Playwright E2E tests
         id: playwrightRun
         if: matrix.sections.type == 'playwright'
-        run: |
-          PLAYWRIGHT_SHARD=${{ matrix.sections.suit }} make docker-e2e-playwright
-
-      - name: Upload Playwrite Artifacts
-        if: failure() && steps.playwrightRun.outcome == 'failure'
         run: |
           PLAYWRIGHT_SHARD=${{ matrix.sections.suit }} make docker-e2e-playwright
 
