@@ -201,9 +201,9 @@ fluent-bit:
           Name                    tail
           Path                    /var/log/containers/*flow*.log,/var/log/containers/*direktiv-sidecar*.log
           Mem_Buf_Limit           5MB
-          Skip_Long_Lines         Off
+          Skip_Long_Lines         On
           Tag                     input
-          Parser                  cri_direktiv
+          multiline.parser        cri, docker
           Refresh_Interval        1
           Buffer_Max_Size         64k
     outputs: |
@@ -220,14 +220,13 @@ fluent-bit:
       [FILTER]
           Name                    rewrite_tag
           Match                   input
-          Rule                    $log ^.*"track":"([^"]+)"[^}].*}$ flow.$1 true
-    customParsers: |
-      [PARSER]
-          Name                    cri_direktiv
-          Format                  regex
-          Regex                   ^(?<time>[^ ]+) (?<stream>stdout|stderr) (?<logtag>[^ ]*) (?<log>.*)$
-          Time_Key                time
-          Time_Format             %Y-%m-%dT%H:%M:%S.%L%z
+          Rule                    $log ^.*"track":"([^"]*).*$ flow.$1 true
+      [FILTER]
+          Name parser
+          Match *
+          Parser json
+          Key_Name log
+          Reserve_Data on
 
 # -- service account for components. If preconfigured serviceaccounts are used the name ise the base 
 # and two additional service accounts are needed, e.g. service account name is myaccount then another two 

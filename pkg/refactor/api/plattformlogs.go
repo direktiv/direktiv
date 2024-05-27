@@ -328,41 +328,31 @@ type RouteEntryContext struct {
 }
 
 func toFeatureLogEntry(e core.LogEntry) (logEntry, error) {
-	entry, ok := e.Data["log"].(string)
-	if !ok {
-		return logEntry{}, fmt.Errorf("log-entry format is corrupt")
-	}
-
-	var m map[string]interface{}
-	if err := json.Unmarshal([]byte(entry), &m); err != nil {
-		return logEntry{}, fmt.Errorf("failed to unmarshal log entry: %w", err)
-	}
-
 	featureLogEntry := logEntry{
 		ID:    e.ID,
 		Time:  e.Time,
-		Msg:   m["msg"],
-		Level: m["level"],
+		Msg:   e.Data["msg"],
+		Level: e.Data["level"],
 	}
-	featureLogEntry.Error = m["error"]
-	featureLogEntry.Trace = m["trace"]
-	featureLogEntry.Span = m["span"]
-	featureLogEntry.Namespace = m["namespace"]
+	featureLogEntry.Error = e.Data["error"]
+	featureLogEntry.Trace = e.Data["trace"]
+	featureLogEntry.Span = e.Data["span"]
+	featureLogEntry.Namespace = e.Data["namespace"]
 	wfLogCtx := WorkflowEntryContext{}
-	wfLogCtx.State = m["state"]
-	wfLogCtx.Path = m["workflow"]
-	wfLogCtx.Instance = m["instance"]
-	wfLogCtx.CalledAs = m["calledAs"]
-	wfLogCtx.Status = m["status"]
-	wfLogCtx.Branch = m["branch"]
+	wfLogCtx.State = e.Data["state"]
+	wfLogCtx.Path = e.Data["workflow"]
+	wfLogCtx.Instance = e.Data["instance"]
+	wfLogCtx.CalledAs = e.Data["calledAs"]
+	wfLogCtx.Status = e.Data["status"]
+	wfLogCtx.Branch = e.Data["branch"]
 	featureLogEntry.Workflow = &wfLogCtx
 	if wfLogCtx.Path == nil && wfLogCtx.Instance == nil {
 		featureLogEntry.Workflow = nil
 	}
-	if id, ok := m["activity"]; ok && id != nil {
+	if id, ok := e.Data["activity"]; ok && id != nil {
 		featureLogEntry.Activity = &ActivityEntryContext{ID: id}
 	}
-	if path, ok := m["route"]; ok && path != nil {
+	if path, ok := e.Data["route"]; ok && path != nil {
 		featureLogEntry.Route = &RouteEntryContext{Path: path}
 	}
 
