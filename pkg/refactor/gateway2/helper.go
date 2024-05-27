@@ -18,18 +18,6 @@ func isAuthPlugin(p core.PluginV2) bool {
 	return strings.Contains(p.Type(), "-auth") || strings.Contains(p.Type(), "auth-")
 }
 
-func WriteJSON(w http.ResponseWriter, v any) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-
-	payLoad := struct {
-		Data any `json:"data"`
-	}{
-		Data: v,
-	}
-	_ = json.NewEncoder(w).Encode(payLoad)
-}
-
 func filterNamespacedConsumers(consumers []core.ConsumerV2, namespace string) []core.ConsumerV2 {
 	list := []core.ConsumerV2{}
 	for _, item := range consumers {
@@ -52,6 +40,7 @@ func filterNamespacedEndpoints(endpoints []core.EndpointV2, namespace string) []
 	return list
 }
 
+// FindConsumerByUser find a consumer that matches a user string.
 func FindConsumerByUser(list []core.ConsumerV2, user string) *core.ConsumerV2 {
 	for _, item := range list {
 		if item.Username == user {
@@ -62,6 +51,7 @@ func FindConsumerByUser(list []core.ConsumerV2, user string) *core.ConsumerV2 {
 	return nil
 }
 
+// FindConsumerByAPIKey find a consumer that matches a key string.
 func FindConsumerByAPIKey(list []core.ConsumerV2, key string) *core.ConsumerV2 {
 	for _, item := range list {
 		if item.APIKey == key {
@@ -70,4 +60,17 @@ func FindConsumerByAPIKey(list []core.ConsumerV2, key string) *core.ConsumerV2 {
 	}
 
 	return nil
+}
+
+// WriteJSON helper function to write a json payload to a http.ResponseWriter.
+func WriteJSON(w http.ResponseWriter, v any) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	payLoad := struct {
+		Data any `json:"data"`
+	}{
+		Data: v,
+	}
+	_ = json.NewEncoder(w).Encode(payLoad)
 }

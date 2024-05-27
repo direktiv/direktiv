@@ -36,7 +36,7 @@ func NewPlugin(config core.PluginConfigV2) (core.PluginV2, error) {
 func ConvertConfig(config map[string]any, target core.PluginV2) error {
 	err := mapstructure.Decode(config, target)
 	if err != nil {
-		return fmt.Errorf("plugin: %s, could not decode plugin config: %v", target.Type(), err)
+		return fmt.Errorf("plugin: %s, could not decode plugin config: %w", target.Type(), err)
 	}
 
 	return nil
