@@ -365,11 +365,9 @@ jobs:
         id: playwrightRun
         if: matrix.sections.type == 'playwright'
         run: |
-          PLAYWRIGHT_SHARD=${{ matrix.sections.suit }} make docker-e2e-playwright && find / -name trace.zip
+          PLAYWRIGHT_SHARD=${{ matrix.sections.suit }} make docker-e2e-playwright || find / -name trace.zip
 
       - name: Upload Playwright Artifacts
         if: failure() && steps.playwrightRun.outcome == 'failure'
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results
-          path: /app/ui/test-results
+        run: |
+          find / -name trace.zip
