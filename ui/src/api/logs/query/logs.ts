@@ -223,7 +223,8 @@ export const useLogs = ({
    */
   let logData: LogEntryType[] | undefined = undefined;
   if (queryReturn.data) {
-    const pages = queryReturn.data?.pages.map((page) => page.data ?? []) ?? [];
+    const pagesReversed = [...queryReturn.data.pages].reverse();
+    const pages = pagesReversed.map((page) => page.data ?? []) ?? [];
     logData = pages.flat();
   }
 
