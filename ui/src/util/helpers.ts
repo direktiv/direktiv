@@ -35,7 +35,7 @@ export const ConditionalWrapper: FC<ConditionalWrapperProps> = ({
 }) => (condition ? wrapper(children) : children);
 
 export const formatLogTime = (time: string) =>
-  moment(time).format("HH:mm:ss.mm");
+  moment(time).format("YYYY-MM-DD HH:mm:ss.mm");
 
 type LogEntryVariant = ComponentProps<typeof LogEntry>["variant"];
 
