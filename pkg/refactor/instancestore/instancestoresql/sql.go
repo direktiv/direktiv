@@ -39,6 +39,7 @@ const (
 	fieldOutput         = "output"
 	fieldErrorMessage   = "error_message"
 	fieldMetadata       = "metadata"
+	fieldSyncHash       = "sync_hash"
 
 	messagesTable                  = "instance_messages"
 	fieldInstanceMessageID         = "id"
@@ -113,7 +114,7 @@ func (s *sqlInstanceStore) CreateInstanceData(ctx context.Context, args *instanc
 		fieldID, fieldNamespaceID, fieldNamespace, fieldRootInstanceID, fieldServer,
 		fieldStatus, fieldWorkflowPath, fieldErrorCode, fieldInvoker, fieldDefinition,
 		fieldSettings, fieldDescentInfo, fieldTelemetryInfo, fieldRuntimeInfo,
-		fieldChildrenInfo, fieldInput, fieldLiveData, fieldStateMemory,
+		fieldChildrenInfo, fieldInput, fieldLiveData, fieldStateMemory, fieldSyncHash,
 	}
 	query := generateInsertQuery(table, columns)
 
@@ -121,7 +122,7 @@ func (s *sqlInstanceStore) CreateInstanceData(ctx context.Context, args *instanc
 		idata.ID, idata.NamespaceID, idata.Namespace, idata.RootInstanceID, idata.Server,
 		idata.Status, idata.WorkflowPath, idata.ErrorCode, idata.Invoker, idata.Definition,
 		make([]byte, 0), idata.DescentInfo, idata.TelemetryInfo, idata.RuntimeInfo,
-		idata.ChildrenInfo, idata.Input, idata.LiveData, idata.StateMemory)
+		idata.ChildrenInfo, idata.Input, idata.LiveData, idata.StateMemory, args.SyncHash)
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -229,25 +230,6 @@ func (s *sqlInstanceStore) DeleteOldInstances(ctx context.Context, before time.T
 	)
 	if res.Error != nil {
 		return res.Error
-	}
-
-	return nil
-}
-
-func (s *sqlInstanceStore) AssertNoParallelCron(ctx context.Context, nsID uuid.UUID, wfPath string) error {
-	query := fmt.Sprintf(`SELECT COUNT(*) FROM %s WHERE %s = ? AND %s = ? AND %s = ? AND %s > ?`, table, fieldNamespaceID, fieldInvoker, fieldWorkflowPath, fieldCreatedAt)
-
-	var k int64
-	res := s.db.WithContext(ctx).Raw(
-		query,
-		nsID, instancestore.InvokerCron, wfPath, time.Now().UTC().Add(-30*time.Second),
-	).First(&k)
-	if res.Error != nil {
-		return res.Error
-	}
-
-	if k != 0 {
-		return instancestore.ErrParallelCron
 	}
 
 	return nil
