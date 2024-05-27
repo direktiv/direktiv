@@ -11,7 +11,7 @@ describe('Test variable workflow links', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
-	helpers.itShouldCreateYamlFileV2(it, expect, namespace, "/", "wf1.yaml", "workflow", `
+	helpers.itShouldCreateYamlFileV2(it, expect, namespace, '/', 'wf1.yaml', 'workflow', `
 direktiv_api: workflow/v1
 description: A simple 'no-op' state that returns 'Hello world!'
 states:
@@ -27,29 +27,29 @@ states:
 		workflowPath: '/wf1.yaml',
 	}
 
-	let fooId;
+	let fooId
 	it(`should create a new workflow variable foo`, async () => {
 		const res = await request(config.getDirektivHost())
 			.post(`/api/v2/namespaces/${ namespace }/variables`)
 			.send(foo)
 		expect(res.statusCode).toEqual(200)
-		fooId = res.body.data.id;
+		fooId = res.body.data.id
 	})
 
 	helpers.itShouldUpdateFilePathV2(it, expect, namespace, '/wf1.yaml', '/wf2.yaml')
 
 	it(`should read new path in variable foo`, async () => {
 		const res = await request(config.getDirektivHost())
-			.get(`/api/v2/namespaces/${ namespace }/variables/${fooId}`)
+			.get(`/api/v2/namespaces/${ namespace }/variables/${ fooId }`)
 			.send(foo)
-		expect(res.body.data.reference).toEqual("/wf2.yaml")
+		expect(res.body.data.reference).toEqual('/wf2.yaml')
 	})
 
 	helpers.itShouldDeleteFileV2(it, expect, namespace, '/wf2.yaml')
 
 	it(`should read 404 variable foo`, async () => {
 		const res = await request(config.getDirektivHost())
-			.get(`/api/v2/namespaces/${ namespace }/variables/${fooId}`)
+			.get(`/api/v2/namespaces/${ namespace }/variables/${ fooId }`)
 			.send(foo)
 		expect(res.statusCode).toEqual(404)
 	})
