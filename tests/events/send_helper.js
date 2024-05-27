@@ -58,6 +58,9 @@ async function sendEventAndList (ns, event) {
 
 		await helpers.sleep(100)
 	}
+
+	await helpers.sleep(100)
+
 	return idFind
 }
 
