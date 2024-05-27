@@ -35,7 +35,7 @@ var sendEventCmd = &cobra.Command{
 	Short: "Remotely trigger direktiv events",
 	Args:  cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		urlExecuteEvent := fmt.Sprintf("%s/broadcast", root.UrlPrefix)
+		urlExecuteEvent := fmt.Sprintf("%s/events/broadcast", root.UrlPrefixV2)
 
 		cmd.Printf("sending events to %s\n", urlExecuteEvent)
 
