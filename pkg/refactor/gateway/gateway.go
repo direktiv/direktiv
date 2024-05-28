@@ -191,7 +191,6 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	traceID := spanContext.TraceID().String()
 	spanID := spanContext.SpanID()
 	slog := slog.With("trace", traceID, "span", spanID, "component", "gateway")
-	slog.Info("serving gateway request")
 	chiCtx := chi.RouteContext(r.Context())
 	namespace := core.SystemNamespace
 	routePath := chi.URLParam(r, "*")
@@ -244,8 +243,6 @@ func (ep *gatewayManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	tracer := trace.SpanFromContext(ctx).TracerProvider().Tracer("direktiv/flow")
 	ctx, childSpan := tracer.Start(ctx, "plugins-processing")
 	defer childSpan.End()
-
-	slogRoute.Info("Serving plugins")
 
 	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(t))
 	defer cancel()
