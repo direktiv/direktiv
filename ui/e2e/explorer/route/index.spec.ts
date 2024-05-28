@@ -387,3 +387,139 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
     useInnerText: true,
   });
 });
+
+test("it blocks navigation when there are unsaved changes", async ({
+  page,
+}) => {
+  let dialogTriggered = false;
+
+  page.on("dialog", async (dialog) => {
+    dialogTriggered = true;
+    return dialog.dismiss();
+  });
+
+  /* prepare data */
+  const filename = "formatroute.yaml";
+
+  type CreateRouteYamlParam = Parameters<typeof createRouteYaml>[0];
+  const minimalRouteConfig: Omit<CreateRouteYamlParam, "plugins"> = {
+    path: "path",
+    timeout: 3000,
+    methods: ["GET", "POST"],
+  };
+
+  const basicTargetPlugin = `
+    type: instant-response
+    configuration:
+      status_code: 200`;
+
+  const initialRouteYaml = createRouteYaml({
+    ...minimalRouteConfig,
+    plugins: {
+      target: basicTargetPlugin,
+    },
+  });
+
+  await createFile({
+    namespace,
+    name: filename,
+    type: "endpoint",
+    yaml: initialRouteYaml,
+  });
+
+  /* visit page */
+  await page.goto(`/n/${namespace}/explorer/endpoint/${filename}`, {
+    waitUntil: "networkidle",
+  });
+
+  await page.getByLabel("path").fill("new_path");
+
+  await expect(
+    page.getByText("unsaved changes"),
+    "it renders a hint that there are unsaved changes"
+  ).toBeVisible();
+
+  await page.getByRole("link", { name: "Monitoring" }).click();
+
+  await expect(
+    dialogTriggered,
+    "it triggers a confirmation dialogue"
+  ).toBeTruthy();
+
+  await expect(page, "it does not navigate away from the page").toHaveURL(
+    `/n/${namespace}/explorer/endpoint/${filename}`
+  );
+});
+
+test("it does not block navigation when only formatting has changed", async ({
+  page,
+}) => {
+  let dialogTriggered = false;
+
+  page.on("dialog", async (dialog) => {
+    dialogTriggered = true;
+    return dialog.dismiss();
+  });
+
+  /* prepare data */
+  const filename = "formatroute.yaml";
+
+  type CreateRouteYamlParam = Parameters<typeof createRouteYaml>[0];
+  const minimalRouteConfig: Omit<CreateRouteYamlParam, "plugins"> = {
+    path: "path",
+    timeout: 3000,
+    methods: ["GET", "POST"],
+  };
+
+  const basicTargetPlugin = `
+    type: "instant-response"
+    configuration:
+      status_code: 200`;
+
+  const initialRouteYaml = createRouteYaml({
+    ...minimalRouteConfig,
+    plugins: {
+      target: basicTargetPlugin,
+    },
+  });
+
+  await createFile({
+    namespace,
+    name: filename,
+    type: "endpoint",
+    yaml: initialRouteYaml,
+  });
+
+  /* visit page */
+  await page.goto(`/n/${namespace}/explorer/endpoint/${filename}`, {
+    waitUntil: "networkidle",
+  });
+
+  const formattedText = page
+    .getByRole("code")
+    .locator("div")
+    .filter({ hasText: "type: instant-response" })
+    .nth(4);
+
+  await expect(
+    formattedText,
+    "it has updated the formatting (removed quotes)"
+  ).toBeVisible();
+
+  await expect(
+    page.getByText("unsaved changes"),
+    "it does not render a hint that there are unsaved changes"
+  ).not.toBeVisible();
+
+  await page.getByRole("link", { name: "Monitoring" }).click();
+
+  await expect(
+    dialogTriggered,
+    "it does not trigger a warning dialogue"
+  ).toBeFalsy();
+
+  await expect(
+    page.getByRole("heading", { name: "Monitoring", exact: true }),
+    "it is possible to leave the route"
+  ).toBeVisible();
+});
