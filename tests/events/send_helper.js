@@ -51,12 +51,9 @@ async function sendEventAndList (ns, event) {
 	const eventsResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ ns }/events/history?limit=100&offset=0`)
 		.send()
 
-
-	for(let i=0; i< eventsResponse.body.data.length; i++) {
-		if(eventsResponse.body.data[i].event.id === eventObject.id) {
-			return  eventsResponse.body.data[i].event
-		}
-	}
+	for (let i = 0; i < eventsResponse.body.data.length; i++)
+		if (eventsResponse.body.data[i].event.id === eventObject.id)
+			return eventsResponse.body.data[i].event
 }
 
 export default {
