@@ -13,35 +13,6 @@ import { patchFile } from "~/api/files/mutate/patchFile";
 
 let namespace = "";
 
-const systemNamespaceName = "system";
-const systemServiceName = "http-service.yaml";
-let cleanupSystemNamespace = true;
-
-test.beforeAll(async () => {
-  try {
-    await createNamespace(systemNamespaceName);
-  } catch (e) {
-    cleanupSystemNamespace = false;
-  }
-
-  await createFile({
-    name: systemServiceName,
-    namespace: systemNamespaceName,
-    type: "service",
-    yaml: createHttpServiceFile(),
-  });
-});
-
-test.afterAll(async () => {
-  await deleteFile({
-    namespace: systemNamespaceName,
-    path: systemServiceName,
-  });
-  if (cleanupSystemNamespace) {
-    await deleteNamespace(systemNamespaceName);
-  }
-});
-
 test.beforeEach(async () => {
   namespace = await createNamespace();
 });
@@ -390,15 +361,47 @@ test("Service list will update the services when refetch button is clicked", asy
   ).toBeVisible();
 });
 
-test("services will also be listed in the system namespace", async ({
-  page,
-}) => {
-  await page.goto(`/n/${systemNamespaceName}/services`, {
-    waitUntil: "networkidle",
+test.describe("system namespace", () => {
+  const systemNamespaceName = "system";
+  const systemServiceName = "http-service.yaml";
+  let cleanUpSystemNamespace = true;
+
+  test.beforeAll(async () => {
+    try {
+      await createNamespace(systemNamespaceName);
+    } catch (e) {
+      cleanUpSystemNamespace = false;
+    }
+
+    await createFile({
+      name: systemServiceName,
+      namespace: systemNamespaceName,
+      type: "service",
+      yaml: createHttpServiceFile(),
+    });
   });
 
-  await expect(
-    page.getByTestId("service-row").getByText(systemServiceName),
-    "it renders the service name"
-  ).toBeVisible();
+  test.afterAll(async () => {
+    await deleteFile({
+      namespace: systemNamespaceName,
+      path: systemServiceName,
+    });
+
+    if (cleanUpSystemNamespace) {
+      await deleteNamespace(systemNamespaceName);
+    }
+  });
+
+  test("services will also be listed in the system namespace", async ({
+    page,
+  }) => {
+    await page.goto(`/n/${systemNamespaceName}/services`, {
+      waitUntil: "networkidle",
+    });
+
+    await expect(
+      page.getByTestId("service-row").getByText(systemServiceName),
+      "it renders the service name"
+    ).toBeVisible();
+  });
 });
