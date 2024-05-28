@@ -1,3 +1,4 @@
+import { createFile, deleteFile } from "e2e/utils/files";
 import {
   createHttpServiceFile,
   findServiceWithApiRequest,
@@ -6,12 +7,40 @@ import {
 import { createNamespace, deleteNamespace } from "../utils/namespace";
 import { expect, test } from "@playwright/test";
 
-import { createFile } from "e2e/utils/files";
 import { encode } from "js-base64";
 import { headers } from "e2e/utils/testutils";
 import { patchFile } from "~/api/files/mutate/patchFile";
 
 let namespace = "";
+
+const systemNamespace = "system";
+const systemServiceName = "http-service.yaml";
+let systemNamespaceAlreadyExists = false;
+
+test.beforeAll(async () => {
+  try {
+    await createNamespace(systemNamespace);
+  } catch (e) {
+    systemNamespaceAlreadyExists = true;
+  }
+
+  await createFile({
+    name: systemServiceName,
+    namespace: systemNamespace,
+    type: "service",
+    yaml: createHttpServiceFile(),
+  });
+});
+
+test.afterAll(async () => {
+  await deleteFile({
+    namespace: systemNamespace,
+    path: systemServiceName,
+  });
+  if (systemNamespaceAlreadyExists === false) {
+    await deleteNamespace(systemNamespace);
+  }
+});
 
 test.beforeEach(async () => {
   namespace = await createNamespace();
@@ -358,5 +387,18 @@ test("Service list will update the services when refetch button is clicked", asy
   await expect(
     page.getByTestId("service-row").getByRole("cell", { name: "small" }),
     "it has updated the rendered size to the new value"
+  ).toBeVisible();
+});
+
+test("services will also be listed in the system namespace", async ({
+  page,
+}) => {
+  await page.goto(`/n/${systemNamespace}/services`, {
+    waitUntil: "networkidle",
+  });
+
+  await expect(
+    page.getByTestId("service-row").getByText(systemServiceName),
+    "it renders the service name"
   ).toBeVisible();
 });
