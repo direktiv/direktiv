@@ -22,7 +22,7 @@ test("It will show the logs on the monitoring page", async ({ page }) => {
 
   await expect(
     page.getByText("msg: updating namespace gateway"),
-    "It will show a log message"
+    "TEST TEST TEST It will show a log message"
   ).toBeVisible();
 
   await expect(
