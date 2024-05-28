@@ -16,31 +16,34 @@ async function deleteAllNamespaces () {
 	}
 }
 
+async function deleteNamespaceIfExists (ns) {
+	const response = await request(config.getDirektivHost()).delete(`/api/v2/namespaces/${ ns }`)
+
+	if (response.statusCode !== 200 && response.statusCode !== 404)
+		throw Error(`none ok namespace(${ ns }) delete statusCode(${ response.statusCode })`)
+}
+
 async function itShouldCreateNamespace (it, expect, ns) {
-	it(`should create a new namespace ${ ns }`, async () => {
-		const res = await request(common.config.getDirektivHost())
-			.post(`/api/v2/namespaces`)
-			.send({ name: ns })
-		expect(res.statusCode).toEqual(200)
-	})
+	const res = await request(common.config.getDirektivHost())
+		.post(`/api/v2/namespaces`)
+		.send({ name: ns })
+	expect(res.statusCode).toEqual(200)
 }
 
 async function itShouldCreateFileV2 (it, expect, ns, path, name, type, mimeType, data) {
-	it(`should create a new file ${ path }`, async () => {
-		if (path === '/')
-			path = ''
+	if (path === '/')
+		path = ''
 
-		const res = await request(common.config.getDirektivHost())
-			.post(`/api/v2/namespaces/${ ns }/files${ path }`)
-			.set('Content-Type', 'application/json')
-			.send({
-				name,
-				type,
-				mimeType,
-				data,
-			})
-		expect(res.statusCode).toEqual(200)
-	})
+	const res = await request(common.config.getDirektivHost())
+		.post(`/api/v2/namespaces/${ ns }/files${ path }`)
+		.set('Content-Type', 'application/json')
+		.send({
+			name,
+			type,
+			mimeType,
+			data,
+		})
+	expect(res.statusCode).toEqual(200)
 }
 
 function itShouldCreateYamlFileV2 (it, expect, ns, path, name, type, data) {
@@ -48,24 +51,22 @@ function itShouldCreateYamlFileV2 (it, expect, ns, path, name, type, data) {
 }
 
 async function itShouldCreateDirV2 (it, expect, ns, path, name) {
-	it(`should create a new dir ${ path }`, async () => {
-		const res = await request(common.config.getDirektivHost())
-			.post(`/api/v2/namespaces/${ ns }/files${ path }`)
-			.set('Content-Type', 'application/json')
-			.send({
-				name,
-				type: 'directory',
-			})
-		expect(res.statusCode).toEqual(200)
-		if (path === '/')
-			path = ''
-
-		expect(res.body.data).toEqual({
-			path: `${ path }/${ name }`,
+	const res = await request(common.config.getDirektivHost())
+		.post(`/api/v2/namespaces/${ ns }/files${ path }`)
+		.set('Content-Type', 'application/json')
+		.send({
+			name,
 			type: 'directory',
-			createdAt: expect.stringMatching(regex.timestampRegex),
-			updatedAt: expect.stringMatching(regex.timestampRegex),
 		})
+	expect(res.statusCode).toEqual(200)
+	if (path === '/')
+		path = ''
+
+	expect(res.body.data).toEqual({
+		path: `${ path }/${ name }`,
+		type: 'directory',
+		createdAt: expect.stringMatching(regex.timestampRegex),
+		updatedAt: expect.stringMatching(regex.timestampRegex),
 	})
 }
 
@@ -149,6 +150,7 @@ function sleep (ms) {
 }
 
 export default {
+	deleteNamespaceIfExists,
 	deleteAllNamespaces,
 	itShouldCreateNamespace,
 
