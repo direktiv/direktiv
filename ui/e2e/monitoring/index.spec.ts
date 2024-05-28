@@ -18,6 +18,8 @@ test("It will show the logs on the monitoring page", async ({ page }) => {
     waitUntil: "domcontentloaded",
   });
 
+  await page.waitForTimeout(5000);
+
   await expect(
     page.getByText("msg: updating namespace gateway"),
     "It will show a log message"
