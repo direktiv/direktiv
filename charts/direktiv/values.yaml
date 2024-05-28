@@ -201,7 +201,7 @@ fluent-bit:
           Name                    tail
           Path                    /var/log/containers/*flow*.log,/var/log/containers/*direktiv-sidecar*.log
           Mem_Buf_Limit           5MB
-          Skip_Long_Lines         On
+          Skip_Long_Lines         Off
           Tag                     input
           multiline.parser        cri, docker
           Refresh_Interval        1
