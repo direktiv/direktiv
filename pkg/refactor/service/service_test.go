@@ -24,6 +24,14 @@ func TestGetServiceURL_Knative(t *testing.T) {
 			name:             "bar",
 			wantURL:          "http://foo-bar-file1-05a68ea6d7.kns.svc.cluster.local",
 		},
+		{
+			knativeNamespace: "kns",
+			namespace:        "foo",
+			typ:              "t1",
+			filePath:         "/file1",
+			name:             "Bar",
+			wantURL:          "http://foo-bar-file1-98db27aa4b.kns.svc.cluster.local",
+		},
 	}
 	for _, tt := range tests {
 		t.Run("valid_case", func(t *testing.T) {

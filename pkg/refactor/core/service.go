@@ -83,7 +83,7 @@ func (c *ServiceFileData) GetID() string {
 		str = str[:50]
 	}
 
-	return fmt.Sprintf("%s-%x", str, sh[:5])
+	return strings.ToLower(fmt.Sprintf("%s-%x", str, sh[:5]))
 }
 
 // GetValueHash calculates a unique hash string based on the settings fields. This hash helps in comparing
