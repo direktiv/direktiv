@@ -29,7 +29,7 @@ type Config struct {
 	Prometheus    string `env:"DIREKTIV_PROMETHEUS_BACKEND"`
 	OpenTelemetry string `env:"DIREKTIV_OPEN_TELEMETRY_BACKEND"`
 
-	EnableDocker bool `env:"DIREKITV_ENABLE_DOCKER"`
+	DisableServices bool `env:"DIREKTIV_DISABLE_SERVICES" envDefault:"false"`
 
 	KnativeServiceAccount string `env:"DIREKTIV_KNATIVE_SERVICE_ACCOUNT"`
 	KnativeNamespace      string `env:"DIREKTIV_KNATIVE_NAMESPACE"`
@@ -84,7 +84,7 @@ func (conf *Config) checkInvalidEmptyFields() error {
 	var invalidEmptyFields []string
 
 	// knative setting only required when docker mode is disabled.
-	if !conf.EnableDocker {
+	if !conf.DisableServices {
 		if conf.KnativeServiceAccount == "" {
 			invalidEmptyFields = append(invalidEmptyFields, "DIREKTIV_KNATIVE_SERVICE_ACCOUNT")
 		}
