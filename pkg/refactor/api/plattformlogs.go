@@ -109,10 +109,7 @@ func (m logController) getNewer(ctx context.Context, t time.Time, params map[str
 
 	res := []logEntry{}
 	for _, le := range logs {
-		e, err := toFeatureLogEntry(le)
-		if err != nil {
-			return []logEntry{}, err
-		}
+		e := toFeatureLogEntry(le)
 		res = append(res, e)
 	}
 
@@ -146,10 +143,7 @@ func (m logController) getOlder(ctx context.Context, params map[string]string) (
 	}
 	res := []logEntry{}
 	for _, le := range r {
-		e, err := toFeatureLogEntry(le)
-		if err != nil {
-			return []logEntry{}, time.Time{}, err
-		}
+		e := toFeatureLogEntry(le)
 		res = append(res, e)
 	}
 
@@ -327,7 +321,7 @@ type RouteEntryContext struct {
 	Path interface{} `json:"path,omitempty"`
 }
 
-func toFeatureLogEntry(e core.LogEntry) (logEntry, error) {
+func toFeatureLogEntry(e core.LogEntry) logEntry {
 	featureLogEntry := logEntry{
 		ID:    e.ID,
 		Time:  e.Time,
@@ -356,5 +350,5 @@ func toFeatureLogEntry(e core.LogEntry) (logEntry, error) {
 		featureLogEntry.Route = &RouteEntryContext{Path: path}
 	}
 
-	return featureLogEntry, nil
+	return featureLogEntry
 }
