@@ -356,7 +356,7 @@ jobs:
       - name: Run API E2E tests
         if: matrix.sections.type == 'api'
         run: |
-          npm -prefix tests run all -- ${{ matrix.sections.suit }}/
+          npm -prefix tests run jest -- ${{ matrix.sections.suit }}/ --runInBand
         env:
           DIREKTIV_HOST: ${{ env.DIREKTIV_HOST }}
           GITHUB_ACTIONS: true
