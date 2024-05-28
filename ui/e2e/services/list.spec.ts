@@ -15,13 +15,13 @@ let namespace = "";
 
 const systemNamespaceName = "system";
 const systemServiceName = "http-service.yaml";
-let systemNamespaceAlreadyExists = false;
+let cleanupSystemNamespace = true;
 
 test.beforeAll(async () => {
   try {
     await createNamespace(systemNamespaceName);
   } catch (e) {
-    systemNamespaceAlreadyExists = true;
+    cleanupSystemNamespace = false;
   }
 
   await createFile({
@@ -37,7 +37,7 @@ test.afterAll(async () => {
     namespace: systemNamespaceName,
     path: systemServiceName,
   });
-  if (systemNamespaceAlreadyExists === false) {
+  if (cleanupSystemNamespace) {
     await deleteNamespace(systemNamespaceName);
   }
 });
