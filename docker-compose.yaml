@@ -64,7 +64,7 @@ services:
       - NODE_TLS_REJECT_UNAUTHORIZED=0
       - DIREKTIV_HOST=http://flow:8181
       - TEST_SECTION=${TEST_SECTION} # To scope the test run to specific section, example: TEST_SECTION=mirror
-    command: npm --prefix /tests run without-k8s
+    command: npm --prefix /tests run all
     depends_on:
       - flow
 

@@ -15,6 +15,6 @@
   },
   "scripts": {
     "all": "npm install && npx jest --runInBand",
-    "without-k8s": "npm install && npx jest tests/${TEST_SECTION} --runInBand  --testPathIgnorePatterns=kubernetes"
+    "all:parallel": "npm install && npx jest"
   }
 }

@@ -361,6 +361,15 @@ jobs:
           DIREKTIV_HOST: ${{ env.DIREKTIV_HOST }}
           GITHUB_ACTIONS: true
 
+      - name: Run API Parallel E2E tests
+        if: matrix.sections.type == 'api-parallel'
+        run: |
+          npm -prefix tests run all:parallel -- ${{ matrix.sections.suit }}/
+        env:
+          DIREKTIV_HOST: ${{ env.DIREKTIV_HOST }}
+          GITHUB_ACTIONS: true
+
+
       - name: Run Playwright E2E tests
         id: playwrightRun
         if: matrix.sections.type == 'playwright'
