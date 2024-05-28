@@ -24,10 +24,10 @@ functions:
   image: direktiv/request:v4
   type: knative-workflow
 states:
-- id: getter 
+- id: get-Json
   type: action
   action:
-    function: get
+    function: get-Json
     input: 
       method: "GET"
       url: "https://jsonplaceholder.typicode.com/todos/1"
