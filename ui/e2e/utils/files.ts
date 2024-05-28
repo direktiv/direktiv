@@ -1,5 +1,6 @@
 import { CreateFileSchemaType } from "~/api/files/schema";
 import { createFile as apiCreateFile } from "~/api/files/mutate/createFile";
+import { deleteFile as apiDeleteFile } from "~/api/files/mutate/deleteFile";
 import { getFile as apiGetFile } from "~/api/files/query/file";
 import { encode } from "js-base64";
 import { headers } from "./testutils";
@@ -31,6 +32,23 @@ export const createFile = async ({
     },
     headers,
   });
+
+export const deleteFile = async ({
+  namespace,
+  path,
+}: {
+  namespace: string;
+  path: string;
+}) => {
+  await apiDeleteFile({
+    urlParams: {
+      namespace,
+      baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
+      path,
+    },
+    headers,
+  });
+};
 
 export const createDirectory = async ({
   name,
