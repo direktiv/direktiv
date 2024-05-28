@@ -24,7 +24,7 @@ async function listInstancesAndFilter (ns, wf, status) {
 			} else if (instancesResponse.body.meta.total === 1)
 				return instancesResponse.body.data[0]
 
-			await helpers.sleep(100)
+			await helpers.sleep(200)
 			// eslint-disable-next-line
 			instancesResponse = (function () {
 			})()
