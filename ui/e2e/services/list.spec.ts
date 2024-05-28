@@ -13,20 +13,20 @@ import { patchFile } from "~/api/files/mutate/patchFile";
 
 let namespace = "";
 
-const systemNamespace = "system";
+const systemNamespaceName = "system";
 const systemServiceName = "http-service.yaml";
 let systemNamespaceAlreadyExists = false;
 
 test.beforeAll(async () => {
   try {
-    await createNamespace(systemNamespace);
+    await createNamespace(systemNamespaceName);
   } catch (e) {
     systemNamespaceAlreadyExists = true;
   }
 
   await createFile({
     name: systemServiceName,
-    namespace: systemNamespace,
+    namespace: systemNamespaceName,
     type: "service",
     yaml: createHttpServiceFile(),
   });
@@ -34,11 +34,11 @@ test.beforeAll(async () => {
 
 test.afterAll(async () => {
   await deleteFile({
-    namespace: systemNamespace,
+    namespace: systemNamespaceName,
     path: systemServiceName,
   });
   if (systemNamespaceAlreadyExists === false) {
-    await deleteNamespace(systemNamespace);
+    await deleteNamespace(systemNamespaceName);
   }
 });
 
@@ -393,7 +393,7 @@ test("Service list will update the services when refetch button is clicked", asy
 test("services will also be listed in the system namespace", async ({
   page,
 }) => {
-  await page.goto(`/n/${systemNamespace}/services`, {
+  await page.goto(`/n/${systemNamespaceName}/services`, {
     waitUntil: "networkidle",
   });
 
