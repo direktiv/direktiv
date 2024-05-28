@@ -37,7 +37,6 @@ async function listInstancesAndFilter (ns, wf, status) {
 // send event and wait for it to appear in the event list baesd on id
 async function sendEventAndList (ns, event) {
 	const eventObject = JSON.parse(event)
-	let idFind
 
 	// requires cloudevent id
 	expect(eventObject.id).not.toBeFalsy()
@@ -49,19 +48,9 @@ async function sendEventAndList (ns, event) {
 	expect(workflowEventResponse.statusCode).toEqual(200)
 
 	// wait for it to be registered
-	for (let i = 0; i < 50; i++) {
-		const eventsResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ ns }/events?limit=100&offset=0`)
-			.send()
-		idFind = eventsResponse.body.events.results.find(item => item.id === eventObject.id)
-		if (idFind)
-			break
-
-		await helpers.sleep(100)
-	}
-
-	await helpers.sleep(100)
-
-	return idFind
+	const eventsResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ ns }/events?limit=100&offset=0`)
+		.send()
+	return eventsResponse.body.events.results.find(item => item.id === eventObject.id)
 }
 
 export default {
