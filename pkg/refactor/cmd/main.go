@@ -44,26 +44,31 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 	go apiLegacy.RunApplication(args.Config)
 
 	// Create service manager
-	serviceManager, err := service.NewManager(args.Config, args.Config.EnableDocker)
-	if err != nil {
-		slog.Error("initializing service manager", "err", err)
-		panic(err)
+	var err error
+	var serviceManager core.ServiceManager
+	if !args.Config.DisableServices {
+		serviceManager, err = service.NewManager(args.Config)
+		if err != nil {
+			slog.Error("initializing service manager", "err", err)
+			panic(err)
+		}
+		slog.Info("service manager initialized successfully")
+
+		// Setup GetServiceURL function
+		service.SetupGetServiceURLFunc(args.Config)
+
+		circuit.Start(func() error {
+			// TODO: yassir, Implement service crash handling.
+			serviceManager.Start(circuit)
+
+			return nil
+		})
+	} else {
+		slog.Info("service manager is disabled")
 	}
-	slog.Info("service manager initialized successfully")
-
-	// Setup GetServiceURL function
-	service.SetupGetServiceURLFunc(args.Config, args.Config.EnableDocker)
-
-	// Start service manager
-	circuit.Start(func() error {
-		// TODO: yassir, Implement service crash handling.
-		serviceManager.Start(circuit)
-
-		return nil
-	})
 
 	// Create registry manager
-	registryManager, err := registry.NewManager(args.Config.EnableDocker)
+	registryManager, err := registry.NewManager(args.Config.DisableServices)
 	if err != nil {
 		slog.Error("registry manager", "err", err)
 		panic(err)
@@ -91,23 +96,25 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 		SyncNamespace:    args.SyncNamespace,
 	}
 
-	args.PubSubBus.Subscribe(func(_ string) {
-		renderServiceManager(args.Database, serviceManager)
-	},
-		pubsub.WorkflowCreate,
-		pubsub.WorkflowUpdate,
-		pubsub.WorkflowDelete,
-		pubsub.WorkflowRename,
-		pubsub.ServiceCreate,
-		pubsub.ServiceUpdate,
-		pubsub.ServiceDelete,
-		pubsub.ServiceRename,
-		pubsub.MirrorSync,
-		pubsub.NamespaceDelete,
-	)
+	if !args.Config.DisableServices {
+		args.PubSubBus.Subscribe(func(_ string) {
+			renderServiceManager(args.Database, serviceManager)
+		},
+			pubsub.WorkflowCreate,
+			pubsub.WorkflowUpdate,
+			pubsub.WorkflowDelete,
+			pubsub.WorkflowRename,
+			pubsub.ServiceCreate,
+			pubsub.ServiceUpdate,
+			pubsub.ServiceDelete,
+			pubsub.ServiceRename,
+			pubsub.MirrorSync,
+			pubsub.NamespaceDelete,
+		)
 
-	// Call at least once before booting
-	renderServiceManager(args.Database, serviceManager)
+		// Call at least once before booting
+		renderServiceManager(args.Database, serviceManager)
+	}
 
 	args.PubSubBus.Subscribe(func(data string) {
 		err := args.ConfigureWorkflow(data)

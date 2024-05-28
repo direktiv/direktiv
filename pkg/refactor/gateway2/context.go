@@ -10,7 +10,6 @@ import (
 const (
 	gatewayCtxKeyConsumersList  = "ctx_consumers_list"
 	gatewayCtxKeyActiveConsumer = "ctx_active_consumer"
-	gatewayCtxKeyNamespace      = "ctx_namespace"
 	gatewayCtxKeyEndpoint       = "ctx_endpoint"
 )
 
