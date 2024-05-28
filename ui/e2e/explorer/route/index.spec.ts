@@ -454,6 +454,14 @@ test("it blocks navigation when there are unsaved changes", async ({
 test("it does not block navigation when only formatting has changed", async ({
   page,
 }) => {
+  /**
+   * In this test, the original file has non-standard formatting. This can happen
+   * when a yaml file was created on an earlier direktiv version or using a
+   * third-party editor with different formatting rules. When the file is loaded
+   * into the form and the form's values are converted back to yaml, this formatting
+   * is updated. This test ensures that these changes are not regarded as "unsaved
+   * changes", blocking navigation away from the page.
+   */
   let dialogTriggered = false;
 
   page.on("dialog", async (dialog) => {
