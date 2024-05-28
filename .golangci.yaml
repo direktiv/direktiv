@@ -46,15 +46,6 @@ linters:
     - cyclop
     - godox # must fix before release.
 
-    - exhaustivestruct
-    - structcheck
-    - ifshort
-    - maligned
-    - interfacer
-    - nosnakecase
-    - golint
-    - varcheck
-    - scopelint
     - gomnd
     - tagliatelle
     - musttag

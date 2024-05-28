@@ -20,14 +20,14 @@ describe('Test workflow function invoke', () => {
 		btoa(`
 description: A simple 'action' state that sends a get request
 functions:
-- id: get
+- id: get-Json
   image: direktiv/request:v4
   type: knative-workflow
 states:
-- id: getter 
+- id: get
   type: action
   action:
-    function: get
+    function: get-Json
     input: 
       method: "GET"
       url: "https://jsonplaceholder.typicode.com/todos/1"
