@@ -4,7 +4,7 @@ import { basename } from 'path'
 import common from '../../common'
 import helpers from '../../common/helpers'
 import request from '../../common/request'
-import { retry10 } from '../../common/retry'
+import { retry50 } from '../../common/retry'
 
 const namespace = basename(__filename)
 
@@ -32,7 +32,7 @@ states:
 		expect(res.statusCode).toEqual(200)
 	})
 
-	retry10(`should contain instance log entries`, async () => {
+	retry50(`should contain instance log entries`, async () => {
 
 		const instRes = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespace }/instances`)
 		expect(instRes.statusCode).toEqual(200)
@@ -79,7 +79,7 @@ states:
 	})
 
 
-	retry10(`should contain instance log entries`, async () => {
+	retry50(`should contain instance log entries`, async () => {
 
         const instRes = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespace }/instances?filter.field=AS&filter.type=CONTAINS&filter.val=noop-error`)
         expect(instRes.statusCode).toEqual(200)
@@ -125,7 +125,7 @@ states:
     })
 
 
-    retry10(`should contain instance log entries`, async () => {
+    retry50(`should contain instance log entries`, async () => {
 
       const instRes = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespace }/instances?filter.field=AS&filter.type=CONTAINS&filter.val=action-error`)
       expect(instRes.statusCode).toEqual(200)

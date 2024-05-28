@@ -16,7 +16,7 @@ describe('Test sync api calls', () => {
     it(`create namespace`, async () => {
         const res = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces`)
         .set('Content-Type', 'application/json')
-        .send(`{"name":"${ namespace }","mirror":{"authType":"public","gitRef":"main","url":"https://github.com/direktiv/direktiv","insecure":false}}`)
+        .send(`{"name":"${ namespace }","mirror":{"authType":"public","gitRef":"main","url":"https://github.com/direktiv/dproxy","insecure":false}}`)
         expect(res.statusCode).toEqual(200)
 
         const resSync = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/syncs`)
@@ -29,8 +29,6 @@ describe('Test sync api calls', () => {
         
         const resLog = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespace }/logs?activity=${ res.body.data[0].id }`)
         expect(resLog.statusCode).toEqual(200)
-
-        console.log(resLog.body)
         expect(resLog.body.data.length).toBeGreaterThan(1)
     })
     

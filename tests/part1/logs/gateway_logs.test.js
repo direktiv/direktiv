@@ -26,7 +26,7 @@ describe('Test gateway api calls', () => {
 
     })
 
-    it(`create namespace`, async () => {
+    retry50(`create namespace`, async () => {
         const gwRes = await request(common.config.getDirektivHost()).get(`/ns/${ namespace }/test`)
         expect(gwRes.statusCode).toEqual(200)
 

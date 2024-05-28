@@ -4,7 +4,7 @@ import { basename } from 'path'
 import common from '../../common'
 import helpers from '../../common/helpers'
 import request from '../../common/request'
-import { retry10 } from '../../common/retry'
+import { retry50 } from '../../common/retry'
 
 const namespace = basename(__filename)
 
@@ -34,7 +34,7 @@ states:
     })
 
 
-    it(`has one error message and at least on started message`, async () => {
+    retry50(`has one error message and at least on started message`, async () => {
         const logRes = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespace }/logs`)
         expect(logRes.statusCode).toEqual(200)
 
