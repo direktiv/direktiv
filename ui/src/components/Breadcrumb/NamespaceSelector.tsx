@@ -19,13 +19,13 @@ import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import { Link, useNavigate } from "react-router-dom";
 import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 import React, { useState } from "react";
-import { useNamespace, useNamespaceActions } from "~/util/store/namespace";
 
 import { Breadcrumb as BreadcrumbLink } from "~/design/Breadcrumbs";
 import Button from "~/design/Button";
 import NamespaceEdit from "../NamespaceEdit";
 import { twMergeClsx } from "~/util/helpers";
 import { useListNamespaces } from "~/api/namespaces/query/get";
+import { useNamespace } from "~/util/store/namespace";
 import { usePages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
 
@@ -41,7 +41,6 @@ const NamespaceSelector = () => {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [open, setOpen] = useState(false);
-  const { setNamespace } = useNamespaceActions();
   const navigate = useNavigate();
 
   if (!namespace) return null;
@@ -49,7 +48,6 @@ const NamespaceSelector = () => {
   const hasResults = isSuccess && availableNamespaces?.data.length > 0;
 
   const onNameSpaceChange = (namespace: string) => {
-    setNamespace(namespace);
     navigate(pages.explorer.createHref({ namespace }));
   };
 
