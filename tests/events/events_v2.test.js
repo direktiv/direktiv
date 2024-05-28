@@ -24,6 +24,18 @@ describe('Test send events v2 api', () => {
 			.send(basicEvent)
 		expect(sendEventResponse.statusCode).toEqual(200)
 	})
+	it(`should send event to namespace`, async () => {
+		const sendEventResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/events/broadcast`)
+			.set('Content-Type', 'application/cloudevents+json')
+			.send(basicEvent)
+		expect(sendEventResponse.statusCode).toEqual(200)
+	})
+	it(`should not break the server`, async () => {
+		const sendEventResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/events/broadcast`)
+			.set('Content-Type', 'application/bad-header')
+			.send(basicEvent)
+		expect(sendEventResponse.statusCode).toEqual(415)
+	})
 	it(`should be regitered`, async () => {
 		const eventHistoryResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/history`)
 			.send()

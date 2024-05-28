@@ -31,23 +31,8 @@ func getKnativeServiceURL(knativeNamespace string, namespace string, typ string,
 	return fmt.Sprintf("http://%s.%s.svc.cluster.local", id, knativeNamespace)
 }
 
-func getDockerServiceURL(namespace string, typ string, file string, name string) string {
-	id := (&core.ServiceFileData{
-		Typ:       typ,
-		Namespace: namespace,
-		FilePath:  file,
-		Name:      name,
-	}).GetID()
-
-	return fmt.Sprintf("http://%s", id)
-}
-
-func SetupGetServiceURLFunc(config *core.Config, withDocker bool) {
+func SetupGetServiceURLFunc(config *core.Config) {
 	GetServiceURL = func(namespace string, typ string, file string, name string) string {
-		if withDocker {
-			return getDockerServiceURL(namespace, typ, file, name)
-		}
-
 		return getKnativeServiceURL(config.KnativeNamespace, namespace, typ, file, name)
 	}
 }

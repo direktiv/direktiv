@@ -29,7 +29,7 @@ services:
 
       - DIREKTIV_DB=host=postgres port=5432 user=myadmin dbname=mydb password=mypassword sslmode=disable
       - DIREKTIV_SECRET_KEY=01234567890123456789012345678912
-      - DIREKITV_ENABLE_DOCKER=true
+      - DIREKTIV_DISABLE_SERVICES=true
 
       - DIREKTIV_KNATIVE_NAMESPACE=direktiv-services-direktiv
       - DIREKTIV_FUNCTIONS_TIMEOUT=7200

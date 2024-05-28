@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"time"
 )
@@ -40,6 +41,10 @@ func (lw *seeWorker) start(ctx context.Context) {
 			case <-ticker.C:
 				sseEvents, err := lw.Get(ctx, lw.Cursor)
 				if err != nil {
+					if errors.Is(err, context.Canceled) {
+						return
+					}
+
 					slog.Error("TODO: should we quit with an error?", "err", err)
 
 					continue
