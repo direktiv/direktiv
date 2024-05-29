@@ -72,7 +72,7 @@ export const createDirectory = async ({
     headers,
   });
 
-type ErrorType = { response: { status?: number } };
+type ErrorType = { status?: number };
 
 export const checkIfFileExists = async ({
   namespace,
@@ -98,13 +98,13 @@ export const checkIfFileExists = async ({
     return response.data.path === path;
   } catch (error) {
     const typedError = error as ErrorType;
-    if (typedError?.response?.status === 404) {
+    if (typedError?.status === 404) {
       // fail silently to allow for using poll() in tests
       return false;
     }
 
     throw new Error(
-      `Unexpected error ${typedError?.response?.status} fetching ${path} in namespace ${namespace}`
+      `Unexpected error ${typedError?.status} fetching ${path} in namespace ${namespace}`
     );
   }
 };

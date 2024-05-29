@@ -17,8 +17,8 @@ const ErrorJson = z
   .optional();
 
 export const ApiErrorSchema = z.object({
-  response: z.instanceof(Response),
-  json: ErrorJson,
+  status: z.number(),
+  body: ErrorJson,
 });
 
 type ApiErrorSchemaType = z.infer<typeof ApiErrorSchema>;
@@ -52,16 +52,16 @@ const getErrorJson = async (res: Response): Promise<ErrorJsonType> => {
 export const createApiErrorFromResponse = async (
   res: Response
 ): Promise<ApiErrorSchemaType> => {
-  let json: ApiErrorSchemaType["json"];
+  let body: ApiErrorSchemaType["body"];
   try {
-    json = await getErrorJson(res);
+    body = await getErrorJson(res);
   } catch (error) {
     process.env.NODE_ENV !== "test" && console.error(error);
   }
 
   return {
-    response: res,
-    json,
+    status: res.status,
+    body,
   };
 };
 
@@ -69,7 +69,7 @@ export const isApiErrorSchema = (error: unknown): error is ApiErrorSchemaType =>
   ApiErrorSchema.safeParse(error).success;
 
 export const getMessageFromApiError = (error: unknown) =>
-  isApiErrorSchema(error) ? error.json?.message : undefined;
+  isApiErrorSchema(error) ? error.body?.message : undefined;
 
 type PermissionStatus =
   | {
@@ -82,7 +82,7 @@ type PermissionStatus =
 
 export const getPermissionStatus = (error: unknown): PermissionStatus => {
   if (isApiErrorSchema(error)) {
-    if (error.response.status === 403 || error.response.status === 401) {
+    if (error.status === 403 || error.status === 401) {
       return {
         isAllowed: false,
         message: getMessageFromApiError(error),
