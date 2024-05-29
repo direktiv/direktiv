@@ -14,7 +14,7 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
   ({ logEntry, ...props }, ref) => {
     const pages = usePages();
     const { t } = useTranslation();
-    const { msg, error, level, time, workflow, namespace } = logEntry;
+    const { msg, id, error, level, time, workflow, namespace } = logEntry;
     const formattedTime = formatLogTime(time);
     const hasNamespaceInformation = !!namespace;
 
@@ -40,7 +40,7 @@ export const Entry = forwardRef<HTMLDivElement, Props>(
         {...props}
       >
         <LogSegment display={true}>
-          {t("components.logs.logEntry.messageLabel")} {msg}
+          ({id}) {t("components.logs.logEntry.messageLabel")} {msg}
         </LogSegment>
         <LogSegment display={error ? true : false}>
           {t("components.logs.logEntry.errorLabel")} {error}
