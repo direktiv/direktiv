@@ -518,16 +518,20 @@ func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
 
 func (worker *inboundWorker) setOutVariables(ctx context.Context, ir *functionRequest) error {
 	subDirs := []string{util.VarScopeFileSystem, util.VarScopeNamespace, util.VarScopeWorkflow, util.VarScopeInstance}
+	slog.Info("starting search & upload of variables")
 	for _, d := range subDirs {
 		out := path.Join(worker.functionDir(ir), "out", d)
+		slog.Info("search & upload variable loop", "out", out, "d", d)
 
 		files, err := os.ReadDir(out)
 		if err != nil {
 			return fmt.Errorf("can not read out folder: %w", err)
 		}
+		slog.Info("found files", "files", files)
 
 		for _, f := range files {
 			fp := path.Join(worker.functionDir(ir), "out", d, f.Name())
+			slog.Info("file for upload", "file", f, "fp", fp)
 
 			fi, err := f.Info()
 			if err != nil {
@@ -536,7 +540,7 @@ func (worker *inboundWorker) setOutVariables(ctx context.Context, ir *functionRe
 
 			switch mode := fi.Mode(); {
 			case mode.IsDir():
-
+				slog.Info("file is dir")
 				tf, err := os.CreateTemp("", "outtar")
 				if err != nil {
 					return err
@@ -564,12 +568,14 @@ func (worker *inboundWorker) setOutVariables(ctx context.Context, ir *functionRe
 					return err
 				}
 			case mode.IsRegular():
+				slog.Info("file is regular")
 
 				/* #nosec */
 				v, err := os.Open(fp)
 				if err != nil {
 					return err
 				}
+				slog.Info("setting variable")
 
 				err = worker.srv.setVar(ctx, ir, fi.Size(), v, d, f.Name(), "")
 				if err != nil {
@@ -584,6 +590,7 @@ func (worker *inboundWorker) setOutVariables(ctx context.Context, ir *functionRe
 			}
 		}
 	}
+	slog.Info("search & upload variable done")
 
 	return nil
 }
