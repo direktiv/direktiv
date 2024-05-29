@@ -1,7 +1,6 @@
 package target
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -41,7 +40,7 @@ func (tnv *NamespaceVarPlugin) Execute(w http.ResponseWriter, r *http.Request) *
 		return nil
 	}
 
-	uri := fmt.Sprintf("http://localhost:%s/api/v2/namespaces/%s/variables/?name=%s",
+	uri := fmt.Sprintf("http://localhost:%s/api/v2/namespaces/%s/variables?name=%s&raw=true",
 		os.Getenv("DIREKTIV_API_V2_PORT"), tnv.Namespace, tnv.Variable)
 
 	resp, err := doRequest(r, http.MethodGet, uri, nil)
@@ -50,32 +49,6 @@ func (tnv *NamespaceVarPlugin) Execute(w http.ResponseWriter, r *http.Request) *
 		return nil
 	}
 	if resp.StatusCode != http.StatusOK {
-		gateway2.WriteInternalError(r, w, nil, "couldn't execute downstream request")
-		return nil
-	}
-	defer resp.Body.Close()
-
-	type object struct {
-		Data []struct {
-			ID string `json:"id"`
-		} `json:"data"`
-	}
-
-	obj := &object{}
-	err = json.NewDecoder(resp.Body).Decode(obj)
-	if err != nil {
-		gateway2.WriteInternalError(r, w, nil, "couldn't execute downstream request")
-		return nil
-	}
-	if len(obj.Data) != 1 {
-		gateway2.WriteInternalError(r, w, nil, "couldn't execute downstream request")
-		return nil
-	}
-
-	uri = fmt.Sprintf("http://localhost:%s/api/v2/namespaces/%s/variables/%s",
-		os.Getenv("DIREKTIV_API_V2_PORT"), tnv.Namespace, obj.Data[0].ID)
-	resp, err = doRequest(r, http.MethodGet, uri, nil)
-	if err != nil {
 		gateway2.WriteInternalError(r, w, nil, "couldn't execute downstream request")
 		return nil
 	}
