@@ -3,7 +3,6 @@ import { basename } from 'path'
 
 import config from '../common/config'
 import helpers from '../common/helpers'
-import regex from '../common/regex'
 import request from '../common/request'
 import { retry10 } from '../common/retry'
 
@@ -32,14 +31,9 @@ plugins:
 	retry10(`should fetch some.text file`, async () => {
 		const res = await request(config.getDirektivHost()).get(`/api/v2/namespaces/${ namespace }/gateway2/ep1`)
 		expect(res.statusCode).toEqual(200)
-		expect(res.body).toMatchObject({
-			data: {
-				path: '/some.text',
-				createdAt: expect.stringMatching(regex.timestampRegex),
-				updatedAt: expect.stringMatching(regex.timestampRegex),
-				data: 'c29tZSBjb250ZW50',
-			},
-		})
+		expect(res.text).toEqual('some content')
+		expect(res.headers['content-type']).toEqual('text/plain')
+		expect(res.headers['content-length']).toEqual('12')
 	})
 
 	// test system namespace access.
@@ -62,14 +56,9 @@ plugins:
 	retry10(`should fetch some.text file from system namespace`, async () => {
 		const res = await request(config.getDirektivHost()).get(`/api/v2/namespaces/system/gateway2/ep2`)
 		expect(res.statusCode).toEqual(200)
-		expect(res.body).toMatchObject({
-			data: {
-				path: '/some.text',
-				createdAt: expect.stringMatching(regex.timestampRegex),
-				updatedAt: expect.stringMatching(regex.timestampRegex),
-				data: 'c29tZSBjb250ZW50',
-			},
-		})
+		expect(res.text).toEqual('some content')
+		expect(res.headers['content-type']).toEqual('text/plain')
+		expect(res.headers['content-length']).toEqual('12')
 	})
 
 	// test access denied of different namespace
