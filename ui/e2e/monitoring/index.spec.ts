@@ -1,6 +1,9 @@
 import { createNamespace, deleteNamespace } from "../utils/namespace";
 import { expect, test } from "@playwright/test";
 
+import { createInstance } from "e2e/instances/utils";
+import { createWorkflow } from "e2e/utils/workflow";
+
 let namespace = "";
 
 test.beforeEach(async () => {
@@ -13,16 +16,16 @@ test.afterEach(async () => {
 });
 
 test("It will show the logs on the monitoring page", async ({ page }) => {
-  test.slow();
+  await createWorkflow(namespace, "test-workflow");
+  await createInstance({ namespace, path: "test-workflow" });
+
   await page.goto(`/n/${namespace}/monitoring`, {
     waitUntil: "domcontentloaded",
   });
 
-  await page.waitForTimeout(5000);
-
   await expect(
-    page.getByText("msg: updating namespace gateway"),
-    "TEST TEST TEST It will show a log message"
+    page.getByText("msg: Workflow has been triggered"),
+    "It will show a log message"
   ).toBeVisible();
 
   await expect(
@@ -41,7 +44,7 @@ test("It will show the logs on the monitoring page", async ({ page }) => {
   await page.waitForTimeout(3000);
 
   await expect(
-    page.getByText("msg: updating namespace gateway"),
+    page.getByText("msg: Workflow has been triggered"),
     "When coming back to the monitoring page, it still shows the same log message"
   ).toBeVisible();
 
