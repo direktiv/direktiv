@@ -14,9 +14,19 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
-const deleteFile = apiFactory({
-  url: ({ namespace, path }: { namespace: string; path: string }) =>
-    `/api/v2/namespaces/${namespace}/files${forceLeadingSlash(path)}`,
+export const deleteFile = apiFactory({
+  url: ({
+    baseUrl,
+    namespace,
+    path,
+  }: {
+    baseUrl?: string;
+    namespace: string;
+    path: string;
+  }) =>
+    `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/files${forceLeadingSlash(
+      path
+    )}`,
   method: "DELETE",
   schema: FileDeletedSchema,
 });
