@@ -28,7 +28,7 @@ func (e *varController) mountRouter(r chi.Router) {
 }
 
 func (e *varController) get(w http.ResponseWriter, r *http.Request) {
-	// handle raw file read.
+	// handle raw var read.
 	if r.URL.Query().Get("raw") == "true" {
 		e.getRaw(w, r)
 		return
@@ -247,6 +247,11 @@ func (e *varController) create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (e *varController) list(w http.ResponseWriter, r *http.Request) {
+	// handle raw var read.
+	if r.URL.Query().Get("raw") == "true" {
+		e.listRaw(w, r)
+		return
+	}
 	ns := extractContextNamespace(r)
 
 	db, err := e.db.BeginTx(r.Context())
@@ -285,6 +290,10 @@ func (e *varController) list(w http.ResponseWriter, r *http.Request) {
 	} else {
 		list, err = dStore.RuntimeVariables().ListForNamespace(r.Context(), ns.Name)
 	}
+	if err != nil {
+		writeDataStoreError(w, err)
+		return
+	}
 
 	filterByName := r.URL.Query().Get("name")
 	if filterByName != "" {
@@ -297,17 +306,79 @@ func (e *varController) list(w http.ResponseWriter, r *http.Request) {
 		list = filteredList
 	}
 
-	if err != nil {
-		writeDataStoreError(w, err)
-		return
-	}
-
 	res := make([]any, len(list))
 	for i := range list {
 		res[i] = convertVariable(list[i])
 	}
 
 	writeJSON(w, res)
+}
+
+func (e *varController) listRaw(w http.ResponseWriter, r *http.Request) {
+	ns := extractContextNamespace(r)
+
+	db, err := e.db.BeginTx(r.Context())
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	defer db.Rollback()
+	dStore := db.DataStore()
+
+	forInstanceID := r.URL.Query().Get("instanceId")
+	_, err = uuid.Parse(forInstanceID)
+	if err != nil && forInstanceID != "" {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	forWorkflowPath := r.URL.Query().Get("workflowPath")
+	if forWorkflowPath != "" && forWorkflowPath != filepath.Clean(forWorkflowPath) {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	var list []*datastore.RuntimeVariable
+	if forInstanceID != "" {
+		list, err = dStore.RuntimeVariables().ListForInstance(r.Context(), uuid.MustParse(forInstanceID))
+	} else if forWorkflowPath != "" {
+		list, err = dStore.RuntimeVariables().ListForWorkflow(r.Context(), ns.Name, forWorkflowPath)
+	} else {
+		list, err = dStore.RuntimeVariables().ListForNamespace(r.Context(), ns.Name)
+	}
+	if errors.Is(err, datastore.ErrNotFound) {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	filterByName := r.URL.Query().Get("name")
+	if filterByName != "" {
+		var filteredList []*datastore.RuntimeVariable
+		for _, item := range list {
+			if item.Name == filterByName {
+				filteredList = append(filteredList, item)
+			}
+		}
+		list = filteredList
+	}
+	if len(list) != 1 {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	variable := list[0]
+	variable.Data, err = dStore.RuntimeVariables().LoadData(r.Context(), variable.ID)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", variable.MimeType)
+	_, err = w.Write(variable.Data)
+	if err != nil {
+		slog.Error("write raw variable response", "err", err)
+	}
 }
 
 func convertVariable(v *datastore.RuntimeVariable) any {
