@@ -46,31 +46,6 @@ func (srv *server) getInstance(ctx context.Context, namespace, instanceID string
 	return instance, nil
 }
 
-func (internal *internal) getInstance(ctx context.Context, instanceID string) (*enginerefactor.Instance, error) {
-	id, err := uuid.Parse(instanceID)
-	if err != nil {
-		return nil, err
-	}
-
-	tx, err := internal.flow.beginSQLTx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer tx.Rollback()
-
-	idata, err := tx.InstanceStore().ForInstanceID(id).GetSummary(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	instance, err := enginerefactor.ParseInstanceData(idata)
-	if err != nil {
-		return nil, err
-	}
-
-	return instance, nil
-}
-
 func (engine *engine) StartWorkflow(ctx context.Context, namespace, path string, input []byte) (*instancestore.InstanceData, error) {
 	var err error
 	var ns *datastore.Namespace

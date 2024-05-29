@@ -26,9 +26,9 @@ export const useLogVirtualizer = ({
 
   const {
     data: logLines = [],
-    hasPreviousPage,
-    fetchPreviousPage,
-    isFetchingPreviousPage,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
   } = useLogs(queryLogsBy);
 
   const numberOfLogLines = logLines.length;
@@ -80,16 +80,16 @@ export const useLogVirtualizer = ({
     const [firstLogLine] = virtualItems;
     if (
       firstLogLine?.index === 0 &&
-      hasPreviousPage &&
-      !isFetchingPreviousPage &&
+      hasNextPage &&
+      !isFetchingNextPage &&
       prevNumberOfLogLines?.current === numberOfLogLines
     ) {
-      fetchPreviousPage();
+      fetchNextPage();
     }
   }, [
-    fetchPreviousPage,
-    hasPreviousPage,
-    isFetchingPreviousPage,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
     numberOfLogLines,
     virtualItems,
   ]);

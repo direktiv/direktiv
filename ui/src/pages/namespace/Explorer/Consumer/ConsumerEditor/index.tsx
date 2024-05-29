@@ -50,8 +50,9 @@ const ConsumerEditor: FC<ConsumerEditorProps> = ({ data }) => {
         values,
       }) => {
         const preview = jsonToYaml(values);
-        const filehasChanged = preview === fileContentFromServer;
-        const isDirty = !consumerConfigError && !filehasChanged;
+        const parsedOriginal = consumerConfig && jsonToYaml(consumerConfig);
+        const filehasChanged = preview !== parsedOriginal;
+        const isDirty = !consumerConfigError && filehasChanged;
         const disableButton = isPending || !!consumerConfigError;
 
         return (

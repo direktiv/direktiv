@@ -195,7 +195,7 @@ export const useLogs = ({
 
   /**
    * The API returns data as an infinite list, which means it returns a cursor in form of a timestamp
-   * to the previous page of data. The end of the list is not known until the last page is reached and
+   * to the next page of data. The end of the list is not known until the last page is reached and
    * the cursor is null.
    *
    * The API only returns navigation into one direction, which means we always have to start with querying
@@ -211,9 +211,7 @@ export const useLogs = ({
       trace,
     }),
     queryFn: fetchLogs,
-    getNextPageParam: () => undefined,
-    getPreviousPageParam: (firstPage) =>
-      firstPage.meta?.previousPage ?? undefined,
+    getNextPageParam: (firstPage) => firstPage.meta?.previousPage,
     enabled: !!namespace && enabled,
     initialPageParam: undefined,
     refetchOnWindowFocus: false,
@@ -225,7 +223,8 @@ export const useLogs = ({
    */
   let logData: LogEntryType[] | undefined = undefined;
   if (queryReturn.data) {
-    const pages = queryReturn.data?.pages.map((page) => page.data ?? []) ?? [];
+    const pagesReversed = [...queryReturn.data.pages].reverse();
+    const pages = pagesReversed.map((page) => page.data ?? []) ?? [];
     logData = pages.flat();
   }
 
