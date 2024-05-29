@@ -303,7 +303,10 @@ func (c *eventsController) registerCoudEvent(w http.ResponseWriter, r *http.Requ
 		return
 	}
 	dEvs := convertEvents(*ns, evs...)
-	c.store.EventHistory().Append(r.Context(), dEvs)
+	_, errs := c.store.EventHistory().Append(r.Context(), dEvs)
+	for _, e := range errs {
+		slog.Error("failed storing cloudevent to the event history", "error", e)
+	}
 
 	processEvents(c, r, ns, evs)
 	// status ok here.

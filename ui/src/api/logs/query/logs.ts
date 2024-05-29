@@ -65,7 +65,7 @@ const updateCache = (
 
   const pages = oldData.pages;
   const olderPages = pages.slice(0, -1);
-  const newestPage = pages.at(-1);
+  const newestPage = pages[0];
   if (newestPage === undefined) return undefined;
 
   const newestPageData = newestPage.data ?? [];
