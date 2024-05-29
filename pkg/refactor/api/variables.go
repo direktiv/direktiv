@@ -2,6 +2,8 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
+	"log/slog"
 	"net/http"
 	"path/filepath"
 	"time"
@@ -26,6 +28,11 @@ func (e *varController) mountRouter(r chi.Router) {
 }
 
 func (e *varController) get(w http.ResponseWriter, r *http.Request) {
+	// handle raw file read.
+	if r.URL.Query().Get("raw") == "true" {
+		e.getRaw(w, r)
+		return
+	}
 	id, err := uuid.Parse(chi.URLParam(r, "variableID"))
 	if err != nil {
 		writeError(w, &Error{
@@ -57,6 +64,44 @@ func (e *varController) get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, convertVariable(variable))
+}
+
+func (e *varController) getRaw(w http.ResponseWriter, r *http.Request) {
+	id, err := uuid.Parse(chi.URLParam(r, "variableID"))
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	db, err := e.db.BeginTx(r.Context())
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	defer db.Rollback()
+	dStore := db.DataStore()
+
+	// Fetch one
+	variable, err := dStore.RuntimeVariables().GetByID(r.Context(), id)
+	if errors.Is(err, datastore.ErrNotFound) {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	variable.Data, err = dStore.RuntimeVariables().LoadData(r.Context(), variable.ID)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", variable.MimeType)
+	_, err = w.Write(variable.Data)
+	if err != nil {
+		slog.Error("write raw variable response", "err", err)
+	}
 }
 
 func (e *varController) delete(w http.ResponseWriter, r *http.Request) {

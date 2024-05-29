@@ -32,7 +32,7 @@ func (e *fsController) mountRouter(r chi.Router) {
 func (e *fsController) read(w http.ResponseWriter, r *http.Request) {
 	// handle raw file read.
 	if r.URL.Query().Get("raw") == "true" {
-		e.readRawFile(w, r)
+		e.readRaw(w, r)
 		return
 	}
 
@@ -84,7 +84,7 @@ func (e *fsController) read(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, res)
 }
 
-func (e *fsController) readRawFile(w http.ResponseWriter, r *http.Request) {
+func (e *fsController) readRaw(w http.ResponseWriter, r *http.Request) {
 	ns := extractContextNamespace(r)
 
 	db, err := e.db.BeginTx(r.Context())
