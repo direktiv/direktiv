@@ -3,7 +3,6 @@ import { basename } from 'path'
 
 import config from '../common/config'
 import helpers from '../common/helpers'
-import regex from '../common/regex'
 import request from '../common/request'
 import { retry10 } from '../common/retry'
 

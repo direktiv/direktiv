@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
-import { btoa, btou } from 'js-base64'
+import { btoa } from 'js-base64'
 import { basename } from 'path'
 
 import config from '../../common/config'
@@ -52,8 +52,7 @@ describe('Test filesystem read single file', () => {
 		expect(res.body).toMatchObject({
 			error: {
 				code: 'resource_not_found',
-				 message: 'filesystem path is not found',
-
+				message: 'filesystem path is not found',
 			},
 		})
 	})
