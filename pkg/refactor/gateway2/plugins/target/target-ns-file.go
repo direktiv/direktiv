@@ -1,6 +1,8 @@
 package target
 
 import (
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -8,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
 )
 
@@ -15,8 +18,6 @@ import (
 type NamespaceFilePlugin struct {
 	Namespace string `mapstructure:"namespace"`
 	File      string `mapstructure:"file"`
-	// TODO: yassir need fix.
-	// ContentType string `mapstructure:"content_type"`
 }
 
 func (tnf *NamespaceFilePlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
@@ -62,89 +63,57 @@ func (tnf *NamespaceFilePlugin) Execute(w http.ResponseWriter, r *http.Request) 
 		return nil
 	}
 	defer resp.Body.Close()
-
-	// copy headers
-	for key, values := range resp.Header {
-		for _, value := range values {
-			w.Header().Add(key, value)
-		}
+	if resp.StatusCode != http.StatusOK {
+		gateway2.WriteInternalError(r, w, nil, "couldn't execute downstream request")
+		return nil
 	}
-	// copy the status code
-	w.WriteHeader(resp.StatusCode)
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		gateway2.WriteInternalError(r, w, nil, "couldn't read downstream request")
+		return nil
+	}
 
-	// copy the response body
-	if _, err := io.Copy(w, resp.Body); err != nil {
+	type PayLoad struct {
+		Data struct {
+			Data     string `json:"data"`
+			Typ      string `json:"type"`
+			MimeType string `json:"mimeType"`
+		} `json:"data"`
+		Error struct {
+			Code string `json:"code"`
+		} `json:"error"`
+	}
+
+	payLoad := &PayLoad{}
+	err = json.Unmarshal(b, payLoad)
+	if err != nil {
+		gateway2.WriteInternalError(r, w, nil, "couldn't decode downstream response")
+		return nil
+	}
+	if payLoad.Error.Code != "" {
+		gateway2.WriteInternalError(r, w, nil, "downstream response error")
+		return nil
+	}
+	if payLoad.Data.Typ == string(filestore.FileTypeDirectory) {
+		gateway2.WriteInternalError(r, w, nil, "requested file is a directory")
+		return nil
+	}
+
+	decodedBytes, err := base64.StdEncoding.DecodeString(payLoad.Data.Data)
+	if err != nil {
+		gateway2.WriteInternalError(r, w, nil, "couldn't base64 decode downstream response")
+		return nil
+	}
+	w.Header().Set("Content-Type", payLoad.Data.MimeType)
+
+	_, err = w.Write(decodedBytes)
+	if err != nil {
 		gateway2.WriteInternalError(r, w, nil, "couldn't write downstream response")
 		return nil
 	}
 
-	// TODO: yassir, check if this is needed.
-	//data, mime, err := fetchObjectData(resp)
-	//if err != nil {
-	//	gateway2.WriteInternalError(r, w, nil, "can not fetch file data")
-	//	return nil
-	//}
-	//
-	//mt := "application/unknown"
-	//
-	//// overwrite object mimetype if configured
-	//// otherwise use the one coming from the API
-	//// last resort is guessing
-	//if tnf.ContentType != "" {
-	//	mt = tnf.ContentType
-	//} else if mime != "" {
-	//	mt = mime
-	//} else {
-	//	// guessing
-	//	// nolint
-	//	kind, _ := filetype.Match(data)
-	//	if kind != filetype.Unknown {
-	//		mt = kind.MIME.Value
-	//	}
-	//}
-	//w.Header().Set("Content-Type", mt)
-	//w.Header().Set("Content-Length", strconv.Itoa(len(data)))
-	//
-	//// nolint
-	//w.Write(data)
-
 	return r
 }
-
-// nolint
-//type Node struct {
-//	Data struct {
-//		CreatedAt    time.Time `json:"createdAt"`
-//		UpdatedAt    time.Time `json:"updatedAt"`
-//		Name         string    `json:"name"`
-//		Path         string    `json:"path"`
-//		Parent       string    `json:"parent"`
-//		Type         string    `json:"type"`
-//		Attributes   []any     `json:"attributes"`
-//		Oid          string    `json:"oid"`
-//		ReadOnly     bool      `json:"readOnly"`
-//		ExpandedType string    `json:"expandedType"`
-//		MimeType     string    `json:"mimeType"`
-//		Data         []byte    `json:"data"`
-//	} `json:"data"`
-//}
-
-// func fetchObjectData(res *http.Response) ([]byte, string, error) {
-//	b, err := io.ReadAll(res.Body)
-//	if err != nil {
-//		return nil, "", err
-//	}
-//
-//	var node Node
-//	err = json.Unmarshal(b, &node)
-//	if err != nil {
-//		return nil, "", err
-//	}
-//
-//	data := node.Data.Data
-//
-//	return data, node.Data.MimeType, nil
-//}
 
 func init() {
 	gateway2.RegisterPlugin(&NamespaceFilePlugin{})
