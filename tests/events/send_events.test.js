@@ -40,132 +40,99 @@ describe('Test send events', () => {
 	helpers.itShouldCreateNamespace(it, expect, namespaceName)
 
 	it(`should send event to namespace`, async () => {
-		const workflowEventResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${ namespaceName }/broadcast`)
+		const workflowEventResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/events/broadcast`)
 			.set('Content-Type', 'application/json')
 			.send(eventDuplicate)
 		expect(workflowEventResponse.statusCode).toEqual(200)
 	})
 
 	it(`fails with duplicate id`, async () => {
-		const workflowEventResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${ namespaceName }/broadcast`)
+		const workflowEventResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/events/broadcast`)
 			.set('Content-Type', 'application/json')
 			.send(eventDuplicate)
-		expect(workflowEventResponse.statusCode).toEqual(400)
+		const workflowEventListResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/history?limit=10&offset=0`)
+			.send()
+		expect(workflowEventResponse.statusCode).toEqual(200)
+		expect(workflowEventListResponse.statusCode).toEqual(200)
+		expect(workflowEventListResponse.body.data.length).toEqual(1)
 	})
 
 	it(`should send event to namespace with JSON`, async () => {
-		const workflowEventResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${ namespaceName }/broadcast`)
+		const workflowEventResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/events/broadcast`)
 			.set('Content-Type', 'application/json')
 			.send(eventWithJSON)
+		const workflowEventListResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/history?limit=10&offset=0`)
+			.send()
 		expect(workflowEventResponse.statusCode).toEqual(200)
+		expect(workflowEventListResponse.statusCode).toEqual(200)
+		expect(workflowEventListResponse.body.data.length).toEqual(2)
 	})
 
 	it(`should send event to namespace with non-JSON`, async () => {
-		const workflowEventResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${ namespaceName }/broadcast`)
+		const workflowEventResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/events/broadcast`)
 			.set('Content-Type', 'application/json')
 			.send(eventWithNonJSON)
+		const workflowEventListResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/history?limit=10&offset=0`)
+			.send()
 		expect(workflowEventResponse.statusCode).toEqual(200)
+		expect(workflowEventListResponse.statusCode).toEqual(200)
+		expect(workflowEventListResponse.body.data.length).toEqual(3)
 	})
 
 	it(`should send event as non-compliant`, async () => {
-		const workflowEventResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${ namespaceName }/broadcast`)
+		const workflowEventResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/events/broadcast`)
 			.set('Content-Type', 'application/json')
 			.send('NON-COMPLIANT')
-		expect(workflowEventResponse.statusCode).toEqual(200)
+		const workflowEventListResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/history?limit=10&offset=0`)
+			.send()
+		expect(workflowEventResponse.statusCode).toEqual(400)
+		expect(workflowEventListResponse.statusCode).toEqual(200)
+		expect(workflowEventListResponse.body.data.length).toEqual(3)
 	})
 
 	it(`should list events`, async () => {
-		const workflowEventResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/events?limit=10&offset=0`)
+		const workflowEventResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/history?limit=10&offset=0`)
 			.send()
-
 		expect(workflowEventResponse.statusCode).toEqual(200)
-
-		// test there are the four created
-		expect(workflowEventResponse.body.events.pageInfo.total).toEqual(4)
-
-		// test that all types are in
-		expect(workflowEventResponse.body.events.results).toEqual(
-			expect.arrayContaining([
-				expect.objectContaining({
-					type: 'noncompliant',
-				}),
-			]),
-		)
-
-		expect(workflowEventResponse.body.events.results).toEqual(
-			expect.arrayContaining([
-				expect.objectContaining({
-					type: 'testerDuplicate',
-				}),
-			]),
-		)
-
-		expect(workflowEventResponse.body.events.results).toEqual(
-			expect.arrayContaining([
-				expect.objectContaining({
-					type: 'testerXML',
-				}),
-			]),
-		)
-
-		expect(workflowEventResponse.body.events.results).toEqual(
-			expect.arrayContaining([
-				expect.objectContaining({
-					type: 'testerJSON',
-				}),
-			]),
-		)
+		expect(workflowEventResponse.body.data.length).toEqual(3)
+		expect(workflowEventResponse.body.data.find(item => item.event.type === 'testerDuplicate')).not.toBeFalsy()
+		expect(workflowEventResponse.body.data.find(item => item.event.type === 'testerXML')).not.toBeFalsy()
+		expect(workflowEventResponse.body.data.find(item => item.event.type === 'testerJSON')).not.toBeFalsy()
 	})
 
 	it(`bad filter value applied on the eventlog`, async () => {
 		// &filter.field=TEXT&filter.type=CONTAINS&filter.val=dfda&filter.field=CREATED&filter.type=AFTER&filter.val=2023-07-11T22%3A00%3A00.000Z
-		const workflowEventResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/events?limit=10&offset=0&filter.field=TEXT&filter.type=CONTAINS&filter.val=dfda`)
+		const workflowEventResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/history?limit=10&offset=0&eventContains=dfda`)
 			.send()
 
 		expect(workflowEventResponse.statusCode).toEqual(200)
 
-		// test there are the four created
-		expect(workflowEventResponse.body.events.pageInfo.total).toEqual(0)
+		expect(workflowEventResponse.body.data.length).toEqual(0)
 
-		expect(workflowEventResponse.body.events.results).toEqual(
+		expect(workflowEventResponse.body.data).toEqual(
 			expect.arrayContaining([]),
 		)
 	})
 
 	it(`should filter the eventlog by TEXT`, async () => {
-		const workflowEventResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/events?limit=10&offset=0&filter.field=TEXT&filter.type=CONTAINS&filter.val=world`)
+		const workflowEventResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/history?limit=10&offset=0&filter.field=TEXT&eventContains=world`)
 			.send()
 
 		expect(workflowEventResponse.statusCode).toEqual(200)
 
 		// test there are the four created
-		expect(workflowEventResponse.body.events.pageInfo.total).toEqual(1)
-
-		// test that all types are in
-		expect(workflowEventResponse.body.events.results).toEqual(
-			expect.arrayContaining([
-				expect.objectContaining({
-					type: 'testerJSON',
-				}),
-			]),
-		)
+		expect(workflowEventResponse.body.data.length).toEqual(1)
+		expect(workflowEventResponse.body.data.find(item => item.event.type === 'testerJSON')).not.toBeFalsy()
 	})
 	it(`should filter the eventlog by TYPE`, async () => {
-		const workflowEventResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/events?limit=10&offset=0&filter.field=TYPE&filter.type=CONTAINS&filter.val=testerJSON`)
+		const workflowEventResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/history?limit=10&offset=0&filter.field=TYPE&typeContains=testerJSON`)
 			.send()
 
 		expect(workflowEventResponse.statusCode).toEqual(200)
 
 		// test there are the four created
-		expect(workflowEventResponse.body.events.pageInfo.total).toEqual(1)
-
-		// test that all types are in
-		expect(workflowEventResponse.body.events.results).toEqual(
-			expect.arrayContaining([
-				expect.objectContaining({
-					type: 'testerJSON',
-				}),
-			]),
-		)
+		expect(workflowEventResponse.body.data.length).toEqual(1)
+		expect(workflowEventResponse.body.data.find(item => item.event.type === 'testerJSON')).not.toBeFalsy()
+		expect(workflowEventResponse.body.data.find(item => item.event.type === 'testerJSON')).not.toBeFalsy()
 	})
 })

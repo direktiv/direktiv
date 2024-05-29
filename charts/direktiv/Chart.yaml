@@ -35,5 +35,5 @@ dependencies:
     condition: ingress-nginx.install
   - name: fluent-bit
     repository: https://fluent.github.io/helm-charts
-    version: 0.43.0
+    version: 0.46.7
     condition: fluent-bit.install

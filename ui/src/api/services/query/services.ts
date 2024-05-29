@@ -67,11 +67,13 @@ export const useWorkflowServices = (workflow: string) =>
     }),
   });
 
-export const useNamespaceServices = () =>
+export const useNamespaceAndSystemServices = () =>
   useServices({
     filter: (apiResponse) => ({
       data: apiResponse.data.filter(
-        (service) => service.type === "namespace-service"
+        (service) =>
+          service.type === "namespace-service" ||
+          service.type === "system-service"
       ),
     }),
   });

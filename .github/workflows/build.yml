@@ -79,7 +79,7 @@ jobs:
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
-          version: v1.58
+          version: v1.59
 
   backend-test:
     runs-on: ubuntu-latest
@@ -356,19 +356,20 @@ jobs:
       - name: Run API E2E tests
         if: matrix.sections.type == 'api'
         run: |
-          npm -prefix tests run all -- ${{ matrix.sections.suit }}/
+          npm -prefix tests run jest -- ${{ matrix.sections.suit }}/ --runInBand
         env:
           DIREKTIV_HOST: ${{ env.DIREKTIV_HOST }}
           GITHUB_ACTIONS: true
 
-      - name: Run Playwrite E2E tests
+      - name: Run Playwright E2E tests
+        id: playwrightRun
         if: matrix.sections.type == 'playwright'
         run: |
           PLAYWRIGHT_SHARD=${{ matrix.sections.suit }} make docker-e2e-playwright
 
-      - name: Show logs
-        run: |
-          kubectl logs deployments/direktiv-flow | tail -n 100
-
-      - name: Cleanup test cache
-        run: npm cache clean --force
+      - name: Upload Playwright Artifacts
+        if: failure() && steps.playwrightRun.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: ./ui/test-results
