@@ -98,27 +98,25 @@ describe('Test workflow events and', () => {
 	it(`should have one event listeners`, async () => {
 		await helpers.sleep(1000)
 
-		const getEventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/event-listeners?limit=8&offset=0`)
+		const getEventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/listeners?limit=8&offset=0`)
 			.send()
-
-		expect(getEventListenerResponse.body.results[0]).toMatchObject({
-			workflow: '/startand.yaml',
-			mode: 'and',
-			instance: '',
+		expect(getEventListenerResponse.body.data[0]).toMatchObject({
+			triggerWorkflow: '/startand.yaml',
+			triggerType: 'StartAnd',
 			createdAt: expect.stringMatching(common.regex.timestampRegex),
 			updatedAt: expect.stringMatching(common.regex.timestampRegex),
-			events: expect.arrayContaining(
+			eventContextFilters: expect.arrayContaining(
 				[ {
-					type: 'eventtype3',
-					filters: {},
-				}, {
 					type: 'eventtype4',
-					filters: {},
+					context: {},
+				}, {
+					type: 'eventtype3',
+					context: {},
 				} ],
 			),
 		})
 
-		expect(getEventListenerResponse.body.pageInfo.total).toEqual(1)
+		expect(getEventListenerResponse.body.data.length).toEqual(1)
 	})
 
 	// workflow with start
@@ -136,26 +134,25 @@ describe('Test workflow events and', () => {
 
 		await new Promise(r => setTimeout(r, 250))
 
-		const getEventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/event-listeners?limit=8&offset=0`)
+		const getEventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/listeners?limit=8&offset=0`)
 			.send()
 
-		expect(getEventListenerResponse.body.pageInfo.total).toEqual(2)
+		expect(getEventListenerResponse.body.data.length).toEqual(2)
 
-		const result = getEventListenerResponse.body.results.find(item => item.workflow === '')
+		const result = getEventListenerResponse.body.data.find(item => item.hasOwnProperty('triggerInstance'))
 
 		expect(result).toMatchObject({
-			workflow: '',
-			mode: 'and',
-			instance: expect.stringMatching(common.regex.uuidRegex),
+			triggerType: 'WaitAnd',
+			triggerInstance: expect.stringMatching(common.regex.uuidRegex),
 			createdAt: expect.stringMatching(common.regex.timestampRegex),
 			updatedAt: expect.stringMatching(common.regex.timestampRegex),
-			events: expect.arrayContaining(
+			eventContextFilters: expect.arrayContaining(
 				[ {
 					type: 'eventtype1',
-					filters: {},
+					context: {},
 				}, {
 					type: 'eventtype2',
-					filters: {},
+					context: {},
 				} ],
 			),
 		})
