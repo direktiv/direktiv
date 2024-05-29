@@ -11,6 +11,7 @@ import {
   useLogsPreferencesVerboseLogs,
 } from "~/util/store/logs";
 
+import ApiError from "~/components/ApiError";
 import Button from "~/design/Button";
 import { ButtonBar } from "~/design/ButtonBar";
 import CopyButton from "~/design/CopyButton";
@@ -30,7 +31,7 @@ const LogsPanel = () => {
 
   const { data: instanceDetailsData } = useInstanceDetails({ instanceId });
 
-  const { data: logLines = [] } = useLogs({
+  const { data: logLines = [], error } = useLogs({
     instance: instanceId,
   });
 
@@ -116,6 +117,11 @@ const LogsPanel = () => {
             </Tooltip>
           </TooltipProvider>
         </ButtonBar>
+      </div>
+      <div className="mb-3">
+        {error && (
+          <ApiError error={error} label={t("pages.monitoring.apiError")} />
+        )}
       </div>
       <ScrollContainer />
       <div
