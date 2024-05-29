@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/direktiv/direktiv/pkg/refactor/compiler"
 	"github.com/direktiv/direktiv/pkg/refactor/database"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/direktiv/direktiv/pkg/refactor/helpers"
@@ -134,6 +135,18 @@ func (e *fsController) delete(w http.ResponseWriter, r *http.Request) {
 	writeOk(w)
 }
 
+type fileRequest struct {
+	Name     string             `json:"name"`
+	Typ      filestore.FileType `json:"type"`
+	MIMEType string             `json:"mimeType"`
+	Data     string             `json:"data"`
+}
+
+const (
+	typeScriptFlowType = "application/x-typescript"
+	yamlFlowType       = "application/yaml"
+)
+
 func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 	ns := extractContextNamespace(r)
 
@@ -146,12 +159,7 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 
 	fStore := db.FileStore()
 
-	req := struct {
-		Name     string             `json:"name"`
-		Typ      filestore.FileType `json:"type"`
-		MIMEType string             `json:"mimeType"`
-		Data     string             `json:"data"`
-	}{}
+	req := fileRequest{}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeNotJSONError(w, err)
@@ -168,24 +176,44 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-	// Validate if data is valid yaml with direktiv files.
-	isDirektivFile := req.Typ != filestore.FileTypeDirectory && req.Typ != filestore.FileTypeFile
-	var data struct{}
-	if err = yaml.Unmarshal(decodedBytes, &data); err != nil && isDirektivFile {
-		writeError(w, &Error{
-			Code:    "request_data_invalid",
-			Message: "file data has invalid yaml string",
-		})
-
-		return
-	}
 
 	path := strings.SplitN(r.URL.Path, "/files", 2)[1]
 	path = filepath.Clean("/" + path)
 
+	filePath := filepath.Join("/", path, req.Name)
+	dataType := detectFlowContent(req.Typ, req.MIMEType)
+
+	// Validate if data is valid yaml with direktiv files.
+	var data struct{}
+	if err = yaml.Unmarshal(decodedBytes, &data); err != nil && dataType == yamlFlowType {
+		writeError(w, &Error{
+			Code:    "request_data_invalid",
+			Message: "file data has invalid yaml string",
+		})
+		return
+	} else if dataType == typeScriptFlowType {
+		// validate typescript
+		compiler, err := compiler.New(filePath, string(decodedBytes))
+		if err != nil {
+			writeError(w, &Error{
+				Code:    "request_data_invalid",
+				Message: "file data has invalid typescript string",
+			})
+			return
+		}
+		_, err = compiler.CompileFlow()
+		if err != nil {
+			writeError(w, &Error{
+				Code:    "request_data_invalid",
+				Message: "file data has invalid typescript string",
+			})
+			return
+		}
+	}
+
 	// Create file.
 	newFile, err := fStore.ForNamespace(ns.Name).CreateFile(r.Context(),
-		"/"+path+"/"+req.Name,
+		filePath,
 		req.Typ,
 		req.MIMEType,
 		decodedBytes)
@@ -207,6 +235,7 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 			Namespace:   ns.Name,
 			NamespaceID: ns.ID,
 			FilePath:    newFile.Path,
+			MimeType:    dataType,
 		})
 		// nolint:staticcheck
 		if err != nil {
@@ -215,6 +244,20 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, newFile)
+}
+
+func detectFlowContent(typ filestore.FileType, mimeType string) string {
+
+	// if it is not a standard type return
+	if typ == filestore.FileTypeDirectory || typ == filestore.FileTypeFile {
+		return ""
+	}
+
+	if mimeType == typeScriptFlowType {
+		return typeScriptFlowType
+	}
+
+	return yamlFlowType
 }
 
 func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
@@ -249,16 +292,6 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-	// Validate if data is valid yaml with direktiv files.
-	var data struct{}
-	if err = yaml.Unmarshal(decodedBytes, &data); err != nil && req.Data != "" {
-		writeError(w, &Error{
-			Code:    "request_data_invalid",
-			Message: "updated file data has invalid yaml string",
-		})
-
-		return
-	}
 
 	path := strings.SplitN(r.URL.Path, "/files", 2)[1]
 	path = filepath.Clean("/" + path)
@@ -268,6 +301,37 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		writeFileStoreError(w, err)
 		return
+	}
+
+	dataType := detectFlowContent(oldFile.Typ, oldFile.MIMEType)
+	filePath := filepath.Join("/", path, oldFile.Path)
+
+	// Validate if data is valid yaml with direktiv files.
+	var data struct{}
+	if err = yaml.Unmarshal(decodedBytes, &data); err != nil && dataType == yamlFlowType {
+		writeError(w, &Error{
+			Code:    "request_data_invalid",
+			Message: "file data has invalid yaml string",
+		})
+		return
+	} else if dataType == typeScriptFlowType {
+		// validate typescript
+		compiler, err := compiler.New(filePath, string(decodedBytes))
+		if err != nil {
+			writeError(w, &Error{
+				Code:    "request_data_invalid",
+				Message: "file data has invalid typescript string",
+			})
+			return
+		}
+		_, err = compiler.CompileFlow()
+		if err != nil {
+			writeError(w, &Error{
+				Code:    "request_data_invalid",
+				Message: "file data has invalid typescript string",
+			})
+			return
+		}
 	}
 
 	if req.Data != "" {
@@ -327,6 +391,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 			Namespace:   ns.Name,
 			NamespaceID: ns.ID,
 			FilePath:    updatedFile.Path,
+			MimeType:    dataType,
 		})
 		// nolint:staticcheck
 		if err != nil {

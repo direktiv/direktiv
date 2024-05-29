@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"strings"
 	"time"
 
 	apiLegacy "github.com/direktiv/direktiv/pkg/api"
@@ -251,7 +252,7 @@ func renderServiceManager(db *database.SQLStore, serviceManager core.ServiceMana
 					FilePath:    file.Path,
 					ServiceFile: *serviceDef,
 				})
-			} else if file.Typ == filestore.FileTypeWorkflow {
+			} else if file.Typ == filestore.FileTypeWorkflow && file.MIMEType == "application/yaml" {
 				sub, err := getWorkflowFunctionDefinitionsFromWorkflow(ns, file)
 				if err != nil {
 					slog.Error("parse workflow def", "err", err)
@@ -260,6 +261,23 @@ func renderServiceManager(db *database.SQLStore, serviceManager core.ServiceMana
 				}
 
 				funConfigList = append(funConfigList, sub...)
+			} else if file.Typ == filestore.FileTypeWorkflow && file.MIMEType == "application/x-typescript" {
+				fmt.Println("PARSE TYPESCRIPT")
+
+				// using hash of the full typescript file to get a reconcile hash
+				svcFile := &core.ServiceFileData{
+					Typ:       core.ServiceTypeTypescript,
+					Name:      strings.ToLower(file.Checksum)[:32],
+					Namespace: ns.Name,
+					FilePath:  file.Path,
+					ServiceFile: core.ServiceFile{
+						Image: strings.ToLower(file.Checksum)[:32],
+						Size:  "medium",
+					},
+					TypescriptFile: file.Data,
+				}
+
+				funConfigList = append(funConfigList, svcFile)
 			}
 		}
 	}

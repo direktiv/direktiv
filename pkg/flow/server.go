@@ -91,14 +91,23 @@ func Run(circuit *core.Circuit) error {
 			slog.Error("critical! unmarshal file change event error", "error", err)
 			panic("unmarshal file change event")
 		}
+
+		if event.MimeType == "application/x-typescript" {
+			slog.Info("TODO TYPESCRIPT SETUP CRON & EVENT LISTENER!")
+			// TODO: TYPESCRIPT, init crons
+			return nil
+		}
+
 		// If this is a delete workflow file
 		if event.DeleteFileID.String() != (uuid.UUID{}).String() {
 			return srv.flow.events.deleteWorkflowEventListeners(circuit.Context(), event.NamespaceID, event.DeleteFileID)
 		}
+
 		file, err := dbManager.FileStore().ForNamespace(event.Namespace).GetFile(circuit.Context(), event.FilePath)
 		if err != nil {
 			return err
 		}
+
 		err = srv.flow.configureWorkflowStarts(circuit.Context(), dbManager, event.NamespaceID, event.Namespace, file)
 		if err != nil {
 			return err

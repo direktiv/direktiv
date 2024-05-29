@@ -45,4 +45,5 @@ type FileChangeEvent struct {
 	FilePath     string
 	OldPath      string
 	DeleteFileID uuid.UUID
+	MimeType     string
 }
