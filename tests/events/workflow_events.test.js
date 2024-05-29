@@ -51,11 +51,9 @@ states:
     result: Hello world!
 `)
 	it(`should wait a second for the events logic to sync`, async () => {
-
 		await helpers.sleep(1000)
 	})
 	it(`should fail to invoke the '/listener.yml' workflow`, async () => {
-
 		const req = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=listener.yml&wait=true`)
 
 		expect(req.statusCode).toEqual(500)
@@ -68,7 +66,6 @@ states:
 	})
 
 	it(`should invoke the '/listener.yml' workflow with an event`, async () => {
-
 		await events.sendEventAndList(namespaceName, basevent('greeting', 'greeting', 'world1'))
 
 		const instance = await events.listInstancesAndFilter(namespaceName, 'listener.yml')
@@ -77,7 +74,6 @@ states:
 })
 
 describe('Test workflow events with filter/context', () => {
-
 	beforeAll(common.helpers.deleteAllNamespaces)
 
 	helpers.itShouldCreateNamespace(it, expect, namespaceName)
@@ -115,12 +111,10 @@ states:
 `)
 
 	it(`should wait a second for the events logic to sync`, async () => {
-
 		await helpers.sleep(1000)
 	})
 
 	it(`should invoke the '/stoplistener.yml' workflow with an event`, async () => {
-
 		await events.sendEventAndList(namespaceName, baseEventWithContext('greeting', 'greeting', 'state', 'stopped'))
 
 		let instance = await events.listInstancesAndFilter(namespaceName, 'startlistener.yml')
@@ -284,7 +278,7 @@ describe('Test workflow events', () => {
 			.send()
 		expect(getEventListenerResponse.body.meta.total).toEqual(2)
 
-		const result = getEventListenerResponse.body.data.find(item => item.hasOwnProperty("triggerInstance"))
+		const result = getEventListenerResponse.body.data.find(item => item.hasOwnProperty('triggerInstance'))
 		expect(result).toMatchObject({
 			triggerType: 'WaitSimple',
 			triggerInstance: expect.stringMatching(common.regex.uuidRegex),

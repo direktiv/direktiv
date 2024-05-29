@@ -1,11 +1,11 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
+import { basename } from 'path'
 
 import common from '../common'
 import helpers from '../common/helpers'
 import request from '../common/request'
 import { retry10 } from '../common/retry'
 import events from './send_helper'
-import { basename } from 'path'
 
 const namespaceName = basename(__filename)
 
@@ -122,7 +122,7 @@ describe('Test workflow events and', () => {
 
 		expect(getEventListenerResponse.body.data.length).toEqual(2)
 
-		const result = getEventListenerResponse.body.data.find(item => item.hasOwnProperty("triggerInstance"))
+		const result = getEventListenerResponse.body.data.find(item => item.hasOwnProperty('triggerInstance'))
 
 		expect(result).toMatchObject({
 			triggerType: 'WaitOR',

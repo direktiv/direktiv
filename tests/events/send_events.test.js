@@ -54,18 +54,18 @@ describe('Test send events', () => {
 			.send()
 		expect(workflowEventResponse.statusCode).toEqual(200)
 		expect(workflowEventListResponse.statusCode).toEqual(200)
-		expect(workflowEventListResponse.body.data.length).toEqual(1)		
+		expect(workflowEventListResponse.body.data.length).toEqual(1)
 	})
 
 	it(`should send event to namespace with JSON`, async () => {
 		const workflowEventResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/events/broadcast`)
 			.set('Content-Type', 'application/json')
 			.send(eventWithJSON)
-			const workflowEventListResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/history?limit=10&offset=0`)
+		const workflowEventListResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/history?limit=10&offset=0`)
 			.send()
 		expect(workflowEventResponse.statusCode).toEqual(200)
 		expect(workflowEventListResponse.statusCode).toEqual(200)
-		expect(workflowEventListResponse.body.data.length).toEqual(2)		
+		expect(workflowEventListResponse.body.data.length).toEqual(2)
 	})
 
 	it(`should send event to namespace with non-JSON`, async () => {
@@ -76,7 +76,7 @@ describe('Test send events', () => {
 			.send()
 		expect(workflowEventResponse.statusCode).toEqual(200)
 		expect(workflowEventListResponse.statusCode).toEqual(200)
-		expect(workflowEventListResponse.body.data.length).toEqual(3)		
+		expect(workflowEventListResponse.body.data.length).toEqual(3)
 	})
 
 	it(`should send event as non-compliant`, async () => {
@@ -87,7 +87,7 @@ describe('Test send events', () => {
 			.send()
 		expect(workflowEventResponse.statusCode).toEqual(400)
 		expect(workflowEventListResponse.statusCode).toEqual(200)
-		expect(workflowEventListResponse.body.data.length).toEqual(3)	
+		expect(workflowEventListResponse.body.data.length).toEqual(3)
 	})
 
 	it(`should list events`, async () => {
@@ -98,7 +98,6 @@ describe('Test send events', () => {
 		expect(workflowEventResponse.body.data.find(item => item.event.type === 'testerDuplicate')).not.toBeFalsy()
 		expect(workflowEventResponse.body.data.find(item => item.event.type === 'testerXML')).not.toBeFalsy()
 		expect(workflowEventResponse.body.data.find(item => item.event.type === 'testerJSON')).not.toBeFalsy()
-
 	})
 
 	it(`bad filter value applied on the eventlog`, async () => {
@@ -135,6 +134,5 @@ describe('Test send events', () => {
 		expect(workflowEventResponse.body.data.length).toEqual(1)
 		expect(workflowEventResponse.body.data.find(item => item.event.type === 'testerJSON')).not.toBeFalsy()
 		expect(workflowEventResponse.body.data.find(item => item.event.type === 'testerJSON')).not.toBeFalsy()
-
 	})
 })

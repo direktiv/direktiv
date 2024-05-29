@@ -102,22 +102,22 @@ func (e *fsController) readRawFile(w http.ResponseWriter, r *http.Request) {
 	// fetch file.
 	file, err := fStore.ForNamespace(ns.Name).GetFile(r.Context(), path)
 	if errors.Is(err, filestore.ErrNotFound) {
-		w.WriteHeader(404)
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 	if err != nil {
-		w.WriteHeader(500)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	if file.Typ == filestore.FileTypeDirectory {
-		w.WriteHeader(404)
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 	w.Header().Set("Content-Type", file.MIMEType)
 
 	data, err := fStore.ForFile(file).GetData(r.Context())
 	if err != nil {
-		w.WriteHeader(500)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
