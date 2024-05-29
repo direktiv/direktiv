@@ -102,7 +102,7 @@ test("it paginates event listeners", async ({ page }) => {
   await expect(
     page.getByRole("cell", { name: "start workflow" }),
     "it renders the expected number of items on page 1"
-  ).toHaveCount(10, { timeout: 10000 });
+  ).toHaveCount(10);
 
   const paginationWrapper = page.getByTestId("pagination-wrapper");
 
