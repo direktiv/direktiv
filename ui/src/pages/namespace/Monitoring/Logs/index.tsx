@@ -5,13 +5,12 @@ import {
   TooltipTrigger,
 } from "~/design/Tooltip";
 
-import Alert from "~/design/Alert";
+import ApiError from "~/components/ApiError";
 import { ButtonBar } from "~/design/ButtonBar";
 import CopyButton from "~/design/CopyButton";
 import { NoPermissions } from "~/design/Table";
 import ScrollContainer from "./Scrollcontainer";
 import { ScrollText } from "lucide-react";
-import { getMessageFromApiError } from "~/api/errorHandling";
 import { getMonitoringLogEntryForClipboard } from "~/components/Logs/utils";
 import { useLogs } from "~/api/logs/query/logs";
 import { useTranslation } from "react-i18next";
@@ -36,13 +35,10 @@ const LogsPanel = () => {
 
   if (!isAllowed) return <NoPermissions>{noPermissionMessage}</NoPermissions>;
 
-  const errorMessage = getMessageFromApiError(error);
-
   return (
     <>
-      {errorMessage && <Alert variant="error">{errorMessage}</Alert>}
-      <div className="mb-5 flex flex-col gap-5 sm:flex-row">
-        <h3 className="flex grow items-center gap-x-2 font-medium">
+      <div className="mb-3 flex flex-col gap-5 sm:flex-row">
+        <h3 className="flex grow gap-x-2 font-medium">
           <ScrollText className="h-5" />
           {t("components.logs.title")}
         </h3>
@@ -65,6 +61,11 @@ const LogsPanel = () => {
             </Tooltip>
           </TooltipProvider>
         </ButtonBar>
+      </div>
+      <div className="mb-3">
+        {error && (
+          <ApiError error={error} label={t("pages.monitoring.apiError")} />
+        )}
       </div>
       <ScrollContainer />
       <div className="flex items-center justify-center pt-2 text-sm text-gray-11 dark:text-gray-dark-11">

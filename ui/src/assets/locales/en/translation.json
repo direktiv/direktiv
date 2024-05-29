@@ -527,7 +527,8 @@
           "title": "Failed Executions",
           "empty": "There are no recent failed executions."
         }
-      }
+      },
+      "apiError": "An error was received when fetching logs:"
     },
     "instances": {
       "list": {
@@ -1139,6 +1140,9 @@
       "header": {
         "confirm": "Confirmation required"
       }
+    },
+    "apiError": {
+      "label": "The API returned an error: "
     },
     "formErrors": {
       "fieldInvalid": "this field is invalid"

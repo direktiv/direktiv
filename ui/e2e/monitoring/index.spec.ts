@@ -55,7 +55,9 @@ test("It will show the logs on the monitoring page", async ({ page }) => {
   ).toBeVisible();
 });
 
-test("it will render an alert", async ({ page }) => {
+test("it renders an error when the api response returns an error", async ({
+  page,
+}) => {
   await page.route(`/api/v2/namespaces/${namespace}/logs`, async (route) => {
     if (route.request().method() === "GET") {
       const json = {
@@ -67,5 +69,7 @@ test("it will render an alert", async ({ page }) => {
 
   await page.goto(`/n/${namespace}/monitoring`);
 
-  await expect(page.getByText("oh no!")).toBeVisible();
+  await expect(
+    page.getByText("An error was received when fetching logs: oh no!")
+  ).toBeVisible();
 });
