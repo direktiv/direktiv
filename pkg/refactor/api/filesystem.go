@@ -31,7 +31,7 @@ func (e *fsController) mountRouter(r chi.Router) {
 
 func (e *fsController) read(w http.ResponseWriter, r *http.Request) {
 	// handle raw file read.
-	if r.URL.Query().Get("withRaw") == "true" {
+	if r.URL.Query().Get("raw") == "true" {
 		e.readRawFile(w, r)
 		return
 	}

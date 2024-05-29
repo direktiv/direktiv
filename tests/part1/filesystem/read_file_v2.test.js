@@ -32,7 +32,7 @@ describe('Test filesystem read single file', () => {
 
 	it(`should read raw file`, async () => {
 		const res = await request(config.getDirektivHost())
-			.get(`/api/v2/namespaces/${ namespace }/files/foo.yaml?withRaw=true`)
+			.get(`/api/v2/namespaces/${ namespace }/files/foo.yaml?raw=true`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.headers['content-type']).toEqual('text/plain')
 		expect(res.headers['content-length']).toEqual('13')
@@ -41,7 +41,7 @@ describe('Test filesystem read single file', () => {
 
 	it(`should read raw file not found`, async () => {
 		const res = await request(config.getDirektivHost())
-			.get(`/api/v2/namespaces/${ namespace }/files/something.yaml?withRaw=true`)
+			.get(`/api/v2/namespaces/${ namespace }/files/something.yaml?raw=true`)
 		expect(res.statusCode).toEqual(404)
 	})
 
