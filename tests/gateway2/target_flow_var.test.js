@@ -53,9 +53,8 @@ plugins:
 	retry10(`should execute wf1.yaml file`, async () => {
 		const res = await request(config.getDirektivHost()).get(`/api/v2/namespaces/${ namespace }/gateway2/ep1`)
 		expect(res.statusCode).toEqual(200)
-
-		expect(res.body.data).toMatchObject({
-			data: btoa('Hello World 55'),
-		})
+		expect(res.text).toEqual('Hello World 55')
+		expect(res.headers['content-type']).toEqual('text/plain')
+		expect(res.headers['content-length']).toEqual('14')
 	})
 })
