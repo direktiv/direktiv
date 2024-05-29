@@ -16,8 +16,9 @@ test.afterEach(async () => {
 });
 
 test("It will show the logs on the monitoring page", async ({ page }) => {
-  await createWorkflow(namespace, "test-workflow");
-  await createInstance({ namespace, path: "test-workflow" });
+  const workflowName = "workflow.yaml";
+  await createWorkflow(namespace, workflowName);
+  await createInstance({ namespace, path: workflowName });
 
   await page.goto(`/n/${namespace}/monitoring`, {
     waitUntil: "domcontentloaded",
