@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"log/slog"
 	"net/http"
 	"path/filepath"
@@ -30,6 +31,12 @@ func (e *fsController) mountRouter(r chi.Router) {
 }
 
 func (e *fsController) read(w http.ResponseWriter, r *http.Request) {
+	// handle raw file read.
+	if r.URL.Query().Get("raw") == "true" {
+		e.readRaw(w, r)
+		return
+	}
+
 	ns := extractContextNamespace(r)
 
 	db, err := e.db.BeginTx(r.Context())
@@ -76,6 +83,49 @@ func (e *fsController) read(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, res)
+}
+
+func (e *fsController) readRaw(w http.ResponseWriter, r *http.Request) {
+	ns := extractContextNamespace(r)
+
+	db, err := e.db.BeginTx(r.Context())
+	if err != nil {
+		writeInternalError(w, err)
+		return
+	}
+	defer db.Rollback()
+
+	fStore := db.FileStore()
+
+	path := strings.SplitN(r.URL.Path, "/files", 2)[1]
+	path = filepath.Clean("/" + path)
+
+	// fetch file.
+	file, err := fStore.ForNamespace(ns.Name).GetFile(r.Context(), path)
+	if errors.Is(err, filestore.ErrNotFound) {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	if file.Typ == filestore.FileTypeDirectory {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	w.Header().Set("Content-Type", file.MIMEType)
+
+	data, err := fStore.ForFile(file).GetData(r.Context())
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	_, err = w.Write(data)
+	if err != nil {
+		slog.Error("write response", "err", err)
+	}
 }
 
 func (e *fsController) delete(w http.ResponseWriter, r *http.Request) {

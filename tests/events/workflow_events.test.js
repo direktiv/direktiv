@@ -37,7 +37,6 @@ describe('Test basic workflow events', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
 
 	helpers.itShouldCreateNamespace(it, expect, namespaceName)
-
 	common.helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
 		'/', 'listener.yml', 'workflow', `
 start:
@@ -51,13 +50,12 @@ states:
   transform:
     result: Hello world!
 `)
-
 	it(`should wait a second for the events logic to sync`, async () => {
 		await helpers.sleep(1000)
 	})
-
 	it(`should fail to invoke the '/listener.yml' workflow`, async () => {
 		const req = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=listener.yml&wait=true`)
+
 		expect(req.statusCode).toEqual(500)
 		expect(req.body).toMatchObject({
 			error: {
@@ -245,22 +243,20 @@ describe('Test workflow events', () => {
 	it(`should have one event listeners`, async () => {
 		await helpers.sleep(1000)
 
-		const getEventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/event-listeners?limit=8&offset=0`)
+		const getEventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/listeners?limit=8&offset=0`)
 			.send()
-
-		expect(getEventListenerResponse.body.results[0]).toMatchObject({
-			workflow: '/start.yaml',
-			mode: 'simple',
-			instance: '',
+		expect(getEventListenerResponse.body.data[0]).toMatchObject({
+			triggerWorkflow: '/start.yaml',
+			triggerType: 'StartSimple',
+			namespace: { namespaceName }.namespaceName,
 			createdAt: expect.stringMatching(common.regex.timestampRegex),
 			updatedAt: expect.stringMatching(common.regex.timestampRegex),
-			events: [ {
+			eventContextFilters: [ {
 				type: 'hello',
-				filters: {},
 			} ],
 		})
 
-		expect(getEventListenerResponse.body.pageInfo.total).toEqual(1)
+		expect(getEventListenerResponse.body.meta.total).toEqual(1)
 	})
 
 	// workflow with start
@@ -278,22 +274,18 @@ describe('Test workflow events', () => {
 
 		await new Promise(r => setTimeout(r, 250))
 
-		const getEventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/event-listeners?limit=8&offset=0`)
+		const getEventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/listeners?limit=8&offset=0`)
 			.send()
+		expect(getEventListenerResponse.body.meta.total).toEqual(2)
 
-		expect(getEventListenerResponse.body.pageInfo.total).toEqual(2)
-
-		const result = getEventListenerResponse.body.results.find(item => item.workflow === '')
-
+		const result = getEventListenerResponse.body.data.find(item => item.hasOwnProperty('triggerInstance'))
 		expect(result).toMatchObject({
-			workflow: '',
-			mode: 'simple',
-			instance: expect.stringMatching(common.regex.uuidRegex),
+			triggerType: 'WaitSimple',
+			triggerInstance: expect.stringMatching(common.regex.uuidRegex),
 			createdAt: expect.stringMatching(common.regex.timestampRegex),
 			updatedAt: expect.stringMatching(common.regex.timestampRegex),
-			events: [ {
+			eventContextFilters: [ {
 				type: 'hellowait',
-				filters: {},
 			} ],
 		})
 	})
@@ -417,7 +409,7 @@ describe('Test workflow events', () => {
 		await events.sendEventAndList(namespaceName, basevent('waitformulti', 'wait-ctx65', 'world1'))
 		let instancesResponse = await events.listInstancesAndFilter(namespaceName, workflowContextMultipleName, 'pending')
 		expect(instancesResponse).not.toBeFalsy()
-		const workflowEventResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${ namespaceName }/broadcast`)
+		const workflowEventResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/events/broadcast`)
 			.set('Content-Type', 'application/json')
 			.send(baseventMultipleContext('waitformulti', 'wait-c3432tx7'))
 		expect(workflowEventResponse.statusCode).toEqual(200)

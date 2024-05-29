@@ -9,7 +9,7 @@ import ServiceEditor from "./ServiceEditor";
 import { analyzePath } from "~/util/router/utils";
 import { useFile } from "~/api/files/query/file";
 import { useNamespace } from "~/util/store/namespace";
-import { useNamespaceServices } from "~/api/services/query/services";
+import { useNamespaceAndSystemServices } from "~/api/services/query/services";
 import { usePages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
 
@@ -28,7 +28,7 @@ const ServicePage: FC = () => {
     isFetched: isPermissionCheckFetched,
   } = useFile({ path });
 
-  const { data: servicesList } = useNamespaceServices();
+  const { data: servicesList } = useNamespaceAndSystemServices();
 
   if (!namespace) return null;
   if (!path) return null;
