@@ -8,11 +8,8 @@ import "google/protobuf/empty.proto";
 
 import "pkg/flow/grpc/variables.proto";
 import "pkg/flow/grpc/internal.proto";
-import "pkg/flow/grpc/cloudevent.proto";
 
 service Flow {
-	rpc BroadcastCloudevent (BroadcastCloudeventRequest) returns (google.protobuf.Empty) {}
-
 	// variables.
 	rpc NamespaceVariable (NamespaceVariableRequest) returns (NamespaceVariableResponse) {}
 	rpc SetNamespaceVariableParcels (stream SetNamespaceVariableRequest) returns (SetNamespaceVariableResponse) {}

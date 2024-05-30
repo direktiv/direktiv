@@ -20,7 +20,6 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Flow_BroadcastCloudevent_FullMethodName         = "/direktiv_flow.Flow/BroadcastCloudevent"
 	Flow_NamespaceVariable_FullMethodName           = "/direktiv_flow.Flow/NamespaceVariable"
 	Flow_SetNamespaceVariableParcels_FullMethodName = "/direktiv_flow.Flow/SetNamespaceVariableParcels"
 	Flow_WorkflowVariable_FullMethodName            = "/direktiv_flow.Flow/WorkflowVariable"
@@ -33,7 +32,6 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type FlowClient interface {
-	BroadcastCloudevent(ctx context.Context, in *BroadcastCloudeventRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// variables.
 	NamespaceVariable(ctx context.Context, in *NamespaceVariableRequest, opts ...grpc.CallOption) (*NamespaceVariableResponse, error)
 	SetNamespaceVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetNamespaceVariableParcelsClient, error)
@@ -49,15 +47,6 @@ type flowClient struct {
 
 func NewFlowClient(cc grpc.ClientConnInterface) FlowClient {
 	return &flowClient{cc}
-}
-
-func (c *flowClient) BroadcastCloudevent(ctx context.Context, in *BroadcastCloudeventRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, Flow_BroadcastCloudevent_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 func (c *flowClient) NamespaceVariable(ctx context.Context, in *NamespaceVariableRequest, opts ...grpc.CallOption) (*NamespaceVariableResponse, error) {
@@ -193,7 +182,6 @@ func (x *flowSetInstanceVariableParcelsClient) CloseAndRecv() (*SetInstanceVaria
 // All implementations must embed UnimplementedFlowServer
 // for forward compatibility
 type FlowServer interface {
-	BroadcastCloudevent(context.Context, *BroadcastCloudeventRequest) (*emptypb.Empty, error)
 	// variables.
 	NamespaceVariable(context.Context, *NamespaceVariableRequest) (*NamespaceVariableResponse, error)
 	SetNamespaceVariableParcels(Flow_SetNamespaceVariableParcelsServer) error
@@ -208,9 +196,6 @@ type FlowServer interface {
 type UnimplementedFlowServer struct {
 }
 
-func (UnimplementedFlowServer) BroadcastCloudevent(context.Context, *BroadcastCloudeventRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method BroadcastCloudevent not implemented")
-}
 func (UnimplementedFlowServer) NamespaceVariable(context.Context, *NamespaceVariableRequest) (*NamespaceVariableResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method NamespaceVariable not implemented")
 }
@@ -240,24 +225,6 @@ type UnsafeFlowServer interface {
 
 func RegisterFlowServer(s grpc.ServiceRegistrar, srv FlowServer) {
 	s.RegisterService(&Flow_ServiceDesc, srv)
-}
-
-func _Flow_BroadcastCloudevent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(BroadcastCloudeventRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).BroadcastCloudevent(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_BroadcastCloudevent_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).BroadcastCloudevent(ctx, req.(*BroadcastCloudeventRequest))
-	}
-	return interceptor(ctx, in, info, handler)
 }
 
 func _Flow_NamespaceVariable_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -399,10 +366,6 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "direktiv_flow.Flow",
 	HandlerType: (*FlowServer)(nil),
 	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "BroadcastCloudevent",
-			Handler:    _Flow_BroadcastCloudevent_Handler,
-		},
 		{
 			MethodName: "NamespaceVariable",
 			Handler:    _Flow_NamespaceVariable_Handler,
