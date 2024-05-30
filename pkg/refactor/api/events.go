@@ -320,7 +320,7 @@ func (c *eventsController) registerCoudEvent(w http.ResponseWriter, r *http.Requ
 		}
 		for _, e := range errs {
 			if e != nil {
-				http.Error(w, "Internal error while appending CloudEvent to history", http.StatusBadRequest)
+				http.Error(w, "Internal error while appending CloudEvent to history", http.StatusInternalServerError)
 
 				return
 			}
