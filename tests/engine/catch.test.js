@@ -11,7 +11,7 @@ describe('Test catch state behaviour', () => {
 
 	helpers.itShouldCreateNamespace(it, expect, namespaceName)
 
-	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateFile(it, expect, namespaceName,
 		'',
 		'error.yaml',
 		'workflow',
@@ -24,7 +24,7 @@ describe('Test catch state behaviour', () => {
   transform: 
     result: x
 `))
-	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateFile(it, expect, namespaceName,
 		'',
 		'catch.yaml',
 		'workflow',

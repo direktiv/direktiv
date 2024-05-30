@@ -25,7 +25,7 @@ async function itShouldCreateNamespace (it, expect, ns) {
 	})
 }
 
-async function itShouldCreateFileV2 (it, expect, ns, path, name, type, mimeType, data) {
+async function itShouldCreateFile (it, expect, ns, path, name, type, mimeType, data) {
 	it(`should create a new file ${ path }`, async () => {
 		if (path === '/')
 			path = ''
@@ -43,11 +43,11 @@ async function itShouldCreateFileV2 (it, expect, ns, path, name, type, mimeType,
 	})
 }
 
-function itShouldCreateYamlFileV2 (it, expect, ns, path, name, type, data) {
-	return itShouldCreateFileV2(it, expect, ns, path, name, type, 'application/yaml', btoa(data))
+function itShouldCreateYamlFile (it, expect, ns, path, name, type, data) {
+	return itShouldCreateFile(it, expect, ns, path, name, type, 'application/yaml', btoa(data))
 }
 
-async function itShouldCreateDirV2 (it, expect, ns, path, name) {
+async function itShouldCreateDir (it, expect, ns, path, name) {
 	it(`should create a new dir ${ path }`, async () => {
 		const res = await request(common.config.getDirektivHost())
 			.post(`/api/v2/namespaces/${ ns }/files${ path }`)
@@ -69,11 +69,11 @@ async function itShouldCreateDirV2 (it, expect, ns, path, name) {
 	})
 }
 
-function itShouldUpdateFilePathV2 (it, expect, ns, path, newPath) {
-	return itShouldUpdateFileV2(it, expect, ns, path, { path: newPath })
+function itShouldUpdateFilePath (it, expect, ns, path, newPath) {
+	return itShouldUpdateFile(it, expect, ns, path, { path: newPath })
 }
 
-async function itShouldUpdateFileV2 (it, expect, ns, path, newPatch) {
+async function itShouldUpdateFile (it, expect, ns, path, newPatch) {
 	let title = `should update file path ${ path }`
 	if (newPatch.path !== undefined)
 		title = `should update file path ${ path } to ${ newPatch.path }`
@@ -99,7 +99,7 @@ async function itShouldUpdateFileV2 (it, expect, ns, path, newPatch) {
 	})
 }
 
-async function itShouldCheckPathExistsV2 (it, expect, ns, path, assertExits) {
+async function itShouldCheckPathExists (it, expect, ns, path, assertExits) {
 	it(`should check if path(${ path }) exists(${ assertExits })`, async () => {
 		const res = await request(common.config.getDirektivHost())
 			.get(`/api/v2/namespaces/${ ns }/files${ path }`)
@@ -121,11 +121,11 @@ states:
 `
 }
 
-function itShouldUpdateYamlFileV2 (it, expect, ns, path, data) {
-	return itShouldUpdateFileV2(it, expect, ns, path, { data: btoa(data) })
+function itShouldUpdateYamlFile (it, expect, ns, path, data) {
+	return itShouldUpdateFile(it, expect, ns, path, { data: btoa(data) })
 }
 
-async function itShouldDeleteFileV2 (it, expect, ns, path) {
+async function itShouldDeleteFile (it, expect, ns, path) {
 	it(`should delete a file ${ path }`, async () => {
 		const res = await request(common.config.getDirektivHost())
 			.delete(`/api/v2/namespaces/${ ns }/files${ path }`)
@@ -135,7 +135,7 @@ async function itShouldDeleteFileV2 (it, expect, ns, path) {
 	})
 }
 
-async function itShouldCreateVariableV2 (it, expect, ns, variable) {
+async function itShouldCreateVariable (it, expect, ns, variable) {
 	it(`should create a variable ${ variable.name }`, async () => {
 		const createRes = await request(config.getDirektivHost())
 			.post(`/api/v2/namespaces/${ ns }/variables`)
@@ -152,15 +152,15 @@ export default {
 	deleteAllNamespaces,
 	itShouldCreateNamespace,
 
-	itShouldUpdateYamlFileV2,
-	itShouldDeleteFileV2,
+	itShouldUpdateYamlFile,
+	itShouldDeleteFile,
 	dummyWorkflow,
-	itShouldCreateYamlFileV2,
-	itShouldCreateDirV2,
-	itShouldCreateFileV2,
-	itShouldCheckPathExistsV2,
-	itShouldUpdateFilePathV2,
-	itShouldUpdateFileV2,
-	itShouldCreateVariableV2,
+	itShouldCreateYamlFile,
+	itShouldCreateDir,
+	itShouldCreateFile,
+	itShouldCheckPathExists,
+	itShouldUpdateFilePath,
+	itShouldUpdateFile,
+	itShouldCreateVariable,
 	sleep,
 }

@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"log/slog"
 
+	enginerefactor "github.com/direktiv/direktiv/pkg/engine"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
-	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
-	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
+	"github.com/direktiv/direktiv/pkg/instancestore"
 )
 
 func (engine *engine) GetIsInstanceFailed(im *instanceMemory) bool {

@@ -39,7 +39,7 @@ describe('Test no namespace variable name duplicated', () => {
 		)
 	})
 
-	helpers.itShouldCreateFileV2(it, expect, namespace, '/', 'wf1.yaml', 'workflow', 'text',
+	helpers.itShouldCreateFile(it, expect, namespace, '/', 'wf1.yaml', 'workflow', 'text',
 		btoa(helpers.dummyWorkflow('wf1.yaml')))
 
 	const foo2 = {

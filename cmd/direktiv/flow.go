@@ -6,8 +6,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/flow"
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc/status"
 )

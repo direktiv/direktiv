@@ -10,8 +10,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
-	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 )

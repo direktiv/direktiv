@@ -91,7 +91,7 @@ describe('Test workflow events and', () => {
 	helpers.itShouldCreateNamespace(it, expect, namespaceName)
 
 	// workflow with start
-	helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateYamlFile(it, expect, namespaceName,
 		'', startWorkflowName, 'workflow',
 		startEventWorkflow)
 
@@ -120,7 +120,7 @@ describe('Test workflow events and', () => {
 	})
 
 	// workflow with start
-	helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateYamlFile(it, expect, namespaceName,
 		'', waitWorkflowName, 'workflow',
 		waitEventWorkflow)
 
@@ -199,19 +199,19 @@ describe('Test workflow events and', () => {
 	})
 
 	// timeout workflow
-	helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateYamlFile(it, expect, namespaceName,
 		'', startWorkflowContextName, 'workflow',
 		startEventContextWorkflow)
 
 	it(`start context`, async () => {
 		await helpers.sleep(1000)
 
-		let workflowEventResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${ namespaceName }/broadcast`)
+		let workflowEventResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/events/broadcast`)
 			.set('Content-Type', 'application/json')
 			.send(basevent('eventtype9', 'eventtype9zz', 'world1'))
 		expect(workflowEventResponse.statusCode).toEqual(200)
 
-		workflowEventResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${ namespaceName }/broadcast`)
+		workflowEventResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/events/broadcast`)
 			.set('Content-Type', 'application/json')
 			.send(basevent('eventtype10', 'eventtype1324320', 'world3'))
 		expect(workflowEventResponse.statusCode).toEqual(200)
@@ -219,7 +219,7 @@ describe('Test workflow events and', () => {
 		let instance = await events.listInstancesAndFilter(namespaceName, startWorkflowContextName)
 		expect(instance).toBeFalsy()
 
-		workflowEventResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${ namespaceName }/broadcast`)
+		workflowEventResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/events/broadcast`)
 			.set('Content-Type', 'application/json')
 			.send(basevent('eventtype10', 'eventtype10afg', 'world2'))
 		expect(workflowEventResponse.statusCode).toEqual(200)
@@ -229,7 +229,7 @@ describe('Test workflow events and', () => {
 	})
 
 	// timeout workflow
-	helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateYamlFile(it, expect, namespaceName,
 		'', waitWorkflowContextName, 'workflow',
 		waitEventContextimeout)
 

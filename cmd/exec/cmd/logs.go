@@ -9,7 +9,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/r3labs/sse"
 	"github.com/spf13/cobra"
 )

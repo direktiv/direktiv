@@ -120,7 +120,7 @@ describe('Test js inbound plugin', () => {
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 	// common.helpers.itShouldCreateNamespace(it, expect, testNamespace);
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -128,7 +128,7 @@ describe('Test js inbound plugin', () => {
 		endpointJSFile,
 	)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -156,7 +156,7 @@ describe('Test js inbound plugin consumer', () => {
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -164,7 +164,7 @@ describe('Test js inbound plugin consumer', () => {
 		consumer,
 	)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -172,7 +172,7 @@ describe('Test js inbound plugin consumer', () => {
 		endpointConsumerFile,
 	)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -197,7 +197,7 @@ describe('Test js inbound plugin url params', () => {
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -205,7 +205,7 @@ describe('Test js inbound plugin url params', () => {
 		endpointParamFile,
 	)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -229,7 +229,7 @@ describe('Test js inbound plugin errors', () => {
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -237,7 +237,7 @@ describe('Test js inbound plugin errors', () => {
 		endpointErrorFile,
 	)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
