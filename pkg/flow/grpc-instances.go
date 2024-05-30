@@ -4,10 +4,10 @@ import (
 	"context"
 	"os"
 
-	"github.com/direktiv/direktiv/pkg/refactor/database"
-	"github.com/direktiv/direktiv/pkg/refactor/datastore"
-	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
-	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
+	"github.com/direktiv/direktiv/pkg/database"
+	"github.com/direktiv/direktiv/pkg/datastore"
+	enginerefactor "github.com/direktiv/direktiv/pkg/engine"
+	"github.com/direktiv/direktiv/pkg/instancestore"
 	"github.com/google/uuid"
 	"go.opentelemetry.io/otel/trace"
 )

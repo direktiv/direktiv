@@ -8,10 +8,10 @@ import (
 	"github.com/direktiv/direktiv/cmd/dinit"
 	"github.com/direktiv/direktiv/cmd/sidecar"
 	"github.com/direktiv/direktiv/cmd/tsengine"
-	_ "github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins/auth"
-	_ "github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins/inbound"
-	_ "github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins/target"
-	"github.com/direktiv/direktiv/pkg/refactor/middlewares"
+	_ "github.com/direktiv/direktiv/pkg/gateway2/plugins/auth"
+	_ "github.com/direktiv/direktiv/pkg/gateway2/plugins/inbound"
+	_ "github.com/direktiv/direktiv/pkg/gateway2/plugins/target"
+	"github.com/direktiv/direktiv/pkg/middlewares"
 )
 
 const (

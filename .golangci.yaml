@@ -58,7 +58,7 @@ linters:
 issues:
   exclude-files: [ ".pb.go" ]
   exclude-rules:
-    - path: '(pkg|cmd)\/(model|sidecar|exec|util|jqer|flow|api)\/.*'
+    - path: '(pkg|cmd)\/(model|sidecar|exec|util|jqer|flow)\/.*'
       linters:
         - paralleltest
         - forbidigo
@@ -144,6 +144,6 @@ issues:
         - goconst
 
     # gateway plugins need to user init() function
-    - path: 'pkg/refactor/gateway2/plugins/.*'
+    - path: 'pkg/gateway2/plugins/.*'
       linters:
         - gochecknoinits
