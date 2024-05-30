@@ -34,8 +34,8 @@ type ProjectConfig struct {
 }
 
 type Configuration struct {
-	ProjectConfig `mapstructure:"config,squash"  yaml:"config,inline"`
-	Profiles      map[string]ProfileConfig `mapstructure:"profiles" yaml:"profiles,flow"`
+	ProjectConfig `mapstructure:"config,squash" yaml:"config,inline"`
+	Profiles      map[string]ProfileConfig `mapstructure:"profiles"      yaml:"profiles,flow"`
 }
 
 var (
