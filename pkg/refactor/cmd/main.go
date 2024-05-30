@@ -21,8 +21,9 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
 	"github.com/direktiv/direktiv/pkg/refactor/registry"
 	"github.com/direktiv/direktiv/pkg/refactor/service"
-	"github.com/direktiv/direktiv/pkg/util"
 )
+
+const direktivDebug = "DIREKTIV_DEBUG"
 
 type NewMainArgs struct {
 	Config                       *core.Config
@@ -193,7 +194,7 @@ func initSLog() {
 	lvl := new(slog.LevelVar)
 	lvl.Set(slog.LevelInfo)
 
-	logDebug := os.Getenv(util.DirektivDebug)
+	logDebug := os.Getenv(direktivDebug)
 	if logDebug == "true" {
 		lvl.Set(slog.LevelDebug)
 	}
