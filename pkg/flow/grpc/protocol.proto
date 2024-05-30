@@ -8,11 +8,8 @@ import "google/protobuf/empty.proto";
 
 import "pkg/flow/grpc/variables.proto";
 import "pkg/flow/grpc/internal.proto";
-import "pkg/flow/grpc/cloudevent.proto";
 
 service Flow {
-	rpc BroadcastCloudevent (BroadcastCloudeventRequest) returns (google.protobuf.Empty) {}
-
 	// variables.
 	rpc NamespaceVariable (NamespaceVariableRequest) returns (NamespaceVariableResponse) {}
 	rpc SetNamespaceVariableParcels (stream SetNamespaceVariableRequest) returns (SetNamespaceVariableResponse) {}
@@ -20,14 +17,6 @@ service Flow {
 	rpc SetWorkflowVariableParcels (stream SetWorkflowVariableRequest) returns (SetWorkflowVariableResponse) {}
 	rpc InstanceVariable (InstanceVariableRequest) returns (InstanceVariableResponse) {}
 	rpc SetInstanceVariableParcels (stream SetInstanceVariableRequest) returns (SetInstanceVariableResponse) {}
-
-	// events.
-	rpc EventListeners (EventListenersRequest) returns (EventListenersResponse) {}
-	rpc EventListenersStream (EventListenersRequest) returns (stream EventListenersResponse) {}
-	rpc EventHistory (EventHistoryRequest) returns (EventHistoryResponse) {}
-	rpc EventHistoryStream (EventHistoryRequest) returns (stream EventHistoryResponse) {}
-	rpc HistoricalEvent (HistoricalEventRequest) returns (HistoricalEventResponse) {}
-	rpc ReplayEvent (ReplayEventRequest) returns (google.protobuf.Empty) {}
 }
 
 service Internal {

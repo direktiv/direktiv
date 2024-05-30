@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/datastore"
-	"github.com/direktiv/direktiv/pkg/flow/bytedata"
+	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 )
@@ -508,7 +508,7 @@ func (pubsub *Pubsub) ConfigureRouterCron(id, cron string) {
 		Cron: cron,
 	}
 
-	key := bytedata.Marshal(msg)
+	key := utils.Marshal(msg)
 
 	pubsub.Publish(&PubsubUpdate{
 		Handler: PubsubConfigureRouterFunction,
