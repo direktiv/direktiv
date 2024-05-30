@@ -11,7 +11,7 @@ describe('Test a simple loop', () => {
 
 	helpers.itShouldCreateNamespace(it, expect, namespaceName)
 
-	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateFile(it, expect, namespaceName,
 		'',
 		'simple-loop.yaml',
 		'workflow',

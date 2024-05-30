@@ -12,9 +12,9 @@ describe('Test target-namespace-file plugin', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
-	helpers.itShouldCreateFileV2(it, expect, namespace, '/', 'some.text', 'file', 'text/plain', btoa(`some content`))
+	helpers.itShouldCreateFile(it, expect, namespace, '/', 'some.text', 'file', 'text/plain', btoa(`some content`))
 
-	helpers.itShouldCreateYamlFileV2(it, expect, namespace,
+	helpers.itShouldCreateYamlFile(it, expect, namespace,
 		'/', 'ep1.yaml', 'endpoint', `
 direktiv_api: endpoint/v2
 path: /ep1
@@ -39,7 +39,7 @@ plugins:
 	// test system namespace access.
 	helpers.itShouldCreateNamespace(it, expect, 'system')
 
-	helpers.itShouldCreateYamlFileV2(it, expect, 'system',
+	helpers.itShouldCreateYamlFile(it, expect, 'system',
 		'/', 'ep2.yaml', 'endpoint', `
 direktiv_api: endpoint/v2
 path: /ep2
@@ -65,7 +65,7 @@ plugins:
 	const otherNamespace = namespace + '_different'
 	helpers.itShouldCreateNamespace(it, expect, otherNamespace)
 
-	helpers.itShouldCreateYamlFileV2(it, expect, otherNamespace,
+	helpers.itShouldCreateYamlFile(it, expect, otherNamespace,
 		'/', 'ep3.yaml', 'endpoint', `
 direktiv_api: endpoint/v2
 path: /ep3

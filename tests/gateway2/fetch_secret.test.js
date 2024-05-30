@@ -22,7 +22,7 @@ describe('Test gateway2 reconciling', () => {
 		expect(res.statusCode).toEqual(200)
 	})
 
-	helpers.itShouldCreateYamlFileV2(it, expect, namespace,
+	helpers.itShouldCreateYamlFile(it, expect, namespace,
 		'/', 'wf1.yml', 'workflow', `
 direktiv_api: workflow/v1
 description: A simple 'no-op' state that returns 'Hello world!'
@@ -33,7 +33,7 @@ states:
     result: Hello world!
 `)
 
-	helpers.itShouldCreateYamlFileV2(it, expect, namespace,
+	helpers.itShouldCreateYamlFile(it, expect, namespace,
 		'/', 'c1.yaml', 'consumer', `
 direktiv_api: "consumer/v2"
 username: user1
@@ -45,7 +45,7 @@ groups:
 - group1
 `)
 
-	helpers.itShouldCreateYamlFileV2(it, expect, namespace,
+	helpers.itShouldCreateYamlFile(it, expect, namespace,
 		'/', 'ep1.yaml', 'endpoint', `
 direktiv_api: endpoint/v2
 path: /foo

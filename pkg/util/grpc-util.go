@@ -1,12 +1,9 @@
 package util
 
 import (
-	"errors"
 	"fmt"
-	"net"
 	"time"
 
-	"github.com/emicklei/go-restful/v3/log"
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -33,31 +30,6 @@ func GetEndpointTLS(service string) (*grpc.ClientConn, error) {
 	}
 
 	return conn, nil
-}
-
-// GrpcStart starts a grpc server.
-func GrpcStart(server **grpc.Server, name, bind string, register func(srv *grpc.Server)) error {
-	listener, err := net.Listen("tcp", bind)
-	if err != nil {
-		return fmt.Errorf("failed to start tcp listener: %w", err)
-	}
-
-	additionalServerOptions := GrpcServerOptions(nil, nil)
-
-	*server = grpc.NewServer(additionalServerOptions...)
-
-	register(*server)
-
-	go func() {
-		err := (*server).Serve(listener)
-		if err != nil {
-			if !errors.Is(err, grpc.ErrServerStopped) {
-				log.Printf("gRPC server error: %v", err)
-			}
-		}
-	}()
-
-	return nil
 }
 
 func GrpcServerOptions(unaryInterceptor grpc.UnaryServerInterceptor, streamInterceptor grpc.StreamServerInterceptor) []grpc.ServerOption {

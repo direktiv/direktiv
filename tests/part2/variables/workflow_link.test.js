@@ -11,7 +11,7 @@ describe('Test variable workflow links', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
-	helpers.itShouldCreateYamlFileV2(it, expect, namespace, '/', 'wf1.yaml', 'workflow', `
+	helpers.itShouldCreateYamlFile(it, expect, namespace, '/', 'wf1.yaml', 'workflow', `
 direktiv_api: workflow/v1
 description: A simple 'no-op' state that returns 'Hello world!'
 states:
@@ -36,7 +36,7 @@ states:
 		fooId = res.body.data.id
 	})
 
-	helpers.itShouldUpdateFilePathV2(it, expect, namespace, '/wf1.yaml', '/wf2.yaml')
+	helpers.itShouldUpdateFilePath(it, expect, namespace, '/wf1.yaml', '/wf2.yaml')
 
 	it(`should read new path in variable foo`, async () => {
 		const res = await request(config.getDirektivHost())
@@ -45,7 +45,7 @@ states:
 		expect(res.body.data.reference).toEqual('/wf2.yaml')
 	})
 
-	helpers.itShouldDeleteFileV2(it, expect, namespace, '/wf2.yaml')
+	helpers.itShouldDeleteFile(it, expect, namespace, '/wf2.yaml')
 
 	it(`should read 404 variable foo`, async () => {
 		const res = await request(config.getDirektivHost())

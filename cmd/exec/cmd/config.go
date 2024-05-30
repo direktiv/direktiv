@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/direktiv/direktiv/pkg/project"
 	"github.com/gobwas/glob"
 	"github.com/r3labs/sse"
 	"github.com/spf13/cobra"
@@ -20,6 +19,7 @@ import (
 const (
 	DefaultProfileConfigName = ".direktiv.profile.yaml"
 	DefaultProfileConfigPath = ".config/direktiv/"
+	ConfigFileName           = ".direktiv.yaml"
 )
 
 type ProfileConfig struct {
@@ -29,9 +29,13 @@ type ProfileConfig struct {
 	MaxSize   int64  `mapstructure:"max-size"  yaml:"max-size"`
 }
 
+type ProjectConfig struct {
+	Ignore []string `yaml:"ignore"`
+}
+
 type Configuration struct {
-	project.Config `mapstructure:",squash"  yaml:",inline"`
-	Profiles       map[string]ProfileConfig `mapstructure:"profiles" yaml:"profiles,flow"`
+	ProjectConfig `mapstructure:"config,squash" yaml:"config,inline"`
+	Profiles      map[string]ProfileConfig `mapstructure:"profiles"      yaml:"profiles,flow"`
 }
 
 var (
@@ -128,7 +132,7 @@ func findProjectFile() (string, error) {
 	}
 
 	for prev := ""; dir != prev; dir = filepath.Dir(dir) {
-		file := filepath.Join(dir, project.ConfigFileName)
+		file := filepath.Join(dir, ConfigFileName)
 
 		if _, err := os.Stat(file); err == nil {
 			return file, nil
@@ -146,7 +150,7 @@ func loadProjectConfig(path string) error {
 		return err
 	}
 
-	err = yaml.Unmarshal(data, &Config.Config)
+	err = yaml.Unmarshal(data, &Config.ProjectConfig)
 	if err != nil {
 		return err
 	}

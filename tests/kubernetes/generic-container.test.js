@@ -30,7 +30,7 @@ describe('Test generic container', () => {
 
 	helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	helpers.itShouldCreateYamlFileV2(
+	helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
