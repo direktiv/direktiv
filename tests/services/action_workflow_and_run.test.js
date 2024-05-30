@@ -12,7 +12,7 @@ describe('Test workflow function invoke', () => {
 
 	helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	helpers.itShouldCreateFileV2(it, expect, testNamespace,
+	helpers.itShouldCreateFile(it, expect, testNamespace,
 		'',
 		testWorkflow,
 		'workflow',

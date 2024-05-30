@@ -31,7 +31,7 @@ describe('Test js base64 feature', () => {
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,

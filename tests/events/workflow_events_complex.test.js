@@ -42,7 +42,7 @@ describe('Test complex workflow events orchistration', () => {
 
 	helpers.itShouldCreateNamespace(it, expect, namespaceName)
 
-	helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateYamlFile(it, expect, namespaceName,
 		'', startThenWaitWorkflowNameContext, 'workflow',
 		starthenWaitWorkflowContext)
 

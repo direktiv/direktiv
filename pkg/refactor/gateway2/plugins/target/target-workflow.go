@@ -75,7 +75,7 @@ func (tf *FlowPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Requ
 	defer childSpan.End()
 
 	url := fmt.Sprintf("http://localhost:%s/api/v2/namespaces/%s/instances?path=%s&wait=%s",
-		os.Getenv("DIREKTIV_API_V1_PORT"),
+		os.Getenv("DIREKTIV_API_PORT"),
 		tf.Namespace, url.QueryEscape(tf.Flow),
 		fmt.Sprintf("%v", tf.internalAsync == "wait"))
 

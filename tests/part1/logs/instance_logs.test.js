@@ -11,7 +11,7 @@ const namespace = basename(__filename)
 describe('Test instance log api calls', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 	helpers.itShouldCreateNamespace(it, expect, namespace)
-	helpers.itShouldCreateFileV2(it, expect, namespace,
+	helpers.itShouldCreateFile(it, expect, namespace,
 		'',
 		'noop.yaml',
 		'workflow',
@@ -54,7 +54,7 @@ states:
 	},
 	)
 
-	helpers.itShouldCreateFileV2(it, expect, namespace,
+	helpers.itShouldCreateFile(it, expect, namespace,
 		'',
 		'noop-error.yaml',
 		'workflow',
@@ -89,7 +89,7 @@ states:
 	},
 	)
 
-	helpers.itShouldCreateFileV2(it, expect, namespace,
+	helpers.itShouldCreateFile(it, expect, namespace,
 		'',
 		'action-error.yaml',
 		'workflow',

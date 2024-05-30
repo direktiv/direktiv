@@ -106,7 +106,7 @@ describe('Test wrong endpoint config', () => {
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -166,7 +166,7 @@ describe('Test gateway get single endpoint', () => {
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -174,7 +174,7 @@ describe('Test gateway get single endpoint', () => {
 		endpoint1,
 	)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -182,7 +182,7 @@ describe('Test gateway get single endpoint', () => {
 		endpoint2,
 	)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -190,7 +190,7 @@ describe('Test gateway get single endpoint', () => {
 		endpoint3,
 	)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -307,7 +307,7 @@ describe('Test gateway endpoints crud operations', () => {
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -315,7 +315,7 @@ describe('Test gateway endpoints crud operations', () => {
 		endpoint1,
 	)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -323,7 +323,7 @@ describe('Test gateway endpoints crud operations', () => {
 		endpoint2,
 	)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -331,7 +331,7 @@ describe('Test gateway endpoints crud operations', () => {
 		consumer1,
 	)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -429,8 +429,8 @@ describe('Test gateway endpoints crud operations', () => {
 		)
 	})
 
-	common.helpers.itShouldDeleteFileV2(it, expect, testNamespace, '/endpoint1.yaml')
-	common.helpers.itShouldDeleteFileV2(it, expect, testNamespace, '/consumer1.yaml')
+	common.helpers.itShouldDeleteFile(it, expect, testNamespace, '/endpoint1.yaml')
+	common.helpers.itShouldDeleteFile(it, expect, testNamespace, '/consumer1.yaml')
 
 	retry10(`should list one route after delete`, async () => {
 		const listRes = await request(common.config.getDirektivHost()).get(
@@ -454,7 +454,7 @@ describe('Test availability of gateway endpoints', () => {
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -462,7 +462,7 @@ describe('Test availability of gateway endpoints', () => {
 		endpoint1,
 	)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -470,7 +470,7 @@ describe('Test availability of gateway endpoints', () => {
 		endpoint2,
 	)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -478,7 +478,7 @@ describe('Test availability of gateway endpoints', () => {
 		consumer1,
 	)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,

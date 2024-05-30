@@ -14,7 +14,7 @@ describe('Test target-flow-var plugin', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
-	helpers.itShouldCreateYamlFileV2(it, expect, namespace, '/', 'wf1.yaml', 'workflow', `
+	helpers.itShouldCreateYamlFile(it, expect, namespace, '/', 'wf1.yaml', 'workflow', `
 direktiv_api: workflow/v1
 description: A simple 'no-op' state that returns 'Hello world!'
 states:
@@ -35,7 +35,7 @@ states:
 		expect(workflowVarResponse.statusCode).toEqual(200)
 	})
 
-	helpers.itShouldCreateYamlFileV2(it, expect, namespace,
+	helpers.itShouldCreateYamlFile(it, expect, namespace,
 		'/', 'ep1.yaml', 'endpoint', `
 direktiv_api: endpoint/v2
 path: /ep1

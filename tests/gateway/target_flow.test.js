@@ -173,7 +173,7 @@ describe('Test target workflow wrong config', () => {
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -212,7 +212,7 @@ describe('Test target workflow with errors', () => {
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -220,7 +220,7 @@ describe('Test target workflow with errors', () => {
 		errorWorkflow,
 	)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -243,7 +243,7 @@ describe('Test target workflow plugin', () => {
 	common.helpers.itShouldCreateNamespace(it, expect, limitedNamespace)
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -251,7 +251,7 @@ describe('Test target workflow plugin', () => {
 		workflow,
 	)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		limitedNamespace,
@@ -259,7 +259,7 @@ describe('Test target workflow plugin', () => {
 		workflow,
 	)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		limitedNamespace,
@@ -267,7 +267,7 @@ describe('Test target workflow plugin', () => {
 		endpointWorkflow,
 	)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		limitedNamespace,
@@ -275,7 +275,7 @@ describe('Test target workflow plugin', () => {
 		endpointWorkflowAllowed,
 	)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -283,7 +283,7 @@ describe('Test target workflow plugin', () => {
 		endpointWorkflow,
 	)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -330,7 +330,7 @@ describe('Test POST method for target workflow plugin', () => {
 	common.helpers.itShouldCreateNamespace(it, expect, limitedNamespace)
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -338,7 +338,7 @@ describe('Test POST method for target workflow plugin', () => {
 		workflowEcho,
 	)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -362,7 +362,7 @@ describe('Test Complex POST method for target workflow plugin', () => {
 	common.helpers.itShouldCreateNamespace(it, expect, limitedNamespace)
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -370,7 +370,7 @@ describe('Test Complex POST method for target workflow plugin', () => {
 		workflowEcho,
 	)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -394,7 +394,7 @@ describe('Test scope for target workflow plugin', () => {
 	common.helpers.itShouldCreateNamespace(it, expect, limitedNamespace)
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		limitedNamespace,
@@ -402,7 +402,7 @@ describe('Test scope for target workflow plugin', () => {
 		workflow,
 	)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -410,7 +410,7 @@ describe('Test scope for target workflow plugin', () => {
 		workflowNotToBetriggered,
 	)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -432,7 +432,7 @@ describe('Test target workflow default contenttype', () => {
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -440,7 +440,7 @@ describe('Test target workflow default contenttype', () => {
 		endpointNoContentType,
 	)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -448,7 +448,7 @@ describe('Test target workflow default contenttype', () => {
 		endpointContentType,
 	)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
