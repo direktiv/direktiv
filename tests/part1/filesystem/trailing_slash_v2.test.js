@@ -23,6 +23,6 @@ describe('Test filesystem tree read operations', () => {
 		'text',
 		btoa(helpers.dummyWorkflow('foo2')))
 
-	helpers.itShouldCreateDirV2(it, expect, namespace, '', 'dir1')
-	helpers.itShouldCreateDirV2(it, expect, namespace, '/', 'dir2')
+	helpers.itShouldCreateDir(it, expect, namespace, '', 'dir1')
+	helpers.itShouldCreateDir(it, expect, namespace, '/', 'dir2')
 })

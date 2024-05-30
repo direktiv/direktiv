@@ -47,7 +47,7 @@ function itShouldCreateYamlFile (it, expect, ns, path, name, type, data) {
 	return itShouldCreateFileV2(it, expect, ns, path, name, type, 'application/yaml', btoa(data))
 }
 
-async function itShouldCreateDirV2 (it, expect, ns, path, name) {
+async function itShouldCreateDir (it, expect, ns, path, name) {
 	it(`should create a new dir ${ path }`, async () => {
 		const res = await request(common.config.getDirektivHost())
 			.post(`/api/v2/namespaces/${ ns }/files${ path }`)
@@ -156,7 +156,7 @@ export default {
 	itShouldDeleteFile,
 	dummyWorkflow,
 	itShouldCreateYamlFile,
-	itShouldCreateDirV2,
+	itShouldCreateDir,
 	itShouldCreateFileV2,
 	itShouldCheckPathExistsV2,
 	itShouldUpdateFilePathV2,

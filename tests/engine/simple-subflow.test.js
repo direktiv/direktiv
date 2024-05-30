@@ -11,7 +11,7 @@ describe('Test subflow behaviour', () => {
 
 	helpers.itShouldCreateNamespace(it, expect, namespaceName)
 
-	helpers.itShouldCreateDirV2(it, expect, namespaceName, '/', 'a')
+	helpers.itShouldCreateDir(it, expect, namespaceName, '/', 'a')
 
 	helpers.itShouldCreateFileV2(it, expect, namespaceName,
 		'/a',

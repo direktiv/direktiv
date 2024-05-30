@@ -10,7 +10,7 @@ describe('Test filesystem tree update operations', () => {
 
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
-	helpers.itShouldCreateDirV2(it, expect, namespace, '/', 'dir1')
+	helpers.itShouldCreateDir(it, expect, namespace, '/', 'dir1')
 	helpers.itShouldCreateFileV2(it, expect, namespace,
 		'/dir1',
 		'foo1',
