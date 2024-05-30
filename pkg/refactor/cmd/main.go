@@ -8,7 +8,6 @@ import (
 	"os"
 	"time"
 
-	apiLegacy "github.com/direktiv/direktiv/pkg/api"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/refactor/api"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
@@ -39,9 +38,6 @@ type NewMainArgs struct {
 
 func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 	initSLog()
-
-	// nolint:errcheck
-	go apiLegacy.RunApplication(args.Config)
 
 	// Create service manager
 	var err error
