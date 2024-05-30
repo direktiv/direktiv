@@ -27,12 +27,6 @@ const (
 	Flow_SetWorkflowVariableParcels_FullMethodName  = "/direktiv_flow.Flow/SetWorkflowVariableParcels"
 	Flow_InstanceVariable_FullMethodName            = "/direktiv_flow.Flow/InstanceVariable"
 	Flow_SetInstanceVariableParcels_FullMethodName  = "/direktiv_flow.Flow/SetInstanceVariableParcels"
-	Flow_EventListeners_FullMethodName              = "/direktiv_flow.Flow/EventListeners"
-	Flow_EventListenersStream_FullMethodName        = "/direktiv_flow.Flow/EventListenersStream"
-	Flow_EventHistory_FullMethodName                = "/direktiv_flow.Flow/EventHistory"
-	Flow_EventHistoryStream_FullMethodName          = "/direktiv_flow.Flow/EventHistoryStream"
-	Flow_HistoricalEvent_FullMethodName             = "/direktiv_flow.Flow/HistoricalEvent"
-	Flow_ReplayEvent_FullMethodName                 = "/direktiv_flow.Flow/ReplayEvent"
 )
 
 // FlowClient is the client API for Flow service.
@@ -47,13 +41,6 @@ type FlowClient interface {
 	SetWorkflowVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetWorkflowVariableParcelsClient, error)
 	InstanceVariable(ctx context.Context, in *InstanceVariableRequest, opts ...grpc.CallOption) (*InstanceVariableResponse, error)
 	SetInstanceVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetInstanceVariableParcelsClient, error)
-	// events.
-	EventListeners(ctx context.Context, in *EventListenersRequest, opts ...grpc.CallOption) (*EventListenersResponse, error)
-	EventListenersStream(ctx context.Context, in *EventListenersRequest, opts ...grpc.CallOption) (Flow_EventListenersStreamClient, error)
-	EventHistory(ctx context.Context, in *EventHistoryRequest, opts ...grpc.CallOption) (*EventHistoryResponse, error)
-	EventHistoryStream(ctx context.Context, in *EventHistoryRequest, opts ...grpc.CallOption) (Flow_EventHistoryStreamClient, error)
-	HistoricalEvent(ctx context.Context, in *HistoricalEventRequest, opts ...grpc.CallOption) (*HistoricalEventResponse, error)
-	ReplayEvent(ctx context.Context, in *ReplayEventRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type flowClient struct {
@@ -202,106 +189,6 @@ func (x *flowSetInstanceVariableParcelsClient) CloseAndRecv() (*SetInstanceVaria
 	return m, nil
 }
 
-func (c *flowClient) EventListeners(ctx context.Context, in *EventListenersRequest, opts ...grpc.CallOption) (*EventListenersResponse, error) {
-	out := new(EventListenersResponse)
-	err := c.cc.Invoke(ctx, Flow_EventListeners_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) EventListenersStream(ctx context.Context, in *EventListenersRequest, opts ...grpc.CallOption) (Flow_EventListenersStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[3], Flow_EventListenersStream_FullMethodName, opts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &flowEventListenersStreamClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-type Flow_EventListenersStreamClient interface {
-	Recv() (*EventListenersResponse, error)
-	grpc.ClientStream
-}
-
-type flowEventListenersStreamClient struct {
-	grpc.ClientStream
-}
-
-func (x *flowEventListenersStreamClient) Recv() (*EventListenersResponse, error) {
-	m := new(EventListenersResponse)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func (c *flowClient) EventHistory(ctx context.Context, in *EventHistoryRequest, opts ...grpc.CallOption) (*EventHistoryResponse, error) {
-	out := new(EventHistoryResponse)
-	err := c.cc.Invoke(ctx, Flow_EventHistory_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) EventHistoryStream(ctx context.Context, in *EventHistoryRequest, opts ...grpc.CallOption) (Flow_EventHistoryStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Flow_ServiceDesc.Streams[4], Flow_EventHistoryStream_FullMethodName, opts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &flowEventHistoryStreamClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-type Flow_EventHistoryStreamClient interface {
-	Recv() (*EventHistoryResponse, error)
-	grpc.ClientStream
-}
-
-type flowEventHistoryStreamClient struct {
-	grpc.ClientStream
-}
-
-func (x *flowEventHistoryStreamClient) Recv() (*EventHistoryResponse, error) {
-	m := new(EventHistoryResponse)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func (c *flowClient) HistoricalEvent(ctx context.Context, in *HistoricalEventRequest, opts ...grpc.CallOption) (*HistoricalEventResponse, error) {
-	out := new(HistoricalEventResponse)
-	err := c.cc.Invoke(ctx, Flow_HistoricalEvent_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *flowClient) ReplayEvent(ctx context.Context, in *ReplayEventRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, Flow_ReplayEvent_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // FlowServer is the server API for Flow service.
 // All implementations must embed UnimplementedFlowServer
 // for forward compatibility
@@ -314,13 +201,6 @@ type FlowServer interface {
 	SetWorkflowVariableParcels(Flow_SetWorkflowVariableParcelsServer) error
 	InstanceVariable(context.Context, *InstanceVariableRequest) (*InstanceVariableResponse, error)
 	SetInstanceVariableParcels(Flow_SetInstanceVariableParcelsServer) error
-	// events.
-	EventListeners(context.Context, *EventListenersRequest) (*EventListenersResponse, error)
-	EventListenersStream(*EventListenersRequest, Flow_EventListenersStreamServer) error
-	EventHistory(context.Context, *EventHistoryRequest) (*EventHistoryResponse, error)
-	EventHistoryStream(*EventHistoryRequest, Flow_EventHistoryStreamServer) error
-	HistoricalEvent(context.Context, *HistoricalEventRequest) (*HistoricalEventResponse, error)
-	ReplayEvent(context.Context, *ReplayEventRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedFlowServer()
 }
 
@@ -348,24 +228,6 @@ func (UnimplementedFlowServer) InstanceVariable(context.Context, *InstanceVariab
 }
 func (UnimplementedFlowServer) SetInstanceVariableParcels(Flow_SetInstanceVariableParcelsServer) error {
 	return status.Errorf(codes.Unimplemented, "method SetInstanceVariableParcels not implemented")
-}
-func (UnimplementedFlowServer) EventListeners(context.Context, *EventListenersRequest) (*EventListenersResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method EventListeners not implemented")
-}
-func (UnimplementedFlowServer) EventListenersStream(*EventListenersRequest, Flow_EventListenersStreamServer) error {
-	return status.Errorf(codes.Unimplemented, "method EventListenersStream not implemented")
-}
-func (UnimplementedFlowServer) EventHistory(context.Context, *EventHistoryRequest) (*EventHistoryResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method EventHistory not implemented")
-}
-func (UnimplementedFlowServer) EventHistoryStream(*EventHistoryRequest, Flow_EventHistoryStreamServer) error {
-	return status.Errorf(codes.Unimplemented, "method EventHistoryStream not implemented")
-}
-func (UnimplementedFlowServer) HistoricalEvent(context.Context, *HistoricalEventRequest) (*HistoricalEventResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method HistoricalEvent not implemented")
-}
-func (UnimplementedFlowServer) ReplayEvent(context.Context, *ReplayEventRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ReplayEvent not implemented")
 }
 func (UnimplementedFlowServer) mustEmbedUnimplementedFlowServer() {}
 
@@ -530,120 +392,6 @@ func (x *flowSetInstanceVariableParcelsServer) Recv() (*SetInstanceVariableReque
 	return m, nil
 }
 
-func _Flow_EventListeners_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(EventListenersRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).EventListeners(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_EventListeners_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).EventListeners(ctx, req.(*EventListenersRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_EventListenersStream_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(EventListenersRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
-	return srv.(FlowServer).EventListenersStream(m, &flowEventListenersStreamServer{stream})
-}
-
-type Flow_EventListenersStreamServer interface {
-	Send(*EventListenersResponse) error
-	grpc.ServerStream
-}
-
-type flowEventListenersStreamServer struct {
-	grpc.ServerStream
-}
-
-func (x *flowEventListenersStreamServer) Send(m *EventListenersResponse) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func _Flow_EventHistory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(EventHistoryRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).EventHistory(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_EventHistory_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).EventHistory(ctx, req.(*EventHistoryRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_EventHistoryStream_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(EventHistoryRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
-	return srv.(FlowServer).EventHistoryStream(m, &flowEventHistoryStreamServer{stream})
-}
-
-type Flow_EventHistoryStreamServer interface {
-	Send(*EventHistoryResponse) error
-	grpc.ServerStream
-}
-
-type flowEventHistoryStreamServer struct {
-	grpc.ServerStream
-}
-
-func (x *flowEventHistoryStreamServer) Send(m *EventHistoryResponse) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func _Flow_HistoricalEvent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(HistoricalEventRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).HistoricalEvent(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_HistoricalEvent_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).HistoricalEvent(ctx, req.(*HistoricalEventRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Flow_ReplayEvent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ReplayEventRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).ReplayEvent(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_ReplayEvent_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).ReplayEvent(ctx, req.(*ReplayEventRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // Flow_ServiceDesc is the grpc.ServiceDesc for Flow service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -667,22 +415,6 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "InstanceVariable",
 			Handler:    _Flow_InstanceVariable_Handler,
 		},
-		{
-			MethodName: "EventListeners",
-			Handler:    _Flow_EventListeners_Handler,
-		},
-		{
-			MethodName: "EventHistory",
-			Handler:    _Flow_EventHistory_Handler,
-		},
-		{
-			MethodName: "HistoricalEvent",
-			Handler:    _Flow_HistoricalEvent_Handler,
-		},
-		{
-			MethodName: "ReplayEvent",
-			Handler:    _Flow_ReplayEvent_Handler,
-		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
@@ -699,16 +431,6 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 			StreamName:    "SetInstanceVariableParcels",
 			Handler:       _Flow_SetInstanceVariableParcels_Handler,
 			ClientStreams: true,
-		},
-		{
-			StreamName:    "EventListenersStream",
-			Handler:       _Flow_EventListenersStream_Handler,
-			ServerStreams: true,
-		},
-		{
-			StreamName:    "EventHistoryStream",
-			Handler:       _Flow_EventHistoryStream_Handler,
-			ServerStreams: true,
 		},
 	},
 	Metadata: "pkg/flow/grpc/protocol.proto",

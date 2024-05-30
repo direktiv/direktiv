@@ -20,14 +20,6 @@ service Flow {
 	rpc SetWorkflowVariableParcels (stream SetWorkflowVariableRequest) returns (SetWorkflowVariableResponse) {}
 	rpc InstanceVariable (InstanceVariableRequest) returns (InstanceVariableResponse) {}
 	rpc SetInstanceVariableParcels (stream SetInstanceVariableRequest) returns (SetInstanceVariableResponse) {}
-
-	// events.
-	rpc EventListeners (EventListenersRequest) returns (EventListenersResponse) {}
-	rpc EventListenersStream (EventListenersRequest) returns (stream EventListenersResponse) {}
-	rpc EventHistory (EventHistoryRequest) returns (EventHistoryResponse) {}
-	rpc EventHistoryStream (EventHistoryRequest) returns (stream EventHistoryResponse) {}
-	rpc HistoricalEvent (HistoricalEventRequest) returns (HistoricalEventResponse) {}
-	rpc ReplayEvent (ReplayEventRequest) returns (google.protobuf.Empty) {}
 }
 
 service Internal {
