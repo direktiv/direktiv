@@ -4,10 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/direktiv/direktiv/pkg/utils"
 
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/direktiv/direktiv/pkg/flow/nohome/recipient"
+	"github.com/direktiv/direktiv/pkg/utils"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
@@ -180,28 +180,6 @@ func traceAddtoEventlog(ctx context.Context) (context.Context, func()) {
 	tp := otel.GetTracerProvider()
 	tr := tp.Tracer("direktiv/flow")
 	ctx, span := tr.Start(ctx, "addToEventLog", trace.WithSpanKind(trace.SpanKindInternal))
-	finish := func() {
-		span.End()
-	}
-
-	return ctx, finish
-}
-
-func traceValidatingEvent(ctx context.Context) (context.Context, func()) {
-	tp := otel.GetTracerProvider()
-	tr := tp.Tracer("direktiv/flow")
-	ctx, span := tr.Start(ctx, "validatingEvent", trace.WithSpanKind(trace.SpanKindInternal))
-	finish := func() {
-		span.End()
-	}
-
-	return ctx, finish
-}
-
-func startIncomingEvent(ctx context.Context, route string) (context.Context, func()) {
-	tp := otel.GetTracerProvider()
-	tr := tp.Tracer("direktiv/flow")
-	ctx, span := tr.Start(ctx, route+"ToNamespaceCloudevent", trace.WithSpanKind(trace.SpanKindInternal))
 	finish := func() {
 		span.End()
 	}

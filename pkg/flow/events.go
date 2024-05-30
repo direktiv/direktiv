@@ -107,13 +107,6 @@ func (events *events) handleEvent(ctx context.Context, ns uuid.UUID, nsName stri
 	return nil
 }
 
-const (
-	contains = "CONTAINS"
-	cr       = "CREATED"
-	after    = "AFTER"
-	before   = "BEFORE"
-)
-
 func (events *events) ReplayCloudevent(ctx context.Context, ns *datastore.Namespace, cevent *datastore.Event) error {
 	event := cevent.Event
 	span := trace.SpanFromContext(ctx)
