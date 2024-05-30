@@ -10,21 +10,21 @@ describe('Test filesystem tree update paths', () => {
 
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
-	helpers.itShouldCheckPathExistsV2(it, expect, namespace, '/dir1', false)
-	helpers.itShouldCheckPathExistsV2(it, expect, namespace, '/foo1', false)
+	helpers.itShouldCheckPathExists(it, expect, namespace, '/dir1', false)
+	helpers.itShouldCheckPathExists(it, expect, namespace, '/foo1', false)
 
 	helpers.itShouldCreateDir(it, expect, namespace, '/', 'dir1')
-	helpers.itShouldCreateFileV2(it, expect, namespace, '/', 'foo1', 'workflow', 'text',
+	helpers.itShouldCreateFile(it, expect, namespace, '/', 'foo1', 'workflow', 'text',
 		btoa(helpers.dummyWorkflow('foo1')))
 
-	helpers.itShouldCheckPathExistsV2(it, expect, namespace, '/dir1', true)
-	helpers.itShouldCheckPathExistsV2(it, expect, namespace, '/foo1', true)
+	helpers.itShouldCheckPathExists(it, expect, namespace, '/dir1', true)
+	helpers.itShouldCheckPathExists(it, expect, namespace, '/foo1', true)
 
 	helpers.itShouldUpdateFilePathV2(it, expect, namespace, '/foo1', '/foo2')
 
-	helpers.itShouldCheckPathExistsV2(it, expect, namespace, '/dir1', true)
-	helpers.itShouldCheckPathExistsV2(it, expect, namespace, '/foo1', false)
-	helpers.itShouldCheckPathExistsV2(it, expect, namespace, '/foo2', true)
+	helpers.itShouldCheckPathExists(it, expect, namespace, '/dir1', true)
+	helpers.itShouldCheckPathExists(it, expect, namespace, '/foo1', false)
+	helpers.itShouldCheckPathExists(it, expect, namespace, '/foo2', true)
 })
 
 describe('Test filesystem tree change dir', () => {
@@ -35,13 +35,13 @@ describe('Test filesystem tree change dir', () => {
 	helpers.itShouldCreateDir(it, expect, namespace, '/', 'dir1')
 	helpers.itShouldCreateDir(it, expect, namespace, '/dir1', 'dir2')
 
-	helpers.itShouldCheckPathExistsV2(it, expect, namespace, '/dir1', true)
-	helpers.itShouldCheckPathExistsV2(it, expect, namespace, '/dir2', false)
-	helpers.itShouldCheckPathExistsV2(it, expect, namespace, '/dir1/dir2', true)
+	helpers.itShouldCheckPathExists(it, expect, namespace, '/dir1', true)
+	helpers.itShouldCheckPathExists(it, expect, namespace, '/dir2', false)
+	helpers.itShouldCheckPathExists(it, expect, namespace, '/dir1/dir2', true)
 
 	helpers.itShouldUpdateFilePathV2(it, expect, namespace, '/dir1/dir2', '/dir2')
 
-	helpers.itShouldCheckPathExistsV2(it, expect, namespace, '/dir1', true)
-	helpers.itShouldCheckPathExistsV2(it, expect, namespace, '/dir2', true)
-	helpers.itShouldCheckPathExistsV2(it, expect, namespace, '/dir1/dir2', false)
+	helpers.itShouldCheckPathExists(it, expect, namespace, '/dir1', true)
+	helpers.itShouldCheckPathExists(it, expect, namespace, '/dir2', true)
+	helpers.itShouldCheckPathExists(it, expect, namespace, '/dir1/dir2', false)
 })

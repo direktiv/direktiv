@@ -12,7 +12,7 @@ describe('Test target-namespace-file plugin', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
-	helpers.itShouldCreateFileV2(it, expect, namespace, '/', 'some.text', 'file', 'text/plain', btoa(`some content`))
+	helpers.itShouldCreateFile(it, expect, namespace, '/', 'some.text', 'file', 'text/plain', btoa(`some content`))
 
 	helpers.itShouldCreateYamlFile(it, expect, namespace,
 		'/', 'ep1.yaml', 'endpoint', `

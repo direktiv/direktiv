@@ -20,7 +20,7 @@ cmd: ""
 scale: 1
 `)
 
-	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateFile(it, expect, namespaceName,
 		'',
 		`a.yaml`,
 		'workflow',
@@ -116,7 +116,7 @@ states:
 		expect(req.body.return.bash[8].result).toBe('')
 	})
 
-	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateFile(it, expect, namespaceName,
 		'',
 		`e.yaml`,
 		'workflow',

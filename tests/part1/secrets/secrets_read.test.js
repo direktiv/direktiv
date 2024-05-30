@@ -22,7 +22,7 @@ describe('Test secret read operations', () => {
 		expect(res.statusCode).toEqual(200)
 	})
 
-	helpers.itShouldCreateFileV2(it, expect, testNamespace,
+	helpers.itShouldCreateFile(it, expect, testNamespace,
 		'',
 		`${ testWorkflow }-parent.yaml`,
 		'workflow',
@@ -44,7 +44,7 @@ states:
     result: 'jq(.return.secret)'
 `))
 
-	helpers.itShouldCreateFileV2(it, expect, testNamespace,
+	helpers.itShouldCreateFile(it, expect, testNamespace,
 		'',
 		`${ testWorkflow }-child.yaml`,
 		'workflow',

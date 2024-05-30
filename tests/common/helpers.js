@@ -25,7 +25,7 @@ async function itShouldCreateNamespace (it, expect, ns) {
 	})
 }
 
-async function itShouldCreateFileV2 (it, expect, ns, path, name, type, mimeType, data) {
+async function itShouldCreateFile (it, expect, ns, path, name, type, mimeType, data) {
 	it(`should create a new file ${ path }`, async () => {
 		if (path === '/')
 			path = ''
@@ -44,7 +44,7 @@ async function itShouldCreateFileV2 (it, expect, ns, path, name, type, mimeType,
 }
 
 function itShouldCreateYamlFile (it, expect, ns, path, name, type, data) {
-	return itShouldCreateFileV2(it, expect, ns, path, name, type, 'application/yaml', btoa(data))
+	return itShouldCreateFile(it, expect, ns, path, name, type, 'application/yaml', btoa(data))
 }
 
 async function itShouldCreateDir (it, expect, ns, path, name) {
@@ -99,7 +99,7 @@ async function itShouldUpdateFileV2 (it, expect, ns, path, newPatch) {
 	})
 }
 
-async function itShouldCheckPathExistsV2 (it, expect, ns, path, assertExits) {
+async function itShouldCheckPathExists (it, expect, ns, path, assertExits) {
 	it(`should check if path(${ path }) exists(${ assertExits })`, async () => {
 		const res = await request(common.config.getDirektivHost())
 			.get(`/api/v2/namespaces/${ ns }/files${ path }`)
@@ -157,8 +157,8 @@ export default {
 	dummyWorkflow,
 	itShouldCreateYamlFile,
 	itShouldCreateDir,
-	itShouldCreateFileV2,
-	itShouldCheckPathExistsV2,
+	itShouldCreateFile,
+	itShouldCheckPathExists,
 	itShouldUpdateFilePathV2,
 	itShouldUpdateFileV2,
 	itShouldCreateVariableV2,

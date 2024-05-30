@@ -11,7 +11,7 @@ describe('Test error state behaviour', () => {
 
 	helpers.itShouldCreateNamespace(it, expect, namespaceName)
 
-	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateFile(it, expect, namespaceName,
 		'',
 		'error.yaml',
 		'workflow',
@@ -35,7 +35,7 @@ states:
 		expect(req.body).toMatchObject({})
 	})
 
-	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateFile(it, expect, namespaceName,
 		'',
 		'caller.yaml',
 		'workflow',
@@ -61,7 +61,7 @@ states:
 		expect(req.body).toMatchObject({})
 	})
 
-	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateFile(it, expect, namespaceName,
 		'',
 		'error-and-continue.yaml',
 		'workflow',
@@ -86,7 +86,7 @@ states:
 		expect(req.body).toMatchObject({})
 	})
 
-	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateFile(it, expect, namespaceName,
 		'',
 		'double-error.yaml',
 		'workflow',

@@ -13,7 +13,7 @@ describe('Test subflow behaviour', () => {
 
 	helpers.itShouldCreateDir(it, expect, namespaceName, '/', 'a')
 
-	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateFile(it, expect, namespaceName,
 		'/a',
 		'child.yaml',
 		'workflow',
@@ -25,7 +25,7 @@ states:
   transform:
     result: 'jq(.input + 1)'`))
 
-	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateFile(it, expect, namespaceName,
 		'/a',
 		'parent1.yaml',
 		'workflow',
@@ -54,7 +54,7 @@ states:
 		})
 	})
 
-	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateFile(it, expect, namespaceName,
 		'/a',
 		'parent2.yaml',
 		'workflow',
@@ -83,7 +83,7 @@ states:
 		})
 	})
 
-	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateFile(it, expect, namespaceName,
 		'/a',
 		'parent3.yaml',
 		'workflow',
@@ -112,7 +112,7 @@ states:
 		})
 	})
 
-	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateFile(it, expect, namespaceName,
 		'/a',
 		'parent4.yaml',
 		'workflow',

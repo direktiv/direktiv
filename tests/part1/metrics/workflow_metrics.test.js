@@ -30,7 +30,7 @@ describe('Test workflow metrics', () => {
 		})
 	})
 
-	helpers.itShouldCreateFileV2(it, expect, namespace,
+	helpers.itShouldCreateFile(it, expect, namespace,
 		'/',
 		'foo1.yaml',
 		'workflow',
