@@ -196,7 +196,8 @@ func Initialize(app core.App, db *database.SQLStore, bus *pubsub2.Bus, instanceM
 	apiServer := &http.Server{
 		Addr:              "0.0.0.0:" + strconv.Itoa(app.Config.ApiPort),
 		Handler:           r,
-		ReadHeaderTimeout: readHeaderTimeout}
+		ReadHeaderTimeout: readHeaderTimeout,
+	}
 
 	circuit.Start(func() error {
 		err := apiServer.ListenAndServe()
