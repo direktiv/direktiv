@@ -20,7 +20,6 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Flow_NamespaceVariable_FullMethodName           = "/direktiv_flow.Flow/NamespaceVariable"
 	Flow_SetNamespaceVariableParcels_FullMethodName = "/direktiv_flow.Flow/SetNamespaceVariableParcels"
 	Flow_WorkflowVariable_FullMethodName            = "/direktiv_flow.Flow/WorkflowVariable"
 	Flow_SetWorkflowVariableParcels_FullMethodName  = "/direktiv_flow.Flow/SetWorkflowVariableParcels"
@@ -33,7 +32,6 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type FlowClient interface {
 	// variables.
-	NamespaceVariable(ctx context.Context, in *NamespaceVariableRequest, opts ...grpc.CallOption) (*NamespaceVariableResponse, error)
 	SetNamespaceVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetNamespaceVariableParcelsClient, error)
 	WorkflowVariable(ctx context.Context, in *WorkflowVariableRequest, opts ...grpc.CallOption) (*WorkflowVariableResponse, error)
 	SetWorkflowVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetWorkflowVariableParcelsClient, error)
@@ -47,15 +45,6 @@ type flowClient struct {
 
 func NewFlowClient(cc grpc.ClientConnInterface) FlowClient {
 	return &flowClient{cc}
-}
-
-func (c *flowClient) NamespaceVariable(ctx context.Context, in *NamespaceVariableRequest, opts ...grpc.CallOption) (*NamespaceVariableResponse, error) {
-	out := new(NamespaceVariableResponse)
-	err := c.cc.Invoke(ctx, Flow_NamespaceVariable_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 func (c *flowClient) SetNamespaceVariableParcels(ctx context.Context, opts ...grpc.CallOption) (Flow_SetNamespaceVariableParcelsClient, error) {
@@ -183,7 +172,6 @@ func (x *flowSetInstanceVariableParcelsClient) CloseAndRecv() (*SetInstanceVaria
 // for forward compatibility
 type FlowServer interface {
 	// variables.
-	NamespaceVariable(context.Context, *NamespaceVariableRequest) (*NamespaceVariableResponse, error)
 	SetNamespaceVariableParcels(Flow_SetNamespaceVariableParcelsServer) error
 	WorkflowVariable(context.Context, *WorkflowVariableRequest) (*WorkflowVariableResponse, error)
 	SetWorkflowVariableParcels(Flow_SetWorkflowVariableParcelsServer) error
@@ -196,9 +184,6 @@ type FlowServer interface {
 type UnimplementedFlowServer struct {
 }
 
-func (UnimplementedFlowServer) NamespaceVariable(context.Context, *NamespaceVariableRequest) (*NamespaceVariableResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method NamespaceVariable not implemented")
-}
 func (UnimplementedFlowServer) SetNamespaceVariableParcels(Flow_SetNamespaceVariableParcelsServer) error {
 	return status.Errorf(codes.Unimplemented, "method SetNamespaceVariableParcels not implemented")
 }
@@ -225,24 +210,6 @@ type UnsafeFlowServer interface {
 
 func RegisterFlowServer(s grpc.ServiceRegistrar, srv FlowServer) {
 	s.RegisterService(&Flow_ServiceDesc, srv)
-}
-
-func _Flow_NamespaceVariable_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(NamespaceVariableRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FlowServer).NamespaceVariable(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Flow_NamespaceVariable_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FlowServer).NamespaceVariable(ctx, req.(*NamespaceVariableRequest))
-	}
-	return interceptor(ctx, in, info, handler)
 }
 
 func _Flow_SetNamespaceVariableParcels_Handler(srv interface{}, stream grpc.ServerStream) error {
@@ -366,10 +333,6 @@ var Flow_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "direktiv_flow.Flow",
 	HandlerType: (*FlowServer)(nil),
 	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "NamespaceVariable",
-			Handler:    _Flow_NamespaceVariable_Handler,
-		},
 		{
 			MethodName: "WorkflowVariable",
 			Handler:    _Flow_WorkflowVariable_Handler,
