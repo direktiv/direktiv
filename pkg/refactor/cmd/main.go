@@ -180,11 +180,11 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 	)
 
 	// Start api v2 server
-	err = api.Initialize(app, args.Database, args.PubSubBus, args.InstanceManager, args.WakeInstanceByEvent, args.WorkflowStart, "0.0.0.0:6667", circuit)
+	err = api.Initialize(app, args.Database, args.PubSubBus, args.InstanceManager, args.WakeInstanceByEvent, args.WorkflowStart, circuit)
 	if err != nil {
 		return fmt.Errorf("initializing api v2, err: %w", err)
 	}
-	slog.Info("api server v2 started.", "addr", "0.0.0.0:6667")
+	slog.Info("api server v2 started")
 
 	return nil
 }

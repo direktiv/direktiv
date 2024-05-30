@@ -141,7 +141,7 @@ func doWorkflowRequest(args map[string]string, w http.ResponseWriter, r *http.Re
 	defer r.Body.Close()
 
 	url := fmt.Sprintf("http://localhost:%s/api/v2/namespaces/%s/instances?path=%s&wait=%s",
-		os.Getenv("DIREKTIV_API_V1_PORT"), args[namespaceArg], args[flowArg], args[execArg])
+		os.Getenv("DIREKTIV_API_PORT"), args[namespaceArg], args[flowArg], args[execArg])
 
 	resp := doRequest(w, r, http.MethodPost, url, r.Body)
 	if resp == nil {

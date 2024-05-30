@@ -22,9 +22,8 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
-      - DIREKTIV_API_V1_PORT=8181
+      - DIREKTIV_API_PORT=8181
       - DIREKTIV_GRPC_PORT=6666
-      - DIREKTIV_API_V2_PORT=6667
       - DIREKTIV_DEBUG=true
 
       - DIREKTIV_DB=host=postgres port=5432 user=myadmin dbname=mydb password=mypassword sslmode=disable
@@ -36,12 +35,10 @@ services:
       - DIREKTIV_LOG_JSON=console
 
     ports:
-      # api v1 port
+      # api port
       - "8181:8181"
       # grpc port
       - "6666:6666"
-      # api v2 port
-      - "6667:6667"
     depends_on:
       - postgres
 
