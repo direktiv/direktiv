@@ -69,11 +69,11 @@ async function itShouldCreateDir (it, expect, ns, path, name) {
 	})
 }
 
-function itShouldUpdateFilePathV2 (it, expect, ns, path, newPath) {
-	return itShouldUpdateFileV2(it, expect, ns, path, { path: newPath })
+function itShouldUpdateFilePath (it, expect, ns, path, newPath) {
+	return itShouldUpdateFile(it, expect, ns, path, { path: newPath })
 }
 
-async function itShouldUpdateFileV2 (it, expect, ns, path, newPatch) {
+async function itShouldUpdateFile (it, expect, ns, path, newPatch) {
 	let title = `should update file path ${ path }`
 	if (newPatch.path !== undefined)
 		title = `should update file path ${ path } to ${ newPatch.path }`
@@ -122,7 +122,7 @@ states:
 }
 
 function itShouldUpdateYamlFile (it, expect, ns, path, data) {
-	return itShouldUpdateFileV2(it, expect, ns, path, { data: btoa(data) })
+	return itShouldUpdateFile(it, expect, ns, path, { data: btoa(data) })
 }
 
 async function itShouldDeleteFile (it, expect, ns, path) {
@@ -135,7 +135,7 @@ async function itShouldDeleteFile (it, expect, ns, path) {
 	})
 }
 
-async function itShouldCreateVariableV2 (it, expect, ns, variable) {
+async function itShouldCreateVariable (it, expect, ns, variable) {
 	it(`should create a variable ${ variable.name }`, async () => {
 		const createRes = await request(config.getDirektivHost())
 			.post(`/api/v2/namespaces/${ ns }/variables`)
@@ -159,8 +159,8 @@ export default {
 	itShouldCreateDir,
 	itShouldCreateFile,
 	itShouldCheckPathExists,
-	itShouldUpdateFilePathV2,
-	itShouldUpdateFileV2,
-	itShouldCreateVariableV2,
+	itShouldUpdateFilePath,
+	itShouldUpdateFile,
+	itShouldCreateVariable,
 	sleep,
 }

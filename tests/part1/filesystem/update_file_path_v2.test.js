@@ -20,7 +20,7 @@ describe('Test filesystem tree update paths', () => {
 	helpers.itShouldCheckPathExists(it, expect, namespace, '/dir1', true)
 	helpers.itShouldCheckPathExists(it, expect, namespace, '/foo1', true)
 
-	helpers.itShouldUpdateFilePathV2(it, expect, namespace, '/foo1', '/foo2')
+	helpers.itShouldUpdateFilePath(it, expect, namespace, '/foo1', '/foo2')
 
 	helpers.itShouldCheckPathExists(it, expect, namespace, '/dir1', true)
 	helpers.itShouldCheckPathExists(it, expect, namespace, '/foo1', false)
@@ -39,7 +39,7 @@ describe('Test filesystem tree change dir', () => {
 	helpers.itShouldCheckPathExists(it, expect, namespace, '/dir2', false)
 	helpers.itShouldCheckPathExists(it, expect, namespace, '/dir1/dir2', true)
 
-	helpers.itShouldUpdateFilePathV2(it, expect, namespace, '/dir1/dir2', '/dir2')
+	helpers.itShouldUpdateFilePath(it, expect, namespace, '/dir1/dir2', '/dir2')
 
 	helpers.itShouldCheckPathExists(it, expect, namespace, '/dir1', true)
 	helpers.itShouldCheckPathExists(it, expect, namespace, '/dir2', true)

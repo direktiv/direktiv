@@ -99,8 +99,8 @@ states:
 		})
 	})
 
-	common.helpers.itShouldUpdateFilePathV2(it, expect, testNamespace, '/s2.yaml', '/s3.yaml')
-	common.helpers.itShouldUpdateFilePathV2(it, expect, testNamespace, '/w2.yaml', '/w3.yaml')
+	common.helpers.itShouldUpdateFilePath(it, expect, testNamespace, '/s2.yaml', '/s3.yaml')
+	common.helpers.itShouldUpdateFilePath(it, expect, testNamespace, '/w2.yaml', '/w3.yaml')
 
 	retry10(`should list all services`, async () => {
 		listRes = await request(common.config.getDirektivHost())

@@ -36,7 +36,7 @@ states:
 		fooId = res.body.data.id
 	})
 
-	helpers.itShouldUpdateFilePathV2(it, expect, namespace, '/wf1.yaml', '/wf2.yaml')
+	helpers.itShouldUpdateFilePath(it, expect, namespace, '/wf1.yaml', '/wf2.yaml')
 
 	it(`should read new path in variable foo`, async () => {
 		const res = await request(config.getDirektivHost())
