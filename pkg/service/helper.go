@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/core"
-	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/mattn/go-shellwords"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -21,6 +20,7 @@ const (
 	direktivProxyNO       = "NO_PROXY"
 	direktivOpentelemetry = "DIREKTIV_OTLP"
 	direktivFlowEndpoint  = "DIREKTIV_FLOW_ENDPOINT"
+	direktivDebug         = "DIREKTIV_DEBUG"
 )
 
 func buildService(c *core.Config, sv *core.ServiceFileData, registrySecrets []corev1.LocalObjectReference) (*servingv1.Service, error) {
@@ -322,7 +322,7 @@ func buildEnvVars(withGrpc bool, c *core.Config, sv *core.ServiceFileData) []cor
 	// add debug if there is an env
 	if c.LogDebug {
 		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
-			Name:  utils.DirektivDebug,
+			Name:  direktivDebug,
 			Value: "true",
 		})
 	}
