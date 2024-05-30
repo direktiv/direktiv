@@ -10,13 +10,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/core"
+	"github.com/direktiv/direktiv/pkg/datastore"
+	enginerefactor "github.com/direktiv/direktiv/pkg/engine"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/nohome/recipient"
+	"github.com/direktiv/direktiv/pkg/instancestore"
 	"github.com/direktiv/direktiv/pkg/model"
-	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/direktiv/direktiv/pkg/refactor/datastore"
-	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
-	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/google/uuid"
 )
 

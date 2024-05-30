@@ -19,8 +19,8 @@ import (
 	"strings"
 	"sync"
 
+	enginerefactor "github.com/direktiv/direktiv/pkg/engine"
 	"github.com/direktiv/direktiv/pkg/flow"
-	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/util"
 )
 

@@ -8,11 +8,11 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/core"
+	enginerefactor "github.com/direktiv/direktiv/pkg/engine"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/states"
-	"github.com/direktiv/direktiv/pkg/refactor/core"
-	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
-	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
+	"github.com/direktiv/direktiv/pkg/instancestore"
 	"github.com/google/uuid"
 )
 
