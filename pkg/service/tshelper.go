@@ -3,8 +3,8 @@ package service
 import (
 	"fmt"
 
+	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/refactor/compiler"
-	"github.com/direktiv/direktiv/pkg/refactor/core"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
