@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/refactor/core"
@@ -26,7 +27,7 @@ const (
 	readHeaderTimeout = 5 * time.Second
 )
 
-func Initialize(app core.App, db *database.SQLStore, bus *pubsub2.Bus, instanceManager *instancestore.InstanceManager, wakeByEvents events.WakeEventsWaiter, startByEvents events.WorkflowStart, addr string, circuit *core.Circuit) error {
+func Initialize(app core.App, db *database.SQLStore, bus *pubsub2.Bus, instanceManager *instancestore.InstanceManager, wakeByEvents events.WakeEventsWaiter, startByEvents events.WorkflowStart, circuit *core.Circuit) error {
 	funcCtr := &serviceController{
 		manager: app.ServiceManager,
 	}
@@ -192,7 +193,11 @@ func Initialize(app core.App, db *database.SQLStore, bus *pubsub2.Bus, instanceM
 		})
 	})
 
-	apiServer := &http.Server{Addr: addr, Handler: r, ReadHeaderTimeout: readHeaderTimeout}
+	apiServer := &http.Server{
+		Addr:              "0.0.0.0:" + strconv.Itoa(app.Config.ApiPort),
+		Handler:           r,
+		ReadHeaderTimeout: readHeaderTimeout,
+	}
 
 	circuit.Start(func() error {
 		err := apiServer.ListenAndServe()

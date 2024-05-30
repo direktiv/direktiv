@@ -42,7 +42,7 @@ describe('Test js outbound plugin', () => {
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 	// common.helpers.itShouldCreateNamespace(it, expect, testNamespace);
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -50,7 +50,7 @@ describe('Test js outbound plugin', () => {
 		endpointJSFile,
 	)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,

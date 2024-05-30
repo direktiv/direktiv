@@ -10,13 +10,10 @@ spec:
   type: ClusterIP
   ports:
     - port: 6665
-      name: flow-v1
+      name: flow-api
       protocol: TCP
     - port: 6666
       name: flow
-      protocol: TCP
-    - port: 6667
-      name: flow-v2
       protocol: TCP
     - port: 7777
       name: internal

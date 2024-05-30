@@ -13,16 +13,16 @@ describe('Test variable list calls', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
-	helpers.itShouldCreateFileV2(it, expect, namespace, '/', 'wf.yaml', 'workflow', 'text',
+	helpers.itShouldCreateFile(it, expect, namespace, '/', 'wf.yaml', 'workflow', 'text',
 		btoa(helpers.dummyWorkflow('wf.yaml')))
 
-	helpers.itShouldCreateVariableV2(it, expect, namespace, {
+	helpers.itShouldCreateVariable(it, expect, namespace, {
 		name: 'foo1',
 		data: btoa('foo1'),
 		mimeType: 'mime_foo1',
 	})
 
-	helpers.itShouldCreateVariableV2(it, expect, namespace, {
+	helpers.itShouldCreateVariable(it, expect, namespace, {
 		name: 'foo2',
 		data: btoa('foo2'),
 		mimeType: 'mime_foo2',

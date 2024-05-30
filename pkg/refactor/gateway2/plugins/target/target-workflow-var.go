@@ -42,7 +42,7 @@ func (tnv *FlowVarPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.
 	}
 
 	uri := fmt.Sprintf("http://localhost:%s/api/v2/namespaces/%s/variables/?name=%s&workflowPath=%s&raw=true",
-		os.Getenv("DIREKTIV_API_V2_PORT"), tnv.Namespace, tnv.Variable, tnv.Flow)
+		os.Getenv("DIREKTIV_API_PORT"), tnv.Namespace, tnv.Variable, tnv.Flow)
 
 	resp, err := doRequest(r, http.MethodGet, uri, nil)
 	if err != nil {

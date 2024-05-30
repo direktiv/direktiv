@@ -9,23 +9,11 @@ const NameRegexFragment = `(([a-zA-Z][a-zA-Z0-9_\-\.]*[a-zA-Z0-9])|([a-zA-Z]))`
 
 const NameRegexPattern = `^` + NameRegexFragment + `$`
 
-var NameRegex = regexp.MustCompile(NameRegexPattern)
-
-const URIRegexPattern = `^(` + NameRegexFragment + `[\/]?)*$`
-
-var URIRegex = regexp.MustCompile(URIRegexPattern)
-
 const VarNameRegexPattern = `^(([a-zA-Z][a-zA-Z0-9_\-\.]*[a-zA-Z0-9])|([a-zA-Z]))$`
 
 const VarSecretNameAndSecretsFolderNamePattern = `^(([a-zA-Z][a-zA-Z0-9_\-\./]*[a-zA-Z0-9/])|([a-zA-Z/]))$`
 
 var VarNameRegex = regexp.MustCompile(VarNameRegexPattern)
-
-const RefRegexFragment = `(([a-zA-Z0-9][a-zA-Z0-9_\-\.]*[a-zA-Z0-9])|([a-zA-Z0-9]))`
-
-const RefRegexPattern = `^` + RefRegexFragment + `$`
-
-var RefRegex = regexp.MustCompile(RefRegexPattern)
 
 const (
 	RegexPattern    = NameRegexPattern
@@ -33,9 +21,8 @@ const (
 )
 
 var (
-	reg               *regexp.Regexp
-	varreg            *regexp.Regexp
-	varSNameAndSFName *regexp.Regexp
+	reg    *regexp.Regexp
+	varreg *regexp.Regexp
 )
 
 func init() {
@@ -50,7 +37,7 @@ func init() {
 		log.Fatal(err.Error())
 	}
 
-	varSNameAndSFName, err = regexp.Compile(VarSecretNameAndSecretsFolderNamePattern)
+	_, err = regexp.Compile(VarSecretNameAndSecretsFolderNamePattern)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -64,8 +51,4 @@ func MatchesRegex(s string) bool {
 
 func MatchesVarRegex(s string) bool {
 	return varreg.MatchString(s)
-}
-
-func MatchesVarSNameAndSFName(s string) bool {
-	return varSNameAndSFName.MatchString(s)
 }

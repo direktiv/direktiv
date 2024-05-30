@@ -166,7 +166,7 @@ func doFilesystemRequest(args map[string]string,
 	defer r.Body.Close()
 
 	url := fmt.Sprintf("http://localhost:%s/api/v2/namespaces/%s/files%s",
-		os.Getenv("DIREKTIV_API_V2_PORT"), args[namespaceArg], args[pathArg])
+		os.Getenv("DIREKTIV_API_PORT"), args[namespaceArg], args[pathArg])
 
 	return doRequest(w, r, http.MethodGet, url, nil)
 }

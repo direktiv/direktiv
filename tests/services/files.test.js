@@ -11,7 +11,7 @@ describe('Test function files behaviour', () => {
 
 	helpers.itShouldCreateNamespace(it, expect, namespaceName)
 
-	helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateYamlFile(it, expect, namespaceName,
 		'/', 'bash.yaml', 'service', `
 direktiv_api: service/v1
 name: bash
@@ -20,7 +20,7 @@ cmd: ""
 scale: 1
 `)
 
-	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateFile(it, expect, namespaceName,
 		'',
 		`a.yaml`,
 		'workflow',
@@ -116,7 +116,7 @@ states:
 		expect(req.body.return.bash[8].result).toBe('')
 	})
 
-	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateFile(it, expect, namespaceName,
 		'',
 		`e.yaml`,
 		'workflow',

@@ -11,7 +11,7 @@ describe('Test events states behaviour', () => {
 
 	helpers.itShouldCreateNamespace(it, expect, namespaceName)
 
-	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateFile(it, expect, namespaceName,
 		'',
 		'generate-event.yaml',
 		'workflow',
@@ -29,7 +29,7 @@ states:
     source: "generate-event"
 `))
 
-	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateFile(it, expect, namespaceName,
 		'',
 		'simple-listener.yaml',
 		'workflow',
@@ -63,7 +63,7 @@ states:
 		})
 	})
 
-	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateFile(it, expect, namespaceName,
 		'',
 		'or-listener.yaml',
 		'workflow',

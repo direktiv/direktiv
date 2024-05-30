@@ -24,7 +24,7 @@ describe('Test target-flow plugin', () => {
 		expect(workflowVarResponse.statusCode).toEqual(200)
 	})
 
-	helpers.itShouldCreateYamlFileV2(it, expect, namespace,
+	helpers.itShouldCreateYamlFile(it, expect, namespace,
 		'/', 'ep1.yaml', 'endpoint', `
 direktiv_api: endpoint/v2
 path: /ep1

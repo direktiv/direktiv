@@ -21,7 +21,7 @@ describe('Test uninitialized secrets notifications', () => {
 		})
 	})
 
-	helpers.itShouldCreateFileV2(it, expect, namespace,
+	helpers.itShouldCreateFile(it, expect, namespace,
 		'/',
 		'foo1',
 		'workflow',
