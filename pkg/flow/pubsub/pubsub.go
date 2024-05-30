@@ -5,13 +5,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/direktiv/direktiv/pkg/utils"
 	"log/slog"
 	"os"
 	"sync"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/datastore"
-	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 )
@@ -508,7 +508,7 @@ func (pubsub *Pubsub) ConfigureRouterCron(id, cron string) {
 		Cron: cron,
 	}
 
-	key := bytedata.Marshal(msg)
+	key := utils.Marshal(msg)
 
 	pubsub.Publish(&PubsubUpdate{
 		Handler: PubsubConfigureRouterFunction,

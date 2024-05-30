@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/direktiv/direktiv/pkg/utils"
 
 	"github.com/cloudevents/sdk-go/v2/event"
-	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/nohome/recipient"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -76,7 +76,7 @@ func traceFullAddWorkflowInstance(ctx context.Context, im *instanceMemory) (cont
 	traceAddWorkflowInstance(ctx, im)
 
 	x := dbTrace(ctx)
-	s := bytedata.Marshal(x)
+	s := utils.Marshal(x)
 
 	im.instance.TelemetryInfo.TraceID = s
 	data, err := im.instance.TelemetryInfo.MarshalJSON()
@@ -126,7 +126,7 @@ func traceStateGenericBegin(ctx context.Context, im *instanceMemory) (context.Co
 	ctx, span = tr.Start(ctx, im.logic.GetType().String(), trace.WithSpanKind(trace.SpanKindInternal))
 
 	x := dbTrace(ctx)
-	s := bytedata.Marshal(x)
+	s := utils.Marshal(x)
 
 	im.instance.TelemetryInfo.SpanID = s
 	data, err := im.instance.TelemetryInfo.MarshalJSON()

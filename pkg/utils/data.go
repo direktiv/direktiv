@@ -1,4 +1,4 @@
-package bytedata
+package utils
 
 import (
 	"bytes"
