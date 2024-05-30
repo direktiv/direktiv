@@ -6,10 +6,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"io"
-
-	"github.com/direktiv/direktiv/pkg/datastore"
-	"github.com/direktiv/direktiv/pkg/flow/grpc"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // Checksum is a shortcut to calculate a hash for any given input by first marshalling it to json.
@@ -46,43 +42,4 @@ func Marshal(x interface{}) string {
 	}
 
 	return string(data)
-}
-
-func ConvertEventListeners(in []*datastore.EventListener) []*grpc.EventListener {
-	res := make([]*grpc.EventListener, 0, len(in))
-	for _, el := range in {
-		types := []*grpc.EventDef{}
-		for _, v := range el.ListeningForEventTypes {
-			types = append(types, &grpc.EventDef{Type: v})
-		}
-		wf := ""
-		ins := ""
-		// step := ""
-		if el.TriggerWorkflow != "" {
-			wf = el.Metadata
-		}
-		if el.TriggerInstance != "" {
-			ins = el.TriggerInstance
-			// step = fmt.Sprintf("%v", el.TriggerInstanceStep)
-		}
-		mode := ""
-		switch el.TriggerType {
-		case datastore.StartAnd, datastore.WaitAnd:
-			mode = "and"
-		case datastore.StartOR, datastore.WaitOR:
-			mode = "or"
-		case datastore.StartSimple, datastore.WaitSimple:
-			mode = "simple"
-		}
-		res = append(res, &grpc.EventListener{
-			Workflow:  wf,
-			Instance:  ins,
-			UpdatedAt: timestamppb.New(el.UpdatedAt),
-			Mode:      mode,
-			Events:    types,
-			CreatedAt: timestamppb.New(el.CreatedAt),
-		})
-	}
-
-	return res
 }
