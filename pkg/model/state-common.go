@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/direktiv/direktiv/pkg/utils"
 )
 
 // RetryDefinition defines a retry object to be used in the workflow.
@@ -135,8 +135,8 @@ func (o *StateCommon) commonValidate() error {
 		return errors.New("id required")
 	}
 
-	if ok := util.MatchesRegex(o.ID); !ok {
-		return fmt.Errorf("state id must match the regex pattern `%s`", util.RegexPattern)
+	if ok := utils.MatchesRegex(o.ID); !ok {
+		return fmt.Errorf("state id must match the regex pattern `%s`", utils.RegexPattern)
 	}
 
 	for _, catch := range o.Catch {

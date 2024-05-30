@@ -6,10 +6,10 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/direktiv/direktiv/pkg/utils"
 )
 
-const pathRegexPattern = `^[/](` + util.NameRegexFragment + `[\/]?)*$`
+const pathRegexPattern = `^[/](` + utils.NameRegexFragment + `[\/]?)*$`
 
 var pathRegexExp = regexp.MustCompile(pathRegexPattern)
 

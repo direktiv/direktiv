@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/direktiv/direktiv/pkg/utils"
 )
 
 const (
@@ -73,11 +73,11 @@ func (o *SetterDefinition) UnmarshalYAML(unmarshal func(interface{}) error) erro
 
 func (o *SetterDefinition) Validate() error {
 	switch o.Scope {
-	case util.VarScopeInstance:
-	case util.VarScopeWorkflow:
-	case util.VarScopeNamespace:
-	case util.VarScopeThread:
-	case util.VarScopeFileSystem:
+	case utils.VarScopeInstance:
+	case utils.VarScopeWorkflow:
+	case utils.VarScopeNamespace:
+	case utils.VarScopeThread:
+	case utils.VarScopeFileSystem:
 		return ErrVarReadOnly
 	default:
 		return ErrVarScope

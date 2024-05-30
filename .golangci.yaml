@@ -58,7 +58,7 @@ linters:
 issues:
   exclude-files: [ ".pb.go" ]
   exclude-rules:
-    - path: '(pkg|cmd)\/(model|sidecar|exec|util|jqer|flow)\/.*'
+    - path: '(pkg|cmd)\/(model|sidecar|exec|utils|jqer|flow)\/.*'
       linters:
         - paralleltest
         - forbidigo

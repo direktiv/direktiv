@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/direktiv/direktiv/pkg/gateway/plugins"
-	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/direktiv/direktiv/pkg/utils"
 )
 
 func doRequest(w http.ResponseWriter, r *http.Request, method, url string, body io.ReadCloser) *http.Response {
@@ -14,7 +14,7 @@ func doRequest(w http.ResponseWriter, r *http.Request, method, url string, body 
 	ctx := r.Context()
 	req, err := http.NewRequestWithContext(ctx, method, url, body)
 
-	endTrace := util.TraceGWHTTPRequest(ctx, req, "direktiv/flow")
+	endTrace := utils.TraceGWHTTPRequest(ctx, req, "direktiv/flow")
 	defer endTrace()
 	if err != nil {
 		plugins.ReportError(r.Context(), w, http.StatusInternalServerError,

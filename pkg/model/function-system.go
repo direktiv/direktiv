@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/direktiv/direktiv/pkg/utils"
 )
 
 // SystemFunctionDefinition defines a system service in the workflow.
@@ -35,8 +35,8 @@ func (o *SystemFunctionDefinition) Validate() error {
 		return errors.New("id required")
 	}
 
-	if ok := util.MatchesRegex(o.ID); !ok {
-		return fmt.Errorf("function id must match regex: %s", util.RegexPattern)
+	if ok := utils.MatchesRegex(o.ID); !ok {
+		return fmt.Errorf("function id must match regex: %s", utils.RegexPattern)
 	}
 
 	filePathPattern := `^/([^/]+/?)+[^/]*$`

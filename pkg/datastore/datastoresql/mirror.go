@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/datastore"
-	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -59,9 +59,9 @@ func cryptDecryptConfig(config *datastore.MirrorConfig, key string, encrypt bool
 			err error
 		)
 		if encrypt {
-			b, err = util.EncryptDataBase64([]byte(key), []byte(*t))
+			b, err = utils.EncryptDataBase64([]byte(key), []byte(*t))
 		} else if len(*t) > 0 {
-			b, err = util.DecryptDataBase64([]byte(key), *t)
+			b, err = utils.DecryptDataBase64([]byte(key), *t)
 		}
 
 		if err != nil {
