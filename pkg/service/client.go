@@ -3,7 +3,7 @@ package service
 import (
 	"io"
 
-	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/core"
 )
 
 // Services need a runtime that creates and schedule them, we use direktiv uses knative as a service runtime.

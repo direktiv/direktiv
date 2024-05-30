@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
+	"github.com/direktiv/direktiv/pkg/instancestore"
 )
 
 func Test_wheres(t *testing.T) {

@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/mattn/go-shellwords"
 	corev1 "k8s.io/api/core/v1"

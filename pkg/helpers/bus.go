@@ -3,8 +3,8 @@ package helpers
 import (
 	"encoding/json"
 
-	"github.com/direktiv/direktiv/pkg/refactor/filestore"
-	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
+	"github.com/direktiv/direktiv/pkg/filestore"
+	"github.com/direktiv/direktiv/pkg/pubsub"
 )
 
 func PublishEventDirektivFileChange(bus *pubsub.Bus, fileType filestore.FileType, topic string, event *pubsub.FileChangeEvent) error {

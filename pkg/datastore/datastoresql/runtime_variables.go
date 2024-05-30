@@ -8,7 +8,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/direktiv/direktiv/pkg/refactor/datastore"
+	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )

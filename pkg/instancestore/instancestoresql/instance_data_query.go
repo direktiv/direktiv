@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
+	"github.com/direktiv/direktiv/pkg/instancestore"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )

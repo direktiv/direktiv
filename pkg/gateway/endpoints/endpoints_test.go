@@ -5,12 +5,12 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway/endpoints"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/auth"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/inbound"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/outbound"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/target"
+	"github.com/direktiv/direktiv/pkg/core"
+	"github.com/direktiv/direktiv/pkg/gateway/endpoints"
+	"github.com/direktiv/direktiv/pkg/gateway/plugins/auth"
+	"github.com/direktiv/direktiv/pkg/gateway/plugins/inbound"
+	"github.com/direktiv/direktiv/pkg/gateway/plugins/outbound"
+	"github.com/direktiv/direktiv/pkg/gateway/plugins/target"
 	"github.com/stretchr/testify/assert"
 )
 

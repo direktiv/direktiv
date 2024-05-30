@@ -8,8 +8,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/direktiv/direktiv/pkg/refactor/datastore"
-	"github.com/direktiv/direktiv/pkg/refactor/filestore"
+	"github.com/direktiv/direktiv/pkg/datastore"
+	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/google/uuid"
 )

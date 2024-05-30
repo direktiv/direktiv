@@ -8,9 +8,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/refactor/database"
-	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
-	"github.com/direktiv/direktiv/pkg/refactor/instancestore/instancestoresql"
+	"github.com/direktiv/direktiv/pkg/database"
+	"github.com/direktiv/direktiv/pkg/instancestore"
+	"github.com/direktiv/direktiv/pkg/instancestore/instancestoresql"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 )

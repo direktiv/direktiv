@@ -6,9 +6,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/direktiv/direktiv/pkg/refactor/database"
-	"github.com/direktiv/direktiv/pkg/refactor/filestore"
-	"github.com/direktiv/direktiv/pkg/refactor/filestore/filestoresql"
+	"github.com/direktiv/direktiv/pkg/database"
+	"github.com/direktiv/direktiv/pkg/filestore"
+	"github.com/direktiv/direktiv/pkg/filestore/filestoresql"
 	"github.com/google/uuid"
 )
 

@@ -5,7 +5,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/direktiv/direktiv/pkg/refactor/datastore"
+	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/go-chi/chi/v5"
 )
 

@@ -7,7 +7,7 @@ import (
 	"time"
 
 	ce "github.com/cloudevents/sdk-go/v2"
-	"github.com/direktiv/direktiv/pkg/refactor/datastore"
+	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )

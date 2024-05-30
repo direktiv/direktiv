@@ -3,8 +3,8 @@ package inbound
 import (
 	"net/http"
 
-	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
+	"github.com/direktiv/direktiv/pkg/core"
+	"github.com/direktiv/direktiv/pkg/gateway/plugins"
 )
 
 const (

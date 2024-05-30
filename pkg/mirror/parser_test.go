@@ -6,7 +6,7 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/direktiv/direktiv/pkg/refactor/mirror"
+	"github.com/direktiv/direktiv/pkg/mirror"
 	"github.com/psanford/memfs"
 )
 

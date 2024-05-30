@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/util"
 )
 

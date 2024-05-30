@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/refactor/pubsub"
+	"github.com/direktiv/direktiv/pkg/pubsub"
 	"github.com/lib/pq"
 )
 

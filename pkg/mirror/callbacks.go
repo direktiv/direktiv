@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/direktiv/direktiv/pkg/refactor/datastore"
-	"github.com/direktiv/direktiv/pkg/refactor/filestore"
+	"github.com/direktiv/direktiv/pkg/datastore"
+	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/google/uuid"
 )
 

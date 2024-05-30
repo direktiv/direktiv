@@ -3,8 +3,8 @@ package service_test
 import (
 	"testing"
 
-	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/direktiv/direktiv/pkg/refactor/service"
+	"github.com/direktiv/direktiv/pkg/core"
+	"github.com/direktiv/direktiv/pkg/service"
 )
 
 func TestGetServiceURL_Knative(t *testing.T) {

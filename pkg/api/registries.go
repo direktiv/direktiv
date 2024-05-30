@@ -5,7 +5,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/go-chi/chi/v5"
 )
 

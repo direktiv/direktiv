@@ -4,8 +4,8 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway2"
+	"github.com/direktiv/direktiv/pkg/core"
+	"github.com/direktiv/direktiv/pkg/gateway2"
 )
 
 const debugPluginName = "debug-target"

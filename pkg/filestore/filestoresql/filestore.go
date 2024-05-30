@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/direktiv/direktiv/pkg/refactor/filestore"
+	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )

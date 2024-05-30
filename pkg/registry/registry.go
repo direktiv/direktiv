@@ -8,7 +8,7 @@ import (
 	"net/url"
 	"sync"
 
-	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/core"
 	dReg "github.com/docker/docker/api/types/registry"
 	dClient "github.com/docker/docker/client"
 	v1 "k8s.io/api/core/v1"

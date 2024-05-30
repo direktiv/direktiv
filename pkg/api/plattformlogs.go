@@ -13,8 +13,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/direktiv/direktiv/pkg/refactor/datastore"
+	"github.com/direktiv/direktiv/pkg/core"
+	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/go-chi/chi/v5"
 )
 

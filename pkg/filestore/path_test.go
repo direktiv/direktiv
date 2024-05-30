@@ -3,7 +3,7 @@ package filestore_test
 import (
 	"testing"
 
-	"github.com/direktiv/direktiv/pkg/refactor/filestore"
+	"github.com/direktiv/direktiv/pkg/filestore"
 )
 
 func TestSanitizePath(t *testing.T) {

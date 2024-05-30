@@ -3,7 +3,7 @@ package events_test
 import (
 	"testing"
 
-	"github.com/direktiv/direktiv/pkg/refactor/events"
+	"github.com/direktiv/direktiv/pkg/events"
 	"github.com/google/uuid"
 )
 

@@ -4,9 +4,9 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/direktiv/direktiv/pkg/datastore"
+	"github.com/direktiv/direktiv/pkg/filestore"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
-	"github.com/direktiv/direktiv/pkg/refactor/datastore"
-	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

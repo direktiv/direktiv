@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/mitchellh/mapstructure"
 )
 

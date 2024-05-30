@@ -4,9 +4,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/direktiv/direktiv/pkg/refactor/database"
-	"github.com/direktiv/direktiv/pkg/refactor/datastore"
-	"github.com/direktiv/direktiv/pkg/refactor/datastore/datastoresql"
+	"github.com/direktiv/direktiv/pkg/database"
+	"github.com/direktiv/direktiv/pkg/datastore"
+	"github.com/direktiv/direktiv/pkg/datastore/datastoresql"
 )
 
 func Test_Secrets(t *testing.T) {

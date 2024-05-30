@@ -7,10 +7,10 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
-	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins/outbound"
+	"github.com/direktiv/direktiv/pkg/core"
+	"github.com/direktiv/direktiv/pkg/gateway"
+	"github.com/direktiv/direktiv/pkg/gateway/plugins"
+	"github.com/direktiv/direktiv/pkg/gateway/plugins/outbound"
 	"github.com/stretchr/testify/assert"
 )
 

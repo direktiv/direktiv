@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/core"
 )
 
 type LogLevel int

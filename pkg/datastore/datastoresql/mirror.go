@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/refactor/datastore"
+	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 	"gorm.io/gorm"

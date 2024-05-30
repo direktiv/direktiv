@@ -1,7 +1,7 @@
 package datastoresql
 
 import (
-	"github.com/direktiv/direktiv/pkg/refactor/datastore"
+	"github.com/direktiv/direktiv/pkg/datastore"
 	"gorm.io/gorm"
 )
 

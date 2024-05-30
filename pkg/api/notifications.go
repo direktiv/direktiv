@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"sort"
 
-	"github.com/direktiv/direktiv/pkg/refactor/database"
-	"github.com/direktiv/direktiv/pkg/refactor/datastore"
+	"github.com/direktiv/direktiv/pkg/database"
+	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/go-chi/chi/v5"
 )
 

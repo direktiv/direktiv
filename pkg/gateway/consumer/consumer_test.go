@@ -3,7 +3,7 @@ package consumer
 import (
 	"testing"
 
-	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/direktiv/direktiv/pkg/refactor/gateway/plugins"
+	"github.com/direktiv/direktiv/pkg/gateway/plugins"
 	"github.com/direktiv/direktiv/pkg/util"
 )
 

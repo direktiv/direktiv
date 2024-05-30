@@ -3,7 +3,7 @@ package engine
 import (
 	"fmt"
 
-	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
+	"github.com/direktiv/direktiv/pkg/instancestore"
 )
 
 type Instance struct {

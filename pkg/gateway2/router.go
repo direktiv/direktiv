@@ -6,7 +6,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/direktiv/direktiv/pkg/refactor/core"
+	"github.com/direktiv/direktiv/pkg/core"
 )
 
 // Struct router implements the gateway logic of serving requests. We can see that it wraps a simple
