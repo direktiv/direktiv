@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/refactor/middlewares"
+	"github.com/direktiv/direktiv/pkg/middlewares"
 	"github.com/gorilla/mux"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/codes"
