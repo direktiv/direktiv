@@ -45,7 +45,7 @@ func (hs *sqlEventHistoryStore) Append(ctx context.Context, events []*datastore.
 		values = append(values, v.ReceivedAt)
 		values = append(values, time.Now().UTC())
 		tx := hs.db.WithContext(ctx).Exec(q, values...)
-		// checks for duplicate key value violates unique constraint (SQLSTATE 23505).
+		// checks for duplicate event id violates unique constraint (SQLSTATE 23505).
 		if tx.Error != nil && strings.Contains(tx.Error.Error(), "23505") {
 			errs[i] = fmt.Errorf("%w + %w", tx.Error, datastore.ErrDuplication)
 
