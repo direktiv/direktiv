@@ -7,6 +7,7 @@ import (
 
 	"github.com/direktiv/direktiv/cmd/dinit"
 	"github.com/direktiv/direktiv/cmd/sidecar"
+	"github.com/direktiv/direktiv/cmd/tsengine"
 	_ "github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins/auth"
 	_ "github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins/inbound"
 	_ "github.com/direktiv/direktiv/pkg/refactor/gateway2/plugins/target"
@@ -59,6 +60,8 @@ func main() {
 		sidecar.RunApplication()
 	case "init":
 		dinit.RunApplication()
+	case "tsengine":
+		tsengine.RunApplication()
 	default:
 		// default to flow app.
 		runApplication()

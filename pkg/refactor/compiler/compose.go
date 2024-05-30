@@ -97,8 +97,10 @@ func (fi *FlowInformation) CompileCompose(path, localPath, flowPath, initializer
 
 	var retries uint64 = 10
 	var interval types.Duration
-	interval.DecodeMapstructure("1s")
+	err := interval.DecodeMapstructure("1s")
+	if err != nil {
 
+	}
 	services["engine"] = types.ServiceConfig{
 		Name:        "engine",
 		Image:       img,
@@ -144,5 +146,3 @@ func (fi *FlowInformation) CompileCompose(path, localPath, flowPath, initializer
 
 	return &project, nil
 }
-
-// https://github.com/docker/compose/blob/eb5e018698e536ceb7e8c0ba174580d6848b0a9c/pkg/compose/viz_test.go#L110

@@ -1,5 +1,7 @@
 package compiler
 
+import "encoding/base64"
+
 type File struct {
 	Name       string
 	Scope      string
@@ -19,6 +21,10 @@ const (
 	fileScopeLocal = "local"
 	// fileScopeShared    = "shared"
 )
+
+func (f *File) Base64() string {
+	return base64.StdEncoding.EncodeToString([]byte(f.Name))
+}
 
 func (f *File) Validate() *Messages {
 	m := newMessages()

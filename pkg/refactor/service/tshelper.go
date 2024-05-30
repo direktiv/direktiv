@@ -3,6 +3,7 @@ package service
 import (
 	"fmt"
 
+	"github.com/direktiv/direktiv/pkg/refactor/compiler"
 	"github.com/direktiv/direktiv/pkg/refactor/core"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -12,6 +13,21 @@ import (
 func buildTypescriptService(c *core.Config, sv *core.ServiceFileData, registrySecrets []corev1.LocalObjectReference) (*servingv1.Service, error) {
 
 	fmt.Println(string(sv.TypescriptFile))
+
+	compiler, err := compiler.New(sv.FilePath, string(sv.TypescriptFile))
+	if err != nil {
+		return nil, err
+	}
+
+	flowInformation, err := compiler.CompileFlow()
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println("SECRETS")
+	fmt.Println(flowInformation.Secrets)
+	fmt.Println("FILES")
+	fmt.Println(flowInformation.Files)
 
 	nonRoot := false
 

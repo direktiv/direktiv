@@ -132,12 +132,17 @@ func (c *Compiler) getID() string {
 
 func (c *Compiler) CompileFlow() (*FlowInformation, error) {
 
+	fileHolder := make(map[string]File)
+	secretsHolder := make(map[string]Secret)
+
 	flowInformation := &FlowInformation{
 		Definition: DefaultDefinition(),
 		messages:   newMessages(),
 		Functions:  make(map[string]Function),
 		Secrets:    make([]Secret, 0),
 		ID:         c.getID(),
+		// Files:      make(map[string]File),
+		Files: make([]File, 0),
 	}
 
 	astIn, err := json.MarshalIndent(c.ast.Body, "", "   ")
@@ -187,7 +192,7 @@ func (c *Compiler) CompileFlow() (*FlowInformation, error) {
 			}
 
 			flowInformation.messages.merge(f.Validate())
-			flowInformation.Files = append(flowInformation.Files, *f)
+			fileHolder[(*f).Base64()] = *f
 		}
 
 		if t == "ArgumentList" && calleeName == "getSecret" {
@@ -197,7 +202,7 @@ func (c *Compiler) CompileFlow() (*FlowInformation, error) {
 				return flowInformation, err
 			}
 			flowInformation.messages.merge(s.Validate())
-			flowInformation.Secrets = append(flowInformation.Secrets, *s)
+			secretsHolder[(*s).Base64()] = *s
 		}
 
 		if t == "ArgumentList" && calleeName == "setupFunction" {
@@ -236,6 +241,14 @@ func (c *Compiler) CompileFlow() (*FlowInformation, error) {
 				break
 			}
 		}
+	}
+
+	for _, v := range fileHolder {
+		flowInformation.Files = append(flowInformation.Files, v)
+	}
+
+	for _, v := range secretsHolder {
+		flowInformation.Secrets = append(flowInformation.Secrets, v)
 	}
 
 	return flowInformation, nil

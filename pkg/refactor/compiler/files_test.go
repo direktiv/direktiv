@@ -4,18 +4,35 @@ import (
 	"testing"
 
 	"github.com/direktiv/direktiv/pkg/refactor/compiler"
+	"github.com/stretchr/testify/assert"
 )
 
-func TestFiles(t *testing.T) {
+func TestFilesMultiple(t *testing.T) {
 
 	def := `
 	const fileOne = getFile({
-		name: "jens/myfile.txt",
+		name: "first.txt",
 		permission: 755,
 		scope: "shared",
 	});	  
+
+	function start() {
+
+		var fileThree = getFile({
+			name: "third.txt",
+			permission: 755,
+			scope: "shared",
+		});	 
+
+		var fileTwo = getFile({
+			name: "second.txt",
+			permission: 755,
+			scope: "shared",
+		});	  
+	}
 	`
 
 	c, _ := compiler.New("", def)
-	c.CompileFlow()
+	fi, _ := c.CompileFlow()
+	assert.Len(t, fi.Files, 3)
 }
