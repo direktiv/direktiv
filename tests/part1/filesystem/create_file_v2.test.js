@@ -13,8 +13,8 @@ describe('Test filesystem tree read operations', () => {
 
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
-	helpers.itShouldCreateDirV2(it, expect, namespace, '/', 'dir1')
-	helpers.itShouldCreateDirV2(it, expect, namespace, '/', 'dir2')
+	helpers.itShouldCreateDir(it, expect, namespace, '/', 'dir1')
+	helpers.itShouldCreateDir(it, expect, namespace, '/', 'dir2')
 
 	it(`should read root dir with two paths`, async () => {
 		const res = await request(config.getDirektivHost())
@@ -45,7 +45,7 @@ describe('Test filesystem tree read operations', () => {
 		})
 	})
 
-	helpers.itShouldCreateFileV2(it, expect, namespace,
+	helpers.itShouldCreateFile(it, expect, namespace,
 		'/dir1',
 		'foo1',
 		'workflow',

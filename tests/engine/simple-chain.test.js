@@ -11,7 +11,7 @@ describe('Test a simple chain of noop states', () => {
 
 	helpers.itShouldCreateNamespace(it, expect, namespaceName)
 
-	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateFile(it, expect, namespaceName,
 		'',
 		'simple-chain.yaml',
 		'workflow',

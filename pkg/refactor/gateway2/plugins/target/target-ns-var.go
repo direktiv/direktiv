@@ -41,7 +41,7 @@ func (tnv *NamespaceVarPlugin) Execute(w http.ResponseWriter, r *http.Request) *
 	}
 
 	uri := fmt.Sprintf("http://localhost:%s/api/v2/namespaces/%s/variables?name=%s&raw=true",
-		os.Getenv("DIREKTIV_API_V2_PORT"), tnv.Namespace, tnv.Variable)
+		os.Getenv("DIREKTIV_API_PORT"), tnv.Namespace, tnv.Variable)
 
 	resp, err := doRequest(r, http.MethodGet, uri, nil)
 	if err != nil {

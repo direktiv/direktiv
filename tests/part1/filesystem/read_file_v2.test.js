@@ -13,7 +13,7 @@ describe('Test filesystem read single file', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 
 	helpers.itShouldCreateNamespace(it, expect, namespace)
-	helpers.itShouldCreateFileV2(it, expect, namespace, '/', 'foo.yaml', 'file', 'text/plain', btoa('some foo data'))
+	helpers.itShouldCreateFile(it, expect, namespace, '/', 'foo.yaml', 'file', 'text/plain', btoa('some foo data'))
 
 	it(`should read file`, async () => {
 		const res = await request(config.getDirektivHost())

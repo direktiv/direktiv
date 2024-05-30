@@ -5,7 +5,6 @@ import (
 	"path/filepath"
 
 	root "github.com/direktiv/direktiv/cmd/exec/cmd"
-	"github.com/direktiv/direktiv/pkg/project"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v3"
@@ -14,7 +13,7 @@ import (
 var confPInitCmd = &cobra.Command{
 	Use:   "project-init",
 	Short: "Creates direktiv-project from current directory.",
-	Long:  "Creates " + project.ConfigFileName + " in current directory to mark it as direktiv-project.",
+	Long:  "Creates " + root.ConfigFileName + " in current directory to mark it as direktiv-project.",
 	PreRun: func(cmd *cobra.Command, args []string) {
 		err := root.InitWD()
 		if err != nil {
@@ -29,7 +28,7 @@ var confPInitCmd = &cobra.Command{
 		if err != nil {
 			root.Fail(cmd, "%s", err)
 		}
-		path := filepath.Join(pf, project.ConfigFileName)
+		path := filepath.Join(pf, root.ConfigFileName)
 		err = os.WriteFile(path, data, 0o664)
 		if err != nil {
 			root.Fail(cmd, "%s", err)

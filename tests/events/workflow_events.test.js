@@ -37,7 +37,7 @@ describe('Test basic workflow events', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
 
 	helpers.itShouldCreateNamespace(it, expect, namespaceName)
-	common.helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
+	common.helpers.itShouldCreateYamlFile(it, expect, namespaceName,
 		'/', 'listener.yml', 'workflow', `
 start:
   type: event
@@ -78,7 +78,7 @@ describe('Test workflow events with filter/context', () => {
 
 	helpers.itShouldCreateNamespace(it, expect, namespaceName)
 
-	common.helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
+	common.helpers.itShouldCreateYamlFile(it, expect, namespaceName,
 		'/', 'startlistener.yml', 'workflow', `
 start:
   type: event
@@ -94,7 +94,7 @@ states:
     result: Hello world!
 `)
 
-	common.helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
+	common.helpers.itShouldCreateYamlFile(it, expect, namespaceName,
 		'/', 'stoplistener.yml', 'workflow', `
     start:
       type: event
@@ -236,7 +236,7 @@ describe('Test workflow events', () => {
 	helpers.itShouldCreateNamespace(it, expect, namespaceName)
 
 	// workflow with start
-	helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateYamlFile(it, expect, namespaceName,
 		'', startWorkflowName, 'workflow',
 		startWorkflow)
 
@@ -260,7 +260,7 @@ describe('Test workflow events', () => {
 	})
 
 	// workflow with start
-	helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateYamlFile(it, expect, namespaceName,
 		'', waitWorkflowName, 'workflow',
 		waitWorkflow)
 
@@ -324,7 +324,7 @@ describe('Test workflow events', () => {
 		expect(outputJSON.hello.data.hello).toEqual('world')
 	})
 
-	helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateYamlFile(it, expect, namespaceName,
 		'', startWorkflowNameContext, 'workflow',
 		startEventWorkflowContext)
 
@@ -345,7 +345,7 @@ describe('Test workflow events', () => {
 		expect(instancesResponse).not.toBeFalsy()
 	})
 
-	helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateYamlFile(it, expect, namespaceName,
 		'', waitWorkflowNameContext, 'workflow',
 		waitWorkflowContext)
 
@@ -372,7 +372,7 @@ describe('Test workflow events', () => {
 		expect(instancesResponse).not.toBeFalsy()
 	})
 
-	helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateYamlFile(it, expect, namespaceName,
 		'', startThenWaitWorkflowNameContext, 'workflow',
 		starthenWaitWorkflowContext)
 
@@ -396,7 +396,7 @@ describe('Test workflow events', () => {
 	})
 
 	// workflow with multiple context-filters
-	helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateYamlFile(it, expect, namespaceName,
 		'', workflowContextMultipleName, 'workflow',
 		eventContextMultipleWorkflow)
 
