@@ -15,10 +15,12 @@ import (
 )
 
 const (
-	direktivCmdExecValue = "/usr/share/direktiv/direktiv-cmd"
-	direktivProxyHTTPS   = "HTTPS_PROXY"
-	direktivProxyHTTP    = "HTTP_PROXY"
-	direktivProxyNO      = "NO_PROXY"
+	direktivCmdExecValue  = "/usr/share/direktiv/direktiv-cmd"
+	direktivProxyHTTPS    = "HTTPS_PROXY"
+	direktivProxyHTTP     = "HTTP_PROXY"
+	direktivProxyNO       = "NO_PROXY"
+	direktivOpentelemetry = "DIREKTIV_OTLP"
+	direktivFlowEndpoint  = "DIREKTIV_FLOW_ENDPOINT"
 )
 
 func buildService(c *core.Config, sv *core.ServiceFileData, registrySecrets []corev1.LocalObjectReference) (*servingv1.Service, error) {
@@ -326,7 +328,7 @@ func buildEnvVars(withGrpc bool, c *core.Config, sv *core.ServiceFileData) []cor
 	}
 
 	proxyEnvs = append(proxyEnvs, corev1.EnvVar{
-		Name:  utils.DirektivOpentelemetry,
+		Name:  direktivOpentelemetry,
 		Value: c.OpenTelemetry,
 	})
 
@@ -334,7 +336,7 @@ func buildEnvVars(withGrpc bool, c *core.Config, sv *core.ServiceFileData) []cor
 		namespace := c.DirektivNamespace
 
 		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
-			Name:  utils.DirektivFlowEndpoint,
+			Name:  direktivFlowEndpoint,
 			Value: fmt.Sprintf("direktiv-flow.%s", namespace),
 		})
 
