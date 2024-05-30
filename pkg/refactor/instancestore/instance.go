@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 )
 
@@ -28,14 +27,20 @@ const (
 	InstanceStatusFailed
 	InstanceStatusCrashed
 	InstanceStatusCancelled
+
+	StrInstanceStatusPending   = "pending"
+	StrInstanceStatusFailed    = "failed"
+	StrInstanceStatusCrashed   = "crashed"
+	StrInstanceStatusComplete  = "complete"
+	StrInstanceStatusCancelled = "cancelled"
 )
 
 var instanceStatusStrings = []string{
-	util.InstanceStatusPending,
-	util.InstanceStatusComplete,
-	util.InstanceStatusFailed,
-	util.InstanceStatusCrashed,
-	util.InstanceStatusCancelled,
+	StrInstanceStatusPending,
+	StrInstanceStatusComplete,
+	StrInstanceStatusFailed,
+	StrInstanceStatusCrashed,
+	StrInstanceStatusCancelled,
 }
 
 func (status InstanceStatus) String() string {
