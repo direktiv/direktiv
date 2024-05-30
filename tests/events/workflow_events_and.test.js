@@ -74,11 +74,11 @@ states:
 
 const basevent = (type, id, value) => `{
   "specversion" : "1.0",
-  "type" : "${ type }",
-  "id": "${ id }",
+  "type" : "${type}",
+  "id": "${id}",
   "source" : "https://direktiv.io/test",
   "datacontenttype" : "application/json",
-  "hello": "${ value }",
+  "hello": "${value}",
   "data" : {
       "hello": "world",
       "123": 456
@@ -98,7 +98,7 @@ describe('Test workflow events and', () => {
 	it(`should have one event listeners`, async () => {
 		await helpers.sleep(1000)
 
-		const getEventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/listeners?limit=8&offset=0`)
+		const getEventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${namespaceName}/events/listeners?limit=8&offset=0`)
 			.send()
 		expect(getEventListenerResponse.body.data[0]).toMatchObject({
 			triggerWorkflow: '/startand.yaml',
@@ -106,13 +106,13 @@ describe('Test workflow events and', () => {
 			createdAt: expect.stringMatching(common.regex.timestampRegex),
 			updatedAt: expect.stringMatching(common.regex.timestampRegex),
 			eventContextFilters: expect.arrayContaining(
-				[ {
+				[{
 					type: 'eventtype4',
 					context: {},
 				}, {
 					type: 'eventtype3',
 					context: {},
-				} ],
+				}],
 			),
 		})
 
@@ -128,13 +128,13 @@ describe('Test workflow events and', () => {
 		await helpers.sleep(1000)
 
 		// start workflow
-		const runWorkflowResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=${ waitWorkflowName }`)
+		const runWorkflowResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${namespaceName}/instances?path=${waitWorkflowName}`)
 			.send()
 		expect(runWorkflowResponse.statusCode).toEqual(200)
 
 		await new Promise(r => setTimeout(r, 250))
 
-		const getEventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/listeners?limit=8&offset=0`)
+		const getEventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${namespaceName}/events/listeners?limit=8&offset=0`)
 			.send()
 
 		expect(getEventListenerResponse.body.data.length).toEqual(2)
@@ -147,13 +147,13 @@ describe('Test workflow events and', () => {
 			createdAt: expect.stringMatching(common.regex.timestampRegex),
 			updatedAt: expect.stringMatching(common.regex.timestampRegex),
 			eventContextFilters: expect.arrayContaining(
-				[ {
+				[{
 					type: 'eventtype1',
 					context: {},
 				}, {
 					type: 'eventtype2',
 					context: {},
-				} ],
+				}],
 			),
 		})
 	})
@@ -171,7 +171,7 @@ describe('Test workflow events and', () => {
 		instancesResponse = await events.listInstancesAndFilter(namespaceName, waitWorkflowName, 'complete')
 		expect(instancesResponse).not.toBeFalsy()
 
-		const instanceOutput = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/instances/${ instancesResponse.id }/output`)
+		const instanceOutput = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${namespaceName}/instances/${instancesResponse.id}/output`)
 		const output = Buffer.from(instanceOutput.body.data.output, 'base64')
 		const outputJSON = JSON.parse(output.toString())
 
@@ -189,7 +189,7 @@ describe('Test workflow events and', () => {
 		await events.sendEventAndList(namespaceName, basevent('eventtype4', 'eventtype4', 'world2'))
 		instance = await events.listInstancesAndFilter(namespaceName, startWorkflowName, 'complete')
 
-		const instanceOutput = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/instances/${ instance.id }/output`)
+		const instanceOutput = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${namespaceName}/instances/${instance.id}/output`)
 		const output = Buffer.from(instanceOutput.body.data.output, 'base64')
 		const outputJSON = JSON.parse(output.toString())
 
@@ -206,12 +206,12 @@ describe('Test workflow events and', () => {
 	it(`start context`, async () => {
 		await helpers.sleep(1000)
 
-		let workflowEventResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${ namespaceName }/broadcast`)
+		let workflowEventResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${namespaceName}/events/broadcast`)
 			.set('Content-Type', 'application/json')
 			.send(basevent('eventtype9', 'eventtype9zz', 'world1'))
 		expect(workflowEventResponse.statusCode).toEqual(200)
 
-		workflowEventResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${ namespaceName }/broadcast`)
+		workflowEventResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${namespaceName}/events/broadcast`)
 			.set('Content-Type', 'application/json')
 			.send(basevent('eventtype10', 'eventtype1324320', 'world3'))
 		expect(workflowEventResponse.statusCode).toEqual(200)
@@ -219,7 +219,7 @@ describe('Test workflow events and', () => {
 		let instance = await events.listInstancesAndFilter(namespaceName, startWorkflowContextName)
 		expect(instance).toBeFalsy()
 
-		workflowEventResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${ namespaceName }/broadcast`)
+		workflowEventResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${namespaceName}/events/broadcast`)
 			.set('Content-Type', 'application/json')
 			.send(basevent('eventtype10', 'eventtype10afg', 'world2'))
 		expect(workflowEventResponse.statusCode).toEqual(200)
@@ -236,7 +236,7 @@ describe('Test workflow events and', () => {
 	it(`flow context`, async () => {
 		await helpers.sleep(1000)
 
-		const runWorkflowResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=${ waitWorkflowContextName }`)
+		const runWorkflowResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${namespaceName}/instances?path=${waitWorkflowContextName}`)
 			.send()
 		expect(runWorkflowResponse.statusCode).toEqual(200)
 
