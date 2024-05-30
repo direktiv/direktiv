@@ -136,6 +136,13 @@ issues:
       linters:
         - init
 
+    - text: "string `true`"
+      linters:
+        - goconst
+    - text: "string `false`"
+      linters:
+        - goconst
+
     # gateway plugins need to user init() function
     - path: 'pkg/refactor/gateway2/plugins/.*'
       linters:
