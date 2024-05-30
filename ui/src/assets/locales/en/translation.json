@@ -1357,7 +1357,7 @@
         },
         "delete": {
           "success": {
-            "title": "Delete namespace {{name}}",
+            "title": "Delete namespace",
             "description": "Namespace {{name}} was deleted successfully."
           },
           "error": {
