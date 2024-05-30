@@ -51,7 +51,7 @@ func (tnf *NamespaceFilePlugin) Execute(w http.ResponseWriter, r *http.Request) 
 	}
 
 	url := fmt.Sprintf("http://localhost:%s/api/v2/namespaces/%s/files%s?raw=true",
-		os.Getenv("DIREKTIV_API_V2_PORT"), tnf.Namespace, tnf.File)
+		os.Getenv("DIREKTIV_API_PORT"), tnf.Namespace, tnf.File)
 
 	// request failed if nil and response already written
 	resp, err := doRequest(r, http.MethodGet, url, nil)

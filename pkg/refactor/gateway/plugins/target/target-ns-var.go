@@ -144,7 +144,7 @@ func doVariableRequest(requestType direktivRequestType, args map[string]string,
 	varName := args[varArg]
 
 	uri := fmt.Sprintf("http://localhost:%s/api/v2/namespaces/%s/variables/?name=%s",
-		os.Getenv("DIREKTIV_API_V2_PORT"), args[namespaceArg], varName)
+		os.Getenv("DIREKTIV_API_PORT"), args[namespaceArg], varName)
 
 	if requestType == direktivWorkflowVarRequest {
 		uri = fmt.Sprintf("%s&workflowPath=%s", uri, url.QueryEscape(args[pathArg]))
@@ -184,7 +184,7 @@ func doVariableRequest(requestType direktivRequestType, args map[string]string,
 	varID := expectedResponse.Data[0].ID.String()
 
 	uri = fmt.Sprintf("http://localhost:%s/api/v2/namespaces/%s/variables/%s",
-		os.Getenv("DIREKTIV_API_V2_PORT"), args[namespaceArg], varID)
+		os.Getenv("DIREKTIV_API_PORT"), args[namespaceArg], varID)
 
 	resp = doRequest(w, r, http.MethodGet, uri, nil)
 	if resp == nil {

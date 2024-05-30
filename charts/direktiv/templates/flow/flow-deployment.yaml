@@ -69,14 +69,11 @@ spec:
           {{ toYaml .Values.flow.extraVolumeMounts | nindent 10 }}
           {{- end }}
           ports:
-            - name: flow-v1
+            - name: flow-api
               containerPort: 6665
               protocol: TCP
             - name: flow
               containerPort: 6666
-              protocol: TCP
-            - name: flow-v2
-              containerPort: 6667
               protocol: TCP
             - name: internal
               containerPort: 7777
@@ -84,10 +81,8 @@ spec:
           env:
           - name: DIREKTIV_DEBUG
             value: {{ .Values.flow.debug | quote }}
-          - name: DIREKTIV_API_V1_PORT
+          - name: DIREKTIV_API_PORT
             value: "6665"
-          - name: DIREKTIV_API_V2_PORT
-            value: "6667"
           - name: DIREKTIV_GRPC_PORT
             value: "6666"
           {{- if ne .Values.apikey "none" }}
