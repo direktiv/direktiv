@@ -45,6 +45,11 @@ func (hs *sqlEventHistoryStore) Append(ctx context.Context, events []*datastore.
 		values = append(values, v.ReceivedAt)
 		values = append(values, time.Now().UTC())
 		tx := hs.db.WithContext(ctx).Exec(q, values...)
+		if tx.Error != nil && strings.Contains(tx.Error.Error(), "23505") {
+			errs[i] = fmt.Errorf("%w + %w", tx.Error, datastore.ErrDuplication)
+
+			continue
+		}
 		if tx.Error != nil {
 			errs[i] = tx.Error
 
@@ -52,7 +57,7 @@ func (hs *sqlEventHistoryStore) Append(ctx context.Context, events []*datastore.
 		}
 	}
 
-	return events, nil
+	return events, errs
 }
 
 func (hs *sqlEventHistoryStore) DeleteOld(ctx context.Context, sinceWhen time.Time) error {

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
@@ -122,7 +123,7 @@ func (c *eventsController) replay(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-	processEvents(c, r, ns, []event.Event{*d.Event})
+	processEvents(c, r, ns, *d.Event)
 }
 
 func (c *eventsController) subscribe(w http.ResponseWriter, r *http.Request) {
@@ -302,24 +303,42 @@ func (c *eventsController) registerCoudEvent(w http.ResponseWriter, r *http.Requ
 
 		return
 	}
-	dEvs := convertEvents(*ns, evs...)
-	_, errs := c.store.EventHistory().Append(r.Context(), dEvs)
-	for _, e := range errs {
-		slog.Error("failed storing cloudevent to the event history", "error", e)
-	}
+	for _, ev := range evs {
+		cEv := convertEvents(*ns, ev)
+		_, errs := c.store.EventHistory().Append(r.Context(), cEv)
+		for _, e := range errs {
+			if e != nil {
+				slog.Error("Failed storing CloudEvent to the event history", "error", e)
+			}
+		}
+		for _, e := range errs {
+			if e != nil && errors.Is(e, datastore.ErrDuplication) {
+				http.Error(w, "Error appending CloudEvent to history", http.StatusBadRequest)
 
-	processEvents(c, r, ns, evs)
-	// status ok here.
+				return
+			}
+		}
+		for _, e := range errs {
+			if e != nil {
+				http.Error(w, "Internal error while appending CloudEvent to history", http.StatusBadRequest)
+
+				return
+			}
+		}
+
+		processEvents(c, r, ns, ev)
+		// status ok here.
+	}
 }
 
-func processEvents(c *eventsController, r *http.Request, ns *datastore.Namespace, evs []event.Event) {
+func processEvents(c *eventsController, r *http.Request, ns *datastore.Namespace, ev event.Event) {
 	engine := events.EventEngine{
 		WorkflowStart:       c.startWorkflow,
 		WakeInstance:        c.wakeInstance,
 		GetListenersByTopic: c.store.EventListenerTopics().GetListeners,
 		UpdateListeners:     c.store.EventListener().UpdateOrDelete,
 	}
-	engine.ProcessEvents(r.Context(), ns.ID, evs, func(template string, args ...interface{}) {
+	engine.ProcessEvents(r.Context(), ns.ID, []event.Event{ev}, func(template string, args ...interface{}) {
 		slog.Error(fmt.Sprintf(template, args...))
 	})
 }
