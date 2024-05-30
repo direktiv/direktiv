@@ -18,7 +18,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/refactor/datastore"
 	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
 	"github.com/direktiv/direktiv/pkg/refactor/filestore"
-	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc/codes"
@@ -180,7 +179,7 @@ func (flow *flow) cronHandler(data []byte) {
 		Namespace: ns,
 		CalledAs:  file.Path,
 		Input:     make([]byte, 0),
-		Invoker:   util.CallerCron,
+		Invoker:   "cron",
 		TelemetryInfo: &enginerefactor.InstanceTelemetryInfo{
 			TraceID:       span.SpanContext().TraceID().String(),
 			SpanID:        span.SpanContext().SpanID().String(),
