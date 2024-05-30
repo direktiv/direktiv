@@ -15,7 +15,7 @@ import { getMonitoringLogEntryForClipboard } from "~/components/Logs/utils";
 import { useLogs } from "~/api/logs/query/logs";
 import { useTranslation } from "react-i18next";
 
-const LogsPanel = () => {
+const Logs = () => {
   const { t } = useTranslation();
 
   const {
@@ -37,34 +37,38 @@ const LogsPanel = () => {
 
   return (
     <>
-      <div className="mb-3 flex flex-col gap-5 sm:flex-row">
-        <h3 className="flex grow gap-x-2 font-medium">
-          <ScrollText className="h-5" />
-          {t("components.logs.title")}
-        </h3>
-        <ButtonBar>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="flex grow">
-                  <CopyButton
-                    value={copyValue}
-                    buttonProps={{
-                      variant: "outline",
-                      size: "sm",
-                      className: "grow",
-                    }}
-                  />
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>{t("components.logs.copy")}</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </ButtonBar>
-      </div>
-      <div className="mb-3">
+      <div>
+        <div className="mb-3 flex flex-col gap-5 sm:flex-row">
+          <h3 className="flex grow gap-x-2 font-medium">
+            <ScrollText className="h-5" />
+            {t("components.logs.title")}
+          </h3>
+          <ButtonBar>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex grow">
+                    <CopyButton
+                      value={copyValue}
+                      buttonProps={{
+                        variant: "outline",
+                        size: "sm",
+                        className: "grow",
+                      }}
+                    />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>{t("components.logs.copy")}</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </ButtonBar>
+        </div>
         {error && (
-          <ApiError error={error} label={t("pages.monitoring.apiError")} />
+          <ApiError
+            error={error}
+            label={t("pages.monitoring.apiError")}
+            className="mb-3"
+          />
         )}
       </div>
       <ScrollContainer />
@@ -79,4 +83,4 @@ const LogsPanel = () => {
   );
 };
 
-export default LogsPanel;
+export default Logs;

@@ -50,77 +50,81 @@ const LogsPanel = () => {
 
   return (
     <>
-      <div className="mb-5 flex flex-col gap-5 sm:flex-row">
-        <h3 className="flex grow items-center gap-x-2 font-medium">
-          <ScrollText className="h-5" />
-          {t("pages.instances.detail.logs.title", {
-            path: instanceDetailsData?.path,
-          })}
-        </h3>
-        <ButtonBar>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="flex grow">
-                  <Toggle
-                    size="sm"
-                    className="grow"
-                    pressed={verboseLogs}
-                    onClick={() => {
-                      setVerboseLogs(!verboseLogs);
-                    }}
-                  >
-                    <Bug />
-                  </Toggle>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                {t("pages.instances.detail.logs.tooltips.verbose")}
-              </TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="flex grow">
-                  <CopyButton
-                    value={copyValue}
-                    buttonProps={{
-                      variant: "outline",
-                      size: "sm",
-                      className: "grow",
-                    }}
-                  />
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>{t("components.logs.copy")}</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="flex grow">
-                  <Button
-                    icon
-                    variant="outline"
-                    size="sm"
-                    className="grow"
-                    onClick={() => {
-                      setMaximizedPanel(isMaximized ? "none" : "logs");
-                    }}
-                  >
-                    {isMaximized ? <Minimize2 /> : <Maximize2 />}
-                  </Button>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                {isMaximized
-                  ? t("pages.instances.detail.logs.tooltips.minimize")
-                  : t("pages.instances.detail.logs.tooltips.maximize")}
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </ButtonBar>
-      </div>
-      <div className="mb-3">
+      <div>
+        <div className="mb-3 flex flex-col gap-5 sm:flex-row">
+          <h3 className="flex grow items-center gap-x-2 font-medium">
+            <ScrollText className="h-5" />
+            {t("pages.instances.detail.logs.title", {
+              path: instanceDetailsData?.path,
+            })}
+          </h3>
+          <ButtonBar>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex grow">
+                    <Toggle
+                      size="sm"
+                      className="grow"
+                      pressed={verboseLogs}
+                      onClick={() => {
+                        setVerboseLogs(!verboseLogs);
+                      }}
+                    >
+                      <Bug />
+                    </Toggle>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {t("pages.instances.detail.logs.tooltips.verbose")}
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex grow">
+                    <CopyButton
+                      value={copyValue}
+                      buttonProps={{
+                        variant: "outline",
+                        size: "sm",
+                        className: "grow",
+                      }}
+                    />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>{t("components.logs.copy")}</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex grow">
+                    <Button
+                      icon
+                      variant="outline"
+                      size="sm"
+                      className="grow"
+                      onClick={() => {
+                        setMaximizedPanel(isMaximized ? "none" : "logs");
+                      }}
+                    >
+                      {isMaximized ? <Minimize2 /> : <Maximize2 />}
+                    </Button>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {isMaximized
+                    ? t("pages.instances.detail.logs.tooltips.minimize")
+                    : t("pages.instances.detail.logs.tooltips.maximize")}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </ButtonBar>
+        </div>
         {error && (
-          <ApiError error={error} label={t("pages.monitoring.apiError")} />
+          <ApiError
+            error={error}
+            label={t("pages.monitoring.apiError")}
+            className="mb-3"
+          />
         )}
       </div>
       <ScrollContainer />
