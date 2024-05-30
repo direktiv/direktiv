@@ -1,7 +1,6 @@
 package util
 
 const (
-	DirektivDebug         = "DIREKTIV_DEBUG"
-	DirektivOpentelemetry = "DIREKTIV_OTLP"
-	DirektivFlowEndpoint  = "DIREKTIV_FLOW_ENDPOINT"
+	DirektivDebug        = "DIREKTIV_DEBUG"
+	DirektivFlowEndpoint = "DIREKTIV_FLOW_ENDPOINT"
 )
