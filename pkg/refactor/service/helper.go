@@ -20,6 +20,7 @@ const (
 	direktivProxyHTTP     = "HTTP_PROXY"
 	direktivProxyNO       = "NO_PROXY"
 	direktivOpenTelemetry = "DIREKTIV_OTLP"
+	direktivFlowEndpoint
 )
 
 func buildService(c *core.Config, sv *core.ServiceFileData, registrySecrets []corev1.LocalObjectReference) (*servingv1.Service, error) {
@@ -335,7 +336,7 @@ func buildEnvVars(withGrpc bool, c *core.Config, sv *core.ServiceFileData) []cor
 		namespace := c.DirektivNamespace
 
 		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
-			Name:  util.DirektivFlowEndpoint,
+			Name:  direktivFlowEndpoint,
 			Value: fmt.Sprintf("direktiv-flow.%s", namespace),
 		})
 
