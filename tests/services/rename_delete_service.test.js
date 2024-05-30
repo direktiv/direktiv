@@ -11,7 +11,7 @@ describe('Test renaming services operations', () => {
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateYamlFileV2(it, expect, testNamespace,
+	common.helpers.itShouldCreateYamlFile(it, expect, testNamespace,
 		'/', 's1.yaml', 'service', `
 direktiv_api: service/v1
 image: redis
@@ -19,7 +19,7 @@ cmd: redis-server
 scale: 1
 `)
 
-	common.helpers.itShouldCreateYamlFileV2(it, expect, testNamespace,
+	common.helpers.itShouldCreateYamlFile(it, expect, testNamespace,
 		'/', 's2.yaml', 'service', `
 direktiv_api: service/v1
 image: redis
@@ -27,7 +27,7 @@ cmd: redis-server
 scale: 2
 `)
 
-	common.helpers.itShouldCreateYamlFileV2(it, expect, testNamespace,
+	common.helpers.itShouldCreateYamlFile(it, expect, testNamespace,
 		'/', 'w1.yaml', 'workflow', `
 description: something
 functions:
@@ -39,7 +39,7 @@ states:
   type: noop
 `)
 
-	common.helpers.itShouldCreateYamlFileV2(it, expect, testNamespace,
+	common.helpers.itShouldCreateYamlFile(it, expect, testNamespace,
 		'/', 'w2.yaml', 'workflow', `
 description: something
 functions:
@@ -149,8 +149,8 @@ states:
 		})
 	})
 
-	common.helpers.itShouldDeleteFileV2(it, expect, testNamespace, '/s1.yaml')
-	common.helpers.itShouldDeleteFileV2(it, expect, testNamespace, '/w1.yaml')
+	common.helpers.itShouldDeleteFile(it, expect, testNamespace, '/s1.yaml')
+	common.helpers.itShouldDeleteFile(it, expect, testNamespace, '/w1.yaml')
 
 	retry10(`should list all services`, async () => {
 		listRes = await request(common.config.getDirektivHost())

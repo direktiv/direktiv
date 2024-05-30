@@ -43,7 +43,7 @@ async function itShouldCreateFileV2 (it, expect, ns, path, name, type, mimeType,
 	})
 }
 
-function itShouldCreateYamlFileV2 (it, expect, ns, path, name, type, data) {
+function itShouldCreateYamlFile (it, expect, ns, path, name, type, data) {
 	return itShouldCreateFileV2(it, expect, ns, path, name, type, 'application/yaml', btoa(data))
 }
 
@@ -121,11 +121,11 @@ states:
 `
 }
 
-function itShouldUpdateYamlFileV2 (it, expect, ns, path, data) {
+function itShouldUpdateYamlFile (it, expect, ns, path, data) {
 	return itShouldUpdateFileV2(it, expect, ns, path, { data: btoa(data) })
 }
 
-async function itShouldDeleteFileV2 (it, expect, ns, path) {
+async function itShouldDeleteFile (it, expect, ns, path) {
 	it(`should delete a file ${ path }`, async () => {
 		const res = await request(common.config.getDirektivHost())
 			.delete(`/api/v2/namespaces/${ ns }/files${ path }`)
@@ -152,10 +152,10 @@ export default {
 	deleteAllNamespaces,
 	itShouldCreateNamespace,
 
-	itShouldUpdateYamlFileV2,
-	itShouldDeleteFileV2,
+	itShouldUpdateYamlFile,
+	itShouldDeleteFile,
 	dummyWorkflow,
-	itShouldCreateYamlFileV2,
+	itShouldCreateYamlFile,
 	itShouldCreateDirV2,
 	itShouldCreateFileV2,
 	itShouldCheckPathExistsV2,

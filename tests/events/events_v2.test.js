@@ -56,7 +56,7 @@ describe('Test basic workflow events v2', () => {
 
 	helpers.itShouldCreateNamespace(it, expect, namespaceName)
 
-	common.helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
+	common.helpers.itShouldCreateYamlFile(it, expect, namespaceName,
 		'/', 'listener.yml', 'workflow', `
 start:
   type: event
