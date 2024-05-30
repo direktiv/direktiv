@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/direktiv/direktiv/pkg/utils"
 )
 
 // GetterState defines the state for a getter.
@@ -25,12 +25,12 @@ type GetterDefinition struct {
 // Validate validates against the getter definition.
 func (o *GetterDefinition) Validate() error {
 	switch o.Scope {
-	case util.VarScopeInstance:
-	case util.VarScopeWorkflow:
-	case util.VarScopeNamespace:
-	case util.VarScopeThread:
-	case util.VarScopeSystem:
-	case util.VarScopeFileSystem:
+	case utils.VarScopeInstance:
+	case utils.VarScopeWorkflow:
+	case utils.VarScopeNamespace:
+	case utils.VarScopeThread:
+	case utils.VarScopeSystem:
+	case utils.VarScopeFileSystem:
 	default:
 		return ErrVarScope
 	}

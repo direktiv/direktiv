@@ -26,7 +26,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/mirror"
 	pubsub2 "github.com/direktiv/direktiv/pkg/pubsub"
 	pubsubSQL "github.com/direktiv/direktiv/pkg/pubsub/sql"
-	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 	libgrpc "google.golang.org/grpc"
@@ -206,7 +206,7 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 	var err error
 	slog.Debug("Starting Flow server")
 	slog.Debug("Initializing telemetry.")
-	telEnd, err := util.InitTelemetry(srv.config.OpenTelemetry, "direktiv/flow", "direktiv")
+	telEnd, err := utils.InitTelemetry(srv.config.OpenTelemetry, "direktiv/flow", "direktiv")
 	if err != nil {
 		return nil, err
 	}

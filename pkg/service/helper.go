@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/core"
-	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/mattn/go-shellwords"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -281,33 +281,33 @@ func buildEnvVars(withGrpc bool, c *core.Config, sv *core.ServiceFileData) []cor
 
 	if len(c.KnativeProxyHTTP) > 0 {
 		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
-			Name:  util.DirektivProxyHTTP,
+			Name:  utils.DirektivProxyHTTP,
 			Value: c.KnativeProxyHTTP,
 		})
 		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
-			Name:  strings.ToLower(util.DirektivProxyHTTP),
+			Name:  strings.ToLower(utils.DirektivProxyHTTP),
 			Value: c.KnativeProxyHTTP,
 		})
 	}
 
 	if len(c.KnativeProxyHTTPS) > 0 {
 		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
-			Name:  util.DirektivProxyHTTPS,
+			Name:  utils.DirektivProxyHTTPS,
 			Value: c.KnativeProxyHTTPS,
 		})
 		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
-			Name:  strings.ToLower(util.DirektivProxyHTTPS),
+			Name:  strings.ToLower(utils.DirektivProxyHTTPS),
 			Value: c.KnativeProxyHTTPS,
 		})
 	}
 
 	if len(c.KnativeProxyNo) > 0 {
 		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
-			Name:  util.DirektivProxyNO,
+			Name:  utils.DirektivProxyNO,
 			Value: c.KnativeProxyNo,
 		})
 		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
-			Name:  strings.ToLower(util.DirektivProxyNO),
+			Name:  strings.ToLower(utils.DirektivProxyNO),
 			Value: c.KnativeProxyNo,
 		})
 	}
@@ -315,13 +315,13 @@ func buildEnvVars(withGrpc bool, c *core.Config, sv *core.ServiceFileData) []cor
 	// add debug if there is an env
 	if c.LogDebug {
 		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
-			Name:  util.DirektivDebug,
+			Name:  utils.DirektivDebug,
 			Value: "true",
 		})
 	}
 
 	proxyEnvs = append(proxyEnvs, corev1.EnvVar{
-		Name:  util.DirektivOpentelemetry,
+		Name:  utils.DirektivOpentelemetry,
 		Value: c.OpenTelemetry,
 	})
 
@@ -329,7 +329,7 @@ func buildEnvVars(withGrpc bool, c *core.Config, sv *core.ServiceFileData) []cor
 		namespace := c.DirektivNamespace
 
 		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
-			Name:  util.DirektivFlowEndpoint,
+			Name:  utils.DirektivFlowEndpoint,
 			Value: fmt.Sprintf("direktiv-flow.%s", namespace),
 		})
 

@@ -21,7 +21,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/pubsub"
 	"github.com/direktiv/direktiv/pkg/registry"
 	"github.com/direktiv/direktiv/pkg/service"
-	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/direktiv/direktiv/pkg/utils"
 )
 
 type NewMainArgs struct {
@@ -193,7 +193,7 @@ func initSLog() {
 	lvl := new(slog.LevelVar)
 	lvl.Set(slog.LevelInfo)
 
-	logDebug := os.Getenv(util.DirektivDebug)
+	logDebug := os.Getenv(utils.DirektivDebug)
 	if logDebug == "true" {
 		lvl.Set(slog.LevelDebug)
 	}

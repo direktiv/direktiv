@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/google/uuid"
 )
 
@@ -31,11 +31,11 @@ const (
 )
 
 var instanceStatusStrings = []string{
-	util.InstanceStatusPending,
-	util.InstanceStatusComplete,
-	util.InstanceStatusFailed,
-	util.InstanceStatusCrashed,
-	util.InstanceStatusCancelled,
+	utils.InstanceStatusPending,
+	utils.InstanceStatusComplete,
+	utils.InstanceStatusFailed,
+	utils.InstanceStatusCrashed,
+	utils.InstanceStatusCancelled,
 }
 
 func (status InstanceStatus) String() string {

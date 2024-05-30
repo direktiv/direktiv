@@ -16,7 +16,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/flow/nohome/recipient"
-	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/google/uuid"
 	libgrpc "google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -41,7 +41,7 @@ func initInternalServer(ctx context.Context, srv *server) (*internal, error) {
 		return nil, err
 	}
 
-	opts := util.GrpcServerOptions(unaryInterceptor, streamInterceptor)
+	opts := utils.GrpcServerOptions(unaryInterceptor, streamInterceptor)
 
 	internal.srv = libgrpc.NewServer(opts...)
 
