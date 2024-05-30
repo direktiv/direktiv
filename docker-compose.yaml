@@ -60,7 +60,7 @@ services:
     environment:
       - NODE_TLS_REJECT_UNAUTHORIZED=0
       - DIREKTIV_HOST=http://flow:8181
-    command: npm --prefix /tests run jest -- ${JEST_PREFIX}/ --runInBand
+    command: npm --prefix /tests run jest -- ${JEST_PREFIX} --runInBand
     depends_on:
       - flow
 
