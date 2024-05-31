@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/direktiv/direktiv/pkg/utils"
 )
 
 // SubflowFunctionDefinition is the object to define a Subflow Function in the workflow.
@@ -38,8 +38,8 @@ func (o *SubflowFunctionDefinition) Validate() error {
 		return errors.New("workflow required")
 	}
 
-	if ok := util.MatchesRegex(o.ID); !ok {
-		return fmt.Errorf("function id must match regex: %s", util.RegexPattern)
+	if ok := utils.MatchesRegex(o.ID); !ok {
+		return fmt.Errorf("function id must match regex: %s", utils.RegexPattern)
 	}
 
 	return nil
