@@ -43,17 +43,17 @@ func (events *events) handleEvent(ctx context.Context, ns *datastore.Namespace, 
 
 	slog.Debug("handle CloudEvent started", tracing.GetSlogAttributesWithStatus(loggingCtx, core.LogRunningStatus)...)
 	e := pkgevents.EventEngine{
-		WorkflowStart: func(workflowID uuid.UUID, ev ...*cloudevents.Event) {
+		WorkflowStart: func(ctx context.Context, workflowID uuid.UUID, ev ...*cloudevents.Event) {
 			slog.Debug("starting workflow via CloudEvent.", tracing.GetSlogAttributesWithStatus(loggingCtx, core.LogRunningStatus)...)
 			_, end := traceMessageTrigger(ctx, "wf: "+workflowID.String())
 			defer end()
-			events.engine.EventsInvoke(workflowID, ev...) //nolint:contextcheck
+			events.engine.EventsInvoke(ctx, workflowID, ev...)
 		},
-		WakeInstance: func(instanceID uuid.UUID, ev []*cloudevents.Event) {
+		WakeInstance: func(ctx context.Context, instanceID uuid.UUID, ev []*cloudevents.Event) {
 			slog.Debug("invoking instance via cloudevent", tracing.GetSlogAttributesWithStatus(tracing.AddTag(loggingCtx, "instance", instanceID), core.LogRunningStatus)...)
 			_, end := traceMessageTrigger(ctx, "ins: "+instanceID.String())
 			defer end()
-			events.engine.WakeEventsWaiter(instanceID, ev) //nolint:contextcheck
+			events.engine.WakeEventsWaiter(ctx, instanceID, ev)
 		},
 		GetListenersByTopic: func(ctx context.Context, s string) ([]*datastore.EventListener, error) {
 			ctx, end := traceGetListenersByTopic(ctx, s)
