@@ -832,7 +832,7 @@ func (engine *engine) WakeEventsWaiter(instance uuid.UUID, events []*cloudevents
 	}
 }
 
-func (engine *engine) EventsInvoke(workflowID uuid.UUID, events ...*cloudevents.Event) {
+func (engine *engine) EventsInvoke(tctx context.Context, workflowID uuid.UUID, events ...*cloudevents.Event) {
 	ctx := context.Background()
 
 	tx, err := engine.flow.beginSQLTx(ctx)
@@ -878,7 +878,7 @@ func (engine *engine) EventsInvoke(workflowID uuid.UUID, events ...*cloudevents.
 		return
 	}
 
-	span := trace.SpanFromContext(ctx)
+	span := trace.SpanFromContext(tctx)
 
 	args := &newInstanceArgs{
 		ID:        uuid.New(),
