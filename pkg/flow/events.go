@@ -39,18 +39,25 @@ func initEvents(srv *server, appendStagingEvent func(ctx context.Context, events
 
 func (events *events) handleEvent(ctx context.Context, ns uuid.UUID, nsName string, ce *cloudevents.Event) error {
 	span := trace.SpanFromContext(ctx)
-	traceID := span.SpanContext().TraceID()
-	spanID := span.SpanContext().SpanID()
-	slog := *slog.With("trace", traceID, "span", spanID, "namespace", nsName)
+
+	logger := slog.With(
+		"trace", span.SpanContext().TraceID().String(),
+		"span", span.SpanContext().SpanID().String(),
+		"namespace", nsName,
+		"event", ce.ID(),
+		"event_type", ce.Type(),
+		"event_source", ce.Source(),
+	)
+	logger.Debug("handle CloudEvent started")
 	e := pkgevents.EventEngine{
 		WorkflowStart: func(workflowID uuid.UUID, ev ...*cloudevents.Event) {
-			slog.Debug("Starting workflow via CloudEvent.")
+			logger.Debug("starting workflow via CloudEvent.")
 			_, end := traceMessageTrigger(ctx, "wf: "+workflowID.String())
 			defer end()
 			events.engine.EventsInvoke(workflowID, ev...) //nolint:contextcheck
 		},
 		WakeInstance: func(instanceID uuid.UUID, ev []*cloudevents.Event) {
-			slog.Debug("invoking instance via cloudevent", "instance", instanceID)
+			logger.Debug("invoking instance via cloudevent", "instance", instanceID)
 			_, end := traceMessageTrigger(ctx, "ins: "+instanceID.String())
 			defer end()
 			events.engine.WakeEventsWaiter(instanceID, ev) //nolint:contextcheck
@@ -62,7 +69,7 @@ func (events *events) handleEvent(ctx context.Context, ns uuid.UUID, nsName stri
 			err := events.runSQLTx(ctx, func(tx *database.SQLStore) error {
 				r, err := tx.DataStore().EventListenerTopics().GetListeners(ctx, s)
 				if err != nil {
-					slog.Error("Error fetching event-listener-topics.", "error", err)
+					slog.Error("failed fetching event-listener-topics.", "error", err)
 					return err
 				}
 				res = r
@@ -76,12 +83,12 @@ func (events *events) handleEvent(ctx context.Context, ns uuid.UUID, nsName stri
 			return res, nil
 		},
 		UpdateListeners: func(ctx context.Context, listener []*datastore.EventListener) []error {
-			slog.Debug("Updating listeners starting.")
+			logger.Debug("starting updating listeners.")
 			err := events.runSQLTx(ctx, func(tx *database.SQLStore) error {
 				errs := tx.DataStore().EventListener().UpdateOrDelete(ctx, listener)
 				for _, err2 := range errs {
 					if err2 != nil {
-						slog.Debug("Error updating listeners.", "error", err2)
+						logger.Debug("Error updating listeners.", "error", err2)
 
 						return err2
 					}
@@ -90,9 +97,10 @@ func (events *events) handleEvent(ctx context.Context, ns uuid.UUID, nsName stri
 				return nil
 			})
 			if err != nil {
+				logger.Error("failed processing events", "error", err)
 				return []error{fmt.Errorf("%w", err)}
 			}
-			slog.Debug("Updating listeners complete.")
+			logger.Debug("updating listeners complete.")
 
 			return nil
 		},
@@ -101,34 +109,45 @@ func (events *events) handleEvent(ctx context.Context, ns uuid.UUID, nsName stri
 	defer end()
 
 	e.ProcessEvents(ctx, ns, []event.Event{*ce}, func(template string, args ...interface{}) {
-		slog.Error(fmt.Sprintf(template, args...))
+		logger.Error(fmt.Sprintf(template, args...))
 	})
+	logger.Debug("CloudEvent handled successfully")
 
 	return nil
 }
 
 func (events *events) BroadcastCloudevent(ctx context.Context, ns *datastore.Namespace, event *cloudevents.Event, timer int64) error {
 	span := trace.SpanFromContext(ctx)
-	traceID := span.SpanContext().TraceID()
-	spanID := span.SpanContext().SpanID()
+	logger := slog.With(
+		"trace", span.SpanContext().TraceID().String(),
+		"span", span.SpanContext().SpanID().String(),
+		"namespace", ns.Name,
+		"event", event.ID(),
+		"event_type", event.Type(),
+		"event_source", event.Source(),
+	)
 
-	slog.With("trace", traceID, "span", spanID, "namespace", "event", event.ID(), "event_type", event.Type(), "event_source", event.Source())
+	logger.Debug("received CloudEvent")
 
 	ctx, end := traceBrokerMessage(ctx, *event)
 	defer end()
 
 	err := events.addEvent(ctx, event, ns)
 	if err != nil {
+		logger.Error("failed to add event", "error", err)
 		return err
 	}
 
 	// handle event
 	if timer == 0 {
+		logger.Debug("handling event immediately")
 		err = events.handleEvent(ctx, ns.ID, ns.Name, event)
 		if err != nil {
+			logger.Error("failed to handle event", "error", err)
 			return err
 		}
 	} else {
+		logger.Debug("Scheduling delayed event", "delay_until", time.Unix(timer, 0))
 		_, errs := events.appendStagingEvent(ctx, &datastore.StagingEvent{
 			Event: &datastore.Event{
 				NamespaceID: ns.ID,
@@ -141,10 +160,11 @@ func (events *events) BroadcastCloudevent(ctx context.Context, ns *datastore.Nam
 		})
 		for _, err2 := range errs {
 			if err2 != nil {
-				slog.Error("failed to create delayed event", "error", err2)
+				logger.Error("failed to create delayed event", "error", err2, "event_id", event.ID())
 			}
 		}
 	}
+	logger.Debug("processed CloudEvent successfully")
 
 	return nil
 }
@@ -152,24 +172,33 @@ func (events *events) BroadcastCloudevent(ctx context.Context, ns *datastore.Nam
 func (events *events) listenForEvents(ctx context.Context, im *instanceMemory, ceds []*model.ConsumeEventDefinition, all bool) error {
 	var transformedEvents []*model.ConsumeEventDefinition
 	span := trace.SpanFromContext(ctx)
-	traceID := span.SpanContext().TraceID()
-	spanID := span.SpanContext().SpanID()
 
-	slog.With("trace", traceID, "span", spanID, "namespace", im.Namespace(), "track", "namespace."+im.Namespace().Name, "instance", im.ID())
-
+	logger := slog.With(
+		"trace", span.SpanContext().SpanID().String(),
+		"span", span.SpanContext().TraceID().String(),
+		"namespace", im.Namespace(),
+		"track", "namespace."+im.Namespace().Name,
+		"instance", im.ID(),
+	)
+	logger.Debug("listening for events")
 	for i := range ceds {
 		ev := new(model.ConsumeEventDefinition)
 		ev.Context = make(map[string]interface{})
 
 		err := copier.Copy(ev, ceds[i])
 		if err != nil {
+			logger.Error("failed to copy event definition", "error", err, "event_index", i)
+
 			return err
 		}
 
 		for k, v := range ceds[i].Context {
 			ev.Context[k], err = jqOne(im.data, v) //nolint:contextcheck
 			if err != nil {
-				return fmt.Errorf("failed to execute jq query for key '%s' on event definition %d: %w", k, i, err)
+				err1 := fmt.Errorf("failed to execute jq query for key '%s' on event definition %d: %w", k, i, err)
+				logger.Error("Failed to execute jq query", "key", k, "event_index", i, "error", err1)
+
+				return err1
 			}
 		}
 
@@ -178,10 +207,11 @@ func (events *events) listenForEvents(ctx context.Context, im *instanceMemory, c
 
 	err := events.addInstanceEventListener(ctx, im.Namespace().ID, im.Namespace().Name, im.GetInstanceID(), transformedEvents, all)
 	if err != nil {
+		logger.Error("failed to add instance event listener", "error", err)
+
 		return err
 	}
-
-	slog.Debug("Registered to receive events.")
+	slog.Debug("successfully registered to receive events.")
 
 	return nil
 }
