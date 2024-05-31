@@ -829,7 +829,7 @@ func (engine *engine) WakeEventsWaiter(ctx context.Context, instance uuid.UUID, 
 
 	slog.With("trace", traceID, "span", spanID, "instance", instance)
 
-	err := engine.enqueueInstanceMessage(ctx, instance, "event", events)
+	err := engine.enqueueInstanceMessage(context.Background(), instance, "event", events)
 	if err != nil {
 		slog.Error("failed to enqueue instance message for wakeEventsWaiter", "error", err)
 		return
@@ -899,7 +899,7 @@ func (engine *engine) EventsInvoke(ctx context.Context, workflowID uuid.UUID, ev
 		},
 	}
 
-	im, err := engine.NewInstance(ctx, args)
+	im, err := engine.NewInstance(context.Background(), args)
 	if err != nil {
 		slog.Error("new instance", "error", err)
 		return
