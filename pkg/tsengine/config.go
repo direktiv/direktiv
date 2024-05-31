@@ -1,7 +1,7 @@
 package tsengine
 
 type Config struct {
-	Initializer string `env:"DIREKTIV_JSENGINE_INIT" envDefault:"mux"`
+	Initializer string `env:"DIREKTIV_JSENGINE_INIT" envDefault:"db"`
 	BaseDir     string `env:"DIREKTIV_JSENGINE_BASEDIR,notEmpty" envDefault:"/direktiv"`
 
 	LogLevel string `env:"DIREKTIV_JS_ENGINE_LOGLEVEL" envDefault:"info"`

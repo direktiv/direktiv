@@ -3,7 +3,7 @@ package compiler_test
 import (
 	"testing"
 
-	"github.com/direktiv/direktiv/pkg/refactor/compiler"
+	"github.com/direktiv/direktiv/pkg/compiler"
 	"github.com/stretchr/testify/assert"
 )
 

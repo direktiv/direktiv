@@ -3,7 +3,7 @@ package transpiler_test
 import (
 	"testing"
 
-	"github.com/direktiv/direktiv/pkg/refactor/transpiler"
+	"github.com/direktiv/direktiv/pkg/transpiler"
 	"github.com/stretchr/testify/assert"
 )
 

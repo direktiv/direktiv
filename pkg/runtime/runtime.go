@@ -12,7 +12,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/direktiv/direktiv/pkg/refactor/runtime/commands"
+	"github.com/direktiv/direktiv/pkg/runtime/commands"
 	"github.com/dop251/goja"
 	"github.com/dop251/goja/parser"
 	"github.com/google/uuid"

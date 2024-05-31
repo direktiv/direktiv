@@ -11,7 +11,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/direktiv/direktiv/pkg/refactor/tsengine"
+	"github.com/direktiv/direktiv/pkg/tsengine"
 	"github.com/stretchr/testify/assert"
 )
 

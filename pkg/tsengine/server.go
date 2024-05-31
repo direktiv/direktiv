@@ -17,11 +17,10 @@ type Server struct {
 
 	Engine      *Engine
 	initializer Initializer
-	prefix      string
 }
 
 const (
-	ServerInitMux  = "mux"
+	ServerInitDB   = "db"
 	ServerInitFile = "file"
 )
 
@@ -33,7 +32,7 @@ func NewServer() (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	// utils.SetLogLevel(cfg.LogLevel)
+	setLogLevel(cfg.LogLevel)
 
 	slog.Info("starting engine server")
 	slog.Info(fmt.Sprintf("using %s initializer", cfg.Initializer))
@@ -42,13 +41,21 @@ func NewServer() (*Server, error) {
 
 	// copy itself to shared location
 	if cfg.SelfCopy != "" {
+
+		ex, err := os.Executable()
+		if err != nil {
+			panic(err)
+		}
+		exPath := filepath.Dir(ex)
+		fmt.Println(exPath)
+
 		slog.Info("copying binary")
 		_, err = copyFile("/engine", cfg.SelfCopy)
 		if err != nil {
 			panic(err)
 		}
 
-		err := os.Chmod(cfg.SelfCopy, 0777)
+		err = os.Chmod(cfg.SelfCopy, 0777)
 		if err != nil {
 			panic(err)
 		}
@@ -57,9 +64,8 @@ func NewServer() (*Server, error) {
 	// get path
 	mux := &http.ServeMux{}
 	s := &Server{
-		mux:    mux,
-		srv:    &http.Server{Addr: ":8080", Handler: mux},
-		prefix: "myprefix",
+		mux: mux,
+		srv: &http.Server{Addr: ":8080", Handler: mux},
 	}
 
 	engine, err := New(cfg.BaseDir)
@@ -78,8 +84,8 @@ func NewServer() (*Server, error) {
 
 	var initializer Initializer
 	switch cfg.Initializer {
-	case ServerInitMux:
-		initializer = NewMuxInitializer(s.prefix, filepath.Join(cfg.BaseDir, engineFsShared), mux, engine)
+	case ServerInitDB:
+		initializer = NewDBInitializer()
 	case ServerInitFile:
 		fi := NewFileInitializer(cfg.BaseDir, cfg.FlowPath, engine)
 		go fi.fileWatcher(cfg.FlowPath)
@@ -91,10 +97,6 @@ func NewServer() (*Server, error) {
 	s.initializer = initializer
 
 	return s, nil
-}
-
-func (s *Server) Prefix() string {
-	return s.prefix
 }
 
 func (s *Server) Initializer() Initializer {
@@ -119,4 +121,21 @@ func (s *Server) HandleFlowRequest(w http.ResponseWriter, r *http.Request) {
 func (s *Server) HandleStatusRequest(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(s.Engine.Status)
+}
+
+func setLogLevel(level string) {
+
+	ll := slog.LevelDebug
+	switch level {
+	case "info":
+		ll = slog.LevelInfo
+	case "warn":
+		ll = slog.LevelWarn
+	case "error":
+		ll = slog.LevelError
+	}
+	handler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: ll})
+	logger := slog.New(handler)
+	slog.SetDefault(logger)
+
 }

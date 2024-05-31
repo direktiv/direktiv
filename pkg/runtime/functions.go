@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/direktiv/direktiv/pkg/refactor/compiler"
+	"github.com/direktiv/direktiv/pkg/compiler"
 )
 
 type Function struct {

@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"dario.cat/mergo"
-	"github.com/direktiv/direktiv/pkg/refactor/compiler"
+	"github.com/direktiv/direktiv/pkg/compiler"
 	"github.com/hashicorp/go-retryablehttp"
 )
 

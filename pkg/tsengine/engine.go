@@ -11,7 +11,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/refactor/runtime"
+	"github.com/direktiv/direktiv/pkg/runtime"
 	"github.com/dop251/goja"
 	"github.com/google/uuid"
 )

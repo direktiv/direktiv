@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/direktiv/direktiv/pkg/refactor/compiler"
+	"github.com/direktiv/direktiv/pkg/compiler"
 )
 
 // func (rt *Runtime) flowFile(call goja.ConstructorCall) *goja.Object {
