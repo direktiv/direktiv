@@ -30,13 +30,13 @@ type (
 	eventHandler func(ctx context.Context, events ...*datastore.Event)
 	// WorkflowStart is a function type that signals the initiation of a new workflow,
 	// providing the workflow's unique ID and related CloudEvents.
-	WorkflowStart func(ctx context.Context, workflowID uuid.UUID, events ...*cloudevents.Event)
+	WorkflowStart func(workflowID uuid.UUID, events ...*cloudevents.Event)
 	// WorkflowStart is a function type that signals the initiation of a new workflow,
 	// providing the namespace names and the workflow's unique path and related CloudEvents.
 	WorkflowStartByPath func(namespace, workflow string, events ...*cloudevents.Event)
 	// WakeEventsWaiter is a function type responsible for handling events that trigger
 	// the continuation of a workflow instance at a specific step.
-	WakeEventsWaiter func(ctx context.Context, instanceID uuid.UUID, events []*cloudevents.Event)
+	WakeEventsWaiter func(instanceID uuid.UUID, events []*cloudevents.Event)
 )
 
 // EventEngine is the central coordinator for processing CloudEvents, dispatching them
@@ -282,7 +282,7 @@ func (ee EventEngine) multiConditionEventAndHandler(l *datastore.EventListener, 
 					WorkflowID: l.TriggerWorkflow,
 					InstanceID: l.TriggerInstance,
 				}
-				ee.triggerAction(ctx, waitType, tr, ces)
+				ee.triggerAction(waitType, tr, ces)
 
 				// Reset event collection and mark for deletion if needed
 				l.ReceivedEventsForAndTrigger = []*datastore.Event{}
@@ -376,7 +376,7 @@ func (ee EventEngine) singleConditionEventHandler(l *datastore.EventListener, wa
 				InstanceID: l.TriggerInstance,
 			}
 			// Trigger the action (note: single event passed).
-			ee.triggerAction(ctx, waitType, tr, []*cloudevents.Event{event.Event})
+			ee.triggerAction(waitType, tr, []*cloudevents.Event{event.Event})
 			if waitType {
 				l.Deleted = true // Mark listener for deletion if applicable.
 			}
@@ -392,14 +392,14 @@ type triggerActionArgs struct {
 }
 
 // triggerAction triggers a workflow (start or resume) based on the waitType flag.
-func (ee EventEngine) triggerAction(ctx context.Context, waitType bool, t triggerActionArgs, ces []*event.Event) {
+func (ee EventEngine) triggerAction(waitType bool, t triggerActionArgs, ces []*event.Event) {
 	if waitType {
 		id, err := uuid.Parse(t.InstanceID)
 		if err != nil {
 			slog.Error("failed to parse a instance id in the event-engine while processing an event")
 			return
 		}
-		go ee.WakeInstance(ctx, id, ces)
+		go ee.WakeInstance(id, ces)
 
 		return
 	}
@@ -408,7 +408,7 @@ func (ee EventEngine) triggerAction(ctx context.Context, waitType bool, t trigge
 		slog.Error("failed to parse a workflow id in the event-engine while processing an event")
 		return
 	}
-	go ee.WorkflowStart(ctx, id, ces...)
+	go ee.WorkflowStart(id, ces...)
 }
 
 // typeMatches checks if an event's type matches any of the provided types.

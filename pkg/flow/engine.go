@@ -822,12 +822,8 @@ func (engine *engine) createTransport() *http.Transport {
 	return tr
 }
 
-func (engine *engine) WakeEventsWaiter(ctx context.Context, instance uuid.UUID, events []*cloudevents.Event) {
-	span := trace.SpanFromContext(ctx)
-	traceID := span.SpanContext().TraceID()
-	spanID := span.SpanContext().SpanID()
-
-	slog.With("trace", traceID, "span", spanID, "instance", instance)
+func (engine *engine) WakeEventsWaiter(instance uuid.UUID, events []*cloudevents.Event) {
+	ctx := context.Background()
 
 	err := engine.enqueueInstanceMessage(context.Background(), instance, "event", events)
 	if err != nil {
@@ -836,12 +832,8 @@ func (engine *engine) WakeEventsWaiter(ctx context.Context, instance uuid.UUID, 
 	}
 }
 
-func (engine *engine) EventsInvoke(ctx context.Context, workflowID uuid.UUID, events ...*cloudevents.Event) {
-	span := trace.SpanFromContext(ctx)
-	traceID := span.SpanContext().TraceID()
-	spanID := span.SpanContext().SpanID()
-
-	slog.With("trace", traceID, "span", spanID, "workflowID", workflowID)
+func (engine *engine) EventsInvoke(workflowID uuid.UUID, events ...*cloudevents.Event) {
+	ctx := context.Background()
 
 	tx, err := engine.flow.beginSQLTx(ctx)
 	if err != nil {
@@ -885,6 +877,8 @@ func (engine *engine) EventsInvoke(ctx context.Context, workflowID uuid.UUID, ev
 		slog.Error("Failed to marshal event data in EventsInvoke.", "error", err)
 		return
 	}
+
+	span := trace.SpanFromContext(ctx)
 
 	args := &newInstanceArgs{
 		ID:        uuid.New(),
