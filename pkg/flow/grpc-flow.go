@@ -10,7 +10,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
-	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/direktiv/direktiv/pkg/utils"
 	libgrpc "google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
@@ -34,7 +34,7 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 		return nil, err
 	}
 
-	opts := util.GrpcServerOptions(unaryInterceptor, streamInterceptor)
+	opts := utils.GrpcServerOptions(unaryInterceptor, streamInterceptor)
 
 	flow.srv = libgrpc.NewServer(opts...)
 

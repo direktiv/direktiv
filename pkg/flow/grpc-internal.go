@@ -13,10 +13,9 @@ import (
 	enginerefactor "github.com/direktiv/direktiv/pkg/engine"
 	libengine "github.com/direktiv/direktiv/pkg/engine"
 	"github.com/direktiv/direktiv/pkg/filestore"
-	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/flow/nohome/recipient"
-	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/google/uuid"
 	libgrpc "google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -41,7 +40,7 @@ func initInternalServer(ctx context.Context, srv *server) (*internal, error) {
 		return nil, err
 	}
 
-	opts := util.GrpcServerOptions(unaryInterceptor, streamInterceptor)
+	opts := utils.GrpcServerOptions(unaryInterceptor, streamInterceptor)
 
 	internal.srv = libgrpc.NewServer(opts...)
 
@@ -413,7 +412,7 @@ func (internal *internal) FileVariableParcels(req *grpc.VariableInternalRequest,
 	} else {
 		if errors.Is(err, filestore.ErrNotFound) {
 			data = make([]byte, 0)
-			checksum = bytedata.Checksum(data)
+			checksum = utils.Checksum(data)
 			createdAt = timestamppb.New(time.Now())
 			updatedAt = createdAt
 		} else {

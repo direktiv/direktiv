@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
-	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/gorilla/mux"
 )
 
@@ -38,7 +38,7 @@ type LocalServer struct {
 func (srv *LocalServer) initFlow() error {
 	serverArr := fmt.Sprintf("%s:7777", os.Getenv(direktivFlowEndpoint))
 	fmt.Printf("flow server: %s\n", serverArr)
-	conn, err := util.GetEndpointTLS(serverArr)
+	conn, err := utils.GetEndpointTLS(serverArr)
 	if err != nil {
 		return err
 	}
@@ -63,7 +63,7 @@ func (srv *LocalServer) Start() {
 
 	srv.router = mux.NewRouter()
 
-	srv.router.Use(util.TelemetryMiddleware)
+	srv.router.Use(utils.TelemetryMiddleware)
 
 	srv.router.HandleFunc("/log", srv.logHandler)
 	srv.router.HandleFunc("/var", srv.varHandler)
@@ -404,7 +404,7 @@ type varClientMsg interface {
 
 func (srv *LocalServer) requestVar(ctx context.Context, ir *functionRequest, scope, key string) (client varClient, recv func() (varClientMsg, error), err error) {
 	switch scope {
-	case util.VarScopeFileSystem:
+	case utils.VarScopeFileSystem:
 		var nvClient grpc.Internal_NamespaceVariableParcelsClient
 		nvClient, err = srv.flow.FileVariableParcels(ctx, &grpc.VariableInternalRequest{
 			Instance: ir.instanceId,
@@ -414,7 +414,7 @@ func (srv *LocalServer) requestVar(ctx context.Context, ir *functionRequest, sco
 		recv = func() (varClientMsg, error) {
 			return nvClient.Recv()
 		}
-	case util.VarScopeNamespace:
+	case utils.VarScopeNamespace:
 		var nvClient grpc.Internal_NamespaceVariableParcelsClient
 		nvClient, err = srv.flow.NamespaceVariableParcels(ctx, &grpc.VariableInternalRequest{
 			Instance: ir.instanceId,
@@ -425,7 +425,7 @@ func (srv *LocalServer) requestVar(ctx context.Context, ir *functionRequest, sco
 			return nvClient.Recv()
 		}
 
-	case util.VarScopeWorkflow:
+	case utils.VarScopeWorkflow:
 		var wvClient grpc.Internal_WorkflowVariableParcelsClient
 		wvClient, err = srv.flow.WorkflowVariableParcels(ctx, &grpc.VariableInternalRequest{
 			Instance: ir.instanceId,
@@ -439,7 +439,7 @@ func (srv *LocalServer) requestVar(ctx context.Context, ir *functionRequest, sco
 	case "":
 		fallthrough
 
-	case util.VarScopeInstance:
+	case utils.VarScopeInstance:
 		var ivClient grpc.Internal_InstanceVariableParcelsClient
 		ivClient, err = srv.flow.InstanceVariableParcels(ctx, &grpc.VariableInternalRequest{
 			Instance: ir.instanceId,
@@ -473,9 +473,9 @@ func (srv *LocalServer) setVar(ctx context.Context, ir *functionRequest, totalSi
 	var send func(*varSetClientMsg) error
 
 	switch scope {
-	case util.VarScopeFileSystem:
+	case utils.VarScopeFileSystem:
 		return errors.New("file-system variables are read-only")
-	case util.VarScopeNamespace:
+	case utils.VarScopeNamespace:
 		var nvClient grpc.Internal_SetNamespaceVariableParcelsClient
 		nvClient, err = srv.flow.SetNamespaceVariableParcels(ctx)
 		if err != nil {
@@ -494,7 +494,7 @@ func (srv *LocalServer) setVar(ctx context.Context, ir *functionRequest, totalSi
 			return nvClient.Send(req)
 		}
 
-	case util.VarScopeWorkflow:
+	case utils.VarScopeWorkflow:
 		var wvClient grpc.Internal_SetWorkflowVariableParcelsClient
 		wvClient, err = srv.flow.SetWorkflowVariableParcels(ctx)
 		if err != nil {
@@ -516,7 +516,7 @@ func (srv *LocalServer) setVar(ctx context.Context, ir *functionRequest, totalSi
 	case "":
 		fallthrough
 
-	case util.VarScopeInstance:
+	case utils.VarScopeInstance:
 		var ivClient grpc.Internal_SetInstanceVariableParcelsClient
 		ivClient, err = srv.flow.SetInstanceVariableParcels(ctx)
 		if err != nil {

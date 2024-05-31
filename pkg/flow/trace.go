@@ -6,8 +6,8 @@ import (
 	"fmt"
 
 	"github.com/cloudevents/sdk-go/v2/event"
-	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/nohome/recipient"
+	"github.com/direktiv/direktiv/pkg/utils"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
@@ -76,7 +76,7 @@ func traceFullAddWorkflowInstance(ctx context.Context, im *instanceMemory) (cont
 	traceAddWorkflowInstance(ctx, im)
 
 	x := dbTrace(ctx)
-	s := bytedata.Marshal(x)
+	s := utils.Marshal(x)
 
 	im.instance.TelemetryInfo.TraceID = s
 	data, err := im.instance.TelemetryInfo.MarshalJSON()
@@ -126,7 +126,7 @@ func traceStateGenericBegin(ctx context.Context, im *instanceMemory) (context.Co
 	ctx, span = tr.Start(ctx, im.logic.GetType().String(), trace.WithSpanKind(trace.SpanKindInternal))
 
 	x := dbTrace(ctx)
-	s := bytedata.Marshal(x)
+	s := utils.Marshal(x)
 
 	im.instance.TelemetryInfo.SpanID = s
 	data, err := im.instance.TelemetryInfo.MarshalJSON()
@@ -180,28 +180,6 @@ func traceAddtoEventlog(ctx context.Context) (context.Context, func()) {
 	tp := otel.GetTracerProvider()
 	tr := tp.Tracer("direktiv/flow")
 	ctx, span := tr.Start(ctx, "addToEventLog", trace.WithSpanKind(trace.SpanKindInternal))
-	finish := func() {
-		span.End()
-	}
-
-	return ctx, finish
-}
-
-func traceValidatingEvent(ctx context.Context) (context.Context, func()) {
-	tp := otel.GetTracerProvider()
-	tr := tp.Tracer("direktiv/flow")
-	ctx, span := tr.Start(ctx, "validatingEvent", trace.WithSpanKind(trace.SpanKindInternal))
-	finish := func() {
-		span.End()
-	}
-
-	return ctx, finish
-}
-
-func startIncomingEvent(ctx context.Context, route string) (context.Context, func()) {
-	tp := otel.GetTracerProvider()
-	tr := tp.Tracer("direktiv/flow")
-	ctx, span := tr.Start(ctx, route+"ToNamespaceCloudevent", trace.WithSpanKind(trace.SpanKindInternal))
 	finish := func() {
 		span.End()
 	}
