@@ -45,6 +45,7 @@ func (instance *Instance) WithTags(ctx context.Context) context.Context {
 
 	return context.WithValue(ctx, core.LogTagsKey, tags)
 }
+
 func getWorkflow(path string) string {
 	return strings.Split(path, ":")[0]
 }

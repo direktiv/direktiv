@@ -3,7 +3,6 @@ package tracing
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/engine"
@@ -77,8 +76,4 @@ func BuildInstanceTrack(instance *engine.Instance) string {
 	}
 
 	return fmt.Sprintf("%v.%v", "instance", callpath)
-}
-
-func getWorkflow(path string) string {
-	return strings.Split(path, ":")[0]
 }
