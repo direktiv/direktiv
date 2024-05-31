@@ -825,7 +825,7 @@ func (engine *engine) createTransport() *http.Transport {
 func (engine *engine) WakeEventsWaiter(instance uuid.UUID, events []*cloudevents.Event) {
 	ctx := context.Background()
 
-	err := engine.enqueueInstanceMessage(context.Background(), instance, "event", events)
+	err := engine.enqueueInstanceMessage(ctx, instance, "event", events)
 	if err != nil {
 		slog.Error("failed to enqueue instance message for wakeEventsWaiter", "error", err)
 		return
@@ -893,7 +893,7 @@ func (engine *engine) EventsInvoke(workflowID uuid.UUID, events ...*cloudevents.
 		},
 	}
 
-	im, err := engine.NewInstance(context.Background(), args)
+	im, err := engine.NewInstance(ctx, args)
 	if err != nil {
 		slog.Error("new instance", "error", err)
 		return
