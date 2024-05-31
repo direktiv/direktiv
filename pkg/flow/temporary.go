@@ -21,6 +21,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/states"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/service"
+	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/google/uuid"
 )
@@ -132,7 +133,7 @@ func (im *instanceMemory) ListenForEvents(ctx context.Context, events []*model.C
 
 func (im *instanceMemory) Log(ctx context.Context, level log.Level, a string, x ...interface{}) {
 	ctx = im.WithTags(ctx)
-	slog.With(enginerefactor.GetSlogAttributesWithStatus(ctx, core.LogRunningStatus)...)
+	slog.With(tracing.GetSlogAttributesWithStatus(ctx, core.LogRunningStatus)...)
 	switch level {
 	case log.Info:
 		slog.Info(fmt.Sprintf(a, x...))

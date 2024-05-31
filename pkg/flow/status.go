@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"log/slog"
 
-	enginerefactor "github.com/direktiv/direktiv/pkg/engine"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/instancestore"
+	"github.com/direktiv/direktiv/pkg/tracing"
 )
 
 func (engine *engine) GetIsInstanceFailed(im *instanceMemory) bool {
@@ -44,11 +44,11 @@ func (engine *engine) SetInstanceFailed(ctx context.Context, im *instanceMemory,
 	var code, message string
 	status = instancestore.InstanceStatusFailed
 	code = ErrCodeInternal
-	insCtx := enginerefactor.WithTrack(im.WithTags(ctx), enginerefactor.BuildInstanceTrack(im.instance))
+	insCtx := tracing.WithTrack(im.WithTags(ctx), tracing.BuildInstanceTrack(im.instance))
 	uerr := new(derrors.UncatchableError)
 	cerr := new(derrors.CatchableError)
 	ierr := new(derrors.InternalError)
-	slog.Error("Workflow canceled due to failed instance", enginerefactor.GetSlogAttributesWithError(insCtx, err)...)
+	slog.Error("Workflow canceled due to failed instance", tracing.GetSlogAttributesWithError(insCtx, err)...)
 	if errors.As(err, &uerr) {
 		code = uerr.Code
 		message = uerr.Message
@@ -56,11 +56,11 @@ func (engine *engine) SetInstanceFailed(ctx context.Context, im *instanceMemory,
 		code = cerr.Code
 		message = cerr.Message
 	} else if errors.As(err, &ierr) {
-		slog.Error("Workflow instance encountered an internal error.", enginerefactor.GetSlogAttributesWithError(insCtx, fmt.Errorf("internal error: %w", ierr))...)
+		slog.Error("Workflow instance encountered an internal error.", tracing.GetSlogAttributesWithError(insCtx, fmt.Errorf("internal error: %w", ierr))...)
 		status = instancestore.InstanceStatusCrashed
 		message = "an internal error occurred"
 	} else {
-		slog.Error("Workflow instance failed due to an unhandled error.", enginerefactor.GetSlogAttributesWithError(insCtx, fmt.Errorf("unhandled error: %w", err))...)
+		slog.Error("Workflow instance failed due to an unhandled error.", tracing.GetSlogAttributesWithError(insCtx, fmt.Errorf("unhandled error: %w", err))...)
 		status = instancestore.InstanceStatusCrashed
 		code = ErrCodeInternal
 		message = err.Error()
