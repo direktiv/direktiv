@@ -107,22 +107,6 @@ func (events *events) handleEvent(ctx context.Context, ns uuid.UUID, nsName stri
 	return nil
 }
 
-func (events *events) ReplayCloudevent(ctx context.Context, ns *datastore.Namespace, cevent *datastore.Event) error {
-	event := cevent.Event
-	span := trace.SpanFromContext(ctx)
-	traceID := span.SpanContext().TraceID()
-	spanID := span.SpanContext().SpanID()
-
-	slog.Debug("Replaying event", "trace", traceID, "span", spanID, "namespace", ns.Name, "event", event.ID(), "event_type", event.Type(), "event_source", event.Source())
-
-	err := events.handleEvent(ctx, ns.ID, ns.Name, event)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (events *events) BroadcastCloudevent(ctx context.Context, ns *datastore.Namespace, event *cloudevents.Event, timer int64) error {
 	span := trace.SpanFromContext(ctx)
 	traceID := span.SpanContext().TraceID()
@@ -137,8 +121,6 @@ func (events *events) BroadcastCloudevent(ctx context.Context, ns *datastore.Nam
 	if err != nil {
 		return err
 	}
-
-	events.pubsub.NotifyEvents(ns)
 
 	// handle event
 	if timer == 0 {
