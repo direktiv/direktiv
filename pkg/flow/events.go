@@ -9,13 +9,14 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/event"
+	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/datastore"
 	pkgevents "github.com/direktiv/direktiv/pkg/events"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/google/uuid"
 	"github.com/jinzhu/copier"
-	"go.opentelemetry.io/otel/trace"
 )
 
 //nolint:gochecknoinits
@@ -37,20 +38,19 @@ func initEvents(srv *server, appendStagingEvent func(ctx context.Context, events
 	return events
 }
 
-func (events *events) handleEvent(ctx context.Context, ns uuid.UUID, nsName string, ce *cloudevents.Event) error {
-	span := trace.SpanFromContext(ctx)
-	traceID := span.SpanContext().TraceID()
-	spanID := span.SpanContext().SpanID()
-	slog := *slog.With("trace", traceID, "span", spanID, "namespace", nsName)
+func (events *events) handleEvent(ctx context.Context, ns *datastore.Namespace, ce *cloudevents.Event) error {
+	loggingCtx := tracing.WithTrack(ns.WithTags(ctx), tracing.BuildNamespaceTrack(ns.Name))
+
+	slog.Debug("handle CloudEvent started", tracing.GetSlogAttributesWithStatus(loggingCtx, core.LogRunningStatus)...)
 	e := pkgevents.EventEngine{
-		WorkflowStart: func(workflowID uuid.UUID, ev ...*cloudevents.Event) {
-			slog.Debug("Starting workflow via CloudEvent.")
+		WorkflowStart: func(ctx context.Context, workflowID uuid.UUID, ev ...*cloudevents.Event) {
+			slog.Debug("starting workflow via CloudEvent.", tracing.GetSlogAttributesWithStatus(loggingCtx, core.LogRunningStatus)...)
 			_, end := traceMessageTrigger(ctx, "wf: "+workflowID.String())
 			defer end()
-			events.engine.EventsInvoke(workflowID, ev...) //nolint:contextcheck
+			events.engine.EventsInvoke(ctx, workflowID, ev...) //nolint:contextcheck
 		},
 		WakeInstance: func(instanceID uuid.UUID, ev []*cloudevents.Event) {
-			slog.Debug("invoking instance via cloudevent", "instance", instanceID)
+			slog.Debug("invoking instance via cloudevent", tracing.GetSlogAttributesWithStatus(tracing.AddTag(loggingCtx, "instance", instanceID), core.LogRunningStatus)...)
 			_, end := traceMessageTrigger(ctx, "ins: "+instanceID.String())
 			defer end()
 			events.engine.WakeEventsWaiter(instanceID, ev) //nolint:contextcheck
@@ -62,7 +62,7 @@ func (events *events) handleEvent(ctx context.Context, ns uuid.UUID, nsName stri
 			err := events.runSQLTx(ctx, func(tx *database.SQLStore) error {
 				r, err := tx.DataStore().EventListenerTopics().GetListeners(ctx, s)
 				if err != nil {
-					slog.Error("Error fetching event-listener-topics.", "error", err)
+					slog.Error("failed fetching event-listener-topics.", tracing.GetSlogAttributesWithError(loggingCtx, err)...)
 					return err
 				}
 				res = r
@@ -76,12 +76,12 @@ func (events *events) handleEvent(ctx context.Context, ns uuid.UUID, nsName stri
 			return res, nil
 		},
 		UpdateListeners: func(ctx context.Context, listener []*datastore.EventListener) []error {
-			slog.Debug("Updating listeners starting.")
+			slog.Debug("starting updating listeners.", tracing.GetSlogAttributesWithStatus(loggingCtx, core.LogRunningStatus)...)
 			err := events.runSQLTx(ctx, func(tx *database.SQLStore) error {
 				errs := tx.DataStore().EventListener().UpdateOrDelete(ctx, listener)
 				for _, err2 := range errs {
 					if err2 != nil {
-						slog.Debug("Error updating listeners.", "error", err2)
+						slog.Debug("Error updating listeners.", tracing.GetSlogAttributesWithError(loggingCtx, err2)...)
 
 						return err2
 					}
@@ -90,9 +90,10 @@ func (events *events) handleEvent(ctx context.Context, ns uuid.UUID, nsName stri
 				return nil
 			})
 			if err != nil {
+				slog.Error("failed processing events", tracing.GetSlogAttributesWithError(loggingCtx, err)...)
 				return []error{fmt.Errorf("%w", err)}
 			}
-			slog.Debug("Updating listeners complete.")
+			slog.Debug("updating listeners complete.", tracing.GetSlogAttributesWithStatus(loggingCtx, core.LogRunningStatus)...)
 
 			return nil
 		},
@@ -100,53 +101,37 @@ func (events *events) handleEvent(ctx context.Context, ns uuid.UUID, nsName stri
 	ctx, end := traceProcessingMessage(ctx)
 	defer end()
 
-	e.ProcessEvents(ctx, ns, []event.Event{*ce}, func(template string, args ...interface{}) {
+	e.ProcessEvents(ctx, ns.ID, []event.Event{*ce}, func(template string, args ...interface{}) {
 		slog.Error(fmt.Sprintf(template, args...))
 	})
-
-	return nil
-}
-
-func (events *events) ReplayCloudevent(ctx context.Context, ns *datastore.Namespace, cevent *datastore.Event) error {
-	event := cevent.Event
-	span := trace.SpanFromContext(ctx)
-	traceID := span.SpanContext().TraceID()
-	spanID := span.SpanContext().SpanID()
-
-	slog.Debug("Replaying event", "trace", traceID, "span", spanID, "namespace", ns.Name, "event", event.ID(), "event_type", event.Type(), "event_source", event.Source())
-
-	err := events.handleEvent(ctx, ns.ID, ns.Name, event)
-	if err != nil {
-		return err
-	}
+	slog.Debug("CloudEvent handled successfully", tracing.GetSlogAttributesWithStatus(loggingCtx, core.LogRunningStatus)...)
 
 	return nil
 }
 
 func (events *events) BroadcastCloudevent(ctx context.Context, ns *datastore.Namespace, event *cloudevents.Event, timer int64) error {
-	span := trace.SpanFromContext(ctx)
-	traceID := span.SpanContext().TraceID()
-	spanID := span.SpanContext().SpanID()
-
-	slog.With("trace", traceID, "span", spanID, "namespace", "event", event.ID(), "event_type", event.Type(), "event_source", event.Source())
+	loggingCtx := tracing.WithTrack(ns.WithTags(ctx), tracing.BuildNamespaceTrack(ns.Name))
+	slog.Debug("received CloudEvent", tracing.GetSlogAttributesWithStatus(loggingCtx, core.LogRunningStatus)...)
 
 	ctx, end := traceBrokerMessage(ctx, *event)
 	defer end()
 
 	err := events.addEvent(ctx, event, ns)
 	if err != nil {
+		slog.Error("failed to add event", tracing.GetSlogAttributesWithError(loggingCtx, err)...)
 		return err
 	}
 
-	events.pubsub.NotifyEvents(ns)
-
 	// handle event
 	if timer == 0 {
-		err = events.handleEvent(ctx, ns.ID, ns.Name, event)
+		slog.Debug("handling event immediately")
+		err = events.handleEvent(ctx, ns, event)
 		if err != nil {
+			slog.Error("failed to handle event", tracing.GetSlogAttributesWithError(loggingCtx, err)...)
 			return err
 		}
 	} else {
+		slog.Debug("Scheduling delayed event", "delay_until", time.Unix(timer, 0))
 		_, errs := events.appendStagingEvent(ctx, &datastore.StagingEvent{
 			Event: &datastore.Event{
 				NamespaceID: ns.ID,
@@ -159,35 +144,39 @@ func (events *events) BroadcastCloudevent(ctx context.Context, ns *datastore.Nam
 		})
 		for _, err2 := range errs {
 			if err2 != nil {
-				slog.Error("failed to create delayed event", "error", err2)
+				slog.Error("failed to create delayed event", tracing.GetSlogAttributesWithError(loggingCtx, err2)...)
 			}
 		}
 	}
+	slog.Debug("processed CloudEvent successfully", tracing.GetSlogAttributesWithStatus(loggingCtx, core.LogRunningStatus)...)
 
 	return nil
 }
 
 func (events *events) listenForEvents(ctx context.Context, im *instanceMemory, ceds []*model.ConsumeEventDefinition, all bool) error {
 	var transformedEvents []*model.ConsumeEventDefinition
-	span := trace.SpanFromContext(ctx)
-	traceID := span.SpanContext().TraceID()
-	spanID := span.SpanContext().SpanID()
+	loggingCtx := im.Namespace().WithTags(ctx)
+	instanceTrackCtx := tracing.WithTrack(loggingCtx, tracing.BuildInstanceTrack(im.instance))
 
-	slog.With("trace", traceID, "span", spanID, "namespace", im.Namespace(), "track", "namespace."+im.Namespace().Name, "instance", im.ID())
-
+	slog.Info("listening for events", tracing.GetSlogAttributesWithStatus(instanceTrackCtx, core.LogRunningStatus)...)
 	for i := range ceds {
 		ev := new(model.ConsumeEventDefinition)
 		ev.Context = make(map[string]interface{})
 
 		err := copier.Copy(ev, ceds[i])
 		if err != nil {
+			slog.Error("failed to copy event definition", tracing.GetSlogAttributesWithError(ctx, err)...)
+
 			return err
 		}
 
 		for k, v := range ceds[i].Context {
 			ev.Context[k], err = jqOne(im.data, v) //nolint:contextcheck
 			if err != nil {
-				return fmt.Errorf("failed to execute jq query for key '%s' on event definition %d: %w", k, i, err)
+				err1 := fmt.Errorf("failed to execute jq query for key '%s' on event definition %d: %w", k, i, err)
+				slog.Error("Failed to execute jq query", tracing.GetSlogAttributesWithError(ctx, err1)...)
+
+				return err1
 			}
 		}
 
@@ -196,10 +185,11 @@ func (events *events) listenForEvents(ctx context.Context, im *instanceMemory, c
 
 	err := events.addInstanceEventListener(ctx, im.Namespace().ID, im.Namespace().Name, im.GetInstanceID(), transformedEvents, all)
 	if err != nil {
+		slog.Error("failed to add instance event listener", tracing.GetSlogAttributesWithError(ctx, err)...)
+
 		return err
 	}
-
-	slog.Debug("Registered to receive events.")
+	slog.Debug("successfully registered to receive events.", tracing.GetSlogAttributesWithStatus(ctx, core.LogRunningStatus)...)
 
 	return nil
 }

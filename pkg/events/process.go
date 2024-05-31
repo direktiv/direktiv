@@ -30,7 +30,7 @@ type (
 	eventHandler func(ctx context.Context, events ...*datastore.Event)
 	// WorkflowStart is a function type that signals the initiation of a new workflow,
 	// providing the workflow's unique ID and related CloudEvents.
-	WorkflowStart func(workflowID uuid.UUID, events ...*cloudevents.Event)
+	WorkflowStart func(ctx context.Context, workflowID uuid.UUID, events ...*cloudevents.Event)
 	// WorkflowStart is a function type that signals the initiation of a new workflow,
 	// providing the namespace names and the workflow's unique path and related CloudEvents.
 	WorkflowStartByPath func(namespace, workflow string, events ...*cloudevents.Event)
@@ -282,7 +282,7 @@ func (ee EventEngine) multiConditionEventAndHandler(l *datastore.EventListener, 
 					WorkflowID: l.TriggerWorkflow,
 					InstanceID: l.TriggerInstance,
 				}
-				ee.triggerAction(waitType, tr, ces)
+				ee.triggerAction(ctx, waitType, tr, ces)
 
 				// Reset event collection and mark for deletion if needed
 				l.ReceivedEventsForAndTrigger = []*datastore.Event{}
@@ -376,7 +376,7 @@ func (ee EventEngine) singleConditionEventHandler(l *datastore.EventListener, wa
 				InstanceID: l.TriggerInstance,
 			}
 			// Trigger the action (note: single event passed).
-			ee.triggerAction(waitType, tr, []*cloudevents.Event{event.Event})
+			ee.triggerAction(ctx, waitType, tr, []*cloudevents.Event{event.Event})
 			if waitType {
 				l.Deleted = true // Mark listener for deletion if applicable.
 			}
@@ -392,7 +392,7 @@ type triggerActionArgs struct {
 }
 
 // triggerAction triggers a workflow (start or resume) based on the waitType flag.
-func (ee EventEngine) triggerAction(waitType bool, t triggerActionArgs, ces []*event.Event) {
+func (ee EventEngine) triggerAction(ctx context.Context, waitType bool, t triggerActionArgs, ces []*event.Event) {
 	if waitType {
 		id, err := uuid.Parse(t.InstanceID)
 		if err != nil {
@@ -408,7 +408,7 @@ func (ee EventEngine) triggerAction(waitType bool, t triggerActionArgs, ces []*e
 		slog.Error("failed to parse a workflow id in the event-engine while processing an event")
 		return
 	}
-	go ee.WorkflowStart(id, ces...)
+	go ee.WorkflowStart(ctx, id, ces...)
 }
 
 // typeMatches checks if an event's type matches any of the provided types.

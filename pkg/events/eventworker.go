@@ -15,14 +15,14 @@ type EventWorker struct {
 	ticker *time.Ticker
 	signal chan struct{}
 	// eventQueue  chan []*events.StagingEvent
-	handleEvent func(ctx context.Context, ns uuid.UUID, nsName string, ce *ce.Event) error
+	handleEvent func(ctx context.Context, ns *datastore.Namespace, ce *ce.Event) error
 }
 
 // NewEventWorker creates a new EventWorker instance.
 // * `store`: The StagingEventStore used for retrieving and deleting delayed events.
 // * `interval`:  The interval at which the worker checks for delayed events.
 // * `handleEvent`: The function invoked to process each delayed event.
-func NewEventWorker(store datastore.StagingEventStore, interval time.Duration, handleEvent func(ctx context.Context, ns uuid.UUID, nsName string, ce *ce.Event) error) *EventWorker {
+func NewEventWorker(store datastore.StagingEventStore, interval time.Duration, handleEvent func(ctx context.Context, ns *datastore.Namespace, ce *ce.Event) error) *EventWorker {
 	return &EventWorker{
 		store:  store,
 		ticker: time.NewTicker(interval),
@@ -81,7 +81,11 @@ func (w *EventWorker) getDelayedEvents(ctx context.Context) {
 
 	// TODO: possible process events in bulk
 	for _, se := range receivedEvents {
-		err := w.handleEvent(ctx, se.NamespaceID, se.Namespace, se.Event.Event)
+		ns := datastore.Namespace{
+			ID:   se.NamespaceID,
+			Name: se.Namespace,
+		}
+		err := w.handleEvent(ctx, &ns, se.Event.Event)
 		if err != nil {
 			slog.Error("handle a event", "err", err)
 		}
