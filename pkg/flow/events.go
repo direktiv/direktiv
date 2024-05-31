@@ -158,7 +158,7 @@ func (events *events) listenForEvents(ctx context.Context, im *instanceMemory, c
 	loggingCtx := im.Namespace().WithTags(ctx)
 	instanceTrackCtx := tracing.WithTrack(loggingCtx, tracing.BuildInstanceTrack(im.instance))
 
-	slog.Debug("listening for events", tracing.GetSlogAttributesWithStatus(instanceTrackCtx, core.LogRunningStatus)...)
+	slog.Info("listening for events", tracing.GetSlogAttributesWithStatus(instanceTrackCtx, core.LogRunningStatus)...)
 	for i := range ceds {
 		ev := new(model.ConsumeEventDefinition)
 		ev.Context = make(map[string]interface{})
