@@ -8,7 +8,7 @@ import { retry10 } from '../common/retry'
 
 const namespace = basename(__filename)
 
-describe('Test gateway2 basic-auth plugin', () => {
+describe('Test gateway2 key-auth plugin', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
@@ -35,7 +35,7 @@ plugins:
   target:
     type: debug-target
   auth:
-    - type: basic-auth   
+    - type: key-auth   
       configuration:
         add_username_header: true
         add_tags_header: true
@@ -44,8 +44,8 @@ plugins:
 
 	retry10(`should denied ep1.yaml endpoint`, async () => {
 		const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway2/foo`)
+			.set('API-Token', 'wrong_key')
 			.send({})
-			.auth('user1', 'falsePassword')
 		expect(res.statusCode).toEqual(403)
 		expect(res.body).toEqual({
 			error: {
@@ -57,15 +57,15 @@ plugins:
 
 	retry10(`should access ep1.yaml endpoint`, async () => {
 		const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway2/foo`)
+			.set('API-Token', 'key1')
 			.send({ foo: 'bar' })
-			.auth('user1', 'pwd1')
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.data.headers).toEqual({
 			'Direktiv-Consumer-Groups': [ 'group1' ],
 			'Direktiv-Consumer-Tags': [ 'tag1' ],
 			'Direktiv-Consumer-User': [ 'user1' ],
 			'Accept-Encoding': [ 'gzip, deflate' ],
-			Authorization: [ 'Basic dXNlcjE6cHdkMQ==' ],
+			'Api-Token': [ 'key1' ],
 			Connection: [ 'close' ],
 			'Content-Length': [ '13' ],
 			'Content-Type': [ 'application/json' ],
