@@ -1,13 +1,31 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
+import { basename } from 'path'
 
 import common from '../common'
 import helpers from '../common/helpers'
 import request from '../common/request'
 import { retry10 } from '../common/retry'
 
-const testNamespace = 'headers'
+const namespace = basename(__filename)
 
-const endpointJSFile = `
+describe('Test header plugin', () => {
+	beforeAll(helpers.deleteAllNamespaces)
+	helpers.itShouldCreateNamespace(it, expect, namespace)
+
+	helpers.itShouldCreateYamlFile(it, expect, namespace,
+		'/', 'c1.yaml', 'consumer', `
+direktiv_api: "consumer/v2"
+username: user1
+password: pwd1
+api_key: key1
+tags:
+- tag1
+groups:
+- group1
+`)
+
+	helpers.itShouldCreateYamlFile(it, expect, namespace,
+		'/', 'ep1.yaml', 'endpoint', `
 direktiv_api: endpoint/v2
 allow_anonymous: false
 plugins:
@@ -32,52 +50,24 @@ plugins:
     - type: "request-convert"
 methods: 
   - POST
-path: /target`
+path: /target
+`)
 
-const wf = `
+	helpers.itShouldCreateYamlFile(
+		it,
+		expect,
+		namespace,
+		'/', 'target.yaml', 'workflow', `
 direktiv_api: workflow/v1
 states:
 - id: helloworld
   type: noop
   transform:
-    result: jq(.)
-`
-
-describe('Test header plugin', () => {
-	beforeAll(common.helpers.deleteAllNamespaces)
-
-	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
-	helpers.itShouldCreateYamlFile(it, expect, testNamespace,
-		'/', 'c1.yaml', 'consumer', `
-direktiv_api: "consumer/v2"
-username: user1
-password: pwd1
-api_key: key1
-tags:
-- tag1
-groups:
-- group1
-`)
-
-	common.helpers.itShouldCreateYamlFile(
-		it,
-		expect,
-		testNamespace,
-		'/', 'endpoint1.yaml', 'endpoint',
-		endpointJSFile,
-	)
-
-	common.helpers.itShouldCreateYamlFile(
-		it,
-		expect,
-		testNamespace,
-		'/', 'target.yaml', 'workflow',
-		wf,
-	)
+    result: jq(.)`)
 
 	retry10(`should have expected body after js`, async () => {
 		const req = await request(common.config.getDirektivHost()).post(
-			`/api/v2/namespaces/${ testNamespace }/gateway2/target?Query1=value1&Query2=value2`,
+			`/api/v2/namespaces/${ namespace }/gateway2/target?Query1=value1&Query2=value2`,
 		)
 			.set('Header', 'Value1')
 			.set('Header1', 'oldvalue')
