@@ -37,22 +37,22 @@ func (acl *ACLPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Requ
 		gateway2.WriteInternalError(r, w, nil, "missing consumer")
 		return nil
 	}
+	if result(acl.DenyGroups, c.Groups) {
+		gateway2.WriteForbiddenError(r, w, nil, "denied user groups")
+		return nil
+	}
+	if result(acl.DenyTags, c.Tags) {
+		gateway2.WriteForbiddenError(r, w, nil, "denied user tags")
+		return nil
+	}
 	if result(acl.AllowGroups, c.Groups) {
 		return r
-	}
-	if result(acl.DenyGroups, c.Groups) {
-		gateway2.WriteInternalError(r, w, nil, "denied user groups")
-		return nil
 	}
 	if result(acl.AllowTags, c.Tags) {
 		return r
 	}
-	if result(acl.DenyTags, c.Tags) {
-		gateway2.WriteInternalError(r, w, nil, "denied user tags")
-		return nil
-	}
 
-	gateway2.WriteInternalError(r, w, nil, "denied user")
+	gateway2.WriteForbiddenError(r, w, nil, "denied user")
 
 	return nil
 }
