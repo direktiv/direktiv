@@ -13,17 +13,6 @@ describe('Test gateway2 reconciling', () => {
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
 	helpers.itShouldCreateYamlFile(it, expect, namespace,
-		'/', 'wf1.yml', 'workflow', `
-direktiv_api: workflow/v1
-description: A simple 'no-op' state that returns 'Hello world!'
-states:
-- id: step1
-  type: noop
-  transform:
-    result: Hello world!
-`)
-
-	helpers.itShouldCreateYamlFile(it, expect, namespace,
 		'/', 'c1.yaml', 'consumer', `
 direktiv_api: "consumer/v2"
 username: user1
@@ -47,6 +36,10 @@ plugins:
     type: debug-target
   auth:
     - type: basic-auth   
+      configuration:
+        add_username_header: true
+        add_tags_header: true
+        add_groups_header: true
 `)
 
 	retry10(`should get access denied ep1.yaml endpoint`, async () => {
@@ -64,9 +57,20 @@ plugins:
 
 	retry10(`should execute protected ep1.yaml endpoint`, async () => {
 		const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway2/foo`)
-			.send({})
+			.send({ foo: 'bar' })
 			.auth('user1', 'pwd1')
 		expect(res.statusCode).toEqual(200)
+		expect(res.body.data.headers).toEqual({
+			'Direktiv-Consumer-Groups': [ 'group1' ],
+			'Direktiv-Consumer-Tags': [ 'tag1' ],
+			'Direktiv-Consumer-User': [ 'user1' ],
+			'Accept-Encoding': [ 'gzip, deflate' ],
+			Authorization: [ 'Basic dXNlcjE6cHdkMQ==' ],
+			Connection: [ 'close' ],
+			'Content-Length': [ '13' ],
+			'Content-Type': [ 'application/json' ],
+		})
 		expect(res.body.data.text).toEqual('from debug plugin')
+		expect(res.body.data.body).toEqual('{"foo":"bar"}')
 	})
 })
