@@ -1,11 +1,10 @@
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
+import { expect, test } from "@playwright/test";
 import {
-  workflowWithDelay as delayedWorkflowContent,
   workflowWithFewLogs as fewLogsWorkflowContent,
   workflowWithManyLogs as manyLogsWorkflowContent,
   simpleWorkflow as simpleWorkflowContent,
 } from "../utils/workflows";
-import { expect, test } from "@playwright/test";
 
 import { createFile } from "e2e/utils/files";
 import { createInstance } from "../utils/index";
@@ -14,41 +13,11 @@ import { mockClipboardAPI } from "e2e/utils/testutils";
 
 let namespace = "";
 const simpleWorkflowName = faker.system.commonFileName("yaml");
-const delayedWorkflowName = faker.system.commonFileName("yaml");
 const fewLogsWorkflowName = faker.system.commonFileName("yaml");
 const manyLogsWorkflowName = faker.system.commonFileName("yaml");
 
 test.beforeEach(async ({ page }) => {
   namespace = await createNamespace();
-  /* create workflows we can use to create instances later */
-  await createFile({
-    name: simpleWorkflowName,
-    namespace,
-    type: "workflow",
-    yaml: simpleWorkflowContent,
-  });
-
-  await createFile({
-    name: delayedWorkflowName,
-    namespace,
-    type: "workflow",
-    yaml: delayedWorkflowContent,
-  });
-
-  await createFile({
-    name: fewLogsWorkflowName,
-    namespace,
-    type: "workflow",
-    yaml: fewLogsWorkflowContent,
-  });
-
-  await createFile({
-    name: manyLogsWorkflowName,
-    namespace,
-    type: "workflow",
-    yaml: manyLogsWorkflowContent,
-  });
-
   await mockClipboardAPI(page);
 });
 
@@ -60,6 +29,13 @@ test.afterEach(async () => {
 test("the logs panel can be resized, it displays a log message from the workflow yaml, one initial and one final log entry", async ({
   page,
 }) => {
+  await createFile({
+    name: fewLogsWorkflowName,
+    namespace,
+    type: "workflow",
+    yaml: fewLogsWorkflowContent,
+  });
+
   const instanceId = (
     await createInstance({
       namespace,
@@ -92,8 +68,8 @@ test("the logs panel can be resized, it displays a log message from the workflow
 
   await expect(
     entriesCounter,
-    "While starting the workflow there are 6 log entries"
-  ).toContainText("received 6 log entries");
+    "While starting the workflow there are 3 log entries"
+  ).toContainText("received 3 log entries");
 
   const resizeButton = page
     .getByTestId("instance-logs-container")
@@ -140,7 +116,7 @@ test("the logs panel can be resized, it displays a log message from the workflow
   ).toContainText("Running state logic");
 
   await expect(
-    scrollContainer.locator("pre").locator("span").nth(15),
+    scrollContainer.locator("pre").locator("span").nth(2),
     "It displays the log message from the log field in the workflow yaml"
   ).toContainText("log-message");
 
@@ -151,13 +127,20 @@ test("the logs panel can be resized, it displays a log message from the workflow
 
   await expect(
     entriesCounter,
-    "When the workflow finished running there are 22 log entries"
-  ).toContainText("received 22 log entries");
+    "When the workflow finished running there are 6 log entries"
+  ).toContainText("received 6 log entries");
 });
 
 test("the logs panel can be toggled between verbose and non verbose logs", async ({
   page,
 }) => {
+  await createFile({
+    name: simpleWorkflowName,
+    namespace,
+    type: "workflow",
+    yaml: simpleWorkflowContent,
+  });
+
   const instanceId = (
     await createInstance({
       namespace,
@@ -213,6 +196,13 @@ test("the logs panel can be toggled between verbose and non verbose logs", async
 });
 
 test("the logs can be copied", async ({ page }) => {
+  await createFile({
+    name: simpleWorkflowName,
+    namespace,
+    type: "workflow",
+    yaml: simpleWorkflowContent,
+  });
+
   const instanceId = (
     await createInstance({
       namespace,
@@ -250,6 +240,13 @@ test("the logs can be copied", async ({ page }) => {
 test("log entries will be automatically scrolled to the end", async ({
   page,
 }) => {
+  await createFile({
+    name: manyLogsWorkflowName,
+    namespace,
+    type: "workflow",
+    yaml: manyLogsWorkflowContent,
+  });
+
   const instanceId = (
     await createInstance({
       namespace,
@@ -278,12 +275,10 @@ test("log entries will be automatically scrolled to the end", async ({
     "The last log entry is in the view, so the page is scrolled down"
   ).toBeInViewport();
 
-  const countLogsAfterScrolling = await scrollContainer.locator("pre").count();
-
   await expect(
-    countLogsAfterScrolling,
+    scrollContainer.locator("pre").nth(20),
     "With more than 20 logs the button appears"
-  ).toBeGreaterThan(20);
+  ).toBeVisible();
 
   // click on first entry to scroll to the top of the list
   const currentFirstEntry = scrollContainer.locator("pre").first();
@@ -309,7 +304,7 @@ test("log entries will be automatically scrolled to the end", async ({
   ).not.toBeVisible();
 
   await expect(
-    scrollContainer.locator("pre").last(),
+    scrollContainer.locator("pre").last().locator("span").last(),
     "The last log entry is in the view, so the page was scrolled down"
   ).toBeInViewport();
 
