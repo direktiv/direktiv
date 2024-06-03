@@ -14,9 +14,6 @@ info:
     # Introduction
     All request and response bodies are `application/json` format.
     
-    # Versioning
-    This is v2 api, v1 endpoints will be removed as we implement them in v2. Unitl the transition is finished this API documentation is incomplete.
-
     # Methods
     We use the following http methods:
     | value | description |
