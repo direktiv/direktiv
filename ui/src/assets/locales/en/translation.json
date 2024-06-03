@@ -527,8 +527,7 @@
           "title": "Failed Executions",
           "empty": "There are no recent failed executions."
         }
-      },
-      "apiError": "An error was received when fetching logs:"
+      }
     },
     "instances": {
       "list": {
@@ -1142,7 +1141,8 @@
       }
     },
     "apiError": {
-      "label": "The API returned an error: "
+      "onlyLabel": "The API returned an unexpected error",
+      "withMessage": "The API returned an unexpected error: {{message}}"
     },
     "formErrors": {
       "fieldInvalid": "this field is invalid"

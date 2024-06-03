@@ -70,6 +70,6 @@ test("it renders an error when the api response returns an error", async ({
   await page.goto(`/n/${namespace}/monitoring`);
 
   await expect(
-    page.getByText("An error was received when fetching logs: oh no!")
+    page.getByText("The API returned an unexpected error: oh no!")
   ).toBeVisible();
 });

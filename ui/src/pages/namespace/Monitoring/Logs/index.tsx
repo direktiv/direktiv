@@ -63,13 +63,7 @@ const Logs = () => {
             </TooltipProvider>
           </ButtonBar>
         </div>
-        {error && (
-          <ApiError
-            error={error}
-            label={t("pages.monitoring.apiError")}
-            className="mb-3"
-          />
-        )}
+        {error && <ApiError error={error} className="mb-3" />}
       </div>
       <ScrollContainer />
       <div className="flex items-center justify-center pt-2 text-sm text-gray-11 dark:text-gray-dark-11">

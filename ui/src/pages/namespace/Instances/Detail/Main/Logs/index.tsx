@@ -119,13 +119,7 @@ const LogsPanel = () => {
             </TooltipProvider>
           </ButtonBar>
         </div>
-        {error && (
-          <ApiError
-            error={error}
-            label={t("pages.monitoring.apiError")}
-            className="mb-3"
-          />
-        )}
+        {error && <ApiError error={error} className="mb-3" />}
       </div>
       <ScrollContainer />
       <div
