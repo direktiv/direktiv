@@ -335,3 +335,44 @@ test("log entries will be automatically scrolled to the end", async ({
     "The 'Follow Logs' button is not visible when the workflow has completed running"
   ).not.toBeVisible();
 });
+
+test("it renders an error when the api response returns an error", async ({
+  page,
+}) => {
+  /* prepare data */
+  const simpleWorkflowName = faker.system.commonFileName("yaml");
+
+  await createFile({
+    name: simpleWorkflowName,
+    namespace,
+    type: "workflow",
+    yaml: simpleWorkflowContent,
+  });
+
+  const instanceId = (
+    await createInstance({
+      namespace,
+      path: simpleWorkflowName,
+    })
+  ).data.id;
+
+  /* register mock error response */
+  await page.route(
+    `/api/v2/namespaces/${namespace}/logs?instance=${instanceId}`,
+    async (route) => {
+      if (route.request().method() === "GET") {
+        const json = {
+          error: { code: 422, message: "oh no!" },
+        };
+        await route.fulfill({ status: 422, json });
+      } else route.continue();
+    }
+  );
+
+  /* perform test */
+  await page.goto(`/n/${namespace}/instances/${instanceId}`);
+
+  await expect(
+    page.getByText("The API returned an unexpected error: oh no!")
+  ).toBeVisible();
+});
