@@ -21,5 +21,4 @@ func NewNamespaceLoggerWithTrace(ctx context.Context, namespaceName string) slog
 	span.SpanContext()
 
 	return *logger.With("trace", span.SpanContext().TraceID().String(), "span", span.SpanContext().SpanID().String())
-
 }
