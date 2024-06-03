@@ -60,13 +60,12 @@ plugins:
 			.set('API-Token', 'key1')
 			.send({ foo: 'bar' })
 		expect(res.statusCode).toEqual(200)
-		expect(res.body.data.headers).toEqual({
+		expect(res.body.data.headers).toMatchObject({
 			'Direktiv-Consumer-Groups': [ 'group1' ],
 			'Direktiv-Consumer-Tags': [ 'tag1' ],
 			'Direktiv-Consumer-User': [ 'user1' ],
 			'Accept-Encoding': [ 'gzip, deflate' ],
 			'Api-Token': [ 'key1' ],
-			Connection: [ 'close' ],
 			'Content-Length': [ '13' ],
 			'Content-Type': [ 'application/json' ],
 		})

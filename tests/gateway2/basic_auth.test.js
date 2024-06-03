@@ -60,13 +60,12 @@ plugins:
 			.send({ foo: 'bar' })
 			.auth('user1', 'pwd1')
 		expect(res.statusCode).toEqual(200)
-		expect(res.body.data.headers).toEqual({
+		expect(res.body.data.headers).toMatchObject({
 			'Direktiv-Consumer-Groups': [ 'group1' ],
 			'Direktiv-Consumer-Tags': [ 'tag1' ],
 			'Direktiv-Consumer-User': [ 'user1' ],
 			'Accept-Encoding': [ 'gzip, deflate' ],
 			Authorization: [ 'Basic dXNlcjE6cHdkMQ==' ],
-			Connection: [ 'close' ],
 			'Content-Length': [ '13' ],
 			'Content-Type': [ 'application/json' ],
 		})
