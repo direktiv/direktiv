@@ -178,7 +178,7 @@ func (hs *sqlEventHistoryStore) getEventsQvQs(ctx context.Context, qv []interfac
 	qv = append(qv, pageSize)
 
 	q := fmt.Sprintf(`SELECT serial_id, id, type, source, cloudevent, namespace_id, namespace, received_at, created_at FROM events_history
-	%v ORDER BY created_at ASC LIMIT ?`, strings.Join(qs, ""))
+	%v ORDER BY created_at DESC LIMIT ?`, strings.Join(qs, ""))
 
 	res := make([]gormEventHistoryEntry, 0, pageSize)
 	tx := hs.db.WithContext(ctx).Raw(q, qv...).Scan(&res)
