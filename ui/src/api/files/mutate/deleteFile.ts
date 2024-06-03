@@ -53,12 +53,20 @@ export const useDeleteFile = ({
           namespace,
         },
       }),
-    onSuccess(_, variables) {
-      queryClient.invalidateQueries({
-        queryKey: fileKeys.file(namespace, {
-          apiKey: apiKey ?? undefined,
-          path: getParentFromPath(variables.file.path),
-        }),
+    async onSuccess(_, variables) {
+      const selfKey = fileKeys.file(namespace, {
+        apiKey: apiKey ?? undefined,
+        path: variables.file.path,
+      });
+      const parentKey = fileKeys.file(namespace, {
+        apiKey: apiKey ?? undefined,
+        path: getParentFromPath(variables.file.path),
+      });
+      await queryClient.removeQueries({
+        queryKey: selfKey,
+      });
+      await queryClient.invalidateQueries({
+        queryKey: parentKey,
       });
       toast({
         title: t("api.tree.mutate.file.delete.success.title"),
