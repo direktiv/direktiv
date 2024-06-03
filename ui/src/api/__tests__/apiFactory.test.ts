@@ -344,7 +344,8 @@ describe("processApiResponse", () => {
       if (parsedRes.success) {
         expect(parsedRes.data.status).toBe(422);
         expect(parsedRes.data.body).toStrictEqual({
-          my: "error",
+          code: 422,
+          message: "error message",
         });
       } else {
         throw new Error("api response does not match ApiErrorSchema");
