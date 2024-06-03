@@ -5,6 +5,7 @@ import (
 	"log/slog"
 
 	"github.com/direktiv/direktiv/pkg/compiler"
+	"github.com/direktiv/direktiv/pkg/utils"
 )
 
 type Function struct {
@@ -43,7 +44,7 @@ type functionArgs struct {
 }
 
 func (f *Function) Execute(in interface{}) interface{} {
-	args, err := compiler.DoubleMarshal[functionArgs](in)
+	args, err := utils.DoubleMarshal[functionArgs](in)
 	if err != nil {
 		throwRuntimeError(f.runtime.vm, DirektivFunctionErrorCode, err)
 	}

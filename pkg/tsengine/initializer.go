@@ -1,17 +1,23 @@
 package tsengine
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"os"
 	"path/filepath"
 
 	"github.com/direktiv/direktiv/pkg/compiler"
+	"github.com/direktiv/direktiv/pkg/datastore"
+	"github.com/direktiv/direktiv/pkg/datastore/datastoresql"
+	"github.com/direktiv/direktiv/pkg/filestore"
+	"github.com/direktiv/direktiv/pkg/filestore/filestoresql"
 	"github.com/fsnotify/fsnotify"
+	"gorm.io/gorm"
 )
 
 type Initializer interface {
-	Init()
+	Init() error
 }
 
 type FileInitializer struct {
@@ -27,25 +33,22 @@ func NewFileInitializer(srcDir, flowPath string, e *Engine) *FileInitializer {
 	}
 }
 
-func (i *FileInitializer) Init() {
+func (i *FileInitializer) Init() error {
 	slog.Info("reading flow")
 
 	b, err := os.ReadFile(i.flowPath)
 	if err != nil {
-		i.engine.SetError(err)
-		return
+		return err
 	}
 
 	c, err := compiler.New(i.flowPath, string(b))
 	if err != nil {
-		i.engine.SetError(err)
-		return
+		return err
 	}
 
 	fi, err := c.CompileFlow()
 	if err != nil {
-		i.engine.SetError(err)
-		return
+		return err
 	}
 
 	secrets := make(map[string]string)
@@ -86,6 +89,8 @@ func (i *FileInitializer) Init() {
 
 	// files are already there
 	i.engine.Initialize(c.Program, fi.Definition.State, secrets, functions, fi.Definition.Json)
+
+	return nil
 }
 
 func (i *FileInitializer) fileWatcher(flow string) {
@@ -135,148 +140,84 @@ func (i *FileInitializer) fileWatcher(flow string) {
 }
 
 type DBInitializer struct {
-	// mux         *http.ServeMux
-	// prefix, dir string
-	// engine      *Engine
+	dataStore           datastore.Store
+	fileStore           filestore.FileStore
+	flowPath, namespace string
+	engine              *Engine
 }
 
-func NewDBInitializer() *DBInitializer {
-	return &DBInitializer{}
+func NewDBInitializer(srcDir, flowPath, namespace string, db *gorm.DB, e *Engine) *DBInitializer {
+
+	ds := datastoresql.NewSQLStore(db, "some_secret_key_")
+	fs := filestoresql.NewSQLFileStore(db)
+
+	return &DBInitializer{
+		dataStore: ds,
+		fileStore: fs,
+		flowPath:  flowPath,
+		namespace: namespace,
+		engine:    e,
+	}
 }
 
-func (db *DBInitializer) Init() {
-	fmt.Println("INIT!!!!!")
+func (db *DBInitializer) Init() error {
+	slog.Info("getting flow", slog.String("namespace", db.namespace), slog.String("path", db.flowPath))
+
+	flow, err := db.fileStore.ForNamespace(db.namespace).GetFile(context.Background(), db.flowPath)
+	if err != nil {
+		return err
+	}
+
+	data, err := db.fileStore.ForFile(flow).GetData(context.Background())
+	if err != nil {
+		return err
+	}
+
+	compiler, err := compiler.New(db.flowPath, string(data))
+	if err != nil {
+		return err
+	}
+
+	fi, err := compiler.CompileFlow()
+	if err != nil {
+		return err
+	}
+
+	secrets := make(map[string]string)
+	for i := range fi.Secrets {
+		secret := fi.Secrets[i]
+		s, err := db.dataStore.Secrets().Get(context.Background(), db.namespace, secret.Name)
+		if err != nil {
+			return err
+		}
+		secrets[secret.Name] = string(s.Data)
+	}
+
+	functions := make(map[string]string)
+	for i := range fi.Functions {
+		f := fi.Functions[i]
+		functions[f.GetID()] = os.Getenv(f.GetID())
+	}
+
+	for i := range fi.Files {
+		file := fi.Files[i]
+
+		fetchPath := file.Name
+		if !filepath.IsAbs(file.Name) {
+			fetchPath = filepath.Join(filepath.Dir(db.flowPath), file.Name)
+		}
+
+		// db.fileStore.
+		f, err := db.fileStore.ForNamespace(db.namespace).GetFile(context.Background(), fetchPath)
+		if err != nil {
+			return err
+		}
+		data, err := db.fileStore.ForFile(f).GetData(context.Background())
+
+		fmt.Printf("%v %v %v\n", f, err, string(data))
+	}
+
+	db.engine.Initialize(compiler.Program, fi.Definition.State, secrets, functions, fi.Definition.Json)
+
+	return nil
 }
-
-// type MuxInitializer struct {
-// 	mux         *http.ServeMux
-// 	prefix, dir string
-// 	engine      *Engine
-// }
-
-// func NewMuxInitializer(prefix string, dir string, mux *http.ServeMux, e *Engine) *MuxInitializer {
-// 	return &MuxInitializer{
-// 		mux:    mux,
-// 		prefix: prefix,
-// 		dir:    dir,
-// 		engine: e,
-// 	}
-// }
-
-// func (m *MuxInitializer) Init() {
-// 	m.mux.HandleFunc("/init", m.HandleInitRequest)
-// }
-
-// func (m *MuxInitializer) HandleInitRequest(w http.ResponseWriter, r *http.Request) {
-// 	data, err := r.MultipartReader()
-// 	if err != nil {
-// 		m.engine.SetError(err)
-// 		return
-// 	}
-
-// 	var script string
-// 	var secrets = make(map[string]string)
-// 	flowPath := os.Getenv("DIREKTIV_JSENGINE_FLOWPATH")
-
-// 	for {
-// 		part, err_part := data.NextPart()
-// 		if err_part == io.EOF {
-// 			break
-// 		}
-
-// 		// all requests come with a prefix to avoid name collusion
-// 		name := part.FormName()[len(m.prefix)+1:]
-
-// 		// handle script
-// 		if name == flowPath {
-// 			var b bytes.Buffer
-// 			err := readPart(part, &b)
-// 			if err != nil {
-// 				m.engine.SetError(err)
-// 				return
-// 			}
-// 			script = b.String()
-// 			continue
-// 		}
-
-// 		split := strings.Split(name, "_")
-// 		if len(split) != 2 {
-// 			// should not happen because it is managed by direktiv
-// 			slog.Warn("illegal part name", slog.String("name", name))
-// 			continue
-// 		}
-
-// 		slog.Info("handling upload part", slog.String("part", name))
-
-// 		// handle secrets
-// 		if split[0] == "secret" {
-// 			var b bytes.Buffer
-// 			err := readPart(part, &b)
-// 			if err != nil {
-// 				m.engine.SetError(err)
-// 				return
-// 			}
-// 			secrets[split[1]] = b.String()
-
-// 			continue
-// 		}
-
-// 		// goes into shared directory
-// 		if split[0] == "file" {
-// 			f, err := os.Create(filepath.Join(m.dir, split[1]))
-// 			if err != nil {
-// 				m.engine.SetError(err)
-// 				return
-// 			}
-// 			err = readPart(part, f)
-// 			if err != nil {
-// 				m.engine.SetError(err)
-// 				return
-// 			}
-// 			continue
-// 		}
-// 	}
-
-// 	// script can not be empty
-// 	if script == "" {
-// 		m.engine.SetError(fmt.Errorf("script can not be empty"))
-// 		return
-// 	}
-
-// 	c, err := compiler.New(flowPath, script)
-// 	if err != nil {
-// 		m.engine.SetError(err)
-// 		return
-// 	}
-
-// 	fi, err := c.CompileFlow()
-// 	if err != nil {
-// 		m.engine.SetError(err)
-// 		return
-// 	}
-
-// 	functions := make(map[string]string)
-// 	for i := range fi.Functions {
-// 		f := fi.Functions[i]
-// 		functions[f.GetID()] = os.Getenv(f.GetID())
-// 	}
-
-// 	m.engine.Initialize(c.Program, fi.Definition.State, secrets, functions, fi.Definition.Json)
-// }
-
-// func readPart(in io.Reader, out io.Writer) error {
-// 	data := make([]byte, 1024)
-// 	for {
-// 		data = data[:cap(data)]
-// 		len, err := in.Read(data)
-// 		if err != nil {
-// 			if err == io.EOF {
-// 				break
-// 			}
-// 			return err
-// 		}
-// 		out.Write(data[:len])
-// 	}
-
-// 	return nil
-// }

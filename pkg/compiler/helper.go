@@ -1,9 +1,9 @@
 package compiler
 
 import (
-	"encoding/json"
 	"log/slog"
 
+	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/itchyny/gojq"
 )
 
@@ -12,7 +12,7 @@ import (
 func jq[T any](query string, obj interface{}) ([]T, error) {
 	retVal := make([]T, 0)
 
-	in, err := DoubleMarshal[interface{}](obj)
+	in, err := utils.DoubleMarshal[interface{}](obj)
 	if err != nil {
 		return retVal, err
 	}
@@ -37,7 +37,7 @@ func jq[T any](query string, obj interface{}) ([]T, error) {
 			return retVal, err
 		}
 
-		o, err := DoubleMarshal[T](v)
+		o, err := utils.DoubleMarshal[T](v)
 		if err != nil {
 			slog.Error("jq query double marshal error", slog.String("query", query),
 				slog.Any("error", err))
@@ -48,19 +48,4 @@ func jq[T any](query string, obj interface{}) ([]T, error) {
 	}
 
 	return retVal, nil
-}
-
-func DoubleMarshal[T any](obj interface{}) (T, error) {
-	var out T
-
-	in, err := json.Marshal(obj)
-	if err != nil {
-		return out, err
-	}
-	err = json.Unmarshal(in, &out)
-	if err != nil {
-		return out, err
-	}
-
-	return out, nil
 }

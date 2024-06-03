@@ -22,6 +22,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/pubsub"
 	"github.com/direktiv/direktiv/pkg/registry"
 	"github.com/direktiv/direktiv/pkg/service"
+	"github.com/direktiv/direktiv/pkg/utils"
 )
 
 type NewMainArgs struct {
@@ -256,7 +257,7 @@ func renderServiceManager(db *database.SQLStore, serviceManager core.ServiceMana
 				}
 
 				funConfigList = append(funConfigList, sub...)
-			} else if file.Typ == filestore.FileTypeWorkflow && file.MIMEType == "application/x-typescript" {
+			} else if file.Typ == filestore.FileTypeWorkflow && file.MIMEType == utils.TypeScriptMimeType {
 				fmt.Println("PARSE TYPESCRIPT")
 
 				// using hash of the full typescript file to get a reconcile hash

@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/direktiv/direktiv/pkg/compiler"
+	"github.com/direktiv/direktiv/pkg/utils"
 )
 
 // func (rt *Runtime) flowFile(call goja.ConstructorCall) *goja.Object {
@@ -53,7 +53,7 @@ const (
 var allowedScopes = []string{fileScopeLocal, fileScopeNamespace, fileScopeShared, fileScopeWorfklow}
 
 func (rt *Runtime) getFile(in map[string]interface{}) *File {
-	args, err := compiler.DoubleMarshal[fileArgs](in)
+	args, err := utils.DoubleMarshal[fileArgs](in)
 	if err != nil {
 		throwRuntimeError(rt.vm, DirektivFileErrorCode, err)
 	}

@@ -2,8 +2,6 @@ package tsengine
 
 import (
 	"encoding/json"
-	"fmt"
-	"log/slog"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -32,10 +30,8 @@ type Engine struct {
 }
 
 type Status struct {
-	Initialized bool  `json:"initialized"`
-	Start       int64 `json:"start"`
-	Failed      bool  `json:"failed"`
-	Active      int32 `json:"active"`
+	Start  int64 `json:"start"`
+	Active int32 `json:"active"`
 }
 
 const (
@@ -53,15 +49,8 @@ func New(baseFS string) (*Engine, error) {
 		},
 	}
 
-	var err error
-	defer func() {
-		if err != nil {
-			engine.Status.Failed = true
-		}
-	}()
-
 	// prepare filesystem
-	err = os.MkdirAll(filepath.Join(baseFS, engineFsShared), 0766)
+	err := os.MkdirAll(filepath.Join(baseFS, engineFsShared), 0766)
 	if err != nil {
 		return nil, err
 	}
@@ -83,28 +72,10 @@ func (e *Engine) Initialize(prg *goja.Program, fn string, secrets map[string]str
 	e.jsonPayload = jsonInput
 	e.startFn = fn
 	e.functions = functions
-
-	// set ok
-	e.Status.Initialized = true
-	e.Status.Failed = false
-}
-
-// SetError marks the engine for garbage collection if init failed
-func (e *Engine) SetError(err error) {
-	slog.Error("engine configuration failed", slog.Any("error", err))
-	fmt.Println(e)
-	fmt.Println(e.Status)
-	e.Status.Initialized = true
-	e.Status.Failed = true
 }
 
 func (e *Engine) RunRequest(req *http.Request, resp http.ResponseWriter) {
 	id := uuid.New()
-
-	if !e.Status.Initialized {
-		writeError(resp, direktivErrorInternal, "engine not initialized")
-		return
-	}
 
 	atomic.AddInt32(&e.Status.Active, 1)
 	defer atomic.AddInt32(&e.Status.Active, -1)

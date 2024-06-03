@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"dario.cat/mergo"
-	"github.com/direktiv/direktiv/pkg/compiler"
+	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/hashicorp/go-retryablehttp"
 )
 
@@ -44,7 +44,7 @@ const (
 
 func (r *Runtime) HttpRequest(in interface{}) interface{} {
 
-	args, err := compiler.DoubleMarshal[HttpArgs](in)
+	args, err := utils.DoubleMarshal[HttpArgs](in)
 	if err != nil {
 		throwRuntimeError(r.vm, DirektivHTTPErrorCode, err)
 	}

@@ -14,6 +14,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/direktiv/direktiv/pkg/helpers"
 	"github.com/direktiv/direktiv/pkg/pubsub"
+	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/go-chi/chi/v5"
 	"gopkg.in/yaml.v3"
 )
@@ -193,8 +194,7 @@ type fileRequest struct {
 }
 
 const (
-	typeScriptFlowType = "application/x-typescript"
-	yamlFlowType       = "application/yaml"
+	yamlFlowType = "application/yaml"
 )
 
 func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
@@ -241,7 +241,7 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 			Message: "file data has invalid yaml string",
 		})
 		return
-	} else if dataType == typeScriptFlowType {
+	} else if dataType == utils.TypeScriptMimeType {
 		// validate typescript
 		compiler, err := compiler.New(filePath, string(decodedBytes))
 		if err != nil {
@@ -303,8 +303,8 @@ func detectFlowContent(typ filestore.FileType, mimeType string) string {
 		return ""
 	}
 
-	if mimeType == typeScriptFlowType {
-		return typeScriptFlowType
+	if mimeType == utils.TypeScriptMimeType {
+		return utils.TypeScriptMimeType
 	}
 
 	return yamlFlowType
@@ -364,7 +364,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 			Message: "file data has invalid yaml string",
 		})
 		return
-	} else if dataType == typeScriptFlowType {
+	} else if dataType == utils.TypeScriptMimeType {
 		// validate typescript
 		compiler, err := compiler.New(filePath, string(decodedBytes))
 		if err != nil {

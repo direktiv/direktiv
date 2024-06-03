@@ -1,23 +1,44 @@
 package tsengine
 
 import (
+	"log/slog"
+	"os"
+
+	"github.com/caarlos0/env/v11"
 	"github.com/direktiv/direktiv/pkg/tsengine"
 )
 
-// "github.com/direktiv/direktiv/pkg/core"
-// "github.com/direktiv/direktiv/pkg/engine"
-
 func RunApplication() {
 
-	loggingCtx := tracing.WithTrack(ns.WithTags(ctx), tracing.BuildNamespaceTrack(ns.Name))
+	// parsing config
+	cfg := tsengine.Config{}
+	err := env.Parse(&cfg)
+	if err != nil {
+		panic(err)
+	}
+	setLogLevel(cfg.LogLevel)
 
-	// namespaceTrackCtx := enginerefactor.WithTrack(loggingCtx, engine.BuildNamespaceTrack(im.instance.Instance.Namespace))
-	// slog.Info("Workflow has been triggered", enginerefactor.GetSlogAttributesWithStatus(namespaceTrackCtx, core.LogRunningStatus)...)
+	srv, err := tsengine.NewServer(cfg, nil)
+	if err != nil {
+		panic(err)
+	}
 
-	// dir, err := os.MkdirTemp(".", "tsengine")
-	// if err != nil {
-	// 	panic(err)
-	// }
+	srv.Start()
+}
 
-	tsengine.NewServer()
+func setLogLevel(level string) {
+
+	ll := slog.LevelDebug
+	switch level {
+	case "info":
+		ll = slog.LevelInfo
+	case "warn":
+		ll = slog.LevelWarn
+	case "error":
+		ll = slog.LevelError
+	}
+	handler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: ll})
+	logger := slog.New(handler)
+	slog.SetDefault(logger)
+
 }

@@ -12,119 +12,187 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/caarlos0/env/v11"
 	"github.com/direktiv/direktiv/pkg/compiler"
+	"github.com/direktiv/direktiv/pkg/database"
+	"github.com/direktiv/direktiv/pkg/datastore"
+	"github.com/direktiv/direktiv/pkg/datastore/datastoresql"
+	"github.com/direktiv/direktiv/pkg/filestore"
+	"github.com/direktiv/direktiv/pkg/filestore/filestoresql"
 	"github.com/direktiv/direktiv/pkg/tsengine"
+	"github.com/direktiv/direktiv/pkg/utils"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"gorm.io/gorm"
 )
 
-func TestServerBasic(t *testing.T) {
-
-	os.Setenv("DIREKTIV_JSENGINE_FLOWPATH", "/myflow.js")
-	d, _ := os.MkdirTemp("", "testme")
-	os.Setenv("DIREKTIV_JSENGINE_BASEDIR", d)
-
-	svr, err := tsengine.NewServer()
-
-	fmt.Println(svr)
-	fmt.Println(err)
-
+type testFile struct {
+	path, mimetytpe, data string
+	typ                   filestore.FileType
 }
 
-// func TestServerMuxGetter(t *testing.T) {
+func testNamespace(db *gorm.DB, name string, secrets map[string]string, files []testFile) error {
+	os.Setenv("DIREKTIV_JSENGINE_NAMESPACE", name)
 
-// 	srv := startServerHttp(action)
-// 	defer srv.stop()
+	ds := datastoresql.NewSQLStore(db, "some_secret_key_")
+	fs := filestoresql.NewSQLFileStore(db)
 
-// 	script := `
-// 	var secret = getSecret({ name: "secret1" })
+	ns, err := ds.Namespaces().Create(context.Background(), &datastore.Namespace{Name: name})
+	if err != nil {
+		return err
+	}
+	root, err := fs.CreateRoot(context.Background(), uuid.New(), name)
+	if err != nil {
+		return err
+	}
 
-// 	var fn = setupFunction({
-// 		image: "localhost:5000/hello"
-// 	})
+	for k, v := range secrets {
+		err = ds.Secrets().Set(context.Background(), &datastore.Secret{
+			Name:      k,
+			Namespace: ns.Name,
+			Data:      []byte(v),
+		})
+		if err != nil {
+			return err
+		}
+	}
 
-// 	function start(state) {
+	for i := range files {
+		f := files[i]
+		_, err := fs.ForRootID(root.ID).CreateFile(context.Background(), f.path,
+			filestore.FileType(f.typ), f.mimetytpe, []byte(f.data))
+		if err != nil {
+			return err
+		}
+	}
 
-// 		var f = getFile({
-// 			name: "file1",
-// 			scope: "shared"
-// 		})
+	return nil
+}
 
-// 		var result =  fn.execute({
-// 			input: state.data()["data"]
-// 		})
+func basicNamespace(t *testing.T, db *gorm.DB, name, script string) tsengine.Config {
+	err := testNamespace(db,
+		name,
+		map[string]string{
+			"secret1": "mysecret1",
+			"secret2": "mysecret2",
+		},
+		[]testFile{
+			{
+				path:      "/myfile",
+				mimetytpe: "application/text",
+				data:      "this is the content",
+				typ:       filestore.FileTypeFile,
+			},
+			{
+				path: "/myflows",
+				data: "this is the content",
+				typ:  filestore.FileTypeDirectory,
+			},
+			{
+				path:      "/myflows/myflow.ts",
+				mimetytpe: utils.TypeScriptMimeType,
+				data:      script,
+				typ:       filestore.FileTypeWorkflow,
+			},
+		})
 
-// 		var r = {}
-// 		r["content"] = f.data()
-// 		r["secret"] = secret.string()
-// 		r["value"] = result["return"]
+	if err != nil {
+		t.Fatalf("unepxected NewMockGorm() error = %v", err)
+	}
 
-// 		return r
-// 	}`
+	os.Setenv("DIREKTIV_JSENGINE_FLOWPATH", "/myflows/myflow.ts")
+	d, _ := os.MkdirTemp("", "testme")
+	os.Setenv("DIREKTIV_JSENGINE_BASEDIR", d)
+	os.Setenv("DIREKTIV_JSENGINE_SELFCOPY", filepath.Join(d, "demo"))
 
-// 	// flowPath := "/path"
-// 	f, _ := os.MkdirTemp("", "test")
-// 	os.Setenv("DIREKTIV_JSENGINE_FLOWPATH", "/mypath")
-// 	os.Setenv("DIREKTIV_JSENGINE_BASEDIR", f)
+	cfg := tsengine.Config{}
+	env.Parse(&cfg)
 
-// 	s, _ := tsengine.NewServer()
+	return cfg
+}
 
-// 	// function
-// 	var fn = make(map[string]interface{})
-// 	fn["image"] = "localhost:5000/hello"
-// 	fnID, _ := compiler.GenerateFunctionID(fn)
-// 	os.Setenv(fnID, fmt.Sprintf("http://127.0.0.1:%d", srv.port))
+func TestServerBasic(t *testing.T) {
+	db, err := database.NewMockGorm()
+	if err != nil {
+		t.Fatalf("unepxected NewMockGorm() error = %v", err)
+	}
 
-// 	// secrets
-// 	secrets := make(map[string]string)
-// 	secrets["secret1"] = "secret1"
-// 	secrets["secret2"] = "secret2"
+	var initTests = []struct {
+		script string
+		err    error
+	}{
+		{"function start(state) {}", nil},
+		{"", nil},
+		{"function {{{}", fmt.Errorf("syntax error")},
+		{`function start { var s = getSecret({ name: "secret1" }) }`, nil},
+	}
 
-// 	// files
-// 	files := make(map[string]io.Reader)
-// 	files["file1"] = strings.NewReader("file1")
-// 	files["file2"] = strings.NewReader("file2")
+	for i, tt := range initTests {
+		t.Run(tt.script, func(t *testing.T) {
+			cfg := basicNamespace(t, db, fmt.Sprintf("n%d", i), tt.script)
+			_, err := tsengine.NewServer(cfg, db)
+			if (tt.err == nil && err != nil) || (tt.err != nil && err == nil) {
+				t.Fatalf("server db init failed, expected %v, got %v", tt.err, err)
+			}
+		})
+	}
+}
 
-// 	pr, wr, _ := tsengine.CreateMultiPartForm(s.Prefix(), script, "/mypath", secrets, files)
+func TestServerSecrets(t *testing.T) {
 
-// 	// request should not be ready
-// 	w := httptest.NewRecorder()
-// 	req, _ := http.NewRequest("GET", "/status", nil)
-// 	s.HandleStatusRequest(w, req)
-// 	sr, _ := io.ReadAll(w.Result().Body)
-// 	var status tsengine.Status
-// 	json.Unmarshal(sr, &status)
-// 	assert.False(t, status.Initialized)
+	db, err := database.NewMockGorm()
+	if err != nil {
+		t.Fatalf("unepxected NewMockGorm() error = %v", err)
+	}
 
-// 	// run init request manually
-// 	req, _ = http.NewRequest("POST", "/init", pr)
-// 	w = httptest.NewRecorder()
-// 	req.Header.Set("Content-Type", wr.FormDataContentType())
-// 	mi := s.Initializer().(*tsengine.MuxInitializer)
-// 	mi.HandleInitRequest(w, req)
+	var initTests = []struct {
+		script string
+		err    error
+	}{
+		{`function start { var s = getSecret({ name: "secret1" }) }`, nil},
+		{
+			`function start { var s = getSecret({ name: "secret1" })
+				var s2 = getSecret({ name: "secret2" }) }`, nil},
+		{`function start { var s = getSecret({ name: "unknown" }) }`, fmt.Errorf("")},
+	}
 
-// 	// init is true now
-// 	req, _ = http.NewRequest("GET", "/status", nil)
-// 	w = httptest.NewRecorder()
-// 	s.HandleStatusRequest(w, req)
-// 	sr, _ = io.ReadAll(w.Result().Body)
-// 	json.Unmarshal(sr, &status)
-// 	assert.True(t, status.Initialized)
+	for i, tt := range initTests {
+		t.Run(tt.script, func(t *testing.T) {
+			cfg := basicNamespace(t, db, fmt.Sprintf("n%d", i), tt.script)
+			_, err := tsengine.NewServer(cfg, db)
+			if (tt.err == nil && err != nil) || (tt.err != nil && err == nil) {
+				t.Fatalf("server db init failed, expected %v, got %v", tt.err, err)
+			}
+		})
+	}
+}
 
-// 	// run flow
-// 	req, _ = http.NewRequest("POST", "/", strings.NewReader(string("{ \"data\": \"coming-in\"}")))
-// 	w = httptest.NewRecorder()
+func TestServerFiles(t *testing.T) {
 
-// 	s.Engine.RunRequest(req, w)
-// 	r, _ := io.ReadAll(w.Result().Body)
+	db, err := database.NewMockGorm()
+	if err != nil {
+		t.Fatalf("unepxected NewMockGorm() error = %v", err)
+	}
 
-// 	var m map[string]string
-// 	json.Unmarshal(r, &m)
+	var initTests = []struct {
+		script string
+		err    error
+	}{
+		{`function start { var s = getFile({ name: "/myfile" }) }`, nil},
+		{`function start { var s = getFile({ name: "../myfile" }) }`, nil},
+		{`function start { var s = getFile({ name: "../../../../../whatever" }) }`, fmt.Errorf("not exist")},
+	}
 
-// 	assert.Equal(t, "secret1", m["secret"])
-// 	assert.Equal(t, "coming-in", m["value"])
-// 	assert.Equal(t, "file1", m["content"])
-// }
-
+	for i, tt := range initTests {
+		t.Run(tt.script, func(t *testing.T) {
+			cfg := basicNamespace(t, db, fmt.Sprintf("n%d", i), tt.script)
+			_, err := tsengine.NewServer(cfg, db)
+			if (tt.err == nil && err != nil) || (tt.err != nil && err == nil) {
+				t.Fatalf("server db init failed, expected %v, got %v", tt.err, err)
+			}
+		})
+	}
+}
 func TestServerFileGetter(t *testing.T) {
 
 	srv := startServerHttp(action)
@@ -168,8 +236,10 @@ func TestServerFileGetter(t *testing.T) {
 	fnID, _ := compiler.GenerateFunctionID(fn)
 	os.Setenv(fnID, fmt.Sprintf("http://127.0.0.1:%d", srv.port))
 
-	s, _ := tsengine.NewServer()
-	s.Initializer().Init()
+	cfg := tsengine.Config{}
+	env.Parse(&cfg)
+
+	s, _ := tsengine.NewServer(cfg, nil)
 
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", "/dummy", strings.NewReader(string("{ \"data\": \"coming-in\"}")))

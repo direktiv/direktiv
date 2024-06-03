@@ -92,7 +92,7 @@ func Run(circuit *core.Circuit) error {
 			panic("unmarshal file change event")
 		}
 
-		if event.MimeType == "application/x-typescript" {
+		if event.MimeType == utils.TypeScriptMimeType {
 			slog.Info("TODO TYPESCRIPT SETUP CRON & EVENT LISTENER!")
 			// TODO: TYPESCRIPT, init crons
 			return nil

@@ -3,6 +3,8 @@ package compiler
 import (
 	"crypto/sha256"
 	"fmt"
+
+	"github.com/direktiv/direktiv/pkg/utils"
 )
 
 type Function struct {
@@ -38,6 +40,6 @@ func (fn *Function) GetID() string {
 
 // GenerateFunctionID is used by the ruintime to generate the same id
 func GenerateFunctionID(in interface{}) (string, error) {
-	f, err := DoubleMarshal[Function](in)
+	f, err := utils.DoubleMarshal[Function](in)
 	return f.GetID(), err
 }

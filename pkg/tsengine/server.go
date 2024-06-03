@@ -6,17 +6,16 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-	"path/filepath"
 
-	"github.com/caarlos0/env/v11"
+	"gorm.io/gorm"
 )
 
 type Server struct {
 	mux *http.ServeMux
 	srv *http.Server
 
-	Engine      *Engine
-	initializer Initializer
+	Engine *Engine
+	// initializer Initializer
 }
 
 const (
@@ -24,38 +23,26 @@ const (
 	ServerInitFile = "file"
 )
 
-func NewServer() (*Server, error) {
-
-	// parsing config
-	cfg := Config{}
-	err := env.Parse(&cfg)
-	if err != nil {
-		return nil, err
-	}
-	setLogLevel(cfg.LogLevel)
-
+func NewServer(cfg Config, db *gorm.DB) (*Server, error) {
 	slog.Info("starting engine server")
-	slog.Info(fmt.Sprintf("using %s initializer", cfg.Initializer))
 	slog.Info(fmt.Sprintf("using flow %s", cfg.FlowPath))
 	slog.Info(fmt.Sprintf("using base dir %s", cfg.BaseDir))
 
 	// copy itself to shared location
 	if cfg.SelfCopy != "" {
-
 		ex, err := os.Executable()
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
-		exPath := filepath.Dir(ex)
-		fmt.Println(exPath)
 
-		slog.Info("copying binary")
-		_, err = copyFile("/engine", cfg.SelfCopy)
+		slog.Info("copying binary", slog.String("source", ex),
+			slog.String("target", cfg.SelfCopy))
+		_, err = copyFile(ex, cfg.SelfCopy)
 		if err != nil {
 			panic(err)
 		}
 
-		err = os.Chmod(cfg.SelfCopy, 0777)
+		err = os.Chmod(cfg.SelfCopy, 0755)
 		if err != nil {
 			panic(err)
 		}
@@ -83,59 +70,32 @@ func NewServer() (*Server, error) {
 	// s.mux.HandleFunc("GET /cancel/{id}", s.HandleStatusRequest)
 
 	var initializer Initializer
-	switch cfg.Initializer {
-	case ServerInitDB:
-		initializer = NewDBInitializer()
-	case ServerInitFile:
+	if db != nil {
+		initializer = NewDBInitializer(cfg.BaseDir, cfg.FlowPath, cfg.Namespace, db, engine)
+	} else {
 		fi := NewFileInitializer(cfg.BaseDir, cfg.FlowPath, engine)
 		go fi.fileWatcher(cfg.FlowPath)
 		initializer = fi
-	default:
-		return nil, fmt.Errorf("unknown initializer")
 	}
 
-	s.initializer = initializer
+	err = initializer.Init()
+	if err != nil {
+		return nil, err
+	}
 
 	return s, nil
 }
 
-func (s *Server) Initializer() Initializer {
-	return s.initializer
-}
-
 func (s *Server) Start() error {
 	slog.Info("starting engine")
-	go s.initializer.Init()
 	return s.srv.ListenAndServe()
 }
 
 func (s *Server) HandleFlowRequest(w http.ResponseWriter, r *http.Request) {
-	if !s.Engine.Status.Initialized {
-		w.Write([]byte("not initialized"))
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
 	s.Engine.RunRequest(r, w)
 }
 
 func (s *Server) HandleStatusRequest(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(s.Engine.Status)
-}
-
-func setLogLevel(level string) {
-
-	ll := slog.LevelDebug
-	switch level {
-	case "info":
-		ll = slog.LevelInfo
-	case "warn":
-		ll = slog.LevelWarn
-	case "error":
-		ll = slog.LevelError
-	}
-	handler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: ll})
-	logger := slog.New(handler)
-	slog.SetDefault(logger)
-
 }

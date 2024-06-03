@@ -11,6 +11,7 @@ import (
 	"slices"
 
 	"dario.cat/mergo"
+	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/dop251/goja/ast"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
@@ -308,7 +309,7 @@ func parseValue(valueItems []ValueItem, item any) error {
 		case string:
 			f.SetString(fmt.Sprintf("%v", v.Value.Value))
 		case []string:
-			jsStrings, err := DoubleMarshal[[]jsStringValue](v.Value.Value)
+			jsStrings, err := utils.DoubleMarshal[[]jsStringValue](v.Value.Value)
 			if err != nil {
 				return err
 			}
@@ -320,7 +321,7 @@ func parseValue(valueItems []ValueItem, item any) error {
 			}
 			f.Set(m)
 		case map[string]interface{}:
-			valueItems, err := DoubleMarshal[[]ValueItem](v.Value.Value)
+			valueItems, err := utils.DoubleMarshal[[]ValueItem](v.Value.Value)
 			if err != nil {
 				return err
 			}
@@ -334,7 +335,7 @@ func parseValue(valueItems []ValueItem, item any) error {
 			}
 			f.Set(m)
 		case map[string]string:
-			valueItems, err := DoubleMarshal[[]ValueItem](v.Value.Value)
+			valueItems, err := utils.DoubleMarshal[[]ValueItem](v.Value.Value)
 			if err != nil {
 				return err
 			}
@@ -347,7 +348,7 @@ func parseValue(valueItems []ValueItem, item any) error {
 			}
 			f.Set(m)
 		case FlowEvent:
-			eventMix, err := DoubleMarshal[[]ValueItemMix](v.Value.Value)
+			eventMix, err := utils.DoubleMarshal[[]ValueItemMix](v.Value.Value)
 			if err != nil {
 				return err
 			}
@@ -359,12 +360,12 @@ func parseValue(valueItems []ValueItem, item any) error {
 
 			f.Set(reflect.ValueOf(event))
 		case []FlowEvent:
-			eventsMix, err := DoubleMarshal[ValueItemMix](v)
+			eventsMix, err := utils.DoubleMarshal[ValueItemMix](v)
 			if err != nil {
 				return err
 			}
 
-			ee, err := DoubleMarshal[ValueItemList](eventsMix.Value)
+			ee, err := utils.DoubleMarshal[ValueItemList](eventsMix.Value)
 			if err != nil {
 				return err
 			}
@@ -372,7 +373,7 @@ func parseValue(valueItems []ValueItem, item any) error {
 			m := reflect.MakeSlice(reflect.TypeOf(make([]FlowEvent, 0)), len(ee.Value), len(ee.Value))
 			for k := range ee.Value {
 				e := ee.Value[k]
-				eventMix, err := DoubleMarshal[[]ValueItemMix](e.Value)
+				eventMix, err := utils.DoubleMarshal[[]ValueItemMix](e.Value)
 				if err != nil {
 					return err
 				}
@@ -384,7 +385,7 @@ func parseValue(valueItems []ValueItem, item any) error {
 			}
 			f.Set(m)
 		case []Scale:
-			arguments, err := DoubleMarshal[[]Argument](v.Value.Value)
+			arguments, err := utils.DoubleMarshal[[]Argument](v.Value.Value)
 			if err != nil {
 				return err
 			}
@@ -412,7 +413,7 @@ func parseEvent(eventMix []ValueItemMix) (FlowEvent, error) {
 	for k := range eventMix {
 		e := eventMix[k]
 		if e.Key.Value == "type" {
-			t, err := DoubleMarshal[Key](e.Value)
+			t, err := utils.DoubleMarshal[Key](e.Value)
 			if err != nil {
 				return event, err
 			}
@@ -420,7 +421,7 @@ func parseEvent(eventMix []ValueItemMix) (FlowEvent, error) {
 		}
 
 		if e.Key.Value == "context" {
-			vi, err := DoubleMarshal[ValueItem](e)
+			vi, err := utils.DoubleMarshal[ValueItem](e)
 			if err != nil {
 				return event, err
 			}
