@@ -19,6 +19,16 @@ func AddTag(ctx context.Context, key, value interface{}) context.Context {
 	return context.WithValue(ctx, core.LogTagsKey, tags)
 }
 
+func AddNamespace(ctx context.Context, namespaceName string) context.Context {
+	tags, ok := ctx.Value(core.LogTagsKey).(map[string]interface{})
+	if !ok {
+		tags = make(map[string]interface{}, 0)
+	}
+	tags["namespace"] = namespaceName
+
+	return context.WithValue(ctx, core.LogTagsKey, tags)
+}
+
 func getSlogAttributes(ctx context.Context) []interface{} {
 	var tags map[string]interface{}
 
