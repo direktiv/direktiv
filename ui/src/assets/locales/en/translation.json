@@ -1140,6 +1140,10 @@
         "confirm": "Confirmation required"
       }
     },
+    "apiError": {
+      "onlyLabel": "The API returned an unexpected error",
+      "withMessage": "The API returned an unexpected error: {{message}}"
+    },
     "formErrors": {
       "fieldInvalid": "this field is invalid"
     },
