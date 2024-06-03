@@ -13,7 +13,7 @@ describe('Test workflow echo json action', () => {
 
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
-	helpers.itShouldCreateFileV2(it, expect, namespace,
+	helpers.itShouldCreateFile(it, expect, namespace,
 		'',
 		testWorkflow,
 		'workflow',
@@ -30,20 +30,20 @@ states:
     function: echo
 `))
 
-	it(`should invoke the ${ testWorkflow } workflow and echo input`, async () => {
+	it(`should invoke the ${testWorkflow} workflow and echo input`, async () => {
 		await helpers.sleep(500)
-		const res = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/instances?path=${ testWorkflow }&wait=true`).send('{"hello":"world"}')
+		const res = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${namespace}/instances?path=${testWorkflow}&wait=true`).send('{"hello":"world"}')
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.return).toMatchObject({
-            "hello":"world"
-        })
+			"hello": "world"
+		})
 	})
-    it(`should invoke the ${ testWorkflow } workflow  and echo input run 2`, async () => {
-        const res = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/instances?path=${ testWorkflow }&wait=true`).send('{"hello2":"world"}')
+	it(`should invoke the ${testWorkflow} workflow  and echo input run 2`, async () => {
+		const res = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${namespace}/instances?path=${testWorkflow}&wait=true`).send('{"hello2":"world"}')
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.return).toMatchObject({
-            "hello2":"world"
-        })
+			"hello2": "world"
+		})
 	})
 
 })

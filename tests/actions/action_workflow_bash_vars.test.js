@@ -13,7 +13,7 @@ describe('Test workflow bash vars via action', () => {
 
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
-	helpers.itShouldCreateFileV2(it, expect, namespace,
+	helpers.itShouldCreateFile(it, expect, namespace,
 		'',
 		testWorkflow,
 		'workflow',
