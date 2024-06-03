@@ -34,9 +34,8 @@ type ErrorJsonType = z.infer<typeof ErrorJson>;
  * }
  */
 const getErrorJson = async (res: Response): Promise<ErrorJsonType> => {
-  let receivedJson = await res.json();
-  receivedJson = receivedJson.error;
-  return ErrorJson.parse(receivedJson);
+  const receivedJson = await res.json();
+  return ErrorJson.parse(receivedJson.error);
 };
 
 export const createApiErrorFromResponse = async (
