@@ -240,6 +240,8 @@ jobs:
             suit: part2
           - type: api
             suit: services
+          - type: api
+            suit: actions
 
           - type: playwright
             suit: "1/4"
