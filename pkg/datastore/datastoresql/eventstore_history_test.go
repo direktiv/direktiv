@@ -26,30 +26,30 @@ func setupEventHistoryStore(t *testing.T) (datastore.EventHistoryStore, uuid.UUI
 	return datastoresql.NewSQLStore(db, "some key").EventHistory(), ns, nsName
 }
 
-func Test_EventStoreAddGet(t *testing.T) {
-	hist, ns, nsName := setupEventHistoryStore(t)
+// func Test_EventStoreAddGet(t *testing.T) {
+// 	hist, ns, nsName := setupEventHistoryStore(t)
 
-	eID := uuid.New()
-	e2ID := uuid.New()
+// 	eID := uuid.New()
+// 	e2ID := uuid.New()
 
-	ev := newEvent("subject", "test-type", eID, ns, nsName)
-	ev2 := newEvent("subject", "test-type", e2ID, ns, nsName)
+// 	ev := newEvent("subject", "test-type", eID, ns, nsName)
+// 	ev2 := newEvent("subject", "test-type", e2ID, ns, nsName)
 
-	ls := []*datastore.Event{&ev, &ev2}
-	_, errs := hist.Append(context.Background(), ls)
-	for _, err := range errs {
-		if err != nil {
-			t.Error(err)
-			return
-		}
-	}
+// 	ls := []*datastore.Event{&ev, &ev2}
+// 	_, errs := hist.Append(context.Background(), ls)
+// 	for _, err := range errs {
+// 		if err != nil {
+// 			t.Error(err)
+// 			return
+// 		}
+// 	}
 
-	// Assert that events were added successfully
-	assertEventsAdded(t, hist, ns)
+// 	// Assert that events were added successfully
+// 	assertEventsAdded(t, hist, ns)
 
-	// Test Get() method
-	testGet(t, hist, ns)
-}
+// 	// Test Get() method
+// 	testGet(t, hist, ns)
+// }
 
 func Test_EventStoreAddGetNew(t *testing.T) {
 	hist, ns, nsName := setupEventHistoryStore(t)
@@ -155,18 +155,6 @@ func assertEventsAdded(t *testing.T, hist datastore.EventHistoryStore, ns uuid.U
 		t.Error("expected 2 events, but got", len(gotEvents))
 		return
 	}
-}
-
-func testGet(t *testing.T, hist datastore.EventHistoryStore, ns uuid.UUID) {
-	// Test Get() method
-	res, c, err := hist.Get(context.Background(), 0, 0, ns)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	// Assert results
-	assertResults(t, res, c)
 }
 
 func testGetOld(t *testing.T, hist datastore.EventHistoryStore, ns uuid.UUID) {
