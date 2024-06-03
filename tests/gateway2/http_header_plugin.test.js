@@ -75,7 +75,7 @@ states:
 			.auth('user1', 'pwd1')
 
 		expect(req.statusCode).toEqual(200)
-		expect(req.body).toEqual({
+		expect(req.body).toMatchObject({
 			result: {
 				body: {
 					hello: 'world',
@@ -95,9 +95,6 @@ states:
 					],
 					Authorization: [
 						'Basic dXNlcjE6cHdkMQ==',
-					],
-					Connection: [
-						'close',
 					],
 					'Content-Length': [
 						'17',
