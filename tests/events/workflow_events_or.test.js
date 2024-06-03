@@ -1,4 +1,5 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
+import { basename } from 'path'
 
 import common from '../common'
 import helpers from '../common/helpers'
@@ -6,7 +7,7 @@ import request from '../common/request'
 import { retry10 } from '../common/retry'
 import events from './send_helper'
 
-const namespaceName = 'sendeventsor'
+const namespaceName = basename(__filename)
 
 const waitWorkflowName = 'waitor.yaml'
 const waitEventWorkflow = `
@@ -76,40 +77,39 @@ describe('Test workflow events and', () => {
 
 	helpers.itShouldCreateNamespace(it, expect, namespaceName)
 	// workflow with start
-	helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateYamlFile(it, expect, namespaceName,
 		'', startWorkflowName, 'workflow',
 		startEventWorkflow)
 
 	retry10(`should have one event listeners`, async () => {
-		const getEventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/event-listeners?limit=8&offset=0`)
+		const getEventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/listeners?limit=8&offset=0`)
 			.send()
 
-		expect(getEventListenerResponse.body.results[0]).toMatchObject({
-			workflow: '/startor.yaml',
-			mode: 'or',
-			instance: '',
+		expect(getEventListenerResponse.body.data[0]).toMatchObject({
+			triggerWorkflow: '/startor.yaml',
+			triggerType: 'StartOR',
 			createdAt: expect.stringMatching(common.regex.timestampRegex),
 			updatedAt: expect.stringMatching(common.regex.timestampRegex),
-			events: expect.arrayContaining(
+			eventContextFilters: expect.arrayContaining(
 				[ {
 					type: 'eventtype3',
-					filters: {},
+					context: {},
 				}, {
 					type: 'eventtype4',
-					filters: {},
+					context: {},
 				} ],
 			),
 		})
 
-		expect(getEventListenerResponse.body.pageInfo.total).toEqual(1)
+		expect(getEventListenerResponse.body.data.length).toEqual(1)
 	})
 
 	// workflow with start
-	helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateYamlFile(it, expect, namespaceName,
 		'', waitWorkflowName, 'workflow',
 		waitEventWorkflow)
 
-	retry10(`should have two event listeners`, async () => {
+	it(`should have two event listeners`, async () => {
 		// start workflow
 		const runWorkflowResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=${ waitWorkflowName }`)
 			.send()
@@ -117,26 +117,25 @@ describe('Test workflow events and', () => {
 
 		await new Promise(r => setTimeout(r, 250))
 
-		const getEventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/event-listeners?limit=8&offset=0`)
+		const getEventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/listeners?limit=8&offset=0`)
 			.send()
 
-		expect(getEventListenerResponse.body.pageInfo.total).toEqual(2)
+		expect(getEventListenerResponse.body.data.length).toEqual(2)
 
-		const result = getEventListenerResponse.body.results.find(item => item.workflow === '')
+		const result = getEventListenerResponse.body.data.find(item => item.hasOwnProperty('triggerInstance'))
 
 		expect(result).toMatchObject({
-			workflow: '',
-			mode: 'or',
-			instance: expect.stringMatching(common.regex.uuidRegex),
+			triggerType: 'WaitOR',
+			triggerInstance: expect.stringMatching(common.regex.uuidRegex),
 			createdAt: expect.stringMatching(common.regex.timestampRegex),
 			updatedAt: expect.stringMatching(common.regex.timestampRegex),
-			events: expect.arrayContaining(
+			eventContextFilters: expect.arrayContaining(
 				[ {
 					type: 'eventtype1',
-					filters: {},
+					context: {},
 				}, {
 					type: 'eventtype2',
-					filters: {},
+					context: {},
 				} ],
 			),
 		})
@@ -191,7 +190,7 @@ describe('Test workflow events and', () => {
 	})
 
 	// timeout workflow
-	helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateYamlFile(it, expect, namespaceName,
 		'', waitWorkflowTimeoutName, 'workflow',
 		waitEventWorkflowTimeout)
 

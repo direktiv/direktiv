@@ -10,15 +10,15 @@ describe('Test filesystem tree update operations', () => {
 
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
-	helpers.itShouldCreateDirV2(it, expect, namespace, '/', 'dir1')
-	helpers.itShouldCreateFileV2(it, expect, namespace,
+	helpers.itShouldCreateDir(it, expect, namespace, '/', 'dir1')
+	helpers.itShouldCreateFile(it, expect, namespace,
 		'/dir1',
 		'foo1',
 		'workflow',
 		'text/plain',
 		btoa(helpers.dummyWorkflow('foo1')))
 
-	helpers.itShouldUpdateFileV2(it, expect, namespace,
+	helpers.itShouldUpdateFile(it, expect, namespace,
 		'/dir1/foo1',
 		{
 			path: '/dir1/foo2',

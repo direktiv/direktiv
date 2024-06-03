@@ -8,10 +8,10 @@ import (
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/direktiv/direktiv/pkg/database"
+	"github.com/direktiv/direktiv/pkg/datastore"
+	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/direktiv/direktiv/pkg/model"
-	"github.com/direktiv/direktiv/pkg/refactor/database"
-	"github.com/direktiv/direktiv/pkg/refactor/datastore"
-	"github.com/direktiv/direktiv/pkg/refactor/filestore"
 	"github.com/google/uuid"
 )
 
@@ -65,8 +65,6 @@ func (events *events) deleteWorkflowEventListeners(ctx context.Context, nsID uui
 		return err
 	}
 
-	events.pubsub.NotifyEventListeners(nsID)
-
 	return nil
 }
 
@@ -89,8 +87,6 @@ func (events *events) deleteInstanceEventListeners(ctx context.Context, im *inst
 	if err != nil {
 		return err
 	}
-
-	events.pubsub.NotifyEventListeners(im.instance.Instance.NamespaceID)
 
 	return nil
 }
@@ -285,8 +281,6 @@ func (events *events) addInstanceEventListener(ctx context.Context, namespace uu
 	if err != nil {
 		return err
 	}
-
-	events.pubsub.NotifyEventListeners(namespace)
 
 	return nil
 }

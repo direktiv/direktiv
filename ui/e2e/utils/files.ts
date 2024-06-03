@@ -1,5 +1,6 @@
 import { CreateFileSchemaType } from "~/api/files/schema";
 import { createFile as apiCreateFile } from "~/api/files/mutate/createFile";
+import { deleteFile as apiDeleteFile } from "~/api/files/mutate/deleteFile";
 import { getFile as apiGetFile } from "~/api/files/query/file";
 import { encode } from "js-base64";
 import { headers } from "./testutils";
@@ -32,6 +33,23 @@ export const createFile = async ({
     headers,
   });
 
+export const deleteFile = async ({
+  namespace,
+  path,
+}: {
+  namespace: string;
+  path: string;
+}) => {
+  await apiDeleteFile({
+    urlParams: {
+      namespace,
+      baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
+      path,
+    },
+    headers,
+  });
+};
+
 export const createDirectory = async ({
   name,
   namespace,
@@ -54,7 +72,7 @@ export const createDirectory = async ({
     headers,
   });
 
-type ErrorType = { response: { status?: number } };
+type ErrorType = { status?: number };
 
 export const checkIfFileExists = async ({
   namespace,
@@ -80,13 +98,13 @@ export const checkIfFileExists = async ({
     return response.data.path === path;
   } catch (error) {
     const typedError = error as ErrorType;
-    if (typedError?.response?.status === 404) {
+    if (typedError?.status === 404) {
       // fail silently to allow for using poll() in tests
       return false;
     }
 
     throw new Error(
-      `Unexpected error ${typedError?.response?.status} fetching ${path} in namespace ${namespace}`
+      `Unexpected error ${typedError?.status} fetching ${path} in namespace ${namespace}`
     );
   }
 };

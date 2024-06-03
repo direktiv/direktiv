@@ -24,11 +24,11 @@ describe('Test send events v2 api', () => {
 			.send(basicEvent)
 		expect(sendEventResponse.statusCode).toEqual(200)
 	})
-	it(`should send event to namespace`, async () => {
+	it(`should not accept dup event`, async () => {
 		const sendEventResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/events/broadcast`)
 			.set('Content-Type', 'application/cloudevents+json')
 			.send(basicEvent)
-		expect(sendEventResponse.statusCode).toEqual(200)
+		expect(sendEventResponse.statusCode).toEqual(400)
 	})
 	it(`should not break the server`, async () => {
 		const sendEventResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/events/broadcast`)
@@ -56,7 +56,7 @@ describe('Test basic workflow events v2', () => {
 
 	helpers.itShouldCreateNamespace(it, expect, namespaceName)
 
-	common.helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
+	common.helpers.itShouldCreateYamlFile(it, expect, namespaceName,
 		'/', 'listener.yml', 'workflow', `
 start:
   type: event

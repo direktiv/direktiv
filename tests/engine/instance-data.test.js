@@ -11,7 +11,7 @@ describe('Test instance data behaviour', () => {
 
 	helpers.itShouldCreateNamespace(it, expect, namespaceName)
 
-	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateFile(it, expect, namespaceName,
 		'',
 		'data.yaml',
 		'workflow',

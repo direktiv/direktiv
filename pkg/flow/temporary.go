@@ -11,17 +11,18 @@ import (
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/direktiv/direktiv/pkg/core"
+	"github.com/direktiv/direktiv/pkg/datastore"
+	enginerefactor "github.com/direktiv/direktiv/pkg/engine"
+	"github.com/direktiv/direktiv/pkg/filestore"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	log "github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/flow/states"
 	"github.com/direktiv/direktiv/pkg/model"
-	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/direktiv/direktiv/pkg/refactor/datastore"
-	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
-	"github.com/direktiv/direktiv/pkg/refactor/filestore"
-	"github.com/direktiv/direktiv/pkg/refactor/service"
-	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/direktiv/direktiv/pkg/service"
+	"github.com/direktiv/direktiv/pkg/tracing"
+	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/google/uuid"
 )
 
@@ -43,19 +44,19 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 
 	for _, selector := range vars {
 		//nolint:nestif
-		if selector.Scope == "" || selector.Scope == util.VarScopeInstance || selector.Scope == util.VarScopeWorkflow || selector.Scope == util.VarScopeNamespace {
+		if selector.Scope == "" || selector.Scope == utils.VarScopeInstance || selector.Scope == utils.VarScopeWorkflow || selector.Scope == utils.VarScopeNamespace {
 			if selector.Scope == "" {
-				selector.Scope = util.VarScopeNamespace
+				selector.Scope = utils.VarScopeNamespace
 			}
 
 			var item *datastore.RuntimeVariable
 
 			switch selector.Scope {
-			case util.VarScopeInstance:
+			case utils.VarScopeInstance:
 				item, err = tx.DataStore().RuntimeVariables().GetForInstance(ctx, im.instance.Instance.ID, selector.Key)
-			case util.VarScopeWorkflow:
+			case utils.VarScopeWorkflow:
 				item, err = tx.DataStore().RuntimeVariables().GetForWorkflow(ctx, im.instance.Instance.Namespace, im.instance.Instance.WorkflowPath, selector.Key)
-			case util.VarScopeNamespace:
+			case utils.VarScopeNamespace:
 				item, err = tx.DataStore().RuntimeVariables().GetForNamespace(ctx, im.instance.Instance.Namespace, selector.Key)
 			default:
 				return nil, derrors.NewInternalError(errors.New("invalid scope"))
@@ -83,7 +84,7 @@ func (im *instanceMemory) GetVariables(ctx context.Context, vars []states.Variab
 			continue
 		}
 
-		if selector.Scope == util.VarScopeFileSystem { //nolint:nestif
+		if selector.Scope == utils.VarScopeFileSystem { //nolint:nestif
 			file, err := tx.FileStore().ForNamespace(im.instance.Instance.Namespace).GetFile(ctx, selector.Key)
 			if errors.Is(err, filestore.ErrNotFound) {
 				x = append(x, states.Variable{
@@ -132,7 +133,7 @@ func (im *instanceMemory) ListenForEvents(ctx context.Context, events []*model.C
 
 func (im *instanceMemory) Log(ctx context.Context, level log.Level, a string, x ...interface{}) {
 	ctx = im.WithTags(ctx)
-	slog.With(enginerefactor.GetSlogAttributesWithStatus(ctx, core.LogRunningStatus)...)
+	slog.With(tracing.GetSlogAttributesWithStatus(ctx, core.LogRunningStatus)...)
 	switch level {
 	case log.Info:
 		slog.Info(fmt.Sprintf(a, x...))
@@ -198,11 +199,11 @@ func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.Variab
 		var item *datastore.RuntimeVariable
 
 		switch v.Scope {
-		case util.VarScopeInstance:
+		case utils.VarScopeInstance:
 			item, err = tx.DataStore().RuntimeVariables().GetForInstance(ctx, im.instance.Instance.ID, v.Key)
-		case util.VarScopeWorkflow:
+		case utils.VarScopeWorkflow:
 			item, err = tx.DataStore().RuntimeVariables().GetForWorkflow(ctx, im.instance.Instance.Namespace, im.instance.Instance.WorkflowPath, v.Key)
-		case util.VarScopeNamespace:
+		case utils.VarScopeNamespace:
 			item, err = tx.DataStore().RuntimeVariables().GetForNamespace(ctx, im.instance.Instance.Namespace, v.Key)
 		default:
 			return derrors.NewInternalError(errors.New("invalid scope"))
@@ -240,9 +241,9 @@ func (im *instanceMemory) SetVariables(ctx context.Context, vars []states.Variab
 			}
 
 			switch v.Scope {
-			case util.VarScopeInstance:
+			case utils.VarScopeInstance:
 				newVar.InstanceID = im.instance.Instance.ID
-			case util.VarScopeWorkflow:
+			case utils.VarScopeWorkflow:
 				newVar.WorkflowPath = im.instance.Instance.WorkflowPath
 			}
 
@@ -537,7 +538,7 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	// potentially dns error for a brand new service
 	// we just loop and see if we can recreate the service
 	// one minute wait max
-	cleanup := util.TraceHTTPRequest(ctx, req)
+	cleanup := utils.TraceHTTPRequest(ctx, req)
 	defer cleanup()
 
 	//nolint:intrange

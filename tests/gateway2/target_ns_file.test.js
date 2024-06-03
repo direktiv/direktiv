@@ -3,7 +3,6 @@ import { basename } from 'path'
 
 import config from '../common/config'
 import helpers from '../common/helpers'
-import regex from '../common/regex'
 import request from '../common/request'
 import { retry10 } from '../common/retry'
 
@@ -13,9 +12,9 @@ describe('Test target-namespace-file plugin', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
-	helpers.itShouldCreateFileV2(it, expect, namespace, '/', 'some.text', 'file', 'text/plain', btoa(`some content`))
+	helpers.itShouldCreateFile(it, expect, namespace, '/', 'some.text', 'file', 'text/plain', btoa(`some content`))
 
-	helpers.itShouldCreateYamlFileV2(it, expect, namespace,
+	helpers.itShouldCreateYamlFile(it, expect, namespace,
 		'/', 'ep1.yaml', 'endpoint', `
 direktiv_api: endpoint/v2
 path: /ep1
@@ -32,20 +31,15 @@ plugins:
 	retry10(`should fetch some.text file`, async () => {
 		const res = await request(config.getDirektivHost()).get(`/api/v2/namespaces/${ namespace }/gateway2/ep1`)
 		expect(res.statusCode).toEqual(200)
-		expect(res.body).toMatchObject({
-			data: {
-				path: '/some.text',
-				createdAt: expect.stringMatching(regex.timestampRegex),
-				updatedAt: expect.stringMatching(regex.timestampRegex),
-				data: 'c29tZSBjb250ZW50',
-			},
-		})
+		expect(res.text).toEqual('some content')
+		expect(res.headers['content-type']).toEqual('text/plain')
+		expect(res.headers['content-length']).toEqual('12')
 	})
 
 	// test system namespace access.
 	helpers.itShouldCreateNamespace(it, expect, 'system')
 
-	helpers.itShouldCreateYamlFileV2(it, expect, 'system',
+	helpers.itShouldCreateYamlFile(it, expect, 'system',
 		'/', 'ep2.yaml', 'endpoint', `
 direktiv_api: endpoint/v2
 path: /ep2
@@ -62,21 +56,16 @@ plugins:
 	retry10(`should fetch some.text file from system namespace`, async () => {
 		const res = await request(config.getDirektivHost()).get(`/api/v2/namespaces/system/gateway2/ep2`)
 		expect(res.statusCode).toEqual(200)
-		expect(res.body).toMatchObject({
-			data: {
-				path: '/some.text',
-				createdAt: expect.stringMatching(regex.timestampRegex),
-				updatedAt: expect.stringMatching(regex.timestampRegex),
-				data: 'c29tZSBjb250ZW50',
-			},
-		})
+		expect(res.text).toEqual('some content')
+		expect(res.headers['content-type']).toEqual('text/plain')
+		expect(res.headers['content-length']).toEqual('12')
 	})
 
 	// test access denied of different namespace
 	const otherNamespace = namespace + '_different'
 	helpers.itShouldCreateNamespace(it, expect, otherNamespace)
 
-	helpers.itShouldCreateYamlFileV2(it, expect, otherNamespace,
+	helpers.itShouldCreateYamlFile(it, expect, otherNamespace,
 		'/', 'ep3.yaml', 'endpoint', `
 direktiv_api: endpoint/v2
 path: /ep3

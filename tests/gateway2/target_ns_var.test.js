@@ -24,7 +24,7 @@ describe('Test target-flow plugin', () => {
 		expect(workflowVarResponse.statusCode).toEqual(200)
 	})
 
-	helpers.itShouldCreateYamlFileV2(it, expect, namespace,
+	helpers.itShouldCreateYamlFile(it, expect, namespace,
 		'/', 'ep1.yaml', 'endpoint', `
 direktiv_api: endpoint/v2
 path: /ep1
@@ -41,9 +41,8 @@ plugins:
 	retry10(`should execute wf1.yaml file`, async () => {
 		const res = await request(config.getDirektivHost()).get(`/api/v2/namespaces/${ namespace }/gateway2/ep1`)
 		expect(res.statusCode).toEqual(200)
-
-		expect(res.body.data).toMatchObject({
-			data: btoa('Hello World'),
-		})
+		expect(res.text).toEqual('Hello World')
+		expect(res.headers['content-type']).toEqual('text/plain')
+		expect(res.headers['content-length']).toEqual('11')
 	})
 })

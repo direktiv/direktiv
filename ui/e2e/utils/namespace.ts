@@ -6,9 +6,8 @@ const apiUrl = process.env.PLAYWRIGHT_UI_BASE_URL;
 
 export const createNamespaceName = () => `playwright-${faker.git.shortSha()}`;
 
-export const createNamespace = () =>
+export const createNamespace = (name: string = createNamespaceName()) =>
   new Promise<string>((resolve, reject) => {
-    const name = createNamespaceName();
     fetch(`${apiUrl}/api/v2/namespaces/`, {
       method: "POST",
       headers,

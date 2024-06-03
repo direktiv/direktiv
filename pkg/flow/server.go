@@ -14,19 +14,19 @@ import (
 	"time"
 
 	"github.com/caarlos0/env/v10"
+	"github.com/direktiv/direktiv/pkg/cmd"
+	"github.com/direktiv/direktiv/pkg/core"
+	"github.com/direktiv/direktiv/pkg/database"
+	"github.com/direktiv/direktiv/pkg/datastore"
+	eventsstore "github.com/direktiv/direktiv/pkg/events"
+	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/direktiv/direktiv/pkg/flow/nohome"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
-	"github.com/direktiv/direktiv/pkg/refactor/cmd"
-	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/direktiv/direktiv/pkg/refactor/database"
-	"github.com/direktiv/direktiv/pkg/refactor/datastore"
-	eventsstore "github.com/direktiv/direktiv/pkg/refactor/events"
-	"github.com/direktiv/direktiv/pkg/refactor/filestore"
-	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
-	"github.com/direktiv/direktiv/pkg/refactor/mirror"
-	pubsub2 "github.com/direktiv/direktiv/pkg/refactor/pubsub"
-	pubsubSQL "github.com/direktiv/direktiv/pkg/refactor/pubsub/sql"
-	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/direktiv/direktiv/pkg/instancestore"
+	"github.com/direktiv/direktiv/pkg/mirror"
+	pubsub2 "github.com/direktiv/direktiv/pkg/pubsub"
+	pubsubSQL "github.com/direktiv/direktiv/pkg/pubsub/sql"
+	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 	libgrpc "google.golang.org/grpc"
@@ -206,7 +206,7 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 	var err error
 	slog.Debug("Starting Flow server")
 	slog.Debug("Initializing telemetry.")
-	telEnd, err := util.InitTelemetry(srv.config.OpenTelemetry, "direktiv/flow", "direktiv")
+	telEnd, err := utils.InitTelemetry(srv.config.OpenTelemetry, "direktiv/flow", "direktiv")
 	if err != nil {
 		return nil, err
 	}

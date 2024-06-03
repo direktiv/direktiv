@@ -9,7 +9,7 @@ import (
 
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/model"
-	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/google/uuid"
 )
 
@@ -66,8 +66,8 @@ func (logic *getterLogic) Run(ctx context.Context, wakedata []byte) (*Transition
 			return nil, derrors.NewCatchableError(ErrCodeJQNotString, "failed to evaluate key as a string for variable at index [%v]", idx)
 		}
 
-		if ok := util.MatchesVarRegex(key); !ok && v.Scope != util.VarScopeFileSystem {
-			return nil, derrors.NewCatchableError(ErrCodeInvalidVariableKey, "variable key must match regex: %s (got: %s)", util.RegexPattern, key)
+		if ok := utils.MatchesVarRegex(key); !ok && v.Scope != utils.VarScopeFileSystem {
+			return nil, derrors.NewCatchableError(ErrCodeInvalidVariableKey, "variable key must match regex: %s (got: %s)", utils.RegexPattern, key)
 		}
 
 		as := key
@@ -80,26 +80,26 @@ func (logic *getterLogic) Run(ctx context.Context, wakedata []byte) (*Transition
 
 		switch v.Scope {
 		case "":
-			selector.Scope = util.VarScopeInstance
+			selector.Scope = utils.VarScopeInstance
 			fallthrough
 
-		case util.VarScopeInstance:
+		case utils.VarScopeInstance:
 			fallthrough
 
-		case util.VarScopeThread:
+		case utils.VarScopeThread:
 			fallthrough
 
-		case util.VarScopeWorkflow:
+		case utils.VarScopeWorkflow:
 			fallthrough
 
-		case util.VarScopeFileSystem:
+		case utils.VarScopeFileSystem:
 			fallthrough
 
-		case util.VarScopeNamespace:
+		case utils.VarScopeNamespace:
 			vars = append(vars, selector)
 			ptrs = append(ptrs, as)
 
-		case util.VarScopeSystem:
+		case utils.VarScopeSystem:
 
 			value, err := valueForSystem(key, logic.Instance)
 			if err != nil {

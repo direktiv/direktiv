@@ -28,11 +28,11 @@ describe('Test filesystem tree read operations', () => {
 		})
 	})
 
-	helpers.itShouldCreateDirV2(it, expect, namespace, '', 'dir1')
-	helpers.itShouldCreateDirV2(it, expect, namespace, '', 'dir2')
-	helpers.itShouldCreateYamlFileV2(it, expect, namespace, '/', 'foo.yaml', 'workflow', helpers.dummyWorkflow('foo'))
-	helpers.itShouldCreateYamlFileV2(it, expect, namespace, '/dir1', 'foo11.yaml', 'workflow', helpers.dummyWorkflow('foo11'))
-	helpers.itShouldCreateYamlFileV2(it, expect, namespace, '/dir1', 'foo12.yaml', 'workflow', helpers.dummyWorkflow('foo12'))
+	helpers.itShouldCreateDir(it, expect, namespace, '', 'dir1')
+	helpers.itShouldCreateDir(it, expect, namespace, '', 'dir2')
+	helpers.itShouldCreateYamlFile(it, expect, namespace, '/', 'foo.yaml', 'workflow', helpers.dummyWorkflow('foo'))
+	helpers.itShouldCreateYamlFile(it, expect, namespace, '/dir1', 'foo11.yaml', 'workflow', helpers.dummyWorkflow('foo11'))
+	helpers.itShouldCreateYamlFile(it, expect, namespace, '/dir1', 'foo12.yaml', 'workflow', helpers.dummyWorkflow('foo12'))
 
 	it(`should read root dir with three paths`, async () => {
 		const res = await request(config.getDirektivHost())
@@ -119,7 +119,7 @@ describe('Test filesystem tree read operations', () => {
 		})
 	})
 
-	helpers.itShouldDeleteFileV2(it, expect, namespace, '/foo.yaml')
+	helpers.itShouldDeleteFile(it, expect, namespace, '/foo.yaml')
 
 	it(`should read root dir two dirs`, async () => {
 		const res = await request(config.getDirektivHost())
@@ -151,7 +151,7 @@ describe('Test filesystem tree read operations', () => {
 		})
 	})
 
-	helpers.itShouldDeleteFileV2(it, expect, namespace, '/dir2')
+	helpers.itShouldDeleteFile(it, expect, namespace, '/dir2')
 
 	it(`should read root dir one path`, async () => {
 		const res = await request(config.getDirektivHost())

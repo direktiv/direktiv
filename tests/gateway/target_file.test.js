@@ -73,7 +73,7 @@ describe('Test target file wrong config', () => {
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -111,7 +111,7 @@ describe('Test mimetype for file target', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -126,7 +126,7 @@ describe('Test mimetype for file target', () => {
 		expect(req.headers['content-type']).toEqual('application/whatever')
 	})
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -148,7 +148,7 @@ describe('Test target namespace file plugin', () => {
 	common.helpers.itShouldCreateNamespace(it, expect, limitedNamespace)
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -156,7 +156,7 @@ describe('Test target namespace file plugin', () => {
 		endpointNSFile,
 	)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -164,7 +164,7 @@ describe('Test target namespace file plugin', () => {
 		endpointNSFileAllowed,
 	)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		limitedNamespace,
@@ -172,7 +172,7 @@ describe('Test target namespace file plugin', () => {
 		endpointNSFile,
 	)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		limitedNamespace,

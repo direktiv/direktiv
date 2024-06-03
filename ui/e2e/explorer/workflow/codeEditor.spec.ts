@@ -217,6 +217,83 @@ test("with confirmation, it navigates to another route despite unsaved changes",
   ).toHaveURL(`/n/${namespace}/settings`);
 });
 
+test("it prevents navigation to another namespace with unsaved changes", async ({
+  page,
+}) => {
+  const secondNamespace = await createNamespace();
+
+  const expectedMsg =
+    "You have unsaved changes that will be lost when leaving this route. Are you sure you want to leave?";
+  let dialogTriggered = false;
+
+  page.on("dialog", async (dialog) => {
+    await expect(dialog.message()).toBe(expectedMsg);
+    dialogTriggered = true;
+    return dialog.dismiss();
+  });
+
+  await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflow}`);
+  await page.getByText(defaultDescription).click();
+
+  const dirtyText = faker.random.alphaNumeric(9);
+  await page.type("textarea", dirtyText);
+
+  await page.getByTestId("dropdown-trg-namespace").click();
+  await page.getByText(secondNamespace).click();
+
+  await expect(dialogTriggered).toBe(true);
+
+  await expect(
+    page,
+    "after dismissing the dialog, it stays on the same route"
+  ).toHaveURL(`/n/${namespace}/explorer/workflow/edit/${workflow}`);
+
+  await expect(
+    page.getByText(dirtyText),
+    "the edited text is still in the editor"
+  ).toBeVisible();
+
+  await deleteNamespace(secondNamespace);
+});
+
+test("with confirmation, it navigates to another namespace despite unsaved changes", async ({
+  page,
+}) => {
+  const secondNamespace = await createNamespace();
+
+  const expectedMsg =
+    "You have unsaved changes that will be lost when leaving this route. Are you sure you want to leave?";
+  let dialogTriggered = false;
+
+  page.on("dialog", async (dialog) => {
+    await expect(dialog.message()).toBe(expectedMsg);
+    dialogTriggered = true;
+    return dialog.accept();
+  });
+
+  await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflow}`);
+  await page.getByText(defaultDescription).click();
+
+  const dirtyText = faker.random.alphaNumeric(9);
+  await page.type("textarea", dirtyText);
+
+  await page.getByTestId("dropdown-trg-namespace").click();
+  await page.getByText(secondNamespace).click();
+
+  await expect(dialogTriggered).toBe(true);
+
+  await expect(page, "it navigates to the new namespace").toHaveURL(
+    `/n/${secondNamespace}/explorer/tree`
+  );
+
+  await expect(
+    page.getByTestId("breadcrumb-namespace"),
+    "it renders the breadcrumb for the new namespace"
+  ).toContainText(secondNamespace);
+
+  await deleteNamespace(secondNamespace);
+});
+
 test("it is possible to leave the app from the editor", async ({ page }) => {
   let dialogTriggered = false;
 

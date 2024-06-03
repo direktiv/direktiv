@@ -19,9 +19,9 @@ import (
 	"strings"
 	"sync"
 
+	enginerefactor "github.com/direktiv/direktiv/pkg/engine"
 	"github.com/direktiv/direktiv/pkg/flow"
-	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
-	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/direktiv/direktiv/pkg/utils"
 )
 
 type inboundWorker struct {
@@ -101,7 +101,7 @@ func (worker *inboundWorker) doFunctionRequest(ctx context.Context, ir *function
 	req.Header.Set("Direktiv-TempDir", worker.functionDir(ir))
 	req.Header.Set("Content-Type", "application/json")
 
-	cleanup := util.TraceHTTPRequest(ctx, req)
+	cleanup := utils.TraceHTTPRequest(ctx, req)
 	defer cleanup()
 
 	resp, err := http.DefaultClient.Do(req)
@@ -417,7 +417,7 @@ func (worker *inboundWorker) prepFunctionFiles(ctx context.Context, ir *function
 		}
 	}
 
-	subDirs := []string{util.VarScopeFileSystem, util.VarScopeNamespace, util.VarScopeWorkflow, util.VarScopeInstance}
+	subDirs := []string{utils.VarScopeFileSystem, utils.VarScopeNamespace, utils.VarScopeWorkflow, utils.VarScopeInstance}
 	for _, d := range subDirs {
 		err := os.MkdirAll(path.Join(dir, fmt.Sprintf("out/%s", d)), 0o777)
 		if err != nil {
@@ -488,7 +488,7 @@ func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
 	rctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	rctx = util.TransplantTelemetryContextInformation(ctx, rctx)
+	rctx = utils.TransplantTelemetryContextInformation(ctx, rctx)
 
 	worker.srv.registerActiveRequest(ir, rctx, cancel)
 	defer worker.srv.deregisterActiveRequest(ir.actionId)
@@ -517,7 +517,7 @@ func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
 }
 
 func (worker *inboundWorker) setOutVariables(ctx context.Context, ir *functionRequest) error {
-	subDirs := []string{util.VarScopeFileSystem, util.VarScopeNamespace, util.VarScopeWorkflow, util.VarScopeInstance}
+	subDirs := []string{utils.VarScopeFileSystem, utils.VarScopeNamespace, utils.VarScopeWorkflow, utils.VarScopeInstance}
 	for _, d := range subDirs {
 		out := path.Join(worker.functionDir(ir), "out", d)
 

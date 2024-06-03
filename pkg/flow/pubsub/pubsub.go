@@ -10,8 +10,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/flow/bytedata"
-	"github.com/direktiv/direktiv/pkg/refactor/datastore"
+	"github.com/direktiv/direktiv/pkg/datastore"
+	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 )
@@ -435,30 +435,6 @@ func pubsubNotify(key string) *PubsubUpdate {
 	}
 }
 
-func (pubsub *Pubsub) namespaceEventListeners(id uuid.UUID) string {
-	return fmt.Sprintf("nsel:%s", id.String())
-}
-
-func (pubsub *Pubsub) SubscribeEventListeners(ns *datastore.Namespace) *Subscription {
-	return pubsub.Subscribe(ns.ID.String(), pubsub.namespaceEventListeners(ns.ID))
-}
-
-func (pubsub *Pubsub) NotifyEventListeners(id uuid.UUID) {
-	pubsub.Publish(pubsubNotify(pubsub.namespaceEventListeners(id)))
-}
-
-func (pubsub *Pubsub) namespaceEvents(ns *datastore.Namespace) string {
-	return fmt.Sprintf("nsev:%s", ns.ID.String())
-}
-
-func (pubsub *Pubsub) SubscribeEvents(ns *datastore.Namespace) *Subscription {
-	return pubsub.Subscribe(ns.ID.String(), pubsub.namespaceEvents(ns))
-}
-
-func (pubsub *Pubsub) NotifyEvents(ns *datastore.Namespace) {
-	pubsub.Publish(pubsubNotify(pubsub.namespaceEvents(ns)))
-}
-
 func (pubsub *Pubsub) NotifyInstances(ns *datastore.Namespace) {
 	// pubsub.publish(pubsubNotify(pubsub.instances(ns)))
 }
@@ -508,7 +484,7 @@ func (pubsub *Pubsub) ConfigureRouterCron(id, cron string) {
 		Cron: cron,
 	}
 
-	key := bytedata.Marshal(msg)
+	key := utils.Marshal(msg)
 
 	pubsub.Publish(&PubsubUpdate{
 		Handler: PubsubConfigureRouterFunction,

@@ -8,22 +8,11 @@ import { retry10 } from '../common/retry'
 
 const namespace = basename(__filename)
 
-describe('Test gateway2 reconciling', () => {
+describe('Test gateway2 basic-auth plugin', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
-	helpers.itShouldCreateYamlFileV2(it, expect, namespace,
-		'/', 'wf1.yml', 'workflow', `
-direktiv_api: workflow/v1
-description: A simple 'no-op' state that returns 'Hello world!'
-states:
-- id: step1
-  type: noop
-  transform:
-    result: Hello world!
-`)
-
-	helpers.itShouldCreateYamlFileV2(it, expect, namespace,
+	helpers.itShouldCreateYamlFile(it, expect, namespace,
 		'/', 'c1.yaml', 'consumer', `
 direktiv_api: "consumer/v2"
 username: user1
@@ -35,7 +24,7 @@ groups:
 - group1
 `)
 
-	helpers.itShouldCreateYamlFileV2(it, expect, namespace,
+	helpers.itShouldCreateYamlFile(it, expect, namespace,
 		'/', 'ep1.yaml', 'endpoint', `
 direktiv_api: endpoint/v2
 path: /foo
@@ -47,9 +36,13 @@ plugins:
     type: debug-target
   auth:
     - type: basic-auth   
+      configuration:
+        add_username_header: true
+        add_tags_header: true
+        add_groups_header: true
 `)
 
-	retry10(`should get access denied ep1.yaml endpoint`, async () => {
+	retry10(`should denied ep1.yaml endpoint`, async () => {
 		const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway2/foo`)
 			.send({})
 			.auth('user1', 'falsePassword')
@@ -62,11 +55,21 @@ plugins:
 		})
 	})
 
-	retry10(`should execute protected ep1.yaml endpoint`, async () => {
+	retry10(`should access ep1.yaml endpoint`, async () => {
 		const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway2/foo`)
-			.send({})
+			.send({ foo: 'bar' })
 			.auth('user1', 'pwd1')
 		expect(res.statusCode).toEqual(200)
+		expect(res.body.data.headers).toMatchObject({
+			'Direktiv-Consumer-Groups': [ 'group1' ],
+			'Direktiv-Consumer-Tags': [ 'tag1' ],
+			'Direktiv-Consumer-User': [ 'user1' ],
+			'Accept-Encoding': [ 'gzip, deflate' ],
+			Authorization: [ 'Basic dXNlcjE6cHdkMQ==' ],
+			'Content-Length': [ '13' ],
+			'Content-Type': [ 'application/json' ],
+		})
 		expect(res.body.data.text).toEqual('from debug plugin')
+		expect(res.body.data.body).toEqual('{"foo":"bar"}')
 	})
 })

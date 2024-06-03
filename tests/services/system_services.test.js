@@ -14,7 +14,7 @@ describe('Test system services behaviour', () => {
 	helpers.itShouldCreateNamespace(it, expect, systemNamespace)
 	helpers.itShouldCreateNamespace(it, expect, normalNamespace)
 
-	helpers.itShouldCreateYamlFileV2(it, expect, systemNamespace,
+	helpers.itShouldCreateYamlFile(it, expect, systemNamespace,
 		'/', 'bash.yaml', 'service', `
 direktiv_api: service/v1
 name: bash
@@ -23,7 +23,7 @@ cmd: ""
 scale: 1
 `)
 
-	helpers.itShouldCreateFileV2(it, expect, systemNamespace,
+	helpers.itShouldCreateFile(it, expect, systemNamespace,
 		'',
 		`a.yaml`,
 		'workflow',
@@ -79,7 +79,7 @@ states:
 		})
 	})
 
-	helpers.itShouldCreateFileV2(it, expect, normalNamespace,
+	helpers.itShouldCreateFile(it, expect, normalNamespace,
 		'',
 		`a.yaml`,
 		'workflow',
@@ -115,7 +115,7 @@ states:
 		})
 	})
 
-	helpers.itShouldCreateFileV2(it, expect, normalNamespace,
+	helpers.itShouldCreateFile(it, expect, normalNamespace,
 		'',
 		`b.yaml`,
 		'workflow',

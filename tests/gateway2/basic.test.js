@@ -8,22 +8,11 @@ import { retry10 } from '../common/retry'
 
 const namespace = basename(__filename)
 
-describe('Test gateway2 reconciling', () => {
+describe('Test gateway2 basic call', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
-	helpers.itShouldCreateYamlFileV2(it, expect, namespace,
-		'/', 'wf1.yml', 'workflow', `
-direktiv_api: workflow/v1
-description: A simple 'no-op' state that returns 'Hello world!'
-states:
-- id: step1
-  type: noop
-  transform:
-    result: Hello world!
-`)
-
-	helpers.itShouldCreateYamlFileV2(it, expect, namespace,
+	helpers.itShouldCreateYamlFile(it, expect, namespace,
 		'/', 'ep1.yaml', 'endpoint', `
 direktiv_api: endpoint/v2
 path: /foo

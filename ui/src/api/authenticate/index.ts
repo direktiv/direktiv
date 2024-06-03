@@ -24,7 +24,7 @@ export const checkApiKeyAgainstServer = (apiKey?: string) =>
     .catch((err) => {
       const parsedError = ApiErrorSchema.safeParse(err);
       if (parsedError.success) {
-        const { status } = parsedError.data.response;
+        const { status } = parsedError.data;
         if (status === 401 || status === 403) {
           return false;
         }

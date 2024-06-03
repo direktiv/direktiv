@@ -220,8 +220,8 @@ describe("processApiResponse", () => {
       const res = result.current.error;
       const parsedRes = ApiErrorSchema.safeParse(res);
       if (parsedRes.success) {
-        expect(parsedRes.data.response.status).toBe(401);
-        expect(parsedRes.data.json).toBe(undefined);
+        expect(parsedRes.data.status).toBe(401);
+        expect(parsedRes.data.body).toBe(undefined);
       } else {
         throw new Error("api response does not match ApiErrorSchema");
       }
@@ -313,8 +313,8 @@ describe("processApiResponse", () => {
       const res = result.current.error;
       const parsedRes = ApiErrorSchema.safeParse(res);
       if (parsedRes.success) {
-        expect(parsedRes.data.response.status).toBe(404);
-        expect(parsedRes.data.json).toBe(undefined);
+        expect(parsedRes.data.status).toBe(404);
+        expect(parsedRes.data.body).toBe(undefined);
       } else {
         throw new Error("api response does not match ApiErrorSchema");
       }
@@ -342,10 +342,9 @@ describe("processApiResponse", () => {
       const res = result.current.error;
       const parsedRes = ApiErrorSchema.safeParse(res);
       if (parsedRes.success) {
-        expect(parsedRes.data.response.status).toBe(422);
-        expect(parsedRes.data.json).toStrictEqual({
-          code: 422,
-          message: "error message",
+        expect(parsedRes.data.status).toBe(422);
+        expect(parsedRes.data.body).toStrictEqual({
+          my: "error",
         });
       } else {
         throw new Error("api response does not match ApiErrorSchema");
