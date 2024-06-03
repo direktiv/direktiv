@@ -67,7 +67,7 @@ func Test_Add_Get_Complex_Context(t *testing.T) {
 	)
 	resultsForEngine := make(chan triggerMock, 1)
 	var engine events.EventProcessing = events.EventEngine{
-		WorkflowStart: func(workflowID uuid.UUID, events ...*cloudevents.Event) {
+		WorkflowStart: func(ctx context.Context, workflowID uuid.UUID, events ...*cloudevents.Event) {
 			resultsForEngine <- triggerMock{events: events, wf: workflowID}
 		},
 		WakeInstance: func(instanceID uuid.UUID, events []*cloudevents.Event) {
@@ -142,7 +142,7 @@ func Test_Add_Get_And(t *testing.T) {
 	)
 	resultsForEngine := make(chan triggerMock, 1)
 	var engine events.EventProcessing = events.EventEngine{
-		WorkflowStart: func(workflowID uuid.UUID, events ...*cloudevents.Event) {
+		WorkflowStart: func(ctx context.Context, workflowID uuid.UUID, events ...*cloudevents.Event) {
 			resultsForEngine <- triggerMock{events: events, wf: workflowID}
 		},
 		WakeInstance: func(instanceID uuid.UUID, events []*cloudevents.Event) {
@@ -218,7 +218,7 @@ func Test_Add_Get_GatekeeperSimple(t *testing.T) {
 	)
 	resultsForEngine := make(chan triggerMock, 1)
 	var engine events.EventProcessing = events.EventEngine{
-		WorkflowStart: func(workflowID uuid.UUID, events ...*cloudevents.Event) {
+		WorkflowStart: func(ctx context.Context, workflowID uuid.UUID, events ...*cloudevents.Event) {
 			resultsForEngine <- triggerMock{events: events, wf: workflowID}
 		},
 		WakeInstance: func(instanceID uuid.UUID, events []*cloudevents.Event) {
@@ -299,7 +299,7 @@ func Test_Add_Get(t *testing.T) {
 	)
 	resultsForEngine := make(chan triggerMock, 1)
 	var engine events.EventProcessing = events.EventEngine{
-		WorkflowStart: func(workflowID uuid.UUID, events ...*cloudevents.Event) {
+		WorkflowStart: func(ctx context.Context, workflowID uuid.UUID, events ...*cloudevents.Event) {
 			resultsForEngine <- triggerMock{events: events, wf: workflowID}
 		},
 		WakeInstance: func(instanceID uuid.UUID, events []*cloudevents.Event) {
@@ -442,7 +442,7 @@ func Test_Add_GatekkeeperComplex(t *testing.T) {
 	)
 	resultsForEngine := make(chan triggerMock, 1)
 	var engine events.EventProcessing = events.EventEngine{
-		WorkflowStart: func(workflowID uuid.UUID, events ...*cloudevents.Event) {
+		WorkflowStart: func(ctx context.Context, workflowID uuid.UUID, events ...*cloudevents.Event) {
 			resultsForEngine <- triggerMock{events: events, wf: workflowID}
 		},
 		WakeInstance: func(instanceID uuid.UUID, events []*cloudevents.Event) {
@@ -533,7 +533,7 @@ func Test_Trigger_GatekeeperSimple(t *testing.T) {
 	)
 	resultsForEngine := make(chan triggerMock, 3)
 	var engine events.EventProcessing = events.EventEngine{
-		WorkflowStart: func(workflowID uuid.UUID, events ...*cloudevents.Event) {
+		WorkflowStart: func(ctx context.Context, workflowID uuid.UUID, events ...*cloudevents.Event) {
 			resultsForEngine <- triggerMock{events: events, wf: workflowID}
 		},
 		WakeInstance: func(instanceID uuid.UUID, events []*cloudevents.Event) {

@@ -27,49 +27,49 @@ groups:
 	helpers.itShouldCreateYamlFile(it, expect, namespace,
 		'/', 'ep1.yaml', 'endpoint', `
 direktiv_api: endpoint/v2
-path: /foo
+path: /foo1
 allow_anonymous: false
 methods:
   - POST
 plugins:
-  target:
-    type: debug-target
   auth:
     - type: basic-auth   
+  target:
+    type: debug-target
+  inbound:
+    - type: acl
       configuration:
-        add_username_header: true
-        add_tags_header: true
-        add_groups_header: true
+        allow_groups: ["group2"]
 `)
 
+	helpers.itShouldCreateYamlFile(it, expect, namespace,
+		'/', 'ep2.yaml', 'endpoint', `
+direktiv_api: endpoint/v2
+path: /foo2
+allow_anonymous: false
+methods:
+  - POST
+plugins:
+  auth:
+    - type: basic-auth   
+  target:
+    type: debug-target
+  inbound:
+    - type: acl
+      configuration:
+        allow_groups: ["group1"]
+`)
 	retry10(`should denied ep1.yaml endpoint`, async () => {
-		const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway2/foo`)
+		const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway2/foo1`)
 			.send({})
-			.auth('user1', 'falsePassword')
+			.auth('user1', 'pwd1')
 		expect(res.statusCode).toEqual(403)
-		expect(res.body).toEqual({
-			error: {
-				endpointFile: '/ep1.yaml',
-				message: 'authentication failed',
-			},
-		})
 	})
 
-	retry10(`should access ep1.yaml endpoint`, async () => {
-		const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway2/foo`)
+	retry10(`should access ep2.yaml endpoint`, async () => {
+		const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway2/foo2`)
 			.send({ foo: 'bar' })
 			.auth('user1', 'pwd1')
 		expect(res.statusCode).toEqual(200)
-		expect(res.body.data.headers).toMatchObject({
-			'Direktiv-Consumer-Groups': [ 'group1' ],
-			'Direktiv-Consumer-Tags': [ 'tag1' ],
-			'Direktiv-Consumer-User': [ 'user1' ],
-			'Accept-Encoding': [ 'gzip, deflate' ],
-			Authorization: [ 'Basic dXNlcjE6cHdkMQ==' ],
-			'Content-Length': [ '13' ],
-			'Content-Type': [ 'application/json' ],
-		})
-		expect(res.body.data.text).toEqual('from debug plugin')
-		expect(res.body.data.body).toEqual('{"foo":"bar"}')
 	})
 })

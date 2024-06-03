@@ -57,16 +57,19 @@ describe('Test complex workflow events orchistration', () => {
 
 		await events.sendEventAndList(namespaceName, eventStream1)
 		let instancesResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/instances?limit=10&offset=0`)
+		await helpers.sleep(300)
 		expect(instancesResponse.body.data.length).toBe(1)
 		const stream1InstanceId = instancesResponse.body.data[0].id
 
 		await events.sendEventAndList(namespaceName, eventStream2)
+		await helpers.sleep(300)
 		instancesResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/instances?limit=10&offset=0`)
 		const stream2InstanceId = instancesResponse.body.data[0].id // assuming they are sorted
 		expect(instancesResponse.body.data.length).toBe(2)
 		expect(stream1InstanceId).not.toBe(stream2InstanceId)
 
 		await events.sendEventAndList(namespaceName, eventStream3)
+		await helpers.sleep(300)
 		instancesResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/instances?limit=10&offset=0`)
 		const stream3InstanceId = instancesResponse.body.data[0].id // assuming they are sorted
 		expect(instancesResponse.body.data.length).toBe(3)

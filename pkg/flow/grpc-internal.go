@@ -13,10 +13,10 @@ import (
 	enginerefactor "github.com/direktiv/direktiv/pkg/engine"
 	libengine "github.com/direktiv/direktiv/pkg/engine"
 	"github.com/direktiv/direktiv/pkg/filestore"
-	"github.com/direktiv/direktiv/pkg/flow/bytedata"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/flow/nohome/recipient"
-	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/direktiv/direktiv/pkg/tracing"
+	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/google/uuid"
 	libgrpc "google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -41,7 +41,7 @@ func initInternalServer(ctx context.Context, srv *server) (*internal, error) {
 		return nil, err
 	}
 
-	opts := util.GrpcServerOptions(unaryInterceptor, streamInterceptor)
+	opts := utils.GrpcServerOptions(unaryInterceptor, streamInterceptor)
 
 	internal.srv = libgrpc.NewServer(opts...)
 
@@ -106,14 +106,14 @@ func (internal *internal) ActionLog(ctx context.Context, req *grpc.ActionLogRequ
 	tags["loop-index"] = fmt.Sprintf("%d", req.GetIterator())
 	tags["state-id"] = stateID
 	tags["state-type"] = "action"
-	loggingCtx := enginerefactor.AddTag(ctx, "state", stateID)
-	loggingCtx = enginerefactor.AddTag(loggingCtx, "branch", req.GetIterator())
-	loggingCtx = enginerefactor.WithTrack(loggingCtx, enginerefactor.BuildInstanceTrack(instance))
-	loggingCtx = enginerefactor.AddTag(loggingCtx, "namespace", instance.Instance.Namespace)
+	loggingCtx := tracing.AddTag(ctx, "state", stateID)
+	loggingCtx = tracing.AddTag(loggingCtx, "branch", req.GetIterator())
+	loggingCtx = tracing.WithTrack(loggingCtx, tracing.BuildInstanceTrack(instance))
+	loggingCtx = tracing.AddTag(loggingCtx, "namespace", instance.Instance.Namespace)
 	loggingCtx = instance.WithTags(loggingCtx)
 	for _, msg := range req.GetMsg() {
 		res := truncateLogsMsg(msg, 1024)
-		slog.Info(res, enginerefactor.GetSlogAttributesWithStatus(loggingCtx, core.LogRunningStatus)...)
+		slog.Info(res, tracing.GetSlogAttributesWithStatus(loggingCtx, core.LogRunningStatus)...)
 	}
 	var resp emptypb.Empty
 
@@ -413,7 +413,7 @@ func (internal *internal) FileVariableParcels(req *grpc.VariableInternalRequest,
 	} else {
 		if errors.Is(err, filestore.ErrNotFound) {
 			data = make([]byte, 0)
-			checksum = bytedata.Checksum(data)
+			checksum = utils.Checksum(data)
 			createdAt = timestamppb.New(time.Now())
 			updatedAt = createdAt
 		} else {

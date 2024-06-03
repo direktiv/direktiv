@@ -11,7 +11,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/instancestore"
 	"github.com/direktiv/direktiv/pkg/instancestore/instancestoresql"
-	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/google/uuid"
 )
 
@@ -512,7 +511,7 @@ func Test_sqlInstanceStore_GetHangingInstances(t *testing.T) {
 	args := &instancestore.CreateInstanceDataArgs{
 		ID:           id,
 		Server:       server,
-		Invoker:      util.CallerCron,
+		Invoker:      "cron",
 		WorkflowPath: "/test.yaml",
 		Definition: []byte(`
 states:
@@ -641,7 +640,7 @@ func Test_sqlInstanceStore_DeleteOldInstances(t *testing.T) {
 	args := &instancestore.CreateInstanceDataArgs{
 		ID:           id,
 		Server:       server,
-		Invoker:      util.CallerCron,
+		Invoker:      "cron",
 		WorkflowPath: "/test.yaml",
 		Definition: []byte(`
 states:

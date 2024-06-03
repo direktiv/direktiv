@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/core"
-	"github.com/direktiv/direktiv/pkg/util"
 	"github.com/mattn/go-shellwords"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -14,7 +13,15 @@ import (
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 )
 
-const direktivCmdExecValue = "/usr/share/direktiv/direktiv-cmd"
+const (
+	direktivCmdExecValue  = "/usr/share/direktiv/direktiv-cmd"
+	direktivProxyHTTPS    = "HTTPS_PROXY"
+	direktivProxyHTTP     = "HTTP_PROXY"
+	direktivProxyNO       = "NO_PROXY"
+	direktivOpentelemetry = "DIREKTIV_OTLP"
+	direktivFlowEndpoint  = "DIREKTIV_FLOW_ENDPOINT"
+	direktivDebug         = "DIREKTIV_DEBUG"
+)
 
 func buildService(c *core.Config, sv *core.ServiceFileData, registrySecrets []corev1.LocalObjectReference) (*servingv1.Service, error) {
 	containers, err := buildContainers(c, sv)
@@ -281,33 +288,33 @@ func buildEnvVars(withGrpc bool, c *core.Config, sv *core.ServiceFileData) []cor
 
 	if len(c.KnativeProxyHTTP) > 0 {
 		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
-			Name:  util.DirektivProxyHTTP,
+			Name:  direktivProxyHTTP,
 			Value: c.KnativeProxyHTTP,
 		})
 		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
-			Name:  strings.ToLower(util.DirektivProxyHTTP),
+			Name:  strings.ToLower(direktivProxyHTTP),
 			Value: c.KnativeProxyHTTP,
 		})
 	}
 
 	if len(c.KnativeProxyHTTPS) > 0 {
 		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
-			Name:  util.DirektivProxyHTTPS,
+			Name:  direktivProxyHTTPS,
 			Value: c.KnativeProxyHTTPS,
 		})
 		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
-			Name:  strings.ToLower(util.DirektivProxyHTTPS),
+			Name:  strings.ToLower(direktivProxyHTTPS),
 			Value: c.KnativeProxyHTTPS,
 		})
 	}
 
 	if len(c.KnativeProxyNo) > 0 {
 		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
-			Name:  util.DirektivProxyNO,
+			Name:  direktivProxyNO,
 			Value: c.KnativeProxyNo,
 		})
 		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
-			Name:  strings.ToLower(util.DirektivProxyNO),
+			Name:  strings.ToLower(direktivProxyNO),
 			Value: c.KnativeProxyNo,
 		})
 	}
@@ -315,13 +322,13 @@ func buildEnvVars(withGrpc bool, c *core.Config, sv *core.ServiceFileData) []cor
 	// add debug if there is an env
 	if c.LogDebug {
 		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
-			Name:  util.DirektivDebug,
+			Name:  direktivDebug,
 			Value: "true",
 		})
 	}
 
 	proxyEnvs = append(proxyEnvs, corev1.EnvVar{
-		Name:  util.DirektivOpentelemetry,
+		Name:  direktivOpentelemetry,
 		Value: c.OpenTelemetry,
 	})
 
@@ -329,7 +336,7 @@ func buildEnvVars(withGrpc bool, c *core.Config, sv *core.ServiceFileData) []cor
 		namespace := c.DirektivNamespace
 
 		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
-			Name:  util.DirektivFlowEndpoint,
+			Name:  direktivFlowEndpoint,
 			Value: fmt.Sprintf("direktiv-flow.%s", namespace),
 		})
 
