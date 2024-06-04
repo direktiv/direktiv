@@ -1,4 +1,12 @@
-import { File, Folder, Layers, Play, Users, Workflow } from "lucide-react";
+import {
+  Braces,
+  File,
+  Folder,
+  Layers,
+  Play,
+  Users,
+  Workflow,
+} from "lucide-react";
 
 import { BaseFileSchemaType } from "./schema";
 import { ExplorerSubpages } from "~/util/router/pages";
@@ -60,14 +68,26 @@ export const removeTrailingSlash = (path?: string) => {
 export const sortByName = (a: { name: string }, b: { name: string }): number =>
   a.name.localeCompare(b.name);
 
-export const fileTypeToIcon = (type: BaseFileSchemaType["type"]) => {
+const workflowIcon = (mimeType: string | undefined) => {
+  switch (mimeType) {
+    case "application/x-typescript":
+      return Braces;
+    default:
+      return Play;
+  }
+};
+
+export const fileTypeToIcon = (
+  type: BaseFileSchemaType["type"],
+  mimeType: string | undefined
+) => {
   switch (type) {
     case "directory":
       return Folder;
     case "service":
       return Layers;
     case "workflow":
-      return Play;
+      return workflowIcon(mimeType);
     case "endpoint":
       return Workflow;
     case "consumer":

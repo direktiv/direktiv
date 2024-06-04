@@ -31,7 +31,7 @@ const FileRow = ({
   onPreviewClicked: (file: BaseFileSchemaType) => void;
 }) => {
   const { t } = useTranslation();
-  const Icon = fileTypeToIcon(file.type);
+  const Icon = fileTypeToIcon(file.type, file.mimeType);
 
   const filename = getFilenameFromPath(file.path);
 
