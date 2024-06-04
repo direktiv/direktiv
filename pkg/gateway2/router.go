@@ -53,7 +53,7 @@ func buildRouter(endpoints []core.EndpointV2, consumers []core.ConsumerV2) *rout
 		cleanPath := strings.Trim(item.Path, " /")
 
 		for _, pattern := range []string{
-			fmt.Sprintf("/api/v2/namespaces/%s/gateway2/%s", item.Namespace, cleanPath),
+			fmt.Sprintf("/api/v2/namespaces/%s/gateway/%s", item.Namespace, cleanPath),
 			fmt.Sprintf("/ns/%s/%s", item.Namespace, cleanPath),
 		} {
 			serveMux.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
