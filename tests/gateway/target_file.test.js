@@ -200,6 +200,6 @@ describe('Test target namespace file plugin', () => {
 		const req = await request(common.config.getDirektivHost()).get(
 			`/ns/` + limitedNamespace + `/endpoint1`,
 		)
-		expect(req.statusCode).toEqual(500)
+		expect(req.statusCode).toEqual(403)
 	})
 })
