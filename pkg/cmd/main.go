@@ -264,8 +264,7 @@ func renderGateway2(db *database.SQLStore, manager core.GatewayManagerV2) {
 			if file.Typ == filestore.FileTypeConsumer {
 				consumerFile, err := core.ParseConsumerFileV2(file.Data)
 				if err != nil {
-					// TODO: yassir log error here.
-					// slog.Error("parse consumer file", "err", err)
+					slog.Error("parse consumer file", "err", err)
 
 					continue
 				}
@@ -277,8 +276,7 @@ func renderGateway2(db *database.SQLStore, manager core.GatewayManagerV2) {
 			} else if file.Typ == filestore.FileTypeEndpoint {
 				endpointFile, err := core.ParseEndpointFileV2(file.Data)
 				if err != nil {
-					// TODO: yassir log error here.
-					// slog.Error("parse endpoint file", "err", err)
+					slog.Error("parse endpoint file", "err", err)
 
 					continue
 				}
