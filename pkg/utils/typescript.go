@@ -3,7 +3,8 @@ package utils
 import "encoding/json"
 
 const (
-	TypeScriptMimeType = "application/x-typescript"
+	TypeScriptMimeType  = "application/x-typescript"
+	TypeScriptExtension = ".direktiv.ts"
 )
 
 func DoubleMarshal[T any](obj interface{}) (T, error) {

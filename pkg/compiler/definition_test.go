@@ -40,3 +40,18 @@ func TestNoFunctionsOutside(t *testing.T) {
 	_, err = compiler.New("", def)
 	assert.Error(t, err)
 }
+
+func TestBasicDefinition(t *testing.T) {
+
+	emptyDef := `const flow: DirektivFlow = {
+		scale: [
+			{
+				min: 1
+			}
+		]
+	};`
+	c, _ := compiler.New("", emptyDef)
+	info, _ := c.CompileFlow()
+
+	assert.Equal(t, 1, info.Definition.Scale[0].Min)
+}

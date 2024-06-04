@@ -22,6 +22,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/pubsub"
 	"github.com/direktiv/direktiv/pkg/registry"
 	"github.com/direktiv/direktiv/pkg/service"
+	"github.com/direktiv/direktiv/pkg/tsengine"
 	"github.com/direktiv/direktiv/pkg/utils"
 )
 
@@ -260,17 +261,12 @@ func renderServiceManager(db *database.SQLStore, serviceManager core.ServiceMana
 			} else if file.Typ == filestore.FileTypeWorkflow && file.MIMEType == utils.TypeScriptMimeType {
 				fmt.Println("PARSE TYPESCRIPT")
 
-				// using hash of the full typescript file to get a reconcile hash
-				svcFile := &core.ServiceFileData{
-					Typ:       core.ServiceTypeTypescript,
-					Name:      strings.ToLower(file.Checksum)[:32],
-					Namespace: ns.Name,
-					FilePath:  file.Path,
-					ServiceFile: core.ServiceFile{
-						Image: strings.ToLower(file.Checksum)[:32],
-						Size:  "medium",
-					},
-					TypescriptFile: file.Data,
+				svcFile := tsengine.GenerateBasicServiceFile(file.Path, ns.Name)
+				svcFile.TypescriptFile = file.Data
+
+				svcFile.ServiceFile = core.ServiceFile{
+					Image: strings.ToLower(file.Checksum)[:32],
+					Size:  "medium",
 				}
 
 				funConfigList = append(funConfigList, svcFile)

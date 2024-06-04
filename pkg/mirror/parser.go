@@ -15,6 +15,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/go-git/go-git/v5/plumbing/format/gitignore"
 )
 
@@ -24,11 +25,12 @@ type Parser struct {
 	src     Source
 	tempDir string
 
-	Filters   map[string][]byte
-	Workflows map[string][]byte
-	Services  map[string][]byte
-	Endpoints map[string][]byte
-	Consumers map[string][]byte
+	Filters             map[string][]byte
+	Workflows           map[string][]byte
+	TypescriptWorkflows map[string][]byte
+	Services            map[string][]byte
+	Endpoints           map[string][]byte
+	Consumers           map[string][]byte
 
 	DeprecatedNamespaceVars map[string][]byte
 	DeprecatedWorkflowVars  map[string]map[string][]byte
@@ -47,11 +49,12 @@ func NewParser(log FormatLogger, src Source) (*Parser, error) {
 		src:     src,
 		tempDir: tempDir,
 
-		Filters:   make(map[string][]byte),
-		Workflows: make(map[string][]byte),
-		Services:  make(map[string][]byte),
-		Endpoints: make(map[string][]byte),
-		Consumers: make(map[string][]byte),
+		Filters:             make(map[string][]byte),
+		Workflows:           make(map[string][]byte),
+		TypescriptWorkflows: make(map[string][]byte),
+		Services:            make(map[string][]byte),
+		Endpoints:           make(map[string][]byte),
+		Consumers:           make(map[string][]byte),
 
 		DeprecatedNamespaceVars: make(map[string][]byte),
 		DeprecatedWorkflowVars:  make(map[string]map[string][]byte),
@@ -89,6 +92,11 @@ func (p *Parser) parse() error {
 	}
 
 	err = p.scanAndPruneAmbiguousDirektivWorkflowFiles()
+	if err != nil {
+		return err
+	}
+
+	err = p.scanDirektivTypescriptWorkflowFiles()
 	if err != nil {
 		return err
 	}
@@ -223,29 +231,6 @@ func (p *Parser) filterCopySource() error {
 	return nil
 }
 
-func (p *Parser) listYAMLFiles() ([]string, error) {
-	var paths []string
-
-	tfs := os.DirFS(p.tempDir)
-
-	err := fs.WalkDir(tfs, ".", func(path string, d fs.DirEntry, err error) error {
-		if !d.Type().IsRegular() {
-			return nil
-		}
-
-		if strings.HasSuffix(path, ".yml") || strings.HasSuffix(path, ".yaml") {
-			paths = append(paths, path)
-		}
-
-		return nil
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	return paths, nil
-}
-
 func (p *Parser) scanAndPruneDirektivResourceFile(path string) error {
 	tpath := filepath.Join(p.tempDir, path)
 
@@ -309,7 +294,7 @@ func (p *Parser) scanAndPruneDirektivResourceFile(path string) error {
 }
 
 func (p *Parser) scanAndPruneDirektivResourceFiles() error {
-	paths, err := p.listYAMLFiles()
+	paths, err := p.listFilesWithExtensions([]string{".yaml", ".yml"})
 	if err != nil {
 		return err
 	}
@@ -356,7 +341,7 @@ func (p *Parser) scanAndPruneAmbiguousDirektivWorkflowFile(path string) error {
 }
 
 func (p *Parser) scanAndPruneAmbiguousDirektivWorkflowFiles() error {
-	paths, err := p.listYAMLFiles()
+	paths, err := p.listFilesWithExtensions([]string{".yaml", ".yml"})
 	if err != nil {
 		return err
 	}
@@ -562,6 +547,58 @@ func (p *Parser) parseDeprecatedVariableFiles() error {
 				p.log.Warnf("Detected deprecated workflow variable definition at: %s", fpath)
 			}
 		}
+	}
+
+	return nil
+}
+
+func (p *Parser) listFilesWithExtensions(extensions []string) ([]string, error) {
+	var paths []string
+
+	tfs := os.DirFS(p.tempDir)
+
+	err := fs.WalkDir(tfs, ".", func(path string, d fs.DirEntry, err error) error {
+		if !d.Type().IsRegular() {
+			return nil
+		}
+
+		for a := range extensions {
+			if strings.HasSuffix(path, extensions[a]) {
+				paths = append(paths, path)
+			}
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return paths, nil
+}
+
+func (p *Parser) scanDirektivTypescriptWorkflowFiles() error {
+	paths, err := p.listFilesWithExtensions([]string{utils.TypeScriptExtension})
+	if err != nil {
+		return err
+	}
+
+	for _, path := range paths {
+		tpath := filepath.Join(p.tempDir, path)
+
+		data, err := os.ReadFile(tpath)
+		if err != nil {
+			return err
+		}
+
+		p.TypescriptWorkflows[path] = data
+
+		err = os.Remove(tpath)
+		if err != nil {
+			return err
+		}
+
+		p.log.Debugf("found direktiv typescript workflow '%s'", path)
 	}
 
 	return nil

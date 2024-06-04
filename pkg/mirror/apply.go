@@ -10,6 +10,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/direktiv/direktiv/pkg/filestore"
+	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/google/uuid"
 )
@@ -59,9 +60,14 @@ func (o *DirektivApplyer) apply(ctx context.Context, callbacks Callbacks, proc *
 		return fmt.Errorf("failed to copy services into new filesystem root: %w", err)
 	}
 
-	err = o.copyWorkflowsIntoRoot(ctx)
+	err = o.copyTypescriptWorkflowsIntoRoot(ctx, o.parser.Workflows, "application/yaml")
 	if err != nil {
 		return fmt.Errorf("failed to copy workflows into new filesystem root: %w", err)
+	}
+
+	err = o.copyTypescriptWorkflowsIntoRoot(ctx, o.parser.TypescriptWorkflows, utils.TypeScriptMimeType)
+	if err != nil {
+		return fmt.Errorf("failed to copy typescript workflows into new filesystem root: %w", err)
 	}
 
 	err = o.copyEndpointsIntoRoot(ctx)
@@ -141,17 +147,17 @@ func (o *DirektivApplyer) copyFilesIntoRoot(ctx context.Context) error {
 	return nil
 }
 
-func (o *DirektivApplyer) copyWorkflowsIntoRoot(ctx context.Context) error {
+func (o *DirektivApplyer) copyTypescriptWorkflowsIntoRoot(ctx context.Context, items map[string][]byte, mimeType string) error {
 	paths := []string{}
-	for k := range o.parser.Workflows {
+	for k := range items {
 		paths = append(paths, k)
 	}
 
 	sort.Strings(paths)
 
 	for _, path := range paths {
-		data := o.parser.Workflows[path]
-		_, err := o.callbacks.FileStore().ForRootID(o.rootID).CreateFile(ctx, path, filestore.FileTypeWorkflow, "application/yaml", data)
+		data := items[path]
+		_, err := o.callbacks.FileStore().ForRootID(o.rootID).CreateFile(ctx, path, filestore.FileTypeWorkflow, mimeType, data)
 		if err != nil {
 			return err
 		}

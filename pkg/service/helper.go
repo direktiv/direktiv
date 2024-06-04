@@ -150,7 +150,7 @@ func buildVolumes(_ *core.Config, sv *core.ServiceFileData) []corev1.Volume {
 
 func buildContainers(c *core.Config, sv *core.ServiceFileData) ([]corev1.Container, error) {
 	// set resource limits.
-	rl, err := buildResourceLimits(c, sv)
+	rl, err := buildResourceLimits(c, sv.Size)
 	if err != nil {
 		return nil, err
 	}
@@ -222,14 +222,14 @@ func buildContainers(c *core.Config, sv *core.ServiceFileData) ([]corev1.Contain
 	return []corev1.Container{uc, sc}, nil
 }
 
-func buildResourceLimits(cf *core.Config, sv *core.ServiceFileData) (*corev1.ResourceRequirements, error) {
+func buildResourceLimits(cf *core.Config, size string) (*corev1.ResourceRequirements, error) {
 	var (
 		m int
 		c string
 		d int
 	)
 
-	switch sv.Size {
+	switch size {
 	case "small":
 		m = cf.KnativeSizeMemorySmall
 		c = cf.KnativeSizeCPUSmall
@@ -243,7 +243,7 @@ func buildResourceLimits(cf *core.Config, sv *core.ServiceFileData) (*corev1.Res
 		c = cf.KnativeSizeCPULarge
 		d = cf.KnativeSizeDiskLarge
 	default:
-		return nil, fmt.Errorf("service size: '%s' is invalid, expected value: ['small', 'medium', 'large']", sv.Size)
+		return nil, fmt.Errorf("service size: '%s' is invalid, expected value: ['small', 'medium', 'large']", size)
 	}
 
 	ephemeralHigh, err := resource.ParseQuantity(fmt.Sprintf("%dM", d))

@@ -22,6 +22,9 @@ func RunApplication() {
 	}
 	setLogLevel(cfg.LogLevel)
 
+	// loggingCtx = tracing.WithTrack(context.Background(), tracing.BuildNamespaceTrack(args.Namespace.Name))
+	// slog.Error("Failed to parse workflow definition.", tracing.GetSlogAttributesWithError(loggingCtx, err)...)
+
 	gormConf := &gorm.Config{
 		Logger: logger.New(
 			log.New(os.Stdout, "\r\n", log.LstdFlags),

@@ -146,9 +146,9 @@ type DBInitializer struct {
 	engine              *Engine
 }
 
-func NewDBInitializer(srcDir, flowPath, namespace string, db *gorm.DB, e *Engine) *DBInitializer {
-
-	ds := datastoresql.NewSQLStore(db, "some_secret_key_")
+func NewDBInitializer(srcDir, flowPath, namespace, secretKey string, db *gorm.DB, e *Engine) *DBInitializer {
+	secretKey = secretKey[0:16]
+	ds := datastoresql.NewSQLStore(db, secretKey)
 	fs := filestoresql.NewSQLFileStore(db)
 
 	return &DBInitializer{
@@ -186,6 +186,7 @@ func (db *DBInitializer) Init() error {
 	secrets := make(map[string]string)
 	for i := range fi.Secrets {
 		secret := fi.Secrets[i]
+		slog.Debug("fetching secret", slog.String("secret", secret.Name))
 		s, err := db.dataStore.Secrets().Get(context.Background(), db.namespace, secret.Name)
 		if err != nil {
 			return err
@@ -196,7 +197,11 @@ func (db *DBInitializer) Init() error {
 	functions := make(map[string]string)
 	for i := range fi.Functions {
 		f := fi.Functions[i]
-		functions[f.GetID()] = os.Getenv(f.GetID())
+		// only do workflow functions
+		if f.Image != "" {
+			slog.Debug("adding function", slog.String("function", f.Image))
+			functions[f.GetID()] = os.Getenv(f.GetID())
+		}
 	}
 
 	for i := range fi.Files {
@@ -206,6 +211,8 @@ func (db *DBInitializer) Init() error {
 		if !filepath.IsAbs(file.Name) {
 			fetchPath = filepath.Join(filepath.Dir(db.flowPath), file.Name)
 		}
+
+		slog.Debug("fetching file", slog.String("secret", fetchPath))
 
 		f, err := db.fileStore.ForNamespace(db.namespace).GetFile(context.Background(), fetchPath)
 		if err != nil {

@@ -7,6 +7,8 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
+
+	"github.com/direktiv/direktiv/pkg/core"
 )
 
 const (
@@ -88,4 +90,13 @@ func copyFile(src, dst string) (int64, error) {
 	defer destination.Close()
 
 	return io.Copy(destination, source)
+}
+
+func GenerateBasicServiceFile(path, ns string) *core.ServiceFileData {
+	return &core.ServiceFileData{
+		Typ:       core.ServiceTypeTypescript,
+		Name:      path,
+		Namespace: ns,
+		FilePath:  path,
+	}
 }

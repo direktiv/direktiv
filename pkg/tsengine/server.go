@@ -71,7 +71,9 @@ func NewServer(cfg Config, db *gorm.DB) (*Server, error) {
 
 	var initializer Initializer
 	if db != nil {
-		initializer = NewDBInitializer(cfg.BaseDir, cfg.FlowPath, cfg.Namespace, db, engine)
+		fmt.Println("SECRET KEY ")
+		fmt.Println(cfg.SecretKey)
+		initializer = NewDBInitializer(cfg.BaseDir, cfg.FlowPath, cfg.Namespace, cfg.SecretKey, db, engine)
 	} else {
 		fi := NewFileInitializer(cfg.BaseDir, cfg.FlowPath, engine)
 		go fi.fileWatcher(cfg.FlowPath)
