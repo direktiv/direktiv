@@ -125,8 +125,8 @@ describe('Test wrong endpoint config', () => {
 				file_path: '/endpointbroken.yaml',
 				allow_anonymous: false,
 				timeout: 0,
-				errors: ["yaml: unmarshal errors:\n  line 5: cannot unmarshal !!map into []core.PluginConfigV2"],
-				plugins: {target: {}},
+				errors: [ 'yaml: unmarshal errors:\n  line 5: cannot unmarshal !!map into []core.PluginConfigV2' ],
+				plugins: { target: {} },
 			},
 		)
 	})
@@ -194,7 +194,7 @@ describe('Test gateway get single endpoint', () => {
 		)
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body.data.length).toEqual(1)
-		expect(listRes.body.data[0]).toEqual(				{
+		expect(listRes.body.data[0]).toEqual({
 			allow_anonymous: false,
 			file_path: '/endpoint1.yaml',
 			methods: [ 'GET' ],
@@ -213,7 +213,7 @@ describe('Test gateway get single endpoint', () => {
 				},
 			},
 			timeout: 0,
-		},)
+		})
 	})
 
 	retry10(`should list long path endpoint`, async () => {
@@ -241,7 +241,7 @@ describe('Test gateway get single endpoint', () => {
 				},
 			},
 			timeout: 0,
-		},)
+		})
 	})
 
 	retry10(`should list long path endpoint with var`, async () => {
@@ -269,7 +269,7 @@ describe('Test gateway get single endpoint', () => {
 				},
 			},
 			timeout: 0,
-		},)
+		})
 	})
 })
 
@@ -338,28 +338,28 @@ describe('Test gateway endpoints crud operations', () => {
 					},
 					timeout: 0,
 				}, {
-				allow_anonymous: true,
-				file_path: '/endpoint2.yaml',
-				methods: [ 'GET' ],
-				path: '/endpoint2',
-				plugins: {
-					auth: [
-						{ type: 'basic-auth' },
-						{
-							configuration: { key_name: 'secret' },
-							type: 'key-auth',
+					allow_anonymous: true,
+					file_path: '/endpoint2.yaml',
+					methods: [ 'GET' ],
+					path: '/endpoint2',
+					plugins: {
+						auth: [
+							{ type: 'basic-auth' },
+							{
+								configuration: { key_name: 'secret' },
+								type: 'key-auth',
+							},
+						],
+						target: {
+							configuration: {
+								status_code: 202,
+								status_message: 'TEST2',
+							},
+							type: 'instant-response',
 						},
-					],
-					target: {
-						configuration: {
-							status_code: 202,
-							status_message: 'TEST2',
-						},
-						type: 'instant-response',
 					},
+					timeout: 0,
 				},
-				timeout: 0,
-			},
 			],
 		)
 	})
@@ -371,11 +371,22 @@ describe('Test gateway endpoints crud operations', () => {
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body.data.length).toEqual(2)
 
-		let comp =  (a,b) => { a.file_path < b.file_path }
-
+		const comp = (a, b) => {
+			return a.file_path < b.file_path ? -1:1
+		}
 		expect(listRes.body.data.sort(comp)).toEqual([
 			{
-				file_path: "/consumer1.yaml",
+				file_path: '/consumer2.yaml',
+				errors: null,
+				api_key: 'key2',
+				groups: [ 'group2' ],
+				password: 'pwd',
+				tags: [ 'tag2' ],
+				username: 'consumer2',
+			},
+
+			{
+				file_path: '/consumer1.yaml',
 				errors: null,
 				api_key: 'key1',
 				groups: [ 'group1' ],
@@ -383,15 +394,6 @@ describe('Test gateway endpoints crud operations', () => {
 				tags: [ 'tag1' ],
 				username: 'consumer1',
 			},
-			{
-				file_path: "/consumer2.yaml",
-				errors: null,
-				api_key: 'key2',
-				groups: [ 'group2' ],
-				password: 'pwd',
-				tags: [ 'tag2' ],
-				username: 'consumer2',
-			}
 		].sort(comp))
 	})
 
