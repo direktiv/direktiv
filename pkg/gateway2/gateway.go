@@ -85,13 +85,13 @@ func (m *manager) interpolateConsumersList(list []core.ConsumerV2) error {
 	for i, c := range list {
 		c.Password, err = fetchSecret(db, c.Namespace, c.Password)
 		if err != nil {
-			c.Errors = append(c.Errors, fmt.Errorf("couldn't fetch secret %s", c.Password))
+			c.Errors = append(c.Errors, fmt.Sprintf("couldn't fetch secret %s", c.Password))
 			continue
 		}
 
 		c.APIKey, err = fetchSecret(db, c.Namespace, c.APIKey)
 		if err != nil {
-			c.Errors = append(c.Errors, fmt.Errorf("couldn't fetch secret %s", c.APIKey))
+			c.Errors = append(c.Errors, fmt.Sprintf("couldn't fetch secret %s", c.APIKey))
 			continue
 		}
 		list[i] = c

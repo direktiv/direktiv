@@ -65,12 +65,12 @@ func buildRouter(endpoints []core.EndpointV2, consumers []core.ConsumerV2) *rout
 		for _, pConfig := range pConfigs {
 			p, err := NewPlugin(pConfig)
 			if err != nil {
-				item.Errors = append(item.Errors, fmt.Errorf("plugin '%s' config: %w", pConfig.Typ, err))
+				item.Errors = append(item.Errors, fmt.Sprintf("plugin '%s' err: %s", pConfig.Typ, err))
 			}
 			pChain = append(pChain, p)
 		}
 		if len(item.PluginsConfig.Auth) == 0 && !item.AllowAnonymous {
-			item.Errors = append(item.Errors, fmt.Errorf("AllowAnonymous is false but zero auth plugin configured"))
+			item.Errors = append(item.Errors, fmt.Sprintf("AllowAnonymous is false but zero auth plugin configured"))
 		}
 		endpoints[i] = item
 

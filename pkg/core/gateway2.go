@@ -18,33 +18,33 @@ type GatewayManagerV2 interface {
 }
 
 type EndpointFileV2 struct {
-	DirektivAPI    string          `yaml:"direktiv_api"`
-	Methods        []string        `yaml:"methods"`
-	Path           string          `yaml:"path"`
-	AllowAnonymous bool            `yaml:"allow_anonymous"`
-	PluginsConfig  PluginsConfigV2 `yaml:"plugins"`
-	Timeout        int             `yaml:"timeout"`
+	DirektivAPI    string          `yaml:"direktiv_api" json:"-"`
+	Methods        []string        `yaml:"methods" json:"methods"`
+	Path           string          `yaml:"path" json:"path"` // TODO: fix ui to remove server_path, warnings
+	AllowAnonymous bool            `yaml:"allow_anonymous" json:"allow_anonymous"`
+	PluginsConfig  PluginsConfigV2 `yaml:"plugins" json:"plugins"`
+	Timeout        int             `yaml:"timeout" json:"timeout"`
 }
 
 type ConsumerFileV2 struct {
-	DirektivAPI string   `yaml:"direktiv_api"`
-	Username    string   `yaml:"username"`
-	Password    string   `yaml:"password"`
-	APIKey      string   `yaml:"api_key"`
-	Tags        []string `yaml:"tags"`
-	Groups      []string `yaml:"groups"`
+	DirektivAPI string   `yaml:"direktiv_api" json:"-"`
+	Username    string   `yaml:"username" json:"username"`
+	Password    string   `yaml:"password" json:"password"`
+	APIKey      string   `yaml:"api_key" json:"api_key"`
+	Tags        []string `yaml:"tags" json:"tags"`
+	Groups      []string `yaml:"groups" json:"groups"`
 }
 
 type PluginsConfigV2 struct {
-	Auth     []PluginConfigV2 `yaml:"auth"`
-	Inbound  []PluginConfigV2 `yaml:"inbound"`
-	Target   PluginConfigV2   `yaml:"target"`
-	Outbound []PluginConfigV2 `yaml:"outbound"`
+	Auth     []PluginConfigV2 `yaml:"auth" json:"auth,omitempty"`
+	Inbound  []PluginConfigV2 `yaml:"inbound" json:"inbound,omitempty"`
+	Target   PluginConfigV2   `yaml:"target" json:"target,omitempty"`
+	Outbound []PluginConfigV2 `yaml:"outbound" json:"outbound,omitempty"`
 }
 
 type PluginConfigV2 struct {
-	Typ    string         `yaml:"type"`
-	Config map[string]any `yaml:"configuration"`
+	Typ    string         `yaml:"type" json:"type"`
+	Config map[string]any `yaml:"configuration" json:"configuration,omitempty"`
 }
 
 type PluginV2 interface {
@@ -58,17 +58,17 @@ type PluginV2 interface {
 type EndpointV2 struct {
 	EndpointFileV2
 
-	Namespace string
-	FilePath  string
-	Errors    []error
+	Namespace string   `yaml:"-" json:"-"`
+	FilePath  string   `yaml:"-" json:"file_path"`
+	Errors    []string `yaml:"-" json:"errors"`
 }
 
 type ConsumerV2 struct {
 	ConsumerFileV2
 
-	Namespace string
-	FilePath  string
-	Errors    []error
+	Namespace string   `yaml:"-" json:"-"`
+	FilePath  string   `yaml:"-" json:"file_path"`
+	Errors    []string `yaml:"-" json:"errors"`
 }
 
 func ParseConsumerFileV2(data []byte) (*ConsumerFileV2, error) {
