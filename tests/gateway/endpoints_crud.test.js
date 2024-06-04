@@ -120,24 +120,14 @@ describe('Test wrong endpoint config', () => {
 		)
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body.data.length).toEqual(1)
-		expect(listRes.body.data).toEqual(
-			expect.arrayContaining(
-				[
-					{
-						file_path: '/endpointbroken.yaml',
-						server_path: '',
-						methods: [],
-						allow_anonymous: false,
-						timeout: 0,
-						errors: [
-							'yaml: unmarshal errors:\n'
-							+ '  line 5: cannot unmarshal !!map into []core.PluginConfig',
-						],
-						warnings: [],
-						plugins: {},
-					},
-				],
-			),
+		expect(listRes.body.data[0]).toEqual(
+			{
+				file_path: '/endpointbroken.yaml',
+				allow_anonymous: false,
+				timeout: 0,
+				errors: ["yaml: unmarshal errors:\n  line 5: cannot unmarshal !!map into []core.PluginConfigV2"],
+				plugins: {target: {}},
+			},
 		)
 	})
 })
