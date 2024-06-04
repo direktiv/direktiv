@@ -66,14 +66,15 @@ const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
                 {t("components.userMenu.loggedIn")}
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
+
               <LogoutButton
-                wrapper={(props) => (
-                  <DropdownMenuItem {...props} className="cursor-pointer" />
+                button={(props) => (
+                  <DropdownMenuItem {...props} className="cursor-pointer">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>{t("components.userMenu.logout")}</span>
+                  </DropdownMenuItem>
                 )}
-              >
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>{t("components.userMenu.logout")}</span>
-              </LogoutButton>
+              />
               <DropdownMenuSeparator />
             </>
           )}

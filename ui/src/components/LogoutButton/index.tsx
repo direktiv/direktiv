@@ -4,15 +4,11 @@ import { LogoutButtonProps } from "./types";
 import OpenSourceLogoutButton from "./OpenSourceLogout";
 import { isEnterprise } from "~/config/env/utils";
 
-const LogoutButton: FC<LogoutButtonProps> = ({ children, wrapper }) =>
+const LogoutButton: FC<LogoutButtonProps> = ({ children, button }) =>
   isEnterprise() ? (
-    <EnterpriseLogoutButton wrapper={wrapper}>
-      {children}
-    </EnterpriseLogoutButton>
+    <EnterpriseLogoutButton button={button}>{children}</EnterpriseLogoutButton>
   ) : (
-    <OpenSourceLogoutButton wrapper={wrapper}>
-      {children}
-    </OpenSourceLogoutButton>
+    <OpenSourceLogoutButton button={button}>{children}</OpenSourceLogoutButton>
   );
 
 export default LogoutButton;

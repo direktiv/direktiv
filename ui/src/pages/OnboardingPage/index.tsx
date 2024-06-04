@@ -123,7 +123,7 @@ const Layout = () => {
         </div>
         {usesAccounts && (
           <LogoutButton
-            wrapper={(props) => <Button {...props} variant="outline" />}
+            button={(props) => <Button {...props} variant="outline" />}
           >
             <LogOut />
             {t("pages.onboarding.logout")}

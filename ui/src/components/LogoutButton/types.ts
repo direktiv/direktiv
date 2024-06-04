@@ -1,10 +1,10 @@
 import { ComponentType, PropsWithChildren, ReactNode } from "react";
 
-type WrapperComponent = ComponentType<{
+type ButtonComponent = ComponentType<{
   onClick: () => void;
   children: ReactNode;
 }>;
 
 export type LogoutButtonProps = PropsWithChildren & {
-  wrapper: WrapperComponent;
+  button: ButtonComponent;
 };

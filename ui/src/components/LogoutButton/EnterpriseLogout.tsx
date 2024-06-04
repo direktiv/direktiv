@@ -4,7 +4,7 @@ import { useAuth } from "react-oidc-context";
 
 const EnterpriseLogoutButton: FC<LogoutButtonProps> = ({
   children,
-  wrapper: WrapperComponent,
+  button: Button,
 }) => {
   const auth = useAuth();
 
@@ -12,7 +12,7 @@ const EnterpriseLogoutButton: FC<LogoutButtonProps> = ({
     auth.signoutRedirect();
   };
 
-  return <WrapperComponent onClick={logout}>{children}</WrapperComponent>;
+  return <Button onClick={logout}>{children}</Button>;
 };
 
 export default EnterpriseLogoutButton;
