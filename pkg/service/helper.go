@@ -204,12 +204,10 @@ func buildContainers(c *core.Config, sv *core.ServiceFileData) ([]corev1.Contain
 	}
 
 	// direktiv sidecar
-	sidecarEnvs := buildEnvVars(true, c, sv)
-	sidecarEnvs = append(sidecarEnvs, corev1.EnvVar{Name: "API_KEY", Value: c.ApiKey})
 	sc := corev1.Container{
 		Name:         containerSidecar,
 		Image:        c.KnativeSidecar,
-		Env:          sidecarEnvs,
+		Env:          buildEnvVars(true, c, sv),
 		VolumeMounts: vMounts,
 		Ports: []corev1.ContainerPort{
 			{
