@@ -23,6 +23,35 @@ type router struct {
 func buildRouter(endpoints []core.EndpointV2, consumers []core.ConsumerV2) *router {
 	serveMux := http.NewServeMux()
 
+	namespacesList := map[string]bool{}
+	for _, item := range endpoints {
+		namespacesList[item.Namespace] = true
+	}
+
+	// setup /routes endpoint
+	for ns, _ := range namespacesList {
+		for _, pattern := range []string{
+			fmt.Sprintf("/api/v2/namespaces/%s/gateway/routes", ns),
+			fmt.Sprintf("/ns/%s/routes", ns),
+		} {
+			serveMux.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
+				WriteJSON(w, filterNamespacedEndpoints(endpoints, ns))
+			})
+		}
+	}
+
+	// setup /consumers endpoint
+	for ns, _ := range namespacesList {
+		for _, pattern := range []string{
+			fmt.Sprintf("/api/v2/namespaces/%s/gateway/consumers", ns),
+			fmt.Sprintf("/ns/%s/consumers", ns),
+		} {
+			serveMux.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
+				WriteJSON(w, filterNamespacedConsumers(consumers, ns))
+			})
+		}
+	}
+
 	for i, item := range endpoints {
 		// concat plugins configs into one list.
 		pConfigs := []core.PluginConfigV2{}
