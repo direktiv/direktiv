@@ -1,11 +1,15 @@
 package tsengine
 
 import (
+	"log"
 	"log/slog"
 	"os"
 
 	"github.com/caarlos0/env/v11"
 	"github.com/direktiv/direktiv/pkg/tsengine"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 func RunApplication() {
@@ -18,12 +22,30 @@ func RunApplication() {
 	}
 	setLogLevel(cfg.LogLevel)
 
-	srv, err := tsengine.NewServer(cfg, nil)
+	gormConf := &gorm.Config{
+		Logger: logger.New(
+			log.New(os.Stdout, "\r\n", log.LstdFlags),
+			logger.Config{
+				LogLevel:                  logger.Silent,
+				IgnoreRecordNotFoundError: true,
+			},
+		),
+	}
+
+	db, err := gorm.Open(postgres.New(postgres.Config{
+		DSN:                  cfg.DBConfig,
+		PreferSimpleProtocol: false,
+	}), gormConf)
 	if err != nil {
 		panic(err)
 	}
 
-	srv.Start()
+	srv, err := tsengine.NewServer(cfg, db)
+	if err != nil {
+		panic(err)
+	}
+
+	panic(srv.Start())
 }
 
 func setLogLevel(level string) {

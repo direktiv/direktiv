@@ -12,23 +12,6 @@ import (
 
 func buildTypescriptService(c *core.Config, sv *core.ServiceFileData, registrySecrets []corev1.LocalObjectReference) (*servingv1.Service, error) {
 
-	fmt.Println(string(sv.TypescriptFile))
-
-	compiler, err := compiler.New(sv.FilePath, string(sv.TypescriptFile))
-	if err != nil {
-		return nil, err
-	}
-
-	flowInformation, err := compiler.CompileFlow()
-	if err != nil {
-		return nil, err
-	}
-
-	fmt.Println("SECRETS")
-	fmt.Println(flowInformation.Secrets)
-	fmt.Println("FILES")
-	fmt.Println(flowInformation.Files)
-
 	nonRoot := false
 
 	containers, err := buildTypescriptContainers(c, sv)
@@ -83,10 +66,43 @@ func buildTypescriptContainers(c *core.Config, sv *core.ServiceFileData) ([]core
 		},
 	}
 
+	compiler, err := compiler.New(sv.FilePath, string(sv.TypescriptFile))
+	if err != nil {
+		return nil, err
+	}
+
+	flowInformation, err := compiler.CompileFlow()
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println("SECRETS")
+	fmt.Println(flowInformation.Secrets)
+	fmt.Println("FILES")
+	fmt.Println(flowInformation.Files)
+	fmt.Println("FUNCTIONS")
+	fmt.Println(flowInformation.Functions)
+
+	basicPort := 8081
+
+	userContainerBasicEnvs := buildEnvVars(false, c, sv)
+	for k := range flowInformation.Functions {
+		fmt.Println("APPEND!!!!!")
+		userContainerBasicEnvs = append(userContainerBasicEnvs, corev1.EnvVar{
+			Name:  k,
+			Value: fmt.Sprintf("http://localhost:%d", basicPort),
+		})
+		basicPort++
+	}
+
+	fmt.Println("ENVS")
+	fmt.Println(userContainerBasicEnvs)
+
 	uc := corev1.Container{
 		Name:  containerUser,
-		Image: sv.Image,
-		Env:   buildEnvVars(false, c, sv),
+		Image: c.KnativeSidecar,
+		Args:  []string{"tsengine"},
+		Env:   userContainerBasicEnvs,
 		// Resources: *rl,
 		VolumeMounts: []corev1.VolumeMount{
 			{
@@ -96,6 +112,45 @@ func buildTypescriptContainers(c *core.Config, sv *core.ServiceFileData) ([]core
 		},
 		SecurityContext: secContext,
 	}
+	containers := []corev1.Container{uc}
 
-	return []corev1.Container{uc}, nil
+	// add function containers
+	basicPort = 8081
+	for k, v := range flowInformation.Functions {
+
+		// v.Cmd
+		// v.Envs
+		// v.Size
+		// v.GetID()
+
+		fnContainer := corev1.Container{
+
+			Name:  k,
+			Image: v.Image,
+			Ports: []corev1.ContainerPort{
+				{
+					ContainerPort: int32(basicPort),
+				},
+			},
+			// Env:   buildEnvVars(false, c, sv),
+			// Resources: *rl,
+
+			VolumeMounts: []corev1.VolumeMount{
+				{
+					Name:      "workdir",
+					MountPath: "/mnt/shared",
+				},
+			},
+			SecurityContext: secContext,
+		}
+
+		basicPort++
+		containers = append(containers, fnContainer)
+
+	}
+
+	fmt.Println("LENGTH!!!!")
+	fmt.Println(len(containers))
+
+	return containers, nil
 }

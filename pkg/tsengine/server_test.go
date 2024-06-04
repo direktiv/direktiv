@@ -136,6 +136,7 @@ func TestServerBasic(t *testing.T) {
 			}
 		})
 	}
+
 }
 
 func TestServerSecrets(t *testing.T) {

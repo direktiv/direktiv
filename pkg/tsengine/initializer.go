@@ -207,7 +207,6 @@ func (db *DBInitializer) Init() error {
 			fetchPath = filepath.Join(filepath.Dir(db.flowPath), file.Name)
 		}
 
-		// db.fileStore.
 		f, err := db.fileStore.ForNamespace(db.namespace).GetFile(context.Background(), fetchPath)
 		if err != nil {
 			return err
