@@ -396,7 +396,7 @@ func (worker *inboundWorker) prepFunctionFiles(ctx context.Context, ir *function
 }
 
 func (worker *inboundWorker) fetchFunctionFiles(ctx context.Context, ir *functionRequest) error {
-	addr := fmt.Sprintf("%v/api/v2/namespaces/%v/variables", worker.srv.flowAddr, ir.namespace)
+	addr := fmt.Sprintf("http://%v/api/v2/namespaces/%v/variables", worker.srv.flowAddr, ir.namespace)
 	client := &http.Client{}
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, addr, nil)
 	if err != nil {
@@ -442,7 +442,7 @@ func (worker *inboundWorker) fetchFunctionFiles(ctx context.Context, ir *functio
 		}
 		pr, pw := io.Pipe()
 		go func() {
-			addr = fmt.Sprintf("%v/api/v2/namespaces/%v/variables/%v", worker.srv.flowAddr, ir.namespace, data.Data[idx].ID)
+			addr = fmt.Sprintf("http://%v/api/v2/namespaces/%v/variables/%v", worker.srv.flowAddr, ir.namespace, data.Data[idx].ID)
 			client := &http.Client{}
 			req, err := http.NewRequestWithContext(ctx, http.MethodGet, addr, nil)
 			if err != nil {
