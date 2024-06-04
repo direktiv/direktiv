@@ -15,13 +15,16 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	enginerefactor "github.com/direktiv/direktiv/pkg/engine"
 	"github.com/direktiv/direktiv/pkg/flow"
 	"github.com/direktiv/direktiv/pkg/utils"
+	"github.com/google/uuid"
 )
 
 type inboundWorker struct {
@@ -68,15 +71,6 @@ func (worker *inboundWorker) run() {
 	}
 
 	slog.Debug("Worker shut down.", "worker_id", worker.id)
-}
-
-func (worker *inboundWorker) fileReader(ctx context.Context, ir *functionRequest, f *functionFiles, pw *io.PipeWriter) error {
-	err := worker.srv.getVar(ctx, ir, pw, nil, f.Scope, f.Key)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 type outcome struct {
@@ -136,29 +130,6 @@ func (worker *inboundWorker) doFunctionRequest(ctx context.Context, ir *function
 	}
 
 	return out, nil
-}
-
-func (worker *inboundWorker) prepOneFunctionFiles(ctx context.Context, ir *functionRequest, f *functionFiles) error {
-	pr, pw := io.Pipe()
-
-	go func() {
-		err := worker.fileReader(ctx, ir, f, pw)
-		if err != nil {
-			_ = pw.CloseWithError(err)
-		} else {
-			_ = pw.Close()
-		}
-	}()
-
-	err := worker.fileWriter(ctx, ir, f, pr)
-	if err != nil {
-		_ = pr.CloseWithError(err)
-		return err
-	}
-
-	_ = pr.Close()
-
-	return nil
 }
 
 func untarFile(tr *tar.Reader, perms string, path string) error {
@@ -409,14 +380,10 @@ func (worker *inboundWorker) prepFunctionFiles(ctx context.Context, ir *function
 	if err != nil {
 		return err
 	}
-
-	for i, f := range ir.files {
-		err = worker.prepOneFunctionFiles(ctx, ir, f)
-		if err != nil {
-			return fmt.Errorf("failed to prepare function files %d: %w", i, err)
-		}
+	err = worker.fetchFunctionFiles(ctx, ir)
+	if err != nil {
+		return err
 	}
-
 	subDirs := []string{utils.VarScopeFileSystem, utils.VarScopeNamespace, utils.VarScopeWorkflow, utils.VarScopeInstance}
 	for _, d := range subDirs {
 		err := os.MkdirAll(path.Join(dir, fmt.Sprintf("out/%s", d)), 0o777)
@@ -426,6 +393,111 @@ func (worker *inboundWorker) prepFunctionFiles(ctx context.Context, ir *function
 	}
 
 	return nil
+}
+
+func (worker *inboundWorker) fetchFunctionFiles(ctx context.Context, ir *functionRequest) error {
+	addr := fmt.Sprintf("%v/api/v2/namespaces/%v/variables", worker.srv.flowAddr, ir.namespace)
+	client := &http.Client{}
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, addr, nil)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Direktiv-Token", worker.srv.flowToken)
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	type variableForAPI struct {
+		ID        uuid.UUID `json:"id"`
+		Typ       string    `json:"type"`
+		Reference string    `json:"reference"`
+		Name      string    `json:"name"`
+
+		Size      int       `json:"size"`
+		MimeType  string    `json:"mimeType"`
+		Data      []byte    `json:"data,omitempty"`
+		CreatedAt time.Time `json:"createdAt"`
+		UpdatedAt time.Time `json:"updatedAt"`
+	}
+	type varResponseData struct {
+		Data  []variableForAPI `json:"data"`
+		Error *any             `json:"error"`
+	}
+	data := varResponseData{}
+	decoder := json.NewDecoder(resp.Body)
+	if err = decoder.Decode(&data); err != nil {
+		return err
+	}
+
+	for _, file := range ir.files {
+		typ, err := determineVarType(file.Scope)
+		if err != nil {
+			return err
+		}
+		idx := slices.IndexFunc(data.Data, func(e variableForAPI) bool { return e.Typ == typ && e.Name == file.Key })
+		if idx == -1 {
+			return fmt.Errorf("variable is not known")
+		}
+		pr, pw := io.Pipe()
+		go func() {
+			addr = fmt.Sprintf("%v/api/v2/namespaces/%v/variables/%v", worker.srv.flowAddr, ir.namespace, data.Data[idx].ID)
+			client := &http.Client{}
+			req, err := http.NewRequestWithContext(ctx, http.MethodGet, addr, nil)
+			if err != nil {
+				sysErr := pw.CloseWithError(err)
+				slog.Error("failed fetching files with", "error", sysErr)
+			}
+			req.Header.Set("Direktiv-Token", worker.srv.flowToken)
+			resp, err := client.Do(req)
+			if err != nil {
+				sysErr := pw.CloseWithError(err)
+				slog.Error("failed fetching files with", "error", sysErr)
+			}
+			defer resp.Body.Close()
+			data1 := variableForAPI{}
+			decoder = json.NewDecoder(resp.Body)
+			if err = decoder.Decode(&data1); err != nil {
+				sysErr := pw.CloseWithError(err)
+				slog.Error("failed fetching files with", "error", sysErr)
+			}
+			_, err = io.Copy(pw, bytes.NewReader(data1.Data))
+			if err != nil {
+				sysErr := pw.CloseWithError(err)
+				slog.Error("failed fetching files with", "error", sysErr)
+			}
+
+			pw.Close()
+		}()
+
+		err = worker.fileWriter(ctx, ir, file, pr)
+		if err != nil {
+			sysErr := pr.CloseWithError(err)
+			slog.Error("failed fetching files with", "error", sysErr)
+
+			return err
+		}
+	}
+
+	return nil
+}
+
+func determineVarType(fileScope string) (string, error) {
+	switch fileScope {
+	case utils.VarScopeFileSystem:
+		return "instance-variable", nil
+	case utils.VarScopeInstance:
+		return "instance-variable", nil
+	case utils.VarScopeWorkflow:
+		return "workflow-variable", nil
+	case utils.VarScopeNamespace:
+		return "namespace-variable", nil
+	case utils.VarScopeSystem:
+	case utils.VarScopeThread:
+	}
+
+	return "", fmt.Errorf("Unknown scope")
 }
 
 func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
