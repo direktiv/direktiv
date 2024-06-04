@@ -4,7 +4,7 @@ import { useApiActions } from "~/util/store/apiKey";
 
 const OpenSourceLogoutButton: FC<LogoutButtonProps> = ({
   children,
-  wrapper: Wrapper,
+  wrapper: WrapperComponent,
 }) => {
   const { setApiKey: storeApiKey } = useApiActions();
 
@@ -12,7 +12,7 @@ const OpenSourceLogoutButton: FC<LogoutButtonProps> = ({
     storeApiKey(null);
   };
 
-  return <Wrapper onClick={logout}>{children}</Wrapper>;
+  return <WrapperComponent onClick={logout}>{children}</WrapperComponent>;
 };
 
 export default OpenSourceLogoutButton;
