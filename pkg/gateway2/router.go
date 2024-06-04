@@ -92,7 +92,6 @@ func buildRouter(endpoints []core.EndpointV2, consumers []core.ConsumerV2) *rout
 				}
 			})
 		}
-
 	}
 
 	// mount not found route.

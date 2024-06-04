@@ -3,7 +3,6 @@ package gateway2
 import (
 	"context"
 	"fmt"
-	"github.com/go-chi/chi/v5"
 	"net/http"
 	"slices"
 	"strings"
@@ -12,6 +11,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/database"
+	"github.com/go-chi/chi/v5"
 )
 
 // manager struct implements core.GatewayManagerV2 by wrapping a pointer to router struct. Whenever endpoint and
@@ -59,7 +59,6 @@ func (m *manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			WriteJSON(w, filterNamespacedEndpoints(inner.endpoints, ns, r.URL.Query().Get("path")))
 			return
 		}
-
 	}
 	// setup /consumers endpoint
 	if strings.HasSuffix(r.URL.Path, "/consumers") {
