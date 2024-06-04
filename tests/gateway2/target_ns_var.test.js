@@ -39,7 +39,7 @@ plugins:
         variable: foo
 `)
 	retry10(`should execute wf1.yaml file`, async () => {
-		const res = await request(config.getDirektivHost()).get(`/api/v2/namespaces/${ namespace }/gateway2/ep1`)
+		const res = await request(config.getDirektivHost()).get(`/api/v2/namespaces/${ namespace }/gateway/ep1`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.text).toEqual('Hello World')
 		expect(res.headers['content-type']).toEqual('text/plain')

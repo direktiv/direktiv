@@ -60,14 +60,14 @@ plugins:
         allow_groups: ["group1"]
 `)
 	retry10(`should denied ep1.yaml endpoint`, async () => {
-		const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway2/foo1`)
+		const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway/foo1`)
 			.send({})
 			.auth('user1', 'pwd1')
 		expect(res.statusCode).toEqual(403)
 	})
 
 	retry10(`should access ep2.yaml endpoint`, async () => {
-		const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway2/foo2`)
+		const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway/foo2`)
 			.send({ foo: 'bar' })
 			.auth('user1', 'pwd1')
 		expect(res.statusCode).toEqual(200)

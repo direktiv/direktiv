@@ -67,7 +67,7 @@ states:
 
 	retry10(`should have expected body after js`, async () => {
 		const req = await request(common.config.getDirektivHost()).post(
-			`/api/v2/namespaces/${ namespace }/gateway2/target?Query1=value1&Query2=value2`,
+			`/api/v2/namespaces/${ namespace }/gateway/target?Query1=value1&Query2=value2`,
 		)
 			.set('Header', 'Value1')
 			.set('Header1', 'oldvalue')

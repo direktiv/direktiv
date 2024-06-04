@@ -29,14 +29,14 @@ plugins:
 `)
 
 	retry10(`should access ep1.yaml endpoint`, async () => {
-		const res = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway2/foo`)
+		const res = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway/foo`)
 			.set('X-Gitlab-Token', 'secret')
 			.send({ hello: 'world' })
 		expect(res.statusCode).toEqual(200)
 	})
 
 	retry10(`should denied ep1.yaml endpoint`, async () => {
-		const res = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway2/foo`)
+		const res = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway/foo`)
 			.set('X-Gitlab-Token', 'wrongSecret')
 			.send({ hello: 'world' })
 		expect(res.statusCode).toEqual(403)
