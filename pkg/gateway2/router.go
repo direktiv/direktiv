@@ -51,37 +51,43 @@ func buildRouter(endpoints []core.EndpointV2, consumers []core.ConsumerV2) *rout
 		}
 
 		cleanPath := strings.Trim(item.Path, " /")
-		pattern := fmt.Sprintf("/api/v2/namespaces/%s/gateway2/%s", item.Namespace, cleanPath)
-		serveMux.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
-			// check if correct method.
-			if !slices.Contains(item.Methods, r.Method) {
-				WriteJSONError(w, http.StatusMethodNotAllowed, item.FilePath,
-					fmt.Sprintf("method:%s is not allowed with this endpoint", r.Method))
 
-				return
-			}
+		for _, pattern := range []string{
+			fmt.Sprintf("/api/v2/namespaces/%s/gateway2/%s", item.Namespace, cleanPath),
+			fmt.Sprintf("/ns/%s/%s", item.Namespace, cleanPath),
+		} {
+			serveMux.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
+				// check if correct method.
+				if !slices.Contains(item.Methods, r.Method) {
+					WriteJSONError(w, http.StatusMethodNotAllowed, item.FilePath,
+						fmt.Sprintf("method:%s is not allowed with this endpoint", r.Method))
 
-			// inject consumer files.
-			r = InjectContextConsumersList(r, filterNamespacedConsumers(consumers, item.Namespace))
-			// inject endpoint.
-			r = InjectContextEndpoint(r, &endpoints[i])
+					return
+				}
 
-			for _, p := range pChain {
-				// checkpoint if auth plugins had a match.
-				if !isAuthPlugin(p) {
-					// case where auth is required but request is not authenticated (consumers doesn't match).
-					hasActiveConsumer := ExtractContextActiveConsumer(r) != nil
-					if !item.AllowAnonymous && !hasActiveConsumer {
-						WriteJSONError(w, http.StatusForbidden, item.FilePath, "authentication failed")
+				// inject consumer files.
+				r = InjectContextConsumersList(r, filterNamespacedConsumers(consumers, item.Namespace))
+				// inject endpoint.
+				r = InjectContextEndpoint(r, &endpoints[i])
 
-						return
+				for _, p := range pChain {
+					// checkpoint if auth plugins had a match.
+					if !isAuthPlugin(p) {
+						// case where auth is required but request is not authenticated (consumers doesn't match).
+						hasActiveConsumer := ExtractContextActiveConsumer(r) != nil
+						if !item.AllowAnonymous && !hasActiveConsumer {
+							WriteJSONError(w, http.StatusForbidden, item.FilePath, "authentication failed")
+
+							return
+						}
+					}
+					if r = p.Execute(w, r); r == nil {
+						break
 					}
 				}
-				if r = p.Execute(w, r); r == nil {
-					break
-				}
-			}
-		})
+			})
+		}
+
 	}
 
 	// mount not found route.
