@@ -77,7 +77,7 @@ func ParseConsumerFileV2(data []byte) (*ConsumerFileV2, error) {
 	if err != nil {
 		return nil, err
 	}
-	if !strings.HasPrefix(res.DirektivAPI, "consumer/v2") {
+	if !strings.HasPrefix(res.DirektivAPI, "consumer/v1") {
 		return nil, fmt.Errorf("invalid consumer api version")
 	}
 
@@ -90,7 +90,7 @@ func ParseEndpointFileV2(data []byte) (*EndpointFileV2, error) {
 	if err != nil {
 		return nil, err
 	}
-	if !strings.HasPrefix(res.DirektivAPI, "endpoint/v2") {
+	if !strings.HasPrefix(res.DirektivAPI, "endpoint/v1") {
 		return nil, fmt.Errorf("invalid endpoint api version")
 	}
 
