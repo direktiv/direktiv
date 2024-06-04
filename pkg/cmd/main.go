@@ -265,8 +265,9 @@ func renderGateway2(db *database.SQLStore, manager core.GatewayManagerV2) {
 				consumerFile, err := core.ParseConsumerFileV2(file.Data)
 				if err != nil {
 					slog.Error("parse consumer file", "err", err)
-
-					continue
+					consumerFile = &core.ConsumerFileV2{
+						Errors: []string{err.Error()},
+					}
 				}
 				consumers = append(consumers, core.ConsumerV2{
 					ConsumerFileV2: *consumerFile,
@@ -277,8 +278,9 @@ func renderGateway2(db *database.SQLStore, manager core.GatewayManagerV2) {
 				endpointFile, err := core.ParseEndpointFileV2(file.Data)
 				if err != nil {
 					slog.Error("parse endpoint file", "err", err)
-
-					continue
+					endpointFile = &core.EndpointFileV2{
+						Errors: []string{err.Error()},
+					}
 				}
 				endpoints = append(endpoints, core.EndpointV2{
 					EndpointFileV2: *endpointFile,

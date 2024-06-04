@@ -3,8 +3,10 @@ package gateway2
 import (
 	"context"
 	"fmt"
+	"github.com/go-chi/chi/v5"
 	"net/http"
 	"slices"
+	"strings"
 	"sync/atomic"
 	"unsafe"
 
@@ -49,6 +51,25 @@ func (m *manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
+
+	// setup /routes endpoint
+	if strings.HasSuffix(r.URL.Path, "/routes") {
+		ns := chi.URLParam(r, "namespace")
+		if ns != "" {
+			WriteJSON(w, filterNamespacedEndpoints(inner.endpoints, ns))
+			return
+		}
+
+	}
+	// setup /consumers endpoint
+	if strings.HasSuffix(r.URL.Path, "/consumers") {
+		ns := chi.URLParam(r, "namespace")
+		if ns != "" {
+			WriteJSON(w, filterNamespacedConsumers(inner.consumers, ns))
+			return
+		}
+	}
+
 	inner.serveMux.ServeHTTP(w, r)
 }
 

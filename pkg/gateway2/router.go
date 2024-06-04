@@ -23,36 +23,12 @@ type router struct {
 func buildRouter(endpoints []core.EndpointV2, consumers []core.ConsumerV2) *router {
 	serveMux := http.NewServeMux()
 
-	namespacesList := map[string]bool{}
-	for _, item := range endpoints {
-		namespacesList[item.Namespace] = true
-	}
-
-	// setup /routes endpoint
-	for ns, _ := range namespacesList {
-		for _, pattern := range []string{
-			fmt.Sprintf("/api/v2/namespaces/%s/gateway/routes", ns),
-			fmt.Sprintf("/ns/%s/routes", ns),
-		} {
-			serveMux.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
-				WriteJSON(w, filterNamespacedEndpoints(endpoints, ns))
-			})
-		}
-	}
-
-	// setup /consumers endpoint
-	for ns, _ := range namespacesList {
-		for _, pattern := range []string{
-			fmt.Sprintf("/api/v2/namespaces/%s/gateway/consumers", ns),
-			fmt.Sprintf("/ns/%s/consumers", ns),
-		} {
-			serveMux.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
-				WriteJSON(w, filterNamespacedConsumers(consumers, ns))
-			})
-		}
-	}
-
 	for i, item := range endpoints {
+		// don't process endpoints with errors
+		if len(item.Errors) > 0 {
+			continue
+		}
+
 		// concat plugins configs into one list.
 		pConfigs := []core.PluginConfigV2{}
 		pConfigs = append(pConfigs, item.PluginsConfig.Auth...)
@@ -126,7 +102,7 @@ func buildRouter(endpoints []core.EndpointV2, consumers []core.ConsumerV2) *rout
 
 	return &router{
 		serveMux:  serveMux,
-		endpoints: make([]core.EndpointV2, 0),
-		consumers: make([]core.ConsumerV2, 0),
+		endpoints: endpoints,
+		consumers: consumers,
 	}
 }

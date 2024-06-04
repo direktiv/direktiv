@@ -19,11 +19,12 @@ type GatewayManagerV2 interface {
 
 type EndpointFileV2 struct {
 	DirektivAPI    string          `yaml:"direktiv_api" json:"-"`
-	Methods        []string        `yaml:"methods" json:"methods"`
-	Path           string          `yaml:"path" json:"path"` // TODO: fix ui to remove server_path, warnings
+	Methods        []string        `yaml:"methods" json:"methods,omitempty"`
+	Path           string          `yaml:"path" json:"path,omitempty"` // TODO: fix ui to remove server_path, warnings
 	AllowAnonymous bool            `yaml:"allow_anonymous" json:"allow_anonymous"`
-	PluginsConfig  PluginsConfigV2 `yaml:"plugins" json:"plugins"`
+	PluginsConfig  PluginsConfigV2 `yaml:"plugins" json:"plugins,omitempty"`
 	Timeout        int             `yaml:"timeout" json:"timeout"`
+	Errors         []string        `yaml:"-" json:"errors,omitempty"`
 }
 
 type ConsumerFileV2 struct {
@@ -33,6 +34,7 @@ type ConsumerFileV2 struct {
 	APIKey      string   `yaml:"api_key" json:"api_key"`
 	Tags        []string `yaml:"tags" json:"tags"`
 	Groups      []string `yaml:"groups" json:"groups"`
+	Errors      []string `yaml:"-" json:"errors"`
 }
 
 type PluginsConfigV2 struct {
@@ -43,7 +45,7 @@ type PluginsConfigV2 struct {
 }
 
 type PluginConfigV2 struct {
-	Typ    string         `yaml:"type" json:"type"`
+	Typ    string         `yaml:"type" json:"type,omitempty"`
 	Config map[string]any `yaml:"configuration" json:"configuration,omitempty"`
 }
 
@@ -58,17 +60,15 @@ type PluginV2 interface {
 type EndpointV2 struct {
 	EndpointFileV2
 
-	Namespace string   `yaml:"-" json:"-"`
-	FilePath  string   `yaml:"-" json:"file_path"`
-	Errors    []string `yaml:"-" json:"errors"`
+	Namespace string `yaml:"-" json:"-"`
+	FilePath  string `yaml:"-" json:"file_path"`
 }
 
 type ConsumerV2 struct {
 	ConsumerFileV2
 
-	Namespace string   `yaml:"-" json:"-"`
-	FilePath  string   `yaml:"-" json:"file_path"`
-	Errors    []string `yaml:"-" json:"errors"`
+	Namespace string `yaml:"-" json:"-"`
+	FilePath  string `yaml:"-" json:"file_path"`
 }
 
 func ParseConsumerFileV2(data []byte) (*ConsumerFileV2, error) {
