@@ -8,6 +8,7 @@ import Button from "~/design/Button";
 import Logo from "~/components/Logo";
 import LogoutButton from "./LogoutButton";
 import NamespaceEdit from "~/components/NamespaceEdit";
+import useApiKeyHandling from "~/hooks/useApiKeyHandling";
 import { useListNamespaces } from "~/api/namespaces/query/get";
 import { useNavigate } from "react-router-dom";
 import { usePages } from "~/util/router/pages";
@@ -16,6 +17,7 @@ import { useTranslation } from "react-i18next";
 const Layout = () => {
   const pages = usePages();
   const { t } = useTranslation();
+  const { usesAccounts } = useApiKeyHandling();
   const {
     data: availableNamespaces,
     isFetched,
@@ -119,7 +121,7 @@ const Layout = () => {
             </DialogContent>
           </Dialog>
         </div>
-        <LogoutButton />
+        {usesAccounts && <LogoutButton />}
         <ul role="list" className="text-left">
           {linkItems.map((item, itemIdx) => (
             <li key={itemIdx}>

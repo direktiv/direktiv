@@ -22,7 +22,7 @@ interface UserMenuProps {
 }
 
 const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
-  const { showUsermenu } = useApiKeyHandling();
+  const { usesAccounts } = useApiKeyHandling();
   const { setTheme } = useThemeActions();
   const theme = useTheme();
   const { t } = useTranslation();
@@ -31,7 +31,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
     <div className={twMergeClsx("flex space-x-2", className)}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          {showUsermenu ? (
+          {usesAccounts ? (
             <Button
               variant="ghost"
               className="items-center px-1"
@@ -52,7 +52,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
           )}
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56">
-          {showUsermenu && (
+          {usesAccounts && (
             <>
               <DropdownMenuLabel>
                 {t("components.userMenu.loggedIn")}
