@@ -11,7 +11,7 @@ import { useTheme, useThemeActions } from "~/util/store/theme";
 
 import Avatar from "~/design/Avatar";
 import Button from "~/design/Button";
-import LogoutButton from "./LogoutButton/index.";
+import LogoutButton from "./LogoutButton";
 import { RxChevronDown } from "react-icons/rx";
 import { twMergeClsx } from "~/util/helpers";
 import useApiKeyHandling from "~/hooks/useApiKeyHandling";
