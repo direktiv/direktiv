@@ -1,4 +1,4 @@
-import { Book, Github, PlusCircle, Slack } from "lucide-react";
+import { Book, Github, LogOut, PlusCircle, Slack } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import { useEffect, useState } from "react";
 import { useNamespace, useNamespaceActions } from "~/util/store/namespace";
@@ -6,7 +6,7 @@ import { useNamespace, useNamespaceActions } from "~/util/store/namespace";
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
 import Logo from "~/components/Logo";
-import LogoutButton from "./LogoutButton";
+import LogoutButton from "~/components/LogoutButton";
 import NamespaceEdit from "~/components/NamespaceEdit";
 import useApiKeyHandling from "~/hooks/useApiKeyHandling";
 import { useListNamespaces } from "~/api/namespaces/query/get";
@@ -121,7 +121,14 @@ const Layout = () => {
             </DialogContent>
           </Dialog>
         </div>
-        {usesAccounts && <LogoutButton />}
+        {usesAccounts && (
+          <LogoutButton
+            wrapper={(props) => <Button {...props} variant="outline" />}
+          >
+            <LogOut />
+            {t("pages.onboarding.logout")}
+          </LogoutButton>
+        )}
         <ul role="list" className="text-left">
           {linkItems.map((item, itemIdx) => (
             <li key={itemIdx}>
