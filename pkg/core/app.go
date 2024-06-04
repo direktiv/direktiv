@@ -119,7 +119,6 @@ type App struct {
 
 	ServiceManager   ServiceManager
 	RegistryManager  RegistryManager
-	GatewayManager   GatewayManager
 	GatewayManagerV2 GatewayManagerV2
 	SyncNamespace    SyncNamespace
 }
