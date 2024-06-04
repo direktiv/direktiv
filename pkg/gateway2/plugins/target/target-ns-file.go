@@ -13,8 +13,9 @@ import (
 
 // NamespaceFilePlugin returns a files in the explorer tree.
 type NamespaceFilePlugin struct {
-	Namespace string `mapstructure:"namespace"`
-	File      string `mapstructure:"file"`
+	Namespace   string `mapstructure:"namespace"`
+	File        string `mapstructure:"file"`
+	ContentType string `mapstructure:"content_type"`
 }
 
 func (tnf *NamespaceFilePlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
@@ -66,6 +67,9 @@ func (tnf *NamespaceFilePlugin) Execute(w http.ResponseWriter, r *http.Request) 
 		for _, value := range values {
 			w.Header().Add(key, value)
 		}
+	}
+	if tnf.ContentType != "" {
+		w.Header().Set("Content-Type", tnf.ContentType)
 	}
 	// copy the status code
 	w.WriteHeader(resp.StatusCode)
