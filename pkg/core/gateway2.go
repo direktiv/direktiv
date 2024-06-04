@@ -61,6 +61,8 @@ type EndpointV2 struct {
 	Errors []string `json:"errors" yaml:"-"`
 	// TODO: yassir, remove this useless field.
 	Warnings []string `json:"warnings" yaml:"-"`
+	// TODO: yassir, remove this useless field.
+	ServerPath string `json:"server_path" yaml:"-"`
 }
 
 type ConsumerV2 struct {

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"path"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/api"
@@ -291,8 +292,10 @@ func renderGateway2(db *database.SQLStore, manager core.GatewayManagerV2) {
 					Errors:         []string{},
 					Warnings:       []string{},
 				}
+				endpoint.ServerPath = path.Clean(fmt.Sprintf("/ns/%s/%s", endpoint.Namespace, endpoint.Path))
 				if err != nil {
 					endpoint.Errors = []string{err.Error()}
+					endpoint.ServerPath = ""
 				}
 				endpoint.Warnings = []string{}
 				endpoints = append(endpoints, endpoint)
