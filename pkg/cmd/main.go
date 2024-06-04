@@ -14,7 +14,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/direktiv/direktiv/pkg/events"
 	"github.com/direktiv/direktiv/pkg/filestore"
-	"github.com/direktiv/direktiv/pkg/gateway"
 	"github.com/direktiv/direktiv/pkg/gateway2"
 	"github.com/direktiv/direktiv/pkg/instancestore"
 	"github.com/direktiv/direktiv/pkg/model"
@@ -71,10 +70,6 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 	slog.Info("registry manager initialized successfully")
 
 	// Create endpoint manager
-	gatewayManager := gateway.NewGatewayManager(args.Database)
-	slog.Info("gateway manager initialized successfully")
-
-	// Create endpoint manager
 	gatewayManager2 := gateway2.NewManager(args.Database)
 	slog.Info("gateway manager2 initialized successfully")
 
@@ -86,7 +81,6 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 		Config:           args.Config,
 		ServiceManager:   serviceManager,
 		RegistryManager:  registryManager,
-		GatewayManager:   gatewayManager,
 		GatewayManagerV2: gatewayManager2,
 		SyncNamespace:    args.SyncNamespace,
 	}
@@ -129,25 +123,6 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 		slog.Error("rendering event listener on server start", "error", err)
 	}
 	slog.Debug("Completed rendering event-listeners on server start")
-
-	// endpoint manager
-	args.PubSubBus.Subscribe(func(_ string) {
-		gatewayManager.UpdateAll()
-	},
-		pubsub.EndpointCreate,
-		pubsub.EndpointUpdate,
-		pubsub.EndpointDelete,
-		pubsub.EndpointRename,
-		pubsub.ConsumerCreate,
-		pubsub.ConsumerDelete,
-		pubsub.ConsumerUpdate,
-		pubsub.ConsumerRename,
-		pubsub.NamespaceDelete,
-		pubsub.NamespaceCreate,
-		pubsub.MirrorSync,
-	)
-	// initial loading of routes and consumers
-	gatewayManager.UpdateAll()
 
 	// endpoint manager
 	args.PubSubBus.Subscribe(func(_ string) {
