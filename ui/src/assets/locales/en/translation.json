@@ -13,6 +13,7 @@
       "noNamespace": "Create a namespace to get started.",
       "createNamespaceBtn": "Create namespace",
       "error": "There was an error fetching the namespaces",
+      "logout": "Logout",
       "links": {
         "docs": {
           "title": "Getting started",

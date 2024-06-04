@@ -6,6 +6,7 @@ import { useNamespace, useNamespaceActions } from "~/util/store/namespace";
 import Alert from "~/design/Alert";
 import Button from "~/design/Button";
 import Logo from "~/components/Logo";
+import LogoutButton from "./LogoutButton";
 import NamespaceEdit from "~/components/NamespaceEdit";
 import { useListNamespaces } from "~/api/namespaces/query/get";
 import { useNavigate } from "react-router-dom";
@@ -94,17 +95,14 @@ const Layout = () => {
 
   return (
     <main className="grid min-h-full place-items-center py-24 px-6 sm:py-32 lg:px-8">
-      <div className="text-center">
-        <h1 className="mb-8 flex justify-center space-x-3 text-2xl font-bold text-gray-12 dark:text-gray-dark-12">
-          <span> {t("pages.onboarding.welcomeTo")}</span>
+      <div className="flex flex-col gap-8 text-center">
+        <h1 className="flex justify-center space-x-3 text-2xl font-bold text-gray-12 dark:text-gray-dark-12">
+          <span>{t("pages.onboarding.welcomeTo")}</span>
           <Logo />
         </h1>
         {isError && (
-          <Alert variant="error" className="mb-8">
-            {t("pages.onboarding.error")}
-          </Alert>
+          <Alert variant="error">{t("pages.onboarding.error")}</Alert>
         )}
-
         <div className="relative block w-full rounded-lg border-2 border-dashed border-gray-5 p-12 text-center dark:border-gray-dark-5">
           <p className="mt-1 text-sm text-gray-9 dark:text-gray-dark-9">
             {t("pages.onboarding.noNamespace")}
@@ -121,8 +119,8 @@ const Layout = () => {
             </DialogContent>
           </Dialog>
         </div>
-
-        <ul role="list" className="mt-6 text-left">
+        <LogoutButton />
+        <ul role="list" className="text-left">
           {linkItems.map((item, itemIdx) => (
             <li key={itemIdx}>
               <div className="group relative flex items-start space-x-3 py-4">
