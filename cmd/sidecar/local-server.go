@@ -378,14 +378,15 @@ func (srv *LocalServer) run() {
 }
 
 type functionRequest struct {
-	actionId   string
-	instanceId string
-	namespace  string
-	step       int
-	deadline   time.Time
-	input      []byte
-	files      []*functionFiles
-	iterator   int
+	actionId     string
+	instanceId   string
+	namespace    string
+	workflowPath string
+	step         int
+	deadline     time.Time
+	input        []byte
+	files        []*functionFiles
+	iterator     int
 }
 
 type functionFiles struct {

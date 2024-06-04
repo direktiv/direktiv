@@ -395,77 +395,128 @@ func (worker *inboundWorker) prepFunctionFiles(ctx context.Context, ir *function
 	return nil
 }
 
-func (worker *inboundWorker) fetchFunctionFiles(ctx context.Context, ir *functionRequest) error {
+type variableForAPI struct {
+	ID        uuid.UUID `json:"id"`
+	Typ       string    `json:"type"`
+	Reference string    `json:"reference"`
+	Name      string    `json:"name"`
+	Data      []byte    `json:"data"`
+	Size      int       `json:"size"`
+	MimeType  string    `json:"mimeType"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+}
+type varResponseData struct {
+	Data  []variableForAPI `json:"data"`
+	Error *any             `json:"error"`
+}
+
+type varInduvidualResponseData struct {
+	Data  variableForAPI `json:"data"`
+	Error *any           `json:"error"`
+}
+
+func (worker *inboundWorker) getNamespaceVariables(ctx context.Context, ir *functionRequest) (*varResponseData, error) {
 	addr := fmt.Sprintf("http://%v/api/v2/namespaces/%v/variables", worker.srv.flowAddr, ir.namespace)
 	client := &http.Client{}
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, addr, nil)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	req.Header.Set("Direktiv-Token", worker.srv.flowToken)
 	resp, err := client.Do(req)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
-	type variableForAPI struct {
-		ID        uuid.UUID `json:"id"`
-		Typ       string    `json:"type"`
-		Reference string    `json:"reference"`
-		Name      string    `json:"name"`
-
-		Size      int       `json:"size"`
-		MimeType  string    `json:"mimeType"`
-		Data      []byte    `json:"data,omitempty"`
-		CreatedAt time.Time `json:"createdAt"`
-		UpdatedAt time.Time `json:"updatedAt"`
-	}
-	type varResponseData struct {
-		Data  []variableForAPI `json:"data"`
-		Error *any             `json:"error"`
-	}
-	data := varResponseData{}
+	namespaceVariables := varResponseData{}
 	decoder := json.NewDecoder(resp.Body)
-	if err = decoder.Decode(&data); err != nil {
+	if err = decoder.Decode(&namespaceVariables); err != nil {
+		return nil, err
+	}
+
+	return &namespaceVariables, nil
+}
+
+func (worker *inboundWorker) getWorkflowVariables(ctx context.Context, ir *functionRequest) (*varResponseData, error) {
+	addr := fmt.Sprintf("http://%v/api/v2/namespaces/%v/variables?workflowPath=%v", worker.srv.flowAddr, ir.namespace, ir.workflowPath)
+	client := &http.Client{}
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, addr, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Direktiv-Token", worker.srv.flowToken)
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	workflowVariables := varResponseData{}
+	decoder := json.NewDecoder(resp.Body)
+	if err = decoder.Decode(&workflowVariables); err != nil {
+		return nil, err
+	}
+
+	return &workflowVariables, nil
+}
+
+func (worker *inboundWorker) fetchFunctionFiles(ctx context.Context, ir *functionRequest) error {
+	namespaceVariables, err := worker.getNamespaceVariables(ctx, ir)
+	if err != nil {
 		return err
 	}
-
+	wfVar, err := worker.getWorkflowVariables(ctx, ir)
+	if err != nil {
+		return err
+	}
+	vars := append(namespaceVariables.Data, wfVar.Data...)
+	slog.Info("F FF", "data", fmt.Sprintf("%v", vars))
 	for _, file := range ir.files {
 		typ, err := determineVarType(file.Scope)
 		if err != nil {
 			return err
 		}
-		idx := slices.IndexFunc(data.Data, func(e variableForAPI) bool { return e.Typ == typ && e.Name == file.Key })
+		idx := slices.IndexFunc(vars, func(e variableForAPI) bool { return e.Typ == typ && e.Name == file.Key })
 		if idx == -1 {
 			return fmt.Errorf("variable is not known")
 		}
 		pr, pw := io.Pipe()
 		go func() {
-			addr = fmt.Sprintf("http://%v/api/v2/namespaces/%v/variables/%v", worker.srv.flowAddr, ir.namespace, data.Data[idx].ID)
+			addr := fmt.Sprintf("http://%v/api/v2/namespaces/%v/variables/%v", worker.srv.flowAddr, ir.namespace, vars[idx].ID)
 			client := &http.Client{}
 			req, err := http.NewRequestWithContext(ctx, http.MethodGet, addr, nil)
 			if err != nil {
 				sysErr := pw.CloseWithError(err)
-				slog.Error("failed fetching files with", "error", sysErr)
+				if sysErr != nil {
+					slog.Error("failed fetching files with", "error", sysErr)
+				}
 			}
 			req.Header.Set("Direktiv-Token", worker.srv.flowToken)
 			resp, err := client.Do(req)
 			if err != nil {
 				sysErr := pw.CloseWithError(err)
-				slog.Error("failed fetching files with", "error", sysErr)
+				if sysErr != nil {
+					slog.Error("failed fetching files with", "error", sysErr)
+				}
 			}
 			defer resp.Body.Close()
-			data1 := variableForAPI{}
-			decoder = json.NewDecoder(resp.Body)
-			if err = decoder.Decode(&data1); err != nil {
+
+			variable := varInduvidualResponseData{}
+			decoder := json.NewDecoder(resp.Body)
+			if err = decoder.Decode(&variable); err != nil {
 				sysErr := pw.CloseWithError(err)
-				slog.Error("failed fetching files with", "error", sysErr)
+				if sysErr != nil {
+					slog.Error("failed fetching files with", "error", sysErr)
+				}
 			}
-			_, err = io.Copy(pw, bytes.NewReader(data1.Data))
+			_, err = io.Copy(pw, bytes.NewReader(variable.Data.Data))
 			if err != nil {
 				sysErr := pw.CloseWithError(err)
-				slog.Error("failed fetching files with", "error", sysErr)
+				if sysErr != nil {
+					slog.Error("failed fetching files with", "error", sysErr)
+				}
 			}
 
 			pw.Close()
@@ -474,7 +525,9 @@ func (worker *inboundWorker) fetchFunctionFiles(ctx context.Context, ir *functio
 		err = worker.fileWriter(ctx, ir, file, pr)
 		if err != nil {
 			sysErr := pr.CloseWithError(err)
-			slog.Error("failed fetching files with", "error", sysErr)
+			if sysErr != nil {
+				slog.Error("failed fetching files with", "error", sysErr)
+			}
 
 			return err
 		}
@@ -534,14 +587,15 @@ func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
 		}
 	}
 	ir := &functionRequest{
-		actionId:   aid,
-		instanceId: action.Instance,
-		namespace:  action.Namespace,
-		step:       action.Step,
-		deadline:   action.Deadline,
-		input:      action.UserInput,
-		iterator:   action.Branch,
-		files:      files,
+		actionId:     aid,
+		instanceId:   action.Instance,
+		namespace:    action.Namespace,
+		step:         action.Step,
+		deadline:     action.Deadline,
+		input:        action.UserInput,
+		iterator:     action.Branch,
+		files:        files,
+		workflowPath: action.Workflow,
 	}
 
 	ctx := req.r.Context()
