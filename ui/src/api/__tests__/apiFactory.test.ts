@@ -51,7 +51,10 @@ const testApi = setupServer(
   ),
   rest.get(apiEndpoint404, (_req, res, ctx) => res(ctx.status(404))),
   rest.get(apiEndpointJSONError, (_req, res, ctx) =>
-    res(ctx.status(422), ctx.json({ my: "error" }))
+    res(
+      ctx.status(422),
+      ctx.json({ error: { code: 422, message: "error message" } })
+    )
   ),
   rest.get(apiEndpointEmptyResponse, (_req, res, ctx) => res(ctx.status(204))),
   rest.get(apiEndpointTextResponse, (_req, res, ctx) =>
@@ -341,7 +344,8 @@ describe("processApiResponse", () => {
       if (parsedRes.success) {
         expect(parsedRes.data.status).toBe(422);
         expect(parsedRes.data.body).toStrictEqual({
-          my: "error",
+          code: 422,
+          message: "error message",
         });
       } else {
         throw new Error("api response does not match ApiErrorSchema");

@@ -26,25 +26,16 @@ type ErrorJsonType = z.infer<typeof ErrorJson>;
 /**
  * Returns an object describing the error. Works with v1 api as well as v2.
  *
- * v1 response body format for errors: {
- *   code: "code",
- *   message: "message",
- * }
- *
- * v2 response body format for errors: {
+ * Response body format for errors: {
  *   error: {
  *     code: "code",
  *     message: "message",
  *   }
  * }
- *
- * This can be simplified to always use receivedJson.error once v1 api
- * is no longer consumed (DIR-1417).
  */
 const getErrorJson = async (res: Response): Promise<ErrorJsonType> => {
-  let receivedJson = await res.json();
-  receivedJson = receivedJson.error || receivedJson;
-  return ErrorJson.parse(receivedJson);
+  const receivedJson = await res.json();
+  return ErrorJson.parse(receivedJson.error);
 };
 
 export const createApiErrorFromResponse = async (
