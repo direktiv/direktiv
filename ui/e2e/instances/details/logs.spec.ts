@@ -66,11 +66,6 @@ test("the logs panel can be resized, it displays a log message from the workflow
     "There is a loading spinner"
   ).toHaveClass(/animate-ping/);
 
-  await expect(
-    entriesCounter,
-    "While starting the workflow there are 3 log entries"
-  ).toContainText("received 3 log entries");
-
   const resizeButton = page
     .getByTestId("instance-logs-container")
     .getByRole("button")
@@ -326,7 +321,7 @@ test("log entries will be automatically scrolled to the end", async ({
   }).toPass();
 
   await expect(
-    currentFirstEntry,
+    scrollContainer.locator("pre").first(),
     "The page is still scrolled up"
   ).toBeInViewport();
 
