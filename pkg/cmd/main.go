@@ -261,32 +261,41 @@ func renderGateway2(db *database.SQLStore, manager core.GatewayManagerV2) {
 			continue
 		}
 		for _, file := range files {
+			// nolint:nestif
 			if file.Typ == filestore.FileTypeConsumer {
 				consumerFile, err := core.ParseConsumerFileV2(file.Data)
 				if err != nil {
 					slog.Error("parse consumer file", "err", err)
-					consumerFile = &core.ConsumerFileV2{
-						Errors: []string{err.Error()},
-					}
+					consumerFile = &core.ConsumerFileV2{}
 				}
-				consumers = append(consumers, core.ConsumerV2{
+				consumer := core.ConsumerV2{
 					ConsumerFileV2: *consumerFile,
 					Namespace:      ns.Name,
 					FilePath:       file.Path,
-				})
+					Errors:         []string{},
+				}
+				if err != nil {
+					consumer.Errors = []string{err.Error()}
+				}
+				consumers = append(consumers, consumer)
 			} else if file.Typ == filestore.FileTypeEndpoint {
 				endpointFile, err := core.ParseEndpointFileV2(file.Data)
 				if err != nil {
 					slog.Error("parse endpoint file", "err", err)
-					endpointFile = &core.EndpointFileV2{
-						Errors: []string{err.Error()},
-					}
+					endpointFile = &core.EndpointFileV2{}
 				}
-				endpoints = append(endpoints, core.EndpointV2{
+				endpoint := core.EndpointV2{
 					EndpointFileV2: *endpointFile,
 					Namespace:      ns.Name,
 					FilePath:       file.Path,
-				})
+					Errors:         []string{},
+					Warnings:       []string{},
+				}
+				if err != nil {
+					endpoint.Errors = []string{err.Error()}
+				}
+				endpoint.Warnings = []string{}
+				endpoints = append(endpoints, endpoint)
 			}
 		}
 	}

@@ -126,6 +126,7 @@ describe('Test wrong endpoint config', () => {
 				allow_anonymous: false,
 				timeout: 0,
 				errors: [ 'yaml: unmarshal errors:\n  line 5: cannot unmarshal !!map into []core.PluginConfigV2' ],
+				warnings: [],
 				plugins: { target: {} },
 			},
 		)
@@ -196,6 +197,8 @@ describe('Test gateway get single endpoint', () => {
 		expect(listRes.body.data.length).toEqual(1)
 		expect(listRes.body.data[0]).toEqual({
 			allow_anonymous: false,
+			errors: [],
+			warnings: [],
 			file_path: '/endpoint1.yaml',
 			methods: [ 'GET' ],
 			path: '/endpoint1',
@@ -224,6 +227,8 @@ describe('Test gateway get single endpoint', () => {
 		expect(listRes.body.data.length).toEqual(1)
 		expect(listRes.body.data[0]).toEqual({
 			allow_anonymous: false,
+			errors: [],
+			warnings: [],
 			file_path: '/endpoint3.yaml',
 			methods: [ 'GET' ],
 			path: '/endpoint3/longer/path',
@@ -252,6 +257,8 @@ describe('Test gateway get single endpoint', () => {
 		expect(listRes.body.data.length).toEqual(1)
 		expect(listRes.body.data[0]).toEqual({
 			allow_anonymous: false,
+			errors: [],
+			warnings: [],
 			file_path: '/endpoint4.yaml',
 			methods: [ 'GET' ],
 			path: '/endpoint4/longer/path/{id}',
@@ -320,6 +327,8 @@ describe('Test gateway endpoints crud operations', () => {
 			[
 				{
 					allow_anonymous: false,
+					errors: [],
+					warnings: [],
 					file_path: '/endpoint1.yaml',
 					methods: [ 'GET' ],
 					path: '/endpoint1',
@@ -339,6 +348,8 @@ describe('Test gateway endpoints crud operations', () => {
 					timeout: 0,
 				}, {
 					allow_anonymous: true,
+					errors: [],
+					warnings: [],
 					file_path: '/endpoint2.yaml',
 					methods: [ 'GET' ],
 					path: '/endpoint2',
@@ -377,7 +388,7 @@ describe('Test gateway endpoints crud operations', () => {
 		expect(listRes.body.data.sort(comp)).toEqual([
 			{
 				file_path: '/consumer2.yaml',
-				errors: null,
+				errors: [],
 				api_key: 'key2',
 				groups: [ 'group2' ],
 				password: 'pwd',
@@ -387,7 +398,7 @@ describe('Test gateway endpoints crud operations', () => {
 
 			{
 				file_path: '/consumer1.yaml',
-				errors: null,
+				errors: [],
 				api_key: 'key1',
 				groups: [ 'group1' ],
 				password: 'pwd',

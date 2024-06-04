@@ -21,7 +21,6 @@ type EndpointFileV2 struct {
 	AllowAnonymous bool            `json:"allow_anonymous"   yaml:"allow_anonymous"`
 	PluginsConfig  PluginsConfigV2 `json:"plugins,omitempty" yaml:"plugins"`
 	Timeout        int             `json:"timeout"           yaml:"timeout"`
-	Errors         []string        `json:"errors,omitempty"  yaml:"-"`
 }
 
 type ConsumerFileV2 struct {
@@ -31,7 +30,6 @@ type ConsumerFileV2 struct {
 	APIKey      string   `json:"api_key"  yaml:"api_key"`
 	Tags        []string `json:"tags"     yaml:"tags"`
 	Groups      []string `json:"groups"   yaml:"groups"`
-	Errors      []string `json:"errors"   yaml:"-"`
 }
 
 type PluginsConfigV2 struct {
@@ -59,6 +57,10 @@ type EndpointV2 struct {
 
 	Namespace string `json:"-"         yaml:"-"`
 	FilePath  string `json:"file_path" yaml:"-"`
+
+	Errors []string `json:"errors" yaml:"-"`
+	// TODO: yassir, remove this useless field.
+	Warnings []string `json:"warnings" yaml:"-"`
 }
 
 type ConsumerV2 struct {
@@ -66,6 +68,8 @@ type ConsumerV2 struct {
 
 	Namespace string `json:"-"         yaml:"-"`
 	FilePath  string `json:"file_path" yaml:"-"`
+
+	Errors []string `json:"errors" yaml:"-"`
 }
 
 func ParseConsumerFileV2(data []byte) (*ConsumerFileV2, error) {
