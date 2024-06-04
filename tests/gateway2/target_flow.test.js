@@ -24,7 +24,7 @@ states:
 
 	helpers.itShouldCreateYamlFile(it, expect, namespace,
 		'/', 'ep1.yaml', 'endpoint', `
-direktiv_api: endpoint/v2
+direktiv_api: endpoint/v1
 path: /ep1
 methods: 
   - GET

@@ -14,7 +14,7 @@ describe('Test gateway2 key-auth plugin', () => {
 
 	helpers.itShouldCreateYamlFile(it, expect, namespace,
 		'/', 'c1.yaml', 'consumer', `
-direktiv_api: "consumer/v2"
+direktiv_api: "consumer/v1"
 username: user1
 password: pwd1
 api_key: key1
@@ -26,7 +26,7 @@ groups:
 
 	helpers.itShouldCreateYamlFile(it, expect, namespace,
 		'/', 'ep1.yaml', 'endpoint', `
-direktiv_api: endpoint/v2
+direktiv_api: endpoint/v1
 path: /foo
 allow_anonymous: false
 methods:
