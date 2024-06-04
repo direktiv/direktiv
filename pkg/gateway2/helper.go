@@ -29,10 +29,10 @@ func filterNamespacedConsumers(consumers []core.ConsumerV2, namespace string) []
 	return list
 }
 
-func filterNamespacedEndpoints(endpoints []core.EndpointV2, namespace string) []core.EndpointV2 {
+func filterNamespacedEndpoints(endpoints []core.EndpointV2, namespace string, path string) []core.EndpointV2 {
 	list := []core.EndpointV2{}
 	for _, item := range endpoints {
-		if item.Namespace == namespace {
+		if item.Namespace == namespace && (path == "" || path == item.Path) {
 			list = append(list, item)
 		}
 	}

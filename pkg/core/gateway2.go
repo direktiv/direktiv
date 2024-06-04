@@ -12,9 +12,6 @@ type GatewayManagerV2 interface {
 	http.Handler
 
 	SetEndpoints(list []EndpointV2, cList []ConsumerV2)
-
-	ListEndpoints(namespace string) []EndpointV2
-	ListConsumers(namespace string) []ConsumerV2
 }
 
 type EndpointFileV2 struct {

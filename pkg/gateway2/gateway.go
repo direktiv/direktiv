@@ -56,7 +56,7 @@ func (m *manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if strings.HasSuffix(r.URL.Path, "/routes") {
 		ns := chi.URLParam(r, "namespace")
 		if ns != "" {
-			WriteJSON(w, filterNamespacedEndpoints(inner.endpoints, ns))
+			WriteJSON(w, filterNamespacedEndpoints(inner.endpoints, ns, r.URL.Query().Get("path")))
 			return
 		}
 
@@ -83,16 +83,6 @@ func (m *manager) SetEndpoints(list []core.EndpointV2, cList []core.ConsumerV2) 
 	}
 	newOne := buildRouter(list, cList)
 	m.atomicSetRouter(newOne)
-}
-
-func (m *manager) ListEndpoints(namespace string) []core.EndpointV2 {
-	inner := m.atomicLoadRouter()
-	return filterNamespacedEndpoints(inner.endpoints, namespace)
-}
-
-func (m *manager) ListConsumers(namespace string) []core.ConsumerV2 {
-	inner := m.atomicLoadRouter()
-	return filterNamespacedConsumers(inner.consumers, namespace)
 }
 
 // interpolateConsumersList translates matic consumer function "fetchSecret" in consumer files.
