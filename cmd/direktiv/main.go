@@ -47,6 +47,7 @@ func (h *apikeyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+
 	if key := os.Getenv("DIREKTIV_API_KEY"); key != "" {
 		middlewares.RegisterHTTPMiddleware(func(h http.Handler) http.Handler {
 			return &apikeyHandler{

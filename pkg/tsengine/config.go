@@ -11,5 +11,5 @@ type Config struct {
 	SelfCopyExit bool   `env:"DIREKTIV_JSENGINE_SELFCOPY_EXIT"`
 
 	DBConfig  string `env:"DIREKTIV_DB"`
-	SecretKey string `env:"DIREKTIV_SECRET_KEY,notEmpty"`
+	SecretKey string `env:"DIREKTIV_SECRET_KEY"`
 }
