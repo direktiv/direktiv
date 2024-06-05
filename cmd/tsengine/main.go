@@ -7,6 +7,7 @@ import (
 
 	"github.com/caarlos0/env/v11"
 	"github.com/direktiv/direktiv/pkg/tsengine"
+	"github.com/direktiv/direktiv/pkg/utils"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -21,6 +22,31 @@ func RunApplication() {
 		panic(err)
 	}
 	setLogLevel(cfg.LogLevel)
+
+	// copy itself to shared location
+	if cfg.SelfCopy != "" {
+		ex, err := os.Executable()
+		if err != nil {
+			panic(err)
+		}
+
+		slog.Info("copying binary", slog.String("source", ex),
+			slog.String("target", cfg.SelfCopy))
+		_, err = utils.CopyFile(ex, cfg.SelfCopy)
+		if err != nil {
+			panic(err)
+		}
+
+		err = os.Chmod(cfg.SelfCopy, 0755)
+		if err != nil {
+			panic(err)
+		}
+
+		// exit is used in kubernetes init containers
+		if cfg.SelfCopyExit {
+			os.Exit(0)
+		}
+	}
 
 	// loggingCtx = tracing.WithTrack(context.Background(), tracing.BuildNamespaceTrack(args.Namespace.Name))
 	// slog.Error("Failed to parse workflow definition.", tracing.GetSlogAttributesWithError(loggingCtx, err)...)

@@ -27,7 +27,6 @@ func TestFunctionID(t *testing.T) {
 
 	// setting the env wit hthe function and its id
 	fnID, _ := compiler.GenerateFunctionID(fn)
-	// os.Setenv(fnID, fmt.Sprintf("http://127.0.0.1:%d", s.port))
 
 	script := `	
 	function start(state) {

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"os"
 
 	"gorm.io/gorm"
 )
@@ -27,26 +26,6 @@ func NewServer(cfg Config, db *gorm.DB) (*Server, error) {
 	slog.Info("starting engine server")
 	slog.Info(fmt.Sprintf("using flow %s", cfg.FlowPath))
 	slog.Info(fmt.Sprintf("using base dir %s", cfg.BaseDir))
-
-	// copy itself to shared location
-	if cfg.SelfCopy != "" {
-		ex, err := os.Executable()
-		if err != nil {
-			return nil, err
-		}
-
-		slog.Info("copying binary", slog.String("source", ex),
-			slog.String("target", cfg.SelfCopy))
-		_, err = copyFile(ex, cfg.SelfCopy)
-		if err != nil {
-			panic(err)
-		}
-
-		err = os.Chmod(cfg.SelfCopy, 0755)
-		if err != nil {
-			panic(err)
-		}
-	}
 
 	// get path
 	mux := &http.ServeMux{}
@@ -71,8 +50,6 @@ func NewServer(cfg Config, db *gorm.DB) (*Server, error) {
 
 	var initializer Initializer
 	if db != nil {
-		fmt.Println("SECRET KEY ")
-		fmt.Println(cfg.SecretKey)
 		initializer = NewDBInitializer(cfg.BaseDir, cfg.FlowPath, cfg.Namespace, cfg.SecretKey, db, engine)
 	} else {
 		fi := NewFileInitializer(cfg.BaseDir, cfg.FlowPath, engine)

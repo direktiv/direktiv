@@ -6,7 +6,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/compiler"
 	"github.com/direktiv/direktiv/pkg/core"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 )
@@ -23,25 +22,41 @@ func buildTypescriptService(c *core.Config, sv *core.ServiceFileData, registrySe
 		return nil, err
 	}
 
-	fmt.Println("SECRETS")
-	fmt.Println(flowInformation.Secrets)
-	fmt.Println("FILES")
-	fmt.Println(flowInformation.Files)
-	fmt.Println("FUNCTIONS")
-	fmt.Println(flowInformation.Functions)
+	// check if special command is used in a function
+	useSpecialCommands := false
+	for k := range flowInformation.Functions {
+		fn := flowInformation.Functions[k]
+		if fn.Cmd == "direktiv" {
+			useSpecialCommands = true
+			break
+		}
+	}
+
+	// add init container if a function requires it
+	initContainers := []corev1.Container{}
+	if useSpecialCommands {
+		initContainers = append(initContainers, buildInitContainer(c.KnativeSidecar))
+	}
+
+	userContainerBasicEnvs := buildEnvVars(false, c, sv)
+
+	// build engine container
+	engineContainer := buildEngineContainer(c, sv, flowInformation.Functions,
+		userContainerBasicEnvs)
 
 	// set scale from configuration
 	if len(flowInformation.Definition.Scale) > 0 {
 		sv.Scale = flowInformation.Definition.Scale[0].Min
 	}
 
-	nonRoot := false
-
-	containers, err := buildTypescriptContainers(c, sv, flowInformation)
+	containers, err := buildFunctionContainers(c, sv, flowInformation)
 	if err != nil {
 		return nil, err
 	}
 
+	containers = append(containers, engineContainer)
+
+	nonRoot := false
 	svc := &servingv1.Service{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "serving.knative.dev/v1",
@@ -57,15 +72,14 @@ func buildTypescriptService(c *core.Config, sv *core.ServiceFileData, registrySe
 							SecurityContext: &corev1.PodSecurityContext{
 								RunAsNonRoot: &nonRoot,
 								SeccompProfile: &corev1.SeccompProfile{
-									// should we change it to runtime?
 									Type: corev1.SeccompProfileTypeUnconfined,
 								},
 							},
 							ServiceAccountName: c.KnativeServiceAccount,
 							Containers:         containers,
-							// InitContainers:     initContainers,
-							Volumes:  buildVolumes(c, sv),
-							Affinity: &corev1.Affinity{},
+							InitContainers:     initContainers,
+							Volumes:            buildVolumes(c, sv),
+							Affinity:           &corev1.Affinity{},
 						},
 					},
 				},
@@ -77,34 +91,59 @@ func buildTypescriptService(c *core.Config, sv *core.ServiceFileData, registrySe
 
 }
 
-func buildTypescriptContainers(c *core.Config, sv *core.ServiceFileData, flowInformation *compiler.FlowInformation) ([]corev1.Container, error) {
-
-	rl, err := buildResourceLimits(c, sv.Size)
-	if err != nil {
-		return nil, err
-	}
-
-	allowPrivilegeEscalation := true
-	secContext := &corev1.SecurityContext{
-		AllowPrivilegeEscalation: &allowPrivilegeEscalation,
-		Capabilities: &corev1.Capabilities{
-			Drop: []corev1.Capability{
-				// corev1.Capability("ALL"),
+func buildInitContainer(sidecar string) corev1.Container {
+	return corev1.Container{
+		Name:  "init",
+		Image: sidecar,
+		Env: []corev1.EnvVar{
+			{
+				Name:  "DIREKTIV_APP",
+				Value: "tsengine",
+			},
+			{
+				Name:  "DIREKTIV_JSENGINE_SELFCOPY",
+				Value: "/mnt/shared/direktiv",
+			},
+			{
+				Name:  "DIREKTIV_JSENGINE_SELFCOPY_EXIT",
+				Value: "true",
+			},
+			{
+				Name:  "DIREKTIV_JSENGINE_FLOWPATH",
+				Value: "dummy",
+			},
+			{
+				Name:  "DIREKTIV_JSENGINE_NAMESPACE",
+				Value: "dummy",
+			},
+			{
+				Name:  "DIREKTIV_SECRET_KEY",
+				Value: "dummy",
+			},
+		},
+		VolumeMounts: []corev1.VolumeMount{
+			{
+				Name:      "workdir",
+				MountPath: "/mnt/shared/",
 			},
 		},
 	}
+}
 
-	// add engine
+func buildEngineContainer(c *core.Config, sv *core.ServiceFileData, functions map[string]compiler.Function,
+	basicEnvs []corev1.EnvVar) corev1.Container {
+
 	basicPort := 8081
-	userContainerBasicEnvs := buildEnvVars(false, c, sv)
-	for k := range flowInformation.Functions {
-		userContainerBasicEnvs = append(userContainerBasicEnvs, corev1.EnvVar{
+
+	for k := range functions {
+		basicEnvs = append(basicEnvs, corev1.EnvVar{
 			Name:  k,
 			Value: fmt.Sprintf("http://localhost:%d", basicPort),
 		})
 		basicPort++
 	}
-	userContainerBasicEnvs = append(userContainerBasicEnvs,
+
+	basicEnvs = append(basicEnvs,
 		corev1.EnvVar{
 			Name:  "DIREKTIV_JSENGINE_BASEDIR",
 			Value: "/mnt/shared",
@@ -121,71 +160,71 @@ func buildTypescriptContainers(c *core.Config, sv *core.ServiceFileData, flowInf
 			Name:  "DIREKTIV_JSENGINE_FLOWPATH",
 			Value: sv.FilePath,
 		},
+		corev1.EnvVar{
+			Name: "DIREKTIV_DB",
+			ValueFrom: &corev1.EnvVarSource{
+				SecretKeyRef: &corev1.SecretKeySelector{
+					Key: "db",
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: "direktiv-secrets-functions",
+					},
+				},
+			},
+		},
+		corev1.EnvVar{
+			Name: "DIREKTIV_SECRET_KEY",
+			ValueFrom: &corev1.EnvVarSource{
+				SecretKeyRef: &corev1.SecretKeySelector{
+					Key: "key",
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: "direktiv-secrets-functions",
+					},
+				},
+			},
+		},
 	)
 
-	db := corev1.EnvVar{
-		Name: "DIREKTIV_DB",
-		ValueFrom: &corev1.EnvVarSource{
-			SecretKeyRef: &corev1.SecretKeySelector{
-				Key: "db",
-				LocalObjectReference: corev1.LocalObjectReference{
-					Name: "direktiv-secrets-functions",
-				},
-			},
-		},
-	}
-	userContainerBasicEnvs = append(userContainerBasicEnvs, db)
-
-	key := corev1.EnvVar{
-		Name: "DIREKTIV_SECRET_KEY",
-		ValueFrom: &corev1.EnvVarSource{
-			SecretKeyRef: &corev1.SecretKeySelector{
-				Key: "key",
-				LocalObjectReference: corev1.LocalObjectReference{
-					Name: "direktiv-secrets-functions",
-				},
-			},
-		},
-	}
-	userContainerBasicEnvs = append(userContainerBasicEnvs, key)
-
-	// LogLevel  string `env:"DIREKTIV_JS_ENGINE_LOGLEVEL" envDefault:"info"`
-	// SelfCopy string `env:"DIREKTIV_JSENGINE_SELFCOPY"`
-
-	baseCPU, _ := resource.ParseQuantity("4")
-	baseMem, _ := resource.ParseQuantity("4096M")
-	// baseDisk, _ := resource.ParseQuantity("64M")
-
-	rr := corev1.ResourceRequirements{
-		Requests: corev1.ResourceList{
-			"cpu":    baseCPU,
-			"memory": baseMem,
-			// "ephemeral-storage": baseDisk,
-		},
-		Limits: corev1.ResourceList{
-			"cpu":    baseCPU,
-			"memory": baseMem,
-			// "ephemeral-storage": baseDisk,
-		},
-	}
-
-	uc := corev1.Container{
+	return corev1.Container{
 		Name:  containerUser,
 		Image: c.KnativeSidecar,
-		Env:   userContainerBasicEnvs,
+		Env:   basicEnvs,
+		Ports: []corev1.ContainerPort{
+			{
+				ContainerPort: int32(8080),
+			},
+		},
 		VolumeMounts: []corev1.VolumeMount{
 			{
 				Name:      "workdir",
 				MountPath: "/mnt/shared",
 			},
 		},
-		SecurityContext: secContext,
-		Resources:       rr,
+		SecurityContext: getSecurityContext(),
 	}
-	containers := []corev1.Container{uc}
+
+}
+
+func getSecurityContext() *corev1.SecurityContext {
+	allowPrivilegeEscalation := true
+	return &corev1.SecurityContext{
+		AllowPrivilegeEscalation: &allowPrivilegeEscalation,
+		Capabilities: &corev1.Capabilities{
+			Drop: []corev1.Capability{},
+		},
+	}
+}
+
+func buildFunctionContainers(c *core.Config, sv *core.ServiceFileData, flowInformation *compiler.FlowInformation) ([]corev1.Container, error) {
+
+	rl, err := buildResourceLimits(c, sv.Size)
+	if err != nil {
+		return nil, err
+	}
+
+	containers := make([]corev1.Container, 0)
 
 	// add function containers
-	basicPort = 8081
+	basicPort := 8081
 	for k, v := range flowInformation.Functions {
 
 		// only workflow functions
@@ -193,20 +232,34 @@ func buildTypescriptContainers(c *core.Config, sv *core.ServiceFileData, flowInf
 			continue
 		}
 
-		// v.Cmd
+		// create envs
+		fnContainerBasicEnvs := buildEnvVars(false, c, sv)
+
+		cmd := v.Cmd
+		if v.Cmd == "direktiv" {
+			cmd = "/mnt/shared/direktiv"
+
+			// add direktiv app env
+			fnContainerBasicEnvs = append(fnContainerBasicEnvs, corev1.EnvVar{
+				Name:  "DIREKTIV_APP",
+				Value: "cmdserver",
+			})
+			fnContainerBasicEnvs = append(fnContainerBasicEnvs, corev1.EnvVar{
+				Name:  "DIREKTIV_PORT",
+				Value: fmt.Sprintf("%d", basicPort),
+			})
+		}
+		fmt.Printf("CHECK COMMAND %v\n", cmd)
+
 		// v.Envs
 		// v.Size
 
 		fnContainer := corev1.Container{
 
-			Name:  k,
-			Image: v.Image,
-			Ports: []corev1.ContainerPort{
-				{
-					ContainerPort: int32(basicPort),
-				},
-			},
-			// Env:   buildEnvVars(false, c, sv),
+			Name:      k,
+			Image:     v.Image,
+			Command:   []string{cmd},
+			Env:       fnContainerBasicEnvs,
 			Resources: *rl,
 
 			VolumeMounts: []corev1.VolumeMount{
@@ -215,7 +268,7 @@ func buildTypescriptContainers(c *core.Config, sv *core.ServiceFileData, flowInf
 					MountPath: "/mnt/shared",
 				},
 			},
-			SecurityContext: secContext,
+			SecurityContext: getSecurityContext(),
 		}
 
 		basicPort++

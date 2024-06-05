@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/direktiv/direktiv/cmd/cmdserver"
 	"github.com/direktiv/direktiv/cmd/dinit"
 	"github.com/direktiv/direktiv/cmd/sidecar"
 	"github.com/direktiv/direktiv/cmd/tsengine"
@@ -62,6 +63,8 @@ func main() {
 		dinit.RunApplication()
 	case "tsengine":
 		tsengine.RunApplication()
+	case "cmdserver":
+		cmdserver.RunApplication()
 	default:
 		// default to flow app.
 		runApplication()

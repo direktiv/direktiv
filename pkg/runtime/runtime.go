@@ -130,14 +130,13 @@ func New(id uuid.UUID, prg *goja.Program, secrets, functions *map[string]string,
 }
 
 type dirInfo struct {
-	sharedDir, outDir, instanceDir string
+	sharedDir, instanceDir string
 }
 
 func (rt *Runtime) dirInfo() *dirInfo {
 	return &dirInfo{
 		sharedDir:   filepath.Join(rt.baseDir, SharedDir),
 		instanceDir: filepath.Join(rt.baseDir, InstancesDir, rt.id),
-		outDir:      filepath.Join(rt.baseDir, InstancesDir, rt.id, "out"),
 	}
 }
 

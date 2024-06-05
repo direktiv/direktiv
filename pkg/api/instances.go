@@ -16,7 +16,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/engine"
 	"github.com/direktiv/direktiv/pkg/instancestore"
@@ -578,13 +577,7 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 	var data *instancestore.InstanceData
 
 	if strings.HasSuffix(path, utils.TypeScriptExtension) {
-		svcFile := &core.ServiceFileData{
-			Typ:       core.ServiceTypeTypescript,
-			Name:      path,
-			Namespace: ns.Name,
-			FilePath:  path,
-		}
-		tsengine.GenerateBasicServiceFile(path, ns.Name)
+		svcFile := tsengine.GenerateBasicServiceFile(path, ns.Name)
 
 		kubernetesNamespace := os.Getenv("DIREKTIV_KNATIVE_NAMESPACE")
 		rp := httputil.ReverseProxy{

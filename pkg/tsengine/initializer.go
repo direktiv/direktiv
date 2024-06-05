@@ -2,7 +2,6 @@ package tsengine
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -12,6 +11,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/datastore/datastoresql"
 	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/direktiv/direktiv/pkg/filestore/filestoresql"
+	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/fsnotify/fsnotify"
 	"gorm.io/gorm"
 )
@@ -71,7 +71,7 @@ func (i *FileInitializer) Init() error {
 		if file.Scope == "shared" {
 			filePathSrc := filepath.Join(i.engine.baseFS, file.Name)
 			filePathTarget := filepath.Join(i.engine.baseFS, "shared", file.Name)
-			_, err := copyFile(filePathSrc, filePathTarget)
+			_, err := utils.CopyFile(filePathSrc, filePathTarget)
 			if err != nil {
 				slog.Error("can not read file", slog.String("file", file.Name), slog.Any("error", err))
 				continue
@@ -207,23 +207,46 @@ func (db *DBInitializer) Init() error {
 	for i := range fi.Files {
 		file := fi.Files[i]
 
-		fetchPath := file.Name
-		if !filepath.IsAbs(file.Name) {
-			fetchPath = filepath.Join(filepath.Dir(db.flowPath), file.Name)
+		if file.Scope != "shared" {
+			continue
 		}
 
-		slog.Debug("fetching file", slog.String("secret", fetchPath))
-
-		f, err := db.fileStore.ForNamespace(db.namespace).GetFile(context.Background(), fetchPath)
+		err = db.writeFile(file)
 		if err != nil {
+			slog.Error("can not fetch file", slog.String("file", file.Name), slog.Any("error", err))
 			return err
 		}
-		data, err := db.fileStore.ForFile(f).GetData(context.Background())
-
-		fmt.Printf("%v %v %v\n", f, err, string(data))
 	}
 
 	db.engine.Initialize(compiler.Program, fi.Definition.State, secrets, functions, fi.Definition.Json)
 
 	return nil
+}
+
+func (db *DBInitializer) writeFile(file compiler.File) error {
+
+	fetchPath := file.Name
+	if !filepath.IsAbs(file.Name) {
+		fetchPath = filepath.Join(filepath.Dir(db.flowPath), file.Name)
+	}
+
+	slog.Debug("fetching file", slog.String("file", fetchPath))
+
+	f, err := db.fileStore.ForNamespace(db.namespace).GetFile(context.Background(), fetchPath)
+	if err != nil {
+		return err
+	}
+	data, err := db.fileStore.ForFile(f).GetData(context.Background())
+	if err != nil {
+		return err
+	}
+
+	newFile := filepath.Join(db.engine.baseFS, engineFsShared, filepath.Base(fetchPath))
+	tf, err := os.Create(newFile)
+	if err != nil {
+		return err
+	}
+
+	_, err = tf.Write(data)
+	return err
 }
