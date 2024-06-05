@@ -9,7 +9,7 @@ import { Settings2 } from "lucide-react";
 import { isEnterprise } from "~/config/env/utils";
 import useApiKeyHandling from "~/hooks/useApiKeyHandling";
 
-const Avatar = forwardRef<ElementRef<typeof Button>>((_, ref) => {
+const Avatar = forwardRef<ElementRef<typeof Button>>((props, ref) => {
   const { usesAccounts } = useApiKeyHandling();
   return usesAccounts ? (
     <Button
@@ -19,6 +19,7 @@ const Avatar = forwardRef<ElementRef<typeof Button>>((_, ref) => {
       role="button"
       icon
       data-testid="dropdown-trg-user-menu"
+      {...props}
     >
       <AvatarDesignComponent>
         {isEnterprise() ? <EnterpriseAvatar /> : <OpenSourceAvatar />}
@@ -26,7 +27,13 @@ const Avatar = forwardRef<ElementRef<typeof Button>>((_, ref) => {
       <RxChevronDown />
     </Button>
   ) : (
-    <Button ref={ref} variant="ghost" icon data-testid="dropdown-trg-user-menu">
+    <Button
+      ref={ref}
+      variant="ghost"
+      icon
+      data-testid="dropdown-trg-user-menu"
+      {...props}
+    >
       <Settings2 />
       <RxChevronDown />
     </Button>
