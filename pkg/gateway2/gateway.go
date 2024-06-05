@@ -112,9 +112,27 @@ func (m *manager) interpolateConsumersList(list []core.ConsumerV2) error {
 }
 
 func consumersForAPI(consumers []core.ConsumerV2) any {
+	type output struct {
+		Username string   `json:"username"`
+		Password string   `json:"password"`
+		APIKey   string   `json:"api_key"`
+		Tags     []string `json:"tags"`
+		Groups   []string `json:"groups"`
+		FilePath string   `json:"file_path"`
+		Errors   []string `json:"errors"`
+	}
 	result := []any{}
 	for _, item := range consumers {
-		result = append(result, item)
+		newItem := output{
+			Username: item.Username,
+			Password: item.Password,
+			APIKey:   item.APIKey,
+			Tags:     item.Tags,
+			Groups:   item.Groups,
+			FilePath: item.FilePath,
+			Errors:   item.Errors,
+		}
+		result = append(result, newItem)
 	}
 
 	return result
@@ -122,14 +140,28 @@ func consumersForAPI(consumers []core.ConsumerV2) any {
 
 func endpointsForAPI(endpoints []core.EndpointV2) any {
 	type output struct {
-		core.EndpointV2
-		ServerPath string
-		Warnings   []string
+		Methods        []string             `json:"methods"`
+		Path           string               `json:"path"`
+		AllowAnonymous bool                 `json:"allow_anonymous"`
+		PluginsConfig  core.PluginsConfigV2 `json:"plugins"`
+		Timeout        int                  `json:"timeout"`
+		FilePath       string               `json:"file_path"`
+		Errors         []string             `json:"errors"`
+		ServerPath     string               `json:"server_path"`
+		Warnings       []string             `json:"warnings"`
 	}
 
 	result := []any{}
 	for _, item := range endpoints {
-		newItem := output{EndpointV2: item}
+		newItem := output{
+			Methods:        item.Methods,
+			Path:           item.Path,
+			AllowAnonymous: item.AllowAnonymous,
+			PluginsConfig:  item.PluginsConfig,
+			Timeout:        item.Timeout,
+			FilePath:       item.FilePath,
+			Errors:         item.Errors,
+		}
 
 		newItem.Warnings = []string{}
 		// set server_path
@@ -138,7 +170,7 @@ func endpointsForAPI(endpoints []core.EndpointV2) any {
 			newItem.ServerPath = path.Clean(fmt.Sprintf("/ns/%s/%s", item.Namespace, item.Path))
 		}
 
-		result = append(result, item)
+		result = append(result, newItem)
 	}
 
 	return result
