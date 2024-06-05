@@ -1,4 +1,12 @@
-import { BookOpen, Moon, Settings2, Slack, Sun, User } from "lucide-react";
+import {
+  BookOpen,
+  LogOut,
+  Moon,
+  Settings2,
+  Slack,
+  Sun,
+  User,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,7 +19,7 @@ import { useTheme, useThemeActions } from "~/util/store/theme";
 
 import Avatar from "~/design/Avatar";
 import Button from "~/design/Button";
-import LogoutButton from "./LogoutButton/index.";
+import LogoutButton from "../LogoutButton";
 import { RxChevronDown } from "react-icons/rx";
 import { twMergeClsx } from "~/util/helpers";
 import useApiKeyHandling from "~/hooks/useApiKeyHandling";
@@ -22,7 +30,7 @@ interface UserMenuProps {
 }
 
 const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
-  const { showUsermenu } = useApiKeyHandling();
+  const { usesAccounts } = useApiKeyHandling();
   const { setTheme } = useThemeActions();
   const theme = useTheme();
   const { t } = useTranslation();
@@ -31,7 +39,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
     <div className={twMergeClsx("flex space-x-2", className)}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          {showUsermenu ? (
+          {usesAccounts ? (
             <Button
               variant="ghost"
               className="items-center px-1"
@@ -52,17 +60,24 @@ const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
           )}
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56">
-          {showUsermenu && (
+          {usesAccounts && (
             <>
               <DropdownMenuLabel>
                 {t("components.userMenu.loggedIn")}
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <LogoutButton />
+
+              <LogoutButton
+                button={(props) => (
+                  <DropdownMenuItem {...props} className="cursor-pointer">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>{t("components.userMenu.logout")}</span>
+                  </DropdownMenuItem>
+                )}
+              />
               <DropdownMenuSeparator />
             </>
           )}
-
           <DropdownMenuLabel>
             {t("components.userMenu.appearance")}
           </DropdownMenuLabel>
