@@ -1,4 +1,4 @@
-import { BookOpen, LogOut, Moon, Slack, Sun } from "lucide-react";
+import { BookOpen, Moon, Slack, Sun } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,10 +10,8 @@ import {
 import { useTheme, useThemeActions } from "~/util/store/theme";
 
 import Avatar from "./Avatar";
-import LogoutButton from "../LogoutButton";
 import UserInfo from "./UserInfo";
 import { twMergeClsx } from "~/util/helpers";
-import useApiKeyHandling from "~/hooks/useApiKeyHandling";
 import { useTranslation } from "react-i18next";
 
 interface UserMenuProps {
@@ -21,7 +19,6 @@ interface UserMenuProps {
 }
 
 const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
-  const { usesAccounts } = useApiKeyHandling();
   const { setTheme } = useThemeActions();
   const theme = useTheme();
   const { t } = useTranslation();
@@ -33,21 +30,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
           <Avatar />
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56">
-          {usesAccounts && (
-            <>
-              <UserInfo />
-              <DropdownMenuSeparator />
-              <LogoutButton
-                button={(props) => (
-                  <DropdownMenuItem {...props} className="cursor-pointer">
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>{t("components.userMenu.logout")}</span>
-                  </DropdownMenuItem>
-                )}
-              />
-              <DropdownMenuSeparator />
-            </>
-          )}
+          <UserInfo />
           <DropdownMenuLabel>
             {t("components.userMenu.appearance")}
           </DropdownMenuLabel>
