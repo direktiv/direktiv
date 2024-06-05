@@ -1,3 +1,5 @@
+import { ElementRef, forwardRef } from "react";
+
 import AvatarDesignComponent from "~/design/Avatar";
 import Button from "~/design/Button";
 import EnterpriseAvatar from "./EnterpriseAvatar";
@@ -7,10 +9,11 @@ import { Settings2 } from "lucide-react";
 import { isEnterprise } from "~/config/env/utils";
 import useApiKeyHandling from "~/hooks/useApiKeyHandling";
 
-const Avatar = () => {
+const Avatar = forwardRef<ElementRef<typeof Button>>((_, ref) => {
   const { usesAccounts } = useApiKeyHandling();
   return usesAccounts ? (
     <Button
+      ref={ref}
       variant="ghost"
       className="items-center px-1"
       role="button"
@@ -23,11 +26,13 @@ const Avatar = () => {
       <RxChevronDown />
     </Button>
   ) : (
-    <Button variant="ghost" icon data-testid="dropdown-trg-user-menu">
+    <Button ref={ref} variant="ghost" icon data-testid="dropdown-trg-user-menu">
       <Settings2 />
       <RxChevronDown />
     </Button>
   );
-};
+});
+
+Avatar.displayName = "Avatar";
 
 export default Avatar;
