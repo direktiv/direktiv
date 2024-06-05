@@ -13,6 +13,7 @@ import Avatar from "./Avatar";
 import Button from "~/design/Button";
 import LogoutButton from "../LogoutButton";
 import { RxChevronDown } from "react-icons/rx";
+import UserInfo from "./UserInfo";
 import { twMergeClsx } from "~/util/helpers";
 import useApiKeyHandling from "~/hooks/useApiKeyHandling";
 import { useTranslation } from "react-i18next";
@@ -52,11 +53,8 @@ const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
         <DropdownMenuContent className="w-56">
           {usesAccounts && (
             <>
-              <DropdownMenuLabel>
-                {t("components.userMenu.loggedIn")}
-              </DropdownMenuLabel>
+              <UserInfo />
               <DropdownMenuSeparator />
-
               <LogoutButton
                 button={(props) => (
                   <DropdownMenuItem {...props} className="cursor-pointer">
