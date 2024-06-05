@@ -1,6 +1,6 @@
 import { ElementRef, forwardRef } from "react";
 
-import AvatarDesignComponent from "~/design/Avatar";
+import Avatar from "~/design/Avatar";
 import Button from "~/design/Button";
 import EnterpriseAvatar from "./EnterpriseAvatar";
 import OpenSourceAvatar from "./OpenSourceAvatar";
@@ -9,7 +9,7 @@ import { Settings2 } from "lucide-react";
 import { isEnterprise } from "~/config/env/utils";
 import useApiKeyHandling from "~/hooks/useApiKeyHandling";
 
-const Avatar = forwardRef<ElementRef<typeof Button>>((props, ref) => {
+const MenuButton = forwardRef<ElementRef<typeof Button>>((props, ref) => {
   const { usesAccounts } = useApiKeyHandling();
   return usesAccounts ? (
     <Button
@@ -21,9 +21,9 @@ const Avatar = forwardRef<ElementRef<typeof Button>>((props, ref) => {
       data-testid="dropdown-trg-user-menu"
       {...props}
     >
-      <AvatarDesignComponent>
+      <Avatar>
         {isEnterprise() ? <EnterpriseAvatar /> : <OpenSourceAvatar />}
-      </AvatarDesignComponent>
+      </Avatar>
       <RxChevronDown />
     </Button>
   ) : (
@@ -40,6 +40,6 @@ const Avatar = forwardRef<ElementRef<typeof Button>>((props, ref) => {
   );
 });
 
-Avatar.displayName = "Avatar";
+MenuButton.displayName = "MenuButton";
 
-export default Avatar;
+export default MenuButton;

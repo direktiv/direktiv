@@ -9,7 +9,7 @@ import {
 } from "~/design/Dropdown";
 import { useTheme, useThemeActions } from "~/util/store/theme";
 
-import Avatar from "./Avatar";
+import MenuButton from "./MenuButton";
 import UserInfo from "./UserInfo";
 import { twMergeClsx } from "~/util/helpers";
 import { useTranslation } from "react-i18next";
@@ -27,7 +27,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
     <div className={twMergeClsx("flex space-x-2", className)}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Avatar />
+          <MenuButton />
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56">
           <UserInfo />
