@@ -2,10 +2,11 @@ package helpers
 
 import (
 	"context"
+	slog2 "log/slog"
+
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/filestore"
-	slog2 "log/slog"
 )
 
 func RenderGatewayFiles(db *database.SQLStore, manager core.GatewayManagerV2) {

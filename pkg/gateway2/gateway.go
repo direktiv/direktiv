@@ -57,7 +57,7 @@ func (m *manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if strings.HasSuffix(r.URL.Path, "/routes") {
 		ns := chi.URLParam(r, "namespace")
 		if ns != "" {
-			WriteJSON(w, endpointsForApi(filterNamespacedEndpoints(inner.endpoints, ns, r.URL.Query().Get("path"))))
+			WriteJSON(w, endpointsForAPI(filterNamespacedEndpoints(inner.endpoints, ns, r.URL.Query().Get("path"))))
 			return
 		}
 	}
@@ -65,7 +65,7 @@ func (m *manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if strings.HasSuffix(r.URL.Path, "/consumers") {
 		ns := chi.URLParam(r, "namespace")
 		if ns != "" {
-			WriteJSON(w, consumersForApi(filterNamespacedConsumers(inner.consumers, ns)))
+			WriteJSON(w, consumersForAPI(filterNamespacedConsumers(inner.consumers, ns)))
 			return
 		}
 	}
@@ -111,7 +111,7 @@ func (m *manager) interpolateConsumersList(list []core.ConsumerV2) error {
 	return nil
 }
 
-func consumersForApi(consumers []core.ConsumerV2) any {
+func consumersForAPI(consumers []core.ConsumerV2) any {
 	result := []any{}
 	for _, item := range consumers {
 		result = append(result, item)
@@ -120,7 +120,7 @@ func consumersForApi(consumers []core.ConsumerV2) any {
 	return result
 }
 
-func endpointsForApi(endpoints []core.EndpointV2) any {
+func endpointsForAPI(endpoints []core.EndpointV2) any {
 	type output struct {
 		core.EndpointV2
 		ServerPath string
