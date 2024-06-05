@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"path"
 	"slices"
 	"strings"
 	"sync/atomic"
@@ -111,9 +112,34 @@ func (m *manager) interpolateConsumersList(list []core.ConsumerV2) error {
 }
 
 func consumersForApi(consumers []core.ConsumerV2) any {
-	return consumers
+	result := []any{}
+	for _, item := range consumers {
+		result = append(result, item)
+	}
+
+	return result
 }
 
 func endpointsForApi(endpoints []core.EndpointV2) any {
-	return endpoints
+	type output struct {
+		core.EndpointV2
+		ServerPath string
+		Warnings   []string
+	}
+
+	result := []any{}
+	for _, item := range endpoints {
+		newItem := output{EndpointV2: item}
+
+		newItem.Warnings = []string{}
+		// set server_path
+		// TODO: remove this useless field
+		if item.Path != "" {
+			newItem.ServerPath = path.Clean(fmt.Sprintf("/ns/%s/%s", item.Namespace, item.Path))
+		}
+
+		result = append(result, item)
+	}
+
+	return result
 }

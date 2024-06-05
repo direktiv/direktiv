@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
-	"path"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/api"
@@ -250,8 +249,8 @@ func renderGateway2(db *database.SQLStore, manager core.GatewayManagerV2) {
 		return
 	}
 
-	consumers := []core.ConsumerV2{}
-	endpoints := []core.EndpointV2{}
+	var consumers []core.ConsumerV2
+	var endpoints []core.EndpointV2
 
 	for _, ns := range nsList {
 		slog = slog.With("namespace", ns.Name)
@@ -262,43 +261,10 @@ func renderGateway2(db *database.SQLStore, manager core.GatewayManagerV2) {
 			continue
 		}
 		for _, file := range files {
-			// nolint:nestif
 			if file.Typ == filestore.FileTypeConsumer {
-				consumerFile, err := core.ParseConsumerFileV2(file.Data)
-				if err != nil {
-					slog.Error("parse consumer file", "err", err)
-					consumerFile = &core.ConsumerFileV2{}
-				}
-				consumer := core.ConsumerV2{
-					ConsumerFileV2: *consumerFile,
-					Namespace:      ns.Name,
-					FilePath:       file.Path,
-					Errors:         []string{},
-				}
-				if err != nil {
-					consumer.Errors = []string{err.Error()}
-				}
-				consumers = append(consumers, consumer)
+				consumers = append(consumers, core.ParseConsumerFileV2(ns.Name, file.Path, file.Data))
 			} else if file.Typ == filestore.FileTypeEndpoint {
-				endpointFile, err := core.ParseEndpointFileV2(file.Data)
-				if err != nil {
-					slog.Error("parse endpoint file", "err", err)
-					endpointFile = &core.EndpointFileV2{}
-				}
-				endpoint := core.EndpointV2{
-					EndpointFileV2: *endpointFile,
-					Namespace:      ns.Name,
-					FilePath:       file.Path,
-					Errors:         []string{},
-					Warnings:       []string{},
-				}
-				endpoint.ServerPath = path.Clean(fmt.Sprintf("/ns/%s/%s", endpoint.Namespace, endpoint.Path))
-				if err != nil {
-					endpoint.Errors = []string{err.Error()}
-					endpoint.ServerPath = ""
-				}
-				endpoint.Warnings = []string{}
-				endpoints = append(endpoints, endpoint)
+				endpoints = append(endpoints, core.ParseEndpointFileV2(ns.Name, file.Path, file.Data))
 			}
 		}
 	}

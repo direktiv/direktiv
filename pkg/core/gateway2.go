@@ -1,7 +1,6 @@
 package core
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -70,28 +69,52 @@ type ConsumerV2 struct {
 	Errors []string
 }
 
-func ParseConsumerFileV2(data []byte) (*ConsumerFileV2, error) {
+func ParseConsumerFileV2(ns string, filePath string, data []byte) ConsumerV2 {
 	res := &ConsumerFileV2{}
 	err := yaml.Unmarshal(data, res)
 	if err != nil {
-		return nil, err
+		return ConsumerV2{
+			Namespace: ns,
+			FilePath:  filePath,
+			Errors:    []string{err.Error()},
+		}
 	}
 	if !strings.HasPrefix(res.DirektivAPI, "consumer/v1") {
-		return nil, fmt.Errorf("invalid consumer api version")
+		return ConsumerV2{
+			Namespace: ns,
+			FilePath:  filePath,
+			Errors:    []string{"invalid consumer api version"},
+		}
 	}
 
-	return res, nil
+	return ConsumerV2{
+		Namespace:      ns,
+		FilePath:       filePath,
+		ConsumerFileV2: *res,
+	}
 }
 
-func ParseEndpointFileV2(data []byte) (*EndpointFileV2, error) {
+func ParseEndpointFileV2(ns string, filePath string, data []byte) EndpointV2 {
 	res := &EndpointFileV2{}
 	err := yaml.Unmarshal(data, res)
 	if err != nil {
-		return nil, err
+		return EndpointV2{
+			Namespace: ns,
+			FilePath:  filePath,
+			Errors:    []string{err.Error()},
+		}
 	}
 	if !strings.HasPrefix(res.DirektivAPI, "endpoint/v1") {
-		return nil, fmt.Errorf("invalid endpoint api version")
+		return EndpointV2{
+			Namespace: ns,
+			FilePath:  filePath,
+			Errors:    []string{"invalid endpoint api version"},
+		}
 	}
 
-	return res, nil
+	return EndpointV2{
+		Namespace:      ns,
+		FilePath:       filePath,
+		EndpointFileV2: *res,
+	}
 }
