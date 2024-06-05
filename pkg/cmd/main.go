@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/direktiv/direktiv/pkg/helpers"
 	"log/slog"
 	"os"
 	"time"
@@ -126,7 +127,7 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 
 	// endpoint manager
 	args.PubSubBus.Subscribe(func(_ string) {
-		renderGateway2(args.Database, gatewayManager2)
+		helpers.RenderGatewayFiles(args.Database, gatewayManager2)
 	},
 		pubsub.EndpointCreate,
 		pubsub.EndpointUpdate,
@@ -141,7 +142,7 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 		pubsub.MirrorSync,
 	)
 	// initial loading of routes and consumers
-	renderGateway2(args.Database, gatewayManager2)
+	helpers.RenderGatewayFiles(args.Database, gatewayManager2)
 
 	// TODO: yassir, this subscribe need to be removed when /api/v2/namespace delete endpoint is migrated.
 	args.PubSubBus.Subscribe(func(ns string) {
@@ -234,41 +235,6 @@ func renderServiceManager(db *database.SQLStore, serviceManager core.ServiceMana
 		}
 	}
 	serviceManager.SetServices(funConfigList)
-}
-
-func renderGateway2(db *database.SQLStore, manager core.GatewayManagerV2) {
-	ctx := context.Background()
-	slog := slog.With("subscriber", "gateway2 file watcher")
-
-	fStore, dStore := db.FileStore(), db.DataStore()
-
-	nsList, err := dStore.Namespaces().GetAll(ctx)
-	if err != nil {
-		slog.Error("listing namespaces", "err", err)
-
-		return
-	}
-
-	var consumers []core.ConsumerV2
-	var endpoints []core.EndpointV2
-
-	for _, ns := range nsList {
-		slog = slog.With("namespace", ns.Name)
-		files, err := fStore.ForNamespace(ns.Name).ListDirektivFilesWithData(ctx)
-		if err != nil {
-			slog.Error("listing direktiv files", "err", err)
-
-			continue
-		}
-		for _, file := range files {
-			if file.Typ == filestore.FileTypeConsumer {
-				consumers = append(consumers, core.ParseConsumerFileV2(ns.Name, file.Path, file.Data))
-			} else if file.Typ == filestore.FileTypeEndpoint {
-				endpoints = append(endpoints, core.ParseEndpointFileV2(ns.Name, file.Path, file.Data))
-			}
-		}
-	}
-	manager.SetEndpoints(endpoints, consumers)
 }
 
 func getWorkflowFunctionDefinitionsFromWorkflow(ns *datastore.Namespace, f *filestore.File) ([]*core.ServiceFileData, error) {
