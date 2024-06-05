@@ -1,12 +1,4 @@
-import {
-  BookOpen,
-  LogOut,
-  Moon,
-  Settings2,
-  Slack,
-  Sun,
-  User,
-} from "lucide-react";
+import { BookOpen, LogOut, Moon, Settings2, Slack, Sun } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,7 +9,7 @@ import {
 } from "~/design/Dropdown";
 import { useTheme, useThemeActions } from "~/util/store/theme";
 
-import Avatar from "~/design/Avatar";
+import Avatar from "./Avatar";
 import Button from "~/design/Button";
 import LogoutButton from "../LogoutButton";
 import { RxChevronDown } from "react-icons/rx";
@@ -47,9 +39,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
               icon
               data-testid="dropdown-trg-user-menu"
             >
-              <Avatar>
-                <User />
-              </Avatar>
+              <Avatar />
               <RxChevronDown />
             </Button>
           ) : (
