@@ -129,7 +129,10 @@ describe('Test wrong endpoint config', () => {
 				errors: [ 'yaml: unmarshal errors:\n  line 5: cannot unmarshal !!map into []core.PluginConfigV2' ],
 				warnings: [],
 				server_path: '',
-				plugins: { target: {} },
+				plugins: { target: {
+						type: '',
+					}
+				},
 			},
 		)
 	})
