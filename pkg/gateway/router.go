@@ -18,14 +18,14 @@ import (
 // http.ServeMux with endpoints and consumers. Lists  endpoints and consumers are used to build the router itself.
 type router struct {
 	serveMux  *http.ServeMux
-	endpoints []core.EndpointV2
-	consumers []core.ConsumerV2
+	endpoints []core.Endpoint
+	consumers []core.Consumer
 }
 
 // buildRouter compiles a new gateway router from endpoints and consumers lists.
 //
 //nolint:gocognit
-func buildRouter(endpoints []core.EndpointV2, consumers []core.ConsumerV2) *router {
+func buildRouter(endpoints []core.Endpoint, consumers []core.Consumer) *router {
 	serveMux := http.NewServeMux()
 
 	for i, item := range endpoints {

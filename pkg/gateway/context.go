@@ -14,12 +14,12 @@ const (
 	gatewayCtxKeyURLParams      = "ctx_params"
 )
 
-func ExtractContextConsumersList(r *http.Request) []core.ConsumerV2 {
+func ExtractContextConsumersList(r *http.Request) []core.Consumer {
 	res := r.Context().Value(gatewayCtxKeyConsumersList)
 	if res == nil {
 		return nil
 	}
-	cast, ok := res.([]core.ConsumerV2)
+	cast, ok := res.([]core.Consumer)
 	if !ok {
 		return nil
 	}
@@ -27,16 +27,16 @@ func ExtractContextConsumersList(r *http.Request) []core.ConsumerV2 {
 	return cast
 }
 
-func InjectContextConsumersList(r *http.Request, contextValue []core.ConsumerV2) *http.Request {
+func InjectContextConsumersList(r *http.Request, contextValue []core.Consumer) *http.Request {
 	return r.WithContext(context.WithValue(r.Context(), gatewayCtxKeyConsumersList, contextValue))
 }
 
-func ExtractContextActiveConsumer(r *http.Request) *core.ConsumerV2 {
+func ExtractContextActiveConsumer(r *http.Request) *core.Consumer {
 	res := r.Context().Value(gatewayCtxKeyActiveConsumer)
 	if res == nil {
 		return nil
 	}
-	cast, ok := res.(*core.ConsumerV2)
+	cast, ok := res.(*core.Consumer)
 	if !ok {
 		return nil
 	}
@@ -44,16 +44,16 @@ func ExtractContextActiveConsumer(r *http.Request) *core.ConsumerV2 {
 	return cast
 }
 
-func InjectContextActiveConsumer(r *http.Request, contextValue *core.ConsumerV2) *http.Request {
+func InjectContextActiveConsumer(r *http.Request, contextValue *core.Consumer) *http.Request {
 	return r.WithContext(context.WithValue(r.Context(), gatewayCtxKeyActiveConsumer, contextValue))
 }
 
-func ExtractContextEndpoint(r *http.Request) *core.EndpointV2 {
+func ExtractContextEndpoint(r *http.Request) *core.Endpoint {
 	res := r.Context().Value(gatewayCtxKeyEndpoint)
 	if res == nil {
 		return nil
 	}
-	cast, ok := res.(*core.EndpointV2)
+	cast, ok := res.(*core.Endpoint)
 	if !ok {
 		return nil
 	}
@@ -71,7 +71,7 @@ func ExtractContextURLParams(r *http.Request) []string {
 	return cast
 }
 
-func InjectContextEndpoint(r *http.Request, contextValue *core.EndpointV2) *http.Request {
+func InjectContextEndpoint(r *http.Request, contextValue *core.Endpoint) *http.Request {
 	return r.WithContext(context.WithValue(r.Context(), gatewayCtxKeyEndpoint, contextValue))
 }
 

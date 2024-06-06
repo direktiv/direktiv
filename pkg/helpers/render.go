@@ -22,8 +22,8 @@ func RenderGatewayFiles(db *database.SQLStore, manager core.GatewayManager) {
 		return
 	}
 
-	var consumers []core.ConsumerV2
-	var endpoints []core.EndpointV2
+	var consumers []core.Consumer
+	var endpoints []core.Endpoint
 
 	for _, ns := range nsList {
 		slog = slog.With("namespace", ns.Name)

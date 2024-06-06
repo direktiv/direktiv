@@ -18,8 +18,8 @@ func isAuthPlugin(p core.Plugin) bool {
 	return strings.Contains(p.Type(), "-auth") || strings.Contains(p.Type(), "auth-")
 }
 
-func filterNamespacedConsumers(consumers []core.ConsumerV2, namespace string) []core.ConsumerV2 {
-	list := []core.ConsumerV2{}
+func filterNamespacedConsumers(consumers []core.Consumer, namespace string) []core.Consumer {
+	list := []core.Consumer{}
 	for _, item := range consumers {
 		if item.Namespace == namespace {
 			list = append(list, item)
@@ -29,8 +29,8 @@ func filterNamespacedConsumers(consumers []core.ConsumerV2, namespace string) []
 	return list
 }
 
-func filterNamespacedEndpoints(endpoints []core.EndpointV2, namespace string, path string) []core.EndpointV2 {
-	list := []core.EndpointV2{}
+func filterNamespacedEndpoints(endpoints []core.Endpoint, namespace string, path string) []core.Endpoint {
+	list := []core.Endpoint{}
 	for _, item := range endpoints {
 		if item.Namespace == namespace && (path == "" || path == item.Path) {
 			list = append(list, item)
@@ -41,7 +41,7 @@ func filterNamespacedEndpoints(endpoints []core.EndpointV2, namespace string, pa
 }
 
 // FindConsumerByUser find a consumer that matches a user string.
-func FindConsumerByUser(list []core.ConsumerV2, user string) *core.ConsumerV2 {
+func FindConsumerByUser(list []core.Consumer, user string) *core.Consumer {
 	for _, item := range list {
 		if item.Username == user {
 			return &item
@@ -52,7 +52,7 @@ func FindConsumerByUser(list []core.ConsumerV2, user string) *core.ConsumerV2 {
 }
 
 // FindConsumerByAPIKey find a consumer that matches a key string.
-func FindConsumerByAPIKey(list []core.ConsumerV2, key string) *core.ConsumerV2 {
+func FindConsumerByAPIKey(list []core.Consumer, key string) *core.Consumer {
 	for _, item := range list {
 		if item.APIKey == key {
 			return &item

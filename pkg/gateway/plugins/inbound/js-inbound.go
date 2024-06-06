@@ -65,7 +65,7 @@ type request struct {
 	// Queries shared.Query
 	Body string
 
-	Consumer *core.ConsumerV2
+	Consumer *core.Consumer
 
 	// url params of type /{id}
 	URLParams map[string]string

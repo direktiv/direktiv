@@ -74,7 +74,7 @@ func (m *manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 // SetEndpoints compiles a new router and atomically swaps the old one. No ongoing requests should be effected.
-func (m *manager) SetEndpoints(list []core.EndpointV2, cList []core.ConsumerV2) {
+func (m *manager) SetEndpoints(list []core.Endpoint, cList []core.Consumer) {
 	cList = slices.Clone(cList)
 
 	err := m.interpolateConsumersList(cList)
@@ -86,7 +86,7 @@ func (m *manager) SetEndpoints(list []core.EndpointV2, cList []core.ConsumerV2) 
 }
 
 // interpolateConsumersList translates matic consumer function "fetchSecret" in consumer files.
-func (m *manager) interpolateConsumersList(list []core.ConsumerV2) error {
+func (m *manager) interpolateConsumersList(list []core.Consumer) error {
 	db, err := m.db.BeginTx(context.Background())
 	if err != nil {
 		return fmt.Errorf("could not begin transaction: %w", err)
@@ -111,7 +111,7 @@ func (m *manager) interpolateConsumersList(list []core.ConsumerV2) error {
 	return nil
 }
 
-func consumersForAPI(consumers []core.ConsumerV2) any {
+func consumersForAPI(consumers []core.Consumer) any {
 	type output struct {
 		Username string   `json:"username"`
 		Password string   `json:"password"`
@@ -141,7 +141,7 @@ func consumersForAPI(consumers []core.ConsumerV2) any {
 	return result
 }
 
-func endpointsForAPI(endpoints []core.EndpointV2) any {
+func endpointsForAPI(endpoints []core.Endpoint) any {
 	type output struct {
 		Methods        []string `json:"methods"`
 		Path           string   `json:"path,omitempty"`

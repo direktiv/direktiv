@@ -11,7 +11,7 @@ import (
 type GatewayManager interface {
 	http.Handler
 
-	SetEndpoints(list []EndpointV2, cList []ConsumerV2)
+	SetEndpoints(list []Endpoint, cList []Consumer)
 }
 
 type EndpointFile struct {
@@ -52,7 +52,7 @@ type Plugin interface {
 	Type() string
 }
 
-type EndpointV2 struct {
+type Endpoint struct {
 	EndpointFile
 
 	Namespace string
@@ -61,7 +61,7 @@ type EndpointV2 struct {
 	Errors []string
 }
 
-type ConsumerV2 struct {
+type Consumer struct {
 	ConsumerFile
 
 	Namespace string
@@ -70,36 +70,36 @@ type ConsumerV2 struct {
 	Errors []string
 }
 
-func ParseConsumerFile(ns string, filePath string, data []byte) ConsumerV2 {
+func ParseConsumerFile(ns string, filePath string, data []byte) Consumer {
 	res := &ConsumerFile{}
 	err := yaml.Unmarshal(data, res)
 	if err != nil {
-		return ConsumerV2{
+		return Consumer{
 			Namespace: ns,
 			FilePath:  filePath,
 			Errors:    []string{err.Error()},
 		}
 	}
 	if !strings.HasPrefix(res.DirektivAPI, "consumer/v1") {
-		return ConsumerV2{
+		return Consumer{
 			Namespace: ns,
 			FilePath:  filePath,
 			Errors:    []string{"invalid consumer api version"},
 		}
 	}
 
-	return ConsumerV2{
+	return Consumer{
 		Namespace:    ns,
 		FilePath:     filePath,
 		ConsumerFile: *res,
 	}
 }
 
-func ParseEndpointFile(ns string, filePath string, data []byte) EndpointV2 {
+func ParseEndpointFile(ns string, filePath string, data []byte) Endpoint {
 	res := &EndpointFile{}
 	err := yaml.Unmarshal(data, res)
 	if err != nil {
-		return EndpointV2{
+		return Endpoint{
 			Namespace: ns,
 			FilePath:  filePath,
 			Errors:    []string{err.Error()},
@@ -109,28 +109,28 @@ func ParseEndpointFile(ns string, filePath string, data []byte) EndpointV2 {
 		res.Path = path.Clean("/" + res.Path)
 	}
 	if !strings.HasPrefix(res.DirektivAPI, "endpoint/v1") {
-		return EndpointV2{
+		return Endpoint{
 			Namespace: ns,
 			FilePath:  filePath,
 			Errors:    []string{"invalid endpoint api version"},
 		}
 	}
 	if res.PluginsConfig.Target.Typ == "" {
-		return EndpointV2{
+		return Endpoint{
 			Namespace: ns,
 			FilePath:  filePath,
 			Errors:    []string{"no target plugin found"},
 		}
 	}
 	if !res.AllowAnonymous && len(res.PluginsConfig.Auth) == 0 {
-		return EndpointV2{
+		return Endpoint{
 			Namespace: ns,
 			FilePath:  filePath,
 			Errors:    []string{"no auth plugin configured but 'allow_anonymous' set true"},
 		}
 	}
 
-	return EndpointV2{
+	return Endpoint{
 		Namespace:    ns,
 		FilePath:     filePath,
 		EndpointFile: *res,
