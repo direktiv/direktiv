@@ -39,7 +39,7 @@ type PluginsConfigV2 struct {
 }
 
 type PluginConfigV2 struct {
-	Typ    string         `json:"type,omitempty"          yaml:"type"`
+	Typ    string         `json:"type"          yaml:"type"`
 	Config map[string]any `json:"configuration,omitempty" yaml:"configuration"`
 }
 
@@ -109,6 +109,20 @@ func ParseEndpointFileV2(ns string, filePath string, data []byte) EndpointV2 {
 			Namespace: ns,
 			FilePath:  filePath,
 			Errors:    []string{"invalid endpoint api version"},
+		}
+	}
+	if res.PluginsConfig.Target.Typ == "" {
+		return EndpointV2{
+			Namespace: ns,
+			FilePath:  filePath,
+			Errors:    []string{"no target plugin found"},
+		}
+	}
+	if res.AllowAnonymous == false && len(res.PluginsConfig.Auth) == 0 {
+		return EndpointV2{
+			Namespace: ns,
+			FilePath:  filePath,
+			Errors:    []string{"no auth plugin configured but 'allow_anonymous' set true"},
 		}
 	}
 

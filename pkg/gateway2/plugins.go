@@ -26,7 +26,7 @@ func RegisterPlugin(p core.PluginV2) {
 func NewPlugin(config core.PluginConfigV2) (core.PluginV2, error) {
 	f, ok := registry[config.Typ]
 	if !ok {
-		return nil, fmt.Errorf("unknow plugin '%s'", config.Typ)
+		return nil, fmt.Errorf("doesn't exist")
 	}
 
 	return f.NewInstance(config)
