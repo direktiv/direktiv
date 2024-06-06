@@ -15,7 +15,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-// manager struct implements core.GatewayManagerV2 by wrapping a pointer to router struct. Whenever endpoint and
+// manager struct implements core.GatewayManager by wrapping a pointer to router struct. Whenever endpoint and
 // consumer files changes, method SetEndpoints should be called and this will build a new router and
 // atomically swaps the old one.
 type manager struct {
@@ -36,9 +36,9 @@ func (m *manager) atomicSetRouter(inner *router) {
 	atomic.StorePointer(&m.routerPointer, unsafe.Pointer(inner))
 }
 
-var _ core.GatewayManagerV2 = &manager{}
+var _ core.GatewayManager = &manager{}
 
-func NewManager(db *database.SQLStore) core.GatewayManagerV2 {
+func NewManager(db *database.SQLStore) core.GatewayManager {
 	return &manager{
 		db: db,
 	}

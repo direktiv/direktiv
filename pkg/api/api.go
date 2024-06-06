@@ -116,7 +116,7 @@ func Initialize(app core.App, db *database.SQLStore, bus *pubsub2.Bus, instanceM
 	logCtr := &logController{
 		store: db.DataStore().NewLogs(),
 	}
-	r.Handle("/ns/{namespace}/*", app.GatewayManagerV2)
+	r.Handle("/ns/{namespace}/*", app.GatewayManager)
 
 	r.Route("/api/v2", func(r chi.Router) {
 		r.Route("/namespaces", func(r chi.Router) {
@@ -165,7 +165,7 @@ func Initialize(app core.App, db *database.SQLStore, bus *pubsub2.Bus, instanceM
 			r.Route("/namespaces/{namespace}/events/broadcast", func(r chi.Router) {
 				eventsCtr.mountBroadcast(r)
 			})
-			r.Handle("/namespaces/{namespace}/gateway/*", app.GatewayManagerV2)
+			r.Handle("/namespaces/{namespace}/gateway/*", app.GatewayManager)
 		})
 
 		r.Route("/jx", func(r chi.Router) {

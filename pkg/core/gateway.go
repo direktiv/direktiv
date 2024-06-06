@@ -8,7 +8,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type GatewayManagerV2 interface {
+type GatewayManager interface {
 	http.Handler
 
 	SetEndpoints(list []EndpointV2, cList []ConsumerV2)

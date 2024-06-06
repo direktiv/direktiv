@@ -9,7 +9,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/filestore"
 )
 
-func RenderGatewayFiles(db *database.SQLStore, manager core.GatewayManagerV2) {
+func RenderGatewayFiles(db *database.SQLStore, manager core.GatewayManager) {
 	ctx := context.Background()
 	slog := slog2.With("subscriber", "gateway file watcher")
 

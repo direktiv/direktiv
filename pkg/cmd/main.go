@@ -79,11 +79,11 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 		Version: &core.Version{
 			UnixTime: time.Now().Unix(),
 		},
-		Config:           args.Config,
-		ServiceManager:   serviceManager,
-		RegistryManager:  registryManager,
-		GatewayManagerV2: gatewayManager2,
-		SyncNamespace:    args.SyncNamespace,
+		Config:          args.Config,
+		ServiceManager:  serviceManager,
+		RegistryManager: registryManager,
+		GatewayManager:  gatewayManager2,
+		SyncNamespace:   args.SyncNamespace,
 	}
 
 	if !args.Config.DisableServices {
