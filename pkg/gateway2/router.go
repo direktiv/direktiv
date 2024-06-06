@@ -102,6 +102,18 @@ func buildRouter(endpoints []core.EndpointV2, consumers []core.ConsumerV2) *rout
 							break
 						}
 					}
+					if p.Type() == "js-outbound" {
+						// Inject the output in the request so that the outbound plugin can process it.
+						w := w.(*httptest.ResponseRecorder)
+						newReq, err := http.NewRequest(http.MethodGet, "/writer", w.Body)
+						if err != nil {
+						}
+						newReq.Response = &http.Response{
+							StatusCode: w.Code,
+						}
+						newReq = newReq.WithContext(r.Context())
+						r = newReq
+					}
 					if r = p.Execute(w, r); r == nil {
 						break
 					}
