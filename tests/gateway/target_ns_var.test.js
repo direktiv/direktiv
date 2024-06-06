@@ -64,23 +64,17 @@ describe('Test target workflow var wrong config', () => {
 		)
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body.data.length).toEqual(1)
-		expect(listRes.body.data).toEqual(
-			expect.arrayContaining(
-				[
-					{
-						file_path: '/ep3.yaml',
-						path: '/ep3',
-						methods: [ 'GET' ],
-						allow_anonymous: true,
-						timeout: 0,
-						server_path: '/ns/system/ep3',
-						errors: [ 'variable required' ],
-						warnings: [],
-						plugins: { target: { type: 'target-namespace-var' } },
-					},
-				],
-			),
-		)
+		expect(listRes.body.data[0]).toEqual({
+			file_path: '/ep3.yaml',
+			path: 'ep3',
+			methods: [ 'GET' ],
+			allow_anonymous: true,
+			timeout: 0,
+			server_path: '/ns/system/ep3',
+			errors: [ "plugin 'target-namespace-var' err: variable required" ],
+			warnings: [],
+			plugins: { target: { type: 'target-namespace-var' } },
+		})
 	})
 })
 
