@@ -11,9 +11,10 @@ import (
 )
 
 type FlowVarPlugin struct {
-	Namespace string `mapstructure:"namespace"`
-	Flow      string `mapstructure:"flow"`
-	Variable  string `mapstructure:"variable"`
+	Namespace   string `mapstructure:"namespace"`
+	Flow        string `mapstructure:"flow"`
+	Variable    string `mapstructure:"variable"`
+	ContentType string `mapstructure:"content_type"`
 }
 
 func (tnv *FlowVarPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
@@ -60,6 +61,9 @@ func (tnv *FlowVarPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.
 		for _, value := range values {
 			w.Header().Add(key, value)
 		}
+	}
+	if tnv.ContentType != "" {
+		w.Header().Set("Content-Type", tnv.ContentType)
 	}
 	// copy the status code
 	w.WriteHeader(resp.StatusCode)

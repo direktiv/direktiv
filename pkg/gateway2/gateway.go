@@ -4,12 +4,15 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"path"
 	"slices"
+	"strings"
 	"sync/atomic"
 	"unsafe"
 
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/database"
+	"github.com/go-chi/chi/v5"
 )
 
 // manager struct implements core.GatewayManagerV2 by wrapping a pointer to router struct. Whenever endpoint and
@@ -49,6 +52,24 @@ func (m *manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
+
+	// setup /routes endpoint
+	if strings.HasSuffix(r.URL.Path, "/routes") {
+		ns := chi.URLParam(r, "namespace")
+		if ns != "" {
+			WriteJSON(w, endpointsForAPI(filterNamespacedEndpoints(inner.endpoints, ns, r.URL.Query().Get("path"))))
+			return
+		}
+	}
+	// setup /consumers endpoint
+	if strings.HasSuffix(r.URL.Path, "/consumers") {
+		ns := chi.URLParam(r, "namespace")
+		if ns != "" {
+			WriteJSON(w, consumersForAPI(filterNamespacedConsumers(inner.consumers, ns)))
+			return
+		}
+	}
+
 	inner.serveMux.ServeHTTP(w, r)
 }
 
@@ -64,16 +85,6 @@ func (m *manager) SetEndpoints(list []core.EndpointV2, cList []core.ConsumerV2) 
 	m.atomicSetRouter(newOne)
 }
 
-func (m *manager) ListEndpoints(namespace string) []core.EndpointV2 {
-	inner := m.atomicLoadRouter()
-	return filterNamespacedEndpoints(inner.endpoints, namespace)
-}
-
-func (m *manager) ListConsumers(namespace string) []core.ConsumerV2 {
-	inner := m.atomicLoadRouter()
-	return filterNamespacedConsumers(inner.consumers, namespace)
-}
-
 // interpolateConsumersList translates matic consumer function "fetchSecret" in consumer files.
 func (m *manager) interpolateConsumersList(list []core.ConsumerV2) error {
 	db, err := m.db.BeginTx(context.Background())
@@ -85,17 +96,95 @@ func (m *manager) interpolateConsumersList(list []core.ConsumerV2) error {
 	for i, c := range list {
 		c.Password, err = fetchSecret(db, c.Namespace, c.Password)
 		if err != nil {
-			c.Errors = append(c.Errors, fmt.Errorf("couldn't fetch secret %s", c.Password))
+			c.Errors = append(c.Errors, fmt.Sprintf("couldn't fetch secret %s", c.Password))
 			continue
 		}
 
 		c.APIKey, err = fetchSecret(db, c.Namespace, c.APIKey)
 		if err != nil {
-			c.Errors = append(c.Errors, fmt.Errorf("couldn't fetch secret %s", c.APIKey))
+			c.Errors = append(c.Errors, fmt.Sprintf("couldn't fetch secret %s", c.APIKey))
 			continue
 		}
 		list[i] = c
 	}
 
 	return nil
+}
+
+func consumersForAPI(consumers []core.ConsumerV2) any {
+	type output struct {
+		Username string   `json:"username"`
+		Password string   `json:"password"`
+		APIKey   string   `json:"api_key"`
+		Tags     []string `json:"tags"`
+		Groups   []string `json:"groups"`
+		FilePath string   `json:"file_path"`
+		Errors   []string `json:"errors"`
+	}
+	result := []any{}
+	for _, item := range consumers {
+		newItem := output{
+			Username: item.Username,
+			Password: item.Password,
+			APIKey:   item.APIKey,
+			Tags:     item.Tags,
+			Groups:   item.Groups,
+			FilePath: item.FilePath,
+			Errors:   item.Errors,
+		}
+		if newItem.Errors == nil {
+			newItem.Errors = []string{}
+		}
+		result = append(result, newItem)
+	}
+
+	return result
+}
+
+func endpointsForAPI(endpoints []core.EndpointV2) any {
+	type output struct {
+		Methods        []string `json:"methods"`
+		Path           string   `json:"path,omitempty"`
+		AllowAnonymous bool     `json:"allow_anonymous"`
+		PluginsConfig  struct {
+			Auth     []core.PluginConfigV2 `json:"auth,omitempty"`
+			Inbound  []core.PluginConfigV2 `json:"inbound,omitempty"`
+			Target   core.PluginConfigV2   `json:"target,omitempty"`
+			Outbound []core.PluginConfigV2 `json:"outbound,omitempty"`
+		} `json:"plugins"`
+		Timeout    int      `json:"timeout"`
+		FilePath   string   `json:"file_path"`
+		Errors     []string `json:"errors"`
+		ServerPath string   `json:"server_path"`
+		Warnings   []string `json:"warnings"`
+	}
+
+	result := []any{}
+	for _, item := range endpoints {
+		newItem := output{
+			Methods:        item.Methods,
+			Path:           item.Path,
+			AllowAnonymous: item.AllowAnonymous,
+			Timeout:        item.Timeout,
+			FilePath:       item.FilePath,
+			Errors:         item.Errors,
+		}
+		newItem.PluginsConfig.Auth = item.PluginsConfig.Auth
+		newItem.PluginsConfig.Inbound = item.PluginsConfig.Inbound
+		newItem.PluginsConfig.Target = item.PluginsConfig.Target
+		newItem.PluginsConfig.Outbound = item.PluginsConfig.Outbound
+
+		newItem.Warnings = []string{}
+		if newItem.Errors == nil {
+			newItem.Errors = []string{}
+		}
+		// set server_path
+		// TODO: remove this useless field
+		if item.Path != "" {
+			newItem.ServerPath = path.Clean(fmt.Sprintf("/ns/%s/%s", item.Namespace, item.Path))
+		}
+		result = append(result, newItem)
+	}
+
+	return result
 }

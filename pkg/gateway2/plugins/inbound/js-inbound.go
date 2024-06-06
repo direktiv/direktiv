@@ -95,13 +95,9 @@ func (js *JSInboundPlugin) Execute(w http.ResponseWriter, r *http.Request) *http
 
 	// add url param
 	urlParams := make(map[string]string)
-
-	// TODO: yassir, need fix here.
-	// up := r.Context().Value(plugins.URLParamCtxKey)
-	// if up != nil {
-	// 	// nolint we know it is from us
-	// 	urlParams = up.(map[string]string)
-	// }
+	for _, param := range gateway2.ExtractContextURLParams(r) {
+		urlParams[param] = r.PathValue(param)
+	}
 
 	req := request{
 		Headers:   r.Header,
@@ -158,17 +154,17 @@ func (js *JSInboundPlugin) Execute(w http.ResponseWriter, r *http.Request) *http
 			// script set status code and stop executing other plugins
 			if responseDone.Status > 0 {
 				// writing headers to response
-				addHeader(req.Headers, w.Header())
+				addHeader(responseDone.Headers, w.Header())
 
 				// set was the incoming content-length
 				w.Header().Del("Content-Length")
 
 				// set status from script
-				w.WriteHeader(req.Status)
+				w.WriteHeader(responseDone.Status)
 
 				// write response body
 				// nolint
-				w.Write([]byte(req.Body))
+				w.Write([]byte(responseDone.Body))
 
 				return nil
 			}

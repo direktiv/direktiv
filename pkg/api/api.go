@@ -98,9 +98,6 @@ func Initialize(app core.App, db *database.SQLStore, bus *pubsub2.Bus, instanceM
 		extraRoute(r)
 	}
 
-	// handle namespace and gateway
-	r.Handle("/ns/{namespace}/*", app.GatewayManager)
-
 	// version endpoint
 	r.Get("/api/v2/status", func(w http.ResponseWriter, r *http.Request) {
 		data := struct {
@@ -119,6 +116,7 @@ func Initialize(app core.App, db *database.SQLStore, bus *pubsub2.Bus, instanceM
 	logCtr := &logController{
 		store: db.DataStore().NewLogs(),
 	}
+	r.Handle("/ns/{namespace}/*", app.GatewayManagerV2)
 
 	r.Route("/api/v2", func(r chi.Router) {
 		r.Route("/namespaces", func(r chi.Router) {
@@ -158,24 +156,6 @@ func Initialize(app core.App, db *database.SQLStore, bus *pubsub2.Bus, instanceM
 			r.Route("/namespaces/{namespace}/metrics", func(r chi.Router) {
 				metricsCtr.mountRouter(r)
 			})
-			r.Get("/namespaces/{namespace}/gateway/consumers", func(w http.ResponseWriter, r *http.Request) {
-				data, err := app.GatewayManager.GetConsumers(chi.URLParam(r, "namespace"))
-				if err != nil {
-					writeInternalError(w, err)
-
-					return
-				}
-				writeJSON(w, data)
-			})
-			r.Get("/namespaces/{namespace}/gateway/routes", func(w http.ResponseWriter, r *http.Request) {
-				data, err := app.GatewayManager.GetRoutes(chi.URLParam(r, "namespace"), r.URL.Query().Get("path"))
-				if err != nil {
-					writeInternalError(w, err)
-
-					return
-				}
-				writeJSON(w, data)
-			})
 			r.Route("/namespaces/{namespace}/events/history", func(r chi.Router) {
 				eventsCtr.mountEventHistoryRouter(r)
 			})
@@ -185,7 +165,7 @@ func Initialize(app core.App, db *database.SQLStore, bus *pubsub2.Bus, instanceM
 			r.Route("/namespaces/{namespace}/events/broadcast", func(r chi.Router) {
 				eventsCtr.mountBroadcast(r)
 			})
-			r.Handle("/namespaces/{namespace}/gateway2/*", app.GatewayManagerV2)
+			r.Handle("/namespaces/{namespace}/gateway/*", app.GatewayManagerV2)
 		})
 
 		r.Route("/jx", func(r chi.Router) {

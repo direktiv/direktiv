@@ -15,11 +15,10 @@ import (
 
 // FlowPlugin executes a flow in a configured namespace.
 type FlowPlugin struct {
-	Namespace string `mapstructure:"namespace"`
-	Flow      string `mapstructure:"flow"`
-	Async     bool   `mapstructure:"async"`
-	// TODO: yassir, need fix here.
-	// ContentType string `mapstructure:"content_type"`
+	Namespace   string `mapstructure:"namespace"`
+	Flow        string `mapstructure:"flow"`
+	Async       bool   `mapstructure:"async"`
+	ContentType string `mapstructure:"content_type"`
 
 	internalAsync string
 }
@@ -37,12 +36,6 @@ func (tf *FlowPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, er
 	if pl.Flow == "" {
 		return nil, fmt.Errorf("flow required")
 	}
-
-	// TODO: yassir, need fix here.
-	// if content type is not set use application/json
-	// if pl.ContentType == "" {
-	//	pl.ContentType = defaultContentType
-	//}
 
 	if !strings.HasPrefix(pl.Flow, "/") {
 		pl.Flow = "/" + pl.Flow
@@ -115,6 +108,9 @@ func (tf *FlowPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Requ
 		for _, value := range values {
 			w.Header().Add(key, value)
 		}
+	}
+	if tf.ContentType != "" {
+		w.Header().Set("Content-Type", tf.ContentType)
 	}
 	// copy the status code
 	w.WriteHeader(resp.StatusCode)
