@@ -95,13 +95,9 @@ func (js *JSInboundPlugin) Execute(w http.ResponseWriter, r *http.Request) *http
 
 	// add url param
 	urlParams := make(map[string]string)
-
-	// TODO: yassir, need fix here.
-	// up := r.Context().Value(plugins.URLParamCtxKey)
-	// if up != nil {
-	// 	// nolint we know it is from us
-	// 	urlParams = up.(map[string]string)
-	// }
+	for _, param := range gateway2.ExtractContextUrlParams(r) {
+		urlParams[param] = r.PathValue(param)
+	}
 
 	req := request{
 		Headers:   r.Header,

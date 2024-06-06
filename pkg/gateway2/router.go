@@ -3,6 +3,7 @@ package gateway2
 import (
 	"fmt"
 	"net/http"
+	"regexp"
 	"slices"
 	"strings"
 
@@ -74,6 +75,7 @@ func buildRouter(endpoints []core.EndpointV2, consumers []core.ConsumerV2) *rout
 				r = InjectContextConsumersList(r, filterNamespacedConsumers(consumers, item.Namespace))
 				// inject endpoint.
 				r = InjectContextEndpoint(r, &endpoints[i])
+				r = InjectContextURLParams(r, ExtractBetweenCurlyBraces(pattern))
 
 				for _, p := range pChain {
 					// checkpoint if auth plugins had a match.
@@ -104,4 +106,24 @@ func buildRouter(endpoints []core.EndpointV2, consumers []core.ConsumerV2) *rout
 		endpoints: endpoints,
 		consumers: consumers,
 	}
+}
+
+func ExtractBetweenCurlyBraces(input string) []string {
+	// Compile the regular expression
+	re := regexp.MustCompile(`\{([^{}]*)\}`)
+
+	// Find all matches
+	matches := re.FindAllStringSubmatch(input, -1)
+
+	// Extract the matched strings
+	var results []string
+	for _, match := range matches {
+		// match[0] is the full match (e.g., "{example}")
+		// match[1] is the first capturing group (e.g., "example")
+		if len(match) > 1 {
+			results = append(results, match[1])
+		}
+	}
+
+	return results
 }

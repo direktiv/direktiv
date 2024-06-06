@@ -11,6 +11,7 @@ const (
 	gatewayCtxKeyConsumersList  = "ctx_consumers_list"
 	gatewayCtxKeyActiveConsumer = "ctx_active_consumer"
 	gatewayCtxKeyEndpoint       = "ctx_endpoint"
+	gatewayCtxKeyUrlParams      = "ctx_params"
 )
 
 func ExtractContextConsumersList(r *http.Request) []core.ConsumerV2 {
@@ -60,6 +61,20 @@ func ExtractContextEndpoint(r *http.Request) *core.EndpointV2 {
 	return cast
 }
 
+func ExtractContextUrlParams(r *http.Request) []string {
+	res := r.Context().Value(gatewayCtxKeyUrlParams)
+	cast, ok := res.([]string)
+	if !ok {
+		return nil
+	}
+
+	return cast
+}
+
 func InjectContextEndpoint(r *http.Request, contextValue *core.EndpointV2) *http.Request {
 	return r.WithContext(context.WithValue(r.Context(), gatewayCtxKeyEndpoint, contextValue))
+}
+
+func InjectContextURLParams(r *http.Request, contextValue []string) *http.Request {
+	return r.WithContext(context.WithValue(r.Context(), gatewayCtxKeyUrlParams, contextValue))
 }
