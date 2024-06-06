@@ -2,7 +2,6 @@ package outbound
 
 import (
 	"fmt"
-	"github.com/direktiv/direktiv/pkg/gateway2"
 	"io"
 	"log/slog"
 	"net/http"
@@ -10,6 +9,7 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/core"
+	"github.com/direktiv/direktiv/pkg/gateway2"
 	"github.com/dop251/goja"
 )
 

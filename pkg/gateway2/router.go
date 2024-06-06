@@ -104,13 +104,17 @@ func buildRouter(endpoints []core.EndpointV2, consumers []core.ConsumerV2) *rout
 					}
 					if p.Type() == "js-outbound" {
 						// Inject the output in the request so that the outbound plugin can process it.
+						//nolint:forcetypeassert
 						w := w.(*httptest.ResponseRecorder)
 						newReq, err := http.NewRequest(http.MethodGet, "/writer", w.Body)
 						if err != nil {
+							slog.With("component", "gateway").
+								Error("creating js-outbound plugin request", "err", err)
 						}
 						newReq.Response = &http.Response{
 							StatusCode: w.Code,
 						}
+						//nolint:contextcheck
 						newReq = newReq.WithContext(r.Context())
 						r = newReq
 					}
@@ -120,6 +124,7 @@ func buildRouter(endpoints []core.EndpointV2, consumers []core.ConsumerV2) *rout
 				}
 
 				if hasOutboundConfigured {
+					//nolint:forcetypeassert
 					w := w.(*httptest.ResponseRecorder)
 					// Copy headers to the original writer.
 					for key, values := range w.Header() {
