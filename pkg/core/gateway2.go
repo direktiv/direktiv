@@ -39,8 +39,8 @@ type PluginsConfigV2 struct {
 }
 
 type PluginConfigV2 struct {
-	Typ    string         `yaml:"type"`
-	Config map[string]any `yaml:"configuration"`
+	Typ    string         `yaml:"type" json:"type,omitempty"`
+	Config map[string]any `yaml:"configuration" json:"configuration,omitempty"`
 }
 
 type PluginV2 interface {

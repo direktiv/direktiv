@@ -132,6 +132,9 @@ func consumersForAPI(consumers []core.ConsumerV2) any {
 			FilePath: item.FilePath,
 			Errors:   item.Errors,
 		}
+		if newItem.Errors == nil {
+			newItem.Errors = []string{}
+		}
 		result = append(result, newItem)
 	}
 
@@ -140,15 +143,20 @@ func consumersForAPI(consumers []core.ConsumerV2) any {
 
 func endpointsForAPI(endpoints []core.EndpointV2) any {
 	type output struct {
-		Methods        []string             `json:"methods"`
-		Path           string               `json:"path"`
-		AllowAnonymous bool                 `json:"allow_anonymous"`
-		PluginsConfig  core.PluginsConfigV2 `json:"plugins"`
-		Timeout        int                  `json:"timeout"`
-		FilePath       string               `json:"file_path"`
-		Errors         []string             `json:"errors"`
-		ServerPath     string               `json:"server_path"`
-		Warnings       []string             `json:"warnings"`
+		Methods        []string `json:"methods"`
+		Path           string   `json:"path"`
+		AllowAnonymous bool     `json:"allow_anonymous"`
+		PluginsConfig  struct {
+			Auth     []core.PluginConfigV2 `json:"auth,omitempty"`
+			Inbound  []core.PluginConfigV2 `json:"inbound,omitempty"`
+			Target   core.PluginConfigV2   `json:"target,omitempty"`
+			Outbound []core.PluginConfigV2 `json:"outbound,omitempty"`
+		} `json:"plugins"`
+		Timeout    int      `json:"timeout"`
+		FilePath   string   `json:"file_path"`
+		Errors     []string `json:"errors"`
+		ServerPath string   `json:"server_path"`
+		Warnings   []string `json:"warnings"`
 	}
 
 	result := []any{}
@@ -157,19 +165,24 @@ func endpointsForAPI(endpoints []core.EndpointV2) any {
 			Methods:        item.Methods,
 			Path:           item.Path,
 			AllowAnonymous: item.AllowAnonymous,
-			PluginsConfig:  item.PluginsConfig,
 			Timeout:        item.Timeout,
 			FilePath:       item.FilePath,
 			Errors:         item.Errors,
 		}
+		newItem.PluginsConfig.Auth = item.PluginsConfig.Auth
+		newItem.PluginsConfig.Inbound = item.PluginsConfig.Inbound
+		newItem.PluginsConfig.Target = item.PluginsConfig.Target
+		newItem.PluginsConfig.Outbound = item.PluginsConfig.Outbound
 
 		newItem.Warnings = []string{}
+		if newItem.Errors == nil {
+			newItem.Errors = []string{}
+		}
 		// set server_path
 		// TODO: remove this useless field
 		if item.Path != "" {
 			newItem.ServerPath = path.Clean(fmt.Sprintf("/ns/%s/%s", item.Namespace, item.Path))
 		}
-
 		result = append(result, newItem)
 	}
 
