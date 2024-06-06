@@ -8,6 +8,7 @@ import (
 	"net/http/httptest"
 	"regexp"
 	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/core"
@@ -132,6 +133,8 @@ func buildRouter(endpoints []core.EndpointV2, consumers []core.ConsumerV2) *rout
 							originalWriter.Header().Add(key, value)
 						}
 					}
+					// Set the new content length.
+					originalWriter.Header().Set("Content-Length", strconv.Itoa(w.Body.Len()))
 					// Copy status code to the original writer.
 					originalWriter.WriteHeader(w.Code)
 
