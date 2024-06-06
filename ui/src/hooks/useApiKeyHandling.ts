@@ -19,7 +19,7 @@ import { useAuthTest } from "~/api/authenticate/query/getAuthInfos";
  * showLoginModal: a flag that indicates whether the UI should handle the
  * displaying a login modal.
  *
- * showUsermenu: indicates whether the usermenu should be shown. In the
+ * usesAccounts: indicates whether the usermenu should be shown. In the
  * enterprise version this is always true (and is independent from any
  * api key handling), in the open source version this is only true if
  * the api key is required
@@ -47,7 +47,7 @@ const useApiKeyHandling = () => {
     isCurrentKeyValid,
     isFetched,
     showLoginModal: !isEnterprise(),
-    showUsermenu: isEnterprise() ? true : isApiKeyRequired,
+    usesAccounts: isEnterprise() ? true : isApiKeyRequired,
   };
 };
 
