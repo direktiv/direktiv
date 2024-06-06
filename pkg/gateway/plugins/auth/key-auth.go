@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/core"
-	"github.com/direktiv/direktiv/pkg/gateway2"
+	"github.com/direktiv/direktiv/pkg/gateway"
 )
 
 const (
@@ -27,7 +27,7 @@ func (ka *KeyAuthPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2,
 		KeyName: DefaultKeyName,
 	}
 
-	err := gateway2.ConvertConfig(config.Config, pl)
+	err := gateway.ConvertConfig(config.Config, pl)
 	if err != nil {
 		return nil, err
 	}
@@ -37,7 +37,7 @@ func (ka *KeyAuthPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2,
 
 func (ka *KeyAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
 	// check request is already authenticated
-	if gateway2.ExtractContextActiveConsumer(r) != nil {
+	if gateway.ExtractContextActiveConsumer(r) != nil {
 		return r
 	}
 
@@ -47,13 +47,13 @@ func (ka *KeyAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.R
 		return r
 	}
 
-	consumerList := gateway2.ExtractContextConsumersList(r)
+	consumerList := gateway.ExtractContextConsumersList(r)
 	if consumerList == nil {
 		slog.Debug("no consumer configured for api key")
 
 		return r
 	}
-	c := gateway2.FindConsumerByAPIKey(consumerList, key)
+	c := gateway.FindConsumerByAPIKey(consumerList, key)
 	// no consumer matching auth name
 	if c == nil {
 		slog.Debug("no consumer configured for api key")
@@ -63,19 +63,19 @@ func (ka *KeyAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.R
 
 	if c.APIKey == key {
 		// set active consumer
-		r = gateway2.InjectContextActiveConsumer(r, c)
+		r = gateway.InjectContextActiveConsumer(r, c)
 
 		// set headers if configured
 		if ka.AddUsernameHeader {
-			r.Header.Set(gateway2.ConsumerUserHeader, c.Username)
+			r.Header.Set(gateway.ConsumerUserHeader, c.Username)
 		}
 
 		if ka.AddTagsHeader && len(c.Tags) > 0 {
-			r.Header.Set(gateway2.ConsumerTagsHeader, strings.Join(c.Tags, ","))
+			r.Header.Set(gateway.ConsumerTagsHeader, strings.Join(c.Tags, ","))
 		}
 
 		if ka.AddGroupsHeader && len(c.Groups) > 0 {
-			r.Header.Set(gateway2.ConsumerGroupsHeader, strings.Join(c.Groups, ","))
+			r.Header.Set(gateway.ConsumerGroupsHeader, strings.Join(c.Groups, ","))
 		}
 	}
 
@@ -87,5 +87,5 @@ func (ka *KeyAuthPlugin) Type() string {
 }
 
 func init() {
-	gateway2.RegisterPlugin(&KeyAuthPlugin{})
+	gateway.RegisterPlugin(&KeyAuthPlugin{})
 }

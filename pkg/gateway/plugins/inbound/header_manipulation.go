@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/direktiv/direktiv/pkg/core"
-	"github.com/direktiv/direktiv/pkg/gateway2"
+	"github.com/direktiv/direktiv/pkg/gateway"
 )
 
 type NameKeys struct {
@@ -21,7 +21,7 @@ type HeaderManipulationPlugin struct {
 func (hp *HeaderManipulationPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
 	pl := &HeaderManipulationPlugin{}
 
-	err := gateway2.ConvertConfig(config.Config, pl)
+	err := gateway.ConvertConfig(config.Config, pl)
 	if err != nil {
 		return nil, err
 	}
@@ -53,5 +53,5 @@ func (hp *HeaderManipulationPlugin) Type() string {
 }
 
 func init() {
-	gateway2.RegisterPlugin(&HeaderManipulationPlugin{})
+	gateway.RegisterPlugin(&HeaderManipulationPlugin{})
 }

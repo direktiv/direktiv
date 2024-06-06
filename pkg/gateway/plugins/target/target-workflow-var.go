@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/direktiv/direktiv/pkg/core"
-	"github.com/direktiv/direktiv/pkg/gateway2"
+	"github.com/direktiv/direktiv/pkg/gateway"
 )
 
 type FlowVarPlugin struct {
@@ -20,7 +20,7 @@ type FlowVarPlugin struct {
 func (tnv *FlowVarPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
 	pl := &FlowVarPlugin{}
 
-	err := gateway2.ConvertConfig(config.Config, pl)
+	err := gateway.ConvertConfig(config.Config, pl)
 	if err != nil {
 		return nil, err
 	}
@@ -33,12 +33,12 @@ func (tnv *FlowVarPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2
 }
 
 func (tnv *FlowVarPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
-	currentNS := gateway2.ExtractContextEndpoint(r).Namespace
+	currentNS := gateway.ExtractContextEndpoint(r).Namespace
 	if tnv.Namespace == "" {
 		tnv.Namespace = currentNS
 	}
 	if tnv.Namespace != currentNS && currentNS != core.SystemNamespace {
-		gateway2.WriteForbiddenError(r, w, nil, "plugin can not target different namespace")
+		gateway.WriteForbiddenError(r, w, nil, "plugin can not target different namespace")
 		return nil
 	}
 
@@ -47,11 +47,11 @@ func (tnv *FlowVarPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.
 
 	resp, err := doRequest(r, http.MethodGet, uri, nil)
 	if err != nil {
-		gateway2.WriteInternalError(r, w, nil, "couldn't execute downstream request")
+		gateway.WriteInternalError(r, w, nil, "couldn't execute downstream request")
 		return nil
 	}
 	if resp.StatusCode != http.StatusOK {
-		gateway2.WriteInternalError(r, w, nil, "couldn't execute downstream request")
+		gateway.WriteInternalError(r, w, nil, "couldn't execute downstream request")
 		return nil
 	}
 	defer resp.Body.Close()
@@ -70,7 +70,7 @@ func (tnv *FlowVarPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.
 
 	// copy the response body
 	if _, err := io.Copy(w, resp.Body); err != nil {
-		gateway2.WriteInternalError(r, w, nil, "couldn't write downstream response")
+		gateway.WriteInternalError(r, w, nil, "couldn't write downstream response")
 		return nil
 	}
 
@@ -82,5 +82,5 @@ func (tnv *FlowVarPlugin) Type() string {
 }
 
 func init() {
-	gateway2.RegisterPlugin(&FlowVarPlugin{})
+	gateway.RegisterPlugin(&FlowVarPlugin{})
 }

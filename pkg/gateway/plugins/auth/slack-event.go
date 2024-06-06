@@ -8,7 +8,7 @@ import (
 	"net/url"
 
 	"github.com/direktiv/direktiv/pkg/core"
-	"github.com/direktiv/direktiv/pkg/gateway2"
+	"github.com/direktiv/direktiv/pkg/gateway"
 	"github.com/slack-go/slack"
 )
 
@@ -19,7 +19,7 @@ type SlackWebhookPlugin struct {
 func (p *SlackWebhookPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
 	pl := &SlackWebhookPlugin{}
 
-	err := gateway2.ConvertConfig(config.Config, pl)
+	err := gateway.ConvertConfig(config.Config, pl)
 	if err != nil {
 		return nil, err
 	}
@@ -29,30 +29,30 @@ func (p *SlackWebhookPlugin) NewInstance(config core.PluginConfigV2) (core.Plugi
 
 func (p *SlackWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
 	// check request is already authenticated
-	if gateway2.ExtractContextActiveConsumer(r) != nil {
+	if gateway.ExtractContextActiveConsumer(r) != nil {
 		return r
 	}
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		gateway2.WriteInternalError(r, w, err, "can not read request body")
+		gateway.WriteInternalError(r, w, err, "can not read request body")
 		return nil
 	}
 
 	sv, err := slack.NewSecretsVerifier(r.Header, p.Secret)
 	if err != nil {
-		gateway2.WriteInternalError(r, w, err, "can not create slack verifier")
+		gateway.WriteInternalError(r, w, err, "can not create slack verifier")
 		return nil
 	}
 
 	if _, err := sv.Write(body); err != nil {
-		gateway2.WriteInternalError(r, w, err, "can not write slack hmac")
+		gateway.WriteInternalError(r, w, err, "can not write slack hmac")
 		return nil
 	}
 
 	// hmac is not valid
 	if err := sv.Ensure(); err != nil {
-		gateway2.WriteInternalError(r, w, err, "slack hmac failed")
+		gateway.WriteInternalError(r, w, err, "slack hmac failed")
 		return nil
 	}
 
@@ -62,20 +62,20 @@ func (p *SlackWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) *ht
 		},
 	}
 	// set active comsumer.
-	r = gateway2.InjectContextActiveConsumer(r, c)
+	r = gateway.InjectContextActiveConsumer(r, c)
 
 	// convert to json if url encoded
 	// nolint:canonicalheader
 	if r.Header.Get("Content-type") == "application/x-www-form-urlencoded" {
 		v, err := url.ParseQuery(string(body))
 		if err != nil {
-			gateway2.WriteInternalError(r, w, err, "can parse url form encoded data")
+			gateway.WriteInternalError(r, w, err, "can parse url form encoded data")
 			return nil
 		}
 
 		b, err := json.Marshal(v)
 		if err != nil {
-			gateway2.WriteInternalError(r, w, err, "can not marshal slack data")
+			gateway.WriteInternalError(r, w, err, "can not marshal slack data")
 			return nil
 		}
 		r.Body = io.NopCloser(bytes.NewBuffer(b))
@@ -91,5 +91,5 @@ func (*SlackWebhookPlugin) Type() string {
 }
 
 func init() {
-	gateway2.RegisterPlugin(&SlackWebhookPlugin{})
+	gateway.RegisterPlugin(&SlackWebhookPlugin{})
 }

@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/direktiv/direktiv/pkg/core"
-	"github.com/direktiv/direktiv/pkg/gateway2"
+	"github.com/direktiv/direktiv/pkg/gateway"
 )
 
 type InstantResponsePlugin struct {
@@ -18,7 +18,7 @@ func (ir *InstantResponsePlugin) NewInstance(config core.PluginConfigV2) (core.P
 		StatusCode:    http.StatusOK,
 		StatusMessage: "This is the end!",
 	}
-	err := gateway2.ConvertConfig(config.Config, pl)
+	err := gateway.ConvertConfig(config.Config, pl)
 	if err != nil {
 		return nil, err
 	}
@@ -27,7 +27,7 @@ func (ir *InstantResponsePlugin) NewInstance(config core.PluginConfigV2) (core.P
 }
 
 func (ir *InstantResponsePlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
-	if gateway2.IsJSON(ir.StatusMessage) {
+	if gateway.IsJSON(ir.StatusMessage) {
 		w.Header().Add("Content-Type", "application/json")
 	}
 
@@ -47,5 +47,5 @@ func (ir *InstantResponsePlugin) Type() string {
 }
 
 func init() {
-	gateway2.RegisterPlugin(&InstantResponsePlugin{})
+	gateway.RegisterPlugin(&InstantResponsePlugin{})
 }

@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/core"
-	"github.com/direktiv/direktiv/pkg/gateway2"
+	"github.com/direktiv/direktiv/pkg/gateway"
 )
 
 // NamespaceFilePlugin returns a files in the explorer tree.
@@ -21,7 +21,7 @@ type NamespaceFilePlugin struct {
 func (tnf *NamespaceFilePlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
 	pl := &NamespaceFilePlugin{}
 
-	err := gateway2.ConvertConfig(config.Config, pl)
+	err := gateway.ConvertConfig(config.Config, pl)
 	if err != nil {
 		return nil, err
 	}
@@ -42,12 +42,12 @@ func (tnf *NamespaceFilePlugin) Type() string {
 }
 
 func (tnf *NamespaceFilePlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
-	currentNS := gateway2.ExtractContextEndpoint(r).Namespace
+	currentNS := gateway.ExtractContextEndpoint(r).Namespace
 	if tnf.Namespace == "" {
 		tnf.Namespace = currentNS
 	}
 	if tnf.Namespace != currentNS && currentNS != core.SystemNamespace {
-		gateway2.WriteForbiddenError(r, w, nil, "plugin can not target different namespace")
+		gateway.WriteForbiddenError(r, w, nil, "plugin can not target different namespace")
 		return nil
 	}
 
@@ -57,7 +57,7 @@ func (tnf *NamespaceFilePlugin) Execute(w http.ResponseWriter, r *http.Request) 
 	// request failed if nil and response already written
 	resp, err := doRequest(r, http.MethodGet, url, nil)
 	if err != nil {
-		gateway2.WriteInternalError(r, w, nil, "couldn't execute downstream request")
+		gateway.WriteInternalError(r, w, nil, "couldn't execute downstream request")
 		return nil
 	}
 	defer resp.Body.Close()
@@ -76,7 +76,7 @@ func (tnf *NamespaceFilePlugin) Execute(w http.ResponseWriter, r *http.Request) 
 
 	// copy the response body
 	if _, err := io.Copy(w, resp.Body); err != nil {
-		gateway2.WriteInternalError(r, w, nil, "couldn't write downstream response")
+		gateway.WriteInternalError(r, w, nil, "couldn't write downstream response")
 		return nil
 	}
 
@@ -84,5 +84,5 @@ func (tnf *NamespaceFilePlugin) Execute(w http.ResponseWriter, r *http.Request) 
 }
 
 func init() {
-	gateway2.RegisterPlugin(&NamespaceFilePlugin{})
+	gateway.RegisterPlugin(&NamespaceFilePlugin{})
 }

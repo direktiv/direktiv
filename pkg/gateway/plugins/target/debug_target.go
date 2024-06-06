@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/direktiv/direktiv/pkg/core"
-	"github.com/direktiv/direktiv/pkg/gateway2"
+	"github.com/direktiv/direktiv/pkg/gateway"
 )
 
 const debugPluginName = "debug-target"
@@ -21,7 +21,7 @@ func (ba *DebugPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, e
 func (ba *DebugPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		gateway2.WriteInternalError(r, w, err, "reading request body")
+		gateway.WriteInternalError(r, w, err, "reading request body")
 		return nil
 	}
 
@@ -35,7 +35,7 @@ func (ba *DebugPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Req
 		Text:    "from debug plugin",
 	}
 
-	gateway2.WriteJSON(w, response)
+	gateway.WriteJSON(w, response)
 
 	return r
 }
@@ -45,5 +45,5 @@ func (ba *DebugPlugin) Type() string {
 }
 
 func init() {
-	gateway2.RegisterPlugin(&DebugPlugin{})
+	gateway.RegisterPlugin(&DebugPlugin{})
 }
