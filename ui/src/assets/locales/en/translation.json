@@ -1220,6 +1220,7 @@
     },
     "userMenu": {
       "loggedIn": "You are logged in",
+      "loggedInAs": "You are logged in as {{username}}",
       "logout": "Logout",
       "appearance": "Appearance",
       "switchToLight": "Switch to light mode",
