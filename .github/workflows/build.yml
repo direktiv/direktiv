@@ -229,7 +229,7 @@ jobs:
           - type: api
             suit: gateway
           - type: api
-            suit: gateway
+            suit: gateway2
           - type: api
             suit: instances
           - type: api
