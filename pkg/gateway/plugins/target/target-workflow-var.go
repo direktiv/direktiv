@@ -7,19 +7,20 @@ import (
 	"os"
 
 	"github.com/direktiv/direktiv/pkg/core"
-	"github.com/direktiv/direktiv/pkg/gateway2"
+	"github.com/direktiv/direktiv/pkg/gateway"
 )
 
-type NamespaceVarPlugin struct {
+type FlowVarPlugin struct {
 	Namespace   string `mapstructure:"namespace"`
+	Flow        string `mapstructure:"flow"`
 	Variable    string `mapstructure:"variable"`
 	ContentType string `mapstructure:"content_type"`
 }
 
-func (tnv *NamespaceVarPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
-	pl := &NamespaceVarPlugin{}
+func (tnv *FlowVarPlugin) NewInstance(config core.PluginConfig) (core.Plugin, error) {
+	pl := &FlowVarPlugin{}
 
-	err := gateway2.ConvertConfig(config.Config, pl)
+	err := gateway.ConvertConfig(config.Config, pl)
 	if err != nil {
 		return nil, err
 	}
@@ -31,26 +32,26 @@ func (tnv *NamespaceVarPlugin) NewInstance(config core.PluginConfigV2) (core.Plu
 	return pl, nil
 }
 
-func (tnv *NamespaceVarPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
-	currentNS := gateway2.ExtractContextEndpoint(r).Namespace
+func (tnv *FlowVarPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
+	currentNS := gateway.ExtractContextEndpoint(r).Namespace
 	if tnv.Namespace == "" {
 		tnv.Namespace = currentNS
 	}
 	if tnv.Namespace != currentNS && currentNS != core.SystemNamespace {
-		gateway2.WriteForbiddenError(r, w, nil, "plugin can not target different namespace")
+		gateway.WriteForbiddenError(r, w, nil, "plugin can not target different namespace")
 		return nil
 	}
 
-	uri := fmt.Sprintf("http://localhost:%s/api/v2/namespaces/%s/variables?name=%s&raw=true",
-		os.Getenv("DIREKTIV_API_PORT"), tnv.Namespace, tnv.Variable)
+	uri := fmt.Sprintf("http://localhost:%s/api/v2/namespaces/%s/variables/?name=%s&workflowPath=%s&raw=true",
+		os.Getenv("DIREKTIV_API_PORT"), tnv.Namespace, tnv.Variable, tnv.Flow)
 
 	resp, err := doRequest(r, http.MethodGet, uri, nil)
 	if err != nil {
-		gateway2.WriteInternalError(r, w, nil, "couldn't execute downstream request")
+		gateway.WriteInternalError(r, w, nil, "couldn't execute downstream request")
 		return nil
 	}
 	if resp.StatusCode != http.StatusOK {
-		gateway2.WriteInternalError(r, w, nil, "couldn't execute downstream request")
+		gateway.WriteInternalError(r, w, nil, "couldn't execute downstream request")
 		return nil
 	}
 	defer resp.Body.Close()
@@ -69,17 +70,17 @@ func (tnv *NamespaceVarPlugin) Execute(w http.ResponseWriter, r *http.Request) *
 
 	// copy the response body
 	if _, err := io.Copy(w, resp.Body); err != nil {
-		gateway2.WriteInternalError(r, w, nil, "couldn't write downstream response")
+		gateway.WriteInternalError(r, w, nil, "couldn't write downstream response")
 		return nil
 	}
 
 	return r
 }
 
-func (tnv *NamespaceVarPlugin) Type() string {
-	return "target-namespace-var"
+func (tnv *FlowVarPlugin) Type() string {
+	return "target-flow-var"
 }
 
 func init() {
-	gateway2.RegisterPlugin(&NamespaceVarPlugin{})
+	gateway.RegisterPlugin(&FlowVarPlugin{})
 }

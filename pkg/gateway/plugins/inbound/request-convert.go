@@ -10,7 +10,7 @@ import (
 	"net/http"
 
 	"github.com/direktiv/direktiv/pkg/core"
-	"github.com/direktiv/direktiv/pkg/gateway2"
+	"github.com/direktiv/direktiv/pkg/gateway"
 )
 
 // RequestConvertPlugin converts headers, query parameters, url paramneters
@@ -22,10 +22,10 @@ type RequestConvertPlugin struct {
 	OmitConsumer bool `mapstructure:"omit_consumer"`
 }
 
-func (rcp *RequestConvertPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
+func (rcp *RequestConvertPlugin) NewInstance(config core.PluginConfig) (core.Plugin, error) {
 	pl := &RequestConvertPlugin{}
 
-	err := gateway2.ConvertConfig(config.Config, pl)
+	err := gateway.ConvertConfig(config.Config, pl)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +79,7 @@ func (rcp *RequestConvertPlugin) Execute(w http.ResponseWriter, r *http.Request)
 		response.Headers = r.Header
 	}
 
-	c := gateway2.ExtractContextActiveConsumer(r)
+	c := gateway.ExtractContextActiveConsumer(r)
 
 	if !rcp.OmitConsumer && c != nil {
 		response.Consumer.Username = c.Username
@@ -95,14 +95,14 @@ func (rcp *RequestConvertPlugin) Execute(w http.ResponseWriter, r *http.Request)
 	if r.Body != nil && !rcp.OmitBody {
 		content, err = io.ReadAll(r.Body)
 		if err != nil {
-			gateway2.WriteInternalError(r, w, err, "can not process content")
+			gateway.WriteInternalError(r, w, err, "can not process content")
 			return nil
 		}
 		defer r.Body.Close()
 	}
 
 	// add json content or base64 if binary
-	if gateway2.IsJSON(string(content)) {
+	if gateway.IsJSON(string(content)) {
 		response.Body = content
 	} else {
 		response.Body = []byte(fmt.Sprintf("{ \"data\": \"%s\" }",
@@ -111,7 +111,7 @@ func (rcp *RequestConvertPlugin) Execute(w http.ResponseWriter, r *http.Request)
 
 	newBody, err := json.Marshal(response)
 	if err != nil {
-		gateway2.WriteInternalError(r, w, err, "can not process content")
+		gateway.WriteInternalError(r, w, err, "can not process content")
 		return nil
 	}
 	r.Body = io.NopCloser(bytes.NewBuffer(newBody))
@@ -128,5 +128,5 @@ func (rcp *RequestConvertPlugin) Type() string {
 }
 
 func init() {
-	gateway2.RegisterPlugin(&RequestConvertPlugin{})
+	gateway.RegisterPlugin(&RequestConvertPlugin{})
 }

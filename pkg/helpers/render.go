@@ -9,9 +9,9 @@ import (
 	"github.com/direktiv/direktiv/pkg/filestore"
 )
 
-func RenderGatewayFiles(db *database.SQLStore, manager core.GatewayManagerV2) {
+func RenderGatewayFiles(db *database.SQLStore, manager core.GatewayManager) {
 	ctx := context.Background()
-	slog := slog2.With("subscriber", "gateway2 file watcher")
+	slog := slog2.With("subscriber", "gateway file watcher")
 
 	fStore, dStore := db.FileStore(), db.DataStore()
 
@@ -22,8 +22,8 @@ func RenderGatewayFiles(db *database.SQLStore, manager core.GatewayManagerV2) {
 		return
 	}
 
-	var consumers []core.ConsumerV2
-	var endpoints []core.EndpointV2
+	var consumers []core.Consumer
+	var endpoints []core.Endpoint
 
 	for _, ns := range nsList {
 		slog = slog.With("namespace", ns.Name)
@@ -35,9 +35,9 @@ func RenderGatewayFiles(db *database.SQLStore, manager core.GatewayManagerV2) {
 		}
 		for _, file := range files {
 			if file.Typ == filestore.FileTypeConsumer {
-				consumers = append(consumers, core.ParseConsumerFileV2(ns.Name, file.Path, file.Data))
+				consumers = append(consumers, core.ParseConsumerFile(ns.Name, file.Path, file.Data))
 			} else if file.Typ == filestore.FileTypeEndpoint {
-				endpoints = append(endpoints, core.ParseEndpointFileV2(ns.Name, file.Path, file.Data))
+				endpoints = append(endpoints, core.ParseEndpointFile(ns.Name, file.Path, file.Data))
 			}
 		}
 	}

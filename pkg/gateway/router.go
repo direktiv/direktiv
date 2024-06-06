@@ -1,4 +1,4 @@
-package gateway2
+package gateway
 
 import (
 	"fmt"
@@ -18,14 +18,14 @@ import (
 // http.ServeMux with endpoints and consumers. Lists  endpoints and consumers are used to build the router itself.
 type router struct {
 	serveMux  *http.ServeMux
-	endpoints []core.EndpointV2
-	consumers []core.ConsumerV2
+	endpoints []core.Endpoint
+	consumers []core.Consumer
 }
 
 // buildRouter compiles a new gateway router from endpoints and consumers lists.
 //
 //nolint:gocognit
-func buildRouter(endpoints []core.EndpointV2, consumers []core.ConsumerV2) *router {
+func buildRouter(endpoints []core.Endpoint, consumers []core.Consumer) *router {
 	serveMux := http.NewServeMux()
 
 	for i, item := range endpoints {
@@ -35,7 +35,7 @@ func buildRouter(endpoints []core.EndpointV2, consumers []core.ConsumerV2) *rout
 		}
 
 		// concat plugins configs into one list.
-		pConfigs := []core.PluginConfigV2{}
+		pConfigs := []core.PluginConfig{}
 		pConfigs = append(pConfigs, item.PluginsConfig.Auth...)
 		pConfigs = append(pConfigs, item.PluginsConfig.Inbound...)
 		pConfigs = append(pConfigs, item.PluginsConfig.Target)
@@ -44,7 +44,7 @@ func buildRouter(endpoints []core.EndpointV2, consumers []core.ConsumerV2) *rout
 		hasOutboundConfigured := len(item.PluginsConfig.Outbound) > 0
 
 		// build plugins chain.
-		pChain := []core.PluginV2{}
+		pChain := []core.Plugin{}
 		for _, pConfig := range pConfigs {
 			p, err := NewPlugin(pConfig)
 			if err != nil {

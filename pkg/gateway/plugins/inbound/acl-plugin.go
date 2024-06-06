@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/direktiv/direktiv/pkg/core"
-	"github.com/direktiv/direktiv/pkg/gateway2"
+	"github.com/direktiv/direktiv/pkg/gateway"
 )
 
 // ACLPlugin is a simple access control method. It checks the incoming consumer
@@ -16,10 +16,10 @@ type ACLPlugin struct {
 	DenyTags    []string `mapstructure:"deny_tags"`
 }
 
-func (acl *ACLPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
+func (acl *ACLPlugin) NewInstance(config core.PluginConfig) (core.Plugin, error) {
 	pl := &ACLPlugin{}
 
-	err := gateway2.ConvertConfig(config.Config, pl)
+	err := gateway.ConvertConfig(config.Config, pl)
 	if err != nil {
 		return nil, err
 	}
@@ -32,17 +32,17 @@ func (acl *ACLPlugin) Type() string {
 }
 
 func (acl *ACLPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
-	c := gateway2.ExtractContextActiveConsumer(r)
+	c := gateway.ExtractContextActiveConsumer(r)
 	if c == nil {
-		gateway2.WriteInternalError(r, w, nil, "missing consumer")
+		gateway.WriteInternalError(r, w, nil, "missing consumer")
 		return nil
 	}
 	if result(acl.DenyGroups, c.Groups) {
-		gateway2.WriteForbiddenError(r, w, nil, "denied user groups")
+		gateway.WriteForbiddenError(r, w, nil, "denied user groups")
 		return nil
 	}
 	if result(acl.DenyTags, c.Tags) {
-		gateway2.WriteForbiddenError(r, w, nil, "denied user tags")
+		gateway.WriteForbiddenError(r, w, nil, "denied user tags")
 		return nil
 	}
 	if result(acl.AllowGroups, c.Groups) {
@@ -52,7 +52,7 @@ func (acl *ACLPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Requ
 		return r
 	}
 
-	gateway2.WriteForbiddenError(r, w, nil, "denied user")
+	gateway.WriteForbiddenError(r, w, nil, "denied user")
 
 	return nil
 }
@@ -71,5 +71,5 @@ func result(userValues []string, configValues []string) bool {
 }
 
 func init() {
-	gateway2.RegisterPlugin(&ACLPlugin{})
+	gateway.RegisterPlugin(&ACLPlugin{})
 }

@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/core"
-	"github.com/direktiv/direktiv/pkg/gateway2"
+	"github.com/direktiv/direktiv/pkg/gateway"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -23,12 +23,12 @@ type FlowPlugin struct {
 	internalAsync string
 }
 
-func (tf *FlowPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
+func (tf *FlowPlugin) NewInstance(config core.PluginConfig) (core.Plugin, error) {
 	pl := &FlowPlugin{
 		Async: false,
 	}
 
-	err := gateway2.ConvertConfig(config.Config, pl)
+	err := gateway.ConvertConfig(config.Config, pl)
 	if err != nil {
 		return nil, err
 	}
@@ -54,12 +54,12 @@ func (tf *FlowPlugin) Type() string {
 }
 
 func (tf *FlowPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
-	currentNS := gateway2.ExtractContextEndpoint(r).Namespace
+	currentNS := gateway.ExtractContextEndpoint(r).Namespace
 	if tf.Namespace == "" {
 		tf.Namespace = currentNS
 	}
 	if tf.Namespace != currentNS && currentNS != core.SystemNamespace {
-		gateway2.WriteForbiddenError(r, w, nil, "plugin can not target different namespace")
+		gateway.WriteForbiddenError(r, w, nil, "plugin can not target different namespace")
 		return nil
 	}
 
@@ -74,7 +74,7 @@ func (tf *FlowPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Requ
 
 	resp, err := doRequest(r.WithContext(ctx), http.MethodPost, url, r.Body)
 	if err != nil {
-		gateway2.WriteForbiddenError(r, w, nil, "couldn't execute downstream request")
+		gateway.WriteForbiddenError(r, w, nil, "couldn't execute downstream request")
 		return nil
 	}
 	defer resp.Body.Close()
@@ -117,7 +117,7 @@ func (tf *FlowPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Requ
 
 	// copy the response body
 	if _, err := io.Copy(w, resp.Body); err != nil {
-		gateway2.WriteInternalError(r, w, nil, "couldn't write downstream response")
+		gateway.WriteInternalError(r, w, nil, "couldn't write downstream response")
 		return nil
 	}
 
@@ -125,5 +125,5 @@ func (tf *FlowPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Requ
 }
 
 func init() {
-	gateway2.RegisterPlugin(&FlowPlugin{})
+	gateway.RegisterPlugin(&FlowPlugin{})
 }

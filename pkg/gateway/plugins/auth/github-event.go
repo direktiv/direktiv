@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/direktiv/direktiv/pkg/core"
-	"github.com/direktiv/direktiv/pkg/gateway2"
+	"github.com/direktiv/direktiv/pkg/gateway"
 	"github.com/google/go-github/v57/github"
 )
 
@@ -15,10 +15,10 @@ type GithubWebhookPlugin struct {
 	Secret string `mapstructure:"secret"`
 }
 
-func (p *GithubWebhookPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
+func (p *GithubWebhookPlugin) NewInstance(config core.PluginConfig) (core.Plugin, error) {
 	pl := &GithubWebhookPlugin{}
 
-	err := gateway2.ConvertConfig(config.Config, pl)
+	err := gateway.ConvertConfig(config.Config, pl)
 	if err != nil {
 		return nil, err
 	}
@@ -28,7 +28,7 @@ func (p *GithubWebhookPlugin) NewInstance(config core.PluginConfigV2) (core.Plug
 
 func (p *GithubWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
 	// check request is already authenticated
-	if gateway2.ExtractContextActiveConsumer(r) != nil {
+	if gateway.ExtractContextActiveConsumer(r) != nil {
 		return r
 	}
 
@@ -41,12 +41,12 @@ func (p *GithubWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) *h
 
 	// reset body with payload
 	r.Body = io.NopCloser(bytes.NewBuffer(payload))
-	c := &core.ConsumerV2{
-		ConsumerFileV2: core.ConsumerFileV2{
+	c := &core.Consumer{
+		ConsumerFile: core.ConsumerFile{
 			Username: "github",
 		},
 	}
-	r = gateway2.InjectContextActiveConsumer(r, c)
+	r = gateway.InjectContextActiveConsumer(r, c)
 
 	return r
 }
@@ -56,5 +56,5 @@ func (*GithubWebhookPlugin) Type() string {
 }
 
 func init() {
-	gateway2.RegisterPlugin(&GithubWebhookPlugin{})
+	gateway.RegisterPlugin(&GithubWebhookPlugin{})
 }

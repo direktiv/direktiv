@@ -1,4 +1,4 @@
-package gateway2
+package gateway
 
 import (
 	"reflect"

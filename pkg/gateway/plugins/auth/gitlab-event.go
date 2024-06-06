@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/direktiv/direktiv/pkg/core"
-	"github.com/direktiv/direktiv/pkg/gateway2"
+	"github.com/direktiv/direktiv/pkg/gateway"
 )
 
 const (
@@ -15,10 +15,10 @@ type GitlabWebhookPlugin struct {
 	Secret string `mapstructure:"secret"`
 }
 
-func (p *GitlabWebhookPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
+func (p *GitlabWebhookPlugin) NewInstance(config core.PluginConfig) (core.Plugin, error) {
 	pl := &GitlabWebhookPlugin{}
 
-	err := gateway2.ConvertConfig(config.Config, pl)
+	err := gateway.ConvertConfig(config.Config, pl)
 	if err != nil {
 		return nil, err
 	}
@@ -28,7 +28,7 @@ func (p *GitlabWebhookPlugin) NewInstance(config core.PluginConfigV2) (core.Plug
 
 func (p *GitlabWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
 	// check request is already authenticated
-	if gateway2.ExtractContextActiveConsumer(r) != nil {
+	if gateway.ExtractContextActiveConsumer(r) != nil {
 		return r
 	}
 
@@ -37,12 +37,12 @@ func (p *GitlabWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) *h
 		return r
 	}
 
-	c := &core.ConsumerV2{
-		ConsumerFileV2: core.ConsumerFileV2{
+	c := &core.Consumer{
+		ConsumerFile: core.ConsumerFile{
 			Username: "gitlab",
 		},
 	}
-	r = gateway2.InjectContextActiveConsumer(r, c)
+	r = gateway.InjectContextActiveConsumer(r, c)
 
 	return r
 }
@@ -52,5 +52,5 @@ func (*GitlabWebhookPlugin) Type() string {
 }
 
 func init() {
-	gateway2.RegisterPlugin(&GitlabWebhookPlugin{})
+	gateway.RegisterPlugin(&GitlabWebhookPlugin{})
 }

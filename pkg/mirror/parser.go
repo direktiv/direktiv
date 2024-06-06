@@ -279,12 +279,12 @@ func (p *Parser) scanAndPruneDirektivResourceFile(path string) error {
 		if err != nil {
 			return err
 		}
-	case *core.EndpointFileV2:
+	case *core.EndpointFile:
 		err = p.handleEndpoint(path, data)
 		if err != nil {
 			return err
 		}
-	case *core.ConsumerFileV2:
+	case *core.ConsumerFile:
 		err = p.handleConsumer(path, data)
 		if err != nil {
 			return err

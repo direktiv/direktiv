@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/core"
-	"github.com/direktiv/direktiv/pkg/gateway2"
+	"github.com/direktiv/direktiv/pkg/gateway"
 )
 
 type BasicAuthPlugin struct {
@@ -16,12 +16,12 @@ type BasicAuthPlugin struct {
 	AddGroupsHeader   bool `mapstructure:"add_groups_header"`
 }
 
-var _ core.PluginV2 = &BasicAuthPlugin{}
+var _ core.Plugin = &BasicAuthPlugin{}
 
-func (ba *BasicAuthPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
+func (ba *BasicAuthPlugin) NewInstance(config core.PluginConfig) (core.Plugin, error) {
 	pl := &BasicAuthPlugin{}
 
-	err := gateway2.ConvertConfig(config.Config, pl)
+	err := gateway.ConvertConfig(config.Config, pl)
 	if err != nil {
 		return nil, err
 	}
@@ -31,7 +31,7 @@ func (ba *BasicAuthPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV
 
 func (ba *BasicAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
 	// check request is already authenticated
-	if gateway2.ExtractContextActiveConsumer(r) != nil {
+	if gateway.ExtractContextActiveConsumer(r) != nil {
 		return r
 	}
 	user, pwd, ok := r.BasicAuth()
@@ -40,11 +40,11 @@ func (ba *BasicAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) *http
 		return r
 	}
 
-	consumerList := gateway2.ExtractContextConsumersList(r)
+	consumerList := gateway.ExtractContextConsumersList(r)
 	if consumerList == nil {
 		return r
 	}
-	consumer := gateway2.FindConsumerByUser(consumerList, user)
+	consumer := gateway.FindConsumerByUser(consumerList, user)
 	// no consumer matching auth name
 	if consumer == nil {
 		return r
@@ -61,18 +61,18 @@ func (ba *BasicAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) *http
 
 	if usernameMatch && passwordMatch {
 		// set active comsumer.
-		r = gateway2.InjectContextActiveConsumer(r, consumer)
+		r = gateway.InjectContextActiveConsumer(r, consumer)
 		// set headers if configured.
 		if ba.AddUsernameHeader {
-			r.Header.Set(gateway2.ConsumerUserHeader, consumer.Username)
+			r.Header.Set(gateway.ConsumerUserHeader, consumer.Username)
 		}
 
 		if ba.AddTagsHeader && len(consumer.Tags) > 0 {
-			r.Header.Set(gateway2.ConsumerTagsHeader, strings.Join(consumer.Tags, ","))
+			r.Header.Set(gateway.ConsumerTagsHeader, strings.Join(consumer.Tags, ","))
 		}
 
 		if ba.AddGroupsHeader && len(consumer.Groups) > 0 {
-			r.Header.Set(gateway2.ConsumerGroupsHeader, strings.Join(consumer.Groups, ","))
+			r.Header.Set(gateway.ConsumerGroupsHeader, strings.Join(consumer.Groups, ","))
 		}
 	}
 
@@ -84,5 +84,5 @@ func (ba *BasicAuthPlugin) Type() string {
 }
 
 func init() {
-	gateway2.RegisterPlugin(&BasicAuthPlugin{})
+	gateway.RegisterPlugin(&BasicAuthPlugin{})
 }

@@ -1,4 +1,4 @@
-package gateway2
+package gateway
 
 import (
 	"context"
@@ -15,7 +15,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-// manager struct implements core.GatewayManagerV2 by wrapping a pointer to router struct. Whenever endpoint and
+// manager struct implements core.GatewayManager by wrapping a pointer to router struct. Whenever endpoint and
 // consumer files changes, method SetEndpoints should be called and this will build a new router and
 // atomically swaps the old one.
 type manager struct {
@@ -36,9 +36,9 @@ func (m *manager) atomicSetRouter(inner *router) {
 	atomic.StorePointer(&m.routerPointer, unsafe.Pointer(inner))
 }
 
-var _ core.GatewayManagerV2 = &manager{}
+var _ core.GatewayManager = &manager{}
 
-func NewManager(db *database.SQLStore) core.GatewayManagerV2 {
+func NewManager(db *database.SQLStore) core.GatewayManager {
 	return &manager{
 		db: db,
 	}
@@ -74,7 +74,7 @@ func (m *manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 // SetEndpoints compiles a new router and atomically swaps the old one. No ongoing requests should be effected.
-func (m *manager) SetEndpoints(list []core.EndpointV2, cList []core.ConsumerV2) {
+func (m *manager) SetEndpoints(list []core.Endpoint, cList []core.Consumer) {
 	cList = slices.Clone(cList)
 
 	err := m.interpolateConsumersList(cList)
@@ -86,7 +86,7 @@ func (m *manager) SetEndpoints(list []core.EndpointV2, cList []core.ConsumerV2) 
 }
 
 // interpolateConsumersList translates matic consumer function "fetchSecret" in consumer files.
-func (m *manager) interpolateConsumersList(list []core.ConsumerV2) error {
+func (m *manager) interpolateConsumersList(list []core.Consumer) error {
 	db, err := m.db.BeginTx(context.Background())
 	if err != nil {
 		return fmt.Errorf("could not begin transaction: %w", err)
@@ -111,7 +111,7 @@ func (m *manager) interpolateConsumersList(list []core.ConsumerV2) error {
 	return nil
 }
 
-func consumersForAPI(consumers []core.ConsumerV2) any {
+func consumersForAPI(consumers []core.Consumer) any {
 	type output struct {
 		Username string   `json:"username"`
 		Password string   `json:"password"`
@@ -141,16 +141,16 @@ func consumersForAPI(consumers []core.ConsumerV2) any {
 	return result
 }
 
-func endpointsForAPI(endpoints []core.EndpointV2) any {
+func endpointsForAPI(endpoints []core.Endpoint) any {
 	type output struct {
 		Methods        []string `json:"methods"`
 		Path           string   `json:"path,omitempty"`
 		AllowAnonymous bool     `json:"allow_anonymous"`
 		PluginsConfig  struct {
-			Auth     []core.PluginConfigV2 `json:"auth,omitempty"`
-			Inbound  []core.PluginConfigV2 `json:"inbound,omitempty"`
-			Target   core.PluginConfigV2   `json:"target,omitempty"`
-			Outbound []core.PluginConfigV2 `json:"outbound,omitempty"`
+			Auth     []core.PluginConfig `json:"auth,omitempty"`
+			Inbound  []core.PluginConfig `json:"inbound,omitempty"`
+			Target   core.PluginConfig   `json:"target,omitempty"`
+			Outbound []core.PluginConfig `json:"outbound,omitempty"`
 		} `json:"plugins"`
 		Timeout    int      `json:"timeout"`
 		FilePath   string   `json:"file_path"`

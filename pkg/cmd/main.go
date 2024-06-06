@@ -14,7 +14,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/direktiv/direktiv/pkg/events"
 	"github.com/direktiv/direktiv/pkg/filestore"
-	"github.com/direktiv/direktiv/pkg/gateway2"
+	"github.com/direktiv/direktiv/pkg/gateway"
 	"github.com/direktiv/direktiv/pkg/helpers"
 	"github.com/direktiv/direktiv/pkg/instancestore"
 	"github.com/direktiv/direktiv/pkg/model"
@@ -71,7 +71,7 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 	slog.Info("registry manager initialized successfully")
 
 	// Create endpoint manager
-	gatewayManager2 := gateway2.NewManager(args.Database)
+	gatewayManager2 := gateway.NewManager(args.Database)
 	slog.Info("gateway manager2 initialized successfully")
 
 	// Create App
@@ -79,11 +79,11 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 		Version: &core.Version{
 			UnixTime: time.Now().Unix(),
 		},
-		Config:           args.Config,
-		ServiceManager:   serviceManager,
-		RegistryManager:  registryManager,
-		GatewayManagerV2: gatewayManager2,
-		SyncNamespace:    args.SyncNamespace,
+		Config:          args.Config,
+		ServiceManager:  serviceManager,
+		RegistryManager: registryManager,
+		GatewayManager:  gatewayManager2,
+		SyncNamespace:   args.SyncNamespace,
 	}
 
 	if !args.Config.DisableServices {
