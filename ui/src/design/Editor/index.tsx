@@ -18,6 +18,7 @@ import themeDark from "./theme-dark";
 import themeLight from "./theme-light";
 // eslint-disable-next-line import/default
 import tsWorker from "monaco-editor/esm/vs/language/typescript/ts.worker?worker";
+import workflowTypes from "src/util/workflow.d.ts?raw";
 
 self.MonacoEnvironment = {
   getWorker(_, label) {
@@ -39,9 +40,26 @@ self.MonacoEnvironment = {
 
 loader.config({ monaco });
 
+const typesPath = "ts:filename/workflow.d.ts";
+
 const beforeMount: EditorProps["beforeMount"] = (monaco) => {
   monaco.editor.defineTheme("direktiv-dark", themeDark);
   monaco.editor.defineTheme("direktiv-light", themeLight);
+
+  // brute force hack to avoid conflicts with existing models when
+  // createModel() is used below. To do: find a context dependent way
+  // to set up the correct model in each use case.
+  monaco.editor.getModels().forEach((model) => model.dispose());
+
+  monaco.languages.typescript.javascriptDefaults.addExtraLib(
+    workflowTypes,
+    typesPath
+  );
+  monaco.editor.createModel(
+    workflowTypes,
+    "typescript",
+    monaco.Uri.parse(typesPath)
+  );
 };
 
 export type EditorLanguagesType = (typeof supportedLanguages)[number];

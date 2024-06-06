@@ -67,6 +67,9 @@ const WorkflowEditor: FC<{
 
   if (!namespace) return null;
 
+  const language =
+    data.mimeType === "application/x-typescript" ? "typescript" : "yaml";
+
   return (
     <div className="relative flex grow flex-col space-y-4 p-5">
       <WorkspaceLayout
@@ -82,6 +85,7 @@ const WorkflowEditor: FC<{
             error={error}
             hasUnsavedChanges={hasUnsavedChanges}
             onSave={onSave}
+            language={language}
           />
         }
       />

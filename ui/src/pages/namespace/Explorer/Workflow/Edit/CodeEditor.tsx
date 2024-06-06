@@ -1,8 +1,8 @@
+import Editor, { EditorLanguagesType } from "~/design/Editor";
 import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 
 import { Bug } from "lucide-react";
 import { Card } from "~/design/Card";
-import Editor from "~/design/Editor";
 import { FC } from "react";
 import useNavigationBlocker from "~/hooks/useNavigationBlocker";
 import { useTheme } from "~/util/store/theme";
@@ -16,6 +16,7 @@ type EditorProps = {
   hasUnsavedChanges: boolean;
   updatedAt: string | undefined;
   error: string | undefined;
+  language: EditorLanguagesType;
 };
 
 export const CodeEditor: FC<EditorProps> = ({
@@ -25,6 +26,7 @@ export const CodeEditor: FC<EditorProps> = ({
   hasUnsavedChanges,
   updatedAt,
   error,
+  language,
 }) => {
   const { t } = useTranslation();
 
@@ -48,6 +50,7 @@ export const CodeEditor: FC<EditorProps> = ({
           }}
           theme={theme ?? undefined}
           onSave={onSave}
+          language={language}
         />
       </div>
       <div
