@@ -2,7 +2,10 @@ package gateway2
 
 import (
 	"fmt"
+	"io"
+	"log/slog"
 	"net/http"
+	"net/http/httptest"
 	"regexp"
 	"slices"
 	"strings"
@@ -37,6 +40,8 @@ func buildRouter(endpoints []core.EndpointV2, consumers []core.ConsumerV2) *rout
 		pConfigs = append(pConfigs, item.PluginsConfig.Target)
 		pConfigs = append(pConfigs, item.PluginsConfig.Outbound...)
 
+		hasOutboundConfigured := len(item.PluginsConfig.Outbound) > 0
+
 		// build plugins chain.
 		pChain := []core.PluginV2{}
 		for _, pConfig := range pConfigs {
@@ -63,7 +68,7 @@ func buildRouter(endpoints []core.EndpointV2, consumers []core.ConsumerV2) *rout
 			fmt.Sprintf("/ns/%s/%s", item.Namespace, cleanPath),
 		} {
 			serveMux.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
-				// check if correct method.
+				// Check if correct method.
 				if !slices.Contains(item.Methods, r.Method) {
 					WriteJSONError(w, http.StatusMethodNotAllowed, item.FilePath,
 						fmt.Sprintf("method:%s is not allowed with this endpoint", r.Method))
@@ -71,32 +76,59 @@ func buildRouter(endpoints []core.EndpointV2, consumers []core.ConsumerV2) *rout
 					return
 				}
 
-				// inject consumer files.
+				// Inject consumer files.
 				r = InjectContextConsumersList(r, filterNamespacedConsumers(consumers, item.Namespace))
 				// inject endpoint.
 				r = InjectContextEndpoint(r, &endpoints[i])
 				r = InjectContextURLParams(r, ExtractBetweenCurlyBraces(pattern))
 
+				// Outbound plugins are used to transform the output from target plugins. When an outbound plugin is
+				// configured, target plugins output should be recorded in a buffer rather than flushed directly to
+				// the client's tcp connection. Then the recorded bytes should be somehow piped to the outbound
+				// plugins.
+				originalWriter := w
+				if hasOutboundConfigured {
+					w = httptest.NewRecorder()
+				}
+
 				for _, p := range pChain {
-					// checkpoint if auth plugins had a match.
+					// Checkpoint if auth plugins had a match.
 					if !isAuthPlugin(p) {
-						// case where auth is required but request is not authenticated (consumers doesn't match).
+						// Case where auth is required but request is not authenticated (consumers doesn't match).
 						hasActiveConsumer := ExtractContextActiveConsumer(r) != nil
 						if !item.AllowAnonymous && !hasActiveConsumer {
 							WriteJSONError(w, http.StatusForbidden, item.FilePath, "authentication failed")
 
-							return
+							break
 						}
 					}
 					if r = p.Execute(w, r); r == nil {
 						break
 					}
 				}
+
+				if hasOutboundConfigured {
+					w := w.(*httptest.ResponseRecorder)
+					// Copy headers to the original writer.
+					for key, values := range w.Header() {
+						for _, value := range values {
+							originalWriter.Header().Add(key, value)
+						}
+					}
+					// Copy status code to the original writer.
+					originalWriter.WriteHeader(w.Code)
+
+					// Copy body to the original writer.
+					if _, err := io.Copy(originalWriter, w.Body); err != nil {
+						slog.With("component", "gateway").
+							Error("flushing final bytes to connection", "err", err)
+					}
+				}
 			})
 		}
 	}
 
-	// mount not found route.
+	// Mount not found route
 	serveMux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		WriteJSONError(w, http.StatusNotFound, "", "gateway couldn't find a matching endpoint")
 	})
