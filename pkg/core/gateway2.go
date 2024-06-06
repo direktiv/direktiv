@@ -2,6 +2,7 @@ package core
 
 import (
 	"net/http"
+	"path"
 	"strings"
 
 	"gopkg.in/yaml.v3"
@@ -103,6 +104,9 @@ func ParseEndpointFileV2(ns string, filePath string, data []byte) EndpointV2 {
 			FilePath:  filePath,
 			Errors:    []string{err.Error()},
 		}
+	}
+	if res.Path != "" {
+		res.Path = path.Clean("/" + res.Path)
 	}
 	if !strings.HasPrefix(res.DirektivAPI, "endpoint/v1") {
 		return EndpointV2{

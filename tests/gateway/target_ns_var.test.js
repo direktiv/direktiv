@@ -66,7 +66,7 @@ describe('Test target workflow var wrong config', () => {
 		expect(listRes.body.data.length).toEqual(1)
 		expect(listRes.body.data[0]).toEqual({
 			file_path: '/ep3.yaml',
-			path: 'ep3',
+			path: '/ep3',
 			methods: [ 'GET' ],
 			allow_anonymous: true,
 			timeout: 0,
