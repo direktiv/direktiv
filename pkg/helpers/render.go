@@ -11,7 +11,7 @@ import (
 
 func RenderGatewayFiles(db *database.SQLStore, manager core.GatewayManagerV2) {
 	ctx := context.Background()
-	slog := slog2.With("subscriber", "gateway2 file watcher")
+	slog := slog2.With("subscriber", "gateway file watcher")
 
 	fStore, dStore := db.FileStore(), db.DataStore()
 

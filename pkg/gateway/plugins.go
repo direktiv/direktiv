@@ -70,14 +70,14 @@ func WriteJSONError(w http.ResponseWriter, status int, endpointFile string, msg 
 
 // WriteInternalError writes error gateway response.
 func WriteInternalError(r *http.Request, w http.ResponseWriter, err error, msg string) {
-	slog.With("component", "gateway2").
+	slog.With("component", "gateway").
 		Error(msg, "err", err)
 	WriteJSONError(w, http.StatusInternalServerError, ExtractContextEndpoint(r).FilePath, msg)
 }
 
 // WriteForbiddenError writes error gateway response.
 func WriteForbiddenError(r *http.Request, w http.ResponseWriter, err error, msg string) {
-	slog.With("component", "gateway2").
+	slog.With("component", "gateway").
 		Error(msg, "err", err)
 	WriteJSONError(w, http.StatusForbidden, ExtractContextEndpoint(r).FilePath, msg)
 }
