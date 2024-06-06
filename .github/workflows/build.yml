@@ -35,7 +35,7 @@ jobs:
       - id: step1
         run: |
           set +e
-          export backend_hash=checksum-${{ hashFiles('cmd', 'pkg', 'go.mod', 'go.sum') }};
+          export backend_hash=checksum-${{ hashFiles('Dockerfile', 'cmd', 'pkg', 'go.mod', 'go.sum') }};
           echo "backend_hash=$backend_hash" >> $GITHUB_OUTPUT;
           docker manifest inspect ghcr.io/direktiv/direktiv:$backend_hash;
           echo "backend_cache_hit=$?" >> $GITHUB_OUTPUT;
