@@ -38,7 +38,7 @@ func (p *GitlabWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) *h
 	}
 
 	c := &core.ConsumerV2{
-		ConsumerFileV2: core.ConsumerFileV2{
+		ConsumerFile: core.ConsumerFile{
 			Username: "gitlab",
 		},
 	}

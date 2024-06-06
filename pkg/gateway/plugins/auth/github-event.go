@@ -42,7 +42,7 @@ func (p *GithubWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) *h
 	// reset body with payload
 	r.Body = io.NopCloser(bytes.NewBuffer(payload))
 	c := &core.ConsumerV2{
-		ConsumerFileV2: core.ConsumerFileV2{
+		ConsumerFile: core.ConsumerFile{
 			Username: "github",
 		},
 	}

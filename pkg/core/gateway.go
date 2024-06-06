@@ -14,7 +14,7 @@ type GatewayManager interface {
 	SetEndpoints(list []EndpointV2, cList []ConsumerV2)
 }
 
-type EndpointFileV2 struct {
+type EndpointFile struct {
 	DirektivAPI    string          `yaml:"direktiv_api"`
 	Methods        []string        `yaml:"methods"`
 	Path           string          `yaml:"path"`
@@ -23,7 +23,7 @@ type EndpointFileV2 struct {
 	Timeout        int             `yaml:"timeout"`
 }
 
-type ConsumerFileV2 struct {
+type ConsumerFile struct {
 	DirektivAPI string   `yaml:"direktiv_api"`
 	Username    string   `yaml:"username"`
 	Password    string   `yaml:"password"`
@@ -53,7 +53,7 @@ type PluginV2 interface {
 }
 
 type EndpointV2 struct {
-	EndpointFileV2
+	EndpointFile
 
 	Namespace string
 	FilePath  string
@@ -62,7 +62,7 @@ type EndpointV2 struct {
 }
 
 type ConsumerV2 struct {
-	ConsumerFileV2
+	ConsumerFile
 
 	Namespace string
 	FilePath  string
@@ -70,8 +70,8 @@ type ConsumerV2 struct {
 	Errors []string
 }
 
-func ParseConsumerFileV2(ns string, filePath string, data []byte) ConsumerV2 {
-	res := &ConsumerFileV2{}
+func ParseConsumerFile(ns string, filePath string, data []byte) ConsumerV2 {
+	res := &ConsumerFile{}
 	err := yaml.Unmarshal(data, res)
 	if err != nil {
 		return ConsumerV2{
@@ -89,14 +89,14 @@ func ParseConsumerFileV2(ns string, filePath string, data []byte) ConsumerV2 {
 	}
 
 	return ConsumerV2{
-		Namespace:      ns,
-		FilePath:       filePath,
-		ConsumerFileV2: *res,
+		Namespace:    ns,
+		FilePath:     filePath,
+		ConsumerFile: *res,
 	}
 }
 
-func ParseEndpointFileV2(ns string, filePath string, data []byte) EndpointV2 {
-	res := &EndpointFileV2{}
+func ParseEndpointFile(ns string, filePath string, data []byte) EndpointV2 {
+	res := &EndpointFile{}
 	err := yaml.Unmarshal(data, res)
 	if err != nil {
 		return EndpointV2{
@@ -131,8 +131,8 @@ func ParseEndpointFileV2(ns string, filePath string, data []byte) EndpointV2 {
 	}
 
 	return EndpointV2{
-		Namespace:      ns,
-		FilePath:       filePath,
-		EndpointFileV2: *res,
+		Namespace:    ns,
+		FilePath:     filePath,
+		EndpointFile: *res,
 	}
 }

@@ -93,10 +93,10 @@ func LoadResource(data []byte) (interface{}, error) {
 		return sf, nil
 
 	case EndpointAPIV1:
-		ef := new(core.EndpointFileV2)
+		ef := new(core.EndpointFile)
 		err = yaml.Unmarshal(data, &ef)
 		if err != nil {
-			return &core.EndpointFileV2{
+			return &core.EndpointFile{
 				DirektivAPI: s,
 			}, fmt.Errorf("error parsing direktiv resource (%s): %w", s, err)
 		}
@@ -104,10 +104,10 @@ func LoadResource(data []byte) (interface{}, error) {
 		return ef, nil
 
 	case ConsumerAPIV1:
-		ef := new(core.ConsumerFileV2)
+		ef := new(core.ConsumerFile)
 		err = yaml.Unmarshal(data, &ef)
 		if err != nil {
-			return &core.ConsumerFileV2{
+			return &core.ConsumerFile{
 				DirektivAPI: s,
 			}, fmt.Errorf("error parsing direktiv resource (%s): %w", s, err)
 		}

@@ -57,7 +57,7 @@ func (p *SlackWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) *ht
 	}
 
 	c := &core.ConsumerV2{
-		ConsumerFileV2: core.ConsumerFileV2{
+		ConsumerFile: core.ConsumerFile{
 			Username: "slack",
 		},
 	}
