@@ -95,7 +95,7 @@ func (js *JSInboundPlugin) Execute(w http.ResponseWriter, r *http.Request) *http
 
 	// add url param
 	urlParams := make(map[string]string)
-	for _, param := range gateway2.ExtractContextUrlParams(r) {
+	for _, param := range gateway2.ExtractContextURLParams(r) {
 		urlParams[param] = r.PathValue(param)
 	}
 
