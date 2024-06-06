@@ -165,6 +165,7 @@ func (db *DBInitializer) Init() error {
 
 	flow, err := db.fileStore.ForNamespace(db.namespace).GetFile(context.Background(), db.flowPath)
 	if err != nil {
+		slog.Error("fetching flow failed", slog.String("flow", db.flowPath))
 		return err
 	}
 
@@ -189,6 +190,7 @@ func (db *DBInitializer) Init() error {
 		slog.Debug("fetching secret", slog.String("secret", secret.Name))
 		s, err := db.dataStore.Secrets().Get(context.Background(), db.namespace, secret.Name)
 		if err != nil {
+			slog.Error("fetching secret failed", slog.String("secret", secret.Name))
 			return err
 		}
 		secrets[secret.Name] = string(s.Data)
