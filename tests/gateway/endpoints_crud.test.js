@@ -122,6 +122,7 @@ describe('Test wrong endpoint config', () => {
 		expect(listRes.body.data.length).toEqual(1)
 		expect(listRes.body.data[0]).toEqual(
 			{
+				methods: null,
 				file_path: '/endpointbroken.yaml',
 				allow_anonymous: false,
 				timeout: 0,

@@ -144,7 +144,7 @@ func consumersForAPI(consumers []core.ConsumerV2) any {
 func endpointsForAPI(endpoints []core.EndpointV2) any {
 	type output struct {
 		Methods        []string `json:"methods"`
-		Path           string   `json:"path"`
+		Path           string   `json:"path,omitempty"`
 		AllowAnonymous bool     `json:"allow_anonymous"`
 		PluginsConfig  struct {
 			Auth     []core.PluginConfigV2 `json:"auth,omitempty"`
