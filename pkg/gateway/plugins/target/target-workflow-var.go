@@ -17,7 +17,7 @@ type FlowVarPlugin struct {
 	ContentType string `mapstructure:"content_type"`
 }
 
-func (tnv *FlowVarPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
+func (tnv *FlowVarPlugin) NewInstance(config core.PluginConfig) (core.Plugin, error) {
 	pl := &FlowVarPlugin{}
 
 	err := gateway.ConvertConfig(config.Config, pl)

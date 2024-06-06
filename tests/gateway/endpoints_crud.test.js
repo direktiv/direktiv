@@ -126,7 +126,7 @@ describe('Test wrong endpoint config', () => {
 				file_path: '/endpointbroken.yaml',
 				allow_anonymous: false,
 				timeout: 0,
-				errors: [ 'yaml: unmarshal errors:\n  line 5: cannot unmarshal !!map into []core.PluginConfigV2' ],
+				errors: [ 'yaml: unmarshal errors:\n  line 5: cannot unmarshal !!map into []core.PluginConfig' ],
 				warnings: [],
 				server_path: '',
 				plugins: { target: {

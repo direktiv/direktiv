@@ -18,7 +18,7 @@ type NamespaceFilePlugin struct {
 	ContentType string `mapstructure:"content_type"`
 }
 
-func (tnf *NamespaceFilePlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
+func (tnf *NamespaceFilePlugin) NewInstance(config core.PluginConfig) (core.Plugin, error) {
 	pl := &NamespaceFilePlugin{}
 
 	err := gateway.ConvertConfig(config.Config, pl)

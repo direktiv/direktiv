@@ -35,7 +35,7 @@ func buildRouter(endpoints []core.EndpointV2, consumers []core.ConsumerV2) *rout
 		}
 
 		// concat plugins configs into one list.
-		pConfigs := []core.PluginConfigV2{}
+		pConfigs := []core.PluginConfig{}
 		pConfigs = append(pConfigs, item.PluginsConfig.Auth...)
 		pConfigs = append(pConfigs, item.PluginsConfig.Inbound...)
 		pConfigs = append(pConfigs, item.PluginsConfig.Target)
@@ -44,7 +44,7 @@ func buildRouter(endpoints []core.EndpointV2, consumers []core.ConsumerV2) *rout
 		hasOutboundConfigured := len(item.PluginsConfig.Outbound) > 0
 
 		// build plugins chain.
-		pChain := []core.PluginV2{}
+		pChain := []core.Plugin{}
 		for _, pConfig := range pConfigs {
 			p, err := NewPlugin(pConfig)
 			if err != nil {

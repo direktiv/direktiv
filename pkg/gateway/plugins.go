@@ -11,10 +11,10 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-var registry = make(map[string]core.PluginV2)
+var registry = make(map[string]core.Plugin)
 
 // RegisterPlugin used to register a new plugin, typically by init() functions.
-func RegisterPlugin(p core.PluginV2) {
+func RegisterPlugin(p core.Plugin) {
 	if os.Getenv("DIREKTIV_APP") != "sidecar" &&
 		os.Getenv("DIREKTIV_APP") != "init" {
 		slog.Info("adding plugin", slog.String("name", p.Type()))
@@ -23,7 +23,7 @@ func RegisterPlugin(p core.PluginV2) {
 }
 
 // NewPlugin creates a new plugin instance from a plugin configuration.
-func NewPlugin(config core.PluginConfigV2) (core.PluginV2, error) {
+func NewPlugin(config core.PluginConfig) (core.Plugin, error) {
 	f, ok := registry[config.Typ]
 	if !ok {
 		return nil, fmt.Errorf("doesn't exist")
@@ -33,7 +33,7 @@ func NewPlugin(config core.PluginConfigV2) (core.PluginV2, error) {
 }
 
 // ConvertConfig only decorates mapstructure.Decode.
-func ConvertConfig(config map[string]any, target core.PluginV2) error {
+func ConvertConfig(config map[string]any, target core.Plugin) error {
 	err := mapstructure.Decode(config, target)
 	if err != nil {
 		return fmt.Errorf("plugin: %s, could not decode plugin config: %w", target.Type(), err)

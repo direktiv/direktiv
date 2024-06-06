@@ -15,12 +15,12 @@ type GatewayManager interface {
 }
 
 type EndpointFile struct {
-	DirektivAPI    string          `yaml:"direktiv_api"`
-	Methods        []string        `yaml:"methods"`
-	Path           string          `yaml:"path"`
-	AllowAnonymous bool            `yaml:"allow_anonymous"`
-	PluginsConfig  PluginsConfigV2 `yaml:"plugins"`
-	Timeout        int             `yaml:"timeout"`
+	DirektivAPI    string        `yaml:"direktiv_api"`
+	Methods        []string      `yaml:"methods"`
+	Path           string        `yaml:"path"`
+	AllowAnonymous bool          `yaml:"allow_anonymous"`
+	PluginsConfig  PluginsConfig `yaml:"plugins"`
+	Timeout        int           `yaml:"timeout"`
 }
 
 type ConsumerFile struct {
@@ -32,21 +32,21 @@ type ConsumerFile struct {
 	Groups      []string `yaml:"groups"`
 }
 
-type PluginsConfigV2 struct {
-	Auth     []PluginConfigV2 `yaml:"auth"`
-	Inbound  []PluginConfigV2 `yaml:"inbound"`
-	Target   PluginConfigV2   `yaml:"target"`
-	Outbound []PluginConfigV2 `yaml:"outbound"`
+type PluginsConfig struct {
+	Auth     []PluginConfig `yaml:"auth"`
+	Inbound  []PluginConfig `yaml:"inbound"`
+	Target   PluginConfig   `yaml:"target"`
+	Outbound []PluginConfig `yaml:"outbound"`
 }
 
-type PluginConfigV2 struct {
+type PluginConfig struct {
 	Typ    string         `json:"type"                    yaml:"type"`
 	Config map[string]any `json:"configuration,omitempty" yaml:"configuration"`
 }
 
-type PluginV2 interface {
+type Plugin interface {
 	// NewInstance method creates new plugin instance
-	NewInstance(config PluginConfigV2) (PluginV2, error)
+	NewInstance(config PluginConfig) (Plugin, error)
 
 	Execute(w http.ResponseWriter, r *http.Request) *http.Request
 	Type() string

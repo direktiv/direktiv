@@ -16,9 +16,9 @@ type BasicAuthPlugin struct {
 	AddGroupsHeader   bool `mapstructure:"add_groups_header"`
 }
 
-var _ core.PluginV2 = &BasicAuthPlugin{}
+var _ core.Plugin = &BasicAuthPlugin{}
 
-func (ba *BasicAuthPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
+func (ba *BasicAuthPlugin) NewInstance(config core.PluginConfig) (core.Plugin, error) {
 	pl := &BasicAuthPlugin{}
 
 	err := gateway.ConvertConfig(config.Config, pl)

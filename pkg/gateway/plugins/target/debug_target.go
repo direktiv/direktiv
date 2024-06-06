@@ -12,9 +12,9 @@ const debugPluginName = "debug-target"
 
 type DebugPlugin struct{}
 
-var _ core.PluginV2 = &DebugPlugin{}
+var _ core.Plugin = &DebugPlugin{}
 
-func (ba *DebugPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
+func (ba *DebugPlugin) NewInstance(config core.PluginConfig) (core.Plugin, error) {
 	return &DebugPlugin{}, nil
 }
 

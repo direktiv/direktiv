@@ -14,7 +14,7 @@ const (
 	ConsumerGroupsHeader = "Direktiv-Consumer-Groups"
 )
 
-func isAuthPlugin(p core.PluginV2) bool {
+func isAuthPlugin(p core.Plugin) bool {
 	return strings.Contains(p.Type(), "-auth") || strings.Contains(p.Type(), "auth-")
 }
 

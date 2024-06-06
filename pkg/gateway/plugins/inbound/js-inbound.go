@@ -19,7 +19,7 @@ type JSInboundPlugin struct {
 	Script string `mapstructure:"script" yaml:"script"`
 }
 
-func (js *JSInboundPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
+func (js *JSInboundPlugin) NewInstance(config core.PluginConfig) (core.Plugin, error) {
 	pl := &JSInboundPlugin{}
 
 	err := gateway.ConvertConfig(config.Config, pl)

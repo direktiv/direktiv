@@ -147,10 +147,10 @@ func endpointsForAPI(endpoints []core.EndpointV2) any {
 		Path           string   `json:"path,omitempty"`
 		AllowAnonymous bool     `json:"allow_anonymous"`
 		PluginsConfig  struct {
-			Auth     []core.PluginConfigV2 `json:"auth,omitempty"`
-			Inbound  []core.PluginConfigV2 `json:"inbound,omitempty"`
-			Target   core.PluginConfigV2   `json:"target,omitempty"`
-			Outbound []core.PluginConfigV2 `json:"outbound,omitempty"`
+			Auth     []core.PluginConfig `json:"auth,omitempty"`
+			Inbound  []core.PluginConfig `json:"inbound,omitempty"`
+			Target   core.PluginConfig   `json:"target,omitempty"`
+			Outbound []core.PluginConfig `json:"outbound,omitempty"`
 		} `json:"plugins"`
 		Timeout    int      `json:"timeout"`
 		FilePath   string   `json:"file_path"`

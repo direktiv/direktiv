@@ -17,7 +17,7 @@ type JSOutboundPlugin struct {
 	Script string `mapstructure:"script" yaml:"script"`
 }
 
-func (js *JSOutboundPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
+func (js *JSOutboundPlugin) NewInstance(config core.PluginConfig) (core.Plugin, error) {
 	pl := &JSOutboundPlugin{}
 
 	err := gateway.ConvertConfig(config.Config, pl)

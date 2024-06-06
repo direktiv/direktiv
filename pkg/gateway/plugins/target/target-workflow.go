@@ -23,7 +23,7 @@ type FlowPlugin struct {
 	internalAsync string
 }
 
-func (tf *FlowPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
+func (tf *FlowPlugin) NewInstance(config core.PluginConfig) (core.Plugin, error) {
 	pl := &FlowPlugin{
 		Async: false,
 	}

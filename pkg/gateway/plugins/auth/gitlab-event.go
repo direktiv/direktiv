@@ -15,7 +15,7 @@ type GitlabWebhookPlugin struct {
 	Secret string `mapstructure:"secret"`
 }
 
-func (p *GitlabWebhookPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
+func (p *GitlabWebhookPlugin) NewInstance(config core.PluginConfig) (core.Plugin, error) {
 	pl := &GitlabWebhookPlugin{}
 
 	err := gateway.ConvertConfig(config.Config, pl)

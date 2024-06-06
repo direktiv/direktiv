@@ -22,7 +22,7 @@ type KeyAuthPlugin struct {
 	KeyName string `mapstructure:"key_name"`
 }
 
-func (ka *KeyAuthPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
+func (ka *KeyAuthPlugin) NewInstance(config core.PluginConfig) (core.Plugin, error) {
 	pl := &KeyAuthPlugin{
 		KeyName: DefaultKeyName,
 	}
