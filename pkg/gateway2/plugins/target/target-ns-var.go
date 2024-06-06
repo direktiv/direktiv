@@ -11,8 +11,9 @@ import (
 )
 
 type NamespaceVarPlugin struct {
-	Namespace string `mapstructure:"namespace"`
-	Variable  string `mapstructure:"variable"`
+	Namespace   string `mapstructure:"namespace"`
+	Variable    string `mapstructure:"variable"`
+	ContentType string `mapstructure:"content_type"`
 }
 
 func (tnv *NamespaceVarPlugin) NewInstance(config core.PluginConfigV2) (core.PluginV2, error) {
@@ -59,6 +60,9 @@ func (tnv *NamespaceVarPlugin) Execute(w http.ResponseWriter, r *http.Request) *
 		for _, value := range values {
 			w.Header().Add(key, value)
 		}
+	}
+	if tnv.ContentType != "" {
+		w.Header().Set("Content-Type", tnv.ContentType)
 	}
 	// copy the status code
 	w.WriteHeader(resp.StatusCode)

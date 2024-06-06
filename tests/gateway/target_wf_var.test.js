@@ -202,6 +202,6 @@ describe('Test target workflow variable plugin', () => {
 		const req = await request(common.config.getDirektivHost()).get(
 			`/ns/` + limitedNamespace + `/endpoint1`,
 		)
-		expect(req.statusCode).toEqual(500)
+		expect(req.statusCode).toEqual(403)
 	})
 })
