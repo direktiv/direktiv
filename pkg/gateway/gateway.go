@@ -3,6 +3,7 @@ package gateway
 import (
 	"context"
 	"fmt"
+	"github.com/pkg/errors"
 	"net/http"
 	"path"
 	"slices"
@@ -74,15 +75,17 @@ func (m *manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 // SetEndpoints compiles a new router and atomically swaps the old one. No ongoing requests should be effected.
-func (m *manager) SetEndpoints(list []core.Endpoint, cList []core.Consumer) {
+func (m *manager) SetEndpoints(list []core.Endpoint, cList []core.Consumer) error {
 	cList = slices.Clone(cList)
 
 	err := m.interpolateConsumersList(cList)
 	if err != nil {
-		panic("TODO: unhandled error: " + err.Error())
+		return errors.Wrap(err, "interpolate consumer files")
 	}
 	newOne := buildRouter(list, cList)
 	m.atomicSetRouter(newOne)
+
+	return nil
 }
 
 // interpolateConsumersList translates matic consumer function "fetchSecret" in consumer files.
