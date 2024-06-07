@@ -251,7 +251,6 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 	srv.pBus = pubsub2.NewBus(coreBus)
 
 	circuit.Start(func() error {
-		// TODO: yassir, Implement bus crash handling.
 		err := srv.pBus.Loop(circuit)
 		if err != nil {
 			return fmt.Errorf("pubsub bus loop, err: %w", err)
