@@ -17,11 +17,13 @@ import (
 )
 
 const (
-	engineInstanceMessagesChannel = "instance_messages"
-
 	engineSchedulingTimeout = time.Second * 10
 	engineOwnershipTimeout  = time.Minute
 )
+
+type InstanceMessagesEvent struct {
+	Message string
+}
 
 type instanceMessageChannelData struct {
 	InstanceID        uuid.UUID
@@ -83,7 +85,9 @@ func (engine *engine) enqueueInstanceMessage(ctx context.Context, id uuid.UUID, 
 	if idata.Server == engine.ID && time.Now().Add(-engineOwnershipTimeout).Before(idata.UpdatedAt) {
 		go engine.instanceMessagesChannelHandler(string(msg)) //nolint:contextcheck
 	} else {
-		err = engine.pBus.Publish(engineInstanceMessagesChannel, string(msg))
+		err = engine.pBus.Publish(&InstanceMessagesEvent{
+			Message: string(msg),
+		})
 		if err != nil {
 			slog.Error("Failed to publish message to bus.", "error", err)
 

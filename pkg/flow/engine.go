@@ -43,7 +43,7 @@ func initEngine(srv *server) *engine {
 
 	engine.server = srv
 
-	engine.pBus.Subscribe(engine.instanceMessagesChannelHandler, engineInstanceMessagesChannel)
+	engine.pBus.Subscribe(&InstanceMessagesEvent{}, engine.instanceMessagesChannelHandler)
 
 	go engine.instanceKicker()
 
