@@ -146,16 +146,6 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 	// initial loading of routes and consumers
 	helpers.RenderGatewayFiles(args.Database, gatewayManager2)
 
-	// TODO: yassir, this subscribe need to be removed when /api/v2/namespace delete endpoint is migrated.
-	args.PubSubBus.Subscribe(func(ns string) {
-		err := registryManager.DeleteNamespace(ns)
-		if err != nil {
-			slog.Error("deleting registry namespace", "err", err)
-		}
-	},
-		pubsub.NamespaceDelete,
-	)
-
 	// Start api v2 server
 	err = api.Initialize(app, args.Database, args.PubSubBus, args.InstanceManager, args.WakeInstanceByEvent, args.WorkflowStart, circuit)
 	if err != nil {

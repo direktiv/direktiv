@@ -381,7 +381,8 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 		})
 		// nolint:staticcheck
 		if err != nil {
-			// TODO: need to log error here.
+			slog.With("component", "api").
+				Error("publish filesystem event", "err", err)
 		}
 	}
 
