@@ -3,7 +3,6 @@ package gateway
 import (
 	"context"
 	"fmt"
-	"github.com/pkg/errors"
 	"net/http"
 	"path"
 	"slices"
@@ -14,6 +13,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/go-chi/chi/v5"
+	"github.com/pkg/errors"
 )
 
 // manager struct implements core.GatewayManager by wrapping a pointer to router struct. Whenever endpoint and
