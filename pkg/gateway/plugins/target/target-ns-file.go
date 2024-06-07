@@ -1,172 +1,88 @@
 package target
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
-	"strconv"
 	"strings"
-	"time"
 
 	"github.com/direktiv/direktiv/pkg/core"
-	"github.com/direktiv/direktiv/pkg/gateway/plugins"
-	"github.com/h2non/filetype"
+	"github.com/direktiv/direktiv/pkg/gateway"
 )
 
-const (
-	NamespaceFilePluginName = "target-namespace-file"
-)
-
-type NamespaceFileConfig struct {
-	Namespace   string `mapstructure:"namespace"    yaml:"namespace"`
-	File        string `mapstructure:"file"         yaml:"file"`
-	ContentType string `mapstructure:"content_type" yaml:"content_type"`
-}
-
-// TargetNamespaceFilePlugin returns a files in the explorer tree.
+// NamespaceFilePlugin returns a files in the explorer tree.
 type NamespaceFilePlugin struct {
-	config *NamespaceFileConfig
+	Namespace   string `mapstructure:"namespace"`
+	File        string `mapstructure:"file"`
+	ContentType string `mapstructure:"content_type"`
 }
 
-func ConfigureNamespaceFilePlugin(config interface{}, ns string) (core.PluginInstance, error) {
-	targetNamespaceFileConfig := &NamespaceFileConfig{}
+func (tnf *NamespaceFilePlugin) NewInstance(config core.PluginConfig) (core.Plugin, error) {
+	pl := &NamespaceFilePlugin{}
 
-	err := plugins.ConvertConfig(config, targetNamespaceFileConfig)
+	err := gateway.ConvertConfig(config.Config, pl)
 	if err != nil {
 		return nil, err
 	}
 
-	if targetNamespaceFileConfig.File == "" {
+	if pl.File == "" {
 		return nil, fmt.Errorf("file is required")
 	}
 
-	if !strings.HasPrefix(targetNamespaceFileConfig.File, "/") {
-		targetNamespaceFileConfig.File = "/" + targetNamespaceFileConfig.File
+	if !strings.HasPrefix(pl.File, "/") {
+		pl.File = "/" + pl.File
 	}
 
-	// set default to gateway namespace
-	if targetNamespaceFileConfig.Namespace == "" {
-		targetNamespaceFileConfig.Namespace = ns
+	return pl, nil
+}
+
+func (tnf *NamespaceFilePlugin) Type() string {
+	return "target-namespace-file"
+}
+
+func (tnf *NamespaceFilePlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
+	currentNS := gateway.ExtractContextEndpoint(r).Namespace
+	if tnf.Namespace == "" {
+		tnf.Namespace = currentNS
+	}
+	if tnf.Namespace != currentNS && currentNS != core.SystemNamespace {
+		gateway.WriteForbiddenError(r, w, nil, "plugin can not target different namespace")
+		return nil
 	}
 
-	// throw error if non magic namespace targets different namespace
-	if targetNamespaceFileConfig.Namespace != ns && ns != core.SystemNamespace {
-		return nil, fmt.Errorf("plugin can not target different namespace")
-	}
+	url := fmt.Sprintf("http://localhost:%s/api/v2/namespaces/%s/files%s?raw=true",
+		os.Getenv("DIREKTIV_API_PORT"), tnf.Namespace, tnf.File)
 
-	return &NamespaceFilePlugin{
-		config: targetNamespaceFileConfig,
-	}, nil
-}
-
-func (tnf NamespaceFilePlugin) Config() interface{} {
-	return tnf.config
-}
-
-func (tnf NamespaceFilePlugin) Type() string {
-	return NamespaceFilePluginName
-}
-
-func (tnf NamespaceFilePlugin) ExecutePlugin(
-	_ *core.ConsumerFile,
-	w http.ResponseWriter, r *http.Request,
-) bool {
 	// request failed if nil and response already written
-	resp := doFilesystemRequest(map[string]string{
-		namespaceArg: tnf.config.Namespace,
-		pathArg:      tnf.config.File,
-	}, w, r)
-	if resp == nil {
-		return false
+	resp, err := doRequest(r, http.MethodGet, url, nil)
+	if err != nil {
+		gateway.WriteInternalError(r, w, nil, "couldn't execute downstream request")
+		return nil
 	}
 	defer resp.Body.Close()
 
-	data, mime, err := fetchObjectData(resp)
-	if err != nil {
-		plugins.ReportError(r.Context(), w, http.StatusInternalServerError,
-			"can not fetch file data", err)
-
-		return false
-	}
-
-	mt := "application/unknown"
-
-	// overwrite object mimetype if configured
-	// otherwise use the one coming from the API
-	// last resort is guessing
-	if tnf.config.ContentType != "" {
-		mt = tnf.config.ContentType
-	} else if mime != "" {
-		mt = mime
-	} else {
-		// guessing
-		// nolint
-		kind, _ := filetype.Match(data)
-		if kind != filetype.Unknown {
-			mt = kind.MIME.Value
+	// copy headers
+	for key, values := range resp.Header {
+		for _, value := range values {
+			w.Header().Add(key, value)
 		}
 	}
-	w.Header().Set("Content-Type", mt)
-	w.Header().Set("Content-Length", strconv.Itoa(len(data)))
+	if tnf.ContentType != "" {
+		w.Header().Set("Content-Type", tnf.ContentType)
+	}
+	// copy the status code
+	w.WriteHeader(resp.StatusCode)
 
-	// nolint
-	w.Write(data)
-
-	return true
-}
-
-// nolint
-type Node struct {
-	Data struct {
-		CreatedAt    time.Time `json:"createdAt"`
-		UpdatedAt    time.Time `json:"updatedAt"`
-		Name         string    `json:"name"`
-		Path         string    `json:"path"`
-		Parent       string    `json:"parent"`
-		Type         string    `json:"type"`
-		Attributes   []any     `json:"attributes"`
-		Oid          string    `json:"oid"`
-		ReadOnly     bool      `json:"readOnly"`
-		ExpandedType string    `json:"expandedType"`
-		MimeType     string    `json:"mimeType"`
-		Data         []byte    `json:"data"`
-	} `json:"data"`
-}
-
-func fetchObjectData(res *http.Response) ([]byte, string, error) {
-	b, err := io.ReadAll(res.Body)
-	if err != nil {
-		return nil, "", err
+	// copy the response body
+	if _, err := io.Copy(w, resp.Body); err != nil {
+		gateway.WriteInternalError(r, w, nil, "couldn't write downstream response")
+		return nil
 	}
 
-	var node Node
-	err = json.Unmarshal(b, &node)
-	if err != nil {
-		return nil, "", err
-	}
-
-	data := node.Data.Data
-
-	return data, node.Data.MimeType, nil
+	return r
 }
 
-//nolint:gochecknoinits
 func init() {
-	plugins.AddPluginToRegistry(plugins.NewPluginBase(
-		NamespaceFilePluginName,
-		plugins.TargetPluginType,
-		ConfigureNamespaceFilePlugin))
-}
-
-func doFilesystemRequest(args map[string]string,
-	w http.ResponseWriter, r *http.Request,
-) *http.Response {
-	defer r.Body.Close()
-
-	url := fmt.Sprintf("http://localhost:%s/api/v2/namespaces/%s/files%s",
-		os.Getenv("DIREKTIV_API_PORT"), args[namespaceArg], args[pathArg])
-
-	return doRequest(w, r, http.MethodGet, url, nil)
+	gateway.RegisterPlugin(&NamespaceFilePlugin{})
 }

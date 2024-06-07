@@ -8,13 +8,13 @@ import { retry10 } from '../common/retry'
 
 const namespace = basename(__filename)
 
-describe('Test gateway2 basic-auth plugin', () => {
+describe('Test gateway basic-auth plugin', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
 	helpers.itShouldCreateYamlFile(it, expect, namespace,
 		'/', 'c1.yaml', 'consumer', `
-direktiv_api: "consumer/v2"
+direktiv_api: "consumer/v1"
 username: user1
 password: pwd1
 api_key: key1
@@ -26,7 +26,7 @@ groups:
 
 	helpers.itShouldCreateYamlFile(it, expect, namespace,
 		'/', 'ep1.yaml', 'endpoint', `
-direktiv_api: endpoint/v2
+direktiv_api: endpoint/v1
 path: /foo1
 allow_anonymous: false
 methods:
@@ -44,7 +44,7 @@ plugins:
 
 	helpers.itShouldCreateYamlFile(it, expect, namespace,
 		'/', 'ep2.yaml', 'endpoint', `
-direktiv_api: endpoint/v2
+direktiv_api: endpoint/v1
 path: /foo2
 allow_anonymous: false
 methods:
@@ -60,14 +60,14 @@ plugins:
         allow_groups: ["group1"]
 `)
 	retry10(`should denied ep1.yaml endpoint`, async () => {
-		const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway2/foo1`)
+		const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway/foo1`)
 			.send({})
 			.auth('user1', 'pwd1')
 		expect(res.statusCode).toEqual(403)
 	})
 
 	retry10(`should access ep2.yaml endpoint`, async () => {
-		const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway2/foo2`)
+		const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway/foo2`)
 			.send({ foo: 'bar' })
 			.auth('user1', 'pwd1')
 		expect(res.statusCode).toEqual(200)

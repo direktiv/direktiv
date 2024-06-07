@@ -36,7 +36,7 @@ states:
   - id: prep
     type: noop
     transform:
-      x: 5
+      x: 10
     transition: loop
   - id: loop
     type: switch

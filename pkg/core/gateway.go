@@ -1,8 +1,8 @@
 package core
 
 import (
-	"fmt"
 	"net/http"
+	"path"
 	"strings"
 
 	"gopkg.in/yaml.v3"
@@ -11,91 +11,128 @@ import (
 type GatewayManager interface {
 	http.Handler
 
-	UpdateAll()
-
-	GetConsumers(namespace string) ([]*ConsumerFile, error)
-	GetRoutes(namespace string, filteredPath string) ([]*Endpoint, error)
+	SetEndpoints(list []Endpoint, cList []Consumer) error
 }
 
 type EndpointFile struct {
-	DirektivAPI    string   `json:"-"               yaml:"direktiv_api"`
-	Methods        []string `json:"methods"         yaml:"methods"`
-	Path           string   `json:"path"            yaml:"path"`
-	AllowAnonymous bool     `json:"allow_anonymous" yaml:"allow_anonymous"`
-	Plugins        Plugins  `json:"plugins"         yaml:"plugins"`
-	Timeout        int      `json:"timeout"         yaml:"timeout"`
+	DirektivAPI    string        `yaml:"direktiv_api"`
+	Methods        []string      `yaml:"methods"`
+	Path           string        `yaml:"path"`
+	AllowAnonymous bool          `yaml:"allow_anonymous"`
+	PluginsConfig  PluginsConfig `yaml:"plugins"`
+	Timeout        int           `yaml:"timeout"`
 }
 
 type ConsumerFile struct {
-	DirektivAPI string   `json:"-"        yaml:"direktiv_api"`
-	Username    string   `json:"username" yaml:"username"`
-	Password    string   `json:"password" yaml:"password"`
-	APIKey      string   `json:"api_key"  yaml:"api_key"`
-	Tags        []string `json:"tags"     yaml:"tags"`
-	Groups      []string `json:"groups"   yaml:"groups"`
+	DirektivAPI string   `yaml:"direktiv_api"`
+	Username    string   `yaml:"username"`
+	Password    string   `yaml:"password"`
+	APIKey      string   `yaml:"api_key"`
+	Tags        []string `yaml:"tags"`
+	Groups      []string `yaml:"groups"`
 }
 
-type Plugins struct {
-	Auth     []PluginConfig `json:"auth,omitempty"     yaml:"auth"`
-	Inbound  []PluginConfig `json:"inbound,omitempty"  yaml:"inbound"`
-	Target   *PluginConfig  `json:"target,omitempty"   yaml:"target"`
-	Outbound []PluginConfig `json:"outbound,omitempty" yaml:"outbound"`
+type PluginsConfig struct {
+	Auth     []PluginConfig `yaml:"auth"`
+	Inbound  []PluginConfig `yaml:"inbound"`
+	Target   PluginConfig   `yaml:"target"`
+	Outbound []PluginConfig `yaml:"outbound"`
 }
 
 type PluginConfig struct {
-	Type          string                 `json:"type,omitempty"          yaml:"type"`
-	Configuration map[string]interface{} `json:"configuration,omitempty" yaml:"configuration"`
+	Typ    string         `json:"type"                    yaml:"type"`
+	Config map[string]any `json:"configuration,omitempty" yaml:"configuration"`
 }
 
-type PluginInstance interface {
-	ExecutePlugin(c *ConsumerFile,
-		w http.ResponseWriter, r *http.Request) bool
-	Config() interface{}
+type Plugin interface {
+	// NewInstance method creates new plugin instance
+	NewInstance(config PluginConfig) (Plugin, error)
+
+	Execute(w http.ResponseWriter, r *http.Request) *http.Request
 	Type() string
 }
 
 type Endpoint struct {
-	Namespace  string `json:"-"`
-	FilePath   string `json:"file_path,omitempty"`
-	Path       string `json:"path,omitempty"`
-	ServerPath string `json:"server_path"`
+	EndpointFile
 
-	Methods        []string `json:"methods"`
-	AllowAnonymous bool     `json:"allow_anonymous"`
-	Timeout        int      `json:"timeout"`
+	Namespace string
+	FilePath  string
 
-	AuthPluginInstances     []PluginInstance `json:"-"`
-	InboundPluginInstances  []PluginInstance `json:"-"`
-	TargetPluginInstance    PluginInstance   `json:"-"`
-	OutboundPluginInstances []PluginInstance `json:"-"`
-	Errors                  []string         `json:"errors"`
-	Warnings                []string         `json:"warnings"`
-
-	Plugins Plugins `json:"plugins"`
+	Errors []string
 }
 
-func ParseConsumerFile(data []byte) (*ConsumerFile, error) {
+type Consumer struct {
+	ConsumerFile
+
+	Namespace string
+	FilePath  string
+
+	Errors []string
+}
+
+func ParseConsumerFile(ns string, filePath string, data []byte) Consumer {
 	res := &ConsumerFile{}
 	err := yaml.Unmarshal(data, res)
 	if err != nil {
-		return nil, err
+		return Consumer{
+			Namespace: ns,
+			FilePath:  filePath,
+			Errors:    []string{err.Error()},
+		}
 	}
 	if !strings.HasPrefix(res.DirektivAPI, "consumer/v1") {
-		return nil, fmt.Errorf("invalid consumer api version")
+		return Consumer{
+			Namespace: ns,
+			FilePath:  filePath,
+			Errors:    []string{"invalid consumer api version"},
+		}
 	}
 
-	return res, nil
+	return Consumer{
+		Namespace:    ns,
+		FilePath:     filePath,
+		ConsumerFile: *res,
+	}
 }
 
-func ParseEndpointFile(data []byte) (*EndpointFile, error) {
+func ParseEndpointFile(ns string, filePath string, data []byte) Endpoint {
 	res := &EndpointFile{}
 	err := yaml.Unmarshal(data, res)
 	if err != nil {
-		return nil, err
+		return Endpoint{
+			Namespace: ns,
+			FilePath:  filePath,
+			Errors:    []string{err.Error()},
+		}
+	}
+	if res.Path != "" {
+		res.Path = path.Clean("/" + res.Path)
 	}
 	if !strings.HasPrefix(res.DirektivAPI, "endpoint/v1") {
-		return nil, fmt.Errorf("invalid endpoint api version")
+		return Endpoint{
+			Namespace: ns,
+			FilePath:  filePath,
+			Errors:    []string{"invalid endpoint api version"},
+		}
+	}
+	if res.PluginsConfig.Target.Typ == "" {
+		return Endpoint{
+			Namespace: ns,
+			FilePath:  filePath,
+			Errors:    []string{"no target plugin found"},
+		}
+	}
+	if !res.AllowAnonymous && len(res.PluginsConfig.Auth) == 0 {
+		return Endpoint{
+			Namespace: ns,
+			FilePath:  filePath,
+			Errors:    []string{"no auth plugin configured but 'allow_anonymous' set true"},
+		}
 	}
 
-	return res, nil
+	return Endpoint{
+		Namespace:    ns,
+		FilePath:     filePath,
+		EndpointFile: *res,
+	}
 }
