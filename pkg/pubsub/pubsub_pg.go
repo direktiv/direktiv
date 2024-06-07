@@ -44,6 +44,9 @@ func (p *Bus) Loop(circuit *core.Circuit) error {
 
 func (p *Bus) Publish(event any) error {
 	channel := reflect.TypeOf(event).String()
+	channel = strings.ReplaceAll(channel, "*", "_")
+	channel = strings.ReplaceAll(channel, ".", "_")
+
 	data, err := json.Marshal(event)
 	if err != nil {
 		panic("Logic error: " + err.Error())
@@ -57,6 +60,9 @@ func (p *Bus) debouncedPublishWithInterval(i time.Duration, event any) error {
 	// when the signature matches.
 
 	channel := reflect.TypeOf(event).String()
+	channel = strings.ReplaceAll(channel, "*", "_")
+	channel = strings.ReplaceAll(channel, ".", "_")
+
 	data, err := json.Marshal(event)
 	if err != nil {
 		panic("Logic error: " + err.Error())
@@ -71,7 +77,10 @@ func (p *Bus) debouncedPublishWithInterval(i time.Duration, event any) error {
 		currentSignature, _ := p.fingerprints.Load(input)
 		// When signature matches, this means no later async publish was recorded.
 		if signature == currentSignature {
-			_ = p.coreBus.Publish(channel, string(data))
+			err = p.coreBus.Publish(channel, string(data))
+			if err != nil {
+				panic(">>>>>>>>>>Logic error453: " + err.Error())
+			}
 		}
 	}()
 
@@ -91,6 +100,8 @@ func (p *Bus) Subscribe(channel any, handler func(data string)) {
 		panic("channel is not comparable")
 	}
 	channelStr := reflect.TypeOf(channel).String()
+	channelStr = strings.ReplaceAll(channelStr, "*", "_")
+	channelStr = strings.ReplaceAll(channelStr, ".", "_")
 
 	p.subscribers.Store(fmt.Sprintf("%s_%s", channelStr, uuid.New().String()), handler)
 	err := p.coreBus.Listen(channelStr)
