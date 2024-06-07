@@ -72,5 +72,9 @@ func (p *Bus) DebouncedPublish(channel string, data string) error {
 func (p *Bus) Subscribe(handler func(data string), channels ...string) {
 	for _, channel := range channels {
 		p.subscribers.Store(fmt.Sprintf("%s_%s", channel, uuid.New().String()), handler)
+		err := p.coreBus.Listen(channel)
+		if err != nil {
+			panic("TODO: handle this pubsub error: " + err.Error())
+		}
 	}
 }
