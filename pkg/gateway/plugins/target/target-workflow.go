@@ -79,31 +79,7 @@ func (tf *FlowPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Requ
 	}
 	defer resp.Body.Close()
 
-	// TODO: yassir, need fix here.
-	// if tf.ContentType != "" {
-	//	w.Header().Set("Content-Type", tf.ContentType)
-	//}
-	// errorCode := resp.Header.Get("Direktiv-Instance-Error-Code")
-	// errorMessage := resp.Header.Get("Direktiv-Instance-Error-Message")
-	// instance := resp.Header.Get("Direktiv-Instance-Id")
-	//
-	// if errorCode != "" {
-	//	msg := fmt.Sprintf("%s: %s (%s)", errorCode, errorMessage, instance)
-	//	plugins.ReportError(r.Context(), w, resp.StatusCode,
-	//		"error executing workflow", fmt.Errorf(msg))
-	//
-	//	return nil
-	//}
-	//
-	//// direktiv requests always respond with 200, workflow errors are handled in the previous check
-	// if resp.StatusCode >= http.StatusMultipleChoices {
-	//	plugins.ReportError(r.Context(), w, resp.StatusCode,
-	//		"can not execute flow", fmt.Errorf(resp.Status))
-	//
-	//	return nil
-	//}
-
-	// copy headers
+	// Copy headers.
 	for key, values := range resp.Header {
 		for _, value := range values {
 			w.Header().Add(key, value)
@@ -112,10 +88,24 @@ func (tf *FlowPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Requ
 	if tf.ContentType != "" {
 		w.Header().Set("Content-Type", tf.ContentType)
 	}
-	// copy the status code
+
+	// Flow engine always return 200 and sets the error information in the headers, so we need to process them.
+	errorCode := resp.Header.Get("Direktiv-Instance-Error-Code")
+	errorMessage := resp.Header.Get("Direktiv-Instance-Error-Message")
+	instance := resp.Header.Get("Direktiv-Instance-Id")
+
+	if errorCode != "" {
+		gateway.WriteInternalError(r, w,
+			fmt.Errorf("errCode: %s, errMessage: %s, instanceId: %s", errorCode, errorMessage, instance),
+			"workflow run failed")
+
+		return nil
+	}
+
+	// Copy the status code.
 	w.WriteHeader(resp.StatusCode)
 
-	// copy the response body
+	// Copy the response body.
 	if _, err := io.Copy(w, resp.Body); err != nil {
 		gateway.WriteInternalError(r, w, nil, "couldn't write downstream response")
 		return nil
