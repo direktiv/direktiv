@@ -228,8 +228,8 @@ describe('Test target workflow with errors', () => {
 		)
 		expect(req.statusCode).toEqual(500)
 		expect(req.body.error).toEqual({
-			code: 'badinput',
-			message: 'Missing or invalid value for required input.',
+			endpointFile: '/eperr3.yaml',
+			message: 'errCode: badinput, errMessage: Missing or invalid value for required input., instanceId: ',
 		})
 	})
 })

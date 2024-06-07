@@ -79,6 +79,20 @@ func (tf *FlowPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Requ
 	}
 	defer resp.Body.Close()
 
+	// Flow engine always return 200 and sets the error information in the headers, so we need to process them.
+	errorCode := resp.Header.Get("Direktiv-Instance-Error-Code")
+	errorMessage := resp.Header.Get("Direktiv-Instance-Error-Message")
+	instance := resp.Header.Get("Direktiv-Instance-Id")
+
+	if errorCode != "" {
+		gateway.WriteJSONError(w,
+			http.StatusInternalServerError,
+			gateway.ExtractContextEndpoint(r).FilePath,
+			fmt.Sprintf("errCode: %s, errMessage: %s, instanceId: %s", errorCode, errorMessage, instance))
+
+		return nil
+	}
+
 	// Copy headers.
 	for key, values := range resp.Header {
 		for _, value := range values {
@@ -87,19 +101,6 @@ func (tf *FlowPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Requ
 	}
 	if tf.ContentType != "" {
 		w.Header().Set("Content-Type", tf.ContentType)
-	}
-
-	// Flow engine always return 200 and sets the error information in the headers, so we need to process them.
-	errorCode := resp.Header.Get("Direktiv-Instance-Error-Code")
-	errorMessage := resp.Header.Get("Direktiv-Instance-Error-Message")
-	instance := resp.Header.Get("Direktiv-Instance-Id")
-
-	if errorCode != "" {
-		gateway.WriteInternalError(r, w,
-			fmt.Errorf("errCode: %s, errMessage: %s, instanceId: %s", errorCode, errorMessage, instance),
-			"workflow run failed")
-
-		return nil
 	}
 
 	// Copy the status code.
