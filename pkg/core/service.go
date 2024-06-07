@@ -103,7 +103,7 @@ func (c *ServiceFileData) GetValueHash() string {
 }
 
 type ServiceManager interface {
-	Start(circuit *Circuit)
+	Run(circuit *Circuit) error
 	SetServices(list []*ServiceFileData)
 	GeAll(namespace string) ([]*ServiceFileData, error)
 	GetPods(namespace string, serviceID string) (any, error)

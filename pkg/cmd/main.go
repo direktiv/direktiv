@@ -53,8 +53,10 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 		service.SetupGetServiceURLFunc(args.Config)
 
 		circuit.Start(func() error {
-			// TODO: yassir, Implement service crash handling.
-			serviceManager.Start(circuit)
+			err := serviceManager.Run(circuit)
+			if err != nil {
+				slog.Error("service manager", "err", err)
+			}
 
 			return nil
 		})
