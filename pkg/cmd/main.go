@@ -53,8 +53,10 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 		service.SetupGetServiceURLFunc(args.Config)
 
 		circuit.Start(func() error {
-			// TODO: yassir, Implement service crash handling.
-			serviceManager.Start(circuit)
+			err := serviceManager.Run(circuit)
+			if err != nil {
+				return fmt.Errorf("service manager, err: %w", err)
+			}
 
 			return nil
 		})
@@ -143,16 +145,6 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 	)
 	// initial loading of routes and consumers
 	helpers.RenderGatewayFiles(args.Database, gatewayManager2)
-
-	// TODO: yassir, this subscribe need to be removed when /api/v2/namespace delete endpoint is migrated.
-	args.PubSubBus.Subscribe(func(ns string) {
-		err := registryManager.DeleteNamespace(ns)
-		if err != nil {
-			slog.Error("deleting registry namespace", "err", err)
-		}
-	},
-		pubsub.NamespaceDelete,
-	)
 
 	// Start api v2 server
 	err = api.Initialize(app, args.Database, args.PubSubBus, args.InstanceManager, args.WakeInstanceByEvent, args.WorkflowStart, circuit)
@@ -249,7 +241,6 @@ func getWorkflowFunctionDefinitionsFromWorkflow(ns *datastore.Namespace, f *file
 
 	for _, fn := range wf.Functions {
 		if fn.GetType() != model.ReusableContainerFunctionType {
-			// TODO: Alan, double check if continue here is valid.
 			continue
 		}
 
