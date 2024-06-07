@@ -55,7 +55,7 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 		circuit.Start(func() error {
 			err := serviceManager.Run(circuit)
 			if err != nil {
-				slog.Error("service manager", "err", err)
+				return fmt.Errorf("service manager, err: %w", err)
 			}
 
 			return nil
