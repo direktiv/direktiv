@@ -215,8 +215,6 @@ func (e *nsController) update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: Alan, check if here we need to fire some pubsub events.
-
 	writeJSON(w, namespaceAPIObject(ns, settings))
 }
 
@@ -287,8 +285,6 @@ func (e *nsController) create(w http.ResponseWriter, r *http.Request) {
 		writeInternalError(w, err)
 		return
 	}
-
-	// TODO: Alan, check if here we need to fire some pubsub events.
 
 	err = e.bus.DebouncedPublish(pubsub.NamespaceCreate, req.Name)
 	if err != nil {
