@@ -44,8 +44,9 @@ func (p *Bus) Loop(circuit *core.Circuit) error {
 
 func (p *Bus) Publish(event any) error {
 	channel := reflect.TypeOf(event).String()
-	channel = strings.ReplaceAll(channel, "*", "_")
-	channel = strings.ReplaceAll(channel, ".", "_")
+	channel = strings.ReplaceAll(channel, "*", "")
+	channel = strings.ReplaceAll(channel, ".", "")
+	channel = strings.ToLower(channel)
 
 	data, err := json.Marshal(event)
 	if err != nil {
@@ -60,8 +61,9 @@ func (p *Bus) debouncedPublishWithInterval(i time.Duration, event any) error {
 	// when the signature matches.
 
 	channel := reflect.TypeOf(event).String()
-	channel = strings.ReplaceAll(channel, "*", "_")
-	channel = strings.ReplaceAll(channel, ".", "_")
+	channel = strings.ReplaceAll(channel, "*", "")
+	channel = strings.ReplaceAll(channel, ".", "")
+	channel = strings.ToLower(channel)
 
 	data, err := json.Marshal(event)
 	if err != nil {
@@ -100,8 +102,9 @@ func (p *Bus) Subscribe(channel any, handler func(data string)) {
 		panic("channel is not comparable")
 	}
 	channelStr := reflect.TypeOf(channel).String()
-	channelStr = strings.ReplaceAll(channelStr, "*", "_")
-	channelStr = strings.ReplaceAll(channelStr, ".", "_")
+	channelStr = strings.ReplaceAll(channelStr, "*", "")
+	channelStr = strings.ReplaceAll(channelStr, ".", "")
+	channelStr = strings.ToLower(channelStr)
 
 	p.subscribers.Store(fmt.Sprintf("%s_%s", channelStr, uuid.New().String()), handler)
 	err := p.coreBus.Listen(channelStr)
