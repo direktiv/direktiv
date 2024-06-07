@@ -331,6 +331,8 @@ func (worker *inboundWorker) writeFile(ftype, dst, perms string, pr io.Reader) e
 }
 
 func (worker *inboundWorker) fileWriter(ctx context.Context, ir *functionRequest, f *functionFiles, pr *io.PipeReader) error {
+	slog.Info("starting writer", "f", f)
+
 	dir := worker.functionDir(ir)
 	dst := f.Key
 	if f.As != "" {
@@ -462,56 +464,98 @@ func (worker *inboundWorker) getWorkflowVariables(ctx context.Context, ir *funct
 	return &workflowVariables, nil
 }
 
+func (worker *inboundWorker) getInstanceVariables(ctx context.Context, ir *functionRequest) (*varResponseData, error) {
+	addr := fmt.Sprintf("http://%v/api/v2/namespaces/%v/variables?instanceId=%v", worker.srv.flowAddr, ir.namespace, ir.instanceId)
+	client := &http.Client{}
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, addr, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Direktiv-Token", worker.srv.flowToken)
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	instanceVariables := varResponseData{}
+	decoder := json.NewDecoder(resp.Body)
+	if err = decoder.Decode(&instanceVariables); err != nil {
+		return nil, err
+	}
+
+	return &instanceVariables, nil
+}
+
 func (worker *inboundWorker) fetchFunctionFiles(ctx context.Context, ir *functionRequest) error {
 	namespaceVariables, err := worker.getNamespaceVariables(ctx, ir)
 	if err != nil {
 		return err
 	}
+	slog.Info("ns vars for processing", "data", fmt.Sprintf("%v", namespaceVariables))
+
 	wfVar, err := worker.getWorkflowVariables(ctx, ir)
 	if err != nil {
 		return err
 	}
+	slog.Info("wf for processing", "data", fmt.Sprintf("%v", wfVar))
+
+	insVars, err := worker.getInstanceVariables(ctx, ir)
+	if err != nil {
+		return err
+	}
+	slog.Info("ins for processing", "data", fmt.Sprintf("%v", insVars))
+
 	vars := append(namespaceVariables.Data, wfVar.Data...)
-	slog.Info("F FF", "data", fmt.Sprintf("%v", vars))
-	for _, file := range ir.files {
+	vars = append(vars, insVars.Data...)
+	slog.Info("variables for processing", "data", fmt.Sprintf("%v", vars))
+	for i := range ir.files {
+		file := ir.files[i]
 		typ, err := determineVarType(file.Scope)
 		if err != nil {
 			return err
 		}
 		idx := slices.IndexFunc(vars, func(e variableForAPI) bool { return e.Typ == typ && e.Name == file.Key })
-		if idx == -1 {
-			return fmt.Errorf("variable is not known")
-		}
 		pr, pw := io.Pipe()
-		go func() {
-			addr := fmt.Sprintf("http://%v/api/v2/namespaces/%v/variables/%v", worker.srv.flowAddr, ir.namespace, vars[idx].ID)
-			client := &http.Client{}
-			req, err := http.NewRequestWithContext(ctx, http.MethodGet, addr, nil)
-			if err != nil {
-				sysErr := pw.CloseWithError(err)
-				if sysErr != nil {
-					slog.Error("failed fetching files with", "error", sysErr)
-				}
-			}
-			req.Header.Set("Direktiv-Token", worker.srv.flowToken)
-			resp, err := client.Do(req)
-			if err != nil {
-				sysErr := pw.CloseWithError(err)
-				if sysErr != nil {
-					slog.Error("failed fetching files with", "error", sysErr)
-				}
-			}
-			defer resp.Body.Close()
+		go func(flowToken string, flowAddr string, namespace string, file *functionFiles, idx int) {
+			var data []byte = nil
+			var err error
+			slog.Info("starting creating variables", "file", file, "idx", idx)
 
-			variable := varInduvidualResponseData{}
-			decoder := json.NewDecoder(resp.Body)
-			if err = decoder.Decode(&variable); err != nil {
-				sysErr := pw.CloseWithError(err)
-				if sysErr != nil {
-					slog.Error("failed fetching files with", "error", sysErr)
+			if idx > -1 {
+				slog.Info("starting request api rotine", "file", file, "idx", idx, "id", vars[idx].ID)
+				addr := fmt.Sprintf("http://%v/api/v2/namespaces/%v/variables/%v", flowAddr, namespace, vars[idx].ID)
+				client := &http.Client{}
+				req, err := http.NewRequestWithContext(ctx, http.MethodGet, addr, nil)
+				if err != nil {
+					sysErr := pw.CloseWithError(err)
+					if sysErr != nil {
+						slog.Error("failed fetching files with", "error", sysErr)
+					}
 				}
+				req.Header.Set("Direktiv-Token", flowToken)
+				resp, err := client.Do(req)
+				if err != nil {
+					sysErr := pw.CloseWithError(err)
+					if sysErr != nil {
+						slog.Error("failed fetching files with", "error", sysErr)
+					}
+				}
+				defer resp.Body.Close()
+
+				variable := varInduvidualResponseData{}
+				decoder := json.NewDecoder(resp.Body)
+				if err = decoder.Decode(&variable); err != nil {
+					sysErr := pw.CloseWithError(err)
+					if sysErr != nil {
+						slog.Error("failed fetching files with", "error", sysErr)
+					}
+				}
+				data = variable.Data.Data
 			}
-			_, err = io.Copy(pw, bytes.NewReader(variable.Data.Data))
+			slog.Info("copy data to for writer", "file", file, "idx", idx, "data", data)
+
+			_, err = io.Copy(pw, bytes.NewReader(data))
 			if err != nil {
 				sysErr := pw.CloseWithError(err)
 				if sysErr != nil {
@@ -520,7 +564,7 @@ func (worker *inboundWorker) fetchFunctionFiles(ctx context.Context, ir *functio
 			}
 
 			pw.Close()
-		}()
+		}(worker.srv.flowToken, worker.srv.flowAddr, ir.namespace, file, idx)
 
 		err = worker.fileWriter(ctx, ir, file, pr)
 		if err != nil {
