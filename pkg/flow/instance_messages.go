@@ -12,6 +12,7 @@ import (
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/states"
 	"github.com/direktiv/direktiv/pkg/instancestore"
+	"github.com/direktiv/direktiv/pkg/pubsub"
 	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/google/uuid"
 )
@@ -20,10 +21,6 @@ const (
 	engineSchedulingTimeout = time.Second * 10
 	engineOwnershipTimeout  = time.Minute
 )
-
-type InstanceMessagesEvent struct {
-	Message string
-}
 
 type instanceMessageChannelData struct {
 	InstanceID        uuid.UUID
@@ -85,7 +82,7 @@ func (engine *engine) enqueueInstanceMessage(ctx context.Context, id uuid.UUID, 
 	if idata.Server == engine.ID && time.Now().Add(-engineOwnershipTimeout).Before(idata.UpdatedAt) {
 		go engine.instanceMessagesChannelHandler(string(msg)) //nolint:contextcheck
 	} else {
-		err = engine.pBus.Publish(&InstanceMessagesEvent{
+		err = engine.pBus.Publish(&pubsub.InstanceMessageEvent{
 			Message: string(msg),
 		})
 		if err != nil {

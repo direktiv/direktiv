@@ -84,7 +84,7 @@ func (e *nsController) delete(w http.ResponseWriter, r *http.Request) {
 			Error("deleting registry namespace", "err", err)
 	}
 
-	err = e.bus.DebouncedPublish(pubsub.NamespacesChangeEvent{
+	err = e.bus.DebouncedPublish(&pubsub.NamespacesChangeEvent{
 		Action: "delete",
 		Name:   name,
 	})
@@ -289,7 +289,7 @@ func (e *nsController) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = e.bus.DebouncedPublish(pubsub.NamespacesChangeEvent{
+	err = e.bus.DebouncedPublish(&pubsub.NamespacesChangeEvent{
 		Action: "create",
 		Name:   req.Name,
 	})

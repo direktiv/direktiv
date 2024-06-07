@@ -113,3 +113,7 @@ type NamespacesChangeEvent struct {
 	Name   string
 	Action string
 }
+
+type InstanceMessageEvent struct {
+	Message string
+}
