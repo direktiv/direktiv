@@ -198,8 +198,6 @@ func Initialize(app core.App, db *database.SQLStore, bus *pubsub2.Bus, instanceM
 		cancel()
 	})
 
-	// TODO: setup shutdown handler.
-
 	return nil
 }
 
