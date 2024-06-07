@@ -418,6 +418,60 @@ type varInduvidualResponseData struct {
 	Error *any           `json:"error"`
 }
 
+type Data struct {
+	Path      string      `json:"path"`
+	Type      string      `json:"type"`
+	Data      string      `json:"data"`
+	Size      int         `json:"size"`
+	MIMEType  string      `json:"mimeType"`
+	CreatedAt string      `json:"createdAt"`
+	UpdatedAt string      `json:"updatedAt"`
+	Children  interface{} `json:"children,omitempty"`
+}
+
+type DecodedResponse struct {
+	Error any  `json:"error,omitempty"`
+	Data  Data `json:"data,omitempty"`
+}
+
+func (worker *inboundWorker) getReferencedFile(ctx context.Context, namespace string, path string) ([]byte, error) {
+	addr := fmt.Sprintf("http://%v/api/v2/namespaces/%v/files/%v", worker.srv.flowAddr, namespace, path)
+	client := &http.Client{}
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, addr, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Direktiv-Token", worker.srv.flowToken)
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+	}
+
+	var respData DecodedResponse
+	if resp.Body == nil {
+		return nil, fmt.Errorf("unexpected failure body was nil")
+	}
+	decoder := json.NewDecoder(resp.Body)
+	if err = decoder.Decode(&respData); err != nil {
+		return nil, err
+	}
+	var d []byte
+
+	if respData.Data.Data != "" {
+		d, err = base64.StdEncoding.DecodeString(respData.Data.Data)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return d, nil
+}
+
 func (worker *inboundWorker) getNamespaceVariables(ctx context.Context, ir *functionRequest) (*varResponseData, error) {
 	addr := fmt.Sprintf("http://%v/api/v2/namespaces/%v/variables", worker.srv.flowAddr, ir.namespace)
 	client := &http.Client{}
@@ -515,11 +569,19 @@ func (worker *inboundWorker) fetchFunctionFiles(ctx context.Context, ir *functio
 		if err != nil {
 			return err
 		}
+
 		idx := slices.IndexFunc(vars, func(e variableForAPI) bool { return e.Typ == typ && e.Name == file.Key })
 		pr, pw := io.Pipe()
 		go func(flowToken string, flowAddr string, namespace string, file *functionFiles, idx int) {
-			var data []byte = nil
+			var data []byte
 			var err error
+			if typ == "file" {
+				data, err = worker.getReferencedFile(ctx, namespace, file.Key)
+				if err != nil {
+					slog.Info("failed fetching file", "error", err)
+				}
+			}
+
 			slog.Info("starting creating variables", "file", file, "idx", idx)
 
 			if idx > -1 {
@@ -583,7 +645,7 @@ func (worker *inboundWorker) fetchFunctionFiles(ctx context.Context, ir *functio
 func determineVarType(fileScope string) (string, error) {
 	switch fileScope {
 	case utils.VarScopeFileSystem:
-		return "instance-variable", nil
+		return "file", nil
 	case utils.VarScopeInstance:
 		return "instance-variable", nil
 	case utils.VarScopeWorkflow:
