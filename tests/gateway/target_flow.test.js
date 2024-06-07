@@ -187,23 +187,17 @@ describe('Test target workflow wrong config', () => {
 		)
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body.data.length).toEqual(1)
-		expect(listRes.body.data).toEqual(
-			expect.arrayContaining(
-				[
-					{
-						file_path: '/ep3.yaml',
-						path: '/endpoint3',
-						methods: [ 'GET' ],
-						allow_anonymous: true,
-						server_path: '/ns/system/endpoint3',
-						timeout: 0,
-						errors: [ 'flow required' ],
-						warnings: [],
-						plugins: { target: { type: 'target-flow' } },
-					},
-				],
-			),
-		)
+		expect(listRes.body.data[0]).toEqual({
+			file_path: '/ep3.yaml',
+			path: '/endpoint3',
+			methods: [ 'GET' ],
+			allow_anonymous: true,
+			server_path: '/ns/system/endpoint3',
+			timeout: 0,
+			errors: [ "plugin 'target-flow' err: flow required" ],
+			warnings: [],
+			plugins: { target: { type: 'target-flow' } },
+		})
 	})
 })
 
@@ -233,7 +227,10 @@ describe('Test target workflow with errors', () => {
 			`/ns/system/endpoint3`,
 		)
 		expect(req.statusCode).toEqual(500)
-		expect(req.text).toContain('error executing workflow: badinput: Missing or invalid value for required input.')
+		expect(req.body.error).toEqual({
+			code: 'badinput',
+			message: 'Missing or invalid value for required input.',
+		})
 	})
 })
 
@@ -320,7 +317,7 @@ describe('Test target workflow plugin', () => {
 		const req = await request(common.config.getDirektivHost()).get(
 			`/ns/` + limitedNamespace + `/endpoint1`,
 		)
-		expect(req.statusCode).toEqual(500)
+		expect(req.statusCode).toEqual(403)
 	})
 })
 

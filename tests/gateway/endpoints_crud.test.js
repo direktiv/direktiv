@@ -120,24 +120,20 @@ describe('Test wrong endpoint config', () => {
 		)
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body.data.length).toEqual(1)
-		expect(listRes.body.data).toEqual(
-			expect.arrayContaining(
-				[
-					{
-						file_path: '/endpointbroken.yaml',
-						server_path: '',
-						methods: [],
-						allow_anonymous: false,
-						timeout: 0,
-						errors: [
-							'yaml: unmarshal errors:\n'
-							+ '  line 5: cannot unmarshal !!map into []core.PluginConfig',
-						],
-						warnings: [],
-						plugins: {},
-					},
-				],
-			),
+		expect(listRes.body.data[0]).toEqual(
+			{
+				methods: null,
+				file_path: '/endpointbroken.yaml',
+				allow_anonymous: false,
+				timeout: 0,
+				errors: [ 'yaml: unmarshal errors:\n  line 5: cannot unmarshal !!map into []core.PluginConfig' ],
+				warnings: [],
+				server_path: '',
+				plugins: { target: {
+						type: '',
+					}
+				},
+			},
 		)
 	})
 })
@@ -203,33 +199,29 @@ describe('Test gateway get single endpoint', () => {
 			`/api/v2/namespaces/${ testNamespace }/gateway/routes?path=/endpoint1`,
 		)
 		expect(listRes.statusCode).toEqual(200)
-
-		expect(listRes.body).toMatchObject({
-			data: [
-				{
-					allow_anonymous: false,
-					errors: [],
-					file_path: '/endpoint1.yaml',
-					methods: [ 'GET' ],
-					path: '/endpoint1',
-					server_path: '/ns/system/endpoint1',
-					plugins: {
-						auth: [ {
-							configuration: { key_name: 'secret' },
-							type: 'key-auth',
-						} ],
-						target: {
-							configuration: {
-								status_code: 201,
-								status_message: 'TEST1',
-							},
-							type: 'instant-response',
-						},
+		expect(listRes.body.data.length).toEqual(1)
+		expect(listRes.body.data[0]).toEqual({
+			allow_anonymous: false,
+			errors: [],
+			warnings: [],
+			server_path: '/ns/system/endpoint1',
+			file_path: '/endpoint1.yaml',
+			methods: [ 'GET' ],
+			path: '/endpoint1',
+			plugins: {
+				auth: [ {
+					configuration: { key_name: 'secret' },
+					type: 'key-auth',
+				} ],
+				target: {
+					configuration: {
+						status_code: 201,
+						status_message: 'TEST1',
 					},
-					timeout: 0,
-					warnings: [],
+					type: 'instant-response',
 				},
-			],
+			},
+			timeout: 0,
 		})
 	})
 
@@ -238,32 +230,29 @@ describe('Test gateway get single endpoint', () => {
 			`/api/v2/namespaces/${ testNamespace }/gateway/routes?path=/endpoint3/longer/path`,
 		)
 		expect(listRes.statusCode).toEqual(200)
-		expect(listRes.body).toMatchObject({
-			data: [
-				{
-					allow_anonymous: false,
-					errors: [],
-					file_path: '/endpoint3.yaml',
-					methods: [ 'GET' ],
-					path: '/endpoint3/longer/path',
-					server_path: '/ns/system/endpoint3/longer/path',
-					plugins: {
-						auth: [ {
-							configuration: { key_name: 'secret' },
-							type: 'key-auth',
-						} ],
-						target: {
-							configuration: {
-								status_code: 201,
-								status_message: 'TEST1',
-							},
-							type: 'instant-response',
-						},
+		expect(listRes.body.data.length).toEqual(1)
+		expect(listRes.body.data[0]).toEqual({
+			allow_anonymous: false,
+			errors: [],
+			warnings: [],
+			server_path: '/ns/system/endpoint3/longer/path',
+			file_path: '/endpoint3.yaml',
+			methods: [ 'GET' ],
+			path: '/endpoint3/longer/path',
+			plugins: {
+				auth: [ {
+					configuration: { key_name: 'secret' },
+					type: 'key-auth',
+				} ],
+				target: {
+					configuration: {
+						status_code: 201,
+						status_message: 'TEST1',
 					},
-					timeout: 0,
-					warnings: [],
+					type: 'instant-response',
 				},
-			],
+			},
+			timeout: 0,
 		})
 	})
 
@@ -272,32 +261,29 @@ describe('Test gateway get single endpoint', () => {
 			`/api/v2/namespaces/${ testNamespace }/gateway/routes?path=/endpoint4/longer/path/{id}`,
 		)
 		expect(listRes.statusCode).toEqual(200)
-		expect(listRes.body).toMatchObject({
-			data: [
-				{
-					allow_anonymous: false,
-					errors: [],
-					file_path: '/endpoint4.yaml',
-					methods: [ 'GET' ],
-					path: '/endpoint4/longer/path/{id}',
-					server_path: '/ns/system/endpoint4/longer/path/{id}',
-					plugins: {
-						auth: [ {
-							configuration: { key_name: 'secret' },
-							type: 'key-auth',
-						} ],
-						target: {
-							configuration: {
-								status_code: 201,
-								status_message: 'TEST1',
-							},
-							type: 'instant-response',
-						},
+		expect(listRes.body.data.length).toEqual(1)
+		expect(listRes.body.data[0]).toEqual({
+			allow_anonymous: false,
+			errors: [],
+			warnings: [],
+			server_path: '/ns/system/endpoint4/longer/path/{id}',
+			file_path: '/endpoint4.yaml',
+			methods: [ 'GET' ],
+			path: '/endpoint4/longer/path/{id}',
+			plugins: {
+				auth: [ {
+					configuration: { key_name: 'secret' },
+					type: 'key-auth',
+				} ],
+				target: {
+					configuration: {
+						status_code: 201,
+						status_message: 'TEST1',
 					},
-					timeout: 0,
-					warnings: [],
+					type: 'instant-response',
 				},
-			],
+			},
+			timeout: 0,
 		})
 	})
 })
@@ -346,58 +332,56 @@ describe('Test gateway endpoints crud operations', () => {
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body.data.length).toEqual(2)
 		expect(listRes.body.data).toEqual(
-			expect.arrayContaining(
-				[
-					{
-						allow_anonymous: false,
-						errors: [],
-						file_path: '/endpoint1.yaml',
-						methods: [ 'GET' ],
-						path: '/endpoint1',
-						server_path: '/ns/system/endpoint1',
-						plugins: {
-							auth: [ {
+			[
+				{
+					allow_anonymous: false,
+					errors: [],
+					warnings: [],
+					server_path: '/ns/system/endpoint1',
+					file_path: '/endpoint1.yaml',
+					methods: [ 'GET' ],
+					path: '/endpoint1',
+					plugins: {
+						auth: [ {
+							configuration: { key_name: 'secret' },
+							type: 'key-auth',
+						} ],
+						target: {
+							configuration: {
+								status_code: 201,
+								status_message: 'TEST1',
+							},
+							type: 'instant-response',
+						},
+					},
+					timeout: 0,
+				}, {
+					allow_anonymous: true,
+					errors: [],
+					warnings: [],
+					server_path: '/ns/system/endpoint2',
+					file_path: '/endpoint2.yaml',
+					methods: [ 'GET' ],
+					path: '/endpoint2',
+					plugins: {
+						auth: [
+							{ type: 'basic-auth' },
+							{
 								configuration: { key_name: 'secret' },
 								type: 'key-auth',
-							} ],
-							target: {
-								configuration: {
-									status_code: 201,
-									status_message: 'TEST1',
-								},
-								type: 'instant-response',
 							},
-						},
-						timeout: 0,
-						warnings: [],
-					}, {
-						allow_anonymous: true,
-						errors: [],
-						file_path: '/endpoint2.yaml',
-						methods: [ 'GET' ],
-						path: '/endpoint2',
-						server_path: '/ns/system/endpoint2',
-						plugins: {
-							auth: [
-								{ type: 'basic-auth' },
-								{
-									configuration: { key_name: 'secret' },
-									type: 'key-auth',
-								},
-							],
-							target: {
-								configuration: {
-									status_code: 202,
-									status_message: 'TEST2',
-								},
-								type: 'instant-response',
+						],
+						target: {
+							configuration: {
+								status_code: 202,
+								status_message: 'TEST2',
 							},
+							type: 'instant-response',
 						},
-						timeout: 0,
-						warnings: [],
 					},
-				],
-			),
+					timeout: 0,
+				},
+			],
 		)
 	})
 
@@ -407,26 +391,31 @@ describe('Test gateway endpoints crud operations', () => {
 		)
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body.data.length).toEqual(2)
-		expect(listRes.body.data).toEqual(
-			expect.arrayContaining(
-				[
-					{
-						api_key: 'key2',
-						groups: [ 'group2' ],
-						password: 'pwd',
-						tags: [ 'tag2' ],
-						username: 'consumer2',
-					},
-					{
-						api_key: 'key1',
-						groups: [ 'group1' ],
-						password: 'pwd',
-						tags: [ 'tag1' ],
-						username: 'consumer1',
-					},
-				],
-			),
-		)
+
+		const comp = (a, b) => {
+			return a.file_path < b.file_path ? -1:1
+		}
+		expect(listRes.body.data.sort(comp)).toEqual([
+			{
+				file_path: '/consumer2.yaml',
+				errors: [],
+				api_key: 'key2',
+				groups: [ 'group2' ],
+				password: 'pwd',
+				tags: [ 'tag2' ],
+				username: 'consumer2',
+			},
+
+			{
+				file_path: '/consumer1.yaml',
+				errors: [],
+				api_key: 'key1',
+				groups: [ 'group1' ],
+				password: 'pwd',
+				tags: [ 'tag1' ],
+				username: 'consumer1',
+			},
+		].sort(comp))
 	})
 
 	common.helpers.itShouldDeleteFile(it, expect, testNamespace, '/endpoint1.yaml')
@@ -490,7 +479,7 @@ describe('Test availability of gateway endpoints', () => {
 		const req = await request(common.config.getDirektivHost()).get(
 			`/ns/system/endpoint1`,
 		)
-		expect(req.statusCode).toEqual(401)
+		expect(req.statusCode).toEqual(403)
 	})
 
 	retry10(`should run endpoint without authentication but allow anonymous`, async () => {

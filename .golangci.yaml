@@ -144,6 +144,6 @@ issues:
         - goconst
 
     # gateway plugins need to user init() function
-    - path: 'pkg/gateway2/plugins/.*'
+    - path: 'pkg/gateway/plugins/.*'
       linters:
         - gochecknoinits

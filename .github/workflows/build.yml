@@ -35,7 +35,7 @@ jobs:
       - id: step1
         run: |
           set +e
-          export backend_hash=checksum-${{ hashFiles('cmd', 'pkg', 'go.mod', 'go.sum') }};
+          export backend_hash=checksum-${{ hashFiles('Dockerfile', 'cmd', 'pkg', 'go.mod', 'go.sum') }};
           echo "backend_hash=$backend_hash" >> $GITHUB_OUTPUT;
           docker manifest inspect ghcr.io/direktiv/direktiv:$backend_hash;
           echo "backend_cache_hit=$?" >> $GITHUB_OUTPUT;
@@ -152,6 +152,8 @@ jobs:
         with:
           context: .
           push: true
+          platforms: linux/amd64,linux/arm64
+          provenance: false
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=local,src=/tmp/.buildx-cache
@@ -206,6 +208,8 @@ jobs:
         with:
           context: ui
           push: true
+          platforms: linux/amd64,linux/arm64
+          provenance: false
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=local,src=/tmp/.buildx-cache

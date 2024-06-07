@@ -1,4 +1,4 @@
-package gateway2
+package gateway
 
 import (
 	"encoding/json"
@@ -11,10 +11,10 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-var registry = make(map[string]core.PluginV2)
+var registry = make(map[string]core.Plugin)
 
 // RegisterPlugin used to register a new plugin, typically by init() functions.
-func RegisterPlugin(p core.PluginV2) {
+func RegisterPlugin(p core.Plugin) {
 	if os.Getenv("DIREKTIV_APP") != "sidecar" &&
 		os.Getenv("DIREKTIV_APP") != "init" {
 		slog.Info("adding plugin", slog.String("name", p.Type()))
@@ -23,17 +23,17 @@ func RegisterPlugin(p core.PluginV2) {
 }
 
 // NewPlugin creates a new plugin instance from a plugin configuration.
-func NewPlugin(config core.PluginConfigV2) (core.PluginV2, error) {
+func NewPlugin(config core.PluginConfig) (core.Plugin, error) {
 	f, ok := registry[config.Typ]
 	if !ok {
-		return nil, fmt.Errorf("unknow plugin '%s'", config.Typ)
+		return nil, fmt.Errorf("doesn't exist")
 	}
 
 	return f.NewInstance(config)
 }
 
 // ConvertConfig only decorates mapstructure.Decode.
-func ConvertConfig(config map[string]any, target core.PluginV2) error {
+func ConvertConfig(config map[string]any, target core.Plugin) error {
 	err := mapstructure.Decode(config, target)
 	if err != nil {
 		return fmt.Errorf("plugin: %s, could not decode plugin config: %w", target.Type(), err)
@@ -70,14 +70,14 @@ func WriteJSONError(w http.ResponseWriter, status int, endpointFile string, msg 
 
 // WriteInternalError writes error gateway response.
 func WriteInternalError(r *http.Request, w http.ResponseWriter, err error, msg string) {
-	slog.With("component", "gateway2").
+	slog.With("component", "gateway").
 		Error(msg, "err", err)
 	WriteJSONError(w, http.StatusInternalServerError, ExtractContextEndpoint(r).FilePath, msg)
 }
 
 // WriteForbiddenError writes error gateway response.
 func WriteForbiddenError(r *http.Request, w http.ResponseWriter, err error, msg string) {
-	slog.With("component", "gateway2").
+	slog.With("component", "gateway").
 		Error(msg, "err", err)
 	WriteJSONError(w, http.StatusForbidden, ExtractContextEndpoint(r).FilePath, msg)
 }

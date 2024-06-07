@@ -10,42 +10,27 @@ import (
 	"net/http"
 
 	"github.com/direktiv/direktiv/pkg/core"
-	"github.com/direktiv/direktiv/pkg/gateway/plugins"
+	"github.com/direktiv/direktiv/pkg/gateway"
 )
-
-const (
-	RequestConvertPluginName = "request-convert"
-)
-
-// RequestConvertConfig converts the whole request into JSON.
-type RequestConvertConfig struct {
-	OmitHeaders  bool `mapstructure:"omit_headers"  yaml:"omit_headers"`
-	OmitQueries  bool `mapstructure:"omit_queries"  yaml:"omit_queries"`
-	OmitBody     bool `mapstructure:"omit_body"     yaml:"omit_body"`
-	OmitConsumer bool `mapstructure:"omit_consumer" yaml:"omit_consumer"`
-}
 
 // RequestConvertPlugin converts headers, query parameters, url paramneters
 // and the body into a JSON object. The original body is discarded.
 type RequestConvertPlugin struct {
-	config *RequestConvertConfig
+	OmitHeaders  bool `mapstructure:"omit_headers"`
+	OmitQueries  bool `mapstructure:"omit_queries"`
+	OmitBody     bool `mapstructure:"omit_body"`
+	OmitConsumer bool `mapstructure:"omit_consumer"`
 }
 
-func ConfigureRequestConvert(config interface{}, _ string) (core.PluginInstance, error) {
-	requestConvertConfig := &RequestConvertConfig{}
+func (rcp *RequestConvertPlugin) NewInstance(config core.PluginConfig) (core.Plugin, error) {
+	pl := &RequestConvertPlugin{}
 
-	err := plugins.ConvertConfig(config, requestConvertConfig)
+	err := gateway.ConvertConfig(config.Config, pl)
 	if err != nil {
 		return nil, err
 	}
 
-	return &RequestConvertPlugin{
-		config: requestConvertConfig,
-	}, nil
-}
-
-func (rcp *RequestConvertPlugin) Config() interface{} {
-	return rcp.config
+	return pl, nil
 }
 
 type RequestConsumer struct {
@@ -62,9 +47,7 @@ type RequestConvertResponse struct {
 	Consumer    RequestConsumer     `json:"consumer"`
 }
 
-func (rcp *RequestConvertPlugin) ExecutePlugin(c *core.ConsumerFile,
-	w http.ResponseWriter, r *http.Request,
-) bool {
+func (rcp *RequestConvertPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
 	response := &RequestConvertResponse{
 		URLParams:   make(map[string]string),
 		QueryParams: make(map[string][]string),
@@ -75,15 +58,16 @@ func (rcp *RequestConvertPlugin) ExecutePlugin(c *core.ConsumerFile,
 		},
 	}
 
+	// TODO: yassir need fix here.
 	// convert uri extension
-	up := r.Context().Value(plugins.URLParamCtxKey)
-	if up != nil {
-		// nolint cvoming from gateway
-		response.URLParams = up.(map[string]string)
-	}
+	// up := r.Context().Value(plugins.URLParamCtxKey)
+	// if up != nil {
+	// 	// nolint cvoming from gateway
+	// 	response.URLParams = up.(map[string]string)
+	// }
 
 	// convert query params
-	if !rcp.config.OmitQueries {
+	if !rcp.OmitQueries {
 		values := r.URL.Query()
 		for k, v := range values {
 			response.QueryParams[k] = v
@@ -91,11 +75,13 @@ func (rcp *RequestConvertPlugin) ExecutePlugin(c *core.ConsumerFile,
 	}
 
 	// convert headers
-	if !rcp.config.OmitHeaders {
+	if !rcp.OmitHeaders {
 		response.Headers = r.Header
 	}
 
-	if !rcp.config.OmitConsumer && c != nil {
+	c := gateway.ExtractContextActiveConsumer(r)
+
+	if !rcp.OmitConsumer && c != nil {
 		response.Consumer.Username = c.Username
 		response.Consumer.Tags = c.Tags
 		response.Consumer.Groups = c.Groups
@@ -106,22 +92,17 @@ func (rcp *RequestConvertPlugin) ExecutePlugin(c *core.ConsumerFile,
 		content = []byte("{}")
 		err     error
 	)
-	if r.Body != nil && !rcp.config.OmitBody {
+	if r.Body != nil && !rcp.OmitBody {
 		content, err = io.ReadAll(r.Body)
 		if err != nil {
-			slog.Error("can not process content",
-				slog.String("plugin", RequestConvertPluginName))
-			w.WriteHeader(http.StatusBadRequest)
-			// nolint
-			w.Write([]byte("can not read content"))
-
-			return false
+			gateway.WriteInternalError(r, w, err, "can not process content")
+			return nil
 		}
-		r.Body.Close()
+		defer r.Body.Close()
 	}
 
 	// add json content or base64 if binary
-	if plugins.IsJSON(string(content)) {
+	if gateway.IsJSON(string(content)) {
 		response.Body = content
 	} else {
 		response.Body = []byte(fmt.Sprintf("{ \"data\": \"%s\" }",
@@ -130,31 +111,22 @@ func (rcp *RequestConvertPlugin) ExecutePlugin(c *core.ConsumerFile,
 
 	newBody, err := json.Marshal(response)
 	if err != nil {
-		slog.Error("can not process content",
-			slog.String("plugin", RequestConvertPluginName))
-		w.WriteHeader(http.StatusInternalServerError)
-		// nolint
-		w.Write([]byte("can not marshal content"))
-
-		return false
+		gateway.WriteInternalError(r, w, err, "can not process content")
+		return nil
 	}
 	r.Body = io.NopCloser(bytes.NewBuffer(newBody))
 
 	slog.Debug("converted content set",
-		slog.String("plugin", RequestConvertPluginName),
-		slog.String("body", string(newBody)))
+		"plugin", (&RequestConvertPlugin{}).Type(),
+		"body", string(newBody))
 
-	return true
+	return r
 }
 
 func (rcp *RequestConvertPlugin) Type() string {
-	return RequestConvertPluginName
+	return "request-convert"
 }
 
-//nolint:gochecknoinits
 func init() {
-	plugins.AddPluginToRegistry(plugins.NewPluginBase(
-		RequestConvertPluginName,
-		plugins.InboundPluginType,
-		ConfigureRequestConvert))
+	gateway.RegisterPlugin(&RequestConvertPlugin{})
 }

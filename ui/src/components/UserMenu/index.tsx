@@ -1,12 +1,4 @@
-import {
-  BookOpen,
-  LogOut,
-  Moon,
-  Settings2,
-  Slack,
-  Sun,
-  User,
-} from "lucide-react";
+import { BookOpen, Moon, Slack, Sun } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,12 +9,9 @@ import {
 } from "~/design/Dropdown";
 import { useTheme, useThemeActions } from "~/util/store/theme";
 
-import Avatar from "~/design/Avatar";
-import Button from "~/design/Button";
-import LogoutButton from "../LogoutButton";
-import { RxChevronDown } from "react-icons/rx";
+import MenuButton from "./MenuButton";
+import UserInfo from "./UserInfo";
 import { twMergeClsx } from "~/util/helpers";
-import useApiKeyHandling from "~/hooks/useApiKeyHandling";
 import { useTranslation } from "react-i18next";
 
 interface UserMenuProps {
@@ -30,7 +19,6 @@ interface UserMenuProps {
 }
 
 const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
-  const { usesAccounts } = useApiKeyHandling();
   const { setTheme } = useThemeActions();
   const theme = useTheme();
   const { t } = useTranslation();
@@ -39,45 +27,10 @@ const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
     <div className={twMergeClsx("flex space-x-2", className)}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          {usesAccounts ? (
-            <Button
-              variant="ghost"
-              className="items-center px-1"
-              role="button"
-              icon
-              data-testid="dropdown-trg-user-menu"
-            >
-              <Avatar>
-                <User />
-              </Avatar>
-              <RxChevronDown />
-            </Button>
-          ) : (
-            <Button variant="ghost" icon data-testid="dropdown-trg-user-menu">
-              <Settings2 />
-              <RxChevronDown />
-            </Button>
-          )}
+          <MenuButton />
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56">
-          {usesAccounts && (
-            <>
-              <DropdownMenuLabel>
-                {t("components.userMenu.loggedIn")}
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-
-              <LogoutButton
-                button={(props) => (
-                  <DropdownMenuItem {...props} className="cursor-pointer">
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>{t("components.userMenu.logout")}</span>
-                  </DropdownMenuItem>
-                )}
-              />
-              <DropdownMenuSeparator />
-            </>
-          )}
+          <UserInfo />
           <DropdownMenuLabel>
             {t("components.userMenu.appearance")}
           </DropdownMenuLabel>

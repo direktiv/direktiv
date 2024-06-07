@@ -9,33 +9,27 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/core"
-	"github.com/direktiv/direktiv/pkg/gateway/plugins"
+	"github.com/direktiv/direktiv/pkg/gateway"
 	"github.com/dop251/goja"
 )
 
-const (
-	JSOutboundPluginName = "js-outbound"
-)
-
-type JSOutboundConfig struct {
+type JSOutboundPlugin struct {
 	Script string `mapstructure:"script" yaml:"script"`
 }
 
-type JSOutboundPlugin struct {
-	config *JSOutboundConfig
-}
+func (js *JSOutboundPlugin) NewInstance(config core.PluginConfig) (core.Plugin, error) {
+	pl := &JSOutboundPlugin{}
 
-func ConfigureKeyAuthPlugin(config interface{}, _ string) (core.PluginInstance, error) {
-	jsConfig := &JSOutboundConfig{}
-
-	err := plugins.ConvertConfig(config, jsConfig)
+	err := gateway.ConvertConfig(config.Config, pl)
 	if err != nil {
 		return nil, err
 	}
 
-	return &JSOutboundPlugin{
-		config: jsConfig,
-	}, nil
+	return pl, nil
+}
+
+func (js *JSOutboundPlugin) Type() string {
+	return "js-outbound"
 }
 
 type response struct {
@@ -44,9 +38,7 @@ type response struct {
 	Code    int
 }
 
-func (js *JSOutboundPlugin) ExecutePlugin(_ *core.ConsumerFile,
-	w http.ResponseWriter, r *http.Request,
-) bool {
+func (js *JSOutboundPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
 	var (
 		err error
 		b   []byte
@@ -55,10 +47,8 @@ func (js *JSOutboundPlugin) ExecutePlugin(_ *core.ConsumerFile,
 	if r.Body != nil {
 		b, err = io.ReadAll(r.Body)
 		if err != nil {
-			plugins.ReportError(r.Context(), w, http.StatusInternalServerError,
-				"can not set read body for js plugin", err)
-
-			return false
+			gateway.WriteInternalError(r, w, err, "can not set read body for js plugin")
+			return nil
 		}
 		defer r.Body.Close()
 	}
@@ -79,20 +69,16 @@ func (js *JSOutboundPlugin) ExecutePlugin(_ *core.ConsumerFile,
 	vm := goja.New()
 	err = vm.Set("input", resp)
 	if err != nil {
-		plugins.ReportError(r.Context(), w, http.StatusInternalServerError,
-			"can not set input object", err)
-
-		return false
+		gateway.WriteInternalError(r, w, err, "can not set input object")
+		return nil
 	}
 
 	err = vm.Set("log", func(txt interface{}) {
 		slog.Info("js log", slog.Any("log", txt))
 	})
 	if err != nil {
-		plugins.ReportError(r.Context(), w, http.StatusInternalServerError,
-			"can not set log function", err)
-
-		return false
+		gateway.WriteInternalError(r, w, err, "can not set log function")
+		return nil
 	}
 
 	err = vm.Set("sleep", func(t interface{}) {
@@ -103,21 +89,17 @@ func (js *JSOutboundPlugin) ExecutePlugin(_ *core.ConsumerFile,
 		time.Sleep(time.Duration(tt) * time.Second)
 	})
 	if err != nil {
-		plugins.ReportError(r.Context(), w, http.StatusInternalServerError,
-			"can not set sleep function", err)
-
-		return false
+		gateway.WriteInternalError(r, w, err, "can not set sleep function")
+		return nil
 	}
 
 	script := fmt.Sprintf("function run() { %s; return input } run()",
-		js.config.Script)
+		js.Script)
 
 	val, err := vm.RunScript("plugin", script)
 	if err != nil {
-		plugins.ReportError(r.Context(), w, http.StatusInternalServerError,
-			"can not execute script", err)
-
-		return false
+		gateway.WriteInternalError(r, w, err, "can not execute script")
+		return nil
 	}
 
 	if val != nil && !val.Equals(goja.Undefined()) {
@@ -138,21 +120,9 @@ func (js *JSOutboundPlugin) ExecutePlugin(_ *core.ConsumerFile,
 		}
 	}
 
-	return true
+	return r
 }
 
-func (js *JSOutboundPlugin) Type() string {
-	return JSOutboundPluginName
-}
-
-func (js *JSOutboundPlugin) Config() interface{} {
-	return js.config
-}
-
-//nolint:gochecknoinits
 func init() {
-	plugins.AddPluginToRegistry(plugins.NewPluginBase(
-		JSOutboundPluginName,
-		plugins.OutboundPluginType,
-		ConfigureKeyAuthPlugin))
+	gateway.RegisterPlugin(&JSOutboundPlugin{})
 }
