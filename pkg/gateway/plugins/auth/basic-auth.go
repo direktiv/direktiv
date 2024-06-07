@@ -3,79 +3,51 @@ package auth
 import (
 	"crypto/sha256"
 	"crypto/subtle"
-	"fmt"
-	"log/slog"
 	"net/http"
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/core"
-	"github.com/direktiv/direktiv/pkg/gateway/consumer"
-	"github.com/direktiv/direktiv/pkg/gateway/plugins"
+	"github.com/direktiv/direktiv/pkg/gateway"
 )
-
-const (
-	BasicAuthPluginName = "basic-auth"
-)
-
-// BasicAuthConfig configures a basic-auth plugin instance.
-// The plugin can be configured to set consumer information (name, groups, tags).
-type BasicAuthConfig struct {
-	AddUsernameHeader bool `mapstructure:"add_username_header" yaml:"add_username_header"`
-	AddTagsHeader     bool `mapstructure:"add_tags_header"     yaml:"add_tags_header"`
-	AddGroupsHeader   bool `mapstructure:"add_groups_header"   yaml:"add_groups_header"`
-}
 
 type BasicAuthPlugin struct {
-	config *BasicAuthConfig
+	AddUsernameHeader bool `mapstructure:"add_username_header"`
+	AddTagsHeader     bool `mapstructure:"add_tags_header"`
+	AddGroupsHeader   bool `mapstructure:"add_groups_header"`
 }
 
-func ConfigureBasicAuthPlugin(config interface{}, _ string) (core.PluginInstance, error) {
-	authConfig := &BasicAuthConfig{}
+var _ core.Plugin = &BasicAuthPlugin{}
 
-	err := plugins.ConvertConfig(config, authConfig)
+func (ba *BasicAuthPlugin) NewInstance(config core.PluginConfig) (core.Plugin, error) {
+	pl := &BasicAuthPlugin{}
+
+	err := gateway.ConvertConfig(config.Config, pl)
 	if err != nil {
 		return nil, err
 	}
 
-	return &BasicAuthPlugin{
-		config: authConfig,
-	}, nil
+	return pl, nil
 }
 
-func (ba *BasicAuthPlugin) ExecutePlugin(c *core.ConsumerFile,
-	w http.ResponseWriter, r *http.Request,
-) bool {
+func (ba *BasicAuthPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
+	// check request is already authenticated
+	if gateway.ExtractContextActiveConsumer(r) != nil {
+		return r
+	}
 	user, pwd, ok := r.BasicAuth()
-
 	// no basic auth provided
 	if !ok {
-		return true
+		return r
 	}
 
-	slog.Debug("running basic-auth plugin", "user", user)
-
-	gwObj := r.Context().Value(plugins.ConsumersParamCtxKey)
-	if gwObj == nil {
-		slog.Debug("no consumer list in context",
-			slog.String("user", user))
-
-		return true
+	consumerList := gateway.ExtractContextConsumersList(r)
+	if consumerList == nil {
+		return r
 	}
-	consumerList, ok := gwObj.(*consumer.List)
-	if !ok {
-		plugins.ReportError(r.Context(), w, http.StatusInternalServerError,
-			"consumerlist", fmt.Errorf("wrong object in context"))
-
-		return false
-	}
-	consumer := consumerList.FindByUser(user)
-
-	// no consumer with that name
+	consumer := gateway.FindConsumerByUser(consumerList, user)
+	// no consumer matching auth name
 	if consumer == nil {
-		slog.Debug("no consumer configured",
-			slog.String("user", user))
-
-		return true
+		return r
 	}
 
 	// comparing passwords
@@ -88,38 +60,29 @@ func (ba *BasicAuthPlugin) ExecutePlugin(c *core.ConsumerFile,
 	passwordMatch := subtle.ConstantTimeCompare(pwdHash[:], pwdHashExpected[:]) == 1
 
 	if usernameMatch && passwordMatch {
-		*c = *consumer
-
+		// set active comsumer.
+		r = gateway.InjectContextActiveConsumer(r, consumer)
 		// set headers if configured.
-		if ba.config.AddUsernameHeader {
-			r.Header.Set(plugins.ConsumerUserHeader, c.Username)
+		if ba.AddUsernameHeader {
+			r.Header.Set(gateway.ConsumerUserHeader, consumer.Username)
 		}
 
-		if ba.config.AddTagsHeader && len(c.Tags) > 0 {
-			r.Header.Set(plugins.ConsumerTagsHeader, strings.Join(c.Tags, ","))
+		if ba.AddTagsHeader && len(consumer.Tags) > 0 {
+			r.Header.Set(gateway.ConsumerTagsHeader, strings.Join(consumer.Tags, ","))
 		}
 
-		if ba.config.AddGroupsHeader && len(c.Groups) > 0 {
-			r.Header.Set(plugins.ConsumerGroupsHeader, strings.Join(c.Groups, ","))
+		if ba.AddGroupsHeader && len(consumer.Groups) > 0 {
+			r.Header.Set(gateway.ConsumerGroupsHeader, strings.Join(consumer.Groups, ","))
 		}
 	}
 
-	// basic auth always returns true to execute other auth plugins
-	return true
+	return r
 }
 
 func (ba *BasicAuthPlugin) Type() string {
-	return BasicAuthPluginName
+	return "basic-auth"
 }
 
-func (ba *BasicAuthPlugin) Config() interface{} {
-	return ba.config
-}
-
-//nolint:gochecknoinits
 func init() {
-	plugins.AddPluginToRegistry(plugins.NewPluginBase(
-		BasicAuthPluginName,
-		plugins.AuthPluginType,
-		ConfigureBasicAuthPlugin))
+	gateway.RegisterPlugin(&BasicAuthPlugin{})
 }

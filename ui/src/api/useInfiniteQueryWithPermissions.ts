@@ -1,13 +1,12 @@
 import {
-  DefaultError,
   InfiniteData,
   QueryKey,
   UseInfiniteQueryOptions,
   UseInfiniteQueryResult,
   useInfiniteQuery,
 } from "@tanstack/react-query";
+import { QueryErrorType, getPermissionStatus } from "./errorHandling";
 
-import { getPermissionStatus } from "./errorHandling";
 import { useTranslation } from "react-i18next";
 
 /**
@@ -28,7 +27,7 @@ type ExtendedUseInfiniteQueryReturn =
  */
 const useInfiniteQueryWithPermissions = <
   TQueryFnData = unknown,
-  TError = DefaultError,
+  TError = QueryErrorType,
   TData = InfiniteData<TQueryFnData>,
   TQueryKey extends QueryKey = QueryKey,
   TPageParam = unknown

@@ -1,12 +1,11 @@
+import { QueryErrorType, getPermissionStatus } from "./errorHandling";
 import {
-  DefaultError,
   QueryKey,
   UseQueryOptions,
   UseQueryResult,
   useQuery,
 } from "@tanstack/react-query";
 
-import { getPermissionStatus } from "./errorHandling";
 import { useTranslation } from "react-i18next";
 
 type UseQueryParam<
@@ -46,7 +45,7 @@ type ExtendedUseQueryReturn =
  */
 const useQueryWithPermissions = <
   TQueryFnData = unknown,
-  TError = DefaultError,
+  TError = QueryErrorType,
   TData = TQueryFnData,
   TQueryKey extends QueryKey = QueryKey
 >(

@@ -5,11 +5,10 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/direktiv/direktiv/pkg/gateway/plugins"
 	"github.com/direktiv/direktiv/pkg/utils"
 )
 
-func doRequest(w http.ResponseWriter, r *http.Request, method, url string, body io.ReadCloser) *http.Response {
+func doRequest(r *http.Request, method, url string, body io.ReadCloser) (*http.Response, error) {
 	client := http.Client{}
 	ctx := r.Context()
 	req, err := http.NewRequestWithContext(ctx, method, url, body)
@@ -17,10 +16,7 @@ func doRequest(w http.ResponseWriter, r *http.Request, method, url string, body 
 	endTrace := utils.TraceGWHTTPRequest(ctx, req, "direktiv/flow")
 	defer endTrace()
 	if err != nil {
-		plugins.ReportError(r.Context(), w, http.StatusInternalServerError,
-			"can not create request", err)
-
-		return nil
+		return nil, err
 	}
 
 	// add api key if required
@@ -30,11 +26,8 @@ func doRequest(w http.ResponseWriter, r *http.Request, method, url string, body 
 
 	resp, err := client.Do(req.WithContext(ctx))
 	if err != nil {
-		plugins.ReportError(r.Context(), w, http.StatusInternalServerError,
-			"can not execute flow", err)
-
-		return nil
+		return nil, err
 	}
 
-	return resp
+	return resp, nil
 }

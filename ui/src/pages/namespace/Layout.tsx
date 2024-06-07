@@ -44,7 +44,7 @@ const Layout = () => {
   }, [namespace, setNamespace, namespaceFromUrl]);
 
   // this error will redirect to the error page, when the namespace does not exist
-  if (isError && isApiErrorSchema(error) && error.response.status === 404) {
+  if (isError && isApiErrorSchema(error) && error.status === 404) {
     throw error;
   }
 

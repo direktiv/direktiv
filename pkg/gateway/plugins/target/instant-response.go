@@ -4,70 +4,48 @@ import (
 	"net/http"
 
 	"github.com/direktiv/direktiv/pkg/core"
-	"github.com/direktiv/direktiv/pkg/gateway/plugins"
-)
-
-const (
-	InstantResponsePluginName = "instant-response"
+	"github.com/direktiv/direktiv/pkg/gateway"
 )
 
 type InstantResponsePlugin struct {
-	config *InstantResponseConfig
-}
-
-type InstantResponseConfig struct {
 	StatusCode    int    `mapstructure:"status_code"    yaml:"status_code"`
 	StatusMessage string `mapstructure:"status_message" yaml:"status_message"`
 	ContentType   string `mapstructure:"content_type"   yaml:"content_type"`
 }
 
-func ConfigureInstantResponse(config interface{}, _ string) (core.PluginInstance, error) {
-	irConfig := &InstantResponseConfig{
+func (ir *InstantResponsePlugin) NewInstance(config core.PluginConfig) (core.Plugin, error) {
+	pl := &InstantResponsePlugin{
 		StatusCode:    http.StatusOK,
 		StatusMessage: "This is the end!",
 	}
-
-	err := plugins.ConvertConfig(config, irConfig)
+	err := gateway.ConvertConfig(config.Config, pl)
 	if err != nil {
 		return nil, err
 	}
 
-	return &InstantResponsePlugin{
-		config: irConfig,
-	}, nil
+	return pl, nil
 }
 
-func (ir *InstantResponsePlugin) ExecutePlugin(_ *core.ConsumerFile,
-	w http.ResponseWriter, _ *http.Request,
-) bool {
-	if plugins.IsJSON(ir.config.StatusMessage) {
+func (ir *InstantResponsePlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
+	if gateway.IsJSON(ir.StatusMessage) {
 		w.Header().Add("Content-Type", "application/json")
 	}
 
-	if ir.config.ContentType != "" {
-		w.Header().Set("Content-Type", ir.config.ContentType)
+	if ir.ContentType != "" {
+		w.Header().Set("Content-Type", ir.ContentType)
 	}
 
-	w.WriteHeader(ir.config.StatusCode)
-
+	w.WriteHeader(ir.StatusCode)
 	// nolint
-	w.Write([]byte(ir.config.StatusMessage))
+	w.Write([]byte(ir.StatusMessage))
 
-	return true
-}
-
-func (ir *InstantResponsePlugin) Config() interface{} {
-	return ir.config
+	return r
 }
 
 func (ir *InstantResponsePlugin) Type() string {
-	return InstantResponsePluginName
+	return "instant-response"
 }
 
-//nolint:gochecknoinits
 func init() {
-	plugins.AddPluginToRegistry(plugins.NewPluginBase(
-		InstantResponsePluginName,
-		plugins.TargetPluginType,
-		ConfigureInstantResponse))
+	gateway.RegisterPlugin(&InstantResponsePlugin{})
 }

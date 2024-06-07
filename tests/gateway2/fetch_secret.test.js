@@ -8,7 +8,7 @@ import { retry10 } from '../common/retry'
 
 const namespace = basename(__filename)
 
-describe('Test gateway2 reconciling', () => {
+describe('Test gateway reconciling', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
@@ -35,7 +35,7 @@ states:
 
 	helpers.itShouldCreateYamlFile(it, expect, namespace,
 		'/', 'c1.yaml', 'consumer', `
-direktiv_api: "consumer/v2"
+direktiv_api: "consumer/v1"
 username: user1
 password: fetchSecret(foo)
 api_key: key1
@@ -47,7 +47,7 @@ groups:
 
 	helpers.itShouldCreateYamlFile(it, expect, namespace,
 		'/', 'ep1.yaml', 'endpoint', `
-direktiv_api: endpoint/v2
+direktiv_api: endpoint/v1
 path: /foo
 allow_anonymous: false
 methods:
@@ -60,7 +60,7 @@ plugins:
 `)
 
 	retry10(`should get access denied ep1.yaml endpoint`, async () => {
-		const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway2/foo`)
+		const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway/foo`)
 			.send({})
 			.auth('user1', 'falsePassword')
 		expect(res.statusCode).toEqual(403)
@@ -73,7 +73,7 @@ plugins:
 	})
 
 	retry10(`should execute protected ep1.yaml endpoint`, async () => {
-		const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway2/foo`)
+		const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/gateway/foo`)
 			.send({})
 			.auth('user1', 'bar')
 		expect(res.statusCode).toEqual(200)

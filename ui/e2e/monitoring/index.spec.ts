@@ -54,3 +54,22 @@ test("It will show the logs on the monitoring page", async ({ page }) => {
     "When coming back to the monitoring page, it still shows the same number of logs"
   ).toBeVisible();
 });
+
+test("it renders an error when the api response returns an error", async ({
+  page,
+}) => {
+  await page.route(`/api/v2/namespaces/${namespace}/logs`, async (route) => {
+    if (route.request().method() === "GET") {
+      const json = {
+        error: { code: 422, message: "oh no!" },
+      };
+      await route.fulfill({ status: 422, json });
+    } else route.continue();
+  });
+
+  await page.goto(`/n/${namespace}/monitoring`);
+
+  await expect(
+    page.getByText("The API returned an unexpected error: oh no!")
+  ).toBeVisible();
+});

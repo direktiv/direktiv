@@ -1,123 +1,86 @@
 package target
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
-	"strings"
+	"os"
 
 	"github.com/direktiv/direktiv/pkg/core"
-	"github.com/direktiv/direktiv/pkg/gateway/plugins"
+	"github.com/direktiv/direktiv/pkg/gateway"
 )
 
-const (
-	TargetFlowVarPluginName = "target-flow-var"
-)
-
-type WorkflowVarConfig struct {
-	Namespace   string `mapstructure:"namespace"    yaml:"namespace"`
-	Flow        string `mapstructure:"flow"         yaml:"flow"`
-	Variable    string `mapstructure:"variable"     yaml:"variable"`
-	ContentType string `mapstructure:"content_type" yaml:"content_type"`
-}
-
-// TargetFlowVarPlugin returns a workflow variable.
 type FlowVarPlugin struct {
-	config *WorkflowVarConfig
+	Namespace   string `mapstructure:"namespace"`
+	Flow        string `mapstructure:"flow"`
+	Variable    string `mapstructure:"variable"`
+	ContentType string `mapstructure:"content_type"`
 }
 
-func ConfigureWorkflowVar(config interface{}, ns string) (core.PluginInstance, error) {
-	targetflowVarConfig := &WorkflowVarConfig{}
+func (tnv *FlowVarPlugin) NewInstance(config core.PluginConfig) (core.Plugin, error) {
+	pl := &FlowVarPlugin{}
 
-	err := plugins.ConvertConfig(config, targetflowVarConfig)
+	err := gateway.ConvertConfig(config.Config, pl)
 	if err != nil {
 		return nil, err
 	}
 
-	if targetflowVarConfig.Flow == "" || targetflowVarConfig.Variable == "" {
-		return nil, fmt.Errorf("flow and variable required")
+	if pl.Variable == "" {
+		return nil, fmt.Errorf("variable required")
 	}
 
-	// set default to gateway namespace
-	if targetflowVarConfig.Namespace == "" {
-		targetflowVarConfig.Namespace = ns
-	}
-
-	// throw error if non magic namespace targets different namespace
-	if targetflowVarConfig.Namespace != ns && ns != core.SystemNamespace {
-		return nil, fmt.Errorf("plugin can not target different namespace")
-	}
-
-	if !strings.HasPrefix(targetflowVarConfig.Flow, "/") {
-		targetflowVarConfig.Flow = "/" + targetflowVarConfig.Flow
-	}
-
-	return &FlowVarPlugin{
-		config: targetflowVarConfig,
-	}, nil
+	return pl, nil
 }
 
-func (tfv FlowVarPlugin) Config() interface{} {
-	return tfv.config
-}
+func (tnv *FlowVarPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
+	currentNS := gateway.ExtractContextEndpoint(r).Namespace
+	if tnv.Namespace == "" {
+		tnv.Namespace = currentNS
+	}
+	if tnv.Namespace != currentNS && currentNS != core.SystemNamespace {
+		gateway.WriteForbiddenError(r, w, nil, "plugin can not target different namespace")
+		return nil
+	}
 
-func (tfv FlowVarPlugin) ExecutePlugin(_ *core.ConsumerFile,
-	w http.ResponseWriter, r *http.Request,
-) bool {
-	// request failed if nil and response already written
-	resp := doVariableRequest(direktivWorkflowVarRequest, map[string]string{
-		namespaceArg: tfv.config.Namespace,
-		pathArg:      tfv.config.Flow,
-		varArg:       tfv.config.Variable,
-	}, w, r)
-	if resp == nil {
-		return false
+	uri := fmt.Sprintf("http://localhost:%s/api/v2/namespaces/%s/variables/?name=%s&workflowPath=%s&raw=true",
+		os.Getenv("DIREKTIV_API_PORT"), tnv.Namespace, tnv.Variable, tnv.Flow)
+
+	resp, err := doRequest(r, http.MethodGet, uri, nil)
+	if err != nil {
+		gateway.WriteInternalError(r, w, nil, "couldn't execute downstream request")
+		return nil
+	}
+	if resp.StatusCode != http.StatusOK {
+		gateway.WriteInternalError(r, w, nil, "couldn't execute downstream request")
+		return nil
 	}
 	defer resp.Body.Close()
 
-	b, err := io.ReadAll(resp.Body)
-	if err != nil {
-		plugins.ReportError(r.Context(), w, http.StatusInternalServerError,
-			"can not fetch file data", err)
+	// copy headers
+	for key, values := range resp.Header {
+		for _, value := range values {
+			w.Header().Add(key, value)
+		}
+	}
+	if tnv.ContentType != "" {
+		w.Header().Set("Content-Type", tnv.ContentType)
+	}
+	// copy the status code
+	w.WriteHeader(resp.StatusCode)
 
-		return false
+	// copy the response body
+	if _, err := io.Copy(w, resp.Body); err != nil {
+		gateway.WriteInternalError(r, w, nil, "couldn't write downstream response")
+		return nil
 	}
 
-	var node Node
-	err = json.Unmarshal(b, &node)
-	if err != nil {
-		plugins.ReportError(r.Context(), w, http.StatusInternalServerError,
-			"can not fetch file data", err)
-
-		return false
-	}
-
-	data := node.Data.Data
-
-	// set headers from Direktiv
-	w.Header().Set("Content-Type", node.Data.MimeType)
-	w.Header().Set("Content-Length", fmt.Sprintf("%v", len(data)))
-
-	// overwrite content type
-	if tfv.config.ContentType != "" {
-		w.Header().Set("Content-Type", tfv.config.ContentType)
-	}
-
-	// nolint
-	w.Write(data)
-
-	return true
+	return r
 }
 
-func (tfv FlowVarPlugin) Type() string {
-	return TargetFlowVarPluginName
+func (tnv *FlowVarPlugin) Type() string {
+	return "target-flow-var"
 }
 
-//nolint:gochecknoinits
 func init() {
-	plugins.AddPluginToRegistry(plugins.NewPluginBase(
-		TargetFlowVarPluginName,
-		plugins.TargetPluginType,
-		ConfigureWorkflowVar))
+	gateway.RegisterPlugin(&FlowVarPlugin{})
 }

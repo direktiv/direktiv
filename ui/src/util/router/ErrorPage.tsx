@@ -17,14 +17,14 @@ const ErrorPage = ({ className }: ErrorPageProps) => {
   let errorTitle = t("pages.error.status");
   let errorMessage = t("pages.error.message");
 
+  if (isApiErrorSchema(error) && error.status === 404) {
+    errorTitle = `${error.status}`;
+    errorMessage = t("pages.error.notFound");
+  }
+
   if (isRouteErrorResponse(error)) {
     errorTitle = `${error.status}`;
     errorMessage = error.statusText;
-  }
-
-  if (isApiErrorSchema(error) && error.response.status === 404) {
-    errorTitle = `${error.response.status}`;
-    errorMessage = t("pages.error.notFound");
   }
 
   return (

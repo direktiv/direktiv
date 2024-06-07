@@ -7,66 +7,54 @@ import (
 	"net/http"
 
 	"github.com/direktiv/direktiv/pkg/core"
-	"github.com/direktiv/direktiv/pkg/gateway/plugins"
+	"github.com/direktiv/direktiv/pkg/gateway"
 	"github.com/google/go-github/v57/github"
 )
 
-const (
-	GithubWebhookPluginName = "github-webhook-auth"
-)
-
-type GithubWebhookPluginConfig struct {
-	Secret string `mapstructure:"secret" yaml:"secret"`
-}
-
 type GithubWebhookPlugin struct {
-	config *GithubWebhookPluginConfig
+	Secret string `mapstructure:"secret"`
 }
 
-func ConfigureGithubWebhook(config interface{}, _ string) (core.PluginInstance, error) {
-	requestConvertConfig := &GithubWebhookPluginConfig{}
+func (p *GithubWebhookPlugin) NewInstance(config core.PluginConfig) (core.Plugin, error) {
+	pl := &GithubWebhookPlugin{}
 
-	err := plugins.ConvertConfig(config, requestConvertConfig)
+	err := gateway.ConvertConfig(config.Config, pl)
 	if err != nil {
 		return nil, err
 	}
 
-	return &GithubWebhookPlugin{
-		config: requestConvertConfig,
-	}, nil
+	return pl, nil
 }
 
-func (p *GithubWebhookPlugin) Config() interface{} {
-	return p.config
-}
+func (p *GithubWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
+	// check request is already authenticated
+	if gateway.ExtractContextActiveConsumer(r) != nil {
+		return r
+	}
 
-func (p *GithubWebhookPlugin) ExecutePlugin(c *core.ConsumerFile, _ http.ResponseWriter, r *http.Request) bool {
-	payload, err := github.ValidatePayload(r, []byte(p.config.Secret))
+	payload, err := github.ValidatePayload(r, []byte(p.Secret))
 	if err != nil {
-		slog.Error("can verify payload", "err", err)
+		slog.Error("cannot verify payload", "err", err)
 
-		return true
+		return r
 	}
 
 	// reset body with payload
 	r.Body = io.NopCloser(bytes.NewBuffer(payload))
-	if c != nil {
-		*c = core.ConsumerFile{
+	c := &core.Consumer{
+		ConsumerFile: core.ConsumerFile{
 			Username: "github",
-		}
+		},
 	}
+	r = gateway.InjectContextActiveConsumer(r, c)
 
-	return true
+	return r
 }
 
 func (*GithubWebhookPlugin) Type() string {
-	return GithubWebhookPluginName
+	return "github-webhook-auth"
 }
 
-//nolint:gochecknoinits
 func init() {
-	plugins.AddPluginToRegistry(plugins.NewPluginBase(
-		GithubWebhookPluginName,
-		plugins.AuthPluginType,
-		ConfigureGithubWebhook))
+	gateway.RegisterPlugin(&GithubWebhookPlugin{})
 }

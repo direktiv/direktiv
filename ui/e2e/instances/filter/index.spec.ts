@@ -131,7 +131,17 @@ test("it is possible to filter by date using created before", async ({
 
   const today = new Date().getDate();
 
-  await page.getByText(today.toString(), { exact: true }).last().click();
+  const todayElement =
+    today > 15
+      ? page
+          .getByRole("gridcell", { name: today.toString(), exact: true })
+          .last()
+      : page
+          .getByRole("gridcell", { name: today.toString(), exact: true })
+          .first();
+
+  await todayElement.click();
+
   await expect(
     page.getByTestId(/instance-row/),
     "there should be 0 rows when we filter before today"
