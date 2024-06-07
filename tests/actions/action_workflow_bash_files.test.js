@@ -117,7 +117,9 @@ states:
 			.send({
 				commands: [
 					{
-						command: 'touch executed',
+						command: 'touch executed'
+					},
+					{
 						command: 'sleep 1 && cat executed'
 					}
 				]
