@@ -79,7 +79,7 @@ func (e *nsController) delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = e.registryManager.DeleteNamespace(name)
-	if err != nil {
+	if err != nil && !errors.Is(err, core.ErrNotFound) {
 		slog.With("component", "api").
 			Error("deleting registry namespace", "err", err)
 	}
