@@ -74,7 +74,7 @@ func (tf *FlowPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Requ
 
 	resp, err := doRequest(r.WithContext(ctx), http.MethodPost, url, r.Body)
 	if err != nil {
-		gateway.WriteForbiddenError(r, w, nil, "couldn't execute downstream request")
+		gateway.WriteForbiddenError(r, w, err, "couldn't execute downstream request")
 		return nil
 	}
 	defer resp.Body.Close()

@@ -47,11 +47,11 @@ func (tnv *FlowVarPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.
 
 	resp, err := doRequest(r, http.MethodGet, uri, nil)
 	if err != nil {
-		gateway.WriteInternalError(r, w, nil, "couldn't execute downstream request")
+		gateway.WriteInternalError(r, w, err, "couldn't execute downstream request")
 		return nil
 	}
 	if resp.StatusCode != http.StatusOK {
-		gateway.WriteInternalError(r, w, nil, "couldn't execute downstream request")
+		gateway.WriteInternalError(r, w, nil, "none ok status downstream request: "+resp.Status)
 		return nil
 	}
 	defer resp.Body.Close()
