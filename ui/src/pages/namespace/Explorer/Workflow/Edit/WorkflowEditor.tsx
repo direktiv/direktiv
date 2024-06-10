@@ -67,8 +67,8 @@ const WorkflowEditor: FC<{
 
   if (!namespace) return null;
 
-  const language =
-    data.mimeType === "application/x-typescript" ? "typescript" : "yaml";
+  const isTsWorkflow = data.mimeType === "application/x-typescript";
+  const language = isTsWorkflow ? "typescript" : "yaml";
 
   return (
     <div className="relative flex grow flex-col space-y-4 p-5">
@@ -86,6 +86,7 @@ const WorkflowEditor: FC<{
             hasUnsavedChanges={hasUnsavedChanges}
             onSave={onSave}
             language={language}
+            isTsWorkflow={isTsWorkflow}
           />
         }
       />

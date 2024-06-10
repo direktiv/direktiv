@@ -42,25 +42,31 @@ loader.config({ monaco });
 
 const typesPath = "ts:filename/workflow.d.ts";
 
-const beforeMount: EditorProps["beforeMount"] = (monaco) => {
-  monaco.editor.defineTheme("direktiv-dark", themeDark);
-  monaco.editor.defineTheme("direktiv-light", themeLight);
+const beforeMount =
+  (isTsWorkflow: boolean): EditorProps["beforeMount"] =>
+  (monaco) => {
+    monaco.editor.defineTheme("direktiv-dark", themeDark);
+    monaco.editor.defineTheme("direktiv-light", themeLight);
 
-  // brute force hack to avoid conflicts with existing models when
-  // createModel() is used below. To do: find a context dependent way
-  // to set up the correct model in each use case.
-  monaco.editor.getModels().forEach((model) => model.dispose());
+    if (isTsWorkflow) {
+      monaco.languages.typescript.javascriptDefaults.addExtraLib(
+        workflowTypes,
+        typesPath
+      );
+      // Delete existing models from previous instances to avoid conflicts.
+      monaco.editor.getModels().forEach((model) => {
+        model.dispose();
+      });
 
-  monaco.languages.typescript.javascriptDefaults.addExtraLib(
-    workflowTypes,
-    typesPath
-  );
-  monaco.editor.createModel(
-    workflowTypes,
-    "typescript",
-    monaco.Uri.parse(typesPath)
-  );
-};
+      monaco.editor.createModel(
+        workflowTypes,
+        "typescript",
+        monaco.Uri.parse(typesPath)
+      );
+    }
+
+    monaco.editor;
+  };
 
 export type EditorLanguagesType = (typeof supportedLanguages)[number];
 
@@ -73,6 +79,7 @@ const Editor: FC<
     onChange?: (value: string | undefined) => void;
     onMount?: EditorProps["onMount"];
     language?: EditorLanguagesType;
+    isTsWorkflow?: boolean;
   }
 > = ({
   options,
@@ -81,6 +88,7 @@ const Editor: FC<
   onChange,
   onMount,
   language = "yaml",
+  isTsWorkflow = false,
   ...props
 }) => {
   const monacoRef = useRef<EditorType>();
@@ -113,7 +121,7 @@ const Editor: FC<
           className="[&_.monaco-editor-overlaymessage]:!hidden"
           width={width}
           height={height}
-          beforeMount={beforeMount}
+          beforeMount={beforeMount(isTsWorkflow)}
           onMount={commonOnMount}
           onChange={() => {
             handleChange();

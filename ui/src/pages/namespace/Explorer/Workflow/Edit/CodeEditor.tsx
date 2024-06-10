@@ -17,6 +17,7 @@ type EditorProps = {
   updatedAt: string | undefined;
   error: string | undefined;
   language: EditorLanguagesType;
+  isTsWorkflow?: boolean;
 };
 
 export const CodeEditor: FC<EditorProps> = ({
@@ -27,6 +28,7 @@ export const CodeEditor: FC<EditorProps> = ({
   updatedAt,
   error,
   language,
+  isTsWorkflow = false,
 }) => {
   const { t } = useTranslation();
 
@@ -51,6 +53,7 @@ export const CodeEditor: FC<EditorProps> = ({
           theme={theme ?? undefined}
           onSave={onSave}
           language={language}
+          isTsWorkflow={isTsWorkflow}
         />
       </div>
       <div
