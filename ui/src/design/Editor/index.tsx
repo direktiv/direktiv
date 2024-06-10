@@ -48,11 +48,18 @@ const beforeMount =
     monaco.editor.defineTheme("direktiv-dark", themeDark);
     monaco.editor.defineTheme("direktiv-light", themeLight);
 
+    const extraLibs = isTsWorkflow
+      ? [
+          {
+            content: workflowTypes,
+            filePath: typesPath,
+          },
+        ]
+      : [];
+
+    monaco.languages.typescript.javascriptDefaults.setExtraLibs(extraLibs);
+
     if (isTsWorkflow) {
-      monaco.languages.typescript.javascriptDefaults.addExtraLib(
-        workflowTypes,
-        typesPath
-      );
       // Delete existing models from previous instances to avoid conflicts.
       monaco.editor.getModels().forEach((model) => {
         model.dispose();
