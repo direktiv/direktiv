@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log/slog"
 	"strings"
 	"time"
 
@@ -73,7 +72,6 @@ func (p *postgresBus) Loop(done <-chan struct{}, handler func(channel string, da
 	for {
 		select {
 		case msg := <-p.listener.Notify:
-			slog.Debug("pubsub core: received notify message", "channel", msg.Channel, "msg", ">"+msg.Extra+"<")
 			handler(msg.Channel, msg.Extra)
 		case <-done:
 			return nil

@@ -3,7 +3,6 @@ package flow
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -84,13 +83,7 @@ func Run(circuit *core.Circuit) error {
 		return fmt.Errorf("initialize legacy server, err: %w", err)
 	}
 
-	configureWorkflow := func(data string) error {
-		event := pubsub2.FileChangeEvent{}
-		err := json.Unmarshal([]byte(data), &event)
-		if err != nil {
-			slog.Error("critical! unmarshal file change event error", "error", err)
-			panic("unmarshal file change event")
-		}
+	configureWorkflow := func(event *pubsub2.FileSystemChangeEvent) error {
 		// If this is a delete workflow file
 		if event.DeleteFileID.String() != (uuid.UUID{}).String() {
 			return srv.flow.events.deleteWorkflowEventListeners(circuit.Context(), event.NamespaceID, event.DeleteFileID)
@@ -130,7 +123,10 @@ func Run(circuit *core.Circuit) error {
 
 			go func() {
 				srv.mirrorManager.Execute(context.Background(), proc, mConfig, &mirror.DirektivApplyer{NamespaceID: ns.ID})
-				err := srv.pBus.Publish(pubsub2.MirrorSync, ns.Name)
+				err := srv.pBus.Publish(&pubsub2.NamespacesChangeEvent{
+					Action: "sync",
+					Name:   ns.Name,
+				})
 				if err != nil {
 					slog.Error("pubsub publish", "error", err)
 				}

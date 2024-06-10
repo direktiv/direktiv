@@ -12,13 +12,12 @@ import (
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/states"
 	"github.com/direktiv/direktiv/pkg/instancestore"
+	"github.com/direktiv/direktiv/pkg/pubsub"
 	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/google/uuid"
 )
 
 const (
-	engineInstanceMessagesChannel = "instance_messages"
-
 	engineSchedulingTimeout = time.Second * 10
 	engineOwnershipTimeout  = time.Minute
 )
@@ -83,7 +82,9 @@ func (engine *engine) enqueueInstanceMessage(ctx context.Context, id uuid.UUID, 
 	if idata.Server == engine.ID && time.Now().Add(-engineOwnershipTimeout).Before(idata.UpdatedAt) {
 		go engine.instanceMessagesChannelHandler(string(msg)) //nolint:contextcheck
 	} else {
-		err = engine.pBus.Publish(engineInstanceMessagesChannel, string(msg))
+		err = engine.pBus.Publish(&pubsub.InstanceMessageEvent{
+			Message: string(msg),
+		})
 		if err != nil {
 			slog.Error("Failed to publish message to bus.", "error", err)
 
