@@ -3,6 +3,7 @@ import {
   File,
   Folder,
   Layers,
+  LucideIcon,
   Play,
   Users,
   Workflow,
@@ -68,7 +69,7 @@ export const removeTrailingSlash = (path?: string) => {
 export const sortByName = (a: { name: string }, b: { name: string }): number =>
   a.name.localeCompare(b.name);
 
-const workflowIcon = (mimeType: string | undefined) => {
+export const workflowIcon = (mimeType: string | undefined): LucideIcon => {
   switch (mimeType) {
     case "application/x-typescript":
       return Braces;
