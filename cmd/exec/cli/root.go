@@ -56,7 +56,6 @@ func readConfig() error {
 			}
 
 			dir = filepath.Join(dir, ".direktiv")
-			fmt.Println(dir)
 
 			err = os.MkdirAll(dir, 0755)
 			if err != nil {
@@ -99,12 +98,12 @@ func prepareCommand(cmd *cobra.Command) (profile, error) {
 
 	// check for namespace
 	if p.Namespace == "" {
-		return p, fmt.Errorf("no namespace provided")
+		return p, fmt.Errorf("no namespace provided or profile name incorrect")
 	}
 
 	// check for url
 	if p.Address == "" {
-		return p, fmt.Errorf("no address provided")
+		return p, fmt.Errorf("no address provided or profile name incorrect")
 	}
 
 	return p, nil
