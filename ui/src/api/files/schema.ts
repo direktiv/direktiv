@@ -66,7 +66,7 @@ const BaseFileSchema = z.object({
   path: z.string().nonempty(),
   createdAt: z.string(),
   updatedAt: z.string(),
-  mimeType: z.string().optional(),
+  mimeType: z.string().optional(), // not present for directories
 });
 
 /* When a specific single file is returned, it also has these properties */
