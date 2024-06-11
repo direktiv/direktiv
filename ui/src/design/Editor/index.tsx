@@ -40,8 +40,6 @@ self.MonacoEnvironment = {
 
 loader.config({ monaco });
 
-const typesPath = "ts:filename/workflow.d.ts";
-
 const beforeMount =
   (isTsWorkflow: boolean): EditorProps["beforeMount"] =>
   (monaco) => {
@@ -52,25 +50,11 @@ const beforeMount =
       ? [
           {
             content: workflowTypes,
-            filePath: typesPath,
           },
         ]
       : [];
 
-    monaco.languages.typescript.javascriptDefaults.setExtraLibs(extraLibs);
-
-    if (isTsWorkflow) {
-      // Delete existing models from previous instances to avoid conflicts.
-      monaco.editor.getModels().forEach((model) => {
-        model.dispose();
-      });
-
-      monaco.editor.createModel(
-        workflowTypes,
-        "typescript",
-        monaco.Uri.parse(typesPath)
-      );
-    }
+    monaco.languages.typescript.typescriptDefaults.setExtraLibs(extraLibs);
 
     monaco.editor;
   };
