@@ -67,9 +67,9 @@ states:
 					}
 				]
 			});
+		console.log(res.body)
 		expect(res.statusCode).toEqual(200)
 		const workflowVarResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${namespace}/variables?workflowPath=/${testWorkflow}`)
-
 		expect(workflowVarResponse.statusCode).toEqual(200)
 		expect(workflowVarResponse.body.data.length).toBe(2)
 

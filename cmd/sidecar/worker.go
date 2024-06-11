@@ -485,7 +485,9 @@ func getNamespaceVariables(ctx context.Context, flowToken string, flowAddr strin
 		return nil, err
 	}
 	defer resp.Body.Close()
-
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+	}
 	namespaceVariables := variablesResponse{}
 	decoder := json.NewDecoder(resp.Body)
 	if err = decoder.Decode(&namespaceVariables); err != nil {
@@ -508,7 +510,9 @@ func getWorkflowVariables(ctx context.Context, flowToken string, flowAddr string
 		return nil, err
 	}
 	defer resp.Body.Close()
-
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+	}
 	workflowVariables := variablesResponse{}
 	decoder := json.NewDecoder(resp.Body)
 	if err = decoder.Decode(&workflowVariables); err != nil {
@@ -599,7 +603,9 @@ func fetchFunctionFiles(ctx context.Context, flowToken string, flowAddr string, 
 					}
 				}
 				defer resp.Body.Close()
-
+				if resp.StatusCode != http.StatusOK {
+					slog.Error("failed fetching files with", "error", fmt.Errorf("unexpected status code: %d", resp.StatusCode))
+				}
 				variable := variableResponse{}
 				decoder := json.NewDecoder(resp.Body)
 				if err = decoder.Decode(&variable); err != nil {
@@ -727,6 +733,7 @@ func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
 
 	out, err := worker.doFunctionRequest(rctx, ir)
 	if err != nil {
+		slog.Error("failed while doFunctionRequest", "error", err)
 		worker.reportSidecarError(req.w, ir, err)
 		return
 	}
@@ -734,6 +741,7 @@ func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
 	// fetch output variables
 	err = worker.setOutVariables(rctx, ir)
 	if err != nil {
+		slog.Error("failed while setOutVariables", "error", err)
 		worker.reportSidecarError(req.w, ir, err)
 		return
 	}
@@ -773,19 +781,14 @@ func (worker *inboundWorker) setOutVariables(ctx context.Context, ir *functionRe
 				}
 				defer os.Remove(tf.Name())
 
-				var end int64
-				end, err = tf.Seek(0, io.SeekEnd)
-				if err != nil {
-					return err
-				}
-
 				_, err = tf.Seek(0, io.SeekStart)
 				if err != nil {
 					return err
 				}
 
-				err = worker.srv.setVar(ctx, ir, end, tf, d, f.Name(), "")
+				err = worker.srv.setVar(ctx, ir, tf, d, f.Name(), "")
 				if err != nil {
+					slog.Error("failed to set variable", "error", err)
 					return err
 				}
 			case mode.IsRegular():
@@ -796,7 +799,7 @@ func (worker *inboundWorker) setOutVariables(ctx context.Context, ir *functionRe
 					return err
 				}
 
-				err = worker.srv.setVar(ctx, ir, fi.Size(), v, d, f.Name(), "")
+				err = worker.srv.setVar(ctx, ir, v, d, f.Name(), "")
 				if err != nil {
 					_ = v.Close()
 					return err
