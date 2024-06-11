@@ -57,7 +57,7 @@ func (tnf *NamespaceFilePlugin) Execute(w http.ResponseWriter, r *http.Request) 
 	// request failed if nil and response already written
 	resp, err := doRequest(r, http.MethodGet, url, nil)
 	if err != nil {
-		gateway.WriteInternalError(r, w, nil, "couldn't execute downstream request")
+		gateway.WriteInternalError(r, w, err, "couldn't execute downstream request")
 		return nil
 	}
 	defer resp.Body.Close()

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -27,7 +28,7 @@ type NewMainArgs struct {
 	Config                       *core.Config
 	Database                     *database.SQLStore
 	PubSubBus                    *pubsub.Bus
-	ConfigureWorkflow            func(data string) error
+	ConfigureWorkflow            func(event *pubsub.FileSystemChangeEvent) error
 	InstanceManager              *instancestore.InstanceManager
 	WakeInstanceByEvent          events.WakeEventsWaiter
 	WorkflowStart                events.WorkflowStart
@@ -89,36 +90,28 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 	}
 
 	if !args.Config.DisableServices {
-		args.PubSubBus.Subscribe(func(_ string) {
+		args.PubSubBus.Subscribe(&pubsub.FileSystemChangeEvent{}, func(_ string) {
 			renderServiceManager(args.Database, serviceManager)
-		},
-			pubsub.WorkflowCreate,
-			pubsub.WorkflowUpdate,
-			pubsub.WorkflowDelete,
-			pubsub.WorkflowRename,
-			pubsub.ServiceCreate,
-			pubsub.ServiceUpdate,
-			pubsub.ServiceDelete,
-			pubsub.ServiceRename,
-			pubsub.MirrorSync,
-			pubsub.NamespaceDelete,
-		)
-
+		})
+		args.PubSubBus.Subscribe(&pubsub.NamespacesChangeEvent{}, func(_ string) {
+			renderServiceManager(args.Database, serviceManager)
+		})
 		// Call at least once before booting
 		renderServiceManager(args.Database, serviceManager)
 	}
 
-	args.PubSubBus.Subscribe(func(data string) {
-		err := args.ConfigureWorkflow(data)
+	args.PubSubBus.Subscribe(&pubsub.FileSystemChangeEvent{}, func(data string) {
+		event := &pubsub.FileSystemChangeEvent{}
+		err := json.Unmarshal([]byte(data), event)
+		if err != nil {
+			panic("Logic Error could not parse file system change event")
+		}
+
+		err = args.ConfigureWorkflow(event)
 		if err != nil {
 			slog.Error("configure workflow", "err", err)
 		}
-	},
-		pubsub.WorkflowCreate,
-		pubsub.WorkflowUpdate,
-		pubsub.WorkflowDelete,
-		pubsub.WorkflowRename,
-	)
+	})
 
 	slog.Debug("Rendering event-listeners on server start")
 	err = args.RenderAllStartEventListeners(circuit.Context(), args.Database)
@@ -128,21 +121,12 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 	slog.Debug("Completed rendering event-listeners on server start")
 
 	// endpoint manager
-	args.PubSubBus.Subscribe(func(_ string) {
+	args.PubSubBus.Subscribe(&pubsub.FileSystemChangeEvent{}, func(_ string) {
 		helpers.RenderGatewayFiles(args.Database, gatewayManager2)
-	},
-		pubsub.EndpointCreate,
-		pubsub.EndpointUpdate,
-		pubsub.EndpointDelete,
-		pubsub.EndpointRename,
-		pubsub.ConsumerCreate,
-		pubsub.ConsumerDelete,
-		pubsub.ConsumerUpdate,
-		pubsub.ConsumerRename,
-		pubsub.NamespaceDelete,
-		pubsub.NamespaceCreate,
-		pubsub.MirrorSync,
-	)
+	})
+	args.PubSubBus.Subscribe(&pubsub.NamespacesChangeEvent{}, func(_ string) {
+		helpers.RenderGatewayFiles(args.Database, gatewayManager2)
+	})
 	// initial loading of routes and consumers
 	helpers.RenderGatewayFiles(args.Database, gatewayManager2)
 
