@@ -16,8 +16,9 @@ import (
 )
 
 type nsController struct {
-	db  *database.SQLStore
-	bus *pubsub.Bus
+	db              *database.SQLStore
+	registryManager core.RegistryManager
+	bus             *pubsub.Bus
 }
 
 func (e *nsController) mountRouter(r chi.Router) {
@@ -77,11 +78,15 @@ func (e *nsController) delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: Alan, check if here we need to fire some pubsub events.
+	err = e.registryManager.DeleteNamespace(name)
+	if err != nil && !errors.Is(err, core.ErrNotFound) {
+		slog.With("component", "api").
+			Error("deleting registry namespace", "err", err)
+	}
 
 	err = e.bus.DebouncedPublish(pubsub.NamespaceDelete, name)
 	if err != nil {
-		slog.Error("pubsub publish", "err", err)
+		slog.Error("pubsub publish filesystem event", "err", err)
 	}
 
 	writeOk(w)
@@ -210,8 +215,6 @@ func (e *nsController) update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: Alan, check if here we need to fire some pubsub events.
-
 	writeJSON(w, namespaceAPIObject(ns, settings))
 }
 
@@ -282,8 +285,6 @@ func (e *nsController) create(w http.ResponseWriter, r *http.Request) {
 		writeInternalError(w, err)
 		return
 	}
-
-	// TODO: Alan, check if here we need to fire some pubsub events.
 
 	err = e.bus.DebouncedPublish(pubsub.NamespaceCreate, req.Name)
 	if err != nil {

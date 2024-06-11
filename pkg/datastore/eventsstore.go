@@ -30,14 +30,6 @@ type EventHistoryStore interface {
 	// It returns the events that were successfully appended along with any errors encountered.
 	Append(ctx context.Context, event []*Event) ([]*Event, []error)
 	GetByID(ctx context.Context, id string) (*Event, error)
-	// the result will be sorted by the AcceptedAt value.
-	// pass 0 for limit or offset to get all events.
-	// The total row count is also returned for pagination.
-	// keyValues MUST be passed as key value pairs.
-	// passed keyValues will be used filter results.
-	// supported keys are created_before, created_after,
-	// received_before, received_after, event_contains, type_contains.
-	Get(ctx context.Context, limit, offset int, namespace uuid.UUID, keyValues ...string) ([]*Event, int, error)
 	GetOld(ctx context.Context, namespace string, t time.Time, keyAndValues ...string) ([]*Event, error)
 	GetStartingIDUntilTime(ctx context.Context, namespace string, lastID int, t time.Time, keyAndValues ...string) ([]*Event, error)
 	GetNew(ctx context.Context, namespace string, t time.Time, keyAndValues ...string) ([]*Event, error)

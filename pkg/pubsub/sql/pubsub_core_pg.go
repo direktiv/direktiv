@@ -14,18 +14,20 @@ import (
 const globalPostgresChannel = "direktiv_pubsub_events"
 
 type postgresBus struct {
-	listener *pq.Listener
-	db       *sql.DB
+	listener  *pq.Listener
+	errorChan chan error
+	db        *sql.DB
 }
 
 func NewPostgresCoreBus(db *sql.DB, listenConnectionString string) (pubsub.CoreBus, error) {
 	p := &postgresBus{
-		db: db,
+		db:        db,
+		errorChan: make(chan error),
 	}
 
 	p.listener = pq.NewListener(listenConnectionString, time.Second, time.Second,
 		func(event pq.ListenerEventType, err error) {
-			// do nothing.
+			p.errorChan <- err
 		})
 
 	var err error
@@ -63,7 +65,7 @@ func (p *postgresBus) Publish(channel string, data string) error {
 	return nil
 }
 
-func (p *postgresBus) Loop(done <-chan struct{}, handler func(channel string, data string)) {
+func (p *postgresBus) Loop(done <-chan struct{}, handler func(channel string, data string)) error {
 	for {
 		select {
 		case msg := <-p.listener.Notify:
@@ -74,7 +76,11 @@ func (p *postgresBus) Loop(done <-chan struct{}, handler func(channel string, da
 				handler(channel, data)
 			}
 		case <-done:
-			return
+			return nil
+		case err := <-p.errorChan:
+			if err != nil {
+				return fmt.Errorf("database connection, err: %w", err)
+			}
 		}
 	}
 }

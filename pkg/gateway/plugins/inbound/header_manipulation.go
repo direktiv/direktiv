@@ -4,74 +4,54 @@ import (
 	"net/http"
 
 	"github.com/direktiv/direktiv/pkg/core"
-	"github.com/direktiv/direktiv/pkg/gateway/plugins"
-)
-
-const (
-	HeaderManipulation = "header-manipulation"
+	"github.com/direktiv/direktiv/pkg/gateway"
 )
 
 type NameKeys struct {
-	Name  string `json:"name"  yaml:"name"`
-	Value string `json:"value" yaml:"value"`
-}
-
-type HeaderManipulationConfig struct {
-	HeadersToAdd    []NameKeys `json:"headers_to_add"    mapstructure:"headers_to_add"    yaml:"headers_to_add"`
-	HeadersToModify []NameKeys `json:"headers_to_modify" mapstructure:"headers_to_modify" yaml:"headers_to_modify"`
-	HeadersToRemove []NameKeys `json:"headers_to_remove" mapstructure:"headers_to_remove" yaml:"headers_to_remove"`
+	Name  string `json:"name"`
+	Value string `json:"value"`
 }
 
 type HeaderManipulationPlugin struct {
-	configuration *HeaderManipulationConfig
+	HeadersToAdd    []NameKeys `mapstructure:"headers_to_add"`
+	HeadersToModify []NameKeys `mapstructure:"headers_to_modify"`
+	HeadersToRemove []NameKeys `mapstructure:"headers_to_remove"`
 }
 
-func ConfigureHeaderManipulation(config interface{}, _ string) (core.PluginInstance, error) {
-	headerManipulationConfig := &HeaderManipulationConfig{}
+func (hp *HeaderManipulationPlugin) NewInstance(config core.PluginConfig) (core.Plugin, error) {
+	pl := &HeaderManipulationPlugin{}
 
-	err := plugins.ConvertConfig(config, headerManipulationConfig)
+	err := gateway.ConvertConfig(config.Config, pl)
 	if err != nil {
 		return nil, err
 	}
 
-	return &HeaderManipulationPlugin{
-		configuration: headerManipulationConfig,
-	}, nil
+	return pl, nil
 }
 
-func (hp *HeaderManipulationPlugin) Config() interface{} {
-	return hp.configuration
-}
-
-func (hp *HeaderManipulationPlugin) ExecutePlugin(_ *core.ConsumerFile,
-	_ http.ResponseWriter, r *http.Request,
-) bool {
-	for a := range hp.configuration.HeadersToAdd {
-		h := hp.configuration.HeadersToAdd[a]
+func (hp *HeaderManipulationPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
+	for a := range hp.HeadersToAdd {
+		h := hp.HeadersToAdd[a]
 		r.Header.Add(h.Name, h.Value)
 	}
 
-	for a := range hp.configuration.HeadersToModify {
-		h := hp.configuration.HeadersToModify[a]
+	for a := range hp.HeadersToModify {
+		h := hp.HeadersToModify[a]
 		r.Header.Set(h.Name, h.Value)
 	}
 
-	for a := range hp.configuration.HeadersToRemove {
-		h := hp.configuration.HeadersToRemove[a]
+	for a := range hp.HeadersToRemove {
+		h := hp.HeadersToRemove[a]
 		r.Header.Del(h.Name)
 	}
 
-	return true
+	return r
 }
 
 func (hp *HeaderManipulationPlugin) Type() string {
-	return HeaderManipulation
+	return "header-manipulation"
 }
 
-//nolint:gochecknoinits
 func init() {
-	plugins.AddPluginToRegistry(plugins.NewPluginBase(
-		HeaderManipulation,
-		plugins.InboundPluginType,
-		ConfigureHeaderManipulation))
+	gateway.RegisterPlugin(&HeaderManipulationPlugin{})
 }

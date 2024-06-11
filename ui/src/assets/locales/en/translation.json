@@ -13,6 +13,7 @@
       "noNamespace": "Create a namespace to get started.",
       "createNamespaceBtn": "Create namespace",
       "error": "There was an error fetching the namespaces",
+      "logout": "Logout",
       "links": {
         "docs": {
           "title": "Getting started",
@@ -1219,6 +1220,7 @@
     },
     "userMenu": {
       "loggedIn": "You are logged in",
+      "loggedInAs": "You are logged in as {{username}}",
       "logout": "Logout",
       "appearance": "Appearance",
       "switchToLight": "Switch to light mode",
@@ -1361,7 +1363,7 @@
         },
         "delete": {
           "success": {
-            "title": "Delete namespace {{name}}",
+            "title": "Delete namespace",
             "description": "Namespace {{name}} was deleted successfully."
           },
           "error": {

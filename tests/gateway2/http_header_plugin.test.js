@@ -14,7 +14,7 @@ describe('Test header plugin', () => {
 
 	helpers.itShouldCreateYamlFile(it, expect, namespace,
 		'/', 'c1.yaml', 'consumer', `
-direktiv_api: "consumer/v2"
+direktiv_api: "consumer/v1"
 username: user1
 password: pwd1
 api_key: key1
@@ -26,7 +26,7 @@ groups:
 
 	helpers.itShouldCreateYamlFile(it, expect, namespace,
 		'/', 'ep1.yaml', 'endpoint', `
-direktiv_api: endpoint/v2
+direktiv_api: endpoint/v1
 allow_anonymous: false
 plugins:
   auth:
@@ -67,7 +67,7 @@ states:
 
 	retry10(`should have expected body after js`, async () => {
 		const req = await request(common.config.getDirektivHost()).post(
-			`/api/v2/namespaces/${ namespace }/gateway2/target?Query1=value1&Query2=value2`,
+			`/api/v2/namespaces/${ namespace }/gateway/target?Query1=value1&Query2=value2`,
 		)
 			.set('Header', 'Value1')
 			.set('Header1', 'oldvalue')

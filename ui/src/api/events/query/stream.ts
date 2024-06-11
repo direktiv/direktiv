@@ -37,7 +37,7 @@ const updateCache = (
 
   return {
     ...oldData,
-    data: [...oldData.data, newItem],
+    data: [newItem, ...oldData.data],
   };
 };
 

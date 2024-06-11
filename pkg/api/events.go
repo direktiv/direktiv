@@ -84,9 +84,11 @@ func (c *eventsController) listEvents(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-
-	slices.Reverse(data)
 	var previousPage interface{} = data[0].ReceivedAt.UTC().Format(time.RFC3339Nano)
+
+	if len(data) > 0 {
+		previousPage = data[len(data)-1].ReceivedAt.UTC().Format(time.RFC3339Nano)
+	}
 
 	metaInfo = map[string]any{
 		"previousPage": previousPage,

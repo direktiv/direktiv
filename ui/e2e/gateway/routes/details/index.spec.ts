@@ -154,7 +154,7 @@ test("Route details page shows warning if the route was not configured correctly
   await expect(
     page
       .getByTestId("route-details-header")
-      .getByText("plugin this-plugin-does-not-exist does not exist"),
+      .getByText("plugin 'this-plugin-does-not-exist' err: doesn't exist"),
     "it shows an error with error detail on hover"
   ).toBeVisible();
 
