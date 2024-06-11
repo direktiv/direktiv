@@ -18,7 +18,6 @@ import themeDark from "./theme-dark";
 import themeLight from "./theme-light";
 // eslint-disable-next-line import/default
 import tsWorker from "monaco-editor/esm/vs/language/typescript/ts.worker?worker";
-import workflowTypes from "src/util/workflow.d.ts?raw";
 
 self.MonacoEnvironment = {
   getWorker(_, label) {
@@ -40,19 +39,16 @@ self.MonacoEnvironment = {
 
 loader.config({ monaco });
 
+export type ExtraLibsType = {
+  content: string;
+  filePath?: string;
+}[];
+
 const beforeMount =
-  (isTsWorkflow: boolean): EditorProps["beforeMount"] =>
+  ({ extraLibs }: { extraLibs: ExtraLibsType }): EditorProps["beforeMount"] =>
   (monaco) => {
     monaco.editor.defineTheme("direktiv-dark", themeDark);
     monaco.editor.defineTheme("direktiv-light", themeLight);
-
-    const extraLibs = isTsWorkflow
-      ? [
-          {
-            content: workflowTypes,
-          },
-        ]
-      : [];
 
     monaco.languages.typescript.typescriptDefaults.setExtraLibs(extraLibs);
 
@@ -70,7 +66,7 @@ const Editor: FC<
     onChange?: (value: string | undefined) => void;
     onMount?: EditorProps["onMount"];
     language?: EditorLanguagesType;
-    isTsWorkflow?: boolean;
+    extraLibs?: ExtraLibsType;
   }
 > = ({
   options,
@@ -79,7 +75,7 @@ const Editor: FC<
   onChange,
   onMount,
   language = "yaml",
-  isTsWorkflow = false,
+  extraLibs = [],
   ...props
 }) => {
   const monacoRef = useRef<EditorType>();
@@ -112,7 +108,7 @@ const Editor: FC<
           className="[&_.monaco-editor-overlaymessage]:!hidden"
           width={width}
           height={height}
-          beforeMount={beforeMount(isTsWorkflow)}
+          beforeMount={beforeMount({ extraLibs })}
           onMount={commonOnMount}
           onChange={() => {
             handleChange();

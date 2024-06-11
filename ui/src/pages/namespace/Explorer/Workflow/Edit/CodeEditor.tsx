@@ -1,4 +1,4 @@
-import Editor, { EditorLanguagesType } from "~/design/Editor";
+import Editor, { EditorLanguagesType, ExtraLibsType } from "~/design/Editor";
 import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 
 import { Bug } from "lucide-react";
@@ -17,7 +17,7 @@ type EditorProps = {
   updatedAt: string | undefined;
   error: string | undefined;
   language: EditorLanguagesType;
-  isTsWorkflow?: boolean;
+  extraLibs?: ExtraLibsType;
 };
 
 export const CodeEditor: FC<EditorProps> = ({
@@ -28,7 +28,7 @@ export const CodeEditor: FC<EditorProps> = ({
   updatedAt,
   error,
   language,
-  isTsWorkflow = false,
+  extraLibs = [],
 }) => {
   const { t } = useTranslation();
 
@@ -53,7 +53,7 @@ export const CodeEditor: FC<EditorProps> = ({
           theme={theme ?? undefined}
           onSave={onSave}
           language={language}
-          isTsWorkflow={isTsWorkflow}
+          extraLibs={extraLibs}
         />
       </div>
       <div
