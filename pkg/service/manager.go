@@ -11,6 +11,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/reconcile"
+	"github.com/pkg/errors"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"knative.dev/serving/pkg/client/clientset/versioned"
@@ -128,17 +129,30 @@ func (m *manager) runCycle() []error {
 	return errs
 }
 
-func (m *manager) Start(circuit *core.Circuit) {
+func (m *manager) Run(circuit *core.Circuit) error {
 	cycleTime := m.cfg.GetFunctionsReconcileInterval()
+	cycleFails := 0
+
 	for {
+		// Pull circuit status.
 		if circuit.IsDone() {
-			return
+			return nil
 		}
 		m.lock.Lock()
 		errs := m.runCycle()
 		m.lock.Unlock()
 		for _, err := range errs {
 			slog.Error("run cycle", "err", err)
+		}
+
+		// Evaluate errors rate.
+		if len(errs) > 0 {
+			cycleFails++
+		} else {
+			cycleFails = 0
+		}
+		if cycleFails > 5 {
+			return errors.New("too many cycle fails")
 		}
 
 		time.Sleep(cycleTime)

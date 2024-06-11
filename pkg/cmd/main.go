@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -27,7 +28,7 @@ type NewMainArgs struct {
 	Config                       *core.Config
 	Database                     *database.SQLStore
 	PubSubBus                    *pubsub.Bus
-	ConfigureWorkflow            func(data string) error
+	ConfigureWorkflow            func(event *pubsub.FileSystemChangeEvent) error
 	InstanceManager              *instancestore.InstanceManager
 	WakeInstanceByEvent          events.WakeEventsWaiter
 	WorkflowStart                events.WorkflowStart
@@ -53,8 +54,10 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 		service.SetupGetServiceURLFunc(args.Config)
 
 		circuit.Start(func() error {
-			// TODO: yassir, Implement service crash handling.
-			serviceManager.Start(circuit)
+			err := serviceManager.Run(circuit)
+			if err != nil {
+				return fmt.Errorf("service manager, err: %w", err)
+			}
 
 			return nil
 		})
@@ -87,36 +90,28 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 	}
 
 	if !args.Config.DisableServices {
-		args.PubSubBus.Subscribe(func(_ string) {
+		args.PubSubBus.Subscribe(&pubsub.FileSystemChangeEvent{}, func(_ string) {
 			renderServiceManager(args.Database, serviceManager)
-		},
-			pubsub.WorkflowCreate,
-			pubsub.WorkflowUpdate,
-			pubsub.WorkflowDelete,
-			pubsub.WorkflowRename,
-			pubsub.ServiceCreate,
-			pubsub.ServiceUpdate,
-			pubsub.ServiceDelete,
-			pubsub.ServiceRename,
-			pubsub.MirrorSync,
-			pubsub.NamespaceDelete,
-		)
-
+		})
+		args.PubSubBus.Subscribe(&pubsub.NamespacesChangeEvent{}, func(_ string) {
+			renderServiceManager(args.Database, serviceManager)
+		})
 		// Call at least once before booting
 		renderServiceManager(args.Database, serviceManager)
 	}
 
-	args.PubSubBus.Subscribe(func(data string) {
-		err := args.ConfigureWorkflow(data)
+	args.PubSubBus.Subscribe(&pubsub.FileSystemChangeEvent{}, func(data string) {
+		event := &pubsub.FileSystemChangeEvent{}
+		err := json.Unmarshal([]byte(data), event)
+		if err != nil {
+			panic("Logic Error could not parse file system change event")
+		}
+
+		err = args.ConfigureWorkflow(event)
 		if err != nil {
 			slog.Error("configure workflow", "err", err)
 		}
-	},
-		pubsub.WorkflowCreate,
-		pubsub.WorkflowUpdate,
-		pubsub.WorkflowDelete,
-		pubsub.WorkflowRename,
-	)
+	})
 
 	slog.Debug("Rendering event-listeners on server start")
 	err = args.RenderAllStartEventListeners(circuit.Context(), args.Database)
@@ -126,33 +121,14 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 	slog.Debug("Completed rendering event-listeners on server start")
 
 	// endpoint manager
-	args.PubSubBus.Subscribe(func(_ string) {
+	args.PubSubBus.Subscribe(&pubsub.FileSystemChangeEvent{}, func(_ string) {
 		helpers.RenderGatewayFiles(args.Database, gatewayManager2)
-	},
-		pubsub.EndpointCreate,
-		pubsub.EndpointUpdate,
-		pubsub.EndpointDelete,
-		pubsub.EndpointRename,
-		pubsub.ConsumerCreate,
-		pubsub.ConsumerDelete,
-		pubsub.ConsumerUpdate,
-		pubsub.ConsumerRename,
-		pubsub.NamespaceDelete,
-		pubsub.NamespaceCreate,
-		pubsub.MirrorSync,
-	)
+	})
+	args.PubSubBus.Subscribe(&pubsub.NamespacesChangeEvent{}, func(_ string) {
+		helpers.RenderGatewayFiles(args.Database, gatewayManager2)
+	})
 	// initial loading of routes and consumers
 	helpers.RenderGatewayFiles(args.Database, gatewayManager2)
-
-	// TODO: yassir, this subscribe need to be removed when /api/v2/namespace delete endpoint is migrated.
-	args.PubSubBus.Subscribe(func(ns string) {
-		err := registryManager.DeleteNamespace(ns)
-		if err != nil {
-			slog.Error("deleting registry namespace", "err", err)
-		}
-	},
-		pubsub.NamespaceDelete,
-	)
 
 	// Start api v2 server
 	err = api.Initialize(app, args.Database, args.PubSubBus, args.InstanceManager, args.WakeInstanceByEvent, args.WorkflowStart, circuit)
@@ -249,7 +225,6 @@ func getWorkflowFunctionDefinitionsFromWorkflow(ns *datastore.Namespace, f *file
 
 	for _, fn := range wf.Functions {
 		if fn.GetType() != model.ReusableContainerFunctionType {
-			// TODO: Alan, double check if continue here is valid.
 			continue
 		}
 

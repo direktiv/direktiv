@@ -142,7 +142,6 @@ CREATE TABLE IF NOT EXISTS "runtime_variables" (
     CONSTRAINT "runtime_variables_unique_2"
     UNIQUE NULLS NOT DISTINCT (namespace, name, workflow_path, instance_id),
 
-    -- TODO: Find a way to clean up runtime vars for workflows when they get deleted.
     CONSTRAINT "fk_instances_v2_runtime_variables"
     FOREIGN KEY ("instance_id") REFERENCES "instances_v2"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );

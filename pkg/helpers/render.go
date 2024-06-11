@@ -41,5 +41,8 @@ func RenderGatewayFiles(db *database.SQLStore, manager core.GatewayManager) {
 			}
 		}
 	}
-	manager.SetEndpoints(endpoints, consumers)
+	err = manager.SetEndpoints(endpoints, consumers)
+	if err != nil {
+		slog.Error("render gateway files", "err", err)
+	}
 }
