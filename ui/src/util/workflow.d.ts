@@ -1,19 +1,19 @@
 /**
- * Example for a custom typescript class. Replace with real types later.
+ * Example method from the example workflow for proof of concept.
+ * Needs to be refined.
+ * @param params
  */
-declare class Facts {
+declare function getFile(params: {
   /**
-   * Returns the next fact
+   * File name
    */
-  static next(): string;
-}
-
-/**
- * Another example
- */
-declare class Hello {
+  name: string;
   /**
-   * Say hello
+   * Permission
    */
-  static world(): string;
-}
+  permission: number;
+  /**
+   * What is this for exaclty? What are the possible values?
+   */
+  scope: "shared" | "other";
+}): void;
