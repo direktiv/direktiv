@@ -397,7 +397,7 @@ func (worker *inboundWorker) prepFunctionFiles(ctx context.Context, ir *function
 	return nil
 }
 
-type variableForAPI struct {
+type variable struct {
 	ID        uuid.UUID `json:"id"`
 	Typ       string    `json:"type"`
 	Reference string    `json:"reference"`
@@ -408,17 +408,17 @@ type variableForAPI struct {
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
 }
-type varResponseData struct {
-	Data  []variableForAPI `json:"data"`
-	Error *any             `json:"error"`
+type variablesResponse struct {
+	Data  []variable `json:"data"`
+	Error *any       `json:"error"`
 }
 
-type varInduvidualResponseData struct {
-	Data  variableForAPI `json:"data"`
-	Error *any           `json:"error"`
+type variableResponse struct {
+	Data  variable `json:"data"`
+	Error *any     `json:"error"`
 }
 
-type Data struct {
+type file struct {
 	Path      string      `json:"path"`
 	Type      string      `json:"type"`
 	Data      string      `json:"data"`
@@ -429,9 +429,9 @@ type Data struct {
 	Children  interface{} `json:"children,omitempty"`
 }
 
-type DecodedResponse struct {
+type decodedFilesResponse struct {
 	Error any  `json:"error,omitempty"`
-	Data  Data `json:"data,omitempty"`
+	Data  file `json:"data,omitempty"`
 }
 
 func (worker *inboundWorker) getReferencedFile(ctx context.Context, namespace string, path string) ([]byte, error) {
@@ -452,7 +452,7 @@ func (worker *inboundWorker) getReferencedFile(ctx context.Context, namespace st
 		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
 
-	var respData DecodedResponse
+	var respData decodedFilesResponse
 	if resp.Body == nil {
 		return nil, fmt.Errorf("unexpected failure body was nil")
 	}
@@ -472,7 +472,7 @@ func (worker *inboundWorker) getReferencedFile(ctx context.Context, namespace st
 	return d, nil
 }
 
-func (worker *inboundWorker) getNamespaceVariables(ctx context.Context, ir *functionRequest) (*varResponseData, error) {
+func (worker *inboundWorker) getNamespaceVariables(ctx context.Context, ir *functionRequest) (*variablesResponse, error) {
 	addr := fmt.Sprintf("http://%v/api/v2/namespaces/%v/variables", worker.srv.flowAddr, ir.namespace)
 	client := &http.Client{}
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, addr, nil)
@@ -486,7 +486,7 @@ func (worker *inboundWorker) getNamespaceVariables(ctx context.Context, ir *func
 	}
 	defer resp.Body.Close()
 
-	namespaceVariables := varResponseData{}
+	namespaceVariables := variablesResponse{}
 	decoder := json.NewDecoder(resp.Body)
 	if err = decoder.Decode(&namespaceVariables); err != nil {
 		return nil, err
@@ -495,7 +495,7 @@ func (worker *inboundWorker) getNamespaceVariables(ctx context.Context, ir *func
 	return &namespaceVariables, nil
 }
 
-func (worker *inboundWorker) getWorkflowVariables(ctx context.Context, ir *functionRequest) (*varResponseData, error) {
+func (worker *inboundWorker) getWorkflowVariables(ctx context.Context, ir *functionRequest) (*variablesResponse, error) {
 	addr := fmt.Sprintf("http://%v/api/v2/namespaces/%v/variables?workflowPath=%v", worker.srv.flowAddr, ir.namespace, ir.workflowPath)
 	client := &http.Client{}
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, addr, nil)
@@ -509,7 +509,7 @@ func (worker *inboundWorker) getWorkflowVariables(ctx context.Context, ir *funct
 	}
 	defer resp.Body.Close()
 
-	workflowVariables := varResponseData{}
+	workflowVariables := variablesResponse{}
 	decoder := json.NewDecoder(resp.Body)
 	if err = decoder.Decode(&workflowVariables); err != nil {
 		return nil, err
@@ -518,7 +518,7 @@ func (worker *inboundWorker) getWorkflowVariables(ctx context.Context, ir *funct
 	return &workflowVariables, nil
 }
 
-func (worker *inboundWorker) getInstanceVariables(ctx context.Context, ir *functionRequest) (*varResponseData, error) {
+func (worker *inboundWorker) getInstanceVariables(ctx context.Context, ir *functionRequest) (*variablesResponse, error) {
 	addr := fmt.Sprintf("http://%v/api/v2/namespaces/%v/variables?instanceId=%v", worker.srv.flowAddr, ir.namespace, ir.instanceId)
 	client := &http.Client{}
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, addr, nil)
@@ -532,7 +532,7 @@ func (worker *inboundWorker) getInstanceVariables(ctx context.Context, ir *funct
 	}
 	defer resp.Body.Close()
 
-	instanceVariables := varResponseData{}
+	instanceVariables := variablesResponse{}
 	decoder := json.NewDecoder(resp.Body)
 	if err = decoder.Decode(&instanceVariables); err != nil {
 		return nil, err
@@ -546,19 +546,16 @@ func (worker *inboundWorker) fetchFunctionFiles(ctx context.Context, ir *functio
 	if err != nil {
 		return err
 	}
-	slog.Info("ns vars for processing", "data", fmt.Sprintf("%v", namespaceVariables))
 
 	wfVar, err := worker.getWorkflowVariables(ctx, ir)
 	if err != nil {
 		return err
 	}
-	slog.Info("wf for processing", "data", fmt.Sprintf("%v", wfVar))
 
 	insVars, err := worker.getInstanceVariables(ctx, ir)
 	if err != nil {
 		return err
 	}
-	slog.Info("ins for processing", "data", fmt.Sprintf("%v", insVars))
 
 	vars := append(namespaceVariables.Data, wfVar.Data...)
 	vars = append(vars, insVars.Data...)
@@ -570,7 +567,7 @@ func (worker *inboundWorker) fetchFunctionFiles(ctx context.Context, ir *functio
 			return err
 		}
 
-		idx := slices.IndexFunc(vars, func(e variableForAPI) bool { return e.Typ == typ && e.Name == file.Key })
+		idx := slices.IndexFunc(vars, func(e variable) bool { return e.Typ == typ && e.Name == file.Key })
 		pr, pw := io.Pipe()
 		go func(flowToken string, flowAddr string, namespace string, file *functionFiles, idx int) {
 			var data []byte
@@ -581,8 +578,6 @@ func (worker *inboundWorker) fetchFunctionFiles(ctx context.Context, ir *functio
 					slog.Info("failed fetching file", "error", err)
 				}
 			}
-
-			slog.Info("starting creating variables", "file", file, "idx", idx)
 
 			if idx > -1 {
 				slog.Info("starting request api rotine", "file", file, "idx", idx, "id", vars[idx].ID)
@@ -605,7 +600,7 @@ func (worker *inboundWorker) fetchFunctionFiles(ctx context.Context, ir *functio
 				}
 				defer resp.Body.Close()
 
-				variable := varInduvidualResponseData{}
+				variable := variableResponse{}
 				decoder := json.NewDecoder(resp.Body)
 				if err = decoder.Decode(&variable); err != nil {
 					sysErr := pw.CloseWithError(err)
@@ -615,8 +610,6 @@ func (worker *inboundWorker) fetchFunctionFiles(ctx context.Context, ir *functio
 				}
 				data = variable.Data.Data
 			}
-			slog.Info("copy data to for writer", "file", file, "idx", idx, "data", data)
-
 			_, err = io.Copy(pw, bytes.NewReader(data))
 			if err != nil {
 				sysErr := pw.CloseWithError(err)
