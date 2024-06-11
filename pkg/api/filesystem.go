@@ -11,7 +11,6 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/filestore"
-	"github.com/direktiv/direktiv/pkg/helpers"
 	"github.com/direktiv/direktiv/pkg/pubsub"
 	"github.com/go-chi/chi/v5"
 	"gopkg.in/yaml.v3"
@@ -170,7 +169,9 @@ func (e *fsController) delete(w http.ResponseWriter, r *http.Request) {
 
 	// Publish pubsub event.
 	if file.Typ.IsDirektivSpecFile() {
-		err = helpers.PublishEventDirektivFileChange(e.bus, file.Typ, "delete", &pubsub.FileChangeEvent{
+		err = e.bus.DebouncedPublish(&pubsub.FileSystemChangeEvent{
+			Action:       "delete",
+			FileType:     string(file.Typ),
 			Namespace:    ns.Name,
 			NamespaceID:  ns.ID,
 			FilePath:     file.Path,
@@ -253,7 +254,9 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 
 	// Publish pubsub event.
 	if newFile.Typ.IsDirektivSpecFile() {
-		err = helpers.PublishEventDirektivFileChange(e.bus, newFile.Typ, "create", &pubsub.FileChangeEvent{
+		err = e.bus.DebouncedPublish(&pubsub.FileSystemChangeEvent{
+			Action:      "create",
+			FileType:    string(newFile.Typ),
 			Namespace:   ns.Name,
 			NamespaceID: ns.ID,
 			FilePath:    newFile.Path,
@@ -361,7 +364,9 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 
 	// Publish pubsub event (rename).
 	if req.Path != "" && updatedFile.Typ.IsDirektivSpecFile() {
-		err = helpers.PublishEventDirektivFileChange(e.bus, updatedFile.Typ, "rename", &pubsub.FileChangeEvent{
+		err = e.bus.DebouncedPublish(&pubsub.FileSystemChangeEvent{
+			Action:      "rename",
+			FileType:    string(updatedFile.Typ),
 			Namespace:   ns.Name,
 			NamespaceID: ns.ID,
 			FilePath:    updatedFile.Path,
@@ -374,7 +379,9 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 
 	// Publish pubsub event (update).
 	if req.Data != "" && updatedFile.Typ.IsDirektivSpecFile() {
-		err = helpers.PublishEventDirektivFileChange(e.bus, updatedFile.Typ, "update", &pubsub.FileChangeEvent{
+		err = e.bus.DebouncedPublish(&pubsub.FileSystemChangeEvent{
+			Action:      "update",
+			FileType:    string(updatedFile.Typ),
 			Namespace:   ns.Name,
 			NamespaceID: ns.ID,
 			FilePath:    updatedFile.Path,
