@@ -256,7 +256,6 @@ func (c *Compiler) CompileFlow() (*FlowInformation, error) {
 }
 
 func parseDefinitionArgs(dec *json.Decoder, item *Definition) error {
-
 	var arg Argument
 	err := dec.Decode(&arg)
 	if err != nil {

@@ -11,7 +11,7 @@ const ExplorerPage = () => {
   if (!isFetched) return null;
 
   // forward 404 errors to the routers error boundary
-  if (isError && isApiErrorSchema(error) && error.response.status === 404) {
+  if (isError && isApiErrorSchema(error) && error.status === 404) {
     throw error;
   }
 

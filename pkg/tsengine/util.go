@@ -6,7 +6,8 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
-	"os"
+
+	"github.com/direktiv/direktiv/pkg/core"
 )
 
 const (
@@ -74,18 +75,11 @@ func CreateMultiPartForm(prefix string, flow, flowPath string, secrets map[strin
 	return pr, writer, errCh
 }
 
-func copyFile(src, dst string) (int64, error) {
-	source, err := os.Open(src)
-	if err != nil {
-		return 0, err
+func GenerateBasicServiceFile(path, ns string) *core.ServiceFileData {
+	return &core.ServiceFileData{
+		Typ:       core.ServiceTypeTypescript,
+		Name:      path,
+		Namespace: ns,
+		FilePath:  path,
 	}
-	defer source.Close()
-
-	destination, err := os.Create(dst)
-	if err != nil {
-		return 0, err
-	}
-	defer destination.Close()
-
-	return io.Copy(destination, source)
 }

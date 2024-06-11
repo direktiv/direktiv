@@ -6,7 +6,7 @@ import (
 
 type CoreBus interface {
 	Publish(channel string, data string) error
-	Loop(done <-chan struct{}, handler func(channel string, data string))
+	Loop(done <-chan struct{}, handler func(channel string, data string)) error
 }
 
 var (

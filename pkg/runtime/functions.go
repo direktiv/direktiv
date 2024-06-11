@@ -62,7 +62,7 @@ func (f *Function) Execute(in interface{}) interface{} {
 	}
 
 	headers := make(map[string]string)
-	headers[DirektivTempDir] = f.runtime.baseDir
+	headers[DirektivTempDir] = f.runtime.dirInfo().instanceDir
 	headers[DirektivActionIDHeader] = f.runtime.id
 
 	httpArgs := HttpArgs{

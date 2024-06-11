@@ -5,12 +5,14 @@ import (
 	"os"
 	"strings"
 
+	"github.com/direktiv/direktiv/cmd/cmdserver"
 	"github.com/direktiv/direktiv/cmd/dinit"
 	"github.com/direktiv/direktiv/cmd/sidecar"
 	"github.com/direktiv/direktiv/cmd/tsengine"
-	_ "github.com/direktiv/direktiv/pkg/gateway2/plugins/auth"
-	_ "github.com/direktiv/direktiv/pkg/gateway2/plugins/inbound"
-	_ "github.com/direktiv/direktiv/pkg/gateway2/plugins/target"
+	_ "github.com/direktiv/direktiv/pkg/gateway/plugins/auth"
+	_ "github.com/direktiv/direktiv/pkg/gateway/plugins/inbound"
+	_ "github.com/direktiv/direktiv/pkg/gateway/plugins/outbound"
+	_ "github.com/direktiv/direktiv/pkg/gateway/plugins/target"
 	"github.com/direktiv/direktiv/pkg/middlewares"
 )
 
@@ -46,6 +48,7 @@ func (h *apikeyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+
 	if key := os.Getenv("DIREKTIV_API_KEY"); key != "" {
 		middlewares.RegisterHTTPMiddleware(func(h http.Handler) http.Handler {
 			return &apikeyHandler{
@@ -62,6 +65,8 @@ func main() {
 		dinit.RunApplication()
 	case "tsengine":
 		tsengine.RunApplication()
+	case "cmdserver":
+		cmdserver.RunApplication()
 	default:
 		// default to flow app.
 		runApplication()

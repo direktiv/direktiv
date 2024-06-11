@@ -121,7 +121,7 @@ test("Route list shows all available routes", async ({ page }) => {
   ).toBeVisible();
 });
 
-test("Route list shows a warning", async ({ page }) => {
+test("Route list shows an error on no target plugin", async ({ page }) => {
   await createFile({
     name: "my-route.yaml",
     namespace,
@@ -150,14 +150,14 @@ test("Route list shows a warning", async ({ page }) => {
   ).toBeVisible();
 
   await expect(
-    page.locator("a").filter({ hasText: "1 warning" }),
-    "there is a link with 1 warning"
-  ).toHaveText("1 warning");
+    page.locator("a").filter({ hasText: "1 error" }),
+    "there is a link with 1 error"
+  ).toHaveText("1 error");
 
-  await page.locator("a").filter({ hasText: "1 warning" }).hover();
+  await page.locator("a").filter({ hasText: "1 error" }).hover();
 
   await expect(
-    page.getByTestId("route-table").getByText("no target plugin set"),
+    page.getByTestId("route-table").getByText("no target plugin found"),
     "it shows the warning details on hover"
   ).toBeVisible();
 });
@@ -204,7 +204,7 @@ test("Route list shows an error", async ({ page }) => {
   await expect(
     page
       .getByTestId("route-table")
-      .getByText("plugin this-plugin-does-not-exist does not exist"),
+      .getByText("plugin 'this-plugin-does-not-exist' err: doesn't exist"),
     "it shows the error detail on hover"
   ).toBeVisible();
 });

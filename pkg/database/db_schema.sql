@@ -142,7 +142,6 @@ CREATE TABLE IF NOT EXISTS "runtime_variables" (
     CONSTRAINT "runtime_variables_unique_2"
     UNIQUE NULLS NOT DISTINCT (namespace, name, workflow_path, instance_id),
 
-    -- TODO: Find a way to clean up runtime vars for workflows when they get deleted.
     CONSTRAINT "fk_instances_v2_runtime_variables"
     FOREIGN KEY ("instance_id") REFERENCES "instances_v2"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
@@ -245,27 +244,3 @@ CREATE TABLE IF NOT EXISTS "event_topics" (
 -- is a compound like this: "namespace-id:event-type"
 CREATE INDEX IF NOT EXISTS "event_topic_bucket" ON "event_topics" USING hash("topic");
 
--- Remove file_annotations.
-DROP TABLE IF EXISTS "file_annotations";
-
--- Remove filesystem_revisions table and move its columns to filesystem_file table.
-ALTER TABLE "instances_v2" DROP COLUMN IF EXISTS "revision_id";
-ALTER TABLE "instances_v2" ADD COLUMN IF NOT EXISTS "server" uuid;
-DROP TABLE IF EXISTS "filesystem_revisions";
-ALTER TABLE "filesystem_files" ADD COLUMN IF NOT EXISTS "data" bytea;
-ALTER TABLE "filesystem_files" ADD COLUMN IF NOT EXISTS "checksum" text;
-ALTER TABLE "event_topics" ADD COLUMN IF NOT EXISTS "filter" text;
-ALTER TABLE "staging_events" ADD COLUMN IF NOT EXISTS "namespace" text;
-ALTER TABLE "events_history" ADD COLUMN IF NOT EXISTS "namespace" text;
-ALTER TABLE "event_listeners" ADD COLUMN IF NOT EXISTS "namespace" text;
-ALTER TABLE "event_listeners" ADD COLUMN IF NOT EXISTS "event_context_filters" text;
-
-ALTER TABLE "event_topics" ADD COLUMN IF NOT EXISTS "namespace" text;
-
-ALTER TABLE "namespaces" DROP COLUMN IF EXISTS "config";
-ALTER TABLE "mirror_configs" ADD COLUMN IF NOT EXISTS "auth_type" text NOT NULL DEFAULT 'public';
-ALTER TABLE "mirror_configs" ADD COLUMN IF NOT EXISTS "auth_token" text;
-
-DROP TABLE IF EXISTS "metrics";
-
-ALTER TABLE "instances_v2" ADD COLUMN IF NOT EXISTS "sync_hash" text UNIQUE;

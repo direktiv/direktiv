@@ -1,8 +1,0 @@
-workflow test
-
-const child-subflow = subflow("child")
-
-call-subflow:
-  call(child-subflow, {
-      message: "hello, world.",
-  })

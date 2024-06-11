@@ -4,103 +4,92 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
-	"log/slog"
 	"net/http"
 	"net/url"
 
 	"github.com/direktiv/direktiv/pkg/core"
-	"github.com/direktiv/direktiv/pkg/gateway/plugins"
+	"github.com/direktiv/direktiv/pkg/gateway"
 	"github.com/slack-go/slack"
 )
 
-const (
-	SlackWebhookPluginName = "slack-webhook-auth"
-)
-
-type SlackWebhookPluginConfig struct {
-	Secret string `mapstructure:"secret" yaml:"secret"`
-}
-
 type SlackWebhookPlugin struct {
-	config *SlackWebhookPluginConfig
+	Secret string `mapstructure:"secret"`
 }
 
-func ConfigureSlackWebhook(config interface{}, _ string) (core.PluginInstance, error) {
-	slackWebhookConfig := &SlackWebhookPluginConfig{}
+func (p *SlackWebhookPlugin) NewInstance(config core.PluginConfig) (core.Plugin, error) {
+	pl := &SlackWebhookPlugin{}
 
-	err := plugins.ConvertConfig(config, slackWebhookConfig)
+	err := gateway.ConvertConfig(config.Config, pl)
 	if err != nil {
 		return nil, err
 	}
 
-	return &SlackWebhookPlugin{
-		config: slackWebhookConfig,
-	}, nil
+	return pl, nil
 }
 
-func (p *SlackWebhookPlugin) Config() interface{} {
-	return p.config
-}
-
-func (p *SlackWebhookPlugin) ExecutePlugin(c *core.ConsumerFile, _ http.ResponseWriter, r *http.Request) bool {
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		slog.Error("can not read slack body", "err", err)
-		return false
+func (p *SlackWebhookPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
+	// check request is already authenticated
+	if gateway.ExtractContextActiveConsumer(r) != nil {
+		return r
 	}
 
-	sv, err := slack.NewSecretsVerifier(r.Header, p.config.Secret)
+	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		slog.Error("can not create slack verifier", "err", err)
-		return false
+		gateway.WriteInternalError(r, w, err, "can not read request body")
+		return nil
+	}
+
+	sv, err := slack.NewSecretsVerifier(r.Header, p.Secret)
+	if err != nil {
+		gateway.WriteInternalError(r, w, err, "can not create slack verifier")
+		return nil
 	}
 
 	if _, err := sv.Write(body); err != nil {
-		slog.Error("can not write slack hmac", "err", err)
-		return false
+		gateway.WriteInternalError(r, w, err, "can not write slack hmac")
+		return nil
 	}
 
 	// hmac is not valid
 	if err := sv.Ensure(); err != nil {
-		slog.Error("slack hmac failed", "err", err)
-		return false
+		gateway.WriteInternalError(r, w, err, "slack hmac failed")
+		return nil
 	}
 
-	*c = core.ConsumerFile{
-		Username: "slack",
+	c := &core.Consumer{
+		ConsumerFile: core.ConsumerFile{
+			Username: "slack",
+		},
 	}
+	// set active comsumer.
+	r = gateway.InjectContextActiveConsumer(r, c)
 
 	// convert to json if url encoded
 	// nolint:canonicalheader
 	if r.Header.Get("Content-type") == "application/x-www-form-urlencoded" {
 		v, err := url.ParseQuery(string(body))
 		if err != nil {
-			slog.Error("can parse url form encoded data", "err", err)
-			return false
+			gateway.WriteInternalError(r, w, err, "can parse url form encoded data")
+			return nil
 		}
 
 		b, err := json.Marshal(v)
 		if err != nil {
-			slog.Error("can not marshal slack data", "err", err)
-			return false
+			gateway.WriteInternalError(r, w, err, "can not marshal slack data")
+			return nil
 		}
-
 		r.Body = io.NopCloser(bytes.NewBuffer(b))
 	} else {
 		r.Body = io.NopCloser(bytes.NewBuffer(body))
 	}
 
-	return true
+	return r
 }
 
 func (*SlackWebhookPlugin) Type() string {
-	return GithubWebhookPluginName
+	return "slack-webhook-auth"
 }
 
-//nolint:gochecknoinits
 func init() {
-	plugins.AddPluginToRegistry(plugins.NewPluginBase(
-		SlackWebhookPluginName,
-		plugins.AuthPluginType,
-		ConfigureSlackWebhook))
+	gateway.RegisterPlugin(&SlackWebhookPlugin{})
 }

@@ -10,42 +10,28 @@ import (
 	"strings"
 
 	"github.com/direktiv/direktiv/pkg/core"
-	"github.com/direktiv/direktiv/pkg/gateway/plugins"
+	"github.com/direktiv/direktiv/pkg/gateway"
 	"github.com/dop251/goja"
 )
 
-const (
-	JSInboundPluginName = "js-inbound"
-)
-
-type JSInboundConfig struct {
+// JSInboundPlugin allows to modify headers, contents and query params of the request.
+type JSInboundPlugin struct {
 	Script string `mapstructure:"script" yaml:"script"`
 }
 
-// JSInboundPlugin allows to modify headers, contents and query params of the request.
-type JSInboundPlugin struct {
-	config *JSInboundConfig
-}
+func (js *JSInboundPlugin) NewInstance(config core.PluginConfig) (core.Plugin, error) {
+	pl := &JSInboundPlugin{}
 
-func ConfigureJSInbound(config interface{}, _ string) (core.PluginInstance, error) {
-	jsConfig := &JSInboundConfig{}
-
-	err := plugins.ConvertConfig(config, jsConfig)
+	err := gateway.ConvertConfig(config.Config, pl)
 	if err != nil {
 		return nil, err
 	}
 
-	return &JSInboundPlugin{
-		config: jsConfig,
-	}, nil
-}
-
-func (js *JSInboundPlugin) Config() interface{} {
-	return js.config
+	return pl, nil
 }
 
 func (js *JSInboundPlugin) Type() string {
-	return JSInboundPluginName
+	return "js-inbound"
 }
 
 type Query struct {
@@ -79,7 +65,7 @@ type request struct {
 	// Queries shared.Query
 	Body string
 
-	Consumer *core.ConsumerFile
+	Consumer *core.Consumer
 
 	// url params of type /{id}
 	URLParams map[string]string
@@ -88,9 +74,7 @@ type request struct {
 	Status int
 }
 
-func (js *JSInboundPlugin) ExecutePlugin(c *core.ConsumerFile,
-	w http.ResponseWriter, r *http.Request,
-) bool {
+func (js *JSInboundPlugin) Execute(w http.ResponseWriter, r *http.Request) *http.Request {
 	var (
 		err error
 		b   []byte
@@ -99,28 +83,20 @@ func (js *JSInboundPlugin) ExecutePlugin(c *core.ConsumerFile,
 	if r.Body != nil {
 		b, err = io.ReadAll(r.Body)
 		if err != nil {
-			plugins.ReportError(r.Context(), w, http.StatusInternalServerError,
-				"can not set read body for js inbound plugin", err)
-
-			return false
+			gateway.WriteInternalError(r, w, err, "can not set read body for js inbound plugin")
+			return nil
 		}
 		defer r.Body.Close()
 	}
 
 	vm := goja.New()
 
-	// add consumer
-	if c == nil {
-		c = &core.ConsumerFile{}
-	}
+	c := gateway.ExtractContextActiveConsumer(r)
 
 	// add url param
 	urlParams := make(map[string]string)
-
-	up := r.Context().Value(plugins.URLParamCtxKey)
-	if up != nil {
-		// nolint we know it is from us
-		urlParams = up.(map[string]string)
+	for _, param := range gateway.ExtractContextURLParams(r) {
+		urlParams[param] = r.PathValue(param)
 	}
 
 	req := request{
@@ -135,31 +111,25 @@ func (js *JSInboundPlugin) ExecutePlugin(c *core.ConsumerFile,
 	// extract all response headers and body
 	err = vm.Set("input", req)
 	if err != nil {
-		plugins.ReportError(r.Context(), w, http.StatusInternalServerError,
-			"can not set input object", err)
-
-		return false
+		gateway.WriteInternalError(r, w, err, "can not set input object")
+		return nil
 	}
 
 	err = vm.Set("log", func(txt interface{}) {
 		slog.Info("js log", slog.Any("log", txt))
 	})
 	if err != nil {
-		plugins.ReportError(r.Context(), w, http.StatusInternalServerError,
-			"can not set log function", err)
-
-		return false
+		gateway.WriteInternalError(r, w, err, "can not set log function")
+		return nil
 	}
 
 	script := fmt.Sprintf("function run() { %s; return input } run()",
-		js.config.Script)
+		js.Script)
 
 	val, err := vm.RunScript("plugin", script)
 	if err != nil {
-		plugins.ReportError(r.Context(), w, http.StatusInternalServerError,
-			"can not execute script", err)
-
-		return false
+		gateway.WriteInternalError(r, w, err, "can not execute script")
+		return nil
 	}
 
 	if val != nil && !val.Equals(goja.Undefined()) {
@@ -183,39 +153,29 @@ func (js *JSInboundPlugin) ExecutePlugin(c *core.ConsumerFile,
 
 			// script set status code and stop executing other plugins
 			if responseDone.Status > 0 {
-				return serveResponse(w, responseDone)
+				// writing headers to response
+				addHeader(responseDone.Headers, w.Header())
+
+				// set was the incoming content-length
+				w.Header().Del("Content-Length")
+
+				// set status from script
+				w.WriteHeader(responseDone.Status)
+
+				// write response body
+				// nolint
+				w.Write([]byte(responseDone.Body))
+
+				return nil
 			}
 		}
 	}
 
-	return true
+	return r
 }
 
-//nolint:gochecknoinits
 func init() {
-	plugins.AddPluginToRegistry(plugins.NewPluginBase(
-		JSInboundPluginName,
-		plugins.InboundPluginType,
-		ConfigureJSInbound))
-}
-
-// serveResponse is writing the response directly to the client if the a status
-// code is set within the Javascript.
-func serveResponse(w http.ResponseWriter, req request) bool {
-	// writing headers to response
-	addHeader(req.Headers, w.Header())
-
-	// set was the incoming content-length
-	w.Header().Del("Content-Length")
-
-	// set status from script
-	w.WriteHeader(req.Status)
-
-	// write response body
-	// nolint
-	w.Write([]byte(req.Body))
-
-	return false
+	gateway.RegisterPlugin(&JSInboundPlugin{})
 }
 
 func addHeader(getHeader, setHeader http.Header) {

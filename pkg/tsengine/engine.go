@@ -2,6 +2,7 @@ package tsengine
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -75,6 +76,9 @@ func (e *Engine) Initialize(prg *goja.Program, fn string, secrets map[string]str
 }
 
 func (e *Engine) RunRequest(req *http.Request, resp http.ResponseWriter) {
+
+	fmt.Println("RUN REQUEST!!!!")
+
 	id := uuid.New()
 
 	atomic.AddInt32(&e.Status.Active, 1)

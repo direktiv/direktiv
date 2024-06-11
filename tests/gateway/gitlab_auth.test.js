@@ -70,6 +70,6 @@ describe('Test gitlab auth plugin', () => {
 			.set('X-Gitlab-Token', 'wrongsecret')
 			.send({ hello: 'world' })
 
-		expect(req.statusCode).toEqual(401)
+		expect(req.statusCode).toEqual(403)
 	})
 })
