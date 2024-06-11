@@ -15,13 +15,16 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	enginerefactor "github.com/direktiv/direktiv/pkg/engine"
 	"github.com/direktiv/direktiv/pkg/flow"
 	"github.com/direktiv/direktiv/pkg/utils"
+	"github.com/google/uuid"
 )
 
 type inboundWorker struct {
@@ -68,15 +71,6 @@ func (worker *inboundWorker) run() {
 	}
 
 	slog.Debug("Worker shut down.", "worker_id", worker.id)
-}
-
-func (worker *inboundWorker) fileReader(ctx context.Context, ir *functionRequest, f *functionFiles, pw *io.PipeWriter) error {
-	err := worker.srv.getVar(ctx, ir, pw, nil, f.Scope, f.Key)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 type outcome struct {
@@ -136,29 +130,6 @@ func (worker *inboundWorker) doFunctionRequest(ctx context.Context, ir *function
 	}
 
 	return out, nil
-}
-
-func (worker *inboundWorker) prepOneFunctionFiles(ctx context.Context, ir *functionRequest, f *functionFiles) error {
-	pr, pw := io.Pipe()
-
-	go func() {
-		err := worker.fileReader(ctx, ir, f, pw)
-		if err != nil {
-			_ = pw.CloseWithError(err)
-		} else {
-			_ = pw.Close()
-		}
-	}()
-
-	err := worker.fileWriter(ctx, ir, f, pr)
-	if err != nil {
-		_ = pr.CloseWithError(err)
-		return err
-	}
-
-	_ = pr.Close()
-
-	return nil
 }
 
 func untarFile(tr *tar.Reader, perms string, path string) error {
@@ -360,6 +331,8 @@ func (worker *inboundWorker) writeFile(ftype, dst, perms string, pr io.Reader) e
 }
 
 func (worker *inboundWorker) fileWriter(ctx context.Context, ir *functionRequest, f *functionFiles, pr *io.PipeReader) error {
+	slog.Info("starting writer", "f", f)
+
 	dir := worker.functionDir(ir)
 	dst := f.Key
 	if f.As != "" {
@@ -409,14 +382,10 @@ func (worker *inboundWorker) prepFunctionFiles(ctx context.Context, ir *function
 	if err != nil {
 		return err
 	}
-
-	for i, f := range ir.files {
-		err = worker.prepOneFunctionFiles(ctx, ir, f)
-		if err != nil {
-			return fmt.Errorf("failed to prepare function files %d: %w", i, err)
-		}
+	err = worker.fetchFunctionFiles(ctx, ir)
+	if err != nil {
+		return err
 	}
-
 	subDirs := []string{utils.VarScopeFileSystem, utils.VarScopeNamespace, utils.VarScopeWorkflow, utils.VarScopeInstance}
 	for _, d := range subDirs {
 		err := os.MkdirAll(path.Join(dir, fmt.Sprintf("out/%s", d)), 0o777)
@@ -426,6 +395,261 @@ func (worker *inboundWorker) prepFunctionFiles(ctx context.Context, ir *function
 	}
 
 	return nil
+}
+
+type variable struct {
+	ID        uuid.UUID `json:"id"`
+	Typ       string    `json:"type"`
+	Reference string    `json:"reference"`
+	Name      string    `json:"name"`
+	Data      []byte    `json:"data"`
+	Size      int       `json:"size"`
+	MimeType  string    `json:"mimeType"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+}
+type variablesResponse struct {
+	Data  []variable `json:"data"`
+	Error *any       `json:"error"`
+}
+
+type variableResponse struct {
+	Data  variable `json:"data"`
+	Error *any     `json:"error"`
+}
+
+type file struct {
+	Path      string      `json:"path"`
+	Type      string      `json:"type"`
+	Data      string      `json:"data"`
+	Size      int         `json:"size"`
+	MIMEType  string      `json:"mimeType"`
+	CreatedAt string      `json:"createdAt"`
+	UpdatedAt string      `json:"updatedAt"`
+	Children  interface{} `json:"children,omitempty"`
+}
+
+type decodedFilesResponse struct {
+	Error any  `json:"error,omitempty"`
+	Data  file `json:"data,omitempty"`
+}
+
+func (worker *inboundWorker) getReferencedFile(ctx context.Context, namespace string, path string) ([]byte, error) {
+	addr := fmt.Sprintf("http://%v/api/v2/namespaces/%v/files/%v", worker.srv.flowAddr, namespace, path)
+	client := &http.Client{}
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, addr, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Direktiv-Token", worker.srv.flowToken)
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+	}
+
+	var respData decodedFilesResponse
+	if resp.Body == nil {
+		return nil, fmt.Errorf("unexpected failure body was nil")
+	}
+	decoder := json.NewDecoder(resp.Body)
+	if err = decoder.Decode(&respData); err != nil {
+		return nil, err
+	}
+	var d []byte
+
+	if respData.Data.Data != "" {
+		d, err = base64.StdEncoding.DecodeString(respData.Data.Data)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return d, nil
+}
+
+func (worker *inboundWorker) getNamespaceVariables(ctx context.Context, ir *functionRequest) (*variablesResponse, error) {
+	addr := fmt.Sprintf("http://%v/api/v2/namespaces/%v/variables", worker.srv.flowAddr, ir.namespace)
+	client := &http.Client{}
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, addr, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Direktiv-Token", worker.srv.flowToken)
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	namespaceVariables := variablesResponse{}
+	decoder := json.NewDecoder(resp.Body)
+	if err = decoder.Decode(&namespaceVariables); err != nil {
+		return nil, err
+	}
+
+	return &namespaceVariables, nil
+}
+
+func (worker *inboundWorker) getWorkflowVariables(ctx context.Context, ir *functionRequest) (*variablesResponse, error) {
+	addr := fmt.Sprintf("http://%v/api/v2/namespaces/%v/variables?workflowPath=%v", worker.srv.flowAddr, ir.namespace, ir.workflowPath)
+	client := &http.Client{}
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, addr, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Direktiv-Token", worker.srv.flowToken)
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	workflowVariables := variablesResponse{}
+	decoder := json.NewDecoder(resp.Body)
+	if err = decoder.Decode(&workflowVariables); err != nil {
+		return nil, err
+	}
+
+	return &workflowVariables, nil
+}
+
+func (worker *inboundWorker) getInstanceVariables(ctx context.Context, ir *functionRequest) (*variablesResponse, error) {
+	addr := fmt.Sprintf("http://%v/api/v2/namespaces/%v/variables?instanceId=%v", worker.srv.flowAddr, ir.namespace, ir.instanceId)
+	client := &http.Client{}
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, addr, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Direktiv-Token", worker.srv.flowToken)
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	instanceVariables := variablesResponse{}
+	decoder := json.NewDecoder(resp.Body)
+	if err = decoder.Decode(&instanceVariables); err != nil {
+		return nil, err
+	}
+
+	return &instanceVariables, nil
+}
+
+func (worker *inboundWorker) fetchFunctionFiles(ctx context.Context, ir *functionRequest) error {
+	namespaceVariables, err := worker.getNamespaceVariables(ctx, ir)
+	if err != nil {
+		return err
+	}
+
+	wfVar, err := worker.getWorkflowVariables(ctx, ir)
+	if err != nil {
+		return err
+	}
+
+	insVars, err := worker.getInstanceVariables(ctx, ir)
+	if err != nil {
+		return err
+	}
+
+	vars := append(namespaceVariables.Data, wfVar.Data...)
+	vars = append(vars, insVars.Data...)
+	slog.Info("variables for processing", "data", fmt.Sprintf("%v", vars))
+	for i := range ir.files {
+		file := ir.files[i]
+		typ, err := determineVarType(file.Scope)
+		if err != nil {
+			return err
+		}
+
+		idx := slices.IndexFunc(vars, func(e variable) bool { return e.Typ == typ && e.Name == file.Key })
+		pr, pw := io.Pipe()
+		go func(flowToken string, flowAddr string, namespace string, file *functionFiles, idx int) {
+			var data []byte
+			var err error
+			if typ == "file" {
+				data, err = worker.getReferencedFile(ctx, namespace, file.Key)
+				if err != nil {
+					slog.Info("failed fetching file", "error", err)
+				}
+			}
+
+			if idx > -1 {
+				slog.Info("starting request api rotine", "file", file, "idx", idx, "id", vars[idx].ID)
+				addr := fmt.Sprintf("http://%v/api/v2/namespaces/%v/variables/%v", flowAddr, namespace, vars[idx].ID)
+				client := &http.Client{}
+				req, err := http.NewRequestWithContext(ctx, http.MethodGet, addr, nil)
+				if err != nil {
+					sysErr := pw.CloseWithError(err)
+					if sysErr != nil {
+						slog.Error("failed fetching files with", "error", sysErr)
+					}
+				}
+				req.Header.Set("Direktiv-Token", flowToken)
+				resp, err := client.Do(req)
+				if err != nil {
+					sysErr := pw.CloseWithError(err)
+					if sysErr != nil {
+						slog.Error("failed fetching files with", "error", sysErr)
+					}
+				}
+				defer resp.Body.Close()
+
+				variable := variableResponse{}
+				decoder := json.NewDecoder(resp.Body)
+				if err = decoder.Decode(&variable); err != nil {
+					sysErr := pw.CloseWithError(err)
+					if sysErr != nil {
+						slog.Error("failed fetching files with", "error", sysErr)
+					}
+				}
+				data = variable.Data.Data
+			}
+			_, err = io.Copy(pw, bytes.NewReader(data))
+			if err != nil {
+				sysErr := pw.CloseWithError(err)
+				if sysErr != nil {
+					slog.Error("failed fetching files with", "error", sysErr)
+				}
+			}
+
+			pw.Close()
+		}(worker.srv.flowToken, worker.srv.flowAddr, ir.namespace, file, idx)
+
+		err = worker.fileWriter(ctx, ir, file, pr)
+		if err != nil {
+			sysErr := pr.CloseWithError(err)
+			if sysErr != nil {
+				slog.Error("failed fetching files with", "error", sysErr)
+			}
+
+			return err
+		}
+	}
+
+	return nil
+}
+
+func determineVarType(fileScope string) (string, error) {
+	switch fileScope {
+	case utils.VarScopeFileSystem:
+		return "file", nil
+	case utils.VarScopeInstance:
+		return "instance-variable", nil
+	case utils.VarScopeWorkflow:
+		return "workflow-variable", nil
+	case utils.VarScopeNamespace:
+		return "namespace-variable", nil
+	case utils.VarScopeSystem:
+	case utils.VarScopeThread:
+	}
+
+	return "", fmt.Errorf("Unknown scope")
 }
 
 func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
@@ -462,14 +686,15 @@ func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
 		}
 	}
 	ir := &functionRequest{
-		actionId:   aid,
-		instanceId: action.Instance,
-		namespace:  action.Namespace,
-		step:       action.Step,
-		deadline:   action.Deadline,
-		input:      action.UserInput,
-		iterator:   action.Branch,
-		files:      files,
+		actionId:     aid,
+		instanceId:   action.Instance,
+		namespace:    action.Namespace,
+		step:         action.Step,
+		deadline:     action.Deadline,
+		input:        action.UserInput,
+		iterator:     action.Branch,
+		files:        files,
+		workflowPath: action.Workflow,
 	}
 
 	ctx := req.r.Context()
