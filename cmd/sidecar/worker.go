@@ -382,7 +382,7 @@ func (worker *inboundWorker) prepFunctionFiles(ctx context.Context, ir *function
 	if err != nil {
 		return err
 	}
-	err = worker.fetchFunctionFiles(ctx, ir)
+	err = fetchFunctionFiles(ctx, worker.srv.flowToken, worker.srv.flowAddr, ir, worker.fileWriter)
 	if err != nil {
 		return err
 	}
@@ -434,15 +434,15 @@ type decodedFilesResponse struct {
 	Data  file `json:"data,omitempty"`
 }
 
-func (worker *inboundWorker) getReferencedFile(ctx context.Context, namespace string, path string) ([]byte, error) {
-	addr := fmt.Sprintf("http://%v/api/v2/namespaces/%v/files/%v", worker.srv.flowAddr, namespace, path)
+func getReferencedFile(ctx context.Context, flowToken, flowAddr, namespace string, path string) ([]byte, error) {
+	addr := fmt.Sprintf("http://%v/api/v2/namespaces/%v/files/%v", flowAddr, namespace, path)
 	client := &http.Client{}
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, addr, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	req.Header.Set("Direktiv-Token", worker.srv.flowToken)
+	req.Header.Set("Direktiv-Token", flowToken)
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
@@ -472,14 +472,14 @@ func (worker *inboundWorker) getReferencedFile(ctx context.Context, namespace st
 	return d, nil
 }
 
-func (worker *inboundWorker) getNamespaceVariables(ctx context.Context, ir *functionRequest) (*variablesResponse, error) {
-	addr := fmt.Sprintf("http://%v/api/v2/namespaces/%v/variables", worker.srv.flowAddr, ir.namespace)
+func getNamespaceVariables(ctx context.Context, flowToken string, flowAddr string, ir *functionRequest) (*variablesResponse, error) {
+	addr := fmt.Sprintf("http://%v/api/v2/namespaces/%v/variables", flowAddr, ir.namespace)
 	client := &http.Client{}
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, addr, nil)
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Direktiv-Token", worker.srv.flowToken)
+	req.Header.Set("Direktiv-Token", flowToken)
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
@@ -495,14 +495,14 @@ func (worker *inboundWorker) getNamespaceVariables(ctx context.Context, ir *func
 	return &namespaceVariables, nil
 }
 
-func (worker *inboundWorker) getWorkflowVariables(ctx context.Context, ir *functionRequest) (*variablesResponse, error) {
-	addr := fmt.Sprintf("http://%v/api/v2/namespaces/%v/variables?workflowPath=%v", worker.srv.flowAddr, ir.namespace, ir.workflowPath)
+func getWorkflowVariables(ctx context.Context, flowToken string, flowAddr string, ir *functionRequest) (*variablesResponse, error) {
+	addr := fmt.Sprintf("http://%v/api/v2/namespaces/%v/variables?workflowPath=%v", flowAddr, ir.namespace, ir.workflowPath)
 	client := &http.Client{}
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, addr, nil)
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Direktiv-Token", worker.srv.flowToken)
+	req.Header.Set("Direktiv-Token", flowToken)
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
@@ -518,14 +518,14 @@ func (worker *inboundWorker) getWorkflowVariables(ctx context.Context, ir *funct
 	return &workflowVariables, nil
 }
 
-func (worker *inboundWorker) getInstanceVariables(ctx context.Context, ir *functionRequest) (*variablesResponse, error) {
-	addr := fmt.Sprintf("http://%v/api/v2/namespaces/%v/variables?instanceId=%v", worker.srv.flowAddr, ir.namespace, ir.instanceId)
+func getInstanceVariables(ctx context.Context, flowToken string, flowAddr string, ir *functionRequest) (*variablesResponse, error) {
+	addr := fmt.Sprintf("http://%v/api/v2/namespaces/%v/variables?instanceId=%v", flowAddr, ir.namespace, ir.instanceId)
 	client := &http.Client{}
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, addr, nil)
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Direktiv-Token", worker.srv.flowToken)
+	req.Header.Set("Direktiv-Token", flowToken)
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
@@ -541,18 +541,18 @@ func (worker *inboundWorker) getInstanceVariables(ctx context.Context, ir *funct
 	return &instanceVariables, nil
 }
 
-func (worker *inboundWorker) fetchFunctionFiles(ctx context.Context, ir *functionRequest) error {
-	namespaceVariables, err := worker.getNamespaceVariables(ctx, ir)
+func fetchFunctionFiles(ctx context.Context, flowToken string, flowAddr string, ir *functionRequest, fileWriter func(context.Context, *functionRequest, *functionFiles, *io.PipeReader) error) error {
+	namespaceVariables, err := getNamespaceVariables(ctx, flowToken, flowAddr, ir)
 	if err != nil {
 		return err
 	}
 
-	wfVar, err := worker.getWorkflowVariables(ctx, ir)
+	wfVar, err := getWorkflowVariables(ctx, flowToken, flowAddr, ir)
 	if err != nil {
 		return err
 	}
 
-	insVars, err := worker.getInstanceVariables(ctx, ir)
+	insVars, err := getInstanceVariables(ctx, flowToken, flowAddr, ir)
 	if err != nil {
 		return err
 	}
@@ -573,7 +573,7 @@ func (worker *inboundWorker) fetchFunctionFiles(ctx context.Context, ir *functio
 			var data []byte
 			var err error
 			if typ == "file" {
-				data, err = worker.getReferencedFile(ctx, namespace, file.Key)
+				data, err = getReferencedFile(ctx, flowToken, flowAddr, namespace, file.Key)
 				if err != nil {
 					slog.Info("failed fetching file", "error", err)
 				}
@@ -619,9 +619,9 @@ func (worker *inboundWorker) fetchFunctionFiles(ctx context.Context, ir *functio
 			}
 
 			pw.Close()
-		}(worker.srv.flowToken, worker.srv.flowAddr, ir.namespace, file, idx)
+		}(flowToken, flowAddr, ir.namespace, file, idx)
 
-		err = worker.fileWriter(ctx, ir, file, pr)
+		err = fileWriter(ctx, ir, file, pr)
 		if err != nil {
 			sysErr := pr.CloseWithError(err)
 			if sysErr != nil {

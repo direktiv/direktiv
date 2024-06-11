@@ -9,7 +9,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-	"strconv"
+	"slices"
 	"sync"
 	"time"
 
@@ -233,14 +233,17 @@ func (srv *LocalServer) varHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 
-		setTotalSize := func(x int64) {
-			w.Header().Set("Content-Length", strconv.Itoa(int(x)))
-		}
-
-		err := srv.getVar(ctx, ir, w, setTotalSize, scope, key)
+		variable, err := getVariableFromFlow(ctx, srv.flowToken, srv.flowAddr, ir, scope, key)
 		if err != nil {
 			reportError(http.StatusInternalServerError, err)
 			slog.Warn("Failed retrieving a Variable.", "action_id", actionId, "key", key, "scope", scope)
+
+			return
+		}
+		_, err = io.Copy(w, bytes.NewReader(variable.Data))
+		if err != nil {
+			reportError(http.StatusInternalServerError, err)
+			slog.Error("Failed retrieving a Variable.", "action_id", actionId, "key", key, "scope", scope)
 
 			return
 		}
@@ -399,69 +402,6 @@ type functionFiles struct {
 
 const sharedDir = "/mnt/shared"
 
-type varClient interface {
-	CloseSend() error
-}
-
-type varClientMsg interface {
-	GetTotalSize() int64
-	GetData() []byte
-}
-
-func (srv *LocalServer) requestVar(ctx context.Context, ir *functionRequest, scope, key string) (client varClient, recv func() (varClientMsg, error), err error) {
-	switch scope {
-	case utils.VarScopeFileSystem:
-		var nvClient grpc.Internal_NamespaceVariableParcelsClient
-		nvClient, err = srv.flow.FileVariableParcels(ctx, &grpc.VariableInternalRequest{
-			Instance: ir.instanceId,
-			Key:      key,
-		})
-		client = nvClient
-		recv = func() (varClientMsg, error) {
-			return nvClient.Recv()
-		}
-	case utils.VarScopeNamespace:
-		var nvClient grpc.Internal_NamespaceVariableParcelsClient
-		nvClient, err = srv.flow.NamespaceVariableParcels(ctx, &grpc.VariableInternalRequest{
-			Instance: ir.instanceId,
-			Key:      key,
-		})
-		client = nvClient
-		recv = func() (varClientMsg, error) {
-			return nvClient.Recv()
-		}
-
-	case utils.VarScopeWorkflow:
-		var wvClient grpc.Internal_WorkflowVariableParcelsClient
-		wvClient, err = srv.flow.WorkflowVariableParcels(ctx, &grpc.VariableInternalRequest{
-			Instance: ir.instanceId,
-			Key:      key,
-		})
-		client = wvClient
-		recv = func() (varClientMsg, error) {
-			return wvClient.Recv()
-		}
-
-	case "":
-		fallthrough
-
-	case utils.VarScopeInstance:
-		var ivClient grpc.Internal_InstanceVariableParcelsClient
-		ivClient, err = srv.flow.InstanceVariableParcels(ctx, &grpc.VariableInternalRequest{
-			Instance: ir.instanceId,
-			Key:      key,
-		})
-		client = ivClient
-		recv = func() (varClientMsg, error) {
-			return ivClient.Recv()
-		}
-
-	default:
-		panic(scope)
-	}
-	return
-}
-
 type varSetClient interface {
 	CloseAndRecv() (*grpc.SetVariableInternalResponse, error)
 }
@@ -599,54 +539,38 @@ func (srv *LocalServer) setVar(ctx context.Context, ir *functionRequest, totalSi
 	return nil
 }
 
-func (srv *LocalServer) getVar(ctx context.Context, ir *functionRequest, w io.Writer, setTotalSize func(x int64), scope, key string) error {
-	client, recv, err := srv.requestVar(ctx, ir, scope, key)
-	if err != nil {
-		return err
-	}
-
-	var received int64
-	noEOF := true
-	for noEOF {
-		msg, err := recv()
-		if errors.Is(err, io.EOF) {
-			noEOF = false
-		} else if err != nil {
-			return err
-		}
-
-		if msg == nil {
-			continue
-		}
-
-		totalSize := msg.GetTotalSize()
-
-		if setTotalSize != nil {
-			setTotalSize(totalSize)
-			setTotalSize = nil
-		}
-
-		data := msg.GetData()
-		received += int64(len(data))
-
-		if received > totalSize {
-			return errors.New("variable returned too many bytes")
-		}
-
-		_, err = io.Copy(w, bytes.NewReader(data))
+func getVariableFromFlow(ctx context.Context, flowToken string, flowAddr string, ir *functionRequest, scope, key string) (variable, error) {
+	var varResp *variablesResponse
+	var err error
+	typ := ""
+	switch scope {
+	case utils.VarScopeInstance:
+		varResp, err = getInstanceVariables(ctx, flowToken, flowAddr, ir)
 		if err != nil {
-			return err
+			return variable{}, err
 		}
+		typ = "instance-variable"
 
-		if totalSize == received {
-			break
+	case utils.VarScopeWorkflow:
+		varResp, err = getWorkflowVariables(ctx, flowToken, flowAddr, ir)
+		if err != nil {
+			return variable{}, err
 		}
+		typ = "workflow-variable"
+	case utils.VarScopeNamespace:
+		varResp, err = getNamespaceVariables(ctx, flowToken, flowAddr, ir)
+		if err != nil {
+			return variable{}, err
+		}
+		typ = "namespace-variable"
+	default:
+		return variable{}, fmt.Errorf("Unknown scope was passed")
 	}
 
-	err = client.CloseSend()
-	if err != nil && !errors.Is(err, io.EOF) {
-		return err
+	idx := slices.IndexFunc(varResp.Data, func(e variable) bool { return e.Typ == typ && e.Name == key })
+	if idx < 0 {
+		return variable{}, fmt.Errorf("failed to fetch variable %v:%v is unknown", scope, key)
 	}
 
-	return nil
+	return varResp.Data[idx], nil
 }
