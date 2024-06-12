@@ -56,10 +56,7 @@ const ExplorerPage: FC = () => {
   );
 
   const filteredFiles = useMemo(
-    () =>
-      (children ?? [])?.filter(
-        (child) => !hasQuery || child.path.includes(query)
-      ),
+    () => children.filter((child) => !hasQuery || child.path.includes(query)),
     [hasQuery, query, children]
   );
 
