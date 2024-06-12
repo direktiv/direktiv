@@ -30,8 +30,6 @@ var instancesPushCmd = &cobra.Command{
 			return err
 		}
 
-		fmt.Println(p.Address)
-
 		fullPath, err := filepath.Abs(args[0])
 		if err != nil {
 			return err
@@ -42,24 +40,91 @@ var instancesPushCmd = &cobra.Command{
 			return err
 		}
 
-		fp, err := filepath.Rel(projectRoot, fullPath)
+		// at this stage there is a direktivignore file
+		// matcher, err := loadIgnoresMatcher(filepath.Join(projectRoot, ".direktivignore"))
+		// if err != nil {
+		// 	return err
+		// }
+
+		uploader, err := newUploader(projectRoot, p)
 		if err != nil {
 			return err
 		}
+
+		// fmt.Printf("PROJECT ROOT %v\n", projectRoot)
+		// fmt.Printf("PATH         %v\n", fullPath)
+
+		// fp, err := filepath.Rel(projectRoot, fullPath)
+		// if err != nil {
+		// 	return err
+		// }
+
+		// fmt.Printf("PATH CALC    %v\n", fp)
 		// fp = fmt.Sprintf("/%s", fp)
 
 		fmt.Println("------------------------")
 		err = filepath.Walk(args[0], func(path string, info os.FileInfo, err error) error {
 
-			// 	println(info.Name())
-			fmt.Println(path)
+			fullPath, err := filepath.Abs(path)
+			if err != nil {
+				return err
+			}
 
-			fmt.Printf(">>> %v %v\n", fp, path)
+			// http://192.168.0.108/api/v2/namespaces/test/files/
+			// {
+			// 	"name": "sss.yaml",
+			// 	"data": "ZGlyZWt0aXZfYXBpOiB3b3JrZmxvdy92MQpkZXNjcmlwdGlvbjogQSBzaW1wbGUgJ25vLW9wJyBzdGF0ZSB0aGF0IHJldHVybnMgJ0hlbGxvIHdvcmxkIScKc3RhdGVzOgotIGlkOiBoZWxsb3dvcmxkCiAgdHlwZTogbm9vcAogIHRyYW5zZm9ybToKICAgIHJlc3VsdDogSGVsbG8gd29ybGQhCg==",
+			// 	"type": "workflow",
+			// 	"mimeType": "application/yaml"
+			//   }
 
-			// fmt.Println(strings.Split(path, fp))
+			// fmt.Printf("FULL %v\n", fullPath)
 
-			p, e := GetRelativePath(fp, path)
-			fmt.Printf("FILES %v %v\n", p, e)
+			// fp, err := filepath.Rel(projectRoot, fullPath)
+			// if err != nil {
+			// 	return err
+			// }
+
+			// fmt.Printf("PATH CALC    %v\n", fp)
+
+			p, err := GetRelativePath(projectRoot, fullPath)
+			if err != nil {
+				return err
+			}
+			// fmt.Printf("!!! %v %v\n", p, err)
+
+			// fmt.Printf("MATCHER %+v\n", matcher)
+
+			if info.IsDir() {
+				err = uploader.createDirectory(p)
+			} else {
+				err = uploader.createFile(p, fullPath)
+			}
+
+			if err != nil {
+				return err
+			}
+
+			// if matcher.Match(strings.Split(p, string(os.PathSeparator)), info.IsDir()) {
+			// 	fmt.Println("MATCH")
+			// } else {
+			// 	fmt.Println("NO MATCH")
+			// }
+
+			// println(info.Name())
+			// fmt.Println(path)
+
+			// fmt.Printf(">>> %v %v\n", fp, path)
+
+			// // fmt.Println(strings.Split(path, fp))
+
+			// fp, err := filepath.Rel(projectRoot, path)
+			// if err != nil {
+			// 	return err
+			// }
+			// fmt.Printf("PATH CALC    %v\n", fp)
+			// p, e := GetRelativePath(fp, path)
+			// fmt.Printf("FILES %v %v\n", p, e)
 			// a, b := filepath.Rel(path, fp)
 			// fmt.Printf("!! %v %v\n", a, b)
 			// 	if strings.HasSuffix(info.Name(), ".direktiv.ts") {
