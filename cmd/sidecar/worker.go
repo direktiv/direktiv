@@ -19,12 +19,10 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 
 	enginerefactor "github.com/direktiv/direktiv/pkg/engine"
 	"github.com/direktiv/direktiv/pkg/flow"
 	"github.com/direktiv/direktiv/pkg/utils"
-	"github.com/google/uuid"
 )
 
 type inboundWorker struct {
@@ -395,43 +393,6 @@ func (worker *inboundWorker) prepFunctionFiles(ctx context.Context, ir *function
 	}
 
 	return statusCode, nil
-}
-
-type variable struct {
-	ID        uuid.UUID `json:"id"`
-	Typ       string    `json:"type"`
-	Reference string    `json:"reference"`
-	Name      string    `json:"name"`
-	Data      []byte    `json:"data"`
-	Size      int       `json:"size"`
-	MimeType  string    `json:"mimeType"`
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
-}
-type variablesResponse struct {
-	Data  []variable `json:"data"`
-	Error *any       `json:"error"`
-}
-
-type variableResponse struct {
-	Data  variable `json:"data"`
-	Error *any     `json:"error"`
-}
-
-type file struct {
-	Path      string      `json:"path"`
-	Type      string      `json:"type"`
-	Data      string      `json:"data"`
-	Size      int         `json:"size"`
-	MIMEType  string      `json:"mimeType"`
-	CreatedAt string      `json:"createdAt"`
-	UpdatedAt string      `json:"updatedAt"`
-	Children  interface{} `json:"children,omitempty"`
-}
-
-type decodedFilesResponse struct {
-	Error any  `json:"error,omitempty"`
-	Data  file `json:"data,omitempty"`
 }
 
 func getReferencedFile(ctx context.Context, flowToken, flowAddr, namespace string, path string) ([]byte, int, error) {

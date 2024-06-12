@@ -24,15 +24,6 @@ const (
 	workerThreads = 10
 )
 
-type RessourceNotFoundError struct {
-	Key   string
-	Scope string
-}
-
-func (e *RessourceNotFoundError) Error() string {
-	return fmt.Sprintf("variable with key %s not found in scope %s", e.Key, e.Scope)
-}
-
 type LocalServer struct {
 	end       func()
 	flow      grpc.InternalClient
@@ -545,25 +536,6 @@ func getVariableDataViaID(ctx context.Context, flowToken string, flowAddr string
 	}
 
 	return v, nil
-}
-
-type createVarRequest struct {
-	Name             string `json:"name"`
-	MimeType         string `json:"mimeType"`
-	Data             []byte `json:"data"`
-	InstanceIDString string `json:"instanceId"`
-	WorkflowPath     string `json:"workflowPath"`
-	Error            Error  `json:"error"`
-}
-
-type Error struct {
-	Code       string            `json:"code"`
-	Message    string            `json:"message"`
-	Validation map[string]string `json:"validation,omitempty"`
-}
-
-type apiError struct {
-	Error Error `json:"error"`
 }
 
 func postVarData(ctx context.Context, flowToken string, flowAddr string, namespace string, body createVarRequest) (int, error) {
