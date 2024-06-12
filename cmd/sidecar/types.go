@@ -32,7 +32,7 @@ type RessourceNotFoundError struct {
 }
 
 func (e *RessourceNotFoundError) Error() string {
-	return fmt.Sprintf("variable with key %s not found in scope %s", e.Key, e.Scope)
+	return fmt.Sprintf("ressource with key %s not found in scope %s", e.Key, e.Scope)
 }
 
 type variable struct {
