@@ -830,6 +830,7 @@ test("it is possible to search for a name and only display files with that name"
   ).toHaveCount(2);
 
   filter.click();
+  page.keyboard.press("Delete");
   await filter.fill("yaml");
 
   expect(
@@ -838,6 +839,7 @@ test("it is possible to search for a name and only display files with that name"
   ).toHaveCount(3);
 
   filter.click();
+  page.keyboard.press("Delete");
   await filter.fill("test");
 
   expect(
@@ -845,8 +847,9 @@ test("it is possible to search for a name and only display files with that name"
     "it renders one element for this query"
   ).toHaveCount(1);
 
-  filter.click();
-  await filter.fill("");
+  await page.reload({
+    waitUntil: "networkidle",
+  });
 
   expect(
     page.locator("tr"),
