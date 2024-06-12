@@ -59,5 +59,6 @@ export const useInstances = (params: InstanceListParams = {}) => {
     }),
     queryFn: fetchInstances,
     enabled: !!namespace,
+    refetchInterval: 5000,
   });
 };
