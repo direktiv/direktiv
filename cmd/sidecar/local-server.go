@@ -23,13 +23,15 @@ const (
 )
 
 type LocalServer struct {
-	end     func()
-	flow    grpc.InternalClient
-	queue   chan *inboundRequest
-	router  *mux.Router
-	stopper chan *time.Time
-	server  http.Server
-	workers []*inboundWorker
+	end       func()
+	flow      grpc.InternalClient
+	flowAddr  string
+	flowToken string
+	queue     chan *inboundRequest
+	router    *mux.Router
+	stopper   chan *time.Time
+	server    http.Server
+	workers   []*inboundWorker
 
 	requestsLock sync.Mutex
 	requests     map[string]*activeRequest
@@ -45,6 +47,9 @@ func (srv *LocalServer) initFlow() error {
 	fmt.Printf("connected to flow\n")
 
 	srv.flow = grpc.NewInternalClient(conn)
+
+	srv.flowToken = os.Getenv("API_KEY")
+	srv.flowAddr = fmt.Sprintf("%s:6665", os.Getenv(direktivFlowEndpoint))
 
 	return nil
 }
@@ -373,14 +378,15 @@ func (srv *LocalServer) run() {
 }
 
 type functionRequest struct {
-	actionId   string
-	instanceId string
-	namespace  string
-	step       int
-	deadline   time.Time
-	input      []byte
-	files      []*functionFiles
-	iterator   int
+	actionId     string
+	instanceId   string
+	namespace    string
+	workflowPath string
+	step         int
+	deadline     time.Time
+	input        []byte
+	files        []*functionFiles
+	iterator     int
 }
 
 type functionFiles struct {
