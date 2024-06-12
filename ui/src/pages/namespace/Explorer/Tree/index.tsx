@@ -95,6 +95,7 @@ const ExplorerPage: FC = () => {
                 <TableBody>
                   <div className="flex justify-between gap-5 p-2">
                     <Input
+                      data-testid="queryField"
                       className="sm:w-60"
                       value={query}
                       onChange={(e) => {

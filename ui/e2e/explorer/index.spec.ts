@@ -742,3 +742,114 @@ test("it is not possible to navigate to a namespace that does not exist", async 
     "it does not show the main navigation"
   ).not.toBeVisible();
 });
+
+test("it is possible to search for a name and only display files with that name", async ({
+  page,
+}) => {
+  // mock namespace with a list of files
+  await page.route(`/api/v2/namespaces/${namespace}/files/`, async (route) => {
+    if (route.request().method() === "GET") {
+      const json = {
+        data: {
+          path: "/",
+          type: "directory",
+          createdAt: "2024-06-03T09:13:12.404617Z",
+          updatedAt: "2024-06-03T09:13:12.404617Z",
+          children: [
+            {
+              path: "/important-directory",
+              type: "directory",
+              createdAt: "2024-06-04T10:29:31.446876Z",
+              updatedAt: "2024-06-04T10:29:31.446876Z",
+            },
+            {
+              path: "/other-directory",
+              type: "directory",
+              createdAt: "2024-06-04T10:29:12.849234Z",
+              updatedAt: "2024-06-12T11:46:57.524557Z",
+            },
+            {
+              path: "/important-workflow.yaml",
+              type: "workflow",
+              size: 377,
+              mimeType: "application/yaml",
+              createdAt: "2024-06-03T09:14:20.838079Z",
+              updatedAt: "2024-06-03T09:14:20.838079Z",
+            },
+            {
+              path: "/other-workflow.yaml",
+              type: "workflow",
+              size: 377,
+              mimeType: "application/yaml",
+              createdAt: "2024-06-03T09:45:10.452797Z",
+              updatedAt: "2024-06-03T11:27:05.535781Z",
+            },
+            {
+              path: "/test.yaml",
+              type: "workflow",
+              size: 378,
+              mimeType: "application/yaml",
+              createdAt: "2024-06-03T09:13:29.215518Z",
+              updatedAt: "2024-06-12T09:23:23.208635Z",
+            },
+          ],
+        },
+      };
+      await route.fulfill({ json });
+    } else route.continue();
+  });
+
+  /* 
+     Note for future uses: 
+     The route for files needs a '/' at the end
+     because the '/' is actually the beginning of the filename
+     see also: src/api/files/query/file.ts
+  */
+
+  const filter = page.getByTestId("queryField");
+
+  // visit page and make sure explorer is loaded
+  await page.goto(`/n/${namespace}/explorer/tree`);
+
+  await expect(
+    page.getByTestId("breadcrumb-namespace"),
+    "a testing namespace is loaded in the explorer"
+  ).toHaveText(namespace);
+
+  expect(
+    page.locator("tr"),
+    "it renders all the elements in the list"
+  ).toHaveCount(5);
+
+  filter.click();
+  await filter.fill("important");
+
+  expect(
+    page.locator("tr"),
+    "it renders two elements for this query"
+  ).toHaveCount(2);
+
+  filter.click();
+  await filter.fill("yaml");
+
+  expect(
+    page.locator("tr"),
+    "it renders three elements for this query"
+  ).toHaveCount(3);
+
+  filter.click();
+  await filter.fill("test");
+
+  expect(
+    page.locator("tr"),
+    "it renders one element for this query"
+  ).toHaveCount(1);
+
+  filter.click();
+  await filter.fill("");
+
+  expect(
+    page.locator("tr"),
+    "it renders all the elements in the list"
+  ).toHaveCount(5);
+});
