@@ -44,16 +44,10 @@ export type ExtraLibsType = {
   filePath?: string;
 }[];
 
-const beforeMount =
-  ({ extraLibs }: { extraLibs: ExtraLibsType }): EditorProps["beforeMount"] =>
-  (monaco) => {
-    monaco.editor.defineTheme("direktiv-dark", themeDark);
-    monaco.editor.defineTheme("direktiv-light", themeLight);
-
-    monaco.languages.typescript.typescriptDefaults.setExtraLibs(extraLibs);
-
-    monaco.editor;
-  };
+const beforeMount: EditorProps["beforeMount"] = (monaco) => {
+  monaco.editor.defineTheme("direktiv-dark", themeDark);
+  monaco.editor.defineTheme("direktiv-light", themeLight);
+};
 
 export type EditorLanguagesType = (typeof supportedLanguages)[number];
 
@@ -89,6 +83,19 @@ const Editor: FC<
   // onMount function on top of this one.
   const commonOnMount: EditorProps["onMount"] = (editor, monaco) => {
     monacoRef.current = editor;
+
+    // Note that all Editor instances share the same language server. Hence,
+    // we use setExtraLibs() to overwrite any previous configuration to avoid
+    // leaks between instances.
+    monaco.languages.typescript.typescriptDefaults.setExtraLibs(extraLibs);
+
+    editor.onDidFocusEditorWidget(() => {
+      // When a second editor is created in a modal, it may reset the language
+      // server settings of the first one. So we need to restore them when
+      // receiving focus.
+      monaco.languages.typescript.typescriptDefaults.setExtraLibs(extraLibs);
+    });
+
     onMount?.(editor, monaco);
     onSave &&
       editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
@@ -108,7 +115,7 @@ const Editor: FC<
           className="[&_.monaco-editor-overlaymessage]:!hidden"
           width={width}
           height={height}
-          beforeMount={beforeMount({ extraLibs })}
+          beforeMount={beforeMount}
           onMount={commonOnMount}
           onChange={() => {
             handleChange();
