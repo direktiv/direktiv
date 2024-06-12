@@ -46,9 +46,9 @@ const ExplorerPage: FC = () => {
   const [renameFile, setRenameNode] = useState<BaseFileSchemaType>();
   const [previewNode, setPreviewNode] = useState<BaseFileSchemaType>();
 
-  const [search, setSearch] = useState("");
+  const [query, setQuery] = useState("");
   const { t } = useTranslation();
-  const isSearch = search.length > 0;
+  const hasQuery = query.length > 0;
 
   const children = useMemo(
     () => (data?.type === "directory" && data?.children) || [],
@@ -58,9 +58,9 @@ const ExplorerPage: FC = () => {
   const filteredFiles = useMemo(
     () =>
       (children ?? [])?.filter(
-        (child) => !isSearch || child.path.includes(search)
+        (child) => !hasQuery || child.path.includes(query)
       ),
-    [isSearch, search, children]
+    [hasQuery, query, children]
   );
 
   useEffect(() => {
@@ -99,9 +99,9 @@ const ExplorerPage: FC = () => {
                   <div className="flex justify-between gap-5 p-2">
                     <Input
                       className="sm:w-60"
-                      value={search}
+                      value={query}
                       onChange={(e) => {
-                        setSearch(e.target.value);
+                        setQuery(e.target.value);
                       }}
                       placeholder={t("pages.explorer.tree.list.filter")}
                     />
