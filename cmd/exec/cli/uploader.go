@@ -4,9 +4,11 @@ import (
 	"bufio"
 	"bytes"
 	"crypto/tls"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
+	"mime"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -21,9 +23,9 @@ type uploader struct {
 }
 
 type fileObject struct {
-	Name     string `json:"name"`
+	Name     string `json:"name,omitempty"`
 	Data     string `json:"data,omitempty"`
-	Typ      string `json:"type"`
+	Typ      string `json:"type,omitempty"`
 	MimeType string `json:"mimeType,omitempty"`
 	// {
 	// 	"name": "sss.yaml",
@@ -63,98 +65,58 @@ func newUploader(projectRoot string, profile profile) (*uploader, error) {
 
 func (u *uploader) createDirectory(path string) error {
 
-	if path == "." || path == ".." {
+	if path == "." {
 		return nil
 	}
 
 	fmt.Printf("creating directory %s\n", path)
 
-	base := filepath.Base(path)
-	parent := filepath.Dir(path)
-
-	if parent == "." {
-		parent = ""
-	}
-
-	// generate url
-	url := fmt.Sprintf("%s/api/v2/namespaces/%s/files/%s", u.profile.Address, u.profile.Namespace, parent)
-
 	dir := fileObject{
-		Typ:  "directory",
-		Name: base,
+		Typ: "directory",
 	}
 
-	dirObj, err := json.MarshalIndent(dir, "", "   ")
-	if err != nil {
-		return err
+	err := u.createFileItem(path, "POST", dir)
+	if err != nil && err.Error() == "filesystem path already exists" {
+		return nil
 	}
 
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(dirObj))
-	if err != nil {
-		return err
-	}
-
-	if u.profile.Token != "" {
-		req.Header.Add("Direktiv-Token", u.profile.Token)
-	}
-
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: u.profile.Insecure},
-	}
-	client := &http.Client{Transport: tr}
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-
-	if resp.StatusCode != 200 {
-		defer resp.Body.Close()
-		b, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return err
-		}
-
-		var errJson errorResponse
-		err = json.Unmarshal(b, &errJson)
-		if err != nil {
-			return err
-		}
-
-		// that is fine, if the dir exists
-		if errJson.Error.Code != "resource_already_exists" {
-			return fmt.Errorf(errJson.Error.Message)
-		}
-	}
-
-	return nil
-
+	return err
 }
 
 func (u *uploader) createFile(path, filePath string) error {
-
 	fmt.Printf("creating file %s\n", path)
-
-	base := filepath.Base(path)
-	parent := filepath.Dir(path)
-
-	if parent == "." {
-		parent = ""
+	b, err := os.ReadFile(filePath)
+	if err != nil {
+		return err
 	}
 
-	fmt.Printf("BASE %v\n", base)
-	fmt.Printf("PARENT %v\n", parent)
+	b64 := base64.StdEncoding.EncodeToString(b)
+
+	obj := fileObject{
+		Data: b64,
+	}
 
 	if strings.HasSuffix(path, ".direktiv.ts") {
 
 	} else if strings.HasSuffix(path, "yaml") || strings.HasSuffix(path, "yml") {
 
-
-		// check if workflow
+		// check if workflow, service endpoint
 	} else {
-
+		obj.Typ = "file"
+		mt := mime.TypeByExtension(filepath.Ext(path))
+		if mt == "" {
+			mt = "text/plain"
+		}
+		obj.MimeType = mt
 	}
 
-	return nil
+	err = u.createFileItem(path, "POST", obj)
+	if err != nil && err.Error() == "filesystem path already exists" {
+		obj.MimeType = ""
+		return u.createFileItem(path, "PATCH", obj)
+	}
+
+	return err
 }
 
 func (u *uploader) loadIgnoresMatcher(path string) error {
@@ -174,5 +136,62 @@ func (u *uploader) loadIgnoresMatcher(path string) error {
 	}
 
 	u.matcher = gitignore.NewMatcher(ps)
+	return nil
+}
+
+func (u *uploader) createFileItem(path, method string, obj fileObject) error {
+	parent := path
+
+	if method == "POST" {
+		base := filepath.Base(path)
+		parent = filepath.Dir(path)
+		if parent == "." {
+			parent = ""
+		}
+		obj.Name = base
+	}
+
+	// generate url
+	url := fmt.Sprintf("%s/api/v2/namespaces/%s/files/%s", u.profile.Address, u.profile.Namespace, parent)
+
+	fObj, err := json.MarshalIndent(obj, "", "   ")
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest(method, url, bytes.NewBuffer(fObj))
+	if err != nil {
+		return err
+	}
+
+	if u.profile.Token != "" {
+		req.Header.Add("Direktiv-Token", u.profile.Token)
+	}
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: u.profile.Insecure},
+	}
+	client := &http.Client{Transport: tr}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		defer resp.Body.Close()
+		b, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return err
+		}
+
+		var errJson errorResponse
+		err = json.Unmarshal(b, &errJson)
+		if err != nil {
+			return err
+		}
+
+		return fmt.Errorf(errJson.Error.Message)
+	}
+
 	return nil
 }

@@ -299,15 +299,18 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-	// Validate if data is valid yaml with direktiv files.
-	var data struct{}
-	if err = yaml.Unmarshal(decodedBytes, &data); err != nil && req.Data != "" {
-		writeError(w, &Error{
-			Code:    "request_data_invalid",
-			Message: "updated file data has invalid yaml string",
-		})
 
-		return
+	if strings.HasSuffix(req.Path, ".yaml") || strings.HasSuffix(req.Path, ".yml") {
+		// Validate if data is valid yaml with direktiv files.
+		var data struct{}
+		if err = yaml.Unmarshal(decodedBytes, &data); err != nil && req.Data != "" {
+			writeError(w, &Error{
+				Code:    "request_data_invalid",
+				Message: "updated file data has invalid yaml string",
+			})
+
+			return
+		}
 	}
 
 	path := strings.SplitN(r.URL.Path, "/files", 2)[1]
