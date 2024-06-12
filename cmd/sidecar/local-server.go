@@ -3,14 +3,12 @@ package sidecar
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
 	"os"
-	"slices"
 	"sync"
 	"time"
 
@@ -468,149 +466,4 @@ func (srv *LocalServer) setVar(ctx context.Context, ir *functionRequest, r io.Re
 		return patchStatusCode, fmt.Errorf("failed to patch variable data: %w", patchErr)
 	}
 	return statusCode, nil
-}
-
-func getVariableMetaFromFlow(ctx context.Context, flowToken string, flowAddr string, ir *functionRequest, scope, key string) (variable, int, error) {
-	var varResp *variablesResponse
-	var err error
-	var typ string
-	statusCode := http.StatusOK
-
-	// Determine scope and retrieve variables
-	switch scope {
-	case utils.VarScopeInstance:
-		varResp, statusCode, err = getInstanceVariables(ctx, flowToken, flowAddr, ir)
-		if err != nil {
-			return variable{}, statusCode, fmt.Errorf("failed to get instance variables: %w", err)
-		}
-		typ = "instance-variable"
-
-	case utils.VarScopeWorkflow:
-		varResp, statusCode, err = getWorkflowVariables(ctx, flowToken, flowAddr, ir)
-		if err != nil {
-			return variable{}, statusCode, fmt.Errorf("failed to get workflow variables: %w", err)
-		}
-		typ = "workflow-variable"
-
-	case utils.VarScopeNamespace:
-		varResp, statusCode, err = getNamespaceVariables(ctx, flowToken, flowAddr, ir)
-		if err != nil {
-			return variable{}, statusCode, fmt.Errorf("failed to get namespace variables: %w", err)
-		}
-		typ = "namespace-variable"
-
-	default:
-		return variable{}, statusCode, fmt.Errorf("unknown scope: %s", scope)
-	}
-
-	idx := slices.IndexFunc(varResp.Data, func(e variable) bool { return e.Typ == typ && e.Name == key })
-	if idx < 0 {
-		return variable{}, statusCode, &RessourceNotFoundError{Key: key, Scope: scope}
-	}
-
-	return varResp.Data[idx], statusCode, nil
-}
-
-func getVariableDataViaID(ctx context.Context, flowToken string, flowAddr string, namespace string, id string) (variable, error) {
-	addr := fmt.Sprintf("http://%v/api/v2/namespaces/%v/variables/%v", flowAddr, namespace, id)
-	client := &http.Client{}
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, addr, nil)
-	if err != nil {
-		return variable{}, err
-	}
-	req.Header.Set("Direktiv-Token", flowToken)
-	resp, err := client.Do(req)
-	if err != nil {
-		return variable{}, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return variable{}, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
-	}
-
-	v := variable{}
-	decoder := json.NewDecoder(resp.Body)
-	if err = decoder.Decode(&v); err != nil {
-		return variable{}, err
-	}
-
-	return v, nil
-}
-
-func postVarData(ctx context.Context, flowToken string, flowAddr string, namespace string, body createVarRequest) (int, error) {
-	reqD, err := json.Marshal(body)
-	if err != nil {
-		return http.StatusBadRequest, fmt.Errorf("failed to marshal request body: %w", err)
-	}
-	read := bytes.NewReader(reqD)
-	url := fmt.Sprintf("http://%v/api/v2/namespaces/%v/variables", flowAddr, namespace)
-
-	resp, err := doRequest(ctx, http.MethodPost, flowToken, url, read)
-	if err != nil {
-		return resp.StatusCode, err
-	}
-
-	if statusCode, err := handleResponse(resp, nil); err != nil {
-		return statusCode, err
-	}
-
-	return http.StatusOK, nil
-}
-
-func patchVarData(ctx context.Context, flowToken string, flowAddr string, namespace string, id string, body datastore.RuntimeVariablePatch) (int, error) {
-	reqD, err := json.Marshal(body)
-	if err != nil {
-		return http.StatusBadRequest, fmt.Errorf("failed to marshal request body: %w", err)
-	}
-	read := bytes.NewReader(reqD)
-	url := fmt.Sprintf("http://%v/api/v2/namespaces/%v/variables/%v", flowAddr, namespace, id)
-
-	resp, err := doRequest(ctx, http.MethodPatch, flowToken, url, read)
-	if err != nil {
-		return resp.StatusCode, err
-	}
-
-	if statusCode, err := handleResponse(resp, nil); err != nil {
-		return statusCode, err
-	}
-
-	return http.StatusOK, nil
-}
-
-func doRequest(ctx context.Context, method, flowToken, url string, body io.Reader) (*http.Response, error) {
-	client := &http.Client{}
-	req, err := http.NewRequestWithContext(ctx, method, url, body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create new request: %w", err)
-	}
-	req.Header.Set("Direktiv-Token", flowToken)
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("failed to execute request: %w", err)
-	}
-
-	return resp, nil
-}
-
-func handleResponse(resp *http.Response, next func(resp *http.Response) (int, error)) (int, error) {
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		var apiErrorResp apiError
-		if err := json.NewDecoder(resp.Body).Decode(&apiErrorResp); err != nil {
-			if err == io.EOF {
-				return resp.StatusCode, fmt.Errorf("empty error response body")
-			}
-			return http.StatusInternalServerError, fmt.Errorf("failed to decode error response: %w", err)
-		}
-		return resp.StatusCode, fmt.Errorf("API error: code %v - message: %v", apiErrorResp.Error.Code, apiErrorResp.Error.Message)
-	}
-
-	if next != nil {
-		return next(resp)
-	}
-
-	return http.StatusOK, nil
 }
