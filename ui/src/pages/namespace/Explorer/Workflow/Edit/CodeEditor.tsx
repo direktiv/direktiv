@@ -17,7 +17,7 @@ type EditorProps = {
   updatedAt: string | undefined;
   error: string | undefined;
   language: EditorLanguagesType;
-  extraLibs?: ExtraLibsType;
+  tsLibs?: ExtraLibsType;
 };
 
 export const CodeEditor: FC<EditorProps> = ({
@@ -28,7 +28,7 @@ export const CodeEditor: FC<EditorProps> = ({
   updatedAt,
   error,
   language,
-  extraLibs = [],
+  tsLibs = [],
 }) => {
   const { t } = useTranslation();
 
@@ -53,7 +53,7 @@ export const CodeEditor: FC<EditorProps> = ({
           theme={theme ?? undefined}
           onSave={onSave}
           language={language}
-          extraLibs={extraLibs}
+          tsLibs={tsLibs}
         />
       </div>
       <div

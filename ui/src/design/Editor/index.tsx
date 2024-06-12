@@ -1,6 +1,6 @@
 import * as monaco from "monaco-editor";
 
-import { FC, useRef } from "react";
+import { FC, useEffect, useRef } from "react";
 import MonacoEditor, { loader } from "@monaco-editor/react";
 
 import AutoSizer from "react-virtualized-auto-sizer";
@@ -60,7 +60,7 @@ const Editor: FC<
     onChange?: (value: string | undefined) => void;
     onMount?: EditorProps["onMount"];
     language?: EditorLanguagesType;
-    extraLibs?: ExtraLibsType;
+    tsLibs?: ExtraLibsType;
   }
 > = ({
   options,
@@ -69,10 +69,25 @@ const Editor: FC<
   onChange,
   onMount,
   language = "yaml",
-  extraLibs = [],
+  tsLibs = [],
   ...props
 }) => {
   const monacoRef = useRef<EditorType>();
+
+  // If extraLibs are received, set them when this component is mounted and clean
+  // them up when it is removed. This ensures other editor instances visited later
+  // will not inherit left-over libs (all instances use the same languageService).
+  // If a second instance is created while this one is mounted (e.g. in a modal),
+  // the same libs will be active for both. This isn't a problem currently because
+  // we don't have modals with editor instances that use typescript.
+  useEffect(() => {
+    if (tsLibs.length) {
+      monaco.languages.typescript.typescriptDefaults.setExtraLibs(tsLibs);
+
+      return () =>
+        monaco.languages.typescript.typescriptDefaults.setExtraLibs([]);
+    }
+  }, [tsLibs]);
 
   const handleChange = () => {
     onChange && onChange(monacoRef.current?.getValue());
@@ -83,18 +98,6 @@ const Editor: FC<
   // onMount function on top of this one.
   const commonOnMount: EditorProps["onMount"] = (editor, monaco) => {
     monacoRef.current = editor;
-
-    // Note that all Editor instances share the same language server. Hence,
-    // we use setExtraLibs() to overwrite any previous configuration to avoid
-    // leaks between instances.
-    monaco.languages.typescript.typescriptDefaults.setExtraLibs(extraLibs);
-
-    editor.onDidFocusEditorWidget(() => {
-      // When a second editor is created in a modal, it may reset the language
-      // server settings of the first one. So we need to restore them when
-      // receiving focus.
-      monaco.languages.typescript.typescriptDefaults.setExtraLibs(extraLibs);
-    });
 
     onMount?.(editor, monaco);
     onSave &&

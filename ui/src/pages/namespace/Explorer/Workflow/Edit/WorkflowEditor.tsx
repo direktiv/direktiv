@@ -71,7 +71,7 @@ const WorkflowEditor: FC<{
   const isTsWorkflow = data.mimeType === "application/x-typescript";
   const language = isTsWorkflow ? "typescript" : "yaml";
 
-  const extraLibs = isTsWorkflow
+  const tsLibs = isTsWorkflow
     ? [
         {
           content: workflowTypes,
@@ -97,7 +97,7 @@ const WorkflowEditor: FC<{
             hasUnsavedChanges={hasUnsavedChanges}
             onSave={onSave}
             language={language}
-            extraLibs={extraLibs}
+            tsLibs={tsLibs}
           />
         }
       />
