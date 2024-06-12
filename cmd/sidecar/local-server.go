@@ -14,6 +14,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/gorilla/mux"
@@ -23,10 +24,13 @@ const (
 	workerThreads = 10
 )
 
-type VariableNotFoundError struct{}
+type RessourceNotFoundError struct {
+	Key   string
+	Scope string
+}
 
-func (e *VariableNotFoundError) Error() string {
-	return "failed to fetch variable"
+func (e *RessourceNotFoundError) Error() string {
+	return fmt.Sprintf("variable with key %s not found in scope %s", e.Key, e.Scope)
 }
 
 type LocalServer struct {
@@ -240,9 +244,9 @@ func (srv *LocalServer) varHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 
-		varMeta, err := getVariableMetaFromFlow(ctx, srv.flowToken, srv.flowAddr, ir, scope, key)
+		varMeta, statusCode, err := getVariableMetaFromFlow(ctx, srv.flowToken, srv.flowAddr, ir, scope, key)
 		if err != nil {
-			reportError(http.StatusInternalServerError, err)
+			reportError(statusCode, err)
 			slog.Warn("Failed retrieving a Variable.", "action_id", actionId, "key", key, "scope", scope)
 
 			return
@@ -267,9 +271,9 @@ func (srv *LocalServer) varHandler(w http.ResponseWriter, r *http.Request) {
 
 	case http.MethodPost:
 
-		err := srv.setVar(ctx, ir, r.Body, scope, key, vMimeType)
+		statusCode, err := srv.setVar(ctx, ir, r.Body, scope, key, vMimeType)
 		if err != nil {
-			reportError(http.StatusInternalServerError, err)
+			reportError(statusCode, err)
 			slog.Warn("Failed to set a Variable.", "action_id", actionId, "key", key, "scope", scope)
 
 			return
@@ -417,73 +421,103 @@ type functionFiles struct {
 
 const sharedDir = "/mnt/shared"
 
-func (srv *LocalServer) setVar(ctx context.Context, ir *functionRequest, r io.Reader, scope, key, vMimeType string) error {
-	varMeta, err := getVariableMetaFromFlow(ctx, srv.flowToken, srv.flowAddr, ir, scope, key)
-	if errors.Is(err, &VariableNotFoundError{}) {
-		data, err := io.ReadAll(r)
-		if err != nil {
-			return err
-		}
+func (srv *LocalServer) setVar(ctx context.Context, ir *functionRequest, r io.Reader, scope, key, vMimeType string) (int, error) {
+	// Retrieve variable metadata
+	varMeta, statusCode, err := getVariableMetaFromFlow(ctx, srv.flowToken, srv.flowAddr, ir, scope, key)
+	if err != nil {
+		target := &RessourceNotFoundError{}
+		if errors.As(err, &target) {
+			data, readErr := io.ReadAll(r)
+			if readErr != nil {
+				return http.StatusInternalServerError, fmt.Errorf("failed to read data from reader: %w", readErr)
+			}
 
-		reqD := createVarRequest{
-			Name:     key,
-			MimeType: vMimeType,
-			Data:     data,
-		}
+			reqD := createVarRequest{
+				Name:     key,
+				MimeType: vMimeType,
+				Data:     data,
+			}
 
-		switch scope {
-		case utils.VarScopeInstance:
-			reqD.InstanceIDString = ir.instanceId
-		case utils.VarScopeWorkflow:
-			reqD.WorkflowPath = ir.workflowPath
-		case utils.VarScopeNamespace:
-			// is already filled
-		default:
-			return fmt.Errorf("Unknown scope was passed")
-		}
+			// Set scope-specific fields
+			switch scope {
+			case utils.VarScopeInstance:
+				reqD.InstanceIDString = ir.instanceId
+			case utils.VarScopeWorkflow:
+				reqD.WorkflowPath = ir.workflowPath
+			case utils.VarScopeNamespace:
+				// Namespace scope requires no additional fields
+			default:
+				return http.StatusBadRequest, fmt.Errorf("unknown scope: %s", scope)
+			}
 
-		return postVarData(ctx, srv.flowToken, srv.flowAddr, ir.namespace, reqD)
-	} else if err != nil {
-		return err
+			// Attempt to create the variable
+			postStatusCode, postErr := postVarData(ctx, srv.flowToken, srv.flowAddr, ir.namespace, reqD)
+			if postErr != nil {
+				return postStatusCode, fmt.Errorf("failed to post variable data: %w", postErr)
+			}
+			return http.StatusOK, nil
+		}
+		// Handle other errors from getVariableMetaFromFlow
+		return statusCode, fmt.Errorf("failed to get variable metadata: %w", err)
 	}
 
-	return patchVarData(ctx, srv.flowToken, srv.flowAddr, ir.namespace, varMeta.ID.String(), r)
+	// Patch existing variable data
+	data, readErr := io.ReadAll(r)
+	if readErr != nil {
+		return http.StatusInternalServerError, fmt.Errorf("failed to read data from reader: %w", readErr)
+	}
+
+	reqD := datastore.RuntimeVariablePatch{
+		Name:     &key,
+		MimeType: &vMimeType,
+		Data:     data,
+	}
+	patchStatusCode, patchErr := patchVarData(ctx, srv.flowToken, srv.flowAddr, ir.namespace, varMeta.ID.String(), reqD)
+	if patchErr != nil {
+		return patchStatusCode, fmt.Errorf("failed to patch variable data: %w", patchErr)
+	}
+	return statusCode, nil
 }
 
-func getVariableMetaFromFlow(ctx context.Context, flowToken string, flowAddr string, ir *functionRequest, scope, key string) (variable, error) {
+func getVariableMetaFromFlow(ctx context.Context, flowToken string, flowAddr string, ir *functionRequest, scope, key string) (variable, int, error) {
 	var varResp *variablesResponse
 	var err error
-	typ := ""
+	var typ string
+	statusCode := http.StatusOK
+
+	// Determine scope and retrieve variables
 	switch scope {
 	case utils.VarScopeInstance:
-		varResp, err = getInstanceVariables(ctx, flowToken, flowAddr, ir)
+		varResp, statusCode, err = getInstanceVariables(ctx, flowToken, flowAddr, ir)
 		if err != nil {
-			return variable{}, err
+			return variable{}, statusCode, fmt.Errorf("failed to get instance variables: %w", err)
 		}
 		typ = "instance-variable"
 
 	case utils.VarScopeWorkflow:
-		varResp, err = getWorkflowVariables(ctx, flowToken, flowAddr, ir)
+		varResp, statusCode, err = getWorkflowVariables(ctx, flowToken, flowAddr, ir)
 		if err != nil {
-			return variable{}, err
+			return variable{}, statusCode, fmt.Errorf("failed to get workflow variables: %w", err)
 		}
 		typ = "workflow-variable"
+
 	case utils.VarScopeNamespace:
-		varResp, err = getNamespaceVariables(ctx, flowToken, flowAddr, ir)
+		varResp, statusCode, err = getNamespaceVariables(ctx, flowToken, flowAddr, ir)
 		if err != nil {
-			return variable{}, err
+			return variable{}, statusCode, fmt.Errorf("failed to get namespace variables: %w", err)
 		}
 		typ = "namespace-variable"
+
 	default:
-		return variable{}, fmt.Errorf("Unknown scope was passed")
+		return variable{}, statusCode, fmt.Errorf("unknown scope: %s", scope)
 	}
 
 	idx := slices.IndexFunc(varResp.Data, func(e variable) bool { return e.Typ == typ && e.Name == key })
 	if idx < 0 {
-		return variable{}, &VariableNotFoundError{}
+		return variable{}, statusCode, &RessourceNotFoundError{Key: key, Scope: scope}
 	}
 
-	return varResp.Data[idx], nil
+	return varResp.Data[idx], statusCode, nil
 }
 
 func getVariableDataViaID(ctx context.Context, flowToken string, flowAddr string, namespace string, id string) (variable, error) {
@@ -519,57 +553,92 @@ type createVarRequest struct {
 	Data             []byte `json:"data"`
 	InstanceIDString string `json:"instanceId"`
 	WorkflowPath     string `json:"workflowPath"`
+	Error            Error  `json:"error"`
 }
 
-func postVarData(ctx context.Context, flowToken string, flowAddr string, namespace string, body createVarRequest) error {
+type Error struct {
+	Code       string            `json:"code"`
+	Message    string            `json:"message"`
+	Validation map[string]string `json:"validation,omitempty"`
+}
+
+type apiError struct {
+	Error Error `json:"error"`
+}
+
+func postVarData(ctx context.Context, flowToken string, flowAddr string, namespace string, body createVarRequest) (int, error) {
 	reqD, err := json.Marshal(body)
 	if err != nil {
-		return err
+		return http.StatusBadRequest, fmt.Errorf("failed to marshal request body: %w", err)
 	}
 	read := bytes.NewReader(reqD)
-	addr := fmt.Sprintf("http://%v/api/v2/namespaces/%v/variables", flowAddr, namespace)
-	client := &http.Client{}
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, addr, read)
+	url := fmt.Sprintf("http://%v/api/v2/namespaces/%v/variables", flowAddr, namespace)
+
+	resp, err := doRequest(ctx, http.MethodPost, flowToken, url, read)
 	if err != nil {
-		return err
-	}
-	req.Header.Set("Direktiv-Token", flowToken)
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+		return resp.StatusCode, err
 	}
 
-	return nil
+	if statusCode, err := handleResponse(resp, nil); err != nil {
+		return statusCode, err
+	}
+
+	return http.StatusOK, nil
 }
 
-func patchVarData(ctx context.Context, flowToken string, flowAddr string, namespace string, id string, r io.Reader) error {
-	addr := fmt.Sprintf("http://%v/api/v2/namespaces/%v/variables/%v", flowAddr, namespace, id)
-	client := &http.Client{}
-	req, err := http.NewRequestWithContext(ctx, http.MethodPatch, addr, r)
+func patchVarData(ctx context.Context, flowToken string, flowAddr string, namespace string, id string, body datastore.RuntimeVariablePatch) (int, error) {
+	reqD, err := json.Marshal(body)
 	if err != nil {
-		return err
+		return http.StatusBadRequest, fmt.Errorf("failed to marshal request body: %w", err)
+	}
+	read := bytes.NewReader(reqD)
+	url := fmt.Sprintf("http://%v/api/v2/namespaces/%v/variables/%v", flowAddr, namespace, id)
+
+	resp, err := doRequest(ctx, http.MethodPatch, flowToken, url, read)
+	if err != nil {
+		return resp.StatusCode, err
 	}
 
+	if statusCode, err := handleResponse(resp, nil); err != nil {
+		return statusCode, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func doRequest(ctx context.Context, method, flowToken, url string, body io.Reader) (*http.Response, error) {
+	client := &http.Client{}
+	req, err := http.NewRequestWithContext(ctx, method, url, body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create new request: %w", err)
+	}
 	req.Header.Set("Direktiv-Token", flowToken)
+
 	resp, err := client.Do(req)
 	if err != nil {
-		return err
+		return nil, fmt.Errorf("failed to execute request: %w", err)
 	}
+
+	return resp, nil
+}
+
+func handleResponse(resp *http.Response, next func(resp *http.Response) (int, error)) (int, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+		var apiErrorResp apiError
+		if err := json.NewDecoder(resp.Body).Decode(&apiErrorResp); err != nil {
+			if err == io.EOF {
+				return resp.StatusCode, fmt.Errorf("empty error response body")
+			}
+			return http.StatusInternalServerError, fmt.Errorf("failed to decode error response: %w", err)
+		}
+		return resp.StatusCode, fmt.Errorf("API error: code %v - message: %v", apiErrorResp.Error.Code, apiErrorResp.Error.Message)
 	}
 
-	v := variable{}
-	decoder := json.NewDecoder(resp.Body)
-	if err = decoder.Decode(&v); err != nil {
-		return err
+	if next != nil {
+		return next(resp)
 	}
 
-	return nil
+	return http.StatusOK, nil
 }
