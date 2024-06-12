@@ -24,7 +24,7 @@ import workflowTypes from "~/assets/ts/workflow.d.ts?raw";
 const WorkflowEditor: FC<{
   data: NonNullable<FileSchemaType>;
 }> = ({ data }) => {
-  const currentLayout = useEditorLayout();
+  const storedEditorLayout = useEditorLayout();
   const { t } = useTranslation();
   const namespace = useNamespace();
   const [error, setError] = useState<string | undefined>();
@@ -79,12 +79,14 @@ const WorkflowEditor: FC<{
       ]
     : [];
 
+  const localLayout = isTsWorkflow ? "code" : storedEditorLayout;
+
   return (
     <div className="relative flex grow flex-col space-y-4 p-5">
       <WorkspaceLayout
-        layout={currentLayout}
+        layout={localLayout}
         diagramComponent={
-          <Diagram workflowData={editorContent} layout={currentLayout} />
+          <Diagram workflowData={editorContent} layout={localLayout} />
         }
         editorComponent={
           <CodeEditor
@@ -101,7 +103,7 @@ const WorkflowEditor: FC<{
       />
 
       <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
-        <EditorLayoutSwitcher />
+        {!isTsWorkflow && <EditorLayoutSwitcher />}
         <Dialog>
           <DialogTrigger asChild>
             <Button
