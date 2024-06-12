@@ -9,6 +9,7 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
+	"os"
 	"path/filepath"
 	"regexp"
 	"runtime"
@@ -47,6 +48,8 @@ func initEngine(srv *server) *engine {
 	engine.pBus.Subscribe(&pubsub.InstanceMessageEvent{}, engine.instanceMessagesChannelHandler)
 
 	go engine.instanceKicker()
+
+	srv.pBus.Subscribe(cancelInstanceMessage{}, engine.cancelInstanceHandler)
 
 	return engine
 }
@@ -279,7 +282,6 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	}
 	im.AddAttribute("loop-index", fmt.Sprintf("%d", iterator))
 
-	engine.pubsub.NotifyInstances(im.Namespace())
 	namespaceTrackCtx := tracing.WithTrack(loggingCtx, tracing.BuildNamespaceTrack(im.instance.Instance.Namespace))
 	slog.Info("Workflow has been triggered", tracing.GetSlogAttributesWithStatus(namespaceTrackCtx, core.LogRunningStatus)...)
 
@@ -385,7 +387,12 @@ func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextSt
 	t := time.Now().UTC()
 
 	im.instance.RuntimeInfo.Flow = flow
-	im.instance.RuntimeInfo.Controller = engine.pubsub.Hostname
+	im.instance.RuntimeInfo.Controller, err = os.Hostname()
+	if err != nil {
+		engine.CrashInstance(ctx, im, err)
+		return nil
+	}
+
 	im.instance.RuntimeInfo.Attempts = attempt
 	im.instance.RuntimeInfo.StateBeginTime = t
 	rtData, err := im.instance.RuntimeInfo.MarshalJSON()
@@ -679,9 +686,6 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 	im.updateArgs.Status = &im.instance.Instance.Status
 
 	slog.Info("Workflow completed.", tracing.GetSlogAttributesWithStatus(instanceTrackCtx, core.LogCompletedStatus)...)
-
-	defer engine.pubsub.NotifyInstance(im.instance.Instance.ID)
-	defer engine.pubsub.NotifyInstances(im.Namespace())
 
 	engine.TerminateInstance(ctx, im)
 

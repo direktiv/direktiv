@@ -107,6 +107,8 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 		}
 	}()
 
+	srv.pBus.Subscribe(configureRouterMessage{}, flow.configureRouterHandler)
+
 	return flow, nil
 }
 

@@ -27,8 +27,8 @@ func (engine *engine) scheduleTimeout(_ context.Context, im *instanceMemory, old
 	// cancel existing timeouts
 	slog.Debug("Cancelling existing timeouts.", "namespace", im.Namespace(), "instance", im.ID(), "timeout_type", prefix, "step", im.Step(), "error", err)
 
-	engine.timers.deleteTimerByName(oldController, engine.pubsub.Hostname, oldID)
-	engine.timers.deleteTimerByName(oldController, engine.pubsub.Hostname, id)
+	engine.timers.deleteTimerByName(oldID)
+	engine.timers.deleteTimerByName(id)
 
 	// schedule timeout
 

@@ -16,7 +16,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/datastore"
 	enginerefactor "github.com/direktiv/direktiv/pkg/engine"
 	"github.com/direktiv/direktiv/pkg/filestore"
-	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/google/uuid"
 	"go.opentelemetry.io/otel/trace"
@@ -96,10 +95,14 @@ func (engine *engine) mux(ctx context.Context, ns *datastore.Namespace, calledAs
 	return file, data, nil
 }
 
-func (flow *flow) configureRouterHandler(req *pubsub.PubsubUpdate) {
-	msg := new(pubsub.ConfigureRouterMessage)
+type configureRouterMessage struct {
+	ID   string
+	Cron string
+}
 
-	err := json.Unmarshal([]byte(req.Key), msg)
+func (flow *flow) configureRouterHandler(data string) {
+	var msg configureRouterMessage
+	err := json.Unmarshal([]byte(data), &msg)
 	if err != nil {
 		slog.Error("Failed to unmarshal router configuration message.", "error", err)
 		return
@@ -216,7 +219,13 @@ func (flow *flow) configureWorkflowStarts(ctx context.Context, tx *database.SQLS
 		return err
 	}
 
-	flow.pubsub.ConfigureRouterCron(file.ID.String(), ms.Cron)
+	err = flow.pBus.Publish(configureRouterMessage{
+		ID:   file.ID.String(),
+		Cron: ms.Cron,
+	})
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

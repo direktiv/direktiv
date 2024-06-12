@@ -19,11 +19,9 @@ import (
 	"github.com/direktiv/direktiv/pkg/datastore"
 	eventsstore "github.com/direktiv/direktiv/pkg/events"
 	"github.com/direktiv/direktiv/pkg/filestore"
-	"github.com/direktiv/direktiv/pkg/flow/nohome"
-	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/instancestore"
 	"github.com/direktiv/direktiv/pkg/mirror"
-	pubsub2 "github.com/direktiv/direktiv/pkg/pubsub"
+	"github.com/direktiv/direktiv/pkg/pubsub"
 	pubsubSQL "github.com/direktiv/direktiv/pkg/pubsub/sql"
 	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/google/uuid"
@@ -39,11 +37,8 @@ type server struct {
 
 	config *core.Config
 
-	// db       *ent.Client
-	pubsub *pubsub.Pubsub
-
 	// the new pubsub bus
-	pBus *pubsub2.Bus
+	pBus *pubsub.Bus
 
 	timers *timers
 	engine *engine
@@ -83,7 +78,7 @@ func Run(circuit *core.Circuit) error {
 		return fmt.Errorf("initialize legacy server, err: %w", err)
 	}
 
-	configureWorkflow := func(event *pubsub2.FileSystemChangeEvent) error {
+	configureWorkflow := func(event *pubsub.FileSystemChangeEvent) error {
 		// If this is a delete workflow file
 		if event.DeleteFileID.String() != (uuid.UUID{}).String() {
 			return srv.flow.events.deleteWorkflowEventListeners(circuit.Context(), event.NamespaceID, event.DeleteFileID)
@@ -123,7 +118,7 @@ func Run(circuit *core.Circuit) error {
 
 			go func() {
 				srv.mirrorManager.Execute(context.Background(), proc, mConfig, &mirror.DirektivApplyer{NamespaceID: ns.ID})
-				err := srv.pBus.Publish(&pubsub2.NamespacesChangeEvent{
+				err := srv.pBus.Publish(&pubsub.NamespacesChangeEvent{
 					Action: "sync",
 					Name:   ns.Name,
 				})
@@ -220,23 +215,6 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 	}
 	slog.Debug("successfully connected to database with raw driver")
 
-	slog.Debug("Initializing pub-sub.")
-
-	srv.pubsub, err = pubsub.InitPubSub(srv, config.DB)
-	if err != nil {
-		return nil, err
-	}
-
-	slog.Info("pub-sub was initialized successfully.")
-
-	slog.Debug("Initializing timers.")
-
-	srv.timers, err = initTimers(srv.pubsub)
-	if err != nil {
-		return nil, err
-	}
-	slog.Info("timers where initialized successfully.")
-
 	slog.Debug("Initializing pubsub routine.")
 	coreBus, err := pubsubSQL.NewPostgresCoreBus(srv.rawDB, srv.config.DB)
 	if err != nil {
@@ -244,7 +222,7 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 	}
 	slog.Info("pubsub routine was initialized.")
 
-	srv.pBus = pubsub2.NewBus(coreBus)
+	srv.pBus = pubsub.NewBus(coreBus)
 
 	circuit.Start(func() error {
 		err := srv.pBus.Loop(circuit)
@@ -254,6 +232,14 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 
 		return nil
 	})
+
+	slog.Debug("Initializing timers.")
+
+	srv.timers, err = initTimers(srv.pBus)
+	if err != nil {
+		return nil, err
+	}
+	slog.Info("timers where initialized successfully.")
 
 	slog.Debug("Initializing engine.")
 
@@ -342,7 +328,6 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 	circuit.Start(func() error {
 		<-circuit.Done()
 		telEnd()
-		srv.cleanup(srv.pubsub.Close)
 		srv.cleanup(srv.timers.Close)
 
 		return nil
@@ -410,31 +395,6 @@ func (srv *server) cleanup(closer func() error) {
 	}
 }
 
-func (srv *server) NotifyCluster(msg string) error {
-	ctx := context.Background()
-
-	conn, err := srv.rawDB.Conn(ctx)
-	if err != nil {
-		return err
-	}
-	defer conn.Close()
-
-	_, err = conn.ExecContext(ctx, "SELECT pg_notify($1, $2)", pubsub.FlowSync, msg)
-
-	perr := new(pq.Error)
-
-	if errors.As(err, &perr) {
-		slog.Error("Database notification to cluster failed.", "error", perr)
-		if perr.Code == "57014" {
-			return fmt.Errorf("canceled query")
-		}
-
-		return err
-	}
-
-	return nil
-}
-
 func (srv *server) NotifyHostname(hostname, msg string) error {
 	ctx := context.Background()
 
@@ -462,38 +422,10 @@ func (srv *server) NotifyHostname(hostname, msg string) error {
 	return nil
 }
 
-func (srv *server) PublishToCluster(payload string) {
-	srv.pubsub.Publish(&pubsub.PubsubUpdate{
-		Handler: nohome.PubsubNotifyFunction,
-		Key:     payload,
-	})
-}
-
-func (srv *server) CacheNotify(req *pubsub.PubsubUpdate) {
-	if srv.ID.String() == req.Sender {
-		return
-	}
-
-	// TODO: Alan, needfix.
-	// srv.database.HandleNotification(req.Key)
-}
-
 func (srv *server) registerFunctions() {
-	srv.pubsub.RegisterFunction(nohome.PubsubNotifyFunction, srv.CacheNotify)
-
-	srv.pubsub.RegisterFunction(pubsub.PubsubNotifyFunction, srv.pubsub.Notify)
-	srv.pubsub.RegisterFunction(pubsub.PubsubDisconnectFunction, srv.pubsub.Disconnect)
-	srv.pubsub.RegisterFunction(pubsub.PubsubDeleteTimerFunction, srv.timers.deleteTimerHandler)
-	srv.pubsub.RegisterFunction(pubsub.PubsubDeleteInstanceTimersFunction, srv.timers.deleteInstanceTimersHandler)
-	srv.pubsub.RegisterFunction(pubsub.PubsubCancelWorkflowFunction, srv.engine.finishCancelWorkflow)
-	srv.pubsub.RegisterFunction(pubsub.PubsubCancelMirrorProcessFunction, srv.engine.finishCancelMirrorProcess)
-	srv.pubsub.RegisterFunction(pubsub.PubsubConfigureRouterFunction, srv.flow.configureRouterHandler)
-
 	srv.timers.registerFunction(timeoutFunction, srv.engine.timeoutHandler)
 	srv.timers.registerFunction(wfCron, srv.flow.cronHandler)
 	srv.timers.registerFunction(retryWakeupFunction, srv.flow.engine.retryWakeup)
-
-	srv.pubsub.RegisterFunction(pubsub.PubsubDeleteActivityTimersFunction, srv.timers.deleteActivityTimersHandler)
 }
 
 func (srv *server) cronPoller() {
