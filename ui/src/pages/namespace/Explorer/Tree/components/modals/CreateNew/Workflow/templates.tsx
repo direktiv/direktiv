@@ -1,8 +1,8 @@
-export type workflowType = (typeof workflowTypes)[number];
+import { workflowTypes } from "~/api/files/schema";
 
 type workflowTemplate = {
   name: string;
-  type: workflowType;
+  type: (typeof workflowTypes)[number];
   data: string;
 };
 
