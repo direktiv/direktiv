@@ -23,7 +23,6 @@ var sendEventCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Short: "Sends the file as cloudevent to Direktiv.",
 	RunE: func(cmd *cobra.Command, args []string) error {
-
 		p, err := prepareCommand(cmd)
 		if err != nil {
 			return err

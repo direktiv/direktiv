@@ -29,6 +29,7 @@ var RootCmd = &cobra.Command{
 	Use: "direktivctl",
 }
 
+// nolint: errcheck
 func bindArgs() {
 	viper.SetEnvPrefix("direktiv")
 	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
@@ -46,37 +47,34 @@ func bindArgs() {
 
 func readConfig() error {
 	if err := viper.ReadInConfig(); err != nil {
+		// nolint: errorlint
 		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
 			return err
-		} else {
-			// first time run with no config file
-			dir, err := os.UserHomeDir()
-			if err != nil {
-				return err
-			}
-
-			dir = filepath.Join(dir, ".direktiv")
-
-			err = os.MkdirAll(dir, 0755)
-			if err != nil {
-				return err
-			}
-			_, err = os.Create(filepath.Join(dir, "profiles.yaml"))
-			if err != nil {
-				return err
-			}
-
-			if err := viper.ReadInConfig(); err != nil {
-				return err
-			}
 		}
+		// first time run with no config file
+		dir, err := os.UserHomeDir()
+		if err != nil {
+			return err
+		}
+
+		dir = filepath.Join(dir, ".direktiv")
+
+		err = os.MkdirAll(dir, 0o755)
+		if err != nil {
+			return err
+		}
+		_, err = os.Create(filepath.Join(dir, "profiles.yaml"))
+		if err != nil {
+			return err
+		}
+
+		return viper.ReadInConfig()
 	}
 
 	return nil
 }
 
 func prepareCommand(cmd *cobra.Command) (profile, error) {
-
 	p := profile{}
 
 	err := readConfig()

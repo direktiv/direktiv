@@ -3,9 +3,11 @@ package cli
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"mime"
@@ -14,6 +16,9 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/direktiv/direktiv/pkg/core"
+	"github.com/direktiv/direktiv/pkg/filestore"
+	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/go-git/go-git/v5/plumbing/format/gitignore"
 )
 
@@ -27,12 +32,6 @@ type fileObject struct {
 	Data     string `json:"data,omitempty"`
 	Typ      string `json:"type,omitempty"`
 	MimeType string `json:"mimeType,omitempty"`
-	// {
-	// 	"name": "sss.yaml",
-	// 	"data": "ZGlyZWt0aXZfYXBpOiB3b3JrZmxvdy92MQpkZXNjcmlwdGlvbjogQSBzaW1wbGUgJ25vLW9wJyBzdGF0ZSB0aGF0IHJldHVybnMgJ0hlbGxvIHdvcmxkIScKc3RhdGVzOgotIGlkOiBoZWxsb3dvcmxkCiAgdHlwZTogbm9vcAogIHRyYW5zZm9ybToKICAgIHJlc3VsdDogSGVsbG8gd29ybGQhCg==",
-	// 	"type": "workflow",
-	// 	"mimeType": "application/yaml"
-	//   }
 }
 
 type errorResponse struct {
@@ -42,15 +41,7 @@ type errorResponse struct {
 	} `json:"error"`
 }
 
-// {
-// 	"error": {
-// 		"code": "resource_already_exists",
-// 		"message": "filesystem path already exists"
-// 	}
-// }
-
 func newUploader(projectRoot string, profile profile) (*uploader, error) {
-
 	uploader := &uploader{
 		profile: profile,
 	}
@@ -64,7 +55,6 @@ func newUploader(projectRoot string, profile profile) (*uploader, error) {
 }
 
 func (u *uploader) createDirectory(path string) error {
-
 	if path == "." {
 		return nil
 	}
@@ -97,12 +87,30 @@ func (u *uploader) createFile(path, filePath string) error {
 	}
 
 	if strings.HasSuffix(path, ".direktiv.ts") {
-
+		obj.Typ = string(filestore.FileTypeWorkflow)
+		obj.MimeType = "application/x-typescript"
 	} else if strings.HasSuffix(path, "yaml") || strings.HasSuffix(path, "yml") {
+		obj.MimeType = "application/yaml"
 
-		// check if workflow, service endpoint
+		resource, err := model.LoadResource(b)
+		if errors.Is(err, model.ErrNotDirektivAPIResource) {
+			obj.Typ = string(filestore.FileTypeFile)
+		}
+
+		switch resource.(type) {
+		case *model.Workflow:
+			obj.Typ = string(filestore.FileTypeWorkflow)
+		case *core.EndpointFile:
+			obj.Typ = string(filestore.FileTypeEndpoint)
+		case *core.ConsumerFile:
+			obj.Typ = string(filestore.FileTypeConsumer)
+		case *core.ServiceFile:
+			obj.Typ = string(filestore.FileTypeService)
+		default:
+			obj.Typ = string(filestore.FileTypeFile)
+		}
 	} else {
-		obj.Typ = "file"
+		obj.Typ = string(filestore.FileTypeFile)
 		mt := mime.TypeByExtension(filepath.Ext(path))
 		if mt == "" {
 			mt = "text/plain"
@@ -112,7 +120,6 @@ func (u *uploader) createFile(path, filePath string) error {
 
 	err = u.createFileItem(path, "POST", obj)
 	if err != nil && err.Error() == "filesystem path already exists" {
-		obj.MimeType = ""
 		return u.createFileItem(path, "PATCH", obj)
 	}
 
@@ -120,7 +127,6 @@ func (u *uploader) createFile(path, filePath string) error {
 }
 
 func (u *uploader) loadIgnoresMatcher(path string) error {
-
 	b, err := os.ReadFile(path)
 	if err != nil {
 		return err
@@ -159,20 +165,7 @@ func (u *uploader) createFileItem(path, method string, obj fileObject) error {
 		return err
 	}
 
-	req, err := http.NewRequest(method, url, bytes.NewBuffer(fObj))
-	if err != nil {
-		return err
-	}
-
-	if u.profile.Token != "" {
-		req.Header.Add("Direktiv-Token", u.profile.Token)
-	}
-
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: u.profile.Insecure},
-	}
-	client := &http.Client{Transport: tr}
-	resp, err := client.Do(req)
+	resp, err := u.sendRequest(method, url, fObj)
 	if err != nil {
 		return err
 	}
@@ -194,4 +187,21 @@ func (u *uploader) createFileItem(path, method string, obj fileObject) error {
 	}
 
 	return nil
+}
+
+func (u *uploader) sendRequest(method, url string, data []byte) (*http.Response, error) {
+	req, err := http.NewRequestWithContext(context.Background(), method, url, bytes.NewBuffer(data))
+	if err != nil {
+		return nil, err
+	}
+
+	if u.profile.Token != "" {
+		req.Header.Add("Direktiv-Token", u.profile.Token)
+	}
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: u.profile.Insecure},
+	}
+	client := &http.Client{Transport: tr}
+	return client.Do(req)
 }

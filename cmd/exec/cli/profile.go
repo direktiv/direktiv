@@ -36,7 +36,6 @@ var deleteProfileCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Short: "Deletes profile with provided name",
 	RunE: func(cmd *cobra.Command, args []string) error {
-
 		err := readConfig()
 		if err != nil {
 			return err
@@ -71,7 +70,6 @@ var listProfilesCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List all profiles in the profile file",
 	RunE: func(cmd *cobra.Command, args []string) error {
-
 		err := readConfig()
 		if err != nil {
 			return err

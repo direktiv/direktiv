@@ -7,7 +7,6 @@ import (
 )
 
 func findProjectRoot(path string) (string, error) {
-
 	fi, err := os.Stat(path)
 	if err != nil {
 		return "", err
