@@ -9,6 +9,15 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
+type LogLevel int
+
+const (
+	LevelDebug LogLevel = iota
+	LevelInfo
+	LevelWarn
+	LevelError
+)
+
 func AddTag(ctx context.Context, key, value interface{}) context.Context {
 	tags, ok := ctx.Value(core.LogTagsKey).(map[string]interface{})
 	if !ok {
@@ -42,6 +51,20 @@ func AddInstanceAttr(ctx context.Context, instanceID string, invoker string, cal
 	tags["invoker"] = invoker
 	tags["callpath"] = callpath
 	tags["workflow"] = workflowPath
+
+	return context.WithValue(ctx, core.LogTagsKey, tags)
+}
+
+func AddStateAttr(ctx context.Context, state string) context.Context {
+	tags, ok := ctx.Value(core.LogTagsKey).(map[string]interface{})
+	if !ok {
+		tags = make(map[string]interface{}, 0)
+	}
+	if trackValue, ok := ctx.Value(core.LogTrackKey).(string); ok {
+		tags["track"] = trackValue
+	}
+
+	tags["state"] = state
 
 	return context.WithValue(ctx, core.LogTagsKey, tags)
 }
@@ -92,10 +115,11 @@ func getAttributes(ctx context.Context) map[string]interface{} {
 	return tags
 }
 
-func GetLogEntryWithStatus(ctx context.Context, level string, msg string, status core.LogStatus) map[string]interface{} {
+func GetLogEntryWithStatus(ctx context.Context, level LogLevel, msg string, status core.LogStatus) map[string]interface{} {
 	tags := getAttributes(ctx)
 	tags["status"] = status
 	tags["level"] = level
+	tags["msg"] = msg
 
 	return tags
 }
@@ -104,7 +128,7 @@ func GetLogEntryWithError(ctx context.Context, msg string, err error) map[string
 	tags := getAttributes(ctx)
 	tags["error"] = err
 	tags["status"] = "error"
-	tags["level"] = "error"
+	tags["level"] = LevelError
 
 	return tags
 }
@@ -138,5 +162,9 @@ func BuildInstanceTrack(instance *engine.Instance) string {
 		callpath += "/" + v.ID.String()
 	}
 
+	return fmt.Sprintf("%v.%v", "instance", callpath)
+}
+
+func BuildInstanceTrackViaCallpath(callpath string) string {
 	return fmt.Sprintf("%v.%v", "instance", callpath)
 }

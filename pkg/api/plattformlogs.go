@@ -15,6 +15,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/datastore"
+	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -61,50 +62,60 @@ func (m *logController) mountRouter(r chi.Router) {
 
 		if instanceID == "" {
 			http.Error(w, "Missing instance ID", http.StatusBadRequest)
+
 			return
 		}
 
 		var logEntry map[string]interface{}
 		err := json.NewDecoder(r.Body).Decode(&logEntry)
 		if err != nil {
-			http.Error(w, "Invalid JSON", http.StatusBadRequest)
+			writeInternalError(w, err)
+
 			return
 		}
 
 		if _, ok := logEntry["track"]; !ok {
-			http.Error(w, "Missing 'track' field", http.StatusBadRequest)
+			writeBadrequestError(w, fmt.Errorf("missing 'track' field"))
+
 			return
 		}
+		slog.Debug("logging aack", "tra", logEntry["track"])
 
 		if v, ok := logEntry["namespace"].(string); !ok || v != namespace.Name {
-			http.Error(w, "Invalid or mismatched namespace", http.StatusBadRequest)
+			writeBadrequestError(w, fmt.Errorf("invalid or mismatched namespace"))
+
 			return
 		}
 
 		msg, ok := logEntry["msg"].(string)
 		if !ok {
-			http.Error(w, "Missing or invalid 'msg' field", http.StatusBadRequest)
+			writeBadrequestError(w, fmt.Errorf("missing or invalid 'msg' field"))
+
 			return
 		}
 
-		logF := slog.Info
-		if v, ok := logEntry["level"].(string); ok {
+		slogF := slog.Info
+		if v, ok := logEntry["level"].(tracing.LogLevel); ok {
 			switch v {
-			case "DEBUG", "debug", "Debug":
-				logF = slog.Debug
-			case "INFO", "info", "Info":
-				logF = slog.Info
-			case "ERROR", "error", "Error":
-				logF = slog.Error
+			case tracing.LevelDebug:
+				slogF = slog.Debug
+			case tracing.LevelInfo:
+				slogF = slog.Info
+			case tracing.LevelWarn:
+				slogF = slog.Warn
+			case tracing.LevelError:
+				slogF = slog.Error
 			}
 		}
+
+		delete(logEntry, "level")
 
 		attr := make([]interface{}, 0, len(logEntry))
 		for k, v := range logEntry {
 			attr = append(attr, k, v)
 		}
 
-		logF(msg, attr...)
+		slogF(msg, attr...)
 		w.WriteHeader(http.StatusOK)
 	})
 }

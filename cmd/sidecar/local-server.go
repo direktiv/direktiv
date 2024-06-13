@@ -169,26 +169,31 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := tracing.AddNamespace(r.Context(), req.Namespace)
 	ctx = tracing.AddInstanceAttr(ctx, req.Instance, "action", req.Callpath, req.Workflow)
 	ctx = tracing.AddTraceAttr(ctx, req.Trace, req.Span)
+	ctx = tracing.AddStateAttr(ctx, req.State)
+	ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrackViaCallpath(req.Callpath))
 
-	entry := tracing.GetLogEntryWithStatus(ctx, "Info", msg, core.LogRunningStatus)
+	entry := tracing.GetLogEntryWithStatus(ctx, tracing.LevelInfo, msg, core.LogRunningStatus)
 	d, err := json.Marshal(entry)
 	if err != nil {
 		slog.Error("Failed to marshal log entry.", "action_id", actionId, "error", err)
 		http.Error(w, "", http.StatusInternalServerError)
+
 		return
 	}
-
-	addr := fmt.Sprintf("http://%v/api/v2/namespaces/%v/plattformlogs?instance=%v", srv.flowAddr, req.Namespace, req.Instance)
+	slog.Debug("redirect log entry to flow", "org_msg", msg)
+	addr := fmt.Sprintf("http://%v/api/v2/namespaces/%v/logs?instance=%v", srv.flowAddr, req.Namespace, req.Instance)
 	resp, err := doRequest(req.ctx, http.MethodPost, srv.flowToken, addr, bytes.NewBuffer(d))
 	if err != nil {
 		slog.Error("Failed to forward log to Flow.", "action_id", actionId, "error", err)
 		http.Error(w, "", http.StatusInternalServerError)
+
 		return
 	}
 
 	if _, err := handleResponse(resp, nil); err != nil {
 		slog.Error("Failed to handle Flow response.", "action_id", actionId, "error", err)
 		http.Error(w, "", http.StatusInternalServerError)
+
 		return
 	}
 
