@@ -743,7 +743,7 @@ test("it is not possible to navigate to a namespace that does not exist", async 
   ).not.toBeVisible();
 });
 
-test("it is possible to search for a name and only display files with that name", async ({
+test("it is possible to filter the file list by name", async ({
   page,
 }) => {
   // mock namespace with a list of files
