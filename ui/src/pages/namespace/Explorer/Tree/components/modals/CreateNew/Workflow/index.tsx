@@ -122,10 +122,7 @@ const NewWorkflow = ({
         name,
         data: encode(fileContent),
         type: "workflow",
-        mimeType:
-          workflowType === "typescript"
-            ? "application/x-typescript"
-            : "application/yaml",
+        mimeType: workflowMimeType,
       },
     });
   };
@@ -136,7 +133,12 @@ const NewWorkflow = ({
 
   const formId = `new-worfklow-${path}`;
 
-  const workflowType = watch("workflowType");
+  const workflowType: (typeof workflowTypes)[number] = watch("workflowType");
+
+  const workflowMimeType =
+    workflowType === "typescript"
+      ? "application/x-typescript"
+      : "application/yaml";
 
   return (
     <>
@@ -170,7 +172,9 @@ const NewWorkflow = ({
             </label>
             <Select
               value={workflowType}
-              onValueChange={(value) => setValue("workflowType", value)}
+              onValueChange={(value: (typeof workflowTypes)[number]) =>
+                setValue("workflowType", value)
+              }
             >
               <SelectTrigger id="type" variant="outline" block>
                 <SelectValue
