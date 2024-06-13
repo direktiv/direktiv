@@ -55,6 +55,58 @@ func (m *logController) mountRouter(r chi.Router) {
 		}
 		writeJSONWithMeta(w, data, metaInfo)
 	})
+	r.Post("/", func(w http.ResponseWriter, r *http.Request) {
+		namespace := extractContextNamespace(r)
+		instanceID := r.URL.Query().Get("instance")
+
+		if instanceID == "" {
+			http.Error(w, "Missing instance ID", http.StatusBadRequest)
+			return
+		}
+
+		var logEntry map[string]interface{}
+		err := json.NewDecoder(r.Body).Decode(&logEntry)
+		if err != nil {
+			http.Error(w, "Invalid JSON", http.StatusBadRequest)
+			return
+		}
+
+		if _, ok := logEntry["track"]; !ok {
+			http.Error(w, "Missing 'track' field", http.StatusBadRequest)
+			return
+		}
+
+		if v, ok := logEntry["namespace"].(string); !ok || v != namespace.Name {
+			http.Error(w, "Invalid or mismatched namespace", http.StatusBadRequest)
+			return
+		}
+
+		msg, ok := logEntry["msg"].(string)
+		if !ok {
+			http.Error(w, "Missing or invalid 'msg' field", http.StatusBadRequest)
+			return
+		}
+
+		logF := slog.Info
+		if v, ok := logEntry["level"].(string); ok {
+			switch v {
+			case "DEBUG", "debug", "Debug":
+				logF = slog.Debug
+			case "INFO", "info", "Info":
+				logF = slog.Info
+			case "ERROR", "error", "Error":
+				logF = slog.Error
+			}
+		}
+
+		attr := make([]interface{}, 0, len(logEntry))
+		for k, v := range logEntry {
+			attr = append(attr, k, v)
+		}
+
+		logF(msg, attr...)
+		w.WriteHeader(http.StatusOK)
+	})
 }
 
 func (m logController) getNewer(ctx context.Context, t time.Time, params map[string]string) ([]logEntry, error) {
