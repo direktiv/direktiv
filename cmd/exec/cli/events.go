@@ -1,7 +1,11 @@
 package cli
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
+	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -28,7 +32,39 @@ var sendEventCmd = &cobra.Command{
 			return err
 		}
 
-		fmt.Println(p)
+		uploader, err := newUploader("", p)
+		if err != nil {
+			return err
+		}
+
+		b, err := os.ReadFile(args[0])
+		if err != nil {
+			return err
+		}
+
+		url := fmt.Sprintf("%s/api/v2/namespaces/%s/events/broadcast", p.Address, p.Namespace)
+		resp, err := uploader.sendRequest("POST", url, b)
+		if err != nil {
+			return err
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			b, err := io.ReadAll(resp.Body)
+			if err != nil {
+				return err
+			}
+
+			var errJson errorResponse
+			err = json.Unmarshal(b, &errJson)
+			if err != nil {
+				return err
+			}
+
+			return fmt.Errorf(errJson.Error.Message)
+		}
+
+		fmt.Println("event sent")
 
 		return nil
 	},

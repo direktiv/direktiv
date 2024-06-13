@@ -46,9 +46,11 @@ func newUploader(projectRoot string, profile profile) (*uploader, error) {
 		profile: profile,
 	}
 
-	err := uploader.loadIgnoresMatcher(filepath.Join(projectRoot, ".direktivignore"))
-	if err != nil {
-		return nil, err
+	if projectRoot != "" {
+		err := uploader.loadIgnoresMatcher(filepath.Join(projectRoot, ".direktivignore"))
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return uploader, nil
@@ -198,6 +200,8 @@ func (u *uploader) sendRequest(method, url string, data []byte) (*http.Response,
 	if u.profile.Token != "" {
 		req.Header.Add("Direktiv-Token", u.profile.Token)
 	}
+
+	req.Header.Add("Content-Type", "application/json")
 
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: u.profile.Insecure},

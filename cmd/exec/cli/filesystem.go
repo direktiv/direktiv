@@ -92,6 +92,22 @@ var instancesExecCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			b, err := io.ReadAll(resp.Body)
+			if err != nil {
+				return err
+			}
+
+			var errJson errorResponse
+			err = json.Unmarshal(b, &errJson)
+			if err != nil {
+				return err
+			}
+
+			return fmt.Errorf(errJson.Error.Message)
+		}
 
 		id, err := handleResponse(resp, p)
 		if err != nil {
