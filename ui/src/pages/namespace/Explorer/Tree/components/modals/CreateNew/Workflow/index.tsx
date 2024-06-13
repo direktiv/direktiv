@@ -37,6 +37,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 type FormInput = {
   name: string;
+  selectedTemplate: string;
   workflowType: (typeof workflowTypes)[number];
   fileContent: string;
 };
@@ -91,6 +92,7 @@ const NewWorkflow = ({
   } = useForm<FormInput>({
     resolver,
     defaultValues: {
+      selectedTemplate: "noop",
       workflowType: "yaml",
       fileContent: defaultWorkflowTemplate.data,
     },
@@ -135,6 +137,8 @@ const NewWorkflow = ({
 
   const workflowType: (typeof workflowTypes)[number] = watch("workflowType");
 
+  const selectedTemplate: string = watch("selectedTemplate");
+
   const workflowMimeType =
     workflowType === "typescript"
       ? "application/x-typescript"
@@ -172,9 +176,20 @@ const NewWorkflow = ({
             </label>
             <Select
               value={workflowType}
-              onValueChange={(value: (typeof workflowTypes)[number]) =>
-                setValue("workflowType", value)
-              }
+              onValueChange={(value: (typeof workflowTypes)[number]) => {
+                setValue("workflowType", value);
+                setValue(
+                  "selectedTemplate",
+                  value === "typescript" ? "TypescriptExample" : "noop"
+                );
+                const match = workflowTemplates.find(
+                  (template) => template.type === value
+                );
+                if (match) {
+                  setValue("fileContent", match.data);
+                  setWorkflowData(match.data);
+                }
+              }}
             >
               <SelectTrigger id="type" variant="outline" block>
                 <SelectValue
@@ -201,13 +216,14 @@ const NewWorkflow = ({
               {t("pages.explorer.tree.newWorkflow.templateLabel")}
             </label>
             <Select
+              value={selectedTemplate}
               onValueChange={(value) => {
-                const matchingWf = workflowTemplates.find(
+                const match = workflowTemplates.find(
                   (template) => template.name === value
                 );
-                if (matchingWf) {
-                  setValue("fileContent", matchingWf.data);
-                  setWorkflowData(matchingWf.data);
+                if (match) {
+                  setValue("fileContent", match.data);
+                  setWorkflowData(match.data);
                 }
               }}
             >
