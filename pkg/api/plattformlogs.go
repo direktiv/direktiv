@@ -79,7 +79,6 @@ func (m *logController) mountRouter(r chi.Router) {
 
 			return
 		}
-		slog.Debug("logging aack", "tra", logEntry["track"])
 
 		if v, ok := logEntry["namespace"].(string); !ok || v != namespace.Name {
 			writeBadrequestError(w, fmt.Errorf("invalid or mismatched namespace"))
