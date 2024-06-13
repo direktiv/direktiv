@@ -24,10 +24,10 @@ test("it renders event listeners", async ({ page }) => {
     (_, index) => `workflow${index}.yaml`
   );
 
-  const yaml = simpleListenerYaml;
+  const content = simpleListenerYaml;
 
   await Promise.all(
-    workflowNames.map((name) => createListener({ name, namespace, yaml }))
+    workflowNames.map((name) => createListener({ name, namespace, content }))
   );
 
   /* visit page and assert a list of listeners is rendered */
@@ -86,10 +86,10 @@ test("it paginates event listeners", async ({ page }) => {
     (_, index) => `workflow${index}.yaml`
   );
 
-  const yaml = simpleListenerYaml;
+  const content = simpleListenerYaml;
 
   await Promise.all(
-    workflowNames.map((name) => createListener({ name, namespace, yaml }))
+    workflowNames.map((name) => createListener({ name, namespace, content }))
   );
 
   /* visit page and assert a list of listeners is rendered */
@@ -133,11 +133,11 @@ test("it paginates event listeners", async ({ page }) => {
 
 test("it renders event context filters", async ({ page }) => {
   /* set up test data */
-  const yaml = contextFiltersListenerYaml;
+  const content = contextFiltersListenerYaml;
   await createListener({
     name: "listener.yaml",
     namespace,
-    yaml,
+    content,
   });
 
   /* visit page and assert filters rendered */

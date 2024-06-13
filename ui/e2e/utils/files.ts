@@ -8,21 +8,21 @@ import { headers } from "./testutils";
 
 export const createFile = async ({
   name,
-  yaml,
+  content,
   namespace,
   type,
   mimeType = "application/yaml",
   path = "/",
 }: {
   name: string;
-  yaml: string;
+  content: string;
   namespace: string;
   type: "workflow" | "consumer" | "endpoint" | "service";
   mimeType?: (typeof workflowMimeTypes)[number];
   path?: string;
 }) => {
   const payload = CreateFileSchema.parse({
-    data: encode(yaml),
+    data: encode(content),
     name,
     mimeType,
     type,

@@ -29,7 +29,7 @@ test("Route details page shows all important information about the route", async
     name: fileName,
     namespace,
     type: "endpoint",
-    yaml: createRouteFile({
+    content: createRouteFile({
       path,
       targetType: "instant-response",
       targetConfigurationStatus: "202",
@@ -129,7 +129,7 @@ test("Route details page shows warning if the route was not configured correctly
     name: fileName,
     namespace,
     type: "endpoint",
-    yaml: routeWithAnError,
+    content: routeWithAnError,
   });
 
   await expect

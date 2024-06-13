@@ -33,7 +33,7 @@ test.beforeEach(async () => {
     name: workflow,
     namespace,
     type: "workflow",
-    yaml: consumeEventWorkflow.data,
+    content: consumeEventWorkflow.data,
   });
 });
 
