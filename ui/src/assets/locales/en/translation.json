@@ -102,7 +102,13 @@
           "templateLabel": "Template",
           "nameAlreadyExists": "The name already exists",
           "cancelBtn": "Cancel",
-          "createBtn": "Create"
+          "createBtn": "Create",
+          "type": {
+            "label": "Type",
+            "yaml": "yaml",
+            "typescript": "Typescript (experimental)",
+            "placeholder": "Select workflow type"
+          }
         },
         "newService": {
           "title": "Create a new service",

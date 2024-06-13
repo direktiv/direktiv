@@ -1,5 +1,14 @@
-export const noop = {
+export type workflowType = (typeof workflowTypes)[number];
+
+type workflowTemplate = {
+  name: string;
+  type: workflowType;
+  data: string;
+};
+
+export const noop: workflowTemplate = {
   name: "noop",
+  type: "yaml",
   data: `direktiv_api: workflow/v1
 description: A simple 'no-op' state that returns 'Hello world!'
 states:
@@ -10,8 +19,9 @@ states:
 `,
 };
 
-export const action = {
+export const action: workflowTemplate = {
   name: "action",
+  type: "yaml",
   data: `direktiv_api: workflow/v1
 description: A simple 'action' state that sends a get request
 functions:
@@ -29,8 +39,9 @@ states:
 `,
 };
 
-export const consumeEvent = {
+export const consumeEvent: workflowTemplate = {
   name: "consumeEvent",
+  type: "yaml",
   data: `direktiv_api: workflow/v1
 functions:
 - id: greeter
@@ -54,8 +65,9 @@ states:
 `,
 };
 
-export const delay = {
+export const delay: workflowTemplate = {
   name: "delay",
+  type: "yaml",
   data: `direktiv_api: workflow/v1
 description: A simple 'delay' state that waits for 5 seconds
 states:
@@ -65,8 +77,9 @@ states:
 `,
 };
 
-export const error = {
+export const error: workflowTemplate = {
   name: "error",
+  type: "yaml",
   data: `direktiv_api: workflow/v1
 description: A simple 'error' state workflow that checks an email attempts to validate it.
 states:
@@ -99,8 +112,9 @@ states:
 `,
 };
 
-export const foreach = {
+export const foreach: workflowTemplate = {
   name: "foreach",
+  type: "yaml",
   data: `direktiv_api: workflow/v1
 description: A simple 'foreach' state that solves expressions
 functions: 
@@ -125,8 +139,9 @@ states:
 `,
 };
 
-export const generateEvent = {
+export const generateEvent: workflowTemplate = {
   name: "generateEvent",
+  type: "yaml",
   data: `direktiv_api: workflow/v1
 description: A simple 'generateEvent' state that sends data to a greeting listener.
 states:
@@ -140,8 +155,9 @@ states:
 `,
 };
 
-export const generateSolveEvent = {
+export const generateSolveEvent: workflowTemplate = {
   name: "generateSolveEvent",
+  type: "yaml",
   data: `direktiv_api: workflow/v1
 description: A simple 'generateEvent' state that sends an expression to a solve listener.
 states:
@@ -155,8 +171,9 @@ states:
 `,
 };
 
-export const getAndSet = {
+export const getAndSet: workflowTemplate = {
   name: "getAndSet",
+  type: "yaml",
   data: `direktiv_api: workflow/v1
 description: "Simple Counter getter and setter variable example"
 states:
@@ -176,8 +193,9 @@ states:
 `,
 };
 
-export const parallel = {
+export const parallel: workflowTemplate = {
   name: "parallel",
+  type: "yaml",
   data: `direktiv_api: workflow/v1
 description: A simple 'parallel' state workflow that runs solve container to solve expressions.
 functions: 
@@ -206,8 +224,9 @@ states:
 `,
 };
 
-export const validate = {
+export const validate: workflowTemplate = {
   name: "validate",
+  type: "yaml",
   data: `direktiv_api: workflow/v1
 description: A simple 'validate' state workflow that checks an email
 states:
@@ -240,8 +259,9 @@ states:
 `,
 };
 
-export const switchState = {
+export const switchState: workflowTemplate = {
   name: "switch",
+  type: "yaml",
   data: `direktiv_api: workflow/v1
 description: A simple 'switch' state that checks whether the age provided is older than 18.
 states:
@@ -267,8 +287,9 @@ states:
 `,
 };
 
-export const eventXor = {
+export const eventXor: workflowTemplate = {
   name: "eventXor",
+  type: "yaml",
   data: `direktiv_api: workflow/v1
 functions:
 - id: greeter
@@ -306,8 +327,9 @@ states:
 `,
 };
 
-export const eventAnd = {
+export const eventAnd: workflowTemplate = {
   name: "eventAnd",
+  type: "yaml",
   data: `direktiv_api: workflow/v1
 functions:
 - id: greeter
@@ -345,6 +367,43 @@ states:
 `,
 };
 
+export const typescriptExample: workflowTemplate = {
+  name: "TypescriptExample",
+  type: "typescript",
+  data: `const flow: DirektivFlow = {
+		scale: [
+			{
+				min: 1
+			}
+		]
+	};
+
+function value() {
+	const fileOne = getFile({
+		name: "/myfile.txt",
+		permission: 755,
+		scope: "shared",
+	});	  
+    
+    var s = getSecret({ name: "hello-world"})
+
+    var r = httpRequest(
+        {
+            method: "POST",
+            url: "http://127.0.0.1:%d"
+        }
+    )
+
+    var fn = setupFunction({
+		image: "localhost:5000/hello"
+	})
+
+    var fn = setupFunction2({
+		image: "localhost:5000/hello"
+	})
+}`,
+};
+
 const templates = [
   noop,
   action,
@@ -360,6 +419,7 @@ const templates = [
   switchState,
   eventXor,
   eventAnd,
+  typescriptExample,
 ] as const;
 
 export default templates;

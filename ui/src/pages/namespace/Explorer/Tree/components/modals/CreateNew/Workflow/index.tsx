@@ -4,6 +4,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/design/Dialog";
+import { FileNameSchema, workflowTypes } from "~/api/files/schema";
 import { Play, PlusCircle } from "lucide-react";
 import {
   Select,
@@ -17,7 +18,6 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
-import { FileNameSchema } from "~/api/files/schema";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { Textarea } from "~/design/TextArea";
@@ -37,6 +37,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 type FormInput = {
   name: string;
+  workflowType: (typeof workflowTypes)[number];
   fileContent: string;
 };
 
@@ -65,7 +66,9 @@ const NewWorkflow = ({
   const resolver = zodResolver(
     z.object({
       name: FileNameSchema.transform((enteredName) =>
-        addYamlFileExtension(enteredName)
+        workflowType === "typescript"
+          ? enteredName // todo: add automatic extension like below
+          : addYamlFileExtension(enteredName)
       ).refine(
         (nameWithExtension) =>
           !(unallowedNames ?? []).some(
@@ -83,10 +86,12 @@ const NewWorkflow = ({
     register,
     handleSubmit,
     setValue,
+    watch,
     formState: { isDirty, errors, isValid, isSubmitted },
   } = useForm<FormInput>({
     resolver,
     defaultValues: {
+      workflowType: "yaml",
       fileContent: defaultWorkflowTemplate.data,
     },
   });
@@ -117,7 +122,10 @@ const NewWorkflow = ({
         name,
         data: encode(fileContent),
         type: "workflow",
-        mimeType: "application/yaml",
+        mimeType:
+          workflowType === "typescript"
+            ? "application/x-typescript"
+            : "application/yaml",
       },
     });
   };
@@ -127,6 +135,9 @@ const NewWorkflow = ({
   const disableSubmit = !isDirty || (isSubmitted && !isValid);
 
   const formId = `new-worfklow-${path}`;
+
+  const workflowType = watch("workflowType");
+
   return (
     <>
       <DialogHeader>
@@ -154,6 +165,31 @@ const NewWorkflow = ({
             />
           </fieldset>
           <fieldset className="flex items-center gap-5">
+            <label className="w-[100px] text-right text-[14px]" htmlFor="type">
+              {t("pages.explorer.tree.newWorkflow.type.label")}
+            </label>
+            <Select
+              value={workflowType}
+              onValueChange={(value) => setValue("workflowType", value)}
+            >
+              <SelectTrigger id="type" variant="outline" block>
+                <SelectValue
+                  placeholder={t(
+                    "pages.explorer.tree.newWorkflow.type.placeholder"
+                  )}
+                  defaultValue="yaml"
+                />
+              </SelectTrigger>
+              <SelectContent>
+                {workflowTypes.map((type) => (
+                  <SelectItem value={type} key={type}>
+                    {t(`pages.explorer.tree.newWorkflow.type.${type}`)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </fieldset>
+          <fieldset className="flex items-center gap-5">
             <label
               className="w-[100px] text-right text-[14px]"
               htmlFor="template"
@@ -163,7 +199,7 @@ const NewWorkflow = ({
             <Select
               onValueChange={(value) => {
                 const matchingWf = workflowTemplates.find(
-                  (t) => t.name === value
+                  (template) => template.name === value
                 );
                 if (matchingWf) {
                   setValue("fileContent", matchingWf.data);
@@ -178,11 +214,13 @@ const NewWorkflow = ({
                 />
               </SelectTrigger>
               <SelectContent>
-                {workflowTemplates.map((t) => (
-                  <SelectItem value={t.name} key={t.name}>
-                    {t.name}
-                  </SelectItem>
-                ))}
+                {workflowTemplates
+                  .filter((template) => workflowType === template.type)
+                  .map((template) => (
+                    <SelectItem value={template.name} key={template.name}>
+                      {template.name}
+                    </SelectItem>
+                  ))}
               </SelectContent>
             </Select>
           </fieldset>
