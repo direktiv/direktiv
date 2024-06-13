@@ -149,6 +149,7 @@ func (u *uploader) loadIgnoresMatcher(path string) error {
 
 func (u *uploader) createFileItem(path, method string, obj fileObject) error {
 	parent := path
+	parent = strings.ReplaceAll(parent, "\\", "/")
 
 	if method == "POST" {
 		base := filepath.Base(path)
@@ -156,6 +157,7 @@ func (u *uploader) createFileItem(path, method string, obj fileObject) error {
 		if parent == "." {
 			parent = ""
 		}
+		base = strings.ReplaceAll(base, "\\", "/")
 		obj.Name = base
 	}
 
