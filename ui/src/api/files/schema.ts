@@ -119,7 +119,7 @@ const CreateWorkflowSchema = CreateYamlFileSchema.extend({
   mimeType: z.enum(workflowMimeTypes),
 });
 
-const CreateFileSchema = z.discriminatedUnion("type", [
+export const CreateFileSchema = z.discriminatedUnion("type", [
   CreateDirectorySchema,
   CreateConsumerSchema,
   CreateEndpointSchema,
