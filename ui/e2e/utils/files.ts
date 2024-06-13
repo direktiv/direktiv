@@ -1,4 +1,3 @@
-import { CreateFileSchemaType } from "~/api/files/schema";
 import { createFile as apiCreateFile } from "~/api/files/mutate/createFile";
 import { deleteFile as apiDeleteFile } from "~/api/files/mutate/deleteFile";
 import { getFile as apiGetFile } from "~/api/files/query/file";
@@ -15,7 +14,7 @@ export const createFile = async ({
   name: string;
   yaml: string;
   namespace: string;
-  type: CreateFileSchemaType["type"];
+  type: "workflow" | "consumer" | "endpoint" | "service";
   path?: string;
 }) =>
   await apiCreateFile({
