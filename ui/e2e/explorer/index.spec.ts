@@ -802,7 +802,7 @@ test("it is possible to search for a name and only display files with that name"
   /* 
      Note for future uses: 
      The route for files needs a '/' at the end
-     because the '/' is actually the beginning of the filename
+     because the '/' is actually the beginning of the path
      see also: src/api/files/query/file.ts
   */
 
