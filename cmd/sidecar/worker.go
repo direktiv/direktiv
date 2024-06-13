@@ -89,7 +89,7 @@ func (worker *inboundWorker) doFunctionRequest(ctx context.Context, ir *function
 	}
 
 	req.Header.Set(actionIDHeader, ir.actionId)
-	req.Header.Set(IteratorHeader, fmt.Sprintf("%d", ir.iterator))
+	req.Header.Set(IteratorHeader, fmt.Sprintf("%d", ir.Branch))
 	req.Header.Set("Direktiv-TempDir", worker.functionDir(ir))
 	req.Header.Set("Content-Type", "application/json")
 
@@ -473,7 +473,7 @@ func fetchFunctionFiles(ctx context.Context, flowToken string, flowAddr string, 
 			}
 
 			pw.Close()
-		}(flowToken, flowAddr, ir.namespace, file, idx)
+		}(flowToken, flowAddr, ir.Namespace, file, idx)
 
 		if err = fileWriter(ctx, ir, file, pr); err != nil {
 			pr.CloseWithError(fmt.Errorf("failed to write file: %w", err))
@@ -535,15 +535,11 @@ func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
 		}
 	}
 	ir := &functionRequest{
-		actionId:     aid,
-		instanceId:   action.Instance,
-		namespace:    action.Namespace,
-		step:         action.Step,
-		deadline:     action.Deadline,
-		input:        action.UserInput,
-		iterator:     action.Branch,
-		files:        files,
-		workflowPath: action.Workflow,
+		actionId:      aid,
+		deadline:      action.Deadline,
+		input:         action.UserInput,
+		files:         files,
+		ActionContext: action.ActionContext,
 	}
 
 	ctx := req.r.Context()

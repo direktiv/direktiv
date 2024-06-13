@@ -3,6 +3,7 @@ package sidecar
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -12,8 +13,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/datastore"
-	"github.com/direktiv/direktiv/pkg/flow/grpc"
+	"github.com/direktiv/direktiv/pkg/engine"
+	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/gorilla/mux"
 )
@@ -24,7 +27,6 @@ const (
 
 type LocalServer struct {
 	end       func()
-	flow      grpc.InternalClient
 	flowAddr  string
 	flowToken string
 	queue     chan *inboundRequest
@@ -40,13 +42,6 @@ type LocalServer struct {
 func (srv *LocalServer) initFlow() error {
 	serverArr := fmt.Sprintf("%s:7777", os.Getenv(direktivFlowEndpoint))
 	fmt.Printf("flow server: %s\n", serverArr)
-	conn, err := utils.GetEndpointTLS(serverArr)
-	if err != nil {
-		return err
-	}
-	fmt.Printf("connected to flow\n")
-
-	srv.flow = grpc.NewInternalClient(conn)
 
 	srv.flowToken = os.Getenv("API_KEY")
 	srv.flowAddr = fmt.Sprintf("%s:6665", os.Getenv(direktivFlowEndpoint))
@@ -139,40 +134,28 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !ok {
-		err := errors.New("the action id went missing")
-		code := http.StatusInternalServerError
-		reportError(code, err)
-
+		reportError(http.StatusInternalServerError, errors.New("the action id went missing"))
 		return
 	}
 
 	if req == nil {
-		code := http.StatusNotFound
-		reportError(code, fmt.Errorf("actionId %s not found", actionId))
-
+		reportError(http.StatusNotFound, fmt.Errorf("actionId %s not found", actionId))
 		return
 	}
 
 	var msg string
-
 	if r.Method == http.MethodPost {
-		capa := int64(0x400000) // 4 MiB
+		const capa = int64(0x400000) // 4 MiB
 		if r.ContentLength > capa {
-			code := http.StatusRequestEntityTooLarge
-			reportError(code, errors.New(http.StatusText(code)))
-
+			reportError(http.StatusRequestEntityTooLarge, errors.New(http.StatusText(http.StatusRequestEntityTooLarge)))
 			return
 		}
-		r := io.LimitReader(r.Body, capa)
 
-		data, err := io.ReadAll(r)
+		data, err := io.ReadAll(io.LimitReader(r.Body, capa))
 		if err != nil {
-			code := http.StatusBadRequest
-			reportError(code, err)
-
+			reportError(http.StatusBadRequest, err)
 			return
 		}
-
 		msg = string(data)
 	} else {
 		msg = r.URL.Query().Get("log")
@@ -183,13 +166,35 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err := srv.flow.ActionLog(req.ctx, &grpc.ActionLogRequest{
-		InstanceId: req.instanceId,
-		Msg:        []string{msg},
-		Iterator:   int32(req.iterator),
-	})
+	ctx := tracing.AddNamespace(r.Context(), req.Namespace)
+	ctx = tracing.AddInstanceAttr(ctx, req.Instance, "action", req.Callpath, req.Workflow)
+	ctx = tracing.AddTraceAttr(ctx, req.Trace, req.Span)
+	ctx = tracing.AddStateAttr(ctx, req.State)
+	ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrackViaCallpath(req.Callpath))
+
+	entry := tracing.GetLogEntryWithStatus(ctx, tracing.LevelInfo, msg, core.LogRunningStatus)
+	d, err := json.Marshal(entry)
+	if err != nil {
+		slog.Error("Failed to marshal log entry.", "action_id", actionId, "error", err)
+		http.Error(w, "", http.StatusInternalServerError)
+
+		return
+	}
+	slog.Debug("redirect log entry to flow", "org_msg", msg)
+	addr := fmt.Sprintf("http://%v/api/v2/namespaces/%v/logs?instance=%v", srv.flowAddr, req.Namespace, req.Instance)
+	resp, err := doRequest(req.ctx, http.MethodPost, srv.flowToken, addr, bytes.NewBuffer(d))
 	if err != nil {
 		slog.Error("Failed to forward log to Flow.", "action_id", actionId, "error", err)
+		http.Error(w, "", http.StatusInternalServerError)
+
+		return
+	}
+
+	if _, err := handleResponse(resp, nil); err != nil {
+		slog.Error("Failed to handle Flow response.", "action_id", actionId, "error", err)
+		http.Error(w, "", http.StatusInternalServerError)
+
+		return
 	}
 
 	slog.Debug("Log handler successfully processed message.", "action_id", actionId)
@@ -241,7 +246,7 @@ func (srv *LocalServer) varHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		varData, err := getVariableDataViaID(ctx, srv.flowToken, srv.flowAddr, ir.namespace, varMeta.ID.String())
+		varData, err := getVariableDataViaID(ctx, srv.flowToken, srv.flowAddr, ir.Namespace, varMeta.ID.String())
 		if err != nil {
 			reportError(http.StatusInternalServerError, err)
 			slog.Warn("Failed retrieving a Variable.", "action_id", actionId, "key", key, "scope", scope)
@@ -389,15 +394,11 @@ func (srv *LocalServer) run() {
 }
 
 type functionRequest struct {
-	actionId     string
-	instanceId   string
-	namespace    string
-	workflowPath string
-	step         int
-	deadline     time.Time
-	input        []byte
-	files        []*functionFiles
-	iterator     int
+	actionId string
+	engine.ActionContext
+	deadline time.Time
+	input    []byte
+	files    []*functionFiles
 }
 
 type functionFiles struct {
@@ -430,9 +431,9 @@ func (srv *LocalServer) setVar(ctx context.Context, ir *functionRequest, r io.Re
 			// Set scope-specific fields
 			switch scope {
 			case utils.VarScopeInstance:
-				reqD.InstanceIDString = ir.instanceId
+				reqD.InstanceIDString = ir.Instance
 			case utils.VarScopeWorkflow:
-				reqD.WorkflowPath = ir.workflowPath
+				reqD.WorkflowPath = ir.Workflow
 			case utils.VarScopeNamespace:
 				// Namespace scope requires no additional fields
 			default:
@@ -440,7 +441,7 @@ func (srv *LocalServer) setVar(ctx context.Context, ir *functionRequest, r io.Re
 			}
 
 			// Attempt to create the variable
-			postStatusCode, postErr := postVarData(ctx, srv.flowToken, srv.flowAddr, ir.namespace, reqD)
+			postStatusCode, postErr := postVarData(ctx, srv.flowToken, srv.flowAddr, ir.Namespace, reqD)
 			if postErr != nil {
 				return postStatusCode, fmt.Errorf("failed to post variable data: %w", postErr)
 			}
@@ -461,7 +462,7 @@ func (srv *LocalServer) setVar(ctx context.Context, ir *functionRequest, r io.Re
 		MimeType: &vMimeType,
 		Data:     data,
 	}
-	patchStatusCode, patchErr := patchVarData(ctx, srv.flowToken, srv.flowAddr, ir.namespace, varMeta.ID.String(), reqD)
+	patchStatusCode, patchErr := patchVarData(ctx, srv.flowToken, srv.flowAddr, ir.Namespace, varMeta.ID.String(), reqD)
 	if patchErr != nil {
 		return patchStatusCode, fmt.Errorf("failed to patch variable data: %w", patchErr)
 	}

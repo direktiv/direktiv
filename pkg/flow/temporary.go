@@ -393,6 +393,13 @@ func (engine *engine) newIsolateRequest(im *instanceMemory, stateID string, time
 		UserInput: inputData,
 		Deadline:  time.Now().UTC().Add(time.Duration(timeout) * time.Second), // TODO?
 	}
+	callpath := ""
+	if len(im.instance.DescentInfo.Descent) == 0 {
+		callpath = im.GetInstanceID().String()
+	}
+	for _, v := range im.instance.DescentInfo.Descent {
+		callpath += "/" + v.ID.String()
+	}
 
 	arCtx := enginerefactor.ActionContext{
 		Trace:     im.instance.TelemetryInfo.TraceID,
@@ -402,7 +409,7 @@ func (engine *engine) newIsolateRequest(im *instanceMemory, stateID string, time
 		Namespace: im.Namespace().Name,
 		Workflow:  im.instance.Instance.WorkflowPath,
 		Instance:  im.ID().String(),
-		Callpath:  im.instance.TelemetryInfo.CallPath,
+		Callpath:  callpath,
 		Action:    uid.String(),
 	}
 	arReq.ActionContext = arCtx
