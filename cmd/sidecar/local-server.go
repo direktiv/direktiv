@@ -9,10 +9,10 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-	"strconv"
 	"sync"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/gorilla/mux"
@@ -233,14 +233,25 @@ func (srv *LocalServer) varHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 
-		setTotalSize := func(x int64) {
-			w.Header().Set("Content-Length", strconv.Itoa(int(x)))
+		varMeta, statusCode, err := getVariableMetaFromFlow(ctx, srv.flowToken, srv.flowAddr, ir, scope, key)
+		if err != nil {
+			reportError(statusCode, err)
+			slog.Warn("Failed retrieving a Variable.", "action_id", actionId, "key", key, "scope", scope)
+
+			return
 		}
 
-		err := srv.getVar(ctx, ir, w, setTotalSize, scope, key)
+		varData, err := getVariableDataViaID(ctx, srv.flowToken, srv.flowAddr, ir.namespace, varMeta.ID.String())
 		if err != nil {
 			reportError(http.StatusInternalServerError, err)
 			slog.Warn("Failed retrieving a Variable.", "action_id", actionId, "key", key, "scope", scope)
+
+			return
+		}
+		_, err = io.Copy(w, bytes.NewReader(varData.Data))
+		if err != nil {
+			reportError(http.StatusInternalServerError, err)
+			slog.Error("Failed retrieving a Variable.", "action_id", actionId, "key", key, "scope", scope)
 
 			return
 		}
@@ -249,9 +260,9 @@ func (srv *LocalServer) varHandler(w http.ResponseWriter, r *http.Request) {
 
 	case http.MethodPost:
 
-		err := srv.setVar(ctx, ir, r.ContentLength, r.Body, scope, key, vMimeType)
+		statusCode, err := srv.setVar(ctx, ir, r.Body, scope, key, vMimeType)
 		if err != nil {
-			reportError(http.StatusInternalServerError, err)
+			reportError(statusCode, err)
 			slog.Warn("Failed to set a Variable.", "action_id", actionId, "key", key, "scope", scope)
 
 			return
@@ -399,254 +410,60 @@ type functionFiles struct {
 
 const sharedDir = "/mnt/shared"
 
-type varClient interface {
-	CloseSend() error
-}
-
-type varClientMsg interface {
-	GetTotalSize() int64
-	GetData() []byte
-}
-
-func (srv *LocalServer) requestVar(ctx context.Context, ir *functionRequest, scope, key string) (client varClient, recv func() (varClientMsg, error), err error) {
-	switch scope {
-	case utils.VarScopeFileSystem:
-		var nvClient grpc.Internal_NamespaceVariableParcelsClient
-		nvClient, err = srv.flow.FileVariableParcels(ctx, &grpc.VariableInternalRequest{
-			Instance: ir.instanceId,
-			Key:      key,
-		})
-		client = nvClient
-		recv = func() (varClientMsg, error) {
-			return nvClient.Recv()
-		}
-	case utils.VarScopeNamespace:
-		var nvClient grpc.Internal_NamespaceVariableParcelsClient
-		nvClient, err = srv.flow.NamespaceVariableParcels(ctx, &grpc.VariableInternalRequest{
-			Instance: ir.instanceId,
-			Key:      key,
-		})
-		client = nvClient
-		recv = func() (varClientMsg, error) {
-			return nvClient.Recv()
-		}
-
-	case utils.VarScopeWorkflow:
-		var wvClient grpc.Internal_WorkflowVariableParcelsClient
-		wvClient, err = srv.flow.WorkflowVariableParcels(ctx, &grpc.VariableInternalRequest{
-			Instance: ir.instanceId,
-			Key:      key,
-		})
-		client = wvClient
-		recv = func() (varClientMsg, error) {
-			return wvClient.Recv()
-		}
-
-	case "":
-		fallthrough
-
-	case utils.VarScopeInstance:
-		var ivClient grpc.Internal_InstanceVariableParcelsClient
-		ivClient, err = srv.flow.InstanceVariableParcels(ctx, &grpc.VariableInternalRequest{
-			Instance: ir.instanceId,
-			Key:      key,
-		})
-		client = ivClient
-		recv = func() (varClientMsg, error) {
-			return ivClient.Recv()
-		}
-
-	default:
-		panic(scope)
-	}
-	return
-}
-
-type varSetClient interface {
-	CloseAndRecv() (*grpc.SetVariableInternalResponse, error)
-}
-
-type varSetClientMsg struct {
-	Key       string
-	Instance  string
-	Value     []byte
-	TotalSize int64
-}
-
-func (srv *LocalServer) setVar(ctx context.Context, ir *functionRequest, totalSize int64, r io.Reader, scope, key, vMimeType string) error {
-	var err error
-	var client varSetClient
-	var send func(*varSetClientMsg) error
-
-	switch scope {
-	case utils.VarScopeFileSystem:
-		return errors.New("file-system variables are read-only")
-	case utils.VarScopeNamespace:
-		var nvClient grpc.Internal_SetNamespaceVariableParcelsClient
-		nvClient, err = srv.flow.SetNamespaceVariableParcels(ctx)
-		if err != nil {
-			return err
-		}
-
-		client = nvClient
-		send = func(x *varSetClientMsg) error {
-			req := &grpc.SetVariableInternalRequest{}
-			req.Key = x.Key
-			req.Instance = x.Instance
-			req.TotalSize = x.TotalSize
-			req.Data = x.Value
-			req.MimeType = vMimeType
-
-			return nvClient.Send(req)
-		}
-
-	case utils.VarScopeWorkflow:
-		var wvClient grpc.Internal_SetWorkflowVariableParcelsClient
-		wvClient, err = srv.flow.SetWorkflowVariableParcels(ctx)
-		if err != nil {
-			return err
-		}
-
-		client = wvClient
-		send = func(x *varSetClientMsg) error {
-			req := &grpc.SetVariableInternalRequest{}
-			req.Key = x.Key
-			req.Instance = x.Instance
-			req.TotalSize = x.TotalSize
-			req.Data = x.Value
-			req.MimeType = vMimeType
-
-			return wvClient.Send(req)
-		}
-
-	case "":
-		fallthrough
-
-	case utils.VarScopeInstance:
-		var ivClient grpc.Internal_SetInstanceVariableParcelsClient
-		ivClient, err = srv.flow.SetInstanceVariableParcels(ctx)
-		if err != nil {
-			return err
-		}
-
-		client = ivClient
-		send = func(x *varSetClientMsg) error {
-			req := &grpc.SetVariableInternalRequest{}
-			req.Key = x.Key
-			req.Instance = x.Instance
-			req.TotalSize = x.TotalSize
-			req.Data = x.Value
-			req.MimeType = vMimeType
-
-			return ivClient.Send(req)
-		}
-
-	default:
-		panic(scope)
-	}
-
-	chunkSize := int64(0x200000) // 2 MiB
-	if totalSize <= 0 {
-		buf := new(bytes.Buffer)
-		_, err := io.CopyN(buf, r, chunkSize+1)
-		if err == nil {
-			return errors.New("large payload requires defined Content-Length")
-		}
-		if !errors.Is(err, io.EOF) {
-			return err
-		}
-
-		data := buf.Bytes()
-		r = bytes.NewReader(data)
-		totalSize = int64(len(data))
-	}
-
-	var written int64
-	for {
-		chunk := chunkSize
-		if totalSize-written < chunk {
-			chunk = totalSize - written
-		}
-
-		buf := new(bytes.Buffer)
-		k, err := io.CopyN(buf, r, chunk)
-		if err != nil {
-			return err
-		}
-
-		written += k
-
-		err = send(&varSetClientMsg{
-			TotalSize: totalSize,
-			Key:       key,
-			Instance:  ir.instanceId,
-			Value:     buf.Bytes(),
-		})
-		if err != nil {
-			return err
-		}
-
-		if written == totalSize {
-			break
-		}
-	}
-
-	_, err = client.CloseAndRecv()
-	if err != nil && !errors.Is(err, io.EOF) {
-		return err
-	}
-
-	return nil
-}
-
-func (srv *LocalServer) getVar(ctx context.Context, ir *functionRequest, w io.Writer, setTotalSize func(x int64), scope, key string) error {
-	client, recv, err := srv.requestVar(ctx, ir, scope, key)
+func (srv *LocalServer) setVar(ctx context.Context, ir *functionRequest, r io.Reader, scope, key, vMimeType string) (int, error) {
+	// Retrieve variable metadata
+	varMeta, statusCode, err := getVariableMetaFromFlow(ctx, srv.flowToken, srv.flowAddr, ir, scope, key)
 	if err != nil {
-		return err
+		target := &RessourceNotFoundError{}
+		if errors.As(err, &target) {
+			data, readErr := io.ReadAll(r)
+			if readErr != nil {
+				return http.StatusInternalServerError, fmt.Errorf("failed to read data from reader: %w", readErr)
+			}
+
+			reqD := createVarRequest{
+				Name:     key,
+				MimeType: vMimeType,
+				Data:     data,
+			}
+
+			// Set scope-specific fields
+			switch scope {
+			case utils.VarScopeInstance:
+				reqD.InstanceIDString = ir.instanceId
+			case utils.VarScopeWorkflow:
+				reqD.WorkflowPath = ir.workflowPath
+			case utils.VarScopeNamespace:
+				// Namespace scope requires no additional fields
+			default:
+				return http.StatusBadRequest, fmt.Errorf("unknown scope: %s", scope)
+			}
+
+			// Attempt to create the variable
+			postStatusCode, postErr := postVarData(ctx, srv.flowToken, srv.flowAddr, ir.namespace, reqD)
+			if postErr != nil {
+				return postStatusCode, fmt.Errorf("failed to post variable data: %w", postErr)
+			}
+			return http.StatusOK, nil
+		}
+		// Handle other errors from getVariableMetaFromFlow
+		return statusCode, fmt.Errorf("failed to get variable metadata: %w", err)
 	}
 
-	var received int64
-	noEOF := true
-	for noEOF {
-		msg, err := recv()
-		if errors.Is(err, io.EOF) {
-			noEOF = false
-		} else if err != nil {
-			return err
-		}
-
-		if msg == nil {
-			continue
-		}
-
-		totalSize := msg.GetTotalSize()
-
-		if setTotalSize != nil {
-			setTotalSize(totalSize)
-			setTotalSize = nil
-		}
-
-		data := msg.GetData()
-		received += int64(len(data))
-
-		if received > totalSize {
-			return errors.New("variable returned too many bytes")
-		}
-
-		_, err = io.Copy(w, bytes.NewReader(data))
-		if err != nil {
-			return err
-		}
-
-		if totalSize == received {
-			break
-		}
+	// Patch existing variable data
+	data, readErr := io.ReadAll(r)
+	if readErr != nil {
+		return http.StatusInternalServerError, fmt.Errorf("failed to read data from reader: %w", readErr)
 	}
 
-	err = client.CloseSend()
-	if err != nil && !errors.Is(err, io.EOF) {
-		return err
+	reqD := datastore.RuntimeVariablePatch{
+		Name:     &key,
+		MimeType: &vMimeType,
+		Data:     data,
 	}
-
-	return nil
+	patchStatusCode, patchErr := patchVarData(ctx, srv.flowToken, srv.flowAddr, ir.namespace, varMeta.ID.String(), reqD)
+	if patchErr != nil {
+		return patchStatusCode, fmt.Errorf("failed to patch variable data: %w", patchErr)
+	}
+	return statusCode, nil
 }

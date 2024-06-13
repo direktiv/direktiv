@@ -19,12 +19,10 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 
 	enginerefactor "github.com/direktiv/direktiv/pkg/engine"
 	"github.com/direktiv/direktiv/pkg/flow"
 	"github.com/direktiv/direktiv/pkg/utils"
-	"github.com/google/uuid"
 )
 
 type inboundWorker struct {
@@ -366,273 +364,124 @@ func (worker *inboundWorker) cleanupFunctionRequest(ir *functionRequest) {
 	}
 }
 
-func (worker *inboundWorker) prepFunctionRequest(ctx context.Context, ir *functionRequest) error {
-	err := worker.prepFunctionFiles(ctx, ir)
+func (worker *inboundWorker) prepFunctionRequest(ctx context.Context, ir *functionRequest) (int, error) {
+	statusCode, err := worker.prepFunctionFiles(ctx, ir)
 	if err != nil {
-		return fmt.Errorf("failed to prepare functions files: %w", err)
+		return statusCode, fmt.Errorf("failed to prepare functions files: %w", err)
 	}
 
-	return nil
+	return statusCode, nil
 }
 
-func (worker *inboundWorker) prepFunctionFiles(ctx context.Context, ir *functionRequest) error {
+func (worker *inboundWorker) prepFunctionFiles(ctx context.Context, ir *functionRequest) (int, error) {
 	dir := worker.functionDir(ir)
 
 	err := os.MkdirAll(dir, 0o750)
 	if err != nil {
-		return err
+		return http.StatusInternalServerError, err
 	}
-	err = worker.fetchFunctionFiles(ctx, ir)
+	statusCode, err := fetchFunctionFiles(ctx, worker.srv.flowToken, worker.srv.flowAddr, ir, worker.fileWriter)
 	if err != nil {
-		return err
+		return statusCode, err
 	}
 	subDirs := []string{utils.VarScopeFileSystem, utils.VarScopeNamespace, utils.VarScopeWorkflow, utils.VarScopeInstance}
 	for _, d := range subDirs {
 		err := os.MkdirAll(path.Join(dir, fmt.Sprintf("out/%s", d)), 0o777)
 		if err != nil {
-			return fmt.Errorf("failed to prepare function output dirs: %w", err)
+			return http.StatusInternalServerError, fmt.Errorf("failed to prepare function output dirs: %w", err)
 		}
 	}
 
-	return nil
+	return statusCode, nil
 }
 
-type variable struct {
-	ID        uuid.UUID `json:"id"`
-	Typ       string    `json:"type"`
-	Reference string    `json:"reference"`
-	Name      string    `json:"name"`
-	Data      []byte    `json:"data"`
-	Size      int       `json:"size"`
-	MimeType  string    `json:"mimeType"`
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
-}
-type variablesResponse struct {
-	Data  []variable `json:"data"`
-	Error *any       `json:"error"`
-}
-
-type variableResponse struct {
-	Data  variable `json:"data"`
-	Error *any     `json:"error"`
-}
-
-type file struct {
-	Path      string      `json:"path"`
-	Type      string      `json:"type"`
-	Data      string      `json:"data"`
-	Size      int         `json:"size"`
-	MIMEType  string      `json:"mimeType"`
-	CreatedAt string      `json:"createdAt"`
-	UpdatedAt string      `json:"updatedAt"`
-	Children  interface{} `json:"children,omitempty"`
-}
-
-type decodedFilesResponse struct {
-	Error any  `json:"error,omitempty"`
-	Data  file `json:"data,omitempty"`
-}
-
-func (worker *inboundWorker) getReferencedFile(ctx context.Context, namespace string, path string) ([]byte, error) {
-	addr := fmt.Sprintf("http://%v/api/v2/namespaces/%v/files/%v", worker.srv.flowAddr, namespace, path)
-	client := &http.Client{}
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, addr, nil)
+func fetchFunctionFiles(ctx context.Context, flowToken string, flowAddr string, ir *functionRequest, fileWriter func(context.Context, *functionRequest, *functionFiles, *io.PipeReader) error) (int, error) {
+	namespaceVariables, statusCode, err := getNamespaceVariables(ctx, flowToken, flowAddr, ir)
 	if err != nil {
-		return nil, err
+		return statusCode, fmt.Errorf("failed to get namespace variables: %w", err)
 	}
 
-	req.Header.Set("Direktiv-Token", worker.srv.flowToken)
-	resp, err := client.Do(req)
+	workflowVariables, statusCode, err := getWorkflowVariables(ctx, flowToken, flowAddr, ir)
 	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+		return statusCode, fmt.Errorf("failed to get workflow variables: %w", err)
 	}
 
-	var respData decodedFilesResponse
-	if resp.Body == nil {
-		return nil, fmt.Errorf("unexpected failure body was nil")
-	}
-	decoder := json.NewDecoder(resp.Body)
-	if err = decoder.Decode(&respData); err != nil {
-		return nil, err
-	}
-	var d []byte
-
-	if respData.Data.Data != "" {
-		d, err = base64.StdEncoding.DecodeString(respData.Data.Data)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return d, nil
-}
-
-func (worker *inboundWorker) getNamespaceVariables(ctx context.Context, ir *functionRequest) (*variablesResponse, error) {
-	addr := fmt.Sprintf("http://%v/api/v2/namespaces/%v/variables", worker.srv.flowAddr, ir.namespace)
-	client := &http.Client{}
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, addr, nil)
+	instanceVariables, statusCode, err := getInstanceVariables(ctx, flowToken, flowAddr, ir)
 	if err != nil {
-		return nil, err
+		return statusCode, fmt.Errorf("failed to get instance variables: %w", err)
 	}
-	req.Header.Set("Direktiv-Token", worker.srv.flowToken)
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	namespaceVariables := variablesResponse{}
-	decoder := json.NewDecoder(resp.Body)
-	if err = decoder.Decode(&namespaceVariables); err != nil {
-		return nil, err
-	}
-
-	return &namespaceVariables, nil
-}
-
-func (worker *inboundWorker) getWorkflowVariables(ctx context.Context, ir *functionRequest) (*variablesResponse, error) {
-	addr := fmt.Sprintf("http://%v/api/v2/namespaces/%v/variables?workflowPath=%v", worker.srv.flowAddr, ir.namespace, ir.workflowPath)
-	client := &http.Client{}
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, addr, nil)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Direktiv-Token", worker.srv.flowToken)
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	workflowVariables := variablesResponse{}
-	decoder := json.NewDecoder(resp.Body)
-	if err = decoder.Decode(&workflowVariables); err != nil {
-		return nil, err
-	}
-
-	return &workflowVariables, nil
-}
-
-func (worker *inboundWorker) getInstanceVariables(ctx context.Context, ir *functionRequest) (*variablesResponse, error) {
-	addr := fmt.Sprintf("http://%v/api/v2/namespaces/%v/variables?instanceId=%v", worker.srv.flowAddr, ir.namespace, ir.instanceId)
-	client := &http.Client{}
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, addr, nil)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Direktiv-Token", worker.srv.flowToken)
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	instanceVariables := variablesResponse{}
-	decoder := json.NewDecoder(resp.Body)
-	if err = decoder.Decode(&instanceVariables); err != nil {
-		return nil, err
-	}
-
-	return &instanceVariables, nil
-}
-
-func (worker *inboundWorker) fetchFunctionFiles(ctx context.Context, ir *functionRequest) error {
-	namespaceVariables, err := worker.getNamespaceVariables(ctx, ir)
-	if err != nil {
-		return err
-	}
-
-	wfVar, err := worker.getWorkflowVariables(ctx, ir)
-	if err != nil {
-		return err
-	}
-
-	insVars, err := worker.getInstanceVariables(ctx, ir)
-	if err != nil {
-		return err
-	}
-
-	vars := append(namespaceVariables.Data, wfVar.Data...)
-	vars = append(vars, insVars.Data...)
+	vars := append(namespaceVariables.Data, workflowVariables.Data...)
+	vars = append(vars, instanceVariables.Data...)
 	slog.Info("variables for processing", "data", fmt.Sprintf("%v", vars))
+
 	for i := range ir.files {
 		file := ir.files[i]
 		typ, err := determineVarType(file.Scope)
 		if err != nil {
-			return err
+			return http.StatusInternalServerError, fmt.Errorf("failed to determine variable type: %w", err)
 		}
 
 		idx := slices.IndexFunc(vars, func(e variable) bool { return e.Typ == typ && e.Name == file.Key })
 		pr, pw := io.Pipe()
+
 		go func(flowToken string, flowAddr string, namespace string, file *functionFiles, idx int) {
 			var data []byte
 			var err error
+
 			if typ == "file" {
-				data, err = worker.getReferencedFile(ctx, namespace, file.Key)
+				dataLocal, statusCode, err := getReferencedFile(ctx, flowToken, flowAddr, namespace, file.Key)
 				if err != nil {
-					slog.Info("failed fetching file", "error", err)
+					slog.Info("Ok error, failed fetching file", "error", err, "statusCode", statusCode)
 				}
+				data = dataLocal
 			}
 
 			if idx > -1 {
-				slog.Info("starting request api rotine", "file", file, "idx", idx, "id", vars[idx].ID)
+				slog.Info("starting request API routine", "file", file, "idx", idx, "id", vars[idx].ID)
 				addr := fmt.Sprintf("http://%v/api/v2/namespaces/%v/variables/%v", flowAddr, namespace, vars[idx].ID)
 				client := &http.Client{}
 				req, err := http.NewRequestWithContext(ctx, http.MethodGet, addr, nil)
 				if err != nil {
-					sysErr := pw.CloseWithError(err)
-					if sysErr != nil {
-						slog.Error("failed fetching files with", "error", sysErr)
-					}
+					pw.CloseWithError(fmt.Errorf("failed to create new request: %w", err))
+					return
 				}
 				req.Header.Set("Direktiv-Token", flowToken)
 				resp, err := client.Do(req)
 				if err != nil {
-					sysErr := pw.CloseWithError(err)
-					if sysErr != nil {
-						slog.Error("failed fetching files with", "error", sysErr)
-					}
+					pw.CloseWithError(fmt.Errorf("failed to execute request: %w", err))
+					return
 				}
 				defer resp.Body.Close()
 
-				variable := variableResponse{}
+				if resp.StatusCode != http.StatusOK {
+					pw.CloseWithError(fmt.Errorf("unexpected status code: %d", resp.StatusCode))
+					return
+				}
+
+				var variable variableResponse
 				decoder := json.NewDecoder(resp.Body)
 				if err = decoder.Decode(&variable); err != nil {
-					sysErr := pw.CloseWithError(err)
-					if sysErr != nil {
-						slog.Error("failed fetching files with", "error", sysErr)
-					}
+					pw.CloseWithError(fmt.Errorf("failed to decode response body: %w", err))
+					return
 				}
 				data = variable.Data.Data
 			}
-			_, err = io.Copy(pw, bytes.NewReader(data))
-			if err != nil {
-				sysErr := pw.CloseWithError(err)
-				if sysErr != nil {
-					slog.Error("failed fetching files with", "error", sysErr)
-				}
+
+			if _, err = io.Copy(pw, bytes.NewReader(data)); err != nil {
+				pw.CloseWithError(fmt.Errorf("failed to copy data to pipe writer: %w", err))
+				return
 			}
 
 			pw.Close()
-		}(worker.srv.flowToken, worker.srv.flowAddr, ir.namespace, file, idx)
+		}(flowToken, flowAddr, ir.namespace, file, idx)
 
-		err = worker.fileWriter(ctx, ir, file, pr)
-		if err != nil {
-			sysErr := pr.CloseWithError(err)
-			if sysErr != nil {
-				slog.Error("failed fetching files with", "error", sysErr)
-			}
-
-			return err
+		if err = fileWriter(ctx, ir, file, pr); err != nil {
+			pr.CloseWithError(fmt.Errorf("failed to write file: %w", err))
+			return http.StatusInternalServerError, err
 		}
 	}
 
-	return nil
+	return http.StatusOK, nil
 }
 
 func determineVarType(fileScope string) (string, error) {
@@ -703,9 +552,9 @@ func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
 
 	defer worker.cleanupFunctionRequest(ir)
 
-	err = worker.prepFunctionRequest(ctx, ir)
+	statusCode, err := worker.prepFunctionRequest(ctx, ir)
 	if err != nil {
-		worker.reportSidecarError(req.w, ir, err)
+		worker.reportSidecarError(req.w, ir, fmt.Errorf("failed to prepare function request with status %v: %w", statusCode, err))
 		return
 	}
 
@@ -727,13 +576,15 @@ func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
 
 	out, err := worker.doFunctionRequest(rctx, ir)
 	if err != nil {
+		slog.Error("failed while doFunctionRequest", "error", err)
 		worker.reportSidecarError(req.w, ir, err)
 		return
 	}
 
 	// fetch output variables
-	err = worker.setOutVariables(rctx, ir)
+	statusCode, err = worker.setOutVariables(rctx, ir)
 	if err != nil {
+		slog.Error("failed while setOutVariables", "error", err, "statusCode", statusCode)
 		worker.reportSidecarError(req.w, ir, err)
 		return
 	}
@@ -741,14 +592,15 @@ func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
 	worker.respondToFlow(req.w, ir.actionId, out)
 }
 
-func (worker *inboundWorker) setOutVariables(ctx context.Context, ir *functionRequest) error {
+func (worker *inboundWorker) setOutVariables(ctx context.Context, ir *functionRequest) (int, error) {
 	subDirs := []string{utils.VarScopeFileSystem, utils.VarScopeNamespace, utils.VarScopeWorkflow, utils.VarScopeInstance}
+	var statusCode int
 	for _, d := range subDirs {
 		out := path.Join(worker.functionDir(ir), "out", d)
 
 		files, err := os.ReadDir(out)
 		if err != nil {
-			return fmt.Errorf("can not read out folder: %w", err)
+			return http.StatusInternalServerError, fmt.Errorf("can not read out folder: %w", err)
 		}
 
 		for _, f := range files {
@@ -756,7 +608,7 @@ func (worker *inboundWorker) setOutVariables(ctx context.Context, ir *functionRe
 
 			fi, err := f.Info()
 			if err != nil {
-				return err
+				return http.StatusInternalServerError, err
 			}
 
 			switch mode := fi.Mode(); {
@@ -764,53 +616,48 @@ func (worker *inboundWorker) setOutVariables(ctx context.Context, ir *functionRe
 
 				tf, err := os.CreateTemp("", "outtar")
 				if err != nil {
-					return err
+					return http.StatusInternalServerError, err
 				}
 
 				err = tarGzDir(fp, tf)
 				if err != nil {
-					return err
+					return http.StatusInternalServerError, err
 				}
 				defer os.Remove(tf.Name())
 
-				var end int64
-				end, err = tf.Seek(0, io.SeekEnd)
-				if err != nil {
-					return err
-				}
-
 				_, err = tf.Seek(0, io.SeekStart)
 				if err != nil {
-					return err
+					return http.StatusInternalServerError, err
 				}
 
-				err = worker.srv.setVar(ctx, ir, end, tf, d, f.Name(), "")
+				statusCode, err = worker.srv.setVar(ctx, ir, tf, d, f.Name(), "")
 				if err != nil {
-					return err
+					slog.Error("failed to set variable", "error", err)
+					return statusCode, err
 				}
 			case mode.IsRegular():
 
 				/* #nosec */
 				v, err := os.Open(fp)
 				if err != nil {
-					return err
+					return http.StatusInternalServerError, err
 				}
 
-				err = worker.srv.setVar(ctx, ir, fi.Size(), v, d, f.Name(), "")
+				statusCode, err = worker.srv.setVar(ctx, ir, v, d, f.Name(), "")
 				if err != nil {
 					_ = v.Close()
-					return err
+					return statusCode, err
 				}
 
 				err = v.Close()
 				if err != nil {
-					return err
+					return http.StatusInternalServerError, err
 				}
 			}
 		}
 	}
 
-	return nil
+	return statusCode, nil
 }
 
 func tarGzDir(src string, buf io.Writer) error {
