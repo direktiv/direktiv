@@ -69,7 +69,7 @@ var instancesExecCmd = &cobra.Command{
 			return err
 		}
 
-		relPath, err := GetRelativePath(projectRoot, fullPath)
+		relPath, err := getRelativePath(projectRoot, fullPath)
 		if err != nil {
 			return err
 		}
@@ -290,7 +290,7 @@ var instancesPushCmd = &cobra.Command{
 				return err
 			}
 
-			p, err := GetRelativePath(projectRoot, fullPath)
+			p, err := getRelativePath(projectRoot, fullPath)
 			if err != nil {
 				return err
 			}
@@ -317,7 +317,7 @@ var instancesPushCmd = &cobra.Command{
 	},
 }
 
-func GetRelativePath(configPath, targpath string) (string, error) {
+func getRelativePath(configPath, targpath string) (string, error) {
 	var err error
 
 	if !filepath.IsAbs(configPath) {
