@@ -16,19 +16,19 @@ import (
 )
 
 func getInstanceVariables(ctx context.Context, flowToken string, flowAddr string, ir *functionRequest) (*variablesResponse, int, error) {
-	addr := fmt.Sprintf("http://%v/api/v2/namespaces/%v/variables?instanceId=%v", flowAddr, ir.namespace, ir.instanceId)
+	addr := fmt.Sprintf("http://%v/api/v2/namespaces/%v/variables?instanceId=%v", flowAddr, ir.Namespace, ir.Instance)
 
 	return getVariables(ctx, flowToken, addr)
 }
 
 func getNamespaceVariables(ctx context.Context, flowToken string, flowAddr string, ir *functionRequest) (*variablesResponse, int, error) {
-	addr := fmt.Sprintf("http://%v/api/v2/namespaces/%v/variables", flowAddr, ir.namespace)
+	addr := fmt.Sprintf("http://%v/api/v2/namespaces/%v/variables", flowAddr, ir.Namespace)
 
 	return getVariables(ctx, flowToken, addr)
 }
 
 func getWorkflowVariables(ctx context.Context, flowToken string, flowAddr string, ir *functionRequest) (*variablesResponse, int, error) {
-	addr := fmt.Sprintf("http://%v/api/v2/namespaces/%v/variables?workflowPath=%v", flowAddr, ir.namespace, ir.workflowPath)
+	addr := fmt.Sprintf("http://%v/api/v2/namespaces/%v/variables?workflowPath=%v", flowAddr, ir.Namespace, ir.Workflow)
 
 	return getVariables(ctx, flowToken, addr)
 }
