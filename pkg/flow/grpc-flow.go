@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/database"
-	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/utils"
 	libgrpc "google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -19,7 +18,6 @@ type flow struct {
 	*server
 	listener net.Listener
 	srv      *libgrpc.Server
-	grpc.UnsafeFlowServer
 }
 
 const srv = "server"
@@ -38,7 +36,6 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 
 	flow.srv = libgrpc.NewServer(opts...)
 
-	grpc.RegisterFlowServer(flow.srv, flow)
 	reflection.Register(flow.srv)
 
 	go func() {

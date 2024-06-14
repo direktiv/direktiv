@@ -6,27 +6,10 @@ option go_package = "github.com/direktiv/direktiv/pkg/flow/grpc";
 
 import "google/protobuf/empty.proto";
 
-import "pkg/flow/grpc/variables.proto";
 import "pkg/flow/grpc/internal.proto";
 
-service Flow {
-	// variables.
-	rpc SetNamespaceVariableParcels (stream SetNamespaceVariableRequest) returns (SetNamespaceVariableResponse) {}
-	rpc WorkflowVariable (WorkflowVariableRequest) returns (WorkflowVariableResponse) {}
-	rpc SetWorkflowVariableParcels (stream SetWorkflowVariableRequest) returns (SetWorkflowVariableResponse) {}
-	rpc InstanceVariable (InstanceVariableRequest) returns (InstanceVariableResponse) {}
-	rpc SetInstanceVariableParcels (stream SetInstanceVariableRequest) returns (SetInstanceVariableResponse) {}
-}
 
 service Internal {
 	rpc ReportActionResults (ReportActionResultsRequest) returns (google.protobuf.Empty) {}
 	rpc ActionLog(ActionLogRequest) returns (google.protobuf.Empty) {}
-
-	rpc NamespaceVariableParcels (VariableInternalRequest) returns (stream VariableInternalResponse) {}
-	rpc SetNamespaceVariableParcels (stream SetVariableInternalRequest) returns (SetVariableInternalResponse) {}
-	rpc WorkflowVariableParcels (VariableInternalRequest) returns (stream VariableInternalResponse) {}
-	rpc SetWorkflowVariableParcels (stream SetVariableInternalRequest) returns (SetVariableInternalResponse) {}
-	rpc InstanceVariableParcels (VariableInternalRequest) returns (stream VariableInternalResponse) {}
-	rpc SetInstanceVariableParcels (stream SetVariableInternalRequest) returns (SetVariableInternalResponse) {}
-	rpc FileVariableParcels (VariableInternalRequest) returns (stream VariableInternalResponse) {}
 }
