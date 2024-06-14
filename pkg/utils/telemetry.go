@@ -26,10 +26,21 @@ var TelemetryMiddleware = func(h http.Handler) http.Handler {
 	return h
 }
 
+var (
+	telemetryUnaryServerInterceptor  grpc.UnaryServerInterceptor
+	telemetryStreamServerInterceptor grpc.StreamServerInterceptor
+)
+
 var globalGRPCDialOptions []grpc.DialOption
 
 func AddGlobalGRPCDialOption(opt grpc.DialOption) {
 	globalGRPCDialOptions = append(globalGRPCDialOptions, opt)
+}
+
+var globalGRPCServerOptions []grpc.ServerOption
+
+func AddGlobalGRPCServerOption(opt grpc.ServerOption) {
+	globalGRPCServerOptions = append(globalGRPCServerOptions, opt)
 }
 
 type grpcMetadataTMC struct {
@@ -160,6 +171,62 @@ func InitTelemetry(addr string, svcName, imName string) (func(), error) {
 
 		return cs, nil
 	}))
+
+	telemetryUnaryServerInterceptor = func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
+		prop := otel.GetTextMapPropagator()
+		requestMetadata, _ := metadata.FromIncomingContext(ctx)
+		metadataCopy := requestMetadata.Copy()
+		carrier := &grpcMetadataTMC{&metadataCopy}
+		ctx = prop.Extract(ctx, carrier)
+
+		tp := otel.GetTracerProvider()
+		tr := tp.Tracer(imName)
+
+		var span trace.Span
+		ctx, span = tr.Start(
+			ctx,
+			info.FullMethod+"Interceptor",
+			trace.WithSpanKind(trace.SpanKindServer),
+		)
+		defer span.End()
+
+		resp, err = handler(ctx, req)
+		if err != nil {
+			s, _ := status.FromError(err)
+			span.SetStatus(codes.Code(s.Code()), s.Message())
+		}
+
+		return resp, err
+	}
+
+	telemetryStreamServerInterceptor = func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+		ctx := ss.Context()
+
+		prop := otel.GetTextMapPropagator()
+		requestMetadata, _ := metadata.FromIncomingContext(ctx)
+		metadataCopy := requestMetadata.Copy()
+		carrier := &grpcMetadataTMC{&metadataCopy}
+		ctx = prop.Extract(ctx, carrier)
+
+		tp := otel.GetTracerProvider()
+		tr := tp.Tracer(imName)
+
+		var span trace.Span
+		_, span = tr.Start(
+			ctx,
+			info.FullMethod+"Interceptor",
+			trace.WithSpanKind(trace.SpanKindServer),
+		)
+		defer span.End()
+
+		err = handler(srv, ss)
+		if err != nil {
+			s, _ := status.FromError(err)
+			span.SetStatus(codes.Code(s.Code()), s.Message())
+		}
+
+		return err
+	}
 
 	TelemetryMiddleware = func(h http.Handler) http.Handler {
 		return &telemetryHandler{
