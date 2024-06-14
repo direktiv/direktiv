@@ -5,19 +5,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
-	"net"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/database"
-	"github.com/direktiv/direktiv/pkg/utils"
-	libgrpc "google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
 )
 
 type flow struct {
 	*server
-	listener net.Listener
-	srv      *libgrpc.Server
 }
 
 const srv = "server"
@@ -26,22 +20,6 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 	var err error
 
 	flow := &flow{server: srv}
-
-	flow.listener, err = net.Listen("tcp", ":6666") //nolint:gosec
-	if err != nil {
-		return nil, err
-	}
-
-	opts := utils.GrpcServerOptions(unaryInterceptor, streamInterceptor)
-
-	flow.srv = libgrpc.NewServer(opts...)
-
-	reflection.Register(flow.srv)
-
-	go func() {
-		<-ctx.Done()
-		flow.srv.Stop()
-	}()
 
 	go func() { //nolint:contextcheck
 		// instance garbage collector
@@ -134,15 +112,6 @@ func (flow *flow) kickExpiredInstances() {
 
 		flow.engine.retryWakeup(data)
 	}
-}
-
-func (flow *flow) Run() error {
-	err := flow.srv.Serve(flow.listener)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func (flow *flow) GetAttributes() map[string]string {
