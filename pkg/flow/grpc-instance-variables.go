@@ -1,10 +1,8 @@
 package flow
 
 import (
-	"bytes"
 	"context"
 	"errors"
-	"io"
 	"log/slog"
 	"time"
 
@@ -121,73 +119,4 @@ func (flow *flow) SetInstanceVariable(ctx context.Context, req *grpc.SetInstance
 	resp.MimeType = newVar.MimeType
 
 	return &resp, nil
-}
-
-//nolint:dupl
-func (flow *flow) SetInstanceVariableParcels(srv grpc.Flow_SetInstanceVariableParcelsServer) error {
-	slog.Debug("Handling gRPC request", "this", this())
-	ctx := srv.Context()
-
-	req, err := srv.Recv()
-	if err != nil {
-		return err
-	}
-
-	firstReq := req
-
-	totalSize := int(req.GetTotalSize())
-
-	buf := new(bytes.Buffer)
-
-	for {
-		_, err = io.Copy(buf, bytes.NewReader(req.GetData()))
-		if err != nil {
-			return err
-		}
-
-		if req.GetTotalSize() <= 0 {
-			if buf.Len() >= totalSize {
-				break
-			}
-		}
-
-		req, err = srv.Recv()
-		if err != nil {
-			if errors.Is(err, io.EOF) {
-				break
-			}
-
-			return err
-		}
-
-		if req.GetTotalSize() <= 0 {
-			if buf.Len() >= totalSize {
-				break
-			}
-		} else {
-			if req == nil {
-				break
-			}
-		}
-
-		if int(req.GetTotalSize()) != totalSize {
-			return errors.New("totalSize changed mid stream")
-		}
-	}
-
-	if buf.Len() > totalSize {
-		return errors.New("received more data than expected")
-	}
-
-	firstReq.Data = buf.Bytes()
-	resp, err := flow.SetInstanceVariable(ctx, firstReq)
-	if err != nil {
-		return err
-	}
-	err = srv.SendAndClose(resp)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }

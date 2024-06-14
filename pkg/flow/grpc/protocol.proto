@@ -10,12 +10,7 @@ import "pkg/flow/grpc/variables.proto";
 import "pkg/flow/grpc/internal.proto";
 
 service Flow {
-	// variables.
-	rpc SetNamespaceVariableParcels (stream SetNamespaceVariableRequest) returns (SetNamespaceVariableResponse) {}
 	rpc WorkflowVariable (WorkflowVariableRequest) returns (WorkflowVariableResponse) {}
-	rpc SetWorkflowVariableParcels (stream SetWorkflowVariableRequest) returns (SetWorkflowVariableResponse) {}
-	rpc InstanceVariable (InstanceVariableRequest) returns (InstanceVariableResponse) {}
-	rpc SetInstanceVariableParcels (stream SetInstanceVariableRequest) returns (SetInstanceVariableResponse) {}
 }
 
 service Internal {
