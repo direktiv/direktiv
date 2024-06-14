@@ -16,7 +16,6 @@ import (
 	enginerefactor "github.com/direktiv/direktiv/pkg/engine"
 	"github.com/direktiv/direktiv/pkg/filestore"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
-	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	log "github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/flow/states"
 	"github.com/direktiv/direktiv/pkg/model"
@@ -485,12 +484,14 @@ func (child *knativeHandle) Info() states.ChildInfo {
 func (engine *engine) doActionRequest(ctx context.Context, ar *functionRequest, arReq *enginerefactor.ActionRequest) {
 	// Log warning if timeout exceeds max allowed timeout.
 	if actionTimeout := time.Duration(ar.Timeout) * time.Second; actionTimeout > engine.server.config.GetFunctionsTimeout() {
-		_, err := engine.internal.ActionLog(context.Background(), &grpc.ActionLogRequest{ //nolint:contextcheck
-			InstanceId: arReq.ActionContext.Instance, Msg: []string{fmt.Sprintf("Warning: Action timeout '%v' is longer than max allowed duariton '%v'", actionTimeout, engine.server.config.GetFunctionsTimeout())},
-		})
-		if err != nil {
-			slog.Error("failed to write action log", "error", err)
-		}
+		ctx = tracing.AddNamespace(ctx, arReq.Namespace)
+		ctx = tracing.AddTraceAttr(ctx, arReq.Trace, arReq.Span)
+		ctx = tracing.AddInstanceAttr(ctx, arReq.Instance, "", arReq.Callpath, arReq.Workflow)
+		ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrackViaCallpath(arReq.Callpath))
+		slog.Warn(
+			fmt.Sprintf("Warning: Action timeout '%v' is longer than max allowed duariton '%v'", actionTimeout, engine.server.config.GetFunctionsTimeout()),
+			tracing.GetSlogAttributesWithStatus(ctx, core.LogFailedStatus)...,
+		)
 	}
 
 	switch ar.Container.Type { //nolint:exhaustive
@@ -524,13 +525,13 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	slog.Debug("deadline for request", "deadline", time.Until(arReq.Deadline))
 	reader, err := enginerefactor.EncodeActionRequest(*arReq)
 	if err != nil {
-		engine.reportError(&arReq.ActionContext, err) //nolint:contextcheck
+		engine.reportError(ctx, &arReq.ActionContext, err)
 
 		return
 	}
 	req, err := http.NewRequestWithContext(rctx, http.MethodPost, addr, reader)
 	if err != nil {
-		engine.reportError(&arReq.ActionContext, err) //nolint:contextcheck
+		engine.reportError(ctx, &arReq.ActionContext, err)
 
 		return
 	}
@@ -603,33 +604,25 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 
 	if err != nil {
 		err := fmt.Errorf("failed creating function with image %s name %s with error: %w", ar.Container.Image, ar.Container.ID, err)
-		engine.reportError(&arReq.ActionContext, err) //nolint:contextcheck
+		engine.reportError(ctx, &arReq.ActionContext, err)
 
 		return
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		engine.reportError(&arReq.ActionContext, fmt.Errorf("action error status: %d", resp.StatusCode)) //nolint:contextcheck
+		engine.reportError(ctx, &arReq.ActionContext, fmt.Errorf("action error status: %d", resp.StatusCode))
 	}
 
 	slog.Debug("function request done")
 }
 
-func (engine *engine) reportError(ar *enginerefactor.ActionContext, err error) {
-	ec := ""
-	em := err.Error()
-	step := int32(ar.Step)
-	r := &grpc.ReportActionResultsRequest{
-		InstanceId:   ar.Instance,
-		Step:         step,
-		ActionId:     ar.Action,
-		ErrorCode:    ec,
-		ErrorMessage: em,
-		Iterator:     int32(ar.Branch),
-	}
-
-	_, err = engine.internal.ReportActionResults(context.Background(), r)
-	if err != nil {
-		slog.Error("failed to respond to flow", "error", err)
-	}
+func (engine *engine) reportError(ctx context.Context, ar *enginerefactor.ActionContext, err error) {
+	ctx = tracing.AddNamespace(ctx, ar.Namespace)
+	ctx = tracing.AddTraceAttr(ctx, ar.Trace, ar.Span)
+	ctx = tracing.AddInstanceAttr(ctx, ar.Instance, "", ar.Callpath, ar.Workflow)
+	ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrackViaCallpath(ar.Callpath))
+	slog.Error(
+		"action failed",
+		tracing.GetSlogAttributesWithError(ctx, err)...,
+	)
 }
