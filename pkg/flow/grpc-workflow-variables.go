@@ -13,6 +13,10 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
+const (
+	parcelSize = 0x100000
+)
+
 func (flow *flow) WorkflowVariable(ctx context.Context, req *grpc.WorkflowVariableRequest) (*grpc.WorkflowVariableResponse, error) {
 	slog.Debug("Handling gRPC request", "this", this())
 
@@ -71,56 +75,6 @@ func (flow *flow) WorkflowVariable(ctx context.Context, req *grpc.WorkflowVariab
 	}
 
 	resp.Data = data
-
-	return &resp, nil
-}
-
-func (flow *flow) SetWorkflowVariable(ctx context.Context, req *grpc.SetWorkflowVariableRequest) (*grpc.SetWorkflowVariableResponse, error) {
-	slog.Debug("Handling gRPC request", "this", this())
-
-	tx, err := flow.beginSQLTx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer tx.Rollback()
-
-	ns, err := tx.DataStore().Namespaces().GetByName(ctx, req.GetNamespace())
-	if err != nil {
-		return nil, err
-	}
-	file, err := tx.FileStore().ForNamespace(ns.Name).GetFile(ctx, req.GetPath())
-	if err != nil {
-		return nil, err
-	}
-
-	newVar, err := tx.DataStore().RuntimeVariables().Set(ctx, &datastore.RuntimeVariable{
-		Namespace:    ns.Name,
-		WorkflowPath: file.Path,
-		Name:         req.GetKey(),
-		Data:         req.GetData(),
-		MimeType:     req.GetMimeType(),
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	if err = tx.Commit(ctx); err != nil {
-		return nil, err
-	}
-
-	// TODO: need fix here.
-	// flow.logger.Infof(ctx, file.ID, database.GetAttributes(recipient.Workflow, ns, fileAttributes(*file)), "Set workflow variable '%s'.", key)
-	// flow.pubsub.NotifyWorkflowVariables(file.ID)
-
-	var resp grpc.SetWorkflowVariableResponse
-
-	resp.Namespace = ns.Name
-	resp.Path = file.Path
-	resp.Key = newVar.Name
-	resp.CreatedAt = timestamppb.New(newVar.CreatedAt)
-	resp.UpdatedAt = timestamppb.New(newVar.UpdatedAt)
-	resp.TotalSize = int64(newVar.Size)
-	resp.MimeType = newVar.MimeType
 
 	return &resp, nil
 }

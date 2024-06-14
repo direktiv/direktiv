@@ -22,36 +22,3 @@ message ActionLogRequest {
 	repeated string msg = 3;
 }
 
-message VariableInternalRequest {
-	string instance = 1;
-	string key = 2;
-}
-
-message VariableInternalResponse {
-	string instance = 1;
-	string key = 2;
-	google.protobuf.Timestamp created_at = 3;
-	google.protobuf.Timestamp updated_at = 4;
-	string checksum = 5;
-	int64 totalSize = 6;
-	bytes data = 7;
-	string mimeType = 8;
-}
-
-message SetVariableInternalRequest {
-	string instance = 1;
-	string key = 2;
-	int64 totalSize = 3;
-	bytes data = 4;
-	string mimeType = 5;
-}
-
-message SetVariableInternalResponse {
-	string instance = 1;
-	string key = 2;
-	google.protobuf.Timestamp created_at = 3;
-	google.protobuf.Timestamp updated_at = 4;
-	string checksum = 5;
-	int64 totalSize = 6;
-	string mimeType = 7;
-}
