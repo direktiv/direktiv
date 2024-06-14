@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package direktiv_flow;
+
+option go_package = "github.com/direktiv/direktiv/pkg/flow/grpc";
+
+import "google/protobuf/timestamp.proto";
+
+
+message WorkflowVariableRequest {
+	string namespace = 1;
+	string path = 2;
+	string key = 3;
+}
+
+message WorkflowVariableResponse {
+	string namespace = 1;
+	string path = 2;
+	string key = 3;
+	google.protobuf.Timestamp created_at = 4;
+	google.protobuf.Timestamp updated_at = 5;
+	string checksum = 6;
+	int64 totalSize = 7;
+	bytes data = 8;
+	string mimeType = 9;
+}
