@@ -28,7 +28,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
-	libgrpc "google.golang.org/grpc"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -530,24 +529,6 @@ func (srv *server) cronPollerWorkflow(ctx context.Context, tx *database.SQLStore
 
 		slog.Debug("Successfully loaded cron schedule for workflow", "workflow", file.Path, "cron_expression", ms.Cron)
 	}
-}
-
-func unaryInterceptor(ctx context.Context, req interface{}, info *libgrpc.UnaryServerInfo, handler libgrpc.UnaryHandler) (interface{}, error) {
-	resp, err := handler(ctx, req)
-	if err != nil {
-		return nil, translateError(err)
-	}
-
-	return resp, nil
-}
-
-func streamInterceptor(srv interface{}, ss libgrpc.ServerStream, info *libgrpc.StreamServerInfo, handler libgrpc.StreamHandler) error {
-	err := handler(srv, ss)
-	if err != nil {
-		return translateError(err)
-	}
-
-	return nil
 }
 
 func this() string {
