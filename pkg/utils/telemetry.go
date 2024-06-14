@@ -32,12 +32,6 @@ func AddGlobalGRPCDialOption(opt grpc.DialOption) {
 	globalGRPCDialOptions = append(globalGRPCDialOptions, opt)
 }
 
-var globalGRPCServerOptions []grpc.ServerOption
-
-func AddGlobalGRPCServerOption(opt grpc.ServerOption) {
-	globalGRPCServerOptions = append(globalGRPCServerOptions, opt)
-}
-
 type grpcMetadataTMC struct {
 	md *metadata.MD
 }
