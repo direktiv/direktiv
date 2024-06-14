@@ -322,15 +322,6 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 	go srv.cronPoller()
 
 	circuit.Start(func() error {
-		e := srv.internal.Run()
-		if e != nil {
-			return fmt.Errorf("srv.internal.Run(), err: %w", err)
-		}
-
-		return nil
-	})
-
-	circuit.Start(func() error {
 		e := srv.flow.Run()
 		if e != nil {
 			return fmt.Errorf("srv.flow.Run(), err: %w", err)
