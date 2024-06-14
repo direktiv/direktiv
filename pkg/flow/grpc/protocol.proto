@@ -6,12 +6,8 @@ option go_package = "github.com/direktiv/direktiv/pkg/flow/grpc";
 
 import "google/protobuf/empty.proto";
 
-import "pkg/flow/grpc/variables.proto";
 import "pkg/flow/grpc/internal.proto";
 
-service Flow {
-	rpc WorkflowVariable (WorkflowVariableRequest) returns (WorkflowVariableResponse) {}
-}
 
 service Internal {
 	rpc ReportActionResults (ReportActionResultsRequest) returns (google.protobuf.Empty) {}
