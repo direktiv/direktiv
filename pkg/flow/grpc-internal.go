@@ -3,6 +3,10 @@ package flow
 import (
 	"context"
 	"fmt"
+	"log/slog"
+	"net"
+	"strings"
+
 	"github.com/direktiv/direktiv/pkg/core"
 	enginerefactor "github.com/direktiv/direktiv/pkg/engine"
 	"github.com/direktiv/direktiv/pkg/flow/grpc"
@@ -13,9 +17,6 @@ import (
 	libgrpc "google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/types/known/emptypb"
-	"log/slog"
-	"net"
-	"strings"
 )
 
 type internal struct {
