@@ -55,9 +55,8 @@ type server struct {
 
 	mirrorManager *mirror.Manager
 
-	flow     *flow
-	internal *internal
-	events   *events
+	flow   *flow
+	events *events
 }
 
 func Run(circuit *core.Circuit) error {
@@ -261,12 +260,6 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 	slog.Info("engine was started.")
 
 	slog.Debug("Initializing internal grpc server.")
-
-	srv.internal, err = initInternalServer(circuit.Context(), srv)
-	if err != nil {
-		return nil, err
-	}
-	slog.Info("Internal grpc server started.")
 
 	srv.flow, err = initFlowServer(circuit.Context(), srv)
 	if err != nil {
