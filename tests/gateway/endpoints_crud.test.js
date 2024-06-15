@@ -130,9 +130,8 @@ describe('Test wrong endpoint config', () => {
 				warnings: [],
 				server_path: '',
 				plugins: { target: {
-						type: '',
-					}
-				},
+					type: '',
+				} },
 			},
 		)
 	})
@@ -392,9 +391,7 @@ describe('Test gateway endpoints crud operations', () => {
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body.data.length).toEqual(2)
 
-		const comp = (a, b) => {
-			return a.file_path < b.file_path ? -1:1
-		}
+		const comp = (a, b) => a.file_path < b.file_path ? -1 : 1
 		expect(listRes.body.data.sort(comp)).toEqual([
 			{
 				file_path: '/consumer2.yaml',

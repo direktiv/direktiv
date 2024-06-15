@@ -11,7 +11,7 @@ import (
 type GatewayManager interface {
 	http.Handler
 
-	SetEndpoints(list []Endpoint, cList []Consumer)
+	SetEndpoints(list []Endpoint, cList []Consumer) error
 }
 
 type EndpointFile struct {

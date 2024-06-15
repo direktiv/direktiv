@@ -45,8 +45,9 @@ func Initialize(app core.App, db *database.SQLStore, bus *pubsub2.Bus, instanceM
 		db: db,
 	}
 	nsCtr := &nsController{
-		db:  db,
-		bus: bus,
+		db:              db,
+		bus:             bus,
+		registryManager: app.RegistryManager,
 	}
 	mirrorsCtr := &mirrorsController{
 		db:            db,
@@ -197,8 +198,6 @@ func Initialize(app core.App, db *database.SQLStore, bus *pubsub2.Bus, instanceM
 		}
 		cancel()
 	})
-
-	// TODO: setup shutdown handler.
 
 	return nil
 }

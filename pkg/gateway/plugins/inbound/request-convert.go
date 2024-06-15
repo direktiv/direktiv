@@ -58,13 +58,11 @@ func (rcp *RequestConvertPlugin) Execute(w http.ResponseWriter, r *http.Request)
 		},
 	}
 
-	// TODO: yassir need fix here.
-	// convert uri extension
-	// up := r.Context().Value(plugins.URLParamCtxKey)
-	// if up != nil {
-	// 	// nolint cvoming from gateway
-	// 	response.URLParams = up.(map[string]string)
-	// }
+	// add url param
+	response.URLParams = make(map[string]string)
+	for _, param := range gateway.ExtractContextURLParams(r) {
+		response.URLParams[param] = r.PathValue(param)
+	}
 
 	// convert query params
 	if !rcp.OmitQueries {
