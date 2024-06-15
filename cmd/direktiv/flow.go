@@ -9,7 +9,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/flow"
 	"github.com/spf13/cobra"
-	"google.golang.org/grpc/status"
 )
 
 func runApplication() {
@@ -25,8 +24,7 @@ func runApplication() {
 
 	err = rootCmd.Execute()
 	if err != nil {
-		desc := status.Convert(err)
-		slog.Error("terminating flow (main)", "status", desc, "error", err)
+		slog.Error("terminating flow (main)", "error", err)
 		os.Exit(1)
 	}
 }
