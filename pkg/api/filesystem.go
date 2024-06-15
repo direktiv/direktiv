@@ -304,7 +304,10 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if strings.HasSuffix(req.Path, ".yaml") || strings.HasSuffix(req.Path, ".yml") {
+	path := strings.SplitN(r.URL.Path, "/files", 2)[1]
+	path = filepath.Clean("/" + path)
+
+	if strings.HasSuffix(path, ".yaml") || strings.HasSuffix(path, ".yml") {
 		// Validate if data is valid yaml with direktiv files.
 		var data struct{}
 		if err = yaml.Unmarshal(decodedBytes, &data); err != nil && req.Data != "" {
@@ -316,9 +319,6 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-
-	path := strings.SplitN(r.URL.Path, "/files", 2)[1]
-	path = filepath.Clean("/" + path)
 
 	// Fetch file.
 	oldFile, err := fStore.ForNamespace(ns.Name).GetFile(r.Context(), path)
