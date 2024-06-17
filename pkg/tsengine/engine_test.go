@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func setupEngineenv(t *testing.T, flow string) *tsengine.Engine {
+func setupEngineenv(t *testing.T, flow string) *tsengine.RuntimeHandler {
 
 	f, err := os.MkdirTemp("", "test")
 	if err != nil {
@@ -23,7 +23,7 @@ func setupEngineenv(t *testing.T, flow string) *tsengine.Engine {
 		t.FailNow()
 	}
 
-	e, _ := tsengine.New(f)
+	_, _ = tsengine.New(f)
 
 	// create flow
 	f3, _ := os.Create(filepath.Join(f, "flow.ts"))
@@ -42,10 +42,10 @@ func setupEngineenv(t *testing.T, flow string) *tsengine.Engine {
 	f2, _ := os.Create(filepath.Join(f, "file2"))
 	f2.WriteString("myfile2")
 
-	fi := tsengine.NewFileInitializer(f, f3.Name(), e)
-	fi.Init()
-
-	return e
+	h, _ := tsengine.CreateRuntimeHandler(tsengine.Config{
+		BaseDir:  f,
+		FlowPath: f3.Name()}, nil)
+	return h
 
 }
 
@@ -62,7 +62,7 @@ func TestBaseEngine(t *testing.T) {
 	req, _ := http.NewRequest("POST", "/dummy", strings.NewReader("{ \"test\": \"engine\"}"))
 	resp := httptest.NewRecorder()
 
-	e.RunRequest(req, resp)
+	e.ServeHTTP(resp, req)
 	b, _ := io.ReadAll(resp.Result().Body)
 	assert.Equal(t, "\"engine\"", string(b))
 }
@@ -81,7 +81,7 @@ func TestEngineResponse(t *testing.T) {
 	req, _ := http.NewRequest("POST", "/dummy", strings.NewReader("{ \"test\": \"engine\"}"))
 	resp := httptest.NewRecorder()
 
-	e.RunRequest(req, resp)
+	e.ServeHTTP(resp, req)
 
 	b, _ := io.ReadAll(resp.Result().Body)
 	assert.Equal(t, "hello", string(b))
@@ -108,7 +108,7 @@ func TestEngineStateURL(t *testing.T) {
 	req.Header.Set("myheader", "myheadervalue")
 	resp := httptest.NewRecorder()
 
-	e.RunRequest(req, resp)
+	e.ServeHTTP(resp, req)
 
 	b, _ := io.ReadAll(resp.Result().Body)
 	var out map[string]string
@@ -140,7 +140,7 @@ func TestEngineStateFile(t *testing.T) {
 	req.Header.Set("myheader", "myheadervalue")
 	resp := httptest.NewRecorder()
 
-	e.RunRequest(req, resp)
+	e.ServeHTTP(resp, req)
 
 	b, _ := io.ReadAll(resp.Result().Body)
 	var out map[string]string
@@ -162,7 +162,7 @@ func TestEngineNoJSON(t *testing.T) {
 	req.Header.Set("myheader", "myheadervalue")
 	resp := httptest.NewRecorder()
 
-	e.RunRequest(req, resp)
+	e.ServeHTTP(resp, req)
 
 	b, _ := io.ReadAll(resp.Result().Body)
 	assert.Equal(t, "\"{{{\"", string(b))

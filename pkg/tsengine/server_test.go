@@ -245,7 +245,7 @@ func TestServerFileGetter(t *testing.T) {
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", "/dummy", strings.NewReader(string("{ \"data\": \"coming-in\"}")))
 
-	s.Engine.RunRequest(req, w)
+	s.Handler.ServeHTTP(w, req)
 
 	r, _ := io.ReadAll(w.Result().Body)
 	assert.Equal(t, "{\"secret\":\"secretvalue\",\"value\":\"coming-in\"}", string(r))
