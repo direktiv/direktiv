@@ -99,10 +99,13 @@
           "title": "Create a new workflow",
           "nameLabel": "Name",
           "namePlaceholder": "workflow-name.yaml",
-          "templateLabel": "Template",
           "nameAlreadyExists": "The name already exists",
           "cancelBtn": "Cancel",
           "createBtn": "Create",
+          "template": {
+            "label": "Template",
+            "placeholder": "Select template"
+          },
           "type": {
             "label": "Type",
             "yaml": "yaml",

@@ -31,18 +31,18 @@ import { usePages } from "~/util/router/pages";
 import { useState } from "react";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
-import workflowTemplates from "./templates";
+import { workflowTemplates } from "./templates";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 type FormInput = {
   name: string;
-  selectedTemplate: string;
+  selectedTemplateName: string;
   workflowType: (typeof workflowTypes)[number];
   fileContent: string;
 };
 
-const defaultWorkflowTemplate = workflowTemplates[0];
+const defaultWorkflowTemplate = workflowTemplates.yaml[0];
 
 const NewWorkflow = ({
   path,
@@ -92,7 +92,7 @@ const NewWorkflow = ({
   } = useForm<FormInput>({
     resolver,
     defaultValues: {
-      selectedTemplate: "noop",
+      selectedTemplateName: defaultWorkflowTemplate.name,
       workflowType: "yaml",
       fileContent: defaultWorkflowTemplate.data,
     },
@@ -137,7 +137,7 @@ const NewWorkflow = ({
 
   const workflowType: (typeof workflowTypes)[number] = watch("workflowType");
 
-  const selectedTemplate: string = watch("selectedTemplate");
+  const selectedTemplateName: string = watch("selectedTemplateName");
 
   const workflowMimeType =
     workflowType === "typescript"
@@ -178,14 +178,10 @@ const NewWorkflow = ({
               value={workflowType}
               onValueChange={(value: (typeof workflowTypes)[number]) => {
                 setValue("workflowType", value);
-                setValue(
-                  "selectedTemplate",
-                  value === "typescript" ? "TypescriptExample" : "noop"
-                );
-                const match = workflowTemplates.find(
-                  (template) => template.type === value
-                );
+
+                const match = workflowTemplates[value][0];
                 if (match) {
+                  setValue("selectedTemplateName", match.name);
                   setValue("fileContent", match.data);
                   setWorkflowData(match.data);
                 }
@@ -213,34 +209,33 @@ const NewWorkflow = ({
               className="w-[100px] text-right text-[14px]"
               htmlFor="template"
             >
-              {t("pages.explorer.tree.newWorkflow.templateLabel")}
+              {t("pages.explorer.tree.newWorkflow.template.label")}
             </label>
             <Select
-              value={selectedTemplate}
+              value={selectedTemplateName}
               onValueChange={(value) => {
-                const match = workflowTemplates.find(
+                const match = workflowTemplates[workflowType].find(
                   (template) => template.name === value
                 );
                 if (match) {
-                  setValue("fileContent", match.data);
+                  setValue("selectedTemplateName", match.name);
                   setWorkflowData(match.data);
                 }
               }}
             >
               <SelectTrigger id="template" variant="outline" block>
                 <SelectValue
-                  placeholder={defaultWorkflowTemplate.name}
-                  defaultValue={defaultWorkflowTemplate.data}
+                  placeholder={t(
+                    "pages.explorer.tree.newWorkflow.template.placeholder"
+                  )}
                 />
               </SelectTrigger>
               <SelectContent>
-                {workflowTemplates
-                  .filter((template) => workflowType === template.type)
-                  .map((template) => (
-                    <SelectItem value={template.name} key={template.name}>
-                      {template.name}
-                    </SelectItem>
-                  ))}
+                {workflowTemplates[workflowType].map((template) => (
+                  <SelectItem value={template.name} key={template.name}>
+                    {template.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </fieldset>
