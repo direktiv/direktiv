@@ -42,7 +42,7 @@ func setupEngineenv(t *testing.T, flow string) *tsengine.Engine {
 	f2, _ := os.Create(filepath.Join(f, "file2"))
 	f2.WriteString("myfile2")
 
-	fi := tsengine.NewFileInitializer(f, f3.Name(), e)
+	fi := tsengine.NewFileEnviroment(f, f3.Name(), e)
 	fi.Init()
 
 	return e

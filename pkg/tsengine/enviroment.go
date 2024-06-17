@@ -16,24 +16,24 @@ import (
 	"gorm.io/gorm"
 )
 
-type Initializer interface {
+type Environment interface {
 	Init() error
 }
 
-type FileInitializer struct {
+type FileEnviroment struct {
 	srcDir, flowPath string
 	engine           *Engine
 }
 
-func NewFileInitializer(srcDir, flowPath string, e *Engine) *FileInitializer {
-	return &FileInitializer{
+func NewFileEnviroment(srcDir, flowPath string, e *Engine) *FileEnviroment {
+	return &FileEnviroment{
 		srcDir:   srcDir,
 		flowPath: flowPath,
 		engine:   e,
 	}
 }
 
-func (i *FileInitializer) Init() error {
+func (i *FileEnviroment) Init() error {
 	slog.Info("reading flow")
 
 	b, err := os.ReadFile(i.flowPath)
@@ -93,7 +93,7 @@ func (i *FileInitializer) Init() error {
 	return nil
 }
 
-func (i *FileInitializer) fileWatcher(flow string) {
+func (i *FileEnviroment) fileWatcher(flow string) {
 
 	// dir to watch
 	dir := filepath.Dir(flow)
@@ -139,19 +139,19 @@ func (i *FileInitializer) fileWatcher(flow string) {
 
 }
 
-type DBInitializer struct {
+type DBEnviroment struct {
 	dataStore           datastore.Store
 	fileStore           filestore.FileStore
 	flowPath, namespace string
 	engine              *Engine
 }
 
-func NewDBInitializer(srcDir, flowPath, namespace, secretKey string, db *gorm.DB, e *Engine) *DBInitializer {
+func NewDBEnviroment(srcDir, flowPath, namespace, secretKey string, db *gorm.DB, e *Engine) *DBEnviroment {
 	secretKey = secretKey[0:16]
 	ds := datastoresql.NewSQLStore(db, secretKey)
 	fs := filestoresql.NewSQLFileStore(db)
 
-	return &DBInitializer{
+	return &DBEnviroment{
 		dataStore: ds,
 		fileStore: fs,
 		flowPath:  flowPath,
@@ -160,7 +160,7 @@ func NewDBInitializer(srcDir, flowPath, namespace, secretKey string, db *gorm.DB
 	}
 }
 
-func (db *DBInitializer) Init() error {
+func (db *DBEnviroment) Init() error {
 	slog.Info("getting flow", slog.String("namespace", db.namespace), slog.String("path", db.flowPath))
 
 	flow, err := db.fileStore.ForNamespace(db.namespace).GetFile(context.Background(), db.flowPath)
@@ -225,7 +225,7 @@ func (db *DBInitializer) Init() error {
 	return nil
 }
 
-func (db *DBInitializer) writeFile(file compiler.File) error {
+func (db *DBEnviroment) writeFile(file compiler.File) error {
 
 	fetchPath := file.Name
 	if !filepath.IsAbs(file.Name) {

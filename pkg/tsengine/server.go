@@ -48,11 +48,11 @@ func NewServer(cfg Config, db *gorm.DB) (*Server, error) {
 	// TODO: cancel
 	// s.mux.HandleFunc("GET /cancel/{id}", s.HandleStatusRequest)
 
-	var initializer Initializer
+	var initializer Environment
 	if db != nil {
-		initializer = NewDBInitializer(cfg.BaseDir, cfg.FlowPath, cfg.Namespace, cfg.SecretKey, db, engine)
+		initializer = NewDBEnviroment(cfg.BaseDir, cfg.FlowPath, cfg.Namespace, cfg.SecretKey, db, engine)
 	} else {
-		fi := NewFileInitializer(cfg.BaseDir, cfg.FlowPath, engine)
+		fi := NewFileEnviroment(cfg.BaseDir, cfg.FlowPath, engine)
 		go fi.fileWatcher(cfg.FlowPath)
 		initializer = fi
 	}
