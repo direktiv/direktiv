@@ -51,9 +51,13 @@ type FormInput = {
 const getFirstTemplateFor = (type: WorkflowType) => {
   const entry = Object.entries(workflowTemplates[type])[0];
   if (!entry) {
-    throw Error("no!");
+    throw Error(`No workflow template exists for ${type}`);
   }
-  return entry[1];
+  const [name, data] = entry;
+  return {
+    name,
+    data,
+  };
 };
 
 const NewWorkflow = ({
@@ -147,7 +151,7 @@ const NewWorkflow = ({
 
   const formId = `new-worfklow-${path}`;
 
-  const workflowType: (typeof workflowTypes)[number] = watch("workflowType");
+  const workflowType: WorkflowType = watch("workflowType");
 
   const selectedTemplateName: string = watch("selectedTemplateName");
 
@@ -188,7 +192,7 @@ const NewWorkflow = ({
             </label>
             <Select
               value={workflowType}
-              onValueChange={(value: (typeof workflowTypes)[number]) => {
+              onValueChange={(value: WorkflowType) => {
                 setValue("workflowType", value);
 
                 const match = getFirstTemplateFor(value);
@@ -229,7 +233,7 @@ const NewWorkflow = ({
                 const match = workflowTemplates[workflowType][value];
                 if (match) {
                   setValue("selectedTemplateName", value);
-                  setWorkflowData(match.data);
+                  setWorkflowData(match);
                 }
               }}
             >

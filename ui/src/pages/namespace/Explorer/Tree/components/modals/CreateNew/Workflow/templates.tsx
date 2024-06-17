@@ -2,7 +2,7 @@ import { WorkflowType } from "~/api/files/schema";
 
 type WorkflowDefinition = { [key: string]: string };
 
-type WorkflowTemplates = Record<WorkflowType, WorkflowDefinition>;
+type WorkflowTemplateFormat = Record<WorkflowType, WorkflowDefinition>;
 
 export const workflowTemplates = {
   yaml: {
@@ -332,4 +332,4 @@ export const workflowTemplates = {
       })
     }`,
   },
-} satisfies WorkflowTemplates;
+} satisfies WorkflowTemplateFormat;
