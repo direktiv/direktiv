@@ -12,7 +12,6 @@ import { BaseFileSchemaType } from "~/api/files/schema";
 import { Card } from "~/design/Card";
 import Delete from "./components/modals/Delete";
 import ExplorerHeader from "./Header";
-import FilePicker from "~/components/FilePicker";
 import FileRow from "./FileRow";
 import FileViewer from "./components/modals/FileViewer";
 import { FolderUp } from "lucide-react";
@@ -88,39 +87,6 @@ const ExplorerPage: FC = () => {
   return (
     <>
       <ExplorerHeader />
-      <div className="p-5">
-        <Card>
-          <FilePicker
-            namespace="new"
-            onChange={() => console.log("test")}
-            defaultPath="test"
-            selectable={(file) => file.type === "workflow"}
-          />
-        </Card>
-      </div>
-
-      <div className="p-5">
-        <Card>
-          <FilePicker
-            namespace="new"
-            onChange={() => console.log("test")}
-            defaultPath="test"
-            selectable={(file) => file.type === "directory"}
-          />
-        </Card>
-      </div>
-
-      <div className="p-5">
-        <Card>
-          <FilePicker
-            namespace="new"
-            onChange={() => console.log("test")}
-            defaultPath="test"
-            selectable={(file) => file.type === "directory"}
-            selectableFolders={true}
-          />
-        </Card>
-      </div>
       <div className="p-5">
         <Card>
           {showTable && (
