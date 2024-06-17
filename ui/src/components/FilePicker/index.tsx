@@ -59,7 +59,11 @@ const FilePicker = ({
   return (
     <ButtonBar>
       <Filepicker
-        buttonText={t("components.filepicker.buttonText")}
+        buttonText={t(
+          selectFolders
+            ? "components.folderpicker.buttonText"
+            : "components.filepicker.buttonText"
+        )}
         onClick={() => {
           setPath(convertFileToPath(inputValue));
         }}
@@ -122,7 +126,11 @@ const FilePicker = ({
         )}
       </Filepicker>
       <Input
-        placeholder={t("components.filepicker.placeholder")}
+        placeholder={t(
+          selectFolders
+            ? "components.folderpicker.placeholder"
+            : "components.filepicker.placeholder"
+        )}
         value={inputValue}
         onChange={(e) => {
           setInputValue(e.target.value);

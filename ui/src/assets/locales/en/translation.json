@@ -1216,6 +1216,10 @@
         "linkText": "Go back to root directory"
       }
     },
+    "folderpicker": {
+      "buttonText": "Browse Folders",
+      "placeholder": "No Folder selected"
+    },
     "fileUpload": {
       "label": "Upload a file"
     },
