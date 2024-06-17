@@ -12,7 +12,6 @@ import {
 import { BaseFileSchemaType } from "~/api/files/schema";
 import { ButtonBar } from "~/design/ButtonBar";
 import { FileList } from "./FileList";
-import { FileListWithSelectButton } from "./FileListWithSelectButton";
 import { FilePathSegments } from "./FilepathSegments";
 import Input from "~/design/Input";
 import { analyzePath } from "~/util/router/utils";
@@ -108,7 +107,7 @@ const FilePicker = ({
           </>
         )}
 
-        {results && !selectFolders && (
+        {results && (
           <FilepickerList>
             <FileList
               files={results}
@@ -116,18 +115,7 @@ const FilePicker = ({
               setPath={(path) => setPath(path)}
               setInputValue={(value) => setInputValue(value)}
               onChange={(path) => onChange?.(path)}
-            />
-            <FilepickerSeparator />
-          </FilepickerList>
-        )}
-        {results && selectFolders && (
-          <FilepickerList>
-            <FileListWithSelectButton
-              files={results}
-              selectable={selectable}
-              setPath={(path) => setPath(path)}
-              setInputValue={(value) => setInputValue(value)}
-              onChange={(path) => onChange?.(path)}
+              selectableFolders={selectFolders}
             />
             <FilepickerSeparator />
           </FilepickerList>
