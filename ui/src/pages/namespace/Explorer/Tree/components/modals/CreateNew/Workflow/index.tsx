@@ -153,6 +153,14 @@ const NewWorkflow = ({
 
   const workflowType: WorkflowType = watch("workflowType");
 
+  // Todo: memoize; probably will require moving workflowType to useState()
+  const currentTemplates = Object.entries(workflowTemplates[workflowType]).map(
+    ([name, data]) => ({
+      name,
+      data,
+    })
+  );
+
   const selectedTemplateName: string = watch("selectedTemplateName");
 
   const workflowMimeType =
@@ -230,10 +238,12 @@ const NewWorkflow = ({
             <Select
               value={selectedTemplateName}
               onValueChange={(value) => {
-                const match = workflowTemplates[workflowType][value];
+                const match = currentTemplates.find(
+                  (template) => template.name === value
+                );
                 if (match) {
-                  setValue("selectedTemplateName", value);
-                  setWorkflowData(match);
+                  setValue("selectedTemplateName", match.name);
+                  setWorkflowData(match.data);
                 }
               }}
             >
