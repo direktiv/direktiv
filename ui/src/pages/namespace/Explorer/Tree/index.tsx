@@ -78,10 +78,9 @@ const ExplorerPage: FC = () => {
         <Card>
           <FilePicker
             namespace="new"
-            onChange={() => console.log("he")}
+            onChange={() => console.log("test")}
             defaultPath="test"
             selectable={(file) => file.type === "workflow"}
-            selectInSidebar={false}
           />
         </Card>
       </div>
@@ -90,10 +89,9 @@ const ExplorerPage: FC = () => {
         <Card>
           <FilePicker
             namespace="new"
-            onChange={() => console.log("he")}
+            onChange={() => console.log("test")}
             defaultPath="test"
             selectable={(file) => file.type === "directory"}
-            selectInSidebar={true}
           />
         </Card>
       </div>
@@ -102,10 +100,10 @@ const ExplorerPage: FC = () => {
         <Card>
           <FilePicker
             namespace="new"
-            onChange={() => console.log("he")}
+            onChange={() => console.log("test")}
             defaultPath="test"
             selectable={(file) => file.type === "directory"}
-            selectButton={true}
+            selectableFolders={true}
           />
         </Card>
       </div>

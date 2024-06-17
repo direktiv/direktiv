@@ -1,14 +1,7 @@
-import {
-  CheckCircle2,
-  Circle,
-  CircleDashed,
-  CircleDot,
-  CircleOff,
-} from "lucide-react";
 import { FC, Fragment } from "react";
 import {
-  FilepickerClose,
   FilepickerListItem,
+  FilepickerSelectButton,
   FilepickerSeparator,
 } from "~/design/Filepicker";
 import {
@@ -28,7 +21,7 @@ export type FileListProps = {
   onChange: (path: string) => void;
 };
 
-export const FileListWithSidebutton: FC<FileListProps> = ({
+export const FileListWithSelectButton: FC<FileListProps> = ({
   files,
   selectable,
   setPath,
@@ -44,7 +37,7 @@ export const FileListWithSidebutton: FC<FileListProps> = ({
       return (
         <Fragment key={filename}>
           {isSelectable ? (
-            <div className=" flex h-auto w-full cursor-pointer items-center justify-between hover:bg-gray-3">
+            <div className="group flex h-auto w-full cursor-pointer items-center justify-between hover:bg-gray-3">
               <div
                 onClick={() => {
                   setPath(file.path);
@@ -55,34 +48,16 @@ export const FileListWithSidebutton: FC<FileListProps> = ({
                   {filename}
                 </FilepickerListItem>
               </div>
-              <div className="">
-                <FilepickerClose
-                  className={twMergeClsx(
-                    "group h-auto px-4 py-2 text-gray-11 hover:bg-gray-3 dark:text-gray-dark-11  dark:hover:bg-gray-dark-3 "
-                  )}
-                  disabled={!isSelectable}
+              <div className="h-auto px-4 py-2 opacity-0 group-hover:opacity-100">
+                <FilepickerSelectButton
                   onClick={() => {
                     setPath(parent);
                     setInputValue(file.path);
                     onChange?.(file.path);
                   }}
                 >
-                  <div className=" h-4 w-4">
-                    <CheckCircle2
-                      aria-hidden="true"
-                      className="invisible absolute h-4 w-4 text-gray-11 group-hover:visible"
-                    />
-                    <Circle
-                      aria-hidden="true"
-                      className=" absolute h-4 w-4 text-gray-11 "
-                    />
-
-                    {/* <CircleDot
-                      aria-hidden="true"
-                      className="invisible absolute h-4 w-4 text-gray-11 group-hover:visible"
-                    /> */}
-                  </div>
-                </FilepickerClose>
+                  Select
+                </FilepickerSelectButton>
               </div>
             </div>
           ) : (

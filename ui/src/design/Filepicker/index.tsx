@@ -1,5 +1,6 @@
 import * as React from "react";
 
+import { CheckCircle2, LucideIcon } from "lucide-react";
 import { FC, PropsWithChildren } from "react";
 import {
   Popover,
@@ -10,7 +11,6 @@ import {
 
 import Button from "~/design/Button";
 import { DropdownMenuSeparator } from "../Dropdown";
-import { LucideIcon } from "lucide-react";
 import { Slot } from "@radix-ui/react-slot";
 import { twMergeClsx } from "~/util/helpers";
 
@@ -88,6 +88,27 @@ const FilepickerListItem: FC<FilepickerProps> = ({
   );
 };
 
+type FilepickerSelectButtonType = PropsWithChildren & {
+  onClick: React.MouseEventHandler;
+};
+
+const FilepickerSelectButton: FC<FilepickerSelectButtonType> = ({
+  children,
+  onClick,
+}) => (
+  <FilepickerClose
+    onClick={onClick}
+    className={twMergeClsx(
+      "h-auto w-full cursor-pointer p-0 font-normal text-gray-11 hover:underline focus:bg-transparent focus:ring-0 focus:ring-transparent focus:ring-offset-0 dark:text-gray-dark-11 dark:focus:bg-transparent"
+    )}
+  >
+    <Button className="" size="sm">
+      <CheckCircle2 />
+      {children}
+    </Button>
+  </FilepickerClose>
+);
+
 type FilepickerPropsType = PropsWithChildren & {
   className?: string;
   buttonText: string;
@@ -124,4 +145,5 @@ export {
   FilepickerList,
   FilepickerListItem,
   FilepickerSeparator,
+  FilepickerSelectButton,
 };

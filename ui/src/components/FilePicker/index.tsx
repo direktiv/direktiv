@@ -12,8 +12,7 @@ import {
 import { BaseFileSchemaType } from "~/api/files/schema";
 import { ButtonBar } from "~/design/ButtonBar";
 import { FileList } from "./FileList";
-import { FileListWithSidebar } from "./FileListWithSidebar";
-import { FileListWithSidebutton } from "./FileListWithSidebutton";
+import { FileListWithSelectButton } from "./FileListWithSelectButton";
 import { FilePathSegments } from "./FilepathSegments";
 import Input from "~/design/Input";
 import { analyzePath } from "~/util/router/utils";
@@ -29,15 +28,13 @@ const FilePicker = ({
   defaultPath,
   onChange,
   selectable,
-  selectInSidebar,
-  selectButton,
+  selectableFolders,
 }: {
   namespace?: string;
   defaultPath?: string;
   onChange?: (filePath: string) => void;
   selectable?: (file: BaseFileSchemaType) => boolean;
-  selectInSidebar?: boolean;
-  selectButton?: boolean;
+  selectableFolders?: boolean;
 }) => {
   const [path, setPath] = useState(convertFileToPath(defaultPath));
   const [inputValue, setInputValue] = useState(defaultPath ? defaultPath : "");
@@ -58,8 +55,7 @@ const FilePicker = ({
   const emptyDirectory = !isError && noResults;
   const folderUpButton = !isError && !noResults && !isRoot;
 
-  const sidebar = selectInSidebar ? selectInSidebar : false;
-  const button = selectButton ? selectButton : false;
+  const selectFolders = selectableFolders || false;
 
   return (
     <ButtonBar>
@@ -112,7 +108,7 @@ const FilePicker = ({
           </>
         )}
 
-        {results && !sidebar && !button && (
+        {results && !selectFolders && (
           <FilepickerList>
             <FileList
               files={results}
@@ -124,21 +120,9 @@ const FilePicker = ({
             <FilepickerSeparator />
           </FilepickerList>
         )}
-        {results && !sidebar && button && (
+        {results && selectFolders && (
           <FilepickerList>
-            <FileListWithSidebutton
-              files={results}
-              selectable={selectable}
-              setPath={(path) => setPath(path)}
-              setInputValue={(value) => setInputValue(value)}
-              onChange={(path) => onChange?.(path)}
-            />
-            <FilepickerSeparator />
-          </FilepickerList>
-        )}
-        {results && sidebar && (
-          <FilepickerList>
-            <FileListWithSidebar
+            <FileListWithSelectButton
               files={results}
               selectable={selectable}
               setPath={(path) => setPath(path)}
