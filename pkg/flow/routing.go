@@ -20,8 +20,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/google/uuid"
 	"go.opentelemetry.io/otel/trace"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 type muxStart struct {
@@ -65,7 +63,7 @@ func validateRouter(ctx context.Context, tx *database.SQLStore, file *filestore.
 
 	err = workflow.Load(data)
 	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, err.Error())
+		return nil, err
 	}
 
 	ms := newMuxStart(workflow)

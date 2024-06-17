@@ -28,7 +28,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
-	libgrpc "google.golang.org/grpc"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -55,9 +54,8 @@ type server struct {
 
 	mirrorManager *mirror.Manager
 
-	flow     *flow
-	internal *internal
-	events   *events
+	flow   *flow
+	events *events
 }
 
 func Run(circuit *core.Circuit) error {
@@ -262,12 +260,6 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 
 	slog.Debug("Initializing internal grpc server.")
 
-	srv.internal, err = initInternalServer(circuit.Context(), srv)
-	if err != nil {
-		return nil, err
-	}
-	slog.Info("Internal grpc server started.")
-
 	srv.flow, err = initFlowServer(circuit.Context(), srv)
 	if err != nil {
 		return nil, err
@@ -320,24 +312,6 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 	srv.registerFunctions()
 
 	go srv.cronPoller()
-
-	circuit.Start(func() error {
-		e := srv.internal.Run()
-		if e != nil {
-			return fmt.Errorf("srv.internal.Run(), err: %w", err)
-		}
-
-		return nil
-	})
-
-	circuit.Start(func() error {
-		e := srv.flow.Run()
-		if e != nil {
-			return fmt.Errorf("srv.flow.Run(), err: %w", err)
-		}
-
-		return nil
-	})
 
 	circuit.Start(func() error {
 		<-circuit.Done()
@@ -555,24 +529,6 @@ func (srv *server) cronPollerWorkflow(ctx context.Context, tx *database.SQLStore
 
 		slog.Debug("Successfully loaded cron schedule for workflow", "workflow", file.Path, "cron_expression", ms.Cron)
 	}
-}
-
-func unaryInterceptor(ctx context.Context, req interface{}, info *libgrpc.UnaryServerInfo, handler libgrpc.UnaryHandler) (interface{}, error) {
-	resp, err := handler(ctx, req)
-	if err != nil {
-		return nil, translateError(err)
-	}
-
-	return resp, nil
-}
-
-func streamInterceptor(srv interface{}, ss libgrpc.ServerStream, info *libgrpc.StreamServerInfo, handler libgrpc.StreamHandler) error {
-	err := handler(srv, ss)
-	if err != nil {
-		return translateError(err)
-	}
-
-	return nil
 }
 
 func this() string {
