@@ -6,13 +6,13 @@ import {
   testDiacriticsWorkflow,
 } from "./utils";
 
-import { noop as basicWorkflow } from "~/pages/namespace/Explorer/Tree/components/modals/CreateNew/Workflow/templates";
 import { createFile } from "e2e/utils/files";
 import { decode } from "js-base64";
 import { faker } from "@faker-js/faker";
 import { getInstanceInput } from "~/api/instances/query/input";
 import { headers } from "e2e/utils/testutils";
 import { prettifyJsonString } from "~/util/helpers";
+import { workflowTemplates } from "~/pages/namespace/Explorer/Tree/components/modals/CreateNew/Workflow/templates";
 
 let namespace = "";
 
@@ -33,7 +33,7 @@ test("it is possible to open and use the run workflow modal from the editor and 
     name: workflowName,
     namespace,
     type: "workflow",
-    content: basicWorkflow.data,
+    content: workflowTemplates.yaml.noop,
   });
 
   await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflowName}`);
@@ -101,7 +101,7 @@ test("it is possible to run the workflow by setting an input JSON via the editor
     name: workflowName,
     namespace,
     type: "workflow",
-    content: basicWorkflow.data,
+    content: workflowTemplates.yaml.noop,
   });
 
   await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflowName}`);
@@ -209,7 +209,7 @@ test("it is not possible to run the workflow when the editor has unsaved changes
     name: workflowName,
     namespace,
     type: "workflow",
-    content: basicWorkflow.data,
+    content: workflowTemplates.yaml.noop,
   });
 
   await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflowName}`);

@@ -109,6 +109,8 @@ const CreateServiceSchema = CreateYamlFileSchema.extend({
 
 export const workflowTypes = ["yaml", "typescript"] as const;
 
+export type WorkflowType = (typeof workflowTypes)[number];
+
 export const workflowMimeTypes = [
   "application/yaml",
   "application/x-typescript",

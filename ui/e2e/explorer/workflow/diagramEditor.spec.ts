@@ -1,9 +1,9 @@
 import { Page, expect, test } from "@playwright/test";
 import { createNamespace, deleteNamespace } from "../../utils/namespace";
 
-import { consumeEvent as consumeEventWorkflow } from "~/pages/namespace/Explorer/Tree/components/modals/CreateNew/Workflow/templates";
 import { createFile } from "e2e/utils/files";
 import { faker } from "@faker-js/faker";
+import { workflowTemplates } from "~/pages/namespace/Explorer/Tree/components/modals/CreateNew/Workflow/templates";
 
 let namespace = "";
 let workflow = "";
@@ -33,7 +33,7 @@ test.beforeEach(async () => {
     name: workflow,
     namespace,
     type: "workflow",
-    content: consumeEventWorkflow.data,
+    content: workflowTemplates.yaml.consumeEvent,
   });
 });
 

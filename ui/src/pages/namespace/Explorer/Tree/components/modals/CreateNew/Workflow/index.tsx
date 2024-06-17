@@ -4,7 +4,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/design/Dialog";
-import { FileNameSchema, workflowTypes } from "~/api/files/schema";
+import {
+  FileNameSchema,
+  WorkflowType,
+  workflowTypes,
+} from "~/api/files/schema";
 import { Play, PlusCircle } from "lucide-react";
 import {
   Select,
@@ -35,14 +39,22 @@ import { workflowTemplates } from "./templates";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
+const defaultType: WorkflowType = "yaml";
+
 type FormInput = {
   name: string;
   selectedTemplateName: string;
-  workflowType: (typeof workflowTypes)[number];
+  workflowType: WorkflowType;
   fileContent: string;
 };
 
-const defaultWorkflowTemplate = workflowTemplates.yaml[0];
+const getFirstTemplateFor = (type: WorkflowType) => {
+  const entry = Object.entries(workflowTemplates[type])[0];
+  if (!entry) {
+    throw Error("no!");
+  }
+  return entry[1];
+};
 
 const NewWorkflow = ({
   path,
@@ -61,7 +73,7 @@ const NewWorkflow = ({
 
   const theme = useTheme();
   const [workflowData, setWorkflowData] = useState<string>(
-    defaultWorkflowTemplate.data
+    getFirstTemplateFor(defaultType).data
   );
 
   const resolver = zodResolver(
@@ -92,9 +104,9 @@ const NewWorkflow = ({
   } = useForm<FormInput>({
     resolver,
     defaultValues: {
-      selectedTemplateName: defaultWorkflowTemplate.name,
-      workflowType: "yaml",
-      fileContent: defaultWorkflowTemplate.data,
+      selectedTemplateName: getFirstTemplateFor(defaultType).name,
+      workflowType: defaultType,
+      fileContent: getFirstTemplateFor(defaultType).data,
     },
   });
 
@@ -179,7 +191,7 @@ const NewWorkflow = ({
               onValueChange={(value: (typeof workflowTypes)[number]) => {
                 setValue("workflowType", value);
 
-                const match = workflowTemplates[value][0];
+                const match = getFirstTemplateFor(value);
                 if (match) {
                   setValue("selectedTemplateName", match.name);
                   setValue("fileContent", match.data);
@@ -192,7 +204,7 @@ const NewWorkflow = ({
                   placeholder={t(
                     "pages.explorer.tree.newWorkflow.type.placeholder"
                   )}
-                  defaultValue="yaml"
+                  defaultValue={defaultType}
                 />
               </SelectTrigger>
               <SelectContent>
@@ -214,11 +226,9 @@ const NewWorkflow = ({
             <Select
               value={selectedTemplateName}
               onValueChange={(value) => {
-                const match = workflowTemplates[workflowType].find(
-                  (template) => template.name === value
-                );
+                const match = workflowTemplates[workflowType][value];
                 if (match) {
-                  setValue("selectedTemplateName", match.name);
+                  setValue("selectedTemplateName", value);
                   setWorkflowData(match.data);
                 }
               }}
@@ -231,9 +241,9 @@ const NewWorkflow = ({
                 />
               </SelectTrigger>
               <SelectContent>
-                {workflowTemplates[workflowType].map((template) => (
-                  <SelectItem value={template.name} key={template.name}>
-                    {template.name}
+                {Object.keys(workflowTemplates[workflowType]).map((name) => (
+                  <SelectItem value={name} key={name}>
+                    {name}
                   </SelectItem>
                 ))}
               </SelectContent>

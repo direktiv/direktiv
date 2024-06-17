@@ -1,22 +1,12 @@
-import { workflowTypes } from "~/api/files/schema";
+import { WorkflowType } from "~/api/files/schema";
 
-type WorkflowTemplate = {
-  name: string;
-  type: (typeof workflowTypes)[number];
-  data: string;
-};
+type WorkflowDefinition = { [key: string]: string };
 
-type WorkflowTemplates = {
-  yaml: WorkflowTemplate[];
-  typescript: WorkflowTemplate[];
-};
+type WorkflowTemplates = Record<WorkflowType, WorkflowDefinition>;
 
 export const workflowTemplates = {
-  yaml: [
-    {
-      name: "noop",
-      type: "yaml",
-      data: `direktiv_api: workflow/v1
+  yaml: {
+    noop: `direktiv_api: workflow/v1
     description: A simple 'no-op' state that returns 'Hello world!'
     states:
     - id: helloworld
@@ -24,11 +14,7 @@ export const workflowTemplates = {
       transform:
         result: Hello world!
     `,
-    },
-    {
-      name: "action",
-      type: "yaml",
-      data: `direktiv_api: workflow/v1
+    action: `direktiv_api: workflow/v1
     description: A simple 'action' state that sends a get request
     functions:
     - id: get
@@ -43,11 +29,7 @@ export const workflowTemplates = {
           method: "GET"
           url: "https://jsonplaceholder.typicode.com/todos/1"
     `,
-    },
-    {
-      name: "consumeEvent",
-      type: "yaml",
-      data: `direktiv_api: workflow/v1
+    consumeEvent: `direktiv_api: workflow/v1
     functions:
     - id: greeter
       image: direktiv/greeting:v3
@@ -68,22 +50,14 @@ export const workflowTemplates = {
       transform:
         greeting: jq(.return.greeting)
     `,
-    },
-    {
-      name: "delay",
-      type: "yaml",
-      data: `direktiv_api: workflow/v1
+    delay: `direktiv_api: workflow/v1
     description: A simple 'delay' state that waits for 5 seconds
     states:
     - id: delay
       type: delay
       duration: PT5S
     `,
-    },
-    {
-      name: "error",
-      type: "yaml",
-      data: `direktiv_api: workflow/v1
+    error: `direktiv_api: workflow/v1
     description: A simple 'error' state workflow that checks an email attempts to validate it.
     states:
     - id: data
@@ -113,11 +87,7 @@ export const workflowTemplates = {
       transform: 
         result: "Email is valid."
     `,
-    },
-    {
-      name: "foreach",
-      type: "yaml",
-      data: `direktiv_api: workflow/v1
+    foreach: `direktiv_api: workflow/v1
     description: A simple 'foreach' state that solves expressions
     functions: 
     - id: solve
@@ -139,11 +109,7 @@ export const workflowTemplates = {
       transform:
         solved: jq(.return)
     `,
-    },
-    {
-      name: "generateEvent",
-      type: "yaml",
-      data: `direktiv_api: workflow/v1
+    generateEvent: `direktiv_api: workflow/v1
     description: A simple 'generateEvent' state that sends data to a greeting listener.
     states:
     - id: generate
@@ -154,11 +120,7 @@ export const workflowTemplates = {
         data: 
           name: "Trent"
     `,
-    },
-    {
-      name: "generateSolveEvent",
-      type: "yaml",
-      data: `direktiv_api: workflow/v1
+    generateSolveEvent: `direktiv_api: workflow/v1
     description: A simple 'generateEvent' state that sends an expression to a solve listener.
     states:
     - id: generate
@@ -169,11 +131,7 @@ export const workflowTemplates = {
         data: 
           x: "10+5"
     `,
-    },
-    {
-      name: "getAndSet",
-      type: "yaml",
-      data: `direktiv_api: workflow/v1
+    getAndSet: `direktiv_api: workflow/v1
     description: "Simple Counter getter and setter variable example"
     states:
       - id: counter-get
@@ -190,11 +148,7 @@ export const workflowTemplates = {
             scope: workflow 
             value: 'jq(.newCounter)'
     `,
-    },
-    {
-      name: "parallel",
-      type: "yaml",
-      data: `direktiv_api: workflow/v1
+    parallel: `direktiv_api: workflow/v1
     description: A simple 'parallel' state workflow that runs solve container to solve expressions.
     functions: 
     - id: solve
@@ -220,11 +174,7 @@ export const workflowTemplates = {
       # Mode 'or' waits for the first action to be completed
       mode: and
     `,
-    },
-    {
-      name: "validate",
-      type: "yaml",
-      data: `direktiv_api: workflow/v1
+    validate: `direktiv_api: workflow/v1
     description: A simple 'validate' state workflow that checks an email
     states:
     - id: data
@@ -254,11 +204,7 @@ export const workflowTemplates = {
       transform:
         result: "Email is valid."
     `,
-    },
-    {
-      name: "switch",
-      type: "yaml",
-      data: `direktiv_api: workflow/v1
+    switch: `direktiv_api: workflow/v1
     description: A simple 'switch' state that checks whether the age provided is older than 18.
     states:
     - id: data
@@ -281,11 +227,7 @@ export const workflowTemplates = {
       transform: 
         result: "You are younger than 18."
     `,
-    },
-    {
-      name: "eventXor",
-      type: "yaml",
-      data: `direktiv_api: workflow/v1
+    eventXor: `direktiv_api: workflow/v1
     functions:
     - id: greeter
       image: direktiv/greeting:v3
@@ -320,11 +262,7 @@ export const workflowTemplates = {
       transform: 
         solvedexpression: jq(.return)
     `,
-    },
-    {
-      name: "eventAnd",
-      type: "yaml",
-      data: `direktiv_api: workflow/v1
+    eventAnd: `direktiv_api: workflow/v1
     functions:
     - id: greeter
       image: direktiv/greeting:v3
@@ -359,44 +297,39 @@ export const workflowTemplates = {
         msggreeting: jq(.greeting)
         solvedexpression: jq(.return)
     `,
-    },
-  ] as const,
-  typescript: [
-    {
-      name: "TypescriptExample",
-      type: "typescript",
-      data: `const flow: DirektivFlow = {
+  },
+  typescript: {
+    example: `const flow: DirektivFlow = {
         scale: [
           {
             min: 1
           }
         ]
       };
-    
+
     function value() {
       const fileOne = getFile({
         name: "/myfile.txt",
         permission: 755,
         scope: "shared",
-      });	  
-        
+      });
+
         var s = getSecret({ name: "hello-world"})
-    
+
         var r = httpRequest(
             {
                 method: "POST",
                 url: "http://127.0.0.1:%d"
             }
         )
-    
+
         var fn = setupFunction({
         image: "localhost:5000/hello"
       })
-    
+
         var fn = setupFunction2({
         image: "localhost:5000/hello"
       })
     }`,
-    },
-  ] as const,
+  },
 } satisfies WorkflowTemplates;

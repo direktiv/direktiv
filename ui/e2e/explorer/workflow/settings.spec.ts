@@ -2,7 +2,6 @@ import { createNamespace, deleteNamespace } from "../../utils/namespace";
 import { expect, test } from "@playwright/test";
 import { waitForSuccessToast, workflowThatCreatesVariable } from "./utils";
 
-import { noop as basicWorkflow } from "~/pages/namespace/Explorer/Tree/components/modals/CreateNew/Workflow/templates";
 import { createFile } from "e2e/utils/files";
 import { createInstance } from "~/api/instances/mutate/create";
 import { createVar } from "~/api/variables/mutate/create";
@@ -11,6 +10,7 @@ import { encode } from "js-base64";
 import { faker } from "@faker-js/faker";
 import { forceLeadingSlash } from "~/api/files/utils";
 import { headers } from "e2e/utils/testutils";
+import { workflowTemplates } from "~/pages/namespace/Explorer/Tree/components/modals/CreateNew/Workflow/templates";
 
 let namespace = "";
 let workflow = "";
@@ -23,7 +23,7 @@ test.beforeEach(async () => {
     name: workflow,
     namespace,
     type: "workflow",
-    content: basicWorkflow.data,
+    content: workflowTemplates.yaml.noop,
   });
 });
 
