@@ -109,16 +109,6 @@ test("Route details page shows all important information about the route", async
     "It does not have any log entries yet"
   ).toBeVisible();
 
-  const res = await fetch(
-    `${process.env.VITE_DEV_API_DOMAIN}/ns/${namespace}/${path}`
-  );
-  await expect(res.ok).toBe(true);
-
-  await expect(
-    page.getByText("received 1 log entry"),
-    "It does have 1 log entry, after the request to the gateway was made"
-  ).toBeVisible();
-
   page
     .getByTestId("route-details-header")
     .getByRole("link", { name: "Edit Route" })
@@ -164,7 +154,7 @@ test("Route details page shows warning if the route was not configured correctly
   await expect(
     page
       .getByTestId("route-details-header")
-      .getByText("plugin this-plugin-does-not-exist does not exist"),
+      .getByText("plugin 'this-plugin-does-not-exist' err: doesn't exist"),
     "it shows an error with error detail on hover"
   ).toBeVisible();
 

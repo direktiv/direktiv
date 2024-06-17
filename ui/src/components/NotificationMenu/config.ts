@@ -1,7 +1,7 @@
 import { LucideIcon, SquareAsterisk } from "lucide-react";
 
-import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
+import { usePages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
 
 export type NotificationConfig = {
@@ -17,6 +17,7 @@ export const useNotificationConfig = ({
   type: string;
   count: number;
 }): NotificationConfig | null => {
+  const pages = usePages();
   const { t } = useTranslation();
   const namespace = useNamespace();
   if (!namespace) return null;

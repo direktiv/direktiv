@@ -8,12 +8,13 @@ import MessagesOverlay from "../components/MessagesOverlay";
 import { Methods } from "../components/Methods";
 import Plugins from "../components/Plugins";
 import PublicPathInput from "../components/PublicPath";
-import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
+import { usePages } from "~/util/router/pages";
 import { useRoute } from "~/api/gateway/query/getRoutes";
 import { useTranslation } from "react-i18next";
 
 const Header = () => {
+  const pages = usePages();
   const namespace = useNamespace();
   const { routePath } = pages.gateway.useParams();
   const { data: route } = useRoute({

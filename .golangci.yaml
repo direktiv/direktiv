@@ -45,27 +45,20 @@ linters:
     - gochecknoglobals
     - cyclop
     - godox # must fix before release.
-    - deadcode # The linter 'deadcode' is deprecated (since v1.49.0).
 
-    - exhaustivestruct
-    - structcheck
-    - ifshort
-    - maligned
-    - interfacer
-    - nosnakecase
-    - golint
-    - varcheck
-    - scopelint
     - gomnd
     - tagliatelle
     - musttag
     - prealloc
     - spancheck # TODO: Alan, enable this one as it helps you fixing some telemetry bugs.
+    - err113 # TODO: This ensures no dynamic errors.
+    - mnd
+    - canonicalheader
 
 issues:
   exclude-files: [ ".pb.go" ]
   exclude-rules:
-    - path: '(pkg|cmd)\/(model|sidecar|exec|util|jqer|flow|api)\/.*'
+    - path: '(pkg|cmd)\/(model|sidecar|exec|utils|jqer|flow)\/.*'
       linters:
         - paralleltest
         - forbidigo
@@ -130,9 +123,27 @@ issues:
     - text: "context-as-argument:"
       linters:
         - revive
+    - text: "context-keys-type: should not use basic type string"
+      linters:
+        - revive
     - text: "fmt.Errorf can be replaced"
       linters:
         - perfsprint
     - text: "fmt.Sprintf can be replaced"
       linters:
         - perfsprint
+    - text: "don't use `init` function"
+      linters:
+        - init
+
+    - text: "string `true`"
+      linters:
+        - goconst
+    - text: "string `false`"
+      linters:
+        - goconst
+
+    # gateway plugins need to user init() function
+    - path: 'pkg/gateway/plugins/.*'
+      linters:
+        - gochecknoinits

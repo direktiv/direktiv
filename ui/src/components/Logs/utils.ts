@@ -7,7 +7,7 @@ export const getInstanceLogEntryForClipboard = (logEntry: LogEntryType) =>
     formatLogTime(logEntry.time),
     logEntry?.level,
     logEntry?.workflow?.workflow,
-    logEntry?.workflow?.state,
+    logEntry?.workflow?.state ?? undefined,
     logEntry.msg,
     logEntry.error ?? undefined,
   ]);

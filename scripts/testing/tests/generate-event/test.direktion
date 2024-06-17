@@ -1,3 +1,0 @@
-workflow test
-
-broadcast('test', 'direktiv.Test', { hello: 'world' })

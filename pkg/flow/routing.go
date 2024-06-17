@@ -2,24 +2,24 @@ package flow
 
 import (
 	"context"
+	"crypto/md5"
 	"database/sql"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
 	"strings"
+	"time"
 
+	"github.com/direktiv/direktiv/pkg/database"
+	"github.com/direktiv/direktiv/pkg/datastore"
+	enginerefactor "github.com/direktiv/direktiv/pkg/engine"
+	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/model"
-	"github.com/direktiv/direktiv/pkg/refactor/database"
-	"github.com/direktiv/direktiv/pkg/refactor/datastore"
-	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
-	"github.com/direktiv/direktiv/pkg/refactor/filestore"
-	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/google/uuid"
 	"go.opentelemetry.io/otel/trace"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 type muxStart struct {
@@ -53,7 +53,7 @@ func newMuxStart(workflow *model.Workflow) *muxStart {
 	return ms
 }
 
-func (srv *server) validateRouter(ctx context.Context, tx *database.SQLStore, file *filestore.File) (*muxStart, error) {
+func validateRouter(ctx context.Context, tx *database.SQLStore, file *filestore.File) (*muxStart, error) {
 	data, err := tx.FileStore().ForFile(file).GetData(ctx)
 	if err != nil {
 		return nil, err
@@ -63,7 +63,7 @@ func (srv *server) validateRouter(ctx context.Context, tx *database.SQLStore, fi
 
 	err = workflow.Load(data)
 	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, err.Error())
+		return nil, err
 	}
 
 	ms := newMuxStart(workflow)
@@ -119,6 +119,8 @@ func (flow *flow) configureRouterHandler(req *pubsub.PubsubUpdate) {
 func (flow *flow) cronHandler(data []byte) {
 	ctx := context.Background()
 
+	t := time.Now().Truncate(time.Minute).UTC()
+
 	id, err := uuid.Parse(string(data))
 	if err != nil {
 		slog.Error("Failed to parse UUID from cron data.", "error", err, "data", string(data))
@@ -127,7 +129,7 @@ func (flow *flow) cronHandler(data []byte) {
 
 	// tx is to be committed in the NewInstance call.
 	tx, err := flow.beginSQLTx(ctx, &sql.TxOptions{
-		Isolation: sql.LevelSerializable,
+		// Isolation: sql.LevelSerializable,
 	})
 	if err != nil {
 		slog.Error("Failed to begin SQL transaction in cron handler.", "error", err)
@@ -162,17 +164,12 @@ func (flow *flow) cronHandler(data []byte) {
 		return
 	}
 
-	err = tx.InstanceStore().AssertNoParallelCron(ctx, ns.ID, file.Path)
-	if errors.Is(err, instancestore.ErrParallelCron) {
-		// already triggered
-		return
-	} else if err != nil {
-		slog.Error("Failed to assert no parallel cron executions.", "error", err, "workflow", file.Path)
-
-		return
-	}
-
 	span := trace.SpanFromContext(ctx)
+
+	x, _ := json.Marshal([]string{ns.Name, file.Path, t.String()}) //nolint
+	unique := string(x)
+	md5sum := md5.Sum([]byte(unique))
+	hash := base64.StdEncoding.EncodeToString(md5sum[:])
 
 	args := &newInstanceArgs{
 		tx:        tx,
@@ -180,18 +177,19 @@ func (flow *flow) cronHandler(data []byte) {
 		Namespace: ns,
 		CalledAs:  file.Path,
 		Input:     make([]byte, 0),
-		Invoker:   instancestore.InvokerCron,
+		Invoker:   "cron",
 		TelemetryInfo: &enginerefactor.InstanceTelemetryInfo{
 			TraceID:       span.SpanContext().TraceID().String(),
 			SpanID:        span.SpanContext().SpanID().String(),
 			NamespaceName: ns.Name,
 		},
+		SyncHash: &hash,
 	}
 
 	im, err := flow.engine.NewInstance(ctx, args)
 	if err != nil {
-		if strings.Contains(err.Error(), "could not serialize access") {
-			slog.Debug("Instance creation clash detected, likely due to parallel execution. Retrying may be required.", "workflow_path", file.Path)
+		if strings.Contains(err.Error(), "duplicate") {
+			slog.Debug("Instance creation clash detected, likely due to parallel execution. This is not an error.")
 			// this happens on a attempt to create an instance clashed with another server
 
 			return
@@ -206,12 +204,12 @@ func (flow *flow) cronHandler(data []byte) {
 }
 
 func (flow *flow) configureWorkflowStarts(ctx context.Context, tx *database.SQLStore, nsID uuid.UUID, nsName string, file *filestore.File) error {
-	ms, err := flow.validateRouter(ctx, tx, file)
+	ms, err := validateRouter(ctx, tx, file)
 	if err != nil {
 		return err
 	}
 
-	err = flow.events.processWorkflowEvents(ctx, nsID, nsName, file, ms)
+	err = renderStartEventListener(ctx, nsID, nsName, file, ms, tx)
 	if err != nil {
 		return err
 	}

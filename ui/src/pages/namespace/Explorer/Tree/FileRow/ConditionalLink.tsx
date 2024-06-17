@@ -8,7 +8,7 @@ import {
 import { BaseFileSchemaType } from "~/api/files/schema";
 import { DialogTrigger } from "~/design/Dialog";
 import { Link } from "react-router-dom";
-import { pages } from "~/util/router/pages";
+import { usePages } from "~/util/router/pages";
 
 type ConditionalLinkProps = PropsWithChildren & {
   file: BaseFileSchemaType;
@@ -22,6 +22,7 @@ export const ConditionalLink: FC<ConditionalLinkProps> = ({
   onPreviewClicked,
   children,
 }) => {
+  const pages = usePages();
   const linkToPreview = isPreviewable(file.type);
   if (linkToPreview)
     return (

@@ -12,7 +12,7 @@ describe('Test workflow function invoke', () => {
 
 	helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	helpers.itShouldCreateFileV2(it, expect, testNamespace,
+	helpers.itShouldCreateFile(it, expect, testNamespace,
 		'',
 		testWorkflow,
 		'workflow',
@@ -20,14 +20,14 @@ describe('Test workflow function invoke', () => {
 		btoa(`
 description: A simple 'action' state that sends a get request
 functions:
-- id: get
+- id: get-Json
   image: direktiv/request:v4
   type: knative-workflow
 states:
-- id: getter 
+- id: get
   type: action
   action:
-    function: get
+    function: get-Json
     input: 
       method: "GET"
       url: "https://jsonplaceholder.typicode.com/todos/1"
@@ -35,7 +35,7 @@ states:
 
 	it(`should invoke the ${ testWorkflow } workflow`, async () => {
 		await helpers.sleep(500)
-		const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ testNamespace }/tree/${ testWorkflow }?op=wait`)
+		const res = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ testNamespace }/instances?path=${ testWorkflow }&wait=true`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.return.status).toBe('200 OK')
 	})

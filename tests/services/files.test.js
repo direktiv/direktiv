@@ -11,7 +11,7 @@ describe('Test function files behaviour', () => {
 
 	helpers.itShouldCreateNamespace(it, expect, namespaceName)
 
-	helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateYamlFile(it, expect, namespaceName,
 		'/', 'bash.yaml', 'service', `
 direktiv_api: service/v1
 name: bash
@@ -20,7 +20,7 @@ cmd: ""
 scale: 1
 `)
 
-	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateFile(it, expect, namespaceName,
 		'',
 		`a.yaml`,
 		'workflow',
@@ -86,7 +86,7 @@ states:
 `))
 
 	it(`should invoke the '/a.yaml' workflow on a fresh namespace`, async () => {
-		const req = await request(config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/tree/a.yaml?op=wait`)
+		const req = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${namespaceName}/instances?path=a.yaml&wait=true`)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({
 			var: {
@@ -97,6 +97,8 @@ states:
 				e: null,
 			},
 		})
+		console.log(req.body.return.bash)
+
 		expect(req.body.return.bash[0]).toMatchObject({
 			result: '',
 			success: true,
@@ -116,7 +118,7 @@ states:
 		expect(req.body.return.bash[8].result).toBe('')
 	})
 
-	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateFile(it, expect, namespaceName,
 		'',
 		`e.yaml`,
 		'workflow',
@@ -129,7 +131,7 @@ states:
     result: x`))
 
 	it(`should invoke the '/a.yaml' workflow on a non-fresh namespace`, async () => {
-		const req = await request(config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/tree/a.yaml?op=wait`)
+		const req = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${namespaceName}/instances?path=a.yaml&wait=true`)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({
 			var: {
@@ -140,6 +142,7 @@ states:
 				e: 'CnN0YXRlczoKLSBpZDogYQogIHR5cGU6IG5vb3AKICB0cmFuc2Zvcm06CiAgICByZXN1bHQ6IHg=',
 			},
 		})
+		console.log(req.body.return.bash)
 		expect(req.body.return.bash[0]).toMatchObject({
 			result: 5,
 			success: true,

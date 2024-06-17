@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/direktiv/direktiv/pkg/core"
+	"github.com/direktiv/direktiv/pkg/utils"
 )
 
 // ReusableFunctionDefinition defines a reusable function and the fields it requires.
@@ -39,8 +39,8 @@ func (o *ReusableFunctionDefinition) Validate() error {
 		return errors.New("id required")
 	}
 
-	if ok := util.MatchesRegex(o.ID); !ok {
-		return fmt.Errorf("function id must match regex: %s", util.RegexPattern)
+	if ok := utils.MatchesRegex(o.ID); !ok {
+		return fmt.Errorf("function id must match regex: %s", utils.RegexPattern)
 	}
 
 	if o.Image == "" {

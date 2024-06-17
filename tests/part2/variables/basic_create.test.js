@@ -13,7 +13,7 @@ describe('Test variable create calls', () => {
 	beforeAll(helpers.deleteAllNamespaces)
 	helpers.itShouldCreateNamespace(it, expect, namespace)
 
-	helpers.itShouldCreateFileV2(it, expect, namespace, '/', 'wf1.yaml', 'workflow', 'text',
+	helpers.itShouldCreateFile(it, expect, namespace, '/', 'wf1.yaml', 'workflow', 'text',
 		btoa(helpers.dummyWorkflow('wf1.yaml')))
 
 	const testCases = [

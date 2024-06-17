@@ -37,8 +37,7 @@ describe('Test basic workflow events', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
 
 	helpers.itShouldCreateNamespace(it, expect, namespaceName)
-
-	common.helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
+	common.helpers.itShouldCreateYamlFile(it, expect, namespaceName,
 		'/', 'listener.yml', 'workflow', `
 start:
   type: event
@@ -51,17 +50,18 @@ states:
   transform:
     result: Hello world!
 `)
-
 	it(`should wait a second for the events logic to sync`, async () => {
 		await helpers.sleep(1000)
 	})
-
 	it(`should fail to invoke the '/listener.yml' workflow`, async () => {
-		const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/tree/listener.yml?op=wait`)
+		const req = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=listener.yml&wait=true`)
+
 		expect(req.statusCode).toEqual(500)
 		expect(req.body).toMatchObject({
-			code: 500,
-			message: 'cannot manually invoke event-based workflow',
+			error: {
+				code: 'cannot manually invoke event-based workflow',
+				message: 'cannot manually invoke event-based workflow',
+			},
 		})
 	})
 
@@ -78,7 +78,7 @@ describe('Test workflow events with filter/context', () => {
 
 	helpers.itShouldCreateNamespace(it, expect, namespaceName)
 
-	common.helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
+	common.helpers.itShouldCreateYamlFile(it, expect, namespaceName,
 		'/', 'startlistener.yml', 'workflow', `
 start:
   type: event
@@ -94,7 +94,7 @@ states:
     result: Hello world!
 `)
 
-	common.helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
+	common.helpers.itShouldCreateYamlFile(it, expect, namespaceName,
 		'/', 'stoplistener.yml', 'workflow', `
     start:
       type: event
@@ -236,33 +236,31 @@ describe('Test workflow events', () => {
 	helpers.itShouldCreateNamespace(it, expect, namespaceName)
 
 	// workflow with start
-	helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateYamlFile(it, expect, namespaceName,
 		'', startWorkflowName, 'workflow',
 		startWorkflow)
 
 	it(`should have one event listeners`, async () => {
 		await helpers.sleep(1000)
 
-		const getEventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/event-listeners?limit=8&offset=0`)
+		const getEventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/listeners?limit=8&offset=0`)
 			.send()
-
-		expect(getEventListenerResponse.body.results[0]).toMatchObject({
-			workflow: '/start.yaml',
-			mode: 'simple',
-			instance: '',
+		expect(getEventListenerResponse.body.data[0]).toMatchObject({
+			triggerWorkflow: '/start.yaml',
+			triggerType: 'StartSimple',
+			namespace: { namespaceName }.namespaceName,
 			createdAt: expect.stringMatching(common.regex.timestampRegex),
 			updatedAt: expect.stringMatching(common.regex.timestampRegex),
-			events: [ {
+			eventContextFilters: [ {
 				type: 'hello',
-				filters: {},
 			} ],
 		})
 
-		expect(getEventListenerResponse.body.pageInfo.total).toEqual(1)
+		expect(getEventListenerResponse.body.meta.total).toEqual(1)
 	})
 
 	// workflow with start
-	helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateYamlFile(it, expect, namespaceName,
 		'', waitWorkflowName, 'workflow',
 		waitWorkflow)
 
@@ -270,28 +268,24 @@ describe('Test workflow events', () => {
 		await helpers.sleep(1000)
 
 		// start workflow
-		const runWorkflowResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${ namespaceName }/tree/${ waitWorkflowName }?op=execute`)
+		const runWorkflowResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=${ waitWorkflowName }`)
 			.send()
 		expect(runWorkflowResponse.statusCode).toEqual(200)
 
 		await new Promise(r => setTimeout(r, 250))
 
-		const getEventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/event-listeners?limit=8&offset=0`)
+		const getEventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/listeners?limit=8&offset=0`)
 			.send()
+		expect(getEventListenerResponse.body.meta.total).toEqual(2)
 
-		expect(getEventListenerResponse.body.pageInfo.total).toEqual(2)
-
-		const result = getEventListenerResponse.body.results.find(item => item.workflow === '')
-
+		const result = getEventListenerResponse.body.data.find(item => item.hasOwnProperty('triggerInstance'))
 		expect(result).toMatchObject({
-			workflow: '',
-			mode: 'simple',
-			instance: expect.stringMatching(common.regex.uuidRegex),
+			triggerType: 'WaitSimple',
+			triggerInstance: expect.stringMatching(common.regex.uuidRegex),
 			createdAt: expect.stringMatching(common.regex.timestampRegex),
 			updatedAt: expect.stringMatching(common.regex.timestampRegex),
-			events: [ {
+			eventContextFilters: [ {
 				type: 'hellowait',
-				filters: {},
 			} ],
 		})
 	})
@@ -309,10 +303,8 @@ describe('Test workflow events', () => {
 		instancesResponse = await events.listInstancesAndFilter(namespaceName, waitWorkflowName, 'complete')
 		expect(instancesResponse).not.toBeFalsy()
 
-		const instanceOutput = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/instances/${ instancesResponse.id }/output`)
-			.send()
-
-		const output = Buffer.from(instanceOutput.body.data, 'base64')
+		const instanceOutput = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/instances/${ instancesResponse.id }/output`)
+		const output = Buffer.from(instanceOutput.body.data.output, 'base64')
 		const outputJSON = JSON.parse(output.toString())
 
 		// custom value set
@@ -324,17 +316,15 @@ describe('Test workflow events', () => {
 		const instance = await events.listInstancesAndFilter(namespaceName, startWorkflowName, 'complete')
 		expect(instance).not.toBeFalsy()
 
-		const instanceOutput = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/instances/${ instance.id }/output`)
-			.send()
-
-		const output = Buffer.from(instanceOutput.body.data, 'base64')
+		const instanceOutput = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/instances/${ instance.id }/output`)
+		const output = Buffer.from(instanceOutput.body.data.output, 'base64')
 		const outputJSON = JSON.parse(output.toString())
 
 		// custom data set
 		expect(outputJSON.hello.data.hello).toEqual('world')
 	})
 
-	helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateYamlFile(it, expect, namespaceName,
 		'', startWorkflowNameContext, 'workflow',
 		startEventWorkflowContext)
 
@@ -355,7 +345,7 @@ describe('Test workflow events', () => {
 		expect(instancesResponse).not.toBeFalsy()
 	})
 
-	helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateYamlFile(it, expect, namespaceName,
 		'', waitWorkflowNameContext, 'workflow',
 		waitWorkflowContext)
 
@@ -363,7 +353,7 @@ describe('Test workflow events', () => {
 		await helpers.sleep(1000)
 
 		// start workflow
-		const runWorkflowResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${ namespaceName }/tree/${ waitWorkflowNameContext }?op=execute`)
+		const runWorkflowResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=${ waitWorkflowNameContext }`)
 			.send()
 		expect(runWorkflowResponse.statusCode).toEqual(200)
 
@@ -382,7 +372,7 @@ describe('Test workflow events', () => {
 		expect(instancesResponse).not.toBeFalsy()
 	})
 
-	helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateYamlFile(it, expect, namespaceName,
 		'', startThenWaitWorkflowNameContext, 'workflow',
 		starthenWaitWorkflowContext)
 
@@ -406,20 +396,20 @@ describe('Test workflow events', () => {
 	})
 
 	// workflow with multiple context-filters
-	helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateYamlFile(it, expect, namespaceName,
 		'', workflowContextMultipleName, 'workflow',
 		eventContextMultipleWorkflow)
 
 	it(`should not start by event due to context filter`, async () => {
 		await helpers.sleep(2000)
-		const runWorkflowResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${ namespaceName }/tree/${ workflowContextMultipleName }?op=execute`)
+		const runWorkflowResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=${ workflowContextMultipleName }`)
 			.send()
 		expect(runWorkflowResponse.statusCode).toEqual(200)
 
 		await events.sendEventAndList(namespaceName, basevent('waitformulti', 'wait-ctx65', 'world1'))
 		let instancesResponse = await events.listInstancesAndFilter(namespaceName, workflowContextMultipleName, 'pending')
 		expect(instancesResponse).not.toBeFalsy()
-		const workflowEventResponse = await request(common.config.getDirektivHost()).post(`/api/namespaces/${ namespaceName }/broadcast`)
+		const workflowEventResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/events/broadcast`)
 			.set('Content-Type', 'application/json')
 			.send(baseventMultipleContext('waitformulti', 'wait-c3432tx7'))
 		expect(workflowEventResponse.statusCode).toEqual(200)

@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/direktiv/direktiv/pkg/utils"
 )
 
 const (
@@ -24,7 +24,7 @@ func RunApplication() {
 
 	openTelemetryBackend := os.Getenv(direktivOpentelemetry)
 
-	telend, err := util.InitTelemetry(openTelemetryBackend, "direktiv/sidecar", "direktiv")
+	telend, err := utils.InitTelemetry(openTelemetryBackend, "direktiv/sidecar", "direktiv")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to initialize telemetry: %v\n", err)
 		os.Exit(1)

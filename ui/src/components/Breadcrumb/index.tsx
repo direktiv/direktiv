@@ -11,10 +11,11 @@ import NamespaceSelector from "./NamespaceSelector";
 import PermissionsBreadcrumb from "./Permissions";
 import ServicesBreadcrumb from "./ServicesBreadcrumb";
 import SettingsBreadcrumb from "./SettingsBreadcrumb";
-import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
+import { usePages } from "~/util/router/pages";
 
 const Breadcrumb = () => {
+  const pages = usePages();
   const namespace = useNamespace();
   const { isExplorerPage } = pages.explorer.useParams();
   const { isInstancePage } = pages.instances.useParams();

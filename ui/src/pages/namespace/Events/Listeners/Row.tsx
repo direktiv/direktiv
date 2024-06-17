@@ -6,10 +6,11 @@ import {
   TooltipTrigger,
 } from "~/design/Tooltip";
 
+import ContextFilters from "./ContextFilters";
 import CopyButton from "~/design/CopyButton";
 import { EventListenerSchemaType } from "~/api/eventListeners/schema";
 import { Link } from "react-router-dom";
-import { pages } from "~/util/router/pages";
+import { usePages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
 import useUpdatedAt from "~/hooks/useUpdatedAt";
 
@@ -20,19 +21,23 @@ const Row = ({
   listener: EventListenerSchemaType;
   namespace: string;
 }) => {
+  const pages = usePages();
   const { t } = useTranslation();
   const createdAt = useUpdatedAt(listener.createdAt);
 
-  const { workflow, instance } = listener;
+  const { triggerWorkflow: workflow, triggerInstance: instance } = listener;
   const listenerType = instance ? "instance" : "workflow";
-  const target = listener.workflow || listener.instance;
+  const target = workflow || instance;
+  const contextFilters = listener.eventContextFilters.filter(
+    (item) => !!Object.keys(item.context).length
+  );
 
   let linkTarget;
 
   if (workflow) {
     linkTarget = pages.explorer.createHref({
       namespace,
-      path: listener.workflow,
+      path: workflow,
       subpage: "workflow",
     });
   }
@@ -44,7 +49,9 @@ const Row = ({
     });
   }
 
-  const eventTypes = listener.events.map((event) => event.type).join(", ");
+  const eventTypes = listener.listeningForEventTypes
+    .map((eventType) => eventType)
+    .join(", ");
 
   return (
     <TooltipProvider>
@@ -55,7 +62,7 @@ const Row = ({
         <TableCell>
           {linkTarget ? <Link to={linkTarget}>{target}</Link> : <>{target}</>}
         </TableCell>
-        <TableCell>{listener.mode}</TableCell>
+        <TableCell>{listener.triggerType}</TableCell>
         <TableCell>
           <Tooltip>
             <TooltipTrigger data-testid="receivedAt-tooltip-trigger">
@@ -86,6 +93,9 @@ const Row = ({
               />
             </TooltipContent>
           </Tooltip>
+        </TableCell>
+        <TableCell>
+          <ContextFilters filters={contextFilters} />
         </TableCell>
       </TableRow>
     </TooltipProvider>

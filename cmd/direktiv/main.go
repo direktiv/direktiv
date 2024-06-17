@@ -7,7 +7,11 @@ import (
 
 	"github.com/direktiv/direktiv/cmd/dinit"
 	"github.com/direktiv/direktiv/cmd/sidecar"
-	"github.com/direktiv/direktiv/pkg/refactor/middlewares"
+	_ "github.com/direktiv/direktiv/pkg/gateway/plugins/auth"
+	_ "github.com/direktiv/direktiv/pkg/gateway/plugins/inbound"
+	_ "github.com/direktiv/direktiv/pkg/gateway/plugins/outbound"
+	_ "github.com/direktiv/direktiv/pkg/gateway/plugins/target"
+	"github.com/direktiv/direktiv/pkg/middlewares"
 )
 
 const (

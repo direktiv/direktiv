@@ -1,3 +1,4 @@
+import { createFile, deleteFile } from "e2e/utils/files";
 import {
   createHttpServiceFile,
   findServiceWithApiRequest,
@@ -6,7 +7,6 @@ import {
 import { createNamespace, deleteNamespace } from "../utils/namespace";
 import { expect, test } from "@playwright/test";
 
-import { createFile } from "e2e/utils/files";
 import { encode } from "js-base64";
 import { headers } from "e2e/utils/testutils";
 import { patchFile } from "~/api/files/mutate/patchFile";
@@ -359,4 +359,49 @@ test("Service list will update the services when refetch button is clicked", asy
     page.getByTestId("service-row").getByRole("cell", { name: "small" }),
     "it has updated the rendered size to the new value"
   ).toBeVisible();
+});
+
+test.describe("system namespace", () => {
+  const systemNamespaceName = "system";
+  const systemServiceName = "http-service.yaml";
+  let cleanUpSystemNamespace = true;
+
+  test.beforeAll(async () => {
+    try {
+      await createNamespace(systemNamespaceName);
+    } catch (e) {
+      cleanUpSystemNamespace = false;
+    }
+
+    await createFile({
+      name: systemServiceName,
+      namespace: systemNamespaceName,
+      type: "service",
+      yaml: createHttpServiceFile(),
+    });
+  });
+
+  test.afterAll(async () => {
+    await deleteFile({
+      namespace: systemNamespaceName,
+      path: systemServiceName,
+    });
+
+    if (cleanUpSystemNamespace) {
+      await deleteNamespace(systemNamespaceName);
+    }
+  });
+
+  test("services will also be listed in the system namespace", async ({
+    page,
+  }) => {
+    await page.goto(`/n/${systemNamespaceName}/services`, {
+      waitUntil: "networkidle",
+    });
+
+    await expect(
+      page.getByTestId("service-row").getByText(systemServiceName),
+      "it renders the service name"
+    ).toBeVisible();
+  });
 });

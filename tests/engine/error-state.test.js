@@ -11,7 +11,7 @@ describe('Test error state behaviour', () => {
 
 	helpers.itShouldCreateNamespace(it, expect, namespaceName)
 
-	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateFile(it, expect, namespaceName,
 		'',
 		'error.yaml',
 		'workflow',
@@ -27,7 +27,7 @@ states:
 `))
 
 	it(`should invoke the '/error.yaml' workflow`, async () => {
-		const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/tree/error.yaml?op=wait`)
+		const req = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=error.yaml&wait=true`)
 
 		expect(req.statusCode).toEqual(500)
 		expect(req.headers['direktiv-instance-error-code']).toEqual('testcode')
@@ -35,7 +35,7 @@ states:
 		expect(req.body).toMatchObject({})
 	})
 
-	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateFile(it, expect, namespaceName,
 		'',
 		'caller.yaml',
 		'workflow',
@@ -53,7 +53,7 @@ states:
 `))
 
 	it(`should invoke the '/caller.yaml' workflow`, async () => {
-		const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/tree/caller.yaml?op=wait`)
+		const req = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=caller.yaml&wait=true`)
 
 		expect(req.statusCode).toEqual(500)
 		expect(req.headers['direktiv-instance-error-code']).toEqual('testcode')
@@ -61,7 +61,7 @@ states:
 		expect(req.body).toMatchObject({})
 	})
 
-	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateFile(it, expect, namespaceName,
 		'',
 		'error-and-continue.yaml',
 		'workflow',
@@ -78,7 +78,7 @@ states:
 `))
 
 	it(`should invoke the '/error-and-continue.yaml' workflow`, async () => {
-		const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/tree/error-and-continue.yaml?op=wait`)
+		const req = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=error-and-continue.yaml&wait=true`)
 
 		expect(req.statusCode).toEqual(500)
 		expect(req.headers['direktiv-instance-error-code']).toEqual('testcode')
@@ -86,7 +86,7 @@ states:
 		expect(req.body).toMatchObject({})
 	})
 
-	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateFile(it, expect, namespaceName,
 		'',
 		'double-error.yaml',
 		'workflow',

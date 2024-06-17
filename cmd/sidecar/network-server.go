@@ -6,10 +6,9 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
-	"os"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/gorilla/mux"
 )
 
@@ -62,16 +61,13 @@ func (srv *NetworkServer) Start() {
 
 	srv.router = mux.NewRouter()
 
-	srv.router.Use(util.TelemetryMiddleware)
+	srv.router.Use(utils.TelemetryMiddleware)
 
 	srv.router.HandleFunc("/", srv.functions)
 
 	srv.router.HandleFunc("/cancel", srv.cancel)
 
 	port := "8890"
-	if os.Getenv("DIREKITV_ENABLE_DOCKER") == "true" {
-		port = "80"
-	}
 	srv.server.Addr = "0.0.0.0:" + port
 	srv.server.Handler = srv.router
 

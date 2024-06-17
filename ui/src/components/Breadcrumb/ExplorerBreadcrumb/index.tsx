@@ -1,8 +1,9 @@
 import BreadcrumbSegment from "./BreadcrumbSegment";
 import { analyzePath } from "~/util/router/utils";
-import { pages } from "~/util/router/pages";
+import { usePages } from "~/util/router/pages";
 
 const ExplorerBreadcrumb = () => {
+  const pages = usePages();
   const { isExplorerPage, path: pathParams } = pages.explorer.useParams();
   const path = analyzePath(pathParams);
 

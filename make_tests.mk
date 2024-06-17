@@ -13,10 +13,9 @@ tests-k3s: k3s-wait
 tests-k3s: ## Runs end-to-end tests. DIREKTIV_HOST=128.0.0.1 make test-k3s [JEST_PREFIX=/tests/namespaces]	
 	docker run -it --rm \
 	-v `pwd`/tests:/tests \
-	-v `pwd`/direktivctl:/bin/direktivctl \
 	-e 'DIREKTIV_HOST=${DIREKTIV_HOST}' \
 	-e 'NODE_TLS_REJECT_UNAUTHORIZED=0' \
-	node:lts-alpine3.18 npm --prefix "/tests" run all -- ${JEST_PREFIX}
+	node:lts-alpine3.18 npm --prefix "/tests" run jest -- ${JEST_PREFIX}/ --runInBand
 
 
 
@@ -38,7 +37,7 @@ tests-godoc: ## Hosts a godoc server for the project on http port 6060.
 	godoc -http=:6060
 
 .PHONY: tests-lint 
-tests-lint: VERSION="v1.57"
+tests-lint: VERSION="v1.59"
 tests-lint: ## Runs very strict linting on the project.
 	docker run \
 	--rm \

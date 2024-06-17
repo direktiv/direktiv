@@ -7,6 +7,7 @@ import {
 } from "../utils/namespace";
 import { expect, test } from "@playwright/test";
 
+import { createService } from "./service/utils";
 import { createWorkflow } from "../utils/workflow";
 
 let namespace = "";
@@ -299,7 +300,7 @@ test("when creating a workflow, the name (before extension) may be the same as a
   await expect(nodeCreated).toBeTruthy();
 });
 
-test("it is not possible to create a workflow when the name already exixts", async ({
+test("it is not possible to create a workflow when the name already exists", async ({
   page,
 }) => {
   const alreadyExists = "workflow.yaml";
@@ -338,47 +339,6 @@ test("it is not possible to create a workflow when the name already exists and t
   await expect(page.getByTestId("form-errors")).toContainText(
     "The name already exists"
   );
-});
-
-test(`it is possible to delete a worfklow`, async ({ page }) => {
-  const name = "workflow.yaml";
-  await createWorkflow(namespace, name);
-
-  await page.goto(`/n/${namespace}/explorer/tree/`);
-  await expect(
-    page.getByTestId("breadcrumb-namespace"),
-    "it renders the breadcrumb for a namespace"
-  ).toBeVisible();
-
-  await expect(
-    page.getByTestId(`explorer-item-${name}`),
-    "it renders the node in the explorer"
-  ).toBeVisible();
-
-  await page
-    .getByTestId(`explorer-item-${name}`)
-    .getByTestId("dropdown-trg-node-actions")
-    .click();
-  await page.getByTestId("node-actions-delete").click();
-
-  await expect(
-    page.getByText(
-      `Are you sure you want to delete ${name}? This cannot be undone.`,
-      {
-        exact: true,
-      }
-    )
-  ).toBeVisible();
-  await page.getByTestId("node-delete-confirm").click();
-
-  await expect(
-    page.getByTestId(`explorer-item-${name}`),
-    "it does not render the old workflow name"
-  ).toHaveCount(0);
-
-  const nodeExists = await checkIfFileExists({ namespace, path: `/${name}` });
-
-  await expect(nodeExists).toBeFalsy();
 });
 
 test(`it is possible to rename a workflow`, async ({ page }) => {
@@ -657,6 +617,82 @@ test(`it is possible to rename a directory`, async ({ page }) => {
   await expect(isRenamed).toBeTruthy();
 });
 
+test(`it is possible to delete a file (and it will be removed from cache)`, async ({
+  page,
+}) => {
+  /* prepare data */
+  const service = {
+    name: "mynewservice.yaml",
+    image: "bash",
+    scale: 2,
+    size: "medium",
+    cmd: "hello",
+  };
+
+  await createService(namespace, service);
+
+  /* visit explorer */
+  await page.goto(`/n/${namespace}/explorer/tree/`);
+  await expect(
+    page.getByTestId("breadcrumb-namespace"),
+    "it renders the breadcrumb for a namespace"
+  ).toBeVisible();
+
+  await expect(
+    page.getByTestId(`explorer-item-${service.name}`),
+    "it renders the node in the explorer"
+  ).toBeVisible();
+
+  /* open file to load it into useQuery cache */
+  await page.getByTestId(`explorer-item-${service.name}`).click();
+
+  await expect(page.getByLabel("Image")).toHaveValue(service.image);
+  await expect(page.getByLabel("Cmd")).toHaveValue(service.cmd);
+
+  /* delete file */
+  await page.getByTestId("breadcrumb-namespace").click();
+  await page
+    .getByTestId(`explorer-item-${service.name}`)
+    .getByTestId("dropdown-trg-node-actions")
+    .click();
+
+  await page.getByTestId("node-actions-delete").click();
+
+  await expect(
+    page.getByText(
+      `Are you sure you want to delete ${service.name}? This cannot be undone.`,
+      {
+        exact: true,
+      }
+    )
+  ).toBeVisible();
+
+  await page.getByTestId("node-delete-confirm").click();
+
+  /* assert file is deleted */
+  await expect(
+    page.getByTestId(`explorer-item-${service.name}`),
+    "it does not render the old file"
+  ).toHaveCount(0);
+
+  const nodeExists = await checkIfFileExists({
+    namespace,
+    path: `/${service.name}`,
+  });
+
+  await expect(nodeExists).toBeFalsy();
+
+  /* create new file with the same name */
+  await page.getByTestId("dropdown-trg-new").first().click();
+  await page.getByRole("button", { name: "New Service" }).click();
+  await page.getByPlaceholder("service-name.yaml").fill(service.name);
+  await page.getByTestId("new-workflow-submit").click();
+
+  /* assert form is empty (cache was cleared) */
+  await expect(page.getByLabel("Image")).toHaveValue("");
+  await expect(page.getByLabel("Cmd")).toHaveValue("");
+});
+
 test("it is not possible to navigate to a workflow that does not exist", async ({
   page,
 }) => {
@@ -705,4 +741,118 @@ test("it is not possible to navigate to a namespace that does not exist", async 
     page.getByRole("link", { name: "Explorer" }),
     "it does not show the main navigation"
   ).not.toBeVisible();
+});
+
+test("it is possible to filter the file list by name", async ({
+  page,
+}) => {
+  // mock namespace with a list of files
+  await page.route(`/api/v2/namespaces/${namespace}/files/`, async (route) => {
+    if (route.request().method() === "GET") {
+      const json = {
+        data: {
+          path: "/",
+          type: "directory",
+          createdAt: "2024-06-03T09:13:12.404617Z",
+          updatedAt: "2024-06-03T09:13:12.404617Z",
+          children: [
+            {
+              path: "/important-directory",
+              type: "directory",
+              createdAt: "2024-06-04T10:29:31.446876Z",
+              updatedAt: "2024-06-04T10:29:31.446876Z",
+            },
+            {
+              path: "/other-directory",
+              type: "directory",
+              createdAt: "2024-06-04T10:29:12.849234Z",
+              updatedAt: "2024-06-12T11:46:57.524557Z",
+            },
+            {
+              path: "/important-workflow.yaml",
+              type: "workflow",
+              size: 377,
+              mimeType: "application/yaml",
+              createdAt: "2024-06-03T09:14:20.838079Z",
+              updatedAt: "2024-06-03T09:14:20.838079Z",
+            },
+            {
+              path: "/other-workflow.yaml",
+              type: "workflow",
+              size: 377,
+              mimeType: "application/yaml",
+              createdAt: "2024-06-03T09:45:10.452797Z",
+              updatedAt: "2024-06-03T11:27:05.535781Z",
+            },
+            {
+              path: "/test.yaml",
+              type: "workflow",
+              size: 378,
+              mimeType: "application/yaml",
+              createdAt: "2024-06-03T09:13:29.215518Z",
+              updatedAt: "2024-06-12T09:23:23.208635Z",
+            },
+          ],
+        },
+      };
+      await route.fulfill({ json });
+    } else route.continue();
+  });
+
+  /* 
+     Note for future uses: 
+     The route for files needs a '/' at the end
+     because the '/' is actually the beginning of the path
+     see also: src/api/files/query/file.ts
+  */
+
+  const filter = page.getByTestId("queryField");
+
+  // visit page and make sure explorer is loaded
+  await page.goto(`/n/${namespace}/explorer/tree`);
+
+  await expect(
+    page.getByTestId("breadcrumb-namespace"),
+    "a testing namespace is loaded in the explorer"
+  ).toHaveText(namespace);
+
+  expect(
+    page.locator("tr"),
+    "it renders all the elements in the list"
+  ).toHaveCount(5);
+
+  filter.click();
+  await filter.fill("important");
+
+  expect(
+    page.locator("tr"),
+    "it renders two elements for this query"
+  ).toHaveCount(2);
+
+  filter.click();
+  page.keyboard.press("Delete");
+  await filter.fill("yaml");
+
+  expect(
+    page.locator("tr"),
+    "it renders three elements for this query"
+  ).toHaveCount(3);
+
+  filter.click();
+  page.keyboard.press("Delete");
+  await filter.fill("test");
+
+  expect(
+    page.locator("tr"),
+    "it renders one element for this query"
+  ).toHaveCount(1);
+
+  await page.reload({
+    waitUntil: "networkidle",
+  });
+
+  expect(
+    page.locator("tr"),
+    "it renders all the elements in the list"
+  ).toHaveCount(5);
 });

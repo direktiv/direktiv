@@ -8,13 +8,14 @@ import { Link } from "react-router-dom";
 import { NoPermissions } from "~/design/Table";
 import PublicPathInput from "../../Gateway/Routes/components/PublicPath";
 import { analyzePath } from "~/util/router/utils";
-import { pages } from "~/util/router/pages";
 import { useFile } from "~/api/files/query/file";
 import { useNamespace } from "~/util/store/namespace";
+import { usePages } from "~/util/router/pages";
 import { useRoute } from "~/api/gateway/query/getRoutes";
 import { useTranslation } from "react-i18next";
 
 const EndpointPage: FC = () => {
+  const pages = usePages();
   const { path } = pages.explorer.useParams();
   const namespace = useNamespace();
   const { segments } = analyzePath(path);

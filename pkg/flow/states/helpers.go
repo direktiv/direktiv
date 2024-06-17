@@ -35,9 +35,16 @@ func jq(input interface{}, command interface{}) ([]interface{}, error) {
 }
 
 func jqOne(input interface{}, command interface{}) (interface{}, error) {
-	output, err := jq(input, command)
-	if err != nil {
-		return nil, err
+	var output []interface{}
+
+	if command == nil {
+		output = append(output, nil)
+	} else {
+		var err error
+		output, err = jq(input, command)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if len(output) == 0 {

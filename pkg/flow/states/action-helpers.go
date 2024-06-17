@@ -11,7 +11,7 @@ import (
 
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/model"
-	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/senseyeio/duration"
 )
 
@@ -182,7 +182,7 @@ func generateActionInput(ctx context.Context, args *generateActionInputArgs) ([]
 			return nil, nil, derrors.NewCatchableError(ErrCodeInvalidVariableKey, "invalid 'key' for function file %d: got zero-length string", idx)
 		}
 
-		if file.Scope != util.VarScopeFileSystem && !util.VarNameRegex.MatchString(file.Key) {
+		if file.Scope != utils.VarScopeFileSystem && !utils.VarNameRegex.MatchString(file.Key) {
 			return nil, nil, derrors.NewCatchableError(ErrCodeInvalidVariableKey, "invalid 'key' for function file %d: must start with a letter and only contain letters, numbers and '_'", idx)
 		}
 
@@ -194,11 +194,11 @@ func generateActionInput(ctx context.Context, args *generateActionInputArgs) ([]
 
 		switch file.Scope {
 		case "":
-		case util.VarScopeNamespace:
-		case util.VarScopeWorkflow:
-		case util.VarScopeInstance:
-		case util.VarScopeThread:
-		case util.VarScopeFileSystem:
+		case utils.VarScopeNamespace:
+		case utils.VarScopeWorkflow:
+		case utils.VarScopeInstance:
+		case utils.VarScopeThread:
+		case utils.VarScopeFileSystem:
 		default:
 			return nil, nil, derrors.NewCatchableError(ErrCodeInvalidVariableScope, "invalid 'scope' for function file %d: %s", idx, file.Scope)
 		}

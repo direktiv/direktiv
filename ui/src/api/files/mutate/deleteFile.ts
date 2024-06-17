@@ -14,9 +14,19 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "~/design/Toast";
 import { useTranslation } from "react-i18next";
 
-const deleteFile = apiFactory({
-  url: ({ namespace, path }: { namespace: string; path: string }) =>
-    `/api/v2/namespaces/${namespace}/files${forceLeadingSlash(path)}`,
+export const deleteFile = apiFactory({
+  url: ({
+    baseUrl,
+    namespace,
+    path,
+  }: {
+    baseUrl?: string;
+    namespace: string;
+    path: string;
+  }) =>
+    `${baseUrl ?? ""}/api/v2/namespaces/${namespace}/files${forceLeadingSlash(
+      path
+    )}`,
   method: "DELETE",
   schema: FileDeletedSchema,
 });
@@ -43,12 +53,20 @@ export const useDeleteFile = ({
           namespace,
         },
       }),
-    onSuccess(_, variables) {
-      queryClient.invalidateQueries({
-        queryKey: fileKeys.file(namespace, {
-          apiKey: apiKey ?? undefined,
-          path: getParentFromPath(variables.file.path),
-        }),
+    async onSuccess(_, variables) {
+      const selfKey = fileKeys.file(namespace, {
+        apiKey: apiKey ?? undefined,
+        path: variables.file.path,
+      });
+      const parentKey = fileKeys.file(namespace, {
+        apiKey: apiKey ?? undefined,
+        path: getParentFromPath(variables.file.path),
+      });
+      await queryClient.removeQueries({
+        queryKey: selfKey,
+      });
+      await queryClient.invalidateQueries({
+        queryKey: parentKey,
       });
       toast({
         title: t("api.tree.mutate.file.delete.success.title"),

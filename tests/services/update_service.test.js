@@ -11,7 +11,7 @@ describe('Test services operations with envs', () => {
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateYamlFileV2(it, expect, testNamespace,
+	common.helpers.itShouldCreateYamlFile(it, expect, testNamespace,
 		'/', 's1.yaml', 'service', `
 direktiv_api: service/v1
 image: direktiv/request
@@ -38,7 +38,7 @@ scale: 1
 		})
 	})
 
-	common.helpers.itShouldUpdateYamlFileV2(it, expect, testNamespace,
+	common.helpers.itShouldUpdateYamlFile(it, expect, testNamespace,
 		'/s1.yaml', `
     direktiv_api: service/v1
     image: direktiv/request
@@ -74,7 +74,7 @@ scale: 1
 		})
 	})
 
-	common.helpers.itShouldUpdateYamlFileV2(it, expect, testNamespace,
+	common.helpers.itShouldUpdateYamlFile(it, expect, testNamespace,
 		'/s1.yaml', `
     direktiv_api: service/v1
     image: direktiv/request:v4
@@ -122,7 +122,7 @@ describe('Test workflow operations with envs', () => {
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateYamlFileV2(it, expect, testNamespace,
+	common.helpers.itShouldCreateYamlFile(it, expect, testNamespace,
 		'/', 'w2.yaml', 'workflow', `
 description: something
 functions:
@@ -154,7 +154,7 @@ states:
 		})
 	})
 
-	common.helpers.itShouldUpdateYamlFileV2(it, expect, testNamespace,
+	common.helpers.itShouldUpdateYamlFile(it, expect, testNamespace,
 		'/w2.yaml', `
 description: something
 functions:
@@ -194,7 +194,7 @@ states:
 		})
 	})
 
-	common.helpers.itShouldUpdateYamlFileV2(it, expect, testNamespace,
+	common.helpers.itShouldUpdateYamlFile(it, expect, testNamespace,
 		'/w2.yaml', `
 description: something
 functions:

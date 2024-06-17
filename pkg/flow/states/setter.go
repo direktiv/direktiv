@@ -6,10 +6,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"reflect"
 
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/model"
-	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/direktiv/direktiv/pkg/utils"
 )
 
 //nolint:gochecknoinits
@@ -64,8 +65,8 @@ func (logic *setterLogic) Run(ctx context.Context, wakedata []byte) (*Transition
 			return nil, derrors.NewCatchableError(ErrCodeJQNotString, "failed to evaluate key as a string for variable at index [%v]", idx)
 		}
 
-		if ok := util.MatchesVarRegex(key); !ok {
-			return nil, derrors.NewCatchableError(ErrCodeInvalidVariableKey, "variable key must match regex: %s (got: %s)", util.RegexPattern, key)
+		if ok := utils.MatchesVarRegex(key); !ok {
+			return nil, derrors.NewCatchableError(ErrCodeInvalidVariableKey, "variable key must match regex: %s (got: %s)", utils.RegexPattern, key)
 		}
 
 		if v.MimeType != nil {
@@ -81,10 +82,15 @@ func (logic *setterLogic) Run(ctx context.Context, wakedata []byte) (*Transition
 			}
 		}
 
+		fmt.Println("A", v.Value, reflect.TypeOf(v.Value), v.Value == nil)
+
 		x, err = jqOne(logic.GetInstanceData(), v.Value) //nolint:contextcheck
 		if err != nil {
+			fmt.Println("B", err)
 			return nil, err
 		}
+
+		fmt.Println("C")
 
 		var data []byte
 

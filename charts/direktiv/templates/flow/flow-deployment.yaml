@@ -69,33 +69,20 @@ spec:
           {{ toYaml .Values.flow.extraVolumeMounts | nindent 10 }}
           {{- end }}
           ports:
-            - name: flow-v1
+            - name: flow-api
               containerPort: 6665
               protocol: TCP
             - name: flow
               containerPort: 6666
               protocol: TCP
-            - name: flow-v2
-              containerPort: 6667
-              protocol: TCP
             - name: internal
               containerPort: 7777
               protocol: TCP
-# Todo: Yassir, delete this entirely in cycle6.
-#            {{/*- if .Values.eventing.enabled */}}
-#            - name: grpcevents
-#              protocol: TCP
-#              containerPort: 3333
-#            {{/*- end */}}
           env:
           - name: DIREKTIV_DEBUG
             value: {{ .Values.flow.debug | quote }}
-          - name: DIREKTIV_LOG_FORMAT
-            value: {{ .Values.flow.logging | quote }}
-          - name: DIREKTIV_API_V1_PORT
+          - name: DIREKTIV_API_PORT
             value: "6665"
-          - name: DIREKTIV_API_V2_PORT
-            value: "6667"
           - name: DIREKTIV_GRPC_PORT
             value: "6666"
           {{- if ne .Values.apikey "none" }}
@@ -111,6 +98,10 @@ spec:
                secretKeyRef:
                  name: {{ .secret | quote }}
                  key: {{ .key | quote }}
+          {{- end }}
+          {{- range .Values.flow.additionalEnvs }}
+          - name: {{ .name | quote }}
+            value: {{ .value | quote }}
           {{- end }}
           - name: DIREKTIV_SECRET_KEY
             valueFrom:
@@ -132,9 +123,6 @@ spec:
           {{- end }}
           - name: DIREKTIV_OPEN_TELEMETRY_BACKEND
             value: {{ include "direktiv.opentelemetry-backend" . }}
-# Todo: Yassir, delete this entirely in cycle6.
-#          - name: DIREKTIV_ENABLE_EVENTING
-#            value: {{/* .Values.eventing.enabled | quote */}}
           - name: DIREKTIV_KNATIVE_SERVICE_ACCOUNT
             value: "{{ include "direktiv.serviceAccountName" . }}-functions-pod"
           - name: DIREKTIV_KNATIVE_NAMESPACE

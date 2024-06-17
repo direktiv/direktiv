@@ -33,7 +33,7 @@ describe('Test generic container', () => {
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -42,7 +42,7 @@ describe('Test generic container', () => {
 	)
 
 	retry10(`should invoke workflow`, async () => {
-		const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ testNamespace }/tree/wf1.yaml?op=wait`)
+		const res = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ testNamespace }/instances?path=wf1.yaml&wait=true`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.return[0].Output).toEqual('value')
 	})

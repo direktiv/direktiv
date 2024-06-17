@@ -3,16 +3,29 @@ WORKDIR /app
 
 ENV PATH /app/node_modules/.bin:$PATH
 
-COPY yarn.lock yarn.lock
-COPY package.json package.json
+COPY yarn.lock .
+COPY package.json .
 RUN yarn install
 
-COPY . .
+COPY assets assets
+COPY conf conf
+COPY public public
+COPY src src
+
+COPY test test
+COPY .env.example .
+COPY .eslintrc.js .
+COPY .nvmrc .
+COPY index.html .
+COPY postcss.config.cjs .
+COPY tailwind.config.cjs .
+COPY tsconfig.json .
+COPY vite.config.ts .
 
 RUN yarn build
 
 # production environment
-FROM --platform=$TARGETPLATFORM nginx:bookworm
+FROM nginx:bookworm
 
 COPY --from=build /app/dist /usr/share/nginx/html
 COPY conf/nginx.conf /etc/nginx/conf.d/default.conf

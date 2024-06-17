@@ -62,7 +62,7 @@ export const createEvents = async (namespace: string) => {
         },
         headers: {
           ...headers,
-          "content-type": "application/cloudevents+json",
+          "content-type": "application/json",
         },
         // request returns null, thus return the generated data instead for use in the test
       }).then(() => event);

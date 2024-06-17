@@ -4,6 +4,7 @@ import {
   parentWorkflow as parentWorkflowContent,
   simpleWorkflow as simpleWorkflowContent,
   workflowThatFails as workflowThatFailsContent,
+  workflowWithDelay as workflowWithDelayContent,
 } from "../utils/workflows";
 
 import { createFile } from "e2e/utils/files";
@@ -17,6 +18,7 @@ type Instance = Awaited<ReturnType<typeof createInstance>>;
 
 let namespace = "";
 const simpleWorkflowName = faker.system.commonFileName("yaml");
+const longRunningWorkflowName = faker.system.commonFileName("yaml");
 const failingWorkflowName = faker.system.commonFileName("yaml");
 
 test.beforeEach(async () => {
@@ -34,6 +36,13 @@ test.beforeEach(async () => {
     namespace,
     type: "workflow",
     yaml: workflowThatFailsContent,
+  });
+
+  await createFile({
+    name: longRunningWorkflowName,
+    namespace,
+    type: "workflow",
+    yaml: workflowWithDelayContent,
   });
 });
 
@@ -213,6 +222,29 @@ test("it renders the instance item correctly for failed and success status", asy
     page.getByTestId("instance-list-pagination"),
     "no pagination is visible when there is only one page"
   ).not.toBeVisible();
+});
+
+test("it will treat the status and finish date of pending instances accordingly", async ({
+  page,
+}) => {
+  await createInstance({ namespace, path: longRunningWorkflowName });
+
+  await page.goto(`/n/${namespace}/instances/`);
+
+  await expect(
+    page.getByTestId("instance-column-state"),
+    "the status column should show the pending status"
+  ).toContainText("pending");
+
+  await expect(
+    page.getByTestId("instance-column-ended-time"),
+    `the "endedAt" column should display "still running"`
+  ).toContainText("still running");
+
+  await expect(
+    page.getByTestId("instance-column-state"),
+    "the status column should update to complete when the instance is finished"
+  ).toContainText("complete");
 });
 
 test("it provides a proper pagination", async ({ page }) => {

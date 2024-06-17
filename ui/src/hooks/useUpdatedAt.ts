@@ -8,7 +8,11 @@ const minutesAgo = (date: moment.MomentInput) => {
   return moment.duration(now.diff(prev)).asMinutes();
 };
 
-const useUpdatedAt = (date: moment.MomentInput): string => {
+const useUpdatedAt = (
+  date: moment.MomentInput,
+  fallbackForInvalidDates = "-"
+): string => {
+  const isValidDate = moment(date).isValid();
   const [updatedString, setUpdatedString] = useState(
     moment(date).fromNow(true)
   );
@@ -28,7 +32,7 @@ const useUpdatedAt = (date: moment.MomentInput): string => {
     };
   }, [date, minAgo]);
 
-  return updatedString;
+  return isValidDate ? updatedString : fallbackForInvalidDates;
 };
 
 export default useUpdatedAt;

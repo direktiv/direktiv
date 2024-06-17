@@ -50,7 +50,7 @@ describe('Test target workflow var wrong config', () => {
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -64,23 +64,17 @@ describe('Test target workflow var wrong config', () => {
 		)
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body.data.length).toEqual(1)
-		expect(listRes.body.data).toEqual(
-			expect.arrayContaining(
-				[
-					{
-						file_path: '/ep3.yaml',
-						path: '/ep3',
-						methods: [ 'GET' ],
-						allow_anonymous: true,
-						timeout: 0,
-						server_path: '/ns/system/ep3',
-						errors: [ 'variable required' ],
-						warnings: [],
-						plugins: { target: { type: 'target-namespace-var' } },
-					},
-				],
-			),
-		)
+		expect(listRes.body.data[0]).toEqual({
+			file_path: '/ep3.yaml',
+			path: '/ep3',
+			methods: [ 'GET' ],
+			allow_anonymous: true,
+			timeout: 0,
+			server_path: '/ns/system/ep3',
+			errors: [ "plugin 'target-namespace-var' err: variable required" ],
+			warnings: [],
+			plugins: { target: { type: 'target-namespace-var' } },
+		})
 	})
 })
 
@@ -110,7 +104,7 @@ describe('Test target namespace variable plugin', () => {
 		expect(workflowVarResponse.statusCode).toEqual(200)
 	})
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -118,7 +112,7 @@ describe('Test target namespace variable plugin', () => {
 		endpointNSVar,
 	)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -126,7 +120,7 @@ describe('Test target namespace variable plugin', () => {
 		endpointNSVarAllowed,
 	)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		limitedNamespace,
@@ -134,7 +128,7 @@ describe('Test target namespace variable plugin', () => {
 		endpointNSVar,
 	)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		limitedNamespace,
@@ -172,6 +166,6 @@ describe('Test target namespace variable plugin', () => {
 		const req = await request(common.config.getDirektivHost()).get(
 			`/ns/` + limitedNamespace + `/endpoint1`,
 		)
-		expect(req.statusCode).toEqual(500)
+		expect(req.statusCode).toEqual(403)
 	})
 })

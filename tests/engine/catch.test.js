@@ -11,7 +11,7 @@ describe('Test catch state behaviour', () => {
 
 	helpers.itShouldCreateNamespace(it, expect, namespaceName)
 
-	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateFile(it, expect, namespaceName,
 		'',
 		'error.yaml',
 		'workflow',
@@ -24,7 +24,7 @@ describe('Test catch state behaviour', () => {
   transform: 
     result: x
 `))
-	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateFile(it, expect, namespaceName,
 		'',
 		'catch.yaml',
 		'workflow',
@@ -44,7 +44,7 @@ states:
 `))
 
 	it(`should invoke the '/catch.yaml' workflow`, async () => {
-		const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/tree/catch.yaml?op=wait`)
+		const req = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=catch.yaml&wait=true`)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({
 			error: {

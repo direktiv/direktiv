@@ -11,9 +11,9 @@ describe('Test subflow behaviour', () => {
 
 	helpers.itShouldCreateNamespace(it, expect, namespaceName)
 
-	helpers.itShouldCreateDirV2(it, expect, namespaceName, '/', 'a')
+	helpers.itShouldCreateDir(it, expect, namespaceName, '/', 'a')
 
-	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateFile(it, expect, namespaceName,
 		'/a',
 		'child.yaml',
 		'workflow',
@@ -25,7 +25,7 @@ states:
   transform:
     result: 'jq(.input + 1)'`))
 
-	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateFile(it, expect, namespaceName,
 		'/a',
 		'parent1.yaml',
 		'workflow',
@@ -47,14 +47,14 @@ states:
 `))
 
 	it(`should invoke the '/a/parent1.yaml' workflow`, async () => {
-		const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/tree/a/parent1.yaml?op=wait`)
+		const req = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=a%2Fparent1.yaml&wait=true`)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({
 			result: 2,
 		})
 	})
 
-	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateFile(it, expect, namespaceName,
 		'/a',
 		'parent2.yaml',
 		'workflow',
@@ -76,14 +76,14 @@ states:
 `))
 
 	it(`should invoke the '/a/parent2.yaml' workflow`, async () => {
-		const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/tree/a/parent2.yaml?op=wait`)
+		const req = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=a%2Fparent2.yaml&wait=true`)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({
 			result: 2,
 		})
 	})
 
-	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateFile(it, expect, namespaceName,
 		'/a',
 		'parent3.yaml',
 		'workflow',
@@ -105,14 +105,14 @@ states:
 `))
 
 	it(`should invoke the '/a/parent3.yaml' workflow`, async () => {
-		const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/tree/a/parent3.yaml?op=wait`)
+		const req = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=a%2Fparent3.yaml&wait=true`)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({
 			result: 2,
 		})
 	})
 
-	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateFile(it, expect, namespaceName,
 		'/a',
 		'parent4.yaml',
 		'workflow',
@@ -134,7 +134,7 @@ states:
 `))
 
 	it(`should invoke the '/a/parent4.yaml' workflow`, async () => {
-		const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/tree/a/parent4.yaml?op=wait`)
+		const req = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=a%2Fparent4.yaml&wait=true`)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({
 			result: 2,
@@ -142,9 +142,9 @@ states:
 	})
 
 	it(`check if instances are present`, async () => {
-		const instances = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/instances`)
+		const instances = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/instances`)
 		expect(instances.statusCode).toEqual(200)
-		expect(instances.body.instances.results.length).not.toBeLessThan(1)
+		expect(instances.body.meta.total).not.toBeLessThan(1)
 	})
 
 	// it(`check if instance logs are present`, async () => {

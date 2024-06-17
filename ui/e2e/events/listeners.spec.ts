@@ -1,30 +1,12 @@
+import {
+  contextFiltersListenerYaml,
+  createListener,
+  simpleListenerYaml,
+} from "./utils";
 import { createNamespace, deleteNamespace } from "e2e/utils/namespace";
 import { expect, test } from "@playwright/test";
 
-import { createFile } from "e2e/utils/files";
-
 let namespace = "";
-
-const createListener = async (name: string) => {
-  const yaml = `direktiv_api: workflow/v1
-description: This workflow spawns an event listener as soon as the file is created
-start:
-  type: event
-  event:
-    type: fake.event.one
-states:
-- id: helloworld
-  type: noop
-  transform:
-    result: Hello world!`;
-
-  await createFile({
-    name,
-    namespace,
-    type: "workflow",
-    yaml,
-  });
-};
 
 test.beforeEach(async () => {
   namespace = await createNamespace();
@@ -42,7 +24,11 @@ test("it renders event listeners", async ({ page }) => {
     (_, index) => `workflow${index}.yaml`
   );
 
-  await Promise.all(workflowNames.map((name) => createListener(name)));
+  const yaml = simpleListenerYaml;
+
+  await Promise.all(
+    workflowNames.map((name) => createListener({ name, namespace, yaml }))
+  );
 
   /* visit page and assert a list of listeners is rendered */
   await page.goto(`/n/${namespace}/events/listeners`);
@@ -100,7 +86,11 @@ test("it paginates event listeners", async ({ page }) => {
     (_, index) => `workflow${index}.yaml`
   );
 
-  await Promise.all(workflowNames.map((name) => createListener(name)));
+  const yaml = simpleListenerYaml;
+
+  await Promise.all(
+    workflowNames.map((name) => createListener({ name, namespace, yaml }))
+  );
 
   /* visit page and assert a list of listeners is rendered */
   await page.goto(`/n/${namespace}/events/listeners`);
@@ -114,10 +104,17 @@ test("it paginates event listeners", async ({ page }) => {
     "it renders the expected number of items on page 1"
   ).toHaveCount(10);
 
-  await expect(page.getByLabel("Pagination")).toBeVisible();
-  await expect(page.getByTestId("pagination-btn-page-1")).toBeVisible();
-  await expect(page.getByTestId("pagination-btn-page-2")).toBeVisible();
-  await expect(page.getByTestId("pagination-btn-page-3")).not.toBeVisible();
+  const paginationWrapper = page.getByTestId("pagination-wrapper");
+
+  await expect(
+    paginationWrapper.getByRole("button", { name: "1" })
+  ).toBeVisible();
+  await expect(
+    paginationWrapper.getByRole("button", { name: "2" })
+  ).toBeVisible();
+  await expect(
+    paginationWrapper.getByRole("button", { name: "3" })
+  ).not.toBeVisible();
 
   await page.getByTestId("pagination-btn-right").click();
 
@@ -132,4 +129,45 @@ test("it paginates event listeners", async ({ page }) => {
     page.getByRole("cell", { name: "start workflow" }),
     "it navigates to page 1 and renders the expected number of items"
   ).toHaveCount(10);
+});
+
+test("it renders event context filters", async ({ page }) => {
+  /* set up test data */
+  const yaml = contextFiltersListenerYaml;
+  await createListener({
+    name: "listener.yaml",
+    namespace,
+    yaml,
+  });
+
+  /* visit page and assert filters rendered */
+  await page.goto(`/n/${namespace}/events/listeners`);
+
+  await expect(page, "it is possible to visit events/listeners ").toHaveURL(
+    `/n/${namespace}/events/listeners`
+  );
+
+  await expect(
+    page.getByRole("cell", { name: "listener.yaml" }),
+    "it renders a row for the event listener"
+  ).toHaveCount(1);
+
+  await page.getByRole("cell", { name: "2 filters " }).hover();
+
+  const popup = page.getByTestId("context-filter-popup");
+  await expect(popup).toBeVisible();
+
+  await expect(
+    popup.getByRole("cell", { name: "fake.event.one" })
+  ).toBeVisible();
+  await expect(
+    popup.getByRole("cell", { name: "somekey: somevalue" })
+  ).toBeVisible();
+  await expect(popup.getByRole("cell", { name: "more: stuff" })).toBeVisible();
+  await expect(
+    popup.getByRole("cell", { name: "fake.event.two" })
+  ).toBeVisible();
+  await expect(
+    popup.getByRole("cell", { name: "anotherkey: anothervalue" })
+  ).toBeVisible();
 });

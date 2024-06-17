@@ -11,7 +11,7 @@ describe('Test events states behaviour', () => {
 
 	helpers.itShouldCreateNamespace(it, expect, namespaceName)
 
-	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateFile(it, expect, namespaceName,
 		'',
 		'generate-event.yaml',
 		'workflow',
@@ -29,7 +29,7 @@ states:
     source: "generate-event"
 `))
 
-	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateFile(it, expect, namespaceName,
 		'',
 		'simple-listener.yaml',
 		'workflow',
@@ -56,14 +56,14 @@ states:
 `))
 
 	it(`should walk through the execution of a workflow called /simple-listener.yaml`, async () => {
-		const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/tree/simple-listener.yaml?op=wait`)
+		const req = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=simple-listener.yaml&wait=true`)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({
 			result: 'x',
 		})
 	})
 
-	helpers.itShouldCreateFileV2(it, expect, namespaceName,
+	helpers.itShouldCreateFile(it, expect, namespaceName,
 		'',
 		'or-listener.yaml',
 		'workflow',
@@ -96,14 +96,13 @@ states:
 `))
 
 	it(`should walk through the execution of a workflow called /or-listener.yaml`, async () => {
-		const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ namespaceName }/tree/or-listener.yaml?op=wait`)
+		const req = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/instances?path=or-listener.yaml&wait=true`)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({
 			result: 'x',
 			transitioned: 'a',
 		})
 		expect(req.body['test.simple']).toMatchObject({
-			data: {},
 			datacontenttype: 'application/json',
 			source: 'generate-event',
 			specversion: '1.0',

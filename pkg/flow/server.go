@@ -3,7 +3,6 @@ package flow
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -14,22 +13,21 @@ import (
 	"time"
 
 	"github.com/caarlos0/env/v10"
+	"github.com/direktiv/direktiv/pkg/cmd"
+	"github.com/direktiv/direktiv/pkg/core"
+	"github.com/direktiv/direktiv/pkg/database"
+	"github.com/direktiv/direktiv/pkg/datastore"
+	eventsstore "github.com/direktiv/direktiv/pkg/events"
+	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/direktiv/direktiv/pkg/flow/nohome"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
-	"github.com/direktiv/direktiv/pkg/refactor/cmd"
-	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/direktiv/direktiv/pkg/refactor/database"
-	"github.com/direktiv/direktiv/pkg/refactor/datastore"
-	eventsstore "github.com/direktiv/direktiv/pkg/refactor/events"
-	"github.com/direktiv/direktiv/pkg/refactor/filestore"
-	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
-	"github.com/direktiv/direktiv/pkg/refactor/mirror"
-	pubsub2 "github.com/direktiv/direktiv/pkg/refactor/pubsub"
-	pubsubSQL "github.com/direktiv/direktiv/pkg/refactor/pubsub/sql"
-	"github.com/direktiv/direktiv/pkg/util"
+	"github.com/direktiv/direktiv/pkg/instancestore"
+	"github.com/direktiv/direktiv/pkg/mirror"
+	pubsub2 "github.com/direktiv/direktiv/pkg/pubsub"
+	pubsubSQL "github.com/direktiv/direktiv/pkg/pubsub/sql"
+	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
-	libgrpc "google.golang.org/grpc"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -56,9 +54,8 @@ type server struct {
 
 	mirrorManager *mirror.Manager
 
-	flow     *flow
-	internal *internal
-	events   *events
+	flow   *flow
+	events *events
 }
 
 func Run(circuit *core.Circuit) error {
@@ -84,13 +81,7 @@ func Run(circuit *core.Circuit) error {
 		return fmt.Errorf("initialize legacy server, err: %w", err)
 	}
 
-	configureWorkflow := func(data string) error {
-		event := pubsub2.FileChangeEvent{}
-		err := json.Unmarshal([]byte(data), &event)
-		if err != nil {
-			slog.Error("critical! unmarshal file change event error", "error", err)
-			panic("unmarshal file change event")
-		}
+	configureWorkflow := func(event *pubsub2.FileSystemChangeEvent) error {
 		// If this is a delete workflow file
 		if event.DeleteFileID.String() != (uuid.UUID{}).String() {
 			return srv.flow.events.deleteWorkflowEventListeners(circuit.Context(), event.NamespaceID, event.DeleteFileID)
@@ -130,7 +121,10 @@ func Run(circuit *core.Circuit) error {
 
 			go func() {
 				srv.mirrorManager.Execute(context.Background(), proc, mConfig, &mirror.DirektivApplyer{NamespaceID: ns.ID})
-				err := srv.pBus.Publish(pubsub2.MirrorSync, ns.Name)
+				err := srv.pBus.Publish(&pubsub2.NamespacesChangeEvent{
+					Action: "sync",
+					Name:   ns.Name,
+				})
 				if err != nil {
 					slog.Error("pubsub publish", "error", err)
 				}
@@ -138,6 +132,7 @@ func Run(circuit *core.Circuit) error {
 
 			return proc, nil
 		},
+		RenderAllStartEventListeners: renderAllStartEventListeners,
 	})
 	if err != nil {
 		return fmt.Errorf("lunching new main, err: %w", err)
@@ -205,11 +200,10 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 	var err error
 	slog.Debug("Starting Flow server")
 	slog.Debug("Initializing telemetry.")
-	telend, err := util.InitTelemetry(srv.config.OpenTelemetry, "direktiv/flow", "direktiv")
+	telEnd, err := utils.InitTelemetry(srv.config.OpenTelemetry, "direktiv/flow", "direktiv")
 	if err != nil {
 		return nil, err
 	}
-	defer telend()
 	slog.Info("Telemetry initialized successfully.")
 
 	srv.gormDB = db
@@ -230,7 +224,7 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 	if err != nil {
 		return nil, err
 	}
-	defer srv.cleanup(srv.pubsub.Close)
+
 	slog.Info("pub-sub was initialized successfully.")
 
 	slog.Debug("Initializing timers.")
@@ -239,7 +233,6 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 	if err != nil {
 		return nil, err
 	}
-	defer srv.cleanup(srv.timers.Close)
 	slog.Info("timers where initialized successfully.")
 
 	slog.Debug("Initializing pubsub routine.")
@@ -252,8 +245,10 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 	srv.pBus = pubsub2.NewBus(coreBus)
 
 	circuit.Start(func() error {
-		// TODO: yassir, Implement bus crash handling.
-		srv.pBus.Start(circuit)
+		err := srv.pBus.Loop(circuit)
+		if err != nil {
+			return fmt.Errorf("pubsub bus loop, err: %w", err)
+		}
 
 		return nil
 	})
@@ -261,16 +256,9 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 	slog.Debug("Initializing engine.")
 
 	srv.engine = initEngine(srv)
-	defer srv.cleanup(srv.engine.Close)
 	slog.Info("engine was started.")
 
 	slog.Debug("Initializing internal grpc server.")
-
-	srv.internal, err = initInternalServer(circuit.Context(), srv)
-	if err != nil {
-		return nil, err
-	}
-	slog.Info("Internal grpc server started.")
 
 	srv.flow, err = initFlowServer(circuit.Context(), srv)
 	if err != nil {
@@ -282,7 +270,6 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 
 	slog.Debug("Initializing events.")
 	srv.events = initEvents(srv, dbManager.DataStore().StagingEvents().Append)
-	defer srv.cleanup(srv.events.Close)
 
 	slog.Debug("Initializing EventWorkers.")
 
@@ -322,36 +309,15 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 		},
 	)
 
-	// Todo: Yassir, delete this entirely in cycle6.
-	// if srv.config.EnableEventing {
-	// 	slog.Debug("Initializing knative eventing receiver.")
-	// 	rcv, err := newEventReceiver(srv.events, srv.flow)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	//
-	// 	// starting the event receiver
-	// 	go rcv.Start()
-	// }
-
 	srv.registerFunctions()
 
 	go srv.cronPoller()
 
 	circuit.Start(func() error {
-		e := srv.internal.Run()
-		if e != nil {
-			return fmt.Errorf("srv.internal.Run(), err: %w", err)
-		}
-
-		return nil
-	})
-
-	circuit.Start(func() error {
-		e := srv.flow.Run()
-		if e != nil {
-			return fmt.Errorf("srv.flow.Run(), err: %w", err)
-		}
+		<-circuit.Done()
+		telEnd()
+		srv.cleanup(srv.pubsub.Close)
+		srv.cleanup(srv.timers.Close)
 
 		return nil
 	})
@@ -544,7 +510,7 @@ func (srv *server) cronPoll() {
 }
 
 func (srv *server) cronPollerWorkflow(ctx context.Context, tx *database.SQLStore, file *filestore.File) {
-	ms, err := srv.validateRouter(ctx, tx, file)
+	ms, err := validateRouter(ctx, tx, file)
 	if err != nil {
 		slog.Error("Failed to validate Routing for a cron schedule.", "error", err)
 		return
@@ -563,24 +529,6 @@ func (srv *server) cronPollerWorkflow(ctx context.Context, tx *database.SQLStore
 
 		slog.Debug("Successfully loaded cron schedule for workflow", "workflow", file.Path, "cron_expression", ms.Cron)
 	}
-}
-
-func unaryInterceptor(ctx context.Context, req interface{}, info *libgrpc.UnaryServerInfo, handler libgrpc.UnaryHandler) (interface{}, error) {
-	resp, err := handler(ctx, req)
-	if err != nil {
-		return nil, translateError(err)
-	}
-
-	return resp, nil
-}
-
-func streamInterceptor(srv interface{}, ss libgrpc.ServerStream, info *libgrpc.StreamServerInfo, handler libgrpc.StreamHandler) error {
-	err := handler(srv, ss)
-	if err != nil {
-		return translateError(err)
-	}
-
-	return nil
 }
 
 func this() string {

@@ -122,7 +122,7 @@ describe('Test special command with files and permission', () => {
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -131,7 +131,7 @@ describe('Test special command with files and permission', () => {
 	)
 
 	retry10(`should invoke workflow`, async () => {
-		const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ testNamespace }/tree/wf1.yaml?op=wait`)
+		const res = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ testNamespace }/instances?path=wf1.yaml&wait=true`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.return[0].Output).toEqual('HELLO')
 		expect(res.body.return[1].Output).toEqual('444\n')
@@ -143,7 +143,7 @@ describe('Test special command with env', () => {
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -152,7 +152,7 @@ describe('Test special command with env', () => {
 	)
 
 	retry10(`should invoke workflow`, async () => {
-		const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ testNamespace }/tree/wf1.yaml?op=wait`)
+		const res = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ testNamespace }/instances?path=wf1.yaml&wait=true`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.return[0].Output).toEqual('HELLO=WORLD\n')
 	})
@@ -163,7 +163,7 @@ describe('Test special command with supress', () => {
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -172,7 +172,7 @@ describe('Test special command with supress', () => {
 	)
 
 	retry10(`should invoke workflow`, async () => {
-		const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ testNamespace }/tree/wf1.yaml?op=wait`)
+		const res = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ testNamespace }/instances?path=wf1.yaml&wait=true`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.return[0].Output).toEqual('hello\n')
 		expect(res.body.return[1].Output).toEqual('')
@@ -184,7 +184,7 @@ describe('Test special command with stop', () => {
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -192,7 +192,7 @@ describe('Test special command with stop', () => {
 		stopWorkflow,
 	)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -205,12 +205,12 @@ describe('Test special command with stop', () => {
 	})
 
 	retry10(`should invoke workflow`, async () => {
-		const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ testNamespace }/tree/wf1.yaml?op=wait`)
+		const res = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ testNamespace }/instances?path=wf1.yaml&wait=true`)
 		expect(res.statusCode).toEqual(500)
 	})
 
 	retry10(`should invoke workflow`, async () => {
-		const res = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ testNamespace }/tree/wf2.yaml?op=wait`)
+		const res = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ testNamespace }/instances?path=wf2.yaml&wait=true`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.return.length).toBe(2)
 	})

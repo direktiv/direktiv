@@ -24,12 +24,24 @@ describe('Test send events v2 api', () => {
 			.send(basicEvent)
 		expect(sendEventResponse.statusCode).toEqual(200)
 	})
+	it(`should not accept dup event`, async () => {
+		const sendEventResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/events/broadcast`)
+			.set('Content-Type', 'application/cloudevents+json')
+			.send(basicEvent)
+		expect(sendEventResponse.statusCode).toEqual(400)
+	})
+	it(`should not break the server`, async () => {
+		const sendEventResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespaceName }/events/broadcast`)
+			.set('Content-Type', 'application/bad-header')
+			.send(basicEvent)
+		expect(sendEventResponse.statusCode).toEqual(415)
+	})
 	it(`should be regitered`, async () => {
 		const eventHistoryResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/history`)
 			.send()
 		expect(eventHistoryResponse.statusCode).toEqual(200)
 		expect(eventHistoryResponse.body.data.length).toBeGreaterThan(0)
-		expect(eventHistoryResponse.body.data[0].namespaceName).toBe(namespaceName)
+		expect(eventHistoryResponse.body.data[0].namespace).toBe(namespaceName)
 		expect(eventHistoryResponse.body.data[0].event.id).toBe('123')
 	})
 	it(`event by id`, async () => {
@@ -44,7 +56,7 @@ describe('Test basic workflow events v2', () => {
 
 	helpers.itShouldCreateNamespace(it, expect, namespaceName)
 
-	common.helpers.itShouldCreateYamlFileV2(it, expect, namespaceName,
+	common.helpers.itShouldCreateYamlFile(it, expect, namespaceName,
 		'/', 'listener.yml', 'workflow', `
 start:
   type: event
@@ -63,7 +75,7 @@ states:
 	})
 
 	it(`listener should be regitered`, async () => {
-		const eventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/listener/`)
+		const eventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/listeners?limit=100&offset=0`)
 			.send()
 		expect(eventListenerResponse.statusCode).toEqual(200)
 		expect(eventListenerResponse.body.data.length).toBeGreaterThan(0)
@@ -72,7 +84,7 @@ states:
 		tmpid = eventListenerResponse.body.data[0].id
 	})
 	it(`listener by id`, async () => {
-		const eventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/listener/${ tmpid }`)
+		const eventListenerResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespaceName }/events/listeners/${ tmpid }`)
 			.send()
 		expect(eventListenerResponse.statusCode).toEqual(200)
 		expect(eventListenerResponse.body.data.id).toBe(tmpid)

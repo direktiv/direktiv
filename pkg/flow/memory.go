@@ -10,13 +10,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/core"
+	"github.com/direktiv/direktiv/pkg/datastore"
+	enginerefactor "github.com/direktiv/direktiv/pkg/engine"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/nohome/recipient"
+	"github.com/direktiv/direktiv/pkg/instancestore"
 	"github.com/direktiv/direktiv/pkg/model"
-	"github.com/direktiv/direktiv/pkg/refactor/core"
-	"github.com/direktiv/direktiv/pkg/refactor/datastore"
-	enginerefactor "github.com/direktiv/direktiv/pkg/refactor/engine"
-	"github.com/direktiv/direktiv/pkg/refactor/instancestore"
 	"github.com/google/uuid"
 )
 
@@ -236,13 +236,17 @@ func (im *instanceMemory) GetAttributes() map[string]string {
 }
 
 func (im *instanceMemory) WithTags(ctx context.Context) context.Context {
-	ctx = im.instance.WithTags(ctx)
-	tags, ok := ctx.Value(core.LogTagsKey).([]interface{})
-	if !ok {
-		tags = make([]interface{}, 0)
+	if im.instance != nil {
+		ctx = im.instance.WithTags(ctx)
 	}
+
+	tags, ok := ctx.Value(core.LogTagsKey).(map[string]interface{})
+	if !ok {
+		tags = make(map[string]interface{})
+	}
+
 	if im.logic != nil {
-		tags = append(tags, "state", im.logic.GetID())
+		tags["state"] = im.logic.GetID()
 	}
 
 	return context.WithValue(ctx, core.LogTagsKey, tags)

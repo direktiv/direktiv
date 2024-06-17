@@ -7,7 +7,7 @@ import Rebuild from "./Rebuild";
 import RefreshButton from "~/design/RefreshButton";
 import { ServiceSchemaType } from "~/api/services/schema/services";
 import ServicesTable from "./Table";
-import { useNamespaceServices } from "~/api/services/query/services";
+import { useNamespaceAndSystemServices } from "~/api/services/query/services";
 import { useTranslation } from "react-i18next";
 
 const ServicesListPage = () => {
@@ -19,7 +19,7 @@ const ServicesListPage = () => {
     isSuccess,
     isAllowed,
     noPermissionMessage,
-  } = useNamespaceServices();
+  } = useNamespaceAndSystemServices();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [rebuildService, setRebuildService] = useState<ServiceSchemaType>();

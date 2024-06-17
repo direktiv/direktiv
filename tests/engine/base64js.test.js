@@ -31,7 +31,7 @@ describe('Test js base64 feature', () => {
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -40,7 +40,7 @@ describe('Test js base64 feature', () => {
 	)
 
 	it(`should invoke the workflow and encode and decode base64`, async () => {
-		const req = await request(common.config.getDirektivHost()).get(`/api/namespaces/${ testNamespace }/tree/wf.yaml?op=wait`)
+		const req = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ testNamespace }/instances?path=wf.yaml&wait=true`)
 			.send(`{"x": 5}`)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({

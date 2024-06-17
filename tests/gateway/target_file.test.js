@@ -38,7 +38,7 @@ const endpointBroken = `
   allow_anonymous: true
   plugins:
     target:
-      type: target-namespace-file
+      type: something-wrong
   methods: 
     - GET
   path: /endpoint3`
@@ -73,7 +73,7 @@ describe('Test target file wrong config', () => {
 
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -87,23 +87,17 @@ describe('Test target file wrong config', () => {
 		)
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body.data.length).toEqual(1)
-		expect(listRes.body.data).toEqual(
-			expect.arrayContaining(
-				[
-					{
-						file_path: '/ep3.yaml',
-						path: '/endpoint3',
-						methods: [ 'GET' ],
-						server_path: '/ns/system/endpoint3',
-						allow_anonymous: true,
-						timeout: 0,
-						errors: [ 'file is required' ],
-						warnings: [],
-						plugins: { target: { type: 'target-namespace-file' } },
-					},
-				],
-			),
-		)
+		expect(listRes.body.data[0]).toEqual({
+			file_path: '/ep3.yaml',
+			path: '/endpoint3',
+			server_path: '/ns/system/endpoint3',
+			methods: [ 'GET' ],
+			allow_anonymous: true,
+			timeout: 0,
+			errors: [ "plugin 'something-wrong' err: doesn't exist" ],
+			warnings: [],
+			plugins: { target: { type: 'something-wrong' } },
+		})
 	})
 })
 
@@ -111,7 +105,7 @@ describe('Test mimetype for file target', () => {
 	beforeAll(common.helpers.deleteAllNamespaces)
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -126,7 +120,7 @@ describe('Test mimetype for file target', () => {
 		expect(req.headers['content-type']).toEqual('application/whatever')
 	})
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -148,7 +142,7 @@ describe('Test target namespace file plugin', () => {
 	common.helpers.itShouldCreateNamespace(it, expect, limitedNamespace)
 	common.helpers.itShouldCreateNamespace(it, expect, testNamespace)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -156,7 +150,7 @@ describe('Test target namespace file plugin', () => {
 		endpointNSFile,
 	)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		testNamespace,
@@ -164,7 +158,7 @@ describe('Test target namespace file plugin', () => {
 		endpointNSFileAllowed,
 	)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		limitedNamespace,
@@ -172,7 +166,7 @@ describe('Test target namespace file plugin', () => {
 		endpointNSFile,
 	)
 
-	common.helpers.itShouldCreateYamlFileV2(
+	common.helpers.itShouldCreateYamlFile(
 		it,
 		expect,
 		limitedNamespace,
@@ -208,6 +202,6 @@ describe('Test target namespace file plugin', () => {
 		const req = await request(common.config.getDirektivHost()).get(
 			`/ns/` + limitedNamespace + `/endpoint1`,
 		)
-		expect(req.statusCode).toEqual(500)
+		expect(req.statusCode).toEqual(403)
 	})
 })

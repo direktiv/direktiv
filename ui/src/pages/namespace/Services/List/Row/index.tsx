@@ -15,15 +15,15 @@ import { FC } from "react";
 import { ServiceSchemaType } from "~/api/services/schema/services";
 import { StatusBadge } from "../../components/StatusBadge";
 import { TooltipProvider } from "~/design/Tooltip";
-import { linkToServiceSource } from "../../components/utils";
-import { pages } from "~/util/router/pages";
 import { useNamespace } from "~/util/store/namespace";
+import { usePages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
 
 const ServicesTableRow: FC<{
   service: ServiceSchemaType;
   setRebuildService: (service: ServiceSchemaType) => void;
 }> = ({ service, setRebuildService }) => {
+  const pages = usePages();
   const namespace = useNamespace();
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -59,7 +59,14 @@ const ServicesTableRow: FC<{
             <div>
               <span className="whitespace-pre-wrap break-all">
                 <Link
-                  to={linkToServiceSource(service)}
+                  to={pages.explorer.createHref({
+                    namespace: service.namespace,
+                    path: service.filePath,
+                    subpage:
+                      service.type === "namespace-service"
+                        ? "service"
+                        : "workflow",
+                  })}
                   onClick={(e) => e.stopPropagation()}
                   className="hover:underline"
                 >

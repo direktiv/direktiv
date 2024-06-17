@@ -5,23 +5,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
-	"net"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/flow/grpc"
-	"github.com/direktiv/direktiv/pkg/refactor/database"
-	"github.com/direktiv/direktiv/pkg/util"
-	libgrpc "google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/reflection"
-	"google.golang.org/grpc/status"
+	"github.com/direktiv/direktiv/pkg/database"
 )
 
 type flow struct {
 	*server
-	listener net.Listener
-	srv      *libgrpc.Server
-	grpc.UnsafeFlowServer
 }
 
 const srv = "server"
@@ -30,23 +20,6 @@ func initFlowServer(ctx context.Context, srv *server) (*flow, error) {
 	var err error
 
 	flow := &flow{server: srv}
-
-	flow.listener, err = net.Listen("tcp", ":6666") //nolint:gosec
-	if err != nil {
-		return nil, err
-	}
-
-	opts := util.GrpcServerOptions(unaryInterceptor, streamInterceptor)
-
-	flow.srv = libgrpc.NewServer(opts...)
-
-	grpc.RegisterFlowServer(flow.srv, flow)
-	reflection.Register(flow.srv)
-
-	go func() {
-		<-ctx.Done()
-		flow.srv.Stop()
-	}()
 
 	go func() { //nolint:contextcheck
 		// instance garbage collector
@@ -139,56 +112,6 @@ func (flow *flow) kickExpiredInstances() {
 
 		flow.engine.retryWakeup(data)
 	}
-}
-
-func (flow *flow) Run() error {
-	err := flow.srv.Serve(flow.listener)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (flow *flow) JQ(ctx context.Context, req *grpc.JQRequest) (*grpc.JQResponse, error) {
-	slog.Debug("Handling gRPC request", "this", this())
-
-	var input interface{}
-
-	data := req.GetData()
-
-	err := json.Unmarshal(data, &input)
-	if err != nil {
-		err = status.Error(codes.InvalidArgument, fmt.Sprintf("invalid json data: %v", err))
-		return nil, err
-	}
-
-	command := "jq(" + req.GetQuery() + ")"
-
-	results, err := jq(input, command) //nolint:contextcheck
-	if err != nil {
-		err = status.Error(codes.InvalidArgument, fmt.Sprintf("error executing JQ command: %v", err))
-		return nil, err
-	}
-
-	var strs []string
-
-	for _, result := range results {
-		x, err := json.MarshalIndent(result, "", "  ")
-		if err != nil {
-			return nil, err
-		}
-
-		strs = append(strs, string(x))
-	}
-
-	var resp grpc.JQResponse
-
-	resp.Query = req.GetQuery()
-	resp.Data = req.GetData()
-	resp.Results = strs
-
-	return &resp, nil
 }
 
 func (flow *flow) GetAttributes() map[string]string {
