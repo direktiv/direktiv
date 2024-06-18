@@ -35,8 +35,8 @@ import { useNotifications } from "~/api/notifications/query/get";
 import { usePages } from "~/util/router/pages";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
+import useTsEditorLibs from "~/hooks/useTsEditorLibs";
 import { workflowTemplates } from "./templates";
-import workflowTsDefinition from "~/assets/ts/workflow.d.ts?raw";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -168,17 +168,7 @@ const NewWorkflow = ({
     [workflowType]
   );
 
-  const tsLibs = useMemo(
-    () =>
-      workflowType === "typescript"
-        ? [
-            {
-              content: workflowTsDefinition,
-            },
-          ]
-        : [],
-    [workflowType]
-  );
+  const tsLibs = useTsEditorLibs(workflowType === "typescript");
 
   const selectedTemplateName: string = watch("selectedTemplateName");
 
