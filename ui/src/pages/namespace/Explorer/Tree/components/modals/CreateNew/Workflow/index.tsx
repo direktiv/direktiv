@@ -39,6 +39,8 @@ import { workflowTemplates } from "./templates";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
+const enableTSWorkflows = process.env.VITE?.VITE_ENABLE_TS_WORKFLOWS;
+
 const defaultType: WorkflowType = "yaml";
 
 type FormInput = {
@@ -195,40 +197,45 @@ const NewWorkflow = ({
               {...register("name")}
             />
           </fieldset>
-          <fieldset className="flex items-center gap-5">
-            <label className="w-[100px] text-right text-[14px]" htmlFor="type">
-              {t("pages.explorer.tree.newWorkflow.type.label")}
-            </label>
-            <Select
-              value={workflowType}
-              onValueChange={(value: WorkflowType) => {
-                setValue("workflowType", value);
+          {enableTSWorkflows && (
+            <fieldset className="flex items-center gap-5">
+              <label
+                className="w-[100px] text-right text-[14px]"
+                htmlFor="type"
+              >
+                {t("pages.explorer.tree.newWorkflow.type.label")}
+              </label>
+              <Select
+                value={workflowType}
+                onValueChange={(value: WorkflowType) => {
+                  setValue("workflowType", value);
 
-                const match = getFirstTemplateFor(value);
-                if (match) {
-                  setValue("selectedTemplateName", match.name);
-                  setValue("fileContent", match.data);
-                  setWorkflowData(match.data);
-                }
-              }}
-            >
-              <SelectTrigger id="type" variant="outline" block>
-                <SelectValue
-                  placeholder={t(
-                    "pages.explorer.tree.newWorkflow.type.placeholder"
-                  )}
-                  defaultValue={defaultType}
-                />
-              </SelectTrigger>
-              <SelectContent>
-                {workflowTypes.map((type) => (
-                  <SelectItem value={type} key={type}>
-                    {t(`pages.explorer.tree.newWorkflow.type.${type}`)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </fieldset>
+                  const match = getFirstTemplateFor(value);
+                  if (match) {
+                    setValue("selectedTemplateName", match.name);
+                    setValue("fileContent", match.data);
+                    setWorkflowData(match.data);
+                  }
+                }}
+              >
+                <SelectTrigger id="type" variant="outline" block>
+                  <SelectValue
+                    placeholder={t(
+                      "pages.explorer.tree.newWorkflow.type.placeholder"
+                    )}
+                    defaultValue={defaultType}
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {workflowTypes.map((type) => (
+                    <SelectItem value={type} key={type}>
+                      {t(`pages.explorer.tree.newWorkflow.type.${type}`)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </fieldset>
+          )}
           <fieldset className="flex items-center gap-5">
             <label
               className="w-[100px] text-right text-[14px]"
