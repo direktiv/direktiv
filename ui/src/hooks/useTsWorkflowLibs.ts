@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import workflowTsDefinition from "~/assets/ts/workflow.d.ts?raw";
 
-const useTsEditorLibs = (enabled: boolean) =>
+const useTsWorkflowLibs = (enabled: boolean) =>
   useMemo(
     () =>
       enabled
@@ -14,4 +14,4 @@ const useTsEditorLibs = (enabled: boolean) =>
     [enabled]
   );
 
-export default useTsEditorLibs;
+export default useTsWorkflowLibs;

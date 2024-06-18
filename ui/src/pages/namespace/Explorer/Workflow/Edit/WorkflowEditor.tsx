@@ -18,7 +18,7 @@ import { useEditorLayout } from "~/util/store/editor";
 import { useNamespace } from "~/util/store/namespace";
 import { useNotifications } from "~/api/notifications/query/get";
 import { useTranslation } from "react-i18next";
-import useTsEditorLibs from "~/hooks/useTsEditorLibs";
+import useTsWorkflowLibs from "~/hooks/useTsWorkflowLibs";
 import { useUpdateFile } from "~/api/files/mutate/updateFile";
 
 const WorkflowEditor: FC<{
@@ -54,7 +54,7 @@ const WorkflowEditor: FC<{
   const isTsWorkflow = data.mimeType === "application/x-typescript";
   const language = isTsWorkflow ? "typescript" : "yaml";
 
-  const tsLibs = useTsEditorLibs(isTsWorkflow);
+  const tsLibs = useTsWorkflowLibs(isTsWorkflow);
 
   const localLayout = isTsWorkflow ? "code" : storedEditorLayout;
 
