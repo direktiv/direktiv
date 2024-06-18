@@ -171,6 +171,32 @@ const NewWorkflow = ({
       ? "application/x-typescript"
       : "application/yaml";
 
+  const handleTypeValueChange = (value: WorkflowType) => {
+    setValue("workflowType", value);
+
+    const match = getFirstTemplateFor(value);
+    if (match) {
+      setValue("selectedTemplateName", match.name);
+      setValue("fileContent", match.data);
+      setWorkflowData(match.data);
+    }
+  };
+
+  const handleTemplateValueChange = (value: string) => {
+    const match = currentTemplates.find((template) => template.name === value);
+    if (match) {
+      setValue("selectedTemplateName", match.name);
+      setWorkflowData(match.data);
+    }
+  };
+
+  const handleEditorOnChange = (newData: string | undefined) => {
+    if (newData) {
+      setWorkflowData(newData);
+      setValue("fileContent", newData);
+    }
+  };
+
   return (
     <>
       <DialogHeader>
@@ -207,16 +233,7 @@ const NewWorkflow = ({
               </label>
               <Select
                 value={workflowType}
-                onValueChange={(value: WorkflowType) => {
-                  setValue("workflowType", value);
-
-                  const match = getFirstTemplateFor(value);
-                  if (match) {
-                    setValue("selectedTemplateName", match.name);
-                    setValue("fileContent", match.data);
-                    setWorkflowData(match.data);
-                  }
-                }}
+                onValueChange={handleTypeValueChange}
               >
                 <SelectTrigger id="type" variant="outline" block>
                   <SelectValue
@@ -245,15 +262,7 @@ const NewWorkflow = ({
             </label>
             <Select
               value={selectedTemplateName}
-              onValueChange={(value) => {
-                const match = currentTemplates.find(
-                  (template) => template.name === value
-                );
-                if (match) {
-                  setValue("selectedTemplateName", match.name);
-                  setWorkflowData(match.data);
-                }
-              }}
+              onValueChange={handleTemplateValueChange}
             >
               <SelectTrigger id="template" variant="outline" block>
                 <SelectValue
@@ -276,12 +285,7 @@ const NewWorkflow = ({
             <Card className="h-96 w-full p-4" noShadow background="weight-1">
               <Editor
                 value={workflowData}
-                onChange={(newData) => {
-                  if (newData) {
-                    setWorkflowData(newData);
-                    setValue("fileContent", newData);
-                  }
-                }}
+                onChange={handleEditorOnChange}
                 theme={theme ?? undefined}
               />
             </Card>
