@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "~/design/Select";
 import { SubmitHandler, useForm } from "react-hook-form";
+import { useMemo, useState } from "react";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
@@ -32,7 +33,6 @@ import { useNamespace } from "~/util/store/namespace";
 import { useNavigate } from "react-router-dom";
 import { useNotifications } from "~/api/notifications/query/get";
 import { usePages } from "~/util/router/pages";
-import { useState } from "react";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 import { workflowTemplates } from "./templates";
@@ -153,12 +153,13 @@ const NewWorkflow = ({
 
   const workflowType: WorkflowType = watch("workflowType");
 
-  // Todo: memoize; probably will require moving workflowType to useState()
-  const currentTemplates = Object.entries(workflowTemplates[workflowType]).map(
-    ([name, data]) => ({
-      name,
-      data,
-    })
+  const currentTemplates = useMemo(
+    () =>
+      Object.entries(workflowTemplates[workflowType]).map(([name, data]) => ({
+        name,
+        data,
+      })),
+    [workflowType]
   );
 
   const selectedTemplateName: string = watch("selectedTemplateName");
