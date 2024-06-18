@@ -1,20 +1,21 @@
-package runtime
+package commands
 
 import (
 	"fmt"
 	"log/slog"
 
 	"github.com/direktiv/direktiv/pkg/compiler"
+	"github.com/direktiv/direktiv/pkg/runtime"
 	"github.com/direktiv/direktiv/pkg/utils"
 )
 
 type FunctionCommand struct {
 	functions *map[string]string
 
-	rt *Runtime
+	rt *runtime.Runtime
 }
 
-func NewFunctionCommand(rt *Runtime, functions *map[string]string) *FunctionCommand {
+func NewFunctionCommand(rt *runtime.Runtime, functions *map[string]string) *FunctionCommand {
 	return &FunctionCommand{
 		rt:        rt,
 		functions: functions,
@@ -29,13 +30,13 @@ func (fc FunctionCommand) GetCommandFunction() interface{} {
 	return func(in map[string]interface{}) *Function {
 		fid, err := compiler.GenerateFunctionID(in)
 		if err != nil {
-			throwRuntimeError(fc.rt.vm, DirektivFunctionErrorCode, err)
+			runtime.ThrowRuntimeError(fc.rt.VM, runtime.DirektivFunctionErrorCode, err)
 		}
 
 		fn, ok := (*fc.functions)[fid]
 		if !ok {
 			fmt.Println("NOTHTHERER")
-			throwRuntimeError(fc.rt.vm, DirektivFunctionErrorCode, fmt.Errorf("function does not exist"))
+			runtime.ThrowRuntimeError(fc.rt.VM, runtime.DirektivFunctionErrorCode, fmt.Errorf("function does not exist"))
 		}
 
 		return &Function{
@@ -50,7 +51,7 @@ type Function struct {
 	id  string
 	url string
 
-	runtime *Runtime
+	runtime *runtime.Runtime
 }
 
 type functionArgs struct {
@@ -65,11 +66,11 @@ type functionArgs struct {
 func (f *Function) Execute(in interface{}) interface{} {
 	args, err := utils.DoubleMarshal[functionArgs](in)
 	if err != nil {
-		throwRuntimeError(f.runtime.vm, DirektivFunctionErrorCode, err)
+		runtime.ThrowRuntimeError(f.runtime.VM, runtime.DirektivFunctionErrorCode, err)
 	}
 
 	if f.url == "" {
-		throwRuntimeError(f.runtime.vm, DirektivFunctionErrorCode, fmt.Errorf("function does not exist"))
+		runtime.ThrowRuntimeError(f.runtime.VM, runtime.DirektivFunctionErrorCode, fmt.Errorf("function does not exist"))
 	}
 
 	slog.Debug("running function", slog.String("id", f.id))
@@ -81,8 +82,8 @@ func (f *Function) Execute(in interface{}) interface{} {
 	}
 
 	headers := make(map[string]string)
-	headers[DirektivTempDir] = f.runtime.dirInfo().instanceDir
-	headers[DirektivActionIDHeader] = f.runtime.id
+	headers[runtime.DirektivTempDir] = f.runtime.DirInfo().InstanceDir
+	headers[runtime.DirektivActionIDHeader] = f.runtime.ID
 
 	httpArgs := HttpArgs{
 		Method:  "POST",
@@ -100,5 +101,5 @@ func (f *Function) Execute(in interface{}) interface{} {
 		httpArgs.Input = args.Input
 	}
 
-	return f.runtime.HttpRequest(httpArgs)
+	return NewRequestCommand(f.runtime).HttpRequest(httpArgs)
 }

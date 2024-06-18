@@ -1,4 +1,4 @@
-package runtime_test
+package test
 
 import (
 	"encoding/base64"

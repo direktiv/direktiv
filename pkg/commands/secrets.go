@@ -1,4 +1,4 @@
-package runtime
+package commands
 
 import (
 	"encoding/base64"
@@ -6,15 +6,17 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+
+	"github.com/direktiv/direktiv/pkg/runtime"
 )
 
 type SecretCommand struct {
 	secrets *map[string]string
 
-	rt *Runtime
+	rt *runtime.Runtime
 }
 
-func NewSecretCommand(rt *Runtime, secrets *map[string]string) *SecretCommand {
+func NewSecretCommand(rt *runtime.Runtime, secrets *map[string]string) *SecretCommand {
 	return &SecretCommand{
 		rt:      rt,
 		secrets: secrets,
@@ -29,12 +31,12 @@ func (sc SecretCommand) GetCommandFunction() interface{} {
 	return func(in map[string]string) *Secret {
 		n, ok := in["name"]
 		if !ok {
-			throwRuntimeError(sc.rt.vm, DirektivSecretsErrorCode, fmt.Errorf("name for secret not provided"))
+			runtime.ThrowRuntimeError(sc.rt.VM, runtime.DirektivSecretsErrorCode, fmt.Errorf("name for secret not provided"))
 		}
 
 		s, ok := (*sc.secrets)[n]
 		if !ok {
-			throwRuntimeError(sc.rt.vm, DirektivSecretsErrorCode, fmt.Errorf("secret %s does not exist", n))
+			runtime.ThrowRuntimeError(sc.rt.VM, runtime.DirektivSecretsErrorCode, fmt.Errorf("secret %s does not exist", n))
 		}
 
 		return &Secret{
@@ -47,7 +49,7 @@ func (sc SecretCommand) GetCommandFunction() interface{} {
 type Secret struct {
 	Value string
 
-	runtime *Runtime
+	runtime *runtime.Runtime
 }
 
 func (s *Secret) String() string {
@@ -55,10 +57,10 @@ func (s *Secret) String() string {
 }
 
 func (s *Secret) File(name string, perm int) {
-	p := filepath.Join(s.runtime.dirInfo().instanceDir, name)
+	p := filepath.Join(s.runtime.DirInfo().InstanceDir, name)
 	err := os.WriteFile(p, []byte(s.Value), fs.FileMode(perm))
 	if err != nil {
-		throwRuntimeError(s.runtime.vm, DirektivFileErrorCode, err)
+		runtime.ThrowRuntimeError(s.runtime.VM, runtime.DirektivFileErrorCode, err)
 	}
 }
 

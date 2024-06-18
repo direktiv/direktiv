@@ -1,10 +1,13 @@
-package runtime
+package state
 
 import (
 	"io"
 	"net/http"
 	"net/url"
 	"os"
+
+	"github.com/direktiv/direktiv/pkg/commands"
+	"github.com/direktiv/direktiv/pkg/runtime"
 )
 
 type State struct {
@@ -17,7 +20,7 @@ type State struct {
 }
 
 func NewState(res http.ResponseWriter, data interface{},
-	headers http.Header, params url.Values, runtime *Runtime) *State {
+	headers http.Header, params url.Values, runtime *runtime.Runtime) *State {
 
 	state := &State{
 		response: NewResponse(res, runtime),
@@ -54,12 +57,12 @@ func (s *State) Response() *Response {
 }
 
 type Response struct {
-	runtime  *Runtime
+	runtime  *runtime.Runtime
 	response http.ResponseWriter
 	Written  bool
 }
 
-func NewResponse(resp http.ResponseWriter, runtime *Runtime) *Response {
+func NewResponse(resp http.ResponseWriter, runtime *runtime.Runtime) *Response {
 
 	// we set a dummy if there is no response
 	// e.g. cron, restart or event
@@ -93,15 +96,15 @@ func (r *Response) Write(data string) {
 	_, err := r.response.Write([]byte(data))
 
 	if err != nil {
-		throwRuntimeError(r.runtime.vm, DirektivFileErrorCode, err)
+		runtime.ThrowRuntimeError(r.runtime.VM, runtime.DirektivFileErrorCode, err)
 	}
 }
 
-func (r *Response) WriteFile(f *File) {
+func (r *Response) WriteFile(f *commands.File) {
 	r.Written = true
 	file, err := os.OpenFile(f.RealPath, os.O_RDONLY, 0400)
 	if err != nil {
-		throwRuntimeError(r.runtime.vm, DirektivFileErrorCode, err)
+		runtime.ThrowRuntimeError(r.runtime.VM, runtime.DirektivFileErrorCode, err)
 	}
 	defer file.Close()
 
@@ -109,13 +112,13 @@ func (r *Response) WriteFile(f *File) {
 	for {
 		n, err := file.Read(buf)
 		if err != nil && err != io.EOF {
-			throwRuntimeError(r.runtime.vm, DirektivFileErrorCode, err)
+			runtime.ThrowRuntimeError(r.runtime.VM, runtime.DirektivFileErrorCode, err)
 		}
 		if n == 0 {
 			break
 		}
 		if _, err := r.response.Write(buf[:n]); err != nil {
-			throwRuntimeError(r.runtime.vm, DirektivFileErrorCode, err)
+			runtime.ThrowRuntimeError(r.runtime.VM, runtime.DirektivFileErrorCode, err)
 		}
 	}
 }

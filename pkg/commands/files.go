@@ -1,4 +1,4 @@
-package runtime
+package commands
 
 import (
 	"encoding/base64"
@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/direktiv/direktiv/pkg/runtime"
 	"github.com/direktiv/direktiv/pkg/utils"
 )
 
@@ -31,10 +32,10 @@ import (
 // }
 
 type FileCommand struct {
-	rt *Runtime
+	rt *runtime.Runtime
 }
 
-func NewFileCommand(rt *Runtime) *FileCommand {
+func NewFileCommand(rt *runtime.Runtime) *FileCommand {
 	return &FileCommand{
 		rt: rt,
 	}
@@ -48,7 +49,7 @@ func (fc FileCommand) GetCommandFunction() interface{} {
 	return func(in map[string]interface{}) *File {
 		args, err := utils.DoubleMarshal[fileArgs](in)
 		if err != nil {
-			throwRuntimeError(fc.rt.vm, DirektivFileErrorCode, err)
+			runtime.ThrowRuntimeError(fc.rt.VM, runtime.DirektivFileErrorCode, err)
 		}
 
 		if args.Scope == "" {
@@ -62,7 +63,7 @@ func (fc FileCommand) GetCommandFunction() interface{} {
 		perm := fmt.Sprintf("%v", args.Permission)
 		o, err := strconv.ParseInt(perm, 8, 64)
 		if err != nil {
-			throwRuntimeError(fc.rt.vm, DirektivFileErrorCode, err)
+			runtime.ThrowRuntimeError(fc.rt.VM, runtime.DirektivFileErrorCode, err)
 		}
 		args.Permission = int(o)
 
@@ -72,25 +73,25 @@ func (fc FileCommand) GetCommandFunction() interface{} {
 		}
 
 		if !slices.Contains(allowedScopes, args.Scope) {
-			throwRuntimeError(fc.rt.vm, DirektivFileErrorCode, fmt.Errorf("unknown scope %s", args.Scope))
+			runtime.ThrowRuntimeError(fc.rt.VM, runtime.DirektivFileErrorCode, fmt.Errorf("unknown scope %s", args.Scope))
 		}
 
 		if args.Name == "" {
-			throwRuntimeError(fc.rt.vm, DirektivFileErrorCode, fmt.Errorf("filename empty"))
+			runtime.ThrowRuntimeError(fc.rt.VM, runtime.DirektivFileErrorCode, fmt.Errorf("filename empty"))
 		}
 
 		var prefixDir string
 		if args.Scope == fileScopeLocal {
-			prefixDir = fc.rt.dirInfo().instanceDir
+			prefixDir = fc.rt.DirInfo().InstanceDir
 		} else if args.Scope == fileScopeShared {
-			prefixDir = fc.rt.dirInfo().sharedDir
+			prefixDir = fc.rt.DirInfo().SharedDir
 		}
 
 		if prefixDir != "" {
 			path := filepath.Join(prefixDir, args.Name)
 			// if .. or something has been used
 			if !strings.HasPrefix(path, prefixDir) {
-				throwRuntimeError(fc.rt.vm, DirektivFileErrorCode, fmt.Errorf("illegal path for %s", args.Name))
+				runtime.ThrowRuntimeError(fc.rt.VM, runtime.DirektivFileErrorCode, fmt.Errorf("illegal path for %s", args.Name))
 			}
 			f.RealPath = path
 		}
@@ -106,7 +107,7 @@ type fileArgs struct {
 }
 
 type File struct {
-	runtime  *Runtime
+	runtime  *runtime.Runtime
 	FileArgs fileArgs `json:"fileArgs"`
 
 	RealPath string
@@ -127,7 +128,7 @@ func (f *File) Delete() {
 	if f.RealPath != "" {
 		err := os.Remove(f.RealPath)
 		if err != nil {
-			throwRuntimeError(f.runtime.vm, DirektivFileErrorCode, err)
+			runtime.ThrowRuntimeError(f.runtime.VM, runtime.DirektivFileErrorCode, err)
 		}
 	}
 }
@@ -139,11 +140,11 @@ func (f *File) Data() string {
 	case fileScopeLocal:
 		b, err := os.ReadFile(f.RealPath)
 		if err != nil {
-			throwRuntimeError(f.runtime.vm, DirektivFileErrorCode, err)
+			runtime.ThrowRuntimeError(f.runtime.VM, runtime.DirektivFileErrorCode, err)
 		}
 		return string(b)
 	default:
-		throwRuntimeError(f.runtime.vm, DirektivFileErrorCode, fmt.Errorf("not implemented"))
+		runtime.ThrowRuntimeError(f.runtime.VM, runtime.DirektivFileErrorCode, fmt.Errorf("not implemented"))
 	}
 	return ""
 }
@@ -159,22 +160,22 @@ func (f *File) Write(data string) {
 	case fileScopeLocal:
 		file, err := os.OpenFile(f.RealPath, os.O_RDWR|os.O_CREATE|os.O_APPEND, fs.FileMode(f.FileArgs.Permission))
 		if err != nil {
-			throwRuntimeError(f.runtime.vm, DirektivFileErrorCode, err)
+			runtime.ThrowRuntimeError(f.runtime.VM, runtime.DirektivFileErrorCode, err)
 		}
 		defer file.Close()
 		_, err = file.Write([]byte(data))
 		if err != nil {
-			throwRuntimeError(f.runtime.vm, DirektivFileErrorCode, err)
+			runtime.ThrowRuntimeError(f.runtime.VM, runtime.DirektivFileErrorCode, err)
 		}
 	default:
-		throwRuntimeError(f.runtime.vm, DirektivFileErrorCode, fmt.Errorf("not implemented"))
+		runtime.ThrowRuntimeError(f.runtime.VM, runtime.DirektivFileErrorCode, fmt.Errorf("not implemented"))
 	}
 }
 
 func (f *File) Size() int {
 	fi, err := os.Stat(f.RealPath)
 	if err != nil {
-		throwRuntimeError(f.runtime.vm, DirektivFileErrorCode, err)
+		runtime.ThrowRuntimeError(f.runtime.VM, runtime.DirektivFileErrorCode, err)
 	}
 	return int(fi.Size())
 }
@@ -186,11 +187,11 @@ func (f *File) Base64() string {
 	case fileScopeLocal:
 		b, err := os.ReadFile(f.RealPath)
 		if err != nil {
-			throwRuntimeError(f.runtime.vm, DirektivFileErrorCode, err)
+			runtime.ThrowRuntimeError(f.runtime.VM, runtime.DirektivFileErrorCode, err)
 		}
 		return base64.StdEncoding.EncodeToString(b)
 	default:
-		throwRuntimeError(f.runtime.vm, DirektivFileErrorCode, fmt.Errorf("not implemented"))
+		runtime.ThrowRuntimeError(f.runtime.VM, runtime.DirektivFileErrorCode, fmt.Errorf("not implemented"))
 	}
 	return ""
 }

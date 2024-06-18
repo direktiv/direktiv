@@ -36,7 +36,7 @@ func RuntimeDirektivError(call goja.ConstructorCall) *goja.Object {
 	return nil
 }
 
-func throwRuntimeError(vm *goja.Runtime, code string, err error) {
+func ThrowRuntimeError(vm *goja.Runtime, code string, err error) {
 	o, err := vm.New(vm.ToValue(RuntimeDirektivError), vm.ToValue(code),
 		vm.ToValue(err.Error()))
 	if err != nil {

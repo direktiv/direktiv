@@ -9,7 +9,10 @@ import (
 	"sync"
 	"sync/atomic"
 
+	"github.com/direktiv/direktiv/pkg/commands"
 	"github.com/direktiv/direktiv/pkg/runtime"
+	"github.com/direktiv/direktiv/pkg/state"
+
 	"github.com/dop251/goja"
 	"github.com/google/uuid"
 )
@@ -109,31 +112,31 @@ func (rh RuntimeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = rb.WithCommand(runtime.NewFileCommand(rb))
+	err = rb.WithCommand(commands.NewFileCommand(rb))
 	if err != nil {
 		writeError(w, direktivErrorInternal, err.Error())
 		return
 	}
 
-	err = rb.WithCommand(runtime.NewSecretCommand(rb, &rh.secrets))
+	err = rb.WithCommand(commands.NewSecretCommand(rb, &rh.secrets))
 	if err != nil {
 		writeError(w, direktivErrorInternal, err.Error())
 		return
 	}
 
-	err = rb.WithCommand(runtime.NewFunctionCommand(rb, &rh.functions))
+	err = rb.WithCommand(commands.NewFunctionCommand(rb, &rh.functions))
 	if err != nil {
 		writeError(w, direktivErrorInternal, err.Error())
 		return
 	}
 
-	err = rb.WithCommand(runtime.NewRequestCommand(rb))
+	err = rb.WithCommand(commands.NewRequestCommand(rb))
 	if err != nil {
 		writeError(w, direktivErrorInternal, err.Error())
 		return
 	}
 
-	rt, err := rb.Prepare(rh.prg)
+	rt, err := state.New(rb, rh.prg)
 	if err != nil {
 		writeError(w, direktivErrorInternal, err.Error())
 		return

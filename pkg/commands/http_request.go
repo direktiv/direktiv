@@ -1,4 +1,4 @@
-package runtime
+package commands
 
 import (
 	"crypto/tls"
@@ -12,15 +12,16 @@ import (
 	"time"
 
 	"dario.cat/mergo"
+	"github.com/direktiv/direktiv/pkg/runtime"
 	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/hashicorp/go-retryablehttp"
 )
 
 type RequestCommand struct {
-	rt *Runtime
+	rt *runtime.Runtime
 }
 
-func NewRequestCommand(rt *Runtime) *RequestCommand {
+func NewRequestCommand(rt *runtime.Runtime) *RequestCommand {
 	return &RequestCommand{
 		rt: rt,
 	}
@@ -31,7 +32,7 @@ func (rc RequestCommand) GetName() string {
 }
 
 func (rc RequestCommand) GetCommandFunction() interface{} {
-	return rc.rt.HttpRequest
+	return rc.HttpRequest
 }
 
 type Retry struct {
@@ -60,11 +61,11 @@ const (
 	httpResultFile   = "file"
 )
 
-func (r *Runtime) HttpRequest(in interface{}) interface{} {
+func (rc RequestCommand) HttpRequest(in interface{}) interface{} {
 
 	args, err := utils.DoubleMarshal[HttpArgs](in)
 	if err != nil {
-		throwRuntimeError(r.vm, DirektivHTTPErrorCode, err)
+		runtime.ThrowRuntimeError(rc.rt.VM, runtime.DirektivHTTPErrorCode, err)
 	}
 
 	defaultArgs := &HttpArgs{
@@ -80,19 +81,19 @@ func (r *Runtime) HttpRequest(in interface{}) interface{} {
 	// merge defaults in
 	err = mergo.Merge(&args, defaultArgs)
 	if err != nil {
-		throwRuntimeError(r.vm, DirektivHTTPErrorCode, err)
+		runtime.ThrowRuntimeError(rc.rt.VM, runtime.DirektivHTTPErrorCode, err)
 	}
 
 	// fail if there is no url
 	if args.URL == "" {
-		throwRuntimeError(r.vm, DirektivHTTPErrorCode, fmt.Errorf("url can not be undefined"))
+		runtime.ThrowRuntimeError(rc.rt.VM, runtime.DirektivHTTPErrorCode, fmt.Errorf("url can not be undefined"))
 	}
 
 	var rd io.Reader
 	if args.File != nil {
 		rd, err = os.Open(args.File.RealPath)
 		if err != nil {
-			throwRuntimeError(r.vm, DirektivHTTPErrorCode, err)
+			runtime.ThrowRuntimeError(rc.rt.VM, runtime.DirektivHTTPErrorCode, err)
 		}
 		// that is guaranteed cast-able
 		defer rd.(*os.File).Close()
@@ -104,7 +105,7 @@ func (r *Runtime) HttpRequest(in interface{}) interface{} {
 		default:
 			b, err := json.Marshal(v)
 			if err != nil {
-				throwRuntimeError(r.vm, DirektivHTTPErrorCode, err)
+				runtime.ThrowRuntimeError(rc.rt.VM, runtime.DirektivHTTPErrorCode, err)
 			}
 			rd = strings.NewReader(string(b))
 		}
@@ -112,7 +113,7 @@ func (r *Runtime) HttpRequest(in interface{}) interface{} {
 
 	req, err := http.NewRequest(args.Method, args.URL, rd)
 	if err != nil {
-		throwRuntimeError(r.vm, DirektivHTTPErrorCode, err)
+		runtime.ThrowRuntimeError(rc.rt.VM, runtime.DirektivHTTPErrorCode, err)
 	}
 
 	if len(args.Header) > 0 {
@@ -140,28 +141,28 @@ func (r *Runtime) HttpRequest(in interface{}) interface{} {
 	// retry request
 	rreq, err := retryablehttp.FromRequest(req)
 	if err != nil {
-		throwRuntimeError(r.vm, DirektivHTTPErrorCode, err)
+		runtime.ThrowRuntimeError(rc.rt.VM, runtime.DirektivHTTPErrorCode, err)
 	}
 
 	if args.Async {
-		go r.doRequest(retryClient, rreq, args.Result)
-		throwRuntimeError(r.vm, DirektivHTTPErrorCode, err)
+		go rc.doRequest(retryClient, rreq, args.Result)
+		runtime.ThrowRuntimeError(rc.rt.VM, runtime.DirektivHTTPErrorCode, err)
 	}
 
-	data, err := r.doRequest(retryClient, rreq, args.Result)
+	data, err := rc.doRequest(retryClient, rreq, args.Result)
 	if err != nil {
-		throwRuntimeError(r.vm, DirektivHTTPErrorCode, err)
+		runtime.ThrowRuntimeError(rc.rt.VM, runtime.DirektivHTTPErrorCode, err)
 	}
 
 	return data
 }
 
-func (r *Runtime) doRequest(client *retryablehttp.Client, req *retryablehttp.Request, result string) (interface{}, error) {
+func (rc RequestCommand) doRequest(client *retryablehttp.Client, req *retryablehttp.Request, result string) (interface{}, error) {
 	resp, err := client.Do(req)
 	if err != nil {
 		// easier option than .Is unwrapping to urlError
 		if strings.Contains(err.Error(), "context deadline exceeded") {
-			throwRuntimeError(r.vm, DirektivTimeoutErrorCode, err)
+			runtime.ThrowRuntimeError(rc.rt.VM, runtime.DirektivTimeoutErrorCode, err)
 		}
 		return nil, err
 	}
@@ -170,16 +171,16 @@ func (r *Runtime) doRequest(client *retryablehttp.Client, req *retryablehttp.Req
 		defer resp.Body.Close()
 	}
 
-	if resp != nil && resp.Header.Get(DirektivErrorCodeHeader) != "" {
-		code := resp.Header.Get(DirektivErrorCodeHeader)
-		msg := resp.Header.Get(DirektivErrorMessageHeader)
-		throwRuntimeError(r.vm, code, fmt.Errorf("%s", msg))
+	if resp != nil && resp.Header.Get(runtime.DirektivErrorCodeHeader) != "" {
+		code := resp.Header.Get(runtime.DirektivErrorCodeHeader)
+		msg := resp.Header.Get(runtime.DirektivErrorMessageHeader)
+		runtime.ThrowRuntimeError(rc.rt.VM, code, fmt.Errorf("%s", msg))
 	}
 
 	// switch result
 	switch result {
 	case httpResultFile:
-		outPath := filepath.Join(r.dirInfo().instanceDir, "result.data")
+		outPath := filepath.Join(rc.rt.DirInfo().InstanceDir, "result.data")
 		err := writeFile(outPath, resp.Body)
 		if err != nil {
 			return nil, err

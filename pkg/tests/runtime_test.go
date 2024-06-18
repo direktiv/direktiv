@@ -1,4 +1,4 @@
-package runtime_test
+package test
 
 import (
 	"fmt"
@@ -6,13 +6,15 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/direktiv/direktiv/pkg/commands"
 	"github.com/direktiv/direktiv/pkg/compiler"
 	"github.com/direktiv/direktiv/pkg/runtime"
+	"github.com/direktiv/direktiv/pkg/state"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
-func createRuntime(t *testing.T, s, fn map[string]string, script string, json bool) *runtime.Executor {
+func createRuntime(t *testing.T, s, fn map[string]string, script string, json bool) *state.Executor {
 
 	c, err := compiler.New("dummy", script)
 	if err != nil {
@@ -34,16 +36,16 @@ func createRuntime(t *testing.T, s, fn map[string]string, script string, json bo
 
 	rb, err := runtime.New(id, f, json)
 
-	err = rb.WithCommand(runtime.NewFileCommand(rb))
+	err = rb.WithCommand(commands.NewFileCommand(rb))
 	assert.NoError(t, err)
-	err = rb.WithCommand(runtime.NewSecretCommand(rb, &s))
+	err = rb.WithCommand(commands.NewSecretCommand(rb, &s))
 	assert.NoError(t, err)
-	err = rb.WithCommand(runtime.NewFunctionCommand(rb, &fn))
+	err = rb.WithCommand(commands.NewFunctionCommand(rb, &fn))
 	assert.NoError(t, err)
-	err = rb.WithCommand(runtime.NewRequestCommand(rb))
+	err = rb.WithCommand(commands.NewRequestCommand(rb))
 	assert.NoError(t, err)
 
-	rt, err := rb.Prepare(c.Program)
+	rt, err := state.New(rb, c.Program)
 	assert.NoError(t, err)
 
 	return rt
