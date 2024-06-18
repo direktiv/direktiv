@@ -10,7 +10,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/datastore/datastoresql"
 	"github.com/direktiv/direktiv/pkg/filestore/filestoresql"
-	"github.com/direktiv/direktiv/pkg/tsengine/environment"
+	"github.com/direktiv/direktiv/pkg/tsengine/provider"
 
 	"gorm.io/gorm"
 )
@@ -79,7 +79,7 @@ func CreateRuntimeHandler(cfg Config, db *gorm.DB) (*RuntimeHandler, error) {
 		return nil, err
 	}
 
-	compiler, err := environment.BuildCompiler(context.Background(), driver, cfg.Namespace, cfg.FlowPath)
+	compiler, err := provider.BuildCompiler(context.Background(), driver, cfg.Namespace, cfg.FlowPath)
 	if err != nil {
 		return nil, err
 	}
@@ -89,9 +89,9 @@ func CreateRuntimeHandler(cfg Config, db *gorm.DB) (*RuntimeHandler, error) {
 		return nil, err
 	}
 
-	functions := environment.NewFunctionBuilder(driver, *flowInfo).Build(context.Background())
-	secrets := environment.NewSecretBuilder(driver, cfg.Namespace, *flowInfo, cfg.BaseDir).Build(context.Background())
-	watcher := environment.NewFileBuilder(driver, cfg.Namespace, *flowInfo, engine.baseFS).Build(context.Background())
+	functions := provider.NewFunctionBuilder(driver, *flowInfo).Build(context.Background())
+	secrets := provider.NewSecretBuilder(driver, cfg.Namespace, *flowInfo, cfg.BaseDir).Build(context.Background())
+	watcher := provider.NewFileBuilder(driver, cfg.Namespace, *flowInfo, engine.baseFS).Build(context.Background())
 	go watcher.Watch(context.Background(), cfg.FlowPath)
 	handler := engine.NewHandler(compiler.Program, flowInfo.Definition.State, secrets, functions, flowInfo.Definition.Json)
 
@@ -99,19 +99,19 @@ func CreateRuntimeHandler(cfg Config, db *gorm.DB) (*RuntimeHandler, error) {
 }
 
 // buildDriver creates an environment driver based on the database configuration.
-func buildDriver(db *gorm.DB, baseFS string, cfg Config) (environment.Driver, error) {
+func buildDriver(db *gorm.DB, baseFS string, cfg Config) (provider.Driver, error) {
 	if db != nil {
 		ds := datastoresql.NewSQLStore(db, cfg.SecretKey)
 		fs := filestoresql.NewSQLFileStore(db)
 
-		return &environment.DBBasedProvider{
+		return &provider.DBBasedProvider{
 			SecretsStore: ds.Secrets(),
 			FileStore:    fs,
 			FlowFilePath: cfg.FlowPath,
 			BaseFilePath: baseFS,
 		}, nil
 	}
-	return &environment.FileBasedProvider{BaseFilePath: baseFS}, nil
+	return &provider.FileBasedProvider{BaseFilePath: baseFS}, nil
 }
 
 // Start starts the server.
