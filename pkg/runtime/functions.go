@@ -8,30 +8,49 @@ import (
 	"github.com/direktiv/direktiv/pkg/utils"
 )
 
+type FunctionCommand struct {
+	functions *map[string]string
+
+	rt *Runtime
+}
+
+func NewFunctionCommand(rt *Runtime, functions *map[string]string) *FunctionCommand {
+	return &FunctionCommand{
+		rt:        rt,
+		functions: functions,
+	}
+}
+
+func (fc FunctionCommand) GetName() string {
+	return "setupFunction"
+}
+
+func (fc FunctionCommand) GetCommandFunction() interface{} {
+	return func(in map[string]interface{}) *Function {
+		fid, err := compiler.GenerateFunctionID(in)
+		if err != nil {
+			throwRuntimeError(fc.rt.vm, DirektivFunctionErrorCode, err)
+		}
+
+		fn, ok := (*fc.functions)[fid]
+		if !ok {
+			fmt.Println("NOTHTHERER")
+			throwRuntimeError(fc.rt.vm, DirektivFunctionErrorCode, fmt.Errorf("function does not exist"))
+		}
+
+		return &Function{
+			id:      fid,
+			runtime: fc.rt,
+			url:     fn,
+		}
+	}
+}
+
 type Function struct {
 	id  string
 	url string
 
 	runtime *Runtime
-}
-
-func (rt *Runtime) setupFunction(in map[string]interface{}) *Function {
-	fid, err := compiler.GenerateFunctionID(in)
-	if err != nil {
-		throwRuntimeError(rt.vm, DirektivFunctionErrorCode, err)
-	}
-
-	fn, ok := (*rt.Functions)[fid]
-	if !ok {
-		fmt.Println("NOTHTHERER")
-		throwRuntimeError(rt.vm, DirektivFunctionErrorCode, fmt.Errorf("function does not exist"))
-	}
-
-	return &Function{
-		id:      fid,
-		runtime: rt,
-		url:     fn,
-	}
 }
 
 type functionArgs struct {

@@ -31,8 +31,9 @@ func TestHttpClientFail(t *testing.T) {
 	req := &http.Request{
 		Body: io.NopCloser(strings.NewReader("")),
 	}
-
-	rt := createRuntime(t, script, true)
+	fns := make(map[string]string)
+	sec := make(map[string]string)
+	rt := createRuntime(t, sec, fns, script, true)
 
 	w := httptest.NewRecorder()
 	_, _, err := rt.Execute("start", req, w)
@@ -59,7 +60,9 @@ func TestHttpClientSimple(t *testing.T) {
 		Body: io.NopCloser(strings.NewReader("")),
 	}
 
-	rt := createRuntime(t, script, true)
+	fns := make(map[string]string)
+	sec := make(map[string]string)
+	rt := createRuntime(t, sec, fns, script, true)
 
 	w := httptest.NewRecorder()
 	r, _, err := rt.Execute("start", req, w)
@@ -91,7 +94,9 @@ func TestHttpClientRetry(t *testing.T) {
 		Body: io.NopCloser(strings.NewReader("")),
 	}
 
-	rt := createRuntime(t, script, true)
+	fns := make(map[string]string)
+	sec := make(map[string]string)
+	rt := createRuntime(t, sec, fns, script, true)
 
 	w := httptest.NewRecorder()
 	r, _, err := rt.Execute("start", req, w)
@@ -129,7 +134,9 @@ func TestHttpClientFileUpload(t *testing.T) {
 		Body: io.NopCloser(strings.NewReader("")),
 	}
 
-	rt := createRuntime(t, script, true)
+	fns := make(map[string]string)
+	sec := make(map[string]string)
+	rt := createRuntime(t, sec, fns, script, true)
 
 	w := httptest.NewRecorder()
 	r, _, err := rt.Execute("start", req, w)
@@ -166,7 +173,9 @@ func TestHttpClientFileDownload(t *testing.T) {
 		Body: io.NopCloser(strings.NewReader("")),
 	}
 
-	rt := createRuntime(t, script, true)
+	fns := make(map[string]string)
+	sec := make(map[string]string)
+	rt := createRuntime(t, sec, fns, script, true)
 
 	w := httptest.NewRecorder()
 	r, _, err := rt.Execute("start", req, w)
@@ -195,7 +204,9 @@ func TestHttpClientTimeout(t *testing.T) {
 		Body: io.NopCloser(strings.NewReader("")),
 	}
 
-	rt := createRuntime(t, script, true)
+	fns := make(map[string]string)
+	sec := make(map[string]string)
+	rt := createRuntime(t, sec, fns, script, true)
 
 	w := httptest.NewRecorder()
 	_, _, err := rt.Execute("start", req, w)

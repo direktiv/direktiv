@@ -50,15 +50,11 @@ func TestFunctionID(t *testing.T) {
 	req := &http.Request{
 		Body: io.NopCloser(strings.NewReader("")),
 	}
-
-	rt := createRuntime(t, script, true)
 	secrets := make(map[string]string)
 	secrets["secret1"] = "value1"
-	rt.Secrets = &secrets
-
 	fns := make(map[string]string)
 	fns[fnID] = fmt.Sprintf("http://127.0.0.1:%d", s.port)
-	rt.Functions = &fns
+	rt := createRuntime(t, secrets, fns, script, true)
 
 	w := httptest.NewRecorder()
 	v, _, err := rt.Execute("start", req, w)
@@ -109,12 +105,12 @@ func TestFunctionFiles(t *testing.T) {
 	req := &http.Request{
 		Body: io.NopCloser(strings.NewReader("")),
 	}
-
-	rt := createRuntime(t, script, true)
-	fnID, _ := compiler.GenerateFunctionID(fn)
 	fns := make(map[string]string)
+	fnID, _ := compiler.GenerateFunctionID(fn)
+	sec := make(map[string]string)
+
 	fns[fnID] = fmt.Sprintf("http://127.0.0.1:%d", s.port)
-	rt.Functions = &fns
+	rt := createRuntime(t, sec, fns, script, true)
 
 	w := httptest.NewRecorder()
 	v, _, err := rt.Execute("start", req, w)
@@ -171,12 +167,12 @@ func TestFunctionDownload(t *testing.T) {
 	req := &http.Request{
 		Body: io.NopCloser(strings.NewReader("")),
 	}
-
-	rt := createRuntime(t, script, true)
 	fnID, _ := compiler.GenerateFunctionID(fn)
 	fns := make(map[string]string)
 	fns[fnID] = fmt.Sprintf("http://127.0.0.1:%d", s.port)
-	rt.Functions = &fns
+	sec := make(map[string]string)
+
+	rt := createRuntime(t, sec, fns, script, true)
 
 	w := httptest.NewRecorder()
 	v, _, err := rt.Execute("start", req, w)
@@ -231,12 +227,12 @@ func TestFunctionRetry(t *testing.T) {
 	req := &http.Request{
 		Body: io.NopCloser(strings.NewReader("")),
 	}
-
-	rt := createRuntime(t, script, true)
 	fnID, _ := compiler.GenerateFunctionID(fn)
 	fns := make(map[string]string)
 	fns[fnID] = fmt.Sprintf("http://127.0.0.1:%d", s.port)
-	rt.Functions = &fns
+	sec := make(map[string]string)
+
+	rt := createRuntime(t, sec, fns, script, true)
 
 	w := httptest.NewRecorder()
 	v, _, err := rt.Execute("start", req, w)
@@ -285,12 +281,9 @@ func TestFunctionErrorHandling(t *testing.T) {
 	req := &http.Request{
 		Body: io.NopCloser(strings.NewReader("")),
 	}
-
-	rt := createRuntime(t, script, true)
-	fnID, _ := compiler.GenerateFunctionID(fn)
 	fns := make(map[string]string)
-	fns[fnID] = fmt.Sprintf("http://127.0.0.1:%d", s.port)
-	rt.Functions = &fns
+	sec := make(map[string]string)
+	rt := createRuntime(t, sec, fns, script, true)
 
 	w := httptest.NewRecorder()
 	v, _, err := rt.Execute("start", req, w)
@@ -337,12 +330,11 @@ func TestFunctionErrorTimeout(t *testing.T) {
 	req := &http.Request{
 		Body: io.NopCloser(strings.NewReader("")),
 	}
-
-	rt := createRuntime(t, script, true)
 	fnID, _ := compiler.GenerateFunctionID(fn)
 	fns := make(map[string]string)
 	fns[fnID] = fmt.Sprintf("http://127.0.0.1:%d", s.port)
-	rt.Functions = &fns
+	sec := make(map[string]string)
+	rt := createRuntime(t, sec, fns, script, true)
 
 	w := httptest.NewRecorder()
 	v, _, err := rt.Execute("start", req, w)

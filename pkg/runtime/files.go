@@ -30,6 +30,75 @@ import (
 // 	return rt.vm.ToValue(f).ToObject(rt.vm)
 // }
 
+type FileCommand struct {
+	rt *Runtime
+}
+
+func NewFileCommand(rt *Runtime) *FileCommand {
+	return &FileCommand{
+		rt: rt,
+	}
+}
+
+func (fc FileCommand) GetName() string {
+	return "getFile"
+}
+
+func (fc FileCommand) GetCommandFunction() interface{} {
+	return func(in map[string]interface{}) *File {
+		args, err := utils.DoubleMarshal[fileArgs](in)
+		if err != nil {
+			throwRuntimeError(fc.rt.vm, DirektivFileErrorCode, err)
+		}
+
+		if args.Scope == "" {
+			args.Scope = fileScopeLocal
+		}
+
+		if args.Permission == 0 {
+			args.Permission = 0777
+		}
+
+		perm := fmt.Sprintf("%v", args.Permission)
+		o, err := strconv.ParseInt(perm, 8, 64)
+		if err != nil {
+			throwRuntimeError(fc.rt.vm, DirektivFileErrorCode, err)
+		}
+		args.Permission = int(o)
+
+		f := &File{
+			FileArgs: args,
+			runtime:  fc.rt,
+		}
+
+		if !slices.Contains(allowedScopes, args.Scope) {
+			throwRuntimeError(fc.rt.vm, DirektivFileErrorCode, fmt.Errorf("unknown scope %s", args.Scope))
+		}
+
+		if args.Name == "" {
+			throwRuntimeError(fc.rt.vm, DirektivFileErrorCode, fmt.Errorf("filename empty"))
+		}
+
+		var prefixDir string
+		if args.Scope == fileScopeLocal {
+			prefixDir = fc.rt.dirInfo().instanceDir
+		} else if args.Scope == fileScopeShared {
+			prefixDir = fc.rt.dirInfo().sharedDir
+		}
+
+		if prefixDir != "" {
+			path := filepath.Join(prefixDir, args.Name)
+			// if .. or something has been used
+			if !strings.HasPrefix(path, prefixDir) {
+				throwRuntimeError(fc.rt.vm, DirektivFileErrorCode, fmt.Errorf("illegal path for %s", args.Name))
+			}
+			f.RealPath = path
+		}
+
+		return f
+	}
+}
+
 type fileArgs struct {
 	Name       string `json:"name"`
 	Permission int    `json:"permission"`
@@ -51,59 +120,6 @@ const (
 )
 
 var allowedScopes = []string{fileScopeLocal, fileScopeNamespace, fileScopeShared, fileScopeWorfklow}
-
-func (rt *Runtime) getFile(in map[string]interface{}) *File {
-	args, err := utils.DoubleMarshal[fileArgs](in)
-	if err != nil {
-		throwRuntimeError(rt.vm, DirektivFileErrorCode, err)
-	}
-
-	if args.Scope == "" {
-		args.Scope = fileScopeLocal
-	}
-
-	if args.Permission == 0 {
-		args.Permission = 0777
-	}
-
-	perm := fmt.Sprintf("%v", args.Permission)
-	o, err := strconv.ParseInt(perm, 8, 64)
-	if err != nil {
-		throwRuntimeError(rt.vm, DirektivFileErrorCode, err)
-	}
-	args.Permission = int(o)
-
-	f := &File{
-		FileArgs: args,
-		runtime:  rt,
-	}
-
-	if !slices.Contains(allowedScopes, args.Scope) {
-		throwRuntimeError(rt.vm, DirektivFileErrorCode, fmt.Errorf("unknown scope %s", args.Scope))
-	}
-
-	if args.Name == "" {
-		throwRuntimeError(rt.vm, DirektivFileErrorCode, fmt.Errorf("filename empty"))
-	}
-
-	var prefixDir string
-	if args.Scope == fileScopeLocal {
-		prefixDir = rt.dirInfo().instanceDir
-	} else if args.Scope == fileScopeShared {
-		prefixDir = rt.dirInfo().sharedDir
-	}
-
-	if prefixDir != "" {
-		path := filepath.Join(prefixDir, args.Name)
-		// if .. or something has been used
-		if !strings.HasPrefix(path, prefixDir) {
-			throwRuntimeError(rt.vm, DirektivFileErrorCode, fmt.Errorf("illegal path for %s", args.Name))
-		}
-		f.RealPath = path
-	}
-
-	return f
-}
 
 // TODO: copy and move from local to shared and vice versa
 

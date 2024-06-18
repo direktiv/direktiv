@@ -29,12 +29,10 @@ func TestSecretsBasic(t *testing.T) {
 	req := &http.Request{
 		Body: io.NopCloser(strings.NewReader("")),
 	}
-
-	rt := createRuntime(t, script, true)
-
+	fns := make(map[string]string)
 	secrets := make(map[string]string)
 	secrets["secret1"] = "value1"
-	rt.Secrets = &secrets
+	rt := createRuntime(t, secrets, fns, script, true)
 
 	w := httptest.NewRecorder()
 	v, _, err := rt.Execute("start", req, w)
@@ -63,12 +61,11 @@ func TestSecretsBasicFile(t *testing.T) {
 	req := &http.Request{
 		Body: io.NopCloser(strings.NewReader("")),
 	}
-
-	rt := createRuntime(t, script, true)
-
 	secrets := make(map[string]string)
 	secrets["secret1"] = "value1"
-	rt.Secrets = &secrets
+	fns := make(map[string]string)
+
+	rt := createRuntime(t, secrets, fns, script, true)
 
 	w := httptest.NewRecorder()
 	v, _, err := rt.Execute("start", req, w)
@@ -90,12 +87,11 @@ func TestSecretsErrorName(t *testing.T) {
 	req := &http.Request{
 		Body: io.NopCloser(strings.NewReader("")),
 	}
-
-	rt := createRuntime(t, script, true)
-
 	secrets := make(map[string]string)
+	fns := make(map[string]string)
+
 	secrets["secret1"] = "value1"
-	rt.Secrets = &secrets
+	rt := createRuntime(t, secrets, fns, script, true)
 
 	w := httptest.NewRecorder()
 	v, _, err := rt.Execute("start", req, w)
@@ -120,11 +116,11 @@ func TestSecretsErrorNotExist(t *testing.T) {
 		Body: io.NopCloser(strings.NewReader("")),
 	}
 
-	rt := createRuntime(t, script, true)
-
+	fns := make(map[string]string)
 	secrets := make(map[string]string)
 	secrets["secret1"] = "value1"
-	rt.Secrets = &secrets
+
+	rt := createRuntime(t, fns, secrets, script, true)
 
 	w := httptest.NewRecorder()
 	v, _, err := rt.Execute("start", req, w)

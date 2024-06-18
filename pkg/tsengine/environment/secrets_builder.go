@@ -28,7 +28,7 @@ func NewSecretBuilder(provider SecretProvider, namespace string, fi compiler.Flo
 }
 
 func (b *SecretBuilder) Build(ctx context.Context) map[string]string {
-	for name, _ := range b.secrets {
+	for name := range b.secrets {
 		slog.Debug("fetching secret", slog.String("secret", name))
 		data, err := b.provider.GetSecret(ctx, b.namespace, name)
 		if err != nil {

@@ -26,8 +26,9 @@ func TestFilesIllegal(t *testing.T) {
 	req := &http.Request{
 		Body: io.NopCloser(strings.NewReader("")),
 	}
-
-	rt := createRuntime(t, script, true)
+	s := make(map[string]string)
+	fn := make(map[string]string)
+	rt := createRuntime(t, s, fn, script, true)
 	w := httptest.NewRecorder()
 
 	_, _, err := rt.Execute("start", req, w)
@@ -47,8 +48,9 @@ func TestFilesIllegal(t *testing.T) {
 	req = &http.Request{
 		Body: io.NopCloser(strings.NewReader("")),
 	}
-
-	rt = createRuntime(t, script, true)
+	s = make(map[string]string)
+	fn = make(map[string]string)
+	rt = createRuntime(t, s, fn, script, true)
 	w = httptest.NewRecorder()
 
 	_, _, err = rt.Execute("start", req, w)
@@ -78,8 +80,9 @@ func TestFilesShared(t *testing.T) {
 	req := &http.Request{
 		Body: io.NopCloser(strings.NewReader("")),
 	}
-
-	rt := createRuntime(t, script, true)
+	s := make(map[string]string)
+	fn := make(map[string]string)
+	rt := createRuntime(t, s, fn, script, true)
 	w := httptest.NewRecorder()
 
 	v, _, err := rt.Execute("start", req, w)
@@ -108,8 +111,9 @@ func TestFilesLocal(t *testing.T) {
 	req := &http.Request{
 		Body: io.NopCloser(strings.NewReader("")),
 	}
-
-	rt := createRuntime(t, script, true)
+	s := make(map[string]string)
+	fn := make(map[string]string)
+	rt := createRuntime(t, s, fn, script, true)
 	w := httptest.NewRecorder()
 
 	v, _, err := rt.Execute("start", req, w)

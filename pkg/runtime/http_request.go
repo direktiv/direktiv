@@ -16,6 +16,24 @@ import (
 	"github.com/hashicorp/go-retryablehttp"
 )
 
+type RequestCommand struct {
+	rt *Runtime
+}
+
+func NewRequestCommand(rt *Runtime) *RequestCommand {
+	return &RequestCommand{
+		rt: rt,
+	}
+}
+
+func (rc RequestCommand) GetName() string {
+	return "httpRequest"
+}
+
+func (rc RequestCommand) GetCommandFunction() interface{} {
+	return rc.rt.HttpRequest
+}
+
 type Retry struct {
 	Count int
 	Wait  int

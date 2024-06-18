@@ -103,7 +103,31 @@ func (rh RuntimeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	defer os.RemoveAll(instanceDir)
 
-	rb, err := runtime.New(id, &rh.secrets, &rh.functions, rh.baseFS, rh.jsonPayload)
+	rb, err := runtime.New(id, rh.baseFS, rh.jsonPayload)
+	if err != nil {
+		writeError(w, direktivErrorInternal, err.Error())
+		return
+	}
+
+	err = rb.WithCommand(runtime.NewFileCommand(rb))
+	if err != nil {
+		writeError(w, direktivErrorInternal, err.Error())
+		return
+	}
+
+	err = rb.WithCommand(runtime.NewSecretCommand(rb, &rh.secrets))
+	if err != nil {
+		writeError(w, direktivErrorInternal, err.Error())
+		return
+	}
+
+	err = rb.WithCommand(runtime.NewFunctionCommand(rb, &rh.functions))
+	if err != nil {
+		writeError(w, direktivErrorInternal, err.Error())
+		return
+	}
+
+	err = rb.WithCommand(runtime.NewRequestCommand(rb))
 	if err != nil {
 		writeError(w, direktivErrorInternal, err.Error())
 		return

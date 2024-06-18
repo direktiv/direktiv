@@ -8,28 +8,46 @@ import (
 	"path/filepath"
 )
 
+type SecretCommand struct {
+	secrets *map[string]string
+
+	rt *Runtime
+}
+
+func NewSecretCommand(rt *Runtime, secrets *map[string]string) *SecretCommand {
+	return &SecretCommand{
+		rt:      rt,
+		secrets: secrets,
+	}
+}
+
+func (sc SecretCommand) GetName() string {
+	return "getSecret"
+}
+
+func (sc SecretCommand) GetCommandFunction() interface{} {
+	return func(in map[string]string) *Secret {
+		n, ok := in["name"]
+		if !ok {
+			throwRuntimeError(sc.rt.vm, DirektivSecretsErrorCode, fmt.Errorf("name for secret not provided"))
+		}
+
+		s, ok := (*sc.secrets)[n]
+		if !ok {
+			throwRuntimeError(sc.rt.vm, DirektivSecretsErrorCode, fmt.Errorf("secret %s does not exist", n))
+		}
+
+		return &Secret{
+			Value:   s,
+			runtime: sc.rt,
+		}
+	}
+}
+
 type Secret struct {
 	Value string
 
 	runtime *Runtime
-}
-
-func (rt *Runtime) getSecret(in map[string]string) *Secret {
-
-	n, ok := in["name"]
-	if !ok {
-		throwRuntimeError(rt.vm, DirektivSecretsErrorCode, fmt.Errorf("name for secret not provided"))
-	}
-
-	s, ok := (*rt.Secrets)[n]
-	if !ok {
-		throwRuntimeError(rt.vm, DirektivSecretsErrorCode, fmt.Errorf("secret %s does not exist", n))
-	}
-
-	return &Secret{
-		Value:   s,
-		runtime: rt,
-	}
 }
 
 func (s *Secret) String() string {

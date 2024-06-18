@@ -38,8 +38,10 @@ func TestStateWriteError(t *testing.T) {
 		}
 	}
 	`
+	sec := make(map[string]string)
+	fns := make(map[string]string)
 
-	rt := createRuntime(t, script, true)
+	rt := createRuntime(t, sec, fns, script, true)
 	w := &testDummyErrorWriter{}
 	req, _ := http.NewRequest("POST", "/", strings.NewReader(""))
 
@@ -66,7 +68,10 @@ func TestStateInputHeaders(t *testing.T) {
 		Header: h,
 	}
 
-	rt := createRuntime(t, script, true)
+	sec := make(map[string]string)
+	fns := make(map[string]string)
+
+	rt := createRuntime(t, sec, fns, script, true)
 	w := httptest.NewRecorder()
 
 	r, _, err := rt.Execute("start", req, w)
@@ -79,7 +84,10 @@ func TestStateInputHeaders(t *testing.T) {
 	}
 	`
 
-	rt = createRuntime(t, script, true)
+	sec = make(map[string]string)
+	fns = make(map[string]string)
+
+	rt = createRuntime(t, sec, fns, script, true)
 	r, _, err = rt.Execute("start", req, w)
 	assert.NoError(t, err)
 	assert.Equal(t, h.Values("test"), r)
@@ -99,8 +107,9 @@ func TestStateInputParams(t *testing.T) {
 		Body: io.NopCloser(strings.NewReader("")),
 		URL:  u,
 	}
-
-	rt := createRuntime(t, script, true)
+	sec := make(map[string]string)
+	fns := make(map[string]string)
+	rt := createRuntime(t, sec, fns, script, true)
 	w := httptest.NewRecorder()
 
 	r, _, err := rt.Execute("start", req, w)
@@ -113,7 +122,10 @@ func TestStateInputParams(t *testing.T) {
 	}
 	`
 
-	rt = createRuntime(t, script, true)
+	sec = make(map[string]string)
+	fns = make(map[string]string)
+
+	rt = createRuntime(t, sec, fns, script, true)
 	r, _, err = rt.Execute("start", req, w)
 	assert.NoError(t, err)
 	assert.Equal(t, u.Query()["test"], r)
@@ -135,7 +147,10 @@ func TestStateInputData(t *testing.T) {
 		Body: io.NopCloser(strings.NewReader(content)),
 	}
 
-	rt := createRuntime(t, script, true)
+	sec := make(map[string]string)
+	fns := make(map[string]string)
+
+	rt := createRuntime(t, sec, fns, script, true)
 	w := httptest.NewRecorder()
 
 	r, _, err := rt.Execute("start", req, w)
@@ -161,8 +176,10 @@ func TestStateInputFile(t *testing.T) {
 	req := &http.Request{
 		Body: io.NopCloser(strings.NewReader(content)),
 	}
+	sec := make(map[string]string)
+	fns := make(map[string]string)
 
-	rt := createRuntime(t, script, false)
+	rt := createRuntime(t, sec, fns, script, true)
 	w := httptest.NewRecorder()
 
 	r, _, err := rt.Execute("start", req, w)
@@ -191,7 +208,10 @@ func TestStateResponseWrite(t *testing.T) {
 		Body: io.NopCloser(strings.NewReader("")),
 	}
 
-	rt := createRuntime(t, script, true)
+	sec := make(map[string]string)
+	fns := make(map[string]string)
+
+	rt := createRuntime(t, sec, fns, script, true)
 	w := httptest.NewRecorder()
 
 	r, _, err := rt.Execute("start", req, w)

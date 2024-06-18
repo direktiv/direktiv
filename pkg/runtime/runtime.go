@@ -19,18 +19,9 @@ import (
 )
 
 type Runtime struct {
-	program     *goja.Program
 	vm          *goja.Runtime
 	id, baseDir string
 	jsonInput   bool
-
-	Secrets   *map[string]string
-	Functions *map[string]string
-}
-
-// AddCommand implements RuntimeBuilder.
-func (rt *Runtime) AddCommand(name string, command any) error {
-	return rt.vm.Set(name, command)
 }
 
 // Prepare implements RuntimeBuilder.
@@ -38,9 +29,8 @@ func (rt *Runtime) Prepare(prg *goja.Program) (*Runtime, error) {
 	if prg == nil {
 		return nil, fmt.Errorf("no program provided")
 	}
-	rt.program = prg
 	// run this to prepare for
-	_, err := rt.vm.RunProgram(rt.program)
+	_, err := rt.vm.RunProgram(prg)
 	if err != nil {
 		return nil, err
 	}
@@ -103,11 +93,11 @@ func (rt *Runtime) Execute(fn string, req *http.Request, resp http.ResponseWrite
 }
 
 type RuntimeBuilder interface {
-	AddCommand(name string, command any) error
 	Prepare(prg *goja.Program) (*Runtime, error)
+	WithCommand(command Command) error
 }
 
-func New(id uuid.UUID, secrets, functions *map[string]string, baseDir string, jsonInput bool) (RuntimeBuilder, error) {
+func New(id uuid.UUID, baseDir string, jsonInput bool) (*Runtime, error) {
 
 	slog.Debug("creating new runtime", slog.String("dir", baseDir), slog.String("instance", id.String()))
 
@@ -121,24 +111,47 @@ func New(id uuid.UUID, secrets, functions *map[string]string, baseDir string, js
 		id:        id.String(),
 		baseDir:   baseDir,
 		jsonInput: jsonInput,
-		Secrets:   secrets,
-		Functions: functions,
 	}
 
-	vm.Set("log", commands.Log)
-	vm.Set("sleep", commands.Sleep)
-	vm.Set("atob", commands.Atob)
-	vm.Set("btoa", commands.Btoa)
-	vm.Set("toJSON", commands.ToJSON)
-	vm.Set("fromJSON", commands.FromJSON)
-	vm.Set("trim", commands.Trim)
-
-	vm.Set("getSecret", rt.getSecret)
-	vm.Set("getFile", rt.getFile)
-	vm.Set("setupFunction", rt.setupFunction)
-	vm.Set("httpRequest", rt.HttpRequest)
+	err := vm.Set("log", commands.Log)
+	if err != nil {
+		return nil, err
+	}
+	err = vm.Set("sleep", commands.Sleep)
+	if err != nil {
+		return nil, err
+	}
+	err = vm.Set("atob", commands.Atob)
+	if err != nil {
+		return nil, err
+	}
+	err = vm.Set("btoa", commands.Btoa)
+	if err != nil {
+		return nil, err
+	}
+	err = vm.Set("toJSON", commands.ToJSON)
+	if err != nil {
+		return nil, err
+	}
+	err = vm.Set("fromJSON", commands.FromJSON)
+	if err != nil {
+		return nil, err
+	}
+	err = vm.Set("trim", commands.Trim)
+	if err != nil {
+		return nil, err
+	}
 
 	return rt, nil
+}
+
+type Command interface {
+	GetName() string
+	GetCommandFunction() interface{}
+}
+
+func (rt *Runtime) WithCommand(command Command) error {
+	return rt.vm.Set(command.GetName(), command.GetCommandFunction())
 }
 
 type dirInfo struct {
