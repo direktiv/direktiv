@@ -35,7 +35,9 @@ func createRuntime(t *testing.T, script string, json bool) *runtime.Runtime {
 	s := make(map[string]string)
 	fn := make(map[string]string)
 
-	rt, err := runtime.New(id, c.Program, &s, &fn, f, json)
+	rb, err := runtime.New(id, &s, &fn, f, json)
+	assert.NoError(t, err)
+	rt, err := rb.Prepare(c.Program)
 	assert.NoError(t, err)
 
 	return rt

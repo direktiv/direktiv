@@ -28,6 +28,25 @@ type Runtime struct {
 	Functions *map[string]string
 }
 
+// AddCommand implements RuntimeBuilder.
+func (rt *Runtime) AddCommand(name string, command any) error {
+	return rt.vm.Set(name, command)
+}
+
+// Prepare implements RuntimeBuilder.
+func (rt *Runtime) Prepare(prg *goja.Program) (*Runtime, error) {
+	if prg == nil {
+		return nil, fmt.Errorf("no program provided")
+	}
+	rt.program = prg
+	// run this to prepare for
+	_, err := rt.vm.RunProgram(rt.program)
+	if err != nil {
+		return nil, err
+	}
+	return rt, nil
+}
+
 func (rt *Runtime) Execute(fn string, req *http.Request, resp http.ResponseWriter) (interface{}, *State, error) {
 
 	defer func() {
@@ -83,7 +102,12 @@ func (rt *Runtime) Execute(fn string, req *http.Request, resp http.ResponseWrite
 	return retValue, state, nil
 }
 
-func New(id uuid.UUID, prg *goja.Program, secrets, functions *map[string]string, baseDir string, jsonInput bool) (*Runtime, error) {
+type RuntimeBuilder interface {
+	AddCommand(name string, command any) error
+	Prepare(prg *goja.Program) (*Runtime, error)
+}
+
+func New(id uuid.UUID, secrets, functions *map[string]string, baseDir string, jsonInput bool) (RuntimeBuilder, error) {
 
 	slog.Debug("creating new runtime", slog.String("dir", baseDir), slog.String("instance", id.String()))
 
@@ -92,17 +116,7 @@ func New(id uuid.UUID, prg *goja.Program, secrets, functions *map[string]string,
 	vm.SetFieldNameMapper(goja.TagFieldNameMapper("json", true))
 	vm.SetParserOptions(parser.WithDisableSourceMaps)
 
-	// static commands
-	vm.Set("log", commands.Log)
-	vm.Set("sleep", commands.Sleep)
-	vm.Set("atob", commands.Atob)
-	vm.Set("btoa", commands.Btoa)
-	vm.Set("toJSON", commands.ToJSON)
-	vm.Set("fromJSON", commands.FromJSON)
-	vm.Set("trim", commands.Trim)
-
 	rt := &Runtime{
-		program:   prg,
 		vm:        vm,
 		id:        id.String(),
 		baseDir:   baseDir,
@@ -111,20 +125,18 @@ func New(id uuid.UUID, prg *goja.Program, secrets, functions *map[string]string,
 		Functions: functions,
 	}
 
+	vm.Set("log", commands.Log)
+	vm.Set("sleep", commands.Sleep)
+	vm.Set("atob", commands.Atob)
+	vm.Set("btoa", commands.Btoa)
+	vm.Set("toJSON", commands.ToJSON)
+	vm.Set("fromJSON", commands.FromJSON)
+	vm.Set("trim", commands.Trim)
+
 	vm.Set("getSecret", rt.getSecret)
 	vm.Set("getFile", rt.getFile)
 	vm.Set("setupFunction", rt.setupFunction)
 	vm.Set("httpRequest", rt.HttpRequest)
-
-	if rt.program == nil {
-		return nil, fmt.Errorf("no program provided")
-	}
-
-	// run this to prepare for
-	_, err := rt.vm.RunProgram(rt.program)
-	if err != nil {
-		return nil, err
-	}
 
 	return rt, nil
 }

@@ -103,7 +103,13 @@ func (rh RuntimeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	defer os.RemoveAll(instanceDir)
 
-	rt, err := runtime.New(id, rh.prg, &rh.secrets, &rh.functions, rh.baseFS, rh.jsonPayload)
+	rb, err := runtime.New(id, &rh.secrets, &rh.functions, rh.baseFS, rh.jsonPayload)
+	if err != nil {
+		writeError(w, direktivErrorInternal, err.Error())
+		return
+	}
+
+	rt, err := rb.Prepare(rh.prg)
 	if err != nil {
 		writeError(w, direktivErrorInternal, err.Error())
 		return
