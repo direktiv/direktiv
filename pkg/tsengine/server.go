@@ -63,6 +63,7 @@ func NewServer(cfg Config, db *gorm.DB) (*Server, error) {
 	return s, nil
 }
 
+// CreateRuntimeHandler initializes the runtime handler with the given configuration and database.
 func CreateRuntimeHandler(cfg Config, db *gorm.DB) (*RuntimeHandler, error) {
 	slog.Info("starting engine server")
 	slog.Info(fmt.Sprintf("using flow %s", cfg.FlowPath))
@@ -97,6 +98,7 @@ func CreateRuntimeHandler(cfg Config, db *gorm.DB) (*RuntimeHandler, error) {
 	return &handler, nil
 }
 
+// buildDriver creates an environment driver based on the database configuration.
 func buildDriver(db *gorm.DB, baseFS string, cfg Config) (environment.Driver, error) {
 	if db != nil {
 		ds := datastoresql.NewSQLStore(db, cfg.SecretKey)
@@ -112,16 +114,27 @@ func buildDriver(db *gorm.DB, baseFS string, cfg Config) (environment.Driver, er
 	return &environment.FileBasedProvider{BaseFilePath: baseFS}, nil
 }
 
+// Start starts the server.
 func (s *Server) Start() error {
-	slog.Info("starting engine")
-	return s.srv.ListenAndServe()
+	slog.Info("Starting engine")
+	err := s.srv.ListenAndServe()
+	if err != nil {
+		slog.Error("Server encountered an error", slog.Any("error", err))
+		return fmt.Errorf("server encountered an error: %w", err)
+	}
+	return nil
 }
 
+// ServeHTTP handles HTTP requests by passing them to the configured handler.
 func (s Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.Handler.ServeHTTP(w, r)
 }
 
+// HandleStatusRequest handles status requests by returning the current status in JSON format.
 func (s *Server) HandleStatusRequest(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(s.Status)
+	if err := json.NewEncoder(w).Encode(s.Status); err != nil {
+		slog.Error("Failed to encode status response", slog.Any("error", err))
+		http.Error(w, "Failed to encode status response", http.StatusInternalServerError)
+	}
 }

@@ -36,7 +36,7 @@ func (b *FileBuilder) watcher(ctx context.Context) {
 	for a := range b.files {
 		file := b.files[a]
 		if file.Scope == "shared" {
-			b.provider.WriteFile(b.namespace, file)
+			b.provider.WriteFile(ctx, b.namespace, file)
 		}
 	}
 }

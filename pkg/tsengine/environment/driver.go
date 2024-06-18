@@ -27,7 +27,7 @@ type SecretProvider interface {
 
 // FileWriter defines the method to write files.
 type FileWriter interface {
-	WriteFile(namespace string, file compiler.File) error
+	WriteFile(ctx context.Context, namespace string, file compiler.File) error
 }
 
 // FileGetter defines the method to get file data.
@@ -55,7 +55,7 @@ func (p *DBBasedProvider) GetSecret(ctx context.Context, namespace, name string)
 }
 
 // WriteFile writes a file to the filestore.
-func (p *DBBasedProvider) WriteFile(namespace string, file compiler.File) error {
+func (p *DBBasedProvider) WriteFile(ctx context.Context, namespace string, file compiler.File) error {
 	fetchPath := file.Name
 	if !filepath.IsAbs(file.Name) {
 		fetchPath = filepath.Join(filepath.Dir(p.FlowFilePath), file.Name)
@@ -63,13 +63,13 @@ func (p *DBBasedProvider) WriteFile(namespace string, file compiler.File) error 
 
 	slog.Debug("fetching file", slog.String("file", fetchPath))
 
-	fileHandle, err := p.FileStore.ForNamespace(namespace).GetFile(context.Background(), fetchPath)
+	fileHandle, err := p.FileStore.ForNamespace(namespace).GetFile(ctx, fetchPath)
 	if err != nil {
 		slog.Error("failed to fetch file", slog.String("namespace", namespace), slog.String("file", fetchPath), slog.Any("error", err))
 		return fmt.Errorf("failed to fetch file %s: %w", fetchPath, err)
 	}
 
-	data, err := p.FileStore.ForFile(fileHandle).GetData(context.Background())
+	data, err := p.FileStore.ForFile(fileHandle).GetData(ctx)
 	if err != nil {
 		slog.Error("failed to get data for file", slog.String("namespace", namespace), slog.String("file", fetchPath), slog.Any("error", err))
 		return fmt.Errorf("failed to get data for file %s: %w", fetchPath, err)
@@ -126,7 +126,7 @@ func (p *FileBasedProvider) GetSecret(ctx context.Context, namespace, name strin
 }
 
 // WriteFile writes a file to the shared filesystem.
-func (p *FileBasedProvider) WriteFile(namespace string, file compiler.File) error {
+func (p *FileBasedProvider) WriteFile(ctx context.Context, namespace string, file compiler.File) error {
 	sourceFilePath := filepath.Join(p.BaseFilePath, file.Name)
 	targetFilePath := filepath.Join(p.BaseFilePath, "shared", file.Name)
 	_, err := utils.CopyFile(sourceFilePath, targetFilePath)
