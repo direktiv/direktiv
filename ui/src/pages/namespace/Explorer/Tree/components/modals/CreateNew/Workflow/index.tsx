@@ -36,6 +36,7 @@ import { usePages } from "~/util/router/pages";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
 import { workflowTemplates } from "./templates";
+import workflowTsDefinition from "~/assets/ts/workflow.d.ts?raw";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -49,6 +50,8 @@ type FormInput = {
   workflowType: WorkflowType;
   fileContent: string;
 };
+
+type EditorLanguage = WorkflowType;
 
 const getFirstTemplateFor = (type: WorkflowType) => {
   const entry = Object.entries(workflowTemplates[type])[0];
@@ -81,6 +84,7 @@ const NewWorkflow = ({
   const [workflowData, setWorkflowData] = useState<string>(
     getFirstTemplateFor(defaultType).data
   );
+  const [editorLanguage, setEditorLanguage] = useState<EditorLanguage>("yaml");
 
   const resolver = zodResolver(
     z.object({
@@ -164,6 +168,18 @@ const NewWorkflow = ({
     [workflowType]
   );
 
+  const tsLibs = useMemo(
+    () =>
+      workflowType === "typescript"
+        ? [
+            {
+              content: workflowTsDefinition,
+            },
+          ]
+        : [],
+    [workflowType]
+  );
+
   const selectedTemplateName: string = watch("selectedTemplateName");
 
   const workflowMimeType =
@@ -178,6 +194,7 @@ const NewWorkflow = ({
     if (match) {
       setValue("selectedTemplateName", match.name);
       setValue("fileContent", match.data);
+      setEditorLanguage(value);
       setWorkflowData(match.data);
     }
   };
@@ -287,6 +304,8 @@ const NewWorkflow = ({
                 value={workflowData}
                 onChange={handleEditorOnChange}
                 theme={theme ?? undefined}
+                language={editorLanguage}
+                tsLibs={tsLibs}
               />
             </Card>
           </fieldset>

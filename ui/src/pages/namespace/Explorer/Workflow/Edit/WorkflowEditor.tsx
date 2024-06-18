@@ -19,7 +19,7 @@ import { useNamespace } from "~/util/store/namespace";
 import { useNotifications } from "~/api/notifications/query/get";
 import { useTranslation } from "react-i18next";
 import { useUpdateFile } from "~/api/files/mutate/updateFile";
-import workflowTypes from "~/assets/ts/workflow.d.ts?raw";
+import workflowTsDefinition from "~/assets/ts/workflow.d.ts?raw";
 
 const WorkflowEditor: FC<{
   data: NonNullable<FileSchemaType>;
@@ -74,7 +74,7 @@ const WorkflowEditor: FC<{
   const tsLibs = isTsWorkflow
     ? [
         {
-          content: workflowTypes,
+          content: workflowTsDefinition,
         },
       ]
     : [];
