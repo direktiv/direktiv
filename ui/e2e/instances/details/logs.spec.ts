@@ -33,7 +33,7 @@ test("the logs panel can be resized, it displays a log message from the workflow
     name: fewLogsWorkflowName,
     namespace,
     type: "workflow",
-    yaml: fewLogsWorkflowContent,
+    content: fewLogsWorkflowContent,
   });
 
   const instanceId = (
@@ -133,7 +133,7 @@ test("the logs panel can be toggled between verbose and non verbose logs", async
     name: simpleWorkflowName,
     namespace,
     type: "workflow",
-    yaml: simpleWorkflowContent,
+    content: simpleWorkflowContent,
   });
 
   const instanceId = (
@@ -195,7 +195,7 @@ test("the logs can be copied", async ({ page }) => {
     name: simpleWorkflowName,
     namespace,
     type: "workflow",
-    yaml: simpleWorkflowContent,
+    content: simpleWorkflowContent,
   });
 
   const instanceId = (
@@ -239,7 +239,7 @@ test("log entries will be automatically scrolled to the end", async ({
     name: manyLogsWorkflowName,
     namespace,
     type: "workflow",
-    yaml: manyLogsWorkflowContent,
+    content: manyLogsWorkflowContent,
   });
 
   const instanceId = (
@@ -341,7 +341,7 @@ test("it renders an error when the api response returns an error", async ({
     name: simpleWorkflowName,
     namespace,
     type: "workflow",
-    yaml: simpleWorkflowContent,
+    content: simpleWorkflowContent,
   });
 
   const instanceId = (

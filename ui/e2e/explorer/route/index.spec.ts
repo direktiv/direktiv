@@ -138,7 +138,7 @@ test("it is possible to add plugins to a route file", async ({ page }) => {
     namespace,
     name: filename,
     type: "endpoint",
-    yaml: initialRouteYaml,
+    content: initialRouteYaml,
   });
 
   await page.goto(`/n/${namespace}/explorer/endpoint/${filename}`, {
@@ -424,7 +424,7 @@ test("it blocks navigation when there are unsaved changes", async ({
     namespace,
     name: filename,
     type: "endpoint",
-    yaml: initialRouteYaml,
+    content: initialRouteYaml,
   });
 
   /* visit page */
@@ -495,7 +495,7 @@ test("it does not block navigation when only formatting has changed", async ({
     namespace,
     name: filename,
     type: "endpoint",
-    yaml: initialRouteYaml,
+    content: initialRouteYaml,
   });
 
   /* visit page */

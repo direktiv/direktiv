@@ -1,6 +1,12 @@
-export const noop = {
-  name: "noop",
-  data: `direktiv_api: workflow/v1
+import { WorkflowType } from "~/api/files/schema";
+
+type WorkflowDefinition = { [key: string]: string };
+
+type WorkflowTemplateFormat = Record<WorkflowType, WorkflowDefinition>;
+
+export const workflowTemplates = {
+  yaml: {
+    noop: `direktiv_api: workflow/v1
 description: A simple 'no-op' state that returns 'Hello world!'
 states:
 - id: helloworld
@@ -8,11 +14,7 @@ states:
   transform:
     result: Hello world!
 `,
-};
-
-export const action = {
-  name: "action",
-  data: `direktiv_api: workflow/v1
+    action: `direktiv_api: workflow/v1
 description: A simple 'action' state that sends a get request
 functions:
 - id: get
@@ -27,11 +29,7 @@ states:
       method: "GET"
       url: "https://jsonplaceholder.typicode.com/todos/1"
 `,
-};
-
-export const consumeEvent = {
-  name: "consumeEvent",
-  data: `direktiv_api: workflow/v1
+    consumeEvent: `direktiv_api: workflow/v1
 functions:
 - id: greeter
   image: direktiv/greeting:v3
@@ -52,22 +50,14 @@ states:
   transform:
     greeting: jq(.return.greeting)
 `,
-};
-
-export const delay = {
-  name: "delay",
-  data: `direktiv_api: workflow/v1
+    delay: `direktiv_api: workflow/v1
 description: A simple 'delay' state that waits for 5 seconds
 states:
 - id: delay
   type: delay
   duration: PT5S
 `,
-};
-
-export const error = {
-  name: "error",
-  data: `direktiv_api: workflow/v1
+    error: `direktiv_api: workflow/v1
 description: A simple 'error' state workflow that checks an email attempts to validate it.
 states:
 - id: data
@@ -97,11 +87,7 @@ states:
   transform: 
     result: "Email is valid."
 `,
-};
-
-export const foreach = {
-  name: "foreach",
-  data: `direktiv_api: workflow/v1
+    foreach: `direktiv_api: workflow/v1
 description: A simple 'foreach' state that solves expressions
 functions: 
 - id: solve
@@ -123,11 +109,7 @@ states:
   transform:
     solved: jq(.return)
 `,
-};
-
-export const generateEvent = {
-  name: "generateEvent",
-  data: `direktiv_api: workflow/v1
+    generateEvent: `direktiv_api: workflow/v1
 description: A simple 'generateEvent' state that sends data to a greeting listener.
 states:
 - id: generate
@@ -138,11 +120,7 @@ states:
     data: 
       name: "Trent"
 `,
-};
-
-export const generateSolveEvent = {
-  name: "generateSolveEvent",
-  data: `direktiv_api: workflow/v1
+    generateSolveEvent: `direktiv_api: workflow/v1
 description: A simple 'generateEvent' state that sends an expression to a solve listener.
 states:
 - id: generate
@@ -153,11 +131,7 @@ states:
     data: 
       x: "10+5"
 `,
-};
-
-export const getAndSet = {
-  name: "getAndSet",
-  data: `direktiv_api: workflow/v1
+    getAndSet: `direktiv_api: workflow/v1
 description: "Simple Counter getter and setter variable example"
 states:
   - id: counter-get
@@ -174,11 +148,7 @@ states:
         scope: workflow 
         value: 'jq(.newCounter)'
 `,
-};
-
-export const parallel = {
-  name: "parallel",
-  data: `direktiv_api: workflow/v1
+    parallel: `direktiv_api: workflow/v1
 description: A simple 'parallel' state workflow that runs solve container to solve expressions.
 functions: 
 - id: solve
@@ -204,11 +174,7 @@ states:
   # Mode 'or' waits for the first action to be completed
   mode: and
 `,
-};
-
-export const validate = {
-  name: "validate",
-  data: `direktiv_api: workflow/v1
+    validate: `direktiv_api: workflow/v1
 description: A simple 'validate' state workflow that checks an email
 states:
 - id: data
@@ -238,11 +204,7 @@ states:
   transform:
     result: "Email is valid."
 `,
-};
-
-export const switchState = {
-  name: "switch",
-  data: `direktiv_api: workflow/v1
+    switch: `direktiv_api: workflow/v1
 description: A simple 'switch' state that checks whether the age provided is older than 18.
 states:
 - id: data
@@ -265,11 +227,7 @@ states:
   transform: 
     result: "You are younger than 18."
 `,
-};
-
-export const eventXor = {
-  name: "eventXor",
-  data: `direktiv_api: workflow/v1
+    eventXor: `direktiv_api: workflow/v1
 functions:
 - id: greeter
   image: direktiv/greeting:v3
@@ -304,11 +262,7 @@ states:
   transform: 
     solvedexpression: jq(.return)
 `,
-};
-
-export const eventAnd = {
-  name: "eventAnd",
-  data: `direktiv_api: workflow/v1
+    eventAnd: `direktiv_api: workflow/v1
 functions:
 - id: greeter
   image: direktiv/greeting:v3
@@ -343,23 +297,39 @@ states:
     msggreeting: jq(.greeting)
     solvedexpression: jq(.return)
 `,
+  },
+  typescript: {
+    example: `const flow: DirektivFlow = {
+  scale: [
+    {
+      min: 1
+    }
+  ]
 };
 
-const templates = [
-  noop,
-  action,
-  consumeEvent,
-  delay,
-  error,
-  foreach,
-  generateEvent,
-  generateSolveEvent,
-  getAndSet,
-  parallel,
-  validate,
-  switchState,
-  eventXor,
-  eventAnd,
-] as const;
+function value() {
+  const fileOne = getFile({
+    name: "/myfile.txt",
+    permission: 755,
+    scope: "shared",
+  });
 
-export default templates;
+    var s = getSecret({ name: "hello-world"})
+
+    var r = httpRequest(
+        {
+            method: "POST",
+            url: "http://127.0.0.1:%d"
+        }
+    )
+
+    var fn = setupFunction({
+    image: "localhost:5000/hello"
+  })
+
+    var fn = setupFunction2({
+    image: "localhost:5000/hello"
+  })
+}`,
+  },
+} satisfies WorkflowTemplateFormat;

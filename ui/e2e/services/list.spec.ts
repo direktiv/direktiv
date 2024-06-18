@@ -43,7 +43,7 @@ test("Service list shows all available services", async ({ page }) => {
     name: "http-service.yaml",
     namespace,
     type: "service",
-    yaml: createHttpServiceFile(),
+    content: createHttpServiceFile(),
   });
 
   await expect
@@ -129,7 +129,7 @@ test("Service list links the file name to the service file", async ({
     name: "http-service.yaml",
     namespace,
     type: "service",
-    yaml: createHttpServiceFile(),
+    content: createHttpServiceFile(),
   });
 
   await page.goto(`/n/${namespace}/services`, {
@@ -159,7 +159,7 @@ test("Service list links the row to the service details page", async ({
     name: "http-service.yaml",
     namespace,
     type: "service",
-    yaml: createHttpServiceFile(),
+    content: createHttpServiceFile(),
   });
 
   await expect
@@ -211,7 +211,7 @@ test("Service list lets the user rebuild a service", async ({ page }) => {
     name: "http-service.yaml",
     namespace,
     type: "service",
-    yaml: createHttpServiceFile(),
+    content: createHttpServiceFile(),
   });
 
   await expect
@@ -262,7 +262,7 @@ test("Service list highlights services that have errors", async ({ page }) => {
     name: "failed-service.yaml",
     namespace,
     type: "service",
-    yaml: serviceWithAnError,
+    content: serviceWithAnError,
   });
 
   await expect
@@ -305,7 +305,7 @@ test("Service list will update the services when refetch button is clicked", asy
     name: "http-service.yaml",
     namespace,
     type: "service",
-    yaml: createHttpServiceFile({
+    content: createHttpServiceFile({
       scale: 1,
       size: "large",
     }),
@@ -377,7 +377,7 @@ test.describe("system namespace", () => {
       name: systemServiceName,
       namespace: systemNamespaceName,
       type: "service",
-      yaml: createHttpServiceFile(),
+      content: createHttpServiceFile(),
     });
   });
 

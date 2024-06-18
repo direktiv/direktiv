@@ -18,8 +18,8 @@ import { useEditorLayout } from "~/util/store/editor";
 import { useNamespace } from "~/util/store/namespace";
 import { useNotifications } from "~/api/notifications/query/get";
 import { useTranslation } from "react-i18next";
+import useTsWorkflowLibs from "~/hooks/useTsWorkflowLibs";
 import { useUpdateFile } from "~/api/files/mutate/updateFile";
-import workflowTypes from "~/assets/ts/workflow.d.ts?raw";
 
 const WorkflowEditor: FC<{
   data: NonNullable<FileSchemaType>;
@@ -51,6 +51,13 @@ const WorkflowEditor: FC<{
 
   const [editorContent, setEditorContent] = useState(workflowDataFromServer);
 
+  const isTsWorkflow = data.mimeType === "application/x-typescript";
+  const language = isTsWorkflow ? "typescript" : "yaml";
+
+  const tsLibs = useTsWorkflowLibs(isTsWorkflow);
+
+  const localLayout = isTsWorkflow ? "code" : storedEditorLayout;
+
   const onEditorContentUpdate = (newData: string) => {
     setHasUnsavedChanges(workflowDataFromServer !== newData);
     setEditorContent(newData ?? "");
@@ -67,19 +74,6 @@ const WorkflowEditor: FC<{
   };
 
   if (!namespace) return null;
-
-  const isTsWorkflow = data.mimeType === "application/x-typescript";
-  const language = isTsWorkflow ? "typescript" : "yaml";
-
-  const tsLibs = isTsWorkflow
-    ? [
-        {
-          content: workflowTypes,
-        },
-      ]
-    : [];
-
-  const localLayout = isTsWorkflow ? "code" : storedEditorLayout;
 
   return (
     <div className="relative flex grow flex-col space-y-4 p-5">

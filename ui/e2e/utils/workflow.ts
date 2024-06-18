@@ -14,7 +14,7 @@ export const createWorkflow = async (namespace: string, name: string) => {
     namespace,
     name,
     type: "workflow",
-    yaml: noopYaml,
+    content: noopYaml,
   });
 
   if (response.data.type !== "workflow") {

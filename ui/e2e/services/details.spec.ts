@@ -26,7 +26,7 @@ test("Service details page provides information about the service", async ({
     name: "request-service.yaml",
     namespace,
     type: "service",
-    yaml: createRequestServiceFile({ scale: 2 }),
+    content: createRequestServiceFile({ scale: 2 }),
   });
 
   await expect
@@ -163,7 +163,7 @@ test("Service details page renders no logs when the service did not mount", asyn
     name: "error-service.yaml",
     namespace,
     type: "service",
-    yaml: serviceWithAnError,
+    content: serviceWithAnError,
   });
 
   await expect

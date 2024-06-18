@@ -107,11 +107,21 @@ const CreateServiceSchema = CreateYamlFileSchema.extend({
   type: z.literal("service"),
 });
 
+export const workflowTypes = ["yaml", "typescript"] as const;
+
+export type WorkflowType = (typeof workflowTypes)[number];
+
+export const workflowMimeTypes = [
+  "application/yaml",
+  "application/x-typescript",
+] as const;
+
 const CreateWorkflowSchema = CreateYamlFileSchema.extend({
   type: z.literal("workflow"),
+  mimeType: z.enum(workflowMimeTypes),
 });
 
-const CreateFileSchema = z.discriminatedUnion("type", [
+export const CreateFileSchema = z.discriminatedUnion("type", [
   CreateDirectorySchema,
   CreateConsumerSchema,
   CreateEndpointSchema,
