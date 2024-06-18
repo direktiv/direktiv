@@ -1,6 +1,7 @@
 package tsengine
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -9,7 +10,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/datastore/datastoresql"
 	"github.com/direktiv/direktiv/pkg/filestore/filestoresql"
-	"github.com/direktiv/direktiv/pkg/tsengine/enviroment"
+	"github.com/direktiv/direktiv/pkg/tsengine/environment"
 
 	"gorm.io/gorm"
 )
@@ -77,7 +78,7 @@ func CreateRuntimeHandler(cfg Config, db *gorm.DB) (*RuntimeHandler, error) {
 		return nil, err
 	}
 
-	compiler, err := enviroment.BuildCompiler(cfg.FlowPath, cfg.Namespace, driver)
+	compiler, err := environment.BuildCompiler(context.Background(), driver, cfg.Namespace, cfg.FlowPath)
 	if err != nil {
 		return nil, err
 	}
@@ -87,28 +88,28 @@ func CreateRuntimeHandler(cfg Config, db *gorm.DB) (*RuntimeHandler, error) {
 		return nil, err
 	}
 
-	functions := enviroment.NewFunctionBuilder(*flowInfo, engine.baseFS).Build()
-	secrets := enviroment.NewSecretBuilder(*flowInfo, cfg.BaseDir, cfg.Namespace, driver).Build()
-	watcher := enviroment.NewFileBuilder(*flowInfo, engine.baseFS, cfg.Namespace).Build()
-	go watcher.Watch(cfg.FlowPath)
+	functions := environment.NewFunctionBuilder(*flowInfo, engine.baseFS).Build()
+	secrets := environment.NewSecretBuilder(driver, cfg.Namespace, *flowInfo, cfg.BaseDir).Build(context.Background())
+	watcher := environment.NewFileBuilder(driver, cfg.Namespace, *flowInfo, engine.baseFS).Build(context.Background())
+	go watcher.Watch(context.Background(), cfg.FlowPath)
 	handler := engine.NewHandler(compiler.Program, flowInfo.Definition.State, secrets, functions, flowInfo.Definition.Json)
 
 	return &handler, nil
 }
 
-func buildDriver(db *gorm.DB, baseFS string, cfg Config) (enviroment.Driver, error) {
+func buildDriver(db *gorm.DB, baseFS string, cfg Config) (environment.Driver, error) {
 	if db != nil {
 		ds := datastoresql.NewSQLStore(db, cfg.SecretKey)
 		fs := filestoresql.NewSQLFileStore(db)
 
-		return &enviroment.DBBasedProvider{
-			Secrets:   ds.Secrets(),
-			Filestore: fs,
-			FlowPath:  cfg.FlowPath,
-			BaseFS:    baseFS,
+		return &environment.DBBasedProvider{
+			SecretsStore: ds.Secrets(),
+			FileStore:    fs,
+			FlowFilePath: cfg.FlowPath,
+			BaseFilePath: baseFS,
 		}, nil
 	}
-	return &enviroment.FileBasedProvider{BaseFS: baseFS}, nil
+	return &environment.FileBasedProvider{BaseFilePath: baseFS}, nil
 }
 
 func (s *Server) Start() error {

@@ -1,4 +1,4 @@
-package enviroment
+package environment
 
 import (
 	"context"
@@ -8,10 +8,10 @@ import (
 	"github.com/direktiv/direktiv/pkg/compiler"
 )
 
-func BuildCompiler(flowPath string, namespace string, provider FileGetter) (compiler.Compiler, error) {
+func BuildCompiler(ctx context.Context, provider FileGetter, namespace string, flowPath string) (compiler.Compiler, error) {
 	slog.Info("building flow", "flowPath", flowPath)
 
-	b, err := provider.GetData(context.Background(), namespace, flowPath)
+	b, err := provider.GetFileData(ctx, namespace, flowPath)
 	if err != nil {
 		return compiler.Compiler{}, &FlowBuildError{flowPath: flowPath, err: err}
 	}

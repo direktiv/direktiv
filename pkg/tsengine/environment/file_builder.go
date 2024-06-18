@@ -1,6 +1,7 @@
-package enviroment
+package environment
 
 import (
+	"context"
 	"log/slog"
 	"path/filepath"
 
@@ -15,34 +16,36 @@ type FileBuilder struct {
 	namespace string
 }
 
-func NewFileBuilder(fi compiler.FlowInformation, baseFS string, namespace string) *FileBuilder {
+func NewFileBuilder(provider FileWriter, namespace string, fi compiler.FlowInformation, baseFS string) *FileBuilder {
 	return &FileBuilder{
 		files:     fi.Files,
 		baseFS:    baseFS,
 		namespace: namespace,
+		provider:  provider,
 	}
 }
 
-func (b *FileBuilder) Build() FileWatcher {
+func (b *FileBuilder) Build(ctx context.Context) FileWatcher {
 	// read files
-	b.watcher()
+	b.watcher(ctx)
 	return FileWatcher{sync: b.watcher}
 }
 
-func (b *FileBuilder) watcher() {
+func (b *FileBuilder) watcher(ctx context.Context) {
+	_ = ctx
 	for a := range b.files {
 		file := b.files[a]
 		if file.Scope == "shared" {
-			b.provider.Write(b.namespace, file)
+			b.provider.WriteFile(b.namespace, file)
 		}
 	}
 }
 
 type FileWatcher struct {
-	sync func()
+	sync func(context.Context)
 }
 
-func (f FileWatcher) Watch(flow string) {
+func (f FileWatcher) Watch(ctx context.Context, flow string) {
 
 	// dir to watch
 	dir := filepath.Dir(flow)
@@ -68,7 +71,7 @@ func (f FileWatcher) Watch(flow string) {
 				}
 				if filepath.Base(event.Name) == file && event.Has(fsnotify.Write) {
 					slog.Info("updating flow")
-					f.sync()
+					f.sync(ctx)
 				}
 			case err, ok := <-watcher.Errors:
 				if !ok {

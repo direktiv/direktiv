@@ -1,4 +1,4 @@
-package enviroment
+package environment
 
 import (
 	"context"
@@ -14,7 +14,7 @@ type SecretBuilder struct {
 	namespace string
 }
 
-func NewSecretBuilder(fi compiler.FlowInformation, baseFS string, namespace string, provider SecretProvider) *SecretBuilder {
+func NewSecretBuilder(provider SecretProvider, namespace string, fi compiler.FlowInformation, baseFS string) *SecretBuilder {
 	secrets := make(map[string]string)
 	for _, s := range fi.Secrets {
 		secrets[s.Name] = ""
@@ -27,10 +27,10 @@ func NewSecretBuilder(fi compiler.FlowInformation, baseFS string, namespace stri
 	}
 }
 
-func (b *SecretBuilder) Build() map[string]string {
+func (b *SecretBuilder) Build(ctx context.Context) map[string]string {
 	for name, _ := range b.secrets {
 		slog.Debug("fetching secret", slog.String("secret", name))
-		data, err := b.provider.Get(context.Background(), b.namespace, name)
+		data, err := b.provider.GetSecret(ctx, b.namespace, name)
 		if err != nil {
 			slog.Error("fetching secret failed", slog.String("secret", name))
 
