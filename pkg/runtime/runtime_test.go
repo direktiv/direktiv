@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func createRuntime(t *testing.T, s, fn map[string]string, script string, json bool) *runtime.Runtime {
+func createRuntime(t *testing.T, s, fn map[string]string, script string, json bool) *runtime.Executor {
 
 	c, err := compiler.New("dummy", script)
 	if err != nil {
