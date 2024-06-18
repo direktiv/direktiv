@@ -89,7 +89,7 @@ func CreateRuntimeHandler(cfg Config, db *gorm.DB) (*RuntimeHandler, error) {
 		return nil, err
 	}
 
-	functions := environment.NewFunctionBuilder(*flowInfo, engine.baseFS).Build()
+	functions := environment.NewFunctionBuilder(driver, *flowInfo).Build(context.Background())
 	secrets := environment.NewSecretBuilder(driver, cfg.Namespace, *flowInfo, cfg.BaseDir).Build(context.Background())
 	watcher := environment.NewFileBuilder(driver, cfg.Namespace, *flowInfo, engine.baseFS).Build(context.Background())
 	go watcher.Watch(context.Background(), cfg.FlowPath)

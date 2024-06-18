@@ -18,6 +18,7 @@ type Driver interface {
 	SecretProvider
 	FileWriter
 	FileGetter
+	FunctionProvider
 }
 
 // SecretProvider defines the method to get secrets.
@@ -33,6 +34,11 @@ type FileWriter interface {
 // FileGetter defines the method to get file data.
 type FileGetter interface {
 	GetFileData(ctx context.Context, namespace, path string) ([]byte, error)
+}
+
+// FunctionProvider is an interface for retrieving functions.
+type FunctionProvider interface {
+	GetFunction(ctx context.Context, functionID string) (string, error)
 }
 
 // DBBasedProvider implements the Driver interface using a database-based backend.
@@ -109,6 +115,11 @@ func (p *DBBasedProvider) GetFileData(ctx context.Context, namespace, path strin
 	return data, nil
 }
 
+// GetFunction retrieves the function value from the database.
+func (p *DBBasedProvider) GetFunction(ctx context.Context, functionID string) (string, error) {
+	return os.Getenv(functionID), nil
+}
+
 // FileBasedProvider implements the Driver interface using a file-based backend.
 type FileBasedProvider struct {
 	BaseFilePath string
@@ -146,4 +157,9 @@ func (p *FileBasedProvider) GetFileData(ctx context.Context, namespace, path str
 		return nil, fmt.Errorf("failed to read file %s: %w", path, err)
 	}
 	return data, nil
+}
+
+// GetFunction retrieves the function value from an environment variable.
+func (p *FileBasedProvider) GetFunction(ctx context.Context, functionID string) (string, error) {
+	return os.Getenv(functionID), nil
 }

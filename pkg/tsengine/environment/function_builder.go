@@ -1,41 +1,40 @@
 package environment
 
 import (
+	"context"
 	"log/slog"
-	"os"
 
 	"github.com/direktiv/direktiv/pkg/compiler"
 )
 
+// FunctionBuilder builds functions from the provided function provider.
 type FunctionBuilder struct {
 	functions map[string]compiler.Function
-	baseFS    string
+	provider  FunctionProvider
 }
 
-func NewFunctionBuilder(fi compiler.FlowInformation, baseFS string) *FunctionBuilder {
+// NewFunctionBuilder creates a new FunctionBuilder.
+func NewFunctionBuilder(provider FunctionProvider, fi compiler.FlowInformation) *FunctionBuilder {
 	return &FunctionBuilder{
 		functions: fi.Functions,
-		baseFS:    baseFS,
+		provider:  provider,
 	}
 }
 
-func (b *FunctionBuilder) Build() map[string]string {
+// Build retrieves and builds functions using the function provider.
+func (b *FunctionBuilder) Build(ctx context.Context) map[string]string {
 	functionsRet := make(map[string]string)
 	for _, f := range b.functions {
 		functionID := f.GetID()
-		value := os.Getenv(functionID)
-		functionsRet[functionID] = value
-		slog.Info("adding function", slog.String("function", functionID))
+		if f.Image != "" { // Only consider functions with non-empty images
+			value, err := b.provider.GetFunction(ctx, functionID)
+			if err != nil {
+				slog.Error("failed to get function", slog.String("functionID", functionID), slog.Any("error", err))
+				continue
+			}
+			functionsRet[functionID] = value
+			slog.Info("adding function", slog.String("function", functionID))
+		}
 	}
 	return functionsRet
 }
-
-// functions := make(map[string]string)
-// for i := range fi.Functions {
-// 	f := fi.Functions[i]
-// 	// only do workflow functions
-// 	if f.Image != "" {
-// 		slog.Debug("adding function", slog.String("function", f.Image))
-// 		functions[f.GetID()] = os.Getenv(f.GetID())
-// 	}
-// }
