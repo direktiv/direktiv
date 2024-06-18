@@ -112,6 +112,36 @@ func (rh RuntimeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	err = rb.WithCommand(&commands.BtoaCommand{})
+	if err != nil {
+		writeError(w, direktivErrorInternal, err.Error())
+		return
+	}
+	err = rb.WithCommand(&commands.SleepCommand{})
+	if err != nil {
+		writeError(w, direktivErrorInternal, err.Error())
+		return
+	}
+	err = rb.WithCommand(&commands.AtobCommand{})
+	if err != nil {
+		writeError(w, direktivErrorInternal, err.Error())
+		return
+	}
+	err = rb.WithCommand(&commands.TrimCommand{})
+	if err != nil {
+		writeError(w, direktivErrorInternal, err.Error())
+		return
+	}
+	err = rb.WithCommand(&commands.ToJSONCommand{})
+	if err != nil {
+		writeError(w, direktivErrorInternal, err.Error())
+		return
+	}
+	err = rb.WithCommand(&commands.FromJSONCommand{})
+	if err != nil {
+		writeError(w, direktivErrorInternal, err.Error())
+		return
+	}
 	err = rb.WithCommand(commands.NewFileCommand(rb))
 	if err != nil {
 		writeError(w, direktivErrorInternal, err.Error())

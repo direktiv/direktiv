@@ -2,23 +2,37 @@ package commands
 
 import (
 	"encoding/json"
-	"fmt"
 )
 
-func FromJSON(in interface{}) (string, error) {
-	b, err := json.Marshal(in)
-	if err != nil {
-		fmt.Println(err)
-		return "", err
-	}
-	return string(b), nil
+type FromJSONCommand struct{}
+
+func (c *FromJSONCommand) GetName() string {
+	return "fromJSON"
 }
 
-func ToJSON(in string) (interface{}, error) {
-	var out interface{}
-	err := json.Unmarshal([]byte(in), &out)
-	if err != nil {
-		return "", err
+func (c *FromJSONCommand) GetCommandFunction() interface{} {
+	return func(in interface{}) (string, error) {
+		b, err := json.Marshal(in)
+		if err != nil {
+			return "", err
+		}
+		return string(b), nil
 	}
-	return out, nil
+}
+
+type ToJSONCommand struct{}
+
+func (c *ToJSONCommand) GetName() string {
+	return "toJSON"
+}
+
+func (c *ToJSONCommand) GetCommandFunction() interface{} {
+	return func(in string) (interface{}, error) {
+		var out interface{}
+		err := json.Unmarshal([]byte(in), &out)
+		if err != nil {
+			return "", err
+		}
+		return out, nil
+	}
 }

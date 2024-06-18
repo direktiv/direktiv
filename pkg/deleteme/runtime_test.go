@@ -36,6 +36,18 @@ func createRuntime(t *testing.T, s, fn map[string]string, script string, json bo
 
 	rb, err := runtime.New(id, f, json)
 
+	err = rb.WithCommand(&commands.BtoaCommand{})
+	assert.NoError(t, err)
+	err = rb.WithCommand(&commands.SleepCommand{})
+	assert.NoError(t, err)
+	err = rb.WithCommand(&commands.AtobCommand{})
+	assert.NoError(t, err)
+	err = rb.WithCommand(&commands.TrimCommand{})
+	assert.NoError(t, err)
+	err = rb.WithCommand(&commands.ToJSONCommand{})
+	assert.NoError(t, err)
+	err = rb.WithCommand(&commands.FromJSONCommand{})
+	assert.NoError(t, err)
 	err = rb.WithCommand(commands.NewFileCommand(rb))
 	assert.NoError(t, err)
 	err = rb.WithCommand(commands.NewSecretCommand(rb, &s))
