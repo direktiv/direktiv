@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "~/design/Select";
 import { SubmitHandler, useForm } from "react-hook-form";
+import { addFileExtension, addYamlFileExtension } from "../../../../utils";
 import { useMemo, useState } from "react";
 
 import Button from "~/design/Button";
@@ -26,7 +27,6 @@ import Editor from "~/design/Editor";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { Textarea } from "~/design/TextArea";
-import { addYamlFileExtension } from "../../../../utils";
 import { encode } from "js-base64";
 import { useCreateFile } from "~/api/files/mutate/createFile";
 import { useNamespace } from "~/util/store/namespace";
@@ -86,7 +86,7 @@ const NewWorkflow = ({
     z.object({
       name: FileNameSchema.transform((enteredName) =>
         workflowType === "typescript"
-          ? enteredName // todo: add automatic extension like below
+          ? addFileExtension(enteredName, ".workflow.ts")
           : addYamlFileExtension(enteredName)
       ).refine(
         (nameWithExtension) =>
