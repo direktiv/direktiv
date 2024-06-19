@@ -50,15 +50,15 @@ func (e *Executor) Execute(fn string, req *http.Request, resp http.ResponseWrite
 	if err != nil {
 		var ge *goja.Exception
 		if errors.As(err, &ge) {
-			e := ge.Value().Export()
+			e := err.(*goja.Exception).Value().Export()
 			errMap, ok := e.(map[string]interface{})
 			if ok {
-				code, _ := errMap["code"]
-				if code == "" {
+				code, ok := errMap["code"]
+				if !ok {
 					code = runtime.DirektivErrorCode
 				}
-				msg, _ := errMap["msg"]
-				if msg == "" {
+				msg, ok := errMap["msg"]
+				if !ok {
 					msg = err
 				}
 				return nil, nil, runtime.NewDirektivError(code, msg)

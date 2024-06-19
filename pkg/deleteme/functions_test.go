@@ -282,6 +282,9 @@ func TestFunctionErrorHandling(t *testing.T) {
 		Body: io.NopCloser(strings.NewReader("")),
 	}
 	fns := make(map[string]string)
+	fnID, _ := compiler.GenerateFunctionID(fn)
+	fns[fnID] = fmt.Sprintf("http://127.0.0.1:%d", s.port)
+
 	sec := make(map[string]string)
 	rt := createRuntime(t, sec, fns, script, true)
 
