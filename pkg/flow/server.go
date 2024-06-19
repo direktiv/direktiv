@@ -83,7 +83,7 @@ func Run(circuit *core.Circuit) error {
 
 	configureWorkflow := func(event *pubsub2.FileSystemChangeEvent) error {
 
-		if event.FileType == utils.TypeScriptMimeType {
+		if event.MimeType == utils.TypeScriptMimeType {
 			slog.Info("TODO TYPESCRIPT SETUP CRON & EVENT LISTENER!")
 			// TODO: TYPESCRIPT, init crons
 			return nil
