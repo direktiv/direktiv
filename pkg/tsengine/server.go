@@ -45,8 +45,7 @@ func New(baseFS string) (*RuntimeManager, error) {
 	return manager, nil
 }
 
-func (rm *RuntimeManager) NewHandler(prg *goja.Program, fn string, secrets map[string]string,
-	functions map[string]string, jsonInput bool) RuntimeHandler {
+func (rm *RuntimeManager) NewHandler(prg *goja.Program, fn string, secrets map[string]string, functions map[string]string, jsonInput bool) RuntimeHandler {
 	rm.mtx.Lock()
 	defer rm.mtx.Unlock()
 
