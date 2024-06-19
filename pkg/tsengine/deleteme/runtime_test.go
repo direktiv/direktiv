@@ -6,10 +6,10 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/direktiv/direktiv/pkg/commands"
-	"github.com/direktiv/direktiv/pkg/compiler"
 	"github.com/direktiv/direktiv/pkg/runtime"
-	"github.com/direktiv/direktiv/pkg/state"
+	"github.com/direktiv/direktiv/pkg/tsengine/commands"
+	"github.com/direktiv/direktiv/pkg/tsengine/compiler"
+	"github.com/direktiv/direktiv/pkg/tsengine/state"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )

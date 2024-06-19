@@ -1,7 +1,7 @@
 package compiler
 
 import (
-	"github.com/direktiv/direktiv/pkg/transpiler"
+	"github.com/direktiv/direktiv/pkg/tsengine/transpiler"
 	"github.com/dop251/goja"
 	"github.com/dop251/goja/ast"
 )

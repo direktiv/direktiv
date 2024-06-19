@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/direktiv/direktiv/pkg/compiler"
+	"github.com/direktiv/direktiv/pkg/tsengine/compiler"
 )
 
 func BuildCompiler(ctx context.Context, provider FileGetter, namespace string, flowPath string) (compiler.Compiler, error) {

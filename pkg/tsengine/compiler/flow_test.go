@@ -3,7 +3,7 @@ package compiler_test
 import (
 	"testing"
 
-	"github.com/direktiv/direktiv/pkg/compiler"
+	"github.com/direktiv/direktiv/pkg/tsengine/compiler"
 	"github.com/stretchr/testify/assert"
 )
 

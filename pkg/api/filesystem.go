@@ -9,10 +9,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/direktiv/direktiv/pkg/compiler"
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/direktiv/direktiv/pkg/pubsub"
+	"github.com/direktiv/direktiv/pkg/tsengine/compiler"
 	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/go-chi/chi/v5"
 	"gopkg.in/yaml.v3"

@@ -7,9 +7,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/direktiv/direktiv/pkg/compiler"
 	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/direktiv/direktiv/pkg/filestore"
+	"github.com/direktiv/direktiv/pkg/tsengine/compiler"
 	"github.com/direktiv/direktiv/pkg/utils"
 )
 

@@ -6,8 +6,8 @@ import (
 	"net/url"
 	"os"
 
-	"github.com/direktiv/direktiv/pkg/commands"
 	"github.com/direktiv/direktiv/pkg/runtime"
+	"github.com/direktiv/direktiv/pkg/tsengine/commands"
 )
 
 type State struct {

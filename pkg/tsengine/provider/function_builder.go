@@ -4,7 +4,7 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/direktiv/direktiv/pkg/compiler"
+	"github.com/direktiv/direktiv/pkg/tsengine/compiler"
 )
 
 // FunctionBuilder builds functions from the provided function provider.

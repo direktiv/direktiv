@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/compiler"
 	"github.com/direktiv/direktiv/pkg/runtime"
+	"github.com/direktiv/direktiv/pkg/tsengine/compiler"
 	"github.com/stretchr/testify/assert"
 )
 
