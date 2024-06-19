@@ -138,7 +138,10 @@ const EventsList = ({
                       goToPage(1);
                     }}
                   >
-                    <SelectTrigger variant="outline">
+                    <SelectTrigger
+                      variant="outline"
+                      data-testid="select-pagesize"
+                    >
                       <SelectValue placeholder="Show 10 rows" />
                     </SelectTrigger>
                     <SelectContent>
