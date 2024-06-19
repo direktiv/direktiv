@@ -5,7 +5,6 @@ type CoreBus interface {
 	Listen(channel string) error
 	Loop(done <-chan struct{}, handler func(channel string, data string)) error
 }
-<<<<<<< HEAD
 
 var (
 	WorkflowCreate = "workflow_create"
@@ -36,14 +35,3 @@ var (
 	SecretDelete = "secret_delete"
 	SecretUpdate = "secret_update"
 )
-
-type FileChangeEvent struct {
-	Namespace    string
-	NamespaceID  uuid.UUID
-	FilePath     string
-	OldPath      string
-	DeleteFileID uuid.UUID
-	MimeType     string
-}
-=======
->>>>>>> main
