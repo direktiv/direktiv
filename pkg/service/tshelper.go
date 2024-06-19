@@ -215,7 +215,7 @@ func getSecurityContext() *corev1.SecurityContext {
 
 func buildFunctionContainers(c *core.Config, sv *core.ServiceFileData, flowInformation *compiler.FlowInformation) ([]corev1.Container, error) {
 
-	rl, err := buildResourceLimits(c, sv.Size)
+	rl, err := buildResourceLimits(c, sv)
 	if err != nil {
 		return nil, err
 	}
