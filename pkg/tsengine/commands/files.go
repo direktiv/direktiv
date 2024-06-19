@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/direktiv/direktiv/pkg/runtime"
+	"github.com/direktiv/direktiv/pkg/tsengine/runtime"
 	"github.com/direktiv/direktiv/pkg/utils"
 )
 

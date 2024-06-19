@@ -12,7 +12,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/direktiv/direktiv/pkg/runtime"
+	"github.com/direktiv/direktiv/pkg/tsengine/runtime"
 	"github.com/dop251/goja"
 )
 

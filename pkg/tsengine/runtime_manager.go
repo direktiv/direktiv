@@ -11,9 +11,9 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/engine"
-	"github.com/direktiv/direktiv/pkg/runtime"
 	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/direktiv/direktiv/pkg/tsengine/commands"
+	"github.com/direktiv/direktiv/pkg/tsengine/runtime"
 	"github.com/direktiv/direktiv/pkg/tsengine/state"
 	"github.com/dop251/goja"
 	"github.com/google/uuid"

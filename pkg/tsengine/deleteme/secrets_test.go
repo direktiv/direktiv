@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/direktiv/direktiv/pkg/runtime"
+	"github.com/direktiv/direktiv/pkg/tsengine/runtime"
 	"github.com/stretchr/testify/assert"
 )
 

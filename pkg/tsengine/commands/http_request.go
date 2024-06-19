@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"dario.cat/mergo"
-	"github.com/direktiv/direktiv/pkg/runtime"
+	"github.com/direktiv/direktiv/pkg/tsengine/runtime"
 	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/hashicorp/go-retryablehttp"
 )
