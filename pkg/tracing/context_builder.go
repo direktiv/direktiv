@@ -164,3 +164,7 @@ func BuildInstanceTrack(instance *engine.Instance) string {
 
 	return fmt.Sprintf("%v.%v", "instance", callpath)
 }
+
+func BuildInstanceTrackViaCallpath(callpath string) string {
+	return fmt.Sprintf("%v.%v", "instance", callpath)
+}
