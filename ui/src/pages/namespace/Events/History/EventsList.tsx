@@ -1,4 +1,10 @@
 import { Dialog, DialogContent } from "~/design/Dialog";
+import {
+  EventsPageSizeValueSchema,
+  eventsPageSizeValue,
+  useEventsPageSize,
+  useEventsPageSizeActions,
+} from "~/util/store/events";
 import { NoPermissions, NoResult, TableCell, TableRow } from "~/design/Table";
 import { Pagination, PaginationLink } from "~/design/Pagination";
 import {
@@ -8,10 +14,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/design/Select";
-import {
-  useEventsPageSizeActions,
-  useEventsPageSizeState,
-} from "~/util/store/events";
 
 import { Card } from "~/design/Card";
 import { EventSchemaType } from "~/api/events/schema";
@@ -34,21 +36,16 @@ const EventsList = ({
   filters: FiltersSchemaType;
   setFilters: (filters: FiltersSchemaType) => void;
 }) => {
-  const { setEventsPageSize } = useEventsPageSizeActions();
   const { t } = useTranslation();
   const [eventDialog, setEventDialog] = useState<EventSchemaType | null>();
 
-  const pagesize = useEventsPageSizeState();
-  const [pageSize, setPageSize] = useState(
-    pagesize.pagesize ? Number(pagesize.pagesize) : 10
-  );
+  const { setEventsPageSize } = useEventsPageSizeActions();
+  const pageSize = useEventsPageSize();
 
   const { data, isFetched, isAllowed, noPermissionMessage } = useEvents({
     enabled: true,
     filters,
   });
-
-  type EventsPageSizeValueType = 10 | 20 | 30 | 50 | null;
 
   const handleOpenChange = (state: boolean) => {
     if (!state) {
@@ -64,7 +61,7 @@ const EventsList = ({
   return (
     <div className="flex grow flex-col gap-y-3 p-5">
       <Dialog open={!!eventDialog} onOpenChange={handleOpenChange}>
-        <PaginationProvider items={data.data} pageSize={pageSize}>
+        <PaginationProvider items={data.data} pageSize={parseInt(pageSize)}>
           {({
             currentItems,
             goToFirstPage,
@@ -131,24 +128,27 @@ const EventsList = ({
                   <Select
                     defaultValue={String(pageSize)}
                     onValueChange={(value) => {
-                      setPageSize(Number(value));
-                      setEventsPageSize(
-                        Number(value) as EventsPageSizeValueType
-                      );
-                      goToPage(1);
+                      const parseValue =
+                        EventsPageSizeValueSchema.safeParse(value);
+                      if (parseValue.success) {
+                        setEventsPageSize(parseValue.data);
+                        goToPage(1);
+                      }
                     }}
                   >
                     <SelectTrigger
                       variant="outline"
                       data-testid="select-pagesize"
                     >
-                      <SelectValue placeholder="Show 10 rows" />
+                      <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="10">Show 10 rows</SelectItem>
-                      <SelectItem value="20">Show 20 rows</SelectItem>
-                      <SelectItem value="30">Show 30 rows</SelectItem>
-                      <SelectItem value="50">Show 50 rows</SelectItem>
+                      {eventsPageSizeValue.map((size) => (
+                        <SelectItem key={size} value={size}>
+                          {/* TODO: i18n */}
+                          Show {size} rows
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
