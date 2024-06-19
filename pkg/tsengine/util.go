@@ -26,7 +26,7 @@ func writeError(w http.ResponseWriter, code, msg string) {
 	w.Header().Add(direktivErrorCodeHeader, code)
 	w.Header().Add(direktivErrorMessageHeader, msg)
 	w.Header().Add("Content-Type", "application/json")
-	w.WriteHeader(500)
+	w.WriteHeader(http.StatusInternalServerError)
 	e := errorStruct{
 		Code: code,
 		Msg:  msg,
@@ -45,8 +45,10 @@ func CreateMultiPartForm(prefix string, flow, flowPath string, secrets map[strin
 	go func() {
 		// adding flow to request
 		flowPartName := fmt.Sprintf("%s-%s", prefix, flowPath)
-		writer.WriteField(flowPartName, flow)
-
+		err := writer.WriteField(flowPartName, flow)
+		if err != nil {
+			errCh <- err
+		}
 		for k, v := range files {
 			partName := fmt.Sprintf("%s-file_%s", prefix, k)
 			part, err := writer.CreateFormFile(partName, k)
@@ -64,7 +66,7 @@ func CreateMultiPartForm(prefix string, flow, flowPath string, secrets map[strin
 			writer.WriteField(fmt.Sprintf("%s-secret_%s", prefix, k), v)
 		}
 
-		err := writer.Close()
+		err = writer.Close()
 		if err != nil {
 			errCh <- err
 		}

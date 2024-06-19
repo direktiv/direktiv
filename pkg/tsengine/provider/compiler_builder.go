@@ -20,6 +20,7 @@ func BuildCompiler(ctx context.Context, provider FileGetter, namespace string, f
 	if err != nil {
 		return compiler.Compiler{}, &FlowBuildError{flowPath: flowPath, err: err}
 	}
+
 	return *c, nil
 }
 

@@ -36,7 +36,10 @@ func (b *FileBuilder) watcher(ctx context.Context) {
 	for a := range b.files {
 		file := b.files[a]
 		if file.Scope == "shared" {
-			b.provider.WriteFile(ctx, b.namespace, file)
+			err := b.provider.WriteFile(ctx, b.namespace, file)
+			if err != nil {
+				slog.Error("TODO in watcher", "error", err)
+			}
 		}
 	}
 }
@@ -81,12 +84,9 @@ func (f FileWatcher) Watch(ctx context.Context, flow string) {
 			}
 		}
 	}()
-
 	err = watcher.Add(dir)
 	if err != nil {
 		panic(err)
 	}
-
 	<-make(chan struct{})
-
 }

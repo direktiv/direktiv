@@ -11,7 +11,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/datastore/datastoresql"
 	"github.com/direktiv/direktiv/pkg/filestore/filestoresql"
 	"github.com/direktiv/direktiv/pkg/tsengine/provider"
-
 	"gorm.io/gorm"
 )
 
@@ -74,11 +73,7 @@ func CreateRuntimeHandler(cfg Config, db *gorm.DB) (*RuntimeHandler, error) {
 		return nil, err
 	}
 
-	driver, err := buildDriver(db, engine.baseFS, cfg)
-	if err != nil {
-		return nil, err
-	}
-
+	driver := buildDriver(db, engine.baseFS, cfg)
 	compiler, err := provider.BuildCompiler(context.Background(), driver, cfg.Namespace, cfg.FlowPath)
 	if err != nil {
 		return nil, err
@@ -99,7 +94,7 @@ func CreateRuntimeHandler(cfg Config, db *gorm.DB) (*RuntimeHandler, error) {
 }
 
 // buildDriver creates an environment driver based on the database configuration.
-func buildDriver(db *gorm.DB, baseFS string, cfg Config) (provider.Driver, error) {
+func buildDriver(db *gorm.DB, baseFS string, cfg Config) provider.Driver {
 	if db != nil {
 		ds := datastoresql.NewSQLStore(db, cfg.SecretKey)
 		fs := filestoresql.NewSQLFileStore(db)
@@ -109,9 +104,9 @@ func buildDriver(db *gorm.DB, baseFS string, cfg Config) (provider.Driver, error
 			FileStore:    fs,
 			FlowFilePath: cfg.FlowPath,
 			BaseFilePath: baseFS,
-		}, nil
+		}
 	}
-	return &provider.FileBasedProvider{BaseFilePath: baseFS}, nil
+	return &provider.FileBasedProvider{BaseFilePath: baseFS}
 }
 
 // Start starts the server.

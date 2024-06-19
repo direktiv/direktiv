@@ -11,7 +11,6 @@ import (
 )
 
 func buildTypescriptService(c *core.Config, sv *core.ServiceFileData, registrySecrets []corev1.LocalObjectReference) (*servingv1.Service, error) {
-
 	compiler, err := compiler.New(sv.FilePath, string(sv.TypescriptFile))
 	if err != nil {
 		return nil, err

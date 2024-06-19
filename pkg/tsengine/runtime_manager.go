@@ -15,7 +15,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/runtime"
 	"github.com/direktiv/direktiv/pkg/state"
 	"github.com/direktiv/direktiv/pkg/tracing"
-
 	"github.com/dop251/goja"
 	"github.com/google/uuid"
 )
@@ -76,18 +75,14 @@ func (rm *RuntimeManager) NewHandler(prg *goja.Program, fn string, secrets map[s
 }
 
 type RuntimeHandler struct {
-	baseFS string
-
-	secrets, functions map[string]string
-	startFn            string
-	tracingAttr        engine.ActionContext
-	prg                *goja.Program
-	jsonPayload        bool
-
-	// flowInformation *compiler.FlowInformation
-	Status Status
-
-	mtx *sync.Mutex
+	baseFS      string
+	secrets     map[string]string
+	functions   map[string]string
+	startFn     string
+	tracingAttr engine.ActionContext
+	prg         *goja.Program
+	jsonPayload bool
+	Status      Status
 }
 
 var _ http.Handler = RuntimeHandler{}

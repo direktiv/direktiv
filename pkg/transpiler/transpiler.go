@@ -19,10 +19,8 @@ type Transpiler struct {
 }
 
 func NewTranspiler() (*Transpiler, error) {
-
 	fn := randstr.String(8, "abcdefghijklmnopqrstuvwABCDEFGHIJKLMNOPQRSTUVWXYZ")
 	vm := goja.New()
-
 	vm.Set(fn, func(call goja.FunctionCall) goja.Value {
 		bs, _ := base64.StdEncoding.DecodeString(call.Argument(0).String())
 		return vm.ToValue(string(bs))
@@ -47,7 +45,6 @@ func NewTranspiler() (*Transpiler, error) {
 }
 
 func (t *Transpiler) Transpile(script string) (string, error) {
-
 	s := fmt.Sprintf("ts.transpile(%s('%s'), {}, /*fileName*/ undefined, /*diagnostics*/ undefined, /*moduleName*/ \"default\")",
 		t.fn, base64.StdEncoding.EncodeToString([]byte(script)))
 	value, err := t.vm.RunString(s)
