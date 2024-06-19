@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/database"
+	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/direktiv/direktiv/pkg/engine"
 	"github.com/direktiv/direktiv/pkg/instancestore"
 	"github.com/direktiv/direktiv/pkg/tsengine"
@@ -575,22 +576,13 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 	wait := r.URL.Query().Get("wait") == "true"
 
 	var data *instancestore.InstanceData
-
 	if strings.HasSuffix(path, utils.TypeScriptExtension) {
-		svcFile := tsengine.GenerateBasicServiceFile(path, ns.Name)
+		err := e.redirectToTSEngine(path, ns, w, r)
+		if err != nil {
+			// should never happen
 
-		kubernetesNamespace := os.Getenv("DIREKTIV_KNATIVE_NAMESPACE")
-		rp := httputil.ReverseProxy{
-			Rewrite: func(pr *httputil.ProxyRequest) {
-				url, err := url.Parse(fmt.Sprintf("http://%s.%s", svcFile.GetID(), kubernetesNamespace))
-				if err != nil {
-					// should never happen
-					return
-				}
-				pr.SetURL(url)
-			},
+			return
 		}
-		rp.ServeHTTP(w, r)
 	} else {
 		input, err := io.ReadAll(r.Body)
 		if err != nil {
@@ -619,6 +611,29 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 
 		writeJSON(w, marshalForAPI(data))
 	}
+}
+
+func (*instController) redirectToTSEngine(path string, ns *datastore.Namespace, w http.ResponseWriter, r *http.Request) error {
+	svcFile := tsengine.GenerateBasicServiceFile(path, ns.Name)
+	kubernetesNamespace := os.Getenv("DIREKTIV_KNATIVE_NAMESPACE")
+	var err1 error
+	rp := httputil.ReverseProxy{
+		Rewrite: func(pr *httputil.ProxyRequest) {
+			url, err := url.Parse(fmt.Sprintf("http://%s.%s", svcFile.GetID(), kubernetesNamespace))
+			if err != nil {
+				err1 = err
+
+				return
+			}
+			pr.SetURL(url)
+		},
+	}
+	if err1 != nil {
+		return err1
+	}
+	rp.ServeHTTP(w, r)
+
+	return nil
 }
 
 func (e *instController) handleWait(ctx context.Context, w http.ResponseWriter, r *http.Request, data *instancestore.InstanceData) {

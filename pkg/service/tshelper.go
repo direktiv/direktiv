@@ -128,9 +128,7 @@ func buildInitContainer(sidecar string) corev1.Container {
 	}
 }
 
-func buildEngineContainer(c *core.Config, sv *core.ServiceFileData, functions map[string]compiler.Function,
-	basicEnvs []corev1.EnvVar) corev1.Container {
-
+func buildEngineContainer(c *core.Config, sv *core.ServiceFileData, functions map[string]compiler.Function, basicEnvs []corev1.EnvVar) corev1.Container {
 	basicPort := 8081
 
 	for k := range functions {
@@ -249,7 +247,6 @@ func buildFunctionContainers(c *core.Config, sv *core.ServiceFileData, flowInfor
 		// v.Size
 
 		fnContainer := corev1.Container{
-
 			Name:      k,
 			Image:     v.Image,
 			Command:   []string{cmd},

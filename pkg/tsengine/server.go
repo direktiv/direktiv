@@ -32,7 +32,7 @@ func New(baseFS string) (*RuntimeManager, error) {
 	manager := &RuntimeManager{
 		baseFS: baseFS,
 	}
-	// prepare filesystem
+	// prepare filesystem.
 	err := os.MkdirAll(filepath.Join(baseFS, managerFsShared), 0766)
 	if err != nil {
 		return nil, err
