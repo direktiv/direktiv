@@ -1,7 +1,6 @@
 package compiler
 
-type Compiler struct {
-}
+type Compiler struct{}
 
 func New(path, typeScript string) (*Compiler, error) {
 	return &Compiler{}, nil
@@ -31,7 +30,7 @@ type Function struct {
 type Definition struct {
 	Type  string
 	Store string
-	Json  bool
+	JSON  bool
 	State string
 	Cron  string
 

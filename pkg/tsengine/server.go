@@ -1,15 +1,12 @@
 package tsengine
 
 import (
-	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
 	"sync"
-	"sync/atomic"
 
 	"github.com/direktiv/direktiv/pkg/core"
-	"github.com/direktiv/direktiv/pkg/engine"
 	"github.com/dop251/goja"
 )
 
@@ -19,8 +16,7 @@ type RuntimeManager struct {
 }
 
 type Status struct {
-	Start  int64 `json:"start"`
-	Active int32 `json:"active"`
+	Start int64 `json:"start"`
 }
 
 const (
@@ -60,6 +56,7 @@ func (rm *RuntimeManager) NewHandler(prg *goja.Program, fn string, secrets map[s
 		jsonPayload: jsonInput,
 		startFn:     fn,
 		functions:   functions,
+		baseFS:      rm.baseFS,
 	}
 }
 
@@ -68,7 +65,6 @@ type RuntimeHandler struct {
 	secrets     map[string]string
 	functions   map[string]string
 	startFn     string
-	tracingAttr engine.ActionContext
 	prg         *goja.Program
 	jsonPayload bool
 	Status      Status
@@ -76,11 +72,7 @@ type RuntimeHandler struct {
 
 var _ http.Handler = RuntimeHandler{}
 
-func (rh RuntimeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("RUN REQUEST!!!!")
-	atomic.AddInt32(&rh.Status.Active, 1)
-	defer atomic.AddInt32(&rh.Status.Active, -1)
-}
+func (rh RuntimeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {}
 
 func GenerateBasicServiceFile(path, ns string) *core.ServiceFileData {
 	return &core.ServiceFileData{

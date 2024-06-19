@@ -10,7 +10,7 @@ import (
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 )
 
-func buildTypescriptService(c *core.Config, sv *core.ServiceFileData, registrySecrets []corev1.LocalObjectReference) (*servingv1.Service, error) {
+func buildTypescriptService(c *core.Config, sv *core.ServiceFileData, _ []corev1.LocalObjectReference) (*servingv1.Service, error) {
 	compiler, err := compiler.New(sv.FilePath, string(sv.TypescriptFile))
 	if err != nil {
 		return nil, err
@@ -87,7 +87,6 @@ func buildTypescriptService(c *core.Config, sv *core.ServiceFileData, registrySe
 	}
 
 	return svc, nil
-
 }
 
 func buildInitContainer(sidecar string) corev1.Container {
@@ -200,7 +199,6 @@ func buildEngineContainer(c *core.Config, sv *core.ServiceFileData, functions ma
 		},
 		SecurityContext: getSecurityContext(),
 	}
-
 }
 
 func getSecurityContext() *corev1.SecurityContext {
@@ -214,7 +212,6 @@ func getSecurityContext() *corev1.SecurityContext {
 }
 
 func buildFunctionContainers(c *core.Config, sv *core.ServiceFileData, flowInformation *compiler.FlowInformation) ([]corev1.Container, error) {
-
 	rl, err := buildResourceLimits(c, sv)
 	if err != nil {
 		return nil, err
@@ -225,7 +222,6 @@ func buildFunctionContainers(c *core.Config, sv *core.ServiceFileData, flowInfor
 	// add function containers
 	basicPort := 8081
 	for k, v := range flowInformation.Functions {
-
 		// only workflow functions
 		if v.Image == "" {
 			continue
@@ -233,9 +229,9 @@ func buildFunctionContainers(c *core.Config, sv *core.ServiceFileData, flowInfor
 
 		// create envs
 		fnContainerBasicEnvs := buildEnvVars(false, c, sv)
-
+		const DIREKTIV = "direktiv"
 		cmd := v.Cmd
-		if v.Cmd == "direktiv" {
+		if v.Cmd == DIREKTIV {
 			cmd = "/mnt/shared/direktiv"
 
 			// add direktiv app env
@@ -248,7 +244,6 @@ func buildFunctionContainers(c *core.Config, sv *core.ServiceFileData, flowInfor
 				Value: fmt.Sprintf("%d", basicPort),
 			})
 		}
-		fmt.Printf("CHECK COMMAND %v\n", cmd)
 
 		// v.Envs
 		// v.Size
@@ -272,11 +267,7 @@ func buildFunctionContainers(c *core.Config, sv *core.ServiceFileData, flowInfor
 
 		basicPort++
 		containers = append(containers, fnContainer)
-
 	}
-
-	fmt.Println("LENGTH!!!!")
-	fmt.Println(len(containers))
 
 	return containers, nil
 }

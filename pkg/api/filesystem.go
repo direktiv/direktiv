@@ -322,7 +322,6 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 }
 
 func detectFlowContent(typ filestore.FileType, mimeType string) string {
-
 	// if it is not a standard type return
 	if typ == filestore.FileTypeDirectory || typ == filestore.FileTypeFile {
 		return ""
@@ -341,6 +340,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 	db, err := e.db.BeginTx(r.Context())
 	if err != nil {
 		writeInternalError(w, err)
+
 		return
 	}
 	defer db.Rollback()
@@ -354,6 +354,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeNotJSONError(w, err)
+
 		return
 	}
 

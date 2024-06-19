@@ -211,8 +211,6 @@ func renderServiceManager(db *database.SQLStore, serviceManager core.ServiceMana
 
 				funConfigList = append(funConfigList, sub...)
 			} else if file.Typ == filestore.FileTypeWorkflow && file.MIMEType == utils.TypeScriptMimeType {
-				fmt.Println("PARSE TYPESCRIPT")
-
 				svcFile := tsengine.GenerateBasicServiceFile(file.Path, ns.Name)
 				svcFile.TypescriptFile = file.Data
 
