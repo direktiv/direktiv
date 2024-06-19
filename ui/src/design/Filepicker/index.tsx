@@ -102,7 +102,7 @@ const FilepickerSelectButton: FC<FilepickerSelectButtonType> = ({
       "h-auto w-full cursor-pointer p-0 font-normal text-gray-11 hover:underline focus:bg-transparent focus:ring-0 focus:ring-transparent focus:ring-offset-0 dark:text-gray-dark-11 dark:focus:bg-transparent"
     )}
   >
-    <Button className="" size="sm">
+    <Button size="sm">
       <CheckCircle2 />
       {children}
     </Button>
