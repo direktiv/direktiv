@@ -2,8 +2,6 @@ package tsengine
 
 import (
 	"net/http"
-	"os"
-	"path/filepath"
 	"sync"
 
 	"github.com/direktiv/direktiv/pkg/core"
@@ -31,15 +29,6 @@ const (
 func New(baseFS string) (*RuntimeManager, error) {
 	manager := &RuntimeManager{
 		baseFS: baseFS,
-	}
-	// prepare filesystem.
-	err := os.MkdirAll(filepath.Join(baseFS, managerFsShared), 0766)
-	if err != nil {
-		return nil, err
-	}
-	err = os.MkdirAll(filepath.Join(baseFS, managerFsInstances), 0766)
-	if err != nil {
-		return nil, err
 	}
 
 	return manager, nil
