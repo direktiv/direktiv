@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/api"
@@ -22,6 +23,8 @@ import (
 	"github.com/direktiv/direktiv/pkg/pubsub"
 	"github.com/direktiv/direktiv/pkg/registry"
 	"github.com/direktiv/direktiv/pkg/service"
+	"github.com/direktiv/direktiv/pkg/tsengine"
+	"github.com/direktiv/direktiv/pkg/utils"
 )
 
 type NewMainArgs struct {
@@ -198,7 +201,7 @@ func renderServiceManager(db *database.SQLStore, serviceManager core.ServiceMana
 					FilePath:    file.Path,
 					ServiceFile: *serviceDef,
 				})
-			} else if file.Typ == filestore.FileTypeWorkflow {
+			} else if file.Typ == filestore.FileTypeWorkflow && file.MIMEType == "application/yaml" {
 				sub, err := getWorkflowFunctionDefinitionsFromWorkflow(ns, file)
 				if err != nil {
 					slog.Error("parse workflow def", "err", err)
@@ -207,6 +210,18 @@ func renderServiceManager(db *database.SQLStore, serviceManager core.ServiceMana
 				}
 
 				funConfigList = append(funConfigList, sub...)
+			} else if file.Typ == filestore.FileTypeWorkflow && file.MIMEType == utils.TypeScriptMimeType {
+				fmt.Println("PARSE TYPESCRIPT")
+
+				svcFile := tsengine.GenerateBasicServiceFile(file.Path, ns.Name)
+				svcFile.TypescriptFile = file.Data
+
+				svcFile.ServiceFile = core.ServiceFile{
+					Image: strings.ToLower(file.Checksum)[:32],
+					Size:  "medium",
+				}
+
+				funConfigList = append(funConfigList, svcFile)
 			}
 		}
 	}

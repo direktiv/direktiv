@@ -9,6 +9,9 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/http/httputil"
+	"net/url"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -16,6 +19,8 @@ import (
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/engine"
 	"github.com/direktiv/direktiv/pkg/instancestore"
+	"github.com/direktiv/direktiv/pkg/tsengine"
+	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -569,32 +574,51 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 
 	wait := r.URL.Query().Get("wait") == "true"
 
-	input, err := io.ReadAll(r.Body)
-	if err != nil {
-		return
+	var data *instancestore.InstanceData
+
+	if strings.HasSuffix(path, utils.TypeScriptExtension) {
+		svcFile := tsengine.GenerateBasicServiceFile(path, ns.Name)
+
+		kubernetesNamespace := os.Getenv("DIREKTIV_KNATIVE_NAMESPACE")
+		rp := httputil.ReverseProxy{
+			Rewrite: func(pr *httputil.ProxyRequest) {
+				url, err := url.Parse(fmt.Sprintf("http://%s.%s", svcFile.GetID(), kubernetesNamespace))
+				if err != nil {
+					// should never happen
+					return
+				}
+				pr.SetURL(url)
+			},
+		}
+		rp.ServeHTTP(w, r)
+	} else {
+		input, err := io.ReadAll(r.Body)
+		if err != nil {
+			return
+		}
+
+		if wait && len(input) == 0 {
+			input = []byte(`{}`)
+		}
+
+		data, err = e.manager.Start(ctx, ns.Name, path, input)
+		if err != nil {
+			writeError(w, &Error{
+				Code:    err.Error(),
+				Message: err.Error(),
+			})
+
+			return
+		}
+
+		if wait {
+			e.handleWait(ctx, w, r, data)
+
+			return
+		}
+
+		writeJSON(w, marshalForAPI(data))
 	}
-
-	if wait && len(input) == 0 {
-		input = []byte(`{}`)
-	}
-
-	data, err := e.manager.Start(ctx, ns.Name, path, input)
-	if err != nil {
-		writeError(w, &Error{
-			Code:    err.Error(),
-			Message: err.Error(),
-		})
-
-		return
-	}
-
-	if wait {
-		e.handleWait(ctx, w, r, data)
-
-		return
-	}
-
-	writeJSON(w, marshalForAPI(data))
 }
 
 func (e *instController) handleWait(ctx context.Context, w http.ResponseWriter, r *http.Request, data *instancestore.InstanceData) {

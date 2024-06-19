@@ -54,8 +54,15 @@ func (c *knativeClient) createService(sv *core.ServiceFileData) error {
 		})
 	}
 
-	// Step2: build service object
-	svcDef, err := buildService(c.config, sv, registrySecrets)
+	// Step2: build service object for either typescript
+	// or yaml functions
+	var svcDef *servingv1.Service
+	if sv.Typ == core.ServiceTypeTypescript {
+		svcDef, err = buildTypescriptService(c.config, sv, registrySecrets)
+	} else {
+		svcDef, err = buildService(c.config, sv, registrySecrets)
+	}
+
 	if err != nil {
 		return err
 	}
