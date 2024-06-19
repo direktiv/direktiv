@@ -18,11 +18,6 @@ type Status struct {
 }
 
 const (
-	managerFsShared    = "shared"
-	managerFsInstances = "instances"
-)
-
-const (
 	StateDataInputFile = "input.data"
 )
 
