@@ -1,6 +1,17 @@
 import { Dialog, DialogContent } from "~/design/Dialog";
 import { NoPermissions, NoResult, TableCell, TableRow } from "~/design/Table";
 import { Pagination, PaginationLink } from "~/design/Pagination";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/design/Select";
+import {
+  useEventsPageSizeActions,
+  useEventsPageSizeState,
+} from "~/util/store/events";
 
 import { Card } from "~/design/Card";
 import { EventSchemaType } from "~/api/events/schema";
@@ -16,8 +27,6 @@ import { useEvents } from "~/api/events/query/get";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-const pageSize = 10;
-
 const EventsList = ({
   filters,
   setFilters,
@@ -25,13 +34,21 @@ const EventsList = ({
   filters: FiltersSchemaType;
   setFilters: (filters: FiltersSchemaType) => void;
 }) => {
+  const { setEventsPageSize } = useEventsPageSizeActions();
   const { t } = useTranslation();
   const [eventDialog, setEventDialog] = useState<EventSchemaType | null>();
+
+  const pagesize = useEventsPageSizeState();
+  const [pageSize, setPageSize] = useState(
+    pagesize.pagesize ? Number(pagesize.pagesize) : 10
+  );
 
   const { data, isFetched, isAllowed, noPermissionMessage } = useEvents({
     enabled: true,
     filters,
   });
+
+  type EventsPageSizeValueType = 10 | 20 | 30 | 50 | null;
 
   const handleOpenChange = (state: boolean) => {
     if (!state) {
@@ -109,29 +126,53 @@ const EventsList = ({
                   )}
                 </EventsTable>
               </Card>
-              {totalPages > 1 && (
-                <Pagination>
-                  <PaginationLink
-                    data-testid="pagination-btn-left"
-                    icon="left"
-                    onClick={() => goToPreviousPage()}
-                  />
-                  {pagesList.map((page) => (
+              <div className="flex items-center justify-end">
+                <div className="m-2">
+                  <Select
+                    defaultValue={String(pageSize)}
+                    onValueChange={(value) => {
+                      setPageSize(Number(value));
+                      setEventsPageSize(
+                        Number(value) as EventsPageSizeValueType
+                      );
+                      goToPage(1);
+                    }}
+                  >
+                    <SelectTrigger variant="outline">
+                      <SelectValue placeholder="Show 10 rows" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="10">Show 10 rows</SelectItem>
+                      <SelectItem value="20">Show 20 rows</SelectItem>
+                      <SelectItem value="30">Show 30 rows</SelectItem>
+                      <SelectItem value="50">Show 50 rows</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                {totalPages > 1 && (
+                  <Pagination>
                     <PaginationLink
-                      active={currentPage === page}
-                      key={`${page}`}
-                      onClick={() => goToPage(page)}
-                    >
-                      {page}
-                    </PaginationLink>
-                  ))}
-                  <PaginationLink
-                    data-testid="pagination-btn-right"
-                    icon="right"
-                    onClick={() => goToNextPage()}
-                  />
-                </Pagination>
-              )}
+                      data-testid="pagination-btn-left"
+                      icon="left"
+                      onClick={() => goToPreviousPage()}
+                    />
+                    {pagesList.map((page) => (
+                      <PaginationLink
+                        active={currentPage === page}
+                        key={`${page}`}
+                        onClick={() => goToPage(page)}
+                      >
+                        {page}
+                      </PaginationLink>
+                    ))}
+                    <PaginationLink
+                      data-testid="pagination-btn-right"
+                      icon="right"
+                      onClick={() => goToNextPage()}
+                    />
+                  </Pagination>
+                )}
+              </div>
             </>
           )}
         </PaginationProvider>
