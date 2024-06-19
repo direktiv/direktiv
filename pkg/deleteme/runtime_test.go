@@ -48,6 +48,11 @@ func createRuntime(t *testing.T, s, fn map[string]string, script string, json bo
 	assert.NoError(t, err)
 	err = rb.WithCommand(&commands.FromJSONCommand{})
 	assert.NoError(t, err)
+	lc, err := commands.NewLogCommand([]interface{}{
+		"test", "testv"})
+	assert.NoError(t, err)
+	err = rb.WithCommand(lc)
+	assert.NoError(t, err)
 	err = rb.WithCommand(commands.NewFileCommand(rb))
 	assert.NoError(t, err)
 	err = rb.WithCommand(commands.NewSecretCommand(rb, &s))

@@ -10,8 +10,11 @@ import (
 	"sync/atomic"
 
 	"github.com/direktiv/direktiv/pkg/commands"
+	"github.com/direktiv/direktiv/pkg/core"
+	"github.com/direktiv/direktiv/pkg/engine"
 	"github.com/direktiv/direktiv/pkg/runtime"
 	"github.com/direktiv/direktiv/pkg/state"
+	"github.com/direktiv/direktiv/pkg/tracing"
 
 	"github.com/dop251/goja"
 	"github.com/google/uuid"
@@ -77,9 +80,9 @@ type RuntimeHandler struct {
 
 	secrets, functions map[string]string
 	startFn            string
-
-	prg         *goja.Program
-	jsonPayload bool
+	tracingAttr        engine.ActionContext
+	prg                *goja.Program
+	jsonPayload        bool
 
 	// flowInformation *compiler.FlowInformation
 	Status Status
@@ -90,7 +93,6 @@ type RuntimeHandler struct {
 var _ http.Handler = RuntimeHandler{}
 
 func (rh RuntimeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-
 	fmt.Println("RUN REQUEST!!!!")
 
 	id := uuid.New()
@@ -138,6 +140,17 @@ func (rh RuntimeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	err = rb.WithCommand(&commands.FromJSONCommand{})
+	if err != nil {
+		writeError(w, direktivErrorInternal, err.Error())
+		return
+	}
+	attrs := tracing.NewGetSlogAttributesWithNamepaceTrackWithStatus(rh.tracingAttr, core.LogRunningStatus)
+	lc, err := commands.NewLogCommand(attrs)
+	if err != nil {
+		writeError(w, direktivErrorInternal, err.Error())
+		return
+	}
+	err = rb.WithCommand(lc)
 	if err != nil {
 		writeError(w, direktivErrorInternal, err.Error())
 		return

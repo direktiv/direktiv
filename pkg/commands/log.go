@@ -1,15 +1,29 @@
 package commands
 
-import "fmt"
+import (
+	"fmt"
+	"log/slog"
+)
 
-type LogCommand struct{}
+type logCommand struct {
+	attrs []interface{}
+}
 
-func (c *LogCommand) GetName() string {
+func NewLogCommand(attrs []interface{}) (logCommand, error) {
+	if len(attrs)%2 != 0 {
+		return logCommand{}, fmt.Errorf("attrs should be passed as key value pairs.")
+	}
+	return logCommand{
+		attrs: attrs,
+	}, nil
+}
+
+func (c logCommand) GetName() string {
 	return "log"
 }
 
-func (c *LogCommand) GetCommandFunction() interface{} {
+func (c logCommand) GetCommandFunction() interface{} {
 	return func(format string, a ...interface{}) {
-		fmt.Println(fmt.Sprintf(format, a...))
+		slog.Info(fmt.Sprintf(format, a...), c.attrs...)
 	}
 }
