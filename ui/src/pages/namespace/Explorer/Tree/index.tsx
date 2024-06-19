@@ -11,6 +11,7 @@ import {
 import { BaseFileSchemaType } from "~/api/files/schema";
 import { Card } from "~/design/Card";
 import Delete from "./components/modals/Delete";
+import { DropdownMenuSeparator } from "~/design/Dropdown";
 import ExplorerHeader from "./Header";
 import FileRow from "./FileRow";
 import FileViewer from "./components/modals/FileViewer";
@@ -18,6 +19,7 @@ import { FolderUp } from "lucide-react";
 import Input from "~/design/Input";
 import { Link } from "react-router-dom";
 import NoResult from "./NoResult";
+import NoSearchResult from "./NoSearchResult";
 import Rename from "./components/modals/Rename";
 import { analyzePath } from "~/util/router/utils";
 import { getFilenameFromPath } from "~/api/files/utils";
@@ -56,7 +58,11 @@ const ExplorerPage: FC = () => {
   );
 
   const filteredFiles = useMemo(
-    () => children.filter((child) => !hasQuery || child.path.includes(query)),
+    () =>
+      children.filter(
+        (child) =>
+          !hasQuery || child.path.toLowerCase().includes(query.toLowerCase())
+      ),
     [hasQuery, query, children]
   );
 
@@ -80,6 +86,7 @@ const ExplorerPage: FC = () => {
 
   const showTable = !isRoot || children.length > 0;
   const noResults = isSuccess && children.length === 0;
+  const noSearchResult = isSuccess && filteredFiles.length === 0;
   const wideOverlay = !!previewNode;
 
   const existingNames = children?.map((file) => getFilenameFromPath(file.path));
@@ -90,75 +97,79 @@ const ExplorerPage: FC = () => {
       <div className="p-5">
         <Card>
           {showTable && (
-            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-              <Table>
-                <TableBody>
-                  <div className="flex justify-between gap-5 p-2">
-                    <Input
-                      data-testid="queryField"
-                      className="sm:w-60"
-                      value={query}
-                      onChange={(e) => {
-                        setQuery(e.target.value);
-                      }}
-                      placeholder={t("pages.explorer.tree.list.filter")}
-                    />
-                  </div>
-                  {!isRoot && (
-                    <TableRow>
-                      <TableCell colSpan={2}>
-                        <Link
-                          to={pages.explorer.createHref({
-                            namespace,
-                            path: parent?.absolute,
-                          })}
-                          className="flex items-center space-x-3 hover:underline"
-                        >
-                          <FolderUp className="h-5" />
-                          <span>
-                            {t("pages.explorer.tree.list.oneLevelUp")}
-                          </span>
-                        </Link>
-                      </TableCell>
-                    </TableRow>
+            <>
+              <div className="flex justify-between gap-5 p-2">
+                <Input
+                  data-testid="queryField"
+                  className="sm:w-60"
+                  value={query}
+                  onChange={(e) => {
+                    setQuery(e.target.value);
+                  }}
+                  placeholder={t("pages.explorer.tree.list.filter")}
+                />
+              </div>
+              <DropdownMenuSeparator></DropdownMenuSeparator>
+              {noSearchResult && <NoSearchResult />}
+              <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                <Table>
+                  <TableBody>
+                    {!isRoot && (
+                      <TableRow>
+                        <TableCell colSpan={2}>
+                          <Link
+                            to={pages.explorer.createHref({
+                              namespace,
+                              path: parent?.absolute,
+                            })}
+                            className="flex items-center space-x-3 hover:underline"
+                          >
+                            <FolderUp className="h-5" />
+                            <span>
+                              {t("pages.explorer.tree.list.oneLevelUp")}
+                            </span>
+                          </Link>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                    {filteredFiles.map((item) => (
+                      <FileRow
+                        key={item.path}
+                        namespace={namespace}
+                        file={item}
+                        onDeleteClicked={setDeleteNode}
+                        onRenameClicked={setRenameNode}
+                        onPreviewClicked={setPreviewNode}
+                      />
+                    ))}
+                  </TableBody>
+                </Table>
+                <DialogContent
+                  className={twMergeClsx(
+                    wideOverlay && "sm:max-w-xl md:max-w-2xl lg:max-w-3xl"
                   )}
-                  {filteredFiles.map((item) => (
-                    <FileRow
-                      key={item.path}
-                      namespace={namespace}
-                      file={item}
-                      onDeleteClicked={setDeleteNode}
-                      onRenameClicked={setRenameNode}
-                      onPreviewClicked={setPreviewNode}
+                >
+                  {previewNode && <FileViewer file={previewNode} />}
+                  {deleteNode && (
+                    <Delete
+                      file={deleteNode}
+                      close={() => {
+                        setDialogOpen(false);
+                      }}
                     />
-                  ))}
-                </TableBody>
-              </Table>
-              <DialogContent
-                className={twMergeClsx(
-                  wideOverlay && "sm:max-w-xl md:max-w-2xl lg:max-w-3xl"
-                )}
-              >
-                {previewNode && <FileViewer file={previewNode} />}
-                {deleteNode && (
-                  <Delete
-                    file={deleteNode}
-                    close={() => {
-                      setDialogOpen(false);
-                    }}
-                  />
-                )}
-                {renameFile && (
-                  <Rename
-                    file={renameFile}
-                    close={() => {
-                      setDialogOpen(false);
-                    }}
-                    unallowedNames={existingNames}
-                  />
-                )}
-              </DialogContent>
-            </Dialog>
+                  )}
+                  {renameFile && (
+                    <Rename
+                      file={renameFile}
+                      close={() => {
+                        setDialogOpen(false);
+                      }}
+                      unallowedNames={existingNames}
+                    />
+                  )}
+                </DialogContent>
+              </Dialog>
+            </>
           )}
           {noResults && <NoResult />}
         </Card>

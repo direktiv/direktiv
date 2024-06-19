@@ -54,6 +54,9 @@
             "createService": "Create Service",
             "createEndpoint": "Create Endpoint",
             "createDirectory": "Create Directory"
+          },
+          "noSearchResults": {
+            "title": "No file matches your search"
           }
         },
         "rename": {
