@@ -179,7 +179,7 @@ func TestStateInputFile(t *testing.T) {
 	sec := make(map[string]string)
 	fns := make(map[string]string)
 
-	rt := createRuntime(t, sec, fns, script, true)
+	rt := createRuntime(t, sec, fns, script, false)
 	w := httptest.NewRecorder()
 
 	r, _, err := rt.Execute("start", req, w)
