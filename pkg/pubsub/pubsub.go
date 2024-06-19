@@ -1,13 +1,11 @@
 package pubsub
 
-import (
-	"github.com/google/uuid"
-)
-
 type CoreBus interface {
 	Publish(channel string, data string) error
+	Listen(channel string) error
 	Loop(done <-chan struct{}, handler func(channel string, data string)) error
 }
+<<<<<<< HEAD
 
 var (
 	WorkflowCreate = "workflow_create"
@@ -47,3 +45,5 @@ type FileChangeEvent struct {
 	DeleteFileID uuid.UUID
 	MimeType     string
 }
+=======
+>>>>>>> main

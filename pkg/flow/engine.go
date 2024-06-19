@@ -26,6 +26,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/flow/states"
 	"github.com/direktiv/direktiv/pkg/instancestore"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/pubsub"
 	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/google/uuid"
 	"github.com/senseyeio/duration"
@@ -43,7 +44,7 @@ func initEngine(srv *server) *engine {
 
 	engine.server = srv
 
-	engine.pBus.Subscribe(engine.instanceMessagesChannelHandler, engineInstanceMessagesChannel)
+	engine.pBus.Subscribe(&pubsub.InstanceMessageEvent{}, engine.instanceMessagesChannelHandler)
 
 	go engine.instanceKicker()
 
@@ -799,9 +800,8 @@ type actionResultPayload struct {
 
 type actionResultMessage struct {
 	InstanceID string
-	State      string
-	Step       int
-	Payload    actionResultPayload
+	enginerefactor.ActionContext
+	Payload actionResultPayload
 }
 
 func (engine *engine) createTransport() *http.Transport {

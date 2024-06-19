@@ -14,7 +14,6 @@ import { Card } from "~/design/Card";
 import Filters from "../components/Filters";
 import { FiltersObj } from "~/api/instances/query/utils";
 import { Pagination } from "~/components/Pagination";
-import RefreshButton from "~/design/RefreshButton";
 import Row from "./Row";
 import { useInstances } from "~/api/instances/query/get";
 import { useState } from "react";
@@ -26,14 +25,7 @@ const InstancesListPage = () => {
   const [offset, setOffset] = useState(0);
   const [filters, setFilters] = useState<FiltersObj>({});
   const { t } = useTranslation();
-  const {
-    data,
-    isSuccess,
-    isFetching,
-    refetch,
-    isAllowed,
-    noPermissionMessage,
-  } = useInstances({
+  const { data, isSuccess, isAllowed, noPermissionMessage } = useInstances({
     limit: instancesPerPage,
     offset,
     filters,
@@ -57,15 +49,6 @@ const InstancesListPage = () => {
           <Boxes className="h-5" />
           {t("pages.instances.list.title")}
         </h3>
-        <RefreshButton
-          icon
-          variant="outline"
-          aria-label={t("pages.instances.list.refetchLabel")}
-          disabled={isFetching}
-          onClick={() => {
-            refetch();
-          }}
-        />
       </div>
       <Card>
         <Filters filters={filters} onUpdate={handleFilterChange} />

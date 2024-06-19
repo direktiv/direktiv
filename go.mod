@@ -13,23 +13,34 @@ require (
 	github.com/compose-spec/compose-go/v2 v2.1.1
 	github.com/docker/docker v24.0.7+incompatible
 	github.com/dop251/goja v0.0.0-20231027120936-b396bb4c349d
+<<<<<<< HEAD
 	github.com/fsnotify/fsnotify v1.7.0
+=======
+>>>>>>> main
 	github.com/gabriel-vasile/mimetype v1.4.3
 	github.com/glebarez/sqlite v1.10.0
 	github.com/go-chi/chi/v5 v5.0.10
 	github.com/go-git/go-git/v5 v5.11.0
-	github.com/gobwas/glob v0.2.3
 	github.com/google/go-github/v57 v57.0.1-0.20231214141441-c4ec3276de85
 	github.com/google/uuid v1.4.0
 	github.com/gorilla/mux v1.8.1
+<<<<<<< HEAD
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/h2non/filetype v1.1.3
 	github.com/hashicorp/go-retryablehttp v0.7.7
 	github.com/itchyny/gojq v0.12.15
+=======
+	github.com/itchyny/gojq v0.12.14
+>>>>>>> main
 	github.com/jinzhu/copier v0.4.0
 	github.com/lib/pq v1.10.9
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/mitchellh/mapstructure v1.5.0
+<<<<<<< HEAD
+=======
+	github.com/olekukonko/tablewriter v0.0.5
+	github.com/pkg/errors v0.9.1
+>>>>>>> main
 	github.com/psanford/memfs v0.0.0-20230130182539-4dbf7e3e865e
 	github.com/qri-io/jsonschema v0.2.1
 	github.com/r3labs/sse v0.0.0-20210224172625-26fe804710bc
@@ -48,11 +59,16 @@ require (
 	go.opentelemetry.io/otel/sdk v1.21.0
 	go.opentelemetry.io/otel/trace v1.21.0
 	golang.org/x/crypto v0.21.0
+<<<<<<< HEAD
 	golang.org/x/sys v0.20.0
 	golang.org/x/text v0.14.0
 	golang.org/x/tools v0.18.0
 	google.golang.org/grpc v1.60.0
 	google.golang.org/protobuf v1.33.0
+=======
+	golang.org/x/sys v0.18.0
+	google.golang.org/grpc v1.60.0
+>>>>>>> main
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/driver/postgres v1.5.4
 	gorm.io/gorm v1.25.5
@@ -117,8 +133,12 @@ require (
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
+<<<<<<< HEAD
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
+=======
+	github.com/mattn/go-runewidth v0.0.15 // indirect
+>>>>>>> main
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
@@ -126,12 +146,12 @@ require (
 	github.com/opencontainers/image-spec v1.1.0-rc5 // indirect
 	github.com/pelletier/go-toml/v2 v2.1.1 // indirect
 	github.com/pjbgf/sha1cd v0.3.0 // indirect
-	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/prometheus/client_model v0.5.0 // indirect
 	github.com/prometheus/procfs v0.12.0 // indirect
 	github.com/qri-io/jsonpointer v0.1.1 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
+	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/sagikazarmark/locafero v0.4.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/sergi/go-diff v1.3.1 // indirect
@@ -156,11 +176,13 @@ require (
 	golang.org/x/sync v0.6.0 // indirect
 	golang.org/x/term v0.18.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
+	golang.org/x/tools v0.16.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/genproto v0.0.0-20231211222908-989df2bf70f3 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20231211222908-989df2bf70f3 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20231211222908-989df2bf70f3 // indirect
+	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/cenkalti/backoff.v1 v1.1.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
