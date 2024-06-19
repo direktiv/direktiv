@@ -34,6 +34,7 @@ func (e *fsController) read(w http.ResponseWriter, r *http.Request) {
 	// handle raw file read.
 	if r.URL.Query().Get("raw") == "true" {
 		e.readRaw(w, r)
+
 		return
 	}
 
@@ -42,6 +43,7 @@ func (e *fsController) read(w http.ResponseWriter, r *http.Request) {
 	db, err := e.db.BeginTx(r.Context())
 	if err != nil {
 		writeInternalError(w, err)
+
 		return
 	}
 	defer db.Rollback()
@@ -55,6 +57,7 @@ func (e *fsController) read(w http.ResponseWriter, r *http.Request) {
 	file, err := fStore.ForNamespace(ns.Name).GetFile(r.Context(), path)
 	if err != nil {
 		writeFileStoreError(w, err)
+
 		return
 	}
 
@@ -63,12 +66,14 @@ func (e *fsController) read(w http.ResponseWriter, r *http.Request) {
 		children, err = fStore.ForNamespace(ns.Name).ReadDirectory(r.Context(), path)
 		if err != nil {
 			writeInternalError(w, err)
+
 			return
 		}
 	} else {
 		data, err := fStore.ForFile(file).GetData(r.Context())
 		if err != nil {
 			writeInternalError(w, err)
+
 			return
 		}
 		file.Data = data
@@ -91,6 +96,7 @@ func (e *fsController) readRaw(w http.ResponseWriter, r *http.Request) {
 	db, err := e.db.BeginTx(r.Context())
 	if err != nil {
 		writeInternalError(w, err)
+
 		return
 	}
 	defer db.Rollback()
@@ -104,14 +110,17 @@ func (e *fsController) readRaw(w http.ResponseWriter, r *http.Request) {
 	file, err := fStore.ForNamespace(ns.Name).GetFile(r.Context(), path)
 	if errors.Is(err, filestore.ErrNotFound) {
 		w.WriteHeader(http.StatusNotFound)
+
 		return
 	}
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
+
 		return
 	}
 	if file.Typ == filestore.FileTypeDirectory {
 		w.WriteHeader(http.StatusNotFound)
+
 		return
 	}
 	w.Header().Set("Content-Type", file.MIMEType)
@@ -119,6 +128,7 @@ func (e *fsController) readRaw(w http.ResponseWriter, r *http.Request) {
 	data, err := fStore.ForFile(file).GetData(r.Context())
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
+
 		return
 	}
 
@@ -134,6 +144,7 @@ func (e *fsController) delete(w http.ResponseWriter, r *http.Request) {
 	db, err := e.db.BeginTx(r.Context())
 	if err != nil {
 		writeInternalError(w, err)
+
 		return
 	}
 	defer db.Rollback()
@@ -147,11 +158,13 @@ func (e *fsController) delete(w http.ResponseWriter, r *http.Request) {
 	file, err := fStore.ForNamespace(ns.Name).GetFile(r.Context(), path)
 	if err != nil {
 		writeFileStoreError(w, err)
+
 		return
 	}
 	err = fStore.ForFile(file).Delete(r.Context(), true)
 	if err != nil {
 		writeInternalError(w, err)
+
 		return
 	}
 
@@ -160,12 +173,14 @@ func (e *fsController) delete(w http.ResponseWriter, r *http.Request) {
 	err = dStore.RuntimeVariables().DeleteForWorkflow(r.Context(), ns.Name, path)
 	if err != nil {
 		writeInternalError(w, err)
+
 		return
 	}
 
 	err = db.Commit(r.Context())
 	if err != nil {
 		writeInternalError(w, err)
+
 		return
 	}
 
@@ -204,6 +219,7 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 	db, err := e.db.BeginTx(r.Context())
 	if err != nil {
 		writeInternalError(w, err)
+
 		return
 	}
 	defer db.Rollback()
@@ -214,6 +230,7 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeNotJSONError(w, err)
+
 		return
 	}
 
@@ -241,6 +258,7 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 			Code:    "request_data_invalid",
 			Message: "file data has invalid yaml string",
 		})
+
 		return
 	} else if dataType == utils.TypeScriptMimeType {
 		// validate typescript
@@ -250,6 +268,7 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 				Code:    "request_data_invalid",
 				Message: "file data has invalid typescript string",
 			})
+
 			return
 		}
 		_, err = compiler.CompileFlow()
@@ -258,6 +277,7 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 				Code:    "request_data_invalid",
 				Message: "file data has invalid typescript string",
 			})
+
 			return
 		}
 	}
@@ -277,6 +297,7 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 	err = db.Commit(r.Context())
 	if err != nil {
 		writeInternalError(w, err)
+
 		return
 	}
 
@@ -367,6 +388,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 	oldFile, err := fStore.ForNamespace(ns.Name).GetFile(r.Context(), path)
 	if err != nil {
 		writeFileStoreError(w, err)
+
 		return
 	}
 
@@ -380,6 +402,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 			Code:    "request_data_invalid",
 			Message: "file data has invalid yaml string",
 		})
+
 		return
 	} else if dataType == utils.TypeScriptMimeType {
 		// validate typescript
@@ -389,6 +412,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 				Code:    "request_data_invalid",
 				Message: "file data has invalid typescript string",
 			})
+
 			return
 		}
 		_, err = compiler.CompileFlow()
@@ -397,6 +421,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 				Code:    "request_data_invalid",
 				Message: "file data has invalid typescript string",
 			})
+
 			return
 		}
 	}
@@ -405,6 +430,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 		_, err = fStore.ForFile(oldFile).SetData(r.Context(), decodedBytes)
 		if err != nil {
 			writeFileStoreError(w, err)
+
 			return
 		}
 	}
@@ -413,6 +439,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 		err = fStore.ForFile(oldFile).SetPath(r.Context(), req.Path)
 		if err != nil {
 			writeFileStoreError(w, err)
+
 			return
 		}
 		oldFile.Path = req.Path
@@ -421,6 +448,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 	updatedFile, err := fStore.ForNamespace(ns.Name).GetFile(r.Context(), oldFile.Path)
 	if err != nil {
 		writeFileStoreError(w, err)
+
 		return
 	}
 	updatedFile.Data = decodedBytes
@@ -430,12 +458,14 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 	err = dStore.RuntimeVariables().SetWorkflowPath(r.Context(), ns.Name, path, req.Path)
 	if err != nil {
 		writeInternalError(w, err)
+
 		return
 	}
 
 	err = db.Commit(r.Context())
 	if err != nil {
 		writeInternalError(w, err)
+
 		return
 	}
 
