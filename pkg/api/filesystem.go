@@ -396,35 +396,12 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 	dataType := detectFlowContent(oldFile.Typ, oldFile.MIMEType)
 	filePath := filepath.Join("/", path, oldFile.Path)
 
-	// Validate if data is valid yaml with direktiv files.
 	var data struct{}
-	if err = yaml.Unmarshal(decodedBytes, &data); err != nil && dataType == yamlFlowType {
-		writeError(w, &Error{
-			Code:    "request_data_invalid",
-			Message: "file data has invalid yaml string",
-		})
+	werr := validate(decodedBytes, data, dataType, filePath)
+	if werr != nil {
+		writeError(w, werr)
 
 		return
-	} else if dataType == utils.TypeScriptMimeType {
-		// validate typescript
-		compiler, err := compiler.New(filePath, string(decodedBytes))
-		if err != nil {
-			writeError(w, &Error{
-				Code:    "request_data_invalid",
-				Message: "file data has invalid typescript string",
-			})
-
-			return
-		}
-		_, err = compiler.CompileFlow()
-		if err != nil {
-			writeError(w, &Error{
-				Code:    "request_data_invalid",
-				Message: "file data has invalid typescript string",
-			})
-
-			return
-		}
 	}
 
 	if req.Data != "" {
@@ -503,4 +480,24 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, updatedFile)
+}
+
+func validate(decodedBytes []byte, data struct{}, dataType string, filePath string) *Error {
+	if err := yaml.Unmarshal(decodedBytes, &data); err != nil && dataType == yamlFlowType {
+		return &Error{
+			Code:    "request_data_invalid",
+			Message: "file data has invalid yaml string",
+		}
+	} else if dataType == utils.TypeScriptMimeType {
+
+		_, err := compiler.New(filePath, string(decodedBytes))
+		if err != nil {
+			return &Error{
+				Code:    "request_data_invalid",
+				Message: "file data has invalid typescript string",
+			}
+		}
+	}
+
+	return nil
 }

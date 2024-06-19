@@ -580,37 +580,39 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 		err := e.redirectToTSEngine(path, ns, w, r)
 		if err != nil {
 			// should never happen
-
-			return
-		}
-	} else {
-		input, err := io.ReadAll(r.Body)
-		if err != nil {
 			return
 		}
 
-		if wait && len(input) == 0 {
-			input = []byte(`{}`)
-		}
-
-		data, err = e.manager.Start(ctx, ns.Name, path, input)
-		if err != nil {
-			writeError(w, &Error{
-				Code:    err.Error(),
-				Message: err.Error(),
-			})
-
-			return
-		}
-
-		if wait {
-			e.handleWait(ctx, w, r, data)
-
-			return
-		}
-
-		writeJSON(w, marshalForAPI(data))
+		return // Exit the function early after redirection
 	}
+
+	// Remaining logic for non-TypeScript files
+	input, err := io.ReadAll(r.Body)
+	if err != nil {
+		return
+	}
+
+	if wait && len(input) == 0 {
+		input = []byte(`{}`)
+	}
+
+	data, err = e.manager.Start(ctx, ns.Name, path, input)
+	if err != nil {
+		writeError(w, &Error{
+			Code:    err.Error(),
+			Message: err.Error(),
+		})
+
+		return
+	}
+
+	if wait {
+		e.handleWait(ctx, w, r, data)
+
+		return
+	}
+
+	writeJSON(w, marshalForAPI(data))
 }
 
 func (*instController) redirectToTSEngine(path string, ns *datastore.Namespace, w http.ResponseWriter, r *http.Request) error {

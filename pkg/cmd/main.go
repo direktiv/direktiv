@@ -183,17 +183,19 @@ func renderServiceManager(db *database.SQLStore, serviceManager core.ServiceMana
 			continue
 		}
 		for _, file := range files {
-			if file.Typ == filestore.FileTypeService {
+			switch {
+			case file.Typ == filestore.FileTypeService:
 				serviceDef, err := core.ParseServiceFile(file.Data)
 				if err != nil {
 					slog.Error("parse service file", "err", err)
-
-					continue
+					continue // Skip to the next file in the loop
 				}
+
 				typ := core.ServiceTypeNamespace
 				if ns.Name == core.SystemNamespace {
 					typ = core.ServiceTypeSystem
 				}
+
 				funConfigList = append(funConfigList, &core.ServiceFileData{
 					Typ:         typ,
 					Name:        "",
@@ -201,24 +203,22 @@ func renderServiceManager(db *database.SQLStore, serviceManager core.ServiceMana
 					FilePath:    file.Path,
 					ServiceFile: *serviceDef,
 				})
-			} else if file.Typ == filestore.FileTypeWorkflow && file.MIMEType == "application/yaml" {
+
+			case file.Typ == filestore.FileTypeWorkflow && file.MIMEType == "application/yaml":
 				sub, err := getWorkflowFunctionDefinitionsFromWorkflow(ns, file)
 				if err != nil {
 					slog.Error("parse workflow def", "err", err)
-
 					continue
 				}
-
 				funConfigList = append(funConfigList, sub...)
-			} else if file.Typ == filestore.FileTypeWorkflow && file.MIMEType == utils.TypeScriptMimeType {
+
+			case file.Typ == filestore.FileTypeWorkflow && file.MIMEType == utils.TypeScriptMimeType:
 				svcFile := tsengine.GenerateBasicServiceFile(file.Path, ns.Name)
 				svcFile.TypescriptFile = file.Data
-
 				svcFile.ServiceFile = core.ServiceFile{
 					Image: strings.ToLower(file.Checksum)[:32],
 					Size:  "medium",
 				}
-
 				funConfigList = append(funConfigList, svcFile)
 			}
 		}
