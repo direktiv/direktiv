@@ -46,18 +46,9 @@ func DefaultDefinition() *Definition {
 }
 
 const (
-	defTypeDefault   = "default"
-	defTypeScheduled = "scheduled"
-	defTypeEvent     = "event"
-	defTypeEventsAnd = "eventsAnd"
-	defTypeEventsOr  = "eventsOr"
-
-	defTimoutDefault = "PT15M"
-
-	defStoreAlways = "always"
-	defStoreError  = "error"
-	defStoreNever  = "never"
-
+	defTypeDefault     = "default"
+	defTimoutDefault   = "PT15M"
+	defStoreAlways     = "always"
 	defMetricInstances = "instances"
 )
 
