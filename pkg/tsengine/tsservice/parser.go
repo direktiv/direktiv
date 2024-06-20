@@ -6,17 +6,6 @@ import (
 	"github.com/dop251/goja/ast"
 )
 
-type jsNameStruct struct {
-	Name string `json:"Name"`
-	Idx  int    `json:"Idx"`
-}
-
-type jsStringValue struct {
-	Idx     int    `json:"Idx"`
-	Literal string `json:"Literal"`
-	Value   string `json:"Value"`
-}
-
 func validateBodyFunctions(prg *ast.Program) error {
 	// everything not being a function declaration is
 	// stored in a list
