@@ -187,13 +187,6 @@ func (e *fsController) delete(w http.ResponseWriter, r *http.Request) {
 	writeOk(w)
 }
 
-type fileRequest struct {
-	Name     string             `json:"name"`
-	Typ      filestore.FileType `json:"type"`
-	MIMEType string             `json:"mimeType"`
-	Data     string             `json:"data"`
-}
-
 const (
 	yamlFlowType = "application/yaml"
 )
@@ -210,7 +203,12 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 
 	fStore := db.FileStore()
 
-	req := fileRequest{}
+	req := struct {
+		Name     string             `json:"name"`
+		Typ      filestore.FileType `json:"type"`
+		MIMEType string             `json:"mimeType"`
+		Data     string             `json:"data"`
+	}{}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeNotJSONError(w, err)
