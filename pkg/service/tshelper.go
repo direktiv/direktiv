@@ -4,14 +4,15 @@ import (
 	"fmt"
 
 	"github.com/direktiv/direktiv/pkg/core"
-	"github.com/direktiv/direktiv/pkg/tsengine/compiler"
+	"github.com/direktiv/direktiv/pkg/tsengine/tsservice"
+	"github.com/direktiv/direktiv/pkg/tsengine/tstypes"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 )
 
 func buildTypescriptService(c *core.Config, sv *core.ServiceFileData, _ []corev1.LocalObjectReference) (*servingv1.Service, error) {
-	compiler, err := compiler.New(sv.FilePath, string(sv.TypescriptFile))
+	compiler, err := tsservice.NewTSServiceCompiler(sv.Namespace, sv.FilePath, string(sv.TypescriptFile))
 	if err != nil {
 		return nil, err
 	}
@@ -128,7 +129,7 @@ func buildInitContainer(sidecar string) corev1.Container {
 	}
 }
 
-func buildEngineContainer(c *core.Config, sv *core.ServiceFileData, functions map[string]compiler.Function, basicEnvs []corev1.EnvVar) corev1.Container {
+func buildEngineContainer(c *core.Config, sv *core.ServiceFileData, functions map[string]tstypes.Function, basicEnvs []corev1.EnvVar) corev1.Container {
 	basicPort := 8081
 
 	for k := range functions {
@@ -209,7 +210,7 @@ func getSecurityContext() *corev1.SecurityContext {
 	}
 }
 
-func buildFunctionContainers(c *core.Config, sv *core.ServiceFileData, flowInformation *compiler.FlowInformation) ([]corev1.Container, error) {
+func buildFunctionContainers(c *core.Config, sv *core.ServiceFileData, flowInformation *tstypes.FlowInformation) ([]corev1.Container, error) {
 	rl, err := buildResourceLimits(c, sv)
 	if err != nil {
 		return nil, err

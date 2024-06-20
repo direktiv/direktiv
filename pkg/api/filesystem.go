@@ -12,7 +12,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/direktiv/direktiv/pkg/pubsub"
-	"github.com/direktiv/direktiv/pkg/tsengine/compiler"
+	"github.com/direktiv/direktiv/pkg/tsengine/tsservice"
 	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/go-chi/chi/v5"
 	"gopkg.in/yaml.v3"
@@ -243,12 +243,13 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 		return
 	} else if dataType == utils.TypeScriptMimeType {
 		// validate typescript
-		compiler, err := compiler.New(filePath, string(decodedBytes))
+		compiler, err := tsservice.NewTSServiceCompiler(ns.Name, filePath, string(decodedBytes))
 		if err != nil {
 			writeError(w, &Error{
 				Code:    "request_data_invalid",
 				Message: "file data has invalid typescript string",
 			})
+
 			return
 		}
 		_, err = compiler.CompileFlow()
@@ -257,6 +258,7 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 				Code:    "request_data_invalid",
 				Message: "file data has invalid typescript string",
 			})
+
 			return
 		}
 	}
@@ -372,7 +374,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 	filePath := filepath.Join("/", path, oldFile.Path)
 
 	var data struct{}
-	werr := validate(decodedBytes, data, dataType, filePath)
+	werr := validate(ns.Name, decodedBytes, data, dataType, filePath)
 	if werr != nil {
 		writeError(w, werr)
 		return
@@ -451,14 +453,14 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, updatedFile)
 }
 
-func validate(decodedBytes []byte, data struct{}, dataType string, filePath string) *Error {
+func validate(namespace string, decodedBytes []byte, data struct{}, dataType string, filePath string) *Error {
 	if err := yaml.Unmarshal(decodedBytes, &data); err != nil && dataType == yamlFlowType {
 		return &Error{
 			Code:    "request_data_invalid",
 			Message: "file data has invalid yaml string",
 		}
 	} else if dataType == utils.TypeScriptMimeType {
-		c, err := compiler.New(filePath, string(decodedBytes))
+		c, err := tsservice.NewTSServiceCompiler(namespace, filePath, string(decodedBytes))
 		if err != nil {
 			return &Error{
 				Code:    "request_data_invalid",

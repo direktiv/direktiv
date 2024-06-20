@@ -1,4 +1,4 @@
-package compiler
+package tstypes
 
 type Definition struct {
 	Type  string
@@ -60,3 +60,9 @@ const (
 
 	defMetricInstances = "instances"
 )
+
+func (def *Definition) Validate() *Messages {
+	m := NewMessages()
+
+	return m
+}

@@ -3,6 +3,7 @@ module github.com/direktiv/direktiv
 go 1.22
 
 require (
+	dario.cat/mergo v1.0.0
 	github.com/bbuck/go-lexer v1.0.0
 	github.com/caarlos0/env/v10 v10.0.0
 	github.com/cloudevents/sdk-go/v2 v2.14.0
@@ -15,7 +16,7 @@ require (
 	github.com/google/go-github/v57 v57.0.1-0.20231214141441-c4ec3276de85
 	github.com/google/uuid v1.4.0
 	github.com/gorilla/mux v1.8.1
-	github.com/itchyny/gojq v0.12.14
+	github.com/itchyny/gojq v0.12.15
 	github.com/jinzhu/copier v0.4.0
 	github.com/lib/pq v1.10.9
 	github.com/mattn/go-shellwords v1.0.12
@@ -40,6 +41,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.21.0
 	golang.org/x/crypto v0.21.0
 	golang.org/x/sys v0.18.0
+	golang.org/x/text v0.14.0
 	google.golang.org/grpc v1.60.0
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/driver/postgres v1.5.4
@@ -51,7 +53,6 @@ require (
 )
 
 require (
-	dario.cat/mergo v1.0.0 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 // indirect
 	github.com/Microsoft/go-winio v0.6.1 // indirect
 	github.com/ProtonMail/go-crypto v0.0.0-20230923063757-afb1ddc0824c // indirect
@@ -119,7 +120,7 @@ require (
 	github.com/prometheus/procfs v0.12.0 // indirect
 	github.com/qri-io/jsonpointer v0.1.1 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
-	github.com/rivo/uniseg v0.4.4 // indirect
+	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/sagikazarmark/locafero v0.4.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/sergi/go-diff v1.3.1 // indirect
@@ -142,7 +143,6 @@ require (
 	golang.org/x/oauth2 v0.15.0 // indirect
 	golang.org/x/sync v0.5.0 // indirect
 	golang.org/x/term v0.18.0 // indirect
-	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	golang.org/x/tools v0.16.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
