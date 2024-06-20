@@ -190,12 +190,10 @@ func renderServiceManager(db *database.SQLStore, serviceManager core.ServiceMana
 					slog.Error("parse service file", "err", err)
 					continue // Skip to the next file in the loop
 				}
-
 				typ := core.ServiceTypeNamespace
 				if ns.Name == core.SystemNamespace {
 					typ = core.ServiceTypeSystem
 				}
-
 				funConfigList = append(funConfigList, &core.ServiceFileData{
 					Typ:         typ,
 					Name:        "",
@@ -203,7 +201,6 @@ func renderServiceManager(db *database.SQLStore, serviceManager core.ServiceMana
 					FilePath:    file.Path,
 					ServiceFile: *serviceDef,
 				})
-
 			case file.Typ == filestore.FileTypeWorkflow && file.MIMEType == "application/yaml":
 				sub, err := getWorkflowFunctionDefinitionsFromWorkflow(ns, file)
 				if err != nil {
@@ -211,7 +208,6 @@ func renderServiceManager(db *database.SQLStore, serviceManager core.ServiceMana
 					continue
 				}
 				funConfigList = append(funConfigList, sub...)
-
 			case file.Typ == filestore.FileTypeWorkflow && file.MIMEType == utils.TypeScriptMimeType:
 				svcFile := tsengine.GenerateBasicServiceFile(file.Path, ns.Name)
 				svcFile.TypescriptFile = file.Data
