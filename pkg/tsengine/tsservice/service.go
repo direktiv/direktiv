@@ -1,13 +1,12 @@
 package tsservice
 
 import (
-	"bytes"
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"regexp"
 
-	"dario.cat/mergo"
+	"github.com/direktiv/direktiv/pkg/tsengine/transpiler"
 	"github.com/direktiv/direktiv/pkg/tsengine/tstypes"
 	"github.com/dop251/goja"
 	"github.com/dop251/goja/ast"
@@ -24,8 +23,19 @@ type Compiler struct {
 }
 
 func NewTSServiceCompiler(namespace, path, script string) (*Compiler, error) {
+	tt, err := transpiler.NewTranspiler()
+	if err != nil {
+		return nil, err
+	}
+
+	// make javascript from typescript
+	js, err := tt.Transpile(script)
+	if err != nil {
+		return nil, err
+	}
+
 	// check if it is parsable
-	ast, err := goja.Parse(path, script)
+	ast, err := goja.Parse(path, js)
 	if err != nil {
 		return nil, err
 	}
@@ -37,15 +47,14 @@ func NewTSServiceCompiler(namespace, path, script string) (*Compiler, error) {
 	}
 
 	// pre compile
-	prg, err := goja.Compile(path, script, true)
+	prg, err := goja.Compile(path, js, true)
 	if err != nil {
 		return nil, err
 	}
 
 	return &Compiler{
 		Path:       path,
-		namespace:  namespace,
-		JavaScript: script,
+		JavaScript: js,
 		ast:        ast,
 		Program:    prg,
 	}, err
@@ -76,85 +85,34 @@ func (c *Compiler) CompileFlow() (*tstypes.FlowInformation, error) {
 
 	astIn, err := json.MarshalIndent(c.ast.Body, "", "   ")
 	if err != nil {
-		return nil, err // Return nil instead of flowInformation on error
+		return nil, fmt.Errorf("error marshaling AST: %w", err)
 	}
 
 	if err := c.parseAST(astIn, flowInformation); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error parsing AST: %w", err)
 	}
 
 	// if no state, we pick the first function
 	if flowInformation.Definition.State == "" {
-		for _, statement := range c.ast.Body {
-			if a, ok := statement.(*ast.FunctionDeclaration); ok {
-				flowInformation.Definition.State = a.Function.Name.Name.String()
-				break
-			}
+		if !c.selectFirstFunctionState(flowInformation) {
+			return nil, fmt.Errorf("no valid function found to set initial state")
 		}
 	}
 
 	return flowInformation, nil
 }
 
+func (c *Compiler) selectFirstFunctionState(flowInformation *tstypes.FlowInformation) bool {
+	for _, statement := range c.ast.Body {
+		if fnDecl, ok := statement.(*ast.FunctionDeclaration); ok {
+			flowInformation.Definition.State = fnDecl.Function.Name.Name.String()
+			return true
+		}
+	}
+	return false
+}
+
 func (c *Compiler) parseAST(astIn []byte, flowInformation *tstypes.FlowInformation) error {
-	dec := json.NewDecoder(bytes.NewReader(astIn))
-	for dec.More() {
-		var tokenType string
-		if err := dec.Decode(&tokenType); err != nil {
-			return err
-		}
-
-		switch tokenType {
-		case "Target":
-			var target jsNameStruct
-			if err := dec.Decode(&target); err != nil {
-				return err
-			}
-			if target.Name == "flow" {
-				if err := handleFlowTarget(dec, flowInformation); err != nil {
-					return err
-				}
-			}
-		case "Callee":
-			var callee jsNameStruct
-			if err := dec.Decode(&callee); err != nil {
-				return err
-			}
-			if callee.Name == "setupFunction" {
-				if err := handleSetupFunctionCallee(dec, flowInformation); err != nil {
-					return err
-				}
-			}
-			// TODO convert this to middleware with next call
-		default:
-			// TODO...
-		}
-	}
-
-	return nil
-}
-
-func handleFlowTarget(dec *json.Decoder, flowInformation *tstypes.FlowInformation) error {
-	def, err := ParseDefinitionArgs(dec)
-	if err != nil {
-		return err
-	}
-	if err := mergo.Merge(flowInformation.Definition, def); err != nil {
-		return err
-	}
-	flowInformation.Messages.Merge(def.Validate())
-	flowInformation.Definition = def
-
-	return nil
-}
-
-func handleSetupFunctionCallee(dec *json.Decoder, flowInformation *tstypes.FlowInformation) error {
-	fn, err := parseCommandArgs(dec)
-	if err != nil {
-		return err
-	}
-	flowInformation.Messages.Merge(fn.Validate())
-	flowInformation.Functions[fn.GetID()] = *fn
 
 	return nil
 }

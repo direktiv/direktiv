@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"path/filepath"
@@ -232,36 +233,8 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 	filePath := filepath.Join("/", path, req.Name)
 	dataType := detectFlowContent(req.Typ, req.MIMEType)
 
-	// Validate if data is valid yaml with direktiv files.
 	var data struct{}
-	if err = yaml.Unmarshal(decodedBytes, &data); err != nil && dataType == yamlFlowType {
-		writeError(w, &Error{
-			Code:    "request_data_invalid",
-			Message: "file data has invalid yaml string",
-		})
-
-		return
-	} else if dataType == utils.TypeScriptMimeType {
-		// validate typescript
-		compiler, err := tsservice.NewTSServiceCompiler(ns.Name, filePath, string(decodedBytes))
-		if err != nil {
-			writeError(w, &Error{
-				Code:    "request_data_invalid",
-				Message: "file data has invalid typescript string",
-			})
-
-			return
-		}
-		_, err = compiler.CompileFlow()
-		if err != nil {
-			writeError(w, &Error{
-				Code:    "request_data_invalid",
-				Message: "file data has invalid typescript string",
-			})
-
-			return
-		}
-	}
+	validate(ns.Name, decodedBytes, &data, dataType, filePath)
 
 	// Create file.
 	newFile, err := fStore.ForNamespace(ns.Name).CreateFile(r.Context(),
@@ -453,27 +426,34 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, updatedFile)
 }
 
-func validate(namespace string, decodedBytes []byte, data struct{}, dataType string, filePath string) *Error {
-	if err := yaml.Unmarshal(decodedBytes, &data); err != nil && dataType == yamlFlowType {
-		return &Error{
-			Code:    "request_data_invalid",
-			Message: "file data has invalid yaml string",
+func validate(namespace string, decodedBytes []byte, data interface{}, dataType string, filePath string) *Error {
+	switch dataType {
+	case yamlFlowType:
+		if err := yaml.Unmarshal(decodedBytes, &data); err != nil {
+			return &Error{
+				Code:    "request_data_invalid",
+				Message: fmt.Sprintf("file data has invalid yaml string: %v", err),
+			}
 		}
-	} else if dataType == utils.TypeScriptMimeType {
+	case utils.TypeScriptMimeType:
 		c, err := tsservice.NewTSServiceCompiler(namespace, filePath, string(decodedBytes))
 		if err != nil {
 			return &Error{
-				Code:    "request_data_invalid",
-				Message: "file data has invalid typescript string",
+				Code:    "compiler_init_error",
+				Message: fmt.Sprintf("failed to initialize TypeScript compiler: %v", err),
 			}
 		}
 		if _, err = c.CompileFlow(); err != nil {
 			return &Error{
-				Code:    "request_data_invalid",
-				Message: "file data has invalid typescript string",
+				Code:    "compile_error",
+				Message: fmt.Sprintf("compilation failed: %v", err),
 			}
 		}
+	default:
+		return &Error{
+			Code:    "unsupported_file_type",
+			Message: fmt.Sprintf("unsupported file type: %s", dataType),
+		}
 	}
-
 	return nil
 }
