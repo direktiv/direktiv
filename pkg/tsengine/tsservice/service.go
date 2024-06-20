@@ -7,6 +7,7 @@ import (
 	"regexp"
 
 	"github.com/direktiv/direktiv/pkg/tsengine/transpiler"
+	"github.com/direktiv/direktiv/pkg/tsengine/tsservice/parsing"
 	"github.com/direktiv/direktiv/pkg/tsengine/tstypes"
 	"github.com/dop251/goja"
 	"github.com/dop251/goja/ast"
@@ -113,6 +114,26 @@ func (c *Compiler) selectFirstFunctionState(flowInformation *tstypes.FlowInforma
 }
 
 func (c *Compiler) parseAST(astIn []byte, flowInformation *tstypes.FlowInformation) error {
+	var root parsing.Root
+	if err := json.Unmarshal(astIn, &root); err != nil {
+		return fmt.Errorf("unmarshaling AST: %w", err)
+	}
+
+	// Iterate over each RawMessage in the root slice
+	for _, rawEntry := range root {
+		var entry parsing.VarOrFunction
+		if err := json.Unmarshal(rawEntry, &entry); err != nil {
+			return fmt.Errorf("unmarshaling entry: %w", err)
+		}
+
+		if entry.Var != nil {
+			// Handle the VarDeclaration (entry.Var)
+		} else if entry.Function != nil {
+			// Handle the FunctionDeclaration (entry.Function)
+			funcName := entry.Function.Name.Name
+			entry.Function.ParameterList.List
+		}
+	}
 
 	return nil
 }
