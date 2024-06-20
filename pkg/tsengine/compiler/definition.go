@@ -3,7 +3,7 @@ package compiler
 type Definition struct {
 	Type  string
 	Store string
-	Json  bool
+	JSON  bool
 	State string
 	Cron  string
 
@@ -29,11 +29,10 @@ type Scale struct {
 }
 
 func DefaultDefinition() *Definition {
-
 	return &Definition{
 		Type:    defTypeDefault,
 		Store:   defStoreAlways,
-		Json:    true,
+		JSON:    true,
 		Timeout: defTimoutDefault,
 		Scale: []Scale{
 			{

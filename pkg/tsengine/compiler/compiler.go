@@ -25,7 +25,6 @@ func (c *Compiler) CompileFlow() (*FlowInformation, error) {
 }
 
 func (c *Compiler) getID() string {
-
 	str := fmt.Sprintf("%s-%s", "TODO: NAMESPACE", c.JavaScript)
 	sh := sha256.Sum256([]byte(str))
 
