@@ -12,7 +12,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/reconcile"
 	"github.com/direktiv/direktiv/pkg/tracing"
-	"github.com/pkg/errors"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"knative.dev/serving/pkg/client/clientset/versioned"
@@ -151,9 +150,6 @@ func (m *manager) Run(circuit *core.Circuit) error {
 			cycleFails++
 		} else {
 			cycleFails = 0
-		}
-		if cycleFails > 5 {
-			return errors.New("too many cycle fails")
 		}
 
 		time.Sleep(cycleTime)
