@@ -6,7 +6,6 @@ import (
 	"reflect"
 
 	"github.com/direktiv/direktiv/pkg/tsengine/tstypes"
-	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/dop251/goja/ast"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
@@ -91,11 +90,11 @@ func parseValue(valueItems []tstypes.ValueItem, item any) error {
 		case map[string]string:
 			parsedValue, err = parseMapStringString(v)
 		case tstypes.FlowEvent:
-			parsedValue, err = parseFlowEvent(v)
+			parsedValue, err = tstypes.ParseFlowEvent(v)
 		case []tstypes.FlowEvent:
-			parsedValue, err = parseFlowEventSlice(v)
+			parsedValue, err = tstypes.ParseFlowEventSlice(v)
 		case []tstypes.Scale:
-			parsedValue, err = parseScaleSlice(v)
+			parsedValue, err = tstypes.ParseScaleSlice(v)
 		default:
 			return fmt.Errorf("unsupported field type: %T", field.Interface())
 		}
@@ -206,90 +205,6 @@ func parseMapStringString(v tstypes.ValueItem) (map[string]string, error) {
 	}
 
 	return result, nil
-}
-
-func parseFlowEvent(v tstypes.ValueItem) (tstypes.FlowEvent, error) {
-	eventMix, err := unmarshalAndAssert[[]tstypes.ValueItemMix](v.Value.Value)
-	if err != nil {
-		return tstypes.FlowEvent{}, fmt.Errorf("not an array of ValueItemMix for FlowEvent %s: %w", v.Key.Value, err)
-	}
-
-	return parseEvent(eventMix)
-}
-
-func parseFlowEventSlice(v tstypes.ValueItem) ([]tstypes.FlowEvent, error) {
-	eventsMix, err := unmarshalAndAssert[tstypes.ValueItemMix](v)
-	if err != nil {
-		return nil, fmt.Errorf("error unmarshalling ValueItemMix for []FlowEvent: %w", err)
-	}
-
-	ee, err := unmarshalAndAssert[tstypes.ValueItemList](eventsMix.Value)
-	if err != nil {
-		return nil, fmt.Errorf("error unmarshalling ValueItemList for []FlowEvent: %w", err)
-	}
-
-	result := make([]tstypes.FlowEvent, len(ee.Value))
-	for i, e := range ee.Value {
-		eventMix, err := unmarshalAndAssert[[]tstypes.ValueItemMix](e.Value)
-		if err != nil {
-			return nil, fmt.Errorf("error unmarshalling ValueItemMix for FlowEvent at index %d: %w", i, err)
-		}
-
-		result[i], err = parseEvent(eventMix)
-		if err != nil {
-			return nil, fmt.Errorf("error parsing FlowEvent at index %d: %w", i, err)
-		}
-	}
-
-	return result, nil
-}
-
-func parseScaleSlice(v tstypes.ValueItem) ([]tstypes.Scale, error) {
-	arguments, err := unmarshalAndAssert[[]tstypes.Argument](v.Value.Value)
-	if err != nil {
-		return nil, fmt.Errorf("not an array of Argument for []Scale: %w", err)
-	}
-
-	result := make([]tstypes.Scale, len(arguments))
-	for i, arg := range arguments {
-		scale := &tstypes.Scale{}
-		err = parseValue(arg.Value, scale) // Pass a pointer to scale
-		if err != nil {
-			return nil, fmt.Errorf("error parsing Scale at index %d: %w", i, err)
-		}
-		result[i] = *scale
-	}
-
-	return result, nil
-}
-
-func parseEvent(eventMix []tstypes.ValueItemMix) (tstypes.FlowEvent, error) {
-	event := tstypes.FlowEvent{}
-	for k := range eventMix {
-		e := eventMix[k]
-		if e.Key.Value == "type" {
-			t, err := utils.DoubleMarshal[tstypes.Key](e.Value)
-			if err != nil {
-				return event, err
-			}
-			event.Type = fmt.Sprintf("%v", t.Value)
-		}
-
-		if e.Key.Value == "context" {
-			vi, err := utils.DoubleMarshal[tstypes.ValueItem](e)
-			if err != nil {
-				return event, err
-			}
-			a := make([]tstypes.ValueItem, 1)
-			a[0] = vi
-			err = parseValue(a, &event)
-			if err != nil {
-				return event, err
-			}
-		}
-	}
-
-	return event, nil
 }
 
 func validateBodyFunctions(prg *ast.Program) error {

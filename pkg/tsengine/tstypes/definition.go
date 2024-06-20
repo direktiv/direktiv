@@ -15,19 +15,6 @@ type Definition struct {
 	Scale []Scale
 }
 
-type FlowEvent struct {
-	Type    string
-	Context map[string]interface{}
-}
-
-type Scale struct {
-	Min    int
-	Max    int
-	Cron   string
-	Metric string
-	Value  int
-}
-
 func DefaultDefinition() *Definition {
 	return &Definition{
 		Type:    defTypeDefault,

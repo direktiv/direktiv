@@ -1,5 +1,10 @@
 package tstypes
 
+import (
+	"encoding/json"
+	"fmt"
+)
+
 type Argument struct {
 	LeftBrace  int         `json:"LeftBrace"`
 	RightBrace int         `json:"RightBrace"`
@@ -51,4 +56,18 @@ type FlowInformation struct {
 
 	Functions map[string]Function
 	ID        string
+}
+
+func unmarshalAndAssert[T any](value any) (T, error) {
+	var result T
+	data, err := json.Marshal(value)
+	if err != nil {
+		return result, fmt.Errorf("error marshalling value: %w", err)
+	}
+	err = json.Unmarshal(data, &result)
+	if err != nil {
+		return result, fmt.Errorf("error unmarshalling value: %w", err)
+	}
+
+	return result, nil
 }
