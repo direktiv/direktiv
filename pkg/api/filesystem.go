@@ -460,8 +460,14 @@ func validate(decodedBytes []byte, data struct{}, dataType string, filePath stri
 			Message: "file data has invalid yaml string",
 		}
 	} else if dataType == utils.TypeScriptMimeType {
-		_, err := compiler.New(filePath, string(decodedBytes))
+		c, err := compiler.New(filePath, string(decodedBytes))
 		if err != nil {
+			return &Error{
+				Code:    "request_data_invalid",
+				Message: "file data has invalid typescript string",
+			}
+		}
+		if _, err = c.CompileFlow(); err != nil {
 			return &Error{
 				Code:    "request_data_invalid",
 				Message: "file data has invalid typescript string",
