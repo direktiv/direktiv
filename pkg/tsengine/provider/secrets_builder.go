@@ -4,7 +4,7 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/direktiv/direktiv/pkg/tsengine/compiler"
+	"github.com/direktiv/direktiv/pkg/tsengine/tsservice"
 )
 
 type SecretBuilder struct {
@@ -14,7 +14,7 @@ type SecretBuilder struct {
 	namespace string
 }
 
-func NewSecretBuilder(provider SecretProvider, namespace string, fi compiler.FlowInformation, baseFS string) *SecretBuilder {
+func NewSecretBuilder(provider SecretProvider, namespace string, fi tsservice.FlowInformation, baseFS string) *SecretBuilder {
 	secrets := make(map[string]string)
 	for _, s := range fi.Secrets {
 		secrets[s.Name] = ""

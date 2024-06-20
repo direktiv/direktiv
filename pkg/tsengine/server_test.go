@@ -19,7 +19,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/direktiv/direktiv/pkg/filestore/filestoresql"
 	"github.com/direktiv/direktiv/pkg/tsengine"
-	"github.com/direktiv/direktiv/pkg/tsengine/compiler"
+	"github.com/direktiv/direktiv/pkg/tsengine/tsservice"
 	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -234,7 +234,7 @@ func TestServerFileGetter(t *testing.T) {
 
 	var fn = make(map[string]interface{})
 	fn["image"] = "localhost:5000/hello"
-	fnID, _ := compiler.GenerateFunctionID(fn)
+	fnID, _ := tsservice.GenerateFunctionID(fn)
 	os.Setenv(fnID, fmt.Sprintf("http://127.0.0.1:%d", srv.port))
 
 	cfg := tsengine.Config{}

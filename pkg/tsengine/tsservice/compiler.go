@@ -1,4 +1,4 @@
-package compiler
+package tsservice
 
 import (
 	"github.com/direktiv/direktiv/pkg/tsengine/transpiler"

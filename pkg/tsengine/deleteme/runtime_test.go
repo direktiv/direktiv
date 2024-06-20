@@ -7,16 +7,16 @@ import (
 	"testing"
 
 	"github.com/direktiv/direktiv/pkg/tsengine/commands"
-	"github.com/direktiv/direktiv/pkg/tsengine/compiler"
 	"github.com/direktiv/direktiv/pkg/tsengine/runtime"
 	"github.com/direktiv/direktiv/pkg/tsengine/state"
+	"github.com/direktiv/direktiv/pkg/tsengine/tsservice"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
 func createRuntime(t *testing.T, s, fn map[string]string, script string, json bool) *state.Executor {
 
-	c, err := compiler.New("dummy", script)
+	c, err := tsservice.New("dummy", script)
 	if err != nil {
 		fmt.Println(err)
 		t.FailNow()

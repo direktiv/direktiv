@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/direktiv/direktiv/pkg/tsengine/compiler"
 	"github.com/direktiv/direktiv/pkg/tsengine/runtime"
+	"github.com/direktiv/direktiv/pkg/tsengine/tsservice"
 	"github.com/direktiv/direktiv/pkg/utils"
 )
 
@@ -28,7 +28,7 @@ func (fc FunctionCommand) GetName() string {
 
 func (fc FunctionCommand) GetCommandFunction() interface{} {
 	return func(in map[string]interface{}) *Function {
-		fid, err := compiler.GenerateFunctionID(in)
+		fid, err := tsservice.GenerateFunctionID(in)
 		if err != nil {
 			runtime.ThrowRuntimeError(fc.rt.VM, runtime.DirektivFunctionErrorCode, err)
 		}

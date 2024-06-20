@@ -1,4 +1,4 @@
-package compiler
+package tsservice
 
 type Definition struct {
 	Type  string

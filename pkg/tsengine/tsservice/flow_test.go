@@ -1,9 +1,9 @@
-package compiler_test
+package tsservice_test
 
 import (
 	"testing"
 
-	"github.com/direktiv/direktiv/pkg/tsengine/compiler"
+	"github.com/direktiv/direktiv/pkg/tsengine/tsservice"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -23,7 +23,7 @@ func TestFlowFunction(t *testing.T) {
 	}
 	`
 
-	c, _ := compiler.New("", def)
+	c, _ := tsservice.New("", def)
 	fi, _ := c.CompileFlow()
 	assert.Equal(t, "start", fi.Definition.State)
 

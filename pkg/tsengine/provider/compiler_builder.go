@@ -5,20 +5,20 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/direktiv/direktiv/pkg/tsengine/compiler"
+	"github.com/direktiv/direktiv/pkg/tsengine/tsservice"
 )
 
-func BuildCompiler(ctx context.Context, provider FileGetter, namespace string, flowPath string) (compiler.Compiler, error) {
+func BuildCompiler(ctx context.Context, provider FileGetter, namespace string, flowPath string) (tsservice.Compiler, error) {
 	slog.Info("building flow", "flowPath", flowPath)
 
 	b, err := provider.GetFileData(ctx, namespace, flowPath)
 	if err != nil {
-		return compiler.Compiler{}, &FlowBuildError{flowPath: flowPath, err: err}
+		return tsservice.Compiler{}, &FlowBuildError{flowPath: flowPath, err: err}
 	}
 
-	c, err := compiler.New(flowPath, string(b))
+	c, err := tsservice.New(flowPath, string(b))
 	if err != nil {
-		return compiler.Compiler{}, &FlowBuildError{flowPath: flowPath, err: err}
+		return tsservice.Compiler{}, &FlowBuildError{flowPath: flowPath, err: err}
 	}
 
 	return *c, nil

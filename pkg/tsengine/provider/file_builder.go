@@ -5,18 +5,18 @@ import (
 	"log/slog"
 	"path/filepath"
 
-	"github.com/direktiv/direktiv/pkg/tsengine/compiler"
+	"github.com/direktiv/direktiv/pkg/tsengine/tsservice"
 	"github.com/fsnotify/fsnotify"
 )
 
 type FileBuilder struct {
-	files     []compiler.File
+	files     []tsservice.File
 	baseFS    string
 	provider  FileWriter
 	namespace string
 }
 
-func NewFileBuilder(provider FileWriter, namespace string, fi compiler.FlowInformation, baseFS string) *FileBuilder {
+func NewFileBuilder(provider FileWriter, namespace string, fi tsservice.FlowInformation, baseFS string) *FileBuilder {
 	return &FileBuilder{
 		files:     fi.Files,
 		baseFS:    baseFS,

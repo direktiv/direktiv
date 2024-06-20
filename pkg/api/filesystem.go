@@ -12,7 +12,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/direktiv/direktiv/pkg/pubsub"
-	"github.com/direktiv/direktiv/pkg/tsengine/compiler"
+	"github.com/direktiv/direktiv/pkg/tsengine/tsservice"
 	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/go-chi/chi/v5"
 	"gopkg.in/yaml.v3"
@@ -244,7 +244,7 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 		return
 	} else if dataType == utils.TypeScriptMimeType {
 		// validate typescript
-		compiler, err := compiler.New(filePath, string(decodedBytes))
+		compiler, err := tsservice.New(filePath, string(decodedBytes))
 		if err != nil {
 			writeError(w, &Error{
 				Code:    "request_data_invalid",
@@ -383,7 +383,7 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 		return
 	} else if dataType == utils.TypeScriptMimeType {
 		// validate typescript
-		compiler, err := compiler.New(filePath, string(decodedBytes))
+		compiler, err := tsservice.New(filePath, string(decodedBytes))
 		if err != nil {
 			writeError(w, &Error{
 				Code:    "request_data_invalid",

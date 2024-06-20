@@ -9,7 +9,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/direktiv/direktiv/pkg/filestore"
-	"github.com/direktiv/direktiv/pkg/tsengine/compiler"
+	"github.com/direktiv/direktiv/pkg/tsengine/tsservice"
 	"github.com/direktiv/direktiv/pkg/utils"
 )
 
@@ -28,7 +28,7 @@ type SecretProvider interface {
 
 // FileWriter defines the method to write files.
 type FileWriter interface {
-	WriteFile(ctx context.Context, namespace string, file compiler.File) error
+	WriteFile(ctx context.Context, namespace string, file tsservice.File) error
 }
 
 // FileGetter defines the method to get file data.
@@ -61,7 +61,7 @@ func (p *DBBasedProvider) GetSecret(ctx context.Context, namespace, name string)
 }
 
 // WriteFile writes a file to the filestore.
-func (p *DBBasedProvider) WriteFile(ctx context.Context, namespace string, file compiler.File) error {
+func (p *DBBasedProvider) WriteFile(ctx context.Context, namespace string, file tsservice.File) error {
 	fetchPath := file.Name
 	if !filepath.IsAbs(file.Name) {
 		fetchPath = filepath.Join(filepath.Dir(p.FlowFilePath), file.Name)
@@ -137,7 +137,7 @@ func (p *FileBasedProvider) GetSecret(ctx context.Context, namespace, name strin
 }
 
 // WriteFile writes a file to the shared filesystem.
-func (p *FileBasedProvider) WriteFile(ctx context.Context, namespace string, file compiler.File) error {
+func (p *FileBasedProvider) WriteFile(ctx context.Context, namespace string, file tsservice.File) error {
 	sourceFilePath := filepath.Join(p.BaseFilePath, file.Name)
 	targetFilePath := filepath.Join(p.BaseFilePath, "shared", file.Name)
 	_, err := utils.CopyFile(sourceFilePath, targetFilePath)

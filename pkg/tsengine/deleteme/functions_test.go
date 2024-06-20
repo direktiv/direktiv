@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/tsengine/compiler"
 	"github.com/direktiv/direktiv/pkg/tsengine/runtime"
+	"github.com/direktiv/direktiv/pkg/tsengine/tsservice"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -26,7 +26,7 @@ func TestFunctionID(t *testing.T) {
 	}
 
 	// setting the env wit hthe function and its id
-	fnID, _ := compiler.GenerateFunctionID(fn)
+	fnID, _ := tsservice.GenerateFunctionID(fn)
 
 	script := `	
 	function start(state) {
@@ -106,7 +106,7 @@ func TestFunctionFiles(t *testing.T) {
 		Body: io.NopCloser(strings.NewReader("")),
 	}
 	fns := make(map[string]string)
-	fnID, _ := compiler.GenerateFunctionID(fn)
+	fnID, _ := tsservice.GenerateFunctionID(fn)
 	sec := make(map[string]string)
 
 	fns[fnID] = fmt.Sprintf("http://127.0.0.1:%d", s.port)
@@ -167,7 +167,7 @@ func TestFunctionDownload(t *testing.T) {
 	req := &http.Request{
 		Body: io.NopCloser(strings.NewReader("")),
 	}
-	fnID, _ := compiler.GenerateFunctionID(fn)
+	fnID, _ := tsservice.GenerateFunctionID(fn)
 	fns := make(map[string]string)
 	fns[fnID] = fmt.Sprintf("http://127.0.0.1:%d", s.port)
 	sec := make(map[string]string)
@@ -227,7 +227,7 @@ func TestFunctionRetry(t *testing.T) {
 	req := &http.Request{
 		Body: io.NopCloser(strings.NewReader("")),
 	}
-	fnID, _ := compiler.GenerateFunctionID(fn)
+	fnID, _ := tsservice.GenerateFunctionID(fn)
 	fns := make(map[string]string)
 	fns[fnID] = fmt.Sprintf("http://127.0.0.1:%d", s.port)
 	sec := make(map[string]string)
@@ -282,7 +282,7 @@ func TestFunctionErrorHandling(t *testing.T) {
 		Body: io.NopCloser(strings.NewReader("")),
 	}
 	fns := make(map[string]string)
-	fnID, _ := compiler.GenerateFunctionID(fn)
+	fnID, _ := tsservice.GenerateFunctionID(fn)
 	fns[fnID] = fmt.Sprintf("http://127.0.0.1:%d", s.port)
 
 	sec := make(map[string]string)
@@ -333,7 +333,7 @@ func TestFunctionErrorTimeout(t *testing.T) {
 	req := &http.Request{
 		Body: io.NopCloser(strings.NewReader("")),
 	}
-	fnID, _ := compiler.GenerateFunctionID(fn)
+	fnID, _ := tsservice.GenerateFunctionID(fn)
 	fns := make(map[string]string)
 	fns[fnID] = fmt.Sprintf("http://127.0.0.1:%d", s.port)
 	sec := make(map[string]string)

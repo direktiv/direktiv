@@ -4,17 +4,17 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/direktiv/direktiv/pkg/tsengine/compiler"
+	"github.com/direktiv/direktiv/pkg/tsengine/tsservice"
 )
 
 // FunctionBuilder builds functions from the provided function provider.
 type FunctionBuilder struct {
-	functions map[string]compiler.Function
+	functions map[string]tsservice.Function
 	provider  FunctionProvider
 }
 
 // NewFunctionBuilder creates a new FunctionBuilder.
-func NewFunctionBuilder(provider FunctionProvider, fi compiler.FlowInformation) *FunctionBuilder {
+func NewFunctionBuilder(provider FunctionProvider, fi tsservice.FlowInformation) *FunctionBuilder {
 	return &FunctionBuilder{
 		functions: fi.Functions,
 		provider:  provider,
