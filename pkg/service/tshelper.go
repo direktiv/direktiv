@@ -6,7 +6,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/tsengine/tsservice"
 	"github.com/direktiv/direktiv/pkg/tsengine/tstypes"
-
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"

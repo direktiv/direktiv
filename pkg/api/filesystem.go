@@ -455,5 +455,6 @@ func validate(namespace string, decodedBytes []byte, data interface{}, dataType 
 			Message: fmt.Sprintf("unsupported file type: %s", dataType),
 		}
 	}
+
 	return nil
 }
