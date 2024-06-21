@@ -8,7 +8,7 @@ import (
 	"github.com/dop251/goja"
 )
 
-type RuntimeManager struct {
+type RuntimeHandlerBuilder struct {
 	baseFS string
 	mtx    sync.Mutex
 }
@@ -21,15 +21,15 @@ const (
 	StateDataInputFile = "input.data"
 )
 
-func New(baseFS string) (*RuntimeManager, error) {
-	manager := &RuntimeManager{
+func NewBuilder(baseFS string) (*RuntimeHandlerBuilder, error) {
+	manager := &RuntimeHandlerBuilder{
 		baseFS: baseFS,
 	}
 
 	return manager, nil
 }
 
-func (rm *RuntimeManager) NewHandler(prg *goja.Program, fn string, secrets map[string]string, functions map[string]string, jsonInput bool) RuntimeHandler {
+func (rm *RuntimeHandlerBuilder) NewHandler(prg *goja.Program, fn string, secrets map[string]string, functions map[string]string, jsonInput bool) RuntimeHandler {
 	rm.mtx.Lock()
 	defer rm.mtx.Unlock()
 

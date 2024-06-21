@@ -22,6 +22,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/pubsub"
 	"github.com/direktiv/direktiv/pkg/registry"
 	"github.com/direktiv/direktiv/pkg/service"
+	"github.com/direktiv/direktiv/pkg/tsengine"
 )
 
 type NewMainArgs struct {
@@ -88,8 +89,16 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 		GatewayManager:  gatewayManager2,
 		SyncNamespace:   args.SyncNamespace,
 	}
+	var tsEngineManager core.TSServiceManager = tsengine.NewManager(args.Database)
 
 	if !args.Config.DisableServices {
+		args.PubSubBus.Subscribe(&pubsub.FileSystemChangeEvent{}, func(_ string) {
+			err := tsEngineManager.Run(circuit)
+			if err != nil {
+				slog.Warn("Failed to render ts-services", "error", err)
+			}
+		})
+
 		args.PubSubBus.Subscribe(&pubsub.FileSystemChangeEvent{}, func(_ string) {
 			renderServiceManager(args.Database, serviceManager)
 		})
