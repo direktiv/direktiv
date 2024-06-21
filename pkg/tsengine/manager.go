@@ -94,7 +94,7 @@ func (m *Manager) processTSFile(ctx context.Context, namespace string, file *fil
 	}
 
 	_, err = m.db.FileStore().ForNamespace(namespace).CreateFile(
-		ctx, file.Path+".yaml", core.ServiceTypeWorkflow, "application/yaml", data,
+		ctx, file.Path+".yaml", filestore.FileTypeService, "application/yaml", data,
 	)
 	if err != nil {
 		return fmt.Errorf("creating yaml file: %w", err)
