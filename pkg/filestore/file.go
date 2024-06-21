@@ -24,6 +24,7 @@ const (
 
 var AllFileTypes = []FileType{
 	FileTypeWorkflow,
+	FileTypeTSWorkflow,
 	FileTypeEndpoint,
 	FileTypeConsumer,
 	FileTypeService,
