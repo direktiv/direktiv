@@ -16,7 +16,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/direktiv/direktiv/pkg/engine"
@@ -576,7 +575,7 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 	wait := r.URL.Query().Get("wait") == "true"
 
 	var data *instancestore.InstanceData
-	if strings.HasSuffix(path, core.TypeScriptExtension) {
+	if strings.HasSuffix(path, ".direktiv.ts") {
 		err := e.redirectToTSEngine(path, ns, w, r)
 		if err != nil {
 			// should never happen
