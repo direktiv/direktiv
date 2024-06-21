@@ -68,9 +68,6 @@ type ServiceFileData struct {
 	// status fields:
 	Error      *string `json:"error"`
 	Conditions any     `json:"conditions"`
-
-	// additional typescript field
-	TypescriptFile []byte `json:"-"`
 }
 
 // GetID calculates a unique id string based on identification fields. This id helps in comparison different
