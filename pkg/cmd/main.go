@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/api"
@@ -23,7 +22,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/pubsub"
 	"github.com/direktiv/direktiv/pkg/registry"
 	"github.com/direktiv/direktiv/pkg/service"
-	"github.com/direktiv/direktiv/pkg/tsengine"
 )
 
 type NewMainArgs struct {
@@ -182,11 +180,11 @@ func renderServiceManager(db *database.SQLStore, serviceManager core.ServiceMana
 			continue
 		}
 		for _, file := range files {
-			switch {
-			case file.Typ == filestore.FileTypeService:
+			if file.Typ == filestore.FileTypeService {
 				serviceDef, err := core.ParseServiceFile(file.Data)
 				if err != nil {
 					slog.Error("parse service file", "err", err)
+
 					continue
 				}
 				typ := core.ServiceTypeNamespace
@@ -200,21 +198,15 @@ func renderServiceManager(db *database.SQLStore, serviceManager core.ServiceMana
 					FilePath:    file.Path,
 					ServiceFile: *serviceDef,
 				})
-			case file.Typ == filestore.FileTypeWorkflow:
+			} else if file.Typ == filestore.FileTypeWorkflow {
 				sub, err := getWorkflowFunctionDefinitionsFromWorkflow(ns, file)
 				if err != nil {
 					slog.Error("parse workflow def", "err", err)
+
 					continue
 				}
+
 				funConfigList = append(funConfigList, sub...)
-			case file.Typ == filestore.FileTypeTSWorkflow:
-				svcFile := tsengine.GenerateBasicServiceFile(file.Path, ns.Name)
-				svcFile.TypescriptFile = file.Data
-				svcFile.ServiceFile = core.ServiceFile{
-					Image: strings.ToLower(file.Checksum)[:32],
-					Size:  "medium",
-				}
-				funConfigList = append(funConfigList, svcFile)
 			}
 		}
 	}
