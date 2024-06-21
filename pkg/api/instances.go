@@ -16,12 +16,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/direktiv/direktiv/pkg/engine"
 	"github.com/direktiv/direktiv/pkg/instancestore"
 	"github.com/direktiv/direktiv/pkg/tsengine"
-	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -576,7 +576,7 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 	wait := r.URL.Query().Get("wait") == "true"
 
 	var data *instancestore.InstanceData
-	if strings.HasSuffix(path, utils.TypeScriptExtension) {
+	if strings.HasSuffix(path, core.TypeScriptExtension) {
 		err := e.redirectToTSEngine(path, ns, w, r)
 		if err != nil {
 			// should never happen

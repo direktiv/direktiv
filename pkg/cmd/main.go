@@ -24,7 +24,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/registry"
 	"github.com/direktiv/direktiv/pkg/service"
 	"github.com/direktiv/direktiv/pkg/tsengine"
-	"github.com/direktiv/direktiv/pkg/utils"
 )
 
 type NewMainArgs struct {
@@ -208,7 +207,7 @@ func renderServiceManager(db *database.SQLStore, serviceManager core.ServiceMana
 					continue
 				}
 				funConfigList = append(funConfigList, sub...)
-			case file.Typ == filestore.FileTypeWorkflow && file.MIMEType == utils.TypeScriptMimeType:
+			case file.Typ == filestore.FileTypeWorkflow && file.MIMEType == core.TypeScriptMimeType:
 				svcFile := tsengine.GenerateBasicServiceFile(file.Path, ns.Name)
 				svcFile.TypescriptFile = file.Data
 				svcFile.ServiceFile = core.ServiceFile{

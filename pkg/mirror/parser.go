@@ -15,7 +15,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/direktiv/direktiv/pkg/model"
-	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/go-git/go-git/v5/plumbing/format/gitignore"
 )
 
@@ -580,7 +579,7 @@ func (p *Parser) listFilesWithExtensions(extensions []string) ([]string, error) 
 }
 
 func (p *Parser) scanDirektivTypescriptWorkflowFiles() error {
-	paths, err := p.listFilesWithExtensions([]string{utils.TypeScriptExtension})
+	paths, err := p.listFilesWithExtensions([]string{core.TypeScriptExtension})
 	if err != nil {
 		return err
 	}

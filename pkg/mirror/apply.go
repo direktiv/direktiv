@@ -8,9 +8,9 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/datastore"
 	"github.com/direktiv/direktiv/pkg/filestore"
-	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/google/uuid"
 )
@@ -65,7 +65,7 @@ func (o *DirektivApplyer) apply(ctx context.Context, callbacks Callbacks, proc *
 		return fmt.Errorf("failed to copy workflows into new filesystem root: %w", err)
 	}
 
-	err = o.copyTypescriptWorkflowsIntoRoot(ctx, o.parser.TypescriptWorkflows, utils.TypeScriptMimeType)
+	err = o.copyTypescriptWorkflowsIntoRoot(ctx, o.parser.TypescriptWorkflows, core.TypeScriptMimeType)
 	if err != nil {
 		return fmt.Errorf("failed to copy typescript workflows into new filesystem root: %w", err)
 	}

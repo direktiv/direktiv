@@ -199,30 +199,44 @@ func validateGlobalFunctionCalls(program *ast.Program, disallowedFunctions map[s
 
 	// Second Pass: Validate function calls
 	for _, statement := range program.Body {
-		if exprStmt, ok := statement.(*ast.ExpressionStatement); ok {
-			if callExpr, ok := exprStmt.Expression.(*ast.CallExpression); ok {
-				if identifier, ok := callExpr.Callee.(*ast.Identifier); ok {
-					functionName := identifier.Name
+		if err := validateCallExpression(statement, declaredFunctions, disallowedFunctions); err != nil {
+			return err
+		}
+	}
 
-					// Skip validation for "setupFunction"
-					if functionName == "setupFunction" {
-						continue
-					}
+	return nil
+}
 
-					// Check if function is declared
-					if !declaredFunctions[functionName.String()] {
-						slog.Error("undeclared function call in global scope", "function", functionName)
-						return fmt.Errorf("function '%s' is not declared", functionName)
-					}
-
-					// Check if function is disallowed
-					if disallowedFunctions[functionName.String()] {
-						slog.Error("disallowed function call in global scope", "function", functionName)
-						return fmt.Errorf("function '%s' is not allowed", functionName)
-					}
-				}
+func validateCallExpression(stmt ast.Statement, declaredFunctions, disallowedFunctions map[string]bool) error {
+	if exprStmt, ok := stmt.(*ast.ExpressionStatement); ok {
+		if callExpr, ok := exprStmt.Expression.(*ast.CallExpression); ok {
+			if identifier, ok := callExpr.Callee.(*ast.Identifier); ok {
+				return validateFuntions(identifier, declaredFunctions, disallowedFunctions)
 			}
 		}
+	}
+
+	return nil
+}
+
+// Skip validation for "setupFunction"
+// Check if function is declared
+// Check if function is disallowed.
+func validateFuntions(identifier *ast.Identifier, declaredFunctions map[string]bool, disallowedFunctions map[string]bool) error {
+	functionName := identifier.Name
+
+	if functionName == "setupFunction" {
+		return nil
+	}
+
+	if !declaredFunctions[functionName.String()] {
+		slog.Error("undeclared function call in global scope", "function", functionName)
+		return fmt.Errorf("function '%s' is not declared", functionName)
+	}
+
+	if disallowedFunctions[functionName.String()] {
+		slog.Error("disallowed function call in global scope", "function", functionName)
+		return fmt.Errorf("function '%s' is not allowed", functionName)
 	}
 
 	return nil
