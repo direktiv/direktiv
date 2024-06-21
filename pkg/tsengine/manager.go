@@ -14,15 +14,15 @@ import (
 
 // Manager handles compilation and generation of TypeScript workflow services.
 type Manager struct {
-	db    *database.SQLStore
-	image string
+	db     *database.SQLStore
+	config core.Config
 }
 
 // NewManager creates a new Manager instance.
-func NewManager(db *database.SQLStore, image string) *Manager {
+func NewManager(db *database.SQLStore, config core.Config) *Manager {
 	return &Manager{
-		db:    db,
-		image: image,
+		db:     db,
+		config: config,
 	}
 }
 
@@ -88,7 +88,7 @@ func (m *Manager) processTSFile(ctx context.Context, namespace string, file *fil
 		ServiceFile: core.ServiceFile{
 			DirektivAPI: "service/v1",
 			Scale:       scale.Min,
-			Image:       m.image,
+			Image:       m.config.KnativeSidecar,
 			Cmd:         "",
 			Size:        "small",
 			Patches:     []core.ServicePatch{},
@@ -96,6 +96,22 @@ func (m *Manager) processTSFile(ctx context.Context, namespace string, file *fil
 				{
 					Name:  "DIREKTIV_APP",
 					Value: "tsengine",
+				},
+				{
+					Name:  "DIREKTIV_JSENGINE_NAMESPACE",
+					Value: namespace,
+				},
+				{
+					Name:  "DIREKTIV_JSENGINE_WORKFLOW_PATH",
+					Value: file.Path,
+				},
+				{
+					Name:  "DIREKTIV_DB",
+					Value: m.config.DB,
+				},
+				{
+					Name:  "DIREKTIV_SECRET_KEY",
+					Value: m.config.ApiKey,
 				},
 			},
 			// TODO: fill all fields.

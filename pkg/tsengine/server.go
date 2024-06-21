@@ -3,12 +3,19 @@ package tsengine
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"log/slog"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 
+	"github.com/caarlos0/env/v10"
 	"github.com/direktiv/direktiv/pkg/core"
+	"github.com/direktiv/direktiv/pkg/database"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 type Status struct {
@@ -19,17 +26,30 @@ const (
 	StateDataInputFile = "input.data"
 )
 
-func NewHandler(baseFS string) (RuntimeHandler, error) {
-	manager := RuntimeHandler{
-		baseFS: baseFS,
+func NewHandler(cfg Config, db *database.SQLStore) (RuntimeHandler, error) {
+	handler := RuntimeHandler{
+		baseDir: cfg.BaseDir,
+		db:      db,
+		ctx: engineCtx{
+			Namespace:     cfg.Namespace,
+			WorkflowsPath: cfg.WorkflowPath,
+		},
 	}
-	// TODO Load data via configuration for the db!
-	return manager, nil
+
+	return handler, nil
 }
 
 type RuntimeHandler struct {
-	baseFS string
-	mtx    *sync.Mutex
+	baseDir string
+	db      *database.SQLStore
+	mtx     *sync.Mutex
+	ctx     engineCtx
+}
+
+type engineCtx struct {
+	Namespace     string
+	WorkflowsPath string
+	// TODO more attr
 }
 
 var _ http.Handler = RuntimeHandler{}
@@ -73,11 +93,22 @@ func NewServer() (*Server, error) {
 			Start: time.Now().UnixMilli(),
 		},
 	}
+	config := Config{}
 
-	handler, err := NewHandler("")
-	if err != nil {
-		panic(err)
+	if err := env.Parse(config); err != nil {
+		return nil, fmt.Errorf("parsing env variables: %w", err)
 	}
+
+	db, err := initDB(config)
+	if err != nil {
+		return nil, fmt.Errorf("was unable create db %w", err)
+	}
+
+	handler, err := NewHandler(config, db)
+	if err != nil {
+		return nil, fmt.Errorf("was unable to create handler %w", err)
+	}
+
 	// handle flow requests
 	s.mux.HandleFunc("/", handler.ServeHTTP)
 	s.mux.HandleFunc("GET /status", s.HandleStatusRequest)
@@ -105,4 +136,53 @@ func (s *Server) Start() error {
 	}
 
 	return nil
+}
+
+func initDB(config Config) (*database.SQLStore, error) {
+	// TODO: this should be re-done
+	gormConf := &gorm.Config{
+		Logger: logger.New(
+			log.New(os.Stdout, "\r\n", log.LstdFlags),
+			logger.Config{
+				LogLevel:                  logger.Silent,
+				IgnoreRecordNotFoundError: true,
+			},
+		),
+	}
+
+	var err error
+	var db *gorm.DB
+	//nolint:intrange
+	for i := 0; i < 10; i++ {
+		slog.Info("connecting to database...")
+
+		db, err = gorm.Open(postgres.New(postgres.Config{
+			DSN:                  config.DBConfig,
+			PreferSimpleProtocol: false, // disables implicit prepared statement usage
+			// Conn:                 edb.SQLStore(),
+		}), gormConf)
+		if err == nil {
+			slog.Info("successfully connected to the database.")
+
+			break
+		}
+		time.Sleep(time.Second)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	gdb, err := db.DB()
+	if err != nil {
+		return nil, fmt.Errorf("modifying gorm driver, err: %w", err)
+	}
+
+	slog.Debug("Database connection pool limits set", "maxIdleConns", 32, "maxOpenConns", 16)
+	gdb.SetMaxIdleConns(32)
+	gdb.SetMaxOpenConns(16)
+
+	dbManager := database.NewSQLStore(db, config.SecretKey)
+
+	return dbManager, nil
 }
