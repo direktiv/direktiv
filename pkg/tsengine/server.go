@@ -9,13 +9,7 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/core"
-	"github.com/dop251/goja"
 )
-
-type RuntimeHandlerBuilder struct {
-	baseFS string
-	mtx    sync.Mutex
-}
 
 type Status struct {
 	Start int64 `json:"start"`
@@ -25,41 +19,27 @@ const (
 	StateDataInputFile = "input.data"
 )
 
-func NewBuilder(baseFS string) (*RuntimeHandlerBuilder, error) {
-	manager := &RuntimeHandlerBuilder{
+func NewHandler(baseFS string) (RuntimeHandler, error) {
+	manager := RuntimeHandler{
 		baseFS: baseFS,
 	}
-
+	// TODO Load data via configuration for the db!
 	return manager, nil
 }
 
-func (rm *RuntimeHandlerBuilder) NewHandler(prg *goja.Program, fn string, secrets map[string]string, functions map[string]string, jsonInput bool) RuntimeHandler {
-	rm.mtx.Lock()
-	defer rm.mtx.Unlock()
-
-	return RuntimeHandler{
-		secrets:     secrets,
-		prg:         prg,
-		jsonPayload: jsonInput,
-		startFn:     fn,
-		functions:   functions,
-		baseFS:      rm.baseFS,
-	}
-}
-
 type RuntimeHandler struct {
-	baseFS      string
-	secrets     map[string]string
-	functions   map[string]string
-	startFn     string
-	prg         *goja.Program
-	jsonPayload bool
-	Status      Status
+	baseFS string
+	mtx    *sync.Mutex
 }
 
 var _ http.Handler = RuntimeHandler{}
 
-func (rh RuntimeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {}
+func (rh RuntimeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	rh.mtx.Lock()
+	defer rh.mtx.Unlock()
+	// TODO compile the program so its ready to be served
+	// TODO actual execution of the program
+}
 
 func GenerateBasicServiceFile(path, ns string) *core.ServiceFileData {
 	return &core.ServiceFileData{
@@ -94,9 +74,12 @@ func NewServer() (*Server, error) {
 		},
 	}
 
+	handler, err := NewHandler("")
+	if err != nil {
+		panic(err)
+	}
 	// handle flow requests
-	s.mux.HandleFunc("/", http.NotFound)
-
+	s.mux.HandleFunc("/", handler.ServeHTTP)
 	s.mux.HandleFunc("GET /status", s.HandleStatusRequest)
 
 	// TODO: cancel

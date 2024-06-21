@@ -16,7 +16,8 @@ var registry = make(map[string]core.Plugin)
 // RegisterPlugin used to register a new plugin, typically by init() functions.
 func RegisterPlugin(p core.Plugin) {
 	if os.Getenv("DIREKTIV_APP") != "sidecar" &&
-		os.Getenv("DIREKTIV_APP") != "init" {
+		os.Getenv("DIREKTIV_APP") != "init" &&
+		os.Getenv("DIREKTIV_APP") != "tsengine" {
 		slog.Info("adding plugin", slog.String("name", p.Type()))
 		registry[p.Type()] = p
 	}
