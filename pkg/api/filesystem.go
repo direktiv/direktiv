@@ -4,17 +4,14 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log/slog"
 	"net/http"
 	"path/filepath"
 	"strings"
 
-	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/direktiv/direktiv/pkg/pubsub"
-	"github.com/direktiv/direktiv/pkg/tsengine/tsservice"
 	"github.com/go-chi/chi/v5"
 	"gopkg.in/yaml.v3"
 )
@@ -188,10 +185,6 @@ func (e *fsController) delete(w http.ResponseWriter, r *http.Request) {
 	writeOk(w)
 }
 
-const (
-	yamlFlowType = "application/yaml"
-)
-
 func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 	ns := extractContextNamespace(r)
 
@@ -226,19 +219,24 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
+	// Validate if data is valid yaml with direktiv files.
+	isDirektivFile := req.Typ != filestore.FileTypeDirectory && req.Typ != filestore.FileTypeFile && req.Typ != filestore.FileTypeTSWorkflow
+	var data struct{}
+	if err = yaml.Unmarshal(decodedBytes, &data); err != nil && isDirektivFile {
+		writeError(w, &Error{
+			Code:    "request_data_invalid",
+			Message: "file data has invalid yaml string",
+		})
+
+		return
+	}
 
 	path := strings.SplitN(r.URL.Path, "/files", 2)[1]
 	path = filepath.Clean("/" + path)
 
-	filePath := filepath.Join("/", path, req.Name)
-	dataType := detectFlowContent(req.Typ, req.MIMEType)
-
-	var data struct{}
-	validate(ns.Name, decodedBytes, &data, dataType, filePath)
-
 	// Create file.
 	newFile, err := fStore.ForNamespace(ns.Name).CreateFile(r.Context(),
-		filePath,
+		"/"+path+"/"+req.Name,
 		req.Typ,
 		req.MIMEType,
 		decodedBytes)
@@ -262,7 +260,6 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 			Namespace:   ns.Name,
 			NamespaceID: ns.ID,
 			FilePath:    newFile.Path,
-			MimeType:    dataType,
 		})
 		// nolint:staticcheck
 		if err != nil {
@@ -272,19 +269,6 @@ func (e *fsController) createFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, newFile)
-}
-
-func detectFlowContent(typ filestore.FileType, mimeType string) string {
-	// if it is not a standard type return
-	if typ == filestore.FileTypeDirectory || typ == filestore.FileTypeFile {
-		return ""
-	}
-
-	if mimeType == core.TypeScriptMimeType {
-		return core.TypeScriptMimeType
-	}
-
-	return yamlFlowType
 }
 
 func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
@@ -340,16 +324,6 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 	oldFile, err := fStore.ForNamespace(ns.Name).GetFile(r.Context(), path)
 	if err != nil {
 		writeFileStoreError(w, err)
-		return
-	}
-
-	dataType := detectFlowContent(oldFile.Typ, oldFile.MIMEType)
-	filePath := filepath.Join("/", path, oldFile.Path)
-
-	var data struct{}
-	werr := validate(ns.Name, decodedBytes, data, dataType, filePath)
-	if werr != nil {
-		writeError(w, werr)
 		return
 	}
 
@@ -414,7 +388,6 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 			Namespace:   ns.Name,
 			NamespaceID: ns.ID,
 			FilePath:    updatedFile.Path,
-			MimeType:    dataType,
 		})
 		// nolint:staticcheck
 		if err != nil {
@@ -424,37 +397,4 @@ func (e *fsController) updateFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, updatedFile)
-}
-
-func validate(namespace string, decodedBytes []byte, data interface{}, dataType string, filePath string) *Error {
-	switch dataType {
-	case yamlFlowType:
-		if err := yaml.Unmarshal(decodedBytes, &data); err != nil {
-			return &Error{
-				Code:    "request_data_invalid",
-				Message: fmt.Sprintf("file data has invalid yaml string: %v", err),
-			}
-		}
-	case core.TypeScriptMimeType:
-		c, err := tsservice.NewTSServiceCompiler(namespace, filePath, string(decodedBytes))
-		if err != nil {
-			return &Error{
-				Code:    "compiler_init_error",
-				Message: fmt.Sprintf("failed to initialize TypeScript compiler: %v", err),
-			}
-		}
-		if _, err = c.CompileFlow(); err != nil {
-			return &Error{
-				Code:    "compile_error",
-				Message: fmt.Sprintf("compilation failed: %v", err),
-			}
-		}
-	default:
-		return &Error{
-			Code:    "unsupported_file_type",
-			Message: fmt.Sprintf("unsupported file type: %s", dataType),
-		}
-	}
-
-	return nil
 }

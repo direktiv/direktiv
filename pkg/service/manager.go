@@ -142,7 +142,7 @@ func (m *manager) Run(circuit *core.Circuit) error {
 		errs := m.runCycle()
 		m.lock.Unlock()
 		for _, err := range errs {
-			slog.Error("run cycle", "err", err)
+			slog.Error("run cycle", "err", err, "cycleFails", cycleFails)
 		}
 
 		// Evaluate errors rate.
