@@ -89,7 +89,7 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 		GatewayManager:  gatewayManager2,
 		SyncNamespace:   args.SyncNamespace,
 	}
-	var tsEngineManager core.TSServiceManager = tsengine.NewManager(args.Database)
+	var tsEngineManager core.TSServiceManager = tsengine.NewManager(args.Database, args.Config.KnativeSidecar)
 
 	if !args.Config.DisableServices {
 		args.PubSubBus.Subscribe(&pubsub.FileSystemChangeEvent{}, func(_ string) {

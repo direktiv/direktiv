@@ -31,7 +31,7 @@ type ServicePatch struct {
 }
 
 type ServiceFile struct {
-	DirektivAPI string                `yaml:"direktiv_api"`
+	DirektivAPI string                `json:"direktiv_api" yaml:"direktiv_api"`
 	Image       string                `json:"image"        yaml:"image"`
 	Cmd         string                `json:"cmd"          yaml:"cmd"`
 	Size        string                `json:"size"         yaml:"size"`

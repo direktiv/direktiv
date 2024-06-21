@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"strconv"
 
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/database"
@@ -15,13 +14,15 @@ import (
 
 // Manager handles compilation and generation of TypeScript workflow services.
 type Manager struct {
-	db *database.SQLStore
+	db    *database.SQLStore
+	image string
 }
 
 // NewManager creates a new Manager instance.
-func NewManager(db *database.SQLStore) *Manager {
+func NewManager(db *database.SQLStore, image string) *Manager {
 	return &Manager{
-		db: db,
+		db:    db,
+		image: image,
 	}
 }
 
@@ -78,12 +79,25 @@ func (m *Manager) processTSFile(ctx context.Context, namespace string, file *fil
 	scale := flowInfo.Definition.Scale[0]
 	serviceData := &core.ServiceFileData{
 		ID:        flowInfo.ID,
-		Typ:       flowInfo.Definition.Type,
+		Typ:       "service/v1",
 		Namespace: namespace,
 		FilePath:  file.Path,
-		Name:      flowInfo.ID,
+		Error:     nil,
+
+		Name: flowInfo.ID,
 		ServiceFile: core.ServiceFile{
-			Size: strconv.Itoa(scale.Min),
+			DirektivAPI: "service/v1",
+			Scale:       scale.Min,
+			Image:       m.image,
+			Cmd:         "",
+			Size:        "small",
+			Patches:     []core.ServicePatch{},
+			Envs: []core.EnvironmentVariable{
+				{
+					Name:  "DIREKTIV_APP",
+					Value: "tsengine",
+				},
+			},
 			// TODO: fill all fields.
 		},
 	}
