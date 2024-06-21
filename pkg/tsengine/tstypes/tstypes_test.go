@@ -3,6 +3,8 @@ package tstypes_test
 import (
 	"testing"
 
+	_ "embed"
+
 	"github.com/direktiv/direktiv/pkg/tsengine/tsservice"
 	"github.com/stretchr/testify/assert"
 )
@@ -10,6 +12,13 @@ import (
 func TestBasicDefinition(t *testing.T) {
 
 	emptyDef := `const flow: DirektivFlow = {
+		scale: [
+			{
+				min: 3
+			}
+		]
+	};
+	var x: DirektivFlow = {
 		scale: [
 			{
 				min: 1
@@ -29,5 +38,5 @@ func TestBasicDefinition(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	assert.Equal(t, 1, info.Definition.Scale[0].Min)
+	assert.Equal(t, 3, info.Definition.Scale[0].Min)
 }

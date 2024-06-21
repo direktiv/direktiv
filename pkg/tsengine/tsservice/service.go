@@ -4,10 +4,10 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"regexp"
 
 	"github.com/direktiv/direktiv/pkg/tsengine/transpiler"
-	"github.com/direktiv/direktiv/pkg/tsengine/tsservice/parsing"
 	"github.com/direktiv/direktiv/pkg/tsengine/tstypes"
 	"github.com/dop251/goja"
 	"github.com/dop251/goja/ast"
@@ -83,16 +83,11 @@ func (c *Compiler) CompileFlow() (*tstypes.FlowInformation, error) {
 		Functions:  make(map[string]tstypes.Function),
 		ID:         c.getID(),
 	}
-
-	astIn, err := json.MarshalIndent(c.ast.Body, "", "   ")
+	vars, err := ParseTopLevelVarsFromAST(c.ast.Body)
 	if err != nil {
-		return nil, fmt.Errorf("error marshaling AST: %w", err)
-	}
-
-	if err := c.parseAST(astIn, flowInformation); err != nil {
 		return nil, fmt.Errorf("error parsing AST: %w", err)
 	}
-
+	flowInformation.Definition, err = ConvertToDefinition(vars)
 	// if no state, we pick the first function
 	if flowInformation.Definition.State == "" {
 		if !c.selectFirstFunctionState(flowInformation) {
@@ -113,27 +108,92 @@ func (c *Compiler) selectFirstFunctionState(flowInformation *tstypes.FlowInforma
 	return false
 }
 
-func (c *Compiler) parseAST(astIn []byte, flowInformation *tstypes.FlowInformation) error {
-	var root parsing.Root
-	if err := json.Unmarshal(astIn, &root); err != nil {
-		return fmt.Errorf("unmarshaling AST: %w", err)
+// ParseTopLevelVarsFromAST parses the AST and extracts variable names.
+func ParseTopLevelVarsFromAST(astBody []ast.Statement) (map[string]interface{}, error) {
+	slog.Info("Starting AST traversal in ParseTopLevelVarsFromAST") // Start log
+
+	variables := map[string]interface{}{}
+	for _, stmt := range astBody {
+		slog.Info("Processing statement", "type", fmt.Sprintf("%T", stmt))
+
+		switch s := stmt.(type) {
+		case *ast.VariableStatement:
+			for _, binding := range s.List {
+				switch target := binding.Target.(type) {
+				case *ast.Identifier:
+					initializerValue := traverseAST(binding.Initializer)
+					variables[target.Name.String()] = initializerValue
+					slog.Info("Found variable", "name", target.Name.String(), "value", initializerValue)
+				}
+			}
+		}
 	}
 
-	// Iterate over each RawMessage in the root slice
-	for _, rawEntry := range root {
-		var entry parsing.VarOrFunction
-		if err := json.Unmarshal(rawEntry, &entry); err != nil {
-			return fmt.Errorf("unmarshaling entry: %w", err)
-		}
+	slog.Info("Completed AST traversal")
+	return variables, nil
+}
 
-		if entry.Var != nil {
-			// Handle the VarDeclaration (entry.Var)
-		} else if entry.Function != nil {
-			// Handle the FunctionDeclaration (entry.Function)
-			funcName := entry.Function.Name.Name
-			entry.Function.ParameterList.List
+func traverseAST(expr ast.Expression) interface{} {
+	slog.Info("Traversing expression", "type", fmt.Sprintf("%T", expr)) // Log expression type
+
+	switch v := expr.(type) {
+	case *ast.ObjectLiteral:
+		objectValue := make(map[string]interface{})
+		for _, prop := range v.Value {
+			switch p := prop.(type) {
+			case *ast.PropertyKeyed:
+				key, ok := p.Key.(*ast.StringLiteral)
+				if !ok {
+					continue
+				}
+				objectValue[key.Value.String()] = traverseAST(p.Value)
+				slog.Info("Found property", "key", key.Value.String(), "value", objectValue[key.Value.String()]) // Log property
+			}
+		}
+		return objectValue
+	case *ast.StringLiteral:
+		return v.Value.String()
+	case *ast.BooleanLiteral:
+		return v.Value
+	case *ast.NullLiteral:
+		return nil
+	case *ast.ArrayLiteral:
+		var arrayValue []interface{}
+		for _, elem := range v.Value {
+			arrayValue = append(arrayValue, traverseAST(elem))
+		}
+		return arrayValue
+	case *ast.NumberLiteral:
+		return v.Value
+	default:
+		slog.Info("Unsupported expression type", "type", fmt.Sprintf("%T", expr)) // Log unsupported types
+		return nil
+	}
+}
+
+func ConvertToDefinition(variables map[string]interface{}) (*tstypes.Definition, error) {
+	for varName, rawValue := range variables {
+		if varName == "flow" { // Only process variables named "flow"
+
+			// Convert rawValue to JSON bytes
+			jsonData, err := json.Marshal(rawValue)
+			if err != nil {
+				return nil, fmt.Errorf("error marshalling variable 'flow': %w", err)
+			}
+
+			slog.Info("Raw JSON data for 'flow':", jsonData) // Log the raw JSON
+
+			// Unmarshal JSON into Definition struct
+			var definition tstypes.Definition
+			if err := json.Unmarshal(jsonData, &definition); err != nil {
+				return nil, fmt.Errorf("error unmarshalling variable 'flow': %w", err)
+			}
+
+			slog.Info("Converted to Definition:", definition) // Log the converted struct
+			return &definition, nil
 		}
 	}
 
-	return nil
+	slog.Info("No variable named 'flow' found.") // Log if 'flow' isn't found
+	return nil, nil                              // Or return an error if you require 'flow' to be present
 }

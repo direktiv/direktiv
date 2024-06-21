@@ -23,14 +23,6 @@ type Function struct {
 	Service string            `json:"service,omitempty"`
 }
 
-type Scale struct {
-	Min    int    `json:"min"`
-	Max    int    `json:"max,omitempty"`
-	Cron   string `json:"cron,omitempty"`
-	Metric string `json:"metric,omitempty"`
-	Value  int    `json:"value,omitempty"`
-}
-
 type Definition struct {
 	Type    string  `json:"type,omitempty"`
 	State   string  `json:"state,omitempty"`
@@ -56,6 +48,14 @@ func DefaultDefinition() *Definition {
 			},
 		},
 	}
+}
+
+type Scale struct {
+	Min    int    `json:"min"`
+	Max    int    `json:"max,omitempty"`
+	Cron   string `json:"cron,omitempty"`
+	Metric string `json:"metric,omitempty"`
+	Value  int    `json:"value,omitempty"`
 }
 
 const (
