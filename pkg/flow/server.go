@@ -198,8 +198,8 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 	srv.config = config
 
 	var err error
-	slog.Debug("starting Flow server")
-	slog.Debug("initializing telemetry.")
+	slog.Debug("Starting Flow server")
+	slog.Debug("Initializing telemetry.")
 	telEnd, err := utils.InitTelemetry(srv.config.OpenTelemetry, "direktiv/flow", "direktiv")
 	if err != nil {
 		return nil, err
@@ -218,7 +218,7 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 	}
 	slog.Debug("successfully connected to database with raw driver")
 
-	slog.Debug("initializing pub-sub.")
+	slog.Debug("Initializing pub-sub.")
 
 	srv.pubsub, err = pubsub.InitPubSub(srv, config.DB)
 	if err != nil {
@@ -227,7 +227,7 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 
 	slog.Info("pub-sub was initialized successfully.")
 
-	slog.Debug("initializing timers.")
+	slog.Debug("Initializing timers.")
 
 	srv.timers, err = initTimers(srv.pubsub)
 	if err != nil {
@@ -235,7 +235,7 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 	}
 	slog.Info("timers where initialized successfully.")
 
-	slog.Debug("initializing pubsub routine.")
+	slog.Debug("Initializing pubsub routine.")
 	coreBus, err := pubsubSQL.NewPostgresCoreBus(srv.rawDB, srv.config.DB)
 	if err != nil {
 		return nil, fmt.Errorf("creating pubsub core bus, err: %w", err)
@@ -253,19 +253,19 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 		return nil
 	})
 
-	slog.Debug("initializing engine.")
+	slog.Debug("Initializing engine.")
 
 	srv.engine = initEngine(srv)
 	slog.Info("engine was started.")
 
-	slog.Debug("initializing flow server.")
+	slog.Debug("Initializing internal grpc server.")
 
 	srv.flow, err = initFlowServer(circuit.Context(), srv)
 	if err != nil {
 		return nil, err
 	}
 
-	slog.Debug("initializing mirror manager.")
+	slog.Debug("Initializing mirror manager.")
 	slog.Debug("mirror manager was started.")
 
 	slog.Debug("Initializing events.")
