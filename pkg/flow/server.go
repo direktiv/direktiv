@@ -26,7 +26,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
-	libgrpc "google.golang.org/grpc"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -50,9 +49,8 @@ type server struct {
 
 	mirrorManager *mirror.Manager
 
-	flow     *flow
-	internal *internal
-	events   *events
+	flow   *flow
+	events *events
 }
 
 func Run(circuit *core.Circuit) error {
@@ -195,8 +193,8 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 	srv.config = config
 
 	var err error
-	slog.Debug("Starting Flow server")
-	slog.Debug("Initializing telemetry.")
+	slog.Debug("starting Flow server")
+	slog.Debug("initializing telemetry.")
 	telEnd, err := utils.InitTelemetry(srv.config.OpenTelemetry, "direktiv/flow", "direktiv")
 	if err != nil {
 		return nil, err
@@ -215,7 +213,7 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 	}
 	slog.Debug("successfully connected to database with raw driver")
 
-	slog.Debug("Initializing pubsub routine.")
+	slog.Debug("initializing pubsub routine.")
 	coreBus, err := pubsubSQL.NewPostgresCoreBus(srv.rawDB, srv.config.DB)
 	if err != nil {
 		return nil, fmt.Errorf("creating pubsub core bus, err: %w", err)
@@ -233,7 +231,7 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 		return nil
 	})
 
-	slog.Debug("Initializing timers.")
+	slog.Debug("initializing timers.")
 
 	srv.timers, err = initTimers(srv.pBus)
 	if err != nil {
@@ -241,25 +239,19 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 	}
 	slog.Info("timers where initialized successfully.")
 
-	slog.Debug("Initializing engine.")
+	slog.Debug("initializing engine.")
 
 	srv.engine = initEngine(srv)
 	slog.Info("engine was started.")
 
-	slog.Debug("Initializing internal grpc server.")
-
-	srv.internal, err = initInternalServer(circuit.Context(), srv)
-	if err != nil {
-		return nil, err
-	}
-	slog.Info("Internal grpc server started.")
+	slog.Debug("initializing flow server.")
 
 	srv.flow, err = initFlowServer(circuit.Context(), srv)
 	if err != nil {
 		return nil, err
 	}
 
-	slog.Debug("Initializing mirror manager.")
+	slog.Debug("initializing mirror manager.")
 	slog.Debug("mirror manager was started.")
 
 	slog.Debug("Initializing events.")
@@ -306,24 +298,6 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 	srv.registerFunctions()
 
 	go srv.cronPoller()
-
-	circuit.Start(func() error {
-		e := srv.internal.Run()
-		if e != nil {
-			return fmt.Errorf("srv.internal.Run(), err: %w", err)
-		}
-
-		return nil
-	})
-
-	circuit.Start(func() error {
-		e := srv.flow.Run()
-		if e != nil {
-			return fmt.Errorf("srv.flow.Run(), err: %w", err)
-		}
-
-		return nil
-	})
 
 	circuit.Start(func() error {
 		<-circuit.Done()
@@ -487,24 +461,6 @@ func (srv *server) cronPollerWorkflow(ctx context.Context, tx *database.SQLStore
 
 		slog.Debug("Successfully loaded cron schedule for workflow", "workflow", file.Path, "cron_expression", ms.Cron)
 	}
-}
-
-func unaryInterceptor(ctx context.Context, req interface{}, info *libgrpc.UnaryServerInfo, handler libgrpc.UnaryHandler) (interface{}, error) {
-	resp, err := handler(ctx, req)
-	if err != nil {
-		return nil, translateError(err)
-	}
-
-	return resp, nil
-}
-
-func streamInterceptor(srv interface{}, ss libgrpc.ServerStream, info *libgrpc.StreamServerInfo, handler libgrpc.StreamHandler) error {
-	err := handler(srv, ss)
-	if err != nil {
-		return translateError(err)
-	}
-
-	return nil
 }
 
 func this() string {

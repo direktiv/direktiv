@@ -15,6 +15,7 @@ import (
 
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/datastore"
+	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -54,6 +55,67 @@ func (m *logController) mountRouter(r chi.Router) {
 			"startingFrom": starting,
 		}
 		writeJSONWithMeta(w, data, metaInfo)
+	})
+	r.Post("/", func(w http.ResponseWriter, r *http.Request) {
+		namespace := extractContextNamespace(r)
+		instanceID := r.URL.Query().Get("instance")
+
+		if instanceID == "" {
+			http.Error(w, "Missing instance ID", http.StatusBadRequest)
+
+			return
+		}
+
+		var logEntry map[string]interface{}
+		err := json.NewDecoder(r.Body).Decode(&logEntry)
+		if err != nil {
+			writeInternalError(w, err)
+
+			return
+		}
+
+		if _, ok := logEntry["track"]; !ok {
+			writeBadrequestError(w, fmt.Errorf("missing 'track' field"))
+
+			return
+		}
+
+		if v, ok := logEntry["namespace"].(string); !ok || v != namespace.Name {
+			writeBadrequestError(w, fmt.Errorf("invalid or mismatched namespace"))
+
+			return
+		}
+
+		msg, ok := logEntry["msg"].(string)
+		if !ok {
+			writeBadrequestError(w, fmt.Errorf("missing or invalid 'msg' field"))
+
+			return
+		}
+
+		slogF := slog.Info
+		if v, ok := logEntry["level"].(tracing.LogLevel); ok {
+			switch v {
+			case tracing.LevelDebug:
+				slogF = slog.Debug
+			case tracing.LevelInfo:
+				slogF = slog.Info
+			case tracing.LevelWarn:
+				slogF = slog.Warn
+			case tracing.LevelError:
+				slogF = slog.Error
+			}
+		}
+
+		delete(logEntry, "level")
+
+		attr := make([]interface{}, 0, len(logEntry))
+		for k, v := range logEntry {
+			attr = append(attr, k, v)
+		}
+
+		slogF(msg, attr...)
+		w.WriteHeader(http.StatusOK)
 	})
 }
 
