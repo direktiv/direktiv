@@ -9,6 +9,15 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
+type LogLevel int
+
+const (
+	LevelDebug LogLevel = iota
+	LevelInfo
+	LevelWarn
+	LevelError
+)
+
 func AddTag(ctx context.Context, key, value interface{}) context.Context {
 	tags, ok := ctx.Value(core.LogTagsKey).(map[string]interface{})
 	if !ok {
@@ -29,23 +38,54 @@ func AddNamespace(ctx context.Context, namespaceName string) context.Context {
 	return context.WithValue(ctx, core.LogTagsKey, tags)
 }
 
-func getSlogAttributes(ctx context.Context) []interface{} {
-	var tags map[string]interface{}
-
+func AddInstanceAttr(ctx context.Context, instanceID string, invoker string, callpath string, workflowPath string) context.Context {
 	tags, ok := ctx.Value(core.LogTagsKey).(map[string]interface{})
 	if !ok {
-		tags = make(map[string]interface{})
+		tags = make(map[string]interface{}, 0)
+	}
+	if trackValue, ok := ctx.Value(core.LogTrackKey).(string); ok {
+		tags["track"] = trackValue
 	}
 
-	if trackValue, ok := ctx.Value(core.LogTrackKey).(string); ok {
-		tags["track"] = trackValue // Add track as a tag to the map
+	tags["instance"] = instanceID
+	tags["invoker"] = invoker
+	tags["callpath"] = callpath
+	tags["workflow"] = workflowPath
+
+	return context.WithValue(ctx, core.LogTagsKey, tags)
+}
+
+func AddStateAttr(ctx context.Context, state string) context.Context {
+	tags, ok := ctx.Value(core.LogTagsKey).(map[string]interface{})
+	if !ok {
+		tags = make(map[string]interface{}, 0)
 	}
-	span := trace.SpanFromContext(ctx)
-	traceID := span.SpanContext().TraceID().String()
-	spanID := span.SpanContext().SpanID().String()
+	if trackValue, ok := ctx.Value(core.LogTrackKey).(string); ok {
+		tags["track"] = trackValue
+	}
+
+	tags["state"] = state
+
+	return context.WithValue(ctx, core.LogTagsKey, tags)
+}
+
+func AddTraceAttr(ctx context.Context, traceID, spanID string) context.Context {
+	tags, ok := ctx.Value(core.LogTagsKey).(map[string]interface{})
+	if !ok {
+		tags = make(map[string]interface{}, 0)
+	}
+	if trackValue, ok := ctx.Value(core.LogTrackKey).(string); ok {
+		tags["track"] = trackValue
+	}
 
 	tags["trace"] = traceID
 	tags["span"] = spanID
+
+	return context.WithValue(ctx, core.LogTagsKey, tags)
+}
+
+func getSlogAttributes(ctx context.Context) []interface{} {
+	tags := getAttributes(ctx)
 
 	// Convert map back to a slice of key-value pairs
 	var result []interface{}
@@ -54,6 +94,43 @@ func getSlogAttributes(ctx context.Context) []interface{} {
 	}
 
 	return result
+}
+
+func getAttributes(ctx context.Context) map[string]interface{} {
+	tags, ok := ctx.Value(core.LogTagsKey).(map[string]interface{})
+	if !ok {
+		tags = make(map[string]interface{})
+	}
+
+	if trackValue, ok := ctx.Value(core.LogTrackKey).(string); ok {
+		tags["track"] = trackValue
+	}
+	span := trace.SpanFromContext(ctx)
+	traceID := span.SpanContext().TraceID().String()
+	spanID := span.SpanContext().SpanID().String()
+
+	tags["trace"] = traceID
+	tags["span"] = spanID
+
+	return tags
+}
+
+func GetLogEntryWithStatus(ctx context.Context, level LogLevel, msg string, status core.LogStatus) map[string]interface{} {
+	tags := getAttributes(ctx)
+	tags["status"] = status
+	tags["level"] = level
+	tags["msg"] = msg
+
+	return tags
+}
+
+func GetLogEntryWithError(ctx context.Context, msg string, err error) map[string]interface{} {
+	tags := getAttributes(ctx)
+	tags["error"] = err
+	tags["status"] = "error"
+	tags["level"] = LevelError
+
+	return tags
 }
 
 func GetSlogAttributesWithStatus(ctx context.Context, status core.LogStatus) []interface{} {
@@ -85,5 +162,9 @@ func BuildInstanceTrack(instance *engine.Instance) string {
 		callpath += "/" + v.ID.String()
 	}
 
+	return fmt.Sprintf("%v.%v", "instance", callpath)
+}
+
+func BuildInstanceTrackViaCallpath(callpath string) string {
 	return fmt.Sprintf("%v.%v", "instance", callpath)
 }

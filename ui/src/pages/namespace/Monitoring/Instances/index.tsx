@@ -3,7 +3,6 @@ import { NoPermissions, NoResult, Table, TableBody } from "~/design/Table";
 
 import { InstanceCard } from "./InstanceCard";
 import { InstanceRow } from "./Row";
-import RefreshButton from "~/design/RefreshButton";
 import { ScrollArea } from "~/design/ScrollArea";
 import { useInstances } from "~/api/instances/query/get";
 import { useTranslation } from "react-i18next";
@@ -12,8 +11,6 @@ export const Instances = () => {
   const {
     data: dataSuccessfulInstances,
     isFetched: isFetchedSuccessfulInstances,
-    isFetching: isFetchingSuccessfulInstances,
-    refetch: refetchSuccessfulInstances,
     isAllowed: isAllowedSuccessfulInstances,
     noPermissionMessage: noPermissionMessageSuccessfulInstances,
   } = useInstances({
@@ -30,8 +27,6 @@ export const Instances = () => {
   const {
     data: dataFailedInstances,
     isFetched: isFetchedFailedInstances,
-    isFetching: isFetchingFailedInstances,
-    refetch: refetchFailedInstances,
     isAllowed: isAllowedFailedInstances,
     noPermissionMessage: noPermissionMessageFailedInstances,
   } = useInstances({
@@ -58,17 +53,6 @@ export const Instances = () => {
       <InstanceCard
         headline={t("pages.monitoring.instances.successfulExecutions.title")}
         icon={CheckCircle2}
-        refetchButton={
-          <RefreshButton
-            icon
-            size="sm"
-            variant="ghost"
-            disabled={isFetchingSuccessfulInstances}
-            onClick={() => {
-              refetchSuccessfulInstances();
-            }}
-          />
-        }
       >
         {isAllowedSuccessfulInstances ? (
           <>
@@ -97,17 +81,6 @@ export const Instances = () => {
       <InstanceCard
         headline={t("pages.monitoring.instances.failedExecutions.title")}
         icon={XCircle}
-        refetchButton={
-          <RefreshButton
-            icon
-            size="sm"
-            variant="ghost"
-            disabled={isFetchingFailedInstances}
-            onClick={() => {
-              refetchFailedInstances();
-            }}
-          />
-        }
       >
         {isAllowedFailedInstances ? (
           <>

@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
+	enginerefactor "github.com/direktiv/direktiv/pkg/engine"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
-	"github.com/direktiv/direktiv/pkg/flow/grpc"
 	"github.com/direktiv/direktiv/pkg/instancestore"
 	"github.com/google/uuid"
 )
@@ -181,11 +181,24 @@ func (engine *engine) WakeInstanceCaller(ctx context.Context, im *instanceMemory
 
 	if caller != nil {
 		slog.Debug("Initiating result report to calling workflow.", "namespace", im.Namespace(), "instance", im.ID())
-
+		callpath := im.instance.Instance.ID.String()
+		for _, v := range im.instance.DescentInfo.Descent {
+			callpath += "/" + v.ID.String()
+		}
 		msg := &actionResultMessage{
 			InstanceID: caller.ID.String(),
-			State:      caller.State,
-			Step:       caller.Step,
+			ActionContext: enginerefactor.ActionContext{
+				Trace:     im.instance.TelemetryInfo.TraceID,
+				Span:      im.instance.TelemetryInfo.SpanID,
+				State:     caller.State,
+				Branch:    caller.Branch,
+				Callpath:  callpath,
+				Instance:  im.GetInstanceID().String(),
+				Workflow:  im.instance.Instance.WorkflowPath,
+				Namespace: im.instance.Instance.Namespace,
+				Step:      caller.Step,
+				Action:    im.ID().String(),
+			},
 			Payload: actionResultPayload{
 				ActionID:     im.ID().String(),
 				ErrorCode:    im.ErrorCode(),
@@ -193,17 +206,7 @@ func (engine *engine) WakeInstanceCaller(ctx context.Context, im *instanceMemory
 				Output:       []byte(im.MarshalOutput()),
 			},
 		}
-
-		step := int32(msg.Step)
-
-		_, err := engine.server.internal.ReportActionResults(ctx, &grpc.ReportActionResultsRequest{
-			InstanceId:   msg.InstanceID,
-			Step:         step,
-			ActionId:     msg.Payload.ActionID,
-			ErrorCode:    msg.Payload.ErrorCode,
-			ErrorMessage: msg.Payload.ErrorMessage,
-			Output:       msg.Payload.Output,
-		})
+		err := engine.ReportActionResults(ctx, msg)
 		if err != nil {
 			slog.Error("Failed to report action results to caller workflow.", "namespace", im.Namespace(), "instance", im.ID(), "error", err)
 
@@ -254,4 +257,27 @@ func (engine *engine) start(im *instanceMemory) {
 	})
 
 	engine.deregisterScheduled(id)
+}
+
+func (engine *engine) ReportActionResults(ctx context.Context, req *actionResultMessage) error {
+	payload := &actionResultPayload{
+		ActionID:     req.Payload.ActionID,
+		ErrorCode:    req.Payload.ErrorCode,
+		ErrorMessage: req.Payload.ErrorMessage,
+		Output:       req.Payload.Output,
+	}
+
+	uid, err := uuid.Parse(req.InstanceID)
+	if err != nil {
+		slog.Debug("failed in ReportActionResults", "this", this(), "error", err)
+		return err
+	}
+
+	err = engine.enqueueInstanceMessage(ctx, uid, "action", payload)
+	if err != nil {
+		slog.Debug("failed to enqueque ReportActionResults", "this", this(), "error", err)
+		return err
+	}
+
+	return nil
 }

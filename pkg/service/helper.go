@@ -285,7 +285,7 @@ func buildResourceLimits(cf *core.Config, size string) (*corev1.ResourceRequirem
 	}, nil
 }
 
-func buildEnvVars(withGrpc bool, c *core.Config, sv *core.ServiceFileData) []corev1.EnvVar {
+func buildEnvVars(forSidecar bool, c *core.Config, sv *core.ServiceFileData) []corev1.EnvVar {
 	proxyEnvs := []corev1.EnvVar{}
 
 	if len(c.KnativeProxyHTTP) > 0 {
@@ -334,7 +334,7 @@ func buildEnvVars(withGrpc bool, c *core.Config, sv *core.ServiceFileData) []cor
 		Value: c.OpenTelemetry,
 	})
 
-	if withGrpc {
+	if forSidecar {
 		namespace := c.DirektivNamespace
 
 		proxyEnvs = append(proxyEnvs, corev1.EnvVar{

@@ -16,8 +16,7 @@ type Config struct {
 
 	LogDebug bool `env:"DIREKTIV_DEBUG"`
 
-	ApiPort  int `env:"DIREKTIV_API_PORT"  envDefault:"6665"`
-	GrpcPort int `env:"DIREKTIV_GRPC_PORT" envDefault:"6666"`
+	ApiPort int `env:"DIREKTIV_API_PORT" envDefault:"6665"`
 
 	ApiKey    string `env:"DIREKTIV_API_KEY"`
 	SecretKey string `env:"DIREKTIV_SECRET_KEY,notEmpty"`

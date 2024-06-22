@@ -1,5 +1,5 @@
 import { Dialog, DialogContent } from "~/design/Dialog";
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 import {
   NoPermissions,
   Table,
@@ -15,6 +15,7 @@ import ExplorerHeader from "./Header";
 import FileRow from "./FileRow";
 import FileViewer from "./components/modals/FileViewer";
 import { FolderUp } from "lucide-react";
+import Input from "~/design/Input";
 import { Link } from "react-router-dom";
 import NoResult from "./NoResult";
 import Rename from "./components/modals/Rename";
@@ -44,7 +45,20 @@ const ExplorerPage: FC = () => {
   const [deleteNode, setDeleteNode] = useState<BaseFileSchemaType>();
   const [renameFile, setRenameNode] = useState<BaseFileSchemaType>();
   const [previewNode, setPreviewNode] = useState<BaseFileSchemaType>();
+
+  const [query, setQuery] = useState("");
   const { t } = useTranslation();
+  const hasQuery = query.length > 0;
+
+  const children = useMemo(
+    () => (data?.type === "directory" && data?.children) || [],
+    [data]
+  );
+
+  const filteredFiles = useMemo(
+    () => children.filter((child) => !hasQuery || child.path.includes(query)),
+    [hasQuery, query, children]
+  );
 
   useEffect(() => {
     if (dialogOpen === false) {
@@ -64,7 +78,6 @@ const ExplorerPage: FC = () => {
       </Card>
     );
 
-  const children = (data?.type === "directory" && data?.children) || [];
   const showTable = !isRoot || children.length > 0;
   const noResults = isSuccess && children.length === 0;
   const wideOverlay = !!previewNode;
@@ -80,6 +93,17 @@ const ExplorerPage: FC = () => {
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <Table>
                 <TableBody>
+                  <div className="flex justify-between gap-5 p-2">
+                    <Input
+                      data-testid="queryField"
+                      className="sm:w-60"
+                      value={query}
+                      onChange={(e) => {
+                        setQuery(e.target.value);
+                      }}
+                      placeholder={t("pages.explorer.tree.list.filter")}
+                    />
+                  </div>
                   {!isRoot && (
                     <TableRow>
                       <TableCell colSpan={2}>
@@ -98,7 +122,7 @@ const ExplorerPage: FC = () => {
                       </TableCell>
                     </TableRow>
                   )}
-                  {children.map((item) => (
+                  {filteredFiles.map((item) => (
                     <FileRow
                       key={item.path}
                       namespace={namespace}
