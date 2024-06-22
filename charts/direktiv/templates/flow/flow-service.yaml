@@ -12,9 +12,6 @@ spec:
     - port: 6665
       name: flow-api
       protocol: TCP
-    - port: 6666
-      name: flow
-      protocol: TCP
     - port: 7777
       name: internal
       protocol: TCP
