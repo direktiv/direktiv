@@ -44,7 +44,7 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "direktiv.serviceAccountName" . }}-functions
+      serviceAccountName: {{ include "direktiv.serviceAccountName" . }}
       containers:
 {{- if .Values.opentelemetry.enabled }}
 {{ include "direktiv.opentelemetry" . | indent 8 }}
@@ -124,7 +124,7 @@ spec:
           - name: DIREKTIV_OPEN_TELEMETRY_BACKEND
             value: {{ include "direktiv.opentelemetry-backend" . }}
           - name: DIREKTIV_KNATIVE_SERVICE_ACCOUNT
-            value: "{{ include "direktiv.serviceAccountName" . }}-functions-pod"
+            value: "{{ include "direktiv.serviceAccountName" . }}"
           - name: DIREKTIV_KNATIVE_NAMESPACE
             value: {{ .Values.functions.namespace | quote }}
           - name: DIREKTIV_KNATIVE_INGRESS_CLASS
