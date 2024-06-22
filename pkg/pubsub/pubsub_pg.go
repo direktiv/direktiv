@@ -109,6 +109,7 @@ type FileSystemChangeEvent struct {
 	FilePath     string
 	OldPath      string
 	DeleteFileID uuid.UUID
+	MimeType     string
 }
 
 type NamespacesChangeEvent struct {
