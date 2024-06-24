@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/caarlos0/env/v10"
-	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/database"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -46,6 +45,9 @@ type RuntimeHandler struct {
 	ctx     engineCtx
 }
 
+// engineCtx defines the context in which
+// the engine operates (e.g., namespace and workflow paths)
+// its main purpose is logging & tracing.
 type engineCtx struct {
 	Namespace     string
 	WorkflowsPath string
@@ -59,15 +61,6 @@ func (rh RuntimeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer rh.mtx.Unlock()
 	// TODO compile the program so its ready to be served
 	// TODO actual execution of the program
-}
-
-func GenerateBasicServiceFile(path, ns string) *core.ServiceFileData {
-	return &core.ServiceFileData{
-		Typ:       core.ServiceTypeTypescript,
-		Name:      path,
-		Namespace: ns,
-		FilePath:  path,
-	}
 }
 
 type Server struct {
@@ -98,11 +91,13 @@ func NewServer() (*Server, error) {
 	if err := env.Parse(config); err != nil {
 		return nil, fmt.Errorf("parsing env variables: %w", err)
 	}
+	slog.Info("initializing the database")
 
 	db, err := initDB(config)
 	if err != nil {
 		return nil, fmt.Errorf("was unable create db %w", err)
 	}
+	slog.Info("database initialized")
 
 	handler, err := NewHandler(config, db)
 	if err != nil {
@@ -115,6 +110,7 @@ func NewServer() (*Server, error) {
 
 	// TODO: cancel
 	// s.mux.HandleFunc("GET /cancel/{id}", s.HandleStatusRequest)
+	slog.Info("started engine server")
 
 	return s, nil
 }

@@ -134,3 +134,12 @@ func (m *Manager) processTSFile(ctx context.Context, namespace string, file *fil
 
 	return nil
 }
+
+func GenerateBasicServiceFile(path, ns string) *core.ServiceFileData {
+	return &core.ServiceFileData{
+		Typ:       core.ServiceTypeTypescript,
+		Name:      path,
+		Namespace: ns,
+		FilePath:  path,
+	}
+}
