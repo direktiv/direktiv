@@ -4,21 +4,19 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/direktiv/direktiv/pkg/tsengine/tsservice"
-	"golang.org/x/exp/slog"
 )
 
-// Manager handles compilation and generation of TypeScript workflow services.
 type Manager struct {
 	db     *database.SQLStore
 	config core.Config
 }
 
-// NewManager creates a new Manager instance.
 func NewManager(db *database.SQLStore, config core.Config) *Manager {
 	return &Manager{
 		db:     db,
@@ -26,39 +24,62 @@ func NewManager(db *database.SQLStore, config core.Config) *Manager {
 	}
 }
 
-// Run iterates over namespaces and TypeScript workflows, compiling and generating service files.
-func (m Manager) Run(cir *core.Circuit) error {
-	ctx := cir.Context()
-
-	nsList, err := m.db.DataStore().Namespaces().GetAll(ctx)
-	if err != nil {
-		return fmt.Errorf("listing namespaces: %w", err)
+func (m Manager) Create(cir *core.Circuit, namespace string, filePath string, fileType string) error {
+	if fileType != string(filestore.FileTypeTSWorkflow) {
+		return nil // Not a TypeScript workflow file, no action needed
 	}
 
-	for _, ns := range nsList {
-		log := slog.With("namespace", ns.Name)
+	ctx := cir.Context()
 
-		files, err := m.db.FileStore().ForNamespace(ns.Name).ListDirektivFilesWithData(ctx)
-		if err != nil {
-			log.Error("listing direktiv files", "err", err)
-			continue
-		}
-
-		for _, file := range files {
-			if file.Typ != filestore.FileTypeTSWorkflow {
-				continue
-			}
-
-			if err := m.processTSFile(ctx, ns.Name, file); err != nil {
-				log.Error("processing ts file", "path", file.Path, "err", err)
-			}
-		}
+	file, err := m.db.FileStore().ForNamespace(namespace).GetFile(ctx, filePath)
+	if err != nil {
+		return err
+	}
+	if err := m.processTSFile(ctx, namespace, file); err != nil {
+		return err
 	}
 
 	return nil
 }
 
-// processTSFile handles the compilation and generation of service files for a single TypeScript workflow.
+func (m Manager) Update(cir *core.Circuit, namespace string, filePath string, fileType string) error {
+	if fileType != string(filestore.FileTypeTSWorkflow) {
+		return nil // no action here
+	}
+	err := m.Delete(cir, namespace, filePath, fileType)
+	if err != nil {
+		return err
+	}
+	err = m.Create(cir, namespace, filePath, fileType)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m Manager) Delete(cir *core.Circuit, namespace string, filePath string, fileType string) error {
+	if fileType != string(filestore.FileTypeTSWorkflow) {
+		return nil // no action here
+	}
+
+	ctx := cir.Context()
+
+	file, err := m.db.FileStore().ForNamespace(namespace).GetFile(ctx, filePath+".yaml")
+	if err != nil {
+		return err
+	}
+
+	err = m.db.FileStore().ForFile(file).Delete(ctx, true)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// processTSFile handles the core logic of compiling the TypeScript file,
+// extracting flow information, and creating the associated service file.
 func (m *Manager) processTSFile(ctx context.Context, namespace string, file *filestore.File) error {
 	log := slog.With("namespace", namespace, "file", file.Path)
 
@@ -67,9 +88,9 @@ func (m *Manager) processTSFile(ctx context.Context, namespace string, file *fil
 		return fmt.Errorf("creating tsfile compiler: %w", err)
 	}
 
-	flowInfo, err := compiler.CompileFlow()
+	flowInfo, err := compiler.Parse()
 	if err != nil {
-		return fmt.Errorf("compiling tsfile: %w", err)
+		return fmt.Errorf("extracting flow information: %w", err)
 	}
 
 	if len(flowInfo.Definition.Scale) == 0 {

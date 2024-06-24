@@ -22,6 +22,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/pubsub"
 	"github.com/direktiv/direktiv/pkg/registry"
 	"github.com/direktiv/direktiv/pkg/service"
+	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/direktiv/direktiv/pkg/tsengine"
 )
 
@@ -92,11 +93,13 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 	var tsEngineManager core.TSServiceManager = tsengine.NewManager(args.Database, *args.Config)
 
 	if !args.Config.DisableServices {
-		args.PubSubBus.Subscribe(&pubsub.FileSystemChangeEvent{}, func(_ string) {
-			err := tsEngineManager.Run(circuit)
+		args.PubSubBus.Subscribe(&pubsub.FileSystemChangeEvent{}, func(data string) {
+			event := &pubsub.FileSystemChangeEvent{}
+			err := json.Unmarshal([]byte(data), event)
 			if err != nil {
-				slog.Warn("Failed to render ts-services", "error", err)
+				panic("logic Error could not parse file system change event")
 			}
+			tsEngineProcessFileChange(event, tsEngineManager, circuit)
 		})
 
 		args.PubSubBus.Subscribe(&pubsub.FileSystemChangeEvent{}, func(_ string) {
@@ -147,6 +150,27 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 	slog.Info("api server v2 started")
 
 	return nil
+}
+
+func tsEngineProcessFileChange(event *pubsub.FileSystemChangeEvent, tsEngineManager core.TSServiceManager, circuit *core.Circuit) {
+	log := tracing.NewNamespaceLogger(event.Namespace)
+	switch event.Action {
+	case "create":
+		err := tsEngineManager.Create(circuit, event.Namespace, event.FilePath, event.FileType)
+		if err != nil {
+			log.Warn("failed to create ts-service", "error", err)
+		}
+	case "update", "rename":
+		err := tsEngineManager.Update(circuit, event.Namespace, event.FilePath, event.FileType)
+		if err != nil {
+			log.Warn("failed to update ts-services", "error", err)
+		}
+	case "delete":
+		err := tsEngineManager.Delete(circuit, event.Namespace, event.FilePath, event.FileType)
+		if err != nil {
+			log.Warn("failed to delete ts-services", "error", err)
+		}
+	}
 }
 
 func initSLog() {

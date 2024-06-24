@@ -62,8 +62,8 @@ func NewTSServiceCompiler(namespace, path, script string) (*Compiler, error) {
 	}, nil
 }
 
-func (c *Compiler) CompileFlow() (*tstypes.FlowInformation, error) {
-	flowInfo := &tstypes.FlowInformation{
+func (c *Compiler) Parse() (*tstypes.TSExecutionContext, error) {
+	execCtx := &tstypes.TSExecutionContext{
 		Definition: tstypes.DefaultDefinition(),
 		Messages:   tstypes.NewMessages(),
 		Functions:  make(map[string]tstypes.Function),
@@ -72,7 +72,7 @@ func (c *Compiler) CompileFlow() (*tstypes.FlowInformation, error) {
 
 	vars := parseTopLevelVarsFromAST(c.ast.Body)
 	var err error
-	if flowInfo.Definition, err = convertToDefinition(vars); err != nil {
+	if execCtx.Definition, err = convertToDefinition(vars); err != nil {
 		var noFlowErr *noFlowVariableFoundError
 		if errors.As(err, &noFlowErr) {
 			slog.Warn("no 'flow' variable found, using default definition")
@@ -80,20 +80,23 @@ func (c *Compiler) CompileFlow() (*tstypes.FlowInformation, error) {
 			return nil, fmt.Errorf("error converting to definition: %w", err)
 		}
 	}
-
-	err = mergo.Merge(flowInfo.Definition, tstypes.DefaultDefinition())
+	def := tstypes.DefaultDefinition()
+	err = tstypes.MergeDefinitions(&execCtx.Definition, &def)
 	if err != nil {
-		return nil, fmt.Errorf("failed to merge default configuration %w", err)
+		return nil, fmt.Errorf("failed to merge with default configuration %w", err)
 	}
-
+	err = mergo.Merge(&execCtx.Definition, &def)
+	if err != nil {
+		return nil, fmt.Errorf("failed to merge default configuration for definition %w", err)
+	}
 	// If no state, pick the first function
-	if flowInfo.Definition.State == "" {
-		if !c.setInitialState(flowInfo) {
+	if execCtx.Definition.State == "" {
+		if !c.setInitialState(execCtx) {
 			return nil, errors.New("no valid function found to set initial state")
 		}
 	}
 
-	return flowInfo, nil
+	return execCtx, nil
 }
 
 // parseTopLevelVarsFromAST parses the AST and extracts variable names.
@@ -157,24 +160,24 @@ func traverseAST(expr ast.Expression) interface{} {
 	}
 }
 
-func convertToDefinition(vars map[string]interface{}) (*tstypes.Definition, error) {
+func convertToDefinition(vars map[string]interface{}) (tstypes.Definition, error) {
 	for varName, rawValue := range vars {
 		if varName == "flow" {
 			jsonData, err := json.Marshal(rawValue)
 			if err != nil {
-				return nil, fmt.Errorf("error marshalling variable 'flow': %w", err)
+				return tstypes.Definition{}, fmt.Errorf("error marshalling variable 'flow': %w", err)
 			}
 
 			var definition tstypes.Definition
 			if err := json.Unmarshal(jsonData, &definition); err != nil {
-				return nil, fmt.Errorf("error unmarshalling variable 'flow': %w", err)
+				return tstypes.Definition{}, fmt.Errorf("error unmarshalling variable 'flow': %w", err)
 			}
 
-			return &definition, nil
+			return definition, nil
 		}
 	}
 
-	return nil, &noFlowVariableFoundError{}
+	return tstypes.Definition{}, &noFlowVariableFoundError{}
 }
 
 type noFlowVariableFoundError struct{}
@@ -257,7 +260,7 @@ func (c *Compiler) getID() string {
 	return fmt.Sprintf("%s-%x", str, hash[:5])
 }
 
-func (c *Compiler) setInitialState(flowInfo *tstypes.FlowInformation) bool {
+func (c *Compiler) setInitialState(flowInfo *tstypes.TSExecutionContext) bool {
 	for _, statement := range c.ast.Body {
 		if fnDecl, ok := statement.(*ast.FunctionDeclaration); ok {
 			flowInfo.Definition.State = fnDecl.Function.Name.Name.String()

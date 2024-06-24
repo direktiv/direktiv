@@ -3,10 +3,12 @@ package tstypes
 import (
 	"fmt"
 	"slices"
+
+	"dario.cat/mergo"
 )
 
-type FlowInformation struct {
-	Definition *Definition
+type TSExecutionContext struct {
+	Definition Definition
 	Messages   *Messages
 
 	Functions map[string]Function
@@ -33,8 +35,8 @@ type Definition struct {
 	Scale   []Scale `json:"scale"`
 }
 
-func DefaultDefinition() *Definition {
-	return &Definition{
+func DefaultDefinition() Definition {
+	return Definition{
 		Type:    defTypeDefault,
 		Store:   defStoreAlways,
 		JSON:    true,
@@ -94,4 +96,19 @@ func (m *Messages) AddWarning(format string, args ...any) {
 func (m *Messages) Merge(a *Messages) {
 	m.Errors = slices.Concat(m.Errors, a.Errors)
 	m.Warnings = slices.Concat(m.Warnings, a.Warnings)
+}
+
+func MergeDefinitions(dst, other *Definition) error {
+	for i := range dst.Scale {
+		err := mergo.Merge(&dst.Scale[i], &other.Scale[0])
+		if err != nil {
+			return fmt.Errorf("scale %w", err)
+		}
+	}
+	err := mergo.Merge(dst, other)
+	if err != nil {
+		return fmt.Errorf("definition %w", err)
+	}
+
+	return nil
 }
