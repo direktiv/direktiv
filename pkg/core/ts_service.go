@@ -8,4 +8,5 @@ type TSServiceManager interface {
 	Update(cir *Circuit, namespace string, filePath string, fileType string) error
 	// Delete removes the generated service file for a TypeScript workflow.
 	Delete(cir *Circuit, namespace string, filePath string, fileType string) error
+	RenderAll(cir *Circuit) error
 }

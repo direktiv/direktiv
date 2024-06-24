@@ -7,7 +7,7 @@ import (
 	"dario.cat/mergo"
 )
 
-type TSExecutionContext struct {
+type ExecutionContext struct {
 	Definition Definition
 	Messages   *Messages
 

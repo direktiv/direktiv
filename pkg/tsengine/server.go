@@ -1,17 +1,20 @@
 package tsengine
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
 	"log/slog"
 	"net/http"
 	"os"
-	"sync"
 	"time"
 
 	"github.com/caarlos0/env/v10"
 	"github.com/direktiv/direktiv/pkg/database"
+	"github.com/direktiv/direktiv/pkg/tsengine/tsservice"
+	"github.com/direktiv/direktiv/pkg/tsengine/tstypes"
+	"github.com/dop251/goja"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -25,15 +28,48 @@ const (
 	StateDataInputFile = "input.data"
 )
 
-func NewHandler(cfg Config, db *database.SQLStore) (RuntimeHandler, error) {
+// NewHandler creates and initializes a RuntimeHandler for a TypeScript service.
+func NewHandler(serverCtx context.Context, cfg Config, db *database.SQLStore) (RuntimeHandler, error) {
 	handler := RuntimeHandler{
 		baseDir: cfg.BaseDir,
 		db:      db,
-		ctx: engineCtx{
-			Namespace:     cfg.Namespace,
-			WorkflowsPath: cfg.WorkflowPath,
+		ctx: WorkflowContext{
+			Namespace:    cfg.Namespace,
+			WorkflowPath: cfg.WorkflowPath,
 		},
 	}
+
+	var err error
+
+	// Fetch the TypeScript file from the database.
+	file, err := handler.db.FileStore().ForNamespace(handler.ctx.Namespace).
+		GetFile(serverCtx, handler.ctx.WorkflowPath)
+	if err != nil {
+		return handler, fmt.Errorf("failed to retrieve TypeScript file: %w", err)
+	}
+
+	file.Data, err = handler.db.FileStore().ForFile(file).GetData(serverCtx)
+	if err != nil {
+		return handler, fmt.Errorf("failed to get file data for '%v': %w", file.Name(), err)
+	}
+
+	// Compile the TypeScript code.
+	compiler, err := tsservice.NewTSServiceCompiler(handler.ctx.Namespace, handler.ctx.WorkflowPath, string(file.Data))
+	if err != nil {
+		return handler, fmt.Errorf("TypeScript compilation error: %w", err)
+	}
+
+	handler.execCtx, err = compiler.Parse()
+	if err != nil {
+		return handler, fmt.Errorf("failed to parse TypeScript code: %w", err)
+	}
+
+	handler.prog, err = compiler.Compile(goja.CompileAST)
+	if err != nil {
+		return handler, fmt.Errorf("failed to finalize TypeScript compilation: %w", err)
+	}
+
+	// TODO: ... (boot-up Go Functions as cmds for the vm later) ...
 
 	return handler, nil
 }
@@ -41,26 +77,78 @@ func NewHandler(cfg Config, db *database.SQLStore) (RuntimeHandler, error) {
 type RuntimeHandler struct {
 	baseDir string
 	db      *database.SQLStore
-	mtx     *sync.Mutex
-	ctx     engineCtx
+	ctx     WorkflowContext
+	execCtx *tstypes.ExecutionContext
+	prog    *goja.Program
 }
 
-// engineCtx defines the context in which
+// WorkflowContext defines the context in which
 // the engine operates (e.g., namespace and workflow paths)
 // its main purpose is logging & tracing.
-type engineCtx struct {
-	Namespace     string
-	WorkflowsPath string
+type WorkflowContext struct {
+	Namespace    string
+	WorkflowPath string
 	// TODO more attr
 }
 
 var _ http.Handler = RuntimeHandler{}
 
+// ServeHTTP handles the HTTP request for the TypeScript service.
 func (rh RuntimeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	rh.mtx.Lock()
-	defer rh.mtx.Unlock()
-	// TODO compile the program so its ready to be served
-	// TODO actual execution of the program
+	rt := goja.New()
+
+	// TODO: ... (Injecting Go Functions) ...
+
+	gojaRes, err := rt.RunProgram(rh.prog)
+	if err != nil {
+		slog.Error("Failed to execute TypeScript program", "error", err, "workflowPath", rh.ctx.WorkflowPath)
+		http.Error(w, "failed to execute program", http.StatusInternalServerError)
+
+		return
+	}
+
+	if err := writeResultResponse(w, gojaRes.Export()); err != nil {
+		slog.Error("Failed to write response", "error", err, "workflowPath", rh.ctx.WorkflowPath)
+		http.Error(w, "failed to write response", http.StatusInternalServerError)
+	}
+}
+
+func writeResultResponse(w http.ResponseWriter, result interface{}) error {
+	w.Header().Set("Content-Type", "application/json")
+
+	switch res := result.(type) {
+	case nil:
+		result = "" // Handle nil as an empty string
+
+	case string, float64, int, map[string]interface{}, []interface{}:
+		// These types can be directly marshaled
+		// No additional conversion needed
+
+	default:
+		// Handle unsupported types or try conversion to string
+		var ok bool
+		if result, ok = convertResultToString(res); !ok {
+			return fmt.Errorf("unsupported result type: %T", result)
+		}
+	}
+	writeJSONResponse(w, map[string]interface{}{"result": result})
+
+	return nil
+}
+
+// TODO: evaluate if need this
+// Helper function to attempt string conversion for unsupported types.
+func convertResultToString(result interface{}) (any, bool) {
+	// TODO: Add custom logic here to attempt converting our types to JSON-marshallable types
+	// For example, you could use fmt.Sprintf("%v", result) as a general fallback
+
+	// TODO add our types here if we really need that
+	// if res, ok := result.("My-direktiv-custom types"); ok {
+	// 	return res.String(), true
+	// }
+
+	// TODO: Fallback (might not always be appropriate)
+	return fmt.Sprintf("%v", result), true
 }
 
 type Server struct {
@@ -88,7 +176,7 @@ func NewServer() (*Server, error) {
 	}
 	config := Config{}
 
-	if err := env.Parse(config); err != nil {
+	if err := env.Parse(&config); err != nil {
 		return nil, fmt.Errorf("parsing env variables: %w", err)
 	}
 	slog.Info("initializing the database")
@@ -99,7 +187,7 @@ func NewServer() (*Server, error) {
 	}
 	slog.Info("database initialized")
 
-	handler, err := NewHandler(config, db)
+	handler, err := NewHandler(context.Background(), config, db)
 	if err != nil {
 		return nil, fmt.Errorf("was unable to create handler %w", err)
 	}
@@ -181,4 +269,17 @@ func initDB(config Config) (*database.SQLStore, error) {
 	dbManager := database.NewSQLStore(db, config.SecretKey)
 
 	return dbManager, nil
+}
+
+func writeJSONResponse(w http.ResponseWriter, data interface{}) {
+	jsonResponse, err := json.Marshal(data)
+	if err != nil {
+		http.Error(w, "failed to marshal response", http.StatusInternalServerError)
+		return
+	}
+	_, err = w.Write(jsonResponse)
+	if err != nil {
+		http.Error(w, "failed to write response", http.StatusInternalServerError)
+		return
+	}
 }

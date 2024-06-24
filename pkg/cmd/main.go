@@ -99,7 +99,7 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 			if err != nil {
 				panic("logic Error could not parse file system change event")
 			}
-			tsEngineProcessFileChange(event, tsEngineManager, circuit)
+			tsEngineProcessFileChange(circuit, event, tsEngineManager)
 		})
 
 		args.PubSubBus.Subscribe(&pubsub.FileSystemChangeEvent{}, func(_ string) {
@@ -108,6 +108,10 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 		args.PubSubBus.Subscribe(&pubsub.NamespacesChangeEvent{}, func(_ string) {
 			renderServiceManager(args.Database, serviceManager)
 		})
+		err := tsEngineManager.RenderAll(circuit)
+		if err != nil {
+			slog.Warn("failed to render typescript services", "error", err)
+		}
 		// Call at least once before booting
 		renderServiceManager(args.Database, serviceManager)
 	}
@@ -152,7 +156,7 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 	return nil
 }
 
-func tsEngineProcessFileChange(event *pubsub.FileSystemChangeEvent, tsEngineManager core.TSServiceManager, circuit *core.Circuit) {
+func tsEngineProcessFileChange(circuit *core.Circuit, event *pubsub.FileSystemChangeEvent, tsEngineManager core.TSServiceManager) {
 	log := tracing.NewNamespaceLogger(event.Namespace)
 	switch event.Action {
 	case "create":

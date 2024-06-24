@@ -84,6 +84,45 @@ func (m Manager) Delete(cir *core.Circuit, namespace string, filePath string, fi
 	return nil
 }
 
+func (m Manager) RenderAll(cir *core.Circuit) error {
+	ctx := cir.Context()
+
+	nsList, err := m.db.DataStore().Namespaces().GetAll(ctx)
+	if err != nil {
+		return fmt.Errorf("listing namespaces: %w", err)
+	}
+
+	for _, ns := range nsList {
+		log := slog.With("namespace", ns.Name)
+
+		files, err := m.db.FileStore().ForNamespace(ns.Name).ListDirektivFilesWithData(ctx)
+		if err != nil {
+			log.Error("listing direktiv files", "err", err)
+			continue
+		}
+
+		for _, file := range files {
+			if file.Typ != filestore.FileTypeTSWorkflow {
+				continue
+			}
+			err := m.Delete(cir, ns.Name, file.Path, string(file.Typ))
+			if err != nil {
+				log.Error("rendering ts file", "file", file.Path, "err", err)
+
+				continue
+			}
+			err = m.Create(cir, ns.Name, file.Path, string(file.Typ))
+			if err != nil {
+				log.Error("rendering ts file", "file", file.Path, "err", err)
+
+				continue
+			}
+		}
+	}
+
+	return nil
+}
+
 // processTSFile handles the core logic of compiling the TypeScript file,
 // extracting flow information, and creating the associated service file.
 func (m *Manager) processTSFile(ctx context.Context, namespace string, file *filestore.File) error {
@@ -131,6 +170,10 @@ func (m *Manager) processTSFile(ctx context.Context, namespace string, file *fil
 				{
 					Name:  "DIREKTIV_JSENGINE_WORKFLOW_PATH",
 					Value: file.Path,
+				},
+				{
+					Name:  "DIREKTIV_JSENGINE_FLOWPATH",
+					Value: "/tmp",
 				},
 				{
 					Name:  "DIREKTIV_DB", // TODO: this is not smart when stored in the filesystem

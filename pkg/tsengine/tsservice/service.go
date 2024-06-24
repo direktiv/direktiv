@@ -62,8 +62,8 @@ func NewTSServiceCompiler(namespace, path, script string) (*Compiler, error) {
 	}, nil
 }
 
-func (c *Compiler) Parse() (*tstypes.TSExecutionContext, error) {
-	execCtx := &tstypes.TSExecutionContext{
+func (c *Compiler) Parse() (*tstypes.ExecutionContext, error) {
+	execCtx := &tstypes.ExecutionContext{
 		Definition: tstypes.DefaultDefinition(),
 		Messages:   tstypes.NewMessages(),
 		Functions:  make(map[string]tstypes.Function),
@@ -97,6 +97,10 @@ func (c *Compiler) Parse() (*tstypes.TSExecutionContext, error) {
 	}
 
 	return execCtx, nil
+}
+
+func (c *Compiler) Compile(compileAst func(prg *ast.Program, strict bool) (*goja.Program, error)) (*goja.Program, error) {
+	return compileAst(c.ast, true)
 }
 
 // parseTopLevelVarsFromAST parses the AST and extracts variable names.
@@ -260,7 +264,7 @@ func (c *Compiler) getID() string {
 	return fmt.Sprintf("%s-%x", str, hash[:5])
 }
 
-func (c *Compiler) setInitialState(flowInfo *tstypes.TSExecutionContext) bool {
+func (c *Compiler) setInitialState(flowInfo *tstypes.ExecutionContext) bool {
 	for _, statement := range c.ast.Body {
 		if fnDecl, ok := statement.(*ast.FunctionDeclaration); ok {
 			flowInfo.Definition.State = fnDecl.Function.Name.Name.String()
