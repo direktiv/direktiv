@@ -615,7 +615,7 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (*instController) redirectToTSEngine(path string, ns *datastore.Namespace, w http.ResponseWriter, r *http.Request) error {
-	svcFile := tsengine.GenerateBasicServiceFile(path, ns.Name)
+	svcFile := tsengine.GenerateBasicServiceFile(path+".yaml", ns.Name)
 	kubernetesNamespace := os.Getenv("DIREKTIV_KNATIVE_NAMESPACE")
 	var err1 error
 	rp := httputil.ReverseProxy{
