@@ -9,10 +9,10 @@ export type EventsPageSizeValueType = z.infer<typeof EventsPageSizeValueSchema>;
 const defaultPageSize: EventsPageSizeValueType = "10";
 
 interface EventsPageSizeState {
-  pagesize: EventsPageSizeValueType;
+  pageSize: EventsPageSizeValueType;
   actions: {
     setEventsPageSize: (
-      EventsPageSize: EventsPageSizeState["pagesize"]
+      EventsPageSize: EventsPageSizeState["pageSize"]
     ) => void;
   };
 }
@@ -20,23 +20,23 @@ interface EventsPageSizeState {
 const useEventsPageSizeState = create<EventsPageSizeState>()(
   persist(
     (set) => ({
-      pagesize: defaultPageSize,
+      pageSize: defaultPageSize,
       actions: {
         setEventsPageSize: (newEventsPageSize) =>
-          set(() => ({ pagesize: newEventsPageSize })),
+          set(() => ({ pageSize: newEventsPageSize })),
       },
     }),
     {
-      name: "direktiv-store-pagesize",
+      name: "direktiv-store-events-page-size",
       partialize: (state) => ({
-        pagesize: state.pagesize,
+        pageSize: state.pageSize,
       }),
     }
   )
 );
 
 export const useEventsPageSize = () =>
-  useEventsPageSizeState((state) => state.pagesize);
+  useEventsPageSizeState((state) => state.pageSize);
 
 export const useEventsPageSizeActions = () =>
   useEventsPageSizeState((state) => state.actions);
