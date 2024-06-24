@@ -136,10 +136,7 @@ const EventsList = ({
                       }
                     }}
                   >
-                    <SelectTrigger
-                      variant="outline"
-                      data-testid="select-pagesize"
-                    >
+                    <SelectTrigger variant="outline">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>

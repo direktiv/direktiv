@@ -121,10 +121,10 @@ test("it renders, filters, and paginates events", async ({ page }) => {
   await expect(page.getByTestId("event-row")).toHaveCount(2);
 
   /**
-   * Test the select options for pagesize
+   * Test the select options for page size
    */
 
-  const selectPagesize = page.getByTestId("select-pagesize");
+  const selectPagesize = page.getByRole("combobox");
   await expect(selectPagesize).toBeVisible();
   expect(selectPagesize).toHaveText("Show 10 rows");
 
