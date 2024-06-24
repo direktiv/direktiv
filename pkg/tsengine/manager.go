@@ -35,6 +35,12 @@ func (m Manager) Create(cir *core.Circuit, namespace string, filePath string, fi
 	if err != nil {
 		return err
 	}
+	data, err := m.db.FileStore().ForFile(file).GetData(ctx)
+	if err != nil {
+		return err
+	}
+	file.Data = data
+
 	if err := m.processTSFile(ctx, namespace, file); err != nil {
 		return err
 	}
@@ -127,11 +133,11 @@ func (m *Manager) processTSFile(ctx context.Context, namespace string, file *fil
 					Value: file.Path,
 				},
 				{
-					Name:  "DIREKTIV_DB",
+					Name:  "DIREKTIV_DB", // TODO: this is not smart when stored in the filesystem
 					Value: m.config.DB,
 				},
 				{
-					Name:  "DIREKTIV_SECRET_KEY",
+					Name:  "DIREKTIV_SECRET_KEY", // TODO: this is not smart when stored in the filesystem
 					Value: m.config.ApiKey,
 				},
 			},
