@@ -342,5 +342,6 @@ func marshalArgsToJSON(args []goja.Value) string {
 		goArgs = append(goArgs, arg.Export())
 	}
 	jsonArgs, _ := json.Marshal(goArgs)
+
 	return string(jsonArgs)
 }
