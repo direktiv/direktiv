@@ -61,6 +61,10 @@ func NewHandler(serverCtx context.Context, cfg Config, db *database.SQLStore) (R
 	if err != nil {
 		return handler, fmt.Errorf("failed to parse TypeScript code: %w", err)
 	}
+
+	// TODO grab files
+	// TODO grab secrets
+
 	// store the compiler func for compiling a program per request.
 	handler.compile = compiler.Compile
 
