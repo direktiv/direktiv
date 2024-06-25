@@ -582,7 +582,7 @@ func (e *instController) create(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		return // Exit the function early after redirection
+		return
 	}
 
 	// Remaining logic for non-TypeScript files

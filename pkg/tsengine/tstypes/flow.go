@@ -10,9 +10,9 @@ import (
 type ExecutionContext struct {
 	Definition Definition
 	Messages   *Messages
-
-	Functions map[string]Function
-	ID        string
+	Input      map[string]interface{}
+	Functions  map[string]Function
+	ID         string
 }
 
 type Function struct {

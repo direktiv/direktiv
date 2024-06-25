@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"log/slog"
 	"net/http"
@@ -15,6 +16,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/tsengine/tsservice"
 	"github.com/direktiv/direktiv/pkg/tsengine/tstypes"
 	"github.com/dop251/goja"
+	"github.com/dop251/goja/ast"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -23,10 +25,6 @@ import (
 type Status struct {
 	Start int64 `json:"start"`
 }
-
-const (
-	StateDataInputFile = "input.data"
-)
 
 // NewHandler creates and initializes a RuntimeHandler for a TypeScript service.
 func NewHandler(serverCtx context.Context, cfg Config, db *database.SQLStore) (RuntimeHandler, error) {
@@ -63,13 +61,8 @@ func NewHandler(serverCtx context.Context, cfg Config, db *database.SQLStore) (R
 	if err != nil {
 		return handler, fmt.Errorf("failed to parse TypeScript code: %w", err)
 	}
-
-	handler.prog, err = compiler.Compile(goja.CompileAST)
-	if err != nil {
-		return handler, fmt.Errorf("failed to finalize TypeScript compilation: %w", err)
-	}
-
-	// TODO: ... (boot-up Go Functions as cmds for the vm later) ...
+	// store the compiler func for compiling a program per request.
+	handler.compile = compiler.Compile
 
 	return handler, nil
 }
@@ -79,7 +72,7 @@ type RuntimeHandler struct {
 	db      *database.SQLStore
 	ctx     WorkflowContext
 	execCtx *tstypes.ExecutionContext
-	prog    *goja.Program
+	compile func(compileAst func(prg *ast.Program, strict bool) (*goja.Program, error)) (*goja.Program, error)
 }
 
 // WorkflowContext defines the context in which
@@ -96,21 +89,79 @@ var _ http.Handler = RuntimeHandler{}
 // ServeHTTP handles the HTTP request for the TypeScript service.
 func (rh RuntimeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	rt := goja.New()
-
-	// TODO: ... (Injecting Go Functions) ...
-
-	gojaRes, err := rt.RunProgram(rh.prog)
+	prog, err := rh.compile(goja.CompileAST)
 	if err != nil {
-		slog.Error("Failed to execute TypeScript program", "error", err, "workflowPath", rh.ctx.WorkflowPath)
-		http.Error(w, "failed to execute program", http.StatusInternalServerError)
-
+		logAndHTTPError(w, "Failed to compile TypeScript to program", err, rh.ctx)
 		return
 	}
 
-	if err := writeResultResponse(w, gojaRes.Export()); err != nil {
-		slog.Error("Failed to write response", "error", err, "workflowPath", rh.ctx.WorkflowPath)
-		http.Error(w, "failed to write response", http.StatusInternalServerError)
+	input, err := io.ReadAll(r.Body)
+	if err != nil {
+		logAndHTTPError(w, "Failed to read input", err, rh.ctx)
+		return
 	}
+
+	// Handle Input based on Content Type and Sources.
+	if err := rh.handleInput(rt, r, input); err != nil {
+		logAndHTTPError(w, "Failed to handle input", err, rh.ctx)
+		return
+	}
+
+	// TODO: ... (Injecting Go Functions) ...
+
+	// Run the main TypeScript program
+	_, err = rt.RunProgram(prog) // discard results we expect them to be undefined / nil
+	if err != nil {
+		logAndHTTPError(w, "Failed to execute TypeScript program (main)", err, rh.ctx)
+		return
+	}
+
+	slog.Info("executing prog", "state", rh.execCtx.Definition.State)
+
+	// Prepare and execute the state-specific code
+	var args []goja.Value
+	if rt.Get("input") != goja.Undefined() {
+		args = append(args, rt.Get("input"))
+	}
+
+	stateCall := fmt.Sprintf("%s(%s)", rh.execCtx.Definition.State, marshalArgsToJSON(args))
+	result, err := rt.RunString(stateCall)
+
+	if err != nil {
+		logAndHTTPError(w, "Failed to execute TypeScript program (state)", err, rh.ctx)
+		return
+	}
+
+	slog.Info("got results", "res", result)
+	if err := writeResultResponse(w, result.Export()); err != nil {
+		logAndHTTPError(w, "Failed to write response", err, rh.ctx)
+		return
+	}
+}
+
+// handleInput manages the input based on the content type and available sources.
+func (rh RuntimeHandler) handleInput(rt *goja.Runtime, r *http.Request, input []byte) error {
+	if len(input) > 0 && r.Header.Get("Content-Type") == "application/json" {
+		var inputData map[string]interface{}
+		if err := json.Unmarshal(input, &inputData); err != nil {
+			return err
+		}
+
+		return rt.Set("input", inputData)
+	} else if len(input) > 0 {
+		return rt.Set("input", string(input))
+	} else if len(rh.execCtx.Input) > 0 {
+		return rt.Set("input", rh.execCtx.Input)
+	}
+
+	// No input available
+	return nil
+}
+
+func logAndHTTPError(w http.ResponseWriter, msg string, err error, ctx WorkflowContext) {
+	// TODO: use direktiv error format.
+	slog.Error(msg, "error", err, "workflowPath", ctx.WorkflowPath)
+	http.Error(w, msg, http.StatusInternalServerError)
 }
 
 func writeResultResponse(w http.ResponseWriter, result interface{}) error {
@@ -118,14 +169,14 @@ func writeResultResponse(w http.ResponseWriter, result interface{}) error {
 
 	switch res := result.(type) {
 	case nil:
-		result = "" // Handle nil as an empty string
+		result = "" // TODO should we handle nil as an empty string?
 
 	case string, float64, int, map[string]interface{}, []interface{}:
-		// These types can be directly marshaled
-		// No additional conversion needed
+		// These types can be directly marshaled.
+		// No additional conversion needed.
 
 	default:
-		// Handle unsupported types or try conversion to string
+		// Handle unsupported types or try conversion to string.
 		var ok bool
 		if result, ok = convertResultToString(res); !ok {
 			return fmt.Errorf("unsupported result type: %T", result)
@@ -136,18 +187,18 @@ func writeResultResponse(w http.ResponseWriter, result interface{}) error {
 	return nil
 }
 
-// TODO: evaluate if need this
+// TODO: evaluate if need this.
 // Helper function to attempt string conversion for unsupported types.
 func convertResultToString(result interface{}) (any, bool) {
-	// TODO: Add custom logic here to attempt converting our types to JSON-marshallable types
-	// For example, you could use fmt.Sprintf("%v", result) as a general fallback
+	// TODO: Add custom logic here to attempt converting our types to JSON-marshallable types.
+	// For example, you could use fmt.Sprintf("%v", result) as a general fallback.
 
 	// TODO add our types here if we really need that
 	// if res, ok := result.("My-direktiv-custom types"); ok {
 	// 	return res.String(), true
 	// }
 
-	// TODO: Fallback (might not always be appropriate)
+	// TODO: Fallback (might not always be appropriate).
 	return fmt.Sprintf("%v", result), true
 }
 
@@ -282,4 +333,14 @@ func writeJSONResponse(w http.ResponseWriter, data interface{}) {
 		http.Error(w, "failed to write response", http.StatusInternalServerError)
 		return
 	}
+}
+
+// marshalArgsToJSON converts a slice of Goja values to a JSON string for use as function arguments.
+func marshalArgsToJSON(args []goja.Value) string {
+	var goArgs []interface{}
+	for _, arg := range args {
+		goArgs = append(goArgs, arg.Export())
+	}
+	jsonArgs, _ := json.Marshal(goArgs)
+	return string(jsonArgs)
 }
