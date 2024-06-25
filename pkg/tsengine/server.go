@@ -126,7 +126,6 @@ func (rh RuntimeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	stateCall := fmt.Sprintf("%s(%s)", rh.execCtx.Definition.State, marshalArgsToJSON(args))
 	result, err := rt.RunString(stateCall)
-
 	if err != nil {
 		logAndHTTPError(w, "Failed to execute TypeScript program (state)", err, rh.ctx)
 		return
