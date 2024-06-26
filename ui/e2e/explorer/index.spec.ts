@@ -743,9 +743,7 @@ test("it is not possible to navigate to a namespace that does not exist", async 
   ).not.toBeVisible();
 });
 
-test("it is possible to filter the file list by name", async ({
-  page,
-}) => {
+test("it is possible to filter the file list by name", async ({ page }) => {
   // mock namespace with a list of files
   await page.route(`/api/v2/namespaces/${namespace}/files/`, async (route) => {
     if (route.request().method() === "GET") {
