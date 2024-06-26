@@ -743,9 +743,7 @@ test("it is not possible to navigate to a namespace that does not exist", async 
   ).not.toBeVisible();
 });
 
-test("it is possible to filter the file list by name", async ({
-  page,
-}) => {
+test("it is possible to filter the file list by name", async ({ page }) => {
   // mock namespace with a list of files
   await page.route(`/api/v2/namespaces/${namespace}/files/`, async (route) => {
     if (route.request().method() === "GET") {
@@ -816,7 +814,7 @@ test("it is possible to filter the file list by name", async ({
     "a testing namespace is loaded in the explorer"
   ).toHaveText(namespace);
 
-  expect(
+  await expect(
     page.locator("tr"),
     "it renders all the elements in the list"
   ).toHaveCount(5);
@@ -824,7 +822,7 @@ test("it is possible to filter the file list by name", async ({
   filter.click();
   await filter.fill("important");
 
-  expect(
+  await expect(
     page.locator("tr"),
     "it renders two elements for this query"
   ).toHaveCount(2);
@@ -833,7 +831,7 @@ test("it is possible to filter the file list by name", async ({
   page.keyboard.press("Delete");
   await filter.fill("yaml");
 
-  expect(
+  await expect(
     page.locator("tr"),
     "it renders three elements for this query"
   ).toHaveCount(3);
@@ -842,7 +840,7 @@ test("it is possible to filter the file list by name", async ({
   page.keyboard.press("Delete");
   await filter.fill("test");
 
-  expect(
+  await expect(
     page.locator("tr"),
     "it renders one element for this query"
   ).toHaveCount(1);
@@ -851,7 +849,7 @@ test("it is possible to filter the file list by name", async ({
     waitUntil: "networkidle",
   });
 
-  expect(
+  await expect(
     page.locator("tr"),
     "it renders all the elements in the list"
   ).toHaveCount(5);
