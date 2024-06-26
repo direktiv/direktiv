@@ -23,7 +23,6 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - DIREKTIV_API_PORT=8181
-      - DIREKTIV_GRPC_PORT=6666
       - DIREKTIV_DEBUG=true
 
       - DIREKTIV_DB=host=postgres port=5432 user=myadmin dbname=mydb password=mypassword sslmode=disable
@@ -37,8 +36,6 @@ services:
     ports:
       # api port
       - "8181:8181"
-      # grpc port
-      - "6666:6666"
     depends_on:
       - postgres
 
