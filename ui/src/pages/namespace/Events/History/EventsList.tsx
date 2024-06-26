@@ -1,19 +1,6 @@
 import { Dialog, DialogContent } from "~/design/Dialog";
-import {
-  EventsPageSizeValueSchema,
-  eventsPageSizeValue,
-  useEventsPageSize,
-  useEventsPageSizeActions,
-} from "~/util/store/events";
 import { NoPermissions, NoResult, TableCell, TableRow } from "~/design/Table";
 import { Pagination, PaginationLink } from "~/design/Pagination";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/design/Select";
 
 import { Card } from "~/design/Card";
 import { EventSchemaType } from "~/api/events/schema";
@@ -23,9 +10,11 @@ import { FiltersSchemaType } from "~/api/events/schema/filters";
 import PaginationProvider from "~/components/PaginationProvider";
 import { Radio } from "lucide-react";
 import Row from "./Row";
+import { SelectPageSize } from "./components/SelectPageSize";
 import SendEvent from "./SendEvent";
 import ViewEvent from "./ViewEvent";
 import { useEvents } from "~/api/events/query/get";
+import { useEventsPageSize } from "~/util/store/events";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -37,10 +26,8 @@ const EventsList = ({
   setFilters: (filters: FiltersSchemaType) => void;
 }) => {
   const { t } = useTranslation();
-  const [eventDialog, setEventDialog] = useState<EventSchemaType | null>();
-
-  const { setEventsPageSize } = useEventsPageSizeActions();
   const pageSize = useEventsPageSize();
+  const [eventDialog, setEventDialog] = useState<EventSchemaType | null>();
 
   const { data, isFetched, isAllowed, noPermissionMessage } = useEvents({
     enabled: true,
@@ -123,32 +110,8 @@ const EventsList = ({
                   )}
                 </EventsTable>
               </Card>
-              <div className="flex items-center justify-end">
-                <div className="m-2">
-                  <Select
-                    defaultValue={String(pageSize)}
-                    onValueChange={(value) => {
-                      const parseValue =
-                        EventsPageSizeValueSchema.safeParse(value);
-                      if (parseValue.success) {
-                        setEventsPageSize(parseValue.data);
-                        goToPage(1);
-                      }
-                    }}
-                  >
-                    <SelectTrigger variant="outline">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {eventsPageSizeValue.map((size) => (
-                        <SelectItem key={size} value={size}>
-                          {/* TODO: i18n */}
-                          Show {size} rows
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div className="flex items-center justify-end gap-2">
+                <SelectPageSize goToPage={() => goToPage(1)}></SelectPageSize>
                 {totalPages > 1 && (
                   <Pagination>
                     <PaginationLink
