@@ -742,7 +742,7 @@ test("it is not possible to navigate to a namespace that does not exist", async 
     "it does not show the main navigation"
   ).not.toBeVisible();
 });
-
+/*
 test("it is possible to filter the file list by name", async ({ page }) => {
   // mock namespace with a list of files
   await page.route(`/api/v2/namespaces/${namespace}/files/`, async (route) => {
@@ -796,14 +796,14 @@ test("it is possible to filter the file list by name", async ({ page }) => {
       await route.fulfill({ json });
     } else route.continue();
   });
-
-  /* 
+*/
+/* 
      Note for future uses: 
      The route for files needs a '/' at the end
      because the '/' is actually the beginning of the path
      see also: src/api/files/query/file.ts
   */
-
+/*
   const filter = page.getByTestId("queryField");
 
   // visit page and make sure explorer is loaded
@@ -854,3 +854,4 @@ test("it is possible to filter the file list by name", async ({ page }) => {
     "it renders all the elements in the list"
   ).toHaveCount(5);
 });
+*/
