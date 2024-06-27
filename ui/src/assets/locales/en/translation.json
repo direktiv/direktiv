@@ -493,7 +493,7 @@
           }
         },
         "selectPageSize": {
-          "selectItem": "Show {{pagesize}} rows"
+          "selectItem": "Show {{count}} rows"
         }
       },
       "listeners": {

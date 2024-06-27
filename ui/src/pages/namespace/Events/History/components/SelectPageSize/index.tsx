@@ -41,7 +41,7 @@ export const SelectPageSize = ({
         {eventsPageSizeValue.map((size) => (
           <SelectItem key={size} value={size}>
             {t("pages.events.history.selectPageSize.selectItem", {
-              pagesize: size,
+              count: Number(size),
             })}
           </SelectItem>
         ))}
