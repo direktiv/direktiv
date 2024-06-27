@@ -111,7 +111,7 @@ const EventsList = ({
                 </EventsTable>
               </Card>
               <div className="flex items-center justify-end gap-2">
-                <SelectPageSize goToPage={() => goToPage(1)} />
+                <SelectPageSize onChange={() => goToPage(1)} />
                 {totalPages > 1 && (
                   <Pagination>
                     <PaginationLink

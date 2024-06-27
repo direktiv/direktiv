@@ -14,11 +14,7 @@ import {
 
 import { useTranslation } from "react-i18next";
 
-export const SelectPageSize = ({
-  goToPage,
-}: {
-  goToPage: (page: number) => void;
-}) => {
+export const SelectPageSize = ({ onChange }: { onChange: () => void }) => {
   const { t } = useTranslation();
   const { setEventsPageSize } = useEventsPageSizeActions();
   const pageSize = useEventsPageSize();
@@ -30,7 +26,7 @@ export const SelectPageSize = ({
         const parseValue = EventsPageSizeValueSchema.safeParse(value);
         if (parseValue.success) {
           setEventsPageSize(parseValue.data);
-          goToPage(1);
+          onChange();
         }
       }}
     >
