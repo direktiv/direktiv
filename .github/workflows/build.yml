@@ -97,7 +97,7 @@ jobs:
 
       - name: Run unit tests
         run: |
-          go test $(go list ./... | egrep -v '(direktiv/pkg/flow/grpc)') -coverprofile coverage.out -covermode count
+          go test ./... -coverprofile coverage.out -covermode count
         env:
           DIREKTIV_APP: flow
 
@@ -148,7 +148,7 @@ jobs:
 
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v6
         with:
           context: .
           push: true
@@ -204,7 +204,7 @@ jobs:
 
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v6
         with:
           context: ui
           push: true
