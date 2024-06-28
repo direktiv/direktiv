@@ -742,6 +742,11 @@ test("it is not possible to navigate to a namespace that does not exist", async 
     "it does not show the main navigation"
   ).not.toBeVisible();
 });
+
+// the test for filters works locally, but has issues in CI,
+// instead of filtered items, it seems to detect every item or none
+// we will address this in the ticket: https://linear.app/direktiv/issue/DIR-1696/fix-for-e2e-test-which-is-failing-in-ci
+
 /*
 test("it is possible to filter the file list by name", async ({ page }) => {
   // mock namespace with a list of files
