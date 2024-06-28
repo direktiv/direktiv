@@ -126,6 +126,6 @@ states:
 			});
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.return.bash).toMatchObject(
-			[{ "result": "", "success": true }])
+			[{ "result": "", "success": true }, { "result": "", "success": true }])
 	})
 })
