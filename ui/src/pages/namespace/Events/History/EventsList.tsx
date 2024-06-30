@@ -10,13 +10,13 @@ import { FiltersSchemaType } from "~/api/events/schema/filters";
 import PaginationProvider from "~/components/PaginationProvider";
 import { Radio } from "lucide-react";
 import Row from "./Row";
+import { SelectPageSize } from "./components/SelectPageSize";
 import SendEvent from "./SendEvent";
 import ViewEvent from "./ViewEvent";
 import { useEvents } from "~/api/events/query/get";
+import { useEventsPageSize } from "~/util/store/events";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-
-const pageSize = 10;
 
 const EventsList = ({
   filters,
@@ -26,6 +26,7 @@ const EventsList = ({
   setFilters: (filters: FiltersSchemaType) => void;
 }) => {
   const { t } = useTranslation();
+  const pageSize = useEventsPageSize();
   const [eventDialog, setEventDialog] = useState<EventSchemaType | null>();
 
   const { data, isFetched, isAllowed, noPermissionMessage } = useEvents({
@@ -47,7 +48,7 @@ const EventsList = ({
   return (
     <div className="flex grow flex-col gap-y-3 p-5">
       <Dialog open={!!eventDialog} onOpenChange={handleOpenChange}>
-        <PaginationProvider items={data.data} pageSize={pageSize}>
+        <PaginationProvider items={data.data} pageSize={parseInt(pageSize)}>
           {({
             currentItems,
             goToFirstPage,
@@ -109,29 +110,32 @@ const EventsList = ({
                   )}
                 </EventsTable>
               </Card>
-              {totalPages > 1 && (
-                <Pagination>
-                  <PaginationLink
-                    data-testid="pagination-btn-left"
-                    icon="left"
-                    onClick={() => goToPreviousPage()}
-                  />
-                  {pagesList.map((page) => (
+              <div className="flex items-center justify-end gap-2">
+                <SelectPageSize onChange={() => goToPage(1)} />
+                {totalPages > 1 && (
+                  <Pagination>
                     <PaginationLink
-                      active={currentPage === page}
-                      key={`${page}`}
-                      onClick={() => goToPage(page)}
-                    >
-                      {page}
-                    </PaginationLink>
-                  ))}
-                  <PaginationLink
-                    data-testid="pagination-btn-right"
-                    icon="right"
-                    onClick={() => goToNextPage()}
-                  />
-                </Pagination>
-              )}
+                      data-testid="pagination-btn-left"
+                      icon="left"
+                      onClick={() => goToPreviousPage()}
+                    />
+                    {pagesList.map((page) => (
+                      <PaginationLink
+                        active={currentPage === page}
+                        key={`${page}`}
+                        onClick={() => goToPage(page)}
+                      >
+                        {page}
+                      </PaginationLink>
+                    ))}
+                    <PaginationLink
+                      data-testid="pagination-btn-right"
+                      icon="right"
+                      onClick={() => goToNextPage()}
+                    />
+                  </Pagination>
+                )}
+              </div>
             </>
           )}
         </PaginationProvider>
