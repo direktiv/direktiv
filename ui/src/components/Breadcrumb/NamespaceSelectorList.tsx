@@ -14,18 +14,16 @@ import { useListNamespaces } from "~/api/namespaces/query/get";
 import { useNamespace } from "~/util/store/namespace";
 import { useTranslation } from "react-i18next";
 
-type NamespaceSelectorListProps =
-  | {
-      onSelectNamespace: (value: string) => void;
-    } & (
-      | { isMulti: false; selectedValues: never }
-      | { isMulti: true; selectedValues: string[] }
-    );
+type NamespaceSelectorListProps = {
+  onSelectNamespace: (value: string) => void;
+  isMulti?: boolean;
+  selectedValues?: string[];
+};
 
 export const NamespaceSelectorList = ({
   onSelectNamespace,
   isMulti = false,
-  selectedValues,
+  selectedValues = [],
 }: NamespaceSelectorListProps) => {
   const { t } = useTranslation();
   const namespace = useNamespace();
