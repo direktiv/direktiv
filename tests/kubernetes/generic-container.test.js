@@ -1,11 +1,11 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
+import { basename } from 'path'
 
 import config from '../common/config'
 import helpers from '../common/helpers'
 import request from '../common/request'
-import { retry10 } from '../common/retry'
 
-const testNamespace = 'patches'
+const testNamespace = basename(__filename)
 
 const genericContainerWorkflow = `
 direktiv_api: workflow/v1
@@ -15,7 +15,7 @@ functions:
   type: knative-workflow
   cmd: /usr/share/direktiv/direktiv-cmd
 states:
-- id: test 
+- id: test
   type: action
   action:
     function: test
@@ -38,8 +38,10 @@ describe('Test generic container', () => {
 		genericContainerWorkflow,
 	)
 
-	retry10(`should invoke workflow`, async () => {
-		const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ testNamespace }/instances?path=wf1.yaml&wait=true`)
+	helpers.sleep(100)
+
+	it(`should invoke workflow`, async () => {
+		const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${testNamespace}/instances?path=wf1.yaml&wait=true`)
 		console.log(res.statusCode, res.body)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.return[0].Output).toEqual('data')
