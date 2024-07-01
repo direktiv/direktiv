@@ -145,13 +145,14 @@ const ExplorerPage: FC = () => {
                         onPreviewClicked={setPreviewNode}
                       />
                     ))}
-                    {noSearchResult && (
-                      <TableRow>
-                        <NoSearchResult />
-                      </TableRow>
-                    )}
                   </TableBody>
                 </Table>
+                {noSearchResult && (
+                  <>
+                    {!isRoot && <DropdownMenuSeparator />}
+                    <NoSearchResult />
+                  </>
+                )}
                 <DialogContent
                   className={twMergeClsx(
                     wideOverlay && "sm:max-w-xl md:max-w-2xl lg:max-w-3xl"
