@@ -1,43 +1,26 @@
-import {
-  ChevronsUpDown,
-  Circle,
-  Home,
-  Loader2,
-  PlusCircle,
-} from "lucide-react";
+import { ChevronsUpDown, Home, PlusCircle } from "lucide-react";
 import {
   Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
   CommandStaticItem,
   CommandStaticSeparator,
 } from "~/design/Command";
 import { Dialog, DialogContent, DialogTrigger } from "~/design/Dialog";
 import { Link, useNavigate } from "react-router-dom";
 import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
-import React, { useState } from "react";
 
 import { Breadcrumb as BreadcrumbLink } from "~/design/Breadcrumbs";
 import Button from "~/design/Button";
 import NamespaceEdit from "../NamespaceEdit";
-import { twMergeClsx } from "~/util/helpers";
-import { useListNamespaces } from "~/api/namespaces/query/get";
+import { NamespaceSelectorList } from "./NamespaceSelectorList";
 import { useNamespace } from "~/util/store/namespace";
 import { usePages } from "~/util/router/pages";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 const NamespaceSelector = () => {
   const pages = usePages();
   const { t } = useTranslation();
   const namespace = useNamespace();
-  const {
-    data: availableNamespaces,
-    isLoading,
-    isSuccess,
-  } = useListNamespaces();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [open, setOpen] = useState(false);
@@ -45,9 +28,8 @@ const NamespaceSelector = () => {
 
   if (!namespace) return null;
 
-  const hasResults = isSuccess && availableNamespaces?.data.length > 0;
-
   const onNameSpaceChange = (namespace: string) => {
+    setOpen(false);
     navigate(pages.explorer.createHref({ namespace }));
   };
 
@@ -74,42 +56,7 @@ const NamespaceSelector = () => {
           </PopoverTrigger>
           <PopoverContent className="w-56 p-0">
             <Command>
-              <CommandInput
-                placeholder={t("components.breadcrumb.searchPlaceholder")}
-              />
-              {hasResults && (
-                <CommandList className="max-h-[278px]">
-                  <CommandEmpty>
-                    {t("components.breadcrumb.notFound")}
-                  </CommandEmpty>
-                  <CommandGroup>
-                    {availableNamespaces?.data.map((ns) => (
-                      <CommandItem
-                        key={ns.name}
-                        value={ns.name}
-                        onSelect={(currentValue: string) => {
-                          onNameSpaceChange(currentValue);
-                          setOpen(false);
-                        }}
-                      >
-                        <Circle
-                          className={twMergeClsx(
-                            "mr-2 h-2 w-2 fill-current",
-                            namespace === ns.name ? "opacity-100" : "opacity-0"
-                          )}
-                        />
-                        <span>{ns.name}</span>
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </CommandList>
-              )}
-              {isLoading && (
-                <CommandStaticItem>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {t("components.breadcrumb.loading")}
-                </CommandStaticItem>
-              )}
+              <NamespaceSelectorList onSelectNamespace={onNameSpaceChange} />
               <CommandStaticSeparator />
               <DialogTrigger data-testid="new-namespace">
                 <CommandStaticItem>
