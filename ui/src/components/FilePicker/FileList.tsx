@@ -43,7 +43,9 @@ export const FileList: FC<FileListProps> = ({
               }}
               className="h-auto w-full cursor-pointer text-gray-11 hover:underline focus:bg-transparent focus:ring-0 focus:ring-transparent focus:ring-offset-0 dark:text-gray-dark-11 dark:focus:bg-transparent"
             >
-              <FilepickerListItem icon={fileTypeToIcon(file.type)}>
+              <FilepickerListItem
+                icon={fileTypeToIcon(file.type, file.mimeType)}
+              >
                 {filename}
               </FilepickerListItem>
             </div>
@@ -60,7 +62,9 @@ export const FileList: FC<FileListProps> = ({
                 onChange?.(file.path);
               }}
             >
-              <FilepickerListItem icon={fileTypeToIcon(file.type)}>
+              <FilepickerListItem
+                icon={fileTypeToIcon(file.type, file.mimeType)}
+              >
                 {filename}
               </FilepickerListItem>
             </FilepickerClose>

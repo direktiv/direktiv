@@ -51,7 +51,12 @@ export type EnvVarSchemaType = z.infer<typeof EnvVarSchema>;
  */
 const ServiceSchema = z.object({
   id: z.string(),
-  type: z.enum(["namespace-service", "workflow-service", "system-service"]),
+  type: z.enum([
+    "namespace-service",
+    "workflow-service",
+    "system-service",
+    "typescript-service",
+  ]),
   namespace: z.string(),
   name: z.string().nullable(),
   filePath: z.string(),

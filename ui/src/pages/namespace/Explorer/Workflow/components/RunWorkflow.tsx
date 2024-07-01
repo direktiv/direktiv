@@ -45,8 +45,11 @@ const RunWorkflow = ({ path }: { path: string }) => {
   const { data } = useFile({ path });
   const submitButtonRef = useRef<HTMLButtonElement>(null);
   const jsonSchemaFormRef = useRef<ElementRef<typeof JSONSchemaForm>>(null);
+
+  const isTsWorkflow = data?.mimeType === "application/x-typescript";
+
   const validationSchema =
-    data?.type === "workflow"
+    data?.type === "workflow" && !isTsWorkflow
       ? getValidationSchemaFromYaml(decode(data?.data ?? ""))
       : null;
 

@@ -29,8 +29,9 @@ import { useNamespace } from "~/util/store/namespace";
 import { usePages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
 import { useUnsavedChanges } from "./store/unsavedChangesContext";
+import { workflowIcon } from "~/api/files/utils";
 
-const Header: FC = () => {
+const Workflow: FC = () => {
   const pages = usePages();
   const { t } = useTranslation();
   const {
@@ -45,6 +46,7 @@ const Header: FC = () => {
   const filename = segments[segments.length - 1];
 
   const {
+    data: file,
     isAllowed,
     noPermissionMessage,
     isFetched: isPermissionCheckFetched,
@@ -111,6 +113,8 @@ const Header: FC = () => {
       </Card>
     );
 
+  const WorkflowIcon = workflowIcon(file?.mimeType);
+
   return (
     <>
       <div className="space-y-5 border-b border-gray-5 bg-gray-1 p-5 pb-0 dark:border-gray-dark-5 dark:bg-gray-dark-1">
@@ -119,7 +123,7 @@ const Header: FC = () => {
             className="flex items-center gap-x-2 font-bold text-primary-500"
             data-testid="workflow-header"
           >
-            <Play className="h-5" />
+            <WorkflowIcon className="h-5" />
             {filename?.relative}
           </h3>
           <div className="flex gap-x-3">
@@ -190,4 +194,4 @@ const Header: FC = () => {
   );
 };
 
-export default Header;
+export default Workflow;
