@@ -1,4 +1,4 @@
-import { MousePointerSquare, MousePointerSquareDashed } from "lucide-react";
+import { SquareDashedMousePointer, SquareMousePointer } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -84,7 +84,7 @@ const PermissionsSelector = ({
                       onClick={selectAllPermissions}
                       disabled={allSelected}
                     >
-                      <MousePointerSquare />
+                      <SquareMousePointer />
                       {t("pages.permissions.permissionsSelector.selectAll")}
                     </Button>
                     <Button
@@ -94,7 +94,7 @@ const PermissionsSelector = ({
                       onClick={deselectAllPermissions}
                       disabled={noneSelected}
                     >
-                      <MousePointerSquareDashed />
+                      <SquareDashedMousePointer />
                       {t("pages.permissions.permissionsSelector.deselectAll")}
                     </Button>
                   </div>
