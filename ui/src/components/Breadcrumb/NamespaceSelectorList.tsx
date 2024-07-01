@@ -1,4 +1,4 @@
-import { Circle, Loader2 } from "lucide-react";
+import { Check, Circle, Loader2, Square } from "lucide-react";
 import {
   CommandEmpty,
   CommandGroup,
@@ -8,7 +8,6 @@ import {
   CommandStaticItem,
 } from "~/design/Command";
 
-import { Checkbox } from "~/design/Checkbox";
 import { twMergeClsx } from "~/util/helpers";
 import { useListNamespaces } from "~/api/namespaces/query/get";
 import { useNamespace } from "~/util/store/namespace";
@@ -49,16 +48,15 @@ export const NamespaceSelectorList = ({
               <CommandItem
                 key={ns.name}
                 value={ns.name}
-                onSelect={(currentValue: string) => {
-                  onSelectNamespace(currentValue);
-                }}
+                onSelect={(value) => onSelectNamespace(value)}
               >
                 {isMulti ? (
                   <>
-                    <Checkbox
-                      checked={selectedValues.includes(ns.name)}
-                      className="mr-2"
-                    />
+                    {selectedValues.includes(ns.name) ? (
+                      <Check className="mr-2 h-5 w-5" />
+                    ) : (
+                      <Square className="mr-2 h-5 w-5" />
+                    )}
                     <span>{ns.name}</span>
                   </>
                 ) : (

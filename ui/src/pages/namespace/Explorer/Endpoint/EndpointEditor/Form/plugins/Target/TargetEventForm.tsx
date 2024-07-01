@@ -6,13 +6,18 @@ import {
   TargetEventFormSchemaType,
 } from "../../../schema/plugins/target/targetEvent";
 
+import { Command } from "~/design/Command";
 import { Fieldset } from "~/components/Form/Fieldset";
-import NamespaceSelector from "~/components/NamespaceSelector";
+import { NamespaceSelectorList } from "~/components/Breadcrumb/NamespaceSelectorList";
 import { PluginWrapper } from "../components/PluginSelector";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 type OptionalConfig = Partial<TargetEventFormSchemaType["configuration"]>;
+
+const predefinedConfig: OptionalConfig = {
+  namespaces: [],
+};
 
 type FormProps = {
   formId: string;
@@ -29,12 +34,14 @@ export const TargetEventForm: FC<FormProps> = ({
   const {
     handleSubmit,
     control,
+    setValue,
     formState: { errors },
   } = useForm<TargetEventFormSchemaType>({
     resolver: zodResolver(TargetEventFormSchema),
     defaultValues: {
       type: "target-event",
       configuration: {
+        ...predefinedConfig,
         ...defaultConfig,
       },
     },
@@ -63,13 +70,26 @@ export const TargetEventForm: FC<FormProps> = ({
         >
           <Controller
             control={control}
-            name="configuration.namespace"
+            name="configuration.namespaces"
             render={({ field }) => (
-              <NamespaceSelector
-                id="namespace"
-                defaultValue={field.value}
-                onValueChange={field.onChange}
-              />
+              <Command id="namespace">
+                <NamespaceSelectorList
+                  onSelectNamespace={(value) => {
+                    if (field.value.includes(value)) {
+                      return setValue(
+                        "configuration.namespaces",
+                        field.value.filter((item) => item !== value)
+                      );
+                    }
+                    setValue("configuration.namespaces", [
+                      ...field.value,
+                      value,
+                    ]);
+                  }}
+                  isMulti={true}
+                  selectedValues={field.value || []}
+                />
+              </Command>
             )}
           />
         </Fieldset>
