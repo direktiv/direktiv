@@ -49,7 +49,7 @@
             "rename": "Rename"
           },
           "empty": {
-            "title": "this directory is empty",
+            "title": "This directory is empty",
             "createWorkflow": "Create Workflow",
             "createService": "Create Service",
             "createEndpoint": "Create Endpoint",
