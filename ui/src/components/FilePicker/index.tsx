@@ -54,13 +54,13 @@ const FilePicker = ({
   const emptyDirectory = !isError && noResults;
   const folderUpButton = !isError && !noResults && !isRoot;
 
-  const selectFolders = selectableFolders || false;
+  selectableFolders = selectableFolders ?? false;
 
   return (
     <ButtonBar>
       <Filepicker
         buttonText={t(
-          selectFolders
+          selectableFolders
             ? "components.folderpicker.buttonText"
             : "components.filepicker.buttonText"
         )}
@@ -119,7 +119,7 @@ const FilePicker = ({
               setPath={(path) => setPath(path)}
               setInputValue={(value) => setInputValue(value)}
               onChange={(path) => onChange?.(path)}
-              selectableFolders={selectFolders}
+              selectableFolders={selectableFolders}
             />
             <FilepickerSeparator />
           </FilepickerList>
@@ -127,7 +127,7 @@ const FilePicker = ({
       </Filepicker>
       <Input
         placeholder={t(
-          selectFolders
+          selectableFolders
             ? "components.folderpicker.placeholder"
             : "components.filepicker.placeholder"
         )}
