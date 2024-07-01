@@ -61,7 +61,10 @@ const ExplorerPage: FC = () => {
     () =>
       children.filter(
         (child) =>
-          !hasQuery || child.path.toLowerCase().includes(query.toLowerCase())
+          !hasQuery ||
+          getFilenameFromPath(child.path.toLowerCase()).includes(
+            query.toLowerCase()
+          )
       ),
     [hasQuery, query, children]
   );
@@ -109,8 +112,8 @@ const ExplorerPage: FC = () => {
                   placeholder={t("pages.explorer.tree.list.filter")}
                 />
               </div>
-              <DropdownMenuSeparator></DropdownMenuSeparator>
-              {noSearchResult && <NoSearchResult />}
+              <DropdownMenuSeparator />
+
               <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                 <Table>
                   <TableBody>
@@ -142,6 +145,11 @@ const ExplorerPage: FC = () => {
                         onPreviewClicked={setPreviewNode}
                       />
                     ))}
+                    {noSearchResult && (
+                      <TableRow>
+                        <NoSearchResult />
+                      </TableRow>
+                    )}
                   </TableBody>
                 </Table>
                 <DialogContent
