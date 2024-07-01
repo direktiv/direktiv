@@ -491,6 +491,9 @@
             "typeContains": "type contains",
             "eventContains": "content contains"
           }
+        },
+        "selectPageSize": {
+          "selectItem": "Show {{count}} rows"
         }
       },
       "listeners": {
