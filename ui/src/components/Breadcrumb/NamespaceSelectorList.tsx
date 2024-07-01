@@ -8,17 +8,24 @@ import {
   CommandStaticItem,
 } from "~/design/Command";
 
+import { Checkbox } from "~/design/Checkbox";
 import { twMergeClsx } from "~/util/helpers";
 import { useListNamespaces } from "~/api/namespaces/query/get";
 import { useNamespace } from "~/util/store/namespace";
 import { useTranslation } from "react-i18next";
 
-type NamespaceSelectorListProps = {
-  onSelectNamespace: (value: string) => void;
-};
+type NamespaceSelectorListProps =
+  | {
+      onSelectNamespace: (value: string) => void;
+    } & (
+      | { isMulti: false; selectedValues: never }
+      | { isMulti: true; selectedValues: string[] }
+    );
 
 export const NamespaceSelectorList = ({
   onSelectNamespace,
+  isMulti = false,
+  selectedValues,
 }: NamespaceSelectorListProps) => {
   const { t } = useTranslation();
   const namespace = useNamespace();
@@ -48,13 +55,25 @@ export const NamespaceSelectorList = ({
                   onSelectNamespace(currentValue);
                 }}
               >
-                <Circle
-                  className={twMergeClsx(
-                    "mr-2 h-2 w-2 fill-current",
-                    namespace === ns.name ? "opacity-100" : "opacity-0"
-                  )}
-                />
-                <span>{ns.name}</span>
+                {isMulti ? (
+                  <>
+                    <Checkbox
+                      checked={selectedValues.includes(ns.name)}
+                      className="mr-2"
+                    />
+                    <span>{ns.name}</span>
+                  </>
+                ) : (
+                  <>
+                    <Circle
+                      className={twMergeClsx(
+                        "mr-2 h-2 w-2 fill-current",
+                        namespace === ns.name ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                    <span>{ns.name}</span>
+                  </>
+                )}
               </CommandItem>
             ))}
           </CommandGroup>
