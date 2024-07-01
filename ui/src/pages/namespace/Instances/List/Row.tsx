@@ -3,7 +3,6 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "~/design/HoverCard";
-import { Link, useNavigate } from "react-router-dom";
 import { TableCell, TableRow } from "~/design/Table";
 import {
   Tooltip,
@@ -21,6 +20,7 @@ import TooltipCopyBadge from "~/design/TooltipCopyBadge";
 import { decode } from "js-base64";
 import moment from "moment";
 import { statusToBadgeVariant } from "../utils";
+import { useNavigate } from "react-router-dom";
 import { usePages } from "~/util/router/pages";
 import { useTranslation } from "react-i18next";
 import useUpdatedAt from "~/hooks/useUpdatedAt";
@@ -53,28 +53,7 @@ const InstanceTableRow: FC<{
         className="cursor-pointer"
       >
         <TableCell data-testid="instance-column-name">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Link
-                onClick={(e) => {
-                  e.stopPropagation(); // prevent the onClick on the row from firing when clicking the workflow link
-                }}
-                to={pages.explorer.createHref({
-                  namespace: instance.namespace,
-                  path: instance.path,
-                  subpage: "workflow",
-                })}
-                className="hover:underline"
-              >
-                {instance.path}
-              </Link>
-            </TooltipTrigger>
-            <TooltipContent>
-              {t("pages.instances.list.tableRow.openWorkflowTooltip", {
-                name: instance.path,
-              })}
-            </TooltipContent>
-          </Tooltip>
+          {instance.path}
         </TableCell>
         <TableCell data-testid="instance-column-id">
           <TooltipCopyBadge value={instance.id} variant="outline">
