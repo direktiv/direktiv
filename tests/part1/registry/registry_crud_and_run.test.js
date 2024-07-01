@@ -12,7 +12,7 @@ describe('Test services crud operations', () => {
 
 	it(`should create a registry`, async () => {
 		const res = await request(common.config.getDirektivHost())
-			.post(`/api/v2/namespaces/${ testNamespace }/registries`)
+			.post(`/api/v2/namespaces/${testNamespace}/registries`)
 			.send({
 				url: 'docker.io',
 				user: 'me',
@@ -31,7 +31,7 @@ describe('Test services crud operations', () => {
 
 	it(`should create a registry`, async () => {
 		const res = await request(common.config.getDirektivHost())
-			.post(`/api/v2/namespaces/${ testNamespace }/registries`)
+			.post(`/api/v2/namespaces/${testNamespace}/registries`)
 			.send({
 				url: 'docker2.io',
 				user: 'me2',
@@ -50,11 +50,11 @@ describe('Test services crud operations', () => {
 
 	it(`should list all registries`, async () => {
 		const listRes = await request(common.config.getDirektivHost())
-			.get(`/api/v2/namespaces/${ testNamespace }/registries`)
+			.get(`/api/v2/namespaces/${testNamespace}/registries`)
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body.data.length).toEqual(2)
-		expect(listRes.body).toMatchObject({
-			data: [
+		expect(listRes.body.data).toEqual(
+			expect.arrayContaining([
 				{
 					namespace: 'test-services',
 					id: 'secret-c163796084d652e67cb0',
@@ -66,19 +66,20 @@ describe('Test services crud operations', () => {
 					id: 'secret-7a95ae8578ed80f27403',
 					url: 'docker2.io',
 					user: 'me2',
-				} ],
-		})
+				}],
+			)
+		)
 	})
 
 	it(`should delete a registry`, async () => {
 		const res = await request(common.config.getDirektivHost())
-			.delete(`/api/v2/namespaces/${ testNamespace }/registries/secret-c163796084d652e67cb0`)
+			.delete(`/api/v2/namespaces/${testNamespace}/registries/secret-c163796084d652e67cb0`)
 		expect(res.statusCode).toEqual(200)
 	})
 
 	it(`should list all registries after delete`, async () => {
 		const listRes = await request(common.config.getDirektivHost())
-			.get(`/api/v2/namespaces/${ testNamespace }/registries`)
+			.get(`/api/v2/namespaces/${testNamespace}/registries`)
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body.data.length).toEqual(1)
 	})
