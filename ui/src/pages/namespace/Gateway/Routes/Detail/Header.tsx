@@ -1,4 +1,4 @@
-import { Pencil, SquareGanttIcon } from "lucide-react";
+import { Pencil, SquareGanttChartIcon } from "lucide-react";
 
 import { AllowAnonymous } from "../components/Anonymous";
 import Badge from "~/design/Badge";
@@ -35,7 +35,7 @@ const Header = () => {
       <div className="flex flex-col gap-x-7 max-md:space-y-4 md:flex-row md:items-center md:justify-start">
         <div className="flex flex-col items-start gap-2">
           <h3 className="flex items-center gap-x-2 font-bold text-primary-500">
-            <SquareGanttIcon className="h-5" /> {route.file_path}
+            <SquareGanttChartIcon className="h-5" /> {route.file_path}
           </h3>
           <div className="flex gap-1">
             <MessagesOverlay messages={route.errors} variant="error">

@@ -1,4 +1,4 @@
-import { SquareGanttIcon, Workflow } from "lucide-react";
+import { SquareGanttChartIcon, Workflow } from "lucide-react";
 
 import { Breadcrumb as BreadcrumbLink } from "~/design/Breadcrumbs";
 import { Link } from "react-router-dom";
@@ -38,7 +38,7 @@ const RoutesBreadcrumb = () => {
               routePath,
             })}
           >
-            <SquareGanttIcon aria-hidden="true" />
+            <SquareGanttChartIcon aria-hidden="true" />
             {routePath}
           </Link>
         </BreadcrumbLink>
