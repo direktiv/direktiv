@@ -89,7 +89,7 @@ const ExplorerPage: FC = () => {
 
   const showTable = !isRoot || children.length > 0;
   const noResults = isSuccess && children.length === 0;
-  const noSearchResult = isSuccess && filteredFiles.length === 0;
+  const noSearchResult = !noResults && filteredFiles.length === 0;
   const wideOverlay = !!previewNode;
 
   const existingNames = children?.map((file) => getFilenameFromPath(file.path));
@@ -135,6 +135,20 @@ const ExplorerPage: FC = () => {
                         </TableCell>
                       </TableRow>
                     )}
+                    {noSearchResult && (
+                      <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
+                        <TableCell>
+                          <NoSearchResult />
+                        </TableCell>
+                      </TableRow>
+                    )}
+                    {noResults && (
+                      <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
+                        <TableCell>
+                          <NoResult />
+                        </TableCell>
+                      </TableRow>
+                    )}
                     {filteredFiles.map((item) => (
                       <FileRow
                         key={item.path}
@@ -147,12 +161,6 @@ const ExplorerPage: FC = () => {
                     ))}
                   </TableBody>
                 </Table>
-                {noSearchResult && (
-                  <>
-                    {!isRoot && <DropdownMenuSeparator />}
-                    <NoSearchResult />
-                  </>
-                )}
                 <DialogContent
                   className={twMergeClsx(
                     wideOverlay && "sm:max-w-xl md:max-w-2xl lg:max-w-3xl"
@@ -180,7 +188,7 @@ const ExplorerPage: FC = () => {
               </Dialog>
             </>
           )}
-          {noResults && <NoResult />}
+          {isRoot && noResults && <NoResult />}
         </Card>
       </div>
     </>
