@@ -11,22 +11,20 @@ import {
 import { BaseFileSchemaType } from "~/api/files/schema";
 import { Card } from "~/design/Card";
 import Delete from "./components/modals/Delete";
+import EmptyDirectory from "./EmptyDirectory";
 import ExplorerHeader from "./Header";
 import FileRow from "./FileRow";
 import FileViewer from "./components/modals/FileViewer";
-import { FolderUp } from "lucide-react";
-import Input from "~/design/Input";
-import { Link } from "react-router-dom";
-import NoResult from "./NoResult";
+import { LevelUpNavigation } from "./LevelUpNavigation";
 import NoSearchResult from "./NoSearchResult";
 import Rename from "./components/modals/Rename";
+import { SearchBar } from "./SearchBar";
 import { analyzePath } from "~/util/router/utils";
 import { getFilenameFromPath } from "~/api/files/utils";
 import { twMergeClsx } from "~/util/helpers";
 import { useFile } from "~/api/files/query/file";
 import { useNamespace } from "~/util/store/namespace";
 import { usePages } from "~/util/router/pages";
-import { useTranslation } from "react-i18next";
 
 const ExplorerPage: FC = () => {
   const pages = usePages();
@@ -48,7 +46,6 @@ const ExplorerPage: FC = () => {
   const [previewNode, setPreviewNode] = useState<BaseFileSchemaType>();
 
   const [query, setQuery] = useState("");
-  const { t } = useTranslation();
   const hasQuery = query.length > 0;
 
   const children = useMemo(
@@ -86,12 +83,11 @@ const ExplorerPage: FC = () => {
       </Card>
     );
 
-  const showTable = !isRoot || children.length > 0;
-  const noResults = isSuccess && children.length === 0;
-  const noSearchResult =
-    isSuccess && children.length !== 0 && filteredFiles.length === 0;
-  const wideOverlay = !!previewNode;
+  const isEmptyDirectory = isSuccess && children.length === 0;
+  const noSearchResult = hasQuery && filteredFiles.length === 0;
+  const showEmptyListNote = noSearchResult || isEmptyDirectory;
 
+  const wideOverlay = !!previewNode;
   const existingNames = children?.map((file) => getFilenameFromPath(file.path));
 
   return (
@@ -99,87 +95,67 @@ const ExplorerPage: FC = () => {
       <ExplorerHeader />
       <div className="p-5">
         <Card>
-          {showTable && (
-            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-              <Table>
-                <TableBody>
-                  <TableRow className="hover:bg-white/75">
-                    <TableCell colSpan={2}>
-                      <Input
-                        data-testid="queryField"
-                        className="sm:w-60"
-                        value={query}
-                        onChange={(e) => {
-                          setQuery(e.target.value);
-                        }}
-                        placeholder={t("pages.explorer.tree.list.filter")}
-                      />
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <Table>
+              <TableBody>
+                {!isEmptyDirectory && (
+                  <SearchBar
+                    query={query}
+                    onChange={(newQuery) => {
+                      setQuery(newQuery);
+                    }}
+                  />
+                )}
+                {!isRoot && (
+                  <LevelUpNavigation
+                    namespace={namespace}
+                    path={parent?.absolute}
+                  />
+                )}
+                {showEmptyListNote && (
+                  <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
+                    <TableCell>
+                      {noSearchResult ? <NoSearchResult /> : <EmptyDirectory />}
                     </TableCell>
                   </TableRow>
-                  {!isRoot && (
-                    <TableRow>
-                      <TableCell colSpan={2}>
-                        <Link
-                          to={pages.explorer.createHref({
-                            namespace,
-                            path: parent?.absolute,
-                          })}
-                          className="flex items-center space-x-3 hover:underline"
-                        >
-                          <FolderUp className="h-5" />
-                          <span>
-                            {t("pages.explorer.tree.list.oneLevelUp")}
-                          </span>
-                        </Link>
-                      </TableCell>
-                    </TableRow>
-                  )}
-                  {(noSearchResult || noResults) && (
-                    <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
-                      <TableCell>
-                        {noSearchResult ? <NoSearchResult /> : <NoResult />}
-                      </TableCell>
-                    </TableRow>
-                  )}
-                  {filteredFiles.map((item) => (
-                    <FileRow
-                      key={item.path}
-                      namespace={namespace}
-                      file={item}
-                      onDeleteClicked={setDeleteNode}
-                      onRenameClicked={setRenameNode}
-                      onPreviewClicked={setPreviewNode}
-                    />
-                  ))}
-                </TableBody>
-              </Table>
-              <DialogContent
-                className={twMergeClsx(
-                  wideOverlay && "sm:max-w-xl md:max-w-2xl lg:max-w-3xl"
                 )}
-              >
-                {previewNode && <FileViewer file={previewNode} />}
-                {deleteNode && (
-                  <Delete
-                    file={deleteNode}
-                    close={() => {
-                      setDialogOpen(false);
-                    }}
+                {filteredFiles.map((item) => (
+                  <FileRow
+                    key={item.path}
+                    namespace={namespace}
+                    file={item}
+                    onDeleteClicked={setDeleteNode}
+                    onRenameClicked={setRenameNode}
+                    onPreviewClicked={setPreviewNode}
                   />
-                )}
-                {renameFile && (
-                  <Rename
-                    file={renameFile}
-                    close={() => {
-                      setDialogOpen(false);
-                    }}
-                    unallowedNames={existingNames}
-                  />
-                )}
-              </DialogContent>
-            </Dialog>
-          )}
-          {isRoot && noResults && <NoResult />}
+                ))}
+              </TableBody>
+            </Table>
+            <DialogContent
+              className={twMergeClsx(
+                wideOverlay && "sm:max-w-xl md:max-w-2xl lg:max-w-3xl"
+              )}
+            >
+              {previewNode && <FileViewer file={previewNode} />}
+              {deleteNode && (
+                <Delete
+                  file={deleteNode}
+                  close={() => {
+                    setDialogOpen(false);
+                  }}
+                />
+              )}
+              {renameFile && (
+                <Rename
+                  file={renameFile}
+                  close={() => {
+                    setDialogOpen(false);
+                  }}
+                  unallowedNames={existingNames}
+                />
+              )}
+            </DialogContent>
+          </Dialog>
         </Card>
       </div>
     </>
