@@ -89,7 +89,8 @@ const ExplorerPage: FC = () => {
 
   const showTable = !isRoot || children.length > 0;
   const noResults = isSuccess && children.length === 0;
-  const noSearchResult = !noResults && filteredFiles.length === 0;
+  const noSearchResult =
+    isSuccess && children.length !== 0 && filteredFiles.length === 0;
   const wideOverlay = !!previewNode;
 
   const existingNames = children?.map((file) => getFilenameFromPath(file.path));
