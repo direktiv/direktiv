@@ -526,7 +526,6 @@
     "monitoring": {
       "title": "Monitoring",
       "instances": {
-        "openWorkflowTooltip": "click to open workflow {{name}}",
         "successfulExecutions": {
           "title": "Successful Executions",
           "empty": "There are no recent successful executions."
@@ -563,8 +562,7 @@
         },
         "tableRow": {
           "realtiveTime": "{{relativeTime}} ago",
-          "stillRunning": "still running",
-          "openWorkflowTooltip": "click to open workflow {{name}}"
+          "stillRunning": "still running"
         },
         "filter": {
           "filterButton": "Filter",
