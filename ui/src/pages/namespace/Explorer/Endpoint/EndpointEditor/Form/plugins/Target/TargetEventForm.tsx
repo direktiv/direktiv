@@ -69,9 +69,7 @@ export const TargetEventForm: FC<FormProps> = ({
           )}
           htmlFor="namespace"
         >
-          {!isSystemNamespace ? (
-            <DisableNamespaceSelectNote />
-          ) : (
+          {isSystemNamespace ? (
             <Controller
               control={control}
               name="configuration.namespaces"
@@ -85,6 +83,8 @@ export const TargetEventForm: FC<FormProps> = ({
                 />
               )}
             />
+          ) : (
+            <DisableNamespaceSelectNote />
           )}
         </Fieldset>
       </PluginWrapper>
