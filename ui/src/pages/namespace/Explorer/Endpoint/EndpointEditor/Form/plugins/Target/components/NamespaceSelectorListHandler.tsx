@@ -1,5 +1,5 @@
 import { Command } from "~/design/Command";
-import { NamespaceSelectorList } from "~/components/Breadcrumb/NamespaceSelectorList";
+import { NamespaceSelectorList } from "~/components/NamespaceSelectorList";
 
 type Props = {
   value: string[];

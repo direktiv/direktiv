@@ -8,7 +8,7 @@ import {
 
 import { DisableNamespaceSelectNote } from "./utils/DisableNamespaceSelectNote";
 import { Fieldset } from "~/components/Form/Fieldset";
-import { NamespaceSelectorListHandler } from "./NamespaceSelectorListHandler";
+import { NamespaceSelectorListHandler } from "./components/NamespaceSelectorListHandler";
 import { PluginWrapper } from "../components/PluginSelector";
 import { useIsSystemNamespace } from "./utils/useIsSystemNamespace";
 import { useTranslation } from "react-i18next";

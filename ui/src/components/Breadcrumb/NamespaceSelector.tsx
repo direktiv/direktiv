@@ -11,7 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "~/design/Popover";
 import { Breadcrumb as BreadcrumbLink } from "~/design/Breadcrumbs";
 import Button from "~/design/Button";
 import NamespaceEdit from "../NamespaceEdit";
-import { NamespaceSelectorList } from "./NamespaceSelectorList";
+import { NamespaceSelectorList } from "../NamespaceSelectorList";
 import { useNamespace } from "~/util/store/namespace";
 import { usePages } from "~/util/router/pages";
 import { useState } from "react";
