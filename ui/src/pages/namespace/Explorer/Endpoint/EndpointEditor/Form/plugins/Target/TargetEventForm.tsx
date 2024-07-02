@@ -7,17 +7,15 @@ import {
 } from "../../../schema/plugins/target/targetEvent";
 
 import { Command } from "~/design/Command";
+import { DisableNamespaceSelectNote } from "./utils/DisableNamespaceSelectNote";
 import { Fieldset } from "~/components/Form/Fieldset";
 import { NamespaceSelectorList } from "~/components/Breadcrumb/NamespaceSelectorList";
 import { PluginWrapper } from "../components/PluginSelector";
+import { useIsSystemNamespace } from "./utils/useIsSystemNamespace";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 type OptionalConfig = Partial<TargetEventFormSchemaType["configuration"]>;
-
-const predefinedConfig: OptionalConfig = {
-  namespaces: [],
-};
 
 type FormProps = {
   formId: string;
@@ -31,6 +29,10 @@ export const TargetEventForm: FC<FormProps> = ({
   formId,
 }) => {
   const { t } = useTranslation();
+  const isSystemNamespace = useIsSystemNamespace();
+
+  const predefinedConfig = isSystemNamespace ? { namespaces: [] } : {};
+
   const {
     handleSubmit,
     control,
@@ -68,30 +70,34 @@ export const TargetEventForm: FC<FormProps> = ({
           )}
           htmlFor="namespace"
         >
-          <Controller
-            control={control}
-            name="configuration.namespaces"
-            render={({ field }) => (
-              <Command id="namespace">
-                <NamespaceSelectorList
-                  onSelectNamespace={(value) => {
-                    if (field.value.includes(value)) {
-                      return setValue(
-                        "configuration.namespaces",
-                        field.value.filter((item) => item !== value)
-                      );
-                    }
-                    setValue("configuration.namespaces", [
-                      ...field.value,
-                      value,
-                    ]);
-                  }}
-                  isMulti={true}
-                  selectedValues={field.value || []}
-                />
-              </Command>
-            )}
-          />
+          {!isSystemNamespace ? (
+            <DisableNamespaceSelectNote />
+          ) : (
+            <Controller
+              control={control}
+              name="configuration.namespaces"
+              render={({ field }) => (
+                <Command id="namespace">
+                  <NamespaceSelectorList
+                    onSelectNamespace={(value) => {
+                      if (field.value.includes(value)) {
+                        return setValue(
+                          "configuration.namespaces",
+                          field.value.filter((item) => item !== value)
+                        );
+                      }
+                      setValue("configuration.namespaces", [
+                        ...field.value,
+                        value,
+                      ]);
+                    }}
+                    isMulti={true}
+                    selectedValues={field.value || []}
+                  />
+                </Command>
+              )}
+            />
+          )}
         </Fieldset>
       </PluginWrapper>
     </form>
