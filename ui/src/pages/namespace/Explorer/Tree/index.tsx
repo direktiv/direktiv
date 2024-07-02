@@ -136,17 +136,10 @@ const ExplorerPage: FC = () => {
                         </TableCell>
                       </TableRow>
                     )}
-                    {noSearchResult && (
+                    {(noSearchResult || noResults) && (
                       <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
                         <TableCell>
-                          <NoSearchResult />
-                        </TableCell>
-                      </TableRow>
-                    )}
-                    {noResults && (
-                      <TableRow className="hover:bg-inherit dark:hover:bg-inherit">
-                        <TableCell>
-                          <NoResult />
+                          {noSearchResult ? <NoSearchResult /> : <NoResult />}
                         </TableCell>
                       </TableRow>
                     )}
