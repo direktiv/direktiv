@@ -6,10 +6,9 @@ import {
   TargetEventFormSchemaType,
 } from "../../../schema/plugins/target/targetEvent";
 
-import { Command } from "~/design/Command";
 import { DisableNamespaceSelectNote } from "./utils/DisableNamespaceSelectNote";
 import { Fieldset } from "~/components/Form/Fieldset";
-import { NamespaceSelectorList } from "~/components/Breadcrumb/NamespaceSelectorList";
+import { NamespaceSelectorListHandler } from "./NamespaceSelectorListHandler";
 import { PluginWrapper } from "../components/PluginSelector";
 import { useIsSystemNamespace } from "./utils/useIsSystemNamespace";
 import { useTranslation } from "react-i18next";
@@ -77,24 +76,13 @@ export const TargetEventForm: FC<FormProps> = ({
               control={control}
               name="configuration.namespaces"
               render={({ field }) => (
-                <Command id="namespace">
-                  <NamespaceSelectorList
-                    onSelectNamespace={(value) => {
-                      if (field.value.includes(value)) {
-                        return setValue(
-                          "configuration.namespaces",
-                          field.value.filter((item) => item !== value)
-                        );
-                      }
-                      setValue("configuration.namespaces", [
-                        ...field.value,
-                        value,
-                      ]);
-                    }}
-                    isMulti={true}
-                    selectedValues={field.value || []}
-                  />
-                </Command>
+                <NamespaceSelectorListHandler
+                  id="namespace"
+                  value={field.value}
+                  onValueChange={(value) =>
+                    setValue("configuration.namespaces", value)
+                  }
+                />
               )}
             />
           )}
