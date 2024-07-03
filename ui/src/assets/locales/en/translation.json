@@ -315,7 +315,7 @@
                 "targetEvent": {
                   "namespace": "Namespace (optional)"
                 },
-                "disableNamespaceSelectNote": "You can target other namespaces from the system namespace. Otherwise, the current namespace will be used."
+                "disableNamespaceSelectNote": "You can only access other namespaces when you are in the system namespace."
               },
               "inbound": {
                 "modal": {
