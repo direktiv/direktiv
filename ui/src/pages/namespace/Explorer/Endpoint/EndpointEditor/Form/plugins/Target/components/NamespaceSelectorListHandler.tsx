@@ -22,7 +22,7 @@ export const NamespaceSelectorListHandler = ({
         }
         onValueChange([...selectedNamespaces, value]);
       }}
-      isMulti={true}
+      isMultiSelect={true}
       selectedValues={selectedNamespaces || []}
     />
   </Command>

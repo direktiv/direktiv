@@ -15,13 +15,13 @@ import { useTranslation } from "react-i18next";
 
 type NamespaceSelectorListProps = {
   onSelectNamespace: (value: string) => void;
-  isMulti?: boolean;
+  isMultiSelect?: boolean;
   selectedValues?: string[];
 };
 
 export const NamespaceSelectorList = ({
   onSelectNamespace,
-  isMulti = false,
+  isMultiSelect = false,
   selectedValues = [],
 }: NamespaceSelectorListProps) => {
   const { t } = useTranslation();
@@ -50,7 +50,7 @@ export const NamespaceSelectorList = ({
                 value={ns.name}
                 onSelect={(value) => onSelectNamespace(value)}
               >
-                {isMulti ? (
+                {isMultiSelect ? (
                   <>
                     {selectedValues.includes(ns.name) ? (
                       <Check className="mr-2 h-5 w-5" />
