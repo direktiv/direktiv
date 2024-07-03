@@ -16,7 +16,7 @@ const EmptyDirectoryButton = () => {
   );
 };
 
-const NoResult: FC = () => {
+const EmptyDirectory: FC = () => {
   const { t } = useTranslation();
   return (
     <div className="flex flex-col items-center gap-y-5">
@@ -27,4 +27,4 @@ const NoResult: FC = () => {
   );
 };
 
-export default NoResult;
+export default EmptyDirectory;
