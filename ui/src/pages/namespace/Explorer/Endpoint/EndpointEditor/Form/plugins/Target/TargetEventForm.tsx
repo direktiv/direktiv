@@ -30,8 +30,6 @@ export const TargetEventForm: FC<FormProps> = ({
   const { t } = useTranslation();
   const isSystemNamespace = useIsSystemNamespace();
 
-  const predefinedConfig = isSystemNamespace ? { namespaces: [] } : {};
-
   const {
     handleSubmit,
     control,
@@ -42,7 +40,6 @@ export const TargetEventForm: FC<FormProps> = ({
     defaultValues: {
       type: "target-event",
       configuration: {
-        ...predefinedConfig,
         ...defaultConfig,
       },
     },
