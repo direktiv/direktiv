@@ -18,29 +18,34 @@ describe('Test services crud operations', () => {
 		const listRes = await request(common.config.getDirektivHost())
 			.get(`/api/v2/namespaces/test_namespace_a/registries`)
 		expect(listRes.statusCode).toEqual(200)
-		expect(listRes.body).toMatchObject({
-			data: [
-				{
-					namespace: 'test_namespace_a',
-					id: expect.stringMatching(/^secret-/),
-					url: 'a_domain_1.io',
-					user: 'a_name_1',
-				},
-				{
-					namespace: 'test_namespace_a',
-					id: expect.stringMatching(/^secret-/),
-					url: 'a_domain_2.io',
-					user: 'a_name_2',
-				} ],
-		})
+		expect(listRes.body.data).toEqual(
+			expect.arrayContaining(
+
+				[
+					{
+						namespace: 'test_namespace_a',
+						id: expect.stringMatching(/^secret-/),
+						url: 'a_domain_1.io',
+						user: 'a_name_1',
+					},
+					{
+						namespace: 'test_namespace_a',
+						id: expect.stringMatching(/^secret-/),
+						url: 'a_domain_2.io',
+						user: 'a_name_2',
+					}
+				]
+
+			)
+		)
 	})
 
 	it(`should list all registries in namespace test_namespace_b`, async () => {
 		const listRes = await request(common.config.getDirektivHost())
 			.get(`/api/v2/namespaces/test_namespace_b/registries`)
 		expect(listRes.statusCode).toEqual(200)
-		expect(listRes.body).toMatchObject({
-			data: [
+		expect(listRes.body.data).toEqual(
+			expect.arrayContaining([
 				{
 					namespace: 'test_namespace_b',
 					id: expect.stringMatching(/^secret-/),
@@ -52,15 +57,16 @@ describe('Test services crud operations', () => {
 					id: expect.stringMatching(/^secret-/),
 					url: 'b_domain_2.io',
 					user: 'b_name_2',
-				} ],
-		})
+				}],
+			)
+		)
 	})
 })
 
-function itShouldCreateSecret (it, expect, namespace, url, user, password) {
-	it(`should create a registry ${ url } ${ user } ${ password }`, async () => {
+function itShouldCreateSecret(it, expect, namespace, url, user, password) {
+	it(`should create a registry ${url} ${user} ${password}`, async () => {
 		const res = await request(common.config.getDirektivHost())
-			.post(`/api/v2/namespaces/${ namespace }/registries`)
+			.post(`/api/v2/namespaces/${namespace}/registries`)
 			.send({
 				url,
 				user,
