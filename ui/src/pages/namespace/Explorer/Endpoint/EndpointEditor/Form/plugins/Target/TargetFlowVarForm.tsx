@@ -49,7 +49,7 @@ export const TargetFlowVarForm: FC<FormProps> = ({
     },
   });
 
-  const disableNamespaceSelect = useIsSystemNamespace();
+  const isSystemNamespace = useIsSystemNamespace();
 
   const submitForm = (e: FormEvent<HTMLFormElement>) => {
     e.stopPropagation(); // prevent the parent form from submitting
@@ -71,7 +71,7 @@ export const TargetFlowVarForm: FC<FormProps> = ({
           )}
           htmlFor="namespace"
         >
-          {disableNamespaceSelect && <DisableNamespaceSelectNote />}
+          {!isSystemNamespace && <DisableNamespaceSelectNote />}
           <Controller
             control={control}
             name="configuration.namespace"
@@ -80,7 +80,7 @@ export const TargetFlowVarForm: FC<FormProps> = ({
                 id="namespace"
                 defaultValue={field.value}
                 onValueChange={field.onChange}
-                disabled={disableNamespaceSelect}
+                disabled={!isSystemNamespace}
               />
             )}
           />
