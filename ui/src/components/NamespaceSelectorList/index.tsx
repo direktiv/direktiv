@@ -13,11 +13,12 @@ import { useListNamespaces } from "~/api/namespaces/query/get";
 import { useNamespace } from "~/util/store/namespace";
 import { useTranslation } from "react-i18next";
 
+type MultiSelectorProps = { isMultiSelect: true; selectedValues: string[] };
+type SingleSelectorProps = { isMultiSelect?: false; selectedValues?: never };
+
 type NamespaceSelectorListProps = {
   onSelectNamespace: (value: string) => void;
-  isMultiSelect?: boolean;
-  selectedValues?: string[];
-};
+} & (MultiSelectorProps | SingleSelectorProps);
 
 export const NamespaceSelectorList = ({
   onSelectNamespace,
