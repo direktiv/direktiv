@@ -86,12 +86,12 @@ test("it is possible to create and sync a mirror", async ({ page }) => {
   ).toHaveCount(2);
 
   await expect(
-    page.getByTestId("sync-row").first().getByRole("cell", { name: "failed" }),
+    page.getByTestId("sync-row").last().getByRole("cell", { name: "failed" }),
     "The sync has failed"
   ).toBeVisible();
 
   await expect(
-    page.getByTestId("sync-row").first().getByTestId("createdAt-relative"),
+    page.getByTestId("sync-row").last().getByTestId("createdAt-relative"),
     "It renders the relative time"
   ).toContainText("seconds ago");
 
@@ -123,7 +123,7 @@ test("it is possible to create and sync a mirror", async ({ page }) => {
   ).toBeVisible();
 
   await expect(
-    page.getByTestId("sync-row").first().getByTestId("createdAt-relative"),
+    page.getByTestId("sync-row").last().getByTestId("createdAt-relative"),
     "It renders the relative time"
   ).toContainText("seconds ago");
 
