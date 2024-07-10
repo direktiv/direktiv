@@ -168,6 +168,8 @@ func (c *knativeClient) listServicePods(id string) (any, error) {
 		})
 	}
 
+	// TODO: we should probably sort this list
+
 	return pods, nil
 }
 

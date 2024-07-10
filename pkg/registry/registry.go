@@ -49,6 +49,8 @@ func (c *kManager) ListRegistries(namespace string) ([]*core.Registry, error) {
 		})
 	}
 
+	// TODO: we should sort this list
+
 	return result, nil
 }
 

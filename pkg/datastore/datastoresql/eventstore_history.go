@@ -98,7 +98,7 @@ func (hs *sqlEventHistoryStore) GetStartingIDUntilTime(ctx context.Context, name
 }
 
 func (hs *sqlEventHistoryStore) GetAll(ctx context.Context) ([]*datastore.Event, error) {
-	q := "SELECT serial_id, id, type, source, cloudevent, namespace_id, namespace, received_at, created_at FROM events_history;"
+	q := "SELECT serial_id, id, type, source, cloudevent, namespace_id, namespace, received_at, created_at FROM events_history ORDER BY created_at DESC;"
 	res := make([]*gormEventHistoryEntry, 0)
 
 	tx := hs.db.WithContext(ctx).Raw(q).Scan(&res)
