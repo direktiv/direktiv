@@ -47,7 +47,7 @@ describe('Test namespaces get delete list calls', () => {
 			.get(`/api/v2/namespaces`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toEqual({
-			data: [ expectDummyNamespace('foo1'), expectDummyNamespace('foo2') ],
+			data: [expectDummyNamespace('foo2'), expectDummyNamespace('foo1')],
 		})
 	})
 
@@ -62,18 +62,18 @@ describe('Test namespaces get delete list calls', () => {
 			.get(`/api/v2/namespaces`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toEqual({
-			data: [ expectDummyNamespace('foo2') ],
+			data: [expectDummyNamespace('foo2')],
 		})
 	})
 })
 
-function makeDummyNamespace (name) {
+function makeDummyNamespace(name) {
 	return {
 		name,
 	}
 }
 
-function expectDummyNamespace (name) {
+function expectDummyNamespace(name) {
 	return {
 		name,
 		isSystemNamespace: false,
