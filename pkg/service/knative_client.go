@@ -172,9 +172,9 @@ func (c *knativeClient) listServicePods(id string) (any, error) {
 		})
 	}
 
-	// Sort by CreatedAt (desc)
+	// Sort by CreatedAt (asc)
 	sort.Slice(pods, func(i, j int) bool {
-		return pods[i].CreatedAt.After(pods[j].CreatedAt)
+		return pods[i].CreatedAt.Before(pods[j].CreatedAt)
 	})
 
 	return pods, nil

@@ -77,7 +77,7 @@ describe('Test variable get delete list calls', () => {
 			.get(`/api/v2/namespaces/${namespace}/variables`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toMatchObject({
-			data: [expectDummyVar('foo2'), expectDummyVar('foo1')],
+			data: [expectDummyVar('foo1'), expectDummyVar('foo2')],
 		})
 	})
 

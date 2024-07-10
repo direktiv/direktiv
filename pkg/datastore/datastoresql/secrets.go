@@ -124,7 +124,7 @@ func (s sqlSecretsStore) GetAll(ctx context.Context, namespace string) ([]*datas
 	var secrets []*datastore.Secret
 
 	res := s.db.WithContext(ctx).Raw(`
-							SELECT * FROM secrets WHERE namespace=? ORDER BY created_at DESC `,
+							SELECT * FROM secrets WHERE namespace=? ORDER BY created_at ASC `,
 		namespace).
 		Find(&secrets)
 	if res.Error != nil {

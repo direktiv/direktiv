@@ -51,9 +51,9 @@ func (c *kManager) ListRegistries(namespace string) ([]*core.Registry, error) {
 		})
 	}
 
-	// Sort registries by CreatedAt (desc order)
+	// Sort registries by CreatedAt (asc order)
 	sort.Slice(result, func(i, j int) bool {
-		return result[i].CreatedAt.After(result[j].CreatedAt)
+		return result[i].CreatedAt.Before(result[j].CreatedAt)
 	})
 
 	return result, nil

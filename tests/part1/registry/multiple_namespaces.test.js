@@ -24,15 +24,15 @@ describe('Test services crud operations', () => {
 					expect.objectContaining({
 						namespace: 'test_namespace_a',
 						id: expect.stringMatching(/^secret-/),
-						url: 'a_domain_1.io',
-						user: 'a_name_1',
+						url: 'a_domain_2.io',
+						user: 'a_name_2',
 					}),
 					expect.objectContaining({
 						namespace: 'test_namespace_a',
 						id: expect.stringMatching(/^secret-/),
-						url: 'a_domain_2.io',
-						user: 'a_name_2',
-					})
+						url: 'a_domain_1.io',
+						user: 'a_name_1',
+					}),
 				]
 
 			)

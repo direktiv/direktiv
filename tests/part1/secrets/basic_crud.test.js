@@ -46,7 +46,7 @@ describe('Test secrets get delete list calls', () => {
 			.get(`/api/v2/namespaces/${namespace}/secrets`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toEqual({
-			data: [expectDummySecret('foo2'), expectDummySecret('foo1')],
+			data: [expectDummySecret('foo1'), expectDummySecret('foo2')],
 		})
 	})
 

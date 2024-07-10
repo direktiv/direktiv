@@ -47,7 +47,7 @@ describe('Test namespaces get delete list calls', () => {
 			.get(`/api/v2/namespaces`)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toEqual({
-			data: [expectDummyNamespace('foo2'), expectDummyNamespace('foo1')],
+			data: [expectDummyNamespace('foo1'), expectDummyNamespace('foo2')],
 		})
 	})
 
