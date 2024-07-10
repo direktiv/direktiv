@@ -56,7 +56,7 @@ func (s *sqlNamespacesStore) GetAll(ctx context.Context) ([]*datastore.Namespace
 	var namespaces []*datastore.Namespace
 	res := s.db.WithContext(ctx).Raw(`
 							SELECT id, name, created_at, updated_at
-							FROM namespaces ORDER BY name`).
+							FROM namespaces ORDER BY created_at DESC `).
 		Find(&namespaces)
 	if res.Error != nil {
 		return nil, res.Error

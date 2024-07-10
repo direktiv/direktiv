@@ -34,7 +34,7 @@ func (s *sqlEventTopicsStore) GetListeners(ctx context.Context, topic string) ([
 	q := `SELECT 
 	id, namespace_id, namespace,  created_at, updated_at, deleted, received_events, trigger_type, events_lifespan, event_types, trigger_info, metadata, event_context_filters
 	FROM event_listeners E WHERE E.deleted = false and E.id in 
-	(SELECT T.event_listener_id FROM event_topics T WHERE topic= $1 ) ` // TODO: This probably needs a sort order, but I am not convinced created_at is the best choice here. Probably needs to be some kind of alphabetization?
+	(SELECT T.event_listener_id FROM event_topics T WHERE topic= $1 ) ORDER BY created_at DESC `
 
 	res := make([]*gormEventListener, 0)
 	tx := s.db.WithContext(ctx).Raw(q, topic).Scan(&res)

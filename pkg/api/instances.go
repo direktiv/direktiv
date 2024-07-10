@@ -707,7 +707,7 @@ func (e *instController) stream(w http.ResponseWriter, r *http.Request) {
 	for {
 		data, err := e.getOnce(r, id)
 		if err != nil {
-			return // TODO: how are we supposed to report errors in SSE?
+			return // TODO: how are we supposed to report errors in SSE? We could publish a SSE of type "error-message"
 		}
 
 		resp := marshalForAPI(data)

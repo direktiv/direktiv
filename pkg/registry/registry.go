@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"net/url"
+	"sort"
 	"sync"
 
 	"github.com/direktiv/direktiv/pkg/core"
@@ -46,10 +47,14 @@ func (c *kManager) ListRegistries(namespace string) ([]*core.Registry, error) {
 			ID:        s.Name,
 			URL:       u,
 			User:      user,
+			CreatedAt: s.GetCreationTimestamp().Time,
 		})
 	}
 
-	// TODO: we should sort this list
+	// Sort registries by CreatedAt (desc order)
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].CreatedAt.After(result[j].CreatedAt)
+	})
 
 	return result, nil
 }

@@ -132,7 +132,7 @@ func (s *sqlRuntimeVariablesStore) listByFieldValue(ctx context.Context, fieldNa
 								id, namespace, workflow_path, instance_id, 
 								name, length(data) AS size, mime_type, 
 								created_at, updated_at
-							FROM runtime_variables WHERE %s ORDER BY created_at`, aggregateConditions), // TODO: I don't think created_at is a sensible ordering. It should probably be alphabetical.
+							FROM runtime_variables WHERE %s ORDER BY created_at DESC `, aggregateConditions),
 		vals...).Find(&variables)
 	if res.Error != nil {
 		return nil, res.Error
