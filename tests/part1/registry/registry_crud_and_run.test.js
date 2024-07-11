@@ -25,7 +25,7 @@ describe('Test services crud operations', () => {
 				id: 'secret-c163796084d652e67cb0',
 				url: 'docker.io',
 				user: 'me',
-			},)
+			})
 		})
 	})
 
