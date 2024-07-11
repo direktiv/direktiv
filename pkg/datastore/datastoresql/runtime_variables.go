@@ -132,7 +132,7 @@ func (s *sqlRuntimeVariablesStore) listByFieldValue(ctx context.Context, fieldNa
 								id, namespace, workflow_path, instance_id, 
 								name, length(data) AS size, mime_type, 
 								created_at, updated_at
-							FROM runtime_variables WHERE %s ORDER BY created_at`, aggregateConditions),
+							FROM runtime_variables WHERE %s ORDER BY created_at ASC `, aggregateConditions),
 		vals...).Find(&variables)
 	if res.Error != nil {
 		return nil, res.Error

@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"sort"
 	"strings"
+	"time"
 
 	"github.com/direktiv/direktiv/pkg/core"
 	v1 "k8s.io/api/core/v1"
@@ -155,7 +157,8 @@ func (c *knativeClient) listServicePods(id string) (any, error) {
 	}
 
 	type pod struct {
-		ID string `json:"id"`
+		ID        string    `json:"id"`
+		CreatedAt time.Time `json:"created_at"`
 	}
 
 	pods := []*pod{}
@@ -164,9 +167,15 @@ func (c *knativeClient) listServicePods(id string) (any, error) {
 			continue
 		}
 		pods = append(pods, &pod{
-			ID: l.Items[i].Name,
+			ID:        l.Items[i].Name,
+			CreatedAt: l.Items[i].CreationTimestamp.Time,
 		})
 	}
+
+	// Sort by CreatedAt (asc)
+	sort.Slice(pods, func(i, j int) bool {
+		return pods[i].CreatedAt.Before(pods[j].CreatedAt)
+	})
 
 	return pods, nil
 }
