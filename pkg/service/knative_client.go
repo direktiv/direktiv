@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -40,6 +41,10 @@ func (c *knativeClient) streamServiceLogs(_ string, podID string) (io.ReadCloser
 }
 
 func (c *knativeClient) createService(sv *core.ServiceFileData) error {
+	if sv.Image == "" {
+		return errors.New("image field is empty or not set")
+	}
+
 	// Step1: prepare registry secrets
 	var registrySecrets []v1.LocalObjectReference
 	secrets, err := c.k8sCli.CoreV1().Secrets(c.config.KnativeNamespace).
