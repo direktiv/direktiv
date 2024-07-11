@@ -48,6 +48,9 @@ func ParseServiceFile(data []byte) (*ServiceFile, error) {
 	if !strings.HasPrefix(res.DirektivAPI, "service/v1") {
 		return nil, errors.New("invalid service api version")
 	}
+	if res.Image == "" {
+		return nil, errors.New("image field is required in the service file")
+	}
 
 	return res, nil
 }
