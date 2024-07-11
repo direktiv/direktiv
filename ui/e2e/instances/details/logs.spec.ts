@@ -8,6 +8,7 @@ import {
 
 import { createFile } from "e2e/utils/files";
 import { createInstance } from "../utils/index";
+import { error as errorWorkflowTemplate } from "~/pages/namespace/Explorer/Tree/components/modals/CreateNew/Workflow/templates";
 import { faker } from "@faker-js/faker";
 import { mockClipboardAPI } from "e2e/utils/testutils";
 
@@ -329,6 +330,42 @@ test("log entries will be automatically scrolled to the end", async ({
     followButton,
     "The 'Follow Logs' button is not visible when the workflow has completed running"
   ).not.toBeVisible();
+});
+
+test("it renders error details for errors in the logs", async ({ page }) => {
+  /* prepare data */
+  const workflowName = faker.system.commonFileName("yaml");
+
+  await createFile({
+    name: workflowName,
+    namespace,
+    type: "workflow",
+    yaml: errorWorkflowTemplate.data,
+  });
+
+  const instanceId = (
+    await createInstance({
+      namespace,
+      path: workflowName,
+    })
+  ).data.id;
+
+  /* perform test */
+  await page.goto(`/n/${namespace}/instances/${instanceId}`);
+
+  const logsPanel = page.getByTestId("instance-logs-container");
+
+  await expect(logsPanel).toBeVisible();
+
+  await expect(
+    page.getByTestId("instance-header-container").locator("div").first()
+  ).toContainText("failed");
+
+  await expect(
+    page.getByText(
+      "msg: State logic execution failed.error: subject failed its JSONSchema validation"
+    )
+  ).toBeVisible();
 });
 
 test("it renders an error when the api response returns an error", async ({
