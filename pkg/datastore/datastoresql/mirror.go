@@ -213,7 +213,7 @@ func (s sqlMirrorStore) GetProcessesByNamespace(ctx context.Context, namespace s
 	res := s.db.WithContext(ctx).Raw(`
 					SELECT *
 					FROM mirror_processes
-					WHERE namespace=? ORDER BY updated_at ASC `, namespace).
+					WHERE namespace=? ORDER BY created_at ASC `, namespace).
 		Find(&process)
 
 	if res.Error != nil {

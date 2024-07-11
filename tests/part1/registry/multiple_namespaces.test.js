@@ -63,10 +63,10 @@ describe('Test services crud operations', () => {
 	})
 })
 
-function itShouldCreateSecret (it, expect, namespace, url, user, password) {
-	it(`should create a registry ${ url } ${ user } ${ password }`, async () => {
+function itShouldCreateSecret(it, expect, namespace, url, user, password) {
+	it(`should create a registry ${url} ${user} ${password}`, async () => {
 		const res = await request(common.config.getDirektivHost())
-			.post(`/api/v2/namespaces/${ namespace }/registries`)
+			.post(`/api/v2/namespaces/${namespace}/registries`)
 			.send({
 				url,
 				user,
