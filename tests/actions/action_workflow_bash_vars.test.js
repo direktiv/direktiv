@@ -1,9 +1,9 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
+import { basename } from 'path'
 
 import common from '../common'
 import helpers from '../common/helpers'
 import request from '../common/request'
-import { basename } from 'path'
 
 const namespace = basename(__filename)
 const testWorkflow = 'test-workflow-bash.yaml'
@@ -33,45 +33,43 @@ states:
       scope: workflow
 `))
 	it(`should set plain text variable`, async () => {
-		const workflowVarResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${namespace}/variables`)
+		const workflowVarResponse = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/variables`)
 			.send({
 				name: 'myvar',
 				data: btoa('Hello World 55'),
 				mimeType: 'text/plain',
-				workflowPath: "/" + testWorkflow,
+				workflowPath: '/' + testWorkflow,
 			})
 		expect(workflowVarResponse.statusCode).toEqual(200)
 	})
-	it(`read variable via bash action from ${testWorkflow} workflow`, async () => {
+	it(`read variable via bash action from ${ testWorkflow } workflow`, async () => {
 		const res = await request(common.config.getDirektivHost())
-			.post(`/api/v2/namespaces/${namespace}/instances?path=${testWorkflow}&wait=true`)
+			.post(`/api/v2/namespaces/${ namespace }/instances?path=${ testWorkflow }&wait=true`)
 			.send({
 				commands: [
 					{
-						command: "cat myvar"
-					}
-				]
-			});
+						command: 'cat myvar',
+					},
+				],
+			})
 		expect(res.statusCode).toEqual(200)
 
 		expect(res.body.return.python).toMatchObject(
-			[{ "result": "Hello World 55", "success": true }])
+			[ { result: 'Hello World 55', success: true } ])
 	})
-	it(`set new variable via bash action from ${testWorkflow} workflow`, async () => {
+	it(`set new variable via bash action from ${ testWorkflow } workflow`, async () => {
 		const res = await request(common.config.getDirektivHost())
-			.post(`/api/v2/namespaces/${namespace}/instances?path=${testWorkflow}&wait=true`)
+			.post(`/api/v2/namespaces/${ namespace }/instances?path=${ testWorkflow }&wait=true`)
 			.send({
 				commands: [
 					{
 						command: "bash -c 'echo hi > out/workflow/somevar1'",
-					}
-				]
-			});
+					},
+				],
+			})
 		expect(res.statusCode).toEqual(200)
-		const workflowVarResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${namespace}/variables?workflowPath=/${testWorkflow}`)
+		const workflowVarResponse = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespace }/variables?workflowPath=/${ testWorkflow }`)
 		expect(workflowVarResponse.statusCode).toEqual(200)
 		expect(workflowVarResponse.body.data.length).toBe(2)
-
 	})
-
 })

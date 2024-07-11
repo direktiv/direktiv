@@ -33,10 +33,10 @@ describe('Test services crud operations', () => {
 						id: expect.stringMatching(/^secret-/),
 						url: 'a_domain_2.io',
 						user: 'a_name_2',
-					}
-				]
+					},
+				],
 
-			)
+			),
 		)
 	})
 
@@ -57,16 +57,16 @@ describe('Test services crud operations', () => {
 					id: expect.stringMatching(/^secret-/),
 					url: 'b_domain_2.io',
 					user: 'b_name_2',
-				}],
-			)
+				} ],
+			),
 		)
 	})
 })
 
-function itShouldCreateSecret(it, expect, namespace, url, user, password) {
-	it(`should create a registry ${url} ${user} ${password}`, async () => {
+function itShouldCreateSecret (it, expect, namespace, url, user, password) {
+	it(`should create a registry ${ url } ${ user } ${ password }`, async () => {
 		const res = await request(common.config.getDirektivHost())
-			.post(`/api/v2/namespaces/${namespace}/registries`)
+			.post(`/api/v2/namespaces/${ namespace }/registries`)
 			.send({
 				url,
 				user,
