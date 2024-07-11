@@ -363,7 +363,7 @@ test("it renders error details for errors in the logs", async ({ page }) => {
 
   await expect(
     page.getByText(
-      "msg: State logic execution failed.error: subject failed its JSONSchema validation"
+      "Workflow failed with an error.error: 'direktiv.schema.*': email '.email' is not valid"
     )
   ).toBeVisible();
 });
