@@ -131,10 +131,6 @@ func (m *manager) runCycle() []error {
 
 func (m *manager) Run(circuit *core.Circuit) error {
 	cycleTime := m.cfg.GetFunctionsReconcileInterval()
-	cycleFails := 0
-
-	maxSleepDuration := 5 * time.Minute
-
 	for {
 		if circuit.IsDone() {
 			return nil
@@ -146,21 +142,7 @@ func (m *manager) Run(circuit *core.Circuit) error {
 			slog.Error("run cycle", "err", err)
 		}
 
-		if len(errs) > 0 {
-			cycleFails++
-		} else {
-			cycleFails = 0
-		}
-		if cycleFails > 5 {
-			slog.Error("too many cycle fails")
-		}
-
-		sleepDuration := cycleTime * time.Duration(cycleFails+1)
-		if sleepDuration > maxSleepDuration {
-			sleepDuration = maxSleepDuration
-		}
-
-		time.Sleep(sleepDuration)
+		time.Sleep(cycleTime)
 	}
 }
 
