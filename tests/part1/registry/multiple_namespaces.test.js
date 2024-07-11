@@ -20,22 +20,23 @@ describe('Test services crud operations', () => {
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body.data).toEqual(
 			expect.arrayContaining(
+
 				[
-					expect.objectContaining({
-						namespace: 'test_namespace_a',
-						id: expect.stringMatching(/^secret-/),
-						url: 'a_domain_2.io',
-						user: 'a_name_2',
-					}),
-					expect.objectContaining({
+					{
 						namespace: 'test_namespace_a',
 						id: expect.stringMatching(/^secret-/),
 						url: 'a_domain_1.io',
 						user: 'a_name_1',
-					}),
-				]
+					},
+					{
+						namespace: 'test_namespace_a',
+						id: expect.stringMatching(/^secret-/),
+						url: 'a_domain_2.io',
+						user: 'a_name_2',
+					},
+				],
 
-			)
+			),
 		)
 	})
 
@@ -45,19 +46,19 @@ describe('Test services crud operations', () => {
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body.data).toEqual(
 			expect.arrayContaining([
-				expect.objectContaining({
+				{
 					namespace: 'test_namespace_b',
 					id: expect.stringMatching(/^secret-/),
 					url: 'b_domain_1.io',
 					user: 'b_name_1',
-				}),
-				expect.objectContaining({
+				},
+				{
 					namespace: 'test_namespace_b',
 					id: expect.stringMatching(/^secret-/),
 					url: 'b_domain_2.io',
 					user: 'b_name_2',
-				})],
-			)
+				} ],
+			),
 		)
 	})
 })
@@ -73,12 +74,12 @@ function itShouldCreateSecret(it, expect, namespace, url, user, password) {
 			})
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toEqual({
-			data: expect.objectContaining({
+			data: {
 				namespace,
 				id: expect.stringMatching(/^secret-/),
 				url,
 				user,
-			},)
+			},
 		})
 	})
 }
