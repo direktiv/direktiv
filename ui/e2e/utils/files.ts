@@ -1,4 +1,5 @@
-import { CreateFileSchemaType } from "~/api/files/schema";
+import { CreateFileSchema, workflowMimeTypes } from "~/api/files/schema";
+
 import { createFile as apiCreateFile } from "~/api/files/mutate/createFile";
 import { deleteFile as apiDeleteFile } from "~/api/files/mutate/deleteFile";
 import { getFile as apiGetFile } from "~/api/files/query/file";
@@ -7,24 +8,28 @@ import { headers } from "./testutils";
 
 export const createFile = async ({
   name,
-  yaml,
+  content,
   namespace,
   type,
+  mimeType = "application/yaml",
   path = "/",
 }: {
   name: string;
-  yaml: string;
+  content: string;
   namespace: string;
-  type: CreateFileSchemaType["type"];
+  type: "workflow" | "consumer" | "endpoint" | "service";
+  mimeType?: (typeof workflowMimeTypes)[number];
   path?: string;
-}) =>
-  await apiCreateFile({
-    payload: {
-      data: encode(yaml),
-      name,
-      mimeType: "application/yaml",
-      type,
-    },
+}) => {
+  const payload = CreateFileSchema.parse({
+    data: encode(content),
+    name,
+    mimeType,
+    type,
+  });
+
+  return await apiCreateFile({
+    payload,
     urlParams: {
       baseUrl: process.env.PLAYWRIGHT_UI_BASE_URL,
       namespace,
@@ -32,6 +37,7 @@ export const createFile = async ({
     },
     headers,
   });
+};
 
 export const deleteFile = async ({
   namespace,

@@ -25,28 +25,28 @@ test.beforeEach(async ({ page }) => {
     name: simpleWorkflowName,
     namespace,
     type: "workflow",
-    yaml: simpleWorkflowContent,
+    content: simpleWorkflowContent,
   });
 
   await createFile({
     name: delayedWorkflowName,
     namespace,
     type: "workflow",
-    yaml: delayedWorkflowContent,
+    content: delayedWorkflowContent,
   });
 
   await createFile({
     name: fewLogsWorkflowName,
     namespace,
     type: "workflow",
-    yaml: fewLogsWorkflowContent,
+    content: fewLogsWorkflowContent,
   });
 
   await createFile({
     name: manyLogsWorkflowName,
     namespace,
     type: "workflow",
-    yaml: manyLogsWorkflowContent,
+    content: manyLogsWorkflowContent,
   });
 
   await mockClipboardAPI(page);

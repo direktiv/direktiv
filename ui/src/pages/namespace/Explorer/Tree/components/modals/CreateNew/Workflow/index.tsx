@@ -4,6 +4,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/design/Dialog";
+import {
+  FileNameSchema,
+  WorkflowType,
+  workflowTypes,
+} from "~/api/files/schema";
 import { Play, PlusCircle } from "lucide-react";
 import {
   Select,
@@ -13,34 +18,52 @@ import {
   SelectValue,
 } from "~/design/Select";
 import { SubmitHandler, useForm } from "react-hook-form";
+import { addFileExtension, addYamlFileExtension } from "../../../../utils";
+import { useMemo, useState } from "react";
 
 import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
-import { FileNameSchema } from "~/api/files/schema";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { Textarea } from "~/design/TextArea";
-import { addYamlFileExtension } from "../../../../utils";
 import { encode } from "js-base64";
 import { useCreateFile } from "~/api/files/mutate/createFile";
 import { useNamespace } from "~/util/store/namespace";
 import { useNavigate } from "react-router-dom";
 import { useNotifications } from "~/api/notifications/query/get";
 import { usePages } from "~/util/router/pages";
-import { useState } from "react";
 import { useTheme } from "~/util/store/theme";
 import { useTranslation } from "react-i18next";
-import workflowTemplates from "./templates";
+import useTsWorkflowLibs from "~/hooks/useTsWorkflowLibs";
+import { workflowTemplates } from "./templates";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
+const enableTSWorkflows = process.env.VITE?.VITE_ENABLE_TS_WORKFLOWS;
+
+const defaultType: WorkflowType = "yaml";
+
 type FormInput = {
   name: string;
+  selectedTemplateName: string;
+  workflowType: WorkflowType;
   fileContent: string;
 };
 
-const defaultWorkflowTemplate = workflowTemplates[0];
+type EditorLanguage = WorkflowType;
+
+const getFirstTemplateFor = (type: WorkflowType) => {
+  const entry = Object.entries(workflowTemplates[type])[0];
+  if (!entry) {
+    throw Error(`No workflow template exists for ${type}`);
+  }
+  const [name, data] = entry;
+  return {
+    name,
+    data,
+  };
+};
 
 const NewWorkflow = ({
   path,
@@ -59,13 +82,16 @@ const NewWorkflow = ({
 
   const theme = useTheme();
   const [workflowData, setWorkflowData] = useState<string>(
-    defaultWorkflowTemplate.data
+    getFirstTemplateFor(defaultType).data
   );
+  const [editorLanguage, setEditorLanguage] = useState<EditorLanguage>("yaml");
 
   const resolver = zodResolver(
     z.object({
       name: FileNameSchema.transform((enteredName) =>
-        addYamlFileExtension(enteredName)
+        workflowType === "typescript"
+          ? addFileExtension(enteredName, ".workflow.ts")
+          : addYamlFileExtension(enteredName)
       ).refine(
         (nameWithExtension) =>
           !(unallowedNames ?? []).some(
@@ -83,11 +109,14 @@ const NewWorkflow = ({
     register,
     handleSubmit,
     setValue,
+    watch,
     formState: { isDirty, errors, isValid, isSubmitted },
   } = useForm<FormInput>({
     resolver,
     defaultValues: {
-      fileContent: defaultWorkflowTemplate.data,
+      selectedTemplateName: getFirstTemplateFor(defaultType).name,
+      workflowType: defaultType,
+      fileContent: getFirstTemplateFor(defaultType).data,
     },
   });
 
@@ -117,7 +146,7 @@ const NewWorkflow = ({
         name,
         data: encode(fileContent),
         type: "workflow",
-        mimeType: "application/yaml",
+        mimeType: workflowMimeType,
       },
     });
   };
@@ -127,6 +156,54 @@ const NewWorkflow = ({
   const disableSubmit = !isDirty || (isSubmitted && !isValid);
 
   const formId = `new-worfklow-${path}`;
+
+  const workflowType: WorkflowType = watch("workflowType");
+
+  const currentTemplates = useMemo(
+    () =>
+      Object.entries(workflowTemplates[workflowType]).map(([name, data]) => ({
+        name,
+        data,
+      })),
+    [workflowType]
+  );
+
+  const tsLibs = useTsWorkflowLibs(workflowType === "typescript");
+
+  const selectedTemplateName: string = watch("selectedTemplateName");
+
+  const workflowMimeType =
+    workflowType === "typescript"
+      ? "application/x-typescript"
+      : "application/yaml";
+
+  const handleTypeValueChange = (value: WorkflowType) => {
+    setValue("workflowType", value);
+
+    const match = getFirstTemplateFor(value);
+    if (match) {
+      setValue("selectedTemplateName", match.name);
+      setValue("fileContent", match.data);
+      setEditorLanguage(value);
+      setWorkflowData(match.data);
+    }
+  };
+
+  const handleTemplateValueChange = (value: string) => {
+    const match = currentTemplates.find((template) => template.name === value);
+    if (match) {
+      setValue("selectedTemplateName", match.name);
+      setWorkflowData(match.data);
+    }
+  };
+
+  const handleEditorOnChange = (newData: string | undefined) => {
+    if (newData) {
+      setWorkflowData(newData);
+      setValue("fileContent", newData);
+    }
+  };
+
   return (
     <>
       <DialogHeader>
@@ -153,34 +230,58 @@ const NewWorkflow = ({
               {...register("name")}
             />
           </fieldset>
+          {enableTSWorkflows && (
+            <fieldset className="flex items-center gap-5">
+              <label
+                className="w-[100px] text-right text-[14px]"
+                htmlFor="type"
+              >
+                {t("pages.explorer.tree.newWorkflow.type.label")}
+              </label>
+              <Select
+                value={workflowType}
+                onValueChange={handleTypeValueChange}
+              >
+                <SelectTrigger id="type" variant="outline" block>
+                  <SelectValue
+                    placeholder={t(
+                      "pages.explorer.tree.newWorkflow.type.placeholder"
+                    )}
+                    defaultValue={defaultType}
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {workflowTypes.map((type) => (
+                    <SelectItem value={type} key={type}>
+                      {t(`pages.explorer.tree.newWorkflow.type.${type}`)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </fieldset>
+          )}
           <fieldset className="flex items-center gap-5">
             <label
               className="w-[100px] text-right text-[14px]"
               htmlFor="template"
             >
-              {t("pages.explorer.tree.newWorkflow.templateLabel")}
+              {t("pages.explorer.tree.newWorkflow.template.label")}
             </label>
             <Select
-              onValueChange={(value) => {
-                const matchingWf = workflowTemplates.find(
-                  (t) => t.name === value
-                );
-                if (matchingWf) {
-                  setValue("fileContent", matchingWf.data);
-                  setWorkflowData(matchingWf.data);
-                }
-              }}
+              value={selectedTemplateName}
+              onValueChange={handleTemplateValueChange}
             >
               <SelectTrigger id="template" variant="outline" block>
                 <SelectValue
-                  placeholder={defaultWorkflowTemplate.name}
-                  defaultValue={defaultWorkflowTemplate.data}
+                  placeholder={t(
+                    "pages.explorer.tree.newWorkflow.template.placeholder"
+                  )}
                 />
               </SelectTrigger>
               <SelectContent>
-                {workflowTemplates.map((t) => (
-                  <SelectItem value={t.name} key={t.name}>
-                    {t.name}
+                {Object.keys(workflowTemplates[workflowType]).map((name) => (
+                  <SelectItem value={name} key={name}>
+                    {name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -191,13 +292,10 @@ const NewWorkflow = ({
             <Card className="h-96 w-full p-4" noShadow background="weight-1">
               <Editor
                 value={workflowData}
-                onChange={(newData) => {
-                  if (newData) {
-                    setWorkflowData(newData);
-                    setValue("fileContent", newData);
-                  }
-                }}
+                onChange={handleEditorOnChange}
                 theme={theme ?? undefined}
+                language={editorLanguage}
+                tsLibs={tsLibs}
               />
             </Card>
           </fieldset>
