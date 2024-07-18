@@ -240,6 +240,11 @@ test("it will treat the status and finish date of pending instances accordingly"
     page.getByTestId("instance-column-ended-time"),
     `the "endedAt" column should display "still running"`
   ).toContainText("still running");
+
+  await expect(
+    page.getByTestId("instance-column-state"),
+    "the status column should update to complete when the instance is finished"
+  ).toContainText("complete");
 });
 
 test("it provides a proper pagination", async ({ page }) => {

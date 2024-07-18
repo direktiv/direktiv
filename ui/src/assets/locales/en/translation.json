@@ -41,6 +41,7 @@
     "explorer": {
       "tree": {
         "list": {
+          "filter": "Filter files...",
           "oneLevelUp": "..",
           "contextMenu": {
             "title": "Edit",
@@ -499,6 +500,9 @@
             "typeContains": "type contains",
             "eventContains": "content contains"
           }
+        },
+        "selectPageSize": {
+          "selectItem": "Show {{count}} rows"
         }
       },
       "listeners": {

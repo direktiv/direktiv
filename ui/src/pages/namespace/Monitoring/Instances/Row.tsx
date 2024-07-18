@@ -17,6 +17,7 @@ import Badge from "~/design/Badge";
 import { ConditionalWrapper } from "~/util/helpers";
 import { InstanceSchemaType } from "~/api/instances/schema";
 import TooltipCopyBadge from "~/design/TooltipCopyBadge";
+import moment from "moment";
 import { statusToBadgeVariant } from "../../Instances/utils";
 import { useNamespace } from "~/util/store/namespace";
 import { usePages } from "~/util/router/pages";
@@ -27,6 +28,7 @@ export const InstanceRow = ({ instance }: { instance: InstanceSchemaType }) => {
   const pages = usePages();
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const isValidDate = moment(instance.endedAt).isValid();
   const endedAt = useUpdatedAt(instance.endedAt);
   const namespace = useNamespace();
 
@@ -99,14 +101,27 @@ export const InstanceRow = ({ instance }: { instance: InstanceSchemaType }) => {
           </ConditionalWrapper>
         </TableCell>
         <TableCell className="w-0 pr-5">
-          <Tooltip>
-            <TooltipTrigger>
-              {t("pages.instances.list.tableRow.realtiveTime", {
-                relativeTime: endedAt,
-              })}
-            </TooltipTrigger>
-            <TooltipContent>{instance.endedAt}</TooltipContent>
-          </Tooltip>
+          <ConditionalWrapper
+            condition={isValidDate}
+            wrapper={(children) => (
+              <Tooltip>
+                <TooltipTrigger>{children}</TooltipTrigger>
+                <TooltipContent>{instance.endedAt}</TooltipContent>
+              </Tooltip>
+            )}
+          >
+            <>
+              {isValidDate ? (
+                t("pages.instances.list.tableRow.realtiveTime", {
+                  relativeTime: endedAt,
+                })
+              ) : (
+                <span className="italic">
+                  {t("pages.instances.list.tableRow.stillRunning")}
+                </span>
+              )}
+            </>
+          </ConditionalWrapper>
         </TableCell>
       </TableRow>
     </TooltipProvider>
