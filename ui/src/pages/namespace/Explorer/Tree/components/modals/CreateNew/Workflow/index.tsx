@@ -204,6 +204,14 @@ const NewWorkflow = ({
     }
   };
 
+  const namePlaceholder = useMemo(
+    () =>
+      workflowType === "typescript"
+        ? t("pages.explorer.tree.newWorkflow.namePlaceholderTs")
+        : t("pages.explorer.tree.newWorkflow.namePlaceholder"),
+    [t, workflowType]
+  );
+
   return (
     <>
       <DialogHeader>
@@ -226,7 +234,7 @@ const NewWorkflow = ({
             <Input
               data-testid="new-workflow-name"
               id="name"
-              placeholder={t("pages.explorer.tree.newWorkflow.namePlaceholder")}
+              placeholder={namePlaceholder}
               {...register("name")}
             />
           </fieldset>

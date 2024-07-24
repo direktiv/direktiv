@@ -100,6 +100,7 @@
           "title": "Create a new workflow",
           "nameLabel": "Name",
           "namePlaceholder": "workflow-name.yaml",
+          "namePlaceholderTs": "name.workflow.ts",
           "nameAlreadyExists": "The name already exists",
           "cancelBtn": "Cancel",
           "createBtn": "Create",
