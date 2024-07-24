@@ -40,6 +40,9 @@ describe("stripFileExtension", () => {
     expect(subject("name.ts", "foo.ts")).toBe("name");
     expect(subject("name.foo", "foo.ts")).toBe("name");
   });
+  test("it does nothing if the provided extension isn't contained in the file name", () => {
+    expect(subject("name.ts", "notfound")).toBe("name.ts");
+  });
 });
 
 describe("forceFileExtension", () => {
