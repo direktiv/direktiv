@@ -3,7 +3,7 @@ const yamlExtensions = [
   ".yml",
 ] as const;
 
-export const addYamlFileExtension = (name: string) => {
+export const forceYamlFileExtension = (name: string) => {
   const newName = name.trim();
   if (yamlExtensions.some((extension) => newName.endsWith(extension))) {
     return newName;
@@ -38,7 +38,7 @@ export const stripFileExtension = (name: string, extension: string) => {
  * @param extension
  * @returns name with extension
  */
-export const addFileExtension = (name: string, extension: string) => {
+export const forceFileExtension = (name: string, extension: string) => {
   const baseName = stripFileExtension(name.trim(), extension);
   return `${baseName}${extension}`;
 };

@@ -1,33 +1,33 @@
+import { describe, expect, test } from "vitest";
 import {
-  addFileExtension,
-  addYamlFileExtension,
+  forceFileExtension,
+  forceYamlFileExtension,
   stripFileExtension,
 } from "../utils";
-import { describe, expect, test } from "vitest";
 
-describe("addYamlFileExtension", () => {
+describe("forceYamlFileExtension", () => {
   test("it adds .yaml to a string that does not end on .yaml or yml", () => {
-    expect(addYamlFileExtension("somefile")).toBe("somefile.yaml");
+    expect(forceYamlFileExtension("somefile")).toBe("somefile.yaml");
   });
 
   test("it trims the input before adding a yaml", () => {
-    expect(addYamlFileExtension("somefile ")).toBe("somefile.yaml");
-    expect(addYamlFileExtension(" somefile")).toBe("somefile.yaml");
-    expect(addYamlFileExtension(" somefile ")).toBe("somefile.yaml");
+    expect(forceYamlFileExtension("somefile ")).toBe("somefile.yaml");
+    expect(forceYamlFileExtension(" somefile")).toBe("somefile.yaml");
+    expect(forceYamlFileExtension(" somefile ")).toBe("somefile.yaml");
   });
 
   test("it trims the input even when no extension is required", () => {
-    expect(addYamlFileExtension("somefile.yaml ")).toBe("somefile.yaml");
-    expect(addYamlFileExtension(" somefile.yaml")).toBe("somefile.yaml");
-    expect(addYamlFileExtension(" somefile.yaml ")).toBe("somefile.yaml");
+    expect(forceYamlFileExtension("somefile.yaml ")).toBe("somefile.yaml");
+    expect(forceYamlFileExtension(" somefile.yaml")).toBe("somefile.yaml");
+    expect(forceYamlFileExtension(" somefile.yaml ")).toBe("somefile.yaml");
   });
 
   test("it does nothing when the string ends with .yaml", () => {
-    expect(addYamlFileExtension("some-file.yaml")).toBe("some-file.yaml");
+    expect(forceYamlFileExtension("some-file.yaml")).toBe("some-file.yaml");
   });
 
   test("it does nothing when the string ends with .yml", () => {
-    expect(addYamlFileExtension("some-file.yml")).toBe("some-file.yml");
+    expect(forceYamlFileExtension("some-file.yml")).toBe("some-file.yml");
   });
 });
 
@@ -42,8 +42,8 @@ describe("stripFileExtension", () => {
   });
 });
 
-describe("addFileExtension", () => {
-  const subject = addFileExtension;
+describe("forceFileExtension", () => {
+  const subject = forceFileExtension;
   const extension = ".workflow.ts";
 
   test("it adds the extension .workflow.ts", () => {

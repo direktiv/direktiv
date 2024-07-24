@@ -12,7 +12,7 @@ import Button from "~/design/Button";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
 import { TextCursorInput } from "lucide-react";
-import { addYamlFileExtension } from "../../utils";
+import { forceYamlFileExtension } from "../../utils";
 import { useRenameFile } from "~/api/files/mutate/renameFile";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
@@ -41,7 +41,7 @@ const Rename = ({
       z.object({
         name: FileNameSchema.transform((enteredName) => {
           if (file.type !== "directory" && file.type !== "file") {
-            return addYamlFileExtension(enteredName);
+            return forceYamlFileExtension(enteredName);
           }
           return enteredName;
         }).refine(

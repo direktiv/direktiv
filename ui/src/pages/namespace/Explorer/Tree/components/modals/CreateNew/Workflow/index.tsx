@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from "~/design/Select";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { addFileExtension, addYamlFileExtension } from "../../../../utils";
+import { forceFileExtension, forceYamlFileExtension } from "../../../../utils";
 import { useMemo, useState } from "react";
 
 import Button from "~/design/Button";
@@ -90,8 +90,8 @@ const NewWorkflow = ({
     z.object({
       name: FileNameSchema.transform((enteredName) =>
         workflowType === "typescript"
-          ? addFileExtension(enteredName, ".workflow.ts")
-          : addYamlFileExtension(enteredName)
+          ? forceFileExtension(enteredName, ".workflow.ts")
+          : forceYamlFileExtension(enteredName)
       ).refine(
         (nameWithExtension) =>
           !(unallowedNames ?? []).some(
