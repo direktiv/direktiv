@@ -61,7 +61,8 @@ export const useWorkflowServices = (workflow: string) =>
     filter: (apiResponse) => ({
       data: apiResponse.data.filter(
         (service) =>
-          service.type === "workflow-service" &&
+          (service.type === "workflow-service" ||
+            service.type === "typescript-service") &&
           service.filePath === forceLeadingSlash(workflow)
       ),
     }),
@@ -73,6 +74,7 @@ export const useNamespaceAndSystemServices = () =>
       data: apiResponse.data.filter(
         (service) =>
           service.type === "namespace-service" ||
+          service.type === "typescript-service" ||
           service.type === "system-service"
       ),
     }),

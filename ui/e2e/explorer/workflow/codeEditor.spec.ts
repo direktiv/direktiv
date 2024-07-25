@@ -125,7 +125,7 @@ test("it renders response errors when saving an invalid workflow", async ({
     "after saving, it renders an error hint in the editor"
   ).toBeVisible();
   await expect(
-    page.getByText("updated file data has invalid yaml string"),
+    page.getByText("file data has invalid yaml string"),
     "it renders an error popup with the error message"
   ).toBeVisible();
 

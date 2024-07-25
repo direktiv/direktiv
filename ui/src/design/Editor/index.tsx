@@ -1,6 +1,6 @@
 import * as monaco from "monaco-editor";
 
-import { FC, useRef } from "react";
+import { FC, useEffect, useRef } from "react";
 import MonacoEditor, { loader } from "@monaco-editor/react";
 
 import AutoSizer from "react-virtualized-auto-sizer";
@@ -39,6 +39,11 @@ self.MonacoEnvironment = {
 
 loader.config({ monaco });
 
+export type ExtraLibsType = {
+  content: string;
+  filePath?: string;
+}[];
+
 const beforeMount: EditorProps["beforeMount"] = (monaco) => {
   monaco.editor.defineTheme("direktiv-dark", themeDark);
   monaco.editor.defineTheme("direktiv-light", themeLight);
@@ -55,6 +60,7 @@ const Editor: FC<
     onChange?: (value: string | undefined) => void;
     onMount?: EditorProps["onMount"];
     language?: EditorLanguagesType;
+    tsLibs?: ExtraLibsType;
   }
 > = ({
   options,
@@ -63,9 +69,25 @@ const Editor: FC<
   onChange,
   onMount,
   language = "yaml",
+  tsLibs = [],
   ...props
 }) => {
   const monacoRef = useRef<EditorType>();
+
+  // If extraLibs are received, set them when this component is mounted and clean
+  // them up when it is removed. This ensures other editor instances visited later
+  // will not inherit left-over libs (all instances use the same languageService).
+  // If a second instance is created while this one is mounted (e.g. in a modal),
+  // the same libs will be active for both. This isn't a problem currently because
+  // we don't have modals with editor instances that use typescript.
+  useEffect(() => {
+    if (tsLibs.length) {
+      monaco.languages.typescript.typescriptDefaults.setExtraLibs(tsLibs);
+
+      return () =>
+        monaco.languages.typescript.typescriptDefaults.setExtraLibs([]);
+    }
+  }, [tsLibs]);
 
   const handleChange = () => {
     onChange && onChange(monacoRef.current?.getValue());
@@ -76,6 +98,7 @@ const Editor: FC<
   // onMount function on top of this one.
   const commonOnMount: EditorProps["onMount"] = (editor, monaco) => {
     monacoRef.current = editor;
+
     onMount?.(editor, monaco);
     onSave &&
       editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {

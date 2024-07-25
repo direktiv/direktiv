@@ -39,7 +39,7 @@ test("Consumer list shows all available consumers", async ({ page }) => {
     name: "redis-consumer.yaml",
     namespace,
     type: "consumer",
-    yaml: createRedisConsumerFile({
+    content: createRedisConsumerFile({
       username: "userA",
       password: "password",
     }),
@@ -116,7 +116,7 @@ test("Consumer list will update the consumers when refetch button is clicked", a
     name: "consumer.yaml",
     namespace,
     type: "consumer",
-    yaml: createRedisConsumerFile({
+    content: createRedisConsumerFile({
       username: "userOld",
       password: "passwordOld",
     }),

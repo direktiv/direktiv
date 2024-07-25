@@ -28,21 +28,21 @@ test.beforeEach(async () => {
     name: simpleWorkflowName,
     namespace,
     type: "workflow",
-    yaml: simpleWorkflowContent,
+    content: simpleWorkflowContent,
   });
 
   await createFile({
     name: failingWorkflowName,
     namespace,
     type: "workflow",
-    yaml: workflowThatFailsContent,
+    content: workflowThatFailsContent,
   });
 
   await createFile({
     name: longRunningWorkflowName,
     namespace,
     type: "workflow",
-    yaml: workflowWithDelayContent,
+    content: workflowWithDelayContent,
   });
 });
 
@@ -253,7 +253,7 @@ test("it provides a proper pagination", async ({ page }) => {
 
   const parentWorkflow = faker.system.commonFileName("yaml");
 
-  const yaml = parentWorkflowContent({
+  const content = parentWorkflowContent({
     childPath: `/${simpleWorkflowName}`,
     children: totalCount - 1,
   });
@@ -262,7 +262,7 @@ test("it provides a proper pagination", async ({ page }) => {
     name: parentWorkflow,
     namespace,
     type: "workflow",
-    yaml,
+    content,
   });
 
   await createInstance({ namespace, path: parentWorkflow }),
@@ -345,7 +345,7 @@ test("It will display child instances as well", async ({ page }) => {
     name: parentWorkflow,
     namespace,
     type: "workflow",
-    yaml: parentWorkflowContent({
+    content: parentWorkflowContent({
       childPath: `/${simpleWorkflowName}`,
       children: 1,
     }),

@@ -18,12 +18,13 @@ import { useEditorLayout } from "~/util/store/editor";
 import { useNamespace } from "~/util/store/namespace";
 import { useNotifications } from "~/api/notifications/query/get";
 import { useTranslation } from "react-i18next";
+import useTsWorkflowLibs from "~/hooks/useTsWorkflowLibs";
 import { useUpdateFile } from "~/api/files/mutate/updateFile";
 
 const WorkflowEditor: FC<{
   data: NonNullable<FileSchemaType>;
 }> = ({ data }) => {
-  const currentLayout = useEditorLayout();
+  const storedEditorLayout = useEditorLayout();
   const { t } = useTranslation();
   const namespace = useNamespace();
   const [error, setError] = useState<string | undefined>();
@@ -50,6 +51,13 @@ const WorkflowEditor: FC<{
 
   const [editorContent, setEditorContent] = useState(workflowDataFromServer);
 
+  const isTsWorkflow = data.mimeType === "application/x-typescript";
+  const language = isTsWorkflow ? "typescript" : "yaml";
+
+  const tsLibs = useTsWorkflowLibs(isTsWorkflow);
+
+  const localLayout = isTsWorkflow ? "code" : storedEditorLayout;
+
   const onEditorContentUpdate = (newData: string) => {
     setHasUnsavedChanges(workflowDataFromServer !== newData);
     setEditorContent(newData ?? "");
@@ -70,9 +78,9 @@ const WorkflowEditor: FC<{
   return (
     <div className="relative flex grow flex-col space-y-4 p-5">
       <WorkspaceLayout
-        layout={currentLayout}
+        layout={localLayout}
         diagramComponent={
-          <Diagram workflowData={editorContent} layout={currentLayout} />
+          <Diagram workflowData={editorContent} layout={localLayout} />
         }
         editorComponent={
           <CodeEditor
@@ -82,12 +90,14 @@ const WorkflowEditor: FC<{
             error={error}
             hasUnsavedChanges={hasUnsavedChanges}
             onSave={onSave}
+            language={language}
+            tsLibs={tsLibs}
           />
         }
       />
 
       <div className="flex flex-col justify-end gap-4 sm:flex-row sm:items-center">
-        <EditorLayoutSwitcher />
+        {!isTsWorkflow && <EditorLayoutSwitcher />}
         <Dialog>
           <DialogTrigger asChild>
             <Button

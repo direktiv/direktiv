@@ -11,9 +11,9 @@ import Button from "~/design/Button";
 import { FileNameSchema } from "~/api/files/schema";
 import FormErrors from "~/components/FormErrors";
 import Input from "~/design/Input";
-import { addYamlFileExtension } from "../../../../utils";
 import { defaultEndpointFileYaml } from "~/pages/namespace/Explorer/Endpoint/EndpointEditor/utils";
 import { encode } from "js-base64";
+import { forceYamlFileExtension } from "../../../../utils";
 import { useCreateFile } from "~/api/files/mutate/createFile";
 import { useNamespace } from "~/util/store/namespace";
 import { useNavigate } from "react-router-dom";
@@ -44,7 +44,7 @@ const NewRoute = ({
   const resolver = zodResolver(
     z.object({
       name: FileNameSchema.transform((enteredName) =>
-        addYamlFileExtension(enteredName)
+        forceYamlFileExtension(enteredName)
       ).refine(
         (nameWithExtension) =>
           !(unallowedNames ?? []).some(
