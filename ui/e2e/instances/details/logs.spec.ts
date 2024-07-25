@@ -13,9 +13,6 @@ import { faker } from "@faker-js/faker";
 import { mockClipboardAPI } from "e2e/utils/testutils";
 
 let namespace = "";
-const simpleWorkflowName = faker.system.commonFileName("yaml");
-const fewLogsWorkflowName = faker.system.commonFileName("yaml");
-const manyLogsWorkflowName = faker.system.commonFileName("yaml");
 
 test.beforeEach(async ({ page }) => {
   namespace = await createNamespace();
@@ -30,8 +27,9 @@ test.afterEach(async () => {
 test("the logs panel can be resized, it displays a log message from the workflow yaml, one initial and one final log entry", async ({
   page,
 }) => {
+  const workflowName = faker.system.commonFileName("yaml");
   await createFile({
-    name: fewLogsWorkflowName,
+    name: workflowName,
     namespace,
     type: "workflow",
     yaml: fewLogsWorkflowContent,
@@ -40,7 +38,7 @@ test("the logs panel can be resized, it displays a log message from the workflow
   const instanceId = (
     await createInstance({
       namespace,
-      path: fewLogsWorkflowName,
+      path: workflowName,
     })
   ).data.id;
   await page.goto(`/n/${namespace}/instances/${instanceId}`);
@@ -54,7 +52,7 @@ test("the logs panel can be resized, it displays a log message from the workflow
   await expect(
     logsPanel.locator("h3"),
     "The headline of the logs shows the name of the currently running workflow"
-  ).toContainText(`Logs for /${fewLogsWorkflowName}`);
+  ).toContainText(`Logs for /${workflowName}`);
 
   await expect(
     page.getByTestId("instance-header-container").locator("div").first()
@@ -130,8 +128,9 @@ test("the logs panel can be resized, it displays a log message from the workflow
 test("the logs panel can be toggled between verbose and non verbose logs", async ({
   page,
 }) => {
+  const workflowName = faker.system.commonFileName("yaml");
   await createFile({
-    name: simpleWorkflowName,
+    name: workflowName,
     namespace,
     type: "workflow",
     yaml: simpleWorkflowContent,
@@ -140,7 +139,7 @@ test("the logs panel can be toggled between verbose and non verbose logs", async
   const instanceId = (
     await createInstance({
       namespace,
-      path: simpleWorkflowName,
+      path: workflowName,
     })
   ).data.id;
   await page.goto(`/n/${namespace}/instances/${instanceId}`);
@@ -192,8 +191,10 @@ test("the logs panel can be toggled between verbose and non verbose logs", async
 });
 
 test("the logs can be copied", async ({ page }) => {
+  const workflowName = faker.system.commonFileName("yaml");
+
   await createFile({
-    name: simpleWorkflowName,
+    name: workflowName,
     namespace,
     type: "workflow",
     yaml: simpleWorkflowContent,
@@ -202,7 +203,7 @@ test("the logs can be copied", async ({ page }) => {
   const instanceId = (
     await createInstance({
       namespace,
-      path: simpleWorkflowName,
+      path: workflowName,
     })
   ).data.id;
   await page.goto(`/n/${namespace}/instances/${instanceId}`);
@@ -236,8 +237,10 @@ test("the logs can be copied", async ({ page }) => {
 test("log entries will be automatically scrolled to the end", async ({
   page,
 }) => {
+  const workflowName = faker.system.commonFileName("yaml");
+
   await createFile({
-    name: manyLogsWorkflowName,
+    name: workflowName,
     namespace,
     type: "workflow",
     yaml: manyLogsWorkflowContent,
@@ -246,7 +249,7 @@ test("log entries will be automatically scrolled to the end", async ({
   const instanceId = (
     await createInstance({
       namespace,
-      path: manyLogsWorkflowName,
+      path: workflowName,
     })
   ).data.id;
 
@@ -372,10 +375,10 @@ test("it renders an error when the api response returns an error", async ({
   page,
 }) => {
   /* prepare data */
-  const simpleWorkflowName = faker.system.commonFileName("yaml");
+  const workflowName = faker.system.commonFileName("yaml");
 
   await createFile({
-    name: simpleWorkflowName,
+    name: workflowName,
     namespace,
     type: "workflow",
     yaml: simpleWorkflowContent,
@@ -384,7 +387,7 @@ test("it renders an error when the api response returns an error", async ({
   const instanceId = (
     await createInstance({
       namespace,
-      path: simpleWorkflowName,
+      path: workflowName,
     })
   ).data.id;
 
