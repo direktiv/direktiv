@@ -2,7 +2,6 @@ package tsengine
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -11,23 +10,19 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/runtime"
-	"github.com/dop251/goja"
 	"github.com/google/uuid"
 )
 
 type Engine struct {
 	baseFS string
 
-	secrets, functions map[string]string
-	startFn            string
+	// initData InitData
 
-	prg         *goja.Program
-	jsonPayload bool
-
-	// flowInformation *compiler.FlowInformation
 	Status Status
 
 	mtx sync.Mutex
+
+	manager runtime.Manager
 }
 
 type Status struct {
@@ -40,14 +35,13 @@ const (
 	engineFsInstances = "instances"
 )
 
-func New(baseFS string) (*Engine, error) {
-
+func New(baseFS string, manager runtime.Manager) (*Engine, error) {
 	engine := &Engine{
-		secrets: make(map[string]string),
-		baseFS:  baseFS,
+		baseFS: baseFS,
 		Status: Status{
 			Start: time.Now().UnixMilli(),
 		},
+		manager: manager,
 	}
 
 	// prepare filesystem
@@ -63,22 +57,7 @@ func New(baseFS string) (*Engine, error) {
 	return engine, nil
 }
 
-func (e *Engine) Initialize(prg *goja.Program, fn string, secrets map[string]string,
-	functions map[string]string, jsonInput bool) {
-	e.mtx.Lock()
-	defer e.mtx.Unlock()
-
-	e.secrets = secrets
-	e.prg = prg
-	e.jsonPayload = jsonInput
-	e.startFn = fn
-	e.functions = functions
-}
-
 func (e *Engine) RunRequest(req *http.Request, resp http.ResponseWriter) {
-
-	fmt.Println("RUN REQUEST!!!!")
-
 	id := uuid.New()
 
 	atomic.AddInt32(&e.Status.Active, 1)
@@ -92,13 +71,14 @@ func (e *Engine) RunRequest(req *http.Request, resp http.ResponseWriter) {
 	}
 	defer os.RemoveAll(instanceDir)
 
-	rt, err := runtime.New(id, e.prg, &e.secrets, &e.functions, e.baseFS, e.jsonPayload)
+	rt, err := runtime.New(id, e.baseFS, e.manager)
 	if err != nil {
 		writeError(resp, direktivErrorInternal, err.Error())
 		return
 	}
 
-	ret, state, err := rt.Execute(e.startFn, req, resp)
+	ret, state, err := rt.Execute(e.manager.RuntimeData().Definition.State,
+		req, resp)
 	if err != nil {
 		writeError(resp, direktivErrorInternal, err.Error())
 		return

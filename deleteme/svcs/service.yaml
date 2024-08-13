@@ -1,0 +1,4 @@
+direktiv_api: service/v1
+image: localhost:5000/hello
+scale: 1
+size: small

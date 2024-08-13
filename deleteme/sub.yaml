@@ -1,0 +1,28 @@
+direktiv_api: workflow/v1
+description: A simple 'no-op' state that returns 'Hello world!'
+states:
+- id: helloworld
+  type: noop
+  log: startSUB
+  transform:
+    result: Hello world!
+  transition: helloworld1
+
+- id: helloworld1
+  type: delay
+  log: startSUB1
+  duration: PT3S
+  transition: helloworld2
+
+- id: helloworld2
+  type: noop
+  log: startSUB3
+  transform:
+    result: Hello world!
+  transition: helloworld3
+
+- id: helloworld3
+  type: delay
+  log: startSUB4
+  duration: PT3S
+  transition: helloworld4

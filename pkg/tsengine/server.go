@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/direktiv/direktiv/pkg/runtime"
 	"gorm.io/gorm"
 )
 
@@ -34,7 +35,19 @@ func NewServer(cfg Config, db *gorm.DB) (*Server, error) {
 		srv: &http.Server{Addr: ":8080", Handler: mux},
 	}
 
-	engine, err := New(cfg.BaseDir)
+	var manager runtime.Manager
+	// if db != nil {
+	manager, err := NewDirektivManager(cfg.BaseDir, cfg.FlowPath, cfg.Namespace, cfg.SecretKey, db)
+	if err != nil {
+		return nil, err
+	}
+	// } else {
+	// 	fi := NewLocalManager(cfg.BaseDir, cfg.FlowPath)
+	// 	go fi.fileWatcher(cfg.FlowPath)
+	// 	// manager = fi
+	// }
+
+	engine, err := New(cfg.BaseDir, manager)
 	if err != nil {
 		return nil, err
 	}
@@ -47,20 +60,6 @@ func NewServer(cfg Config, db *gorm.DB) (*Server, error) {
 
 	// TODO: cancel
 	// s.mux.HandleFunc("GET /cancel/{id}", s.HandleStatusRequest)
-
-	var initializer Initializer
-	if db != nil {
-		initializer = NewDBInitializer(cfg.BaseDir, cfg.FlowPath, cfg.Namespace, cfg.SecretKey, db, engine)
-	} else {
-		fi := NewFileInitializer(cfg.BaseDir, cfg.FlowPath, engine)
-		go fi.fileWatcher(cfg.FlowPath)
-		initializer = fi
-	}
-
-	err = initializer.Init()
-	if err != nil {
-		return nil, err
-	}
 
 	return s, nil
 }

@@ -1,0 +1,54 @@
+direktiv_api: workflow/v1
+
+
+functions:
+- type: subflow
+  id: request
+  workflow: sub.yaml
+
+states:
+- id: helloworld
+  type: noop
+  log: start
+  transform:
+    result: Hello world!
+  transition: helloworld1
+
+- id: helloworld1
+  type: delay
+  log: start2
+  duration: PT3S
+  transition: a
+
+
+- id: a
+  type: action
+  action:
+    function: request
+  transition: helloworld2
+
+
+- id: helloworld2
+  type: noop
+  log: start3
+  transform:
+    result: Hello world!
+  transition: helloworld3
+
+- id: helloworld3
+  type: delay
+  log: start4
+  duration: PT3S
+  transition: helloworld4
+
+- id: helloworld4
+  type: noop
+  log: start5
+  transform:
+    result: Hello world!
+  transition: helloworld5
+
+- id: helloworld5
+  type: delay
+  log: start100
+  duration: PT3S

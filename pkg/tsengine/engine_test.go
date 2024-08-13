@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"path/filepath"
 	"strings"
 	"testing"
 
@@ -23,27 +22,27 @@ func setupEngineenv(t *testing.T, flow string) *tsengine.Engine {
 		t.FailNow()
 	}
 
-	e, _ := tsengine.New(f)
+	e, _ := tsengine.New(f, nil)
 
-	// create flow
-	f3, _ := os.Create(filepath.Join(f, "flow.ts"))
-	f3.WriteString(flow)
+	// // create flow
+	// f3, _ := os.Create(filepath.Join(f, "flow.ts"))
+	// f3.WriteString(flow)
 
-	// create secrets
-	os.MkdirAll(filepath.Join(f, "secrets"), 0777)
-	s1, _ := os.Create(filepath.Join(f, "secrets", "secret1"))
-	s1.WriteString("mysecret1")
-	s2, _ := os.Create(filepath.Join(f, "secrets", "secret2"))
-	s2.WriteString("mysecret2")
+	// // create secrets
+	// os.MkdirAll(filepath.Join(f, "secrets"), 0777)
+	// s1, _ := os.Create(filepath.Join(f, "secrets", "secret1"))
+	// s1.WriteString("mysecret1")
+	// s2, _ := os.Create(filepath.Join(f, "secrets", "secret2"))
+	// s2.WriteString("mysecret2")
 
-	// create files
-	f1, _ := os.Create(filepath.Join(f, "file1.txt"))
-	f1.WriteString("myfile1")
-	f2, _ := os.Create(filepath.Join(f, "file2"))
-	f2.WriteString("myfile2")
+	// // create files
+	// f1, _ := os.Create(filepath.Join(f, "file1.txt"))
+	// f1.WriteString("myfile1")
+	// f2, _ := os.Create(filepath.Join(f, "file2"))
+	// f2.WriteString("myfile2")
 
-	fi := tsengine.NewFileInitializer(f, f3.Name(), e)
-	fi.Init()
+	// fi := tsengine.NewLocalManager(f, f3.Name(), e)
+	// fi.Init()
 
 	return e
 

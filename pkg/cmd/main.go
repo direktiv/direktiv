@@ -221,6 +221,8 @@ func renderServiceManager(db *database.SQLStore, serviceManager core.ServiceMana
 					Size:  "medium",
 				}
 
+				fmt.Printf("CREATED ID %v\n", svcFile.GetID())
+
 				funConfigList = append(funConfigList, svcFile)
 			}
 		}

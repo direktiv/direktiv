@@ -21,7 +21,7 @@ func (rt *Runtime) setupFunction(in map[string]interface{}) *Function {
 		throwRuntimeError(rt.vm, DirektivFunctionErrorCode, err)
 	}
 
-	fn, ok := (*rt.Functions)[fid]
+	fn, ok := rt.manager.RuntimeData().Functions[fid]
 	if !ok {
 		fmt.Println("NOTHTHERER")
 		throwRuntimeError(rt.vm, DirektivFunctionErrorCode, fmt.Errorf("function does not exist"))
@@ -63,7 +63,7 @@ func (f *Function) Execute(in interface{}) interface{} {
 
 	headers := make(map[string]string)
 	headers[DirektivTempDir] = f.runtime.dirInfo().instanceDir
-	headers[DirektivActionIDHeader] = f.runtime.id
+	headers[DirektivActionIDHeader] = f.runtime.id.String()
 
 	httpArgs := HttpArgs{
 		Method:  "POST",

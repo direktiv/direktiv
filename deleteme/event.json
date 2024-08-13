@@ -1,0 +1,8 @@
+{
+  
+	"type": "dsd",
+	"datacontenttype": "application/json; charset=utf-8",
+  "source": "//cloudaudit.googleapis.com/projects/PROJECT_ID",
+  "specversion": "1.0",
+  "subject": "bigquery.googleapis.com/projects/my-project/jobs/bqjob_r3ac45813612fa2d6_0000017d591922c9_1"
+}

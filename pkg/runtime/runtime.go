@@ -19,16 +19,28 @@ import (
 )
 
 type Runtime struct {
-	program     *goja.Program
-	vm          *goja.Runtime
-	id, baseDir string
-	jsonInput   bool
+	// program     *goja.Program
+	vm      *goja.Runtime
+	id      uuid.UUID
+	baseDir string
+	manager Manager
+	// jsonInput   bool
 
-	Secrets   *map[string]string
-	Functions *map[string]string
+	// Secrets   *map[string]string
+	// Functions *map[string]string
 }
 
+// type RuntimeData struct {
+// 	Program   *goja.Program
+// 	JSONInput bool
+
+// 	Secrets   *map[string]string
+// 	Functions *map[string]string
+// }
+
 func (rt *Runtime) Execute(fn string, req *http.Request, resp http.ResponseWriter) (interface{}, *State, error) {
+
+	rt.manager.CreateInstance(rt.id, "api", rt.manager.RuntimeData().Script)
 
 	defer func() {
 		if r := recover(); r != nil {
@@ -46,7 +58,8 @@ func (rt *Runtime) Execute(fn string, req *http.Request, resp http.ResponseWrite
 	}
 
 	// create file if input is file
-	data, err := prepareInput(req, rt.dirInfo().instanceDir, rt.jsonInput)
+	data, err := prepareInput(req, rt.dirInfo().instanceDir,
+		rt.manager.RuntimeData().Definition.Json)
 	if !ok {
 		return nil, nil, err
 	}
@@ -83,7 +96,7 @@ func (rt *Runtime) Execute(fn string, req *http.Request, resp http.ResponseWrite
 	return retValue, state, nil
 }
 
-func New(id uuid.UUID, prg *goja.Program, secrets, functions *map[string]string, baseDir string, jsonInput bool) (*Runtime, error) {
+func New(id uuid.UUID, baseDir string, manager Manager) (*Runtime, error) {
 
 	slog.Debug("creating new runtime", slog.String("dir", baseDir), slog.String("instance", id.String()))
 
@@ -102,13 +115,11 @@ func New(id uuid.UUID, prg *goja.Program, secrets, functions *map[string]string,
 	vm.Set("trim", commands.Trim)
 
 	rt := &Runtime{
-		program:   prg,
-		vm:        vm,
-		id:        id.String(),
-		baseDir:   baseDir,
-		jsonInput: jsonInput,
-		Secrets:   secrets,
-		Functions: functions,
+		vm:      vm,
+		id:      id,
+		baseDir: baseDir,
+
+		manager: manager,
 	}
 
 	vm.Set("getSecret", rt.getSecret)
@@ -116,12 +127,12 @@ func New(id uuid.UUID, prg *goja.Program, secrets, functions *map[string]string,
 	vm.Set("setupFunction", rt.setupFunction)
 	vm.Set("httpRequest", rt.HttpRequest)
 
-	if rt.program == nil {
+	if rt.manager.RuntimeData().Program == nil {
 		return nil, fmt.Errorf("no program provided")
 	}
 
 	// run this to prepare for
-	_, err := rt.vm.RunProgram(rt.program)
+	_, err := rt.vm.RunProgram(rt.manager.RuntimeData().Program)
 	if err != nil {
 		return nil, err
 	}
@@ -136,7 +147,7 @@ type dirInfo struct {
 func (rt *Runtime) dirInfo() *dirInfo {
 	return &dirInfo{
 		sharedDir:   filepath.Join(rt.baseDir, SharedDir),
-		instanceDir: filepath.Join(rt.baseDir, InstancesDir, rt.id),
+		instanceDir: filepath.Join(rt.baseDir, InstancesDir, rt.id.String()),
 	}
 }
 

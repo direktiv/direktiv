@@ -21,7 +21,7 @@ func (rt *Runtime) getSecret(in map[string]string) *Secret {
 		throwRuntimeError(rt.vm, DirektivSecretsErrorCode, fmt.Errorf("name for secret not provided"))
 	}
 
-	s, ok := (*rt.Secrets)[n]
+	s, ok := rt.manager.RuntimeData().Secrets[n]
 	if !ok {
 		throwRuntimeError(rt.vm, DirektivSecretsErrorCode, fmt.Errorf("secret %s does not exist", n))
 	}
