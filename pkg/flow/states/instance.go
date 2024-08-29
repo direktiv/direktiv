@@ -33,6 +33,7 @@ type Instance interface { //nolint:interfacebloat
 	Iterator() (int, bool)
 	Deadline(ctx context.Context) time.Time
 	LivingChildren(ctx context.Context) []*ChildInfo
+	GetTraceID(ctx context.Context) string
 }
 
 type Child interface {
