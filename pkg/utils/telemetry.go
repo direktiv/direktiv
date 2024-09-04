@@ -95,6 +95,7 @@ func InitTelemetry(cirCtx context.Context, addr string, svcName, imName string) 
 	middlewares.RegisterHTTPMiddleware(TelemetryMiddleware)
 
 	slog.Debug("Telemetry initialization completed.")
+
 	return telemetryWaiter(tp, bsp), nil
 }
 
