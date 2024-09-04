@@ -74,7 +74,7 @@ func InitTelemetry(cirCtx context.Context, addr string, svcName, imName string) 
 	}
 
 	slog.Debug("Setting up SimpleSpanProcessor with no-op exporter.")
-	bsp := sdktrace.NewSimpleSpanProcessor(exp)
+	bsp := sdktrace.NewBatchSpanProcessor(exp)
 	tp := sdktrace.NewTracerProvider(
 		sdktrace.WithSampler(sdktrace.AlwaysSample()), // Always sample spans, generate trace IDs
 		sdktrace.WithResource(res),
