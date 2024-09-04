@@ -36,7 +36,6 @@ type NewMainArgs struct {
 }
 
 func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
-
 	// Create service manager
 	var err error
 	var serviceManager core.ServiceManager

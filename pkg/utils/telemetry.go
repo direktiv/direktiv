@@ -18,7 +18,6 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.10.0"
 	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/metadata"
 )
 
 var TelemetryMiddleware = func(h http.Handler) http.Handler {
@@ -37,42 +36,13 @@ func AddGlobalGRPCServerOption(opt grpc.ServerOption) {
 	globalGRPCServerOptions = append(globalGRPCServerOptions, opt)
 }
 
-type grpcMetadataTMC struct {
-	md *metadata.MD
-}
-
-func (tmc *grpcMetadataTMC) Get(k string) string {
-	array := tmc.md.Get(k)
-	if len(array) == 0 {
-		return ""
-	}
-	return array[0]
-}
-
-func (tmc *grpcMetadataTMC) Keys() []string {
-	keys := tmc.md.Get("oteltmckeys")
-	if keys == nil {
-		keys = make([]string, 0)
-	}
-	return keys
-}
-
-func (tmc *grpcMetadataTMC) Set(k, v string) {
-	newKey := len(tmc.md.Get(k)) == 0
-	tmc.md.Set(k, v)
-	if newKey {
-		tmc.md.Append("oteltmckeys", k)
-	}
-}
-
 var instrumentationName string
 
 func InitTelemetry(cirCtx context.Context, addr string, svcName, imName string) (func(), error) {
 	slog.Debug("Initializing telemetry.", "instrumentationName", imName)
 	instrumentationName = imName
 
-	var prop propagation.TextMapPropagator
-	prop = propagation.TraceContext{}
+	prop := propagation.TraceContext{}
 	otel.SetTracerProvider(otel.GetTracerProvider())
 	otel.SetTextMapPropagator(prop)
 
