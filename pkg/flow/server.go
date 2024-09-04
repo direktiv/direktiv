@@ -66,6 +66,7 @@ func Run(circuit *core.Circuit) error {
 	if err := config.Init(); err != nil {
 		return fmt.Errorf("init config, err: %w", err)
 	}
+	initSLog(config)
 
 	slog.Info("initialize db connection")
 	db, err := initDB(config)
@@ -200,9 +201,9 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 	var err error
 	slog.Debug("starting Flow server")
 	slog.Debug("initializing telemetry.")
-	telEnd, err := utils.InitTelemetry(srv.config.OpenTelemetry, "direktiv/flow", "direktiv")
+	telEnd, err := utils.InitTelemetry(circuit.Context(), srv.config.OpenTelemetry, "direktiv/flow", "direktiv")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Telemetry init failed: %w", err)
 	}
 	slog.Info("Telemetry initialized successfully.")
 
@@ -555,4 +556,21 @@ func (srv *server) runSQLTx(ctx context.Context, fun func(tx *database.SQLStore)
 	}
 
 	return tx.Commit(ctx)
+}
+
+func initSLog(cfg *core.Config) {
+	lvl := new(slog.LevelVar)
+	lvl.Set(slog.LevelInfo)
+
+	logDebug := cfg.LogDebug
+	if logDebug {
+		slog.Info("logging is set to debug")
+		lvl.Set(slog.LevelDebug)
+	}
+
+	slogger := slog.New(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{
+		Level: lvl,
+	}))
+
+	slog.SetDefault(slogger)
 }

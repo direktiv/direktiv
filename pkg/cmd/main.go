@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"os"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/api"
@@ -37,7 +36,6 @@ type NewMainArgs struct {
 }
 
 func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
-	initSLog()
 
 	// Create service manager
 	var err error
@@ -138,22 +136,6 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 	slog.Info("api server v2 started")
 
 	return nil
-}
-
-func initSLog() {
-	lvl := new(slog.LevelVar)
-	lvl.Set(slog.LevelInfo)
-
-	logDebug := os.Getenv("DIREKTIV_DEBUG")
-	if logDebug == "true" {
-		lvl.Set(slog.LevelDebug)
-	}
-
-	slogger := slog.New(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{
-		Level: lvl,
-	}))
-
-	slog.SetDefault(slogger)
 }
 
 func renderServiceManager(db *database.SQLStore, serviceManager core.ServiceManager) {

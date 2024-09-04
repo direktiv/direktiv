@@ -3,13 +3,13 @@ package utils
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/middlewares"
 	"github.com/gorilla/mux"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/codes"
 	otlp "go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	otlpgrpc "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/propagation"
@@ -19,7 +19,6 @@ import (
 	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
-	"google.golang.org/grpc/status"
 )
 
 var TelemetryMiddleware = func(h http.Handler) http.Handler {
@@ -68,7 +67,8 @@ func (tmc *grpcMetadataTMC) Set(k, v string) {
 
 var instrumentationName string
 
-func InitTelemetry(addr string, svcName, imName string) (func(), error) {
+func InitTelemetry(cirCtx context.Context, addr string, svcName, imName string) (func(), error) {
+	slog.Debug("Initializing telemetry.", "instrumentationName", imName)
 	instrumentationName = imName
 
 	var prop propagation.TextMapPropagator
@@ -79,94 +79,42 @@ func InitTelemetry(addr string, svcName, imName string) (func(), error) {
 	if addr == "" {
 		return func() {}, nil
 	}
+	var exp sdktrace.SpanExporter
+	var err error
 
+	slog.Debug("Creating OTLP gRPC client.", "endpoint", addr)
 	driver := otlpgrpc.NewClient(
 		otlpgrpc.WithInsecure(),
 		otlpgrpc.WithEndpoint(addr),
 		otlpgrpc.WithDialOption(grpc.WithBlock()),
 	)
 
-	ctx := context.Background()
-
-	exp, err := otlp.New(ctx, driver)
+	slog.Debug("Setting up OTLP exporter.")
+	exp, err = otlp.New(cirCtx, driver)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create exporter: %w", err)
+		slog.Error("Failed to create OTLP exporter.", "error", err)
+		return nil, fmt.Errorf("failed to create OTLP exporter: %w", err)
 	}
 
-	res, err := resource.New(ctx, resource.WithAttributes(semconv.ServiceNameKey.String(svcName)))
+	slog.Debug("Creating resource with service name.", "serviceName", svcName)
+	res, err := resource.New(cirCtx, resource.WithAttributes(semconv.ServiceNameKey.String(svcName)))
 	if err != nil {
+		slog.Error("Failed to create resource.", "error", err)
 		return nil, fmt.Errorf("failed to create resource: %w", err)
 	}
 
-	bsp := sdktrace.NewBatchSpanProcessor(exp)
+	slog.Debug("Setting up SimpleSpanProcessor with no-op exporter.")
+	bsp := sdktrace.NewSimpleSpanProcessor(exp)
 	tp := sdktrace.NewTracerProvider(
-		sdktrace.WithSampler(sdktrace.AlwaysSample()),
+		sdktrace.WithSampler(sdktrace.AlwaysSample()), // Always sample spans, generate trace IDs
 		sdktrace.WithResource(res),
 		sdktrace.WithSpanProcessor(bsp),
 	)
 
+	slog.Debug("Setting tracer provider.")
 	otel.SetTracerProvider(tp)
 
-	AddGlobalGRPCDialOption(grpc.WithUnaryInterceptor(func(ctx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
-		tp := otel.GetTracerProvider()
-		tr := tp.Tracer(imName)
-
-		requestMetadata, _ := metadata.FromOutgoingContext(ctx)
-		metadataCopy := requestMetadata.Copy()
-
-		name := method
-		var span trace.Span
-		ctx, span = tr.Start(
-			ctx,
-			name,
-			trace.WithSpanKind(trace.SpanKindClient),
-		)
-		defer span.End()
-
-		prop = otel.GetTextMapPropagator()
-		prop.Inject(ctx, &grpcMetadataTMC{&metadataCopy})
-
-		ctx = metadata.NewOutgoingContext(ctx, metadataCopy)
-
-		err := invoker(ctx, method, req, reply, cc, opts...)
-		if err != nil {
-			s, _ := status.FromError(err)
-			span.SetStatus(codes.Code(s.Code()), s.Message())
-		}
-
-		return err
-	}))
-
-	AddGlobalGRPCDialOption(grpc.WithStreamInterceptor(func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
-		tp := otel.GetTracerProvider()
-		tr := tp.Tracer(imName)
-
-		requestMetadata, _ := metadata.FromOutgoingContext(ctx)
-		metadataCopy := requestMetadata.Copy()
-
-		name := method
-		var span trace.Span
-		ctx, span = tr.Start(
-			ctx,
-			name,
-			trace.WithSpanKind(trace.SpanKindClient),
-		)
-		defer span.End()
-
-		prop = otel.GetTextMapPropagator()
-		prop.Inject(ctx, &grpcMetadataTMC{&metadataCopy})
-
-		ctx = metadata.NewOutgoingContext(ctx, metadataCopy)
-
-		cs, err := streamer(ctx, desc, cc, method, opts...)
-		if err != nil {
-			s, _ := status.FromError(err)
-			span.SetStatus(codes.Code(s.Code()), s.Message())
-		}
-
-		return cs, nil
-	}))
-
+	slog.Debug("Registering HTTP telemetry middleware.")
 	TelemetryMiddleware = func(h http.Handler) http.Handler {
 		return &telemetryHandler{
 			imName: imName,
@@ -176,6 +124,7 @@ func InitTelemetry(addr string, svcName, imName string) (func(), error) {
 
 	middlewares.RegisterHTTPMiddleware(TelemetryMiddleware)
 
+	slog.Debug("Telemetry initialization completed.")
 	return telemetryWaiter(tp, bsp), nil
 }
 
