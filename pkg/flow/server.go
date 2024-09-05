@@ -25,6 +25,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/mirror"
 	pubsub2 "github.com/direktiv/direktiv/pkg/pubsub"
 	pubsubSQL "github.com/direktiv/direktiv/pkg/pubsub/sql"
+	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 	"gorm.io/driver/postgres"
@@ -200,10 +201,10 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 	var err error
 	slog.Debug("starting Flow server")
 	slog.Debug("initializing telemetry.")
-	// telEnd, err := utils.InitTelemetry(circuit.Context(), srv.config.OpenTelemetry, "direktiv/flow", "direktiv")
-	// if err != nil {
-	// 	return nil, fmt.Errorf("Telemetry init failed: %w", err)
-	// }
+	telEnd, err := tracing.InitTelemetry(circuit.Context(), srv.config.OpenTelemetry, "direktiv/flow", "direktiv")
+	if err != nil {
+		return nil, fmt.Errorf("Telemetry init failed: %w", err)
+	}
 	slog.Info("Telemetry initialized successfully.")
 
 	srv.gormDB = db
@@ -315,7 +316,7 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 
 	circuit.Start(func() error {
 		<-circuit.Done()
-		// telEnd()
+		telEnd()
 		srv.cleanup(srv.pubsub.Close)
 		srv.cleanup(srv.timers.Close)
 
