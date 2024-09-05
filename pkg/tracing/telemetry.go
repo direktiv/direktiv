@@ -20,22 +20,6 @@ import (
 	"google.golang.org/grpc"
 )
 
-var TelemetryMiddleware = func(h http.Handler) http.Handler {
-	return h
-}
-
-var globalGRPCDialOptions []grpc.DialOption
-
-func AddGlobalGRPCDialOption(opt grpc.DialOption) {
-	globalGRPCDialOptions = append(globalGRPCDialOptions, opt)
-}
-
-var globalGRPCServerOptions []grpc.ServerOption
-
-func AddGlobalGRPCServerOption(opt grpc.ServerOption) {
-	globalGRPCServerOptions = append(globalGRPCServerOptions, opt)
-}
-
 var instrumentationName string
 
 func InitTelemetry(cirCtx context.Context, addr string, svcName, imName string) (func(), error) {
@@ -85,14 +69,12 @@ func InitTelemetry(cirCtx context.Context, addr string, svcName, imName string) 
 	otel.SetTracerProvider(tp)
 
 	slog.Debug("Registering HTTP telemetry middleware.")
-	TelemetryMiddleware = func(h http.Handler) http.Handler {
+	middlewares.RegisterHTTPMiddleware(func(h http.Handler) http.Handler {
 		return &telemetryHandler{
 			imName: imName,
 			next:   h,
 		}
-	}
-
-	middlewares.RegisterHTTPMiddleware(TelemetryMiddleware)
+	})
 
 	slog.Debug("Telemetry initialization completed.")
 
