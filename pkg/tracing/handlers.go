@@ -10,34 +10,30 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-// telemetryHandler is the deprecated mux-based telemetry middleware.
-// Deprecated: Use ChiTelemetryMiddleware for the chi router instead.
-type telemetryHandler struct {
-	imName string
-	next   http.Handler
-}
+func MuxMiddleware(imName string) mux.MiddlewareFunc {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// Extract the trace context from HTTP request headers
+			prop := otel.GetTextMapPropagator()
+			ctx := prop.Extract(r.Context(), &httpCarrier{r: r})
 
-// Deprecated: ServeHTTP for mux. Use ChiTelemetryMiddleware instead.
-func (h *telemetryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	// Extract the trace context from HTTP request headers
-	prop := otel.GetTextMapPropagator()
-	ctx := prop.Extract(r.Context(), &httpCarrier{r: r})
+			tp := otel.GetTracerProvider()
+			tr := tp.Tracer(imName)
 
-	tp := otel.GetTracerProvider()
-	tr := tp.Tracer(h.imName)
+			// Determine the route name from mux (if available)
+			route := "apiv2"
+			if mux.CurrentRoute(r) != nil {
+				route = mux.CurrentRoute(r).GetName()
+			}
 
-	// Determine the route name from mux (if available)
-	route := "apiv2"
-	if mux.CurrentRoute(r) != nil {
-		route = mux.CurrentRoute(r).GetName()
+			// Start a new trace span
+			ctx, span := tr.Start(ctx, route, trace.WithSpanKind(trace.SpanKindServer))
+			defer span.End()
+
+			// Pass the context to the next handler
+			next.ServeHTTP(w, r.WithContext(ctx))
+		})
 	}
-
-	// Start a new trace span
-	ctx, span := tr.Start(ctx, route, trace.WithSpanKind(trace.SpanKindServer))
-	defer span.End()
-
-	// Pass the context to the next handler
-	h.next.ServeHTTP(w, r.WithContext(ctx))
 }
 
 // ChiTelemetryMiddleware is the middleware for chi-based routers to handle tracing.

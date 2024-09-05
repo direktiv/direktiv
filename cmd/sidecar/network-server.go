@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/gorilla/mux"
 )
 
@@ -60,7 +61,7 @@ func (srv *NetworkServer) Start() {
 
 	srv.router = mux.NewRouter()
 
-	//TODO: srv.router.Use(utils.TelemetryMiddleware)
+	srv.router.Use(tracing.MuxMiddleware("direktiv/sidecar"))
 
 	srv.router.HandleFunc("/", srv.functions)
 
