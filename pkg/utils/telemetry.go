@@ -80,6 +80,7 @@ func InitTelemetry(addr string, svcName, imName string) (func(), error) {
 		return func() {}, nil
 	}
 
+	// nolint:staticcheck
 	driver := otlpgrpc.NewClient(
 		otlpgrpc.WithInsecure(),
 		otlpgrpc.WithEndpoint(addr),

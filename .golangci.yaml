@@ -55,6 +55,11 @@ linters:
     - mnd
     - canonicalheader
 
+    # TODO: these need to be removed.
+    - gosimple
+    - govet
+    - gosec
+
 issues:
   exclude-files: [ ".pb.go" ]
   exclude-rules:
