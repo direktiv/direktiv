@@ -1,5 +1,12 @@
 package tracing
 
+import (
+	"context"
+	"log/slog"
+
+	"go.opentelemetry.io/otel/trace"
+)
+
 // import (
 // 	"context"
 // 	"encoding/json"
@@ -249,3 +256,13 @@ package tracing
 
 // 	return ctx, finish
 // }
+
+// Trace adds an event to the current span from the context.
+func Trace(ctx context.Context, msg string) {
+	span := trace.SpanFromContext(ctx)
+	if span.IsRecording() {
+		span.AddEvent(msg)
+	} else {
+		slog.Warn("No active span found in context for tracing event.", "event", msg)
+	}
+}

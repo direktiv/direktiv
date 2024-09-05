@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/middlewares"
-	"github.com/gorilla/mux"
 	"go.opentelemetry.io/otel"
 	otlp "go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	otlpgrpc "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
@@ -16,26 +15,28 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.10.0"
-	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc"
 )
 
 var instrumentationName string
 
+// InitTelemetry initializes tracing with OTLP, resource, and tracer provider setup.
 func InitTelemetry(cirCtx context.Context, addr string, svcName, imName string) (func(), error) {
 	slog.Debug("Initializing telemetry.", "instrumentationName", imName)
 	instrumentationName = imName
 
-	prop := propagation.TraceContext{}
-	otel.SetTracerProvider(otel.GetTracerProvider())
-	otel.SetTextMapPropagator(prop)
+	// Setup context propagation format
+	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(
+		propagation.TraceContext{},
+		propagation.Baggage{},
+	))
 
 	if addr == "" {
+		slog.Warn("No OTLP address provided. Telemetry will not be exported.")
 		return func() {}, nil
 	}
-	var exp sdktrace.SpanExporter
-	var err error
 
+	// Setup OTLP exporter
 	slog.Debug("Creating OTLP gRPC client.", "endpoint", addr)
 	driver := otlpgrpc.NewClient(
 		otlpgrpc.WithInsecure(),
@@ -44,12 +45,13 @@ func InitTelemetry(cirCtx context.Context, addr string, svcName, imName string) 
 	)
 
 	slog.Debug("Setting up OTLP exporter.")
-	exp, err = otlp.New(cirCtx, driver)
+	exp, err := otlp.New(cirCtx, driver)
 	if err != nil {
 		slog.Error("Failed to create OTLP exporter.", "error", err)
 		return nil, fmt.Errorf("failed to create OTLP exporter: %w", err)
 	}
 
+	// Setup resource with service name
 	slog.Debug("Creating resource with service name.", "serviceName", svcName)
 	res, err := resource.New(cirCtx, resource.WithAttributes(semconv.ServiceNameKey.String(svcName)))
 	if err != nil {
@@ -57,10 +59,13 @@ func InitTelemetry(cirCtx context.Context, addr string, svcName, imName string) 
 		return nil, fmt.Errorf("failed to create resource: %w", err)
 	}
 
-	slog.Debug("Setting up SimpleSpanProcessor with no-op exporter.")
+	// Choose a sampler based on an environment variable or default to AlwaysSample
+	sampler := sdktrace.AlwaysSample() // You could configure this based on env variables
+
+	// Set up batch span processor and tracer provider
 	bsp := sdktrace.NewBatchSpanProcessor(exp)
 	tp := sdktrace.NewTracerProvider(
-		sdktrace.WithSampler(sdktrace.AlwaysSample()), // Always sample spans, generate trace IDs
+		sdktrace.WithSampler(sampler),
 		sdktrace.WithResource(res),
 		sdktrace.WithSpanProcessor(bsp),
 	)
@@ -68,12 +73,10 @@ func InitTelemetry(cirCtx context.Context, addr string, svcName, imName string) 
 	slog.Debug("Setting tracer provider.")
 	otel.SetTracerProvider(tp)
 
+	// Register HTTP telemetry middleware
 	slog.Debug("Registering HTTP telemetry middleware.")
 	middlewares.RegisterHTTPMiddleware(func(h http.Handler) http.Handler {
-		return &telemetryHandler{
-			imName: imName,
-			next:   h,
-		}
+		return otelMiddleware(imName, h)
 	})
 
 	slog.Debug("Telemetry initialization completed.")
@@ -81,139 +84,34 @@ func InitTelemetry(cirCtx context.Context, addr string, svcName, imName string) 
 	return telemetryWaiter(tp, bsp), nil
 }
 
-type telemetryHandler struct {
-	imName string
-	next   http.Handler
-}
-
-func (h *telemetryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	prop := otel.GetTextMapPropagator()
-	ctx := prop.Extract(r.Context(), &httpCarrier{
-		r: r,
-	})
-
-	tp := otel.GetTracerProvider()
-	tr := tp.Tracer(h.imName)
-	route := "apiv2"
-
-	if mux.CurrentRoute(r) != nil {
-		route = mux.CurrentRoute(r).GetName()
-	}
-	ctx, span := tr.Start(ctx, route, trace.WithSpanKind(trace.SpanKindServer))
-	defer span.End()
-
-	subr := r.WithContext(ctx)
-
-	h.next.ServeHTTP(w, subr)
-}
-
+// telemetryWaiter ensures all telemetry data is flushed and the provider is shut down gracefully.
 func telemetryWaiter(tp *sdktrace.TracerProvider, bsp sdktrace.SpanProcessor) func() {
 	return func() {
-		t := time.Now().UTC()
-
-		deadline := t.Add(25 * time.Second)
-
-		ctx, cancel := context.WithDeadline(context.Background(), deadline)
+		ctx, cancel := context.WithTimeout(context.Background(), 25*time.Second)
 		defer cancel()
 
-		err := bsp.ForceFlush(ctx)
-		if err != nil {
-			fmt.Printf("Failed to flush telemetry data: %v\n", err)
-			return
+		// Force flush to export all remaining telemetry data
+		slog.Info("Flushing telemetry data before shutdown.")
+		if err := bsp.ForceFlush(ctx); err != nil {
+			slog.Error("Failed to flush telemetry data.", "error", err)
 		}
 
-		err = tp.Shutdown(ctx)
-		if err != nil {
-			fmt.Printf("Failed to shutdown telemetry: %v\n", err)
-			return
+		// Shut down the tracer provider
+		slog.Info("Shutting down telemetry.")
+		if err := tp.Shutdown(ctx); err != nil {
+			slog.Error("Failed to shutdown telemetry.", "error", err)
 		}
 	}
 }
 
-func Trace(ctx context.Context, msg string) {
-	span := trace.SpanFromContext(ctx)
-	if span == nil {
-		return
-	}
+// otelMiddleware injects trace context into the request and starts a new span.
+func otelMiddleware(imName string, next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		tr := otel.Tracer(instrumentationName)
+		ctx, span := tr.Start(r.Context(), fmt.Sprintf("%s-request", imName))
+		defer span.End()
 
-	span.AddEvent(msg)
-}
-
-type httpCarrier struct {
-	r *http.Request
-}
-
-func (c *httpCarrier) Get(key string) string {
-	return c.r.Header.Get(key)
-}
-
-// nolint:canonicalheader
-func (c *httpCarrier) Keys() []string {
-	return c.r.Header.Values("oteltmckeys")
-}
-
-// nolint:canonicalheader
-func (c *httpCarrier) Set(key, val string) {
-	prev := c.Get(key)
-	if prev == "" {
-		c.r.Header.Add("oteltmckeys", key)
-	}
-	c.r.Header.Set(key, val)
-}
-
-func TraceHTTPRequest(ctx context.Context, r *http.Request) (cleanup func()) {
-	tp := otel.GetTracerProvider()
-	tr := tp.Tracer(instrumentationName)
-	ctx, span := tr.Start(ctx, "function", trace.WithSpanKind(trace.SpanKindClient))
-
-	prop := otel.GetTextMapPropagator()
-	prop.Inject(ctx, &httpCarrier{
-		r: r,
+		r = r.WithContext(ctx)
+		next.ServeHTTP(w, r)
 	})
-
-	return func() { span.End() }
-}
-
-func TraceGWHTTPRequest(ctx context.Context, r *http.Request, instrumentationName string) (cleanup func()) {
-	tp := otel.GetTracerProvider()
-	tr := tp.Tracer(instrumentationName)
-	ctx, span := tr.Start(ctx, "gateway", trace.WithSpanKind(trace.SpanKindClient))
-
-	prop := otel.GetTextMapPropagator()
-	prop.Inject(ctx, &httpCarrier{
-		r: r,
-	})
-
-	return func() { span.End() }
-}
-
-type GenericTelemetryCarrier struct {
-	Trace map[string]string
-}
-
-func (c *GenericTelemetryCarrier) Get(key string) string {
-	v := c.Trace[key]
-	return v
-}
-
-func (c *GenericTelemetryCarrier) Keys() []string {
-	var keys []string
-	for k := range c.Trace {
-		keys = append(keys, k)
-	}
-	return keys
-}
-
-func (c *GenericTelemetryCarrier) Set(key, val string) {
-	c.Trace[key] = val
-}
-
-func TransplantTelemetryContextInformation(a, b context.Context) context.Context {
-	carrier := &GenericTelemetryCarrier{
-		Trace: make(map[string]string),
-	}
-	prop := otel.GetTextMapPropagator()
-	prop.Inject(a, carrier)
-	ctx := prop.Extract(b, carrier)
-	return ctx
 }
