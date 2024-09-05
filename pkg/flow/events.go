@@ -45,19 +45,19 @@ func (events *events) handleEvent(ctx context.Context, ns *datastore.Namespace, 
 	e := pkgevents.EventEngine{
 		WorkflowStart: func(ctx context.Context, workflowID uuid.UUID, ev ...*cloudevents.Event) {
 			slog.Debug("starting workflow via CloudEvent.", tracing.GetSlogAttributesWithStatus(loggingCtx, core.LogRunningStatus)...)
-			_, end := traceMessageTrigger(ctx, "wf: "+workflowID.String())
-			defer end()
+			//_, end := traceMessageTrigger(ctx, "wf: "+workflowID.String())
+			//defer end()
 			events.engine.EventsInvoke(ctx, workflowID, ev...) //nolint:contextcheck
 		},
 		WakeInstance: func(instanceID uuid.UUID, ev []*cloudevents.Event) {
 			slog.Debug("invoking instance via cloudevent", tracing.GetSlogAttributesWithStatus(tracing.AddTag(loggingCtx, "instance", instanceID), core.LogRunningStatus)...)
-			_, end := traceMessageTrigger(ctx, "ins: "+instanceID.String())
-			defer end()
+			//_, end := traceMessageTrigger(ctx, "ins: "+instanceID.String())
+			//defer end()
 			events.engine.WakeEventsWaiter(instanceID, ev) //nolint:contextcheck
 		},
 		GetListenersByTopic: func(ctx context.Context, s string) ([]*datastore.EventListener, error) {
-			ctx, end := traceGetListenersByTopic(ctx, s)
-			defer end()
+			//ctx, end := traceGetListenersByTopic(ctx, s)
+			//defer end()
 			res := make([]*datastore.EventListener, 0)
 			err := events.runSQLTx(ctx, func(tx *database.SQLStore) error {
 				r, err := tx.DataStore().EventListenerTopics().GetListeners(ctx, s)
@@ -98,8 +98,8 @@ func (events *events) handleEvent(ctx context.Context, ns *datastore.Namespace, 
 			return nil
 		},
 	}
-	ctx, end := traceProcessingMessage(ctx)
-	defer end()
+	// TODO: ctx, end := traceProcessingMessage(ctx)
+	// defer end()
 
 	e.ProcessEvents(ctx, ns.ID, []event.Event{*ce}, func(template string, args ...interface{}) {
 		slog.Error(fmt.Sprintf(template, args...))
@@ -113,8 +113,8 @@ func (events *events) BroadcastCloudevent(ctx context.Context, ns *datastore.Nam
 	loggingCtx := tracing.WithTrack(ns.WithTags(ctx), tracing.BuildNamespaceTrack(ns.Name))
 	slog.Debug("received CloudEvent", tracing.GetSlogAttributesWithStatus(loggingCtx, core.LogRunningStatus)...)
 
-	ctx, end := traceBrokerMessage(ctx, *event)
-	defer end()
+	// TODO: ctx, end := traceBrokerMessage(ctx, *event)
+	// defer end()
 
 	err := events.addEvent(ctx, event, ns)
 	if err != nil {

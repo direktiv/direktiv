@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/gorilla/mux"
 )
 
@@ -61,7 +60,7 @@ func (srv *NetworkServer) Start() {
 
 	srv.router = mux.NewRouter()
 
-	srv.router.Use(utils.TelemetryMiddleware)
+	//TODO: srv.router.Use(utils.TelemetryMiddleware)
 
 	srv.router.HandleFunc("/", srv.functions)
 

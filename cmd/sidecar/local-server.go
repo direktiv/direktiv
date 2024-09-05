@@ -63,7 +63,7 @@ func (srv *LocalServer) Start() {
 
 	srv.router = mux.NewRouter()
 
-	srv.router.Use(utils.TelemetryMiddleware)
+	// TODO: srv.router.Use(utils.TelemetryMiddleware)
 
 	srv.router.HandleFunc("/log", srv.logHandler)
 	srv.router.HandleFunc("/var", srv.varHandler)

@@ -16,8 +16,7 @@ import (
 )
 
 func (events *events) addEvent(ctx context.Context, eventin *cloudevents.Event, ns *datastore.Namespace) error {
-	ctx, end := traceAddtoEventlog(ctx)
-	defer end()
+	// TODO Log print
 	li := make([]*datastore.Event, 0)
 	if eventin.ID() == "" {
 		eventin.SetID(uuid.NewString())

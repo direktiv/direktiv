@@ -226,19 +226,19 @@ func (engine *engine) handleActionMessage(ctx context.Context, im *instanceMemor
 		return nil
 	}
 
-	traceActionResult(ctx, &pl)
+	//traceActionResult(ctx, &pl)
 
 	return engine.runState(ctx, im, data, nil)
 }
 
 func (engine *engine) handleEventMessage(ctx context.Context, im *instanceMemory, data []byte) *states.Transition {
-	ctx, cleanup, err := traceStateGenericBegin(ctx, im)
-	if err != nil {
-		slog.Error("Failed to begin trace for event message.", tracing.GetSlogAttributesWithError(ctx, err)...)
+	// ctx, cleanup, err := traceStateGenericBegin(ctx, im)
+	// if err != nil {
+	// 	slog.Error("Failed to begin trace for event message.", tracing.GetSlogAttributesWithError(ctx, err)...)
 
-		return nil
-	}
-	defer cleanup()
+	// 	return nil
+	// }
+	// defer cleanup()
 
 	return engine.runState(ctx, im, data, nil)
 }

@@ -273,10 +273,10 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 		panic(err)
 	}
 
-	_, err = traceFullAddWorkflowInstance(ctx, im) // TODO.
-	if err != nil {
-		return nil, fmt.Errorf("failed to traceFullAddWorkflowInstance: %w", err)
-	}
+	// _, err = traceFullAddWorkflowInstance(ctx, im) // TODO.
+	// if err != nil {
+	// 	return nil, fmt.Errorf("failed to traceFullAddWorkflowInstance: %w", err)
+	// }
 	im.AddAttribute("loop-index", fmt.Sprintf("%d", iterator))
 
 	engine.pubsub.NotifyInstances(im.Namespace())
@@ -375,12 +375,12 @@ func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextSt
 		return nil
 	}
 
-	ctx, cleanup, err := traceStateGenericBegin(ctx, im)
-	if err != nil {
-		engine.CrashInstance(ctx, im, err)
-		return nil
-	}
-	defer cleanup()
+	// ctx, cleanup, err := traceStateGenericBegin(ctx, im)
+	// if err != nil {
+	// 	engine.CrashInstance(ctx, im, err)
+	// 	return nil
+	// }
+	// defer cleanup()
 
 	t := time.Now().UTC()
 
@@ -480,14 +480,14 @@ func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata
 
 	var transition *states.Transition
 
-	ctx, cleanup, e2 := traceStateGenericLogicThread(ctx, im)
-	if e2 != nil {
-		err = e2
-		slog.Error("Failed to inject tracing information.", tracing.GetSlogAttributesWithError(instanceTrackCtx, e2)...)
+	// ctx, cleanup, e2 := traceStateGenericLogicThread(ctx, im)
+	// if e2 != nil {
+	// 	err = e2
+	// 	slog.Error("Failed to inject tracing information.", tracing.GetSlogAttributesWithError(instanceTrackCtx, e2)...)
 
-		goto failure
-	}
-	defer cleanup()
+	// 	goto failure
+	// }
+	// defer cleanup()
 
 	if err != nil {
 		slog.Error("Error before state execution.", tracing.GetSlogAttributesWithError(instanceTrackCtx, err)...)
@@ -560,7 +560,7 @@ next:
 
 failure:
 	slog.Error("State execution failed.", tracing.GetSlogAttributesWithError(instanceTrackCtx, err)...)
-	traceStateError(ctx, err)
+	//traceStateError(ctx, err)
 
 	var breaker int
 
@@ -728,7 +728,7 @@ func (engine *engine) subflowInvoke(ctx context.Context, pi *enginerefactor.Pare
 	}
 
 	im.AddAttribute("loop-index", fmt.Sprintf("%d", pi.Branch))
-	traceSubflowInvoke(ctx, args.CalledAs, im.ID().String())
+	// TODO: traceSubflowInvoke(ctx, args.CalledAs, im.ID().String())
 
 	return im, nil
 }

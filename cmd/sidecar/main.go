@@ -1,13 +1,10 @@
 package sidecar
 
 import (
-	"context"
 	"fmt"
 	"log/slog"
 	"os"
 	"time"
-
-	"github.com/direktiv/direktiv/pkg/utils"
 )
 
 const (
@@ -16,21 +13,19 @@ const (
 )
 
 func RunApplication() {
-	var err error
-
 	sl := new(SignalListener)
 	sl.Start()
 
 	fmt.Printf("listener started\n")
 
-	openTelemetryBackend := os.Getenv(direktivOpentelemetry)
+	//TODO: openTelemetryBackend := os.Getenv(direktivOpentelemetry)
 
-	telend, err := utils.InitTelemetry(context.Background(), openTelemetryBackend, "direktiv/sidecar", "direktiv")
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "failed to initialize telemetry: %v\n", err)
-		os.Exit(1)
-	}
-	defer telend()
+	// telend, err := utils.InitTelemetry(context.Background(), openTelemetryBackend, "direktiv/sidecar", "direktiv")
+	// if err != nil {
+	// 	fmt.Fprintf(os.Stderr, "failed to initialize telemetry: %v\n", err)
+	// 	os.Exit(1)
+	// }
+	// defer telend()
 
 	local := new(LocalServer)
 	local.Start()
