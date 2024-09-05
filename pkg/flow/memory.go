@@ -14,7 +14,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/datastore"
 	enginerefactor "github.com/direktiv/direktiv/pkg/engine"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
-	"github.com/direktiv/direktiv/pkg/flow/nohome/recipient"
 	"github.com/direktiv/direktiv/pkg/instancestore"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/google/uuid"
@@ -211,30 +210,6 @@ func (im *instanceMemory) StoreData(key string, val interface{}) error {
 	return nil
 }
 
-func (im *instanceMemory) GetAttributes() map[string]string {
-	tags := im.instance.GetAttributes(recipient.Instance)
-	for k, v := range im.tags {
-		tags[k] = v
-	}
-	if im.logic != nil {
-		tags["state-id"] = im.logic.GetID()
-		tags["state-type"] = im.logic.GetType().String()
-	}
-
-	pi := im.engine.InstanceCaller(im)
-	if pi != nil {
-		a := strings.Split(pi.State, ":")
-		if len(a) >= 1 && a[0] != "" {
-			tags["invoker-workflow"] = a[0]
-		}
-		if len(a) > 1 {
-			tags["invoker-state-id"] = a[1]
-		}
-	}
-
-	return tags
-}
-
 func (im *instanceMemory) WithTags(ctx context.Context) context.Context {
 	if im.instance != nil {
 		ctx = im.instance.WithTags(ctx)
@@ -250,15 +225,6 @@ func (im *instanceMemory) WithTags(ctx context.Context) context.Context {
 	}
 
 	return context.WithValue(ctx, core.LogTagsKey, tags)
-}
-
-func (im *instanceMemory) GetState() string {
-	tags := im.instance.GetAttributes(recipient.Instance)
-	if im.logic != nil {
-		return fmt.Sprintf("%s:%s", tags["workflow"], im.logic.GetID())
-	}
-
-	return tags["workflow"]
 }
 
 var errEngineSync = errors.New("instance appears to be under control of another node")
