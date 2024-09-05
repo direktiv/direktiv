@@ -443,8 +443,7 @@ EOF
         if [ "$WITH_MONITORING" == "true" ]; then
             cat <<EOF >> $DIREKTIV_CONFIG
 flow:
-  logging: json
-
+  debug: true
 opentelemetry:
   # -- opentelemetry address where Direktiv is sending data to
   address: "tempo.default:4317"
@@ -509,7 +508,6 @@ install_monitoring() {
     helm repo add fluent https://fluent.github.io/helm-charts
     helm repo update
     helm upgrade --install tempo grafana/tempo
-    helm upgrade --install fluent-bit fluent/fluent-bit --values scripts/fluentbit.values.yaml
 
     echo "Monitoring components installed successfully."
 }
