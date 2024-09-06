@@ -59,9 +59,7 @@ func (srv *NetworkServer) Start() {
 	waitForUserContainer()
 
 	srv.router = mux.NewRouter()
-
 	srv.router.HandleFunc("/", srv.functions)
-
 	srv.router.HandleFunc("/cancel", srv.cancel)
 
 	port := "8890"

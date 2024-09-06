@@ -62,7 +62,6 @@ func (srv *LocalServer) Start() {
 	srv.requests = make(map[string]*activeRequest)
 
 	srv.router = mux.NewRouter()
-
 	srv.router.HandleFunc("/log", srv.logHandler)
 	srv.router.HandleFunc("/var", srv.varHandler)
 
@@ -125,7 +124,7 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 	srv.requestsLock.Lock()
 	req, ok := srv.requests[actionId]
 	srv.requestsLock.Unlock()
-	ctx, span, err := tracing.InjectTraceParent(r.Context(), req.Workflow+"-action-log-request", req.ActionContext.TraceParent)
+	ctx, span, err := tracing.InjectTraceParent(r.Context(), req.ActionContext.TraceParent, "action-log-request: "+req.Workflow)
 	if err != nil {
 		slog.Error("Failed to populate trace information.", "action_id", actionId, "error", err)
 		http.Error(w, "", http.StatusInternalServerError)

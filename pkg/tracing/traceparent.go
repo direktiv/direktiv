@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -43,6 +44,12 @@ func InjectTraceParent(ctx context.Context, traceParent string, traceName string
 		return newCtx, span, nil
 	}
 
+	attr := getCoreAttributes(ctx)
+	kv := make([]attribute.KeyValue, 0, len(attr)*2)
+	for k, v := range attr {
+		kv = append(kv, attribute.String(k, fmt.Sprint(v)))
+	}
+
 	return newCtx, span, fmt.Errorf("failed to inject traceparent as parent span")
 }
 
@@ -55,6 +62,11 @@ func Span(ctxWithTracing context.Context, name string) (context.Context, func(),
 		return nil, nil, fmt.Errorf("failed to start span for %s", name)
 	}
 
+	attr := getCoreAttributes(ctx)
+	kv := make([]attribute.KeyValue, 0, len(attr)*2)
+	for k, v := range attr {
+		kv = append(kv, attribute.String(k, fmt.Sprint(v)))
+	}
 	endSpan := func() {
 		defer span.End()
 	}

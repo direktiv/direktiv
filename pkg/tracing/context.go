@@ -81,7 +81,7 @@ func getSlogAttributes(ctx context.Context) []interface{} {
 	return result
 }
 
-func getAttributes(ctx context.Context) map[string]interface{} {
+func getCoreAttributes(ctx context.Context) map[string]interface{} {
 	tags, ok := ctx.Value(core.LogTagsKey).(map[string]interface{})
 	if !ok {
 		tags = make(map[string]interface{})
@@ -90,6 +90,12 @@ func getAttributes(ctx context.Context) map[string]interface{} {
 	if trackValue, ok := ctx.Value(core.LogTrackKey).(string); ok {
 		tags["track"] = trackValue
 	}
+
+	return tags
+}
+
+func getAttributes(ctx context.Context) map[string]interface{} {
+	tags := getCoreAttributes(ctx)
 	span := trace.SpanFromContext(ctx)
 	traceID := span.SpanContext().TraceID().String()
 	spanID := span.SpanContext().SpanID().String()

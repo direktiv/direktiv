@@ -93,7 +93,7 @@ func (worker *inboundWorker) doFunctionRequest(ctxWithTracing context.Context, i
 	req.Header.Set(IteratorHeader, fmt.Sprintf("%d", ir.Branch))
 	req.Header.Set("Direktiv-TempDir", worker.functionDir(ir))
 	req.Header.Set("Content-Type", "application/json")
-	_, spanEnd, err := tracing.Span(ctxWithTracing, ir.Workflow+"-function-request")
+	_, spanEnd, err := tracing.Span(ctxWithTracing, "function-request: "+ir.Workflow)
 	if err != nil {
 		return nil, fmt.Errorf("doFunctionRequest failed %w", err)
 	}
@@ -561,7 +561,7 @@ func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
 	rctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	rctx, span, err := tracing.InjectTraceParent(rctx, ir.ActionContext.TraceParent, ir.Workflow+"-action-handle-function")
+	rctx, span, err := tracing.InjectTraceParent(rctx, ir.ActionContext.TraceParent, "action-handle-function: "+ir.Workflow)
 	if err != nil {
 		slog.Error("failed while doFunctionRequest", "error", err)
 		worker.reportSidecarError(req.w, ir, err)

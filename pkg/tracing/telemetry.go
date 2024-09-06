@@ -112,8 +112,6 @@ func telemetryWaiter(tp *sdktrace.TracerProvider, bsp sdktrace.SpanProcessor) fu
 func entrypointOtelMiddleware(imName string, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		slog.Debug("Starting HTTP telemetry middleware.")
-
 		parentSpan := trace.SpanFromContext(ctx)
 		var span trace.Span
 		tracer := otel.Tracer(instrumentationName)
@@ -124,10 +122,8 @@ func entrypointOtelMiddleware(imName string, next http.Handler) http.Handler {
 		apiVersion := version.Version
 
 		if parentSpan.SpanContext().IsValid() {
-			slog.Debug("Create a new child span.")
 			ctx, span = tracer.Start(ctx, fmt.Sprintf("%s-child:%s", imName, route), trace.WithSpanKind(trace.SpanKindInternal))
 		} else {
-			slog.Debug("No valid span exists... creating a new root span")
 			ctx, span = tracer.Start(ctx, fmt.Sprintf("%s-root:%s", imName, route))
 		}
 
@@ -140,7 +136,6 @@ func entrypointOtelMiddleware(imName string, next http.Handler) http.Handler {
 		)
 
 		defer func() {
-			slog.Debug("Ending span")
 			span.End()
 		}()
 		r = r.WithContext(ctx)

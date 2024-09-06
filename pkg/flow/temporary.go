@@ -483,10 +483,11 @@ func (child *knativeHandle) Info() states.ChildInfo {
 
 func (engine *engine) doActionRequest(ctx context.Context, ar *functionRequest, arReq *enginerefactor.ActionRequest) {
 	// Log warning if timeout exceeds max allowed timeout.
+	ctx = tracing.AddNamespace(ctx, arReq.Namespace)
+	ctx = tracing.AddInstanceAttr(ctx, arReq.Instance, "", arReq.Callpath, arReq.Workflow)
+	ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrackViaCallpath(arReq.Callpath))
+
 	if actionTimeout := time.Duration(ar.Timeout) * time.Second; actionTimeout > engine.server.config.GetFunctionsTimeout() {
-		ctx = tracing.AddNamespace(ctx, arReq.Namespace)
-		ctx = tracing.AddInstanceAttr(ctx, arReq.Instance, "", arReq.Callpath, arReq.Workflow)
-		ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrackViaCallpath(arReq.Callpath))
 		slog.Warn(
 			fmt.Sprintf("Warning: Action timeout '%v' is longer than max allowed duariton '%v'", actionTimeout, engine.server.config.GetFunctionsTimeout()),
 			tracing.GetSlogAttributesWithStatus(ctx, core.LogFailedStatus)...,
@@ -510,10 +511,15 @@ func (engine *engine) doActionRequest(ctx context.Context, ar *functionRequest, 
 func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	ar *functionRequest, arReq *enginerefactor.ActionRequest,
 ) {
-	var err error
+	ctx, spanEnd, err := tracing.Span(ctx, "knative-request-start")
+	if err != nil {
+		engine.reportError(ctx, &arReq.ActionContext, err)
 
+		return
+	}
+	defer spanEnd()
+	slog.Debug("starting function request", tracing.GetSlogAttributesWithStatus(ctx, core.LogRunningStatus)...)
 	tr := engine.createTransport()
-
 	addr := ar.Container.Service
 
 	slog.Debug("function request for image", "name", ar.Container.Image, "addr", addr, "image_id", ar.Container.ID)
@@ -522,6 +528,14 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	defer cancel()
 
 	slog.Debug("deadline for request", "deadline", time.Until(arReq.Deadline))
+	traceParent, err := tracing.ExtractTraceParent(ctx)
+	if err != nil {
+		engine.reportError(ctx, &arReq.ActionContext, err)
+
+		return
+	}
+
+	arReq.ActionContext.TraceParent = traceParent // Note: Safe to update to newest in chain, when ensured that ctx is connected to the trace of im!
 	reader, err := enginerefactor.EncodeActionRequest(*arReq)
 	if err != nil {
 		engine.reportError(ctx, &arReq.ActionContext, err)
@@ -611,8 +625,7 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	if resp.StatusCode != http.StatusOK {
 		engine.reportError(ctx, &arReq.ActionContext, fmt.Errorf("action error status: %d", resp.StatusCode))
 	}
-
-	slog.Debug("function request done")
+	slog.Debug("function request done", tracing.GetSlogAttributesWithStatus(ctx, core.LogRunningStatus)...)
 }
 
 func (engine *engine) reportError(ctx context.Context, ar *enginerefactor.ActionContext, err error) {
