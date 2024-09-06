@@ -5,10 +5,14 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/middlewares"
+	"github.com/direktiv/direktiv/pkg/version"
+	"github.com/go-chi/chi/v5"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	otlp "go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	otlpgrpc "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/propagation"
@@ -110,27 +114,73 @@ func entrypointOtelMiddleware(imName string, next http.Handler) http.Handler {
 		ctx := r.Context()
 		slog.Debug("Starting HTTP telemetry middleware.")
 
-		// Retrieve the span from the context, if it exists
 		parentSpan := trace.SpanFromContext(ctx)
 		var span trace.Span
 		tracer := otel.Tracer(instrumentationName)
 
+		route := extractRoute(r)
+		method := r.Method
+		namespace := extractNamespace(r)
+		apiVersion := version.Version
+
 		if parentSpan.SpanContext().IsValid() {
 			slog.Debug("Create a new child span.")
-			ctx, span = tracer.Start(ctx, fmt.Sprintf("%s-request-child", imName), trace.WithSpanKind(trace.SpanKindInternal))
+			ctx, span = tracer.Start(ctx, fmt.Sprintf("%s-child:%s", imName, route), trace.WithSpanKind(trace.SpanKindInternal))
 		} else {
-			slog.Debug("no valid span exists... create a new root span ")
-			ctx, span = tracer.Start(ctx, fmt.Sprintf("%s-request-root", imName))
+			slog.Debug("No valid span exists... creating a new root span")
+			ctx, span = tracer.Start(ctx, fmt.Sprintf("%s-root:%s", imName, route))
 		}
+
+		span.SetAttributes(
+			attribute.String("http.route", route),
+			attribute.String("http.method", method),
+			attribute.String("namespace", namespace),
+			attribute.String("api.version", apiVersion),
+			attribute.String("instance.manager", imName),
+		)
+
 		defer func() {
 			slog.Debug("Ending span")
 			span.End()
 		}()
-
 		r = r.WithContext(ctx)
 
 		slog.Debug("Call the next handler")
-
 		next.ServeHTTP(w, r)
 	})
+}
+
+// extractRoute attempts to extract the API route from the request. If unable, it returns a default value.
+func extractRoute(r *http.Request) string {
+	if chiCtx := chi.RouteContext(r.Context()); chiCtx != nil && chiCtx.RoutePath != "" {
+		return chiCtx.RoutePath
+	}
+
+	return r.URL.Path
+}
+
+// extractNamespace attempts to extract the namespace from chi params or the URL path.
+func extractNamespace(r *http.Request) string {
+	if chiCtx := chi.RouteContext(r.Context()); chiCtx != nil {
+		namespace := chi.URLParam(r, "namespace")
+		if namespace != "" {
+			return namespace
+		}
+	}
+	pathSegments := splitURLPath(r.URL.Path)
+	for i, segment := range pathSegments {
+		if segment == "namespaces" && i+1 < len(pathSegments) {
+			// Return the segment following "namespaces"
+			return pathSegments[i+1]
+		}
+	}
+
+	slog.Warn("Namespace could not be extracted. Defaulting to 'unknown'.")
+
+	return "unknown"
+}
+
+func splitURLPath(path string) []string {
+	cleanPath := strings.Trim(path, "/")
+	return strings.Split(cleanPath, "/")
 }

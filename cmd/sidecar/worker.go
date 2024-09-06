@@ -79,12 +79,12 @@ type outcome struct {
 }
 
 // nolint:canonicalheader
-func (worker *inboundWorker) doFunctionRequest(ctx context.Context, ir *functionRequest) (*outcome, error) {
+func (worker *inboundWorker) doFunctionRequest(ctxWithTracing context.Context, ir *functionRequest) (*outcome, error) {
 	slog.Debug("Forwarding request to service.", "action_id", ir.actionId)
 
 	url := "http://localhost:8080"
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(ir.input))
+	req, err := http.NewRequestWithContext(ctxWithTracing, http.MethodPost, url, bytes.NewReader(ir.input))
 	if err != nil {
 		return nil, err
 	}
@@ -93,9 +93,11 @@ func (worker *inboundWorker) doFunctionRequest(ctx context.Context, ir *function
 	req.Header.Set(IteratorHeader, fmt.Sprintf("%d", ir.Branch))
 	req.Header.Set("Direktiv-TempDir", worker.functionDir(ir))
 	req.Header.Set("Content-Type", "application/json")
-	// TODO: tracing
-	// cleanup := utils.TraceHTTPRequest(ctx, req)
-	// defer cleanup()
+	_, spanEnd, err := tracing.Span(ctxWithTracing, ir.Workflow+"-function-request")
+	if err != nil {
+		return nil, fmt.Errorf("doFunctionRequest failed %w", err)
+	}
+	defer spanEnd()
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -559,7 +561,7 @@ func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
 	rctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	rctx, span, err := tracing.InjectTraceParent(rctx, ir.ActionContext.TraceParent)
+	rctx, span, err := tracing.InjectTraceParent(rctx, ir.ActionContext.TraceParent, ir.Workflow+"-action-handle-function")
 	if err != nil {
 		slog.Error("failed while doFunctionRequest", "error", err)
 		worker.reportSidecarError(req.w, ir, err)

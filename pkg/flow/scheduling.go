@@ -101,7 +101,7 @@ func (engine *engine) executor(ctx context.Context, id uuid.UUID) {
 	}
 
 	slog.Debug("Beginning instance execution loop.", "instance", id)
-	ctx, span, err := tracing.InjectTraceParent(ctx, im.instance.TelemetryInfo.TraceParent)
+	ctx, span, err := tracing.InjectTraceParent(ctx, im.instance.TelemetryInfo.TraceParent, im.instance.Instance.WorkflowPath+"-instance-execution")
 	if err != nil {
 		slog.Error("engine executor failed to inject trace parent", "error", err)
 	}
@@ -225,7 +225,7 @@ func (engine *engine) start(im *instanceMemory) {
 	workflowPath := GetInodePath(im.instance.Instance.WorkflowPath)
 
 	ctx := context.Background()
-	ctx, span, err := tracing.InjectTraceParent(ctx, im.instance.TelemetryInfo.TraceParent)
+	ctx, span, err := tracing.InjectTraceParent(ctx, im.instance.TelemetryInfo.TraceParent, im.instance.Instance.WorkflowPath+"-instance-start")
 	if err != nil {
 		engine.CrashInstance(ctx, im, derrors.NewUncatchableError(ErrCodeInternal, "failed to populate tracing information: %v", err))
 		slog.Error("Failed to populate tracing information. Workflow execution halted.", "namespace", namespace, "workflow", workflowPath, "instance", im.ID(), "error", err)
