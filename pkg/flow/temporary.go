@@ -511,7 +511,7 @@ func (engine *engine) doActionRequest(ctx context.Context, ar *functionRequest, 
 func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	ar *functionRequest, arReq *enginerefactor.ActionRequest,
 ) {
-	ctx, spanEnd, err := tracing.Span(ctx, "knative-request-start")
+	ctx, spanEnd, err := tracing.NewSpan(ctx, "knative-request-start")
 	if err != nil {
 		engine.reportError(ctx, &arReq.ActionContext, err)
 

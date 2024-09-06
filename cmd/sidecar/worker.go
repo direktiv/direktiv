@@ -93,7 +93,7 @@ func (worker *inboundWorker) doFunctionRequest(ctxWithTracing context.Context, i
 	req.Header.Set(IteratorHeader, fmt.Sprintf("%d", ir.Branch))
 	req.Header.Set("Direktiv-TempDir", worker.functionDir(ir))
 	req.Header.Set("Content-Type", "application/json")
-	_, spanEnd, err := tracing.Span(ctxWithTracing, "function-request: "+ir.Workflow)
+	_, spanEnd, err := tracing.NewSpan(ctxWithTracing, "function-request: "+ir.Workflow)
 	if err != nil {
 		return nil, fmt.Errorf("doFunctionRequest failed %w", err)
 	}

@@ -49,13 +49,14 @@ func InjectTraceParent(ctx context.Context, traceParent string, traceName string
 	for k, v := range attr {
 		kv = append(kv, attribute.String(k, fmt.Sprint(v)))
 	}
+	span.SetAttributes(kv...)
 
 	return newCtx, span, fmt.Errorf("failed to inject traceparent as parent span")
 }
 
-// Span starts a new span with the provided name as a child of the context with tracing.
+// NewSpan starts a new span with the provided name as a child of the context with tracing.
 // It returns a function that ends the span when called.
-func Span(ctxWithTracing context.Context, name string) (context.Context, func(), error) {
+func NewSpan(ctxWithTracing context.Context, name string) (context.Context, func(), error) {
 	tracer := otel.GetTracerProvider().Tracer(instrumentationName)
 	ctx, span := tracer.Start(ctxWithTracing, name)
 	if !span.SpanContext().IsValid() {
@@ -70,6 +71,7 @@ func Span(ctxWithTracing context.Context, name string) (context.Context, func(),
 	endSpan := func() {
 		defer span.End()
 	}
+	span.SetAttributes(kv...)
 
 	return ctx, endSpan, nil
 }

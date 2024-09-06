@@ -18,6 +18,21 @@ const (
 	LevelError
 )
 
+func (level LogLevel) String() string {
+	switch level {
+	case LevelDebug:
+		return "DEBUG"
+	case LevelInfo:
+		return "INFO"
+	case LevelWarn:
+		return "WARN"
+	case LevelError:
+		return "ERROR"
+	default:
+		return "DEBUG"
+	}
+}
+
 func AddTag(ctx context.Context, key, value interface{}) context.Context {
 	tags, ok := ctx.Value(core.LogTagsKey).(map[string]interface{})
 	if !ok {
