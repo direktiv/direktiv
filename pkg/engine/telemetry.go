@@ -12,8 +12,7 @@ func (instance *Instance) WithTags(ctx context.Context) context.Context {
 	if !ok {
 		tags = make(map[string]interface{}, 0)
 	}
-	tags["trace"] = instance.TelemetryInfo.TraceID
-	tags["span"] = instance.TelemetryInfo.SpanID
+
 	tags["instance"] = instance.Instance.ID
 	tags["invoker"] = instance.Instance.Invoker
 	callpath := ""

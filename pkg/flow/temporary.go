@@ -401,15 +401,14 @@ func (engine *engine) newIsolateRequest(im *instanceMemory, stateID string, time
 	}
 
 	arCtx := enginerefactor.ActionContext{
-		Trace:     im.instance.TelemetryInfo.TraceID,
-		Span:      im.instance.TelemetryInfo.SpanID,
-		State:     stateID,
-		Branch:    iterator,
-		Namespace: im.Namespace().Name,
-		Workflow:  im.instance.Instance.WorkflowPath,
-		Instance:  im.ID().String(),
-		Callpath:  callpath,
-		Action:    uid.String(),
+		TraceParent: im.instance.TelemetryInfo.TraceParent,
+		State:       stateID,
+		Branch:      iterator,
+		Namespace:   im.Namespace().Name,
+		Workflow:    im.instance.Instance.WorkflowPath,
+		Instance:    im.ID().String(),
+		Callpath:    callpath,
+		Action:      uid.String(),
 	}
 	arReq.ActionContext = arCtx
 
@@ -462,6 +461,7 @@ func (engine *engine) newIsolateRequest(im *instanceMemory, stateID string, time
 		}
 	}
 	arReq.Files = files2
+
 	return ar, &arReq, nil
 }
 
@@ -485,7 +485,6 @@ func (engine *engine) doActionRequest(ctx context.Context, ar *functionRequest, 
 	// Log warning if timeout exceeds max allowed timeout.
 	if actionTimeout := time.Duration(ar.Timeout) * time.Second; actionTimeout > engine.server.config.GetFunctionsTimeout() {
 		ctx = tracing.AddNamespace(ctx, arReq.Namespace)
-		ctx = tracing.AddTraceAttr(ctx, arReq.Trace, arReq.Span)
 		ctx = tracing.AddInstanceAttr(ctx, arReq.Instance, "", arReq.Callpath, arReq.Workflow)
 		ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrackViaCallpath(arReq.Callpath))
 		slog.Warn(
@@ -618,7 +617,6 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 
 func (engine *engine) reportError(ctx context.Context, ar *enginerefactor.ActionContext, err error) {
 	ctx = tracing.AddNamespace(ctx, ar.Namespace)
-	ctx = tracing.AddTraceAttr(ctx, ar.Trace, ar.Span)
 	ctx = tracing.AddInstanceAttr(ctx, ar.Instance, "", ar.Callpath, ar.Workflow)
 	ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrackViaCallpath(ar.Callpath))
 	slog.Error(

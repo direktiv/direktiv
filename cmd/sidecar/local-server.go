@@ -165,10 +165,16 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 		slog.Debug("Log handler received an empty message body.", "action_id", actionId)
 		return
 	}
+	ctx, span, err := tracing.InjectTraceParent(r.Context(), req.ActionContext.TraceParent)
+	if err != nil {
+		slog.Error("Failed to populate trace information.", "action_id", actionId, "error", err)
+		http.Error(w, "", http.StatusInternalServerError)
 
-	ctx := tracing.AddNamespace(r.Context(), req.Namespace)
+		return
+	}
+	defer span.End()
+	ctx = tracing.AddNamespace(ctx, req.Namespace)
 	ctx = tracing.AddInstanceAttr(ctx, req.Instance, "action", req.Callpath, req.Workflow)
-	ctx = tracing.AddTraceAttr(ctx, req.Trace, req.Span)
 	ctx = tracing.AddStateAttr(ctx, req.State)
 	ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrackViaCallpath(req.Callpath))
 

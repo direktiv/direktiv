@@ -15,6 +15,7 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.10.0"
+	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc"
 )
 
@@ -76,7 +77,7 @@ func InitTelemetry(cirCtx context.Context, addr string, svcName, imName string) 
 	// Register HTTP telemetry middleware
 	slog.Debug("Registering HTTP telemetry middleware.")
 	middlewares.RegisterHTTPMiddleware(func(h http.Handler) http.Handler {
-		return otelMiddleware(imName, h)
+		return entrypointOtelMiddleware(imName, h)
 	})
 
 	slog.Debug("Telemetry initialization completed.")
@@ -104,14 +105,33 @@ func telemetryWaiter(tp *sdktrace.TracerProvider, bsp sdktrace.SpanProcessor) fu
 	}
 }
 
-// otelMiddleware injects trace context into the request and starts a new span.
-func otelMiddleware(imName string, next http.Handler) http.Handler {
+// entrypointOtelMiddleware injects trace context into the request and starts a new span.
+func entrypointOtelMiddleware(imName string, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		tr := otel.Tracer(instrumentationName)
-		ctx, span := tr.Start(r.Context(), fmt.Sprintf("%s-request", imName))
-		defer span.End()
+		ctx := r.Context()
+		slog.Debug("Starting HTTP telemetry middleware.")
+
+		// Retrieve the span from the context, if it exists
+		parentSpan := trace.SpanFromContext(ctx)
+		var span trace.Span
+		tracer := otel.Tracer(instrumentationName)
+
+		if parentSpan.SpanContext().IsValid() {
+			slog.Debug("Create a new child span.")
+			ctx, span = tracer.Start(ctx, fmt.Sprintf("%s-request-child", imName), trace.WithSpanKind(trace.SpanKindInternal))
+		} else {
+			slog.Debug("no valid span exists... create a new root span ")
+			ctx, span = tracer.Start(ctx, fmt.Sprintf("%s-request-root", imName))
+		}
+		defer func() {
+			slog.Debug("Ending span")
+			span.End()
+		}()
 
 		r = r.WithContext(ctx)
+
+		slog.Debug("Call the next handler")
+
 		next.ServeHTTP(w, r)
 	})
 }

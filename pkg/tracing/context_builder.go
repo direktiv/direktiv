@@ -69,21 +69,6 @@ func AddStateAttr(ctx context.Context, state string) context.Context {
 	return context.WithValue(ctx, core.LogTagsKey, tags)
 }
 
-func AddTraceAttr(ctx context.Context, traceID, spanID string) context.Context {
-	tags, ok := ctx.Value(core.LogTagsKey).(map[string]interface{})
-	if !ok {
-		tags = make(map[string]interface{}, 0)
-	}
-	if trackValue, ok := ctx.Value(core.LogTrackKey).(string); ok {
-		tags["track"] = trackValue
-	}
-
-	tags["trace"] = traceID
-	tags["span"] = spanID
-
-	return context.WithValue(ctx, core.LogTagsKey, tags)
-}
-
 func getSlogAttributes(ctx context.Context) []interface{} {
 	tags := getAttributes(ctx)
 

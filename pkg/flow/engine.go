@@ -30,7 +30,6 @@ import (
 	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/google/uuid"
 	"github.com/senseyeio/duration"
-	"go.opentelemetry.io/otel/trace"
 )
 
 type engine struct {
@@ -149,6 +148,7 @@ func trim(s string) string {
 	return strings.TrimPrefix(s, "/")
 }
 
+// TODO: MARKER revisit logging & tracing.
 func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*instanceMemory, error) {
 	slog.Debug("Initializing new instance creation.", "namespace", args.Namespace.Name, "workflow", args.CalledAs, "invoker", args.Invoker)
 	file, data, err := engine.mux(ctx, args.Namespace, args.CalledAs)
@@ -199,6 +199,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	if err != nil {
 		panic(err)
 	}
+	//	slog.Error("MYERRROR1", "traceID", args.TelemetryInfo.TraceID, "spanID", args.TelemetryInfo.SpanID)
 
 	liveData := marshalInstanceInputData(args.Input)
 
@@ -282,7 +283,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	engine.pubsub.NotifyInstances(im.Namespace())
 	namespaceTrackCtx := tracing.WithTrack(loggingCtx, tracing.BuildNamespaceTrack(im.instance.Instance.Namespace))
 	slog.Info("Workflow has been triggered", tracing.GetSlogAttributesWithStatus(namespaceTrackCtx, core.LogRunningStatus)...)
-
+	//	slog.Error("MYERRROR2", "traceID", im.instance.TelemetryInfo.TraceID, "spanID", im.instance.TelemetryInfo.SpanID)
 	return im, nil
 }
 
@@ -554,7 +555,8 @@ func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata
 	}
 
 next:
-	slog.Debug("Initiating state logic run.", tracing.GetSlogAttributesWithStatus(instanceTrackCtx, core.LogRunningStatus)...)
+	//	slog.Debug("MYERRROR3 : Initiating state logic run.", "traceID", im.instance.TelemetryInfo.TraceID, "SpanID", im.instance.TelemetryInfo.SpanID)
+	//	slog.Debug("Initiating state logic run.", tracing.GetSlogAttributesWithStatus(instanceTrackCtx, core.LogRunningStatus)...)
 
 	return engine.transitionState(ctx, im, transition)
 
@@ -695,7 +697,7 @@ func (engine *engine) subflowInvoke(ctx context.Context, pi *enginerefactor.Pare
 		Descent: append(instance.DescentInfo.Descent, *pi),
 	}
 
-	span := trace.SpanFromContext(ctx)
+	// TODO: add log line here
 
 	args := &newInstanceArgs{
 		ID: uuid.New(),
@@ -708,8 +710,7 @@ func (engine *engine) subflowInvoke(ctx context.Context, pi *enginerefactor.Pare
 		Invoker:     fmt.Sprintf("instance:%v", pi.ID),
 		DescentInfo: di,
 		TelemetryInfo: &enginerefactor.InstanceTelemetryInfo{
-			TraceID:       span.SpanContext().TraceID().String(),
-			SpanID:        span.SpanContext().SpanID().String(),
+			TraceParent:   instance.TelemetryInfo.TraceParent,
 			NamespaceName: instance.TelemetryInfo.NamespaceName,
 		},
 	}
@@ -877,8 +878,12 @@ func (engine *engine) EventsInvoke(tctx context.Context, workflowID uuid.UUID, e
 		slog.Error("Failed to marshal event data in EventsInvoke.", "error", err)
 		return
 	}
-
-	span := trace.SpanFromContext(tctx)
+	traceParent, err := tracing.ExtractTraceParent(tctx)
+	if err != nil {
+		slog.Error("Failed to extract traceParent in EventsInvoke.", "error", err)
+		return
+	}
+	// TODO: tracing
 
 	args := &newInstanceArgs{
 		ID:        uuid.New(),
@@ -887,8 +892,7 @@ func (engine *engine) EventsInvoke(tctx context.Context, workflowID uuid.UUID, e
 		Input:     input,
 		Invoker:   "cloudevent",
 		TelemetryInfo: &enginerefactor.InstanceTelemetryInfo{
-			TraceID:       span.SpanContext().TraceID().String(),
-			SpanID:        span.SpanContext().SpanID().String(),
+			TraceParent:   traceParent,
 			NamespaceName: ns.Name,
 		},
 	}

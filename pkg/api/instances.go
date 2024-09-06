@@ -80,7 +80,7 @@ func marshalForAPI(data *instancestore.InstanceData) *InstanceData {
 	x, err := engine.ParseInstanceData(data)
 	if err == nil {
 		resp.Flow = x.RuntimeInfo.Flow
-		resp.TraceID = x.TelemetryInfo.TraceID
+		//		resp.TraceID = x.TelemetryInfo.TraceID
 		for i := range x.DescentInfo.Descent {
 			resp.Lineage = append(resp.Lineage, marshalLineage(&x.DescentInfo.Descent[i]))
 		}

@@ -18,8 +18,8 @@ import (
 	"github.com/direktiv/direktiv/pkg/filestore"
 	"github.com/direktiv/direktiv/pkg/flow/pubsub"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/google/uuid"
-	"go.opentelemetry.io/otel/trace"
 )
 
 type muxStart struct {
@@ -163,9 +163,9 @@ func (flow *flow) cronHandler(data []byte) {
 
 		return
 	}
-
-	span := trace.SpanFromContext(ctx)
-
+	traceParent, _ := tracing.ExtractTraceParent(ctx)
+	// TODO error handling
+	// TODO tracing / logging
 	x, _ := json.Marshal([]string{ns.Name, file.Path, t.String()}) //nolint
 	unique := string(x)
 	md5sum := md5.Sum([]byte(unique))
@@ -179,8 +179,7 @@ func (flow *flow) cronHandler(data []byte) {
 		Input:     make([]byte, 0),
 		Invoker:   "cron",
 		TelemetryInfo: &enginerefactor.InstanceTelemetryInfo{
-			TraceID:       span.SpanContext().TraceID().String(),
-			SpanID:        span.SpanContext().SpanID().String(),
+			TraceParent:   traceParent,
 			NamespaceName: ns.Name,
 		},
 		SyncHash: &hash,

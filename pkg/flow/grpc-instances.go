@@ -2,14 +2,15 @@ package flow
 
 import (
 	"context"
+	"fmt"
 	"os"
 
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/datastore"
 	enginerefactor "github.com/direktiv/direktiv/pkg/engine"
 	"github.com/direktiv/direktiv/pkg/instancestore"
+	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/google/uuid"
-	"go.opentelemetry.io/otel/trace"
 )
 
 func (srv *server) getInstance(ctx context.Context, namespace, instanceID string) (*enginerefactor.Instance, error) {
@@ -58,9 +59,14 @@ func (engine *engine) StartWorkflow(ctx context.Context, namespace, path string,
 		return nil, err
 	}
 
-	calledAs := path
+	// TODO tracing
+	// TODO logging
 
-	span := trace.SpanFromContext(ctx)
+	calledAs := path
+	traceParent, err := tracing.ExtractTraceParent(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("StartWorkflow %w", err)
+	}
 
 	if input == nil {
 		input = make([]byte, 0)
@@ -73,8 +79,7 @@ func (engine *engine) StartWorkflow(ctx context.Context, namespace, path string,
 		Input:     input,
 		Invoker:   apiCaller,
 		TelemetryInfo: &enginerefactor.InstanceTelemetryInfo{
-			TraceID:       span.SpanContext().TraceID().String(),
-			SpanID:        span.SpanContext().SpanID().String(),
+			TraceParent:   traceParent,
 			NamespaceName: ns.Name,
 		},
 	}

@@ -13,6 +13,7 @@ import (
 	enginerefactor "github.com/direktiv/direktiv/pkg/engine"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/instancestore"
+	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/google/uuid"
 )
 
@@ -100,7 +101,11 @@ func (engine *engine) executor(ctx context.Context, id uuid.UUID) {
 	}
 
 	slog.Debug("Beginning instance execution loop.", "instance", id)
-
+	ctx, span, err := tracing.InjectTraceParent(ctx, im.instance.TelemetryInfo.TraceParent)
+	if err != nil {
+		slog.Error("engine executor failed to inject trace parent", "error", err)
+	}
+	defer span.End()
 	engine.executorLoop(ctx, im)
 	slog.Debug("Successfully deregistered instance after execution.", "instance", id)
 
@@ -188,16 +193,15 @@ func (engine *engine) WakeInstanceCaller(ctx context.Context, im *instanceMemory
 		msg := &actionResultMessage{
 			InstanceID: caller.ID.String(),
 			ActionContext: enginerefactor.ActionContext{
-				Trace:     im.instance.TelemetryInfo.TraceID,
-				Span:      im.instance.TelemetryInfo.SpanID,
-				State:     caller.State,
-				Branch:    caller.Branch,
-				Callpath:  callpath,
-				Instance:  im.GetInstanceID().String(),
-				Workflow:  im.instance.Instance.WorkflowPath,
-				Namespace: im.instance.Instance.Namespace,
-				Step:      caller.Step,
-				Action:    im.ID().String(),
+				TraceParent: im.instance.TelemetryInfo.TraceParent,
+				State:       caller.State,
+				Branch:      caller.Branch,
+				Callpath:    callpath,
+				Instance:    im.GetInstanceID().String(),
+				Workflow:    im.instance.Instance.WorkflowPath,
+				Namespace:   im.instance.Instance.Namespace,
+				Step:        caller.Step,
+				Action:      im.ID().String(),
 			},
 			Payload: actionResultPayload{
 				ActionID:     im.ID().String(),
@@ -215,12 +219,20 @@ func (engine *engine) WakeInstanceCaller(ctx context.Context, im *instanceMemory
 	}
 }
 
+// TODO: MARKER tracing ROOT use InjectTraceParent.
 func (engine *engine) start(im *instanceMemory) {
 	namespace := im.instance.TelemetryInfo.NamespaceName
 	workflowPath := GetInodePath(im.instance.Instance.WorkflowPath)
 
 	ctx := context.Background()
+	ctx, span, err := tracing.InjectTraceParent(ctx, im.instance.TelemetryInfo.TraceParent)
+	if err != nil {
+		engine.CrashInstance(ctx, im, derrors.NewUncatchableError(ErrCodeInternal, "failed to populate tracing information: %v", err))
+		slog.Error("Failed to populate tracing information. Workflow execution halted.", "namespace", namespace, "workflow", workflowPath, "instance", im.ID(), "error", err)
 
+		return
+	}
+	defer span.End()
 	slog.Debug("Workflow execution initiated.", "namespace", namespace, "workflow", workflowPath, "instance", im.ID())
 
 	workflow, err := im.Model()

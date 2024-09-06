@@ -22,6 +22,7 @@ import (
 
 	enginerefactor "github.com/direktiv/direktiv/pkg/engine"
 	"github.com/direktiv/direktiv/pkg/flow"
+	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/direktiv/direktiv/pkg/utils"
 )
 
@@ -92,7 +93,7 @@ func (worker *inboundWorker) doFunctionRequest(ctx context.Context, ir *function
 	req.Header.Set(IteratorHeader, fmt.Sprintf("%d", ir.Branch))
 	req.Header.Set("Direktiv-TempDir", worker.functionDir(ir))
 	req.Header.Set("Content-Type", "application/json")
-
+	// TODO: tracing
 	// cleanup := utils.TraceHTTPRequest(ctx, req)
 	// defer cleanup()
 
@@ -558,7 +559,13 @@ func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
 	rctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	//rctx = utils.TransplantTelemetryContextInformation(ctx, rctx)
+	rctx, span, err := tracing.InjectTraceParent(rctx, ir.ActionContext.TraceParent)
+	if err != nil {
+		slog.Error("failed while doFunctionRequest", "error", err)
+		worker.reportSidecarError(req.w, ir, err)
+		return
+	}
+	defer span.End()
 
 	worker.srv.registerActiveRequest(ir, rctx, cancel)
 	defer worker.srv.deregisterActiveRequest(ir.actionId)

@@ -16,17 +16,17 @@ func TestInstanceTelemetryInfo_MarshalJSON(t *testing.T) {
 		{
 			name: "Nil Info",
 			info: nil,
-			want: []byte(`{"version":"v1","trace_id":"","span_id":"","call_path":"","NamespaceName":""}`),
+			want: []byte(`{"version":"v2","traceparent":"","call_path":"","namespace_name":""}`),
 		},
 		{
 			name: "Valid Info",
 			info: &InstanceTelemetryInfo{
-				TraceID:       "trace123",
-				SpanID:        "span456",
+				Version:       "v2",
+				TraceParent:   "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01",
 				CallPath:      "/some/path",
 				NamespaceName: "namespace1",
 			},
-			want: []byte(`{"version":"v1","trace_id":"trace123","span_id":"span456","call_path":"/some/path","NamespaceName":"namespace1"}`),
+			want: []byte(`{"version":"v2","traceparent":"00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01","call_path":"/some/path","namespace_name":"namespace1"}`),
 		},
 	}
 
@@ -54,23 +54,21 @@ func TestLoadInstanceTelemetryInfo(t *testing.T) {
 		want  *InstanceTelemetryInfo
 	}{
 		{
-			name:  "Valid v1 Info",
-			input: []byte(`{"version":"v1","trace_id":"trace123","span_id":"span456","call_path":"/some/path","NamespaceName":"namespace1"}`),
+			name:  "Valid v2 Info",
+			input: []byte(`{"version":"v2","traceparent":"00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01","call_path":"/some/path","namespace_name":"namespace1"}`),
 			want: &InstanceTelemetryInfo{
-				Version:       "v1",
-				TraceID:       "trace123",
-				SpanID:        "span456",
+				Version:       "v2",
+				TraceParent:   "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01",
 				CallPath:      "/some/path",
 				NamespaceName: "namespace1",
 			},
 		},
 		{
-			name:  "Valid v1 empty Info",
-			input: []byte(`{"version":"v1","trace_id":"","span_id":"","call_path":"","NamespaceName":""}`),
+			name:  "Valid v2 empty Info",
+			input: []byte(`{"version":"v2","traceparent":"","call_path":"","namespace_name":""}`),
 			want: &InstanceTelemetryInfo{
-				Version:       "v1",
-				TraceID:       "",
-				SpanID:        "",
+				Version:       "v2",
+				TraceParent:   "",
 				CallPath:      "",
 				NamespaceName: "",
 			},

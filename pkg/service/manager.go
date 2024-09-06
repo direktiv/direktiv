@@ -93,7 +93,7 @@ func (m *manager) runCycle() []error {
 		target[i] = v
 	}
 
-	// slog.Debug("services reconcile", "src", len(src), "target", len(target))
+	slog.Debug("services reconcile", "src", len(src), "target", len(target))
 
 	result := reconcile.Calculate(src, target)
 

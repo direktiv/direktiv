@@ -2,7 +2,6 @@ package instancestoresql_test
 
 import (
 	"context"
-	"encoding/json"
 	"reflect"
 	"testing"
 
@@ -24,14 +23,13 @@ func Test_NewSQLInstanceStore(t *testing.T) {
 	store := instancestoresql.NewSQLInstanceStore(db)
 
 	telemetryInfo := &engine.InstanceTelemetryInfo{
-		Version:       "v1",
-		TraceID:       "trace123",
-		SpanID:        "span456",
+		Version:       "v2",
+		TraceParent:   "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01",
 		CallPath:      "/some/path",
 		NamespaceName: "namespace1",
 	}
 
-	telemetryInfoBytes, err := json.Marshal(telemetryInfo)
+	telemetryInfoBytes, err := telemetryInfo.MarshalJSON()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -43,45 +41,6 @@ func Test_NewSQLInstanceStore(t *testing.T) {
 		Server:         server,
 		Invoker:        "api",
 		WorkflowPath:   "someRandomWfPath",
-		Definition:     []byte{},
-		DescentInfo:    []byte{},
-		TelemetryInfo:  telemetryInfoBytes,
-		RuntimeInfo:    []byte{},
-		ChildrenInfo:   []byte{},
-		Input:          []byte{},
-		LiveData:       []byte{},
-	})
-	if err != nil {
-		t.Error(err)
-	}
-
-	_, err = store.CreateInstanceData(context.Background(), &instancestore.CreateInstanceDataArgs{
-		ID:             uuid.New(),
-		NamespaceID:    ns,
-		RootInstanceID: uuid.New(),
-		Server:         server,
-		Invoker:        "api",
-		WorkflowPath:   "someRandomWfPathPlus",
-		Definition:     []byte{},
-		DescentInfo:    []byte{},
-		TelemetryInfo:  telemetryInfoBytes,
-		RuntimeInfo:    []byte{},
-		ChildrenInfo:   []byte{},
-		Input:          []byte{},
-		LiveData:       []byte{},
-	})
-	if err != nil {
-		t.Error(err)
-	}
-
-	// Additional instance for testing
-	_, err = store.CreateInstanceData(context.Background(), &instancestore.CreateInstanceDataArgs{
-		ID:             uuid.New(),
-		NamespaceID:    ns,
-		RootInstanceID: uuid.New(),
-		Server:         server,
-		Invoker:        "api",
-		WorkflowPath:   "-someRandomWfPath",
 		Definition:     []byte{},
 		DescentInfo:    []byte{},
 		TelemetryInfo:  telemetryInfoBytes,
@@ -118,12 +77,11 @@ func Test_NewSQLInstanceStore(t *testing.T) {
 	}
 
 	if len(res.Results) > 0 {
-		var storedTelemetry engine.InstanceTelemetryInfo
-		err := json.Unmarshal(res.Results[0].TelemetryInfo, &storedTelemetry)
+		storedTelemetry, err := engine.LoadInstanceTelemetryInfo(res.Results[0].TelemetryInfo)
 		if err != nil {
 			t.Errorf("failed to unmarshal telemetry info: %v", err)
 		}
-		if !reflect.DeepEqual(storedTelemetry, *telemetryInfo) {
+		if !reflect.DeepEqual(storedTelemetry, telemetryInfo) {
 			t.Errorf("telemetry info mismatch: got %+v, want %+v", storedTelemetry, telemetryInfo)
 		}
 	}
