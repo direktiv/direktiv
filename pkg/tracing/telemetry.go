@@ -60,8 +60,7 @@ func InitTelemetry(cirCtx context.Context, addr string, svcName, imName string) 
 		return nil, fmt.Errorf("failed to create resource: %w", err)
 	}
 
-	// Choose a sampler based on an environment variable or default to AlwaysSample
-	sampler := sdktrace.AlwaysSample() // You could configure this based on env variables
+	sampler := sdktrace.AlwaysSample()
 
 	// Set up batch span processor and tracer provider
 	bsp := sdktrace.NewBatchSpanProcessor(exp)

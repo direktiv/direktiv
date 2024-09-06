@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/gorilla/mux"
 )
 
@@ -60,8 +59,6 @@ func (srv *NetworkServer) Start() {
 	waitForUserContainer()
 
 	srv.router = mux.NewRouter()
-
-	srv.router.Use(tracing.MuxMiddleware("direktiv/sidecar"))
 
 	srv.router.HandleFunc("/", srv.functions)
 

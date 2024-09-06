@@ -63,8 +63,6 @@ func (srv *LocalServer) Start() {
 
 	srv.router = mux.NewRouter()
 
-	srv.router.Use(tracing.MuxMiddleware("direktiv/sidecar"))
-
 	srv.router.HandleFunc("/log", srv.logHandler)
 	srv.router.HandleFunc("/var", srv.varHandler)
 
