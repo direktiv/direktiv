@@ -196,6 +196,11 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	}
 
 	args.TelemetryInfo.NamespaceName = args.Namespace.Name
+	traceParent, err := tracing.ExtractTraceParent(loggingCtx)
+	if err != nil {
+		slog.Warn("NewInstance telemetry failed", "error", err)
+	}
+	args.TelemetryInfo.TraceParent = traceParent
 	telemetryInfo, err := args.TelemetryInfo.MarshalJSON()
 	if err != nil {
 		panic(err)

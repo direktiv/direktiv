@@ -84,18 +84,6 @@ func AddStateAttr(ctx context.Context, state string) context.Context {
 	return context.WithValue(ctx, core.LogTagsKey, tags)
 }
 
-func getSlogAttributes(ctx context.Context) []interface{} {
-	tags := getAttributes(ctx)
-
-	// Convert map back to a slice of key-value pairs
-	var result []interface{}
-	for k, v := range tags {
-		result = append(result, k, v)
-	}
-
-	return result
-}
-
 func getCoreAttributes(ctx context.Context) map[string]interface{} {
 	tags, ok := ctx.Value(core.LogTagsKey).(map[string]interface{})
 	if !ok {
@@ -122,7 +110,7 @@ func getAttributes(ctx context.Context) map[string]interface{} {
 	return tags
 }
 
-func GetLogEntryWithStatus(ctx context.Context, level LogLevel, msg string, status core.LogStatus) map[string]interface{} {
+func GetRawLogEntryWithStatus(ctx context.Context, level LogLevel, msg string, status core.LogStatus) map[string]interface{} {
 	tags := getAttributes(ctx)
 	tags["status"] = status
 	tags["level"] = level
@@ -130,30 +118,6 @@ func GetLogEntryWithStatus(ctx context.Context, level LogLevel, msg string, stat
 
 	return tags
 }
-
-func GetLogEntryWithError(ctx context.Context, msg string, err error) map[string]interface{} {
-	tags := getAttributes(ctx)
-	tags["error"] = err
-	tags["status"] = "error"
-	tags["level"] = LevelError
-
-	return tags
-}
-
-// func GetSlogAttributesWithStatus(ctx context.Context, status core.LogStatus) []interface{} {
-// 	tags := getSlogAttributes(ctx)
-// 	tags = append(tags, "status", status)
-
-// 	return tags
-// }
-
-// func GetSlogAttributesWithError(ctx context.Context, err error) []interface{} {
-// 	tags := getSlogAttributes(ctx)
-// 	tags = append(tags, "error", err)
-// 	tags = append(tags, "status", "error")
-
-// 	return tags
-// }
 
 func WithTrack(ctx context.Context, track string) context.Context {
 	return context.WithValue(ctx, core.LogTrackKey, track)

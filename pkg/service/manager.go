@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"log/slog"
@@ -279,13 +280,13 @@ func (m *manager) Rebuild(namespace string, serviceID string) error {
 
 func (m *manager) setServiceDefaults(sv *core.ServiceFileData) {
 	// empty size string defaults to medium
-	nsLogger := tracing.NewNamespaceLogger(sv.Namespace)
+	ctx := tracing.AddNamespace(context.Background(), sv.Namespace)
 	if sv.Size == "" {
-		nsLogger.Warn("empty service size, defaulting to medium", "service_file", sv.FilePath)
+		slog.WarnContext(ctx, "empty service size, defaulting to medium", "service_file", sv.FilePath)
 		sv.Size = "medium"
 	}
 	if sv.Scale > m.cfg.KnativeMaxScale {
-		nsLogger.Warn("service_scale is bigger than allowed max_scale, defaulting to max_scale",
+		slog.WarnContext(ctx, "service_scale is bigger than allowed max_scale, defaulting to max_scale",
 			"service_scale", sv.Scale,
 			"max_scale", m.cfg.KnativeMaxScale,
 			"service_file", sv.FilePath)

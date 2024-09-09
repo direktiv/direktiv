@@ -525,7 +525,7 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	rctx, cancel := context.WithDeadline(context.Background(), arReq.Deadline)
 	defer cancel()
 
-	slog.DebugContext(ctx, "deadline for request", "deadline", time.Until(arReq.Deadline))
+	slog.DebugContext(ctx, fmt.Sprintf("deadline for request is %s", time.Until(arReq.Deadline)), "deadline", time.Until(arReq.Deadline))
 	traceParent, err := tracing.ExtractTraceParent(ctx)
 	if err != nil {
 		engine.reportError(ctx, &arReq.ActionContext, err)
