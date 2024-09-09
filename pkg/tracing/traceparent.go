@@ -41,6 +41,13 @@ func InjectTraceParent(ctx context.Context, traceParent string, traceName string
 	// Start a new span with this context, making it the parent span
 	newCtx, span := tracer.Start(newCtx, traceName)
 	if span.SpanContext().IsValid() {
+		attr := getCoreAttributes(ctx)
+		kv := make([]attribute.KeyValue, 0, len(attr)*2)
+		for k, v := range attr {
+			kv = append(kv, attribute.String(k, fmt.Sprint(v)))
+		}
+		span.SetAttributes(kv...)
+
 		return newCtx, span, nil
 	}
 

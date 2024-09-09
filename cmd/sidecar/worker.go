@@ -79,12 +79,18 @@ type outcome struct {
 }
 
 // nolint:canonicalheader
-func (worker *inboundWorker) doFunctionRequest(ctxWithTracing context.Context, ir *functionRequest) (*outcome, error) {
-	slog.Debug("Forwarding request to service.", "action_id", ir.actionId)
+func (worker *inboundWorker) doFunctionRequest(ctx context.Context, ir *functionRequest) (*outcome, error) {
+	ctx, spanEnd, err := tracing.NewSpan(ctx, "execting function request: "+ir.actionId+", workflow: "+ir.Workflow)
+	if err != nil {
+		return nil, fmt.Errorf("doFunctionRequest failed %w", err)
+	}
+	defer spanEnd()
+
+	slog.DebugContext(ctx, "Forwarding request to service.", "action-id", ir.actionId)
 
 	url := "http://localhost:8080"
 
-	req, err := http.NewRequestWithContext(ctxWithTracing, http.MethodPost, url, bytes.NewReader(ir.input))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(ir.input))
 	if err != nil {
 		return nil, err
 	}
@@ -93,11 +99,6 @@ func (worker *inboundWorker) doFunctionRequest(ctxWithTracing context.Context, i
 	req.Header.Set(IteratorHeader, fmt.Sprintf("%d", ir.Branch))
 	req.Header.Set("Direktiv-TempDir", worker.functionDir(ir))
 	req.Header.Set("Content-Type", "application/json")
-	_, spanEnd, err := tracing.NewSpan(ctxWithTracing, "function-request: "+ir.Workflow)
-	if err != nil {
-		return nil, fmt.Errorf("doFunctionRequest failed %w", err)
-	}
-	defer spanEnd()
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -560,8 +561,11 @@ func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
 	// NOTE: rctx exists because we don't want to immediately cancel the function request if our context is cancelled
 	rctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-
-	rctx, span, err := tracing.InjectTraceParent(rctx, ir.ActionContext.TraceParent, "action-handle-function: "+ir.Workflow)
+	rctx = tracing.AddNamespace(rctx, ir.Namespace)
+	rctx = tracing.AddStateAttr(rctx, ir.State)
+	rctx = tracing.AddInstanceAttr(rctx, ir.Instance, "flow", ir.Callpath, ir.Workflow)
+	rctx = tracing.AddTag(rctx, "action-id", ir.actionId)
+	rctx, span, err := tracing.InjectTraceParent(rctx, ir.ActionContext.TraceParent, "action registered for execution: "+ir.actionId+", workflow: "+ir.Workflow)
 	if err != nil {
 		slog.Error("failed while doFunctionRequest", "error", err)
 		worker.reportSidecarError(req.w, ir, err)

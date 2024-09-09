@@ -180,6 +180,8 @@ func (logic *actionLogic) scheduleAction(ctx context.Context, attempt int) error
 		return err
 	}
 
+	logic.Log(ctx, log.Info, "function %s returned (%s).", logic.label(), child.ID)
+
 	return nil
 }
 

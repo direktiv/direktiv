@@ -112,11 +112,12 @@ func getCoreAttributes(ctx context.Context) map[string]interface{} {
 func getAttributes(ctx context.Context) map[string]interface{} {
 	tags := getCoreAttributes(ctx)
 	span := trace.SpanFromContext(ctx)
-	traceID := span.SpanContext().TraceID().String()
-	spanID := span.SpanContext().SpanID().String()
-
-	tags["trace"] = traceID
-	tags["span"] = spanID
+	if span.SpanContext().TraceID().IsValid() {
+		traceID := span.SpanContext().TraceID().String()
+		spanID := span.SpanContext().SpanID().String()
+		tags["trace"] = traceID
+		tags["span"] = spanID
+	}
 
 	return tags
 }
@@ -139,20 +140,20 @@ func GetLogEntryWithError(ctx context.Context, msg string, err error) map[string
 	return tags
 }
 
-func GetSlogAttributesWithStatus(ctx context.Context, status core.LogStatus) []interface{} {
-	tags := getSlogAttributes(ctx)
-	tags = append(tags, "status", status)
+// func GetSlogAttributesWithStatus(ctx context.Context, status core.LogStatus) []interface{} {
+// 	tags := getSlogAttributes(ctx)
+// 	tags = append(tags, "status", status)
 
-	return tags
-}
+// 	return tags
+// }
 
-func GetSlogAttributesWithError(ctx context.Context, err error) []interface{} {
-	tags := getSlogAttributes(ctx)
-	tags = append(tags, "error", err)
-	tags = append(tags, "status", "error")
+// func GetSlogAttributesWithError(ctx context.Context, err error) []interface{} {
+// 	tags := getSlogAttributes(ctx)
+// 	tags = append(tags, "error", err)
+// 	tags = append(tags, "status", "error")
 
-	return tags
-}
+// 	return tags
+// }
 
 func WithTrack(ctx context.Context, track string) context.Context {
 	return context.WithValue(ctx, core.LogTrackKey, track)

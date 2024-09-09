@@ -132,16 +132,15 @@ func (im *instanceMemory) ListenForEvents(ctx context.Context, events []*model.C
 
 func (im *instanceMemory) Log(ctx context.Context, level log.Level, a string, x ...interface{}) {
 	ctx = im.WithTags(ctx)
-	slog.With(tracing.GetSlogAttributesWithStatus(ctx, core.LogRunningStatus)...)
 	switch level {
 	case log.Info:
-		slog.Info(fmt.Sprintf(a, x...))
+		slog.InfoContext(ctx, fmt.Sprintf(a, x...))
 	case log.Debug:
-		slog.Debug(fmt.Sprintf(a, x...))
+		slog.DebugContext(ctx, fmt.Sprintf(a, x...))
 	case log.Error:
-		slog.Error(fmt.Sprintf(a, x...))
+		slog.ErrorContext(ctx, fmt.Sprintf(a, x...))
 	case log.Panic:
-		slog.Error(fmt.Sprintf("Panic: "+a, x...))
+		slog.ErrorContext(ctx, fmt.Sprintf("Panic: "+a, x...))
 	}
 }
 
@@ -488,9 +487,8 @@ func (engine *engine) doActionRequest(ctx context.Context, ar *functionRequest, 
 	ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrackViaCallpath(arReq.Callpath))
 
 	if actionTimeout := time.Duration(ar.Timeout) * time.Second; actionTimeout > engine.server.config.GetFunctionsTimeout() {
-		slog.Warn(
+		slog.WarnContext(ctx,
 			fmt.Sprintf("Warning: Action timeout '%v' is longer than max allowed duariton '%v'", actionTimeout, engine.server.config.GetFunctionsTimeout()),
-			tracing.GetSlogAttributesWithStatus(ctx, core.LogFailedStatus)...,
 		)
 	}
 
@@ -511,14 +509,14 @@ func (engine *engine) doActionRequest(ctx context.Context, ar *functionRequest, 
 func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	ar *functionRequest, arReq *enginerefactor.ActionRequest,
 ) {
-	ctx, spanEnd, err := tracing.NewSpan(ctx, "knative-request-start")
+	ctx, spanEnd, err := tracing.NewSpan(ctx, "executing knative request to action")
 	if err != nil {
 		engine.reportError(ctx, &arReq.ActionContext, err)
 
 		return
 	}
 	defer spanEnd()
-	slog.Debug("starting function request", tracing.GetSlogAttributesWithStatus(ctx, core.LogRunningStatus)...)
+	slog.DebugContext(ctx, "starting function request")
 	tr := engine.createTransport()
 	addr := ar.Container.Service
 
@@ -527,7 +525,7 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	rctx, cancel := context.WithDeadline(context.Background(), arReq.Deadline)
 	defer cancel()
 
-	slog.Debug("deadline for request", "deadline", time.Until(arReq.Deadline))
+	slog.DebugContext(ctx, "deadline for request", "deadline", time.Until(arReq.Deadline))
 	traceParent, err := tracing.ExtractTraceParent(ctx)
 	if err != nil {
 		engine.reportError(ctx, &arReq.ActionContext, err)
@@ -625,15 +623,15 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	if resp.StatusCode != http.StatusOK {
 		engine.reportError(ctx, &arReq.ActionContext, fmt.Errorf("action error status: %d", resp.StatusCode))
 	}
-	slog.Debug("function request done", tracing.GetSlogAttributesWithStatus(ctx, core.LogRunningStatus)...)
+	slog.DebugContext(ctx, "function request done")
 }
 
 func (engine *engine) reportError(ctx context.Context, ar *enginerefactor.ActionContext, err error) {
 	ctx = tracing.AddNamespace(ctx, ar.Namespace)
 	ctx = tracing.AddInstanceAttr(ctx, ar.Instance, "", ar.Callpath, ar.Workflow)
 	ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrackViaCallpath(ar.Callpath))
-	slog.Error(
+	slog.ErrorContext(
+		ctx,
 		"action failed",
-		tracing.GetSlogAttributesWithError(ctx, err)...,
 	)
 }

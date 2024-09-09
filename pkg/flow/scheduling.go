@@ -101,13 +101,15 @@ func (engine *engine) executor(ctx context.Context, id uuid.UUID) {
 	}
 
 	slog.Debug("Beginning instance execution loop.", "instance", id)
-	ctx, span, err := tracing.InjectTraceParent(ctx, im.instance.TelemetryInfo.TraceParent, "instance-execution: "+im.instance.Instance.WorkflowPath)
+	ctx = im.Namespace().WithTags(ctx)
+	ctx = im.WithTags(ctx)
+	ctx, span, err := tracing.InjectTraceParent(ctx, im.instance.TelemetryInfo.TraceParent, "scheduler continues instance: "+im.instance.Instance.WorkflowPath)
 	if err != nil {
 		slog.Error("engine executor failed to inject trace parent", "error", err)
 	}
 	defer span.End()
 	engine.executorLoop(ctx, im)
-	slog.Debug("Successfully deregistered instance after execution.", "instance", id)
+	slog.DebugContext(ctx, "Successfully deregistered instance after execution.", "instance", id)
 
 	engine.deregisterScheduled(id)
 }
@@ -137,6 +139,11 @@ func (engine *engine) transitionLoop(ctx context.Context, im *instanceMemory, ms
 }
 
 func (engine *engine) executorLoop(ctx context.Context, im *instanceMemory) {
+	ctx, cleanup, err := tracing.NewSpan(ctx, "instance scheduling")
+	if err != nil {
+		slog.Error("telemetry failed in scheduler", "error", err)
+	}
+	defer cleanup()
 	for {
 		// pop message
 		tx, err := engine.flow.beginSQLTx(ctx)
@@ -225,12 +232,10 @@ func (engine *engine) start(im *instanceMemory) {
 	workflowPath := GetInodePath(im.instance.Instance.WorkflowPath)
 
 	ctx := context.Background()
-	ctx, span, err := tracing.InjectTraceParent(ctx, im.instance.TelemetryInfo.TraceParent, "instance-start: "+im.instance.Instance.WorkflowPath)
+	ctx, span, err := tracing.InjectTraceParent(ctx, im.instance.TelemetryInfo.TraceParent, "scheduler starts instance: "+im.GetInstanceID().String()+", workflow: "+im.instance.Instance.WorkflowPath)
 	if err != nil {
-		engine.CrashInstance(ctx, im, derrors.NewUncatchableError(ErrCodeInternal, "failed to populate tracing information: %v", err))
 		slog.Error("Failed to populate tracing information. Workflow execution halted.", "namespace", namespace, "workflow", workflowPath, "instance", im.ID(), "error", err)
-
-		return
+		// TODO: should we crash?
 	}
 	defer span.End()
 	slog.Debug("Workflow execution initiated.", "namespace", namespace, "workflow", workflowPath, "instance", im.ID())

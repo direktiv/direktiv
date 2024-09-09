@@ -8,7 +8,6 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/core"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/states"
 	"github.com/direktiv/direktiv/pkg/instancestore"
@@ -121,7 +120,7 @@ func (engine *engine) handleInstanceMessage(ctx context.Context, im *instanceMem
 	ctx = tracing.WithTrack(instanceCtx, tracing.BuildInstanceTrack(im.instance))
 
 	if im.instance.Instance.EndedAt != nil && !im.instance.Instance.EndedAt.IsZero() {
-		slog.Warn("Skipping message because instance has ended.", tracing.GetSlogAttributesWithStatus(nsCtx, core.LogCompletedStatus)...)
+		slog.WarnContext(nsCtx, "Skipping message because instance has ended.")
 
 		return nil
 	}
@@ -130,7 +129,7 @@ func (engine *engine) handleInstanceMessage(ctx context.Context, im *instanceMem
 
 	err := json.Unmarshal(msg.Payload, &m)
 	if err != nil {
-		slog.Error("Failed to unmarshal message payload", tracing.GetSlogAttributesWithError(ctx, err)...)
+		slog.ErrorContext(ctx, "Failed to unmarshal message payload", "error", err)
 
 		return nil
 	}
@@ -140,21 +139,21 @@ func (engine *engine) handleInstanceMessage(ctx context.Context, im *instanceMem
 
 	x, ok := m["type"]
 	if !ok {
-		slog.Error("Invalid message payload: missing 'type' field", tracing.GetSlogAttributesWithError(ctx, err)...)
+		slog.ErrorContext(ctx, "Invalid message payload: missing 'type' field", "error", err)
 
 		return nil
 	}
 
 	msgType, ok = x.(string)
 	if !ok {
-		slog.Error("failed to unmarshal message payload: 'type' field not a string", tracing.GetSlogAttributesWithError(ctx, err)...)
+		slog.ErrorContext(ctx, "failed to unmarshal message payload: 'type' field not a string", "error", err)
 
 		return nil
 	}
 
 	x, ok = m["data"]
 	if !ok {
-		slog.Error("Invalid message payload: missing 'data' field", tracing.GetSlogAttributesWithError(ctx, err)...)
+		slog.ErrorContext(ctx, "Invalid message payload: missing 'data' field", "error", err)
 
 		return nil
 	}
@@ -190,7 +189,7 @@ func (engine *engine) handleCancelMessage(ctx context.Context, im *instanceMemor
 
 	err := json.Unmarshal(data, &args)
 	if err != nil {
-		slog.Error("handleCancelMessage failed to unmarshal cancel message args", tracing.GetSlogAttributesWithError(ctx, err)...)
+		slog.ErrorContext(ctx, "handleCancelMessage failed to unmarshal cancel message args", "error", err)
 		return nil
 	}
 
@@ -208,7 +207,7 @@ func (engine *engine) handleWakeMessage(ctx context.Context, im *instanceMemory,
 
 	err := json.Unmarshal(data, &pl)
 	if err != nil {
-		slog.Error("handleWakeMessage failed to unmarshal wakeup message args", tracing.GetSlogAttributesWithError(ctx, err)...)
+		slog.ErrorContext(ctx, "handleWakeMessage failed to unmarshal wakeup message args", "error", err)
 
 		return nil
 	}
@@ -221,12 +220,12 @@ func (engine *engine) handleActionMessage(ctx context.Context, im *instanceMemor
 
 	err := json.Unmarshal(data, &pl)
 	if err != nil {
-		slog.Error("handleActionMessage failed to unmarshal action results message", tracing.GetSlogAttributesWithError(ctx, err)...)
+		slog.ErrorContext(ctx, "handleActionMessage failed to unmarshal action results message", "error", err)
 
 		return nil
 	}
 
-	//traceActionResult(ctx, &pl)
+	// TODO: traceActionResult(ctx, &pl)
 
 	return engine.runState(ctx, im, data, nil)
 }
@@ -248,7 +247,7 @@ func (engine *engine) handleTransitionMessage(ctx context.Context, im *instanceM
 
 	err := json.Unmarshal(data, &state)
 	if err != nil {
-		slog.Error("handleTransitionMessage failed to unmarshal transition message args", tracing.GetSlogAttributesWithError(ctx, err)...)
+		slog.ErrorContext(ctx, "handleTransitionMessage failed to unmarshal transition message args", "error", err)
 
 		return nil
 	}

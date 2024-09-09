@@ -567,10 +567,14 @@ func initSLog(cfg *core.Config) {
 		slog.Info("logging is set to debug")
 		lvl.Set(slog.LevelDebug)
 	}
-
-	slogger := slog.New(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{
+	handlers := tracing.NewContextHandler(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{
 		Level: lvl,
 	}))
+	slogger := slog.New(
+		tracing.TeeHandler{
+			handlers,
+			tracing.EventHandler{},
+		})
 
 	slog.SetDefault(slogger)
 }
