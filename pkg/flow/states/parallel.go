@@ -234,7 +234,7 @@ func (logic *parallelLogic) processActionResults(ctx context.Context, children [
 		return nil, derrors.NewInternalError(errors.New("incorrect child action ID"))
 	}
 
-	logic.Log(ctx, "Child '%s' returned.", id)
+	logic.Log(ctx, log.Debug, "Child '%s' returned.", id)
 
 	if results.ErrorCode != "" {
 		logic.Log(ctx, log.Error, "Action raised catchable error '%s': %s.", results.ErrorCode, results.ErrorMessage)

@@ -612,7 +612,7 @@ func (engine *engine) transformState(ctx context.Context, im *instanceMemory, tr
 	}
 	loggingCtx := im.Namespace().WithTags(ctx)
 	loggingCtx = tracing.WithTrack(im.WithTags(loggingCtx), tracing.BuildInstanceTrack(im.instance))
-	slog.InfoContext(loggingCtx, "Transforming state data.")
+	slog.DebugContext(loggingCtx, "Transforming state data.")
 
 	x, err := jqObject(im.data, transition.Transform) //nolint:contextcheck
 	if err != nil {
@@ -623,7 +623,7 @@ func (engine *engine) transformState(ctx context.Context, im *instanceMemory, tr
 	}
 
 	im.replaceData(x)
-	slog.InfoContext(loggingCtx, "Successfully transformed state data.")
+	slog.DebugContext(loggingCtx, "Successfully transformed state data.")
 
 	return nil
 }

@@ -281,7 +281,7 @@ func (logic *forEachLogic) processActionResults(ctx context.Context, children []
 		slog.Warn("tracing.NewSpan failed in processActionResults", "error", "err")
 	}
 	defer end()
-	logic.Log(ctx, log.Info, "Child '%s' returned.", id)
+	logic.Log(ctx, log.Debug, "Child '%s' returned.", id)
 
 	if results.ErrorCode != "" {
 		logic.Log(ctx, log.Error, "[%v] Action raised catchable error '%s': %s.", idx, results.ErrorCode, results.ErrorMessage)
