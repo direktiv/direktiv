@@ -105,7 +105,7 @@ func (engine *engine) executor(ctx context.Context, id uuid.UUID) {
 	ctx = im.WithTags(ctx)
 	ctx, span, err2 := tracing.InjectTraceParent(ctx, im.instance.TelemetryInfo.TraceParent, "scheduler continues instance: "+im.instance.Instance.WorkflowPath)
 	if err2 != nil {
-		slog.Error("engine executor failed to inject trace parent", "error", err2)
+		slog.Warn("engine executor failed to inject trace parent", "error", err2)
 	}
 	defer span.End()
 	engine.executorLoop(ctx, im)
