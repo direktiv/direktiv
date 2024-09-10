@@ -154,7 +154,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	ctx = tracing.WithTrack(ctx, tracing.BuildNamespaceTrack(args.Namespace.Name))
 	ctx, cleanup, err := tracing.NewSpan(ctx, "creating a new Instance: "+args.ID.String()+", workflow: "+args.CalledAs)
 	if err != nil {
-		return nil, err
+		slog.Warn("failed in new instance", "error", err)
 	}
 	defer cleanup()
 	slog.DebugContext(ctx, "Initializing new instance creation.")
@@ -312,8 +312,6 @@ func (engine *engine) loadStateLogic(im *instanceMemory, stateID string) error {
 func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextState string, attempt int) *states.Transition {
 	ctx, cleanup, err := tracing.NewSpan(ctx, "engine transitions: "+nextState)
 	if err != nil {
-		// TODO Should we crash? engine.CrashInstance(ctx, im, err)
-		// return nil
 		slog.Warn("transition failed to init telemetry", "error", err)
 	}
 	defer cleanup()
@@ -470,7 +468,7 @@ func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata
 	ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrack(im.instance))
 	ctx, cleanup, err3 := tracing.NewSpan(ctx, "preparing instance for state execution")
 	if err != nil {
-		slog.Error("failed to init telemery in runstate", "error", err3)
+		slog.Warn("failed to init telemery in runstate", "error", err3)
 	}
 	defer cleanup()
 
@@ -869,7 +867,7 @@ func (engine *engine) EventsInvoke(tctx context.Context, workflowID uuid.UUID, e
 	}
 	tctx, end, err := tracing.NewSpan(tctx, "engine invoked by event")
 	if err != nil {
-		slog.Error("Failed to tracing.NewSpan.", "error", err)
+		slog.Warn("Failed to tracing.NewSpan.", "error", err)
 	}
 	defer end()
 	traceParent, err := tracing.ExtractTraceParent(tctx)

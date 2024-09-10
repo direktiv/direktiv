@@ -82,7 +82,7 @@ type outcome struct {
 func (worker *inboundWorker) doFunctionRequest(ctx context.Context, ir *functionRequest) (*outcome, error) {
 	ctx, spanEnd, err := tracing.NewSpan(ctx, "execting function request: "+ir.actionId+", workflow: "+ir.Workflow)
 	if err != nil {
-		return nil, fmt.Errorf("doFunctionRequest failed %w", err)
+		slog.Warn("doFunctionRequest failed", "error", err)
 	}
 	defer spanEnd()
 

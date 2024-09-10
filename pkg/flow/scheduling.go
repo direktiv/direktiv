@@ -141,7 +141,7 @@ func (engine *engine) transitionLoop(ctx context.Context, im *instanceMemory, ms
 func (engine *engine) executorLoop(ctx context.Context, im *instanceMemory) {
 	ctx, cleanup, err := tracing.NewSpan(ctx, "instance scheduling")
 	if err != nil {
-		slog.Error("telemetry failed in scheduler", "error", err)
+		slog.Warn("telemetry failed in scheduler", "error", err)
 	}
 	defer cleanup()
 	for {

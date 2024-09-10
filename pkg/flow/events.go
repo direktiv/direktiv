@@ -133,7 +133,7 @@ func (events *events) BroadcastCloudevent(ctx context.Context, ns *datastore.Nam
 	loggingCtx := tracing.WithTrack(ns.WithTags(ctx), tracing.BuildNamespaceTrack(ns.Name))
 	loggingCtx, cleanup, err := tracing.NewSpan(loggingCtx, "Adding CloudEvent to the Event Bus. ID: "+event.ID())
 	if err != nil {
-		slog.Error("failed to popupate telemetry in BroadcastCloudevent", "error", err)
+		slog.Warn("failed to popupate telemetry in BroadcastCloudevent", "error", err)
 	}
 	defer cleanup()
 	slog.DebugContext(loggingCtx, "received CloudEvent")
