@@ -3,6 +3,7 @@ package flow
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"os"
 
 	"github.com/direktiv/direktiv/pkg/database"
@@ -61,11 +62,15 @@ func (engine *engine) StartWorkflow(ctx context.Context, namespace, path string,
 
 	// TODO tracing
 	// TODO logging
-
+	ctx, end, err := tracing.NewSpan(ctx, "starting workflow")
+	if err != nil {
+		slog.Warn("failed tracing.NewSpan()", "error", fmt.Errorf("StartWorkflow %w", err))
+	}
+	defer end()
 	calledAs := path
 	traceParent, err := tracing.ExtractTraceParent(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("StartWorkflow %w", err)
+		slog.Warn("failed tracing.ExtractTraceParent", "error", fmt.Errorf("StartWorkflow %w", err))
 	}
 
 	if input == nil {
