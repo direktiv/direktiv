@@ -103,9 +103,9 @@ func (engine *engine) executor(ctx context.Context, id uuid.UUID) {
 	slog.Debug("Beginning instance execution loop.", "instance", id)
 	ctx = im.Namespace().WithTags(ctx)
 	ctx = im.WithTags(ctx)
-	ctx, span, err := tracing.InjectTraceParent(ctx, im.instance.TelemetryInfo.TraceParent, "scheduler continues instance: "+im.instance.Instance.WorkflowPath)
-	if err != nil {
-		slog.Error("engine executor failed to inject trace parent", "error", err)
+	ctx, span, err2 := tracing.InjectTraceParent(ctx, im.instance.TelemetryInfo.TraceParent, "scheduler continues instance: "+im.instance.Instance.WorkflowPath)
+	if err2 != nil {
+		slog.Error("engine executor failed to inject trace parent", "error", err2)
 	}
 	defer span.End()
 	engine.executorLoop(ctx, im)

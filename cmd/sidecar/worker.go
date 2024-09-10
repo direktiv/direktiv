@@ -565,11 +565,14 @@ func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
 	rctx = tracing.AddStateAttr(rctx, ir.State)
 	rctx = tracing.AddInstanceAttr(rctx, ir.Instance, "flow", ir.Callpath, ir.Workflow)
 	rctx = tracing.AddTag(rctx, "action-id", ir.actionId)
-	rctx, span, err := tracing.InjectTraceParent(rctx, ir.ActionContext.TraceParent, "action registered for execution: "+ir.actionId+", workflow: "+ir.Workflow)
-	if err != nil {
-		slog.Error("failed while doFunctionRequest", "error", err)
-		worker.reportSidecarError(req.w, ir, err)
-		return
+	rctx, end, err2 := tracing.NewSpan(rctx, "handle function request")
+	if err2 != nil {
+		slog.Warn("failed while doFunctionRequest", "error", err2)
+	}
+	defer end()
+	rctx, span, err2 := tracing.InjectTraceParent(rctx, ir.ActionContext.TraceParent, "action registered for execution: "+ir.actionId+", workflow: "+ir.Workflow)
+	if err2 != nil {
+		slog.Warn("failed while doFunctionRequest", "error", err2)
 	}
 	defer span.End()
 

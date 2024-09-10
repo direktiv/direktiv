@@ -152,9 +152,9 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	ctx = tracing.AddTag(ctx, "calledAs", args.CalledAs)
 	ctx = tracing.AddInstanceAttr(ctx, args.ID.String(), args.Invoker, args.TelemetryInfo.CallPath, args.CalledAs)
 	ctx = tracing.WithTrack(ctx, tracing.BuildNamespaceTrack(args.Namespace.Name))
-	ctx, cleanup, err := tracing.NewSpan(ctx, "creating a new Instance: "+args.ID.String()+", workflow: "+args.CalledAs)
-	if err != nil {
-		slog.Warn("failed in new instance", "error", err)
+	ctx, cleanup, err2 := tracing.NewSpan(ctx, "creating a new Instance: "+args.ID.String()+", workflow: "+args.CalledAs)
+	if err2 != nil {
+		slog.Warn("failed in new instance", "error", err2)
 	}
 	defer cleanup()
 	slog.DebugContext(ctx, "Initializing new instance creation.")
@@ -865,13 +865,13 @@ func (engine *engine) EventsInvoke(tctx context.Context, workflowID uuid.UUID, e
 		slog.Error("Failed to marshal event data in EventsInvoke.", "error", err)
 		return
 	}
-	tctx, end, err := tracing.NewSpan(tctx, "engine invoked by event")
-	if err != nil {
+	tctx, end, err2 := tracing.NewSpan(tctx, "engine invoked by event")
+	if err2 != nil {
 		slog.Warn("Failed to tracing.NewSpan.", "error", err)
 	}
 	defer end()
-	traceParent, err := tracing.ExtractTraceParent(tctx)
-	if err != nil {
+	traceParent, err2 := tracing.ExtractTraceParent(tctx)
+	if err2 != nil {
 		slog.Error("Failed to extract traceParent in EventsInvoke.", "error", err)
 	}
 	// TODO: tracing

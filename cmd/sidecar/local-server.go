@@ -130,12 +130,9 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 	ctx = tracing.AddInstanceAttr(ctx, req.Instance, "action", req.Callpath, req.Workflow)
 	ctx = tracing.AddStateAttr(ctx, req.State)
 	ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrackViaCallpath(req.Callpath))
-	ctx, span, err := tracing.InjectTraceParent(ctx, req.ActionContext.TraceParent, "writing logs in action: "+actionId+", workflow: "+req.Workflow)
-	if err != nil {
-		slog.ErrorContext(ctx, "Failed to populate trace information.", "action", actionId, "error", err)
-		http.Error(w, "", http.StatusInternalServerError)
-
-		return
+	ctx, span, err2 := tracing.InjectTraceParent(ctx, req.ActionContext.TraceParent, "writing logs in action: "+actionId+", workflow: "+req.Workflow)
+	if err2 != nil {
+		slog.Warn("Failed to populate trace information.", "action", actionId, "error", err2)
 	}
 	defer span.End()
 
