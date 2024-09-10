@@ -525,7 +525,7 @@ func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata
 	}
 
 	ctx = im.WithTags(ctx)
-	slog.DebugContext(ctx, "Executing state logic.")
+	slog.DebugContext(ctx, "Running state logic.")
 
 	transition, err = im.logic.Run(ctx, wakedata)
 	if err != nil {
