@@ -62,9 +62,9 @@ func (ee EventEngine) ProcessEvents(
 	cloudevents []cloudevents.Event,
 	handleErrors func(template string, args ...interface{}),
 ) {
-	ctx, end, err := tracing.NewSpan(ctx, "Dispatching CloudEvents to handlers")
-	if err != nil {
-		slog.Warn("ProcessEvents: failed to init telemetry", "error", err)
+	ctx, end, err2 := tracing.NewSpan(ctx, "Dispatching CloudEvents to handlers")
+	if err2 != nil {
+		slog.Warn("ProcessEvents: failed to init telemetry", "error", err2)
 	}
 	defer end()
 	// 1. Extract Topics: Retrieves relevant event topics from the provided CloudEvents

@@ -49,7 +49,7 @@ func (info *InstanceTelemetryInfo) MarshalJSON() ([]byte, error) {
 	}
 }
 
-// deprecated: instanceTelemetryInfoV1 represents the v1 format of InstanceTelemetryInfo.
+// Deprecated: instanceTelemetryInfoV1 represents the v1 format of InstanceTelemetryInfo.
 type instanceTelemetryInfoV1 struct {
 	Version       string `json:"version"`
 	TraceID       string `json:"trace_id"`

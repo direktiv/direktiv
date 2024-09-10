@@ -2,10 +2,7 @@ package tracing
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
-
-	"github.com/direktiv/direktiv/pkg/core"
 )
 
 // ContextHandler wraps a slog.Handler (e.g., JSON handler) and processes slogFields from the context.
@@ -29,14 +26,14 @@ func (h *ContextHandler) Handle(ctx context.Context, rec slog.Record) error {
 	if attrs := getAttributes(ctx); len(attrs) > 0 {
 		res := make([]slog.Attr, 0, len(attrs)*2)
 		for k, v := range attrs {
-			res = append(res, slog.Attr{Key: fmt.Sprint(k), Value: slog.AnyValue(v)})
+			res = append(res, slog.Attr{Key: k, Value: slog.AnyValue(v)})
 		}
 
 		return h.innerHandler.WithAttrs(res).Handle(ctx, rec)
 	}
 
 	// Pass the record to the inner handler
-	return h.innerHandler.WithAttrs([]slog.Attr{{Key: string(core.LogTrackKey), Value: slog.AnyValue("flow")}}).Handle(ctx, rec)
+	return h.innerHandler.Handle(ctx, rec)
 }
 
 // WithAttrs implements slog.Handler.

@@ -59,7 +59,7 @@ func AddInstanceAttr(ctx context.Context, instanceID string, invoker string, cal
 		tags = make(map[string]interface{}, 0)
 	}
 	if trackValue, ok := ctx.Value(core.LogTrackKey).(string); ok {
-		tags["track"] = trackValue
+		tags[string(core.LogTrackKey)] = trackValue
 	}
 
 	tags["instance"] = instanceID
@@ -76,7 +76,7 @@ func AddStateAttr(ctx context.Context, state string) context.Context {
 		tags = make(map[string]interface{}, 0)
 	}
 	if trackValue, ok := ctx.Value(core.LogTrackKey).(string); ok {
-		tags["track"] = trackValue
+		tags[string(core.LogTrackKey)] = trackValue
 	}
 
 	tags["state"] = state
@@ -91,7 +91,7 @@ func getCoreAttributes(ctx context.Context) map[string]interface{} {
 	}
 
 	if trackValue, ok := ctx.Value(core.LogTrackKey).(string); ok {
-		tags["track"] = trackValue
+		tags[string(core.LogTrackKey)] = trackValue
 	}
 
 	return tags
@@ -129,6 +129,9 @@ func BuildNamespaceTrack(namespace string) string {
 
 func BuildInstanceTrack(instance *engine.Instance) string {
 	callpath := instance.Instance.ID.String()
+	if instance.DescentInfo == nil {
+		return fmt.Sprintf("%v.%v", "instance", callpath)
+	}
 	for _, v := range instance.DescentInfo.Descent {
 		callpath += "/" + v.ID.String()
 	}

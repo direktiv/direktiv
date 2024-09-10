@@ -149,20 +149,17 @@ func trim(s string) string {
 
 // TODO: MARKER revisit logging & tracing.
 func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*instanceMemory, error) {
-	slog.Debug("Initializing new instance creation.", "namespace", args.Namespace.Name, "workflow", args.CalledAs, "invoker", args.Invoker)
-	file, data, err := engine.mux(ctx, args.Namespace, args.CalledAs)
-	if err != nil {
-		return nil, err
-	}
-	loggingCtx := args.Namespace.WithTags(ctx)
-	loggingCtx = tracing.AddTag(loggingCtx, "calledAs", args.CalledAs)
-	loggingCtx = tracing.AddTag(loggingCtx, "invoker", args.Invoker)
-	loggingCtx = tracing.WithTrack(loggingCtx, tracing.BuildNamespaceTrack(args.Namespace.Name))
-	loggingCtx, cleanup, err := tracing.NewSpan(loggingCtx, "creating a new Instance: "+args.ID.String()+", workflow: "+args.CalledAs)
+	ctx = args.Namespace.WithTags(ctx)
+	ctx = tracing.AddTag(ctx, "calledAs", args.CalledAs)
+	ctx = tracing.AddInstanceAttr(ctx, args.ID.String(), args.Invoker, args.TelemetryInfo.CallPath, args.CalledAs)
+	ctx = tracing.WithTrack(ctx, tracing.BuildNamespaceTrack(args.Namespace.Name))
+	ctx, cleanup, err := tracing.NewSpan(ctx, "creating a new Instance: "+args.ID.String()+", workflow: "+args.CalledAs)
 	if err != nil {
 		return nil, err
 	}
 	defer cleanup()
+	slog.DebugContext(ctx, "Initializing new instance creation.")
+	file, data, err := engine.mux(ctx, args.Namespace, args.CalledAs)
 	if err != nil {
 		return nil, err
 	}
@@ -196,7 +193,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	}
 
 	args.TelemetryInfo.NamespaceName = args.Namespace.Name
-	traceParent, err := tracing.ExtractTraceParent(loggingCtx)
+	traceParent, err := tracing.ExtractTraceParent(ctx)
 	if err != nil {
 		slog.Warn("NewInstance telemetry failed", "error", err)
 	}
@@ -228,7 +225,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 		}
 		defer tx.Rollback()
 	}
-	slog.DebugContext(loggingCtx, "Preparing to commit new instance transaction.", "instance", args.ID.String(), "namespace", args.Namespace)
+	slog.DebugContext(ctx, "Preparing to commit new instance transaction.")
 
 	idata, err := tx.InstanceStore().CreateInstanceData(ctx, &instancestore.CreateInstanceDataArgs{
 		ID:             args.ID,
@@ -255,7 +252,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 	if err != nil {
 		return nil, err
 	}
-	slog.InfoContext(loggingCtx, "New instance transaction committed successfully.", "instance", args.ID.String(), "namespace", args.Namespace)
+	slog.InfoContext(ctx, "New instance transaction committed successfully.")
 
 	instance, err := enginerefactor.ParseInstanceData(idata)
 	if err != nil {
@@ -278,15 +275,10 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 		panic(err)
 	}
 
-	// _, err = traceFullAddWorkflowInstance(ctx, im) // TODO.
-	// if err != nil {
-	// 	return nil, fmt.Errorf("failed to traceFullAddWorkflowInstance: %w", err)
-	// }
 	im.AddAttribute("loop-index", fmt.Sprintf("%d", iterator))
 
 	engine.pubsub.NotifyInstances(im.Namespace())
-	namespaceTrackCtx := tracing.WithTrack(loggingCtx, tracing.BuildNamespaceTrack(im.instance.Instance.Namespace))
-	slog.InfoContext(namespaceTrackCtx, "Workflow has been triggered")
+	slog.InfoContext(ctx, "Workflow has been triggered")
 
 	return im, nil
 }
@@ -477,9 +469,9 @@ func (engine *engine) TerminateInstance(ctx context.Context, im *instanceMemory)
 func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata []byte, err error) *states.Transition {
 	loggingCtx := im.Namespace().WithTags(ctx)
 	instanceTrackCtx := tracing.WithTrack(loggingCtx, tracing.BuildInstanceTrack(im.instance))
-	instanceTrackCtx, cleanup, err := tracing.NewSpan(instanceTrackCtx, "prepering instance for state execution")
+	instanceTrackCtx, cleanup, err3 := tracing.NewSpan(instanceTrackCtx, "prepering instance for state execution")
 	if err != nil {
-		slog.Error("failed to init telemery in runstate", "error", err)
+		slog.Error("failed to init telemery in runstate", "error", err3)
 	}
 	defer cleanup()
 

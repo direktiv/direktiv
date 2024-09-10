@@ -25,14 +25,14 @@ func ExtractTraceParent(ctx context.Context) (string, error) {
 	return traceParent, nil
 }
 
-func TraceParentToTraceID(traceParent string) (string, error) {
+func TraceParentToTraceID(ctx context.Context, traceParent string) (string, error) {
 	// Set up the propagation map with the traceparent
 	carrier := propagation.MapCarrier{
 		"traceparent": traceParent,
 	}
 
 	propagator := propagation.TraceContext{}
-	newCtx := propagator.Extract(context.Background(), carrier)
+	newCtx := propagator.Extract(ctx, carrier)
 	span := trace.SpanFromContext(newCtx)
 	if span.SpanContext().TraceID().IsValid() {
 		return span.SpanContext().TraceID().String(), nil
@@ -79,20 +79,20 @@ func InjectTraceParent(ctx context.Context, traceParent string, traceName string
 
 // NewSpan starts a new span with the provided name as a child of the context with tracing.
 // It returns a function that ends the span when called.
-func NewSpan(ctxWithTracing context.Context, name string) (context.Context, func(), error) {
+func NewSpan(ctx context.Context, name string) (context.Context, func(), error) {
 	tracer := otel.GetTracerProvider().Tracer(instrumentationName)
-	ctx, span := tracer.Start(ctxWithTracing, name)
+	ctx2, span := tracer.Start(ctx, name)
 	if !span.SpanContext().IsValid() {
-		return nil, nil, fmt.Errorf("failed to start span for %s", name)
+		return ctx, func() {}, fmt.Errorf("failed to start span for %s", name)
 	}
-
+	ctx = ctx2
 	attr := getCoreAttributes(ctx)
 	kv := make([]attribute.KeyValue, 0, len(attr)*2)
 	for k, v := range attr {
 		kv = append(kv, attribute.String(k, fmt.Sprint(v)))
 	}
 	endSpan := func() {
-		defer span.End()
+		span.End()
 	}
 	span.SetAttributes(kv...)
 

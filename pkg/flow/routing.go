@@ -163,15 +163,21 @@ func (flow *flow) cronHandler(data []byte) {
 
 		return
 	}
-	traceParent, err := tracing.ExtractTraceParent(ctx)
+	ctx = ns.WithTags(ctx)
+	ctx, end, err := tracing.NewSpan(ctx, "starting cron handler")
 	if err != nil {
-		slog.Warn("cranhandler failed to init telemetrery", "error", err)
+		slog.Warn("cronhandler failed to start span", "error", err)
 	}
+	defer end()
+
 	x, _ := json.Marshal([]string{ns.Name, file.Path, t.String()}) //nolint
 	unique := string(x)
 	md5sum := md5.Sum([]byte(unique))
 	hash := base64.StdEncoding.EncodeToString(md5sum[:])
-
+	traceParent, err := tracing.ExtractTraceParent(ctx)
+	if err != nil {
+		slog.Warn("cronhandler failed to init telemetry", "error", err)
+	}
 	args := &newInstanceArgs{
 		tx:        tx,
 		ID:        uuid.New(),

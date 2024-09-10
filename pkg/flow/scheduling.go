@@ -192,7 +192,7 @@ func (engine *engine) WakeInstanceCaller(ctx context.Context, im *instanceMemory
 	caller := engine.InstanceCaller(im)
 
 	if caller != nil {
-		slog.DebugContext(ctx, "Initiating result report to calling workflow.", "namespace", im.Namespace(), "instance", im.ID())
+		slog.DebugContext(ctx, "Initiating result report to calling workflow.", "namespace", im.Namespace().Name, "instance", im.ID())
 		callpath := im.instance.Instance.ID.String()
 		for _, v := range im.instance.DescentInfo.Descent {
 			callpath += "/" + v.ID.String()

@@ -2,7 +2,6 @@ package engine
 
 import (
 	"context"
-	"strings"
 
 	"github.com/direktiv/direktiv/pkg/core"
 )
@@ -23,8 +22,4 @@ func (instance *Instance) WithTags(ctx context.Context) context.Context {
 	tags["workflow"] = instance.Instance.WorkflowPath
 
 	return context.WithValue(ctx, core.LogTagsKey, tags)
-}
-
-func getWorkflow(path string) string {
-	return strings.Split(path, ":")[0]
 }

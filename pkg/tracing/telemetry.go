@@ -25,6 +25,10 @@ import (
 
 var instrumentationName string
 
+func SetInstrumentationName(name string) {
+	instrumentationName = name
+}
+
 // InitTelemetry initializes tracing with OTLP, resource, and tracer provider setup.
 func InitTelemetry(cirCtx context.Context, addr string, svcName, imName string) (func(), error) {
 	slog.Debug("Initializing telemetry.", "instrumentationName", imName)
@@ -85,13 +89,13 @@ func InitTelemetry(cirCtx context.Context, addr string, svcName, imName string) 
 
 	slog.Debug("Telemetry initialization completed.")
 
-	return telemetryWaiter(tp, bsp), nil
+	return telemetryWaiter(cirCtx, tp, bsp), nil
 }
 
 // telemetryWaiter ensures all telemetry data is flushed and the provider is shut down gracefully.
-func telemetryWaiter(tp *sdktrace.TracerProvider, bsp sdktrace.SpanProcessor) func() {
+func telemetryWaiter(cirCtx context.Context, tp *sdktrace.TracerProvider, bsp sdktrace.SpanProcessor) func() {
 	return func() {
-		ctx, cancel := context.WithTimeout(context.Background(), 25*time.Second)
+		ctx, cancel := context.WithTimeout(cirCtx, 25*time.Second)
 		defer cancel()
 
 		// Force flush to export all remaining telemetry data
@@ -139,8 +143,6 @@ func entrypointOtelMiddleware(imName string, next http.Handler) http.Handler {
 			span.End()
 		}()
 		r = r.WithContext(ctx)
-
-		slog.Debug("Call the next handler")
 		next.ServeHTTP(w, r)
 	})
 }
@@ -169,8 +171,6 @@ func extractNamespace(r *http.Request) string {
 			return pathSegments[i+1]
 		}
 	}
-
-	slog.Warn("Namespace could not be extracted. Defaulting to 'unknown'.")
 
 	return "unknown"
 }

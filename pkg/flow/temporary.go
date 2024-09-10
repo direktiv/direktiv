@@ -526,14 +526,7 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	defer cancel()
 
 	slog.DebugContext(ctx, fmt.Sprintf("deadline for request is %s", time.Until(arReq.Deadline)), "deadline", time.Until(arReq.Deadline))
-	traceParent, err := tracing.ExtractTraceParent(ctx)
-	if err != nil {
-		engine.reportError(ctx, &arReq.ActionContext, err)
 
-		return
-	}
-
-	arReq.ActionContext.TraceParent = traceParent // Note: Safe to update to newest in chain, when ensured that ctx is connected to the trace of im!
 	reader, err := enginerefactor.EncodeActionRequest(*arReq)
 	if err != nil {
 		engine.reportError(ctx, &arReq.ActionContext, err)
