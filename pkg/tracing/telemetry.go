@@ -50,7 +50,7 @@ func InitTelemetry(cirCtx context.Context, addr string, svcName, imName string) 
 	driver := otlpgrpc.NewClient(
 		otlpgrpc.WithInsecure(),
 		otlpgrpc.WithEndpoint(addr),
-		otlpgrpc.WithDialOption(grpc.WithBlock()),
+		otlpgrpc.WithDialOption(grpc.WithBlock()), // nolint:staticcheck
 	)
 
 	slog.Debug("Setting up OTLP exporter.")
