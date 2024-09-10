@@ -141,7 +141,7 @@ func (engine *engine) transitionLoop(ctx context.Context, im *instanceMemory, ms
 func (engine *engine) executorLoop(ctx context.Context, im *instanceMemory) {
 	ctx, cleanup, err := tracing.NewSpan(ctx, "instance scheduling")
 	if err != nil {
-		slog.Warn("telemetry failed in scheduler", "error", err)
+		slog.Debug("telemetry failed in scheduler", "error", err)
 	}
 	defer cleanup()
 	for {
@@ -233,7 +233,7 @@ func (engine *engine) start(im *instanceMemory) {
 	ctx := context.Background()
 	ctx, span, err := tracing.InjectTraceParent(ctx, im.instance.TelemetryInfo.TraceParent, "scheduler starts instance: "+im.GetInstanceID().String()+", workflow: "+im.instance.Instance.WorkflowPath)
 	if err != nil {
-		slog.Warn("Failed to populate tracing information. Workflow execution halted.", "namespace", namespace, "workflow", workflowPath, "instance", im.ID(), "error", err)
+		slog.Debug("Failed to populate tracing information. Workflow execution halted.", "namespace", namespace, "workflow", workflowPath, "instance", im.ID(), "error", err)
 	}
 	defer span.End()
 	slog.Debug("Workflow execution initiated.", "namespace", namespace, "workflow", workflowPath, "instance", im.ID())
