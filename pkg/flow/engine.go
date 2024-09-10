@@ -867,7 +867,7 @@ func (engine *engine) EventsInvoke(tctx context.Context, workflowID uuid.UUID, e
 		slog.Error("Failed to marshal event data in EventsInvoke.", "error", err)
 		return
 	}
-	tctx, end, err := tracing.NewSpan(ctx, "engine invoked by event")
+	tctx, end, err := tracing.NewSpan(tctx, "engine invoked by event")
 	if err != nil {
 		slog.Error("Failed to tracing.NewSpan.", "error", err)
 	}
