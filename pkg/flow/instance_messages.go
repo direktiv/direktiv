@@ -159,7 +159,7 @@ func (engine *engine) handleInstanceMessage(ctx context.Context, im *instanceMem
 	}
 
 	data, _ := json.Marshal(x)
-
+	// TODO trace each of thos branches with spans
 	switch msgType {
 	case "cancel":
 		return engine.handleCancelMessage(ctx, im, data)
@@ -231,14 +231,6 @@ func (engine *engine) handleActionMessage(ctx context.Context, im *instanceMemor
 }
 
 func (engine *engine) handleEventMessage(ctx context.Context, im *instanceMemory, data []byte) *states.Transition {
-	// ctx, cleanup, err := traceStateGenericBegin(ctx, im)
-	// if err != nil {
-	// 	slog.Error("Failed to begin trace for event message.", tracing.GetSlogAttributesWithError(ctx, err)...)
-
-	// 	return nil
-	// }
-	// defer cleanup()
-
 	return engine.runState(ctx, im, data, nil)
 }
 

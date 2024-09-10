@@ -163,9 +163,10 @@ func (flow *flow) cronHandler(data []byte) {
 
 		return
 	}
-	traceParent, _ := tracing.ExtractTraceParent(ctx)
-	// TODO error handling
-	// TODO tracing / logging
+	traceParent, err := tracing.ExtractTraceParent(ctx)
+	if err != nil {
+		slog.Warn("cranhandler failed to init telemetrery", "error", err)
+	}
 	x, _ := json.Marshal([]string{ns.Name, file.Path, t.String()}) //nolint
 	unique := string(x)
 	md5sum := md5.Sum([]byte(unique))
@@ -188,13 +189,13 @@ func (flow *flow) cronHandler(data []byte) {
 	im, err := flow.engine.NewInstance(ctx, args)
 	if err != nil {
 		if strings.Contains(err.Error(), "duplicate") {
-			slog.Debug("Instance creation clash detected, likely due to parallel execution. This is not an error.")
+			slog.DebugContext(ctx, "Instance creation clash detected, likely due to parallel execution. This is not an error.")
 			// this happens on a attempt to create an instance clashed with another server
 
 			return
 		}
 
-		slog.Error("Failed to create new instance from cron job.", "workflow_path", file.Path, "error", err)
+		slog.ErrorContext(ctx, "Failed to create new instance from cron job.", "workflow_path", file.Path, "error", err)
 
 		return
 	}

@@ -63,15 +63,15 @@ func (engine *engine) executor(ctx context.Context, id uuid.UUID) {
 		ctx2, err := engine.registerScheduled(ctx, id)
 		if err != nil {
 			if errors.Is(err, errEngineSync) {
-				slog.Debug("Failed to register instance for scheduled execution.", "instance", id, "error", err)
+				slog.DebugContext(ctx, "Failed to register instance for scheduled execution.", "instance", id, "error", err)
 				continue
 			}
 
-			slog.Error("Failed to register instance for scheduled execution.", "instance", id, "error", err)
+			slog.ErrorContext(ctx, "Failed to register instance for scheduled execution.", "instance", id, "error", err)
 
 			return
 		}
-		slog.Debug("Successfully registered instance for scheduled execution.", "instance", id)
+		slog.DebugContext(ctx, "Successfully registered instance for scheduled execution.", "instance", id)
 
 		im, err = engine.getInstanceMemory(ctx2, id)
 		if err != nil {
@@ -84,7 +84,7 @@ func (engine *engine) executor(ctx context.Context, id uuid.UUID) {
 				continue
 			}
 
-			slog.Error("Failed to retrieve instance memory in executor.", "instance", id, "error", err)
+			slog.ErrorContext(ctx, "Failed to retrieve instance memory in executor.", "instance", id, "error", err)
 
 			engine.deregisterScheduled(id)
 
@@ -177,11 +177,11 @@ func (engine *engine) executorLoop(ctx context.Context, im *instanceMemory) {
 }
 
 func (engine *engine) InstanceYield(ctx context.Context, im *instanceMemory) {
-	slog.Debug("Instance preparing to yield and release resources.", "instance", im.ID().String(), "namespace", im.Namespace())
+	slog.DebugContext(ctx, "Instance preparing to yield and release resources.", "instance", im.ID().String(), "namespace", im.Namespace())
 
 	err := engine.freeMemory(ctx, im)
 	if err != nil {
-		slog.Error("Failed to free memory for instance. Initiating crash sequence.", "instance", im.ID().String(), "namespace", im.Namespace(), "error", err)
+		slog.ErrorContext(ctx, "Failed to free memory for instance. Initiating crash sequence.", "instance", im.ID().String(), "namespace", im.Namespace(), "error", err)
 		engine.CrashInstance(ctx, im, err)
 
 		return
@@ -192,7 +192,7 @@ func (engine *engine) WakeInstanceCaller(ctx context.Context, im *instanceMemory
 	caller := engine.InstanceCaller(im)
 
 	if caller != nil {
-		slog.Debug("Initiating result report to calling workflow.", "namespace", im.Namespace(), "instance", im.ID())
+		slog.DebugContext(ctx, "Initiating result report to calling workflow.", "namespace", im.Namespace(), "instance", im.ID())
 		callpath := im.instance.Instance.ID.String()
 		for _, v := range im.instance.DescentInfo.Descent {
 			callpath += "/" + v.ID.String()
@@ -219,14 +219,13 @@ func (engine *engine) WakeInstanceCaller(ctx context.Context, im *instanceMemory
 		}
 		err := engine.ReportActionResults(ctx, msg)
 		if err != nil {
-			slog.Error("Failed to report action results to caller workflow.", "namespace", im.Namespace(), "instance", im.ID(), "error", err)
+			slog.ErrorContext(ctx, "Failed to report action results to caller workflow.", "namespace", im.Namespace(), "instance", im.ID(), "error", err)
 
 			return
 		}
 	}
 }
 
-// TODO: MARKER tracing ROOT use InjectTraceParent.
 func (engine *engine) start(im *instanceMemory) {
 	namespace := im.instance.TelemetryInfo.NamespaceName
 	workflowPath := GetInodePath(im.instance.Instance.WorkflowPath)
@@ -234,8 +233,7 @@ func (engine *engine) start(im *instanceMemory) {
 	ctx := context.Background()
 	ctx, span, err := tracing.InjectTraceParent(ctx, im.instance.TelemetryInfo.TraceParent, "scheduler starts instance: "+im.GetInstanceID().String()+", workflow: "+im.instance.Instance.WorkflowPath)
 	if err != nil {
-		slog.Error("Failed to populate tracing information. Workflow execution halted.", "namespace", namespace, "workflow", workflowPath, "instance", im.ID(), "error", err)
-		// TODO: should we crash?
+		slog.Warn("Failed to populate tracing information. Workflow execution halted.", "namespace", namespace, "workflow", workflowPath, "instance", im.ID(), "error", err)
 	}
 	defer span.End()
 	slog.Debug("Workflow execution initiated.", "namespace", namespace, "workflow", workflowPath, "instance", im.ID())
@@ -243,7 +241,7 @@ func (engine *engine) start(im *instanceMemory) {
 	workflow, err := im.Model()
 	if err != nil {
 		engine.CrashInstance(ctx, im, derrors.NewUncatchableError(ErrCodeWorkflowUnparsable, "failed to parse workflow YAML: %v", err))
-		slog.Error("Failed to parse workflow YAML. Workflow execution halted.", "namespace", namespace, "workflow", workflowPath, "instance", im.ID(), "error", err)
+		slog.ErrorContext(ctx, "Failed to parse workflow YAML. Workflow execution halted.", "namespace", namespace, "workflow", workflowPath, "instance", im.ID(), "error", err)
 
 		return
 	}
@@ -252,7 +250,7 @@ func (engine *engine) start(im *instanceMemory) {
 
 	ctx, err = engine.registerScheduled(ctx, id)
 	if err != nil {
-		slog.Debug("Failed to register workflow as scheduled. Workflow execution may be delayed or halted.", "namespace", namespace, "workflow", workflowPath, "instance", id, "error", err)
+		slog.DebugContext(ctx, "Failed to register workflow as scheduled. Workflow execution may be delayed or halted.", "namespace", namespace, "workflow", workflowPath, "instance", id, "error", err)
 
 		return
 	}
@@ -262,7 +260,7 @@ func (engine *engine) start(im *instanceMemory) {
 		"data": workflow.GetStartState().GetID(),
 	})
 	if err != nil {
-		slog.Error("Failed to marshal start state payload. Halting workflow execution.", "namespace", namespace, "workflow", workflowPath, "instance", id, "error", err)
+		slog.ErrorContext(ctx, "Failed to marshal start state payload. Halting workflow execution.", "namespace", namespace, "workflow", workflowPath, "instance", id, "error", err)
 		panic(err) // TODO?
 	}
 
@@ -286,13 +284,13 @@ func (engine *engine) ReportActionResults(ctx context.Context, req *actionResult
 
 	uid, err := uuid.Parse(req.InstanceID)
 	if err != nil {
-		slog.Debug("failed in ReportActionResults", "this", this(), "error", err)
+		slog.DebugContext(ctx, "failed in ReportActionResults", "this", this(), "error", err)
 		return err
 	}
 
 	err = engine.enqueueInstanceMessage(ctx, uid, "action", payload)
 	if err != nil {
-		slog.Debug("failed to enqueque ReportActionResults", "this", this(), "error", err)
+		slog.DebugContext(ctx, "failed to enqueque ReportActionResults", "this", this(), "error", err)
 		return err
 	}
 

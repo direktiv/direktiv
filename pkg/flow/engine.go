@@ -82,7 +82,7 @@ func (engine *engine) kickWaitingInstances() {
 
 	for idx := range instances {
 		instance := instances[idx]
-		slog.Debug("Kicking instance.", "instance_id", instance.ID)
+		slog.Debug("Kicking instance.", "instance", instance.ID)
 
 		data, err := json.Marshal(&instanceMessageChannelData{
 			InstanceID:        instance.ID,

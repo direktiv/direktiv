@@ -127,7 +127,7 @@ func (srv *NetworkServer) functions(w http.ResponseWriter, r *http.Request) {
 	defer func(req *inboundRequest) {
 		r := recover()
 		if r != nil {
-			slog.Error("Request panicked.", "action_id", id, "request", r)
+			slog.Error("Request panicked.", "action-id", id, "request", r)
 			srv.local.drainRequest(req)
 		} else {
 			_ = req.r.Body.Close()
@@ -150,9 +150,9 @@ func (srv *NetworkServer) functions(w http.ResponseWriter, r *http.Request) {
 		select {
 		case <-req.end:
 			waiting = false
-			slog.Debug("Request returned.", "action_id", id)
+			slog.Debug("Request returned.", "action-id", id)
 		case <-time.After(time.Minute * 5):
-			slog.Info("Request hasn't returned yet.", "action_id", id)
+			slog.Info("Request hasn't returned yet.", "action-id", id)
 		}
 	}
 }

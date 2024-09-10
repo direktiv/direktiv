@@ -25,6 +25,22 @@ func ExtractTraceParent(ctx context.Context) (string, error) {
 	return traceParent, nil
 }
 
+func TraceParentToTraceID(traceParent string) (string, error) {
+	// Set up the propagation map with the traceparent
+	carrier := propagation.MapCarrier{
+		"traceparent": traceParent,
+	}
+
+	propagator := propagation.TraceContext{}
+	newCtx := propagator.Extract(context.Background(), carrier)
+	span := trace.SpanFromContext(newCtx)
+	if span.SpanContext().TraceID().IsValid() {
+		return span.SpanContext().TraceID().String(), nil
+	}
+
+	return "", fmt.Errorf("failed extract trace-id from traceparent")
+}
+
 // InjectTraceParent injects the given traceparent into a new context and returns it with the parent span.
 // The tracer is automatically obtained from the global OpenTelemetry TracerProvider.
 func InjectTraceParent(ctx context.Context, traceParent string, traceName string) (context.Context, trace.Span, error) {

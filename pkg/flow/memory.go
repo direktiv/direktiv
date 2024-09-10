@@ -348,6 +348,6 @@ func (engine *engine) freeMemory(ctx context.Context, im *instanceMemory) error 
 func (engine *engine) forceFreeCriticalMemory(ctx context.Context, im *instanceMemory) {
 	err := im.flushUpdates(ctx)
 	if err != nil {
-		slog.Error("Failed to force flush updates for instance memory during critical memory release.", "instance", im.ID().String(), "namespace", im.Namespace(), "error", err)
+		slog.ErrorContext(ctx, "Failed to force flush updates for instance memory during critical memory release.", "instance", im.ID().String(), "namespace", im.Namespace(), "error", err)
 	}
 }

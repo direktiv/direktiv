@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"strings"
@@ -16,6 +17,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/engine"
 	"github.com/direktiv/direktiv/pkg/instancestore"
+	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -80,7 +82,11 @@ func marshalForAPI(data *instancestore.InstanceData) *InstanceData {
 	x, err := engine.ParseInstanceData(data)
 	if err == nil {
 		resp.Flow = x.RuntimeInfo.Flow
-		//		resp.TraceID = x.TelemetryInfo.TraceID
+		traceID, err := tracing.TraceParentToTraceID(x.TelemetryInfo.TraceParent)
+		if err != nil {
+			slog.Debug("marshalForAPI: failed to convert to tracie-id", "error", err)
+		}
+		resp.TraceID = traceID
 		for i := range x.DescentInfo.Descent {
 			resp.Lineage = append(resp.Lineage, marshalLineage(&x.DescentInfo.Descent[i]))
 		}
