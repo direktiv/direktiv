@@ -110,7 +110,7 @@ test("the logs panel can be resized, it displays a log message from the workflow
   ).toContainText("Running state logic");
 
   await expect(
-    scrollContainer.locator("pre").locator("span").nth(2),
+    scrollContainer.locator("pre").locator("span").nth(3), // Note: there is no way to know the index of a log line
     "It displays the log message from the log field in the workflow yaml"
   ).toContainText("log-message");
 
