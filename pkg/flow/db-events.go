@@ -16,7 +16,7 @@ import (
 )
 
 func (events *events) addEvent(ctx context.Context, eventin *cloudevents.Event, ns *datastore.Namespace) error {
-	// TODO Log print
+	slog.DebugContext(ctx, "Event-Bus registering event")
 	li := make([]*datastore.Event, 0)
 	if eventin.ID() == "" {
 		eventin.SetID(uuid.NewString())

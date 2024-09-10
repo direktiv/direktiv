@@ -147,7 +147,6 @@ func trim(s string) string {
 	return strings.TrimPrefix(s, "/")
 }
 
-// TODO: MARKER revisit logging & tracing.
 func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*instanceMemory, error) {
 	ctx = args.Namespace.WithTags(ctx)
 	ctx = tracing.AddTag(ctx, "calledAs", args.CalledAs)
@@ -315,7 +314,7 @@ func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextSt
 	if err != nil {
 		// TODO Should we crash? engine.CrashInstance(ctx, im, err)
 		// return nil
-		slog.Error("transition failed to init telemetry", "error", err)
+		slog.Warn("transition failed to init telemetry", "error", err)
 	}
 	defer cleanup()
 	workflow, err := im.Model()
@@ -467,20 +466,20 @@ func (engine *engine) TerminateInstance(ctx context.Context, im *instanceMemory)
 
 //nolint:gocognit
 func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata []byte, err error) *states.Transition {
-	loggingCtx := im.Namespace().WithTags(ctx)
-	instanceTrackCtx := tracing.WithTrack(loggingCtx, tracing.BuildInstanceTrack(im.instance))
-	instanceTrackCtx, cleanup, err3 := tracing.NewSpan(instanceTrackCtx, "prepering instance for state execution")
+	ctx = im.Namespace().WithTags(ctx)
+	ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrack(im.instance))
+	ctx, cleanup, err3 := tracing.NewSpan(ctx, "preparing instance for state execution")
 	if err != nil {
 		slog.Error("failed to init telemery in runstate", "error", err3)
 	}
 	defer cleanup()
 
-	slog.DebugContext(instanceTrackCtx, "Starting state execution.")
+	slog.DebugContext(ctx, "Starting state execution.")
 
 	var transition *states.Transition
 
 	if err != nil {
-		slog.ErrorContext(instanceTrackCtx, "Error before state execution.", "error", err)
+		slog.ErrorContext(ctx, "Error before state execution.", "error", err)
 
 		goto failure
 	}
@@ -489,7 +488,7 @@ func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata
 		var object interface{}
 		object, err = jqOne(im.data, lq) //nolint:contextcheck
 		if err != nil {
-			slog.ErrorContext(instanceTrackCtx, "Failed to process jq query on state data.", "error", fmt.Errorf("query failed %v, err: %w", lq, err))
+			slog.ErrorContext(ctx, "Failed to process jq query on state data.", "error", fmt.Errorf("query failed %v, err: %w", lq, err))
 
 			goto failure
 		}
@@ -498,7 +497,7 @@ func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata
 		data, err = json.MarshalIndent(object, "", "  ")
 		if err != nil {
 			err = derrors.NewInternalError(fmt.Errorf("failed to marshal state data: %w", err))
-			slog.ErrorContext(instanceTrackCtx, "Failed to marshal jq query result for logging.", "error", fmt.Errorf("failed to marshal state data: %w", err))
+			slog.ErrorContext(ctx, "Failed to marshal jq query result for logging.", "error", fmt.Errorf("failed to marshal state data: %w", err))
 
 			goto failure
 		}
@@ -510,7 +509,7 @@ func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata
 		var object interface{}
 		object, err = jqOne(im.data, md) //nolint:contextcheck
 		if err != nil {
-			slog.ErrorContext(instanceTrackCtx, "Failed to execute jq query for metadata.", "error", err)
+			slog.ErrorContext(ctx, "Failed to execute jq query for metadata.", "error", err)
 
 			goto failure
 		}
@@ -519,7 +518,7 @@ func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata
 		data, err = json.MarshalIndent(object, "", "  ")
 		if err != nil {
 			err = derrors.NewInternalError(fmt.Errorf("failed to marshal state data: %w", err))
-			slog.ErrorContext(instanceTrackCtx, "Failed to marshal metadata.", "error", err)
+			slog.ErrorContext(ctx, "Failed to marshal metadata.", "error", err)
 
 			goto failure
 		}
@@ -527,52 +526,52 @@ func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata
 		engine.StoreMetadata(ctx, im, string(data))
 	}
 
-	instanceTrackCtx = im.WithTags(instanceTrackCtx)
-	slog.DebugContext(instanceTrackCtx, "Executing state logic.")
+	ctx = im.WithTags(ctx)
+	slog.DebugContext(ctx, "Executing state logic.")
 
 	transition, err = im.logic.Run(ctx, wakedata)
 	if err != nil {
-		slog.ErrorContext(instanceTrackCtx, "State logic execution failed.", "error", err)
+		slog.ErrorContext(ctx, "State logic execution failed.", "error", err)
 
 		goto failure
 	}
-	slog.DebugContext(instanceTrackCtx, "Applying state transformation based on logic run.")
+	slog.DebugContext(ctx, "Applying state transformation based on logic run.")
 
 	err = engine.transformState(ctx, im, transition)
 	if err != nil {
-		slog.ErrorContext(instanceTrackCtx, "State transformation failed.", "error", err)
+		slog.ErrorContext(ctx, "State transformation failed.", "error", err)
 
 		goto failure
 	}
 
-	slog.DebugContext(instanceTrackCtx, "State logic executed. Processing post-execution actions.")
+	slog.DebugContext(ctx, "State logic executed. Processing post-execution actions.")
 
 next:
-	slog.DebugContext(instanceTrackCtx, "Processing post-execution actions.")
+	slog.DebugContext(ctx, "Processing post-execution actions.")
 
 	return engine.transitionState(ctx, im, transition)
 
 failure:
-	slog.ErrorContext(instanceTrackCtx, "State execution failed.", "error", err)
+	slog.ErrorContext(ctx, "State execution failed.", "error", err)
 	// traceStateError(ctx, err)
 
 	var breaker int
 
 	if breaker > 10 {
 		err = derrors.NewInternalError(errors.New("somehow ended up in a catchable error loop"))
-		slog.ErrorContext(instanceTrackCtx, "Possible error loop detected.", "error", err)
+		slog.ErrorContext(ctx, "Possible error loop detected.", "error", err)
 	}
 
 	err1 := engine.CancelInstanceChildren(ctx, im)
 	if err1 != nil {
-		slog.ErrorContext(instanceTrackCtx, "Canceling Instance's children failed.", "error", err1)
+		slog.ErrorContext(ctx, "Canceling Instance's children failed.", "error", err1)
 	}
 	cerr := new(derrors.CatchableError)
 
 	if errors.As(err, &cerr) {
 		err2 := im.StoreData("error", cerr)
 		if err2 != nil {
-			slog.ErrorContext(instanceTrackCtx, "Failed to store error data.", "error", err2)
+			slog.ErrorContext(ctx, "Failed to store error data.", "error", err2)
 		}
 
 		for _, catch := range im.logic.ErrorDefinitions() {
@@ -583,12 +582,12 @@ failure:
 
 			matched, regErr := regexp.MatchString(errRegex, cerr.Code)
 			if regErr != nil {
-				slog.ErrorContext(instanceTrackCtx, "Regex compilation failed for error catch definition.", "error", regErr)
+				slog.ErrorContext(ctx, "Regex compilation failed for error catch definition.", "error", regErr)
 			}
 
 			if matched {
-				slog.InfoContext(instanceTrackCtx, "Catchable error matched; executing defined transition.")
-				slog.ErrorContext(instanceTrackCtx, "State failed with an error", "error", fmt.Errorf("state failed with an error '%s': %s", cerr.Code, cerr.Message))
+				slog.InfoContext(ctx, "Catchable error matched; executing defined transition.")
+				slog.ErrorContext(ctx, "State failed with an error", "error", fmt.Errorf("state failed with an error '%s': %s", cerr.Code, cerr.Message))
 
 				transition = &states.Transition{
 					Transform: "",
@@ -599,7 +598,7 @@ failure:
 			}
 		}
 	}
-	slog.ErrorContext(instanceTrackCtx, "Unrecoverable error encountered; initiating instance crash.", "error", err)
+	slog.ErrorContext(ctx, "Unrecoverable error encountered; initiating instance crash.", "error", err)
 	engine.CrashInstance(ctx, im, err)
 
 	return nil
@@ -688,7 +687,7 @@ func (engine *engine) subflowInvoke(ctx context.Context, pi *enginerefactor.Pare
 		Descent: append(instance.DescentInfo.Descent, *pi),
 	}
 
-	// TODO: add log line here
+	slog.InfoContext(ctx, "Invoking a subflow")
 
 	args := &newInstanceArgs{
 		ID: uuid.New(),
@@ -720,7 +719,6 @@ func (engine *engine) subflowInvoke(ctx context.Context, pi *enginerefactor.Pare
 	}
 
 	im.AddAttribute("loop-index", fmt.Sprintf("%d", pi.Branch))
-	// TODO: traceSubflowInvoke(ctx, args.CalledAs, im.ID().String())
 
 	return im, nil
 }

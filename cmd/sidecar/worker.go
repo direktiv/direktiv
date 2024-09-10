@@ -37,7 +37,7 @@ func (worker *inboundWorker) Cancel() {
 	worker.lock.Lock()
 
 	if worker.cancel != nil {
-		slog.Debug("Cancelling worker.", "worker-id", worker.id)
+		slog.Debug("Cancelling worker.", "worker", worker.id)
 		worker.cancel()
 	}
 
@@ -45,7 +45,7 @@ func (worker *inboundWorker) Cancel() {
 }
 
 func (worker *inboundWorker) run() {
-	slog.Debug("Starting worker", "worker-id", worker.id)
+	slog.Debug("Starting worker", "worker", worker.id)
 
 	for {
 		worker.lock.Lock()
@@ -64,12 +64,12 @@ func (worker *inboundWorker) run() {
 		worker.lock.Unlock()
 
 		id := req.r.Header.Get(actionIDHeader)
-		slog.Debug("Worker picked up request.", "worker-id", worker.id, "action-id", id)
+		slog.Debug("Worker picked up request.", "worker", worker.id, "action-id", id)
 
 		worker.handleFunctionRequest(req)
 	}
 
-	slog.Debug("Worker shut down.", "worker-id", worker.id)
+	slog.Debug("Worker shut down.", "worker", worker.id)
 }
 
 type outcome struct {

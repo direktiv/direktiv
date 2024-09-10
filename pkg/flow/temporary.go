@@ -550,8 +550,6 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	// potentially dns error for a brand new service
 	// we just loop and see if we can recreate the service
 	// one minute wait max
-	// cleanup := utils.TraceHTTPRequest(ctx, req)
-	// defer cleanup()
 
 	//nolint:intrange
 	for i := 0; i < 300; i++ { // 5 minutes retries.

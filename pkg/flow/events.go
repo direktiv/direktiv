@@ -66,8 +66,6 @@ func (events *events) handleEvent(ctx context.Context, ns *datastore.Namespace, 
 			}
 			defer end()
 			slog.DebugContext(ctx, "invoking instance via cloudevent")
-			//_, end := traceMessageTrigger(ctx, "ins: "+instanceID.String())
-			//defer end()
 			events.engine.WakeEventsWaiter(instanceID, ev) //nolint:contextcheck
 		},
 		GetListenersByTopic: func(ctx context.Context, s string) ([]*datastore.EventListener, error) {

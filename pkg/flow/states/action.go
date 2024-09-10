@@ -7,11 +7,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"time"
 
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	log "github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/model"
+	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/senseyeio/duration"
 )
 
@@ -160,6 +162,12 @@ func (logic *actionLogic) scheduleAction(ctx context.Context, attempt int) error
 	if ok {
 		args.iterator = iterator
 	}
+	ctx = tracing.AddTag(ctx, "branch", iterator)
+	ctx, end, err := tracing.NewSpan(ctx, "Scheduling a action branch")
+	if err != nil {
+		slog.Warn("scheduleAction: tracing.NewSpan", "error", err)
+	}
+	defer end()
 	child, err := invokeAction(ctx, args)
 	if err != nil {
 		return err

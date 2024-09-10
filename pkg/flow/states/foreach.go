@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"time"
 
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
@@ -275,6 +276,11 @@ func (logic *forEachLogic) processActionResults(ctx context.Context, children []
 	}
 	logic.AddAttribute("loop-index", fmt.Sprintf("%d", idx))
 	ctx = tracing.AddTag(ctx, "branch", idx)
+	ctx, end, err := tracing.NewSpan(ctx, "processing action results")
+	if err != nil {
+		slog.Warn("tracing.NewSpan failed in processActionResults", "error", "err")
+	}
+	defer end()
 	logic.Log(ctx, log.Info, "Child '%s' returned.", id)
 
 	if results.ErrorCode != "" {
