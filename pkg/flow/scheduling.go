@@ -177,7 +177,7 @@ func (engine *engine) executorLoop(ctx context.Context, im *instanceMemory) {
 }
 
 func (engine *engine) InstanceYield(ctx context.Context, im *instanceMemory) {
-	slog.DebugContext(ctx, "Instance preparing to yield and release resources.", "instance", im.ID().String(), "namespace", im.Namespace())
+	slog.DebugContext(ctx, "Instance preparing to yield and release resources.", "instance", im.ID().String(), "namespace", im.Namespace().Name)
 
 	err := engine.freeMemory(ctx, im)
 	if err != nil {
