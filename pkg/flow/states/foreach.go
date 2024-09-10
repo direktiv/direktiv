@@ -278,7 +278,7 @@ func (logic *forEachLogic) processActionResults(ctx context.Context, children []
 	ctx = tracing.AddTag(ctx, "branch", idx)
 	ctx, end, err := tracing.NewSpan(ctx, "processing action results")
 	if err != nil {
-		slog.Warn("tracing.NewSpan failed in processActionResults", "error", "err")
+		slog.Debug("tracing.NewSpan failed in processActionResults", "error", "err")
 	}
 	defer end()
 	logic.Log(ctx, log.Debug, "Child '%s' returned.", id)

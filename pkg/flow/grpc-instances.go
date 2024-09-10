@@ -64,13 +64,13 @@ func (engine *engine) StartWorkflow(ctx context.Context, namespace, path string,
 	// TODO logging
 	ctx, end, err := tracing.NewSpan(ctx, "starting workflow")
 	if err != nil {
-		slog.Warn("failed tracing.NewSpan()", "error", fmt.Errorf("StartWorkflow %w", err))
+		slog.Debug("failed tracing.NewSpan()", "error", fmt.Errorf("StartWorkflow %w", err))
 	}
 	defer end()
 	calledAs := path
 	traceParent, err := tracing.ExtractTraceParent(ctx)
 	if err != nil {
-		slog.Warn("failed tracing.ExtractTraceParent", "error", fmt.Errorf("StartWorkflow %w", err))
+		slog.Debug("failed tracing.ExtractTraceParent", "error", fmt.Errorf("StartWorkflow %w", err))
 	}
 
 	if input == nil {

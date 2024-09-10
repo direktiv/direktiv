@@ -511,7 +511,7 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 ) {
 	ctx, spanEnd, err := tracing.NewSpan(ctx, "executing knative request to action")
 	if err != nil {
-		slog.Warn("failed in doKnativeHTTPRequest", "error", err)
+		slog.Debug("failed in doKnativeHTTPRequest", "error", err)
 	}
 	defer spanEnd()
 	slog.DebugContext(ctx, "starting function request")

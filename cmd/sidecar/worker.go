@@ -82,7 +82,7 @@ type outcome struct {
 func (worker *inboundWorker) doFunctionRequest(ctx context.Context, ir *functionRequest) (*outcome, error) {
 	ctx, spanEnd, err := tracing.NewSpan(ctx, "execting function request: "+ir.actionId+", workflow: "+ir.Workflow)
 	if err != nil {
-		slog.Warn("doFunctionRequest failed", "error", err)
+		slog.Debug("doFunctionRequest failed", "error", err)
 	}
 	defer spanEnd()
 
@@ -567,7 +567,7 @@ func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
 	rctx = tracing.AddTag(rctx, "action-id", ir.actionId)
 	rctx, end, err2 := tracing.NewSpan(rctx, "handle function request")
 	if err2 != nil {
-		slog.Warn("failed while doFunctionRequest", "error", err2)
+		slog.Debug("failed while doFunctionRequest", "error", err2)
 	}
 	defer end()
 	rctx, span, err2 := tracing.InjectTraceParent(rctx, ir.ActionContext.TraceParent, "action registered for execution: "+ir.actionId+", workflow: "+ir.Workflow)

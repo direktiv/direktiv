@@ -166,7 +166,7 @@ func (flow *flow) cronHandler(data []byte) {
 	ctx = ns.WithTags(ctx)
 	ctx, end, err := tracing.NewSpan(ctx, "starting cron handler")
 	if err != nil {
-		slog.Warn("cronhandler failed to start span", "error", err)
+		slog.Debug("cronhandler failed to start span", "error", err)
 	}
 	defer end()
 
@@ -176,7 +176,7 @@ func (flow *flow) cronHandler(data []byte) {
 	hash := base64.StdEncoding.EncodeToString(md5sum[:])
 	traceParent, err := tracing.ExtractTraceParent(ctx)
 	if err != nil {
-		slog.Warn("cronhandler failed to init telemetry", "error", err)
+		slog.Debug("cronhandler failed to init telemetry", "error", err)
 	}
 	args := &newInstanceArgs{
 		tx:        tx,

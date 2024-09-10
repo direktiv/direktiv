@@ -165,7 +165,7 @@ func (logic *actionLogic) scheduleAction(ctx context.Context, attempt int) error
 	ctx = tracing.AddTag(ctx, "branch", iterator)
 	ctx, end, err2 := tracing.NewSpan(ctx, "Scheduling a action branch")
 	if err2 != nil {
-		slog.Warn("scheduleAction: tracing.NewSpan", "error", err2)
+		slog.Debug("scheduleAction: tracing.NewSpan", "error", err2)
 	}
 	defer end()
 	child, err := invokeAction(ctx, args)
