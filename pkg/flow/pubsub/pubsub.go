@@ -274,9 +274,16 @@ func (s *Subscription) Close() error {
 }
 
 func (pubsub *Pubsub) periodicFlush() {
+	ticker := time.NewTicker(100 * time.Millisecond)
+	defer ticker.Stop()
+
 	for {
-		time.Sleep(time.Millisecond)
-		pubsub.timeFlush()
+		select {
+		case <-ticker.C:
+			pubsub.timeFlush()
+		case <-pubsub.closer:
+			return
+		}
 	}
 }
 
@@ -369,7 +376,9 @@ func (pubsub *Pubsub) flush() {
 
 func (pubsub *Pubsub) timeFlush() {
 	pubsub.bufferMtx.Lock()
-	go pubsub.flush()
+	// defer pubsub.bufferMtx.Unlock()
+
+	pubsub.flush()
 }
 
 func (pubsub *Pubsub) Publish(req *PubsubUpdate) {
