@@ -482,7 +482,7 @@ type knativeHandle struct {
 }
 
 func (child *knativeHandle) Run(ctx context.Context) {
-	child.engine.doActionRequest(ctx, child.ar, child.arReq) // using a go routine may be unsafe (caused panics) where but why?
+	go child.engine.doActionRequest(ctx, child.ar, child.arReq) // using a go routine may be unsafe (caused panics) where but why?
 }
 
 func (child *knativeHandle) Info() states.ChildInfo {
@@ -514,7 +514,7 @@ func (engine *engine) doActionRequest(ctx context.Context, ar *functionRequest, 
 	case model.SystemKnativeFunctionType:
 		fallthrough
 	case model.ReusableContainerFunctionType:
-		engine.doKnativeHTTPRequest(ctx, ar, arReq) // go routine causes panic
+		go engine.doKnativeHTTPRequest(ctx, ar, arReq) // go routine causes panic
 	default:
 		panic(fmt.Errorf("unexpected type: %+v", ar.Container.Type))
 	}
