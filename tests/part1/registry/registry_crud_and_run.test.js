@@ -55,6 +55,8 @@ describe('Test services crud operations', () => {
 			.get(`/api/v2/namespaces/${testNamespace}/registries`)
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body.data.length).toEqual(2)
+		const sortedResponseData = listRes.body.data.sort((a, b) => a.id.localeCompare(b.id));
+
 		const expectedData = [
 			{
 				namespace: 'test-services',
@@ -70,7 +72,6 @@ describe('Test services crud operations', () => {
 			}
 		].sort((a, b) => a.id.localeCompare(b.id));
 
-		expect(sortedResponseData.length).toEqual(2);
 		expect(sortedResponseData).toEqual(expectedData);
 	})
 
