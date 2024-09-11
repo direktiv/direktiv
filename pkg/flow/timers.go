@@ -1,6 +1,7 @@
 package flow
 
 import (
+	"encoding/json"
 	"fmt"
 	"log/slog"
 	"os"
@@ -8,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/flow/pubsub"
+	"github.com/direktiv/direktiv/pkg/pubsub"
 	"github.com/robfig/cron/v3"
 )
 
@@ -26,11 +27,11 @@ type timers struct {
 	cron     *cron.Cron
 	fns      map[string]func([]byte)
 	timers   map[string]*timer
-	pubsub   *pubsub.Pubsub
+	pubsub   *pubsub.Bus
 	hostname string
 }
 
-func initTimers(pubsub *pubsub.Pubsub) (*timers, error) {
+func initTimers(pubsub *pubsub.Bus) (*timers, error) {
 	timers := new(timers)
 	timers.fns = make(map[string]func([]byte))
 	timers.cron = cron.New()
@@ -45,6 +46,8 @@ func initTimers(pubsub *pubsub.Pubsub) (*timers, error) {
 	}
 
 	go timers.cron.Start()
+
+	timers.pubsub.Subscribe(clusterDeleteInstanceTimersMessage{}, timers.deleteTimersForInstanceHandler)
 
 	return timers, nil
 }
@@ -225,8 +228,20 @@ func (timers *timers) addOneShot(name, fn string, timeos time.Time, data []byte)
 	return nil
 }
 
+type clusterDeleteInstanceTimersMessage struct {
+	Name string
+}
+
 func (timers *timers) deleteTimersForInstance(name string) {
-	timers.pubsub.ClusterDeleteInstanceTimers(name)
+	_ = timers.pubsub.Publish(clusterDeleteInstanceTimersMessage{
+		Name: name,
+	})
+}
+
+func (timers *timers) deleteTimersForInstanceHandler(data string) {
+	var msg clusterDeleteInstanceTimersMessage
+	_ = json.Unmarshal([]byte(data), &msg)
+	timers.deleteTimersForInstanceNoBroadcast(msg.Name)
 }
 
 func (timers *timers) deleteTimersForInstanceNoBroadcast(name string) {
@@ -258,56 +273,24 @@ func (timers *timers) deleteTimersForInstanceNoBroadcast(name string) {
 	}
 }
 
-func (timers *timers) deleteTimersForActivityNoBroadcast(name string) {
-	var keys []string
-
-	timers.mtx.Lock()
-	defer timers.mtx.Unlock()
-
-	delT := func(pattern, name string) {
-		for _, n := range timers.timers {
-			if strings.HasPrefix(n.name, fmt.Sprintf(pattern, name)) {
-				key := timers.prepDisableTimer(n)
-				keys = append(keys, key)
-			}
-		}
-	}
-
-	patterns := []string{
-		"timeout:%s",
-		"%s",
-	}
-
-	for _, p := range patterns {
-		delT(p, name)
-	}
-
-	for _, key := range keys {
-		delete(timers.timers, key)
-	}
+type deleteTimerMessage struct {
+	// timers.deleteTimerByName("", timers.pubsub.Hostname, req.Key)
+	Name string
 }
 
-func (timers *timers) deleteInstanceTimersHandler(req *pubsub.PubsubUpdate) {
-	timers.deleteTimersForInstanceNoBroadcast(req.Key)
+func (timers *timers) deleteTimer(name string) {
+	_ = timers.pubsub.Publish(clusterDeleteInstanceTimersMessage{
+		Name: name,
+	})
 }
 
-func (timers *timers) deleteActivityTimersHandler(req *pubsub.PubsubUpdate) {
-	timers.deleteTimersForActivityNoBroadcast(req.Key)
+func (timers *timers) deleteTimerHandler(data string) {
+	var msg deleteTimerMessage
+	_ = json.Unmarshal([]byte(data), &msg)
+	timers.deleteTimerByName(msg.Name)
 }
 
-func (timers *timers) deleteTimerHandler(req *pubsub.PubsubUpdate) {
-	timers.deleteTimerByName("", timers.pubsub.Hostname, req.Key)
-}
-
-func (timers *timers) deleteTimerByName(oldController, newController, name string) {
-	if oldController != newController && oldController != "" {
-		// send delete to specific server
-
-		timers.pubsub.HostnameDeleteTimer(oldController, name)
-
-		return
-	}
-
+func (timers *timers) deleteTimerByName(name string) {
 	// delete local timer
 	var key string
 
@@ -320,12 +303,8 @@ func (timers *timers) deleteTimerByName(oldController, newController, name strin
 	delete(timers.timers, key)
 
 	timers.mtx.Unlock()
-
-	if newController == "" {
-		timers.pubsub.ClusterDeleteTimer(name)
-	}
 }
 
 func (timers *timers) deleteCronForWorkflow(id string) {
-	timers.deleteTimerByName("", timers.hostname, fmt.Sprintf("cron:%s", id))
+	timers.deleteTimerByName(fmt.Sprintf("cron:%s", id))
 }
