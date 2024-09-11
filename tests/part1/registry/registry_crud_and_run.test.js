@@ -55,21 +55,23 @@ describe('Test services crud operations', () => {
 			.get(`/api/v2/namespaces/${testNamespace}/registries`)
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body.data.length).toEqual(2)
-		expect(listRes.body).toMatchObject({
-			data: [
-				{
-					namespace: 'test-services',
-					id: 'secret-c163796084d652e67cb0',
-					url: 'docker.io',
-					user: 'me',
-				},
-				{
-					namespace: 'test-services',
-					id: 'secret-7a95ae8578ed80f27403',
-					url: 'docker2.io',
-					user: 'me2',
-				}],
-		})
+		const expectedData = [
+			{
+				namespace: 'test-services',
+				id: 'secret-c163796084d652e67cb0',
+				url: 'docker.io',
+				user: 'me',
+			},
+			{
+				namespace: 'test-services',
+				id: 'secret-7a95ae8578ed80f27403',
+				url: 'docker2.io',
+				user: 'me2',
+			}
+		].sort((a, b) => a.id.localeCompare(b.id));
+
+		expect(sortedResponseData.length).toEqual(2);
+		expect(sortedResponseData).toEqual(expectedData);
 	})
 
 	it(`should delete a registry`, async () => {
