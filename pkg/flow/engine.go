@@ -544,7 +544,7 @@ func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata
 		WorkflowPath: im.instance.Instance.WorkflowPath,
 		Status:       core.LogUnknownStatus,
 	}, im.GetState())
-	slog.InfoContext(ctx, "Running state logic.")
+	slog.DebugContext(ctx, "Running state logic.")
 
 	transition, err = im.logic.Run(ctx, wakedata)
 	if err != nil {
