@@ -544,7 +544,7 @@ func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata
 		WorkflowPath: im.instance.Instance.WorkflowPath,
 		Status:       core.LogUnknownStatus,
 	}, im.GetState())
-	slog.DebugContext(ctx, "Running state logic.")
+	slog.InfoContext(ctx, "Running state logic.")
 
 	transition, err = im.logic.Run(ctx, wakedata)
 	if err != nil {
@@ -702,6 +702,7 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 	im.updateArgs.Status = &im.instance.Instance.Status
 
 	slog.InfoContext(instanceTrackCtx, "Workflow completed.")
+	slog.InfoContext(tracing.WithTrack(ctx, tracing.BuildNamespaceTrack(im.Namespace().Name)), "Workflow completed.")
 
 	defer engine.pubsub.NotifyInstance(im.instance.Instance.ID)
 	defer engine.pubsub.NotifyInstances(im.Namespace())
