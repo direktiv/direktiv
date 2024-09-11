@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 
+import regex from '../../common/regex'
 import common from '../../common'
 import request from '../../common/request'
 

@@ -2,6 +2,7 @@ import { beforeAll, describe, expect, it } from '@jest/globals'
 
 import common from '../../common'
 import request from '../../common/request'
+import regex from '../../common/regex'
 
 const testNamespace = 'test-services'
 
@@ -59,12 +60,14 @@ describe('Test services crud operations', () => {
 
 		const expectedData = [
 			{
+				createdAt: expect.stringMatching(regex.timestampRegex),
 				namespace: 'test-services',
 				id: 'secret-c163796084d652e67cb0',
 				url: 'docker.io',
 				user: 'me',
 			},
 			{
+				createdAt: expect.stringMatching(regex.timestampRegex),
 				namespace: 'test-services',
 				id: 'secret-7a95ae8578ed80f27403',
 				url: 'docker2.io',
