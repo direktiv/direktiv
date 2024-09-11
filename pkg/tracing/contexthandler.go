@@ -23,7 +23,7 @@ func (h *ContextHandler) Enabled(ctx context.Context, level slog.Level) bool {
 
 // Handle implements slog.Handler.
 func (h *ContextHandler) Handle(ctx context.Context, rec slog.Record) error {
-	if attrs := getAttributes(ctx); len(attrs) > 0 {
+	if attrs := GetAttributes(ctx); len(attrs) > 0 {
 		res := make([]slog.Attr, 0, len(attrs)*2)
 		for k, v := range attrs {
 			res = append(res, slog.Attr{Key: k, Value: slog.AnyValue(v)})

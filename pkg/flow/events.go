@@ -38,7 +38,7 @@ func initEvents(srv *server, appendStagingEvent func(ctx context.Context, events
 }
 
 func (events *events) handleEvent(ctx context.Context, ns *datastore.Namespace, ce *cloudevents.Event) error {
-	ctx = tracing.WithTrack(ns.WithTags(ctx), tracing.BuildNamespaceTrack(ns.Name))
+	ctx = tracing.WithTrack(tracing.AddNamespace(ctx, ns.Name), tracing.BuildNamespaceTrack(ns.Name))
 	ctx, end, err := tracing.NewSpan(ctx, "handling event-messages")
 	if err != nil {
 		slog.Debug("GetListenersByTopic failed to init telemetry", "error", err)
@@ -48,7 +48,7 @@ func (events *events) handleEvent(ctx context.Context, ns *datastore.Namespace, 
 	slog.DebugContext(ctx, "handle CloudEvent started")
 	e := pkgevents.EventEngine{
 		WorkflowStart: func(ctx context.Context, workflowID uuid.UUID, ev ...*cloudevents.Event) {
-			ctx = tracing.WithTrack(ns.WithTags(ctx), tracing.BuildNamespaceTrack(ns.Name))
+			ctx = tracing.WithTrack(tracing.AddNamespace(ctx, ns.Name), tracing.BuildNamespaceTrack(ns.Name))
 			ctx, end, err := tracing.NewSpan(ctx, "starting workflow via CloudEvent")
 			if err != nil {
 				slog.Debug("WorkflowStart failed to init telemetry", "error", err)
@@ -58,8 +58,8 @@ func (events *events) handleEvent(ctx context.Context, ns *datastore.Namespace, 
 			events.engine.EventsInvoke(ctx, workflowID, ev...) //nolint:contextcheck
 		},
 		WakeInstance: func(instanceID uuid.UUID, ev []*cloudevents.Event) {
-			ctx = tracing.AddTag(ctx, "instance", instanceID)
-			ctx = tracing.WithTrack(ns.WithTags(ctx), tracing.BuildNamespaceTrack(ns.Name))
+			ctx = tracing.AddLoseInstanceIDAttr(ctx, instanceID.String())
+			ctx = tracing.WithTrack(tracing.AddNamespace(ctx, ns.Name), tracing.BuildNamespaceTrack(ns.Name))
 			ctx, end, err := tracing.NewSpan(ctx, "waking instance via CloudEvent")
 			if err != nil {
 				slog.Debug("WakeInstance failed to init telemetry", "error", err)
@@ -69,7 +69,7 @@ func (events *events) handleEvent(ctx context.Context, ns *datastore.Namespace, 
 			events.engine.WakeEventsWaiter(instanceID, ev) //nolint:contextcheck
 		},
 		GetListenersByTopic: func(ctx context.Context, s string) ([]*datastore.EventListener, error) {
-			ctx = tracing.WithTrack(ns.WithTags(ctx), tracing.BuildNamespaceTrack(ns.Name))
+			ctx = tracing.WithTrack(tracing.AddNamespace(ctx, ns.Name), tracing.BuildNamespaceTrack(ns.Name))
 			ctx, end, err := tracing.NewSpan(ctx, "Fetching cloudevens from event bus")
 			if err != nil {
 				slog.Debug("GetListenersByTopic failed to init telemetry", "error", err)
@@ -93,7 +93,7 @@ func (events *events) handleEvent(ctx context.Context, ns *datastore.Namespace, 
 			return res, nil
 		},
 		UpdateListeners: func(ctx context.Context, listener []*datastore.EventListener) []error {
-			ctx = tracing.WithTrack(ns.WithTags(ctx), tracing.BuildNamespaceTrack(ns.Name))
+			ctx = tracing.WithTrack(tracing.AddNamespace(ctx, ns.Name), tracing.BuildNamespaceTrack(ns.Name))
 			ctx, end, err := tracing.NewSpan(ctx, "Updating even-listeners in the event bus")
 			if err != nil {
 				slog.Debug("UpdateListeners:c failed to init telemetry", "error", err)
@@ -130,7 +130,7 @@ func (events *events) handleEvent(ctx context.Context, ns *datastore.Namespace, 
 }
 
 func (events *events) BroadcastCloudevent(ctx context.Context, ns *datastore.Namespace, event *cloudevents.Event, timer int64) error {
-	loggingCtx := tracing.WithTrack(ns.WithTags(ctx), tracing.BuildNamespaceTrack(ns.Name))
+	loggingCtx := tracing.WithTrack(tracing.AddNamespace(ctx, ns.Name), tracing.BuildNamespaceTrack(ns.Name))
 	loggingCtx, cleanup, err := tracing.NewSpan(loggingCtx, "Adding CloudEvent to the Event Bus. ID: "+event.ID())
 	if err != nil {
 		slog.Debug("failed to popupate telemetry in BroadcastCloudevent", "error", err)
@@ -176,7 +176,7 @@ func (events *events) BroadcastCloudevent(ctx context.Context, ns *datastore.Nam
 
 func (events *events) listenForEvents(ctx context.Context, im *instanceMemory, ceds []*model.ConsumeEventDefinition, all bool) error {
 	var transformedEvents []*model.ConsumeEventDefinition
-	loggingCtx := im.Namespace().WithTags(ctx)
+	loggingCtx := tracing.AddNamespace(ctx, im.Namespace().Name)
 	instanceTrackCtx := tracing.WithTrack(loggingCtx, tracing.BuildInstanceTrack(im.instance))
 	instanceTrackCtx, end, err := tracing.NewSpan(instanceTrackCtx, "waiting for events")
 	if err != nil {

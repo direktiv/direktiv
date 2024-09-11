@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/core"
 	enginerefactor "github.com/direktiv/direktiv/pkg/engine"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/instancestore"
@@ -101,8 +102,15 @@ func (engine *engine) executor(ctx context.Context, id uuid.UUID) {
 	}
 
 	slog.Debug("Beginning instance execution loop.", "instance", id)
-	ctx = im.Namespace().WithTags(ctx)
-	ctx = im.WithTags(ctx)
+	ctx = tracing.AddInstanceMemoryAttr(ctx, tracing.InstanceAttributes{
+		Namespace:    im.Namespace().Name,
+		InstanceID:   im.GetInstanceID().String(),
+		Invoker:      im.instance.Instance.Invoker,
+		Callpath:     tracing.CreateCallpath(im.instance),
+		WorkflowPath: im.instance.Instance.WorkflowPath,
+		Status:       core.LogUnknownStatus,
+	}, im.GetState())
+	ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrack(im.instance))
 	ctx, span, err2 := tracing.InjectTraceParent(ctx, im.instance.TelemetryInfo.TraceParent, "scheduler continues instance: "+im.instance.Instance.WorkflowPath)
 	if err2 != nil {
 		slog.Warn("engine executor failed to inject trace parent", "error", err2)

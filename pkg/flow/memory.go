@@ -10,7 +10,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/datastore"
 	enginerefactor "github.com/direktiv/direktiv/pkg/engine"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
@@ -210,21 +209,12 @@ func (im *instanceMemory) StoreData(key string, val interface{}) error {
 	return nil
 }
 
-func (im *instanceMemory) WithTags(ctx context.Context) context.Context {
-	if im.instance != nil {
-		ctx = im.instance.WithTags(ctx)
-	}
-
-	tags, ok := ctx.Value(core.LogTagsKey).(map[string]interface{})
-	if !ok {
-		tags = make(map[string]interface{})
-	}
-
+func (im *instanceMemory) GetState() string {
 	if im.logic != nil {
-		tags["state"] = im.logic.GetID()
+		return im.logic.GetID()
 	}
 
-	return context.WithValue(ctx, core.LogTagsKey, tags)
+	return ""
 }
 
 var errEngineSync = errors.New("instance appears to be under control of another node")

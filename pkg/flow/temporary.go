@@ -131,7 +131,16 @@ func (im *instanceMemory) ListenForEvents(ctx context.Context, events []*model.C
 }
 
 func (im *instanceMemory) Log(ctx context.Context, level log.Level, a string, x ...interface{}) {
-	ctx = im.WithTags(ctx)
+	ctx = tracing.AddInstanceMemoryAttr(ctx, tracing.InstanceAttributes{
+		Namespace:    im.Namespace().Name,
+		InstanceID:   im.GetInstanceID().String(),
+		Invoker:      im.instance.Instance.Invoker,
+		Callpath:     tracing.CreateCallpath(im.instance),
+		WorkflowPath: im.instance.Instance.WorkflowPath,
+		Status:       core.LogUnknownStatus,
+	}, im.GetState())
+	ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrack(im.instance))
+
 	switch level {
 	case log.Info:
 		slog.InfoContext(ctx, fmt.Sprintf(a, x...))
@@ -482,8 +491,13 @@ func (child *knativeHandle) Info() states.ChildInfo {
 
 func (engine *engine) doActionRequest(ctx context.Context, ar *functionRequest, arReq *enginerefactor.ActionRequest) {
 	// Log warning if timeout exceeds max allowed timeout.
-	ctx = tracing.AddNamespace(ctx, arReq.Namespace)
-	ctx = tracing.AddInstanceAttr(ctx, arReq.Instance, "", arReq.Callpath, arReq.Workflow)
+	ctx = tracing.AddInstanceAttr(ctx, tracing.InstanceAttributes{
+		Namespace:    arReq.Namespace,
+		InstanceID:   arReq.Instance,
+		Callpath:     arReq.Callpath,
+		WorkflowPath: arReq.Workflow,
+		Status:       core.LogUnknownStatus,
+	})
 	ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrackViaCallpath(arReq.Callpath))
 
 	if actionTimeout := time.Duration(ar.Timeout) * time.Second; actionTimeout > engine.server.config.GetFunctionsTimeout() {
@@ -617,7 +631,13 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 
 func (engine *engine) reportError(ctx context.Context, ar *enginerefactor.ActionContext, err error) {
 	ctx = tracing.AddNamespace(ctx, ar.Namespace)
-	ctx = tracing.AddInstanceAttr(ctx, ar.Instance, "", ar.Callpath, ar.Workflow)
+	tracing.AddInstanceAttr(ctx, tracing.InstanceAttributes{
+		Namespace:    ar.Namespace,
+		InstanceID:   ar.Instance,
+		Callpath:     ar.Callpath,
+		WorkflowPath: ar.Workflow,
+		Status:       core.LogUnknownStatus,
+	})
 	ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrackViaCallpath(ar.Callpath))
 	slog.ErrorContext(
 		ctx,

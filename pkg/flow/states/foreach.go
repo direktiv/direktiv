@@ -275,7 +275,7 @@ func (logic *forEachLogic) processActionResults(ctx context.Context, children []
 		return nil, derrors.NewInternalError(errors.New("incorrect child action ID"))
 	}
 	logic.AddAttribute("loop-index", fmt.Sprintf("%d", idx))
-	ctx = tracing.AddTag(ctx, "branch", idx)
+	ctx = tracing.AddBranch(ctx, idx)
 	ctx, end, err := tracing.NewSpan(ctx, "processing action results")
 	if err != nil {
 		slog.Debug("tracing.NewSpan failed in processActionResults", "error", "err")

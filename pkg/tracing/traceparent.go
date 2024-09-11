@@ -57,7 +57,7 @@ func InjectTraceParent(ctx context.Context, traceParent string, traceName string
 	// Start a new span with this context, making it the parent span
 	newCtx, span := tracer.Start(newCtx, traceName)
 	if span.SpanContext().IsValid() {
-		attr := getCoreAttributes(ctx)
+		attr := GetCoreAttributes(ctx)
 		kv := make([]attribute.KeyValue, 0, len(attr)*2)
 		for k, v := range attr {
 			kv = append(kv, attribute.String(k, fmt.Sprint(v)))
@@ -67,7 +67,7 @@ func InjectTraceParent(ctx context.Context, traceParent string, traceName string
 		return newCtx, span, nil
 	}
 
-	attr := getCoreAttributes(ctx)
+	attr := GetCoreAttributes(ctx)
 	kv := make([]attribute.KeyValue, 0, len(attr)*2)
 	for k, v := range attr {
 		kv = append(kv, attribute.String(k, fmt.Sprint(v)))
@@ -86,7 +86,7 @@ func NewSpan(ctx context.Context, name string) (context.Context, func(), error) 
 		return ctx, func() {}, fmt.Errorf("failed to start span for %s", name)
 	}
 	ctx = ctx2
-	attr := getCoreAttributes(ctx)
+	attr := GetCoreAttributes(ctx)
 	kv := make([]attribute.KeyValue, 0, len(attr)*2)
 	for k, v := range attr {
 		kv = append(kv, attribute.String(k, fmt.Sprint(v)))

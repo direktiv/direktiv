@@ -20,6 +20,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/direktiv/direktiv/pkg/core"
 	enginerefactor "github.com/direktiv/direktiv/pkg/engine"
 	"github.com/direktiv/direktiv/pkg/flow"
 	"github.com/direktiv/direktiv/pkg/tracing"
@@ -562,9 +563,17 @@ func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
 	rctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	rctx = tracing.AddNamespace(rctx, ir.Namespace)
+	rctx = tracing.AddInstanceMemoryAttr(rctx, tracing.InstanceAttributes{
+		Namespace:    ir.Namespace,
+		InstanceID:   ir.Instance,
+		Status:       core.LogUnknownStatus,
+		WorkflowPath: ir.Workflow,
+		Callpath:     ir.Callpath,
+	}, ir.State)
+	rctx = tracing.WithTrack(rctx, tracing.BuildInstanceTrackViaCallpath(ir.Callpath))
+	rctx = tracing.AddActionID(rctx, aid)
+	rctx = tracing.AddNamespace(rctx, ir.Namespace)
 	rctx = tracing.AddStateAttr(rctx, ir.State)
-	rctx = tracing.AddInstanceAttr(rctx, ir.Instance, "flow", ir.Callpath, ir.Workflow)
-	rctx = tracing.AddTag(rctx, "action-id", ir.actionId)
 	rctx, end, err2 := tracing.NewSpan(rctx, "handle function request")
 	if err2 != nil {
 		slog.Debug("failed while doFunctionRequest", "error", err2)

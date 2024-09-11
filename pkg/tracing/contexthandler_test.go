@@ -31,7 +31,7 @@ func TestContextHandler_LogOutputWithAttributes(t *testing.T) {
 
 	// Create a context with attributes
 	ctx := context.Background()
-	ctx = tracing.AddTag(ctx, "key", "value")
+	ctx = tracing.AddNamespace(ctx, "namespace1")
 	ctx = tracing.WithTrack(ctx, "test-track")
 
 	// Log a message with this context
@@ -43,7 +43,7 @@ func TestContextHandler_LogOutputWithAttributes(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Verify that the attributes from the context are present in the log output
-	assert.Equal(t, "value", logOutput["key"], "Expected 'key' attribute to be present in the log")
+	assert.Equal(t, "namespace1", logOutput["namespace"], "Expected 'namespace' attribute to be present in the log")
 	assert.Equal(t, "test-track", logOutput[string(core.LogTrackKey)], "Expected 'track' attribute to be present in the log")
 	assert.Equal(t, "Test message", logOutput["msg"], "Expected log message to be 'Test message'")
 }
@@ -74,22 +74,22 @@ func TestContextHandler_DuplicateAttributes(t *testing.T) {
 
 	// Create a context with attributes
 	ctx := context.Background()
-	ctx = tracing.AddTag(ctx, "key", "context-value")
+	ctx = tracing.AddNamespace(ctx, "namespace1")
 
 	// Log a message and also set the same key via slog.With
-	logger.With("key", "slog-value").InfoContext(ctx, "Test message with possible duplicates")
+	logger.With("namespace", "slog-value").InfoContext(ctx, "Test message with possible duplicates")
 
 	// Capture the log output
 	var logOutput map[string]interface{}
 	err := json.Unmarshal(buf.Bytes(), &logOutput)
 	assert.NoError(t, err)
 
-	assert.Equal(t, "context-value", logOutput["key"], "Expected 'key' to be set by context and not slog.With")
+	assert.Equal(t, "namespace1", logOutput["namespace"], "Expected 'namespace' to be set by context and not slog.With")
 
-	// Ensure that there are no duplicate 'key' attributes
+	// Ensure that there are no duplicate 'namespace' attributes
 	logOutputRaw := buf.String()
-	keyCount := countOccurrences(logOutputRaw, `"key"`)
-	assert.Equal(t, 2, keyCount, "Expected 'key' to appear only twice in the log output (once in each key-value pair)")
+	keyCount := countOccurrences(logOutputRaw, `"namespace"`)
+	assert.Equal(t, 2, keyCount, "Expected 'namespace' to appear only twice in the log output (once in each key-value pair)")
 }
 
 // TestContextHandler_NoDuplicateAttributes ensures that slog attributes take precedence over context attributes
@@ -99,20 +99,20 @@ func TestContextHandler_NoDuplicateAttributes(t *testing.T) {
 
 	// Create a context with attributes
 	ctx := context.Background()
-	ctx = tracing.AddTag(ctx, "key", "context-value")
+	ctx = tracing.AddNamespace(ctx, "namespace1")
 
 	// Log a message and also set the same key via slog.With attributes
-	logger.InfoContext(ctx, "Test message with possible duplicates", "key", "other-value")
+	logger.InfoContext(ctx, "Test message with possible duplicates", "namespace", "other-value")
 
 	// Capture the log output
 	var logOutput map[string]interface{}
 	err := json.Unmarshal(buf.Bytes(), &logOutput)
 	assert.NoError(t, err)
 
-	assert.Equal(t, "other-value", logOutput["key"], "Expected 'key' to be set by slog attrs and not context")
+	assert.Equal(t, "other-value", logOutput["namespace"], "Expected 'namespace' to be set by slog attrs and not context")
 
-	// Ensure that there are no duplicate 'key' attributes
+	// Ensure that there are no duplicate 'namespace' attributes
 	logOutputRaw := buf.String()
-	keyCount := countOccurrences(logOutputRaw, `"key"`)
-	assert.Equal(t, 2, keyCount, "Expected 'key' to appear only twice in the log output (once in each key-value pair)")
+	keyCount := countOccurrences(logOutputRaw, `"namespace"`)
+	assert.Equal(t, 2, keyCount, "Expected 'namespace' to appear only twice in the log output (once in each key-value pair)")
 }

@@ -163,7 +163,7 @@ func (flow *flow) cronHandler(data []byte) {
 
 		return
 	}
-	ctx = ns.WithTags(ctx)
+	ctx = tracing.AddNamespace(ctx, ns.Name)
 	ctx, end, err := tracing.NewSpan(ctx, "starting cron handler")
 	if err != nil {
 		slog.Debug("cronhandler failed to start span", "error", err)

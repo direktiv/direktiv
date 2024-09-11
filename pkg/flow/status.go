@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/direktiv/direktiv/pkg/core"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/instancestore"
 	"github.com/direktiv/direktiv/pkg/tracing"
@@ -44,9 +45,15 @@ func (engine *engine) SetInstanceFailed(ctx context.Context, im *instanceMemory,
 	var code, message string
 	status = instancestore.InstanceStatusFailed
 	code = ErrCodeInternal
-	ctx = tracing.WithTrack(im.WithTags(ctx), tracing.BuildInstanceTrack(im.instance))
-	ctx = im.Namespace().WithTags(ctx)
-	ctx = im.WithTags(ctx)
+	ctx = tracing.AddInstanceMemoryAttr(ctx, tracing.InstanceAttributes{
+		Namespace:    im.Namespace().Name,
+		InstanceID:   im.GetInstanceID().String(),
+		Invoker:      im.instance.Instance.Invoker,
+		Callpath:     tracing.CreateCallpath(im.instance),
+		WorkflowPath: im.instance.Instance.WorkflowPath,
+		Status:       core.LogUnknownStatus,
+	}, im.GetState())
+	ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrack(im.instance))
 
 	uerr := new(derrors.UncatchableError)
 	cerr := new(derrors.CatchableError)

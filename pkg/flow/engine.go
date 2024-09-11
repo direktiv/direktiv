@@ -17,6 +17,7 @@ import (
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/database"
 	"github.com/direktiv/direktiv/pkg/datastore"
 	enginerefactor "github.com/direktiv/direktiv/pkg/engine"
@@ -148,10 +149,14 @@ func trim(s string) string {
 }
 
 func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*instanceMemory, error) {
-	ctx = args.Namespace.WithTags(ctx)
-	ctx = tracing.AddTag(ctx, "calledAs", args.CalledAs)
-	ctx = tracing.AddInstanceAttr(ctx, args.ID.String(), args.Invoker, args.TelemetryInfo.CallPath, args.CalledAs)
-	ctx = tracing.WithTrack(ctx, tracing.BuildNamespaceTrack(args.Namespace.Name))
+	ctx = tracing.AddInstanceAttr(ctx, tracing.InstanceAttributes{
+		Namespace:    args.Namespace.Name,
+		InstanceID:   args.ID.String(),
+		Invoker:      args.Invoker,
+		Callpath:     args.TelemetryInfo.CallPath,
+		WorkflowPath: args.CalledAs,
+		Status:       core.LogRunningStatus,
+	})
 	ctx, cleanup, err2 := tracing.NewSpan(ctx, "creating a new Instance: "+args.ID.String()+", workflow: "+args.CalledAs)
 	if err2 != nil {
 		slog.Debug("failed in new instance", "error", err2)
@@ -375,7 +380,15 @@ func (engine *engine) Transition(ctx context.Context, im *instanceMemory, nextSt
 		engine.CrashInstance(ctx, im, err)
 		return nil
 	}
-	ctx = im.WithTags(ctx)
+	ctx = tracing.AddInstanceMemoryAttr(ctx,
+		tracing.InstanceAttributes{
+			Namespace:    im.Namespace().Name,
+			InstanceID:   im.GetInstanceID().String(),
+			Invoker:      im.instance.Instance.Invoker,
+			Callpath:     tracing.CreateCallpath(im.instance),
+			WorkflowPath: im.instance.Instance.WorkflowPath,
+			Status:       core.LogUnknownStatus,
+		}, im.GetState())
 	t := time.Now().UTC()
 
 	im.instance.RuntimeInfo.Flow = flow
@@ -464,7 +477,7 @@ func (engine *engine) TerminateInstance(ctx context.Context, im *instanceMemory)
 
 //nolint:gocognit
 func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata []byte, err error) *states.Transition {
-	ctx = im.Namespace().WithTags(ctx)
+	ctx = tracing.AddNamespace(ctx, im.Namespace().Name)
 	ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrack(im.instance))
 	ctx, cleanup, err3 := tracing.NewSpan(ctx, "preparing instance for state execution")
 	if err != nil {
@@ -523,8 +536,14 @@ func (engine *engine) runState(ctx context.Context, im *instanceMemory, wakedata
 
 		engine.StoreMetadata(ctx, im, string(data))
 	}
-
-	ctx = im.WithTags(ctx)
+	ctx = tracing.AddInstanceMemoryAttr(ctx, tracing.InstanceAttributes{
+		Namespace:    im.Namespace().Name,
+		InstanceID:   im.GetInstanceID().String(),
+		Invoker:      im.instance.Instance.Invoker,
+		Callpath:     tracing.CreateCallpath(im.instance),
+		WorkflowPath: im.instance.Instance.WorkflowPath,
+		Status:       core.LogUnknownStatus,
+	}, im.GetState())
 	slog.InfoContext(ctx, "Running state logic.")
 
 	transition, err = im.logic.Run(ctx, wakedata)
@@ -610,8 +629,15 @@ func (engine *engine) transformState(ctx context.Context, im *instanceMemory, tr
 	if s, ok := transition.Transform.(string); ok && (s == "" || s == ".") {
 		return nil
 	}
-	loggingCtx := im.Namespace().WithTags(ctx)
-	loggingCtx = tracing.WithTrack(im.WithTags(loggingCtx), tracing.BuildInstanceTrack(im.instance))
+	loggingCtx := tracing.AddInstanceMemoryAttr(ctx, tracing.InstanceAttributes{
+		Namespace:    im.instance.Instance.Namespace,
+		InstanceID:   im.GetInstanceID().String(),
+		Invoker:      im.instance.Instance.Invoker,
+		Callpath:     tracing.CreateCallpath(im.instance),
+		WorkflowPath: im.instance.Instance.WorkflowPath,
+		Status:       core.LogUnknownStatus,
+	}, im.GetState())
+	loggingCtx = tracing.WithTrack(loggingCtx, tracing.BuildInstanceTrack(im.instance))
 	slog.DebugContext(loggingCtx, "Transforming state data.")
 
 	x, err := jqObject(im.data, transition.Transform) //nolint:contextcheck
@@ -642,8 +668,15 @@ func (engine *engine) transitionState(ctx context.Context, im *instanceMemory, t
 
 		return nil
 	}
-	loggingCtx := im.Namespace().WithTags(ctx)
-	instanceTrackCtx := tracing.WithTrack(im.WithTags(loggingCtx), tracing.BuildInstanceTrack(im.instance))
+	loggingCtx := tracing.AddInstanceMemoryAttr(ctx, tracing.InstanceAttributes{
+		Namespace:    im.Namespace().Name,
+		InstanceID:   im.GetInstanceID().String(),
+		Invoker:      im.instance.Instance.Invoker,
+		Callpath:     tracing.CreateCallpath(im.instance),
+		WorkflowPath: im.instance.Instance.WorkflowPath,
+		Status:       core.LogUnknownStatus,
+	}, im.GetState())
+	instanceTrackCtx := tracing.WithTrack(loggingCtx, tracing.BuildInstanceTrack(im.instance))
 
 	if transition.NextState != "" {
 		slog.DebugContext(instanceTrackCtx, "Transitioning to next state.")
@@ -913,18 +946,32 @@ func (engine *engine) SetMemory(ctx context.Context, im *instanceMemory, x inter
 }
 
 func (engine *engine) reportInstanceCrashed(ctx context.Context, im *instanceMemory, typ, code string, err error) {
-	loggingCtx := im.Namespace().WithTags(ctx)
+	loggingCtx := tracing.AddInstanceMemoryAttr(ctx, tracing.InstanceAttributes{
+		Namespace:    im.Namespace().Name,
+		InstanceID:   im.GetInstanceID().String(),
+		Invoker:      im.instance.Instance.Invoker,
+		Callpath:     tracing.CreateCallpath(im.instance),
+		WorkflowPath: im.instance.Instance.WorkflowPath,
+		Status:       core.LogUnknownStatus,
+	}, im.GetState())
+	instanceTrackCtx := tracing.WithTrack(loggingCtx, tracing.BuildInstanceTrack(im.instance))
 
-	instanceTrackCtx := tracing.WithTrack(im.WithTags(loggingCtx), tracing.BuildInstanceTrack(im.instance))
-	namespaceTrackCtx := tracing.WithTrack(im.WithTags(loggingCtx), tracing.BuildNamespaceTrack(im.Namespace().Name))
+	namespaceTrackCtx := tracing.WithTrack(loggingCtx, tracing.BuildNamespaceTrack(im.Namespace().Name))
 	msg := fmt.Sprintf("Workflow failed with code = %v, type = %v, error = %v", typ, code, err.Error())
 	slog.ErrorContext(instanceTrackCtx, msg, "error", err)
 	slog.ErrorContext(namespaceTrackCtx, msg, "error", err)
 }
 
 func (engine *engine) UserLog(ctx context.Context, im *instanceMemory, msg string) {
-	loggingCtx := im.Namespace().WithTags(ctx)
-	instanceTrackCtx := tracing.WithTrack(im.WithTags(loggingCtx), tracing.BuildInstanceTrack(im.instance))
+	loggingCtx := tracing.AddInstanceMemoryAttr(ctx, tracing.InstanceAttributes{
+		Namespace:    im.Namespace().Name,
+		InstanceID:   im.GetInstanceID().String(),
+		Invoker:      im.instance.Instance.Invoker,
+		Callpath:     tracing.CreateCallpath(im.instance),
+		WorkflowPath: im.instance.Instance.WorkflowPath,
+		Status:       core.LogUnknownStatus,
+	}, im.GetState())
+	instanceTrackCtx := tracing.WithTrack(loggingCtx, tracing.BuildInstanceTrack(im.instance))
 	slog.InfoContext(instanceTrackCtx, msg)
 }
 

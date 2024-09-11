@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/core"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/flow/states"
 	"github.com/direktiv/direktiv/pkg/instancestore"
@@ -114,9 +115,18 @@ func (engine *engine) instanceMessagesChannelHandler(data string) {
 }
 
 func (engine *engine) handleInstanceMessage(ctx context.Context, im *instanceMemory, msg *instancestore.InstanceMessageData) *states.Transition {
-	nsCtx := im.Namespace().WithTags(ctx)
-	instanceCtx := im.WithTags(nsCtx)
-	nsCtx = tracing.WithTrack(instanceCtx, tracing.BuildNamespaceTrack(im.Namespace().Name))
+	instanceCtx := tracing.AddInstanceMemoryAttr(ctx,
+		tracing.InstanceAttributes{
+			Namespace:    im.Namespace().Name,
+			InstanceID:   im.GetInstanceID().String(),
+			Invoker:      im.instance.Instance.Invoker,
+			Callpath:     tracing.CreateCallpath(im.instance),
+			WorkflowPath: im.instance.Instance.WorkflowPath,
+			Status:       core.LogUnknownStatus,
+		},
+		im.GetState(),
+	)
+	nsCtx := tracing.WithTrack(instanceCtx, tracing.BuildNamespaceTrack(im.Namespace().Name))
 	ctx = tracing.WithTrack(instanceCtx, tracing.BuildInstanceTrack(im.instance))
 
 	if im.instance.Instance.EndedAt != nil && !im.instance.Instance.EndedAt.IsZero() {

@@ -127,8 +127,13 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 	req, ok := srv.requests[actionId]
 	srv.requestsLock.Unlock()
 	ctx := tracing.AddNamespace(r.Context(), req.Namespace)
-	ctx = tracing.AddInstanceAttr(ctx, req.Instance, "action", req.Callpath, req.Workflow)
-	ctx = tracing.AddStateAttr(ctx, req.State)
+	ctx = tracing.AddInstanceMemoryAttr(ctx, tracing.InstanceAttributes{
+		Namespace:    req.Namespace,
+		InstanceID:   req.Instance,
+		Status:       core.LogUnknownStatus,
+		WorkflowPath: req.Workflow,
+		Callpath:     req.Callpath,
+	}, req.State)
 	ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrackViaCallpath(req.Callpath))
 	ctx, span, err2 := tracing.InjectTraceParent(ctx, req.ActionContext.TraceParent, "writing logs in action: "+actionId+", workflow: "+req.Workflow)
 	if err2 != nil {
@@ -210,8 +215,14 @@ func (srv *LocalServer) varHandler(w http.ResponseWriter, r *http.Request) {
 	req, ok := srv.requests[actionId]
 	srv.requestsLock.Unlock()
 	ctx := tracing.AddNamespace(r.Context(), req.Namespace)
-	ctx = tracing.AddInstanceAttr(ctx, req.Instance, "action", req.Callpath, req.Workflow)
-	ctx = tracing.AddStateAttr(ctx, req.State)
+	ctx = tracing.AddInstanceMemoryAttr(ctx, tracing.InstanceAttributes{
+		Namespace:    req.Namespace,
+		InstanceID:   req.Instance,
+		Status:       core.LogUnknownStatus,
+		WorkflowPath: req.Workflow,
+		Callpath:     req.Callpath,
+	}, req.State)
+	ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrackViaCallpath(req.Callpath))
 	ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrackViaCallpath(req.Callpath))
 	reportError := func(code int, err error) {
 		http.Error(w, err.Error(), code)
@@ -234,9 +245,15 @@ func (srv *LocalServer) varHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ctx = req.ctx
-	ctx = tracing.AddNamespace(r.Context(), req.Namespace)
-	ctx = tracing.AddInstanceAttr(ctx, req.Instance, "action", req.Callpath, req.Workflow)
-	ctx = tracing.AddStateAttr(ctx, req.State)
+	ctx = tracing.AddNamespace(ctx, req.Namespace)
+	ctx = tracing.AddInstanceMemoryAttr(ctx, tracing.InstanceAttributes{
+		Namespace:    req.Namespace,
+		InstanceID:   req.Instance,
+		Status:       core.LogUnknownStatus,
+		WorkflowPath: req.Workflow,
+		Callpath:     req.Callpath,
+	}, req.State)
+	ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrackViaCallpath(req.Callpath))
 	ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrackViaCallpath(req.Callpath))
 
 	ir := req.functionRequest
