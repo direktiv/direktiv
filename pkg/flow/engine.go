@@ -283,6 +283,7 @@ func (engine *engine) NewInstance(ctx context.Context, args *newInstanceArgs) (*
 
 	engine.pubsub.NotifyInstances(im.Namespace())
 	slog.InfoContext(ctx, "Workflow has been triggered")
+	slog.InfoContext(tracing.WithTrack(ctx, tracing.BuildNamespaceTrack(im.Namespace().Name)), "Workflow has been triggered")
 
 	return im, nil
 }
