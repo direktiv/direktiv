@@ -23,14 +23,14 @@ describe('Test services crud operations', () => {
 
 				[
 					{
-						created_at: expect.anything(),
+						createdAt: expect.stringMatching(regex.timestampRegex),
 						namespace: 'test_namespace_a',
 						id: expect.stringMatching(/^secret-/),
 						url: 'a_domain_1.io',
 						user: 'a_name_1',
 					},
 					{
-						created_at: expect.anything(),
+						createdAt: expect.stringMatching(regex.timestampRegex),
 						namespace: 'test_namespace_a',
 						id: expect.stringMatching(/^secret-/),
 						url: 'a_domain_2.io',
@@ -49,14 +49,14 @@ describe('Test services crud operations', () => {
 		expect(listRes.body.data).toEqual(
 			expect.arrayContaining([
 				{
-					created_at: expect.anything(),
+					createdAt: expect.stringMatching(regex.timestampRegex),
 					namespace: 'test_namespace_b',
 					id: expect.stringMatching(/^secret-/),
 					url: 'b_domain_1.io',
 					user: 'b_name_1',
 				},
 				{
-					created_at: expect.anything(),
+					createdAt: expect.stringMatching(regex.timestampRegex),
 					namespace: 'test_namespace_b',
 					id: expect.stringMatching(/^secret-/),
 					url: 'b_domain_2.io',
@@ -79,7 +79,7 @@ function itShouldCreateSecret(it, expect, namespace, url, user, password) {
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toEqual({
 			data: {
-				created_at: expect.anything(),
+				createdAt: expect.stringMatching(regex.timestampRegex),
 				namespace,
 				id: expect.stringMatching(/^secret-/),
 				url,

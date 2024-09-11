@@ -163,7 +163,7 @@ func (c *knativeClient) listServicePods(id string) (any, error) {
 
 	type pod struct {
 		ID        string    `json:"id"`
-		CreatedAt time.Time `json:"created_at"`
+		CreatedAt time.Time `json:"createdAt"`
 	}
 
 	pods := []*pod{}

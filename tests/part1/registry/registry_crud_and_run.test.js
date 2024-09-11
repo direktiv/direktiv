@@ -21,7 +21,7 @@ describe('Test services crud operations', () => {
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toEqual({
 			data: {
-				created_at: expect.anything(),
+				createdAt: expect.stringMatching(regex.timestampRegex),
 				namespace: 'test-services',
 				id: 'secret-c163796084d652e67cb0',
 				url: 'docker.io',
@@ -41,7 +41,7 @@ describe('Test services crud operations', () => {
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toEqual({
 			data: {
-				created_at: expect.anything(),
+				createdAt: expect.stringMatching(regex.timestampRegex),
 				namespace: 'test-services',
 				id: 'secret-7a95ae8578ed80f27403',
 				url: 'docker2.io',
