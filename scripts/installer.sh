@@ -443,8 +443,52 @@ EOF
         if [ "$WITH_MONITORING" == "true" ]; then
             cat <<EOF >> $DIREKTIV_CONFIG
 flow:
-  logging: json
+  debug: true
+fluent-bit:
+  install: true
+  envFrom:
+    - secretRef:
+        name: direktiv-fluentbit
+  config:
+    inputs: |
+      [INPUT]
+          Name                    tail
+          Path                    /var/log/containers/*flow*.log,/var/log/containers/*direktiv-sidecar*.log
+          Mem_Buf_Limit           5MB
+          Skip_Long_Lines         Off
+          Tag                     input
+          multiline.parser        cri, docker
+          Refresh_Interval        1
+          Buffer_Max_Size         64k
+    outputs: |
+      [OUTPUT]
+          name                    pgsql
+          match                   flow.*
+          port                    ${PG_PORT}
+          table                   fluentbit
+          user                    ${PG_USER}
+          database                ${PG_DB_NAME}
+          host                    ${PG_HOST}
+          password                ${PG_PASSWORD}
 
+      [OUTPUT]
+          Name                    loki
+          Match                   *
+          Host                    loki.default
+          Port                    3100
+          Labels                  job=fluentbit
+          Line_Format             json
+    filters: |
+      [FILTER]
+          Name                    rewrite_tag
+          Match                   input
+          Rule                    $log ^.*"track":"([^"]*).*$ flow.$1 true
+      [FILTER]
+          Name parser
+          Match *
+          Parser json
+          Key_Name log
+          Reserve_Data on
 opentelemetry:
   # -- opentelemetry address where Direktiv is sending data to
   address: "tempo.default:4317"
@@ -509,7 +553,6 @@ install_monitoring() {
     helm repo add fluent https://fluent.github.io/helm-charts
     helm repo update
     helm upgrade --install tempo grafana/tempo
-    helm upgrade --install fluent-bit fluent/fluent-bit --values scripts/fluentbit.values.yaml
 
     echo "Monitoring components installed successfully."
 }

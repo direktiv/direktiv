@@ -25,15 +25,15 @@ states:
     result: x`))
 
 	it(`generate some logs`, async () => {
-		const res = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/instances?path=noop.yaml&wait=true`)
+		const res = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${namespace}/instances?path=noop.yaml&wait=true`)
 		expect(res.statusCode).toEqual(200)
 	})
 
 	retry50(`should contain instance log entries`, async () => {
-		const instRes = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespace }/instances`)
+		const instRes = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${namespace}/instances`)
 		expect(instRes.statusCode).toEqual(200)
 
-		const logRes = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespace }/logs?instance=${ instRes.body.data[0].id }`)
+		const logRes = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${namespace}/logs?instance=${instRes.body.data[0].id}`)
 		expect(logRes.statusCode).toEqual(200)
 
 		expect(logRes.body.data).toEqual(
@@ -67,16 +67,16 @@ states:
     result: jq(.doesnotexist)`))
 
 	it(`generate some logs for error`, async () => {
-		const res = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/instances?path=noop-error.yaml&wait=true`)
+		const res = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${namespace}/instances?path=noop-error.yaml&wait=true`)
 		expect(res.statusCode).toEqual(500)
 		expect(res.headers['direktiv-instance-error-code']).toEqual('direktiv.jq.badCommand')
 	})
 
 	retry50(`should contain instance log entries`, async () => {
-		const instRes = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespace }/instances?filter.field=AS&filter.type=CONTAINS&filter.val=noop-error`)
+		const instRes = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${namespace}/instances?filter.field=AS&filter.type=CONTAINS&filter.val=noop-error`)
 		expect(instRes.statusCode).toEqual(200)
 
-		const logRes = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespace }/logs?instance=${ instRes.body.data[0].id }`)
+		const logRes = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${namespace}/logs?instance=${instRes.body.data[0].id}`)
 		expect(logRes.statusCode).toEqual(200)
 
 		expect(logRes.body.data).toEqual(
@@ -111,16 +111,17 @@ states:
 `))
 
 	it(`generate some logs for error`, async () => {
-		const res = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${ namespace }/instances?path=action-error.yaml&wait=true`)
+		const res = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${namespace}/instances?path=action-error.yaml&wait=true`)
+		console.log(res.body)
 		expect(res.statusCode).toEqual(500)
 		expect(res.headers['direktiv-instance-error-code']).toEqual('com.send-request.error')
 	})
 
 	retry50(`should contain instance log entries`, async () => {
-		const instRes = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespace }/instances?filter.field=AS&filter.type=CONTAINS&filter.val=action-error`)
+		const instRes = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${namespace}/instances?filter.field=AS&filter.type=CONTAINS&filter.val=action-error`)
 		expect(instRes.statusCode).toEqual(200)
 
-		const logRes = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${ namespace }/logs?instance=${ instRes.body.data[0].id }`)
+		const logRes = await request(common.config.getDirektivHost()).get(`/api/v2/namespaces/${namespace}/logs?instance=${instRes.body.data[0].id}`)
 		expect(logRes.statusCode).toEqual(200)
 
 		expect(logRes.body.data).toEqual(

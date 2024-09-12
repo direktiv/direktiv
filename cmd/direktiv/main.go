@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"net/http"
 	"os"
 	"strings"
@@ -57,7 +58,7 @@ func main() {
 
 	switch os.Getenv("DIREKTIV_APP") {
 	case "sidecar":
-		sidecar.RunApplication()
+		sidecar.RunApplication(context.Background())
 	case "init":
 		dinit.RunApplication()
 	default:

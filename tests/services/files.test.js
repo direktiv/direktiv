@@ -86,6 +86,7 @@ states:
 `))
 
 	it(`should invoke the '/a.yaml' workflow on a fresh namespace`, async () => {
+		helpers.sleep(10)
 		const req = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${namespaceName}/instances?path=a.yaml&wait=true`)
 		expect(req.statusCode).toEqual(200)
 		expect(req.body).toMatchObject({

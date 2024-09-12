@@ -20,8 +20,10 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/direktiv/direktiv/pkg/core"
 	enginerefactor "github.com/direktiv/direktiv/pkg/engine"
 	"github.com/direktiv/direktiv/pkg/flow"
+	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/direktiv/direktiv/pkg/utils"
 )
 
@@ -36,7 +38,7 @@ func (worker *inboundWorker) Cancel() {
 	worker.lock.Lock()
 
 	if worker.cancel != nil {
-		slog.Debug("Cancelling worker.", "worker_id", worker.id)
+		slog.Debug("Cancelling worker.", "worker", worker.id)
 		worker.cancel()
 	}
 
@@ -44,7 +46,7 @@ func (worker *inboundWorker) Cancel() {
 }
 
 func (worker *inboundWorker) run() {
-	slog.Debug("Starting worker", "worker_id", worker.id)
+	slog.Debug("Starting worker", "worker", worker.id)
 
 	for {
 		worker.lock.Lock()
@@ -63,12 +65,12 @@ func (worker *inboundWorker) run() {
 		worker.lock.Unlock()
 
 		id := req.r.Header.Get(actionIDHeader)
-		slog.Debug("Worker picked up request.", "worker_id", worker.id, "action_id", id)
+		slog.Debug("Worker picked up request.", "worker", worker.id, "action-id", id)
 
 		worker.handleFunctionRequest(req)
 	}
 
-	slog.Debug("Worker shut down.", "worker_id", worker.id)
+	slog.Debug("Worker shut down.", "worker", worker.id)
 }
 
 type outcome struct {
@@ -79,7 +81,13 @@ type outcome struct {
 
 // nolint:canonicalheader
 func (worker *inboundWorker) doFunctionRequest(ctx context.Context, ir *functionRequest) (*outcome, error) {
-	slog.Debug("Forwarding request to service.", "action_id", ir.actionId)
+	ctx, spanEnd, err := tracing.NewSpan(ctx, "execting function request: "+ir.actionId+", workflow: "+ir.Workflow)
+	if err != nil {
+		slog.Debug("doFunctionRequest failed", "error", err)
+	}
+	defer spanEnd()
+
+	slog.DebugContext(ctx, "Forwarding request to service.", "action-id", ir.actionId)
 
 	url := "http://localhost:8080"
 
@@ -92,9 +100,6 @@ func (worker *inboundWorker) doFunctionRequest(ctx context.Context, ir *function
 	req.Header.Set(IteratorHeader, fmt.Sprintf("%d", ir.Branch))
 	req.Header.Set("Direktiv-TempDir", worker.functionDir(ir))
 	req.Header.Set("Content-Type", "application/json")
-
-	cleanup := utils.TraceHTTPRequest(ctx, req)
-	defer cleanup()
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -557,8 +562,28 @@ func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
 	// NOTE: rctx exists because we don't want to immediately cancel the function request if our context is cancelled
 	rctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-
-	rctx = utils.TransplantTelemetryContextInformation(ctx, rctx)
+	rctx = tracing.AddNamespace(rctx, ir.Namespace)
+	rctx = tracing.AddInstanceMemoryAttr(rctx, tracing.InstanceAttributes{
+		Namespace:    ir.Namespace,
+		InstanceID:   ir.Instance,
+		Status:       core.LogUnknownStatus,
+		WorkflowPath: ir.Workflow,
+		Callpath:     ir.Callpath,
+	}, ir.State)
+	rctx = tracing.WithTrack(rctx, tracing.BuildInstanceTrackViaCallpath(ir.Callpath))
+	rctx = tracing.AddActionID(rctx, aid)
+	rctx = tracing.AddNamespace(rctx, ir.Namespace)
+	rctx = tracing.AddStateAttr(rctx, ir.State)
+	rctx, end, err2 := tracing.NewSpan(rctx, "handle function request")
+	if err2 != nil {
+		slog.Debug("failed while doFunctionRequest", "error", err2)
+	}
+	defer end()
+	rctx, span, err2 := tracing.InjectTraceParent(rctx, ir.ActionContext.TraceParent, "action registered for execution: "+ir.actionId+", workflow: "+ir.Workflow)
+	if err2 != nil {
+		slog.Warn("failed while doFunctionRequest", "error", err2)
+	}
+	defer span.End()
 
 	worker.srv.registerActiveRequest(ir, rctx, cancel)
 	defer worker.srv.deregisterActiveRequest(ir.actionId)

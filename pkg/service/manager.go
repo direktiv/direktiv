@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"log/slog"
@@ -131,10 +132,6 @@ func (m *manager) runCycle() []error {
 
 func (m *manager) Run(circuit *core.Circuit) error {
 	cycleTime := m.cfg.GetFunctionsReconcileInterval()
-	cycleFails := 0
-
-	maxSleepDuration := 5 * time.Minute
-
 	for {
 		if circuit.IsDone() {
 			return nil
@@ -146,21 +143,7 @@ func (m *manager) Run(circuit *core.Circuit) error {
 			slog.Error("run cycle", "err", err)
 		}
 
-		if len(errs) > 0 {
-			cycleFails++
-		} else {
-			cycleFails = 0
-		}
-		if cycleFails > 5 {
-			slog.Error("too many cycle fails")
-		}
-
-		sleepDuration := cycleTime * time.Duration(cycleFails+1)
-		if sleepDuration > maxSleepDuration {
-			sleepDuration = maxSleepDuration
-		}
-
-		time.Sleep(sleepDuration)
+		time.Sleep(cycleTime)
 	}
 }
 
@@ -297,13 +280,13 @@ func (m *manager) Rebuild(namespace string, serviceID string) error {
 
 func (m *manager) setServiceDefaults(sv *core.ServiceFileData) {
 	// empty size string defaults to medium
-	nsLogger := tracing.NewNamespaceLogger(sv.Namespace)
+	ctx := tracing.AddNamespace(context.Background(), sv.Namespace)
 	if sv.Size == "" {
-		nsLogger.Warn("empty service size, defaulting to medium", "service_file", sv.FilePath)
+		slog.WarnContext(ctx, "empty service size, defaulting to medium", "service_file", sv.FilePath)
 		sv.Size = "medium"
 	}
 	if sv.Scale > m.cfg.KnativeMaxScale {
-		nsLogger.Warn("service_scale is bigger than allowed max_scale, defaulting to max_scale",
+		slog.WarnContext(ctx, "service_scale is bigger than allowed max_scale, defaulting to max_scale",
 			"service_scale", sv.Scale,
 			"max_scale", m.cfg.KnativeMaxScale,
 			"service_file", sv.FilePath)

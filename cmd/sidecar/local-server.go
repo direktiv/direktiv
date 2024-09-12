@@ -63,8 +63,7 @@ func (srv *LocalServer) Start() {
 
 	srv.router = mux.NewRouter()
 
-	srv.router.Use(utils.TelemetryMiddleware)
-
+	// TODO: Pass trace-id to user container
 	srv.router.HandleFunc("/log", srv.logHandler)
 	srv.router.HandleFunc("/var", srv.varHandler)
 
@@ -127,10 +126,24 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 	srv.requestsLock.Lock()
 	req, ok := srv.requests[actionId]
 	srv.requestsLock.Unlock()
+	ctx := tracing.AddNamespace(r.Context(), req.Namespace)
+	ctx = tracing.AddInstanceMemoryAttr(ctx, tracing.InstanceAttributes{
+		Namespace:    req.Namespace,
+		InstanceID:   req.Instance,
+		Status:       core.LogUnknownStatus,
+		WorkflowPath: req.Workflow,
+		Callpath:     req.Callpath,
+	}, req.State)
+	ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrackViaCallpath(req.Callpath))
+	ctx, span, err2 := tracing.InjectTraceParent(ctx, req.ActionContext.TraceParent, "writing logs in action: "+actionId+", workflow: "+req.Workflow)
+	if err2 != nil {
+		slog.Debug("Failed to populate trace information.", "action", actionId, "error", err2)
+	}
+	defer span.End()
 
 	reportError := func(code int, err error) {
 		http.Error(w, err.Error(), code)
-		slog.Warn("Log handler error occurred.", "action_id", actionId, "action_err_code", code, "error", err)
+		slog.WarnContext(ctx, "Log handler error occurred.", "action", actionId, "action_err_code", code, "error", err)
 	}
 
 	if !ok {
@@ -162,42 +175,36 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(msg) == 0 {
-		slog.Debug("Log handler received an empty message body.", "action_id", actionId)
+		slog.Debug("Log handler received an empty message body.", "action", actionId)
 		return
 	}
 
-	ctx := tracing.AddNamespace(r.Context(), req.Namespace)
-	ctx = tracing.AddInstanceAttr(ctx, req.Instance, "action", req.Callpath, req.Workflow)
-	ctx = tracing.AddTraceAttr(ctx, req.Trace, req.Span)
-	ctx = tracing.AddStateAttr(ctx, req.State)
-	ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrackViaCallpath(req.Callpath))
-
-	entry := tracing.GetLogEntryWithStatus(ctx, tracing.LevelInfo, msg, core.LogRunningStatus)
+	entry := tracing.GetRawLogEntryWithStatus(ctx, tracing.LevelInfo, msg, core.LogRunningStatus)
 	d, err := json.Marshal(entry)
 	if err != nil {
-		slog.Error("Failed to marshal log entry.", "action_id", actionId, "error", err)
+		slog.Error("Failed to marshal log entry.", "action", actionId, "error", err)
 		http.Error(w, "", http.StatusInternalServerError)
 
 		return
 	}
-	slog.Debug("redirect log entry to flow", "org_msg", msg)
+	slog.DebugContext(ctx, "redirect log entry to flow", "org-msg", msg)
 	addr := fmt.Sprintf("http://%v/api/v2/namespaces/%v/logs?instance=%v", srv.flowAddr, req.Namespace, req.Instance)
 	resp, err := doRequest(req.ctx, http.MethodPost, srv.flowToken, addr, bytes.NewBuffer(d))
 	if err != nil {
-		slog.Error("Failed to forward log to Flow.", "action_id", actionId, "error", err)
+		slog.Error("Failed to forward log to Flow.", "action", actionId, "error", err)
 		http.Error(w, "", http.StatusInternalServerError)
 
 		return
 	}
 
 	if _, err := handleResponse(resp, nil); err != nil {
-		slog.Error("Failed to handle Flow response.", "action_id", actionId, "error", err)
+		slog.ErrorContext(ctx, "Failed to handle Flow response.", "action", actionId, "error", err)
 		http.Error(w, "", http.StatusInternalServerError)
 
 		return
 	}
 
-	slog.Debug("Log handler successfully processed message.", "action_id", actionId)
+	slog.DebugContext(ctx, "Log handler successfully processed message.", "action", actionId)
 }
 
 // nolint:canonicalheader
@@ -207,10 +214,19 @@ func (srv *LocalServer) varHandler(w http.ResponseWriter, r *http.Request) {
 	srv.requestsLock.Lock()
 	req, ok := srv.requests[actionId]
 	srv.requestsLock.Unlock()
-
+	ctx := tracing.AddNamespace(r.Context(), req.Namespace)
+	ctx = tracing.AddInstanceMemoryAttr(ctx, tracing.InstanceAttributes{
+		Namespace:    req.Namespace,
+		InstanceID:   req.Instance,
+		Status:       core.LogUnknownStatus,
+		WorkflowPath: req.Workflow,
+		Callpath:     req.Callpath,
+	}, req.State)
+	ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrackViaCallpath(req.Callpath))
+	ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrackViaCallpath(req.Callpath))
 	reportError := func(code int, err error) {
 		http.Error(w, err.Error(), code)
-		slog.Warn("Variable retrieval failed.", "action_id", actionId, "error", err)
+		slog.WarnContext(ctx, "Variable retrieval failed.", "action", actionId, "error", err)
 	}
 
 	if !ok {
@@ -228,7 +244,18 @@ func (srv *LocalServer) varHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx := req.ctx
+	ctx = req.ctx
+	ctx = tracing.AddNamespace(ctx, req.Namespace)
+	ctx = tracing.AddInstanceMemoryAttr(ctx, tracing.InstanceAttributes{
+		Namespace:    req.Namespace,
+		InstanceID:   req.Instance,
+		Status:       core.LogUnknownStatus,
+		WorkflowPath: req.Workflow,
+		Callpath:     req.Callpath,
+	}, req.State)
+	ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrackViaCallpath(req.Callpath))
+	ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrackViaCallpath(req.Callpath))
+
 	ir := req.functionRequest
 
 	scope := r.URL.Query().Get("scope")
@@ -241,7 +268,7 @@ func (srv *LocalServer) varHandler(w http.ResponseWriter, r *http.Request) {
 		varMeta, statusCode, err := getVariableMetaFromFlow(ctx, srv.flowToken, srv.flowAddr, ir, scope, key)
 		if err != nil {
 			reportError(statusCode, err)
-			slog.Warn("Failed retrieving a Variable.", "action_id", actionId, "key", key, "scope", scope)
+			slog.WarnContext(ctx, "Failed retrieving a Variable.", "action", actionId, "key", key, "scope", scope)
 
 			return
 		}
@@ -249,36 +276,36 @@ func (srv *LocalServer) varHandler(w http.ResponseWriter, r *http.Request) {
 		varData, err := getVariableDataViaID(ctx, srv.flowToken, srv.flowAddr, ir.Namespace, varMeta.ID.String())
 		if err != nil {
 			reportError(http.StatusInternalServerError, err)
-			slog.Warn("Failed retrieving a Variable.", "action_id", actionId, "key", key, "scope", scope)
+			slog.WarnContext(ctx, "Failed retrieving a Variable.", "action", actionId, "key", key, "scope", scope)
 
 			return
 		}
 		_, err = io.Copy(w, bytes.NewReader(varData.Data))
 		if err != nil {
 			reportError(http.StatusInternalServerError, err)
-			slog.Error("Failed retrieving a Variable.", "action_id", actionId, "key", key, "scope", scope)
+			slog.Error("Failed retrieving a Variable.", "action", actionId, "key", key, "scope", scope)
 
 			return
 		}
 
-		slog.Debug("Variable successfully retrieved.", "action_id", actionId, "key", key, "scope", scope)
+		slog.DebugContext(ctx, "Variable successfully retrieved.", "action", actionId, "key", key, "scope", scope)
 
 	case http.MethodPost:
 
 		statusCode, err := srv.setVar(ctx, ir, r.Body, scope, key, vMimeType)
 		if err != nil {
 			reportError(statusCode, err)
-			slog.Warn("Failed to set a Variable.", "action_id", actionId, "key", key, "scope", scope)
+			slog.WarnContext(ctx, "Failed to set a Variable.", "action", actionId, "key", key, "scope", scope)
 
 			return
 		}
 
-		slog.Debug("Variable successfully stored.", "action_id", actionId, "key", key, "scope", scope, "mime_type", vMimeType)
+		slog.DebugContext(ctx, "Variable successfully stored.", "action", actionId, "key", key, "scope", scope, "mime_type", vMimeType)
 
 	default:
 		code := http.StatusMethodNotAllowed
 		reportError(code, errors.New(http.StatusText(code)))
-		slog.Warn("Unsupported HTTP method for var handler.", "action_id", actionId, "method", r.Method)
+		slog.Warn("Unsupported HTTP method for var handler.", "action", actionId, "method", r.Method)
 
 		return
 	}
@@ -301,7 +328,7 @@ func (srv *LocalServer) registerActiveRequest(ir *functionRequest, ctx context.C
 
 	srv.requestsLock.Unlock()
 
-	slog.Info("Serving.", "action_id", ir.actionId)
+	slog.InfoContext(ctx, "Serving.", "action", ir.actionId)
 }
 
 func (srv *LocalServer) deregisterActiveRequest(actionId string) {
@@ -311,7 +338,7 @@ func (srv *LocalServer) deregisterActiveRequest(actionId string) {
 
 	srv.requestsLock.Unlock()
 
-	slog.Debug("Request deregistered.", "action_id", actionId)
+	slog.Debug("Request deregistered.", "action", actionId)
 }
 
 func (srv *LocalServer) cancelActiveRequest(ctx context.Context, actionId string) {
@@ -323,14 +350,14 @@ func (srv *LocalServer) cancelActiveRequest(ctx context.Context, actionId string
 		return
 	}
 
-	slog.Info("Attempting to cancel.", "action_id", actionId)
+	slog.InfoContext(ctx, "Attempting to cancel.", "action", actionId)
 
 	go srv.sendCancelToService(ctx, req.functionRequest)
 
 	select {
 	case <-req.ctx.Done():
 	case <-time.After(10 * time.Second):
-		slog.Warn("Request failed to cancel punctually.", "action_id", actionId)
+		slog.WarnContext(ctx, "Request failed to cancel punctually.", "action", actionId)
 		req.cancel()
 	}
 }
@@ -340,7 +367,7 @@ func (srv *LocalServer) sendCancelToService(ctx context.Context, ir *functionReq
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, url, nil)
 	if err != nil {
-		slog.Error("Failed to create cancel request.", "action_id", ir.actionId, "error", err)
+		slog.ErrorContext(ctx, "Failed to create cancel request.", "action", ir.actionId, "error", err)
 		return
 	}
 
@@ -348,13 +375,13 @@ func (srv *LocalServer) sendCancelToService(ctx context.Context, ir *functionReq
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		slog.Error("Failed to send cancel to service.", "action_id", ir.actionId, "error", err)
+		slog.ErrorContext(ctx, "Failed to send cancel to service.", "action", ir.actionId, "error", err)
 		return
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		slog.Warn("Service responded to cancel request.", "action_id", ir.actionId, "resp_code", resp.StatusCode)
+		slog.WarnContext(ctx, "Service responded to cancel request.", "action", ir.actionId, "resp-code", resp.StatusCode)
 	}
 }
 
@@ -372,7 +399,7 @@ func (srv *LocalServer) drainRequest(req *inboundRequest) {
 	http.Error(req.w, msg, code)
 
 	id := req.r.Header.Get(actionIDHeader)
-	slog.Warn("Request aborted due to server unavailability", "action_id", id, "http_status_code", code, "reason", msg)
+	slog.Warn("Request aborted due to server unavailability", "action", id, "http_status_code", code, "reason", msg)
 
 	defer func() {
 		_ = recover()

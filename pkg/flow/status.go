@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log/slog"
 
+	"github.com/direktiv/direktiv/pkg/core"
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
 	"github.com/direktiv/direktiv/pkg/instancestore"
 	"github.com/direktiv/direktiv/pkg/tracing"
+	"golang.org/x/exp/slog"
 )
 
 func (engine *engine) GetIsInstanceFailed(im *instanceMemory) bool {
@@ -44,11 +45,20 @@ func (engine *engine) SetInstanceFailed(ctx context.Context, im *instanceMemory,
 	var code, message string
 	status = instancestore.InstanceStatusFailed
 	code = ErrCodeInternal
-	insCtx := tracing.WithTrack(im.WithTags(ctx), tracing.BuildInstanceTrack(im.instance))
+	ctx = tracing.AddInstanceMemoryAttr(ctx, tracing.InstanceAttributes{
+		Namespace:    im.Namespace().Name,
+		InstanceID:   im.GetInstanceID().String(),
+		Invoker:      im.instance.Instance.Invoker,
+		Callpath:     tracing.CreateCallpath(im.instance),
+		WorkflowPath: im.instance.Instance.WorkflowPath,
+		Status:       core.LogUnknownStatus,
+	}, im.GetState())
+	ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrack(im.instance))
+
 	uerr := new(derrors.UncatchableError)
 	cerr := new(derrors.CatchableError)
 	ierr := new(derrors.InternalError)
-	slog.Error("Workflow canceled due to failed instance", tracing.GetSlogAttributesWithError(insCtx, err)...)
+	slog.ErrorContext(ctx, "Workflow canceled due to failed instance")
 	if errors.As(err, &uerr) {
 		code = uerr.Code
 		message = uerr.Message
@@ -56,11 +66,11 @@ func (engine *engine) SetInstanceFailed(ctx context.Context, im *instanceMemory,
 		code = cerr.Code
 		message = cerr.Message
 	} else if errors.As(err, &ierr) {
-		slog.Error("Workflow instance encountered an internal error.", tracing.GetSlogAttributesWithError(insCtx, fmt.Errorf("internal error: %w", ierr))...)
+		slog.ErrorContext(ctx, "Workflow instance encountered an internal error.", "error", fmt.Errorf("internal error: %w", ierr))
 		status = instancestore.InstanceStatusCrashed
 		message = "an internal error occurred"
 	} else {
-		slog.Error("Workflow instance failed due to an unhandled error.", tracing.GetSlogAttributesWithError(insCtx, fmt.Errorf("unhandled error: %w", err))...)
+		slog.ErrorContext(ctx, "Workflow instance failed due to an unhandled error.", "error", fmt.Errorf("unhandled error: %w", err))
 		status = instancestore.InstanceStatusCrashed
 		code = ErrCodeInternal
 		message = err.Error()

@@ -9,6 +9,7 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/direktiv/direktiv/pkg/datastore"
+	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/google/uuid"
 	"github.com/ryanuber/go-glob"
 )
@@ -61,6 +62,11 @@ func (ee EventEngine) ProcessEvents(
 	cloudevents []cloudevents.Event,
 	handleErrors func(template string, args ...interface{}),
 ) {
+	ctx, end, err2 := tracing.NewSpan(ctx, "Dispatching CloudEvents to handlers")
+	if err2 != nil {
+		slog.Debug("ProcessEvents: failed to init telemetry", "error", err2)
+	}
+	defer end()
 	// 1. Extract Topics: Retrieves relevant event topics from the provided CloudEvents
 	//    within the specified namespace.
 	topics := ee.getTopics(ctx, namespace, cloudevents)

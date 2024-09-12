@@ -25,25 +25,25 @@ describe('Test variable list calls', () => {
 
 	it(`should list variable all`, async () => {
 		const res = await request(config.getDirektivHost())
-			.get(`/api/v2/namespaces/${ namespace }/variables`)
+			.get(`/api/v2/namespaces/${namespace}/variables`)
 		expect(res.statusCode).toEqual(200)
 
 		const reduced = res.body.data.map(item => item.name)
-		expect(reduced).toEqual([ 'foo1', 'foo2' ])
+		expect(reduced).toEqual(['foo1', 'foo2'])
 	})
 
 	it(`should list variable foo2`, async () => {
 		const res = await request(config.getDirektivHost())
-			.get(`/api/v2/namespaces/${ namespace }/variables?name=foo2`)
+			.get(`/api/v2/namespaces/${namespace}/variables?name=foo2`)
 		expect(res.statusCode).toEqual(200)
 
 		const reduced = res.body.data.map(item => item.name)
-		expect(reduced).toEqual([ 'foo2' ])
+		expect(reduced).toEqual(['foo2'])
 	})
 
 	it(`should list empty`, async () => {
 		const res = await request(config.getDirektivHost())
-			.get(`/api/v2/namespaces/${ namespace }/variables?name=foo3`)
+			.get(`/api/v2/namespaces/${namespace}/variables?name=foo3`)
 		expect(res.statusCode).toEqual(200)
 
 		const reduced = res.body.data.map(item => item.name)

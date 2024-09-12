@@ -30,7 +30,7 @@ test("It will show the logs on the monitoring page", async ({ page }) => {
   ).toBeVisible();
 
   await expect(
-    page.getByText("received 1 log entry"),
+    page.getByText("received 2 log entries"),
     "It will show the number of logs"
   ).toBeVisible();
 
@@ -50,7 +50,7 @@ test("It will show the logs on the monitoring page", async ({ page }) => {
   ).toBeVisible();
 
   await expect(
-    page.getByText("received 1 log entry"),
+    page.getByText("received 2 log entries"),
     "When coming back to the monitoring page, it still shows the same number of logs"
   ).toBeVisible();
 });

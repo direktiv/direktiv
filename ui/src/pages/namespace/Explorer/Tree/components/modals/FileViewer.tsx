@@ -10,6 +10,7 @@ import Button from "~/design/Button";
 import { Card } from "~/design/Card";
 import Editor from "~/design/Editor";
 import { File } from "lucide-react";
+import { analyzePath } from "~/util/router/utils";
 import { decode } from "js-base64";
 import { mimeTypeToEditorSyntax } from "~/design/Editor/utils";
 import { useFile } from "~/api/files/query/file";
@@ -39,6 +40,9 @@ const FileViewer = ({ file }: { file: BaseFileSchemaType }) => {
 
   if (data?.type === "directory") return null;
 
+  const path = analyzePath(file.path);
+  const filename = path.segments.at(-1)?.relative;
+
   const fileContent = decode(data?.data ?? "");
   const mimeType = data?.mimeType;
 
@@ -54,7 +58,7 @@ const FileViewer = ({ file }: { file: BaseFileSchemaType }) => {
     <>
       <DialogHeader>
         <DialogTitle>
-          <File /> {t("pages.explorer.tree.fileViewer.title")} {file.path}
+          <File /> {t("pages.explorer.tree.fileViewer.title")} {filename}
         </DialogTitle>
       </DialogHeader>
       <Card className="grow p-4" background="weight-1">

@@ -1,11 +1,14 @@
 package core
 
+import "time"
+
 type Registry struct {
-	Namespace string `json:"namespace"`
-	ID        string `json:"id"`
-	URL       string `json:"url"`
-	User      string `json:"user"`
-	Password  string `json:"password,omitempty"`
+	Namespace string    `json:"namespace"`
+	ID        string    `json:"id"`
+	URL       string    `json:"url"`
+	User      string    `json:"user"`
+	Password  string    `json:"password,omitempty"`
+	CreatedAt time.Time `json:"createdAt,omitempty"`
 }
 
 type RegistryManager interface {
