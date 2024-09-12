@@ -12,6 +12,7 @@ DIREKTIV_CONFIG=${DIREKTIV_CONFIG:-direktiv.yaml}
 INSTALL_CONTOUR_VERSION="${INSTALL_CONTOUR_VERSION:-v1.11.1}"
 INSTALL_K3S_VERSION="${INSTALL_K3S_VERSION:-v1.28.1+k3s1}"
 INSTALL_KNATIVE_VERSION="${INSTALL_KNATIVE_VERSION:-v1.11.7}"
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 
 # NOTE: DIREKTIV_VERSION is not exposed because the script is not necessarily
 #   expected to work across multiple versions. The script should be re-published
@@ -440,7 +441,7 @@ frontend:
 
 EOF
         if [ "$WITH_MONITORING" == "true" ]; then
-            cat monitoring.values.yaml >> $DIREKTIV_CONFIG
+            cat "${SCRIPT_DIR}/monitoring.values.yaml" >> $DIREKTIV_CONFIG
         fi
     fi
 
