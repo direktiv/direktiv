@@ -8,7 +8,7 @@ type Registry struct {
 	URL       string    `json:"url"`
 	User      string    `json:"user"`
 	Password  string    `json:"password,omitempty"`
-	CreatedAt time.Time `json:"created_at,omitempty"`
+	CreatedAt time.Time `json:"createdAt,omitempty"`
 }
 
 type RegistryManager interface {

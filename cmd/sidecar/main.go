@@ -1,12 +1,13 @@
 package sidecar
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"os"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/utils"
+	"github.com/direktiv/direktiv/pkg/tracing"
 )
 
 const (
@@ -14,9 +15,7 @@ const (
 	direktivOpentelemetry = "DIREKTIV_OTLP"
 )
 
-func RunApplication() {
-	var err error
-
+func RunApplication(ctx context.Context) {
 	sl := new(SignalListener)
 	sl.Start()
 
@@ -24,7 +23,7 @@ func RunApplication() {
 
 	openTelemetryBackend := os.Getenv(direktivOpentelemetry)
 
-	telend, err := utils.InitTelemetry(openTelemetryBackend, "direktiv/sidecar", "direktiv")
+	telend, err := tracing.InitTelemetry(ctx, openTelemetryBackend, "direktiv/sidecar", "direktiv")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to initialize telemetry: %v\n", err)
 		os.Exit(1)

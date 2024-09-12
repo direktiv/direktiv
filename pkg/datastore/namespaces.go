@@ -5,7 +5,6 @@ import (
 	"errors"
 	"time"
 
-	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/google/uuid"
 )
 
@@ -16,23 +15,6 @@ type Namespace struct {
 
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
-}
-
-func (ns *Namespace) WithTags(ctx context.Context) context.Context {
-	tags, ok := ctx.Value(core.LogTagsKey).(map[string]interface{})
-	if !ok {
-		tags = make(map[string]interface{}, 0)
-	}
-	tags["namespace"] = ns.Name
-
-	return context.WithValue(ctx, core.LogTagsKey, tags)
-}
-
-func (ns *Namespace) GetAttributes() map[string]string {
-	return map[string]string{
-		"namespace":    ns.Name,
-		"namespace-id": ns.ID.String(),
-	}
 }
 
 var (

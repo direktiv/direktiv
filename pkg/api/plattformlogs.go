@@ -74,7 +74,7 @@ func (m *logController) mountRouter(r chi.Router) {
 			return
 		}
 
-		if _, ok := logEntry["track"]; !ok {
+		if _, ok := logEntry[string(core.LogTrackKey)]; !ok {
 			writeBadrequestError(w, fmt.Errorf("missing 'track' field"))
 
 			return

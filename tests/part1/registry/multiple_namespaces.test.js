@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 
+import regex from '../../common/regex'
 import common from '../../common'
 import request from '../../common/request'
 
@@ -23,12 +24,14 @@ describe('Test services crud operations', () => {
 
 				[
 					{
+						createdAt: expect.stringMatching(regex.timestampRegex),
 						namespace: 'test_namespace_a',
 						id: expect.stringMatching(/^secret-/),
 						url: 'a_domain_1.io',
 						user: 'a_name_1',
 					},
 					{
+						createdAt: expect.stringMatching(regex.timestampRegex),
 						namespace: 'test_namespace_a',
 						id: expect.stringMatching(/^secret-/),
 						url: 'a_domain_2.io',
@@ -47,17 +50,19 @@ describe('Test services crud operations', () => {
 		expect(listRes.body.data).toEqual(
 			expect.arrayContaining([
 				{
+					createdAt: expect.stringMatching(regex.timestampRegex),
 					namespace: 'test_namespace_b',
 					id: expect.stringMatching(/^secret-/),
 					url: 'b_domain_1.io',
 					user: 'b_name_1',
 				},
 				{
+					createdAt: expect.stringMatching(regex.timestampRegex),
 					namespace: 'test_namespace_b',
 					id: expect.stringMatching(/^secret-/),
 					url: 'b_domain_2.io',
 					user: 'b_name_2',
-				} ],
+				}],
 			),
 		)
 	})
@@ -75,6 +80,7 @@ function itShouldCreateSecret(it, expect, namespace, url, user, password) {
 		expect(res.statusCode).toEqual(200)
 		expect(res.body).toEqual({
 			data: {
+				createdAt: expect.stringMatching(regex.timestampRegex),
 				namespace,
 				id: expect.stringMatching(/^secret-/),
 				url,

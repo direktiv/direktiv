@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"os"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/api"
@@ -37,15 +36,13 @@ type NewMainArgs struct {
 }
 
 func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
-	initSLog()
-
 	// Create service manager
 	var err error
 	var serviceManager core.ServiceManager
 	if !args.Config.DisableServices {
 		serviceManager, err = service.NewManager(args.Config)
 		if err != nil {
-			slog.Error("initializing service manager", "err", err)
+			slog.Error("initializing service manager", "error", err)
 			panic(err)
 		}
 		slog.Info("service manager initialized successfully")
@@ -68,7 +65,7 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 	// Create registry manager
 	registryManager, err := registry.NewManager(args.Config.DisableServices)
 	if err != nil {
-		slog.Error("registry manager", "err", err)
+		slog.Error("registry manager", "error", err)
 		panic(err)
 	}
 	slog.Info("registry manager initialized successfully")
@@ -109,7 +106,7 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 
 		err = args.ConfigureWorkflow(event)
 		if err != nil {
-			slog.Error("configure workflow", "err", err)
+			slog.Error("configure workflow", "error", err)
 		}
 	})
 
@@ -140,22 +137,6 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 	return nil
 }
 
-func initSLog() {
-	lvl := new(slog.LevelVar)
-	lvl.Set(slog.LevelInfo)
-
-	logDebug := os.Getenv("DIREKTIV_DEBUG")
-	if logDebug == "true" {
-		lvl.Set(slog.LevelDebug)
-	}
-
-	slogger := slog.New(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{
-		Level: lvl,
-	}))
-
-	slog.SetDefault(slogger)
-}
-
 func renderServiceManager(db *database.SQLStore, serviceManager core.ServiceManager) {
 	ctx := context.Background()
 	slog := slog.With("subscriber", "services file watcher")
@@ -164,7 +145,7 @@ func renderServiceManager(db *database.SQLStore, serviceManager core.ServiceMana
 
 	nsList, err := dStore.Namespaces().GetAll(ctx)
 	if err != nil {
-		slog.Error("listing namespaces", "err", err)
+		slog.Error("listing namespaces", "error", err)
 
 		return
 	}
@@ -175,7 +156,7 @@ func renderServiceManager(db *database.SQLStore, serviceManager core.ServiceMana
 		slog = slog.With("namespace", ns.Name)
 		files, err := fStore.ForNamespace(ns.Name).ListDirektivFilesWithData(ctx)
 		if err != nil {
-			slog.Error("listing direktiv files", "err", err)
+			slog.Error("listing direktiv files", "error", err)
 
 			continue
 		}
@@ -183,7 +164,7 @@ func renderServiceManager(db *database.SQLStore, serviceManager core.ServiceMana
 			if file.Typ == filestore.FileTypeService {
 				serviceDef, err := core.ParseServiceFile(file.Data)
 				if err != nil {
-					slog.Error("parse service file", "err", err)
+					slog.Error("parse service file", "error", err)
 
 					continue
 				}
@@ -201,7 +182,7 @@ func renderServiceManager(db *database.SQLStore, serviceManager core.ServiceMana
 			} else if file.Typ == filestore.FileTypeWorkflow {
 				sub, err := getWorkflowFunctionDefinitionsFromWorkflow(ns, file)
 				if err != nil {
-					slog.Error("parse workflow def", "err", err)
+					slog.Error("parse workflow def", "error", err)
 
 					continue
 				}

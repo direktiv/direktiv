@@ -131,17 +131,25 @@ func (im *instanceMemory) ListenForEvents(ctx context.Context, events []*model.C
 }
 
 func (im *instanceMemory) Log(ctx context.Context, level log.Level, a string, x ...interface{}) {
-	ctx = im.WithTags(ctx)
-	slog.With(tracing.GetSlogAttributesWithStatus(ctx, core.LogRunningStatus)...)
+	ctx = tracing.AddInstanceMemoryAttr(ctx, tracing.InstanceAttributes{
+		Namespace:    im.Namespace().Name,
+		InstanceID:   im.GetInstanceID().String(),
+		Invoker:      im.instance.Instance.Invoker,
+		Callpath:     tracing.CreateCallpath(im.instance),
+		WorkflowPath: im.instance.Instance.WorkflowPath,
+		Status:       core.LogUnknownStatus,
+	}, im.GetState())
+	ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrack(im.instance))
+
 	switch level {
 	case log.Info:
-		slog.Info(fmt.Sprintf(a, x...))
+		slog.InfoContext(ctx, fmt.Sprintf(a, x...))
 	case log.Debug:
-		slog.Debug(fmt.Sprintf(a, x...))
+		slog.DebugContext(ctx, fmt.Sprintf(a, x...))
 	case log.Error:
-		slog.Error(fmt.Sprintf(a, x...))
+		slog.ErrorContext(ctx, fmt.Sprintf(a, x...))
 	case log.Panic:
-		slog.Error(fmt.Sprintf("Panic: "+a, x...))
+		slog.ErrorContext(ctx, fmt.Sprintf("Panic: "+a, x...))
 	}
 }
 
@@ -401,15 +409,14 @@ func (engine *engine) newIsolateRequest(im *instanceMemory, stateID string, time
 	}
 
 	arCtx := enginerefactor.ActionContext{
-		Trace:     im.instance.TelemetryInfo.TraceID,
-		Span:      im.instance.TelemetryInfo.SpanID,
-		State:     stateID,
-		Branch:    iterator,
-		Namespace: im.Namespace().Name,
-		Workflow:  im.instance.Instance.WorkflowPath,
-		Instance:  im.ID().String(),
-		Callpath:  callpath,
-		Action:    uid.String(),
+		TraceParent: im.instance.TelemetryInfo.TraceParent,
+		State:       stateID,
+		Branch:      iterator,
+		Namespace:   im.Namespace().Name,
+		Workflow:    im.instance.Instance.WorkflowPath,
+		Instance:    im.ID().String(),
+		Callpath:    callpath,
+		Action:      uid.String(),
 	}
 	arReq.ActionContext = arCtx
 
@@ -462,6 +469,7 @@ func (engine *engine) newIsolateRequest(im *instanceMemory, stateID string, time
 		}
 	}
 	arReq.Files = files2
+
 	return ar, &arReq, nil
 }
 
@@ -474,7 +482,7 @@ type knativeHandle struct {
 }
 
 func (child *knativeHandle) Run(ctx context.Context) {
-	go child.engine.doActionRequest(ctx, child.ar, child.arReq)
+	go child.engine.doActionRequest(ctx, child.ar, child.arReq) // using a go routine may be unsafe (caused panics) where but why?
 }
 
 func (child *knativeHandle) Info() states.ChildInfo {
@@ -483,14 +491,18 @@ func (child *knativeHandle) Info() states.ChildInfo {
 
 func (engine *engine) doActionRequest(ctx context.Context, ar *functionRequest, arReq *enginerefactor.ActionRequest) {
 	// Log warning if timeout exceeds max allowed timeout.
+	ctx = tracing.AddInstanceAttr(ctx, tracing.InstanceAttributes{
+		Namespace:    arReq.Namespace,
+		InstanceID:   arReq.Instance,
+		Callpath:     arReq.Callpath,
+		WorkflowPath: arReq.Workflow,
+		Status:       core.LogUnknownStatus,
+	})
+	ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrackViaCallpath(arReq.Callpath))
+
 	if actionTimeout := time.Duration(ar.Timeout) * time.Second; actionTimeout > engine.server.config.GetFunctionsTimeout() {
-		ctx = tracing.AddNamespace(ctx, arReq.Namespace)
-		ctx = tracing.AddTraceAttr(ctx, arReq.Trace, arReq.Span)
-		ctx = tracing.AddInstanceAttr(ctx, arReq.Instance, "", arReq.Callpath, arReq.Workflow)
-		ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrackViaCallpath(arReq.Callpath))
-		slog.Warn(
+		slog.WarnContext(ctx,
 			fmt.Sprintf("Warning: Action timeout '%v' is longer than max allowed duariton '%v'", actionTimeout, engine.server.config.GetFunctionsTimeout()),
-			tracing.GetSlogAttributesWithStatus(ctx, core.LogFailedStatus)...,
 		)
 	}
 
@@ -502,7 +514,7 @@ func (engine *engine) doActionRequest(ctx context.Context, ar *functionRequest, 
 	case model.SystemKnativeFunctionType:
 		fallthrough
 	case model.ReusableContainerFunctionType:
-		go engine.doKnativeHTTPRequest(ctx, ar, arReq)
+		go engine.doKnativeHTTPRequest(ctx, ar, arReq) // go routine causes panic
 	default:
 		panic(fmt.Errorf("unexpected type: %+v", ar.Container.Type))
 	}
@@ -511,10 +523,13 @@ func (engine *engine) doActionRequest(ctx context.Context, ar *functionRequest, 
 func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	ar *functionRequest, arReq *enginerefactor.ActionRequest,
 ) {
-	var err error
-
+	ctx, spanEnd, err := tracing.NewSpan(ctx, "executing knative request to action")
+	if err != nil {
+		slog.Debug("failed in doKnativeHTTPRequest", "error", err)
+	}
+	defer spanEnd()
+	slog.DebugContext(ctx, "starting function request")
 	tr := engine.createTransport()
-
 	addr := ar.Container.Service
 
 	slog.Debug("function request for image", "name", ar.Container.Image, "addr", addr, "image_id", ar.Container.ID)
@@ -522,7 +537,8 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	rctx, cancel := context.WithDeadline(context.Background(), arReq.Deadline)
 	defer cancel()
 
-	slog.Debug("deadline for request", "deadline", time.Until(arReq.Deadline))
+	slog.DebugContext(ctx, fmt.Sprintf("deadline for request is %s", time.Until(arReq.Deadline)), "deadline", time.Until(arReq.Deadline))
+
 	reader, err := enginerefactor.EncodeActionRequest(*arReq)
 	if err != nil {
 		engine.reportError(ctx, &arReq.ActionContext, err)
@@ -546,8 +562,6 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	// potentially dns error for a brand new service
 	// we just loop and see if we can recreate the service
 	// one minute wait max
-	cleanup := utils.TraceHTTPRequest(ctx, req)
-	defer cleanup()
 
 	//nolint:intrange
 	for i := 0; i < 300; i++ { // 5 minutes retries.
@@ -612,17 +626,21 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	if resp.StatusCode != http.StatusOK {
 		engine.reportError(ctx, &arReq.ActionContext, fmt.Errorf("action error status: %d", resp.StatusCode))
 	}
-
-	slog.Debug("function request done")
+	slog.DebugContext(ctx, "function request done")
 }
 
 func (engine *engine) reportError(ctx context.Context, ar *enginerefactor.ActionContext, err error) {
 	ctx = tracing.AddNamespace(ctx, ar.Namespace)
-	ctx = tracing.AddTraceAttr(ctx, ar.Trace, ar.Span)
-	ctx = tracing.AddInstanceAttr(ctx, ar.Instance, "", ar.Callpath, ar.Workflow)
+	tracing.AddInstanceAttr(ctx, tracing.InstanceAttributes{
+		Namespace:    ar.Namespace,
+		InstanceID:   ar.Instance,
+		Callpath:     ar.Callpath,
+		WorkflowPath: ar.Workflow,
+		Status:       core.LogUnknownStatus,
+	})
 	ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrackViaCallpath(ar.Callpath))
-	slog.Error(
+	slog.ErrorContext(
+		ctx,
 		"action failed",
-		tracing.GetSlogAttributesWithError(ctx, err)...,
 	)
 }

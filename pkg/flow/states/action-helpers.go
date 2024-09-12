@@ -10,6 +10,7 @@ import (
 	"time"
 
 	derrors "github.com/direktiv/direktiv/pkg/flow/errors"
+	log "github.com/direktiv/direktiv/pkg/flow/internallogger"
 	"github.com/direktiv/direktiv/pkg/model"
 	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/senseyeio/duration"
@@ -270,7 +271,7 @@ func invokeAction(ctx context.Context, args invokeActionArgs) (*ChildInfo, error
 	ci := child.Info()
 
 	if args.async {
-		args.instance.Log(ctx, "info", "Running child '%s' in fire-and-forget mode (async).", ci.ID)
+		args.instance.Log(ctx, log.Debug, "Running child '%s' in fire-and-forget mode (async).", ci.ID)
 		//nolint:nilnil
 		return nil, nil
 	}
