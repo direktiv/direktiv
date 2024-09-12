@@ -23,6 +23,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/direktiv/direktiv/pkg/utils"
 	"github.com/google/uuid"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // TEMPORARY EVERYTHING
@@ -283,6 +284,10 @@ func (im *instanceMemory) GetModel() (*model.Workflow, error) {
 
 func (im *instanceMemory) GetInstanceID() uuid.UUID {
 	return im.instance.Instance.ID
+}
+
+func (im *instanceMemory) GetTraceID(ctx context.Context) string {
+	return trace.SpanFromContext(ctx).SpanContext().TraceID().String()
 }
 
 func (im *instanceMemory) PrimeDelayedEvent(event cloudevents.Event) {
