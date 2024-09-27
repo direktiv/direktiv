@@ -569,30 +569,40 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 	// one minute wait max
 
 	//nolint:intrange
-	for i := 0; i < 300; i++ { // 5 minutes retries.
-		slog.Debug("functions request", "i", i, "addr", addr)
+	for i := 0; i < 300; i++ { // 5 minutes max retry
+		slog.Debug("attempting function request", "retry", i, "address", addr)
+
 		resp, err = client.Do(req)
 		if err != nil {
 			if ctxErr := rctx.Err(); ctxErr != nil {
-				slog.Debug("context error in knative call", "error", rctx.Err())
+				slog.Debug("request canceled or deadline exceeded", "error", ctxErr)
+				engine.reportError(ctx, &arReq.ActionContext, fmt.Errorf("request timed out or was canceled: %w", ctxErr))
+
 				return
 			}
-			slog.Debug("function request", "image", ar.Container.Image, "image_id", ar.Container.ID, "error", err)
+
+			if i%10 == 0 {
+				slog.DebugContext(ctx, fmt.Sprintf("retrying function request for container '%s' (attempt %d)", ar.Container.ID, i), "image", ar.Container.Image, "image_id", ar.Container.ID, "error", err)
+			} else {
+				slog.Debug("retrying function request", "image", ar.Container.Image, "image_id", ar.Container.ID, "error", err)
+			}
 
 			time.Sleep(time.Second)
 		} else {
 			defer resp.Body.Close()
-			slog.Debug("successfully created function", "image", ar.Container.Image, "image_id", ar.Container.ID)
+			slog.Debug("function request successful", "image", ar.Container.Image, "image_id", ar.Container.ID)
 			aid := resp.Header.Get(DirektivActionIDHeader)
 			if len(aid) == 0 {
-				slog.Debug("action id was empty", "this", this())
+				slog.Debug("action ID missing from response", "this", this())
+				engine.reportError(ctx, &arReq.ActionContext, fmt.Errorf("missing action ID in response"))
 
 				return
 			}
 			var respBody enginerefactor.ActionResponse
 			decoder := json.NewDecoder(resp.Body)
 			if err := decoder.Decode(&respBody); err != nil {
-				slog.Debug("failed to decode the response body", "error", err)
+				slog.Debug("failed to decode response body", "error", err)
+				engine.reportError(ctx, &arReq.ActionContext, err)
 
 				return
 			}
@@ -605,14 +615,16 @@ func (engine *engine) doKnativeHTTPRequest(ctx context.Context,
 
 			uid, err := uuid.Parse(arReq.Instance)
 			if err != nil {
-				slog.Debug("Error returned to gRPC request", "this", this(), "error", err)
+				slog.Debug("failed to parse instance UUID", "error", err)
+				engine.reportError(ctx, &arReq.ActionContext, err)
 
 				return
 			}
 
 			err = engine.enqueueInstanceMessage(ctx, uid, "action", payload)
 			if err != nil {
-				slog.Debug("Error returned to gRPC request", "this", this(), "error", err)
+				slog.Debug("failed to enqueue instance message", "error", err)
+				engine.reportError(ctx, &arReq.ActionContext, err)
 
 				return
 			}
@@ -647,5 +659,7 @@ func (engine *engine) reportError(ctx context.Context, ar *enginerefactor.Action
 	slog.ErrorContext(
 		ctx,
 		"action failed",
+		"error",
+		err,
 	)
 }
