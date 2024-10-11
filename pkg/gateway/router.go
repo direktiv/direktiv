@@ -28,11 +28,20 @@ type router struct {
 func buildRouter(endpoints []core.Endpoint, consumers []core.Consumer) *router {
 	serveMux := http.NewServeMux()
 
+	checkUniqueGatewayPaths := map[string]string{}
+
 	for i, item := range endpoints {
 		// don't process endpoints with errors
 		if len(item.Errors) > 0 {
 			continue
 		}
+
+		if _, ok := checkUniqueGatewayPaths[item.Path]; ok {
+			item.Errors = append(item.Errors, fmt.Sprintf("duplicate gateway path: %s", item.Path))
+			endpoints[i] = item
+			continue
+		}
+		checkUniqueGatewayPaths[item.Path] = item.Path
 
 		// concat plugins configs into one list.
 		pConfigs := []core.PluginConfig{}
