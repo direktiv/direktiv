@@ -14,7 +14,6 @@ env:
   SRVTAG: dev
   IS_GITHUB_ACTIONS: true
 
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
@@ -102,7 +101,7 @@ jobs:
           DIREKTIV_APP: flow
 
   backend-build:
-    needs: [ check-cache, backend-license, backend-lint, backend-test ]
+    needs: [check-cache, backend-license, backend-lint, backend-test]
     runs-on: ubuntu-latest
     if: needs.check-cache.outputs.backend_cache_hit == '1'
     permissions:
@@ -130,7 +129,6 @@ jobs:
             type=sha,format=long
             type=raw,value=${{ needs.check-cache.outputs.backend_hash }}
 
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
         with:
@@ -139,13 +137,11 @@ jobs:
       - name: Set current date
         run: echo "CURRENT_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
 
-
       - name: Cache Docker layers
         uses: actions/cache@v4
         with:
           path: /tmp/.buildx-cache
           key: api-${{ env.CURRENT_DATE }}-${{ runner.os }}-buildx-x
-
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
@@ -202,7 +198,6 @@ jobs:
           path: /tmp/.buildx-cache
           key: ui-${{ env.CURRENT_DATE }}-${{ runner.os }}-buildx-x
 
-
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
@@ -216,7 +211,7 @@ jobs:
           cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
 
   e2e:
-    needs: [ check-cache, ui-build, backend-build ]
+    needs: [check-cache, ui-build, backend-build]
     if: ${{ !failure() && !cancelled() }}
     runs-on: ubuntu-latest
 
@@ -272,7 +267,7 @@ jobs:
       - name: Install Postgres using Percona Operator
         run: |
           helm repo add percona https://percona.github.io/percona-helm-charts/
-          helm install --create-namespace -n postgres pg-operator percona/pg-operator --wait
+          helm install --create-namespace -n postgres pg-operator percona/pg-operator --version 2.4.2 --wait
           kubectl apply -f https://raw.githubusercontent.com/direktiv/direktiv/main/scripts/kubernetes/install/db/basic.yaml
 
       - name: Install Knative
@@ -295,7 +290,7 @@ jobs:
           DB_USER=$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "user"}}' | base64 --decode)
           DB_PASSWORD=$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "password"}}' | base64 --decode)
           DB_NAME=$(kubectl get secrets -n postgres direktiv-cluster-pguser-direktiv -o 'go-template={{index .data "dbname"}}' | base64 --decode)
-          
+
           cat <<EOF > dev.yaml
           pullPolicy: IfNotPresent
           registry: ghcr.io
@@ -334,7 +329,7 @@ jobs:
             fi
             sleep 1;
           done
-          
+
           echo "API failed to be healthy";
           kubectl get pods;
           kubectl logs deployments/direktiv-flow;
@@ -353,7 +348,7 @@ jobs:
             fi
             sleep 1;
           done
-          
+
           echo "UI failed to be healthy";
           kubectl get pods;
           kubectl describe po direktiv-frontend;
