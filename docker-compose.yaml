@@ -17,7 +17,7 @@ services:
     volumes: []
 
   flow:
-    image: ${DIREKTIV_IMAGE}
+    image: direktiv-dev
     command: ["/bin/direktiv", "server"]
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -40,7 +40,7 @@ services:
       - postgres
 
   ui:
-    image: ${DIREKTIV_UI_IMAGE}
+    image: direktiv-ui-dev
     environment:
       - UI_BACKEND=http://flow:8181/api/
       - UI_PORT=8080
