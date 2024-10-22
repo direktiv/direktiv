@@ -92,6 +92,7 @@ func (engine *engine) executor(ctx context.Context, id uuid.UUID) {
 			return
 		}
 
+		//nolint:fatcontext
 		ctx = ctx2
 
 		break

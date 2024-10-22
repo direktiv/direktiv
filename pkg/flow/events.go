@@ -58,6 +58,7 @@ func (events *events) handleEvent(ctx context.Context, ns *datastore.Namespace, 
 			events.engine.EventsInvoke(ctx, workflowID, ev...) //nolint:contextcheck
 		},
 		WakeInstance: func(instanceID uuid.UUID, ev []*cloudevents.Event) {
+			// nolint:fatcontext
 			ctx = tracing.AddLoseInstanceIDAttr(ctx, instanceID.String())
 			ctx = tracing.WithTrack(tracing.AddNamespace(ctx, ns.Name), tracing.BuildNamespaceTrack(ns.Name))
 			ctx, end, err := tracing.NewSpan(ctx, "waking instance via CloudEvent")
