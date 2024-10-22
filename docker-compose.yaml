@@ -42,8 +42,8 @@ services:
   ui:
     image: direktiv-ui-dev
     environment:
-      - UI_BACKEND=http://flow:8181/api/
-      - UI_PORT=8080
+      - DIREKTIV_UI_PORT=8080
+      - DIREKTIV_UI_BACKEND=http://flow:8181/api/
     ports:
       # api port
       - "8080:8080"
