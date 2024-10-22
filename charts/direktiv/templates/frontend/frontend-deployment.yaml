@@ -76,7 +76,7 @@ spec:
           - name: "DIREKTIV_UI_PORT"
             value: "2304"
           - name: "DIREKTIV_UI_BACKEND"
-            value: "http://1.2.3.4"
+            value: "http://1.2.3.4/"
           {{- end }}
           ports:
             - name: frontend
