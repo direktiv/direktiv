@@ -13,26 +13,33 @@ const (
 
 	containerUser        = "direktiv-container"
 	containerSidecar     = "direktiv-sidecar"
-	containerSidecarPort = 8890
+	containerSidecarPort = 80
 )
 
 // GetServiceURL is a global function that know how to construct a service url based on service parameters.
 // You need to call SetupGetServiceURLFunc function to construct GetServiceURL.
 var GetServiceURL func(namespace string, typ string, file string, name string) string
 
-func getKnativeServiceURL(knativeNamespace string, namespace string, typ string, file string, name string) string {
-	id := (&core.ServiceFileData{
+func getKnativeServiceURL(config *core.Config, namespace string, typ string, file string, name string) string {
+	// Construct the service ID
+	serviceID := (&core.ServiceFileData{
 		Typ:       typ,
 		Namespace: namespace,
 		FilePath:  file,
 		Name:      name,
 	}).GetID()
 
-	return fmt.Sprintf("http://%s.%s.svc.cluster.local", id, knativeNamespace)
+	if config.IngressHost != "" {
+		// Construct external URL for ingress host
+		return fmt.Sprintf("http://%s.%s.nip.io", serviceID, config.IngressHost)
+	}
+
+	// Default to internal cluster-local DNS
+	return fmt.Sprintf("http://%s.%s.svc.cluster.local", serviceID, config.KnativeNamespace)
 }
 
 func SetupGetServiceURLFunc(config *core.Config) {
 	GetServiceURL = func(namespace string, typ string, file string, name string) string {
-		return getKnativeServiceURL(config.KnativeNamespace, namespace, typ, file, name)
+		return getKnativeServiceURL(config, namespace, typ, file, name)
 	}
 }

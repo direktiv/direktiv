@@ -176,7 +176,7 @@ func buildSecret(registry core.Registry) (*v1.Secret, error) {
 	return &s, nil
 }
 
-func NewManager(mocked bool) (core.RegistryManager, error) {
+func NewManager(mocked bool, c *core.Config) (core.RegistryManager, error) {
 	if mocked {
 		return &mockedManager{
 			lock: &sync.Mutex{},
@@ -184,18 +184,44 @@ func NewManager(mocked bool) (core.RegistryManager, error) {
 		}, nil
 	}
 
-	config, err := rest.InClusterConfig()
-	if err != nil {
-		return nil, err
+	var config *rest.Config
+	var err error
+
+	// Check for external Kubernetes configuration
+	// TODO: linting
+	if c.KubernetesHost != "" { // nolint
+		config = &rest.Config{
+			Host:        c.KubernetesHost,
+			BearerToken: c.KubernetesToken,
+			TLSClientConfig: rest.TLSClientConfig{
+				Insecure: c.KubernetesCACert == "", // Disable TLS validation if no CA cert provided
+			},
+		}
+
+		// Decode and use CA cert if provided
+		if c.KubernetesCACert != "" {
+			caCertDecoded, err := base64.StdEncoding.DecodeString(c.KubernetesCACert)
+			if err != nil {
+				return nil, fmt.Errorf("invalid base64-encoded CA certificate: %w", err)
+			}
+			config.TLSClientConfig.CAData = caCertDecoded
+		}
+	} else {
+		// Fallback to in-cluster configuration
+		config, err = rest.InClusterConfig()
+		if err != nil {
+			return nil, fmt.Errorf("failed to load in-cluster config: %w", err)
+		}
 	}
 
+	// Create Kubernetes client
 	cSet, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create Kubernetes client: %w", err)
 	}
 
 	return &kManager{
-		K8sNamespace: "direktiv-services-direktiv",
+		K8sNamespace: c.KubernetesNamespace,
 		Clientset:    cSet,
 	}, nil
 }

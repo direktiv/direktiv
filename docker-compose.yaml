@@ -17,22 +17,28 @@ services:
     volumes: []
 
   flow:
-    image: direktiv-dev
+    image: direktiv
     command: ["/bin/direktiv", "server"]
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - DIREKTIV_API_PORT=8181
       - DIREKTIV_DEBUG=true
 
       - DIREKTIV_DB=host=postgres port=5432 user=myadmin dbname=mydb password=mypassword sslmode=disable
       - DIREKTIV_SECRET_KEY=01234567890123456789012345678912
-      - DIREKTIV_DISABLE_SERVICES=true
+      - DIREKTIV_DISABLE_SERVICES=false
 
       - DIREKTIV_KNATIVE_NAMESPACE=direktiv-services-direktiv
       - DIREKTIV_FUNCTIONS_TIMEOUT=7200
       - DIREKTIV_LOG_JSON=console
 
+      # for external Kubernetes/Knative connectivity
+      - KUBERNETES_HOST=192.168.122.44:6443
+      - INGRESS_HOST=192.168.122.44
+      - KUBERNETES_TOKEN=eyJhbGciOiJSUzI1NiIsImtpZCI6InBnNE55Z1Y2QkNjdjBtRE84NlNSdjVGMjNWOXpVdWdzRnJIZVJ1cTh4SVUifQ.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJkaXJla3Rpdi1zZXJ2aWNlcy1kaXJla3RpdiIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VjcmV0Lm5hbWUiOiJkaXJla3Rpdi1rbmF0aXZlLXRva2VuIiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZXJ2aWNlLWFjY291bnQubmFtZSI6ImRpcmVrdGl2LWtuYXRpdmUtc2VydmljZS1hY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZXJ2aWNlLWFjY291bnQudWlkIjoiZDMwY2Q5YzEtMDA4Yi00ZjgyLWFjYmEtNzdlNjc4Y2Q0NzYyIiwic3ViIjoic3lzdGVtOnNlcnZpY2VhY2NvdW50OmRpcmVrdGl2LXNlcnZpY2VzLWRpcmVrdGl2OmRpcmVrdGl2LWtuYXRpdmUtc2VydmljZS1hY2NvdW50In0.XnAbhGXE1IDGhMUNobNHCSpEqmIOQjlJTzWqWkH8HCeqk_siobXX9i2BSbkGhFQeogKzvxMr5LwUUNu3kIaNVYWr4Om2dEtkzlez4dBTqNfB1N-MSCRRbSm9kmEr-Zfctt8OuVW5dQG4ICPPg7TbqaUcAbuYd8980NRInpPD7oH3r35uxur2hYia2ADlkIZOruq3N_Ubmmx8xdQb0ZiBilvilz9OtGDCcpT-W-bkvLyE0VcTaqDVjXEZs_08SGSm7FZbd7Vqq3htipEI9GH9oNzVcRdgQiwiMce_95qjWsglECWifJtd-otJFfFnJl19Qj9onHprTYUsf5bj3jj0zA
+      - DIREKTIV_KNATIVE_SERVICE_ACCOUNT=direktiv-knative-service-account
+      - DIREKTIV_KNATIVE_INGRESS_CLASS=contour.ingress.networking.knative.dev
+      - DIREKTIV_FLOW_ENDPOINT=192.168.178.106
+      - DIREKTIV_KNATIVE_SIDECAR=direktiv/direktiv:v0.8.6
     ports:
       # api port
       - "8181:8181"
@@ -40,7 +46,7 @@ services:
       - postgres
 
   ui:
-    image: direktiv-ui-dev
+    image: direktiv-ui
     environment:
       - DIREKTIV_UI_PORT=8080
       - DIREKTIV_UI_BACKEND=http://flow:8181/api/
@@ -77,3 +83,12 @@ services:
       && yarn run e2e:headless-chromium-only"
     depends_on:
       - ui
+
+  # nginx:
+  #   image: nginx:alpine
+  #   ports:
+  #     - "8080:80"
+  #   volumes:
+  #     - ./nginx.conf:/etc/nginx/nginx.conf:ro
+  #   depends_on:
+  #     - flow

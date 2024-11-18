@@ -55,6 +55,14 @@ type Config struct {
 	FunctionsReconcileInterval int `env:"DIREKTIV_FUNCTIONS_RECONCILE_INTERVAL" envDefault:"1"`
 
 	IsEnterprise bool `env:"DIREKTIV_IS_ENTERPRISE" envDefault:"false"`
+
+	// Kubernetes/Knative external access
+	KubernetesHost       string `env:"KUBERNETES_HOST"`
+	KubernetesToken      string `env:"KUBERNETES_TOKEN"`
+	KubernetesNamespace  string `env:"KUBERNETES_NAMESPACE" envDefault:"default"`
+	KubernetesCACert     string `env:"KUBERNETES_CA_CERT"` // Base64-encoded CA cert
+	IngressHost          string `env:"INGRESS_HOST"`
+	DirektivFlowEndpoint string `env:"DIREKTIV_FLOW_ENDPOINT"`
 }
 
 func (conf *Config) GetFunctionsTimeout() time.Duration {

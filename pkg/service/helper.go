@@ -101,6 +101,9 @@ func buildServiceMeta(c *core.Config, sv *core.ServiceFileData) metav1.ObjectMet
 
 	meta.Annotations["direktiv.io/inputHash"] = sv.GetValueHash()
 	meta.Labels["networking.knative.dev/visibility"] = "cluster-local"
+	if c.IngressHost != "" {
+		meta.Labels["networking.knative.dev/visibility"] = "external"
+	}
 	meta.Annotations["networking.knative.dev/ingress.class"] = c.KnativeIngressClass
 
 	return meta
@@ -337,10 +340,17 @@ func buildEnvVars(forSidecar bool, c *core.Config, sv *core.ServiceFileData) []c
 	if forSidecar {
 		namespace := c.DirektivNamespace
 
-		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
-			Name:  direktivFlowEndpoint,
-			Value: fmt.Sprintf("direktiv-flow.%s", namespace),
-		})
+		if c.DirektivFlowEndpoint != "" {
+			proxyEnvs = append(proxyEnvs, corev1.EnvVar{
+				Name:  direktivFlowEndpoint,
+				Value: c.DirektivFlowEndpoint,
+			})
+		} else {
+			proxyEnvs = append(proxyEnvs, corev1.EnvVar{
+				Name:  direktivFlowEndpoint,
+				Value: fmt.Sprintf("direktiv-flow.%s", namespace),
+			})
+		}
 
 		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
 			Name:  "DIREKTIV_APP",

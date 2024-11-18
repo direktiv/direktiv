@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"log/slog"
@@ -39,18 +40,46 @@ func NewManager(c *core.Config) (core.ServiceManager, error) {
 }
 
 func newKnativeManager(c *core.Config) (*manager, error) {
-	config, err := rest.InClusterConfig()
-	if err != nil {
-		return nil, err
+	var config *rest.Config
+	var err error
+
+	// Check if KubernetesHost is set to determine external connection
+	// TODO: linting
+	if c.KubernetesHost != "" { // nolint:nestif
+		// External Kubernetes connection configuration
+		config = &rest.Config{
+			Host:        c.KubernetesHost,
+			BearerToken: c.KubernetesToken,
+			TLSClientConfig: rest.TLSClientConfig{
+				Insecure: true, // Set to false if KubernetesCACert is provided
+			},
+		}
+
+		// Use CAData for TLS validation if KubernetesCACert is provided
+		if c.KubernetesCACert != "" {
+			caCertDecoded, err := base64.StdEncoding.DecodeString(c.KubernetesCACert)
+			if err != nil {
+				return nil, fmt.Errorf("invalid base64 CA certificate: %w", err)
+			}
+			config.TLSClientConfig.CAData = caCertDecoded
+			config.TLSClientConfig.Insecure = false // Ensure TLS validation
+		}
+	} else {
+		// Use in-cluster configuration
+		config, err = rest.InClusterConfig()
+		if err != nil {
+			return nil, fmt.Errorf("failed to load in-cluster config: %w", err)
+		}
 	}
+
 	knativeCli, err := versioned.NewForConfig(config)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create Knative client: %w", err)
 	}
 
 	k8sCli, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create Kubernetes client: %w", err)
 	}
 
 	client := &knativeClient{
@@ -63,8 +92,7 @@ func newKnativeManager(c *core.Config) (*manager, error) {
 		cfg:           c,
 		list:          make([]*core.ServiceFileData, 0),
 		runtimeClient: client,
-
-		lock: &sync.Mutex{},
+		lock:          &sync.Mutex{},
 	}, nil
 }
 

@@ -2,8 +2,8 @@
 docker-start:
 docker-start: ## Create a local docker deployment.
 	docker compose down --remove-orphans -v
-	docker build -t direktiv-dev .
-	cd ui && docker build -t direktiv-ui-dev .
+	docker build -t direktiv .
+	cd ui && docker build -t direktiv-ui .
 
 	docker compose up -d --scale e2e-api=0
 
@@ -11,14 +11,14 @@ docker-start: ## Create a local docker deployment.
 docker-headless:
 docker-headless: ## Create a local docker deployment without an included UI container.
 	docker compose down --remove-orphans -v
-	docker build -t direktiv-dev .
+	docker build -t direktiv .
 	docker compose up -d --scale ui=0 --scale e2e-api=0
 
 .PHONY: docker-e2e-api
 docker-e2e-api:
 docker-e2e-api: ## Perform backend end-to-end tests against the docker deployment.
 	docker compose down --remove-orphans -v
-	docker build -t direktiv-dev .
+	docker build -t direktiv .
 	docker compose run e2e-api
 
 .PHONY: docker-e2e-playwright

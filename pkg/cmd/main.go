@@ -63,7 +63,7 @@ func NewMain(circuit *core.Circuit, args *NewMainArgs) error {
 	}
 
 	// Create registry manager
-	registryManager, err := registry.NewManager(args.Config.DisableServices)
+	registryManager, err := registry.NewManager(args.Config.DisableServices, args.Config)
 	if err != nil {
 		slog.Error("registry manager", "error", err)
 		panic(err)
