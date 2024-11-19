@@ -208,7 +208,7 @@ func patchVarData(ctx context.Context, flowToken string, flowAddr string, namesp
 	read := bytes.NewReader(reqD)
 	url := fmt.Sprintf("http://%v/api/v2/namespaces/%v/variables/%v", flowAddr, namespace, id)
 
-	resp, err := doRequest(ctx, http.MethodPost, flowToken, url, read)
+	resp, err := doRequest(ctx, http.MethodPatch, flowToken, url, read)
 	if err != nil {
 		if resp == nil {
 			return http.StatusInternalServerError, err
