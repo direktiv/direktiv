@@ -19,6 +19,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/direktiv/direktiv/pkg/core"
 	enginerefactor "github.com/direktiv/direktiv/pkg/engine"
@@ -545,6 +546,9 @@ func (worker *inboundWorker) handleFunctionRequest(req *inboundRequest) {
 		input:         action.UserInput,
 		files:         files,
 		ActionContext: action.ActionContext,
+	}
+	if ir.deadline.IsZero() {
+		ir.deadline = time.Now().Add(3 * time.Second)
 	}
 
 	ctx := req.r.Context()
