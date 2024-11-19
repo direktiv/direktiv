@@ -64,11 +64,17 @@ func getReferencedFile(ctx context.Context, flowToken, flowAddr, namespace strin
 	var d []byte
 
 	resp, err := doRequest(ctx, http.MethodGet, flowToken, addr, nil)
-	if err != nil {
-		if resp == nil {
-			return nil, http.StatusInternalServerError, err
+	if err != nil && resp == nil {
+		return nil, http.StatusInternalServerError, err
+	}
+	if resp.StatusCode == http.StatusNotFound {
+		// some very special magic
+		return nil, resp.StatusCode, &RessourceNotFoundError{
+			Key:   path,
+			Scope: "file",
 		}
-
+	}
+	if err != nil {
 		return nil, resp.StatusCode, fmt.Errorf("failed to do request: %w", err)
 	}
 	statusCode, err := handleResponse(resp, func(resp *http.Response) (int, error) {
