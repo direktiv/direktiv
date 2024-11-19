@@ -112,7 +112,7 @@ func Handler[IN any](fn func(context.Context, IN, *ExecutionInfo) (interface{}, 
 
 			return
 		}
-		backend := "http://localhost:8889"
+		backend := "http://localhost:80"
 		if os.Getenv(httpBackend) != "" {
 			backend = os.Getenv(httpBackend)
 		}

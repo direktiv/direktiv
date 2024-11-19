@@ -20,7 +20,7 @@ var _ io.Writer = (*Logger)(nil)
 
 const (
 	devMode     = "DIREKTIV_DEV_MODE"
-	httpBackend = "DIREKTIV_HTTP_BACKEND"
+	httpBackend = "DIREKTIV_FLOW_ENDPOINT" // "DIREKTIV_HTTP_BACKEND"
 )
 
 func NewLogger(httpBackend, actionID string) *Logger {
