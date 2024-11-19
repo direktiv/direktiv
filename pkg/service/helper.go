@@ -20,6 +20,7 @@ const (
 	direktivProxyNO       = "NO_PROXY"
 	direktivOpentelemetry = "DIREKTIV_OTLP"
 	direktivFlowEndpoint  = "DIREKTIV_FLOW_ENDPOINT"
+	direktivAPIPort       = "DIREKTIV_API_PORT"
 	direktivDebug         = "DIREKTIV_DEBUG"
 )
 
@@ -344,6 +345,10 @@ func buildEnvVars(forSidecar bool, c *core.Config, sv *core.ServiceFileData) []c
 			proxyEnvs = append(proxyEnvs, corev1.EnvVar{
 				Name:  direktivFlowEndpoint,
 				Value: c.DirektivFlowEndpoint,
+			})
+			proxyEnvs = append(proxyEnvs, corev1.EnvVar{
+				Name:  direktivAPIPort,
+				Value: strconv.Itoa(c.ApiPort),
 			})
 		} else {
 			proxyEnvs = append(proxyEnvs, corev1.EnvVar{

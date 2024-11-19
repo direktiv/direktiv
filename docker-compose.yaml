@@ -38,7 +38,7 @@ services:
       - DIREKTIV_KNATIVE_SERVICE_ACCOUNT=direktiv-knative-service-account
       - DIREKTIV_KNATIVE_INGRESS_CLASS=contour.ingress.networking.knative.dev
       - DIREKTIV_FLOW_ENDPOINT=192.168.178.106
-      - DIREKTIV_KNATIVE_SIDECAR=direktiv/direktiv:v0.8.6
+      - DIREKTIV_KNATIVE_SIDECAR=h8718/direktiv:latest
     ports:
       # api port
       - "8181:8181"

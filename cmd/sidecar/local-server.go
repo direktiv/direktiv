@@ -40,11 +40,13 @@ type LocalServer struct {
 }
 
 func (srv *LocalServer) initFlow() error {
-	serverArr := fmt.Sprintf("%s:7777", os.Getenv(direktivFlowEndpoint))
-	fmt.Printf("flow server: %s\n", serverArr)
+	srv.flowAddr = fmt.Sprintf("%s:6665", os.Getenv(direktivFlowEndpoint))
+	if port := os.Getenv("DIREKTIV_API_PORT"); port != "" {
+		srv.flowAddr = fmt.Sprintf("%s:%s", os.Getenv(direktivFlowEndpoint), port)
+	}
+	fmt.Printf("flow server: %s\n", srv.flowAddr)
 
 	srv.flowToken = os.Getenv("API_KEY")
-	srv.flowAddr = fmt.Sprintf("%s:6665", os.Getenv(direktivFlowEndpoint))
 
 	return nil
 }
@@ -472,6 +474,7 @@ func (srv *LocalServer) setVar(ctx context.Context, ir *functionRequest, r io.Re
 			if postErr != nil {
 				return postStatusCode, fmt.Errorf("failed to post variable data: %w", postErr)
 			}
+
 			return http.StatusOK, nil
 		}
 		// Handle other errors from getVariableMetaFromFlow
@@ -493,5 +496,6 @@ func (srv *LocalServer) setVar(ctx context.Context, ir *functionRequest, r io.Re
 	if patchErr != nil {
 		return patchStatusCode, fmt.Errorf("failed to patch variable data: %w", patchErr)
 	}
+
 	return statusCode, nil
 }

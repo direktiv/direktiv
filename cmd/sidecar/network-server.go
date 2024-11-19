@@ -62,7 +62,7 @@ func (srv *NetworkServer) Start() {
 	srv.router.HandleFunc("/", srv.functions)
 	srv.router.HandleFunc("/cancel", srv.cancel)
 
-	port := "8890"
+	port := "80"
 	srv.server.Addr = "0.0.0.0:" + port
 	srv.server.Handler = srv.router
 

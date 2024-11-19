@@ -31,7 +31,7 @@ func getKnativeServiceURL(config *core.Config, namespace string, typ string, fil
 
 	if config.IngressHost != "" {
 		// Construct external URL for ingress host
-		return fmt.Sprintf("http://%s.%s.nip.io", serviceID, config.IngressHost)
+		return fmt.Sprintf("http://%s.%s.%s.nip.io", serviceID, config.KnativeNamespace, config.IngressHost)
 	}
 
 	// Default to internal cluster-local DNS
