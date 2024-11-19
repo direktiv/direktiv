@@ -36,6 +36,10 @@ func getWorkflowVariables(ctx context.Context, flowToken string, flowAddr string
 func getVariables(ctx context.Context, flowToken, addr string) (*variablesResponse, int, error) {
 	resp, err := doRequest(ctx, http.MethodGet, flowToken, addr, nil)
 	if err != nil {
+		if resp == nil {
+			return nil, http.StatusInternalServerError, err
+		}
+
 		return nil, resp.StatusCode, err
 	}
 	variables := variablesResponse{}
@@ -45,6 +49,7 @@ func getVariables(ctx context.Context, flowToken, addr string) (*variablesRespon
 		if err = decoder.Decode(&variables); err != nil {
 			return resp.StatusCode, fmt.Errorf("failed to decode response body: %w", err)
 		}
+
 		return http.StatusOK, nil
 	})
 	if err != nil {
@@ -59,6 +64,9 @@ func getReferencedFile(ctx context.Context, flowToken, flowAddr, namespace strin
 	var d []byte
 
 	resp, err := doRequest(ctx, http.MethodGet, flowToken, addr, nil)
+	if err != nil && resp == nil {
+		return nil, http.StatusInternalServerError, err
+	}
 	if resp.StatusCode == http.StatusNotFound {
 		// some very special magic
 		return nil, resp.StatusCode, &RessourceNotFoundError{
@@ -80,6 +88,7 @@ func getReferencedFile(ctx context.Context, flowToken, flowAddr, namespace strin
 			if errors.As(err, &target) {
 				return http.StatusBadRequest, fmt.Errorf("invalid response format: %w", err)
 			}
+
 			return http.StatusInternalServerError, fmt.Errorf("failed to decode response: %w", err)
 		}
 
@@ -89,6 +98,7 @@ func getReferencedFile(ctx context.Context, flowToken, flowAddr, namespace strin
 				return http.StatusInternalServerError, fmt.Errorf("failed to decode base64 data: %w", err)
 			}
 		}
+
 		return http.StatusOK, nil
 	})
 	if err != nil {
@@ -176,6 +186,10 @@ func postVarData(ctx context.Context, flowToken string, flowAddr string, namespa
 
 	resp, err := doRequest(ctx, http.MethodPost, flowToken, url, read)
 	if err != nil {
+		if resp == nil {
+			return http.StatusInternalServerError, err
+		}
+
 		return resp.StatusCode, err
 	}
 
@@ -196,6 +210,10 @@ func patchVarData(ctx context.Context, flowToken string, flowAddr string, namesp
 
 	resp, err := doRequest(ctx, http.MethodPatch, flowToken, url, read)
 	if err != nil {
+		if resp == nil {
+			return http.StatusInternalServerError, err
+		}
+
 		return resp.StatusCode, err
 	}
 
@@ -231,8 +249,10 @@ func handleResponse(resp *http.Response, next func(resp *http.Response) (int, er
 			if err == io.EOF {
 				return resp.StatusCode, fmt.Errorf("empty error response body")
 			}
+
 			return http.StatusInternalServerError, fmt.Errorf("failed to decode error response: %w", err)
 		}
+
 		return resp.StatusCode, fmt.Errorf("API error: code %v - message: %v", apiErrorResp.Error.Code, apiErrorResp.Error.Message)
 	}
 
