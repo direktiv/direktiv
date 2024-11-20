@@ -2,6 +2,26 @@ apiVersion: v1
 entries:
   direktiv:
   - apiVersion: v2
+    appVersion: v0.8.9
+    created: "2024-11-20T18:29:28.113711002Z"
+    dependencies:
+    - condition: ingress-nginx.install
+      name: ingress-nginx
+      repository: https://kubernetes.github.io/ingress-nginx
+      version: 4.9.0
+    - condition: fluent-bit.install
+      name: fluent-bit
+      repository: https://fluent.github.io/helm-charts
+      version: 0.46.7
+    description: direktiv helm chart
+    digest: a8e2847651b9752ec860af61ca16094c395daeaab078428202f0a54a551c9c77
+    icon: https://charts.direktiv.io/logo.png
+    name: direktiv
+    type: application
+    urls:
+    - https://github.com/direktiv/direktiv/releases/download/direktiv-0.1.29/direktiv-0.1.29.tgz
+    version: 0.1.29
+  - apiVersion: v2
     appVersion: v0.8.8
     created: "2024-08-28T23:41:45.784292791Z"
     dependencies:
@@ -156,4 +176,4 @@ entries:
     urls:
     - https://github.com/direktiv/direktiv/releases/download/direktiv-0.1.22/direktiv-0.1.22.tgz
     version: 0.1.22
-generated: "2024-08-28T23:41:45.784313971Z"
+generated: "2024-11-20T18:29:28.113732091Z"
