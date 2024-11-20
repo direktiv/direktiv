@@ -105,7 +105,6 @@ $ helm install direktiv direktiv/direktiv
 |------------|------|---------|
 | https://fluent.github.io/helm-charts | fluent-bit | 0.46.7 |
 | https://kubernetes.github.io/ingress-nginx | ingress-nginx | 4.9.0 |
-| https://prometheus-community.github.io/helm-charts | prometheus | 25.8.2 |
 
 ## Values
 

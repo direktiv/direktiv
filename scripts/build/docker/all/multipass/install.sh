@@ -226,7 +226,6 @@ EOF
 
 helm repo add direktiv https://charts.direktiv.io && \
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx && \
-helm repo add prometheus https://prometheus-community.github.io/helm-charts && \
 helm repo add fluent-bit https://fluent.github.io/helm-charts && \
 KUBECONFIG=/etc/rancher/k3s/k3s.yaml helm install -f /direktiv.yaml direktiv direktiv/direktiv
 

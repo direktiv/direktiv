@@ -24,7 +24,6 @@ type Config struct {
 
 	FunctionsTimeout int `env:"DIREKTIV_FUNCTIONS_TIMEOUT" envDefault:"7200"`
 
-	Prometheus    string `env:"DIREKTIV_PROMETHEUS_BACKEND"`
 	OpenTelemetry string `env:"DIREKTIV_OPEN_TELEMETRY_BACKEND"`
 
 	DisableServices bool `env:"DIREKTIV_DISABLE_SERVICES" envDefault:"false"`
