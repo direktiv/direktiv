@@ -1,5 +1,3 @@
-CLUSTER_NAME_FOR_E2E := direktiv-e2e
-CIDR_FOR_E2E := 172.22.2.0/28
 CIDR_FOR_DEV := 172.22.1.0/28
 
 KIND_SCRIPTS_DIR := ./scripts/kind
@@ -30,14 +28,8 @@ setup-direktiv:
 
 # Target for running E2E tests
 e2e:
-	@echo "Setting up Kind cluster with random name $(CLUSTER_NAME_FOR_E2E) for E2E tests..."
-	bash $(KIND_INSTALL_DEPENDENCIES) $(CLUSTER_NAME_FOR_E2E) $(CIDR_FOR_E2E)
-	@echo "Installing Direktiv in the $(CLUSTER_NAME_FOR_E2E) cluster..."
-	bash $(KIND_INSTALL_DIREKTIV) $(CLUSTER_NAME_FOR_E2E)
-	@echo "Launching E2E tests on the $(CLUSTER_NAME_FOR_E2E) cluster..."
-	bash $(KIND_API_TESTS_DIREKTIV) $(CLUSTER_NAME_FOR_E2E)
-	@echo "Cleaning up the Kind cluster $(CLUSTER_NAME_FOR_E2E)..."
-	kind delete cluster --name $(CLUSTER_NAME_FOR_E2E)
+	@echo "Launching E2E tests on the $(DEFAULT_CLUSTER_NAME) cluster..."
+	bash $(KIND_API_TESTS_DIREKTIV) $(DEFAULT_CLUSTER_NAME)
 
 # Clean default cluster if needed
 clean-cluster:
