@@ -84,28 +84,6 @@ database:
   # -- additional connection attributes, e.g. target_session_attrs
   additional: ""
 
-prometheus:
-  install: true
-  backendName: "prom-backend-server" # required if install = false
-  global:
-    scrape_interval: 1m
-    evaluation_interval: 1m
-  server:
-    retention: 96h
-    persistentVolume:
-      enabled: false
-  alertmanager:
-    enabled: false
-  prometheus-node-exporter:
-    enabled: false
-  prometheus-pushgateway:
-    enabled: false
-  kube-state-metrics:
-    enabled: false
-  serviceAccounts:
-    server:
-      create: true
-
 # Added this to connect to tracing.direktiv.io
 opentelemetry:
   # -- installs opentelemtry agent as sidecar in flow

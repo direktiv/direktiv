@@ -15,11 +15,6 @@ spec:
       {{- include "direktiv.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      annotations:
-        prometheus.io/port: "2112"
-        prometheus.io/path: "/metrics"
-        prometheus.io/scrape: "true"
-        prometheus.io/scheme: "http"
       labels:
         {{- include "direktiv.selectorLabels" . | nindent 8 }}
         app: {{ include "direktiv.fullname" . }}-flow
@@ -110,12 +105,6 @@ spec:
                 key: db
           - name: DIREKTIV_FUNCTIONS_TIMEOUT
             value: {{ .Values.requestTimeout | quote }}
-          - name: DIREKTIV_PROMETHEUS_BACKEND
-          {{- if .Values.prometheus.install }}
-            value: {{ include "direktiv.fullname" . }}-prometheus-server.{{ .Release.Namespace }}
-          {{- else }}
-            value: {{ .Values.prometheus.backendName | quote }}
-          {{- end }}
           - name: DIREKTIV_OPEN_TELEMETRY_BACKEND
             value: {{ include "direktiv.opentelemetry-backend" . }}
           - name: DIREKTIV_KNATIVE_SERVICE_ACCOUNT

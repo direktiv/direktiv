@@ -46,7 +46,7 @@ Run Workflows and Create Services in Seconds
 * __API Gateway__: Includes an API gateway to expose flows as services for third-party consumers including authentication.
 * __CloudEvents__: Supports CNCF's [CloudEvents](https://cloudevents.io/) natively.
 * __GitOps Approach__: All configurations, services and flows can be synced from Git. Git becomes the single source of truth.
-* __Observability__: Integrated into Prometheus (metrics), Fluent Bit (logging) & OpenTelemetry (instrumentation & tracing).
+* __Observability__: Integrated into Fluent Bit (logging) & OpenTelemetry (instrumentation & tracing).
 * __Periodic Tasks__: Call flows periodically via cron jobs for repeating tasks. 
 * __Scalable__: Direktiv scales on mulitple levels with Kubernetes scaling and [Knative's](https://knative.dev/docs/) scaling features.
 * __Easily Extendable__: Add custom functions with simple Docker containers.
