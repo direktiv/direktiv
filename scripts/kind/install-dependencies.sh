@@ -18,6 +18,8 @@ kind delete cluster --name "$CLUSTER_NAME" || true
 KIND_CONFIG="/tmp/kind-config.yaml"
 METALLB_CONFIG="/tmp/metallb-config.yaml"
 POSTGRES_INGRESS="/tmp/postgres-ingress.yaml"
+REGISTRY="/tmp/registry-deployment.yaml"
+
 touch $KIND_CONFIG
 touch $METALLB_CONFIG
 touch $POSTGRES_INGRESS
@@ -25,8 +27,6 @@ touch $POSTGRES_INGRESS
 cat <<EOF > $KIND_CONFIG
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
-networking:
-  ipFamily: ipv4
 nodes:
   - role: control-plane
 EOF
@@ -125,5 +125,63 @@ EOF
 
 # Apply PostgreSQL Ingress
 kubectl apply -f $POSTGRES_INGRESS
+
+# Apply PostgreSQL Ingress
+kubectl apply -f $POSTGRES_INGRESS
+
+# Deploy the Docker registry
+kubectl create namespace registry
+cat <<EOF > $REGISTRY
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: registry
+  namespace: registry
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: registry
+  template:
+    metadata:
+      labels:
+        app: registry
+    spec:
+      containers:
+        - name: registry
+          image: registry:2
+          ports:
+            - containerPort: 5000
+          volumeMounts:
+            - name: registry-data
+              mountPath: /var/lib/registry
+      volumes:
+        - name: registry-data
+          emptyDir: {}  # Non-persistent volume
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: registry
+  namespace: registry
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 5000
+      targetPort: 5000
+  selector:
+    app: registry
+EOF
+
+# Apply Registry Deployment and Service
+kubectl apply -f $REGISTRY
+
+# Wait for registry pod to be ready
+echo "Waiting for registry pod to be ready..."
+kubectl wait --namespace registry --for=condition=Ready pod -l app=registry --timeout=120s
+
+export REGISTRY_HOST=(`kubectl --namespace registry get services registry --output jsonpath='{.status.loadBalancer.ingress[0].ip}'`)
+
+echo your image registry is here: $REGISTRY_HOST
 
 echo "cluster is ready!"

@@ -15,7 +15,7 @@ echo "Tag Direktiv images as dev"
 docker pull direktiv/frontend:$DIREKTIV_VERSION
 docker tag direktiv/frontend:$DIREKTIV_VERSION direktiv/frontend:dev
 
-docker pull direktiv/direktiv:$DIREKTIV_VERSION
+docker build -t direktiv/direktiv:$DIREKTIV_VERSION .
 docker tag direktiv/direktiv:$DIREKTIV_VERSION direktiv/direktiv:dev
 
 echo "Load images into Kind cluster"
@@ -34,7 +34,7 @@ echo "PostgreSQL password retrieved: $POSTGRES_PASSWORD"
 DIREKTIV_CONFIG="/tmp/direktiv.yaml"
 # Create Direktiv Configuration
 cat <<EOF > $DIREKTIV_CONFIG
-pullPolicy: IfNotPresent
+pullPolicy: Never
 tag: dev
 flow:
   debug: true
