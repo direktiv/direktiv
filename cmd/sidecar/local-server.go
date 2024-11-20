@@ -39,54 +39,62 @@ type LocalServer struct {
 	requests     map[string]*activeRequest
 }
 
-func (srv *LocalServer) initFlow() error {
-	serverArr := fmt.Sprintf("%s:7777", os.Getenv(direktivFlowEndpoint))
-	fmt.Printf("flow server: %s\n", serverArr)
-
+func (srv *LocalServer) Start() {
+	// Attempt to initialize the flow
 	srv.flowToken = os.Getenv("API_KEY")
 	srv.flowAddr = fmt.Sprintf("%s:6665", os.Getenv(direktivFlowEndpoint))
+	fmt.Printf("flow server addr: %s\n", srv.flowAddr)
 
-	return nil
-}
+	slog.Info("flow initialized successfully.")
 
-func (srv *LocalServer) Start() {
-	err := srv.initFlow()
-	if err != nil {
-		slog.Error("Localhost server unable to connect to flow", "error", err)
-		Shutdown(ERROR)
-
-		return
-	}
-
+	// Create the inbound request queue
 	srv.queue = make(chan *inboundRequest, 100)
+	slog.Info("inbound request queue created with capacity of 100.")
+
+	// Initialize the requests map
 	srv.requests = make(map[string]*activeRequest)
+	slog.Info("active requests map initialized.")
 
+	// Initialize the router and set up handlers
 	srv.router = mux.NewRouter()
+	slog.Info("router initialized.")
 
-	// TODO: Pass trace-id to user container
+	// Register handler functions
 	srv.router.HandleFunc("/log", srv.logHandler)
 	srv.router.HandleFunc("/var", srv.varHandler)
+	slog.Info("routes registered: /log and /var.")
 
+	// Configure the server's address
 	srv.server.Addr = "127.0.0.1:8889"
 	srv.server.Handler = srv.router
+	slog.Info("server address set to 127.0.0.1:8889.")
 
+	// Create the stopper channel
 	srv.stopper = make(chan *time.Time, 1)
+	slog.Info("stopper channel initialized.")
 
+	// Register the server thread for shutdown handling
 	srv.end = threads.Register(srv.stopper)
+	slog.Info("localhost server thread registered.")
 
-	slog.Debug("Localhost server thread registered.")
-
-	//nolint:intrange
+	// Initialize worker threads
 	for i := 0; i < workerThreads; i++ {
 		worker := new(inboundWorker)
 		worker.id = i
 		worker.srv = srv
 		srv.workers = append(srv.workers, worker)
+
+		// Log when each worker is started
+		slog.Info(fmt.Sprintf("starting worker thread %d", i))
 		go worker.run()
 	}
+	slog.Info(fmt.Sprintf("%d worker threads started.", workerThreads))
 
+	// Start the main server functions
 	go srv.run()
+	slog.Info("main server run goroutine started.")
 	go srv.wait()
+	slog.Info("wait goroutine started.")
 }
 
 func (srv *LocalServer) wait() {
@@ -96,7 +104,7 @@ func (srv *LocalServer) wait() {
 	t := <-srv.stopper
 	close(srv.queue)
 
-	slog.Debug("Localhost server shutting down.")
+	slog.Info("localhost server shutting down.")
 
 	for req := range srv.queue {
 		go srv.drainRequest(req)
@@ -111,13 +119,13 @@ func (srv *LocalServer) wait() {
 
 	err := srv.server.Shutdown(ctx)
 	if err != nil {
-		slog.Error("Error shutting down localhost server", "error", err)
+		slog.Error("error shutting down localhost server", "error", err)
 		Shutdown(ERROR)
 
 		return
 	}
 
-	slog.Debug("Primary localhost server thread shut down successfully.")
+	slog.Info("primary localhost server thread shut down successfully.")
 }
 
 func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
@@ -137,7 +145,7 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 	ctx = tracing.WithTrack(ctx, tracing.BuildInstanceTrackViaCallpath(req.Callpath))
 	ctx, span, err2 := tracing.InjectTraceParent(ctx, req.ActionContext.TraceParent, "writing logs in action: "+actionId+", workflow: "+req.Workflow)
 	if err2 != nil {
-		slog.Debug("Failed to populate trace information.", "action", actionId, "error", err2)
+		slog.Info("Failed to populate trace information.", "action", actionId, "error", err2)
 	}
 	defer span.End()
 
@@ -175,7 +183,7 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(msg) == 0 {
-		slog.Debug("Log handler received an empty message body.", "action", actionId)
+		slog.Info("Log handler received an empty message body.", "action", actionId)
 		return
 	}
 
@@ -187,7 +195,7 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-	slog.DebugContext(ctx, "redirect log entry to flow", "org-msg", msg)
+	slog.InfoContext(ctx, "redirect log entry to flow", "org-msg", msg)
 	addr := fmt.Sprintf("http://%v/api/v2/namespaces/%v/logs?instance=%v", srv.flowAddr, req.Namespace, req.Instance)
 	resp, err := doRequest(req.ctx, http.MethodPost, srv.flowToken, addr, bytes.NewBuffer(d))
 	if err != nil {
@@ -204,7 +212,7 @@ func (srv *LocalServer) logHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	slog.DebugContext(ctx, "Log handler successfully processed message.", "action", actionId)
+	slog.InfoContext(ctx, "Log handler successfully processed message.", "action", actionId)
 }
 
 // nolint:canonicalheader
@@ -288,7 +296,7 @@ func (srv *LocalServer) varHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		slog.DebugContext(ctx, "Variable successfully retrieved.", "action", actionId, "key", key, "scope", scope)
+		slog.InfoContext(ctx, "Variable successfully retrieved.", "action", actionId, "key", key, "scope", scope)
 
 	case http.MethodPost:
 
@@ -300,7 +308,7 @@ func (srv *LocalServer) varHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		slog.DebugContext(ctx, "Variable successfully stored.", "action", actionId, "key", key, "scope", scope, "mime_type", vMimeType)
+		slog.InfoContext(ctx, "Variable successfully stored.", "action", actionId, "key", key, "scope", scope, "mime_type", vMimeType)
 
 	default:
 		code := http.StatusMethodNotAllowed
@@ -338,7 +346,7 @@ func (srv *LocalServer) deregisterActiveRequest(actionId string) {
 
 	srv.requestsLock.Unlock()
 
-	slog.Debug("Request deregistered.", "action", actionId)
+	slog.Info("Request deregistered.", "action", actionId)
 }
 
 func (srv *LocalServer) cancelActiveRequest(ctx context.Context, actionId string) {

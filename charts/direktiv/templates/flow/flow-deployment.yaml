@@ -53,9 +53,9 @@ spec:
             allowPrivilegeEscalation: false
           resources:
             requests:
-              memory: "128Mi"
+              memory: "256Mi"
             limits:
-              memory: "2048Mi"
+              memory: "4048Mi"
           image: "{{ .Values.registry }}/{{ .Values.image }}:{{ .Values.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.pullPolicy }}
           command: ["/bin/direktiv", "server"]
@@ -66,9 +66,6 @@ spec:
           ports:
             - name: flow-api
               containerPort: 6665
-              protocol: TCP
-            - name: internal
-              containerPort: 7777
               protocol: TCP
           env:
           - name: DIREKTIV_DEBUG
