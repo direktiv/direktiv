@@ -18,13 +18,11 @@ import (
 )
 
 const (
-	DirektivActionIDHeader = "Direktiv-ActionID"
-	DirektivTempDir        = "Direktiv-TempDir"
-
+	DirektivActionIDHeader     = "Direktiv-ActionID"
+	DirektivTempDir            = "Direktiv-TempDir"
 	DirektivErrorCodeHeader    = "Direktiv-ErrorCode"
 	DirektivErrorMessageHeader = "Direktiv-ErrorMessage"
-
-	DirektivErrorCode = "io.direktiv.error.execution"
+	DirektivErrorCode          = "io.direktiv.error.execution"
 )
 
 type File struct {
@@ -65,85 +63,81 @@ func NewServer[IN any](fn func(context.Context, IN, *ExecutionInfo) (interface{}
 }
 
 func errWriter(w http.ResponseWriter, status int, errMsg string) {
+	slog.Error("writing error response", slog.Int("status", status), slog.String("error", errMsg))
 	w.Header().Set(DirektivErrorCodeHeader, DirektivErrorCode)
 	w.Header().Set(DirektivErrorMessageHeader, errMsg)
 
 	w.WriteHeader(status)
 
-	// nolint
-	w.Write([]byte(errMsg))
+	_, err := w.Write([]byte(errMsg))
+	if err != nil {
+		slog.Error("failed to write error response", slog.String("error", err.Error()))
+	}
 }
 
 // nolint
 func Handler[IN any](fn func(context.Context, IN, *ExecutionInfo) (interface{}, error)) http.Handler {
 	r := chi.NewRouter()
 
+	
+	r.Get("/healthz", readinessHandler)
+	r.Get("/readiness", readinessHandler)
+
 	r.Post("/", func(w http.ResponseWriter, r *http.Request) {
 		var in Payload[IN]
 		b, err := io.ReadAll(r.Body)
 		if err != nil {
-			errWriter(w, http.StatusBadRequest, err.Error())
-
+			errWriter(w, http.StatusBadRequest, "failed to read request body")
 			return
 		}
 		defer r.Body.Close()
 
 		if len(b) > 0 {
-			err = json.Unmarshal(b, &in)
-			if err != nil {
-				errWriter(w, http.StatusBadRequest, err.Error())
-
+			if err := json.Unmarshal(b, &in); err != nil {
+				errWriter(w, http.StatusBadRequest, "failed to unmarshal request payload")
 				return
 			}
-			defer r.Body.Close()
 		}
 
-		// get tmp dir
 		tmpDir := r.Header.Get(DirektivTempDir)
 		if tmpDir == "" {
 			errWriter(w, http.StatusBadRequest, "no temp directory provided")
-
 			return
 		}
 
 		actionID := r.Header.Get(DirektivActionIDHeader)
 		if actionID == "" {
 			errWriter(w, http.StatusBadRequest, "no action id provided")
-
 			return
 		}
+
 		backend := "http://localhost:8889"
-		if os.Getenv(httpBackend) != "" {
-			backend = os.Getenv(httpBackend)
+		if envBackend := os.Getenv("httpBackend"); envBackend != "" {
+			backend = envBackend
 		}
+
 		ei := &ExecutionInfo{
 			TmpDir: tmpDir,
 			Log:    NewLogger(backend, actionID),
 		}
 
-		for a := range in.Files {
-			f := in.Files[a]
-
-			err = prepareFile(filepath.Join(tmpDir, f.Name), f.Content, f.Permission)
+		for _, file := range in.Files {
+			err := prepareFile(filepath.Join(tmpDir, file.Name), file.Content, file.Permission)
 			if err != nil {
-				errWriter(w, http.StatusInternalServerError, err.Error())
-
+				errWriter(w, http.StatusInternalServerError, "failed to prepare file: "+err.Error())
 				return
 			}
-
 		}
 
 		out, err := fn(r.Context(), in.Data, ei)
 		if err != nil {
-			errWriter(w, http.StatusInternalServerError, err.Error())
-
+			errWriter(w, http.StatusInternalServerError, "handler function error: "+err.Error())
 			return
 		}
 
-		w.Header().Add("Content-Type", "application/json")
+		w.Header().Set("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(out); err != nil {
-			errWriter(w, http.StatusInternalServerError, err.Error())
-
+			errWriter(w, http.StatusInternalServerError, "failed to encode response: "+err.Error())
 			return
 		}
 	})
@@ -152,31 +146,38 @@ func Handler[IN any](fn func(context.Context, IN, *ExecutionInfo) (interface{}, 
 }
 
 func prepareFile(path, content string, perm uint) error {
+	slog.Debug("preparing file", slog.String("path", path), slog.Any("permission", perm))
 	file, err := os.Create(path)
 	if err != nil {
+		slog.Error("failed to create file", slog.String("path", path), slog.String("error", err.Error()))
 		return err
 	}
-
 	defer file.Close()
 
 	_, err = file.WriteString(content)
 	if err != nil {
+		slog.Error("failed to write file content", slog.String("path", path), slog.String("error", err.Error()))
 		return err
 	}
 
-	return file.Chmod(fs.FileMode(perm))
+	if err := file.Chmod(fs.FileMode(perm)); err != nil {
+		slog.Error("failed to set file permissions", slog.String("path", path), slog.String("error", err.Error()))
+		return err
+	}
+
+	slog.Info("file prepared successfully", slog.String("path", path))
+
+	return nil
 }
 
 func (s *Server[IN]) Start() {
 	slog.Info("starting server")
 
-	signal.Notify(s.stopChan,
-		syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+	signal.Notify(s.stopChan, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 
 	go func() {
 		if err := s.httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			slog.Error("error starting server", slog.String("error", err.Error()))
-
 			os.Exit(1)
 		}
 	}()
@@ -197,7 +198,6 @@ func (s *Server[IN]) Stop() {
 		<-shutdownCtx.Done()
 		if shutdownCtx.Err() == context.DeadlineExceeded {
 			slog.Error("shutdown timed out")
-
 			os.Exit(1)
 		}
 	}()
@@ -205,9 +205,14 @@ func (s *Server[IN]) Stop() {
 	err := s.httpServer.Shutdown(shutdownCtx)
 	if err != nil {
 		slog.Error("shutdown failed", slog.String("error", err.Error()))
-
 		os.Exit(1)
 	}
 
 	slog.Info("server stopped")
+}
+
+func readinessHandler(w http.ResponseWriter, r *http.Request) {
+	// Perform any necessary checks here (e.g., dependencies, file availability)
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write([]byte("ok"))
 }
