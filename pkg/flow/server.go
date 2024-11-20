@@ -269,10 +269,10 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 	slog.Debug("initializing mirror manager.")
 	slog.Debug("mirror manager was started.")
 
-	slog.Debug("Initializing events.")
+	slog.Debug("initializing events.")
 	srv.events = initEvents(srv, dbManager.DataStore().StagingEvents().Append)
 
-	slog.Debug("Initializing EventWorkers.")
+	slog.Debug("initializing EventWorkers.")
 
 	interval := 1 * time.Second // TODO: Adjust the polling interval
 	eventWorker := eventsstore.NewEventWorker(dbManager.DataStore().StagingEvents(), interval, srv.events.handleEvent)
@@ -282,7 +282,7 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 
 		return nil
 	})
-	slog.Info("Events-engine was started.")
+	slog.Info("events-engine was started.")
 
 	cc := func(ctx context.Context, nsID uuid.UUID, nsName string, file *filestore.File) error {
 		err = srv.flow.configureWorkflowStarts(ctx, dbManager, nsID, nsName, file)
@@ -292,7 +292,7 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 
 		err = srv.flow.placeholdSecrets(ctx, dbManager, nsName, file)
 		if err != nil {
-			slog.Debug("Error setting up placeholder secrets", "error", err, string(core.LogTrackKey), "namespace."+nsName, "namespace", nsName, "file", file.Path)
+			slog.Debug("failed setting up placeholder secrets", "error", err, string(core.LogTrackKey), "namespace."+nsName, "namespace", nsName, "file", file.Path)
 		}
 
 		return nil

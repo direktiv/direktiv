@@ -149,8 +149,6 @@ $ helm install direktiv direktiv/direktiv
 | frontend.logos.logo-dark | string | `nil` | Path to dark logo |
 | frontend.logos.logo-light | string | `nil` | Path to light logo |
 | functions.affinity | object | `{}` |  |
-| functions.containers.functionscontroller.resources.limits.memory | string | `"1024Mi"` |  |
-| functions.containers.functionscontroller.resources.requests.memory | string | `"128Mi"` |  |
 | functions.extraContainers | list | `[]` | extra containers for tasks and knative pods |
 | functions.extraContainersPod | list | `[]` | extra containers for function controller, e.g. database containers for google cloud or logging |
 | functions.extraVolumes | list | `[]` | extra volumes for tasks and knative pods |
