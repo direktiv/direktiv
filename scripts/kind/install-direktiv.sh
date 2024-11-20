@@ -34,7 +34,7 @@ echo "PostgreSQL password retrieved: $POSTGRES_PASSWORD"
 DIREKTIV_CONFIG="/tmp/direktiv.yaml"
 # Create Direktiv Configuration
 cat <<EOF > $DIREKTIV_CONFIG
-pullPolicy: Never
+pullPolicy: IfNotPresent
 tag: dev
 flow:
   debug: true
