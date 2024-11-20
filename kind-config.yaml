@@ -1,0 +1,15 @@
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: direktiv-cluster
+nodes:
+- role: control-plane
+  extraPortMappings:
+  - containerPort: 8080
+    hostPort: 9090
+    protocol: TCP
+  - containerPort: 5432
+    hostPort: 5432
+    protocol: TCP
+  extraMounts:
+  - hostPath: MYDIR
+    containerPath: /source
