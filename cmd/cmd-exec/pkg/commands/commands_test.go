@@ -161,7 +161,7 @@ func TestStopOnTestErrors(t *testing.T) {
 	}
 
 	commands.RunCommands(context.Background(), cmds, se)
-	assert.Equal(t, "running 3 commands\nrunning command 'echo hello1'\nhello1\nrunning command 'does not exist'\nexec: \"does\": executable file not found in $PATH\n", b.String())
+	assert.Equal(t, "running 3 commands\nrunning command 'echo hello1'\nhello1\nrunning command 'does not exist'\nexec: \"does\": executable file not found in $PATH\nstopping execution due to error in command 1\n", b.String())
 
 	cmds.Commands[1].StopOnError = false
 
