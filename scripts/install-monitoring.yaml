@@ -18,12 +18,6 @@ data:
               "name": "Loki",
               "type": "loki",
               "url": "http://loki.default.svc.cluster.local:3100"
-            },
-            {
-              "uid":"prometheus",
-              "name": "Prometheus",
-              "type": "prometheus",
-              "url": "http://direktiv-prometheus-server.direktiv.svc.cluster.local"
             }
         ]
     }
