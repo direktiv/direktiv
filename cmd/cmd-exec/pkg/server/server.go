@@ -79,7 +79,6 @@ func errWriter(w http.ResponseWriter, status int, errMsg string) {
 func Handler[IN any](fn func(context.Context, IN, *ExecutionInfo) (interface{}, error)) http.Handler {
 	r := chi.NewRouter()
 
-	
 	r.Get("/healthz", readinessHandler)
 	r.Get("/readiness", readinessHandler)
 
@@ -212,7 +211,6 @@ func (s *Server[IN]) Stop() {
 }
 
 func readinessHandler(w http.ResponseWriter, r *http.Request) {
-	// Perform any necessary checks here (e.g., dependencies, file availability)
 	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write([]byte("ok"))
 }
