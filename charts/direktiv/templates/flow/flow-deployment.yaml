@@ -176,17 +176,6 @@ spec:
             value: "{{ .Values.nats.config.routeURLs.user }}"
           - name: DIREKTIV_NATS_PASSWORD
             value: "{{ .Values.nats.config.routeURLs.password }}"
-          # OpenSearch Configuration
-          - name: DIREKTIV_OPENSEARCH_ENABLED
-            value: "{{ .Values.opensearch.enabled }}"
-          - name: DIREKTIV_OPENSEARCH_HOST
-            value: "{{ .Values.opensearch.host }}"
-          - name: DIREKTIV_OPENSEARCH_PORT
-            value: "{{ .Values.opensearch.port }}"
-          - name: DIREKTIV_OPENSEARCH_USERNAME
-            value: "{{ .Values.opensearch.username }}"
-          - name: DIREKTIV_OPENSEARCH_PASSWORD
-            value: "{{ .Values.opensearch.password }}"
 
       volumes:
 {{- if .Values.opentelemetry.enabled }}
