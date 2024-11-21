@@ -78,7 +78,8 @@ func (srv *LocalServer) Start() {
 	slog.Info("localhost server thread registered.")
 
 	// Initialize worker threads
-	for i := 0; i < workerThreads; i++ {
+	workers := make([]*inboundWorker, workerThreads)
+	for i := range workers {
 		worker := new(inboundWorker)
 		worker.id = i
 		worker.srv = srv
