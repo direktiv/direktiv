@@ -330,7 +330,7 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 	})
 
 	slog.Info("Initialize NATS connection")
-	if config.NatsHost != "" {
+	if config.NatsInstalled {
 		var err error
 		slog.Info("conecting to NATS")
 		for i := range 10 {

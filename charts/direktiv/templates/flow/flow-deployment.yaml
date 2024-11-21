@@ -164,6 +164,8 @@ spec:
           - name: DIREKTIV_KNATIVE_SIZE_DISK_LARGE
             value: "{{ .Values.functions.limits.disk.large }}"
           # NATS Configuration
+          - name: DIREKTIV_NATS_INSTALLED
+            value: "{{ .Values.nats.install }}"
           - name: DIREKTIV_NATS_HOST
             value: "direktiv-nats.{{ .Release.Namespace }}.svc.cluster.local"          
           - name: DIREKTIV_NATS_PORT
