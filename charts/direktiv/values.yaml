@@ -322,6 +322,26 @@ functions:
     #     requests:
     #       memory: "2Gi"
     #       cpu:    "1"
-  
 
-
+nats:
+  install: true
+  config:
+    cluster:
+      enabled: true
+      port: 6222
+      replicas: 3
+    tls:
+        enabled: false
+        secretName:
+        dir: /etc/nats-certs/cluster
+        cert: tls.crt
+        key: tls.key
+    routeURLs:
+      user: direktiv
+      password: direktiv
+      useFQDN: false
+      k8sClusterDomain: cluster.local
+    nats:
+      port: 4222
+      tls:
+        enabled: false
