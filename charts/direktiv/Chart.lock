@@ -5,5 +5,8 @@ dependencies:
 - name: fluent-bit
   repository: https://fluent.github.io/helm-charts
   version: 0.46.7
-digest: sha256:825bca1d9db4a67ba8b27a0788e8221ad87a7f0f9b992cde3428a36cd0fb841f
-generated: "2024-05-27T11:56:33.129113674+02:00"
+- name: nats
+  repository: https://nats-io.github.io/k8s/helm/charts
+  version: 1.2.6
+digest: sha256:f312aff5001b71247cd43af915f5146f0a133b158dd10d15fb418820e0b0b6c2
+generated: "2024-11-21T09:09:54.12470772+01:00"
