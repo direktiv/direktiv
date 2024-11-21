@@ -23,6 +23,7 @@ jobs:
         run: |
           helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
           helm repo add fluent-bit https://fluent.github.io/helm-charts
+          helm repo add nats https://nats-io.github.io/k8s/helm/charts
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
       - name: Helm Lint
