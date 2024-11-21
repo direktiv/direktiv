@@ -163,6 +163,19 @@ spec:
             value: "{{ .Values.functions.limits.cpu.large }}"
           - name: DIREKTIV_KNATIVE_SIZE_DISK_LARGE
             value: "{{ .Values.functions.limits.disk.large }}"
+          # NATS Configuration
+          - name: DIREKTIV_NATS_INSTALLED
+            value: "{{ .Values.nats.install }}"
+          - name: DIREKTIV_NATS_HOST
+            value: "direktiv-nats.{{ .Release.Namespace }}.svc.cluster.local"          
+          - name: DIREKTIV_NATS_PORT
+            value: "{{ .Values.nats.config.port }}"
+          - name: DIREKTIV_NATS_TLS
+            value: "{{ .Values.nats.config.tls.enabled }}"
+          - name: DIREKTIV_NATS_USERNAME
+            value: "{{ .Values.nats.config.routeURLs.user }}"
+          - name: DIREKTIV_NATS_PASSWORD
+            value: "{{ .Values.nats.config.routeURLs.password }}"
 
       volumes:
 {{- if .Values.opentelemetry.enabled }}

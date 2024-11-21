@@ -33,3 +33,7 @@ dependencies:
     repository: https://fluent.github.io/helm-charts
     version: 0.46.7
     condition: fluent-bit.install
+  - name: nats
+    repository: "https://nats-io.github.io/k8s/helm/charts"
+    version: "1.2.6"
+    condition: nats.install
