@@ -25,10 +25,10 @@ func RunApplication(ctx context.Context) {
 
 	telend, err := tracing.InitTelemetry(ctx, openTelemetryBackend, "direktiv/sidecar", "direktiv")
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "failed to initialize telemetry: %v\n", err)
-		os.Exit(1)
+		slog.Warn("Failed to initialize telemetry, but continuing", "error", err)
+	} else {
+		defer telend()
 	}
-	defer telend()
 
 	local := new(LocalServer)
 	local.Start()
