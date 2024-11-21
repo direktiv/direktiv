@@ -156,18 +156,6 @@ ingress-nginx:
         podAnnotations:
           linkerd.io/inject: disabled
 
-fluentbit:
-  # -- postgres for direktiv services
-  # Append extra output to fluentbit configuration.
-  # There are two log types: application (system), functions (workflows)
-  # these can be matched to new outputs.
-  extraConfig: ""
-  # extraConfig: |
-  #   [OUTPUT]
-  #           name stdout
-  #           match application
-
-# --  fluentbit configuration
 fluent-bit:
   install: true
   envFrom:
@@ -335,13 +323,5 @@ functions:
     #       memory: "2Gi"
     #       cpu:    "1"
   
-  containers:
-    functionscontroller:
-      resources:
-        requests:
-          memory: "128Mi"
-        limits:
-          memory: "1024Mi"
-
 
 
