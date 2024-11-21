@@ -49,6 +49,8 @@ database:
 frontend:
   image: "direktiv/frontend"
   tag: dev
+nats:
+  install: true
 EOF
 
 # Install Direktiv
