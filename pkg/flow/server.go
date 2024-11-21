@@ -28,6 +28,7 @@ import (
 	"github.com/direktiv/direktiv/pkg/tracing"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
+	"github.com/nats-io/nats.go"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -56,6 +57,7 @@ type server struct {
 
 	flow   *flow
 	events *events
+	nats   *nats.Conn
 }
 
 func Run(circuit *core.Circuit) error {
@@ -319,9 +321,36 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 		telEnd()
 		srv.cleanup(srv.pubsub.Close)
 		srv.cleanup(srv.timers.Close)
+		if srv.nats != nil {
+			srv.nats.Close()
+			slog.Info("NATS connection closed")
+		}
 
 		return nil
 	})
+
+	slog.Info("Initialize NATS connection")
+	if config.NatsHost != "" {
+		var err error
+		slog.Info("conecting to NATS")
+		for i := range 10 {
+			err = srv.initNATS(config)
+			if err == nil {
+				slog.Info("NATS connection established successfully")
+				break
+			}
+			slog.Error("Failed to connect to NATS, retrying...", "attempt", i+1, "error", err)
+			time.Sleep(time.Duration(i+2) * time.Second)
+		}
+
+		if err != nil {
+			return nil, fmt.Errorf("initialize NATS connection, err: %w", err)
+		}
+
+		if err := srv.publishDemoMessage("test", "test-connection"); err != nil {
+			return nil, fmt.Errorf("testing NATS connection, err: %w", err)
+		}
+	}
 
 	return srv, nil
 }
@@ -577,4 +606,35 @@ func initSLog(cfg *core.Config) {
 		})
 
 	slog.SetDefault(slogger)
+}
+
+// Initialize NATS connection using environment variables.
+func (srv *server) initNATS(config *core.Config) error {
+	natsURL := config.NatsHost
+	if natsURL == "" {
+		return fmt.Errorf("NATS URL not set in environment")
+	}
+
+	// Connect to NATS
+	nc, err := nats.Connect(natsURL)
+	if err != nil {
+		return fmt.Errorf("failed to connect to NATS, err: %w", err)
+	}
+
+	// Store the NATS connection in the server struct
+	srv.nats = nc
+	slog.Info("Successfully connected to NATS")
+
+	return nil
+}
+
+// Example of publishing a message to NATS.
+func (srv *server) publishDemoMessage(subject, msg string) error {
+	err := srv.nats.Publish(subject, []byte(msg))
+	if err != nil {
+		return fmt.Errorf("failed to publish message, err: %w", err)
+	}
+	slog.Info("Message published", "subject", subject, "msg", msg)
+
+	return nil
 }

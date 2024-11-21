@@ -54,6 +54,12 @@ type Config struct {
 	FunctionsReconcileInterval int `env:"DIREKTIV_FUNCTIONS_RECONCILE_INTERVAL" envDefault:"1"`
 
 	IsEnterprise bool `env:"DIREKTIV_IS_ENTERPRISE" envDefault:"false"`
+
+	NatsHost     string `env:"DIREKTIV_NATS_HOST"`
+	NatsPort     int    `env:"DIREKTIV_NATS_PORT"     envDefault:"4222"`
+	NatsTLS      bool   `env:"DIREKTIV_NATS_TLS"      envDefault:"false"`
+	NatsUsername string `env:"DIREKTIV_NATS_USERNAME"`
+	NatsPassword string `env:"DIREKTIV_NATS_PASSWORD"`
 }
 
 func (conf *Config) GetFunctionsTimeout() time.Duration {
