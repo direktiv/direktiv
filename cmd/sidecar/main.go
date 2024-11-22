@@ -19,7 +19,7 @@ func RunApplication(ctx context.Context) {
 	sl := new(SignalListener)
 	sl.Start()
 
-	fmt.Printf("listener started12346\n")
+	fmt.Printf("listener started\n")
 
 	openTelemetryBackend := os.Getenv(direktivOpentelemetry)
 
