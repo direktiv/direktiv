@@ -1,10 +1,32 @@
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 name: direktiv-cluster
+containerdConfigPatches:
+- |-
+  [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
+    endpoint = ["http://proxy-docker-hub:5000"]
+- |-
+  [plugins."io.containerd.grpc.v1.cri".registry.mirrors."quay.io"]
+    endpoint = ["http://proxy-quay:5000"]
+- |-
+  [plugins."io.containerd.grpc.v1.cri".registry.mirrors."k8s.gcr.io"]
+    endpoint = ["http://proxy-k8s-gcr:5000"]
+- |-
+  [plugins."io.containerd.grpc.v1.cri".registry.mirrors."gcr.io"]
+    endpoint = ["http://proxy-gcr:5000"]
+- |-
+  [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry.k8s.io"]
+    endpoint = ["http://proxy-registry-k8s-io:5000"]
+- |-
+  [plugins."io.containerd.grpc.v1.cri".registry.mirrors."cr.fluentbit.io"]
+    endpoint = ["http://proxy-cr-fluentbit-io:5000"]
+- |-
+  [plugins."io.containerd.grpc.v1.cri".registry.mirrors."localhost:5001"]
+    endpoint = ["http://kind-registry:5000"]
 nodes:
 - role: control-plane
   extraPortMappings:
-  - containerPort: 8080
+  - containerPort: 80
     hostPort: 9090
     protocol: TCP
   - containerPort: 5432
@@ -13,3 +35,5 @@ nodes:
   extraMounts:
   - hostPath: MYDIR
     containerPath: /source
+  - hostPath: GOBASE
+    containerPath: /gobase

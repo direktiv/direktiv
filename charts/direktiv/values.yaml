@@ -25,6 +25,7 @@ tolerations: []
 affinity: {}
 
 flow:
+  command: ["/bin/direktiv", "server"]
   # -- Output debug-level logs.
   debug: false
   # -- Set to define an encryption key to be used for secrets. If set to empty, one will be generated on install.
@@ -67,6 +68,7 @@ flow:
   
   # -- Knative max scale
   max_scale: 5
+  sidecar: 
 
 database:
   # -- database host

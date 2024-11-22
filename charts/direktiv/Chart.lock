@@ -1,12 +1,9 @@
 dependencies:
-- name: prometheus
-  repository: https://prometheus-community.github.io/helm-charts
-  version: 25.8.2
 - name: ingress-nginx
   repository: https://kubernetes.github.io/ingress-nginx
   version: 4.9.0
 - name: fluent-bit
   repository: https://fluent.github.io/helm-charts
   version: 0.46.7
-digest: sha256:825bca1d9db4a67ba8b27a0788e8221ad87a7f0f9b992cde3428a36cd0fb841f
-generated: "2024-05-27T11:56:33.129113674+02:00"
+digest: sha256:039e5e417cc28e29f0c92b1b88f7a7867c8d3292adbcedaf71211faa1667dd6c
+generated: "2024-11-21T06:59:17.299698734+01:00"

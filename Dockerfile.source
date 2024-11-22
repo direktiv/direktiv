@@ -1,0 +1,8 @@
+FROM golang:1.23.0
+
+WORKDIR /source
+
+ENV GOCACHE=/gobase/gocache
+ENV GOMODCACHE=/gobase/gomod
+
+CMD ["go", "run", "cmd/direktiv/flow.go", "cmd/direktiv/main.go", "server"]

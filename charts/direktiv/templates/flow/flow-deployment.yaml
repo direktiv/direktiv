@@ -63,7 +63,9 @@ spec:
               memory: "2048Mi"
           image: "{{ .Values.registry }}/{{ .Values.image }}:{{ .Values.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.pullPolicy }}
+          {{- if .Values.flow.command }}
           command: ["/bin/direktiv", "server"]
+          {{- end }}
           volumeMounts:
           {{- if .Values.flow.extraVolumeMounts -}}
           {{ toYaml .Values.flow.extraVolumeMounts | nindent 10 }}
@@ -124,8 +126,13 @@ spec:
             value: {{ .Values.functions.namespace | quote }}
           - name: DIREKTIV_KNATIVE_INGRESS_CLASS
             value: {{ .Values.functions.ingressClass | quote }}
+          {{- if .Values.flow.sidecar }}
+          - name: DIREKTIV_KNATIVE_SIDECAR
+            value: "{{ .Values.flow.sidecar }}"
+          {{- else }}
           - name: DIREKTIV_KNATIVE_SIDECAR
             value: "{{ .Values.registry }}/{{ .Values.image }}:{{ .Values.tag | default .Chart.AppVersion }}"
+          {{- end }}
           - name: DIREKTIV_KNATIVE_MAX_SCALE
             value: {{ .Values.flow.max_scale | quote }}
           {{- if .Values.netShape }}

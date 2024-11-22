@@ -1,0 +1,95 @@
+apiVersion: operator.knative.dev/v1beta1
+kind: KnativeServing
+metadata:
+  name: direktiv-knative
+  namespace: knative-serving
+spec:
+  version: "1.11.0"
+  high-availability:
+    replicas: 1
+  ingress:
+    contour:
+      enabled: true
+  deployments:
+  - name: activator
+    annotations:
+      linkerd.io/inject: enabled
+  - name: controller
+    annotations:
+      linkerd.io/inject: enabled
+  config:
+    features:
+      multi-container: "enabled"  
+      kubernetes.podspec-affinity: "enabled"
+      kubernetes.podspec-topologyspreadconstraints: "enabled"
+      kubernetes.podspec-hostaliases: "disabled"
+      kubernetes.podspec-nodeselector: "enabled"
+      kubernetes.podspec-tolerations: "enabled"
+      kubernetes.podspec-fieldref: "disabled"
+      kubernetes.podspec-runtimeclassname: "enabled"
+      kubernetes.podspec-dnspolicy: "disabled"
+      kubernetes.podspec-dnsconfig: "disabled"
+      kubernetes.podspec-securitycontext: "enabled"
+      kubernetes.podspec-priorityclassname: "enabled"
+      kubernetes.podspec-schedulername: "disabled"
+      kubernetes.containerspec-addcapabilities: "disabled"
+      kubernetes.podspec-dryrun: "allowed"
+      tag-header-based-routing: "enabled"
+      autodetect-http2: "enabled"
+      kubernetes.podspec-volumes-emptydir: "enabled"
+      kubernetes.podspec-init-containers: "enabled"
+      kubernetes.podspec-persistent-volume-claim: "disabled"
+      kubernetes.podspec-persistent-volume-write: "disabled"
+      queueproxy.mount-podinfo: "disabled"
+    autoscaler:
+      container-concurrency-target-percentage: "70"
+      container-concurrency-target-default: "100"
+      requests-per-second-target-default: "200"
+      target-burst-capacity: "211"
+      stable-window: "60s"
+      panic-window-percentage: "10.0"
+      panic-threshold-percentage: "200.0"
+      max-scale-up-rate: "1000.0"
+      max-scale-down-rate: "2.0"
+      enable-scale-to-zero: "true"
+      scale-to-zero-grace-period: 120s
+      scale-to-zero-pod-retention-period: 120s
+      pod-autoscaler-class: "kpa.autoscaling.knative.dev"
+      activator-capacity: "100.0"
+      initial-scale: "0"
+      allow-zero-initial-scale: "true"
+      min-scale: "0"
+      max-scale: "1"
+      scale-down-delay: "0s"
+      max-scale-limit: "10"
+    defaults:
+      revision-timeout-seconds: "14400"
+      max-revision-timeout-seconds: "14400"
+      revision-response-start-timeout-seconds: "14400"
+      revision-idle-timeout-seconds: "0"
+      revision-cpu-request: "50m"
+      revision-memory-request: "100M"
+      revision-ephemeral-storage-request: "50M"
+      revision-cpu-limit: "1000m"
+      revision-memory-limit: "2048M"
+      revision-ephemeral-storage-limit: "4096M"
+      container-name-template: "user-container"
+      init-container-name-template: "init-container"
+      container-concurrency: "0"
+      container-concurrency-max-limit: "1000"
+      allow-container-concurrency-zero: "true"
+      enable-service-links: "false"
+    deployment:
+      registries-skipping-tag-resolving: "kind-registry,kind.local,ko.local,dev.local,localhost:5001,localhost:5000,localhost:31212"
+      digest-resolution-timeout: "10s"
+      progress-deadline: "600s"
+      queue-sidecar-cpu-request: "25m"
+      queue-sidecar-cpu-limit: "1000m"
+      queue-sidecar-memory-request: "400Mi"
+      queue-sidecar-memory-limit: "800Mi"
+      queue-sidecar-ephemeral-storage-request: "512Mi"
+      queue-sidecar-ephemeral-storage-limit: "1024Mi"
+    network:
+      ingress-class: "contour.ingress.networking.knative.dev"
+
+

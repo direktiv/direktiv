@@ -7,7 +7,7 @@ tests-scan-ui: direktiv-ui
 	trivy image --exit-code 1 --ignore-unfixed localhost:5000/frontend
 
 
-DIREKTIV_HOST := $(shell kubectl -n direktiv get services direktiv-ingress-nginx-controller --output jsonpath='{.status.loadBalancer.ingress[0].ip}')
+# DIREKTIV_HOST := $(shell kubectl -n direktiv get services direktiv-ingress-nginx-controller --output jsonpath='{.status.loadBalancer.ingress[0].ip}')
 .PHONY: tests-k3s
 tests-k3s: k3s-wait
 tests-k3s: ## Runs end-to-end tests. DIREKTIV_HOST=128.0.0.1 make test-k3s [JEST_PREFIX=/tests/namespaces]	
