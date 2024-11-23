@@ -30,7 +30,7 @@ cluster-prepare:
 
 # mirrord kind
 .PHONY: cluster-init 
-cluster-init: cluster-create cluster-prepare cluster-build
+cluster-init: cluster-create cluster-prepare cluster-build cluster-ui-build
 
 .PHONY: cluster-ui-build
 cluster-ui-build: ## Builds UI for cluster
