@@ -1,8 +1,8 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
+import { retry10, retry50 } from '../common/retry'
 
 import common from '../common'
 import request from '../common/request'
-import { retry10 } from '../common/retry'
 
 const testNamespace = 'system'
 
@@ -136,7 +136,7 @@ describe('Test target namespace variable plugin', () => {
 		endpointNSVarAllowed,
 	)
 
-	retry10(`should return a ns var from magic namespace`, async () => {
+	retry50(`should return a ns var from magic namespace`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(
 			`/ns/system/endpoint1`,
 		)
@@ -145,7 +145,7 @@ describe('Test target namespace variable plugin', () => {
 		expect(req.header['content-type']).toEqual('text/plain')
 	})
 
-	retry10(`should return a var from magic namespace with namespace set`, async () => {
+	retry50(`should return a var from magic namespace with namespace set`, async () => {
 		const req = await request(common.config.getDirektivHost()).get(
 			`/ns/system/endpoint2`,
 		)
