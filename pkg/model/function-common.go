@@ -8,7 +8,8 @@ import (
 )
 
 // -------- Function Types -----------
-
+//
+//nolint:recvcheck
 type FunctionType int
 
 const (
