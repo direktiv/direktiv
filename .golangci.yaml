@@ -46,7 +46,6 @@ linters:
     - cyclop
     - godox # must fix before release.
 
-    - gomnd
     - tagliatelle
     - musttag
     - prealloc
@@ -74,7 +73,6 @@ issues:
         - stylecheck
         - tagliatelle
         - wastedassign
-        - gomnd
         - testpackage
         - asasalint
         - predeclared

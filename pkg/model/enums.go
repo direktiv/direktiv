@@ -6,7 +6,8 @@ import (
 )
 
 // -------------- Branch Modes --------------
-
+//
+//nolint:recvcheck
 type BranchMode int
 
 const (
@@ -84,6 +85,8 @@ func (a *BranchMode) UnmarshalYAML(unmarshal func(interface{}) error) error {
 // -------------- Size --------------
 
 // Size string enum to differentiate function sizes.
+//
+//nolint:recvcheck
 type Size int
 
 const (
@@ -161,7 +164,8 @@ func (a *Size) UnmarshalYAML(unmarshal func(interface{}) error) error {
 }
 
 // -------------- State Types --------------
-
+//
+//nolint:recvcheck
 type StateType int
 
 const (
@@ -271,7 +275,8 @@ func (a *StateType) UnmarshalYAML(unmarshal func(interface{}) error) error {
 }
 
 // -------------- Start Types --------------
-
+//
+//nolint:recvcheck
 type StartType int
 
 const (
