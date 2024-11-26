@@ -38,21 +38,8 @@ spec:
           pathType: Prefix
           backend:
             service:
-              name: {{ include "direktiv.fullname" . }}-frontend
-              port:
-                number: 2304
-        - path: /api/
-          pathType: Prefix
-          backend:
-            service:
               name: {{ include "direktiv.fullname" . }}-flow
               port:
                 number: 6665
-        - path: /ns/
-          pathType: Prefix
-          backend:
-            service:
-              name: {{ include "direktiv.fullname" . }}-flow
-              port:
-                number: 6665
+
 {{ end }}
