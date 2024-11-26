@@ -58,7 +58,7 @@ spec:
               memory: "4048Mi"
           image: "{{ .Values.registry }}/{{ .Values.image }}:{{ .Values.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.pullPolicy }}
-          command: ["/bin/direktiv", "server"]
+          command: ["/app/direktiv", "server"]
           volumeMounts:
           {{- if .Values.flow.extraVolumeMounts -}}
           {{ toYaml .Values.flow.extraVolumeMounts | nindent 10 }}

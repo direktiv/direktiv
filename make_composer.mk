@@ -3,16 +3,15 @@ docker-start:
 docker-start: ## Create a local docker deployment.
 	docker compose down --remove-orphans -v
 	docker build -t direktiv-dev .
-	cd ui && docker build -t direktiv-ui-dev .
 
 	docker compose up -d --scale e2e-api=0
 
 .PHONY: docker-headless
 docker-headless:
-docker-headless: ## Create a local docker deployment without an included UI container.
+docker-headless: ## Create a local docker deployment.
 	docker compose down --remove-orphans -v
 	docker build -t direktiv-dev .
-	docker compose up -d --scale ui=0 --scale e2e-api=0
+	docker compose up -d --scale e2e-api=0
 
 .PHONY: docker-e2e-api
 docker-e2e-api:

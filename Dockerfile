@@ -12,18 +12,41 @@ COPY cmd src/cmd/
 RUN --mount=type=cache,target=/root/.cache/go-build cd src && \
     CGO_ENABLED=false GOOS=linux GOARCH=$TARGETARCH go build -tags osusergo,netgo -ldflags "-X github.com/direktiv/direktiv/pkg/version.Version=$VERSION" -o /direktiv cmd/direktiv/*.go;
 
-
-# Remove pkg folder so that the direktiv-cmd binary doesn't include logic.
-RUN rm -rf pkg
 RUN --mount=type=cache,target=/root/.cache/go-build cd src && \
     CGO_ENABLED=false GOOS=linux GOARCH=$TARGETARCH go build -tags osusergo,netgo -o /direktiv-cmd cmd/cmd-exec/*.go;
 
+#########################################################################################
+FROM --platform=$BUILDPLATFORM node:18.18.1 as ui-builder
+WORKDIR /app
+ENV PATH /app/node_modules/.bin:$PATH
 
+COPY ui/yarn.lock .
+COPY ui/package.json .
+RUN yarn install
+
+COPY ui/assets assets
+COPY ui/public public
+COPY ui/src src
+
+COPY ui/test test
+COPY ui/.env.example .
+COPY ui/.eslintrc.js .
+COPY ui/.nvmrc .
+COPY ui/index.html .
+COPY ui/postcss.config.cjs .
+COPY ui/tailwind.config.cjs .
+COPY ui/tsconfig.json .
+COPY ui/vite.config.ts .
+
+RUN yarn build
+
+########################################################################################
 FROM  gcr.io/distroless/static
 USER nonroot:nonroot
 
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
-COPY --from=builder /direktiv /bin/direktiv
-COPY --from=builder /direktiv-cmd /bin/direktiv-cmd
+COPY --from=builder /direktiv /app/direktiv
+COPY --from=builder /direktiv-cmd /app/direktiv-cmd
+COPY --from=ui-builder /app/dist /app/ui
 
-CMD ["/bin/direktiv"]
+CMD ["/app/direktiv"]

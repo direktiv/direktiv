@@ -17,7 +17,7 @@ import (
 func RunApplication() {
 	perm := 0o755
 	sharedDir := "/usr/share/direktiv"
-	cmdBinary := "/bin/direktiv-cmd"
+	cmdBinary := "/app/direktiv-cmd"
 	targetBinary := "/usr/share/direktiv/direktiv-cmd"
 
 	slog.Info("starting RunApplication", "sharedDir", sharedDir, "cmdBinary", cmdBinary)

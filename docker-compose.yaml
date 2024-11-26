@@ -18,11 +18,11 @@ services:
 
   flow:
     image: direktiv-dev
-    command: ["/bin/direktiv", "server"]
+    command: ["/app/direktiv", "server"]
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
-      - DIREKTIV_API_PORT=8181
+      - DIREKTIV_API_PORT=8080
       - DIREKTIV_DEBUG=true
 
       - DIREKTIV_DB=host=postgres port=5432 user=myadmin dbname=mydb password=mypassword sslmode=disable
@@ -35,20 +35,9 @@ services:
 
     ports:
       # api port
-      - "8181:8181"
-    depends_on:
-      - postgres
-
-  ui:
-    image: direktiv-ui-dev
-    environment:
-      - DIREKTIV_UI_PORT=8080
-      - DIREKTIV_UI_BACKEND=http://flow:8181/api/
-    ports:
-      # api port
       - "8080:8080"
     depends_on:
-      - flow
+      - postgres
 
   e2e-api:
     image: node:lts-alpine3.18
@@ -56,7 +45,7 @@ services:
       - ./tests:/tests
     environment:
       - NODE_TLS_REJECT_UNAUTHORIZED=0
-      - DIREKTIV_HOST=http://flow:8181
+      - DIREKTIV_HOST=http://flow:8080
     command: npm --prefix /tests run jest -- ${JEST_PREFIX} --runInBand
     depends_on:
       - flow
@@ -69,11 +58,11 @@ services:
     environment:
       - NODE_TLS_REJECT_UNAUTHORIZED=0
       - PLAYWRIGHT_USE_VITE=FALSE
-      - PLAYWRIGHT_UI_BASE_URL=http://ui:8080
+      - PLAYWRIGHT_UI_BASE_URL=http://flow:8080
     command: >
       bash -c "cd ui
       && yarn
       && npx playwright install --with-deps chromium
       && yarn run e2e:headless-chromium-only"
     depends_on:
-      - ui
+      - flow
