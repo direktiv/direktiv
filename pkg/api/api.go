@@ -182,6 +182,7 @@ func Initialize(app core.App, db *database.SQLStore, bus *pubsub2.Bus, instanceM
 				Code:    "request_path_not_found",
 				Message: "request http path was not found",
 			})
+
 			return
 		}
 
