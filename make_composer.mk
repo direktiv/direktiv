@@ -3,26 +3,18 @@ docker-start:
 docker-start: ## Create a local docker deployment.
 	docker compose down --remove-orphans -v
 	docker build -t direktiv-dev .
-
 	docker compose up -d --scale e2e-api=0
 
-.PHONY: docker-headless
-docker-headless:
-docker-headless: ## Create a local docker deployment.
-	docker compose down --remove-orphans -v
-	docker build -t direktiv-dev .
-	docker compose up -d --scale e2e-api=0
-
-.PHONY: docker-e2e-api
+.PHONY: docker-e2e
 docker-e2e-api:
 docker-e2e-api: ## Perform backend end-to-end tests against the docker deployment.
 	docker compose down --remove-orphans -v
 	docker build -t direktiv-dev .
 	docker compose run e2e-api
 
-.PHONY: docker-e2e-playwright
+.PHONY: docker-playwright
 docker-e2e-playwright:
-docker-e2e-playwright: ## Create a local docker deployment.
+docker-e2e-playwright: ## Perform ui e2e tests with playwright platform.
 	docker run \
 	-v $$PWD/ui:/app/ui \
 	-e NODE_TLS_REJECT_UNAUTHORIZED=0 \
