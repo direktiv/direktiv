@@ -180,7 +180,7 @@ func Initialize(app core.App, db *database.SQLStore, bus *pubsub2.Bus, instanceM
 		if strings.Contains(r.URL.Path, "/api/") {
 			writeError(w, &Error{
 				Code:    "request_path_not_found",
-				Message: "request http path was not found",
+				Message: "request http path is not found",
 			})
 
 			return
