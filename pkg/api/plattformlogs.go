@@ -119,7 +119,7 @@ func (m *logController) mountRouter(r chi.Router) {
 	})
 }
 
-func (m logController) getNewer(ctx context.Context, t time.Time, params map[string]string) ([]logEntry, error) {
+func (m *logController) getNewer(ctx context.Context, t time.Time, params map[string]string) ([]logEntry, error) {
 	var logs []core.LogEntry
 	var err error
 
@@ -178,7 +178,7 @@ func (m logController) getNewer(ctx context.Context, t time.Time, params map[str
 	return res, nil
 }
 
-func (m logController) getOlder(ctx context.Context, params map[string]string) ([]logEntry, time.Time, error) {
+func (m *logController) getOlder(ctx context.Context, params map[string]string) ([]logEntry, time.Time, error) {
 	var r []core.LogEntry
 	var err error
 	// Determine the track based on the provided parameters
@@ -214,7 +214,7 @@ func (m logController) getOlder(ctx context.Context, params map[string]string) (
 
 // stream handles log streaming requests using Server-Sent Events (SSE).
 // Clients subscribing to this endpoint will receive real-time log updates.
-func (m logController) stream(w http.ResponseWriter, r *http.Request) {
+func (m *logController) stream(w http.ResponseWriter, r *http.Request) {
 	// cursor is set to multiple seconds before the current time to mitigate data loss
 	// that may occur due to delays between submitting and processing the request, or when a sequence of client requests is necessary.
 	cursor := time.Now().UTC().Add(-time.Second * 3)
