@@ -8,7 +8,9 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/core"
@@ -172,6 +174,26 @@ func Initialize(app core.App, db *database.SQLStore, bus *pubsub2.Bus, instanceM
 		r.Route("/jx", func(r chi.Router) {
 			jxCtr.mountRouter(r)
 		})
+	})
+
+	r.HandleFunc("/*", func(w http.ResponseWriter, r *http.Request) {
+		if strings.Contains(r.URL.Path, "/api/") {
+			writeError(w, &Error{
+				Code:    "request_path_not_found",
+				Message: "request http path was not found",
+			})
+			return
+		}
+
+		staticDir := "/app/ui"
+		fs := http.FileServer(http.Dir(staticDir))
+
+		if _, err := os.Stat(staticDir + r.URL.Path); err == nil {
+			fs.ServeHTTP(w, r)
+			return
+		}
+
+		http.ServeFile(w, r, filepath.Join(staticDir, "index.html"))
 	})
 
 	apiServer := &http.Server{
