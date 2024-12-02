@@ -149,6 +149,7 @@
     "@types/dagre": "^0.7.48",
     "@types/drawflow": "^0.0.4",
     "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.2.0",
     "@types/react-virtualized": "^9.21.21",
     "@types/react-window": "^1.8.5",
     "@vitejs/plugin-react": "^3.0.1",
