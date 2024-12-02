@@ -264,9 +264,6 @@ importers:
       typescript:
         specifier: ^4.9.0
         version: 4.9.5
-      vite-plugin-rewrite-all:
-        specifier: ^1.0.1
-        version: 1.0.1(vite@4.0.4(@types/node@18.7.18)(terser@5.36.0))
       yaml:
         specifier: ^2.4.1
         version: 2.4.1
@@ -2899,10 +2896,6 @@ packages:
 
   concat-map@0.0.1:
     resolution: {integrity: sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==}
-
-  connect-history-api-fallback@1.6.0:
-    resolution: {integrity: sha512-e54B99q/OUoH64zYYRf3HBP5z24G38h5D3qXu23JGRoigpX5Ss4r9ZnDk3g0Z8uQC2x2lPaJ+UlWBc1ZWBWdLg==}
-    engines: {node: '>=0.8'}
 
   convert-source-map@1.8.0:
     resolution: {integrity: sha512-+OQdjP49zViI/6i7nIJpA8rAl4sV/JdPfU9nZs3VqOwGIgizICvuN2ru6fMd+4llL0tar18UYJXfZ/TWtmhUjA==}
@@ -5849,13 +5842,6 @@ packages:
     resolution: {integrity: sha512-zyiJ3DLs9zXign4P2MD4PQk+7rdT+JkHukgmmS0KuImbCQ7WnCdea5imQVeT6OtUsBwsLztJxQODUsinVr91tg==}
     engines: {node: '>=v14.16.0'}
     hasBin: true
-
-  vite-plugin-rewrite-all@1.0.1:
-    resolution: {integrity: sha512-W0DAchC8ynuQH0lYLIu5/5+JGfYlUTRD8GGNtHFXRJX4FzzB9MajtqHBp26zq/ly9sDt5BqrfdT08rv3RbB0LQ==}
-    engines: {node: '>=12.0.0'}
-    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
-    peerDependencies:
-      vite: ^2.0.0 || ^3.0.0 || ^4.0.0
 
   vite-plugin-svgr@2.4.0:
     resolution: {integrity: sha512-q+mJJol6ThvqkkJvvVFEndI4EaKIjSI0I3jNFgSoC9fXAz1M7kYTVUin8fhUsFojFDKZ9VHKtX6NXNaOLpbsHA==}
@@ -9296,8 +9282,6 @@ snapshots:
 
   concat-map@0.0.1: {}
 
-  connect-history-api-fallback@1.6.0: {}
-
   convert-source-map@1.8.0:
     dependencies:
       safe-buffer: 5.1.2
@@ -12516,11 +12500,6 @@ snapshots:
       - sugarss
       - supports-color
       - terser
-
-  vite-plugin-rewrite-all@1.0.1(vite@4.0.4(@types/node@18.7.18)(terser@5.36.0)):
-    dependencies:
-      connect-history-api-fallback: 1.6.0
-      vite: 4.0.4(@types/node@18.7.18)(terser@5.36.0)
 
   vite-plugin-svgr@2.4.0(rollup@3.17.2)(vite@4.0.4(@types/node@18.7.18)(terser@5.36.0)):
     dependencies:
