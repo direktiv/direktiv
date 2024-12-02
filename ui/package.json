@@ -102,7 +102,7 @@
     "storybook": "NODE_OPTIONS=--openssl-legacy-provider pnpm exec storybook dev -p 6006",
     "storybook:build": "pnpm exec storybook build",
     "check": "run-p check:*",
-    "check:lint": "eslint . --ext .js,.jsx,.ts,.tsx --max-warnings 0 --report-unused-disable-directives",
+    "check:lint": "eslint . --ext .js,.jsx,.ts,.tsx --max-warnings 0 --report-unused-disable-directives --cache",
     "check:types": "tsc --tsBuildInfoFile .tsbuildinfo --incremental",
     "check:prettier": "prettier --check './{src,test,e2e}/**/*.{js,jsx,ts,tsx,json,scss,css}'",
     "check:test": "vitest run",
