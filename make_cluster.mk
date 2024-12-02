@@ -43,6 +43,13 @@ kind-start:
 
 	kubectl wait --for=condition=ready pod -l app=direktiv-flow --timeout=60s
 
+	@echo "Waiting for API endpoint to return 200..."
+	@until curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:9090/api/v2/status | grep -q 200; do \
+		echo "Waiting..."; \
+		sleep 2; \
+	done
+	@echo "Endpoint is ready!"
+
 
 kind-api-test: kind-start
 	docker run \
