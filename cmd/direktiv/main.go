@@ -58,8 +58,6 @@ func main() {
 	switch os.Getenv("DIREKTIV_APP") {
 	case "sidecar":
 		sidecar.RunApplication(context.Background())
-	case "init":
-		runDinitFunction()
 	default:
 		// default to flow app.
 		runApplication()
