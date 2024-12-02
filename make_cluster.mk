@@ -1,8 +1,54 @@
+kind-start:
+	kind delete clusters --all
+	kind create cluster --config kind-config.yaml
+
+	if ! docker inspect kind-registry >/dev/null 2>&1; then \
+		docker run -d -p "127.0.0.1:5001:5000" --network bridge --name kind-registry --restart=always registry:2; \
+		docker network connect kind kind-registry; \
+	fi
+
+	if ! docker inspect proxy-docker-hub >/dev/null 2>&1; then \
+		docker run -d --name proxy-docker-hub --restart=always \
+		--net=kind \
+		-e REGISTRY_PROXY_REMOTEURL=https://registry-1.docker.io \
+		registry:2;\
+	fi
+
+	DOCKER_BUILDKIT=1 docker build --push -t localhost:5001/direktiv:dev .
+
+	helm install --set database.host=postgres.default.svc \
+	--set database.port=5432 \
+	--set database.user=admin \
+	--set database.password=password \
+	--set database.name=direktiv \
+	--set database.sslmode=disable \
+	--set ingress-nginx.install=false \
+	--set image=direktiv \
+	--set registry=localhost:5001 \
+	--set tag=dev \
+	--set pullPolicy=IfNotPresent \
+	--set flow.sidecar=localhost:5001/direktiv:dev \
+	--set-json flow.command='[]' \
+	direktiv charts/direktiv
+
+	kubectl apply -f kind/postgres.yaml
+	kubectl apply -f kind/deploy-ingress-nginx.yaml
+	kubectl apply -f kind/svc-configmap.yaml
+	kubectl apply -f kind/knative-a-serving-operator.yaml
+	kubectl apply -f kind/knative-b-serving-ns.yaml
+	kubectl apply -f kind/knative-c-serving-basic.yaml
+	kubectl apply -f kind/knative-d-serving-countour.yaml
+	kubectl apply -f kind/knative-d-serving-countour.yaml
+	kubectl delete -f kind/knative-e-serving-ns-delete.yaml
+
+	kubectl wait --for=condition=ready pod -l app=direktiv-flow --timeout=60s
+
+
+
+
 .PHONY: cluster-create
 cluster-create: cluster-image-cache-start ## Creates cluster and requires kind
-	mkdir -p ${HOME}/gobase
-	chmod 777 ${HOME}/gobase
-	cat kind-config.yaml | sed 's?MYDIR?'`pwd`'?' | sed 's?GOBASE?'`echo ${HOME}/gobase`'?' | kind create cluster --config -
+	kind create cluster --config kind-config.yaml
 # @for node in $(shell kind get nodes --name direktiv-cluster); do \
 # 	echo $$node;\
 # 	docker exec "$$node" mkdir -p "/etc/containerd/certs.d/localhost:5001"; \
