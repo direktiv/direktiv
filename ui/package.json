@@ -139,6 +139,7 @@
     "@storybook/addon-actions": "^8.4.6",
     "@storybook/addon-essentials": "^8.4.6",
     "@storybook/addon-interactions": "^8.4.6",
+    "@storybook/blocks": "^8.4.6",
     "@storybook/node-logger": "^8.4.6",
     "@storybook/react": "^8.4.6",
     "@storybook/react-vite": "^8.4.6",

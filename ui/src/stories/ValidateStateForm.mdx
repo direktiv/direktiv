@@ -1,4 +1,4 @@
-import { Meta } from "@storybook/addon-docs";
+import { Meta } from "@storybook/blocks";
 import "./stories.css";
 
 import RunWorkflow from "./assets/run-workflow.png";
@@ -39,12 +39,7 @@ Below is what the form would look like for the workflow above:
 
 <div className="subheading">How it works</div>
 
-<img
-  src={ValidateForm}
-  alt="validate-workflow"
-  class="center"
-  style={{ width: "90%" }}
-/>
+<img src={ValidateForm} alt="validate-workflow" class="center" style={{ width: "90%" }} />
 
 When the user presses the Run Button on the workflow page the `onOpen` event function will trigger on the Modal component. During this onOpen function the following things happen:
 
