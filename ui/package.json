@@ -164,7 +164,6 @@
     "vite": "^4.0.4",
     "vite-plugin-svgr": "^2.4.0",
     "vite-tsconfig-paths": "^4.0.5",
-    "vitest": "^0.28.2",
-    "yalc": "^1.0.0-pre.53"
+    "vitest": "^0.28.2"
   }
 }
