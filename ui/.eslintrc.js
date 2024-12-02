@@ -37,6 +37,8 @@ module.exports = {
     "dist/",
     ".eslintrc.js",
     "env.d.ts",
+    "test-results",
+    "storybook-static",
     "playwright-report/",
   ],
   rules: {
