@@ -59,13 +59,7 @@ export default ({ mode }) => {
         },
       },
     },
-    plugins: [
-      react(),
-      viteTsconfigPaths(),
-      svgrPlugin(),
-      reactVirtualized(),
-      pluginRewriteAll(),
-    ],
+    plugins: [react(), viteTsconfigPaths(), svgrPlugin(), pluginRewriteAll()],
     test: {
       globals: true,
       environment: "jsdom",
