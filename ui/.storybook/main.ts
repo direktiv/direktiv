@@ -22,14 +22,13 @@ module.exports = {
     "@storybook/addon-essentials",
     "@storybook/addon-interactions",
     "storybook-addon-react-router-v6",
+    "@chromatic-com/storybook"
   ],
   framework: {
     name: "@storybook/react-vite",
     options: {},
   },
-  docs: {
-    autodocs: true,
-  },
+  docs: {},
   // https://github.com/chromaui/chromatic-cli/issues/550#issuecomment-1326856720
   viteFinal: (config) => ({
     ...config,
