@@ -93,13 +93,6 @@ module.exports = {
     // like f.e. in a function signature to indicate that the function takes
     // a parameter but does not use it
     "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
-
-    // REMOVE WHEN 100 % TYPESCRIPT IS ACHIEVED
-
-    // we will use TypeScript's types for component props instead)
-    "react/prop-types": "off",
-    // this is the default in typescript and we want to enforce it in JavaScript as well
-    "prefer-const": "error",
   },
   overrides: [
     {
