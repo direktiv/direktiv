@@ -112,7 +112,6 @@ states:
 
 	it(`generate some logs for error`, async () => {
 		const res = await request(common.config.getDirektivHost()).post(`/api/v2/namespaces/${namespace}/instances?path=action-error.yaml&wait=true`)
-		console.log(res.body)
 		expect(res.statusCode).toEqual(500)
 		expect(res.headers['direktiv-instance-error-code']).toEqual('com.send-request.error')
 	})

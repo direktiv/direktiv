@@ -36,7 +36,7 @@ func buildRouter(endpoints []core.Endpoint, consumers []core.Consumer) *router {
 			continue
 		}
 
-		if _, ok := checkUniqueGatewayPaths[item.Path]; ok {
+		if _, ok := checkUniqueGatewayPaths[item.Namespace+item.Path]; ok {
 			item.Errors = append(item.Errors, fmt.Sprintf("duplicate gateway path: %s", item.Path))
 			endpoints[i] = item
 
