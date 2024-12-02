@@ -94,8 +94,7 @@
     "zustand": "^4.3.6"
   },
   "scripts": {
-    "start": "vite",
-    "dev": "pnpm run start",
+    "dev": "vite",
     "build": "vite build",
     "preview": "vite preview --debug",
     "prebuild": "pnpm run check",
