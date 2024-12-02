@@ -37,3 +37,6 @@ nodes:
     containerPath: /source
   - hostPath: GOBASE
     containerPath: /gobase
+# - role: worker
+# - role: worker
+# - role: worker
