@@ -98,7 +98,6 @@ states:
 				e: null,
 			},
 		})
-		console.log(req.body.return.bash)
 
 		expect(req.body.return.bash[0]).toMatchObject({
 			result: '',
@@ -143,7 +142,6 @@ states:
 				e: 'CnN0YXRlczoKLSBpZDogYQogIHR5cGU6IG5vb3AKICB0cmFuc2Zvcm06CiAgICByZXN1bHQ6IHg=',
 			},
 		})
-		console.log(req.body.return.bash)
 		expect(req.body.return.bash[0]).toMatchObject({
 			result: 5,
 			success: true,
