@@ -42,7 +42,7 @@ func buildRouter(endpoints []core.Endpoint, consumers []core.Consumer) *router {
 
 			continue
 		}
-		checkUniqueGatewayPaths[item.Path] = item.Path
+		checkUniqueGatewayPaths[item.Namespace+item.Path] = item.Path
 
 		// concat plugins configs into one list.
 		pConfigs := []core.PluginConfig{}
