@@ -44,7 +44,14 @@ kind-start:
 	kubectl wait --for=condition=ready pod -l app=direktiv-flow --timeout=60s
 
 
-
+kind-api-test: kind-start
+	docker run \
+ 	-v ./tests:/tests \
+ 	-e NODE_TLS_REJECT_UNAUTHORIZED=0 \
+ 	-e DIREKTIV_HOST=http://host.docker.internal:9090 \
+ 	--network=host \
+ 	node:18 \
+ 	bash -c "npm --prefix /tests run jest -- --runInBand"
 
 .PHONY: cluster-create
 cluster-create: cluster-image-cache-start ## Creates cluster and requires kind
