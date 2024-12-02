@@ -49,7 +49,7 @@ export const createWorkflowVariables = async (
   // editor (where each line is a separate HTML element)
   const variables = Array.from({ length: amount }, () => ({
     name: faker.internet.domainWord(),
-    content: encode(faker.git.shortSha()),
+    content: encode(faker.git.commitSha({ length: 7 })),
     mimeType:
       supportedMimeTypes[Math.floor(Math.random() * supportedMimeTypes.length)],
   }));

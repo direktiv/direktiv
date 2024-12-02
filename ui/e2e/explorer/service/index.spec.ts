@@ -31,7 +31,7 @@ test("it is possible to create a service", async ({ page }) => {
 
   const envs = Array.from({ length: 3 }, () => ({
     name: faker.lorem.word(),
-    value: faker.git.shortSha(),
+    value: faker.git.commitSha({ length: 7 }),
   }));
 
   const patches = Array.from({ length: 2 }, () => ({
@@ -327,7 +327,7 @@ test("it is possible to edit patches", async ({ page }) => {
 test("it is possible to edit environment variables", async ({ page }) => {
   const envs = Array.from({ length: 5 }, () => ({
     name: faker.lorem.word(),
-    value: faker.git.shortSha(),
+    value: faker.git.commitSha({ length: 7 }),
   }));
 
   const service = {
@@ -358,7 +358,7 @@ test("it is possible to edit environment variables", async ({ page }) => {
   /* edit one item */
   const updatedEnv: EnvVarSchemaType = {
     name: faker.lorem.word(),
-    value: faker.git.shortSha(),
+    value: faker.git.commitSha({ length: 7 }),
   };
 
   const envToEdit = envs[3];

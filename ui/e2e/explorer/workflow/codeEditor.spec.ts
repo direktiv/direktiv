@@ -64,7 +64,7 @@ test("it is possible to save the workflow", async ({ page }) => {
   const editorElement = page.getByText(defaultDescription);
   await editorElement.click();
 
-  const testText = faker.random.alphaNumeric(9);
+  const testText = faker.string.alphanumeric(9);
   await page.type("textarea", testText);
 
   // now click on Save
@@ -172,7 +172,7 @@ test("it prevents navigation to another route with unsaved changes", async ({
   await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflow}`);
   await page.getByText(defaultDescription).click();
 
-  const dirtyText = faker.random.alphaNumeric(9);
+  const dirtyText = faker.string.alphanumeric(9);
   await page.type("textarea", dirtyText);
 
   await page.getByRole("link", { name: "Settings" }).click();
@@ -205,7 +205,7 @@ test("with confirmation, it navigates to another route despite unsaved changes",
   await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflow}`);
   await page.getByText(defaultDescription).click();
 
-  const dirtyText = faker.random.alphaNumeric(9);
+  const dirtyText = faker.string.alphanumeric(9);
   await page.type("textarea", dirtyText);
 
   await page.getByRole("link", { name: "Settings" }).click();
@@ -235,7 +235,7 @@ test("it prevents navigation to another namespace with unsaved changes", async (
   await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflow}`);
   await page.getByText(defaultDescription).click();
 
-  const dirtyText = faker.random.alphaNumeric(9);
+  const dirtyText = faker.string.alphanumeric(9);
   await page.type("textarea", dirtyText);
 
   await page.getByTestId("dropdown-trg-namespace").click();
@@ -274,7 +274,7 @@ test("with confirmation, it navigates to another namespace despite unsaved chang
   await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflow}`);
   await page.getByText(defaultDescription).click();
 
-  const dirtyText = faker.random.alphaNumeric(9);
+  const dirtyText = faker.string.alphanumeric(9);
   await page.type("textarea", dirtyText);
 
   await page.getByTestId("dropdown-trg-namespace").click();
@@ -329,7 +329,7 @@ test("it prevents navigation away from the app with unsaved changes", async ({
   await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflow}`);
   await page.getByText(defaultDescription).click();
 
-  const dirtyText = faker.random.alphaNumeric(9);
+  const dirtyText = faker.string.alphanumeric(9);
   await page.type("textarea", dirtyText);
 
   try {
@@ -365,7 +365,7 @@ test("with confirmation, it allows navigation away from the app with unsaved cha
   await page.goto(`/n/${namespace}/explorer/workflow/edit/${workflow}`);
   await page.getByText(defaultDescription).click();
 
-  const dirtyText = faker.random.alphaNumeric(9);
+  const dirtyText = faker.string.alphanumeric(9);
   await page.type("textarea", dirtyText);
 
   await page.goto("/api/v2/status");
