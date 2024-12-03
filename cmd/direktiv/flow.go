@@ -40,8 +40,9 @@ You need to specify the SERVICE_NAME as an argument.`,
 }
 
 var startAPICmd = &cobra.Command{
-	Use:  "api",
-	Args: cobra.ExactArgs(0),
+	Use:   "api",
+	Short: "direktiv API service",
+	Args:  cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
 		slog.Info("starting 'api' service...")
 
@@ -73,8 +74,9 @@ var startAPICmd = &cobra.Command{
 // a server listening to port 8080. This enables Direktiv to use standard containers from
 // e.g. DockerHub.
 var startDinitCmd = &cobra.Command{
-	Use:  "dinit",
-	Args: cobra.ExactArgs(0),
+	Use:   "dinit",
+	Short: "a helper service for direktiv sidecar",
+	Args:  cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
 		slog.Info("starting 'dinit' service...")
 
@@ -132,8 +134,9 @@ var startDinitCmd = &cobra.Command{
 }
 
 var startSidecarCmd = &cobra.Command{
-	Use:  "sidecar",
-	Args: cobra.ExactArgs(0),
+	Use:   "sidecar",
+	Short: "direktiv sidecar service, this service manage action request to user containers",
+	Args:  cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
 		slog.Info("starting 'sidecar' service...")
 		sidecar.RunApplication(context.Background())
