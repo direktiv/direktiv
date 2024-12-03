@@ -13,12 +13,10 @@ tests-api: ## Runs end-to-end tests. DIREKTIV_HOST=128.0.0.1 make test-k3s [JEST
 	kubectl wait --for=condition=ready pod -l "app=direktiv-flow"
 	docker run -it --rm \
 	-v `pwd`/tests:/tests \
-	-e 'DIREKTIV_HOST=http://localhost:9090' \
+	-e 'DIREKTIV_HOST=http://${DIREKTIV_HOST}' \
 	-e 'NODE_TLS_REJECT_UNAUTHORIZED=0' \
 	--network=host \
 	node:lts-alpine3.18 npm --prefix "/tests" run jest -- ${JEST_PREFIX}/ --runInBand
-
-
 
 TEST_PACKAGES := $(shell find . -type f -name '*_test.go' | sed -e 's/^\.\///g' | sed -r 's|/[^/]+$$||'  |sort |uniq)
 UNITTEST_PACKAGES := $(shell echo ${TEST_PACKAGES} | sed 's/ /\n/g' | awk '{print "github.com/direktiv/direktiv/" $$0}')

@@ -1,4 +1,8 @@
-kind-start:
+.PHONY: cluster-setup
+cluster-setup: cluster-create cluster-prep cluster-direktiv
+
+.PHONY: cluster-create
+cluster-create: cluster-build
 	kind delete clusters --all
 	kind create cluster --config kind-config.yaml
 
@@ -14,8 +18,67 @@ kind-start:
 		registry:2;\
 	fi
 
+	if ! docker inspect proxy-quay >/dev/null 2>&1; then \
+		docker run -d --name proxy-quay --restart=always \
+		--net=kind \
+		-e REGISTRY_PROXY_REMOTEURL=https://quay.io \
+		registry:2;\
+	fi
+
+	if ! docker inspect proxy-gcr >/dev/null 2>&1; then \
+		docker run -d --name proxy-gcr --restart=always \
+		--net=kind \
+		-e REGISTRY_PROXY_REMOTEURL=https://gcr.io \
+		registry:2;\
+	fi
+
+	if ! docker inspect proxy-k8s-gcr >/dev/null 2>&1; then \
+		docker run -d --name proxy-k8s-gcr --restart=always \
+		--net=kind \
+		-e REGISTRY_PROXY_REMOTEURL=https://k8s.gcr.io \
+		registry:2;\
+	fi
+
+	if ! docker inspect proxy-registry-k8s-io >/dev/null 2>&1; then \
+		docker run -d --name proxy-registry-k8s-io --restart=always \
+		--net=kind \
+		-e REGISTRY_PROXY_REMOTEURL=https://registry.k8s.io \
+		registry:2;\
+	fi
+
+	if ! docker inspect proxy-cr-fluentbit-io >/dev/null 2>&1; then \
+		docker run -d --name proxy-cr-fluentbit-io --restart=always \
+		--net=kind \
+		-e REGISTRY_PROXY_REMOTEURL=https://cr.fluentbit.io \
+		registry:2;\
+	fi
+
+.PHONY: cluster-prep
+cluster-prep: cluster-prep
+	kubectl apply -f kind/postgres.yaml
+	kubectl apply -f kind/deploy-ingress-nginx.yaml
+	kubectl apply -f kind/svc-configmap.yaml
+	kubectl apply -f kind/knative-a-serving-operator.yaml
+	kubectl apply -f kind/knative-b-serving-ns.yaml
+	kubectl apply -f kind/knative-c-serving-basic.yaml
+	kubectl apply -f kind/knative-d-serving-countour.yaml
+	kubectl apply -f kind/knative-d-serving-countour.yaml
+	kubectl delete -f kind/knative-e-serving-ns-delete.yaml
+
+.PHONY: cluster-build
+cluster-build: ## Builds direktiv for cluster
 	DOCKER_BUILDKIT=1 docker build --push -t localhost:5001/direktiv:dev .
 
+.PHONY: cluster-direktiv-delete
+cluster-direktiv-delete:
+	kubectl get namespace "direktiv-services-direktiv" -o json   | tr -d "\n" | sed "s/\"finalizers\": \[[^]]\+\]/\"finalizers\": []/"   | kubectl replace --raw /api/v1/namespaces/direktiv-services-direktiv/finalize -f - || true
+	helm uninstall direktiv
+
+.PHONY: cluster-direktiv
+cluster-direktiv: ## Installs direktiv in cluster
+# // app.kubernetes.io/component=admission-webhook
+	kubectl wait -n ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller 
+	kubectl wait -n ingress-nginx --for=condition=complete job --selector=app.kubernetes.io/component=admission-webhook
 	helm install --set database.host=postgres.default.svc \
 	--set database.port=5432 \
 	--set database.user=admin \
@@ -28,18 +91,7 @@ kind-start:
 	--set tag=dev \
 	--set pullPolicy=IfNotPresent \
 	--set flow.sidecar=localhost:5001/direktiv:dev \
-	--set-json flow.command='[]' \
 	direktiv charts/direktiv
-
-	kubectl apply -f kind/postgres.yaml
-	kubectl apply -f kind/deploy-ingress-nginx.yaml
-	kubectl apply -f kind/svc-configmap.yaml
-	kubectl apply -f kind/knative-a-serving-operator.yaml
-	kubectl apply -f kind/knative-b-serving-ns.yaml
-	kubectl apply -f kind/knative-c-serving-basic.yaml
-	kubectl apply -f kind/knative-d-serving-countour.yaml
-	kubectl apply -f kind/knative-d-serving-countour.yaml
-	kubectl delete -f kind/knative-e-serving-ns-delete.yaml
 
 	kubectl wait --for=condition=ready pod -l app=direktiv-flow --timeout=60s
 
@@ -49,78 +101,6 @@ kind-start:
 		sleep 2; \
 	done
 	@echo "Endpoint is ready!"
-
-
-kind-api-test: kind-start
-	docker run \
- 	-v ./tests:/tests \
- 	-e NODE_TLS_REJECT_UNAUTHORIZED=0 \
- 	-e DIREKTIV_HOST=http://host.docker.internal:9090 \
- 	--network=host \
- 	node:18 \
- 	bash -c "npm --prefix /tests run jest -- --runInBand"
-
-.PHONY: cluster-create
-cluster-create: cluster-image-cache-start ## Creates cluster and requires kind
-	kind create cluster --config kind-config.yaml
-# @for node in $(shell kind get nodes --name direktiv-cluster); do \
-# 	echo $$node;\
-# 	docker exec "$$node" mkdir -p "/etc/containerd/certs.d/localhost:5001"; \
-# 	docker exec "$$node" bash -c 'echo [host."http://kind-registry:5000"] > /etc/containerd/certs.d/localhost:5001/hosts.toml'; \
-# done
-	@if [ "$(shell docker inspect -f='{{json .NetworkSettings.Networks.kind}}' "kind-registry")" = 'null' ]; then \
-		docker network connect "kind" "kind-registry"; \
-	fi
-
-.PHONY: cluster-delete
-cluster-delete: ## Deletes cluster
-	kind delete cluster --name direktiv-cluster
-
-.PHONY: cluster-prepare
-cluster-prepare: 
-	kubectl apply -f kind/postgres.yaml
-	kubectl apply -f kind/deploy-ingress-nginx.yaml
-	kubectl apply -f kind/svc-configmap.yaml
-	kubectl apply -f kind/knative-a-serving-operator.yaml
-	kubectl apply -f kind/knative-b-serving-ns.yaml
-	kubectl apply -f kind/knative-c-serving-basic.yaml
-	kubectl apply -f kind/knative-d-serving-countour.yaml
-	kubectl apply -f kind/knative-d-serving-countour.yaml
-	kubectl delete -f kind/knative-e-serving-ns-delete.yaml
-
-# mirrord kind
-.PHONY: cluster-init 
-cluster-init: cluster-create cluster-prepare cluster-build cluster-ui-build
-
-.PHONY: cluster-ui-build
-cluster-ui-build: ## Builds UI for cluster
-	DOCKER_BUILDKIT=1 docker build --push -t localhost:5001/frontend:source ui/ 
-
-.PHONY: cluster-build
-cluster-build: ## Builds direktiv for cluster
-	DOCKER_BUILDKIT=1 docker build --push -f Dockerfile.source -t localhost:5001/direktiv:source .
-	DOCKER_BUILDKIT=1 docker build --push -t localhost:5001/direktiv:dev .
-
-.PHONY: cluster-direktiv
-cluster-direktiv: ## Installs direktiv in cluster
-	helm install --set database.host=postgres.default.svc \
-	--set database.port=5432 \
-	--set database.user=admin \
-	--set database.password=password \
-	--set database.name=direktiv \
-	--set database.sslmode=disable \
-	--set ingress-nginx.install=false \
-	--set frontend.image=frontend \
-	--set frontend.tag=source \
-	--set image=direktiv \
-	--set registry=localhost:5001 \
-	--set tag=source \
-	--set pullPolicy=IfNotPresent \
-	--set flow.sidecar=localhost:5001/direktiv:dev \
-	--set-json flow.command='[]' \
-	--set-json flow.extraVolumes='[{"name":"source-files","hostPath":{"path":"/source"}},{"name":"gobase","hostPath":{"path":"/gobase"}}]' \
-	--set-json flow.extraVolumeMounts='[{"name":"source-files","mountPath":"/source"},{"name":"gobase","mountPath":"/gobase"}]' \
-	direktiv charts/direktiv
 
 .PHONY: cluster-image-cache-start
 cluster-image-cache-start:  
@@ -177,13 +157,7 @@ cluster-image-cache-stop:
 	@docker rm -f kind-registry proxy-docker-hub proxy-quay proxy-gcr proxy-k8s-gcr proxy-registry-k8s-io proxy-cr-fluentbit-io 2>/dev/null || true
 
 .PHONY: cluster-direktiv-run
-cluster-direktiv-run:  
+cluster-direktiv-run: cluster-build
 	kubectl delete pod -l app.kubernetes.io/name=direktiv,app.kubernetes.io/instance=direktiv 
 	kubectl wait --for=condition=ready pod -l "app=direktiv-flow"
 	kubectl logs -f -l "app=direktiv-flow"
-
-
-# sudo sysctl fs.inotify.max_user_watches=524288
-# sudo sysctl fs.inotify.max_user_instances=512
-# NS=`kubectl get ns |grep Terminating | awk 'NR==1 {print $1}'` && kubectl get namespace "$NS" -o json   | tr -d "\n" | sed "s/\"finalizers\": \[[^]]\+\]/\"finalizers\": []/"   | kubectl replace --raw /api/v1/namespaces/$NS/finalize -f -
-	
