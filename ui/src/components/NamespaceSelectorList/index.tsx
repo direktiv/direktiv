@@ -54,9 +54,9 @@ export const NamespaceSelectorList = ({
                 {isMultiSelect ? (
                   <>
                     {selectedValues.includes(ns.name) ? (
-                      <Check className="mr-2 h-5 w-5" />
+                      <Check className="mr-2 size-5" />
                     ) : (
-                      <Square className="mr-2 h-5 w-5" />
+                      <Square className="mr-2 size-5" />
                     )}
                     <span>{ns.name}</span>
                   </>
@@ -78,7 +78,7 @@ export const NamespaceSelectorList = ({
       )}
       {isLoading && (
         <CommandStaticItem>
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          <Loader2 className="mr-2 size-4 animate-spin" />
           {t("components.breadcrumb.loading")}
         </CommandStaticItem>
       )}
