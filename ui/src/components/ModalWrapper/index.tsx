@@ -29,7 +29,7 @@ export const ModalWrapper: FC<ModalWrapperProps> = ({
       <DialogHeader>
         <DialogTitle>{title}</DialogTitle>
       </DialogHeader>
-      <div className="flex max-h-[70vh] flex-col gap-5 overflow-y-auto p-[1px]">
+      <div className="flex max-h-[70vh] flex-col gap-5 overflow-y-auto p-px">
         {children}
       </div>
       <DialogFooter>

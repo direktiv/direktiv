@@ -46,7 +46,7 @@ export const ListContextMenu: FC<ListContextMenuProps> = ({
             }}
           >
             <DropdownMenuItem>
-              <ArrowDown className="mr-2 h-4 w-4" />
+              <ArrowDown className="mr-2 size-4" />
               {t("components.contextMenu.moveDownBtn")}
             </DropdownMenuItem>
           </DialogTrigger>
@@ -61,7 +61,7 @@ export const ListContextMenu: FC<ListContextMenuProps> = ({
             }}
           >
             <DropdownMenuItem>
-              <ArrowUp className="mr-2 h-4 w-4" />
+              <ArrowUp className="mr-2 size-4" />
               {t("components.contextMenu.moveUpBtn")}
             </DropdownMenuItem>
           </DialogTrigger>
@@ -75,7 +75,7 @@ export const ListContextMenu: FC<ListContextMenuProps> = ({
           }}
         >
           <DropdownMenuItem>
-            <Trash className="mr-2 h-4 w-4" />
+            <Trash className="mr-2 size-4" />
             {t("components.contextMenu.deleteBtn")}
           </DropdownMenuItem>
         </DialogTrigger>

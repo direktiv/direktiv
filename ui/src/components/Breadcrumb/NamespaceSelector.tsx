@@ -61,7 +61,7 @@ const NamespaceSelector = () => {
               <DialogTrigger data-testid="new-namespace">
                 <CommandStaticItem>
                   <>
-                    <PlusCircle className="mr-2 h-4 w-4" />
+                    <PlusCircle className="mr-2 size-4" />
                     <span>{t("components.breadcrumb.createBtn")}</span>
                   </>
                 </CommandStaticItem>

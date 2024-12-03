@@ -34,7 +34,7 @@ export const OidcHandler: FC<PropsWithChildren> = ({ children }) => {
   if (auth.isLoading) {
     return (
       <div className="flex w-full flex-col items-center p-5">
-        <Loader2 className="h-4 w-4 animate-spin" />
+        <Loader2 className="size-4 animate-spin" />
       </div>
     );
   }

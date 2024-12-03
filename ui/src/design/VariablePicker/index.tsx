@@ -53,7 +53,7 @@ const VariablepickerHeading: FC<PropsWithChildren> = ({ children }) => (
   <div className="px-2 text-sm font-semibold text-gray-9 dark:text-gray-dark-9">
     <div className="flex items-center px-2">
       <div className="w-max">
-        <FileJson className="h-4 w-4" aria-hidden="true" />
+        <FileJson className="size-4" aria-hidden="true" />
       </div>
       <div className="whitespace-nowrap px-3 py-2 text-sm">{children}</div>
     </div>
