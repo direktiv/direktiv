@@ -15,7 +15,6 @@ import (
 )
 
 func runApplication() {
-
 	startCmd := &cobra.Command{
 		Use:   "start SERVICE_NAME",
 		Short: "Starts the specified direktiv service",
