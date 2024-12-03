@@ -64,7 +64,7 @@ export const NamespaceSelectorList = ({
                   <>
                     <Circle
                       className={twMergeClsx(
-                        "mr-2 h-2 w-2 fill-current",
+                        "mr-2 size-2 fill-current",
                         namespace === ns.name ? "opacity-100" : "opacity-0"
                       )}
                     />
