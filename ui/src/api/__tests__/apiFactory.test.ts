@@ -1,5 +1,3 @@
-import "cross-fetch/polyfill";
-
 import { HttpResponse, http } from "msw";
 import { ResponseParser, apiFactory } from "../apiFactory";
 import {
