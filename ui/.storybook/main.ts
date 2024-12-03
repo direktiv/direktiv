@@ -12,10 +12,6 @@ module.exports = {
   stories: [
     "../src/design/**/*.mdx",
     "../src/design/**/*.stories.@(js|jsx|ts|tsx)",
-    "../src/componentsNext/**/*.mdx",
-    "../src/componentsNext/**/*.stories.@(js|jsx|ts|tsx)",
-    "../src/hooksNext/**/*.mdx",
-    "../src/hooksNext/**/*.stories.@(js|jsx|ts|tsx)",
   ],
 
   addons: [
