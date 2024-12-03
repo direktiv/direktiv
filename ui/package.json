@@ -104,12 +104,12 @@
     "check": "run-p check:*",
     "check:lint": "eslint . --ext .js,.jsx,.ts,.tsx --max-warnings 0 --report-unused-disable-directives --cache",
     "check:types": "tsc --tsBuildInfoFile .tsbuildinfo --incremental",
-    "check:prettier": "prettier --check './{src,test,e2e}/**/*.{js,jsx,ts,tsx,json,scss,css}'",
+    "check:prettier": "prettier --check './{src,test,e2e}/**/*.{js,jsx,ts,tsx,json,scss,css}' --cache",
     "check:test": "vitest run",
     "e2e:headless": "pnpm exec playwright test --project \"chromium\" --project \"firefox\"",
     "e2e:headless-chromium-only": "pnpm exec playwright test --project \"chromium\"  --reporter=line",
     "e2e:ui": "pnpm exec playwright test --ui",
-    "prettier": "prettier --write './{src,test,e2e}/**/*.{js,jsx,ts,tsx,json,scss,css}'"
+    "prettier": "prettier --write './{src,test,e2e}/**/*.{js,jsx,ts,tsx,json,scss,css}' --cache"
   },
   "resolutions": {
     "babel-loader": "8.1.0",
