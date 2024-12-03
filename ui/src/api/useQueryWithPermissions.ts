@@ -12,7 +12,7 @@ type UseQueryParam<
   TQueryFnData,
   TError,
   TData,
-  TQueryKey extends QueryKey
+  TQueryKey extends QueryKey,
 > = UseQueryOptions<TQueryFnData, TError, TData, TQueryKey>;
 
 /**
@@ -47,7 +47,7 @@ const useQueryWithPermissions = <
   TQueryFnData = unknown,
   TError = QueryErrorType,
   TData = TQueryFnData,
-  TQueryKey extends QueryKey = QueryKey
+  TQueryKey extends QueryKey = QueryKey,
 >(
   useQueryParams: UseQueryParam<TQueryFnData, TError, TData, TQueryKey>
 ): UseQueryResult<TData, TError> & ExtendedUseQueryReturn => {
