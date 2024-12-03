@@ -95,7 +95,7 @@ const TimePickerInput = React.forwardRef<
         id={id || picker}
         name={name || picker}
         className={twMergeClsx(
-          "focus:bg-accent focus:text-accent-foreground w-[48px] text-center text-base tabular-nums caret-transparent [&::-webkit-inner-spin-button]:appearance-none",
+          "w-[48px] text-center text-base tabular-nums caret-transparent [&::-webkit-inner-spin-button]:appearance-none",
           className
         )}
         value={value || calculatedValue}
