@@ -26,6 +26,10 @@ module.exports = {
         extensions: [".js", ".jsx", ".ts", ".tsx"],
       },
     },
+    tailwindcss: {
+      callees: ["clsx", "cn", "twMerge", "twMergeClsx"],
+      config: "tailwind.config.cjs",
+    },
   },
   env: {
     browser: true,
