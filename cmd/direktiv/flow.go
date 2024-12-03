@@ -2,13 +2,13 @@ package main
 
 import (
 	"context"
-	"github.com/direktiv/direktiv/cmd/sidecar"
 	"io"
 	"io/fs"
 	"log/slog"
 	"os"
 	"time"
 
+	"github.com/direktiv/direktiv/cmd/sidecar"
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/flow"
 	"github.com/spf13/cobra"

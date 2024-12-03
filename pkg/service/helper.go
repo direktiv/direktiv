@@ -337,7 +337,6 @@ func buildEnvVars(forSidecar bool, c *core.Config, sv *core.ServiceFileData) []c
 			Name:  direktivFlowEndpoint,
 			Value: fmt.Sprintf("direktiv-flow.%s", namespace),
 		})
-
 	} else {
 		for _, v := range sv.Envs {
 			proxyEnvs = append(proxyEnvs, corev1.EnvVar{
