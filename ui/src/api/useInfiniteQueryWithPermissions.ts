@@ -30,7 +30,7 @@ const useInfiniteQueryWithPermissions = <
   TError = QueryErrorType,
   TData = InfiniteData<TQueryFnData>,
   TQueryKey extends QueryKey = QueryKey,
-  TPageParam = unknown
+  TPageParam = unknown,
 >(
   useInfiniteQueryParams: UseInfiniteQueryOptions<
     TQueryFnData,
