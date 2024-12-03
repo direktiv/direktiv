@@ -16,13 +16,11 @@ import (
 
 func runApplication() {
 	var err error
-	var addr string
 
 	rootCmd := &cobra.Command{
 		Use: "flow",
 	}
 
-	rootCmd.PersistentFlags().StringVar(&addr, "addr", "localhost:8080", "")
 	rootCmd.AddCommand(serverCmd, sidecarCmd, dinitCmd)
 
 	err = rootCmd.Execute()
