@@ -21,8 +21,7 @@ module.exports = {
   addons: [
     "@storybook/addon-essentials",
     "@storybook/addon-interactions",
-    "storybook-addon-react-router-v6",
-    "@chromatic-com/storybook"
+    "@chromatic-com/storybook",
   ],
   framework: {
     name: "@storybook/react-vite",
