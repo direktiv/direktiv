@@ -18,7 +18,7 @@ services:
 
   flow:
     image: direktiv-dev
-    command: ["/app/direktiv", "server"]
+    command: ["/app/direktiv", "start", "api"]
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
