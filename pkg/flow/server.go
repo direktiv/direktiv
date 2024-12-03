@@ -9,6 +9,7 @@ import (
 	"log/slog"
 	"os"
 	"runtime"
+	"strconv"
 	"strings"
 	"time"
 
@@ -29,6 +30,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 	"github.com/nats-io/nats.go"
+	"github.com/opensearch-project/opensearch-go"
+	"github.com/opensearch-project/opensearch-go/opensearchapi"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -55,9 +58,10 @@ type server struct {
 
 	mirrorManager *mirror.Manager
 
-	flow   *flow
-	events *events
-	nats   *nats.Conn
+	flow             *flow
+	events           *events
+	nats             *nats.Conn
+	openSearchClient *opensearch.Client
 }
 
 func Run(circuit *core.Circuit) error {
@@ -329,17 +333,16 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 		return nil
 	})
 
-	slog.Info("Initialize NATS connection")
 	if config.NatsInstalled {
 		var err error
-		slog.Info("conecting to NATS")
-		for i := range 10 {
+		slog.Info("conecting to NATS", "config.NatsHost", config.NatsHost, "config.NatsPort", config.NatsPort)
+		for i := range 12 {
 			err = srv.initNATS(config)
 			if err == nil {
 				slog.Info("NATS connection established successfully")
 				break
 			}
-			slog.Error("Failed to connect to NATS, retrying...", "attempt", i+1, "error", err)
+			slog.Error("failed to connect to NATS, retrying...", "attempt", i+1, "error", err)
 			time.Sleep(time.Duration(i+2) * time.Second)
 		}
 
@@ -349,6 +352,28 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 
 		if err := srv.publishDemoMessage("test", "test-connection"); err != nil {
 			return nil, fmt.Errorf("testing NATS connection, err: %w", err)
+		}
+		slog.Info("connected to NATS")
+	}
+
+	if config.OpenSearchInstalled {
+		slog.Info("initialize OpenSearch", "config.OpenSearchHost", config.OpenSearchHost, "config.OpenSearchPort", config.OpenSearchPort, "config.OpenSearchProtocol", config.OpenSearchProtocol)
+		var err error
+		for i := range 12 {
+			slog.Info("attempting to connect to OpenSearch", "attempt", i+1, "config.OpenSearchHost", config.OpenSearchHost, "config.OpenSearchPort", config.OpenSearchPort)
+			srv.openSearchClient, err = initOpenSearch(config)
+			if err == nil {
+				slog.Info("connected to OpenSearch")
+				break
+			}
+			time.Sleep(time.Duration(i+2) * time.Second)
+		}
+		if err != nil {
+			return nil, fmt.Errorf("initialize OpenSearch client, err: %w", err)
+		}
+		err = srv.demoIndexDocument("test", "test", `{"field": "test value"}`)
+		if err != nil {
+			return nil, fmt.Errorf("testing OpenSearch, err: %w", err)
 		}
 	}
 
@@ -623,7 +648,7 @@ func (srv *server) initNATS(config *core.Config) error {
 
 	// Store the NATS connection in the server struct
 	srv.nats = nc
-	slog.Info("Successfully connected to NATS")
+	slog.Info("successfully connected to NATS")
 
 	return nil
 }
@@ -634,7 +659,57 @@ func (srv *server) publishDemoMessage(subject, msg string) error {
 	if err != nil {
 		return fmt.Errorf("failed to publish message, err: %w", err)
 	}
-	slog.Info("Message published", "subject", subject, "msg", msg)
+	slog.Info("message published", "subject", subject, "msg", msg)
+
+	return nil
+}
+
+func initOpenSearch(cfg *core.Config) (*opensearch.Client, error) {
+	addr := cfg.OpenSearchProtocol + "://" + cfg.OpenSearchHost + ":" + strconv.Itoa(cfg.OpenSearchPort)
+	config := opensearch.Config{
+		Addresses: []string{addr},         // Example: "http://localhost:9200"
+		Username:  cfg.OpenSearchUsername, // Optional
+		Password:  cfg.OpenSearchPassword, // Optional
+	}
+
+	client, err := opensearch.NewClient(config)
+	if err != nil {
+		slog.Debug("connect to OpenSearch", "addr", addr, "error", err)
+		return nil, fmt.Errorf("failed to create OpenSearch client: %w", err)
+	}
+	slog.Debug("connect to OpenSearch", "addr", addr)
+
+	// Test the connection
+	res, err := client.Info()
+	if err != nil {
+		return nil, fmt.Errorf("OpenSearch connection test failed: %w", err)
+	}
+	defer res.Body.Close()
+
+	slog.Info("Connected to OpenSearch", "info", res.String())
+
+	return client, nil
+}
+
+func (srv *server) demoIndexDocument(index string, docID string, doc string) error {
+	req := opensearchapi.IndexRequest{
+		Index:      index,
+		DocumentID: docID,
+		Body:       strings.NewReader(doc),
+		Refresh:    "true",
+	}
+
+	res, err := req.Do(context.Background(), srv.openSearchClient)
+	if err != nil {
+		return fmt.Errorf("failed to index document: %w", err)
+	}
+	defer res.Body.Close()
+
+	if res.IsError() {
+		return fmt.Errorf("error indexing document: %s", res.String())
+	}
+
+	slog.Info("Document indexed successfully", "index", index, "id", docID)
 
 	return nil
 }
