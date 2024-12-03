@@ -36,18 +36,13 @@ func buildService(c *core.Config, sv *core.ServiceFileData, registrySecrets []co
 		initContainers = append(initContainers, corev1.Container{
 			Name:  "init",
 			Image: c.KnativeSidecar,
-			Env: []corev1.EnvVar{
-				{
-					Name:  "DIREKTIV_APP",
-					Value: "init",
-				},
-			},
 			VolumeMounts: []corev1.VolumeMount{
 				{
 					Name:      "bindir",
 					MountPath: "/usr/share/direktiv/",
 				},
 			},
+			Command: []string{"/app/direktiv", "dinit"},
 		})
 	}
 

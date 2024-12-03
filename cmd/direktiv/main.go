@@ -6,7 +6,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/direktiv/direktiv/cmd/dinit"
 	"github.com/direktiv/direktiv/cmd/sidecar"
 	_ "github.com/direktiv/direktiv/pkg/gateway/plugins/auth"
 	_ "github.com/direktiv/direktiv/pkg/gateway/plugins/inbound"
@@ -59,8 +58,6 @@ func main() {
 	switch os.Getenv("DIREKTIV_APP") {
 	case "sidecar":
 		sidecar.RunApplication(context.Background())
-	case "init":
-		dinit.RunApplication()
 	default:
 		// default to flow app.
 		runApplication()
