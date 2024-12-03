@@ -42,7 +42,7 @@ func buildService(c *core.Config, sv *core.ServiceFileData, registrySecrets []co
 					MountPath: "/usr/share/direktiv/",
 				},
 			},
-			Command: []string{"/app/direktiv", "dinit"},
+			Command: []string{"/app/direktiv", "start", "dinit"},
 		})
 	}
 
@@ -212,7 +212,7 @@ func buildContainers(c *core.Config, sv *core.ServiceFileData) ([]corev1.Contain
 			},
 		},
 		SecurityContext: secContext,
-		Command:         []string{"/app/direktiv", "sidecar"},
+		Command:         []string{"/app/direktiv", "start", "sidecar"},
 	}
 
 	return []corev1.Container{uc, sc}, nil
