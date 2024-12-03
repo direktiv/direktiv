@@ -16,13 +16,7 @@ export const ButtonBar: React.FC<HTMLAttributes<HTMLDivElement>> = ({
       "[&>*]:border [&_button]:focus:ring-0 [&_button]:focus:ring-offset-0",
       "[&>*]:active:ring-0 [&_button]:active:ring-offset-0",
 
-      "[&>button]:rounded-none",
-      "[&>button]:-mr-px",
-      "[&>button]:active:outline-none",
-
       "[&>*>button]:rounded-none",
-      "[&*>button]:-mr-px",
-      "[&*>button]:active:outline-none",
 
       "[&>div]:border-0",
 
