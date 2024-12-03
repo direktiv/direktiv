@@ -32,7 +32,7 @@ const CustomHandle: FC<HandleProps> = ({ type, position, highlight }) => (
     position={position}
     id="default"
     className={twMergeClsx(
-      "h-2 w-2 rounded border",
+      "size-2 rounded border",
       "!bg-white dark:!bg-black",
       highlight
         ? "!border-success-9 dark:!border-success-dark-9"
@@ -104,7 +104,7 @@ const StartEndHandle: FC<StartEndHandleProps> = ({
 }) => (
   <Card
     className={twMergeClsx(
-      "h-12 w-12 rounded-full p-2",
+      "size-12 rounded-full p-2",
       highlight
         ? "ring-success-9 dark:ring-success-dark-9"
         : "ring-gray-8 dark:ring-gray-dark-8"
@@ -113,7 +113,7 @@ const StartEndHandle: FC<StartEndHandleProps> = ({
   >
     <div
       className={twMergeClsx(
-        "h-full w-full rounded-full",
+        "size-full rounded-full",
         end && "bg-success-9 dark:bg-success-dark-9",
         !end && [
           "ring-1",

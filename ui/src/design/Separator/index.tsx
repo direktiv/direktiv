@@ -17,7 +17,7 @@ const Separator = React.forwardRef<
     className={twMergeClsx(
       "bg-gray-4",
       " dark:bg-gray-dark-4",
-      vertical ? "h-full w-[1px]" : "h-[1px] w-full",
+      vertical ? "h-full w-px" : "h-px w-full",
       className
     )}
     {...props}

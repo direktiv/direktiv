@@ -11,19 +11,19 @@ export const ButtonBar: React.FC<HTMLAttributes<HTMLDivElement>> = ({
     {...props}
     className={twMergeClsx(
       "[&>*]:rounded-none",
-      "[&>*]:mr-[-1px]",
+      "[&>*]:-mr-px",
       "[&>*]:active:outline-none",
       "[&>*]:border [&_button]:focus:ring-0 [&_button]:focus:ring-offset-0",
       "[&>*]:active:ring-0 [&_button]:active:ring-offset-0",
 
       "[&>button]:rounded-none",
-      "[&>button]:mr-[-1px]",
+      "[&>button]:-mr-px",
       "[&>button]:active:outline-none",
       "[&>button]:border [&_button]:focus:ring-0 [&_button]:focus:ring-offset-0",
       "[&>button]:active:ring-0 [&_button]:active:ring-offset-0",
 
       "[&>*>button]:rounded-none",
-      "[&*>button]:mr-[-1px]",
+      "[&*>button]:-mr-px",
       "[&*>button]:active:outline-none",
       "[&*>button]:border [&_button]:focus:ring-0 [&_button]:focus:ring-offset-0",
       "[&*>button]:active:ring-0 [&_button]:active:ring-offset-0",

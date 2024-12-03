@@ -48,7 +48,7 @@ const DropdownMenuSubContent = React.forwardRef<
   <DropdownMenuPrimitive.SubContent
     ref={ref}
     className={twMergeClsx(
-      "z-50 min-w-[8rem] overflow-hidden rounded-md p-1 shadow-md ring-1",
+      "z-50 min-w-32 overflow-hidden rounded-md p-1 shadow-md ring-1",
       "bg-gray-1 text-gray-11 ring-gray-3",
       "dark:bg-gray-dark-1 dark:text-gray-dark-11 dark:ring-gray-dark-3",
       className
@@ -68,7 +68,7 @@ const DropdownMenuContent = React.forwardRef<
       ref={ref}
       sideOffset={sideOffset}
       className={twMergeClsx(
-        "z-50 min-w-[8rem] overflow-hidden animate-in data-[side=top]:slide-in-from-bottom-2 data-[side=right]:slide-in-from-left-2 data-[side=left]:slide-in-from-right-2 data-[side=bottom]:slide-in-from-top-2",
+        "z-50 min-w-32 overflow-hidden animate-in data-[side=top]:slide-in-from-bottom-2 data-[side=right]:slide-in-from-left-2 data-[side=left]:slide-in-from-right-2 data-[side=bottom]:slide-in-from-top-2",
         "rounded-md shadow-md ring-1",
         "bg-gray-1 text-gray-11 ring-gray-3",
         "dark:bg-gray-dark-1 dark:text-gray-dark-11 dark:ring-gray-dark-3",

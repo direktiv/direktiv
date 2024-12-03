@@ -14,7 +14,7 @@ const Command = React.forwardRef<
   <CommandPrimitive
     ref={ref}
     className={twMergeClsx(
-      "flex h-full w-full flex-col overflow-hidden rounded-md",
+      "flex size-full flex-col overflow-hidden rounded-md",
       "bg-gray-1",
       "dark:bg-gray-dark-1",
       className
