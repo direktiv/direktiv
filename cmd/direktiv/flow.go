@@ -18,14 +18,14 @@ func runApplication() {
 	var err error
 
 	rootCmd := &cobra.Command{
-		Use: "flow",
+		Use: "direktiv",
 	}
 
 	rootCmd.AddCommand(serverCmd, sidecarCmd, dinitCmd)
 
 	err = rootCmd.Execute()
 	if err != nil {
-		slog.Error("terminating flow (main)", "error", err)
+		slog.Error("terminating (main)", "error", err)
 		os.Exit(1)
 	}
 }
