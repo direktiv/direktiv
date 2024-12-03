@@ -44,9 +44,10 @@ var startAPICmd = &cobra.Command{
 	Use:  "api",
 	Args: cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
+		slog.Info("starting 'api' service...")
+
 		circuit := core.NewCircuit(context.Background(), os.Interrupt)
 
-		slog.Info("starting server")
 		err := flow.Run(circuit)
 		if err != nil {
 			slog.Error("initializing", "err", err)
@@ -76,7 +77,7 @@ var startDinitCmd = &cobra.Command{
 	Use:  "dinit",
 	Args: cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
-		slog.Info("starting dinit")
+		slog.Info("starting 'dinit' service...")
 
 		perm := 0o755
 		sharedDir := "/usr/share/direktiv"
@@ -135,7 +136,7 @@ var startSidecarCmd = &cobra.Command{
 	Use:  "sidecar",
 	Args: cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
-		slog.Info("starting sidecar")
+		slog.Info("starting 'sidecar' service...")
 		sidecar.RunApplication(context.Background())
 	},
 }
