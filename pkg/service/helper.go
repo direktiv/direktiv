@@ -42,7 +42,7 @@ func buildService(c *core.Config, sv *core.ServiceFileData, registrySecrets []co
 					MountPath: "/usr/share/direktiv/",
 				},
 			},
-			Command: []string{"dinit"},
+			Command: []string{"/app/direktiv", "dinit"},
 		})
 	}
 
