@@ -15,30 +15,38 @@ import (
 )
 
 func runApplication() {
-	var err error
-	var addr string
-
-	rootCmd := &cobra.Command{
-		Use: "flow",
+	startCmd := &cobra.Command{
+		Use:   "start SERVICE_NAME",
+		Short: "Starts the specified direktiv service",
+		Long: `The "start" command starts a direktiv service. 
+You need to specify the SERVICE_NAME as an argument.`,
 	}
 
-	rootCmd.PersistentFlags().StringVar(&addr, "addr", "localhost:8080", "")
-	rootCmd.AddCommand(serverCmd, sidecarCmd, dinitCmd)
+	startCmd.AddCommand(startAPICmd, startSidecarCmd, startDinitCmd)
 
-	err = rootCmd.Execute()
+	rootCmd := &cobra.Command{
+		Use:   "direktiv",
+		Short: "This CLI is for lunching Direktiv stacks and interacting its APIs",
+		Args:  cobra.ExactArgs(1),
+	}
+
+	rootCmd.AddCommand(startCmd)
+
+	err := rootCmd.Execute()
 	if err != nil {
-		slog.Error("terminating flow (main)", "error", err)
+		slog.Error("terminating (main)", "error", err)
 		os.Exit(1)
 	}
 }
 
-var serverCmd = &cobra.Command{
-	Use:  "server",
+var startAPICmd = &cobra.Command{
+	Use:  "api",
 	Args: cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
+		slog.Info("starting 'api' service...")
+
 		circuit := core.NewCircuit(context.Background(), os.Interrupt)
 
-		slog.Info("starting server")
 		err := flow.Run(circuit)
 		if err != nil {
 			slog.Error("initializing", "err", err)
@@ -61,14 +69,14 @@ var serverCmd = &cobra.Command{
 	},
 }
 
-// command dinitCmd provides a simple mechanism to prepare containers for action without
+// command startDinitCmd provides a simple mechanism to prepare containers for action without
 // a server listening to port 8080. This enables Direktiv to use standard containers from
 // e.g. DockerHub.
-var dinitCmd = &cobra.Command{
+var startDinitCmd = &cobra.Command{
 	Use:  "dinit",
 	Args: cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
-		slog.Info("starting dinit")
+		slog.Info("starting 'dinit' service...")
 
 		perm := 0o755
 		sharedDir := "/usr/share/direktiv"
@@ -123,11 +131,11 @@ var dinitCmd = &cobra.Command{
 	},
 }
 
-var sidecarCmd = &cobra.Command{
+var startSidecarCmd = &cobra.Command{
 	Use:  "sidecar",
 	Args: cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
-		slog.Info("starting sidecar")
+		slog.Info("starting 'sidecar' service...")
 		sidecar.RunApplication(context.Background())
 	},
 }
