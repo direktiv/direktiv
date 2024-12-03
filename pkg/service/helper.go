@@ -212,6 +212,7 @@ func buildContainers(c *core.Config, sv *core.ServiceFileData) ([]corev1.Contain
 			},
 		},
 		SecurityContext: secContext,
+		Command:         []string{"/app/direktiv", "sidecar"},
 	}
 
 	return []corev1.Container{uc, sc}, nil
@@ -337,10 +338,6 @@ func buildEnvVars(forSidecar bool, c *core.Config, sv *core.ServiceFileData) []c
 			Value: fmt.Sprintf("direktiv-flow.%s", namespace),
 		})
 
-		proxyEnvs = append(proxyEnvs, corev1.EnvVar{
-			Name:  "DIREKTIV_APP",
-			Value: "sidecar",
-		})
 	} else {
 		for _, v := range sv.Envs {
 			proxyEnvs = append(proxyEnvs, corev1.EnvVar{

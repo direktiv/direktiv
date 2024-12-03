@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/direktiv/direktiv/cmd/sidecar"
 	"io"
 	"io/fs"
 	"log/slog"
@@ -22,7 +23,7 @@ func runApplication() {
 	}
 
 	rootCmd.PersistentFlags().StringVar(&addr, "addr", "localhost:8080", "")
-	rootCmd.AddCommand(serverCmd, dinitCmd)
+	rootCmd.AddCommand(serverCmd, sidecarCmd, dinitCmd)
 
 	err = rootCmd.Execute()
 	if err != nil {
@@ -119,5 +120,14 @@ var dinitCmd = &cobra.Command{
 		}
 
 		slog.Info("RunApplication completed successfully")
+	},
+}
+
+var sidecarCmd = &cobra.Command{
+	Use:  "sidecar",
+	Args: cobra.ExactArgs(0),
+	Run: func(cmd *cobra.Command, args []string) {
+		slog.Info("starting sidecar")
+		sidecar.RunApplication(context.Background())
 	},
 }

@@ -1,12 +1,10 @@
 package main
 
 import (
-	"context"
 	"net/http"
 	"os"
 	"strings"
 
-	"github.com/direktiv/direktiv/cmd/sidecar"
 	_ "github.com/direktiv/direktiv/pkg/gateway/plugins/auth"
 	_ "github.com/direktiv/direktiv/pkg/gateway/plugins/inbound"
 	_ "github.com/direktiv/direktiv/pkg/gateway/plugins/outbound"
@@ -55,11 +53,5 @@ func main() {
 		})
 	}
 
-	switch os.Getenv("DIREKTIV_APP") {
-	case "sidecar":
-		sidecar.RunApplication(context.Background())
-	default:
-		// default to flow app.
-		runApplication()
-	}
+	runApplication()
 }
