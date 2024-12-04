@@ -1,3 +1,4 @@
+// nolint:forbidigo
 package main
 
 import (
@@ -197,13 +198,13 @@ var eventSendCmd = &cobra.Command{
 				return err
 			}
 
-			var errJson errorResponse
-			err = json.Unmarshal(b, &errJson)
+			var errJSON errorResponse
+			err = json.Unmarshal(b, &errJSON)
 			if err != nil {
 				return err
 			}
 
-			return fmt.Errorf(errJson.Error.Message)
+			return fmt.Errorf(errJSON.Error.Message)
 		}
 
 		fmt.Println("event sent")
