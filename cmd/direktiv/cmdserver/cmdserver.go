@@ -1,13 +1,13 @@
-package main
+package cmdserver
 
 import (
 	"log/slog"
 
-	"github.com/direktiv/direktiv/cmd/cmd-exec/pkg/commands"
-	"github.com/direktiv/direktiv/cmd/cmd-exec/pkg/server"
+	"github.com/direktiv/direktiv/cmd/direktiv/cmdserver/pkg/commands"
+	"github.com/direktiv/direktiv/cmd/direktiv/cmdserver/pkg/server"
 )
 
-func main() {
+func Start() {
 	slog.Info("starting cmd-exec server")
 
 	// Create a new server with the RunCommands handler
