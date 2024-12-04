@@ -10,7 +10,6 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/core"
@@ -32,6 +31,14 @@ You need to specify the SERVICE_NAME as an argument.`,
 		Short: "Executes a direktiv event command",
 	}
 	eventCmd.AddCommand(eventSendCmd)
+
+	instancesCmd := &cobra.Command{
+		Use:   "filesystem",
+		Short: "Execute flows and push files",
+	}
+	instancesCmd.AddCommand(instancesPushCmd)
+	instancesCmd.AddCommand(instancesExecCmd)
+	instancesExecCmd.PersistentFlags().Bool("push", true, "Push before execute.")
 
 	startCmd.AddCommand(startAPICmd, startSidecarCmd, startDinitCmd)
 
@@ -158,24 +165,9 @@ var eventSendCmd = &cobra.Command{
 	Use:   "send",
 	Short: "Sends a file as cloudevent to Direktiv",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		token := os.Getenv("DIREKTIV_TOKEN")
-		namespace := os.Getenv("DIREKTIV_NAMESPACE")
-		address := os.Getenv("DIREKTIV_REMOTE_ADDRESS")
-		insecure := strings.ToLower(os.Getenv("DIREKTIV_INSECURE")) == "true"
+		p := prepareCommand()
 
-		p := profile{
-			Namespace: namespace,
-			Token:     token,
-			Address:   address,
-			Insecure:  insecure,
-		}
-
-		uploader, err := newUploader("", profile{
-			Namespace: namespace,
-			Token:     token,
-			Address:   address,
-			Insecure:  insecure,
-		})
+		uploader, err := newUploader("", p)
 		if err != nil {
 			return err
 		}
