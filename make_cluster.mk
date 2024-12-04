@@ -1,10 +1,12 @@
+KIND_CONFIG ?= kind-config.yaml
+
 .PHONY: cluster-setup
 cluster-setup: cluster-create cluster-prep cluster-direktiv
 
 .PHONY: cluster-create
 cluster-create: cluster-build
 	kind delete clusters --all
-	kind create cluster --config kind-config.yaml
+	kind create cluster --config ${KIND_CONFIG}
 
 	if ! docker inspect kind-registry >/dev/null 2>&1; then \
 		docker run -d -p "127.0.0.1:5001:5000" --network bridge --name kind-registry --restart=always registry:2; \
@@ -70,13 +72,12 @@ cluster-build: ## Builds direktiv for cluster
 	DOCKER_BUILDKIT=1 docker build --push -t localhost:5001/direktiv:dev .
 
 .PHONY: cluster-direktiv-delete
-cluster-direktiv-delete:
+cluster-direktiv-delete: ## Deletes direktiv from cluster
 	kubectl get namespace "direktiv-services-direktiv" -o json   | tr -d "\n" | sed "s/\"finalizers\": \[[^]]\+\]/\"finalizers\": []/"   | kubectl replace --raw /api/v1/namespaces/direktiv-services-direktiv/finalize -f - || true
 	helm uninstall direktiv
 
 .PHONY: cluster-direktiv
 cluster-direktiv: ## Installs direktiv in cluster
-# // app.kubernetes.io/component=admission-webhook
 	kubectl wait -n ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller 
 	kubectl wait -n ingress-nginx --for=condition=complete job --selector=app.kubernetes.io/component=admission-webhook
 	helm install --set database.host=postgres.default.svc \
@@ -101,55 +102,6 @@ cluster-direktiv: ## Installs direktiv in cluster
 		sleep 2; \
 	done
 	@echo "Endpoint is ready!"
-
-.PHONY: cluster-image-cache-start
-cluster-image-cache-start:  
-	@if [ "$$(docker ps -f name=proxy-docker-hub --format {{.Names}})" != "proxy-docker-hub" ]; then \
-		docker run -d --name proxy-docker-hub --restart=always \
-		--net=kind \
-		-e REGISTRY_PROXY_REMOTEURL=https://registry-1.docker.io \
-		registry:2; \
-	fi
-
-	@if [ "$$(docker ps -f name=proxy-quay --format {{.Names}})" != "proxy-quay" ]; then \
-		docker run -d --name proxy-quay --restart=always \
-		--net=kind \
-		-e REGISTRY_PROXY_REMOTEURL=https://quay.io \
-		registry:2; \
-	fi
-
-	@if [ "$$(docker ps -f name=proxy-gcr --format {{.Names}})" != "proxy-gcr" ]; then \
-		docker run -d --name proxy-gcr --restart=always \
-		--net=kind \
-		-e REGISTRY_PROXY_REMOTEURL=https://gcr.io \
-		registry:2; \
-	fi
-
-	@if [ "$$(docker ps -f name=proxy-k8s-gcr --format {{.Names}})" != "proxy-k8s-gcr" ]; then \
-		docker run -d --name proxy-k8s-gcr --restart=always \
-		--net=kind \
-		-e REGISTRY_PROXY_REMOTEURL=https://k8s.gcr.io \
-		registry:2; \
-	fi
-
-	@if [ "$$(docker ps -f name=proxy-registry-k8s-io --format {{.Names}})" != "proxy-registry-k8s-io" ]; then \
-		docker run -d --name proxy-registry-k8s-io --restart=always \
-		--net=kind \
-		-e REGISTRY_PROXY_REMOTEURL=https://registry.k8s.io \
-		registry:2; \
-	fi
-
-	@if [ "$$(docker ps -f name=proxy-cr-fluentbit-io --format {{.Names}})" != "proxy-cr-fluentbit-io" ]; then \
-		docker run -d --name proxy-cr-fluentbit-io --restart=always \
-		--net=kind \
-		-e REGISTRY_PROXY_REMOTEURL=https://cr.fluentbit.io \
-		registry:2; \
-	fi
-
-	@if [ "$$(docker ps -f name=kind-registry --format {{.Names}})" != "kind-registry" ]; then \
-		docker run -d -p "127.0.0.1:5001:5000" --network bridge --name kind-registry --restart=always \
-		registry:2; \
-	fi
 
 .PHONY: cluster-image-cache-stop
 cluster-image-cache-stop:  

@@ -1,10 +1,20 @@
 **_Ubuntu Development Installation_**
 
-**Install k3s**
+# sudo sysctl fs.inotify.max_user_watches=524288
+# sudo sysctl fs.inotify.max_user_instances=512
 
-```
-curl -sfL https://get.k3s.io | sh -s - --disable traefik --write-kubeconfig-mode=644
-```
+
+
+**Install kind and kubectl**
+
+https://kind.sigs.k8s.io/docs/user/quick-start/
+
+https://kubernetes.io/docs/tasks/tools/
+
+***Linux***
+
+echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf
+echo fs.inotify.max_user_instances=512 | sudo tee -a /etc/sysctl.conf
 
 **Change ~/.bashrc for code completion**
 
@@ -12,19 +22,6 @@ curl -sfL https://get.k3s.io | sh -s - --disable traefik --write-kubeconfig-mode
 alias kc="kubectl"
 source <(kubectl completion bash)
 complete -F __start_kubectl kc
-export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
-```
-
-**Install local registry**
-
-```
-docker run -d -p 5000:5000 --restart=always --name registry registry:2
-```
-
-You can set up a registry with TLS to use Knatives tag resolution. This creates certificates based on the hostname and starts the registry with certificates. Images can be tagged and pushed with HOSTNAME:5443. 
-
-```
-scripts/registry/setup.sh
 ```
 
 **Install helm**
@@ -37,14 +34,18 @@ chmod 700 get_helm.sh
 
 **Base Install**
 
-Installs DB, Knative, Direktiv
-```
-make -C ../ k3s-install
-```
+The common make targets are:
 
-**Additional Monitoring**
+*cluster-setup*: Sets up the full cluster including Knative, Direktiv and Database
 
-Installs DB, Knative, Direktiv with Grafana and Tempo
-```
-make -C ../ k3s-monitoring-install
-```
+*cluster-build*: Creates an empty cluster
+
+*cluster-build*: Builds Direktiv and pushes it to the registry at localhost:5001/direktiv:dev
+
+*cluster-direktiv*: Installs only Direktiv (for chart development)
+
+*cluster-direktiv-delete*: Removes Direktiv from cluster
+
+*cluster-direktiv-run*: Builds Direktiv and replaces the pod with a new version and tails the log
+
+For cluster tests use 'KIND_CONFIG=kind-config-cluster.yaml make cluster-setup'
