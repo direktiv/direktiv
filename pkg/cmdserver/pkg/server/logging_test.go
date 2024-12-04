@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/direktiv/direktiv/cmd/dirkeitv/cmdserver/pkg/server"
+	"github.com/direktiv/direktiv/pkg/cmdserver/pkg/server"
 	"github.com/stretchr/testify/assert"
 )
 
