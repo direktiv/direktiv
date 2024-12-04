@@ -330,3 +330,42 @@ opensearch:
 
   protocol: https
   httpPort: 9200
+
+data-prepper:
+  install: true
+  pipelineConfig:
+    enabled: true
+    existingSecret: ""
+    config:
+      ## Simple Example
+      simple-sample-pipeline:
+        workers: 2
+        delay: 5000
+        source:
+          http:
+        buffer:
+          bounded_blocking:
+            buffer_size: 1024
+            batch_size: 256
+        processor:
+          - string_converter:
+              upper_case: true
+        sink:
+          - stdout:
+          - opensearch:
+              hosts: ["https://opensearch-cluster-master.direktiv.svc:9200"]
+              username: admin
+              password: direktivTr0&3
+              index_type: trace-analytics-raw
+              insecure: true
+              max_retries: 20
+              bulk_size: 4
+  ports:
+    - name: http-source
+      port: 2021
+    - name: otel-traces
+      port: 21890
+    - name: otel-metrics
+      port: 21891
+    - name: otel-logs
+      port: 21892

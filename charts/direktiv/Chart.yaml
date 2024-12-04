@@ -41,3 +41,7 @@ dependencies:
     repository: "https://opensearch-project.github.io/helm-charts/"
     version: "2.27.1"
     condition: opensearch.install
+  - name: data-prepper
+    repository: "https://opensearch-project.github.io/helm-charts/"
+    version: "0.1.0"
+    condition: data-prepper.install
