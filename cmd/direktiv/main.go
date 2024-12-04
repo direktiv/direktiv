@@ -1,11 +1,11 @@
 package main
 
 import (
-	"github.com/direktiv/direktiv/pkg/cmdserver"
 	"net/http"
 	"os"
 	"strings"
 
+	"github.com/direktiv/direktiv/pkg/cmdserver"
 	_ "github.com/direktiv/direktiv/pkg/gateway/plugins/auth"
 	_ "github.com/direktiv/direktiv/pkg/gateway/plugins/inbound"
 	_ "github.com/direktiv/direktiv/pkg/gateway/plugins/outbound"
