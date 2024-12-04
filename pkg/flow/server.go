@@ -2,11 +2,13 @@ package flow
 
 import (
 	"context"
+	"crypto/tls"
 	"database/sql"
 	"errors"
 	"fmt"
 	"log"
 	"log/slog"
+	"net/http"
 	"os"
 	"runtime"
 	"strconv"
@@ -359,19 +361,12 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 	if config.OpenSearchInstalled {
 		slog.Info("initialize OpenSearch", "config.OpenSearchHost", config.OpenSearchHost, "config.OpenSearchPort", config.OpenSearchPort, "config.OpenSearchProtocol", config.OpenSearchProtocol)
 		var err error
-		for i := range 12 {
-			slog.Info("attempting to connect to OpenSearch", "attempt", i+1, "config.OpenSearchHost", config.OpenSearchHost, "config.OpenSearchPort", config.OpenSearchPort)
-			srv.openSearchClient, err = initOpenSearch(config)
-			if err == nil {
-				slog.Info("connected to OpenSearch")
-				break
-			}
-			time.Sleep(time.Duration(i+2) * time.Second)
-		}
+		srv.openSearchClient, err = initOpenSearch(config)
 		if err != nil {
 			return nil, fmt.Errorf("initialize OpenSearch client, err: %w", err)
 		}
-		err = srv.demoIndexDocument("test", "test", `{"field": "test value"}`)
+		slog.Info("connected to OpenSearch")
+		err = srv.demoIndexDocument(context.Background(), "test", "test", `{"field": "test value"}`)
 		if err != nil {
 			return nil, fmt.Errorf("testing OpenSearch, err: %w", err)
 		}
@@ -665,16 +660,29 @@ func (srv *server) publishDemoMessage(subject, msg string) error {
 }
 
 func initOpenSearch(cfg *core.Config) (*opensearch.Client, error) {
+	retries := 12
 	addr := cfg.OpenSearchProtocol + "://" + cfg.OpenSearchHost + ":" + strconv.Itoa(cfg.OpenSearchPort)
+	transport := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		},
+	}
+
 	config := opensearch.Config{
-		Addresses: []string{addr},         // Example: "http://localhost:9200"
-		Username:  cfg.OpenSearchUsername, // Optional
-		Password:  cfg.OpenSearchPassword, // Optional
+		Addresses: []string{addr},
+		Username:  cfg.OpenSearchUsername,
+		Password:  cfg.OpenSearchPassword,
+		Transport: transport,
+		RetryBackoff: func(attempt int) time.Duration {
+			return time.Second + time.Duration(attempt)
+		},
+		DisableRetry: false,
+		MaxRetries:   retries,
 	}
 
 	client, err := opensearch.NewClient(config)
 	if err != nil {
-		slog.Debug("connect to OpenSearch", "addr", addr, "error", err)
+		slog.Info("connect to OpenSearch", "addr", addr, "error", err)
 		return nil, fmt.Errorf("failed to create OpenSearch client: %w", err)
 	}
 	slog.Debug("connect to OpenSearch", "addr", addr)
@@ -682,6 +690,7 @@ func initOpenSearch(cfg *core.Config) (*opensearch.Client, error) {
 	// Test the connection
 	res, err := client.Info()
 	if err != nil {
+		slog.Info("OpenSearch connection test failed", "addr", addr, "error", err)
 		return nil, fmt.Errorf("OpenSearch connection test failed: %w", err)
 	}
 	defer res.Body.Close()
@@ -691,7 +700,7 @@ func initOpenSearch(cfg *core.Config) (*opensearch.Client, error) {
 	return client, nil
 }
 
-func (srv *server) demoIndexDocument(index string, docID string, doc string) error {
+func (srv *server) demoIndexDocument(ctx context.Context, index string, docID string, doc string) error {
 	req := opensearchapi.IndexRequest{
 		Index:      index,
 		DocumentID: docID,
@@ -699,7 +708,7 @@ func (srv *server) demoIndexDocument(index string, docID string, doc string) err
 		Refresh:    "true",
 	}
 
-	res, err := req.Do(context.Background(), srv.openSearchClient)
+	res, err := req.Do(ctx, srv.openSearchClient)
 	if err != nil {
 		return fmt.Errorf("failed to index document: %w", err)
 	}
