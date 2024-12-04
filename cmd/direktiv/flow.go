@@ -40,7 +40,7 @@ You need to specify the SERVICE_NAME as an argument.`,
 	instancesCmd.AddCommand(instancesExecCmd)
 	instancesExecCmd.PersistentFlags().Bool("push", true, "Push before execute.")
 
-	startCmd.AddCommand(startAPICmd, startSidecarCmd, startDinitCmd)
+	startCmd.AddCommand(startAPICmd, startSidecarCmd, startDinitCmd, startCommandServerCmd)
 
 	rootCmd := &cobra.Command{
 		Use:   "direktiv",
@@ -157,6 +157,16 @@ var startSidecarCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
 		slog.Info("starting 'sidecar' service...")
+		sidecar.RunApplication(context.Background())
+	},
+}
+
+var startCommandServerCmd = &cobra.Command{
+	Use:   "cmdserver",
+	Short: "direktiv cmdserver service, this service is part of direktiv sidecar stack",
+	Args:  cobra.ExactArgs(0),
+	Run: func(cmd *cobra.Command, args []string) {
+		slog.Info("starting 'cmdserver' service...")
 		sidecar.RunApplication(context.Background())
 	},
 }
