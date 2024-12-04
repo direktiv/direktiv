@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/direktiv/direktiv/pkg/cmdserver/pkg/commands"
+	"github.com/direktiv/direktiv/pkg/cmdserver/pkg/server"
 	"io"
 	"net"
 	"net/http"
@@ -12,8 +14,6 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/direktiv/direktiv/cmd/cmd-exec/pkg/commands"
-	"github.com/direktiv/direktiv/cmd/cmd-exec/pkg/server"
 	"github.com/stretchr/testify/assert"
 )
 

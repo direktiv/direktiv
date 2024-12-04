@@ -1,4 +1,5 @@
-package cli
+// nolint:forbidigo
+package main
 
 import (
 	"bytes"
@@ -19,24 +20,24 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var instancesCmd = &cobra.Command{
-	Use:   "filesystem",
-	Short: "Execute flows and push files",
-}
-
 type instanceResponse struct {
 	Data struct {
 		api.InstanceData
 	} `json:"data"`
 }
 
-func init() {
-	RootCmd.AddCommand(instancesCmd)
-	instancesCmd.AddCommand(instancesPushCmd)
-	instancesCmd.AddCommand(instancesExecCmd)
+func prepareCommand() profile {
+	token := os.Getenv("DIREKTIV_TOKEN")
+	namespace := os.Getenv("DIREKTIV_NAMESPACE")
+	address := os.Getenv("DIREKTIV_REMOTE_ADDRESS")
+	insecure := strings.ToLower(os.Getenv("DIREKTIV_INSECURE")) == "true"
 
-	instancesExecCmd.PersistentFlags().Bool("push", true, "Push before execute.")
-	// instancesExecCmd.PersistentFlags().Bool("wait", true, "Wait for flow to finish execution.")
+	return profile{
+		Namespace: namespace,
+		Token:     token,
+		Address:   address,
+		Insecure:  insecure,
+	}
 }
 
 var instancesExecCmd = &cobra.Command{
@@ -44,10 +45,7 @@ var instancesExecCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Short: "Execute flows in Direktiv",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		p, err := prepareCommand(cmd)
-		if err != nil {
-			return err
-		}
+		p := prepareCommand()
 
 		fullPath, err := filepath.Abs(args[0])
 		if err != nil {
@@ -100,13 +98,13 @@ var instancesExecCmd = &cobra.Command{
 				return err
 			}
 
-			var errJson errorResponse
-			err = json.Unmarshal(b, &errJson)
+			var errJSON errorResponse
+			err = json.Unmarshal(b, &errJSON)
 			if err != nil {
 				return err
 			}
 
-			return fmt.Errorf(errJson.Error.Message)
+			return fmt.Errorf(errJSON.Error.Message)
 		}
 
 		id, err := handleResponse(resp, p)
@@ -148,10 +146,12 @@ func handleOutput(profile profile, uploader *uploader, id string) error {
 
 		if instance.Data.Status == "pending" {
 			time.Sleep(1 * time.Second)
+
 			continue
 		}
 
 		fmt.Printf("Output:\n%s\n", string(instance.Data.Output))
+
 		break
 	}
 
@@ -205,6 +205,7 @@ func printLogSSE(ctx context.Context, instance string, profile profile) error {
 			if err := json.Unmarshal(msg.Data, &data); err != nil {
 				cancel()
 				errCh <- err
+
 				return
 			}
 
@@ -213,6 +214,7 @@ func printLogSSE(ctx context.Context, instance string, profile profile) error {
 			if wf, ok := data["workflow"].(map[string]interface{}); ok && (wf["status"] == string(core.LogCompletedStatus) || wf["status"] == string(core.LogFailedStatus) || wf["status"] == string(core.LogErrStatus)) {
 				cancel()
 				errCh <- nil
+
 				return
 			}
 		})
@@ -222,6 +224,7 @@ func printLogSSE(ctx context.Context, instance string, profile profile) error {
 	}()
 
 	err := <-errCh
+
 	return err
 }
 
@@ -259,15 +262,42 @@ func formatLogEntry(data map[string]interface{}) {
 	fmt.Printf("%s (%v): %s\n", l.workflow, l.instance, l.msg)
 }
 
+func findProjectRoot(path string) (string, error) {
+	fi, err := os.Stat(path)
+	if err != nil {
+		return "", err
+	}
+
+	if !fi.IsDir() {
+		path = filepath.Dir(path)
+	}
+
+	files, err := os.ReadDir(path)
+	if err != nil {
+		return "", err
+	}
+
+	for i := range files {
+		file := files[i]
+		if file.Name() == ".direktivignore" {
+			return path, nil
+		}
+	}
+
+	newPath := filepath.Dir(path)
+	if path == newPath {
+		return "", fmt.Errorf("no .direktivignore file found")
+	}
+
+	return findProjectRoot(newPath)
+}
+
 var instancesPushCmd = &cobra.Command{
 	Use:   "push [name of file/directory]",
 	Args:  cobra.ExactArgs(1),
 	Short: "Push files to Direktiv",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		p, err := prepareCommand(cmd)
-		if err != nil {
-			return err
-		}
+		p := prepareCommand()
 
 		fullPath, err := filepath.Abs(args[0])
 		if err != nil {
