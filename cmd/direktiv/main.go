@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/direktiv/direktiv/pkg/cmdserver"
 	"net/http"
 	"os"
 	"strings"
@@ -51,6 +52,12 @@ func main() {
 				key:  key,
 			}
 		})
+	}
+
+	if strings.Contains(os.Args[0], "direktiv-cmd") {
+		cmdserver.Start()
+
+		return
 	}
 
 	runApplication()
