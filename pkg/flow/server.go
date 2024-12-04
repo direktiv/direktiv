@@ -33,7 +33,6 @@ import (
 	"github.com/lib/pq"
 	"github.com/nats-io/nats.go"
 	"github.com/opensearch-project/opensearch-go"
-	"github.com/opensearch-project/opensearch-go/opensearchapi"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -366,10 +365,6 @@ func initLegacyServer(circuit *core.Circuit, config *core.Config, db *gorm.DB, d
 			return nil, fmt.Errorf("initialize OpenSearch client, err: %w", err)
 		}
 		slog.Info("connected to OpenSearch")
-		err = srv.demoIndexDocument(context.Background(), "test", "test", `{"field": "test value"}`)
-		if err != nil {
-			return nil, fmt.Errorf("testing OpenSearch, err: %w", err)
-		}
 	}
 
 	return srv, nil
@@ -698,27 +693,4 @@ func initOpenSearch(cfg *core.Config) (*opensearch.Client, error) {
 	slog.Info("Connected to OpenSearch", "info", res.String())
 
 	return client, nil
-}
-
-func (srv *server) demoIndexDocument(ctx context.Context, index string, docID string, doc string) error {
-	req := opensearchapi.IndexRequest{
-		Index:      index,
-		DocumentID: docID,
-		Body:       strings.NewReader(doc),
-		Refresh:    "true",
-	}
-
-	res, err := req.Do(ctx, srv.openSearchClient)
-	if err != nil {
-		return fmt.Errorf("failed to index document: %w", err)
-	}
-	defer res.Body.Close()
-
-	if res.IsError() {
-		return fmt.Errorf("error indexing document: %s", res.String())
-	}
-
-	slog.Info("Document indexed successfully", "index", index, "id", docID)
-
-	return nil
 }
