@@ -347,7 +347,7 @@ data-prepper:
     enabled: true
     existingSecret: ""
     config:
-      logging-pipeline:
+      simple-sample-pipeline:
         workers: 2
         delay: 5000
         source:
