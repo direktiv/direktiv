@@ -94,9 +94,10 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "run-p build:*",
+    "build:compile": "vite build",
+    "build:check": "pnpm run check",
     "preview": "vite preview --debug",
-    "prebuild": "pnpm run check",
     "test": "vitest",
     "storybook": "NODE_OPTIONS=--openssl-legacy-provider pnpm exec storybook dev -p 6006",
     "storybook:build": "pnpm exec storybook build",
