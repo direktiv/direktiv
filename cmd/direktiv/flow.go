@@ -157,7 +157,6 @@ var eventSendCmd = &cobra.Command{
 	Use:   "send",
 	Short: "Sends a file as cloudevent to Direktiv",
 	RunE: func(cmd *cobra.Command, args []string) error {
-
 		token := os.Getenv("DIREKTIV_TOKEN")
 		namespace := os.Getenv("DIREKTIV_NAMESPACE")
 		address := os.Getenv("DIREKTIV_REMOTE_ADDRESS")
@@ -176,7 +175,6 @@ var eventSendCmd = &cobra.Command{
 			Address:   address,
 			Insecure:  insecure,
 		})
-
 		if err != nil {
 			return err
 		}
