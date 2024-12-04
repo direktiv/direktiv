@@ -2,10 +2,14 @@ package main
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"io"
 	"io/fs"
 	"log/slog"
+	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/direktiv/direktiv/pkg/core"
@@ -22,6 +26,12 @@ func runApplication() {
 You need to specify the SERVICE_NAME as an argument.`,
 	}
 
+	eventCmd := &cobra.Command{
+		Use:   "event COMMAND",
+		Short: "Executes a direktiv event command",
+	}
+	eventCmd.AddCommand(eventSendCmd)
+
 	startCmd.AddCommand(startAPICmd, startSidecarCmd, startDinitCmd)
 
 	rootCmd := &cobra.Command{
@@ -30,7 +40,7 @@ You need to specify the SERVICE_NAME as an argument.`,
 		Args:  cobra.ExactArgs(1),
 	}
 
-	rootCmd.AddCommand(startCmd)
+	rootCmd.AddCommand(startCmd, eventCmd)
 
 	err := rootCmd.Execute()
 	if err != nil {
@@ -140,5 +150,66 @@ var startSidecarCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		slog.Info("starting 'sidecar' service...")
 		sidecar.RunApplication(context.Background())
+	},
+}
+
+var eventSendCmd = &cobra.Command{
+	Use:   "send",
+	Short: "Sends a file as cloudevent to Direktiv",
+	RunE: func(cmd *cobra.Command, args []string) error {
+
+		token := os.Getenv("DIREKTIV_TOKEN")
+		namespace := os.Getenv("DIREKTIV_NAMESPACE")
+		address := os.Getenv("DIREKTIV_REMOTE_ADDRESS")
+		insecure := strings.ToLower(os.Getenv("DIREKTIV_INSECURE")) == "true"
+
+		p := profile{
+			Namespace: namespace,
+			Token:     token,
+			Address:   address,
+			Insecure:  insecure,
+		}
+
+		uploader, err := newUploader("", profile{
+			Namespace: namespace,
+			Token:     token,
+			Address:   address,
+			Insecure:  insecure,
+		})
+
+		if err != nil {
+			return err
+		}
+
+		b, err := os.ReadFile(args[0])
+		if err != nil {
+			return err
+		}
+
+		url := fmt.Sprintf("%s/api/v2/namespaces/%s/events/broadcast", p.Address, p.Namespace)
+		resp, err := uploader.sendRequest("POST", url, b)
+		if err != nil {
+			return err
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			b, err := io.ReadAll(resp.Body)
+			if err != nil {
+				return err
+			}
+
+			var errJson errorResponse
+			err = json.Unmarshal(b, &errJson)
+			if err != nil {
+				return err
+			}
+
+			return fmt.Errorf(errJson.Error.Message)
+		}
+
+		fmt.Println("event sent")
+
+		return nil
 	},
 }

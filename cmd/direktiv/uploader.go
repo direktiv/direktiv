@@ -1,4 +1,4 @@
-package cli
+package main
 
 import (
 	"bufio"
@@ -22,6 +22,12 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/format/gitignore"
 )
 
+type profile struct {
+	Address   string `json:"address"`
+	Insecure  bool   `json:"insecure"`
+	Namespace string `json:"namespace"`
+	Token     string `json:"token"`
+}
 type uploader struct {
 	matcher gitignore.Matcher
 	profile profile
