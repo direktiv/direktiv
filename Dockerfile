@@ -26,7 +26,6 @@ WORKDIR /app
 COPY ui/package.json .
 COPY ui/pnpm-lock.yaml .
 
-# TODO: ADD CACHING
 RUN pnpm install
 
 COPY ui/.eslintrc.js .
