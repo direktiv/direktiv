@@ -87,7 +87,7 @@ database:
 # Added this to connect to tracing.direktiv.io
 opentelemetry:
   # -- installs opentelemtry agent as sidecar in flow
-  enabled: false
+  enabled: true
   image: otel/opentelemetry-collector-dev:latest
   # -- config for sidecar agent
   agentconfig: |
@@ -98,7 +98,7 @@ opentelemetry:
           http:
     exporters:
       otlp:
-        endpoint: "tempo.grafana.svc:4317" # otel receivers grpc port for expl. tempo 
+        endpoint: "http://data-prepper-service:21890" # otel receivers grpc port for expl. tempo 
         insecure: true
         sending_queue:
           num_consumers: 4
@@ -343,6 +343,30 @@ data-prepper:
         delay: 5000
         source:
           http:
+        buffer:
+          bounded_blocking:
+            buffer_size: 1024
+            batch_size: 256
+        processor:
+          - string_converter:
+              upper_case: true
+        sink:
+          - stdout:
+          - opensearch:
+              hosts: ["https://opensearch-cluster-master.direktiv.svc:9200"]
+              username: admin
+              password: direktivTr0&3
+              index_type: trace-analytics-raw
+              insecure: true
+              max_retries: 20
+              bulk_size: 4
+      tracing-pipeline:
+        workers: 2
+        delay: 5000
+        source:
+          otel_trace_source:
+            ssl: false
+            port: 21890
         buffer:
           bounded_blocking:
             buffer_size: 1024
