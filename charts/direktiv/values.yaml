@@ -87,7 +87,7 @@ database:
 # Added this to connect to tracing.direktiv.io
 opentelemetry:
   # -- installs opentelemtry agent as sidecar in flow
-  enabled: true
+  enabled: false
   image: otel/opentelemetry-collector-dev:latest
   # -- config for sidecar agent
   agentconfig: |
@@ -183,18 +183,15 @@ fluent-bit:
           host                    ${PG_HOST}
           password                ${PG_PASSWORD}
       [OUTPUT]
-          Name            opensearch
-          Match           *
-          Host            opensearch-cluster-master.direktiv.svc
-          Port            9200
-          Index           fluentbit
-          HTTP_User       admin
-          HTTP_Passwd     direktivTr0&3
-          tls             on
-          tls.verify      off
-          Buffer_Size     4M
-          Retry_Limit     5
-          Suppress_Type_Name On
+          name                    http
+          match                   *
+          host                    ${DATA_PREPPER_HOST}
+          port                    2021
+          URI                     /log/ingest
+          Format                  json
+          tls                     off
+          HTTP_User               admin
+          HTTP_Passwd             admin
     filters: |
       [FILTER]
           Name                    rewrite_tag
@@ -350,8 +347,7 @@ data-prepper:
     enabled: true
     existingSecret: ""
     config:
-      ## Simple Example
-      simple-sample-pipeline:
+      logging-pipeline:
         workers: 2
         delay: 5000
         source:
