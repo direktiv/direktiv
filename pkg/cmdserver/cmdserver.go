@@ -3,8 +3,8 @@ package cmdserver
 import (
 	"log/slog"
 
-	"github.com/direktiv/direktiv/cmd/direktiv/cmdserver/pkg/commands"
-	"github.com/direktiv/direktiv/cmd/direktiv/cmdserver/pkg/server"
+	"github.com/direktiv/direktiv/pkg/cmdserver/pkg/commands"
+	"github.com/direktiv/direktiv/pkg/cmdserver/pkg/server"
 )
 
 func Start() {

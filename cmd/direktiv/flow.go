@@ -12,6 +12,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/cmdserver"
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/flow"
 	"github.com/direktiv/direktiv/pkg/sidecar"
@@ -167,7 +168,7 @@ var startCommandServerCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
 		slog.Info("starting 'cmdserver' service...")
-		sidecar.RunApplication(context.Background())
+		cmdserver.Start()
 	},
 }
 
