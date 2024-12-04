@@ -182,6 +182,19 @@ fluent-bit:
           database                ${PG_DB_NAME}
           host                    ${PG_HOST}
           password                ${PG_PASSWORD}
+      [OUTPUT]
+          Name            opensearch
+          Match           *
+          Host            opensearch-cluster-master.direktiv.svc
+          Port            9200
+          Index           fluentbit
+          HTTP_User       admin
+          HTTP_Passwd     direktivTr0&3
+          tls             on
+          tls.verify      off
+          Buffer_Size     4M
+          Retry_Limit     5
+          Suppress_Type_Name On
     filters: |
       [FILTER]
           Name                    rewrite_tag
