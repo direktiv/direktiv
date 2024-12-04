@@ -1,11 +1,11 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 import { basename } from 'path'
 
+import common from '../common'
 import config from '../common/config'
 import helpers from '../common/helpers'
 import request from '../common/request'
 import { retry10 } from '../common/retry'
-import common from "../common";
 
 const namespace = basename(__filename)
 
@@ -51,6 +51,6 @@ plugins:
 		expect(listRes.statusCode).toEqual(200)
 		expect(listRes.body.data.length).toEqual(2)
 		listRes.body.data[0].errors = []
-		listRes.body.data[1].errors = [ 'duplicate gateway path: /foo']
+		listRes.body.data[1].errors = [ 'duplicate gateway path: /foo' ]
 	})
 })

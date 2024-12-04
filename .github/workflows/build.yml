@@ -62,8 +62,6 @@ jobs:
       - name: Run unit tests
         run: |
           go test ./... -coverprofile coverage.out -covermode count
-        env:
-          DIREKTIV_APP: flow
 
   build:
     needs: [backend-license, backend-lint, backend-test]

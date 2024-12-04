@@ -42,7 +42,6 @@ describe('Test generic container', () => {
 
 	it(`should invoke workflow`, async () => {
 		const res = await request(config.getDirektivHost()).post(`/api/v2/namespaces/${ testNamespace }/instances?path=wf1.yaml&wait=true`)
-		console.log(res.statusCode, res.body)
 		expect(res.statusCode).toEqual(200)
 		expect(res.body.return[0].Output).toEqual('data')
 	})
