@@ -1,3 +1,4 @@
+// nolint
 package main
 
 import (
@@ -150,6 +151,7 @@ func (u *uploader) loadIgnoresMatcher(path string) error {
 	}
 
 	u.matcher = gitignore.NewMatcher(ps)
+
 	return nil
 }
 
