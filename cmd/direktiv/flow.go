@@ -101,7 +101,7 @@ var startDinitCmd = &cobra.Command{
 
 		perm := 0o755
 		sharedDir := "/usr/share/direktiv"
-		cmdBinary := "/app/direktiv-cmd"
+		cmdBinary := "/app/direktiv"
 		targetBinary := "/usr/share/direktiv/direktiv-cmd"
 
 		slog.Info("starting RunApplication", "sharedDir", sharedDir, "cmdBinary", cmdBinary)
