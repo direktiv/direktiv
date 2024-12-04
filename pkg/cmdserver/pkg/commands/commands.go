@@ -7,7 +7,7 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/direktiv/direktiv/cmd/cmd-exec/pkg/server"
+	"github.com/direktiv/direktiv/pkg/cmdserver/pkg/server"
 	"github.com/mattn/go-shellwords"
 )
 
