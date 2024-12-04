@@ -1,13 +1,18 @@
+// nolint:forbidigo
 package main
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"io"
 	"io/fs"
 	"log/slog"
+	"net/http"
 	"os"
 	"time"
 
+	"github.com/direktiv/direktiv/pkg/cmdserver"
 	"github.com/direktiv/direktiv/pkg/core"
 	"github.com/direktiv/direktiv/pkg/flow"
 	"github.com/direktiv/direktiv/pkg/sidecar"
@@ -22,7 +27,21 @@ func runApplication() {
 You need to specify the SERVICE_NAME as an argument.`,
 	}
 
-	startCmd.AddCommand(startAPICmd, startSidecarCmd, startDinitCmd)
+	eventCmd := &cobra.Command{
+		Use:   "event COMMAND",
+		Short: "Executes a direktiv event command",
+	}
+	eventCmd.AddCommand(eventSendCmd)
+
+	instancesCmd := &cobra.Command{
+		Use:   "filesystem",
+		Short: "Execute flows and push files",
+	}
+	instancesCmd.AddCommand(instancesPushCmd)
+	instancesCmd.AddCommand(instancesExecCmd)
+	instancesExecCmd.PersistentFlags().Bool("push", true, "Push before execute.")
+
+	startCmd.AddCommand(startAPICmd, startSidecarCmd, startDinitCmd, startCommandServerCmd)
 
 	rootCmd := &cobra.Command{
 		Use:   "direktiv",
@@ -30,7 +49,7 @@ You need to specify the SERVICE_NAME as an argument.`,
 		Args:  cobra.ExactArgs(1),
 	}
 
-	rootCmd.AddCommand(startCmd)
+	rootCmd.AddCommand(startCmd, eventCmd)
 
 	err := rootCmd.Execute()
 	if err != nil {
@@ -82,7 +101,7 @@ var startDinitCmd = &cobra.Command{
 
 		perm := 0o755
 		sharedDir := "/usr/share/direktiv"
-		cmdBinary := "/app/direktiv-cmd"
+		cmdBinary := "/app/direktiv"
 		targetBinary := "/usr/share/direktiv/direktiv-cmd"
 
 		slog.Info("starting RunApplication", "sharedDir", sharedDir, "cmdBinary", cmdBinary)
@@ -140,5 +159,59 @@ var startSidecarCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		slog.Info("starting 'sidecar' service...")
 		sidecar.RunApplication(context.Background())
+	},
+}
+
+var startCommandServerCmd = &cobra.Command{
+	Use:   "cmdserver",
+	Short: "direktiv cmdserver service, this service is part of direktiv sidecar stack",
+	Args:  cobra.ExactArgs(0),
+	Run: func(cmd *cobra.Command, args []string) {
+		slog.Info("starting 'cmdserver' service...")
+		cmdserver.Start()
+	},
+}
+
+var eventSendCmd = &cobra.Command{
+	Use:   "send",
+	Short: "Sends a file as cloudevent to Direktiv",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		p := prepareCommand()
+
+		uploader, err := newUploader("", p)
+		if err != nil {
+			return err
+		}
+
+		b, err := os.ReadFile(args[0])
+		if err != nil {
+			return err
+		}
+
+		url := fmt.Sprintf("%s/api/v2/namespaces/%s/events/broadcast", p.Address, p.Namespace)
+		resp, err := uploader.sendRequest("POST", url, b)
+		if err != nil {
+			return err
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			b, err := io.ReadAll(resp.Body)
+			if err != nil {
+				return err
+			}
+
+			var errJSON errorResponse
+			err = json.Unmarshal(b, &errJSON)
+			if err != nil {
+				return err
+			}
+
+			return fmt.Errorf(errJSON.Error.Message)
+		}
+
+		fmt.Println("event sent")
+
+		return nil
 	},
 }
