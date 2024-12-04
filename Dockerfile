@@ -10,7 +10,7 @@ COPY pkg src/pkg/
 COPY cmd src/cmd/
 
 RUN --mount=type=cache,target=/root/.cache/go-build cd src && \
-    CGO_ENABLED=false GOOS=linux GOARCH=$TARGETARCH go build -tags osusergo,netgo -ldflags "-X github.com/direktiv/direktiv/pkg/version.Version=$VERSION" -o /direktiv cmd/direktiv/*.go;
+    CGO_ENABLED=false GOOS=linux GOARCH=$TARGETARCH go build -tags osusergo,netgo -ldflags "-X github.com/direktiv/direktiv/pkg/version.Version=$VERSION" -o /direktiv cmd/*.go;
 
 #########################################################################################
 FROM --platform=$BUILDPLATFORM node:18.18.1 as ui-builder
