@@ -38,7 +38,7 @@ The common make targets are:
 
 *cluster-setup*: Sets up the full cluster including Knative, Direktiv and Database
 
-*cluster-create*: Creates an empty cluster
+*cluster-build*: Creates an empty cluster
 
 *cluster-build*: Builds Direktiv and pushes it to the registry at localhost:5001/direktiv:dev
 
@@ -47,7 +47,5 @@ The common make targets are:
 *cluster-direktiv-delete*: Removes Direktiv from cluster
 
 *cluster-direktiv-run*: Builds Direktiv and replaces the pod with a new version and tails the log
-
-*kind delete clusters --all*: Delete all clusters
 
 For cluster tests use 'KIND_CONFIG=kind-config-cluster.yaml make cluster-setup'
