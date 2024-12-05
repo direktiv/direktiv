@@ -194,10 +194,8 @@ jobs:
           DB_HOST=postgres-postgresql.postgres.svc
           DB_PORT=5432
           DB_USER=postgres
-          DB_PASSWORD=postgres
+          DB_PASSWORD=$(kubectl get secret --namespace postgres postgres-postgresql -o jsonpath="{.data.postgres-password}" | base64 -d)
           DB_NAME=postgres
-          POSTGRES_PASSWORD=$(kubectl get secret --namespace postgres postgres-postgresql -o jsonpath="{.data.postgres-password}" | base64 -d)
-
 
           cat <<EOF > dev.yaml
           pullPolicy: IfNotPresent
