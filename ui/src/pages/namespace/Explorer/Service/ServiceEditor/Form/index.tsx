@@ -90,7 +90,7 @@ export const Form: FC<FormProps> = ({ defaultConfig, children, onSave }) => {
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger>
-                    <HelpCircle className="ml-1 h-4 w-4" />
+                    <HelpCircle className="ml-1 size-4" />
                   </TooltipTrigger>
                   <TooltipContent>
                     {t("pages.explorer.service.editor.form.scale.tooltip")}

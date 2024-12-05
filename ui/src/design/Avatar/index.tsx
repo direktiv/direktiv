@@ -12,7 +12,7 @@ const Avatar: FC<AvatarProps> = React.forwardRef<HTMLDivElement, AvatarProps>(
     <div
       {...props}
       className={twMergeClsx(
-        "flex h-7 w-7 items-center justify-center rounded-full text-xs",
+        "flex size-7 items-center justify-center rounded-full text-xs",
         "bg-primary-500 text-gray-1 dark:text-gray-dark-1",
         className
       )}

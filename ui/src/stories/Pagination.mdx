@@ -1,4 +1,4 @@
-import { Meta } from "@storybook/addon-docs";
+import { Meta } from "@storybook/blocks";
 import "./stories.css";
 
 <Meta title="Systems/Pagination" />
@@ -7,8 +7,8 @@ import "./stories.css";
 
 Pagination is done with the combination of two functions:
 
-- usePageHandler - A Hook that tracks current page info and generates query strings to be used by direktiv-react-hooks or the direktiv API
-- Pagination - A React Component that renders a page selector that the user will use to change the page values of `usePageHandler`
+* usePageHandler - A Hook that tracks current page info and generates query strings to be used by direktiv-react-hooks or the direktiv API
+* Pagination - A React Component that renders a page selector that the user will use to change the page values of `usePageHandler`
 
 <div className="subheading">Hook & Connection</div>
 
@@ -61,5 +61,5 @@ If we take the example above were the user clicked the next page button to go to
 
 The usePageHandler returns two functions:
 
-- updatePage - Sets the current page (This automatically updates other returned values like `pageParams`). This is used by the `Pagination` component but can be used by the parents to programmatically set the page.
-- goToFirstPage - A utility function that sets the current page to 1. This is mainly used when you need to programmatically reset the state of usePageHandler.
+* updatePage - Sets the current page (This automatically updates other returned values like `pageParams`). This is used by the `Pagination` component but can be used by the parents to programmatically set the page.
+* goToFirstPage - A utility function that sets the current page to 1. This is mainly used when you need to programmatically reset the state of usePageHandler.

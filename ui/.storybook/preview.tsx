@@ -6,7 +6,6 @@ import React from "react";
 import withTailwindThemeDecorator from "./withTailwindTheme.decorator";
 
 export const parameters = {
-  actions: { argTypesRegex: "^on[A-Z].*" },
   controls: {
     matchers: {
       color: /(background|color)$/i,
@@ -31,3 +30,4 @@ export const globalTypes = {
 };
 
 export const decorators = [withTailwindThemeDecorator, (Story) => <Story />];
+export const tags = ["autodocs"];

@@ -51,7 +51,7 @@ const Row = ({
               }}
             >
               <DropdownMenuItem>
-                <Trash className="mr-2 h-4 w-4" />
+                <Trash className="mr-2 size-4" />
                 {t("pages.permissions.groups.contextMenu.delete")}
               </DropdownMenuItem>
             </DialogTrigger>
@@ -63,7 +63,7 @@ const Row = ({
               }}
             >
               <DropdownMenuItem>
-                <Pencil className="mr-2 h-4 w-4" />
+                <Pencil className="mr-2 size-4" />
                 {t("pages.permissions.groups.contextMenu.edit")}
               </DropdownMenuItem>
             </DialogTrigger>

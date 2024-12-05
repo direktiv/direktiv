@@ -23,7 +23,7 @@ const RadioGroupItem = React.forwardRef<
   <RadioGroupPrimitive.Item
     ref={ref}
     className={twMergeClsx(
-      "text:fill-slate-50 h-4 w-4 rounded-full border  focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+      "text:fill-slate-50 size-4 rounded-full border focus:outline-none  focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
       "border-gray-4 text-gray-12 hover:border-gray-6 hover:text-gray-1 focus:ring-gray-4 focus:ring-offset-gray-1",
       "dark:border-gray-dark-4 dark:text-gray-dark-12  dark:hover:border-gray-dark-6 dark:hover:text-gray-dark-1 dark:focus:ring-gray-dark-4 dark:focus:ring-offset-gray-dark-1",
       className
@@ -33,7 +33,7 @@ const RadioGroupItem = React.forwardRef<
     <RadioGroupPrimitive.Indicator className="flex items-center justify-center">
       <Circle
         className={twMergeClsx(
-          "h-2.5 w-2.5",
+          "size-2.5",
           " fill-gray-12",
           " dark:fill-gray-dark-12"
         )}

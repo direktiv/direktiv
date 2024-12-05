@@ -13,29 +13,31 @@ RUN --mount=type=cache,target=/root/.cache/go-build cd src && \
     CGO_ENABLED=false GOOS=linux GOARCH=$TARGETARCH go build -tags osusergo,netgo -ldflags "-X github.com/direktiv/direktiv/pkg/version.Version=$VERSION" -o /direktiv cmd/*.go;
 
 #########################################################################################
-FROM --platform=$BUILDPLATFORM node:18.18.1 as ui-builder
+FROM --platform=$BUILDPLATFORM node:20-slim as ui-builder
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
+
 WORKDIR /app
-ENV PATH /app/node_modules/.bin:$PATH
 
-COPY ui/yarn.lock .
 COPY ui/package.json .
-RUN yarn install
+COPY ui/pnpm-lock.yaml .
 
-COPY ui/assets assets
-COPY ui/public public
-COPY ui/src src
+RUN pnpm install
 
-COPY ui/test test
-COPY ui/.env.example .
 COPY ui/.eslintrc.js .
-COPY ui/.nvmrc .
+COPY ui/.prettierrc.mjs .
 COPY ui/index.html .
 COPY ui/postcss.config.cjs .
 COPY ui/tailwind.config.cjs .
 COPY ui/tsconfig.json .
-COPY ui/vite.config.ts .
+COPY ui/vite.config.mts .
+COPY ui/assets assets
+COPY ui/public public
+COPY ui/src src
+COPY ui/test test
 
-RUN yarn build
+RUN pnpm run build
 
 ########################################################################################
 FROM  gcr.io/distroless/static
