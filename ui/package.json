@@ -72,6 +72,7 @@
     "postcss-nesting": "^11.2.2",
     "prettier": "^2.8.3",
     "prettier-plugin-tailwindcss": "^0.2.4",
+    "rapidoc": "^9.3.8",
     "react": "^18.2.0",
     "react-collapsed": "^3.3.0",
     "react-day-picker": "^8.7.1",
@@ -136,6 +137,7 @@
   "devDependencies": {
     "@faker-js/faker": "^7.3.0",
     "@playwright/test": "^1.35.0",
+    "@rollup/plugin-yaml": "^4.1.2",
     "@storybook/addon-actions": "^7.0.0-beta.53",
     "@storybook/addon-essentials": "^7.0.0-beta.53",
     "@storybook/addon-interactions": "^7.0.0-beta.53",

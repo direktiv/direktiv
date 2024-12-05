@@ -8,6 +8,7 @@ import pluginRewriteAll from "vite-plugin-rewrite-all";
 import react from "@vitejs/plugin-react";
 import svgrPlugin from "vite-plugin-svgr";
 import viteTsconfigPaths from "vite-tsconfig-paths";
+import yaml from "@rollup/plugin-yaml";
 
 //  fix https://github.com/uber/baseweb/issues/4129
 const WRONG_CODE = `import { bpfrpt_proptype_WindowScroller } from "../WindowScroller.js";`;
@@ -86,6 +87,7 @@ export default ({ mode }) => {
       svgrPlugin(),
       reactVirtualized(),
       pluginRewriteAll(),
+      yaml(),
     ],
     test: {
       globals: true,
