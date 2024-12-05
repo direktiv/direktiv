@@ -9,15 +9,21 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
+// LogLevel represents the severity level of logs in the system.
 type LogLevel int
 
 const (
+	// LevelDebug is used for debug-level logs, providing detailed information.
 	LevelDebug LogLevel = iota
+	// LevelInfo is used for informational logs, indicating normal operation.
 	LevelInfo
+	// LevelWarn is used for warning-level logs, highlighting potential issues.
 	LevelWarn
+	// LevelError is used for error-level logs, indicating a failure or serious issue.
 	LevelError
 )
 
+// String returns the string representation of the LogLevel for logging purposes.
 func (level LogLevel) String() string {
 	switch level {
 	case LevelDebug:
@@ -33,47 +39,52 @@ func (level LogLevel) String() string {
 	}
 }
 
+// LogContextKey defines the keys used for storing values in the context for structured logging.
 type LogContextKey int
 
 const (
-	NamespaceKey LogContextKey = iota
-	InstanceKey
-	InvokerKey
-	CallpathKey
-	WorkflowKey
-	StateKey
-	LogTrackKey
-	TraceKey
-	SpanKey
-	LevelKey
-	StatusKey
-	MsgKey
-	ActionKey
-	BranchKey
+	NamespaceKey LogContextKey = iota // Key for namespace
+	InstanceKey                       // Key for instance ID
+	InvokerKey                        // Key for the invoker
+	CallpathKey                       // Key for the call path
+	WorkflowKey                       // Key for the workflow path
+	StateKey                          // Key for state information
+	LogTrackKey                       // Key for log tracking information
+	TraceKey                          // Key for trace information (OpenTelemetry)
+	SpanKey                           // Key for span information (OpenTelemetry)
+	LevelKey                          // Key for log level
+	StatusKey                         // Key for log status
+	MsgKey                            // Key for log message
+	ActionKey                         // Key for action ID
+	BranchKey                         // Key for branch information
 )
 
+// AddNamespace adds the namespace to the context for tracing and structured logging.
 func AddNamespace(ctx context.Context, namespaceName string) context.Context {
 	return context.WithValue(ctx, NamespaceKey, namespaceName)
 }
 
+// AddActionID adds an action identifier to the context, useful for tracing specific operations.
 func AddActionID(ctx context.Context, action string) context.Context {
 	return context.WithValue(ctx, ActionKey, action)
 }
 
+// AddBranch adds the branch identifier to the context for workflows with conditional branches.
 func AddBranch(ctx context.Context, branch int) context.Context {
 	return context.WithValue(ctx, BranchKey, branch)
 }
 
-// InstanceAttributes holds the common attributes for an instance.
+// InstanceAttributes holds common metadata for an instance, which is helpful for logging.
 type InstanceAttributes struct {
-	Namespace    string
-	InstanceID   string
-	Invoker      string
-	Callpath     string
-	WorkflowPath string
-	Status       core.LogStatus
+	Namespace    string         // Namespace where the instance belongs
+	InstanceID   string         // Unique identifier for the instance
+	Invoker      string         // The invoker triggering the instance
+	Callpath     string         // The callpath for tracing the instance
+	WorkflowPath string         // Path of the workflow the instance belongs to
+	Status       core.LogStatus // Current status of the instance
 }
 
+// AddInstanceMemoryAttr adds instance-specific attributes and state information to the context for logging.
 func AddInstanceMemoryAttr(ctx context.Context, attrs InstanceAttributes, state string) context.Context {
 	ctx = AddInstanceAttr(ctx, attrs)
 	ctx = AddStateAttr(ctx, state)
@@ -82,6 +93,7 @@ func AddInstanceMemoryAttr(ctx context.Context, attrs InstanceAttributes, state 
 	return ctx
 }
 
+// AddInstanceAttr adds the core instance attributes to the context for logging.
 func AddInstanceAttr(ctx context.Context, attrs InstanceAttributes) context.Context {
 	ctx = AddNamespace(ctx, attrs.Namespace)
 	ctx = context.WithValue(ctx, InstanceKey, attrs.InstanceID)
@@ -92,26 +104,31 @@ func AddInstanceAttr(ctx context.Context, attrs InstanceAttributes) context.Cont
 	return ctx
 }
 
+// AddStateAttr adds the state information of the instance to the context.
 func AddStateAttr(ctx context.Context, state string) context.Context {
 	return context.WithValue(ctx, StateKey, state)
 }
 
+// AddLoseInstanceIDAttr adds a new instance ID to the context.
 func AddLoseInstanceIDAttr(ctx context.Context, instanceID string) context.Context {
 	return context.WithValue(ctx, InstanceKey, instanceID)
 }
 
+// AddStatus adds the status of the instance to the context, indicating the current state.
 func AddStatus(ctx context.Context, status core.LogStatus) context.Context {
 	return context.WithValue(ctx, StatusKey, status)
 }
 
+// WithTrack adds a unique tracking identifier to the context, useful for correlating logs.
 func WithTrack(ctx context.Context, track string) context.Context {
 	return context.WithValue(ctx, LogTrackKey, track)
 }
 
+// GetCoreAttributes retrieves the core attributes from the context for structured logging.
 func GetCoreAttributes(ctx context.Context) map[string]interface{} {
 	tags := make(map[string]interface{})
 
-	// Retrieve core attributes using enum keys
+	// Retrieve core attributes using context keys
 	if namespace, ok := ctx.Value(NamespaceKey).(string); ok {
 		tags["namespace"] = namespace
 	}
@@ -146,10 +163,11 @@ func GetCoreAttributes(ctx context.Context) map[string]interface{} {
 	return tags
 }
 
+// GetAttributes retrieves both core attributes and trace-specific information (trace and span IDs) from the context.
 func GetAttributes(ctx context.Context) map[string]interface{} {
 	tags := GetCoreAttributes(ctx)
 
-	// Add trace information if available
+	// Add OpenTelemetry trace and span information if available
 	span := trace.SpanFromContext(ctx)
 	if span.SpanContext().TraceID().IsValid() {
 		tags["trace"] = span.SpanContext().TraceID().String()
@@ -159,6 +177,7 @@ func GetAttributes(ctx context.Context) map[string]interface{} {
 	return tags
 }
 
+// GetRawLogEntryWithStatus creates a log entry containing the status, level, and message, enriched with context attributes.
 func GetRawLogEntryWithStatus(ctx context.Context, level LogLevel, msg string, status core.LogStatus) map[string]interface{} {
 	tags := GetAttributes(ctx)
 	tags["status"] = status
@@ -168,10 +187,12 @@ func GetRawLogEntryWithStatus(ctx context.Context, level LogLevel, msg string, s
 	return tags
 }
 
+// BuildNamespaceTrack constructs a unique track identifier for the namespace.
 func BuildNamespaceTrack(namespace string) string {
 	return fmt.Sprintf("%v.%v", "namespace", namespace)
 }
 
+// BuildInstanceTrack constructs a unique track identifier for the instance.
 func BuildInstanceTrack(instance *engine.Instance) string {
 	callpath := instance.Instance.ID.String()
 	if instance.DescentInfo == nil {
@@ -184,11 +205,12 @@ func BuildInstanceTrack(instance *engine.Instance) string {
 	return fmt.Sprintf("%v.%v", "instance", callpath)
 }
 
+// BuildInstanceTrackViaCallpath constructs a unique track identifier using the callpath.
 func BuildInstanceTrackViaCallpath(callpath string) string {
 	return fmt.Sprintf("%v.%v", "instance", callpath)
 }
 
-// CreateCallpath builds the callpath string from the instance's descent information.
+// CreateCallpath constructs a callpath string based on an instance's descent information.
 func CreateCallpath(instance *engine.Instance) string {
 	callpath := ""
 	for _, v := range instance.DescentInfo.Descent {
