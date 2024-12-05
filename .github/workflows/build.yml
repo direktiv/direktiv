@@ -210,7 +210,7 @@ jobs:
             user: "$DB_USER"
             password: "$DB_PASSWORD"
             name: "$DB_NAME"
-            sslmode: require
+            sslmode: allow
           EOF
           cat dev.yaml
       - name: Install Direktiv chart
