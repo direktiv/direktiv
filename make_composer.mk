@@ -24,5 +24,5 @@ docker-e2e-playwright: ## Perform ui e2e tests with playwright platform.
     -e PLAYWRIGHT_CI=TRUE \
 	-w /app/ui \
 	--net=host \
-	node:18 \
-	bash -c "yarn && npx playwright install --with-deps chromium && npx playwright test --shard=${PLAYWRIGHT_SHARD} --project \"chromium\"  --reporter=line"
+	node:20-slim \
+	bash -c "corepack enable && pnpm install && pnpm exec playwright install --with-deps chromium && pnpm exec playwright test --shard=${PLAYWRIGHT_SHARD} --project \"chromium\"  --reporter=line"

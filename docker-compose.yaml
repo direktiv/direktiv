@@ -18,7 +18,7 @@ services:
 
   flow:
     image: direktiv-dev
-    command: ["/app/direktiv", "server"]
+    command: ["/app/direktiv", "start", "api"]
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
@@ -47,22 +47,5 @@ services:
       - NODE_TLS_REJECT_UNAUTHORIZED=0
       - DIREKTIV_HOST=http://flow:8080
     command: npm --prefix /tests run jest -- ${JEST_PREFIX} --runInBand
-    depends_on:
-      - flow
-
-  e2e-playwright:
-    scale: 0
-    image: node:18
-    volumes:
-      - ./ui:/ui
-    environment:
-      - NODE_TLS_REJECT_UNAUTHORIZED=0
-      - PLAYWRIGHT_USE_VITE=FALSE
-      - PLAYWRIGHT_UI_BASE_URL=http://flow:8080
-    command: >
-      bash -c "cd ui
-      && yarn
-      && npx playwright install --with-deps chromium
-      && yarn run e2e:headless-chromium-only"
     depends_on:
       - flow

@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
 
-import regex from '../../common/regex'
 import common from '../../common'
+import regex from '../../common/regex'
 import request from '../../common/request'
 
 describe('Test services crud operations', () => {
@@ -62,16 +62,16 @@ describe('Test services crud operations', () => {
 					id: expect.stringMatching(/^secret-/),
 					url: 'b_domain_2.io',
 					user: 'b_name_2',
-				}],
+				} ],
 			),
 		)
 	})
 })
 
-function itShouldCreateSecret(it, expect, namespace, url, user, password) {
-	it(`should create a registry ${url} ${user} ${password}`, async () => {
+function itShouldCreateSecret (it, expect, namespace, url, user, password) {
+	it(`should create a registry ${ url } ${ user } ${ password }`, async () => {
 		const res = await request(common.config.getDirektivHost())
-			.post(`/api/v2/namespaces/${namespace}/registries`)
+			.post(`/api/v2/namespaces/${ namespace }/registries`)
 			.send({
 				url,
 				user,
