@@ -198,6 +198,23 @@ jobs:
           DB_NAME=postgres
           POSTGRES_PASSWORD=$(kubectl get secret --namespace postgres postgres-postgresql -o jsonpath="{.data.postgres-password}" | base64 -d)
 
+
+          cat <<EOF > dev.yaml
+          pullPolicy: IfNotPresent
+          registry: ghcr.io
+          image: direktiv/direktiv
+          tag: sha-${{ github.sha }}
+          flow:
+            logging: json
+          database:
+            host: "$DB_HOST"
+            port: $DB_PORT
+            user: "$DB_USER"
+            password: "$DB_PASSWORD"
+            name: "$DB_NAME"
+            sslmode: require
+          EOF
+          cat dev.yaml
       - name: Install Direktiv chart
         run: helm install direktiv -f dev.yaml ./charts/direktiv/
 
