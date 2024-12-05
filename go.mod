@@ -21,6 +21,7 @@ require (
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/nats-io/nats.go v1.37.0
+	github.com/opensearch-project/opensearch-go v1.1.0
 	github.com/pkg/errors v0.9.1
 	github.com/psanford/memfs v0.0.0-20230130182539-4dbf7e3e865e
 	github.com/qri-io/jsonschema v0.2.1
